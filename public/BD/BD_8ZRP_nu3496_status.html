@@ -254,11 +254,12 @@
     <h1 class="hero-title">nu<span class="accent">3496</span><br><span class="gold">Impossible</span><br>Made Routine</h1>
     <p style="font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);opacity:.7;margin-bottom:.6rem;margin-top:-.2rem">Nicaragua · 3,496 real locations</p>
     <p class="hero-sub">Before the year 2000, this computation was science fiction. Today it runs on a laptop.</p>
-    <p class="hero-context">3,496 real locations across Nicaragua. A search space larger than the number of atoms in the observable universe — by a factor that itself has over 10,000 digits. Our solver, built from pre-1980 mathematics and <strong>~100 KB of Python</strong>, finds a solution within <strong>1.241% of the known optimum</strong> at t=61h. No commercial software. No supercomputer. No external dependencies. Just math and a new idea.</p>
+    <p class="hero-context">3,496 real locations across Nicaragua. A search space larger than the number of atoms in the observable universe — by a factor that itself has over 10,000 digits. Our solver, built from pre-1980 mathematics and <strong>~100 KB of Python</strong>, finds a solution within <strong>1.241% of the known optimum</strong> at t=61h. In the later DEV2 Polyhedral/LZ arena, a targeted B480 door run independently reached <strong>97,337 / 1.253%</strong> — only 12 tour units behind the all-time page leader. No commercial software. No supercomputer. No external dependencies. Just math and a new idea.</p>
     <div class="hero-tags">
       <span class="tag cyan">n = 3,496 cities</span>
       <span class="tag gold">optimal = 96,132</span>
       <span class="tag green">best gap 1.241%</span>
+      <span class="tag cyan">DEV2 poly-door 1.253%</span>
       <span class="tag violet">DCC v2 adaptive</span>
       <span class="tag orange">~100 KB Python</span>
       <span class="tag">zero dependencies</span>
@@ -504,56 +505,68 @@
 <div class="divider"></div>
 
 
-<!-- DEV2 POLYHEDRAL DOOR UPDATE -->
+<!-- DEV2 POLY DOOR UPDATE -->
 <section>
   <div class="wrap">
-    <span class="sec-tag cyan">DEV2 Arena Discovery · July 2026</span>
-    <h2>Polyhedral/LZ Door: Below 3% Gap</h2>
-    <p>This is <strong>not</strong> the all-time 8Z-RP nu3496 record shown above. The older v2.5 fleet remains better at <strong>97,325 / 1.241%</strong>. This update documents something different: a new DEV2 arena discovery where a broad ssMDL-DCC search found a polyhedral/folded representation and a targeted continuation opened that door.</p>
+    <span class="sec-tag green">Latest DEV2 arena update · July 6, 2026</span>
+    <h2>DEV2 Polyhedral/LZ Door: 97,337 / 1.253%</h2>
+    <p>This is <strong>not</strong> a new all-time 8Z-RP page record: the older v2.5 fleet leader still stands at <strong>97,325 / 1.241%</strong>. But it is the most important DEV2 arena discovery so far. The new arena, after a broad scout and a targeted continuation, reached <strong>97,337</strong> — only <strong>12 tour units</strong> behind the all-time page leader and <strong>1,205 units</strong> above the known optimum of 96,132.</p>
 
     <div class="stat-banner">
-      <div class="sb-cell"><div class="sb-num green">98,940</div><div class="sb-label">DEV2 best tour</div><div class="sb-sub">PS3_BB_ext</div></div>
-      <div class="sb-cell"><div class="sb-num cyan">2.921%</div><div class="sb-label">Gap to optimum</div><div class="sb-sub">96,132 optimum</div></div>
-      <div class="sb-cell"><div class="sb-num gold">3/3</div><div class="sb-label">Sub-5% variants</div><div class="sb-sub">BB_ext · ratchet_base · ratchet_ext</div></div>
-      <div class="sb-cell"><div class="sb-num violet">2h</div><div class="sb-label">Winning variant</div><div class="sb-sub">7,200 s budget</div></div>
-      <div class="sb-cell"><div class="sb-num rose">+1,615</div><div class="sb-label">Behind all-time v2.5</div><div class="sb-sub">97,325 still leads</div></div>
-      <div class="sb-cell"><div class="sb-num">−1,226</div><div class="sb-label">Beats old balanced ref</div><div class="sb-sub">100,166 reference</div></div>
+      <div class="sb-cell"><div class="sb-num green">97,337</div><div class="sb-label">DEV2 B480 best</div><div class="sb-sub">DOOR_ratch_ext2_3opt45</div></div>
+      <div class="sb-cell"><div class="sb-num cyan">1.253%</div><div class="sb-label">Gap to optimum</div><div class="sb-sub">96,132 known optimal</div></div>
+      <div class="sb-cell"><div class="sb-num gold">+12</div><div class="sb-label">Behind page leader</div><div class="sb-sub">97,325 v2.5 fleet result</div></div>
+      <div class="sb-cell"><div class="sb-num violet">4h</div><div class="sb-label">Heavy variant budget</div><div class="sb-sub">14,400 s B480</div></div>
+      <div class="sb-cell"><div class="sb-num rose">14,386s</div><div class="sb-label">Time to best</div><div class="sb-sub">best came near the end</div></div>
+      <div class="sb-cell"><div class="sb-num">72a344…ad02</div><div class="sb-label">Tour SHA-256</div><div class="sb-sub">validated full 3,496-node tour</div></div>
     </div>
 
     <div class="grid-2" style="margin-top:1.5rem">
       <div class="highlight green">
-        <h3 style="color:var(--green)">What actually worked</h3>
-        <p>The winning path was not brute force and not a classical exact solver. The arena first found a promising <strong>polyhedral/folded search basin</strong>. A hotfix then resumed the unfinished P3 ablation and completed the strongest missing variant:</p>
-        <div class="code-block" style="margin-top:.8rem"><span class="cc">category</span> = <span class="cg">polyhedral_space_s42</span>
-<span class="cc">variant</span>  = <span class="cg">PS3_BB_ext</span>
-<span class="cc">sensor</span>   = <span class="cg">LZ_binary</span>
-<span class="cc">law</span>      = <span class="cg">BB</span>
-<span class="cc">ops</span>      = <span class="cg">2opt, oropt1/2/3, double_bridge, 3opt_type4, seg_flip</span>
-<span class="cc">length</span>   = <span class="cg">98,940</span>
-<span class="cc">gap</span>      = <span class="cg">2.920984%</span></div>
+        <h3 style="color:var(--green)">What opened the door</h3>
+        <p>The winning DEV2 chain was not brute force. The broad arena first found the <strong>polyhedral / folded representation</strong>. A targeted B240 continuation reached <strong>98,940 / 2.921%</strong>. Then the B480 from-best run added the decisive operator set and reached <strong>97,337 / 1.253%</strong>.</p>
+        <div class="code-block" style="margin-top:1rem"><span class="cc">sensor</span>     = <span class="cg">LZ_binary</span>
+<span class="cc">law</span>        = <span class="cv">ratchet</span>
+<span class="cc">operators</span>  = <span class="cgo">2opt, oropt1, oropt2, oropt3, double_bridge,
+             3opt_type4, 3opt_type5, seg_flip</span>
+<span class="cc">start</span>      = <span class="cg">PS3_BB_ext · 98,940</span>
+<span class="cc">backend</span>    = <span class="cv">Rust 2-opt</span>
+<span class="cc">accel</span>      = <span class="cv">CuPy/GPU · 1 worker</span></div>
       </div>
-      <div class="highlight violet">
-        <h3 style="color:var(--violet)">Why it matters</h3>
-        <p>The broad arena did not merely grind; it discovered a door. The targeted run then opened it. This validates the research workflow: <strong>rank, do not eliminate</strong>; preserve promising representation × sensor × operator cells; return with deeper budget when a door appears.</p>
-        <p style="margin-top:.7rem">The best tour was found near the end of its two-hour budget, so the direction is not obviously exhausted.</p>
+      <div class="highlight gold">
+        <h3 style="color:var(--gold)">Why it matters</h3>
+        <p>The DEV2 arena almost reproduced the older 61-hour fleet result through a very different route: <strong>arena discovery → hotfix → targeted continuation → deeper from-best door run</strong>. That is evidence that the arena is not merely running old local search longer; it can identify a promising basin and then exploit it.</p>
+        <p style="margin-top:.8rem">The best B480 result appeared at <strong>14,386.85 seconds out of 14,400</strong>, almost at the end of the allowed time. That is a strong reason to keep the B960 continuation running: this door has not obviously exhausted itself.</p>
       </div>
     </div>
 
     <div class="table-wrap" style="margin-top:1.5rem">
       <table class="worker-table">
-        <thead><tr><th>DEV2 variant</th><th>Length</th><th>Gap</th><th>L_total</th><th>Meaning</th></tr></thead>
+        <thead>
+          <tr><th>DEV2 variant</th><th>Length</th><th>Gap</th><th>L_total</th><th>Meaning</th></tr>
+        </thead>
         <tbody>
-          <tr><td><strong>PS3_BB_ext</strong></td><td>98,940</td><td>2.921%</td><td>50.3882</td><td>raw-distance winner; extended operators opened the door</td></tr>
-          <tr><td><strong>PS3_ratch_base</strong></td><td>99,211</td><td>3.203%</td><td>48.6722</td><td>best MDL/L_total; structurally very strong</td></tr>
-          <tr><td><strong>PS3_ratch_ext</strong></td><td>99,440</td><td>3.441%</td><td>58.2921</td><td>completed final P3 variant; good but not winner</td></tr>
-          <tr><td>PS3_BB_base</td><td>101,004</td><td>5.068%</td><td>77.0155</td><td>door opener from the original deep run</td></tr>
+          <tr><td><strong>DOOR_ratch_ext2_3opt45_from_best</strong></td><td><strong>97,337</strong></td><td><strong>1.253485%</strong></td><td>28.0484</td><td>Current DEV2/poly-door winner</td></tr>
+          <tr><td>DOOR_BB_ext2_3opt45_from_best</td><td>98,486</td><td>2.448716%</td><td>46.2115</td><td>BB law with the same extended 3-opt set</td></tr>
+          <tr><td>DOOR_BB_base_from_best</td><td>98,936</td><td>2.916823%</td><td>44.3250</td><td>Base operator continuation from the 98,940 door</td></tr>
+          <tr><td>PS3_BB_ext</td><td>98,940</td><td>2.920984%</td><td>50.3882</td><td>B240 door opener; first DEV2 result below 3%</td></tr>
+          <tr><td>PS3_ratch_base</td><td>99,211</td><td>3.202888%</td><td>48.6722</td><td>Strong MDL/poly-door structure signal</td></tr>
+          <tr><td>PS3_ratch_ext</td><td>99,440</td><td>3.441102%</td><td>58.2921</td><td>Good result, but not the winner</td></tr>
+          <tr><td>PS3_BB_base</td><td>101,004</td><td>5.068031%</td><td>77.0155</td><td>Original deep polyhedral door opener</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div class="highlight gold" style="margin-top:1.2rem">
-      <h3 style="color:var(--gold)">Interpretation</h3>
-      <p>The new DEV2 result does not beat the v2.5 fleet record. It is evidence for a different claim: the ssMDL-DCC arena can discover a useful representation, preserve it despite earlier failures, and convert it into a much better route with a targeted continuation. Classical moves do the local work; the arena decides where to aim them.</p>
+    <div class="grid-4" style="margin-top:1.5rem">
+      <div class="panel green"><p class="micro">All-time page leader</p><h3>97,325 · 1.241%</h3><p>Older v2.5 fleet result remains the page record.</p></div>
+      <div class="panel cyan"><p class="micro">New DEV2 arena result</p><h3>97,337 · 1.253%</h3><p>Only 12 units behind the page leader, found by a targeted polyhedral/LZ door run.</p></div>
+      <div class="panel gold"><p class="micro">Against old balanced reference</p><h3>−2,829</h3><p>The DEV2 B480 result is 2,829 units better than the older 100,166 balanced reference.</p></div>
+      <div class="panel violet"><p class="micro">Against optimum</p><h3>+1,205</h3><p>Still not exact, but very close for a small local research arena.</p></div>
+    </div>
+
+    <div class="highlight violet" style="margin-top:1.5rem">
+      <h3 style="color:var(--violet)">Updated interpretation</h3>
+      <p>The all-time page story remains: a tiny local solver can approach the known optimum on nu3496. The new DEV2 story is different and deeper: <strong>the arena found a door</strong>. Polyhedral/folded space created the right basin, <strong>LZ_binary</strong> supplied the compression signal, <strong>ratchet</strong> kept pressure on the search, and <strong>3opt_type4 + 3opt_type5 + seg_flip</strong> unlocked the final improvement. This is why the next B960 continuation is worth running.</p>
     </div>
   </div>
 </section>
@@ -610,7 +623,7 @@
   <div class="wrap">
     <p>AIM³ Institute · Bojan Dobrečevič · Ljubljana · 8Z Research Program</p>
     <p style="margin-top:.3rem;opacity:.6">Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline">C</a></p>
-    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) status · snapshot t=61h · 8zrp_v2.5 · DCC v2 · Meta-DCC · Rust 2-opt</p>
+    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) status · v2.5 all-time snapshot + DEV2 Polyhedral/LZ update · DCC/MDL · Rust 2-opt</p>
     <p style="margin-top:.3rem;opacity:.35">Algorithms: Croes 1958 · Or 1976 · Lin–Kernighan 1973 · DCC 2024 · zero external dependencies</p>
   </div>
 </footer>
