@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>8Z-RP · Nicaragua (nu3496) Run Status</title>
+  <title>8Z-RP · Nicaragua (nu3496) DEV2/B960 Final Status</title>
   <link rel="preconnect" href="https://fonts.googleapis.com/"/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -253,20 +253,68 @@
     <p class="hero-eyebrow">8Z Research Program · AIM³ Institute · Live Computation</p>
     <h1 class="hero-title">nu<span class="accent">3496</span><br><span class="gold">Impossible</span><br>Made Routine</h1>
     <p style="font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);opacity:.7;margin-bottom:.6rem;margin-top:-.2rem">Nicaragua · 3,496 real locations</p>
-    <p class="hero-sub">Before the year 2000, this computation was science fiction. Today a small local arena is within 1.1131% on a laptop.</p>
-    <p class="hero-context">3,496 real locations across Nicaragua. A search space larger than the number of atoms in the observable universe — by a factor that itself has over 10,000 digits. Our solver, built from pre-1980 mathematics and <strong>~100 KB of Python</strong>, now has a live DEV2 Polyhedral/LZ result within <strong>1.1131% of the known optimum</strong>. The B960 door run reached <strong>97,202 / 1.1131%</strong>, improving the previous 97,325 page leader by 123 tour units and the previous B960 checkpoint by 111. No commercial software. No supercomputer. No external dependencies. Just math and a new idea.</p>
+    <p class="hero-sub">Before the year 2000, this computation was science fiction. Today it runs on a laptop.</p>
+    <p class="hero-context">3,496 real locations across Nicaragua. A search space larger than the number of atoms in the observable universe — by a factor that itself has over 10,000 digits. The DEV2 Polyhedral/LZ door run is now <strong>complete at B960</strong>: <strong>97,202</strong>, only <strong>1.113053% from the known optimum</strong>. No commercial software. No supercomputer. Classical moves, a small local solver, and a new arena-guided search architecture.</p>
     <div class="hero-tags">
       <span class="tag cyan">n = 3,496 cities</span>
       <span class="tag gold">optimal = 96,132</span>
-      <span class="tag green">best gap 1.1131%</span>
-      <span class="tag cyan">DEV2 poly-door 97,202</span>
-      <span class="tag violet">DCC v2 adaptive</span>
-      <span class="tag orange">~100 KB Python</span>
-      <span class="tag">zero dependencies</span>
-      <span class="tag rose">live B960 checkpoint</span>
+      <span class="tag green">best = 97,202 · gap 1.113%</span>
+      <span class="tag violet">DEV2/B960 complete</span>
+      <span class="tag orange">Polyhedral/LZ door</span>
+      <span class="tag">GPU + 1 worker</span>
+      <span class="tag rose">valid full tour</span>
     </div>
   </div>
 </div>
+<div class="divider"></div>
+
+<!-- DEV2 B960 FINAL -->
+<section>
+  <div class="wrap">
+    <span class="sec-tag green">DEV2 Polyhedral/LZ Door · B960 complete · July 8, 2026</span>
+    <h2>New Completed Best: 97,202 / 1.113053%</h2>
+    <p>The B960 door run has finished all six targeted variants. The final winner remains <strong>DOOR_ratch_ext_from_best</strong> at <strong>97,202</strong>, gap <strong>1.113053%</strong>. The last two 3opt45 variants completed successfully, but did not beat the live record. This confirms the full B960 ladder, not just a mid-run snapshot.</p>
+
+    <div class="stat-banner" style="margin-top:1.2rem">
+      <div class="sb-cell"><div class="sb-num green">97,202</div><div class="sb-label">Best tour</div><div class="sb-sub">valid 3,496-node tour</div></div>
+      <div class="sb-cell"><div class="sb-num cyan">1.113%</div><div class="sb-label">Gap</div><div class="sb-sub">+1,070 over optimum</div></div>
+      <div class="sb-cell"><div class="sb-num gold">96,132</div><div class="sb-label">Known optimum</div><div class="sb-sub">TSPLIB nu3496</div></div>
+      <div class="sb-cell"><div class="sb-num violet">6/6</div><div class="sb-label">B960 variants</div><div class="sb-sub">complete</div></div>
+      <div class="sb-cell"><div class="sb-num orange">−123</div><div class="sb-label">vs old page leader</div><div class="sb-sub">97,325 → 97,202</div></div>
+      <div class="sb-cell"><div class="sb-num rose">109</div><div class="sb-label">Units to sub-1%</div><div class="sb-sub">threshold ≈ 97,093</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:1.4rem">
+      <div class="highlight green">
+        <h3 style="color:var(--green)">Winning formula</h3>
+        <p><strong>polyhedral / folded representation</strong> + <strong>LZ_binary compression sensor</strong> + <strong>ratchet law</strong> + <strong>2opt, oropt1/2/3, double_bridge, 3opt_type4, seg_flip</strong>. This is the clearest evidence so far that the arena can find a door, reopen it, and deepen it with targeted compute.</p>
+      </div>
+      <div class="highlight cyan">
+        <h3 style="color:var(--cyan)">What changed from B480?</h3>
+        <p>B480 reached <strong>97,337 / 1.253%</strong>. B960 improved the same basin to <strong>97,202 / 1.113%</strong>. The improvement is smaller than the B240→B480 jump, but the full ladder is now consistent: every B960 variant beat the B480 best.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:1.5rem">
+      <table class="worker-table">
+        <thead><tr><th>Rank</th><th>B960 variant</th><th>Law</th><th>Operators</th><th>Tour length</th><th>Gap</th><th>L_total</th></tr></thead>
+        <tbody>
+          <tr><td>#1</td><td><strong>DOOR_ratch_ext_from_best</strong></td><td>ratchet</td><td>base + 3opt_type4 + seg_flip</td><td><strong>97,202</strong></td><td><strong>1.113053%</strong></td><td>18.9492</td></tr>
+          <tr><td>#2</td><td>DOOR_ratch_ext2_3opt45_from_best</td><td>ratchet</td><td>base + 3opt_type4 + 3opt_type5 + seg_flip</td><td>97,264</td><td>1.177548%</td><td>22.6996</td></tr>
+          <tr><td>#3</td><td>DOOR_ratch_base_from_best</td><td>ratchet</td><td>2opt + oropt1/2/3 + double_bridge</td><td>97,281</td><td>1.195232%</td><td><strong>13.9053</strong></td></tr>
+          <tr><td>#4</td><td>DOOR_BB_ext_from_best</td><td>BB</td><td>base + 3opt_type4 + seg_flip</td><td>97,294</td><td>1.208755%</td><td>20.0626</td></tr>
+          <tr><td>#5</td><td>DOOR_BB_ext2_3opt45_from_best</td><td>BB</td><td>base + 3opt_type4 + 3opt_type5 + seg_flip</td><td>97,296</td><td>1.210835%</td><td>23.0868</td></tr>
+          <tr><td>#6</td><td>DOOR_BB_base_from_best</td><td>BB</td><td>2opt + oropt1/2/3 + double_bridge</td><td>97,313</td><td>1.228519%</td><td>14.2926</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="highlight gold" style="margin-top:1.2rem">
+      <h3 style="color:var(--gold)">Improvement ladder</h3>
+      <p><code>101,004 / 5.068%</code> → <code>98,940 / 2.921%</code> → <code>97,337 / 1.253%</code> → <code>97,313 / 1.229%</code> → <code>97,202 / 1.113%</code>. The current result is <strong>123 tour units better</strong> than the previous public page leader <code>97,325 / 1.241%</code>.</p>
+    </div>
+  </div>
+</section>
 <div class="divider"></div>
 
 <!-- THE SCALE -->
@@ -283,7 +331,7 @@
       </div>
       <div class="bignumber-body" id="bignumber"></div>
       <div class="bignumber-footer">
-        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our current live page best navigates this space to within 1.1131% of optimal.</strong></p>
+        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our DEV2/B960 polyhedral-door run navigates this space to within 1.113053% of optimal.</strong></p>
       </div>
     </div>
 
@@ -304,9 +352,9 @@
         <p>We never look at most routes. Smart moves + adaptive DCC governance follow improvement gradients, escaping local optima without random thrashing.</p>
       </div>
       <div class="panel green">
-        <p class="micro">Current live page best</p>
-        <h3>1.1131% from optimal</h3>
-        <p>Out of a 10,869-digit search space, the DEV2/B960 poly-door run lands within 1.1131% of the known optimum. On a laptop. In Python. With classical moves plus our arena governance.</p>
+        <p class="micro">Current DEV2/B960 result</p>
+        <h3>1.113% from optimal</h3>
+        <p>Out of a 10,869-digit search space, the completed B960 polyhedral-door run lands at 97,202 / 96,132 — only 1.113053% above the known optimum.</p>
       </div>
     </div>
   </div>
@@ -404,13 +452,13 @@
         <div class="vs-item"><strong>Team:</strong> one researcher (AIM³ Institute, Ljubljana) + AI collaboration</div>
         <div class="vs-item"><strong>Method:</strong> classical moves from 1958–1976, directed by DCC v2 adaptive governor. No LP, no cutting planes, no approximation theorems.</div>
         <div class="vs-item"><strong>Hardware:</strong> consumer laptop (Razer Blade, 16 cores, RTX GPU, Windows 11)</div>
-        <div class="vs-item"><strong>Output:</strong> 1.1131% from optimal in the live DEV2/B960 poly-door run; older v2.5 fleet result was 1.241%</div>
+        <div class="vs-item"><strong>Output:</strong> 1.113053% from optimal in the completed DEV2/B960 polyhedral-door run</div>
       </div>
     </div>
 
     <div class="highlight cyan">
       <h3 style="color:var(--cyan)">What this comparison means for P vs NP research</h3>
-      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and land within 1.1131% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
+      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and land within 1.113053% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
     </div>
   </div>
 </section>
@@ -435,8 +483,8 @@
       </div>
       <div class="panel green">
         <p class="micro">Today — consumer hardware</p>
-        <h3>Live DEV2 to 1.1131% gap</h3>
-        <p>A consumer laptop, Python, a small Rust speed loop, one GPU, and old local-search moves governed by new arena logic. The same scale of computation that was impossible in 1990 now runs while you sleep — on hardware you can buy in a store.</p>
+        <h3>DEV2/B960 to 1.113% gap</h3>
+        <p>A consumer laptop, available for €2,000. Python, available for free. Math invented before the first moon landing. One new idea. The same computation that was impossible in 1990 now runs while you sleep — on hardware you can buy in a store.</p>
       </div>
     </div>
 
@@ -446,7 +494,7 @@
 
     <div class="highlight violet">
       <h3 style="color:var(--violet)">For full context: Concorde on very large instances</h3>
-      <p>Concorde — the most powerful TSP solver ever built, backed by decades of research and requiring commercial LP solver licenses — needed <strong>over 136 CPU-years</strong> to prove the optimal solution for the 85,900-city pla85900 instance (2006). That is the best team in the world, unlimited compute, decades of work. We are not Concorde. We are not trying to be. We are a compact local solver/arena finding near-optimal solutions to a 3,496-city instance on a single laptop. This comparison is not embarrassing. It is extraordinary.</p>
+      <p>Concorde — the most powerful TSP solver ever built, backed by decades of research and requiring commercial LP solver licenses — needed <strong>over 136 CPU-years</strong> to prove the optimal solution for the 85,900-city pla85900 instance (2006). That is the best team in the world, unlimited compute, decades of work. We are not Concorde. We are not trying to be. We are a 100 KB Python file finding near-optimal solutions to a 3,496-city instance in 50 hours on a single laptop. This comparison is not embarrassing. It is extraordinary.</p>
     </div>
   </div>
 </section>
@@ -455,9 +503,9 @@
 <!-- CURRENT RESULTS -->
 <section>
   <div class="wrap">
-    <span class="sec-tag">Historical v2.5 fleet snapshot · t = 61h</span>
-    <h2>Earlier Fleet Context</h2>
-    <p>This section preserves the earlier v2.5 fleet snapshot that originally led this page. The current DEV2/B960 page leader is now shown below. Third checkpoint: t&asymp;61h (March 18 08:50 &rarr; March 20 22:03). Fleet of 14 workers, all active. Meta-DCC: 1,030 snapshots, 34 meta-steps. <strong>Fleet convergence reached</strong> — all workers within 0.022% of each other. Tightest spread since the run began.</p>
+    <span class="sec-tag">Historical v2.5 fleet snapshot · superseded by DEV2/B960</span>
+    <h2>Earlier Page Leader: 97,325 / 1.241%</h2>
+    <p>Historical checkpoint before the DEV2 polyhedral-door breakthrough. t&asymp;61h (March 18 08:50 &rarr; March 20 22:03). Fleet of 14 workers, all active. Meta-DCC: 1,030 snapshots, 34 meta-steps. <strong>Fleet convergence reached</strong> — all workers within 0.022% of each other. Tightest spread since the run began.</p>
 
     <div class="stat-banner">
       <div class="sb-cell"><div class="sb-num cyan">61h</div><div class="sb-label">Elapsed</div><div class="sb-sub">168h budget · 36.3% used</div></div>
@@ -499,78 +547,6 @@
         <li><strong>Better governance:</strong> <a href="BD_8ZRP_arena.html" style="color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.3)">Arena Lab</a> shows gravity+ADSR and LZ_dual+PI outperform the current LZ_binary+BB on uy734 (n=734). At n=3496, the classic sensor is even more limited — the binary improvement stream is too sparse at this scale.</li>
         <li><strong>Hierarchical DCC:</strong> Partition 3,496 cities into ~17 clusters of ~200. Govern each cluster with geometric sensors (their optimal scale, where they find exact optimal). Stitch cluster solutions into a global tour.</li>
       </ol>
-    </div>
-  </div>
-</section>
-<div class="divider"></div>
-
-
-<!-- DEV2 POLY DOOR UPDATE -->
-<section>
-  <div class="wrap">
-    <span class="sec-tag green">Latest DEV2 arena update · July 7, 2026</span>
-    <h2>DEV2 Polyhedral/LZ Door: 97,202 / 1.1131%</h2>
-    <p>The live DEV2/B960 extract has produced another page leader. The older v2.5 fleet result was <strong>97,325 / 1.241%</strong>; the previous B960 checkpoint was <strong>97,313 / 1.228519%</strong>; the current DEV2 Polyhedral/LZ door run has now reached <strong>97,202 / 1.113053%</strong>. That is <strong>123 tour units better</strong> than the previous page leader and only <strong>1,070 units above</strong> the known optimum of 96,132.</p>
-
-    <div class="stat-banner">
-      <div class="sb-cell"><div class="sb-num green">97,202</div><div class="sb-label">Current page best</div><div class="sb-sub">DEV2 B960 · DOOR_ratch_ext</div></div>
-      <div class="sb-cell"><div class="sb-num cyan">1.1131%</div><div class="sb-label">Gap to optimum</div><div class="sb-sub">96,132 known optimal</div></div>
-      <div class="sb-cell"><div class="sb-num gold">−123</div><div class="sb-label">Vs previous page leader</div><div class="sb-sub">97,325 → 97,202</div></div>
-      <div class="sb-cell"><div class="sb-num violet">−111</div><div class="sb-label">Vs previous B960 checkpoint</div><div class="sb-sub">97,313 → 97,202</div></div>
-      <div class="sb-cell"><div class="sb-num rose">24,241s</div><div class="sb-label">Time to best</div><div class="sb-sub">best at move 19,413</div></div>
-      <div class="sb-cell"><div class="sb-num">f51a…df5e</div><div class="sb-label">Tour SHA-256</div><div class="sb-sub">validated 3,496-node tour</div></div>
-    </div>
-
-    <div class="grid-2" style="margin-top:1.5rem">
-      <div class="highlight green">
-        <h3 style="color:var(--green)">What opened the door</h3>
-        <p>The broad arena first found the <strong>polyhedral / folded representation</strong>. A targeted B240 continuation reached <strong>98,940 / 2.921%</strong>. B480 then used <strong>ratchet + 3opt_type4 + 3opt_type5 + seg_flip</strong> to jump to <strong>97,337 / 1.253%</strong>. B960 first polished the basin to <strong>97,313 / 1.2285%</strong>, and then <strong>ratchet + 3opt_type4 + seg_flip</strong> pushed it further to <strong>97,202 / 1.1131%</strong>.</p>
-        <div class="code-block" style="margin-top:1rem"><span class="cc">current winner</span> = <span class="cg">DOOR_ratch_ext_from_best</span>
-<span class="cc">sensor</span>         = <span class="cg">LZ_binary</span>
-<span class="cc">law</span>            = <span class="cv">ratchet</span>
-<span class="cc">operators</span>      = <span class="cgo">2opt, oropt1, oropt2, oropt3, double_bridge, 3opt_type4, seg_flip</span>
-<span class="cc">start</span>          = <span class="cg">B480 best · 97,337</span>
-<span class="cc">backend</span>        = <span class="cv">Rust 2-opt</span>
-<span class="cc">accel</span>          = <span class="cv">CuPy/GPU · 1 worker</span></div>
-      </div>
-      <div class="highlight gold">
-        <h3 style="color:var(--gold)">Why it matters</h3>
-        <p>The arena has now done the full discovery loop: <strong>wide scout → memory hotfix → B240 door → B480 deepening → B960 continuation</strong>. The important point is not only the final length. The system found a basin, returned to it, and kept extracting structure from it through several targeted continuations.</p>
-        <p style="margin-top:.8rem">At this checkpoint, B960 had completed four of six variants. The two heavier <strong>ext2 / 3opt45</strong> variants were still pending, so this page may need another update if the run continues improving.</p>
-      </div>
-    </div>
-
-    <div class="table-wrap" style="margin-top:1.5rem">
-      <table class="worker-table">
-        <thead>
-          <tr><th>DEV2 variant</th><th>Length</th><th>Gap</th><th>L_total</th><th>Meaning</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>DOOR_ratch_ext_from_best</strong> <span style="color:var(--cyan)">B960</span></td><td><strong>97,202</strong></td><td><strong>1.113053%</strong></td><td><strong>18.9492</strong></td><td>Current raw-distance winner; ratchet + extended operator set</td></tr>
-          <tr><td>DOOR_ratch_base_from_best <span style="color:var(--cyan)">B960</span></td><td>97,281</td><td>1.195232%</td><td><strong>13.9053</strong></td><td>Best MDL/L_total among completed B960 variants</td></tr>
-          <tr><td>DOOR_BB_ext_from_best <span style="color:var(--cyan)">B960</span></td><td>97,294</td><td>1.208755%</td><td>20.0626</td><td>BB with 3opt_type4 + seg_flip</td></tr>
-          <tr><td>DOOR_BB_base_from_best <span style="color:var(--cyan)">B960</span></td><td>97,313</td><td>1.228519%</td><td>14.2926</td><td>Previous B960 checkpoint; first completed B960 variant</td></tr>
-          <tr><td>DOOR_ratch_ext2_3opt45_from_best <span style="color:var(--gold)">B480</span></td><td>97,337</td><td>1.253485%</td><td>28.0484</td><td>Large B480 breakthrough; ratchet + 3opt45</td></tr>
-          <tr><td>DOOR_BB_ext2_3opt45_from_best <span style="color:var(--gold)">B480</span></td><td>98,486</td><td>2.448716%</td><td>46.2115</td><td>BB law with the extended 3-opt set</td></tr>
-          <tr><td>DOOR_BB_base_from_best <span style="color:var(--gold)">B480</span></td><td>98,936</td><td>2.916823%</td><td>44.3250</td><td>Base continuation from the 98,940 door</td></tr>
-          <tr><td>PS3_BB_ext <span style="color:var(--violet)">B240</span></td><td>98,940</td><td>2.920984%</td><td>50.3882</td><td>First DEV2 result below 3%</td></tr>
-          <tr><td>PS3_ratch_base <span style="color:var(--violet)">B240</span></td><td>99,211</td><td>3.202888%</td><td>48.6722</td><td>Strong MDL/poly-door structure signal</td></tr>
-          <tr><td>PS3_ratch_ext <span style="color:var(--violet)">B240</span></td><td>99,440</td><td>3.441102%</td><td>58.2921</td><td>Good result, but not the winner</td></tr>
-          <tr><td>PS3_BB_base <span style="color:var(--violet)">B240</span></td><td>101,004</td><td>5.068031%</td><td>77.0155</td><td>Original deep polyhedral door opener</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="grid-4" style="margin-top:1.5rem">
-      <div class="panel green"><p class="micro">Current page leader</p><h3>97,202 · 1.1131%</h3><p>Live DEV2/B960 result from the Polyhedral/LZ door run.</p></div>
-      <div class="panel cyan"><p class="micro">Previous page leader</p><h3>97,325 · 1.241%</h3><p>Older v2.5 fleet result, now improved by 123 tour units.</p></div>
-      <div class="panel gold"><p class="micro">Against B960 checkpoint</p><h3>−111</h3><p>Latest B960 record improved 97,313 → 97,202.</p></div>
-      <div class="panel violet"><p class="micro">Against optimum</p><h3>+1,070</h3><p>Still heuristic, but now only 1.1131% above the known optimum.</p></div>
-    </div>
-
-    <div class="highlight violet" style="margin-top:1.5rem">
-      <h3 style="color:var(--violet)">Updated interpretation</h3>
-      <p>The old page story was already strong: a small local solver could approach the known optimum on nu3496. The new DEV2 story is stronger: <strong>the arena found a door and then improved through targeted continuations</strong>. Polyhedral/folded space created the basin, <strong>LZ_binary</strong> supplied the compression signal, B480 used ratchet plus extended 3-opt to make the big leap, and B960 is still shaving the basin down. Because the two heaviest B960 variants were not yet complete in this extract, this result is a live checkpoint, not necessarily the end of the door.</p>
     </div>
   </div>
 </section>
@@ -627,7 +603,7 @@
   <div class="wrap">
     <p>AIM³ Institute · Bojan Dobrečevič · Ljubljana · 8Z Research Program</p>
     <p style="margin-top:.3rem;opacity:.6">Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline">C</a></p>
-    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) status · v2.5 all-time snapshot + DEV2 Polyhedral/LZ update · DCC/MDL · Rust 2-opt</p>
+    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) status · snapshot t=61h · 8zrp_v2.5 · DCC v2 · Meta-DCC · Rust 2-opt</p>
     <p style="margin-top:.3rem;opacity:.35">Algorithms: Croes 1958 · Or 1976 · Lin–Kernighan 1973 · DCC 2024 · zero external dependencies</p>
   </div>
 </footer>
@@ -689,6 +665,5 @@ document.getElementById('worker-tbody').innerHTML=workers.map(w=>{
   </tr>`;
 }).join('');
 </script>
-<!-- updated: DEV2 B960 20260707 -->
 </body>
 </html>
