@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>8Z-RP · Nicaragua (nu3496) Run Status</title>
+  <title>8Z-RP · nu3496 · Verified 97,110 / 1.017351%</title>
+  <meta name="description" content="Verified 8Z-RP nu3496 route: length 97,110, 1.017351% above the certified optimum of 96,132. Includes interactive visualization, TSPLIB tour and independent verification."/>
   <link rel="preconnect" href="https://fonts.googleapis.com/"/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -174,6 +175,30 @@
   .sister-desc{font-size:.7rem;color:#5e7192;line-height:1.4;font-family:'JetBrains Mono',monospace}
   @media(max-width:900px){.sister-strip{grid-template-columns:1fr 1fr}}
   @media(max-width:580px){.sister-strip{grid-template-columns:1fr}.sister-thumb,.sister-thumb-stats,.sister-thumb-arena{width:100px;min-width:100px;height:85px}}
+
+    /* VERIFIED ROUTE / DOWNLOADS */
+    .route-proof-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:1.3rem;margin-top:1.6rem;align-items:stretch}
+    .route-figure{margin:0;border:1px solid rgba(0,229,255,.18);background:linear-gradient(145deg,rgba(0,229,255,.035),rgba(6,10,20,.96));border-radius:7px;overflow:hidden;box-shadow:var(--shadow)}
+    .route-figure a{display:block;position:relative}
+    .route-figure img{display:block;width:100%;height:auto;max-height:680px;object-fit:contain;background:#071018}
+    .route-figure .route-overlay{position:absolute;right:12px;bottom:12px;padding:7px 10px;border-radius:4px;background:rgba(2,4,9,.84);border:1px solid rgba(0,229,255,.22);font-family:'JetBrains Mono',monospace;font-size:.63rem;letter-spacing:.07em;color:var(--cyan);backdrop-filter:blur(8px)}
+    .route-figure figcaption{padding:.85rem 1rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted-2);font-family:'JetBrains Mono',monospace;line-height:1.55}
+    .proof-card{border:1px solid rgba(52,211,153,.2);background:linear-gradient(145deg,rgba(52,211,153,.055),rgba(6,10,20,.95));border-radius:7px;padding:1.2rem;box-shadow:var(--shadow)}
+    .proof-card h3{color:var(--green);margin-bottom:.65rem}
+    .proof-list{display:grid;gap:.55rem;margin-top:.7rem}
+    .proof-row{display:flex;justify-content:space-between;gap:1rem;padding:.48rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.86rem}
+    .proof-row:last-child{border-bottom:0}.proof-row span{color:var(--muted-2)}.proof-row strong{text-align:right;color:var(--text)}
+    .hash-box{margin-top:.8rem;padding:.75rem;background:rgba(2,4,9,.72);border:1px solid rgba(167,139,250,.18);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.55;word-break:break-all;color:rgba(226,232,244,.72)}
+    .asset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:.8rem;margin-top:1.25rem}
+    .asset-link{display:flex;flex-direction:column;gap:.25rem;padding:.9rem 1rem;border:1px solid var(--border-strong);border-radius:5px;background:linear-gradient(145deg,rgba(15,23,41,.86),rgba(6,10,20,.94));transition:transform .18s,border-color .18s,background .18s;min-height:84px}
+    .asset-link:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.42);background:linear-gradient(145deg,rgba(0,229,255,.075),rgba(6,10,20,.96))}
+    .asset-link strong{font-size:.92rem;color:var(--text)}
+    .asset-link small{font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.4;color:var(--muted)}
+    .asset-link.primary{border-color:rgba(52,211,153,.32);background:linear-gradient(145deg,rgba(52,211,153,.075),rgba(6,10,20,.96))}
+    .asset-link.primary strong{color:var(--green)}
+    .status-note{margin-top:1rem;font-size:.82rem;color:var(--muted-2);font-family:'JetBrains Mono',monospace}
+    @media(max-width:860px){.route-proof-grid{grid-template-columns:1fr}.route-figure img{max-height:none}}
+
   </style>
 </head>
 <body>
@@ -186,6 +211,7 @@
     <a href="https://chessbest.org/bd/" class="cyan">Portfolio</a>
     <a href="BD_8ZRP.html" class="violet">8Z-RP</a>
     <a href="BD_8ZRP_arena.html" class="gold">Arena Lab</a>
+    <a href="#verified-route" class="green">97,110 Route</a>
     <a href="BD_8ZRP_qa194_map.html" class="green">qa194 Map</a>
     <a href="https://chessbest.org/bd/BD_8Z_Reasoning.html" class="green">Reasoning</a>
   </div>
@@ -253,51 +279,83 @@
     <p class="hero-eyebrow">8Z Research Program · AIM³ Institute · Live Computation</p>
     <h1 class="hero-title">nu<span class="accent">3496</span><br><span class="gold">Impossible</span><br>Made Routine</h1>
     <p style="font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);opacity:.7;margin-bottom:.6rem;margin-top:-.2rem">Nicaragua · 3,496 real locations</p>
-    <p class="hero-sub">A laptop-scale Python arena is now within 1.062% of the known optimum on nu3496.</p>
-    <p class="hero-context">3,496 real locations across Nicaragua. A search space larger than the number of atoms in the observable universe — by a factor that itself has over 10,000 digits. The original v2.5 page leader was <strong>97,325 / 1.241%</strong>. The DEV2 polyhedral/LZ door has now reached <strong>97,153 / 1.062081%</strong> in the B1920 TOP4 run. No commercial solver stack. No supercomputer. A small deterministic arena, classical moves, compression guidance, and targeted continuation.</p>
+    <p class="hero-sub">A laptop-scale Python/Rust arena has produced a verified 97,110 tour — 1.017351% above the certified optimum.</p>
+    <p class="hero-context">3,496 real locations across Nicaragua. The long DEV2 search reached <strong>97,153 / 1.062081%</strong>; a post-run fusion of compatible elite edge components followed by one deterministic Or-opt-1 move then produced <strong>97,110 / 1.017351%</strong>. The route was rebuilt locally, checked as a complete 3,496-city permutation, and independently recomputed from the original TSPLIB coordinates. Only <strong>17 tour units</strong> remain to cross below 1%.</p>
     <div class="hero-tags">
       <span class="tag cyan">n = 3,496 cities</span>
       <span class="tag gold">optimal = 96,132</span>
-      <span class="tag green">DEV2 best gap 1.062%</span>
+      <span class="tag cyan">route = 97,110</span>
+      <span class="tag green">verified gap 1.017351%</span>
       <span class="tag violet">DCC v2 adaptive</span>
       <span class="tag orange">~100 KB Python</span>
       <span class="tag">zero dependencies</span>
-      <span class="tag rose">B1920 live checkpoint</span>
+      <span class="tag rose">97,110 verified checkpoint</span>
     </div>
   </div>
 </div>
 <div class="divider"></div>
 
-<!-- DEV2 B1920 LIVE RECORD -->
-<section>
+<!-- VERIFIED 97110 CHECKPOINT -->
+<section id="verified-route">
   <div class="wrap">
-    <span class="sec-tag green">DEV2 live checkpoint · B1920 TOP4</span>
-    <h2>New Live Best: 97,153 / 1.062081%</h2>
-    <p>The B1920 sub‑1% continuation has already produced a new record. This is not the end of the run: only the first TOP4 variant is visible in the current extract, while the remaining variants continue. The latest confirmed route is valid, complete, and recomputes to the same TSPLIB EUC_2D length.</p>
+    <span class="sec-tag green">Verified checkpoint · locally reproduced · 11 July 2026</span>
+    <h2>97,110 / 1.017351% — Route, Proof and Downloadable Evidence</h2>
+    <p>The completed B1920 TOP4 run ended with a raw arena winner of <strong>97,153</strong>. We then combined compatible edge components from the completed elite tours, retained one compatible edge set from an earlier branch, and applied one deterministic Or-opt-1 relocation. The resulting <strong>97,110</strong> route is a <em>post-run elite-fusion checkpoint</em>, not a mislabeled raw B1920 row. It was subsequently rebuilt on the local machine by the DEV2.1 seed factory and independently recomputed from the original <code>nu3496.tsp</code> coordinates.</p>
 
     <div class="stat-banner">
-      <div class="sb-cell"><div class="sb-num green">97,153</div><div class="sb-label">Current DEV2 best</div><div class="sb-sub">B1920_top4_ratch_ext_from_best</div></div>
-      <div class="sb-cell"><div class="sb-num cyan">1.062081%</div><div class="sb-label">Gap to optimum</div><div class="sb-sub">optimum = 96,132</div></div>
-      <div class="sb-cell"><div class="sb-num gold">+1,021</div><div class="sb-label">Above optimum</div><div class="sb-sub">sub‑1% needs about −60 more</div></div>
-      <div class="sb-cell"><div class="sb-num violet">−49</div><div class="sb-label">Improvement vs B960</div><div class="sb-sub">97,202 → 97,153</div></div>
-      <div class="sb-cell"><div class="sb-num rose">1 / 4</div><div class="sb-label">B1920 variants seen</div><div class="sb-sub">run continues</div></div>
-      <div class="sb-cell"><div class="sb-num">16h</div><div class="sb-label">Budget per variant</div><div class="sb-sub">GPU/CuPy + Rust + 1 worker</div></div>
+      <div class="sb-cell"><div class="sb-num green">97,110</div><div class="sb-label">Current verified route</div><div class="sb-sub">elite fusion + deterministic Or-opt-1</div></div>
+      <div class="sb-cell"><div class="sb-num cyan">1.017351%</div><div class="sb-label">Gap to certified optimum</div><div class="sb-sub">optimum = 96,132</div></div>
+      <div class="sb-cell"><div class="sb-num gold">+978</div><div class="sb-label">Above optimum</div><div class="sb-sub">independently recomputed</div></div>
+      <div class="sb-cell"><div class="sb-num rose">17</div><div class="sb-label">Units to sub-1%</div><div class="sb-sub">length ≤ 97,093</div></div>
+      <div class="sb-cell"><div class="sb-num violet">3,496 / 3,496</div><div class="sb-label">Legal permutation</div><div class="sb-sub">no missing or repeated city IDs</div></div>
+      <div class="sb-cell"><div class="sb-num">EUC_2D</div><div class="sb-label">Distance rule</div><div class="sb-sub">TSPLIB nearest-integer closure included</div></div>
     </div>
 
-    <div class="highlight green" style="margin-top:1.2rem">
-      <h3 style="color:var(--green)">Winning formula so far</h3>
-      <p><strong>polyhedral/folded door + LZ_binary + ratchet + 2‑opt/or‑opt/double‑bridge + 3opt_type4 + seg_flip</strong>. The best arrived very late in the 16h budget: time-to-best was about 55,793s out of 57,600s, so this branch is still breathing.</p>
+    <div class="route-proof-grid">
+      <figure class="route-figure">
+        <a href="NU3496_8ZRP_97110_interactive.html" target="_blank" rel="noopener">
+          <img src="NU3496_8ZRP_97110_route.svg" alt="Verified 8Z-RP route of all 3,496 nu3496 locations, length 97,110" loading="lazy"/>
+          <span class="route-overlay">OPEN INTERACTIVE VIEW ↗</span>
+        </a>
+        <figcaption>Verified route over the original planar TSPLIB coordinates. Duplicate coordinates in the official instance are retained as distinct city IDs. Click the image for the standalone interactive zoom/pan viewer.</figcaption>
+      </figure>
+
+      <aside class="proof-card">
+        <h3>Independent verification</h3>
+        <div class="proof-list">
+          <div class="proof-row"><span>Dimension</span><strong>3,496</strong></div>
+          <div class="proof-row"><span>Unique city IDs</span><strong>3,496</strong></div>
+          <div class="proof-row"><span>Distinct coordinates</span><strong>2,373</strong></div>
+          <div class="proof-row"><span>Duplicate-coordinate IDs</span><strong>1,123</strong></div>
+          <div class="proof-row"><span>Declared length matches</span><strong style="color:var(--green)">TRUE</strong></div>
+          <div class="proof-row"><span>Closure edge included</span><strong style="color:var(--green)">TRUE</strong></div>
+        </div>
+        <div class="hash-box"><strong>Canonical tour SHA-256</strong><br/>57db4f751fa0613f969abc759c28ba34be8e992e90842950e098378d7342d036</div>
+      </aside>
     </div>
 
-    <div class="table-wrap" style="margin-top:1.5rem">
+    <div class="asset-grid" aria-label="nu3496 evidence downloads">
+      <a class="asset-link primary" href="NU3496_8ZRP_97110_interactive.html" target="_blank" rel="noopener"><strong>Interactive route viewer ↗</strong><small>Standalone HTML · zoom, pan and route inspection</small></a>
+      <a class="asset-link primary" href="NU3496_8ZRP_97110.tour" download><strong>Download TSPLIB .tour</strong><small>Complete 1-based sequence of all 3,496 city IDs</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97110_verification.json" target="_blank" rel="noopener"><strong>Verification JSON</strong><small>Length, gap, legality, formula and canonical SHA-256</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97110.csv" download><strong>Route CSV</strong><small>Order, city IDs, coordinates and next-city information</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97110_route.svg" target="_blank" rel="noopener"><strong>Full-resolution SVG</strong><small>1400 × 1000 vector route graphic</small></a>
+      <a class="asset-link" href="all_validated_candidates.json" target="_blank" rel="noopener"><strong>Validated candidates</strong><small>Machine-readable audit list used by the exporter</small></a>
+      <a class="asset-link" href="TSP_NU3496_VERIFY_EXPORT_VIEW_KIT_20260711.zip" download><strong>Verifier/exporter kit</strong><small>Rebuild .tour, JSON, CSV, SVG and interactive HTML locally</small></a>
+    </div>
+
+    <p class="status-note">Current experiment: DEV2.1 focused sub‑1 surgery is continuing from the verified 97,110 seed. This page records the latest validated checkpoint and can be updated again when a shorter route is reproduced.</p>
+
+    <div class="table-wrap" style="margin-top:1.6rem">
       <table class="worker-table">
-        <thead><tr><th>Checkpoint</th><th>Variant</th><th>Length</th><th>Gap</th><th>Meaning</th></tr></thead>
+        <thead><tr><th>Milestone</th><th>Method / variant</th><th>Length</th><th>Gap</th><th>Role</th></tr></thead>
         <tbody>
-          <tr><td>B1920 live</td><td>B1920_top4_ratch_ext_from_best</td><td><strong>97,153</strong></td><td><strong>1.062081%</strong></td><td>new confirmed live best</td></tr>
-          <tr><td>B960 final</td><td>DOOR_ratch_ext_from_best</td><td>97,202</td><td>1.113053%</td><td>previous DEV2 best</td></tr>
-          <tr><td>B480</td><td>DOOR_ratch_ext2_3opt45_from_best</td><td>97,337</td><td>1.253485%</td><td>first near-page-record door breakthrough</td></tr>
-          <tr><td>B240</td><td>PS3_BB_ext</td><td>98,940</td><td>2.920984%</td><td>opened the sub‑3% door</td></tr>
-          <tr><td>Original page leader</td><td>v2.5 fleet W13</td><td>97,325</td><td>1.2410%</td><td>older reference now passed by DEV2</td></tr>
+          <tr><td><strong>Verified fusion</strong></td><td>elite edge-component fusion + Or-opt-1</td><td><strong>97,110</strong></td><td><strong>1.017351%</strong></td><td>current reproducible checkpoint</td></tr>
+          <tr><td>B1920 final</td><td>ratch_ext</td><td>97,153</td><td>1.062081%</td><td>best raw long-run result</td></tr>
+          <tr><td>B960 final</td><td>DOOR_ratch_ext_from_best</td><td>97,202</td><td>1.113053%</td><td>door continuation</td></tr>
+          <tr><td>B480</td><td>DOOR_ratch_ext2_3opt45_from_best</td><td>97,337</td><td>1.253485%</td><td>major ratchet/3opt45 breakthrough</td></tr>
+          <tr><td>B240</td><td>PS3_BB_ext</td><td>98,940</td><td>2.920984%</td><td>opened the sub-3% door</td></tr>
+          <tr><td>Historical v2.5</td><td>fleet W13</td><td>97,325</td><td>1.2410%</td><td>earlier page leader</td></tr>
         </tbody>
       </table>
     </div>
@@ -319,7 +377,7 @@
       </div>
       <div class="bignumber-body" id="bignumber"></div>
       <div class="bignumber-footer">
-        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our solver navigates this space to within 1.241% of optimal at t=61h.</strong></p>
+        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our current independently verified route is 1.017351% above the certified optimum.</strong></p>
       </div>
     </div>
 
@@ -340,9 +398,9 @@
         <p>We never look at most routes. Smart moves + adaptive DCC governance follow improvement gradients, escaping local optima without random thrashing.</p>
       </div>
       <div class="panel green">
-        <p class="micro">Our result at t = 50.6h</p>
-        <h3>1.241% from optimal</h3>
-        <p>Out of a 10,869-digit search space, we land within 1.241% of the best known solution. On a laptop. In slow Python. With math invented before 1980.</p>
+        <p class="micro">Current verified checkpoint</p>
+        <h3>1.017351% from optimal</h3>
+        <p>Out of a 10,869-digit search space, the verified route lands only 978 units above the certified optimum. On a laptop-scale local stack, with a small Python core, optional Rust acceleration, and evidence files published beside this page.</p>
       </div>
     </div>
   </div>
@@ -402,7 +460,7 @@
         <div class="tl-line"></div>
         <div class="tl-content">
           <h3 style="color:var(--green)">DCC — Digital Claustrum Controller (new)</h3>
-          <p>The one thing we invented. An adaptive governor that decides <em>which</em> classical move to apply, <em>when</em> to escalate intensity, and <em>how</em> to escape stagnation without collapsing. The underlying moves are 50–70 years old. The DCC is what orchestrates them intelligently at scale, without human tuning, and self-heals when workers get stuck.</p>
+          <p>One of the new orchestration layers we developed. An adaptive governor that decides <em>which</em> classical move to apply, <em>when</em> to escalate intensity, and <em>how</em> to escape stagnation without collapsing. The underlying moves are 50–70 years old. The DCC orchestrates them intelligently at scale, while the broader research program adds compression sensors, polyhedral/folded representations, targeted continuation and Rank-Don’t-Eliminate resurrection.</p>
         </div>
       </div>
     </div>
@@ -434,19 +492,19 @@
       </div>
       <div class="vs-mid"><div class="vs-label">vs</div></div>
       <div class="vs-box us">
-        <div class="vs-title us">8Z-RP v2.5</div>
+        <div class="vs-title us">8Z-RP / DEV2.1</div>
         <div class="vs-item"><strong>Codebase:</strong> ~100 KB of Python. One file. Readable by any programmer.</div>
         <div class="vs-item"><strong>Dependencies:</strong> zero for the core algorithm. One optional Rust extension for inner-loop speed (PyO3/maturin, ~200 lines).</div>
         <div class="vs-item"><strong>Team:</strong> one researcher (AIM³ Institute, Ljubljana) + AI collaboration</div>
         <div class="vs-item"><strong>Method:</strong> classical moves from 1958–1976, directed by DCC v2 adaptive governor. No LP, no cutting planes, no approximation theorems.</div>
         <div class="vs-item"><strong>Hardware:</strong> consumer laptop (Razer Blade, 16 cores, RTX GPU, Windows 11)</div>
-        <div class="vs-item"><strong>Output:</strong> 1.241% from optimal at t=61h and still improving</div>
+        <div class="vs-item"><strong>Output:</strong> verified 97,110 route, 1.017351% above optimum; complete .tour and audit artifacts published</div>
       </div>
     </div>
 
     <div class="highlight cyan">
       <h3 style="color:var(--cyan)">What this comparison means for P vs NP research</h3>
-      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and land within 1.241% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
+      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and produce a verified route within 1.017351% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
     </div>
   </div>
 </section>
@@ -471,8 +529,8 @@
       </div>
       <div class="panel green">
         <p class="micro">Today — consumer hardware</p>
-        <h3>61h to 1.241% gap</h3>
-        <p>A consumer laptop, available for €2,000. Python, available for free. Math invented before the first moon landing. One new idea. The same computation that was impossible in 1990 now runs while you sleep — on hardware you can buy in a store.</p>
+        <h3>97,110 / 1.017351% verified</h3>
+        <p>A consumer workstation, Python available for free, optional Rust/CuPy acceleration, and a compact locally reproducible workflow. The route, hash, verification report and interactive map are published with this page.</p>
       </div>
     </div>
 
@@ -591,8 +649,8 @@
   <div class="wrap">
     <p>AIM³ Institute · Bojan Dobrečevič · Ljubljana · 8Z Research Program</p>
     <p style="margin-top:.3rem;opacity:.6">Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline">C</a></p>
-    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) status · snapshot t=61h · 8zrp_v2.5 · DCC v2 · Meta-DCC · Rust 2-opt</p>
-    <p style="margin-top:.3rem;opacity:.35">Algorithms: Croes 1958 · Or 1976 · Lin–Kernighan 1973 · DCC 2024 · zero external dependencies</p>
+    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) · verified checkpoint 97,110 / 1.017351% · 11 July 2026 · DEV2.1 focused surgery</p>
+    <p style="margin-top:.3rem;opacity:.35">Classical local search + MDL/LZ guidance + polyhedral door + DCC/RDE governance · optional Rust/CuPy acceleration</p>
   </div>
 </footer>
 
