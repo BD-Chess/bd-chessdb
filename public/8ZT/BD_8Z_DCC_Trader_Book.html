@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>8Z-DCC Trader — Truth-Hardened Dual-Book Architecture, July 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg-primary: #0a0c10;
+  --bg-secondary: #12151c;
+  --bg-tertiary: #1a1e28;
+  --bg-card: #161a24;
+  --border: #2a2f3c;
+  --border-accent: #3a4055;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b93a6;
+  --text-muted: #5a6275;
+  --accent-green: #00e676;
+  --accent-green-dim: #00c85320;
+  --accent-red: #ff4757;
+  --accent-red-dim: #ff475720;
+  --accent-blue: #448aff;
+  --accent-blue-dim: #448aff20;
+  --accent-gold: #ffd740;
+  --accent-gold-dim: #ffd74020;
+  --accent-purple: #b388ff;
+  --accent-purple-dim: #b388ff20;
+  --accent-teal: #64ffda;
+  --accent-teal-dim: #64ffda20;
+  --accent-orange: #ff9100;
+  --accent-orange-dim: #ff910020;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--accent-orange); color: #000; }
+
+/* ---- NAV ---- */
+.toc-nav {
+  position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+  background: var(--bg-secondary); border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 100; padding: 28px 0;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.toc-nav::-webkit-scrollbar { width: 4px; }
+.toc-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.toc-brand {
+  padding: 0 24px 20px; border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.toc-brand h2 {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--accent-orange); letter-spacing: 2px; text-transform: uppercase;
+}
+.toc-brand p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.toc-nav a {
+  display: block; padding: 7px 24px; font-size: 13px; color: var(--text-secondary);
+  text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent;
+}
+.toc-nav a:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.toc-nav a.ch {
+  font-weight: 600; color: var(--text-primary); font-size: 12px;
+  letter-spacing: 1px; text-transform: uppercase; margin-top: 14px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.toc-nav a.ch:first-of-type { border-top: none; margin-top: 0; }
+.toc-nav a.sub { padding-left: 36px; font-size: 12.5px; }
+
+/* ---- MAIN ---- */
+.main { margin-left: 260px; max-width: 860px; padding: 48px 56px 120px; }
+
+/* ---- COVER ---- */
+.cover {
+  text-align: center; padding: 80px 0 60px;
+  border-bottom: 1px solid var(--border); margin-bottom: 60px;
+}
+.cover-tag {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 3px;
+  color: var(--accent-orange); text-transform: uppercase; margin-bottom: 20px;
+}
+.cover h1 {
+  font-family: var(--font-display); font-size: 44px; font-weight: 900;
+  line-height: 1.15; color: var(--text-primary); margin-bottom: 18px;
+}
+.cover h1 em { font-style: italic; color: var(--accent-orange); }
+.cover .subtitle {
+  font-size: 18px; color: var(--text-secondary); max-width: 620px;
+  margin: 0 auto 28px; line-height: 1.6;
+}
+.cover .meta {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);
+}
+
+/* ---- CHAPTERS ---- */
+.chapter {
+  margin-bottom: 64px; padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.chapter-num {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px;
+  color: var(--accent-orange); text-transform: uppercase; margin-bottom: 8px;
+}
+.chapter h2 {
+  font-family: var(--font-display); font-size: 32px; font-weight: 700;
+  line-height: 1.25; margin-bottom: 24px; color: var(--text-primary);
+}
+.chapter h3 {
+  font-size: 20px; font-weight: 600; margin: 36px 0 14px;
+  color: var(--text-primary); padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.chapter h4 {
+  font-size: 16px; font-weight: 600; margin: 24px 0 10px;
+  color: var(--accent-teal);
+}
+
+p { margin-bottom: 16px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--accent-gold); font-style: normal; }
+
+/* ---- COMPONENTS ---- */
+.callout {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-blue); padding: 18px 22px;
+  margin: 20px 0; border-radius: 4px;
+}
+.callout.warn { border-left-color: var(--accent-gold); }
+.callout.danger { border-left-color: var(--accent-red); }
+.callout.success { border-left-color: var(--accent-green); }
+.callout.orange { border-left-color: var(--accent-orange); }
+.callout .callout-title {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 8px; font-weight: 600;
+}
+.callout.warn .callout-title { color: var(--accent-gold); }
+.callout.danger .callout-title { color: var(--accent-red); }
+.callout.success .callout-title { color: var(--accent-green); }
+.callout.orange .callout-title { color: var(--accent-orange); }
+.callout p { margin-bottom: 6px; font-size: 14px; }
+
+code {
+  font-family: var(--font-mono); font-size: 13px; background: var(--bg-tertiary);
+  padding: 2px 6px; border-radius: 3px; color: var(--accent-teal);
+}
+pre {
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  padding: 18px 22px; border-radius: 4px; overflow-x: auto;
+  margin: 16px 0; font-family: var(--font-mono); font-size: 12.5px;
+  line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap;
+}
+pre .kw { color: var(--accent-purple); }
+pre .fn { color: var(--accent-blue); }
+pre .str { color: var(--accent-green); }
+pre .num { color: var(--accent-gold); }
+pre .cm { color: var(--text-muted); font-style: italic; }
+
+.metric-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin: 20px 0;
+}
+.metric-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 16px; border-radius: 4px; text-align: center;
+}
+.metric-card .mv {
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+}
+.metric-card .mv.green { color: var(--accent-green); }
+.metric-card .mv.red { color: var(--accent-red); }
+.metric-card .mv.blue { color: var(--accent-blue); }
+.metric-card .mv.gold { color: var(--accent-gold); }
+.metric-card .mv.orange { color: var(--accent-orange); }
+.metric-card .mv.teal { color: var(--accent-teal); }
+.metric-card .ml {
+  font-size: 11px; color: var(--text-muted); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+
+.param-table {
+  width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px;
+}
+.param-table th {
+  text-align: left; padding: 10px 14px; background: var(--bg-tertiary);
+  border: 1px solid var(--border); font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.param-table td {
+  padding: 9px 14px; border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.param-table td:first-child { font-family: var(--font-mono); color: var(--accent-teal); font-size: 12.5px; }
+.param-table tr:hover td { background: var(--bg-card); }
+
+.tag {
+  display: inline-block; font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px; letter-spacing: 1px;
+  text-transform: uppercase; margin-right: 4px;
+}
+.tag.green { background: var(--accent-green-dim); color: var(--accent-green); }
+.tag.red { background: var(--accent-red-dim); color: var(--accent-red); }
+.tag.blue { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.tag.gold { background: var(--accent-gold-dim); color: var(--accent-gold); }
+.tag.orange { background: var(--accent-orange-dim); color: var(--accent-orange); }
+.tag.purple { background: var(--accent-purple-dim); color: var(--accent-purple); }
+
+.nest-diagram {
+  display: grid; grid-template-columns: 1fr; gap: 0; margin: 24px 0;
+}
+.nest-level {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 20px 24px; position: relative;
+}
+.nest-level:first-child { border-radius: 8px 8px 0 0; }
+.nest-level:last-child { border-radius: 0 0 8px 8px; }
+.nest-level + .nest-level { border-top: none; }
+.nest-level .nl-tag {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 6px;
+}
+.nest-level .nl-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.nest-level .nl-desc { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 0; }
+.nest-arrow {
+  text-align: center; font-family: var(--font-mono); font-size: 16px;
+  color: var(--accent-orange); padding: 4px 0; background: var(--bg-primary);
+  margin: -1px 0; position: relative; z-index: 1;
+}
+
+.flow-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px; margin: 24px 0;
+}
+.flow-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 16px;
+}
+.flow-row:last-child { margin-bottom: 0; }
+.flow-node {
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 16px; text-align: center;
+  font-family: var(--font-mono); font-size: 12px;
+  min-width: 100px;
+}
+.flow-node.active { border-color: var(--accent-orange); color: var(--accent-orange); }
+.flow-node.green { border-color: var(--accent-green); color: var(--accent-green); }
+.flow-node.gold { border-color: var(--accent-gold); color: var(--accent-gold); }
+.flow-node.blue { border-color: var(--accent-blue); color: var(--accent-blue); }
+.flow-node.teal { border-color: var(--accent-teal); color: var(--accent-teal); }
+.flow-node small { display: block; font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+.flow-arrow { font-family: var(--font-mono); color: var(--text-muted); font-size: 16px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+.quote-block {
+  border-left: 3px solid var(--accent-orange); padding: 16px 24px;
+  margin: 24px 0; background: rgba(255,145,0,.04);
+}
+.quote-block p {
+  font-family: var(--font-display); font-size: 18px; line-height: 1.6;
+  color: var(--text-primary); font-style: italic; margin-bottom: 0;
+}
+
+.footer-note {
+  margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  text-align: center; line-height: 1.8;
+}
+
+@media (max-width: 960px) {
+  .toc-nav { display: none; }
+  .main { margin-left: 0; padding: 32px 24px 80px; }
+  .cover h1 { font-size: 30px; }
+  .metric-grid { grid-template-columns: repeat(2, 1fr); }
+  .flow-row { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+@media print {
+  .toc-nav { display: none; }
+  .main { margin-left: 0; max-width: 100%; }
+  body { background: #fff; color: #111; }
+}
+</style>
+</head>
+<body>
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav class="toc-nav">
+<div class="toc-brand">
+<h2>8Z-DCC Trader</h2>
+<p>Compression-driven dual-book research · v1.1</p>
+</div>
+<a class="ch" href="#cover">Overview</a><a href="#ch0-update">July 2026 Addendum</a>
+<a class="ch" href="#ch1">1. The Core Thesis</a>
+<a class="sub" href="#ch1-bridge">TSP ↔ Trading Bridge</a>
+<a class="sub" href="#ch1-mm">Market Maker Compression</a>
+<a class="ch" href="#ch2">2. The MDL Arena</a>
+<a class="sub" href="#ch2-generators">Generator Catalogue</a>
+<a class="sub" href="#ch2-scoring">MDL Scoring</a>
+<a class="sub" href="#ch2-learning">Learning Phase</a>
+<a class="ch" href="#ch3">3. DCC Governance</a>
+<a class="sub" href="#ch3-coupling">Coupling Parameter</a>
+<a class="sub" href="#ch3-sizing">Confidence → Sizing</a>
+<a class="ch" href="#ch4">4. Dual-Direction Engine</a>
+<a class="sub" href="#ch4-hedge">Always Hedged</a>
+<a class="sub" href="#ch4-zz">ZZ Position Management</a>
+<a class="sub" href="#ch4-escape">Escape &amp; Retracement</a>
+<a class="ch" href="#ch5">5. Multi-Pair Portfolio</a>
+<a class="sub" href="#ch5-nesting">Three-Level Nesting</a>
+<a class="sub" href="#ch5-meta">Meta-DCC Allocation</a>
+<a class="ch" href="#ch6">6. Risk Architecture</a>
+<a class="sub" href="#ch6-five">Five Nested Protections</a>
+<a class="sub" href="#ch6-skim">Compounding &amp; Skimming</a>
+<a class="sub" href="#ch6-ruin">Ruin Probability</a>
+<a class="ch" href="#ch7">7. The MM Thesis</a>
+<a class="sub" href="#ch7-nature">Human Nature Doesn't Change</a>
+<a class="sub" href="#ch7-patterns">Compressible Patterns</a>
+<a class="ch" href="#ch8">8. Architecture Diagram</a>
+<a class="ch" href="#ch9">9. Implementation Roadmap</a>
+<a class="ch" href="#ch10">10. Connection to 8Z-OS</a>
+</nav>
+<!-- ════════════════════════ MAIN ════════════════════════ -->
+<div class="main">
+<!-- COVER -->
+<section class="cover" id="cover">
+<div class="cover-tag">Private Research Document · v1.1 truth-hardening addendum</div>
+<h1>The <em>8Z-DCC</em> Trader</h1>
+<div class="subtitle">A compression-driven trading architecture whose hypotheses are now separated into prediction, causal dual-book execution, hedge-separation rescue, harvest/reseed and risk-governor evidence — without assuming guaranteed retracement or guaranteed profit.</div>
+<div class="meta">Bojan Dobrečević · AIM³ Institute · March–July 2026</div>
+<div class="metric-grid" style="margin-top:36px; max-width:560px; margin-left:auto; margin-right:auto;">
+<div class="metric-card"><div class="mv orange">MDL</div><div class="ml">Predictor Arena</div></div>
+<div class="metric-card"><div class="mv gold">DCC</div><div class="ml">Confidence Governor</div></div>
+<div class="metric-card"><div class="mv teal">Dual</div><div class="ml">Both Directions</div></div>
+<div class="metric-card"><div class="mv green">N-Pair</div><div class="ml">Portfolio Nesting</div></div>
+</div>
+</section><section class="chapter" id="ch0-update">
+<div class="chapter-num">July 2026 Addendum</div>
+<h2>From a compelling thesis to a falsifiable dual-book research system</h2>
+<p>The original book correctly identified compression, two-sided exposure and adaptive management as a fertile architecture. The newer HSR/PiX arenas sharpen the contract: long and short are separate books, but they may communicate through explicit wallet-aware policies. HOPM may mine only development data; HSMR may rescue the adverse book; BDHE may harvest/reseed the winner; the main engine must replay frozen rules causally.</p>
+<div class="metric-grid">
+<div class="metric-card"><div class="mv orange">HOPM</div><div class="ml">Development-only profile miner</div></div>
+<div class="metric-card"><div class="mv gold">HSMR</div><div class="ml">Cost-aware separation rescue</div></div>
+<div class="metric-card"><div class="mv teal">BDHE</div><div class="ml">Harvest / reseed governor</div></div>
+<div class="metric-card"><div class="mv green">HSR</div><div class="ml">Forward causal truth test</div></div>
+</div>
+<div class="callout warning"><div class="callout-title">Epistemic correction</div><p>Retracement is common but not guaranteed inside a finite time, wallet or liquidation horizon. A high gross win rate can hide open tail, turnover or unclosed risk. Leverage magnifies both useful capital efficiency and execution/risk errors. No numeric ruin probability is asserted without a calibrated empirical model.</p></div>
+<p>As of 11 July 2026, v1.8.2b has measured 18 HSMR, 18 BDHE and 14 combined profiles against 582 controls and 150 chronological fold rows. None is strict-holdout eligible yet. That is not a failure of the architecture; it is the current truth state.</p>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 1 — THE CORE THESIS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch1">
+<div class="chapter-num">Chapter 01</div>
+<h2>The Core Thesis</h2>
+<div class="quote-block">
+<p>If you can compress it, you can predict it. If you can predict it, you can trade it.</p>
+</div>
+<p>
+The 8Z compression framework proved a principle across seven domains: find the shortest mathematical description of the data, and you have found its structure. In images, the shortest description beats PNG. In audio, it beats FLAC. In TSP, the shortest tour IS the optimal route. In genomic DNA, it reveals mathematical structure invisible to standard null models.
+</p>
+<p>
+The 8Z-DCC Trader applies this same principle to financial markets. The most compressible price behavior — the patterns that repeat most reliably, that can be described with the fewest parameters — is the behavior most likely to continue. And the behavior most likely to continue is the behavior that makes money for whoever controls the market.
+</p>
+<h3 id="ch1-bridge">The TSP ↔ Trading Bridge</h3>
+<p>
+In the Travelling Salesman Problem, the DCC-governed MDL arena found exact optimal solutions by letting competing perturbation operators (or-opt, double-bridge, segment inversion) battle for improvement budget. The controller measured which operator was compressing the tour most efficiently and allocated resources accordingly. On qa194, DCC v2 autonomously discovered that or-opt was the dominant operator — a finding that five AI systems failed to predict.
+</p>
+<p>
+The trading problem has the same structure. Replace "perturbation operators" with "market behavior models." Replace "tour length" with "prediction error." Replace "the shortest tour" with "the most predictable price movement." The MDL arena finds which model describes the market best. The DCC governs how much to trust that model. The architecture is isomorphic.
+</p>
+<div class="callout orange">
+<div class="callout-title">The Isomorphism</div>
+<p><strong>TSP:</strong> Competing kick operators → MDL selects best → DCC governs search budget → shortest tour</p>
+<p><strong>Trading:</strong> Competing market models → MDL selects best → DCC governs position sizing → most profitable trade</p>
+</div>
+<h3 id="ch1-mm">Market Maker Compression</h3>
+<p>
+Why does compression predict market direction? Because the dominant force in any liquid market is the Market Maker. MMs need predictable retail flow to extract profit. They create this predictability through engineered patterns: stop hunts below obvious support, liquidity grabs above resistance, fake breakouts that trap momentum traders, and mean-reversion setups that punish overextended positions.
+</p>
+<p>
+These patterns are <em>literally the most compressible structures in price data</em> because they are designed to repeat. A sweep below support followed by a sharp reversal up is a template. It compresses beautifully because the same sequence plays out hundreds of times per year on every liquid asset. MDL finds templates. Templates are MM playbooks. Therefore MDL finds MM playbooks.
+</p>
+<div class="callout warn">
+<div class="callout-title">The Human Nature Invariant</div>
+<p>Retail traders lose money to MMs because human psychology — fear, greed, anchoring, herd behavior — does not change on trading timescales. If normal traders lost money to MMs over the last 6 months, they will keep losing money the same way for the next 6 months. The patterns that extract their money are stable because the psychology that creates them is stable. MDL on a rolling 5000-bar window captures this stability.</p>
+</div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 2 — THE MDL ARENA -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch2">
+<div class="chapter-num">Chapter 02</div>
+<h2>The MDL Predictor Arena</h2>
+<p>
+The SM trader already contains a 4-generator MDL module (TREND, REVERT, MOM, RANDOM_WALK) on a 20-bar window. The 8Z-DCC Trader promotes MDL from accessory module to core engine, expands the generator count from 4 to 20+, and runs it on 5000 bars instead of 20.
+</p>
+<h3 id="ch2-generators">Generator Catalogue</h3>
+<p>
+Each generator is a model of "how price moves next given what just happened." Every generator makes a prediction for the next bar: direction (UP/DOWN), magnitude (how far), and confidence (how certain). MDL scores them all, and the winner drives the signal.
+</p>
+<table class="param-table">
+<tr><th>Generator</th><th>Model</th><th>What It Captures</th></tr>
+<tr><td>TREND-S</td><td>Linear regression, 20 bars</td><td>Short-term momentum</td></tr>
+<tr><td>TREND-M</td><td>Linear regression, 100 bars</td><td>Medium-term trend</td></tr>
+<tr><td>TREND-L</td><td>Linear regression, 500 bars</td><td>Macro drift</td></tr>
+<tr><td>REVERT-μ</td><td>Mean reversion to SMA-50</td><td>Price returning to average</td></tr>
+<tr><td>REVERT-VWAP</td><td>Mean reversion to VWAP</td><td>Institutional fair value</td></tr>
+<tr><td>MOM-1</td><td>Velocity model (last bar delta)</td><td>Immediate momentum continuation</td></tr>
+<tr><td>MOM-N</td><td>N-bar acceleration</td><td>Momentum building or fading</td></tr>
+<tr><td>RW</td><td>Random walk (no prediction)</td><td>Null model — no structure</td></tr>
+<tr><td>CYCLE-S</td><td>Fourier dominant frequency, 50 bars</td><td>Short-period oscillation</td></tr>
+<tr><td>CYCLE-M</td><td>Fourier dominant frequency, 200 bars</td><td>Medium-period cycle</td></tr>
+<tr><td>PATTERN-NN</td><td>Nearest-neighbor pattern match</td><td>"Last time it looked like this, price went…"</td></tr>
+<tr><td>STOP-HUNT</td><td>Liquidity grab detector</td><td>MM sweeping stops, reversal imminent</td></tr>
+<tr><td>BREAKOUT</td><td>Range breakout with volume</td><td>Genuine directional move</td></tr>
+<tr><td>FAKE-BO</td><td>Breakout failure detector</td><td>Failed breakout = MM trap, reversal</td></tr>
+<tr><td>SESSION</td><td>Time-of-day pattern</td><td>Asian range, London open, US session</td></tr>
+<tr><td>CORR-ETH</td><td>BTC-ETH cross-correlation lag</td><td>SM-style sync signal</td></tr>
+<tr><td>CORR-GOLD</td><td>BTC-Gold inverse correlation</td><td>Risk-off/risk-on regime</td></tr>
+<tr><td>VOL-REGIME</td><td>ATR regime classifier</td><td>Low-vol range vs high-vol trend</td></tr>
+<tr><td>FRAC-ZZ</td><td>ZigZag fractal coherence</td><td>Multi-timeframe nesting score</td></tr>
+<tr><td>COMPRESS</td><td>LZ complexity of last N closes</td><td>Direct compressibility — low = predictable</td></tr>
+</table>
+<h3 id="ch2-scoring">MDL Scoring</h3>
+<p>
+Each generator's MDL cost is: <code>params_penalty + log2(prediction_error)</code>. A complex model (many parameters) pays a higher penalty. A model with low prediction error earns a lower cost. The winner is the generator with the minimum MDL cost — the model that explains the most data with the least complexity.
+</p>
+<pre>
+<span class="cm">// MDL cost for generator g over window W</span>
+MDL(g, W) = k(g) × log2(|W|) + log2(MSE(g, W))
+
+<span class="cm">// k(g) = number of free parameters in generator g</span>
+<span class="cm">// |W| = window size (bars)</span>
+<span class="cm">// MSE(g, W) = mean squared prediction error over W</span>
+
+<span class="cm">// Winner = argmin over all generators</span>
+winner = argmin_g MDL(g, W)
+</pre>
+<p>
+The random walk generator (RW) has zero parameters. It's the cheapest model in terms of complexity, but it has the worst prediction error (it predicts nothing). Any generator that beats RW has found real structure. Any generator that beats RW <em>consistently</em> has found a repeating pattern — an MM playbook.
+</p>
+<h3 id="ch2-learning">The Learning Phase</h3>
+<p>
+On startup, the engine loads 5000 historical bars and runs all generators. No trading occurs during the learning phase. The engine simply measures: which generators consistently beat the random walk? How stable is the winner? Does the winning generator change every 10 bars (chaos) or every 500 bars (stable regime)?
+</p>
+<p>
+At the end of the learning phase, the engine has a ranked leaderboard of generators, a coupling stability score, and a directional prediction with confidence. Only then does it begin trading.
+</p>
+<div class="callout success">
+<div class="callout-title">The Rolling Window</div>
+<p>The 5000-bar window rolls forward continuously. Old bars drop off, new bars enter. Generators that compressed well 3000 bars ago but fail on recent data naturally lose their ranking. The system learns and forgets at the same rate the market changes. No manual retraining. No human intervention. The window IS the memory.</p>
+</div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 3 — DCC GOVERNANCE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch3">
+<div class="chapter-num">Chapter 03</div>
+<h2>DCC Confidence Governance</h2>
+<p>
+The DCC does not predict direction. The MDL arena predicts direction. The DCC measures <em>how much to trust that prediction</em>. This separation is the key architectural insight — the same separation that works in 8Z compression (MDL selects the codec, DCC governs the search budget) and in TSP (MDL measures improvement, DCC governs exploration/exploitation).
+</p>
+<h3 id="ch3-coupling">The Coupling Parameter <em>u</em></h3>
+<p>
+DCC monitors how stable the winning generator is over time:
+</p>
+<pre>
+<span class="cm">// Track regime changes over last 64 evaluation windows</span>
+change_rate = regime_changes / lookback_windows
+
+<span class="cm">// Map to coupling parameter u ∈ [0, 1]</span>
+<span class="kw">if</span> change_rate &lt; seizure_threshold:
+    u = <span class="num">1.0</span>              <span class="cm">// stable regime → full trust</span>
+<span class="kw">elif</span> change_rate &gt; noise_threshold:
+    u = <span class="num">0.0</span>              <span class="cm">// chaotic → no trust</span>
+<span class="kw">else</span>:
+    u = <span class="num">1.0</span> - (change_rate - seizure) / (noise - seizure)
+</pre>
+<div class="metric-grid">
+<div class="metric-card"><div class="mv green">u → 1.0</div><div class="ml">Exploit</div></div>
+<div class="metric-card"><div class="mv gold">u ≈ 0.5</div><div class="ml">Mixed</div></div>
+<div class="metric-card"><div class="mv red">u → 0.0</div><div class="ml">Explore / Hedge</div></div>
+</div>
+<h3 id="ch3-sizing">Confidence → Asymmetric Sizing</h3>
+<p>
+The DCC coupling parameter directly governs the ratio between the predicted direction and the hedge:
+</p>
+<pre>
+<span class="cm">// MDL says: predicted direction = LONG</span>
+<span class="cm">// DCC says: coupling u = 0.74</span>
+
+predicted_weight = <span class="num">0.5</span> + <span class="num">0.5</span> × u     <span class="cm">// = 0.87</span>
+hedge_weight     = <span class="num">1.0</span> - predicted_weight <span class="cm">// = 0.13</span>
+
+<span class="cm">// With $200 budget:</span>
+long_size  = $<span class="num">200</span> × <span class="num">0.87</span> = $<span class="num">174</span>  <span class="cm">// predicted direction</span>
+short_size = $<span class="num">200</span> × <span class="num">0.13</span> = $<span class="num">26</span>   <span class="cm">// hedge</span>
+
+<span class="cm">// When u = 0.0 (chaos): 50/50 split → pure hedge</span>
+<span class="cm">// When u = 1.0 (stable): 100/0 → full directional</span>
+</pre>
+<div class="callout warn">
+<div class="callout-title">Never Zero Hedge</div>
+<p>Even at u = 1.0, the implementation should keep a minimum hedge of 5–10%. No prediction is 100% reliable. Smart AI bots trade the opposite of human logic. The hedge is insurance against being outsmarted — and with ZZ position management, even the losing hedge eventually profits on retracement.</p>
+</div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 4 — DUAL-DIRECTION ENGINE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch4">
+<div class="chapter-num">Chapter 04 · revised July 2026</div>
+<h2>The Coordinated Dual-Book Engine</h2>
+<h3 id="ch4-hedge">Always two-sided does not mean always safe</h3>
+<p>The system can keep LONG and SHORT books open on the same instrument, but a hedge is only the starting geometry. Equal books may offset directional PnL before costs; they do not erase fees, funding, spread, slippage, margin constraints, liquidation mechanics or asymmetric adds. The central question is not merely “how much long and how much short?” but “which book owns which action, under what causal context, and with what wallet budget?”</p>
+<p>MDL/DCC may propose regime, direction or confidence. HSR owns execution truth. HSMR and BDHE are explicit policy families, not implicit promises.</p>
+<h3 id="ch4-zz">From independent legs to controlled communication</h3>
+<table class="param-table">
+<tr><th>Layer</th><th>Role</th><th>Current evidence rule</th></tr>
+<tr><td>Base long/short books</td><td>Maintain two-sided optionality</td><td>Measured at wallet level and by separate book state</td></tr>
+<tr><td>HSMR</td><td>Rescue an adverse book after separation plus causal context</td><td>Must beat wick-only, random-density, DCA and no-rescue controls</td></tr>
+<tr><td>BDHE</td><td>Harvest/reseed a profitable book</td><td>Must beat continuous hold and simpler harvest/reentry controls</td></tr>
+<tr><td>DCPV / CRMM</td><td>Potential permit, veto and regime context</td><td>Governor evidence only until paired causal lift is shown</td></tr>
+<tr><td>P0–P5 lanes</td><td>Profile capital and failure modes</td><td>Risk classifies; it does not silently delete valid branches</td></tr>
+</table>
+<p>The books therefore communicate only through declared, auditable state: separation, wallet buffer, volatility, wick/sweep context, realized/unrealized split, rescue activity, harvest activity and abort conditions.</p>
+<h3 id="ch4-escape">Escape is a hypothesis, not a guarantee</h3>
+<p>A rescue may move the adverse book's weighted average closer to current price and reduce the retrace required to close rescue excess. That can be powerful. It can also create enormous turnover or fail in continuation regimes. The v1.8.2b oracle therefore distinguishes a mechanical target close from a profitable cycle after costs.</p>
+<div class="callout success"><div class="callout-title">Truth-hardened net equation</div>
+<p><strong>Net equity change = realized book PnL + current unrealized book PnL − fees − slippage − funding − rejected/forced-execution effects.</strong></p>
+<p>A rescue or harvest is useful only if it improves the declared objective versus matched alternatives under causal replay.</p></div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 5 — MULTI-PAIR PORTFOLIO -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch5">
+<div class="chapter-num">Chapter 05</div>
+<h2>Multi-Pair Portfolio</h2>
+<p>
+A single pair can experience extended adverse conditions. BTC can grind up for weeks, trapping a hedge short that takes a long time to escape. The portfolio layer solves this by spreading risk across uncorrelated markets.
+</p>
+<h3 id="ch5-nesting">Three-Level Nesting</h3>
+<p>
+The architecture mirrors the 8Z-OS exactly:
+</p>
+<div class="nest-diagram">
+<div class="nest-level" style="border-color:var(--accent-orange)">
+<div class="nl-tag" style="color:var(--accent-orange)">Level 3 — Portfolio DCC</div>
+<div class="nl-title">Meta-Controller: Budget Across Pairs</div>
+<div class="nl-desc">Monitors which pairs are most compressible (most predictable). Routes more capital to high-compression pairs. Reduces allocation to chaotic pairs. Governs the overall wallet risk.</div>
+</div>
+<div class="nest-arrow">▼</div>
+<div class="nest-level" style="border-color:var(--accent-gold)">
+<div class="nl-tag" style="color:var(--accent-gold)">Level 2 — Pair DCC</div>
+<div class="nl-title">Dual-Direction Sizing Per Pair</div>
+<div class="nl-desc">For each pair: MDL predicts direction, DCC measures confidence, dual-direction engine opens both sides with asymmetric sizing. Each pair runs independently.</div>
+</div>
+<div class="nest-arrow">▼</div>
+<div class="nest-level" style="border-color:var(--accent-teal)">
+<div class="nl-tag" style="color:var(--accent-teal)">Level 1 — Bar-Level MDL</div>
+<div class="nl-title">Generator Arena Per Bar</div>
+<div class="nl-desc">20+ generators compete on rolling 5000-bar window. Winner = current market regime. Direction = predicted movement. Confidence = MDL cost margin over random walk.</div>
+</div>
+</div>
+<p>
+This is the exact same fractal nesting as the 8Z audio codec (sample → frame → segment → file) and the 8Z-OS whitepaper (candidate → tier → arena → global). The architecture was designed once in compression and transfers directly to finance.
+</p>
+<h3 id="ch5-meta">Meta-DCC Allocation</h3>
+<p>
+The Level 3 DCC monitors all pairs and allocates budget based on compressibility:
+</p>
+<pre>
+<span class="cm">// For each active pair p:</span>
+compression_score[p] = MDL_cost(RW) - MDL_cost(winner[p])
+                       <span class="cm">// how much better than random walk</span>
+stability_score[p]   = u[p]
+                       <span class="cm">// how stable the winning regime is</span>
+
+allocation[p] = normalize(compression_score[p] × stability_score[p])
+
+<span class="cm">// High compression + high stability → more budget</span>
+<span class="cm">// Low compression or low stability → less budget</span>
+<span class="cm">// Both zero → minimum allocation (still hedged, still watching)</span>
+</pre>
+<table class="param-table">
+<tr><th>Pair</th><th>Compression</th><th>Stability</th><th>Allocation</th></tr>
+<tr><td>BTCUSDT</td><td>High (strong pattern)</td><td>u = 0.82</td><td>35%</td></tr>
+<tr><td>ETHUSDT</td><td>Medium</td><td>u = 0.61</td><td>22%</td></tr>
+<tr><td>SOLUSDT</td><td>Low (chaotic)</td><td>u = 0.18</td><td>8%</td></tr>
+<tr><td>Gold (XAUUSD)</td><td>High (cycle)</td><td>u = 0.77</td><td>30%</td></tr>
+<tr><td>SPX (ES)</td><td>Low</td><td>u = 0.25</td><td>5%</td></tr>
+</table>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 6 — RISK ARCHITECTURE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch6">
+<div class="chapter-num">Chapter 06 · revised July 2026</div>
+<h2>Risk Architecture Without Guarantees</h2>
+<h3 id="ch6-five">Five measured defenses</h3>
+<p>The architecture retains five useful defenses, but none is independently sufficient and their failures are correlated. Safety must be measured, not inferred from narrative.</p>
+<div class="metric-grid">
+<div class="metric-card" style="border-color:var(--accent-green)"><div class="mv green">1</div><div class="ml">Causal replay</div></div>
+<div class="metric-card" style="border-color:var(--accent-teal)"><div class="mv teal">2</div><div class="ml">Dual-book accounting</div></div>
+<div class="metric-card" style="border-color:var(--accent-blue)"><div class="mv blue">3</div><div class="ml">Matched controls</div></div>
+<div class="metric-card" style="border-color:var(--accent-gold)"><div class="mv gold">4</div><div class="ml">P0–P5 capital lanes</div></div>
+<div class="metric-card" style="border-color:var(--accent-orange)"><div class="mv orange">5</div><div class="ml">Sealed holdout</div></div>
+</div>
+<p><strong>Layer 1 — Causal replay:</strong> decisions use information available at time <em>t</em>; fills occur under the declared next-bar and cost contract.</p>
+<p><strong>Layer 2 — Dual-book accounting:</strong> realized and unrealized PnL, gross notional, margin buffer, book ratios and open-tail dependency are reported separately.</p>
+<p><strong>Layer 3 — Matched controls:</strong> rescue and harvest policies must beat simpler or randomized alternatives, not merely produce positive PnL.</p>
+<p><strong>Layer 4 — Capital lanes:</strong> P0–P5 describe survival/core/aggressive/wildcat/quarantine roles. A risky branch remains available for research without being promoted.</p>
+<p><strong>Layer 5 — Sealed holdout:</strong> development and validation may create and rank hypotheses; locked holdout is opened only for pre-sealed eligible profiles.</p>
+<h3 id="ch6-skim">Skimming and realized-profit conversion</h3>
+<p>Moving realized profit outside a trading wallet can cap future wallet loss, but it does not make the strategy profitable. BDHE is explicitly testing whether harvest/reseed adds economic value versus continuous hold. The current v1.8.2b development result is negative versus hold for all 18 BDHE profiles, so BDHE remains a governor/research branch rather than a promoted alpha engine.</p>
+<h3 id="ch6-ruin">Ruin probability: not yet numerically estimated</h3>
+<table class="param-table">
+<tr><th>Required evidence</th><th>Current rule</th></tr>
+<tr><td>Finite-wallet survival</td><td>Report observed minimum wallet, drawdown, margin/liquidation buffer and rejected actions</td></tr>
+<tr><td>Regime robustness</td><td>Require non-overlapping chronological folds and latest-regime validation</td></tr>
+<tr><td>Cost robustness</td><td>Stress fees, spread, slippage, funding and turnover</td></tr>
+<tr><td>Strategy attribution</td><td>Require activity and wins over matched controls</td></tr>
+<tr><td>Final claim</td><td>No universal safety or ruin percentage before calibrated walk-forward/holdout evidence</td></tr>
+</table>
+<div class="callout warning"><div class="callout-title">Current honest status</div><p>The newest arena is safer epistemically because it refuses promotion: zero HSMR/BDHE/combined profiles are strict-holdout eligible in the 11 July 2026 snapshot. The research surface is preserved under “rank, don't eliminate.”</p></div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 7 — THE MM THESIS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch7">
+<div class="chapter-num">Chapter 07</div>
+<h2>The Market Maker Thesis</h2>
+<h3 id="ch7-nature">Human Nature Doesn't Change</h3>
+<p>
+The Hutter Prize thesis states: <em>compression equals intelligence.</em> A system that compresses Wikipedia better understands language better. Applied to markets: a system that compresses price data better understands market structure better.
+</p>
+<p>
+Market structure is driven by human psychology. Fear creates panics. Greed creates bubbles. Anchoring to round numbers creates predictable support/resistance. Herd behavior creates momentum. Loss aversion creates stop clusters. None of these change over a human lifetime. The MM exploits them, and because the patterns are stable, the compression is stable.
+</p>
+<p>
+AI trading bots are the counterargument — they don't have human psychology, so they may break the patterns. But the MDL arena handles this naturally: when AI bots disrupt a pattern, the generator that depended on that pattern loses MDL ranking, a new generator (perhaps PATTERN-NN or COMPRESS, which can capture bot-vs-bot dynamics) rises, and the DCC detects the regime change. The system adapts because the rolling window forgets old patterns as they break.
+</p>
+<h3 id="ch7-patterns">Compressible MM Patterns</h3>
+<table class="param-table">
+<tr><th>Pattern</th><th>Mechanism</th><th>MDL Generator</th></tr>
+<tr><td>Stop Hunt</td><td>MM sweeps below support, triggers retail stops, reverses</td><td>STOP-HUNT</td></tr>
+<tr><td>Fake Breakout</td><td>Price breaks resistance, traps momentum traders, reverses</td><td>FAKE-BO</td></tr>
+<tr><td>Mean Reversion</td><td>Overextended price returns to fair value</td><td>REVERT-VWAP</td></tr>
+<tr><td>Session Cycle</td><td>Asia ranges, London breaks out, US continues or reverses</td><td>SESSION</td></tr>
+<tr><td>Volatility Clustering</td><td>High-vol follows high-vol, low-vol follows low-vol</td><td>VOL-REGIME</td></tr>
+<tr><td>Liquidation Cascade</td><td>Leveraged positions liquidated, causing more liquidations</td><td>MOM-N</td></tr>
+<tr><td>Dead Cat Bounce</td><td>Sharp decline produces brief recovery before continuing</td><td>REVERT-μ</td></tr>
+<tr><td>Cross-Asset Lag</td><td>BTC moves first, alts follow with delay</td><td>CORR-ETH</td></tr>
+</table>
+<p>
+Every one of these patterns is a <em>template</em>. Templates compress well because they repeat with minor variation. The MDL arena naturally finds them without being told what to look for — it just finds whatever structure makes the data most compressible.
+</p>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 8 — ARCHITECTURE DIAGRAM -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch8">
+<div class="chapter-num">Chapter 08 · revised July 2026</div>
+<h2>Current Architecture Diagram</h2>
+<p>The current path separates hypothesis generation from proof:</p>
+<div class="flow-box">
+<div class="flow-row">
+<div class="flow-node">Historical 1m Data<small>Development partition only</small></div><div class="flow-arrow">→</div>
+<div class="flow-node active">HOPM / HSMR-O / BDHE-O<small>Mine parameterized causal profiles</small></div><div class="flow-arrow">→</div>
+<div class="flow-node gold">Frozen Profiles<small>Hashes · schema · no action tape</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node gold">Import Audit<small>Leakage and profile contract</small></div><div class="flow-arrow">→</div>
+<div class="flow-node teal">HSR Forward Replay<small>close[t] decision → open[t+1] fill</small></div><div class="flow-arrow">→</div>
+<div class="flow-node green">Long / Short Books<small>Wallet-aware causal actions</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node green">Matched Controls<small>Same candles and costs</small></div><div class="flow-arrow">↔</div>
+<div class="flow-node blue">Chronological Folds<small>Activity · survival · worst fold</small></div><div class="flow-arrow">→</div>
+<div class="flow-node" style="border-color:var(--accent-purple);color:var(--accent-purple)">Strict Selection<small>Only then locked holdout</small></div>
+</div>
+</div>
+<p>MDL/DCC, DCPV, CRMM, Sync Momentum, ZigZag and PiT remain specialist inputs or challengers. They earn execution authority only through declared pairwise evidence.</p>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 9 — IMPLEMENTATION ROADMAP -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch9">
+<div class="chapter-num">Chapter 09</div>
+<h2>Implementation Roadmap</h2>
+<h3>Phase 1 — MDL Arena Validator</h3>
+<p>
+A standalone HTML page. Loads 5000 bars from Binance. Runs all generators. Outputs: winning generator, directional prediction, confidence score, DCC coupling u. No trading. Pure validation: does MDL predict direction better than 50%? If yes, proceed. If no, expand the generator catalogue or revisit the window size.
+</p>
+<h3>Phase 2 — Dual-Direction Engine</h3>
+<p>
+Wire the dual-position manager to the MDL arena. Open both sides, size by DCC confidence, manage each side with ZZ logic. Single pair (BTCUSDT). Backtest on 5000+ bars. Measure: net PnL, max drawdown, time-to-profit on hedge side, comparison to standalone ZZ and SM.
+</p>
+<h3>Phase 3 — Multi-Pair + Portfolio DCC</h3>
+<p>
+Add more pairs (ETHUSDT, SOLUSDT, Gold, SPX). Implement Level 3 DCC that allocates across pairs. Backtest the full portfolio. Measure: portfolio Sharpe ratio, maximum simultaneous drawdown, cross-pair decorrelation.
+</p>
+<h3>Phase 4 — Live Paper Trading</h3>
+<p>
+Deploy as a live paper trader in the same design system as ZZ and SM traders. WebSocket feeds from 5 exchanges. Real-time MDL scoring, DCC monitoring, dual positions, portfolio allocation. No real money. Monitor for at least 30 days.
+</p>
+<h3>Phase 5 — Skimming Automation</h3>
+<p>
+Implement the compounding + skimming protocol. Start with $200 real capital. Automated skim triggers at 2x equity. Cold wallet transfers. The system runs with minimum human oversight.
+</p>
+<div class="callout warn">
+<div class="callout-title">Execution Discipline</div>
+<p>The one thing that kills this system is human override. The DCC controls the sizing, not the human's fear or greed. Once live, the system runs as designed. The human monitors but does not intervene on individual trades. The only valid human override is: shut everything down and withdraw. Never: "I think it should be more long right now."</p>
+</div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 10 — CONNECTION TO 8Z-OS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="chapter" id="ch10">
+<div class="chapter-num">Chapter 10</div>
+<h2>Connection to 8Z-OS</h2>
+<p>
+The 8Z-DCC Trader is the seventh domain where the MDL + DCC architecture produces results. The same core pattern — competing generators under DCC governance — has now been deployed across:
+</p>
+<div class="flow-box">
+<div class="flow-row">
+<div class="flow-node gold">Image<small>Beat PNG</small></div>
+<div class="flow-arrow">→</div>
+<div class="flow-node teal">Audio<small>Beat FLAC</small></div>
+<div class="flow-arrow">→</div>
+<div class="flow-node green">FASTA<small>Beat 7-Zip</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node blue">TSP<small>Exact optimal</small></div>
+<div class="flow-arrow">→</div>
+<div class="flow-node" style="border-color:var(--accent-purple);color:var(--accent-purple)">DNA<small>Z-scores 28–74</small></div>
+<div class="flow-arrow">→</div>
+<div class="flow-node active">Trading<small>This document</small></div>
+</div>
+<div class="flow-row">
+<div class="flow-node" style="border-color:var(--accent-red);color:var(--accent-red)">Auth<small>8Z Shield</small></div>
+</div>
+</div>
+<p>
+The 8Z-OS thesis is now empirically demonstrated: <strong>if you have a domain where competing models can be scored by compression quality, and a controller that governs the search budget, you can find structure that domain-specific tools miss.</strong> The architecture is universal. The generators change per domain. The DCC is the same everywhere.
+</p>
+<p>
+In the BD Trading Book, this architecture was already visible: the SM trader's MDL module (4 generators), the ZZ trader's DCC coupling (leg amplitude CV), the fractal coherence measure (Legs Sync nesting), and the Dream Team's regime detection. The 8Z-DCC Trader doesn't add new components — it promotes existing components from modules to engine, expands their scope, and adds the dual-direction and portfolio layers.
+</p>
+<div class="quote-block">
+<p>The product was already working before it was named. MDL and DCC were already inside ZZ and SM. The 8Z-DCC Trader is the recognition that they should be running the show, not sitting in the passenger seat.</p>
+</div>
+<div class="callout orange">
+<div class="callout-title">The Pattern Continues</div>
+<p>This is Example N+1 in the 8Z Reasoning Framework: the architecture that works in compression works in trading. The cross-domain transfer that produced the TSP solver from compression primitives now produces the 8Z-DCC Trader from the same primitives. Every domain is the same problem. MDL finds the structure. DCC governs the search. The human decides whether to act.</p>
+</div>
+</section>
+<!-- FOOTER -->
+<div class="footer-note">
+  8Z-DCC Trader Book v1.0 · Bojan Dobrečević · AIM³ Institute · March 2026<br/>
+  Private research document. Protected by 8Z Shield.<br/>
+  Built by BD × C — "because you see."
+</div>
+</div>
+</body>
+</html>
