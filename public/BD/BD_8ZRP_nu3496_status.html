@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>8Z-RP · nu3496 · Sub-1% Verified · 97,056 / 0.961178%</title>
-  <meta name="description" content="Verified 8Z-RP nu3496 sub-1% route: length 97,056, 0.961178% above the certified optimum of 96,132. Includes interactive visualization, TSPLIB tour and independent verification."/>
+  <title>8Z-RP · nu3496 · DEV2.3 Live Record · 97,050 / 0.954937%</title>
+  <meta name="description" content="Live verified 8Z-RP nu3496 checkpoint: length 97,050, 0.954937% above the certified optimum of 96,132. Produced inside the active DEV2.3 continuous campaign and independently recomputed from the original TSPLIB coordinates."/>
   <link rel="preconnect" href="https://fonts.googleapis.com/"/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -211,7 +211,8 @@
     <a href="https://chessbest.org/bd/" class="cyan">Portfolio</a>
     <a href="BD_8ZRP.html" class="violet">8Z-RP</a>
     <a href="BD_8ZRP_arena.html" class="gold">Arena Lab</a>
-    <a href="#verified-route" class="green">97,056 Route</a>
+    <a href="#live-route" class="green">97,050 Live</a>
+    <a href="#verified-route" class="cyan">97,056 Completed</a>
     <a href="BD_8ZRP_qa194_map.html" class="green">qa194 Map</a>
     <a href="https://chessbest.org/bd/BD_8Z_Reasoning.html" class="green">Reasoning</a>
   </div>
@@ -276,35 +277,100 @@
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
   <div class="hero-shell">
-    <p class="hero-eyebrow">8Z Research Program · AIM³ Institute · Verified Sub-1% Milestone</p>
-    <h1 class="hero-title">nu<span class="accent">3496</span><br><span class="gold">Sound Barrier</span><br>Broken</h1>
+    <p class="hero-eyebrow">8Z Research Program · AIM³ Institute · DEV2.3 Continuous Research · Live Verified Checkpoint</p>
+    <h1 class="hero-title">nu<span class="accent">3496</span><br><span class="gold">97,050</span><br>Still Moving</h1>
     <p style="font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);opacity:.7;margin-bottom:.6rem;margin-top:-.2rem">Nicaragua · 3,496 real locations</p>
-    <p class="hero-sub">A laptop-scale Python/Rust/GPU arena has produced a verified 97,056 tour — 0.961178% above the certified optimum.</p>
-    <p class="hero-context">The DEV2.1 focused surgery arena started from the independently verified <strong>97,110</strong> elite-fusion seed. Its first 16-hour evidence-led continuation — <strong>LZ_binary + ratchet + focused local operators</strong> — improved the route to <strong>97,056 / 0.961178%</strong>. The full 3,496-city cycle was independently recomputed from the original TSPLIB coordinates. The sub-1% threshold was crossed by <strong>37 tour units</strong>, and the master stopped before the remaining three variants by design.</p>
+    <p class="hero-sub">The open-ended DEV2.3 campaign has produced a new independently verified live checkpoint: 97,050 — 0.954937% above the certified optimum.</p>
+    <p class="hero-context">The active P1 branch began from the completed <strong>97,056</strong> sub-1% winner and improved it by <strong>6 tour units</strong> after about <strong>1 h 05 min</strong>. The complete 3,496-city cycle was atomically checkpointed and independently recomputed from the original <code>nu3496.tsp</code> coordinates. Only <strong>7 undirected edges</strong> changed; their total cost fell from 446 to 440. The 16-hour variant is still running, and the continuous campaign will proceed to further evidence-led branches.</p>
     <div class="hero-tags">
       <span class="tag cyan">n = 3,496 cities</span>
       <span class="tag gold">optimal = 96,132</span>
-      <span class="tag cyan">route = 97,056</span>
-      <span class="tag green">verified gap 0.961178%</span>
-      <span class="tag violet">LZ_binary + ratchet</span>
+      <span class="tag cyan">live route = 97,050</span>
+      <span class="tag green">verified gap 0.954937%</span>
+      <span class="tag violet">LZ_binary + ratchet · k10</span>
       <span class="tag orange">CuPy GPU + Rust</span>
-      <span class="tag">1 worker · 16h</span>
-      <span class="tag rose">SUB-1% VERIFIED</span>
+      <span class="tag">1 worker · active 16h branch</span>
+      <span class="tag rose">LIVE RECORD</span>
     </div>
   </div>
 </div>
 <div class="divider"></div>
 
+<!-- DEV2.3 LIVE CHECKPOINT -->
+<section id="live-route">
+  <div class="wrap">
+    <span class="sec-tag green">DEV2.3 continuous campaign · live verified checkpoint · 12 July 2026</span>
+    <h2>97,050 / 0.954937% — A New Record Inside the Active Variant</h2>
+    <p>The open-ended DEV2.3 campaign began cycle 1, branch P1 from the completed <strong>97,056</strong> seed. The active configuration is <code>LZ_binary + ratchet</code>, candidate width <strong>k=10</strong>, improve-only acceptance, and the proven operator family <code>2opt, oropt1/2/3, double_bridge, 3opt_type4, seg_flip</code>. CuPy/GPU and the Rust backend are active with one worker.</p>
+    <p>The new best appeared at move <strong>8,700</strong>, after <strong>3,906.11 seconds</strong> (about 1 h 05 min). At the 2-hour heartbeat it remained the live incumbent while the branch continued. Because the variant is still active, the normal completed-run leaderboard still reports 97,056; the authoritative live evidence is the atomically written <code>live_best_checkpoint.json</code>, independently recomputed below.</p>
+
+    <div class="stat-banner">
+      <div class="sb-cell"><div class="sb-num green">97,050</div><div class="sb-label">Current live verified route</div><div class="sb-sub">DEV2.3 cycle 1 · branch P1</div></div>
+      <div class="sb-cell"><div class="sb-num cyan">0.954937%</div><div class="sb-label">Gap to certified optimum</div><div class="sb-sub">optimum = 96,132</div></div>
+      <div class="sb-cell"><div class="sb-num gold">+918</div><div class="sb-label">Above optimum</div><div class="sb-sub">independently recomputed</div></div>
+      <div class="sb-cell"><div class="sb-num green">43</div><div class="sb-label">Units inside sub-1%</div><div class="sb-sub">threshold = 97,093</div></div>
+      <div class="sb-cell"><div class="sb-num violet">7</div><div class="sb-label">Edges changed vs 97,056</div><div class="sb-sub">99.7998% edge overlap</div></div>
+      <div class="sb-cell"><div class="sb-num">53</div><div class="sb-label">To the 0.90% milestone</div><div class="sb-sub">target length = 96,997</div></div>
+    </div>
+
+    <div class="route-proof-grid">
+      <figure class="route-figure">
+        <a href="NU3496_8ZRP_97050_interactive.html" target="_blank" rel="noopener">
+          <img src="NU3496_8ZRP_97050_route.svg" alt="Live verified 8Z-RP route of all 3,496 nu3496 locations, length 97,050" loading="lazy"/>
+          <span class="route-overlay">OPEN LIVE ROUTE VIEW ↗</span>
+        </a>
+        <figcaption>Atomic DEV2.3 in-variant checkpoint over the original planar TSPLIB coordinates. The full legal cycle was independently recomputed; click for the standalone interactive viewer.</figcaption>
+      </figure>
+
+      <aside class="proof-card">
+        <h3>Independent live-checkpoint verification</h3>
+        <div class="proof-list">
+          <div class="proof-row"><span>Dimension</span><strong>3,496</strong></div>
+          <div class="proof-row"><span>Unique city IDs</span><strong>3,496</strong></div>
+          <div class="proof-row"><span>Declared length matches</span><strong style="color:var(--green)">TRUE</strong></div>
+          <div class="proof-row"><span>Closure edge included</span><strong style="color:var(--green)">TRUE</strong></div>
+          <div class="proof-row"><span>Previous completed best</span><strong>97,056</strong></div>
+          <div class="proof-row"><span>Live improvement</span><strong style="color:var(--green)">−6</strong></div>
+        </div>
+        <div class="hash-box"><strong>Canonical tour SHA-256</strong><br/>0928dfc9ce634da01d67351ccca1ee217d5b2a7bd3e17eaf611bd89093d9326a</div>
+      </aside>
+    </div>
+
+    <div class="asset-grid" aria-label="nu3496 live checkpoint downloads">
+      <a class="asset-link primary" href="NU3496_8ZRP_97050_interactive.html" target="_blank" rel="noopener"><strong>Interactive live route ↗</strong><small>Standalone HTML · zoom, pan and route inspection</small></a>
+      <a class="asset-link primary" href="NU3496_8ZRP_97050.tour" download><strong>Download live TSPLIB .tour</strong><small>Complete 1-based sequence of all 3,496 city IDs</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97050_verification.json" target="_blank" rel="noopener"><strong>Verification JSON</strong><small>Independent length, gap, legality and canonical SHA-256</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97050.csv" download><strong>Route CSV</strong><small>Order, city IDs, coordinates and next-city information</small></a>
+      <a class="asset-link" href="NU3496_8ZRP_97050_route.svg" target="_blank" rel="noopener"><strong>Full-resolution SVG</strong><small>Vector route graphic</small></a>
+      <a class="asset-link" href="NU3496_DEV23_LIVE_CHECKPOINT_97050.json" target="_blank" rel="noopener"><strong>Atomic live checkpoint</strong><small>Full in-variant tour and campaign lineage</small></a>
+      <a class="asset-link" href="NU3496_DEV23_LIVE_STATUS_97050.json" target="_blank" rel="noopener"><strong>Heartbeat status</strong><small>Progress, ETA, moves, stagnation and resources at extract time</small></a>
+    </div>
+
+    <p class="status-note"><strong>Live-record status:</strong> 97,050 is a complete, independently verified tour saved during an active variant. The branch has not yet emitted its final <code>DONE</code> row and may improve again before its 16-hour budget ends.</p>
+
+    <div class="table-wrap" style="margin-top:1.6rem">
+      <table class="worker-table">
+        <thead><tr><th>Checkpoint</th><th>Method / status</th><th>Length</th><th>Gap</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td><strong>DEV2.3 live record</strong></td><td>P1 · LZ_binary + ratchet + k10 + ext operators</td><td><strong>97,050</strong></td><td><strong>0.954937%</strong></td><td><strong>−6</strong> vs completed best</td></tr>
+          <tr><td>DEV2.1 completed winner</td><td>focused B1920 F1</td><td>97,056</td><td>0.961178%</td><td>published completed checkpoint</td></tr>
+          <tr><td>Elite-fusion seed</td><td>edge fusion + deterministic Or-opt-1</td><td>97,110</td><td>1.017351%</td><td>pre-sub-1 seed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <!-- VERIFIED SUB-1 CHECKPOINT -->
 <section id="verified-route">
   <div class="wrap">
-    <span class="sec-tag green">Verified sub-1% milestone · local GPU/Rust run · 12 July 2026</span>
-    <h2>97,056 / 0.961178% — The 1% Barrier Is Broken</h2>
+    <span class="sec-tag cyan">Previous completed sub-1% milestone · local GPU/Rust run · 12 July 2026</span>
+    <h2>97,056 / 0.961178% — The Completed Milestone That Opened DEV2.3</h2>
     <p>The DEV2.1 focused surgery arena first rebuilt the independently verified <strong>97,110</strong> elite-fusion seed. It then launched the first evidence-led B1920 continuation: <code>SUB1_FOCUSED_B1920_F1_fusion_ratch_ext_k10</code>. The winning recipe was <strong>LZ_binary</strong> sensing, the <strong>ratchet</strong> law, candidate width <strong>k=10</strong>, and the operator set <code>2opt, oropt1/2/3, double_bridge, 3opt_type4, seg_flip</code>. CuPy/GPU and the Rust 2-opt backend were active with one worker. The route improved by <strong>54 units</strong>, from 97,110 to <strong>97,056</strong>.</p>
     <p>The best point was reached after <strong>33,215.69 seconds</strong> (about 9 h 13 min), at move <strong>31,410</strong> of 52,310 total moves. The variant completed its full 16-hour budget, after which the master detected <code>97,056 ≤ 97,093</code> and intentionally stopped before the remaining three variants. This is therefore a <strong>raw arena result</strong>, not a post-run reconstruction.</p>
 
     <div class="stat-banner">
-      <div class="sb-cell"><div class="sb-num green">97,056</div><div class="sb-label">Current verified route</div><div class="sb-sub">focused B1920 arena winner</div></div>
+      <div class="sb-cell"><div class="sb-num green">97,056</div><div class="sb-label">Previous completed route</div><div class="sb-sub">focused B1920 arena winner</div></div>
       <div class="sb-cell"><div class="sb-num cyan">0.961178%</div><div class="sb-label">Gap to certified optimum</div><div class="sb-sub">optimum = 96,132</div></div>
       <div class="sb-cell"><div class="sb-num gold">+924</div><div class="sb-label">Above optimum</div><div class="sb-sub">independently recomputed</div></div>
       <div class="sb-cell"><div class="sb-num green">37</div><div class="sb-label">Units inside sub-1%</div><div class="sb-sub">threshold = 97,093</div></div>
@@ -352,7 +418,7 @@
       <table class="worker-table">
         <thead><tr><th>Milestone</th><th>Method / variant</th><th>Length</th><th>Gap</th><th>Role</th></tr></thead>
         <tbody>
-          <tr><td><strong>Sub-1 focused winner</strong></td><td>LZ_binary + ratchet + k10 + ext operators</td><td><strong>97,056</strong></td><td><strong>0.961178%</strong></td><td>current verified raw arena record</td></tr>
+          <tr><td><strong>Sub-1 focused winner</strong></td><td>LZ_binary + ratchet + k10 + ext operators</td><td><strong>97,056</strong></td><td><strong>0.961178%</strong></td><td>previous completed raw arena record</td></tr>
           <tr><td>Focused seed</td><td>elite edge-component fusion + deterministic Or-opt-1</td><td>97,110</td><td>1.017351%</td><td>starting seed for DEV2.1 surgery</td></tr>
           <tr><td>B1920 broad-door winner</td><td>ratch_ext from B960 best</td><td>97,153</td><td>1.062081%</td><td>best before fusion/surgery</td></tr>
           <tr><td>B960 winner</td><td>DOOR_ratch_ext_from_best</td><td>97,202</td><td>1.113053%</td><td>deep door continuation</td></tr>
@@ -378,7 +444,7 @@
       </div>
       <div class="bignumber-body" id="bignumber"></div>
       <div class="bignumber-footer">
-        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our current independently verified route is 0.961178% above the certified optimum.</strong></p>
+        <p>This number has <strong>10,869 digits</strong>. For comparison, the number of atoms in the entire observable universe has <strong>81 digits</strong>. If every single atom were itself a complete universe, and you counted every atom in all those universes too, the result would still have only 161 digits. Our search space exceeds that by a factor with <strong>10,708 digits</strong>. A computer checking one trillion routes per second, running since the Big Bang, would not have found a useful solution by now. <strong>Our current independently verified live checkpoint is 0.954937% above the certified optimum.</strong></p>
       </div>
     </div>
 
@@ -399,8 +465,8 @@
         <p>We never look at most routes. Smart moves + adaptive DCC governance follow improvement gradients, escaping local optima without random thrashing.</p>
       </div>
       <div class="panel green">
-        <p class="micro">Current verified sub-1% checkpoint</p>
-        <h3>0.961178% from optimal</h3>
+        <p class="micro">Current live verified sub-1% checkpoint</p>
+        <h3>0.954937% from optimal</h3>
         <p>Out of a 10,869-digit search space, the verified route lands only 978 units above the certified optimum. On a laptop-scale local stack, with a small Python core, optional Rust acceleration, and evidence files published beside this page.</p>
       </div>
     </div>
@@ -499,13 +565,13 @@
         <div class="vs-item"><strong>Team:</strong> one researcher (AIM³ Institute, Ljubljana) + AI collaboration</div>
         <div class="vs-item"><strong>Method:</strong> classical moves from 1958–1976, directed by DCC v2 adaptive governor. No LP, no cutting planes, no approximation theorems.</div>
         <div class="vs-item"><strong>Hardware:</strong> consumer laptop (Razer Blade, 16 cores, RTX GPU, Windows 11)</div>
-        <div class="vs-item"><strong>Output:</strong> verified 97,056 sub-1% route, 0.961178% above optimum; complete .tour and audit artifacts published</div>
+        <div class="vs-item"><strong>Output:</strong> live verified 97,050 route, 0.954937% above optimum; atomic checkpoint plus complete .tour and audit artifacts</div>
       </div>
     </div>
 
     <div class="highlight cyan">
       <h3 style="color:var(--cyan)">What this comparison means for P vs NP research</h3>
-      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and produce a verified route within 0.961178% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
+      <p>Concorde proves optimality — but needs an entire mathematical edifice to do it. We don't prove optimality. We show something different: that a lightweight adaptive system, built from mathematical primitives invented before the moon landing, can navigate a 10,869-digit search space and produce a verified live checkpoint within 0.954937% of optimal. The <em>efficiency of navigation</em> is the empirical signal. How does a small system find good solutions so reliably in a space this large? That question is the research.</p>
     </div>
   </div>
 </section>
@@ -530,7 +596,7 @@
       </div>
       <div class="panel green">
         <p class="micro">Today — consumer hardware</p>
-        <h3>97,056 / 0.961178% · sub-1 verified</h3>
+        <h3>97,050 / 0.954937% · DEV2.3 live verified</h3>
         <p>A consumer workstation, Python available for free, optional Rust/CuPy acceleration, and a compact locally reproducible workflow. The route, hash, verification report and interactive map are published with this page.</p>
       </div>
     </div>
@@ -650,7 +716,7 @@
   <div class="wrap">
     <p>AIM³ Institute · Bojan Dobrečevič · Ljubljana · 8Z Research Program</p>
     <p style="margin-top:.3rem;opacity:.6">Built by <a href="https://chessbest.org/bd/C_soul_vault.html" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline">C</a></p>
-    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) · verified SUB-1 checkpoint 97,056 / 0.961178% · 12 July 2026 · DEV2.1 focused surgery</p>
+    <p style="margin-top:.4rem;opacity:.5">Nicaragua (nu3496) · DEV2.3 live verified checkpoint 97,050 / 0.954937% · 12 July 2026 · continuous research campaign</p>
     <p style="margin-top:.3rem;opacity:.35">Classical local search + MDL/LZ guidance + polyhedral door + DCC/RDE governance · optional Rust/CuPy acceleration</p>
   </div>
 </footer>
