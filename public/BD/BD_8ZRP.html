@@ -886,7 +886,186 @@ footer{
 }
 .map-link-btn:hover{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.5)}
 
-  </style>
+  
+/* ── Many-senses architecture · START ── */
+.sense-lead{
+  max-width:860px;
+  font-size:1.02rem;
+}
+.sense-loop{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;
+  margin:2rem 0 0;
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  background:var(--border);
+  box-shadow:var(--shadow);
+}
+.sense-loop .step{
+  position:relative;
+  min-height:112px;
+  padding:1rem .85rem;
+  background:linear-gradient(160deg,rgba(11,17,32,.88),rgba(6,10,20,.98));
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.sense-loop .step::after{
+  content:'→';
+  position:absolute;
+  right:-9px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--cyan);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  z-index:3;
+}
+.sense-loop .step:last-child::after{display:none}
+.sense-loop .k{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.58rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.35rem;
+}
+.sense-loop .v{
+  font-size:.92rem;
+  line-height:1.25;
+  font-weight:700;
+  color:var(--text);
+}
+.sense-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1.15rem;
+  margin-top:2rem;
+}
+.sense-card{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:1.45rem 1.35rem 1.25rem;
+  background:linear-gradient(155deg,rgba(11,17,32,.84),rgba(6,10,20,.97));
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.sense-card::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;width:3px;
+  background:var(--sense-accent,var(--cyan));
+  opacity:.72;
+}
+.sense-card.cyan{--sense-accent:var(--cyan)}
+.sense-card.gold{--sense-accent:var(--gold)}
+.sense-card.green{--sense-accent:var(--green)}
+.sense-card.violet{--sense-accent:var(--violet)}
+.sense-card.rose{--sense-accent:var(--rose)}
+.sense-card.orange{--sense-accent:var(--orange)}
+.sense-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:.55rem;
+}
+.sense-card h3{font-size:1.08rem;line-height:1.22}
+.sense-origin{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.57rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.32rem;
+}
+.sense-rank{
+  flex:0 0 auto;
+  min-width:72px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:3px;
+  padding:.32rem .42rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.62rem;
+  line-height:1.25;
+  color:var(--text);
+  background:rgba(255,255,255,.025);
+}
+.sense-rank strong{display:block;color:var(--sense-accent,var(--cyan));font-size:.76rem}
+.sense-card p{max-width:none;font-size:.94rem;color:rgba(226,232,244,.70)}
+.sense-tech{
+  margin-top:.8rem;
+  padding:.65rem .72rem;
+  border-radius:4px;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.055);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.66rem;
+  line-height:1.55;
+  color:rgba(226,232,244,.66);
+}
+.sensor-rank-box{
+  margin-top:2rem;
+  border:1px solid rgba(52,211,153,.22);
+  border-radius:6px;
+  overflow:hidden;
+  background:linear-gradient(150deg,rgba(52,211,153,.045),rgba(6,10,20,.98));
+  box-shadow:var(--shadow);
+}
+.sensor-rank-head{
+  padding:1.35rem 1.4rem 1rem;
+  border-bottom:1px solid var(--border);
+}
+.sensor-rank-head h3{margin-bottom:.35rem}
+.sensor-rank-head p{max-width:none;font-size:.92rem}
+.sensor-rank-row{
+  display:grid;
+  grid-template-columns:82px 1.15fr 1fr 1.7fr;
+  gap:1rem;
+  align-items:center;
+  padding:.82rem 1.4rem;
+  border-bottom:1px solid rgba(255,255,255,.045);
+}
+.sensor-rank-row:last-child{border-bottom:none}
+.sensor-rank-row.header{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.58rem;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--muted);
+  background:rgba(255,255,255,.018);
+}
+.sensor-rank-row .rank{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  color:var(--green);
+}
+.sensor-rank-row .sensor{font-weight:700;color:var(--text)}
+.sensor-rank-row .result{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:rgba(226,232,244,.72)}
+.sensor-rank-row .meaning{font-size:.9rem;color:rgba(226,232,244,.64)}
+.sense-pills{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1rem}
+.sense-pills .pill{border-color:rgba(167,139,250,.15);background:rgba(167,139,250,.035)}
+@media(max-width:980px){
+  .sense-loop{grid-template-columns:1fr 1fr}
+  .sense-loop .step::after{display:none}
+  .sense-grid{grid-template-columns:1fr}
+  .sensor-rank-row{grid-template-columns:70px 1fr 1fr}
+  .sensor-rank-row .meaning{grid-column:2 / -1}
+  .sensor-rank-row.header .meaning{display:none}
+}
+@media(max-width:620px){
+  .sense-loop{grid-template-columns:1fr}
+  .sensor-rank-row{grid-template-columns:58px 1fr}
+  .sensor-rank-row .result,.sensor-rank-row .meaning{grid-column:2 / -1}
+  .sensor-rank-row.header{display:none}
+}
+/* ── END MANY-SENSES CSS ── */
+
+</style>
 </head>
 <body>
   <div class="scroll-prog"><div class="scroll-prog-bar" id="spb"></div></div>
@@ -940,6 +1119,7 @@ footer{
     <a class="cyan" href="#stop">Why stop</a>
     <a class="gold" href="#verified-results">Verified results</a>
     <a class="violet" href="#core-idea">Core idea</a>
+    <a class="gold" href="#many-senses">Many senses</a>
     <a class="orange" href="#empirical">Empirical</a>
     <a class="green" href="#ladder">Progression</a>
     <a class="rose" href="#almost-wrong">Near miss</a>
@@ -1054,7 +1234,7 @@ footer{
         <article class="panel rose rv rv-d1">
           <div class="micro">From broad arena to local surgery</div>
           <h3>A traceable progression, not a lucky single run</h3>
-          <p><span class="mono">101,004 &rarr; 98,940 &rarr; 97,337 &rarr; 97,202 &rarr; 97,153 &rarr; 97,056 &rarr; 97,050 &rarr; 97,042</span>. The arena first discovered a polyhedral/LZ search door, then deepened it, fused elite edges and finally switched to focused local surgery.</p>
+          <p><span class="mono">101,004 &rarr; 98,940 &rarr; 97,337 &rarr; 97,202 &rarr; 97,153 &rarr; 97,056 &rarr; 97,050 &rarr; 97,042</span>. Inside the polyhedral-space experiment, the arena identified the LZ compression branch as the strongest door; it then deepened that branch, fused elite edges and finally switched to focused local surgery.</p>
         </article>
         <article class="panel green rv rv-d2">
           <div class="micro">Public evidence</div>
@@ -1291,9 +1471,250 @@ footer{
 
   <div class="divider"></div>
 
+  <!-- ===== MANY SENSES SECTION ===== -->
+<section id="many-senses">
+  <div class="wrap">
+    <span class="sec-tag gold rv">One Map · Many Senses</span>
+    <h2 class="rv">My arena does not use only one TSP trick. I gave it several different “senses” for looking at the same map.</h2>
+    <p class="sense-lead rv">
+      I did not begin from TSP literature. I began from visual and cross-domain intuitions: Google Maps zoom, compression, 3D shapes, bats, black holes, changing coordinate systems and feedback from a good solution back into the representation that created it. GPT and the wider AI council helped translate those ideas into deterministic sensors, controllers, tests and arena families. The arena measures them under one MDL/DCC framework, preserves useful losers, and lets the map decide which sense deserves more computation.
+    </p>
+
+    <div class="sense-loop rv">
+      <div class="step"><div class="k">Observe</div><div class="v">2D map and current tour</div></div>
+      <div class="step"><div class="k">Transform</div><div class="v">zoom · fold · echo · gravity</div></div>
+      <div class="step"><div class="k">Measure</div><div class="v">structure and compressibility</div></div>
+      <div class="step"><div class="k">Govern</div><div class="v">DCC changes search pressure</div></div>
+      <div class="step"><div class="k">Act</div><div class="v">local route operators execute</div></div>
+      <div class="step"><div class="k">Remember</div><div class="v">rank, archive, do not eliminate</div></div>
+      <div class="step"><div class="k">Reverse arrow</div><div class="v">good tours improve the next view</div></div>
+    </div>
+
+    <div class="sense-grid">
+      <article class="sense-card cyan rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD founding idea · current winning lineage</div>
+            <h3>Compression as a search compass</h3>
+          </div>
+          <div class="sense-rank"><strong>#1</strong>NU3496</div>
+        </div>
+        <p>
+          The original question was whether the shortest tour should also have a shorter, more regular description. In the working arena, LZ-based sensors measure structure in the stream of search outcomes, while MDL judges whether additional complexity actually pays. DCC then uses that signal to decide when to exploit, perturb, switch or escalate.
+        </p>
+        <div class="sense-tech">LZ_binary · LZ_dual · zstd_ratio · MDL score → DCC / ratchet feedback</div>
+      </article>
+
+      <article class="sense-card green rv rv-d2">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD × GPT control architecture</div>
+            <h3>DCC: complexity changes how the solver behaves</h3>
+          </div>
+          <div class="sense-rank"><strong>DCC</strong>governor</div>
+        </div>
+        <p>
+          DCC is not another way of swapping edges. It sits above the route moves and changes the search pressure. Depending on the measured structure, it can increase exploitation, strengthen perturbations, change greedy probability, switch kick families, escalate recovery or reduce wasted work. The search result therefore becomes feedback for the next search decision.
+        </p>
+        <div class="sense-tech">tour/search stream → compression/complexity → DCC law → altered exploration and exploitation</div>
+      </article>
+
+      <article class="sense-card gold rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD visual idea · GPT implementation</div>
+            <h3>Google-Maps zoom as an integer bitshift pyramid</h3>
+          </div>
+          <div class="sense-rank"><strong>O(n·L)</strong>scale layer</div>
+        </div>
+        <p>
+          BD imagined zooming out until nearby cities visually merge into one city, solving the smaller global structure, and then zooming back in to refine local routes. GPT translated that idea into a cheap raster hierarchy: at level <code>k</code>, integer coordinates become <code>(x &gt;&gt; k, y &gt;&gt; k)</code>. Cities collapse into cells without an expensive clustering algorithm, creating coarse-to-fine and “negative zoom” views.
+        </p>
+        <div class="sense-tech">collapse → cluster route → zoom in → entry/exit refinement → seam repair</div>
+      </article>
+
+      <article class="sense-card cyan rv rv-d2">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD scale ideas · MSTD family</div>
+            <h3>Scale coherence, hourglass shape and negative zoom</h3>
+          </div>
+          <div class="sense-rank"><strong>#5–#7</strong>NU3496</div>
+        </div>
+        <p>
+          Zoom is not used only to reduce city count. The arena also measures the shape of the pyramid and asks whether route structure survives across levels. <code>hourglass</code> detects where the hierarchy narrows, <code>scale_coherence</code> measures persistence across zoom changes, and MSTD can use positive levels for zoom-out or negative levels for zoom-in on selected local subsets.
+        </p>
+        <div class="sense-tech">fold_dist #4 · hourglass #5 · scale_coherence #7 · scale_walk compression retained for RDE</div>
+      </article>
+
+      <article class="sense-card violet rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD 2D→3D idea · polyhedral sensor family</div>
+            <h3>A new coordinate system on 3D objects</h3>
+          </div>
+          <div class="sense-rank"><strong>#4</strong>best fold lens</div>
+        </div>
+        <p>
+          Cluster centres from the flat map are projected onto objects such as a pyramid, cube, octahedron, dodecahedron or icosahedron. The arena then asks whether neighboring tour segments become simpler in that alternate geometry—through folded distance, chord/surface ratios, convergence or disagreement. This is not classical “polyhedral TSP” cutting-plane theory; it is a representation lens.
+        </p>
+        <div class="sense-tech">fold_dist #4 · pure 3D-object sensors roughly #16–#22 on NU3496</div>
+      </article>
+
+      <article class="sense-card gold rv rv-d2">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD × AI geometry laboratory</div>
+            <h3>Symmetry, reflections, negative space and route motion</h3>
+          </div>
+          <div class="sense-rank"><strong>#8</strong>best transform</div>
+        </div>
+        <p>
+          The geometry laboratory does not stop at 3D objects. It tests triangle area and compactness, circumradius, Voronoi adjacency, radial fingerprints, reflection consistency, projection disagreement, rotation survival, negative-space signals, overlap cores, path winding, local torsion, helix and Lissajous projections. Each is another language in which a route may look simpler.
+        </p>
+        <div class="sense-tech">symmetry_reflect_diag #8 · circum_r #10 · tri_compact #13 · lissajous #23 · local_torsion #27</div>
+      </article>
+
+      <article class="sense-card orange rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD bat idea · echo sensor</div>
+            <h3>Echolocation: does the route respect physical neighbors?</h3>
+          </div>
+          <div class="sense-rank"><strong>#9</strong>NU3496</div>
+        </div>
+        <p>
+          The bat metaphor became a measurable echo signal rather than a population of simulated bats. A good tour should usually keep physically nearby cities near one another in route order. Echo measures the “miss rate” when the tour ignores local spatial neighbors, and it can expose a different route basin even when its raw length is not yet the winner.
+        </p>
+        <div class="sense-tech">echo won its original hyperdimensional category; it also ranked strongly on uy734</div>
+      </article>
+
+      <article class="sense-card rose rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD black-hole idea · gravity sensor</div>
+            <h3>Gravity: compact segments have lower energy</h3>
+          </div>
+          <div class="sense-rank"><strong>#6</strong>NU3496</div>
+        </div>
+        <p>
+          The black-hole intuition became a segment-energy sensor. Compact route sections behave like low-energy structures; long jumps across dense regions look suspicious. Gravity does not copy the standard black-hole metaheuristic where candidate solutions are “stars.” It is a lens that scores the geometry of one tour and directs attention toward expensive, weakly bound regions.
+        </p>
+        <div class="sense-tech">gravity won transform-persistence on NU3496 and ranked #3 in the earlier uy734 arena</div>
+      </article>
+
+      <article class="sense-card violet rv rv-d2">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD × AIm³ Lab · C additions</div>
+            <h3>Quantum-inspired senses for search dynamics</h3>
+          </div>
+          <div class="sense-rank"><strong>#14</strong>interference</div>
+        </div>
+        <p>
+          These sensors do not claim quantum computing. They borrow structural ideas to describe the search itself: interference compares phase relationships between streams, tunnelling measures barrier shape before a breakthrough, quantum walk follows probability-like movement, entanglement measures coupled progress and decoherence detects the loss of useful structure.
+        </p>
+        <div class="sense-tech">interference · tunneling · qwalk · entanglement · decoherence · experimental RDE family</div>
+      </article>
+
+      <article class="sense-card green rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">C contribution · Tour-Enriched Pyramid</div>
+            <h3>The reverse arrow: the tour improves its own representation</h3>
+          </div>
+          <div class="sense-rank"><strong>#24</strong>early TEP sensor</div>
+        </div>
+        <p>
+          A normal pyramid only sends information downward: coarse representation first, detailed tour later. C added the reverse arrow. A good tour can modify the next pyramid—changing affinity weights, boundaries, candidate connections or scale emphasis—so the representation learns from the solution it produced. The full resonance loop is <code>MSTD → TEP → HyperDim → Solve → MDL in 2D → Feedback</code>. The solver is no longer trapped inside a fixed coordinate system.
+        </p>
+        <div class="sense-tech">map → pyramid → tour → enriched pyramid → revised tour</div>
+      </article>
+
+      <article class="sense-card cyan rv rv-d1">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">BD × GPT research discipline</div>
+            <h3>Rank-Don’t-Eliminate</h3>
+          </div>
+          <div class="sense-rank"><strong>RDE</strong>archive</div>
+        </div>
+        <p>
+          A sensor is not declared useless because it loses on one map, at one scale, with one operator set. The arena keeps an archive across method × representation × scale × operator × instance × seed × budget × hardware. When a new zoom, lens, GPU path or operator appears, older methods can be resurrected and scored again. That matters because rankings have already changed across instance size, representation and hardware.
+        </p>
+        <div class="sense-tech">rank → preserve → change representation → resurrection sweep → compare again</div>
+      </article>
+
+      <article class="sense-card gold rv rv-d2">
+        <div class="sense-head">
+          <div>
+            <div class="sense-origin">Current record mechanism</div>
+            <h3>Elite-route fusion and focused local surgery</h3>
+          </div>
+          <div class="sense-rank"><strong>97,042</strong>live record</div>
+        </div>
+        <p>
+          Once elite tours agreed on more than 98–99% of their edges, the problem changed. The arena stopped rebuilding the whole route and concentrated on the small disagreement components. Compatible edges from different winners were fused, then LZ/DCC-guided local surgery repaired only a handful of weak connections. The present NU3496 record came mainly from this compression/DCC lineage—not from bats, gravity or a pure 3D sensor.
+        </p>
+        <div class="sense-tech">broad scout → deep door → elite fusion → disagreement edges → local surgery</div>
+      </article>
+    </div>
+
+    <div class="sensor-rank-box rv">
+      <div class="sensor-rank-head">
+        <h3>How the idea families ranked on NU3496</h3>
+        <p>
+          The latest completed discovery table contains 106 named sensor labels. These are best observed results, not a universal ordering: the LZ branch later received B240/B480/B960/B1920 continuation, fusion, focused surgery and the live DEV2.3 campaign, while most alternative senses received only broad or medium scouting budgets.
+        </p>
+      </div>
+      <div class="sensor-rank-row header"><div>Rank</div><div>Sensor / idea</div><div>Best observed</div><div>What it tells us</div></div>
+      <div class="sensor-rank-row"><div class="rank">#1</div><div class="sensor">LZ_binary</div><div class="result">97,056 completed<br>97,042 live lineage</div><div class="meaning">Current winner: compression feedback + DCC/ratchet + fusion/surgery.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#2</div><div class="sensor">zstd_ratio</div><div class="result">102,152 · 6.262%</div><div class="meaning">A second compression family became the strongest fast challenger.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#3</div><div class="sensor">LZ_dual</div><div class="result">102,577 · 6.704%</div><div class="meaning">Dual compression signal produced the strongest early MDL winner.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#4</div><div class="sensor">fold_dist</div><div class="result">102,751 · 6.885%</div><div class="meaning">Strongest folded-space lens in the broad table.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#5</div><div class="sensor">hourglass</div><div class="result">102,764 · 6.899%</div><div class="meaning">The shape of the multi-scale hierarchy carried useful information.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#6</div><div class="sensor">gravity</div><div class="result">102,952 · 7.094%</div><div class="meaning">Best physics-style sensor; winner of transform-persistence.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#7</div><div class="sensor">scale_coherence</div><div class="result">103,182 · 7.334%</div><div class="meaning">Direct evidence that the quality of a lens can depend on zoom level.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#8</div><div class="sensor">symmetry_reflect_diag</div><div class="result">103,271 · 7.426%</div><div class="meaning">A reflected coordinate system became a competitive route view.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#9</div><div class="sensor">echo</div><div class="result">103,299 · 7.455%</div><div class="meaning">Bat-inspired spatial-neighbor signal; won a hyperdimensional category.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#10–#15</div><div class="sensor">circum_r · frozen_edge · CUSUM · tri_compact · interference · tri_area</div><div class="result">103,311–104,133<br>7.468–8.323%</div><div class="meaning">Geometry, stability, rhythm and search-dynamics signals all survived the scout.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#16–#22</div><div class="sensor">pyramid · cube · octa · dodeca · icosa</div><div class="result">104,401–105,083<br>8.602–9.311%</div><div class="meaning">Pure 3D-object sensors were respectable but not the NU3496 winner.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#23–#27</div><div class="sensor">lissajous · scale_walk_lz / TEP · projection disagreement · hierarchical simplex · local torsion</div><div class="result">105,116–105,391<br>9.345–9.632%</div><div class="meaning">Alternative transforms and reverse-arrow signals remain experimental RDE branches.</div></div>
+      <div class="sense-tech" style="margin:1rem 1.4rem 1.25rem">Important: NU3496 is only one geometry. These ranks do not tell us what wins on China, World TSP, a highly symmetric VLSI map or another hardware regime.</div>
+    </div>
+
+    <div class="highlight violet rv">
+      <h3>The full idea atlas remains alive</h3>
+      <p>
+        Beyond the headline families, the archive contains LZ-per-operator, transfer entropy, sample entropy, frozen-edge stability, CUSUM rhythm change, triangle area/radius/compactness, Voronoi adjacency, scale-walk compression, hierarchical triangle/tetra/simplex views, multi-centre radial fields, sector and reflection symmetries, angle and turn-density walks, radial fingerprints, rotation survival, mirror/twin consistency, negative space, overlap cores, scale persistence, projection disagreement, helix/Lissajous coordinates, random-axis controls and weighted or switching hybrid sensors. Not every item began as a BD seed; the larger system emerged from the BD × AI research loop.
+      </p>
+      <div class="sense-pills">
+        <span class="pill">compression streams</span><span class="pill">bitshift / MSTD zoom</span><span class="pill">hourglass / scale walk</span><span class="pill">3D polyhedra</span><span class="pill">echo / gravity</span><span class="pill">symmetry / reflections</span><span class="pill">negative space</span><span class="pill">torsion / helix / Lissajous</span><span class="pill">quantum-inspired dynamics</span><span class="pill">TEP / resonance</span><span class="pill">hybrid sensors</span><span class="pill">elite fusion / surgery</span>
+      </div>
+    </div>
+
+    <div class="highlight green rv">
+      <h3>Not the winner here does not mean not the winner elsewhere</h3>
+      <p>
+        The current NU3496 record came mainly from compression/DCC feedback, elite-tour fusion and focused local surgery. Echo, gravity, zoom, TEP and pure 3D branches did not directly produce this particular record. But gravity and echo won their own categories, folded-space sensors ranked near the top, and rankings have already inverted with instance size and hardware. Another map may favour a different sense—which is exactly why the arena ranks and preserves methods rather than deleting them after one loss.
+      </p>
+    </div>
+
+    <div class="highlight gold rv">
+      <h3>Originality claim — precise, not inflated</h3>
+      <p>
+        General multilevel TSP, pyramid models, bat-inspired optimization and black-hole metaheuristics already exist. The claim here is not ownership of those words. The candidate originality is in the concrete sensor implementations, the integer-bitshift representation, the tour-to-representation reverse arrow, MDL/DCC feedback, Rank-Don’t-Eliminate resurrection, and the complete arena that tests all of them under one reproducible workflow. In the current literature review, no equivalent combined architecture has been found.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- ===== END MANY SENSES SECTION ===== -->
+
+  <div class="divider"></div>
+
   <!-- ===== EMPIRICAL TEST ===== -->
 
-  <section id="empirical">
+<section id="empirical">
     <div class="wrap">
       <span class="sec-tag orange rv">First Empirical Test</span>
       <h2 class="rv">Measured: shorter tours <em>are</em> more compressible. The founding question holds.</h2>
