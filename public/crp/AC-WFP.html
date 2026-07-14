@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#05070d">
-<title>AC–WFP V4-DRAFT.5 — Whole-First Co-Emergent Physicalization</title>
-<meta name="description" content="AC–WFP V4-DRAFT.5: completed A3 development evidence, A4/MAL handoff, and Rank-Don’t-Eliminate upgrade path.">
+<title>AC–WFP V4-DRAFT.6 — Whole-First Co-Emergent Physicalization</title>
+<meta name="description" content="AC–WFP V4-DRAFT.6: plain-language whole-first orientation, completed deep/daily development findings, and the live v0.3.1a1 multiday evidence boundary. AC remains AC0.">
 <meta name="author" content="BD × AI">
 <script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
@@ -36,120 +36,632 @@ body::selection{background:rgba(34,211,238,.28);color:white}a{color:var(--cyan);
 .glossary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.term{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(7,12,23,.55)}.term b{display:block;color:#fff;margin-bottom:5px}.term span{display:block;color:var(--muted);font-size:.9em;line-height:1.55}details.a3-current-results{padding:0!important;overflow:hidden}details.a3-current-results summary{cursor:pointer;list-style:none;padding:22px 28px;border-bottom:1px solid var(--line);font-weight:850;color:#fff;font-size:1.1em;background:rgba(34,211,238,.06)}details.a3-current-results summary::-webkit-details-marker{display:none}details.a3-current-results summary:before{content:"＋";display:inline-grid;place-items:center;width:28px;height:28px;margin-right:10px;border-radius:10px;background:rgba(34,211,238,.12);color:var(--cyan)}details.a3-current-results[open] summary:before{content:"−"}details.a3-current-results>div,details.a3-current-results>p,details.a3-current-results>h3,details.a3-current-results>pre{margin-left:28px;margin-right:28px}details.a3-current-results h3{color:#fff;margin-top:28px}.muted-line{color:var(--muted)!important;font-size:.9em}.footer{width:min(960px,calc(100% - 34px));margin:0 auto;padding:30px 0 96px;color:var(--dim);text-align:center;font-size:.82em}.fontctl{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:120;display:grid;grid-template-columns:54px 54px;overflow:hidden;border:1px solid var(--line2);border-radius:17px;background:rgba(9,15,27,.91);box-shadow:0 18px 58px rgba(0,0,0,.46);backdrop-filter:blur(16px)}.fontctl button{width:54px;height:54px;border:0;background:transparent;color:#fff;cursor:pointer;font-weight:850}.fontctl button:hover{background:rgba(34,211,238,.10)}
 @media(max-width:980px){.status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.grid.two,.dashboard,.glossary{grid-template-columns:1fr}.topbar-inner{align-items:flex-start}.topnav{display:none}.hero:after{opacity:.38;right:-18%;width:70vw}.paper-head{display:block}.paper-head p{margin-top:8px}}@media(max-width:640px){:root{--reader-text:20px}.wrap{width:min(100% - 22px,1180px)}.hero{padding-top:54px}.hero h1{font-size:clamp(48px,14vw,72px)}.status-grid{grid-template-columns:1fr}.glass-section{padding:20px}.grid{gap:10px}.paper-body h2{margin-top:48px}.fontctl{grid-template-columns:56px 56px}.fontctl button{width:56px;height:56px}}
 @media print{body{background:#fff;color:#111}.topbar,.reading-progress,.fontctl,.hero:after{display:none!important}.glass-section,.card,.signal-card,.stat,pre,.table-scroll,blockquote{box-shadow:none!important;background:#fff!important;color:#111!important;border-color:#bbb!important}.wrap{width:100%;max-width:none}.paper-body{width:100%;max-width:none}a{color:#111}.pill,.stat .note,.card p,.section-lead,.signal-card p{color:#333!important}}
-</style>
-<style>
-.paper-body > h1:first-child{display:none}.paper-body > h2:first-of-type{margin-top:0}.mini-panel{border:1px solid var(--line);border-radius:18px;background:rgba(7,12,23,.55);padding:18px}.mini-panel h3{margin:0 0 8px;color:#fff}.mini-panel p{margin:0;color:var(--muted)}.next-steps{display:grid;gap:10px}.step-row{border:1px solid rgba(148,163,184,.14);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.025)}.step-row b{color:#fff}.step-row span{display:block;color:var(--muted);font-size:.9em}.status-grid .value.small{font-size:clamp(17px,2vw,24px)}
-</style>
 
+
+/* V4-DRAFT.6 additions */
+.layman-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}.flow-step{position:relative;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.025);min-height:150px}.flow-step:not(:last-child):after{content:"→";position:absolute;right:-19px;top:50%;transform:translateY(-50%);color:var(--cyan);font-family:var(--mono);font-weight:800;z-index:2}.flow-step b{display:block;color:#fff;margin-bottom:7px}.flow-step span{color:var(--muted);font-size:.92em}.plain-quote{margin:18px 0;padding:18px 20px;border-left:4px solid var(--cyan);border-radius:0 16px 16px 0;background:linear-gradient(90deg,rgba(34,211,238,.10),rgba(34,211,238,.025));font-size:1.08em}.result-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.94em}.result-table th,.result-table td{padding:12px 13px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}.result-table th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan);background:rgba(34,211,238,.055)}.result-table td.num{text-align:right;font-family:var(--mono);white-space:nowrap}.verdict-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.verdict-card{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.025)}.verdict-card h3{margin-top:0}.verdict-card.good{border-color:rgba(52,211,153,.32);background:rgba(52,211,153,.055)}.verdict-card.warn{border-color:rgba(245,158,11,.34);background:rgba(245,158,11,.05)}.verdict-card.closed{border-color:rgba(251,113,133,.32);background:rgba(251,113,133,.045)}.snapshot-note{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px}.paper-head .sync-badge{display:inline-flex;margin-top:10px;padding:5px 10px;border:1px solid rgba(52,211,153,.3);border-radius:999px;color:var(--green);font-family:var(--mono);font-size:11px}.paper-body section.level1,.paper-body section.level2{scroll-margin-top:90px}.paper-body table{display:block;overflow-x:auto}.source-note{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(167,139,250,.045);color:var(--muted)}
+@media(max-width:900px){.layman-flow,.verdict-grid{grid-template-columns:1fr 1fr}.flow-step:nth-child(2):after{display:none}}
+@media(max-width:620px){.layman-flow,.verdict-grid{grid-template-columns:1fr}.flow-step:after{display:none}.result-table{font-size:.86em}.result-table th,.result-table td{padding:10px 9px}}
+</style>
 </head>
 <body>
+
 <div class="reading-progress"><span></span></div>
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#top"><span class="brand-mark">Ω</span><span>AC–WFP V4-DRAFT.5</span></a>
+    <a class="brand" href="#top"><span class="brand-mark">Ω</span><span>AC–WFP V4-DRAFT.6 · v0.3.1a1 live</span></a>
     <nav class="topnav" aria-label="Page navigation">
-      <a href="#dashboard">Dashboard</a><a href="#a4">A4 / MAL</a><a href="#paper">Full text</a><a href="#verdict">Verdict</a>
+      <a href="#plain">Start here</a><a href="#latest">Latest status</a><a href="#findings">Findings</a><a href="#meaning">Meaning</a><a href="#paper">Full paper</a>
     </nav>
   </div>
 </header>
 <main id="top" class="wrap">
 <section class="hero">
-  <div class="eyebrow">Whole-first research programme · completed A3 update</div>
-  <h1><span class="blue">AC–WFP</span><span class="white">V4-DRAFT.5</span></h1>
-  <p>Completed A3 development evidence, A4/MAL handoff, and Rank-Don’t-Eliminate upgrade path. The scientific baseline remains Ω; AC remains AC0.</p>
+  <div class="eyebrow">Whole-first research programme · synchronized development update · 14 July 2026</div>
+  <h1><span class="blue">AC–WFP</span><span class="white">V4-DRAFT.6</span></h1>
+  <p>Could particles and local systems be stable expressions of a deeper Whole rather than the final independent bricks of reality? This page explains the idea plainly, shows what the Python arena actually tests, and reports the latest completed and live evidence without turning a development hint into a physics claim.</p>
   <div class="pill-row">
-    <span class="pill green">A3 completed</span><span class="pill gold">DEVELOPMENT_ONLY</span><span class="pill rose">NOT_CONFIRMATION</span><span class="pill blue">Arena 0A closed</span><span class="pill">AC0</span>
+    <span class="pill green">v0.3.1a1 active</span><span class="pill blue">multiday · PROPOSE</span><span class="pill gold">DEVELOPMENT_ONLY</span><span class="pill rose">NOT_CONFIRMATION</span><span class="pill">AC0</span>
   </div>
   <div class="status-grid">
-    <div class="stat"><span class="label">A3 systems</span><span class="value">576 / 576</span><span class="note">completed</span></div>
-    <div class="stat"><span class="label">Failures</span><span class="value">0</span><span class="note">timeouts also 0</span></div>
-    <div class="stat"><span class="label">Gates</span><span class="value">30 / 31</span><span class="note">temporal sensor needs repair</span></div>
-    <div class="stat"><span class="label">Firewall</span><span class="value">PASS</span><span class="note">1769 scanned · 0 findings</span></div>
+    <div class="stat"><span class="label">Active profile</span><span class="value small">multiday</span><span class="note">576 systems · 23 arms</span></div>
+    <div class="stat"><span class="label">Persisted proposals</span><span class="value small">3,970 / 13,248</span><span class="note">29.9668% at snapshot</span></div>
+    <div class="stat"><span class="label">Best deep hint</span><span class="value small">3 wins · 0 null</span><span class="note">MPRC2_FULL · not confirmed</span></div>
+    <div class="stat"><span class="label">Scientific boundary</span><span class="value">AC0</span><span class="note">Arena 0A closed</span></div>
   </div>
 </section>
 
-<section class="glass-section feature" id="dashboard">
-  <p class="section-kicker">Current evidence dashboard</p>
-  <h2 class="section-title">A3 did not prove the theory. It sharpened the instrument.</h2>
-  <p class="section-lead">The completed run says the useful thing: raw compression is not closure, change-point segmentation is a temporal trap, and the cleanest current clue is operation-gated structural MPRC2 under low-rank or spectral accounting.</p>
-  <div class="dashboard">
-    <div class="signal-card good">
-      <h3>Best A4-worthy development clues</h3>
-      <div class="signal-list">
-        <div class="signal-item"><b>LOW_RANK + MPRC2_NON_TEMPORAL_OP</b><span>38 positive / 2 null</span></div>
-        <div class="signal-item"><b>LOW_RANK + MPRC2_MOVE_OVERLAP</b><span>37 positive / 2 null</span></div>
-        <div class="signal-item"><b>SPECTRAL + MPRC2_NON_TEMPORAL_OP</b><span>31 positive / 0 null</span></div>
-      </div>
-    </div>
-    <div class="signal-card warn">
-      <h3>Main traps and demotions</h3>
-      <div class="signal-list">
-        <div class="signal-item"><b>MPRC2_CHANGEPOINT_ONLY</b><span>6 positive / 42 null</span></div>
-        <div class="signal-item"><b>LEC specificity</b><span>FAIL · proposal-only</span></div>
-        <div class="signal-item"><b>MSR2 recovery/rho</b><span>not load-bearing yet</span></div>
-      </div>
-    </div>
+<section class="glass-section feature" id="plain">
+  <p class="section-kicker">Start here · plain-language explanation</p>
+  <h2 class="section-title">The hypothesis reverses the usual deepest-level direction: not only parts building a Whole, but a Whole making stable parts possible.</h2>
+  <p class="section-lead">At everyday scales, particles still build atoms and atoms build objects. AC–WFP asks whether the particles themselves may be stable modes of a deeper globally constrained reality—real like whirlpools are real, but not independent substances added to the water.</p>
+  <div class="layman-flow" aria-label="Whole-first hypothesis flow">
+    <div class="flow-step"><b>1 · Deeper Whole Ω</b><span>A global relational actuality or compatibility structure, not a giant object inside space.</span></div>
+    <div class="flow-step"><b>2 · Stable restrictions</b><span>Some local patterns persist, predict and can be reconstructed from the wider organization.</span></div>
+    <div class="flow-step"><b>3 · Particle-like modes</b><span>Effective sectors may behave as particles, fields, clocks or local systems.</span></div>
+    <div class="flow-step"><b>4 · Familiar world</b><span>Bottom-up physics can remain valid as the effective description of those stable modes.</span></div>
+  </div>
+  <div class="plain-quote"><strong>The arena tests only the first bridge:</strong> can nontrivial effective parts be discovered from a whole relational process under blind prediction, disjoint recovery, full model-cost, matched-null and representation-robustness tests?</div>
+  <div class="grid three">
+    <div class="card"><div class="card-icon">✓</div><h3>What a win could say</h3><p>A particular finite mechanism found an observationally useful effective restriction that survived the registered controls.</p></div>
+    <div class="card"><div class="card-icon">≠</div><h3>What it would not say</h3><p>It would not yet derive real particles, spacetime, QM, GR, consciousness, AC or a Theory of Everything.</p></div>
+    <div class="card"><div class="card-icon">⚖</div><h3>Why the nulls matter</h3><p>A mechanism must refuse worlds that merely look structured. Compression alone is not closure.</p></div>
   </div>
 </section>
 
-<section class="glass-section" id="a4">
-  <p class="section-kicker">Next move</p>
-  <h2 class="section-title">A4 should be designed through MAL, not improvised from excitement.</h2>
+<section class="glass-section live-banner" id="latest">
+  <div class="live-head">
+    <div><p class="section-kicker"><span class="live-dot"></span>Latest live instrument status</p><h2 class="section-title">The repaired v0.3.1a1 multiday run is progressing normally and persisting every completed proposal.</h2></div>
+    <span class="live-time">snapshot · 14 Jul 2026 · 09:17 CEST</span>
+  </div>
+  <p class="section-lead">The active profile is still in <code>PROPOSE</code>. Evaluation has not opened, so the current multiday run has no mechanism verdict yet.</p>
+  <div class="live-progress" aria-label="Multiday proposal progress: 29.9668 percent">
+    <div class="live-progress-top"><b>MULTIDAY · PROPOSAL PHASE</b><span>3,970 / 13,248 · 29.9668%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:29.9668%"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="card-icon">576</div><h3>Balanced large profile</h3><p>384 structured systems and 192 matched null systems, with all public design factors balanced by role.</p></div>
+    <div class="card"><div class="card-icon">=</div><h3>Atomic persistence works</h3><p>3,970 completed heartbeats = 3,970 candidate files = 3,970 candidate receipts.</p></div>
+    <div class="card"><div class="card-icon">6</div><h3>Bounded active queue</h3><p>Six active tasks matched six workers; every recorded task remained on attempt 1 and no heartbeat was unreadable.</p></div>
+  </div>
+  <div class="profile-ladder" aria-label="Master ladder status">
+    <span class="profile-step done">smoke ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step done">mini ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step done">standard ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step done">nulls ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step done">deep ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step done">daily ✓</span><span class="profile-arrow">→</span>
+    <span class="profile-step active">multiday · active</span><span class="profile-arrow">→</span>
+    <span class="profile-step">weekly</span>
+  </div>
+  <div class="claim-boundary"><strong>Claim boundary:</strong> progress, queue health and atomic persistence are engineering evidence. They are not evidence that a closure mechanism wins in multiday.</div>
+</section>
+
+<section class="glass-section" id="findings">
+  <p class="section-kicker">Latest completed scientific-development findings</p>
+  <h2 class="section-title">Deep produced one narrow whole-first-compatible hint—and several useful rejections.</h2>
+  <p class="section-lead">The interesting comparison is not the mechanism with the most raw wins. It is the mechanism that wins on structured systems while avoiding matched-null traps.</p>
+  <div style="overflow-x:auto">
+  <table class="result-table">
+    <thead><tr><th>Mechanism</th><th>Wins</th><th>Null wins</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>MPRC2_FULL</strong></td><td class="num">3</td><td class="num">0 / 112</td><td>Rare, but the cleanest specific deep signal.</td></tr>
+      <tr><td>MPRC2_NON_TEMPORAL</td><td class="num">5</td><td class="num">2 / 112</td><td>More sensitive, but less specific; temporal persistence may reject false parts.</td></tr>
+      <tr><td>ENVELOPE_MPRC_SYNERGY</td><td class="num">1</td><td class="num">1 / 112</td><td>The only win is not specific.</td></tr>
+      <tr><td>SINGLETON</td><td class="num">36</td><td class="num">14 / 112</td><td>Useful local shortcut, but high null leakage.</td></tr>
+      <tr><td>LEC family</td><td class="num">0</td><td class="num">0</td><td>Current implementation earns no scientific win.</td></tr>
+      <tr><td>MSR2 family</td><td class="num">0</td><td class="num">0</td><td>Finite modular/spectral proxy remains non-load-bearing.</td></tr>
+    </tbody>
+  </table>
+  </div>
   <div class="grid two">
-    <div class="mini-panel"><h3>Ask MAL</h3><p>What is the smallest strict A4 confirmation design that freezes candidate rules, improves temporal controls, keeps AC0, prevents self-deception, and implements Rank-Don’t-Eliminate?</p></div>
-    <div class="mini-panel"><h3>Do not ask MAL</h3><p>Do not ask whether AC is true. A3 tests finite effective-part discovery machinery, not consciousness, GR/QM, spacetime, ToE, AGI or ASI.</p></div>
+    <div class="mini-panel"><h3>One codebook-stable candidate</h3><p><code>MPRC2_FULL</code> passed the observational certificate on one deep system in both codebooks, with roughly +1.25–1.31 kbits predictive advantage and +292–318 bits disjoint-recovery advantage. Production/reference parity passed.</p></div>
+    <div class="mini-panel"><h3>Why it is not a discovery</h3><p>The signal is rare, daily does not cleanly replicate it, all secondary max-statistic p-values are 1.0, intervention is unearned, and no candidate is promotion-eligible.</p></div>
   </div>
-  <div class="next-steps" style="margin-top:16px">
-    <div class="step-row"><b>1. Council review</b><span>Top-5 LLMs review final A3 and propose A4 controls, certificate rules and kill tests.</span></div>
-    <div class="step-row"><b>2. Builder spec</b><span>Freeze the A4 rule set before any fresh split: primary, secondary, exploratory and negative controls.</span></div>
-    <div class="step-row"><b>3. Fresh preregistered run</b><span>No promotion from A3 post-hoc clues. A4 must earn its result under a new split.</span></div>
+</section>
+
+<section class="glass-section" id="meaning">
+  <p class="section-kicker">What this means for the central idea</p>
+  <h2 class="section-title">Whole → effective parts is becoming testable. Whole → actual particles remains open.</h2>
+  <div class="verdict-grid">
+    <div class="verdict-card good"><h3>Strengthened</h3><p>Effective parts can be defined by separate prediction and recovery, tested against matched nulls, checked under multiple codebooks and audited end to end.</p></div>
+    <div class="verdict-card warn"><h3>Interesting but unresolved</h3><p>Temporal persistence may improve specificity: a real part-like sector may need to remain the same organization through change, not merely form a static cluster.</p></div>
+    <div class="verdict-card closed"><h3>Still unearned</h3><p>No derivation of physical particles, spacetime, QM, GR, Standard Model structure, subjectivity or AC. AC remains AC0.</p></div>
+  </div>
+  <div class="plain-quote">A local or particle-like description can be highly useful without proving that local particles are ontologically primitive. The Singleton baseline is the clearest current warning: it often works, but it also works on many null worlds.</div>
+</section>
+
+<section class="glass-section" id="next">
+  <p class="section-kicker">Next scientific gate</p>
+  <h2 class="section-title">Finish multiday, then ask whether the deep pattern survives larger scale without null leakage.</h2>
+  <div class="next-steps">
+    <div class="step-row"><b>1 · Finish and replay multiday</b><span>Proposal → evaluation → finalization → audit closure → strict replay.</span></div>
+    <div class="step-row"><b>2 · Compare the same certificate vector</b><span>Separate prediction, disjoint recovery, stability, naturality, codebook agreement and null specificity.</span></div>
+    <div class="step-row"><b>3 · Run weekly and freeze the development capsule</b><span>Do not alter the gates after seeing the larger-scale results.</span></div>
+    <div class="step-row"><b>4 · Only then design confirmation</b><span>One frozen source identity, fresh preregistered split, and a genuine intervention/autonomy axis.</span></div>
   </div>
 </section>
 
 <section class="paper-shell" id="paper">
   <div class="paper-head">
-    <h2>Full V4-DRAFT.5 research text</h2>
-    <p>Living draft · completed A3 evidence · A4/MAL handoff</p>
+    <h2>Complete synchronized V4-DRAFT.6 research document</h2>
+    <p>Updated Markdown and HTML now contain the same status, layman orientation, latest evidence and preserved historical research body.</p>
+    <span class="sync-badge">MD ↔ HTML synchronized · 14 July 2026</span>
   </div>
   <article class="paper-body">
-<h1 id="acwfp-v4-draft.5-whole-first-co-emergent-physicalization">AC–WFP
-V4-DRAFT.5 — Whole-First Co-Emergent Physicalization</h1>
-<h2 id="final-a3-development-evidence-update-a4mal-handoff-and-rank-dont-eliminate-upgrade-path">Final
-A3 development-evidence update, A4/MAL handoff, and Rank-Don’t-Eliminate
-upgrade path</h2>
-<p><strong>Status:</strong> executable draft research contract plus
-completed A3 development-evidence update; not an established physical
-theory and not confirmation evidence<br/>
-<strong>Version:</strong> V4-DRAFT.5<br/>
-<strong>Date:</strong> 3 July 2026<br/>
-<strong>Authors:</strong> BD × AI<br/>
-<strong>Neutral scientific baseline:</strong> Ω<br/>
-<strong>AC status:</strong> AC0<br/>
+<section id="acwfp-v4-draft.6-whole-first-co-emergent-physicalization"
+class="level1">
+<h1>AC–WFP V4-DRAFT.6 — Whole-First Co-Emergent Physicalization</h1>
+<section
+id="integrated-v0.3.1v0.3.1a1-development-update-deepdaily-findings-and-live-multiday-evidence"
+class="level2">
+<h2>Integrated v0.3.1/v0.3.1a1 development update, deep/daily findings,
+and live multiday evidence</h2>
+<p><strong>Status:</strong> living executable research contract with
+completed A3 evidence, completed v0.3.1 <code>deep</code> and
+<code>daily</code> development evidence, and an active v0.3.1a1
+<code>multiday</code> run; not an established physical theory and not
+confirmation evidence<br />
+<strong>Version:</strong> V4-DRAFT.6<br />
+<strong>Date:</strong> 14 July 2026<br />
+<strong>Authors:</strong> BD × AI<br />
+<strong>Neutral scientific baseline:</strong> Ω<br />
+<strong>AC status:</strong> AC0<br />
+<strong>Scientific status:</strong>
+<code>DEVELOPMENT_ONLY_NOT_CONFIRMATION</code>;
+<code>NOT_ARENA_0A</code>; intervention axis reserved and unearned<br />
 <strong>Method:</strong> evidence first; mechanism labels must alter
-behaviour; effective parts require a vector of mandatory certificates
-rather than one scalar win<br/>
+behaviour; effective parts require separate predictive and
+disjoint-recovery certificates, stability, naturality, null specificity,
+representation robustness, complete model-cost accounting, and
+eventually intervention<br />
 <strong>Canonical source:</strong>
-<code>AC-WFP_v4_DRAFT_5.md</code><br/>
+<code>AC-WFP_v4_DRAFT_6.md</code><br />
 <strong>HTML companion:</strong>
-<code>AC-WFP_v4_DRAFT_5.html</code><br/>
-<strong>Executable companion:</strong> AC-WFP Arena
-<code>v0.2.0a3</code> / Python package <code>acwfp-arena==0.2.0a3</code>
-for completed A3 development evidence; A4 is not yet built<br/>
-<strong>Historical baseline:</strong> <code>AC-WFP_v3.md</code> and
-AC-WFP Arena v0.1.2 remain frozen and are not rewritten<br/>
-<strong>Version relation:</strong> this draft updates V4-DRAFT.4 after
-the completed A3 run; it still does not supersede V3 and it does not
-become final V4 until a fresh preregistered A4/V4-confirmation split is
-frozen and evaluated<br/>
-<strong>New source synthesis:</strong> V3; v0.1.2 implementation audit;
-Hinton energy-based-learning bridge; Modern Knowledge Transfer Map; A1
-defect classification; completed A2 evidence; A3 v0.2.0a3
-build/validation evidence; completed A3 multiday extract
-<code>LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip</code>; A4
-dossier/prompt; and the Rank-Don’t-Eliminate operating principle</p>
-<hr/>
-<h2 id="reader-orientation-what-this-living-v4-page-is">Reader
-orientation — what this living V4 page is</h2>
+<code>AC-WFP_v4_DRAFT_6.html</code><br />
+<strong>Current executable companion:</strong> AC-WFP Arena
+<code>v0.3.1a1</code>, bounded active queue with atomic candidate
+persistence and evaluation checkpointing<br />
+<strong>Completed current-generation evidence:</strong>
+<code>standard</code>, <code>adversarial_nulls</code>,
+<code>deep</code>, and <code>daily</code> were finalized under v0.3.1
+with strict replay; the current <code>multiday</code> profile runs under
+the v0.3.1a1 queue/resume hotfix<br />
+<strong>Historical scientific baseline:</strong> V4-DRAFT.5 and its
+completed A3 record remain frozen below for traceability<br />
+<strong>Version relation:</strong> V4-DRAFT.6 supersedes V4-DRAFT.5 as
+the living development document, but it is not final V4 and does not
+create confirmation evidence<br />
+<strong>Latest evidence snapshot:</strong>
+<code>RICH3_LIVE_EXTRACT_ACWFP_V031_MASTER_multiday_20260714_070811.zip</code>,
+generated 14 July 2026 at 07:17 UTC / 09:17 CEST</p>
+<hr />
+</section>
+<section id="start-here-the-idea-in-plain-language" class="level2">
+<h2>Start here — the idea in plain language</h2>
+<section id="the-ordinary-picture" class="level3">
+<h3>The ordinary picture</h3>
+<p>The familiar bottom-up picture says that reality is built from the
+smallest independent things:</p>
+<pre class="text"><code>particles → atoms → molecules → stars, bodies and observers</code></pre>
+<p>AC–WFP asks whether this may be correct as an <strong>effective
+description</strong> while being reversed at the deepest level:</p>
+<pre class="text"><code>a globally constrained Whole Ω
+→ stable local restrictions and modes
+→ particle-like sectors, fields and geometry
+→ the familiar physical world</code></pre>
+<p>This does <strong>not</strong> say that electrons, atoms or tables
+are unreal. It asks whether they are ultimate bricks, or whether they
+are more like persistent patterns supported by a deeper whole.</p>
+</section>
+<section id="a-simple-analogy" class="level3">
+<h3>A simple analogy</h3>
+<p>A whirlpool is real: it has a location, lifetime, shape and causal
+effects. But it is not a separate substance added to water. It is a
+stable pattern made possible by the organization of the larger flow.</p>
+<p>The whole-first hypothesis asks whether a physical “part” could be
+similar:</p>
+<blockquote>
+<p>A particle or local subsystem may be a stable, reconstructible and
+predictive mode of a deeper global relational structure, rather than an
+independently existing primitive from which the Whole is assembled.</p>
+</blockquote>
+<p>The analogy is only an intuition. The scientific work begins when
+“stable pattern” is replaced by measurable requirements.</p>
+</section>
+<section id="what-the-python-arena-actually-does" class="level3">
+<h3>What the Python arena actually does</h3>
+<p>The arena does not simulate the birth of our universe and does not
+test consciousness directly. It tests a smaller prerequisite:</p>
+<ol type="1">
+<li>generate finite relational worlds with hidden organization;</li>
+<li>give proposal mechanisms only the allowed training view;</li>
+<li>ask them to discover candidate effective parts without seeing
+held-out or sealed information;</li>
+<li>test whether those candidates predict unseen data and independently
+reconstruct disjoint information;</li>
+<li>charge the full cost of the model, search, codebook and
+machinery;</li>
+<li>test the same mechanisms on matched null worlds designed to look
+tempting without containing valid closure;</li>
+<li>repeat the scoring under two codebooks and require audit, signature,
+replay and reference-evaluator agreement.</li>
+</ol>
+<p>A positive result would mean only that a specific
+<strong>observational closure mechanism candidate</strong> survived this
+finite test. It would not yet derive particles, spacetime, quantum
+theory, gravity, consciousness or AC.</p>
+</section>
+<section id="the-one-sentence-project-summary" class="level3">
+<h3>The one-sentence project summary</h3>
+<blockquote>
+<p>We are turning the philosophical idea “parts may be expressions of a
+Whole” into a programme that can fail: a candidate part must earn
+prediction, recovery, stability, representation robustness and null
+specificity under blind, cost-complete testing.</p>
+</blockquote>
+<hr />
+</section>
+</section>
+<section id="v4-draft.6-update-what-the-latest-evidence-says"
+class="level2">
+<h2>V4-DRAFT.6 update — what the latest evidence says</h2>
+<section
+id="d6.1-current-live-status-the-repaired-multiday-run-is-healthy"
+class="level3">
+<h3>D6.1 Current live status: the repaired multiday run is healthy</h3>
+<p>The latest safe <code>RICH3</code> snapshot records the active
+<code>multiday</code> profile at <strong>14 July 2026, 09:17
+CEST</strong>:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th style="text-align: right;">Latest snapshot</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Release / runtime</td>
+<td style="text-align: right;"><code>0.3.1a1</code> / bounded active
+queue</td>
+</tr>
+<tr class="even">
+<td>Stage</td>
+<td style="text-align: right;"><code>PROPOSE</code></td>
+</tr>
+<tr class="odd">
+<td>Systems</td>
+<td style="text-align: right;">576</td>
+</tr>
+<tr class="even">
+<td>Structured / matched null systems</td>
+<td style="text-align: right;">384 / 192</td>
+</tr>
+<tr class="odd">
+<td>Declared arms</td>
+<td style="text-align: right;">23</td>
+</tr>
+<tr class="even">
+<td>Expected proposals</td>
+<td style="text-align: right;">13,248</td>
+</tr>
+<tr class="odd">
+<td>Persisted completed proposals</td>
+<td style="text-align: right;"><strong>3,970</strong></td>
+</tr>
+<tr class="even">
+<td>Proposal progress</td>
+<td style="text-align: right;"><strong>29.9668%</strong></td>
+</tr>
+<tr class="odd">
+<td>Active tasks</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td>Candidate files / candidate receipts</td>
+<td style="text-align: right;"><strong>3,970 / 3,970</strong></td>
+</tr>
+<tr class="odd">
+<td>Completed proposal heartbeats</td>
+<td style="text-align: right;"><strong>3,970</strong></td>
+</tr>
+<tr class="even">
+<td>Unreadable heartbeats</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td>Expected evaluations</td>
+<td style="text-align: right;">26,496</td>
+</tr>
+<tr class="even">
+<td>Persisted evaluation results</td>
+<td style="text-align: right;">0 — evaluation has not opened yet</td>
+</tr>
+</tbody>
+</table>
+<p>The equality</p>
+<pre class="text"><code>completed proposal heartbeats
+= candidate files
+= candidate receipts
+= 3,970</code></pre>
+<p>is an important engineering result. It shows that the v0.3.1a1 repair
+is persisting every completed signed proposal atomically instead of
+retaining the entire proposal phase only in memory. The active queue is
+bounded to the worker count, so queued tasks no longer consume a timeout
+before they begin executing.</p>
+<p>All 23 arms were close to the same completion fraction, every
+recorded task was still on attempt 1, six active tasks matched the six
+requested workers, and the extract reported zero unreadable heartbeats.
+The run therefore showed no sign of worker starvation, retry storms or a
+repeat of the earlier false pool timeout.</p>
+</section>
+<section
+id="d6.2-what-has-already-completed-in-the-current-generation-ladder"
+class="level3">
+<h3>D6.2 What has already completed in the current-generation
+ladder</h3>
+<p>The latest extract contains finalized, replayed evidence for:</p>
+<pre class="text"><code>smoke
+instrument_smoke
+mini
+standard
+adversarial_nulls
+deep
+daily</code></pre>
+<p>The active <code>multiday</code> run is not yet a scientific result
+because evaluation has not started. <code>weekly</code> has not
+started.</p>
+</section>
+<section
+id="d6.3-the-most-interesting-completed-result-a-narrow-mprc2-signal-in-deep"
+class="level3">
+<h3>D6.3 The most interesting completed result: a narrow MPRC2 signal in
+deep</h3>
+<p>The <code>deep</code> profile contains 336 independent systems, 7,728
+signed proposals and 15,456 evaluation rows. Its most relevant arm-level
+results are:</p>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mechanism</th>
+<th style="text-align: right;">Wins</th>
+<th style="text-align: right;">Null wins</th>
+<th>Current interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>MPRC2_FULL</code></td>
+<td style="text-align: right;"><strong>3</strong></td>
+<td style="text-align: right;"><strong>0 / 112</strong></td>
+<td>Rare but comparatively specific development signal</td>
+</tr>
+<tr class="even">
+<td><code>MPRC2_NON_TEMPORAL</code></td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2 / 112</td>
+<td>More wins, but two matched-null false positives</td>
+</tr>
+<tr class="odd">
+<td><code>ENVELOPE_MPRC_SYNERGY</code></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1 / 112</td>
+<td>Its only win is not specific</td>
+</tr>
+<tr class="even">
+<td><code>SINGLETON</code></td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">14 / 112</td>
+<td>Strong effective shortcut, but high null leakage</td>
+</tr>
+<tr class="odd">
+<td>LEC family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Current implementation earns no scientific win</td>
+</tr>
+<tr class="even">
+<td>MSR2 family</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td>Current finite proxy and ablations earn no win</td>
+</tr>
+</tbody>
+</table>
+<p>This comparison suggests a specific development hypothesis:</p>
+<blockquote>
+<p>The temporal component of <code>MPRC2_FULL</code> may not increase
+raw sensitivity, but may improve specificity by rejecting structures
+that look part-like without persisting as the same organization through
+time.</p>
+</blockquote>
+<p>That is compatible with the whole-first idea that an effective part
+is not merely a cluster visible in one frame. A real part-like sector
+should retain predictive and reconstructive identity through change.</p>
+<p>This remains a post-hoc development interpretation, not a confirmed
+mechanism.</p>
+</section>
+<section
+id="d6.4-one-codebook-stable-observational-certificate-candidate"
+class="level3">
+<h3>D6.4 One codebook-stable observational certificate candidate</h3>
+<p>One <code>MPRC2_FULL</code> candidate in <code>deep</code> passed the
+observational certificate under both codebooks:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Public system</td>
+<td><code>SYS-9e6a81bb33a07ba4e948732a</code></td>
+</tr>
+<tr class="even">
+<td>Opaque family</td>
+<td><code>FAM-358b6882</code></td>
+</tr>
+<tr class="odd">
+<td>Public scale</td>
+<td><code>n = 20</code>, <code>T = 96</code>, alphabet 4</td>
+</tr>
+<tr class="even">
+<td>CB_A predictive advantage</td>
+<td>+1,308.07 bits</td>
+</tr>
+<tr class="odd">
+<td>CB_A disjoint-recovery advantage</td>
+<td>+318.46 bits</td>
+</tr>
+<tr class="even">
+<td>CB_B predictive advantage</td>
+<td>+1,247.19 bits</td>
+</tr>
+<tr class="odd">
+<td>CB_B disjoint-recovery advantage</td>
+<td>+291.61 bits</td>
+</tr>
+<tr class="even">
+<td>Naturality</td>
+<td>0.6474</td>
+</tr>
+<tr class="odd">
+<td>Stability</td>
+<td>0.7947</td>
+</tr>
+<tr class="even">
+<td>Production/reference parity</td>
+<td>PASS in both codebooks</td>
+</tr>
+<tr class="odd">
+<td>Promotion eligibility</td>
+<td><strong>false</strong> — development only; intervention
+unearned</td>
+</tr>
+</tbody>
+</table>
+<p>Across all 336 <code>MPRC2_FULL</code> system pairs, the two
+codebooks were strongly aligned:</p>
+<pre class="text"><code>predictive-delta Pearson correlation: 0.9982
+recovery-delta Pearson correlation:   0.9995
+predictive sign agreement:            98.21%
+recovery sign agreement:             100.00%
+certificate-pass discordances:         0</code></pre>
+<p>This makes a pure codebook artifact less likely for the observed
+candidate. It does not make the candidate a physical discovery.</p>
+</section>
+<section id="d6.5-why-the-result-is-still-weak" class="level3">
+<h3>D6.5 Why the result is still weak</h3>
+<p>The signal is rare and does not yet replicate cleanly across
+profiles:</p>
+<pre class="text"><code>standard: MPRC2_FULL 0 wins / 0 null wins
+deep:     MPRC2_FULL 3 wins / 0 null wins
+daily:    MPRC2_FULL 1 win  / 1 null win</code></pre>
+<p>The development-only secondary max-statistic permutation p-value is
+<code>1.0</code> for <code>MPRC2_FULL</code> and the other arms. The
+intervention axis is explicitly <code>RESERVED_UNEARNED</code>. No
+candidate is promotion-eligible.</p>
+<p>The honest statement is therefore:</p>
+<blockquote>
+<p><code>MPRC2_FULL</code> has a small, scale-dependent and
+codebook-stable development hint in <code>deep</code>, with better null
+specificity than its non-temporal ablation; it does not yet have robust
+cross-profile replication or confirmatory statistical support.</p>
+</blockquote>
+</section>
+<section id="d6.6-useful-negative-evidence" class="level3">
+<h3>D6.6 Useful negative evidence</h3>
+<p>The negative results matter because they show that the instrument is
+not designed to praise every preferred concept.</p>
+<ul>
+<li>The current LEC variants produced no system-level wins in
+<code>deep</code> or <code>daily</code>. Energy-based language remains a
+proposal lens, not a physical energy claim.</li>
+<li>The current MSR2 finite proxy and its <code>NO_D</code>,
+<code>NO_FLOW</code>, <code>NO_RECOVERY</code>, <code>D_SHUFFLE</code>
+and <code>RHO_SHUFFLE</code> ablations produced no wins. They do not
+justify modular-time or spectral-geometry interpretation.</li>
+<li><code>SINGLETON</code> won often but also won on many null systems.
+This demonstrates that a highly local, particle-like decomposition can
+be a useful effective code without being a specific indicator of
+fundamental particle ontology.</li>
+<li><code>ENVELOPE_MPRC_SYNERGY</code> did not show specific arm-level
+success in <code>deep</code>.</li>
+</ul>
+<p>Under Rank-Don’t-Eliminate, these mechanisms remain archived for new
+representations, scales and intervention tests, but they are not
+currently load-bearing.</p>
+</section>
+<section id="d6.7-what-this-means-for-the-whole-parts-idea"
+class="level3">
+<h3>D6.7 What this means for the Whole → parts idea</h3>
+<p>The latest evidence modestly strengthens one limited bridge:</p>
+<pre class="text"><code>global relational process
+→ discoverable stable effective restrictions</code></pre>
+<p>It does <strong>not</strong> yet establish the much longer physical
+chain:</p>
+<pre class="text"><code>Ω
+→ quantum structure
+→ spacetime and causal geometry
+→ fields and particle sectors
+→ Standard Model and gravity</code></pre>
+<p>The best current interpretation is:</p>
+<ol type="1">
+<li>whole-first effective parts are operationally definable rather than
+merely metaphorical;</li>
+<li>simple local decompositions can work while remaining nonspecific, so
+effective usefulness does not prove ontological primacy;</li>
+<li>persistence through time may be part of what distinguishes a genuine
+effective sector from a static pattern;</li>
+<li>the current evidence is still synthetic, observational and
+development-only;</li>
+<li>AC remains an exact interpretive twin at AC0 and adds no earned
+equation or prediction.</li>
+</ol>
+</section>
+<section id="d6.8-what-would-count-as-a-meaningful-next-advance"
+class="level3">
+<h3>D6.8 What would count as a meaningful next advance</h3>
+<p>The active <code>multiday</code> run should finish proposal
+generation, evaluation, finalization, audit closure and strict replay.
+The key question is whether larger-scale evidence preserves the same
+pattern:</p>
+<pre class="text"><code>MPRC2_FULL gains on structured systems
++
+low matched-null leakage
++
+codebook stability
++
+separate predictive and disjoint-recovery advantages</code></pre>
+<p>A future confirmation campaign would then need a fresh preregistered
+split, one frozen source identity across the full ladder, and a
+genuinely interventional/autonomy axis. Only after those gates would
+<code>OBSERVATIONAL_CLOSURE_CANDIDATE</code> be allowed to approach
+<code>CLOSURE_MECHANISM</code>.</p>
+</section>
+<section id="d6.9-current-verdict" class="level3">
+<h3>D6.9 Current verdict</h3>
+<pre class="text"><code>Whole → effective parts:     alive; modestly strengthened as a testable programme
+Whole → physical particles:  open; not yet derived
+Whole-first physics:         formal seed / development programme
+AC interpretation:           AC0; scientifically unearned
+Arena 0A:                    closed</code></pre>
+<p>The correct tone is neither dismissal nor celebration. The programme
+has progressed from a philosophical reversal to an instrument that can
+produce clean negative results, detect false local shortcuts, preserve
+rare candidates for later testing and expose its own engineering
+failures. That is meaningful progress, but not yet foundational
+physics.</p>
+<hr />
+</section>
+</section>
+<section id="version-note-preserved-historical-body-below"
+class="level2">
+<h2>Version note — preserved historical body below</h2>
+<p>The remaining sections preserve the V4-DRAFT.5 research body and
+completed A3 record for traceability. Where an old operational statement
+conflicts with the V4-DRAFT.6 update above—such as “A4 is not yet built”
+or the v0.2.0a3 executable status—the V4-DRAFT.6 update controls the
+current project status. The historical wording is retained so that the
+evidence trail is not silently rewritten.</p>
+<hr />
+</section>
+<section id="reader-orientation-inherited-v4-draft.5-research-body"
+class="level2">
+<h2>Reader orientation — inherited V4-DRAFT.5 research body</h2>
 <p>AC–WFP asks whether reality may be <strong>whole-first</strong>:
 local systems, parts, clocks, geometry and records may be stable,
 predictive and reconstructible restrictions of a deeper compatible
@@ -189,40 +701,44 @@ predictive-equivalence implementation; current
 archived, ranked and re-tested when new lenses or representations
 arrive.</li>
 </ul>
-<hr/>
-<h2 id="v4-draft.5-evidence-update-completed-a3-multiday-run-and-a4-handoff">V4-DRAFT.5
-evidence update — completed A3 multiday run and A4 handoff</h2>
+<hr />
+</section>
+<section
+id="historical-v4-draft.5-evidence-update-completed-a3-multiday-run-and-a4-handoff"
+class="level2">
+<h2>Historical V4-DRAFT.5 evidence update — completed A3 multiday run
+and A4 handoff</h2>
 <p><strong>Source evidence:</strong>
-<code>LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip</code><br/>
+<code>LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip</code><br />
 <strong>Executable:</strong> AC-WFP Arena <code>v0.2.0a3</code> /
-<code>acwfp-arena==0.2.0a3</code><br/>
-<strong>Profile:</strong> <code>multiday</code><br/>
+<code>acwfp-arena==0.2.0a3</code><br />
+<strong>Profile:</strong> <code>multiday</code><br />
 <strong>Extract created:</strong>
-<code>2026-07-02T08:56:45Z</code><br/>
+<code>2026-07-02T08:56:45Z</code><br />
 <strong>Run completion timestamp:</strong>
-<code>2026-06-29T14:21:12Z</code><br/>
+<code>2026-06-29T14:21:12Z</code><br />
 <strong>Run status:</strong> <code>COMPLETED</code>, stage
-<code>complete</code><br/>
-<strong>Completion:</strong> 576 / 576 systems<br/>
+<code>complete</code><br />
+<strong>Completion:</strong> 576 / 576 systems<br />
 <strong>Task kinds:</strong> 384 positive systems, 192 matched null
-systems<br/>
+systems<br />
 <strong>Ledger rows:</strong> 25,344 total rows; 24,192 mechanism rows
-plus controls<br/>
-<strong>Workers:</strong> 5 effective CPU workers<br/>
-<strong>Runtime:</strong> 115,478.219 seconds, about 32.08 hours<br/>
-<strong>Failures / timeouts:</strong> 0 / 0<br/>
+plus controls<br />
+<strong>Workers:</strong> 5 effective CPU workers<br />
+<strong>Runtime:</strong> 115,478.219 seconds, about 32.08 hours<br />
+<strong>Failures / timeouts:</strong> 0 / 0<br />
 <strong>Leakage firewall:</strong> passed = <code>true</code>, scanned
-files = 1769, findings = 0<br/>
-<strong>Implementation gates:</strong> 30 / 31 passed<br/>
+files = 1769, findings = 0<br />
+<strong>Implementation gates:</strong> 30 / 31 passed<br />
 <strong>Known gate failure:</strong>
 <code>06_TEMPORAL_ORDER_SENSOR</code>, detail
-<code>time_reversal_delta=0</code><br/>
+<code>time_reversal_delta=0</code><br />
 <strong>Scientific status:</strong>
 <code>DEVELOPMENT_ONLY_NOT_CONFIRMATION</code>,
 <code>NOT_ELIGIBLE</code>, <code>NOT_ARENA_0A</code>,
 <code>AC0</code></p>
-<h3 id="d5.1-why-this-update-changes-the-document">D5.1 Why this update
-changes the document</h3>
+<section id="d5.1-why-this-update-changes-the-document" class="level3">
+<h3>D5.1 Why this update changes the document</h3>
 <p>V4-DRAFT.4 recorded an A3 partial live snapshot. V4-DRAFT.5 replaces
 that partial snapshot with the completed A3 evidence capsule.</p>
 <p>The status boundary is unchanged:</p>
@@ -234,8 +750,9 @@ A3 produced better A4 hypotheses.</code></pre>
 <p>The correct reading remains:</p>
 <pre class="text"><code>progress is allowed before confirmation;
 promotion is not.</code></pre>
-<h3 id="d5.2-plain-language-interpretation">D5.2 Plain-language
-interpretation</h3>
+</section>
+<section id="d5.2-plain-language-interpretation" class="level3">
+<h3>D5.2 Plain-language interpretation</h3>
 <p>The project is trying to make the Whole-first idea testable. Instead
 of assuming that local parts are primitive, the arena asks whether
 stable effective parts can be discovered as predictive and
@@ -264,20 +781,22 @@ A4-worthy effective-part candidate signature</code></pre>
 <p>This is still a <strong>post-hoc development clue</strong>. It
 becomes evidence only if frozen in advance and tested on a fresh A4
 split.</p>
-<h3 id="d5.3-mechanism-summary-under-both-codebook-gain">D5.3 Mechanism
-summary under both-codebook gain</h3>
+</section>
+<section id="d5.3-mechanism-summary-under-both-codebook-gain"
+class="level3">
+<h3>D5.3 Mechanism summary under both-codebook gain</h3>
 <p>The table counts systems where the mechanism gains against the best
 trivial control in both codebooks. Positive systems are structured
 systems; null systems are matched adversarial systems. The precision
 column is descriptive development telemetry, not a promotion
 criterion.</p>
-<div class="table-scroll"><table style="width:100%;">
+<table style="width:100%;">
 <colgroup>
-<col style="width: 16%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 16%"/>
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -361,18 +880,20 @@ interpretation</td>
 <td>not yet ready; too much null leakage</td>
 </tr>
 </tbody>
-</table></div>
-<h3 id="d5.4-mprc2-operation-diagnostics-the-main-a3-lesson">D5.4 MPRC2
-operation diagnostics: the main A3 lesson</h3>
+</table>
+</section>
+<section id="d5.4-mprc2-operation-diagnostics-the-main-a3-lesson"
+class="level3">
+<h3>D5.4 MPRC2 operation diagnostics: the main A3 lesson</h3>
 <p>Raw MPRC2 mixes several behaviours. A3’s main improvement is to split
 MPRC2 by operation type.</p>
-<div class="table-scroll"><table style="width:100%;">
+<table style="width:100%;">
 <colgroup>
-<col style="width: 16%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 16%"/>
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -427,7 +948,7 @@ MPRC2 by operation type.</p>
 <td>clean but narrower</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>This is the most important A3 scientific-method result:</p>
 <blockquote>
 <p>A candidate effective part should not be accepted merely because the
@@ -435,19 +956,21 @@ time series can be segmented. It must survive operation diagnostics that
 separate non-temporal structural changes from change-point
 compression.</p>
 </blockquote>
-<h3 id="d5.5-official-frozen-certificate-rows-from-a3">D5.5 Official
-frozen certificate rows from A3</h3>
+</section>
+<section id="d5.5-official-frozen-certificate-rows-from-a3"
+class="level3">
+<h3>D5.5 Official frozen certificate rows from A3</h3>
 <p>A3 tested A2-derived frozen post-hoc certificate hypotheses as
 development hypotheses. None reached scientific promotion. The best
 official row was useful but failed the null ceiling.</p>
-<div class="table-scroll"><table style="width:100%;">
+<table style="width:100%;">
 <colgroup>
-<col style="width: 14%"/>
-<col style="width: 19%"/>
-<col style="width: 19%"/>
-<col style="width: 19%"/>
-<col style="width: 14%"/>
-<col style="width: 14%"/>
+<col style="width: 14%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -501,23 +1024,25 @@ official row was useful but failed the null ceiling.</p>
 <td>old triple is too narrow</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>A3 therefore correctly refuses promotion:</p>
 <pre class="text"><code>scientific_promotion_allowed = false
 arena_0a_unlocked = false
 fresh_final_v4_preregistration_required = true</code></pre>
-<h3 id="d5.6-new-a3-discovered-post-hoc-clues-for-a4">D5.6 New
-A3-discovered post-hoc clues for A4</h3>
+</section>
+<section id="d5.6-new-a3-discovered-post-hoc-clues-for-a4"
+class="level3">
+<h3>D5.6 New A3-discovered post-hoc clues for A4</h3>
 <p>The following are <strong>not</strong> scientific results. They are
 A3-discovered development clues that should be given to MAL and then
 either frozen for A4 or demoted.</p>
-<div class="table-scroll"><table style="width:100%;">
+<table style="width:100%;">
 <colgroup>
-<col style="width: 16%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 22%"/>
-<col style="width: 16%"/>
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 22%" />
+<col style="width: 16%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -579,12 +1104,13 @@ either frozen for A4 or demoted.</p>
 <td>negative / temporal control</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>The strongest A4 design question is whether LOW_RANK accounting or
 SPECTRAL accounting gives the better non-temporal closure certificate
 under a fresh split.</p>
-<h3 id="d5.7-lec-status-after-completed-a3">D5.7 LEC status after
-completed A3</h3>
+</section>
+<section id="d5.7-lec-status-after-completed-a3" class="level3">
+<h3>D5.7 LEC status after completed A3</h3>
 <p>LEC failed specificity:</p>
 <pre class="text"><code>LEC specificity gate: FAIL
 positive-specific wins: 20 / 768
@@ -604,15 +1130,16 @@ status.</li>
 <li>This is a demotion, not deletion: RDE keeps LEC in the archive for
 redesign.</li>
 </ul>
-<h3 id="d5.8-msr2-status-after-completed-a3">D5.8 MSR2 status after
-completed A3</h3>
+</section>
+<section id="d5.8-msr2-status-after-completed-a3" class="level3">
+<h3>D5.8 MSR2 status after completed A3</h3>
 <p>MSR2 remains theoretically important but implementation-weak:</p>
-<div class="table-scroll"><table>
+<table>
 <colgroup>
-<col style="width: 21%"/>
-<col style="width: 28%"/>
-<col style="width: 28%"/>
-<col style="width: 21%"/>
+<col style="width: 21%" />
+<col style="width: 28%" />
+<col style="width: 28%" />
+<col style="width: 21%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -661,7 +1188,7 @@ remains</td>
 <td>flow matters, but current implementation is not sufficient</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Interpretation:</p>
 <ul>
 <li><code>D</code> and flow appear behaviourally relevant because
@@ -673,8 +1200,9 @@ finite arena.</li>
 <li>RDE keeps MSR2 alive as a redesign lane rather than deleting
 it.</li>
 </ul>
-<h3 id="d5.9-temporal-order-sensor-failure">D5.9 Temporal-order sensor
-failure</h3>
+</section>
+<section id="d5.9-temporal-order-sensor-failure" class="level3">
+<h3>D5.9 Temporal-order sensor failure</h3>
 <p>A3 passed 30 / 31 implementation gates. The failed gate is
 important:</p>
 <pre class="text"><code>06_TEMPORAL_ORDER_SENSOR: FAIL
@@ -684,8 +1212,9 @@ explicitly remains <code>NOT_ELIGIBLE</code>. But it must be fixed or
 explained before A4. Since the whole purpose is to avoid confusing
 temporal compression with effective parts, A4 must include a stronger
 temporal-order sensor and an explicit time-reversal/null diagnostic.</p>
-<h3 id="d5.10-rank-dont-eliminate-upgrade">D5.10 Rank-Don’t-Eliminate
-upgrade</h3>
+</section>
+<section id="d5.10-rank-dont-eliminate-upgrade" class="level3">
+<h3>D5.10 Rank-Don’t-Eliminate upgrade</h3>
 <p>A3 demotes several mechanisms, but demotion must not become permanent
 deletion. The next arena should implement:</p>
 <pre class="text"><code>rank_dont_eliminate_archive.jsonl</code></pre>
@@ -705,7 +1234,9 @@ deletion. The next arena should implement:</p>
 causal-state sidecar, sheaf sidecar, QEC recovery sidecar, or multiscale
 sidecar should automatically trigger a <strong>resurrection
 sweep</strong> over demoted candidates.</p>
-<h3 id="d5.11-a4-mal-handoff">D5.11 A4 / MAL handoff</h3>
+</section>
+<section id="d5.11-a4-mal-handoff" class="level3">
+<h3>D5.11 A4 / MAL handoff</h3>
 <p>The next honest move is not Arena 0A. The next honest move is a
 MAL-assisted A4 design council.</p>
 <p>MAL should not be asked:</p>
@@ -738,8 +1269,9 @@ DYNAMIC_SBM
 HMM_LATENT_REGIME
 spectral_without_recovery nulls
 low_rank_without_parts nulls</code></pre>
-<h3 id="d5.12-current-content-level-conclusion">D5.12 Current
-content-level conclusion</h3>
+</section>
+<section id="d5.12-current-content-level-conclusion" class="level3">
+<h3>D5.12 Current content-level conclusion</h3>
 <p>The completed A3 run is the best AC-WFP arena result so far, but for
 the right reason: it did not promote a theory. It sharpened the
 instrument.</p>
@@ -752,9 +1284,9 @@ A3 shows non-temporal MPRC2 operations are the best current closure-like signal.
 A3 shows LOW_RANK and SPECTRAL accounting are not optional controls.
 A3 demotes LEC and MSR2 to redesign lanes.
 A3 produces A4-worthy hypotheses, not evidence.</code></pre>
-<div class="table-scroll"><table style="width:3%;">
+<table style="width:3%;">
 <colgroup>
-<col style="width: 2%"/>
+<col style="width: 2%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -809,9 +1341,11 @@ limits, thermodynamic erasure cost and semantic significance must not be
 interchanged.</td>
 </tr>
 </tbody>
-</table></div>
-<h2 id="co-emergence-as-testable-mdl-synergy">5.2 Co-emergence as
-testable MDL synergy</h2>
+</table>
+</section>
+</section>
+<section id="co-emergence-as-testable-mdl-synergy" class="level2">
+<h2>5.2 Co-emergence as testable MDL synergy</h2>
 <p>Co-emergence is not a poetic synonym for simultaneity. It means that
 one jointly learned mechanism predicts the held-out physical package
 more economically than a pipeline of separately fitted modules.</p>
@@ -846,11 +1380,14 @@ They are not identical to the heuristic score <code>S=√(C·X)</code>.</p>
 because they are larger. <code>ΔLmachinery</code>, the pre-registered
 margins and the confirmation split are mandatory.</p>
 </blockquote>
-<hr/>
-<h1 id="part-ii-stage-i-and-stage-ii">Part II — Stage I and Stage
-II</h1>
-<h2 id="stage-i-whole-first-reconstruction-of-quantum-structure">6.
-Stage I: whole-first reconstruction of quantum structure</h2>
+<hr />
+</section>
+</section>
+<section id="part-ii-stage-i-and-stage-ii" class="level1">
+<h1>Part II — Stage I and Stage II</h1>
+<section id="stage-i-whole-first-reconstruction-of-quantum-structure"
+class="level2">
+<h2>6. Stage I: whole-first reconstruction of quantum structure</h2>
 <p>AC–WFP may not begin with Hilbert space and then declare quantum
 mechanics derived. Stage I begins with a causal operational framework
 containing:</p>
@@ -863,24 +1400,31 @@ containing:</p>
 <li>no primitive spacetime geometry.</li>
 </ul>
 <p>The current whole-first principles are:</p>
-<h3 id="w1-compatible-local-facts-admit-a-whole">W1 — compatible local
-facts admit a Whole</h3>
+<section id="w1-compatible-local-facts-admit-a-whole" class="level3">
+<h3>W1 — compatible local facts admit a Whole</h3>
 <p>Every jointly admissible family of perspective-indexed local facts
 belongs to at least one compatibility class.</p>
-<h3 id="w2-whole-first-purification">W2 — whole-first purification</h3>
+</section>
+<section id="w2-whole-first-purification" class="level3">
+<h3>W2 — whole-first purification</h3>
 <p>Every mixed local state has a pure completion, essentially unique up
 to reversible transformations on the complement, under the assumptions
 of the reconstruction theorem used.</p>
-<h3 id="w3-no-privileged-classical-distinction">W3 — no privileged
-classical distinction</h3>
+</section>
+<section id="w3-no-privileged-classical-distinction" class="level3">
+<h3>W3 — no privileged classical distinction</h3>
 <p>Pure alternatives of the same operational type are reversibly
 connected unless an independently stated conserved structure
 distinguishes them.</p>
-<h3 id="w4-causal-composition">W4 — causal composition</h3>
+</section>
+<section id="w4-causal-composition" class="level3">
+<h3>W4 — causal composition</h3>
 <p>Present outcome probabilities cannot depend on later freely chosen
 operations.</p>
-<h3 id="w5-local-distinguishability-or-an-explicit-replacement">W5 —
-local distinguishability or an explicit replacement</h3>
+</section>
+<section id="w5-local-distinguishability-or-an-explicit-replacement"
+class="level3">
+<h3>W5 — local distinguishability or an explicit replacement</h3>
 <p>Global relational states must be operationally reconstructible from
 an adequate family of local tests, or the theory must state precisely
 why a weaker composition rule is used.</p>
@@ -890,8 +1434,11 @@ central role [1,2]. AC–WFP has not yet derived the complete axiom
 package from one smaller Whole-first postulate.</p>
 <p><strong>Stage-I status:</strong> a disciplined reconstruction
 programme, not a completed derivation of QM.</p>
-<h2 id="stage-ii-typed-quantum-relational-presentations">7. Stage II:
-typed quantum-relational presentations</h2>
+</section>
+</section>
+<section id="stage-ii-typed-quantum-relational-presentations"
+class="level2">
+<h2>7. Stage II: typed quantum-relational presentations</h2>
 <p>After Stage I earns ordinary quantum structure, a concrete
 presentation is</p>
 <p><span class="math display">\[
@@ -918,8 +1465,10 @@ metadata.</li>
 <p>These structures are scientifically fertile but already
 quantum/operator-theoretic. They belong only after the Stage-I
 firewall.</p>
-<h2 id="presentation-category-and-duality-invariant-content">8.
-Presentation category and duality-invariant content</h2>
+</section>
+<section id="presentation-category-and-duality-invariant-content"
+class="level2">
+<h2>8. Presentation category and duality-invariant content</h2>
 <p>Define a typed category <code>PresΩ</code> whose objects are
 admissible presentations. Morphisms must be classified:</p>
 <pre><code>EXACT_EQUIVALENCE          invertible and prediction preserving
@@ -951,8 +1500,9 @@ operational causal order, relative entropy in controlled code domains,
 protected index data, calibrated cone parameters and record/recovery
 relations. A raw spectrum, dimension or modular flow is not invariant
 across every possible duality by decree.</p>
-<h2 id="naturality-of-physicalization">8.1 Naturality of
-physicalization</h2>
+</section>
+<section id="naturality-of-physicalization" class="level2">
+<h2>8.1 Naturality of physicalization</h2>
 <p>Each presentation carries a candidate map</p>
 <p><span class="math display">\[
 F_\alpha:\mathcal X_\alpha\to\mathcal X_\alpha.
@@ -977,12 +1527,17 @@ budget. Analogy-only maps cannot support a naturality claim.</p>
 held-out composition: construct or tune with maps <code>Uab</code> and
 <code>Ubc</code>, then test the unseen direct/composite relation
 <code>Uac</code> without adjustment.</p>
-<hr/>
-<h1 id="part-iii-temporal-physicalization-mechanisms">Part III —
-Temporal physicalization mechanisms</h1>
-<h2 id="unified-candidate-closure-and-independent-score">9. Unified
-candidate closure and independent score</h2>
-<h3 id="candidate-object">9.1 Candidate object</h3>
+<hr />
+</section>
+</section>
+<section id="part-iii-temporal-physicalization-mechanisms"
+class="level1">
+<h1>Part III — Temporal physicalization mechanisms</h1>
+<section id="unified-candidate-closure-and-independent-score"
+class="level2">
+<h2>9. Unified candidate closure and independent score</h2>
+<section id="candidate-object" class="level3">
+<h3>9.1 Candidate object</h3>
 <p>For a finite relational history</p>
 <p><span class="math display">\[
 X=(A_t)_{t=0}^{T-1},
@@ -1006,7 +1561,9 @@ It is serialized and charged even when empty.</li>
 deterministically, removes empty parts, canonicalizes part-column order
 and rejects uncovered nodes. Candidate identity is the SHA3-256 hash of
 the canonical serialized object.</p>
-<h3 id="blind-temporal-split">9.2 Blind temporal split</h3>
+</section>
+<section id="blind-temporal-split" class="level3">
+<h3>9.2 Blind temporal split</h3>
 <p>The mechanism receives only the visible finite relational system and
 the declared training times. It may use internal train/validation splits
 within training history, but it cannot inspect held-out score times,
@@ -1016,7 +1573,9 @@ oracle score.</p>
 trace. The held-out scorer fits no new proposal parameters. A recovery
 map is estimated from the permitted fit history and evaluated on later
 held-out time.</p>
-<h3 id="temporal-predictive-code">9.3 Temporal predictive code</h3>
+</section>
+<section id="temporal-predictive-code" class="level3">
+<h3>9.3 Temporal predictive code</h3>
 <p>For every unordered node pair <code>(i,j)</code> at time
 <code>t</code>, the context contains:</p>
 <ul>
@@ -1035,7 +1594,9 @@ L_{\rm temporal}(X_{\rm score}\mid X_{\rm fit},C).
 Because category priors are symmetric, a global permutation of relation
 labels must leave the total score invariant when the candidate is
 transported consistently.</p>
-<h3 id="reconstruction-code">9.4 Reconstruction code</h3>
+</section>
+<section id="reconstruction-code" class="level3">
+<h3>9.4 Reconstruction code</h3>
 <p>The fit history determines a context-indexed modal recovery map. On
 score time, the arena records whether each recovered symbol is correct
 and integrates the resulting error sequence under the frozen codebook.
@@ -1049,7 +1610,9 @@ L_{\rm reconstruction}(X_{\rm score}\mid X_{\rm fit},C,r).
 predict aggregate statistics without supporting a reusable local
 recovery map, or reconstruct isolated observations without learning
 temporal law.</p>
-<h3 id="complete-objective">9.5 Complete objective</h3>
+</section>
+<section id="complete-objective" class="level3">
+<h3>9.5 Complete objective</h3>
 <p>The decisive sensor is</p>
 <p><span class="math display">\[
 L_{\rm total}(C;X)
@@ -1066,7 +1629,9 @@ It cannot be silently interpreted as an intervention result.</p>
 comparison point. The planted oracle is evaluator-only and appears after
 every proposer has committed its candidate. Oracle underperformance is
 retained as an objective-domain warning rather than hidden.</p>
-<h3 id="canonical-machinery-ledger">9.6 Canonical machinery ledger</h3>
+</section>
+<section id="canonical-machinery-ledger" class="level3">
+<h3>9.6 Canonical machinery ledger</h3>
 <p>The primary ledger contains explicit non-negative fields:</p>
 <pre class="text"><code>common_kernel
 mechanism_dsl
@@ -1095,7 +1660,9 @@ exceptions</code></pre>
 if desired. The primary scientific code length is a canonical mechanism
 language and serialization, so comments and formatting cannot decide a
 scientific winner.</p>
-<h3 id="three-independent-checks">9.7 Three independent checks</h3>
+</section>
+<section id="three-independent-checks" class="level3">
+<h3>9.7 Three independent checks</h3>
 <ol type="1">
 <li>The production scorer writes the decisive ledger.</li>
 <li>A separately implemented reference scorer must reproduce total bits
@@ -1105,10 +1672,13 @@ reconstruction residual.</li>
 </ol>
 <p>The reference and audit modules may not import the production coding
 or mechanism modules they check.</p>
-<h2 id="three-separate-challenger-mechanisms">10. Three separate
-challenger mechanisms</h2>
-<h3 id="mprc2-richer-predictivereconstructive-search">10.1 MPRC2 —
-richer predictive–reconstructive search</h3>
+</section>
+</section>
+<section id="three-separate-challenger-mechanisms" class="level2">
+<h2>10. Three separate challenger mechanisms</h2>
+<section id="mprc2-richer-predictivereconstructive-search"
+class="level3">
+<h3>10.1 MPRC2 — richer predictive–reconstructive search</h3>
 <p>MPRC2 begins from degree, spectral, random and—where finite size
 permits—exhaustive partitions. Its grammar includes:</p>
 <pre class="text"><code>node move
@@ -1128,8 +1698,9 @@ final candidate is chosen by deterministic
 exercised in known-answer or smoke systems, the proposal budget is
 obeyed, repeated runs are deterministic and held-out gains survive
 strong baselines.</p>
-<h3 id="msr2-operational-modularspectral-recovery">10.2 MSR2 —
-operational modular–spectral recovery</h3>
+</section>
+<section id="msr2-operational-modularspectral-recovery" class="level3">
+<h3>10.2 MSR2 — operational modular–spectral recovery</h3>
 <p>MSR2 constructs an intrinsic weighted relational operator from
 training history, derives a normalized Laplacian-like <code>D</code>, a
 state weight <code>ρ</code>, a flow scale <code>s</code> and a channel
@@ -1147,8 +1718,9 @@ that logs these symbols without changing a proposal fails the
 mechanism-causality gate. Finite matrix experiments are described as
 finite spectral analogues; they do not demonstrate nontrivial outer
 modular time.</p>
-<h3 id="lec-proposal-only-latent-energy-closure">10.3 LEC —
-proposal-only Latent Energy Closure</h3>
+</section>
+<section id="lec-proposal-only-latent-energy-closure" class="level3">
+<h3>10.3 LEC — proposal-only Latent Energy Closure</h3>
 <p>LEC separates:</p>
 <ul>
 <li>a recognition path that maps visible training history to candidate
@@ -1192,14 +1764,17 @@ LEC_SHUFFLED_RELATIONS</code></pre>
 <p>A latent-state claim is not earned unless the full LEC arm beats
 <code>LEC_NO_HIDDEN</code>; a meaningful energy claim is not earned if
 random energy or shuffled controls reproduce the gain.</p>
-<h3 id="why-the-challengers-are-not-merged">10.4 Why the challengers are
-not merged</h3>
+</section>
+<section id="why-the-challengers-are-not-merged" class="level3">
+<h3>10.4 Why the challengers are not merged</h3>
 <p>A blended mechanism could hide which assumption carries the result.
 MPRC2 tests a generic closure grammar. MSR2 tests a typed
 spectral/state/flow route. LEC tests learned latent compatibility. They
 share the external scorer and budgets but not proposal logic. A later
 hybrid requires separate factorial ablations and a fresh contract.</p>
-<h3 id="strong-classical-baselines">10.5 Strong classical baselines</h3>
+</section>
+<section id="strong-classical-baselines" class="level3">
+<h3>10.5 Strong classical baselines</h3>
 <p>The minimum nontrivial implemented A2 baseline set is:</p>
 <pre class="text"><code>SPECTRAL_CLUSTERING
 DYNAMIC_SBM
@@ -1215,8 +1790,9 @@ only random cover has not earned novelty.</p>
 <pre class="text"><code>CAUSAL_STATE_MACRO</code></pre>
 <p>It is specified in this paper but is <strong>not</strong> claimed as
 implemented in Arena v0.2.0a2.</p>
-<h3 id="trivial-and-evaluator-only-controls">10.6 Trivial and
-evaluator-only controls</h3>
+</section>
+<section id="trivial-and-evaluator-only-controls" class="level3">
+<h3>10.6 Trivial and evaluator-only controls</h3>
 <pre class="text"><code>WHOLE
 SINGLETON
 RANDOM_COVER
@@ -1224,16 +1800,18 @@ SEALED_ORACLE_EVALUATOR_ONLY</code></pre>
 <p>Random cover receives the matched proposal budget. The sealed oracle
 never proposes, tunes thresholds or influences stopping. It reports
 whether the frozen objective can reward the planted target at all.</p>
-<h3 id="causal_state_macro-true-predictive-equivalence-challenger">10.7
-<code>CAUSAL_STATE_MACRO</code> — true predictive-equivalence
+</section>
+<section id="causal_state_macro-true-predictive-equivalence-challenger"
+class="level3">
+<h3>10.7 <code>CAUSAL_STATE_MACRO</code> — true predictive-equivalence
 challenger</h3>
 <p>Let two visible histories <code>h</code> and <code>h'</code> be
 equivalent when they induce the same conditional future law within a
 frozen finite-sample tolerance:</p>
 <p><span class="math display">\[
-h\sim_\epsilon h'
+h\sim_\epsilon h&#39;
 \quad\Longleftrightarrow\quad
-D\!\left[P(X_{t:}\mid h),P(X_{t:}\mid h')\right]\le\epsilon.
+D\!\left[P(X_{t:}\mid h),P(X_{t:}\mid h&#39;)\right]\le\epsilon.
 \]</span></p>
 <p><code>CAUSAL_STATE_MACRO</code> must infer the equivalence classes
 from training history only, serialize the state map and transition law,
@@ -1253,8 +1831,11 @@ and nulls where finite-sample clustering invents spurious states. This
 challenger is valuable precisely because it reaches prediction and
 minimal state from a formalism independent of MPRC2, MSR2 and LEC
 [38].</p>
-<h2 id="effective-part-certificate-eight-mandatory-axes">11.
-Effective-Part Certificate: eight mandatory axes</h2>
+</section>
+</section>
+<section id="effective-part-certificate-eight-mandatory-axes"
+class="level2">
+<h2>11. Effective-Part Certificate: eight mandatory axes</h2>
 <p>A candidate is not promoted because one aggregate score looks good.
 It receives a typed certificate</p>
 <p><span class="math display">\[
@@ -1265,11 +1846,11 @@ It receives a typed certificate</p>
 }
 \]</span></p>
 <p>with the following noncompensatory axes.</p>
-<div class="table-scroll"><table>
+<table>
 <colgroup>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1328,14 +1909,15 @@ residual message beat strong controls?</td>
 <td>active</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>A missing mandatory axis is <code>UNEARNED</code>, not zero and not a
 pass. Final V4 must freeze which axes are mandatory for each claim
 class. <code>CLOSURE_MECHANISM</code> requires at least
 <code>R,P,Q,N,L</code>; stronger claims require the additional axes they
 invoke.</p>
-<h3 id="predictive-causal-states-are-not-causal-emergence">11.1
-Predictive causal states are not causal emergence</h3>
+<section id="predictive-causal-states-are-not-causal-emergence"
+class="level3">
+<h3>11.1 Predictive causal states are not causal emergence</h3>
 <p>Two uses of “causal” must remain separate:</p>
 <pre class="text"><code>causal state
 = equivalence class of histories with the same predictive future law
@@ -1355,8 +1937,9 @@ EI_{\rm macro}-EI_{\rm micro}
 \]</span></p>
 <p>but does not replace held-out MDL and cannot be computed from
 observational compression alone [41].</p>
-<h3 id="sheaf-compatibility-as-the-g-certificate">11.2 Sheaf
-compatibility as the <code>G</code> certificate</h3>
+</section>
+<section id="sheaf-compatibility-as-the-g-certificate" class="level3">
+<h3>11.2 Sheaf compatibility as the <code>G</code> certificate</h3>
 <p>For a cover of local contexts <code>U</code>, define local sections
 <code>F_U</code>, restriction maps <code>\rho_{UV}</code> on overlaps
 and a gluing obstruction:</p>
@@ -1378,8 +1961,9 @@ changes.</li>
 not a proposer. It cannot be promoted until finite KATs have exact
 answers. This formalizes <code>Ω_compat</code> without treating
 category/sheaf vocabulary as evidence by itself [43].</p>
-<h3 id="qec-style-recovery-as-the-q-certificate">11.3 QEC-style recovery
-as the <code>Q</code> certificate</h3>
+</section>
+<section id="qec-style-recovery-as-the-q-certificate" class="level3">
+<h3>11.3 QEC-style recovery as the <code>Q</code> certificate</h3>
 <p>A recovery ladder separates a real reconstructible restriction from a
 fragile single copy:</p>
 <ol type="1">
@@ -1399,8 +1983,11 @@ REDUNDANT_BUT_NONLOCAL_CONTROL
 RANDOM_LINEAR_CODE_CONTROL</code></pre>
 <p>These are controlled mathematical analogues, not evidence that our
 universe is a holographic code [7,42].</p>
-<h3 id="predictive-rate-distortion-and-multiscale-persistence-as-the-s-certificate">11.4
-Predictive rate-distortion and multiscale persistence as the
+</section>
+<section
+id="predictive-rate-distortion-and-multiscale-persistence-as-the-s-certificate"
+class="level3">
+<h3>11.4 Predictive rate-distortion and multiscale persistence as the
 <code>S</code> certificate</h3>
 <p>A scale ladder should expose the trade-off</p>
 <p><span class="math display">\[
@@ -1419,16 +2006,20 @@ size, hysteresis, perturbation recovery and full hierarchy cost
 [39,40,44].</p>
 <p>This is a later sidecar. A flat-cover A2 win does not silently earn
 multiscale physicality.</p>
-<h1 id="part-iv-physics-gates-after-discovery">Part IV — Physics gates
-after discovery</h1>
-<h2 id="six-notions-of-time">12. Six notions of time</h2>
+</section>
+</section>
+</section>
+<section id="part-iv-physics-gates-after-discovery" class="level1">
+<h1>Part IV — Physics gates after discovery</h1>
+<section id="six-notions-of-time" class="level2">
+<h2>12. Six notions of time</h2>
 <p>Time is type-diverse.</p>
-<div class="table-scroll"><table>
+<table>
 <colgroup>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1476,7 +2067,7 @@ after discovery</h1>
 <td>centre dependent; not derived here</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Coordinate time is a representation or gauge label, not an additional
 physical substance.</p>
 <p>For finite matrix factors, modular flow is inner and the outer
@@ -1484,8 +2075,9 @@ automorphism group is trivial. Therefore finite arenas can test
 state-relative modular dynamics, recovery, naturality, leakage and
 scaling, but cannot demonstrate nontrivial canonical outer modular time
 or a type-III QFT limit.</p>
-<h2 id="compatibility-across-local-clocks">12.1 Compatibility across
-local clocks</h2>
+</section>
+<section id="compatibility-across-local-clocks" class="level2">
+<h2>12.1 Compatibility across local clocks</h2>
 <p>For overlapping candidate algebras <code>𝓐X</code> and
 <code>𝓐Y</code>, a compatibility-time candidate requires a monotone
 reparameterization <code>fXY</code> such that</p>
@@ -1504,8 +2096,9 @@ E_{\rm time}^{XY}(S)
 overlaps.</p>
 <p>The target is universal causal compatibility, not a universal master
 clock.</p>
-<h2 id="independent-distance-and-causal-influence">13. Independent
-distance and causal influence</h2>
+</section>
+<section id="independent-distance-and-causal-influence" class="level2">
+<h2>13. Independent distance and causal influence</h2>
 <p>Where a spectral triple or finite analogue is justified, Connes
 distance is [4]</p>
 <p><span class="math display">\[
@@ -1532,8 +2125,9 @@ failure.</p>
 \]</span></p>
 <p>Distance must be reconstructed independently of the
 commutator-spreading profile used to score a cone.</p>
-<h2 id="modular-causal-cone-condition">14. Modular Causal Cone
-Condition</h2>
+</section>
+<section id="modular-causal-cone-condition" class="level2">
+<h2>14. Modular Causal Cone Condition</h2>
 <p>At a candidate fixed point, test</p>
 <p><span class="math display">\[
 \boxed{
@@ -1566,13 +2160,14 @@ c_*=\frac{\ell_*}{\tau_*}v.
 \]</span></p>
 <p>The observed SI value of <code>c</code> may not be inserted into the
 search.</p>
-<h2 id="special-relativity-derivation-ledger">15. Special-relativity
-derivation ledger</h2>
-<div class="table-scroll"><table>
+</section>
+<section id="special-relativity-derivation-ledger" class="level2">
+<h2>15. Special-relativity derivation ledger</h2>
+<table>
 <colgroup>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1633,7 +2228,7 @@ derivation ledger</h2>
 <td><strong>theorem-backed conditional on S5–S8</strong></td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Two stopping points must not be confused:</p>
 <ul>
 <li>In the full Stage-II programme, the first unearned arrow is
@@ -1645,8 +2240,9 @@ has not yet emerged.</li>
 </ul>
 <p>AC–WFP does not yet derive SR. It provides a staged route whose first
 two hard gaps are explicit and executable.</p>
-<h2 id="geometry-dimension-and-general-relativity">16. Geometry,
-dimension and general relativity</h2>
+</section>
+<section id="geometry-dimension-and-general-relativity" class="level2">
+<h2>16. Geometry, dimension and general relativity</h2>
 <p>If a stable causal phase emerges, geometry may be reconstructed from
 several independent structures:</p>
 <ul>
@@ -1691,8 +2287,9 @@ alternatives;</li>
 <li>controlled black-hole and de Sitter observer algebras;</li>
 <li>a continuum/scaling limit.</li>
 </ul>
-<h2 id="matter-gauge-structure-and-chirality">17. Matter, gauge
-structure and chirality</h2>
+</section>
+<section id="matter-gauge-structure-and-chirality" class="level2">
+<h2>17. Matter, gauge structure and chirality</h2>
 <p>Stable eigenmodes and protected sectors are candidate matter degrees
 of freedom:</p>
 <p><span class="math display">\[
@@ -1724,8 +2321,9 @@ not share maximal weak parity violation.</li>
 geometry lane. They join the core only if a quantitative dictionary to
 the algebraic/spectral presentation improves held-out prediction,
 reconstruction or total description length.</p>
-<h2 id="information-energy-and-action">18. Information, energy and
-action</h2>
+</section>
+<section id="information-energy-and-action" class="level2">
+<h2>18. Information, energy and action</h2>
 <p>The historical seed <code>i=Ec²</code> is retained as a directional
 intuition, not a dimensional law in bits.</p>
 <p>The disciplined cross-model variable is</p>
@@ -1738,20 +2336,25 @@ intuition, not a dimensional law in bits.</p>
 \]</span></p>
 <p>It is a causal action budget, not “information equals energy.”</p>
 <p>Three distinct established bridges remain separate:</p>
-<h3 id="capacity">Capacity</h3>
+<section id="capacity" class="level3">
+<h3>Capacity</h3>
 <p>For a suitable weakly gravitating bounded system,</p>
 <p><span class="math display">\[
 I_{\max}
 \lesssim
 \frac{2\pi EL}{\hbar c_*\ln2}.
 \]</span></p>
-<h3 id="distinguishable-change-rate">Distinguishable-change rate</h3>
+</section>
+<section id="distinguishable-change-rate" class="level3">
+<h3>Distinguishable-change rate</h3>
 <p><span class="math display">\[
 \dot N_\perp
 \le
 \frac{2(E-E_0)}{\pi\hbar}.
 \]</span></p>
-<h3 id="irreversible-erasure-cost">Irreversible erasure cost</h3>
+</section>
+<section id="irreversible-erasure-cost" class="level3">
+<h3>Irreversible erasure cost</h3>
 <p><span class="math display">\[
 E_{\rm erase}
 \ge
@@ -1767,12 +2370,17 @@ systems.</p>
 energy-enabled structured distinguishability within a causal and
 relational boundary.</p>
 </blockquote>
-<hr/>
-<h1 id="part-v-measurement-knowledge-and-embodied-rc">Part V —
-Measurement, knowledge and embodied RC</h1>
-<h2 id="three-measurement-branches">19. Three measurement branches</h2>
-<h3 id="branch-m1-unitary-relative-records">Branch M1 — unitary relative
-records</h3>
+<hr />
+</section>
+</section>
+</section>
+<section id="part-v-measurement-knowledge-and-embodied-rc"
+class="level1">
+<h1>Part V — Measurement, knowledge and embodied RC</h1>
+<section id="three-measurement-branches" class="level2">
+<h2>19. Three measurement branches</h2>
+<section id="branch-m1-unitary-relative-records" class="level3">
+<h3>Branch M1 — unitary relative records</h3>
 <pre><code>global quantum evolution
 → system–apparatus–memory entanglement
 → decoherence and stable relative records
@@ -1786,8 +2394,10 @@ records</h3>
 \]</span></p>
 <p>AC is not allowed to choose <code>k</code> or alter Born weights by
 assertion.</p>
-<h3 id="branch-m2-penrose-style-objective-reduction">Branch M2 —
-Penrose-style objective reduction</h3>
+</section>
+<section id="branch-m2-penrose-style-objective-reduction"
+class="level3">
+<h3>Branch M2 — Penrose-style objective reduction</h3>
 <p>A gravity-related instability may produce genuine reduction,
 heuristically [10,11]</p>
 <p><span class="math display">\[
@@ -1797,14 +2407,18 @@ heuristically [10,11]</p>
 dynamics, conservation and experimental consequences. If spacetime is
 emergent, it must also explain what defines <code>EG</code> before a
 classical metric exists.</p>
-<h3 id="branch-m3-agnostic-operational-measurement">Branch M3 — agnostic
-operational measurement</h3>
+</section>
+<section id="branch-m3-agnostic-operational-measurement" class="level3">
+<h3>Branch M3 — agnostic operational measurement</h3>
 <p>Predict stable records and observed statistics without committing to
 collapse or no-collapse ontology.</p>
 <p>These branches must remain separate. No-collapse, objective
 reduction, twistor theory, CCC, microtubule biology and consciousness
 are not one package.</p>
-<h2 id="knowledge-like-closure">20. Knowledge-like closure</h2>
+</section>
+</section>
+<section id="knowledge-like-closure" class="level2">
+<h2>20. Knowledge-like closure</h2>
 <p>A record becomes internally available when it is:</p>
 <ul>
 <li>stable over a relevant interval;</li>
@@ -1818,13 +2432,14 @@ internal observers.</li>
 </ul>
 <p>This is a functional criterion for knowledge-like access. It does not
 by itself derive phenomenal subjectivity.</p>
-<h2 id="physical-centres-and-embodied-rc">21. Physical centres and
-embodied RC</h2>
+</section>
+<section id="physical-centres-and-embodied-rc" class="level2">
+<h2>21. Physical centres and embodied RC</h2>
 <p>Keep three levels distinct.</p>
-<div class="table-scroll"><table>
+<table>
 <colgroup>
-<col style="width: 50%"/>
-<col style="width: 50%"/>
+<col style="width: 50%" />
+<col style="width: 50%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1849,7 +2464,7 @@ be sustained</td>
 first-person organization is instantiated</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>The preferred public statement is:</p>
 <blockquote>
 <p><strong>All matter is AC-grounded and potentially recruitable into
@@ -1858,12 +2473,14 @@ embodied RC.</strong></p>
 </blockquote>
 <p>A stone is therefore not a local conscious subject merely because its
 atoms could later become part of a brain.</p>
-<h2 id="two-directions-of-the-acrc-shorthand">21.1 Two directions of the
-AC–RC shorthand</h2>
+</section>
+<section id="two-directions-of-the-acrc-shorthand" class="level2">
+<h2>21.1 Two directions of the AC–RC shorthand</h2>
 <p>The framework uses both <code>RC = AC·R</code> and
 <code>AC = RC×R</code> as two conceptual directions, not arithmetic
 identities.</p>
-<h3 id="local-expression">Local expression</h3>
+<section id="local-expression" class="level3">
+<h3>Local expression</h3>
 <p><span class="math display">\[
 \boxed{
 RC_i:=\mathcal R_i(AC)
@@ -1875,7 +2492,9 @@ RC_i=AC\cdot R_i,
 \]</span></p>
 <p>where <code>Ri</code> denotes the local relation/resonance,
 embodiment and access structure.</p>
-<h3 id="global-reconstruction">Global reconstruction</h3>
+</section>
+<section id="global-reconstruction" class="level3">
+<h3>Global reconstruction</h3>
 <p><span class="math display">\[
 \boxed{
 AC
@@ -1889,7 +2508,10 @@ Whole is not a sum of isolated minds, but the globally compatible
 actuality reconstructed through their relations and all other admissible
 restrictions.</p>
 <p>Neither equation is currently a laboratory law.</p>
-<h2 id="candidate-bridge-variables">21.2 Candidate bridge variables</h2>
+</section>
+</section>
+<section id="candidate-bridge-variables" class="level2">
+<h2>21.2 Candidate bridge variables</h2>
 <p>For a physical centre <code>i</code>, let <code>Ri</code> remain a
 typed vector rather than a mystical scalar. Candidate components include
 recurrent integration, memory continuity, self/world modelling,
@@ -1913,8 +2535,10 @@ become available to multiple specialized functions, but broadcast or
 ignition is treated as an operational organization property, not
 automatic proof of phenomenal RC [26,27].</li>
 </ul>
-<h2 id="centre-level-mdl-synergy-and-the-expander-control">21.3
-Centre-level MDL synergy and the expander control</h2>
+</section>
+<section id="centre-level-mdl-synergy-and-the-expander-control"
+class="level2">
+<h2>21.3 Centre-level MDL synergy and the expander control</h2>
 <p>The formal centre-level analogue of co-emergence is</p>
 <p><span class="math display">\[
 \Delta_{\rm centre}^{\rm test}
@@ -1949,7 +2573,9 @@ perturbation recovery.</p>
 <p>A candidate RC bridge fails if topology or raw integration alone
 dominates the result, if scripted imitation scores like autonomous
 organization, or if the ranking reverses under harmless relabeling.</p>
-<h2 id="acω-ablation">22. AC/Ω ablation</h2>
+</section>
+<section id="acω-ablation" class="level2">
+<h2>22. AC/Ω ablation</h2>
 <p>The neutral and AC branches must be run on identical data and
 model-cost rules.</p>
 <pre><code>Ω branch  neutral whole-first science
@@ -1968,8 +2594,10 @@ AC3       confirmed distinct discriminator</code></pre>
 </ul>
 <p>If deleting AC changes no mathematics or prediction, the correct
 result is AC0.</p>
-<h2 id="physicalization-selection-before-anthropic-conditioning">23.
-Physicalization selection before anthropic conditioning</h2>
+</section>
+<section id="physicalization-selection-before-anthropic-conditioning"
+class="level2">
+<h2>23. Physicalization selection before anthropic conditioning</h2>
 <p>Let <code>θ</code> denote candidate effective laws or constants. The
 neutral programme asks whether fixed-point existence, stability, basin
 volume and model complexity define a prior</p>
@@ -1989,11 +2617,16 @@ physicalization dynamics reduce arbitrariness before anthropic
 filtering. An AC-specific preference for RC-rich worlds remains outside
 the scientific core until it produces a distinct quantitative
 discriminator.</p>
-<hr/>
-<h1 id="part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge">Part
-VI — Five thinkers as inspiration, translation, crossover and
+<hr />
+</section>
+</section>
+<section
+id="part-vi-five-thinkers-as-inspiration-translation-crossover-and-challenge"
+class="level1">
+<h1>Part VI — Five thinkers as inspiration, translation, crossover and
 challenge</h1>
-<h2 id="use-contract">24. Use contract</h2>
+<section id="use-contract" class="level2">
+<h2>24. Use contract</h2>
 <p>Witten, Maldacena, Rovelli, Penrose and Connes are not merely
 limit-setters. This paper uses each in four modes:</p>
 <pre><code>INSPIRE    extract mechanisms, mathematical objects and questions
@@ -2001,12 +2634,14 @@ TRANSLATE  build explicit dictionaries into the Ω branch
 CROSSOVER  combine compatible structures into new candidates
 CHALLENGE  expose domain limits, contradictions and no-go conditions</code></pre>
 <p>Prestige is ignored; intellectual content is preserved.</p>
-<h2 id="constructive-ledger">25. Constructive ledger</h2>
-<div class="table-scroll"><table>
+</section>
+<section id="constructive-ledger" class="level2">
+<h2>25. Constructive ledger</h2>
+<table>
 <colgroup>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
-<col style="width: 33%"/>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -2054,19 +2689,20 @@ automatically physical time; finite factors cannot prove outer modular
 time</td>
 </tr>
 </tbody>
-</table></div>
-<h2 id="crossover-ledger-artifact-or-demote">26. Crossover ledger:
-artifact or demote</h2>
+</table>
+</section>
+<section id="crossover-ledger-artifact-or-demote" class="level2">
+<h2>26. Crossover ledger: artifact or demote</h2>
 <p>A crossover is retained as a mechanism only if it produces a testable
 artefact that did not already exist: a new model branch, operator
 dictionary, metric, intervention, prediction or held-out test. Otherwise
 it is classified as a constraint or <code>INSPIRE_ONLY</code>.</p>
-<div class="table-scroll"><table>
+<table>
 <colgroup>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
-<col style="width: 25%"/>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -2118,17 +2754,20 @@ relative events</td>
 <td>never scored as an arm</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <blockquote>
 <p><strong>Prestige-removal test:</strong> delete every thinker’s name.
 If the crossover no longer specifies a unique artefact and failure
 condition, demote it.</p>
 </blockquote>
-<hr/>
-<h1 id="part-vii-arena-0x-h-and-the-route-to-a-fresh-arena-0a">Part VII
-— Arena 0X-H and the route to a fresh Arena 0A</h1>
-<h2 id="governing-development-question">27. Governing development
-question</h2>
+<hr />
+</section>
+</section>
+<section id="part-vii-arena-0x-h-and-the-route-to-a-fresh-arena-0a"
+class="level1">
+<h1>Part VII — Arena 0X-H and the route to a fresh Arena 0A</h1>
+<section id="governing-development-question" class="level2">
+<h2>27. Governing development question</h2>
 <p>Does the enlarged temporal measurement instrument behave correctly,
 and does any challenger show enough specific held-out signal to justify
 the cost and risk of a fresh confirmation experiment?</p>
@@ -2137,7 +2776,9 @@ the cost and risk of a fresh confirmation experiment?</p>
 mechanism failure, useful transfer domains and candidate promotion
 rules. It may not issue <code>QUALIFIED</code>,
 <code>ADEQUATELY_POWERED</code> or <code>CLOSURE_MECHANISM</code>.</p>
-<h2 id="version-and-data-firewall">27.1 Version and data firewall</h2>
+</section>
+<section id="version-and-data-firewall" class="level2">
+<h2>27.1 Version and data firewall</h2>
 <pre class="text"><code>V3 + Arena v0.1.2
 → frozen historical baseline
 → no rewrite and no reuse of sealed confirmation material
@@ -2161,41 +2802,55 @@ final V4 + final Arena v0.2
 <p>No alpha file, manually created pass filename, A1 receipt or old v0.1
 seal may open final Arena 0A. Sidecar results cannot be inserted post
 hoc into an already scored core endpoint.</p>
-<h2 id="development-hypotheses">27.2 Development hypotheses</h2>
-<h3 id="h₀-no-specific-closure-mechanism">H₀ — no specific closure
-mechanism</h3>
+</section>
+<section id="development-hypotheses" class="level2">
+<h2>27.2 Development hypotheses</h2>
+<section id="h₀-no-specific-closure-mechanism" class="level3">
+<h3>H₀ — no specific closure mechanism</h3>
 <p>Any apparent gain is reproduced by a strong classical model, random
 proposal search, representation leakage, objective alignment with one
 generator family or uncharged machinery.</p>
-<h3 id="h₁ᴹᴾᴿᶜ²">H₁ᴹᴾᴿᶜ²</h3>
+</section>
+<section id="h₁ᴹᴾᴿᶜ²" class="level3">
+<h3>H₁ᴹᴾᴿᶜ²</h3>
 <p>MPRC2’s richer closure grammar yields held-out temporal compression
 and reconstruction beyond matched classical and random controls, with
 stable transported candidates.</p>
-<h3 id="h₁ᴹˢᴿ²">H₁ᴹˢᴿ²</h3>
+</section>
+<section id="h₁ᴹˢᴿ²" class="level3">
+<h3>H₁ᴹˢᴿ²</h3>
 <p>Operational spectral/state/flow proposals yield a specific advantage
 that disappears under <code>D</code>, <code>ρ</code>, flow or channel
 ablations and survives full spectral debt.</p>
-<h3 id="h₁ᴸᴱᶜ">H₁ᴸᴱᶜ</h3>
+</section>
+<section id="h₁ᴸᴱᶜ" class="level3">
+<h3>H₁ᴸᴱᶜ</h3>
 <p>Proposal-only LEC finds useful latent organization beyond classical
 baselines; the advantage requires reachable latent candidates,
 meaningful energy features and hidden regimes rather than random energy,
 time shuffling or relation shuffling.</p>
-<h3 id="h₁ᶜˢ-predictive-equivalence-sidecar">H₁ᶜˢ —
-predictive-equivalence sidecar</h3>
+</section>
+<section id="h₁ᶜˢ-predictive-equivalence-sidecar" class="level3">
+<h3>H₁ᶜˢ — predictive-equivalence sidecar</h3>
 <p>A true causal-state reconstruction yields a smaller held-out
 predictive representation than <code>PREDICTIVE_STATE_HEURISTIC</code>,
 HMM and matched Markov-order controls after state-inference cost.</p>
-<h3 id="h₁ᴳ-h₁q-h₁i-h₁s-certificate-sidecars">H₁ᴳ / H₁Q / H₁I / H₁S —
-certificate sidecars</h3>
+</section>
+<section id="h₁ᴳ-h₁q-h₁i-h₁s-certificate-sidecars" class="level3">
+<h3>H₁ᴳ / H₁Q / H₁I / H₁S — certificate sidecars</h3>
 <p>Sheaf gluing, redundant recovery, intervention efficacy and
 multiscale persistence each supply information not reducible to the core
 MDL score. These hypotheses are isolated, KAT-first and not active
 endpoints in Arena v0.2.0a2.</p>
-<h2 id="finite-domain-and-genuine-generator-diversity">28. Finite domain
-and genuine generator diversity</h2>
+</section>
+</section>
+<section id="finite-domain-and-genuine-generator-diversity"
+class="level2">
+<h2>28. Finite domain and genuine generator diversity</h2>
 <p>Every generator family is a separate function and a separate declared
 law. Names alone do not count as diversity.</p>
-<h3 id="positive-development-laws">28.1 Positive development laws</h3>
+<section id="positive-development-laws" class="level3">
+<h3>28.1 Positive development laws</h3>
 <ol type="1">
 <li><code>block_static</code></li>
 <li><code>markov_parts</code></li>
@@ -2209,7 +2864,9 @@ law. Names alone do not count as diversity.</p>
 <li><code>spectral_anti_aligned</code></li>
 <li><code>nonlocal_delayed</code></li>
 </ol>
-<h3 id="adversarial-null-laws">28.2 Adversarial null laws</h3>
+</section>
+<section id="adversarial-null-laws" class="level3">
+<h3>28.2 Adversarial null laws</h3>
 <ol type="1">
 <li><code>clusterable_nonpredictive</code></li>
 <li><code>global_latent_confounder</code></li>
@@ -2221,7 +2878,9 @@ law. Names alone do not count as diversity.</p>
 <p>These nulls prevent the arena from equating clustering, temporal
 predictability, low rank, spectral structure or local Markov persistence
 with effective closure.</p>
-<h3 id="effect-calibration">28.3 Effect calibration</h3>
+</section>
+<section id="effect-calibration" class="level3">
+<h3>28.3 Effect calibration</h3>
 <p>For selected development systems, the generator searches a frozen
 noise ladder and records the realized oracle-versus-control margin.
 Approximate targets are diagnostics, not guaranteed properties. A target
@@ -2229,9 +2888,12 @@ that fails to clear the objective is retained in the objective-miss
 ledger.</p>
 <p>Final confirmation must withhold entire laws or law constructors, not
 merely new seeds from familiar code paths.</p>
-<h2 id="development-arms">29. Development arms</h2>
-<h3 id="implemented-arena-v0.2.0a2-core">29.1 Implemented Arena v0.2.0a2
-core</h3>
+</section>
+</section>
+<section id="development-arms" class="level2">
+<h2>29. Development arms</h2>
+<section id="implemented-arena-v0.2.0a2-core" class="level3">
+<h3>29.1 Implemented Arena v0.2.0a2 core</h3>
 <pre class="text"><code>MPRC2
 MSR2
 LEC_PROPOSAL_ONLY
@@ -2251,8 +2913,10 @@ RANDOM_COVER
 SEALED_ORACLE_EVALUATOR_ONLY</code></pre>
 <p>All non-oracle arms see the same visible data and declared training
 times. The oracle is evaluated only after proposals are committed.</p>
-<h3 id="specified-kat-first-sidecars-not-implemented-in-a2">29.2
-Specified KAT-first sidecars — not implemented in A2</h3>
+</section>
+<section id="specified-kat-first-sidecars-not-implemented-in-a2"
+class="level3">
+<h3>29.2 Specified KAT-first sidecars — not implemented in A2</h3>
 <pre class="text"><code>CAUSAL_STATE_MACRO
 SHEAF_COMPATIBILITY_EVALUATOR
 QEC_RECONSTRUCTIBLE_PART
@@ -2262,15 +2926,19 @@ PREDICTIVE_RATE_DISTORTION_LADDER</code></pre>
 independent cost accounting and no leakage. It cannot join a final
 winner rule merely because it produces an interesting retrospective
 diagnostic.</p>
-<h3 id="development-only-diversity-archive">29.3 Development-only
-diversity archive</h3>
+</section>
+<section id="development-only-diversity-archive" class="level3">
+<h3>29.3 Development-only diversity archive</h3>
 <p>A Quality-Diversity archive may retain high-quality candidates across
 descriptors such as part count, overlap, regime count, hierarchy depth,
 recovery redundancy, causal-state complexity, gluing obstruction and
 multiscale persistence. It is an anti-collapse search memory. Archive
 occupancy or novelty is never a scientific endpoint and all selected
 candidates still pay the complete search ledger.</p>
-<h2 id="budgets-and-fair-search">30. Budgets and fair search</h2>
+</section>
+</section>
+<section id="budgets-and-fair-search" class="level2">
+<h2>30. Budgets and fair search</h2>
 <p>Each task freezes:</p>
 <ul>
 <li>proposal budget per searchable arm;</li>
@@ -2285,7 +2953,9 @@ candidates still pay the complete search ledger.</p>
 save an atomic result and receipt after every completed system. A crash
 or manual interruption resumes from verified receipts and quarantines
 corrupted artifacts.</p>
-<h2 id="leakage-firewall">31. Leakage firewall</h2>
+</section>
+<section id="leakage-firewall" class="level2">
+<h2>31. Leakage firewall</h2>
 <p>Visible systems exclude:</p>
 <pre class="text"><code>target_candidate
 target_cover / target_partition
@@ -2300,8 +2970,9 @@ oracle score</code></pre>
 <p>Hidden metadata is stored outside visible input paths and is read
 only by evaluator code after proposal generation. Live extracts remove
 hidden/oracle payloads, sealed rows and host paths.</p>
-<h2 id="primary-development-metrics">32. Primary development
-metrics</h2>
+</section>
+<section id="primary-development-metrics" class="level2">
+<h2>32. Primary development metrics</h2>
 <p>For every system, codebook and arm, record:</p>
 <ol type="1">
 <li>total held-out bits;</li>
@@ -2332,8 +3003,10 @@ telemetry in a separate operational ledger.</li>
 <p>Positive discoveries and null false positives must appear in separate
 tables. Alpha summaries may flag “ready for fresh preregistration,” but
 that flag is not a scientific pass.</p>
-<h2 id="twenty-three-implementation-gates-in-arena-v0.2.0a2">33.
-Twenty-three implementation gates in Arena v0.2.0a2</h2>
+</section>
+<section id="twenty-three-implementation-gates-in-arena-v0.2.0a2"
+class="level2">
+<h2>33. Twenty-three implementation gates in Arena v0.2.0a2</h2>
 <ol type="1">
 <li>known-answer tests;</li>
 <li>visible system schema and taint firewall;</li>
@@ -2362,8 +3035,10 @@ KAT;</li>
 </ol>
 <p>Passing all twenty-three gates establishes only that the A2
 development instrument behaved as declared.</p>
-<h2 id="promotion-gates-for-a-final-v4-preregistration">34. Promotion
-gates for a final V4 preregistration</h2>
+</section>
+<section id="promotion-gates-for-a-final-v4-preregistration"
+class="level2">
+<h2>34. Promotion gates for a final V4 preregistration</h2>
 <p>A mechanism may enter the final contract only if development evidence
 shows:</p>
 <ol type="1">
@@ -2391,7 +3066,9 @@ scientific scores.</li>
 </ol>
 <p>Threshold values are frozen only after development data are closed
 and before fresh confirmation systems are generated.</p>
-<h2 id="hard-kill-conditions">35. Hard kill conditions</h2>
+</section>
+<section id="hard-kill-conditions" class="level2">
+<h2>35. Hard kill conditions</h2>
 <p>Demote or repair the mechanism if:</p>
 <ul>
 <li>its parameters do not alter candidate behaviour;</li>
@@ -2415,9 +3092,11 @@ representation change;</li>
 <li>a multiscale claim appears only at one hand-picked scale;</li>
 <li>an aggregate certificate score hides a failed mandatory axis.</li>
 </ul>
-<h2 id="runnable-python-architecture">36. Runnable Python
-architecture</h2>
-<h3 id="implemented-a2-core">36.0 Implemented A2 core</h3>
+</section>
+<section id="runnable-python-architecture" class="level2">
+<h2>36. Runnable Python architecture</h2>
+<section id="implemented-a2-core" class="level3">
+<h3>36.0 Implemented A2 core</h3>
 <pre class="text"><code>acwfp_arena/
   data/
     generators.py
@@ -2448,8 +3127,9 @@ architecture</h2>
     live_extract.py
     replay.py
     run0a.py</code></pre>
-<h3 id="specified-next-sidecar-modules">36.0.1 Specified next sidecar
-modules</h3>
+</section>
+<section id="specified-next-sidecar-modules" class="level3">
+<h3>36.0.1 Specified next sidecar modules</h3>
 <pre class="text"><code>acwfp_arena/
   sidecars/
     causal_states.py
@@ -2462,7 +3142,9 @@ modules</h3>
     effective_part_certificate.py</code></pre>
 <p>These paths describe the next isolated build target; they are not
 asserted to exist in v0.2.0a2.</p>
-<h3 id="operational-requirements">36.1 Operational requirements</h3>
+</section>
+<section id="operational-requirements" class="level3">
+<h3>36.1 Operational requirements</h3>
 <ul>
 <li>true CPU processes through <code>ProcessPoolExecutor</code> with
 spawn;</li>
@@ -2483,7 +3165,9 @@ overnight, deep and multiday;</li>
 <li>leakage-safe live ZIP extraction during a running or interrupted
 experiment.</li>
 </ul>
-<h3 id="required-evidence-bundle">36.2 Required evidence bundle</h3>
+</section>
+<section id="required-evidence-bundle" class="level3">
+<h3>36.2 Required evidence bundle</h3>
 <pre class="text"><code>qualification_report.json
 outcome.json
 all_ledgers.jsonl
@@ -2511,51 +3195,65 @@ report.html</code></pre>
 <p>Sidecar-specific files are required only when their endpoint is
 activated, and their absence must be recorded as <code>UNEARNED</code>,
 not interpreted as zero effect.</p>
-<h1 id="part-viii-development-sequence-later-sidecars-and-verdict">Part
-VIII — Development sequence, later sidecars and verdict</h1>
-<h2 id="research-sequence">37. Research sequence</h2>
-<h3 id="phase-v4-0-instrument-repair">Phase V4-0 — instrument
-repair</h3>
+</section>
+</section>
+</section>
+<section id="part-viii-development-sequence-later-sidecars-and-verdict"
+class="level1">
+<h1>Part VIII — Development sequence, later sidecars and verdict</h1>
+<section id="research-sequence" class="level2">
+<h2>37. Research sequence</h2>
+<section id="phase-v4-0-instrument-repair" class="level3">
+<h3>Phase V4-0 — instrument repair</h3>
 <p><strong>Engineering status: completed in A2 reduced
 validation.</strong> The temporal candidate object, independent scorer,
 latent LEC path, generator laws, machinery ledger,
 production/reference/audit parity, telemetry, resume and fail-closed
 boundary are implemented. This is not a scientific pass.</p>
-<h3 id="phase-v4-1-repaired-a2-challenger-tournament">Phase V4-1 —
-repaired A2 challenger tournament</h3>
+</section>
+<section id="phase-v4-1-repaired-a2-challenger-tournament"
+class="level3">
+<h3>Phase V4-1 — repaired A2 challenger tournament</h3>
 <p>Run MPRC2, MSR2, proposal-only LEC, LEC ablations and strong
 classical baselines on fresh A2 development outputs. Mine objective
 misses, false positives and disagreement cases rather than repeating
 easy seeds.</p>
-<h3 id="phase-v4-1s-kat-first-certificate-sidecars">Phase V4-1S —
-KAT-first certificate sidecars</h3>
+</section>
+<section id="phase-v4-1s-kat-first-certificate-sidecars" class="level3">
+<h3>Phase V4-1S — KAT-first certificate sidecars</h3>
 <p>In separate outputs, build <code>CAUSAL_STATE_MACRO</code>,
 <code>SHEAF_COMPATIBILITY_EVALUATOR</code>, QEC recovery controls,
 causal-emergence evaluator and predictive-rate-distortion ladder. Each
 must pass exact finite KATs before touching a final endpoint.</p>
-<h3 id="phase-v4-2-unseen-law-transfer">Phase V4-2 — unseen-law
-transfer</h3>
+</section>
+<section id="phase-v4-2-unseen-law-transfer" class="level3">
+<h3>Phase V4-2 — unseen-law transfer</h3>
 <p>Freeze complete generator laws as development holdouts. A mechanism
 that succeeds only on aligned latent-Markov, low-rank or code-like
 families is not promoted.</p>
-<h3 id="phase-v4-3-final-contract-selection">Phase V4-3 — final contract
-selection</h3>
+</section>
+<section id="phase-v4-3-final-contract-selection" class="level3">
+<h3>Phase V4-3 — final contract selection</h3>
 <p>Retain only mechanisms, certificate axes and controls that pass
 kill-tests. Freeze exact thresholds, codebooks, budget matching,
 approximation tolerances, statistics, multiplicity policy and complete
 failure rules.</p>
-<h3 id="phase-v4-4-fresh-confirmation">Phase V4-4 — fresh
-confirmation</h3>
+</section>
+<section id="phase-v4-4-fresh-confirmation" class="level3">
+<h3>Phase V4-4 — fresh confirmation</h3>
 <p>Generate a new sealed split after the final contract hash is fixed.
 Only a compatible signed pass from the final qualification instrument
 may open Arena 0A.</p>
-<h3 id="phase-v4-5-evidence-driven-paper-freeze">Phase V4-5 —
-evidence-driven paper freeze</h3>
+</section>
+<section id="phase-v4-5-evidence-driven-paper-freeze" class="level3">
+<h3>Phase V4-5 — evidence-driven paper freeze</h3>
 <p>Final V4 records what survived. Failed mechanisms are demoted
 explicitly; they are not preserved by changing interpretation after the
 data.</p>
-<h2 id="deferred-wakesleep-experiment">38. Deferred wake–sleep
-experiment</h2>
+</section>
+</section>
+<section id="deferred-wakesleep-experiment" class="level2">
+<h2>38. Deferred wake–sleep experiment</h2>
 <p>Wake–sleep is scientifically interesting but not part of the current
 A2 score.</p>
 <p>Promotion prerequisites are:</p>
@@ -2570,8 +3268,10 @@ A2 score.</p>
 </ol>
 <p>A sleep phase that improves only its own recognition accuracy but not
 real held-out closure discovery is rejected.</p>
-<h2 id="deferred-dcc-value-of-computation-resource-governor">39.
-Deferred DCC / Value-of-Computation resource governor</h2>
+</section>
+<section id="deferred-dcc-value-of-computation-resource-governor"
+class="level2">
+<h2>39. Deferred DCC / Value-of-Computation resource governor</h2>
 <p>DCC may later allocate proposal, model, memory and intervention
 budgets across MPRC2, MSR2, LEC, causal-state and classical specialists.
 It is not allowed to alter the scientific score.</p>
@@ -2587,45 +3287,66 @@ gain, estimated cost, delay cost, contamination risk and fallback value.
 It is promoted only if it reaches equal or better scientific performance
 with lower total compute/risk cost or reaches a strictly better frontier
 under the same budget [45].</p>
-<h2 id="scientific-sidecars-and-search-tools">40. Scientific sidecars
-and search tools</h2>
-<h3 id="causal_state_macro">40.1 <code>CAUSAL_STATE_MACRO</code></h3>
+</section>
+<section id="scientific-sidecars-and-search-tools" class="level2">
+<h2>40. Scientific sidecars and search tools</h2>
+<section id="causal_state_macro" class="level3">
+<h3>40.1 <code>CAUSAL_STATE_MACRO</code></h3>
 <p>Test predictive-equivalence states against the heuristic
 predictive-state baseline, HMM and matched Markov-order controls.</p>
-<h3 id="sheaf_compatibility_evaluator">40.2
-<code>SHEAF_COMPATIBILITY_EVALUATOR</code></h3>
+</section>
+<section id="sheaf_compatibility_evaluator" class="level3">
+<h3>40.2 <code>SHEAF_COMPATIBILITY_EVALUATOR</code></h3>
 <p>Test exact gluing, obstruction, ambiguity and minimum repair under
 local-to-global consistency.</p>
-<h3 id="qecredundant-recovery-control-family">40.3
-QEC/redundant-recovery control family</h3>
+</section>
+<section id="qecredundant-recovery-control-family" class="level3">
+<h3>40.3 QEC/redundant-recovery control family</h3>
 <p>Test multiple authorized reconstructions, erasure/noise curves and
 graceful degradation without importing holographic ontology.</p>
-<h3 id="arena-0x-i-causal-emergence-under-interventions">40.4 Arena 0X-I
-— causal emergence under interventions</h3>
+</section>
+<section id="arena-0x-i-causal-emergence-under-interventions"
+class="level3">
+<h3>40.4 Arena 0X-I — causal emergence under interventions</h3>
 <p>Introduce bounded internal perturbations and require a candidate to
 predict what changes, what remains invariant and whether the effective
 boundary recovers. A pass can support
 <code>INTERVENTION_ROBUST_CLOSURE</code>, not spacetime.</p>
-<h3 id="predictive-rate-distortion-and-multiscale-fixed-point-closure">40.5
-Predictive rate-distortion and multiscale fixed-point closure</h3>
+</section>
+<section
+id="predictive-rate-distortion-and-multiscale-fixed-point-closure"
+class="level3">
+<h3>40.5 Predictive rate-distortion and multiscale fixed-point
+closure</h3>
 <p>Test whether candidate organization persists across a
 compression/prediction frontier and repeated effective-model
 construction.</p>
-<h3 id="quality-diversity-archive-and-disagreement-forge">40.6
-Quality-Diversity archive and Disagreement Forge</h3>
+</section>
+<section id="quality-diversity-archive-and-disagreement-forge"
+class="level3">
+<h3>40.6 Quality-Diversity archive and Disagreement Forge</h3>
 <p>Preserve diverse high-quality candidate families and search domains
 where MPRC2, MSR2, LEC, causal-state and classical baselines disagree
 while exact evaluation remains possible. Archive and Forge outputs are
 curriculum/debugging evidence, never confirmation evidence [46].</p>
-<h3 id="physics-gates">40.7 Physics gates</h3>
+</section>
+<section id="physics-gates" class="level3">
+<h3>40.7 Physics gates</h3>
 <p>Only after a robust closure mechanism and the certificate axes
 required by the next claim are earned should the programme activate
 finite causal-cone, dimension-attractor, geometry–matter, measurement
 and embodied-RC arenas.</p>
-<h2 id="current-verdict">41. Current verdict</h2>
-<h1 id="v4-draft.5-verdict-a3-completed-cleanly-a4-confirmation-design-is-now-the-next-work">V4-DRAFT.5
-VERDICT — A3 COMPLETED CLEANLY; A4 CONFIRMATION DESIGN IS NOW THE NEXT
-WORK</h1>
+</section>
+</section>
+<section id="current-verdict" class="level2">
+<h2>41. Current verdict</h2>
+</section>
+</section>
+<section
+id="v4-draft.5-verdict-a3-completed-cleanly-a4-confirmation-design-is-now-the-next-work"
+class="level1">
+<h1>V4-DRAFT.5 VERDICT — A3 COMPLETED CLEANLY; A4 CONFIRMATION DESIGN IS
+NOW THE NEXT WORK</h1>
 <p>V4-DRAFT.5 has a stronger basis than V4-DRAFT.4 because the A3
 multiday run is no longer a partial live snapshot. It is a completed
 development evidence capsule:</p>
@@ -2673,8 +3394,8 @@ Earned result class:    DEVELOPMENT_EVIDENCE_ONLY
 AC status:              AC0
 Arena 0A:               CLOSED / FAIL-CLOSED
 Next arena:             A4 / V4-confirmation design, not yet built</code></pre>
-<h2 id="v4-draft.5-provenance-and-changelog">42. V4-DRAFT.5 provenance
-and changelog</h2>
+<section id="v4-draft.5-provenance-and-changelog" class="level2">
+<h2>42. V4-DRAFT.5 provenance and changelog</h2>
 <p>Relative to V4-DRAFT.4, this draft:</p>
 <ol type="1">
 <li>replaces the partial A3 live snapshot with the completed A3 multiday
@@ -2701,8 +3422,10 @@ requirement;</li>
 <li>keeps AC0, NOT_CONFIRMATION, NOT_ARENA_0A and all science/AC
 firewalls intact.</li>
 </ol>
-<h1 id="references-and-primary-anchors">References and primary
-anchors</h1>
+</section>
+</section>
+<section id="references-and-primary-anchors" class="level1">
+<h1>References and primary anchors</h1>
 <ol type="1">
 <li><p>G. Chiribella, G. M. D’Ariano and P. Perinotti, <em>Probabilistic
 Theories with Purification</em>, Phys. Rev. A 81, 062348 (2010),
@@ -2838,12 +3561,36 @@ Council</em> (29 June 2026).</p></li>
 <li><p>BD × AI, <em>Rank-Don’t-Eliminate Operating Principle</em> (2026
 project note).</p></li>
 </ol>
+</section>
 
   </article>
 </section>
+
+<details class="live-appendix" id="v031-appendix">
+  <summary><span>Evidence appendix · latest RICH3 snapshot</span><span>14 July 2026</span></summary>
+  <div class="live-appendix-body">
+    <p>This appendix records the safe public evidence available in <code>RICH3_LIVE_EXTRACT_ACWFP_V031_MASTER_multiday_20260714_070811.zip</code>. It contains no raw arrays, sealed metadata, raw heartbeat payloads, candidate memberships or row-level cohort labels.</p>
+    <table class="live-table">
+      <thead><tr><th>Field</th><th>Snapshot value</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Release / scheduler</td><td><strong>0.3.1a1 / bounded active queue</strong></td><td>Queue/resume hotfix with atomic candidate persistence.</td></tr>
+        <tr><td>Active profile / stage</td><td><strong>multiday / PROPOSE</strong></td><td>No multiday scoring result exists yet.</td></tr>
+        <tr><td>Run ID</td><td><code>997815190b0e6a0894d0e396</code></td><td>Current content-addressed run directory.</td></tr>
+        <tr><td>Systems / arms</td><td><strong>576 / 23</strong></td><td>384 structured + 192 matched null systems.</td></tr>
+        <tr><td>Proposal progress</td><td><strong>3,970 / 13,248 (29.9668%)</strong></td><td>Six additional tasks active at snapshot time.</td></tr>
+        <tr><td>Atomic persistence</td><td><strong>3,970 candidates + 3,970 receipts</strong></td><td>Matches completed proposal heartbeats exactly.</td></tr>
+        <tr><td>Retries / unreadable heartbeats</td><td><strong>0 / 0 observed</strong></td><td>No sign of the previous timeout/retry failure mode.</td></tr>
+        <tr><td>Expected evaluations</td><td><strong>26,496</strong></td><td>Evaluation has not opened.</td></tr>
+        <tr><td>Deep MPRC2_FULL</td><td><strong>3 wins · 0 null wins</strong></td><td>Development hint, not promotion evidence.</td></tr>
+        <tr><td>Scientific status</td><td><strong>DEVELOPMENT_ONLY_NOT_CONFIRMATION · AC0</strong></td><td>Arena 0A and intervention remain closed.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</details>
+
 </main>
 <div class="fontctl" aria-label="Reader controls"><button data-font-minus title="Smaller text">A−</button><button data-font-plus title="Larger text">A+</button></div>
-<footer class="footer">AC–WFP V4-DRAFT.5 · completed A3 development evidence · AC0 · NOT_CONFIRMATION · Arena 0A closed.</footer>
+<footer class="footer">AC–WFP V4-DRAFT.6 · synchronized living development document · DEVELOPMENT_ONLY_NOT_CONFIRMATION · AC0 · Arena 0A closed.</footer>
 <script>
 (function(){
   const root=document.documentElement;
@@ -2866,3 +3613,4 @@ project note).</p></li>
 </script>
 </body>
 </html>
+

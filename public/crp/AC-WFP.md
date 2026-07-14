@@ -1,24 +1,271 @@
-# AC–WFP V4-DRAFT.5 — Whole-First Co-Emergent Physicalization
+# AC–WFP V4-DRAFT.6 — Whole-First Co-Emergent Physicalization
 
-## Final A3 development-evidence update, A4/MAL handoff, and Rank-Don’t-Eliminate upgrade path
+## Integrated v0.3.1/v0.3.1a1 development update, deep/daily findings, and live multiday evidence
 
-**Status:** executable draft research contract plus completed A3 development-evidence update; not an established physical theory and not confirmation evidence  
-**Version:** V4-DRAFT.5  
-**Date:** 3 July 2026  
+**Status:** living executable research contract with completed A3 evidence, completed v0.3.1 `deep` and `daily` development evidence, and an active v0.3.1a1 `multiday` run; not an established physical theory and not confirmation evidence  
+**Version:** V4-DRAFT.6  
+**Date:** 14 July 2026  
 **Authors:** BD × AI  
 **Neutral scientific baseline:** Ω  
 **AC status:** AC0  
-**Method:** evidence first; mechanism labels must alter behaviour; effective parts require a vector of mandatory certificates rather than one scalar win  
-**Canonical source:** `AC-WFP_v4_DRAFT_5.md`  
-**HTML companion:** `AC-WFP_v4_DRAFT_5.html`  
-**Executable companion:** AC-WFP Arena `v0.2.0a3` / Python package `acwfp-arena==0.2.0a3` for completed A3 development evidence; A4 is not yet built  
-**Historical baseline:** `AC-WFP_v3.md` and AC-WFP Arena v0.1.2 remain frozen and are not rewritten  
-**Version relation:** this draft updates V4-DRAFT.4 after the completed A3 run; it still does not supersede V3 and it does not become final V4 until a fresh preregistered A4/V4-confirmation split is frozen and evaluated  
-**New source synthesis:** V3; v0.1.2 implementation audit; Hinton energy-based-learning bridge; Modern Knowledge Transfer Map; A1 defect classification; completed A2 evidence; A3 v0.2.0a3 build/validation evidence; completed A3 multiday extract `LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip`; A4 dossier/prompt; and the Rank-Don’t-Eliminate operating principle
+**Scientific status:** `DEVELOPMENT_ONLY_NOT_CONFIRMATION`; `NOT_ARENA_0A`; intervention axis reserved and unearned  
+**Method:** evidence first; mechanism labels must alter behaviour; effective parts require separate predictive and disjoint-recovery certificates, stability, naturality, null specificity, representation robustness, complete model-cost accounting, and eventually intervention  
+**Canonical source:** `AC-WFP_v4_DRAFT_6.md`  
+**HTML companion:** `AC-WFP_v4_DRAFT_6.html`  
+**Current executable companion:** AC-WFP Arena `v0.3.1a1`, bounded active queue with atomic candidate persistence and evaluation checkpointing  
+**Completed current-generation evidence:** `standard`, `adversarial_nulls`, `deep`, and `daily` were finalized under v0.3.1 with strict replay; the current `multiday` profile runs under the v0.3.1a1 queue/resume hotfix  
+**Historical scientific baseline:** V4-DRAFT.5 and its completed A3 record remain frozen below for traceability  
+**Version relation:** V4-DRAFT.6 supersedes V4-DRAFT.5 as the living development document, but it is not final V4 and does not create confirmation evidence  
+**Latest evidence snapshot:** `RICH3_LIVE_EXTRACT_ACWFP_V031_MASTER_multiday_20260714_070811.zip`, generated 14 July 2026 at 07:17 UTC / 09:17 CEST
 
 ---
 
-## Reader orientation — what this living V4 page is
+## Start here — the idea in plain language
+
+### The ordinary picture
+
+The familiar bottom-up picture says that reality is built from the smallest independent things:
+
+```text
+particles → atoms → molecules → stars, bodies and observers
+```
+
+AC–WFP asks whether this may be correct as an **effective description** while being reversed at the deepest level:
+
+```text
+a globally constrained Whole Ω
+→ stable local restrictions and modes
+→ particle-like sectors, fields and geometry
+→ the familiar physical world
+```
+
+This does **not** say that electrons, atoms or tables are unreal. It asks whether they are ultimate bricks, or whether they are more like persistent patterns supported by a deeper whole.
+
+### A simple analogy
+
+A whirlpool is real: it has a location, lifetime, shape and causal effects. But it is not a separate substance added to water. It is a stable pattern made possible by the organization of the larger flow.
+
+The whole-first hypothesis asks whether a physical “part” could be similar:
+
+> A particle or local subsystem may be a stable, reconstructible and predictive mode of a deeper global relational structure, rather than an independently existing primitive from which the Whole is assembled.
+
+The analogy is only an intuition. The scientific work begins when “stable pattern” is replaced by measurable requirements.
+
+### What the Python arena actually does
+
+The arena does not simulate the birth of our universe and does not test consciousness directly. It tests a smaller prerequisite:
+
+1. generate finite relational worlds with hidden organization;
+2. give proposal mechanisms only the allowed training view;
+3. ask them to discover candidate effective parts without seeing held-out or sealed information;
+4. test whether those candidates predict unseen data and independently reconstruct disjoint information;
+5. charge the full cost of the model, search, codebook and machinery;
+6. test the same mechanisms on matched null worlds designed to look tempting without containing valid closure;
+7. repeat the scoring under two codebooks and require audit, signature, replay and reference-evaluator agreement.
+
+A positive result would mean only that a specific **observational closure mechanism candidate** survived this finite test. It would not yet derive particles, spacetime, quantum theory, gravity, consciousness or AC.
+
+### The one-sentence project summary
+
+> We are turning the philosophical idea “parts may be expressions of a Whole” into a programme that can fail: a candidate part must earn prediction, recovery, stability, representation robustness and null specificity under blind, cost-complete testing.
+
+---
+
+## V4-DRAFT.6 update — what the latest evidence says
+
+### D6.1 Current live status: the repaired multiday run is healthy
+
+The latest safe `RICH3` snapshot records the active `multiday` profile at **14 July 2026, 09:17 CEST**:
+
+| Field | Latest snapshot |
+|---|---:|
+| Release / runtime | `0.3.1a1` / bounded active queue |
+| Stage | `PROPOSE` |
+| Systems | 576 |
+| Structured / matched null systems | 384 / 192 |
+| Declared arms | 23 |
+| Expected proposals | 13,248 |
+| Persisted completed proposals | **3,970** |
+| Proposal progress | **29.9668%** |
+| Active tasks | 6 |
+| Candidate files / candidate receipts | **3,970 / 3,970** |
+| Completed proposal heartbeats | **3,970** |
+| Unreadable heartbeats | 0 |
+| Expected evaluations | 26,496 |
+| Persisted evaluation results | 0 — evaluation has not opened yet |
+
+The equality
+
+```text
+completed proposal heartbeats
+= candidate files
+= candidate receipts
+= 3,970
+```
+
+is an important engineering result. It shows that the v0.3.1a1 repair is persisting every completed signed proposal atomically instead of retaining the entire proposal phase only in memory. The active queue is bounded to the worker count, so queued tasks no longer consume a timeout before they begin executing.
+
+All 23 arms were close to the same completion fraction, every recorded task was still on attempt 1, six active tasks matched the six requested workers, and the extract reported zero unreadable heartbeats. The run therefore showed no sign of worker starvation, retry storms or a repeat of the earlier false pool timeout.
+
+### D6.2 What has already completed in the current-generation ladder
+
+The latest extract contains finalized, replayed evidence for:
+
+```text
+smoke
+instrument_smoke
+mini
+standard
+adversarial_nulls
+deep
+daily
+```
+
+The active `multiday` run is not yet a scientific result because evaluation has not started. `weekly` has not started.
+
+### D6.3 The most interesting completed result: a narrow MPRC2 signal in deep
+
+The `deep` profile contains 336 independent systems, 7,728 signed proposals and 15,456 evaluation rows. Its most relevant arm-level results are:
+
+| Mechanism | Wins | Null wins | Current interpretation |
+|---|---:|---:|---|
+| `MPRC2_FULL` | **3** | **0 / 112** | Rare but comparatively specific development signal |
+| `MPRC2_NON_TEMPORAL` | 5 | 2 / 112 | More wins, but two matched-null false positives |
+| `ENVELOPE_MPRC_SYNERGY` | 1 | 1 / 112 | Its only win is not specific |
+| `SINGLETON` | 36 | 14 / 112 | Strong effective shortcut, but high null leakage |
+| LEC family | 0 | 0 | Current implementation earns no scientific win |
+| MSR2 family | 0 | 0 | Current finite proxy and ablations earn no win |
+
+This comparison suggests a specific development hypothesis:
+
+> The temporal component of `MPRC2_FULL` may not increase raw sensitivity, but may improve specificity by rejecting structures that look part-like without persisting as the same organization through time.
+
+That is compatible with the whole-first idea that an effective part is not merely a cluster visible in one frame. A real part-like sector should retain predictive and reconstructive identity through change.
+
+This remains a post-hoc development interpretation, not a confirmed mechanism.
+
+### D6.4 One codebook-stable observational certificate candidate
+
+One `MPRC2_FULL` candidate in `deep` passed the observational certificate under both codebooks:
+
+| Field | Value |
+|---|---|
+| Public system | `SYS-9e6a81bb33a07ba4e948732a` |
+| Opaque family | `FAM-358b6882` |
+| Public scale | `n = 20`, `T = 96`, alphabet 4 |
+| CB_A predictive advantage | +1,308.07 bits |
+| CB_A disjoint-recovery advantage | +318.46 bits |
+| CB_B predictive advantage | +1,247.19 bits |
+| CB_B disjoint-recovery advantage | +291.61 bits |
+| Naturality | 0.6474 |
+| Stability | 0.7947 |
+| Production/reference parity | PASS in both codebooks |
+| Promotion eligibility | **false** — development only; intervention unearned |
+
+Across all 336 `MPRC2_FULL` system pairs, the two codebooks were strongly aligned:
+
+```text
+predictive-delta Pearson correlation: 0.9982
+recovery-delta Pearson correlation:   0.9995
+predictive sign agreement:            98.21%
+recovery sign agreement:             100.00%
+certificate-pass discordances:         0
+```
+
+This makes a pure codebook artifact less likely for the observed candidate. It does not make the candidate a physical discovery.
+
+### D6.5 Why the result is still weak
+
+The signal is rare and does not yet replicate cleanly across profiles:
+
+```text
+standard: MPRC2_FULL 0 wins / 0 null wins
+deep:     MPRC2_FULL 3 wins / 0 null wins
+daily:    MPRC2_FULL 1 win  / 1 null win
+```
+
+The development-only secondary max-statistic permutation p-value is `1.0` for `MPRC2_FULL` and the other arms. The intervention axis is explicitly `RESERVED_UNEARNED`. No candidate is promotion-eligible.
+
+The honest statement is therefore:
+
+> `MPRC2_FULL` has a small, scale-dependent and codebook-stable development hint in `deep`, with better null specificity than its non-temporal ablation; it does not yet have robust cross-profile replication or confirmatory statistical support.
+
+### D6.6 Useful negative evidence
+
+The negative results matter because they show that the instrument is not designed to praise every preferred concept.
+
+- The current LEC variants produced no system-level wins in `deep` or `daily`. Energy-based language remains a proposal lens, not a physical energy claim.
+- The current MSR2 finite proxy and its `NO_D`, `NO_FLOW`, `NO_RECOVERY`, `D_SHUFFLE` and `RHO_SHUFFLE` ablations produced no wins. They do not justify modular-time or spectral-geometry interpretation.
+- `SINGLETON` won often but also won on many null systems. This demonstrates that a highly local, particle-like decomposition can be a useful effective code without being a specific indicator of fundamental particle ontology.
+- `ENVELOPE_MPRC_SYNERGY` did not show specific arm-level success in `deep`.
+
+Under Rank-Don’t-Eliminate, these mechanisms remain archived for new representations, scales and intervention tests, but they are not currently load-bearing.
+
+### D6.7 What this means for the Whole → parts idea
+
+The latest evidence modestly strengthens one limited bridge:
+
+```text
+global relational process
+→ discoverable stable effective restrictions
+```
+
+It does **not** yet establish the much longer physical chain:
+
+```text
+Ω
+→ quantum structure
+→ spacetime and causal geometry
+→ fields and particle sectors
+→ Standard Model and gravity
+```
+
+The best current interpretation is:
+
+1. whole-first effective parts are operationally definable rather than merely metaphorical;
+2. simple local decompositions can work while remaining nonspecific, so effective usefulness does not prove ontological primacy;
+3. persistence through time may be part of what distinguishes a genuine effective sector from a static pattern;
+4. the current evidence is still synthetic, observational and development-only;
+5. AC remains an exact interpretive twin at AC0 and adds no earned equation or prediction.
+
+### D6.8 What would count as a meaningful next advance
+
+The active `multiday` run should finish proposal generation, evaluation, finalization, audit closure and strict replay. The key question is whether larger-scale evidence preserves the same pattern:
+
+```text
+MPRC2_FULL gains on structured systems
++
+low matched-null leakage
++
+codebook stability
++
+separate predictive and disjoint-recovery advantages
+```
+
+A future confirmation campaign would then need a fresh preregistered split, one frozen source identity across the full ladder, and a genuinely interventional/autonomy axis. Only after those gates would `OBSERVATIONAL_CLOSURE_CANDIDATE` be allowed to approach `CLOSURE_MECHANISM`.
+
+### D6.9 Current verdict
+
+```text
+Whole → effective parts:     alive; modestly strengthened as a testable programme
+Whole → physical particles:  open; not yet derived
+Whole-first physics:         formal seed / development programme
+AC interpretation:           AC0; scientifically unearned
+Arena 0A:                    closed
+```
+
+The correct tone is neither dismissal nor celebration. The programme has progressed from a philosophical reversal to an instrument that can produce clean negative results, detect false local shortcuts, preserve rare candidates for later testing and expose its own engineering failures. That is meaningful progress, but not yet foundational physics.
+
+---
+
+## Version note — preserved historical body below
+
+The remaining sections preserve the V4-DRAFT.5 research body and completed A3 record for traceability. Where an old operational statement conflicts with the V4-DRAFT.6 update above—such as “A4 is not yet built” or the v0.2.0a3 executable status—the V4-DRAFT.6 update controls the current project status. The historical wording is retained so that the evidence trail is not silently rewritten.
+
+---
+
+
+## Reader orientation — inherited V4-DRAFT.5 research body
 
 AC–WFP asks whether reality may be **whole-first**: local systems, parts, clocks, geometry and records may be stable, predictive and reconstructible restrictions of a deeper compatible Whole, rather than independent primitives assembled upward inside a pre-existing container.
 
@@ -39,7 +286,7 @@ Key abbreviations used below:
 
 ---
 
-## V4-DRAFT.5 evidence update — completed A3 multiday run and A4 handoff
+## Historical V4-DRAFT.5 evidence update — completed A3 multiday run and A4 handoff
 
 **Source evidence:** `LIVE_EXTRACT_ACWFP_MULTIDAY_20260702_105031.zip`  
 **Executable:** AC-WFP Arena `v0.2.0a3` / `acwfp-arena==0.2.0a3`  
