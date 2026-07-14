@@ -39,6 +39,24 @@
     "url": "https://www.mdlxdcc.org/Nara/episode-01-ordinary-light.html"
   }
   </script>
+
+<style id="nara-episode-music-style">
+  .music-tool {
+    min-width: 6.6rem;
+    white-space: nowrap;
+  }
+  .music-tool[data-state="playing"] {
+    border-color: rgba(214, 176, 92, .72);
+    color: #f5d991;
+  }
+  .music-tool[data-state="blocked"] {
+    border-color: rgba(255,255,255,.28);
+  }
+  @media (max-width: 720px) {
+    .music-tool { min-width: 3rem; }
+    .music-tool .music-label { display: none; }
+  }
+</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to story</a>
@@ -58,10 +76,15 @@
 <span aria-live="polite" class="scale-label" data-reader-scale-label="">100%</span>
 <button aria-label="Increase text size" class="tool" data-reader-scale="0.08" type="button">A+</button>
 <button aria-label="Reset text size" class="tool" data-reader-scale="reset" type="button">A</button>
+<button aria-label="Play background music" aria-pressed="false" class="tool music-tool" data-state="ready" id="nara-audio-toggle" title="Play or pause Episode 01 music" type="button"><span aria-hidden="true" class="music-icon">▶</span> <span class="music-label">Music</span></button>
 </div>
 </div>
 <div aria-hidden="true" class="reading-progress"></div>
 </header>
+
+<audio id="nara-episode-audio" preload="auto" autoplay>
+  <source src="assets/audio/Nara_Episode_One_Opening.m4a" type="audio/mp4"/>
+</audio>
 <main id="main" tabindex="-1">
 <section class="hero story-hero">
 <div class="wrap hero-grid story-hero-single">
@@ -610,5 +633,111 @@
 </div>
 </footer>
 <script defer="" src="assets/js/nara-reader.js"></script>
+
+<script>
+(() => {
+  const audio = document.getElementById('nara-episode-audio');
+  const button = document.getElementById('nara-audio-toggle');
+  if (!audio || !button) return;
+
+  const icon = button.querySelector('.music-icon');
+  const targetVolume = 0.22;
+  let fadeTimer = null;
+  let userPaused = false;
+  let firstStartPending = true;
+
+  function setState(state) {
+    button.dataset.state = state;
+    const playing = state === 'playing';
+    button.setAttribute('aria-pressed', String(playing));
+    if (state === 'playing') {
+      icon.textContent = '⏸';
+      button.setAttribute('aria-label', 'Pause background music');
+      button.title = 'Pause Episode 01 music';
+    } else if (state === 'ended') {
+      icon.textContent = '↻';
+      button.setAttribute('aria-label', 'Replay background music');
+      button.title = 'Replay Episode 01 music';
+    } else {
+      icon.textContent = '▶';
+      button.setAttribute('aria-label', 'Play background music');
+      button.title = 'Play Episode 01 music';
+    }
+  }
+
+  function stopFade() {
+    if (fadeTimer) {
+      window.clearInterval(fadeTimer);
+      fadeTimer = null;
+    }
+  }
+
+  function fadeIn() {
+    stopFade();
+    audio.volume = 0;
+    const steps = 20;
+    let step = 0;
+    fadeTimer = window.setInterval(() => {
+      step += 1;
+      audio.volume = Math.min(targetVolume, targetVolume * step / steps);
+      if (step >= steps || audio.paused) stopFade();
+    }, 100);
+  }
+
+  async function startMusic({restart = false} = {}) {
+    if (userPaused) return false;
+    if (restart || audio.ended) audio.currentTime = 0;
+    try {
+      audio.volume = 0;
+      await audio.play();
+      firstStartPending = false;
+      setState('playing');
+      fadeIn();
+      return true;
+    } catch (error) {
+      setState('blocked');
+      return false;
+    }
+  }
+
+  button.addEventListener('click', async () => {
+    if (!audio.paused) {
+      userPaused = true;
+      stopFade();
+      audio.pause();
+      setState('paused');
+      return;
+    }
+    userPaused = false;
+    await startMusic({restart: audio.ended});
+  });
+
+  audio.addEventListener('play', () => setState('playing'));
+  audio.addEventListener('pause', () => {
+    if (!audio.ended) setState('paused');
+  });
+  audio.addEventListener('ended', () => {
+    stopFade();
+    setState('ended');
+  });
+
+  const unlockOnFirstInteraction = async () => {
+    if (!firstStartPending || userPaused || !audio.paused) return;
+    const started = await startMusic();
+    if (started) {
+      document.removeEventListener('pointerdown', unlockOnFirstInteraction, true);
+      document.removeEventListener('keydown', unlockOnFirstInteraction, true);
+    }
+  };
+
+  document.addEventListener('pointerdown', unlockOnFirstInteraction, true);
+  document.addEventListener('keydown', unlockOnFirstInteraction, true);
+
+  audio.volume = 0;
+  window.addEventListener('load', () => {
+    startMusic();
+  }, {once: true});
+})();
+</script>
 </body>
 </html>
