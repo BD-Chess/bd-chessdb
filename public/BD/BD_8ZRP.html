@@ -5,9 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BD × AI Lab — 8Z-RP / TSP as Compression · nu3496 Below 1%</title>
-  <meta name="description" content="8Z-RP is a human–AI co-developed TSP research system. Current independently verified nu3496 live checkpoint: 96,934, only 0.834270% above the certified optimum of 96,132, with a complete tour, interactive visualization and verification artifacts." />
+  <meta name="description" content="8Z-RP is a human–AI co-developed TSP research system: a 51,038-byte general solver source, a completed and independently verified nu3496 route only 0.834270% above optimum, and a clearly labeled native million-city scaling hypothesis." />
   <meta property="og:title" content="8Z-RP · TSP as Compression · nu3496 Below 1%" />
-  <meta property="og:description" content="Verified live nu3496 route: 96,934 / 0.834270% above certified optimum. Open the full status, route and evidence." />
+  <meta property="og:description" content="51 KB general solver source; completed nu3496 P5 record at 0.834270% above optimum; plus a falsifiable 1–100-million-city native-scaling hypothesis." />
   <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -93,7 +93,7 @@ a{color:inherit}
   mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black,transparent);
 }
 #constellation-canvas{position:absolute;inset:0;pointer-events:none}
-.hero-shell{position:relative;z-index:2;max-width:860px}
+.hero-shell{position:relative;z-index:2;max-width:860px;width:100%;min-width:0}
 .hero-eyebrow{
   font-family:'JetBrains Mono',monospace;
   font-size:.72rem;
@@ -1095,6 +1095,129 @@ footer{
 @media(max-width:980px){.architecture-chain{grid-template-columns:1fr 1fr}.architecture-node:not(:last-child)::after{display:none}}
 @media(max-width:720px){.originality-grid,.claim-split,.architecture-chain{grid-template-columns:1fr}}
 
+
+
+/* ===== TSPTS SOURCE-SIZE STORY · 16 JULY 2026 ===== */
+.size-story{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  padding:0;
+  border-top:1px solid rgba(0,229,255,.10);
+  border-bottom:1px solid rgba(245,158,11,.14);
+  background:
+    radial-gradient(ellipse 62% 72% at 12% 45%,rgba(0,229,255,.09),transparent 68%),
+    radial-gradient(ellipse 58% 78% at 92% 55%,rgba(245,158,11,.08),transparent 68%),
+    linear-gradient(135deg,#030711 0%,#07101d 46%,#09080f 100%);
+}
+.size-story::before{
+  content:'';position:absolute;inset:0;z-index:-2;opacity:.42;
+  background-image:
+    linear-gradient(rgba(0,229,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.035) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:linear-gradient(90deg,black,rgba(0,0,0,.18),black);
+}
+.size-story::after{
+  content:'51,038 < 96,982';position:absolute;right:-.04em;bottom:-.19em;z-index:-1;
+  font-family:'JetBrains Mono',monospace;font-size:clamp(3rem,12vw,11rem);font-weight:700;
+  letter-spacing:-.08em;color:rgba(255,255,255,.018);white-space:nowrap;pointer-events:none;
+}
+.size-story-wrap{max-width:1180px;margin:0 auto;padding:96px 5vw 92px;position:relative}
+.size-story-kicker{
+  max-width:none;margin:0 0 1.05rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;
+  letter-spacing:.32em;text-transform:uppercase;color:var(--cyan);
+}
+.size-story-title{
+  max-width:1100px;margin:0;font-size:clamp(2.65rem,7.8vw,7.6rem);line-height:.84;
+  letter-spacing:-.055em;font-weight:700;text-transform:uppercase;
+}
+.size-story-line{display:block;color:var(--text)}
+.size-story-accent{
+  display:block;color:var(--gold);text-shadow:0 0 34px rgba(245,158,11,.10);
+}
+.size-story-lead{
+  max-width:900px;margin:2rem 0 0;font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.25rem,2.45vw,1.85rem);line-height:1.35;color:rgba(226,232,244,.83);
+}
+.size-story-equation{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:1rem;
+  align-items:stretch;margin:2.4rem 0 1.6rem;
+}
+.size-file-card{
+  border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:1.5rem 1.4rem;
+  background:linear-gradient(160deg,rgba(15,23,41,.86),rgba(4,8,16,.94));
+  box-shadow:0 20px 45px rgba(0,0,0,.24);position:relative;overflow:hidden;
+}
+.size-file-card::before{content:'';position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,var(--card-accent,var(--cyan)),transparent 80%)}
+.size-file-card.solver{--card-accent:var(--cyan)}
+.size-file-card.instance{--card-accent:var(--gold)}
+.size-file-label{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(226,232,244,.48)}
+.size-file-name{font-family:'JetBrains Mono',monospace;font-size:clamp(1rem,2.2vw,1.45rem);font-weight:700;margin:.45rem 0 .8rem;color:var(--text);word-break:break-word}
+.size-file-bytes{font-family:'JetBrains Mono',monospace;font-size:clamp(2rem,5vw,4rem);font-weight:700;line-height:1;color:var(--card-accent)}
+.size-file-kib{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:rgba(226,232,244,.48);margin-top:.42rem}
+.size-file-role{margin-top:.9rem;font-size:.95rem;color:rgba(226,232,244,.68);max-width:none}
+.size-story-symbol{align-self:center;font-family:'JetBrains Mono',monospace;font-size:clamp(2.7rem,7vw,5.8rem);font-weight:700;color:var(--green);text-shadow:0 0 24px rgba(52,211,153,.16)}
+.size-story-punch{
+  margin:0;padding:1.25rem 1.35rem;border:1px solid rgba(52,211,153,.18);border-radius:7px;
+  background:rgba(52,211,153,.045);font-size:clamp(1.05rem,1.9vw,1.32rem);color:rgba(226,232,244,.82);
+}
+.size-story-punch strong{font-family:'JetBrains Mono',monospace;color:var(--green)}
+.size-story-copy{max-width:940px;margin:1.3rem 0 0;color:rgba(226,232,244,.73);font-size:1rem}
+.size-story-copy strong{color:var(--text)}
+.size-story-boundary{
+  max-width:940px;margin:1rem 0 0;padding-left:1rem;border-left:2px solid rgba(245,158,11,.42);
+  color:rgba(226,232,244,.55);font-size:.86rem;
+}
+.size-story-boundary strong{color:var(--gold)}
+.size-story-hashes{margin-top:1rem;font-family:'JetBrains Mono',monospace;font-size:.61rem;line-height:1.65;color:rgba(226,232,244,.31);word-break:break-all}
+@media(max-width:760px){
+  .size-story-wrap{padding:76px 5vw 72px}
+  .size-story-equation{grid-template-columns:1fr;gap:.8rem}
+  .size-story-symbol{transform:rotate(90deg);justify-self:center;line-height:.7;margin:.2rem 0}
+  .size-story-title{font-size:clamp(2.45rem,13.4vw,4.9rem);line-height:.88}
+  .size-story::after{font-size:22vw;bottom:.02em}
+}
+
+
+/* ===== FALSIFIABLE NATIVE-SCALING HYPOTHESIS · 16 JULY 2026 ===== */
+.hyp-section{position:relative;overflow:hidden;background:
+  radial-gradient(ellipse 58% 72% at 92% 15%,rgba(167,139,250,.08),transparent 62%),
+  radial-gradient(ellipse 55% 68% at 5% 90%,rgba(0,229,255,.06),transparent 62%),
+  linear-gradient(180deg,#040713,#060a14)}
+.hyp-section::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.28;background-image:
+  linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:74px 74px}
+.hyp-shell{position:relative;z-index:1}
+.hyp-flag{display:inline-flex;align-items:center;gap:.55rem;margin:.25rem 0 1rem;padding:.46rem .7rem;border:1px solid rgba(245,158,11,.28);border-radius:3px;background:rgba(245,158,11,.07);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.hyp-flag::before{content:'●';font-size:.55rem}
+.hyp-lead{max-width:84ch;font-size:1.08rem;color:rgba(226,232,244,.8)}
+.hyp-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15rem;margin-top:1.8rem}
+.hyp-card{position:relative;padding:1.5rem 1.35rem;border:1px solid rgba(255,255,255,.1);border-radius:7px;background:rgba(5,9,20,.82);box-shadow:var(--shadow);overflow:hidden}
+.hyp-card::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,var(--hyp-accent),transparent 86%)}
+.hyp-card.pc{--hyp-accent:var(--cyan)}.hyp-card.hpc{--hyp-accent:var(--gold)}
+.hyp-label{font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+.hyp-number{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(2.3rem,5vw,4.5rem);line-height:.95;letter-spacing:-.055em;margin:.65rem 0 .55rem;color:var(--hyp-accent)}
+.hyp-card h3{margin:0 0 .55rem;font-size:1.16rem}.hyp-card p{max-width:none;font-size:.95rem;color:rgba(226,232,244,.68)}
+.hyp-confidence{display:inline-block;margin-top:.9rem;padding:.25rem .46rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);color:rgba(226,232,244,.62)}
+.hyp-boundary{max-width:95ch;margin:1.15rem 0 0;padding:1rem 1.1rem;border-left:3px solid var(--rose);background:rgba(255,107,138,.05);color:rgba(226,232,244,.67);font-size:.9rem}.hyp-boundary strong{color:var(--rose)}
+.hyp-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin-top:1.5rem}
+.hyp-evidence article{padding:1.1rem;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:rgba(255,255,255,.025)}
+.hyp-ev-num{font-family:'JetBrains Mono',monospace;font-size:1.42rem;font-weight:700;color:var(--green);line-height:1.1}.hyp-evidence h3{font-size:1rem;margin:.38rem 0 .35rem}.hyp-evidence p{max-width:none;font-size:.86rem;line-height:1.55;color:rgba(226,232,244,.62)}
+.hyp-architecture{margin-top:1.4rem;padding:1.1rem;border:1px solid rgba(0,229,255,.15);border-radius:5px;background:#030711}
+.hyp-arch-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:.7rem}
+.hyp-flow{display:flex;flex-wrap:wrap;align-items:center;gap:.48rem}.hyp-step{padding:.42rem .55rem;border:1px solid rgba(255,255,255,.09);border-radius:3px;background:rgba(255,255,255,.025);font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(226,232,244,.72)}.hyp-arrow{font-family:'JetBrains Mono',monospace;color:var(--violet);font-weight:700}
+.hyp-details{margin-top:1rem;border:1px solid rgba(167,139,250,.16);border-radius:5px;background:rgba(167,139,250,.035)}
+.hyp-details summary{cursor:pointer;padding:.9rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.05em;color:var(--violet)}
+.hyp-details-body{padding:0 1rem 1rem;color:rgba(226,232,244,.68);font-size:.9rem}.hyp-details-body ul{margin:.65rem 0 0 1.1rem}.hyp-details-body li{margin:.35rem 0}
+.hyp-sources{max-width:100ch;margin:1rem 0 0;font-family:'JetBrains Mono',monospace;font-size:.62rem;line-height:1.7;color:var(--muted)}.hyp-sources a{color:var(--cyan);text-decoration:underline;text-decoration-color:rgba(0,229,255,.28);text-underline-offset:3px}
+@media(max-width:780px){.hyp-targets,.hyp-evidence{grid-template-columns:1fr}.hyp-flow{align-items:stretch}.hyp-step{width:100%}.hyp-arrow{display:none}.hyp-card{padding:1.25rem 1.05rem}}
+
+
+/* Final mobile containment for the expanded 2026 hero metrics. */
+@media(max-width:980px){.hero-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:768px){.hero-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.hm{min-width:0}}
+@media(max-width:480px){.hero-metrics{grid-template-columns:1fr}.hm{min-width:0}}
 </style>
 </head>
 <body>
@@ -1108,29 +1231,31 @@ footer{
 <div class="hero-shell">
   <div class="hero-eyebrow">BD &times; AI Lab &middot; 8Z-RP &middot; MDL / DCC / Route Optimization Research</div>
   <h1 class="hero-title"><span class="accent">8Z-RP</span><br><span class="gold">TSP as Compression</span></h1>
-  <p class="hero-subtitle">A human-led, AI-assisted TSP research system that progressed from an exact qa194 result to a complete, independently verified live route of <strong>96,934</strong> on nu3496 &mdash; only <strong>0.834270%</strong> above the certified optimum of 96,132.</p>
+  <p class="hero-subtitle">A human-led, AI-assisted TSP research system that progressed from an exact qa194 result to a complete, independently verified route of <strong>96,934</strong> on nu3496 &mdash; only <strong>0.834270%</strong> above the certified optimum of 96,132.</p>
   <p class="hero-copy">
     Co-developed by <strong>BD and AI research partners</strong> through a repeated build &rarr; run &rarr; extract &rarr; diagnose &rarr; rebuild loop. This is not a one-shot generated solver: the system grew through many experimental versions, local compute runs, live evidence packages, failures, hotfixes, edge fusion and focused route surgery.
   </p>
   <p class="hero-kicker">The core question remains: <strong>isn&rsquo;t the shortest route the one compressed best?</strong> The current flagship evidence is no longer a small demonstration: it is a fully published 3,496-city route below 1% gap, with its tour, interactive view and independent verification beside the result.</p>
 
   <div class="hero-metrics">
-    <div class="hm"><div class="n" style="color:var(--rose)">96,934</div><div class="l">nu3496 live route</div></div>
+    <div class="hm"><div class="n" style="color:var(--rose)">96,934</div><div class="l">nu3496 completed P5 route</div></div>
     <div class="hm"><div class="n" style="color:var(--green)">0.8343%</div><div class="l">Gap to certified optimum</div></div>
     <div class="hm"><div class="n" style="color:var(--cyan)">3,496</div><div class="l">Cities in flagship route</div></div>
+    <div class="hm"><div class="n" style="color:var(--cyan)">51 KB</div><div class="l">TSPTS general solver source</div></div>
+    <div class="hm"><div class="n" style="color:var(--gold)">97 KB</div><div class="l">One nu3496 input file</div></div>
     <div class="hm"><div class="n" style="color:var(--gold)">9,352</div><div class="l">qa194 exact optimal</div></div>
     <div class="hm"><div class="n" style="color:var(--violet)">41&ndash;112&times;</div><div class="l">Measured Rust speedup</div></div>
-    <div class="hm"><div class="n" style="color:var(--orange)">LIVE</div><div class="l">Continuous research campaign</div></div>
+    <div class="hm"><div class="n" style="color:var(--orange)">P5 DONE</div><div class="l">Five DEV2.3 branches completed</div></div>
   </div>
 
   <div class="hero-actions">
-    <a class="btn btn-primary" href="BD_8ZRP_nu3496_status.html">Open nu3496 live status &rarr;</a>
+    <a class="btn btn-primary" href="BD_8ZRP_nu3496_status.html">Open nu3496 verified record &rarr;</a>
     <a class="btn btn-secondary" href="#nu3496-breakthrough">See the flagship result</a>
     <a class="btn btn-secondary" href="https://chessbest.org/trip/" target="_blank" rel="noopener">Open live trip optimizer &nearr;</a>
     <a class="btn btn-secondary" href="index.html">Back to portfolio &rarr;</a>
   </div>
   <div class="hero-tags">
-    <span class="tag rose">nu3496 live &middot; 96,934</span>
+    <span class="tag rose">nu3496 completed P5 &middot; 96,934</span>
     <span class="tag green">verified sub-1% gap</span>
     <span class="tag cyan">complete .tour + audit artifacts</span>
     <span class="tag gold">qa194 exact &middot; 9,352</span>
@@ -1144,7 +1269,9 @@ footer{
 
   <nav class="topnav">
     <span>Jump to</span>
+    <a class="cyan" href="#solver-smaller-than-instance">51 KB solver</a>
     <a class="rose" href="#nu3496-breakthrough">Latest record</a>
+    <a class="gold" href="#million-city-hypothesis">Million-city hypothesis</a>
     <a class="green" href="BD_8ZRP_nu3496_status.html">Full nu3496 status &nearr;</a>
     <a class="cyan" href="#stop">Why stop</a>
     <a class="gold" href="#verified-results">Verified results</a>
@@ -1201,7 +1328,7 @@ footer{
       <div class="sister-thumb-nu">
         <div class="nu-vis">
           <div class="nu-bar-wrap">
-            <div class="nu-label">LIVE</div>
+            <div class="nu-label">P5</div>
             <div class="nu-bar"><div class="nu-fill" style="width:96%;background:var(--green)"></div></div>
             <div class="nu-val" style="color:var(--green)">.834%</div>
           </div>
@@ -1215,11 +1342,11 @@ footer{
             <div class="nu-bar"><div class="nu-fill" style="width:90%;background:var(--rose)"></div></div>
             <div class="nu-val" style="color:var(--rose)">.961%</div>
           </div>
-          <div class="nu-stat">3,496 cities · verified · campaign active</div>
+          <div class="nu-stat">3,496 cities · completed P5 record</div>
         </div>
       </div>
       <div class="sister-info">
-        <div class="sister-tag" style="color:var(--green);border-color:rgba(52,211,153,0.28)">Flagship Live Evidence</div>
+        <div class="sister-tag" style="color:var(--green);border-color:rgba(52,211,153,0.28)">Flagship Verified Evidence</div>
         <div class="sister-title">nu3496 · Verified Below 1%</div>
         <div class="sister-desc">96,934 · 0.834270% · tour + verification + interactive route</div>
       </div>
@@ -1228,37 +1355,77 @@ footer{
 
   <div class="divider"></div>
 
+
+  <!-- ===== TSPTS SOURCE-SIZE STORY ===== -->
+  <section id="solver-smaller-than-instance" class="size-story" aria-labelledby="size-story-title-main">
+    <div class="size-story-wrap">
+      <p class="size-story-kicker">Compression in practice · raw text files · measured 16 July 2026</p>
+      <h2 class="size-story-title" id="size-story-title-main">
+        <span class="size-story-line">The general solver</span>
+        <span class="size-story-accent">is smaller</span>
+        <span class="size-story-line">than one problem file.</span>
+      </h2>
+      <p class="size-story-lead">The complete TSPTS v0.1 Python source is only 51,038 bytes. The official <code>nu3496.tsp</code> coordinate file it reads is 96,982 bytes. One compact text file describes how to search; the larger text file describes just one 3,496-city instance.</p>
+
+      <div class="size-story-equation" aria-label="TSPTS source size compared with the nu3496 instance file">
+        <article class="size-file-card solver">
+          <div class="size-file-label">General-purpose solver source</div>
+          <div class="size-file-name">TSPTS.py</div>
+          <div class="size-file-bytes">51,038 B</div>
+          <div class="size-file-kib">49.84 KiB · 725 lines · Python standard-library path</div>
+          <p class="size-file-role">A generic deterministic TSPLIB EUC_2D solver—not a stored Nicaragua tour.</p>
+        </article>
+        <div class="size-story-symbol" aria-hidden="true">&lt;</div>
+        <article class="size-file-card instance">
+          <div class="size-file-label">One problem instance</div>
+          <div class="size-file-name">nu3496.tsp</div>
+          <div class="size-file-bytes">96,982 B</div>
+          <div class="size-file-kib">94.71 KiB · 3,496 coordinate records</div>
+          <p class="size-file-role">A single official Nicaragua routing instance, before any route is searched.</p>
+        </article>
+      </div>
+
+      <div class="size-story-punch"><strong>1.90× larger input.</strong> The solver source is <strong>47.4% smaller</strong> than the problem file it can read and attack—and the 8Z-RP research system is already independently verified below 1% on that same instance.</div>
+      <p class="size-story-copy"><strong>This is why the comparison belongs beside “TSP as Compression.”</strong> It is not a proof about Kolmogorov complexity, nor does it count the Python interpreter or runtime memory. It is a concrete and memorable engineering fact: a small, reusable program encodes a search procedure for many compatible TSP files, while this one input file is almost twice as large.</p>
+      <p class="size-story-copy">The TSPTS source itself declares cold-start operation with no archived tours, arena caches, instance-name branches, known-optimum-guided moves, network calls or external solvers. Its product identity is general-purpose, not <code>nu3496</code>-specific.</p>
+      <p class="size-story-boundary"><strong>Evidence boundary:</strong> the 96,934 / 0.834270% route published on these pages belongs to the independently verified DEV2.3 research-arena lineage. The size comparison belongs to TSPTS. A TSPTS-specific sub-1% milestone should be attributed with its own cold-start command, result artifact and hash.</p>
+      <div class="size-story-hashes">TSPTS.py SHA-256: 951fd97d27723fa3ce29913e01409976414985e19b303effef955bdff8083cef<br/>nu3496.tsp SHA-256: 95aebc8fd9907b94ef644a7e9bd0662e24644cfc58963bc121abbe6696c96e74</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <section id="nu3496-breakthrough">
     <div class="wrap">
-      <span class="sec-tag green rv">Canonical Flagship Evidence · Live 15 July 2026</span>
+      <span class="sec-tag green rv">Canonical Flagship Evidence · Completed P5 · 16 July 2026</span>
       <h2 class="rv">nu3496 is no longer &ldquo;the next frontier.&rdquo; It is now a verified sub-1% route.</h2>
       <p class="rv">
-        The active DEV2.3 continuous campaign has produced a complete route of <strong>96,934</strong> for the official 3,496-city nu3496 instance. The route is <strong>0.834270%</strong> above the certified optimum of 96,132 and has been independently recomputed from the original TSPLIB coordinates. The latest completed branch is P4 at <strong>96,947</strong>; the newer P5 result is an atomically saved, independently verified live checkpoint. The full status page publishes the interactive route, standard <code>.tour</code> file and verification evidence.
+        DEV2.3 cycle 1 branch P5 completed its full 16-hour budget with a route of <strong>96,934</strong> for the official 3,496-city nu3496 instance. The route is <strong>0.834270%</strong> above the certified optimum of 96,132 and has been independently recomputed from the original TSPLIB coordinates. P5 improved the completed P4 basin by 13 units. The record appeared at move 40,280; P5 then completed its full budget with 60,645 total moves and emitted its final result row, making it the latest completed verified branch in the 16 July 2026 extract. At capture, P6 was active at 43.75% with a branch best of 97,276 and had not produced a new global record. The full status page publishes the interactive route, standard <code>.tour</code> file and verification evidence.
       </p>
 
       <div class="nu-route-showcase rv">
         <a class="nu-route-preview" href="BD_8ZRP_nu3496_status.html" aria-label="Open the canonical nu3496 status and evidence page">
           <img src="NU3496_8ZRP_96934_route.svg" alt="Verified 8Z-RP nu3496 route with 3,496 cities, length 96,934" loading="lazy"/>
-          <span class="nu-route-badge">Verified live route</span>
+          <span class="nu-route-badge">Verified completed route</span>
           <div class="nu-route-caption">
             <div class="title">The complete 3,496-city route &mdash; click for the evidence page</div>
-            <div class="desc">96,934 · 0.834270% gap · independently recomputed · P5 live checkpoint · campaign active</div>
+            <div class="desc">96,934 · 0.834270% gap · independently recomputed · completed P5 branch</div>
           </div>
         </a>
 
         <aside class="nu-evidence-gateway">
           <div class="eyebrow">Canonical status page</div>
           <h3>The result should be inspected, not merely quoted.</h3>
-          <p>The dedicated page is the authoritative gateway to the latest nu3496 checkpoint and its public evidence. It is the first page to update whenever the continuous campaign finds another record.</p>
+          <p>The dedicated page is the authoritative gateway to the latest completed nu3496 record and its public evidence. It is the first page to update whenever the continuous campaign finds another record.</p>
           <div class="nu-evidence-list">
             <div class="nu-evidence-row"><span class="k">Current route</span><span class="v good">96,934</span></div>
             <div class="nu-evidence-row"><span class="k">Certified optimum</span><span class="v">96,132</span></div>
             <div class="nu-evidence-row"><span class="k">Verified gap</span><span class="v good">0.834270%</span></div>
-            <div class="nu-evidence-row"><span class="k">Latest completed branch</span><span class="v">P4 · 96,947</span></div>
+            <div class="nu-evidence-row"><span class="k">Latest completed branch</span><span class="v good">P5 · 96,934</span></div>
             <div class="nu-evidence-row"><span class="k">Published evidence</span><span class="v">tour · hash · recomputation · interactive view</span></div>
           </div>
           <a class="btn btn-primary" href="BD_8ZRP_nu3496_status.html">Open complete status &amp; evidence &rarr;</a>
-          <div class="nu-canonical-note">Canonical live record: BD_8ZRP_nu3496_status.html</div>
+          <div class="nu-canonical-note">Canonical verified record: BD_8ZRP_nu3496_status.html</div>
         </aside>
       </div>
 
@@ -1279,6 +1446,52 @@ footer{
         <a class="btn btn-primary" href="BD_8ZRP_nu3496_status.html">Open the complete nu3496 status &rarr;</a>
         <a class="btn btn-secondary" href="BD_8ZRP_nu3496_status.html#live-route">Inspect route and evidence</a>
       </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+
+  <!-- ===== FALSIFIABLE NATIVE-SCALING HYPOTHESIS ===== -->
+  <section id="million-city-hypothesis" class="hyp-section" aria-labelledby="hyp-title-main">
+    <div class="wrap hyp-shell">
+      <span class="sec-tag gold">Falsifiable future target · published 16 July 2026</span>
+      <div class="hyp-flag">Hypothesis — not measured 8Z-RP capability</div>
+      <h2 id="hyp-title-main">From 3,496 cities to millions: a test we want to run.</h2>
+      <p class="hyp-lead">The completed <strong>96,934 / 0.834270%</strong> nu3496 result is measured evidence. The numbers below are a separate engineering hypothesis for a purpose-built <strong>C++23 / CUDA / MPI TSPES</strong> redesign: sparse candidate graphs, a spatial pyramid, GPU-batched local moves, Tour-Enriched-Pyramid feedback and distributed elite exchange—rather than a line-by-line port of the present Python code.</p>
+
+      <div class="hyp-targets">
+        <article class="hyp-card pc">
+          <div class="hyp-label">Seven-day workstation target</div>
+          <div class="hyp-number">1–2 million</div>
+          <h3>Within approximately 1% of an optimum or credible lower bound</h3>
+          <p>Assumed hardware: about 10 CPU workers plus one modern GPU. A favorable Euclidean/geographic stretch envelope of 1–5 million cities is worth testing, but is not yet demonstrated.</p>
+          <span class="hyp-confidence">plausible engineering hypothesis</span>
+        </article>
+        <article class="hyp-card hpc">
+          <div class="hyp-label">Seven-day supercomputer target</div>
+          <div class="hyp-number">50–100 million</div>
+          <h3>Within approximately 1% of an optimum or credible lower bound</h3>
+          <p>Assumed allocation: roughly 256–1,000 GPUs with asynchronous MPI exchange of compact elite structures. This requires good locality, sparse memory behavior and useful parallel efficiency across the hierarchy.</p>
+          <span class="hyp-confidence">high-risk stretch hypothesis</span>
+        </article>
+      </div>
+
+      <p class="hyp-boundary"><strong>Do not quote these numbers as results.</strong> They concern near-optimal heuristic tours on favorable large geometric instances. Exact proof of optimality is a different computational regime; non-geometric, adversarial or badly partitionable instances may scale far worse.</p>
+
+      <div class="hyp-evidence">
+        <article><div class="hyp-ev-num">1,904,711</div><h3>World TSP anchor</h3><p>The current best reported tour and the published lower bound imply a gap below 0.0471%, proving that excellent heuristic quality is possible at million-city scale.</p></article>
+        <article><div class="hyp-ev-num">1,437,195 / 1 h</div><h3>Hard-clock anchor</h3><p>The Santa Claus Challenge evaluated a 1.4-million-node Euclidean instance under a one-hour limit. Its central result: local-search localization through a neighborhood graph was decisive.</p></article>
+        <article><div class="hyp-ev-num">85,900 / 136 CPU-y</div><h3>Exact-proof boundary</h3><p>The literature’s cited exact record required about 136 CPU-years. Our hypothesis is explicitly about high-quality heuristic tours, not mathematical certificates of optimality.</p></article>
+      </div>
+
+      <div class="hyp-architecture">
+        <div class="hyp-arch-label">Proposed native computation path</div>
+        <div class="hyp-flow"><span class="hyp-step">32–128 sparse candidates</span><span class="hyp-arrow">→</span><span class="hyp-step">spatial pyramid</span><span class="hyp-arrow">→</span><span class="hyp-step">GPU move batches</span><span class="hyp-arrow">→</span><span class="hyp-step">entry/exit stitching</span><span class="hyp-arrow">→</span><span class="hyp-step">TEP affinity + disagreement</span><span class="hyp-arrow">→</span><span class="hyp-step">focused surgery</span><span class="hyp-arrow">→</span><span class="hyp-step">MPI elite exchange</span><span class="hyp-arrow">→</span><span class="hyp-step">independent verification</span></div>
+      </div>
+
+      <details class="hyp-details"><summary>How this hypothesis should be tested—and allowed to fail</summary><div class="hyp-details-body"><ul><li>Build a native reference path first, then add CUDA and MPI without changing route semantics.</li><li>Use a public ladder: 100k → 1M → 5M → 10M → 50M → 100M cities.</li><li>Publish hardware, code hash, route hash, validity check, time-to-quality curve, memory and energy use.</li><li>Use known optima where available and defensible lower bounds elsewhere; never substitute “best seen” for a bound.</li><li>Revise the hypothesis downward if the workstation misses 1M at ≈1% in seven days or if multi-GPU scaling loses most of its efficiency.</li></ul></div></details>
+      <p class="hyp-sources">External scale anchors: <a href="https://www.math.uwaterloo.ca/tsp/world/" target="_blank" rel="noopener">University of Waterloo — World TSP</a> · <a href="https://doi.org/10.3389/frobt.2021.689908" target="_blank" rel="noopener">Mariescu-Istodor &amp; Fränti — Solving the Large-Scale TSP Problem in 1 h</a>.</p>
     </div>
   </section>
 
@@ -1341,8 +1554,8 @@ footer{
       </p>
 
       <div class="highlight green rv">
-        <h3>Latest flagship checkpoint: nu3496 = 96,934 / 0.834270%</h3>
-        <p>The current result is a complete, independently recomputed live tour from the active DEV2.3 campaign. It moves the project from an exact small-instance demonstration to published evidence on a 3,496-city route. <a href="BD_8ZRP_nu3496_status.html" style="color:var(--green);text-decoration:none;border-bottom:1px solid rgba(52,211,153,.35)">Open the full status and evidence &rarr;</a></p>
+        <h3>Latest completed flagship record: nu3496 = 96,934 / 0.834270%</h3>
+        <p>The current result is a complete, independently recomputed P5 result from DEV2.3 cycle 1. It moves the project from an exact small-instance demonstration to published evidence on a 3,496-city route. <a href="BD_8ZRP_nu3496_status.html" style="color:var(--green);text-decoration:none;border-bottom:1px solid rgba(52,211,153,.35)">Open the full status and evidence &rarr;</a></p>
       </div>
 
   <div class="stat-banner rv">
@@ -1683,7 +1896,7 @@ footer{
             <div class="sense-origin">Current record mechanism</div>
             <h3>Elite-route fusion and focused local surgery</h3>
           </div>
-          <div class="sense-rank"><strong>96,934</strong>live record</div>
+          <div class="sense-rank"><strong>96,934</strong>completed P5 record</div>
         </div>
         <p>
           Once elite tours agreed on more than 98–99% of their edges, the problem changed. The arena stopped rebuilding the whole route and concentrated on disagreement components. Compatible edges from different winners were fused; P4 then used controlled threshold acceptance to cross a difficult basin boundary, and P5 applied bounded GENI/subtour/LK-chain micro-surgery under improve-only acceptance. The present NU3496 record came mainly from this compression/DCC lineage—not from bats, gravity or a pure 3D sensor.
@@ -1696,11 +1909,11 @@ footer{
       <div class="sensor-rank-head">
         <h3>How the idea families ranked on NU3496</h3>
         <p>
-          The latest completed discovery table contains 106 named sensor labels. These are best observed results, not a universal ordering: the LZ branch later received B240/B480/B960/B1920 continuation, fusion, focused surgery and the live DEV2.3 campaign, while most alternative senses received only broad or medium scouting budgets.
+          The latest completed discovery table contains 106 named sensor labels. These are best observed results, not a universal ordering: the LZ branch later received B240/B480/B960/B1920 continuation, fusion, focused surgery and the continuing DEV2.3 campaign, while most alternative senses received only broad or medium scouting budgets.
         </p>
       </div>
       <div class="sensor-rank-row header"><div>Rank</div><div>Sensor / idea</div><div>Best observed</div><div>What it tells us</div></div>
-      <div class="sensor-rank-row"><div class="rank">#1</div><div class="sensor">LZ_binary</div><div class="result">96,947 completed<br>96,934 live lineage</div><div class="meaning">Current winner: compression feedback + DCC/ratchet + fusion/surgery.</div></div>
+      <div class="sensor-rank-row"><div class="rank">#1</div><div class="sensor">LZ_binary</div><div class="result">96,947 P4 basin<br>96,934 completed P5</div><div class="meaning">Current winner: compression feedback + DCC/ratchet + fusion/surgery.</div></div>
       <div class="sensor-rank-row"><div class="rank">#2</div><div class="sensor">zstd_ratio</div><div class="result">102,152 · 6.262%</div><div class="meaning">A second compression family became the strongest fast challenger.</div></div>
       <div class="sensor-rank-row"><div class="rank">#3</div><div class="sensor">LZ_dual</div><div class="result">102,577 · 6.704%</div><div class="meaning">Dual compression signal produced the strongest early MDL winner.</div></div>
       <div class="sensor-rank-row"><div class="rank">#4</div><div class="sensor">fold_dist</div><div class="result">102,751 · 6.885%</div><div class="meaning">Strongest folded-space lens in the broad table.</div></div>
@@ -1998,7 +2211,7 @@ footer{
           <td><strong>nu3496 &mdash; continuous focused campaign, LZ_binary + ratchet, Rust/CuPy</strong></td>
           <td class="mono good">96,934</td>
           <td class="good">0.834270%</td>
-          <td><strong>Current independently verified live checkpoint; full tour and audit artifacts published.</strong></td>
+          <td><strong>Completed P5 record; full tour and audit artifacts published.</strong></td>
         </tr>
       </tbody>
     </table>
@@ -2353,7 +2566,7 @@ footer{
             nu3496 is no longer a projection. The project crossed below 1% through a sequence of evidence-led changes: broad sensor/operator scouting, a polyhedral/LZ search door, B240/B480/B960/B1920 continuations, elite-edge fusion, deterministic Or-opt surgery and then an open-ended DEV2.3 campaign.
           </p>
           <p style="margin-top:.6rem">
-            The current verified live route is <strong style="color:var(--green)">96,934 / 0.834270%</strong>. P4 delivered the large basin break from 97,036 to 96,947 through controlled threshold acceptance; P5 then improved that completed winner by another 13 units with bounded GENI/subtour/LK-chain micro-surgery under improve-only acceptance. Different neighborhoods contributed at different depths, which is direct support for Rank-Don&rsquo;t-Eliminate.
+            The current completed verified route is <strong style="color:var(--green)">96,934 / 0.834270%</strong>. P4 delivered the large basin break from 97,036 to 96,947 through controlled threshold acceptance; P5 then improved that completed winner by another 13 units with bounded GENI/subtour/LK-chain micro-surgery under improve-only acceptance. Different neighborhoods contributed at different depths, which is direct support for Rank-Don&rsquo;t-Eliminate.
           </p>
           <a href="BD_8ZRP_nu3496_status.html" class="map-link-btn">Open the complete nu3496 record &rarr;</a>
         </div>
@@ -2446,7 +2659,7 @@ footer{
           <ul>
             <li>qa194 exact known optimal 9352 was matched by multiple independent workers on official Waterloo benchmark.</li>
             <li>uy734 (n=734): DCC v2 reached 0.64% gap in 28.3 min, beating v1&rsquo;s 0.80% in 39 min. Scaling confirmed at 4&times;.</li>
-            <li>nu3496 (n=3,496): current independently verified live route <strong>96,934</strong>, only <strong>0.834270%</strong> above the certified optimum of 96,132, with the full tour and verification artifacts published.</li>
+            <li>nu3496 (n=3,496): completed independently verified P5 route <strong>96,934</strong>, only <strong>0.834270%</strong> above the certified optimum of 96,132, with the full tour and verification artifacts published.</li>
             <li>DCC v1 lost its ablation honestly. DCC v2 found exact with 5&times; less budget on qa194, then won on uy734 too.</li>
             <li>DCC v2 auto-allocated 48% of kick budget to or-opt-3 on qa194 and 76% to or-opt variants on uy734 &mdash; while double-bridge delivered the decisive final escape on both. Complementarity, not replacement.</li>
             <li>Rust backend delivers 41&ndash;112&times; wall speedup with identical results. Determinism verified across 16 test configurations.</li>
@@ -2523,10 +2736,10 @@ footer{
       <h2 class="rv">Continue the nu3496 campaign, test transfer, and build the formal bridge.</h2>
       <div class="grid-4">
         <article class="panel rose rv rv-d1">
-          <div class="micro">Active now</div>
+          <div class="micro">Latest completed result</div>
           <h3>DEV2.3 continuous nu3496 campaign</h3>
-          <p>The current live checkpoint is <strong>96,934 / 0.834270%</strong>. It was found in P5 after P4 completed at 96,947. Seven evidence-led branches cycle through the raw winner, MDL-friendly neighborhoods, wider candidate graphs, controlled valley crossing, micro-surgery and alternative basins. Milestones are logged, not used as automatic stop gates.</p>
-          <a href="BD_8ZRP_nu3496_status.html" class="map-link-btn">Follow the live status &rarr;</a>
+          <p>The latest completed checkpoint is <strong>96,934 / 0.834270%</strong>. P5 completed after improving the P4 basin from 96,947 to 96,934. At extract capture, P6 was 43.75% through its MDL-basin budget with a branch best of 97,276, so it had not beaten the 96,934 global record; P7 had not yet started. Seven evidence-led branches cycle through the raw winner, MDL-friendly neighborhoods, wider candidate graphs, controlled valley crossing, micro-surgery and alternative basins. Milestones are logged, not used as automatic stop gates.</p>
+          <a href="BD_8ZRP_nu3496_status.html" class="map-link-btn">Open the verified record &rarr;</a>
         </article>
         <article class="panel green rv rv-d2">
           <div class="micro">Next local target</div>
@@ -2556,7 +2769,7 @@ footer{
       <span class="sec-tag rv">Closing</span>
       <h2 class="rv">From an outsider compression intuition to a verified sub-1% flagship route &mdash; a living research machine with public evidence.</h2>
       <p class="rv">
-        The verified core now spans three scales: exact qa194, uy734 at 0.46%, and a complete live nu3496 route of 96,934 / 0.834270%. Add DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance, arena-led sensor discovery, elite-edge fusion and published route verification. The project is no longer only a small-instance proof of concept; it is a traceable research program with public evidence at 3,496 cities.
+        The verified core now spans three scales: exact qa194, uy734 at 0.46%, and a completed nu3496 route of 96,934 / 0.834270%. Add DCC v2 vindication, auto-discovered operator preference, Rust acceleration, Meta-DCC fleet governance, arena-led sensor discovery, elite-edge fusion and published route verification. The project is no longer only a small-instance proof of concept; it is a traceable research program with public evidence at 3,496 cities.
       </p>
       <p class="rv">
         This is not a proof of P&nbsp;=&nbsp;NP. This is not a toy heuristic. This is a real research machine with public benchmark evidence, controller evidence, engineering evidence, and a controller that discovered what the experts defaulted past. The remarkable part is not that a heuristic can match a 200-city optimum &mdash; that has been possible for decades. The remarkable part is the <em>way</em> it was produced.
@@ -2583,9 +2796,9 @@ footer{
           <div class="d">17 sensors × 8 laws. Ranking inversion at n≈300. Hierarchical DCC v1.6. MDL decides.</div>
         </a>
         <a class="mini-link rv" href="BD_8ZRP_nu3496_status.html">
-          <div class="k">Flagship live result</div>
+          <div class="k">Flagship verified record</div>
           <div class="t">nu3496 Status · 96,934 / 0.834270%</div>
-          <div class="d">3,496 cities · independently verified tour · interactive route · .tour and audit evidence · campaign still active.</div>
+          <div class="d">3,496 cities · independently verified tour · interactive route · .tour and audit evidence · P5 completed; P6 was active at capture and P7 had not yet started.</div>
         </a>
         <a class="mini-link rv" href="BD_AIM3.html">
           <div class="k">Method</div>
@@ -2615,7 +2828,7 @@ footer{
           <ul class="foot-links">
             <li><a href="index.html">Back to main portfolio</a></li>
             <li><a href="https://chessbest.org/trip/" target="_blank" rel="noopener">Open live trip optimizer</a></li>
-            <li><a href="BD_8ZRP_nu3496_status.html">Open nu3496 live status and evidence</a></li>
+            <li><a href="BD_8ZRP_nu3496_status.html">Open nu3496 record and evidence</a></li>
             <li><a href="#top">Return to top</a></li>
           </ul>
         </div>
