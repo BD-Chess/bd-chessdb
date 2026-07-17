@@ -1,4 +1,21 @@
-# MDLxDCC.org seed-bank renewal redirects · 2026-06-07
+# Google canonical-host and legacy-home redirects · 2026-07-17
+# Domain-level rules must come before path rules.
+http://mdlxdcc.org/* https://www.mdlxdcc.org/:splat 301!
+https://mdlxdcc.org/* https://www.mdlxdcc.org/:splat 301!
+http://www.mdlxdcc.org/* https://www.mdlxdcc.org/:splat 301!
+
+# Preserve the former router behavior for the ChessBest root domain.
+http://chessbest.org/ https://chessbd.netlify.app/chess.html 301!
+https://chessbest.org/ https://chessbd.netlify.app/chess.html 301!
+http://www.chessbest.org/ https://chessbd.netlify.app/chess.html 301!
+https://www.chessbest.org/ https://chessbd.netlify.app/chess.html 301!
+
+# One canonical MDLxDCC home URL.
+/index.html / 301!
+/lab.html / 301!
+/lab / 301!
+
+# Existing seed-bank renewal rewrites · 2026-06-07
 /crp/seedbank /crp/SeedBank.html 200
 /crp/codecapsules /crp/CodeCapsules.html 200
 /crp/talkingtoaliens /crp/TalkingToAliens.html 200
