@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="color-scheme" content="dark">
+  <title>Ljubljana → Lastovo · potovalni načrt 24.–25. 7. 2026</title>
+  <meta name="description" content="Dve najboljši možnosti poti z avtomobilom iz Ljubljane na Lastovo: dnevna vožnja s spanjem v Veli Luki ali nočna vožnja.">
+
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3ynHVhZMJtKovlLlhhAqj5W3f+AbM=" crossorigin="">
+
+  <style>
+    :root {
+      --base-size: 20px;
+      --bg: #07111f;
+      --bg-2: #0a1627;
+      --card: rgba(17, 30, 49, 0.92);
+      --card-2: rgba(12, 24, 41, 0.96);
+      --line: #2a3d57;
+      --line-soft: rgba(132, 162, 196, 0.18);
+      --text: #eef6ff;
+      --muted: #b4c4d7;
+      --blue: #69b7ff;
+      --cyan: #55e3d5;
+      --amber: #ffca67;
+      --green: #74e39a;
+      --red: #ff8a8a;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding-bottom: 98px;
+      overflow-wrap: anywhere;
+      background:
+        radial-gradient(circle at 12% -10%, rgba(65, 147, 255, 0.17), transparent 30rem),
+        radial-gradient(circle at 95% 10%, rgba(85, 227, 213, 0.10), transparent 26rem),
+        linear-gradient(180deg, var(--bg), #050b14 75%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: var(--base-size);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: var(--blue); }
+    a:focus-visible, button:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 3px;
+    }
+
+    .page {
+      width: min(100% - 28px, 1040px);
+      margin: 0 auto;
+    }
+
+    header {
+      padding: clamp(32px, 8vw, 72px) 0 26px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 13px;
+      color: var(--cyan);
+      font-size: 0.76em;
+      font-weight: 850;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.13; text-wrap: balance; }
+    h1 {
+      margin: 0;
+      max-width: 920px;
+      font-size: clamp(2rem, 8vw, 4.35rem);
+      letter-spacing: -0.045em;
+    }
+
+    .lead {
+      max-width: 830px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 1.08em;
+    }
+
+    .ticket {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 15px 17px;
+      border: 1px solid rgba(116, 227, 154, 0.34);
+      border-radius: 17px;
+      background: rgba(34, 107, 64, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(116, 227, 154, 0.05);
+    }
+    .ticket strong { color: #a4f5bd; }
+    .ticket .icon { flex: 0 0 auto; font-size: 1.35em; line-height: 1.1; }
+
+    .jump-nav {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin: 22px 0 0;
+    }
+    .jump-nav a {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      padding: 10px 15px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(11, 24, 42, 0.72);
+      color: var(--text);
+      font-size: 0.87em;
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .jump-nav a:hover { border-color: var(--blue); }
+
+    .decision {
+      margin: 14px 0 34px;
+      padding: 20px;
+      border: 1px solid rgba(105, 183, 255, 0.30);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(32, 79, 128, 0.29), rgba(17, 30, 49, 0.80));
+      box-shadow: var(--shadow);
+    }
+    .decision strong { color: #a9d7ff; }
+
+    .options {
+      display: grid;
+      gap: 24px;
+    }
+
+    .option {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      box-shadow: var(--shadow);
+    }
+    .option::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: var(--blue);
+    }
+    .option.recommended::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+    .option.night::before { background: linear-gradient(90deg, var(--amber), #ff9e6b); }
+
+    .option-head { padding: 25px 22px 18px; }
+    .option h2 {
+      margin: 6px 0 10px;
+      font-size: clamp(1.45rem, 6vw, 2.35rem);
+      letter-spacing: -0.025em;
+    }
+    .option-intro { margin: 0; color: var(--muted); }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(4, 12, 22, 0.54);
+      color: var(--muted);
+      font-size: 0.72em;
+      font-weight: 800;
+    }
+    .badge.best { border-color: rgba(116, 227, 154, 0.35); color: #a4f5bd; }
+    .badge.warn { border-color: rgba(255, 202, 103, 0.35); color: #ffd990; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 21px;
+      overflow: hidden;
+      border: 1px solid var(--line-soft);
+      border-radius: 17px;
+      background: var(--line-soft);
+    }
+    .metric {
+      min-width: 0;
+      padding: 15px 13px;
+      background: rgba(7, 17, 31, 0.82);
+    }
+    .metric small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 0.65em;
+      font-weight: 760;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .metric strong {
+      display: block;
+      font-size: 1.04em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-block {
+      padding: 21px 22px 25px;
+      border-top: 1px solid var(--line-soft);
+    }
+    .day-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+    .day-title h3 { margin: 0; font-size: 1.08em; }
+    .day-title span { color: var(--muted); font-size: 0.76em; white-space: nowrap; }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7.1rem;
+      top: 20px;
+      bottom: 20px;
+      width: 2px;
+      background: linear-gradient(var(--blue), rgba(105, 183, 255, 0.10));
+    }
+    .recommended .timeline::before { background: linear-gradient(var(--cyan), rgba(85, 227, 213, 0.10)); }
+    .night .timeline::before { background: linear-gradient(var(--amber), rgba(255, 202, 103, 0.10)); }
+
+    .timeline li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 6.15rem 1fr;
+      gap: 1.7rem;
+      min-height: 56px;
+      padding: 8px 0;
+    }
+    .timeline li::before {
+      content: "";
+      position: absolute;
+      left: calc(7.1rem - 6px);
+      top: 19px;
+      width: 12px;
+      height: 12px;
+      border: 3px solid var(--card-2);
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 2px rgba(105, 183, 255, 0.22);
+    }
+    .recommended .timeline li::before { background: var(--cyan); }
+    .night .timeline li::before { background: var(--amber); }
+
+    .time {
+      color: #dbeaff;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.015em;
+    }
+    .event strong { display: block; }
+    .event span { display: block; color: var(--muted); font-size: 0.88em; }
+
+    .buffer-box, .warning-box, .sleep-box {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(7, 17, 31, 0.73);
+    }
+    .buffer-box { border: 1px solid rgba(116, 227, 154, 0.28); }
+    .warning-box { border: 1px solid rgba(255, 202, 103, 0.30); }
+    .sleep-box { border: 1px solid rgba(105, 183, 255, 0.25); }
+    .buffer-box strong { color: #a4f5bd; }
+    .warning-box strong { color: #ffdb96; }
+    .sleep-box strong { color: #abd9ff; }
+
+    .ferry-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 13px;
+    }
+    .ferry-time {
+      padding: 10px 7px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.82em;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+    .ferry-time.target {
+      border-color: rgba(116, 227, 154, 0.48);
+      background: rgba(34, 107, 64, 0.20);
+      color: #b2f8c7;
+    }
+
+    section.standard {
+      margin-top: 34px;
+      padding: 23px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(12, 24, 41, 0.90);
+      box-shadow: var(--shadow);
+    }
+    section.standard h2 { margin: 0 0 16px; font-size: 1.55em; }
+
+    .compare-wrap { overflow-x: auto; border-radius: 15px; }
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      background: rgba(5, 13, 24, 0.46);
+    }
+    th, td {
+      padding: 14px 13px;
+      border-bottom: 1px solid var(--line-soft);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: #dbeaff;
+      font-size: 0.78em;
+      letter-spacing: 0.02em;
+    }
+    td { color: var(--muted); font-size: 0.88em; }
+    td:first-child { color: var(--text); font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+
+    .map-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .map-head p { margin: 4px 0 0; color: var(--muted); font-size: 0.87em; }
+    .map-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .map-actions a, .source-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(7, 17, 31, 0.78);
+      color: var(--text);
+      font-size: 0.82em;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .map-actions a:hover, .source-links a:hover { border-color: var(--blue); }
+
+    #map {
+      width: 100%;
+      height: min(62vh, 570px);
+      min-height: 410px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #0a1522;
+    }
+    #map-fallback {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 70% 24%, rgba(85, 227, 213, 0.08), transparent 38%),
+        linear-gradient(180deg, #0b1827, #08111d);
+    }
+    #map-fallback svg { width: 100%; height: 100%; max-height: 520px; }
+    #map-fallback text { font-family: inherit; fill: #dcecff; font-size: 15px; font-weight: 760; }
+    #map-fallback .minor { fill: #9fb2c8; font-size: 12px; font-weight: 650; }
+    .map-status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.74em;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 15px;
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 0.75em;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .legend i { width: 27px; height: 4px; border-radius: 4px; background: var(--blue); }
+    .legend i.ferry { background: repeating-linear-gradient(90deg, var(--cyan) 0 8px, transparent 8px 13px); }
+    .legend i.island { background: var(--amber); }
+
+    .leaflet-container { font-family: inherit; }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+      background: #101e30;
+      color: var(--text);
+    }
+    .leaflet-popup-content { font-size: 0.94rem; line-height: 1.4; }
+    .leaflet-control-zoom a {
+      background: #102035 !important;
+      color: var(--text) !important;
+      border-color: var(--line) !important;
+    }
+    .leaflet-control-attribution {
+      background: rgba(5, 13, 24, 0.82) !important;
+      color: var(--muted) !important;
+    }
+    .leaflet-control-attribution a { color: var(--blue) !important; }
+    .route-marker {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 2px solid #dff1ff;
+      border-radius: 50% 50% 50% 12%;
+      transform: rotate(-45deg);
+      background: #2179c8;
+      box-shadow: 0 5px 17px rgba(0,0,0,.44);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .route-marker span { transform: rotate(45deg); }
+    .route-marker.sleep { background: #2a9b79; }
+    .route-marker.ferry { background: #bf832d; }
+
+    details {
+      margin-top: 18px;
+      border: 1px solid var(--line-soft);
+      border-radius: 15px;
+      background: rgba(5, 13, 24, 0.46);
+    }
+    summary {
+      cursor: pointer;
+      padding: 14px 15px;
+      font-weight: 850;
+    }
+    details > div { padding: 0 15px 15px; color: var(--muted); }
+
+    footer {
+      padding: 32px 0 15px;
+      color: var(--muted);
+      font-size: 0.78em;
+    }
+    .source-links { display: flex; flex-wrap: wrap; gap: 9px; margin: 13px 0 16px; }
+    .fine-print { max-width: 920px; }
+
+    .font-controls {
+      position: fixed;
+      z-index: 2000;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(132, 162, 196, 0.30);
+      border-radius: 17px;
+      background: rgba(7, 17, 31, 0.94);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .font-controls button {
+      width: 56px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #14253a;
+      color: var(--text);
+      font: inherit;
+      font-size: 1.05em;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .font-controls button:active { transform: translateY(1px); }
+    .font-readout {
+      min-width: 52px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.72em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 20px, 1040px); }
+      header { padding-top: 30px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+      .compare-wrap { overflow: visible; }
+      .compare-wrap table, .compare-wrap tbody, .compare-wrap tr, .compare-wrap td { display: block; width: 100%; min-width: 0; }
+      .compare-wrap thead { display: none; }
+      .compare-wrap tr { padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+      .compare-wrap tr:last-child { border-bottom: 0; }
+      .compare-wrap td { padding: 8px 11px; border: 0; }
+      .compare-wrap td:first-child { padding-top: 5px; color: var(--text); font-size: 0.92em; }
+      .compare-wrap td:nth-child(2), .compare-wrap td:nth-child(3) {
+        margin-top: 5px;
+        border: 1px solid var(--line-soft);
+        border-radius: 11px;
+        background: rgba(7, 17, 31, 0.62);
+      }
+      .compare-wrap td:nth-child(2)::before, .compare-wrap td:nth-child(3)::before {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 0.67em;
+        font-weight: 850;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .compare-wrap td:nth-child(2)::before { content: "A · Spanje v Veli Luki"; color: #a4f5bd; }
+      .compare-wrap td:nth-child(3)::before { content: "B · Nočna vožnja"; color: #ffdb96; }
+
+      .map-head { display: block; }
+      .map-actions { margin-top: 13px; }
+      #map { min-height: 440px; }
+    }
+
+    @media (max-width: 520px) {
+      .option-head, .day-block { padding-left: 17px; padding-right: 17px; }
+      .timeline::before { left: 5.4rem; }
+      .timeline li { grid-template-columns: 4.55rem 1fr; gap: 1.7rem; }
+      .timeline li::before { left: calc(5.4rem - 6px); }
+      .time { font-size: 0.88em; }
+      .ferry-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      section.standard { padding: 19px 15px; }
+      #map { min-height: 455px; }
+    }
+
+    @media print {
+      body { background: white; color: black; padding-bottom: 0; }
+      .font-controls, .jump-nav, .map-actions { display: none !important; }
+      .option, section.standard, .decision { box-shadow: none; background: white; border-color: #aaa; }
+      .lead, .option-intro, .event span, td, footer, .map-status, .legend { color: #333; }
+      #map { height: 400px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">🚗 Pot na Lastovo · 24.–25. julij 2026</div>
+      <h1>Ljubljana → Orebić → Vela Luka → Ubli</h1>
+      <p class="lead">Samo dve realni možnosti: <strong>dnevna vožnja s spanjem v Veli Luki</strong> ali <strong>nočna vožnja brez prenočišča</strong>. Obe sta usklajeni z že kupljeno karto za soboto ob 09:00.</p>
+
+      <div class="ticket">
+        <div class="icon" aria-hidden="true">✅</div>
+        <div><strong>Karta je kupljena:</strong> Vela Luka → Ubli, sobota 25. 7. 2026 ob <strong>09:00</strong>. Prihod v Ubli ob <strong>10:30</strong>.</div>
+      </div>
+
+      <nav class="jump-nav" aria-label="Hitra navigacija">
+        <a href="#opcija-a">A · Spanje v Veli Luki</a>
+        <a href="#opcija-b">B · Nočna vožnja</a>
+        <a href="#primerjava">Primerjava</a>
+        <a href="#zemljevid">Zemljevid</a>
+      </nav>
+    </header>
+
+    <div class="decision">
+      <strong>Priporočilo:</strong> možnost A skoraj povsem loči dolgo cestno pot od rezerviranega trajekta ob 09:00. Tudi ob večurnem zastoju imate 24. julija zvečer več trajektov Orebić → Dominče in nato prespite že blizu odhoda iz Vele Luke.
+    </div>
+
+    <div class="options">
+      <article class="option recommended" id="opcija-a">
+        <div class="option-head">
+          <div class="badges">
+            <span class="badge best">★ PRIPOROČENO</span>
+            <span class="badge best">najmanj tveganja</span>
+            <span class="badge">normalen spanec</span>
+          </div>
+          <h2>A · Dnevna vožnja + spanje v Veli Luki</h2>
+          <p class="option-intro">Odpeljete se podnevi, še isti večer pridete na Korčulo, prespite v Veli Luki ali bližnjem Blatu in zjutraj vstanete okoli 07:00.</p>
+
+          <div class="metrics" aria-label="Ključni časi možnosti A">
+            <div class="metric"><small>Odhod iz LJ</small><strong>24. 7. · 08:30</strong></div>
+            <div class="metric"><small>Ciljni trajekt</small><strong>Orebić · 19:30</strong></div>
+            <div class="metric"><small>Spanec</small><strong>Vela Luka</strong></div>
+            <div class="metric"><small>Ubli</small><strong>25. 7. · 10:30</strong></div>
+          </div>
+        </div>
+
+        <div class="day-block">
+          <div class="day-title">
+            <h3>Petek, 24. 7. · do Vele Luke</h3>
+            <span>2–3 kratki postanki</span>
+          </div>
+          <ol class="timeline">
+            <li><div class="time">08:30</div><div class="event"><strong>Odhod iz Ljubljane</strong><span>Poln rezervoar, dokumenti in trajektna karta Orebić–Dominče pripravljeni.</span></div></li>
+            <li><div class="time">10:30</div><div class="event"><strong>1. kratek postanek</strong><span>Približno 10 minut; območje Karlovec/Bosiljevo.</span></div></li>
+            <li><div class="time">13:00</div><div class="event"><strong>2. kratek postanek</strong><span>Približno 15 minut; območje Gospić/Zir.</span></div></li>
+            <li><div class="time">15:30</div><div class="event"><strong>3. kratek postanek</strong><span>Približno 10 minut; južno od Splita ali pred Pelješcem.</span></div></li>
+            <li><div class="time">17:00–18:15</div><div class="event"><strong>Predviden prihod v Orebić</strong><span>Čista vožnja je približno 6 h 46 min; ta razpon že vključuje postanke in poletno prometno rezervo.</span></div></li>
+            <li><div class="time">19:30</div><div class="event"><strong>Trajekt Orebić → Dominče</strong><span>Glavni cilj. Plovba traja približno 20 minut.</span></div></li>
+            <li><div class="time">19:50–20:45</div><div class="event"><strong>Dominče → Vela Luka</strong><span>Približno 43 km; načrtovalno 50–55 minut po otoški cesti.</span></div></li>
+            <li><div class="time">ok. 21:00</div><div class="event"><strong>Prijava in počitek</strong><span>Prenočite v Veli Luki; Blato je dobra cenejša rezerva približno 10–15 minut stran.</span></div></li>
+          </ol>
+
+          <div class="buffer-box">
+            <strong>Velika prometna varovalka:</strong> če pridete prej, poskusite trajekt ob 18:00. Glavni cilj je 19:30, ob zamudi pa sta še 20:30 in 22:15.
+            <div class="ferry-strip" aria-label="Večerni trajekti iz Orebića">
+              <div class="ferry-time">18:00</div>
+              <div class="ferry-time target">19:30 · cilj</div>
+              <div class="ferry-time">20:30</div>
+              <div class="ferry-time">22:15</div>
+            </div>
+          </div>
+
+          <div class="sleep-box"><strong>Nastanitev:</strong> iščite eno noč, zasebno parkirišče in pozno ali samostojno prijavo. Najbolj praktična je Vela Luka; Blato je smiselno le, če je opazno cenejše.</div>
+        </div>
+
+        <div class="day-block">
+          <div class="day-title">
+            <h3>Sobota, 25. 7. · Vela Luka → Lastovo</h3>
+            <span>brez jutranjega hitenja</span>
+          </div>
+          <ol class="timeline">
+            <li><div class="time">07:00</div><div class="event"><strong>Vstajanje</strong><span>Zajtrk, odjava in zadnja priprava avtomobila.</span></div></li>
+            <li><div class="time">07:35–07:45</div><div class="event"><strong>Odhod iz nastanitve</strong><span>Iz Vele Luke le nekaj minut; iz Blata odidite približno 10 minut prej.</span></div></li>
+            <li><div class="time">do 08:00</div><div class="event"><strong>V vrsti na trajektnem terminalu</strong><span>Polnih 60 minut pred rezerviranim odhodom.</span></div></li>
+            <li><div class="time">09:00</div><div class="event"><strong>Vela Luka → Ubli</strong><span>Rezervirani avtomobilski trajekt.</span></div></li>
+            <li><div class="time">10:30</div><div class="event"><strong>Prihod v Ubli</strong><span>Do kampa nato le še kratka lokalna vožnja.</span></div></li>
+          </ol>
+        </div>
+      </article>
+
+      <article class="option night" id="opcija-b">
+        <div class="option-head">
+          <div class="badges">
+            <span class="badge warn">NOČNA VOŽNJA</span>
+            <span class="badge warn">priporočena 2 voznika</span>
+            <span class="badge">brez prenočišča</span>
+          </div>
+          <h2>B · Odhod okoli 20:30 in vožnja ponoči</h2>
+          <p class="option-intro">Cenejša možnost brez sobe. Cilj je trajekt Orebić → Dominče ob 06:30, nato prihod v Velo Luko približno 80 minut pred odhodom za Ubli.</p>
+
+          <div class="metrics" aria-label="Ključni časi možnosti B">
+            <div class="metric"><small>Odhod iz LJ</small><strong>24. 7. · 20:30</strong></div>
+            <div class="metric"><small>Trajekt Orebić</small><strong>25. 7. · 06:30</strong></div>
+            <div class="metric"><small>Vela Luka</small><strong>ok. 07:40</strong></div>
+            <div class="metric"><small>Ubli</small><strong>25. 7. · 10:30</strong></div>
+          </div>
+        </div>
+
+        <div class="day-block">
+          <div class="day-title">
+            <h3>Petek zvečer → sobota dopoldne</h3>
+            <span>2–3 kratki postanki</span>
+          </div>
+          <ol class="timeline">
+            <li><div class="time">20:30</div><div class="event"><strong>Odhod iz Ljubljane</strong><span>Voznika naj bosta pred odhodom spočita.</span></div></li>
+            <li><div class="time">22:35</div><div class="event"><strong>1. kratek postanek</strong><span>Približno 10 minut.</span></div></li>
+            <li><div class="time">01:00</div><div class="event"><strong>2. kratek postanek</strong><span>Približno 15 minut in po potrebi menjava voznika.</span></div></li>
+            <li><div class="time">03:30</div><div class="event"><strong>3. kratek postanek</strong><span>Približno 10 minut; ne izpuščajte ga, če koncentracija pada.</span></div></li>
+            <li><div class="time">04:30–05:30</div><div class="event"><strong>Predviden prihod v Orebić</strong><span>Postavitev v vrsto in kratek počitek pred vkrcanjem.</span></div></li>
+            <li><div class="time">06:30</div><div class="event"><strong>Trajekt Orebić → Dominče</strong><span>Glavna in zadnja načrtovalno varna povezava.</span></div></li>
+            <li><div class="time">06:50–07:45</div><div class="event"><strong>Dominče → Vela Luka</strong><span>Približno 50–55 minut z normalno rezervo.</span></div></li>
+            <li><div class="time">do 08:00</div><div class="event"><strong>V vrsti v Veli Luki</strong><span>Približno eno uro pred rezerviranim odhodom.</span></div></li>
+            <li><div class="time">09:00–10:30</div><div class="event"><strong>Vela Luka → Ubli</strong><span>Prihod na Lastovo ob 10:30.</span></div></li>
+          </ol>
+
+          <div class="warning-box">
+            <strong>Kritična točka:</strong> če zamudite trajekt ob 06:30, je odhod iz Orebića ob 07:20 le zasilna možnost. V Velo Luko bi prišli približno 25–35 minut pred odhodom, kar je za avtomobil pretesno.
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <section class="standard" id="primerjava">
+      <h2>Hitra primerjava</h2>
+      <div class="compare-wrap">
+        <table>
+          <thead>
+            <tr><th></th><th>A · Spanje v Veli Luki</th><th>B · Nočna vožnja</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Odhod iz Ljubljane</td><td>24. 7. ob 08:30</td><td>24. 7. ob 20:30</td></tr>
+            <tr><td>Spanec</td><td>Normalna noč v Veli Luki ali Blatu</td><td>Brez spanja med dolgo potjo</td></tr>
+            <tr><td>Orebić → Dominče</td><td>19:30; rezervi 20:30 in 22:15</td><td>06:30; 07:20 je že tvegano</td></tr>
+            <tr><td>Prometna odpornost</td><td><strong>Zelo visoka</strong> — dolga pot je opravljena prejšnji dan</td><td>Srednja — večja zamuda lahko ogrozi povezavo</td></tr>
+            <tr><td>Strošek</td><td>Ena poceni nočitev</td><td>Brez nočitve</td></tr>
+            <tr><td>Utrujenost ob prihodu</td><td>Nizka</td><td>Visoka, predvsem za voznika</td></tr>
+            <tr><td>Prihod v Ubli</td><td>25. 7. ob 10:30</td><td>25. 7. ob 10:30</td></tr>
+            <tr><td>Sklep</td><td><strong>Najboljša skupna možnost</strong></td><td>Dobra le ob spočitih voznikih</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="standard" id="zemljevid">
+      <div class="map-head">
+        <div>
+          <h2>Zemljevid poti</h2>
+          <p>Pot je pri obeh možnostih enaka; razlikujeta se čas odhoda in prenočevanje.</p>
+        </div>
+        <div class="map-actions">
+          <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Ljubljana%2C+Slovenia&amp;destination=Vela+Luka%2C+Croatia&amp;waypoints=Orebic%2C+Croatia%7CDomince%2C+Croatia&amp;travelmode=driving" target="_blank" rel="noopener">Odpri cestno pot ↗</a>
+          <a href="https://www.hak.hr/info/stanje-na-cestama" target="_blank" rel="noopener">HAK promet ↗</a>
+        </div>
+      </div>
+
+      <div id="map" role="img" aria-label="Interaktivni zemljevid poti iz Ljubljane prek Orebića, Dominč in Vele Luke do Ublija">
+        <div id="map-fallback" aria-label="Shematski zemljevid poti">
+          <svg viewBox="0 0 360 500" role="img" aria-label="Shematska pot Ljubljana, Orebić, Dominče, Vela Luka, Ubli">
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <path d="M85 52 C125 95, 105 140, 168 183 S260 238, 248 292" fill="none" stroke="#69b7ff" stroke-width="7" stroke-linecap="round" opacity=".9"/>
+            <path d="M248 292 L278 314" fill="none" stroke="#55e3d5" stroke-width="7" stroke-linecap="round" stroke-dasharray="10 10"/>
+            <path d="M278 314 C235 332, 188 346, 135 365" fill="none" stroke="#ffca67" stroke-width="7" stroke-linecap="round" opacity=".92"/>
+            <path d="M135 365 C152 408, 174 438, 199 466" fill="none" stroke="#55e3d5" stroke-width="7" stroke-linecap="round" stroke-dasharray="10 10"/>
+
+            <g filter="url(#glow)"><circle cx="85" cy="52" r="10" fill="#69b7ff"/><circle cx="248" cy="292" r="10" fill="#bf832d"/><circle cx="278" cy="314" r="10" fill="#bf832d"/><circle cx="135" cy="365" r="10" fill="#2a9b79"/><circle cx="199" cy="466" r="10" fill="#55e3d5"/></g>
+            <text x="106" y="57">Ljubljana</text>
+            <text class="minor" x="106" y="76">A2 / A1 / Pelješki most</text>
+            <text x="154" y="282">Orebić</text>
+            <text class="minor" x="151" y="301">trajekt · 20 min</text>
+            <text x="288" y="319">Dominče</text>
+            <text x="27" y="359">Vela Luka</text>
+            <text class="minor" x="27" y="378">spanje ali prihod 07:40</text>
+            <text x="218" y="471">Ubli</text>
+          </svg>
+        </div>
+      </div>
+      <div class="legend" aria-label="Legenda zemljevida">
+        <span><i></i> cestna pot Ljubljana–Orebić</span>
+        <span><i class="ferry"></i> trajekt</span>
+        <span><i class="island"></i> cesta čez Korčulo</span>
+      </div>
+      <div class="map-status" id="map-status">Zemljevid nalaga cestno traso; če spletno usmerjanje ni dosegljivo, ostane prikazana zanesljiva shematska pot.</div>
+
+      <details>
+        <summary>Zakaj je možnost A odpornejša na zastoje?</summary>
+        <div>Rezervirani trajekt Vela Luka → Ubli odpelje šele naslednje jutro. Zato večurna zamuda na poti iz Ljubljane praviloma pomeni le poznejši večerni trajekt Orebić → Dominče in krajši spanec — ne pa izgube že kupljene povezave ob 09:00.</div>
+      </details>
+    </section>
+
+    <footer>
+      <strong>Preverjeno 17. 7. 2026.</strong> Uradni poletni vozni red navaja večerne odhode Orebić → Dominče ter Vela Luka → Ubli ob 09:00 s prihodom ob 10:30. Vozni redi se lahko spremenijo, zato jih preverite še 24 ur pred potjo in zjutraj pred odhodom.
+      <div class="source-links">
+        <a href="https://www.jadrolinija.hr/download/78a49598b028455c7a14e7f3c53408bc" target="_blank" rel="noopener">Jadrolinija 634 · vozni red ↗</a>
+        <a href="https://www.jadrolinija.hr/download/35ee0ff9e5c7e95325d4166e5f53556b" target="_blank" rel="noopener">Jadrolinija 604 · vozni red ↗</a>
+        <a href="https://www.jadrolinija.hr/en/travel/orebic_-_domince_korcula" target="_blank" rel="noopener">Orebić–Dominče ↗</a>
+        <a href="https://www.hak.hr/info/stanje-na-cestama?lang=en" target="_blank" rel="noopener">HAK · stanje na cestah ↗</a>
+      </div>
+      <div class="fine-print">Načrtovalni časi vključujejo 2–3 kratke postanke in dodatno prometno rezervo, niso pa jamstvo dejanskega časa vožnje. Tik pred odhodom preverite promet, veter in morebitna obvestila prevoznika.</div>
+    </footer>
+  </main>
+
+  <div class="font-controls" role="group" aria-label="Nastavitev velikosti črk">
+    <button type="button" id="font-down" aria-label="Zmanjšaj velikost črk">A−</button>
+    <div class="font-readout" id="font-readout" aria-live="polite">100 %</div>
+    <button type="button" id="font-up" aria-label="Povečaj velikost črk">A+</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    (() => {
+      'use strict';
+
+      // Font controls
+      const root = document.documentElement;
+      const down = document.getElementById('font-down');
+      const up = document.getElementById('font-up');
+      const readout = document.getElementById('font-readout');
+      const MIN = 17;
+      const MAX = 28;
+      const DEFAULT = 20;
+      const STEP = 1;
+
+      let fontSize = Number.parseInt(localStorage.getItem('lastovo-font-size') || String(DEFAULT), 10);
+      if (!Number.isFinite(fontSize)) fontSize = DEFAULT;
+      fontSize = Math.min(MAX, Math.max(MIN, fontSize));
+
+      function applyFontSize() {
+        root.style.setProperty('--base-size', `${fontSize}px`);
+        readout.textContent = `${Math.round((fontSize / DEFAULT) * 100)} %`;
+        down.disabled = fontSize <= MIN;
+        up.disabled = fontSize >= MAX;
+        localStorage.setItem('lastovo-font-size', String(fontSize));
+      }
+
+      down.addEventListener('click', () => { fontSize = Math.max(MIN, fontSize - STEP); applyFontSize(); });
+      up.addEventListener('click', () => { fontSize = Math.min(MAX, fontSize + STEP); applyFontSize(); });
+      applyFontSize();
+
+      // Map
+      const status = document.getElementById('map-status');
+      if (!window.L) {
+        status.textContent = 'Interaktivni zemljevid se ni naložil. Uporabite gumb »Odpri cestno pot«.';
+        return;
+      }
+
+      const points = {
+        ljubljana: [46.0569, 14.5058],
+        orebic: [42.9745, 17.1770],
+        domince: [42.9565, 17.1350],
+        velaLuka: [42.9612, 16.7197],
+        ubli: [42.7440, 16.8260]
+      };
+
+      const fallbackMap = document.getElementById('map-fallback');
+      if (fallbackMap) fallbackMap.remove();
+      const map = L.map('map', { zoomControl: true, scrollWheelZoom: false, tap: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      function markerIcon(label, className = '') {
+        return L.divIcon({
+          className: '',
+          html: `<div class="route-marker ${className}"><span>${label}</span></div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 32],
+          popupAnchor: [0, -31]
+        });
+      }
+
+      L.marker(points.ljubljana, { icon: markerIcon('1') }).addTo(map).bindPopup('<strong>Ljubljana</strong><br>Odhod 08:30 ali 20:30.');
+      L.marker(points.orebic, { icon: markerIcon('2', 'ferry') }).addTo(map).bindPopup('<strong>Orebić</strong><br>Trajekt za Dominče.');
+      L.marker(points.domince, { icon: markerIcon('3', 'ferry') }).addTo(map).bindPopup('<strong>Dominče</strong><br>Začetek vožnje čez Korčulo.');
+      L.marker(points.velaLuka, { icon: markerIcon('4', 'sleep') }).addTo(map).bindPopup('<strong>Vela Luka</strong><br>Možnost A: prenočevanje.<br>25. 7. ob 09:00: trajekt za Ubli.');
+      L.marker(points.ubli, { icon: markerIcon('5', 'ferry') }).addTo(map).bindPopup('<strong>Ubli · Lastovo</strong><br>Prihod 25. 7. ob 10:30.');
+
+      const fallbackMain = L.polyline([
+        points.ljubljana,
+        [45.84, 15.69],
+        [45.41, 15.31],
+        [44.55, 15.69],
+        [43.72, 16.06],
+        [43.12, 17.36],
+        [42.93, 17.53],
+        points.orebic
+      ], { color: '#69b7ff', weight: 5, opacity: 0.72, lineJoin: 'round' }).addTo(map);
+
+      const ferry1 = L.polyline([points.orebic, points.domince], {
+        color: '#55e3d5', weight: 5, opacity: 0.95, dashArray: '10 10'
+      }).addTo(map);
+
+      const fallbackIsland = L.polyline([
+        points.domince,
+        [42.969, 17.055],
+        [42.987, 16.922],
+        [42.972, 16.812],
+        points.velaLuka
+      ], { color: '#ffca67', weight: 5, opacity: 0.82, lineJoin: 'round' }).addTo(map);
+
+      const ferry2 = L.polyline([points.velaLuka, points.ubli], {
+        color: '#55e3d5', weight: 5, opacity: 0.95, dashArray: '10 10'
+      }).addTo(map);
+
+      const bounds = L.latLngBounds(Object.values(points));
+      map.fitBounds(bounds.pad(0.12));
+      L.control.scale({ imperial: false }).addTo(map);
+
+      async function fetchRoadRoute(waypoints, color, fallbackLayer) {
+        const coords = waypoints.map(([lat, lon]) => `${lon},${lat}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=false`;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000);
+        try {
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          if (!data.routes || !data.routes[0]) throw new Error('Brez trase');
+          L.geoJSON(data.routes[0].geometry, {
+            style: { color, weight: 5, opacity: 0.90, lineJoin: 'round' }
+          }).addTo(map);
+          map.removeLayer(fallbackLayer);
+          return true;
+        } catch (error) {
+          return false;
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      Promise.all([
+        fetchRoadRoute([
+          points.ljubljana,
+          [45.842, 15.690],
+          [45.405, 15.310],
+          [43.552, 16.480],
+          [43.055, 17.430],
+          [42.928, 17.525],
+          points.orebic
+        ], '#69b7ff', fallbackMain),
+        fetchRoadRoute([points.domince, points.velaLuka], '#ffca67', fallbackIsland)
+      ]).then(results => {
+        status.textContent = results.every(Boolean)
+          ? 'Prikazana je cestna trasa; trajektna odseka sta označena s črtkano linijo.'
+          : 'Del poti je prikazan shematsko, ker spletno usmerjanje trenutno ni bilo dosegljivo. Za navigacijo uporabite gumb »Odpri cestno pot«.';
+      });
+
+      // Keep map layout correct after font changes or orientation changes.
+      window.addEventListener('resize', () => setTimeout(() => map.invalidateSize(), 120));
+      down.addEventListener('click', () => setTimeout(() => map.invalidateSize(), 120));
+      up.addEventListener('click', () => setTimeout(() => map.invalidateSize(), 120));
+    })();
+  </script>
+</body>
+</html>
