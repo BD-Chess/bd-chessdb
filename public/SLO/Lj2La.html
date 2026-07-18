@@ -452,6 +452,149 @@
     .route-marker.sleep { background: #2a9b79; }
     .route-marker.ferry { background: #bf832d; }
 
+    .lodging-intro {
+      margin: -4px 0 18px;
+      color: var(--muted);
+    }
+    .lodging-note {
+      margin: 0 0 20px;
+      padding: 15px 16px;
+      border: 1px solid rgba(255, 202, 103, 0.30);
+      border-radius: 15px;
+      background: rgba(106, 74, 20, 0.15);
+      color: #f7dfac;
+    }
+    .lodging-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .lodging-group {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: rgba(5, 13, 24, 0.46);
+    }
+    .lodging-group-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .lodging-group-head h3 {
+      margin: 0;
+      font-size: 1.18em;
+    }
+    .lodging-group-head span {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.68em;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .stay-list {
+      display: grid;
+      gap: 12px;
+    }
+    .stay-card {
+      position: relative;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(10, 22, 39, 0.88);
+    }
+    .stay-card.recommended {
+      border-color: rgba(116, 227, 154, 0.40);
+      box-shadow: inset 0 0 0 1px rgba(116, 227, 154, 0.06);
+    }
+    .stay-card.value {
+      border-color: rgba(105, 183, 255, 0.38);
+    }
+    .stay-card.unconfirmed {
+      border-style: dashed;
+      border-color: rgba(255, 202, 103, 0.44);
+    }
+    .stay-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+    }
+    .stay-name {
+      margin: 0;
+      font-size: 1.02em;
+      line-height: 1.22;
+    }
+    .stay-location {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.76em;
+      font-weight: 700;
+    }
+    .stay-price {
+      color: #ffffff;
+      font-size: 1.28em;
+      font-weight: 920;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+    }
+    .stay-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 11px 0 8px;
+    }
+    .stay-meta span {
+      padding: 4px 8px;
+      border: 1px solid var(--line-soft);
+      border-radius: 999px;
+      color: #d9e8f7;
+      font-size: 0.67em;
+      font-weight: 760;
+    }
+    .stay-card p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.82em;
+    }
+    .stay-card .why {
+      color: #dcecff;
+    }
+    .stay-card a {
+      display: inline-flex;
+      margin-top: 11px;
+      min-height: 40px;
+      align-items: center;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(7, 17, 31, 0.72);
+      color: var(--text);
+      font-size: 0.72em;
+      font-weight: 820;
+      text-decoration: none;
+    }
+    .group-pick {
+      margin: 14px 0 0;
+      padding: 13px 14px;
+      border-radius: 13px;
+      background: rgba(34, 107, 64, 0.16);
+      color: #c9f7d6;
+      font-size: 0.82em;
+    }
+    .group-pick strong { color: #a4f5bd; }
+    .lodging-footnote {
+      margin-top: 17px;
+      color: var(--muted);
+      font-size: 0.76em;
+    }
+
     details {
       margin-top: 18px;
       border: 1px solid var(--line-soft);
@@ -544,6 +687,7 @@
       .map-head { display: block; }
       .map-actions { margin-top: 13px; }
       #map { min-height: 440px; }
+      .lodging-groups { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 520px) {
@@ -583,6 +727,7 @@
         <a href="#opcija-b">B · Nočna vožnja</a>
         <a href="#primerjava">Primerjava</a>
         <a href="#zemljevid">Zemljevid</a>
+        <a href="#prenocisce">Nočitev · 2 ali 4 osebe</a>
       </nav>
     </header>
 
@@ -764,8 +909,150 @@
       </details>
     </section>
 
+    <section class="standard" id="prenocisce">
+      <h2>Prenočišče za 2 ali 4 osebe</h2>
+      <p class="lodging-intro">Ker še ni odločeno, ali bosta prespala samo vidva ali oba para, sta spodaj ločena izbora za <strong>2 odrasli osebi</strong> in <strong>4 odrasle osebe</strong>. Cene na posnetkih veljajo za noč <strong>24.–25. 7. 2026</strong> in vključujejo prikazane davke ter pristojbine.</p>
+
+      <div class="lodging-note"><strong>Pred rezervacijo vedno potrdi:</strong> prihod približno med 20:30 in 22:00, odhod najpozneje okoli 07:30, možnost samostojne prijave/odjave, parkiranje za poln avtomobil ter točno razporeditev postelj.</div>
+
+      <div class="lodging-groups">
+        <div class="lodging-group">
+          <div class="lodging-group-head">
+            <h3>Če prespita samo 2</h3>
+            <span>1 soba</span>
+          </div>
+
+          <div class="stay-list">
+            <article class="stay-card value">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Rooms &amp; Apartments Mirakul</h4>
+                  <span class="stay-location">Vela Luka · približno 0,6 km od centra</span>
+                </div>
+                <div class="stay-price">€60</div>
+              </div>
+              <div class="stay-meta"><span>9,2 · 154 ocen</span><span>1 zasebna soba</span><span>1 postelja</span></div>
+              <p class="why"><strong>Najnižja prikazana cena za 2.</strong> Lokacijsko zelo dobro; parkiranje in pozni prihod je treba še potrditi.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Rooms+%26+Apartments+Mirakul+Vela+Luka" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+
+            <article class="stay-card unconfirmed">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Hotel / Pansion Lipa</h4>
+                  <span class="stay-location">Blato · jutranja kratka vožnja do Vele Luke</span>
+                </div>
+                <div class="stay-price">≈ €70</div>
+              </div>
+              <div class="stay-meta"><span>cena po tvoji ponudbi</span><span>predvidoma 1 soba</span></div>
+              <p class="why"><strong>Dobra cena.</strong> Smiselno le po potrditvi poznega prihoda, zgodnjega odhoda in parkiranja.</p>
+              <a href="https://maps.app.goo.gl/VKPNgDWtkxm75qgL8" target="_blank" rel="noopener">Odpri prejeto lokacijo ↗</a>
+            </article>
+
+            <article class="stay-card">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Alanis</h4>
+                  <span class="stay-location">Vela Luka · 250 m od centra</span>
+                </div>
+                <div class="stay-price">€86</div>
+              </div>
+              <div class="stay-meta"><span>9,3 · 7 ocen</span><span>1 zasebna soba</span><span>2 postelji</span></div>
+              <p class="why">Dobra izbira, kadar želita dve ločeni postelji. Parkiranje na posnetku ni navedeno, zato ga preverita.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Alanis+Vela+Luka+Croatia" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+
+            <article class="stay-card recommended">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Guest House Mara</h4>
+                  <span class="stay-location">Vela Luka · 450 m od centra</span>
+                </div>
+                <div class="stay-price">€90</div>
+              </div>
+              <div class="stay-meta"><span>9,5 · 363 ocen</span><span>1 zasebna soba</span><span>1 postelja</span><span>brezplačno parkiranje</span></div>
+              <p class="why"><strong>Najmanj logističnega tveganja.</strong> Odlične ocene, zelo blizu terminala in parkiranje je navedeno.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Guest+House+Mara+Vela+Luka" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+          </div>
+
+          <p class="group-pick"><strong>Izbira za 2:</strong> Mirakul za najnižjo ceno, če potrdi parkiranje in pozni prihod; Mara za najpreprostejše ter najmanj tvegano jutro.</p>
+        </div>
+
+        <div class="lodging-group">
+          <div class="lodging-group-head">
+            <h3>Če prespite vsi 4</h3>
+            <span>2 para</span>
+          </div>
+
+          <div class="stay-list">
+            <article class="stay-card unconfirmed">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Hotel / Pansion Lipa</h4>
+                  <span class="stay-location">Blato · ocena za 2 sobi</span>
+                </div>
+                <div class="stay-price">≈ €140*</div>
+              </div>
+              <div class="stay-meta"><span>2 sobi × približno €70</span><span>ni še potrjeno</span></div>
+              <p class="why"><strong>Potencialno najceneje za 4.</strong> Velja samo, če sta dve sobi dejansko prosti po isti ceni in potrdijo večerni prihod, zgodnji odhod ter parkiranje.</p>
+              <a href="https://maps.app.goo.gl/VKPNgDWtkxm75qgL8" target="_blank" rel="noopener">Odpri prejeto lokacijo ↗</a>
+            </article>
+
+            <article class="stay-card value">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Stone House Dioniz</h4>
+                  <span class="stay-location">Brnistrova · 7,5 km od Vele Luke</span>
+                </div>
+                <div class="stay-price">€163</div>
+              </div>
+              <div class="stay-meta"><span>8,0 · 7 ocen</span><span>cela hiša · 120 m²</span><span>5 postelj</span><span>1 kopalnica</span><span>brezplačno parkiranje</span></div>
+              <p class="why"><strong>Najcenejša potrjena cela hiša za 4.</strong> Veliko prostora in dovolj postelj; slabost je ena kopalnica ter manj ocen.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Stone+House+Dioniz+Brnistrova+Korcula" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+
+            <article class="stay-card">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Milton holiday house</h4>
+                  <span class="stay-location">Blato · 7,6 km od Vele Luke</span>
+                </div>
+                <div class="stay-price">€172</div>
+              </div>
+              <div class="stay-meta"><span>8,6 · 20 ocen</span><span>cela hiša · 80 m²</span><span>4 postelje</span><span>2 spalnici</span><span>2 kopalnici</span><span>brezplačno parkiranje</span></div>
+              <p class="why"><strong>Najudobnejša razporeditev za štiri odrasle.</strong> Dve kopalnici in štiri postelje; nujno potrditi pozni prihod.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Milton+holiday+house+Blato+Korcula" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+
+            <article class="stay-card recommended">
+              <div class="stay-top">
+                <div>
+                  <h4 class="stay-name">Guest House Mara</h4>
+                  <span class="stay-location">Vela Luka · 450 m od centra</span>
+                </div>
+                <div class="stay-price">€180</div>
+              </div>
+              <div class="stay-meta"><span>9,5 · 363 ocen</span><span>2 zasebni sobi</span><span>skupaj 2 postelji</span><span>brezplačno parkiranje</span></div>
+              <p class="why"><strong>Najboljša logistika za dva para.</strong> Zjutraj praktično ni dodatne vožnje; dve postelji najverjetneje pomenita dve zakonski postelji, zato preverite konfiguracijo.</p>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=Guest+House+Mara+Vela+Luka" target="_blank" rel="noopener">Odpri na zemljevidu ↗</a>
+            </article>
+          </div>
+
+          <p class="group-pick"><strong>Izbira za 4:</strong> Mara za najmanj tveganja in dva para; Milton za največ udobja; Dioniz za najnižjo trenutno potrjeno ceno cele hiše.</p>
+        </div>
+      </div>
+
+      <p class="lodging-footnote">* Znesek za Lipo pri štirih osebah je samo izračun 2 × približno €70, ne potrjena ponudba. Booking cene in razpoložljivost se lahko spremenijo; pri rezultatu »samo še 1« ni mogoče računati, da boste dobili drugo enako sobo.</p>
+
+      <details>
+        <summary>Kratko sporočilo gostitelju pred rezervacijo</summary>
+        <div><em>Dobar dan, trebamo smještaj za jednu noć, 24.–25. 7. 2026., za ___ odraslih. Dolazimo približno između 20:30 i 22:00 nakon trajekta Orebić–Dominče, a odlazimo oko 07:15–07:30 zbog trajekta iz Vele Luke u 09:00. Je li moguć kasni ili self check-in, rani odlazak bez osobne odjave, siguran parking i možete li potvrditi točan broj kreveta te ukupnu cijenu?</em></div>
+      </details>
+    </section>
+
     <footer>
-      <strong>Preverjeno 17. 7. 2026.</strong> Uradni poletni vozni red navaja večerne odhode Orebić → Dominče ter Vela Luka → Ubli ob 09:00 s prihodom ob 10:30. Vozni redi se lahko spremenijo, zato jih preverite še 24 ur pred potjo in zjutraj pred odhodom.
+      <strong>Posodobljeno 17. 7. 2026.</strong> Uradni poletni vozni red navaja večerne odhode Orebić → Dominče ter Vela Luka → Ubli ob 09:00 s prihodom ob 10:30. Cene nočitev so prepisane iz prikazanih ponudb za 24.–25. 7. 2026 in niso zaklenjene. Vozni redi se lahko spremenijo, zato jih preverite še 24 ur pred potjo in zjutraj pred odhodom.
       <div class="source-links">
         <a href="https://www.jadrolinija.hr/download/78a49598b028455c7a14e7f3c53408bc" target="_blank" rel="noopener">Jadrolinija 634 · vozni red ↗</a>
         <a href="https://www.jadrolinija.hr/download/35ee0ff9e5c7e95325d4166e5f53556b" target="_blank" rel="noopener">Jadrolinija 604 · vozni red ↗</a>
