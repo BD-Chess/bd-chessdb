@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>8zip, ReZIP &amp; 8zipLab — Verified Compression Research</title>
+  <meta name="description" content="A plain-language, evidence-first overview of 8zip standard-ZIP optimization, the ReZIP cold-storage campaign, and the experimental 8zipLab FPLB research branch.">
+  <link rel="canonical" href="https://www.mdlxdcc.org/8Z/8zip.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="8zip, ReZIP &amp; 8zipLab — Verified Compression Research">
+  <meta property="og:description" content="Two separate compression branches: ordinary compatible ZIP optimization and experimental MDL×DCC archive research, both governed by exact restoration and no-regression evidence.">
+  <meta property="og:url" content="https://www.mdlxdcc.org/8Z/8zip.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#07111e">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"TechArticle",
+    "headline":"8zip, ReZIP & 8zipLab — Verified Compression Research",
+    "author":{"@type":"Person","name":"Bojan Dobrečevič"},
+    "dateModified":"2026-07-19",
+    "url":"https://www.mdlxdcc.org/8Z/8zip.html",
+    "about":["lossless compression","ZIP optimization","Minimum Description Length","exact deduplication","reproducible verification"]
+  }
+  </script>
+  <style>
+    :root{
+      --bg:#06101c;--bg2:#091827;--panel:#0d2032;--panel2:#10283d;
+      --text:#eaf4ff;--muted:#a3b6ca;--line:rgba(157,205,255,.17);
+      --cyan:#4fe1ff;--blue:#65a8ff;--green:#63e7ad;--gold:#ffc766;
+      --rose:#ff7d9d;--violet:#bda0ff;--max:1180px;
+      color-scheme:dark;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:
+      radial-gradient(circle at 14% -10%,rgba(79,225,255,.16),transparent 31rem),
+      radial-gradient(circle at 90% 8%,rgba(189,160,255,.12),transparent 30rem),
+      linear-gradient(180deg,var(--bg),#071421 55%,#050d16);
+      color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      line-height:1.66;font-size:17px}
+    a{color:var(--cyan);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:3px}
+    .wrap{width:min(var(--max),calc(100% - 36px));margin:auto}
+    .topbar{position:sticky;top:0;z-index:30;background:rgba(6,16,28,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+    .topbar-inner{min-height:66px;display:flex;align-items:center;gap:20px;justify-content:space-between}
+    .brand{font-weight:900;letter-spacing:.04em;color:white;white-space:nowrap}.brand span{color:var(--cyan)}
+    .nav{display:flex;gap:17px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:.82rem}
+    .nav a{color:#dcecff}.nav a:hover{color:var(--cyan);text-decoration:none}
+    .lang-toggle{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:#081827}
+    .lang-toggle button{border:0;background:transparent;color:var(--muted);font-weight:800;padding:6px 9px;border-radius:999px;cursor:pointer}
+    .lang-toggle button.active{background:var(--cyan);color:#002533}
+    .hero{padding:88px 0 58px;border-bottom:1px solid var(--line)}
+    .eyebrow{display:inline-flex;gap:8px;align-items:center;color:var(--cyan);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;font-weight:900}
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 7px rgba(99,231,173,.10)}
+    h1{font-size:clamp(2.7rem,7vw,6.4rem);line-height:.94;margin:22px 0 24px;letter-spacing:-.065em;max-width:1000px}
+    .accent{background:linear-gradient(90deg,var(--cyan),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lead{max-width:900px;font-size:clamp(1.05rem,2.1vw,1.35rem);color:#c9d9e9}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}
+    .button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--line);font-weight:850;color:white;background:#0c2235}
+    .button.primary{background:linear-gradient(135deg,#0caac2,#327af5);border-color:transparent}.button:hover{text-decoration:none;filter:brightness(1.08)}
+    .status-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .status{font-size:.78rem;font-weight:800;border:1px solid var(--line);border-radius:999px;padding:7px 11px;background:rgba(11,33,51,.78)}
+    .status.good{color:var(--green)}.status.live{color:var(--gold)}.status.info{color:var(--cyan)}
+    section{padding:74px 0;border-bottom:1px solid var(--line)}
+    .section-head{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:32px;margin-bottom:34px;align-items:end}
+    .kicker{text-transform:uppercase;letter-spacing:.14em;color:var(--cyan);font-weight:900;font-size:.72rem}
+    h2{font-size:clamp(2rem,4vw,3.7rem);line-height:1.03;letter-spacing:-.04em;margin:.55rem 0 0}
+    h3{font-size:1.2rem;margin:.2rem 0 .65rem}
+    p{margin:.55rem 0 1.05rem}.muted{color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:36px}
+    .metric{padding:20px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(150deg,rgba(17,42,63,.94),rgba(7,23,36,.94));min-height:144px}
+    .metric .num{font-size:clamp(1.65rem,3.4vw,2.7rem);font-weight:950;line-height:1;color:var(--cyan);letter-spacing:-.04em}
+    .metric .label{font-size:.82rem;color:var(--muted);margin-top:10px}
+    .metric .note{font-size:.72rem;color:#7890a7;margin-top:8px}
+    .lane-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .lane{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:22px;padding:28px;background:linear-gradient(145deg,rgba(16,40,61,.95),rgba(7,21,33,.97))}
+    .lane:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-70px;top:-80px;background:radial-gradient(circle,rgba(79,225,255,.18),transparent 70%)}
+    .lane.lab:before{background:radial-gradient(circle,rgba(189,160,255,.2),transparent 70%)}
+    .lane-label{font-size:.73rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}.lane.lab .lane-label{color:var(--violet)}
+    .lane h3{font-size:1.65rem;letter-spacing:-.025em}
+    .truth-list{padding:0;margin:22px 0 0;list-style:none}.truth-list li{padding:11px 0 11px 28px;border-top:1px solid var(--line);position:relative}.truth-list li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:900}
+    .truth-list li.caution:before{content:"!";color:var(--gold)}
+    .pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:stretch;margin-top:24px}
+    .step{position:relative;border:1px solid var(--line);border-radius:16px;padding:18px 14px;background:#0b1e2e;text-align:center;font-size:.86rem}
+    .step b{display:block;color:white;margin-bottom:6px}.step small{display:block;color:var(--muted)}
+    .step:not(:last-child):after{content:"→";position:absolute;right:-14px;top:50%;transform:translateY(-50%);z-index:2;color:var(--cyan);font-size:1.25rem;font-weight:900}
+    .result-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:20px;min-width:0}
+    .card{border:1px solid var(--line);border-radius:20px;padding:24px;background:rgba(12,31,47,.92);min-width:0}
+    .card.highlight{box-shadow:0 20px 70px rgba(36,168,255,.09);border-color:rgba(79,225,255,.32)}
+    .badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;font-weight:900;border:1px solid var(--line);color:var(--cyan)}
+    .badge.gold{color:var(--gold)}.badge.green{color:var(--green)}.badge.violet{color:var(--violet)}
+    .table-wrap{overflow-x:auto;max-width:100%;margin-top:16px;border:1px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch}
+    table{width:100%;border-collapse:collapse;min-width:630px;background:#081827}
+    th,td{padding:13px 15px;border-bottom:1px solid var(--line);text-align:left;font-size:.86rem}
+    th{color:var(--muted);font-size:.71rem;text-transform:uppercase;letter-spacing:.08em;background:#0d2234}
+    td.num{text-align:right;font-variant-numeric:tabular-nums}tr:last-child td{border-bottom:0}.winner td{color:var(--green);font-weight:800}
+    .barset{margin-top:20px;display:grid;gap:14px}.barrow{display:grid;grid-template-columns:140px minmax(0,1fr) 100px;gap:10px;align-items:center;font-size:.8rem;min-width:0}.barrow strong{white-space:nowrap;text-align:right}.bartrack{height:12px;background:#06101c;border-radius:999px;overflow:hidden;border:1px solid var(--line)}.bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--green))}.bar.violet{background:linear-gradient(90deg,var(--violet),var(--blue))}
+    .finding-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.finding{padding:22px;border-left:3px solid var(--cyan);background:#0a1b2a;border-radius:0 16px 16px 0}.finding:nth-child(2){border-color:var(--violet)}.finding:nth-child(3){border-color:var(--green)}.finding:nth-child(4){border-color:var(--gold)}
+    .live-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.live-card{border:1px solid var(--line);border-radius:20px;padding:24px;background:linear-gradient(150deg,#10263a,#071522)}
+    .live-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 8px rgba(99,231,173,.1)}
+    .progress{height:11px;border-radius:999px;background:#06101c;border:1px solid var(--line);overflow:hidden;margin:18px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));width:79.16%}.progress.lab span{width:34%;background:linear-gradient(90deg,var(--violet),var(--cyan));animation:labscan 1.8s ease-in-out infinite}@keyframes labscan{0%{transform:translateX(-110%)}50%{transform:translateX(195%)}100%{transform:translateX(-110%)}}@media(prefers-reduced-motion:reduce){.progress.lab span{animation:none;width:100%;opacity:.45}}
+    code{overflow-wrap:anywhere;word-break:break-word}.lane,.live-card,.finding,.scenario,.step{min-width:0}.mini{font-size:.78rem;color:var(--muted)}.mono{font-family:"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:.82rem;color:#c9eaff;background:#06131f;padding:12px 14px;border-radius:12px;border:1px solid var(--line);overflow:auto}
+    .scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.scenario{border:1px solid var(--line);border-radius:20px;padding:25px;background:#0a1c2b}.scenario .range{font-size:1.45rem;font-weight:950;color:var(--cyan)}.scenario.best .range{color:var(--green)}.scenario.ceiling .range{color:var(--gold)}
+    .callout{padding:24px;border:1px solid rgba(255,199,102,.35);border-radius:18px;background:rgba(255,199,102,.07);margin-top:22px}.callout strong{color:var(--gold)}
+    .roadmap{display:grid;gap:12px;counter-reset:road}.road{counter-increment:road;display:grid;grid-template-columns:52px 1fr;gap:15px;align-items:start;border:1px solid var(--line);border-radius:18px;padding:18px;background:#091a29}.road:before{content:counter(road);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#0c3147;color:var(--cyan);font-weight:950}
+    .footer{padding:38px 0;color:var(--muted);font-size:.82rem}.footer-inner{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .lang-sl{display:none}
+    html[data-lang="sl"] .lang-en{display:none!important}
+    html[data-lang="sl"] .lang-sl{display:inline}
+    html[data-lang="sl"] div.lang-sl,html[data-lang="sl"] p.lang-sl{display:block}
+    @media(max-width:900px){.section-head,.result-grid{grid-template-columns:minmax(0,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.pipeline{grid-template-columns:1fr}.step:not(:last-child):after{content:"↓";right:50%;top:auto;bottom:-18px;transform:translateX(50%)}.scenario-grid{grid-template-columns:1fr}.nav a.hide-mobile{display:none}}
+    @media(max-width:700px){body{font-size:16px}.topbar-inner{align-items:flex-start;padding:12px 0}.nav{gap:9px}.lane-grid,.live-grid,.finding-grid{grid-template-columns:minmax(0,1fr)}.metrics{grid-template-columns:1fr 1fr}.barrow{grid-template-columns:88px minmax(0,1fr) 108px;gap:6px;font-size:.72rem}.hero{padding-top:62px}}
+    @media(max-width:460px){.metrics{grid-template-columns:1fr}.wrap{width:min(var(--max),calc(100% - 24px))}.lang-toggle{margin-left:auto}.nav a{display:none}.nav .lang-toggle{display:flex}}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html">8Z <span>Compression</span></a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#branches"><span class="lang-en">Branches</span><span class="lang-sl">Veji</span></a>
+      <a href="#evidence"><span class="lang-en">Evidence</span><span class="lang-sl">Dokazi</span></a>
+      <a href="#live"><span class="lang-en">Live status</span><span class="lang-sl">Živo stanje</span></a>
+      <a href="#future"><span class="lang-en">Future</span><span class="lang-sl">Prihodnost</span></a>
+      <a class="hide-mobile" href="../BD/">BD × AI Lab</a>
+      <a class="hide-mobile" href="../">MDL×DCC.org</a>
+      <span class="lang-toggle" role="group" aria-label="Language">
+        <button class="active" data-set-lang="en" type="button">EN</button>
+        <button data-set-lang="sl" type="button">SL</button>
+      </span>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow"><span class="pulse"></span><span class="lang-en">Evidence-first lossless compression research</span><span class="lang-sl">Raziskave brezizgubnega stiskanja, vodene z dokazi</span></div>
+      <h1><span class="lang-en">Smaller archives.<br><span class="accent">No missing bytes.</span></span><span class="lang-sl">Manjši arhivi.<br><span class="accent">Brez izgubljenih bajtov.</span></span></h1>
+      <p class="lead lang-en">8zip is not one magic codec. It is a verified arena: build several serious candidates, account for every byte, reject anything that cannot restore the exact source tree, and keep the smallest valid result. The compatible standard-ZIP branch and the experimental 8zipLab branch are deliberately separate.</p>
+      <p class="lead lang-sl">8zip ni en čudežni kodek. Je verificirana arena: zgradi več resnih kandidatov, obračunaj vsak bajt, zavrni vse, kar ne obnovi natančnega izvornega drevesa, in obdrži najmanjši pravilen rezultat. Združljiva veja standardnega ZIP-a in eksperimentalna veja 8zipLab sta namenoma ločeni.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#evidence"><span class="lang-en">See the measured results</span><span class="lang-sl">Poglej izmerjene rezultate</span></a>
+        <a class="button" href="index.html"><span class="lang-en">Open the 8Z hub</span><span class="lang-sl">Odpri 8Z središče</span></a>
+      </div>
+      <div class="status-row">
+        <span class="status good"><span class="lang-en">Exact restore required</span><span class="lang-sl">Zahtevana natančna obnova</span></span>
+        <span class="status info"><span class="lang-en">Standard ZIP branch</span><span class="lang-sl">Veja standardnega ZIP-a</span></span>
+        <span class="status info"><span class="lang-en">Experimental FPLB branch</span><span class="lang-sl">Eksperimentalna veja FPLB</span></span>
+        <span class="status live"><span class="lang-en">Live snapshot · 19 July 2026</span><span class="lang-sl">Živi posnetek · 19. julij 2026</span></span>
+      </div>
+      <div class="metrics" aria-label="Current headline measurements">
+        <div class="metric"><div class="num">19/24</div><div class="label"><span class="lang-en">ReZIP items completed; item 20 is running</span><span class="lang-sl">ReZIP arhivov končanih; arhiv 20 trenutno teče</span></div><div class="note"><span class="lang-en">Latest supplied log snapshot</span><span class="lang-sl">Zadnji priloženi dnevnik</span></div></div>
+        <div class="metric"><div class="num">14.45%</div><div class="label"><span class="lang-en">saved on completed ReZIP archive 19</span><span class="lang-sl">prihranjeno pri končanem ReZIP arhivu 19</span></div><div class="note">73,107,031 B → 62,541,850 B</div></div>
+        <div class="metric"><div class="num">0.325%</div><div class="label"><span class="lang-en">v0.2.1 FPLB gain over its standard-ZIP baseline</span><span class="lang-sl">dobiček FPLB v0.2.1 proti standardnemu ZIP izhodišču</span></div><div class="note"><span class="lang-en">Small, real, fully charged</span><span class="lang-sl">Majhen, resničen, v celoti obračunan</span></div></div>
+        <div class="metric"><div class="num">9.07%</div><div class="label"><span class="lang-en">smaller v0.2.2 migration artifact than v0.2.1</span><span class="lang-sl">manjši migracijski artefakt v0.2.2 od v0.2.1</span></div><div class="note"><span class="lang-en">Exact-dedup migration proof, not the new live final</span><span class="lang-sl">Dokaz migracije z exact-dedup, ne novi živi finale</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="branches">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Two separate branches</span><span class="lang-sl">Dve ločeni veji</span></div><h2><span class="lang-en">Compatibility here.<br>Research freedom there.</span><span class="lang-sl">Združljivost tukaj.<br>Raziskovalna svoboda tam.</span></h2></div>
+        <p class="muted lang-en">The separation prevents a good experimental result from being mistaken for an ordinary ZIP result. It also lets the mainline stay useful today while the laboratory explores deeper structures for tomorrow.</p>
+        <p class="muted lang-sl">Ločitev prepreči, da bi dober eksperimentalni rezultat zamenjali za navaden ZIP rezultat. Hkrati omogoča, da je glavna veja uporabna že danes, laboratorij pa raziskuje globlje strukture za jutri.</p>
+      </div>
+      <div class="lane-grid">
+        <article class="lane">
+          <div class="lane-label">8zip + ReZIP</div>
+          <h3><span class="lang-en">The standard-ZIP mainline</span><span class="lang-sl">Glavna veja standardnega ZIP-a</span></h3>
+          <p class="lang-en">The output remains a normal <strong>.zip</strong> archive using Store(0) and Deflate(8). Ordinary unzip tools restore it. Internally, 8zip may compare fresh 7‑Zip, ECT, KZIP, imported streams, and its own per-file candidates.</p>
+          <p class="lang-sl">Izhod ostane običajen arhiv <strong>.zip</strong> z metodama Store(0) in Deflate(8). Obnovijo ga navadna unzip orodja. Znotraj arene lahko 8zip primerja sveži 7‑Zip, ECT, KZIP, uvožene tokove in lastne kandidate po datotekah.</p>
+          <ul class="truth-list">
+            <li><span class="lang-en">Standard ZIP compatibility is a hard requirement.</span><span class="lang-sl">Združljivost s standardnim ZIP-om je trda zahteva.</span></li>
+            <li><span class="lang-en">The smallest candidate wins only after strict tree and byte verification.</span><span class="lang-sl">Najmanjši kandidat zmaga šele po strogi preverbi drevesa in bajtov.</span></li>
+            <li><span class="lang-en">ReZIP optimizes existing archives for cold storage without changing their meaning.</span><span class="lang-sl">ReZIP optimizira obstoječe arhive za hladno hrambo, ne da spremeni njihov pomen.</span></li>
+          </ul>
+        </article>
+        <article class="lane lab">
+          <div class="lane-label">8zipLab</div>
+          <h3><span class="lang-en">The experimental FPLB laboratory</span><span class="lang-sl">Eksperimentalni laboratorij FPLB</span></h3>
+          <p class="lang-en">8zipLab is allowed to use its own FPLB container, embedded trained or procedural dictionaries, content-addressed blobs, and research-only restoration logic. It is <strong>not</strong> presented as standard ZIP.</p>
+          <p class="lang-sl">8zipLab sme uporabljati lasten vsebnik FPLB, vgrajene naučene ali proceduralne slovarje, vsebinsko naslovljene bloke ter raziskovalno obnovo. <strong>Ni</strong> predstavljen kot standardni ZIP.</p>
+          <ul class="truth-list">
+            <li><span class="lang-en">All model, dictionary, manifest, and container bytes are charged.</span><span class="lang-sl">Vsi bajti modela, slovarja, manifesta in vsebnika so obračunani.</span></li>
+            <li><span class="lang-en">Train, validation, and sealed holdout are separated by exact-content group.</span><span class="lang-sl">Train, validation in sealed holdout so ločeni po skupinah enake vsebine.</span></li>
+            <li class="caution"><span class="lang-en"><strong>FPLB is not standard ZIP.</strong> A custom-format win does not imply universal dictionary generalization; <code>CROSS_ARCHIVE_REUSE</code> remains unproven without independent external corpora.</span><span class="lang-sl"><strong>FPLB ni standardni ZIP.</strong> Zmaga lastnega formata še ne pomeni univerzalne posplošitve slovarja; <code>CROSS_ARCHIVE_REUSE</code> ostaja nedokazan brez neodvisnih zunanjih korpusov.</span></li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">The shared discipline</span><span class="lang-sl">Skupna disciplina</span></div><h2><span class="lang-en">Do not guess the winner. Build the arena.</span><span class="lang-sl">Ne ugibaj zmagovalca. Zgradi areno.</span></h2></div>
+        <p class="muted lang-en">This is the MDL×DCC idea in practical form: multiple candidate descriptions compete, full cost decides, and verification is part of the score rather than an afterthought.</p>
+        <p class="muted lang-sl">To je praktična oblika ideje MDL×DCC: več kandidatnih opisov tekmuje, odloča celoten strošek, verifikacija pa je del rezultata in ne naknadna misel.</p>
+      </div>
+      <div class="pipeline" aria-label="Compression arena pipeline">
+        <div class="step"><b><span class="lang-en">1 · Inventory</span><span class="lang-sl">1 · Inventar</span></b><small><span class="lang-en">Paths, sizes, hashes, empty directories</span><span class="lang-sl">Poti, velikosti, hashi, prazne mape</span></small></div>
+        <div class="step"><b><span class="lang-en">2 · Candidates</span><span class="lang-sl">2 · Kandidati</span></b><small><span class="lang-en">Codecs, streams, dictionaries, dedup layouts</span><span class="lang-sl">Kodeki, tokovi, slovarji, dedup postavitve</span></small></div>
+        <div class="step"><b><span class="lang-en">3 · Full MDL cost</span><span class="lang-sl">3 · Celoten MDL strošek</span></b><small><span class="lang-en">Payload + metadata + models + container</span><span class="lang-sl">Payload + metadata + modeli + vsebnik</span></small></div>
+        <div class="step"><b><span class="lang-en">4 · Restore</span><span class="lang-sl">4 · Obnova</span></b><small><span class="lang-en">Exact paths and byte-for-byte contents</span><span class="lang-sl">Natančne poti in bajtno enaka vsebina</span></small></div>
+        <div class="step"><b><span class="lang-en">5 · Promote</span><span class="lang-sl">5 · Promocija</span></b><small><span class="lang-en">Smallest verified no-regression champion</span><span class="lang-sl">Najmanjši verificirani prvak brez regresije</span></small></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Measured evidence</span><span class="lang-sl">Izmerjeni dokazi</span></div><h2><span class="lang-en">What we know so far</span><span class="lang-sl">Kaj za zdaj vemo</span></h2></div>
+        <p class="muted lang-en">The encouraging part is not a slogan. It is that several different mechanisms have now produced verified gains: stream selection in standard ZIP, embedded dictionaries in FPLB, and exact-content deduplication in FPLB3.</p>
+        <p class="muted lang-sl">Spodbuden del ni slogan. Več različnih mehanizmov je že prineslo verificirane prihranke: izbor tokov v standardnem ZIP-u, vgrajeni slovarji v FPLB in odstranjevanje natančnih dvojnikov v FPLB3.</p>
+      </div>
+      <div class="result-grid">
+        <article class="card highlight">
+          <span class="badge green">8zipLab v0.2.1 · verified</span>
+          <h3><span class="lang-en">A small but real dictionary result</span><span class="lang-sl">Majhen, a resničen rezultat slovarjev</span></h3>
+          <p class="muted lang-en">On a 320-file, 293.59 MB source corpus, the final artifact restored every file exactly and was deterministically rebuilt byte-identically.</p>
+          <p class="muted lang-sl">Na korpusu 320 datotek z 293,59 MB izvornih podatkov je končni artefakt natančno obnovil vsako datoteko in bil deterministično ponovno zgrajen bajtno identično.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th><span class="lang-en">Artifact</span><span class="lang-sl">Artefakt</span></th><th class="num"><span class="lang-en">Bytes</span><span class="lang-sl">Bajti</span></th><th class="num"><span class="lang-en">Change</span><span class="lang-sl">Sprememba</span></th></tr></thead>
+              <tbody>
+                <tr><td><span class="lang-en">Standard ZIP baseline</span><span class="lang-sl">Standardni ZIP baseline</span></td><td class="num">38,805,947</td><td class="num">—</td></tr>
+                <tr><td><span class="lang-en">Dictionaryless FPLB2</span><span class="lang-sl">FPLB2 brez slovarjev</span></td><td class="num">38,772,676</td><td class="num">−33,271</td></tr>
+                <tr class="winner"><td><span class="lang-en">Final FPLB2 + dictionaries</span><span class="lang-sl">Končni FPLB2 + slovarji</span></td><td class="num">38,679,805</td><td class="num">−126,142 vs ZIP</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mini lang-en">The dictionary layer added 92,871 bytes of net gain after all model and manifest costs. The strongest real-data contribution came from a train-derived 8 KiB dictionary.</p>
+          <p class="mini lang-sl">Slovarski sloj je po vseh stroških modela in manifesta dodal 92.871 bajtov neto prihranka. Največji prispevek na realnih podatkih je dal iz train podatkov naučen 8 KiB slovar.</p>
+        </article>
+        <article class="card">
+          <span class="badge violet">v0.2.2 · migration proof</span>
+          <h3><span class="lang-en">Exact duplicates were the larger opportunity</span><span class="lang-sl">Natančni dvojniki so bili večja priložnost</span></h3>
+          <p class="muted lang-en">The same v0.2.1 corpus contained 320 paths but only 286 unique contents. A production FPLB3 migration stored each unique content once and kept all original paths.</p>
+          <p class="muted lang-sl">Isti korpus v0.2.1 je imel 320 poti, vendar le 286 različnih vsebin. Produkcijska migracija FPLB3 je vsako vsebino shranila enkrat in ohranila vse izvorne poti.</p>
+          <div class="barset">
+            <div class="barrow"><span>FPLB2 v0.2.1</span><div class="bartrack"><div class="bar violet" style="width:100%"></div></div><strong>38,679,805 B</strong></div>
+            <div class="barrow"><span>FPLB3 v0.2.2</span><div class="bartrack"><div class="bar" style="width:90.93%"></div></div><strong>35,172,243 B</strong></div>
+          </div>
+          <ul class="truth-list">
+            <li><span class="lang-en">3,507,562 bytes smaller than the v0.2.1 champion.</span><span class="lang-sl">3.507.562 bajtov manj od prvaka v0.2.1.</span></li>
+            <li><span class="lang-en">9.07% gain versus FPLB2 v0.2.1.</span><span class="lang-sl">9,07 % prihranka proti FPLB2 v0.2.1.</span></li>
+            <li><span class="lang-en">9.36% gain versus the original standard-ZIP baseline.</span><span class="lang-sl">9,36 % prihranka proti prvotnemu standardnemu ZIP baselineu.</span></li>
+          </ul>
+          <p class="mini lang-en">This is a verified migration result on the known corpus, not the final result of the new live v0.2.2 search.</p>
+          <p class="mini lang-sl">To je verificiran migracijski rezultat na znanem korpusu, ne končni rezultat novega živega iskanja v0.2.2.</p>
+        </article>
+      </div>
+      <div class="result-grid" style="margin-top:20px">
+        <article class="card">
+          <span class="badge gold">ReZIP · archive 19</span>
+          <h3><span class="lang-en">A practical standard-ZIP win</span><span class="lang-sl">Praktična zmaga standardnega ZIP-a</span></h3>
+          <div class="table-wrap"><table><tbody>
+            <tr><td><span class="lang-en">Original ZIP</span><span class="lang-sl">Izvirni ZIP</span></td><td class="num">73,107,031 B</td></tr>
+            <tr class="winner"><td><span class="lang-en">Verified ReZIP output</span><span class="lang-sl">Verificirani ReZIP izhod</span></td><td class="num">62,541,850 B</td></tr>
+            <tr><td><span class="lang-en">Saved</span><span class="lang-sl">Prihranek</span></td><td class="num">10,565,181 B · 14.45%</td></tr>
+            <tr><td><span class="lang-en">Winner</span><span class="lang-sl">Zmagovalec</span></td><td class="num">internal mixed MDL + imported streams</td></tr>
+            <tr><td><span class="lang-en">Verification</span><span class="lang-sl">Verifikacija</span></td><td class="num">PASS + independent reverify</td></tr>
+          </tbody></table></div>
+        </article>
+        <article class="card">
+          <span class="badge">Interpretation</span>
+          <h3><span class="lang-en">Why both small and large gains matter</span><span class="lang-sl">Zakaj so pomembni majhni in veliki prihranki</span></h3>
+          <p class="lang-en">A 0.3% gain on a difficult corpus can validate a new mechanism. A 9–15% gain on a suitable archive can already matter operationally. The right goal is not “beat everything everywhere”; it is <strong>find the best valid description for this data and never regress when a simpler method is better.</strong></p>
+          <p class="lang-sl">0,3 % prihranka na težkem korpusu lahko potrdi nov mehanizem. 9–15 % na primernem arhivu je lahko že praktično pomembnih. Pravi cilj ni »premagati vse povsod«, temveč <strong>najti najboljši pravilen opis teh podatkov in ne regresirati, kadar je preprostejša metoda boljša.</strong></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="lessons">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Research lessons</span><span class="lang-sl">Raziskovalne lekcije</span></div><h2><span class="lang-en">The project is becoming clearer, not smaller</span><span class="lang-sl">Projekt postaja jasnejši, ne manjši</span></h2></div>
+        <p class="muted lang-en">Each run removes one kind of uncertainty. That is progress: we now know which gains are container effects, dictionary effects, exact-duplicate effects, and which claims still need external corpora.</p>
+        <p class="muted lang-sl">Vsak run odstrani eno vrsto negotovosti. To je napredek: zdaj vemo, kateri prihranki izvirajo iz vsebnika, slovarjev, natančnih dvojnikov in katere trditve še zahtevajo zunanje korpuse.</p>
+      </div>
+      <div class="finding-grid">
+        <div class="finding"><h3><span class="lang-en">Verification is part of compression</span><span class="lang-sl">Verifikacija je del stiskanja</span></h3><p class="muted lang-en">A smaller archive that cannot prove exact restoration is not a winner. The verifier, tree hash, corruption tests, and deterministic rebuild are part of the product.</p><p class="muted lang-sl">Manjši arhiv, ki ne dokaže natančne obnove, ni zmagovalec. Verifier, hash drevesa, testi poškodb in deterministična ponovna gradnja so del izdelka.</p></div>
+        <div class="finding"><h3><span class="lang-en">Split by content, not only by filename</span><span class="lang-sl">Delitev po vsebini, ne le po imenu</span></h3><p class="muted lang-en">v0.2.1 revealed that identical content under different paths can weaken holdout independence. v0.2.2 keeps exact duplicates inside one split.</p><p class="muted lang-sl">v0.2.1 je pokazala, da ista vsebina pod različnimi potmi oslabi neodvisnost holdouta. v0.2.2 drži natančne dvojnike v istem splitu.</p></div>
+        <div class="finding"><h3><span class="lang-en">One learned dictionary survived stricter tests</span><span class="lang-sl">En naučeni slovar je preživel strožje teste</span></h3><p class="muted lang-en">The reusable signal became smaller after duplicate-safe analysis, but it did not disappear. That makes the next cross-archive test worth doing.</p><p class="muted lang-sl">Signal ponovne uporabe se je po duplicate-safe analizi zmanjšal, ni pa izginil. Zato je naslednji cross-archive test smiseln.</p></div>
+        <div class="finding"><h3><span class="lang-en">Exact dedup changed the scale</span><span class="lang-sl">Exact dedup je spremenil merilo</span></h3><p class="muted lang-en">On this corpus, storing identical content once produced far more gain than refining dictionary recipes alone. The best roadmap follows measured leverage.</p><p class="muted lang-sl">Na tem korpusu je enkratno shranjevanje enake vsebine prineslo mnogo več kot samo izboljševanje slovarskih receptov. Najboljši načrt sledi izmerjenemu vzvodu.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="live">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Live campaign snapshot</span><span class="lang-sl">Posnetek živih runov</span></div><h2><span class="lang-en">Both runs are healthy</span><span class="lang-sl">Oba runa sta zdrava</span></h2></div>
+        <p class="muted lang-en">Snapshot from the latest project-folder logs supplied on 19 July 2026. These values will be updated when the campaigns advance.</p>
+        <p class="muted lang-sl">Posnetek iz najnovejših dnevnikov projektne mape, priloženih 19. julija 2026. Vrednosti bomo posodabljali, ko bosta kampanji napredovali.</p>
+      </div>
+      <div class="live-grid">
+        <article class="live-card">
+          <div class="live-head"><div><span class="badge green">8zipLab v0.2.2</span><h3><span class="lang-en">Real run: corpus construction</span><span class="lang-sl">Pravi run: gradnja korpusa</span></h3></div><span class="live-dot" title="healthy"></span></div>
+          <div class="progress lab" role="img" aria-label="8zipLab real-run phase indicator; completion percentage is not yet measurable"><span></span></div>
+          <p class="lang-en">All standalone selftests, the FPLB3 red-team suite, the triple-gate tests, positive control, resume control, and E2E smoke passed. The master then began scanning <code>D:\</code> to build the real 320-file corpus.</p>
+          <p class="lang-sl">Vsi standalone selftesti, FPLB3 red-team paket, triple-gate testi, positive control, resume kontrola in E2E smoke so prestali. Master je nato začel pregledovati <code>D:\</code> za gradnjo pravega 320-datotečnega korpusa.</p>
+          <div class="mono">[2026-07-19 15:33:58] [SCAN] walking D:\</div>
+          <p class="mini"><span class="lang-en">No traceback, error, or failed gate in the supplied log.</span><span class="lang-sl">V priloženem dnevniku ni tracebacka, napake ali padlega gatea.</span></p>
+        </article>
+        <article class="live-card">
+          <div class="live-head"><div><span class="badge green">8zip ReZIP v0.2.5B</span><h3><span class="lang-en">Archive 20 of 24</span><span class="lang-sl">Arhiv 20 od 24</span></h3></div><span class="live-dot" title="healthy"></span></div>
+          <div class="progress"><span></span></div>
+          <p class="lang-en">Archive 19 finished with a verified 10.57 MB saving. On archive 20, the fresh one-thread 7‑Zip candidate completed at 64,879,746 bytes after 5:25:55; ECT9 MT1 is now running.</p>
+          <p class="lang-sl">Arhiv 19 se je končal z verificiranim prihrankom 10,57 MB. Pri arhivu 20 je sveži enonitni kandidat 7‑Zip končal pri 64.879.746 bajtih po 5:25:55; zdaj teče ECT9 MT1.</p>
+          <div class="mono">[20/24] original=75,192,592 B<br>7-Zip=64,879,746 B · PASS<br>current=ECT9 MT1</div>
+          <p class="mini"><span class="lang-en">No crash or non-zero return code in the supplied log.</span><span class="lang-sl">V priloženem dnevniku ni padca ali neničelnega return code.</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="future">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Realistic upside</span><span class="lang-sl">Realistični potencial</span></div><h2><span class="lang-en">What could this become?</span><span class="lang-sl">Kaj lahko iz tega nastane?</span></h2></div>
+        <p class="muted lang-en">There is no honest universal “maximum compression” number. The ceiling depends on the data. But the measured mechanisms already support three realistic development scenarios.</p>
+        <p class="muted lang-sl">Poštena univerzalna številka »maksimalne kompresije« ne obstaja. Strop je odvisen od podatkov. Izmerjeni mehanizmi pa že podpirajo tri realistične razvojne scenarije.</p>
+      </div>
+      <div class="scenario-grid">
+        <article class="scenario"><div class="range"><span class="lang-en">Useful now</span><span class="lang-sl">Uporabno že zdaj</span></div><h3><span class="lang-en">Verified ZIP optimizer</span><span class="lang-sl">Verificirani ZIP optimizator</span></h3><p class="muted lang-en">ReZIP becomes a practical cold-storage tool that can recover anything from zero to low double-digit percentages, depending on how weak or redundant the original archive is, while preserving ordinary ZIP compatibility.</p><p class="muted lang-sl">ReZIP postane praktično orodje za hladno hrambo, ki lahko glede na šibkost ali redundanco izvirnega arhiva prihrani od nič do nizkih dvomestnih odstotkov in ohrani običajno ZIP združljivost.</p></article>
+        <article class="scenario best"><div class="range"><span class="lang-en">Strong research path</span><span class="lang-sl">Močna raziskovalna pot</span></div><h3><span class="lang-en">Specialized FPLB archives</span><span class="lang-sl">Specializirani arhivi FPLB</span></h3><p class="muted lang-en">For project bundles, versioned JSON/CSV/log datasets, and backup trees with repeated content, exact dedup plus charged dictionaries can realistically produce persistent mid- to low-double-digit gains.</p><p class="muted lang-sl">Pri projektnih paketih, verzioniranih JSON/CSV/log podatkih in backup drevesih s ponavljajočo vsebino lahko exact dedup ter obračunani slovarji realno prinesejo trajne srednje do nizke dvomestne prihranke.</p></article>
+        <article class="scenario ceiling"><div class="range"><span class="lang-en">High-upside frontier</span><span class="lang-sl">Visoko-potencialna meja</span></div><h3><span class="lang-en">Near-duplicate chunks and deltas</span><span class="lang-sl">Near-duplicate bloki in delte</span></h3><p class="muted lang-en">If content-defined chunking and base+delta candidates work without verifier complexity exploding, highly repetitive snapshots could go well beyond today’s 9% migration proof. This is plausible on the right data, not promised for arbitrary files.</p><p class="muted lang-sl">Če content-defined chunking in base+delta kandidati delujejo brez eksplozije kompleksnosti verifierja, bi lahko zelo ponavljajoči snapshoti močno presegli današnji 9-odstotni migracijski dokaz. To je verjetno na pravih podatkih, ne obljuba za poljubne datoteke.</p></article>
+      </div>
+      <div class="callout">
+        <p class="lang-en"><strong>The most important positive constraint:</strong> already-compressed JPEG, MP4, encrypted, or high-entropy data may offer almost nothing. That does not weaken the architecture. It is why the arena keeps Store/fallback candidates and promotes a new method only when the complete verified result is genuinely smaller.</p>
+        <p class="lang-sl"><strong>Najpomembnejša pozitivna omejitev:</strong> že stisnjeni JPEG, MP4, šifrirani ali visoko-entropijski podatki lahko ponudijo skoraj nič. To ne slabi arhitekture. Prav zato arena ohrani Store/fallback kandidate in novo metodo promovira le, kadar je celoten verificirani rezultat res manjši.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="kicker"><span class="lang-en">Next evidence gates</span><span class="lang-sl">Naslednji dokazni gatei</span></div><h2><span class="lang-en">The route forward</span><span class="lang-sl">Pot naprej</span></h2></div>
+        <p class="muted lang-en">The project advances by freezing what is proven, then adding one major mechanism at a time so the source of every gain remains understandable.</p>
+        <p class="muted lang-sl">Projekt napreduje tako, da zamrzne dokazano, nato pa doda po en večji mehanizem, da ostane izvor vsakega prihranka razumljiv.</p>
+      </div>
+      <div class="roadmap">
+        <div class="road"><div><h3><span class="lang-en">Finish the v0.2.2 real run</span><span class="lang-sl">Končaj pravi run v0.2.2</span></h3><p class="muted lang-en">Audit the new 320-file review bundle, compare FPLB2 and FPLB3, and verify archive-specific, group-safe, and external cross-archive claims separately.</p><p class="muted lang-sl">Auditiraj novi 320-datotečni review bundle, primerjaj FPLB2 in FPLB3 ter ločeno preveri archive-specific, group-safe in zunanji cross-archive rezultat.</p></div></div>
+        <div class="road"><div><h3><span class="lang-en">Finish ReZIP 24/24 and activate the R5 resume path</span><span class="lang-sl">Končaj ReZIP 24/24 in aktiviraj R5 resume pot</span></h3><p class="muted lang-en">Keep successful items, reprocess only missing or legacy cases, and calculate total weighted savings, median gain, winner provenance, and strict reverify outcomes.</p><p class="muted lang-sl">Ohrani uspešne arhive, ponovno obdelaj le manjkajoče ali legacy primere ter izračunaj skupni uteženi prihranek, mediano, izvor zmagovalcev in stroge reverify rezultate.</p></div></div>
+        <div class="road"><div><h3><span class="lang-en">Only then build v0.2.3</span><span class="lang-sl">Šele nato zgradi v0.2.3</span></h3><p class="muted lang-en">The strongest candidate directions are content-defined chunking, near-duplicate block reuse, base+delta encoding, and cluster-specific dictionaries — always behind a no-regression champion gate.</p><p class="muted lang-sl">Najmočnejše smeri so content-defined chunking, ponovna uporaba skoraj enakih blokov, base+delta kodiranje in cluster-specific slovarji — vedno za champion gateom brez regresije.</p></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div><strong>8Z / 8zip research</strong><br><span class="lang-en">Human-led, multi-AI engineering by Bojan Dobrečevič and collaborators.</span><span class="lang-sl">Človeško vodeno, več-AI inženirstvo Bojana Dobrečeviča in sodelavcev.</span></div>
+    <div class="footer-links"><a href="index.html">8Z Hub</a><a href="8Z_compression.html">Mathematical Compression</a><a href="../crp/MDLxDCC.html">MDL×DCC</a><a href="../BD/BD_AIM3_RHP.html">RHP</a><a href="../">MDLxDCC.org</a></div>
+  </div>
+</footer>
+<script>
+(function(){
+  const root=document.documentElement;
+  let saved=null;
+  try{saved=localStorage.getItem('mdlxdcc-lang')}catch(_e){}
+  const initial=saved==='sl'?'sl':'en';
+  function setLang(lang){
+    root.dataset.lang=lang;
+    root.lang=lang;
+    try{localStorage.setItem('mdlxdcc-lang',lang)}catch(_e){}
+    document.querySelectorAll('[data-set-lang]').forEach(b=>b.classList.toggle('active',b.dataset.setLang===lang));
+  }
+  document.querySelectorAll('[data-set-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.setLang)));
+  setLang(initial);
+})();
+</script>
+</body>
+</html>
