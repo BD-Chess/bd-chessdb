@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#07111f">
   <meta name="color-scheme" content="dark">
   <title>Lj2La · Ljubljana → Lastovo · 24.–25. 7. 2026</title>
-  <meta name="description" content="Dve najboljši možnosti poti z avtomobilom iz Ljubljane na Lastovo: dnevna vožnja s spanjem v Veli Luki ali nočna vožnja.">
+  <meta name="description" content="Dve možnosti poti z avtomobilom iz Ljubljane na Lastovo: nočna vožnja z načrtom spanja ali dnevna vožnja s spanjem v Veli Luki.">
 
   <style>
 
@@ -552,6 +552,103 @@
       color: #b2f8c7;
     }
 
+    .options > .sleep-prep { margin-top: 0; }
+    .sleep-prep {
+      border-color: rgba(255, 202, 103, 0.34) !important;
+      background:
+        radial-gradient(circle at 95% 0%, rgba(255, 202, 103, 0.10), transparent 24rem),
+        rgba(12, 24, 41, 0.94) !important;
+    }
+    .sleep-prep h2 { margin-top: 6px !important; }
+    .sleep-lead { margin: 0 0 18px; color: var(--muted); }
+    .sleep-week { display: grid; gap: 9px; }
+    .sleep-row {
+      display: grid;
+      grid-template-columns: minmax(10.5rem, 0.95fr) minmax(8.5rem, 0.65fr) minmax(12rem, 1.55fr);
+      gap: 12px;
+      align-items: center;
+      padding: 13px 14px;
+      border: 1px solid var(--line-soft);
+      border-radius: 14px;
+      background: rgba(7, 17, 31, 0.66);
+    }
+    .sleep-row.key {
+      border-color: rgba(255, 202, 103, 0.40);
+      background: rgba(112, 76, 17, 0.17);
+    }
+    .sleep-date { font-weight: 840; color: #dcecff; }
+    .sleep-time {
+      color: #ffe1a1;
+      font-size: 1.08em;
+      font-weight: 920;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .sleep-goal { color: var(--muted); font-size: 0.84em; }
+    .work-note {
+      margin-top: 14px;
+      padding: 14px 15px;
+      border-left: 4px solid var(--blue);
+      border-radius: 12px;
+      background: rgba(33, 85, 137, 0.15);
+      color: #dcecff;
+    }
+    .friday-plan {
+      margin-top: 20px;
+      padding: 17px;
+      border: 1px solid rgba(85, 227, 213, 0.28);
+      border-radius: 17px;
+      background: rgba(6, 25, 35, 0.42);
+    }
+    .friday-plan h3 { margin: 0 0 13px; font-size: 1.12em; }
+    .friday-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+    .friday-grid > div {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid var(--line-soft);
+      border-radius: 13px;
+      background: rgba(7, 17, 31, 0.70);
+    }
+    .friday-grid strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #f5fbff;
+      font-size: 1.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .friday-grid span { display: block; color: var(--muted); font-size: 0.78em; }
+    .friday-grid .highlight {
+      grid-column: span 2;
+      border-color: rgba(116, 227, 154, 0.43);
+      background: rgba(34, 107, 64, 0.18);
+    }
+    .friday-grid .highlight strong { color: #baf8cb; }
+    .friday-grid .depart {
+      border-color: rgba(255, 202, 103, 0.48);
+      background: rgba(116, 75, 11, 0.20);
+    }
+    .friday-grid .depart strong { color: #ffe0a0; }
+    .safety-rules {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .safety-rule {
+      padding: 14px;
+      border: 1px solid var(--line-soft);
+      border-radius: 14px;
+      background: rgba(7, 17, 31, 0.62);
+    }
+    .safety-rule strong { display: block; margin-bottom: 5px; color: #eef6ff; }
+    .safety-rule span { display: block; color: var(--muted); font-size: 0.82em; }
+    .sleep-source-note { margin: 17px 0 0; color: var(--muted); font-size: 0.78em; }
+    .sleep-links { margin-top: 12px; }
+
     section.standard {
       margin-top: 34px;
       padding: 23px 20px;
@@ -913,8 +1010,12 @@
         letter-spacing: 0.04em;
         text-transform: uppercase;
       }
-      .compare-wrap td:nth-child(2)::before { content: "A · Spanje v Veli Luki"; color: #a4f5bd; }
-      .compare-wrap td:nth-child(3)::before { content: "B · Nočna vožnja"; color: #ffdb96; }
+      .compare-wrap td:nth-child(2)::before { content: "A · Nočna vožnja"; color: #ffdb96; }
+      .compare-wrap td:nth-child(3)::before { content: "B · Spanje v Veli Luki"; color: #a4f5bd; }
+
+      .sleep-row { grid-template-columns: minmax(9rem, 0.9fr) minmax(7rem, 0.65fr) 1.2fr; }
+      .friday-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .safety-rules { grid-template-columns: 1fr; }
 
       .map-head { display: block; }
       .map-actions { margin-top: 13px; }
@@ -928,6 +1029,10 @@
       .timeline li { grid-template-columns: 4.55rem 1fr; gap: 1.7rem; }
       .timeline li::before { left: calc(5.4rem - 6px); }
       .time { font-size: 0.88em; }
+      .sleep-row { grid-template-columns: 1fr; gap: 3px; }
+      .sleep-time { white-space: normal; }
+      .friday-grid { grid-template-columns: 1fr; }
+      .friday-grid .highlight { grid-column: auto; }
       .ferry-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       section.standard { padding: 19px 15px; }
       #map { min-height: 455px; }
@@ -947,7 +1052,7 @@
     <header>
       <div class="eyebrow">🚗 Pot na Lastovo · 24.–25. julij 2026</div>
       <h1>Ljubljana → Orebić → Vela Luka → Ubli</h1>
-      <p class="lead">Samo dve realni možnosti: <strong>dnevna vožnja s spanjem v Veli Luki</strong> ali <strong>nočna vožnja brez prenočišča</strong>. Obe sta usklajeni z že kupljeno karto za soboto ob 09:00.</p>
+      <p class="lead">Samo dve realni možnosti: najprej <strong>nočna vožnja z odhodom ob 20:00</strong>, ker prijateljema dnevna vročina ne ustreza, nato še <strong>dnevna vožnja s spanjem v Veli Luki</strong>. Obe sta usklajeni z že kupljeno karto za soboto ob 09:00.</p>
 
       <div class="ticket">
         <div class="icon" aria-hidden="true">✅</div>
@@ -955,8 +1060,9 @@
       </div>
 
       <nav class="jump-nav" aria-label="Hitra navigacija">
-        <a href="#opcija-a">A · Spanje v Veli Luki</a>
-        <a href="#opcija-b">B · Nočna vožnja</a>
+        <a href="#opcija-a">A · Nočna vožnja</a>
+        <a href="#spanje">Spanje pred odhodom</a>
+        <a href="#opcija-b">B · Spanje v Veli Luki</a>
         <a href="#primerjava">Primerjava</a>
         <a href="#zemljevid">Zemljevid</a>
         <a href="#prenocisce">Nočitev · 2 ali 4 osebe</a>
@@ -964,21 +1070,138 @@
     </header>
 
     <div class="decision">
-      <strong>Priporočilo:</strong> možnost A skoraj povsem loči dolgo cestno pot od rezerviranega trajekta ob 09:00. Tudi ob večurnem zastoju imate 24. julija zvečer več trajektov Orebić → Dominče in nato prespite že blizu odhoda iz Vele Luke.
+      <strong>Vrstni red po vajini trenutni situaciji:</strong> nočna vožnja je zdaj prva, ker prijateljema dnevna vročina ne ustreza in klime ne želita uporabljati. Da ostane razumna, sta obvezna dva spočita voznika in spodnji načrt spanja. Možnost B s spanjem v Veli Luki ostaja varnostno najmirnejša rezerva.
     </div>
 
     <div class="options">
-      <article class="option recommended" id="opcija-a">
+      <article class="option night" id="opcija-a">
         <div class="option-head">
           <div class="badges">
-            <span class="badge best">★ PRIPOROČENO</span>
+            <span class="badge best">★ PRVA MOŽNOST</span>
+            <span class="badge warn">NOČNA VOŽNJA</span>
+            <span class="badge warn">priporočena 2 voznika</span>
+            <span class="badge">brez prenočišča</span>
+          </div>
+          <h2>A · Odhod ob 20:00 in vožnja ponoči</h2>
+          <p class="option-intro">Skupinska izbira zaradi hladnejše nočne vožnje in manjše potrebe po klimi. Cilj je trajekt Orebić → Dominče ob 06:30, nato prihod v Velo Luko približno 80 minut pred odhodom za Ubli.</p>
+
+          <div class="metrics" aria-label="Ključni časi možnosti A">
+            <div class="metric"><small>Odhod od doma</small><strong>24. 7. · 20:00</strong></div>
+            <div class="metric"><small>Trajekt Orebić</small><strong>25. 7. · 06:30</strong></div>
+            <div class="metric"><small>Vela Luka</small><strong>ok. 07:40</strong></div>
+            <div class="metric"><small>Ubli</small><strong>25. 7. · 10:30</strong></div>
+          </div>
+        </div>
+
+        <div class="day-block">
+          <div class="day-title">
+            <h3>Petek zvečer → sobota dopoldne</h3>
+            <span>2–3 kratki postanki</span>
+          </div>
+          <ol class="timeline">
+            <li><div class="time">20:00</div><div class="event"><strong>Odhod od doma v Ljubljani</strong><span>Oba voznika naj pred odhodom opravita popoldanski spalni blok.</span></div></li>
+            <li><div class="time">22:10</div><div class="event"><strong>1. kratek postanek</strong><span>10–15 minut; kratka hoja, voda in po potrebi menjava voznika.</span></div></li>
+            <li><div class="time">00:40</div><div class="event"><strong>2. kratek postanek</strong><span>15–20 minut in načrtovana menjava voznika.</span></div></li>
+            <li><div class="time">03:00</div><div class="event"><strong>3. kratek postanek</strong><span>15–20 minut; ne izpustite ga samo zato, ker je Orebić že bližje.</span></div></li>
+            <li><div class="time">04:00–05:00</div><div class="event"><strong>Predviden prihod v Orebić</strong><span>Postavitev v vrsto; preostali čas uporabite za počitek, ne za dodatno vožnjo.</span></div></li>
+            <li><div class="time">06:30</div><div class="event"><strong>Trajekt Orebić → Dominče</strong><span>Glavna in zadnja načrtovalno varna povezava.</span></div></li>
+            <li><div class="time">06:50–07:45</div><div class="event"><strong>Dominče → Vela Luka</strong><span>Približno 50–55 minut z normalno rezervo.</span></div></li>
+            <li><div class="time">do 08:00</div><div class="event"><strong>V vrsti v Veli Luki</strong><span>Približno eno uro pred rezerviranim odhodom.</span></div></li>
+            <li><div class="time">09:00–10:30</div><div class="event"><strong>Vela Luka → Ubli</strong><span>Prihod na Lastovo ob 10:30.</span></div></li>
+          </ol>
+
+          <div class="warning-box">
+            <strong>Kritična točka:</strong> če zamudite trajekt ob 06:30, je odhod iz Orebića ob 07:20 le zasilna možnost. V Velo Luko bi prišli približno 25–35 minut pred odhodom, kar je za avtomobil pretesno.
+          </div>
+        </div>
+      </article>
+
+      <section class="standard sleep-prep" id="spanje">
+        <div class="badges">
+          <span class="badge best">PRIPRAVA ZA MOŽNOST A</span>
+          <span class="badge">00:00–08:00 vsak dan</span>
+          <span class="badge warn">petek: popoldanski spalni blok</span>
+        </div>
+        <h2>Kako spati ta teden pred odhodom ob 20:00</h2>
+        <p class="sleep-lead"><strong>Ohrani stabilen ritem.</strong> Vsako noč pojdi spat ob <strong>00:00</strong> in vstani ob <strong>08:00</strong>, da do petka ne nabereš spalnega dolga. V petek nato dodaj še načrtovan popoldanski spanec. Enak plan naj po možnosti sledi tudi drugi voznik.</p>
+
+        <div class="sleep-week" aria-label="Tedenski načrt spanja">
+          <div class="sleep-row">
+            <div class="sleep-date">Ned. 19. → pon. 20.</div>
+            <div class="sleep-time">00:00–08:00</div>
+            <div class="sleep-goal">8 ur · začetek brez spalnega dolga</div>
+          </div>
+          <div class="sleep-row">
+            <div class="sleep-date">Pon. 20. → tor. 21.</div>
+            <div class="sleep-time">00:00–08:00</div>
+            <div class="sleep-goal">8 ur · ohrani enak ritem</div>
+          </div>
+          <div class="sleep-row">
+            <div class="sleep-date">Tor. 21. → sre. 22.</div>
+            <div class="sleep-time">00:00–08:00</div>
+            <div class="sleep-goal">8 ur · brez krajšanja spanja</div>
+          </div>
+          <div class="sleep-row">
+            <div class="sleep-date">Sre. 22. → čet. 23.</div>
+            <div class="sleep-time">00:00–08:00</div>
+            <div class="sleep-goal">8 ur · stabilen ritem pred odhodom</div>
+          </div>
+          <div class="sleep-row key">
+            <div class="sleep-date">Čet. 23. → pet. 24.</div>
+            <div class="sleep-time">00:00–08:00</div>
+            <div class="sleep-goal">polnih 8 ur; brez alkohola in brez uspaval</div>
+          </div>
+        </div>
+
+        <div class="work-note"><strong>Če moraš zaradi službe kakšen dan vstati prej:</strong> pojdi tisti večer ustrezno prej spat. Ključ je, da ohraniš približno 8 ur spanja; petkov popoldanski spanec ostane.</div>
+
+        <div class="friday-plan">
+          <h3>Petek, 24. 7. · ključni dan</h3>
+          <div class="friday-grid">
+            <div><strong>08:00</strong><span>vstani; miren dan, brez težkega treninga</span></div>
+            <div><strong>do 13:00</strong><span>zadnja kava pred popoldanskim spanjem</span></div>
+            <div class="highlight"><strong>15:00–17:30</strong><span>2,5-urni spanec v temni, hladni in tihi sobi</span></div>
+            <div><strong>17:30–18:15</strong><span>prebujanje, tuš, svetloba, voda in kratka hoja</span></div>
+            <div><strong>18:15–19:00</strong><span>normalen, ne pretežek obrok</span></div>
+            <div><strong>19:15</strong><span>zadnji pregled kart, dokumentov in avtomobila</span></div>
+            <div class="depart"><strong>20:00</strong><span>odhod od doma</span></div>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <strong>Če 2,5-urni spanec ne uspe:</strong> rezervna možnost je približno <strong>90 minut</strong> (na primer 15:45–17:15) ali kratek <strong>15–20-minutni</strong> dremež. Po prebujanju si vedno pusti vsaj 20–30 minut, da mine začetna omotičnost.
+        </div>
+
+        <div class="buffer-box go-no-go">
+          <strong>Go / no-go ob 19:00:</strong> če glavni voznik ni dobil vsaj približno 8 ur nočnega spanja ali petkov spalni blok ni uspel in je že pred odhodom zaspan, nočna možnost odpade. Takrat je boljša možnost B ali dodatni spanec pred nadaljevanjem.
+        </div>
+
+        <div class="safety-rules">
+          <div class="safety-rule"><strong>Četrtek in petek: nič alkohola.</strong><span>Tudi majhna količina skupaj z utrujenostjo dodatno poslabša vožnjo.</span></div>
+          <div class="safety-rule"><strong>Ne uporabljaj uspaval ali sedativnih antihistaminikov.</strong><span>Ne uvajaj novega zdravila tik pred nočno vožnjo; preveri opozorila na zdravilih, ki jih že jemlješ.</span></div>
+          <div class="safety-rule"><strong>Kofein ni nadomestilo za spanec.</strong><span>Če ga običajno piješ, ostani pri običajni količini; ne poskušaj noči reševati z več energijskimi pijačami.</span></div>
+          <div class="safety-rule"><strong>Ob prvih znakih zaspanosti takoj ustavi.</strong><span>Težke veke, ponavljajoče zehanje, zgrešeni znaki ali vijuganje pomenijo počivališče, menjava voznika ali 15–20 minut spanja.</span></div>
+        </div>
+
+        <p class="sleep-source-note">Podlaga načrta: odrasli praviloma potrebujejo 7–9 ur kakovostnega spanja; raziskave nočnega dela kažejo boljšo budnost po približno 1,5–3 urah načrtovanega spanja pred nočjo. Točne ure zgoraj so praktična prilagoditev vajinemu odhodu ob 20:00.</p>
+        <div class="map-actions sleep-links">
+          <a href="https://www.cdc.gov/niosh/motor-vehicle/driver-fatigue/index.html" target="_blank" rel="noopener">CDC/NIOSH · utrujenost za volanom ↗</a>
+          <a href="https://www.cdc.gov/niosh/work-hour-training-for-nurses/longhours/mod7/06.html" target="_blank" rel="noopener">CDC/NIOSH · spanec pred nočjo ↗</a>
+          <a href="https://www.nhtsa.gov/risky-driving/drowsy-driving" target="_blank" rel="noopener">NHTSA · zaspana vožnja ↗</a>
+        </div>
+      </section>
+
+      <article class="option recommended" id="opcija-b">
+        <div class="option-head">
+          <div class="badges">
+            <span class="badge best">VARNOSTNO NAJMIRNEJŠA</span>
             <span class="badge best">najmanj tveganja</span>
             <span class="badge">normalen spanec</span>
           </div>
-          <h2>A · Dnevna vožnja + spanje v Veli Luki</h2>
+          <h2>B · Dnevna vožnja + spanje v Veli Luki</h2>
           <p class="option-intro">Odpeljete se podnevi, še isti večer pridete na Korčulo, prespite v Veli Luki ali bližnjem Blatu in zjutraj vstanete okoli 07:00.</p>
 
-          <div class="metrics" aria-label="Ključni časi možnosti A">
+          <div class="metrics" aria-label="Ključni časi možnosti B">
             <div class="metric"><small>Odhod iz LJ</small><strong>24. 7. · 08:30</strong></div>
             <div class="metric"><small>Ciljni trajekt</small><strong>Orebić · 19:30</strong></div>
             <div class="metric"><small>Spanec</small><strong>Vela Luka</strong></div>
@@ -1029,47 +1252,6 @@
           </ol>
         </div>
       </article>
-
-      <article class="option night" id="opcija-b">
-        <div class="option-head">
-          <div class="badges">
-            <span class="badge warn">NOČNA VOŽNJA</span>
-            <span class="badge warn">priporočena 2 voznika</span>
-            <span class="badge">brez prenočišča</span>
-          </div>
-          <h2>B · Odhod okoli 20:30 in vožnja ponoči</h2>
-          <p class="option-intro">Cenejša možnost brez sobe. Cilj je trajekt Orebić → Dominče ob 06:30, nato prihod v Velo Luko približno 80 minut pred odhodom za Ubli.</p>
-
-          <div class="metrics" aria-label="Ključni časi možnosti B">
-            <div class="metric"><small>Odhod iz LJ</small><strong>24. 7. · 20:30</strong></div>
-            <div class="metric"><small>Trajekt Orebić</small><strong>25. 7. · 06:30</strong></div>
-            <div class="metric"><small>Vela Luka</small><strong>ok. 07:40</strong></div>
-            <div class="metric"><small>Ubli</small><strong>25. 7. · 10:30</strong></div>
-          </div>
-        </div>
-
-        <div class="day-block">
-          <div class="day-title">
-            <h3>Petek zvečer → sobota dopoldne</h3>
-            <span>2–3 kratki postanki</span>
-          </div>
-          <ol class="timeline">
-            <li><div class="time">20:30</div><div class="event"><strong>Odhod iz Ljubljane</strong><span>Voznika naj bosta pred odhodom spočita.</span></div></li>
-            <li><div class="time">22:35</div><div class="event"><strong>1. kratek postanek</strong><span>Približno 10 minut.</span></div></li>
-            <li><div class="time">01:00</div><div class="event"><strong>2. kratek postanek</strong><span>Približno 15 minut in po potrebi menjava voznika.</span></div></li>
-            <li><div class="time">03:30</div><div class="event"><strong>3. kratek postanek</strong><span>Približno 10 minut; ne izpuščajte ga, če koncentracija pada.</span></div></li>
-            <li><div class="time">04:30–05:30</div><div class="event"><strong>Predviden prihod v Orebić</strong><span>Postavitev v vrsto in kratek počitek pred vkrcanjem.</span></div></li>
-            <li><div class="time">06:30</div><div class="event"><strong>Trajekt Orebić → Dominče</strong><span>Glavna in zadnja načrtovalno varna povezava.</span></div></li>
-            <li><div class="time">06:50–07:45</div><div class="event"><strong>Dominče → Vela Luka</strong><span>Približno 50–55 minut z normalno rezervo.</span></div></li>
-            <li><div class="time">do 08:00</div><div class="event"><strong>V vrsti v Veli Luki</strong><span>Približno eno uro pred rezerviranim odhodom.</span></div></li>
-            <li><div class="time">09:00–10:30</div><div class="event"><strong>Vela Luka → Ubli</strong><span>Prihod na Lastovo ob 10:30.</span></div></li>
-          </ol>
-
-          <div class="warning-box">
-            <strong>Kritična točka:</strong> če zamudite trajekt ob 06:30, je odhod iz Orebića ob 07:20 le zasilna možnost. V Velo Luko bi prišli približno 25–35 minut pred odhodom, kar je za avtomobil pretesno.
-          </div>
-        </div>
-      </article>
     </div>
 
     <section class="standard" id="primerjava">
@@ -1077,17 +1259,18 @@
       <div class="compare-wrap">
         <table>
           <thead>
-            <tr><th></th><th>A · Spanje v Veli Luki</th><th>B · Nočna vožnja</th></tr>
+            <tr><th></th><th>A · Nočna vožnja</th><th>B · Spanje v Veli Luki</th></tr>
           </thead>
           <tbody>
-            <tr><td>Odhod iz Ljubljane</td><td>24. 7. ob 08:30</td><td>24. 7. ob 20:30</td></tr>
-            <tr><td>Spanec</td><td>Normalna noč v Veli Luki ali Blatu</td><td>Brez spanja med dolgo potjo</td></tr>
-            <tr><td>Orebić → Dominče</td><td>19:30; rezervi 20:30 in 22:15</td><td>06:30; 07:20 je že tvegano</td></tr>
-            <tr><td>Prometna odpornost</td><td><strong>Zelo visoka</strong> — dolga pot je opravljena prejšnji dan</td><td>Srednja — večja zamuda lahko ogrozi povezavo</td></tr>
-            <tr><td>Strošek</td><td>Ena poceni nočitev</td><td>Brez nočitve</td></tr>
-            <tr><td>Utrujenost ob prihodu</td><td>Nizka</td><td>Visoka, predvsem za voznika</td></tr>
+            <tr><td>Odhod iz Ljubljane</td><td>24. 7. ob 20:00</td><td>24. 7. ob 08:30</td></tr>
+            <tr><td>Spanec</td><td>Tedenska priprava + 2,5-urni petkov spanec</td><td>Normalna noč v Veli Luki ali Blatu</td></tr>
+            <tr><td>Orebić → Dominče</td><td>06:30; 07:20 je že tvegano</td><td>19:30; rezervi 20:30 in 22:15</td></tr>
+            <tr><td>Prometna odpornost</td><td>Srednja — večja zamuda lahko ogrozi povezavo</td><td><strong>Zelo visoka</strong> — dolga pot je opravljena prejšnji dan</td></tr>
+            <tr><td>Vročina / klima</td><td><strong>Najbolj prijazna</strong> — večina vožnje ponoči</td><td>Večina poti podnevi; več potrebe po hlajenju</td></tr>
+            <tr><td>Strošek</td><td>Brez nočitve</td><td>Ena poceni nočitev</td></tr>
+            <tr><td>Utrujenost ob prihodu</td><td>Višja; nujna dva spočita voznika</td><td>Nizka</td></tr>
             <tr><td>Prihod v Ubli</td><td>25. 7. ob 10:30</td><td>25. 7. ob 10:30</td></tr>
-            <tr><td>Sklep</td><td><strong>Najboljša skupna možnost</strong></td><td>Dobra le ob spočitih voznikih</td></tr>
+            <tr><td>Sklep</td><td><strong>Skupinska izbira zaradi vročine</strong>, vendar le z disciplino spanja</td><td><strong>Varnostno najmirnejša možnost</strong></td></tr>
           </tbody>
         </table>
       </div>
@@ -1124,7 +1307,7 @@
       <div class="map-status">Zasnova: enak tip interaktivne osnovne karte in lastne trase kot na <a href="https://www.mdlxdcc.org/bd/bd_8zrp_qa194_map" target="_blank" rel="noopener">najini qa194 strani ↗</a>; Google Maps ostaja neposredna navigacija.</div>
 
       <details>
-        <summary>Zakaj je možnost A odpornejša na zastoje?</summary>
+        <summary>Zakaj je možnost B odpornejša na zastoje?</summary>
         <div>Rezervirani trajekt Vela Luka → Ubli odpelje šele naslednje jutro. Zato večurna zamuda na poti iz Ljubljane praviloma pomeni le poznejši večerni trajekt Orebić → Dominče in krajši spanec — ne pa izgube že kupljene povezave ob 09:00.</div>
       </details>
     </section>
@@ -1272,12 +1455,14 @@
     </section>
 
     <footer>
-      <strong>Posodobljeno 17. 7. 2026.</strong> Uradni poletni vozni red navaja večerne odhode Orebić → Dominče ter Vela Luka → Ubli ob 09:00 s prihodom ob 10:30. Cene nočitev so prepisane iz prikazanih ponudb za 24.–25. 7. 2026 in niso zaklenjene. Vozni redi se lahko spremenijo, zato jih preverite še 24 ur pred potjo in zjutraj pred odhodom.
+      <strong>Posodobljeno 19. 7. 2026.</strong> Uradni poletni vozni red navaja večerne odhode Orebić → Dominče ter Vela Luka → Ubli ob 09:00 s prihodom ob 10:30. Cene nočitev so prepisane iz prikazanih ponudb za 24.–25. 7. 2026 in niso zaklenjene. Vozni redi se lahko spremenijo, zato jih preverite še 24 ur pred potjo in zjutraj pred odhodom.
       <div class="source-links">
         <a href="https://www.jadrolinija.hr/download/78a49598b028455c7a14e7f3c53408bc" target="_blank" rel="noopener">Jadrolinija 634 · vozni red ↗</a>
         <a href="https://www.jadrolinija.hr/download/35ee0ff9e5c7e95325d4166e5f53556b" target="_blank" rel="noopener">Jadrolinija 604 · vozni red ↗</a>
         <a href="https://www.jadrolinija.hr/en/travel/orebic_-_domince_korcula" target="_blank" rel="noopener">Orebić–Dominče ↗</a>
         <a href="https://www.hak.hr/info/stanje-na-cestama?lang=en" target="_blank" rel="noopener">HAK · stanje na cestah ↗</a>
+        <a href="https://www.cdc.gov/niosh/motor-vehicle/driver-fatigue/index.html" target="_blank" rel="noopener">CDC/NIOSH · utrujenost za volanom ↗</a>
+        <a href="https://www.nhtsa.gov/risky-driving/drowsy-driving" target="_blank" rel="noopener">NHTSA · zaspana vožnja ↗</a>
       </div>
       <div class="fine-print">Načrtovalni časi vključujejo 2–3 kratke postanke in dodatno prometno rezervo, niso pa jamstvo dejanskega časa vožnje. Tik pred odhodom preverite promet, veter in morebitna obvestila prevoznika.</div>
     </footer>
