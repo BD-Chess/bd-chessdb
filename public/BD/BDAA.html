@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>BDAA — platforma za brezalkoholno pivo in vino</title>
+<meta name="description" content="Celovit pregled postopkov razalkoholizacije piva in vina, raziskovalne arhitekture BD × GPT ter deterministične arene BDAA v0.3.1.">
+<style>
+:root{
+  --bg:#060607;--bg2:#0d0b0b;--panel:#171212;--panel2:#120f10;
+  --text:#f4ece7;--muted:#c8b9b0;--dim:#8e7d76;--line:#392a28;
+  --amber:#ffbd5b;--gold:#f6d180;--red:#ff796f;--wine:#c65b86;
+  --green:#65d69b;--cyan:#64d8e8;--shadow:0 22px 65px rgba(0,0,0,.42);
+  --radius:18px;--sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.68;background:
+ radial-gradient(circle at 12% -5%,rgba(255,121,111,.16),transparent 31%),
+ radial-gradient(circle at 92% 6%,rgba(198,91,134,.12),transparent 28%),
+ radial-gradient(circle at 52% 0%,rgba(255,189,91,.07),transparent 27%),
+ linear-gradient(180deg,var(--bg),var(--bg2));}
+a{color:var(--amber);text-decoration:none}a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,189,91,.17);background:rgba(6,6,7,.88);backdrop-filter:blur(16px)}
+.topbar-inner{width:min(1240px,calc(100% - 32px));margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
+.brand{font:800 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions a{font:700 11px/1 var(--mono);padding:8px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.025)}
+.actions a:hover{border-color:var(--amber);color:var(--amber);text-decoration:none}
+.layout{width:min(1240px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:26px;padding:34px 0 72px}
+.sidebar{position:sticky;top:74px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:rgba(18,15,16,.86);box-shadow:var(--shadow);padding:18px}
+.sidebar h2{font:800 12px/1.2 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
+.sidebar nav{display:grid;gap:2px}.sidebar nav a{padding:7px 9px;border-radius:9px;color:var(--muted);font-size:13px;line-height:1.3}
+.sidebar nav a:hover{background:rgba(255,189,91,.07);color:var(--amber);text-decoration:none}
+.article{min-width:0}
+.hero{padding:35px 34px 31px;border:1px solid rgba(255,189,91,.22);border-radius:24px;background:linear-gradient(145deg,rgba(111,43,39,.28),rgba(18,15,16,.95));box-shadow:var(--shadow)}
+.hero h1{margin:0;font-size:clamp(36px,5.5vw,69px);line-height:1.01;letter-spacing:-.048em;color:#fff}
+.hero h2{margin:12px 0 0;color:var(--amber);font-size:clamp(18px,2.5vw,28px);font-weight:650}
+.hero-kicker{font:800 12px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 13px}
+.lead{font-size:clamp(18px,2.1vw,23px);line-height:1.58;color:#e2d1c8;max-width:980px}
+.article h2{margin:52px 0 18px;padding-top:12px;font-size:clamp(27px,3.3vw,42px);line-height:1.15;letter-spacing:-.025em;color:#fff}
+.article h3{margin:32px 0 12px;font-size:clamp(21px,2.3vw,29px);line-height:1.2;color:var(--amber)}
+.article h4{margin:25px 0 9px;color:var(--green)}
+.article p,.article li{color:var(--muted)}.article strong{color:#fff}
+.article blockquote{margin:20px 0;padding:16px 19px;border-left:4px solid var(--amber);border-radius:0 12px 12px 0;background:rgba(255,189,91,.055);color:var(--muted)}
+.article code{font-family:var(--mono);font-size:.9em;padding:.12em .42em;border:1px solid rgba(255,189,91,.18);border-radius:7px;background:rgba(255,189,91,.07);color:#fff0cc}
+.article ul,.article ol{padding-left:1.35em}.article li{margin:.38em 0}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:21px 0 29px}
+.metric-card{padding:17px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(54,35,31,.88),rgba(16,13,14,.96))}
+.metric-card b{display:block;font:850 clamp(22px,3vw,34px)/1.05 var(--mono);color:#fff;margin-bottom:7px}
+.metric-card span{display:block;font:750 10px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.grid-2,.grid-3{display:grid;gap:14px;margin:18px 0}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.info-card{border:1px solid var(--line);border-radius:16px;background:rgba(18,15,16,.78);padding:20px}.info-card h3{margin:0 0 9px!important;font-size:21px!important}.info-card p{margin:7px 0}
+.callout{margin:20px 0;padding:19px 21px;border:1px solid rgba(255,189,91,.31);border-radius:16px;background:linear-gradient(135deg,rgba(255,189,91,.09),rgba(198,91,134,.035))}
+.callout.red{border-color:rgba(255,121,111,.36);background:linear-gradient(135deg,rgba(255,121,111,.10),rgba(198,91,134,.04))}
+.callout.green{border-color:rgba(101,214,155,.34);background:linear-gradient(135deg,rgba(101,214,155,.09),rgba(100,216,232,.025))}
+.callout h3{margin:0 0 7px!important;font-size:21px!important}.callout p:last-child{margin-bottom:0}
+.status-row{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}.badge{font:750 10px/1 var(--mono);letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:7px 9px;color:var(--muted);background:rgba(255,255,255,.025)}
+.badge.clean{color:var(--green);border-color:rgba(101,214,155,.34);background:rgba(101,214,155,.07)}.badge.warn{color:var(--gold);border-color:rgba(246,209,128,.34);background:rgba(246,209,128,.07)}.badge.research{color:var(--amber);border-color:rgba(255,189,91,.34);background:rgba(255,189,91,.07)}
+.process-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.process-step{position:relative;padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);min-height:120px}
+.process-step b{display:block;color:var(--amber);font-family:var(--mono);margin-bottom:6px}.process-step:not(:last-child)::after{content:'→';position:absolute;right:-11px;top:45%;z-index:2;color:var(--red);font-size:22px;font-weight:900}
+.method-ladder{display:grid;gap:10px;margin:18px 0}.method{display:grid;grid-template-columns:190px 1fr;gap:15px;padding:15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.018)}.method b{color:var(--amber);font-family:var(--mono)}
+.table-wrap{overflow:auto;margin:18px 0 28px;border:1px solid var(--line);border-radius:16px;background:rgba(8,7,8,.72);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:820px;font-size:14px}
+th,td{padding:11px 12px;text-align:left;vertical-align:top;border-right:1px solid rgba(57,42,40,.75);border-bottom:1px solid rgba(57,42,40,.75)}
+th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}
+th{position:sticky;top:0;z-index:2;font:800 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:#211819}
+tbody tr:nth-child(even){background:rgba(255,255,255,.022)}tbody tr:hover{background:rgba(255,189,91,.05)}
+details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background:rgba(8,7,8,.58);overflow:hidden}summary{cursor:pointer;padding:13px 16px;color:var(--amber);font-weight:750}details>div{padding:0 16px 15px;border-top:1px solid var(--line)}
+.timeline{display:grid;gap:12px;margin:20px 0}.timeline-item{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:16px;border-left:3px solid var(--wine);background:rgba(198,91,134,.045);border-radius:0 14px 14px 0}.timeline-item b{font-family:var(--mono);color:var(--gold)}
+.footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
+.backtop{position:fixed;right:16px;bottom:16px;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(18,15,16,.92);color:var(--amber);box-shadow:var(--shadow)}
+.small{font-size:13px;color:var(--dim)!important}
+@media(max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.process-step::after{display:none}}
+@media(max-width:700px){.metric-grid,.grid-2,.grid-3,.process-flow{grid-template-columns:1fr}.method,.timeline-item{grid-template-columns:1fr}}
+@media(max-width:620px){.topbar-inner{align-items:flex-start;flex-direction:column}.layout{width:min(100% - 20px,1240px);padding-top:18px}.sidebar{display:none}.hero{padding:26px 20px 24px}.article h2{margin-top:42px}table{font-size:13px}th,td{padding:10px}}
+@media print{.topbar,.sidebar,.backtop{display:none}.layout{display:block;width:100%;padding:0}body{background:#fff;color:#000}.hero,.info-card,.callout,.metric-card{box-shadow:none;background:#fff}.article p,.article li,td{color:#222}.article h1,.article h2,.article h3,.article strong{color:#000}}
+</style>
+</head>
+<body id="top">
+<header class="topbar"><div class="topbar-inner">
+<div class="brand">8Z · BDAA · Beverage Dealcoholization 2026</div>
+<div class="actions"><a href="#teza">Teza</a><a href="#postopek">Postopek</a><a href="#metode">18 metod</a><a href="#arena">Arena</a><a href="#naslednji-test">Naslednji test</a></div>
+</div></header>
+
+<div class="layout">
+<aside class="sidebar"><h2>Vsebina</h2><nav>
+<a href="#teza">Produktna teza</a>
+<a href="#problem">Zakaj je problem težak</a>
+<a href="#postopek">Naš hibridni postopek</a>
+<a href="#metode">18 metodnih družin</a>
+<a href="#primerjava">Primerjava metod</a>
+<a href="#produkt">Produktne oblike</a>
+<a href="#arena">BDAA v0.3.1</a>
+<a href="#rezultati">Rezultati v0.2.1</a>
+<a href="#dokazi">Kaj je dokazano</a>
+<a href="#odprto">Kaj ostaja odprto</a>
+<a href="#zgodovina">Razvoj arene</a>
+<a href="#naslednji-test">Naslednji testi</a>
+<a href="#sklep">Sklep</a>
+</nav></aside>
+
+<main class="article">
+<section class="hero" id="teza">
+<p class="hero-kicker">BD × GPT · BDAA / 8Z · raziskovalni posnetek 3. avgust 2026</p>
+<h1>Brezalkoholno pivo in vino brez izgube značaja</h1>
+<h2>Zaščiti aromo in telo, loči etanol, vrni pravo vodo, ponovno sestavi pijačo brez dodanega sladkorja</h2>
+<p class="lead"><strong>Osrednja ideja:</strong> pijače ne obravnavamo kot eno samo tekočino, ki jo brutalno segrejemo ali filtriramo. Najprej zaščitimo občutljive aromatske in funkcionalne frakcije, nato poenostavimo vodno-alkoholni del, etanol selektivno odstranimo, nosilec oziroma ločevalno fazo regeneriramo in na koncu pijačo natančno ponovno sestavimo.</p>
+<div class="status-row">
+<span class="badge research">BDAA v0.3.1</span><span class="badge clean">18/18 selftestov</span>
+<span class="badge clean">1 vs 6 worker determinism PASS</span><span class="badge research">18 metod</span>
+<span class="badge warn">laboratorij še potreben</span>
+</div>
+<div class="metric-grid">
+<div class="metric-card"><b>18</b><span>metodnih družin</span></div>
+<div class="metric-card"><b>4.050</b><span>uravnoteženih raziskovalnih celic</span></div>
+<div class="metric-card"><b>3 × 5 × 5</b><span>pijače × ABV cilji × misije</span></div>
+<div class="metric-card"><b>0 sladkorja</b><span>cilj ponovne sestave</span></div>
+</div>
+</section>
+
+<section id="problem">
+<h2>1. Zakaj je dobra razalkoholizacija težka</h2>
+<div class="grid-3">
+<div class="info-card"><h3>Etanol ni samo alkohol</h3><p>Prispeva občutek topline, telo, topnost arom in ravnotežje okusa. Njegova odstranitev spremeni celoten senzorični sistem.</p></div>
+<div class="info-card"><h3>Arome so hlapne</h3><p>Postopki, ki dobro odstranijo etanol, pogosto odnašajo tudi vrhnje arome, CO₂ in druge majhne molekule.</p></div>
+<div class="info-card"><h3>Voda ni nevtralna rešitev</h3><p>Preprosta zamenjava odstranjene frakcije z vodo razredči telo, kisline, minerale, barvo in strukturo.</p></div>
+</div>
+<div class="callout red"><h3>Zakaj so mnoge brezalkoholne pijače presladke</h3><p>Ko alkohol izgine, se spremeni zaznava ravnotežja med sladkostjo, kislino, grenkobo, aromo in telesom. Dodajanje sladkorja lahko hitro prekrije praznino, vendar pogosto ustvari pijačo, ki je kalorično in senzorično oddaljena od izvirnika. Naš cilj je obnoviti strukturo z lastnimi frakcijami, procesnimi nastavitvami in minimalnimi funkcionalnimi dodatki — ne s prikrivanjem s sladkorjem.</p></div>
+</section>
+
+<section id="postopek">
+<h2>2. Naš hibridni postopek</h2>
+<div class="process-flow">
+<div class="process-step"><b>1 · Zaščita</b><span>Odvzem in zaščita arom, CO₂ ter funkcionalnih frakcij, ki jih kasneje vrnemo.</span></div>
+<div class="process-step"><b>2 · Poenostavitev</b><span>Glavni tok se spremeni v lažje obvladljivo vodno-alkoholno frakcijo.</span></div>
+<div class="process-step"><b>3 · Selektivni zajem</b><span>Etanol se loči z membrano, vakuumom, zamrzovanjem, sorbentom ali magnetnim nosilcem.</span></div>
+<div class="process-step"><b>4 · Separacija</b><span>Naloženi nosilec ali etanolni tok se odstrani z magnetom, centrifugo ali membrano.</span></div>
+<div class="process-step"><b>5 · Regeneracija</b><span>Nosilec se očisti in ponovno uporabi; etanol postane uporaben soproizvod.</span></div>
+<div class="process-step"><b>6 · Voda</b><span>Vrne se dovolj čista lastna voda ali natančno receptirana sveža voda.</span></div>
+<div class="process-step"><b>7 · Rekombinacija</b><span>Zaščitene frakcije, telo, kisline, minerali in CO₂ se vrnejo v pravilnem vrstnem redu.</span></div>
+<div class="process-step"><b>8 · Validacija</b><span>ABV, stabilnost, ostanki nosilca, mikrobiologija in slepa degustacija.</span></div>
+</div>
+<blockquote><strong>Najina najbolj posebna veja:</strong> magnetno odzivna trdna ali tekoča faza, ki močneje veže oziroma porazdeli etanol kot vodo, nato pa jo odstranimo z visokim gradientom magnetnega polja. Magnet ni čarobni ločevalnik alkohola; pomemben je posebej zasnovan nosilec.</blockquote>
+<h3>Zakaj neposredno močno magnetno polje ni dovolj</h3>
+<p>Etanol in voda nimata tako različnega magnetnega odziva, da bi ju bilo smiselno industrijsko ločevati samo z magnetom. Zato BDAA vsebuje <code>direct_magnetic_field_falsification</code> kot kontrolni baseline, ki mora idejo zavrniti, kadar ni prisoten selektivni magnetni nosilec.</p>
+</section>
+
+<section id="metode">
+<h2>3. Osemnajst metodnih družin v areni</h2>
+<div class="method-ladder">
+<div class="method"><b>Membrane</b><span>RO/diafiltracija, pervaporacija, osmotska destilacija in vakuumska membranska destilacija.</span></div>
+<div class="method"><b>Vakuum in film</b><span>Vakuumska destilacija, spinning cone in zaprti mikroflash skozi zelo majhno odprtino.</span></div>
+<div class="method"><b>Plinski prenos</b><span>Inert-gas stripping z ločenim zajemom arom in nadzorom oksidacije.</span></div>
+<div class="method"><b>Zamrzovanje</b><span>Progresivno, falling-film in scraped-surface zamrzovanje z rastjo kristalov, entrainmentom ter pranjem ledu.</span></div>
+<div class="method"><b>Sorbenti</b><span>Klasični trdni sorbent ter membransko-sorbentni hibrid.</span></div>
+<div class="method"><b>Magnetni nosilci</b><span>Magnetni trdni delci in magnetna tekoča faza z regeneracijo, residual gate-om in izgubo materiala.</span></div>
+<div class="method"><b>Hibridi</b><span>Freeze–microflash in unrestricted hybrid, ki lahko sestavi več metod v smiselno procesno verigo.</span></div>
+<div class="method"><b>Falsifikator</b><span>Neposredno magnetno polje brez nosilca, namenjeno preprečevanju lažnih čudežnih rezultatov.</span></div>
+</div>
+</section>
+
+<section id="primerjava">
+<h2>4. Inženirska primerjava glavnih pristopov</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Pristop</th><th>Glavna prednost</th><th>Glavno tveganje</th><th>Najbolj smiseln namen</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>RO + diafiltracija</td><td>Nizka temperatura, modularnost</td><td>Velika poraba vode, več ciklov, omejena selektivnost</td><td>Pivo in nekatere vinske predobdelave</td><td>Zrela osnova</td></tr>
+<tr><td>Pervaporacija / VMD</td><td>Selektivnejši hlapni prenos</td><td>Membrane, fouling, vakuum, aroma loss</td><td>Fina odstranitev etanola</td><td>Obetavno</td></tr>
+<tr><td>Vakuumska destilacija</td><td>Znana industrijska fizika</td><td>Toplotna poškodba in odnašanje arom</td><td>Večje centralne naprave</td><td>Zrelo, kompromisno</td></tr>
+<tr><td>Spinning cone</td><td>Hiter tanki film, ločen aroma pass</td><td>CAPEX in kompleksnost</td><td>Premium kakovost pri večjih količinah</td><td>Industrijsko relevantno</td></tr>
+<tr><td>Zamrzovanje</td><td>Nizke temperature, zanimiva frakcionacija</td><td>Etanol ostaja v tekoči fazi; pranje ledu in energija</td><td>Predkoncentracija ali hibrid</td><td>Raziskovalno</td></tr>
+<tr><td>Closed microflash</td><td>Zelo kratek toplotni stik v zaprtem sistemu</td><td>Težko uravnoteženje transferja, vakuuma in arom</td><td>Hibrid po predobdelavi</td><td>Nova veja</td></tr>
+<tr><td>Trdni sorbent</td><td>Možna selektivnost in nizka procesna temperatura</td><td>Kapaciteta, regeneracija, okus, strošek</td><td>Polishing ali manjše serije</td><td>Laboratorij potreben</td></tr>
+<tr><td>Magnetni tekoči nosilec</td><td>Selektivni kontakt + hitra zunanja separacija</td><td>Živilska varnost, ostanek, emulzija, regeneracija</td><td>Potencialno nova platforma</td><td>Najbolj originalna hipoteza</td></tr>
+<tr><td>Unrestricted hybrid</td><td>Vsak korak dela samo to, kar zna najbolje</td><td>Kompleksnost, CAPEX, čiščenje in kontrola</td><td>Iskanje najboljšega celotnega postopka</td><td>Glavni cilj arene</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="produkt">
+<h2>5. Iz postopka v dejansko ponudbo</h2>
+<div class="grid-3">
+<div class="info-card"><h3>Lastna modularna naprava</h3><p>Pivovarna ali klet kupi opremo in jo uporablja po potrebi. Prednost je nadzor; slabost CAPEX, čiščenje in strokovno upravljanje.</p></div>
+<div class="info-card"><h3>Centralna storitev</h3><p>Pijača se prevaža v specializiran obrat. Najboljša izkoriščenost opreme, vendar dodatna logistika in večje serije.</p></div>
+<div class="info-card"><h3>Mobilna storitev</h3><p>Naprava pride k proizvajalcu. Zanimivo za craft segment, vendar mora prestati omejitve mase, električne moči, vode, footprinta in pretoka.</p></div>
+</div>
+<p>BDAA ne optimizira samo končnega ABV in okusa. V isti kandidat vključuje CAPEX, OPEX, energijo, vodo, delo, CIP, QA, potrošni material, etanolni soproizvod, zahtevano prodajno ceno, realni demand ramp in diskontirani break-even.</p>
+</section>
+
+<section id="arena">
+<h2>6. BDAA v0.3.1 — all-methods correctness grand tournament</h2>
+<div class="metric-grid">
+<div class="metric-card"><b>3</b><span>pivo, belo vino, rdeče vino</span></div>
+<div class="metric-card"><b>5</b><span>ciljnih ABV ravni</span></div>
+<div class="metric-card"><b>5</b><span>produktnih misij</span></div>
+<div class="metric-card"><b>3</b><span>fiksni demand scenariji</span></div>
+</div>
+<p>Celoten krog vsebuje <strong>4.050 ločenih celic</strong>. Vsaka metoda dobi enako deterministično kvoto, zato hitra ali že znana metoda ne more izriniti počasnejše, bolj eksperimentalne metode, še preden jo arena resno preizkusi.</p>
+<div class="grid-2">
+<div class="info-card"><h3>Programsko jedro</h3><ul><li>SQLite WAL in <code>synchronous=FULL</code>;</li><li>atomski claim z <code>BEGIN IMMEDIATE</code>;</li><li>lease token, heartbeat in recovery;</li><li>single-supervisor lock;</li><li>fail-closed fingerprint kode, authority in baze;</li><li>1-vs-6 worker determinism.</li></ul></div>
+<div class="info-card"><h3>Fizikalni gate-i</h3><ul><li>zaprta masa in voda;</li><li>legalni in ciljni ABV;</li><li>senzorična ustreznost;</li><li>čistost povratne vode;</li><li>ostanek sorbenta ali magnetnega nosilca;</li><li>robustnost procesa in trga.</li></ul></div>
+</div>
+<div class="callout green"><h3>Validacijski rezultat v0.3.1</h3><p>Self-test 18/18 PASS, 1-vs-6 worker determinism PASS, SQLite resume/recovery PASS, brez podvojenih taskov ali rezultatov, največja masna napaka približno 4,44 × 10⁻¹⁶ kg. To potrjuje programsko pravilnost in uravnoteženo iskanje — ne laboratorijske resnice.</p></div>
+<div class="callout red"><h3>Pomemben pošten rezultat</h3><p>Plitva validacija v0.3.1 še ni našla kandidata, ki bi prestal vse gate. To ni dokaz, da nobena metoda ne deluje. Pomeni, da je novi model strožji in da mora dolga kampanja šele odkriti izvedljive prvake brez starih bližnjic.</p></div>
+</section>
+
+<section id="rezultati">
+<h2>7. Kaj je našla prejšnja dolga kampanja v0.2.1</h2>
+<p>Prejšnja produktno popravljena arena je do 3. avgusta 2026 zaključila <strong>1.109.250 evaluacij</strong>. Ti rezultati so dragocen raziskovalni zemljevid, vendar jih v0.3.1 zaradi spremenjene fizike vode, arom in ekonomike ne smemo neposredno razglasiti za končni verdict.</p>
+<div class="metric-grid">
+<div class="metric-card"><b>1.109.250</b><span>zaključenih rezultatov</span></div>
+<div class="metric-card"><b>25.669</b><span>process-feasible</span></div>
+<div class="metric-card"><b>5.178</b><span>market-feasible</span></div>
+<div class="metric-card"><b>2.258</b><span>robustnih ponudb</span></div>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Misija v0.2.1</th><th>Robustni rezultati</th><th>Market rezultati</th><th>Najboljši robustni offer p10</th><th>Najnižji opaženi inkrementalni strošek</th></tr></thead>
+<tbody>
+<tr><td>Low customer CAPEX</td><td>727</td><td>1.478</td><td>92,04</td><td>0,508 €/L</td></tr>
+<tr><td>Low total CAPEX</td><td>360</td><td>1.043</td><td>79,49</td><td>0,185 €/L</td></tr>
+<tr><td>Mobile service</td><td>43</td><td>126</td><td>79,86</td><td>0,898 €/L</td></tr>
+<tr><td>Premium quality</td><td>450</td><td>1.196</td><td>86,98</td><td>0,234 €/L</td></tr>
+<tr><td>Quality / price</td><td>678</td><td>1.335</td><td>87,30</td><td>0,288 €/L</td></tr>
+</tbody></table></div>
+<p class="small">Številke so iz starejšega modela v0.2.1 in niso ponudbe dobaviteljev ali potrjeni proizvodni stroški. Njihova vrednost je predvsem v usmerjanju naslednjih eksperimentov.</p>
+</section>
+
+<section id="dokazi">
+<h2>8. Kaj je trenutno dejansko dokazano</h2>
+<ul>
+<li>izdelana je deterministična arena, ki lahko pošteno primerja zelo različne procesne arhitekture;</li>
+<li>masa, voda in provenance dodane vode se zapirajo do numerične natančnosti;</li>
+<li>vsaka metoda ima lasten fizikalni pogonski parameter, zato si metode ne izposojajo napačne fizike;</li>
+<li>aroma capture, vračanje vode, regeneracija in komercialna ponudba niso brezplačne operacije;</li>
+<li>prejšnja arena je našla veliko zanimivih procesnih in tržnih hipotez;</li>
+<li>magnetna tekoča veja je dovolj natančno modelirana, da jo je mogoče falsificirati in usmeriti v laboratorij.</li>
+</ul>
+</section>
+
+<section id="odprto">
+<h2>9. Kaj še ni dokazano</h2>
+<div class="grid-2">
+<div class="info-card"><h3>Laboratorij</h3><ul><li>realna etanolna selektivnost sorbentov;</li><li>porazdelitveni koeficient magnetne tekoče faze;</li><li>ostanek in migracija materiala;</li><li>regeneracija skozi več ciklov;</li><li>mikrobiološka in kemijska varnost;</li><li>slepa senzorična kakovost.</li></ul></div>
+<div class="info-card"><h3>Industrija in trg</h3><ul><li>resnični EUR/L pri konkretni opremi;</li><li>CIP in fouling skozi dolge teke;</li><li>dobavljivost membran in nosilcev;</li><li>realni CAPEX in servis;</li><li>regulativna pot za nov pomožni material;</li><li>dejanski willingness-to-pay.</li></ul></div>
+</div>
+<blockquote><strong>Truth boundary:</strong> arena ustvarja in rangira hipoteze. Zmagovalec nastane šele po zaporedju <code>arena → laboratorij → slepa degustacija → realni EUR/L → kalibracija → ponovni turnir</code>.</blockquote>
+</section>
+
+<section id="zgodovina">
+<h2>10. Razvoj raziskovalne arene</h2>
+<div class="timeline">
+<div class="timeline-item"><b>v0.1.x</b><span>Osnovni procesni graf, pravilen vrstni red rekombinacije, receptirana voda, kalorije na končni liter in uravnotežena obravnava piva ter vin.</span></div>
+<div class="timeline-item"><b>v0.2.1</b><span>Produktna pravilnost: fiksni demand scenariji, realnejša mobilna naprava, capacity-based sorbent costing ter customer/provider payback gate-i.</span></div>
+<div class="timeline-item"><b>v0.3.0</b><span>Veliki turnir vseh metod: 18 metod, tri zamrzovalne veje, magnetni trdni in tekoči nosilec, mikroflash, hibridi in Best Method verdict.</span></div>
+<div class="timeline-item"><b>v0.3.1</b><span>Correctness release: neidealna povratna voda, ločeni method drivers, plačljiv aroma capture, diskontiran večletni break-even, fail-closed fingerprint in hitrejše poročanje.</span></div>
+</div>
+</section>
+
+<section id="naslednji-test">
+<h2>11. Naslednji odločilni testi</h2>
+<ol>
+<li><strong>Dolga v0.3.1 kampanja:</strong> po strožji fiziki najti prve process-feasible, market-feasible in robustne prvake po posameznih metodah.</li>
+<li><strong>Bench sorbent test:</strong> izmeriti kapaciteto in selektivnost za etanol/vodo/arome na realnem pivu in vinu.</li>
+<li><strong>Magnetni carrier test:</strong> majhen closed-loop sistem z meritvijo porazdelitve, časa separacije, residuala in regeneracije.</li>
+<li><strong>Freeze–microflash test:</strong> preveriti, ali zamrzovalna predobdelava res zmanjša energijo in senzorično škodo mikroflasha.</li>
+<li><strong>Aroma capture test:</strong> GC-MS oziroma ciljne meritve pred in po zajemu ter vračanju arom.</li>
+<li><strong>Slepa degustacija:</strong> primerjava z originalom in najboljšimi komercialnimi brezalkoholnimi referencami brez dodanega sladkorja.</li>
+<li><strong>Ponovna kalibracija:</strong> izmerjene koeficiente vstaviti v authority datoteke in ponoviti celoten turnir.</li>
+</ol>
+</section>
+
+<section id="sklep">
+<h2>12. Sklep</h2>
+<p>Najina raziskava ni samo še ena varianta vakuumske destilacije. Gradiva <strong>platformo za razstavljanje in ponovno sestavljanje pijače</strong>, kjer posamezen korak opravi ozko nalogo: zaščita arom, ločitev etanola, čiščenje vode, regeneracija nosilca in obnova telesa.</p>
+<p>Najbolj obetavna smer trenutno ni nujno ena čudežna naprava, temveč <strong>hibrid</strong>: zrela predobdelava + selektivni polishing + natančna rekombinacija. Magnetni tekoči nosilec je najbolj originalna veja in lahko odpre novo procesno kategorijo, vendar mora biti laboratorijsko dokazan ali pošteno zavrnjen.</p>
+<div class="callout"><h3>Pravi cilj</h3><p>Brezalkoholna pijača, ki ni sladka imitacija originala, ampak ohrani aromo, suhost, telo, strukturo in identiteto piva ali vina — ob dovolj nizkem strošku, da jo lahko dejansko proizvaja craft ali regionalni proizvajalec.</p></div>
+</section>
+
+<div class="footer">Celovit projektni HTML · BDAA v0.3.1 correctness + zgodovinski rezultati v0.2.1 · raziskava je odprta in zahteva laboratorijsko validacijo.</div>
+</main>
+</div>
+<a class="backtop" href="#top" aria-label="Na vrh">↑</a>
+</body>
+</html>
