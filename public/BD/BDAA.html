@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>BDAA — platforma za brezalkoholno pivo in vino</title>
-<meta name="description" content="Celovit pregled postopkov razalkoholizacije piva in vina, raziskovalne arhitekture BD × GPT ter deterministične arene BDAA v0.3.1.">
+<meta name="description" content="BDAA: raziskava nove ponudbe brezalkoholnega piva in vina z boljšim razmerjem med kakovostjo in ceno, podprta z deterministično all-methods areno.">
 <style>
 :root{
   --bg:#060607;--bg2:#0d0b0b;--panel:#171212;--panel2:#120f10;
@@ -73,8 +73,15 @@ details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background
 .footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
 .backtop{position:fixed;right:16px;bottom:16px;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(18,15,16,.92);color:var(--amber);box-shadow:var(--shadow)}
 .small{font-size:13px;color:var(--dim)!important}
+.why-now{margin:24px 0 0;padding:27px 27px 23px;border:1px solid rgba(100,216,232,.28);border-radius:20px;background:
+ linear-gradient(135deg,rgba(100,216,232,.075),rgba(255,189,91,.045) 52%,rgba(198,91,134,.035));box-shadow:var(--shadow)}
+.why-now h2{margin:0 0 14px!important;padding-top:0!important;font-size:clamp(27px,3.3vw,40px)!important}
+.why-quote{margin:16px 0 20px!important;border-left-color:var(--cyan)!important;background:rgba(100,216,232,.055)!important;font-size:clamp(17px,1.8vw,20px);color:#e7dcd6!important}
+.why-verdict{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;margin-top:18px;padding:16px 18px;border:1px solid rgba(101,214,155,.34);border-radius:14px;background:rgba(101,214,155,.065)}
+.why-verdict b{font:900 12px/1.25 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--green);padding-top:4px}
+.why-verdict p{margin:0;color:#e2d7d1}
 @media(max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.process-step::after{display:none}}
-@media(max-width:700px){.metric-grid,.grid-2,.grid-3,.process-flow{grid-template-columns:1fr}.method,.timeline-item{grid-template-columns:1fr}}
+@media(max-width:700px){.metric-grid,.grid-2,.grid-3,.process-flow{grid-template-columns:1fr}.method,.timeline-item,.why-verdict{grid-template-columns:1fr}}
 @media(max-width:620px){.topbar-inner{align-items:flex-start;flex-direction:column}.layout{width:min(100% - 20px,1240px);padding-top:18px}.sidebar{display:none}.hero{padding:26px 20px 24px}.article h2{margin-top:42px}table{font-size:13px}th,td{padding:10px}}
 @media print{.topbar,.sidebar,.backtop{display:none}.layout{display:block;width:100%;padding:0}body{background:#fff;color:#000}.hero,.info-card,.callout,.metric-card{box-shadow:none;background:#fff}.article p,.article li,td{color:#222}.article h1,.article h2,.article h3,.article strong{color:#000}}
 </style>
@@ -82,12 +89,13 @@ details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background
 <body id="top">
 <header class="topbar"><div class="topbar-inner">
 <div class="brand">8Z · BDAA · Beverage Dealcoholization 2026</div>
-<div class="actions"><a href="#teza">Teza</a><a href="#postopek">Postopek</a><a href="#metode">18 metod</a><a href="#arena">Arena</a><a href="#naslednji-test">Naslednji test</a></div>
+<div class="actions"><a href="#teza">Teza</a><a href="#zakaj-smisel">Zakaj ima smisel</a><a href="#postopek">Postopek</a><a href="#metode">18 metod</a><a href="#arena">Arena</a><a href="#naslednji-test">Naslednji test</a></div>
 </div></header>
 
 <div class="layout">
 <aside class="sidebar"><h2>Vsebina</h2><nav>
 <a href="#teza">Produktna teza</a>
+<a href="#zakaj-smisel">Zakaj ima raziskava smisel</a>
 <a href="#problem">Zakaj je problem težak</a>
 <a href="#postopek">Naš hibridni postopek</a>
 <a href="#metode">18 metodnih družin</a>
@@ -120,6 +128,18 @@ details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background
 <div class="metric-card"><b>3 × 5 × 5</b><span>pijače × ABV cilji × misije</span></div>
 <div class="metric-card"><b>0 sladkorja</b><span>cilj ponovne sestave</span></div>
 </div>
+</section>
+
+<section id="zakaj-smisel" class="why-now">
+<h2>Ali bi to že obstajalo, če bi bilo res dobro?</h2>
+<blockquote class="why-quote"><strong>Najpogostejši ugovor:</strong> »Če bi bilo mogoče narediti bistveno boljše brezalkoholno pivo ali vino, bi to veliki proizvajalci, univerze ali laboratoriji že zdavnaj naredili.«</blockquote>
+<p>Ugovor je razumljiv, vendar ni dokaz. <strong>Membrane, vakuum, zamrzovanje, centrifuge in sorbenti že obstajajo.</strong> BDAA zato ne temelji na trditvi, da je vsak gradnik nov. Raziskava išče nekaj bolj praktičnega: <strong>celotno ponudbo, ki bi pri realnem strošku dala boljši izdelek</strong> — manj sladek, nizkokaloričen, z zelo malo alkohola ter z aromo, suhostjo, telesom in identiteto čim bližje originalu.</p>
+<div class="grid-3">
+<div class="info-card"><h3>Kar je že znano</h3><p>Posamezne metode ločevanja in industrijski moduli. To so gradniki in primerjalni baseline-i, ne razlog za opustitev raziskave.</p></div>
+<div class="info-card"><h3>Kar gradimo drugače</h3><p>Zaščita frakcij → obdelava poenostavljenega vodno-alkoholnega toka → selektivna odstranitev etanola → regeneracija → receptirana voda → natančna rekombinacija brez sladkornega »obliža«.</p></div>
+<div class="info-card"><h3>Kaj bo odločilo</h3><p>Ne občutek novosti, ampak meritve: končni ABV, izguba arom, ostanek nosilca, energija, realni EUR/L in slepa degustacija proti najboljšim izdelkom na trgu.</p></div>
+</div>
+<div class="why-verdict"><b>Pravi kriterij</b><p><strong>Tržna originalnost ne zahteva novega fizikalnega zakona.</strong> Dovolj je, da znane in nove elemente sestavimo v sistem, ki doseže opazno boljše razmerje med kakovostjo in ceno. Če laboratorij pokaže, da ne deluje, dobimo preverjen negativen rezultat. Če premaga najboljše reference v slepem testu in pri realnem strošku, imamo resno novo ponudbo — ne glede na starost posameznih gradnikov.</p></div>
 </section>
 
 <section id="problem">
