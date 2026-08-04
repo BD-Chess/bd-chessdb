@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="sl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<title>Gumotex Solar Performance Platform — trg, KPA v0.4.4 in high-speed raziskava 2026</title>
-<meta name="description" content="Sedanji evropski trg kajakov, potencial modularnega Gumotex Solar Performance Kita ter stanje raziskave KPA v0.4.1 po 500.000 evaluacijah.">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="dark" name="color-scheme"/>
+<title>Gumotex Solar Performance Platform — KPA v0.4.4, trg, vrzel in zgodovina 2026</title>
+<meta content="Sedanji evropski trg kajakov, korist raziskave KPA, preliminarna integracijska vrzel, modularni Gumotex Solar/Seawave performance sistem, v0.4.1 Deep, v0.4.4 full-foil/dual-motor rezultati in zgodovina Python aren." name="description"/>
 <style>
 :root {
   --bg:#05070c; --bg2:#0a0f1a; --panel:#101827; --panel2:#0d1421;
@@ -16,8 +17,8 @@
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;background:var(--bg)}
-body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.68;background:
+html{scroll-behavior:smooth;background:var(--bg);max-width:100%;overflow-x:hidden}
+body{margin:0;max-width:100%;overflow-x:hidden;color:var(--text);font-family:var(--sans);line-height:1.68;background:
  radial-gradient(circle at 15% -5%,rgba(55,112,255,.18),transparent 30%),
  radial-gradient(circle at 90% 8%,rgba(57,216,255,.10),transparent 27%),
  linear-gradient(180deg,var(--bg),var(--bg2));}
@@ -48,7 +49,7 @@ a{color:var(--cyan);text-decoration:none} a:hover{text-decoration:underline}
 .article code{font-family:var(--mono);font-size:.9em;padding:.12em .42em;border:1px solid rgba(57,216,255,.18);border-radius:7px;background:rgba(57,216,255,.07);color:#ddfaff}
 .article pre{overflow:auto;padding:18px;border:1px solid var(--line);border-radius:14px;background:#070b12}
 .article ul,.article ol{padding-left:1.35em} .article li{margin:.38em 0}
-.table-wrap{overflow:auto;margin:18px 0 28px;border:1px solid var(--line);border-radius:16px;background:rgba(6,10,17,.72);box-shadow:var(--shadow)}
+.table-wrap{overflow:auto;max-width:100%;margin:18px 0 28px;border:1px solid var(--line);border-radius:16px;background:rgba(6,10,17,.72);box-shadow:var(--shadow)}
 table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px;font-size:14px}
 th,td{padding:11px 12px;text-align:left;vertical-align:top;border-right:1px solid rgba(38,52,73,.75);border-bottom:1px solid rgba(38,52,73,.75);white-space:nowrap}
 th:last-child,td:last-child{border-right:0} tr:last-child td{border-bottom:0}
@@ -126,135 +127,127 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 @media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
 @media(max-width:560px){.metric-grid{grid-template-columns:1fr}.product-step{grid-template-columns:1fr}}
 
+
+
+/* Evidence legend, market-gap matrix and KPA history */
+.evidence-panel{margin:20px 0 28px;padding:20px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(20,32,53,.82),rgba(8,13,22,.92));box-shadow:var(--shadow)}
+.evidence-panel h3{margin:0 0 12px!important;font-size:21px!important;color:#fff!important}
+.evidence-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.evidence-item{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.018)}
+.evidence-item b{display:block;font:800 10px/1.3 var(--mono);letter-spacing:.07em;margin-bottom:7px}
+.evidence-item p{margin:0;font-size:13px;color:var(--muted)}
+.evidence-item.user b{color:var(--green)}
+.evidence-item.market b{color:var(--blue)}
+.evidence-item.estimate b{color:var(--gold)}
+.evidence-item.model b{color:var(--cyan)}
+.value-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0}
+.value-flow div{position:relative;padding:14px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(57,216,255,.035);text-align:center;color:var(--muted);font-size:13px}
+.value-flow div b{display:block;color:#fff;margin-bottom:4px}
+.value-flow div:not(:last-child)::after{content:'→';position:absolute;right:-9px;top:50%;transform:translateY(-50%);z-index:2;color:var(--cyan);font-weight:900}
+.market-gap-table td:first-child{font-weight:800;color:#fff}
+.market-gap-table td:nth-child(2){color:#b9c9dd}
+.market-gap-table td:nth-child(3){color:#d8e7f9}
+.gap-stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:17px 0}
+.gap-stack .info-card{height:100%}
+.source-note{font-size:13px;color:var(--dim)!important;border-left:3px solid rgba(113,167,255,.38);padding-left:12px}
+.part-label{display:inline-block;margin:42px 0 4px;padding:6px 10px;border:1px solid rgba(248,191,91,.28);border-radius:999px;background:rgba(248,191,91,.065);font:800 10px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--gold)}
+.timeline{position:relative;margin:24px 0 0;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:7px;bottom:8px;width:2px;background:linear-gradient(var(--cyan),rgba(113,167,255,.20))}
+.timeline-item{position:relative;margin:0 0 16px;padding:18px 19px;border:1px solid var(--line);border-radius:16px;background:rgba(13,20,33,.78);box-shadow:0 12px 32px rgba(0,0,0,.20)}
+.timeline-item::before{content:'';position:absolute;left:-26px;top:23px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:3px solid var(--cyan);box-shadow:0 0 0 5px rgba(57,216,255,.08)}
+.timeline-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.timeline-version{font:900 12px/1 var(--mono);letter-spacing:.09em;color:var(--cyan)}
+.timeline-date{font:750 10px/1 var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.timeline-item h3{margin:8px 0 7px!important;font-size:22px!important;color:#fff!important}
+.timeline-item>p{margin:0;color:var(--muted)}
+.timeline-item details{margin-top:12px}
+.timeline-lesson{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.timeline-lesson div{padding:12px;border:1px solid rgba(38,52,73,.78);border-radius:11px;background:rgba(5,8,14,.30);font-size:13px;color:var(--muted)}
+.timeline-lesson b{display:block;color:var(--gold);font:800 10px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+@media(max-width:900px){.evidence-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.value-flow{grid-template-columns:1fr}.value-flow div:not(:last-child)::after{content:'↓';right:auto;left:50%;top:auto;bottom:-14px;transform:translateX(-50%)}.gap-stack{grid-template-columns:1fr}.timeline-lesson{grid-template-columns:1fr}}
+@media(max-width:560px){.evidence-legend{grid-template-columns:1fr}.timeline{padding-left:22px}.timeline-item::before{left:-21px}.timeline::before{left:5px}}
 </style>
-</head>
+<meta content="BD × GPT · KPA / 8Z" name="author"/><meta content="article" property="og:type"/><meta content="Gumotex Solar Performance Platform — KPA v0.4.4" property="og:title"/><meta content="Trg kajakov, korist KPA raziskave, integracijska vrzel, adaptive full-foil in zgodovina aren." property="og:description"/></head>
 <body id="top">
-<header class="topbar"><div class="topbar-inner"><div class="brand">8Z · Solar Performance Platform 2026</div><div class="actions"><a href="#produktna-teza">Teza</a><a href="#nova-trzna-nisa">Trg</a><a href="#kpa-live-extract">Arena</a><a href="#2-glavna-primerjalna-tabela">Tabela</a></div></div></header>
+<header class="topbar"><div class="topbar-inner"><div class="brand">8Z · KPA / Solar Performance Platform 2026</div><div class="actions"><a href="#produktna-teza">Teza</a><a href="#kaj-kpa-ustvarja">Korist</a><a href="#trzna-integracijska-vrzel">Vrzel</a><a href="#v044-rezultati">Arena</a><a href="#sedanji-trg">Trg</a><a href="#zgodovina-kpa">Zgodovina</a></div></div></header>
 <div class="layout">
-<aside class="sidebar"><h2>Vsebina</h2><nav>
-<a href="#produktna-teza">Produktna teza</a>
-<a href="#zakaj-solar">Zakaj prav Solar</a>
-<a href="#nova-trzna-nisa">Nova tržna niša</a>
-<a href="#ekspedicijska-uporaba">Ekspedicije in dopust</a>
-<a href="#produktna-druzina">Produktna družina</a>
-<a href="#kpa-live-extract">KPA live extract</a>
-<a href="#kaj-arena-podpira">Kaj raziskava podpira</a>
-<a href="#kaj-se-ni-dokazano">Kaj še ni dokazano</a>
-<a href="#nadaljnje-delo">Nadaljnje delo</a>
-<a href="#2-glavna-primerjalna-tabela">Sedanji trg — tabela</a>
-<a class="" href="#10-napihljivih-in-10-trdih-kajakov-10-enosedov-in-10-tandemov">10 napihljivih in 10 trdih kajakov; 10 enosedov in 10 tandemov</a>
-<a class="" href="#1-povzetek">1. Povzetek</a>
-<a class="" href="#2-glavna-primerjalna-tabela">2. Glavna primerjalna tabela</a>
-<a class="" href="#3-legenda-stolpcev">3. Legenda stolpcev</a>
-<a class="toc-sub" href="#k-kategorija">K — kategorija</a>
-<a class="toc-sub" href="#l-s-mere">L×Š — mere</a>
-<a class="toc-sub" href="#dr-drzava-izdelave">Dr. — država izdelave</a>
-<a class="toc-sub" href="#cena">€ — cena</a>
-<a class="toc-sub" href="#r-rekreativci">R — rekreativci</a>
-<a class="toc-sub" href="#a-resni-amaterji">A — resni amaterji</a>
-<a class="toc-sub" href="#p-profesionalni-oziroma-vrhunski-veslaci">P — profesionalni oziroma vrhunski veslači</a>
-<a class="" href="#4-pogoji-za-navedene-hitrosti">4. Pogoji za navedene hitrosti</a>
-<a class="" href="#5-metodologija-ocenjevanja-hitrosti">5. Metodologija ocenjevanja hitrosti</a>
-<a class="" href="#6-posebne-opombe-k-tabeli">6. Posebne opombe k tabeli</a>
-<a class="toc-sub" href="#zahtevna-stabilnost-surfskija">* Zahtevna stabilnost surfskija</a>
-<a class="toc-sub" href="#akcijska-cena">† Akcijska cena</a>
-<a class="toc-sub" href="#portugalska-prodajna-cena">‡ Portugalska prodajna cena</a>
-<a class="" href="#7-najhitrejsi-modeli-po-kategorijah">7. Najhitrejši modeli po kategorijah</a>
-<a class="toc-sub" href="#7-1-napihljivi-enosed">7.1 Napihljivi enosed</a>
-<a class="toc-sub" href="#7-2-napihljivi-tandem">7.2 Napihljivi tandem</a>
-<a class="toc-sub" href="#7-3-trd-enosed">7.3 Trd enosed</a>
-<a class="toc-sub" href="#7-4-trd-tandem">7.4 Trd tandem</a>
-<a class="" href="#8-napihljivi-proti-trdim-kajakom">8. Napihljivi proti trdim kajakom</a>
-<a class="toc-sub" href="#8-1-zakaj-so-trdi-kajaki-praviloma-hitrejsi">8.1 Zakaj so trdi kajaki praviloma hitrejši</a>
-<a class="toc-sub" href="#8-2-zakaj-je-napihljivi-kajak-vseeno-lahko-boljsa-izbira">8.2 Zakaj je napihljivi kajak vseeno lahko boljša izbira</a>
-<a class="" href="#9-gumotex-solar-kot-realno-sidro">9. Gumotex Solar kot realno sidro</a>
-<a class="" href="#10-kaj-bi-pomenil-solar-foil">10. Kaj bi pomenil Solar Foil</a>
-<a class="" href="#11-cena-proti-hitrosti">11. Cena proti hitrosti</a>
-<a class="" href="#12-omejitve-dokumenta">12. Omejitve dokumenta</a>
-<a class="" href="#13-priporocena-uporaba-tabele">13. Priporočena uporaba tabele</a>
-<a class="" href="#14-sklep">14. Sklep</a>
-<a class="" href="#15-viri-in-povezave">15. Viri in povezave</a>
-<a class="toc-sub" href="#gumotex-ceska">Gumotex — Češka</a>
-<a class="toc-sub" href="#grabner-avstrija">Grabner — Avstrija</a>
-<a class="toc-sub" href="#prijon-nemcija">Prijon — Nemčija</a>
-<a class="toc-sub" href="#nelo-portugalska">Nelo — Portugalska</a>
-<a class="toc-sub" href="#dodatni-referencni-vir">Dodatni referenčni vir</a>
-<a class="" href="#16-status-podatkov">16. Status podatkov</a></nav></aside>
+<aside class="sidebar"><h2>Vsebina</h2><nav><a href="#produktna-teza">Produktna teza</a><a href="#zakaj-solar">Zakaj prav Solar</a><a href="#nova-trzna-nisa">Nova tržna niša</a><a href="#ekspedicijska-uporaba">Ekspedicije in dopust</a><a href="#produktna-druzina">Produktna družina</a><a href="#dve-produktni-poti">Dve produktni poti</a><a href="#v044-rezultati">KPA v0.4.4 rezultati</a><a href="#adaptivni-fullfoil">Adaptivni full foil</a><a href="#dokazni-status-v044">Dokazni status</a><a href="#kpa-live-extract">KPA v0.4.1 Deep</a><a href="#kaj-arena-podpira">Kaj raziskava podpira</a><a href="#kaj-kpa-ustvarja">Kaj KPA ustvarja</a><a href="#trzna-integracijska-vrzel">Tržna/integracijska vrzel</a><a href="#kaj-se-ni-dokazano">Kaj še ni dokazano</a><a href="#nadaljnje-delo">Nadaljnje delo</a><a href="#sedanji-trg">PRILOGA A — evropski trg</a><a class="toc-sub" href="#2-glavna-primerjalna-tabela">A.1 Glavna tabela</a><a class="toc-sub" href="#3-legenda-stolpcev">A.2 Legenda</a><a class="toc-sub" href="#4-pogoji-za-navedene-hitrosti">A.3 Pogoji hitrosti</a><a class="toc-sub" href="#5-metodologija-ocenjevanja-hitrosti">A.4 Metodologija</a><a class="toc-sub" href="#7-najhitrejsi-modeli-po-kategorijah">A.6 Najhitrejši modeli</a><a class="toc-sub" href="#8-napihljivi-proti-trdim-kajakom">A.7 Napihljivi vs trdi</a><a class="toc-sub" href="#9-gumotex-solar-kot-realno-sidro">A.8 Solar sidro</a><a class="toc-sub" href="#10-kaj-bi-pomenil-solar-foil">A.9 Odprta Solar lestev</a><a class="toc-sub" href="#11-cena-proti-hitrosti">A.10 Cena proti hitrosti</a><a class="toc-sub" href="#12-omejitve-dokumenta">A.11 Omejitve</a><a class="toc-sub" href="#14-sklep">A.13 Sklep</a><a class="toc-sub" href="#15-viri-in-povezave">A.14 Viri</a><a class="toc-sub" href="#16-status-podatkov">A.15 Status podatkov</a><a href="#zgodovina-kpa">Zgodovina KPA aren</a></nav></aside>
 <main class="article"><h1 id="solar-performance-platform">Gumotex Solar Performance Platform</h1>
-<h2 id="produktna-teza">Sedanji trg, dostopen performance kit in nova full-foil / dual-motor high-speed veja</h2>
+<h2 id="produktna-teza">Sedanji trg, korist raziskave, integracijska vrzel ter full-foil / dual-motor high-speed veja</h2>
 <p class="hero-kicker">BD × GPT · KPA / 8Z · raziskovalni posnetek 3. avgust 2026</p>
 <p class="lead"><strong>Osrednja ideja:</strong> ohraniti največje prednosti Gumotex Solarja — zložljivost, prevoz v prtljažniku, majhen prostor za skladiščenje, stabilnost, tandem uporabo in dopustniško praktičnost — ter z modularnim kitom bistveno povečati hitrost, doseg, varnostno rezervo in sposobnost potovanja v vetru ter valovih.</p>
 <div class="status-row"><span class="badge research">KPA v0.4.4</span><span class="badge clean">68/68 selftestov · 0 napak</span><span class="badge research">1.400 matched evaluacij</span><span class="badge warn">strict-clean: 0</span><span class="badge warn">reduced-order · ne prototip</span></div>
 <div class="metric-grid">
-  <div class="metric-card"><b>≈ €900</b><span>Solar v dobri akciji</span></div>
-  <div class="metric-card"><b>5 / 8 km/h</b><span>BD-jevi realni tandem sidri</span></div>
-  <div class="metric-card"><b>21,20 km/h</b><span>najmočnejši Solar 60-min model v0.4.4</span></div>
-  <div class="metric-card"><b>+3,38 km/h</b><span>najmočnejši matched foil gain proti no-foil</span></div>
+<div class="metric-card"><b>≈ €900</b><span>Solar v dobri akciji</span></div>
+<div class="metric-card"><b>5 / 8 km/h</b><span>BD-jevi realni tandem sidri</span></div>
+<div class="metric-card"><b>21,20 km/h</b><span>najmočnejši Solar 60-min model v0.4.4</span></div>
+<div class="metric-card"><b>+3,38 km/h</b><span>najmočnejši matched foil gain proti no-foil</span></div>
+</div><div class="evidence-panel" id="dokazna-legenda">
+<h3>Kako brati dokaze na tej strani</h3>
+<div class="evidence-legend">
+<div class="evidence-item user"><b>USER-MEASURED</b><p>BD-jevi realni Solar tandem hitrosti približno 5 km/h sproščeno in 8 km/h hitro.</p></div>
+<div class="evidence-item market"><b>MARKET-SOURCED</b><p>Modeli, mere, domače cene in javna ponudba proizvajalcev oziroma prodajalcev.</p></div>
+<div class="evidence-item estimate"><b>ENGINEERING ESTIMATE</b><p>R/A/P hitrostni intervali in drugi orientacijski izračuni, ki niso certificirane meritve.</p></div>
+<div class="evidence-item model"><b>REDUCED-ORDER MODEL</b><p>Rezultati Python arene KPA. Uporabni za rangiranje in testne odločitve, ne kot dokaz izdelka.</p></div>
 </div>
-
+</div>
 <section id="zakaj-solar">
 <h2>1. Zakaj je Gumotex Solar izjemno močna osnovna platforma</h2>
 <div class="grid-3">
-  <div class="info-card"><h3>Celotna uporabna vrednost</h3><p>Solar ne zmaga samo po ceni. Združuje kakovost, stabilnost, nosilnost, tandem uporabo, robustnost in dovolj dobro hitrost za večino rekreativcev.</p></div>
-  <div class="info-card"><h3>Prevoz in skladiščenje</h3><p>Gre v avtomobilski prtljažnik. Ne potrebuje prikolice, dolge garaže ali stalnega prostora na strehi. Na večtedenskem dopustu ostane več prostora za družino, prtljago, kolesa ali strešni kovček.</p></div>
-  <div class="info-card"><h3>Resnična dopustniška logistika</h3><p>Trd 5–6-metrski morski kajak je hitrejši, vendar ga mora uporabnik pripeljati, varno pritrditi, hraniti in nositi. Solar lahko potuje z uporabnikom skoraj povsod.</p></div>
+<div class="info-card"><h3>Celotna uporabna vrednost</h3><p>Solar ne zmaga samo po ceni. Združuje kakovost, stabilnost, nosilnost, tandem uporabo, robustnost in dovolj dobro hitrost za večino rekreativcev.</p></div>
+<div class="info-card"><h3>Prevoz in skladiščenje</h3><p>Gre v avtomobilski prtljažnik. Ne potrebuje prikolice, dolge garaže ali stalnega prostora na strehi. Na večtedenskem dopustu ostane več prostora za družino, prtljago, kolesa ali strešni kovček.</p></div>
+<div class="info-card"><h3>Resnična dopustniška logistika</h3><p>Trd 5–6-metrski morski kajak je hitrejši, vendar ga mora uporabnik pripeljati, varno pritrditi, hraniti in nositi. Solar lahko potuje z uporabnikom skoraj povsod.</p></div>
 </div>
 <div class="callout green"><h3>Zakaj razmerje cena / hitrost ni dovolj</h3><p>Za rekreativca je pravilnejša metrika <strong>celotna vrednost lastništva</strong>: cena + hitrost + stabilnost + transport + skladiščenje + čas priprave + udobje + vsestranskost + stroški poti. Po takem merilu je Solar lahko med najboljšimi kajaki na trgu že brez kita.</p></div>
 </section>
-
 <section id="nova-trzna-nisa">
 <h2>2. Nova tržna niša: prenosljiv performance oziroma »e-kajak«</h2>
 <p>Primerjava s kolesom in e-kolesom je natančna. Profesionalni kajakaš bo na tekmovalnem K1 ali K2 še naprej treniral in tekmoval z lastno močjo. Toda običajen rekreativec, resen amater ali celo profesionalec na dopustu lahko želi <strong>več dnevnega dosega, manj utrujenosti in več varnostne rezerve</strong>.</p>
 <div class="grid-2">
-  <div class="info-card"><h3>Rekreativni trg</h3><ul><li>pari in družine na morju;</li><li>uporabniki brez prostora za trdi kajak;</li><li>starejši ali manj trenirani uporabniki;</li><li>daljši dnevni izleti brez izčrpanosti;</li><li>varen povratek ob vetru ali utrujenosti.</li></ul></div>
-  <div class="info-card"><h3>Performance in ekspedicijski trg</h3><ul><li>resni amaterji na večtedenskem dopustu;</li><li>profesionalci, ki ne želijo prevažati tekmovalnega kajaka;</li><li>dolge obalne ture in veliki otoki;</li><li>fotografi, raziskovalci, ribiči in avanturisti;</li><li>hitro premikanje med zalivi in otoki.</li></ul></div>
+<div class="info-card"><h3>Rekreativni trg</h3><ul><li>pari in družine na morju;</li><li>uporabniki brez prostora za trdi kajak;</li><li>starejši ali manj trenirani uporabniki;</li><li>daljši dnevni izleti brez izčrpanosti;</li><li>varen povratek ob vetru ali utrujenosti.</li></ul></div>
+<div class="info-card"><h3>Performance in ekspedicijski trg</h3><ul><li>resni amaterji na večtedenskem dopustu;</li><li>profesionalci, ki ne želijo prevažati tekmovalnega kajaka;</li><li>dolge obalne ture in veliki otoki;</li><li>fotografi, raziskovalci, ribiči in avanturisti;</li><li>hitro premikanje med zalivi in otoki.</li></ul></div>
 </div>
 <blockquote><strong>Tržna obljuba ni »premagaj profesionalca«.</strong> Tržna obljuba je: običajnemu ali dobremu veslaču omogoči potovalne hitrosti in dnevni doseg, ki sta bila prej povezana z dragimi, dolgimi in logistično zahtevnimi trdimi kajaki.</blockquote>
 </section>
-
 <section id="ekspedicijska-uporaba">
 <h2>3. Daljši dopust, hrvaški otoki, veter in valovi</h2>
 <p>Obhod večjega hrvaškega otoka ali večdnevno potovanje ob razčlenjeni obali ni samo vprašanje maksimalne hitrosti. Odločajo veter, valovi, tok, prtljaga, postanki, utrujenost, navigacija, razpoložljiva zavetja in zanesljivost opreme.</p>
 <div class="grid-3">
-  <div class="info-card"><h3>Več dnevnega dosega</h3><p>Pri 5 km/h je 40 km dolg dan že osem ur gibanja. Pri 10 km/h ista razdalja teoretično zahteva polovico časa, zato ostane več rezerve za postanke, vreme in raziskovanje.</p></div>
-  <div class="info-card"><h3>Varnostna rezerva</h3><p>Električni assist je lahko pomembnejši ob povratku proti vetru kot na mirnem jutranjem morju. Dvojni neodvisni pogon lahko doda redundanco, vendar mora imeti tudi ročni limp-home način.</p></div>
-  <div class="info-card"><h3>Profesionalec na dopustu</h3><p>Tudi vrhunski veslač ne želi nujno vsak dopustniški dan veslati na tekmovalni meji. Prenosljiva platforma mu lahko omogoči daljšo turo, več prtljage in skupno pot s partnerjem.</p></div>
+<div class="info-card"><h3>Več dnevnega dosega</h3><p>Pri 5 km/h je 40 km dolg dan že osem ur gibanja. Pri 10 km/h ista razdalja teoretično zahteva polovico časa, zato ostane več rezerve za postanke, vreme in raziskovanje.</p></div>
+<div class="info-card"><h3>Varnostna rezerva</h3><p>Električni assist je lahko pomembnejši ob povratku proti vetru kot na mirnem jutranjem morju. Dvojni neodvisni pogon lahko doda redundanco, vendar mora imeti tudi ročni limp-home način.</p></div>
+<div class="info-card"><h3>Profesionalec na dopustu</h3><p>Tudi vrhunski veslač ne želi nujno vsak dopustniški dan veslati na tekmovalni meji. Prenosljiva platforma mu lahko omogoči daljšo turo, več prtljage in skupno pot s partnerjem.</p></div>
 </div>
 <div class="callout gold"><h3>Pomembna varnostna meja</h3><p>Motor, baterija ali foil ne spremenijo Solarja v plovilo za neomejeno odprto morje. Sistem mora biti zasnovan tako, da ostane varen in obvladljiv tudi ob prazni bateriji, okvari motorja, bočnem vetru, kratkem strmem valu in zasilnem pristanku.</p></div>
 </section>
-
 <section id="produktna-druzina">
 <h2>4. Možna produktna družina</h2>
 <p>Smiselna pot ni en sam drag komplet, ampak modularna platforma, pri kateri uporabnik kupi samo stopnjo, ki jo potrebuje.</p>
 <div class="product-ladder">
-  <div class="product-step"><b>Touring Control Kit</b><span>tog prečni okvir, boljše sledenje smeri, skeg ali manjši stabilizacijski foil, hitra montaža in brez motorja.</span></div>
-  <div class="product-step"><b>Paddle Assist</b><span>majhen učinkovit e-pogon, ki ne nadomesti veslanja, ampak ga dopolni; cilj so daljši izleti, manj utrujenosti in povratek proti vetru.</span></div>
-  <div class="product-step"><b>Expedition Performance</b><span>večja baterija, učinkovitejši appendage/foil sistem, robustni nosilci, navigacija, redundanca in prtljažna konfiguracija.</span></div>
-  <div class="product-step"><b>Dual Performance</b><span>dvojni pogon za hitrost, krmiljenje in odpornost na posamezno okvaro; namenjen resnim amaterjem in dolgim turam.</span></div>
-  <div class="product-step"><b>Universal Adapter Platform</b><span>adapterji za druge premium napihljive kajake, da trg ne ostane omejen samo na Solar.</span></div>
+<div class="product-step"><b>Touring Control Kit</b><span>tog prečni okvir, boljše sledenje smeri, skeg ali manjši stabilizacijski foil, hitra montaža in brez motorja.</span></div>
+<div class="product-step"><b>Paddle Assist</b><span>majhen učinkovit e-pogon, ki ne nadomesti veslanja, ampak ga dopolni; cilj so daljši izleti, manj utrujenosti in povratek proti vetru.</span></div>
+<div class="product-step"><b>Expedition Performance</b><span>večja baterija, učinkovitejši appendage/foil sistem, robustni nosilci, navigacija, redundanca in prtljažna konfiguracija.</span></div>
+<div class="product-step"><b>Dual Performance</b><span>dvojni pogon za hitrost, krmiljenje in odpornost na posamezno okvaro; namenjen resnim amaterjem in dolgim turam.</span></div>
+<div class="product-step"><b>Universal Adapter Platform</b><span>adapterji za druge premium napihljive kajake, da trg ne ostane omejen samo na Solar.</span></div>
 </div>
 <p><strong>Delovni cilji, ne dokazani rezultati:</strong> približno 7–10 km/h brez močnega motornega pogona, 10–14 km/h z enim assist pogonom in 15–20+ km/h z zmogljivejšo dvojno konfiguracijo v ustreznih razmerah. Te številke mora potrditi prototip in voda.</p>
 </section>
-
-
 <section id="dve-produktni-poti">
 <h2>5. Dve ločeni produktni poti</h2>
 <p>V0.4.4 ne razveljavi ideje cenovno dostopnega Solar kita. Pokaže pa, da moramo jasno ločiti <strong>množični rekreativni izdelek</strong> od <strong>premium high-speed raziskovalne platforme</strong>. Poskus združiti oba v en sam paket bi ustvaril pretežak, predrag in tržno nejasen izdelek.</p>
 <div class="grid-2">
-  <div class="info-card"><h3>A. Solar Touring / Paddle-Assist Kit</h3><p><strong>Cilj:</strong> največ koristi za običajnega rekreativca ob ohranjeni zložljivosti.</p><ul><li>lahek tog okvir in smerna stabilnost;</li><li>skeg, partial foil ali majhen razbremenilni appendage;</li><li>majhen do srednje močan e-assist;</li><li>hitra montaža, malo dodatnega prostora;</li><li>delovni razpon približno 7–12 km/h glede na izvedbo.</li></ul><p class="small-note">Ciljna cena mora ostati v območju, ki je primerljivo s kakovostnim touring dodatkom oziroma novim kajakom, ne z majhnim čolnom.</p></div>
-  <div class="info-card"><h3>B. Expedition / Sport Full-Foil Platform</h3><p><strong>Cilj:</strong> zelo velik doseg in hitrost za resne amaterje, profesionalce na dopustu ter premium ekspedicijsko uporabo.</p><ul><li>zunanji ali integrirani strukturni load frame;</li><li>adaptivni full foil z dinamično površino;</li><li>1,5–6,0 kW motorna lestev;</li><li>eno- in dvo-motorne konfiguracije;</li><li>ciljna cona 15–25+ km/h v primernih razmerah.</li></ul><p class="small-note">Najmočnejši modelni Solar sistem ima scenarijsko complete-retail ceno približno €28.433. To je premium prototipna veja, ne trenutni množični €1.000 kit.</p></div>
+<div class="info-card"><h3>A. Solar Touring / Paddle-Assist Kit</h3><p><strong>Cilj:</strong> največ koristi za običajnega rekreativca ob ohranjeni zložljivosti.</p><ul><li>lahek tog okvir in smerna stabilnost;</li><li>skeg, partial foil ali majhen razbremenilni appendage;</li><li>majhen do srednje močan e-assist;</li><li>hitra montaža, malo dodatnega prostora;</li><li>delovni razpon približno 7–12 km/h glede na izvedbo.</li></ul><p class="small-note">Ciljna cena mora ostati v območju, ki je primerljivo s kakovostnim touring dodatkom oziroma novim kajakom, ne z majhnim čolnom.</p></div>
+<div class="info-card"><h3>B. Expedition / Sport Full-Foil Platform</h3><p><strong>Cilj:</strong> zelo velik doseg in hitrost za resne amaterje, profesionalce na dopustu ter premium ekspedicijsko uporabo.</p><ul><li>zunanji ali integrirani strukturni load frame;</li><li>adaptivni full foil z dinamično površino;</li><li>1,5–6,0 kW motorna lestev;</li><li>eno- in dvo-motorne konfiguracije;</li><li>ciljna cona 15–25+ km/h v primernih razmerah.</li></ul><p class="small-note">Najmočnejši modelni Solar sistem ima scenarijsko complete-retail ceno približno €28.433. To je premium prototipna veja, ne trenutni množični €1.000 kit.</p></div>
 </div>
 <blockquote><strong>Prava platformna strategija:</strong> isti osnovni uporabniški problem — prenosljiv hitrejši kajak — vendar različna masa, moč, cena, regulativa, varnost in ciljna publika.</blockquote>
 </section>
-
 <section id="v044-rezultati">
 <h2>6. Kaj je dejansko našla KPA v0.4.4</h2>
 <p><strong>Analiziran paket:</strong> <code>8Z_KPA_v0_4_4_FULL_FOIL_DUAL_MOTOR_HIGH_SPEED_COMPLETE</code>. Arena je namensko ločila vzdržno hitrost, hitro 20-minutno vožnjo, povprečje na 200 m z akceleracijo in 10-sekundni vrh.</p>
 <div class="metric-grid">
-  <div class="metric-card"><b>68 / 68</b><span>selftesti PASS</span></div>
-  <div class="metric-card"><b>1.400</b><span>matched full-foil evaluacij</span></div>
-  <div class="metric-card"><b>34 / 36</b><span>adaptivni foil premaga fiksnega</span></div>
-  <div class="metric-card"><b>18 / 36</b><span>foil premaga same-power no-foil</span></div>
+<div class="metric-card"><b>68 / 68</b><span>selftesti PASS</span></div>
+<div class="metric-card"><b>1.400</b><span>matched full-foil evaluacij</span></div>
+<div class="metric-card"><b>34 / 36</b><span>adaptivni foil premaga fiksnega</span></div>
+<div class="metric-card"><b>18 / 36</b><span>foil premaga same-power no-foil</span></div>
 </div>
 <h3>Najpomembnejša matched konteksta</h3>
 <div class="table-wrap"><table>
@@ -266,39 +259,36 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 <div class="callout green"><h3>Zakaj je Solar rezultat pomemben</h3><p>Primerjava drži isti trup, podoben load/upgrade kontekst in isto skupno motorno moč. Adaptivni full foil je v najmočnejšem Solar kontekstu približno 3,38 km/h hitrejši od no-foil kontrole in približno 3,20 km/h hitrejši od istega foila s fiksnim krmiljenjem. To je prvi resen reduced-order signal, da dobiček ni samo posledica več motorne moči.</p></div>
 <div class="callout gold"><h3>Zakaj je Seawave rezultat enako dragocen</h3><p>Seawave pokaže večjo absolutno hitrost, vendar je no-foil kontrola malenkost hitrejša. Arena zato ne nagradi foila avtomatsko. To je dober falsifier in opozorilo, da planing, deformacija napihljivega trupa ter free-surface hidrodinamika nad 20 km/h še niso dovolj razrešeni.</p></div>
 </section>
-
 <section id="adaptivni-fullfoil">
 <h2>7. Adaptivni full foil: bistvo novega koncepta</h2>
 <p>V0.4.4 full foil ni ena velika fiksna podvodna površina. Krmilnik spreminja več stvari hkrati, ker so potrebe pri speljevanju drugačne kot pri stabilnem hitrem letu.</p>
 <div class="product-ladder">
-  <div class="product-step"><b>1. Launch</b><span>večja potopljena površina, več incidence in flap za začetni vzgon.</span></div>
-  <div class="product-step"><b>2. Relief stabilisation</b><span>globina se povezuje s hitrostjo in močjo zaradi ventilacijske rezerve; globina sama ni čarobni množitelj vzgona.</span></div>
-  <div class="product-step"><b>3. Unload</b><span>ko se trup dovolj razbremeni, se incidence in flap zmanjšata.</span></div>
-  <div class="product-step"><b>4. Area/span retraction</b><span>potopljena površina oziroma razpon se zmanjša, da full foil pri križarjenju ne plačuje nepotrebnega upora.</span></div>
-  <div class="product-step"><b>5. Fail-safe</b><span>ob ventilaciji, preveliki obremenitvi ali napaki krmilnika mora sistem varno zmanjšati hitrost oziroma umakniti foil.</span></div>
+<div class="product-step"><b>1. Launch</b><span>večja potopljena površina, več incidence in flap za začetni vzgon.</span></div>
+<div class="product-step"><b>2. Relief stabilisation</b><span>globina se povezuje s hitrostjo in močjo zaradi ventilacijske rezerve; globina sama ni čarobni množitelj vzgona.</span></div>
+<div class="product-step"><b>3. Unload</b><span>ko se trup dovolj razbremeni, se incidence in flap zmanjšata.</span></div>
+<div class="product-step"><b>4. Area/span retraction</b><span>potopljena površina oziroma razpon se zmanjša, da full foil pri križarjenju ne plačuje nepotrebnega upora.</span></div>
+<div class="product-step"><b>5. Fail-safe</b><span>ob ventilaciji, preveliki obremenitvi ali napaki krmilnika mora sistem varno zmanjšati hitrost oziroma umakniti foil.</span></div>
 </div>
 <p>Ta arhitektura razloži, zakaj je adaptivni foil v 34 od 36 matched kontekstov premagal isti foil s fiksnim krmiljenjem, vendar le v polovici kontekstov premagal no-foil kontrolo. <strong>Dobro krmiljenje izboljša foil; foil sam po sebi še ni avtomatsko najboljša rešitev.</strong></p>
 </section>
-
 <section id="dokazni-status-v044">
 <h2>8. Dokazni status v0.4.4</h2>
 <div class="grid-2">
-  <div class="info-card"><h3>Kaj je zdaj podprto</h3><ul><li>20+ km/h je v modelu dosegljiva veja, ne več samo hipotetičen slogan;</li><li>pri Solarju obstaja matched kontekst, kjer adaptivni foil jasno premaga isto-močno no-foil kontrolo;</li><li>dva motorja pri isti skupni moči lahko primerjamo ločeno od učinka večje skupne moči;</li><li>60-min hitrost in 200-m sprint sta pravilno ločena;</li><li>strukturni okvir, mount, baterija, motorji in krmiljenje niso brezmasni ali brezplačni.</li></ul></div>
-  <div class="info-card"><h3>Kaj ostaja odprto</h3><ul><li>izmerjene thrust/efficiency mape motorjev in propulzorjev;</li><li>ventilacija, kavitacija in free-surface CFD/VOF;</li><li>deformacija Solar/Seawave trupa pri 15–30 km/h;</li><li>foil breach, porpoising, slamming in re-entry dinamika;</li><li>FEA/FSI nosilcev ter ciklična utrujenost;</li><li>realna varnost, krmiljenje, doseg in termika pri 6 kW.</li></ul></div>
+<div class="info-card"><h3>Kaj je zdaj podprto</h3><ul><li>20+ km/h je v modelu dosegljiva veja, ne več samo hipotetičen slogan;</li><li>pri Solarju obstaja matched kontekst, kjer adaptivni foil jasno premaga isto-močno no-foil kontrolo;</li><li>dva motorja pri isti skupni moči lahko primerjamo ločeno od učinka večje skupne moči;</li><li>60-min hitrost in 200-m sprint sta pravilno ločena;</li><li>strukturni okvir, mount, baterija, motorji in krmiljenje niso brezmasni ali brezplačni.</li></ul></div>
+<div class="info-card"><h3>Kaj ostaja odprto</h3><ul><li>izmerjene thrust/efficiency mape motorjev in propulzorjev;</li><li>ventilacija, kavitacija in free-surface CFD/VOF;</li><li>deformacija Solar/Seawave trupa pri 15–30 km/h;</li><li>foil breach, porpoising, slamming in re-entry dinamika;</li><li>FEA/FSI nosilcev ter ciklična utrujenost;</li><li>realna varnost, krmiljenje, doseg in termika pri 6 kW.</li></ul></div>
 </div>
 <div class="callout"><h3>Zakaj je strict-clean še vedno 0</h3><p>Vseh 150 engineering-clean high-speed vrstic uporablja neizmerjene high-speed propulsor mape. Zato je <code>strict_clean</code> namensko izklopljen. Rezultat je <strong>reasoned reduced-order evidence</strong>, ne CFD, towing-tank meritev, certifikat ali obljuba kupcu.</p></div>
 <h3>Naslednji odločilni test</h3>
 <ol><li>izmeriti enojni in dvojni pogon: električni vhod, potisk, hitrost toka in termiko;</li><li>narediti same-power towing test: no foil vs fixed full foil vs adaptive full foil;</li><li>najprej prototip z omejeno močjo in instrumentalnim zunanjim okvirjem;</li><li>šele po strukturnem in kontrolnem gate-u odpreti 20+ km/h full-scale test;</li><li>ločeno nadaljevati cenejši rekreativni kit, da ga premium 6 kW veja ne izrine.</li></ol>
 </section>
-
 <section id="kpa-live-extract">
 <h2>9. Predhodni v0.4.1 Deep: široka raziskovalna osnova</h2>
 <p><strong>Analiziran paket:</strong> <code>LIVE_EXTRACT_KPA_V041_16_ALLSPACE_DEEP_20260803_081538.zip</code>.</p>
 <div class="metric-grid">
-  <div class="metric-card"><b>500.000</b><span>zaključenih kandidatov</span></div>
-  <div class="metric-card"><b>137.785</b><span>physics-feasible</span></div>
-  <div class="metric-card"><b>35.557</b><span>engineering-clean</span></div>
-  <div class="metric-card"><b>429</b><span>strict-clean</span></div>
+<div class="metric-card"><b>500.000</b><span>zaključenih kandidatov</span></div>
+<div class="metric-card"><b>137.785</b><span>physics-feasible</span></div>
+<div class="metric-card"><b>35.557</b><span>engineering-clean</span></div>
+<div class="metric-card"><b>429</b><span>strict-clean</span></div>
 </div>
 <p>Arena je tekla s šestimi workerji, končala brez napake in je kalibrirana na BD-jevo izmerjeno Solar tandem sidro: približno <strong>5 km/h sproščeno</strong> ter <strong>8 km/h hitro</strong>. Model je osnovni Solar reproduciral na 4,998 in 7,9997 km/h, kar pomeni, da je baseline dobro zaklenjen — ne pa, da so napovedi novih kitov eksperimentalno potrjene.</p>
 <details class="project-details"><summary>Glavne kategorije opozoril v 500.000 evaluacijah</summary><div><ul>
@@ -312,19 +302,56 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 <li>veliki dobitki proti referenci, ki zahtevajo fizično potrditev.</li>
 </ul></div></details>
 </section>
-
 <section id="kaj-arena-podpira">
 <h2>10. Kaj celotna dosedanja raziskava zares podpira</h2>
 <div class="grid-2">
-  <div class="info-card"><h3>Modularni produkt ima smisel</h3><p>Trg in model podpirata večstopenjsko platformo: osnovni Solar, stabilizacijski oziroma smerni appendage, električni assist ter naprednejše ekspedicijske konfiguracije.</p></div>
-  <div class="info-card"><h3>Motor ni samo za maksimalno hitrost</h3><p>Močan produktni razlog so zmanjšan napor, povratek proti vetru, večji doseg, dostopnost in varnostna rezerva.</p></div>
-  <div class="info-card"><h3>Polni foil ni avtomatski zmagovalec</h3><p>Foil lahko pomaga, vendar doda velike strukturne in kontrolne zahteve. Veliko čistih kandidatov uporablja samo skeg, stabilizacijski appendage ali celo motor brez foila.</p></div>
-  <div class="info-card"><h3>Solarjeva logistika je del izdelka</h3><p>Kit je zanimiv samo, če ne uniči prenosljivosti. Masa, volumen, montažni čas in potreba po trajnih predelavah morajo ostati prve razredne metrike.</p></div>
+<div class="info-card"><h3>Modularni produkt ima smisel</h3><p>Trg in model podpirata večstopenjsko platformo: osnovni Solar, stabilizacijski oziroma smerni appendage, električni assist ter naprednejše ekspedicijske konfiguracije.</p></div>
+<div class="info-card"><h3>Motor ni samo za maksimalno hitrost</h3><p>Močan produktni razlog so zmanjšan napor, povratek proti vetru, večji doseg, dostopnost in varnostna rezerva.</p></div>
+<div class="info-card"><h3>Polni foil ni avtomatski zmagovalec</h3><p>Foil lahko pomaga, vendar doda velike strukturne in kontrolne zahteve. Veliko čistih kandidatov uporablja samo skeg, stabilizacijski appendage ali celo motor brez foila.</p></div>
+<div class="info-card"><h3>Solarjeva logistika je del izdelka</h3><p>Kit je zanimiv samo, če ne uniči prenosljivosti. Masa, volumen, montažni čas in potreba po trajnih predelavah morajo ostati prve razredne metrike.</p></div>
 </div>
+</section><section id="kaj-kpa-ustvarja">
+<h2>11. Kaj KPA ustvarja že pred prototipom</h2>
+<p>KPA ni samo generator visokih številk. Njena neposredna korist je, da široko produktno idejo spremeni v <strong>merljiv in preverljiv prostor odločitev</strong>: kaj pripada trupu, kaj foilu, kaj motorju, kaj krmilniku, kaj ceni in kaj samo napačni predpostavki.</p>
+<div class="value-flow">
+<div><b>Seed</b>Solar, foil, motor, adaptive control</div>
+<div><b>Matched controls</b>isti trup, posadka in moč</div>
+<div><b>Falsifierji</b>no-foil, fixed foil, single/dual</div>
+<div><b>Pareto produkti</b>hitrost, doseg, cena, varnost</div>
+<div><b>Naslednji test</b>kaj je vredno CFD ali prototipa</div>
+</div>
+<div class="grid-3">
+<div class="info-card"><h3>Preprečevanje napačnih prototipov</h3><p>Arena pokaže, ali dobiček prihaja iz foila ali samo iz več motorne moči, boljšega trupa oziroma ugodnega scora. Tako zmanjšuje število dragih prototipov, zgrajenih na napačni atribuciji.</p></div>
+<div class="info-card"><h3>Več izdelkov, ne en čudežni cilj</h3><p>Ločeno rangira human-only, single-motor, dual-motor, cenovno dostopen retrofit, OEM Solar/Seawave in premium high-speed platformo. Produkt z 8 km/h ni neuspeh zato, ker ni dosegel 10 km/h.</p></div>
+<div class="info-card"><h3>Uporabno za proizvajalca</h3><p>OEM veja lahko spremeni load path, togost, rail, keel, poravnavo, servis, garancijo in proizvodne stroške. To je drugačen problem od clip-on kita za že kupljen Solar.</p></div>
+<div class="info-card"><h3>Dokazna disciplina</h3><p>Raw, engineering-clean, strict-clean, anomaly in matched evidence so ločeni. Velik rezultat z neizmerjeno propulsor mapo ne postane avtomatsko tržna obljuba.</p></div>
+<div class="info-card"><h3>Rank, don’t eliminate</h3><p>Slab rezultat v eni vlogi ne izbriše ideje. Foil, skeg, motor ali konstrukcija lahko izgubijo kot glavni pogon in kasneje zmagajo kot stabilnost, varnost, doseg ali OEM podsistem.</p></div>
+<div class="info-card"><h3>Most v resnični svet</h3><p>Najboljši izhod arene ni »winner«, ampak natančen kandidat: geometrija, moč, masa, cena, failure-first predpostavka in matched test, ki ga mora nato preveriti voda.</p></div>
+</div>
+<blockquote><strong>KPA ne dokazuje izdelka.</strong> KPA zmanjšuje število dragih napačnih prototipov in pove, kateri prototip je najprej smiselno izdelati.</blockquote>
+<details class="project-details"><summary>Kaj je v najinem postopku posebej koristno</summary><div><p>Vsaka nova verzija ohrani stare seede, vendar popravi vprašanje, ko se pokaže slepa pega. V0.4.1 je na primer pokazala, da »variable foil« kot naknadni overlay ni pravi test; v0.4.2 je zato regulator prestavila v časovno hidrodinamično zanko. V0.4.3 je odstranila en sam cilj 10 km/h, v0.4.4 pa je ločila učinek drugega motorja od učinka večje skupne moči.</p><p>To je praktičen raziskovalni rezultat sam po sebi: sistem, ki se zna popraviti, ohraniti negativne rezultate in iz njih izdelati močnejši naslednji test.</p></div></details>
+</section><section id="trzna-integracijska-vrzel">
+<h2>12. Kaj že obstaja in kje je integracijska vrzel</h2>
+<p>Posamezni deli širše ideje že obstajajo. Zato ne trdimo, da sva »izumila hydrofoil« ali električni kajak. Potencialno zanimiva je <strong>integrirana produktna kombinacija</strong> in način, kako jo pošteno primerjava z istim kajakom brez foila oziroma z istim fiksnim foilom.</p>
+<div class="table-wrap"><table class="market-gap-table">
+<thead><tr><th>Obstoječa kategorija</th><th>Kaj je danes javno na voljo ali znano</th><th>Vrzel, ki jo raziskuje KPA</th></tr></thead>
+<tbody>
+<tr><td>Premium napihljivi touring kajaki</td><td><a href="https://gumotexboats.eu/products/kajak-solar-cervena">Gumotex Solar</a> in <a href="https://gumotexboats.eu/products/seawave-cervena">Seawave</a>: zložljivost, touring, tandem/več konfiguracij.</td><td>Foil-ready nosilna pot, adaptivni foil, več pogonskih razredov ter skupna retrofit/OEM platforma.</td></tr>
+<tr><td>Modularni električni pogoni</td><td><a href="https://bixpy.com/products/bixpy-k-1-motor">Bixpy K-1</a> in podobni kompleti motorizirajo kajake, SUP-e in mala napihljiva plovila.</td><td>Integracija z no/fixed/adaptive foil kontrolami, porazdeljenim load frameom, dualnim pogonom in Gumotexovo produktno ekonomiko.</td></tr>
+<tr><td>Serijski eFoil</td><td><a href="https://eu.fliteboard.com/">Fliteboard</a> ponuja električne hydrofoil deske, tudi z napihljivo konstrukcijo v delu ponudbe.</td><td>To ni zložljiv tandem touring kajak, ki ostane uporaben za normalno veslanje, prtljago in limp-home.</td></tr>
+<tr><td>Hydrofoil kolo</td><td><a href="https://manta5.com/">Manta5</a> prodaja električno-pedalna hydrofoil kolesa.</td><td>Druga ergonomija, trup, nosilnost in uporaba; ne rešuje Solar/Seawave touring platforme.</td></tr>
+<tr><td>Človeško gnan foil kajak</td><td><a href="https://human-powered-hydrofoils.com/hydrofoils/hydrofoil-kayak-flyak/">Flyak</a> je pokazal specializiran human-powered hydrofoil kajak.</td><td>Ni običajen zložljiv napihljiv tandem, masovni retrofit oziroma OEM touring družina z motorno lestvijo.</td></tr>
+<tr><td>Assisted-foil intelektualna lastnina</td><td><a href="https://patents.google.com/patent/US10279873B2/en">Assisted foil for watercraft</a> in sorodni patenti kažejo, da so nekateri elementi in režimi že opisani.</td><td>Formalna novost najine specifične kombinacije je odprto vprašanje; potreben je namenski prior-art/patentni pregled.</td></tr>
+</tbody></table></div>
+<div class="gap-stack">
+<div class="info-card"><h3>Integracijska celota, ki je v pregledanem javnem trgu nisva našla kot običajen serijski izdelek</h3><ul><li>zložljiv napihljiv tandem touring kajak;</li><li>odstranljiv oziroma OEM load frame za foil in motorne sile;</li><li>adaptivna globina, incidenca, flap in potopljena površina;</li><li>krmiljenje glede na hitrost, človeško in motorno moč ter ride height;</li><li>human-only, single-motor in dual-motor produktna lestev;</li><li>isti koncept kot retrofit in tovarniško integriran model;</li><li>normalno veslanje ob prazni bateriji ali odpovedi;</li><li>matched no-foil / fixed-foil / adaptive-foil dokazna pot.</li></ul></div>
+<div class="info-card"><h3>Kaj ta trditev ne pomeni</h3><ul><li>ne pomeni, da posamezni gradniki niso znani;</li><li>ne pomeni patentne novosti;</li><li>ne pomeni, da na svetu ne obstaja prototip ali manj znan projekt;</li><li>ne pomeni, da je modelna hitrost že realna;</li><li>pomeni le, da v pregledanem javnem trgu do 3. avgusta 2026 nisva našla iste integrirane množične platforme.</li></ul></div>
+</div>
+<div class="callout gold"><h3>Preliminarni tržni sklep</h3><p>Največja možna razlikovalna vrednost ni en sam foil. Je <strong>celotna prenosljiva platforma</strong>: kajak, load frame, adaptivni foil, pogonski moduli, fail-safe veslanje, servis ter dokazna atribucija vsakega podsistema. Formalno novost je treba preveriti ločeno.</p></div>
+<p class="source-note">Javni referenčni pregled: Gumotex trenutna ponudba in dodatki, Bixpy modularni kayak motorji, Fliteboard eFoil, Manta5 hydrofoil bike, zgodovinski Flyak ter assisted-foil patentna družina. Odsotnost v tem pregledu ni dokaz absolutne odsotnosti na trgu.</p>
 </section>
-
 <section id="kaj-se-ni-dokazano">
-<h2>11. Kaj še ni dokazano</h2>
+<h2>13. Kaj še ni dokazano</h2>
 <ul>
 <li>da bi polni hydrofoil pri Solarju res zmanjšal potreben napor pri rekreativni hitrosti;</li>
 <li>da je mogoče doseči 15–20+ km/h ob sprejemljivi stabilnosti, dosegu in masi;</li>
@@ -336,22 +363,20 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 </ul>
 <div class="callout"><h3>Dokazni status</h3><p>To je raziskovalna produktna hipoteza z močnim tržnim razlogom in vse bolj strukturiranim modelom. Ni še končan inženirski izdelek, CFD potrditev, certifikat ali prototipni rezultat.</p></div>
 </section>
-
 <section id="nadaljnje-delo">
-<h2>12. Nadaljnje delo</h2>
+<h2>14. Nadaljnje delo</h2>
 <ol>
-<li><strong>V0.4.2 in nadaljnja arena:</strong> izboljšati Gumotex-adaptive produktne profile, dejanske akcijske cene, logistiko in realne ekspedicijske misije.</li>
+<li><strong>Naslednja arena in higher-fidelity most:</strong> vgraditi izmerjene propulsor mape, free-surface/VOF hidrodinamiko, bolj realen foil/controller model ter lossless matched evidence.</li>
 <li><strong>Matched študije:</strong> Solar baseline proti skegu, partial foilu, full foilu, enemu motorju in dvojnemu motorju pri isti masi posadke in prtljage.</li>
 <li><strong>Fizični nosilec:</strong> izdelati tog zunanji okvir, ki porazdeli obremenitve brez nevarnega lokalnega stiskanja trupa.</li>
 <li><strong>Majhen vodni prototip:</strong> najprej izmeriti upor, smerno stabilnost, moč motorja, hitrost in čas montaže.</li>
 <li><strong>Valovi in veter:</strong> ločeno testirati bočni veter, čelni veter, kratke valove, zavijanje in varni limp-home način.</li>
 <li><strong>Ekspedicijska ekonomika:</strong> doseg z realno baterijo, dnevni kilometri, čas polnjenja, rezervni modul in teža vse opreme.</li>
 <li><strong>Trg:</strong> ločiti družinski Touring, Expedition Performance in Professional Holiday/Training segment.</li>
-</ol>
+<li><strong>Dve vzporedni produktni poti:</strong> ločeno nadaljevati dostopen Touring/Paddle-Assist kit in premium full-foil/dual-motor platformo.</li><li><strong>Trg in prior art:</strong> narediti namenski pregled patentov, pravil za motorna plovila in potencialnih OEM partnerjev, preden se uporabi trditev o novosti.</li></ol>
 </section>
-
-<hr />
-<h2 id="sedanji-trg">13. Sedanji evropski trg kajakov</h2>
+<hr/>
+<div class="part-label">DEL II · Referenčni trg in metodologija</div><h2 id="sedanji-trg">PRILOGA A — Sedanji evropski trg kajakov</h2>
 <p>Ta dokument primerja 20 evropsko izdelanih kajakov različnih razredov:</p>
 <ul>
 <li>10 napihljivih in 10 trdih kajakov;</li>
@@ -369,247 +394,247 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 <li>vrhunsko usklajena dvojica v tekmovalno usmerjenem surfski tandemu lahko vzdržno doseže približno <strong>15–17 km/h</strong>.</li>
 </ul>
 <p>Vse hitrosti v glavni tabeli pomenijo približno <strong>60-minutno povprečje na mirni vodi</strong>, ne trenutne maksimalne hitrosti ali kratkega sprinta.</p>
-<hr />
-<h2 id="2-glavna-primerjalna-tabela">14. Glavna primerjalna tabela sedanjega trga</h2>
+<hr/>
+<h2 id="2-glavna-primerjalna-tabela">A.1 Glavna primerjalna tabela sedanjega trga</h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
-  <th style="text-align:right">#</th>
-  <th>Model</th>
-  <th style="text-align:center">K</th>
-  <th style="text-align:right">L×Š</th>
-  <th style="text-align:center">Dr.</th>
-  <th style="text-align:right">€</th>
-  <th style="text-align:right">R</th>
-  <th style="text-align:right">A</th>
-  <th style="text-align:right">P</th>
+<th style="text-align:right">#</th>
+<th>Model</th>
+<th style="text-align:center">K</th>
+<th style="text-align:right">L×Š</th>
+<th style="text-align:center">Dr.</th>
+<th style="text-align:right">€</th>
+<th style="text-align:right">R</th>
+<th style="text-align:right">A</th>
+<th style="text-align:right">P</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td style="text-align:right">1</td>
-  <td><a href="https://gumotexboats.eu/products/kajak-rush-1-cerna">Gumotex Rush 1</a></td>
-  <td style="text-align:center">N1</td>
-  <td style="text-align:right">355×81</td>
-  <td style="text-align:center">CZ</td>
-  <td style="text-align:right">≈1.642</td>
-  <td style="text-align:right">4,5–5,5</td>
-  <td style="text-align:right">5,8–6,8</td>
-  <td style="text-align:right">7,0–8,0</td>
+<td style="text-align:right">1</td>
+<td><a href="https://gumotexboats.eu/products/kajak-rush-1-cerna">Gumotex Rush 1</a></td>
+<td style="text-align:center">N1</td>
+<td style="text-align:right">355×81</td>
+<td style="text-align:center">CZ</td>
+<td style="text-align:right">≈1.642</td>
+<td style="text-align:right">4,5–5,5</td>
+<td style="text-align:right">5,8–6,8</td>
+<td style="text-align:right">7,0–8,0</td>
 </tr>
 <tr>
-  <td style="text-align:right">2</td>
-  <td><a href="https://gumotexboats.eu/products/framura-cervena">Gumotex Framura</a></td>
-  <td style="text-align:center">N1</td>
-  <td style="text-align:right">410×75</td>
-  <td style="text-align:center">CZ</td>
-  <td style="text-align:right">≈1.144</td>
-  <td style="text-align:right">5,0–6,0</td>
-  <td style="text-align:right">6,3–7,5</td>
-  <td style="text-align:right">7,8–9,0</td>
+<td style="text-align:right">2</td>
+<td><a href="https://gumotexboats.eu/products/framura-cervena">Gumotex Framura</a></td>
+<td style="text-align:center">N1</td>
+<td style="text-align:right">410×75</td>
+<td style="text-align:center">CZ</td>
+<td style="text-align:right">≈1.144</td>
+<td style="text-align:right">5,0–6,0</td>
+<td style="text-align:right">6,3–7,5</td>
+<td style="text-align:right">7,8–9,0</td>
 </tr>
 <tr>
-  <td style="text-align:right">3</td>
-  <td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/escape-1">Grabner Escape 1</a></td>
-  <td style="text-align:center">N1</td>
-  <td style="text-align:right">420×75</td>
-  <td style="text-align:center">AT</td>
-  <td style="text-align:right">3.690</td>
-  <td style="text-align:right">5,2–6,2</td>
-  <td style="text-align:right">6,8–8,0</td>
-  <td style="text-align:right">8,3–9,5</td>
+<td style="text-align:right">3</td>
+<td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/escape-1">Grabner Escape 1</a></td>
+<td style="text-align:center">N1</td>
+<td style="text-align:right">420×75</td>
+<td style="text-align:center">AT</td>
+<td style="text-align:right">3.690</td>
+<td style="text-align:right">5,2–6,2</td>
+<td style="text-align:right">6,8–8,0</td>
+<td style="text-align:right">8,3–9,5</td>
 </tr>
 <tr>
-  <td style="text-align:right">4</td>
-  <td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/tramper">Grabner Tramper</a></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">400×90</td>
-  <td style="text-align:center">AT</td>
-  <td style="text-align:right">2.690</td>
-  <td style="text-align:right">4,5–5,5</td>
-  <td style="text-align:right">5,8–6,8</td>
-  <td style="text-align:right">7,0–8,0</td>
+<td style="text-align:right">4</td>
+<td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/tramper">Grabner Tramper</a></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">400×90</td>
+<td style="text-align:center">AT</td>
+<td style="text-align:right">2.690</td>
+<td style="text-align:right">4,5–5,5</td>
+<td style="text-align:right">5,8–6,8</td>
+<td style="text-align:right">7,0–8,0</td>
 </tr>
 <tr>
-  <td style="text-align:right">5</td>
-  <td><strong><a href="https://gumotexboats.eu/products/kajak-solar-cervena">Gumotex Solar</a></strong></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">410×80</td>
-  <td style="text-align:center">CZ</td>
-  <td style="text-align:right">≈1.002</td>
-  <td style="text-align:right"><strong>4,5–5,5</strong></td>
-  <td style="text-align:right"><strong>6,0–7,3</strong></td>
-  <td style="text-align:right"><strong>7,5–8,8</strong></td>
+<td style="text-align:right">5</td>
+<td><strong><a href="https://gumotexboats.eu/products/kajak-solar-cervena">Gumotex Solar</a></strong></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">410×80</td>
+<td style="text-align:center">CZ</td>
+<td style="text-align:right">≈1.002</td>
+<td style="text-align:right"><strong>4,5–5,5</strong></td>
+<td style="text-align:right"><strong>6,0–7,3</strong></td>
+<td style="text-align:right"><strong>7,5–8,8</strong></td>
 </tr>
 <tr>
-  <td style="text-align:right">6</td>
-  <td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/holiday">Grabner Holiday</a></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">395×75</td>
-  <td style="text-align:center">AT</td>
-  <td style="text-align:right">2.690</td>
-  <td style="text-align:right">5,2–6,2</td>
-  <td style="text-align:right">6,8–8,0</td>
-  <td style="text-align:right">8,3–9,5</td>
+<td style="text-align:right">6</td>
+<td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/holiday">Grabner Holiday</a></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">395×75</td>
+<td style="text-align:center">AT</td>
+<td style="text-align:right">2.690</td>
+<td style="text-align:right">5,2–6,2</td>
+<td style="text-align:right">6,8–8,0</td>
+<td style="text-align:right">8,3–9,5</td>
 </tr>
 <tr>
-  <td style="text-align:right">7</td>
-  <td><a href="https://gumotexboats.eu/products/kajak-rush-2-cerna">Gumotex Rush 2</a></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">420×82</td>
-  <td style="text-align:center">CZ</td>
-  <td style="text-align:right">≈2.013</td>
-  <td style="text-align:right">5,3–6,3</td>
-  <td style="text-align:right">6,8–8,2</td>
-  <td style="text-align:right">8,5–9,8</td>
+<td style="text-align:right">7</td>
+<td><a href="https://gumotexboats.eu/products/kajak-rush-2-cerna">Gumotex Rush 2</a></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">420×82</td>
+<td style="text-align:center">CZ</td>
+<td style="text-align:right">≈2.013</td>
+<td style="text-align:right">5,3–6,3</td>
+<td style="text-align:right">6,8–8,2</td>
+<td style="text-align:right">8,5–9,8</td>
 </tr>
 <tr>
-  <td style="text-align:right">8</td>
-  <td><strong><a href="https://gumotexboats.eu/products/seawave-cervena">Gumotex Seawave</a></strong></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">455×83</td>
-  <td style="text-align:center">CZ</td>
-  <td style="text-align:right">≈1.678</td>
-  <td style="text-align:right"><strong>5,8–7,0</strong></td>
-  <td style="text-align:right"><strong>7,5–9,0</strong></td>
-  <td style="text-align:right"><strong>9,2–10,5</strong></td>
+<td style="text-align:right">8</td>
+<td><strong><a href="https://gumotexboats.eu/products/seawave-cervena">Gumotex Seawave</a></strong></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">455×83</td>
+<td style="text-align:center">CZ</td>
+<td style="text-align:right">≈1.678</td>
+<td style="text-align:right"><strong>5,8–7,0</strong></td>
+<td style="text-align:right"><strong>7,5–9,0</strong></td>
+<td style="text-align:right"><strong>9,2–10,5</strong></td>
 </tr>
 <tr>
-  <td style="text-align:right">9</td>
-  <td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/riverstar-1">Grabner Riverstar</a></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">500×90</td>
-  <td style="text-align:center">AT</td>
-  <td style="text-align:right">4.890</td>
-  <td style="text-align:right">5,5–6,5</td>
-  <td style="text-align:right">7,0–8,5</td>
-  <td style="text-align:right">8,8–10,2</td>
+<td style="text-align:right">9</td>
+<td><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/riverstar-1">Grabner Riverstar</a></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">500×90</td>
+<td style="text-align:center">AT</td>
+<td style="text-align:right">4.890</td>
+<td style="text-align:right">5,5–6,5</td>
+<td style="text-align:right">7,0–8,5</td>
+<td style="text-align:right">8,8–10,2</td>
 </tr>
 <tr>
-  <td style="text-align:right">10</td>
-  <td><strong><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/escape-2">Grabner Escape 2</a></strong></td>
-  <td style="text-align:center">N2</td>
-  <td style="text-align:right">500×75</td>
-  <td style="text-align:center">AT</td>
-  <td style="text-align:right">3.070†</td>
-  <td style="text-align:right"><strong>6,0–7,2</strong></td>
-  <td style="text-align:right"><strong>8,0–9,8</strong></td>
-  <td style="text-align:right"><strong>10,0–11,5</strong></td>
+<td style="text-align:right">10</td>
+<td><strong><a href="https://www.grabner.com/en/shop/products/inflatable-boats/kayaks/escape-2">Grabner Escape 2</a></strong></td>
+<td style="text-align:center">N2</td>
+<td style="text-align:right">500×75</td>
+<td style="text-align:center">AT</td>
+<td style="text-align:right">3.070†</td>
+<td style="text-align:right"><strong>6,0–7,2</strong></td>
+<td style="text-align:right"><strong>8,0–9,8</strong></td>
+<td style="text-align:right"><strong>10,0–11,5</strong></td>
 </tr>
 <tr>
-  <td style="text-align:right">11</td>
-  <td><a href="https://www.prijon.com/enduro-450.html">Prijon Enduro 450</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">453×62</td>
-  <td style="text-align:center">DE</td>
-  <td style="text-align:right">1.565</td>
-  <td style="text-align:right">5,5–6,5</td>
-  <td style="text-align:right">7,0–8,3</td>
-  <td style="text-align:right">8,5–9,8</td>
+<td style="text-align:right">11</td>
+<td><a href="https://www.prijon.com/enduro-450.html">Prijon Enduro 450</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">453×62</td>
+<td style="text-align:center">DE</td>
+<td style="text-align:right">1.565</td>
+<td style="text-align:right">5,5–6,5</td>
+<td style="text-align:right">7,0–8,3</td>
+<td style="text-align:right">8,5–9,8</td>
 </tr>
 <tr>
-  <td style="text-align:right">12</td>
-  <td><a href="https://www.prijon.com/touryak-500.html">Prijon Touryak 500</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">503×63</td>
-  <td style="text-align:center">DE</td>
-  <td style="text-align:right">1.946</td>
-  <td style="text-align:right">6,0–7,0</td>
-  <td style="text-align:right">7,8–9,2</td>
-  <td style="text-align:right">9,5–10,8</td>
+<td style="text-align:right">12</td>
+<td><a href="https://www.prijon.com/touryak-500.html">Prijon Touryak 500</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">503×63</td>
+<td style="text-align:center">DE</td>
+<td style="text-align:right">1.946</td>
+<td style="text-align:right">6,0–7,0</td>
+<td style="text-align:right">7,8–9,2</td>
+<td style="text-align:right">9,5–10,8</td>
 </tr>
 <tr>
-  <td style="text-align:right">13</td>
-  <td><a href="https://www.prijon.com/seatron-gt.html">Prijon Seatron GT</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">520×58</td>
-  <td style="text-align:center">DE</td>
-  <td style="text-align:right">1.985</td>
-  <td style="text-align:right">6,3–7,5</td>
-  <td style="text-align:right">8,5–10,0</td>
-  <td style="text-align:right">10,3–11,8</td>
+<td style="text-align:right">13</td>
+<td><a href="https://www.prijon.com/seatron-gt.html">Prijon Seatron GT</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">520×58</td>
+<td style="text-align:center">DE</td>
+<td style="text-align:right">1.985</td>
+<td style="text-align:right">6,3–7,5</td>
+<td style="text-align:right">8,5–10,0</td>
+<td style="text-align:right">10,3–11,8</td>
 </tr>
 <tr>
-  <td style="text-align:right">14</td>
-  <td><a href="https://old2.nelo.eu/product/520_/">Nelo 520</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">520×52</td>
-  <td style="text-align:center">PT</td>
-  <td style="text-align:right">1.944‡</td>
-  <td style="text-align:right">7,0–8,5*</td>
-  <td style="text-align:right">9,5–11,2</td>
-  <td style="text-align:right">11,8–13,3</td>
+<td style="text-align:right">14</td>
+<td><a href="https://old2.nelo.eu/product/520_/">Nelo 520</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">520×52</td>
+<td style="text-align:center">PT</td>
+<td style="text-align:right">1.944‡</td>
+<td style="text-align:right">7,0–8,5*</td>
+<td style="text-align:right">9,5–11,2</td>
+<td style="text-align:right">11,8–13,3</td>
 </tr>
 <tr>
-  <td style="text-align:right">15</td>
-  <td><a href="https://old2.nelo.eu/product/viper-46-ski/">Nelo Viper 46 Ski</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">520×46</td>
-  <td style="text-align:center">PT</td>
-  <td style="text-align:right">1.994†‡</td>
-  <td style="text-align:right">7,0–8,5*</td>
-  <td style="text-align:right">9,8–11,8</td>
-  <td style="text-align:right">12,3–14,0</td>
+<td style="text-align:right">15</td>
+<td><a href="https://old2.nelo.eu/product/viper-46-ski/">Nelo Viper 46 Ski</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">520×46</td>
+<td style="text-align:center">PT</td>
+<td style="text-align:right">1.994†‡</td>
+<td style="text-align:right">7,0–8,5*</td>
+<td style="text-align:right">9,8–11,8</td>
+<td style="text-align:right">12,3–14,0</td>
 </tr>
 <tr>
-  <td style="text-align:right">16</td>
-  <td><a href="https://old2.nelo.eu/product/550-2/">Nelo 550</a></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">550×47</td>
-  <td style="text-align:center">PT</td>
-  <td style="text-align:right">1.944†‡</td>
-  <td style="text-align:right">7,5–9,0*</td>
-  <td style="text-align:right">10,3–12,3</td>
-  <td style="text-align:right">12,8–14,7</td>
+<td style="text-align:right">16</td>
+<td><a href="https://old2.nelo.eu/product/550-2/">Nelo 550</a></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">550×47</td>
+<td style="text-align:center">PT</td>
+<td style="text-align:right">1.944†‡</td>
+<td style="text-align:right">7,5–9,0*</td>
+<td style="text-align:right">10,3–12,3</td>
+<td style="text-align:right">12,8–14,7</td>
 </tr>
 <tr>
-  <td style="text-align:right">17</td>
-  <td><strong><a href="https://old2.nelo.eu/product/560/">Nelo 560</a></strong></td>
-  <td style="text-align:center">T1</td>
-  <td style="text-align:right">560×45</td>
-  <td style="text-align:center">PT</td>
-  <td style="text-align:right">1.944†‡</td>
-  <td style="text-align:right">7,0–8,5*</td>
-  <td style="text-align:right"><strong>10,5–12,8</strong></td>
-  <td style="text-align:right"><strong>13,5–15,5</strong></td>
+<td style="text-align:right">17</td>
+<td><strong><a href="https://old2.nelo.eu/product/560/">Nelo 560</a></strong></td>
+<td style="text-align:center">T1</td>
+<td style="text-align:right">560×45</td>
+<td style="text-align:center">PT</td>
+<td style="text-align:right">1.944†‡</td>
+<td style="text-align:right">7,0–8,5*</td>
+<td style="text-align:right"><strong>10,5–12,8</strong></td>
+<td style="text-align:right"><strong>13,5–15,5</strong></td>
 </tr>
 <tr>
-  <td style="text-align:right">18</td>
-  <td><a href="https://www.prijon.com/dayliner-duo.html">Prijon Dayliner Duo</a></td>
-  <td style="text-align:center">T2</td>
-  <td style="text-align:right">470×68</td>
-  <td style="text-align:center">DE</td>
-  <td style="text-align:right">1.891</td>
-  <td style="text-align:right">6,0–7,2</td>
-  <td style="text-align:right">8,0–9,5</td>
-  <td style="text-align:right">9,8–11,3</td>
+<td style="text-align:right">18</td>
+<td><a href="https://www.prijon.com/dayliner-duo.html">Prijon Dayliner Duo</a></td>
+<td style="text-align:center">T2</td>
+<td style="text-align:right">470×68</td>
+<td style="text-align:center">DE</td>
+<td style="text-align:right">1.891</td>
+<td style="text-align:right">6,0–7,2</td>
+<td style="text-align:right">8,0–9,5</td>
+<td style="text-align:right">9,8–11,3</td>
 </tr>
 <tr>
-  <td style="text-align:right">19</td>
-  <td><a href="https://www.prijon.com/poseidon.html">Prijon Poseidon</a></td>
-  <td style="text-align:center">T2</td>
-  <td style="text-align:right">518×67</td>
-  <td style="text-align:center">DE</td>
-  <td style="text-align:right">2.312</td>
-  <td style="text-align:right">6,5–7,8</td>
-  <td style="text-align:right">8,8–10,5</td>
-  <td style="text-align:right">10,8–12,3</td>
+<td style="text-align:right">19</td>
+<td><a href="https://www.prijon.com/poseidon.html">Prijon Poseidon</a></td>
+<td style="text-align:center">T2</td>
+<td style="text-align:right">518×67</td>
+<td style="text-align:center">DE</td>
+<td style="text-align:right">2.312</td>
+<td style="text-align:right">6,5–7,8</td>
+<td style="text-align:right">8,8–10,5</td>
+<td style="text-align:right">10,8–12,3</td>
 </tr>
 <tr>
-  <td style="text-align:right">20</td>
-  <td><strong><a href="https://www.nelo.eu/product/600/">Nelo 600 SS2</a></strong></td>
-  <td style="text-align:center">T2</td>
-  <td style="text-align:right">600×60</td>
-  <td style="text-align:center">PT</td>
-  <td style="text-align:right">2.944‡</td>
-  <td style="text-align:right">**8,5–10,5***</td>
-  <td style="text-align:right"><strong>12,0–14,5</strong></td>
-  <td style="text-align:right"><strong>14,8–17,0</strong></td>
+<td style="text-align:right">20</td>
+<td><strong><a href="https://www.nelo.eu/product/600/">Nelo 600 SS2</a></strong></td>
+<td style="text-align:center">T2</td>
+<td style="text-align:right">600×60</td>
+<td style="text-align:center">PT</td>
+<td style="text-align:right">2.944‡</td>
+<td style="text-align:right">8,5–10,5*</td>
+<td style="text-align:right"><strong>12,0–14,5</strong></td>
+<td style="text-align:right"><strong>14,8–17,0</strong></td>
 </tr>
 </tbody>
 </table></div>
-<hr />
-<h2 id="3-legenda-stolpcev">3. Legenda stolpcev</h2>
+<hr/>
+<h2 id="3-legenda-stolpcev">A.2 Legenda stolpcev</h2>
 <h3 id="k-kategorija">K — kategorija</h3>
 <ul>
 <li><strong>N1</strong>: napihljiv enosed;</li>
@@ -647,8 +672,8 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 <p>Redno trenirani veslači z dobro tehniko, primerno telesno pripravljenostjo, učinkovitim zavesljajem in kakovostnim veslom. Tempo je vzdržen približno eno uro, vendar ni sproščen.</p>
 <h3 id="p-profesionalni-oziroma-vrhunski-veslaci">P — profesionalni oziroma vrhunski veslači</h3>
 <p>Vrhunsko usposobljeni in zelo dobro pripravljeni veslači v <strong>navedenem modelu kajaka</strong>. To niso hitrosti posebnih olimpijskih K1/K2 sprint čolnov, razen kadar je obravnavani model sam izrazito tekmovalno usmerjen.</p>
-<hr />
-<h2 id="4-pogoji-za-navedene-hitrosti">4. Pogoji za navedene hitrosti</h2>
+<hr/>
+<h2 id="4-pogoji-za-navedene-hitrosti">A.3 Pogoji za navedene hitrosti</h2>
 <p>Vse hitrosti R, A in P so ocenjeni razponi za približno <strong>60 minut neprekinjenega veslanja</strong> pod naslednjimi pogoji:</p>
 <ul>
 <li>mirna ali le rahlo valovita voda;</li>
@@ -669,41 +694,41 @@ details.project-details{margin:13px 0;border:1px solid var(--line);border-radius
 <li>rezultat tekmovalne vožnje s popolnoma praznim čolnom;</li>
 <li>zagotovilo, da bo vsak uporabnik dosegel navedeno hitrost.</li>
 </ul>
-<hr />
-<h2 id="5-metodologija-ocenjevanja-hitrosti">5. Metodologija ocenjevanja hitrosti</h2>
+<hr/>
+<h2 id="5-metodologija-ocenjevanja-hitrosti">A.4 Metodologija ocenjevanja hitrosti</h2>
 <p>Proizvajalci za večino rekreativnih kajakov ne objavljajo standardiziranih enournih hitrosti. Razponi so zato konservativne inženirske ocene, izdelane iz kombinacije naslednjih dejavnikov:</p>
 <ol>
-<li><p><strong>Dolžina vodne linije</strong><br />
+<li><p><strong>Dolžina vodne linije</strong><br/>
 Daljša vodna linija praviloma omogoča višjo učinkovito potovalno hitrost in manj izrazit valovni upor pri enaki hitrosti.</p>
 </li>
-<li><p><strong>Širina in čelni prerez</strong><br />
+<li><p><strong>Širina in čelni prerez</strong><br/>
 Ožji kajak je običajno hitrejši, vendar zahteva več ravnotežja in boljšo tehniko.</p>
 </li>
-<li><p><strong>Togost konstrukcije</strong><br />
+<li><p><strong>Togost konstrukcije</strong><br/>
 Trd trup praviloma izgubi manj energije zaradi deformiranja. Pri napihljivih modelih so pomembni tlak, notranje pregrade, drop-stitch elementi in oblika dna.</p>
 </li>
-<li><p><strong>Oblika trupa</strong><br />
+<li><p><strong>Oblika trupa</strong><br/>
 Dolg, ozek, gladko zaključen trup z učinkovitim premcem in krmo je pri potovalni hitrosti praviloma boljši od kratkega, širokega in zelo stabilnega trupa.</p>
 </li>
-<li><p><strong>Smerna stabilnost</strong><br />
+<li><p><strong>Smerna stabilnost</strong><br/>
 Kajak, ki dobro drži smer, izgubi manj energije zaradi popravljanja smeri.</p>
 </li>
-<li><p><strong>Stabilnost in uporabnost moči</strong><br />
+<li><p><strong>Stabilnost in uporabnost moči</strong><br/>
 Zelo ozek kajak je teoretično hiter, toda manj izkušen veslač lahko zaradi lovljenja ravnotežja vesla slabše in počasneje kot v širšem čolnu.</p>
 </li>
-<li><p><strong>Enosed ali tandem</strong><br />
+<li><p><strong>Enosed ali tandem</strong><br/>
 Dva dobro usklajena veslača lahko ustvarita bistveno več skupne moči, medtem ko se upor trupa ne podvoji. Zato je lahko učinkovit tandem zelo hiter.</p>
 </li>
-<li><p><strong>Namen modela</strong><br />
+<li><p><strong>Namen modela</strong><br/>
 Družinski, touring, ekspedicijski in surfski modeli imajo različne kompromise med hitrostjo, stabilnostjo, nosilnostjo, udobjem in varnostjo.</p>
 </li>
-<li><p><strong>Znane uporabniške meritve in realni referenčni primeri</strong><br />
+<li><p><strong>Znane uporabniške meritve in realni referenčni primeri</strong><br/>
 Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra za preprečevanje nerealnih ocen.</p>
 </li>
 </ol>
 <p>Ocene so namenoma podane kot razpon in ne kot ena navidezno natančna številka.</p>
-<hr />
-<h2 id="6-posebne-opombe-k-tabeli">6. Posebne opombe k tabeli</h2>
+<hr/>
+<h2 id="6-posebne-opombe-k-tabeli">A.5 Posebne opombe k tabeli</h2>
 <h3 id="zahtevna-stabilnost-surfskija"><code>*</code> Zahtevna stabilnost surfskija</h3>
 <p>Pri modelih Nelo 520, Viper 46, 550, 560 in 600 SS2 je dejanska hitrost močno odvisna od ravnotežja. Začetnik je lahko v ozkem in nestabilnem kajaku počasnejši kot v širšem touring modelu, ker:</p>
 <ul>
@@ -727,9 +752,9 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>dostave.</li>
 </ul>
 <p>Pred nakupom je zato treba potrditi končno ceno v košarici ali pri trgovcu.</p>
-<hr />
-<h2 id="7-najhitrejsi-modeli-po-kategorijah">7. Najhitrejši modeli po kategorijah</h2>
-<h3 id="7-1-napihljivi-enosed">7.1 Napihljivi enosed</h3>
+<hr/>
+<h2 id="7-najhitrejsi-modeli-po-kategorijah">A.6 Najhitrejši modeli po kategorijah</h2>
+<h3 id="7-1-napihljivi-enosed">A.6.1 Napihljivi enosed</h3>
 <p><strong>Grabner Escape 1</strong> ima v tej skupini največji ocenjeni hitrostni potencial:</p>
 <ul>
 <li>R: 5,2–6,2 km/h;</li>
@@ -737,7 +762,7 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>P: 8,3–9,5 km/h.</li>
 </ul>
 <p>Njegovi glavni prednosti sta dolžina 420 cm in razmeroma majhna širina 75 cm.</p>
-<h3 id="7-2-napihljivi-tandem">7.2 Napihljivi tandem</h3>
+<h3 id="7-2-napihljivi-tandem">A.6.2 Napihljivi tandem</h3>
 <p><strong>Grabner Escape 2</strong> je najhitrejši napihljivi tandem v izboru:</p>
 <ul>
 <li>R: 6,0–7,2 km/h;</li>
@@ -745,7 +770,7 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>P: 10,0–11,5 km/h.</li>
 </ul>
 <p>Z dolžino 500 cm in širino 75 cm je izrazito dolg in ozek za napihljiv tandem. Cena in manj družinska naravnanost pa ga postavljata v drug razred kot Gumotex Solar.</p>
-<h3 id="7-3-trd-enosed">7.3 Trd enosed</h3>
+<h3 id="7-3-trd-enosed">A.6.3 Trd enosed</h3>
 <p><strong>Nelo 560</strong> ima največji hitrostni potencial med enosedi:</p>
 <ul>
 <li>R: 7,0–8,5 km/h za veslača, ki ga lahko stabilno obvlada;</li>
@@ -753,7 +778,7 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>P: 13,5–15,5 km/h.</li>
 </ul>
 <p>Vendar je zaradi širine 45 cm primeren predvsem za zelo sposobne veslače. Za manj izkušenega uporabnika je lahko Nelo 520 hitrejša realna izbira, ker omogoča bolj učinkovit zavesljaj.</p>
-<h3 id="7-4-trd-tandem">7.4 Trd tandem</h3>
+<h3 id="7-4-trd-tandem">A.6.4 Trd tandem</h3>
 <p><strong>Nelo 600 SS2</strong> je najhitrejši tandem v celotnem izboru:</p>
 <ul>
 <li>R: 8,5–10,5 km/h za tehnično dovolj sposobno dvojico;</li>
@@ -761,9 +786,9 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>P: 14,8–17,0 km/h.</li>
 </ul>
 <p>To je lahek, dolg in hitrostno usmerjen surfski tandem. Ni neposreden nadomestek za družinski napihljivi kajak, ker zahteva bistveno več znanja, ravnotežja, previdnosti in logistike.</p>
-<hr />
-<h2 id="8-napihljivi-proti-trdim-kajakom">8. Napihljivi proti trdim kajakom</h2>
-<h3 id="8-1-zakaj-so-trdi-kajaki-praviloma-hitrejsi">8.1 Zakaj so trdi kajaki praviloma hitrejši</h3>
+<hr/>
+<h2 id="8-napihljivi-proti-trdim-kajakom">A.7 Napihljivi proti trdim kajakom</h2>
+<h3 id="8-1-zakaj-so-trdi-kajaki-praviloma-hitrejsi">A.7.1 Zakaj so trdi kajaki praviloma hitrejši</h3>
 <p>Trdi kajaki imajo navadno:</p>
 <ul>
 <li>bolj natančno oblikovan trup;</li>
@@ -774,7 +799,7 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>več možnosti za zelo ozko geometrijo.</li>
 </ul>
 <p>Pri enaki moči veslača je zato dober trd touring kajak pogosto približno <strong>1–3 km/h hitrejši</strong> od širšega napihljivega kajaka podobnega namena. Pri specializiranem surfskiju je lahko razlika še večja.</p>
-<h3 id="8-2-zakaj-je-napihljivi-kajak-vseeno-lahko-boljsa-izbira">8.2 Zakaj je napihljivi kajak vseeno lahko boljša izbira</h3>
+<h3 id="8-2-zakaj-je-napihljivi-kajak-vseeno-lahko-boljsa-izbira">A.7.2 Zakaj je napihljivi kajak vseeno lahko boljša izbira</h3>
 <p>Napihljivi kajak je lahko bistveno bolj praktičen zaradi:</p>
 <ul>
 <li>prevoza v avtomobilu brez strešnih nosilcev;</li>
@@ -787,8 +812,8 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>večnamenske družinske uporabe.</li>
 </ul>
 <p>Optimalni kajak zato ni nujno najhitrejši kajak, temveč tisti, ki uporabniku prinese največ dejansko preveslanih kilometrov in najmanj logističnih ovir.</p>
-<hr />
-<h2 id="9-gumotex-solar-kot-realno-sidro">9. Gumotex Solar kot realno sidro</h2>
+<hr/>
+<h2 id="9-gumotex-solar-kot-realno-sidro">A.8 Gumotex Solar kot realno sidro</h2>
 <p>Za Gumotex Solar sta bili uporabljeni tudi praktični meritvi:</p>
 <ul>
 <li>približno <strong>5 km/h pri sproščenem veslanju v dvoje</strong>;</li>
@@ -812,65 +837,26 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>možnostjo solo ali tandem uporabe;</li>
 <li>realno hitrostjo.</li>
 </ul>
-<hr />
-<h2 id="10-kaj-bi-pomenil-solar-foil">10. Kaj bi pomenil Solar Foil</h2>
-<p>Če bi nadgradnja <strong>Solar + hydrofoil kit</strong> omogočila normalno rekreativno povprečje okoli <strong>10 km/h</strong>, bi to pomenilo velik tehnološki preskok.</p>
-<p>V primerjavi z običajnim sproščenim Solarjem pri 5 km/h bi bila hitrost:</p>
-<ul>
-<li>približno dvakrat večja;</li>
-<li>čas za isto razdaljo približno prepolovljen;</li>
-<li>višja od večine klasičnih napihljivih tandemov;</li>
-<li>primerljiva z dobrimi trdimi touring kajaki;</li>
-<li>na spodnjem robu rekreativnega območja dvojnega surfskija Nelo 600 SS2.</li>
-</ul>
-<p>Primer za 20 km dolgo pot:</p>
+<hr/>
+<h2 id="10-kaj-bi-pomenil-solar-foil">A.9 Kaj lahko pomeni Solar Performance / Solar Foil</h2>
+<p>Solar Performance Platform nima enega zaklenjenega cilja 10 km/h. Pravilno vprašanje je, <strong>katera stopnja hitrosti, cene, dosega, mase in kompleksnosti ustvari dober izdelek za določenega kupca</strong>.</p>
+<p>Primer odprte produktne lestve za 20 km dolgo pot:</p>
 <div class="table-wrap"><table>
-<thead>
-<tr>
-  <th>Sistem</th>
-  <th style="text-align:right">Povp. hitrost</th>
-  <th style="text-align:right">Čas za 20 km</th>
-</tr>
-</thead>
+<thead><tr><th>Sistem oziroma raziskovalni razred</th><th style="text-align:right">Hitrost</th><th style="text-align:right">Čas za 20 km</th><th>Status</th></tr></thead>
 <tbody>
-<tr>
-  <td>Solar sproščeno</td>
-  <td style="text-align:right">5 km/h</td>
-  <td style="text-align:right">4 h 00 min</td>
-</tr>
-<tr>
-  <td>Solar hitro</td>
-  <td style="text-align:right">8 km/h</td>
-  <td style="text-align:right">2 h 30 min</td>
-</tr>
-<tr>
-  <td>Solar Foil cilj</td>
-  <td style="text-align:right">10 km/h</td>
-  <td style="text-align:right">2 h 00 min</td>
-</tr>
-<tr>
-  <td>Solar Foil + pomoč, hipotetično</td>
-  <td style="text-align:right">12 km/h</td>
-  <td style="text-align:right">1 h 40 min</td>
-</tr>
-</tbody>
-</table></div>
-<p>Toda doseganje 10 km/h samo z dodatkom foila ni samoumevno. Sistem mora rešiti:</p>
-<ul>
-<li>dovolj vzgona pri nizki hitrosti;</li>
-<li>stabilnost pri vzletu in pristanku;</li>
-<li>dodatni upor foila pred delnim razbremenjevanjem trupa;</li>
-<li>trdno pritrditev na mehak trup;</li>
-<li>nadzor višine in vpadnega kota;</li>
-<li>varnost pri plitvini in trku;</li>
-<li>smerno stabilnost;</li>
-<li>maso in ceno kita;</li>
-<li>enostavno montažo;</li>
-<li>transport v obstoječi torbi ali dodatnem kompaktnem paketu.</li>
-</ul>
-<p>Če bi bilo to doseženo pri ceni približno 1.000–1.200 EUR za retrofit kit, bi šlo za nov tržni razred: prenosljiv napihljivi touring kajak z bistveno višjo potovalno hitrostjo.</p>
-<hr />
-<h2 id="11-cena-proti-hitrosti">11. Cena proti hitrosti</h2>
+<tr><td>Solar sproščeno</td><td style="text-align:right">5 km/h</td><td style="text-align:right">4 h 00 min</td><td>USER-MEASURED sidro</td></tr>
+<tr><td>Solar hitro</td><td style="text-align:right">8 km/h</td><td style="text-align:right">2 h 30 min</td><td>USER-MEASURED hitri tandem</td></tr>
+<tr><td>Solar Foil human/adaptive</td><td style="text-align:right">7–10 km/h</td><td style="text-align:right">2 h 51 min–2 h 00 min</td><td>odprt raziskovalni razred</td></tr>
+<tr><td>Solar Foil + en motor</td><td style="text-align:right">10–15 km/h</td><td style="text-align:right">2 h 00 min–1 h 20 min</td><td>assist/performance razred</td></tr>
+<tr><td>Solar Foil + dual motor</td><td style="text-align:right">15–25+ km/h</td><td style="text-align:right">1 h 20 min–manj kot 48 min</td><td>premium high-speed raziskava</td></tr>
+</tbody></table></div>
+<p>Ti razponi niso obljube. So <strong>poročilni in produktni razredi</strong>, v katerih arena išče Pareto rešitve. Solar Foil pri 8 km/h je lahko dober izdelek, če stane približno 500 EUR, ostane lahek in zmanjša napor. Dualni sistem pri 20 km/h je lahko tehnično zanimiv, vendar predrag ali pretežak za množični trg.</p>
+<div class="callout green"><h3>BD-jev množični scenarij</h3><p>Če bi Solar za približno <strong>+500 EUR</strong> dobil normalno rekreativno hitrost približno <strong>8 km/h</strong>, ob ohranjeni zložljivosti in varnem veslanju brez baterije, bi to že ustvarilo jasno uporabno vrednost — tudi brez 10 km/h.</p></div>
+<p>Vsaka veja mora še vedno rešiti:</p>
+<ul><li>vzgonsko in uporno bilanco pri nizki ter visoki hitrosti;</li><li>stabilnost pri vzletu, delnem reliefu, zavijanju in pristanku;</li><li>nosilni okvir na mehkem trupu;</li><li>nadzor globine, incidence, flapa in površine;</li><li>plitvino, trk, ventilacijo, kavitacijo in varni fail-safe;</li><li>baterijo, termiko, doseg, maso, ceno, montažo in regulativo.</li></ul>
+<p>Če dostopen retrofit ne zmore dovolj, lahko OEM Solar ali Seawave spremeni nosilno pot, keel, togost, geometrijo in servisno arhitekturo. Zato arena ločuje kit od tovarniško integriranega izdelka.</p>
+<hr/>
+<h2 id="11-cena-proti-hitrosti">A.10 Cena proti hitrosti</h2>
 <p>Najdražji kajak ni nujno sorazmerno hitrejši. Cena pogosto vključuje:</p>
 <ul>
 <li>ročno izdelavo;</li>
@@ -902,8 +888,8 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>dejanski način uporabe;</li>
 <li>celotni strošek opreme.</li>
 </ol>
-<hr />
-<h2 id="12-omejitve-dokumenta">12. Omejitve dokumenta</h2>
+<hr/>
+<h2 id="12-omejitve-dokumenta">A.11 Omejitve dokumenta</h2>
 <p>Ta primerjava ni laboratorijski test vseh 20 kajakov z istimi veslači. Glavne omejitve so:</p>
 <ul>
 <li>različni proizvajalci ne merijo hitrosti po enakem standardu;</li>
@@ -919,8 +905,8 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>cene se lahko hitro spremenijo.</li>
 </ul>
 <p>Razpone je zato treba razumeti kot <strong>realistične orientacijske intervale</strong>, ne kot certificirane rezultate.</p>
-<hr />
-<h2 id="13-priporocena-uporaba-tabele">13. Priporočena uporaba tabele</h2>
+<hr/>
+<h2 id="13-priporocena-uporaba-tabele">A.12 Priporočena uporaba tabele</h2>
 <p>Tabela je posebej uporabna za naslednje odločitve:</p>
 <ul>
 <li>koliko hitrosti se realno pridobi s prehodom iz napihljivega na trdi kajak;</li>
@@ -931,13 +917,14 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <li>koliko je mogoče pridobiti z boljšim veslom in tehniko pred menjavo kajaka;</li>
 <li>ali je tandem za določeno posadko hitrejši in učinkovitejši od dveh enosedov.</li>
 </ul>
-<hr />
-<h2 id="14-sklep">14. Sklep</h2>
+<hr/>
+<h2 id="14-sklep">A.13 Sklep</h2>
 <p>Za običajnega rekreativca je realna povprečna hitrost večine uporabnih napihljivih kajakov približno <strong>5–7 km/h</strong>. Dobri trdi touring kajaki dvignejo ta razpon približno na <strong>6–8 km/h</strong>, zelo ozki surfski modeli pa lahko sposobnemu veslaču omogočijo <strong>8–10 km/h ali več</strong>.</p>
-<p>Pri resnih amaterjih se razlike povečajo, ker hitrejši trup učinkoviteje pretvori dodatno moč v hitrost. Pri vrhunskih veslačih je razpon od približno <strong>8 km/h v počasnejšem napihljivem kajaku</strong> do približno <strong>17 km/h v hitrostnem tandemskem surfskiju</strong>.</p>
-<p>Za Gumotex Solar je okoli <strong>5 km/h sproščeno</strong> in <strong>8 km/h zelo hitro</strong> realističen in dober rezultat. Nadgradnja, ki bi omogočila resnično vzdržno rekreativno hitrost <strong>10 km/h</strong>, bi Solar prestavila iz razreda praktičnih družinskih napihljivih kajakov v hitrostni razred dobrih trdih touring kajakov oziroma spodnji razred rekreativnih tandemskih surfskijev. To bi bila bistvena, tržno zanimiva inovacija.</p>
-<hr />
-<h2 id="15-viri-in-povezave">15. Viri in povezave</h2>
+<p>Pri resnih amaterjih se razlike povečajo, ker hitrejši trup učinkoviteje pretvori dodatno moč v hitrost. Pri vrhunskih veslačih je razpon od približno <strong>8 km/h v počasnejšem napihljivem kajaku</strong> do približno <strong>17 km/h v hitrostnem tandemskem surfskiju</strong> pri približno enournem tempu; sprinti so lahko hitrejši.</p>
+<p>Za Gumotex Solar je okoli <strong>5 km/h sproščeno</strong> in <strong>8 km/h zelo hitro</strong> realističen rezultat. Naslednja kategorija ni nujno en sam »Solar 10«. Lahko je dostopen Solar Foil pri 7–9 km/h, single-motor touring sistem pri 10–15 km/h ali premium dual-motor full-foil platforma pri 15–25+ km/h. Vsak izdelek mora zmagati na svoji Pareto kombinaciji hitrosti, dosega, cene, stabilnosti, prenosljivosti in varnosti.</p>
+<p>Najbolj zanimiva potencialna inovacija je zato integrirana platforma in dokazni postopek: <strong>isti trup + ista posadka + ista moč → no foil, fixed foil, adaptive foil</strong>, nato ločeno produktno vrednotenje za retrofit in OEM. To je močna raziskovalna in tržna smer, ne pa še potrjen izdelek.</p>
+<hr/>
+<h2 id="15-viri-in-povezave">A.14 Viri in povezave</h2>
 <h3 id="gumotex-ceska">Gumotex — Češka</h3>
 <ul>
 <li><a href="https://gumotexboats.eu/products/kajak-rush-1-cerna">Gumotex Rush 1</a></li>
@@ -977,19 +964,42 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
 <ul>
 <li><a href="https://www.canoeicf.com/sites/default/files/2022_icf_canoe_sprint_and_paracanoe_world_championships_halifax_-_media_guide.pdf">International Canoe Federation — Canoe Sprint in Paracanoe World Championships, media guide</a></li>
 </ul>
-<hr />
-<h2 id="16-status-podatkov">16. Status podatkov</h2>
+<hr/>
+
+<ul>
+<li><a href="https://bixpy.com/products/bixpy-k-1-motor">Bixpy K-1 — modularni električni motor za kajake in mala plovila</a></li>
+<li><a href="https://eu.fliteboard.com/">Fliteboard — serijski električni hydrofoil</a></li>
+<li><a href="https://manta5.com/">Manta5 — električno-pedalno hydrofoil kolo</a></li>
+<li><a href="https://human-powered-hydrofoils.com/hydrofoils/hydrofoil-kayak-flyak/">Flyak — human-powered hydrofoil kayak reference</a></li>
+<li><a href="https://patents.google.com/patent/US10279873B2/en">US10279873B2 — Assisted foil for watercraft</a></li>
+</ul>
+<h3 id="elektricni-foil-referencni-izdelki">Električni pogon, eFoil in hydrofoil reference</h3>
+<h2 id="16-status-podatkov">A.15 Status podatkov</h2>
 <ul>
 <li><strong>Mere, modeli in osnovne cene:</strong> povzeti iz navedenih strani proizvajalcev oziroma domačih prodajnih prikazov.</li>
 <li><strong>Hitrosti R/A/P:</strong> konservativne inženirske ocene, ne uradno certificirane meritve proizvajalcev.</li>
 <li><strong>Praktično sidro Solar 5/8 km/h:</strong> uporabniška realna meritev, uporabljena za umerjanje ocene.</li>
 <li><strong>Valuta:</strong> EUR; pri čeških cenah je bila uporabljena informativna pretvorba iz CZK.</li>
 <li><strong>Veljavnost cen:</strong> informativna na dan 3. avgusta 2026.</li>
-</ul>
-<div class="footer">Celovit projektni HTML: sedanji trg + Solar Performance Platform + KPA v0.4.1 Deep + KPA v0.4.4 full-foil / dual-motor high-speed raziskava. Raziskava je odprta in se nadaljuje.</div></main>
+<li><strong>Tržna/integracijska vrzel:</strong> preliminarni javni pregled, ne patentno ali pravno mnenje; stanje na dan 3. avgusta 2026.</li><li><strong>KPA v0.4.4:</strong> reduced-order model z namensko strict-clean blokado, dokler niso na voljo izmerjene high-speed propulsor in strukturne mape.</li></ul>
+<section id="zgodovina-kpa">
+<div class="part-label">DEL III · Razvojna zgodovina</div>
+<h2>Zgodovina KPA Python aren</h2>
+<p>Spodaj niso našteti vsi majhni hotfixi. Prikazane so spremembe, ki so dejansko spremenile raziskovalno vprašanje, fiziko, produktno logiko ali dokazno disciplino.</p>
+<div class="timeline">
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.1</span><span class="timeline-date">prvi široki scout</span></div><h3>Ali lahko sploh najdemo uporabne kombinacije kajaka, človeka, motorja in foila?</h3><p>Prva arena je odprla širok prostor človeškega pogona, elektrike, pedal, trupov in foilov ter pokazala ponavljajoč signal tandem touring + manjši foil/assist + elektrika.</p><details class="project-details"><summary>Problem → nadgradnja → lekcija</summary><div class="timeline-lesson"><div><b>Problem</b>Fiksni trupi, generični paddle/pedal modeli in preveč enoten score.</div><div><b>Nadgradnja</b>Prvi deterministični Standard/Deep/Target-Hours scout.</div><div><b>Lekcija</b>Prostor je obetaven, vendar top rezultat brez realnih baseline-ov še ni produkt.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.2 / v0.2.1</span><span class="timeline-date">crew–paddle–hull–foil expansion</span></div><h3>Eksplicitne posadke, vesla, pedali, kontinuirni trupi in fizikalni foil</h3><p>Dodani so bili 12 crew strategij, geometrija vesla, pedalni pogoni, električni režimi, kontinuirni hull/foil model, misijski grid, exact replay, lossless ledgers in robusten target-hours runtime.</p><details class="project-details"><summary>Zakaj je nastala naslednja verzija</summary><div class="timeline-lesson"><div><b>Problem</b>Fishing in drugi lahki cilji so lahko zasegli globalni leaderboard; Windows heartbeat je lahko prekinil dolg run.</div><div><b>Nadgradnja</b>Per-mission evidence lanes, engineering/strict clean, runtime Hotfix1 in 28,4 milijona agregiranih evaluacij.</div><div><b>Lekcija</b>Globalni score je prišel v plateau, dragi 1.000 W sistemi pa so zasegli vrh. Potrebna je bila tržna in lastniška razcepitev.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.3</span><span class="timeline-date">recreational / retrofit / DIY / professional</span></div><h3>Solar 5/8 km/h sidro in ločitev complete izdelka od nadgradnje</h3><p>V0.3 je uvedla BD-jevo realno Solar sidro, complete-vs-retrofit stroške, ownership profile, DIY/3D print, mount strukturo, cenovne razrede, Solar matched študije in ločene rekreativne ter profesionalne lane.</p><details class="project-details"><summary>Ključna sprememba vprašanja</summary><div class="timeline-lesson"><div><b>Problem</b>EUR 300 kit in EUR 300 celoten kajak sta bila v istem cenovnem pogledu.</div><div><b>Nadgradnja</b>Market × purchase × manufacturing tensor, component costs in price-class leaderboards.</div><div><b>Lekcija</b>Ne iščemo enega zmagovalca, temveč različne izdelke za različne lastnike in trge.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.4</span><span class="timeline-date">all-space product tensor</span></div><h3>Solar je pomembno sidro, ne meja celotne arene</h3><p>Arena je postala market-neutral all-space sistem z osmimi trgi, zaščitenimi specialističnimi tracki, generičnimi matched motor×foil kontrolami in večobjektivnimi produktnimi ter Pareto pogledi.</p><details class="project-details"><summary>Kaj je bilo pridobljeno</summary><div class="timeline-lesson"><div><b>Problem</b>Rekreativna prioriteta je lahko preozko obravnavala performance, professional, rescue in commercial trge.</div><div><b>Nadgradnja</b>All-space charter, local matched baseline in architecture-specific tracks.</div><div><b>Lekcija</b>Foil, motor ali pedal se morajo dokazati v konkretni celici trga, ne na enem univerzalnem leaderboardu.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.4.1</span><span class="timeline-date">correctness + variable-foil scout</span></div><h3>Popravljene nekompatibilne arhitekture in dodanih deset variable-foil variant</h3><p>Dodani so fixed, two-position, incidence, flap, V, ladder, manual handle, wand, hydraulic in servo sistemi; no-foil takeoff semantika, Solar scope in useful-motion gate so bili popravljeni.</p><details class="project-details"><summary>Najpomembnejša samokorekcija</summary><div class="timeline-lesson"><div><b>Problem</b>Variable foil je bil pretežno naknadni arhitekturni overlay, ne pravi regulator v fizikalni zanki. Paket je potreboval tudi HOTFIX1 zaradi manjkajočih runnerjev.</div><div><b>Nadgradnja</b>500.000-task Deep in podroben code audit sta razkrila, da hitrost/moč ne krmilita dejanske hidrodinamike dovolj globoko.</div><div><b>Lekcija</b>Negativni rezultat v0.4.1 ni mogel zavrniti BD-jeve adaptivne ideje, ker je ni zares simuliral.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.4.2</span><span class="timeline-date">true adaptive control + Gumotex platform</span></div><h3>Hitrost in moč sta prvič neposredno krmilili globino, incidenco, flap in površino</h3><p>V vsakem časovnem koraku so se ponovno izračunali foil lift/drag, strut drag, ventilacija, hull relief, hitrost in stabilnost. Dodane so bile Solar/Seawave retrofit, OEM, shared-platform in manufacturer-economics poti.</p><details class="project-details"><summary>Zakaj 10 km/h ni mogel ostati edini cilj</summary><div class="timeline-lesson"><div><b>Problem</b>Flagship 10 km/h je preveč zožil produktno vrednost.</div><div><b>Nadgradnja</b>Solar Speed 7/8/9/10 in Seawave 10/11 so postali ločeni target cells, ne obljube.</div><div><b>Lekcija</b>Dober produkt je Pareto rešitev; 8 km/h za +500 EUR je lahko boljši množični izdelek kot drag 10 km/h sistem.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.4.3</span><span class="timeline-date">European-baseline open ladder</span></div><h3>Dvajset evropskih baseline kajakov in odprti human/single/dual motor razredi</h3><p>V areno je vstopil TOP 20 evropski referenčni nabor. Človeški kandidati so dobili same-skill R/A/P primerjave, motorni kandidati speed-class primerjave, hitrost 8/10/12/20/25+ pa je postala odprt izhod.</p><details class="project-details"><summary>Nova dokazna atribucija</summary><div class="timeline-lesson"><div><b>Problem</b>Motorni rezultat je lahko izgledal kot foil zmaga, drugi motor pa kot arhitekturna korist samo zato, ker je dodal moč.</div><div><b>Nadgradnja</b>No-foil / fixed / adaptive primerjave ter equal-total-power single-vs-dual controls.</div><div><b>Lekcija</b>Najhitrejši kandidat ni nujno najboljši foil kandidat in 10 km/h ni meja uspeha.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">KPA v0.4.4</span><span class="timeline-date">full-foil / dual-motor high-speed</span></div><h3>Odprta 1,5–6,0 kW lestev, variable-area full foil in več časovnih meril</h3><p>V0.4.4 je ločila 60-min endurance, 20-min fast, 200-m average in 10-s peak. Full foil uporablja veliko launch površino ter kasnejše unload/retract krmiljenje. Solar je v enem matched reduced-order kontekstu presegel 20 km/h in premagal same-power no-foil kontrolo.</p><details class="project-details"><summary>Kaj v0.4.4 pomeni — in česa ne</summary><div class="timeline-lesson"><div><b>Problem</b>Prejšnji prostor je lahko implicitno dušil 20+ km/h in ni dovolj resno modeliral polne dualne moči.</div><div><b>Nadgradnja</b>Dualni 1,5–6 kW pogon, high-speed load frame, sprint sanity in lossless matched ledgers.</div><div><b>Lekcija</b>20+ km/h je modelno odprta veja, vendar strict-clean ostaja 0 brez izmerjenih motornih map, CFD/VOF, FEA/FSI in prototipa.</div></div></details></article>
 </div>
-<a class="backtop" href="#top" aria-label="Na vrh">↑</a>
-
+<div class="callout green"><h3>Zakaj je ta zgodovina pomembna</h3><p>Nobena večja verzija ni bila samo »več vrstic«. Vsaka je popravila preozko vprašanje ali nepravilno atribucijo, ki jo je odkrila prejšnja. Prav to — seed → bridge → test → rezultat → močnejši naslednji test — je ena glavnih vrednosti KPA postopka.</p></div>
+</section><div class="footer">Celovit projektni HTML: produktna teza + korist KPA + preliminarna tržna vrzel + evropski trg + KPA v0.4.1 Deep + KPA v0.4.4 full-foil/dual-motor raziskava + zgodovina Python aren. Raziskava je odprta in se nadaljuje.</div></main>
+</div>
+<a aria-label="Na vrh" class="backtop" href="#top">↑</a>
 <script>
 (function(){
   'use strict';
@@ -1091,6 +1101,5 @@ Kjer so bile na voljo smiselne praktične meritve, so bile uporabljene kot sidra
   });
 })();
 </script>
-
 </body>
 </html>
