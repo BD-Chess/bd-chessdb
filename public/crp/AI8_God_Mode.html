@@ -66,7 +66,7 @@ p{margin:0 0 17px;color:var(--muted2)}strong{color:var(--text)}
 .arena{display:grid;grid-template-columns:100px 1.25fr 1.5fr;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:25px 0}.arena>div{padding:15px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.91rem;color:var(--muted2)}.arena>div:nth-child(3n){border-right:0}.arena .head{background:rgba(255,255,255,.035);font:600 .66rem/1.35 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.arena .regime{font:600 .75rem/1.3 'IBM Plex Mono',monospace;color:var(--cyan)}.arena .end{border-bottom:0}
 ul.clean{margin:10px 0 0;padding-left:20px;color:var(--muted2)}ul.clean li{margin:8px 0}.quote{margin:31px 0;border-left:3px solid var(--violet);padding:12px 0 12px 25px}.quote p{font-family:'Cormorant Garamond',serif;font-size:clamp(1.35rem,3vw,1.9rem);line-height:1.42;color:var(--text);margin:0}.quote .by{font:500 .66rem/1.5 'IBM Plex Mono',monospace;color:var(--muted);margin-top:10px}
 .related{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.related a{text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}.related a:hover{border-color:var(--line2)}.related strong{display:block;margin-bottom:6px}.related span{color:var(--muted);font-size:.9rem}
-.sources a{word-break:break-word}.source-note{font-size:.82rem;color:var(--muted);margin-top:18px}
+.sources a{word-break:break-word}.source-note{font-size:.82rem;color:var(--muted);margin-top:18px}.related-work-map{margin-top:24px}.related-work-body{padding:0 12px 12px}.related-work-body h3{font:600 .68rem/1.4 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--gold);margin:16px 0 10px}.related-work-body .related{margin-bottom:14px}.related-work-body .related:last-child{margin-bottom:0}
 footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-between;gap:24px;color:var(--muted);font-size:.83rem}.footer-title{color:var(--text);font-weight:600;margin-bottom:5px}
 @media(max-width:980px){.toc-grid{grid-template-columns:repeat(2,1fr)}.grid.five{grid-template-columns:repeat(2,1fr)}.grid.three,.related{grid-template-columns:1fr 1fr}.section-head{grid-template-columns:1fr;gap:10px}.compare{grid-template-columns:130px repeat(4,1fr)}}
 @media(max-width:700px){.topbar-inner{align-items:flex-start;padding:12px 0}.nav a{display:none}.hero{padding:68px 0 45px}h1{font-size:3.25rem}.grid.two,.grid.three,.grid.five,.related{grid-template-columns:1fr}.compare,.permission,.arena{display:block}.compare .head,.permission .head,.arena .head{display:none}.cell,.permission>div,.arena>div{border-right:0!important;border-bottom:1px solid var(--line)}.cell.rowhead,.permission .level,.arena .regime{border-top:2px solid var(--line);background:rgba(255,255,255,.025)}.formula code{white-space:normal}.footer-inner{display:block}.footer-inner>div+div{margin-top:18px}.toc-grid{grid-template-columns:1fr}}
@@ -138,7 +138,15 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     "https://www.mdlxdcc.org/crp/CodeCapsules.html",
     "https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547",
     "https://docs.x.ai/developers/faq/security",
-    "https://noqta.tn/en/news/xai-grok-build-code-upload-privacy-incident-2026"
+    "https://noqta.tn/en/news/xai-grok-build-code-upload-privacy-incident-2026",
+    "https://web.mit.edu/Saltzer/www/publications/protection/index.html",
+    "https://genai.owasp.org/llmrisk/llm062025-excessive-agency/",
+    "https://developers.openai.com/codex/sandboxing/auto-review",
+    "https://code.claude.com/docs/en/permissions",
+    "https://geminicli.com/docs/reference/policy-engine/",
+    "https://arxiv.org/abs/2605.14859",
+    "https://arxiv.org/abs/2605.11003",
+    "https://arxiv.org/abs/2512.11147"
   ]
 }
 </script>
@@ -526,6 +534,26 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
         <a href="https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547" rel="noopener noreferrer"><strong>Cereblab wire analysis</strong><span>Primary technical account of what Grok Build 0.2.93 transmitted.</span></a>
         <a href="https://docs.x.ai/developers/faq/security" rel="noopener noreferrer"><strong>xAI security FAQ</strong><span>Current official retention and ZDR documentation for Grok Build.</span></a>
       </div>
+      <div class="callout violet"><div class="label">Related-work boundary</div><p>These sources do not validate AI8, and AI8 does not claim to invent least privilege. They show that permission inference, sandboxing, approval gates, scope control, and runtime authorization are active engineering and research problems. The specific AI8 proposal is to place permission allocation, contraction, and the governor itself inside a matched-budget, auditable arena.</p></div>
+      <details class="architecture-map related-work-map"><summary>External permission-governance map · 8 primary / official sources</summary><div class="related-work-body">
+        <h3>Foundations and risk framing</h3>
+        <div class="related">
+          <a href="https://web.mit.edu/Saltzer/www/publications/protection/index.html" rel="noopener noreferrer"><strong>Saltzer &amp; Schroeder — The Protection of Information in Computer Systems</strong><span>Foundational source for least privilege, separation of privilege, complete mediation, and fail-safe defaults.</span></a>
+          <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" rel="noopener noreferrer"><strong>OWASP LLM06:2025 — Excessive Agency</strong><span>Current risk framing for excessive functionality, permissions, and autonomy in LLM-based systems.</span></a>
+        </div>
+        <h3>Deployed permission baselines</h3>
+        <div class="related">
+          <a href="https://developers.openai.com/codex/sandboxing/auto-review" rel="noopener noreferrer"><strong>OpenAI Codex Auto-review</strong><span>A separate reviewer agent evaluates eligible sandbox-boundary escalation requests while the main agent remains under the same sandbox policy.</span></a>
+          <a href="https://code.claude.com/docs/en/permissions" rel="noopener noreferrer"><strong>Claude Code permissions</strong><span>Fine-grained allow / ask / deny rules combined with OS-level sandboxing as complementary defense-in-depth layers.</span></a>
+          <a href="https://geminicli.com/docs/reference/policy-engine/" rel="noopener noreferrer"><strong>Gemini CLI policy engine</strong><span>Priority-based allow, deny, or ask_user decisions for tool calls; a deployed policy-engine baseline.</span></a>
+        </div>
+        <h3>Research benchmarks and enforcement</h3>
+        <div class="related">
+          <a href="https://arxiv.org/abs/2605.14859" rel="noopener noreferrer"><strong>AuthBench — Do Coding Agents Understand Least-Privilege Authorization?</strong><span>120 terminal tasks testing file-level read / write / execute policy inference; frontier models simultaneously under-grant and over-grant.</span></a>
+          <a href="https://arxiv.org/abs/2605.11003" rel="noopener noreferrer"><strong>The Authorization–Execution Gap</strong><span>Frames divergence between intended authorization and executed trajectories across tools, persistent state, and multi-agent handoffs.</span></a>
+          <a href="https://arxiv.org/abs/2512.11147" rel="noopener noreferrer"><strong>MiniScope</strong><span>A least-privilege framework for tool-calling agents that reconstructs permission hierarchies and reports 1–6% latency overhead.</span></a>
+        </div>
+      </div></details>
       <p class="source-note">The Grok Build incident is used here only as a real-world trigger for thinking about privileged agents. This page does not claim that the model caused the upload, that the incident reflected self-preservation, or that the exact behavior persists in current versions.</p>
     </div>
     <div class="lang sl">
@@ -543,6 +571,26 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
         <a href="https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547" rel="noopener noreferrer"><strong>Cereblab wire analiza</strong><span>Primarni tehnični zapis o tem, kaj je pošiljal Grok Build 0.2.93.</span></a>
         <a href="https://docs.x.ai/developers/faq/security" rel="noopener noreferrer"><strong>xAI varnostni FAQ</strong><span>Trenutna uradna dokumentacija o hrambi in ZDR za Grok Build.</span></a>
       </div>
+      <div class="callout violet"><div class="label">Meja povezanega dela</div><p>Ti viri ne potrjujejo AI8 in AI8 ne trdi, da je izumil načelo najmanjših privilegijev. Kažejo, da so sklepanje o dovoljenjih, sandboxing, odobritvene meje, nadzor obsega in runtime avtorizacija dejavni inženirski in raziskovalni problemi. Poseben predlog AI8 je, da se razporejanje in krčenje dovoljenj ter sam governor postavijo v matched-budget, preverljivo areno.</p></div>
+      <details class="architecture-map related-work-map"><summary>Zunanji zemljevid upravljanja dovoljenj · 8 primarnih / uradnih virov</summary><div class="related-work-body">
+        <h3>Temelji in varnostni okvir</h3>
+        <div class="related">
+          <a href="https://web.mit.edu/Saltzer/www/publications/protection/index.html" rel="noopener noreferrer"><strong>Saltzer &amp; Schroeder — The Protection of Information in Computer Systems</strong><span>Temeljni vir za najmanjše privilegije, ločitev privilegijev, preverjanje vsakega dostopa in varne privzete nastavitve.</span></a>
+          <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" rel="noopener noreferrer"><strong>OWASP LLM06:2025 — Excessive Agency</strong><span>Sedanji varnostni okvir za pretirano funkcionalnost, dovoljenja in avtonomijo v sistemih na osnovi LLM.</span></a>
+        </div>
+        <h3>Implementirani permission baselini</h3>
+        <div class="related">
+          <a href="https://developers.openai.com/codex/sandboxing/auto-review" rel="noopener noreferrer"><strong>OpenAI Codex Auto-review</strong><span>Ločen reviewer agent ocenjuje primerne zahteve za prestop meje sandboxa, glavni agent pa ostane pod istim sandbox pravilnikom.</span></a>
+          <a href="https://code.claude.com/docs/en/permissions" rel="noopener noreferrer"><strong>Claude Code permissions</strong><span>Finozrnata pravila allow / ask / deny skupaj z OS-level sandboxingom kot dopolnjujoča se defense-in-depth sloja.</span></a>
+          <a href="https://geminicli.com/docs/reference/policy-engine/" rel="noopener noreferrer"><strong>Gemini CLI policy engine</strong><span>Prioritetne odločitve allow, deny ali ask_user za tool calle; implementiran baseline policy engina.</span></a>
+        </div>
+        <h3>Raziskovalni benchmarki in enforcement</h3>
+        <div class="related">
+          <a href="https://arxiv.org/abs/2605.14859" rel="noopener noreferrer"><strong>AuthBench — Do Coding Agents Understand Least-Privilege Authorization?</strong><span>120 terminalskih nalog za file-level read / write / execute politike; frontier modeli hkrati premalo in preveč dovoljujejo.</span></a>
+          <a href="https://arxiv.org/abs/2605.11003" rel="noopener noreferrer"><strong>The Authorization–Execution Gap</strong><span>Opredeli razhajanje med nameravano avtorizacijo in izvršeno trajektorijo prek orodij, trajnega stanja in multi-agent predaj.</span></a>
+          <a href="https://arxiv.org/abs/2512.11147" rel="noopener noreferrer"><strong>MiniScope</strong><span>Least-privilege okvir za tool-calling agente, ki rekonstruira hierarhije dovoljenj in poroča o 1–6 % latency overheadu.</span></a>
+        </div>
+      </div></details>
       <p class="source-note">Incident Grok Build je tukaj uporabljen samo kot resnični povod za razmislek o privilegiranih agentih. Stran ne trdi, da je upload povzročil model, da je incident izražal samoohranitev ali da enako vedenje obstaja v trenutnih verzijah.</p>
     </div>
   </div>
