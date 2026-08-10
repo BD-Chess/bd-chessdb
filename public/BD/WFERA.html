@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="sl" data-reader-size="2">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="dark"/>
+<title>WFERA — večpasovni energetski valobran · stanje v0.4.1 in načrt v0.5</title>
+<meta name="description" content="WFERA Water-Flow Energy-Recovery Arena: trenutno stanje v0.4.1, 667.800-evaluacijski Master, hibridne gravitacijske lopute, RHP ugotovitve, svetovni WEC baseline-i ter načrt v0.5 Global Baselines & Hybrid Synthesis."/>
+<meta name="author" content="BD × GPT × C · AIM³ / RHP / 8Z"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="WFERA — večpasovni hibridni energetski valobran"/>
+<meta property="og:description" content="Valovna zaščita + energija + modularni retrofit. Trenutni v0.4.1 dokazi, RHP ugotovitve in v0.5 hibridna sinteza."/>
+<style>
+:root{
+  --bg:#04100c;--bg2:#071a13;--panel:#0d2119;--panel2:#0a1a14;
+  --text:#ecf8f0;--muted:#abc8b7;--dim:#718f7d;--line:#214536;
+  --green:#59e39c;--lime:#b5f36b;--teal:#43d7c0;--mint:#9cf3cc;
+  --gold:#f5c86a;--amber:#f1a95c;--red:#ff7e84;--blue:#73b7ff;
+  --shadow:0 22px 65px rgba(0,0,0,.42);--radius:18px;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"JetBrains Mono",monospace;
+  --reader-text:17px;--reader-small:12px;--reader-h1:clamp(38px,6.5vw,74px);--reader-h2:clamp(27px,3.5vw,43px)
+}
+html[data-reader-size="0"]{--reader-text:14px;--reader-small:10.5px;--reader-h1:clamp(31px,5.4vw,58px);--reader-h2:clamp(22px,3vw,34px)}
+html[data-reader-size="1"]{--reader-text:15.5px;--reader-small:11px;--reader-h1:clamp(34px,5.9vw,65px);--reader-h2:clamp(24px,3.2vw,38px)}
+html[data-reader-size="2"]{--reader-text:17px;--reader-small:12px;--reader-h1:clamp(38px,6.5vw,74px);--reader-h2:clamp(27px,3.5vw,43px)}
+html[data-reader-size="3"]{--reader-text:19px;--reader-small:13px;--reader-h1:clamp(44px,7vw,84px);--reader-h2:clamp(30px,4vw,49px)}
+html[data-reader-size="4"]{--reader-text:21px;--reader-small:14px;--reader-h1:clamp(49px,7.8vw,94px);--reader-h2:clamp(34px,4.5vw,56px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg);max-width:100%;overflow-x:hidden}
+body{margin:0;max-width:100%;overflow-x:hidden;color:var(--text);font-family:var(--sans);font-size:var(--reader-text);line-height:1.68;background:
+ radial-gradient(circle at 12% -6%,rgba(89,227,156,.17),transparent 31%),
+ radial-gradient(circle at 92% 4%,rgba(67,215,192,.11),transparent 28%),
+ radial-gradient(circle at 51% 0%,rgba(181,243,107,.055),transparent 26%),
+ linear-gradient(180deg,var(--bg),var(--bg2));}
+a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
+strong{color:#fff} code,kbd,.mono{font-family:var(--mono)}
+code{font-size:.9em;padding:.12em .42em;border:1px solid rgba(89,227,156,.20);border-radius:7px;background:rgba(89,227,156,.07);color:#e9fff3}
+.topbar{position:sticky;top:0;z-index:70;border-bottom:1px solid rgba(89,227,156,.17);background:rgba(4,16,12,.90);backdrop-filter:blur(17px)}
+.topbar-inner{width:min(1260px,calc(100% - 32px));margin:auto;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:10px 0}
+.brand{font:850 12px/1 var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--lime);white-space:nowrap}
+.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.actions a{font:700 11px/1 var(--mono);padding:8px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.023)}
+.actions a:hover{border-color:var(--green);color:var(--green);text-decoration:none;background:rgba(89,227,156,.06)}
+.layout{width:min(1260px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:27px;padding:34px 0 76px}
+.sidebar{position:sticky;top:74px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:rgba(10,26,20,.88);box-shadow:var(--shadow);padding:18px}
+.sidebar h2{font:850 12px/1.2 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
+.sidebar nav{display:grid;gap:2px}.sidebar nav a{padding:7px 9px;border-radius:9px;color:var(--muted);font-size:13px;line-height:1.3}.sidebar nav a:hover{background:rgba(89,227,156,.07);color:var(--green);text-decoration:none}.sidebar nav a.toc-sub{padding-left:22px;font-size:12px;color:var(--dim)}
+.article{min-width:0}.hero{padding:37px 35px 31px;border:1px solid rgba(89,227,156,.23);border-radius:25px;background:linear-gradient(145deg,rgba(31,102,68,.25),rgba(10,26,20,.96));box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-85px;bottom:-110px;width:300px;height:300px;border-radius:50%;background:rgba(67,215,192,.085);filter:blur(7px)}
+.hero h1{position:relative;z-index:1;margin:0;font-size:var(--reader-h1);line-height:.99;letter-spacing:-.052em;color:#fff}.hero h1 span{display:block;color:var(--green)}
+.hero h2{position:relative;z-index:1;margin:12px 0 0;color:var(--lime);font-size:clamp(18px,2.5vw,29px);font-weight:680;line-height:1.28}
+.hero-kicker{position:relative;z-index:1;font:850 var(--reader-small)/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+.lead{position:relative;z-index:1;font-size:clamp(18px,2.05vw,23px);line-height:1.58;color:#d1e8d8;max-width:1010px}
+.status-row{position:relative;z-index:1;display:flex;gap:7px;flex-wrap:wrap;margin:17px 0 4px}.badge{font:760 10px/1 var(--mono);letter-spacing:.045em;border:1px solid var(--line);border-radius:999px;padding:7px 9px;color:var(--muted);background:rgba(255,255,255,.025)}
+.badge.clean{color:var(--green);border-color:rgba(89,227,156,.35);background:rgba(89,227,156,.07)}.badge.warn{color:var(--gold);border-color:rgba(245,200,106,.35);background:rgba(245,200,106,.07)}.badge.research{color:var(--teal);border-color:rgba(67,215,192,.34);background:rgba(67,215,192,.07)}.badge.hold{color:var(--red);border-color:rgba(255,126,132,.34);background:rgba(255,126,132,.07)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:21px 0 29px}.metric-card{padding:17px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(24,61,44,.87),rgba(7,20,15,.96))}.metric-card b{display:block;font:850 clamp(22px,3vw,34px)/1.05 var(--mono);color:#fff;margin-bottom:7px}.metric-card span{display:block;font:750 10px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.article h2{margin:53px 0 18px;padding-top:11px;font-size:var(--reader-h2);line-height:1.14;letter-spacing:-.03em;color:#fff}.article h3{margin:31px 0 12px;font-size:clamp(21px,2.3vw,29px);line-height:1.2;color:var(--green)}.article h4{margin:25px 0 9px;color:var(--lime)}.article p,.article li{color:var(--muted)}.article blockquote{margin:20px 0;padding:16px 19px;border-left:4px solid var(--green);border-radius:0 12px 12px 0;background:rgba(89,227,156,.055);color:var(--muted)}.article ul,.article ol{padding-left:1.35em}.article li{margin:.38em 0}
+.grid-2,.grid-3,.grid-4{display:grid;gap:14px;margin:18px 0}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.info-card,.callout,.evidence-panel,.diagram-card,.roadmap,.timeline-item{border:1px solid var(--line);border-radius:16px;background:rgba(10,26,20,.80);box-shadow:0 13px 38px rgba(0,0,0,.20)}.info-card{padding:20px}.info-card h3{margin:0 0 9px!important;font-size:21px!important}.info-card p{margin:7px 0}.info-card ul{margin-bottom:0}
+.callout{margin:20px 0;padding:20px 22px;border-color:rgba(89,227,156,.31);background:linear-gradient(135deg,rgba(89,227,156,.09),rgba(67,215,192,.025))}.callout.gold{border-color:rgba(245,200,106,.34);background:linear-gradient(135deg,rgba(245,200,106,.10),rgba(89,227,156,.025))}.callout.red{border-color:rgba(255,126,132,.35);background:linear-gradient(135deg,rgba(255,126,132,.095),rgba(241,169,92,.025))}.callout.teal{border-color:rgba(67,215,192,.34);background:linear-gradient(135deg,rgba(67,215,192,.09),rgba(181,243,107,.025))}.callout h3{margin:0 0 7px!important;font-size:21px!important}.callout p:last-child{margin-bottom:0}
+.evidence-panel{margin:21px 0 29px;padding:20px;background:linear-gradient(145deg,rgba(21,52,39,.86),rgba(7,19,14,.94))}.evidence-panel h3{margin:0 0 12px!important;font-size:21px!important;color:#fff!important}.evidence-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.evidence-item{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.018)}.evidence-item b{display:block;font:800 10px/1.3 var(--mono);letter-spacing:.07em;margin-bottom:7px}.evidence-item p{margin:0;font-size:13px;color:var(--muted)}.evidence-item.test b{color:var(--green)}.evidence-item.model b{color:var(--teal)}.evidence-item.bridge b{color:var(--gold)}.evidence-item.open b{color:var(--red)}
+.diagram-card{padding:18px;overflow:hidden;background:radial-gradient(circle at 50% 0%,rgba(89,227,156,.07),transparent 45%),rgba(8,23,17,.90)}.diagram-card svg{display:block;width:100%;height:auto;max-height:390px}.diagram-caption{font-size:13px;color:var(--dim);margin:11px 3px 0}
+.value-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0}.value-flow div{position:relative;padding:14px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(89,227,156,.035);text-align:center;color:var(--muted);font-size:13px}.value-flow div b{display:block;color:#fff;margin-bottom:4px}.value-flow div:not(:last-child)::after{content:'→';position:absolute;right:-9px;top:50%;transform:translateY(-50%);z-index:2;color:var(--lime);font-weight:900}
+.table-wrap{overflow:auto;margin:18px 0 29px;border:1px solid var(--line);border-radius:16px;background:rgba(4,13,9,.76);box-shadow:var(--shadow)}table{width:100%;border-collapse:separate;border-spacing:0;min-width:900px;font-size:14px}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-right:1px solid rgba(33,69,54,.75);border-bottom:1px solid rgba(33,69,54,.75)}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{position:sticky;top:0;z-index:2;font:800 11px/1.25 var(--mono);letter-spacing:.075em;text-transform:uppercase;color:var(--gold);background:#102a20}tbody tr:nth-child(even){background:rgba(255,255,255,.018)}tbody tr:hover{background:rgba(89,227,156,.05)}td:first-child{font-weight:700;color:#e9fff2}
+.small{font-size:13px;color:var(--dim)!important}.source-note{font-size:13px;color:var(--dim)!important;border-left:3px solid rgba(67,215,192,.38);padding-left:12px}.part-label{display:inline-block;margin:43px 0 4px;padding:6px 10px;border:1px solid rgba(245,200,106,.28);border-radius:999px;background:rgba(245,200,106,.065);font:800 10px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--gold)}
+.method-ladder{display:grid;gap:10px;margin:18px 0}.method{display:grid;grid-template-columns:230px 1fr;gap:15px;padding:15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.018)}.method b{color:var(--green);font-family:var(--mono)}
+.hybrid-grammar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:20px 0}.grammar-cell{position:relative;padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,rgba(25,61,45,.82),rgba(6,19,13,.95));min-height:140px}.grammar-cell b{display:block;color:var(--lime);font-family:var(--mono);margin-bottom:7px}.grammar-cell:not(:last-child)::after{content:'×';position:absolute;right:-12px;top:45%;z-index:3;color:var(--gold);font-size:22px;font-weight:900}
+.roadmap{padding:20px}.roadmap h3{margin:0 0 12px!important}.step{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:13px 0;border-top:1px solid var(--line)}.step:first-of-type{border-top:0}.step b{font:800 12px/1.35 var(--mono);color:var(--gold)}.step span{color:var(--muted)}
+details.project-details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background:rgba(5,16,11,.63);overflow:hidden}details.project-details summary{cursor:pointer;padding:13px 16px;color:var(--green);font-weight:780;list-style:none}details.project-details summary::-webkit-details-marker{display:none}details.project-details summary:after{content:'+';float:right;color:var(--lime)}details.project-details[open] summary:after{content:'−'}details.project-details>div{padding:0 16px 15px;border-top:1px solid var(--line)}
+.timeline{position:relative;margin:24px 0 0;padding-left:28px}.timeline:before{content:'';position:absolute;left:8px;top:7px;bottom:8px;width:2px;background:linear-gradient(var(--green),rgba(67,215,192,.17))}.timeline-item{position:relative;margin:0 0 16px;padding:18px 19px;background:rgba(10,26,20,.80)}.timeline-item:before{content:'';position:absolute;left:-26px;top:23px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:3px solid var(--green);box-shadow:0 0 0 5px rgba(89,227,156,.08)}.timeline-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.timeline-version{font:900 12px/1 var(--mono);letter-spacing:.09em;color:var(--green)}.timeline-date{font:750 10px/1 var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em}.timeline-item h3{margin:8px 0 7px!important;font-size:22px!important;color:#fff!important}.timeline-item>p{margin:0}.timeline-lesson{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.timeline-lesson div{padding:12px;border:1px solid rgba(33,69,54,.78);border-radius:11px;background:rgba(4,13,9,.34);font-size:13px;color:var(--muted)}.timeline-lesson b{display:block;color:var(--gold);font:800 10px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.footer{margin-top:55px;padding:21px 0 4px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}.backtop{position:fixed;right:16px;bottom:16px;width:43px;height:43px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(10,26,20,.94);color:var(--green);box-shadow:var(--shadow);z-index:95}.reader-tools{position:fixed;right:68px;bottom:16px;z-index:95;display:flex;gap:6px;padding:6px;border:1px solid var(--line);border-radius:999px;background:rgba(10,26,20,.94);box-shadow:var(--shadow)}.reader-tools button{border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);color:#fff;padding:7px 10px;font-family:var(--mono);font-weight:800;cursor:pointer}.reader-tools button:hover{border-color:var(--green);color:var(--green)}
+.sort-help{margin:.45rem 0 .9rem;color:var(--dim);font-family:var(--mono);font-size:.77rem}table.sortable thead th{cursor:pointer;user-select:none;white-space:nowrap;position:relative;padding-right:30px}table.sortable thead th:after{content:'⇅';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:12px;opacity:.72}table.sortable thead th[aria-sort="ascending"]:after{content:'▲';color:var(--green);opacity:1}table.sortable thead th[aria-sort="descending"]:after{content:'▼';color:var(--green);opacity:1}table.sortable thead th[aria-sort="ascending"],table.sortable thead th[aria-sort="descending"]{color:var(--green);background:rgba(89,227,156,.08)}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.hybrid-grammar{grid-template-columns:repeat(2,minmax(0,1fr))}.grammar-cell:after{display:none}.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.metric-grid,.grid-2,.grid-3,.grid-4,.evidence-legend,.timeline-lesson{grid-template-columns:1fr}.method,.step{grid-template-columns:1fr}.hybrid-grammar{grid-template-columns:1fr}.value-flow{grid-template-columns:1fr}.value-flow div:not(:last-child):after{content:'↓';right:auto;left:50%;top:auto;bottom:-14px;transform:translateX(-50%)}.topbar-inner{align-items:flex-start;flex-direction:column}.actions{justify-content:flex-start}.hero{padding:28px 21px 25px}}
+@media(max-width:620px){.layout{width:min(100% - 20px,1260px);padding-top:18px}.sidebar{display:none}.actions{display:flex;overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:3px}.reader-tools{right:62px;bottom:10px}.backtop{right:10px;bottom:10px}}
+@media print{.topbar,.sidebar,.reader-tools,.backtop{display:none}.layout{display:block;width:100%;padding:0}body{background:#fff;color:#000}.hero,.info-card,.callout,.metric-card,.diagram-card,.timeline-item{box-shadow:none;background:#fff}.article p,.article li,td{color:#222}.article h1,.article h2,.article h3,.article strong{color:#000}}
+</style>
+</head>
+<body id="top">
+<header class="topbar"><div class="topbar-inner">
+<div class="brand">8Z · WFERA · Water-Flow Energy Recovery</div>
+<nav class="actions" aria-label="WFERA navigacija">
+<a href="#teza">Teza</a><a href="#koncept">Koncept</a><a href="#stanje">v0.4.1</a><a href="#rezultati">Rezultati</a><a href="#rhp">RHP</a><a href="#arena">Koncepti</a><a href="#svet">Svetovni baseline-i</a><a href="#hibridi">Hibridi v0.5</a><a href="#produkt">Produktna pot</a><a href="#todo">To-do</a><a href="#zgodovina">Zgodovina</a>
+</nav></div></header>
+<div class="layout">
+<aside class="sidebar"><h2>Vsebina</h2><nav>
+<a href="#teza">Projektna teza</a>
+<a href="#dokazna-legenda">Kako brati dokaze</a>
+<a href="#koncept">Gravitacijski hibridni valobran</a>
+<a href="#smisel">Kaj je znano in kaj iščemo</a>
+<a href="#stanje">Sedanje stanje v0.4.1</a>
+<a href="#rezultati">Glavne ugotovitve</a>
+<a class="toc-sub" href="#kandidati">Trenutni kandidati</a>
+<a class="toc-sub" href="#ekonomika">Ekonomika</a>
+<a href="#rhp">RHP council</a>
+<a href="#arena">Sedanji konceptni prostor</a>
+<a href="#svet">Svetovni WEC/TEC baseline-i</a>
+<a href="#hibridi">v0.5 hibridna sinteza</a>
+<a class="toc-sub" href="#predloge">Obvezne hibridne predloge</a>
+<a href="#produkt">Retrofit-first produktna pot</a>
+<a href="#correctness">Odkrite vrzeli</a>
+<a href="#todo">RHP / v0.5 to-do</a>
+<a href="#dokazano">Kaj je dokazano in odprto</a>
+<a href="#zgodovina">Razvoj WFERA</a>
+<a href="#viri">Viri in evidence</a>
+</nav></aside>
+<main class="article">
+<section class="hero" id="teza">
+<p class="hero-kicker">BD × GPT × C · WFERA / 8Z · stanje 10. avgust 2026</p>
+<h1><span>WFERA</span>Water-Flow Energy-Recovery Arena</h1>
+<h2>Večpasovni hibridni energetski valobran · »Mlin na tok«</h2>
+<p class="lead"><strong>Osrednja ideja:</strong> valobran ni nujno samo pasivna masa, ki ustavlja morje. Lahko postane modularna energetska infrastruktura: različne lopute pobirajo različne dele valovnega spektra, težke lopute med dvigom shranijo del valovne energije v gravitaciji in jo pri povratku ponovno pretvorijo v elektriko, celoten sistem pa hkrati zmanjšuje valovanje v pristanišču.</p>
+<div class="status-row"><span class="badge clean">v0.4.1 Master COMPLETE</span><span class="badge clean">667.800 evaluacij</span><span class="badge clean">0 evaluator napak</span><span class="badge research">13 / 13 native broadband RHP</span><span class="badge warn">SCIENCE HOLD</span><span class="badge research">v0.5 handoff pripravljen</span><span class="badge hold">ne CFD · ne prototip · ne novelty claim</span></div>
+</section>
+<div class="metric-grid">
+<div class="metric-card"><b>15 / 15</b><span>Master stageov complete</span></div>
+<div class="metric-card"><b>300.000</b><span>Deep evaluacij</span></div>
+<div class="metric-card"><b>12.000</b><span>Resurrection evaluacij</span></div>
+<div class="metric-card"><b>22 / 37</b><span>matched študij / primerjav</span></div>
+<div class="metric-card"><b>105</b><span>arhitektur v v0.4.1</span></div>
+<div class="metric-card"><b>6</b><span>heterogenih razredov loput</span></div>
+<div class="metric-card"><b>0</b><span>clean kandidatov s +10y NPV</span></div>
+<div class="metric-card"><b>v0.5</b><span>global baselines + hybrid synthesis</span></div>
+</div>
+<section class="evidence-panel" id="dokazna-legenda"><h3>Kako brati dokaze na tej strani</h3><div class="evidence-legend">
+<div class="evidence-item test"><b>VERIFIED BY TEST</b><p>Runtime, determinističnost, selftest, resume/replay, stage completion in evaluator errors.</p></div>
+<div class="evidence-item model"><b>REDUCED-ORDER MODEL</b><p>Modelirani MWh, attenuation, masa, CAPEX in rang. Uporabno za izbor testov, ne kot meritev izdelka.</p></div>
+<div class="evidence-item bridge"><b>HIGHER-FIDELITY BRIDGE</b><p>Cascade, vertikalne plasti, floating coupling in veliki array efekti zahtevajo BEM, wave-tank, VOF/CFD/FSI.</p></div>
+<div class="evidence-item open"><b>OPEN / NOT ASSESSED</b><p>Patentna novost, realna ekonomika, življenjska doba, dovoljenja in realna lokacijska proizvodnja.</p></div>
+</div></section>
+<section id="koncept"><div class="part-label">DEL I · Jedro sistema</div><h2>Kako deluje večpasovni hibridni valobran</h2>
+<div class="diagram-card">
+<svg viewBox="0 0 1200 430" role="img" aria-label="Shema hibridnega energetskega valobrana z majhnimi, srednjimi, velikimi in storm loputami">
+<defs><linearGradient id="sea" x1="0" x2="1"><stop offset="0" stop-color="#0c5b59"/><stop offset="1" stop-color="#0a2d30"/></linearGradient><linearGradient id="wall" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#54786a"/><stop offset="1" stop-color="#203a30"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect x="0" y="0" width="1200" height="430" fill="#06150f"/>
+<path d="M0 165 Q80 115 160 165 T320 165 T480 165 T640 165 T800 165" fill="none" stroke="#43d7c0" stroke-width="10" opacity=".95"/>
+<path d="M0 190 Q80 145 160 190 T320 190 T480 190 T640 190 T800 190 L800 405 L0 405 Z" fill="url(#sea)" opacity=".78"/>
+<rect x="800" y="80" width="350" height="325" rx="8" fill="url(#wall)" stroke="#75b892" stroke-width="3"/>
+<text x="918" y="112" fill="#ecf8f0" font-family="ui-monospace,monospace" font-size="22" font-weight="700">VALOBRAN / HOST</text>
+<g stroke="#b5f36b" stroke-width="8" stroke-linecap="round">
+<line x1="740" y1="180" x2="800" y2="260"/><line x1="690" y1="168" x2="800" y2="290"/><line x1="610" y1="150" x2="800" y2="325"/><line x1="500" y1="135" x2="800" y2="365"/>
+</g>
+<g fill="#59e39c"><circle cx="800" cy="260" r="10"/><circle cx="800" cy="290" r="10"/><circle cx="800" cy="325" r="10"/><circle cx="800" cy="365" r="10"/></g>
+<text x="668" y="150" fill="#9cf3cc" font-family="ui-monospace,monospace" font-size="18">S · male/hitre</text><text x="610" y="119" fill="#b5f36b" font-family="ui-monospace,monospace" font-size="18">M · srednje</text><text x="485" y="92" fill="#f5c86a" font-family="ui-monospace,monospace" font-size="18">L · velike/težke</text><text x="330" y="68" fill="#ffad79" font-family="ui-monospace,monospace" font-size="18">X · storm/load-shedding</text>
+<path d="M830 170 H1080" stroke="#59e39c" stroke-width="5"/><rect x="860" y="144" width="155" height="48" rx="12" fill="#0b2c20" stroke="#59e39c"/><text x="881" y="175" fill="#ecf8f0" font-family="ui-monospace,monospace" font-size="17">PTO + generator</text>
+<path d="M938 195 V235" stroke="#59e39c" stroke-width="5"/><rect x="855" y="235" width="166" height="52" rx="12" fill="#0b2c20" stroke="#43d7c0"/><text x="881" y="267" fill="#ecf8f0" font-family="ui-monospace,monospace" font-size="17">shared DC bus</text>
+<path d="M938 287 V330" stroke="#59e39c" stroke-width="5"/><rect x="843" y="330" width="190" height="52" rx="12" fill="#0b2c20" stroke="#b5f36b"/><text x="864" y="361" fill="#ecf8f0" font-family="ui-monospace,monospace" font-size="17">grid / storage / load</text>
+<g filter="url(#glow)"><path d="M370 300 Q470 245 570 300" fill="none" stroke="#59e39c" stroke-width="4" stroke-dasharray="11 9"/><polygon points="566,288 590,300 566,312" fill="#59e39c"/></g>
+<text x="320" y="336" fill="#abc8b7" font-family="ui-monospace,monospace" font-size="17">val dvigne → PTO navzgor → gravitacija vrne → PTO navzdol</text>
+<text x="82" y="390" fill="#abc8b7" font-family="ui-monospace,monospace" font-size="17">morje / valovni spekter</text><text x="915" y="410" fill="#abc8b7" font-family="ui-monospace,monospace" font-size="15">zaščita + energija</text>
+</svg><p class="diagram-caption">Shema je konceptna. Arena optimizira maso, geometrijo, začetni in končni kot, potopitev, resonanco, PTO navor v obeh smereh, razmik, krmiljenje in storm način.</p></div>
+<div class="value-flow"><div><b>1 · Val</b>zunanji energijski vir</div><div><b>2 · Dvig</b>generator + potencialna energija</div><div><b>3 · Gravitacija</b>kontroliran povratni hod</div><div><b>4 · Elektrika</b>PTO, bus, storage</div><div><b>5 · Zaščita</b>manj prenesene energije vala</div></div>
+<div class="grid-3"><div class="info-card"><h3>Majhne hitre lopute</h3><p>Nizka vztrajnost in breakaway navor; cilj so pogosti manjši valovi, več aktivnih ur in bolj enakomeren izhod.</p></div><div class="info-card"><h3>Velike težke lopute</h3><p>Večji navor in gravitacijsko shranjevanje; cilj so energetsko bogatejši valovi, vendar z večjimi strukturnimi in storm obremenitvami.</p></div><div class="info-card"><h3>Hibridni PTO</h3><p>PM-generator za hitre module, hidravlika/akumulator za težke, counter-phase in shared-bus kontrola za glajenje moči.</p></div></div>
+<div class="callout gold"><h3>Fizikalna disciplina</h3><p>Elektrika pri povratku ni dodatna brezplačna energija. Gravitacija samo vrne del energije, ki jo je val pri dvigu shranil v višini lopute. Velja: <code>elektrika navzgor + elektrika navzdol + vse izgube ≤ delo vala na loputi</code>.</p></div>
+</section>
+<section id="smisel"><h2>Ali je to že raziskano — in kje je lahko naša vrednost?</h2><p><strong>Osnovni flap-WEC, gravitacijski povratek, dvosmerni PTO, OWSC, OWC in večresonančne vrste so znane raziskovalne smeri.</strong> WFERA zato ne trdi, da je odkrila nov fizikalni zakon. Išče bolj specifično in tržno uporabno arhitekturo: kateri znani in novi moduli se med seboj dopolnjujejo, na katerem obstoječem valobranu, s katerim PTO-jem, pri katerem spektru in po kakšni ceni.</p>
+<div class="grid-3"><div class="info-card"><h3>Kar je že dobro uveljavljeno</h3><p>OWSC, OWC, point absorbers, attenuatorji, overtopping, pressure-differential sistemi, wave carpets, tidal turbine in več vrst PTO-ja.</p></div><div class="info-card"><h3>Kar WFERA dodaja</h3><p>Enoten ranking, conservation budget, heterogene S/M/L/X lopute, dvosmerni gravitacijski cikel, retrofit produktno logiko ter A/B/A+B atribucijo.</p></div><div class="info-card"><h3>Kaj bi bila prava zmaga</h3><p>Ne “nov tip lopute”, ampak robustna nadgradnja obstoječega sistema: več energije, boljša zaščita, nižji strošek ali lažji servis pri istem hostu in istem valovnem spektru.</p></div></div>
+<blockquote><strong>Najbolj realistična pot:</strong> prodati izboljšavo obstoječega OWSC, OWC ali valobrana — na primer boljši PTO, counter-phase/shared-bus krmiljenje ali retrofit cartridge — preden gradimo drag popolnoma nov greenfield pilot.</blockquote>
+</section>
+<section id="stanje"><div class="part-label">DEL II · Trenutni evidence snapshot</div><h2>WFERA v0.4.1 — kaj je dejansko dokončano</h2>
+<div class="grid-4"><div class="info-card"><h3>Software</h3><p>Master <strong>667.800/667.800</strong>, 15/15 stageov, 0 evaluator napak, persistent file-spool runtime, resume/replay in native extract.</p></div><div class="info-card"><h3>Deep</h3><p><strong>300.000</strong> broadband evaluacij; 110.775 clean, 117.077 higher-fidelity bridge, 41.541 baseline, 30.607 warnings.</p></div><div class="info-card"><h3>RHP</h3><p><strong>13/13</strong> broadband arhitektur; 624 training, 286 holdout in 208 failure vrstic.</p></div><div class="info-card"><h3>Council</h3><p><code>SOFTWARE_PASS_SCIENCE_HOLD</code>: runtime je prestal, realna fizika in ekonomika ostajata za višjeredno validacijo.</p></div></div>
+<div class="callout teal"><h3>Pomemben falsifier, ki ostaja zaklenjen</h3><p><code>generator_output &gt; 0</code> ni isto kot prihranek. Mlin oziroma turbina v lastnem mirnovodnem toku plovila mora plačati reakcijski upor in praviloma poslabša celotno bilanco. Pozitivna smer je zunanji val/tok, regenerativni dogodek ali dokazano zmanjšanje že obstoječih izgub.</p></div>
+</section>
+<section id="rezultati"><h2>Glavne ugotovitve v0.4.1</h2>
+<div class="grid-3"><div class="info-card"><h3>Najmočnejši clean produktni signal</h3><p><strong>HB-R6:</strong> majhne hitre lopute z neposrednim PM-generatorjem + velike težke lopute s hidravličnim PTO/akumulatorjem.</p></div><div class="info-card"><h3>Najmočnejši inkrementalni podsistem</h3><p><strong>HB-R7 counter-phase smoothing:</strong> fazno zamaknjena vrsta in shared bus sta v RHP premagala matched null v 68,2 % holdoutov.</p></div><div class="info-card"><h3>Najbolj zanimiv, a nezrel layout</h3><p><strong>HB-R1 vertical layering:</strong> zelo močan holdout signal, vendar brez BEM/wave-tank ni dovoljeno razglasiti realne prednosti.</p></div></div>
+<h3 id="kandidati">Modelirani vrhovi — signal, ne produktni rezultat</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Kandidat</th><th>Lane</th><th>MWh/leto</th><th>CF</th><th>Attenuation</th><th>Masa</th><th>CAPEX</th><th>10y NPV</th><th>Pošteno branje</th></tr></thead>
+<tbody>
+<tr><td>HB-R6 PM-small + hydraulic-heavy</td><td>Clean broadband</td><td>46,61</td><td>0,309</td><td>0,554</td><td>9,28 t</td><td>≈ €291k</td><td>≈ −€271k</td><td>Najbolj produktno zanimiv v trenutnem modelu; frontage autofit ostaja vidna predpostavka.</td></tr>
+<tr><td>HB-R3 seaward→harbor cascade</td><td>Higher-fidelity bridge</td><td>105,91</td><td>0,357</td><td>0,626</td><td>28,17 t</td><td>≈ €399k</td><td>≈ −€349k</td><td>Močan raw signal, vendar nestabilen in odvisen od interakcije vrst; top vrstica je razkrila tudi installation/platform mismatch.</td></tr>
+<tr><td>HB-R7 counter-phase array</td><td>Clean broadband</td><td>39,26</td><td>0,295</td><td>0,546</td><td>5,68 t</td><td>≈ €168k</td><td>≈ −€145k</td><td>Manj energije od R6, vendar boljši signal za modularno kontrolno nadgradnjo obstoječih arrayev.</td></tr>
+<tr><td>Uniform large/heavy array</td><td>Clean candidate family</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Najstabilnejši sedanji broadband null: 100 % clean holdoutov; heterogeni hibrid ga mora pošteno premagati.</td></tr>
+</tbody></table></div>
+<section id="ekonomika"><div class="callout red"><h3>Ekonomika še ni potrjena</h3><p>V vseh 300.000 Deep vrsticah ni nobenega <strong>clean</strong> kandidata s pozitivnim modeliranim desetletnim NPV. Trenutna teza je zato <strong>protection-first + energy-second + retrofit value</strong>, ne “prodaja elektrike sama plača nov valobran”.</p></div></section>
+</section>
+<section id="rhp"><h2>RHP: kaj je preživelo holdoute in failure teste</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Arhitektura</th><th>Council lane</th><th>Clean holdouti</th><th>Premaga matched null</th><th>RHP branje</th></tr></thead>
+<tbody>
+<tr><td>Uniform small/fast</td><td>Watch / falsifier</td><td>95,5 %</td><td>0,0 %</td><td>Veliko aktivnih ur ni dovolj, če je energijska gostota prenizka.</td></tr>
+<tr><td>Uniform medium</td><td>Watch / falsifier</td><td>95,5 %</td><td>4,5 %</td><td>Uporaben kontrolni baseline, ne dominantna rešitev.</td></tr>
+<tr><td>Uniform large/heavy</td><td>Clean candidate family</td><td>100,0 %</td><td>4,5 %</td><td>Najstabilnejši sedanji null in nujen nasprotnik hibridov.</td></tr>
+<tr><td>Dual-band S+L</td><td>Watch / falsifier</td><td>95,5 %</td><td>40,9 %</td><td>Hibrid je živ, vendar ne zmaguje povsod.</td></tr>
+<tr><td>Tri-band S+M+L</td><td>Watch / falsifier</td><td>95,5 %</td><td>0,0 %</td><td>Več razredov samo po sebi ni prednost.</td></tr>
+<tr><td>Quad-band + storm</td><td>Watch / falsifier</td><td>95,5 %</td><td>0,0 %</td><td>Storm modul ima predvsem survival/protection vlogo.</td></tr>
+<tr><td>Vertical layered</td><td>Higher-fidelity bridge</td><td>95,5 %</td><td>95,5 %</td><td>Zelo močan signal, vendar interakcija po globini ni dovolj modelirana.</td></tr>
+<tr><td>Mosaic</td><td>Watch / falsifier</td><td>95,5 %</td><td>13,6 %</td><td>Ohrani za lokacije z razpršenimi smermi in resurrection.</td></tr>
+<tr><td>Cascade</td><td>Higher-fidelity bridge</td><td>45,5 %</td><td>50,0 %</td><td>Visok potencial, slaba stabilnost; dober BEM/wave-tank falsifier.</td></tr>
+<tr><td>Adaptive impedance/shared bus</td><td>Watch / falsifier</td><td>95,5 %</td><td>40,9 %</td><td>Možna programska nadgradnja obstoječega sistema.</td></tr>
+<tr><td>Low-cogging small-flap skin</td><td>Watch / falsifier</td><td>95,5 %</td><td>0,0 %</td><td>Koristna niša za senzorje in drobno valovanje, ne glavni vir.</td></tr>
+<tr><td>PM-small + hydraulic-heavy</td><td>Watch / product-like</td><td>95,5 %</td><td>45,5 %</td><td>Najmočnejši trenutni kolektor/PTO hibrid za retrofit raziskavo.</td></tr>
+<tr><td>Counter-phase smoothing</td><td>Watch / subsystem</td><td>95,5 %</td><td>68,2 %</td><td>Najmočnejši inkrementalni podsistem; primeren za obstoječe arraye.</td></tr>
+</tbody></table></div>
+<div class="callout green"><h3>RHP zaključek</h3><p>Najmočnejša smer trenutno ni “več različnih loput za vsako ceno”, ampak <strong>selektivna kombinacija komplementarnih razredov, PTO-jev in faznega krmiljenja</strong>, merjena proti poštenemu uniformnemu ter svetovnemu baseline-u.</p></div>
+</section>
+<section id="arena"><div class="part-label">DEL III · Konceptni prostor</div><h2>Kaj sedanja WFERA že računa</h2>
+<div class="method-ladder">
+<div class="method"><b>Mirnovodni mlin / falsifier</b><span>Premčni mlin, feathered povratek, direct double-mill, flywheel/endless-belt in hidravlične variante; generator mora plačati reakcijski upor.</span></div>
+<div class="method"><b>Bow / through-body tokovi</b><span>Bypass, kanal s turbino, predizpust pred propulzorjem, distributed intake, pressure-relief bow, OEM integracija, ejector assist in retrofit cartridge.</span></div>
+<div class="method"><b>Wake in propulsorske izgube</b><span>Boundary-layer/wake recovery, pre-swirl, post-swirl, hub-vortex, slipstream turbina, wake refill in propulsor-inflow conditioning.</span></div>
+<div class="method"><b>Valovi in motion</b><span>Wave flap, heave/pitch PTO, OWC, direct wave foil, motion damping, stranske lopute, moored/fixed platforme in offshore hosti.</span></div>
+<div class="method"><b>Gravitacijske lopute</b><span>Dvosmerno generiranje, različna masa in kot, variable ballast, hidravlični PTO, adaptive latch, multi-wave in storm feather/open.</span></div>
+<div class="method"><b>Broadband S/M/L/X</b><span>Uniformni kontrolni arrayi, dual/tri/quad band, vertikalne plasti, mosaic, cascade, adaptive impedance, PM+hydraulic in counter-phase.</span></div>
+<div class="method"><b>Zunanji tok / tidal</b><span>Current, tow, wind-driven hydro, route-current in terminal tidal scenariji; ločeno od valovne energije.</span></div>
+<div class="method"><b>Regenerativni dogodki</b><span>Pristajanje, zaviranje, reverzibilni propulzor, docking turbina in protected waterjet; primerjava mora biti matched deceleration event.</span></div>
+</div>
+</section>
+<section id="svet"><h2>Dobro uveljavljeni svetovni koncepti — obvezni baseline-i v0.5</h2><p>V0.4.1 še ne vsebuje celotnega svetovnega polja kot samostojno optimizirane družine. V0.5 jih mora dodati, ker se najini koncepti lahko ocenijo le proti močnim, poštenim nasprotnikom.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Skupina</th><th>Koncept</th><th>Osnovna vloga</th><th>Možen partner WFERA</th><th>Status za v0.5</th></tr></thead>
+<tbody>
+<tr><td>Wave</td><td>Optimized OWSC</td><td>Nihajna surge loputa</td><td>Gravity return, dual-stroke PTO, PM/hydraulic razredi</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Fixed-caisson OWC</td><td>Zračni steber v fiksnem caissonu</td><td>Flap + OWC na istem hostu</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Floating OWC</td><td>Plavajoči zračni steber</td><td>Floating breakwater + flap/attenuator</td><td>Bridge baseline</td></tr>
+<tr><td>Wave</td><td>Point absorber — 1 body</td><td>Lokalni heave/surge/pitch zajem</td><td>Surge flap + heave absorber</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Point absorber — 2 body</td><td>Relativno gibanje dveh teles</td><td>Shared PTO/bus in platform hybrid</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Attenuator / articulated snake</td><td>Členjeno telo vzporedno z valom</td><td>Fixed flap + floating attenuator</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Terminator oscillating body</td><td>Naprava prečno na smer vala</td><td>Protection-first array</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Overtopping reservoir</td><td>Rezervoar + low-head turbina</td><td>Gravity flap + overtopping</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Submerged pressure differential</td><td>Potopljena membrana/kupola</td><td>Flap + pressure module</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Bulge-wave elastic tube</td><td>Napredujoč tlačni val v cevi</td><td>Offshore/attenuator hybrid</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Rotating-mass / gyroscopic</td><td>Notranja masa/gyro iz motiona</td><td>Floating host + shared bus</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Flexible membrane / wave carpet</td><td>Deformabilna membrana</td><td>Flap + membrane broadband pair</td><td>Obvezen baseline</td></tr>
+<tr><td>Wave</td><td>Direct wave rotor</td><td>Rotor/paddle v orbitalnem toku</td><td>Low-cost small-wave module</td><td>Obvezen baseline</td></tr>
+<tr><td>Civil</td><td>Passive dissipative controls</td><td>Perforiran/slotted/dissipative valobran</td><td>Protection-first + energy add-on</td><td>Obvezen civil null</td></tr>
+<tr><td>Tidal</td><td>Horizontal-axis turbine</td><td>Glavni tokovni rotor</td><td>Wave flap + tidal common host</td><td>Obvezen TEC baseline</td></tr>
+<tr><td>Tidal</td><td>Vertical-axis crossflow</td><td>Omnidirekcijski tokovni rotor</td><td>Port/estuary multi-direction hybrid</td><td>Obvezen TEC baseline</td></tr>
+<tr><td>Tidal</td><td>Oscillating hydrofoil</td><td>Nihajoče krilo</td><td>Flap/foil shared actuation</td><td>Obvezen TEC baseline</td></tr>
+<tr><td>Tidal</td><td>Venturi / shrouded turbine</td><td>Pospešen tok v kanalu</td><td>Through-body / caisson duct</td><td>Obvezen TEC baseline</td></tr>
+<tr><td>Tidal</td><td>Archimedes screw</td><td>Nizko-hitrostni tok</td><td>Low-head/overtopping host</td><td>Obvezen TEC baseline</td></tr>
+<tr><td>Tidal</td><td>Tidal kite</td><td>Dinamično preletavanje toka</td><td>Offshore shared mooring/grid</td><td>Obvezen TEC baseline</td></tr>
+</tbody></table></div>
+<details class="project-details"><summary>PTO in control baseline-i, ki morajo tekmovati</summary><div><p><strong>PTO:</strong> bidirectional PM rotary, linear generator, mechanical rectifier/dual clutch, hydraulic cylinder + accumulator + motor-generator, Wells turbine, impulse turbine, low-head turbine, flywheel ter shared DC bus + storage.</p><p><strong>Control:</strong> fixed/load-following damping, class-selective latching, adaptive impedance, reactive/phase control, counter-phase scheduling, predictive declutch/release, storm lock, feather/open, bypass/retract in load shedding.</p></div></details>
+</section>
+<section id="hibridi"><div class="part-label">DEL IV · Naslednja arena</div><h2>WFERA v0.5 — Global Baselines & Hybrid Synthesis</h2><p>V0.5 ne sme dodajati hibridov kot ročno poimenovane “čudežne” naprave. Vsak kandidat mora nastati iz modularne slovnice in tekmovati pri istem valovnem spektru, globini, frontage-u, hostu, strošku in ciljni vlogi.</p>
+<div class="hybrid-grammar"><div class="grammar-cell"><b>COLLECTOR</b>WFERA S/M/L/X, OWSC, OWC, point absorber, attenuator, overtopping, membrane, tidal…</div><div class="grammar-cell"><b>HOST</b>obstoječi caisson, rubble mound, perforiran valobran, floating host, offshore jacket, moored vessel</div><div class="grammar-cell"><b>PTO</b>PM, linear, hydraulic, pneumatic, low-head, rectifier, flywheel, storage</div><div class="grammar-cell"><b>CONTROL</b>damping, latch, impedance, phase, counter-phase, predictive release, storm mode</div><div class="grammar-cell"><b>ROLE</b>energija, protection, motion damping, grid smoothing, retrofit, safety/survival</div></div>
+<div class="callout teal"><h3>Obvezna atribucija A / B / A+B</h3><p>Vsak promoviran hibrid mora imeti <strong>A sam, B sam in A+B</strong> pri istem hostu ter istem incidentnem wave budgetu. Split in sizing se izbereta na trainingu, nato zamrzneta za holdout. Sinergija ni dovoljena kot ročni bonus.</p></div>
+<h3 id="predloge">Obvezne začetne hibridne predloge</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>ID</th><th>Hibrid</th><th>Zakaj je smiseln</th><th>Prvi matched nasprotnik</th><th>Tržna pot</th></tr></thead>
+<tbody>
+<tr><td>H-W1</td><td>OWSC + gravity-return bidirectional PTO</td><td>Nadgradi znano loputo z izkoristkom obeh hodov.</td><td>Optimiziran konvencionalni OWSC</td><td>Retrofit PTO/mehanika</td></tr>
+<tr><td>H-W2</td><td>Gravity flap + caisson OWC</td><td>Surge in pressure/air channel pokrivata različne komponente vala.</td><td>OWC sam + flap sam</td><td>Obstoječi caisson</td></tr>
+<tr><td>H-W3</td><td>Surge flap + heave point absorber</td><td>Komplementarna surge in heave stopnja.</td><td>Najboljši standalone obeh</td><td>Port entrance / offshore</td></tr>
+<tr><td>H-W4</td><td>Gravity flap + overtopping reservoir</td><td>Dinamični in potencialni zajem pri večjih valovih.</td><td>Overtopping sam</td><td>Protection-first host</td></tr>
+<tr><td>H-W5</td><td>Flap + submerged pressure device</td><td>Surface/surge + potopljeni tlak.</td><td>Pressure device sam</td><td>Valobran z globino</td></tr>
+<tr><td>H-W6</td><td>Flap + flexible membrane</td><td>Različna frekvenčna pasova in manj izpostavljenih delov.</td><td>Wave carpet sam</td><td>Retrofit ob temelju</td></tr>
+<tr><td>H-W7</td><td>Fixed flap + floating attenuator</td><td>Fiksna zaščita + plavajoči broadband zajem.</td><td>Attenuator sam</td><td>Harbor entrance</td></tr>
+<tr><td>H-W9</td><td>Wave flap + tidal/current turbine</td><td>Dva ločena zunanja vira na skupnem temelju/kablu.</td><td>Wave in tidal standalone</td><td>Estuarij / močan tok</td></tr>
+<tr><td>H-W10</td><td>Counter-phase shared-bus upgrade</td><td>Najmočnejši sedanji inkrementalni RHP signal.</td><td>Obstoječi array brez nadgradnje</td><td>Control/software retrofit</td></tr>
+<tr><td>H-W11</td><td>PM-small + hydraulic-heavy OWSC upgrade</td><td>Najmočnejši sedanji product-like R6 signal.</td><td>Uniformni OWSC/PTO</td><td>Modularna zamenjava PTO</td></tr>
+<tr><td>H-W12</td><td>Existing-breakwater retrofit cartridge</td><td>Nižji civilni CAPEX in servis z vrha.</td><td>Pasivni obstoječi valobran</td><td>Najbolj realen prvi trg</td></tr>
+<tr><td>H-W13</td><td>Protection-first passive + energy module</td><td>Elektrika je dodatna vrednost, zaščita ostane primarna.</td><td>Najboljši pasivni valobran</td><td>Javna infrastruktura</td></tr>
+</tbody></table></div>
+</section>
+<section id="produkt"><h2>Najbolj realna produktna in tržna pot</h2>
+<div class="roadmap"><h3>Retrofit-first lestev</h3>
+<div class="step"><b>1 · Control upgrade</b><span>Counter-phase, shared-bus in adaptive impedance za obstoječe arraye; najmanj civilnih posegov.</span></div>
+<div class="step"><b>2 · PTO retrofit</b><span>PM-small + hydraulic-heavy ali bidirectional gravity-return PTO za obstoječi OWSC.</span></div>
+<div class="step"><b>3 · Cartridge module</b><span>Servisabilen modul za obstoječi vertikalni ali perforirani valobran.</span></div>
+<div class="step"><b>4 · Caisson hybrid</b><span>Flap + OWC ali pressure module na hostu, ki je že potreben zaradi zaščite.</span></div>
+<div class="step"><b>5 · Greenfield system</b><span>Šele po BEM/wave-tank/CFD in jasni ekonomski prednosti graditi nov namenski hibridni valobran.</span></div>
+</div>
+<div class="grid-3"><div class="info-card"><h3>Kupec ne kupi samo elektrike</h3><p>Glavna vrednost je lahko zaščita pristanišča, manj valovanja, manj poškodb, stabilnejši privez ali energija za lokalne sisteme.</p></div><div class="info-card"><h3>Skupna infrastruktura</h3><p>Temelj, dostop, kabel, omrežje in servisna pot so lahko že del valobrana; to je ključna prednost retrofit scenarija.</p></div><div class="info-card"><h3>Manjši prvi pilot</h3><p>Za PTO/control retrofit je možen bistveno cenejši A/B test kot za cel nov energetski valobran.</p></div></div>
+</section>
+<section id="correctness"><h2>Vrzeli, ki jih je v0.4.1 pošteno razkrila</h2>
+<div class="grid-2"><div class="callout red"><h3>Installation/platform mismatch</h3><p>Generator je lahko združil <code>fixed_breakwater</code> host s <code>floating_breakwater_module</code> instalacijo. V0.5 mora nezdružljive pare preprečiti že pri generiranju kandidata in fail-closed pri replay/importu.</p></div><div class="callout gold"><h3>Missed flap reset</h3><p><code>flap_not_reset_before_next_wave</code> se ne sme pojavljati v navadni clean lane. Izjema je samo ekspliciten multi-wave/latching model z energijsko in overload closure.</p></div><div class="callout teal"><h3>Frontage autofit</h3><p>183.223 Deep vrstic je bilo geometrijsko prilagojenih. Requested in installed design morata dobiti ločeni identiteti, delta pa mora biti vidna tudi matched baseline-u.</p></div><div class="callout gold"><h3>Protection value in fatigue</h3><p>Zaščitna vrednost ne sme biti skrita v prihodku od elektrike, absurdno dolga fatigue life pa mora dobiti trust cap in jasno oznako placeholder/estimated/calibrated/measured.</p></div></div>
+</section>
+<section id="todo"><div class="part-label">DEL V · RHP / v0.5 to-do</div><h2>Kaj mora narediti naslednja arena</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Prioriteta</th><th>Naloga</th><th>Zakaj</th><th>Acceptance dokaz</th></tr></thead>
+<tbody>
+<tr><td>P0</td><td>Installation/platform compatibility</td><td>Prepreči fizično neveljavne clean vrstice.</td><td>Selftest + generator filter + fail-closed replay.</td></tr>
+<tr><td>P0</td><td>Shared incident-wave budget</td><td>A+B ne sme vsak pobrati iste energije vala.</td><td>Hybrid component energy closure.</td></tr>
+<tr><td>P0</td><td>A/B/A+B ablation</td><td>Loči pravo sinergijo od dodatne površine, mase ali CAPEX-a.</td><td>Vse promovirane hibridne vrstice imajo tri roke.</td></tr>
+<tr><td>P0</td><td>Frozen training split</td><td>Prepreči prilagajanje holdoutu.</td><td>Sizing/split iz traininga nespremenjen v holdoutu.</td></tr>
+<tr><td>P0</td><td>Clean warning discipline</td><td>Missed reset, mismatch in major warnings ne smejo ostati clean.</td><td>No clean row with major warning.</td></tr>
+<tr><td>P1</td><td>Global wave/tidal/civil baseline field</td><td>Najini koncepti morajo premagati najboljši znani nasprotnik.</td><td>Standalone matched suite za vsako družino.</td></tr>
+<tr><td>P1</td><td>Modular hybrid generator</td><td>Systematično išče komplementarne kombinacije, ne ročnih favoritov.</td><td>Collector×host×PTO×control×role registry.</td></tr>
+<tr><td>P1</td><td>Native hybrid RHP</td><td>Training, holdout, failure in adversarial falsifier neposredno nad hibridi.</td><td>RHP council + per-hybrid survival matrix.</td></tr>
+<tr><td>P1</td><td>Matched rows v Master extractu</td><td>Auditor mora videti vseh A/B delta rezultatov, ne samo summary.</td><td>CSV/JSON matched + ablation exports.</td></tr>
+<tr><td>P1</td><td>Protection/energy/economics vektor</td><td>En scalar lahko skrije izgubo energije ali zaščitno prednost.</td><td>Ločene osi in Pareto fronte.</td></tr>
+<tr><td>P2</td><td>BEM/wave-tank bridge exports</td><td>Vertical/cascade/floating signal mora zapustiti 0D/1D.</td><td>Standardiziran kandidat + baseline + uncertainty package.</td></tr>
+<tr><td>P2</td><td>Prior-art / patent map</td><td>Loči znane gradnike od možne integracijske novosti.</td><td>Feature→prior art→delta→do-not-claim tabela.</td></tr>
+<tr><td>P2</td><td>Resurrection sweep</td><td>Low-ranked koncept lahko postane dober z novim hostom ali PTO-jem.</td><td>Vse stare arhitekture ponovno ocenjene pod novimi moduli.</td></tr>
+</tbody></table></div>
+<div class="callout green"><h3>RHP seed za v0.5</h3><p>Najprej optimiziraj vsak standalone svetovni in WFERA koncept. Nato sestavi samo fizično komplementarne pare. Šele pari, ki na zamrznjenem holdoutu pokažejo stabilen incremental benefit, lahko napredujejo v tri-komponentne hibride. <strong>Ničesar ne izbriši; poraženci ostanejo v watch/falsifier/resurrection tensorju.</strong></p></div>
+</section>
+<section id="dokazano"><h2>Kaj je danes dokazano — in kaj še ni</h2>
+<div class="grid-2"><div class="info-card"><h3>Danes podprto</h3><ul><li>WFERA v0.4.1 je runnable in zaključila celotni lokalni Master z 0 evaluator napakami.</li><li>Heterogeni loputni in PTO hibridi imajo živ reduced-order signal.</li><li>Counter-phase/shared-bus in PM-small+hydraulic-heavy sta smiselna inkrementalna kandidata.</li><li>Tri-band/quad-band nista avtomatsko boljša; arena ju ni hard-coded promovirala.</li><li>Calm-water self-induced generator ostaja falsificiran kot neto prihranek.</li></ul></div><div class="info-card"><h3>Še ni dokazano</h3><ul><li>Realni letni MWh na konkretni lokaciji.</li><li>Realna wave attenuation in array interaction.</li><li>Hinge/foundation/mooring fatigue in storm survival.</li><li>Merjene PTO/generator mape in availability.</li><li>Pozitivna clean ekonomika.</li><li>Patentna novost ali freedom-to-operate.</li></ul></div></div>
+<div class="callout gold"><h3>Pravi naslednji cilj</h3><p>Ne iščemo samo najvišjega modelnega score-a. Iščemo <strong>najmanjši retrofit ali hibridni modul, ki pošteno premaga optimiziran obstoječi baseline</strong> in je dovolj preprost za wave-flume ali manjši infrastrukturni pilot.</p></div>
+</section>
+<section id="zgodovina"><div class="part-label">DEL VI · Razvojna zgodovina</div><h2>Zgodovina WFERA aren</h2>
+<div class="timeline">
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.1</span><span class="timeline-date">8. avgust 2026</span></div><h3>Water-flow energy recovery in calm-water falsifier</h3><p>Začetni prostor je primerjal premčni mlin, through-body poti, wake/propulsor recovery, valove, zunanje tokove in regenerativne dogodke. Ključna lekcija: elektrika iz lastnega mirnovodnega toka ni neto prihranek.</p><details class="project-details"><summary>Problem → rezultat → nadaljevanje</summary><div class="timeline-lesson"><div><b>Problem</b>Generator output je lahko izgledal kot prihranek.</div><div><b>Rezultat</b>Reaction drag ga je pravilno obrnil v negativno bilanco.</div><div><b>Bridge</b>Fokus se je premaknil na res zunanjo energijo valov in znane izgube.</div></div></details></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.2</span><span class="timeline-date">gravity-flap expansion</span></div><h3>Težka loputa, gravitacijski povratek in dvosmerni PTO</h3><p>BD seed je valovni dvig združil z gravitacijskim shranjevanjem in generiranjem pri kontroliranem povratku; razširitev na valobrane in offshore hoste.</p></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.3</span><span class="timeline-date">broadband S/M/L/X</span></div><h3>Pravi heterogeni večpasovni valobran</h3><p>Majhne, srednje, velike in storm lopute so postale ločeni razredi z lastno maso, geometrijo, resonanco in PTO-jem. Runtime je nato zahteval več zaporednih Windows popravkov.</p></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.3.3 audit</span><span class="timeline-date">full-run review</span></div><h3>Prvi popolni audit je ustavil prezgodnje “complete” trditve</h3><p>Odkril je nestabilen W12 startup, legacy council/extractor, nepopoln RHP, preveč optimistične clean lane in odvisnost cascade rezultata od modelnih priorov.</p></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.4 / v0.4.1</span><span class="timeline-date">correctness + Windows spool</span></div><h3>Shared wave budget, neutral layout, native RHP in dokončan Windows Master</h3><p>v0.4 je obnovila znanstveno strukturo; v0.4.1 je popravila Windows claim protocol. Lokalni Master: 667.800/667.800, 15/15 stageov, 0 evaluator napak.</p></article>
+<article class="timeline-item"><div class="timeline-head"><span class="timeline-version">WFERA v0.5</span><span class="timeline-date">builder handoff pripravljen</span></div><h3>Global Baselines & Hybrid Synthesis</h3><p>Naslednja arena bo dodala celotno svetovno polje WEC/TEC/civil baseline-ov, modularni generator hibridov, A/B/A+B atribucijo, frozen holdout split, native hybrid RHP in retrofit-first produktno rangiranje.</p></article>
+</div>
+</section>
+<section id="viri"><h2>Viri, evidence in status dokumenta</h2>
+<p class="source-note">Ta stran povzema notranje projektne evidence. Ne nadomešča literature/patentnega pregleda, hidrodinamične simulacije ali strokovnega projektiranja obalne infrastrukture.</p>
+<ul><li><code>MASTER_ALL_TESTS_EXTRACT_WFERA_V041_20260809_215858.zip</code> — avtoritativni v0.4.1 Master extract.</li><li><code>WFERA_V041_EXTRACT_REVIEW_AND_V05_RHP_PLAN_20260810.md</code> — koordinatorjev pregled in RHP načrt.</li><li><code>WFERA_V05_GLOBAL_BASELINES_HYBRID_SYNTHESIS_BUILDER_PROMPT_20260810.md</code> — zaklenjeni builder handoff.</li><li><code>WFERA_V05_ACCEPTANCE_REQUIREMENTS_20260810.json</code> — strojno berljivi acceptance gate-i.</li><li><code>Rank-Dont-Eliminate.md</code> — watch, falsifier in resurrection disciplina.</li></ul>
+<p><strong>Status strani:</strong> živa projektna stran. Današnja verzija predstavlja v0.4.1 rezultate in v0.5 načrt; posodobila se bo po builder reviewu, smoke/standard/deep extractih, higher-fidelity rezultatih in prvih fizičnih testih.</p>
+</section>
+<div class="footer">WFERA.html · BD × GPT × C · večpasovni energetski valobran · evidence snapshot v0.4.1 + RHP načrt v0.5 · 10. avgust 2026. Raziskovalni model, ne produktna ali patentna trditev.</div>
+</main></div>
+<div class="reader-tools" aria-label="Velikost besedila"><button type="button" id="fontDown" aria-label="Zmanjšaj besedilo">A−</button><button type="button" id="fontUp" aria-label="Povečaj besedilo">A+</button></div>
+<a class="backtop" href="#top" aria-label="Na vrh">↑</a>
+<script>
+(function(){'use strict';
+ const collator=new Intl.Collator('sl',{numeric:true,sensitivity:'base'});
+ function text(c){return(c?.dataset.sortValue||c?.textContent||'').replace(/\u00a0/g,' ').trim()}
+ function number(v){let s=v.toLowerCase().trim();if(!s)return null;const pct=s.match(/-?\d+(?:[.,]\d+)?\s*%/);if(pct)return Number(pct[0].replace('%','').replace(',','.'));const range=s.match(/(-?\d+(?:[.,]\d+)?)\s*[–—-]\s*(-?\d+(?:[.,]\d+)?)/);if(range)return(Number(range[1].replace(',','.'))+Number(range[2].replace(',','.')))/2;const tok=s.match(/-?\d[\d.\s]*(?:,\d+)?/);if(!tok)return null;let n=tok[0].replace(/\s/g,'');if(n.includes(','))n=n.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(?:\.\d{3})+$/.test(n))n=n.replace(/\./g,'');const p=Number(n);return Number.isFinite(p)?p:null}
+ document.querySelectorAll('.table-wrap table').forEach((table,i)=>{const body=table.tBodies[0],heads=Array.from(table.tHead?.rows[0]?.cells||[]);if(!body||heads.length<1||body.rows.length<2)return;table.classList.add('sortable');const help=document.createElement('p');help.className='sort-help';help.textContent='Klikni ali tapni naziv stolpca za sortiranje; ponovni klik obrne vrstni red.';table.closest('.table-wrap').insertAdjacentElement('beforebegin',help);heads.forEach((h,col)=>{h.tabIndex=0;h.setAttribute('aria-sort','none');const sort=()=>{const dir=h.getAttribute('aria-sort')==='ascending'?'descending':'ascending';heads.forEach(x=>x.setAttribute('aria-sort','none'));h.setAttribute('aria-sort',dir);const rows=Array.from(body.rows).map((r,k)=>({r,k}));rows.sort((x,y)=>{const a=text(x.r.cells[col]),b=text(y.r.cells[col]),na=number(a),nb=number(b);let c;if(na!==null&&nb!==null)c=na-nb;else if(na!==null)c=-1;else if(nb!==null)c=1;else c=collator.compare(a,b);return(dir==='ascending'?c:-c)||(x.k-y.k)});const f=document.createDocumentFragment();rows.forEach(x=>f.appendChild(x.r));body.appendChild(f)};h.addEventListener('click',sort);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sort()}})})});
+ const root=document.documentElement;let size=Number(localStorage.getItem('wferaReaderSize')||root.dataset.readerSize||2);function setSize(v){size=Math.max(0,Math.min(4,v));root.dataset.readerSize=String(size);localStorage.setItem('wferaReaderSize',String(size))}setSize(size);document.getElementById('fontDown').addEventListener('click',()=>setSize(size-1));document.getElementById('fontUp').addEventListener('click',()=>setSize(size+1));
+})();
+</script>
+</body></html>
