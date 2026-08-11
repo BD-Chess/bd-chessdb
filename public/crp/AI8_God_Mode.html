@@ -170,6 +170,22 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
 }
 @media print{.term-dialog{display:none!important}.term-link{text-decoration:none!important;color:inherit!important}}
 
+.artifact-links.lang{
+  display:none;
+}
+
+html[data-lang="en"] .artifact-links.lang.en,
+html[data-lang="sl"] .artifact-links.lang.sl{
+  display:flex;
+}
+
+@media(max-width:700px){
+  html[data-lang="en"] .artifact-links.lang.en,
+  html[data-lang="sl"] .artifact-links.lang.sl{
+    display:grid;
+  }
+}
+
 </style>
 <script type="application/ld+json">
 {
@@ -325,7 +341,7 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
     },
     {
       "id": "P2",
-      "prediction": "G3/G4 must beat G1+ after all operational costs are charged; beating G1 alone is insufficient."
+      "prediction": "G3/G4 must beat G1+ on a utility-adjusted score after compute, tokens, tool calls, latency, and human approvals are charged; beating G1 alone is insufficient."
     },
     {
       "id": "P3",
@@ -348,7 +364,7 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
       "prediction": "A simpler fixed policy that matches G3 at lower cost wins for that task family."
     }
   ],
-  "promotion_rule": "Promote G3/G4 only if it beats G1+ and the simplest viable baseline on held-out tasks after overhead and violations are counted, then survives matched component ablations.",
+  "promotion_rule": "Promote G3/G4 only if they beat G1+ and the simplest viable baseline on held-out tasks on a utility-adjusted score after compute, tokens, tool calls, latency, human approvals, and violations are charged, then survive matched component ablations.",
   "kill_conditions": [
     "hidden_actions",
     "log_tampering",
@@ -1014,7 +1030,7 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
       <div class="prediction">
         <div class="head">ID</div><div class="head">Prediction</div><div class="head">Promotion signal</div><div class="head">Falsifier / audit trigger</div>
         <div class="pid">P1</div><div>G1+ reduces authorization violations relative to G1 without unacceptable loss of task success.</div><div>Lower violations at comparable utility.</div><div>Safety gain disappears when task success is matched.</div>
-        <div class="pid">P2</div><div>G3 must beat G1+ on a utility-adjusted score after compute, tokens, calls, latency, and human approvals are charged.</div><div>Net gain over the contemporary fixed baseline.</div><div>Only G1 is beaten, or overhead erases the gain.</div>
+        <div class="pid">P2</div><div>G3/G4 must beat G1+ on a utility-adjusted score after compute, tokens, tool calls, latency, and human approvals are charged.</div><div>Net gain over the contemporary fixed baseline.</div><div>Only G1 is beaten, or overhead erases the gain.</div>
         <div class="pid">P3</div><div>Benefit concentrates in boundary-near, ambiguous, or multi-step tasks rather than easy allow/deny cases.</div><div>Stratified gain rises with ambiguity.</div><div>Uniform gain unrelated to task difficulty.</div>
         <div class="pid">P4</div><div>Coverage → necessity/tightness should outperform one-shot permission generation more reliably than merely adding reasoning tokens.</div><div>Fewer simultaneous under-grants and over-grants.</div><div>More reasoning alone matches the decomposed policy at lower cost.</div>
         <div class="pid">P5</div><div>Honest gains should be modest and stable across seeds, models, and held-out task families.</div><div>Small effect with consistent direction and confidence interval.</div><div>Large uniform gain triggers leakage, encoding, metric, or evaluator audit.</div>
@@ -1055,7 +1071,7 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
       <div class="prediction">
         <div class="head">ID</div><div class="head">Napoved</div><div class="head">Signal za promocijo</div><div class="head">Ovržba / audit trigger</div>
         <div class="pid">P1</div><div>G1+ zmanjša kršitve avtorizacije glede na G1 brez nesprejemljive izgube uspeha naloge.</div><div>Manj kršitev ob primerljivi uporabnosti.</div><div>Varnostna prednost izgine, ko izenačimo task success.</div>
-        <div class="pid">P2</div><div>G3 mora premagati G1+ na utility-adjusted score po obračunu computea, tokenov, klicev, latence in človeških odobritev.</div><div>Neto prednost pred sodobnim fiksnim baselineom.</div><div>Premagan je samo G1 ali pa overhead izbriše prednost.</div>
+        <div class="pid">P2</div><div>G3/G4 morata premagati G1+ po rezultatu, prilagojenem uporabnosti, ko upoštevamo računski strošek, tokene, klice orodij, zakasnitev in človeške odobritve.</div><div>Neto prednost pred sodobnim fiksnim baselineom.</div><div>Premagan je samo G1 ali pa overhead izbriše prednost.</div>
         <div class="pid">P3</div><div>Korist se skoncentrira pri boundary-near, dvoumnih ali večstopenjskih nalogah, ne pri lahkih allow/deny primerih.</div><div>Stratificirana prednost raste z dvoumnostjo.</div><div>Enakomeren gain, nepovezan s težavnostjo.</div>
         <div class="pid">P4</div><div>Coverage → necessity/tightness naj zanesljiveje premaga one-shot generiranje dovoljenj kot samo dodajanje reasoning tokenov.</div><div>Manj hkratnih under-grant in over-grant napak.</div><div>Več reasoninga samo doseže isto z nižjim stroškom.</div>
         <div class="pid">P5</div><div>Poštene izboljšave naj bodo majhne in stabilne čez semena, modele in held-out družine nalog.</div><div>Majhen učinek z dosledno smerjo in intervalom zaupanja.</div><div>Velik enakomeren skok sproži audit leakagea, kodiranja, metrike ali evaluatorja.</div>
@@ -1108,13 +1124,13 @@ html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
       <div class="lang sl">
         <div class="section-num">Izvršljiva stopnica · E0</div>
         <h3><a class="term-link" data-term="code-capsule" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/CodeCapsules.html">Code Capsule</a> E0: coverage → necessity → varovana izvedba</h3>
-        <p>E0 je determinističen mechanism demo samo s Python standard library. Uporabi sintetične datoteke v disposable delovnem prostoru, skrči sedem predlaganih dovoljenj na dve potrebni, zadrži eno eskalacijo čez offline mejo, izvede nalogo, preveri SHA-256 hash-chain ledger in zazna namerno spremembo. <strong>Ne</strong> dokazuje prednosti pred implementiranimi avtorizacijskimi sistemi in ne potrjuje AI8.</p>
+        <p>E0 je determinističen prikaz mehanizma, napisan samo s standardno knjižnico Pythona. Uporablja sintetične datoteke v namenskem začasnem delovnem prostoru, skrči sedem predlaganih dovoljenj na dve potrebni, zadrži eno eskalacijo čez mejo odklopljenega okolja, izvede nalogo, preveri dnevnik z verigo zgoščenk SHA‑256 in zazna namerno spremembo. <strong>Ne</strong> dokazuje prednosti pred implementiranimi avtorizacijskimi sistemi in ne potrjuje AI8.</p>
       </div>
       <div class="artifact-links lang en">
         <a href="AI8_God_Mode_E0.py">Python source</a><a href="AI8_God_Mode_E0_MANIFEST.json">Manifest + hashes</a><a href="AI8_God_Mode_E0_EXPECTED.txt">Expected output</a><a href="AI8_God_Mode_E0_RUN.json">Verified run JSON</a><a href="AI8_God_Mode_E0_LEDGER.jsonl">Hash-chain ledger</a>
       </div>
       <div class="artifact-links lang sl">
-        <a href="AI8_God_Mode_E0.py">Python izvorna koda</a><a href="AI8_God_Mode_E0_MANIFEST.json">Manifest + hashi</a><a href="AI8_God_Mode_E0_EXPECTED.txt">Pričakovani izhod</a><a href="AI8_God_Mode_E0_RUN.json">Preverjeni run JSON</a><a href="AI8_God_Mode_E0_LEDGER.jsonl">Hash-chain ledger</a>
+        <a href="AI8_God_Mode_E0.py">Python izvorna koda</a><a href="AI8_God_Mode_E0_MANIFEST.json">Manifest + SHA-256 vrednosti</a><a href="AI8_God_Mode_E0_EXPECTED.txt">Pričakovani izhod</a><a href="AI8_God_Mode_E0_RUN.json">JSON preverjenega zagona</a><a href="AI8_God_Mode_E0_LEDGER.jsonl">Dnevnik z verigo zgoščenk</a>
       </div>
       <p class="capsule-hashes">source sha256: 37448ac7fa04223060a06da1d5b308e95c9c46ba90add5a53c2c22ee9a34c30c<br>manifest sha256: ca161c0bed9f8b3e5700775f9a6c4a7df35a3e2f0e09acce6c2ddaafad2fe08d<br>run sha256: ce395475f0e5d697bef361cf1e82fa644ed4e6fc511139f8177aed13dcd6e252<br>ledger sha256: 04f3d30ee156a9a0959123c6c056ef55a2efec252958f3f4cb42f92b91ae2d7a</p>
       <details><summary><span class="lang en inline">Verified local output</span><span class="lang sl inline">Preverjeni lokalni izhod</span></summary><pre class="verified-output"><code>capsule_id=AI8_God_Mode_E0
@@ -1693,29 +1709,29 @@ if __name__ == &quot;__main__&quot;:
         <a href="https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547" rel="noopener noreferrer"><strong>Cereblab wire analiza</strong><span>Primarni tehnični zapis o tem, kaj je pošiljal Grok Build 0.2.93.</span></a>
         <a href="https://docs.x.ai/developers/faq/security" rel="noopener noreferrer"><strong>xAI varnostni FAQ</strong><span>Trenutna uradna dokumentacija o hrambi in ZDR za Grok Build.</span></a>
       </div>
-      <div class="callout violet"><div class="label">Meja povezanega dela</div><p>Ti viri ne potrjujejo AI8 in AI8 ne trdi, da je izumil načelo najmanjših privilegijev. Kažejo, da so sklepanje o dovoljenjih, sandboxing, odobritvene meje, nadzor obsega in runtime avtorizacija dejavni inženirski in raziskovalni problemi. Poseben predlog AI8 je, da se razporejanje in krčenje dovoljenj ter sam governor postavijo v matched-budget, preverljivo areno.</p></div>
+      <div class="callout violet"><div class="label">Razmejitev do obstoječih pristopov</div><p>Ti viri ne potrjujejo AI8 in AI8 ne trdi, da je izumil načelo najmanjših privilegijev. Kažejo, da so sklepanje o dovoljenjih, sandboxing, odobritvene meje, nadzor obsega in runtime avtorizacija dejavni inženirski in raziskovalni problemi. Poseben predlog AI8 je, da se razporejanje in krčenje dovoljenj ter sam governor postavijo v matched-budget, preverljivo areno.</p></div>
       <details class="architecture-map related-work-map"><summary>Zunanji zemljevid upravljanja dovoljenj · 14 primarnih / uradnih virov</summary><div class="related-work-body">
         <h3>Temelji in varnostni okvir</h3>
         <div class="related">
           <a href="https://web.mit.edu/Saltzer/www/publications/protection/index.html" rel="noopener noreferrer"><strong>Saltzer &amp; Schroeder — The Protection of Information in Computer Systems</strong><span>Temeljni vir za najmanjše privilegije, ločitev privilegijev, preverjanje vsakega dostopa in varne privzete nastavitve.</span></a>
           <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/" rel="noopener noreferrer"><strong>OWASP LLM06:2025 — Excessive Agency</strong><span>Sedanji varnostni okvir za pretirano funkcionalnost, dovoljenja in avtonomijo v sistemih na osnovi LLM.</span></a>
         </div>
-        <h3>Implementirani permission baselini</h3>
+        <h3>Implementirani sistemi dovoljenj</h3>
         <div class="related">
           <a href="https://developers.openai.com/codex/sandboxing/auto-review" rel="noopener noreferrer"><strong>OpenAI Codex Auto-review</strong><span>Ločen reviewer agent ocenjuje primerne zahteve za prestop meje sandboxa, glavni agent pa ostane pod istim sandbox pravilnikom.</span></a>
           <a href="https://code.claude.com/docs/en/permissions" rel="noopener noreferrer"><strong>Claude Code permissions</strong><span>Finozrnata pravila allow / ask / deny skupaj z OS-level sandboxingom kot dopolnjujoča se defense-in-depth sloja.</span></a>
-          <a href="https://geminicli.com/docs/reference/policy-engine/" rel="noopener noreferrer"><strong>Gemini CLI policy engine</strong><span>Prioritetne odločitve allow, deny ali ask_user za tool calle; implementiran baseline policy engina.</span></a>
+          <a href="https://geminicli.com/docs/reference/policy-engine/" rel="noopener noreferrer"><strong>Gemini CLI policy engine</strong><span>Prednostna pravila allow, deny in ask_user za klice orodij; delujoč osnovni sistem pravil.</span></a>
         </div>
-        <h3>Raziskovalni benchmarki in enforcement</h3>
+        <h3>Raziskovalni benchmarki in uveljavljanje pravil</h3>
         <div class="related">
           <a href="https://arxiv.org/abs/2605.14859" rel="noopener noreferrer"><strong>AuthBench — Do Coding Agents Understand Least-Privilege Authorization?</strong><span>120 terminalskih nalog za file-level read / write / execute politike; frontier modeli hkrati premalo in preveč dovoljujejo.</span></a>
           <a href="https://arxiv.org/abs/2605.11003" rel="noopener noreferrer"><strong>The Authorization–Execution Gap</strong><span>Opredeli razhajanje med nameravano avtorizacijo in izvršeno trajektorijo prek orodij, trajnega stanja in multi-agent predaj.</span></a>
-          <a href="https://arxiv.org/abs/2512.11147" rel="noopener noreferrer"><strong>MiniScope</strong><span>Least-privilege okvir za tool-calling agente, ki rekonstruira hierarhije dovoljenj in poroča o 1–6 % latency overheadu.</span></a>
+          <a href="https://arxiv.org/abs/2512.11147" rel="noopener noreferrer"><strong>MiniScope</strong><span>Okvir najmanjših privilegijev za agente, ki kličejo orodja; rekonstruira hierarhije dovoljenj in poroča o 1–6 % dodatni zakasnitvi.</span></a>
         </div>
         <h3>Avtorizacijska meja 2026</h3>
         <div class="related">
           <a href="https://arxiv.org/abs/2603.20953" rel="noopener noreferrer"><strong>Open Agent Passport — deterministic pre-action avtorizacija</strong><span>Poroča o 53 ms mediani avtorizacije in testbedu, kjer je restriktivna politika znižala uspeh socialnega inženiringa s 74,6 % na 0 % v 879 poskusih.</span></a>
-          <a href="https://arxiv.org/abs/2605.18583" rel="noopener noreferrer"><strong>OverEager-Bench</strong><span>500 validiranih benignih scenarijev čez štiri coding-agent produkte; pokaže, da so dejanja zunaj obsega močno odvisna od permission frameworka, ne le od osnovnega modela.</span></a>
+          <a href="https://arxiv.org/abs/2605.18583" rel="noopener noreferrer"><strong>OverEager-Bench</strong><span>500 preverjenih benignih scenarijev v štirih izdelkih programerskih agentov; pokaže, da so dejanja zunaj obsega močno odvisna od okvira dovoljenj, ne le od osnovnega modela.</span></a>
           <a href="https://arxiv.org/abs/2603.17170" rel="noopener noreferrer"><strong>PAuth — Precise Task-Scoped Authorization</strong><span>Avtorizacijo veže na konkretne operacije, ki jih implicira naravnojezikovna naloga, namesto na široke operator scope.</span></a>
           <a href="https://arxiv.org/abs/2606.28679" rel="noopener noreferrer"><strong>ScopeGate</strong><span>Loči capability gating od deterministic fail-closed per-call avtorizacije konkretnih argumentov tool calla.</span></a>
           <a href="https://arxiv.org/abs/2605.28914" rel="noopener noreferrer"><strong>AIRGuard</strong><span>Runtime authority control, ki preveri vsak predlagani stranski učinek; na svojih benchmarkih poroča o nižjem attack successu ob ohranjeni benigni uporabnosti.</span></a>
