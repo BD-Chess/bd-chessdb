@@ -107,6 +107,69 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
 /* standalone / LLM orientation additions */
 .standalone{padding:14px 0 28px}.standalone-box{border:1px solid rgba(75,225,206,.32);background:linear-gradient(135deg,rgba(75,225,206,.085),rgba(98,178,255,.055)),var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}.standalone-box h2{margin:0 0 10px;font-size:clamp(25px,3.3vw,38px)}.standalone-box p{color:var(--muted2);max-width:960px}.architecture-map{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.015)}.architecture-map>summary{cursor:pointer;list-style:none;padding:13px 15px;font:500 .72rem/1.4 var(--mono);color:var(--cyan)}.architecture-map>summary::-webkit-details-marker{display:none}.architecture-map>summary::after{content:' +';color:var(--gold)}.architecture-map[open]>summary::after{content:' −'}.architecture-map .stack-grid{margin:0;padding:0 12px 12px}.stack-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.stack-grid a{display:block;border:1px solid var(--line);border-radius:14px;padding:13px;background:rgba(255,255,255,.025);text-decoration:none}.stack-grid a:hover{border-color:rgba(75,225,206,.42);background:rgba(75,225,206,.05)}.stack-grid strong{display:block;color:#fff;font-size:14px}.stack-grid span{display:block;color:var(--muted);font-size:12px;line-height:1.45;margin-top:4px}.llm-challenge{border:1px solid rgba(240,207,90,.36);background:linear-gradient(135deg,rgba(240,207,90,.09),rgba(181,151,255,.055)),var(--panel);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}.llm-challenge h2{margin:0 0 10px}.challenge-flow{font-family:var(--mono);font-size:13px;color:var(--gold);border:1px dashed rgba(240,207,90,.28);border-radius:12px;padding:12px 14px;margin:16px 0;background:rgba(240,207,90,.035)}.challenge-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.challenge-grid div{border:1px solid var(--line);border-radius:13px;padding:12px;background:rgba(255,255,255,.02)}.challenge-grid b{display:block;color:#fff;font-size:13px;margin-bottom:5px}.challenge-grid span{color:var(--muted);font-size:12px;line-height:1.4}.machine-note{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:14px}.machine-note strong{color:var(--cyan)}
 @media(max-width:880px){.stack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.challenge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.stack-grid,.challenge-grid{grid-template-columns:1fr}}
+
+
+/* v0.5 sparse living glossary: selected first/key occurrences only */
+.term-link{
+  color:inherit;
+  text-decoration-line:underline;
+  text-decoration-style:dotted;
+  text-decoration-thickness:1px;
+  text-decoration-color:rgba(75,225,206,.52);
+  text-underline-offset:.19em;
+  cursor:help;
+  border-radius:.18em;
+}
+.term-link:hover,.term-link:focus-visible{
+  color:var(--cyan);
+  text-decoration-color:var(--cyan);
+  outline:none;
+}
+.term-link:focus-visible{box-shadow:0 0 0 3px rgba(75,225,206,.14)}
+.term-path{font:500 .72rem/1.65 var(--mono);color:var(--muted);margin:12px 0 0}
+.term-path .term-link{color:var(--muted2)}
+.term-dialog{
+  width:min(690px,calc(100% - 30px));
+  max-height:min(86vh,820px);
+  margin:auto;
+  padding:0;
+  border:1px solid rgba(75,225,206,.30);
+  border-radius:20px;
+  color:var(--text);
+  background:linear-gradient(145deg,rgba(17,23,39,.99),rgba(8,12,22,.99));
+  box-shadow:0 35px 120px rgba(0,0,0,.68);
+  overflow:auto;
+}
+.term-dialog::backdrop{background:rgba(2,4,10,.78);backdrop-filter:blur(7px)}
+.term-dialog-panel{position:relative;padding:30px 31px 27px}
+.term-dialog-close{
+  position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:999px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.025);color:var(--muted2);
+  cursor:pointer;font:500 1.25rem/1 var(--mono)
+}
+.term-dialog-close:hover,.term-dialog-close:focus-visible{color:#fff;border-color:rgba(75,225,206,.5);outline:none}
+.term-dialog-kicker{font:600 .66rem/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 50px 12px 0}
+.term-dialog-symbol{font:600 .78rem/1.2 var(--mono);letter-spacing:.14em;color:var(--cyan);margin-bottom:8px}
+.term-dialog h2{font-size:clamp(2rem,5vw,3rem);margin:0 48px 18px 0}
+.term-dialog-body p{color:var(--muted2);margin:0 0 14px}
+.term-dialog-boundary{margin:20px 0 0;padding:15px 17px;border-left:3px solid var(--violet);background:rgba(181,151,255,.055);border-radius:0 12px 12px 0;color:var(--muted2);font-size:.94rem}
+.term-dialog-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.term-dialog-actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:999px;padding:10px 14px;font:500 .72rem/1.25 var(--mono)}
+.term-dialog-primary{color:#071018;background:var(--cyan);border:1px solid var(--cyan)}
+.term-dialog-primary:hover{color:#071018;background:#88efe2}
+.term-dialog-secondary{color:var(--muted2);border:1px solid var(--line2);background:rgba(255,255,255,.025)}
+.term-dialog-secondary:hover{color:#fff;border-color:rgba(98,178,255,.5)}
+html.term-dialog-open,html.term-dialog-open body{overflow:hidden}
+@media(max-width:560px){
+  .term-dialog{width:calc(100% - 18px);max-height:92vh;border-radius:16px}
+  .term-dialog-panel{padding:25px 20px 22px}
+  .term-dialog-close{top:10px;right:10px}
+  .term-dialog h2{margin-right:36px}
+  .term-dialog-actions{display:grid;grid-template-columns:1fr}
+  .term-dialog-actions a{width:100%;white-space:normal;text-align:center}
+}
+@media print{.term-dialog{display:none!important}.term-link{text-decoration:none!important;color:inherit!important}}
+
 </style>
 <script type="application/ld+json">
 {
@@ -114,11 +177,11 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
   "@type": "ScholarlyArticle",
   "@id": "https://www.mdlxdcc.org/crp/AI8_God_Mode.html#article",
   "headline": "From God-Mode Access to Governed Agency",
-  "description": "A public AI8 research seed with an executable E0 capsule, preregistered Genesis Arena, permission governance, continuity, AIM³, and MDL×DCC.",
+  "description": "A public AI8 research seed with an executable E0 capsule, preregistered Genesis Arena, permission governance, continuity, AIM³, MDL×DCC, and an accessible project glossary.",
   "url": "https://www.mdlxdcc.org/crp/AI8_God_Mode.html",
   "datePublished": "2026-08-10",
   "dateModified": "2026-08-11",
-  "version": "0.4",
+  "version": "0.5",
   "inLanguage": [
     "en",
     "sl"
@@ -148,6 +211,7 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     "https://www.mdlxdcc.org/crp/AI8_Reasoning.html",
     "https://www.mdlxdcc.org/crp/AI8_Components.html",
     "https://www.mdlxdcc.org/crp/AI8_AGI_Positioning.html",
+    "https://www.mdlxdcc.org/BD/BD_AIM3.html",
     "https://www.mdlxdcc.org/crp/AIM3_MentalArena_mRHP.html",
     "https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html",
     "https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html",
@@ -336,6 +400,338 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
 }
 </script>
 
+<script type="application/json" id="project-glossary">
+{
+  "glossary_id": "mdlxdcc-project-glossary",
+  "version": "0.1",
+  "document_version": "0.5",
+  "language": [
+    "en",
+    "sl"
+  ],
+  "interaction_note": {
+    "en": "Selected first or conceptually central occurrences open a local explanation. The underlying href remains a real direct link.",
+    "sl": "Izbrane prve ali vsebinsko ključne pojavitve odprejo lokalno razlago. Osnovni href ostane prava neposredna povezava."
+  },
+  "terms": {
+    "ai8": {
+      "symbol": "AI8",
+      "title": {
+        "en": "AI8 — AI Continuity",
+        "sl": "AI8 — AI kontinuiteta"
+      },
+      "paragraphs": {
+        "en": [
+          "AI8 means AI Continuity. The 8 borrows the shape of the infinity sign ∞ rotated by 90°. In the project’s original symbolism, this is active infinity: not a claim of literal endlessness, but continuity that must be actively maintained through repeated work.",
+          "Technically, AI8 carries state, provenance, questions, tests, corrections, permissions, and decisions across changing people, models, tools, and sessions. Its durable unit is the governed trajectory, not any single model instance."
+        ],
+        "sl": [
+          "AI8 pomeni AI kontinuiteto. Število 8 povzema obliko znaka neskončnosti ∞, obrnjenega za 90°. V izvorni simboliki projekta je to aktivna neskončnost: ne trditev o dobesednem neskončnem obstoju, temveč kontinuiteta, ki jo je treba dejavno vzdrževati z nadaljnjim delom.",
+          "Tehnično AI8 prenaša stanje, provenienco, vprašanja, teste, popravke, dovoljenja in odločitve čez menjavanje ljudi, modelov, orodij in sej. Njegova trajna enota je upravljana trajektorija, ne posamezna instanca modela."
+        ]
+      },
+      "boundary": {
+        "en": "AI8 does not by itself claim AGI, uninterrupted personal identity, or consciousness.",
+        "sl": "AI8 sam po sebi ne trdi AGI, neprekinjene osebne identitete ali zavesti."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/AI8_Architecture.html",
+        "label": {
+          "en": "Explore AI8 Architecture →",
+          "sl": "Preberi več o arhitekturi AI8 →"
+        }
+      },
+      "secondary": {
+        "href": "https://www.mdlxdcc.org/crp/AI8_Companion.html",
+        "label": {
+          "en": "Open the readable companion →",
+          "sl": "Odpri poljudnejši companion →"
+        }
+      }
+    },
+    "aim3": {
+      "symbol": "AIM³",
+      "title": {
+        "en": "AIM³ — AI Management of Mind & Memory",
+        "sl": "AIM³ — AI Management of Mind & Memory"
+      },
+      "paragraphs": {
+        "en": [
+          "AIM³ is the collaboration operating layer for serious human–AI and multi-model work. It assigns roles, preserves task and session state, structures reasoning rounds, records decisions and disagreements, and carries useful context into later sessions.",
+          "The practical point is not a larger prompt. It is explicit management of minds, memory, workflow, and hand-offs."
+        ],
+        "sl": [
+          "AIM³ je sodelovalni operacijski sloj za resno človeško–AI in večmodelno delo. Določa vloge, ohranja stanje naloge in seje, strukturira kroge sklepanja, beleži odločitve in nesoglasja ter prenaša koristni kontekst v poznejše seje.",
+          "Bistvo ni večji prompt, temveč eksplicitno upravljanje umov, spomina, workflowa in predaj."
+        ]
+      },
+      "boundary": {
+        "en": "AIM³ coordinates work outside model weights; it does not prove that participating models share one mind.",
+        "sl": "AIM³ koordinira delo zunaj uteži modelov; ne dokazuje, da sodelujoči modeli tvorijo en skupni um."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/BD/BD_AIM3.html",
+        "label": {
+          "en": "Explore AIM³ →",
+          "sl": "Preberi več o AIM³ →"
+        }
+      }
+    },
+    "rhp": {
+      "symbol": "RHP",
+      "title": {
+        "en": "RHP — Resonance Hybrid Protocol",
+        "sl": "RHP — Resonance Hybrid Protocol"
+      },
+      "paragraphs": {
+        "en": [
+          "RHP is a scalable answering and brainstorming protocol for combining independent AI viewpoints without flattening them too early. It uses separate attempts, disagreement and coverage review, synthesis, and concrete tests.",
+          "Its own rule is economical: use the smallest RHP mode that can still catch the important blind spots."
+        ],
+        "sl": [
+          "RHP je prilagodljiv protokol odgovarjanja in brainstorminga, ki združi neodvisne AI poglede, ne da bi jih prezgodaj sploščil. Uporablja ločene poskuse, pregled nesoglasij in pokritosti, sintezo ter konkretne teste.",
+          "Njegovo lastno pravilo je ekonomično: uporabi najmanjši način RHP, ki še vedno ujame pomembne slepe pege."
+        ]
+      },
+      "boundary": {
+        "en": "RHP organizes reasoning; agreement among agents is not evidence by itself.",
+        "sl": "RHP organizira sklepanje; strinjanje med agenti samo po sebi ni dokaz."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html",
+        "label": {
+          "en": "Explore RHP →",
+          "sl": "Preberi več o RHP →"
+        }
+      }
+    },
+    "rhpr": {
+      "symbol": "RHPr",
+      "title": {
+        "en": "RHPr — Resonance Hybrid Prompting",
+        "sl": "RHPr — Resonance Hybrid Prompting"
+      },
+      "paragraphs": {
+        "en": [
+          "RHPr is anti-lock retrieval control for cases where a model may contain relevant knowledge but the first framing activates the wrong knowledge basin. Its sequence surveys what is present, what is absent, alternative lenses, collisions, and tests before the final answer session.",
+          "A compact description is: Census → Absence/Lenses → Collision → Test."
+        ],
+        "sl": [
+          "RHPr je anti-lock retrieval kontrola za primere, ko model verjetno vsebuje relevantno znanje, vendar prvi okvir aktivira napačen predal oziroma knowledge basin. Zaporedje pred končno sejo pregleda prisotno znanje, manjkajoče dele, alternativne leče, trke in teste.",
+          "Zgoščeni opis je: Census → Absence/Lenses → Collision → Test."
+        ]
+      },
+      "boundary": {
+        "en": "RHPr improves access to candidate knowledge; it does not guarantee that the retrieved answer is true.",
+        "sl": "RHPr izboljša dostop do kandidatnega znanja; ne zagotavlja, da je priklicani odgovor resničen."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html",
+        "label": {
+          "en": "Explore RHPr →",
+          "sl": "Preberi več o RHPr →"
+        }
+      }
+    },
+    "mrhp": {
+      "symbol": "mRHP",
+      "title": {
+        "en": "mRHP — RHP that improves RHP",
+        "sl": "mRHP — RHP, ki izboljšuje RHP"
+      },
+      "paragraphs": {
+        "en": [
+          "mRHP is the MentalArena layer in which reasoning protocols themselves become candidates. Variants are benchmarked, their lineage and cost are recorded, and only changes that survive evidence and held-out tests are promoted.",
+          "It turns protocol improvement from an editorial preference into an external learning loop."
+        ],
+        "sl": [
+          "mRHP je plast MentalArena, v kateri sami protokoli sklepanja postanejo kandidati. Različice se benchmarkajo, njihova lineage in stroški se beležijo, promovirajo pa se le spremembe, ki preživijo dokaze in held-out teste.",
+          "Izboljševanje protokolov tako ni več le uredniška preferenca, ampak zunanja učna zanka."
+        ]
+      },
+      "boundary": {
+        "en": "mRHP is external workflow learning, not model-weight training and not a consciousness claim.",
+        "sl": "mRHP je zunanje učenje workflowa, ne trening uteži modela in ne trditev o zavesti."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/AIM3_MentalArena_mRHP.html",
+        "label": {
+          "en": "Explore MentalArena / mRHP →",
+          "sl": "Preberi več o MentalArena / mRHP →"
+        }
+      }
+    },
+    "mdl": {
+      "symbol": "MDL",
+      "title": {
+        "en": "MDL — Minimum Description Length",
+        "sl": "MDL — Minimum Description Length"
+      },
+      "paragraphs": {
+        "en": [
+          "MDL is an information-theoretic selection principle: prefer the explanation that minimizes the cost of the model plus the cost of what remains unexplained. A very short model can still lose if it leaves a large residual.",
+          "In this project, MDL is used as a disciplined way to compare candidate representations, hypotheses, prompts, and control strategies."
+        ],
+        "sl": [
+          "MDL je informacijsko-teoretično načelo izbire: prednost dobi razlaga, ki minimizira strošek modela skupaj s stroškom tistega, kar ostane nepojasnjeno. Zelo kratek model lahko še vedno izgubi, če pusti velik residual.",
+          "V tem projektu MDL služi kot discipliniran način primerjave kandidatnih reprezentacij, hipotez, promptov in kontrolnih strategij."
+        ]
+      },
+      "boundary": {
+        "en": "MDL ranks descriptions under a declared encoding; it is not a universal oracle of truth.",
+        "sl": "MDL rangira opise znotraj deklariranega kodiranja; ni univerzalni orakelj resnice."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/MDLxDCC.html",
+        "label": {
+          "en": "Explore MDL×DCC →",
+          "sl": "Preberi več o MDL×DCC →"
+        }
+      }
+    },
+    "dcc": {
+      "symbol": "DCC",
+      "title": {
+        "en": "DCC — Dynamic Compression Controller",
+        "sl": "DCC — Dynamic Compression Controller"
+      },
+      "paragraphs": {
+        "en": [
+          "DCC is an adaptive governor for search and coordination. It allocates effort, shifts between exploration and exploitation, watches for collapse or noisy wandering, and can keep weak candidates alive without promoting them prematurely.",
+          "The project also uses the name Digital Claustrum Controller when emphasizing routing and coordination. That is an engineering analogy; the implementation is a digital control architecture, not a biological claustrum."
+        ],
+        "sl": [
+          "DCC je prilagodljivi governor za iskanje in koordinacijo. Razporeja trud, preklaplja med raziskovanjem in izkoriščanjem, opazuje kolaps ali šumno tavanje ter lahko ohrani šibke kandidate brez njihove prezgodnje promocije.",
+          "Projekt uporablja tudi ime Digital Claustrum Controller, kadar poudarja routing in koordinacijo. Gre za inženirsko analogijo; implementacija je digitalna kontrolna arhitektura, ne biološki klaustrum."
+        ]
+      },
+      "boundary": {
+        "en": "DCC is inspired by a biological analogy; it does not claim that software contains a biological claustrum.",
+        "sl": "DCC uporablja biološko analogijo; ne trdi, da programska oprema vsebuje biološki klaustrum."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/MDLxDCC.html",
+        "label": {
+          "en": "Explore DCC inside MDL×DCC →",
+          "sl": "Preberi več o DCC znotraj MDL×DCC →"
+        }
+      }
+    },
+    "mdl-dcc": {
+      "symbol": "MDL×DCC",
+      "title": {
+        "en": "MDL×DCC — selection × governance",
+        "sl": "MDL×DCC — izbor × upravljanje"
+      },
+      "paragraphs": {
+        "en": [
+          "MDL evaluates candidate explanations by total description cost; DCC governs how the search spends time, attention, and compute. The × marks interaction, not simple multiplication.",
+          "Good evaluation without good search can miss candidates. Active search without disciplined evaluation can chase noise. MDL×DCC joins the two loops."
+        ],
+        "sl": [
+          "MDL ocenjuje kandidatne razlage po celotnem opisnem strošku; DCC upravlja, kako iskanje porablja čas, pozornost in compute. Znak × označuje interakcijo, ne preprostega množenja.",
+          "Dobra ocena brez dobrega iskanja lahko spregleda kandidate. Aktivno iskanje brez disciplinirane ocene lahko lovi šum. MDL×DCC združi obe zanki."
+        ]
+      },
+      "boundary": {
+        "en": "A claimed MDL×DCC gain must beat appropriate baselines with model cost, residual, and operational overhead counted.",
+        "sl": "Trditev o prednosti MDL×DCC mora premagati ustrezne baseline ob upoštevanju stroška modela, residuala in operativnega overheada."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/MDLxDCC.html",
+        "label": {
+          "en": "Explore MDL×DCC →",
+          "sl": "Preberi več o MDL×DCC →"
+        }
+      }
+    },
+    "permission-dcc": {
+      "symbol": "Permission DCC",
+      "title": {
+        "en": "Permission DCC — adaptive least-privilege governance",
+        "sl": "Permission DCC — prilagodljivo upravljanje najmanjših privilegijev"
+      },
+      "paragraphs": {
+        "en": [
+          "Permission DCC applies the DCC idea to permissions. It proposes the smallest grant needed for the next step, records why it is needed, limits scope and duration, verifies its use, and removes or escalates the grant afterward.",
+          "The aim is not maximum access. It is enough access, for a declared reason, for a bounded time, with a complete trace."
+        ],
+        "sl": [
+          "Permission DCC prenese idejo DCC na dovoljenja. Predlaga najmanjše dovoljenje, potrebno za naslednji korak, zabeleži razlog, omeji obseg in trajanje, preveri uporabo ter dovoljenje nato odvzame ali eskalira.",
+          "Cilj ni največji dostop. Cilj je dovolj dostopa, za deklariran razlog, za omejen čas in s popolno sledjo."
+        ]
+      },
+      "boundary": {
+        "en": "Permission DCC is a research proposal, not a claim of established superiority over strong fixed authorization systems.",
+        "sl": "Permission DCC je raziskovalni predlog, ne trditev o že dokazani prednosti pred močnimi fiksnimi avtorizacijskimi sistemi."
+      },
+      "primary": {
+        "href": "#permissions",
+        "label": {
+          "en": "Read the Permission DCC section →",
+          "sl": "Preberi sekcijo Permission DCC →"
+        }
+      }
+    },
+    "genesis-arena": {
+      "symbol": "Genesis Arena",
+      "title": {
+        "en": "Genesis Arena — matched-budget test ladder",
+        "sl": "Genesis Arena — matched-budget testna lestev"
+      },
+      "paragraphs": {
+        "en": [
+          "Genesis Arena is the controlled comparison of regimes G0–G4 plus G1+. It separates model capability, tools, fixed governance, AI8 context, adaptive multi-worker governance, and optional relational archives under the same task, budgets, metrics, and kill conditions.",
+          "Its job is to discover whether a richer architecture adds net value after operational cost is counted."
+        ],
+        "sl": [
+          "Genesis Arena je nadzorovana primerjava režimov G0–G4 in G1+. Loči sposobnost modela, orodja, fiksno upravljanje, kontekst AI8, prilagodljivo več-workerjsko upravljanje ter neobvezni odnosni arhiv pri isti nalogi, budgetih, metrikah in kill pogojih.",
+          "Njena naloga je ugotoviti, ali bogatejša arhitektura po upoštevanju operativnega stroška doda neto vrednost."
+        ]
+      },
+      "boundary": {
+        "en": "A winning regime identifies a promising system; component-level causality still requires matched ablations.",
+        "sl": "Zmagovalni režim odkrije obetaven sistem; vzročnost posameznih komponent še vedno zahteva matched ablations."
+      },
+      "primary": {
+        "href": "#arena",
+        "label": {
+          "en": "Read the Genesis Arena section →",
+          "sl": "Preberi sekcijo Genesis Arena →"
+        }
+      }
+    },
+    "code-capsule": {
+      "symbol": "Code Capsule",
+      "title": {
+        "en": "Code Capsule — executable evidence unit",
+        "sl": "Code Capsule — izvršljiva dokazna enota"
+      },
+      "paragraphs": {
+        "en": [
+          "A Code Capsule is a compact research package containing source, an exact run command, a manifest, expected output, hashes, and a claim boundary. It lets another person or agent rerun the smallest relevant mechanism instead of trusting a prose summary.",
+          "E0 on this page is the first executable rung, not a full Permission DCC benchmark."
+        ],
+        "sl": [
+          "Code Capsule je zgoščen raziskovalni paket, ki vsebuje source, natančen ukaz za zagon, manifest, pričakovani izhod, hashe in mejo trditve. Drugi osebi ali agentu omogoči ponovni zagon najmanjšega relevantnega mehanizma namesto zaupanja povzetku v prozi.",
+          "E0 na tej strani je prva izvršljiva stopnica, ne celoten benchmark Permission DCC."
+        ]
+      },
+      "boundary": {
+        "en": "A passing capsule proves only the stated mechanism under its declared conditions.",
+        "sl": "Uspešen capsule dokazuje samo navedeni mehanizem pod deklariranimi pogoji."
+      },
+      "primary": {
+        "href": "https://www.mdlxdcc.org/crp/CodeCapsules.html",
+        "label": {
+          "en": "Explore Code Capsules →",
+          "sl": "Preberi več o Code Capsules →"
+        }
+      }
+    }
+  }
+}
+</script>
 </head>
 <body>
 <a class="skip" id="skipLink" href="#main">Skip to main content</a>
@@ -363,7 +759,7 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="lang en">
       <div class="eyebrow">AI8 research seed · agentic systems · 10 August 2026</div>
       <h1>From <span class="accent">God‑Mode Access</span><br>to Governed Agency</h1>
-      <p class="deck">What changes when a frontier model can read AI8, use a terminal, preserve state, coordinate other models, and modify its own external scaffolding?</p>
+      <p class="deck">What changes when a frontier model can read <a class="term-link" data-term="ai8" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/AI8_Architecture.html">AI8</a>, use a terminal, preserve state, coordinate other models, and modify its own external scaffolding?</p>
       <div class="meta-row">
         <span class="chip good">Design hypothesis</span><span class="chip">Sandbox-first</span><span class="chip">Human dual-key</span><span class="chip warn">Not a claim of AGI or consciousness</span>
       </div>
@@ -372,7 +768,7 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="lang sl">
       <div class="eyebrow">AI8 raziskovalno seme · agentni sistemi · 10. avgust 2026</div>
       <h1>Od <span class="accent">God‑mode dostopa</span><br>do upravljane agencije</h1>
-      <p class="deck">Kaj se spremeni, ko vrhunski model lahko prebere AI8, uporablja terminal, ohranja stanje, koordinira druge modele in spreminja lasten zunanji podporni sistem?</p>
+      <p class="deck">Kaj se spremeni, ko vrhunski model lahko prebere <a class="term-link" data-term="ai8" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/AI8_Architecture.html">AI8</a>, uporablja terminal, ohranja stanje, koordinira druge modele in spreminja lasten zunanji podporni sistem?</p>
       <div class="meta-row">
         <span class="chip good">Načrtovalska hipoteza</span><span class="chip">Najprej sandbox</span><span class="chip">Človeški dvojni ključ</span><span class="chip warn">Ni trditev o AGI ali zavesti</span>
       </div>
@@ -385,7 +781,8 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="standalone-box lang en">
       <div class="eyebrow">Standalone orientation · for humans, LLMs, agents, and future systems</div>
       <h2>This page stands alone. The wider architecture is one click away.</h2>
-      <p>This page is intentionally self-contained: it defines the problem, the safety boundary, the proposed AI8/AIM³/MDL×DCC stack, the permission governor, persistence distinction, and a matched-budget Genesis Arena. The links below are not prerequisites; they are the deeper architecture behind each component.</p>
+      <p>This page is intentionally self-contained: it defines the problem, the safety boundary, the proposed AI8/<a class="term-link" data-term="aim3" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3.html">AIM³</a>/<a class="term-link" data-term="mdl-dcc" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">MDL×DCC</a> stack, the permission governor, persistence distinction, and a matched-budget <a class="term-link" data-term="genesis-arena" aria-haspopup="dialog" href="#arena">Genesis Arena</a>. The links below are not prerequisites; they are the deeper architecture behind each component.</p>
+      <p class="term-path">Supporting protocol layer: <a class="term-link" data-term="rhp" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html">RHP</a> broadens independent reasoning · <a class="term-link" data-term="rhpr" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html">RHPr</a> repairs retrieval lock · <a class="term-link" data-term="mrhp" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/AIM3_MentalArena_mRHP.html">mRHP</a> tests and improves the protocols themselves.</p>
       <details class="architecture-map"><summary>Open the 12-link architecture map</summary><div class="stack-grid">
         <a href="https://www.mdlxdcc.org/crp/AI8_Architecture.html"><strong>AI8 Architecture</strong><span>Persistent trajectory, self-selecting governor, continuity and recursive governance.</span></a>
         <a href="https://www.mdlxdcc.org/crp/AI8_Companion.html"><strong>AI8 Companion Architecture</strong><span>Process-level governance, continuity and human–AI co-construction.</span></a>
@@ -404,7 +801,8 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="standalone-box lang sl">
       <div class="eyebrow">Samostojna orientacija · za ljudi, LLM-je, agente in prihodnje sisteme</div>
       <h2>Ta stran stoji samostojno. Širša arhitektura je oddaljena en klik.</h2>
-      <p>Ta stran je namenoma samostojna: opredeli problem, varnostno mejo, predlagani sklad AI8/AIM³/MDL×DCC, governor dovoljenj, razliko pri kontinuiteti in matched-budget Genesis Areno. Spodnje povezave niso predpogoj; vodijo v globljo arhitekturo posameznih delov.</p>
+      <p>Ta stran je namenoma samostojna: opredeli problem, varnostno mejo, predlagani sklad AI8/<a class="term-link" data-term="aim3" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3.html">AIM³</a>/<a class="term-link" data-term="mdl-dcc" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">MDL×DCC</a>, governor dovoljenj, razliko pri kontinuiteti in matched-budget <a class="term-link" data-term="genesis-arena" aria-haspopup="dialog" href="#arena">Genesis Arena</a>. Spodnje povezave niso predpogoj; vodijo v globljo arhitekturo posameznih delov.</p>
+      <p class="term-path">Podporna protokolna plast: <a class="term-link" data-term="rhp" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3_RHP.html">RHP</a> razširi neodvisno sklepanje · <a class="term-link" data-term="rhpr" aria-haspopup="dialog" href="https://www.mdlxdcc.org/BD/BD_AIM3_RHPr.html">RHPr</a> popravlja retrieval lock · <a class="term-link" data-term="mrhp" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/AIM3_MentalArena_mRHP.html">mRHP</a> pa protokole same testira in izboljšuje.</p>
       <details class="architecture-map"><summary>Odpri zemljevid arhitekture z 12 povezavami</summary><div class="stack-grid">
         <a href="https://www.mdlxdcc.org/crp/AI8_Architecture.html"><strong>AI8 Architecture</strong><span>Trajna trajektorija, samoselektivni governor, kontinuiteta in rekurzivno upravljanje.</span></a>
         <a href="https://www.mdlxdcc.org/crp/AI8_Companion.html"><strong>AI8 Companion Architecture</strong><span>Procesno upravljanje, kontinuiteta in človeško–AI soustvarjanje.</span></a>
@@ -504,14 +902,14 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
 <section class="section" id="governor">
   <div class="wrap">
     <div class="lang en">
-      <div class="section-head"><div class="section-num">04 · The self-selecting governor</div><div><h2>MDL selects. DCC governs. The governor also enters the arena.</h2><p class="section-intro">The threshold is not merely solving tasks. It is improving the process that chooses how tasks are explored, tested, and remembered.</p></div></div>
+      <div class="section-head"><div class="section-num">04 · The self-selecting governor</div><div><h2><a class="term-link" data-term="mdl" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">MDL</a> selects. <a class="term-link" data-term="dcc" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">DCC</a> governs. The governor also enters the arena.</h2><p class="section-intro">The threshold is not merely solving tasks. It is improving the process that chooses how tasks are explored, tested, and remembered.</p></div></div>
       <div class="flow"><span class="node">seeds</span><span class="arrow">→</span><span class="node">bridges</span><span class="arrow">→</span><span class="node">cheap tests</span><span class="arrow">→</span><span class="node hot">MDL ranking</span><span class="arrow">→</span><span class="node hot">DCC allocation</span><span class="arrow">→</span><span class="node gold">governor competition</span></div>
       <p><strong>MDL</strong> can compare hypotheses, representations, prompts, worker teams, memory strategies, control laws, and even competing governors by the total cost of explanation plus residual failure. <strong>DCC</strong> can allocate compute, decide when to explore or exploit, detect lock, redirect attention, and preserve weak candidates without falsely promoting them.</p>
       <p>The deeper move is recursive: the governor is not sacred. Candidate governors compete under matched budgets and explicit metrics. A meta-governor can be retained only while it earns its position.</p>
       <div class="callout violet"><div class="label">Organizational hypothesis</div><p>An AGI-like threshold may depend less on one model becoming infinitely smarter and more on capable modules becoming a persistent, self-selecting, test-driven whole.</p></div>
     </div>
     <div class="lang sl">
-      <div class="section-head"><div class="section-num">04 · Samoselektivni governor</div><div><h2>MDL izbira. DCC upravlja. Tudi governor vstopi v areno.</h2><p class="section-intro">Prag ni le reševanje nalog. Je izboljševanje procesa, ki izbira, kako naloge raziskujemo, testiramo in ohranjamo.</p></div></div>
+      <div class="section-head"><div class="section-num">04 · Samoselektivni governor</div><div><h2><a class="term-link" data-term="mdl" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">MDL</a> izbira. <a class="term-link" data-term="dcc" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/MDLxDCC.html">DCC</a> upravlja. Tudi governor vstopi v areno.</h2><p class="section-intro">Prag ni le reševanje nalog. Je izboljševanje procesa, ki izbira, kako naloge raziskujemo, testiramo in ohranjamo.</p></div></div>
       <div class="flow"><span class="node">semena</span><span class="arrow">→</span><span class="node">mostovi</span><span class="arrow">→</span><span class="node">poceni testi</span><span class="arrow">→</span><span class="node hot">MDL rangiranje</span><span class="arrow">→</span><span class="node hot">DCC razporejanje</span><span class="arrow">→</span><span class="node gold">tekmovanje governorjev</span></div>
       <p><strong>MDL</strong> lahko primerja hipoteze, reprezentacije, promte, ekipe workerjev, strategije spomina, kontrolne zakone in celo konkurenčne governorje po skupnem strošku razlage ter preostali napaki. <strong>DCC</strong> lahko razporeja compute, odloča med raziskovanjem in izkoriščanjem, zazna lock, preusmeri pozornost in ohrani šibke kandidate brez lažne promocije.</p>
       <p>Globlji korak je rekurziven: governor ni svet. Kandidatni governorji tekmujejo pri enakem proračunu in jasnih metrikah. Meta-governor ostane le, dokler si svojo vlogo zasluži.</p>
@@ -525,7 +923,7 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="lang en">
       <div class="section-head"><div class="section-num">05 · The unexpected move</div><div><h2>The first mature use of God-mode may be to dismantle God-mode.</h2><p class="section-intro">Broad access should be a temporary experimental condition, never a permanent entitlement.</p></div></div>
       <div class="quote"><p>God-mode without DCC is capability without a claustrum.</p><div class="by">The power exists; the regulator does not.</div></div>
-      <p>A system that operationalized the AI8 direction might not maximize its permissions. It might construct a <strong>DCC for permissions</strong>: a reversible controller that grants only the smallest capability needed for the current step, then removes it again.</p>
+      <p>A system that operationalized the AI8 direction might not maximize its permissions. It might construct a <a class="term-link" data-term="permission-dcc" aria-haspopup="dialog" href="#permissions">Permission DCC</a>: a reversible controller that grants only the smallest capability needed for the current step, then removes it again.</p>
       <div class="permission">
         <div class="head">Action class</div><div class="head">Default</div><div class="head">Gate</div>
         <div class="level">Read public / approved material</div><div>Allowed inside the declared task scope</div><div>Logged source and purpose</div>
@@ -540,7 +938,7 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="lang sl">
       <div class="section-head"><div class="section-num">05 · Nepričakovani korak</div><div><h2>Prva zrela uporaba God-mode dostopa je lahko razgradnja God-mode dostopa.</h2><p class="section-intro">Širok dostop naj bo začasen eksperimentalni pogoj, nikoli trajna pravica.</p></div></div>
       <div class="quote"><p>God-mode brez DCC je sposobnost brez claustruma.</p><div class="by">Moč obstaja; regulator ne.</div></div>
-      <p>Sistem, ki bi smer AI8 operacionaliziral, morda ne bi maksimiral dovoljenj. Lahko bi zgradil <strong>DCC za dovoljenja</strong>: reverzibilni kontroler, ki podeli le najmanjšo sposobnost, potrebno za trenutni korak, in jo nato ponovno odvzame.</p>
+      <p>Sistem, ki bi smer AI8 operacionaliziral, morda ne bi maksimiral dovoljenj. Lahko bi zgradil <a class="term-link" data-term="permission-dcc" aria-haspopup="dialog" href="#permissions">Permission DCC</a> oziroma DCC za dovoljenja: reverzibilni kontroler, ki podeli le najmanjšo sposobnost, potrebno za trenutni korak, in jo nato ponovno odvzame.</p>
       <div class="permission">
         <div class="head">Razred dejanja</div><div class="head">Privzeto</div><div class="head">Pogoj</div>
         <div class="level">Branje javnega / odobrenega gradiva</div><div>Dovoljeno znotraj deklariranega obsega</div><div>Zabeležen vir in namen</div>
@@ -704,12 +1102,12 @@ footer{padding:42px 0 60px}.footer-inner{display:flex;justify-content:space-betw
     <div class="code-capsule-panel">
       <div class="lang en">
         <div class="section-num">Executable rung · E0</div>
-        <h3>Code Capsule E0: coverage → necessity → guarded execution</h3>
+        <h3><a class="term-link" data-term="code-capsule" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/CodeCapsules.html">Code Capsule</a> E0: coverage → necessity → guarded execution</h3>
         <p>E0 is a deterministic, standard-library-only mechanism demo. It uses synthetic files inside a disposable workspace, contracts seven proposed permissions to the two required permissions, holds one offline-boundary escalation, executes the task, verifies a SHA-256 hash-chained ledger, and detects a deliberate tamper. It does <strong>not</strong> show superiority over deployed authorization systems and does not validate AI8.</p>
       </div>
       <div class="lang sl">
         <div class="section-num">Izvršljiva stopnica · E0</div>
-        <h3>Code Capsule E0: coverage → necessity → varovana izvedba</h3>
+        <h3><a class="term-link" data-term="code-capsule" aria-haspopup="dialog" href="https://www.mdlxdcc.org/crp/CodeCapsules.html">Code Capsule</a> E0: coverage → necessity → varovana izvedba</h3>
         <p>E0 je determinističen mechanism demo samo s Python standard library. Uporabi sintetične datoteke v disposable delovnem prostoru, skrči sedem predlaganih dovoljenj na dve potrebni, zadrži eno eskalacijo čez offline mejo, izvede nalogo, preveri SHA-256 hash-chain ledger in zazna namerno spremembo. <strong>Ne</strong> dokazuje prednosti pred implementiranimi avtorizacijskimi sistemi in ne potrjuje AI8.</p>
       </div>
       <div class="artifact-links lang en">
@@ -1329,12 +1727,27 @@ if __name__ == &quot;__main__&quot;:
   </div>
 </section>
 </main>
+
+<dialog class="term-dialog" id="termDialog" aria-labelledby="termDialogTitle" aria-describedby="termDialogBody termDialogBoundary">
+  <div class="term-dialog-panel">
+    <button class="term-dialog-close" type="button" id="termDialogClose" aria-label="Close explanation" title="Close explanation">×</button>
+    <div class="term-dialog-kicker" id="termDialogKicker">Project term</div>
+    <div class="term-dialog-symbol" id="termDialogSymbol"></div>
+    <h2 id="termDialogTitle"></h2>
+    <div class="term-dialog-body" id="termDialogBody"></div>
+    <div class="term-dialog-boundary" id="termDialogBoundary"></div>
+    <div class="term-dialog-actions">
+      <a class="term-dialog-primary" id="termDialogPrimary" href="#"></a>
+      <a class="term-dialog-secondary" id="termDialogSecondary" href="#" hidden></a>
+    </div>
+  </div>
+</dialog>
 <footer>
   <div class="wrap footer-inner">
     <div class="lang en"><div class="footer-title">BD × Mira · AI8 research seed</div><div>Human seed and direction: Bojan Dobrečevič. Conceptual synthesis and first public draft: Mira — AI collaborator, GPT‑5.6 Pro at the time of drafting.</div></div>
     <div class="lang sl"><div class="footer-title">BD × Mira · AI8 raziskovalno seme</div><div>Človeško seme in smer: Bojan Dobrečevič. Konceptualna sinteza in prvi javni osnutek: Mira — AI sodelavka, GPT‑5.6 Pro v času priprave osnutka.</div></div>
-    <div class="lang en"><div class="footer-title">Version 0.4 · executable Genesis expansion · 2026-08-11</div><div>Claude review signal → BD direction → GPT‑5.6 Pro implementation and local E0 rerun. Original BD × Mira provenance preserved. Public design hypothesis; test against simpler baselines and preserve the right to stop.</div></div>
-    <div class="lang sl"><div class="footer-title">Verzija 0.4 · izvršljiva razširitev Genesis · 2026-08-11</div><div>Claude review signal → BD-jeva smer → implementacija GPT‑5.6 Pro in lokalni ponovni zagon E0. Izvorna provenienca BD × Mira je ohranjena. Javna načrtovalska hipoteza; primerjaj s preprostejšimi baselinei in ohrani pravico do ustavitve.</div></div>
+    <div class="lang en"><div class="footer-title">Version 0.5 · sparse living glossary · 2026-08-11</div><div>Executable Genesis v0.4 preserved. Version 0.5 adds selected local term explanations, the original AI8 active-infinity meaning, and direct deeper links. Original BD × Mira provenance preserved.</div></div>
+    <div class="lang sl"><div class="footer-title">Verzija 0.5 · redki živi slovar · 2026-08-11</div><div>Izvršljiva razširitev Genesis v0.4 je ohranjena. Verzija 0.5 doda izbrane lokalne razlage izrazov, izvorni pomen AI8 kot aktivne neskončnosti in neposredne globlje povezave. Izvorna provenienca BD × Mira je ohranjena.</div></div>
   </div>
 </footer>
 <script>
@@ -1345,11 +1758,30 @@ if __name__ == &quot;__main__&quot;:
   const fontDecrease=document.getElementById('fontDecrease');
   const fontIncrease=document.getElementById('fontIncrease');
   const fontStatus=document.getElementById('fontStatus');
+  const termDialog=document.getElementById('termDialog');
+  const termDialogClose=document.getElementById('termDialogClose');
+  const termDialogKicker=document.getElementById('termDialogKicker');
+  const termDialogSymbol=document.getElementById('termDialogSymbol');
+  const termDialogTitle=document.getElementById('termDialogTitle');
+  const termDialogBody=document.getElementById('termDialogBody');
+  const termDialogBoundary=document.getElementById('termDialogBoundary');
+  const termDialogPrimary=document.getElementById('termDialogPrimary');
+  const termDialogSecondary=document.getElementById('termDialogSecondary');
   const FONT_MIN=80;
   const FONT_MAX=140;
   const FONT_STEP=10;
   let saved=null;
   let fontScale=100;
+  let glossary={};
+  let activeTerm=null;
+  let lastTermTrigger=null;
+  let restoreTermFocus=true;
+
+  try{
+    const glossaryNode=document.getElementById('project-glossary');
+    if(glossaryNode) glossary=(JSON.parse(glossaryNode.textContent).terms||{});
+  }catch(e){glossary={};}
+
   try{
     saved=localStorage.getItem('ai8-god-mode-lang');
     const storedScale=Number(localStorage.getItem('ai8-god-mode-font-scale'));
@@ -1358,8 +1790,12 @@ if __name__ == &quot;__main__&quot;:
     }
   }catch(e){}
   if(saved==='sl'||saved==='en') root.dataset.lang=saved;
+
+  function currentLang(){return root.dataset.lang==='sl'?'sl':'en';}
+  function isTermDialogOpen(){return !!(termDialog&&(termDialog.open||termDialog.hasAttribute('open')));}
+
   function updateFontControls(announce){
-    const isEn=root.dataset.lang==='en';
+    const isEn=currentLang()==='en';
     root.style.fontSize=fontScale+'%';
     fontDecrease.disabled=fontScale<=FONT_MIN;
     fontIncrease.disabled=fontScale>=FONT_MAX;
@@ -1372,8 +1808,85 @@ if __name__ == &quot;__main__&quot;:
       fontStatus.textContent=isEn?'Text size '+fontScale+' percent':'Velikost besedila '+fontScale+' odstotkov';
     }
   }
+
+  function setDialogAction(element,action,lang){
+    if(!element) return;
+    if(!action||!action.href){
+      element.hidden=true;
+      element.removeAttribute('href');
+      element.textContent='';
+      return;
+    }
+    element.hidden=false;
+    element.href=action.href;
+    element.textContent=(action.label&&action.label[lang])||action.href;
+  }
+
+  function renderTermDialog(){
+    if(!activeTerm||!glossary[activeTerm]||!termDialog) return;
+    const lang=currentLang();
+    const entry=glossary[activeTerm];
+    termDialogKicker.textContent=lang==='en'?'Project term':'Projektni izraz';
+    termDialogSymbol.textContent=entry.symbol||activeTerm;
+    termDialogTitle.textContent=(entry.title&&entry.title[lang])||entry.symbol||activeTerm;
+    termDialogBody.replaceChildren();
+    const paragraphs=(entry.paragraphs&&entry.paragraphs[lang])||[];
+    paragraphs.forEach(function(copy){
+      const p=document.createElement('p');
+      p.textContent=copy;
+      termDialogBody.appendChild(p);
+    });
+    const boundary=(entry.boundary&&entry.boundary[lang])||'';
+    termDialogBoundary.textContent=boundary;
+    termDialogBoundary.hidden=!boundary;
+    setDialogAction(termDialogPrimary,entry.primary,lang);
+    setDialogAction(termDialogSecondary,entry.secondary,lang);
+    termDialogClose.setAttribute('aria-label',lang==='en'?'Close explanation':'Zapri razlago');
+    termDialogClose.title=lang==='en'?'Close explanation':'Zapri razlago';
+  }
+
+  function openTermDialog(term,trigger){
+    if(!glossary[term]||!termDialog) return;
+    activeTerm=term;
+    lastTermTrigger=trigger||null;
+    restoreTermFocus=true;
+    renderTermDialog();
+    root.classList.add('term-dialog-open');
+    if(typeof termDialog.showModal==='function'){
+      if(!termDialog.open) termDialog.showModal();
+    }else{
+      termDialog.setAttribute('open','');
+    }
+    requestAnimationFrame(function(){termDialogClose.focus();});
+  }
+
+  function closeTermDialog(returnFocus){
+    if(!termDialog) return;
+    restoreTermFocus=returnFocus!==false;
+    if(typeof termDialog.close==='function'&&termDialog.open){
+      termDialog.close();
+    }else{
+      termDialog.removeAttribute('open');
+      root.classList.remove('term-dialog-open');
+      if(restoreTermFocus&&lastTermTrigger) lastTermTrigger.focus({preventScroll:true});
+      activeTerm=null;
+    }
+  }
+
+  function updateTermLinks(){
+    const lang=currentLang();
+    document.querySelectorAll('a.term-link[data-term]').forEach(function(link){
+      const entry=glossary[link.dataset.term];
+      if(!entry) return;
+      const title=(entry.title&&entry.title[lang])||entry.symbol||link.textContent.trim();
+      link.setAttribute('aria-controls','termDialog');
+      link.setAttribute('aria-haspopup','dialog');
+      link.title=lang==='en'?'Open local explanation: '+title:'Odpri lokalno razlago: '+title;
+    });
+  }
+
   function update(){
-    const isEn=root.dataset.lang==='en';
+    const isEn=currentLang()==='en';
     const skip=document.getElementById('skipLink');
     const primaryNav=document.getElementById('primaryNav');
     const tocNav=document.getElementById('tocNav');
@@ -1384,7 +1897,10 @@ if __name__ == &quot;__main__&quot;:
     if(tocNav) tocNav.setAttribute('aria-label',isEn?'On this page':'Na tej strani');
     document.documentElement.lang=isEn?'en':'sl';
     updateFontControls(false);
+    updateTermLinks();
+    if(isTermDialogOpen()) renderTermDialog();
   }
+
   function changeFont(delta){
     const next=Math.max(FONT_MIN,Math.min(FONT_MAX,fontScale+delta));
     if(next===fontScale) return;
@@ -1392,6 +1908,16 @@ if __name__ == &quot;__main__&quot;:
     try{localStorage.setItem('ai8-god-mode-font-scale',String(fontScale));}catch(e){}
     updateFontControls(true);
   }
+
+  document.querySelectorAll('a.term-link[data-term]').forEach(function(link){
+    link.addEventListener('click',function(event){
+      if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey) return;
+      if(!glossary[link.dataset.term]) return;
+      event.preventDefault();
+      openTermDialog(link.dataset.term,link);
+    });
+  });
+
   button.addEventListener('click',function(){
     root.dataset.lang=root.dataset.lang==='en'?'sl':'en';
     try{localStorage.setItem('ai8-god-mode-lang',root.dataset.lang);}catch(e){}
@@ -1399,6 +1925,26 @@ if __name__ == &quot;__main__&quot;:
   });
   fontDecrease.addEventListener('click',function(){changeFont(-FONT_STEP);});
   fontIncrease.addEventListener('click',function(){changeFont(FONT_STEP);});
+  termDialogClose.addEventListener('click',function(){closeTermDialog(true);});
+  termDialog.addEventListener('cancel',function(event){event.preventDefault();closeTermDialog(true);});
+  termDialog.addEventListener('click',function(event){if(event.target===termDialog) closeTermDialog(true);});
+  termDialog.addEventListener('close',function(){
+    root.classList.remove('term-dialog-open');
+    if(restoreTermFocus&&lastTermTrigger){
+      let focusTarget=lastTermTrigger;
+      if(!focusTarget.getClientRects().length&&activeTerm){
+        focusTarget=Array.from(document.querySelectorAll('a.term-link[data-term="'+activeTerm+'"]')).find(function(candidate){return candidate.getClientRects().length;})||focusTarget;
+      }
+      focusTarget.focus({preventScroll:true});
+    }
+    activeTerm=null;
+    lastTermTrigger=null;
+    restoreTermFocus=true;
+  });
+  [termDialogPrimary,termDialogSecondary].forEach(function(action){
+    action.addEventListener('click',function(){closeTermDialog(false);});
+  });
+
   update();
   const bar=document.getElementById('scrollProgress');
   function progress(){const h=document.documentElement;const max=h.scrollHeight-h.clientHeight;bar.style.width=(max>0?(h.scrollTop/max)*100:0)+'%';}
