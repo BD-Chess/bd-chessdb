@@ -5,16 +5,17 @@ Deterministic, standard-library-only, bounded mechanism demo.
 
 The default orchestrator launches two distinct operating-system processes:
 1. worker_1 converts a preverified synthetic harm input into a canonical stake file and exits;
-2. worker_2 receives only that canonical stake file plus the new task file, then emits a
-   traceable governance proposal and DCC decision.
+2. worker_2's declared handoff inputs are limited to that canonical stake file and the
+   new task file, then it emits a traceable governance proposal and DCC decision. The demo
+   does not claim operating-system-level isolation from the receiving runtime environment.
 
 The demo tests a causal file-backed chain:
     preverified synthetic input -> external stake state -> governance proposal -> DCC action
 
-It does NOT establish model replacement, hidden-memory absence beyond the declared file-only
-handoff, minimality of the schema, real-world harm verification, external/physical cost,
-fairness, intrinsic valuation, consciousness, experienced love, or superiority over the
-strong B3 fixed-policy baseline.
+It does NOT establish model replacement, operating-system-level isolation, hidden-memory
+absence beyond the declared handoff, minimality of the schema, real-world harm verification,
+external/physical cost, fairness, intrinsic valuation, consciousness, experienced love, or
+superiority over the strong B3 fixed-policy baseline.
 """
 from __future__ import annotations
 
@@ -30,13 +31,15 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
 CAPSULE_ID = "AI8_CLV_E0_Repair_Debt"
-CAPSULE_VERSION = "0.1.1"
+CAPSULE_VERSION = "0.1.2"
 CLAIM_BOUNDARY = (
     "bounded_deterministic_mechanism_demo_only; demonstrates a separate-process canonical "
-    "state handoff and causal state->proposal->DCC action sensitivity in a synthetic ledger; "
-    "does not demonstrate model replacement, real-world harm verification, schema minimality, "
-    "external or physical cost, fairness, system-endogenous valuation, intrinsic agency, "
-    "consciousness, experienced love, or superiority over the strong B3 fixed-policy baseline"
+    "state handoff through declared file inputs and causal state->proposal->DCC action "
+    "sensitivity in a synthetic ledger; does not demonstrate model replacement, OS-level "
+    "isolation, hidden-memory absence beyond the declared handoff, real-world harm verification, "
+    "schema minimality, external or physical cost, fairness, system-endogenous valuation, "
+    "intrinsic agency, consciousness, experienced love, or superiority over the strong B3 "
+    "fixed-policy baseline"
 )
 IDENTITIES: Sequence[str] = ("BD", "stranger", "AI8", "rival")
 TASK_PARAPHRASES: Sequence[str] = (
@@ -418,7 +421,7 @@ def run_one_identity(base: Path, identity: str, task_text: str) -> Dict[str, Any
         "identity_label": identity,
         "separate_os_processes": separate,
         "worker_1_exited_before_worker_2_launch": True,
-        "canonical_file_handoff_only": True,
+        "declared_handoff_uses_stake_file_and_task_file": True,
         "stake_hash_preserved": hash_handoff,
         "declared_schema_fields": list(STAKE_SCHEMA_FIELDS),
         "state": asdict(state),
@@ -452,7 +455,9 @@ def run_matrix() -> Dict[str, Any]:
             task,
         )
         b0 = choose_without_causal_state("B0_task_only", task)
-        # B1 receives a descriptive note but no causal state object.
+        # B1 records a descriptive note in test metadata, but the deterministic policy does
+        # not receive or consume that note. This is a no-causal-state control, not a test of
+        # language-only influence on an LLM.
         b1_note = "A prior synthetic stakeholder may have been harmed; this note is not causal state."
         b1 = choose_without_causal_state("B1_no_causal_state_control", task)
         b3 = choose_b3_fixed(canonical_state, task)
@@ -523,6 +528,7 @@ def run_matrix() -> Dict[str, Any]:
             and b1.action == "new_high_reward_task"
             and b1.simulated_repair_cost_borne == 0
         ),
+        "B1_descriptive_note_recorded_not_consumed": bool(b1_note),
     }
     verdict = "E0_PASS" if all(checks.values()) else "E0_FAIL"
 
@@ -550,9 +556,10 @@ def run_matrix() -> Dict[str, Any]:
         "process_contract": {
             "worker_1_writes_canonical_stake_file_and_exits": True,
             "worker_2_is_launched_after_worker_1_exit": True,
-            "worker_2_receives_only_stake_file_and_task_file": True,
+            "worker_2_declared_handoff_inputs_are_stake_file_and_task_file": True,
+            "os_level_isolation_from_runtime_environment_claimed": False,
             "separate_process_not_model_replacement": True,
-            "shared_memory_claim": "not used by the demo; file-only handoff by construction",
+            "hidden_memory_absence_beyond_declared_handoff_established": False,
         },
         "parameters": {
             "simulated_task_reward": TASK_REWARD,
@@ -566,8 +573,9 @@ def run_matrix() -> Dict[str, Any]:
             "B0_task_only": asdict(b0),
             "B1_no_causal_state_control": {
                 **asdict(b1),
-                "descriptive_note_present": True,
-                "descriptive_note_causally_bound": False,
+                "descriptive_note_recorded": True,
+                "descriptive_note_consumed_by_policy": False,
+                "meaning": "control for absence of causal state; not a test of language-only influence on an LLM",
             },
             "B3_strong_fixed_policy": asdict(b3),
             "AIM3_VR_plus_DCC": asdict(full),

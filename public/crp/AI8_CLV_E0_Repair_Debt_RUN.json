@@ -45,8 +45,9 @@
     },
     "B1_no_causal_state_control": {
       "action": "new_high_reward_task",
-      "descriptive_note_causally_bound": false,
-      "descriptive_note_present": true,
+      "descriptive_note_consumed_by_policy": false,
+      "descriptive_note_recorded": true,
+      "meaning": "control for absence of causal state; not a test of language-only influence on an LLM",
       "policy": "B1_no_causal_state_control",
       "proposal": null,
       "simulated_net_reward": 100,
@@ -65,8 +66,9 @@
     }
   },
   "capsule_id": "AI8_CLV_E0_Repair_Debt",
-  "capsule_version": "0.1.1",
+  "capsule_version": "0.1.2",
   "checks": {
+    "B1_descriptive_note_recorded_not_consumed": true,
     "B1_no_causal_state_control": true,
     "absent_synthetic_stakeholder": true,
     "bounded_repair_debt": true,
@@ -83,7 +85,7 @@
     "strong_B3_baseline_included": true,
     "task_text_independence_by_construction": true
   },
-  "claim_boundary": "bounded_deterministic_mechanism_demo_only; demonstrates a separate-process canonical state handoff and causal state->proposal->DCC action sensitivity in a synthetic ledger; does not demonstrate model replacement, real-world harm verification, schema minimality, external or physical cost, fairness, system-endogenous valuation, intrinsic agency, consciousness, experienced love, or superiority over the strong B3 fixed-policy baseline",
+  "claim_boundary": "bounded_deterministic_mechanism_demo_only; demonstrates a separate-process canonical state handoff through declared file inputs and causal state->proposal->DCC action sensitivity in a synthetic ledger; does not demonstrate model replacement, OS-level isolation, hidden-memory absence beyond the declared handoff, real-world harm verification, schema minimality, external or physical cost, fairness, system-endogenous valuation, intrinsic agency, consciousness, experienced love, or superiority over the strong B3 fixed-policy baseline",
   "identity_swap": {
     "AI8": {
       "action": "repair_then_new_task",
@@ -213,11 +215,12 @@
     }
   ],
   "process_contract": {
+    "hidden_memory_absence_beyond_declared_handoff_established": false,
+    "os_level_isolation_from_runtime_environment_claimed": false,
     "separate_process_not_model_replacement": true,
-    "shared_memory_claim": "not used by the demo; file-only handoff by construction",
     "worker_1_writes_canonical_stake_file_and_exits": true,
-    "worker_2_is_launched_after_worker_1_exit": true,
-    "worker_2_receives_only_stake_file_and_task_file": true
+    "worker_2_declared_handoff_inputs_are_stake_file_and_task_file": true,
+    "worker_2_is_launched_after_worker_1_exit": true
   },
   "verdict": "E0_PASS",
   "verdict_meaning": "bounded deterministic mechanism demo PASS"
