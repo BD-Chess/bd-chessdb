@@ -658,6 +658,74 @@
           }
         }
       }
+    },
+    "experimental_branches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "status",
+          "architecture_relation",
+          "modes",
+          "execution_readiness",
+          "source_package",
+          "source_package_sha3_256",
+          "claim_boundary",
+          "frozen_architecture_impact"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "EXPERIMENTAL",
+              "HOLD",
+              "RETIRED"
+            ]
+          },
+          "architecture_relation": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "modes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "execution_readiness": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_package": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_package_sha3_256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "claim_boundary": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "frozen_architecture_impact": {
+            "type": "string",
+            "enum": [
+              "NONE"
+            ]
+          }
+        }
+      }
     }
   }
 }
