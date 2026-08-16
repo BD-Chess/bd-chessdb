@@ -1,0 +1,663 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.mdlxdcc.org/AI8/arenaloop_public_status.schema.json",
+  "title": "AI8 ArenaLoop Public Status",
+  "description": "Schema for the read-only public projection of verified local ArenaLoop state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project",
+    "projection",
+    "architecture",
+    "current",
+    "proof_ladder",
+    "phase_gates",
+    "role_separation",
+    "public_artifacts",
+    "released_blockers",
+    "released_failures",
+    "change_log",
+    "privacy"
+  ],
+  "$defs": {
+    "sha3": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "isoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "gateStatus": {
+      "type": "string",
+      "enum": [
+        "NOT_OPENED",
+        "IN_PROGRESS",
+        "PASS",
+        "HOLD",
+        "FAIL",
+        "SUPERSEDED"
+      ]
+    },
+    "proofStatus": {
+      "type": "string",
+      "enum": [
+        "FROZEN",
+        "NOT_OPENED",
+        "IN_PROGRESS",
+        "PASS",
+        "HOLD",
+        "FAIL",
+        "SUPERSEDED",
+        "NOT_DEMONSTRATED",
+        "NOT_CLAIMED"
+      ]
+    },
+    "localizedText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "en",
+        "sl"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sl": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "url",
+        "public"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "public": {
+          "type": "boolean"
+        },
+        "sha3_256": {
+          "$ref": "#/$defs/sha3"
+        }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "canonical_url",
+        "status_url",
+        "status_schema_url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "const": "ai8-arenaloop"
+        },
+        "name": {
+          "type": "string",
+          "const": "AI8 ArenaLoop"
+        },
+        "canonical_url": {
+          "type": "string",
+          "const": "https://www.mdlxdcc.org/AI8/AI8_ArenaLoop.html"
+        },
+        "status_url": {
+          "type": "string",
+          "const": "https://www.mdlxdcc.org/AI8/arenaloop_public_status.json"
+        },
+        "status_schema_url": {
+          "type": "string",
+          "const": "https://www.mdlxdcc.org/AI8/arenaloop_public_status.schema.json"
+        }
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "release_channel",
+        "generated_at",
+        "verified_at",
+        "generator_version",
+        "canonical_local_sources",
+        "bootstrap_projection"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "const": "READ_ONLY_PUBLIC_PROJECTION"
+        },
+        "release_channel": {
+          "type": "string",
+          "enum": [
+            "REVIEW",
+            "PUBLIC"
+          ]
+        },
+        "generated_at": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "verified_at": {
+          "$ref": "#/$defs/isoDateTime"
+        },
+        "generator_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_local_sources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "ArenaLoop Observation Ledger",
+              "AI8 Governance Ledger",
+              "frozen contracts",
+              "gate records",
+              "release manifests",
+              "review records",
+              "results records"
+            ]
+          }
+        },
+        "bootstrap_projection": {
+          "type": "boolean"
+        },
+        "bootstrap_note": {
+          "$ref": "#/$defs/localizedText"
+        }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spec_name",
+        "version",
+        "status",
+        "filename",
+        "sha3_256",
+        "byte_length",
+        "freeze_record_url",
+        "reopen_reference"
+      ],
+      "properties": {
+        "spec_name": {
+          "type": "string",
+          "const": "AI8 ArenaLoop Architecture Spec"
+        },
+        "version": {
+          "type": "string",
+          "const": "0.2.2"
+        },
+        "status": {
+          "type": "string",
+          "const": "FROZEN"
+        },
+        "filename": {
+          "type": "string",
+          "const": "AI8_ArenaLoop.md"
+        },
+        "sha3_256": {
+          "$ref": "#/$defs/sha3"
+        },
+        "byte_length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "freeze_record_url": {
+          "type": "string",
+          "const": "FINAL_FREEZE_RECORD.md"
+        },
+        "reopen_reference": {
+          "type": "string",
+          "const": "Architecture Spec §22.3"
+        }
+      }
+    },
+    "current": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase_id",
+        "phase_label",
+        "phase_status",
+        "runtime_v0_1",
+        "last_verified_milestone",
+        "next_permitted_step"
+      ],
+      "properties": {
+        "phase_id": {
+          "type": "string",
+          "const": "PHASE_0"
+        },
+        "phase_label": {
+          "$ref": "#/$defs/localizedText"
+        },
+        "phase_status": {
+          "$ref": "#/$defs/gateStatus"
+        },
+        "runtime_v0_1": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "build_status",
+            "acceptance_status",
+            "permission_level"
+          ],
+          "properties": {
+            "label": {
+              "$ref": "#/$defs/localizedText"
+            },
+            "build_status": {
+              "$ref": "#/$defs/gateStatus"
+            },
+            "acceptance_status": {
+              "$ref": "#/$defs/gateStatus"
+            },
+            "permission_level": {
+              "type": "string",
+              "const": "P0"
+            }
+          }
+        },
+        "last_verified_milestone": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "date",
+            "status",
+            "evidence"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "$ref": "#/$defs/localizedText"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "status": {
+              "$ref": "#/$defs/gateStatus"
+            },
+            "evidence": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/evidenceRef"
+              }
+            }
+          }
+        },
+        "next_permitted_step": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "permission_required",
+            "blocked_actions"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "$ref": "#/$defs/localizedText"
+            },
+            "permission_required": {
+              "type": "string",
+              "minLength": 1
+            },
+            "blocked_actions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "proof_ladder": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "status",
+          "claim_boundary",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "status": {
+            "$ref": "#/$defs/proofStatus"
+          },
+          "claim_boundary": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/evidenceRef"
+            }
+          }
+        }
+      }
+    },
+    "phase_gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "order",
+          "label",
+          "status",
+          "public_note",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_-]+$"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "status": {
+            "$ref": "#/$defs/gateStatus"
+          },
+          "public_note": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/evidenceRef"
+            }
+          }
+        }
+      }
+    },
+    "role_separation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "same_project_threads_independent",
+        "builder_truth_access",
+        "roles"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "const": "session separation + workspace/project separation + storage/access-root separation"
+        },
+        "same_project_threads_independent": {
+          "type": "boolean",
+          "const": false
+        },
+        "builder_truth_access": {
+          "type": "boolean",
+          "const": false
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "public_status"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "$ref": "#/$defs/localizedText"
+              },
+              "public_status": {
+                "$ref": "#/$defs/gateStatus"
+              }
+            }
+          }
+        }
+      }
+    },
+    "public_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "url",
+          "version",
+          "status",
+          "public",
+          "claim_boundary"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "$ref": "#/$defs/proofStatus"
+          },
+          "public": {
+            "type": "boolean",
+            "const": true
+          },
+          "sha3_256": {
+            "$ref": "#/$defs/sha3"
+          },
+          "claim_boundary": {
+            "$ref": "#/$defs/localizedText"
+          }
+        }
+      }
+    },
+    "released_blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "status",
+          "released_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "status": {
+            "$ref": "#/$defs/gateStatus"
+          },
+          "released_at": {
+            "$ref": "#/$defs/isoDateTime"
+          }
+        }
+      }
+    },
+    "released_failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "released_at",
+          "repair_status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "released_at": {
+            "$ref": "#/$defs/isoDateTime"
+          },
+          "repair_status": {
+            "$ref": "#/$defs/gateStatus"
+          }
+        }
+      }
+    },
+    "change_log": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "date",
+          "version",
+          "status",
+          "summary"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "$ref": "#/$defs/proofStatus"
+          },
+          "summary": {
+            "$ref": "#/$defs/localizedText"
+          },
+          "release_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hidden_evaluator_truth_exposed",
+        "checkpoint_identities_exposed",
+        "local_paths_exposed",
+        "sentinel_data_exposed",
+        "private_review_notes_exposed",
+        "excluded_categories"
+      ],
+      "properties": {
+        "hidden_evaluator_truth_exposed": {
+          "type": "boolean",
+          "const": false
+        },
+        "checkpoint_identities_exposed": {
+          "type": "boolean",
+          "const": false
+        },
+        "local_paths_exposed": {
+          "type": "boolean",
+          "const": false
+        },
+        "sentinel_data_exposed": {
+          "type": "boolean",
+          "const": false
+        },
+        "private_review_notes_exposed": {
+          "type": "boolean",
+          "const": false
+        },
+        "excluded_categories": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

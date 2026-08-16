@@ -1,0 +1,668 @@
+{
+  "schema_version": "1.0.0",
+  "project": {
+    "id": "ai8-arenaloop",
+    "name": "AI8 ArenaLoop",
+    "canonical_url": "https://www.mdlxdcc.org/AI8/AI8_ArenaLoop.html",
+    "status_url": "https://www.mdlxdcc.org/AI8/arenaloop_public_status.json",
+    "status_schema_url": "https://www.mdlxdcc.org/AI8/arenaloop_public_status.schema.json"
+  },
+  "projection": {
+    "mode": "READ_ONLY_PUBLIC_PROJECTION",
+    "release_channel": "REVIEW",
+    "generated_at": "2026-08-16T08:50:00+02:00",
+    "verified_at": "2026-08-16T08:50:00+02:00",
+    "generator_version": "ai8-public-projection-0.2.0",
+    "canonical_local_sources": [
+      "ArenaLoop Observation Ledger",
+      "AI8 Governance Ledger",
+      "frozen contracts",
+      "gate records",
+      "release manifests",
+      "review records",
+      "results records"
+    ],
+    "bootstrap_projection": true,
+    "bootstrap_note": {
+      "en": "Initial review projection derived only from the verified frozen specification, freeze record, and explicitly confirmed public milestones. Later updates must be generated from canonical local ledgers and release records.",
+      "sl": "Začetna pregledna projekcija je izpeljana samo iz preverjene zamrznjene specifikacije, zapisa o zamrznitvi in izrecno potrjenih javnih mejnikov. Poznejše posodobitve morajo nastati iz kanoničnih lokalnih ledgerjev in release zapisov."
+    }
+  },
+  "architecture": {
+    "spec_name": "AI8 ArenaLoop Architecture Spec",
+    "version": "0.2.2",
+    "status": "FROZEN",
+    "filename": "AI8_ArenaLoop.md",
+    "sha3_256": "4d8c5c9b91cce6cb80d5165493276c6d16346f7248536d02dd903ae1ec53aaa9",
+    "byte_length": 155578,
+    "freeze_record_url": "FINAL_FREEZE_RECORD.md",
+    "reopen_reference": "Architecture Spec §22.3"
+  },
+  "current": {
+    "phase_id": "PHASE_0",
+    "phase_label": {
+      "en": "Phase 0 — Evidence boundary and truth separation",
+      "sl": "Faza 0 — dokazna meja in ločitev resnice"
+    },
+    "phase_status": "NOT_OPENED",
+    "runtime_v0_1": {
+      "label": {
+        "en": "Runtime v0.1 — TSP Observer",
+        "sl": "Runtime v0.1 — TSP Observer"
+      },
+      "build_status": "HOLD",
+      "acceptance_status": "NOT_OPENED",
+      "permission_level": "P0"
+    },
+    "last_verified_milestone": {
+      "id": "ARCH_FREEZE_022",
+      "label": {
+        "en": "Architecture Spec v0.2.2 frozen and SHA3-256 verified",
+        "sl": "Architecture Spec v0.2.2 zamrznjen in SHA3-256 preverjen"
+      },
+      "date": "2026-08-16",
+      "status": "PASS",
+      "evidence": [
+        {
+          "label": "Frozen Architecture Spec",
+          "url": "AI8_ArenaLoop.md",
+          "public": true,
+          "sha3_256": "4d8c5c9b91cce6cb80d5165493276c6d16346f7248536d02dd903ae1ec53aaa9"
+        },
+        {
+          "label": "Final Freeze Record",
+          "url": "FINAL_FREEZE_RECORD.md",
+          "public": true
+        }
+      ]
+    },
+    "next_permitted_step": {
+      "id": "APPOINT_PHASE0_SEPARATED_ROLES",
+      "label": {
+        "en": "Appoint a Phase-0 Curator and a separate Independent Truth Reviewer, then create isolated Phase-0 workspace and storage roots.",
+        "sl": "Imenuj Phase-0 Curatorja in ločenega Independent Truth Reviewerja, nato ustvari izolirane Phase-0 delovne in podatkovne korene."
+      },
+      "permission_required": "Explicit BD approval and confirmed access separation",
+      "blocked_actions": [
+        "Runtime v0.1 Builder handoff",
+        "Builder access to any evaluator-only truth material",
+        "Historical Replay construction",
+        "Autonomous candidate generation"
+      ]
+    }
+  },
+  "proof_ladder": [
+    {
+      "id": "ARCHITECTURE_SPEC",
+      "label": {
+        "en": "Architecture Spec v0.2.2",
+        "sl": "Architecture Spec v0.2.2"
+      },
+      "status": "FROZEN",
+      "claim_boundary": {
+        "en": "Architecture is fixed; implementation effectiveness is not yet demonstrated.",
+        "sl": "Arhitektura je zamrznjena; učinkovitost implementacije še ni dokazana."
+      },
+      "evidence": [
+        {
+          "label": "Frozen Architecture Spec",
+          "url": "AI8_ArenaLoop.md",
+          "public": true,
+          "sha3_256": "4d8c5c9b91cce6cb80d5165493276c6d16346f7248536d02dd903ae1ec53aaa9"
+        }
+      ]
+    },
+    {
+      "id": "PHASE_0",
+      "label": {
+        "en": "Phase 0 evidence boundary",
+        "sl": "Phase 0 dokazna meja"
+      },
+      "status": "NOT_OPENED",
+      "claim_boundary": {
+        "en": "No Builder-safe/evaluator-truth package split has yet passed the public gates.",
+        "sl": "Ločitev Builder-safe in evaluator-truth paketov še ni prestala javnih gateov."
+      },
+      "evidence": []
+    },
+    {
+      "id": "RUNTIME_V01",
+      "label": {
+        "en": "Runtime v0.1 Observer",
+        "sl": "Runtime v0.1 Observer"
+      },
+      "status": "NOT_OPENED",
+      "claim_boundary": {
+        "en": "Not yet built or independently evaluated.",
+        "sl": "Še ni zgrajen ali neodvisno ovrednoten."
+      },
+      "evidence": []
+    },
+    {
+      "id": "HISTORICAL_REPLAY",
+      "label": {
+        "en": "Historical Replay v0.2",
+        "sl": "Historical Replay v0.2"
+      },
+      "status": "NOT_OPENED",
+      "claim_boundary": {
+        "en": "Opens only after an accepted Observer release.",
+        "sl": "Odpre se šele po sprejetem Observer releasu."
+      },
+      "evidence": []
+    },
+    {
+      "id": "AUTONOMOUS_INNER",
+      "label": {
+        "en": "Autonomous INNER",
+        "sl": "Avtonomni INNER"
+      },
+      "status": "NOT_OPENED",
+      "claim_boundary": {
+        "en": "No autonomous exploitation/evolution proof is claimed.",
+        "sl": "Dokaz avtonomnega exploitation/evolution še ni zahtevan ali dosežen."
+      },
+      "evidence": []
+    },
+    {
+      "id": "OUTER_13A",
+      "label": {
+        "en": "Autonomous OUTER proof 13A",
+        "sl": "Avtonomni OUTER dokaz 13A"
+      },
+      "status": "NOT_DEMONSTRATED",
+      "claim_boundary": {
+        "en": "No blind proof that the system independently reopens an exhausted representation.",
+        "sl": "Ni slepega dokaza, da sistem sam ponovno odpre izčrpano reprezentacijo."
+      },
+      "evidence": []
+    },
+    {
+      "id": "OUTER_13B",
+      "label": {
+        "en": "Collaborative OUTER proof 13B",
+        "sl": "Sodelovalni OUTER dokaz 13B"
+      },
+      "status": "NOT_DEMONSTRATED",
+      "claim_boundary": {
+        "en": "No matched proof that Human–AI H-REOPEN adds measurable value over no-H-REOPEN.",
+        "sl": "Ni matched dokaza, da Human–AI H-REOPEN merljivo preseže no-H-REOPEN."
+      },
+      "evidence": []
+    },
+    {
+      "id": "META",
+      "label": {
+        "en": "META policy improvement",
+        "sl": "META izboljšanje politike"
+      },
+      "status": "NOT_OPENED",
+      "claim_boundary": {
+        "en": "No independent-judge held-out META advantage is claimed.",
+        "sl": "Ni trditve o held-out META prednosti z neodvisnim judgeom."
+      },
+      "evidence": []
+    },
+    {
+      "id": "CROSS_DOMAIN",
+      "label": {
+        "en": "Cross-domain replication",
+        "sl": "Večdomenska replikacija"
+      },
+      "status": "NOT_DEMONSTRATED",
+      "claim_boundary": {
+        "en": "TSP is the first proving ground; general runtime transfer remains open.",
+        "sl": "TSP je prvi proving ground; splošni prenos runtimea ostaja odprt."
+      },
+      "evidence": []
+    },
+    {
+      "id": "AGI_CONSCIOUSNESS",
+      "label": {
+        "en": "AGI / consciousness",
+        "sl": "AGI / zavest"
+      },
+      "status": "NOT_CLAIMED",
+      "claim_boundary": {
+        "en": "ArenaLoop does not claim AGI, consciousness, or continuous subjective identity.",
+        "sl": "ArenaLoop ne trdi AGI, zavesti ali neprekinjene subjektivne identitete."
+      },
+      "evidence": []
+    }
+  ],
+  "phase_gates": [
+    {
+      "id": "P0_01_FREEZE_RECORD",
+      "order": 1,
+      "label": {
+        "en": "Final freeze record and spec hash confirmed",
+        "sl": "Končni freeze record in hash specifikacije potrjena"
+      },
+      "status": "PASS",
+      "public_note": {
+        "en": "The public copy is byte-identical to the frozen local file.",
+        "sl": "Javna kopija je byte-identična zamrznjeni lokalni datoteki."
+      },
+      "evidence": [
+        {
+          "label": "Final Freeze Record",
+          "url": "FINAL_FREEZE_RECORD.md",
+          "public": true
+        },
+        {
+          "label": "Frozen Architecture Spec",
+          "url": "AI8_ArenaLoop.md",
+          "public": true,
+          "sha3_256": "4d8c5c9b91cce6cb80d5165493276c6d16346f7248536d02dd903ae1ec53aaa9"
+        }
+      ]
+    },
+    {
+      "id": "P0_02_ROLE_APPOINTMENT",
+      "order": 2,
+      "label": {
+        "en": "Curator and Independent Truth Reviewer appointed",
+        "sl": "Curator in Independent Truth Reviewer imenovana"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "They must be separate from the Runtime v0.1 Builder.",
+        "sl": "Morata biti ločena od Runtime v0.1 Builderja."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_03_ISOLATED_ROOTS",
+      "order": 3,
+      "label": {
+        "en": "Separate workspaces and storage/access roots created",
+        "sl": "Ustvarjeni ločeni workspacei in storage/access koreni"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Different threads in one shared project are not sufficient independence.",
+        "sl": "Različne niti v istem deljenem projektu niso zadostna neodvisnost."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_04_TSP_SNAPSHOT",
+      "order": 4,
+      "label": {
+        "en": "Canonical read-only TSP snapshot selected and hashed",
+        "sl": "Izbran in hashiran kanonični read-only TSP snapshot"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Public status does not expose checkpoint identities before release.",
+        "sl": "Javni status pred releasom ne razkriva identitet checkpointov."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_05_SHARED_SCHEMAS",
+      "order": 5,
+      "label": {
+        "en": "PHASE0_SHARED_SCHEMAS built and validated",
+        "sl": "PHASE0_SHARED_SCHEMAS zgrajen in validiran"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Includes canonicalization, scoring, and constitutional interfaces.",
+        "sl": "Vključuje kanonizacijske, scoring in constitutional vmesnike."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_06_BUILDER_INPUT",
+      "order": 6,
+      "label": {
+        "en": "PHASE0_BUILDER_INPUT built",
+        "sl": "PHASE0_BUILDER_INPUT zgrajen"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Builder-safe source evidence only.",
+        "sl": "Samo Builder-safe source evidence."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_07_PROPOSED_TRUTH",
+      "order": 7,
+      "label": {
+        "en": "Proposed evaluator truth built in restricted root",
+        "sl": "Predlagani evaluator truth zgrajen v omejenem korenu"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Contents and structure remain private.",
+        "sl": "Vsebina in struktura ostaneta zasebni."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_08_TRUTH_REVIEW",
+      "order": 8,
+      "label": {
+        "en": "Independent Truth Review completed",
+        "sl": "Independent Truth Review zaključen"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Every scored truth item must be confirmed, corrected, marked ambiguous, or rejected as unsupported.",
+        "sl": "Vsaka scored truth postavka mora biti potrjena, popravljena, označena kot dvoumna ali zavrnjena kot nepodprta."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_09_TRUTH_FREEZE",
+      "order": 9,
+      "label": {
+        "en": "Dual-control evaluator truth freeze",
+        "sl": "Dual-control zamrznitev evaluator trutha"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Truth freezes before any Builder output exists.",
+        "sl": "Truth se zamrzne pred obstojem Builder outputa."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_10_CSE",
+      "order": 10,
+      "label": {
+        "en": "Constitutional / Standing Envelope validation",
+        "sl": "Validacija Constitutional / Standing Envelope"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Minimal CSE-0.1 is required from Phase 0.",
+        "sl": "Minimalni CSE-0.1 je zahtevan od Phase 0."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_11_MANIFESTS",
+      "order": 11,
+      "label": {
+        "en": "SHA3 manifests and package disjointness PASS",
+        "sl": "SHA3 manifesti in ločenost paketov PASS"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "Builder-safe and evaluator-only roots must be disjoint.",
+        "sl": "Builder-safe in evaluator-only koreni morajo biti ločeni."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_12_CONTAMINATION",
+      "order": 12,
+      "label": {
+        "en": "Access separation and contamination tests PASS",
+        "sl": "Access separation in contamination testi PASS"
+      },
+      "status": "NOT_OPENED",
+      "public_note": {
+        "en": "No evaluator-only material may be reachable from the Builder environment.",
+        "sl": "Noben evaluator-only material ne sme biti dosegljiv iz Builder okolja."
+      },
+      "evidence": []
+    },
+    {
+      "id": "P0_13_BUILDER_HANDOFF",
+      "order": 13,
+      "label": {
+        "en": "Runtime v0.1 Builder handoff unlocked",
+        "sl": "Runtime v0.1 Builder handoff odklenjen"
+      },
+      "status": "HOLD",
+      "public_note": {
+        "en": "Remains HOLD until every prerequisite gate passes.",
+        "sl": "Ostane HOLD, dokler ne prestanejo vsi predhodni gate-i."
+      },
+      "evidence": []
+    }
+  ],
+  "role_separation": {
+    "rule": "session separation + workspace/project separation + storage/access-root separation",
+    "same_project_threads_independent": false,
+    "builder_truth_access": false,
+    "roles": [
+      {
+        "id": "CURATOR",
+        "label": {
+          "en": "Phase-0 Lead / Curator",
+          "sl": "Phase-0 Lead / Curator"
+        },
+        "public_status": "NOT_OPENED"
+      },
+      {
+        "id": "TRUTH_REVIEWER",
+        "label": {
+          "en": "Independent Truth Reviewer",
+          "sl": "Independent Truth Reviewer"
+        },
+        "public_status": "NOT_OPENED"
+      },
+      {
+        "id": "BUILDER",
+        "label": {
+          "en": "Runtime v0.1 Builder",
+          "sl": "Runtime v0.1 Builder"
+        },
+        "public_status": "HOLD"
+      },
+      {
+        "id": "IMPLEMENTATION_REVIEWER",
+        "label": {
+          "en": "Independent Implementation Reviewer",
+          "sl": "Independent Implementation Reviewer"
+        },
+        "public_status": "NOT_OPENED"
+      },
+      {
+        "id": "HIDDEN_EVALUATOR",
+        "label": {
+          "en": "Results / Hidden Evaluator",
+          "sl": "Results / Hidden Evaluator"
+        },
+        "public_status": "NOT_OPENED"
+      }
+    ]
+  },
+  "public_artifacts": [
+    {
+      "id": "ARCH_SPEC_022",
+      "label": {
+        "en": "Frozen Architecture Spec v0.2.2",
+        "sl": "Zamrznjeni Architecture Spec v0.2.2"
+      },
+      "url": "AI8_ArenaLoop.md",
+      "version": "0.2.2",
+      "status": "FROZEN",
+      "public": true,
+      "sha3_256": "4d8c5c9b91cce6cb80d5165493276c6d16346f7248536d02dd903ae1ec53aaa9",
+      "claim_boundary": {
+        "en": "Canonical architecture; not proof of runtime performance.",
+        "sl": "Kanonična arhitektura; ni dokaz delovanja runtimea."
+      }
+    },
+    {
+      "id": "FREEZE_RECORD",
+      "label": {
+        "en": "Final Freeze Record",
+        "sl": "Končni Freeze Record"
+      },
+      "url": "FINAL_FREEZE_RECORD.md",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Records the hash and freeze decision only.",
+        "sl": "Beleži samo hash in odločitev o zamrznitvi."
+      }
+    },
+    {
+      "id": "PUBLIC_STATUS",
+      "label": {
+        "en": "ArenaLoop public status",
+        "sl": "Javni status ArenaLoopa"
+      },
+      "url": "arenaloop_public_status.json",
+      "version": "1.0.0",
+      "status": "IN_PROGRESS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Read-only public projection; not canonical local state.",
+        "sl": "Read-only javna projekcija; ni kanonično lokalno stanje."
+      }
+    },
+    {
+      "id": "PUBLIC_STATUS_SCHEMA",
+      "label": {
+        "en": "Public status JSON schema",
+        "sl": "JSON schema javnega statusa"
+      },
+      "url": "arenaloop_public_status.schema.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Validates public structure, not hidden evidence.",
+        "sl": "Validira javno strukturo, ne skritih dokazov."
+      }
+    },
+    {
+      "id": "PUBLIC_RELEASES",
+      "label": {
+        "en": "Public release registry",
+        "sl": "Javni release register"
+      },
+      "url": "arenaloop_releases.json",
+      "version": "1.0.0",
+      "status": "IN_PROGRESS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Lists public releases and their claim boundaries.",
+        "sl": "Navaja javne release in njihove meje trditev."
+      }
+    },
+    {
+      "id": "PUBLIC_STATUS_MANIFEST",
+      "label": {
+        "en": "Public status manifest",
+        "sl": "Manifest javnega statusa"
+      },
+      "url": "PUBLIC_STATUS_MANIFEST.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Binds the exported public files and their SHA3-256 hashes; it does not attest hidden implementation state.",
+        "sl": "Poveže izvožene javne datoteke in njihove SHA3-256 hashe; ne potrjuje skritega implementacijskega stanja."
+      }
+    },
+    {
+      "id": "AI8_MAP",
+      "label": {
+        "en": "AI8 machine-readable map",
+        "sl": "Strojno berljiv zemljevid AI8"
+      },
+      "url": "ai8_map.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Navigation and lineage map; not evidence for architecture performance.",
+        "sl": "Navigacijski zemljevid in lineage; ni dokaz delovanja arhitekture."
+      }
+    },
+    {
+      "id": "PUBLIC_EXPORT_CONTRACT",
+      "label": {
+        "en": "Public export allowlist",
+        "sl": "Allowlist javnega izvoza"
+      },
+      "url": "../PUBLIC_ALLOWLIST.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Defines the only files eligible for public export in this review package.",
+        "sl": "Določa edine datoteke, dovoljene za javni izvoz v tem review paketu."
+      }
+    },
+    {
+      "id": "PUBLIC_EXCLUSIONS",
+      "label": {
+        "en": "Public exclusion manifest",
+        "sl": "Manifest javnih izključitev"
+      },
+      "url": "../PUBLIC_EXCLUSION_MANIFEST.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Names forbidden content categories without exposing their private instances.",
+        "sl": "Navede prepovedane kategorije vsebine brez razkritja njihovih zasebnih primerov."
+      }
+    },
+    {
+      "id": "SENTINEL_SCAN_REPORT",
+      "label": {
+        "en": "Sentinel scan report",
+        "sl": "Poročilo sentinel pregleda"
+      },
+      "url": "../SENTINEL_SCAN_REPORT.json",
+      "version": "1.0.0",
+      "status": "PASS",
+      "public": true,
+      "claim_boundary": {
+        "en": "Reports fail-closed export scan results without exposing sentinel identifiers or payloads.",
+        "sl": "Poroča o fail-closed pregledu izvoza brez razkritja sentinel identifikatorjev ali payloadov."
+      }
+    }
+  ],
+  "released_blockers": [],
+  "released_failures": [],
+  "change_log": [
+    {
+      "date": "2026-08-16",
+      "version": "architecture-0.2.2",
+      "status": "FROZEN",
+      "summary": {
+        "en": "Architecture closed after constitutional and evaluation precision pass; next step is Phase 0.",
+        "sl": "Arhitektura zaprta po constitutional in evaluation precision passu; naslednji korak je Phase 0."
+      },
+      "release_url": "AI8_ArenaLoop.md"
+    },
+    {
+      "date": "2026-08-16",
+      "version": "website-0.2.0-review",
+      "status": "IN_PROGRESS",
+      "summary": {
+        "en": "Initial AI8 hub, ArenaLoop page, public status schema, and fail-closed export package prepared for review.",
+        "sl": "Za pregled pripravljeni začetni AI8 hub, ArenaLoop stran, public status schema in fail-closed export paket."
+      }
+    }
+  ],
+  "privacy": {
+    "hidden_evaluator_truth_exposed": false,
+    "checkpoint_identities_exposed": false,
+    "local_paths_exposed": false,
+    "sentinel_data_exposed": false,
+    "private_review_notes_exposed": false,
+    "excluded_categories": [
+      "evaluator-only truth and expected answers",
+      "unreleased checkpoint identities",
+      "local filesystem paths and access-root names",
+      "sentinel identifiers or sentinel payloads",
+      "private Curator and Truth Reviewer notes",
+      "unreleased failure annotations",
+      "private identity or relationship material not explicitly released"
+    ]
+  }
+}
