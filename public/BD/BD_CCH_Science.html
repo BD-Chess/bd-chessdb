@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CCH — The Claustrum–Consciousness Hypothesis: A Testable Science</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CCH v1.5 — A Testable Control Hypothesis for Conscious Brain Regimes</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&amp;family=DM+Sans:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
 <style>
 :root{--bg-primary:#0a0c10;--bg-secondary:#12151c;--bg-tertiary:#1a1e28;--bg-card:#161a24;--border:#2a2f3c;--border-accent:#3a4055;--text-primary:#e8eaf0;--text-secondary:#8b93a6;--text-muted:#5a6275;--accent-green:#00e676;--accent-green-dim:#00c85320;--accent-red:#ff4757;--accent-red-dim:#ff475720;--accent-blue:#448aff;--accent-blue-dim:#448aff20;--accent-gold:#ffd740;--accent-gold-dim:#ffd74020;--accent-purple:#b388ff;--accent-purple-dim:#b388ff20;--accent-teal:#64ffda;--accent-teal-dim:#64ffda20;--accent-cyan:#00e5ff;--accent-cyan-dim:#00e5ff20;--font-display:'Playfair Display',Georgia,serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace}
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;font-size:16px}body{background:var(--bg-primary);color:var(--text-primary);font-family:var(--font-body);line-height:1.72;-webkit-font-smoothing:antialiased}::selection{background:var(--accent-blue);color:#fff}
@@ -55,292 +56,304 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
 
 @media(max-width:960px){.toc-nav{display:none}.main{margin-left:0;padding:32px 24px 80px}.cover h1{font-size:30px}.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media print{.toc-nav{display:none}.main{margin-left:0;max-width:100%}body{background:#fff;color:#111}}
-</style>
-</head>
-<body>
 
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent-cyan);outline-offset:3px}
+
+@media(max-width:600px){
+  .compare-table{display:block;width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .compare-table th,.compare-table td{min-width:118px;white-space:normal;overflow-wrap:anywhere}
+  .formula{padding:18px 14px}
+  .formula .expr{font-size:16px;overflow-wrap:anywhere;word-break:break-word}
+  pre{max-width:100%;padding:16px 14px}
+}
+</style>
+<meta content="CCH v1.5: an ontology-neutral, falsifiable control hypothesis for conscious brain regimes, with explicit claim boundaries, mixed claustrum evidence, candidate S* metrics, and DCC engineering tests." name="description"/></head>
+<body>
 <!-- ═══ SIDEBAR ═══ -->
 <nav class="toc-nav">
-  <div class="toc-brand">
-    <h2>CCH v1.4</h2>
-    <p>The Testable Science</p>
-  </div>
-  <a href="#cover" class="ch">Cover</a>
-  <a href="#ch1" class="ch">1 &middot; Introduction</a>
-  <a href="#ch2" class="ch">2 &middot; Core Claims</a>
-  <a href="#c1" class="sub">C1: Conscious Regime</a>
-  <a href="#c2" class="sub">C2: Necessity of Control</a>
-  <a href="#c3" class="sub">C3: The Claustrum</a>
-  <a href="#c4" class="sub">C4: AI Extension</a>
-  <a href="#ch3" class="ch">3 &middot; The S-Metric</a>
-  <a href="#coherence" class="sub">Coherence C<sub>n</sub></a>
-  <a href="#complexity" class="sub">Complexity &Psi;(I)</a>
-  <a href="#lockkey" class="sub">Lock &amp; Key</a>
-  <a href="#ch4" class="ch">4 &middot; Claustrum as Controller</a>
-  <a href="#ch5" class="ch">5 &middot; Predictions</a>
-  <a href="#p1" class="sub">P1&ndash;P5</a>
-  <a href="#falsify" class="sub">Falsification</a>
-  <a href="#ch6" class="ch">6 &middot; Experiments &amp; Code</a>
-  <a href="#zombie" class="sub">Zombie Test</a>
-  <a href="#physionet" class="sub">PhysioNet Pipeline</a>
-  <a href="#digiclaust" class="sub">Digital Claustrum</a>
-  <a href="#ch7" class="ch">7 &middot; GNW vs IIT vs CCH</a>
-  <a href="#ch8" class="ch">8 &middot; Human&ndash;AI Method</a>
-  <a href="#ch9" class="ch">9 &middot; Roadmap</a>
-  <a href="#glossary" class="ch">Glossary</a>
-</nav>
-
+<div class="toc-brand">
+<h2>CCH v1.5</h2>
+<p>Mechanism-first research bridge</p>
+</div>
+<a class="ch" href="#cover">Cover</a>
+<a class="ch" href="#ch1">1 · Role &amp; Question</a>
+<a class="ch" href="#ch2">2 · Hypotheses</a>
+<a class="sub" href="#c1">H1: Controlled Regime</a>
+<a class="sub" href="#c2">H2: Active Regulation</a>
+<a class="sub" href="#c3">H3: Claustrum Candidate</a>
+<a class="sub" href="#c4">H4: AI Engineering</a>
+<a class="ch" href="#ch3">3 · State &amp; S*</a>
+<a class="sub" href="#coherence">Coherence C<sub>n</sub></a>
+<a class="sub" href="#complexity">Complexity Ψ(I)</a>
+<a class="sub" href="#lockkey">Soft conjunction</a>
+<a class="ch" href="#ch4">4 · Construction Blueprint</a>
+<a class="ch" href="#ch5">5 · Predictions &amp; Falsifiers</a>
+<a class="sub" href="#p1">P1–P5</a>
+<a class="sub" href="#falsify">Falsification</a>
+<a class="ch" href="#ch6">6 · Experiments &amp; Code</a>
+<a class="sub" href="#zombie">Synthetic unit tests</a>
+<a class="sub" href="#physionet">PhysioNet Pipeline</a>
+<a class="sub" href="#digiclaust">DCC-like toy</a>
+<a class="ch" href="#ch7">7 · GNW / IIT / CCH</a>
+<a class="ch" href="#ch8">8 · Collaboration</a>
+<a class="ch" href="#ch9">9 · Roadmap &amp; Limits</a>
+<a class="ch" href="#glossary">Glossary</a>
+<a class="ch" href="#references">Primary Sources</a></nav>
 <!-- ═══ MAIN ═══ -->
 <div class="main">
-
 <!-- COVER -->
 <div class="cover vis" id="cover">
-  <div class="cover-tag">CCH v1.4 &mdash; Claustrum&ndash;Consciousness Hypothesis</div>
-  <h1><em>The Testable Science</em><br>of Consciousness</h1>
-  <div class="subtitle">A control-theoretic framework with a computable intensity marker, executable validation code, and five falsifiable predictions. From the claustrum to the edge of chaos.</div>
-  <div class="meta">Bojan Dobre&#269;evi&#269; &bull; AIM&sup3; Institute &bull; January 2026<br>
-  AI Team: Gemini 3 Pro &bull; ChatGPT 5.1 &bull; Claude 4.5 Opus &bull; Grok 4.1</div>
-
-  <div class="stats-row" style="margin-top:36px">
-    <div class="stat"><div class="val cyan">S</div><div class="lbl">Computable Metric</div></div>
-    <div class="stat"><div class="val green">5</div><div class="lbl">Predictions</div></div>
-    <div class="stat"><div class="val gold">P1</div><div class="lbl">Code-Ready Test</div></div>
-    <div class="stat"><div class="val teal">MIT</div><div class="lbl">Open License</div></div>
-    <div class="stat"><div class="val purple">4</div><div class="lbl">AI Collaborators</div></div>
-  </div>
+<div class="cover-tag">CCH v1.5 — Claustrum–Consciousness Hypothesis</div>
+<h1><em>A Testable Control Hypothesis</em><br/>for Conscious Brain Regimes</h1>
+<div class="subtitle">An ontology-neutral research program linking integration, differentiation, temporal organization, and active regulation — without claiming that complexity alone, a high S score, or the claustrum proves consciousness.</div>
+<div class="meta">Bojan Dobrečevič • AIM³ Institute<br/>
+  Original framework: January 2026 • v1.5 precision alignment: August 2026<br/>
+  AI collaborators across versions: Gemini • GPT • Claude • Grok</div>
+<div class="stats-row" style="margin-top:36px">
+<div class="stat"><div class="val cyan">X(t)</div><div class="lbl">State Vector</div></div>
+<div class="stat"><div class="val green">S*</div><div class="lbl">Candidate Summary</div></div>
+<div class="stat"><div class="val gold">5</div><div class="lbl">Test Families</div></div>
+<div class="stat"><div class="val teal">0</div><div class="lbl">Ontology Proven</div></div>
+<div class="stat"><div class="val purple">1+</div><div class="lbl">Controller Candidates</div></div>
 </div>
-
+</div>
 <!-- ═══ CHAPTER 1 ═══ -->
 <div class="chapter vis" id="ch1">
-  <div class="chapter-num">Chapter 1</div>
-  <h2>Introduction &amp; Motivation</h2>
-
-  <p>The <strong>Claustrum&ndash;Consciousness Hypothesis (CCH)</strong> proposes that conscious experience in brains depends on maintaining a specific global dynamical regime of <em>high coherence AND high informational complexity</em>, measurable by a scalar <strong>S</strong>; and that the brain requires a dedicated <strong>Coherence-Complexity Controller (CCC)</strong> to maintain this regime.</p>
-
-  <p>In mammals, CCH identifies the <strong>claustrum</strong> (and claustrum-like hubs) as the primary candidate for this control hub.</p>
-
-  <h3>Why This Matters</h3>
-  <p>Most existing consciousness metrics either remain at the level of "neural correlates" without specifying a control quantity, or propose measures like &Phi; in Integrated Information Theory that are in principle appealing but extremely hard to compute. CCH is the bridge: <strong>simple enough to implement, explicit enough to be falsified, and structured enough to suggest concrete architectures for artificial agents.</strong></p>
-
-  <h3 id="executable">The Transition to Executable Science</h3>
-  <p>With v1.3, CCH moved from philosophy of mind to a <strong>falsifiable signal-processing hypothesis</strong>. Actual Python code (Chapter 6) allows any researcher to download open-access sleep data from PhysioNet and test the theory's core predictions immediately.</p>
-
-  <h3>Physicalist Core vs. Metaphysical Extension</h3>
-  <p>CCH is deliberately stated in <strong>purely physicalist terms</strong>. It does not require a fundamental "consciousness field" or any modification of standard physics. Those ideas live in separate, explicitly metaphysical documents: the <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold);">Consciousness Field Hypothesis (CFH)</a> and the Claustrum's Cosmic Shadow (CSH).</p>
-
-  <div class="callout warn" id="box1">
-    <div class="callout-title">What CCH Does NOT Claim</div>
-    <p>CCH <strong>does not</strong> claim the claustrum is a magical "seat of consciousness." It proposes the claustrum as a strong candidate for a specific <em>control function</em> (CCC).</p>
-    <p>CCH <strong>does not</strong> claim S measures moral worth, personhood, or ethical status. S is an intensity marker for dynamical regimes, not a value scale.</p>
-    <p>CCH <strong>does not</strong> require accepting CFH or CSH. Those are optional interpretive layers.</p>
-    <p>CCH <strong>does not</strong> assert that any system with high S is necessarily conscious. It claims high S should be a reliable <em>operational marker</em> of regimes that in brains correlate with consciousness.</p>
-  </div>
+<div class="chapter-num">Chapter 1</div>
+<h2>Document Role &amp; Research Question</h2>
+<div class="callout teal">
+<div class="callout-title">Three pages, three different burdens</div>
+<p><a href="../acp/AC_01_Flagship.html" style="color:var(--accent-gold)">AC_01_Flagship</a> is the canonical ontological proposal. <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">CFH</a> records the personal origin and speculative AC/CF bridge. <strong>This CCH page owns only the operational question:</strong> which local brain dynamics and control mechanisms can be defined, measured, perturbed, and falsified?</p>
 </div>
-
+<p>The <strong>Claustrum–Consciousness Hypothesis (CCH)</strong> proposes that ordinary conscious brain regimes may depend on a <strong>controlled, multi-dimensional dynamical region</strong> in which large-scale integration, differentiation, temporal organization, and adaptive regulation coexist.</p>
+<p>The current prototype compresses part of that state into a candidate summary statistic, <strong>S*</strong>. S* is not consciousness, not a quantity of Consciousness Field, and not a personhood score. It is a candidate signal-processing proxy whose value must be earned against simpler baselines and held-out data.</p>
+<p>CCH further proposes that the brain may require <strong>active distributed regulation</strong> to remain inside a viable region rather than collapsing into overly rigid or overly fragmented dynamics. The claustrum is one biologically plausible modulator within that wider control architecture — not a proven seat, receiver, or sole controller of consciousness.</p>
+<h3>Why This Matters</h3>
+<p><strong>Complexity alone is not the claim.</strong> A random process can be complex. A seizure can be highly synchronized. A large model can be computationally elaborate without being conscious. CCH asks a narrower construction question: <em>is there a measurable controlled regime, and does active regulation causally help sustain it?</em></p>
+<h3 id="executable">From Description to Blueprint</h3>
+<p>The page now separates the proposed <strong>plant, state variables, sensors, controller candidates, actuators, disturbances, outcomes, baselines, and falsifiers</strong>. The included code is a prototype for smoke tests and preregistration. It is not a validated biomarker and not a construction plan for consciousness.</p>
+<h3>Ontology-Neutral Science Boundary</h3>
+<p>CCH can be tested by a physicalist, an emergentist, or someone who prefers AC/CFH. It contains no external receiver variable and does not model consciousness as a signal arriving from elsewhere. Under AC/CFH, every system is already within the proposed ground; CCH would still study only the <strong>local organization and regulation</strong> associated with bounded relative experience.</p>
+<div class="callout warn" id="box1">
+<div class="callout-title">What CCH does not claim</div>
+<p><strong>Not complexity alone:</strong> high complexity is neither sufficient nor treated as evidence of consciousness.</p>
+<p><strong>Not a receiver theory:</strong> the brain is not modeled as a radio, antenna, or portal through which an external field arrives.</p>
+<p><strong>Not claustrum supremacy:</strong> the claustrum is one candidate hub inside a potentially distributed controller.</p>
+<p><strong>Not S = consciousness:</strong> S* is a candidate summary of measured dynamics, not phenomenal intensity, moral worth, personhood, or standing.</p>
+<p><strong>Not artificial consciousness:</strong> a DCC-like controller improving an AI system would establish an engineering result, not awareness.</p>
+<p><strong>Not proof of CFH:</strong> success of CCH would not establish AC/CF; failure would reject or revise this bridge, not logically settle every possible ontology.</p>
+</div>
+</div>
 <!-- ═══ CHAPTER 2 ═══ -->
 <div class="chapter vis" id="ch2">
-  <div class="chapter-num">Chapter 2</div>
-  <h2>Core Claims</h2>
-
-  <p>CCH is built around four core claims:</p>
-
-  <div class="layer-card" id="c1" style="border-left:3px solid var(--accent-cyan)">
-    <div class="layer-num">C1</div>
-    <div class="layer-title">The Conscious Regime &mdash; "Soft AND" Gate</div>
-    <p>Conscious experience arises when a system realizes a global dynamical regime characterized by <strong>both Integration (Unity) and Differentiation (Complexity)</strong>. This relationship is multiplicative:</p>
-    <div class="formula" style="margin:16px 0 12px">
-      <div class="expr">S = k &middot; C<sub>n</sub> &middot; &Psi;(I)</div>
-      <div class="desc">Intensity = Scaling &times; Coherence &times; Informational Complexity</div>
-    </div>
-    <p>Without Integration (C<sub>n</sub>), the system is fragmented &mdash; schizophrenia, noise. Without Differentiation (&Psi;), the system is trivial &mdash; seizure, deep sleep. <strong>Only the simultaneous presence of both "unlocks" the conscious regime.</strong></p>
-  </div>
-
-  <div class="layer-card" id="c2" style="border-left:3px solid var(--accent-gold)">
-    <div class="layer-num">C2</div>
-    <div class="layer-title">The Necessity of Control</div>
-    <p>Such regimes are inherently unstable &mdash; <em>"The Edge of Chaos."</em> Without active control, neural systems collapse into <strong>Seizures</strong> (High Coherence, Low Complexity) or <strong>Noise</strong> (Low Coherence, High Entropy). A controller is not optional; it is architecturally necessary.</p>
-  </div>
-
-  <div class="layer-card" id="c3" style="border-left:3px solid var(--accent-teal)">
-    <div class="layer-num">C3</div>
-    <div class="layer-title">The Claustrum as CCC Candidate</div>
-    <p>For mammalian brains, existing anatomical and perturbation data make the <strong>claustrum</strong> a strong candidate for orchestrating this regime. Unlike the thalamus (which gates energy and arousal), the claustrum appears to act as a <em>"tuner" or resonant controller</em>, modulating synchrony to stabilize S within the conscious window.</p>
-  </div>
-
-  <div class="layer-card" id="c4" style="border-left:3px solid var(--accent-purple)">
-    <div class="layer-num">C4</div>
-    <div class="layer-title">AI Extension &mdash; The Digital Claustrum</div>
-    <p>Any artificial system that aims to maintain high S must include a <strong>Digital CCC</strong> module &mdash; a controller monitoring the system's internal dynamics and adjusting coupling, gain, and noise to prevent collapse into trivial or chaotic states.</p>
-  </div>
+<div class="chapter-num">Chapter 2</div>
+<h2>Four Testable Hypotheses</h2>
+<p>CCH is organized as four separable hypotheses. Each may survive or fail independently.</p>
+<div class="layer-card" id="c1" style="border-left:3px solid var(--accent-cyan)">
+<div class="layer-num">H1</div>
+<div class="layer-title">Controlled Regime Hypothesis</div>
+<p>Conscious brain states may require a joint region of <strong>integration and differentiation</strong>, maintained over time. The primary object should be a state vector, not a single magic number:</p>
+<div class="formula" style="margin:16px 0 12px">
+<div class="expr">X(t) = [C<sub>n</sub>(t), ER<sub>n</sub>(t), SI(t)]</div>
+<div class="desc">Coherence × spatial diversity × structured temporal complexity</div>
 </div>
-
+<p>A candidate compression of that vector is:</p>
+<div class="formula" style="margin:12px 0">
+<div class="expr">S* = k · C<sub>n</sub> · Ψ(I),   Ψ(I)=ER<sub>n</sub>·SI</div>
+<div class="desc">Prototype summary statistic — not a consciousness quantity</div>
+</div>
+</div>
+<div class="layer-card" id="c2" style="border-left:3px solid var(--accent-gold)">
+<div class="layer-num">H2</div>
+<div class="layer-title">Active Regulation Hypothesis</div>
+<p>CCH predicts that robust maintenance of the proposed region requires <strong>adaptive feedback</strong> under changing conditions. This is not assumed as fact. It must be tested against passive recurrent dynamics, fixed controllers, and simpler homeostatic baselines under matched disturbance and compute budgets.</p>
+</div>
+<div class="layer-card" id="c3" style="border-left:3px solid var(--accent-teal)">
+<div class="layer-num">H3</div>
+<div class="layer-title">Claustrum Modulation Hypothesis</div>
+<p>The claustrum is proposed as <strong>one candidate modulator</strong> of large-scale cortical coordination, variability, attention, and state transitions. Human stimulation evidence is mixed, while recent animal work supports a role in modulating prefrontal and cortex-wide dynamics. CCH therefore predicts a measurable contribution, not sole ownership of consciousness.</p>
+</div>
+<div class="layer-card" id="c4" style="border-left:3px solid var(--accent-purple)">
+<div class="layer-num">H4</div>
+<div class="layer-title">Engineering Analogue — DCC-like Governance</div>
+<p>Artificial systems can test an analogous control principle: monitor task-relevant coherence, diversity, stability, and failure modes; then adapt routing, coupling, budget, memory, or exploration. A positive result would show <strong>better sustained adaptive cognition</strong> than matched fixed or episodic baselines. It would not by itself show consciousness, intrinsic agency, or coupling to CF.</p>
+</div>
+</div>
 <!-- ═══ CHAPTER 3 ═══ -->
 <div class="chapter vis" id="ch3">
-  <div class="chapter-num">Chapter 3</div>
-  <h2>The S-Metric &mdash; Full Definition</h2>
-
-  <div class="formula">
-    <div class="expr">S = k &middot; C<sub>n</sub> &middot; &Psi;(I)</div>
-    <div class="desc">where &Psi;(I) = ER<sub>n</sub> &middot; SI</div>
-  </div>
-
-  <h3 id="coherence">Coherence Metric C<sub>n</sub> (Integration)</h3>
-  <p>C<sub>n</sub> measures large-scale <strong>Phase Locking</strong> across brain channels in specific frequency bands. For each epoch and target band (e.g., Alpha 8&ndash;12 Hz):</p>
-  <p><strong>1.</strong> Filter with zero-phase Butterworth bandpass. <strong>2.</strong> Compute Hilbert transform for analytic signal. <strong>3.</strong> Compute Phase Locking Value (PLV) between channels.</p>
-
-  <div class="formula" style="border-left:3px solid var(--accent-blue)">
-    <div class="expr">C<sub>n</sub> = (PLV<sub>avg</sub> &minus; Noise_Floor) / (1.0 &minus; Noise_Floor)</div>
-    <div class="desc">Excess synchrony above chance level &bull; Range: [0, 1]</div>
-  </div>
-
-  <h3 id="complexity">Informational Complexity &Psi;(I) (Differentiation)</h3>
-  <p>&Psi;(I) combines two orthogonal measures into a single factor:</p>
-
-  <h4>Spatial Diversity: Effective Rank (ER<sub>n</sub>)</h4>
-  <p>Measures the dimensionality of the covariance matrix. High rank = high spatial independence. Low rank = high redundancy. Computed from eigenvalues of the channel covariance matrix.</p>
-
-  <h4>Temporal Structure: Structural Integrity (SI)</h4>
-  <div class="formula" style="border-left:3px solid var(--accent-gold)">
-    <div class="expr">SI = exp(&minus;(LZC<sub>n</sub> &minus; &mu;<sub>critical</sub>)&sup2; / 2&sigma;&sup2;)</div>
-    <div class="desc">Gaussian penalty around the subject-specific critical complexity point</div>
-  </div>
-  <p>&mu;<sub>critical</sub> is the LZC value associated with the maximum derivative of Effective Rank in the subject's dynamic range &mdash; the <em>Edge of Chaos</em>. This solves the "Circular Calibration" problem: the metric asks <strong>"Is the system currently near its OWN optimal complexity point?"</strong></p>
-
-  <h3 id="lockkey">The Lock &amp; Key Metaphor</h3>
-  <p>The product S = C<sub>n</sub> &times; &Psi;(I) acts as a <strong>Lock and Key</strong> mechanism. Consciousness requires both pieces simultaneously. You cannot pick the lock with integration alone (seizure) or differentiation alone (noise). The multiplicative structure means <em>either factor collapsing to zero kills S entirely</em>.</p>
-
-  <h3>Parameters</h3>
-  <table class="compare-table">
-    <thead><tr><th>Name</th><th>Meaning</th><th>v1.3 Standard</th></tr></thead>
-    <tbody>
-      <tr><td>band</td><td>Frequency band for C<sub>n</sub></td><td>Alpha (8&ndash;12 Hz)</td></tr>
-      <tr><td>window_len</td><td>Epoch length</td><td>10s or 30s</td></tr>
-      <tr><td>noise_floor</td><td>PLV baseline</td><td>0.1 or Surrogate 5th %tile</td></tr>
-      <tr><td>k</td><td>S scaling factor</td><td>100 (S &isin; [0, 100])</td></tr>
-      <tr><td>&sigma;</td><td>LZC tolerance</td><td>max(0.05, 2 &middot; std(LZC<sub>cal</sub>))</td></tr>
-      <tr><td>&mu;</td><td>Critical point</td><td>median(LZC<sub>cal</sub>)</td></tr>
-    </tbody>
-  </table>
+<div class="chapter-num">Chapter 3</div>
+<h2>Measured State and Candidate S* Summary</h2>
+<div class="formula">
+<div class="expr">X(t)=[C<sub>n</sub>, ER<sub>n</sub>, SI]    ;    S*=k·C<sub>n</sub>·(ER<sub>n</sub>·SI)</div>
+<div class="desc">Use X(t) for interpretation; use S* only as a preregistered candidate compression.</div>
 </div>
-
+<div class="callout danger">
+<div class="callout-title">Do not maximize S*</div>
+<p>Different dynamical states can share the same product. A scalar may hide whether a change came from coherence, diversity, or temporal structure. The controller target is therefore a <strong>viable region in X-space</strong>, not an unconditional maximum of S*.</p>
+</div>
+<h3 id="coherence">C<sub>n</sub> — Normalized Coherence / Integration Proxy</h3>
+<p>C<sub>n</sub> is a candidate summary of cross-channel phase coordination in a declared frequency band. The exact estimator, channel set, reference, surrogate null, and frequency band must be frozen before evaluation. Pairwise PLV, global phase consistency, and alternative connectivity measures should compete rather than be treated as interchangeable.</p>
+<div class="formula" style="border-left:3px solid var(--accent-blue)">
+<div class="expr">C<sub>n</sub> = normalize(connectivity - surrogate baseline)</div>
+<div class="desc">Prototype range [0,1]; estimator and null model are part of the contract.</div>
+</div>
+<h3 id="complexity">Ψ(I) — Differentiation / Structured Complexity Proxy</h3>
+<p>The current prototype combines two distinct features:</p>
+<h4>Spatial Diversity: ER<sub>n</sub></h4>
+<p>Normalized effective rank estimates how many independent dimensions are expressed across the measured channels. It is sensitive to channel count, preprocessing, reference choice, noise, and sample size; these dependencies must be controlled.</p>
+<h4>Temporal Structure: SI</h4>
+<div class="formula" style="border-left:3px solid var(--accent-gold)">
+<div class="expr">SI = exp(−(LZC<sub>n</sub> − μ<sub>cal</sub>)² / 2σ<sub>cal</sub>²)</div>
+<div class="desc">Prototype proximity to a calibration target, not an established biological optimum.</div>
+</div>
+<p>μ<sub>cal</sub> and σ<sub>cal</sub> must be estimated only from a frozen calibration set. They must not be selected from the held-out test labels or altered after outcomes are known.</p>
+<h3 id="lockkey">The Soft-Conjunction Metaphor</h3>
+<p>The multiplicative S* formula encodes a useful engineering intuition: a system should not receive a high summary score when one required dimension collapses. This is a <strong>candidate soft conjunction</strong>, not proof that the listed factors are necessary and sufficient for experience.</p>
+<h3>Prototype Parameters</h3>
+<table class="compare-table">
+<thead><tr><th>Name</th><th>Meaning</th><th>Current prototype</th></tr></thead>
+<tbody>
+<tr><td>band</td><td>Frequency band for coherence proxy</td><td>Alpha 8–12 Hz as one candidate</td></tr>
+<tr><td>window_len</td><td>Epoch length</td><td>10s or 30s; must be preregistered</td></tr>
+<tr><td>null</td><td>Connectivity baseline</td><td>Surrogate-derived, not a universal 0.1 constant</td></tr>
+<tr><td>k</td><td>Display scaling only</td><td>100; no scientific meaning</td></tr>
+<tr><td>μ<sub>cal</sub></td><td>LZC calibration target</td><td>Estimated on training/calibration split</td></tr>
+<tr><td>σ<sub>cal</sub></td><td>Calibration tolerance</td><td>Frozen before held-out evaluation</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+<div class="callout-title">Current code correspondence</div>
+<p>The embedded v1.3 Python code implements the S* prototype, not the full v1.5 research contract. It does not by itself establish estimator validity, state-space control, causal necessity, or consciousness.</p>
+</div>
+</div>
 <!-- ═══ CHAPTER 4 ═══ -->
 <div class="chapter vis" id="ch4">
-  <div class="chapter-num">Chapter 4</div>
-  <h2>The Claustrum as Controller</h2>
-
-  <h3>CCC Architecture</h3>
-  <p>The Coherence-Complexity Controller (CCC) is a <strong>resonant feedback loop</strong> that continuously monitors S and exerts active feedback to keep the system within a target S-band. This is not a metaphor &mdash; it is a specific control-theoretic architecture:</p>
-
-  <p><strong>1. Sense:</strong> Monitor global coherence (C<sub>n</sub>) and complexity (&Psi;) in real time.<br>
-  <strong>2. Compare:</strong> Evaluate current S against the target corridor [S<sub>min</sub>, S<sub>max</sub>].<br>
-  <strong>3. Act:</strong> If S drifts toward seizure (too high coherence), inject desynchronizing noise. If S drifts toward chaos (too low coherence), increase coupling gain.</p>
-
-  <h3>Why the Claustrum Specifically</h3>
-  <p>The claustrum has <strong>reciprocal connections to nearly every cortical area</strong> &mdash; the widest connectivity of any brain structure. It is anatomically positioned as a <em>hub</em>, not a relay. Perturbation studies show that electrical stimulation of the claustrum causes immediate loss of consciousness, while lesions produce not coma (like thalamic damage) but <strong>fragmentation and delirium</strong> &mdash; exactly what CCH predicts for loss of the controller.</p>
-
-  <table class="compare-table">
-    <thead><tr><th>Feature</th><th>Thalamic Lesion</th><th>Claustrum Lesion</th></tr></thead>
-    <tbody>
-      <tr><td>Effect on S</td><td>Mean(S) decreases</td><td style="color:var(--accent-cyan)">Variance(S) increases</td></tr>
-      <tr><td>Phenomenology</td><td>Coma / Sleep (fading out)</td><td style="color:var(--accent-cyan)">Delirium / Dissociation (breaking up)</td></tr>
-      <tr><td>Dynamics</td><td>Signal amplitude drops</td><td style="color:var(--accent-cyan)">Signal coherence becomes unstable</td></tr>
-    </tbody>
-  </table>
-
-  <h3>Edge of Chaos Dynamics</h3>
-  <p>The conscious regime exists at a <em>phase transition</em> between order and chaos. This is inherently unstable &mdash; like balancing a ball on a hill. The CCC's job is to maintain this balance continuously, adjusting coupling strength in response to moment-by-moment changes in neural dynamics. Without a controller, the system inevitably collapses to one attractor or the other.</p>
+<div class="chapter-num">Chapter 4</div>
+<h2>Minimal Construction Blueprint</h2>
+<table class="compare-table">
+<thead><tr><th>Element</th><th>CCH specification</th><th>Current status</th></tr></thead>
+<tbody>
+<tr><td>Plant</td><td>Distributed brain / neural system whose global dynamics evolve over time.</td><td>Biological target, not fully modeled</td></tr>
+<tr><td>State</td><td>X(t) = coherence, differentiation, structured temporal dynamics, plus declared task/state variables.</td><td>Candidate proxies only</td></tr>
+<tr><td>Sensors</td><td>EEG, MEG, intracranial recordings, imaging, behavior, and state labels.</td><td>Dataset-dependent</td></tr>
+<tr><td>Controller</td><td>Potentially distributed adaptive network; claustrum is one candidate hub.</td><td>Open hypothesis</td></tr>
+<tr><td>Actuators</td><td>Coupling, inhibition/excitation, gain, routing, attention, arousal, and neuromodulation.</td><td>Requires causal mapping</td></tr>
+<tr><td>Target</td><td>A viable region Ω<sub>CCH</sub> in state space, not maximum complexity or maximum synchrony.</td><td>Must be learned and preregistered</td></tr>
+<tr><td>Disturbances</td><td>Sleep, anesthesia, seizure, injury, task shifts, sensory load, and internal noise.</td><td>Multiple test families</td></tr>
+<tr><td>Outcomes</td><td>Responsiveness, reportability, flexibility, stability, recovery, and validated behavioral performance.</td><td>No single outcome is sufficient</td></tr>
+</tbody>
+</table>
+<h3>Adaptive Feedback Architecture</h3>
+<p>A candidate CCC performs four steps:</p>
+<p><strong>1. Sense:</strong> estimate X(t) with uncertainty.<br/>
+<strong>2. Compare:</strong> determine distance from a preregistered viable region Ω<sub>CCH</sub>.<br/>
+<strong>3. Act:</strong> modulate one or more lawful control channels.<br/>
+<strong>4. Verify:</strong> test whether the intervention improves the predicted neural and behavioral outcomes relative to matched controls.</p>
+<p>The controller hypothesis is false or over-scoped if passive recurrent organization, a simpler fixed controller, or a different distributed network explains the same outcomes as well or better.</p>
+<h3>Why Keep the Claustrum in the Model?</h3>
+<p>The claustrum has dense, structured cortical connectivity and can modulate prefrontal activity and large-scale functional relationships. That makes it a plausible component of a control architecture. But the causal evidence does <strong>not</strong> justify calling it the seat or sole controller of consciousness.</p>
+<div class="callout warn">
+<div class="callout-title">Mixed human stimulation evidence</div>
+<p>A 2014 case reported reversible unresponsiveness and amnesia during stimulation near a claustral electrode. A 2019 study of direct, including bilateral, claustrum stimulation did not evoke loss of consciousness. CCH must preserve both results and design tests that distinguish local spread, patient-specific factors, and actual claustrum function.</p>
 </div>
-
+<p>Recent animal studies support a narrower statement: claustrum manipulation can alter prefrontal activity, long-range functional connectivity, and neural variability. These findings motivate a <strong>modulation hypothesis</strong>; they do not prove a consciousness controller.</p>
+<h3>Distributed Alternatives Must Compete</h3>
+<p>Claustrum-centered models must be compared with thalamocortical, frontoparietal, salience/executive, brainstem/neuromodulatory, and interoceptive/homeostatic control models. CCH should promote whichever architecture best predicts and survives intervention data.</p>
+<h3>Productive-Corridor Hypothesis</h3>
+<p>The phrase <em>edge of chaos</em> is retained as a motivating dynamical hypothesis: useful cognition may occupy a region between rigid synchronization and unstructured variability. It is not treated as a universal law of consciousness. The region must be defined by measurable state variables and validated outcomes, not by metaphor alone.</p>
+<div class="callout teal">
+<div class="callout-title">No receiver mechanism</div>
+<p>Nothing in this blueprint transmits consciousness into the brain. CCH models local dynamics and control. AC/CFH may interpret why such dynamics are phenomenally present, but that ontological question is not solved by the controller.</p>
+</div>
+</div>
 <!-- ═══ CHAPTER 5 ═══ -->
 <div class="chapter vis" id="ch5">
-  <div class="chapter-num">Chapter 5</div>
-  <h2>Predictions &amp; Falsifiability</h2>
-
-  <div class="callout success" id="p1">
-    <div class="callout-title">Prediction P1 &mdash; State Ordering <span class="tag green">code ready</span></div>
-    <p><strong>S(Wake) &gt; S(REM) &gt; S(N2) &gt; S(N3)</strong></p>
-    <p>When computed on PhysioNet Sleep-EDF data, the S-metric should separate conscious states by a clear ordering. Pass criterion: AUC &gt; 0.8 for Wake vs. N3 classification.</p>
-  </div>
-
-  <div class="callout">
-    <div class="callout-title">Prediction P2 &mdash; Anesthesia Gradient</div>
-    <p>S should decrease monotonically with anesthetic depth, tracking independently of BIS (which relies on different signal features).</p>
-  </div>
-
-  <div class="callout">
-    <div class="callout-title">Prediction P3 &mdash; Claustrum Perturbation</div>
-    <p>Direct claustrum stimulation should produce <strong>variance increase</strong> in S (controller perturbation), not mean decrease (unlike thalamic stimulation).</p>
-  </div>
-
-  <div class="callout">
-    <div class="callout-title">Prediction P4 &mdash; Meditation Effect</div>
-    <p>Advanced meditators should show elevated S during meditation, with the increase driven by maintained &Psi; alongside increased C<sub>n</sub> &mdash; not by coherence collapse.</p>
-  </div>
-
-  <div class="callout">
-    <div class="callout-title">Prediction P5 &mdash; Digital Claustrum Homeostasis</div>
-    <p>A coupled chaotic system with a CCC module should maintain stable S longer than one without. Removal of the controller should cause mode collapse within a predictable timescale.</p>
-  </div>
-
-  <h3 id="falsify">What Would Falsify CCH</h3>
-  <div class="callout danger">
-    <div class="callout-title">Falsification Criteria</div>
-    <p>If S fails to separate Wake from N3 sleep (AUC &lt; 0.6), the metric is broken. If claustrum lesions produce coma rather than delirium, the controller hypothesis is wrong. If a linear "Smart Zombie" can sustain high S, the Conservation of Complexity principle fails. <strong>CCH explicitly invites these tests.</strong></p>
-  </div>
+<div class="chapter-num">Chapter 5</div>
+<h2>Predictions, Baselines &amp; Falsifiability</h2>
+<div class="callout success" id="p1">
+<div class="callout-title">P1 — State Sensitivity <span class="tag green">smoke-test ready</span></div>
+<p>On subject-held-out sleep data, X(t) and S* should discriminate declared physiological states better than preregistered simple spectral, entropy, and single-feature baselines.</p>
+<p><strong>Boundary:</strong> Sleep-stage classification is not the same as measuring consciousness. Sleep-EDF has only two EEG channels, so it cannot strongly test large-scale integration; it is an initial pipeline and calibration test.</p>
 </div>
-
+<div class="callout">
+<div class="callout-title">P2 — Cross-Condition Generalization</div>
+<p>A metric trained or calibrated on one condition should retain predictive value across held-out subjects and at least one distinct regime such as anesthesia, recovery, or another recording dataset. Failure to transfer counts against the general marker claim.</p>
+</div>
+<div class="callout">
+<div class="callout-title">P3 — Causal Controller Signature</div>
+<p>Pre-registered perturbation of a candidate controller should produce a predicted change in X(t), network organization, and behavior that differs from control-region stimulation and from nonspecific arousal effects. Claustrum, thalamic, and distributed-network hypotheses must be compared.</p>
+</div>
+<div class="callout">
+<div class="callout-title">P4 — Active vs. Passive Regulation</div>
+<p>Under matched disturbances, an adaptive controller should maintain the target state region and task-relevant performance more robustly than the same plant with no controller, a fixed controller, or a simpler homeostatic rule.</p>
+</div>
+<div class="callout">
+<div class="callout-title">P5 — DCC-like AI Engineering Test</div>
+<p>Using identical models, tools, tasks, and total budgets, DCC-like governance should improve sustained research performance, stability, or recovery over episodic and fixed-workflow baselines. This is an engineering prediction only.</p>
+</div>
+<h3 id="falsify">What Would Falsify or Reduce CCH?</h3>
+<div class="callout danger">
+<div class="callout-title">Fail conditions by layer</div>
+<p><strong>Metric layer:</strong> X/S* fails held-out generalization, is unstable under reasonable preprocessing, or adds no value beyond simpler baselines.</p>
+<p><strong>Control layer:</strong> active feedback does not outperform passive or simpler fixed organization under matched disturbances.</p>
+<p><strong>Claustrum layer:</strong> claustrum perturbation produces no distinctive predictive effect, or another distributed model explains the evidence better.</p>
+<p><strong>AI layer:</strong> DCC-like governance adds complexity, tokens, or human work without better validated outcomes.</p>
+<p><strong>Scientific discipline:</strong> definitions, target regions, or thresholds are repeatedly changed after results are known.</p>
+</div>
+<div class="callout warn">
+<div class="callout-title">Partial failure is allowed</div>
+<p>The scalar S* may fail while a multi-dimensional X(t) model survives. The claustrum-specific hypothesis may fail while distributed active control remains viable. CCH must not protect the full package by moving every failed claim into a vaguer formulation.</p>
+</div>
+</div>
 <!-- ═══ CHAPTER 6 ═══ -->
 <div class="chapter vis" id="ch6">
-  <div class="chapter-num">Chapter 6</div>
-  <h2>Experimental Designs &amp; Code</h2>
-
-  <h3 id="zombie">The Zombie Test &mdash; Synthetic Validation</h3>
-  <p>Before applying S to human data, the metric was validated on 10-channel synthetic signals to ensure it rejects "zombie" and "seizure" states:</p>
-
-  <table class="compare-table">
-    <thead><tr><th>Condition</th><th>C<sub>n</sub></th><th>LZC<sub>n</sub></th><th>SI</th><th>S</th></tr></thead>
-    <tbody>
-      <tr><td>Wake-Like</td><td>0.65</td><td>0.55</td><td>0.99</td><td style="color:var(--accent-green);font-weight:700">~64</td></tr>
-      <tr><td>Seizure</td><td>0.98</td><td>0.05</td><td>0.19</td><td style="color:var(--accent-gold)">~18</td></tr>
-      <tr><td>Zombie/Noise</td><td>0.05</td><td>0.99</td><td>0.04</td><td style="color:var(--accent-red)">~0</td></tr>
-    </tbody>
-  </table>
-
-  <h4>The Smart Zombie &mdash; Adversarial Stress Test</h4>
-  <p>A "Smart Zombie" signal was constructed: 10 channels of Pink Noise linearly mixed (60% common driver) to force high synchrony while retaining temporal complexity.</p>
-
-  <table class="compare-table">
-    <thead><tr><th>Metric</th><th>Smart Zombie</th><th>Interpretation</th></tr></thead>
-    <tbody>
-      <tr><td>Coherence C<sub>n</sub></td><td>0.72</td><td style="color:var(--accent-green)">High &mdash; mimicked successfully</td></tr>
-      <tr><td>Structure SI</td><td>0.99</td><td style="color:var(--accent-green)">High &mdash; mimicked successfully</td></tr>
-      <tr><td>Diversity ER<sub>n</sub></td><td style="color:var(--accent-red);font-weight:700">0.21</td><td style="color:var(--accent-red)">Low &mdash; THE TRAP</td></tr>
-      <tr><td>Final S</td><td style="color:var(--accent-red);font-weight:700">14.6</td><td style="color:var(--accent-red)">REJECTED</td></tr>
-    </tbody>
-  </table>
-
-  <div class="callout teal">
-    <div class="callout-title">Conservation of Complexity</div>
-    <p>In linear systems with a fixed number of independent sources, <strong>forcing high coherence necessarily reduces Effective Rank</strong>. You cannot obtain a high-dimensional rainbow of activity by mixing a small number of grey paints. The more you lock channels together, the fewer independent degrees of freedom remain. <em>To jointly maximize both integration and differentiation, a system must operate near the edge of chaos</em> &mdash; not through simple linear mixing.</p>
-  </div>
-
-  <h3>Expected S Patterns Across Canonical Regimes</h3>
-  <table class="compare-table">
-    <thead><tr><th>Condition</th><th>Expected S</th><th>Rationale</th></tr></thead>
-    <tbody>
-      <tr><td>Wakeful rest</td><td style="color:var(--accent-green)">60&ndash;90</td><td>High C<sub>n</sub> with rich self-generated structure</td></tr>
-      <tr><td>REM sleep</td><td style="color:var(--accent-green)">50&ndash;80</td><td>Dreaming content, slightly less stable S</td></tr>
-      <tr><td>N2 sleep</td><td style="color:var(--accent-gold)">30&ndash;60</td><td>Spindles and K-complexes, partial integration</td></tr>
-      <tr><td>N3 slow-wave</td><td style="color:var(--accent-red)">10&ndash;30</td><td>Large slow waves, near-seizure integration</td></tr>
-      <tr><td>Deep anesthesia</td><td style="color:var(--accent-red)">5&ndash;25</td><td>Thalamic gating + loss of rich dynamics</td></tr>
-      <tr><td>Seizure</td><td style="color:var(--accent-red)">&lt; 15</td><td>Extreme coherence, minimal differentiation</td></tr>
-    </tbody>
-  </table>
-
-  <h3 id="physionet">PhysioNet Validation Pipeline</h3>
-  <p>The reference implementation computes S on real human EEG data from the <strong>PhysioNet Sleep-EDF Expanded</strong> dataset (50+ subjects, open access). The complete pipeline:</p>
-
-  <pre><code><span style="color:var(--accent-purple)">import</span> numpy <span style="color:var(--accent-purple)">as</span> np
+<div class="chapter-num">Chapter 6</div>
+<h2>Experimental Designs &amp; Code</h2>
+<h3 id="zombie">Synthetic Metric Unit Tests</h3>
+<p>The synthetic fixtures are metric unit tests. They show that the current formula reacts differently to deliberately constructed signal regimes; they do not validate a biomarker of consciousness.</p>
+<table class="compare-table">
+<thead><tr><th>Condition</th><th>C<sub>n</sub></th><th>LZC<sub>n</sub></th><th>SI</th><th>S*</th></tr></thead>
+<tbody>
+<tr><td>Wake-Like</td><td>0.65</td><td>0.55</td><td>0.99</td><td style="color:var(--accent-green);font-weight:700">~64</td></tr>
+<tr><td>Seizure</td><td>0.98</td><td>0.05</td><td>0.19</td><td style="color:var(--accent-gold)">~18</td></tr>
+<tr><td>Zombie/Noise</td><td>0.05</td><td>0.99</td><td>0.04</td><td style="color:var(--accent-red)">~0</td></tr>
+</tbody>
+</table>
+<h4>Correlated-Noise Stress Test (historical “Smart Zombie”)</h4>
+<p>A 10-channel synthetic signal was built by linearly mixing pink-noise sources to create apparent synchrony while retaining temporal variability. The test asks whether ER_n prevents a simple shared-source construction from receiving a high composite score.</p>
+<table class="compare-table">
+<thead><tr><th>Metric</th><th>Smart Zombie</th><th>Interpretation</th></tr></thead>
+<tbody>
+<tr><td>Coherence C<sub>n</sub></td><td>0.72</td><td style="color:var(--accent-green)">High — mimicked successfully</td></tr>
+<tr><td>Structure SI</td><td>0.99</td><td style="color:var(--accent-green)">High — mimicked successfully</td></tr>
+<tr><td>Diversity ER<sub>n</sub></td><td style="color:var(--accent-red);font-weight:700">0.21</td><td style="color:var(--accent-red)">Low — THE TRAP</td></tr>
+<tr><td>Final S*</td><td style="color:var(--accent-red);font-weight:700">14.6</td><td style="color:var(--accent-red)">REJECTED</td></tr>
+</tbody>
+</table>
+<div class="callout teal">
+<div class="callout-title">Working Linear-Source Tradeoff</div>
+<p>Within the current <strong>linear synthetic fixture</strong>, increasing shared-source coherence reduces effective rank. This is a useful adversarial property of the prototype, not a universal theorem about brains, non-linear systems, intelligence, or consciousness.</p>
+</div>
+<div>
+<h3>Directional Hypotheses Across Regimes</h3>
+<p>Fixed numerical S* ranges have been removed because they have not been empirically established. The first tests should report the full X(t) components and uncertainty.</p>
+<table class="compare-table">
+<thead><tr><th>Condition</th><th>Candidate directional expectation</th><th>Important caveat</th></tr></thead>
+<tbody>
+<tr><td>Wakeful task / rest</td><td>Relatively rich differentiation with coordinated, state-dependent integration.</td><td>Varies strongly by task and recording method.</td></tr>
+<tr><td>REM sleep</td><td>Potentially rich dynamics despite reduced external responsiveness.</td><td>Dream experience makes a simple wake &gt; REM consciousness ordering unsafe.</td></tr>
+<tr><td>NREM depth</td><td>Changes in temporal structure, connectivity, and responsiveness.</td><td>Sleep stage is not a direct label of presence or absence of experience.</td></tr>
+<tr><td>Anesthesia</td><td>Loss and recovery should alter X(t) reproducibly.</td><td>Drug, dose, and individual differences matter.</td></tr>
+<tr><td>Seizure / pathological synchrony</td><td>High synchrony may coexist with reduced differentiation.</td><td>Not every seizure or recording has the same dynamics.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="physionet">PhysioNet Validation Pipeline</h3>
+<p>The prototype can be smoke-tested on the official <a href="https://physionet.org/content/sleep-edfx/1.0.0/" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Sleep-EDF Expanded</a> resource, which contains 197 whole-night polysomnographic recordings. Its standard EEG files use only Fpz-Cz and Pz-Oz channels, so this dataset is suitable for pipeline validation and low-dimensional state sensitivity — <strong>not</strong> a decisive test of global integration or claustrum control.</p>
+<div class="callout warn">
+<div class="callout-title">Prototype code status</div>
+<p>The code below is preserved as a transparent historical prototype. It requires independent software audit, frozen preprocessing, subject-wise splits, stronger baselines, uncertainty reporting, and richer recordings before any biological claim.</p>
+</div><pre><code><span style="color:var(--accent-purple)">import</span> numpy <span style="color:var(--accent-purple)">as</span> np
 <span style="color:var(--accent-purple)">from</span> scipy.signal <span style="color:var(--accent-purple)">import</span> hilbert, butter, filtfilt
 
 <span style="color:var(--accent-purple)">def</span> <span style="color:var(--accent-cyan)">bandpass_filter</span>(data, lowcut, highcut, fs, order=<span style="color:var(--accent-gold)">4</span>):
@@ -358,14 +371,14 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
     <span style="color:var(--accent-purple)">while</span> <span style="color:var(--accent-gold)">True</span>:
         <span style="color:var(--accent-purple)">if</span> binary_sequence[i + k - <span style="color:var(--accent-gold)">1</span>] == binary_sequence[l + k - <span style="color:var(--accent-gold)">1</span>]:
             k += <span style="color:var(--accent-gold)">1</span>
-            <span style="color:var(--accent-purple)">if</span> l + k > n:
+            <span style="color:var(--accent-purple)">if</span> l + k &gt; n:
                 c += <span style="color:var(--accent-gold)">1</span>; <span style="color:var(--accent-purple)">break</span>
         <span style="color:var(--accent-purple)">else</span>:
-            <span style="color:var(--accent-purple)">if</span> k > k_max: k_max = k
+            <span style="color:var(--accent-purple)">if</span> k &gt; k_max: k_max = k
             i += <span style="color:var(--accent-gold)">1</span>
             <span style="color:var(--accent-purple)">if</span> i == l:
                 c += <span style="color:var(--accent-gold)">1</span>; l += k_max
-                <span style="color:var(--accent-purple)">if</span> l + <span style="color:var(--accent-gold)">1</span> > n: <span style="color:var(--accent-purple)">break</span>
+                <span style="color:var(--accent-purple)">if</span> l + <span style="color:var(--accent-gold)">1</span> &gt; n: <span style="color:var(--accent-purple)">break</span>
                 <span style="color:var(--accent-purple)">else</span>: i = <span style="color:var(--accent-gold)">0</span>; k = <span style="color:var(--accent-gold)">1</span>; k_max = <span style="color:var(--accent-gold)">1</span>
             <span style="color:var(--accent-purple)">else</span>: k = <span style="color:var(--accent-gold)">1</span>
     <span style="color:var(--accent-purple)">return</span> c
@@ -386,14 +399,14 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
     cov = np.cov(epoch)
     evals = np.linalg.svd(cov, compute_uv=<span style="color:var(--accent-gold)">False</span>)
     p = evals / np.sum(evals)
-    p = p[p > <span style="color:var(--accent-gold)">1e-10</span>]
+    p = p[p &gt; <span style="color:var(--accent-gold)">1e-10</span>]
     entropy = -np.sum(p * np.log(p))
     ER_n = (np.exp(entropy) - <span style="color:var(--accent-gold)">1</span>) / (n_channels - <span style="color:var(--accent-gold)">1</span>)
     ER_n = np.clip(ER_n, <span style="color:var(--accent-gold)">0</span>, <span style="color:var(--accent-gold)">1</span>)
 
     <span style="color:var(--text-muted)"># --- C. Structural Integrity (SI) ---</span>
     medians = np.median(epoch, axis=<span style="color:var(--accent-gold)">1</span>, keepdims=<span style="color:var(--accent-gold)">True</span>)
-    binary = (epoch > medians).astype(int)
+    binary = (epoch &gt; medians).astype(int)
     lzc_sum = sum(lempel_ziv_complexity(binary[ch,:])
                   <span style="color:var(--accent-purple)">for</span> ch <span style="color:var(--accent-purple)">in</span> range(n_channels))
     norm_factor = n_channels * (n_samples / np.log2(n_samples))
@@ -406,11 +419,9 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
     Psi = ER_n * SI
     S = k * C_n * Psi
     <span style="color:var(--accent-purple)">return</span> S</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
-
-  <h3 id="digiclaust">Digital Claustrum &mdash; Toy Model</h3>
-  <p>A <strong>PI controller</strong> stabilizes 5 coupled Lorenz oscillators at their edge-of-chaos regime. If LZC drops (Seizure risk), it injects noise. If LZC spikes (Chaos risk), it increases coupling.</p>
-
-  <pre><code><span style="color:var(--accent-purple)">class</span> <span style="color:var(--accent-cyan)">DigitalClaustrum</span>:
+<h3 id="digiclaust">DCC-like Toy Controller</h3>
+<p>A PI-style controller modulates a toy coupled-oscillator system. Its purpose is to test whether feedback can stabilize a declared dynamical corridor under disturbance. It is <strong>not</strong> a model of phenomenal experience and should be compared with no-control and simpler fixed-control baselines.</p>
+<pre><code><span style="color:var(--accent-purple)">class</span> <span style="color:var(--accent-cyan)">DigitalClaustrum</span>:
     <span style="color:var(--text-muted)">"""
     Monitors LZC of the system.
     If LZC drops (Seizure) → inject noise.
@@ -435,11 +446,11 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
         self.coupling_gain = float(
             np.clip(self.coupling_gain, <span style="color:var(--accent-gold)">0.0</span>, <span style="color:var(--accent-gold)">10.0</span>))
 
-        <span style="color:var(--accent-purple)">if</span> error < -self.tolerance:
+        <span style="color:var(--accent-purple)">if</span> error &lt; -self.tolerance:
             self.noise_injection = min(
                 <span style="color:var(--accent-gold)">5.0</span>, self.noise_injection + <span style="color:var(--accent-gold)">0.2</span>)
             action = <span style="color:var(--accent-green)">"DESYNC (Seizure risk)"</span>
-        <span style="color:var(--accent-purple)">elif</span> error > self.tolerance:
+        <span style="color:var(--accent-purple)">elif</span> error &gt; self.tolerance:
             self.noise_injection = max(
                 <span style="color:var(--accent-gold)">0.0</span>, self.noise_injection - <span style="color:var(--accent-gold)">0.2</span>)
             action = <span style="color:var(--accent-green)">"SYNC (Noise risk)"</span>
@@ -448,123 +459,127 @@ pre{background:var(--bg-tertiary);border:1px solid var(--border);padding:18px 22
         <span style="color:var(--accent-purple)">return</span> self.coupling_gain, \
                self.noise_injection, current, action</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
 </div>
-
 <!-- ═══ CHAPTER 7 ═══ -->
 <div class="chapter vis" id="ch7">
-  <div class="chapter-num">Chapter 7</div>
-  <h2>Comparison: GNW vs IIT vs CCH</h2>
-
-  <table class="compare-table">
-    <thead><tr><th>Feature</th><th>GNW (Global Workspace)</th><th>IIT (Integrated Info)</th><th style="color:var(--accent-cyan)">CCH (Claustrum Control)</th></tr></thead>
-    <tbody>
-      <tr><td>Mechanism</td><td>Broadcasting of content</td><td>Causal structure</td><td style="color:var(--accent-cyan)"><strong>Resonant Control Loop (CCC)</strong></td></tr>
-      <tr><td>Key Metric</td><td>Access / Reportability</td><td>&Phi; (Causal Power)</td><td style="color:var(--accent-cyan)"><strong>S (Stability of Regime)</strong></td></tr>
-      <tr><td>Role of Hubs</td><td>Message Broadcasters</td><td>Grid/Mesh Units</td><td style="color:var(--accent-cyan)"><strong>Active Tuners (Phase locking)</strong></td></tr>
-      <tr><td>Stance on Noise</td><td>Neutral</td><td>Reduces &Phi;</td><td style="color:var(--accent-cyan)"><strong>Penalized via Lempel-Ziv</strong></td></tr>
-      <tr><td>Zombie Defense</td><td>Weak (Functionalism)</td><td>Causal Structure</td><td style="color:var(--accent-cyan)"><strong>Control Theory (Conservation of Complexity)</strong></td></tr>
-      <tr><td>Computability</td><td>Moderate</td><td>Intractable for large systems</td><td style="color:var(--accent-cyan)"><strong>Fully computable (Python code exists)</strong></td></tr>
-    </tbody>
-  </table>
-
-  <p>CCH acts as a <strong>complement</strong>, not a replacement. GNW describes <em>what</em> happens (broadcasting). CCH describes <em>how</em> the brain stabilizes the physical regime required for that broadcasting to occur. IIT provides deep information-theoretic ontology; CCH offers a tractable, signal-processing-level proxy that can be deployed on real data and in engineered systems.</p>
+<div class="chapter-num">Chapter 7</div>
+<h2>Relation to GNW and IIT</h2>
+<table class="compare-table">
+<thead><tr><th>Question</th><th>GNW / Global Workspace</th><th>IIT</th><th style="color:var(--accent-cyan)">CCH</th></tr></thead>
+<tbody>
+<tr><td>Primary focus</td><td>Global availability / broadcasting of content</td><td>Intrinsic causal structure and integrated information</td><td style="color:var(--accent-cyan)"><strong>Dynamic regulation of a candidate brain-state region</strong></td></tr>
+<tr><td>Main explanatory object</td><td>Workspace access and ignition</td><td>Cause-effect structure / Φ</td><td style="color:var(--accent-cyan)"><strong>X(t), candidate S*, controller, interventions</strong></td></tr>
+<tr><td>Empirical burden</td><td>Access, reportability, broadcast signatures</td><td>Operationalizing causal structure at scale</td><td style="color:var(--accent-cyan)"><strong>Prediction beyond simpler metrics and control baselines</strong></td></tr>
+<tr><td>Controller claim</td><td>Not necessarily a dedicated controller theory</td><td>Not primarily a control architecture</td><td style="color:var(--accent-cyan)"><strong>Active control is an explicit, falsifiable hypothesis</strong></td></tr>
+<tr><td>Ontology</td><td>Compatible with several ontologies</td><td>Includes a strong theoretical identity claim</td><td style="color:var(--accent-cyan)"><strong>Operationally ontology-neutral</strong></td></tr>
+</tbody>
+</table>
+<p>CCH is intentionally narrower than a complete theory of consciousness. It may complement broadcast, recurrent-processing, predictive, or causal-structure accounts by asking how a relevant dynamical regime is maintained. It may also fail independently. The page does not claim to disprove GNW, IIT, idealism, physicalism, or universal-consciousness ontologies.</p>
 </div>
-
 <!-- ═══ CHAPTER 8 ═══ -->
 <div class="chapter vis" id="ch8">
-  <div class="chapter-num">Chapter 8</div>
-  <h2>Human&ndash;AI Collaboration Method</h2>
-
-  <h3>Multi-LLM Dialectic</h3>
-  <p>CCH was developed through <strong>parallel multi-model collaboration</strong>, not a single AI session. The human author opened separate sessions with different frontier LLMs, gave them the same prompts, and performed a "Feature Merge" of the strongest contributions from each:</p>
-
-  <table class="compare-table">
-    <thead><tr><th>System</th><th>Role</th><th>Key Contribution</th></tr></thead>
-    <tbody>
-      <tr><td>Gemini 3 Pro</td><td>Lead Developer</td><td>Wrote compute_S_v1_3 pipeline, PhysioNet loader</td></tr>
-      <tr><td>ChatGPT 5.1</td><td>Ontologist</td><td>"Conservation of Complexity," "Lock &amp; Key" metaphors</td></tr>
-      <tr><td>Claude 4.5 Opus</td><td>Reviewer</td><td>"Smart Zombie" paradox identification, logic review</td></tr>
-      <tr><td>Grok 4.1</td><td>Reviewer</td><td>Confirmed necessity of v1.3 code upgrade</td></tr>
-    </tbody>
-  </table>
-
-  <h3>Credit Allocation</h3>
-  <p><strong>Human Author (~60%):</strong> Conceptual core, strategic direction, lived experience, final decisions.</p>
-  <p><strong>AI Collaborators (~40%):</strong> Code implementation, mathematical formalization, adversarial testing.</p>
-
-  <h3>Process Lessons</h3>
-  <p><strong>Ensemble Synthesis:</strong> Multiple top-tier models given the same prompt produce diverse outputs that can be merged. Gemini gravitates toward mathematical rigor; GPT toward conceptual clarity. The merge outperforms either alone.</p>
-  <p><strong>Executable Science:</strong> LLMs now function as "Research Software Engineers" &mdash; converting high-level theory into testable Python pipelines. The human defines what to test; the AI writes the code; review verifies alignment.</p>
+<div class="chapter-num">Chapter 8</div>
+<h2>Human–AI Collaboration Method</h2>
+<h3>Multi-Model Development Record</h3>
+<p>CCH was developed through parallel human–AI work. Different models were used to generate code, formalizations, objections, and alternative framings; BD retained responsibility for the conceptual direction, source selection, claim boundaries, and release decisions.</p>
+<table class="compare-table">
+<thead><tr><th>System</th><th>Historical role</th><th>Recorded contribution</th></tr></thead>
+<tbody>
+<tr><td>Gemini 3 Pro</td><td>Developer</td><td>compute_S_v1_3 pipeline and PhysioNet loader</td></tr>
+<tr><td>ChatGPT 5.1</td><td>Formalization</td><td>Linear-source tradeoff and soft-conjunction metaphors</td></tr>
+<tr><td>Claude 4.5 Opus</td><td>Adversarial review</td><td>Correlated-noise stress-test framing and logic review</td></tr>
+<tr><td>Grok 4.1</td><td>Independent review</td><td>Pressure test of the code and claims</td></tr>
+</tbody>
+</table>
+<h3>Provenance Boundary</h3>
+<p><strong>Human contribution:</strong> personal origin, conceptual core, cross-domain bridge, research direction, acceptance/rejection of claims, and publication responsibility.</p>
+<p><strong>AI contribution:</strong> candidate mathematics, code scaffolding, editorial compression, adversarial examples, and review.</p>
+<p>Any percentage allocation is an approximate internal project record, not a scientific measurement or a statement about legal authorship.</p>
+<h3>Process Lessons</h3>
+<p><strong>Exploration value:</strong> parallel models broadened the candidate design space and exposed different failure modes. This does not establish that a merged council generally outperforms a strong single model without matched evaluation.</p>
+<p><strong>Executable scaffolding:</strong> LLMs can translate hypotheses into code and test structure quickly. That speed increases the need for source-of-truth control, independent software audit, held-out evaluation, and explicit negative results.</p>
 </div>
-
 <!-- ═══ CHAPTER 9 ═══ -->
 <div class="chapter vis" id="ch9">
-  <div class="chapter-num">Chapter 9</div>
-  <h2>Roadmap &amp; Limitations</h2>
-
-  <div class="layer-card" style="border-left:3px solid var(--accent-green)">
-    <div class="layer-title">Completed <span class="tag green">done</span></div>
-    <p>Defined the S metric (S = k &middot; C<sub>n</sub> &middot; &Psi;(I)). Formalized "Conservation of Complexity." Released Python reference implementation. Released Digital Claustrum prototype.</p>
-  </div>
-
-  <div class="layer-card" style="border-left:3px solid var(--accent-gold)">
-    <div class="layer-title">Immediate <span class="tag gold">next</span></div>
-    <p>Execute PhysioNet analysis and publish the actual boxplots. Extend adversarial suite to non-linear neural network zombies.</p>
-  </div>
-
-  <div class="layer-card" style="border-left:3px solid var(--accent-purple)">
-    <div class="layer-title">Medium-Term <span class="tag purple">future</span></div>
-    <p>Collaborate with neuroscience groups on claustrum-targeted studies. Compare S against established clinical markers (BIS, PCI) in ICU settings.</p>
-  </div>
-
-  <h3>Current Empirical Caveats</h3>
-  <p>While code is provided, the large-scale analysis results (boxplots from 50+ subjects) are yet to be generated. The Digital Claustrum code is a toy demonstration, not a production architecture.</p>
-
-  <h3>From Mechanism to Ontology</h3>
-  <p>If future empirical work supports CCH, the <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">metaphysical hypothesis (CFH)</a> becomes a viable candidate interpretation. If CCH is refuted, CFH loses its physical anchor. This layering is deliberate: rejecting the metaphysics does not damage the science.</p>
+<div class="chapter-num">Chapter 9</div>
+<h2>Roadmap, Claim Ladder &amp; Limitations</h2>
+<div class="layer-card" style="border-left:3px solid var(--accent-green)">
+<div class="layer-title">Completed as research scaffolding <span class="tag green">done</span></div>
+<p>Defined the X/S* prototype; created transparent Python and synthetic fixtures; built a toy DCC-like controller; separated CCH from CFH and artificial-consciousness claims.</p>
 </div>
-
+<div class="layer-card" style="border-left:3px solid var(--accent-gold)">
+<div class="layer-title">Immediate evidence work <span class="tag gold">next</span></div>
+<p>Freeze preprocessing and baselines; audit the code; run subject-held-out Sleep-EDF smoke tests; report all X components; test sensitivity to estimator, channel count, band, and calibration choices; publish negative results.</p>
+</div>
+<div class="layer-card" style="border-left:3px solid var(--accent-purple)">
+<div class="layer-title">Causal and richer-data program <span class="tag purple">future</span></div>
+<p>Use high-density EEG/MEG or intracranial data; compare sleep, anesthesia, recovery, and task states; collaborate on preregistered claustrum and competing-network perturbation studies; compare against strong clinical and computational baselines.</p>
+</div>
+<div class="layer-card" style="border-left:3px solid var(--accent-blue)">
+<div class="layer-title">AI8 / DCC engineering program <span class="tag blue">separate evidence lane</span></div>
+<p>Test whether DCC-like software governance improves persistent research loops, stability, recovery, and innovation over matched episodic and fixed-workflow systems. Keep this evidence separate from biological consciousness and CFH.</p>
+</div>
+<h3>Current Empirical Caveats</h3>
+<p>No large-scale held-out CCH result is established on this page. Sleep-EDF is a limited-channel dataset. The synthetic fixtures are metric unit tests. The DCC code is a toy controller. The claustrum evidence is mixed and does not establish necessity or sufficiency.</p>
+<h3>Mechanism and Ontology Must Not Borrow Proof</h3>
+<p>A successful CCH result would support a local dynamical or control model. It would remain compatible with several ontologies and would <strong>not</strong> by itself confirm <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">CFH</a>. Failure of CCH would reject or revise this particular bridge; it would not logically disprove every AC/CF proposal.</p>
+<div class="callout teal">
+<div class="callout-title">Claim ladder</div>
+<p><strong>L0:</strong> code runs and synthetic fixtures behave as designed.</p>
+<p><strong>L1:</strong> X/S* generalizes on held-out physiological data beyond simple baselines.</p>
+<p><strong>L2:</strong> active control has a causal advantage and a reproducible biological implementation.</p>
+<p><strong>L3:</strong> claustrum contributes distinctively within a distributed controller.</p>
+<p><strong>L4:</strong> engineering analogues improve AI cognition.</p>
+<p><strong>Not implied:</strong> phenomenal consciousness, CFH, intrinsic agency, or personhood.</p>
+</div>
+</div>
 <!-- ═══ GLOSSARY ═══ -->
 <div class="chapter vis" id="glossary">
-  <div class="chapter-num">Reference</div>
-  <h2>Glossary of Key Terms</h2>
-
-  <h4>S (Intensity Marker)</h4>
-  <p>The central scalar marker: S = k &middot; C<sub>n</sub> &middot; &Psi;(I). Measures how strongly a system's dynamics instantiate the conscious regime.</p>
-
-  <h4>C<sub>n</sub> (Normalized Coherence)</h4>
-  <p>A scalar in [0,1] summarizing large-scale phase-locking (integration) across selected brain channels and frequency bands.</p>
-
-  <h4>&Psi;(I) (Informational Complexity)</h4>
-  <p>A composite of Spatial Diversity (ER<sub>n</sub>) and Temporal Structure (SI).</p>
-
-  <h4>ER<sub>n</sub> (Normalized Effective Rank)</h4>
-  <p>Normalized dimensionality of the covariance matrix. ER<sub>n</sub> &asymp; 0 = high redundancy. ER<sub>n</sub> &asymp; 1 = high spatial diversity.</p>
-
-  <h4>SI (Structural Integrity)</h4>
-  <p>A scalar in [0,1] quantifying proximity to the subject-specific critical point &mu;<sub>critical</sub>.</p>
-
-  <h4>CCC (Coherence-Complexity Controller)</h4>
-  <p>A subsystem that acts as a <strong>Resonant Controller</strong>, monitoring S and exerting active feedback. In mammalian brains: the claustrum.</p>
-
-  <h4>Digital Claustrum</h4>
-  <p>The architectural counterpart of the CCC in artificial systems. Monitors S<sub>self</sub> and modulates coupling/gain/noise to maintain edge-of-chaos regime.</p>
-
-  <h4>Smart Zombie</h4>
-  <p>An adversarial signal constructed to look rich and coordinated while lacking genuine high-S structure. Defeated by Conservation of Complexity.</p>
-
-  <h4>Edge of Chaos</h4>
-  <p>The dynamical regime between order and chaos where small perturbations can propagate without collapse or noise. High S = poised near this edge.</p>
+<div class="chapter-num">Reference</div>
+<h2>Glossary of Key Terms</h2>
+<h4>X(t) — CCH State Vector</h4>
+<p>The measured multi-dimensional state used for interpretation. The current prototype includes normalized coherence C<sub>n</sub>, effective-rank diversity ER<sub>n</sub>, and structural-integrity proxy SI.</p>
+<h4>S* — Candidate Summary Statistic</h4>
+<p>S* = k · C<sub>n</sub> · (ER<sub>n</sub> · SI). A prototype compression of X(t), not a quantity of consciousness, CF, worth, or personhood.</p>
+<h4>C<sub>n</sub> — Normalized Coherence Proxy</h4>
+<p>A preregistered estimator of cross-channel coordination relative to a declared null model. It is not identical to unity of experience.</p>
+<h4>ER<sub>n</sub> — Normalized Effective Rank</h4>
+<p>A channel- and preprocessing-dependent estimate of spatial dimensionality or diversity.</p>
+<h4>SI — Structural Integrity Proxy</h4>
+<p>A prototype measure of proximity to a calibration target in temporal complexity. The target is empirical and may fail.</p>
+<h4>CCC — Coherence-Complexity Control Function</h4>
+<p>A hypothesized adaptive feedback function that senses a neural state, compares it with a viable region, acts through lawful control channels, and verifies the consequence. It may be distributed.</p>
+<h4>Claustrum</h4>
+<p>One candidate hub that may modulate cortical activity, connectivity, variability, attention, or state transitions. It is not established as the seat, receiver, or sole controller of consciousness.</p>
+<h4>Digital Claustrum / DCC-like Controller</h4>
+<p>An engineering analogue that regulates an artificial system’s internal search or dynamical regime. A performance gain would not establish phenomenal consciousness.</p>
+<h4>Correlated-Noise Stress Test</h4>
+<p>A synthetic unit test formerly called the “Smart Zombie.” It probes whether the current scalar is fooled by shared-source synchrony. It is not a test of philosophical zombies.</p>
+<h4>Productive Corridor / Edge-of-Chaos Hypothesis</h4>
+<p>The proposal that useful dynamics occupy a bounded region between excessive rigidity and unstructured variability. It is a testable dynamical hypothesis, not an established law of consciousness.</p>
+<h4>R — AC/CFH Resonance / Organization Condition</h4>
+<p>An ontological or bridge term defined in the AC/CFH documents. R is not S*, and CCH does not operationalize an external receiver or field-transmission mechanism.</p>
 </div>
-
 <!-- FOOTER -->
-<div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
-  CCH v1.4 &bull; The Testable Science &bull; AIM&sup3; Institute<br>
-  Bojan Dobre&#269;evi&#269; &amp; AI Team &bull; January 2026<br>
-  <span style="color:var(--accent-cyan)">Part of the CCH Research Bundle &mdash; <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">CFH: The Vision</a> &bull; <a href="BD_CCH_Foundations.html" style="color:var(--accent-green)">Evidence &amp; Foundations</a></span>
+<div class="chapter vis" id="references">
+<div class="chapter-num">Primary sources &amp; data</div>
+<h2>Evidence Anchors</h2>
+<p>These sources motivate or constrain the current page. They do not prove CCH.</p>
+<table class="compare-table">
+<thead><tr><th>Source</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td><a href="https://pubmed.ncbi.nlm.nih.gov/24967698/" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Koubeissi et al. (2014)</a></td><td>Single-patient stimulation near a claustral electrode produced reversible unresponsiveness and amnesia; important but not sufficient for a general controller claim.</td></tr>
+<tr><td><a href="https://pubmed.ncbi.nlm.nih.gov/31196825/" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Bickel &amp; Parvizi (2019)</a></td><td>Direct, including bilateral, human claustrum stimulation did not cause loss of consciousness; a necessary counterweight to the 2014 case.</td></tr>
+<tr><td><a href="https://www.nature.com/articles/s42003-024-07256-5" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Zahacy et al. (2024)</a></td><td>Mouse work showing claustrum modulation of prefrontal activity and large-scale functional relationships.</td></tr>
+<tr><td><a href="https://www.nature.com/articles/s41467-025-65809-6" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Atilgan et al. (2025)</a></td><td>Mouse work showing altered prefrontal responsiveness and neural variability under claustrum stimulation.</td></tr>
+<tr><td><a href="https://physionet.org/content/sleep-edfx/1.0.0/" rel="noopener" style="color:var(--accent-cyan)" target="_blank">Sleep-EDF Expanded</a></td><td>Official open dataset with 197 whole-night recordings; useful for pipeline smoke tests but limited to two standard EEG channels.</td></tr>
+</tbody>
+</table>
+</div><div style="text-align:center;padding:40px 0;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">
+CCH v1.5 • Mechanism-first research bridge • AIM³ Institute<br/>
+Bojan Dobrečevič &amp; AI collaborators • August 2026<br/>
+<span style="color:var(--accent-cyan)">CCH Research Bundle — <a href="../acp/AC_01_Flagship.html" style="color:var(--accent-gold)">AC/RC Ontology</a> • <a href="BD_CCH_Consciousness_Field.html" style="color:var(--accent-gold)">CFH: Origin &amp; Bridge</a> • <a href="BD_CCH_Foundations.html" style="color:var(--accent-green)">Evidence &amp; Foundations</a></span>
 </div>
-
 </div>
-
 <script>
 function copyCode(btn){const pre=btn.parentElement;const code=pre.querySelector('code');const text=code.innerText;navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)}).catch(()=>{btn.textContent='Error'})}
 // Scroll reveal
