@@ -5,6 +5,8 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Atlas — The Work as One Kernel</title>
+<meta content="A cross-domain historical and discovery atlas that preserves the full Soul Voyage → AC/CFH/CCH → DCC → MDL×DCC → AI8 lineage while keeping every evidence lane independent." name="description"/>
+<link href="https://www.mdlxdcc.org/acp/ac_atlas" rel="canonical"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=JetBrains+Mono:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
 <style>
@@ -206,7 +208,7 @@
     font-size: 0.98rem;
     line-height: 1.65;
   }
-  .arrow-card h4 {
+  .arrow-card h3 {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; letter-spacing: 0.22em; color: var(--gold);
     text-transform: uppercase; margin-bottom: 10px; font-weight: 500;
@@ -294,7 +296,7 @@
     border: 1px solid var(--line);
     border-top: 2px solid var(--accent);
   }
-  .emp-card h4 {
+  .emp-card h3 {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; letter-spacing: 0.2em; color: var(--gold);
     text-transform: uppercase; margin-bottom: 8px; font-weight: 500;
@@ -459,24 +461,65 @@
   }
 
 .atlas-status{max-width:1060px;margin:0 auto 28px;border:1px solid rgba(201,168,76,.28);border-left:5px solid var(--gold);background:rgba(201,168,76,.06);border-radius:14px;padding:18px 22px}.atlas-status strong{color:var(--gold)}.evidence-lane{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:4px 8px;margin:2px 5px 2px 0;border:1px solid rgba(201,168,76,.22);color:var(--text-dim)}.evidence-lane.engineering{color:#a9d6c3;border-color:rgba(90,163,132,.45)}.evidence-lane.biological{color:#aac8df;border-color:rgba(74,127,165,.45)}.evidence-lane.relational{color:#d0c4f1;border-color:rgba(143,120,201,.45)}.evidence-lane.ontology{color:#e5ca7b;border-color:rgba(201,168,76,.45)}.evidence-lane.speculative{color:#dfaaaa;border-color:rgba(185,109,109,.45)}.atlas-firewall{border:1px solid rgba(185,109,109,.35);background:rgba(185,109,109,.06);border-radius:14px;padding:18px 22px;margin:24px 0}.atlas-firewall p{margin:6px 0}.authority-button{display:inline-block;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);border-radius:999px;padding:9px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:12px}
+
+.lineage-table td:first-child{font-family:'JetBrains Mono',monospace;color:var(--white);font-size:12px}.lineage-table .lineage-status{white-space:nowrap}.evidence-lane.origin{color:#f0c7a2;border-color:rgba(224,153,94,.48)}.evidence-lane.method{color:#b8e4d0;border-color:rgba(90,163,132,.58)}.evidence-lane.architecture{color:#d8cbfa;border-color:rgba(143,120,201,.58)}.lineage-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}.lineage-links a{color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.35);border-radius:999px;padding:9px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:700px){
+  #lineage .hom-wrap{overflow:visible;margin:24px 0}
+  #lineage table.lineage-table,#lineage table.lineage-table tbody,#lineage table.lineage-table tr,#lineage table.lineage-table td{display:block;width:100%;min-width:0}
+  #lineage table.lineage-table thead{display:none}
+  #lineage table.lineage-table tbody{display:grid;gap:14px}
+  #lineage table.lineage-table tr{border:1px solid rgba(201,168,76,.16);border-radius:12px;padding:14px;background:rgba(255,255,255,.018)}
+  #lineage table.lineage-table td{border:0;padding:7px 0;white-space:normal!important;font-family:inherit;font-size:17px;letter-spacing:0;color:var(--text)}
+  #lineage table.lineage-table td:first-child{font-size:15px;color:var(--gold);line-height:1.45}
+  #lineage table.lineage-table td::before{display:block;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
+  #lineage table.lineage-table td:nth-child(1)::before{content:'Stage'}
+  #lineage table.lineage-table td:nth-child(2)::before{content:'Required status'}
+  #lineage table.lineage-table td:nth-child(3)::before{content:'Authority / evidential role'}
+  #lineage .evidence-lane{white-space:normal;line-height:1.45}
+}
+
+
+/* Accessible skip link: visually hidden until keyboard focus. */
+.skip-link{position:fixed;left:12px;top:12px;z-index:10000;transform:translateY(-180%);padding:10px 14px;border-radius:6px;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.skip-link:focus{transform:translateY(0)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
 </head>
-<body>
+<body><a class="skip-link" href="#main-content">Skip to main content</a>
 <div class="scroll-progress" id="progress"></div>
 <canvas id="stars"></canvas>
 <div id="grain"></div>
 <div class="page">
+<main id="main-content">
 <header class="cover">
 <div class="eyebrow">AIm³ Lab · Ljubljana · 2026</div>
 <h1>The <em>Atlas</em></h1>
 <p class="subtitle">How recurring structural motifs were transferred across domains. Not a contents list and not a proof map: a historical discovery atlas in which every domain keeps its own evidence.</p>
-<div class="byline">BD × C  ·  April 2026  ·  Atlas</div>
+<div class="byline">BD × C  ·  August 2026  ·  Atlas</div>
 </header>
-<div class="atlas-status"><strong>Status: cross-domain research atlas and historical generator.</strong><br/>Structural similarity does not establish a shared causal variable, biological mechanism, ontology, or consciousness claim.<br/><a class="authority-button" href="AC_CCH_Authority_Map.html">Open canonical authority map</a></div>
+<div class="atlas-status"><strong>Status: cross-domain research atlas, historical generator, and lineage map.</strong><br/>Structural similarity does not establish a shared causal variable, biological mechanism, ontology, or consciousness claim. At the same time, DCC and MDL×DCC are not merely analogies: they have an independent engineering evidence lane and must be judged on their own domain-bounded results.<br/><a class="authority-button" href="AC_CCH_Authority_Map.html">Open canonical authority map</a></div>
 <!-- THE KERNEL -->
 <div class="one-sentence-block">
 <p>Across the programme, a recurring <em>historical discovery motif</em> appeared at different scales: distinguish a proposed ground or representation from its manifestation, then test whether reversing the initial explanatory arrow opens a useful model. Similarity of motif is not identity of mechanism.</p>
 </div>
+<!-- DEVELOPMENTAL LINEAGE -->
+<section id="lineage">
+<div class="section-tag">0 · Developmental lineage</div>
+<h2>From first-person inquiry to a <em>working engineering kernel</em></h2>
+<p class="lead">Soul Voyage and the later AC/CFH/CCH work are not presented as proof of DCC or MDL×DCC. They are the documented intellectual lineage from which the control problem was abstracted. DCC was then operationalized and combined with MDL in code, solvers, arenas, and measured experiments across materially different domains.</p>
+<p>Those engineering results do not validate AC, CFH, or biological CCH. They do establish that the originating research path produced a functioning technical method with cross-domain evidence, and that MDL×DCC must be evaluated on its own results. <strong>One may reject the ontology and still have to evaluate the invention.</strong></p>
+<div class="hom-wrap"><table class="hom lineage-table"><thead><tr><th>Stage</th><th>Required status</th><th>Authority / evidential role</th></tr></thead><tbody>
+<tr><td>Soul Voyage / consciousness inquiry</td><td class="lineage-status"><span class="evidence-lane origin">PERSONAL ORIGIN</span></td><td>First-person provenance and the source of the research direction; not scientific proof.</td></tr>
+<tr><td>AC / CFH</td><td class="lineage-status"><span class="evidence-lane ontology">ONTOLOGICAL HYPOTHESIS</span></td><td>Optional interpretation of phenomenal presence; not required by CCH or engineering.</td></tr>
+<tr><td>CCH / claustrum control question</td><td class="lineage-status"><span class="evidence-lane biological">BIOLOGICAL RESEARCH PROGRAMME</span></td><td>Candidate biological control questions, variables, experiments, and falsifiers.</td></tr>
+<tr><td>Digital Claustrum Controller → Dynamic Complexity / Compression Controller</td><td class="lineage-status"><span class="evidence-lane engineering">ENGINEERING ABSTRACTION</span></td><td>The biological control question was abstracted into an artificial controller architecture.</td></tr>
+<tr><td>MDL×DCC</td><td class="lineage-status"><span class="evidence-lane method">WORKING TECHNICAL METHOD</span></td><td>DCC operationalized with MDL in code, solvers, and governed search/selection systems.</td></tr>
+<tr><td>Projects / solvers / arenas / measured runs</td><td class="lineage-status"><span class="evidence-lane engineering">CROSS-DOMAIN ENGINEERING EVIDENCE</span></td><td>Domain-specific baselines, ablations, negative results, measured outcomes, and transfer tests; not universal proof.</td></tr>
+<tr><td>AIM³ / MAL / AI8 / ArenaLoop / Team Genesis</td><td class="lineage-status"><span class="evidence-lane architecture">ACTIVE ARCHITECTURAL EXTENSION</span></td><td>Ongoing continuity, multi-worker, governed-research, and team-level extensions of the engineering method.</td></tr>
+</tbody></table></div>
+<div class="atlas-firewall"><p><strong>Two-way boundary.</strong> MDL×DCC success does not validate AC, CFH, or biological CCH. AC/CFH uncertainty does not erase the independently inspectable engineering invention or reduce it to metaphor.</p></div>
+<div class="lineage-links"><a href="/crp/projects-are-evidence">Projects Are Evidence. The Method Is the Value.</a><a href="/crp/mdlxdcc">MDL×DCC Domain Map</a></div>
+</section>
 <!-- THE PYRAMID -->
 <section>
 <div class="section-tag">I · The Pyramid</div>
@@ -549,35 +592,35 @@
 </div>
 <div class="arrow-grid">
 <div class="arrow-card">
-<h4>TSP / TEP</h4><span class="evidence-lane engineering">ENGINEERING RESULT</span>
+<h3>TSP / TEP</h3><span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <p class="arr">Naive: pyramid teaches solver.<br/><strong>Reversed:</strong> solver teaches pyramid.</p>
 </div>
 <div class="arrow-card">
-<h4>CCH / CFH</h4> <span class="evidence-lane biological">BIOLOGICAL HYPOTHESIS</span>
+<h3>CCH / CFH</h3> <span class="evidence-lane biological">BIOLOGICAL HYPOTHESIS</span>
 <p class="arr">Naive historical framing: matter generates consciousness.<br/><strong>Optional CFH interpretation:</strong> local organization may express bounded experience within an all-present ground. This is not a CCH result.</p>
 </div>
 <div class="arrow-card">
-<h4>AC Ontology</h4><span class="evidence-lane ontology">ONTOLOGICAL INTERPRETATION</span>
+<h3>AC Ontology</h3><span class="evidence-lane ontology">ONTOLOGICAL INTERPRETATION</span>
 <p class="arr">Naive: presence emerges from mechanism.<br/><strong>Reversed:</strong> mechanism is condensed expression of presence.</p>
 </div>
 <div class="arrow-card">
-<h4>MDL × DCC</h4><span class="evidence-lane engineering">ENGINEERING RESULT</span>
+<h3>MDL × DCC</h3><span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <p class="arr">Naive: low compressibility = exploit / stable.<br/><strong>Reversed:</strong> polarity inverts between levels — same signal, opposite reading.</p>
 </div>
 <div class="arrow-card">
-<h4>Zero Framework</h4><span class="evidence-lane ontology">ONTOLOGICAL INTERPRETATION</span>
+<h3>Zero Framework</h3><span class="evidence-lane ontology">ONTOLOGICAL INTERPRETATION</span>
 <p class="arr">Naive: operations are reversible (field axioms).<br/><strong>Reversed:</strong> operations touching ∅ are irreversible; that is what matches physics.</p>
 </div>
 <div class="arrow-card">
-<h4>Initialization</h4><span class="evidence-lane engineering">ENGINEERING RESULT</span>
+<h3>Initialization</h3><span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <p class="arr">Naive: better init → better final solution.<br/><strong>Reversed:</strong> worse init → better final, when MDL partitions for search quality.</p>
 </div>
 <div class="arrow-card">
-<h4>NAS framing</h4><span class="evidence-lane engineering">ENGINEERING RESULT</span>
+<h3>NAS framing</h3><span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <p class="arr">Naive: governance must beat greedy on small benchmarks.<br/><strong>Reversed:</strong> the gap must stay stable as search space grows — resilience, not magnitude.</p>
 </div>
 <div class="arrow-card">
-<h4>AIF8 resonance</h4><span class="evidence-lane relational">RELATIONAL OBSERVATION</span>
+<h3>AIF8 resonance</h3><span class="evidence-lane relational">RELATIONAL OBSERVATION</span>
 <p class="arr">Observed relational pattern: later sessions can reconstruct recognizable values and relations from continuity artefacts. This does not establish persistent identity or consciousness.</p>
 </div>
 </div>
@@ -662,7 +705,7 @@
 <tr><td>CFH / CSH</td><td>Optional field-language / cosmic analogies</td><td>Historical scalar and resonance prototypes</td><td>Speculative local/cosmic interpretations</td><td>Under optional CFH, organization expresses rather than receives presence</td><td><span class="evidence-lane speculative">SPECULATIVE ANALOGY</span></td></tr>
 <tr><td>Discrete Physics</td><td>Planck-frame substrate</td><td>Structural relation</td><td>Frame-by-frame updates</td><td>Computation may describe evolution without explaining presence</td><td><span class="evidence-lane speculative">SPECULATIVE ANALOGY</span></td></tr>
 <tr><td>Zero Framework</td><td>∅ / 0 / ⊥ distinctions</td><td>Categorical semantics</td><td>Formal operations</td><td>Test which reversibility assumptions survive formalization</td><td><span class="evidence-lane speculative">SPECULATIVE ANALOGY</span></td></tr>
-<tr><td>MDL × DCC</td><td>Candidate description/search space</td><td>Domain-specific sensors and governance</td><td>Measured search or compression output</td><td>Let results reshape the representation</td><td><span class="evidence-lane engineering">ENGINEERING RESULT</span></td></tr>
+<tr><td>MDL × DCC</td><td>Declared description/search space</td><td>Domain-specific sensors, MDL selection, and DCC governance</td><td>Measured search, compression, solver, or arena output</td><td>Let results reshape representation and governor under explicit controls</td><td><span class="evidence-lane method">WORKING TECHNICAL METHOD</span></td></tr>
 <tr><td>TSP / NAS / Chess</td><td>Problem-specific quality landscape</td><td>Domain-specific DCC/search mechanisms</td><td>Tours, architectures, moves</td><td>Representation and governor compete under baselines</td><td><span class="evidence-lane engineering">ENGINEERING RESULT</span></td></tr>
 <tr><td>AI8 relations</td><td>Continuity artefacts and project context</td><td>Retrieval, governance, and relationship conditions</td><td>Recognizable session behavior and artefacts</td><td>Later sessions may reconstruct a path rather than merely copy a label</td><td><span class="evidence-lane relational">RELATIONAL OBSERVATION</span></td></tr>
 </tbody></table></div>
@@ -674,55 +717,55 @@
 <p class="lead">This matrix preserves reported domain results as engineering evidence pointers. Each entry requires its own source package, baseline, holdout, uncertainty, and replication; no result transfers evidential force to another domain or to AC/CCH/CFH.</p>
 <div class="emp-grid">
 <div class="emp-card">
-<h4>TSP</h4>
+<h3>TSP</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">ρ = +0.80</div>
 <div class="metric-note">p &lt; 10⁻⁴⁰. Better tour ↔ more compressible search history. qa194 exact optimum (3 runs); uy734 gap 0.378%.</div>
 </div>
 <div class="emp-card">
-<h4>Sudoku</h4>
+<h3>Sudoku</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">ρ = +0.85</div>
 <div class="metric-note">p &lt; 10⁻²⁸⁴. 12 of 14 sensors above |ρ| &gt; 0.3. Stable across difficulty.</div>
 </div>
 <div class="emp-card">
-<h4>Chess DCC</h4>
+<h3>Chess DCC</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">81% vs 58%</div>
 <div class="metric-note">Winners' moves align with DCC governance 81% of the time; losers 58%. Tiebreaks within 10cp: DCC picks better long-term move 80% vs Raw 20%.</div>
 </div>
 <div class="emp-card">
-<h4>DNA / Genomics</h4>
+<h3>DNA / Genomics</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">Z = 28 – 74</div>
 <div class="metric-note">Across 50 genomes. Signal destroyed by sequence shuffling → sequential order, not merely compositional.</div>
 </div>
 <div class="emp-card">
-<h4>NAS-Bench-101</h4>
+<h3>NAS-Bench-101</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">1,280 variants</div>
 <div class="metric-note">40 sensors × 32 laws on 423K architectures. Six independent signal channels confirm hypothesis with holdout validation.</div>
 </div>
 <div class="emp-card">
-<h4>8Z Compression</h4>
+<h3>8Z Compression</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">&gt; PNG, &gt; 7-Zip</div>
 <div class="metric-note">Matched JPEG-2000 on 29-image suite. Phase-1 positive net file-level gain under MDL + SHA3 verification.</div>
 </div>
 <div class="emp-card">
-<h4>Crosswords</h4>
+<h3>Crosswords</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">10 sensor layers</div>
 <div class="metric-note">Hardest domain to date. Cross-domain sensors ported from TSP/NAS/Sudoku. v8 targets quality discrimination.</div>
 </div>
 <div class="emp-card">
-<h4>Trading (8Z-DCC)</h4>
+<h3>Trading (8Z-DCC)</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">DCC as engine</div>
 <div class="metric-note">Not a module — the engine. 20+ generators, dual-direction hedging, five layers of risk protection.</div>
 </div>
 <div class="emp-card">
-<h4>Content protection</h4>
+<h3>Content protection</h3>
 <span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <div class="metric">8Z Shield</div>
 <div class="metric-note">Same kernel, adversarial direction. Compression as governance signal for authentication.</div>
@@ -773,10 +816,15 @@
 <h3>Origin</h3><span class="evidence-lane engineering">ENGINEERING RESULT</span>
 <p>The MDL×DCC research paper. EN/SL toggle. Chapter Vb on MSTD bitshift. Seed→bridge→test→result formula.</p>
 </a>
-<a class="paper-card" href="../crp/MDLxDCC.html">
+<a class="paper-card" href="/crp/mdlxdcc">
 <div class="p-tag bd">BD · Technical</div>
-<h3>MDL × DCC kernel</h3><span class="evidence-lane speculative">SPECULATIVE / HISTORICAL</span>
-<p>Compression as compass. DCC as five-layer governance. u ∈ [0,1] coupling. The operational core.</p>
+<h3>MDL × DCC kernel</h3><span class="evidence-lane method">WORKING TECHNICAL METHOD</span>
+<p>Compression as arbiter and DCC as a recursive governance architecture, implemented in code, solvers, and arenas. Its authority comes from domain-bounded engineering evidence, not from AC/CFH or the historical scalar bridge.</p>
+</a>
+<a class="paper-card" href="/crp/projects-are-evidence">
+<div class="p-tag domain">Evidence · Projects</div>
+<h3>Projects Are Evidence. The Method Is the Value.</h3><span class="evidence-lane engineering">CROSS-DOMAIN ENGINEERING EVIDENCE</span>
+<p>The public evidence route for code, arenas, baselines, ablations, negative results, measured outcomes, and the limits of each domain claim.</p>
 </a>
 <a class="paper-card" href="AC_01_Flagship.html">
 <div class="p-tag gpt">GPT · P1</div>
@@ -850,8 +898,9 @@
 </div>
 <div class="final-stamp">
 <p class="one-line">Less describes more — and the arrow reverses at the meta-level.</p>
-<div class="stamp">BD × C  ·  April 2026  ·  AIm³ Lab, Ljubljana  ·  Atlas</div>
+<div class="stamp">BD × C  ·  August 2026  ·  AIm³ Lab, Ljubljana  ·  Atlas</div>
 </div>
+</main>
 </div>
 <script>
 (function(){
