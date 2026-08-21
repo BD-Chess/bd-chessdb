@@ -364,6 +364,7 @@ body::after{
     </div>
     <div class="panel" id="humanTracePanel"><div class="panel-title">Human Trace v1.2</div>
       <button class="btn green" id="traceConsentBtn" onclick="consentHumanTrace()">Enable with consent</button>
+      <button class="btn green" id="traceContinueBtn" onclick="continueRecoveredHumanTrace('pointer')" style="display:none;margin-top:3px">Continue recovered session</button>
       <div class="btn-row" style="margin-top:3px">
         <button class="btn" id="tracePauseBtn" onclick="toggleHumanTracePause()">Pause</button>
         <button class="btn gold" onclick="exportHumanTrace()">Export</button>
@@ -882,7 +883,7 @@ body::after{
   const STORAGE_KEY='ai8SudokuHumanTraceV1';
   const CONSENT_KEY='ai8SudokuHumanTraceConsentV1';
   const ALLOWED_SOURCE=new Set(['touch','pointer','key']);
-  const ALLOWED_ACTION=new Set(['select_cell','place_value','erase_value','add_note','remove_note','undo','request_hint','accept_hint','ignore_hint','start','pause','resume','finish']);
+  const ALLOWED_ACTION=new Set(['select_cell','place_value','erase_value','add_note','remove_note','undo','request_hint','accept_hint','ignore_hint','start','pause','resume','session_resume','finish']);
   const MUTATING_ACTION=new Set(['place_value','erase_value','add_note','remove_note']);
   const PAYLOAD_KEYS={
     start:['reason','difficulty'],
@@ -895,7 +896,7 @@ body::after{
     request_hint:['hint_id','cell','value','technique'],
     accept_hint:['hint_id'],
     ignore_hint:['hint_id','reason'],
-    pause:[],resume:[],finish:['outcome']
+    pause:[],resume:[],session_resume:['reason'],finish:['outcome']
   };
   const PRIVACY={
     local_first:true,
@@ -924,6 +925,7 @@ body::after{
     if(action==='request_hint'&&(!boundedText(p.hint_id,96)||!isInt(p.cell,0,80)||!isInt(p.value,1,9)||!boundedText(p.technique,96)))throw new Error('invalid hint request payload');
     if(action==='accept_hint'&&!boundedText(p.hint_id,96))throw new Error('invalid hint acceptance payload');
     if(action==='ignore_hint'&&(!boundedText(p.hint_id,96)||!boundedText(p.reason,96)))throw new Error('invalid hint ignore payload');
+    if(action==='session_resume'&&!boundedText(p.reason,64))throw new Error('invalid session resume payload');
     if(action==='finish'&&!boundedText(p.outcome,64))throw new Error('invalid finish payload');
     return p;
   }
@@ -1025,7 +1027,6 @@ body::after{
   }
   return{SCHEMA,ENGINE,STORAGE_KEY,CONSENT_KEY,PRIVACY,PAYLOAD_KEYS,Recorder,noteMasksFromSets,stateObject,eventHash,traceHash,sanitizePayload};
 });
-
 </script>
 <script>
 // ── Dynamic cell sizing ──
@@ -1233,7 +1234,7 @@ let aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};
 let fullLog=[];// accumulated log for sensor computation
 
 // ── v1.2 AI8_SUDOKU_HUMAN_EVENT_V1 ──
-let activeHumanHint=null,tracePaused=false,traceFinishRecorded=false,traceHistoryFloor=0;
+let activeHumanHint=null,tracePaused=false,traceFinishRecorded=false,traceHistoryFloor=0,recoveryAwaitingContinue=false;
 function humanCandidateMasks(){
   if(!notes)return Array(81).fill(0);
   return AI8SudokuHumanTrace.noteMasksFromSets(notes);
@@ -1249,18 +1250,24 @@ function ai8InputSource(ev){
   return'pointer';
 }
 function updateHumanTraceStatus(){
-  const el=document.getElementById('traceStatus'),consent=document.getElementById('traceConsentBtn'),pause=document.getElementById('tracePauseBtn');
+  const el=document.getElementById('traceStatus'),consent=document.getElementById('traceConsentBtn'),pause=document.getElementById('tracePauseBtn'),cont=document.getElementById('traceContinueBtn');
   if(!el)return;
   if(!humanTraceRecorder.hasConsent()){
     el.textContent='Consent required · local only';el.className='trace-status';
     if(consent){consent.textContent='Enable with consent';consent.style.display=''};
+    if(cont)cont.style.display='none';
     if(pause)pause.textContent='Pause';return;
   }
   if(consent)consent.style.display='none';
+  if(cont)cont.style.display=(recoveryAwaitingContinue&&!humanTraceRecorder.finished)?'':'none';
   const trace=humanTraceRecorder.exportObject();
   const count=trace?trace.events.length:0;
-  el.textContent=humanTraceRecorder.finished?`Complete · ${count} events stored locally`:(tracePaused?`Paused · ${count} events stored locally`:`Recording locally · ${count} events`);
-  el.className='trace-status '+(tracePaused?'paused':'on');
+  if(recoveryAwaitingContinue&&!humanTraceRecorder.finished){
+    el.textContent=`Recovered after page reload · ${count} events · Continue to resume same trace`;el.className='trace-status paused';
+  }else{
+    el.textContent=humanTraceRecorder.finished?`Complete · ${count} events stored locally`:(tracePaused?`Paused · ${count} events stored locally`:`Recording locally · ${count} events`);
+    el.className='trace-status '+(tracePaused?'paused':'on');
+  }
   if(pause)pause.textContent=tracePaused?'Resume':'Pause';
 }
 function consentHumanTrace(){
@@ -1269,17 +1276,29 @@ function consentHumanTrace(){
   updateHumanTraceStatus();
 }
 function startHumanTrace(source='pointer',payload={}){
-  traceFinishRecorded=false;tracePaused=false;activeHumanHint=null;traceHistoryFloor=history.length;
+  traceFinishRecorded=false;tracePaused=false;activeHumanHint=null;traceHistoryFloor=history.length;recoveryAwaitingContinue=false;
   if(humanTraceRecorder.hasConsent()&&playerGrid)humanTraceRecorder.start(source,payload);
   updateHumanTraceStatus();
 }
 function humanCapture(action,source,payload,mutate){
+  if(recoveryAwaitingContinue){setStatus('Recovered trace is waiting · click Continue recovered session first','');return null;}
   if(tracePaused){setStatus('Human trace is paused · resume before solving','');return null;}
   const ev=humanTraceRecorder.capture(action,source,payload,mutate);updateHumanTraceStatus();return ev;
 }
 function humanNoMutation(action,source,payload){
-  if(tracePaused&&action!=='resume')return null;
+  if(recoveryAwaitingContinue&&action!=='session_resume')return null;
+  if(tracePaused&&!['resume','session_resume'].includes(action))return null;
   const ev=humanTraceRecorder.noMutation(action,source,payload);updateHumanTraceStatus();return ev;
+}
+function continueRecoveredHumanTrace(source='pointer'){
+  if(!recoveryAwaitingContinue||!humanTraceRecorder.isActive())return false;
+  const wasPaused=tracePaused;
+  recoveryAwaitingContinue=false;
+  const ev=humanTraceRecorder.noMutation('session_resume',source,{reason:'page_reload'});
+  if(!ev){recoveryAwaitingContinue=true;updateHumanTraceStatus();return false;}
+  if(!wasPaused)resumeTimer();
+  setStatus(wasPaused?'Recovered session continued · trace remains paused':'Recovered session continued · same trace','win');
+  updateHumanTraceStatus();return true;
 }
 function blockAIWhileHumanTrace(actionLabel){
   if(humanTraceRecorder.isLocked()){
@@ -1309,6 +1328,7 @@ function maybeFinishHumanTrace(source='pointer',outcome='solved'){
   humanNoMutation('finish',source,{outcome});traceFinishRecorded=true;
 }
 function toggleHumanTracePause(){
+  if(recoveryAwaitingContinue){setStatus('Click Continue recovered session first','');return;}
   if(!humanTraceRecorder.hasConsent()||!humanTraceRecorder.trace)return;
   if(tracePaused){tracePaused=false;humanNoMutation('resume','pointer',{});resumeTimer();}
   else{ignoreCurrentHint('pointer','paused');humanNoMutation('pause','pointer',{});tracePaused=true;stopTimer();}
@@ -1322,7 +1342,7 @@ function exportHumanTrace(){
   setStatus(`Human trace exported · ${trace.events.length} events`,'win');return trace;
 }
 function deleteHumanTrace(){
-  humanTraceRecorder.deleteAll();activeHumanHint=null;tracePaused=false;traceFinishRecorded=false;updateHumanTraceStatus();setStatus('Human trace and consent deleted locally','');
+  humanTraceRecorder.deleteAll();activeHumanHint=null;tracePaused=false;traceFinishRecorded=false;recoveryAwaitingContinue=false;updateHumanTraceStatus();setStatus('Human trace and consent deleted locally','');
 }
 
 function buildGrid(){
@@ -1613,7 +1633,7 @@ function replayStoredTraceState(trace){
   if(!trace||!trace.initial_state)return null;
   const board=trace.initial_state.board.slice(),masks=trace.initial_state.candidates.slice();
   const hist=[];
-  let unresolvedHint=null,paused=false;
+  let unresolvedHint=null,paused=false,selected=null;
   function maskToSet(m){const s=new Set();for(let v=1;v<=9;v++)if(m&(1<<(v-1)))s.add(v);return s;}
   function setToMask(s){let m=0;for(const v of s)m|=1<<(v-1);return m;}
   for(const e of trace.events){
@@ -1628,26 +1648,30 @@ function replayStoredTraceState(trace){
       if(hist.length)hist.pop();board[p.cell]=p.restored_value;masks[p.cell]=setToMask(new Set(p.restored_notes||[]));
     }else if(e.action==='request_hint')unresolvedHint={hint_id:p.hint_id,cell:p.cell,value:p.value,technique:p.technique};
     else if((e.action==='accept_hint'||e.action==='ignore_hint')&&unresolvedHint&&p.hint_id===unresolvedHint.hint_id)unresolvedHint=null;
+    else if(e.action==='select_cell')selected=p.selected?p.cell:null;
     else if(e.action==='pause')paused=true;
     else if(e.action==='resume')paused=false;
+    else if(e.action==='session_resume'){}
   }
   const bh=AI8SudokuTruth.boardHash(board),ch=AI8SudokuTruth.candidateHash(masks,true);
   if(bh!==trace.final_state.board_hash||ch!==trace.final_state.candidate_hash)return null;
-  return{board,masks,history:hist,unresolvedHint,paused};
+  return{board,masks,history:hist,unresolvedHint,paused,selected};
 }
 function restoreStoredHumanTraceOnLoad(){
   if(!humanTraceRecorder.hasConsent())return false;
   const loaded=humanTraceRecorder.loadStored();if(!loaded.ok)return false;
   const trace=loaded.trace,st=replayStoredTraceState(trace);if(!st){setStatus('Stored trace failed local integrity replay · Export/Delete only','');updateHumanTraceStatus();return false;}
+  const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
   const ib=trace.initial_state.board;
   puzzle=Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>trace.given_cells.includes(r*9+c)?ib[r*9+c]:0));
   playerGrid=Array.from({length:9},(_,r)=>st.board.slice(r*9,r*9+9));
   givenCells=puzzle.map(row=>row.map(v=>v!==0));
   notes=Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>{const m=st.masks[r*9+c],s=new Set();for(let v=1;v<=9;v++)if(m&(1<<(v-1)))s.add(v);return s;}));
-  history=st.history;traceHistoryFloor=0;activeHumanHint=st.unresolvedHint;tracePaused=st.paused;traceFinishRecorded=humanTraceRecorder.finished;selectedCell=null;
+  history=st.history;traceHistoryFloor=0;activeHumanHint=st.unresolvedHint;tracePaused=st.paused;traceFinishRecorded=humanTraceRecorder.finished;selectedCell=st.selected;recoveryAwaitingContinue=!humanTraceRecorder.finished;
   const firstStart=trace.events.find(e=>e.action==='start');currentDiff=firstStart?.payload?.difficulty||'restored';
+  timerSeconds=Math.max(0,Math.round(trace.events.reduce((a,e)=>a+(e.delta_ms_50||0),0)/1000));document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');stopTimer();
   const solved=solveWithStrategy(copyGrid(puzzle),'full');solution=solved.solved;aiLog=solveWithStrategy(copyGrid(playerGrid),currentStrategy).log;aiStepIndex=0;resetM();render();
-  setStatus(humanTraceRecorder.finished?'Stored completed trace restored · Export or Delete':'Stored trace restored · Resume/Export/Delete','win');updateHumanTraceStatus();return true;
+  setStatus(humanTraceRecorder.finished?'Stored completed trace restored · Export or Delete':'Page reload detected · same game and trace restored · click Continue','win');updateHumanTraceStatus();return true;
 }
 function loadTraceTestPuzzle(puzzleString,solutionString,source='pointer'){
   const p=AI8SudokuTruth.parseBoard(puzzleString),sol=AI8SudokuTruth.parseBoard(solutionString);
@@ -1669,10 +1693,12 @@ window.AI8SudokuTestAPI={
   ignoreHint:(source='pointer')=>ignoreCurrentHint(source,'test_ignore'),
   pause:()=>{if(!tracePaused)toggleHumanTracePause();},
   resume:()=>{if(tracePaused)toggleHumanTracePause();},
+  continueRecovered:(source='pointer')=>continueRecoveredHumanTrace(source),
   exportTrace:()=>humanTraceRecorder.exportObject(),
   deleteTrace:()=>deleteHumanTrace(),
   state:()=>({board:playerGrid?playerGrid.flat():[],candidates:humanCandidateMasks()})
 };
+window.addEventListener('beforeunload',()=>{try{if(humanTraceRecorder.hasTrace())humanTraceRecorder.exportObject();}catch(_){}});
 buildGrid();updateHumanTraceStatus();restoreStoredHumanTraceOnLoad();
 </script>
 </body>
