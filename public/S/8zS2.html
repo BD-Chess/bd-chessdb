@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sudoku × MDL — Phase 1 + Human Trace v1.2 | AIM³ Lab</title>
+<title>Sudoku × MDL — Phase 1 + Human Trace v1.2 RC7 | AIM³ Lab</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
 <!-- Offline/local-first release: system font fallbacks are used; no remote font request. -->
 <style>
@@ -247,6 +247,8 @@ body::after{
 /* ── Hint button ── */
 .cell.ai-hint{box-shadow:inset 0 0 0 2px var(--gold),0 0 12px rgba(245,158,11,0.3);animation:hintPulse 1s ease-in-out 3}
 @keyframes hintPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--gold),0 0 8px rgba(245,158,11,0.2)}50%{box-shadow:inset 0 0 0 2px var(--gold),0 0 18px rgba(245,158,11,0.45)}}
+.cell.ai-correction{background:var(--rose-dim)!important;border-color:var(--rose)!important;color:var(--rose)!important;box-shadow:inset 0 0 0 2px var(--rose),0 0 14px rgba(255,107,138,0.35);animation:wrongHintPulse 1s ease-in-out 4}
+@keyframes wrongHintPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--rose),0 0 8px rgba(255,107,138,0.22)}50%{box-shadow:inset 0 0 0 2px var(--rose),0 0 22px rgba(255,107,138,0.55)}}
 
 /* ── Stats bar ── */
 .stats-bar{
@@ -330,7 +332,7 @@ body::after{
 <div class="topbar">
   <a href="/BD/">← BD Lab</a>
   <span class="tb-center">BD Sudoku × MDL</span>
-  <span class="tb-version">Phase 1 · ρ = 0.85 · Logic/Trace v1.2 · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
+  <span class="tb-version">Phase 1 · ρ = 0.85 · Logic/Trace v1.2 RC7 · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
 </div>
 
 <div class="page">
@@ -573,7 +575,7 @@ body::after{
     <p><strong>Place</strong> a number using the numpad below the grid, or press 1–9 on your keyboard. Click the same number again to clear it. Arrow keys move the selection.</p>
     <p><strong>Notes mode</strong> — toggle with the Notes button or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. Numbers become small pencil marks — candidates you're considering.</p>
     <p><strong>Undo</strong> with the button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. Erase with button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
-    <p><strong>💡 Hint</strong> — highlights the next logical cell and tells you why (naked single, hidden single, pointing pair, or guess). Doesn't place the number.</p>
+    <p><strong>💡 Hint</strong> — first checks whether your entered values contradict the unique solution. If so, it highlights all wrong entries and jumps to the most recently changed one. Otherwise it highlights the next logical cell and explains why. It never places the number.</p>
     <p><strong>AI Solve</strong> — select a strategy, watch the solving process animated. Green = naked single. Blue = hidden single. Violet = pointing pair. Orange = guess. Red = backtrack. Step through one move at a time.</p>
     <p><strong>⚡ Compare All</strong> — runs all 5 strategies on the current puzzle and shows a comparison table with steps, backtracks, and sensor readings.</p>
     <p><strong>Difficulty:</strong> Easy has 36–42 given digits and solves with pure logic. Evil has only 20–23 — watch the sensors diverge.</p>
@@ -607,7 +609,7 @@ body::after{
     <div style="font-size:.92rem;color:rgba(226,232,244,0.75);line-height:1.7">
       <p style="margin-bottom:10px"><strong style="color:var(--text)">Select</strong> a cell by clicking/tapping. <strong style="color:var(--text)">Place</strong> with numpad or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">1–9</kbd>.</p>
       <p style="margin-bottom:10px"><strong style="color:var(--text)">Notes</strong> — press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. <strong style="color:var(--text)">Undo</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. <strong style="color:var(--text)">Erase</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
-      <p style="margin-bottom:10px"><strong style="color:var(--gold)">💡 Hint</strong> — shows the next logical step with reasoning.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--gold)">💡 Hint</strong> — correction first: wrong entered cells are highlighted and the newest one is selected; when the board is consistent, the next logical step is shown.</p>
       <p style="margin-bottom:10px"><strong style="color:var(--green)">AI Strategies:</strong> Random (blind), MRV (fewest candidates), Naked (naked singles + MRV), Full (naked + hidden + MRV), Human (+ pointing pairs).</p>
       <p style="margin-bottom:10px"><strong style="color:var(--violet)">⚡ Compare All</strong> — run all 5 strategies and compare sensors.</p>
       <div style="border-top:1px solid var(--border);padding-top:12px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)">
@@ -1234,7 +1236,7 @@ let aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};
 let fullLog=[];// accumulated log for sensor computation
 
 // ── v1.2 AI8_SUDOKU_HUMAN_EVENT_V1 ──
-let activeHumanHint=null,tracePaused=false,traceFinishRecorded=false,traceHistoryFloor=0,recoveryAwaitingContinue=false;
+let activeHumanHint=null,tracePaused=false,traceFinishRecorded=false,traceHistoryFloor=0,recoveryAwaitingContinue=false,correctionHighlightActive=false;
 function humanCandidateMasks(){
   if(!notes)return Array(81).fill(0);
   return AI8SudokuHumanTrace.noteMasksFromSets(notes);
@@ -1276,7 +1278,7 @@ function consentHumanTrace(){
   updateHumanTraceStatus();
 }
 function startHumanTrace(source='pointer',payload={}){
-  traceFinishRecorded=false;tracePaused=false;activeHumanHint=null;traceHistoryFloor=history.length;recoveryAwaitingContinue=false;
+  traceFinishRecorded=false;tracePaused=false;activeHumanHint=null;traceHistoryFloor=history.length;recoveryAwaitingContinue=false;correctionHighlightActive=false;
   if(humanTraceRecorder.hasConsent()&&playerGrid)humanTraceRecorder.start(source,payload);
   updateHumanTraceStatus();
 }
@@ -1309,7 +1311,9 @@ function blockAIWhileHumanTrace(actionLabel){
 }
 function ignoreCurrentHint(source='pointer',reason='other_action'){
   if(!activeHumanHint)return;
+  const wasCorrection=activeHumanHint.technique==='correction';
   humanNoMutation('ignore_hint',source,{hint_id:activeHumanHint.hint_id,reason});activeHumanHint=null;
+  if(wasCorrection&&['explicit_ignore','test_ignore','export','paused','session_finished','new_game'].includes(reason))correctionHighlightActive=false;
 }
 function resolveHintForPlacement(cell,value,source,notesAction){
   if(!activeHumanHint)return;
@@ -1321,6 +1325,22 @@ function isHumanSolvedCorrectly(){
   if(!playerGrid||!solution||!isSolved(playerGrid))return false;
   for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])return false;
   return true;
+}
+function currentWrongEntries(){
+  if(!playerGrid||!solution||!givenCells)return[];
+  const wrong=[];
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(givenCells[r][c])continue;
+    const current=playerGrid[r][c],expected=solution[r][c];
+    if(current!==0&&current!==expected)wrong.push({cell:r*9+c,r,c,current,expected});
+  }
+  return wrong;
+}
+function primaryWrongEntry(wrong){
+  if(!wrong.length)return null;
+  const byCell=new Map(wrong.map(x=>[x.cell,x]));
+  for(let i=history.length-1;i>=0;i--){const x=byCell.get(history[i].r*9+history[i].c);if(x)return x;}
+  return wrong[0];
 }
 function maybeFinishHumanTrace(source='pointer',outcome='solved'){
   if(traceFinishRecorded||!isHumanSolvedCorrectly())return;
@@ -1342,7 +1362,7 @@ function exportHumanTrace(){
   setStatus(`Human trace exported · ${trace.events.length} events`,'win');return trace;
 }
 function deleteHumanTrace(){
-  humanTraceRecorder.deleteAll();activeHumanHint=null;tracePaused=false;traceFinishRecorded=false;recoveryAwaitingContinue=false;updateHumanTraceStatus();setStatus('Human trace and consent deleted locally','');
+  humanTraceRecorder.deleteAll();activeHumanHint=null;tracePaused=false;traceFinishRecorded=false;recoveryAwaitingContinue=false;correctionHighlightActive=false;updateHumanTraceStatus();setStatus('Human trace and consent deleted locally','');
 }
 
 function buildGrid(){
@@ -1357,15 +1377,19 @@ function render(){
   const cells=document.querySelectorAll('.cell');const counts=Array(10).fill(0);
   const sR=selectedCell!==null?Math.floor(selectedCell/9):-1,sC=selectedCell!==null?selectedCell%9:-1;
   const sV=selectedCell!==null?playerGrid[sR]?.[sC]:0;
+  const correctionWrong=correctionHighlightActive?currentWrongEntries():[];
+  if(correctionHighlightActive&&!correctionWrong.length)correctionHighlightActive=false;
+  const correctionSet=new Set(correctionWrong.map(x=>x.cell));
   cells.forEach((cell,i)=>{
     const r=Math.floor(i/9),c=i%9,v=playerGrid[r][c],isG=givenCells[r][c];
-    const keep=cell.className.match(/ai-\w+/);cell.className='cell';
+    const keep=[...cell.classList].find(name=>['ai-naked','ai-hidden','ai-guess','ai-backtrack','ai-pointing','ai-hint'].includes(name));cell.className='cell';
     if(isG)cell.classList.add('given');
     if(selectedCell===i)cell.classList.add('selected');
     if(selectedCell!==null&&(r===sR||c===sC||(Math.floor(r/3)===Math.floor(sR/3)&&Math.floor(c/3)===Math.floor(sC/3))))cell.classList.add('highlight');
     if(v!==0&&sV!==0&&v===sV&&i!==selectedCell)cell.classList.add('same-value');
     if(v!==0&&!isG){const tmp=playerGrid[r][c];playerGrid[r][c]=0;if(!isValid(playerGrid,r,c,tmp))cell.classList.add('error');playerGrid[r][c]=tmp}
     if(keep)cell.classList.add(keep[0]);
+    if(correctionSet.has(i))cell.classList.add('ai-correction');
     if(v!==0){cell.innerHTML=v;counts[v]++}
     else if(notes&&notes[r][c].size>0){let h='<div class="notes">';for(let n=1;n<=9;n++)h+=`<span>${notes[r][c].has(n)?n:''}</span>`;cell.innerHTML=h+'</div>'}
     else cell.innerHTML='';
@@ -1453,7 +1477,7 @@ function newGame(diff,source='pointer'){
   setTimeout(()=>{
     const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;
     playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));
-    notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;
+    notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;
     const solveRes=solveWithStrategy(copyGrid(puzzle),currentStrategy);
     aiLog=solveRes.log;aiStepIndex=0;resetM();
     const givens=puzzle.flat().filter(v=>v!==0).length;
@@ -1603,13 +1627,35 @@ function toggleCollapse(bodyId,hdrId){
 function aiHint(source='pointer'){
   if(!puzzle||aiAnimating)return;
   if(tracePaused){setStatus('Hint blocked while human trace is paused · Resume first','');return;}
-  // Recompute from the CURRENT player state. The initial aiLog is not a valid human-hint source
-  // after the player has changed the board.
-  const dynamic=solveWithStrategy(copyGrid(playerGrid),currentStrategy);
-  const hintStep=dynamic.log.find(e=>!e.backtrack&&playerGrid[e.r][e.c]===0);
-  if(!hintStep){setStatus('No hints available','');return}
   if(activeHumanHint)ignoreCurrentHint(source,'superseded_hint');
   const hintId='hint-'+String((humanTraceRecorder.trace?.events.length||0)).padStart(4,'0');
+
+  // Correction mode has priority over forward solving. A logical next move is
+  // misleading when the human board already contains wrong entries. Highlight
+  // every wrong non-given entry and jump to the most recently changed one.
+  const wrong=currentWrongEntries();
+  if(wrong.length){
+    const primary=primaryWrongEntry(wrong);
+    correctionHighlightActive=true;
+    const candidateHint={hint_id:hintId,cell:primary.cell,value:primary.expected,technique:'correction',wrong_cells:wrong.map(x=>x.cell)};
+    let recorded=true;
+    if(humanTraceRecorder.isActive())recorded=!!humanNoMutation('request_hint',source,{hint_id:hintId,cell:primary.cell,value:primary.expected,technique:'correction'});
+    if(humanTraceRecorder.isActive()&&!recorded){setStatus('Hint request was not recorded · hint cancelled','');return;}
+    activeHumanHint=humanTraceRecorder.isActive()?candidateHint:candidateHint;
+    gameStats.currentHints++;saveStats();renderStats();
+    selectedCell=primary.cell;
+    const noun=wrong.length===1?'entry is':'entries are';
+    setStatus(`Correction hint: ${wrong.length} wrong ${noun} highlighted · R${primary.r+1}C${primary.c+1} is ${primary.current}, should be ${primary.expected}`,'solving');
+    render();
+    return;
+  }
+
+  // Recompute from the CURRENT player state. The initial aiLog is not a valid human-hint source
+  // after the player has changed the board.
+  correctionHighlightActive=false;
+  const dynamic=solveWithStrategy(copyGrid(playerGrid),currentStrategy);
+  const hintStep=dynamic.log.find(e=>!e.backtrack&&playerGrid[e.r][e.c]===0&&(!solution||e.v===solution[e.r][e.c]));
+  if(!hintStep){setStatus('No hints available','');return}
   const candidateHint={hint_id:hintId,cell:hintStep.r*9+hintStep.c,value:hintStep.v,technique:hintStep.strategy};
   let recorded=true;
   if(humanTraceRecorder.isActive())recorded=!!humanNoMutation('request_hint',source,{hint_id:hintId,cell:candidateHint.cell,value:hintStep.v,technique:hintStep.strategy});
@@ -1670,14 +1716,14 @@ function restoreStoredHumanTraceOnLoad(){
   history=st.history;traceHistoryFloor=0;activeHumanHint=st.unresolvedHint;tracePaused=st.paused;traceFinishRecorded=humanTraceRecorder.finished;selectedCell=st.selected;recoveryAwaitingContinue=!humanTraceRecorder.finished;
   const firstStart=trace.events.find(e=>e.action==='start');currentDiff=firstStart?.payload?.difficulty||'restored';
   timerSeconds=Math.max(0,Math.round(trace.events.reduce((a,e)=>a+(e.delta_ms_50||0),0)/1000));document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');stopTimer();
-  const solved=solveWithStrategy(copyGrid(puzzle),'full');solution=solved.solved;aiLog=solveWithStrategy(copyGrid(playerGrid),currentStrategy).log;aiStepIndex=0;resetM();render();
+  const solved=solveWithStrategy(copyGrid(puzzle),'full');solution=solved.solved;if(activeHumanHint&&activeHumanHint.technique==='correction')correctionHighlightActive=true;aiLog=solveWithStrategy(copyGrid(playerGrid),currentStrategy).log;aiStepIndex=0;resetM();render();
   setStatus(humanTraceRecorder.finished?'Stored completed trace restored · Export or Delete':'Page reload detected · same game and trace restored · click Continue','win');updateHumanTraceStatus();return true;
 }
 function loadTraceTestPuzzle(puzzleString,solutionString,source='pointer'){
   const p=AI8SudokuTruth.parseBoard(puzzleString),sol=AI8SudokuTruth.parseBoard(solutionString);
   const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
   currentDiff='fixture';puzzle=[];solution=[];for(let r=0;r<9;r++){puzzle.push(p.slice(r*9,r*9+9));solution.push(sol.slice(r*9,r*9+9));}
-  playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;notesMode=false;
+  playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;notesMode=false;
   document.getElementById('notesBtn').textContent='Notes: OFF';document.getElementById('notesBtn').classList.remove('active');
   const solveRes=solveWithStrategy(copyGrid(puzzle),currentStrategy);aiLog=solveRes.log;aiStepIndex=0;resetM();startTimer();render();startHumanTrace(source,{reason:'test_fixture',difficulty:'fixture'});return true;
 }
