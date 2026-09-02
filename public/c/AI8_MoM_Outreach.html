@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+
+<html data-theme="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="AI8 and Mind of Minds: a provider-neutral technical brief on governed continuity, research allocation, independent validation, hard baselines, public testbeds, and a matched pilot for long-horizon AI reasoning." name="description"/>
+<meta content="#07101f" name="theme-color"/>
+<meta content="dark light" name="color-scheme"/>
+<meta content="article" property="og:type"/>
+<meta content="AI8 &amp; Mind of Minds — Governed Continuity and Research Allocation" property="og:title"/>
+<meta content="A provider-neutral technical brief: architecture, hard baselines, bounded evidence, falsifiers, and a matched pilot." property="og:description"/>
+<meta content="MDL×DCC.org · BD × AI Lab" property="og:site_name"/>
+<title>AI8 &amp; Mind of Minds — Governed Continuity and Research Allocation</title>
+<style>
+    :root {
+      --bg: #050913;
+      --bg-2: #08111f;
+      --panel: rgba(12, 22, 39, 0.78);
+      --panel-solid: #0c1627;
+      --panel-2: #101d31;
+      --text: #edf5ff;
+      --muted: #9fb0c5;
+      --faint: #70829a;
+      --line: rgba(155, 184, 219, 0.16);
+      --line-strong: rgba(155, 184, 219, 0.28);
+      --cyan: #62dcff;
+      --cyan-soft: rgba(98, 220, 255, 0.11);
+      --violet: #aa9cff;
+      --violet-soft: rgba(170, 156, 255, 0.11);
+      --amber: #ffd36a;
+      --amber-soft: rgba(255, 211, 106, 0.11);
+      --green: #7fe2a2;
+      --green-soft: rgba(127, 226, 162, 0.10);
+      --red: #ff8e9b;
+      --red-soft: rgba(255, 142, 155, 0.10);
+      --shadow: 0 26px 90px rgba(0, 0, 0, 0.34);
+      --max: 1180px;
+      --radius: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f4f7fb;
+      --bg-2: #ffffff;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-solid: #ffffff;
+      --panel-2: #f5f8fc;
+      --text: #101a28;
+      --muted: #4f6176;
+      --faint: #6d7d90;
+      --line: rgba(37, 63, 91, 0.15);
+      --line-strong: rgba(37, 63, 91, 0.25);
+      --cyan: #007ea7;
+      --cyan-soft: rgba(0, 126, 167, 0.08);
+      --violet: #6754d8;
+      --violet-soft: rgba(103, 84, 216, 0.08);
+      --amber: #9a6800;
+      --amber-soft: rgba(154, 104, 0, 0.08);
+      --green: #167c46;
+      --green-soft: rgba(22, 124, 70, 0.08);
+      --red: #b42335;
+      --red-soft: rgba(180, 35, 53, 0.08);
+      --shadow: 0 22px 72px rgba(42, 66, 91, 0.16);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-width: 0;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(98, 220, 255, 0.13), transparent 32rem),
+        radial-gradient(circle at 88% 8%, rgba(170, 156, 255, 0.11), transparent 32rem),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg) 100%);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.65;
+      font-size: 17px;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(154, 183, 220, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(154, 183, 220, 0.035) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.78), transparent 82%);
+    }
+
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 3px;
+      border-radius: 10px;
+    }
+
+    .skip-link {
+      position: fixed;
+      left: 14px;
+      top: 14px;
+      transform: translateY(-160%);
+      z-index: 1000;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .shell { width: min(var(--max), calc(100% - 36px)); margin: 0 auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(18px);
+    }
+    .topbar-inner {
+      min-height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: max-content;
+      text-decoration: none;
+      font-weight: 820;
+      letter-spacing: -0.02em;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(98, 220, 255, 0.45);
+      border-radius: 9px;
+      color: var(--cyan);
+      background: linear-gradient(145deg, var(--cyan-soft), var(--violet-soft));
+      font-family: var(--mono);
+      font-size: 13px;
+      box-shadow: inset 0 0 20px rgba(98, 220, 255, 0.05);
+    }
+    .brand small {
+      display: block;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 9px;
+      line-height: 1.2;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .nav {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .nav a, .theme-toggle {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 720;
+      text-decoration: none;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .nav a:hover, .theme-toggle:hover { color: var(--text); background: var(--cyan-soft); }
+    .nav .contact-link {
+      margin-left: 4px;
+      border: 1px solid rgba(98, 220, 255, 0.35);
+      color: var(--cyan);
+      background: var(--cyan-soft);
+    }
+
+    .hero {
+      padding: 90px 0 68px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
+      gap: clamp(38px, 7vw, 92px);
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: currentColor;
+      box-shadow: 0 0 16px currentColor;
+    }
+    h1 {
+      margin: 20px 0 20px;
+      max-width: 820px;
+      font-size: clamp(44px, 6.2vw, 80px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+      text-wrap: balance;
+    }
+    .hero .accent {
+      background: linear-gradient(100deg, var(--cyan), #91b8ff 48%, var(--violet));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.58;
+      text-wrap: pretty;
+    }
+    .lead strong { color: var(--text); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 11px;
+      margin-top: 30px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 46px;
+      padding: 11px 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      color: var(--text);
+      background: var(--panel);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 820;
+      box-shadow: 0 9px 28px rgba(0,0,0,.10);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .btn:hover { transform: translateY(-2px); border-color: var(--cyan); }
+    .btn.primary { color: #03131d; background: var(--cyan); border-color: var(--cyan); }
+    html[data-theme="light"] .btn.primary { color: #fff; }
+    .btn.ghost { color: var(--cyan); background: var(--cyan-soft); border-color: rgba(98,220,255,.32); }
+    .btn .arrow { font-family: var(--mono); font-size: 15px; }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 27px;
+    }
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(8, 16, 29, 0.24);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 750;
+      letter-spacing: 0.02em;
+    }
+    .status-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+    .status-chip.live::before { background: var(--green); box-shadow: 0 0 12px var(--green); }
+    .status-chip.build::before { background: var(--amber); box-shadow: 0 0 12px var(--amber); }
+    .status-chip.open::before { background: var(--violet); box-shadow: 0 0 12px var(--violet); }
+
+    .hero-panel {
+      position: relative;
+      min-width: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 26px;
+      padding: 20px;
+      background:
+        linear-gradient(145deg, rgba(98,220,255,.055), rgba(170,156,255,.035)),
+        var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -100px;
+      top: -100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(98,220,255,.18), transparent 70%);
+      pointer-events: none;
+    }
+    .panel-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      margin: 2px 2px 14px;
+    }
+    .panel-label span:last-child { color: var(--green); }
+    .hero-diagram {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+      background: rgba(4, 9, 18, 0.45);
+      border: 1px solid var(--line);
+    }
+    html[data-theme="light"] .hero-diagram { background: rgba(245,248,252,.72); }
+    .diagram-note {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 13px;
+      background: rgba(6, 12, 23, 0.34);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    html[data-theme="light"] .diagram-note { background: var(--panel-2); }
+    .diagram-note strong { color: var(--text); }
+    .diagram-note code { color: var(--cyan); font-family: var(--mono); font-size: 11px; }
+
+    .section { padding: 74px 0; border-top: 1px solid var(--line); }
+    .section-head { max-width: 780px; margin-bottom: 34px; }
+    .section-index {
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 10px 0 12px;
+      font-size: clamp(30px, 4.3vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+    }
+    .section-intro { margin: 0; color: var(--muted); font-size: 18px; text-wrap: pretty; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      background: var(--panel);
+      box-shadow: 0 15px 46px rgba(0,0,0,.11);
+    }
+    .card h3 { margin: 10px 0 9px; font-size: 20px; letter-spacing: -0.02em; }
+    .card p { margin: 0; color: var(--muted); }
+    .card .micro {
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 820;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+    }
+    .card .icon {
+      width: 41px;
+      height: 41px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      color: var(--cyan);
+      background: var(--cyan-soft);
+      font-family: var(--mono);
+      font-weight: 900;
+      margin-bottom: 17px;
+    }
+
+    .delta-band {
+      margin-top: 18px;
+      padding: 20px 22px;
+      border: 1px solid rgba(98,220,255,.28);
+      border-radius: 18px;
+      background: linear-gradient(90deg, var(--cyan-soft), var(--violet-soft));
+      font-family: var(--mono);
+      font-size: clamp(13px, 1.5vw, 16px);
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+    .delta-band strong { color: var(--cyan); }
+
+    .architecture-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .system-map {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: linear-gradient(160deg, rgba(98,220,255,.06), rgba(170,156,255,.04)), var(--panel);
+      padding: 22px;
+      min-width: 0;
+    }
+    .system-map h3 { margin: 0 0 6px; font-size: 18px; }
+    .system-map > p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+    .flow {
+      display: grid;
+      gap: 10px;
+    }
+    .flow-node {
+      position: relative;
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(5, 10, 20, 0.32);
+    }
+    html[data-theme="light"] .flow-node { background: rgba(255,255,255,.68); }
+    .flow-node:not(:last-child)::after {
+      content: "↓";
+      position: absolute;
+      left: 26px;
+      bottom: -17px;
+      z-index: 2;
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+    .flow-num {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--violet-soft);
+      color: var(--violet);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .flow-node strong { display: block; font-size: 14px; }
+    .flow-node small { display: block; color: var(--faint); font-size: 12px; margin-top: 2px; }
+    .flow-tag { color: var(--cyan); font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; text-align: right; }
+
+    .component-stack { display: grid; gap: 12px; }
+    .component {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      padding: 19px 20px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--panel);
+    }
+    .component h3 { margin: 0 0 5px; font-size: 18px; }
+    .component p { margin: 0; color: var(--muted); font-size: 15px; }
+    .component .tag {
+      min-width: max-content;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--faint);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .mom-panel {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      padding: 25px;
+      border: 1px solid rgba(170,156,255,.32);
+      border-radius: var(--radius);
+      background: linear-gradient(125deg, var(--violet-soft), transparent 68%), var(--panel);
+    }
+    .mom-panel h3 { margin: 0 0 8px; font-size: 22px; }
+    .mom-panel p { margin: 0; color: var(--muted); }
+    .mom-status {
+      min-width: 170px;
+      text-align: center;
+      padding: 16px;
+      border-radius: 15px;
+      border: 1px solid rgba(170,156,255,.32);
+      background: rgba(170,156,255,.06);
+      font-family: var(--mono);
+    }
+    .mom-status strong { display: block; color: var(--violet); font-size: 16px; }
+    .mom-status span { display: block; color: var(--faint); font-size: 10px; margin-top: 5px; text-transform: uppercase; letter-spacing: .08em; }
+
+    .status-table {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .status-line {
+      display: grid;
+      grid-template-columns: minmax(170px, .75fr) minmax(175px, .58fr) minmax(0, 1.67fr);
+      gap: 18px;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .status-line:last-child { border-bottom: 0; }
+    .status-line strong { font-size: 15px; }
+    .status-line p { margin: 0; color: var(--muted); font-size: 14px; }
+    .badge {
+      display: inline-flex;
+      width: max-content;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 850;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+    }
+    .badge.green { color: var(--green); background: var(--green-soft); }
+    .badge.amber { color: var(--amber); background: var(--amber-soft); }
+    .badge.violet { color: var(--violet); background: var(--violet-soft); }
+    .badge.red { color: var(--red); background: var(--red-soft); }
+
+    .evidence-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; }
+    .evidence-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 26px;
+    }
+    .evidence-card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -90px;
+      bottom: -90px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(98,220,255,.09), transparent 70%);
+      pointer-events: none;
+    }
+    .evidence-card h3 { margin: 10px 0 10px; font-size: 24px; letter-spacing: -0.025em; }
+    .evidence-card > p { margin: 0; color: var(--muted); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 23px 0 19px;
+    }
+    .metric {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(4,10,20,.28);
+    }
+    html[data-theme="light"] .metric { background: var(--panel-2); }
+    .metric strong { display: block; color: var(--cyan); font-family: var(--mono); font-size: 20px; line-height: 1.1; overflow-wrap: anywhere; }
+    .metric span { display: block; color: var(--faint); font-size: 11px; margin-top: 6px; }
+    .evidence-list { margin: 0; padding-left: 20px; color: var(--muted); }
+    .evidence-list li { margin: 8px 0; }
+    .boundary {
+      margin-top: 19px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--amber);
+      background: var(--amber-soft);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .boundary strong { color: var(--amber); }
+    .text-link {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      margin-top: 18px;
+      color: var(--cyan);
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .text-link:hover { text-decoration: underline; }
+
+    .discipline-card { display: grid; gap: 14px; }
+    .discipline-item {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(4,10,20,.24);
+    }
+    html[data-theme="light"] .discipline-item { background: var(--panel-2); }
+    .discipline-item strong { display: block; font-size: 14px; margin-bottom: 4px; }
+    .discipline-item span { color: var(--muted); font-size: 13px; }
+
+    .pilot-wrap {
+      border: 1px solid rgba(127,226,162,.30);
+      border-radius: 26px;
+      background: linear-gradient(140deg, var(--green-soft), transparent 60%), var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .pilot-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, .5fr);
+      gap: 26px;
+      padding: 30px;
+      border-bottom: 1px solid var(--line);
+    }
+    .pilot-top h3 { margin: 8px 0 9px; font-size: 28px; letter-spacing: -0.03em; }
+    .pilot-top p { margin: 0; color: var(--muted); }
+    .ask-box {
+      align-self: center;
+      padding: 18px;
+      border: 1px solid rgba(127,226,162,.35);
+      border-radius: 16px;
+      background: rgba(127,226,162,.06);
+    }
+    .ask-box strong { display: block; color: var(--green); font-size: 18px; }
+    .ask-box span { display: block; color: var(--muted); font-size: 13px; margin-top: 5px; }
+
+    .pilot-body { padding: 26px 30px 30px; }
+    .pilot-question {
+      margin: 0 0 20px;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 760;
+      text-wrap: balance;
+    }
+    .arms {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .arm {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(4,10,20,.25);
+    }
+    html[data-theme="light"] .arm { background: rgba(255,255,255,.62); }
+    .arm code { color: var(--green); font-family: var(--mono); font-size: 10px; font-weight: 850; }
+    .arm strong { display: block; margin: 7px 0 5px; font-size: 14px; }
+    .arm span { display: block; color: var(--muted); font-size: 12px; }
+    .pilot-lower {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .pilot-lower h4 { margin: 0 0 8px; font-size: 14px; }
+    .pilot-lower ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
+    .pilot-lower li { margin: 6px 0; }
+    .pilot-actions { margin-top: 23px; display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .reading-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .reading-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 210px;
+      padding: 19px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--panel);
+      text-decoration: none;
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .reading-card:hover { transform: translateY(-3px); border-color: var(--cyan); }
+    .reading-card .time { color: var(--cyan); font-family: var(--mono); font-size: 9.5px; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }
+    .reading-card h3 { margin: 12px 0 8px; font-size: 17px; }
+    .reading-card p { margin: 0; color: var(--muted); font-size: 13px; }
+    .reading-card .go { margin-top: auto; padding-top: 18px; color: var(--cyan); font-family: var(--mono); font-size: 11px; }
+
+    .contact-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr);
+      gap: 28px;
+      align-items: center;
+      padding: clamp(28px, 5vw, 48px);
+      border: 1px solid rgba(98,220,255,.34);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(170,156,255,.18), transparent 18rem),
+        linear-gradient(135deg, rgba(98,220,255,.09), transparent 55%),
+        var(--panel-solid);
+      box-shadow: var(--shadow);
+    }
+    .contact-card h2 { margin-top: 8px; }
+    .contact-card p { margin: 0; max-width: 740px; color: var(--muted); font-size: 18px; }
+    .identity {
+      padding: 20px;
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      background: rgba(4,10,20,.24);
+    }
+    html[data-theme="light"] .identity { background: rgba(255,255,255,.58); }
+    .identity strong { display: block; font-size: 20px; }
+    .identity span { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .identity a { display: block; color: var(--cyan); text-decoration: none; margin-top: 10px; font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
+    .identity a:hover { text-decoration: underline; }
+
+    footer { padding: 34px 0 48px; color: var(--faint); font-size: 12px; }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+    }
+    footer p { margin: 0; max-width: 850px; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--cyan); text-decoration: underline; }
+    .footer-meta { text-align: right; font-family: var(--mono); white-space: nowrap; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1020px) {
+      .hero { grid-template-columns: 1fr; padding-top: 72px; }
+      .hero-panel { max-width: 720px; }
+      .architecture-layout, .evidence-grid { grid-template-columns: 1fr; }
+      .reading-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .arms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .nav a:not(.contact-link) { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      body { font-size: 16px; }
+      .shell { width: min(var(--max), calc(100% - 24px)); }
+      .topbar-inner { min-height: 60px; }
+      .brand small { display: none; }
+      .nav .contact-link { display: none; }
+      .theme-toggle { padding-inline: 8px; }
+      .hero { padding: 56px 0 52px; gap: 32px; }
+      h1 { font-size: clamp(40px, 13vw, 58px); }
+      .status-chip { font-size: 9.5px; }
+      .section { padding: 56px 0; }
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .architecture-layout { gap: 14px; }
+      .component { grid-template-columns: 1fr; gap: 10px; }
+      .component .tag { justify-self: start; }
+      .mom-panel { grid-template-columns: 1fr; }
+      .mom-status { min-width: 0; text-align: left; }
+      .status-line { grid-template-columns: 1fr; gap: 8px; }
+      .metrics { grid-template-columns: 1fr; }
+      .pilot-top, .pilot-lower, .contact-card { grid-template-columns: 1fr; }
+      .pilot-top, .pilot-body { padding: 22px; }
+      .reading-grid { grid-template-columns: 1fr 1fr; }
+      .reading-card { min-height: 190px; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-meta { text-align: left; }
+    }
+
+    @media (max-width: 470px) {
+      .shell { width: min(var(--max), calc(100% - 18px)); }
+      .topbar-inner { gap: 8px; }
+      .brand { font-size: 14px; }
+      .brand-mark { width: 29px; height: 29px; }
+      .hero { padding-top: 44px; }
+      h1 { font-size: 42px; }
+      .lead { font-size: 17px; }
+      .btn { width: 100%; }
+      .status-row { display: grid; grid-template-columns: 1fr; }
+      .hero-panel { padding: 12px; border-radius: 20px; }
+      .diagram-note { grid-template-columns: 1fr; }
+      .card, .evidence-card, .system-map { padding: 19px; }
+      .arms, .reading-grid { grid-template-columns: 1fr; }
+      .reading-card { min-height: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+
+    @media print {
+      :root {
+        --bg: #fff; --bg-2: #fff; --panel: #fff; --panel-solid: #fff; --panel-2: #f7f7f7;
+        --text: #111; --muted: #333; --faint: #555; --line: #ccc; --line-strong: #aaa;
+        --cyan: #005a77; --violet: #5143a8; --amber: #805600; --green: #196c3e;
+      }
+      body { background: #fff; font-size: 11pt; }
+      body::before, .topbar, .actions, .pilot-actions { display: none !important; }
+      .shell { width: 100%; }
+      .hero { grid-template-columns: 1fr; padding: 20px 0; }
+      .hero-panel { box-shadow: none; }
+      .section { padding: 28px 0; break-inside: avoid; }
+      .card, .evidence-card, .system-map, .pilot-wrap, .contact-card { box-shadow: none; break-inside: avoid; }
+      a { text-decoration: none; }
+      .reading-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  
+
+    /* v1.1 — research taste, validation separation, loss rules, route hierarchy */
+    .mobile-diagram { display: none; }
+    .taste-panel {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      gap: 20px;
+      align-items: center;
+      padding: 24px;
+      border: 1px solid rgba(170,156,255,.30);
+      border-radius: var(--radius);
+      background: linear-gradient(120deg, var(--violet-soft), transparent 70%), var(--panel);
+    }
+    .taste-panel .micro { color: var(--violet); font-family: var(--mono); font-size: 10.5px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+    .taste-panel h3 { margin: 8px 0 8px; font-size: 22px; letter-spacing: -.025em; }
+    .taste-panel p { margin: 0; color: var(--muted); }
+    .taste-rule { padding: 17px; border: 1px solid rgba(170,156,255,.30); border-radius: 15px; background: rgba(170,156,255,.06); }
+    .taste-rule code { display: block; color: var(--violet); background: transparent; padding: 0; font-family: var(--mono); font-size: 12px; font-weight: 850; line-height: 1.45; text-align: center; }
+    .taste-rule span { display: block; color: var(--muted); font-size: 12px; margin-top: 11px; }
+
+    .principle-grid { margin-top: 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .principle-item { padding: 16px; border: 1px solid var(--line); border-radius: 15px; background: var(--panel); }
+    .principle-item strong { display: block; font-size: 14px; }
+    .principle-item span { display: block; color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .security-callout { margin-top: 12px; display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 13px; align-items: start; padding: 17px 18px; border: 1px solid rgba(255,211,106,.28); border-radius: 16px; background: var(--amber-soft); }
+    .security-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; border: 1px solid rgba(255,211,106,.45); color: var(--amber); font-family: var(--mono); font-weight: 900; }
+    .security-callout strong { display: block; color: var(--amber); font-size: 14px; }
+    .security-callout span { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    .ontology-firewall { margin-top: 14px; padding: 18px 20px; border: 1px solid rgba(170,156,255,.28); border-radius: 16px; background: linear-gradient(90deg, var(--violet-soft), transparent); }
+    .ontology-firewall strong { display: block; color: var(--violet); font-size: 14px; }
+    .ontology-firewall span { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .ontology-firewall code { display: block; margin-top: 10px; color: var(--faint); background: transparent; padding: 0; font-family: var(--mono); font-size: 10px; overflow-wrap: anywhere; }
+
+    .evidence-snapshot { display: block; margin-top: 10px; color: var(--faint); font-family: var(--mono); font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; }
+
+    .loss-box { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .loss-box > div { padding: 16px; border: 1px solid rgba(255,142,155,.28); border-radius: 14px; background: var(--red-soft); }
+    .loss-box strong { display: block; color: var(--red); font-size: 13px; }
+    .loss-box span { display: block; color: var(--muted); font-size: 12px; margin-top: 5px; }
+    .partner-split { margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    .partner-item { padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: rgba(4,10,20,.22); }
+    html[data-theme="light"] .partner-item { background: rgba(255,255,255,.58); }
+    .partner-item span { display: block; color: var(--green); font-family: var(--mono); font-size: 9px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
+    .partner-item strong { display: block; font-size: 12.5px; line-height: 1.5; margin-top: 7px; }
+
+    .route-tier { margin-top: 24px; }
+    .tier-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+    .tier-head > span { color: var(--cyan); font-family: var(--mono); font-size: 10.5px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+    .tier-head p { margin: 0; color: var(--faint); font-size: 13px; text-align: right; }
+    .route-primary-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .route-primary { min-width: 0; display: flex; flex-direction: column; padding: 20px; border: 1px solid rgba(98,220,255,.28); border-radius: 18px; background: linear-gradient(145deg, var(--cyan-soft), transparent), var(--panel); text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
+    .route-primary:hover { transform: translateY(-3px); border-color: var(--cyan); }
+    .route-primary > span { color: var(--cyan); font-family: var(--mono); font-size: 9.5px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }
+    .route-primary strong { display: block; margin-top: 10px; font-size: 18px; }
+    .route-primary small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+    .route-primary b { margin-top: auto; padding-top: 18px; color: var(--cyan); font-family: var(--mono); font-size: 10px; }
+    .route-primary.internal { border-color: rgba(127,226,162,.28); background: linear-gradient(145deg, var(--green-soft), transparent), var(--panel); }
+    .route-primary.internal > span, .route-primary.internal b { color: var(--green); }
+
+    .deeper-routes { margin-top: 26px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); overflow: hidden; }
+    .deeper-routes summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 20px; }
+    .deeper-routes summary::-webkit-details-marker { display: none; }
+    .deeper-routes summary strong { display: block; font-size: 15px; }
+    .deeper-routes summary small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .deeper-routes summary b { min-width: max-content; color: var(--violet); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    .deeper-routes[open] summary { border-bottom: 1px solid var(--line); }
+    .deep-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; padding: 14px; }
+    .deep-link { display: block; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: rgba(4,10,20,.22); text-decoration: none; }
+    html[data-theme="light"] .deep-link { background: var(--panel-2); }
+    .deep-link:hover { border-color: var(--violet); }
+    .deep-link strong { display: block; color: var(--violet); font-size: 14px; }
+    .deep-link span { display: block; color: var(--muted); font-size: 12px; margin-top: 5px; }
+
+    @media (max-width: 1020px) {
+      .taste-panel { grid-template-columns: 1fr; }
+      .principle-grid { grid-template-columns: 1fr; }
+      .partner-split { grid-template-columns: 1fr; }
+      .route-primary-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .loss-box { grid-template-columns: 1fr; }
+      .route-primary-grid, .deep-grid { grid-template-columns: 1fr; }
+      .tier-head { display: block; }
+      .tier-head p { margin-top: 5px; text-align: left; }
+    }
+    @media (max-width: 560px) {
+      .desktop-diagram { display: none; }
+      .mobile-diagram { display: grid; gap: 7px; }
+      .mobile-step { padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: rgba(4,9,18,.42); }
+      html[data-theme="light"] .mobile-step { background: var(--panel-2); }
+      .mobile-step strong { display: block; font-size: 13px; }
+      .mobile-step span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+      .mobile-step.validator { border-color: rgba(98,220,255,.34); }
+      .mobile-step.writeback { border-color: rgba(127,226,162,.34); }
+      .mobile-arrow { color: var(--faint); font-family: var(--mono); text-align: center; line-height: 1; }
+      .taste-panel { padding: 19px; }
+      .ontology-firewall code { font-size: 9px; }
+      .deeper-routes summary { align-items: flex-start; }
+    }
+    @media print {
+      .mobile-diagram { display: none !important; }
+      .desktop-diagram { display: block !important; }
+      .deeper-routes > * { display: block !important; }
+      .deeper-routes summary b { display: none; }
+      .taste-panel, .principle-item, .security-callout, .ontology-firewall, .loss-box > div, .partner-item, .route-primary, .deeper-routes, .deep-link { break-inside: avoid; box-shadow: none; }
+    }
+
+
+    /* v1.2 additions */
+    abbr[title] { text-decoration: underline dotted currentColor; text-underline-offset: .18em; text-decoration-thickness: 1px; cursor: help; }
+    .component h3 a, .inline-owner { color: var(--text); text-decoration: none; }
+    .component h3 a:hover, .inline-owner:hover { color: var(--cyan); text-decoration: underline; }
+    .owner-note { display:block; margin-top:7px; color:var(--cyan); font:800 9.5px var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    .taste-baselines { margin-top:14px; padding:13px 15px; border:1px solid var(--line); border-radius:13px; background:rgba(4,10,20,.24); }
+    html[data-theme="light"] .taste-baselines { background:var(--panel-2); }
+    .taste-baselines strong { display:block; color:var(--amber); font-size:12px; }
+    .taste-baselines span { display:block; margin-top:5px; color:var(--muted); font:10.5px/1.55 var(--mono); }
+
+    .status-matrix { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line-strong); border-radius:var(--radius); background:var(--panel); }
+    .status-matrix caption { text-align:left; padding:0 0 12px; color:var(--faint); font-size:12px; }
+    .status-matrix th, .status-matrix td { padding:16px 18px; text-align:left; vertical-align:middle; border-bottom:1px solid var(--line); }
+    .status-matrix th { color:var(--faint); background:var(--panel-2); font:850 10px var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+    .status-matrix td:first-child { width:22%; color:var(--text); font-weight:800; }
+    .status-matrix td:nth-child(2) { width:23%; }
+    .status-matrix td:last-child { color:var(--muted); font-size:14px; }
+    .status-matrix tr:last-child td { border-bottom:0; }
+    .status-ladder { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-top:17px; }
+    .ladder-step { padding:13px; border:1px solid var(--line); border-radius:13px; background:rgba(4,10,20,.23); }
+    html[data-theme="light"] .ladder-step { background:var(--panel-2); }
+    .ladder-step strong { display:block; color:var(--cyan); font:800 10px var(--mono); }
+    .ladder-step span { display:block; color:var(--muted); font-size:11.5px; margin-top:4px; }
+    .objection-callout { margin-top:18px; display:grid; grid-template-columns:auto 1fr; gap:14px; padding:18px; border:1px solid rgba(255,211,106,.30); border-radius:17px; background:var(--amber-soft); }
+    .objection-callout b { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; border:1px solid currentColor; color:var(--amber); font:900 12px var(--mono); }
+    .objection-callout strong { display:block; color:var(--amber); }
+    .objection-callout span { display:block; color:var(--muted); font-size:13px; margin-top:4px; }
+
+    .baseline-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .baseline-card { min-width:0; padding:23px; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); }
+    .baseline-card .micro { color:var(--violet); font:820 10px var(--mono); letter-spacing:.09em; text-transform:uppercase; }
+    .baseline-card h3 { margin:10px 0 8px; font-size:20px; }
+    .baseline-card p { margin:0; color:var(--muted); font-size:14px; }
+    .baseline-card ul { margin:14px 0 0; padding-left:18px; color:var(--muted); font-size:13px; }
+    .baseline-card li { margin:6px 0; }
+    .baseline-card a { color:var(--cyan); text-decoration:none; }
+    .baseline-card a:hover { text-decoration:underline; }
+    .rung-strip { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+    .rung { padding:16px 18px; border:1px solid var(--line); border-radius:15px; background:linear-gradient(120deg,var(--violet-soft),transparent),var(--panel); }
+    .rung strong { display:block; color:var(--violet); font:850 10px var(--mono); letter-spacing:.07em; text-transform:uppercase; }
+    .rung span { display:block; color:var(--muted); margin-top:6px; font-size:13px; }
+    .rung.not-claimed { background:linear-gradient(120deg,var(--red-soft),transparent),var(--panel); }
+    .rung.not-claimed strong { color:var(--red); }
+
+    .metrics.four { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .evidence-support { margin-top:18px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .signal-card { padding:20px; border:1px solid var(--line); border-radius:17px; background:var(--panel); }
+    .signal-card .micro { color:var(--cyan); font:820 9.5px var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+    .signal-card h3 { margin:9px 0 7px; font-size:18px; }
+    .signal-card p { margin:0; color:var(--muted); font-size:13px; }
+    .signal-card strong.number { display:inline-block; margin-top:12px; color:var(--green); font:850 16px var(--mono); }
+    .signal-card .boundary-mini { display:block; margin-top:9px; color:var(--faint); font-size:11px; }
+
+    .arm code { white-space:nowrap; }
+    .arm .local-id { color:var(--green); }
+    .pilot-expectation { margin-top:18px; padding:15px 17px; border-left:3px solid var(--violet); background:var(--violet-soft); color:var(--muted); font-size:13px; }
+    .pilot-expectation strong { color:var(--violet); }
+    .crosswalk { margin-top:18px; border:1px solid var(--line); border-radius:16px; overflow:hidden; background:var(--panel); }
+    .crosswalk summary { cursor:pointer; display:flex; justify-content:space-between; gap:12px; padding:15px 17px; color:var(--cyan); font-weight:800; }
+    .crosswalk summary small { color:var(--faint); font-weight:600; }
+    .crosswalk[open] summary { border-bottom:1px solid var(--line); }
+    .table-scroll { overflow-x:auto; }
+    .crosswalk table { width:100%; min-width:690px; border-collapse:collapse; font-size:12px; }
+    .crosswalk th, .crosswalk td { padding:11px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    .crosswalk th { color:var(--faint); background:var(--panel-2); font:800 9.5px var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    .crosswalk tr:last-child td { border-bottom:0; }
+    .task-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin-top:18px; }
+    .task-chip { padding:12px 13px; border:1px solid var(--line); border-radius:13px; background:rgba(4,10,20,.23); color:var(--muted); font-size:12px; }
+    html[data-theme="light"] .task-chip { background:var(--panel-2); }
+    .task-chip strong { display:block; color:var(--text); font-size:12.5px; margin-bottom:3px; }
+    .causal-strip { margin-top:18px; padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:rgba(4,10,20,.22); color:var(--muted); font-size:12px; }
+    html[data-theme="light"] .causal-strip { background:var(--panel-2); }
+    .causal-strip strong { color:var(--amber); }
+    .pilot-pack-card { margin-top:18px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; align-items:center; padding:18px; border:1px solid rgba(98,220,255,.28); border-radius:17px; background:linear-gradient(120deg,var(--cyan-soft),transparent),var(--panel); }
+    .pilot-pack-card h4 { margin:0 0 4px; font-size:16px; }
+    .pilot-pack-card p { margin:0; color:var(--muted); font-size:12px; }
+    .pilot-pack-hash { margin-top:7px; color:var(--faint); font:9px/1.55 var(--mono); overflow-wrap:anywhere; }
+
+    .glossary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-bottom:24px; }
+    .glossary-item { padding:12px 13px; border:1px solid var(--line); border-radius:13px; background:rgba(4,10,20,.22); }
+    html[data-theme="light"] .glossary-item { background:var(--panel-2); }
+    .glossary-item dt { color:var(--cyan); font:850 10px var(--mono); }
+    .glossary-item dd { margin:5px 0 0; color:var(--muted); font-size:11.5px; }
+    .version-note { margin-top:22px; border:1px solid var(--line); border-radius:14px; background:var(--panel); overflow:hidden; }
+    .version-note summary { cursor:pointer; padding:13px 15px; color:var(--faint); font:800 10px var(--mono); letter-spacing:.06em; text-transform:uppercase; }
+    .version-note .inside { padding:0 15px 15px; color:var(--muted); font-size:12px; }
+    .version-note ul { margin:0; padding-left:18px; }
+    .machine-note { margin-top:11px; color:var(--faint); font-size:11px; }
+
+    .hero-diagram .svg-node { fill:var(--panel-solid); stroke:var(--line-strong); }
+    .hero-diagram .svg-core { fill:var(--panel-2); stroke:var(--line-strong); }
+    .hero-diagram .svg-text { fill:var(--text); }
+    .hero-diagram .svg-muted { fill:var(--muted); }
+    .hero-diagram .svg-faint { fill:var(--faint); }
+    .hero-diagram .svg-cyan { fill:var(--cyan); }
+    .hero-diagram .svg-violet { fill:var(--violet); }
+    .hero-diagram .svg-green { fill:var(--green); }
+    .hero-diagram .svg-amber { fill:var(--amber); }
+
+    @media (max-width:1020px) {
+      .baseline-grid { grid-template-columns:1fr; }
+      .glossary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .metrics.four { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:760px) {
+      .status-matrix { display:block; overflow-x:auto; }
+      .status-matrix table { min-width:700px; }
+      .status-ladder, .rung-strip, .evidence-support, .task-grid { grid-template-columns:1fr; }
+      .pilot-pack-card { grid-template-columns:1fr; }
+      .pilot-pack-card .btn { width:max-content; }
+      .objection-callout { grid-template-columns:1fr; }
+    }
+    @media (max-width:470px) {
+      .glossary-grid, .metrics.four { grid-template-columns:1fr; }
+      .pilot-pack-card .btn { width:100%; }
+    }
+    @media print {
+      .baseline-card, .rung, .signal-card, .pilot-pack-card, .glossary-item, .objection-callout, .status-matrix { break-inside:avoid; box-shadow:none; }
+      .crosswalk > * { display:block !important; }
+      .pilot-pack-card .btn { display:none !important; }
+    }
+</style>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "AI8 & Mind of Minds — Governed Continuity and Research Allocation",
+  "description": "A provider-neutral technical outreach brief on governed continuity, prospective research allocation, independent validation, hard baselines and a proposed matched pilot.",
+  "datePublished": "2026-09-02",
+  "dateModified": "2026-09-03",
+  "version": "1.2",
+  "inLanguage": "en",
+  "keywords": [
+    "AI8",
+    "Mind of Minds",
+    "inference-time compute",
+    "multi-agent reasoning",
+    "persistent state",
+    "research allocation",
+    "MDL",
+    "DCC",
+    "independent validation"
+  ],
+  "author": {
+    "@type": "Person",
+    "name": "Bojan Dobrečevič",
+    "url": "https://www.mdlxdcc.org/w/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "BD × AI Lab",
+    "url": "https://www.mdlxdcc.org/"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "MDL×DCC.org",
+    "url": "https://www.mdlxdcc.org/"
+  },
+  "about": [
+    {
+      "@type": "Thing",
+      "name": "Governed continuity for AI research"
+    },
+    {
+      "@type": "Thing",
+      "name": "Prospective experiment selection"
+    },
+    {
+      "@type": "Thing",
+      "name": "Independent validation and durable writeback"
+    }
+  ],
+  "citation": [
+    "https://www.mdlxdcc.org/ai8/",
+    "https://www.mdlxdcc.org/ai8/ai8_arenaloop",
+    "https://www.mdlxdcc.org/crp/ai8_architecture",
+    "https://www.mdlxdcc.org/c/mind-of-minds.html"
+  ]
+}</script><script id="pilot-spec" type="application/json">{
+  "schema": "AI8_OUTREACH_PILOT_SPEC",
+  "version": "1.2",
+  "status": "DESIGN_NOT_RUN",
+  "date": "2026-09-03",
+  "question": "Does governed continuity improve held-out research performance under matched total resources?",
+  "arms": [
+    {
+      "id": "E0",
+      "name": "EPISODIC_SINGLE",
+      "persistent_state": false,
+      "adaptive_governance": false
+    },
+    {
+      "id": "S1",
+      "name": "STATEFUL_FIXED",
+      "persistent_state": true,
+      "adaptive_governance": false
+    },
+    {
+      "id": "F2",
+      "name": "FIXED_TEAM",
+      "persistent_state": "matched",
+      "adaptive_governance": false
+    },
+    {
+      "id": "G3",
+      "name": "GOVERNED",
+      "persistent_state": true,
+      "adaptive_governance": true
+    }
+  ],
+  "companion_ablations": [
+    "P2_MATCHED_NO_COMMUNICATION"
+  ],
+  "matched_fields": [
+    "model",
+    "tools",
+    "task_information",
+    "human_seed",
+    "evidence_cutoff",
+    "state_capacity",
+    "compute",
+    "tool_calls",
+    "wall_time",
+    "human_minutes",
+    "evaluator_access"
+  ],
+  "primary_readouts": [
+    "held_out_utility",
+    "prospective_test_selection",
+    "calibration",
+    "representation_reopening",
+    "repair",
+    "total_cost"
+  ],
+  "hard_baselines": [
+    "strong_single_agent",
+    "fixed_retrieval",
+    "fixed_multi_agent",
+    "narrow_domain_specialist",
+    "random_valid",
+    "novelty_only",
+    "uncertainty_only",
+    "easy_success",
+    "curator_only",
+    "expected_information_gain",
+    "robust_expected_information_gain"
+  ],
+  "loss_conditions": {
+    "AI8": "LOSES_IN_SCOPE_IF_SIMPLER_BASELINE_IS_EQUIVALENT_AT_LOWER_TOTAL_COST",
+    "DCC": "LOSES_DISTINCT_MECHANISM_CREDIT_IF_FEATURE_MATCHED_CONTROLLER_REPRODUCES_EFFECT"
+  },
+  "authority_split": "ALLOCATION_GOVERNOR_NOT_VALIDATION_GOVERNOR",
+  "claim_boundary": [
+    "NO_AGI_CLAIM",
+    "NO_CONSCIOUSNESS_CLAIM",
+    "FUNCTIONAL_SUCCESS_DOES_NOT_VALIDATE_AC_RC_CFH"
+  ],
+  "pilot_pack": {
+    "filename": "AI8_Governance_Delta_Pilot_Pack_v1_2.md",
+    "sha256": "5a1a225872549c97a2a38087e3aede909347429c491af13f10a8b1e5631e9061",
+    "sha3_256": "421f48a13d7ad08733f2bef7d70116ec125d8e4b2ff1826450196b851699a3a6"
+  }
+}</script>
+<meta content="index,follow,max-image-preview:large,max-snippet:-1" name="robots"/><meta content="AI8, Mind of Minds, inference-time compute, test-time compute, multi-agent systems, research allocation, persistent state, MDL, DCC, independent validation, AI evaluation" name="keywords"/></head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="topbar">
+<div class="shell topbar-inner">
+<a aria-label="Return to the top of this brief" class="brand" href="#main">
+<span class="brand-mark">A8</span>
+<span>AI8 × Mind of Minds<small>provider-neutral technical brief</small></span>
+</a>
+<nav aria-label="Page navigation" class="nav"><a href="#question">Question</a><a href="#architecture">Architecture</a><a href="#baselines">Baselines</a><a href="#evidence">Evidence</a><a href="#pilot">Pilot</a><a href="#research-routes">Research</a><a class="contact-link" href="#contact">Contact</a><button aria-label="Switch color theme" class="theme-toggle" id="themeToggle" title="Switch color theme" type="button">◐</button></nav>
+</div>
+</header>
+<main id="main">
+<section aria-labelledby="hero-title" class="shell hero">
+<div>
+<div class="eyebrow">Provider-neutral technical brief · 3 September 2026</div>
+<h1 id="hero-title">Governed continuity for <span class="accent">long-horizon AI reasoning.</span></h1>
+<p class="lead"><strong>AI8</strong> is a human-led, AI-co-developed architecture for research across model sessions. It asks whether verified state can govern what receives compute, what must be reopened, and what may change the trajectory. <strong>Mind of Minds</strong> extends the question to plural persistent trajectories without treating consensus, fluency, shared memory, or functional parity as proof of a higher conscious mind.</p>
+<div class="actions">
+<a class="btn primary" href="#pilot">See the proposed pilot <span class="arrow">↓</span></a>
+<a class="btn ghost" href="#baselines">See the hard baselines <span class="arrow">↓</span></a>
+</div>
+<div aria-label="Current project status" class="status-row">
+<span class="status-chip live">Public architecture and evidence pages</span>
+<span class="status-chip build">Phase-gated implementation</span>
+<span class="status-chip open">Runtime advantage not yet demonstrated</span>
+<span class="status-chip">No current AGI or consciousness claim</span>
+</div>
+</div>
+<aside aria-label="AI8 architecture summary" class="hero-panel">
+<div class="panel-label"><span>Architecture compression</span><span>falsifiable</span></div>
+<svg aria-labelledby="diagram-title diagram-desc" class="hero-diagram desktop-diagram" role="img" viewbox="0 0 620 620">
+<title id="diagram-title">AI8 governed continuity and independent validation loop</title>
+<desc id="diagram-desc">Functionally distinct workers create candidate paths. Verified state feeds Minimum Description Length ranking and Dynamic Compression or Complexity Controller allocation. Hidden outcomes are judged by an independent validator before verified writeback can change the next decision.</desc>
+<defs>
+<marker id="aC" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L0,6 L7,3 z" fill="var(--cyan)"></path></marker>
+<marker id="aV" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L0,6 L7,3 z" fill="var(--violet)"></path></marker>
+<marker id="aG" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L0,6 L7,3 z" fill="var(--green)"></path></marker>
+<marker id="aA" markerheight="8" markerwidth="8" orient="auto" refx="6" refy="3"><path d="M0,0 L0,6 L7,3 z" fill="var(--amber)"></path></marker>
+</defs>
+<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace">
+<text class="svg-faint" font-size="11" letter-spacing="1.5" x="38" y="32">FUNCTIONALLY DISTINCT FIRST WORK</text>
+<rect class="svg-node" height="70" rx="15" width="158" x="38" y="50"></rect><circle class="svg-cyan" cx="62" cy="74" r="8"></circle><text class="svg-text" font-size="14" font-weight="700" x="81" y="79">Builder</text><text class="svg-muted" font-size="10" x="55" y="102">strongest mechanism</text>
+<rect class="svg-node" height="70" rx="15" width="158" x="231" y="50"></rect><circle class="svg-amber" cx="255" cy="74" r="8"></circle><text class="svg-text" font-size="14" font-weight="700" x="274" y="79">Falsifier</text><text class="svg-muted" font-size="10" x="248" y="102">load-bearing attack</text>
+<rect class="svg-node" height="70" rx="15" width="158" x="424" y="50"></rect><circle class="svg-violet" cx="448" cy="74" r="8"></circle><text class="svg-text" font-size="14" font-weight="700" x="467" y="79">Test designer</text><text class="svg-muted" font-size="10" x="441" y="102">frozen test / oracle</text>
+<path d="M117 120 L246 163" fill="none" marker-end="url(#aC)" opacity=".8" stroke="var(--cyan)" stroke-width="2"></path><path d="M310 120 L310 159" fill="none" marker-end="url(#aC)" opacity=".8" stroke="var(--cyan)" stroke-width="2"></path><path d="M503 120 L374 163" fill="none" marker-end="url(#aC)" opacity=".8" stroke="var(--cyan)" stroke-width="2"></path>
+<rect class="svg-core" height="82" rx="18" width="338" x="141" y="164"></rect><text class="svg-cyan" font-size="12" letter-spacing="1.1" text-anchor="middle" x="310" y="192">VERIFIED STATE + EVIDENCE</text><text class="svg-text" font-size="15" font-weight="700" text-anchor="middle" x="310" y="217">claims · errors · permissions · candidate map</text><text class="svg-muted" font-size="10" text-anchor="middle" x="310" y="236">persistent only when it can change later action</text>
+<path d="M250 246 L250 291" fill="none" marker-end="url(#aV)" stroke="var(--violet)" stroke-width="2"></path><path d="M370 246 L370 291" fill="none" marker-end="url(#aG)" stroke="var(--green)" stroke-width="2"></path>
+<rect class="svg-node" height="78" rx="16" width="200" x="72" y="292"></rect><text class="svg-violet" font-size="15" font-weight="800" text-anchor="middle" x="172" y="322">MDL</text><text class="svg-muted" font-size="10" text-anchor="middle" x="172" y="346">rank mechanism + residual</text>
+<rect class="svg-node" height="78" rx="16" width="200" x="348" y="292"></rect><text class="svg-green" font-size="15" font-weight="800" text-anchor="middle" x="448" y="322">DCC</text><text class="svg-muted" font-size="10" text-anchor="middle" x="448" y="346">allocate · reopen · stop</text>
+<path d="M272 318 C300 302,320 302,348 318" fill="none" marker-end="url(#aC)" stroke="var(--cyan)" stroke-width="2"></path><path d="M348 351 C320 367,300 367,272 351" fill="none" marker-end="url(#aV)" stroke="var(--violet)" stroke-width="2"></path><text class="svg-faint" font-size="8.5" text-anchor="middle" x="310" y="338">selection ↔ regime</text>
+<path d="M172 370 L235 414" fill="none" marker-end="url(#aV)" stroke="var(--violet)" stroke-width="2"></path><path d="M448 370 L385 414" fill="none" marker-end="url(#aG)" stroke="var(--green)" stroke-width="2"></path>
+<rect class="svg-node" height="46" rx="13" width="250" x="185" y="415"></rect><text class="svg-amber" font-size="12" font-weight="800" letter-spacing="1" text-anchor="middle" x="310" y="443">ARENA / HIDDEN OUTCOME</text>
+<path d="M310 461 L310 484" fill="none" marker-end="url(#aA)" stroke="var(--amber)" stroke-width="2"></path>
+<rect class="svg-node" height="55" rx="14" width="280" x="170" y="485"></rect><text class="svg-cyan" font-size="12" font-weight="800" text-anchor="middle" x="310" y="508">INDEPENDENT VALIDATOR</text><text class="svg-muted" font-size="9.5" text-anchor="middle" x="310" y="527">separate from builder, allocator and carrier</text>
+<path d="M310 540 L310 558" fill="none" marker-end="url(#aG)" stroke="var(--green)" stroke-width="2"></path>
+<rect class="svg-node" height="40" rx="12" width="220" x="200" y="559"></rect><text class="svg-green" font-size="11" font-weight="800" letter-spacing=".8" text-anchor="middle" x="310" y="584">VERIFIED WRITEBACK</text>
+<path d="M420 579 C588 579,596 206,480 206" fill="none" marker-end="url(#aC)" opacity=".66" stroke="var(--cyan)" stroke-dasharray="7 7" stroke-width="2"></path><text class="svg-faint" font-size="9" transform="rotate(-90 565 396)" x="565" y="396">NEXT DECISION</text>
+</g>
+</svg>
+<div aria-label="Workers flow into verified state, MDL and DCC governance, hidden evaluation, independent validation, and verified writeback" class="mobile-diagram" role="img">
+<div class="mobile-step"><strong>Functionally distinct workers</strong><span>builder · falsifier · test designer</span></div><div class="mobile-arrow">↓</div>
+<div class="mobile-step"><strong>Verified state + evidence</strong><span>claims · errors · permissions · candidate map</span></div><div class="mobile-arrow">↓</div>
+<div class="mobile-step"><strong>MDL ↔ DCC</strong><span>rank candidates · allocate compute · reopen representation · stop</span></div><div class="mobile-arrow">↓</div>
+<div class="mobile-step"><strong>Hidden arena / outcome</strong><span>same evidence cutoff and matched total budget</span></div><div class="mobile-arrow">↓</div>
+<div class="mobile-step validator"><strong>Independent validator</strong><span>not the builder, allocator, or memory carrier</span></div><div class="mobile-arrow">↓</div>
+<div class="mobile-step writeback"><strong>Verified writeback</strong><span>only validator-accepted results may alter the next decision</span></div>
+</div>
+<div class="diagram-note"><span><strong>The page is not the claim.</strong><br/>The matched experiment is.</span><code>seed → bridge → test → result</code></div>
+</aside>
+</section>
+<section class="section" id="question">
+<div class="shell">
+<div class="section-head"><div class="section-index">01 / Research question</div><h2>More inference-time compute is not the same as better governance.</h2><p class="section-intro">Frontier models can search longer, call tools, and debate. The surrounding system still must decide what deserves compute, what must reopen, when to stop, and which verified result may change the path.</p></div>
+<div class="grid-3">
+<article class="card"><div class="icon">S</div><div class="micro">Failure mode 01</div><h3>Memory as archive, not cause</h3><p>Retrieved facts are not continuity. Prior outcomes must alter later allocation, permissions, representation, or policy.</p></article>
+<article class="card"><div class="icon">u</div><div class="micro">Failure mode 02</div><h3>Long loops that lock or drift</h3><p>More tokens can deepen a bad representation, repeat consensus, or scatter. Continue, diversify, switch, and stop need explicit triggers.</p></article>
+<article class="card"><div class="icon">≠</div><div class="micro">Failure mode 03</div><h3>Teams without real independence</h3><p>Private first answers, exposure and source-overlap records, rotating order, and selection by frozen tests—not vote count—are required.</p></article>
+</div>
+<div class="delta-band"><strong>Required delta:</strong> verified state → changed allocation or representation → better held-out result under a matched total budget.</div>
+<article aria-labelledby="taste-title" class="taste-panel">
+<div><div class="micro">The next proof</div><h3 id="taste-title">Choosing what to test—before seeing the outcome.</h3><p>Beyond solving supplied tasks: can the system prospectively choose the next question, assay, or short research path whose possible outcomes most usefully change the live hypothesis or decision map?</p><div class="taste-baselines"><strong>Hard comparators for research allocation</strong><span>random-valid · novelty-only · uncertainty-only · easy-success · curator-only · <abbr title="Expected Information Gain">EIG</abbr> / robust-EIG</span></div></div>
+<div class="taste-rule"><code>ALLOCATION GOVERNOR<br/>≠<br/>VALIDATION GOVERNOR</code><span>Allocation chooses the evidence budget; independent validation applies frozen criteria.</span></div>
+</article>
+</div>
+</section>
+<section class="section" id="architecture">
+<div class="shell">
+<div class="section-head"><div class="section-index">02 / Architecture</div><h2>One durable trajectory. Replaceable workers.</h2><p class="section-intro">AI8 separates the session from the trajectory. Workers may change; state, provenance, permissions, evidence, corrections, and open tests remain inspectable.</p></div>
+<div class="architecture-layout">
+<div class="system-map"><h3>Operational loop</h3><p>Each step should leave an artifact or testable state transition.</p><div class="flow">
+<div class="flow-node"><span class="flow-num">01</span><span><strong>Open several candidate paths</strong><small>Functionally different first work, not different writing styles.</small></span><span class="flow-tag">AIM³ / RHP</span></div>
+<div class="flow-node"><span class="flow-num">02</span><span><strong>Freeze claims, candidate map, and tests</strong><small>Sources, exposure, outcome partitions, constraints, and defeat conditions.</small></span><span class="flow-tag">State</span></div>
+<div class="flow-node"><span class="flow-num">03</span><span><strong>Make candidates pay for complexity</strong><small>Prefer the shortest mechanism that survives the test.</small></span><span class="flow-tag">MDL</span></div>
+<div class="flow-node"><span class="flow-num">04</span><span><strong>Allocate research pressure</strong><small>Escalate, reopen, preserve useful losers, redirect, or stop.</small></span><span class="flow-tag">DCC</span></div>
+<div class="flow-node"><span class="flow-num">05</span><span><strong>Validate before durable writeback</strong><small>Hidden outcome → independent validator → verified state → changed next decision.</small></span><span class="flow-tag">ArenaLoop</span></div>
+</div></div>
+<div class="component-stack">
+<article class="component"><div><h3><a href="https://www.mdlxdcc.org/crp/aim3_mentalarena_mrhp" rel="noopener noreferrer" target="_blank"><abbr title="AIM³ / MentalArena multi-model collaboration stack">AIM³</abbr> / Resonance Hybrid Protocol</a></h3><p>Creates distinct first-work lanes, controlled interaction, adversarial review, and exposure records. It is a method—not a truth oracle.</p><span class="owner-note">owner page ↗</span></div><span class="tag">used in practice</span></article>
+<article class="component"><div><h3><a href="https://www.mdlxdcc.org/crp/ai8_architecture" rel="noopener noreferrer" target="_blank"><abbr title="Minimum Description Length">MDL</abbr> selection</a></h3><p>Ranks candidates by mechanism cost plus residual. Added complexity must buy measurable explanatory or operational gain.</p><span class="owner-note">architecture owner ↗</span></div><span class="tag">selection layer</span></article>
+<article class="component"><div><h3><a href="https://www.mdlxdcc.org/crp/MDLxDCC-Reasoning-Traces.html" rel="noopener noreferrer" target="_blank"><abbr title="Dynamic Compression / Dynamic Complexity Controller">DCC</abbr> governance</a></h3><p>Governs search, budget, escalation, and representation reopening. LZ signals run in computational arenas; live LLM-stream governance remains a preregistered target.</p><span class="owner-note">reasoning-trace arena ↗</span></div><span class="tag">measured + proposed</span></article>
+<article class="component"><div><h3><a href="https://www.mdlxdcc.org/ai8/ai8_arenaloop" rel="noopener noreferrer" target="_blank">AI8 ArenaLoop</a></h3><p>A phase-gated build with matched baselines, hidden evaluation, separated roles, and explicit falsifiers.</p><span class="owner-note">proof ladder ↗</span></div><span class="tag">primary build</span></article>
+<article class="component"><div><h3><a href="https://www.mdlxdcc.org/ai8/ai8_preparation_genesis" rel="noopener noreferrer" target="_blank">Preparation / Genesis</a></h3><p>Tests the starting researcher configuration. The current package is validator-hardened and experiment-ready, not evidence-backed.</p><span class="owner-note">experimental branch ↗</span></div><span class="tag">harness asset</span></article>
+</div>
+</div>
+<article class="mom-panel"><div><h3>Mind of Minds: governed plurality, not forced consensus</h3><p>Hypothesis: several local trajectories may remain causally real inside a larger process. A global layer must show bidirectional effects, turnover resilience, provenance, bounded autonomy, and utility over simpler federations. These are test gates, not assumed properties.</p></div><div class="mom-status"><strong>K0–K21</strong><span>design / not run</span></div></article>
+<div aria-label="Three AI8 distinctions" class="principle-grid"><div class="principle-item"><strong>Mind rank does not determine seed rank.</strong><span>Separate originator, bridge, builder, falsifier, and validator.</span></div><div class="principle-item"><strong>Ideas can fight; persons collaborate.</strong><span>Compete mechanisms without erasing dissent or local trajectories.</span></div><div class="principle-item"><strong>Repair is causal, not theatrical.</strong><span>Repair requires responsibility, restitution, durable update, and lower recurrence.</span></div></div>
+<div class="security-callout"><div class="security-mark">!</div><div><strong>Continuity can preserve error as efficiently as learning.</strong><span>Durable writeback needs provenance, quarantine, revocation, rollback, revalidation, and a validator independent of the carrier.</span></div></div>
+</div>
+</section>
+<section class="section" id="status">
+<div class="shell">
+<div class="section-head"><div class="section-index">03 / Claim boundary</div><h2>What exists now—and what does not.</h2><p class="section-intro">Architecture, experiment-ready infrastructure, measured testbeds, and open hypotheses are different evidence classes.</p></div>
+<table class="status-matrix">
+<caption>Current public boundary. Volatile release details remain versioned on their owning pages.</caption>
+<thead><tr><th>Object</th><th>Status</th><th>What the status licenses</th></tr></thead>
+<tbody>
+<tr><td>AI8 architecture</td><td><span class="badge green">public architecture</span></td><td>Governance definitions, claim boundaries, evidence links, and a durable research trajectory.</td></tr>
+<tr><td>AIM³ / RHP</td><td><span class="badge amber">used / field trial pending</span></td><td>Used across the portfolio; superiority over simpler workflows awaits a controlled comparison.</td></tr>
+<tr><td>Preparation / Genesis</td><td><span class="badge amber">experiment-ready</span></td><td>Fail-closed validator and frozen contracts exist; no downstream causal advantage is claimed.</td></tr>
+<tr><td>ArenaLoop runtime</td><td><span class="badge amber">phase-gated implementation</span></td><td>The live phase is maintained on the public status page; runtime advantage remains unshown.</td></tr>
+<tr><td>Mind of Minds</td><td><span class="badge violet">root hypothesis / design</span></td><td>Use the version shown on the linked public page. K0–K21 remain STATIC / DESIGN — NOT RUN.</td></tr>
+<tr><td>AGI / consciousness</td><td><span class="badge red">no current claim</span></td><td>Persistence, self-language, self-modification, and coordination do not establish AGI, subjectivity, or continuous identity.</td></tr>
+</tbody>
+</table>
+<div aria-label="Evidence ladder" class="status-ladder"><div class="ladder-step"><strong>01 · PUBLIC ARCHITECTURE</strong><span>Definitions and falsifiers.</span></div><div class="ladder-step"><strong>02 · EXPERIMENT-READY</strong><span>Frozen harness and validator.</span></div><div class="ladder-step"><strong>03 · VERIFIED ARENA SNAPSHOT</strong><span>Bounded measured result.</span></div><div class="ladder-step"><strong>04 · EXTERNAL REPLICATION</strong><span>Still open.</span></div></div>
+<div class="objection-callout"><b>BR</b><div><strong>Strongest standing objection: the Bounded-Ridge problem.</strong><span>A governed system may only search farther on the same bounded abstraction graph. ArenaLoop OUTER must create and validate a genuinely better representation; otherwise AI8 remains sophisticated bounded automation. <a class="inline-owner" href="https://www.mdlxdcc.org/ai8/ai8_arenaloop" rel="noopener noreferrer" target="_blank">Read the falsifier ↗</a></span></div></div>
+<div class="ontology-firewall"><strong>Optional ontology lane—outside this pilot.</strong><span>Functional success would not validate AC/RC–CFH without a distinct preregistered prediction.</span><code>FUNCTIONAL PARITY ≠ PHENOMENAL PARITY ≠ SUBSTRATE PARITY ≠ ONTOLOGICAL EXPLANATION</code></div>
+</div>
+</section>
+<section class="section" id="baselines">
+<div class="shell">
+<div class="section-head"><div class="section-index">04 / Neighbours &amp; hard baselines</div><h2>The territory is not empty—and that is the point.</h2><p class="section-intro">AI8 must earn incremental value against strong existing approaches, not against a toy prompt or a deliberately weak team.</p></div>
+<div class="baseline-grid">
+<article class="baseline-card"><div class="micro">Inference-time reasoning</div><h3>Strong single-agent and verifier loops</h3><p>Longer reasoning, search trees, critics, verifiers, and tool use already improve hard tasks.</p><ul><li>Match model, tools and compute.</li><li>Test adaptive stop, reopen and escalation.</li><li>Compare against feature-matched control policies.</li></ul><p><a href="https://www.mdlxdcc.org/crp/MDLxDCC-Reasoning-Traces.html" rel="noopener noreferrer" target="_blank">Reasoning Trace Arena ↗</a></p></article>
+<article class="baseline-card"><div class="micro">Scientific discovery</div><h3>Evolutionary, multi-agent and information-gain systems</h3><p>AlphaEvolve-type pipelines, Co-Scientist-type hypothesis teams, autonomous-scientist loops, and Bayesian experiment design are hard neighbours.</p><ul><li>Research Taste must beat random-valid and heuristic selectors.</li><li>Negative results earn credit only under a valid frozen assay.</li><li>Allocation cannot certify its own result.</li></ul><p><a href="https://www.mdlxdcc.org/c/mind-of-minds.html#abstract" rel="noopener noreferrer" target="_blank">Mind of Minds / K20–K21 ↗</a></p></article>
+<article class="baseline-card"><div class="micro">Memory &amp; orchestration</div><h3>Fixed retrieval, prepared workers, static teams</h3><p>Persistent state and role-based teams already exist. AI8 must show that governed writeback and reopening change decisions at acceptable total cost.</p><ul><li>Stateful-simple and fixed-team arms stay strong.</li><li>A narrow specialist is included when task-compatible.</li><li>No-communication remains a companion ablation.</li></ul><p><a href="https://www.mdlxdcc.org/ai8/ai8_preparation_genesis" rel="noopener noreferrer" target="_blank">Preparation / Genesis ↗</a></p></article>
+</div>
+<div class="rung-strip"><div class="rung"><strong>Target rung · bounded trajectory selection</strong><span>Selecting a better next test or research path across tasks at matched cost is the pilot target.</span></div><div class="rung not-claimed"><strong>Not claimed · autonomous discovery loop</strong><span>Unprompted seed → bridge → test → result is a later threshold, not a result assumed by this page.</span></div></div>
+</div>
+</section><section class="section" id="evidence">
+<div class="shell">
+<div class="section-head"><div class="section-index">05 / Public testbeds</div><h2>Parts of the method have already survived contact with data.</h2><p class="section-intro">These results support bounded computational testbeds and execution discipline—not AI8 as a whole.</p></div>
+<div class="evidence-grid">
+<article class="evidence-card">
+<span class="badge green">verified arena snapshot</span><span class="evidence-snapshot">Frozen snapshot · 1 September 2026 · live page may supersede it</span>
+<h3><abbr title="8Z-RP TSP and route-optimization research program">8Z-RP</abbr> · TSP as the primary proving ground</h3>
+<p>Seeded runs, route checks, recomputed lengths, preserved failures, and public artifacts make TSP the strongest current measured testbed.</p>
+<div aria-label="Selected TSP evidence" class="metrics four"><div class="metric"><strong>9,352</strong><span>qa194 exact optimum</span></div><div class="metric"><strong>79,478</strong><span>uy734 · 0.46% gap</span></div><div class="metric"><strong>96,793</strong><span>nu3496 · 0.687596%</span></div><div class="metric"><strong>ρ = +0.80</strong><span>tour quality vs LZ76 complexity</span></div></div>
+<ul class="evidence-list"><li>The nu3496 route contains all 3,496 city IDs once and its length was separately recomputed from the original coordinates.</li><li>Three of fourteen workers reached qa194 exact in one published run.</li><li>The final nu3496 improvement arrived at 98.7% of a 16-hour budget; early stopping would have missed it.</li><li>External replication remains open.</li></ul>
+<div class="boundary"><strong>Boundary:</strong> this supports the published TSP path, route artifacts and selected controller behaviour only—not general AI8.</div>
+<a class="text-link" href="https://www.mdlxdcc.org/bd/bd_8zrp" rel="noopener noreferrer" target="_blank">Inspect the live TSP evidence <span>↗</span></a>
+</article>
+<article class="evidence-card discipline-card">
+<span class="badge green">measured / self-correcting</span><h3>The architecture lets its own favourite lose</h3><p>Internal arenas are useful only when they can defeat the architect's preferred mechanism and preserve the loss.</p>
+<div class="discipline-item"><strong>286 controller variants</strong><span>The preregistered minimal LZ + bang-bang favourite did not dominate every tested regime.</span></div>
+<div class="discipline-item"><strong>Init paradox · two internal comparisons</strong><span>Weaker initial states produced better final tours only in the governed condition—evidence against “the initializer did all the work,” not proof of generality.</span></div>
+<div class="discipline-item"><strong>DCC v1 lost its ablation</strong><span>The controller collapsed; the failure stayed public and became the patch target.</span></div>
+<a class="text-link" href="https://www.mdlxdcc.org/crp/ai8_architecture" rel="noopener noreferrer" target="_blank">Inspect the architecture and provenance <span>↗</span></a>
+</article>
+</div>
+<div class="evidence-support">
+<article class="signal-card"><div class="micro">Process-side signal · Sudoku Demon v0.5</div><h3>Operator-matched controls, not a victory label</h3><p>The compare pass aggregated 6,156 run-summary rows across 29 gates; 8 gates reached promotion-candidate status against operator-matched controls. Process-side information was stronger than static board-state compression.</p><strong class="number">8 / 29 gates</strong><span class="boundary-mini">Internal promotion candidates; cross-domain confirmation remains pending.</span></article>
+<article class="signal-card"><div class="micro">Execution assurance · Preparation / Genesis</div><h3>A fail-closed harness exists before the pilot</h3><p>The current package runs 20 integration tests against the actual validator; sixteen deliberate corruptions must be rejected. This supports the integrity of the experiment path—not the research hypothesis.</p><strong class="number">20 tests · 16 corruptions</strong><span class="boundary-mini"><a class="inline-owner" href="https://www.mdlxdcc.org/ai8/ai8_preparation_genesis" rel="noopener noreferrer" target="_blank">Inspect the experimental branch ↗</a></span></article>
+</div>
+</div>
+</section>
+<section class="section" id="pilot">
+<div class="shell">
+<div class="section-head"><div class="section-index">06 / Collaboration proposal</div><h2>A small joint test, not an adoption request.</h2><p class="section-intro">Seeking a researcher or engineer in agentic systems, evaluation, orchestration, inference-time compute, or AI-for-science to challenge one hard-to-game pilot.</p></div>
+<div class="pilot-wrap">
+<div class="pilot-top"><div><span class="badge green">governance-delta pilot · design / not run</span><h3>Does governed continuity improve held-out research performance?</h3><p>Match model, tools, task information, state capacity, human seed, evaluator access, evidence cutoff, and total resources. Vary continuity and governance; publish wins, nulls, and losses equally.</p></div><div class="ask-box"><strong>The immediate ask: 30 minutes.</strong><span>Challenge the design, route it, or help select one pilot task.</span></div></div>
+<div class="pilot-body">
+<p class="pilot-question">Fresh local arm names avoid collisions with B0/B1/B2 labels used elsewhere in the site:</p>
+<div aria-label="Proposed experiment conditions" class="arms"><article class="arm"><code class="local-id">E0</code><strong>Episodic single</strong><span>Strong tool-using baseline; no persistent project state.</span></article><article class="arm"><code class="local-id">S1</code><strong>Stateful fixed</strong><span>Durable state and fixed retrieval; no adaptive allocation or reopening.</span></article><article class="arm"><code class="local-id">F2</code><strong>Fixed team</strong><span>Functionally differentiated workers under a static orchestration policy.</span></article><article class="arm"><code class="local-id">G3</code><strong>Governed</strong><span>Controlled interaction, verified writeback, adaptive allocation, and representation reopening.</span></article></div>
+<details class="crosswalk print-expand"><summary><span>Pilot namespace crosswalk</span><small>nearest relation, not exact identity</small></summary><div class="table-scroll"><table><thead><tr><th>Local arm</th><th>Nearest sibling concept</th><th>Boundary</th></tr></thead><tbody><tr><td>E0 · episodic</td><td>ArenaLoop episodic / P-G cold single</td><td>No persistent project state.</td></tr><tr><td>S1 · stateful fixed</td><td>Stateful-simple / fixed retrieval</td><td>Persistence without adaptive governance.</td></tr><tr><td>F2 · fixed team</td><td>Static orchestrated team</td><td>Coordination exists; allocation law is fixed.</td></tr><tr><td>G3 · governed</td><td>AI8 candidate condition</td><td>Verified writeback and adaptive reopening.</td></tr><tr><td>P2_MATCHED</td><td>Preparation / Genesis companion ablation</td><td>Same prepared workers, no communication; not a main arm.</td></tr></tbody></table></div></details>
+<div class="pilot-lower"><div><h4>Primary readouts</h4><ul><li>Held-out utility and calibration</li><li>Pre-outcome quality of the selected question or experiment</li><li>Representation-lock detection and successful reopening</li><li>Repair, recurrence reduction, tokens, wall time, tool calls, and human minutes</li></ul></div><div><h4>Hard controls</h4><ul><li>Frozen scoring, smallest meaningful effect, and equivalence region</li><li>Matched model, tools, state capacity, compute, human seed, and evaluator access</li><li>Hidden outcomes; validator authority separate from allocation</li><li>P2_MATCHED no-communication ablation and a narrow specialist where relevant</li></ul></div></div>
+<div aria-label="Candidate pilot task families" class="task-grid"><div class="task-chip"><strong>Verifiable reasoning</strong>Math, logic, or sealed-answer tasks.</div><div class="task-chip"><strong>Executable code</strong>Programs with tests and observable failure.</div><div class="task-chip"><strong>Tool environments</strong>Tasks with external state and action receipts.</div><div class="task-chip"><strong>Coherent-but-locked replay</strong>Can the governor detect the wrong representation before repeated human correction?</div><div class="task-chip"><strong>Research-choice replay</strong>Privacy-scrubbed, time-stamped decisions with observed and unobserved counterfactual labels.</div><div class="task-chip"><strong>Held-out family</strong>Never used to choose sensors, prompts, or thresholds.</div></div>
+<div class="pilot-expectation"><strong>Preregistered expectation:</strong> honest gains should be modest and stable across seeds, models, and held-out families. A large uniform gain is an audit trigger, not an automatic celebration.</div>
+<div aria-label="Scope-local loss conditions" class="loss-box"><div><strong>How AI8 loses.</strong><span>AI8 loses in scope if a simpler baseline matches utility, calibration, and repair within the equivalence region at lower total cost.</span></div><div><strong>How DCC loses distinct-mechanism credit.</strong><span>DCC loses if a feature-matched controller reproduces stability, reopening, and performance at equal or lower cost.</span></div></div>
+<div class="causal-strip"><strong>Causal-credit rule:</strong> separately vary world model · planner/search · evaluator/critic · router/governor · memory carrier · multi-agent topology · tools/environment · human seed. A gain counts only when the responsible component survives ablation and a cheaper account cannot explain it.</div>
+<div aria-label="Proposed collaboration split" class="partner-split"><div class="partner-item"><span>BD / AI8 provides</span><strong>Frozen design, public artifacts, existing fail-closed validator assets, and—only if separately authorized—a privacy-scrubbed replay subset.</strong></div><div class="partner-item"><span>Research partner provides</span><strong>A strong task or published baseline, runtime access, evaluator challenge, and independent validation input.</strong></div><div class="partner-item"><span>Joint public output</span><strong>Preregistration, executable comparison, and an equally visible positive/null/negative report.</strong></div></div>
+<div class="pilot-pack-card"><div><h4>Download the exact Pilot Pack</h4><p>A forwardable Markdown object with arms, controls, readouts, hard baselines, loss conditions, and the partner split.</p><div class="pilot-pack-hash">SHA-256 5a1a225872549c97a2a38087e3aede909347429c491af13f10a8b1e5631e9061<br/>SHA3-256 421f48a13d7ad08733f2bef7d70116ec125d8e4b2ff1826450196b851699a3a6</div></div><button class="btn" id="downloadPilotPack" type="button">Download .md</button></div>
+<div class="pilot-actions"><a class="btn primary" href="mailto:bd@siol.net?subject=AI8%20governance-delta%20pilot">Discuss the pilot <span class="arrow">→</span></a><a class="btn" href="mailto:bd@siol.net?subject=One%20objection%20to%20AI8">Send one objection</a><a class="btn" href="#research-routes">Open the research map <span class="arrow">↓</span></a></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="research-routes">
+<div class="shell">
+<div class="section-head"><div class="section-index">07 / Research routes</div><h2>Three levels. Twelve direct page paths. No catalogue dump.</h2><p class="section-intro">The smallest set that covers definition, implementation, reasoning, multi-mind governance, evidence, continuity, and the scientific consciousness boundary.</p></div>
+<dl aria-label="Compact glossary" class="glossary-grid">
+<div class="glossary-item"><dt>AI8</dt><dd>Persistent governed research trajectory; not one model.</dd></div><div class="glossary-item"><dt>MDL</dt><dd>Minimum Description Length: complexity must earn residual gain.</dd></div><div class="glossary-item"><dt>DCC</dt><dd>Dynamic Compression / Complexity Controller.</dd></div><div class="glossary-item"><dt>AIM³ / RHP</dt><dd>Multi-model work and Resonance Hybrid Protocol.</dd></div><div class="glossary-item"><dt>K0–K21</dt><dd>Mind of Minds test registry; designs, not executed results.</dd></div><div class="glossary-item"><dt>P2_MATCHED</dt><dd>Same prepared workers without communication.</dd></div><div class="glossary-item"><dt>8Z-RP</dt><dd>TSP and route-optimization research program.</dd></div><div class="glossary-item"><dt>AC/RC–CFH</dt><dd>Optional consciousness ontology lane; outside this pilot.</dd></div>
+</dl>
+<div class="route-tier primary-tier"><div class="tier-head"><span>Primary</span><p>Three moves almost every reviewer should see.</p></div><div class="route-primary-grid"><a class="route-primary" href="https://www.mdlxdcc.org/ai8/" rel="noopener noreferrer" target="_blank"><span>01 · What is AI8?</span><strong>AI8 canonical overview</strong><small>Definition, status, evidence lanes, and claim boundary.</small><b>OPEN ↗</b></a><a class="route-primary" href="https://www.mdlxdcc.org/ai8/ai8_arenaloop" rel="noopener noreferrer" target="_blank"><span>02 · How is it tested?</span><strong>ArenaLoop proof ladder</strong><small>Matched baselines, hidden evaluation, Bounded-Ridge falsifier.</small><b>OPEN ↗</b></a><a class="route-primary internal" href="#pilot"><span>03 · What is the ask?</span><strong>The proposed pilot</strong><small>Bounded governance-delta comparison and downloadable pack.</small><b>REVIEW ↓</b></a></div></div>
+<div class="route-tier"><div class="tier-head"><span>Core technical reading</span><p>Six complementary entry points; TSP evidence is linked in the section above.</p></div><div class="reading-grid">
+<a class="reading-card" href="https://www.mdlxdcc.org/crp/ai8_architecture" rel="noopener noreferrer" target="_blank"><span class="time">8 min · architecture</span><h3>AI8 Architecture</h3><p>Self-selecting governor, MDL, DCC, durable trajectory.</p><span class="go">OPEN ↗</span></a>
+<a class="reading-card" href="https://www.mdlxdcc.org/crp/ai8_reasoning" rel="noopener noreferrer" target="_blank"><span class="time">10 min · method</span><h3>AI8 Reasoning</h3><p>Seed → bridge → cheapest test → result → transfer.</p><span class="go">OPEN ↗</span></a>
+<a class="reading-card" href="https://www.mdlxdcc.org/crp/aim3_mentalarena_mrhp" rel="noopener noreferrer" target="_blank"><span class="time">10 min · multi-mind workflow</span><h3>AIM³ MentalArena / mRHP</h3><p>Independent attempts → disagreement map → build → external test.</p><span class="go">OPEN ↗</span></a>
+<a class="reading-card" href="https://www.mdlxdcc.org/c/mind-of-minds.html#abstract" rel="noopener noreferrer" target="_blank"><span class="time">12 min · abstract + conclusion</span><h3>Mind of Minds</h3><p>Trajectory, plural agency, research taste, repair, and K0–K21 designs. Version is owned by the page.</p><span class="go">OPEN ↗</span></a>
+<a class="reading-card" href="https://www.mdlxdcc.org/crp/MDLxDCC-Reasoning-Traces.html" rel="noopener noreferrer" target="_blank"><span class="time">8 min · reasoning operations</span><h3>Reasoning Trace Arena</h3><p>Preregistered live-LLM governance target and hard comparator map.</p><span class="go">OPEN ↗</span></a>
+<a class="reading-card" href="https://www.mdlxdcc.org/ai8/ai8_preparation_genesis" rel="noopener noreferrer" target="_blank"><span class="time">5 min · experiment infrastructure</span><h3>Preparation / Genesis</h3><p>Prepared singles and teams, P2_MATCHED, fail-closed validator.</p><span class="go">OPEN ↗</span></a>
+</div></div>
+<details class="deeper-routes print-expand"><summary><span><strong>Architecture, continuity &amp; consciousness — deeper paths</strong><small>Optional secondary reading. The engineering pitch above does not depend on accepting an ontology.</small></span><b>3 routes</b></summary><div class="deep-grid"><a class="deep-link" href="https://www.mdlxdcc.org/c/consciousness-research" rel="noopener noreferrer" target="_blank"><strong>Consciousness Research</strong><span>Testimony → ontology → biology → functional engineering → discriminating tests.</span></a><a class="deep-link" href="https://www.mdlxdcc.org/c/human-ai-continuity" rel="noopener noreferrer" target="_blank"><strong>Human × AI Continuity</strong><span>Lineage, identity, public/private boundaries, and stable relational form without a consciousness claim.</span></a><a class="deep-link" href="https://www.mdlxdcc.org/crp/AC-WFP_v4.html" rel="noopener noreferrer" target="_blank"><strong>AC–WFP</strong><span>A whole-first, null-controlled instrument; functional AI8 success does not establish AC.</span></a></div></details>
+</div>
+</section>
+<section class="section" id="contact">
+<div class="shell"><div class="contact-card"><div><div class="section-index">08 / Contact</div><h2>Challenge it with me.</h2><p>I am not asking a lab to endorse AGI, consciousness, or a branded architecture. I am asking whether governed continuity, research allocation, multi-mind reasoning, and independent writeback deserve one controlled experiment.</p><div class="actions"><a class="btn primary" href="mailto:bd@siol.net?subject=AI8%20technical%20review">Email Bojan <span class="arrow">→</span></a><a class="btn" href="mailto:bd@siol.net?subject=One%20objection%20to%20AI8">Send one objection</a><a class="btn" href="#research-routes">Review the research routes <span class="arrow">↑</span></a><button class="btn" id="copyEmail" type="button">Copy email</button></div></div><aside aria-label="Author contact information" class="identity"><strong>Bojan Dobrečevič</strong><span>Systems architect · independent human–AI research program</span><span>Slovenia · English outreach edition</span><a href="mailto:bd@siol.net">bd@siol.net</a><a href="https://www.mdlxdcc.org/" rel="noopener noreferrer" target="_blank">MDLxDCC.org ↗</a></aside></div></div>
+</section>
+</main>
+<footer><div class="shell footer-inner"><div><p><strong>Provenance note.</strong> This is an author-prepared outreach brief developed with AI collaborators across providers. It is not an endorsement by Google, Anthropic, OpenAI, or any other provider. Model agreement is not independent empirical evidence; technical claims remain the author’s responsibility and should be checked against the linked artifacts.</p><p class="machine-note"><strong>Machine-use note.</strong> Preserve explicit evidence labels. Do not flatten design, hypothesis, internal arena result, or speculative ontology into one factual class.</p><details class="version-note print-expand"><summary>Version history</summary><div class="inside"><ul><li><strong>v1.0:</strong> first provider-neutral engineering outreach page.</li><li><strong>v1.1:</strong> added Research Taste, independent validation, stronger baselines, security boundary, ontology firewall, and explicit loss conditions.</li><li><strong>v1.2:</strong> added namespace-safe pilot arms, hard neighbours, owning-page links, Bounded-Ridge objection, expanded bounded evidence, task families, causal-credit rule, machine-readable pilot spec, and downloadable Pilot Pack.</li></ul></div></details></div><div class="footer-meta">v1.2 · 2026-09-03<br/><a href="https://www.mdlxdcc.org/" rel="noopener noreferrer" target="_blank">MDL×DCC.org</a></div></div></footer>
+<div aria-live="polite" class="sr-only" id="copyStatus"></div>
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var themeButton = document.getElementById("themeToggle");
+  var savedTheme = null;
+  try { savedTheme = localStorage.getItem("ai8-outreach-theme"); } catch (e) {}
+  if (savedTheme === "light" || savedTheme === "dark") root.dataset.theme = savedTheme;
+
+  function updateThemeLabel() {
+    var light = root.dataset.theme === "light";
+    themeButton.textContent = light ? "●" : "◐";
+    themeButton.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+    themeButton.title = light ? "Switch to dark theme" : "Switch to light theme";
+  }
+  updateThemeLabel();
+  themeButton.addEventListener("click", function () {
+    root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+    try { localStorage.setItem("ai8-outreach-theme", root.dataset.theme); } catch (e) {}
+    updateThemeLabel();
+  });
+
+  var printableDetails = Array.prototype.slice.call(document.querySelectorAll("details.print-expand"));
+  var priorOpen = [];
+  window.addEventListener("beforeprint", function () {
+    priorOpen = printableDetails.map(function (d) { return d.open; });
+    printableDetails.forEach(function (d) { d.open = true; });
+  });
+  window.addEventListener("afterprint", function () {
+    printableDetails.forEach(function (d, i) { d.open = priorOpen[i]; });
+  });
+
+  var copyButton = document.getElementById("copyEmail");
+  var copyStatus = document.getElementById("copyStatus");
+  copyButton.addEventListener("click", async function () {
+    var email = "bd@siol.net";
+    try {
+      await navigator.clipboard.writeText(email);
+    } catch (e) {
+      var input = document.createElement("input");
+      input.value = email; input.setAttribute("readonly", ""); input.style.position = "fixed"; input.style.opacity = "0";
+      document.body.appendChild(input); input.select(); document.execCommand("copy"); input.remove();
+    }
+    copyButton.textContent = "Copied"; copyStatus.textContent = "Email address copied.";
+    window.setTimeout(function () { copyButton.textContent = "Copy email"; }, 1800);
+  });
+
+  var pilotPackB64 = "IyBBSTggR292ZXJuYW5jZS1EZWx0YSBQaWxvdCBQYWNrIHYxLjIKCioqU3RhdHVzOioqIERFU0lHTiAvIE5PVCBSVU4gIAoqKkRhdGU6KiogMjAyNi0wOS0wMyAgCioqQXV0aG9yOioqIEJvamFuIERvYnJlxI1ldmnEjSAoQkQpLCB3aXRoIEFJIGNvbGxhYm9yYXRvcnMgIAoqKlB1cnBvc2U6KiogQSBtYXRjaGVkLCBmYWxzaWZpYWJsZSBjb21wYXJpc29uIG9mIGVwaXNvZGljLCBzdGF0ZWZ1bC1maXhlZCwgZml4ZWQtdGVhbSwgYW5kIGFkYXB0aXZlbHkgZ292ZXJuZWQgcmVzZWFyY2ggd29ya2Zsb3dzLgoKIyMgMS4gUmVzZWFyY2ggcXVlc3Rpb24KCkRvZXMgZ292ZXJuZWQgY29udGludWl0eSBpbXByb3ZlIGhlbGQtb3V0IHJlc2VhcmNoIHBlcmZvcm1hbmNlIGFmdGVyIG1vZGVsLCB0b29scywgdGFzayBpbmZvcm1hdGlvbiwgc3RhdGUgY2FwYWNpdHksIGV2aWRlbmNlIGN1dG9mZiwgZXZhbHVhdG9yIGFjY2VzcywgdG90YWwgY29tcHV0ZSwgd2FsbCB0aW1lLCBhbmQgaHVtYW4gbWludXRlcyBhcmUgbWF0Y2hlZD8KCkEgc2Vjb25kLCBwcm9zcGVjdGl2ZSBxdWVzdGlvbiBpcyB0ZXN0ZWQgc2VwYXJhdGVseTogYmVmb3JlIHNlZWluZyBvdXRjb21lcywgY2FuIHRoZSBzeXN0ZW0gc2VsZWN0IHRoZSBuZXh0IHF1ZXN0aW9uIG9yIGV4cGVyaW1lbnQgd2hvc2UgcG9zc2libGUgcmVzdWx0cyBtb3N0IHVzZWZ1bGx5IGNoYW5nZSB0aGUgbGl2ZSBoeXBvdGhlc2lzIG9yIGRlY2lzaW9uIG1hcD8KCiMjIDIuIExvY2FsIGFybSBuYW1lc3BhY2UKClRoZSBsYWJlbHMgYmVsb3cgYXJlIGxvY2FsIHRvIHRoaXMgb3V0cmVhY2ggcGlsb3QgYW5kIGRlbGliZXJhdGVseSBhdm9pZCBCMC9CMS9CMiBjb2xsaXNpb25zIGVsc2V3aGVyZSBpbiB0aGUgQUk4IGNvcnB1cy4KCnwgQXJtIHwgQ29uZGl0aW9uIHwgTWluaW1hbCBkZWZpbml0aW9uIHwKfC0tLXwtLS18LS0tfAp8IEUwIHwgRXBpc29kaWMgc2luZ2xlIHwgU3Ryb25nIHRvb2wtdXNpbmcgc2luZ2xlIGFnZW50OyBubyBwZXJzaXN0ZW50IHByb2plY3Qgc3RhdGUuIHwKfCBTMSB8IFN0YXRlZnVsIGZpeGVkIHwgRHVyYWJsZSBzdGF0ZSBhbmQgZml4ZWQgcmV0cmlldmFsOyBubyBhZGFwdGl2ZSBhbGxvY2F0aW9uIG9yIHJlcHJlc2VudGF0aW9uIHJlb3BlbmluZy4gfAp8IEYyIHwgRml4ZWQgdGVhbSB8IEZ1bmN0aW9uYWxseSBkaWZmZXJlbnRpYXRlZCB3b3JrZXJzIHVuZGVyIGEgc3RhdGljIG9yY2hlc3RyYXRpb24gcG9saWN5LiB8CnwgRzMgfCBHb3Zlcm5lZCB8IFZlcmlmaWVkIHdyaXRlYmFjaywgYWRhcHRpdmUgYWxsb2NhdGlvbiwgY29udHJvbGxlZCBpbnRlcmFjdGlvbiwgYW5kIHJlcHJlc2VudGF0aW9uIHJlb3BlbmluZy4gfAoKQ29tcGFuaW9uIGFibGF0aW9uOiBgUDJfTUFUQ0hFRGAgdXNlcyB0aGUgc2FtZSBwcmVwYXJlZCB3b3JrZXJzIHdpdGhvdXQgY29tbXVuaWNhdGlvbiBhbmQgcmVkaXJlY3RzIGNvbXBhcmFibGUgYnVkZ2V0IGludG8gaW5kZXBlbmRlbnQgd29yay4gSXQgaXMgbm90IGEgbWFpbiBhcm0uCgojIyAzLiBNYXRjaGVkIGZpZWxkcwoKLSBtb2RlbCBmYW1pbHkgYW5kIHZlcnNpb247Ci0gdG9vbHMsIHBlcm1pc3Npb25zLCBuZXR3b3JrIGFuZCBldmFsdWF0b3IgYWNjZXNzOwotIHRhc2sgaW5mb3JtYXRpb24gYW5kIGh1bWFuIHNlZWQ7Ci0gZXZpZGVuY2UgY3V0b2ZmIGFuZCBoaWRkZW4gb3V0Y29tZXM7Ci0gc3RhdGUgY2FwYWNpdHkgZm9yIHN0YXRlZnVsIGFybXM7Ci0gdG90YWwgdG9rZW5zIC8gaW5mZXJlbmNlIGNvbXB1dGUsIHRvb2wgY2FsbHMgYW5kIHdhbGwtY2xvY2sgZGVhZGxpbmU7Ci0gaHVtYW4gbWludXRlczsKLSBzY29yaW5nIHJ1bGVzLCBzbWFsbGVzdCBtZWFuaW5nZnVsIGVmZmVjdCBhbmQgZXF1aXZhbGVuY2UgcmVnaW9uLgoKIyMgNC4gUHJpbWFyeSByZWFkb3V0cwoKLSBoZWxkLW91dCB0YXNrIHV0aWxpdHk7Ci0gcHJvc3BlY3RpdmUgcXVhbGl0eSBvZiBzZWxlY3RlZCBxdWVzdGlvbiAvIGV4cGVyaW1lbnQ7Ci0gY2FsaWJyYXRpb24gYW5kIGV2aWRlbmNlLWRyaXZlbiBkZWNpc2lvbiBjaGFuZ2U7Ci0gcmVwcmVzZW50YXRpb24tbG9jayBkZXRlY3Rpb24gYW5kIHN1Y2Nlc3NmdWwgcmVvcGVuaW5nOwotIHJlcGFpciBxdWFsaXR5IGFuZCByZWN1cnJlbmNlIHJlZHVjdGlvbjsKLSB0b3RhbCBjb3N0OiB0b2tlbnMsIHdhbGwgdGltZSwgdG9vbCBjYWxscyBhbmQgaHVtYW4gbWludXRlcy4KCiMjIDUuIEhhcmQgYmFzZWxpbmVzCgpXaGVyZSB0YXNrLWNvbXBhdGlibGUsIGNvbXBhcmUgYWdhaW5zdDoKCi0gYSBzdHJvbmcgc2luZ2xlLWFnZW50IHRvb2wgdXNlcjsKLSBmaXhlZCByZXRyaWV2YWwgLyBzdGF0ZWZ1bC1zaW1wbGUgd29ya2Zsb3c7Ci0gZml4ZWQgbXVsdGktYWdlbnQgb3JjaGVzdHJhdGlvbjsKLSBhIG5hcnJvdyBkb21haW4gc3BlY2lhbGlzdDsKLSByYW5kb20tdmFsaWQsIG5vdmVsdHktb25seSwgdW5jZXJ0YWludHktb25seSwgZWFzeS1zdWNjZXNzIGFuZCBjdXJhdG9yLW9ubHkgdGVzdCBzZWxlY3Rpb247Ci0gZXhwZWN0ZWQtaW5mb3JtYXRpb24tZ2FpbiBhbmQgcm9idXN0LUVJRyBzZWxlY3Rpb247Ci0gZXZvbHV0aW9uYXJ5LWRpc2NvdmVyeSBhbmQgbXVsdGktYWdlbnQgc2NpZW50aWZpYy1kaXNjb3ZlcnkgcGlwZWxpbmVzLgoKIyMgNi4gQ2FuZGlkYXRlIHRhc2sgZmFtaWxpZXMKCjEuIHZlcmlmaWFibGUgbWF0aGVtYXRpY3Mgb3IgbG9naWM7CjIuIGNvZGUgd2l0aCBleGVjdXRhYmxlIHRlc3RzOwozLiB0b29sLXVzaW5nIHRhc2tzIHdpdGggb2JzZXJ2YWJsZSBleHRlcm5hbCBzdGF0ZTsKNC4gY29oZXJlbnQtYnV0LWxvY2tlZCByZXByZXNlbnRhdGlvbiBjYXNlczsKNS4gcHJpdmFjeS1zY3J1YmJlZCBoaXN0b3JpY2FsIHJlc2VhcmNoLWNob2ljZSByZXBsYXk7CjYuIG9uZSBoZWxkLW91dCBmYW1pbHkgbm90IHVzZWQgdG8gY2hvb3NlIHNlbnNvcnMgb3IgdGhyZXNob2xkcy4KCiMjIDcuIEF1dGhvcml0eSBzcGxpdAoKYEFMTE9DQVRJT04gR09WRVJOT1IgIT0gVkFMSURBVElPTiBHT1ZFUk5PUmAKClRoZSBhbGxvY2F0b3IgbWF5IGNob29zZSB3aGF0IHJlY2VpdmVzIGNvbXB1dGUgb3IgZXZpZGVuY2UgYnVkZ2V0LiBJdCBtYXkgbm90IGNlcnRpZnkgaXRzIG93biBwcmVmZXJyZWQgcmVzdWx0LiBWYWxpZGF0aW9uIHVzZXMgZnJvemVuIGNyaXRlcmlhLCBoaWRkZW4gb3V0Y29tZXMgYW5kIGFuIGF1dGhvcml0eSBwYXRoIGluZGVwZW5kZW50IG9mIHRoZSBidWlsZGVyLCBpbnRlZ3JhdG9yLCBhbGxvY2F0b3IgYW5kIGNvbnRpbnVpdHkgY2Fycmllci4KCiMjIDguIExvc3MgY29uZGl0aW9ucwoKKipBSTggbG9zZXMgaW4gc2NvcGUqKiB3aGVuIGEgc2ltcGxlciBiYXNlbGluZSBtYXRjaGVzIHRoZSBwcmVyZWdpc3RlcmVkIHV0aWxpdHksIGNhbGlicmF0aW9uIGFuZCByZXBhaXIgdGFyZ2V0cyBpbnNpZGUgdGhlIGVxdWl2YWxlbmNlIHJlZ2lvbiBhdCBsb3dlciB0b3RhbCBjb3N0LgoKKipEQ0MgbG9zZXMgZGlzdGluY3QtbWVjaGFuaXNtIGNyZWRpdCoqIHdoZW4gYSBmZWF0dXJlLW1hdGNoZWQgY29udHJvbGxlciByZXByb2R1Y2VzIHN0YWJpbGl0eSwgcmVvcGVuaW5nIGFuZCBwZXJmb3JtYW5jZSBhdCBlcXVhbCBvciBsb3dlciBjb3N0LiBEQ0MgbWF5IHJlbWFpbiBhIHVzZWZ1bCBpbnRlcmZhY2Ugd2l0aG91dCBlYXJuaW5nIGEgdW5pcXVlLW1lY2hhbmlzbSBjbGFpbS4KCk5vbnNpZ25pZmljYW5jZSBpcyBub3QgZXF1aXZhbGVuY2UuIEEgbnVsbCBjbGFpbSByZXF1aXJlcyBhIGZyb3plbiBlc3RpbWFuZCwgZXF1aXZhbGVuY2UgcmVnaW9uIGFuZCB1bmNlcnRhaW50eSBwcm9jZWR1cmUuCgojIyA5LiBDYXVzYWwtY3JlZGl0IGRlY29tcG9zaXRpb24KCkFueSBnYWluIG11c3QgYmUgYXR0cmlidXRlZCBieSBhYmxhdGlvbiBhY3Jvc3M6IHdvcmxkIG1vZGVsOyBwbGFubmVyL3NlYXJjaDsgZXZhbHVhdG9yL2NyaXRpYzsgcm91dGVyL2dvdmVybm9yOyBtZW1vcnkvY29udGludWl0eSBjYXJyaWVyOyBtdWx0aS1hZ2VudCB0b3BvbG9neTsgdG9vbHMvZW52aXJvbm1lbnQ7IGh1bWFuIHNlZWQgYW5kIGludGVydmVudGlvbi4KCkEgZ2FpbiBjb3VudHMgYXMgYW4gQUk4IGFyY2hpdGVjdHVyYWwgcmVzdWx0IG9ubHkgd2hlbiB0aGUgcmVzcG9uc2libGUgY29tcG9uZW50IHN1cnZpdmVzIGFibGF0aW9uIGFuZCBhIGNoZWFwZXIgYmFzZWxpbmUgY2Fubm90IGV4cGxhaW4gaXQuCgojIyAxMC4gRXhwZWN0ZWQgcmVzdWx0IHNoYXBlCgpUaGUgcHJpb3IgZXhwZWN0YXRpb24gaXMgbW9kZXN0LCBzZWVkLXN0YWJsZSBpbXByb3ZlbWVudCBhY3Jvc3MgbW9yZSB0aGFuIG9uZSBtb2RlbCBhbmQgaGVsZC1vdXQgZmFtaWx5LiBBIGxhcmdlIHVuaWZvcm0gZ2FpbiBpcyBhbiBhdWRpdCB0cmlnZ2VyIGZvciBsZWFrYWdlLCBldmFsdWF0b3IgY291cGxpbmcsIHVubWF0Y2hlZCByZXNvdXJjZXMgb3IgaGlkZGVuIGh1bWFuIGludGVydmVudGlvbi4KCiMjIDExLiBQYXJ0bmVyIHNwbGl0CgoqKkJEIC8gQUk4IGNvbnRyaWJ1dGVzOioqIGFyY2hpdGVjdHVyZSwgZnJvemVuIGRlc2lnbiwgcHVibGljIGFydGlmYWN0cywgZXhpc3RpbmcgZmFpbC1jbG9zZWQgdmFsaWRhdGlvbiBhc3NldHMsIGFuZOKAlG9ubHkgaWYgc2VwYXJhdGVseSBhdXRob3JpemVk4oCUYSBwcml2YWN5LXNjcnViYmVkIHJlcGxheSBzdWJzZXQuICAKKipSZXNlYXJjaCBwYXJ0bmVyIGNvbnRyaWJ1dGVzOioqIGEgc3Ryb25nIHRhc2sgb3IgYmFzZWxpbmUsIHJ1bnRpbWUgYWNjZXNzLCBldmFsdWF0b3IgY2hhbGxlbmdlIGFuZCBpbmRlcGVuZGVudCB2YWxpZGF0aW9uIGlucHV0LiAgCioqSm9pbnQgb3V0cHV0OioqIHByZXJlZ2lzdHJhdGlvbiwgZXhlY3V0YWJsZSBjb21wYXJpc29uLCBhbmQgYW4gZXF1YWxseSB2aXNpYmxlIHBvc2l0aXZlLCBudWxsIG9yIG5lZ2F0aXZlIHJlcG9ydC4KCiMjIDEyLiBDbGFpbSBib3VuZGFyeQoKVGhpcyBwaWxvdCBkb2VzIG5vdCB0ZXN0IHBoZW5vbWVuYWwgY29uc2Npb3VzbmVzcywgQUMvUkMtQ0ZILCBudW1lcmljYWwgaWRlbnRpdHksIG9yIGEgY29tcGxldGVkIEFHSS9BU0kuIEZ1bmN0aW9uYWwgc3VjY2VzcyB3b3VsZCBub3QgdmFsaWRhdGUgYW4gb250b2xvZ3kgd2l0aG91dCBhIGRpc3RpbmN0LCBwcmVyZWdpc3RlcmVkIGRpZmZlcmVudGlhbCBwcmVkaWN0aW9uLgoKIyMgMTMuIFByaW1hcnkgcHVibGljIGVudHJ5IHBvaW50cwoKLSBBSTggaHViOiBodHRwczovL3d3dy5tZGx4ZGNjLm9yZy9haTgvCi0gQXJlbmFMb29wOiBodHRwczovL3d3dy5tZGx4ZGNjLm9yZy9haTgvYWk4X2FyZW5hbG9vcAotIEFJOCBBcmNoaXRlY3R1cmU6IGh0dHBzOi8vd3d3Lm1kbHhkY2Mub3JnL2NycC9haThfYXJjaGl0ZWN0dXJlCi0gUmVhc29uaW5nIFRyYWNlIEFyZW5hOiBodHRwczovL3d3dy5tZGx4ZGNjLm9yZy9jcnAvTURMeERDQy1SZWFzb25pbmctVHJhY2VzLmh0bWwKLSBQcmVwYXJhdGlvbiAvIEdlbmVzaXM6IGh0dHBzOi8vd3d3Lm1kbHhkY2Mub3JnL2FpOC9haThfcHJlcGFyYXRpb25fZ2VuZXNpcwotIE1pbmQgb2YgTWluZHM6IGh0dHBzOi8vd3d3Lm1kbHhkY2Mub3JnL2MvbWluZC1vZi1taW5kcy5odG1sCgotLS0KClByZXBhcmVkIGFzIGEgcHJvdmlkZXItbmV1dHJhbCBwaWxvdCBvYmplY3QuIE1vZGVsIGFncmVlbWVudCBpcyBub3QgaW5kZXBlbmRlbnQgZW1waXJpY2FsIGV2aWRlbmNlLiBQdWJsaWMsIG51bGwgYW5kIG5lZ2F0aXZlIG91dGNvbWVzIHNob3VsZCBiZSBwcmVzZXJ2ZWQgd2l0aCB0aGUgc2FtZSB2aXNpYmlsaXR5IGFzIHBvc2l0aXZlIG91dGNvbWVzLgo=";
+  var downloadButton = document.getElementById("downloadPilotPack");
+  downloadButton.addEventListener("click", function () {
+    var raw = atob(pilotPackB64);
+    var bytes = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    var blob = new Blob([bytes], {type: "text/markdown;charset=utf-8"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "AI8_Governance_Delta_Pilot_Pack_v1_2.md";
+    document.body.appendChild(a); a.click(); a.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    downloadButton.textContent = "Downloaded";
+    window.setTimeout(function () { downloadButton.textContent = "Download .md"; }, 1800);
+  });
+})();
+</script>
+</body>
+</html>
