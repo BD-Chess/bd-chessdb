@@ -77,6 +77,21 @@ Suggested query families for that rerun, recorded here as **future protocol**, n
 - `self-improving solver governor selection`
 - `multi-level search control reopen stagnation representation`
 
+### 5.1 Additional nearest-neighbour families added after adversarial external review
+
+The following families were identified by external reviewers as important omissions from the first targeted pass. They are now explicitly queued for deeper full-text comparison. Their presence here does **not** mean they have already been ruled in or ruled out as full matches:
+
+- selection hyper-heuristics and Adaptive Operator Selection (AOS);
+- Adaptive Large Neighbourhood Search (ALNS) and reactive search;
+- algorithm configuration / selection systems such as SMAC, irace and SATzilla;
+- quality-diversity archives such as MAP-Elites / novelty search;
+- Gödel machine, OOPS and related self-referential improvement systems;
+- compression-progress / artificial-curiosity controllers;
+- AutoML-Zero, learned optimizers and other meta-optimization systems;
+- hierarchical routing / Mixture-of-Experts and adaptive-computation controllers.
+
+The purpose of the next rerun is not to make the six-part conjunction harder to attack by definition. It is to identify which of these neighbours already contain load-bearing parts of the claimed wiring, and to narrow the novelty claim if necessary.
+
 ## 6. Defeat condition for the priority claim
 
 The bounded priority claim should be withdrawn or narrowed if a dated earlier public system is found that practically implements all six properties, not merely adjacent terminology.
