@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#05070d">
+<title>8zCoding — Executable Multi‑AI Code Search | BD × AI Lab</title>
+<meta name="description" content="8zCoding is BD × AI Lab's executable coding research laboratory: blind multi-model candidate generation through MAL, isolated local build/test/oracle evaluation, evidence-guided repair, and cost-aware controller research.">
+<meta name="author" content="BD × AI Lab">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/8zCoding.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="8zCoding — Models propose. Executable evidence decides.">
+<meta property="og:description" content="A local build–run–verify laboratory for testing whether multi-AI coding, evidence-guided repair, and adaptive compute allocation produce better verified software per unit cost.">
+<meta property="og:url" content="https://www.mdlxdcc.org/crp/8zCoding.html">
+<style>
+:root{
+  --bg:#05070d;--bg2:#080b14;--panel:#0d1525;--panel2:#101b30;
+  --line:rgba(148,163,184,.20);--line2:rgba(96,165,250,.30);
+  --text:#e8eff9;--soft:#c7d1e0;--muted:#8fa0b9;--dim:#64748b;
+  --cyan:#22d3ee;--blue:#60a5fa;--violet:#a78bfa;--green:#34d399;
+  --gold:#f59e0b;--rose:#fb7185;--orange:#fb923c;
+  --cyan-d:rgba(34,211,238,.10);--blue-d:rgba(96,165,250,.10);
+  --violet-d:rgba(167,139,250,.10);--green-d:rgba(52,211,153,.10);
+  --gold-d:rgba(245,158,11,.10);--rose-d:rgba(251,113,133,.10);
+  --shadow:0 24px 80px rgba(0,0,0,.34);--r:20px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.67;background:
+  radial-gradient(circle at 12% 4%,rgba(34,211,238,.13),transparent 30rem),
+  radial-gradient(circle at 90% 13%,rgba(167,139,250,.13),transparent 34rem),
+  linear-gradient(180deg,var(--bg),var(--bg2) 46%,#04060b);overflow-x:hidden}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitchTiles'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(1120px,calc(100% - 34px));margin-inline:auto}.narrow{width:min(840px,calc(100% - 34px));margin-inline:auto}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--violet));z-index:1000}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(5,7,13,.88);border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}
+.topbar .wrap{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font:700 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--blue);white-space:nowrap}.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.nav a{font:600 11px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.022)}.nav a:hover{color:#fff;border-color:rgba(96,165,250,.5);text-decoration:none}
+.hero{padding:88px 0 54px;border-bottom:1px solid var(--line)}.eyebrow{font:700 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:18px}.hero h1{font-size:clamp(48px,8vw,92px);line-height:.94;letter-spacing:-.065em;margin:0;max-width:980px}.hero h1 .grad{display:block;background:linear-gradient(100deg,var(--cyan),var(--blue) 48%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}.lead{font-size:clamp(19px,2.2vw,25px);line-height:1.55;color:var(--soft);max-width:900px;margin:24px 0 0}.thesis{margin:28px 0 0;padding:18px 20px;border:1px solid rgba(34,211,238,.28);border-left:3px solid var(--cyan);border-radius:14px;background:linear-gradient(90deg,rgba(34,211,238,.07),rgba(96,165,250,.035));font-size:18px}.thesis strong{color:#fff}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025);font:700 11px/1.2 var(--mono);color:var(--text)}.btn:hover{text-decoration:none;transform:translateY(-1px);border-color:rgba(34,211,238,.5)}.btn.primary{background:linear-gradient(135deg,rgba(34,211,238,.14),rgba(96,165,250,.10));border-color:rgba(34,211,238,.36)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}.chip{font:700 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.02);color:var(--muted)}.chip.pass{color:var(--green);border-color:rgba(52,211,153,.32);background:var(--green-d)}.chip.open{color:var(--gold);border-color:rgba(245,158,11,.32);background:var(--gold-d)}.chip.no{color:var(--rose);border-color:rgba(251,113,133,.30);background:var(--rose-d)}
+main section{padding:54px 0;border-bottom:1px solid rgba(148,163,184,.12)}.section-tag{font:700 10px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--violet);margin-bottom:10px}h2{font-size:clamp(31px,4vw,47px);letter-spacing:-.045em;line-height:1.05;margin:0 0 16px}h3{font-size:20px;margin:0 0 8px;letter-spacing:-.02em}p{color:var(--muted);margin:0 0 15px}.intro{font-size:18px;color:var(--soft);max-width:860px}.mono{font-family:var(--mono)}code{font-family:var(--mono);font-size:.9em;color:#dbeafe;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.15);padding:1px 5px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{border:1px solid var(--line);border-radius:var(--r);padding:20px;background:linear-gradient(180deg,rgba(16,27,48,.86),rgba(9,15,28,.84));box-shadow:var(--shadow)}.card p{margin:0}.card .kicker{font:700 10px/1 var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}.kicker.cyan{color:var(--cyan)}.kicker.blue{color:var(--blue)}.kicker.violet{color:var(--violet)}.kicker.green{color:var(--green)}.kicker.gold{color:var(--gold)}.kicker.rose{color:var(--rose)}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:30px 0 8px}.node{position:relative;border:1px solid var(--line);background:rgba(13,21,37,.9);border-radius:14px;padding:16px 12px;min-height:126px}.node:not(:last-child):after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);z-index:2;color:var(--dim);font-weight:800}.node .n{font:800 10px/1 var(--mono);color:var(--cyan);letter-spacing:.1em;margin-bottom:8px}.node strong{display:block;font-size:16px;margin-bottom:6px}.node span{font-size:13px;color:var(--muted)}
+.callout{margin:22px 0;padding:19px 20px;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:14px;background:rgba(96,165,250,.055)}.callout.green{border-left-color:var(--green);background:var(--green-d)}.callout.gold{border-left-color:var(--gold);background:var(--gold-d)}.callout.rose{border-left-color:var(--rose);background:var(--rose-d)}.callout .ct{font:800 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;color:var(--blue)}.callout.green .ct{color:var(--green)}.callout.gold .ct{color:var(--gold)}.callout.rose .ct{color:var(--rose)}.callout p:last-child{margin-bottom:0}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px;margin-top:24px;background:rgba(13,21,37,.65)}table{border-collapse:collapse;width:100%;min-width:720px}th,td{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.12);text-align:left;vertical-align:top}th{font:800 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--gold);background:rgba(255,255,255,.024)}td{color:var(--muted);font-size:14px}td strong{color:var(--text)}.s-pass{color:var(--green);font-family:var(--mono);font-weight:800}.s-open{color:var(--gold);font-family:var(--mono);font-weight:800}.s-no{color:var(--rose);font-family:var(--mono);font-weight:800}.s-neutral{color:var(--blue);font-family:var(--mono);font-weight:800}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}.metric{border:1px solid var(--line);border-radius:16px;padding:17px;background:rgba(255,255,255,.018)}.metric .label{font:700 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.metric .value{font-size:29px;letter-spacing:-.04em;font-weight:800;margin-top:8px}.metric .sub{font-size:12px;color:var(--dim);margin-top:4px}.pos{color:var(--green)}.neg{color:var(--rose)}
+.roadmap{margin-top:26px;display:grid;gap:10px}.step{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(13,21,37,.7)}.step .num{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--blue-d);border:1px solid rgba(96,165,250,.24);font:800 11px/1 var(--mono);color:var(--blue)}.step strong{display:block}.step small{display:block;color:var(--muted);margin-top:3px}.step .state{font:800 10px/1 var(--mono);letter-spacing:.05em;border-radius:999px;padding:6px 8px;border:1px solid var(--line);white-space:nowrap}.state.now{color:var(--cyan);border-color:rgba(34,211,238,.3);background:var(--cyan-d)}.state.next{color:var(--gold);border-color:rgba(245,158,11,.3);background:var(--gold-d)}.state.later{color:var(--dim)}
+.package{display:grid;grid-template-columns:1.3fr .7fr;gap:18px;align-items:stretch;margin-top:25px}.package .hash{word-break:break-all;font:600 12px/1.65 var(--mono);color:#cbd5e1;background:#050914;border:1px solid rgba(96,165,250,.16);border-radius:10px;padding:12px;margin-top:12px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fact{border:1px solid var(--line);border-radius:13px;padding:12px}.fact b{display:block;font:800 10px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin-bottom:5px}.fact span{font-weight:800;color:var(--text)}
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}.rel{display:block;border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(13,21,37,.72)}.rel:hover{border-color:rgba(34,211,238,.35);text-decoration:none}.rel b{display:block;color:#fff;margin-bottom:6px}.rel span{display:block;color:var(--muted);font-size:13px}
+footer{padding:34px 0 78px;color:var(--dim);font-size:13px}.footgrid{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}.footgrid .mono{font-size:11px}
+@media(max-width:980px){.flow{grid-template-columns:repeat(3,1fr)}.node:nth-child(3):after{display:none}.grid{grid-template-columns:1fr 1fr}.related{grid-template-columns:1fr 1fr}.package{grid-template-columns:1fr}}
+@media(max-width:680px){.topbar .wrap{display:block;padding:12px 0}.nav{justify-content:flex-start;margin-top:10px}.hero{padding-top:58px}.grid,.grid.two,.metric-grid,.related{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.node:not(:last-child):after{content:"↓";right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%)}.step{grid-template-columns:44px 1fr}.step .state{grid-column:2;justify-self:start}.facts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="../">BD × AI Lab · 8zCoding</a>
+  <nav class="nav" aria-label="Related research">
+    <a href="index.html">CRP</a>
+    <a href="MDLxDCC.html">MDL×DCC</a>
+    <a href="AIM3_MentalArena_mRHP.html">AIM³ / MAL</a>
+    <a href="AI8_Architecture.html">AI8 Architecture</a>
+    <a href="CodeCapsules.html">Code Capsules</a>
+  </nav>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Executable coding research · MAL ↔ 8zCoding</div>
+  <h1>8zCoding<span class="grad">Models propose. Evidence decides.</span></h1>
+  <p class="lead">A local code-discovery laboratory for turning multi-AI proposals into compiled, tested, benchmarked and reproducible software — without letting model confidence, provider prestige or controller rhetoric substitute for executable results.</p>
+  <div class="thesis"><strong>The experiment:</strong> can better task specification, blind multi-model diversity, evidence-guided repair and cost-aware allocation produce <em>better verified code per unit of total cost</em> than a strong single agent, Best-of-N and simpler controllers?</div>
+  <div class="chips" aria-label="Current status">
+    <span class="chip pass">A0/A1 verifier · PASS</span>
+    <span class="chip pass">A2/A3/A5 · engineering PASS</span>
+    <span class="chip open">A4 oracle · provisional</span>
+    <span class="chip no">DCC utility · not promoted</span>
+    <span class="chip no">LZ mechanism · not promoted</span>
+    <span class="chip open">A6 live coding · not yet run</span>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="#architecture">See the loop →</a>
+    <a class="btn" href="#evidence">Current evidence</a>
+    <a class="btn" href="#roadmap">Roadmap</a>
+  </div>
+</div></header>
+
+<main>
+<section id="architecture"><div class="wrap">
+  <div class="section-tag">01 · Architecture</div>
+  <h2>Two engines. One evidence loop.</h2>
+  <p class="intro">During R&D, MAL and 8zCoding deliberately remain separate. MAL creates intelligence-rich task packets and blind candidate sets; 8zCoding owns local execution, hidden verification, benchmarking and evidence. The separation is a measurement boundary, not a product limitation.</p>
+  <div class="flow" role="img" aria-label="BD to MAL to blind LLMs to 8zCoding to verifier to repair loop">
+    <div class="node"><div class="n">01 · INTENT</div><strong>BD / User</strong><span>Goal, constraints, budget, material decisions.</span></div>
+    <div class="node"><div class="n">02 · FORGE</div><strong>MAL</strong><span>Research, specification, coder packet, provenance.</span></div>
+    <div class="node"><div class="n">03 · DIVERGE</div><strong>Blind LLMs</strong><span>Fresh, stateless, peer-separated implementations.</span></div>
+    <div class="node"><div class="n">04 · EXECUTE</div><strong>8zCoding</strong><span>Safe build, run, tests, benchmarks, accounting.</span></div>
+    <div class="node"><div class="n">05 · JUDGE</div><strong>Oracle</strong><span>Correctness and measured behavior, not opinions.</span></div>
+    <div class="node"><div class="n">06 · LEARN</div><strong>Repair / Allocate</strong><span>Safe evidence returns to the owner; next budget is earned.</span></div>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">MAL engine</div><h3>Intelligence before code</h3><p>Reconstruct the problem, sharpen the behavioral contract, generate alternative implementations and keep provider identity private from the evaluator.</p></div>
+    <div class="card"><div class="kicker blue">8zCoding engine</div><h3>Reality after code</h3><p>Compile, execute, verify, benchmark, measure memory and artifacts, bind results to exact candidate bytes, and preserve failures as evidence.</p></div>
+    <div class="card"><div class="kicker violet">Controller layer</div><h3>Allocation must earn its complexity</h3><p>Equal allocation, greedy, bandit-style and DCC controllers compete. DCC is a candidate — never a privileged winner.</p></div>
+  </div>
+</div></section>
+
+<section id="windtunnel"><div class="wrap">
+  <div class="section-tag">02 · Why N‑Queens first</div>
+  <h2>A wind tunnel before real software.</h2>
+  <p class="intro">The first domain is intentionally narrow: <code>count(n, prefix)</code> must return the exact number of legal N‑Queens completions. That makes it possible to harden the judge before asking whether the search process itself is intelligent.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker green">Exact oracle</div><h3>Correctness is a hard gate</h3><p>Independent Python and C++ reference paths, strict I/O, canonical output and known totals make silent “almost correct” code unacceptable.</p></div>
+    <div class="card"><div class="kicker gold">Mutation pressure</div><h3>Known wrong programs must die</h3><p>The A0/A1 calibration rejected all 11 seeded wrong candidates, including prefix, diagonal, symmetry, truncation, grammar and nondeterminism defects.</p></div>
+    <div class="card"><div class="kicker cyan">Windows reality</div><h3>Platform bugs count</h3><p>Actual Windows 11 + MSVC runs exposed and repaired compiler sidecar and CRLF/LF protocol defects before the verifier was accepted.</p></div>
+  </div>
+  <div class="callout green"><div class="ct">What A0/A1 establishes</div><p>We have a strong local judge for the frozen N‑Queens behavioral domain. It does <strong>not</strong> establish that multi-LLM coding, MAL, DCC or 8zCoding live search is superior. Those are later experiments.</p></div>
+</div></section>
+
+<section id="evidence"><div class="wrap">
+  <div class="section-tag">03 · Current executable evidence</div>
+  <h2>The machinery works. The favored mechanism has not won.</h2>
+  <p class="intro">The current controller package is useful precisely because it does not force a success story. It separates engineering validity from scientific promotion.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Layer</th><th>Status</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A0/A1 verifier & oracle</strong></td><td class="s-pass">PASS</td><td>Strict behavioral judge; actual Windows 11 + MSVC core and package-close confirmed.</td></tr>
+      <tr><td><strong>A2 synthetic calibration</strong></td><td class="s-pass">ENGINEERING PASS</td><td>Controller mechanics, replay legality and synthetic hard predicates operate as designed.</td></tr>
+      <tr><td><strong>A3 N‑Queens TUNE replay</strong></td><td class="s-pass">ENGINEERING PASS</td><td>Real candidate ecology and controller replay executed deterministically.</td></tr>
+      <tr><td><strong>A4 opportunity / oracle</strong></td><td class="s-open">PROVISIONAL</td><td>Primary metric is AUC-U, but the current oracle optimizes final utility first. Alignment successor required.</td></tr>
+      <tr><td><strong>A4 passive LZ prediction</strong></td><td class="s-no">NOT PROMOTED</td><td><code>lz_norm</code> did not achieve the required out-of-bank predictive improvement.</td></tr>
+      <tr><td><strong>A5 one-shot replay</strong></td><td class="s-pass">ENGINEERING PASS</td><td>Internally precommitted same-generator holdout executed without post-holdout retuning.</td></tr>
+      <tr><td><strong>P-DCC-UTILITY</strong></td><td class="s-no">NOT MET</td><td>C5-R did not materially beat the strongest ordinary controller.</td></tr>
+      <tr><td><strong>P-DCC-COMPRESSION-MECHANISM</strong></td><td class="s-no">NOT MET</td><td>Incremental value of the LZ/process-compression channel is not established.</td></tr>
+      <tr><td><strong>A6 live coding</strong></td><td class="s-open">NEXT</td><td>Allowed after bridge conformance and sandbox gates; can begin with equal or ordinary allocation.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="label">TUNE · C5-R − C4b</div><div class="value pos">+0.006812</div><div class="sub">AUC-U · positive, below 0.02 practical win margin</div></div>
+    <div class="metric"><div class="label">Holdout · C5-R − C0</div><div class="value neg">−0.008469</div><div class="sub">AUC-U · competitive mean, not a win</div></div>
+    <div class="metric"><div class="label">Holdout · C5-R − C5-A</div><div class="value neg">−0.002173</div><div class="sub">Compression channel unresolved</div></div>
+  </div>
+
+  <div class="callout gold"><div class="ct">Evidence class</div><p>The A5 evidence is a <strong>one-shot internally precommitted same-generator holdout</strong>: useful internal validation, not independent replication. Two order variants of one content seed are nested measurements, not two independent banks.</p></div>
+  <div class="callout"><div class="ct">Practical margin ≠ statistical equivalence</div><p>An observed mean delta inside ±0.02 says the average difference is small relative to the predeclared practical margin. It does not, by itself, establish formal equivalence or non-inferiority.</p></div>
+</div></section>
+
+<section id="oracle"><div class="wrap">
+  <div class="section-tag">04 · Known debt</div>
+  <h2>The A4 oracle found a bug in our own claim boundary.</h2>
+  <p class="intro">The replay protocol declares <strong>AUC-U</strong> as the primary utility, but the current static/adaptive oracle chooses schedules by final utility first and AUC second. That makes it possible for a deployable controller to score higher AUC-U than the object called the AUC oracle.</p>
+  <div class="grid two">
+    <div class="card"><div class="kicker rose">Observed diagnostic</div><h3>Negative “room”</h3><p><code>HOLDOUT_570173 / O1</code> reports <code>room_from_c0 = -0.093269...</code> and <code>room_from_c4 = -0.091226...</code>. A true upper bound for the same primary metric should not do that.</p></div>
+    <div class="card"><div class="kicker green">Bounded repair</div><h3>Split the objectives</h3><p>The planned v0.2.1 successor separates <code>ORACLE-A-AUC</code>, <code>ORACLE-A-FINAL</code>, <code>ORACLE-S-AUC</code> and <code>ORACLE-S-FINAL</code>, with a truth-known canary where AUC-optimal and final-optimal schedules differ.</p></div>
+  </div>
+  <div class="callout rose"><div class="ct">What changes — and what does not</div><p>The oracle defect makes A4 room/regret interpretation provisional. It does <strong>not</strong> retroactively erase raw controller traces or their direct AUC-U means. The v0.2 package remains historical evidence; the correction belongs in a new versioned successor.</p></div>
+</div></section>
+
+<section id="bridge"><div class="wrap">
+  <div class="section-tag">05 · MAL ↔ 8zCoding bridge</div>
+  <h2>Blind generation on one side. Untrusted execution on the other.</h2>
+  <p class="intro">The next system-level experiment is not “ask many models and vote.” It is a controlled bridge in which MAL prepares the same canonical coder packet for multiple fresh providers, hides identity from evaluation, and 8zCoding returns only evidence that is safe to use for repair.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">Candidate Forge</div><h3>Stateless providers</h3><p>Each first-round model receives the same canonical task, no peer answers and no MAL synthesis preference. MAL is locally stateful only for provenance, costs, hashes and resume.</p></div>
+    <div class="card"><div class="kicker violet">Blind evidence</div><h3>Opaque IDs</h3><p>The evaluator sees candidate bytes and opaque IDs — not provider prestige or route order. Private provenance remains separate.</p></div>
+    <div class="card"><div class="kicker gold">Shared contract</div><h3>One conformance kit</h3><p><code>MAL_8ZCODING_BRIDGE_CONFORMANCE_KIT_V1</code> must define the exact schemas, canonicalization, path safety, ZIP/hash rules and feedback redaction both engines obey.</p></div>
+  </div>
+  <div class="callout"><div class="ct">Repair is an experiment too</div><p>Evidence-guided repair must be compared against an equal-cost fresh cold sample. The first pilot allows at most one repair round, then evaluates on a separate final post-repair holdout.</p></div>
+</div></section>
+
+<section id="security"><div class="wrap">
+  <div class="section-tag">06 · Security boundary</div>
+  <h2>Generated code is data until the sandbox says otherwise.</h2>
+  <p class="intro">MAL never executes provider-generated code. A6 must not import or execute untrusted candidate code directly inside the normal MAL process or an unprotected host environment.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker rose">No host trust</div><h3>Disposable execution</h3><p>Use a disposable Windows Sandbox, VM, isolated WSL/container or comparable environment. Direct host execution is outside the intended A6 security contract.</p></div>
+    <div class="card"><div class="kicker gold">No ambient authority</div><h3>No network. No credentials.</h3><p>Bounded mounts, read-only or mediated oracle access, process-tree control, timeouts, memory/disk/output limits and no secrets in the candidate environment.</p></div>
+    <div class="card"><div class="kicker green">No hidden-test leakage</div><h3>Safe feedback only</h3><p>Models may receive failure classes and redacted diagnostics, never hidden fixture bytes, expected hidden answers or enough repeated information to reconstruct the final holdout.</p></div>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <div class="section-tag">07 · Current execution board</div>
+  <h2>The shortest path to new evidence.</h2>
+  <p class="intro">Several tasks can proceed in parallel, but the first claim-bearing live coding run stays behind explicit interface and sandbox gates.</p>
+  <div class="roadmap">
+    <div class="step"><div class="num">A</div><div><strong>Bridge Kit candidate + MAL v2.0 Candidate Forge</strong><small>Freeze shared schemas first; implement MAL against exact candidate-kit bytes.</small></div><span class="state now">NOW</span></div>
+    <div class="step"><div class="num">B</div><div><strong>A2–A5 v0.2.1 oracle alignment</strong><small>Separate AUC and FINAL oracles; recompute only affected A4 room/regret evidence.</small></div><span class="state now">PARALLEL</span></div>
+    <div class="step"><div class="num">C</div><div><strong>Promote one shared Bridge Conformance Kit V1</strong><small>MAL and A6 must return the same verdicts on the same fixture bytes.</small></div><span class="state next">GATE</span></div>
+    <div class="step"><div class="num">D</div><div><strong>A6 offline / mock runner + disposable sandbox</strong><small>Blind ingest → build → verify → benchmark → safe feedback, with no paid calls.</small></div><span class="state next">NEXT</span></div>
+    <div class="step"><div class="num">E</div><div><strong>Small matched-Python live Top‑5</strong><small>First measure prompt effect, then diversity, then repair vs cold sample.</small></div><span class="state later">LATER</span></div>
+    <div class="step"><div class="num">F</div><div><strong>Ordinary controller before DCC-R</strong><small>Only after live traces show real allocation opportunity; DCC-R enters as an equal comparator.</small></div><span class="state later">LATER</span></div>
+    <div class="step"><div class="num">G</div><div><strong>Transfer beyond N‑Queens</strong><small>Weighted pathfinding first; frozen transfer and retuned results reported separately.</small></div><span class="state later">TRANSFER</span></div>
+  </div>
+</div></section>
+
+<section id="success"><div class="wrap">
+  <div class="section-tag">08 · What would count as success?</div>
+  <h2>Not more activity. Better verified software per total cost.</h2>
+  <div class="grid two">
+    <div class="card"><div class="kicker green">Success</div><h3>The stack earns its extra machinery</h3><p>Across more than one programming task, the system produces a better verified Pareto frontier — correctness, runtime, size, robustness and discovery cost — than strong single-agent, Best-of-N and simple evolutionary baselines under comparable total budget.</p></div>
+    <div class="card"><div class="kicker rose">Failure that still teaches</div><h3>The simpler system wins</h3><p>If MAL prompt forging, Top‑5 diversity, evidence repair or DCC fails to repay its coordination overhead, those layers should be removed or demoted. The verifier, blind forge, evidence bridge and release pipeline can still remain valuable.</p></div>
+  </div>
+  <div class="callout green"><div class="ct">Controller rule</div><p>If equal allocation or a simpler ordinary controller matches DCC at lower cost, the simpler controller wins. ssMDL×DCC only means the governor is allowed to compete — not that it is guaranteed victory.</p></div>
+</div></section>
+
+<section id="ai8"><div class="wrap">
+  <div class="section-tag">09 · AI8 connection</div>
+  <h2>A measurable first work cell — if it earns the role.</h2>
+  <p class="intro">If MAL × 8zCoding proves value, it can become the first operational cell of a future AI8 Work Environment: locally continuous project state, replaceable AI providers, task/evidence graphs, multiple workstreams and controllers that themselves remain subject to comparison.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">Continuity</div><h3>State belongs to the project</h3><p>Provider/model calls can stay fresh and replaceable while local continuity preserves goals, artifacts, evidence, decisions, budgets and open tensions.</p></div>
+    <div class="card"><div class="kicker violet">Team intelligence</div><h3>MAL coordinates possibilities</h3><p>Architect, researcher, alternative architect, falsifier and integrator roles can propose work without being mistaken for independent empirical evidence.</p></div>
+    <div class="card"><div class="kicker blue">Reality cells</div><h3>8zCoding closes the loop</h3><p>Programming is the first domain because compiler, tests, hidden oracles and benchmarks make it unusually hard to substitute persuasive prose for a working artifact.</p></div>
+  </div>
+  <div class="callout gold"><div class="ct">Claim boundary</div><p>An effective AI8 work cell would be evidence about a workflow architecture. It would not, by itself, establish AGI, ASI, consciousness, personhood or ontological continuity.</p></div>
+  <div class="hero-actions">
+    <a class="btn primary" href="AI8_Architecture.html">AI8 Architecture →</a>
+    <a class="btn" href="AIM3_MentalArena_mRHP.html">AIM³ / MentalArena</a>
+  </div>
+</div></section>
+
+<section id="package"><div class="wrap">
+  <div class="section-tag">10 · Current R&D package identity</div>
+  <h2>Executable evidence exists — with a known open debt.</h2>
+  <div class="package">
+    <div class="card">
+      <div class="kicker blue">Current project artifact</div>
+      <h3 class="mono" style="font-size:16px;word-break:break-word">8zCoding_NQueens_Controller_Replay_A2_A5_v0_2_RND.zip</h3>
+      <p>This is an executable research laboratory, not a deployment release. Its controller traces and engineering results remain useful; A4 oracle room/regret is provisional until the bounded oracle-alignment successor is built and rerun.</p>
+      <div class="hash" id="pkgHash">SHA3-256 · e8c80cd9862f045aaa3f19ccb1f5a89a1203eee290dbad243df64213e35ef1cf</div>
+      <div class="hero-actions"><button class="btn" type="button" id="copyHash">Copy SHA3</button><a class="btn" href="CodeCapsules.html">Executable evidence standard →</a></div>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>ZIP size</b><span>7,066,925 B</span></div>
+      <div class="fact"><b>Members</b><span>1,306</span></div>
+      <div class="fact"><b>Terminal</b><span>A2_A3_A5_RND_PASS</span></div>
+      <div class="fact"><b>Public status</b><span>R&D evidence</span></div>
+    </div>
+  </div>
+  <p style="margin-top:18px">The package is referenced here by identity, not assumed to be a public download. If released publicly later, it should be published as a proper Code Capsule with exact commands, package-close receipt and the oracle-alignment limitation visible beside it.</p>
+</div></section>
+
+<section id="related"><div class="wrap">
+  <div class="section-tag">11 · Related pages</div>
+  <h2>Where 8zCoding fits in the wider research map.</h2>
+  <div class="related">
+    <a class="rel" href="AI8_Architecture.html"><b>AI8 Architecture</b><span>Whole-system continuity, multi-level governance and the future AI8 Work Environment context.</span></a>
+    <a class="rel" href="AIM3_MentalArena_mRHP.html"><b>AIM³ / MentalArena</b><span>The multi-model reasoning, architecture, critique and prompt/specification side of the bridge.</span></a>
+    <a class="rel" href="MDLxDCC.html"><b>MDL×DCC</b><span>The broader generator–judge–governor research framework and claim boundaries.</span></a>
+    <a class="rel" href="CodeCapsules.html"><b>Code Capsules</b><span>How executable research artifacts should be packaged, hashed, run and audited.</span></a>
+    <a class="rel" href="MDLxDCC-Arenas.html"><b>MDL×DCC Arenas</b><span>The wider program of truth-known, benchmark and practical arenas.</span></a>
+    <a class="rel" href="projects-are-evidence.html"><b>Projects Are Evidence</b><span>Why individual projects are testbeds for the method rather than substitutes for cross-domain proof.</span></a>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap footgrid">
+  <div>BD × AI Lab · 8zCoding public research page · 2026-09-04</div>
+  <div class="mono">R&D · executable evidence · claims remain bounded by the actual artifacts</div>
+</div></footer>
+
+<script>
+(function(){
+  const p=document.getElementById('progress');
+  function prog(){const d=document.documentElement;const max=d.scrollHeight-d.clientHeight;p.style.width=(max?100*d.scrollTop/max:0)+'%'}
+  addEventListener('scroll',prog,{passive:true});prog();
+  const btn=document.getElementById('copyHash');
+  if(btn)btn.addEventListener('click',async()=>{
+    const h='e8c80cd9862f045aaa3f19ccb1f5a89a1203eee290dbad243df64213e35ef1cf';
+    try{await navigator.clipboard.writeText(h);btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy SHA3',1300)}catch(e){btn.textContent='Select hash above'}
+  });
+})();
+</script>
+</body>
+</html>
