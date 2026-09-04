@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>BD SOL BB Neutral-Lock — Low-Attention Manual Strategy</title>
+<style>
+:root{
+  --bg:#090d12; --bg2:#0d131b; --card:#111923; --card2:#151f2b; --line:#263444;
+  --text:#e9f0f7; --muted:#9fb0c2; --accent:#79d6ff; --accent2:#9ff0c6; --warn:#ffcf70;
+  --danger:#ff8e9a; --good:#86efac; --code:#0a1118; --shadow:0 14px 40px rgba(0,0,0,.28);
+  --base-font:17px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{margin:0;background:linear-gradient(180deg,#0a0f15 0,#090d12 45%,#070b10 100%);color:var(--text);font:var(--base-font)/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent)}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(9,13,18,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1120px;margin:auto;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.2px;white-space:nowrap}.brand small{color:var(--muted);font-weight:600}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{font:inherit;color:var(--text);background:#121b25;border:1px solid #314256;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:750}
+button:hover{background:#182331;border-color:#46617d}button.active{background:#153247;border-color:#4db6e9;color:#dff6ff}
+main{max-width:1120px;margin:auto;padding:24px 16px 72px}
+.hero{padding:28px 0 14px}.eyebrow{color:var(--accent2);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.78em}
+h1{font-size:clamp(2rem,6vw,4.1rem);line-height:1.02;margin:.25em 0 .3em;letter-spacing:-.04em}
+.subtitle{font-size:1.08em;color:var(--muted);max-width:900px;margin:0}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}.badge{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:.82em;font-weight:800;background:#0f1720}.badge.good{color:var(--good)}.badge.warn{color:var(--warn)}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}.quick .q{background:linear-gradient(180deg,#121b25,#0e151e);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}.q strong{display:block;font-size:1.1em;margin-bottom:5px}.q span{color:var(--muted);font-size:.92em}
+nav.toc{margin:22px 0 28px;padding:12px;background:#0d141c;border:1px solid var(--line);border-radius:14px;display:flex;gap:8px;flex-wrap:wrap}nav.toc a{text-decoration:none;color:#c9d7e5;border:1px solid #26374a;border-radius:999px;padding:5px 9px;font-size:.82em}
+section{scroll-margin-top:86px;background:rgba(17,25,35,.70);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+h2{font-size:1.55em;line-height:1.2;margin:0 0 14px;letter-spacing:-.02em}h3{font-size:1.12em;margin:22px 0 8px;color:#dce9f5}
+p{margin:.7em 0}.lead{font-size:1.08em;color:#dce9f5}.muted{color:var(--muted)}
+.callout{border-left:4px solid var(--accent);background:#0d1821;padding:14px 16px;border-radius:0 12px 12px 0;margin:14px 0}.callout.good{border-color:var(--good)}.callout.warn{border-color:var(--warn)}.callout.danger{border-color:var(--danger)}
+code,kbd{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;background:#101923;border:1px solid #223247;border-radius:5px;padding:.08em .3em;font-size:.91em}pre{overflow:auto;background:var(--code);border:1px solid #1d2a39;border-radius:12px;padding:14px;line-height:1.5;color:#d7e5f1;font-size:.91em}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:12px 0}table{border-collapse:collapse;width:100%;min-width:620px;background:#0d141c}th,td{padding:10px 12px;border-bottom:1px solid #213041;text-align:left;vertical-align:top}th{background:#111d28;color:#eaf5ff;position:sticky;top:0}tr:last-child td{border-bottom:0}.num{text-align:right;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini{background:#0d151e;border:1px solid #223144;border-radius:12px;padding:14px}
+ul,ol{padding-left:1.25em}.state{font-weight:800;color:var(--accent2)}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:1.02em;background:#0a1219;border:1px solid #203043;border-radius:12px;padding:14px;overflow:auto}
+.footer{margin-top:34px;color:var(--muted);font-size:.88em;text-align:center}
+.lang{display:none}.lang.active{display:block}
+@media(max-width:800px){.quick{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.topbar-inner{align-items:flex-start}.brand{width:100%}section{padding:17px}main{padding-top:14px}}
+@media(max-width:480px){.quick{grid-template-columns:1fr}.controls{width:100%;justify-content:space-between}button{padding:8px 10px}body{line-height:1.58}}
+@media print{.topbar,.toc{display:none!important}body{background:#fff;color:#111}.lang{display:none}.lang.active{display:block}section,.quick .q{box-shadow:none;border-color:#ccc;background:#fff}.muted,.subtitle{color:#444}pre,.formula{white-space:pre-wrap;background:#f4f4f4;color:#111;border-color:#ccc}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">BD SOL BB Neutral-Lock <small>v0.1</small></div>
+    <div class="controls">
+      <button id="slBtn" class="active" aria-label="Slovenščina">SL</button>
+      <button id="enBtn" aria-label="English">EN</button>
+      <button id="minusBtn" aria-label="Pomanjšaj pisavo">A−</button>
+      <button id="plusBtn" aria-label="Povečaj pisavo">A+</button>
+      <button id="resetBtn" aria-label="Ponastavi pisavo">A</button>
+    </div>
+  </div>
+</header>
+<main>
+
+<article id="sl" class="lang active" lang="sl">
+  <div class="hero">
+    <div class="eyebrow">Ročna SOL strategija z nizko pozornostjo</div>
+    <h1>NO ACTION je privzeta odločitev.</h1>
+    <p class="subtitle">Enak LONG + SHORT core kupi čas. Bollinger Bands pomagajo prepoznati redke trenutke za zaščito winnerja ali reanchor loserja. Cilj ni ves čas trejdati, ampak čim redkeje narediti pravo stvar.</p>
+    <div class="badges"><span class="badge good">SOL · 1m · BB(20,2)</span><span class="badge">Cross-margin</span><span class="badge">100× ROE interpretacija</span><span class="badge warn">Raziskovalna strategija</span></div>
+  </div>
+
+  <div class="quick" id="decision-sl">
+    <div class="q"><strong>1 · Poglej</strong><span>Pregled ni signal. Najprej preveri, ali je account še equal-core neutral.</span></div>
+    <div class="q"><strong>2 · Winner gate</strong><span>Profitni SL/harvest šele, ko je BB struktura res oslabila; full exit pomeni directional handoff.</span></div>
+    <div class="q"><strong>3 · Loser gate</strong><span>Reanchor samo ob svežem displacementu in uporabnem minimum-sufficient addu. Po fillu takoj TP za exact excess.</span></div>
+    <div class="q"><strong>4 · Privzeto</strong><span>Če noben gate jasno ne velja: nič ne naredi.</span></div>
+  </div>
+
+  <nav class="toc">
+    <a href="#sl-core">Jedro</a><a href="#sl-winner">Winner SL</a><a href="#sl-lock">Neutral-lock</a><a href="#sl-sol">SOL evidence</a><a href="#sl-reanchor">Reanchor</a><a href="#sl-risk">Risk budget</a><a href="#sl-state">State machine</a><a href="#sl-card">Phone card</a><a href="#sl-boundary">Meja dokazov</a>
+  </nav>
+
+  <section id="sl-core">
+    <h2>1. Odločilni popravek: pogled ni dejanje</h2>
+    <p class="lead">Strategije ne modeliramo kot <code>pogledam → izberem akcijo</code>, ampak kot <code>pogledam → preverim dva neodvisna gate-a → največkrat nič</code>.</p>
+    <div class="grid2">
+      <div class="mini"><strong>WINNER GATE</strong><p>Ali obstaja dovolj močan razlog, da profitnemu legu arm-aš ali zategneš profitni izhod?</p></div>
+      <div class="mini"><strong>LOSER GATE</strong><p>Ali obstaja dovolj močan razlog za reanchor in ali je minimum-sufficient add varen glede na wallet in čas, ko telefona ne boš gledal?</p></div>
+    </div>
+    <div class="callout good"><strong>Legalni rezultati vsakega pregleda:</strong> NO ACTION · samo winner action · samo loser reanchor · redko koordinirano oboje. <strong>NO ACTION ni fallback; je mainline.</strong></div>
+  </section>
+
+  <section>
+    <h2>2. Equal-core invariant</h2>
+    <p>Za enako količino <code>q</code> SOL na LONG in SHORT:</p>
+    <div class="formula">PairPnL(P) = q(P − L) + q(S − P) = q(S − L)</div>
+    <p>Trenutna cena <code>P</code> se izniči. Če sta oba corea enako velika, samo gibanje cene ne ustvarja novega directional PnL. Če je po prejšnjih reanchorjih <code>S &gt; L</code>, ima par zaklenjen pozitiven spread, neodvisen od trenutne cene.</p>
+    <div class="table-wrap"><table><thead><tr><th>WAIT stanje</th><th>Pomen</th></tr></thead><tbody>
+      <tr><td><span class="state">NEUTRAL_WAIT</span></td><td>Enaki količini; ni novega directional PnL iz premika cene.</td></tr>
+      <tr><td><span class="state">ARMED_NEUTRAL</span></td><td>Še vedno enaki količini, toda conditional order lahko samodejno spremeni stanje.</td></tr>
+      <tr><td><span class="state">DIRECTIONAL_WAIT</span></td><td>Winner SL ali loser add se je že izvršil; količini nista več enaki in adverse tail postane pomemben.</td></tr>
+    </tbody></table></div>
+    <p class="muted">To je idealni linearni model. Funding, slippage, mark-price liquidation, maintenance margin in execution failure niso zajeti v tej identiteti.</p>
+  </section>
+
+  <section id="sl-winner">
+    <h2>3. Winner SL ni samo »zaklep profita«</h2>
+    <p>Dokler profitni LONG SL samo čaka, je pair še neutral. Ko se sproži, LONG zapreš, SHORT ostane in account postane directionally SHORT. Zato je full winner SL <strong>directional handoff</strong>, ne brezplačen profit lock.</p>
+    <div class="callout warn"><strong>Praktična posledica:</strong> prvi outer-BB touch, prvi reentry v kanal ali 2-bar stall sami po sebi niso dovolj močan razlog za full winner exit.</div>
+    <h3>Sveža SOL ugotovitev</h3>
+    <p>Po upper-BB excursionu in dokončanem closeu na/pod moving middle BB je bil naslednji outer band v 60 minutah:</p>
+    <div class="table-wrap"><table><thead><tr><th>Signal</th><th class="num">Naslednji lower BB</th><th class="num">Naslednji upper BB</th></tr></thead><tbody>
+      <tr><td>Upper excursion → completed middle-BB close</td><td class="num">67.05%</td><td class="num">32.66%</td></tr>
+      <tr><td>Lower excursion → completed middle-BB close</td><td class="num">34.81%</td><td class="num">65.02%</td></tr>
+    </tbody></table></div>
+    <h3>Popravljeno winner pravilo</h3>
+    <pre>DEFAULT:
+  winnerja pusti pri miru
+
+ARM / TIGHTEN PROFIT FLOOR:
+  šele ko je profit dovolj velik in je BB struktura res oslabila
+
+FULL WINNER EXIT:
+  samo kot zavesten directional-handoff branch,
+  najbolje po completed 1m middle-BB closeu proti stari smeri
+  in ko 1m + 5m ne podpirata več starega premika
+
+PARTIAL WINNER EXIT:
+  varnejši challenger kot full exit</pre>
+    <p>Profit floor naj bo monotone: LONG stop se lahko samo dviguje, SHORT stop samo spušča.</p>
+  </section>
+
+  <section id="sl-lock">
+    <h2>4. Čistejši profit-lock: reanchor loserja, zapri excess, ohrani equal core</h2>
+    <p>To je trenutno najmočnejši matematični mehanizem Reanchor Lock logike.</p>
+    <div class="formula">A = (q·P0 + d·P1) / (q + d)</div>
+    <p>Če loserju pri ceni <code>P1</code> dodaš <code>d</code>, dobiš novi aggregate average <code>A</code>. Ko se retrace zgodi in zapreš samo temporary excess <code>d</code>, ostaneta:</p>
+    <pre>q LONG  @ P0
+q SHORT @ A</pre>
+    <p>Njuna skupna vrednost je <code>q(A − P0)</code> in je neodvisna od trenutne cene.</p>
+    <div class="callout good"><strong>Ključ:</strong> uspešen loser reanchor lahko velik del prejšnjega winner displacementa spremeni v zaklenjen average spread, ne da winner core zapreš in ne da izgubiš equal hedge.</div>
+    <h3>Primer 4 → 40</h3>
+    <pre>4 LONG  @ 100
+4 SHORT @ 100
+cena → 105
+add 36 SHORT @ 105
+nov aggregate SHORT average = 104.50</pre>
+    <p>Po majhnem retraceu zapreš 36-SOL excess v profitu. Ostane 4 LONG @100 + 4 SHORT @104.50, kar vsebuje približno $18 zaklenjenega pair PnL pri katerikoli poznejši ceni.</p>
+  </section>
+
+  <section>
+    <h2>5. Nevtralna realizacija: symmetric pair trim/reset</h2>
+    <p>Če imaš enak core z različnima averageoma:</p>
+    <pre>q LONG  @ L
+q SHORT @ S, kjer S &gt; L</pre>
+    <p>in zapreš enako količino <code>h</code> na obeh straneh:</p>
+    <div class="formula">realized = h(P − L) + h(S − P) = h(S − L)</div>
+    <p>Tako lahko realiziraš del zaklenjenega profita <strong>brez napovedovanja smeri</strong>. Po želji lahko nato ponovno odpreš svež equal LONG+SHORT core.</p>
+  </section>
+
+  <section id="sl-sol">
+    <h2>6. Kaj dejansko pravijo SOL BB podatki</h2>
+    <h3>6.1 Edge → middle / edge → opposite edge</h3>
+    <p>Na 236,161 realnih 1m SOLUSDT barih je bila ideja broadly podprta, vendar počasneje, kot lahko deluje na moving-BB grafu. Pri statičnih event-time BB nivojih:</p>
+    <div class="table-wrap"><table><thead><tr><th>Event</th><th>Target</th><th class="num">5m</th><th class="num">15m</th><th class="num">60m</th><th class="num">240m</th><th class="num">24h</th></tr></thead><tbody>
+      <tr><td>Upper excursion</td><td>original middle</td><td class="num">18.6%</td><td class="num">42.0%</td><td class="num">69.1%</td><td class="num">84.9%</td><td class="num">93.9%</td></tr>
+      <tr><td>Upper excursion</td><td>original lower</td><td class="num">4.3%</td><td class="num">17.2%</td><td class="num">47.0%</td><td class="num">72.5%</td><td class="num">88.9%</td></tr>
+      <tr><td>Lower excursion</td><td>original middle</td><td class="num">19.0%</td><td class="num">41.8%</td><td class="num">68.6%</td><td class="num">83.1%</td><td class="num">92.2%</td></tr>
+      <tr><td>Lower excursion</td><td>original upper</td><td class="num">4.1%</td><td class="num">17.1%</td><td class="num">46.0%</td><td class="num">69.4%</td><td class="num">85.8%</td></tr>
+    </tbody></table></div>
+    <p class="muted">Moving BB lahko pride proti ceni; vizualni »return to middle« zato ni nujno vrnitev cene na originalni middle nivo.</p>
+
+    <h3>6.2 Flat/mixed kanal bolj mean-reverta</h3>
+    <div class="table-wrap"><table><thead><tr><th>Regime</th><th class="num">Static middle by H60</th><th class="num">Opposite band by H60</th></tr></thead><tbody>
+      <tr><td>Upper excursion · 1m+5m flat/mixed</td><td class="num">74.3%</td><td class="num">55.6%</td></tr>
+      <tr><td>Upper excursion · 1m+5m aligned up</td><td class="num">67.9%</td><td class="num">44.6%</td></tr>
+      <tr><td>Lower excursion · flat/mixed</td><td class="num">73.0%</td><td class="num">51.8%</td></tr>
+      <tr><td>Lower excursion · aligned down</td><td class="num">66.5%</td><td class="num">42.9%</td></tr>
+    </tbody></table></div>
+    <p>5m naj zato deluje predvsem kot <strong>veto/size modifier</strong>, ne kot nov indikator sistem.</p>
+
+    <h3>6.3 Velike 1m sveče se pogosto retraceajo</h3>
+    <div class="table-wrap"><table><thead><tr><th>Smer</th><th>Retrace</th><th class="num">5m</th><th class="num">15m</th><th class="num">60m</th><th class="num">24h</th></tr></thead><tbody>
+      <tr><td>Up impulse</td><td>1/3</td><td class="num">69.8%</td><td class="num">80.5%</td><td class="num">89.1%</td><td class="num">96.6%</td></tr>
+      <tr><td>Up impulse</td><td>1/2</td><td class="num">55.0%</td><td class="num">70.7%</td><td class="num">84.5%</td><td class="num">95.3%</td></tr>
+      <tr><td>Down impulse</td><td>1/3</td><td class="num">70.7%</td><td class="num">80.6%</td><td class="num">89.7%</td><td class="num">96.3%</td></tr>
+      <tr><td>Down impulse</td><td>1/2</td><td class="num">57.2%</td><td class="num">71.5%</td><td class="num">84.5%</td><td class="num">94.9%</td></tr>
+    </tbody></table></div>
+    <div class="callout danger"><strong>Pomembno:</strong> p95 adverse continuation pred half-retraceom je velik: približno 109–119 bp pri H5, 140–159 bp pri H15 in 205–246 bp pri H60. »Prej ali slej se pokrije« ni isto kot »varno je čakati z velikim directional excessom«.</div>
+
+    <h3>6.4 SOL impulse-retrace lookup</h3>
+    <div class="table-wrap"><table><thead><tr><th>Zahtevan favorable move</th><th class="num">H5</th><th class="num">H15</th><th class="num">H60</th><th class="num">H240</th><th class="num">H24h</th></tr></thead><tbody>
+      <tr><td>4 bp</td><td class="num">90.2%</td><td class="num">93.6%</td><td class="num">96.5%</td><td class="num">97.5%</td><td class="num">98.9%</td></tr>
+      <tr><td>8 bp</td><td class="num">81.8%</td><td class="num">88.8%</td><td class="num">94.3%</td><td class="num">96.5%</td><td class="num">98.1%</td></tr>
+      <tr><td>12 bp</td><td class="num">73.5%</td><td class="num">83.4%</td><td class="num">91.7%</td><td class="num">95.2%</td><td class="num">97.5%</td></tr>
+      <tr><td>20 bp</td><td class="num">56.1%</td><td class="num">71.0%</td><td class="num">85.1%</td><td class="num">91.4%</td><td class="num">95.6%</td></tr>
+      <tr><td>30 bp</td><td class="num">39.2%</td><td class="num">59.0%</td><td class="num">77.3%</td><td class="num">86.5%</td><td class="num">93.0%</td></tr>
+      <tr><td>40 bp</td><td class="num">26.2%</td><td class="num">47.7%</td><td class="num">69.6%</td><td class="num">82.2%</td><td class="num">90.8%</td></tr>
+      <tr><td>60 bp</td><td class="num">11.1%</td><td class="num">28.4%</td><td class="num">55.2%</td><td class="num">73.9%</td><td class="num">86.8%</td></tr>
+      <tr><td>100 bp</td><td class="num">2.7%</td><td class="num">10.7%</td><td class="num">34.1%</td><td class="num">58.2%</td><td class="num">78.4%</td></tr>
+    </tbody></table></div>
+    <p>P95 adverse excursion v istem lookupu: približno 110 bp (H5), 157 bp (H15), 282 bp (H60), 489 bp (H240) in 1093 bp (H24h).</p>
+  </section>
+
+  <section id="sl-reanchor">
+    <h2>7. Reanchor sizing: zelo majhen target je drag</h2>
+    <p>Pri idealizirani 100× interpretaciji je +3% ROE približno +3 bp favorable price move.</p>
+    <div class="formula">R = D / M + 3 &nbsp;&nbsp; | &nbsp;&nbsp; M = D / (R − 3) &nbsp;&nbsp; | &nbsp;&nbsp; add multiple = M − 1</div>
+    <div class="table-wrap"><table><thead><tr><th>Old gap D</th><th>Desired move R</th><th class="num">Total book M</th><th class="num">Add multiple</th></tr></thead><tbody>
+      <tr><td>50 bp</td><td>12 bp</td><td class="num">5.56×</td><td class="num">4.56×</td></tr>
+      <tr><td>50 bp</td><td>20 bp</td><td class="num">2.94×</td><td class="num">1.94×</td></tr>
+      <tr><td>100 bp</td><td>12 bp</td><td class="num">11.11×</td><td class="num">10.11×</td></tr>
+      <tr><td>100 bp</td><td>20 bp</td><td class="num">5.88×</td><td class="num">4.88×</td></tr>
+      <tr><td>100 bp</td><td>30 bp</td><td class="num">3.70×</td><td class="num">2.70×</td></tr>
+      <tr><td>200 bp</td><td>30 bp</td><td class="num">7.41×</td><td class="num">6.41×</td></tr>
+      <tr><td>300 bp</td><td>30 bp</td><td class="num">11.12×</td><td class="num">10.12×</td></tr>
+      <tr><td>500 bp</td><td>50 bp</td><td class="num">10.67×</td><td class="num">9.67×</td></tr>
+    </tbody></table></div>
+    <p>Zato je prejšnja ideja »vedno spravi target na 4–8 bp« preagresivna. Bolj smiselne cone:</p>
+    <ul><li><strong>20–30 bp:</strong> hitrejši rescue, pogosto velik add.</li><li><strong>30–50 bp:</strong> manjši add, več čakanja.</li><li><strong>50–100 bp:</strong> samo kadar wallet in odsotnost dovoljujeta daljši rescue.</li></ul>
+    <div class="callout"><strong>Glavno pravilo:</strong> cilj ni najmanjši možni retrace. Cilj je <strong>najmanjši add</strong>, ki izbrani retrace naredi dovolj dosegljiv in ne preseže risk budgeta.</div>
+  </section>
+
+  <section id="sl-risk">
+    <h2>8. Low-attention risk budget: sizing po času odsotnosti</h2>
+    <p>Ko loser dobi excess add, je prvi-order net directional quantity približno ravno excess. Če je excess notional <code>x × wallet</code> in adverse move <code>a</code> bp:</p>
+    <div class="formula">loss_fraction ≈ x · a / 10,000</div>
+    <div class="table-wrap"><table><thead><tr><th>Možna odsotnost</th><th class="num">SOL p95 adverse</th><th class="num">Net excess za ~5% wallet loss</th><th class="num">Net excess za ~10%</th></tr></thead><tbody>
+      <tr><td>5 min</td><td class="num">110 bp</td><td class="num">4.55× wallet</td><td class="num">9.09×</td></tr>
+      <tr><td>15 min</td><td class="num">157–160 bp</td><td class="num">~3.1×</td><td class="num">~6.25×</td></tr>
+      <tr><td>60 min</td><td class="num">282–285 bp</td><td class="num">~1.75×</td><td class="num">~3.5×</td></tr>
+    </tbody></table></div>
+    <div class="callout warn"><strong>Operativno pravilo:</strong> dalj ko telefona morda ne boš gledal, manjši mora biti dovoljen rescue excess. 5-minutni rescue size ni sleep-size.</div>
+  </section>
+
+  <section>
+    <h2>9. Zakaj občasno gledanje spremeni optimalno strategijo</h2>
+    <p>Okno od reentryja do middle/new-extreme je bilo kratko: mediana 3 min, p75 6 min, p90 9 min.</p>
+    <div class="table-wrap"><table><thead><tr><th>Pogled telefona</th><th class="num">Približna možnost, da padeš v okno</th></tr></thead><tbody>
+      <tr><td>vsakih 5 min</td><td class="num">61.6%</td></tr><tr><td>10 min</td><td class="num">39.0%</td></tr><tr><td>15 min</td><td class="num">27.0%</td></tr><tr><td>30 min</td><td class="num">13.6%</td></tr><tr><td>60 min</td><td class="num">6.8%</td></tr>
+    </tbody></table></div>
+    <pre>1. Zamujen setup = NO CHASE.
+2. Deluj samo, če veljaven setup slučajno vidiš ob pregledu.
+3. Po addu takoj postavi exact excess TP.
+4. Winner floor lahko ostane kot conditional order samo, če njegov trigger pusti sprejemljivo stanje.
+5. Sleep state: brez rescue excessa in brez latentnega orderja, ki lahko ustvari velik naked book.</pre>
+  </section>
+
+  <section id="sl-state">
+    <h2>10. Revised state machine</h2>
+    <div class="table-wrap"><table><thead><tr><th>State</th><th>Pomen</th></tr></thead><tbody>
+      <tr><td><span class="state">N0 NEUTRAL_EQUAL_CORE</span></td><td>Enak LONG/SHORT. Privzeto NO ACTION.</td></tr>
+      <tr><td><span class="state">N1 OBSERVE_DISPLACEMENT</span></td><td>En winner, en loser, še vedno neutral.</td></tr>
+      <tr><td><span class="state">N2 WINNER_FLOOR_ARMED</span></td><td>Profitni conditional stop obstaja; trigger lahko ustvari directional handoff.</td></tr>
+      <tr><td><span class="state">R0 REANCHOR_ARMED</span></td><td>Setup prepoznan; add še ni izvršen.</td></tr>
+      <tr><td><span class="state">R1 RESCUE_ACTIVE</span></td><td>Loser povečan; net excess obstaja; partial TP za exact excess mora že biti live.</td></tr>
+      <tr><td><span class="state">R2 EXCESS_HARVESTED</span></td><td>Excess se zapre v profitu; enakost količin se povrne.</td></tr>
+      <tr><td><span class="state">L0 LOCKED_EQUAL_CORE</span></td><td>Enaki količini, različna averagea, price-independent locked pair PnL.</td></tr>
+      <tr><td><span class="state">P0 PAIR_TRIM_OR_RESET</span></td><td>Simetrično realiziraš locked spread; po želji reset.</td></tr>
+      <tr><td><span class="state">D0 DIRECTIONAL_HANDOFF</span></td><td>Winner stop je sprožen; preostali loser je directional. Ni sleep-safe default.</td></tr>
+    </tbody></table></div>
+    <pre>Preferirana low-attention pot:
+N0 → N1 → R0 → R1 → R2 → L0 → optional P0 → N0/L0
+
+Optional winner-SL branch:
+N1 → N2 → D0</pre>
+  </section>
+
+  <section id="sl-card">
+    <h2>11. Phone-check decision card</h2>
+    <h3>Korak 1 — Je account equal-core neutral?</h3>
+    <p><strong>DA:</strong> premik trga sam ni ustvaril nove directional pair izgube. <strong>NE:</strong> najprej upravljaj obstoječi excess ali directional state; ne začenjaj nove nepovezane akcije.</p>
+    <h3>Korak 2 — Winner gate</h3>
+    <pre>NO ACTION:
+- samo outer BB touch
+- samo reentry v BB
+- 1m in 5m kanal še močno podpirata winner smer
+- uporaben stop bi bil znotraj noise-a
+- trigger bi pustil prevelik naked loser
+
+TIGHTEN / ARM:
+- profit je dovolj velik za strukturiran pozitiven stop
+- 1m kanal je flatten/turn
+- ali completed middle-BB close proti winner smeri
+- resulting directional exposure je sprejemljiv
+
+Preferiraj partial winner action ali neutral pair trim pred full winner-only exitom.</pre>
+    <h3>Korak 3 — Loser reanchor gate</h3>
+    <pre>NO ACTION:
+- samo BB touch
+- impulse še pospešuje
+- setup okno je zamujeno
+- minimum-sufficient add presega wallet/horizon cap
+- po prejšnjem rescueu ni novega adverse displacementa
+
+ARM, ne avtomatski fill:
+- velik completed outside-BB displacement
+- svež local extreme / stall / reversal structure je viden
+- 1m + 5m ne zahtevata continuation veto-a za full size
+- candidate size je matematično uporaben in wallet-feasible
+
+PO FILLU:
+- takoj preračunaj aggregate average
+- takoj postavi partial TP za exact excess
+- target naj bo explicit price, ne stale pre-add ROE
+- nov add samo ob novem adverse displacementu in novem dogodku</pre>
+    <div class="callout good"><strong>Korak 4:</strong> če noben gate jasno ne velja → <strong>DO NOTHING.</strong></div>
+  </section>
+
+  <section id="sl-boundary">
+    <h2>12. Končni sklep in meja dokazov</h2>
+    <p class="lead">Najboljša trenutna interpretacija ni aktiven BB scalping sistem, ampak <strong>low-frequency neutral-lock system</strong>.</p>
+    <pre>majhen equal core kupi čas in zmanjša potrebo po napovedovanju smeri
++
+BB označuje redke displacement priložnosti
++
+loser reanchor prenese del displacementa v locked average spread
++
+excess TP vrne equal quantity
++
+symmetric pair trim/reset realizira profit brez directional izbire
++
+winner-only SL ostane optional directional overlay
++
+NO ACTION prevladuje pri večini pregledov</pre>
+    <p>Raziskava podpira posamezne mehanizme, ne pa še trditve, da je celotna ročna politika live-profitable ali optimalna za določen wallet. Naslednja plast je wallet/core/excess matrika po $100 → $250k+ in konkretni scenariji.</p>
+    <p class="muted">Podlaga: BD BB Reanchor Lock, BD BB Hybrid Dual-Book, Q1s-DETS, BD Trading Arenas in sveža BB-only analiza SOLUSDT 1m, 2026-01-01 → 2026-06-14.</p>
+  </section>
+</article>
+
+<article id="en" class="lang" lang="en">
+  <div class="hero">
+    <div class="eyebrow">Low-attention manual SOL strategy</div>
+    <h1>NO ACTION is the default decision.</h1>
+    <p class="subtitle">An equal LONG + SHORT core buys time. Bollinger Bands help identify rare moments to protect the winner or reanchor the loser. The objective is not to trade constantly, but to act only when the geometry is worth it.</p>
+    <div class="badges"><span class="badge good">SOL · 1m · BB(20,2)</span><span class="badge">Cross-margin</span><span class="badge">100× ROE interpretation</span><span class="badge warn">Research strategy</span></div>
+  </div>
+
+  <div class="quick" id="decision-en">
+    <div class="q"><strong>1 · Look</strong><span>A phone check is not a signal. First verify whether the account is still equal-core neutral.</span></div>
+    <div class="q"><strong>2 · Winner gate</strong><span>Protect/harvest only after BB structure has genuinely weakened; a full exit creates a directional handoff.</span></div>
+    <div class="q"><strong>3 · Loser gate</strong><span>Reanchor only after fresh displacement and a useful minimum-sufficient add. After fill, place TP for the exact excess immediately.</span></div>
+    <div class="q"><strong>4 · Default</strong><span>If neither gate clearly passes: do nothing.</span></div>
+  </div>
+
+  <nav class="toc">
+    <a href="#en-core">Core</a><a href="#en-winner">Winner SL</a><a href="#en-lock">Neutral-lock</a><a href="#en-sol">SOL evidence</a><a href="#en-reanchor">Reanchor</a><a href="#en-risk">Risk budget</a><a href="#en-state">State machine</a><a href="#en-card">Phone card</a><a href="#en-boundary">Evidence boundary</a>
+  </nav>
+
+  <section id="en-core">
+    <h2>1. Decisive correction: looking is not acting</h2>
+    <p class="lead">Model the strategy as <code>look → test two independent gates → usually do nothing</code>, not as <code>look → choose an action</code>.</p>
+    <div class="grid2">
+      <div class="mini"><strong>WINNER GATE</strong><p>Is there enough evidence to arm or tighten a profitable exit on the winning leg?</p></div>
+      <div class="mini"><strong>LOSER GATE</strong><p>Is there enough evidence to reanchor the losing leg, and is the minimum-sufficient add safe for the wallet and expected unattended interval?</p></div>
+    </div>
+    <div class="callout good"><strong>Legal outcomes:</strong> NO ACTION · winner action only · loser reanchor only · rarely a coordinated both-action case. <strong>NO ACTION is the mainline state.</strong></div>
+  </section>
+
+  <section>
+    <h2>2. Equal-core invariant</h2>
+    <p>For equal SOL quantity <code>q</code> on LONG and SHORT:</p>
+    <div class="formula">PairPnL(P) = q(P − L) + q(S − P) = q(S − L)</div>
+    <p>Current price <code>P</code> cancels. If quantities remain equal, price movement alone does not create new directional pair PnL. If previous reanchors produced <code>S &gt; L</code>, the pair contains a positive locked spread independent of current price.</p>
+    <div class="table-wrap"><table><thead><tr><th>WAIT state</th><th>Meaning</th></tr></thead><tbody>
+      <tr><td><span class="state">NEUTRAL_WAIT</span></td><td>Equal quantities; no new directional PnL from price movement.</td></tr>
+      <tr><td><span class="state">ARMED_NEUTRAL</span></td><td>Equal now, but a conditional order can automatically change the state.</td></tr>
+      <tr><td><span class="state">DIRECTIONAL_WAIT</span></td><td>A winner stop or loser add has filled; quantities are unequal and adverse-tail exposure matters.</td></tr>
+    </tbody></table></div>
+    <p class="muted">This is the ideal linear model. Funding, slippage, mark-price liquidation, maintenance margin and execution failure sit outside the invariant.</p>
+  </section>
+
+  <section id="en-winner">
+    <h2>3. A winner SL is not merely “locking profit”</h2>
+    <p>Before a profitable LONG stop triggers, the pair can still be neutral. Once it triggers, LONG closes and SHORT remains, so the account becomes directionally SHORT. A full winner SL is therefore a <strong>directional handoff</strong>, not a free profit lock.</p>
+    <div class="callout warn"><strong>Practical consequence:</strong> an outer-band touch, first reentry into the band, or a 2-bar stall alone are too weak for a large full winner exit.</div>
+    <h3>Fresh SOL result</h3>
+    <div class="table-wrap"><table><thead><tr><th>Signal</th><th class="num">Next lower BB</th><th class="num">Next upper BB</th></tr></thead><tbody>
+      <tr><td>Upper excursion → completed middle-BB close</td><td class="num">67.05%</td><td class="num">32.66%</td></tr>
+      <tr><td>Lower excursion → completed middle-BB close</td><td class="num">34.81%</td><td class="num">65.02%</td></tr>
+    </tbody></table></div>
+    <pre>DEFAULT:
+  leave the winner alone
+
+ARM / TIGHTEN PROFIT FLOOR:
+  only after profit is large enough and BB structure has materially weakened
+
+FULL WINNER EXIT:
+  explicit directional-handoff branch,
+  preferably after a completed 1m middle-BB close against the old direction
+  and when 1m + 5m no longer strongly support the old move
+
+PARTIAL WINNER EXIT:
+  safer challenger than full exit</pre>
+    <p>The profit floor should be monotone: LONG stop only moves up; SHORT stop only moves down.</p>
+  </section>
+
+  <section id="en-lock">
+    <h2>4. Cleaner profit lock: reanchor loser, harvest excess, retain equal cores</h2>
+    <div class="formula">A = (q·P0 + d·P1) / (q + d)</div>
+    <p>Add <code>d</code> to the loser at <code>P1</code>, creating new aggregate average <code>A</code>. After a retrace, close only the temporary excess <code>d</code>. The remaining equal cores are:</p>
+    <pre>q LONG  @ P0
+q SHORT @ A</pre>
+    <p>Their combined PnL is <code>q(A − P0)</code>, independent of current price.</p>
+    <div class="callout good"><strong>Key point:</strong> a successful loser reanchor can transform much of the previous winner displacement into a locked average spread without closing the winner and without abandoning the equal hedge.</div>
+    <h3>4 → 40 example</h3>
+    <pre>4 LONG  @ 100
+4 SHORT @ 100
+price → 105
+add 36 SHORT @ 105
+new aggregate SHORT average = 104.50</pre>
+    <p>After a small retrace, close the 36-SOL excess in profit. The remaining 4 LONG @100 + 4 SHORT @104.50 contain roughly $18 of locked pair PnL at any later price.</p>
+  </section>
+
+  <section>
+    <h2>5. Neutral realization: symmetric pair trim/reset</h2>
+    <p>With equal cores at different averages:</p>
+    <pre>q LONG  @ L
+q SHORT @ S, where S &gt; L</pre>
+    <p>closing the same amount <code>h</code> from each side realizes:</p>
+    <div class="formula">realized = h(P − L) + h(S − P) = h(S − L)</div>
+    <p>This realizes locked profit <strong>without predicting the next SOL direction</strong>. You can then optionally reopen a fresh equal LONG+SHORT core.</p>
+  </section>
+
+  <section id="en-sol">
+    <h2>6. What the SOL BB data actually say</h2>
+    <h3>6.1 Edge → middle / edge → opposite edge</h3>
+    <p>Across 236,161 real SOLUSDT 1m bars, the intuition is broadly supported, but more slowly than a moving-band chart can visually suggest. Using static event-time BB levels:</p>
+    <div class="table-wrap"><table><thead><tr><th>Event</th><th>Target</th><th class="num">5m</th><th class="num">15m</th><th class="num">60m</th><th class="num">240m</th><th class="num">24h</th></tr></thead><tbody>
+      <tr><td>Upper excursion</td><td>original middle</td><td class="num">18.6%</td><td class="num">42.0%</td><td class="num">69.1%</td><td class="num">84.9%</td><td class="num">93.9%</td></tr>
+      <tr><td>Upper excursion</td><td>original lower</td><td class="num">4.3%</td><td class="num">17.2%</td><td class="num">47.0%</td><td class="num">72.5%</td><td class="num">88.9%</td></tr>
+      <tr><td>Lower excursion</td><td>original middle</td><td class="num">19.0%</td><td class="num">41.8%</td><td class="num">68.6%</td><td class="num">83.1%</td><td class="num">92.2%</td></tr>
+      <tr><td>Lower excursion</td><td>original upper</td><td class="num">4.1%</td><td class="num">17.1%</td><td class="num">46.0%</td><td class="num">69.4%</td><td class="num">85.8%</td></tr>
+    </tbody></table></div>
+    <p class="muted">Moving BB levels can move toward price, so a visual “return to middle” is not necessarily a return to the original middle price.</p>
+
+    <h3>6.2 Flat/mixed channel is more mean-reverting</h3>
+    <div class="table-wrap"><table><thead><tr><th>Regime</th><th class="num">Static middle by H60</th><th class="num">Opposite band by H60</th></tr></thead><tbody>
+      <tr><td>Upper excursion · 1m+5m flat/mixed</td><td class="num">74.3%</td><td class="num">55.6%</td></tr>
+      <tr><td>Upper excursion · 1m+5m aligned up</td><td class="num">67.9%</td><td class="num">44.6%</td></tr>
+      <tr><td>Lower excursion · flat/mixed</td><td class="num">73.0%</td><td class="num">51.8%</td></tr>
+      <tr><td>Lower excursion · aligned down</td><td class="num">66.5%</td><td class="num">42.9%</td></tr>
+    </tbody></table></div>
+    <p>Use 5m mainly as a <strong>veto/size modifier</strong>, not as another indicator stack.</p>
+
+    <h3>6.3 Large 1m candles are often retraced</h3>
+    <div class="table-wrap"><table><thead><tr><th>Direction</th><th>Retrace</th><th class="num">5m</th><th class="num">15m</th><th class="num">60m</th><th class="num">24h</th></tr></thead><tbody>
+      <tr><td>Up impulse</td><td>1/3</td><td class="num">69.8%</td><td class="num">80.5%</td><td class="num">89.1%</td><td class="num">96.6%</td></tr>
+      <tr><td>Up impulse</td><td>1/2</td><td class="num">55.0%</td><td class="num">70.7%</td><td class="num">84.5%</td><td class="num">95.3%</td></tr>
+      <tr><td>Down impulse</td><td>1/3</td><td class="num">70.7%</td><td class="num">80.6%</td><td class="num">89.7%</td><td class="num">96.3%</td></tr>
+      <tr><td>Down impulse</td><td>1/2</td><td class="num">57.2%</td><td class="num">71.5%</td><td class="num">84.5%</td><td class="num">94.9%</td></tr>
+    </tbody></table></div>
+    <div class="callout danger"><strong>Important:</strong> p95 adverse continuation before a half-retrace is large: roughly 109–119 bp by H5, 140–159 bp by H15, and 205–246 bp by H60. “Eventually retraced” is not the same as “safe to wait with a large directional excess.”</div>
+
+    <h3>6.4 SOL impulse-retrace lookup</h3>
+    <div class="table-wrap"><table><thead><tr><th>Required favorable move</th><th class="num">H5</th><th class="num">H15</th><th class="num">H60</th><th class="num">H240</th><th class="num">H24h</th></tr></thead><tbody>
+      <tr><td>4 bp</td><td class="num">90.2%</td><td class="num">93.6%</td><td class="num">96.5%</td><td class="num">97.5%</td><td class="num">98.9%</td></tr>
+      <tr><td>8 bp</td><td class="num">81.8%</td><td class="num">88.8%</td><td class="num">94.3%</td><td class="num">96.5%</td><td class="num">98.1%</td></tr>
+      <tr><td>12 bp</td><td class="num">73.5%</td><td class="num">83.4%</td><td class="num">91.7%</td><td class="num">95.2%</td><td class="num">97.5%</td></tr>
+      <tr><td>20 bp</td><td class="num">56.1%</td><td class="num">71.0%</td><td class="num">85.1%</td><td class="num">91.4%</td><td class="num">95.6%</td></tr>
+      <tr><td>30 bp</td><td class="num">39.2%</td><td class="num">59.0%</td><td class="num">77.3%</td><td class="num">86.5%</td><td class="num">93.0%</td></tr>
+      <tr><td>40 bp</td><td class="num">26.2%</td><td class="num">47.7%</td><td class="num">69.6%</td><td class="num">82.2%</td><td class="num">90.8%</td></tr>
+      <tr><td>60 bp</td><td class="num">11.1%</td><td class="num">28.4%</td><td class="num">55.2%</td><td class="num">73.9%</td><td class="num">86.8%</td></tr>
+      <tr><td>100 bp</td><td class="num">2.7%</td><td class="num">10.7%</td><td class="num">34.1%</td><td class="num">58.2%</td><td class="num">78.4%</td></tr>
+    </tbody></table></div>
+    <p>Corresponding p95 adverse excursion: ~110 bp (H5), 157 bp (H15), 282 bp (H60), 489 bp (H240), and 1093 bp (H24h).</p>
+  </section>
+
+  <section id="en-reanchor">
+    <h2>7. Reanchor sizing: tiny targets are expensive</h2>
+    <p>Under the idealized 100× interpretation, +3% ROE is roughly a +3 bp favorable price move.</p>
+    <div class="formula">R = D / M + 3 &nbsp;&nbsp; | &nbsp;&nbsp; M = D / (R − 3) &nbsp;&nbsp; | &nbsp;&nbsp; add multiple = M − 1</div>
+    <div class="table-wrap"><table><thead><tr><th>Old gap D</th><th>Desired move R</th><th class="num">Total book M</th><th class="num">Add multiple</th></tr></thead><tbody>
+      <tr><td>50 bp</td><td>12 bp</td><td class="num">5.56×</td><td class="num">4.56×</td></tr><tr><td>50 bp</td><td>20 bp</td><td class="num">2.94×</td><td class="num">1.94×</td></tr><tr><td>100 bp</td><td>12 bp</td><td class="num">11.11×</td><td class="num">10.11×</td></tr><tr><td>100 bp</td><td>20 bp</td><td class="num">5.88×</td><td class="num">4.88×</td></tr><tr><td>100 bp</td><td>30 bp</td><td class="num">3.70×</td><td class="num">2.70×</td></tr><tr><td>200 bp</td><td>30 bp</td><td class="num">7.41×</td><td class="num">6.41×</td></tr><tr><td>300 bp</td><td>30 bp</td><td class="num">11.12×</td><td class="num">10.12×</td></tr><tr><td>500 bp</td><td>50 bp</td><td class="num">10.67×</td><td class="num">9.67×</td></tr>
+    </tbody></table></div>
+    <ul><li><strong>20–30 bp:</strong> faster rescue, often requires a large add.</li><li><strong>30–50 bp:</strong> smaller add, more waiting.</li><li><strong>50–100 bp:</strong> only when wallet and unattended interval support a longer rescue.</li></ul>
+    <div class="callout"><strong>Main rule:</strong> do not minimize retrace at any cost. Minimize the <strong>add size</strong> that makes the chosen retrace horizon useful without exceeding the risk budget.</div>
+  </section>
+
+  <section id="en-risk">
+    <h2>8. Low-attention risk budget: size by unattended horizon</h2>
+    <div class="formula">loss_fraction ≈ x · a / 10,000</div>
+    <p>Here <code>x</code> is net rescue-excess notional as a multiple of wallet and <code>a</code> is adverse movement in bp.</p>
+    <div class="table-wrap"><table><thead><tr><th>Possible unattended interval</th><th class="num">SOL p95 adverse</th><th class="num">Net excess for ~5% wallet loss</th><th class="num">Net excess for ~10%</th></tr></thead><tbody>
+      <tr><td>5 min</td><td class="num">110 bp</td><td class="num">4.55× wallet</td><td class="num">9.09×</td></tr><tr><td>15 min</td><td class="num">157–160 bp</td><td class="num">~3.1×</td><td class="num">~6.25×</td></tr><tr><td>60 min</td><td class="num">282–285 bp</td><td class="num">~1.75×</td><td class="num">~3.5×</td></tr>
+    </tbody></table></div>
+    <div class="callout warn"><strong>Operating rule:</strong> the longer the phone may be unattended, the smaller permissible rescue excess must be. A 5-minute rescue size is not a sleep size.</div>
+  </section>
+
+  <section>
+    <h2>9. Why occasional phone checks change the optimal strategy</h2>
+    <p>The reentry-to-middle/new-extreme window was short: median 3 minutes, p75 6 minutes, p90 9 minutes.</p>
+    <div class="table-wrap"><table><thead><tr><th>Phone check interval</th><th class="num">Approx. chance of landing in the window</th></tr></thead><tbody>
+      <tr><td>5 min</td><td class="num">61.6%</td></tr><tr><td>10 min</td><td class="num">39.0%</td></tr><tr><td>15 min</td><td class="num">27.0%</td></tr><tr><td>30 min</td><td class="num">13.6%</td></tr><tr><td>60 min</td><td class="num">6.8%</td></tr>
+    </tbody></table></div>
+    <pre>1. Missed setup = NO CHASE.
+2. Act only when a valid setup happens to be visible at the check.
+3. After an add, place the exact excess TP immediately.
+4. A winner floor can remain conditional only if its trigger leaves an acceptable account state.
+5. Sleep state: no rescue excess and no latent order that can create a large naked book.</pre>
+  </section>
+
+  <section id="en-state">
+    <h2>10. Revised state machine</h2>
+    <div class="table-wrap"><table><thead><tr><th>State</th><th>Meaning</th></tr></thead><tbody>
+      <tr><td><span class="state">N0 NEUTRAL_EQUAL_CORE</span></td><td>Equal LONG/SHORT; default NO ACTION.</td></tr><tr><td><span class="state">N1 OBSERVE_DISPLACEMENT</span></td><td>One winner, one loser, still neutral.</td></tr><tr><td><span class="state">N2 WINNER_FLOOR_ARMED</span></td><td>Profitable conditional stop exists; trigger can create directional handoff.</td></tr><tr><td><span class="state">R0 REANCHOR_ARMED</span></td><td>Setup recognized; no add filled yet.</td></tr><tr><td><span class="state">R1 RESCUE_ACTIVE</span></td><td>Loser enlarged; net excess exists; partial TP for exact excess should already be live.</td></tr><tr><td><span class="state">R2 EXCESS_HARVESTED</span></td><td>Excess closes in profit; equal quantities restored.</td></tr><tr><td><span class="state">L0 LOCKED_EQUAL_CORE</span></td><td>Equal cores, different averages, price-independent locked pair PnL.</td></tr><tr><td><span class="state">P0 PAIR_TRIM_OR_RESET</span></td><td>Symmetrically realize locked spread; optionally reset.</td></tr><tr><td><span class="state">D0 DIRECTIONAL_HANDOFF</span></td><td>Winner stop triggered; remaining loser is directional and is not the sleep-safe default.</td></tr>
+    </tbody></table></div>
+    <pre>Preferred low-attention path:
+N0 → N1 → R0 → R1 → R2 → L0 → optional P0 → N0/L0
+
+Optional winner-SL branch:
+N1 → N2 → D0</pre>
+  </section>
+
+  <section id="en-card">
+    <h2>11. Phone-check decision card</h2>
+    <h3>Step 1 — Is the account still equal-core neutral?</h3>
+    <p><strong>YES:</strong> market movement alone has not created new directional pair loss. <strong>NO:</strong> manage the existing excess/directional state first; do not start an unrelated action.</p>
+    <h3>Step 2 — Winner gate</h3>
+    <pre>NO ACTION:
+- only an outer BB touch
+- only a reentry into BB
+- 1m and 5m still strongly support the winner direction
+- a useful stop would sit inside normal noise
+- trigger would leave an oversized naked loser
+
+TIGHTEN / ARM:
+- profit is large enough for a structurally positive stop
+- 1m channel has flattened/turned
+- or completed middle-BB close against winner direction
+- resulting directional exposure is acceptable
+
+Prefer partial winner action or neutral pair trim before full winner-only exit.</pre>
+    <h3>Step 3 — Loser reanchor gate</h3>
+    <pre>NO ACTION:
+- only a BB touch
+- impulse is still accelerating
+- setup window was missed
+- minimum-sufficient add exceeds wallet/horizon cap
+- no new adverse displacement after a prior rescue
+
+ARM, not automatic fill:
+- large completed outside-BB displacement
+- fresh local extreme / stall / reversal structure is visible
+- 1m + 5m do not demand a full-size continuation veto
+- candidate size is mathematically useful and wallet-feasible
+
+ON FILL:
+- immediately recompute aggregate average
+- immediately place partial TP for the exact excess
+- target by explicit price, not stale pre-add ROE
+- add again only after new adverse displacement + new event</pre>
+    <div class="callout good"><strong>Step 4:</strong> if neither gate clearly passes → <strong>DO NOTHING.</strong></div>
+  </section>
+
+  <section id="en-boundary">
+    <h2>12. Main conclusion and evidence boundary</h2>
+    <p class="lead">The best current interpretation is not an active BB scalping system. It is a <strong>low-frequency neutral-lock system</strong>.</p>
+    <pre>small equal core buys time and reduces the need to predict direction
++
+BB identifies rare displacement opportunities
++
+loser reanchor converts part of displacement into a locked average spread
++
+excess TP restores equal quantity
++
+symmetric pair trim/reset realizes profit without choosing direction
++
+winner-only SL remains an optional directional overlay
++
+NO ACTION dominates most phone checks</pre>
+    <p>The research supports the individual mechanisms, but does not yet prove that the full manual policy is live-profitable or optimal for a specific wallet. The next synthesis layer is the wallet/core/excess matrix from $100 through $250k+ and concrete scenario cards.</p>
+    <p class="muted">Basis: BD BB Reanchor Lock, BD BB Hybrid Dual-Book, Q1s-DETS, BD Trading Arenas, and fresh BB-only SOLUSDT 1m analysis, 2026-01-01 → 2026-06-14.</p>
+  </section>
+</article>
+
+<div class="footer">Standalone HTML · no external libraries · language/font preferences are stored locally in the browser</div>
+</main>
+<script>
+(function(){
+  const root=document.documentElement, sl=document.getElementById('sl'), en=document.getElementById('en');
+  const slBtn=document.getElementById('slBtn'), enBtn=document.getElementById('enBtn');
+  const minusBtn=document.getElementById('minusBtn'), plusBtn=document.getElementById('plusBtn'), resetBtn=document.getElementById('resetBtn');
+  const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  let size=parseInt(store.get('bdNeutralFont')||'17',10); if(!Number.isFinite(size)) size=17;
+  size=Math.min(24,Math.max(13,size)); root.style.setProperty('--base-font',size+'px');
+  function setLang(lang){
+    const isSl=lang!=='en'; sl.classList.toggle('active',isSl); en.classList.toggle('active',!isSl);
+    slBtn.classList.toggle('active',isSl); enBtn.classList.toggle('active',!isSl);
+    document.documentElement.lang=isSl?'sl':'en'; store.set('bdNeutralLang',isSl?'sl':'en');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function setSize(n){size=Math.min(24,Math.max(13,n));root.style.setProperty('--base-font',size+'px');store.set('bdNeutralFont',String(size));}
+  slBtn.addEventListener('click',()=>setLang('sl')); enBtn.addEventListener('click',()=>setLang('en'));
+  minusBtn.addEventListener('click',()=>setSize(size-1)); plusBtn.addEventListener('click',()=>setSize(size+1)); resetBtn.addEventListener('click',()=>setSize(17));
+  const saved=store.get('bdNeutralLang'); if(saved==='en') setLang('en');
+})();
+</script>
+</body>
+</html>
