@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AI8 Sudoku R6: multi-representation specialist ecology, proof compression, Proof Atlas, Geometric Path-MDL, MDL economics and DCC allocation.">
+<title>AI8 Sudoku R6 — Multi-Representation Research Architecture</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2303060d'/%3E%3Cpath d='M7 9h18M7 16h18M7 23h18M9 7v18M16 7v18M23 7v18' stroke='%2300e5ff' stroke-width='1.2' opacity='.8'/%3E%3Ccircle cx='23' cy='9' r='2.2' fill='%23f59e0b'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#03060d; --bg2:#07101c; --surface:rgba(12,23,39,.82); --surface2:#0d1a2c;
+  --text:#e7eef9; --muted:#8494ad; --cyan:#00e5ff; --green:#34d399; --gold:#f59e0b;
+  --violet:#a78bfa; --rose:#fb7185; --line:rgba(0,229,255,.14); --line2:rgba(0,229,255,.25);
+  --cyanDim:rgba(0,229,255,.09); --greenDim:rgba(52,211,153,.09); --goldDim:rgba(245,158,11,.10);
+  --violetDim:rgba(167,139,250,.09); --roseDim:rgba(251,113,133,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--text); background:
+  radial-gradient(circle at 12% 12%,rgba(52,211,153,.12),transparent 29%),
+  radial-gradient(circle at 88% 18%,rgba(0,229,255,.10),transparent 24%),
+  radial-gradient(circle at 65% 78%,rgba(167,139,250,.08),transparent 25%),
+  linear-gradient(180deg,#05080f 0%,#03060d 64%,#020409 100%);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+body:before{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.035;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:42px 42px; mask-image:linear-gradient(to bottom,black,transparent 85%);
+}
+a{color:inherit}
+.topbar{
+  position:sticky; top:0; z-index:50; backdrop-filter:blur(16px);
+  background:rgba(3,6,13,.78); border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1180px; margin:auto; padding:11px 22px; display:flex; align-items:center; justify-content:space-between; gap:20px;
+}
+.brand{font:700 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.18em; color:var(--cyan); text-transform:uppercase}
+.brand span{color:var(--gold)}
+.nav{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+.nav a{font:600 .67rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted); text-decoration:none; letter-spacing:.08em}
+.nav a:hover{color:var(--cyan)}
+.hero{max-width:1180px; margin:auto; padding:88px 22px 54px; position:relative}
+.kicker{font:700 .72rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.22em; color:var(--green); text-transform:uppercase}
+h1{font-size:clamp(2.6rem,7vw,6rem); line-height:.95; letter-spacing:-.055em; margin:16px 0 20px; max-width:1000px}
+h1 .accent{color:var(--cyan)}
+.lead{max-width:860px; font-size:clamp(1.08rem,2.1vw,1.45rem); color:#bac8dc; line-height:1.55}
+.hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:30px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px; text-decoration:none; border:1px solid var(--line2);
+  border-radius:9px; padding:11px 15px; background:rgba(7,16,28,.74);
+  font:700 .76rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.05em;
+}
+.btn.primary{border-color:rgba(0,229,255,.45); color:var(--cyan); box-shadow:0 0 28px rgba(0,229,255,.07)}
+.btn:hover{transform:translateY(-1px); background:rgba(13,26,44,.92)}
+.status-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:34px}
+.pill{
+  border:1px solid var(--line); border-radius:999px; padding:6px 10px;
+  font:600 .67rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted);
+  background:rgba(8,16,28,.62)
+}
+.pill strong{color:var(--text)}
+main{max-width:1180px; margin:auto; padding:0 22px 90px}
+.section{padding:58px 0; border-top:1px solid rgba(0,229,255,.09)}
+.eyebrow{font:700 .65rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.20em; color:var(--cyan); text-transform:uppercase}
+h2{font-size:clamp(1.8rem,4vw,3.3rem); letter-spacing:-.035em; line-height:1.05; margin:10px 0 14px}
+h3{margin:0 0 8px; font-size:1.05rem}
+.section-intro{max-width:820px; color:#aebdd2; font-size:1.04rem}
+.grid{display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:26px}
+.card{
+  grid-column:span 4; border:1px solid var(--line); border-radius:13px; padding:20px;
+  background:linear-gradient(180deg,rgba(14,28,47,.79),rgba(7,15,27,.79));
+  box-shadow:0 12px 32px rgba(0,0,0,.16);
+}
+.card.wide{grid-column:span 6}
+.card.full{grid-column:1/-1}
+.card .tag{font:700 .61rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.12em; color:var(--muted); text-transform:uppercase}
+.card p{color:#a9b9cf; margin:9px 0 0; font-size:.93rem}
+.card.cyan{border-color:rgba(0,229,255,.24)}
+.card.green{border-color:rgba(52,211,153,.22)}
+.card.gold{border-color:rgba(245,158,11,.23)}
+.card.violet{border-color:rgba(167,139,250,.23)}
+.card.rose{border-color:rgba(251,113,133,.20)}
+.flow{
+  margin-top:28px; display:grid; gap:9px; grid-template-columns:repeat(7,1fr); align-items:stretch;
+}
+.flow .node{
+  min-height:92px; padding:13px 11px; border:1px solid var(--line); border-radius:10px;
+  background:rgba(8,18,31,.76); display:flex; flex-direction:column; justify-content:center;
+}
+.flow .node b{font-size:.82rem; color:var(--cyan)}
+.flow .node small{color:var(--muted); line-height:1.35; margin-top:5px}
+.flow .arrow{display:none}
+.metric-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:26px}
+.metric{padding:18px; border-radius:11px; background:rgba(7,16,28,.72); border:1px solid var(--line)}
+.metric strong{display:block; font-size:1.65rem; letter-spacing:-.04em; color:var(--gold)}
+.metric span{color:var(--muted); font-size:.83rem}
+.pathbox{
+  margin-top:26px; border:1px solid rgba(167,139,250,.25); border-radius:14px;
+  background:linear-gradient(135deg,rgba(167,139,250,.08),rgba(0,229,255,.04)); overflow:hidden;
+}
+.path-head{padding:20px 20px 8px}
+.path-head code{color:var(--violet); font-size:.82rem}
+.path-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:12px 20px 22px}
+.path-step{border:1px solid rgba(167,139,250,.18); border-radius:10px; padding:14px; background:rgba(7,12,24,.72)}
+.path-step b{display:block; color:#d7ccff; font-size:.85rem}
+.path-step span{color:var(--muted); font-size:.79rem}
+.equation{
+  font:600 .84rem/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; color:#c8d6e8;
+  background:#030812; border:1px solid var(--line); padding:14px 16px; border-radius:9px; overflow:auto;
+}
+.build{counter-reset:stage; display:grid; gap:10px; margin-top:24px}
+.stage{
+  display:grid; grid-template-columns:62px 1fr; gap:14px; padding:15px; border:1px solid var(--line);
+  border-radius:10px; background:rgba(7,15,27,.65)
+}
+.stage .s{font:800 .82rem/1 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--green); padding-top:3px}
+.stage p{margin:3px 0 0; color:#a6b7cd; font-size:.9rem}
+.quote{
+  margin-top:26px; border-left:3px solid var(--gold); padding:18px 22px;
+  background:linear-gradient(90deg,rgba(245,158,11,.08),transparent);
+  font-size:1.18rem; color:#d6dfec
+}
+.note{color:var(--muted); font-size:.83rem}
+footer{border-top:1px solid var(--line); padding:28px 22px 42px; color:var(--muted)}
+.footer-inner{max-width:1180px; margin:auto; display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap}
+.footer-inner a{color:var(--cyan); text-decoration:none}
+@media(max-width:900px){
+  .card,.card.wide{grid-column:span 6}
+  .flow{grid-template-columns:repeat(2,1fr)}
+  .metric-strip{grid-template-columns:repeat(2,1fr)}
+  .path-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:620px){
+  .topbar-inner{align-items:flex-start; flex-direction:column}
+  .nav{gap:11px}
+  .hero{padding-top:60px}
+  .card,.card.wide{grid-column:1/-1}
+  .flow{grid-template-columns:1fr}
+  .metric-strip,.path-grid{grid-template-columns:1fr}
+  .stage{grid-template-columns:48px 1fr}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">AI8 <span>Sudoku</span> · R6</div>
+    <nav class="nav" aria-label="Primary">
+      <a href="/BD/8zSudoku.html">8zSudoku</a>
+      <a href="AI8_Architecture.html">AI8 Architecture</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#path">Path-MDL</a>
+      <a href="#build">Build order</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="kicker">Pre-builder research architecture · v1.3 · September 2026</div>
+  <h1>Sudoku R6: <span class="accent">change the representation,</span><br>not just the solver.</h1>
+  <p class="lead">
+    The next AI8 Sudoku arena expands the search space from “which solver should run?” to
+    “which representation, specialist, proof language and allocation policy is worth using now?”
+    The aim is not complexity for its own sake. It is to discover representations that make useful
+    structure cheaper to recognize, verify and reuse.
+  </p>
+  <div class="hero-actions">
+    <a class="btn primary" href="/BD/8zSudoku.html">Open current 8zSudoku ↗</a>
+    <a class="btn" href="#architecture">Explore R6 architecture ↓</a>
+  </div>
+  <div class="status-row">
+    <div class="pill"><strong>Status:</strong> research basis, not a delivered R6 arena</div>
+    <div class="pill"><strong>Truth:</strong> independent checker stays authoritative</div>
+    <div class="pill"><strong>Destination:</strong> one standalone 8zSudoku.html</div>
+  </div>
+</section>
+
+<main>
+<section class="section" id="why">
+  <div class="eyebrow">Why R6 exists</div>
+  <h2>Give the governor something qualitatively different to govern.</h2>
+  <p class="section-intro">
+    Earlier Sudoku generations showed an important split: strong classical leaves can still beat a more
+    elaborate combined system, while some DCC portfolio-allocation contrasts remain positive. R6 takes that
+    result constructively. Instead of stacking more meta-control over nearly identical actions, it deliberately
+    creates a richer ecology of representations and specialists.
+  </p>
+  <div class="grid">
+    <article class="card cyan"><div class="tag">Representation</div><h3>Multi-Representation Ecology</h3><p>Evaluate method × representation × scale × state regime, not a single scalar leaderboard.</p></article>
+    <article class="card green"><div class="tag">Compression</div><h3>Proof Codec</h3><p>MDL is attached to an actually encoded proof or choice stream with a decoder and verification cost.</p></article>
+    <article class="card violet"><div class="tag">Memory</div><h3>Proof Atlas</h3><p>Convert expensive verified discovery into a compact macro plus a cheap matcher that can be reused later.</p></article>
+    <article class="card gold"><div class="tag">Control</div><h3>DCC Representation Governor</h3><p>Choose whether to continue, switch view, change scale, fund a specialist, or do nothing beyond baseline work.</p></article>
+    <article class="card rose"><div class="tag">Product</div><h3>Game Review</h3><p>Evaluate actual player actions using verifiable explanations and a frozen reference proof language.</p></article>
+    <article class="card"><div class="tag">Distillation</div><h3>Standalone destination</h3><p>The Python arena may be large; only mechanisms that earn their cost return to the final single-file HTML product.</p></article>
+  </div>
+</section>
+
+<section class="section" id="architecture">
+  <div class="eyebrow">Core loop</div>
+  <h2>Fund first. Then let the specialist work.</h2>
+  <p class="section-intro">
+    R6 explicitly charges representation construction, feature extraction, failed proposals, checking,
+    learning and persistence. Views are not built for free before selection.
+  </p>
+  <div class="flow" aria-label="R6 architecture flow">
+    <div class="node"><b>Verified State</b><small>givens, domains, committed history</small></div>
+    <div class="node"><b>8z Forge</b><small>view/work descriptors, Atlas entries</small></div>
+    <div class="node"><b>MDL</b><small>model + proof + library economics</small></div>
+    <div class="node"><b>DCC / control</b><small>continue, switch, scale, budget</small></div>
+    <div class="node"><b>X specialist</b><small>paid execution or continuation</small></div>
+    <div class="node"><b>Checker</b><small>verified effect or explicit no-effect/limit</small></div>
+    <div class="node"><b>Atlas / Product</b><small>experience, generator, review, distillation</small></div>
+  </div>
+  <div class="quote">“Rank, Don’t Eliminate”: a weak method in one representation can become a strong specialist when a new lens creates the right niche.</div>
+</section>
+
+<section class="section">
+  <div class="eyebrow">First specialist families</div>
+  <h2>Three mathematical lenses, plus exact and external anchors.</h2>
+  <div class="grid">
+    <article class="card wide green">
+      <div class="tag">A · algebra</div><h3>AIS / Digit Balance</h3>
+      <p>Compile bounded count and linear relations into exact certificates, then distil recurring relations into Atlas matchers.</p>
+    </article>
+    <article class="card wide cyan">
+      <div class="tag">B · 729-space</div><h3>CubeLift</h3>
+      <p>Lift Sudoku into a 9×9×9 candidate cube with cell, row–digit, column–digit and box–digit projections.</p>
+    </article>
+    <article class="card wide violet">
+      <div class="tag">C · geometry</div><h3>Geometric Path-MDL</h3>
+      <p>Use exact single-digit path structure, PATH_DAG queries, joint GLOBAL9 models and paid branch-ranking experiments.</p>
+    </article>
+    <article class="card wide gold">
+      <div class="tag">Anchors</div><h3>DLX + certified SAT/CDCL</h3>
+      <p>Keep canonical exact-cover and proof-producing SAT references in the arena so raw speed and refutation claims face strong external-style baselines.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="path">
+  <div class="eyebrow">Digit-Path research</div>
+  <h2>From a visual seed to exact objects and falsifiable tests.</h2>
+  <p class="section-intro">
+    Connecting equal digits across rows first looked like a picture. R6 turns that picture into a concrete
+    family of representations with explicit codecs, exact queries and causal branch-ordering tests.
+  </p>
+  <div class="metric-strip">
+    <div class="metric"><strong>46,656</strong><span>valid single-digit patterns</span></div>
+    <div class="metric"><strong>6⁶</strong><span>PATH6 factorization into six S₃ choices</span></div>
+    <div class="metric"><strong>9</strong><span>coupled digit paths in GLOBAL9</span></div>
+    <div class="metric"><strong>T0→T3</strong><span>correctness → diagnostic → prediction → causal search</span></div>
+  </div>
+  <div class="pathbox">
+    <div class="path-head">
+      <code>Pattern → Path → Exact queries → Joint codec → Predictive signal → Causal search</code>
+    </div>
+    <div class="path-grid">
+      <div class="path-step"><b>PATH6</b><span>Exact bijection for the 46,656 single-digit pattern space. A fixed 16-bit index is a codec, not yet a ranker.</span></div>
+      <div class="path-step"><b>PATH_DAG</b><span>Count feasible paths and cell support without enumerating every full pattern when a dynamic program can answer the query directly.</span></div>
+      <div class="path-step"><b>PATH_COVER</b><span>Compose compatible digit patterns as a macro exact-cover view; distinguish exact compatibility from geometric scoring.</span></div>
+      <div class="path-step"><b>GLOBAL9</b><span>Model all nine paths jointly. It can be tested even if single-digit PATH6 has no useful marginal signal.</span></div>
+    </div>
+  </div>
+  <p class="equation">G_coupling = L_independent(Y | D) − L_joint(Y | D), with model/codebook/library/framing costs charged on both sides.</p>
+  <p class="note">Shorter path description is not a truth rule. It becomes useful only if it predicts or causally improves verified search under matched cost and information.</p>
+</section>
+
+<section class="section">
+  <div class="eyebrow">Proof economy</div>
+  <h2>Discovery only matters if it becomes cheaper next time.</h2>
+  <div class="grid">
+    <article class="card cyan">
+      <div class="tag">Proof codec</div><h3>Bits with a decoder</h3>
+      <p>Reference proof bits are meaningful only inside a frozen proof language and codebook. Runtime, library cost and decoder work remain visible.</p>
+    </article>
+    <article class="card green">
+      <div class="tag">Atlas</div><h3>Matcher cost matters</h3>
+      <p>A beautiful macro that is expensive to recognize may compress storage without reducing solving work. R6 measures both.</p>
+    </article>
+    <article class="card violet">
+      <div class="tag">Symmetry</div><h3>Canonical schemas</h3>
+      <p>Atlas entries are canonicalized across declared Sudoku symmetries so the library does not fill with equivalent positional copies.</p>
+    </article>
+    <article class="card gold">
+      <div class="tag">Negative knowledge</div><h3>Nogoods + Negative Atlas</h3>
+      <p>Store verified forbidden combinations separately from completed “nothing found” scans; both retain exact scope and dependency conditions.</p>
+    </article>
+    <article class="card rose">
+      <div class="tag">Forge economics</div><h3>Search for views is not free</h3>
+      <p>Representation/program search, compilation, canonicalization, failed candidates and maintenance are included in the system account.</p>
+    </article>
+    <article class="card">
+      <div class="tag">Marginal value</div><h3>Who survives distillation?</h3>
+      <p>Measure value with ablation and replacement-aware contribution, not just isolated leaderboard rank or editorial enthusiasm.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="build">
+  <div class="eyebrow">Recommended build order</div>
+  <h2>S0 → S8: grow the laboratory without losing the product.</h2>
+  <div class="build">
+    <div class="stage"><div class="s">S0</div><div><h3>Bind the base and measurement ledger</h3><p>Preserve checker authority, cost accounting, exposure boundaries and reproducible identities.</p></div></div>
+    <div class="stage"><div class="s">S1</div><div><h3>Actual proof / choice codec</h3><p>Encoder, decoder, replay and independent checking before proof bits become a research currency.</p></div></div>
+    <div class="stage"><div class="s">S2</div><div><h3>Atlas vertical slice + safe constraints</h3><p>One real macro/matcher path, symmetry contract, nogood representation and negative-cache rules.</p></div></div>
+    <div class="stage"><div class="s">S3</div><div><h3>Executable mechanisms + anchors</h3><p>AIS, CubeLift, Geometric Path-MDL, plus DLX and certified SAT/CDCL references.</p></div></div>
+    <div class="stage"><div class="s">S4</div><div><h3>Representation selection</h3><p>Compare fixed, structural, bandit, MDL-only, DCC-only and combined control over the same capability menu.</p></div></div>
+    <div class="stage"><div class="s">S5</div><div><h3>One pattern through the product</h3><p>Generator → solve → proof → Atlas → Game Review → next practice, end to end.</p></div></div>
+    <div class="stage"><div class="s">S6</div><div><h3>Broader screening + interaction pairs</h3><p>Echo, magnetic, gravity, negative-space and retained archive ideas under bounded budgets.</p></div></div>
+    <div class="stage"><div class="s">S7</div><div><h3>Persistent transfer + marginal contribution</h3><p>Measure whether expensive discovery leaves cheaper future capability and which specialists truly add portfolio value.</p></div></div>
+    <div class="stage"><div class="s">S8</div><div><h3>Dependency-closed HTML distillation</h3><p>Only mechanisms with verified parity, product value and justified size/runtime cost enter the final single-file browser product.</p></div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="eyebrow">Product destination</div>
+  <h2>The final product is not the arena.</h2>
+  <p class="section-intro">
+    R6 is allowed to be large because its job is to discover, falsify and compare. The endpoint remains deliberately small:
+    one self-contained browser file that can generate unique puzzles, solve, explain, review a player’s actual moves,
+    maintain a local learning profile and choose the next useful exercise.
+  </p>
+  <div class="grid">
+    <article class="card wide green"><div class="tag">Player mode</div><h3>Quiet by default</h3><p>The grid stays central. Proof and research machinery surface only when the player asks for help or review.</p></article>
+    <article class="card wide violet"><div class="tag">Laboratory mode</div><h3>Inspectable when needed</h3><p>Expose proof bits, work units, representations, DCC decisions and replay for research and advanced users.</p></article>
+  </div>
+</section>
+
+<section class="section">
+  <div class="eyebrow">Evidence posture</div>
+  <h2>Creative ideas become claims only after matched tests.</h2>
+  <p class="section-intro">
+    The v1.3 master synthesis contains verified mathematical checks for parts of PATH6 and related accounting,
+    but it does not claim that R6 already wins as a solver. Editorial scores are historical priorities; after data arrive,
+    empirical cards replace them.
+  </p>
+  <div class="grid">
+    <article class="card"><h3>No magical score</h3><p>Bits, WU, CPU, solved rate, proof coverage and human learning are different quantities. They are not merged post hoc.</p></article>
+    <article class="card"><h3>Strong baselines</h3><p>Best classical leaf, restarts, DLX, ordinary adaptive control, contextual bandits and matched shams remain part of the contract.</p></article>
+    <article class="card"><h3>10% has a denominator</h3><p>Any “10% better” claim must name the task profile, comparator, quality gate, total account and uncertainty rule beforehand.</p></article>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>AI8 Sudoku R6 · BD × AI · research architecture v1.3</div>
+    <div><a href="/BD/8zSudoku.html">8zSudoku</a> · <a href="AI8_Architecture.html">AI8 Architecture</a> · <a href="/BD/">BD Lab</a></div>
+  </div>
+</footer>
+</body>
+</html>

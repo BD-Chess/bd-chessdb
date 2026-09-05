@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#05070d">
+<title>8z–MDL×DCC — Cross-Domain Search, Description & Control | BD × AI Lab</title>
+<meta name="description" content="8z–MDL×DCC is BD × AI Lab's cross-domain research architecture for generating representations and procedures, measuring their description economics, allocating compute adaptively, verifying domain outcomes, and turning expensive discoveries into reusable capability.">
+<meta name="author" content="BD × AI Lab">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<link rel="canonical" href="https://www.mdlxdcc.org/crp/8z_MDLxDCC.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="8z–MDL×DCC — Search better before searching longer.">
+<meta property="og:description" content="Representations, MDL economics, adaptive control, specialist ecologies, Proof Atlas and executable evidence across TSP, compression, Sudoku, chess, coding and AI8.">
+<meta property="og:url" content="https://www.mdlxdcc.org/crp/8z_MDLxDCC.html">
+<style>
+:root{
+  --bg:#05070d;--bg2:#080b14;--panel:#0d1525;--panel2:#101b30;
+  --line:rgba(148,163,184,.20);--line2:rgba(34,211,238,.30);
+  --text:#e8eff9;--soft:#c7d1e0;--muted:#8fa0b9;--dim:#64748b;
+  --cyan:#22d3ee;--blue:#60a5fa;--violet:#a78bfa;--green:#34d399;
+  --gold:#f59e0b;--rose:#fb7185;--orange:#fb923c;
+  --cyan-d:rgba(34,211,238,.10);--blue-d:rgba(96,165,250,.10);
+  --violet-d:rgba(167,139,250,.10);--green-d:rgba(52,211,153,.10);
+  --gold-d:rgba(245,158,11,.10);--rose-d:rgba(251,113,133,.10);
+  --shadow:0 24px 80px rgba(0,0,0,.34);--r:20px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:Inter,"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.67;background:
+  radial-gradient(circle at 12% 4%,rgba(34,211,238,.13),transparent 30rem),
+  radial-gradient(circle at 91% 11%,rgba(167,139,250,.13),transparent 34rem),
+  radial-gradient(circle at 52% 48%,rgba(52,211,153,.035),transparent 45rem),
+  linear-gradient(180deg,var(--bg),var(--bg2) 46%,#04060b);overflow-x:hidden}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitchTiles'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{width:min(1120px,calc(100% - 34px));margin-inline:auto}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--cyan),var(--blue),var(--violet),var(--green));z-index:1000}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(5,7,13,.88);border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}
+.topbar .wrap{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font:700 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);white-space:nowrap}
+.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.nav a{font:600 11px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.022)}
+.nav a:hover{color:#fff;border-color:rgba(34,211,238,.5);text-decoration:none}
+.hero{padding:88px 0 56px;border-bottom:1px solid var(--line)}
+.eyebrow{font:700 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:18px}
+.hero h1{font-size:clamp(50px,8.4vw,94px);line-height:.92;letter-spacing:-.07em;margin:0;max-width:1040px}
+.hero h1 .grad{display:block;background:linear-gradient(100deg,var(--cyan),var(--blue) 44%,var(--violet) 74%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(19px,2.2vw,25px);line-height:1.55;color:var(--soft);max-width:940px;margin:25px 0 0}
+.thesis{margin:29px 0 0;padding:18px 20px;border:1px solid rgba(34,211,238,.28);border-left:3px solid var(--cyan);border-radius:14px;background:linear-gradient(90deg,rgba(34,211,238,.07),rgba(167,139,250,.035));font-size:18px}
+.thesis strong{color:#fff}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025);font:700 11px/1.2 var(--mono);color:var(--text);cursor:pointer}
+.btn:hover{text-decoration:none;transform:translateY(-1px);border-color:rgba(34,211,238,.5)}
+.btn.primary{background:linear-gradient(135deg,rgba(34,211,238,.14),rgba(96,165,250,.10));border-color:rgba(34,211,238,.36)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}
+.chip{font:700 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:rgba(255,255,255,.02);color:var(--muted)}
+.chip.pass{color:var(--green);border-color:rgba(52,211,153,.32);background:var(--green-d)}
+.chip.open{color:var(--gold);border-color:rgba(245,158,11,.32);background:var(--gold-d)}
+.chip.info{color:var(--blue);border-color:rgba(96,165,250,.30);background:var(--blue-d)}
+main section{padding:56px 0;border-bottom:1px solid rgba(148,163,184,.12)}
+.section-tag{font:700 10px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--violet);margin-bottom:10px}
+h2{font-size:clamp(31px,4vw,48px);letter-spacing:-.047em;line-height:1.05;margin:0 0 16px}
+h3{font-size:20px;margin:0 0 8px;letter-spacing:-.02em}
+p{color:var(--muted);margin:0 0 15px}
+.intro{font-size:18px;color:var(--soft);max-width:900px}
+.mono{font-family:var(--mono)}
+code{font-family:var(--mono);font-size:.9em;color:#dbeafe;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.15);padding:1px 5px;border-radius:6px}
+.flow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:31px 0 10px}
+.node{position:relative;border:1px solid var(--line);background:rgba(13,21,37,.9);border-radius:14px;padding:16px 12px;min-height:138px}
+.node:not(:last-child):after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);z-index:2;color:var(--dim);font-weight:800}
+.node .n{font:800 10px/1 var(--mono);color:var(--cyan);letter-spacing:.1em;margin-bottom:8px}
+.node strong{display:block;font-size:15px;margin-bottom:6px}
+.node span{font-size:12.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{border:1px solid var(--line);border-radius:var(--r);padding:20px;background:linear-gradient(180deg,rgba(16,27,48,.86),rgba(9,15,28,.84));box-shadow:var(--shadow)}
+.card p{margin:0}.card .kicker{font:700 10px/1 var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.kicker.cyan{color:var(--cyan)}.kicker.blue{color:var(--blue)}.kicker.violet{color:var(--violet)}.kicker.green{color:var(--green)}.kicker.gold{color:var(--gold)}.kicker.rose{color:var(--rose)}
+.callout{margin:22px 0;padding:19px 20px;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:14px;background:rgba(96,165,250,.055)}
+.callout.green{border-left-color:var(--green);background:var(--green-d)}
+.callout.gold{border-left-color:var(--gold);background:var(--gold-d)}
+.callout.rose{border-left-color:var(--rose);background:var(--rose-d)}
+.callout.violet{border-left-color:var(--violet);background:var(--violet-d)}
+.callout .ct{font:800 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;color:var(--blue)}
+.callout.green .ct{color:var(--green)}.callout.gold .ct{color:var(--gold)}.callout.rose .ct{color:var(--rose)}.callout.violet .ct{color:var(--violet)}
+.callout p:last-child{margin-bottom:0}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
+.metric{border:1px solid var(--line);border-radius:16px;padding:17px;background:rgba(255,255,255,.018)}
+.metric .label{font:700 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.metric .value{font-size:28px;letter-spacing:-.04em;font-weight:800;margin-top:8px}
+.metric .sub{font-size:12px;color:var(--dim);margin-top:4px}
+.pos{color:var(--green)}.warn{color:var(--gold)}.neg{color:var(--rose)}.info{color:var(--blue)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px;margin-top:24px;background:rgba(13,21,37,.65)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.12);text-align:left;vertical-align:top}
+th{font:800 10px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--gold);background:rgba(255,255,255,.024)}
+td{color:var(--muted);font-size:14px}td strong{color:var(--text)}
+.s-pass{color:var(--green);font-family:var(--mono);font-weight:800}.s-open{color:var(--gold);font-family:var(--mono);font-weight:800}.s-no{color:var(--rose);font-family:var(--mono);font-weight:800}.s-info{color:var(--blue);font-family:var(--mono);font-weight:800}
+.eq{margin:22px 0;border:1px solid rgba(167,139,250,.24);border-radius:16px;background:rgba(167,139,250,.055);padding:18px 20px;font:700 clamp(15px,2vw,19px)/1.55 var(--mono);color:#ddd6fe;overflow:auto}
+.r6flow{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:26px}
+.r6box{border:1px solid var(--line);border-radius:16px;background:rgba(13,21,37,.75);padding:16px;min-height:145px}
+.r6box .tag{font:800 9px/1 var(--mono);letter-spacing:.12em;color:var(--violet);text-transform:uppercase;margin-bottom:9px}
+.r6box b{display:block;margin-bottom:5px}.r6box span{font-size:13px;color:var(--muted)}
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+.rel{display:block;border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(13,21,37,.72)}
+.rel:hover{border-color:rgba(34,211,238,.35);text-decoration:none}
+.rel b{display:block;color:#fff;margin-bottom:6px}.rel span{display:block;color:var(--muted);font-size:13px}
+footer{padding:34px 0 78px;color:var(--dim);font-size:13px}.footgrid{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}.footgrid .mono{font-size:11px}
+@media(max-width:1020px){.flow{grid-template-columns:repeat(4,1fr)}.node:nth-child(4):after{display:none}.grid.four,.metric-grid{grid-template-columns:repeat(2,1fr)}.r6flow{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.grid,.grid.two{grid-template-columns:1fr 1fr}.related{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.topbar .wrap{display:block;padding:12px 0}.nav{justify-content:flex-start;margin-top:10px}.hero{padding-top:58px}.grid,.grid.two,.grid.four,.metric-grid,.related,.r6flow{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.node:not(:last-child):after{content:"↓";right:auto;left:50%;top:auto;bottom:-17px;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="topbar"><div class="wrap">
+  <a class="brand" href="../">BD × AI Lab · 8z–MDL×DCC</a>
+  <nav class="nav" aria-label="Related research">
+    <a href="index.html">CRP</a>
+    <a href="MDLxDCC.html">MDL×DCC Overview</a>
+    <a href="MDLxDCC-Arenas.html">Arenas</a>
+    <a href="8zCoding.html">8zCoding</a>
+    <a href="AI8_Architecture.html">AI8 Architecture</a>
+    <a href="../BD/BD_8Z_ssMDL_DCC.html">ssMDL×DCC</a>
+  </nav>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Cross-domain research architecture · technical gateway</div>
+  <h1>8z–MDL×DCC<span class="grad">Search better before searching longer.</span></h1>
+  <p class="lead">A research architecture for generating representations and procedures, measuring what they cost to describe and use, allocating compute adaptively, verifying domain outcomes, and turning expensive discoveries into reusable capability.</p>
+  <div class="thesis"><strong>The central hypothesis:</strong> useful structure is not only in the final answer. It can also live in the representation, the search trajectory, the proof, the specialist ecology and the way compute is allocated. The goal is not to force one algorithm to win everywhere — it is to discover which transferable mechanisms create measurable value across different domains.</div>
+  <div class="chips">
+    <span class="chip pass">Working artifacts · multiple domains</span>
+    <span class="chip info">Cross-domain mechanism · under test</span>
+    <span class="chip open">R6 multi-representation · research direction</span>
+    <span class="chip info">AI8 first research instrument · hypothesis</span>
+  </div>
+  <div class="hero-actions">
+    <a class="btn primary" href="#architecture">Architecture →</a>
+    <a class="btn" href="#evidence">Measured evidence</a>
+    <a class="btn" href="#r6">R6 next direction</a>
+    <a class="btn" href="8z_MDLxDCC_TEHNICNA_MONOGRAFIJA_v1_5_20260905.md">Technical monograph · v1.5</a>
+  </div>
+</div></header>
+
+<main>
+<section id="architecture"><div class="wrap">
+  <div class="section-tag">01 · Architecture</div>
+  <h2>Generate possibilities. Price them. Govern work. Verify reality.</h2>
+  <p class="intro">8z–MDL×DCC is best understood as an open architecture rather than a sacred three-module recipe. The current triad gives three different jobs; domain specialists and future mechanisms may be added, replaced or demoted when evidence says they should be.</p>
+
+  <div class="flow" role="img" aria-label="8z to MDL to DCC to specialist to checker to atlas to next decision">
+    <div class="node"><div class="n">01 · 8z</div><strong>Representation Forge</strong><span>Create candidate views, operators, programs, models or decompositions.</span></div>
+    <div class="node"><div class="n">02 · MDL</div><strong>Description Economics</strong><span>Charge model, residual, proof, library, framing and side information honestly.</span></div>
+    <div class="node"><div class="n">03 · DCC</div><strong>Adaptive Allocation</strong><span>Continue, switch, scale, reopen, abstain or fund a specialist under one budget.</span></div>
+    <div class="node"><div class="n">04 · X</div><strong>Domain Specialist</strong><span>Execute real work: search, compress, prove, generate, code or analyze.</span></div>
+    <div class="node"><div class="n">05 · TRUTH</div><strong>Independent Checker</strong><span>Domain correctness remains outside the governor's authority.</span></div>
+    <div class="node"><div class="n">06 · MEMORY</div><strong>Atlas / Experience</strong><span>Preserve verified outcomes, costs, detectors, failures and reopening conditions.</span></div>
+    <div class="node"><div class="n">07 · LOOP</div><strong>Next Decision</strong><span>Cheap reuse when possible; expensive discovery only when it earns the cost.</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">8z</div><h3>Expand the language of search</h3><p>The strongest version of 8z is not “compression everywhere.” It is the deliberate creation and recombination of candidate representations, views, operators and programs.</p></div>
+    <div class="card"><div class="kicker violet">MDL</div><h3>Make explanations pay rent</h3><p>A short label is not a short model if its decoder, library or hidden table is free. MDL is useful only when the encoded object and side information are explicit.</p></div>
+    <div class="card"><div class="kicker green">DCC</div><h3>Intervene only when useful</h3><p>A controller is valuable only when its signal changes a decision and the changed trajectory repays sensing and control overhead. “Do nothing” must remain an allowed action.</p></div>
+  </div>
+</div></section>
+
+<section id="crossdomain"><div class="wrap">
+  <div class="section-tag">02 · What “cross-domain” means</div>
+  <h2>Universal does not mean #1 on every benchmark.</h2>
+  <p class="intro">The research target is a transferable architecture that repeatedly creates useful effects across heterogeneous domains. A specialist may still be best at the final step. A negative result in one domain does not erase a verified result in another — and a wide portfolio does not, by itself, prove one universal kernel.</p>
+  <div class="grid four">
+    <div class="card"><div class="kicker green">1 · Artifact</div><h3>Does it work?</h3><p>A real codec decodes. A tour is valid. A verifier accepts the right program. A Sudoku proof replays.</p></div>
+    <div class="card"><div class="kicker cyan">2 · Comparative result</div><h3>Does it beat a named alternative?</h3><p>Same target, stated budget, explicit metric and honest denominator.</p></div>
+    <div class="card"><div class="kicker gold">3 · Mechanism</div><h3>Why did it improve?</h3><p>Matched controls isolate a sensor, representation, controller, proof language or scheduler.</p></div>
+    <div class="card"><div class="kicker violet">4 · Transfer</div><h3>Does the same mechanism travel?</h3><p>Fresh domains, adapters and baselines test whether value survives outside the original problem.</p></div>
+  </div>
+  <div class="callout green"><div class="ct">Research rule</div><p><strong>Cross-domain success ≠ universal dominance.</strong> The stronger claim is repeated, measurable utility of a transferable architecture, with domain specialists allowed to win and with failures kept visible.</p></div>
+</div></section>
+
+<section id="evidence"><div class="wrap">
+  <div class="section-tag">03 · Evidence map</div>
+  <h2>Measured artifacts first. Attribution second.</h2>
+  <p class="intro">The numbers below are intentionally heterogeneous: tour quality, file size, PAR2, search work and retrospective ranking are different metrics. They are shown side by side as project evidence — not collapsed into one “MDL×DCC score.”</p>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="label">TSP · nu3496</div><div class="value pos">+0.828%</div><div class="sub">best rechecked stored tour above known optimum 96,132</div></div>
+    <div class="metric"><div class="label">FASTA · HYB3W vs 7‑Zip</div><div class="value pos">−11.31%</div><div class="sub">smaller output on the reported 50-file corpus</div></div>
+    <div class="metric"><div class="label">Sudoku · A01 vs UCB1</div><div class="value pos">−10.58%</div><div class="sub">mean PAR2 on completed v1.4 A+B; not wall-clock speed</div></div>
+    <div class="metric"><div class="label">ChessDCC · retrospective match</div><div class="value info">2.273×</div><div class="sub">950/2055 vs 418/2055; endpoint-information caveat remains</div></div>
+  </div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Domain</th><th>What is real today</th><th>Important boundary</th></tr></thead>
+    <tbody>
+      <tr><td><strong>TSP</strong></td><td>Valid, rechecked stored tours and a large adaptive research lineage.</td><td>Near-optimal tour quality does not isolate DCC or prove a universal controller.</td></tr>
+      <tr><td><strong>Compression</strong></td><td>Lossless codecs and measured output-size comparisons across FASTA, image and audio branches.</td><td>HYB3W is about 14% larger than specialist GeCo3 on the same FASTA benchmark; external specialist baselines matter.</td></tr>
+      <tr><td><strong>Sudoku</strong></td><td>Truth/proof layers, large confirmation runs, 50-policy MetaSearch, R5 AdaptiveProof/Game Review path and honest matched controls.</td><td>The full A04 system did not beat the strongest classical leaf; some DCC scheduling contrasts are positive, MDL-specific attribution is not established.</td></tr>
+      <tr><td><strong>ChessDCC</strong></td><td>2,055 deduplicated near-tie decisions with a large retrospective ranking delta.</td><td>The feature trajectory and endpoint judge share PV lineage; prefix-only evaluation is the stronger next test.</td></tr>
+      <tr><td><strong>8zCoding</strong></td><td>Executable build–run–verify research loop with deterministic oracle work and multi-controller experiments.</td><td>Favored adaptive mechanisms remain competitors, not privileged winners.</td></tr>
+      <tr><td><strong>AI8</strong></td><td>A concrete architecture for persistent project state, multiple AI work lanes, verification and replaceable models.</td><td>The “first research instrument” advantage is a testable hypothesis, not yet a cross-domain measured theorem.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout gold"><div class="ct">Why this matters</div><p>The portfolio is valuable even before one shared causal kernel is fully established. The scientific next step is to identify <em>which</em> recurring mechanisms survive matched controls and transfer.</p></div>
+</div></section>
+
+<section id="sudoku"><div class="wrap">
+  <div class="section-tag">04 · Sudoku as a stress test</div>
+  <h2>A small game became a serious laboratory.</h2>
+  <p class="intro">8zSudoku began as a single browser file: generator, multiple solving strategies and process sensing. That small product grew into a Python proof-and-control laboratory, then into R5 AdaptiveProof/Game Review. The intended final direction loops back to one standalone HTML product.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">Product-first discovery</div><h3>HTML → arena</h3><p>A compact browser artifact exposed useful questions about solving traces, logic, proof, difficulty and human play.</p></div>
+    <div class="card"><div class="kicker violet">Research expansion</div><h3>Arena → evidence</h3><p>Matched controls, root-stuck cohorts, stateful policies, proof checking and protected confirmation separated useful mechanisms from favored explanations.</p></div>
+    <div class="card"><div class="kicker green">Distillation</div><h3>Evidence → better HTML</h3><p>The final user should not inherit the laboratory. The user should inherit its verified gold: generation, explanation, review, practice and local continuity.</p></div>
+  </div>
+  <div class="callout"><div class="ct">Product thesis</div><p>The long-term 8zSudoku goal is not merely “beat every classical solver.” It is a standalone Game Review and learning system that can evaluate an actual move against verifiable alternatives, explain why, track a local skill profile and generate the next useful exercise.</p></div>
+</div></section>
+
+<section id="r6"><div class="wrap">
+  <div class="section-tag">05 · R6 research direction</div>
+  <h2>From selecting procedures to learning reusable capability.</h2>
+  <p class="intro">R6 changes the problem the governor receives. Instead of another larger scheduler over nearly the same menu, it introduces qualitatively different representations and specialists — then asks whether expensive discovery can be compiled into cheap future recognition.</p>
+
+  <div class="r6flow">
+    <div class="r6box"><div class="tag">Forge</div><b>Multi-Representation</b><span>CubeLift, AIS, Digit Paths, multi-scale and other paid views of the same verified state.</span></div>
+    <div class="r6box"><div class="tag">Specialize</div><b>X Specialists</b><span>Each view has operators, detectors or solver leaves with explicit scope and cost.</span></div>
+    <div class="r6box"><div class="tag">Encode</div><b>Proof / Choice Codec</b><span>MDL receives an actual encoded object: model, proof, library, framing and decoder contract.</span></div>
+    <div class="r6box"><div class="tag">Retain</div><b>Proof Atlas</b><span>A verified discovery is stored with a matcher, cost, failure modes and reopening conditions.</span></div>
+    <div class="r6box"><div class="tag">Govern</div><b>DCC / Ordinary Control</b><span>Use the matcher only when expected future gain exceeds sensing, lookup and control overhead.</span></div>
+  </div>
+
+  <div class="eq">expensive generic discovery → verified reusable structure → cheap matcher → cheaper future work</div>
+
+  <div class="grid two">
+    <div class="card"><div class="kicker violet">PATH6 / GLOBAL9</div><h3>Digit paths as a testable representation</h3><p>One digit has 46,656 valid row-order patterns under the formal PATH6 decomposition. A fixed 16-bit index is a compact record, but it cannot rank patterns by itself; useful signal must come from a conditional model, joint structure or partial state.</p></div>
+    <div class="card"><div class="kicker cyan">CubeLift / AIS</div><h3>Equivalent truth, different work</h3><p>The 9×9×9 candidate cube and algebraic invariant compilation do not create new Sudoku truth. Their value must come from cheaper recognition, stronger bounded propagation or a useful specialist regime.</p></div>
+  </div>
+
+  <div class="callout violet"><div class="ct">R6 claim boundary</div><p>R6 is a research architecture, not a solved benchmark. Its strongest current contribution is a sharper experimental question: can a system turn expensive verified reasoning into a reusable detector that saves work on fresh problems?</p></div>
+</div></section>
+
+<section id="atlas"><div class="wrap">
+  <div class="section-tag">06 · Proof Atlas</div>
+  <h2>Memory should store capability, not just history.</h2>
+  <p class="intro">A short proof is useful. A reusable detector can be more useful. Proof Atlas treats learned knowledge as an executable object with a matcher and a cost model, not merely a remembered label or solved instance.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker green">Schema</div><h3>What was discovered?</h3><p>Premise pattern, representation, effect program, proof language and scope.</p></div>
+    <div class="card"><div class="kicker blue">Detector</div><h3>Can we recognize it cheaply?</h3><p>Matcher cost, false positives, false negatives and dependencies decide whether reuse is practical.</p></div>
+    <div class="card"><div class="kicker gold">Economics</div><h3>Did reuse repay discovery?</h3><p>Library bits, proof bits, discovery work, lookup work, verification and future work saved remain separate accounts.</p></div>
+  </div>
+  <div class="callout green"><div class="ct">AI8 bridge</div><p>This is a concrete route from “remember what happened” to “retain a verified skill.” The same principle can later connect 8zCoding and 8zReasoning: difficult discoveries should leave behind versioned, testable, reusable operators rather than only prose summaries.</p></div>
+</div></section>
+
+<section id="ai8"><div class="wrap">
+  <div class="section-tag">07 · AI8</div>
+  <h2>A candidate first research instrument for many domains.</h2>
+  <p class="intro">A reusable architecture may be most valuable at the beginning of an unfamiliar problem: create several views, establish a verifier, run strong controls, find a first qualified signal, preserve what was learned, then hand the task to the best specialist if that is the right answer.</p>
+  <div class="grid">
+    <div class="card"><div class="kicker cyan">Continuity</div><h3>State survives sessions</h3><p>Project goals, artifacts, claims, evidence, tests, open tensions and next actions live outside any single model call.</p></div>
+    <div class="card"><div class="kicker violet">MAL / RHP</div><h3>Generate better possibilities</h3><p>Multiple reasoning and design perspectives widen the candidate space before executable tests decide.</p></div>
+    <div class="card"><div class="kicker blue">8zCoding</div><h3>Turn proposals into evidence</h3><p>Build, run, test, benchmark and repair code under deterministic oracles when possible.</p></div>
+  </div>
+  <div class="eq">new domain → first valid run → first qualified signal → verified decision → reusable skill → specialist handoff or continued search</div>
+  <div class="callout gold"><div class="ct">A measurable hypothesis</div><p>The AI8 claim is not “our framework is magically fastest everywhere.” The experiment is whether a reusable instrument lowers the total cost and time from a new question to a useful, verified research decision compared with strong alternative workflows.</p></div>
+</div></section>
+
+<section id="principles"><div class="wrap">
+  <div class="section-tag">08 · Research principles</div>
+  <h2>Open architecture. Hard verification.</h2>
+  <div class="grid two">
+    <div class="card"><div class="kicker green">Rank, don't eliminate</div><h3>Value depends on representation and regime</h3><p>A method that is weak today can become a specialist when a new representation or scale reveals its niche. Preserve defeat reasons, future tests and resurrection conditions.</p></div>
+    <div class="card"><div class="kicker rose">No brand privilege</div><h3>Names do not earn compute</h3><p>If a contextual bandit, classical leaf or simple scheduler wins under equal information and cost, it should be used. MDL, DCC and ss layers remain hypotheses that must repay their overhead.</p></div>
+  </div>
+  <div class="grid two">
+    <div class="card"><div class="kicker cyan">Verifier outside the governor</div><h3>Truth is not a control variable</h3><p>A controller proposes work. A domain checker decides whether the result is valid. The governor cannot redefine correctness to make its own policy look better.</p></div>
+    <div class="card"><div class="kicker gold">Less describes more</div><h3>Distill after discovery</h3><p>Large laboratories are allowed to be complex. The final product should carry only the mechanisms that earned their cost and survived verification.</p></div>
+  </div>
+</div></section>
+
+<section id="monograph"><div class="wrap">
+  <div class="section-tag">09 · Technical reference</div>
+  <h2>The full monograph is the audit trail behind this page.</h2>
+  <p class="intro">The public page is intentionally a gateway. The v1.5 monograph contains the historical development, formulas, domain case studies, evidence map, claim boundaries, R6 representation proposals and implementation-facing interface discussion.</p>
+  <div class="grid two">
+    <div class="card"><div class="kicker cyan">Read</div><h3>Technical monograph · v1.5</h3><p>22 parts, 141 numbered chapters and a detailed formula/evidence register. Keep the Markdown beside this page or update the link to your public document location.</p><div class="hero-actions"><a class="btn primary" href="8z_MDLxDCC_TEHNICNA_MONOGRAFIJA_v1_5_20260905.md">Open monograph →</a></div></div>
+    <div class="card"><div class="kicker violet">Use</div><h3>Three reading paths</h3><p><strong style="color:#fff">Understand:</strong> architecture, artifacts, cross-domain thesis.<br><strong style="color:#fff">Build:</strong> interfaces, economics, specialist ecology, R6.<br><strong style="color:#fff">Audit:</strong> evidence tables, source register and claim boundaries.</p></div>
+  </div>
+</div></section>
+
+<section id="related"><div class="wrap">
+  <div class="section-tag">10 · Related pages</div>
+  <h2>Where this fits in the wider research map.</h2>
+  <div class="related">
+    <a class="rel" href="MDLxDCC.html"><b>MDL×DCC Overview</b><span>Shorter public introduction to the broader generator–judge–governor program.</span></a>
+    <a class="rel" href="MDLxDCC-Arenas.html"><b>MDL×DCC Arenas</b><span>Experimental environments where candidate mechanisms meet matched controls and real metrics.</span></a>
+    <a class="rel" href="AI8_Architecture.html"><b>AI8 Architecture</b><span>Persistent multi-AI work, continuity, replaceable models and future system-level integration.</span></a>
+    <a class="rel" href="8zCoding.html"><b>8zCoding</b><span>Executable program discovery, local build/run/test loops and evidence-guided repair.</span></a>
+    <a class="rel" href="AI8_Reasoning.html"><b>8z / AI8 Reasoning</b><span>The future route from research episodes to reusable reasoning operators and skills.</span></a>
+    <a class="rel" href="../BD/BD_8Z_ssMDL_DCC.html"><b>ssMDL×DCC</b><span>Self-selecting and multi-level governance concepts and their broader research lineage.</span></a>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap footgrid">
+  <div>BD × AI Lab · 8z–MDL×DCC technical gateway · 2026-09-05</div>
+  <div class="mono">Artifacts first · mechanisms tested · architecture remains evolvable</div>
+</div></footer>
+
+<script>
+(function(){
+  const p=document.getElementById('progress');
+  function prog(){const d=document.documentElement;const max=d.scrollHeight-d.clientHeight;p.style.width=(max?100*d.scrollTop/max:0)+'%'}
+  addEventListener('scroll',prog,{passive:true});prog();
+})();
+</script>
+</body>
+</html>
