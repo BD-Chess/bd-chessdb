@@ -8,7 +8,7 @@
 <meta name="author" content="Bojan Dobrečevič (BD) × AI collaborators">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
 <meta name="theme-color" content="#05070d">
-<meta name="version" content="0.2.7 PRE-REVIEW — 2026-09-05">
+<meta name="version" content="0.2.8 PRE-REVIEW — 2026-09-06">
 <link rel="canonical" href="https://www.mdlxdcc.org/">
 <link rel="alternate" type="text/plain" href="https://www.mdlxdcc.org/llms.txt" title="LLM-readable summary">
 <link rel="alternate" type="text/plain" href="https://www.mdlxdcc.org/llms-full.txt" title="Extended LLM-readable summary">
@@ -35,7 +35,7 @@
   "description":"A public research entrance to 8Z–MDL×DCC: a recursive, multi-level and self-selecting architecture for discovering structure and governing search across heterogeneous domains.",
   "datePublished":"2026-09-03",
   "dateModified":"2026-09-05",
-  "version":"0.2.7 PRE-REVIEW",
+  "version":"0.2.8 PRE-REVIEW",
   "inLanguage":["en","sl"],
   "author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"},
   "isPartOf":{"@type":"WebSite","name":"MDLxDCC.org","url":"https://www.mdlxdcc.org/"},
@@ -101,12 +101,18 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var
 .brand small{display:block;color:var(--dim);font:750 9px/1.25 var(--mono);letter-spacing:.11em;text-transform:uppercase}
 .nav{margin-left:auto;display:flex;align-items:center;gap:4px}.nav a,.topbtn{border:0;background:transparent;color:var(--muted);font:760 12px var(--sans);padding:9px 10px;border-radius:10px;cursor:pointer}.nav a:hover,.topbtn:hover{color:var(--text);text-decoration:none;background:rgba(88,220,255,.08)}
 .controls{display:flex;align-items:center;gap:5px}.lang-switch{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:rgba(255,255,255,.025)}.lang-switch button{border:0;background:transparent;color:var(--dim);border-radius:999px;padding:6px 9px;font:850 9px var(--mono);cursor:pointer}.lang-switch button.active{color:#071018;background:var(--cyan)}html[data-theme="light"] .lang-switch button.active{color:#fff}
+.font-switch{display:none;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px;background:rgba(255,255,255,.025)}
+.font-switch button{min-width:34px;border:0;background:transparent;color:var(--muted);border-radius:999px;padding:6px 7px;font:900 10px var(--mono);cursor:pointer}
+.font-switch button:hover{color:var(--text);background:rgba(88,220,255,.08)}
+.font-switch button:disabled{opacity:.32;cursor:not-allowed}
+.font-switch .font-level{min-width:28px;text-align:center;color:var(--dim);font:800 8px var(--mono);user-select:none}
+
 .hero{min-height:calc(100vh - 68px);padding:78px 0 58px;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);gap:clamp(36px,6vw,78px);align-items:center}
 .eyebrow{font:880 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
 h1{font-size:clamp(54px,7.5vw,92px);line-height:.94;letter-spacing:-.064em;margin:17px 0 22px;max-width:850px;text-wrap:balance}.hero-third{display:inline-block;font-size:.66em;letter-spacing:-.035em;margin-top:.15em;white-space:nowrap}.hero-answer{display:inline-block;font-size:clamp(23px,3vw,42px);letter-spacing:-.025em;margin-top:.28em;color:var(--green);white-space:nowrap}
 h1 .accent{background:linear-gradient(100deg,var(--cyan),#91b8ff 48%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
 .lead{font:italic clamp(20px,2.1vw,26px)/1.55 var(--serif);color:var(--muted);max-width:850px;margin:0}.thesis{margin:24px 0 0;font-weight:900;font-size:18px;letter-spacing:-.015em}.thesis em{color:var(--gold);font-style:normal}
-.hero-actions,.pills{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:45px;padding:10px 16px;border:1px solid var(--line2);border-radius:999px;color:var(--text);background:rgba(88,220,255,.07);font:850 11px var(--mono);cursor:pointer;transition:.18s}.btn:hover{text-decoration:none;transform:translateY(-1px);border-color:var(--cyan)}.btn.primary{color:#04141d;background:var(--cyan);border-color:var(--cyan)}html[data-theme="light"] .btn.primary{color:#fff}.btn.gold{border-color:color-mix(in srgb,var(--gold) 60%,transparent);background:rgba(255,211,106,.08)}
+.hero-actions,.pills{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:45px;padding:10px 16px;border:1px solid var(--line2);border-radius:999px;color:var(--text);background:rgba(88,220,255,.07);font:850 11px var(--mono);cursor:pointer;transition:.18s}.btn:hover{text-decoration:none;transform:translateY(-1px);border-color:var(--cyan)}.btn.primary{color:#04141d;background:var(--cyan);border-color:var(--cyan)}html[data-theme="light"] .btn.primary{color:#fff}.btn.gold{border-color:color-mix(in srgb,var(--gold) 60%,transparent);background:rgba(255,211,106,.08)}.btn.violet{border-color:color-mix(in srgb,var(--violet) 58%,transparent);background:rgba(170,156,255,.09);color:color-mix(in srgb,var(--violet) 82%,var(--text))}
 .pill{font:850 9px var(--mono);letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:7px 9px;color:var(--muted);background:rgba(255,255,255,.02)}.pill.green{color:var(--green);border-color:color-mix(in srgb,var(--green) 46%,transparent)}.pill.gold{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}.pill.rose{color:var(--rose);border-color:color-mix(in srgb,var(--rose) 43%,transparent)}
 .loop-card{position:relative;overflow:hidden;min-height:530px;padding:22px;border:1px solid var(--line2);border-radius:30px;background:linear-gradient(145deg,rgba(88,220,255,.055),rgba(170,156,255,.045)),var(--panel);box-shadow:var(--shadow)}
 .loop-card::before{content:"8";position:absolute;right:-15px;top:-72px;font:900 380px/1 var(--sans);letter-spacing:-.16em;color:rgba(88,220,255,.035);pointer-events:none}.loop-label{position:relative;z-index:2;font:850 10px var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--green)}
@@ -148,7 +154,7 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
 .domain-overview{display:grid;grid-template-columns:minmax(250px,.65fr) minmax(0,1.35fr);gap:20px;align-items:stretch}.domain-count{display:grid;align-content:center;padding:31px;border:1px solid color-mix(in srgb,var(--cyan) 45%,transparent);border-radius:26px;background:linear-gradient(145deg,rgba(88,220,255,.10),rgba(170,156,255,.035)),var(--panel);box-shadow:var(--shadow)}.domain-count .label{font:850 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}.domain-count .amount{font:900 clamp(58px,8.5vw,98px)/.94 var(--mono);letter-spacing:-.085em;margin:13px 0;color:var(--text)}.domain-count p{color:var(--muted);margin:0;font-size:14px}.economic-details{margin-top:17px;border:1px solid color-mix(in srgb,var(--gold) 42%,var(--line));border-radius:20px;background:rgba(255,211,106,.025);overflow:hidden}.economic-details>summary{cursor:pointer;list-style:none;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--gold);font-weight:900}.economic-details>summary::-webkit-details-marker{display:none}.economic-details>summary::after{content:"+";font:900 18px var(--mono)}.economic-details[open]>summary::after{content:"−"}.economic-details[open]>summary{border-bottom:1px solid var(--line);background:rgba(255,211,106,.05)}.economic-body{display:grid;grid-template-columns:minmax(270px,.72fr) minmax(0,1.28fr);gap:17px;padding:18px}.economic-copy{padding:25px;border:1px solid var(--line);border-radius:20px;background:var(--panel)}.economic-copy h3{font-size:27px;letter-spacing:-.04em;margin:0 0 11px}.economic-copy p{color:var(--muted)}.footer-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.footer-links a{font:800 9px var(--mono);border:1px solid var(--line);border-radius:999px;padding:5px 8px}.footer-links a:hover{text-decoration:none;border-color:var(--cyan)}
 
 @media(max-width:1050px){.hero{grid-template-columns:1fr;min-height:auto}.domain-overview,.economic-body{grid-template-columns:1fr}.loop-card{max-width:720px}.evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.ai-node::after{display:none}.potential{grid-template-columns:1fr}.neighbor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.deep-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.audience-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.public-first{grid-template-columns:1fr auto}.oracle-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.outreach-grid{grid-template-columns:1fr}.outreach-card{min-height:210px}}
-@media(max-width:760px){body{font-size:16px}.status-grid,.separation-note,.replicate-callout,.transfer-grid{grid-template-columns:1fr}.separation-note b,.separation-note a{white-space:normal}.passport{grid-template-columns:1fr 1fr}.wrap,.narrow{width:min(100% - 22px,var(--max))}.sitebar-inner{min-height:60px}.brand small,.nav{display:none}.controls{margin-left:auto}.hero{padding:54px 0 42px;gap:28px}h1{font-size:clamp(46px,13.5vw,65px)}.lead{font-size:18px}.loop-card{min-height:0;padding:14px}.depth-grid,.section-head,.triad,.details-grid,.claim-stage,.claim-box .cols,.loss-grid,.challenge-steps{grid-template-columns:1fr}.section-head{gap:13px}.section-head h2{font-size:40px}.evidence-grid{grid-template-columns:1fr}.recursion{grid-template-columns:1fr}.recursion .formula{white-space:normal}.ai-strip{grid-template-columns:1fr 1fr}.deep-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.footer-meta{text-align:left}.neighbor-grid{grid-template-columns:1fr 1fr}.money .amount{font-size:60px}.hero-actions .btn{flex:1 1 210px}.tools-row{justify-content:flex-start}.public-first{grid-template-columns:1fr}.public-first .badge,.public-first a{white-space:normal}.audience-head{display:block}.audience-head>span{display:block;margin-top:5px}.authority-head,.collab-grid{grid-template-columns:1fr}.oracle-grid{grid-template-columns:1fr 1fr}.outreach-card{min-height:0}}
+@media(max-width:760px){.font-switch{display:flex}.controls{gap:4px}.sitebar-inner{gap:9px}body{font-size:16px}.status-grid,.separation-note,.replicate-callout,.transfer-grid{grid-template-columns:1fr}.separation-note b,.separation-note a{white-space:normal}.passport{grid-template-columns:1fr 1fr}.wrap,.narrow{width:min(100% - 22px,var(--max))}.sitebar-inner{min-height:60px}.brand small,.nav{display:none}.controls{margin-left:auto}.hero{padding:54px 0 42px;gap:28px}h1{font-size:clamp(46px,13.5vw,65px)}.lead{font-size:18px}.loop-card{min-height:0;padding:14px}.depth-grid,.section-head,.triad,.details-grid,.claim-stage,.claim-box .cols,.loss-grid,.challenge-steps{grid-template-columns:1fr}.section-head{gap:13px}.section-head h2{font-size:40px}.evidence-grid{grid-template-columns:1fr}.recursion{grid-template-columns:1fr}.recursion .formula{white-space:normal}.ai-strip{grid-template-columns:1fr 1fr}.deep-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.footer-meta{text-align:left}.neighbor-grid{grid-template-columns:1fr 1fr}.money .amount{font-size:60px}.hero-actions .btn{flex:1 1 210px}.tools-row{justify-content:flex-start}.public-first{grid-template-columns:1fr}.public-first .badge,.public-first a{white-space:normal}.audience-head{display:block}.audience-head>span{display:block;margin-top:5px}.authority-head,.collab-grid{grid-template-columns:1fr}.oracle-grid{grid-template-columns:1fr 1fr}.outreach-card{min-height:0}}
 @media(max-width:460px){.brand{font-size:13px}.status-grid,.passport{grid-template-columns:1fr}.termline{font-size:9px}.metric small{font-size:9px}.mark{width:31px;height:31px}.lang-switch button{padding:5px 7px}.topbtn{padding:7px}.hero{padding-top:42px}h1{font-size:43px}.pills{display:grid}.btn{width:100%}.ai-strip,.neighbor-grid,.audience-grid{grid-template-columns:1fr}.metric{font-size:31px}.section-head h2{font-size:35px}.challenge h2{font-size:41px}.loop-note{font-size:12px}.oracle-grid{grid-template-columns:1fr}.authority-strip{padding:17px}.outreach-card{padding:20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 @media print{:root{--bg:#fff;--bg2:#fff;--panel:#fff;--panel2:#f5f5f5;--text:#111;--muted:#333;--dim:#555;--line:#ccc;--cyan:#00627f;--gold:#755000}.sitebar,.progress,.hero-actions,.controls,.tools-row,.back{display:none!important}body{background:#fff;font-size:10.5pt}.hero{min-height:0;padding:22px 0}.loop-card{box-shadow:none;break-inside:avoid}.depthbar{padding:9px 0}section{padding:30px 0}.evidence-grid,.triad,.deep-grid{display:block}.e-card,.triad-card,.deep-card,.expander,.loss{break-inside:avoid;margin-bottom:10px}.expander:not([open]) .inside,.economic-details .economic-body{display:block!important}.footer{padding-bottom:10px}}
@@ -176,6 +182,11 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
         <button type="button" data-set-lang="en" class="active">EN</button>
         <button type="button" data-set-lang="sl">SLO</button>
       </div>
+      <div class="font-switch" role="group" aria-label="Text size">
+        <button type="button" id="fontDown" aria-label="Decrease text size" title="Decrease text size">A−</button>
+        <span class="font-level" id="fontLevel" aria-live="polite">100%</span>
+        <button type="button" id="fontUp" aria-label="Increase text size" title="Increase text size">A+</button>
+      </div>
       <button class="topbtn" id="theme" type="button" aria-label="Switch theme">◐</button>
     </div>
   </div>
@@ -183,7 +194,7 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
 <main id="main">
 <section class="wrap hero" id="top">
   <div>
-    <div class="eyebrow"><span class="lang-en">BD × AI LAB · PUBLIC RESEARCH ARCHITECTURE · v0.2.7 PRE-REVIEW</span><span class="lang-sl">BD × AI LAB · JAVNA RAZISKOVALNA ARHITEKTURA · v0.2.7 PRED RECENZIJO</span></div>
+    <div class="eyebrow"><span class="lang-en">BD × AI LAB · PUBLIC RESEARCH ARCHITECTURE · v0.2.8 PRE-REVIEW</span><span class="lang-sl">BD × AI LAB · JAVNA RAZISKOVALNA ARHITEKTURA · v0.2.8 PRED RECENZIJO</span></div>
     <h1><span class="lang-en">Too many possibilities.<br><span class="accent">Too little time.</span><br><span class="hero-third">Too costly to search?</span><br><span class="hero-answer">We can help you search smarter.</span></span><span class="lang-sl">Preveč možnosti.<br><span class="accent">Premalo časa.</span><br><span class="hero-third">Je iskanje predrago?</span><br><span class="hero-answer">Pomagamo vam iskati pametneje.</span></span></h1>
     <p class="lead"><span class="lang-en">8Z–MDL×DCC is a multi-level, recursive and self-selecting architecture for discovering structure and governing search in spaces too large for exhaustive inspection.</span><span class="lang-sl">8Z–MDL×DCC je večnivojska, rekurzivna in samoselektivna arhitektura za odkrivanje strukture ter upravljanje iskanja v prostorih, ki so preveliki za izčrpen pregled.</span></p>
     <p class="termline"><span class="lang-en"><strong>DCC</strong> = Dynamic Complexity Controller · <strong>MDL</strong> = Minimum Description Length.</span><span class="lang-sl"><strong>DCC</strong> = Dynamic Complexity Controller · <strong>MDL</strong> = Minimum Description Length.</span></p>
@@ -192,6 +203,7 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
       <a class="btn primary" href="#evidence"><span class="lang-en">See the evidence ↓</span><span class="lang-sl">Poglej dokaze ↓</span></a>
       <a class="btn" href="/crp/MDLxDCC-Arenas.html"><span class="lang-en">Reproduce one result</span><span class="lang-sl">Reproduciraj en rezultat</span></a>
       <a class="btn" href="/crp/8z_MDLxDCC.html"><span class="lang-en">Open technical gateway</span><span class="lang-sl">Odpri tehnični portal</span></a>
+      <a class="btn violet" href="/crp/AI8_Sudoku_R6.html"><span class="lang-en">Open Sudoku R6</span><span class="lang-sl">Odpri Sudoku R6</span></a>
       <a class="btn gold" href="#challenge"><span class="lang-en">Bring one hard problem</span><span class="lang-sl">Prinesi en težek problem</span></a>
     </div>
   </div>
@@ -506,7 +518,7 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
 </section>
 </main>
 <footer class="footer">
-  <div class="wrap footer-grid"><div><p><span class="lang-en"><strong>Public working synthesis.</strong> Main architecture and human origin: Bojan Dobrečevič (BD), developed with multiple AI collaborators. Numbers on this page are scoped to their linked evidence pages and may be superseded by newer verified runs. The page separates measured results, candidate mechanisms, modeled potential and open ontology.</span><span class="lang-sl"><strong>Javni delovni čistopis.</strong> Glavna arhitektura in človeški izvor: Bojan Dobrečevič (BD), razvito z več AI-sodelavci. Številke na tej strani so omejene na povezane dokazne strani in jih lahko nadomestijo novejši preverjeni runi. Stran ločuje izmerjene rezultate, kandidatne mehanizme, modelirani potencial in odprto ontologijo.</span></p><div class="footer-links"><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/c/MDLxDCC_Public_Prior_Art_Log.html"><span class="lang-en">prior-art note</span><span class="lang-sl">zapis prior arta</span></a></div></div><div class="footer-meta">MDLxDCC.org<br>index v0.2.7 PRE-REVIEW<br>2026-09-05 · EN/SLO</div></div>
+  <div class="wrap footer-grid"><div><p><span class="lang-en"><strong>Public working synthesis.</strong> Main architecture and human origin: Bojan Dobrečevič (BD), developed with multiple AI collaborators. Numbers on this page are scoped to their linked evidence pages and may be superseded by newer verified runs. The page separates measured results, candidate mechanisms, modeled potential and open ontology.</span><span class="lang-sl"><strong>Javni delovni čistopis.</strong> Glavna arhitektura in človeški izvor: Bojan Dobrečevič (BD), razvito z več AI-sodelavci. Številke na tej strani so omejene na povezane dokazne strani in jih lahko nadomestijo novejši preverjeni runi. Stran ločuje izmerjene rezultate, kandidatne mehanizme, modelirani potencial in odprto ontologijo.</span></p><div class="footer-links"><a href="/llms.txt">llms.txt</a><a href="/llms-full.txt">llms-full.txt</a><a href="/c/MDLxDCC_Public_Prior_Art_Log.html"><span class="lang-en">prior-art note</span><span class="lang-sl">zapis prior arta</span></a></div></div><div class="footer-meta">MDLxDCC.org<br>index v0.2.8 PRE-REVIEW<br>2026-09-06 · EN/SLO</div></div>
 </footer>
 <button class="back" id="back" type="button" aria-label="Back to top">↑</button>
 <script id="mdlxdcc-summary" type="application/json">
@@ -624,6 +636,9 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
   const progress=document.getElementById('progress');
   const back=document.getElementById('back');
   const themeBtn=document.getElementById('theme');
+  const fontDown=document.getElementById('fontDown');
+  const fontUp=document.getElementById('fontUp');
+  const fontLevel=document.getElementById('fontLevel');
   const langBtns=[...document.querySelectorAll('[data-set-lang]')];
   const metaDescription=document.querySelector('meta[name="description"]');
   const titles={
@@ -646,8 +661,40 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
     themeBtn.setAttribute('aria-label',theme==='dark'?'Switch to light theme':'Switch to dark theme');
     if(save)try{localStorage.setItem('mdlxdcc-theme',theme)}catch(_e){}
   }
+  const fontTargets='body,p,li,td,th,summary,a,button,small,label,code,h1,h2,h3,h4,strong,em,.termline,.metric,.loop-note,.section-lead,.section-head p,.e-card p,.deep-card p,.audience p,.inside';
+  const fontScales=[0.9,1.0,1.1,1.2,1.3];
+  let fontBaseCaptured=false;
+  function captureFontBases(){
+    if(fontBaseCaptured)return;
+    document.querySelectorAll(fontTargets).forEach(el=>{
+      if(el.closest('svg'))return;
+      const px=parseFloat(getComputedStyle(el).fontSize);
+      if(Number.isFinite(px)&&px>0)el.dataset.baseFontPx=String(px);
+    });
+    fontBaseCaptured=true;
+  }
+  function setFontScale(scale,save=true){
+    scale=Math.max(fontScales[0],Math.min(fontScales[fontScales.length-1],Number(scale)||1));
+    captureFontBases();
+    document.querySelectorAll('[data-base-font-px]').forEach(el=>{
+      el.style.fontSize=(Number(el.dataset.baseFontPx)*scale).toFixed(2)+'px';
+    });
+    if(fontLevel)fontLevel.textContent=Math.round(scale*100)+'%';
+    if(fontDown)fontDown.disabled=scale<=fontScales[0]+.001;
+    if(fontUp)fontUp.disabled=scale>=fontScales[fontScales.length-1]-.001;
+    root.dataset.fontScale=String(scale);
+    if(save)try{localStorage.setItem('mdlxdcc-font-scale',String(scale))}catch(_e){}
+  }
+  function stepFont(dir){
+    const current=Number(root.dataset.fontScale)||1;
+    let idx=fontScales.reduce((best,v,i)=>Math.abs(v-current)<Math.abs(fontScales[best]-current)?i:best,0);
+    idx=Math.max(0,Math.min(fontScales.length-1,idx+dir));
+    setFontScale(fontScales[idx]);
+  }
   langBtns.forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.setLang)));
   themeBtn.addEventListener('click',()=>setTheme(root.dataset.theme==='dark'?'light':'dark'));
+  if(fontDown)fontDown.addEventListener('click',()=>stepFont(-1));
+  if(fontUp)fontUp.addEventListener('click',()=>stepFont(1));
   document.querySelectorAll('[data-details]').forEach(btn=>btn.addEventListener('click',()=>{
     const open=btn.dataset.details==='open';document.querySelectorAll('details').forEach(d=>d.open=open);
   }));
@@ -657,9 +704,13 @@ section{padding:86px 0}.section-kicker{font:850 10px var(--mono);letter-spacing:
   }
   window.addEventListener('scroll',onScroll,{passive:true});
   back.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-  let savedLang='en',savedTheme='dark';
-  try{savedLang=localStorage.getItem('mdlxdcc-lang')||((navigator.language||'').toLowerCase().startsWith('sl')?'sl':'en');savedTheme=localStorage.getItem('mdlxdcc-theme')||((matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark');}catch(_e){}
-  setLang(savedLang,false);setTheme(savedTheme,false);onScroll();
+  let savedLang='en',savedTheme='dark',savedFontScale=1;
+  try{
+    savedLang=localStorage.getItem('mdlxdcc-lang')||((navigator.language||'').toLowerCase().startsWith('sl')?'sl':'en');
+    savedTheme=localStorage.getItem('mdlxdcc-theme')||((matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark');
+    savedFontScale=Number(localStorage.getItem('mdlxdcc-font-scale')||1);
+  }catch(_e){}
+  setLang(savedLang,false);setTheme(savedTheme,false);setFontScale(savedFontScale,false);onScroll();
 })();
 </script>
 </body>
