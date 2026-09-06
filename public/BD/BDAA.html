@@ -1,634 +1,424 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 
 <html lang="sl">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="dark" name="color-scheme"/>
-<title>BDAA v0.5.1-RHP — S13 v teku + RHP predprojekt v0.5.2</title>
-<meta content="BDAA v0.5.1-RHP: delni S13 posnetek z 1.844.747 rezultati in 219 process-feasible kandidati; RHP predprojekt v0.5.2 razširi magnetni koncept, Product-B deployment, shared hub in FAST2." name="description"/>
+<title>BD SOL BB Surfing Hedge — Neutral-Lock Strategy v0.2</title>
 <style>
 :root{
-  --bg:#060607;--bg2:#0d0b0b;--panel:#171212;--panel2:#120f10;
-  --text:#f4ece7;--muted:#c8b9b0;--dim:#8e7d76;--line:#392a28;
-  --amber:#ffbd5b;--gold:#f6d180;--red:#ff796f;--wine:#c65b86;
-  --green:#65d69b;--cyan:#64d8e8;--shadow:0 22px 65px rgba(0,0,0,.42);
-  --radius:18px;--sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#090d12; --bg2:#0d131b; --card:#111923; --card2:#151f2b; --line:#263444;
+  --text:#e9f0f7; --muted:#9fb0c2; --accent:#79d6ff; --accent2:#9ff0c6; --warn:#ffcf70;
+  --danger:#ff8e9a; --good:#86efac; --code:#0a1118; --shadow:0 14px 40px rgba(0,0,0,.28);
+  --base-font:17px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--bg)}
-body{margin:0;color:var(--text);font-family:var(--sans);line-height:1.68;background:
- radial-gradient(circle at 12% -5%,rgba(255,121,111,.16),transparent 31%),
- radial-gradient(circle at 92% 6%,rgba(198,91,134,.12),transparent 28%),
- radial-gradient(circle at 52% 0%,rgba(255,189,91,.07),transparent 27%),
- linear-gradient(180deg,var(--bg),var(--bg2));}
-a{color:var(--amber);text-decoration:none}a:hover{text-decoration:underline}
-.topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,189,91,.17);background:rgba(6,6,7,.88);backdrop-filter:blur(16px)}
-.topbar-inner{width:min(1240px,calc(100% - 32px));margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
-.brand{font:800 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
-.actions{display:flex;gap:8px;flex-wrap:wrap}.actions a{font:700 11px/1 var(--mono);padding:8px 11px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.025)}
-.actions a:hover{border-color:var(--amber);color:var(--amber);text-decoration:none}
-.layout{width:min(1240px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:26px;padding:34px 0 72px}
-.sidebar{position:sticky;top:74px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:rgba(18,15,16,.86);box-shadow:var(--shadow);padding:18px}
-.sidebar h2{font:800 12px/1.2 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
-.sidebar nav{display:grid;gap:2px}.sidebar nav a{padding:7px 9px;border-radius:9px;color:var(--muted);font-size:13px;line-height:1.3}
-.sidebar nav a:hover{background:rgba(255,189,91,.07);color:var(--amber);text-decoration:none}
-.article{min-width:0}
-.hero{padding:35px 34px 31px;border:1px solid rgba(255,189,91,.22);border-radius:24px;background:linear-gradient(145deg,rgba(111,43,39,.28),rgba(18,15,16,.95));box-shadow:var(--shadow)}
-.hero h1{margin:0;font-size:clamp(36px,5.5vw,69px);line-height:1.01;letter-spacing:-.048em;color:#fff}
-.hero h2{margin:12px 0 0;color:var(--amber);font-size:clamp(18px,2.5vw,28px);font-weight:650}
-.hero-kicker{font:800 12px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 13px}
-.lead{font-size:clamp(18px,2.1vw,23px);line-height:1.58;color:#e2d1c8;max-width:980px}
-.article h2{margin:52px 0 18px;padding-top:12px;font-size:clamp(27px,3.3vw,42px);line-height:1.15;letter-spacing:-.025em;color:#fff}
-.article h3{margin:32px 0 12px;font-size:clamp(21px,2.3vw,29px);line-height:1.2;color:var(--amber)}
-.article h4{margin:25px 0 9px;color:var(--green)}
-.article p,.article li{color:var(--muted)}.article strong{color:#fff}
-.article blockquote{margin:20px 0;padding:16px 19px;border-left:4px solid var(--amber);border-radius:0 12px 12px 0;background:rgba(255,189,91,.055);color:var(--muted)}
-.article code{font-family:var(--mono);font-size:.9em;padding:.12em .42em;border:1px solid rgba(255,189,91,.18);border-radius:7px;background:rgba(255,189,91,.07);color:#fff0cc}
-.article ul,.article ol{padding-left:1.35em}.article li{margin:.38em 0}
-.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:21px 0 29px}
-.metric-card{padding:17px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(54,35,31,.88),rgba(16,13,14,.96))}
-.metric-card b{display:block;font:850 clamp(22px,3vw,34px)/1.05 var(--mono);color:#fff;margin-bottom:7px}
-.metric-card span{display:block;font:750 10px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
-.grid-2,.grid-3{display:grid;gap:14px;margin:18px 0}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.info-card{border:1px solid var(--line);border-radius:16px;background:rgba(18,15,16,.78);padding:20px}.info-card h3{margin:0 0 9px!important;font-size:21px!important}.info-card p{margin:7px 0}
-.callout{margin:20px 0;padding:19px 21px;border:1px solid rgba(255,189,91,.31);border-radius:16px;background:linear-gradient(135deg,rgba(255,189,91,.09),rgba(198,91,134,.035))}
-.callout.red{border-color:rgba(255,121,111,.36);background:linear-gradient(135deg,rgba(255,121,111,.10),rgba(198,91,134,.04))}
-.callout.green{border-color:rgba(101,214,155,.34);background:linear-gradient(135deg,rgba(101,214,155,.09),rgba(100,216,232,.025))}
-.callout h3{margin:0 0 7px!important;font-size:21px!important}.callout p:last-child{margin-bottom:0}
-.status-row{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 4px}.badge{font:750 10px/1 var(--mono);letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:7px 9px;color:var(--muted);background:rgba(255,255,255,.025)}
-.badge.clean{color:var(--green);border-color:rgba(101,214,155,.34);background:rgba(101,214,155,.07)}.badge.warn{color:var(--gold);border-color:rgba(246,209,128,.34);background:rgba(246,209,128,.07)}.badge.research{color:var(--amber);border-color:rgba(255,189,91,.34);background:rgba(255,189,91,.07)}
-.process-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
-.process-step{position:relative;padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);min-height:120px}
-.process-step b{display:block;color:var(--amber);font-family:var(--mono);margin-bottom:6px}.process-step:not(:last-child)::after{content:'→';position:absolute;right:-11px;top:45%;z-index:2;color:var(--red);font-size:22px;font-weight:900}
-.method-ladder{display:grid;gap:10px;margin:18px 0}.method{display:grid;grid-template-columns:190px 1fr;gap:15px;padding:15px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.018)}.method b{color:var(--amber);font-family:var(--mono)}
-.table-wrap{overflow:auto;margin:18px 0 28px;border:1px solid var(--line);border-radius:16px;background:rgba(8,7,8,.72);box-shadow:var(--shadow)}
-table{width:100%;border-collapse:separate;border-spacing:0;min-width:820px;font-size:14px}
-th,td{padding:11px 12px;text-align:left;vertical-align:top;border-right:1px solid rgba(57,42,40,.75);border-bottom:1px solid rgba(57,42,40,.75)}
-th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}
-th{position:sticky;top:0;z-index:2;font:800 11px/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold);background:#211819}
-tbody tr:nth-child(even){background:rgba(255,255,255,.022)}tbody tr:hover{background:rgba(255,189,91,.05)}
-details{margin:13px 0;border:1px solid var(--line);border-radius:14px;background:rgba(8,7,8,.58);overflow:hidden}summary{cursor:pointer;padding:13px 16px;color:var(--amber);font-weight:750}details>div{padding:0 16px 15px;border-top:1px solid var(--line)}
-.timeline{display:grid;gap:12px;margin:20px 0}.timeline-item{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:16px;border-left:3px solid var(--wine);background:rgba(198,91,134,.045);border-radius:0 14px 14px 0}.timeline-item b{font-family:var(--mono);color:var(--gold)}
-.footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
-.backtop{position:fixed;right:16px;bottom:16px;width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:rgba(18,15,16,.92);color:var(--amber);box-shadow:var(--shadow)}
-.small{font-size:13px;color:var(--dim)!important}
-.why-now{margin:24px 0 0;padding:27px 27px 23px;border:1px solid rgba(100,216,232,.28);border-radius:20px;background:
- linear-gradient(135deg,rgba(100,216,232,.075),rgba(255,189,91,.045) 52%,rgba(198,91,134,.035));box-shadow:var(--shadow)}
-.why-now h2{margin:0 0 14px!important;padding-top:0!important;font-size:clamp(27px,3.3vw,40px)!important}
-.why-quote{margin:16px 0 20px!important;border-left-color:var(--cyan)!important;background:rgba(100,216,232,.055)!important;font-size:clamp(17px,1.8vw,20px);color:#e7dcd6!important}
-.why-verdict{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;margin-top:18px;padding:16px 18px;border:1px solid rgba(101,214,155,.34);border-radius:14px;background:rgba(101,214,155,.065)}
-.why-verdict b{font:900 12px/1.25 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--green);padding-top:4px}
-.why-verdict p{margin:0;color:#e2d7d1}
-@media(max-width:960px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.process-step::after{display:none}}
-@media(max-width:700px){.metric-grid,.grid-2,.grid-3,.process-flow{grid-template-columns:1fr}.method,.timeline-item,.why-verdict{grid-template-columns:1fr}}
-@media(max-width:620px){.topbar-inner{align-items:flex-start;flex-direction:column}.layout{width:min(100% - 20px,1240px);padding-top:18px}.sidebar{display:none}.hero{padding:26px 20px 24px}.article h2{margin-top:42px}table{font-size:13px}th,td{padding:10px}}
-@media print{.topbar,.sidebar,.backtop{display:none}.layout{display:block;width:100%;padding:0}body{background:#fff;color:#000}.hero,.info-card,.callout,.metric-card{box-shadow:none;background:#fff}.article p,.article li,td{color:#222}.article h1,.article h2,.article h3,.article strong{color:#000}}
+body{margin:0;background:linear-gradient(180deg,#0a0f15 0,#090d12 45%,#070b10 100%);color:var(--text);font:var(--base-font)/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent)}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(9,13,18,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1120px;margin:auto;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.2px;white-space:nowrap}.brand small{color:var(--muted);font-weight:600}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{font:inherit;color:var(--text);background:#121b25;border:1px solid #314256;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:750}
+button:hover{background:#182331;border-color:#46617d}button.active{background:#153247;border-color:#4db6e9;color:#dff6ff}
+main{max-width:1120px;margin:auto;padding:24px 16px 72px}
+.hero{padding:28px 0 14px}.eyebrow{color:var(--accent2);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.78em}
+h1{font-size:clamp(2rem,6vw,4.1rem);line-height:1.02;margin:.25em 0 .3em;letter-spacing:-.04em}
+.subtitle{font-size:1.08em;color:var(--muted);max-width:900px;margin:0}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}.badge{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:.82em;font-weight:800;background:#0f1720}.badge.good{color:var(--good)}.badge.warn{color:var(--warn)}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}.quick .q{background:linear-gradient(180deg,#121b25,#0e151e);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}.q strong{display:block;font-size:1.1em;margin-bottom:5px}.q span{color:var(--muted);font-size:.92em}
+nav.toc{margin:22px 0 28px;padding:12px;background:#0d141c;border:1px solid var(--line);border-radius:14px;display:flex;gap:8px;flex-wrap:wrap}nav.toc a{text-decoration:none;color:#c9d7e5;border:1px solid #26374a;border-radius:999px;padding:5px 9px;font-size:.82em}
+section{scroll-margin-top:86px;background:rgba(17,25,35,.70);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+h2{font-size:1.55em;line-height:1.2;margin:0 0 14px;letter-spacing:-.02em}h3{font-size:1.12em;margin:22px 0 8px;color:#dce9f5}
+p{margin:.7em 0}.lead{font-size:1.08em;color:#dce9f5}.muted{color:var(--muted)}
+.callout{border-left:4px solid var(--accent);background:#0d1821;padding:14px 16px;border-radius:0 12px 12px 0;margin:14px 0}.callout.good{border-color:var(--good)}.callout.warn{border-color:var(--warn)}.callout.danger{border-color:var(--danger)}
+code,kbd{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;background:#101923;border:1px solid #223247;border-radius:5px;padding:.08em .3em;font-size:.91em}pre{overflow:auto;background:var(--code);border:1px solid #1d2a39;border-radius:12px;padding:14px;line-height:1.5;color:#d7e5f1;font-size:.91em}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:12px 0}table{border-collapse:collapse;width:100%;min-width:620px;background:#0d141c}th,td{padding:10px 12px;border-bottom:1px solid #213041;text-align:left;vertical-align:top}th{background:#111d28;color:#eaf5ff;position:sticky;top:0}tr:last-child td{border-bottom:0}.num{text-align:right;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini{background:#0d151e;border:1px solid #223144;border-radius:12px;padding:14px}
+ul,ol{padding-left:1.25em}.state{font-weight:800;color:var(--accent2)}
+.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:1.02em;background:#0a1219;border:1px solid #203043;border-radius:12px;padding:14px;overflow:auto}
+.footer{margin-top:34px;color:var(--muted);font-size:.88em;text-align:center}
+.lang{display:none}.lang.active{display:block}
+@media(max-width:800px){.quick{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.topbar-inner{align-items:flex-start}.brand{width:100%}section{padding:17px}main{padding-top:14px}}
+@media(max-width:480px){.quick{grid-template-columns:1fr}.controls{width:100%;justify-content:space-between}button{padding:8px 10px}body{line-height:1.58}}
+@media print{.topbar,.toc{display:none!important}body{background:#fff;color:#111}.lang{display:none}.lang.active{display:block}section,.quick .q{box-shadow:none;border-color:#ccc;background:#fff}.muted,.subtitle{color:#444}pre,.formula{white-space:pre-wrap;background:#f4f4f4;color:#111;border-color:#ccc}}
 
-.rhp-now{margin:24px 0 0;padding:27px;border:1px solid rgba(198,91,134,.34);border-radius:20px;background:linear-gradient(135deg,rgba(198,91,134,.09),rgba(100,216,232,.045) 52%,rgba(255,189,91,.035));box-shadow:var(--shadow)}
-.rhp-now h2{margin:0 0 14px!important;padding-top:0!important}
-.signal{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);font:800 10px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;margin:2px 5px 2px 0}
-.signal.good{color:var(--green);border-color:rgba(101,214,155,.34);background:rgba(101,214,155,.07)}
-.signal.warn{color:var(--gold);border-color:rgba(246,209,128,.34);background:rgba(246,209,128,.07)}
-.signal.bad{color:var(--red);border-color:rgba(255,121,111,.34);background:rgba(255,121,111,.07)}
+.statusline{margin:18px 0 0;padding:12px 14px;border:1px solid #7a5b1f;background:#221b0d;border-radius:12px;color:#ffe3a3}.statusline strong{color:#fff1c9}.rank{display:inline-block;padding:.16em .5em;border:1px solid #34506a;border-radius:999px;font-size:.78em;font-weight:800;color:#cfeeff;background:#0d1c28}.rank.main{border-color:#377b5b;color:#baf5d4;background:#0c2118}.rank.chal{border-color:#806425;color:#ffe2a0;background:#221b0c}.rank.off{border-color:#6e3f49;color:#ffc1ca;background:#241117}.tiny{font-size:.86em;color:var(--muted)}.logic{border:1px solid #2b455d;background:#0b1721;border-radius:14px;padding:14px;margin:12px 0}.logic strong{color:#eaf7ff}.metric{font-variant-numeric:tabular-nums;font-weight:800}.nowrap{white-space:nowrap}
 </style>
 </head>
-<body id="top">
-<header class="topbar"><div class="topbar-inner">
-<div class="brand">8Z · BDAA · Beverage Dealcoholization 2026</div>
-<div class="actions"><a href="#teza">Teza</a><a href="#zakaj-smisel">Zakaj ima smisel</a><a href="#originalnost">Kaj je originalno</a><a href="#postopek">Postopek</a><a href="#dvojni-produkt">Dva produkta</a><a href="#metode">18 metod</a><a href="#arena">BDAA v0.5.1-RHP</a><a href="#v051-release">Validacija v0.5.1</a><a href="#v051-long-run">Dolgi v0.5.1 tek</a><a href="#rhp-v040-rezultati">v0.4 dolgi tek</a><a href="#v052-rhp-predesign">RHP v0.5.2 / To-do</a><a href="#naslednji-test">Naslednji test</a></div>
-</div></header>
-<div class="layout">
-<aside class="sidebar"><h2>Vsebina</h2><nav><a href="#teza">Produktna teza</a><a href="#zakaj-smisel">Zakaj ima raziskava smisel</a><a href="#originalnost">Kaj je pri BDAA originalno</a><a href="#problem">Zakaj je problem težak</a><a href="#postopek">Naš hibridni postopek</a><a href="#dvojni-produkt">Pijača + alkoholni produkt</a><a href="#metode">18 metodnih družin</a><a href="#primerjava">Primerjava metod</a><a href="#svetovna-primerjava">Naš pristop vs svet</a><a href="#produkt">Produktne oblike</a><a href="#arena">BDAA v0.5.1-RHP</a><a href="#v051-release">Validacija v0.5.1</a><a href="#v051-long-run">Rezultati dolgega v0.5.1 teka</a><a href="#v052-rhp-predesign">RHP predprojekt v0.5.2 + To-do</a><a href="#rhp-v040-rezultati">Zgodovinski v0.4 dolgi tek</a><a href="#rezultati">Zgodovinski rezultati v0.2.1</a><a href="#dokazi">Kaj je dokazano</a><a href="#odprto">Kaj ostaja odprto</a><a href="#zgodovina">Razvoj arene</a><a href="#naslednji-test">Naslednji testi</a><a href="#sklep">Sklep</a></nav></aside>
-<main class="article">
-<section class="hero" id="teza">
-<p class="hero-kicker">BD × GPT · BDAA / 8Z · v0.5.1-RHP S13 v teku · delni FAST 10. avgusta 2026 · RHP predprojekt v0.5.2</p>
-<h1>Brezalkoholno pivo in vino brez izgube značaja</h1>
-<h2>Zaščiti aromo in telo, ponovno sestavi pijačo brez dodanega sladkorja — odstranjeni etanol pa pretvori v drugi kakovosten produkt</h2>
-<p class="lead"><strong>Osrednja ideja:</strong> pijače ne obravnavamo kot eno samo tekočino, ki jo brutalno segrejemo ali filtriramo. Najprej zaščitimo občutljive aromatske in funkcionalne frakcije, nato poenostavimo vodno-alkoholni del, etanol selektivno odstranimo, nosilec oziroma ločevalno fazo regeneriramo in na koncu pijačo natančno ponovno sestavimo. <strong>Alkoholnega toka ne obravnavamo kot odpadek:</strong> arena ga mora usmeriti v najvrednejši realno dosegljivi razred — od aromatičnega vinskega destilata ali nevtralne alkoholne osnove do tehničnega, kozmetičnega, biocidnega ali farmacevtskega etanola.</p>
-<div class="status-row"><span class="badge research">BDAA v0.5.1-RHP Correctness</span><span class="badge clean">S0–S12 DONE</span><span class="badge warn">S13 95.147 / 162.000 · 58,73 %</span><span class="badge clean">1.844.747 evaluacij</span><span class="badge warn">219 process-feasible</span><span class="badge warn">0 market · 0 robust</span><span class="badge research">v0.5.2 RHP predprojekt</span></div>
-<div class="metric-grid"><div class="metric-card"><b>1.844.747</b><span>zaključenih evaluacij</span></div><div class="metric-card"><b>219</b><span>process-feasible</span></div><div class="metric-card"><b>203</b><span>Agent‑0 LAB_TEST</span></div><div class="metric-card"><b>0 / 0</b><span>market / robust twin</span></div><div class="metric-card"><b>210.317</b><span>resurrection evaluacij</span></div></div>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<div class="brand">BD SOL BB Surfing Hedge · Neutral-Lock <small>strategy v0.2 · working authority</small></div>
+<div class="controls">
+<button aria-label="Slovenščina" class="active" id="slBtn">SL</button>
+<button aria-label="English" id="enBtn">EN</button>
+<button aria-label="Pomanjšaj pisavo" id="minusBtn">A−</button>
+<button aria-label="Povečaj pisavo" id="plusBtn">A+</button>
+<button aria-label="Ponastavi pisavo" id="resetBtn">A</button>
+</div>
+</div>
+</header>
+<main>
+<article class="lang active" id="sl" lang="sl">
+<div class="hero">
+<div class="eyebrow">BD SOL · BB Surfing Hedge · Neutral-Lock arhitektura</div>
+<h1>Najprej ohrani hedge. Reanchoraj samo dober setup. Excess zapri. Potem spet mir.</h1>
+<p class="subtitle">Trenutna najboljša delovna logika je <strong>reanchor-only neutral-lock</strong>: majhen ali zmeren equal LONG+SHORT core kupi čas; Bollingerjeva struktura odpre redke loser-reanchor priložnosti; exact excess TP vrne enake količine; pair reset realizira zaklenjeni spread. Winner-only izhod ni več mainline.</p>
+<div class="badges"><span class="badge good">SOL · 1m execution · BB(20,2)</span><span class="badge">100× research model</span><span class="badge">Cross-margin accounting</span><span class="badge warn">Working authority v0.2</span></div>
+<div class="statusline"><strong>Status 7. 9. 2026:</strong> v0.1.2 <em>long</em> test še ni končan; zadnji live extract je bil pri 62,53 % capacity stagea, errors=0. Arena v0.1.3 je že v gradnji. Spodnja logika je najboljša trenutna sinteza in jo bomo po končnem stress/junijskem rezultatu lahko še spremenili.</div>
+</div>
+<div class="quick">
+<div class="q"><strong>1 · NEUTRAL</strong><span>Equal LONG/SHORT je varen osnovni način. Če ni čistega setupa: NO ACTION.</span></div>
+<div class="q"><strong>2 · REANCHOR</strong><span>Loser add samo po completed impulse + stall/reversal/selektivnem gate-u. Order je intent, ne obljuba.</span></div>
+<div class="q"><strong>3 · HARVEST</strong><span>Po fillu takoj exact-excess TP. Ko se excess zapre, se vrni na equal quantity.</span></div>
+<div class="q"><strong>4 · RESET</strong><span>Če je med averageoma dovolj zaklenjenega spreada, ga realiziraj simetrično; winner-only exit ostane challenger.</span></div>
+</div>
+<nav class="toc">
+<a href="#sl-thesis">Mainline</a><a href="#sl-state">Stanja</a><a href="#sl-setup">Setup bank</a><a href="#sl-fill">Fill/revalidate</a><a href="#sl-size">Sizing</a><a href="#sl-winner">Winner</a><a href="#sl-harvest">Harvest/reset</a><a href="#sl-bbfilter">BB-position</a><a href="#sl-evidence">Evidence</a><a href="#sl-card">Phone card</a><a href="#sl-boundary">Meje</a>
+</nav>
+<section id="sl-thesis">
+<h2>1. Trenutna mainline logika</h2>
+<p class="lead"><span class="rank main">MAINLINE</span> <strong>Equal core → selektivni loser reanchor → exact-excess TP → locked equal core → optional pair reset.</strong></p>
+<pre>N0 EQUAL CORE
+  ↓  completed outside-BB displacement + setup potrjen ob pregledu
+R0 REANCHOR INTENT
+  ↓  naslednji open: celoten setup + loser side + qty + risk ponovno preverjeni
+R1 RESCUE ACTIVE
+  ↓  resting exact-excess TP
+R2 EXCESS HARVESTED
+  ↓
+L0 LOCKED EQUAL CORE
+  ↓  po potrebi symmetric pair trim/reset
+N0 / L0</pre>
+<div class="callout good"><strong>Najpomembnejša sprememba glede v0.1:</strong> winner-only SL/exit ni več privzeti profit-lock. Trenutni vodilni v0.1.2 live kandidati imajo <code>winner_mode=none</code>; čistejši opaženi mehanizem je reanchor + exact-excess TP + pair reset.</div>
+<p><strong>NO ACTION ostaja glavna odločitev.</strong> Ne odpiramo nove akcije, če je account že v rescueu, v directional handoffu, če je setup zamujen ali če minimum-sufficient add ne prestane risk/horizon cap-a.</p>
 </section>
-<section class="why-now" id="zakaj-smisel">
-<h2>Ali bi to že obstajalo, če bi bilo res dobro?</h2>
-<blockquote class="why-quote"><strong>Najpogostejši ugovor:</strong> »Če bi bilo mogoče narediti bistveno boljše brezalkoholno pivo ali vino, bi to veliki proizvajalci, univerze ali laboratoriji že zdavnaj naredili.«</blockquote>
-<p>Ugovor je razumljiv, vendar ni dokaz. <strong>Membrane, vakuum, zamrzovanje, centrifuge in sorbenti že obstajajo.</strong> BDAA zato ne temelji na trditvi, da je vsak gradnik nov. Raziskava išče nekaj bolj praktičnega: <strong>celotno ponudbo, ki bi pri realnem strošku dala boljši izdelek</strong> — manj sladek, nizkokaloričen, z zelo malo alkohola ter z aromo, suhostjo, telesom in identiteto čim bližje originalu.</p>
-<div class="grid-3">
-<div class="info-card"><h3>Kar je že znano</h3><p>Posamezne metode ločevanja in industrijski moduli. To so gradniki in primerjalni baseline-i, ne razlog za opustitev raziskave.</p></div>
-<div class="info-card"><h3>Kar gradimo drugače</h3><p>Zaščita frakcij → obdelava poenostavljenega vodno-alkoholnega toka → selektivna odstranitev etanola → regeneracija → receptirana voda → natančna rekombinacija brez sladkornega »obliža«.</p></div>
-<div class="info-card"><h3>Kaj bo odločilo</h3><p>Ne občutek novosti, ampak meritve: končni ABV, izguba arom, ostanek nosilca, energija, realni EUR/L in slepa degustacija proti najboljšim izdelkom na trgu.</p></div>
-</div>
-<div class="why-verdict"><b>Pravi kriterij</b><p><strong>Tržna originalnost ne zahteva novega fizikalnega zakona.</strong> Dovolj je, da znane in nove elemente sestavimo v sistem, ki doseže opazno boljše razmerje med kakovostjo in ceno. Če laboratorij pokaže, da ne deluje, dobimo preverjen negativen rezultat. Če premaga najboljše reference v slepem testu in pri realnem strošku, imamo resno novo ponudbo — ne glede na starost posameznih gradnikov.</p></div>
+<section id="sl-state">
+<h2>2. Stanja, ki jih ne smemo mešati</h2>
+<div class="table-wrap"><table><thead><tr><th>Stanje</th><th>Pravilna interpretacija</th><th>Sleep-safe?</th></tr></thead><tbody>
+<tr><td><span class="state">N0 NEUTRAL_EQUAL_CORE</span></td><td>Enaka qty LONG/SHORT; brez rescuea in brez latentnega directional orderja.</td><td>Najbližje DA, ob zadostnem margin headroomu.</td></tr>
+<tr><td><span class="state">N1 OBSERVE_DISPLACEMENT</span></td><td>Winner/loser obstajata samo po PnL; book je še vedno quantity-neutral.</td><td>DA, če ni armed orderjev.</td></tr>
+<tr><td><span class="state">R0 REANCHOR_INTENT</span></td><td>Signal je zaznan, vendar add še ni izveden. Naslednji open mora revalidirati.</td><td>NE za dolg spanec; latentna akcija obstaja.</td></tr>
+<tr><td><span class="state">R1 RESCUE_ACTIVE</span></td><td>Loser je povečan, net excess je directional. TP mora biti že live.</td><td>NE.</td></tr>
+<tr><td><span class="state">L0 LOCKED_EQUAL_CORE</span></td><td>Enaki qty, različna averagea; zaklenjeni pair spread je neodvisen od trenutne cene.</td><td>Najbližje DA.</td></tr>
+<tr><td><span class="state">D0 DIRECTIONAL_HANDOFF</span></td><td>Winner-only exit je pustil naked preostali leg. To ni NO ACTION in ni dokončan neutral-lock.</td><td>NE.</td></tr>
+</tbody></table></div>
+<div class="formula">PairPnL(P) = q(P − L) + q(S − P) = q(S − L)</div>
+<p class="muted">Equal core ne pomeni, da je account brez tveganja: margin, funding, mark-price pravila, slippage in latentni orderji ostanejo ločena tveganja. Pomeni samo, da je prvi-order directional price delta pri enakih qty izničen.</p>
 </section>
-<section class="why-now" id="originalnost">
-<h2>Kaj je pri BDAA dejansko originalno?</h2>
-<p><strong>Da: BDAA je originalna kot celovita procesna in produktna arhitektura.</strong> Ne zato, ker bi bili membrana, vakuum, zamrzovanje, centrifuga ali sorbent vsak zase novi, temveč zato, ker jih povezujemo v določen zaprti krog: zaščita občutljivih frakcij → poenostavitev vodno-alkoholnega toka → selektivna odstranitev etanola → regeneracija ločevalne faze → vračanje lastne ali receptirane vode → natančna rekombinacija brez sladkornega »obliža« → skupna optimizacija okusa, kalorij in realnega EUR/L.</p>
-<div class="grid-3">
-<div class="info-card"><h3>Originalnost celote</h3><p>Posebnost je v <strong>sistemski sestavi in cilju ponudbe</strong>: ne iščemo samo najnižjega ABV, ampak nesladek, nizkokaloričen izdelek z značajem originala in dovolj nizkim stroškom za dejanski trg. To je najina originalna arhitektura, čeprav uporablja tudi znane module.</p></div>
-<div class="info-card"><h3>Najbolj originalna tehnična veja</h3><p><strong>Etanol-selektivni magnetni trdni ali tekoči nosilec</strong>: nosilec veže oziroma sprejme etanol, nato pa celotno naloženo fazo odstranimo z magnetnim gradientom, jo regeneriramo in ponovno uporabimo. Magnet torej ne ločuje neposredno vode in etanola; ločuje posebej zasnovan nosilec skupaj z zajetim etanolom.</p></div>
-<div class="info-card"><h3>Poštena meja trditve</h3><p>Do sedaj pregledani komercialni sistemi uporabljajo predvsem membrane, stripping, vakuum in spinning-cone tehnologije. <strong>Nismo našli komercialne razalkoholizacije piva ali vina z magnetno odstranljivim etanolskim nosilcem.</strong> To upravičuje oznako »najbolj originalna veja«, ne pa še trditve o dokazani svetovni ali patentni novosti.</p></div>
-</div>
-<div class="why-verdict"><b>Najbolj natančno</b><p><strong>Celota je originalna arhitektura nove ponudbe; magnetni carrier loop je njena najbolj originalna in najbolj tvegana tehnična veja.</strong> Generična adsorpcija alkohola je že znana, magnetne tekočine in magnetna separacija pa obstajajo v drugih raziskovalnih področjih. Najina razlikovalna hipoteza je njihova živilsko varna, regenerativna uporaba znotraj predhodno frakcionirane in pozneje rekonstruirane pijače.</p></div>
+<section id="sl-setup">
+<h2>3. Setup bank: rank, ne en sam čarobni signal</h2>
+<p>Vsi setupi zahtevajo <strong>completed outside-BB impulse</strong>, dovolj velik displacement, svež local extreme in dokaz, da impulz ne pospešuje več. Sam BB touch ali stari oddaljeni average ni setup.</p>
+<div class="table-wrap"><table><thead><tr><th>Setup</th><th>Trenutni status</th><th>Operativna ideja</th><th>Trenutni evidence seed</th></tr></thead><tbody>
+<tr><td><strong>STALL</strong></td><td><span class="rank main">LEADER / CHALLENGER</span></td><td>Po velikem displacementu se telo/range skrči ali naredi majhen pullback; ni nove akceleracije.</td><td>5-min pogledi; v najboljšem vidnem 61-dnevnem cellu target 75 bp.</td></tr>
+<tr><td><strong>REVERSAL</strong></td><td><span class="rank main">RISK-EFFICIENT SPECIALIST</span></td><td>Po fresh extreme pride completed reversal znak; pri počasnejšem režimu lahko 15m completed context deluje kot veto/size modifier.</td><td>15-min pogledi; 75 bp je trenutno obetaven seed.</td></tr>
+<tr><td><strong>SELECTIVE</strong></td><td><span class="rank chal">ROBUST SPECIALIST</span></td><td>Kombinira fresh displacement + stall/reversal + močnejši veto; manj priložnosti, pogosto manj directional časa.</td><td>5–15 min; 30–50 bp targeti ostajajo pomembni.</td></tr>
+<tr><td><strong>REENTRY</strong></td><td><span class="rank chal">CONTROL</span></td><td>BB reentry brez dovolj bogatega stall/reversal konteksta.</td><td>Ohrani kot matched control, ne kot privzeto pravilo.</td></tr>
+</tbody></table></div>
+<div class="callout warn"><strong>Ne overfitaj leaderboarda:</strong> 75 bp ni nova dogma. Bolj oddaljen target potrebuje manjši add, vendar lahko rescue traja bistveno dlje. Target mora biti skupaj optimiziran z walletom, coreom, setupom in največjim časom brez nadzora.</div>
 </section>
-<section id="problem">
-<h2>1. Zakaj je dobra razalkoholizacija težka</h2>
-<div class="grid-3">
-<div class="info-card"><h3>Etanol ni samo alkohol</h3><p>Prispeva občutek topline, telo, topnost arom in ravnotežje okusa. Njegova odstranitev spremeni celoten senzorični sistem.</p></div>
-<div class="info-card"><h3>Arome so hlapne</h3><p>Postopki, ki dobro odstranijo etanol, pogosto odnašajo tudi vrhnje arome, CO₂ in druge majhne molekule.</p></div>
-<div class="info-card"><h3>Voda ni nevtralna rešitev</h3><p>Preprosta zamenjava odstranjene frakcije z vodo razredči telo, kisline, minerale, barvo in strukturo.</p></div>
-</div>
-<div class="callout red"><h3>Zakaj so mnoge brezalkoholne pijače presladke</h3><p>Ko alkohol izgine, se spremeni zaznava ravnotežja med sladkostjo, kislino, grenkobo, aromo in telesom. Dodajanje sladkorja lahko hitro prekrije praznino, vendar pogosto ustvari pijačo, ki je kalorično in senzorično oddaljena od izvirnika. Naš cilj je obnoviti strukturo z lastnimi frakcijami, procesnimi nastavitvami in minimalnimi funkcionalnimi dodatki — ne s prikrivanjem s sladkorjem.</p></div>
-</section>
-<section id="postopek">
-<h2>2. Naš hibridni postopek</h2>
-<div class="process-flow">
-<div class="process-step"><b>1 · Zaščita</b><span>Odvzem in zaščita arom, CO₂ ter funkcionalnih frakcij, ki jih kasneje vrnemo.</span></div>
-<div class="process-step"><b>2 · Poenostavitev</b><span>Glavni tok se spremeni v lažje obvladljivo vodno-alkoholno frakcijo.</span></div>
-<div class="process-step"><b>3 · Selektivni zajem</b><span>Etanol se loči z membrano, vakuumom, zamrzovanjem, sorbentom ali magnetnim nosilcem.</span></div>
-<div class="process-step"><b>4 · Separacija</b><span>Naloženi nosilec ali etanolni tok se odstrani z magnetom, centrifugo ali membrano.</span></div>
-<div class="process-step"><b>5 · Regeneracija + produkt B</b><span>Nosilec se očisti in ponovno uporabi; alkoholni tok se zbere, razvrsti, prečisti in usmeri v najvrednejšo dovoljeno uporabo.</span></div>
-<div class="process-step"><b>6 · Voda</b><span>Vrne se dovolj čista lastna voda ali natančno receptirana sveža voda.</span></div>
-<div class="process-step"><b>7 · Rekombinacija</b><span>Zaščitene frakcije, telo, kisline, minerali in CO₂ se vrnejo v pravilnem vrstnem redu.</span></div>
-<div class="process-step"><b>8 · Validacija</b><span>ABV, stabilnost, ostanki nosilca, mikrobiologija in slepa degustacija.</span></div>
-</div>
-<blockquote><strong>Najina najbolj originalna tehnična veja:</strong> magnetno odzivna trdna ali tekoča faza, ki močneje veže oziroma porazdeli etanol kot vodo, nato pa jo odstranimo z visokim gradientom magnetnega polja. Po trenutnem javnem pregledu se tak pristop ne uporablja kot komercialna metoda razalkoholizacije piva ali vina. Magnet ni čarobni ločevalnik alkohola; bistven je posebej zasnovan, živilsko varen in regenerativen nosilec.</blockquote>
-<h3>Zakaj neposredno močno magnetno polje ni dovolj</h3>
-<p>Etanol in voda nimata tako različnega magnetnega odziva, da bi ju bilo smiselno industrijsko ločevati samo z magnetom. Zato BDAA vsebuje <code>direct_magnetic_field_falsification</code> kot kontrolni baseline, ki mora idejo zavrniti, kadar ni prisoten selektivni magnetni nosilec.</p>
-</section>
-<section id="metode">
-<h2>3. Osemnajst metodnih družin v areni</h2>
-<div class="method-ladder">
-<div class="method"><b>Membrane</b><span>RO/diafiltracija, pervaporacija, osmotska destilacija in vakuumska membranska destilacija.</span></div>
-<div class="method"><b>Vakuum in film</b><span>Vakuumska destilacija, spinning cone in zaprti mikroflash skozi zelo majhno odprtino.</span></div>
-<div class="method"><b>Plinski prenos</b><span>Inert-gas stripping z ločenim zajemom arom in nadzorom oksidacije.</span></div>
-<div class="method"><b>Zamrzovanje</b><span>Progresivno, falling-film in scraped-surface zamrzovanje z rastjo kristalov, entrainmentom ter pranjem ledu.</span></div>
-<div class="method"><b>Sorbenti</b><span>Klasični trdni sorbent ter membransko-sorbentni hibrid.</span></div>
-<div class="method"><b>Magnetni nosilci</b><span>Magnetni trdni delci in magnetna tekoča faza z regeneracijo, residual gate-om in izgubo materiala.</span></div>
-<div class="method"><b>Hibridi</b><span>Freeze–microflash in unrestricted hybrid, ki lahko sestavi več metod v smiselno procesno verigo.</span></div>
-<div class="method"><b>Falsifikator</b><span>Neposredno magnetno polje brez nosilca, namenjeno preprečevanju lažnih čudežnih rezultatov.</span></div>
-</div>
-</section>
-<section id="primerjava">
-<h2>4. Inženirska primerjava glavnih pristopov</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>Pristop</th><th>Glavna prednost</th><th>Glavno tveganje</th><th>Najbolj smiseln namen</th><th>Status</th></tr></thead>
-<tbody>
-<tr><td>RO + diafiltracija</td><td>Nizka temperatura, modularnost</td><td>Velika poraba vode, več ciklov, omejena selektivnost</td><td>Pivo in nekatere vinske predobdelave</td><td>Zrela osnova</td></tr>
-<tr><td>Pervaporacija / VMD</td><td>Selektivnejši hlapni prenos</td><td>Membrane, fouling, vakuum, aroma loss</td><td>Fina odstranitev etanola</td><td>Obetavno</td></tr>
-<tr><td>Vakuumska destilacija</td><td>Znana industrijska fizika</td><td>Toplotna poškodba in odnašanje arom</td><td>Večje centralne naprave</td><td>Zrelo, kompromisno</td></tr>
-<tr><td>Spinning cone</td><td>Hiter tanki film, ločen aroma pass</td><td>CAPEX in kompleksnost</td><td>Premium kakovost pri večjih količinah</td><td>Industrijsko relevantno</td></tr>
-<tr><td>Zamrzovanje</td><td>Nizke temperature, zanimiva frakcionacija</td><td>Etanol ostaja v tekoči fazi; pranje ledu in energija</td><td>Predkoncentracija ali hibrid</td><td>Raziskovalno</td></tr>
-<tr><td>Closed microflash</td><td>Zelo kratek toplotni stik v zaprtem sistemu</td><td>Težko uravnoteženje transferja, vakuuma in arom</td><td>Hibrid po predobdelavi</td><td>Nova veja</td></tr>
-<tr><td>Trdni sorbent</td><td>Možna selektivnost in nizka procesna temperatura</td><td>Kapaciteta, regeneracija, okus, strošek</td><td>Polishing ali manjše serije</td><td>Laboratorij potreben</td></tr>
-<tr><td>Magnetni tekoči nosilec</td><td>Selektivni kontakt + hitra zunanja separacija</td><td>Živilska varnost, ostanek, emulzija, regeneracija</td><td>Potencialno nova platforma</td><td><strong>Najbolj originalna tehnična veja; brez ugotovljene komercialne uporabe v razalkoholizaciji pijač</strong></td></tr>
-<tr><td>Unrestricted hybrid</td><td>Vsak korak dela samo to, kar zna najbolje</td><td>Kompleksnost, CAPEX, čiščenje in kontrola</td><td>Iskanje najboljšega celotnega postopka</td><td>Glavni cilj arene</td></tr>
-</tbody></table></div>
-</section>
-<section id="svetovna-primerjava">
-<h2>5. Naš pristop proti najboljšim poznanim pristopom v svetu</h2>
-<p>Spodnja tabela primerja najpomembnejše danes uporabljene oziroma industrijsko dosegljive poti z našim konceptom <strong>BDAA Architecture</strong>. Pri uveljavljenih metodah so tehnološke značilnosti podprte z industrijskimi sistemi in objavljeno literaturo. Stroški so <strong>orientacijski screening razponi za večjo, dobro izkoriščeno napravo</strong>, ne ponudbe dobaviteljev. Dejansko ceno močno spreminjajo začetni in ciljni ABV, velikost serije, voda, energija, CIP, aroma recovery, amortizacija ter lokalno delo.</p>
-<div class="callout"><h3>Kako brati stroške</h3><p><strong>CAPEX</strong> pomeni približen red velikosti procesnega modula brez nove stavbe in polnilne linije. <strong>Procesni strošek</strong> pomeni dodaten strošek razalkoholizacije pri večjih količinah in visoki izkoriščenosti, brez osnovne pijače, embalaže, distribucije, marže in davka. Razponi so za primerjavo arhitektur, ne za investicijsko odločitev.</p></div>
-<div class="table-wrap"><table>
-<thead><tr><th>Pristop</th><th>Zrelost</th><th>Pros</th><th>Cons</th><th>Večji volumen</th><th>Okvirni CAPEX</th><th>Dodatni strošek</th><th>Najbolj primeren za</th></tr></thead>
-<tbody>
-<tr><td><strong>Vakuumska destilacija / stripping</strong></td><td>Visoka</td><td>Znana fizika; doseže zelo nizek ABV; manj diafiltracijske vode; industrijsko dobavljiva.</td><td>Toplotna in vakuumska obremenitev; izguba arom; potreben aroma recovery; energijska intenzivnost.</td><td>10.000–100.000+ L/dan</td><td>≈ €0,5–3,0 mio</td><td>≈ €0,08–0,30/L</td><td>Velike pivovarne, centralni obrati, 0.0–0.5 % ABV</td></tr>
-<tr><td><strong>Reverse osmosis + diafiltracija</strong></td><td>Visoka</td><td>Nizka temperatura; dobra zaščita nehlapnih komponent; modularnost; primerna za pivo in delno znižanje vina.</td><td>Veliko kakovostne vode; fouling; menjava membran; več ciklov; 0.0 je lahko ekonomsko težak.</td><td>5.000–80.000 L/dan</td><td>≈ €0,3–2,0 mio</td><td>≈ €0,10–0,40/L</td><td>Pivo do približno 0,5 %, vino z delnim znižanjem ABV</td></tr>
-<tr><td><strong>Spinning Cone Column</strong></td><td>Visoka / premium</td><td>Zelo kratek stik; ločen zajem arom; dobra kakovost; kontinuirno delovanje.</td><td>Visok CAPEX; zahtevna naprava in CIP; smiselna ob visoki izkoriščenosti ali centralni storitvi.</td><td>20.000–200.000+ L/dan</td><td>≈ €1–5+ mio</td><td>≈ €0,10–0,35/L</td><td>Premium vino, velike serije, centralna storitev</td></tr>
-<tr><td><strong>Pervaporacija / membranska destilacija</strong></td><td>Srednja–visoka</td><td>Potencialno selektivnejši prenos etanola; nizka temperatura; kompaktna modularna izvedba.</td><td>Omejen flux; fouling; vakuum; možen prenos arom; drage specialne membrane.</td><td>5.000–50.000 L/dan</td><td>≈ €0,4–2,5 mio</td><td>≈ €0,12–0,45/L</td><td>Premium pivo/vino, fina odstranitev, hibridi</td></tr>
-<tr><td><strong>Osmotska destilacija</strong></td><td>Srednja</td><td>Zelo nizka temperatura; majhna toplotna poškodba; modularnost.</td><td>Regeneracija strip raztopine; wetting; počasnejši proces; aroma transfer; dražja globoka razalkoholizacija.</td><td>3.000–30.000 L/dan</td><td>≈ €0,3–1,5 mio</td><td>≈ €0,15–0,55/L</td><td>Nežna delna korekcija vina in premium izdelki</td></tr>
-<tr><td><strong>Arrested fermentation / posebno varjenje</strong></td><td>Visoka za pivo</td><td>Najnižji dodatni strošek; manj opreme; visoka energijska učinkovitost.</td><td>Ni polno fermentiran izdelek; pogosto sladek ali »worty« profil; omejena kompleksnost; slabo za vino.</td><td>10.000–500.000+ L/dan</td><td>≈ €0,05–0,5 mio dodatkov</td><td>≈ €0,02–0,12/L</td><td>Cenovno množično brezalkoholno pivo</td></tr>
-<tr><td><strong>Centralna pogodbena razalkoholizacija</strong></td><td>Visoka</td><td>Ni velikega lastnega CAPEX; dostop do SCC, vakuuma ali RO; strokovno upravljanje.</td><td>Prevoz tekočine; minimalna serija; manj nadzora; logistika in oksidacijsko tveganje.</td><td>Serije 5.000–100.000+ L</td><td>Za naročnika nizek</td><td>≈ €0,20–0,80/L + logistika</td><td>Craft pivovarne in kleti brez lastne naprave</td></tr>
-<tr><td><strong>BDAA hibrid: zaščita arom + selektivna ločitev + rekombinacija</strong></td><td><strong>Originalna sistemska arhitektura</strong><br/><span class="small">patentna novost ni potrjena</span></td><td>Vsak korak opravi ozko nalogo; vrača lastne arome in vodo; skupaj optimizira okus, energijo, vodo, CAPEX in trg; lahko uporablja zrele module.</td><td>Več korakov; kompleksnejši nadzor in CIP; potreben recipe/provenance sistem; celota še ni fizično potrjena.</td><td>Ciljno 10.000–100.000+ L/dan</td><td>Modelno ≈ €0,6–3,5 mio</td><td><strong>Modelno ≈ €0,18–0,50/L</strong></td><td>Premium pivo in vino brez dodanega sladkorja</td></tr>
-<tr><td><strong>BDAA magnetni tekoči ali trdni nosilec</strong></td><td><strong>Najbolj originalna tehnična veja</strong><br/><span class="small">zgodnja laboratorijska hipoteza</span></td><td>Možna selektivna ekstrakcija pri nizki temperaturi; magnetna separacija; regeneracija; potencialno majhna izguba vode in arom.</td><td>Selektivnost ni izmerjena; živilska varnost; residual; emulzije; regeneracija; regulativa; najvišje tehnično tveganje.</td><td>Še ni določeno</td><td>Še ni verodostojno ocenljiv</td><td>Ciljno &lt; €0,30/L, <strong>nedokazano</strong></td><td>Prihodnji polishing ali nova ločevalna platforma</td></tr>
-</tbody></table></div>
-<h3>Kje je naš pristop lahko boljši</h3>
-<div class="grid-3"><div class="info-card"><h3>Kakovost</h3><p>Namesto da ena naprava hkrati odstranjuje etanol in skuša ohraniti vse drugo, BDAA najprej zaščiti občutljive frakcije, nato opravi ločitev in pijačo ponovno sestavi.</p></div><div class="info-card"><h3>Prilagodljivost</h3><p>Ista platforma lahko uporabi drugačno verigo za pivo, belo vino, rdeče vino ter različne ciljne ABV in cenovne razrede.</p></div><div class="info-card"><h3>Ekonomika celote</h3><p>Arena poleg energije ocenjuje vodo, CIP, delo, potrošni material, regeneracijo, CAPEX, prodajno ceno in demand ramp.</p></div></div>
-<h3>Kje so svetovni pristopi danes boljši</h3>
-<ul><li><strong>Dokazana proizvodnja:</strong> vakuumski, RO in SCC sistemi že delujejo v realnih obratih.</li><li><strong>Dobavitelji in servis:</strong> obstajajo standardni moduli, reference, rezervni deli in procesne garancije.</li><li><strong>Regulativa:</strong> znani postopki imajo lažjo pot kot nov magnetni nosilec.</li><li><strong>Meritve kakovosti:</strong> najboljši sistemi imajo realne senzorične in kemične podatke; BDAA je še model.</li></ul>
-<div class="callout green"><h3>Najbolj realna prva industrijska različica BDAA</h3><p>Najmanj tvegana prva izvedba je verjetno <strong>pametna hibridna linija</strong>: zajem arom → zrela nizkotemperaturna RO ali vakuumska stopnja → po potrebi selektivni polishing → kontrolirano vračanje lastne vode, arom, kislin, mineralov in CO₂. Tako lahko najino glavno inovacijo — pravilno razstavljanje in ponovno sestavljanje pijače — testiramo z že dosegljivo opremo.</p></div>
-<details><summary>Viri in meja stroškovnih ocen</summary><div><p>Tehnološka primerjava je preverjena proti industrijskim opisom Alfa Laval za membransko in stripping razalkoholizacijo, sistemu Lowal, sistemu GEA AromaPlus, dokumentaciji Flavourtech Spinning Cone Column ter strokovnim pregledom metod za vino. Dobavitelji praviloma ne objavljajo cen celotnih industrijskih projektov, zato so CAPEX in EUR/L inženirski screening razponi. Pred investicijo so nujne ponudbe za konkretno kapaciteto, ciljni ABV in recepturo.</p></div></details>
-</section>
-<section id="dvojni-produkt">
-<h2>6. Dva izdelka iz iste fermentacije</h2>
-<div class="callout green"><h3>Alkoholni tok ni odpadek</h3><p>Pravi BDAA cilj ni samo <strong>izdelek A: kakovostna nizkoalkoholna pijača</strong>. Isti proces lahko ustvari tudi <strong>izdelek B: namensko prečiščen alkoholni produkt</strong>. Zmagovalna metoda zato ni nujno tista z najnižjim neposrednim stroškom razalkoholizacije, temveč tista, ki ustvari največjo skupno vrednost obeh izhodov.</p></div>
-<div class="process-flow">
-<div class="process-step"><b>B1 · Surovi alkoholni tok</b><span>Kondenzat, permeat ali desorbat: etanol + voda + arome + estri + aldehidi + višji alkoholi.</span></div>
-<div class="process-step"><b>B2 · Analitična razvrstitev</b><span>ABV, metanol, acetaldehid, etil acetat, višji alkoholi, furfural, aroma fingerprint, ostanek nosilca.</span></div>
-<div class="process-step"><b>B3 · Dodelava</b><span>Frakcioniranje arom, rektifikacija, dehidracija, aktivno oglje, membransko poliranje ali denaturacija.</span></div>
-<div class="process-step"><b>B4 · Najvrednejši trg</b><span>Vinska alkoholna osnova, liker/aperitiv, tehnični solvent, čistilo, kozmetika, biocid, farmacija ali energija.</span></div>
-</div>
-<div class="grid-2">
-<div class="info-card"><h3>Vinski alkoholni tok</h3><p>Arena mora ločiti vsaj tri cilje: <strong>aromatični vinski destilat</strong>, <strong>nevtralni etanol kmetijskega izvora</strong> in <strong>ločeno vinsko aromatsko frakcijo</strong>. Del arom se lahko vrne v nizkoalkoholno vino, del pa se ohrani za liker, aperitiv ali drug premium izdelek. Izraz »vinski alkohol« sam po sebi ni dovolj natančen: pravna kategorija je odvisna od surovine, načina destilacije, končnega ABV, nečistoč in označevanja.</p></div>
-<div class="info-card"><h3>Pivski alkoholni tok</h3><p>Najprej je smiselno modelirati <strong>tehnični etanol za čistila in razmaščevanje</strong>, nato kakovost za kozmetiko, dovoljene biocide oziroma razkužila ter farmacevtsko pomožno snov. Nižji rezervni izhod sta biofuel ali lastna procesna energija. Arena ne sme vnaprej predpostaviti nizke vrednosti: pravno in tržno upravičenost mora oceniti glede na izvor, dejanski proces, čistost in državo uporabe.</p></div>
-</div>
-<h3>Kakovostna kaskada alkoholnega toka</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Ciljni razred</th><th>Ključna dodelava</th><th>Odločilne meritve</th><th>Možna uporaba</th><th>Vloga v areni</th></tr></thead>
-<tbody>
-<tr><td><strong>Aromatični vinski destilat</strong></td><td>Nežna frakcijska destilacija; ločen heads/hearts/tails; nadzor arome</td><td>ABV, metanol, hlapne snovi, organoleptika, izvor</td><td>Vinski destilat, brandy/wine-spirit kandidat ali premium aromatska osnova — le če izpolni konkretna pravila</td><td>Maksimizira identiteto in premium vrednost, ne nevtralnosti</td></tr>
-<tr><td><strong>Nevtralni etanol kmetijskega izvora</strong></td><td>Rektifikacija do najmanj 96 % vol.; po potrebi oglje in dehidracija</td><td>Etil acetat, acetaldehid, višji alkoholi, metanol, furfural, okus</td><td>Likerji, grenčice, maceracije in druge alkoholne pijače, kadar pravna kvalifikacija to dopušča</td><td>Primerja višjo prodajno vrednost z dodatno energijo in CAPEX-om</td></tr>
-<tr><td><strong>Kozmetični / ekstrakcijski etanol</strong></td><td>Rektifikacija, dezodorizacija, stabilna specifikacija serije</td><td>Čistost, vonj, nehlapni ostanek, sledne nečistoče</td><td>Parfumerija, kozmetika, rastlinski izvlečki</td><td>Srednje-visoka vrednost; zahteva kakovost in sledljivost</td></tr>
-<tr><td><strong>Biocidni / razkuževalni razred</strong></td><td>Standardizacija koncentracije, formulacija, dokaz učinkovitosti</td><td>Etanol, nečistoče, stabilnost, mikrobiološka učinkovitost</td><td>Površinska ali higienska razkužila ob ustreznih dovoljenjih</td><td>Ločen regulatorni gate; market value ni avtomatična</td></tr>
-<tr><td><strong>Farmacevtski razred</strong></td><td>Validirana rektifikacija/poliranje, GMP in farmakopejska kontrola</td><td>Celotna farmakopejska specifikacija in sledljivost</td><td>Topilo oziroma pomožna snov v zdravilih</td><td>Najvišja kakovostna ovira; lahko pa upraviči dražjo separacijo</td></tr>
-<tr><td><strong>Tehnični alkohol</strong></td><td>Rektifikacija do namenske specifikacije; pogosto denaturacija</td><td>ABV, voda, vonj, ostanek, varnostni list</td><td>Čistila, razmaščevanje, formulacije detergentov</td><td>Najrealnejši osnovni trg za pivski tok</td></tr>
-<tr><td><strong>Energija / gorivo</strong></td><td>Minimalno čiščenje ali dehidracija glede na uporabo</td><td>Kurilna vrednost, voda, korozivnost, emisije</td><td>Biofuel ali interna procesna energija</td><td>Spodnja vrednostna meja, da alkoholni tok ni odpadek</td></tr>
-</tbody></table></div>
-<h3>Kaj mora računati naslednja arena</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Fizika produkta B</h3><p>Maso in sestavo surovega alkoholnega toka, njegovo koncentracijo, izgube pri rektifikaciji, porabo energije, vračanje vode, zajem arom ter čistost končne frakcije.</p></div>
-<div class="info-card"><h3>Regulatorni router</h3><p>Za vsak trg ločen gate: surovina, način pridobivanja, zahtevani ABV, nečistoče, denaturacija, trošarine, dovoljenja, dokumentacija in verjetnost, da serija doseže razred.</p></div>
-<div class="info-card"><h3>Skupna ekonomika</h3><p><code>neto strošek razalkoholizacije = strošek procesa − realna vrednost produkta B</code>. Vrednost se prizna šele po strošku dodelave, analiz, izgub, skladiščenja, davkov in prodaje.</p></div>
-</div>
-<div class="callout"><h3>Ključni konflikt: komu pripada aroma?</h3><p>Arena mora preprečiti dvojno štetje. Ista aromatska molekula ne more hkrati v celoti izboljšati nizkoalkoholne pijače in premium alkoholnega produkta. RHP mora raziskovati Pareto mejo: koliko posamezne aromatske frakcije vrniti izdelku A, koliko ohraniti v izdelku B in koliko je izgubiti pri čiščenju.</p></div>
-<details><summary>Regulatorna osnova in poštena meja</summary><div>
-<p>Uredba (EU) 2019/787 za <em>ethyl alcohol of agricultural origin</em> zahteva pridobivanje s fermentacijo in destilacijo kmetijskih proizvodov, najmanj 96,0 % vol. ter stroge meje za etil acetat, acetaldehid, višje alkohole, metanol in furfural. Ista uredba ločeno opredeljuje <em>wine spirit</em>, ki mora biti proizveden z destilacijo vina oziroma vinskega destilata pri manj kot 86 % vol. <a href="https://eur-lex.europa.eu/eli/reg/2019/787/2024-05-13/eng" rel="noopener" target="_blank">Uradno besedilo EUR-Lex</a>.</p>
-<p>Študija, financirana s strani Evropske komisije, je poročala o pomembni razliki v tržnih izhodih alkohola, odstranjenega iz vina in piva, ter o industrijskih izhodih za pivski tok. To je uporaben trenutni regulatorni signal, ne nadomestilo za pravno kvalifikacijo konkretnega procesa v Sloveniji ali drugi državi. <a href="https://agriculture.ec.europa.eu/system/files/2023-03/study-on-low-no-alcohol-beverages-presentation_en.pdf" rel="noopener" target="_blank">Študija o low/no-alcohol pijačah</a>.</p>
-</div></details>
-</section>
-<section id="produkt">
-<h2>7. Iz postopka v dejansko ponudbo</h2>
-<div class="grid-3">
-<div class="info-card"><h3>Lastna modularna naprava</h3><p>Pivovarna ali klet kupi opremo in jo uporablja po potrebi. Prednost je nadzor; slabost CAPEX, čiščenje in strokovno upravljanje.</p></div>
-<div class="info-card"><h3>Centralna storitev</h3><p>Pijača se prevaža v specializiran obrat. Najboljša izkoriščenost opreme, vendar dodatna logistika in večje serije.</p></div>
-<div class="info-card"><h3>Mobilna storitev</h3><p>Naprava pride k proizvajalcu. Zanimivo za craft segment, vendar mora prestati omejitve mase, električne moči, vode, footprinta in pretoka.</p></div>
-</div>
-<p>BDAA v0.5.1 etanolni tok obravnava kot <strong>poln drugi produkt</strong> z lastno fiziko, dodelavo, kvalifikacijo, CAPEX/OPEX, trgom in fizikalno robustnostjo.</p>
-</section>
-<section id="arena">
-<h2>8. BDAA v0.5.1-RHP — Twin-Product Correctness Arena</h2>
-<div class="metric-grid">
-<div class="metric-card"><b>4.050</b><span>osnovnih uravnoteženih celic</span></div>
-<div class="metric-card"><b>18</b><span>primarnih metodnih družin</span></div>
-<div class="metric-card"><b>11</b><span>RHP generativnih lensov</span></div>
-<div class="metric-card"><b>8</b><span>Product-B route družin</span></div>
-</div>
-<p><strong>v0.5.1 je popravljeni production research release nad v0.5.1 release candidatom.</strong> Ohranja poln Twin-Product model, vendar na novo definira konsolidirani denarni tok, dimenzionira Product-B opremo iz pretoka, strogo validira authority zahteve, ponovno izvaja fizični Product-B graf v vsakem Monte Carlo vzorcu in eksplicitno zapira carrier/sorbent inventar.</p>
-<div class="callout green"><h3>Šest correctness popravkov je zaključenih</h3><p><strong>1.</strong> Produkt B se v skupni marži in paybacku prizna samo enkrat. <strong>2.</strong> CAPEX raste z dejanskim pretokom in številom linij. <strong>3.</strong> nepoznana authority zahteva fail-closed odpove. <strong>4.</strong> energy route mora dokazati fizikalno učinkovitost in pozitivno neto energijo. <strong>5.</strong> Product-B Monte Carlo spreminja dejanski ABV, yield, nečistoče, energijo in route status. <strong>6.</strong> nosilec ima enoten vhodni in izhodni provenance ledger.</p></div>
-<div class="grid-3">
-<div class="info-card"><h3>Komponentno zaprt Produkt B</h3><p>Sledi etanolu, vodi, metanolu, acetaldehidu, etil acetatu, višjim alkoholom, furfuralu, aromatskim razredom, CO₂, nehlapnemu ostanku ter ostanku sorbenta, magnetnega nosilca ali draw faze.</p></div>
-<div class="info-card"><h3>Neidealni processing graph</h3><p><code>raw stream → heads/hearts/tails → rektifikacija → dehidracija → oglje/membrana → residual removal → denaturacija → skladiščenje → kvalifikacija</code>. Vsaka stopnja ima yield, selektivnost, energijo, strošek, uncertainty, evidence maturity in assumption debt.</p></div>
-<div class="info-card"><h3>Deterministični router</h3><p>Stanja <code>eligible</code>, <code>ineligible</code>, <code>unverified</code> in <code>fallback</code>. Če višji razred odpove, tok pade v naslednji dovoljeni razred. <strong>Unverified route-grade vrednost je nič.</strong></p></div>
-</div>
-<h3>Osem route družin Produkta B</h3>
-<div class="table-wrap"><table><thead><tr><th>Pot</th><th>Primarna surovina</th><th>Glavni konflikt</th><th>Pravna obravnava v areni</th></tr></thead><tbody>
-<tr><td>Wine aromatic distillate</td><td>belo/rdeče vino</td><td>aromatska identiteta vs višja čistoča</td><td>unverified; case-specific kategorija in način proizvodnje</td></tr>
-<tr><td>Agricultural neutral ethanol</td><td>pivo ali vino</td><td>96 % + stroge nečistoče vs energija/yield</td><td>unverified; izvor in postopek nista sklepana iz čistosti</td></tr>
-<tr><td>Liqueur / aperitif base</td><td>predvsem vinski tok</td><td>premium aroma vs kvalifikacijska verjetnost</td><td>unverified; dovoljena uporaba se ne predpostavi</td></tr>
-<tr><td>Cosmetic / extraction</td><td>pivo ali vino</td><td>vonj, residual, sledljivost</td><td>unverified; customer/release specifikacija potrebna</td></tr>
-<tr><td>Biocidal / disinfectant</td><td>pivo ali vino</td><td>čistost ni enaka avtorizaciji produkta</td><td>unverified; active-substance in product authorisation sta ločena gate-a</td></tr>
-<tr><td>Pharmaceutical candidate</td><td>pivo ali vino</td><td>Ph. Eur./GMP release vs zelo visok strošek</td><td>candidate-only; čistost sama ne daje farmacevtskega statusa</td></tr>
-<tr><td>Technical cleaning</td><td>predvsem pivski tok</td><td>nizka cena vs zanesljiv outlet</td><td>established scenario, še vedno zahteva SDS, davke/denaturacijo in kupčevo specifikacijo</td></tr>
-<tr><td>Energy recovery</td><td>vsi tokovi</td><td>najnižja vrednost vs najvišja robustnost</td><td>vrednostni floor; dovoljenje za uporabo energije ni avtomatično</td></tr>
-</tbody></table></div>
-<h3>Aroma ni več mogoče prodati dvakrat</h3>
-<div class="callout"><p>Za vsak zajeti aromatski razred velja <code>aroma_to_A + aroma_to_B + aroma_to_loss = captured_aroma</code>. Produkt A in premium Produkt B zato tekmujeta na dejanski Pareto meji. Testi zavrnejo dvojno štetje mase, senzoričnega prispevka in prihodka.</p></div>
-<h3>RHP correctness popravki</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Feasible hierarhija</h3><p>Controller spremlja ločeno robust twin, nominal market twin, process-feasible in exploratory signal. Fizikalno neizvedljiv kandidat z visokim score-om ne more več krmiliti stagnacije ali crystallize moda.</p></div>
-<div class="info-card"><h3>Izvršni diversity gate</h3><p>Raznolikost meri procesno sekvenco, metodo, Product-B route, lens, hipotezno družino in meaningful genes. Prag, histereza ter minimalni scatter čas dejansko spremenijo mešanico staršev.</p></div>
-<div class="info-card"><h3>Route-stratified resurrection</h3><p>Parent, donor in research-reserve pooli ohranijo procesno in Product-B pot. Scatter poveča fresh, route-donor, contradiction, resurrection in same-cell raziskovanje, brez izginotja metode ali route-a.</p></div>
-</div>
-<div class="grid-2">
-<div class="info-card"><h3>Programsko jedro</h3><ul><li>SQLite WAL + <code>synchronous=FULL</code>;</li><li>atomic claim, lease token, heartbeat in stale-write guard;</li><li>single-supervisor lock, varen Ctrl+C in resume z istim ukazom;</li><li>schema 51 in fail-closed cross-platform fingerprint;</li><li>determinističen rezultat pri 1 ali 6 workerjih.</li></ul></div>
-<div class="info-card"><h3>Inkrementalni FAST</h3><ul><li>global, breakdown, champion in diversity summary tabele;</li><li>posodobitev v isti commit transakciji kot rezultat;</li><li>bounded primary-key lookups namesto JSON full scana;</li><li>read transakcija se zapre pred pisanjem in kompresijo;</li><li>portable extract vključuje vseh pet authority datotek.</li></ul></div>
-</div>
-</section>
-<section class="rhp-now" id="v051-release">
-<h2>9. Release validacija v0.5.1-RHP</h2>
-<p class="small">Izvedeno 6. avgusta 2026 · build <code>0.5.1-RHP1-TWIN-PRODUCT-CORRECTNESS</code> · schema 51 · fingerprint <code>b5b095339d3315d389bc2e5d5b228fef8e4d5a1b1f9e964ce37504f517948460</code>.</p>
-<div class="metric-grid">
-<div class="metric-card"><b>PASS</b><span>celotna validacija v 28.363 s</span></div>
-<div class="metric-card"><b>+0,10</b><span>€/L prihodka B = +0,10 €/L marže</span></div>
-<div class="metric-card"><b>4</b><span>različna fizična MC stanja / 4 vzorci</span></div>
-<div class="metric-card"><b>0.001550 s</b><span>FAST snapshot na 65.536 rezultatih</span></div>
-</div>
-<p><span class="signal good">self-test PASS</span><span class="signal good">1 vs 6 determinism PASS</span><span class="signal good">spawn 6/6 PASS</span><span class="signal good">crash/resume PASS</span><span class="signal good">schema 50 rejected</span><span class="signal warn">0 plitvih robustnih ponudb</span></p>
-<div class="callout green"><h3>Finančni double count je odstranjen</h3><p>Kontrolni dvig zunanjega kvalificiranega Product-B prihodka za natanko <strong>0,10 €/L</strong> poveča <code>combined_margin</code> za <strong>0.100000000000000 €/L</strong>. Interni service fee in net-dealcoholization prikazi ne ustvarjajo dodatnega konsolidiranega prihodka.</p></div>
-<h3>Product-B CAPEX je zdaj dimenzioniran</h3>
-<div class="table-wrap"><table><thead><tr><th>Letni vhod</th><th>Letni Produkt B</th><th>Product-B CAPEX</th><th>Verdict</th></tr></thead><tbody>
-<tr><td>50.000 L</td><td>126.038 L</td><td>1,271,436.36 €</td><td rowspan="3"><strong>strogo narašča s pretokom</strong></td></tr>
-<tr><td>250.000 L</td><td>630.188 L</td><td>2,786,124.23 €</td></tr>
-<tr><td>1.000.000 L</td><td>2520.753 L</td><td>4,904,674.50 €</td></tr>
-</tbody></table></div>
-<h3>Fizikalna robustnost Produkta B</h3>
-<div class="table-wrap"><table><thead><tr><th>Kontrolna perturbacija</th><th>Končni ABV B</th><th>Etanolni yield</th><th>Status</th></tr></thead><tbody>
-<tr><td>yield faktor 0,65</td><td>79.310847 %</td><td>0.035112</td><td>ineligible</td></tr>
-<tr><td>yield faktor 1,06</td><td>98.670814 %</td><td>0.936910</td><td>eligible</td></tr>
-</tbody></table></div>
-<p>Vsak Monte Carlo vzorec ponovno izvede operacije, sestavo, residual, energijo, kvalifikacijo in fallback. <code>robust_product_b_probability</code> zato ni več skoraj binarni rezultat nespremenjene fizike.</p>
-<h3>Energy route in fail-closed authority</h3>
-<div class="grid-2"><div class="info-card"><h3>Manjkajoče metrike</h3><p>Route odpove z razlogoma <code>energy_recovery_efficiency_missing</code> in <code>net_energy_balance_kwh_l_input_missing</code>. Stari nepoznani ključ je zavrnjen že pri nalaganju authority datoteke.</p></div><div class="info-card"><h3>Fizikalni gate</h3><p>Kontrolni nizki primer: učinkovitost 0.0405, neto -0.00269 kWh/L → <strong>ineligible</strong>. Visoki primer: 0.6860, neto 0.01653 kWh/L → <strong>eligible</strong>.</p></div></div>
-<h3>Celotna programska lestev</h3>
-<div class="table-wrap"><table><thead><tr><th>Test</th><th>Rezultat</th></tr></thead><tbody>
-<tr><td>Self-test + novih šest correctness regresij</td><td>PASS</td></tr>
-<tr><td>1 worker proti 6 workerjem</td><td>PASS · <code>e7bee9389beffd2b8e574ab1efaa1c9acbe71683a1f83dd53df0d634e04ad9e2</code></td></tr>
-<tr><td>Windows-like spawn</td><td>6/6 exit code 0 · 120/120</td></tr>
-<tr><td>6-worker smoke</td><td>180/180 · 3 pijače · 18 metod · 11 lensov · 8 B-poti</td></tr>
-<tr><td>Full-cell materializacija</td><td>4.050/4.050</td></tr>
-<tr><td>Crash/resume</td><td>5 + 235 → 240/240 · 0/0 duplikatov</td></tr>
-<tr><td>SQLite / portable extract</td><td><code>quick_check=ok</code> · 51 članov · manifest PASS</td></tr>
-<tr><td>Največja twin masa / finančni ledger</td><td>4.441e-16 / 7.105e-15</td></tr>
-</tbody></table></div>
-<div class="callout"><h3>Release verdict</h3><p><strong>v0.5.1 je pripravljena za nov modelni 20-urni Grand Tournament.</strong> To pomeni, da so znani Twin-Product correctness blockerji odpravljeni in testirani. Ne pomeni laboratorijsko dokazane selektivnosti, varnosti, okusa, realnega dobaviteljskega CAPEX-a, tržne absorpcije, patentne novosti ali pravne kvalifikacije.</p></div>
-<h3>Windows CMD</h3>
-<details><summary>Self-test, 20 ur, poljubne ure, FAST, portable in zaključek stage-a</summary><div><pre><code>python BDAA.py selftest
-python BDAA.py campaign --workers 6 --hours 20 --run-dir runs_bdaa_v051_rhp_twin_correctness\campaign --status-mode auto --status-seconds 2
-python BDAA.py campaign --workers 6 --hours 12.5 --run-dir runs_bdaa_v051_rhp_twin_correctness\campaign --status-mode auto --status-seconds 2
-python BDAA_FAST_EXTRACT.py --run-dir runs_bdaa_v051_rhp_twin_correctness\campaign
-python BDAA.py extract --run-dir runs_bdaa_v051_rhp_twin_correctness\campaign
-python BDAA.py campaign --workers 6 --max-cycles 1 --no-auto-extract --run-dir runs_bdaa_v051_rhp_twin_correctness\campaign --status-mode auto --status-seconds 2</code></pre></div></details>
-</section>
-<section class="rhp-now" id="v051-long-run">
-<h2>10. Dolgi v0.5.1 Twin-Product tek — delni S13 posnetek</h2>
-<p class="small">FAST posnetek: 10. avgust 2026 ob 07:54:08 CEST · build <code>0.5.1-RHP1-TWIN-PRODUCT-CORRECTNESS</code> · S0–S12 zaključeni · S13 še teče. Spodnje številke so vmesno stanje in jih bo po <code>S13 ... | DONE</code> nadomestil končni FAST.</p>
-<div class="metric-grid">
-<div class="metric-card"><b>1.844.747</b><span>zaključenih rezultatov</span></div>
-<div class="metric-card"><b>95.147 / 162.000</b><span>S13 · 58,73 %</span></div>
-<div class="metric-card"><b>219</b><span>process-feasible kandidatov</span></div>
-<div class="metric-card"><b>0 / 0</b><span>market / robust twin</span></div>
-</div>
-<p><span class="signal good">resume z 2 workerjema deluje</span><span class="signal good">18 metod · 11 lensov · 8 B-poti</span><span class="signal warn">203 LAB_TEST</span><span class="signal warn">S13 še brez governance zaključka</span><span class="signal bad">Product B neto negativen</span></p>
-<div class="callout"><h3>Poštena oznaka trenutnega stanja</h3><p>S13 je po resume-u pravilno nadaljeval že materializiran stage: <strong>95.147 done, 66.852 pending in 1 leased</strong>. Ker stage še ni zaključen, še nima končnega digest-a, reserve sprememb ali nove governance vrstice. Rezultat je dovolj dober za sprotno diagnozo, ne pa za končni release verdict.</p></div>
-<h3>Kaj je S13 doslej dodal</h3>
-<div class="table-wrap"><table><thead><tr><th>Meritev</th><th>Po S12</th><th>Delni S13</th><th>Sprememba</th></tr></thead><tbody>
-<tr><td>Zaključene evaluacije</td><td>1.749.600</td><td><strong>1.844.747</strong></td><td>+95.147</td></tr>
-<tr><td>Process-feasible</td><td>189</td><td><strong>219</strong></td><td>+30</td></tr>
-<tr><td>Agent‑0 LAB_TEST</td><td>174</td><td><strong>203</strong></td><td>+29</td></tr>
-<tr><td>Resurrection evaluacije</td><td>197.795</td><td><strong>210.317</strong></td><td>+12.522</td></tr>
-<tr><td>Product-B qualified / fallback</td><td>1.505.429</td><td><strong>1.587.250</strong></td><td>+81.821</td></tr>
-<tr><td>Best process p10</td><td>90,9304</td><td><strong>90,9304</strong></td><td>brez premika roba</td></tr>
-<tr><td>Market / robust twin</td><td>0 / 0</td><td><strong>0 / 0</strong></td><td>brez preboja</td></tr>
-</tbody></table></div>
-<div class="callout green"><h3>RHP bolje zadene izvedljivo območje</h3><p>S13 je doslej našel približno <strong>0,0315 %</strong> process-feasible rezultatov, prejšnji S0–S12 pa približno <strong>0,0108 %</strong>. To je približno <strong>2,9-krat večja gostota uporabnih seedov</strong>. Toda globalni best process, tržna ekonomika in Product-B rezultat ostajajo nespremenjeni: dobili smo več seedov, ne novega roba.</p></div>
-<h3>Procesno izvedljive metode v delnem S13</h3>
-<div class="table-wrap"><table><thead><tr><th>Metoda</th><th>Skupne evaluacije</th><th>Process-feasible</th><th>LAB_TEST</th><th>Sprememba od S12</th></tr></thead><tbody>
-<tr><td><strong>Trdni sorbent</strong></td><td>102.486</td><td><strong>103</strong></td><td>103</td><td>+15 feasible</td></tr>
-<tr><td><strong>Closed microflash</strong></td><td>102.486</td><td><strong>50</strong></td><td>46</td><td>+6 feasible</td></tr>
-<tr><td><strong>Falling-film freeze</strong></td><td>102.486</td><td><strong>46</strong></td><td>38</td><td>+7 feasible</td></tr>
-<tr><td>Progressive freeze</td><td>102.486</td><td>11</td><td>7</td><td>+1 feasible</td></tr>
-<tr><td>Scraped-surface freeze</td><td>102.486</td><td>7</td><td>7</td><td>+1 feasible</td></tr>
-<tr><td>Freeze–microflash hybrid</td><td>102.486</td><td>2</td><td>2</td><td>brez spremembe</td></tr>
-<tr><td>Preostalih 12 metod</td><td>približno 102.486 vsaka</td><td><strong>0</strong></td><td>0</td><td>obe magnetni veji ostajata pri 0</td></tr>
-</tbody></table></div>
-<p class="small">S13 je raziskovalno uravnotežen: vsaka metoda ima v delnem stage-u približno 5.286 novih rezultatov; prisotnih je vseh 18 metod, vseh 11 lensov, vseh 8 Product-B route-ov, 4.600 procesnih sekvenc in 42.478 hipoteznih družin.</p>
-<h3>Procesni prvak, najbližji trgu in novi S13 seed</h3>
-<div class="table-wrap"><table><thead><tr><th>Vloga</th><th>Metoda</th><th>Pijača / cilj</th><th>Procesni rezultat</th><th>Ekonomika in Produkt B</th></tr></thead><tbody>
-<tr><td><strong>Globalni process prvak</strong></td><td>Trdni sorbent</td><td>Pivo / 1,20 %</td><td>1,20495 % ABV; kakovost 90,27; process p10 90,93; robust process 100 %</td><td>incremental 21,92 €/L; required wholesale 34,76 €/L proti ceiling 2,695 €/L; B biocidni cilj → technical fallback; neto B −0,319 €/L</td></tr>
-<tr><td><strong>Najbližji trgu med izvoženimi feasible kandidati</strong></td><td>Trdni sorbent</td><td>Pivo / 0,50 %</td><td>0,52576 % ABV; kakovost 88,41; process p10 88,82; robust process 100 %</td><td>incremental 5,36 €/L; required wholesale 9,09 €/L proti ceiling 2,805 €/L; margin −0,757 €/L; Product-B CAPEX 18,13 mio €</td></tr>
-<tr><td><strong>Novi izvoženi S13 LAB_TEST</strong></td><td>Closed microflash</td><td>Pivo / 0,50 %</td><td>0,50641 % ABV; kakovost 85,99; process p10 85,47; robust process 95 %</td><td>micro 50k + mobile; pharma cilj → technical fallback; incremental 58,84 €/L; skupni CAPEX 11,16 mio €</td></tr>
-</tbody></table></div>
-<div class="callout red"><h3>Zakaj več feasible seedov še ne pomeni tržnega napredka</h3><p>Novi S13 closed-microflash seed je fizikalno zanimiv, vendar plača drago farmacevtsko Product-B verigo in nato pade v tehnični fallback. To je neposreden argument za <strong>adaptive route stopping</strong>: premium dodelava se ne sme izvesti, če je njen pričakovani marginalni rezultat negativen.</p></div>
-<h3>Produkt B ostaja strukturni ekonomski blocker</h3>
-<div class="table-wrap"><table><thead><tr><th>Zahtevana B-pot</th><th>Process-feasible</th><th>Najboljši neto B rezultat</th><th>Interpretacija</th></tr></thead><tbody>
-<tr><td>Energy recovery</td><td>9</td><td><strong>−0,09417 €/L</strong></td><td>Najmanj negativna pot; globalni net prvak ostaja energy-ineligible.</td></tr>
-<tr><td>Wine aromatic distillate</td><td>0</td><td>−0,13903 €/L</td><td>Premium identiteta še ne pokrije dodelave in kvalifikacije.</td></tr>
-<tr><td>Liqueur / aperitif base</td><td>0</td><td>−0,14508 €/L</td><td>Brez process-feasible kandidatov.</td></tr>
-<tr><td>Biocidal / disinfectant</td><td>28</td><td>−0,15814 €/L</td><td>Višja pot pogosto konča v tehničnem fallbacku.</td></tr>
-<tr><td>Technical cleaning</td><td>58</td><td>−0,16532 €/L</td><td>Najzanesljivejši outlet, vendar še ne povrne lokalne opreme.</td></tr>
-<tr><td>Cosmetic extraction</td><td>40</td><td>−0,17896 €/L</td><td>Vonj, residual in release zvišajo strošek.</td></tr>
-<tr><td>Agricultural neutral ethanol</td><td>69</td><td>−0,21329 €/L</td><td>Rektifikacija in impurity specifikacija sta predragi.</td></tr>
-<tr><td>Pharmaceutical candidate</td><td>15</td><td>−0,24622 €/L</td><td>Najvišji QA in dokazni prag.</td></tr>
-</tbody></table></div>
-<h3>Resume, RHP in integriteta</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Resume je pravilen</h3><p>S13 je ob ponovnem zagonu zapisal <code>inserted=0</code>, prevzel šest starih lease-ov in nadaljeval isto množico nalog z 2 workerjema. Ni ustvaril novega stage-a ali podvojenih rezultatov.</p></div>
-<div class="info-card"><h3>Resurrection ostaja koristen</h3><p>Od 203 LAB_TEST kandidatov jih je 168 iz resurrection veje. Približno 83 % laboratorijskih seedov je torej nastalo z vračanjem zavrnjenih specialistov.</p></div>
-<div class="info-card"><h3>Governance meja</h3><p>Zadnja zaključena governance vrstica je še S12: <code>selected_tier=process_feasible</code>, <code>mode=scatter</code>. Končni S13 verdict nastane šele po dokončanju stage-a.</p></div>
-</div>
-<h3>FAST in storage stanje</h3>
-<div class="table-wrap"><table><thead><tr><th>Kontrola</th><th>Rezultat</th></tr></thead><tbody>
-<tr><td>ZIP / JSON / CSV</td><td>PASS; 19 datotek, 61 bogato izbranih rezultatov, brez NaN/Infinity</td></tr>
-<tr><td>Glavna SQLite datoteka</td><td>91.963.850.752 B ≈ 91,96 GB; med aktivnim pisanjem WAL ni nujno vključen v to številko</td></tr>
-<tr><td>FAST snapshot read</td><td><strong>552,375 s</strong></td></tr>
-<tr><td>Celoten extract pred ZIP finalize</td><td><strong>552,968 s</strong> oziroma približno 9 min 13 s</td></tr>
-<tr><td>Best process / exploratory p10</td><td>90,9304 / 89,7534</td></tr>
-<tr><td>Known stale completions</td><td>starih 5 zavrnitev; token guard je preprečil prepis; po resume-u ni nove korupcije</td></tr>
-</tbody></table></div>
-<div class="callout red"><h3>FAST2 je release zahteva za v0.5.2</h3><p>FAST še vedno ne skenira širokih result JSON payloadov, vendar je devetminutni status na 92-GB bazi predolg. Nova arena potrebuje materializirane task-count in diversity povzetke, kompaktno champion-payload tabelo ter polne JSON dokumente samo za feasible, LAB_TEST, reserve, champion in audit vzorce.</p></div>
-<div class="why-verdict"><b>Odločitev</b><p><strong>S13 dokončaj; S14 ne začni.</strong> Po <code>S13 ... | DONE</code> naredi en končni FAST, zamrzni v0.5.1 kot dokazni checkpoint in preidi v v0.5.2. Delni S13 kaže boljše ciljanje izvedljivega prostora, ne pa spremembe najboljšega procesa ali ekonomike.</p></div>
-<p class="small">Truth boundary: vse kakovostne, tržne, CAPEX in Product-B številke so rezultati trenutnih authority priorjev. Delni S13 dokazuje vedenje modela in resume infrastrukture, ne laboratorijske ali investicijske resnice.</p>
-</section><section class="rhp-now" id="v052-rhp-predesign">
-<h2>11. RHP predprojekt v0.5.2 — magnetna razširitev, market rescue in To-do</h2>
-<p class="small">Predprojektni memorandum: 10. avgust 2026 · temelji na delnem S13 posnetku z 1.844.747 rezultati · ni release, ni builder prompt in ne spreminja tekoče v0.5.1 arene. Končne S13 številke je treba po zaključku še zamenjati.</p>
-<div class="callout green"><h3>Glavni RHP sklep: magnetnega koncepta še ne zavrzi</h3><p><strong>0 process-feasible</strong> za obe magnetni veji v globalnem v0.5.1 teku zavrača sedanjo ozko formulacijo, ne celotne družine magnetnih arhitektur. Trenutni model skoraj vse naloge naloži enemu prostemu nosilcu in enemu magnetnemu separatorju. Naslednja arena mora ločiti <strong>kemijsko selektivnost, kontakt, magnetni transport, varnostno pregrado, regeneracijo in Product-B deployment</strong>.</p></div>
-<div class="metric-grid">
-<div class="metric-card"><b>108</b><span>lokalnih magnetnih grid kombinacij</span></div>
-<div class="metric-card"><b>33</b><span>modelno process-feasible v lokalnem gridu</span></div>
-<div class="metric-card"><b>6 modulov</b><span>C · K · M · S · R · B</span></div>
-<div class="metric-card"><b>matched twin</b><span>magnetni kandidat vs nemagnetna kontrola</span></div>
-</div>
-<div class="callout red"><h3>33/108 ni dokaz delujočega separatorja</h3><p>Stari v0.4 magnetni seed je v v0.5.1 replayu dosegel 0,74648 % ABV pri cilju 0,80 %, vendar le 0,6667 robustnosti. Lokalni grid je našel 33 process-feasible kombinacij, a je hkrati pokazal, da sedanja enačba zajema pri nekaterih kombinacijah prehitro saturira na <code>0,99999999</code>. To je dokaz <strong>search-hole + model-hole</strong>, ne laboratorijski dokaz magnetne ločitve.</p></div>
-<h3>Najobetavnejša nova magnetna arhitektura</h3>
-<div class="callout"><h3><code>MAGNETIC PERMEATE-SIDE CYCLIC SORBENT LOOP</code></h3><p>Magnet naj drži, usmerja ali regenerira etanol-selektivni nosilec; ne sme biti čarobni separator, ki mora iz cele pijače v enem koraku poloviti skoraj vsak delec.</p></div>
-<div class="process-flow">
-<div class="process-step"><b>1 · Zaščita</b><span>Zaprti zajem arom in CO₂ pred specialistično obdelavo.</span></div>
-<div class="process-step"><b>2 · Frakcionacija</b><span>UF/NF/RO ustvari zaščiten vodno-etanolni permeat in ohrani telo/barvo v retentatu.</span></div>
-<div class="process-step"><b>3 · Selektivni bed</b><span>Etanol-selektivni porozni nosilec deluje v fixed ali moving-bed modulu.</span></div>
-<div class="process-step"><b>4 · Zadrževanje</b><span>Večstopenjski HGMS samo kjer je potreben; magnetizem ni edina varnostna pregrada.</span></div>
-<div class="process-step"><b>5 · Guard</b><span>Neodvisni microfilter/UF/depth filter ter online particle/iron kontrola.</span></div>
-<div class="process-step"><b>6 · Regeneracija</b><span>Vakuumski, temperaturni ali magnetno-indukcijski swing ustvari alkoholni desorbat.</span></div>
-<div class="process-step"><b>7 · Deployment</b><span>Raw storage, tolling ali shared hub; lokalna polna B-linija samo ob pozitivnem marginalnem NPV.</span></div>
-<div class="process-step"><b>8 · Rekombinacija</b><span>Čista voda, lastne frakcije, minerali, kisline in CO₂ se vrnejo Produktu A.</span></div>
-</div>
-<h3>Šest modulov, ki jih arena ne sme več zlivati v en »čudežni delec«</h3>
-<div class="grid-3">
-<div class="info-card"><h3>C · Kemija</h3><p>Liquid-phase working capacity, EtOH/H₂O selektivnost, coadsorpcija arom, kinetika in breakthrough v realnem permeatu.</p></div>
-<div class="info-card"><h3>K · Kontakt</h3><p>Fixed bed, cyclic beds, moving bed, monolith, membrane-confined liquid, countercurrent stages ali polishing po bulk metodi.</p></div>
-<div class="info-card"><h3>M · Magnetni transport</h3><p>HGMS matrika, rotor-stator, magnetna stabilizacija postelje, preklapljanje moving-bed poti ali magnetizem samo pri regeneraciji.</p></div>
-<div class="info-card"><h3>S · Safety barrier</h3><p>Fines, leachables, shell fragments, guard breakthrough, online monitoring in avtomatski diversion morajo imeti ločen ledger.</p></div>
-<div class="info-card"><h3>R · Regeneracija</h3><p>Vacuum/temperature swing, inertni purge, indukcijsko segrevanje, capacity retention, attrition in energija skozi cikle.</p></div>
-<div class="info-card"><h3>B · Alkoholni desorbat</h3><p>A-only, raw B, prodaja zunanjemu predelovalcu, tolling, shared hub ali lokalna dodelava samo, kadar je ekonomsko upravičena.</p></div>
-</div>
-<h3>Razširjeni magnetni portfelj za v0.5.2</h3>
-<div class="table-wrap"><table><thead><tr><th>Arhitektura</th><th>RHP status</th><th>Zakaj je pomembna</th><th>Glavni falsifikator</th></tr></thead><tbody>
-<tr><td><code>magnetic_permeate_fixed_bed</code></td><td><strong>BUILD FIRST</strong></td><td>Zaščiten permeat, majhen residualni burden, ciklične kolone in lažji guard.</td><td>Nemagnetni adsorbent z isto ovojnico doseže enako ali bolje.</td></tr>
-<tr><td><code>serial_hgms_with_guard</code></td><td><strong>BUILD FIRST</strong></td><td>Razbije zahtevo po enem skoraj popolnem separatorju; eksplicitni serial escape.</td><td>Fines, loading, ponovni odklop ali guard breakthrough.</td></tr>
-<tr><td><code>magnetic_induction_regeneration</code></td><td><strong>BUILD FIRST · regen option</strong></td><td>Magnetni core dobi jasno funkcijo brez prostih delcev v končni pijači.</td><td>Slab energijski ledger, water carryover ali degradacija skozi cikle.</td></tr>
-<tr><td><code>magnetic_permeate_moving_bed_carousel</code></td><td>BUILD SECOND</td><td>Loči adsorption, washing in desorption ter omogoča bolj kontinuirno delovanje.</td><td>Attrition, mešanje con, kompleksnost in CIP.</td></tr>
-<tr><td><code>countercurrent_low_inventory_magnetic_extraction</code></td><td>BUILD SECOND</td><td>Manjši inventar in boljša uporaba kapacitete skozi več stopenj.</td><td>Preveč posod, separatorjev in operativne kompleksnosti.</td></tr>
-<tr><td><code>membrane_confined_magnetic_liquid</code></td><td>HEDGE / LAB ONLY</td><td>Tekoča faza ni prosto dispergirana; residual postane problem membrane in tesnjenja.</td><td>Wetting, solvent loss, leak, safety in regulatorni debt.</td></tr>
-<tr><td><code>free_magnetic_liquid_extraction</code></td><td>HEDGE / falsification-heavy</td><td>Ohrani visoko-originalno vejo, vendar z dvojno pregrado in matched solvent controlom.</td><td>Residual, emulzija, leachables in nič route-grade prihodka brez verifikacije.</td></tr>
-<tr><td><code>direct_magnetic_field_falsification</code></td><td>KEEP AS CONTROL</td><td>Preprečuje, da bi dreamer ali mutacija ustvarila čudežno neposredno ločitev vode in etanola.</td><td>Mora ostati neizvedljiv brez selektivnega nosilca.</td></tr>
-</tbody></table></div>
-<h3>RHP pregled drugih konceptov: kaj mora nova arena spremeniti</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Product A naj bo vedno baseline</h3><p>Vsak genom mora izračunati <code>A-only</code>, A + raw B storage/sale, toll processing, shared regional hub in full local B line. Twin-Product ostane cilj, vendar dodelava ni nujno lokalna.</p></div>
-<div class="info-card"><h3>Adaptive Product-B stopping</h3><p>Pred vsako drago operacijo se izračuna marginalni qualified revenue minus CAPEX, OPEX, yield loss, qualification risk in fallback probability. Negativna operacija se ne izvede.</p></div>
-<div class="info-card"><h3>Shared regional hub</h3><p>Več pivovarn in kleti agregira absolutni alkohol; arena modelira koncentracijo, transport, storage, minimalno serijo, utilization, toll fee, QA pooling in lastništvo prihodka.</p></div>
-<div class="info-card"><h3>Trdni sorbent je družina</h3><p>Batch, fixed bed, parallel cyclic beds, moving bed, monolith, adsorptive membrane in permeate-side polishing morajo biti ločene kontaktne arhitekture.</p></div>
-<div class="info-card"><h3>Microflash/freeze na side-streamu</h3><p>Closed microflash naj deluje tudi samo na permeatu ali freeze-concentrated mother liquor; zamrzovanje je lahko volumetrična priprava, ne končni čudež.</p></div>
-<div class="info-card"><h3>Membrane in centrifuga kot pomoč</h3><p>RO/NF zaščiti in poenostavi tok; centrifuga naj pomaga pri carrier recovery ali koalescenci, ne pa se pretvarja, da neposredno ločuje popolnoma mešljiva etanol in vodo.</p></div>
-</div>
-<h3>Predlagana glavna platforma v0.5.2</h3>
-<div class="callout green"><h3><code>PROTECTED-SIDESTREAM TWIN-PRODUCT PLATFORM</code></h3><p>Aroma/CO₂ zaščita → UF/NF/RO frakcionacija → specialistični bulk removal → opcijski polishing samo ob pozitivnem marginalnem učinku → kvalificirana voda → raw/toll/shared/local Product-B deployment → natančna rekombinacija brez sladkornega obliža.</p></div>
-<h3 id="v052-todo">To-do pred gradnjo nove arene</h3>
+<section id="sl-fill">
+<h2>4. Reanchor je dvostopenjski dogodek: signal → revalidiran fill</h2>
 <ol>
-<li><strong>Dokončati S13</strong>, narediti en končni FAST in v memorandum zamenjati delne številke.</li>
-<li><strong>Zamrzniti v0.5.1 checkpoint</strong>; ne poganjati S14 in ne prenašati starih scoreov v novo shemo.</li>
-<li><strong>Historical genome replay:</strong> v0.4 magnetni genom prenesti kot genom, ga ponovno izračunati in vključiti v audit.</li>
-<li><strong>Trust-region za redke otoke:</strong> lokalni search okoli redkih feasible seedov, brez slepega globalnega vzorčenja.</li>
-<li><strong>Matched attribution:</strong> vsak magnetni material in arhitektura dobita nemagnetnega dvojčka z isto selektivno ovojnico.</li>
-<li><strong>Nova HGMS fizika:</strong> flow, viscosity, magnetizacija, matrix geometry, loading, particle-size distribution in fines morajo vplivati na zajem.</li>
-<li><strong>No magical separator:</strong> B in gradient sama ne smeta ustvariti idealne retencije; serial capture in guard se masno zapreta.</li>
-<li><strong>Containment ledger:</strong> delci, attrition, leachables, shell fragments, guard breakthrough in diversion so ločeni tokovi.</li>
-<li><strong>Cikli in regeneracija:</strong> kapaciteta, attrition, leaching in energija se spreminjajo skozi najmanj modeliranih 20 ciklov.</li>
-<li><strong>A-only/raw/toll/shared/local ekonomika:</strong> vsi deployment modeli se vedno izračunajo z enim konsolidiranim ledgerjem.</li>
-<li><strong>Adaptive route stop:</strong> negativna marginalna Product-B operacija se ne izvede.</li>
-<li><strong>FAST2 + compact storage:</strong> status v sekundah oziroma največ nekaj deset sekund; polni JSON samo za feasible, LAB_TEST, reserve, champion in audit sample.</li>
-<li><strong>Nova schema in run mapa:</strong> brez resume-a rezultatov v0.5.1.</li>
-<li><strong>Najprej targeted tournament:</strong> historical replay → magnetic matched micro-tournament → deployment economics → all-architecture smoke → 4.050-cell baseline → kratek RHP deep run → šele nato dolg tek.</li>
+<li>Ob phone-check closeu setup samo ustvari <strong>intent</strong>.</li>
+<li>Na naslednjem 1m open ponovno preveri: kdo je še loser, ali je setup še svež, ali je drift sprejemljiv, ali je impulse že preklical thesis, ali je account še equal-core in brez drugega rescuea.</li>
+<li>Količino ponovno izračunaj na dejanski fill ceni. Stale qty se ne sme slepo izvršiti.</li>
+<li>Če je minimum-sufficient add večji od risk/margin cap-a → <strong>NO ACTION</strong>.</li>
+<li>Če fill nastane, takoj deaktiviraj nezdružljiv winner conditional in takoj postavi exact-excess TP.</li>
 </ol>
-<h3>Najcenejši odločilni laboratorijski program</h3>
-<div class="table-wrap"><table><thead><tr><th>Korak</th><th>Kaj izmeriti</th><th>Kill / promote logika</th></tr></thead><tbody>
-<tr><td><strong>M0</strong> · računski replay</td><td>Stari magnetni seed, lokalni trust-region in saturacija capture enačbe.</td><td>Potrdi search-hole; hkrati zavrne uporabo stare enačbe kot fizikalnega dokaza.</td></tr>
-<tr><td><strong>M1</strong> · liquid-phase material screen</td><td>Working capacity, EtOH/H₂O selektivnost, aroma coadsorption, kinetika, desorption yield; magnetni in nemagnetni shell control.</td><td>Če kemija ne omogoča smiselnega inventarja, močnejši magnet koncepta ne reši.</td></tr>
-<tr><td><strong>M2</strong> · dynamic breakthrough</td><td>Fixed-bed breakthrough, superficial velocity, pressure drop, voda/aroma displacement in ponovljivost.</td><td>Material, ki deluje le v dolgem batch ravnotežju, se demotira.</td></tr>
-<tr><td><strong>M3</strong> · matched handling</td><td>Nemagnetni fixed bed, magnetni fixed bed, batch + HGMS, serial HGMS in serial + guard.</td><td>Magnetizem mora pokazati merljivo dodatno vrednost glede na kontrolni dvojček.</td></tr>
-<tr><td><strong>M4</strong> · containment</td><td>Delci, Fe/magnetni element, shell, leachables, attrition po CIP-u in barrier breakthrough.</td><td>Modelni residual limit ni dokaz varnosti; materialni in regulatorni gate ostane fail-closed.</td></tr>
-<tr><td><strong>M5</strong> · regeneracija</td><td>Vacuum, temperature-vacuum, induction-assisted in bulk heating; kWh/kg EtOH, water carryover, cycle time, 20 ciklov.</td><td>Indukcija zmaga samo, če izboljša energijo/cikel brez degradacije.</td></tr>
-<tr><td><strong>M6</strong> · 1-L beverage test</td><td>Original, nemagnetni sorbent, magnetni sorbent, closed microflash in pervaporacija/RO; ABV, GC, residual, yield, energija, slepa degustacija.</td><td>Prvi pravi Product-A matched dokaz.</td></tr>
-<tr><td><strong>M7</strong> · Product-B desorbat</td><td>Volumen, ABV, metanol, aldehidi, estri, višji alkoholi, furfural, aroma, residual in kWh/L absolutnega alkohola.</td><td>Šele te meritve kalibrirajo raw sale, tolling in shared-hub route.</td></tr>
+<div class="logic"><strong>NO CHASE:</strong> če se je cena med signalom in naslednjim openom že vrnila, če loser ni več loser ali če je setup potekel, intent umre. Nova akcija zahteva nov dogodek.</div>
+</section>
+<section id="sl-size">
+<h2>5. Sizing: minimum-sufficient add, ne minimum target</h2>
+<p>Če je loserjev stari gap <code>D</code> bp in želiš po reanchorju doseči target po ugodnem premiku <code>R</code> bp, z majhnim profit-lockom <code>g</code> velja približno:</p>
+<div class="formula">Total book multiple M ≈ D / (R − g)    ·    add multiple ≈ M − 1</div>
+<p>Manjši target pomeni hitrejši možni rescue, vendar eksplozivno večji add. Zato je cilj <strong>najmanjši add, ki daje razumno dosegljiv target in prestane risk budget</strong>, ne najmanjši možni retrace.</p>
+<h3>Risk po času odsotnosti</h3>
+<div class="formula">max net-excess / wallet ≈ loss_budget × 10,000 / adverse_planning_bps</div>
+<p>v0.1.2 uporablja kot raziskovalne planning proxyje približno 110 bp (5 min), 160 bp (15 min) in 285 bp (60 min). To <strong>niso garantirani tail boundi</strong>. Daljši možni čas brez telefona mora praviloma znižati dovoljen excess.</p>
+<div class="callout warn">Trenutni live leaderji na W250k niso priporočilo za W250k in njihove G5/G10/G20 oznake niso net leverage. Long live extract prikazuje top absolutni PnL in zato sistematično favorizira velik wallet. Končni wallet frontier še ni znan.</div>
+</section>
+<section id="sl-winner">
+<h2>6. Winner logika: privzeto OFF, dokler nimamo boljšega directional repaira</h2>
+<p><span class="rank off">MAINLINE OFF</span> Full winner-only exit spremeni neutral book v directional handoff. Trenutno ga zato ne uporabljamo kot osnovni profit-lock.</p>
+<pre>DEFAULT:
+  winner_mode = NONE
+  pusti winner core odprt
+  profit išči prek loser reanchorja + exact-excess TP + locked spread
+
+PREDNOST PRED WINNER-ONLY EXITOM:
+  1. exact-excess TP
+  2. symmetric pair trim/reset
+  3. partial coordinated winner action (challenger)
+
+FULL WINNER EXIT:
+  samo ločen DIRECTIONAL_HANDOFF challenger,
+  z eksplicitnim repair/exit planom in lastnim risk budgetom.</pre>
+<p>Če je rescue intent ali rescue active, winner stop, ki bi lahko pustil velik naked book, mora biti preklican/zamrznjen. Ne dovoljuj latentne collision poti.</p>
+</section>
+<section id="sl-harvest">
+<h2>7. Exact-excess TP in pair reset sta jedro »surfing hedge«</h2>
+<p>Po loser addu pri ceni <code>P1</code> se weighted average premakne proti trgu. Ko retrace doseže eksplicitni target, zapri <strong>samo excess</strong>. Originalni core ostane.</p>
+<div class="formula">A = (q·P0 + d·P1)/(q+d)    →    po TP ostane q LONG @ P0 + q SHORT @ A</div>
+<p>Ko sta quantity spet enaki, se price delta spet zaklene. Če je spread med averageoma dovolj velik, lahko realiziraš del profita brez smerne napovedi:</p>
+<div class="formula">pair trim realized = h(P−L) + h(S−P) = h(S−L)</div>
+<div class="callout good">Current evidence podpira več zaporednih zaključenih ciklov: najboljši vidni STALL cell ima 14 reanchorjev, 14 exact-excess TP in 14 pair resetov ter konča kot COMPLETE_EQUAL_CORE.</div>
+</section>
+<section id="sl-bbfilter">
+<h2>8. Adaptive BB-position veto: uporaben specialist, ne univerzalni rule</h2>
+<p><span class="rank chal">OPTIONAL RESEARCH SPECIALIST</span> Ločen MDL×DCC poskus je odkril preprostejši adaptive filter položaja cene znotraj BB. Pri P30 je na neprekinjenem april–junij replayu izboljšal kombinacijo PnL, DD in dokončanega equal-core stanja; pri P05 in P60 ni bil splošno boljši.</p>
+<div class="table-wrap"><table><thead><tr><th>P30 continuous later replay</th><th class="num">PnL</th><th class="num">DD</th><th>Konec</th></tr></thead><tbody>
+<tr><td>Original P30</td><td class="num">+27.50</td><td class="num">300.26</td><td>Open rescue</td></tr>
+<tr><td><strong>Adaptive BB-position veto</strong></td><td class="num"><strong>+63.68</strong></td><td class="num"><strong>22.28</strong></td><td>Equal core · 12/12 rescueov zaključenih</td></tr>
+<tr><td>BB-position + 2 bp adverse-fill stress</td><td class="num">+55.97</td><td class="num">—</td><td>Equal core</td></tr>
 </tbody></table></div>
-<h3>RHP prioritetna lestvica</h3>
-<div class="table-wrap"><table><thead><tr><th>#</th><th>Koncept</th><th>Zakaj ima prednost</th></tr></thead><tbody>
-<tr><td>1</td><td><strong>Permeate-side fixed/cyclic sorbent bed</strong></td><td>Najbolj zmanjša fouling, aroma loss in residualni problem.</td></tr>
-<tr><td>2</td><td><strong>A-only + raw/toll/shared Product-B deployment</strong></td><td>Neposredno napade največji ekonomski blocker v0.5.1.</td></tr>
-<tr><td>3</td><td><strong>Serial HGMS + independent guard</strong></td><td>Razbije nerealno zahtevo po enem skoraj popolnem separatorju.</td></tr>
-<tr><td>4</td><td><strong>Matched magnetic vs non-magnetic platform</strong></td><td>Pokaže, ali magnetizem res dodaja vrednost.</td></tr>
-<tr><td>5</td><td><strong>Magnetic induction regeneration</strong></td><td>Možna prava funkcija magnetnega jedra brez prostih delcev v produktu.</td></tr>
-<tr><td>6</td><td><strong>Moving-bed carousel</strong></td><td>Kontinuiteta, washing in ločen Product-B desorbat.</td></tr>
-<tr><td>7</td><td><strong>Countercurrent low-inventory stages</strong></td><td>Zmanjša inventar in bolje izkoristi kapaciteto.</td></tr>
-<tr><td>8</td><td><strong>Closed microflash na permeatu / freeze concentrate</strong></td><td>Nadgradi drugo najmočnejšo procesno družino brez obdelave cele pijače.</td></tr>
+<p class="tiny">To je specialist P30 × konkretna BB geometrija × ista že raziskana zgodovina. Manualni vizualni ekvivalent learned filtra še ni validiran. Zato ga dodajamo kot challenger/veto, ne kot obvezni del ročne strategije.</p>
+</section>
+<section id="sl-evidence">
+<h2>9. Kaj se trenutno dobrega kaže v v0.1.2 long runu</h2>
+<p>Spodnje so <strong>vmesne capacity ugotovitve</strong> iz live extracta, ne končna validacija. Vsi primeri so 1. april–31. maj 2026, W250k, causal next-open, winner_mode=none in so v prikazanem cellu zaključeni kot equal core.</p>
+<div class="table-wrap"><table><thead><tr><th>Kandidat</th><th class="num">ROI</th><th class="num">DD / W</th><th class="num">Directional bars</th><th>Opomba</th></tr></thead><tbody>
+<tr><td><strong>STALL · 5m · G5</strong></td><td class="num metric">+29.31%</td><td class="num">17.72%</td><td class="num">18.71%</td><td>14/14 rescue TP + 14 resetov; April sam zase konča z odprtim rescueom.</td></tr>
+<tr><td><strong>REVERSAL · 15m · G10</strong></td><td class="num metric">+16.87%</td><td class="num">11.11%</td><td class="num">3.62%</td><td>5/5 rescue ciklov; manj directional časa.</td></tr>
+<tr><td>REVERSAL · 15m · G20</td><td class="num">+18.85%</td><td class="num">15.24%</td><td class="num">3.06%</td><td>Več corea: samo +11.76% več PnL kot G10, DD pa +37.17%.</td></tr>
+<tr><td><strong>SELECTIVE · 5m · G2</strong></td><td class="num metric">+17.37%</td><td class="num">14.34%</td><td class="num">5.04%</td><td>9/9 rescue TP; zanimiv kompromis.</td></tr>
 </tbody></table></div>
-<div class="why-verdict"><b>RHP verdict</b><p><strong>Magnetni koncept ohrani, razcepi in zaostri.</strong> Najprej dokaži kemijo nosilca, nato matched magnetni handling, nato containment in regeneracijo. Vzporedno reši Product-B ekonomiko z A-only, tollingom in shared hubom. Nova arena naj išče širše arhitekture, vendar z bolj strogo fiziko in brez znižanja gate-ov.</p></div>
-<p class="small">Vir predprojekta: <code>BDAA_V052_RHP_MAGNETIC_AND_CONCEPT_EXPANSION_PRE_DESIGN_20260810.md</code> in companion evidence JSON. Vse nove arhitekture so RHP hipoteze; niso laboratorijsko, regulativno ali komercialno potrjene.</p>
+<div class="callout warn"><strong>Nezaključeni testi:</strong> live extract je bil pri 138,676 / 221,760 capacity work-unitih (62.53 %), errors=0. Matching stress in junijska diagnostika tega long runa še nista bila v extractu. Zato nobeden od teh kandidatov še ni »zmagovalna strategija«.</div>
 </section>
-<section class="rhp-now" id="rhp-v040-rezultati">
-<h2>12. Zgodovinski v0.4.0-RHP dolgi tek</h2>
-<p class="small">Konsistentni zgodovinski posnetek: 6. avgust 2026 ob 08:07 CEST · build <code>0.4.0-RHP1-GRAND-DISCOVERY</code> · Stage 0–11 zaključeni · Stage 12 je bil tedaj v teku. Ti rezultati so vhodna raziskovalna evidenca za v0.5.1, ne rezultat nove Twin-Product kampanje.</p>
-<div class="metric-grid">
-<div class="metric-card"><b>1.592.193</b><span>zaključenih evaluacij</span></div>
-<div class="metric-card"><b>794</b><span>process-feasible kandidatov</span></div>
-<div class="metric-card"><b>14</b><span>nominalno tržnih kandidatov</span></div>
-<div class="metric-card"><b>0</b><span>robustnih celovitih ponudb</span></div>
+<section id="sl-card">
+<h2>10. Phone-check card — trenutna operativna verzija</h2>
+<h3>A. Najprej stanje</h3>
+<pre>Če RESCUE_ACTIVE ali DIRECTIONAL_HANDOFF:
+  ne odpiraj novega nepovezanega setupa.
+  Upravljaj obstoječi tail / TP / repair.
+
+Če EQUAL_CORE in brez pending orderjev:
+  nadaljuj na setup gate.</pre>
+<h3>B. Setup gate</h3>
+<pre>NO ACTION, če:
+- samo outer-BB touch ali samo reentry
+- impulse še pospešuje
+- ni completed large outside-BB displacementa
+- ni fresh extreme + stall/reversal/selektivnega potrjevanja
+- setup je zamujen
+- minimum-sufficient add presega risk/margin cap
+
+REANCHOR INTENT, če:
+- completed displacement je dovolj velik
+- svež extreme je prisoten
+- STALL / REVERSAL / SELECTIVE gate je veljaven
+- continuation veto ne zahteva zavrnitve ali manjšega sizea</pre>
+<h3>C. Na naslednjem open</h3>
+<pre>REVALIDATE EVERYTHING.
+Če loser/setup/size/risk ne držijo več → CANCEL.
+Če držijo → fill minimum-sufficient qty → takoj exact-excess TP.</pre>
+<h3>D. Po TP</h3>
+<pre>Če qty spet equal:
+  meri locked spread.
+  pair trim/reset samo, če je spread dovolj velik.
+  sicer NO ACTION.</pre>
+<div class="callout good"><strong>Sleep rule:</strong> za dolg nenadzorovan interval ciljaj na equal qty, brez rescue excessa, brez pending reanchorja in brez winner stopa, ki bi lahko sam ustvaril velik naked book.</div>
+</section>
+<section id="sl-boundary">
+<h2>11. Kaj je trenutno zamrznjeno in kaj se lahko še spremeni</h2>
+<p><strong>Zamrznjeno jedro:</strong> equal-core accounting, weighted-average reanchor, next-open revalidation, exact-excess TP, equal-quantity return, pair-reset identiteta, NO CHASE in NO ACTION kot legalna glavna odločitev.</p>
+<p><strong>Še evolvabilno:</strong> ranking STALL/REVERSAL/SELECTIVE, target geometrija 30–75+ bp, optimalen core/wallet, adaptive BB-position veto, 5m/15m/30m pozornost, največji dovoljen rescue duration in kakršenkoli prihodnji winner/directional repair.</p>
+<p><strong>Še ni dokazano:</strong> 8-urni sleep, live venue execution, funding/impact, sealed holdout, trajna profitabilnost ali optimalni wallet. v0.1.3 arena je trenutno v gradnji in lahko po novih dokazih spremeni del te politike.</p>
+<div class="callout danger"><strong>To je raziskovalna strategija, ne live-trading dovoljenje.</strong> Trenutni pozitivni rezultati so zgodovinski replayi na že pregledani SOL zgodovini. Namen strani je čim bolj natančno opisati trenutno najboljšo delovno hipotezo.</div>
+</section>
+</article>
+<article class="lang" id="en" lang="en">
+<div class="hero">
+<div class="eyebrow">BD SOL · BB Surfing Hedge · Neutral-Lock architecture</div>
+<h1>Preserve the hedge first. Reanchor only a good setup. Harvest the excess. Then go quiet again.</h1>
+<p class="subtitle">The current best working logic is <strong>reanchor-only neutral-lock</strong>: a small or moderate equal LONG+SHORT core buys time; Bollinger structure opens rare loser-reanchor opportunities; an exact-excess TP restores equal quantities; pair reset realizes locked spread. Winner-only exit is no longer mainline.</p>
+<div class="badges"><span class="badge good">SOL · 1m execution · BB(20,2)</span><span class="badge">100× research model</span><span class="badge">Cross-margin accounting</span><span class="badge warn">Working authority v0.2</span></div>
+<div class="statusline"><strong>Status 7 Sep 2026:</strong> the v0.1.2 <em>long</em> test is still running; the latest live extract was at 62.53% of the capacity stage with errors=0. Arena v0.1.3 is already being built. The logic below is the best current synthesis and may still change after the final stress/June evidence.</div>
 </div>
-<p><span class="signal good">integriteta PASS</span><span class="signal good">18 metod uravnoteženo</span><span class="signal warn">tržni seedi niso robustni</span><span class="signal bad">še ni Grand Championa</span></p>
-<div class="callout"><h3>Najpomembnejši rezultat</h3><p>Arena je iz prostora milijonov kombinacij izločila dve trenutno najmočnejši smeri: <strong>trdni selektivni sorbent</strong> kot procesni in kakovostni vodja ter <strong>closed microflash</strong> kot najboljši nominalni ponudbeni seed. Nobena smer še ne dosega zahtevane 70-% robustne tržne verjetnosti; najboljši trenutni kandidati so okoli 33–35 %.</p></div>
-<h3>Trenutni vodilni kandidati</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Vloga</th><th>Metoda</th><th>Pijača / cilj</th><th>Rezultat</th><th>Kakovost</th><th>Strošek</th><th>Pošten status</th></tr></thead>
-<tbody>
-<tr><td><strong>Procesni prvak</strong></td><td>Trdni sorbent</td><td>Pivo / 0,50 %</td><td>0,511 % ABV; process p10 92,15</td><td>90,62</td><td>0,623 €/L</td><td>Odličen modelni proces; ekonomika ni robustna.</td></tr>
-<tr><td><strong>Najboljša kakovost med tržnimi seedi</strong></td><td>Trdni sorbent</td><td>Pivo / 0,50 %</td><td>0,509 % ABV; process p10 89,91</td><td>91,33</td><td>0,443 €/L; CAPEX 1,26 mio €</td><td>Nominalno tržen; robust market 34,1 %.</td></tr>
-<tr><td><strong>Najboljši ponudbeni p10</strong></td><td>Closed microflash</td><td>Pivo / 0,50 %</td><td>0,436 % ABV; offer p10 83,34</td><td>83,69</td><td>0,324 €/L; CAPEX 1,20 mio €</td><td>Nominalno tržen; robust market 32,8 %.</td></tr>
-<tr><td><strong>Najnižji ABV seed</strong></td><td>Progresivno zamrzovanje</td><td>Pivo / 0,20 %</td><td>0,201 % ABV; process p10 81,64</td><td>82,01</td><td>1,160 €/L</td><td>Procesno izvedljiv; trenutno predrag.</td></tr>
-<tr><td><strong>Najbolj zrel bench baseline</strong></td><td>Pervaporacija</td><td>Pivo / 0,50 %</td><td>0,502 % ABV; process p10 85,87</td><td>84,97</td><td>0,762 €/L</td><td>Najvišji evidence maturity 0,729; ni tržno robusten.</td></tr>
+<div class="quick">
+<div class="q"><strong>1 · NEUTRAL</strong><span>Equal LONG/SHORT is the base mode. If there is no clean setup: NO ACTION.</span></div>
+<div class="q"><strong>2 · REANCHOR</strong><span>Add to the loser only after a completed impulse + stall/reversal/selective gate. The order is an intent, not a promise.</span></div>
+<div class="q"><strong>3 · HARVEST</strong><span>Immediately place an exact-excess TP after fill. When excess closes, return to equal quantity.</span></div>
+<div class="q"><strong>4 · RESET</strong><span>If enough spread is locked between averages, realize it symmetrically; winner-only exit stays a challenger.</span></div>
+</div>
+<nav class="toc">
+<a href="#en-thesis">Mainline</a><a href="#en-state">States</a><a href="#en-setup">Setup bank</a><a href="#en-fill">Fill/revalidate</a><a href="#en-size">Sizing</a><a href="#en-winner">Winner</a><a href="#en-harvest">Harvest/reset</a><a href="#en-bbfilter">BB-position</a><a href="#en-evidence">Evidence</a><a href="#en-card">Phone card</a><a href="#en-boundary">Boundaries</a>
+</nav>
+<section id="en-thesis">
+<h2>1. Current mainline logic</h2>
+<p class="lead"><span class="rank main">MAINLINE</span> <strong>Equal core → selective loser reanchor → exact-excess TP → locked equal core → optional pair reset.</strong></p>
+<pre>N0 EQUAL CORE
+  ↓  completed outside-BB displacement + setup confirmed at a check
+R0 REANCHOR INTENT
+  ↓  next open: setup + loser side + quantity + risk fully revalidated
+R1 RESCUE ACTIVE
+  ↓  resting exact-excess TP
+R2 EXCESS HARVESTED
+  ↓
+L0 LOCKED EQUAL CORE
+  ↓  optional symmetric pair trim/reset
+N0 / L0</pre>
+<div class="callout good"><strong>Most important change from v0.1:</strong> winner-only SL/exit is no longer the default profit lock. Current leading v0.1.2 live candidates use <code>winner_mode=none</code>; the cleanest observed mechanism is reanchor + exact-excess TP + pair reset.</div>
+<p><strong>NO ACTION remains the main decision.</strong> Do not start a new action if the account is already in rescue, in directional handoff, if the setup was missed, or if the minimum-sufficient add fails its risk/horizon cap.</p>
+</section>
+<section id="en-state">
+<h2>2. States that must not be conflated</h2>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>Correct interpretation</th><th>Sleep-safe?</th></tr></thead><tbody>
+<tr><td><span class="state">N0 NEUTRAL_EQUAL_CORE</span></td><td>Equal LONG/SHORT quantity; no rescue and no latent directional order.</td><td>Closest to YES, with sufficient margin headroom.</td></tr>
+<tr><td><span class="state">N1 OBSERVE_DISPLACEMENT</span></td><td>One winner and one loser only by PnL; quantity book is still neutral.</td><td>YES if no armed orders exist.</td></tr>
+<tr><td><span class="state">R0 REANCHOR_INTENT</span></td><td>Signal detected, but add not filled. The next open must revalidate.</td><td>NO for long unattended periods.</td></tr>
+<tr><td><span class="state">R1 RESCUE_ACTIVE</span></td><td>Loser enlarged, net excess is directional. TP must already be live.</td><td>NO.</td></tr>
+<tr><td><span class="state">L0 LOCKED_EQUAL_CORE</span></td><td>Equal quantity, different averages; locked pair spread is price-independent.</td><td>Closest to YES.</td></tr>
+<tr><td><span class="state">D0 DIRECTIONAL_HANDOFF</span></td><td>Winner-only exit left a naked remaining leg. This is not NO ACTION and not completed neutral-lock.</td><td>NO.</td></tr>
 </tbody></table></div>
-<h3>Katere metode so že našle izvedljivo območje</h3>
-<div class="table-wrap"><table>
-<thead><tr><th>Metoda</th><th>Process-feasible</th><th>Nominal market</th><th>Robust offer</th><th>Interpretacija</th></tr></thead>
-<tbody>
-<tr><td>Closed microflash</td><td>324</td><td>8</td><td>0</td><td>Najmočnejša ponudbena smer v trenutnem modelu.</td></tr>
-<tr><td>Trdni sorbent</td><td>266</td><td>4</td><td>0</td><td>Najboljša kakovost in process p10; ključen materialni laboratorijski test.</td></tr>
-<tr><td>Falling-film freeze</td><td>74</td><td>0</td><td>0</td><td>Procesna alternativa, ekonomika še ne prestane gate-ov.</td></tr>
-<tr><td>Scraped-surface freeze</td><td>49</td><td>1</td><td>0</td><td>Prvi nominalni zamrzovalni market seed.</td></tr>
-<tr><td>Progressive freeze</td><td>45</td><td>0</td><td>0</td><td>Doseže približno 0,2 % ABV, vendar je drag.</td></tr>
-<tr><td>Freeze–microflash</td><td>20</td><td>1</td><td>0</td><td>Hibrid je živ, a še ni robusten.</td></tr>
-<tr><td>Pervaporacija</td><td>13</td><td>0</td><td>0</td><td>Visoka dokazna zrelost; dober referenčni bench test.</td></tr>
-<tr><td>Magnetni trdni nosilec</td><td>1</td><td>0</td><td>0</td><td>Prvi procesno izvedljiv magnetni seed.</td></tr>
+<div class="formula">PairPnL(P) = q(P − L) + q(S − P) = q(S − L)</div>
+<p class="muted">Equal core does not mean risk-free: margin, funding, mark-price rules, slippage and latent orders remain separate risks. It only means first-order directional price delta cancels while quantities are equal.</p>
+</section>
+<section id="en-setup">
+<h2>3. Setup bank: rank specialists, do not force one magical signal</h2>
+<p>Every setup requires a <strong>completed outside-BB impulse</strong>, sufficient displacement, a fresh local extreme and evidence that the impulse is no longer accelerating. A BB touch or an old distant average is not a setup by itself.</p>
+<div class="table-wrap"><table><thead><tr><th>Setup</th><th>Current status</th><th>Operational idea</th><th>Current evidence seed</th></tr></thead><tbody>
+<tr><td><strong>STALL</strong></td><td><span class="rank main">LEADER / CHALLENGER</span></td><td>After a large displacement, body/range contracts or makes a small pullback; no renewed acceleration.</td><td>5-minute checks; 75 bp target in the strongest visible 61-day cell.</td></tr>
+<tr><td><strong>REVERSAL</strong></td><td><span class="rank main">RISK-EFFICIENT SPECIALIST</span></td><td>A completed reversal sign after the fresh extreme; completed 15m context may act as a veto/size modifier.</td><td>15-minute checks; 75 bp is a promising current seed.</td></tr>
+<tr><td><strong>SELECTIVE</strong></td><td><span class="rank chal">ROBUST SPECIALIST</span></td><td>Fresh displacement + stall/reversal + stronger veto; fewer opportunities, often less directional time.</td><td>5–15 min; 30–50 bp targets remain important.</td></tr>
+<tr><td><strong>REENTRY</strong></td><td><span class="rank chal">CONTROL</span></td><td>BB reentry without enough stall/reversal context.</td><td>Keep as a matched control, not the default rule.</td></tr>
 </tbody></table></div>
-<h3>Magnetna veja: prvi resen signal, ne še rešitev</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Magnetni trdni nosilec</h3><p>Prvi process-feasible kandidat: pivo 0,746 % pri cilju 0,8 %, kakovost 89,93 in process p10 86,70. Model zahteva približno 0,353 kg krožečega nosilca/L, 3,33 T, gradient 149,6 T/m in 99,9999927-% separacijo. To je <strong>laboratorijski seed z visokim assumption debtom</strong>, ne recept za napravo.</p></div>
-<div class="info-card"><h3>Magnetni tekoči nosilec</h3><p>Še ni process-feasible. Najboljši izbrani kandidat pusti približno 31,5 mg/L nosilca pri dovoljeni meji 0,5 mg/L. Tudi 99,9855-% separacija zato ni dovolj; residual mora pasti še približno 63-krat.</p></div>
-<div class="info-card"><h3>Neposredni magnet</h3><p>Falsifikacijski baseline ima 0 process-feasible rezultatov. To je dobro: arena ne proizvaja čudežne neposredne ločitve vode in etanola brez selektivnega nosilca.</p></div>
-</div>
-<h3>Kaj RHP prispeva</h3>
-<div class="grid-3">
-<div class="info-card"><h3>Resurrection deluje</h3><p>196.707 ponovnih preizkusov. V bogatem izboru je resurrection ustvaril dva nominalna market kandidata in velik del najboljših procesnih kandidatov.</p></div>
-<div class="info-card"><h3>Dreamer odpira največ vrat</h3><p><code>dreamer_cross_domain</code> je ustvaril največ Agent‑0 eligible rezultatov (112), sledita formalni in fizično-geometrijski lens. To ne pomeni, da dreamer sam zmaga; pomeni, da dobro generira testabilne mostove.</p></div>
-<div class="info-card"><h3>Agent‑0 ostaja strog</h3><p>764 rezultatov je označenih <code>LAB_TEST</code>, 1.197 kontrol je falsificiranih, vendar ni niti enega <code>PROMOTE</code>. Brez robustnega procesa in trga ni dovoljena promocija.</p></div>
-</div>
-<div class="callout green"><h3>Ta v0.4.0 blocker je v v0.5.0 odpravljen</h3><p><strong>Prvič:</strong> claustrum trenutno spremlja globalni <code>max(offer_p10)</code>, tudi kadar je kandidat fizikalno neizvedljiv. Trenutni signal 93,755 prihaja iz RO kandidata, ki pri cilju 0,35 % konča pri približno 9,91 % ABV — zato to ni zmagovalec. <strong>Drugič:</strong> authority določa minimalno raznolikost 0,20, vendar je izračunana raznolikost od Stage 3 naprej približno 0,0098, governance pa kljub temu ne sproži <code>scatter</code>. v0.5.0 zdaj uporablja hierarhijo robust twin → nominal market twin → process-feasible → exploratory ter dejansko uveljavlja diversity gate s histerezo in minimalnim scatter trajanjem.</p></div>
-<div class="callout green"><h3>Ta v0.4.0 blocker je v v0.5.0 odpravljen</h3><p>SQLite read snapshot je na 1,59 milijona rezultatih trajal 392,8 s oziroma približno 6 min 33 s. v0.5.0 uporablja inkrementalne summary tabele; validacijski snapshot na 65.536 rezultatih je trajal približno 0,00133 s.</p></div>
-<p class="small">Truth boundary: vse številke kakovosti, stroškov in trga so rezultat trenutnih authority priorjev. Zmagovalec nastane šele po laboratorijskem merjenju, slepi degustaciji in ponovni kalibraciji.</p>
+<div class="callout warn"><strong>Do not overfit the leaderboard:</strong> 75 bp is not a new dogma. A farther target needs a smaller add but can keep rescue open much longer. Target must be optimized jointly with wallet, core, setup and maximum unattended horizon.</div>
 </section>
-<section id="rezultati">
-<h2>13. Zgodovinski zemljevid v0.2.1</h2>
-<p>Prejšnja produktno popravljena arena je do 3. avgusta 2026 zaključila <strong>1.109.250 evaluacij</strong>. Rezultati ostajajo zgodovinski zemljevid, vendar jih po strožji fiziki v0.3.1 in RHP upravljanju v0.4.0 ne smemo neposredno primerjati z aktualnimi verdicti.</p>
-<div class="metric-grid">
-<div class="metric-card"><b>1.109.250</b><span>zaključenih rezultatov</span></div>
-<div class="metric-card"><b>25.669</b><span>process-feasible</span></div>
-<div class="metric-card"><b>5.178</b><span>market-feasible</span></div>
-<div class="metric-card"><b>2.258</b><span>robustnih ponudb</span></div>
-</div>
-<div class="table-wrap"><table>
-<thead><tr><th>Misija v0.2.1</th><th>Robustni rezultati</th><th>Market rezultati</th><th>Najboljši robustni offer p10</th><th>Najnižji opaženi inkrementalni strošek</th></tr></thead>
-<tbody>
-<tr><td>Low customer CAPEX</td><td>727</td><td>1.478</td><td>92,04</td><td>0,508 €/L</td></tr>
-<tr><td>Low total CAPEX</td><td>360</td><td>1.043</td><td>79,49</td><td>0,185 €/L</td></tr>
-<tr><td>Mobile service</td><td>43</td><td>126</td><td>79,86</td><td>0,898 €/L</td></tr>
-<tr><td>Premium quality</td><td>450</td><td>1.196</td><td>86,98</td><td>0,234 €/L</td></tr>
-<tr><td>Quality / price</td><td>678</td><td>1.335</td><td>87,30</td><td>0,288 €/L</td></tr>
-</tbody></table></div>
-<p class="small">Številke so iz starejšega modela v0.2.1 in niso ponudbe dobaviteljev ali potrjeni proizvodni stroški. Njihova vrednost je predvsem v usmerjanju naslednjih eksperimentov.</p>
-</section>
-<section id="dokazi">
-<h2>14. Kaj je trenutno dejansko dokazano</h2>
-<div class="grid-2">
-<div class="info-card"><h3>Dokazano v v0.5.1 kodi</h3><ul><li>komponentne bilance Produkt A + Produkt B + waste se zapirajo do numerične natančnosti;</li><li>ista aroma ne more biti dvakrat uporabljena ali ovrednotena;</li><li>nekvalificiran oziroma <code>unverified</code> Product-B route ne dobi route-grade prihodka;</li><li>fallback, twin economics in vsi reporti so deterministični pri 1 in 6 workerjih;</li><li>feasibility-aware governance, diversity scatter, lease/token guard, resume in FAST summary arhitektura delujejo v izvedenih testih;</li><li>vseh 18 metod, 11 lensov, 4.050 celic in 8 B-poti ostaja pokritih.</li></ul></div>
-<div class="info-card"><h3>Dokazano z zgodovinskim v0.4 tekom</h3><ul><li>RHP je izvedel več kot 1,59 milijona evaluacij in ohranil vseh 18 metod;</li><li>resurrection je vračal zavrnjene specialiste in ustvaril tudi procesne ter nominalne market seede;</li><li>trdni sorbent, closed microflash, več zamrzovalnih poti, pervaporacija in prvi magnetni trdni nosilec so v starem modelu našli process-feasible območje;</li><li>direktni magnet brez selektivnega nosilca je ostal falsifikacijska kontrola;</li><li>nobena v0.4 ponudba ni dosegla robustnega celovitega gate-a.</li></ul></div>
-</div>
-<blockquote><strong>Pomembno: </strong>v0.5.1 ima trenutno 1.844.747 rezultatov, 219 process-feasible kandidatov in 203 LAB_TEST seedov; S13 še ni zaključen. Delni tek potrjuje resume, uravnotežen search ter strogo odsotnost lažnega tržnega zmagovalca, ne pa laboratorijskih parametrov.</blockquote>
-</section>
-<section id="odprto">
-<h2>15. Kaj še ni dokazano</h2>
-<div class="grid-2">
-<div class="info-card"><h3>Laboratorij in senzorična resnica</h3><ul><li>realna etanolna selektivnost sorbentov in magnetnih nosilcev;</li><li>ostanek, migracija in živilska varnost materiala;</li><li>regeneracija skozi več ciklov;</li><li>resnična sestava surovega ter dodelanega alkoholnega toka;</li><li>slepa senzorična kakovost Produkta A;</li><li>aromatska Pareto meja med A in B.</li></ul></div>
-<div class="info-card"><h3>Industrija, trg in pravo</h3><ul><li>resnični EUR/L, CAPEX, CIP, fouling in dobavljivost;</li><li>rektifikacijski yield in energija na liter absolutnega alkohola;</li><li>market absorption in dejanska prodajna cena Produkta B;</li><li>trošarine, denaturacija, skladiščenje in logistika;</li><li>pravna kategorija konkretnega vinskega ali pivskega toka;</li><li>GMP, Ph. Eur., biocidna ali druga release kvalifikacija.</li></ul></div>
-</div>
-<div class="callout"><h3>Programsko stanje pri delnem S13</h3><p>Feasibility-aware governance, scatter, lease/token guard in correctness ledger ostajajo pravilni. Nova omejitev je podatkovna skala: 1.844.747 rezultatov, približno 91,96-GB glavna baza in 552,4-s FAST snapshot. v0.5.2 mora zato poleg raziskovalne ekonomike uvesti FAST2 in compact storage.</p></div>
-<blockquote><strong>Truth boundary:</strong> arena ustvarja in rangira hipoteze. Zmagovalec nastane šele po zaporedju <code>arena → laboratorij → slepa degustacija → realni EUR/L → regulatorna presoja → kalibracija → ponovni turnir</code>.</blockquote>
-</section>
-<section id="zgodovina">
-<h2>16. Razvoj raziskovalne arene</h2>
-<div class="timeline">
-<div class="timeline-item"><b>v0.1.x</b><span>Osnovni procesni graf, pravilen vrstni red rekombinacije, receptirana voda, kalorije na končni liter in uravnotežena obravnava piva ter vin.</span></div>
-<div class="timeline-item"><b>v0.2.1</b><span>Produktna pravilnost: fiksni demand scenariji, realnejša mobilna naprava, capacity-based sorbent costing ter customer/provider payback gate-i.</span></div>
-<div class="timeline-item"><b>v0.3.0</b><span>Veliki turnir vseh metod: 18 metod, tri zamrzovalne veje, magnetni trdni in tekoči nosilec, mikroflash, hibridi in Best Method verdict.</span></div>
-<div class="timeline-item"><b>v0.3.1</b><span>Correctness release: neidealna povratna voda, ločeni method drivers, plačljiv aroma capture, diskontiran večletni break-even, fail-closed fingerprint in hitrejše poročanje.</span></div>
-<div class="timeline-item"><b>v0.4.0-RHP</b><span>Grand Discovery Arena: 11 izvršnih lensov, sedem raziskovalnih faz, Agent‑0 fitness, evidence/assumption ledger, contradiction routing, 12.000-mestna research reserve in deterministični resurrection.</span></div>
-<div class="timeline-item"><b>v0.5.0-RHP</b><span>Twin-Product Grand Discovery: poln komponentni Produkt B, processing graph, 8 route družin, aroma Pareto, net economics, feasible governance, pravi diversity gate in inkrementalni FAST.</span></div>
-<div class="timeline-item"><b>v0.5.1 dolgi tek</b><span>S0–S12 zaključeni; delni S13 ima 1.844.747 rezultatov, 219 process-feasible in 203 LAB_TEST, vendar še vedno 0 market in 0 robust twin. S13 bolje zadene feasible prostor, brez premika najboljšega roba.</span></div><div class="timeline-item"><b>v0.5.1-RHP</b><span>Twin-Product Correctness: en finančni ledger, pretokovno skaliran CAPEX, fail-closed authority, pravi energy gate, fizikalni Product-B Monte Carlo, carrier provenance, schema 51 in celotna regresijska lestev.</span></div><div class="timeline-item"><b>v0.5.2 predprojekt</b><span>Market Rescue + Magnetic Architecture Expansion + Shared Product-B Hub + FAST2: permeate-side cyclic bed, serial HGMS + guard, matched nemagnetni dvojčki, A-only/raw/toll/shared/local ekonomika in protected-side-stream platforma.</span></div></div>
-</section>
-<section id="naslednji-test">
-<h2>17. Naslednji odločilni koraki</h2>
+<section id="en-fill">
+<h2>4. Reanchor is a two-stage event: signal → revalidated fill</h2>
 <ol>
-<li><strong>S13 dokončaj z 2 workerjema:</strong> ne prekinjaj ga zaradi vmesnega FAST-a; po <code>S13 ... | DONE</code> ne zaženi S14.</li>
-<li><strong>En končni FAST:</strong> z njim zamenjaj delne številke v tem HTML-ju in v RHP memorandumu ter zapiši končni S13 governance.</li>
-<li><strong>Zamrzni v0.5.1:</strong> ohrani bazo kot dokazni checkpoint; brez resume-a v novo shemo in brez prenosa starih scoreov.</li>
-<li><strong>v0.5.2 targeted build:</strong> historical seed replay, rare-island trust-region, matched magnetic/non-magnetic atribucija in strožji HGMS/containment model.</li>
-<li><strong>Market rescue:</strong> vsak kandidat vedno izračuna A-only, raw B, raw sale, tolling, shared hub in full local B; uporabi adaptive route stopping.</li>
-<li><strong>Protected side-stream platform:</strong> aroma/CO₂ zaščita → frakcionacija → specialistični bulk removal → opcijski polishing → water gate → deployment B → rekombinacija.</li>
-<li><strong>FAST2 + compact storage:</strong> materializirani task/diversity counters, ločen champion payload in polni JSON samo za dokazno pomembne rezultate.</li>
-<li><strong>Laboratorijski vrstni red:</strong> M1 material screen → M2 breakthrough → M3 matched handling → M4 containment → M5 regeneracija → M6 1-L beverage test → M7 Product-B desorbat.</li>
-<li><strong>Šele nato dolg turnir:</strong> correctness, replay, micro-tournament, deployment economics, all-architecture smoke, 4.050-cell baseline, kratek deep run in pregled saturacij.</li>
+<li>At the phone-check close, a setup only creates an <strong>intent</strong>.</li>
+<li>At the next 1m open, recheck who is still the loser, setup freshness, drift, impulse invalidation, equal-core state and absence of another rescue.</li>
+<li>Recompute quantity at the actual fill price. Never blindly execute stale quantity.</li>
+<li>If the minimum-sufficient add exceeds risk/margin caps → <strong>NO ACTION</strong>.</li>
+<li>If a fill occurs, disable any incompatible winner conditional and immediately place the exact-excess TP.</li>
 </ol>
-<div class="callout green"><h3>Najcenejši prvi realni test</h3><p>Najprej izmeri liquid-phase kapaciteto in EtOH/H₂O selektivnost najboljših poroznih materialov v zaščitenem pivskem permeatu ter uporabi matched magnetni in nemagnetni shell control. Če kemija ne drži, je magnetna separacija sekundarna in veja se pravilno demotira.</p></div>
+<div class="logic"><strong>NO CHASE:</strong> if price already reverted before the next open, if the leg is no longer the loser, or if the setup expired, the intent dies. A new action requires a new event.</div>
 </section>
-<section id="sklep">
-<h2>18. Sklep</h2>
-<p><strong>BDAA v0.5.1-RHP ostaja poštena raziskovalna arena:</strong> pri delnem S13 ima 1.844.747 rezultatov, 219 process-feasible kandidatov in 203 LAB_TEST seedov, vendar še vedno 0 market in 0 robustnih Twin-Product ponudb. S13 približno 2,9-krat pogosteje zadene izvedljivo območje, toda best process p10 ostaja 90,9304, Product-B route maksimumi pa so vsi neto negativni.</p>
-<p>Procesno še vedno vodijo <strong>trdni sorbent</strong>, <strong>closed microflash</strong> in <strong>falling-film freeze</strong>. Lokalna polna Product-B dodelava ostaja glavni ekonomski blocker. Zato naslednja verzija ne potrebuje samo več istega searcha, ampak drugačno deployment arhitekturo: <strong>A-only + raw/toll/shared/local B + adaptive stopping</strong>.</p>
-<div class="callout green"><h3>Magnetni koncept po novem RHP pregledu</h3><p>Rezultat 0/0 magnetnih feasible kandidatov ne pomeni univerzalne zavrnitve magnetizma. Kaže, da je sedanja prosto-dispergirana, enostopenjska formulacija preozka in da je njen capture prior preveč idealiziran. Najobetavnejši naslednji koncept je <strong>permeate-side cyclic sorbent loop</strong> z fixed/moving bedom, večstopenjskim HGMS samo kjer je potreben, neodvisnim guardom, regeneracijo in matched nemagnetno kontrolo.</p></div>
-<div class="callout"><h3>Prava naslednja odločitev</h3><p><strong>Dokončaj S13, naredi končni FAST, nato zgradi v0.5.2 targeted.</strong> Najprej historical replay, matched micro-tournament in deployment economics; šele po preverjanju nove fizike in modelnih saturacij je smiseln nov dolg Grand Tournament.</p></div>
-<p class="small">Truth boundary: RHP predprojekt je načrt za boljši eksperiment. Ne dokazuje materialne selektivnosti, živilske varnosti, HGMS učinkovitosti, regeneracije, Product-B kvalifikacije ali komercialne prednosti.</p>
+<section id="en-size">
+<h2>5. Sizing: minimum-sufficient add, not minimum target</h2>
+<p>If the old loser gap is <code>D</code> bp and the post-reanchor target requires an adverse-to-favorable move of <code>R</code> bp with small lock <code>g</code>:</p>
+<div class="formula">Total book multiple M ≈ D / (R − g)    ·    add multiple ≈ M − 1</div>
+<p>A smaller target can make rescue faster but makes the add explode. The objective is the <strong>smallest add that gives a reasonably reachable target and passes the risk budget</strong>, not the smallest possible retrace.</p>
+<h3>Risk by unattended horizon</h3>
+<div class="formula">max net-excess / wallet ≈ loss_budget × 10,000 / adverse_planning_bps</div>
+<p>v0.1.2 uses research planning proxies around 110 bp (5 min), 160 bp (15 min), and 285 bp (60 min). These are <strong>not guaranteed tail bounds</strong>. A longer unattended horizon should generally reduce permitted excess.</p>
+<div class="callout warn">Current live leaders at W250k are not a W250k recommendation, and G5/G10/G20 labels are not net leverage. The live summary ranks absolute PnL and therefore favors large wallets. The final wallet frontier is still unknown.</div>
 </section>
-<div class="footer">Celovit projektni HTML · BDAA v0.5.1-RHP Correctness · delni S13 FAST 10. avgusta 2026: 1.844.747 rezultatov, 219 process-feasible, 203 LAB_TEST, 0 market, 0 robust · RHP predprojekt v0.5.2: protected side-stream, permeate-side cyclic sorbent loop, matched controls, A-only/raw/toll/shared/local Product-B deployment, adaptive stopping in FAST2 · vse številke ostajajo modelni screening do laboratorijske, senzorične, industrijske in regulatorne validacije.</div>
+<section id="en-winner">
+<h2>6. Winner logic: default OFF until directional repair is better defined</h2>
+<p><span class="rank off">MAINLINE OFF</span> A full winner-only exit converts a neutral book into directional handoff, so it is no longer used as the base profit-lock mechanism.</p>
+<pre>DEFAULT:
+  winner_mode = NONE
+  keep winner core open
+  seek profit through loser reanchor + exact-excess TP + locked spread
+
+PREFER BEFORE WINNER-ONLY EXIT:
+  1. exact-excess TP
+  2. symmetric pair trim/reset
+  3. partial coordinated winner action (challenger)
+
+FULL WINNER EXIT:
+  separate DIRECTIONAL_HANDOFF challenger only,
+  with explicit repair/exit plan and its own risk budget.</pre>
+<p>If a rescue intent is armed or rescue is active, any winner stop that could leave a large naked book must be cancelled/frozen. No latent collision path.</p>
+</section>
+<section id="en-harvest">
+<h2>7. Exact-excess TP and pair reset are the core of the “surfing hedge”</h2>
+<p>After adding to the loser at <code>P1</code>, weighted average moves toward market. When retrace reaches the explicit target, close <strong>only the excess</strong>. Original core stays.</p>
+<div class="formula">A = (q·P0 + d·P1)/(q+d)    →    after TP: q LONG @ P0 + q SHORT @ A</div>
+<p>Once quantities are equal again, price delta re-locks. If spread between averages is large enough, realize part of it without directional prediction:</p>
+<div class="formula">pair trim realized = h(P−L) + h(S−P) = h(S−L)</div>
+<div class="callout good">Current evidence includes repeated completed cycles: the strongest visible STALL cell has 14 reanchors, 14 exact-excess TPs and 14 pair resets, ending COMPLETE_EQUAL_CORE.</div>
+</section>
+<section id="en-bbfilter">
+<h2>8. Adaptive BB-position veto: useful specialist, not universal rule</h2>
+<p><span class="rank chal">OPTIONAL RESEARCH SPECIALIST</span> A separate MDL×DCC study uncovered a simpler adaptive filter based on price position inside the BB. On P30 it improved the combination of PnL, drawdown and completed equal-core state on the continuous later replay; it was not generally better on P05/P60.</p>
+<div class="table-wrap"><table><thead><tr><th>P30 continuous later replay</th><th class="num">PnL</th><th class="num">DD</th><th>End</th></tr></thead><tbody>
+<tr><td>Original P30</td><td class="num">+27.50</td><td class="num">300.26</td><td>Open rescue</td></tr>
+<tr><td><strong>Adaptive BB-position veto</strong></td><td class="num"><strong>+63.68</strong></td><td class="num"><strong>22.28</strong></td><td>Equal core · 12/12 rescues completed</td></tr>
+<tr><td>BB-position + 2 bp adverse-fill stress</td><td class="num">+55.97</td><td class="num">—</td><td>Equal core</td></tr>
+</tbody></table></div>
+<p class="tiny">This is a P30 × specific BB geometry × already-studied-history specialist. A manual visual equivalent of the learned filter is not validated, so it is a challenger/veto rather than a mandatory manual rule.</p>
+</section>
+<section id="en-evidence">
+<h2>9. What currently looks promising in the v0.1.2 long run</h2>
+<p>These are <strong>intermediate capacity findings</strong>, not final validation. All examples are 1 Apr–31 May 2026, W250k, causal next-open, winner_mode=none, and end equal-core in the shown cell.</p>
+<div class="table-wrap"><table><thead><tr><th>Candidate</th><th class="num">ROI</th><th class="num">DD / W</th><th class="num">Directional bars</th><th>Note</th></tr></thead><tbody>
+<tr><td><strong>STALL · 5m · G5</strong></td><td class="num metric">+29.31%</td><td class="num">17.72%</td><td class="num">18.71%</td><td>14/14 rescue TP + 14 resets; April alone ends with an open rescue.</td></tr>
+<tr><td><strong>REVERSAL · 15m · G10</strong></td><td class="num metric">+16.87%</td><td class="num">11.11%</td><td class="num">3.62%</td><td>5/5 rescue cycles; less directional time.</td></tr>
+<tr><td>REVERSAL · 15m · G20</td><td class="num">+18.85%</td><td class="num">15.24%</td><td class="num">3.06%</td><td>More core: only +11.76% more PnL than G10, but DD +37.17%.</td></tr>
+<tr><td><strong>SELECTIVE · 5m · G2</strong></td><td class="num metric">+17.37%</td><td class="num">14.34%</td><td class="num">5.04%</td><td>9/9 rescue TPs; interesting compromise.</td></tr>
+</tbody></table></div>
+<div class="callout warn"><strong>Tests are unfinished:</strong> the live extract was at 138,676 / 221,760 capacity work units (62.53%), errors=0. Matching stress and June diagnostics for this long run were not yet included. None of these candidates is a “winning strategy” yet.</div>
+</section>
+<section id="en-card">
+<h2>10. Phone-check card — current operational version</h2>
+<h3>A. State first</h3>
+<pre>If RESCUE_ACTIVE or DIRECTIONAL_HANDOFF:
+  do not start a new unrelated setup.
+  Manage existing tail / TP / repair first.
+
+If EQUAL_CORE and no pending orders:
+  proceed to the setup gate.</pre>
+<h3>B. Setup gate</h3>
+<pre>NO ACTION if:
+- only outer-BB touch or only reentry
+- impulse is still accelerating
+- no completed large outside-BB displacement
+- no fresh extreme + stall/reversal/selective confirmation
+- setup was missed
+- minimum-sufficient add exceeds risk/margin cap
+
+REANCHOR INTENT if:
+- completed displacement is large enough
+- fresh extreme exists
+- STALL / REVERSAL / SELECTIVE gate is valid
+- continuation veto does not require rejection or smaller size</pre>
+<h3>C. At the next open</h3>
+<pre>REVALIDATE EVERYTHING.
+If loser/setup/size/risk no longer hold → CANCEL.
+If they hold → fill minimum-sufficient quantity → immediately place exact-excess TP.</pre>
+<h3>D. After TP</h3>
+<pre>If quantity is equal again:
+  measure locked spread.
+  pair trim/reset only when spread is large enough.
+  otherwise NO ACTION.</pre>
+<div class="callout good"><strong>Sleep rule:</strong> for a long unattended interval, aim for equal quantities, no rescue excess, no pending reanchor and no winner stop that can autonomously create a large naked book.</div>
+</section>
+<section id="en-boundary">
+<h2>11. What is currently frozen and what may still change</h2>
+<p><strong>Frozen core:</strong> equal-core accounting, weighted-average reanchor, next-open revalidation, exact-excess TP, return to equal quantity, pair-reset identity, NO CHASE and NO ACTION as a legal main decision.</p>
+<p><strong>Still evolvable:</strong> STALL/REVERSAL/SELECTIVE ranking, 30–75+ bp target geometry, optimal core/wallet, adaptive BB-position veto, 5m/15m/30m attention, maximum allowed rescue duration and any future winner/directional repair.</p>
+<p><strong>Not yet proven:</strong> 8-hour sleep, live venue execution, funding/impact, sealed holdout, durable profitability or an optimal wallet. Arena v0.1.3 is currently being built and may change parts of this policy after new evidence.</p>
+<div class="callout danger"><strong>This is a research strategy, not permission for live trading.</strong> Current positive results are historical replays on already-examined SOL history. The purpose of this page is to describe the best current working hypothesis as accurately as possible.</div>
+</section>
+</article>
+<div class="footer">Standalone HTML · no external libraries · language/font preferences are stored locally in the browser</div>
 </main>
-</div>
-<a aria-label="Na vrh" class="backtop" href="#top">↑</a>
+<script>
+(function(){
+  const root=document.documentElement, sl=document.getElementById('sl'), en=document.getElementById('en');
+  const slBtn=document.getElementById('slBtn'), enBtn=document.getElementById('enBtn');
+  const minusBtn=document.getElementById('minusBtn'), plusBtn=document.getElementById('plusBtn'), resetBtn=document.getElementById('resetBtn');
+  const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  let size=parseInt(store.get('bdNeutralFont')||'17',10); if(!Number.isFinite(size)) size=17;
+  size=Math.min(24,Math.max(13,size)); root.style.setProperty('--base-font',size+'px');
+  function setLang(lang){
+    const isSl=lang!=='en'; sl.classList.toggle('active',isSl); en.classList.toggle('active',!isSl);
+    slBtn.classList.toggle('active',isSl); enBtn.classList.toggle('active',!isSl);
+    document.documentElement.lang=isSl?'sl':'en'; store.set('bdNeutralLang',isSl?'sl':'en');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function setSize(n){size=Math.min(24,Math.max(13,n));root.style.setProperty('--base-font',size+'px');store.set('bdNeutralFont',String(size));}
+  slBtn.addEventListener('click',()=>setLang('sl')); enBtn.addEventListener('click',()=>setLang('en'));
+  minusBtn.addEventListener('click',()=>setSize(size-1)); plusBtn.addEventListener('click',()=>setSize(size+1)); resetBtn.addEventListener('click',()=>setSize(17));
+  const saved=store.get('bdNeutralLang'); if(saved==='en') setLang('en');
+})();
+</script>
 </body>
 </html>
