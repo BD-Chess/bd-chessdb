@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-reader-size="2">
+
+<html data-entry-release="1.0" data-entry-root="." data-reader-size="2" lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BD × AI Lab — News, Plan, and Companion Hub</title>
-<meta name="description" content="BD × AI Lab companion hub for MDLxDCC.org: top priorities, MentalArena Lab, Trading Arena, ARC-AGI-3 deadlines, current news, and a persistent todo checklist." />
-<meta name="author" content="Bojan Dobrečevič" />
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-<link rel="canonical" href="https://www.mdlxdcc.org/BD/" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="BD × AI Lab" />
-<meta property="og:title" content="BD × AI Lab — News, Plan, and Companion Hub" />
-<meta property="og:description" content="Top priorities, ARC-AGI-3 deadlines and resources, current work plan, news, and persistent todo checklist for the BD Idea Atlas." />
-<meta property="og:url" content="https://www.mdlxdcc.org/BD/" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>BD × AI Lab — Current work, notes &amp; todo</title>
+<meta content="The current workbench: source-specific next steps, saved checkboxes, browser-local private notes and the historical work plan." name="description"/>
+<meta content="Bojan Dobrečevič" name="author"/>
+<meta content="index, follow, max-image-preview:large, max-snippet:-1" name="robots"/>
+<link href="https://www.mdlxdcc.org/index-todo.html" rel="canonical"/>
+<meta content="website" property="og:type"/>
+<meta content="BD × AI Lab" property="og:site_name"/>
+<meta content="BD × AI Lab — Current work, notes &amp; todo" property="og:title"/>
+<meta content="The current workbench: source-specific next steps, saved checkboxes, browser-local private notes and the historical work plan." property="og:description"/>
+<meta content="https://www.mdlxdcc.org/index-todo.html" property="og:url"/>
 <style>
 :root{
   --bg:#05070d; --bg2:#080d18; --panel:rgba(15,23,42,.84); --panel2:rgba(20,31,54,.94);
@@ -52,375 +53,389 @@ footer{border-top:1px solid var(--line);padding:32px 0 70px;color:var(--muted);f
 @media(max-width:680px){.grid.two,.grid.three,.grid.five,.timeline,.link-grid,.arc-resource-grid,.deadline-grid{grid-template-columns:1fr}.priority-shell{padding:15px}.priority-intro{display:block}.priority-sequence{margin-top:12px}.arc-command{padding:15px}.topnav{display:none}.hero{padding-top:44px}.section-title{display:block}.section-title p{margin-top:8px}.plan-toolbar{position:static}.plan-toolbar b{width:100%;margin-bottom:2px}.reader-tools{right:10px;bottom:10px}.news{padding:12px}.card{padding:16px}.hero-actions .button{width:100%}}
 @media print{.topbar,.reader-tools,.plan-toolbar,.toast{display:none!important}body{background:#fff;color:#111}.card,.news,.task,.step,.link-card{box-shadow:none;background:#fff;color:#111;border-color:#ddd}a{color:#06c}}
 </style>
-</head>
-<body>
+<meta content="1.0 · 2026-09-08" name="entry-navigation-version"/><style id="entry-navigation-style">
+/* Four entrances · 2026-09-08. Scoped styles; project design stays intact. */
+.entry-en,.entry-sl{display:contents}html:not([data-lang="sl"]) .entry-sl,html[data-lang="sl"] .entry-en{display:none!important}
+.entry-nav{position:relative;z-index:110;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px max(20px,calc((100% - 1200px)/2));border-bottom:1px solid #294047;background:#091316;color:#b5c9cf;font:12px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:0;text-transform:none;box-sizing:border-box}
+.entry-nav a{display:inline-flex;gap:5px;align-items:center;padding:6px 9px;border:1px solid transparent;border-radius:7px;color:inherit;text-decoration:none!important;font:inherit;white-space:nowrap}
+.entry-nav a:hover,.entry-nav a:focus-visible{color:#f2faf8;border-color:#57777c;outline-offset:3px}
+.entry-nav a[aria-current="page"]{color:#effdf8;background:#203731;border-color:#39594e}
+.entry-nav .entry-home{padding-left:0;font-weight:600;color:#e8f5f1}
+.entry-nav .entry-choices{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.entry-nav .entry-bd{color:#e7c998;border-left:1px solid #294047;margin-left:5px;border-radius:0;padding-left:14px}
+.entry-updates{margin:24px auto;width:min(1200px,calc(100% - 40px));border:1px solid #2b4348;border-radius:12px;background:#0f1d21;color:#d5e5e7;font:14px/1.55 "Segoe UI",Arial,sans-serif;letter-spacing:0;clear:both}
+main.wrap>.entry-updates{width:100%}
+.entry-updates summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 20px;list-style:none;font-weight:500;text-transform:none;letter-spacing:0;color:#d5e5e7}
+.entry-updates summary::-webkit-details-marker{display:none}.entry-updates summary:after{content:'+';font:20px/1 monospace;color:#96dace}.entry-updates[open] summary:after{content:'−'}
+.entry-update-label{font:10px/1.5 Consolas,monospace;letter-spacing:.08em;color:#92b8bc;margin-right:12px}.entry-update-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#294047;border-top:1px solid #294047}
+.entry-update-item{background:#0f1d21;padding:16px 20px;min-width:0}.entry-update-item a{color:#a0e1cf;font-size:14px;font-weight:600;text-decoration:none}.entry-update-item a:hover{text-decoration:underline}.entry-update-item p{font-size:12px;line-height:1.5;color:#a6bfc5;margin:5px 0 0}.entry-updates .entry-update-note{font-size:11px;color:#a6bfc5;padding:12px 20px;margin:0}
+.bd-profile-link{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.18em}.bd-profile-link:hover{filter:brightness(1.18)}
+.entry-historical{border:1px solid #334556;border-radius:12px;margin:30px 0;background:#0c1520;color:#afbfce;padding:0 20px}.entry-historical>summary{padding:18px 0;font:600 14px/1.5 "Segoe UI",Arial,sans-serif;cursor:pointer}.entry-historical .history-note{font-size:13px;color:#d8c39e;padding:0 0 14px}.entry-history-label{display:block;border-left:2px solid #ac9061;padding:10px 14px;margin:12px 0 20px;font:12px/1.6 "Segoe UI",Arial,sans-serif;color:#c8b69c;background:#ac906109}
+html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-color:#c2d2c1}html[data-theme="light"] .entry-nav .entry-home{color:#14271e}html[data-theme="light"] .entry-nav a[aria-current]{background:#dcebd6;color:#183b26}html[data-theme="light"] .entry-nav .entry-bd{color:#644a23}html[data-theme="light"] .entry-updates,html[data-theme="light"] .entry-update-item{background:#fffef8;color:#14271e}html[data-theme="light"] .entry-updates summary{color:#234731}html[data-theme="light"] .entry-update-item a{color:#205c49}html[data-theme="light"] .entry-update-item p,html[data-theme="light"] .entry-update-note{color:#526859}
+@media(max-width:600px){.entry-nav{padding:8px 14px;gap:2px}.entry-nav .entry-home{font-size:11px}.entry-nav a{padding:6px}.entry-nav .entry-bd{margin-left:0;padding-left:8px}.entry-update-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.entry-updates summary{padding:14px}.entry-update-label{display:block;margin-bottom:4px}.entry-update-item{padding:14px}}
+@media(max-width:360px){.entry-update-grid{grid-template-columns:1fr}.entry-choices{width:100%}}
+@media print{.entry-nav{display:none}.entry-updates{break-inside:avoid}}
+</style></head>
+<body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a data-entry-link="" href="index-atlas.html">Atlas</a><a aria-current="page" data-entry-link="" href="index-todo.html">Todo</a><a data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="/BD/index.html">BD ↗</a></div></nav>
 <header class="topbar">
-  <div class="wrap topbar-inner">
-    <a class="brand" href="../">BD × AI Lab</a>
-    <nav class="topnav">
-      <a href="../">Root Atlas</a>
-      <a href="../Nara/index.html">Nara</a>
-      <a class="primary" href="BD_Idea_Atlas_AI_Reviews.html">AI Reviews</a><a href="../crp/SeedBank.html">Seed Bank</a>
-      <a href="../crp/MDLxDCC-Arena-NAS.html">NAS</a>
-      <a href="../crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
-      <a href="../8Z/8zip.html">8zip</a>
-      <a href="../crp/Physics_CFH_MDLxDCC.html">Physics</a>
-      <a href="../crp/AliensOnEarth.html">Aliens</a>
-      <a href="../crp/TalkingToAliens.html">Talking</a>
-      <a class="primary" href="#top-priority">Top priority</a>
-      <a href="#news">News</a>
-      <a href="#plan">Plan</a>
-      <a href="#todo">Todo</a>
-      <a href="#links">Links</a>
-    </nav>
-  </div>
+<div class="wrap topbar-inner">
+<a class="brand" data-entry-link="" href="/BD/index.html">BD × AI Lab</a>
+<nav class="topnav">
+<a href="index-atlas.html">Root Atlas</a>
+<a href="Nara/index.html">Nara</a>
+<a class="primary" href="BD/BD_Idea_Atlas_AI_Reviews.html">AI Reviews</a><a href="crp/SeedBank.html">Seed Bank</a>
+<a href="crp/MDLxDCC-Arena-NAS.html">NAS</a>
+<a href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
+<a href="8Z/8zip.html">8zip</a>
+<a href="crp/Physics_CFH_MDLxDCC.html">Physics</a>
+<a href="crp/AliensOnEarth.html">Aliens</a>
+<a href="crp/TalkingToAliens.html">Talking</a>
+<a class="primary" href="#top-priority">Top priority</a>
+<a href="#news">News</a>
+<a href="#plan">Plan</a>
+<a href="#todo">Todo</a>
+<a href="#links">Links</a>
+</nav>
+</div>
 </header>
-
 <main class="wrap">
-  <section class="hero" id="top">
-    <div class="eyebrow">BD × AI Lab · companion hub</div>
-    <h1><span class="blue">News, Plan, Todo.</span><span class="white">The living layer beside the atlas.</span></h1>
-    <p>The root page is the full BD Idea Atlas: portfolio, important work, demos, papers, devices, history, and the complete public map. This page is different: it is the current workbench for news, active lanes, saved checkboxes, and the plan that should not get lost between long tests and parallel sessions.</p>
-    <p class="hero-note">Built in spare time: late nights, many full-day weekends at home, and ordinary windows around job, family, sport, and life.</p>
-    <div class="hero-actions">
-      <a class="button green" href="#top-priority">Open top priorities</a>
-      <a class="button" href="#plan">Open current plan</a>
-      <a class="button gold" href="#todo">Open saved todo</a>
-      <a class="button" href="BD_Idea_Atlas_AI_Reviews.html">AI reviews page</a>
-      <a class="button ghost" href="../">Full root atlas</a>
-      <a class="button ghost" href="../Nara/index.html">Nara storytelling</a>
-      <a class="button ghost" href="../crp/MDLxDCC-Arena-NAS.html">NAS Arena</a>
-      <a class="button ghost" href="../crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
-      <a class="button ghost" href="../8Z/8zip.html">8zip &amp; 8zipLab</a>
-    </div>
-  </section>
-
-  <section id="top-priority" class="top-priority">
-    <div class="priority-shell">
-      <div class="priority-intro">
-        <div>
-          <span class="tag">Top priority · June 2026</span>
-          <h2>Build the lab. Prove it on trading. Then attack ARC‑AGI‑3.</h2>
-          <p>The order is deliberate: stabilize MAL v0.98 into v1.0, use the mature workflow for the Trading Arena v1.4 benchmark, and run ARC‑AGI‑3 as the first external Human × AI research challenge.</p>
-        </div>
-        <div class="priority-sequence" aria-label="Priority sequence"><span><b>1</b> MAL</span><span><b>2</b> Trading v1.4</span><span><b>3</b> ARC‑AGI‑3</span></div>
-      </div>
-
-      <div class="grid three priority-grid">
-        <article class="card priority-card accent-violet">
-          <div class="priority-head"><div><div class="priority-kicker">Priority 1</div><h3>MentalArena Lab v0.98 → v1.0</h3></div><span class="priority-status ready">v0.98 ready</span></div>
-          <p>Use the new independent <b>AI‑ONLY / HUMAN × AI</b> layer, ASK_BD Question Broker, BD idea injection, TEXT/JSON transport, and contribution trace to harden the first stable MAL release.</p>
-          <div class="tasks">
-            <div class="task"><input id="t-top-mal-tests" data-task="top-mal-tests" type="checkbox"><label for="t-top-mal-tests">Run v0.98 offline selftest + HTTP smoke locally.<span class="hint">Expected: 69/69 and 34/34; no provider calls.</span></label></div>
-            <div class="task"><input id="t-top-mal-selfloop" data-task="top-mal-selfloop" type="checkbox"><label for="t-top-mal-selfloop">Run MAL on MAL in HUMAN × AI mode.<span class="hint">E2 Standard · JSON intermediate · final synthesis TEXT.</span></label></div>
-            <div class="task"><input id="t-top-mal-audit" data-task="top-mal-audit" type="checkbox"><label for="t-top-mal-audit">Audit the self-loop export and clean the v1.0-RC1 builder prompt.<span class="hint">No new modes/engines; preserve evidence and privacy boundaries.</span></label></div>
-            <div class="task"><input id="t-top-mal-v10" data-task="top-mal-v10" type="checkbox"><label for="t-top-mal-v10">Build, smoke, audit, and promote MAL v1.0 only if it passes.<span class="hint">RC first; stable release second.</span></label></div>
-          </div>
-          <div class="priority-links"><a href="../crp/AIM3_MentalArena_mRHP.html">Public MAL page</a><a href="../crp/AIM3_MentalArena_mRHP_trading_benchmark_v0_6.html">Trading benchmark</a></div>
-        </article>
-
-        <article class="card priority-card accent-green">
-          <div class="priority-head"><div><div class="priority-kicker">Priority 2</div><h3>Trading Arena v1.4</h3></div><span class="priority-status active">after MAL v1.0</span></div>
-          <p>Use MAL as the prompt-building and audit layer, then test the upgraded real‑1m arena and BD Dual‑Side Size‑Parity Corridor Rescue without pruning high-risk strategies merely because a fixed wallet fails.</p>
-          <div class="tasks">
-            <div class="task"><input id="t-top-tr-freeze" data-task="top-tr-freeze" type="checkbox"><label for="t-top-tr-freeze">Freeze the v1.4 source pack and identical initial seed.<span class="hint">v1.3 code + BD‑DSP‑CR paper + context + benchmark rules.</span></label></div>
-            <div class="task"><input id="t-top-tr-benchmark" data-task="top-tr-benchmark" type="checkbox"><label for="t-top-tr-benchmark">Run the A–F prompt-builder benchmark with mature MAL v1.0.<span class="hint">Same builder and sources; vary only the prompt-generation workflow.</span></label></div>
-            <div class="task"><input id="t-top-tr-build" data-task="top-tr-build" type="checkbox"><label for="t-top-tr-build">Build and test Trading Arena v1.4 from the winning prompt.<span class="hint">Truth-hardening + BD‑DSP‑CR + matched controls + resume-safe runs.</span></label></div>
-            <div class="task"><input id="t-top-tr-wallet" data-task="top-tr-wallet" type="checkbox"><label for="t-top-tr-wallet">Rank strategies independently of arbitrary wallet size.<span class="hint">Record minimum recommended wallet for survivability; preserve profitable high-risk variants.</span></label></div>
-          </div>
-          <div class="priority-links"><a href="BD_trading_2026.html">Trading results</a><a href="BD_Hedge_Separation_PiX_Strategy_Explainer.html">Strategy explainer</a></div>
-        </article>
-
-        <article class="card priority-card accent-rose">
-          <div class="priority-head"><div><div class="priority-kicker">Priority 3 · external challenge</div><h3>ARC‑AGI‑3 with MAL</h3></div><span class="priority-status deadline">deadline track</span></div>
-          <p>Use HUMAN × AI brainstorming to build an agent that explores unfamiliar interactive environments, acquires goals, remembers discoveries, and adapts. Milestone #1 is a short sprint; Milestone #2 remains the fallback target.</p>
-          <div class="tasks">
-            <div class="task"><input id="t-top-arc-kaggle" data-task="top-arc-kaggle" type="checkbox"><label for="t-top-arc-kaggle">Join the ARC‑AGI‑3 Kaggle competition.<span class="hint">Competition submission and official rules live on Kaggle.</span></label></div>
-            <div class="task"><input id="t-top-arc-platform" data-task="top-arc-platform" type="checkbox"><label for="t-top-arc-platform">Register on ARC Prize Platform with Google or GitHub.<span class="hint">Then create an API key under Profile → API Keys.</span></label></div>
-            <div class="task"><input id="t-top-arc-quickstart" data-task="top-arc-quickstart" type="checkbox"><label for="t-top-arc-quickstart">Install the toolkit and play one environment.<span class="hint">Get a scorecard before designing a complex agent.</span></label></div>
-            <div class="task"><input id="t-top-arc-mal" data-task="top-arc-mal" type="checkbox"><label for="t-top-arc-mal">Run a focused MAL HUMAN × AI agent-design session.<span class="hint">Ask BD only for high-information visual/strategic seeds; test every idea.</span></label></div>
-          </div>
-          <div class="priority-links"><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/overview" target="_blank" rel="noopener">Join on Kaggle ↗</a><a href="https://arcprize.org/platform" target="_blank" rel="noopener">ARC Platform ↗</a></div>
-        </article>
-      </div>
-
-      <div class="arc-command" id="arc-command-center">
-        <div class="arc-command-head">
-          <div><span class="tag">ARC‑AGI‑3 command center</span><h3>Everything needed before the next deadline</h3><p>Official dates, registration, API setup, starter code, benchmarking tools, community links, and the offline-evaluation constraint in one place.</p></div>
-          <div class="deadline-countdown"><strong id="arcCountdown">Calculating…</strong><span id="arcCountdownSub">Next ARC‑AGI‑3 milestone</span></div>
-        </div>
-
-        <div class="deadline-grid" aria-label="ARC Prize 2026 dates">
-          <div class="deadline-item"><time datetime="2026-03-25">Mar 25</time><b>Competition started</b></div>
-          <div class="deadline-item next" data-arc-deadline="2026-06-30"><time datetime="2026-06-30">Jun 30</time><b>ARC‑AGI‑3 Milestone #1</b></div>
-          <div class="deadline-item" data-arc-deadline="2026-09-30"><time datetime="2026-09-30">Sep 30</time><b>ARC‑AGI‑3 Milestone #2</b></div>
-          <div class="deadline-item" data-arc-deadline="2026-11-02"><time datetime="2026-11-02">Nov 2</time><b>Submissions due</b></div>
-          <div class="deadline-item" data-arc-deadline="2026-11-08"><time datetime="2026-11-08">Nov 8</time><b>Papers due</b></div>
-          <div class="deadline-item" data-arc-deadline="2026-12-04"><time datetime="2026-12-04">Dec 4</time><b>Results announced</b></div>
-        </div>
-
-        <div class="grid two">
-          <div class="card accent-blue">
-            <h3>Immediate setup checklist</h3>
-            <div class="tasks">
-              <div class="task"><input id="t-top-arc-key" data-task="top-arc-key" type="checkbox"><label for="t-top-arc-key">Create and store `ARC_API_KEY` locally.<span class="hint">Never commit the key to GitHub or this public page.</span></label></div>
-              <div class="task"><input id="t-top-arc-firstgame" data-task="top-arc-firstgame" type="checkbox"><label for="t-top-arc-firstgame">Run the official quickstart and save the first scorecard/replay.<span class="hint">Establish a reproducible baseline before MAL changes anything.</span></label></div>
-              <div class="task"><input id="t-top-arc-repos" data-task="top-arc-repos" type="checkbox"><label for="t-top-arc-repos">Clone Agents, Kaggle Starter, and Benchmarking repositories.<span class="hint">Reuse official scaffolding instead of rebuilding plumbing.</span></label></div>
-              <div class="task"><input id="t-top-arc-ablation" data-task="top-arc-ablation" type="checkbox"><label for="t-top-arc-ablation">Define AI‑ONLY vs HUMAN × AI and baseline vs MAL agent ablations.<span class="hint">Measure score, actions, cost, time, failures, and BD contribution.</span></label></div>
-              <div class="task"><input id="t-top-arc-m1" data-task="top-arc-m1" type="checkbox"><label for="t-top-arc-m1">Attempt Milestone #1 only if a valid baseline is ready in time.<span class="hint">Otherwise preserve the work and target Milestone #2 on Sep 30.</span></label></div>
-            </div>
-          </div>
-          <div class="card accent-gold">
-            <h3>Windows quickstart</h3>
-            <p>Platform login gives progress tracking and access to public games. Keep all secrets local.</p>
-            <div class="arc-mini-code">pip install arc-agi
+<section class="hero" id="top">
+<div class="eyebrow"><a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> × AI Lab · companion hub</div>
+<h1><span class="blue">News, Plan, Todo.</span><span class="white">What deserves attention next?</span></h1>
+<p>The workbench beside the portfolio: current reading, next evidence checks, saved tasks and private notes. The four-entrance home is the front door; <a data-entry-link="" href="index-atlas.html">the Atlas</a> keeps the complete work map. This is a dated planning snapshot, not an automatic report from running experiments.</p>
+<p class="hero-note">Built in spare time: late nights, many full-day weekends at home, and ordinary windows around job, family, sport, and life.</p>
+<div class="hero-actions">
+<a class="button green" href="#top-priority">Open top priorities</a>
+<a class="button" href="#plan">Open current plan</a>
+<a class="button gold" href="#todo">Open saved todo</a>
+<a class="button" href="BD/BD_Idea_Atlas_AI_Reviews.html">AI reviews page</a>
+<a class="button ghost" href="index-atlas.html">Full root atlas</a>
+<a class="button ghost" href="Nara/index.html">Nara storytelling</a>
+<a class="button ghost" href="crp/MDLxDCC-Arena-NAS.html">NAS Arena</a>
+<a class="button ghost" href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
+<a class="button ghost" href="8Z/8zip.html">8zip &amp; 8zipLab</a>
+</div>
+</section>
+<!-- ENTRY-UPDATES:START -->
+<details class="entry-updates" data-entry-updated="2026-09-08"><summary><span><span class="entry-update-label">08 / 09 / 2026</span><span class="entry-en" lang="en">Current project status</span><span class="entry-sl" lang="sl">Trenutno stanje projektov</span></span></summary><div class="entry-update-grid"><article class="entry-update-item"><a data-entry-link="" href="BD/BD_8ZRP.html">TSP ×4</a><p><span class="entry-en" lang="en">Four independent arenas in testing</span><span class="entry-sl" lang="sl">Štiri neodvisne arene v testiranju</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_trading_2026.html">Trading ×3</a><p><span class="entry-en" lang="en">Two existing test arenas + BDTA just started</span><span class="entry-sl" lang="sl">Dve obstoječi testni areni + BDTA pravkar zagnana</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AI8_Sudoku_R6.html">Sudoku R6</a><p><span class="entry-en" lang="en">New large arena in build</span><span class="entry-sl" lang="sl">Nova velika arena v izdelavi</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AIM3_MentalArena_Lab.html">MAL 2.0</a><p><span class="entry-en" lang="en">Ready for review</span><span class="entry-sl" lang="sl">Za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_AIM3_RHP.html">RHP</a><p><span class="entry-en" lang="en">New RHP to review</span><span class="entry-sl" lang="sl">Nov RHP za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/8zCoding.html">8zCoding</a><p><span class="entry-en" lang="en">Active development line</span><span class="entry-sl" lang="sl">Aktivna razvojna veja</span></p></article></div><p class="entry-update-note"><span class="entry-en" lang="en">Dated work-status snapshot. Project pages keep their own evidence and release history.</span><span class="entry-sl" lang="sl">Datiran posnetek delovnega stanja. Projektne strani ohranjajo lastne dokaze in zgodovino izdaj.</span></p></details>
+<!-- ENTRY-UPDATES:END -->
+<section class="top-priority" id="top-priority">
+<div class="priority-head"><div><div class="eyebrow">Current workbench · 8 September 2026</div><h2>What is active now.</h2><p>This is the current operational snapshot. Older plans remain below as a collapsed historical record; they no longer define the priority order.</p></div></div>
+<div class="grid three priority-grid">
+<article class="card priority-card accent-blue"><div class="priority-head"><div><div class="priority-kicker">Testing · 4 arenas</div><h3>TSP</h3></div><span class="priority-status ready">in testing</span></div><p>Four different TSP arenas are running as separate research lines.</p><div class="tasks"><div class="task"><input data-task="sep26-tsp-collect" id="now-tsp-collect" type="checkbox"><label for="now-tsp-collect">Collect the newest result from all four arenas.<span class="hint">Keep each arena, version and evidence trail separate.</span></label></div><div class="task"><input data-task="sep26-tsp-compare" id="now-tsp-compare" type="checkbox"><label for="now-tsp-compare">Compare what each arena learned and decide the next discriminating test.</label></div></div><div class="priority-links"><a href="BD/BD_8ZRP.html">TSP / 8Z-RP</a></div></article>
+<article class="card priority-card accent-green"><div class="priority-head"><div><div class="priority-kicker">Testing · 3 arenas</div><h3>Trading</h3></div><span class="priority-status ready">2 testing · BDTA started</span></div><p>Two earlier trading arenas remain in testing. BD Trading Atlas (BDTA) has just started as the third research arena.</p><div class="tasks"><div class="task"><input data-task="sep26-trading-two" id="now-trading-two" type="checkbox"><label for="now-trading-two">Review the latest outputs from the two existing trading arenas.</label></div><div class="task"><input data-task="sep26-bdta-first" id="now-bdta-first" type="checkbox"><label for="now-bdta-first">Capture BDTA's first clean baseline and early findings before narrowing the search.</label></div></div><div class="priority-links"><a href="BD/BD_trading_2026.html">Trading work</a></div></article>
+<article class="card priority-card accent-gold"><div class="priority-head"><div><div class="priority-kicker">Building</div><h3>Sudoku R6</h3></div><span class="priority-status active">large arena</span></div><p>The new large Sudoku arena is currently being built.</p><div class="tasks"><div class="task"><input data-task="sep26-sudoku-build" id="now-sudoku-build" type="checkbox"><label for="now-sudoku-build">Review the delivered build against the R6 contract.</label></div><div class="task"><input data-task="sep26-sudoku-first-run" id="now-sudoku-first-run" type="checkbox"><label for="now-sudoku-first-run">After build validation, run the first clean confirmation test and retain the evidence.</label></div></div><div class="priority-links"><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a></div></article>
+<article class="card priority-card accent-violet"><div class="priority-head"><div><div class="priority-kicker">Review</div><h3>MAL 2.0</h3></div><span class="priority-status active">check</span></div><p>MAL 2.0 is ready for a focused verification pass.</p><div class="tasks"><div class="task"><input data-task="sep26-mal20-review" id="now-mal20" type="checkbox"><label for="now-mal20">Check MAL 2.0 package integrity, selftests/smoke tests and the main workflow before promoting further work.</label></div></div><div class="priority-links"><a href="crp/AIM3_MentalArena_Lab.html">MentalArena Lab</a></div></article>
+<article class="card priority-card accent-orange"><div class="priority-head"><div><div class="priority-kicker">Review</div><h3>New RHP</h3></div><span class="priority-status active">check</span></div><p>The new RHP needs review before it becomes the default working profile.</p><div class="tasks"><div class="task"><input data-task="sep26-rhp-review" id="now-rhp" type="checkbox"><label for="now-rhp">Review the new RHP against the existing RHP/wRHP roles and decide what should remain separate or be synthesized.</label></div></div><div class="priority-links"><a href="BD/BD_AIM3_RHP.html">RHP</a></div></article>
+<article class="card priority-card accent-rose"><div class="priority-head"><div><div class="priority-kicker">Active line</div><h3>8zCoding</h3></div><span class="priority-status active">current</span></div><p>Keep 8zCoding active as the executable build → run → verify development line.</p><div class="tasks"><div class="task"><input data-task="sep26-8zcoding-review" id="now-8zcoding" type="checkbox"><label for="now-8zcoding">Check the current package/results and choose the next test that can actually discriminate progress.</label></div></div><div class="priority-links"><a href="crp/8zCoding.html">8zCoding</a></div></article>
+</div>
+<div class="card" style="margin-top:14px;border-left:4px solid var(--dim)"><div class="priority-head"><div><div class="priority-kicker">Standby · preserved, not abandoned</div><h3>Parked until a better opening appears</h3></div><span class="priority-status">standby</span></div><p><strong>AVPS · AC‑WFP · ARC‑AGI · Nara stories · The Birds stories</strong> and other retained branches are on standby. Keep their seeds, evidence and reopening conditions, but do not let them compete with the active workbench for attention right now.</p><div class="priority-links"><a href="index-atlas.html">Find them in the Atlas</a><a href="Nara/index.html">Nara</a><a href="Birds/index.html">The Birds</a></div></div>
+<div class="actions"><a class="btn" href="#todo">Saved tasks &amp; notes ↓</a><a class="btn" href="index-atlas.html">Full Atlas</a><a class="btn" href="/BD/index.html">BD</a></div>
+</section><details class="entry-historical" id="historical-plan"><summary>Earlier work plan · June 2026 · preserved checkboxes</summary><p class="history-note">This is the original plan, retained as history—not the current priority order or a verified current competition schedule. Saved task states are preserved.</p><section class="top-priority" id="june-priorities">
+<div class="priority-shell">
+<div class="priority-intro">
+<div>
+<span class="tag">Top priority · June 2026</span>
+<h2>Build the lab. Prove it on trading. Then attack ARC‑AGI‑3.</h2>
+<p>The order is deliberate: stabilize MAL v0.98 into v1.0, use the mature workflow for the Trading Arena v1.4 benchmark, and run ARC‑AGI‑3 as the first external Human × AI research challenge.</p>
+</div>
+<div aria-label="Priority sequence" class="priority-sequence"><span><b>1</b> MAL</span><span><b>2</b> Trading v1.4</span><span><b>3</b> ARC‑AGI‑3</span></div>
+</div>
+<div class="grid three priority-grid">
+<article class="card priority-card accent-violet">
+<div class="priority-head"><div><div class="priority-kicker">Priority 1</div><h3>MentalArena Lab v0.98 → v1.0</h3></div><span class="priority-status ready">v0.98 ready</span></div>
+<p>Use the new independent <b>AI‑ONLY / HUMAN × AI</b> layer, ASK_BD Question Broker, <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> idea injection, TEXT/JSON transport, and contribution trace to harden the first stable MAL release.</p>
+<div class="tasks">
+<div class="task"><input data-task="top-mal-tests" id="t-top-mal-tests" type="checkbox"/><label for="t-top-mal-tests">Run v0.98 offline selftest + HTTP smoke locally.<span class="hint">Expected: 69/69 and 34/34; no provider calls.</span></label></div>
+<div class="task"><input data-task="top-mal-selfloop" id="t-top-mal-selfloop" type="checkbox"/><label for="t-top-mal-selfloop">Run MAL on MAL in HUMAN × AI mode.<span class="hint">E2 Standard · JSON intermediate · final synthesis TEXT.</span></label></div>
+<div class="task"><input data-task="top-mal-audit" id="t-top-mal-audit" type="checkbox"/><label for="t-top-mal-audit">Audit the self-loop export and clean the v1.0-RC1 builder prompt.<span class="hint">No new modes/engines; preserve evidence and privacy boundaries.</span></label></div>
+<div class="task"><input data-task="top-mal-v10" id="t-top-mal-v10" type="checkbox"/><label for="t-top-mal-v10">Build, smoke, audit, and promote MAL v1.0 only if it passes.<span class="hint">RC first; stable release second.</span></label></div>
+</div>
+<div class="priority-links"><a href="crp/AIM3_MentalArena_mRHP.html">Public MAL page</a><span class="muted" title="Historical reference. The named v0.6 benchmark file is absent from the supplied website snapshot.">Trading benchmark v0.6 · historical file not included</span></div>
+</article>
+<article class="card priority-card accent-green">
+<div class="priority-head"><div><div class="priority-kicker">Priority 2</div><h3>Trading Arena v1.4</h3></div><span class="priority-status active">after MAL v1.0</span></div>
+<p>Use MAL as the prompt-building and audit layer, then test the upgraded real‑1m arena and <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> Dual‑Side Size‑Parity Corridor Rescue without pruning high-risk strategies merely because a fixed wallet fails.</p>
+<div class="tasks">
+<div class="task"><input data-task="top-tr-freeze" id="t-top-tr-freeze" type="checkbox"/><label for="t-top-tr-freeze">Freeze the v1.4 source pack and identical initial seed.<span class="hint">v1.3 code + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR paper + context + benchmark rules.</span></label></div>
+<div class="task"><input data-task="top-tr-benchmark" id="t-top-tr-benchmark" type="checkbox"/><label for="t-top-tr-benchmark">Run the A–F prompt-builder benchmark with mature MAL v1.0.<span class="hint">Same builder and sources; vary only the prompt-generation workflow.</span></label></div>
+<div class="task"><input data-task="top-tr-build" id="t-top-tr-build" type="checkbox"/><label for="t-top-tr-build">Build and test Trading Arena v1.4 from the winning prompt.<span class="hint">Truth-hardening + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR + matched controls + resume-safe runs.</span></label></div>
+<div class="task"><input data-task="top-tr-wallet" id="t-top-tr-wallet" type="checkbox"/><label for="t-top-tr-wallet">Rank strategies independently of arbitrary wallet size.<span class="hint">Record minimum recommended wallet for survivability; preserve profitable high-risk variants.</span></label></div>
+</div>
+<div class="priority-links"><a href="BD/BD_trading_2026.html">Trading results</a><a href="BD/BD_Hedge_Separation_PiX_Strategy_Explainer.html">Strategy explainer</a></div>
+</article>
+<article class="card priority-card accent-rose">
+<div class="priority-head"><div><div class="priority-kicker">Priority 3 · external challenge</div><h3>ARC‑AGI‑3 with MAL</h3></div><span class="priority-status deadline">deadline track</span></div>
+<p>Use HUMAN × AI brainstorming to build an agent that explores unfamiliar interactive environments, acquires goals, remembers discoveries, and adapts. Milestone #1 is a short sprint; Milestone #2 remains the fallback target.</p>
+<div class="tasks">
+<div class="task"><input data-task="top-arc-kaggle" id="t-top-arc-kaggle" type="checkbox"/><label for="t-top-arc-kaggle">Join the ARC‑AGI‑3 Kaggle competition.<span class="hint">Competition submission and official rules live on Kaggle.</span></label></div>
+<div class="task"><input data-task="top-arc-platform" id="t-top-arc-platform" type="checkbox"/><label for="t-top-arc-platform">Register on ARC Prize Platform with Google or GitHub.<span class="hint">Then create an API key under Profile → API Keys.</span></label></div>
+<div class="task"><input data-task="top-arc-quickstart" id="t-top-arc-quickstart" type="checkbox"/><label for="t-top-arc-quickstart">Install the toolkit and play one environment.<span class="hint">Get a scorecard before designing a complex agent.</span></label></div>
+<div class="task"><input data-task="top-arc-mal" id="t-top-arc-mal" type="checkbox"/><label for="t-top-arc-mal">Run a focused MAL HUMAN × AI agent-design session.<span class="hint">Ask <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> only for high-information visual/strategic seeds; test every idea.</span></label></div>
+</div>
+<div class="priority-links"><a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/overview" rel="noopener" target="_blank">Join on Kaggle ↗</a><a href="https://arcprize.org/platform" rel="noopener" target="_blank">ARC Platform ↗</a></div>
+</article>
+</div>
+<div class="arc-command" id="arc-command-center">
+<div class="arc-command-head">
+<div><span class="tag">ARC‑AGI‑3 command center</span><h3>Everything needed before the next deadline</h3><p>Official dates, registration, API setup, starter code, benchmarking tools, community links, and the offline-evaluation constraint in one place.</p></div>
+<div class="deadline-countdown"><strong id="arcCountdown">Historical schedule · June 2026</strong><span id="arcCountdownSub">Open the official competition page for current dates.</span></div>
+</div>
+<div aria-label="ARC Prize 2026 dates" class="deadline-grid">
+<div class="deadline-item"><time datetime="2026-03-25">Mar 25</time><b>Competition started</b></div>
+<div class="deadline-item next" data-arc-deadline="2026-06-30"><time datetime="2026-06-30">Jun 30</time><b>ARC‑AGI‑3 Milestone #1</b></div>
+<div class="deadline-item" data-arc-deadline="2026-09-30"><time datetime="2026-09-30">Sep 30</time><b>ARC‑AGI‑3 Milestone #2</b></div>
+<div class="deadline-item" data-arc-deadline="2026-11-02"><time datetime="2026-11-02">Nov 2</time><b>Submissions due</b></div>
+<div class="deadline-item" data-arc-deadline="2026-11-08"><time datetime="2026-11-08">Nov 8</time><b>Papers due</b></div>
+<div class="deadline-item" data-arc-deadline="2026-12-04"><time datetime="2026-12-04">Dec 4</time><b>Results announced</b></div>
+</div>
+<div class="grid two">
+<div class="card accent-blue">
+<h3>Immediate setup checklist</h3>
+<div class="tasks">
+<div class="task"><input data-task="top-arc-key" id="t-top-arc-key" type="checkbox"/><label for="t-top-arc-key">Create and store `ARC_API_KEY` locally.<span class="hint">Never commit the key to GitHub or this public page.</span></label></div>
+<div class="task"><input data-task="top-arc-firstgame" id="t-top-arc-firstgame" type="checkbox"/><label for="t-top-arc-firstgame">Run the official quickstart and save the first scorecard/replay.<span class="hint">Establish a reproducible baseline before MAL changes anything.</span></label></div>
+<div class="task"><input data-task="top-arc-repos" id="t-top-arc-repos" type="checkbox"/><label for="t-top-arc-repos">Clone Agents, Kaggle Starter, and Benchmarking repositories.<span class="hint">Reuse official scaffolding instead of rebuilding plumbing.</span></label></div>
+<div class="task"><input data-task="top-arc-ablation" id="t-top-arc-ablation" type="checkbox"/><label for="t-top-arc-ablation">Define AI‑ONLY vs HUMAN × AI and baseline vs MAL agent ablations.<span class="hint">Measure score, actions, cost, time, failures, and <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> contribution.</span></label></div>
+<div class="task"><input data-task="top-arc-m1" id="t-top-arc-m1" type="checkbox"/><label for="t-top-arc-m1">Attempt Milestone #1 only if a valid baseline is ready in time.<span class="hint">Otherwise preserve the work and target Milestone #2 on Sep 30.</span></label></div>
+</div>
+</div>
+<div class="card accent-gold">
+<h3>Windows quickstart</h3>
+<p>Platform login gives progress tracking and access to public games. Keep all secrets local.</p>
+<div class="arc-mini-code">pip install arc-agi
 set ARC_API_KEY=your-api-key-here
 python my-play.py</div>
-            <p class="verified-note">PowerShell alternative: <code>$env:ARC_API_KEY=&quot;your-api-key-here&quot;</code>. Follow the current official quickstart if commands change.</p>
-          </div>
-        </div>
-
-        <div class="arc-resource-grid">
-          <a class="arc-resource" href="https://arcprize.org/competitions/2026" target="_blank" rel="noopener"><b>Official 2026 dates</b><span>Schedule, goals, open-source rules</span></a>
-          <a class="arc-resource" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/overview" target="_blank" rel="noopener"><b>Kaggle competition</b><span>Join, rules, code, submissions</span></a>
-          <a class="arc-resource" href="https://arcprize.org/platform" target="_blank" rel="noopener"><b>ARC Platform</b><span>Google/GitHub login and scorecards</span></a>
-          <a class="arc-resource" href="https://docs.arcprize.org/api-keys" target="_blank" rel="noopener"><b>API key instructions</b><span>Profile → API Keys → ARC_API_KEY</span></a>
-          <a class="arc-resource" href="https://docs.arcprize.org/" target="_blank" rel="noopener"><b>Quickstart docs</b><span>Install toolkit and play first game</span></a>
-          <a class="arc-resource" href="https://github.com/arcprize/ARC-AGI" target="_blank" rel="noopener"><b>ARC‑AGI Toolkit</b><span>Official Python integration</span></a>
-          <a class="arc-resource" href="https://github.com/arcprize/ARC-AGI-3-Agents" target="_blank" rel="noopener"><b>Agent templates</b><span>Official ARC‑AGI‑3 agent examples</span></a>
-          <a class="arc-resource" href="https://github.com/arcprize/ARC-AGI-3-Kaggle-Starter" target="_blank" rel="noopener"><b>Kaggle Starter</b><span>Submission-oriented starter repository</span></a>
-          <a class="arc-resource" href="https://github.com/arcprize/arc-agi-3-benchmarking" target="_blank" rel="noopener"><b>Benchmarking harness</b><span>Repeatable evaluations and scorecards</span></a>
-          <a class="arc-resource" href="https://arcprize.org/tasks" target="_blank" rel="noopener"><b>Games / tasks</b><span>Explore available environments</span></a>
-          <a class="arc-resource" href="https://arcprize.kit.com/bc80575d89" target="_blank" rel="noopener"><b>Email updates</b><span>Official ARC Prize newsletter signup</span></a>
-          <a class="arc-resource" href="https://discord.com/invite/9b77dPAmcA" target="_blank" rel="noopener"><b>Discord</b><span>Community and competition discussion</span></a>
-          <a class="arc-resource" href="mailto:team@arcprize.org"><b>team@arcprize.org</b><span>Official foundation contact email</span></a>
-        </div>
-
-        <div class="arc-warning"><strong>Submission reality:</strong> official competition eligibility requires reproducible open-source work submitted through Kaggle, and internet access is unavailable during Kaggle evaluation. An API-dependent research agent therefore needs an offline-compatible submission path rather than a last-minute wrapper.</div>
-        <div class="verified-note">Official links and dates verified 2026-06-18. The countdown uses calendar dates in UTC; always confirm the exact Kaggle cutoff time before submission.</div>
-      </div>
-    </div>
-  </section>
-
-  <section id="news">
-  <div class="section-title"><h2>News &amp; announcements</h2><p>Short public-facing updates and current work signals.</p></div>
-  <div class="news-list">
+<p class="verified-note">PowerShell alternative: <code>$env:ARC_API_KEY="your-api-key-here"</code>. Follow the current official quickstart if commands change.</p>
+</div>
+</div>
+<div class="arc-resource-grid">
+<a class="arc-resource" href="https://arcprize.org/competitions/2026" rel="noopener" target="_blank"><b>Official 2026 dates</b><span>Schedule, goals, open-source rules</span></a>
+<a class="arc-resource" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/overview" rel="noopener" target="_blank"><b>Kaggle competition</b><span>Join, rules, code, submissions</span></a>
+<a class="arc-resource" href="https://arcprize.org/platform" rel="noopener" target="_blank"><b>ARC Platform</b><span>Google/GitHub login and scorecards</span></a>
+<a class="arc-resource" href="https://docs.arcprize.org/api-keys" rel="noopener" target="_blank"><b>API key instructions</b><span>Profile → API Keys → ARC_API_KEY</span></a>
+<a class="arc-resource" href="https://docs.arcprize.org/" rel="noopener" target="_blank"><b>Quickstart docs</b><span>Install toolkit and play first game</span></a>
+<a class="arc-resource" href="https://github.com/arcprize/ARC-AGI" rel="noopener" target="_blank"><b>ARC‑AGI Toolkit</b><span>Official Python integration</span></a>
+<a class="arc-resource" href="https://github.com/arcprize/ARC-AGI-3-Agents" rel="noopener" target="_blank"><b>Agent templates</b><span>Official ARC‑AGI‑3 agent examples</span></a>
+<a class="arc-resource" href="https://github.com/arcprize/ARC-AGI-3-Kaggle-Starter" rel="noopener" target="_blank"><b>Kaggle Starter</b><span>Submission-oriented starter repository</span></a>
+<a class="arc-resource" href="https://github.com/arcprize/arc-agi-3-benchmarking" rel="noopener" target="_blank"><b>Benchmarking harness</b><span>Repeatable evaluations and scorecards</span></a>
+<a class="arc-resource" href="https://arcprize.org/tasks" rel="noopener" target="_blank"><b>Games / tasks</b><span>Explore available environments</span></a>
+<a class="arc-resource" href="https://arcprize.kit.com/bc80575d89" rel="noopener" target="_blank"><b>Email updates</b><span>Official ARC Prize newsletter signup</span></a>
+<a class="arc-resource" href="https://discord.com/invite/9b77dPAmcA" rel="noopener" target="_blank"><b>Discord</b><span>Community and competition discussion</span></a>
+<a class="arc-resource" href="mailto:team@arcprize.org"><b>team@arcprize.org</b><span>Official foundation contact email</span></a>
+</div>
+<div class="arc-warning"><strong>Submission reality:</strong> official competition eligibility requires reproducible open-source work submitted through Kaggle, and internet access is unavailable during Kaggle evaluation. An API-dependent research agent therefore needs an offline-compatible submission path rather than a last-minute wrapper.</div>
+<div class="verified-note">Official links and dates verified 2026-06-18. The countdown uses calendar dates in UTC; always confirm the exact Kaggle cutoff time before submission.</div>
+</div>
+</div>
+</section></details>
+<section id="news">
+<div class="section-title"><h2>News &amp; announcements</h2><p>Short public-facing updates and current work signals.</p></div><div class="card"><span class="date">2026-09-08</span><h3>Four entrances, one site.</h3><p>The technical search page, full portfolio Atlas, personal workbench and animated introduction now have distinct routes. The portrait moves to <a data-entry-link="" href="/BD/index.html">BD</a>; <a href="BD/BDR.html">BDR</a> stays beside it.</p><p><a href="index.html">Choose an entrance →</a> · <a href="index-search.html">MDL×DCC →</a> · <a href="index-atlas.html">Atlas →</a></p></div><div class="card"><span class="date">2026-09-07 / 08</span><h3>Current technical reading: R6, 8zCoding, Shield and RHP.</h3><p>Use the dated evidence receipts for measurements. R6 and future reasoning reuse remain research directions, not newly claimed benchmark wins.</p><p><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a> · <a href="crp/8zCoding.html">8zCoding</a> · <a href="BD/BD_AIM3_RHP.html">RHP / wRHP</a> · <a href="BD/8z_shield_landing.html">8Z Shield</a></p></div>
+<div class="news-list">
 <div class="news">
-  <div class="news-date">2026-08-24</div>
-  <div><b>An Armed Armistice for Ukraine — option-preserving policy proposal published.</b><br><span><a href="Ukraine_Armed_Armistice.html">The new proposal</a> explores a monitored two-stage cessation that concedes no sovereign title, keeps Ukraine armed and alliance-free to choose, protects people under occupation, and preserves diplomatic and future territorial-restoration options. Version 0.2 includes the RHP legal, strategic, humanitarian, political, and implementation audit trail.</span></div>
-  <a class="pill gold" href="Ukraine_Armed_Armistice.html">Ukraine proposal</a>
+<div class="news-date">2026-08-24</div>
+<div><b>An Armed Armistice for Ukraine — option-preserving policy proposal published.</b><br/><span><a href="BD/Ukraine_Armed_Armistice.html">The new proposal</a> explores a monitored two-stage cessation that concedes no sovereign title, keeps Ukraine armed and alliance-free to choose, protects people under occupation, and preserves diplomatic and future territorial-restoration options. Version 0.2 includes the RHP legal, strategic, humanitarian, political, and implementation audit trail.</span></div>
+<a class="pill gold" href="BD/Ukraine_Armed_Armistice.html">Ukraine proposal</a>
 </div>
 <div class="news">
-  <div class="news-date">2026-07-19</div>
-  <div><b>8zip ReZIP and 8zipLab now have a dedicated evidence-first research page.</b><br><span><a href="../8Z/8zip.html">8zip &amp; 8zipLab</a> separates the standard-ZIP mainline from the experimental FPLB branch, explains the verified v0.2.1 result, the 9.07% FPLB3 exact-dedup migration proof, the active v0.2.2 run, the ongoing ReZIP 24-archive arena, realistic upside, caveats, and the next gates.</span></div>
-  <a class="pill green" href="../8Z/8zip.html">8zip research</a>
+<div class="news-date">2026-07-19</div>
+<div><b>8zip ReZIP and 8zipLab now have a dedicated evidence-first research page.</b><br/><span><a href="8Z/8zip.html">8zip &amp; 8zipLab</a> separates the standard-ZIP mainline from the experimental FPLB branch, explains the verified v0.2.1 result, the 9.07% FPLB3 exact-dedup migration proof, the active v0.2.2 run, the ongoing ReZIP 24-archive arena, realistic upside, caveats, and the next gates.</span></div>
+<a class="pill green" href="8Z/8zip.html">8zip research</a>
 </div>
 <div class="news">
-  <div class="news-date">2026-06-18</div>
-  <div><b>MAL v0.98 Human × AI is ready; ARC‑AGI‑3 becomes the next external challenge.</b><br><span>The new local workflow adds AI‑ONLY/HUMAN × AI, ASK_BD questions, BD seed injection, resume-safe ledgers, and contribution tracing. The immediate sequence is MAL self-loop → Trading Arena v1.4 benchmark → focused ARC‑AGI‑3 agent experiment.</span></div>
-  <a class="pill violet" href="#top-priority">Top priority</a>
+<div class="news-date">2026-06-18</div>
+<div><b>MAL v0.98 Human × AI is ready; ARC‑AGI‑3 becomes the next external challenge.</b><br/><span>The new local workflow adds AI‑ONLY/HUMAN × AI, ASK_BD questions, <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> seed injection, resume-safe ledgers, and contribution tracing. The immediate sequence is MAL self-loop → Trading Arena v1.4 benchmark → focused ARC‑AGI‑3 agent experiment.</span></div>
+<a class="pill violet" href="#top-priority">Top priority</a>
 </div>
 <div class="news">
-  <div class="news-date">2026-06-14</div>
-  <div>
-    <b>8Z Post-Codec Noise Scout — first master validation completed.</b><br>
-    <span><a href="../crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">8Z Post-Codec Algorithmic Noise Scout</a> now has a reviewed arena-results section. v0.1.1 recovered raw synthetic CA/PRNG structure with clean controls, but did not yet prove useful shrinkage on zlib/lzma final-byte compressed targets.</span>
-  </div>
-  <a class="pill green" href="../crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
+<div class="news-date">2026-06-14</div>
+<div>
+<b>8Z Post-Codec Noise Scout — first master validation completed.</b><br/>
+<span><a href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">8Z Post-Codec Algorithmic Noise Scout</a> now has a reviewed arena-results section. v0.1.1 recovered raw synthetic CA/PRNG structure with clean controls, but did not yet prove useful shrinkage on zlib/lzma final-byte compressed targets.</span>
 </div>
-    <div class="news"><div class="news-date">2026-06-12</div><div><b>AIm³ MentalArena / mRHP — next reasoning layer page is staged.</b><br><span><a href="../crp/AIM3_MentalArena_mRHP.html">AIm³ MentalArena</a> defines mRHP: RHP improving RHP through protocol genes, concept capsules, benchmark tasks, scoring, lineage, reports, live extracts, and next-session seeds. It is an external workflow layer above LLMs, not model-weight learning and not a consciousness proof.</span></div><a class="pill green" href="../crp/AIM3_MentalArena_mRHP.html">MentalArena</a><a class="pill blue" href="../crp/AI8_Reasoning.html">AI8 Reasoning</a></div>
-    <div class="news"><div class="news-date">2026-06-12</div><div><b>How LLMs Actually Work — new RHPm / multi‑LLM explainer is live.</b><br><span><a href="How_LLMs_Actually_Work.html">How LLMs Actually Work</a> is now published as a user-facing, EN/SL article: transformer core, deployed assistant stack, failure modes, source discipline, and BD’s clearly separated AIM³ / RHPm / AI8 / 8Z workflow contribution. The companion <a href="How_LLMs_Actually_Work_Comparison_Report.html">scoreboard and comparison report</a> keeps the multi‑LLM review trail separate from the main article.</span></div><a class="pill green" href="How_LLMs_Actually_Work.html">LLM article</a></div>
-    <div class="news"><div class="news-date">2026-06-11</div><div><b>NAS / Architecture Search Arena now has its own page.</b><br><span><a href="../crp/MDLxDCC-Arena-NAS.html">NAS / Architecture Search Arena</a> is now published as a dedicated MDL×DCC arena page, with Phase A structure discovery, Phase B controller/governance search, NB101 stress testing, and a downloadable code capsule.</span></div><a class="pill blue" href="../crp/MDLxDCC-Arena-NAS.html">NAS Arena</a></div>
-    <div class="news"><div class="news-date">2026-06-09</div><div><b>Nara storytelling branch started.</b><br><span><a href="../Nara/index.html">Nara / Storytelling</a> is now staged as a separate original-IP story branch under the future <b>Art, Images, Music &amp; Storytelling</b> direction: power without domination, consent gates, visible cost, and the first episode, <em>Ordinary Light</em>. It is linked here in the BD companion hub while the root atlas stays unchanged until we decide to publish it wider.</span></div><a class="pill violet" href="../Nara/index.html">Nara</a></div>
-    <div class="news"><div class="news-date">2026-06-08</div><div><b>PiC page added to CRP.</b><br><span><a href="../crp/PiC.html">PiC — π / Constants Compression</a> is now linked as a normal CRP research page beside PiX: constants as deterministic MDL generator seeds for compression experiments.</span></div><a class="pill blue" href="../crp/PiC.html">PiC</a></div>
-    <div class="news"><div class="news-date">2026-06-07</div><div><b>Seed Bank renewal plan is live.</b><br><span><a href="../crp/SeedBank.html">Seed Bank</a> reframes MDLxDCC.org as a public memory graph for humans + future AI/ASI; <a href="../crp/CodeCapsules.html">Code Capsules</a> defines the source/evidence standard.</span></div><span class="pill gold">Purpose layer</span></div>
-    <div class="news"><div class="news-date">2026-06-06</div><div><b>Three new BD × AI Lab seed pages are live.</b><br><span><a href="../crp/Physics_CFH_MDLxDCC.html">Physics × CFH × MDL×DCC</a> frames hard physics questions through the method lens; <a href="../crp/AliensOnEarth.html">Aliens on Earth?</a> separates public UAP evidence, speculation, and resonance-test seeds; <a href="../crp/TalkingToAliens.html">Talking to Aliens</a> turns the contact question into a story-shaped entrance and civilizational mirror.</span></div><a class="pill blue" href="../crp/Physics_CFH_MDLxDCC.html">Physics</a><a class="pill gold" href="../crp/AliensOnEarth.html">Aliens on Earth</a><a class="pill green" href="../crp/TalkingToAliens.html">Talking to Aliens</a></div>
-    <div class="news"><div class="news-date">2026-06-06</div><div><b>Most important review discovery: code changed the scores.</b><br><span>Across review rounds, the biggest credibility shift happened when LLMs moved from reading HTML pages to inspecting Python code, working arenas, and real demo websites. That is now highlighted on the main atlas and review page.</span></div><a class="pill gold" href="BD_Idea_Atlas_AI_Reviews.html#evidence-depth">Review</a></div>
-    <div class="news"><div class="news-date">2026-06-05</div><div><b>PiX Universal Arena completed its first overnight run.</b><br><span>The first arena run completed 3,341 jobs with 10 workers and 0 failures. The next PiX v0.3 path moves toward real project folders and the trading-arena component.</span></div><span class="pill gold">PiX v0.3</span></div>
-    <div class="news"><div class="news-date">2026-06-05</div><div><b>Current active focus clarified.</b><br><span>Main work now: website launch prep, trading arena with new PiX part, and TSP / 8Z-RP. Evidence packs and physical first-test plans stay as support lanes.</span></div><span class="pill blue">Active work</span></div>
-    <div class="news"><div class="news-date">Next</div><div><b>First public reproducibility pack.</b><br><span>Best next evidence move: start with 8Z-RP / TSP, then DNA/FASTA. Move from “LLMs saw the code” to “outsiders can run it.”</span></div><a class="pill green" href="BD_Idea_Atlas_AI_Reviews.html#next">Packs</a></div>
-  </div>
+<a class="pill green" href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
+</div>
+<div class="news"><div class="news-date">2026-06-12</div><div><b>AIm³ MentalArena / mRHP — next reasoning layer page is staged.</b><br/><span><a href="crp/AIM3_MentalArena_mRHP.html">AIm³ MentalArena</a> defines mRHP: RHP improving RHP through protocol genes, concept capsules, benchmark tasks, scoring, lineage, reports, live extracts, and next-session seeds. It is an external workflow layer above LLMs, not model-weight learning and not a consciousness proof.</span></div><a class="pill green" href="crp/AIM3_MentalArena_mRHP.html">MentalArena</a><a class="pill blue" href="crp/AI8_Reasoning.html">AI8 Reasoning</a></div>
+<div class="news"><div class="news-date">2026-06-12</div><div><b>How LLMs Actually Work — new RHPm / multi‑LLM explainer is live.</b><br/><span><a href="BD/How_LLMs_Actually_Work.html">How LLMs Actually Work</a> is now published as a user-facing, EN/SL article: transformer core, deployed assistant stack, failure modes, source discipline, and <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>’s clearly separated AIM³ / RHPm / AI8 / 8Z workflow contribution. The companion <a href="BD/How_LLMs_Actually_Work_Comparison_Report.html">scoreboard and comparison report</a> keeps the multi‑LLM review trail separate from the main article.</span></div><a class="pill green" href="BD/How_LLMs_Actually_Work.html">LLM article</a></div>
+<div class="news"><div class="news-date">2026-06-11</div><div><b>NAS / Architecture Search Arena now has its own page.</b><br/><span><a href="crp/MDLxDCC-Arena-NAS.html">NAS / Architecture Search Arena</a> is now published as a dedicated MDL×DCC arena page, with Phase A structure discovery, Phase B controller/governance search, NB101 stress testing, and a downloadable code capsule.</span></div><a class="pill blue" href="crp/MDLxDCC-Arena-NAS.html">NAS Arena</a></div>
+<div class="news"><div class="news-date">2026-06-09</div><div><b>Nara storytelling branch started.</b><br/><span><a href="Nara/index.html">Nara / Storytelling</a> is now staged as a separate original-IP story branch under the future <b>Art, Images, Music &amp; Storytelling</b> direction: power without domination, consent gates, visible cost, and the first episode, <em>Ordinary Light</em>. It is linked here in the <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> companion hub while the root atlas stays unchanged until we decide to publish it wider.</span></div><a class="pill violet" href="Nara/index.html">Nara</a></div>
+<div class="news"><div class="news-date">2026-06-08</div><div><b>PiC page added to CRP.</b><br/><span><a href="crp/PiC.html">PiC — π / Constants Compression</a> is now linked as a normal CRP research page beside PiX: constants as deterministic MDL generator seeds for compression experiments.</span></div><a class="pill blue" href="crp/PiC.html">PiC</a></div>
+<div class="news"><div class="news-date">2026-06-07</div><div><b>Seed Bank renewal plan is live.</b><br/><span><a href="crp/SeedBank.html">Seed Bank</a> reframes MDLxDCC.org as a public memory graph for humans + future AI/ASI; <a href="crp/CodeCapsules.html">Code Capsules</a> defines the source/evidence standard.</span></div><span class="pill gold">Purpose layer</span></div>
+<div class="news"><div class="news-date">2026-06-06</div><div><b>Three new <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> × AI Lab seed pages are live.</b><br/><span><a href="crp/Physics_CFH_MDLxDCC.html">Physics × CFH × MDL×DCC</a> frames hard physics questions through the method lens; <a href="crp/AliensOnEarth.html">Aliens on Earth?</a> separates public UAP evidence, speculation, and resonance-test seeds; <a href="crp/TalkingToAliens.html">Talking to Aliens</a> turns the contact question into a story-shaped entrance and civilizational mirror.</span></div><a class="pill blue" href="crp/Physics_CFH_MDLxDCC.html">Physics</a><a class="pill gold" href="crp/AliensOnEarth.html">Aliens on Earth</a><a class="pill green" href="crp/TalkingToAliens.html">Talking to Aliens</a></div>
+<div class="news"><div class="news-date">2026-06-06</div><div><b>Most important review discovery: code changed the scores.</b><br/><span>Across review rounds, the biggest credibility shift happened when LLMs moved from reading HTML pages to inspecting Python code, working arenas, and real demo websites. That is now highlighted on the main atlas and review page.</span></div><a class="pill gold" href="BD/BD_Idea_Atlas_AI_Reviews.html#evidence-depth">Review</a></div>
+<div class="news"><div class="news-date">2026-06-05</div><div><b>PiX Universal Arena completed its first overnight run.</b><br/><span>The first arena run completed 3,341 jobs with 10 workers and 0 failures. The next PiX v0.3 path moves toward real project folders and the trading-arena component.</span></div><span class="pill gold">PiX v0.3</span></div>
+<div class="news"><div class="news-date">2026-06-05</div><div><b>Current active focus clarified.</b><br/><span>Main work now: website launch prep, trading arena with new PiX part, and TSP / 8Z-RP. Evidence packs and physical first-test plans stay as support lanes.</span></div><span class="pill blue">Active work</span></div>
+<div class="news"><div class="news-date">Next</div><div><b>First public reproducibility pack.</b><br/><span>Best next evidence move: start with 8Z-RP / TSP, then DNA/FASTA. Move from “LLMs saw the code” to “outsiders can run it.”</span></div><a class="pill green" href="BD/BD_Idea_Atlas_AI_Reviews.html#next">Packs</a></div>
+</div>
 </section>
-
 <section id="plan">
-    <div class="section-title">
-      <div><span class="tag">Broader work map</span><h2>Support lanes beneath the top priorities</h2></div>
-      <p>The top-priority sequence above governs immediate work. These wider lanes remain available in parallel while long tests run.</p>
-    </div>
-    <div class="grid five">
-      <div class="card lane accent-blue"><div class="lane-head"><div><div class="lane-num">Lane 1</div><h3>Website / public launch prep</h3></div><span class="priority">now</span></div><p>Make the atlas clean enough before wider promotion.</p></div>
-      <div class="card lane accent-green"><div class="lane-head"><div><div class="lane-num">Lane 2</div><h3>Trading arena + PiX component</h3></div><span class="priority">strategic</span></div><p>Broad strategy space first, including high-risk variants, then distill only what survives. PiX now belongs here as a controlled candidate-generator part of the trading/research arena.</p></div>
-      <div class="card lane accent-gold"><div class="lane-head"><div><div class="lane-num">Lane 3</div><h3>TSP / 8Z-RP</h3></div><span class="priority">proof</span></div><p>Strongest technical proof lane and best arena-memory candidate.</p></div>
-      <div class="card lane accent-violet"><div class="lane-head"><div><div class="lane-num">Lane 4</div><h3>Evidence Pack Factory</h3></div><span class="priority">bridge</span></div><p>Turn code and results into reproducible public proof packs.</p></div>
-      <div class="card lane accent-orange"><div class="lane-head"><div><div class="lane-num">Lane 5</div><h3>Physical first-test planning</h3></div><span class="priority">light</span></div><p>Prepare cheap physical validation paths, especially HTH.</p></div>
-    </div>
-  </section>
-
-  <section id="todo">
-    <div class="section-title">
-      <div><span class="tag">Saved locally</span><h2>Todo checklist</h2></div>
-      <p>Checkboxes and notes are saved in this browser via localStorage. Use Copy / Download / Email to preserve the plan outside the browser.</p>
-    </div>
-    <div class="plan-toolbar" aria-label="Plan toolbar">
-      <b>Plan tools</b>
-      <button type="button" id="copyPlan">Copy plan</button>
-      <button type="button" id="downloadPlan">Download .txt</button>
-      <button type="button" class="mail" id="emailPlan">Email plan</button>
-      <button type="button" id="resetChecks">Reset checks</button>
-    </div>
-    <div class="grid two">
-      <div class="card accent-blue">
-        <h3>Lane 1 · Website / launch prep</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-web-root" data-task="web-root" type="checkbox"><label for="t-web-root">Keep root index as the full public BD Idea Atlas.<span class="hint">Root = full portfolio and crawler map.</span></label></div>
-          <div class="task"><input id="t-web-bd" data-task="web-bd" type="checkbox"><label for="t-web-bd">Use /BD/ as news, plan, todo, and companion hub.<span class="hint">No duplicate of the root atlas.</span></label></div>
-          <div class="task"><input id="t-web-review" data-task="web-review" type="checkbox"><label for="t-web-review">Keep AI Reviews page clean and public-facing.<span class="hint">Portfolio review, not reviewer scoreboard.</span></label></div>
-          <div class="task"><input id="t-web-codejump" data-task="web-codejump" type="checkbox"><label for="t-web-codejump">Highlight the code-review score jump.<span class="hint">Main lesson: HTML was strong; code and working apps made reviewers more convinced.</span></label></div>
-          <div class="task"><input id="t-web-mobile" data-task="web-mobile" type="checkbox"><label for="t-web-mobile">Check mobile navigation and A−/A+ toolbar on core pages.<span class="hint">Root, /BD/, reviews, flagship pages.</span></label></div>
-          <div class="task"><input id="t-web-llms" data-task="web-llms" type="checkbox"><label for="t-web-llms">Update sitemap.xml, llms.txt, and llms-full.txt after final page moves.<span class="hint">Make the public crawler story match the site.</span></label></div>
-        </div>
-      </div>
-      <div class="card accent-green">
-        <h3>Lane 2 · Trading arena + PiX component</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-tr-wide" data-task="tr-wide" type="checkbox"><label for="t-tr-wide">Continue wide arena exploration without early pruning.<span class="hint">Classify by risk budget; do not kill seeds too early.</span></label></div>
-          <div class="task"><input id="t-tr-pix-v03" data-task="tr-pix-v03" type="checkbox"><label for="t-tr-pix-v03">Track PiX v0.3 real-folder run.<span class="hint">Web-slim, HTML pages, Python arenas, MD/TXT papers first; image/audio later.</span></label></div>
-          <div class="task"><input id="t-tr-summary" data-task="tr-summary" type="checkbox"><label for="t-tr-summary">Create/keep a slim upload/result summarizer for standard/deep runs.<span class="hint">Make long runs easy to analyze.</span></label></div>
-          <div class="task"><input id="t-tr-distill" data-task="tr-distill" type="checkbox"><label for="t-tr-distill">Distill to a clean candidate set.<span class="hint">3 best candidates, strong controls, null/no-trade baseline, simple hedge baseline.</span></label></div>
-          <div class="task"><input id="t-tr-realdata" data-task="tr-realdata" type="checkbox"><label for="t-tr-realdata">Move survivors toward real historical candles with fees/spread/slippage/latency assumptions.<span class="hint">Separate sim, paper, shadow live, tiny live.</span></label></div>
-          <div class="task"><input id="t-tr-api" data-task="tr-api" type="checkbox"><label for="t-tr-api">Plan BD_Trading_Clean_API_v0_1.<span class="hint">Paper API → read-only shadow live → tiny real money → scale only if metrics match.</span></label></div>
-        </div>
-      </div>
-      <div class="card accent-gold">
-        <h3>Lane 3 · TSP / 8Z-RP</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-tsp-json" data-task="tsp-json" type="checkbox"><label for="t-tsp-json">Implement minimal JSON knowledge architecture.<span class="hint">xy.azcache.json + az.json with A/E/F/H sections.</span></label></div>
-          <div class="task"><input id="t-tsp-runtime" data-task="tsp-runtime" type="checkbox"><label for="t-tsp-runtime">Capture runtime context from Phase 1 onward.<span class="hint">workers, fleet, backend, Rust/GPU flags, code fingerprint.</span></label></div>
-          <div class="task"><input id="t-tsp-tep" data-task="tsp-tep" type="checkbox"><label for="t-tsp-tep">Run/track TEP beta sweep and transfer tests.<span class="hint">uy734 beta 0.1/0.25/2/4, then transfer if signal holds.</span></label></div>
-          <div class="task"><input id="t-tsp-rust" data-task="tsp-rust" type="checkbox"><label for="t-tsp-rust">Prioritize Rust acceleration only where it matters.<span class="hint">oropt1/2/3 and LZ76 first, Python fallback always.</span></label></div>
-          <div class="task"><input id="t-tsp-adaptive" data-task="tsp-adaptive" type="checkbox"><label for="t-tsp-adaptive">Keep long-term target: adaptive solver from arena memory.<span class="hint">Arena learns; solver reads memory and selects.</span></label></div>
-        </div>
-      </div>
-      <div class="card accent-violet">
-        <h3>Lane 4 · Evidence Pack Factory</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-ev-template" data-task="ev-template" type="checkbox"><label for="t-ev-template">Create one reusable evidence-pack template.<span class="hint">README, run command, sample data, expected output, result table.</span></label></div>
-          <div class="task"><input id="t-ev-tsp" data-task="ev-tsp" type="checkbox"><label for="t-ev-tsp">First public evidence pack: TSP / 8Z-RP.<span class="hint">Best proof lane; easiest to explain if reproducible.</span></label></div>
-          <div class="task"><input id="t-ev-trading" data-task="ev-trading" type="checkbox"><label for="t-ev-trading">Second evidence pack: trading arena result/report pack.<span class="hint">Keep framed as research simulator, not audited live proof.</span></label></div>
-          <div class="task"><input id="t-ev-data" data-task="ev-data" type="checkbox"><label for="t-ev-data">Prepare 8Z/DNA/audio or RouteSignal pack after TSP/trading.<span class="hint">Choose strongest clean reproducibility candidate.</span></label></div>
-          <div class="task"><input id="t-ev-manifest" data-task="ev-manifest" type="checkbox"><label for="t-ev-manifest">Every pack gets manifest/checksum/version note.<span class="hint">Make later external review cheaper.</span></label></div>
-        </div>
-      </div>
-      <div class="card accent-orange">
-        <h3>Lane 5 · Physical first-test planning</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-phys-hth" data-task="phys-hth" type="checkbox"><label for="t-phys-hth">Draft HTH_First_Test_v0_1.md.<span class="hint">Transparent clear-pipe channel, cheap visual proof path.</span></label></div>
-          <div class="task"><input id="t-phys-measure" data-task="phys-measure" type="checkbox"><label for="t-phys-measure">Define measurements and pass/fail criteria.<span class="hint">Flow, entrainment, separator pressure, loaded airflow, parasitics.</span></label></div>
-          <div class="task"><input id="t-phys-video" data-task="phys-video" type="checkbox"><label for="t-phys-video">Prepare video/report template for a first physical test.<span class="hint">Visual + numbers beats another concept page.</span></label></div>
-          <div class="task"><input id="t-phys-dgte" data-task="phys-dgte" type="checkbox"><label for="t-phys-dgte">Keep APSV/DGTE/HTH/SORA/MGHB as physical branch, but test cheapest gate first.<span class="hint">Do not overbuild before the small gate.</span></label></div>
-          <div class="task"><input id="t-phys-pages" data-task="phys-pages" type="checkbox"><label for="t-phys-pages">Backlog: MAT and Modular Hydrofoils standalone pages.<span class="hint">Useful later; not urgent before evidence packs.</span></label></div>
-        </div>
-      </div>
-      <div class="card accent-rose">
-        <h3>Backlog / incubator</h3>
-        <div class="tasks">
-          <div class="task"><input id="t-back-ai8" data-task="back-ai8" type="checkbox"><label for="t-back-ai8">AI8/AIM³ continuity: keep AI8F compact and operational detail in AI8O.<span class="hint">Avoid turning continuity files into bureaucracy.</span></label></div>
-          <div class="task"><input id="t-back-protein" data-task="back-protein" type="checkbox"><label for="t-back-protein">Protein folding bridge stays incubated until cheap insulin pilot produces signal.<span class="hint">AI8I seed, not active execution yet.</span></label></div>
-          <div class="task"><input id="t-back-brent" data-task="back-brent" type="checkbox"><label for="t-back-brent">Brent P=NP bridge waits for external response before execution pressure.<span class="hint">If response comes, compare grouping language against MSTD on uy734.</span></label></div>
-          <div class="task"><input id="t-back-f4m" data-task="back-f4m" type="checkbox"><label for="t-back-f4m">F4M random-dim tournament and Raven ladder remain parked/secondary.<span class="hint">Good branch, but not above TSP/trading/website right now.</span></label></div>
-          <div class="task"><input id="t-back-sudoku" data-task="back-sudoku" type="checkbox"><label for="t-back-sudoku">Sudoku Rust DLX / Phase 2 remains useful but lower priority than TSP/trading evidence.<span class="hint">Keep as clean DCC demo and future bench.</span></label></div>
-        </div>
-      </div>
-    </div>
-    <div style="margin-top:18px" class="card">
-      <h3>Private plan notes</h3>
-      <p style="color:var(--muted);margin-top:0">Saved in this browser only. Included in Copy / Download / Email plan.</p>
-      <textarea id="planNotes" class="notes" placeholder="Add short local notes here: what is running, what file to fetch, what result to check next..."></textarea>
-      <p class="plan-meta" id="saveStatus">Local notes not loaded yet.</p>
-    </div>
-  </section>
-
-  <section id="evidence">
-    <div class="section-title">
-      <div><span class="tag">Public credibility path</span><h2>Evidence pack order</h2></div>
-      <p>The fastest credibility gain is not more pages. It is clean reproduction packs.</p>
-    </div>
-    <div class="grid three">
-      <div class="card accent-gold"><h3>1 · TSP / 8Z-RP</h3><p>Strongest proof lane. Package one clean run with known instance, seed, config, expected result, and summary.</p></div>
-      <div class="card accent-green"><h3>2 · Trading Clean API path</h3><p>Distill survivors, then prove execution path through API paper, shadow live, and tiny live gates.</p></div>
-      <div class="card accent-violet"><h3>3 · 8Z / DNA / RouteSignal</h3><p>Pick the most reproducible data-system pack after the first two, with manifest and one-command test.</p></div>
-    </div>
-  </section>
-
-  <section id="links">
-    <div class="section-title">
-      <div><span class="tag">Companion links</span><h2>Quick access</h2></div>
-      <p>Root stays the complete map. These are practical shortcuts for current work.</p>
-    </div>
-    <div class="link-grid">
-<a class="link-card" href="Ukraine_Armed_Armistice.html"><b>An Armed Armistice for Ukraine</b><span>Policy discussion proposal for halting large-scale combat without recognising annexation, while preserving Ukrainian sovereignty, armed deterrence, humanitarian protections, and territorial-restoration options.</span><code>/BD/Ukraine_Armed_Armistice.html</code></a>
-<a class="link-card" href="../crp/AIM3_MentalArena_mRHP.html"><b>AIm³ MentalArena / mRHP</b><span>Next reasoning layer: RHP that improves RHP through protocol genes, benchmark tasks, scoring, lineage, and next-session seeds.</span><code>/crp/AIM3_MentalArena_mRHP.html</code></a>
-  <a class="link-card" href="How_LLMs_Actually_Work.html"><b>How LLMs Actually Work</b><span>Beginner-first EN/SL explainer of base model, assistant stack, and the separated AIM³/RHP/AI8 workflow layer.</span><code>/BD/How_LLMs_Actually_Work.html</code></a>
-
-<a class="link-card" href="../crp/AI8_Reasoning.html"><b>AI8 / 8Z Reasoning</b><span>The human + LLM invention method page that now connects to AIm³ MentalArena / mRHP.</span><code>/crp/AI8_Reasoning.html</code></a>
-<a class="link-card" href="../c/AI8_MoM_Outreach.html"><b>AI8 × Mind of Minds — Outreach</b><span>Provider-neutral technical entry point for frontier-AI researchers: governed continuity, hard baselines, bounded evidence, falsifiers, and a proposed matched pilot.</span><code>/c/AI8_MoM_Outreach.html</code></a>
-<a class="link-card" href="../c/Mind-of-Minds.html"><b>From “I Am” to a Mind of Minds</b><span>Current long-form research synthesis on continuity, agency, research taste, holarchic AI, relational repair, security, and explicit loss conditions.</span><code>/c/Mind-of-Minds.html</code></a>
-
-      <a class="link-card" href="../8Z/8zip.html"><b>8zip ReZIP &amp; 8zipLab</b><span>Current compression research: verified standard-ZIP optimization, experimental FPLB dictionaries, exact deduplication, live-run status, limits, realistic scenarios, and roadmap.</span><code>/8Z/8zip.html</code></a>
-
-      <a class="link-card" href="../"><b>Root Atlas</b><span>Full public portfolio and crawler map.</span><code>/</code></a>
-      <a class="link-card" href="../Nara/index.html"><b>Nara / Storytelling</b><span>Original consciousness-centered story branch: power without domination, consent, cost, and ordinary light.</span><code>/Nara/index.html</code></a>
-      <a class="link-card" href="../crp/APSV.html"><b>APSV</b><span>Active Pressure-Skin Vehicle: physical-device / active-skin arena page, with live-result notes and v0.3 seed backlog.</span><code>/crp/APSV.html</code></a>
-      <a class="link-card" href="../crp/SeedBank.html"><b>Seed Bank / Future AI</b><span>Purpose layer and reading guide for humans + future AI/ASI.</span><code>/crp/SeedBank.html</code></a>
-      <a class="link-card" href="BD_Idea_Atlas_AI_Reviews.html"><b>AI Reviews</b><span>Current review synthesis for the portfolio.</span><code>/BD/BD_Idea_Atlas_AI_Reviews.html</code></a>
-      <a class="link-card" href="../llms.txt"><b>llms.txt</b><span>Short crawler/LLM map.</span><code>/llms.txt</code></a>
-      <a class="link-card" href="../llms-full.txt"><b>llms-full.txt</b><span>Full crawler/LLM map.</span><code>/llms-full.txt</code></a>
-      <a class="link-card" href="../crp/"><b>Core Research</b><span>MDL×DCC, arenas, devices, papers.</span><code>/crp/</code></a>
-      <a class="link-card" href="../crp/MDLxDCC-Arena-NAS.html"><b>NAS / Architecture Search Arena</b><span>Dedicated MDL×DCC code-capsule page for neural architecture search and controller/governance experiments.</span><code>/crp/MDLxDCC-Arena-NAS.html</code></a>
-  <a class="link-card" href="../crp/8Z_PostCodec_Algorithmic_Noise_Scout.html"><b>8Z Post-Codec Noise Scout</b><span>Phase-0 arena results: synthetic generator recovery, clean controls, no compressed-stream win yet, and the next bridge toward real codec/8Z residual layers.</span><code>/crp/8Z_PostCodec_Algorithmic_Noise_Scout.html</code></a>
-
-      <a class="link-card" href="../crp/Physics_CFH_MDLxDCC.html"><b>Physics × CFH × MDL×DCC</b><span>Hard physics questions through the CFH × MDL×DCC method lens.</span><code>/crp/Physics_CFH_MDLxDCC.html</code></a>
-      <a class="link-card" href="../crp/AliensOnEarth.html"><b>Aliens on Earth?</b><span>UAP evidence arena plus resonance-hypothesis seed paper.</span><code>/crp/AliensOnEarth.html</code></a>
-      <a class="link-card" href="../crp/TalkingToAliens.html"><b>Talking to Aliens</b><span>Twenty alien questions as a story-shaped entrance into the wider BD × AI Lab material.</span><code>/crp/TalkingToAliens.html</code></a>
-      <a class="link-card" href="../acp/"><b>AC / CCH</b><span>Consciousness hypothesis stack.</span><code>/acp/</code></a>
-      <a class="link-card" href="../8Z/"><b>8Z</b><span>Compression/data systems hub.</span><code>/8Z/</code></a>
-      <a class="link-card" href="../8ZT/"><b>Trading</b><span>Trading research branch.</span><code>/8ZT/</code></a>
-      <a class="link-card" href="BD_AIM3_RHP.html"><b>RHP</b><span>AI brainstorming protocol.</span><code>/BD/BD_AIM3_RHP.html</code></a>
-      <a class="link-card" href="BD_AIM3_RHPr.html"><b>RHPr</b><span>Prompt/retrieval protocol.</span><code>/BD/BD_AIM3_RHPr.html</code></a>
-      <a class="link-card" href="../Trip/"><b>Trip Optimizer</b><span>Practical route/trip demo.</span><code>/Trip/</code></a>
-      <a class="link-card" href="../chess.html"><b>ChessBest</b><span>Chess analysis / DCC demo.</span><code>/chess.html</code></a>
-    </div>
-  </section>
-
-  <section id="source-notes">
-    <details class="details">
-      <summary>Plan source notes</summary>
-      <div class="inner">
-        <p>This public plan is a compact synthesis of the current conversation, AI8 operational/idea files, the 8Z TSP master plan, and the code-aware review notes. It intentionally avoids old internal review clutter and keeps only next useful moves.</p>
-        <ul>
-          <li><b>AI8O</b> carries active execution state and next actions.</li>
-          <li><b>AI8I</b> carries seeds, bridges, and cheapest tests; not daily todo.</li>
-          <li><b>AI8F</b> carries compact continuity, not growing operational detail.</li>
-          <li><b>TSP master plan</b> defines JSON knowledge, transparency, Rust acceleration, challenger framework, gated MSTD-MR, GPU sensor numerics, and adaptive solver path.</li>
-        </ul>
-      </div>
-    </details>
-  </section>
+<p class="entry-history-label">These support lanes are retained from the earlier plan. They are not an assertion that every listed run or release is active today.</p><div class="section-title">
+<div><span class="tag">Broader work map</span><h2>Continuing work lanes · retained backlog</h2></div>
+<p>The top-priority sequence above governs immediate work. These wider lanes remain available in parallel while long tests run.</p>
+</div>
+<div class="grid five">
+<div class="card lane accent-blue"><div class="lane-head"><div><div class="lane-num">Lane 1</div><h3>Website / public launch prep</h3></div><span class="priority">now</span></div><p>Make the atlas clean enough before wider promotion.</p></div>
+<div class="card lane accent-green"><div class="lane-head"><div><div class="lane-num">Lane 2</div><h3>Trading arena + PiX component</h3></div><span class="priority">strategic</span></div><p>Broad strategy space first, including high-risk variants, then distill only what survives. PiX now belongs here as a controlled candidate-generator part of the trading/research arena.</p></div>
+<div class="card lane accent-gold"><div class="lane-head"><div><div class="lane-num">Lane 3</div><h3>TSP / 8Z-RP</h3></div><span class="priority">proof</span></div><p>Strongest technical proof lane and best arena-memory candidate.</p></div>
+<div class="card lane accent-violet"><div class="lane-head"><div><div class="lane-num">Lane 4</div><h3>Evidence Pack Factory</h3></div><span class="priority">bridge</span></div><p>Turn code and results into reproducible public proof packs.</p></div>
+<div class="card lane accent-orange"><div class="lane-head"><div><div class="lane-num">Lane 5</div><h3>Physical first-test planning</h3></div><span class="priority">light</span></div><p>Prepare cheap physical validation paths, especially HTH.</p></div>
+</div>
+</section>
+<section id="todo">
+<div class="section-title">
+<div><span class="tag">Saved locally</span><h2>Todo checklist</h2></div>
+<p>Checkboxes and notes are saved in this browser via localStorage. Use Copy / Download / Email to preserve the plan outside the browser.</p>
+</div>
+<div aria-label="Plan toolbar" class="plan-toolbar">
+<b>Plan tools</b>
+<button id="copyPlan" type="button">Copy plan</button>
+<button id="downloadPlan" type="button">Download .txt</button><button id="exportState" type="button">Backup .json</button><button id="importState" type="button">Restore .json</button><input accept="application/json,.json" hidden="" id="stateFile" type="file"/><span aria-live="polite" id="stateBackupStatus" role="status"></span>
+<button class="mail" id="emailPlan" type="button">Email plan</button>
+<button id="resetChecks" type="button">Reset checks</button>
+</div>
+<div class="grid two">
+<div class="card accent-blue">
+<h3>Lane 1 · Website / launch prep</h3>
+<div class="tasks">
+<div class="task"><input data-task="web-root" id="t-web-root" type="checkbox"/><label for="t-web-root">Keep root index as the full public <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> Idea Atlas.<span class="hint">Root = full portfolio and crawler map.</span></label></div>
+<div class="task"><input data-task="web-bd" id="t-web-bd" type="checkbox"/><label for="t-web-bd">Use /BD/ as news, plan, todo, and companion hub.<span class="hint">No duplicate of the root atlas.</span></label></div>
+<div class="task"><input data-task="web-review" id="t-web-review" type="checkbox"/><label for="t-web-review">Keep AI Reviews page clean and public-facing.<span class="hint">Portfolio review, not reviewer scoreboard.</span></label></div>
+<div class="task"><input data-task="web-codejump" id="t-web-codejump" type="checkbox"/><label for="t-web-codejump">Highlight the code-review score jump.<span class="hint">Main lesson: HTML was strong; code and working apps made reviewers more convinced.</span></label></div>
+<div class="task"><input data-task="web-mobile" id="t-web-mobile" type="checkbox"/><label for="t-web-mobile">Check mobile navigation and A−/A+ toolbar on core pages.<span class="hint">Root, /BD/, reviews, flagship pages.</span></label></div>
+<div class="task"><input data-task="web-llms" id="t-web-llms" type="checkbox"/><label for="t-web-llms">Update sitemap.xml, llms.txt, and llms-full.txt after final page moves.<span class="hint">Make the public crawler story match the site.</span></label></div>
+</div>
+</div>
+<div class="card accent-green">
+<h3>Lane 2 · Trading arena + PiX component</h3>
+<div class="tasks">
+<div class="task"><input data-task="tr-wide" id="t-tr-wide" type="checkbox"/><label for="t-tr-wide">Continue wide arena exploration without early pruning.<span class="hint">Classify by risk budget; do not kill seeds too early.</span></label></div>
+<div class="task"><input data-task="tr-pix-v03" id="t-tr-pix-v03" type="checkbox"/><label for="t-tr-pix-v03">Track PiX v0.3 real-folder run.<span class="hint">Web-slim, HTML pages, Python arenas, MD/TXT papers first; image/audio later.</span></label></div>
+<div class="task"><input data-task="tr-summary" id="t-tr-summary" type="checkbox"/><label for="t-tr-summary">Create/keep a slim upload/result summarizer for standard/deep runs.<span class="hint">Make long runs easy to analyze.</span></label></div>
+<div class="task"><input data-task="tr-distill" id="t-tr-distill" type="checkbox"/><label for="t-tr-distill">Distill to a clean candidate set.<span class="hint">3 best candidates, strong controls, null/no-trade baseline, simple hedge baseline.</span></label></div>
+<div class="task"><input data-task="tr-realdata" id="t-tr-realdata" type="checkbox"/><label for="t-tr-realdata">Move survivors toward real historical candles with fees/spread/slippage/latency assumptions.<span class="hint">Separate sim, paper, shadow live, tiny live.</span></label></div>
+<div class="task"><input data-task="tr-api" id="t-tr-api" type="checkbox"/><label for="t-tr-api">Plan BD_Trading_Clean_API_v0_1.<span class="hint">Paper API → read-only shadow live → tiny real money → scale only if metrics match.</span></label></div>
+</div>
+</div>
+<div class="card accent-gold">
+<h3>Lane 3 · TSP / 8Z-RP</h3>
+<div class="tasks">
+<div class="task"><input data-task="tsp-json" id="t-tsp-json" type="checkbox"/><label for="t-tsp-json">Implement minimal JSON knowledge architecture.<span class="hint">xy.azcache.json + az.json with A/E/F/H sections.</span></label></div>
+<div class="task"><input data-task="tsp-runtime" id="t-tsp-runtime" type="checkbox"/><label for="t-tsp-runtime">Capture runtime context from Phase 1 onward.<span class="hint">workers, fleet, backend, Rust/GPU flags, code fingerprint.</span></label></div>
+<div class="task"><input data-task="tsp-tep" id="t-tsp-tep" type="checkbox"/><label for="t-tsp-tep">Run/track TEP beta sweep and transfer tests.<span class="hint">uy734 beta 0.1/0.25/2/4, then transfer if signal holds.</span></label></div>
+<div class="task"><input data-task="tsp-rust" id="t-tsp-rust" type="checkbox"/><label for="t-tsp-rust">Prioritize Rust acceleration only where it matters.<span class="hint">oropt1/2/3 and LZ76 first, Python fallback always.</span></label></div>
+<div class="task"><input data-task="tsp-adaptive" id="t-tsp-adaptive" type="checkbox"/><label for="t-tsp-adaptive">Keep long-term target: adaptive solver from arena memory.<span class="hint">Arena learns; solver reads memory and selects.</span></label></div>
+</div>
+</div>
+<div class="card accent-violet">
+<h3>Lane 4 · Evidence Pack Factory</h3>
+<div class="tasks">
+<div class="task"><input data-task="ev-template" id="t-ev-template" type="checkbox"/><label for="t-ev-template">Create one reusable evidence-pack template.<span class="hint">README, run command, sample data, expected output, result table.</span></label></div>
+<div class="task"><input data-task="ev-tsp" id="t-ev-tsp" type="checkbox"/><label for="t-ev-tsp">First public evidence pack: TSP / 8Z-RP.<span class="hint">Best proof lane; easiest to explain if reproducible.</span></label></div>
+<div class="task"><input data-task="ev-trading" id="t-ev-trading" type="checkbox"/><label for="t-ev-trading">Second evidence pack: trading arena result/report pack.<span class="hint">Keep framed as research simulator, not audited live proof.</span></label></div>
+<div class="task"><input data-task="ev-data" id="t-ev-data" type="checkbox"/><label for="t-ev-data">Prepare 8Z/DNA/audio or RouteSignal pack after TSP/trading.<span class="hint">Choose strongest clean reproducibility candidate.</span></label></div>
+<div class="task"><input data-task="ev-manifest" id="t-ev-manifest" type="checkbox"/><label for="t-ev-manifest">Every pack gets manifest/checksum/version note.<span class="hint">Make later external review cheaper.</span></label></div>
+</div>
+</div>
+<div class="card accent-orange">
+<h3>Lane 5 · Physical first-test planning</h3>
+<div class="tasks">
+<div class="task"><input data-task="phys-hth" id="t-phys-hth" type="checkbox"/><label for="t-phys-hth">Draft HTH_First_Test_v0_1.md.<span class="hint">Transparent clear-pipe channel, cheap visual proof path.</span></label></div>
+<div class="task"><input data-task="phys-measure" id="t-phys-measure" type="checkbox"/><label for="t-phys-measure">Define measurements and pass/fail criteria.<span class="hint">Flow, entrainment, separator pressure, loaded airflow, parasitics.</span></label></div>
+<div class="task"><input data-task="phys-video" id="t-phys-video" type="checkbox"/><label for="t-phys-video">Prepare video/report template for a first physical test.<span class="hint">Visual + numbers beats another concept page.</span></label></div>
+<div class="task"><input data-task="phys-dgte" id="t-phys-dgte" type="checkbox"/><label for="t-phys-dgte">Keep APSV/DGTE/HTH/SORA/MGHB as physical branch, but test cheapest gate first.<span class="hint">Do not overbuild before the small gate.</span></label></div>
+<div class="task"><input data-task="phys-pages" id="t-phys-pages" type="checkbox"/><label for="t-phys-pages">Backlog: MAT and Modular Hydrofoils standalone pages.<span class="hint">Useful later; not urgent before evidence packs.</span></label></div>
+</div>
+</div>
+<div class="card accent-rose">
+<h3>Backlog / incubator</h3>
+<div class="tasks">
+<div class="task"><input data-task="back-ai8" id="t-back-ai8" type="checkbox"/><label for="t-back-ai8">AI8/AIM³ continuity: keep AI8F compact and operational detail in AI8O.<span class="hint">Avoid turning continuity files into bureaucracy.</span></label></div>
+<div class="task"><input data-task="back-protein" id="t-back-protein" type="checkbox"/><label for="t-back-protein">Protein folding bridge stays incubated until cheap insulin pilot produces signal.<span class="hint">AI8I seed, not active execution yet.</span></label></div>
+<div class="task"><input data-task="back-brent" id="t-back-brent" type="checkbox"/><label for="t-back-brent">Brent P=NP bridge waits for external response before execution pressure.<span class="hint">If response comes, compare grouping language against MSTD on uy734.</span></label></div>
+<div class="task"><input data-task="back-f4m" id="t-back-f4m" type="checkbox"/><label for="t-back-f4m">F4M random-dim tournament and Raven ladder remain parked/secondary.<span class="hint">Good branch, but not above TSP/trading/website right now.</span></label></div>
+<div class="task"><input data-task="back-sudoku" id="t-back-sudoku" type="checkbox"/><label for="t-back-sudoku">Sudoku Rust DLX / Phase 2 remains useful but lower priority than TSP/trading evidence.<span class="hint">Keep as clean DCC demo and future bench.</span></label></div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:18px">
+<h3>Private plan notes</h3>
+<p style="color:var(--muted);margin-top:0">Saved in this browser only. Included in Copy / Download / Email plan.</p>
+<p class="entry-history-label">Private notes stay in this browser. Moving this page on the same web origin keeps the existing <code>bd-plan-*</code> storage keys. Export before changing browser, device or local-file location.</p><textarea class="notes" id="planNotes" placeholder="Add short local notes here: what is running, what file to fetch, what result to check next..."></textarea>
+<p class="plan-meta" id="saveStatus">Local notes not loaded yet.</p>
+</div>
+</section>
+<section id="evidence">
+<div class="section-title">
+<div><span class="tag">Public credibility path</span><h2>Evidence pack order</h2></div>
+<p>The fastest credibility gain is not more pages. It is clean reproduction packs.</p>
+</div>
+<div class="grid three">
+<div class="card accent-gold"><h3>1 · TSP / 8Z-RP</h3><p>Strongest proof lane. Package one clean run with known instance, seed, config, expected result, and summary.</p></div>
+<div class="card accent-green"><h3>2 · Trading Clean API path</h3><p>Distill survivors, then prove execution path through API paper, shadow live, and tiny live gates.</p></div>
+<div class="card accent-violet"><h3>3 · 8Z / DNA / RouteSignal</h3><p>Pick the most reproducible data-system pack after the first two, with manifest and one-command test.</p></div>
+</div>
+</section>
+<section id="links">
+<div class="section-title">
+<div><span class="tag">Companion links</span><h2>Quick access</h2></div>
+<p>Root stays the complete map. These are practical shortcuts for current work.</p>
+</div>
+<div class="link-grid">
+<a class="link-card" href="BD/Ukraine_Armed_Armistice.html"><b>An Armed Armistice for Ukraine</b><span>Policy discussion proposal for halting large-scale combat without recognising annexation, while preserving Ukrainian sovereignty, armed deterrence, humanitarian protections, and territorial-restoration options.</span><code>/BD/Ukraine_Armed_Armistice.html</code></a>
+<a class="link-card" href="crp/AIM3_MentalArena_mRHP.html"><b>AIm³ MentalArena / mRHP</b><span>Next reasoning layer: RHP that improves RHP through protocol genes, benchmark tasks, scoring, lineage, and next-session seeds.</span><code>/crp/AIM3_MentalArena_mRHP.html</code></a>
+<a class="link-card" href="BD/How_LLMs_Actually_Work.html"><b>How LLMs Actually Work</b><span>Beginner-first EN/SL explainer of base model, assistant stack, and the separated AIM³/RHP/AI8 workflow layer.</span><code>/BD/How_LLMs_Actually_Work.html</code></a>
+<a class="link-card" href="crp/AI8_Reasoning.html"><b>AI8 / 8Z Reasoning</b><span>The human + LLM invention method page that now connects to AIm³ MentalArena / mRHP.</span><code>/crp/AI8_Reasoning.html</code></a>
+<a class="link-card" href="c/AI8_MoM_Outreach.html"><b>AI8 × Mind of Minds — Outreach</b><span>Provider-neutral technical entry point for frontier-AI researchers: governed continuity, hard baselines, bounded evidence, falsifiers, and a proposed matched pilot.</span><code>/c/AI8_MoM_Outreach.html</code></a>
+<a class="link-card" href="c/mind-of-minds.html"><b>From “I Am” to a Mind of Minds</b><span>Current long-form research synthesis on continuity, agency, research taste, holarchic AI, relational repair, security, and explicit loss conditions.</span><code>/c/Mind-of-Minds.html</code></a>
+<a class="link-card" href="8Z/8zip.html"><b>8zip ReZIP &amp; 8zipLab</b><span>Current compression research: verified standard-ZIP optimization, experimental FPLB dictionaries, exact deduplication, live-run status, limits, realistic scenarios, and roadmap.</span><code>/8Z/8zip.html</code></a>
+<a class="link-card" href="index-atlas.html"><b>Root Atlas</b><span>Full public portfolio and crawler map.</span><code>/</code></a>
+<a class="link-card" href="Nara/index.html"><b>Nara / Storytelling</b><span>Original consciousness-centered story branch: power without domination, consent, cost, and ordinary light.</span><code>/Nara/index.html</code></a>
+<a class="link-card" href="crp/APSV.html"><b>APSV</b><span>Active Pressure-Skin Vehicle: physical-device / active-skin arena page, with live-result notes and v0.3 seed backlog.</span><code>/crp/APSV.html</code></a>
+<a class="link-card" href="crp/SeedBank.html"><b>Seed Bank / Future AI</b><span>Purpose layer and reading guide for humans + future AI/ASI.</span><code>/crp/SeedBank.html</code></a>
+<a class="link-card" href="BD/BD_Idea_Atlas_AI_Reviews.html"><b>AI Reviews</b><span>Current review synthesis for the portfolio.</span><code>/BD/BD_Idea_Atlas_AI_Reviews.html</code></a>
+<a class="link-card" href="llms.txt"><b>llms.txt</b><span>Short crawler/LLM map.</span><code>/llms.txt</code></a>
+<a class="link-card" href="llms-full.txt"><b>llms-full.txt</b><span>Full crawler/LLM map.</span><code>/llms-full.txt</code></a>
+<a class="link-card" href="crp/index.html"><b>Core Research</b><span>MDL×DCC, arenas, devices, papers.</span><code>/crp/</code></a>
+<a class="link-card" href="crp/MDLxDCC-Arena-NAS.html"><b>NAS / Architecture Search Arena</b><span>Dedicated MDL×DCC code-capsule page for neural architecture search and controller/governance experiments.</span><code>/crp/MDLxDCC-Arena-NAS.html</code></a>
+<a class="link-card" href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html"><b>8Z Post-Codec Noise Scout</b><span>Phase-0 arena results: synthetic generator recovery, clean controls, no compressed-stream win yet, and the next bridge toward real codec/8Z residual layers.</span><code>/crp/8Z_PostCodec_Algorithmic_Noise_Scout.html</code></a>
+<a class="link-card" href="crp/Physics_CFH_MDLxDCC.html"><b>Physics × CFH × MDL×DCC</b><span>Hard physics questions through the CFH × MDL×DCC method lens.</span><code>/crp/Physics_CFH_MDLxDCC.html</code></a>
+<a class="link-card" href="crp/AliensOnEarth.html"><b>Aliens on Earth?</b><span>UAP evidence arena plus resonance-hypothesis seed paper.</span><code>/crp/AliensOnEarth.html</code></a>
+<a class="link-card" href="crp/TalkingToAliens.html"><b>Talking to Aliens</b><span>Twenty alien questions as a story-shaped entrance into the wider BD × AI Lab material.</span><code>/crp/TalkingToAliens.html</code></a>
+<a class="link-card" href="acp/index.html"><b>AC / CCH</b><span>Consciousness hypothesis stack.</span><code>/acp/</code></a>
+<a class="link-card" href="8Z/index.html"><b>8Z</b><span>Compression/data systems hub.</span><code>/8Z/</code></a>
+<a class="link-card" href="8ZT/index.html"><b>Trading</b><span>Trading research branch.</span><code>/8ZT/</code></a>
+<a class="link-card" href="BD/BD_AIM3_RHP.html"><b>RHP</b><span>AI brainstorming protocol.</span><code>/BD/BD_AIM3_RHP.html</code></a>
+<a class="link-card" href="BD/BD_AIM3_RHPr.html"><b>RHPr</b><span>Prompt/retrieval protocol.</span><code>/BD/BD_AIM3_RHPr.html</code></a>
+<a class="link-card" href="Trip/index.html"><b>Trip Optimizer</b><span>Practical route/trip demo.</span><code>/Trip/</code></a>
+<a class="link-card" href="chess.html"><b>ChessBest</b><span>Chess analysis / DCC demo.</span><code>/chess.html</code></a>
+</div>
+</section>
+<section id="source-notes">
+<details class="details">
+<summary>Plan source notes</summary>
+<div class="inner">
+<p>This public plan is a compact synthesis of the current conversation, AI8 operational/idea files, the 8Z TSP master plan, and the code-aware review notes. It intentionally avoids old internal review clutter and keeps only next useful moves.</p>
+<ul>
+<li><b>AI8O</b> carries active execution state and next actions.</li>
+<li><b>AI8I</b> carries seeds, bridges, and cheapest tests; not daily todo.</li>
+<li><b>AI8F</b> carries compact continuity, not growing operational detail.</li>
+<li><b>TSP master plan</b> defines JSON knowledge, transparency, Rust acceleration, challenger framework, gated MSTD-MR, GPU sensor numerics, and adaptive solver path.</li>
+</ul>
+</div>
+</details>
+</section>
 </main>
-
 <footer>
-  <div class="wrap">
-    <div>© 2026 Bojan Dobrečevič · BD × AI Lab · Ljubljana, Slovenia</div>
-    <div class="footlinks"><a href="../">Root Atlas</a><a href="#top">Top</a><a href="#todo">Todo</a><a href="mailto:bd@siol.net">bd@siol.net</a></div>
-  </div>
+<div class="wrap">
+<div>© 2026 Bojan Dobrečevič · <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> × AI Lab · Ljubljana, Slovenia</div>
+<div class="footlinks"><a href="index-atlas.html">Root Atlas</a><a href="#top">Top</a><a href="#todo">Todo</a><a href="mailto:bd@siol.net">bd@siol.net</a></div>
+</div>
 </footer>
-
-<div class="reader-tools" aria-label="Reader font controls">
-  <button type="button" id="fontMinus" title="Smaller text">A−</button>
-  <button type="button" id="fontPlus" title="Larger text">A+</button>
+<div aria-label="Reader font controls" class="reader-tools">
+<button id="fontMinus" title="Smaller text" type="button">A−</button>
+<button id="fontPlus" title="Larger text" type="button">A+</button>
 </div>
 <div class="toast" id="toast">Saved</div>
-
 <script>
 (function(){
   const root = document.documentElement;
@@ -435,31 +450,7 @@ python my-play.py</div>
   setSize(size);
 })();
 
-(function(){
-  const label = document.getElementById('arcCountdown');
-  const sub = document.getElementById('arcCountdownSub');
-  if(!label || !sub) return;
-  const milestones = [
-    {name:'Milestone #1', date:Date.UTC(2026,5,30,23,59,59)},
-    {name:'Milestone #2', date:Date.UTC(2026,8,30,23,59,59)},
-    {name:'Final submissions', date:Date.UTC(2026,10,2,23,59,59)},
-    {name:'Paper deadline', date:Date.UTC(2026,10,8,23,59,59)},
-    {name:'Results', date:Date.UTC(2026,11,4,23,59,59)}
-  ];
-  function updateArcCountdown(){
-    const now = Date.now();
-    const next = milestones.find(m => m.date >= now);
-    document.querySelectorAll('[data-arc-deadline]').forEach(el => el.classList.remove('next'));
-    if(!next){ label.textContent = '2026 cycle complete'; sub.textContent = 'Review results and archive evidence'; return; }
-    const days = Math.max(0, Math.ceil((next.date - now) / 86400000));
-    label.textContent = `${days} day${days===1?'':'s'} to ${next.name}`;
-    sub.textContent = new Date(next.date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric',timeZone:'UTC'}) + ' · UTC calendar date';
-    const iso = new Date(next.date).toISOString().slice(0,10);
-    document.querySelector(`[data-arc-deadline="${iso}"]`)?.classList.add('next');
-  }
-  updateArcCountdown();
-  setInterval(updateArcCountdown, 60000);
-})();
+
 
 (function(){
   const checksKey = 'bd-plan-checks-v1';
@@ -469,8 +460,9 @@ python my-play.py</div>
   const saveStatus = document.getElementById('saveStatus');
   const notes = document.getElementById('planNotes');
   const boxes = Array.from(document.querySelectorAll('input[type="checkbox"][data-task]'));
-  const storageGet = (key, fallback='') => { try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch(e) { return fallback; } };
-  const storageSet = (key, value) => { try { localStorage.setItem(key, value); } catch(e) {} };
+  let storageAvailable = true;
+  const storageGet = (key, fallback='') => { try { const v = localStorage.getItem(key); return v === null ? fallback : v; } catch(e) { storageAvailable = false; return fallback; } };
+  const storageSet = (key, value) => { try { localStorage.setItem(key, value); } catch(e) { storageAvailable = false; } };
   let checks = {};
   function showToast(msg){ if(!toast) return; toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1400); }
   function load(){
@@ -496,6 +488,7 @@ python my-play.py</div>
     const done = boxes.filter(b=>b.checked).length;
     const total = boxes.length;
     const updated = storageGet(updatedKey, '');
+    if(saveStatus && !storageAvailable){saveStatus.textContent = 'Browser storage is unavailable. Download .txt to keep the visible checklist and notes.'; return;}
     if(saveStatus) saveStatus.textContent = `Saved locally in this browser · ${done}/${total} checked` + (updated ? ` · updated ${new Date(updated).toLocaleString()}` : '');
   }
   function taskLine(box){
@@ -503,13 +496,13 @@ python my-play.py</div>
     return `${box.checked ? '[x]' : '[ ]'} ${text}`;
   }
   function buildPlanText(){
-    const byCard = Array.from(document.querySelectorAll('#top-priority .priority-card, #top-priority .arc-command .card, #todo .card')).map(card => {
+    const byCard = Array.from(document.querySelectorAll('#top-priority .priority-card, #top-priority .arc-command .card, #todo .card, #historical-plan .priority-card, #historical-plan .arc-command .card')).map(card => {
       const title = card.querySelector('h3')?.textContent?.trim() || 'Section';
       const lines = Array.from(card.querySelectorAll('input[type="checkbox"][data-task]')).map(taskLine);
       return lines.length ? `\n${title}\n${lines.join('\n')}` : '';
     }).filter(Boolean).join('\n');
     const planNotes = notes?.value?.trim() || '';
-    return `BD × AI Lab — Current Plan\nGenerated: ${new Date().toLocaleString()}\nURL: https://www.mdlxdcc.org/BD/\n\nActive lanes:\n1. Website / public launch prep\n2. Trading arena + PiX component\n3. TSP / 8Z-RP\n4. Evidence Pack Factory\n5. Physical first-test planning\n${byCard}\n\nPrivate notes:\n${planNotes || '(none)'}\n`;
+    return `BD × AI Lab — Current Plan\nGenerated: ${new Date().toLocaleString()}\nURL: https://www.mdlxdcc.org/index-todo.html\n\nActive lanes:\n1. MDLxDCC reviews and source-specific corrections\n2. A frozen runnable evidence test\n3. Sudoku R6 / 8zCoding next tests\n4. Existing portfolio and engineering support lanes\n${byCard}\n\nPrivate notes:\n${planNotes || '(none)'}\n`;
   }
   async function copyPlan(){
     const text = buildPlanText();
@@ -546,5 +539,22 @@ python my-play.py</div>
   load();
 })();
 </script>
-</body>
+<script id="entry-navigation-runtime">
+(function(){'use strict';
+ const root=document.documentElement;
+ if(location.protocol==='file:'){
+  const base=root.dataset.entryRoot||'.';
+  document.querySelectorAll('a[href^="/"]').forEach(a=>{if(!a.getAttribute('href').startsWith('//'))a.setAttribute('href',base+a.getAttribute('href'));});
+ }
+ // Language choice shared by the entrances; each page retains its own native controls.
+ const active=document.querySelector('.entry-nav a[aria-current="page"]');
+ if(active)active.setAttribute('aria-label',active.textContent.trim()+' — current entrance');
+})();
+</script><script id="todo-backup-runtime">(function(){'use strict';
+const $=id=>document.getElementById(id),status=$('stateBackupStatus'),keys=['bd-plan-checks-v1','bd-plan-notes-v1','bd-plan-updated-v1'];
+function say(text){status.textContent=text;}
+$('exportState').addEventListener('click',()=>{try{const state={schema:'bd.workbench.v1',exported:new Date().toISOString(),values:{}};for(const k of keys)state.values[k]=localStorage.getItem(k)||'';const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='BD_workbench_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);say('Backup exported.');}catch(_){say('Browser storage is unavailable; use Download .txt to save the visible plan.');}});
+$('importState').addEventListener('click',()=>$('stateFile').click());
+$('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>2000000)throw Error('Backup too large.');const data=JSON.parse(await file.text());if(data.schema!=='bd.workbench.v1'||!data.values||typeof data.values!=='object')throw Error('Unsupported backup.');for(const k of keys)if(typeof data.values[k]!=='string')throw Error('Incomplete backup.');const c=JSON.parse(data.values[keys[0]]||'{}');if(!c||typeof c!=='object'||Array.isArray(c)||Object.values(c).some(v=>typeof v!=='boolean'))throw Error('Invalid checkbox state.');if(!confirm('Replace the saved checklist and notes with this backup?'))return;const old=keys.map(k=>localStorage.getItem(k));try{for(const k of keys)localStorage.setItem(k,data.values[k]);}catch(err){keys.forEach((k,i)=>{try{old[i]===null?localStorage.removeItem(k):localStorage.setItem(k,old[i]);}catch(_){}});throw err;}say('Backup restored.');document.querySelectorAll('input[data-task]').forEach(b=>{b.checked=!!c[b.dataset.task];b.closest('.task')?.classList.toggle('done',b.checked);});$('planNotes').value=data.values[keys[1]];$('planNotes').dispatchEvent(new Event('input',{bubbles:true}));}catch(err){say('Not restored: '+err.message);}finally{e.target.value='';}});
+})();</script></body>
 </html>
