@@ -104,7 +104,7 @@
     controller = typeof AbortController === 'function' ? new AbortController() : null;
     let expired = false;
     const timeout = setTimeout(() => { expired = true; if (controller) controller.abort(); }, 2200);
-    fetch('/api/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
+    fetch('/.netlify/functions/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
       ...(controller ? {signal:controller.signal} : {})})
       .then(response => {
         if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('No country response');
