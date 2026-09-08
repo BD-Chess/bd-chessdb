@@ -3,6 +3,121 @@
 <html data-entry-release="1.0" data-entry-root="." data-reader-size="2" lang="en">
 <head>
 <meta charset="utf-8"/>
+<script id="mdlxdcc-locale">
+/* MDLxDCC shared language preference v1.0 · 2026-09-08
+   Explicit choice > remembered choice > Netlify country (SI → sl, else en).
+   No IP, city or location is stored. No third-party calls. */
+(function () {
+  'use strict';
+  if (window.MDLxDCCLocale) return;
+  const root = document.documentElement;
+  const KEY = 'mdlxdcc-locale-v1', LEGACY = 'mdlxdcc-lang', COOKIE = 'mdlxdcc_locale';
+  const listeners = new Set();
+  let selection = null, generation = 0, controller = null;
+  const valid = value => value === 'en' || value === 'sl';
+  const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  function parse(value) {
+    try {
+      const x = JSON.parse(value);
+      return x && valid(x.lang) && ['manual', 'geo'].includes(x.source) &&
+        Number.isFinite(x.at) && x.at >= 0 ? {lang:x.lang, source:x.source, at:x.at} : null;
+    } catch (_) { return null; }
+  }
+  function cookieSelection() {
+    try {
+      const item = document.cookie.split(';').map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
+      return item ? parse(decodeURIComponent(item.slice(COOKIE.length + 1))) : null;
+    } catch (_) { return null; }
+  }
+  function read() {
+    const local = parse(get(KEY)), cookie = cookieSelection();
+    let value = !local ? cookie : !cookie ? local : cookie.at > local.at ? cookie : local;
+    const legacy = get(LEGACY);
+    // A legacy page may still save just the original shared key. Adopt its explicit change.
+    if (valid(legacy) && (!value || (value.lang !== legacy && (!cookie || (local && local.at >= cookie.at))))) {
+      value = {lang:legacy, source:'manual', at:Date.now()};
+    }
+    return value;
+  }
+  function persist() {
+    if (!selection) return;
+    const data = JSON.stringify(selection);
+    try {
+      localStorage.setItem(LEGACY, selection.lang);
+      localStorage.setItem('bdPortraitLang', selection.lang);
+      localStorage.setItem(KEY, data);
+    } catch (_) {}
+    try {
+      if (!/^https?:$/.test(location.protocol)) return;
+      const host = location.hostname.toLowerCase();
+      const domain = host === 'mdlxdcc.org' || host === 'www.mdlxdcc.org' ? '; Domain=mdlxdcc.org' : '';
+      document.cookie = COOKIE + '=' + encodeURIComponent(data) + '; Path=/; Max-Age=31536000; SameSite=Lax' + domain +
+        (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (_) {}
+  }
+  function current() { return selection ? selection.lang : 'en'; }
+  function apply() {
+    const lang = current();
+    root.lang = lang; root.dataset.lang = lang;
+    root.dataset.localeSource = selection ? selection.source : 'fallback';
+    listeners.forEach(fn => { try { fn(lang); } catch (error) { console.warn('Language view could not update.', error); } });
+    window.dispatchEvent(new CustomEvent('mdlxdcc:language', {detail:{lang, source:root.dataset.localeSource}}));
+  }
+  function choose(lang) {
+    if (!valid(lang)) return;
+    generation++;
+    if (controller) controller.abort();
+    selection = {lang, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+    persist(); apply();
+  }
+  function subscribe(fn) {
+    if (typeof fn !== 'function') return () => {};
+    listeners.add(fn); fn(current());
+    return () => listeners.delete(fn);
+  }
+  function refresh() {
+    const next = read();
+    if (next && (!selection || next.at > selection.at || next.lang !== selection.lang)) {
+      generation++; if (controller) controller.abort();
+      selection = next; persist(); apply();
+    }
+  }
+  selection = read();
+  try {
+    const requested = new URLSearchParams(location.search).get('lang');
+    if (valid(requested)) selection = {lang:requested, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+  } catch (_) {}
+  window.MDLxDCCLocale = Object.freeze({current, choose, subscribe, refresh, version:'1.0'});
+  root.classList.add('js');
+  if (selection) persist();
+  apply();
+  window.addEventListener('storage', event => { if ([KEY, LEGACY, null].includes(event.key)) refresh(); });
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('focus', refresh);
+  if (!selection && /^https?:$/.test(location.protocol) && typeof fetch === 'function') {
+    const start = generation;
+    controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let expired = false;
+    const timeout = setTimeout(() => { expired = true; if (controller) controller.abort(); }, 2200);
+    fetch('/api/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
+      ...(controller ? {signal:controller.signal} : {})})
+      .then(response => {
+        if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('No country response');
+        return response.json();
+      })
+      .then(data => {
+        // A late response must never replace a manual choice or a choice made in another tab.
+        if (expired || generation !== start || selection || !data || !valid(data.language)) return;
+        const saved = read();
+        selection = saved || {lang:data.language, source:'geo', at:Date.now()};
+        persist(); apply();
+      })
+      .catch(() => { /* English stays usable when offline, unknown, or unavailable. */ })
+      .finally(() => clearTimeout(timeout));
+  }
+})();
+
+</script>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>BD × AI Lab — Current work, notes &amp; todo</title>
 <meta content="The current workbench: source-specific next steps, saved checkboxes, browser-local private notes and the historical work plan." name="description"/>
@@ -75,42 +190,47 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 @media(max-width:600px){.entry-nav{padding:8px 14px;gap:2px}.entry-nav .entry-home{font-size:11px}.entry-nav a{padding:6px}.entry-nav .entry-bd{margin-left:0;padding-left:8px}.entry-update-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.entry-updates summary{padding:14px}.entry-update-label{display:block;margin-bottom:4px}.entry-update-item{padding:14px}}
 @media(max-width:360px){.entry-update-grid{grid-template-columns:1fr}.entry-choices{width:100%}}
 @media print{.entry-nav{display:none}.entry-updates{break-inside:avoid}}
-</style></head>
-<body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a data-entry-link="" href="index-atlas.html">Atlas</a><a aria-current="page" data-entry-link="" href="index-todo.html">Todo</a><a data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="/BD/index.html">BD ↗</a></div></nav>
+</style>
+<style id="entry-locale-style">
+.entry-en,.entry-sl{display:contents}html:not([data-lang=sl]) .entry-sl,html[data-lang=sl] .entry-en{display:none!important}
+.entry-language{display:none;align-items:center;gap:3px;flex-shrink:0;padding:3px;border:1px solid currentColor;border-radius:8px}.js .entry-language{display:inline-flex}.entry-language button{font:600 11px/1.2 system-ui,sans-serif;min-width:34px;min-height:32px;padding:6px;border:0;border-radius:5px;color:inherit;background:transparent;cursor:pointer}.entry-language button[aria-pressed=true]{background:#698f8955}.entry-language button:focus-visible{outline:2px solid #a5ddcb;outline-offset:3px}.entry-nav{flex-wrap:wrap;gap:8px}.entry-choices{flex-wrap:wrap}.entry-language-note{max-width:1200px;margin:12px auto;padding:10px 20px;color:inherit;font:400 13px/1.6 system-ui,sans-serif;opacity:.85}
+</style>
+<style id="todo-narrow-fit">.grid>*,.card,.priority-card,.task label{min-width:0}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.task label{overflow-wrap:anywhere}@media(max-width:700px){.grid.two{grid-template-columns:minmax(0,1fr)}}</style></head>
+<body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a data-entry-link="" href="index-atlas.html">Atlas</a><a aria-current="page" data-entry-link="" href="index-todo.html">Todo</a><a data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="/BD/index.html">BD ↗</a></div><div aria-label="Language / Jezik" class="entry-language" role="group"><button aria-pressed="true" data-entry-language="en" type="button">EN</button><button aria-pressed="false" data-entry-language="sl" type="button">SL</button></div></nav>
 <header class="topbar">
 <div class="wrap topbar-inner">
 <a class="brand" data-entry-link="" href="/BD/index.html">BD × AI Lab</a>
 <nav class="topnav">
-<a href="index-atlas.html">Root Atlas</a>
+<a href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Root Atlas</span><span class="entry-sl" lang="sl">Celoten atlas</span></span></a>
 <a href="Nara/index.html">Nara</a>
-<a class="primary" href="BD/BD_Idea_Atlas_AI_Reviews.html">AI Reviews</a><a href="crp/SeedBank.html">Seed Bank</a>
+<a class="primary" href="BD/BD_Idea_Atlas_AI_Reviews.html"><span class="entry-bilingual"><span class="entry-en" lang="en">AI Reviews</span><span class="entry-sl" lang="sl">AI recenzije</span></span></a><a href="crp/SeedBank.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Seed Bank</span><span class="entry-sl" lang="sl">Banka idej</span></span></a>
 <a href="crp/MDLxDCC-Arena-NAS.html">NAS</a>
 <a href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
 <a href="8Z/8zip.html">8zip</a>
 <a href="crp/Physics_CFH_MDLxDCC.html">Physics</a>
 <a href="crp/AliensOnEarth.html">Aliens</a>
 <a href="crp/TalkingToAliens.html">Talking</a>
-<a class="primary" href="#top-priority">Top priority</a>
-<a href="#news">News</a>
-<a href="#plan">Plan</a>
+<a class="primary" href="#top-priority"><span class="entry-bilingual"><span class="entry-en" lang="en">Top priority</span><span class="entry-sl" lang="sl">Prednostne naloge</span></span></a>
+<a href="#news"><span class="entry-bilingual"><span class="entry-en" lang="en">News</span><span class="entry-sl" lang="sl">Novosti</span></span></a>
+<a href="#plan"><span class="entry-bilingual"><span class="entry-en" lang="en">Plan</span><span class="entry-sl" lang="sl">Načrt</span></span></a>
 <a href="#todo">Todo</a>
-<a href="#links">Links</a>
+<a href="#links"><span class="entry-bilingual"><span class="entry-en" lang="en">Links</span><span class="entry-sl" lang="sl">Povezave</span></span></a>
 </nav>
 </div>
 </header>
 <main class="wrap">
 <section class="hero" id="top">
-<div class="eyebrow"><a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> × AI Lab · companion hub</div>
-<h1><span class="blue">News, Plan, Todo.</span><span class="white">What deserves attention next?</span></h1>
-<p>The workbench beside the portfolio: current reading, next evidence checks, saved tasks and private notes. The four-entrance home is the front door; <a data-entry-link="" href="index-atlas.html">the Atlas</a> keeps the complete work map. This is a dated planning snapshot, not an automatic report from running experiments.</p>
-<p class="hero-note">Built in spare time: late nights, many full-day weekends at home, and ordinary windows around job, family, sport, and life.</p>
+<div class="eyebrow"><a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a><span class="entry-bilingual"><span class="entry-en" lang="en"> × AI Lab · companion hub</span><span class="entry-sl" lang="sl"> × AI Lab · delovna miza</span></span></div>
+<h1><span class="blue"><span class="entry-bilingual"><span class="entry-en" lang="en">News, Plan, Todo.</span><span class="entry-sl" lang="sl">Novosti, načrt, naloge.</span></span></span><span class="white"><span class="entry-bilingual"><span class="entry-en" lang="en">What deserves attention next?</span><span class="entry-sl" lang="sl">Kaj si zasluži pozornost zdaj?</span></span></span></h1>
+<p><span class="entry-bilingual"><span class="entry-en" lang="en">The workbench beside the portfolio: current reading, next evidence checks, saved tasks and private notes. The four-entrance home is the front door; </span><span class="entry-sl" lang="sl">Delovna miza ob portfelju: aktualno branje, naslednje preverbe, shranjene naloge in osebne opombe. Glavna stran ponuja štiri vhode; </span></span><a data-entry-link="" href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">the Atlas</span><span class="entry-sl" lang="sl">atlas</span></span></a><span class="entry-bilingual"><span class="entry-en" lang="en"> keeps the complete work map. This is a dated planning snapshot, not an automatic report from running experiments.</span><span class="entry-sl" lang="sl"> pa ohranja celoten zemljevid dela. To je datiran načrt, ne samodejno poročilo o tekočih poskusih.</span></span></p>
+<p class="hero-note"><span class="entry-bilingual"><span class="entry-en" lang="en">Built in spare time: late nights, many full-day weekends at home, and ordinary windows around job, family, sport, and life.</span><span class="entry-sl" lang="sl">Nastalo v prostem času: pozno ponoči, ob številnih celodnevnih vikendih doma ter vmes med službo, družino, športom in življenjem.</span></span></p>
 <div class="hero-actions">
-<a class="button green" href="#top-priority">Open top priorities</a>
-<a class="button" href="#plan">Open current plan</a>
-<a class="button gold" href="#todo">Open saved todo</a>
-<a class="button" href="BD/BD_Idea_Atlas_AI_Reviews.html">AI reviews page</a>
-<a class="button ghost" href="index-atlas.html">Full root atlas</a>
-<a class="button ghost" href="Nara/index.html">Nara storytelling</a>
+<a class="button green" href="#top-priority"><span class="entry-bilingual"><span class="entry-en" lang="en">Open top priorities</span><span class="entry-sl" lang="sl">Odpri prednostne naloge</span></span></a>
+<a class="button" href="#plan"><span class="entry-bilingual"><span class="entry-en" lang="en">Open current plan</span><span class="entry-sl" lang="sl">Odpri širši načrt</span></span></a>
+<a class="button gold" href="#todo"><span class="entry-bilingual"><span class="entry-en" lang="en">Open saved todo</span><span class="entry-sl" lang="sl">Odpri shranjene naloge</span></span></a>
+<a class="button" href="BD/BD_Idea_Atlas_AI_Reviews.html"><span class="entry-bilingual"><span class="entry-en" lang="en">AI reviews page</span><span class="entry-sl" lang="sl">AI recenzije</span></span></a>
+<a class="button ghost" href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Full root atlas</span><span class="entry-sl" lang="sl">Celoten atlas</span></span></a>
+<a class="button ghost" href="Nara/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Nara storytelling</span><span class="entry-sl" lang="sl">Zgodbe Nara</span></span></a>
 <a class="button ghost" href="crp/MDLxDCC-Arena-NAS.html">NAS Arena</a>
 <a class="button ghost" href="crp/8Z_PostCodec_Algorithmic_Noise_Scout.html">Noise Scout</a>
 <a class="button ghost" href="8Z/8zip.html">8zip &amp; 8zipLab</a>
@@ -120,18 +240,18 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 <details class="entry-updates" data-entry-updated="2026-09-08"><summary><span><span class="entry-update-label">08 / 09 / 2026</span><span class="entry-en" lang="en">Current project status</span><span class="entry-sl" lang="sl">Trenutno stanje projektov</span></span></summary><div class="entry-update-grid"><article class="entry-update-item"><a data-entry-link="" href="BD/BD_8ZRP.html">TSP ×4</a><p><span class="entry-en" lang="en">Four independent arenas in testing</span><span class="entry-sl" lang="sl">Štiri neodvisne arene v testiranju</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_trading_2026.html">Trading ×3</a><p><span class="entry-en" lang="en">Two existing test arenas + BDTA just started</span><span class="entry-sl" lang="sl">Dve obstoječi testni areni + BDTA pravkar zagnana</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AI8_Sudoku_R6.html">Sudoku R6</a><p><span class="entry-en" lang="en">New large arena in build</span><span class="entry-sl" lang="sl">Nova velika arena v izdelavi</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AIM3_MentalArena_Lab.html">MAL 2.0</a><p><span class="entry-en" lang="en">Ready for review</span><span class="entry-sl" lang="sl">Za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_AIM3_RHP.html">RHP</a><p><span class="entry-en" lang="en">New RHP to review</span><span class="entry-sl" lang="sl">Nov RHP za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/8zCoding.html">8zCoding</a><p><span class="entry-en" lang="en">Active development line</span><span class="entry-sl" lang="sl">Aktivna razvojna veja</span></p></article></div><p class="entry-update-note"><span class="entry-en" lang="en">Dated work-status snapshot. Project pages keep their own evidence and release history.</span><span class="entry-sl" lang="sl">Datiran posnetek delovnega stanja. Projektne strani ohranjajo lastne dokaze in zgodovino izdaj.</span></p></details>
 <!-- ENTRY-UPDATES:END -->
 <section class="top-priority" id="top-priority">
-<div class="priority-head"><div><div class="eyebrow">Current workbench · 8 September 2026</div><h2>What is active now.</h2><p>This is the current operational snapshot. Older plans remain below as a collapsed historical record; they no longer define the priority order.</p></div></div>
+<div class="priority-head"><div><div class="eyebrow"><span class="entry-bilingual"><span class="entry-en" lang="en">Current workbench · 8 September 2026</span><span class="entry-sl" lang="sl">Aktualna delovna miza · 8. september 2026</span></span></div><h2><span class="entry-bilingual"><span class="entry-en" lang="en">What is active now.</span><span class="entry-sl" lang="sl">Kaj je trenutno aktivno.</span></span></h2><p><span class="entry-bilingual"><span class="entry-en" lang="en">This is the current operational snapshot. Older plans remain below as a collapsed historical record; they no longer define the priority order.</span><span class="entry-sl" lang="sl">To je trenutni operativni pregled. Starejši načrti ostajajo spodaj kot zaprt zgodovinski zapis in ne določajo več vrstnega reda prednosti.</span></span></p></div></div>
 <div class="grid three priority-grid">
-<article class="card priority-card accent-blue"><div class="priority-head"><div><div class="priority-kicker">Testing · 4 arenas</div><h3>TSP</h3></div><span class="priority-status ready">in testing</span></div><p>Four different TSP arenas are running as separate research lines.</p><div class="tasks"><div class="task"><input data-task="sep26-tsp-collect" id="now-tsp-collect" type="checkbox"><label for="now-tsp-collect">Collect the newest result from all four arenas.<span class="hint">Keep each arena, version and evidence trail separate.</span></label></div><div class="task"><input data-task="sep26-tsp-compare" id="now-tsp-compare" type="checkbox"><label for="now-tsp-compare">Compare what each arena learned and decide the next discriminating test.</label></div></div><div class="priority-links"><a href="BD/BD_8ZRP.html">TSP / 8Z-RP</a></div></article>
-<article class="card priority-card accent-green"><div class="priority-head"><div><div class="priority-kicker">Testing · 3 arenas</div><h3>Trading</h3></div><span class="priority-status ready">2 testing · BDTA started</span></div><p>Two earlier trading arenas remain in testing. BD Trading Atlas (BDTA) has just started as the third research arena.</p><div class="tasks"><div class="task"><input data-task="sep26-trading-two" id="now-trading-two" type="checkbox"><label for="now-trading-two">Review the latest outputs from the two existing trading arenas.</label></div><div class="task"><input data-task="sep26-bdta-first" id="now-bdta-first" type="checkbox"><label for="now-bdta-first">Capture BDTA's first clean baseline and early findings before narrowing the search.</label></div></div><div class="priority-links"><a href="BD/BD_trading_2026.html">Trading work</a></div></article>
-<article class="card priority-card accent-gold"><div class="priority-head"><div><div class="priority-kicker">Building</div><h3>Sudoku R6</h3></div><span class="priority-status active">large arena</span></div><p>The new large Sudoku arena is currently being built.</p><div class="tasks"><div class="task"><input data-task="sep26-sudoku-build" id="now-sudoku-build" type="checkbox"><label for="now-sudoku-build">Review the delivered build against the R6 contract.</label></div><div class="task"><input data-task="sep26-sudoku-first-run" id="now-sudoku-first-run" type="checkbox"><label for="now-sudoku-first-run">After build validation, run the first clean confirmation test and retain the evidence.</label></div></div><div class="priority-links"><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a></div></article>
-<article class="card priority-card accent-violet"><div class="priority-head"><div><div class="priority-kicker">Review</div><h3>MAL 2.0</h3></div><span class="priority-status active">check</span></div><p>MAL 2.0 is ready for a focused verification pass.</p><div class="tasks"><div class="task"><input data-task="sep26-mal20-review" id="now-mal20" type="checkbox"><label for="now-mal20">Check MAL 2.0 package integrity, selftests/smoke tests and the main workflow before promoting further work.</label></div></div><div class="priority-links"><a href="crp/AIM3_MentalArena_Lab.html">MentalArena Lab</a></div></article>
-<article class="card priority-card accent-orange"><div class="priority-head"><div><div class="priority-kicker">Review</div><h3>New RHP</h3></div><span class="priority-status active">check</span></div><p>The new RHP needs review before it becomes the default working profile.</p><div class="tasks"><div class="task"><input data-task="sep26-rhp-review" id="now-rhp" type="checkbox"><label for="now-rhp">Review the new RHP against the existing RHP/wRHP roles and decide what should remain separate or be synthesized.</label></div></div><div class="priority-links"><a href="BD/BD_AIM3_RHP.html">RHP</a></div></article>
-<article class="card priority-card accent-rose"><div class="priority-head"><div><div class="priority-kicker">Active line</div><h3>8zCoding</h3></div><span class="priority-status active">current</span></div><p>Keep 8zCoding active as the executable build → run → verify development line.</p><div class="tasks"><div class="task"><input data-task="sep26-8zcoding-review" id="now-8zcoding" type="checkbox"><label for="now-8zcoding">Check the current package/results and choose the next test that can actually discriminate progress.</label></div></div><div class="priority-links"><a href="crp/8zCoding.html">8zCoding</a></div></article>
+<article class="card priority-card accent-blue"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Testing · 4 arenas</span><span class="entry-sl" lang="sl">Testiranje · 4 arene</span></span></div><h3>TSP</h3></div><span class="priority-status ready"><span class="entry-bilingual"><span class="entry-en" lang="en">in testing</span><span class="entry-sl" lang="sl">v testiranju</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">Four different TSP arenas are running as separate research lines.</span><span class="entry-sl" lang="sl">Štiri različne TSP arene tečejo kot ločene raziskovalne veje.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-tsp-collect" id="now-tsp-collect" type="checkbox"/><label for="now-tsp-collect"><span class="entry-bilingual"><span class="entry-en" lang="en">Collect the newest result from all four arenas.</span><span class="entry-sl" lang="sl">Zberi najnovejši rezultat vseh štirih aren.</span></span><span class="hint"><span class="entry-bilingual"><span class="entry-en" lang="en">Keep each arena, version and evidence trail separate.</span><span class="entry-sl" lang="sl">Ohrani ločene arene, različice in dokazne sledi.</span></span></span></label></div><div class="task"><input data-task="sep26-tsp-compare" id="now-tsp-compare" type="checkbox"/><label for="now-tsp-compare"><span class="entry-bilingual"><span class="entry-en" lang="en">Compare what each arena learned and decide the next discriminating test.</span><span class="entry-sl" lang="sl">Primerjaj, kaj je ugotovila posamezna arena, in izberi naslednji test, ki loči med razlagami.</span></span></label></div></div><div class="priority-links"><a href="BD/BD_8ZRP.html">TSP / 8Z-RP</a></div></article>
+<article class="card priority-card accent-green"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Testing · 3 arenas</span><span class="entry-sl" lang="sl">Testiranje · 3 arene</span></span></div><h3>Trading</h3></div><span class="priority-status ready"><span class="entry-bilingual"><span class="entry-en" lang="en">2 testing · BDTA started</span><span class="entry-sl" lang="sl">2 v testiranju · BDTA zagnana</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">Two earlier trading arenas remain in testing. BD Trading Atlas (BDTA) has just started as the third research arena.</span><span class="entry-sl" lang="sl">Dve prejšnji trgovalni areni ostajata v testiranju. BD Trading Atlas (BDTA) je pravkar začela kot tretja raziskovalna arena.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-trading-two" id="now-trading-two" type="checkbox"/><label for="now-trading-two"><span class="entry-bilingual"><span class="entry-en" lang="en">Review the latest outputs from the two existing trading arenas.</span><span class="entry-sl" lang="sl">Preglej najnovejše rezultate obeh obstoječih trgovalnih aren.</span></span></label></div><div class="task"><input data-task="sep26-bdta-first" id="now-bdta-first" type="checkbox"/><label for="now-bdta-first"><span class="entry-bilingual"><span class="entry-en" lang="en">Capture BDTA's first clean baseline and early findings before narrowing the search.</span><span class="entry-sl" lang="sl">Pred zožitvijo iskanja shrani prvo čisto izhodišče BDTA in začetne ugotovitve.</span></span></label></div></div><div class="priority-links"><a href="BD/BD_trading_2026.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Trading work</span><span class="entry-sl" lang="sl">Trgovalni projekti</span></span></a></div></article>
+<article class="card priority-card accent-gold"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Building</span><span class="entry-sl" lang="sl">V izdelavi</span></span></div><h3>Sudoku R6</h3></div><span class="priority-status active"><span class="entry-bilingual"><span class="entry-en" lang="en">large arena</span><span class="entry-sl" lang="sl">velika arena</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">The new large Sudoku arena is currently being built.</span><span class="entry-sl" lang="sl">Nova velika Sudoku arena je trenutno v izdelavi.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-sudoku-build" id="now-sudoku-build" type="checkbox"/><label for="now-sudoku-build"><span class="entry-bilingual"><span class="entry-en" lang="en">Review the delivered build against the R6 contract.</span><span class="entry-sl" lang="sl">Primerjaj dostavljeno gradnjo s pogodbo R6.</span></span></label></div><div class="task"><input data-task="sep26-sudoku-first-run" id="now-sudoku-first-run" type="checkbox"/><label for="now-sudoku-first-run"><span class="entry-bilingual"><span class="entry-en" lang="en">After build validation, run the first clean confirmation test and retain the evidence.</span><span class="entry-sl" lang="sl">Po validaciji gradnje izvedi prvi čisti potrditveni test in shrani dokaze.</span></span></label></div></div><div class="priority-links"><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a></div></article>
+<article class="card priority-card accent-violet"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Review</span><span class="entry-sl" lang="sl">Pregled</span></span></div><h3>MAL 2.0</h3></div><span class="priority-status active"><span class="entry-bilingual"><span class="entry-en" lang="en">check</span><span class="entry-sl" lang="sl">preveri</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">MAL 2.0 is ready for a focused verification pass.</span><span class="entry-sl" lang="sl">MAL 2.0 je pripravljena za ciljno preverjanje.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-mal20-review" id="now-mal20" type="checkbox"/><label for="now-mal20"><span class="entry-bilingual"><span class="entry-en" lang="en">Check MAL 2.0 package integrity, selftests/smoke tests and the main workflow before promoting further work.</span><span class="entry-sl" lang="sl">Pred nadaljevanjem preveri celovitost paketa MAL 2.0, samopreizkuse, osnovne teste in glavni delovni tok.</span></span></label></div></div><div class="priority-links"><a href="crp/AIM3_MentalArena_Lab.html">MentalArena Lab</a></div></article>
+<article class="card priority-card accent-orange"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Review</span><span class="entry-sl" lang="sl">Pregled</span></span></div><h3><span class="entry-bilingual"><span class="entry-en" lang="en">New RHP</span><span class="entry-sl" lang="sl">Nov RHP</span></span></h3></div><span class="priority-status active"><span class="entry-bilingual"><span class="entry-en" lang="en">check</span><span class="entry-sl" lang="sl">preveri</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">The new RHP needs review before it becomes the default working profile.</span><span class="entry-sl" lang="sl">Nov RHP potrebuje pregled, preden postane privzeti delovni profil.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-rhp-review" id="now-rhp" type="checkbox"/><label for="now-rhp"><span class="entry-bilingual"><span class="entry-en" lang="en">Review the new RHP against the existing RHP/wRHP roles and decide what should remain separate or be synthesized.</span><span class="entry-sl" lang="sl">Primerjaj nov RHP z obstoječimi vlogami RHP/wRHP in odloči, kaj naj ostane ločeno oziroma se združi.</span></span></label></div></div><div class="priority-links"><a href="BD/BD_AIM3_RHP.html">RHP</a></div></article>
+<article class="card priority-card accent-rose"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Active line</span><span class="entry-sl" lang="sl">Aktivna veja</span></span></div><h3>8zCoding</h3></div><span class="priority-status active"><span class="entry-bilingual"><span class="entry-en" lang="en">current</span><span class="entry-sl" lang="sl">aktualno</span></span></span></div><p><span class="entry-bilingual"><span class="entry-en" lang="en">Keep 8zCoding active as the executable build → run → verify development line.</span><span class="entry-sl" lang="sl">Ohrani 8zCoding kot aktivno razvojno vejo gradnja → izvajanje → preverjanje.</span></span></p><div class="tasks"><div class="task"><input data-task="sep26-8zcoding-review" id="now-8zcoding" type="checkbox"/><label for="now-8zcoding"><span class="entry-bilingual"><span class="entry-en" lang="en">Check the current package/results and choose the next test that can actually discriminate progress.</span><span class="entry-sl" lang="sl">Preglej trenutni paket in rezultate ter izberi naslednji test, ki lahko dejansko pokaže napredek.</span></span></label></div></div><div class="priority-links"><a href="crp/8zCoding.html">8zCoding</a></div></article>
 </div>
-<div class="card" style="margin-top:14px;border-left:4px solid var(--dim)"><div class="priority-head"><div><div class="priority-kicker">Standby · preserved, not abandoned</div><h3>Parked until a better opening appears</h3></div><span class="priority-status">standby</span></div><p><strong>AVPS · AC‑WFP · ARC‑AGI · Nara stories · The Birds stories</strong> and other retained branches are on standby. Keep their seeds, evidence and reopening conditions, but do not let them compete with the active workbench for attention right now.</p><div class="priority-links"><a href="index-atlas.html">Find them in the Atlas</a><a href="Nara/index.html">Nara</a><a href="Birds/index.html">The Birds</a></div></div>
-<div class="actions"><a class="btn" href="#todo">Saved tasks &amp; notes ↓</a><a class="btn" href="index-atlas.html">Full Atlas</a><a class="btn" href="/BD/index.html">BD</a></div>
-</section><details class="entry-historical" id="historical-plan"><summary>Earlier work plan · June 2026 · preserved checkboxes</summary><p class="history-note">This is the original plan, retained as history—not the current priority order or a verified current competition schedule. Saved task states are preserved.</p><section class="top-priority" id="june-priorities">
+<div class="card" style="margin-top:14px;border-left:4px solid var(--dim)"><div class="priority-head"><div><div class="priority-kicker"><span class="entry-bilingual"><span class="entry-en" lang="en">Standby · preserved, not abandoned</span><span class="entry-sl" lang="sl">Na čakanju · ohranjeno, ne opuščeno</span></span></div><h3><span class="entry-bilingual"><span class="entry-en" lang="en">Parked until a better opening appears</span><span class="entry-sl" lang="sl">Počaka na boljšo priložnost</span></span></h3></div><span class="priority-status"><span class="entry-bilingual"><span class="entry-en" lang="en">standby</span><span class="entry-sl" lang="sl">na čakanju</span></span></span></div><p><strong>AVPS · AC‑WFP · ARC‑AGI · Nara stories · The Birds stories</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> and other retained branches are on standby. Keep their seeds, evidence and reopening conditions, but do not let them compete with the active workbench for attention right now.</span><span class="entry-sl" lang="sl"> in druge ohranjene veje so na čakanju. Ohrani njihove ideje, dokaze in pogoje ponovnega odpiranja, vendar naj trenutno ne tekmujejo za pozornost z aktivnimi nalogami.</span></span></p><div class="priority-links"><a href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Find them in the Atlas</span><span class="entry-sl" lang="sl">Najdi jih v atlasu</span></span></a><a href="Nara/index.html">Nara</a><a href="Birds/index.html">The Birds</a></div></div>
+<div class="actions"><a class="btn" href="#todo"><span class="entry-bilingual"><span class="entry-en" lang="en">Saved tasks &amp; notes ↓</span><span class="entry-sl" lang="sl">Shranjene naloge in opombe ↓</span></span></a><a class="btn" href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Full Atlas</span><span class="entry-sl" lang="sl">Celoten atlas</span></span></a><a class="btn" href="/BD/index.html">BD</a></div>
+</section><p class="entry-language-note"><span class="entry-en" lang="en">The active overview and controls follow your language. Older news, plans and saved checklists are retained in their original English; personal notes are never translated or changed.</span><span class="entry-sl" lang="sl">Aktualni pregled in upravljalni gumbi sledijo tvojemu jeziku. Starejše novice, načrti in shranjeni seznami ostajajo v izvirni angleščini; osebnih opomb ne prevajamo ali spreminjamo.</span></p><details class="entry-historical" id="historical-plan" lang="en"><summary><span class="entry-en" lang="en">Earlier work plan · English archive · June 2026</span><span class="entry-sl" lang="sl">Prejšnji delovni načrt · angleški arhiv · junij 2026</span></summary><p class="history-note">This is the original plan, retained as history—not the current priority order or a verified current competition schedule. Saved task states are preserved.</p><section class="top-priority" id="june-priorities">
 <div class="priority-shell">
 <div class="priority-intro">
 <div>
@@ -146,10 +266,10 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 <div class="priority-head"><div><div class="priority-kicker">Priority 1</div><h3>MentalArena Lab v0.98 → v1.0</h3></div><span class="priority-status ready">v0.98 ready</span></div>
 <p>Use the new independent <b>AI‑ONLY / HUMAN × AI</b> layer, ASK_BD Question Broker, <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> idea injection, TEXT/JSON transport, and contribution trace to harden the first stable MAL release.</p>
 <div class="tasks">
-<div class="task"><input data-task="top-mal-tests" id="t-top-mal-tests" type="checkbox"/><label for="t-top-mal-tests">Run v0.98 offline selftest + HTTP smoke locally.<span class="hint">Expected: 69/69 and 34/34; no provider calls.</span></label></div>
-<div class="task"><input data-task="top-mal-selfloop" id="t-top-mal-selfloop" type="checkbox"/><label for="t-top-mal-selfloop">Run MAL on MAL in HUMAN × AI mode.<span class="hint">E2 Standard · JSON intermediate · final synthesis TEXT.</span></label></div>
-<div class="task"><input data-task="top-mal-audit" id="t-top-mal-audit" type="checkbox"/><label for="t-top-mal-audit">Audit the self-loop export and clean the v1.0-RC1 builder prompt.<span class="hint">No new modes/engines; preserve evidence and privacy boundaries.</span></label></div>
-<div class="task"><input data-task="top-mal-v10" id="t-top-mal-v10" type="checkbox"/><label for="t-top-mal-v10">Build, smoke, audit, and promote MAL v1.0 only if it passes.<span class="hint">RC first; stable release second.</span></label></div>
+<div class="task"><input data-task="top-mal-tests" id="t-top-mal-tests" type="checkbox"><label for="t-top-mal-tests">Run v0.98 offline selftest + HTTP smoke locally.<span class="hint">Expected: 69/69 and 34/34; no provider calls.</span></label></input></div>
+<div class="task"><input data-task="top-mal-selfloop" id="t-top-mal-selfloop" type="checkbox"><label for="t-top-mal-selfloop">Run MAL on MAL in HUMAN × AI mode.<span class="hint">E2 Standard · JSON intermediate · final synthesis TEXT.</span></label></input></div>
+<div class="task"><input data-task="top-mal-audit" id="t-top-mal-audit" type="checkbox"><label for="t-top-mal-audit">Audit the self-loop export and clean the v1.0-RC1 builder prompt.<span class="hint">No new modes/engines; preserve evidence and privacy boundaries.</span></label></input></div>
+<div class="task"><input data-task="top-mal-v10" id="t-top-mal-v10" type="checkbox"><label for="t-top-mal-v10">Build, smoke, audit, and promote MAL v1.0 only if it passes.<span class="hint">RC first; stable release second.</span></label></input></div>
 </div>
 <div class="priority-links"><a href="crp/AIM3_MentalArena_mRHP.html">Public MAL page</a><span class="muted" title="Historical reference. The named v0.6 benchmark file is absent from the supplied website snapshot.">Trading benchmark v0.6 · historical file not included</span></div>
 </article>
@@ -157,10 +277,10 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 <div class="priority-head"><div><div class="priority-kicker">Priority 2</div><h3>Trading Arena v1.4</h3></div><span class="priority-status active">after MAL v1.0</span></div>
 <p>Use MAL as the prompt-building and audit layer, then test the upgraded real‑1m arena and <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> Dual‑Side Size‑Parity Corridor Rescue without pruning high-risk strategies merely because a fixed wallet fails.</p>
 <div class="tasks">
-<div class="task"><input data-task="top-tr-freeze" id="t-top-tr-freeze" type="checkbox"/><label for="t-top-tr-freeze">Freeze the v1.4 source pack and identical initial seed.<span class="hint">v1.3 code + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR paper + context + benchmark rules.</span></label></div>
-<div class="task"><input data-task="top-tr-benchmark" id="t-top-tr-benchmark" type="checkbox"/><label for="t-top-tr-benchmark">Run the A–F prompt-builder benchmark with mature MAL v1.0.<span class="hint">Same builder and sources; vary only the prompt-generation workflow.</span></label></div>
-<div class="task"><input data-task="top-tr-build" id="t-top-tr-build" type="checkbox"/><label for="t-top-tr-build">Build and test Trading Arena v1.4 from the winning prompt.<span class="hint">Truth-hardening + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR + matched controls + resume-safe runs.</span></label></div>
-<div class="task"><input data-task="top-tr-wallet" id="t-top-tr-wallet" type="checkbox"/><label for="t-top-tr-wallet">Rank strategies independently of arbitrary wallet size.<span class="hint">Record minimum recommended wallet for survivability; preserve profitable high-risk variants.</span></label></div>
+<div class="task"><input data-task="top-tr-freeze" id="t-top-tr-freeze" type="checkbox"><label for="t-top-tr-freeze">Freeze the v1.4 source pack and identical initial seed.<span class="hint">v1.3 code + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR paper + context + benchmark rules.</span></label></input></div>
+<div class="task"><input data-task="top-tr-benchmark" id="t-top-tr-benchmark" type="checkbox"><label for="t-top-tr-benchmark">Run the A–F prompt-builder benchmark with mature MAL v1.0.<span class="hint">Same builder and sources; vary only the prompt-generation workflow.</span></label></input></div>
+<div class="task"><input data-task="top-tr-build" id="t-top-tr-build" type="checkbox"><label for="t-top-tr-build">Build and test Trading Arena v1.4 from the winning prompt.<span class="hint">Truth-hardening + <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a>‑DSP‑CR + matched controls + resume-safe runs.</span></label></input></div>
+<div class="task"><input data-task="top-tr-wallet" id="t-top-tr-wallet" type="checkbox"><label for="t-top-tr-wallet">Rank strategies independently of arbitrary wallet size.<span class="hint">Record minimum recommended wallet for survivability; preserve profitable high-risk variants.</span></label></input></div>
 </div>
 <div class="priority-links"><a href="BD/BD_trading_2026.html">Trading results</a><a href="BD/BD_Hedge_Separation_PiX_Strategy_Explainer.html">Strategy explainer</a></div>
 </article>
@@ -168,7 +288,7 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 <div class="priority-head"><div><div class="priority-kicker">Priority 3 · external challenge</div><h3>ARC‑AGI‑3 with MAL</h3></div><span class="priority-status deadline">deadline track</span></div>
 <p>Use HUMAN × AI brainstorming to build an agent that explores unfamiliar interactive environments, acquires goals, remembers discoveries, and adapts. Milestone #1 is a short sprint; Milestone #2 remains the fallback target.</p>
 <div class="tasks">
-<div class="task"><input data-task="top-arc-kaggle" id="t-top-arc-kaggle" type="checkbox"/><label for="t-top-arc-kaggle">Join the ARC‑AGI‑3 Kaggle competition.<span class="hint">Competition submission and official rules live on Kaggle.</span></label></div>
+<div class="task"><input data-task="top-arc-kaggle" id="t-top-arc-kaggle" type="checkbox"><label for="t-top-arc-kaggle">Join the ARC‑AGI‑3 Kaggle competition.<span class="hint">Competition submission and official rules live on Kaggle.</span></label></input></div>
 <div class="task"><input data-task="top-arc-platform" id="t-top-arc-platform" type="checkbox"/><label for="t-top-arc-platform">Register on ARC Prize Platform with Google or GitHub.<span class="hint">Then create an API key under Profile → API Keys.</span></label></div>
 <div class="task"><input data-task="top-arc-quickstart" id="t-top-arc-quickstart" type="checkbox"/><label for="t-top-arc-quickstart">Install the toolkit and play one environment.<span class="hint">Get a scorecard before designing a complex agent.</span></label></div>
 <div class="task"><input data-task="top-arc-mal" id="t-top-arc-mal" type="checkbox"/><label for="t-top-arc-mal">Run a focused MAL HUMAN × AI agent-design session.<span class="hint">Ask <a class="bd-profile-link" data-entry-link="" href="/BD/index.html">BD</a> only for high-information visual/strategic seeds; test every idea.</span></label></div>
@@ -229,7 +349,7 @@ python my-play.py</div>
 </div>
 </div>
 </section></details>
-<section id="news">
+<section id="news" lang="en">
 <div class="section-title"><h2>News &amp; announcements</h2><p>Short public-facing updates and current work signals.</p></div><div class="card"><span class="date">2026-09-08</span><h3>Four entrances, one site.</h3><p>The technical search page, full portfolio Atlas, personal workbench and animated introduction now have distinct routes. The portrait moves to <a data-entry-link="" href="/BD/index.html">BD</a>; <a href="BD/BDR.html">BDR</a> stays beside it.</p><p><a href="index.html">Choose an entrance →</a> · <a href="index-search.html">MDL×DCC →</a> · <a href="index-atlas.html">Atlas →</a></p></div><div class="card"><span class="date">2026-09-07 / 08</span><h3>Current technical reading: R6, 8zCoding, Shield and RHP.</h3><p>Use the dated evidence receipts for measurements. R6 and future reasoning reuse remain research directions, not newly claimed benchmark wins.</p><p><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a> · <a href="crp/8zCoding.html">8zCoding</a> · <a href="BD/BD_AIM3_RHP.html">RHP / wRHP</a> · <a href="BD/8z_shield_landing.html">8Z Shield</a></p></div>
 <div class="news-list">
 <div class="news">
@@ -268,7 +388,7 @@ python my-play.py</div>
 <div class="news"><div class="news-date">Next</div><div><b>First public reproducibility pack.</b><br/><span>Best next evidence move: start with 8Z-RP / TSP, then DNA/FASTA. Move from “LLMs saw the code” to “outsiders can run it.”</span></div><a class="pill green" href="BD/BD_Idea_Atlas_AI_Reviews.html#next">Packs</a></div>
 </div>
 </section>
-<section id="plan">
+<section id="plan" lang="en">
 <p class="entry-history-label">These support lanes are retained from the earlier plan. They are not an assertion that every listed run or release is active today.</p><div class="section-title">
 <div><span class="tag">Broader work map</span><h2>Continuing work lanes · retained backlog</h2></div>
 <p>The top-priority sequence above governs immediate work. These wider lanes remain available in parallel while long tests run.</p>
@@ -283,17 +403,17 @@ python my-play.py</div>
 </section>
 <section id="todo">
 <div class="section-title">
-<div><span class="tag">Saved locally</span><h2>Todo checklist</h2></div>
-<p>Checkboxes and notes are saved in this browser via localStorage. Use Copy / Download / Email to preserve the plan outside the browser.</p>
+<div><span class="tag"><span class="entry-bilingual"><span class="entry-en" lang="en">Saved locally</span><span class="entry-sl" lang="sl">Shranjeno lokalno</span></span></span><h2><span class="entry-bilingual"><span class="entry-en" lang="en">Todo checklist</span><span class="entry-sl" lang="sl">Seznam nalog</span></span></h2></div>
+<p><span class="entry-bilingual"><span class="entry-en" lang="en">Checkboxes and notes are saved in this browser via localStorage. Use Copy / Download / Email to preserve the plan outside the browser.</span><span class="entry-sl" lang="sl">Oznake in opombe se shranijo v tem brskalniku. Načrt ohrani zunaj brskalnika s kopiranjem, prenosom ali e-pošto.</span></span></p>
 </div>
 <div aria-label="Plan toolbar" class="plan-toolbar">
-<b>Plan tools</b>
-<button id="copyPlan" type="button">Copy plan</button>
-<button id="downloadPlan" type="button">Download .txt</button><button id="exportState" type="button">Backup .json</button><button id="importState" type="button">Restore .json</button><input accept="application/json,.json" hidden="" id="stateFile" type="file"/><span aria-live="polite" id="stateBackupStatus" role="status"></span>
-<button class="mail" id="emailPlan" type="button">Email plan</button>
-<button id="resetChecks" type="button">Reset checks</button>
+<b><span class="entry-bilingual"><span class="entry-en" lang="en">Plan tools</span><span class="entry-sl" lang="sl">Orodja za načrt</span></span></b>
+<button id="copyPlan" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Copy plan</span><span class="entry-sl" lang="sl">Kopiraj načrt</span></span></button>
+<button id="downloadPlan" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Download .txt</span><span class="entry-sl" lang="sl">Prenesi .txt</span></span></button><button id="exportState" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Backup .json</span><span class="entry-sl" lang="sl">Varnostna kopija .json</span></span></button><button id="importState" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Restore .json</span><span class="entry-sl" lang="sl">Obnovi .json</span></span></button><input accept="application/json,.json" hidden="" id="stateFile" type="file"/><span aria-live="polite" id="stateBackupStatus" role="status"></span>
+<button class="mail" id="emailPlan" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Email plan</span><span class="entry-sl" lang="sl">Pošlji načrt</span></span></button>
+<button id="resetChecks" type="button"><span class="entry-bilingual"><span class="entry-en" lang="en">Reset checks</span><span class="entry-sl" lang="sl">Ponastavi oznake</span></span></button>
 </div>
-<div class="grid two">
+<div class="grid two" lang="en">
 <div class="card accent-blue">
 <h3>Lane 1 · Website / launch prep</h3>
 <div class="tasks">
@@ -364,7 +484,7 @@ python my-play.py</div>
 <p class="plan-meta" id="saveStatus">Local notes not loaded yet.</p>
 </div>
 </section>
-<section id="evidence">
+<section id="evidence" lang="en">
 <div class="section-title">
 <div><span class="tag">Public credibility path</span><h2>Evidence pack order</h2></div>
 <p>The fastest credibility gain is not more pages. It is clean reproduction packs.</p>
@@ -375,7 +495,7 @@ python my-play.py</div>
 <div class="card accent-violet"><h3>3 · 8Z / DNA / RouteSignal</h3><p>Pick the most reproducible data-system pack after the first two, with manifest and one-command test.</p></div>
 </div>
 </section>
-<section id="links">
+<section id="links" lang="en">
 <div class="section-title">
 <div><span class="tag">Companion links</span><h2>Quick access</h2></div>
 <p>Root stays the complete map. These are practical shortcuts for current work.</p>
@@ -410,7 +530,7 @@ python my-play.py</div>
 <a class="link-card" href="chess.html"><b>ChessBest</b><span>Chess analysis / DCC demo.</span><code>/chess.html</code></a>
 </div>
 </section>
-<section id="source-notes">
+<section id="source-notes" lang="en">
 <details class="details">
 <summary>Plan source notes</summary>
 <div class="inner">
@@ -492,7 +612,9 @@ python my-play.py</div>
     if(saveStatus) saveStatus.textContent = `Saved locally in this browser · ${done}/${total} checked` + (updated ? ` · updated ${new Date(updated).toLocaleString()}` : '');
   }
   function taskLine(box){
-    const text = box.closest('.task')?.querySelector('label')?.childNodes[0]?.textContent?.trim() || box.dataset.task;
+    const label=box.closest('.task')?.querySelector('label')?.cloneNode(true);
+    if(label)label.querySelectorAll('.hint').forEach(e=>e.remove());
+    const text=label?.textContent?.trim()||box.dataset.task;
     return `${box.checked ? '[x]' : '[ ]'} ${text}`;
   }
   function buildPlanText(){
@@ -502,7 +624,7 @@ python my-play.py</div>
       return lines.length ? `\n${title}\n${lines.join('\n')}` : '';
     }).filter(Boolean).join('\n');
     const planNotes = notes?.value?.trim() || '';
-    return `BD × AI Lab — Current Plan\nGenerated: ${new Date().toLocaleString()}\nURL: https://www.mdlxdcc.org/index-todo.html\n\nActive lanes:\n1. MDLxDCC reviews and source-specific corrections\n2. A frozen runnable evidence test\n3. Sudoku R6 / 8zCoding next tests\n4. Existing portfolio and engineering support lanes\n${byCard}\n\nPrivate notes:\n${planNotes || '(none)'}\n`;
+    return `BD × AI Lab — Current Overview + Retained Checklist\nGenerated: ${new Date().toLocaleString()}\nURL: https://www.mdlxdcc.org/index-todo.html\n\nActive lanes (BD status, 2026-09-08):\n1. TSP: four separate arenas in testing\n2. Trading: two test arenas + BDTA just started\n3. Sudoku R6: new large arena in build\n4. MAL 2.0: review\n5. New RHP: review\n6. 8zCoding: active\n\nRETAINED EARLIER CHECKLIST / HISTORICAL TASKS (not the current priority order):\n${byCard}\n\nPrivate notes:\n${planNotes || '(none)'}\n`;
   }
   async function copyPlan(){
     const text = buildPlanText();
@@ -556,5 +678,13 @@ function say(text){status.textContent=text;}
 $('exportState').addEventListener('click',()=>{try{const state={schema:'bd.workbench.v1',exported:new Date().toISOString(),values:{}};for(const k of keys)state.values[k]=localStorage.getItem(k)||'';const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='BD_workbench_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);say('Backup exported.');}catch(_){say('Browser storage is unavailable; use Download .txt to save the visible plan.');}});
 $('importState').addEventListener('click',()=>$('stateFile').click());
 $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>2000000)throw Error('Backup too large.');const data=JSON.parse(await file.text());if(data.schema!=='bd.workbench.v1'||!data.values||typeof data.values!=='object')throw Error('Unsupported backup.');for(const k of keys)if(typeof data.values[k]!=='string')throw Error('Incomplete backup.');const c=JSON.parse(data.values[keys[0]]||'{}');if(!c||typeof c!=='object'||Array.isArray(c)||Object.values(c).some(v=>typeof v!=='boolean'))throw Error('Invalid checkbox state.');if(!confirm('Replace the saved checklist and notes with this backup?'))return;const old=keys.map(k=>localStorage.getItem(k));try{for(const k of keys)localStorage.setItem(k,data.values[k]);}catch(err){keys.forEach((k,i)=>{try{old[i]===null?localStorage.removeItem(k):localStorage.setItem(k,old[i]);}catch(_){}});throw err;}say('Backup restored.');document.querySelectorAll('input[data-task]').forEach(b=>{b.checked=!!c[b.dataset.task];b.closest('.task')?.classList.toggle('done',b.checked);});$('planNotes').value=data.values[keys[1]];$('planNotes').dispatchEvent(new Event('input',{bubbles:true}));}catch(err){say('Not restored: '+err.message);}finally{e.target.value='';}});
-})();</script></body>
+})();</script>
+<script id="entry-locale-view">(function(){
+const root=document.documentElement;
+window.MDLxDCCLocale.subscribe(lang=>{root.dataset.lang=lang;root.lang=lang;document.title={"en": "BD × AI Lab — Current work, notes & todo", "sl": "BD × AI Lab — Aktualno delo, opombe in naloge"}[lang];document.querySelectorAll('[data-entry-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.entryLanguage===lang)));
+ document.querySelectorAll('[data-placeholder-en]').forEach(e=>e.setAttribute('placeholder',lang==='sl'?e.dataset.placeholderSl:e.dataset.placeholderEn));
+});
+document.querySelectorAll('[data-entry-language]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.entryLanguage)));
+})();</script>
+</body>
 </html>

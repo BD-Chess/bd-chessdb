@@ -5,6 +5,122 @@
 <!-- build: mdlxdcc-index-work-at-a-glance-20260823 + continuity-v0.3-r1-tisa-20260901 --><html data-entry-release="1.0" data-entry-root="." data-lang="en" lang="en">
 <head>
 <meta charset="utf-8"/>
+<script id="mdlxdcc-locale">
+/* MDLxDCC shared language preference v1.0 · 2026-09-08
+   Explicit choice > remembered choice > Netlify country (SI → sl, else en).
+   No IP, city or location is stored. No third-party calls. */
+(function () {
+  'use strict';
+  if (window.MDLxDCCLocale) return;
+  const root = document.documentElement;
+  const KEY = 'mdlxdcc-locale-v1', LEGACY = 'mdlxdcc-lang', COOKIE = 'mdlxdcc_locale';
+  const listeners = new Set();
+  let selection = null, generation = 0, controller = null;
+  const valid = value => value === 'en' || value === 'sl';
+  const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  function parse(value) {
+    try {
+      const x = JSON.parse(value);
+      return x && valid(x.lang) && ['manual', 'geo'].includes(x.source) &&
+        Number.isFinite(x.at) && x.at >= 0 ? {lang:x.lang, source:x.source, at:x.at} : null;
+    } catch (_) { return null; }
+  }
+  function cookieSelection() {
+    try {
+      const item = document.cookie.split(';').map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
+      return item ? parse(decodeURIComponent(item.slice(COOKIE.length + 1))) : null;
+    } catch (_) { return null; }
+  }
+  function read() {
+    const local = parse(get(KEY)), cookie = cookieSelection();
+    let value = !local ? cookie : !cookie ? local : cookie.at > local.at ? cookie : local;
+    const legacy = get(LEGACY);
+    // A legacy page may still save just the original shared key. Adopt its explicit change.
+    if (valid(legacy) && (!value || (value.lang !== legacy && (!cookie || (local && local.at >= cookie.at))))) {
+      value = {lang:legacy, source:'manual', at:Date.now()};
+    }
+    return value;
+  }
+  function persist() {
+    if (!selection) return;
+    const data = JSON.stringify(selection);
+    try {
+      localStorage.setItem(LEGACY, selection.lang);
+      localStorage.setItem('bdPortraitLang', selection.lang);
+      localStorage.setItem(KEY, data);
+    } catch (_) {}
+    try {
+      if (!/^https?:$/.test(location.protocol)) return;
+      const host = location.hostname.toLowerCase();
+      const domain = host === 'mdlxdcc.org' || host === 'www.mdlxdcc.org' ? '; Domain=mdlxdcc.org' : '';
+      document.cookie = COOKIE + '=' + encodeURIComponent(data) + '; Path=/; Max-Age=31536000; SameSite=Lax' + domain +
+        (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (_) {}
+  }
+  function current() { return selection ? selection.lang : 'en'; }
+  function apply() {
+    const lang = current();
+    root.lang = lang; root.dataset.lang = lang;
+    root.dataset.localeSource = selection ? selection.source : 'fallback';
+    listeners.forEach(fn => { try { fn(lang); } catch (error) { console.warn('Language view could not update.', error); } });
+    window.dispatchEvent(new CustomEvent('mdlxdcc:language', {detail:{lang, source:root.dataset.localeSource}}));
+  }
+  function choose(lang) {
+    if (!valid(lang)) return;
+    generation++;
+    if (controller) controller.abort();
+    selection = {lang, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+    persist(); apply();
+  }
+  function subscribe(fn) {
+    if (typeof fn !== 'function') return () => {};
+    listeners.add(fn); fn(current());
+    return () => listeners.delete(fn);
+  }
+  function refresh() {
+    const next = read();
+    if (next && (!selection || next.at > selection.at || next.lang !== selection.lang)) {
+      generation++; if (controller) controller.abort();
+      selection = next; persist(); apply();
+    }
+  }
+  selection = read();
+  try {
+    const requested = new URLSearchParams(location.search).get('lang');
+    if (valid(requested)) selection = {lang:requested, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+  } catch (_) {}
+  window.MDLxDCCLocale = Object.freeze({current, choose, subscribe, refresh, version:'1.0'});
+  root.classList.add('js');
+  if (selection) persist();
+  apply();
+  window.addEventListener('storage', event => { if ([KEY, LEGACY, null].includes(event.key)) refresh(); });
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('focus', refresh);
+  if (!selection && /^https?:$/.test(location.protocol) && typeof fetch === 'function') {
+    const start = generation;
+    controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let expired = false;
+    const timeout = setTimeout(() => { expired = true; if (controller) controller.abort(); }, 2200);
+    fetch('/api/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
+      ...(controller ? {signal:controller.signal} : {})})
+      .then(response => {
+        if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('No country response');
+        return response.json();
+      })
+      .then(data => {
+        // A late response must never replace a manual choice or a choice made in another tab.
+        if (expired || generation !== start || selection || !data || !valid(data.language)) return;
+        const saved = read();
+        selection = saved || {lang:data.language, source:'geo', at:Date.now()};
+        persist(); apply();
+      })
+      .catch(() => { /* English stays usable when offline, unknown, or unavailable. */ })
+      .finally(() => clearTimeout(timeout));
+  }
+})();
+
+</script>
+
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>BD Idea Atlas — The complete portfolio | MDL×DCC.org</title>
 <meta content="The complete BD × AI portfolio: practical tools, physical inventions, research, consciousness, collaboration and creative work." name="description"/>
@@ -598,9 +714,10 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 
  function langText(en, sl){ return (doc.dataset.lang || 'en') === 'sl' ? sl : en; }
  function setMenu(open){ if(!menuToggle || !menuPanel) return; menuPanel.hidden = !open; menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
- function setLang(lang){
+ function setLang(lang,persist=true){
+ if(persist)return window.MDLxDCCLocale.choose(lang);
  doc.dataset.lang = lang; doc.lang = lang;
- storage.set('mdlxdcc-lang', lang);
+
  if (langSwitch) langSwitch.textContent = lang === 'sl' ? 'Eng' : 'Slo';
  document.querySelectorAll('[data-lang-button]').forEach(b => b.classList.toggle('active', b.dataset.langButton === lang));
  document.querySelectorAll('[data-placeholder-en]').forEach(el => { el.placeholder = lang === 'sl' ? el.dataset.placeholderSl : el.dataset.placeholderEn; });
@@ -635,7 +752,7 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
  });
  if (status){
  if (q || activeFilter !== 'all') status.textContent = langText('Showing matching links. Clear search/filter to restore the full map.', 'Prikazane so ujemajoče povezave. Počisti iskanje/filter za celoten zemljevid.');
- else status.textContent = langText('Search/filter is restored at the top. English is the default; Slovenian is one click away.', 'Iskanje/filter je vrnjen na vrh. Angleščina je privzeta; slovenščina je en klik stran.');
+ else status.textContent = langText('Search/filter is restored at the top. Language follows your preference; switch it at any time.', 'Iskanje/filter je vrnjen na vrh. Jezik sledi tvoji izbiri; kadarkoli ga lahko preklopiš.');
  }
  }
  search?.addEventListener('input', applyFilters);
@@ -648,7 +765,7 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
  document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => { activeFilter = b.dataset.filter || 'all'; setMenu(false); document.querySelectorAll('.filter-btn').forEach(x => x.classList.toggle('active', x === b)); if (activeFilter !== 'all') document.getElementById('classic-index')?.scrollIntoView({behavior:'smooth', block:'start'}); applyFilters(); }));
  const n = document.querySelectorAll('.link-item').length;
  document.querySelectorAll('[data-linkcount]').forEach(el => el.textContent = n);
- setLang(storage.get('mdlxdcc-lang') || 'en');
+ window.MDLxDCCLocale.subscribe(lang=>setLang(lang,false));
 })();
 </script>
 <script id="entry-navigation-runtime">
