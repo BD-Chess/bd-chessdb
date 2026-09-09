@@ -47,7 +47,7 @@
       </div>
     </div>
     <div class="nav-wrap"><nav class="nav" aria-label="Atlas navigation">
-      <a href="#story"><span class="lang-en">Story</span><span class="lang-sl">Zgodba</span></a><a href="#mechanisms"><span class="lang-en">Mechanisms</span><span class="lang-sl">Mehanizmi</span></a><a href="#results"><span class="lang-en">Results</span><span class="lang-sl">Rezultati</span></a><a href="#q1s">Q1s</a><a href="#arenas"><span class="lang-en">Arenas</span><span class="lang-sl">Arene</span></a><a href="#convergence"><span class="lang-en">Convergence</span><span class="lang-sl">Konvergenca</span></a><a href="#frontier"><span class="lang-en">Frontier</span><span class="lang-sl">Fronta</span></a><a href="#evidence"><span class="lang-en">Evidence</span><span class="lang-sl">Evidenca</span></a><a href="#boundary"><span class="lang-en">Boundary</span><span class="lang-sl">Meja</span></a>
+      <a href="/bd/trading"><span class="lang-en">Trading index</span><span class="lang-sl">Trading indeks</span></a><a href="#story"><span class="lang-en">Story</span><span class="lang-sl">Zgodba</span></a><a href="#mechanisms"><span class="lang-en">Mechanisms</span><span class="lang-sl">Mehanizmi</span></a><a href="#results"><span class="lang-en">Results</span><span class="lang-sl">Rezultati</span></a><a href="#q1s">Q1s</a><a href="#arenas"><span class="lang-en">Arenas</span><span class="lang-sl">Arene</span></a><a href="#convergence"><span class="lang-en">Convergence</span><span class="lang-sl">Konvergenca</span></a><a href="#frontier"><span class="lang-en">Frontier</span><span class="lang-sl">Fronta</span></a><a href="#evidence"><span class="lang-en">Evidence</span><span class="lang-sl">Evidenca</span></a><a href="#boundary"><span class="lang-en">Boundary</span><span class="lang-sl">Meja</span></a>
     </nav></div>
   </header>
   <main id="top">
@@ -237,8 +237,7 @@
 </style>
 <script>
 (()=>{'use strict';
-  const STORE='8z-shield:bd-trading-atlas:pass-only:v1';
-  const PAGE='bd-trading-research-atlas';
+  const STORE='8z-shield:bd-trading:password-only:v1';
   const MAX_PLAIN=2*1024*1024;
   const secs=[...document.querySelectorAll('._8z-sec[data-8z-blob]')];
   let authorized=false,busy=false,target=null;
@@ -259,8 +258,8 @@
   function wipeRendered(){for(const el of secs){const ct=el.querySelector('._8z-ct');if(!ct)continue;ct.replaceChildren();ct.style.display='none';el.classList.remove('_8z-ok');el.classList.add('_8z-lk');delete el.dataset.mounted}}
   function refresh(){const w=words();for(const el of secs){const title=el.querySelector('.trading-shield-copy b'),sub=el.querySelector('.trading-shield-copy span'),btn=el.querySelector('.trading-shield-open');if(title)title.textContent=w.teaser;if(sub)sub.textContent=w.sub;if(btn)btn.textContent=authorized?w.ready:w.open}const dialog=$('trading-shield-dialog');if(dialog){$('trading-shield-title').textContent=w.title;$('trading-shield-copy').textContent=w.copy;$('trading-shield-label').textContent=w.label;$('trading-shield-cancel').textContent=w.cancel;$('trading-shield-submit').textContent=w.unlock;$('trading-shield-lock').textContent=w.lock}}
   function makeDialog(){const d=document.createElement('dialog');d.id='trading-shield-dialog';d.className='trading-shield-dialog';d.innerHTML='<form method="dialog" novalidate><h2 id="trading-shield-title"></h2><p id="trading-shield-copy"></p><label id="trading-shield-label" for="trading-shield-input"></label><input id="trading-shield-input" type="password" autocomplete="current-password" required><div id="trading-shield-status" class="trading-shield-status" aria-live="polite"></div><div class="trading-shield-actions"><button id="trading-shield-cancel" value="cancel" type="button"></button><button id="trading-shield-submit" value="default" type="submit"></button></div></form>';document.body.append(d);$('trading-shield-cancel').addEventListener('click',()=>d.close());d.addEventListener('close',()=>{$('trading-shield-input').value='';$('trading-shield-status').textContent=''});d.querySelector('form').addEventListener('submit',unlockFromDialog);return d}
-  async function remember(ph){sessionStorage.setItem(STORE,JSON.stringify({v:1,page:PAGE,origin:location.origin,p:bytes64(ph)}))}
-  function recall(){try{const o=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!o||o.v!==1||o.page!==PAGE||o.origin!==location.origin||typeof o.p!=='string')return null;const p=b64bytes(o.p);return p.length===32?p:null}catch(_){return null}}
+  async function remember(ph){sessionStorage.setItem(STORE,JSON.stringify({v:2,origin:location.origin,p:bytes64(ph)}))}
+  function recall(){try{const o=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!o||o.v!==2||o.origin!==location.origin||typeof o.p!=='string')return null;const p=b64bytes(o.p);return p.length===32?p:null}catch(_){return null}}
   function setAuthorized(){authorized=true;document.documentElement.classList.add('trading-shield-live');for(const el of secs)el.classList.add('trading-shield-authorized');refresh()}
   async function open(el){target=el;if(authorized){await decryptAndMount(el,recall());return}const d=$('trading-shield-dialog')||makeDialog();refresh();d.showModal();setTimeout(()=>$('trading-shield-input').focus(),0)}
   async function decryptAndMount(el,ph){if(busy||!ph||el.dataset.mounted==='1')return;busy=true;try{safeMount(el,await decrypt(el.getAttribute('data-8z-blob'),ph))}catch(_){authorized=false;document.documentElement.classList.remove('trading-shield-live');try{sessionStorage.removeItem(STORE)}catch(__){};wipeRendered();refresh()}finally{busy=false}}
