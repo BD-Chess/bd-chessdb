@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const CREDENTIAL_RE = /^[A-Za-z0-9+/]{43}=$/;
+const DOMAIN = "mdlxdcc.org";
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -33,22 +35,34 @@ export default async (req, context) => {
     return json({ ok: false, error: "email" }, 400);
   }
 
-  const credential = Netlify.env.get("SHIELD_EMAIL_CREDENTIAL");
-  if (!credential || !CREDENTIAL_RE.test(credential)) {
-    console.error("shield-email-access: missing or invalid SHIELD_EMAIL_CREDENTIAL");
+  // The owner password stays server-side in Netlify. Never publish it or the
+  // derived password-equivalent credential in GitHub source.
+  const password = Netlify.env.get("SHIELD_EMAIL_PASSWORD");
+  if (!password) {
+    console.error("shield-email-access: missing SHIELD_EMAIL_PASSWORD");
     return json({ ok: false, error: "unavailable" }, 503);
   }
+  const credential = createHash("sha256")
+    .update(`${password}||${DOMAIN}`, "utf8")
+    .digest("base64");
 
   const accessedAt = new Date().toISOString();
   const ip = String(context?.ip || "").slice(0, 80);
 
-  // Server-side fallback audit. The browser also records the same event through
-  // Netlify Forms so BD can receive form-submission email notifications.
+  // Authoritative server-side audit line. Netlify's Context.ip is the client IP.
+  // The browser also submits the same event to the Netlify Form so BD can attach
+  // a form-submission email notification to bd@siol.net.
   console.log(JSON.stringify({ event: "shield-email-access", email, accessedAt, ip, page }));
 
   return json({ ok: true, credential, accessedAt, ip });
 };
 
 export const config = {
-  path: "/api/shield-email-access"
+  path: "/api/shield-email-access",
+  method: "POST",
+  rateLimit: {
+    windowLimit: 20,
+    windowSize: 60,
+    aggregateBy: ["ip", "domain"]
+  }
 };
