@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8Z Publish — Sell Anything. No Server. No Platform. Just Encryption.</title>
+<title>8Z Shield — Encrypted HTML protection | BD × AI Lab</title>
+<meta name="description" content="Working BD × AI technology: encrypted HTML sections or whole pages, standalone password access and optional hosted email sessions. In production on MDLxDCC.org.">
+<link rel="canonical" href="https://www.mdlxdcc.org/bd/8z_shield_landing">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -501,8 +503,192 @@ body::after {
   .gap-middle .arrow-down { transform: rotate(0); }
 }
 </style>
+<style id="shield-current-style">
+/* Current product layer. Original March 2026 copy is retained below as history. */
+html:not([data-lang="sl"]) .lang-sl,html[data-lang="sl"] .lang-en{display:none!important}
+html[data-theme="light"]{--bg:#fbfaf6;--bg2:#f2efe7;--bg3:#eeeae0;--card:#fff;--border:#d5cdbf;--border-hi:#b6a98f;--text:#26251f;--text2:#56554b;--muted:#696457;--orange:#a35200;--green:#08783b;--teal:#08756a;--gold:#806300;--blue:#255eae;--purple:#7040a0;--red:#ad2945;color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark}
+.shield-nav{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:16px 0;border-bottom:1px solid var(--border);font:12px/1.5 var(--mono)}
+.shield-nav a,#shield-current a:not(.btn-primary):not(.btn-secondary){color:var(--teal);text-underline-offset:4px}
+.shield-controls{display:flex;flex-wrap:wrap;gap:6px}.shield-controls button{font:inherit;color:var(--text2);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer}
+.shield-controls button[aria-pressed="true"]{color:var(--text);border-color:var(--orange)}
+.shield-current-hero{min-height:0;padding:70px 0 48px}.shield-current-hero .hero-sub{max-width:760px}.shield-current-hero .hero-title{font-size:clamp(42px,7vw,76px)}
+.shield-current-hero .hero-eyebrow,.shield-current-hero .hero-title,.shield-current-hero .hero-sub,.shield-current-hero .hero-actions{opacity:1;animation:none}
+.shield-status{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.shield-status>span{padding:6px 10px;border:1px solid var(--green);border-radius:6px;color:var(--green);font:11px/1.5 var(--mono);text-transform:uppercase}
+#shield-current .section{padding:44px 0}#shield-current .section-title{font-size:clamp(28px,4vw,36px)}#shield-current .section-sub{max-width:780px;margin-bottom:24px}#shield-current p{color:var(--text2);margin:0 0 16px}#shield-current strong{color:var(--text)}
+.shield-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.shield-option{min-width:0;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:10px}.shield-option h3{margin:8px 0 12px;font-size:20px;line-height:1.35}.shield-option p:last-child{margin-bottom:0!important}.shield-letter{font:700 12px/1 var(--mono);color:var(--orange)}
+.shield-current-flow{margin:22px 0;padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--card);font:13px/2 var(--mono);color:var(--teal);overflow-wrap:anywhere}
+.shield-production-links{display:flex;flex-wrap:wrap;gap:12px 22px;margin:22px 0}.shield-sources{font:12px/1.8 var(--mono);overflow-wrap:anywhere}.shield-history{margin:40px auto;border:1px solid var(--border);border-radius:12px;padding:20px;max-width:1000px}.shield-history>summary{cursor:pointer;font-weight:600}.shield-history-note{margin:18px 0;color:var(--text2)}.shield-history .hero{min-height:0;padding:40px 0}.shield-history .hero-title{font-size:clamp(28px,5vw,48px)}.shield-history .container{padding-left:16px;padding-right:16px}.shield-history .vis{opacity:1;transform:none}.shield-history .hero-eyebrow,.shield-history .hero-title,.shield-history .hero-sub,.shield-history .hero-actions,.shield-history .hero-stats{opacity:1;animation:none}.shield-history{overflow-wrap:anywhere}.shield-history table{display:block;overflow-x:auto}
+.shield-current-footer{border-top:1px solid var(--border);padding:24px 0 40px;font:12px/1.8 var(--mono);color:var(--text2)}
+@media(max-width:600px){.shield-options{grid-template-columns:1fr}.shield-current-hero{padding:40px 0 30px}.shield-current-hero .hero-sub{font-size:16px}.shield-option{padding:20px}.shield-nav{align-items:flex-start}.shield-current-hero .btn-primary,.shield-current-hero .btn-secondary{padding:12px 16px;font-size:11px;letter-spacing:1px}.shield-history{padding:14px;margin-left:12px;margin-right:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+<script id="mdlxdcc-locale">
+/* MDLxDCC shared language preference v1.0 · 2026-09-08
+   Explicit choice > remembered choice > Netlify country (SI → sl, else en).
+   No IP, city or location is stored. No third-party calls. */
+(function () {
+  'use strict';
+  if (window.MDLxDCCLocale) return;
+  const root = document.documentElement;
+  const KEY = 'mdlxdcc-locale-v1', LEGACY = 'mdlxdcc-lang', COOKIE = 'mdlxdcc_locale';
+  const listeners = new Set();
+  let selection = null, generation = 0, controller = null;
+  const valid = value => value === 'en' || value === 'sl';
+  const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  function parse(value) {
+    try {
+      const x = JSON.parse(value);
+      return x && valid(x.lang) && ['manual', 'geo'].includes(x.source) &&
+        Number.isFinite(x.at) && x.at >= 0 ? {lang:x.lang, source:x.source, at:x.at} : null;
+    } catch (_) { return null; }
+  }
+  function cookieSelection() {
+    try {
+      const item = document.cookie.split(';').map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
+      return item ? parse(decodeURIComponent(item.slice(COOKIE.length + 1))) : null;
+    } catch (_) { return null; }
+  }
+  function read() {
+    const local = parse(get(KEY)), cookie = cookieSelection();
+    let value = !local ? cookie : !cookie ? local : cookie.at > local.at ? cookie : local;
+    const legacy = get(LEGACY);
+    // A legacy page may still save just the original shared key. Adopt its explicit change.
+    if (valid(legacy) && (!value || (value.lang !== legacy && (!cookie || (local && local.at >= cookie.at))))) {
+      value = {lang:legacy, source:'manual', at:Date.now()};
+    }
+    return value;
+  }
+  function persist() {
+    if (!selection) return;
+    const data = JSON.stringify(selection);
+    try {
+      localStorage.setItem(LEGACY, selection.lang);
+      localStorage.setItem('bdPortraitLang', selection.lang);
+      localStorage.setItem(KEY, data);
+    } catch (_) {}
+    try {
+      if (!/^https?:$/.test(location.protocol)) return;
+      const host = location.hostname.toLowerCase();
+      const domain = host === 'mdlxdcc.org' || host === 'www.mdlxdcc.org' ? '; Domain=mdlxdcc.org' : '';
+      document.cookie = COOKIE + '=' + encodeURIComponent(data) + '; Path=/; Max-Age=31536000; SameSite=Lax' + domain +
+        (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (_) {}
+  }
+  function current() { return selection ? selection.lang : 'en'; }
+  function apply() {
+    const lang = current();
+    root.lang = lang; root.dataset.lang = lang;
+    root.dataset.localeSource = selection ? selection.source : 'fallback';
+    listeners.forEach(fn => { try { fn(lang); } catch (error) { console.warn('Language view could not update.', error); } });
+    window.dispatchEvent(new CustomEvent('mdlxdcc:language', {detail:{lang, source:root.dataset.localeSource}}));
+  }
+  function choose(lang) {
+    if (!valid(lang)) return;
+    generation++;
+    if (controller) controller.abort();
+    selection = {lang, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+    persist(); apply();
+  }
+  function subscribe(fn) {
+    if (typeof fn !== 'function') return () => {};
+    listeners.add(fn); fn(current());
+    return () => listeners.delete(fn);
+  }
+  function refresh() {
+    const next = read();
+    if (next && (!selection || next.at > selection.at || next.lang !== selection.lang)) {
+      generation++; if (controller) controller.abort();
+      selection = next; persist(); apply();
+    }
+  }
+  selection = read();
+  try {
+    const requested = new URLSearchParams(location.search).get('lang');
+    if (valid(requested)) selection = {lang:requested, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+  } catch (_) {}
+  window.MDLxDCCLocale = Object.freeze({current, choose, subscribe, refresh, version:'1.0'});
+  root.classList.add('js');
+  if (selection) persist();
+  apply();
+  window.addEventListener('storage', event => { if ([KEY, LEGACY, null].includes(event.key)) refresh(); });
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('focus', refresh);
+  if (!selection && /^https?:$/.test(location.protocol) && typeof fetch === 'function') {
+    const start = generation;
+    controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let expired = false;
+    const timeout = setTimeout(() => { expired = true; if (controller) controller.abort(); }, 2200);
+    fetch('/api/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
+      ...(controller ? {signal:controller.signal} : {})})
+      .then(response => {
+        if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('No country response');
+        return response.json();
+      })
+      .then(data => {
+        // A late response must never replace a manual choice or a choice made in another tab.
+        if (expired || generation !== start || selection || !data || !valid(data.language)) return;
+        const saved = read();
+        selection = saved || {lang:data.language, source:'geo', at:Date.now()};
+        persist(); apply();
+      })
+      .catch(() => { /* English stays usable when offline, unknown, or unavailable. */ })
+      .finally(() => clearTimeout(timeout));
+  }
+})();
+
+</script>
 </head>
 <body>
+
+<div class="container"><nav class="shield-nav" aria-label="8Z Shield navigation">
+<a data-entry-link="" href="/index-atlas.html">← BD × AI Lab · Atlas</a>
+<div class="shield-controls"><button id="shield-lang-en" type="button" data-set-lang="en" aria-pressed="true">EN</button><button id="shield-lang-sl" type="button" data-set-lang="sl" aria-pressed="false">SL</button><button id="shield-light" type="button" data-set-theme="light" aria-pressed="false"><span class="lang-en" lang="en">Light</span><span class="lang-sl" lang="sl">Svetlo</span></button><button id="shield-dark" type="button" data-set-theme="dark" aria-pressed="true"><span class="lang-en" lang="en">Dark</span><span class="lang-sl" lang="sl">Temno</span></button></div>
+</nav></div>
+<main id="shield-current">
+<section class="hero shield-current-hero" id="shield-overview"><div class="hero-bg"></div><div class="container hero-content">
+<div class="hero-eyebrow">BD × AI Lab · <span class="lang-en" lang="en">Working technology</span><span class="lang-sl" lang="sl">Delujoča tehnologija</span></div>
+<h1 class="hero-title">8Z <em>Shield</em></h1>
+<p class="hero-sub"><span class="lang-en" lang="en">Encrypted HTML protection with flexible access. Protect one sensitive section or a whole page; publish the ciphertext and let the browser unlock it.</span><span class="lang-sl" lang="sl">Šifrirana zaščita HTML s prilagodljivim dostopom. Zaščiti občutljivo sekcijo ali celo stran; objavi ciphertext, odklep pa opravi brskalnik.</span></p>
+<div class="shield-status"><span><span class="lang-en" lang="en">In production on MDLxDCC.org</span><span class="lang-sl" lang="sl">V produkciji na MDLxDCC.org</span></span><span><span class="lang-en" lang="en">Hosted email access · since 9 September 2026</span><span class="lang-sl" lang="sl">Gostovani email dostop · od 9. septembra 2026</span></span></div>
+<p><span class="lang-en" lang="en">8Z Shield is a reusable publishing and security mechanism built by BD × AI. It combines standalone password protection with an optional hosted access layer. The email gate adds a way to obtain access; the underlying HTML payload remains encrypted.</span><span class="lang-sl" lang="sl">8Z Shield je ponovno uporaben mehanizem za objavljanje in zaščito, ki ga je zgradil BD × AI. Združuje samostojno zaščito z geslom in opcijsko gostovano dostopno plast. Email gate doda način pridobitve dostopa; osnovni HTML payload ostane šifriran.</span></p>
+<div class="hero-actions"><a class="btn-primary" href="#shield-modes"><span class="lang-en" lang="en">Explore the four capabilities</span><span class="lang-sl" lang="sl">Spoznaj štiri zmožnosti</span></a><a class="btn-secondary" data-entry-link="" href="/index-search.html"><span class="lang-en" lang="en">See production use →</span><span class="lang-sl" lang="sl">Poglej produkcijsko uporabo →</span></a></div>
+</div></section>
+<section class="section flow-section" id="shield-modes"><div class="container">
+<div class="section-tag"><span class="lang-en" lang="en">Protection + access</span><span class="lang-sl" lang="sl">Zaščita + dostop</span></div><h2 class="section-title"><span class="lang-en" lang="en">Choose what to protect. Choose how to open it.</span><span class="lang-sl" lang="sl">Izberi, kaj zaščitiš. Izberi način odklepa.</span></h2>
+<div class="shield-options">
+<article class="shield-option" id="shield-section"><div class="shield-letter">A · <span class="lang-en" lang="en">Section protection</span><span class="lang-sl" lang="sl">Zaščita sekcij</span></div><h3><span class="lang-en" lang="en">Protect one section</span><span class="lang-sl" lang="sl">Zaščiti posamezno sekcijo</span></h3><p><span class="lang-en" lang="en">Keep the overview, results and context public. Encrypt only selected sensitive HTML sections. The authoring tool <code>8z_shield_sections.py</code> replaces those sections with encrypted payloads and a browser unlock interface.</span><span class="lang-sl" lang="sl">Pregled, rezultati in kontekst ostanejo javni. Šifrirajo se samo izbrane občutljive HTML sekcije. Avtorsko orodje <code>8z_shield_sections.py</code> jih nadomesti s šifriranimi payloadi in vmesnikom za odklep v brskalniku.</span></p></article>
+<article class="shield-option" id="shield-whole-page"><div class="shield-letter">B · <span class="lang-en" lang="en">Whole-page protection</span><span class="lang-sl" lang="sl">Zaščita cele strani</span></div><h3><span class="lang-en" lang="en">Protect a whole page</span><span class="lang-sl" lang="sl">Zaščiti celotno stran</span></h3><p><span class="lang-en" lang="en">The companion tool <code>bd_html_lock.py</code> wraps a complete HTML document in a self-contained encrypted page. The published wrapper contains ciphertext; the document is rendered after a successful password unlock.</span><span class="lang-sl" lang="sl">Spremljevalno orodje <code>bd_html_lock.py</code> celoten HTML dokument ovije v samostojno šifrirano stran. Objavljeni ovoj vsebuje ciphertext; dokument se izriše po uspešnem odklepu z geslom.</span></p></article>
+<article class="shield-option" id="shield-password"><div class="shield-letter">C · <span class="lang-en" lang="en">Password / standalone</span><span class="lang-sl" lang="sl">Geslo / samostojno</span></div><h3><span class="lang-en" lang="en">Unlock with a password</span><span class="lang-sl" lang="sl">Odkleni z geslom</span></h3><p><span class="lang-en" lang="en">No server required for standalone/password mode. Share or host the encrypted HTML without a user database or a server-side login system. A compatible browser uses the supplied password to unlock the content. Portability depends on the chosen build and its assets.</span><span class="lang-sl" lang="sl">Samostojni/geselni način ne zahteva strežniškega login sistema. Šifrirani HTML lahko deliš ali gostiš brez uporabniške baze. Združljiv brskalnik z vnesenim geslom odklene vsebino. Prenosljivost je odvisna od izbrane gradnje in njenih virov.</span></p></article>
+<article class="shield-option" id="shield-email"><div class="shield-letter">D · <span class="lang-en" lang="en">Email-gated / temporary access</span><span class="lang-sl" lang="sl">Email / začasni dostop</span></div><h3><span class="lang-en" lang="en">Add optional hosted access</span><span class="lang-sl" lang="sl">Dodaj opcijski gostovani dostop</span></h3><p><span class="lang-en" lang="en">On MDLxDCC.org, the visitor enters a syntactically valid email address. No mailbox verification, KYC or identity check is performed. The server logs access and issues a compatible Shield credential; the standard browser session grants access for up to 8 hours.</span><span class="lang-sl" lang="sl">Na MDLxDCC.org obiskovalec vnese sintaktično veljaven email naslov. Predal se ne preverja; ni KYC ali preverjanja identitete. Strežnik zabeleži dostop in izda združljiv Shield credential; standardna seja v brskalniku omogoča dostop do 8 ur.</span></p></article>
+</div>
+<div class="shield-current-flow">HTML → <span class="lang-en" lang="en">select sections or whole page → encrypt → publish ciphertext → password OR hosted email access → browser unlock</span><span class="lang-sl" lang="sl">izberi sekcije ali celo stran → šifriraj → objavi ciphertext → geslo ALI gostovani email dostop → odklep v brskalniku</span></div>
+<p><span class="lang-en" lang="en">Both protection tools use AES-256-GCM authenticated encryption. The achievement is the reusable publishing mechanism and its integration, rather than a claim to have invented a new cryptographic primitive.</span><span class="lang-sl" lang="sl">Obe zaščitni orodji uporabljata avtenticirano šifriranje AES-256-GCM. Dosežek je ponovno uporaben mehanizem za objavljanje in njegova integracija, ne trditev o izumu novega kriptografskega primitiva.</span></p>
+</div></section>
+<section class="section flow-section" id="shield-production"><div class="container">
+<div class="section-tag"><span class="lang-en" lang="en">Working · in production</span><span class="lang-sl" lang="sl">Deluje · v produkciji</span></div><h2 class="section-title"><span class="lang-en" lang="en">The hosted system in use today</span><span class="lang-sl" lang="sl">Gostovani sistem, ki deluje danes</span></h2>
+<div class="shield-current-flow"><span class="lang-en" lang="en">Protected section → email syntax check → server access log → Shield credential → browser unlock → session up to 8 hours</span><span class="lang-sl" lang="sl">Zaščitena sekcija → preverjanje oblike emaila → strežniški zapis dostopa → Shield credential → odklep v brskalniku → seja do 8 ur</span></div>
+<p><span class="lang-en" lang="en">This intentionally low-friction gate uses a Netlify Function, a server-side secret and access logging. Optional server-assisted access is available for temporary email-gated sessions; it does not replace the cryptographic Shield. The owner password stays in Netlify’s secret configuration, outside the public HTML and GitHub repository.</span><span class="lang-sl" lang="sl">Ta namerno preprost dostopni prag uporablja Netlify Function, strežniško skrivnost in beleženje dostopov. Opcijski strežniško podprti dostop omogoča začasne email seje; ne nadomešča kriptografskega Shielda. Lastniško geslo ostane v Netlifyjevi konfiguraciji skrivnosti, zunaj javnega HTML in GitHub repozitorija.</span></p>
+<p><span class="lang-en" lang="en">On access, the system may record the entered email, server timestamp, IP if supplied by the Netlify runtime, page and user agent. The access flow also submits a record to the Netlify form <code>shield-access</code>. The email is unverified input, not a verified user identity.</span><span class="lang-sl" lang="sl">Ob dostopu lahko sistem zabeleži vneseni email, strežniški čas, IP, če ga poda Netlify runtime, stran in user agent. Dostopni potek pošlje zapis tudi v Netlify obrazec <code>shield-access</code>. Email je nepreverjen vnos, ne preverjena identiteta uporabnika.</span></p>
+<p><span class="lang-en" lang="en">Public changes follow GitHub → Netlify: a separate branch, reviewable pull request and Deploy Preview before the approved production merge. The hosted email layer was introduced on 9 September 2026 in PR #5 and tested with an end-to-end check against real Shield ciphertext on both protected page types.</span><span class="lang-sl" lang="sl">Javne spremembe sledijo toku GitHub → Netlify: ločena veja, pregledljiv pull request in Deploy Preview pred odobrenim produkcijskim mergeom. Gostovana email plast je bila uvedena 9. septembra 2026 v PR #5 in preverjena z end-to-end testom proti pravemu Shield ciphertextu na obeh tipih zaščitenih strani.</span></p>
+<div class="shield-production-links"><a data-entry-link="" href="/index-search.html"><span class="lang-en" lang="en">Technical entrance →</span><span class="lang-sl" lang="sl">Tehnični vhod →</span></a><a data-entry-link="" href="/crp/8z_MDLxDCC.html"><span class="lang-en" lang="en">MDL×DCC technical page →</span><span class="lang-sl" lang="sl">MDL×DCC tehnična stran →</span></a><a href="https://github.com/BD-Chess/bd-chessdb/pull/5"><span class="lang-en" lang="en">Production implementation · PR #5 →</span><span class="lang-sl" lang="sl">Produkcijska implementacija · PR #5 →</span></a></div>
+</div></section>
+<section class="section flow-section" id="shield-boundaries"><div class="container">
+<div class="section-tag"><span class="lang-en" lang="en">A clear boundary</span><span class="lang-sl" lang="sl">Jasna meja</span></div><h2 class="section-title"><span class="lang-en" lang="en">Protection before unlock</span><span class="lang-sl" lang="sl">Zaščita pred odklepom</span></h2>
+<p><span class="lang-en" lang="en">The protected plaintext is not published as ordinary public HTML. Access depends on the key and the chosen access flow. Password strength and the security of the browser and host still matter.</span><span class="lang-sl" lang="sl">Zaščiteni plaintext ni objavljen kot običajni javni HTML. Dostop je odvisen od ključa in izbranega dostopnega poteka. Moč gesla ter varnost brskalnika in gostovanja ostajajo pomembni.</span></p>
+<p><span class="lang-en" lang="en"><strong>After a legitimate unlock, a reader can read, save or copy the content.</strong> 8Z Shield is not DRM against an authorized reader. The 8-hour limit governs the standard hosted browser session; it does not retract content or credentials that a reader has already copied.</span><span class="lang-sl" lang="sl"><strong>Po dovoljenem odklepu lahko bralec vsebino prebere, shrani ali kopira.</strong> 8Z Shield ni DRM proti pooblaščenemu bralcu. Omejitev 8 ur velja za standardno gostovano sejo v brskalniku; ne odvzame že kopirane vsebine ali credentialov.</span></p>
+</div></section>
+<section class="section flow-section" id="shield-lineage"><div class="container">
+<div class="section-tag">BD × AI Lab</div><h2 class="section-title"><span class="lang-en" lang="en">Built through collaboration</span><span class="lang-sl" lang="sl">Zgrajeno skozi sodelovanje</span></h2>
+<p><span class="lang-en" lang="en">BD defines the problem, direction, UX, security policy and requirements, tests the system and makes decisions. AI collaborators contribute a substantial share of the code, implementations, audits and technical proposals. The section-protection source credits Bojan Dobrečevič and Claude Opus 4.6; the whole-page tool is BD HTML Lock v2.1.</span><span class="lang-sl" lang="sl">BD določa problem, smer, UX, varnostno politiko in zahteve, sistem testira ter sprejema odločitve. AI sodelavci prispevajo velik del kode, implementacij, auditov in tehničnih predlogov. Izvorno orodje za sekcije navaja Bojana Dobrečeviča in Claude Opus 4.6; orodje za celo stran je BD HTML Lock v2.1.</span></p>
+<p><span class="lang-en" lang="en">8Z Publish is the broader publishing lineage; 8Z-Auth is related research. Earlier capsule, trace and commercialization proposals retain their own dates and evidence status. The production capabilities described above stand on the two protection tools and the deployed email access layer.</span><span class="lang-sl" lang="sl">8Z Publish je širša razvojna linija objavljanja; 8Z-Auth je povezano raziskovalno delo. Starejši predlogi kapsul, sledenja in komercializacije ohranjajo svoje datume in dokazni status. Zgoraj opisane produkcijske zmožnosti temeljijo na obeh zaščitnih orodjih in uvedeni email dostopni plasti.</span></p>
+<p class="shield-sources"><span class="lang-en" lang="en">Production reference</span><span class="lang-sl" lang="sl">Produkcijska referenca</span>: <a href="https://github.com/BD-Chess/bd-chessdb/commit/a95da32db1039b013d4a951ce781babd6afa78a1">a95da32… · 2026-09-09</a></p>
+</div></section>
+</main>
+<details class="shield-history" id="shield-history"><summary><span class="lang-en" lang="en">History · original March 2026 8Z Publish presentation (English)</span><span class="lang-sl" lang="sl">Zgodovina · izvirna predstavitev 8Z Publish iz marca 2026 (angleško)</span></summary>
+<p class="shield-history-note"><span class="lang-en" lang="en">Original wording is retained below as a dated historical record, including research proposals and commercial claims. It is not the current product specification or a verification of every earlier claim. “No server” describes standalone/password architecture. Today’s optional email access uses a server. Current capabilities and limits are stated above; deletion does not revoke copies already obtained, and claims about quantum safety, copy prevention or guaranteed leak attribution are not adopted here.</span><span class="lang-sl" lang="sl">Spodaj je ohranjeno izvirno besedilo kot datiran zgodovinski zapis, vključno z raziskovalnimi predlogi in komercialnimi trditvami. To ni današnja specifikacija izdelka ali potrditev vseh prejšnjih trditev. »No server« opisuje samostojno/geselno arhitekturo. Današnji opcijski email dostop uporablja strežnik. Aktualne zmožnosti in meje so navedene zgoraj; brisanje ne prekliče že pridobljenih kopij, trditve o kvantni varnosti, preprečitvi kopiranja ali zagotovljenem pripisu razkritij pa tukaj niso prevzete.</span></p>
+<div lang="en" class="shield-original">
+
 
 <!-- ═══════════════════ HERO ═══════════════════ -->
 <section class="hero">
@@ -1024,5 +1210,20 @@ document.querySelectorAll('.vis').forEach(el => obs.observe(el));
 // Fallback: show everything after 3s
 setTimeout(() => document.querySelectorAll('.vis').forEach(el => el.classList.add('show')), 3000);
 </script>
+
+</div></details>
+<footer class="container shield-current-footer">8Z Shield · BD × AI Lab · <span class="lang-en" lang="en">Current product overview · 9 September 2026</span><span class="lang-sl" lang="sl">Aktualni pregled izdelka · 9. september 2026</span><br><a data-entry-link="" href="/index-atlas.html">Atlas</a> · <a data-entry-link="" href="/BD/index.html">BD</a> · <a href="#shield-overview"><span class="lang-en" lang="en">Back to current overview</span><span class="lang-sl" lang="sl">Nazaj na aktualni pregled</span></a></footer>
+<script id="shield-presentation-controls">+(function(){
+  var root=document.documentElement;
+  function sync(){document.querySelectorAll('[data-set-lang]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.setLang===root.dataset.lang));});}
+  document.querySelectorAll('[data-set-lang]').forEach(function(b){b.addEventListener('click',function(){if(window.MDLxDCCLocale)window.MDLxDCCLocale.choose(b.dataset.setLang);else{root.dataset.lang=b.dataset.setLang;root.lang=b.dataset.setLang;}sync();});});
+  function theme(value){root.dataset.theme=value;document.querySelectorAll('[data-set-theme]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.setTheme===value));});}
+  var initial='dark';try{initial=localStorage.getItem('bd-shield-presentation-theme')||initial;}catch(_){}
+  theme(initial==='light'?'light':'dark');
+  document.querySelectorAll('[data-set-theme]').forEach(function(b){b.addEventListener('click',function(){theme(b.dataset.setTheme);try{localStorage.setItem('bd-shield-presentation-theme',b.dataset.setTheme);}catch(_){}});});
+  window.addEventListener('mdlxdcc:language',sync);sync();
+})();
+</script>
+
 </body>
 </html>
