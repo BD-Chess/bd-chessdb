@@ -505,24 +505,28 @@ body::after {
 </style>
 <style id="shield-current-style">
 /* Current product layer. Original March 2026 copy is retained below as history. */
+html{--shield-font-scale:1;font-size:calc(100% * var(--shield-font-scale))}
 html:not([data-lang="sl"]) .lang-sl,html[data-lang="sl"] .lang-en{display:none!important}
 html[data-theme="light"]{--bg:#fbfaf6;--bg2:#f2efe7;--bg3:#eeeae0;--card:#fff;--border:#d5cdbf;--border-hi:#b6a98f;--text:#26251f;--text2:#56554b;--muted:#696457;--orange:#a35200;--green:#08783b;--teal:#08756a;--gold:#806300;--blue:#255eae;--purple:#7040a0;--red:#ad2945;color-scheme:light}
 html[data-theme="dark"]{color-scheme:dark}
-.shield-nav{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:16px 0;border-bottom:1px solid var(--border);font:12px/1.5 var(--mono)}
+.shield-nav{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:16px 0;border-bottom:1px solid var(--border);font:.75rem/1.5 var(--mono)}
 .shield-nav a,#shield-current a:not(.btn-primary):not(.btn-secondary){color:var(--teal);text-underline-offset:4px}
 html[data-theme="light"] #shield-current .btn-primary{background:var(--orange);color:#fff}
 .shield-current-footer a{color:var(--teal);text-underline-offset:4px}
 .shield-controls{display:flex;flex-wrap:wrap;gap:6px}.shield-controls button{font:inherit;color:var(--text2);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer}
 .shield-controls button[aria-pressed="true"]{color:var(--text);border-color:var(--orange)}
-.shield-current-hero{min-height:0;padding:70px 0 48px}.shield-current-hero .hero-sub{max-width:760px}.shield-current-hero .hero-title{font-size:clamp(42px,7vw,76px)}
+.shield-font-controls{display:flex;gap:6px}.shield-controls button:disabled{opacity:.45;cursor:default}.shield-controls button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+#shield-current{overflow-wrap:anywhere}#shield-current .hero-eyebrow,#shield-current .section-tag{font-size:.6875rem}#shield-current .btn-primary{font-size:.8125rem}#shield-current .btn-secondary{font-size:.75rem}
+.shield-current-hero{min-height:0;padding:70px 0 48px}.shield-current-hero .hero-sub{max-width:760px;font-size:1.125rem}.shield-current-hero .hero-title{font-size:calc(clamp(42px,7vw,76px) * var(--shield-font-scale))}
 .shield-current-hero .hero-eyebrow,.shield-current-hero .hero-title,.shield-current-hero .hero-sub,.shield-current-hero .hero-actions{opacity:1;animation:none}
-.shield-status{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.shield-status>span{padding:6px 10px;border:1px solid var(--green);border-radius:6px;color:var(--green);font:11px/1.5 var(--mono);text-transform:uppercase}
-#shield-current .section{padding:44px 0}#shield-current .section-title{font-size:clamp(28px,4vw,36px)}#shield-current .section-sub{max-width:780px;margin-bottom:24px}#shield-current p{color:var(--text2);margin:0 0 16px}#shield-current strong{color:var(--text)}
-.shield-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.shield-option{min-width:0;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:10px}.shield-option h3{margin:8px 0 12px;font-size:20px;line-height:1.35}.shield-option p:last-child{margin-bottom:0!important}.shield-letter{font:700 12px/1 var(--mono);color:var(--orange)}
-.shield-current-flow{margin:22px 0;padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--card);font:13px/2 var(--mono);color:var(--teal);overflow-wrap:anywhere}
+.shield-status{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}.shield-status>span{padding:6px 10px;border:1px solid var(--green);border-radius:6px;color:var(--green);font:.6875rem/1.5 var(--mono);text-transform:uppercase}
+#shield-current .section{padding:44px 0}#shield-current .section-title{font-size:calc(clamp(28px,4vw,36px) * var(--shield-font-scale))}#shield-current .section-sub{max-width:780px;margin-bottom:24px;font-size:1rem}#shield-current p{color:var(--text2);margin:0 0 16px}#shield-current strong{color:var(--text)}
+.shield-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.shield-option{min-width:0;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:10px}.shield-option h3{margin:8px 0 12px;font-size:1.25rem;line-height:1.35}.shield-option p:last-child{margin-bottom:0!important}.shield-letter{font:700 .75rem/1 var(--mono);color:var(--orange)}
+.shield-current-flow{margin:22px 0;padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--card);font:.8125rem/2 var(--mono);color:var(--teal);overflow-wrap:anywhere}
 .shield-production-links{display:flex;flex-wrap:wrap;gap:12px 22px;margin:22px 0}.shield-sources{font:12px/1.8 var(--mono);overflow-wrap:anywhere}.shield-history{margin:40px auto;border:1px solid var(--border);border-radius:12px;padding:20px;max-width:1000px}.shield-history>summary{cursor:pointer;font-weight:600}.shield-history-note{margin:18px 0;color:var(--text2)}.shield-history .hero{min-height:0;padding:40px 0}.shield-history .hero-title{font-size:clamp(28px,5vw,48px)}.shield-history .container{padding-left:16px;padding-right:16px}.shield-history .vis{opacity:1;transform:none}.shield-history .hero-eyebrow,.shield-history .hero-title,.shield-history .hero-sub,.shield-history .hero-actions,.shield-history .hero-stats{opacity:1;animation:none}.shield-history{overflow-wrap:anywhere}.shield-history table{display:block;overflow-x:auto}
-.shield-current-footer{border-top:1px solid var(--border);padding:24px 0 40px;font:12px/1.8 var(--mono);color:var(--text2)}
-@media(max-width:600px){.shield-options{grid-template-columns:1fr}.shield-current-hero{padding:40px 0 30px}.shield-current-hero .hero-sub{font-size:16px}.shield-option{padding:20px}.shield-nav{align-items:flex-start}.shield-current-hero .btn-primary,.shield-current-hero .btn-secondary{padding:12px 16px;font-size:11px;letter-spacing:1px}.shield-history{padding:14px;margin-left:12px;margin-right:12px}}
+.shield-sources{font-size:.75rem}
+.shield-current-footer{border-top:1px solid var(--border);padding:24px 0 40px;font:.75rem/1.8 var(--mono);color:var(--text2)}
+@media(max-width:600px){.shield-options{grid-template-columns:1fr}.shield-current-hero{padding:40px 0 30px}.shield-current-hero .hero-sub{font-size:1rem}.shield-option{padding:20px}.shield-nav{align-items:flex-start}#shield-current .btn-primary,#shield-current .btn-secondary{padding:12px 16px;font-size:.6875rem;letter-spacing:1px}.shield-history{padding:14px;margin-left:12px;margin-right:12px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 <script id="mdlxdcc-locale">
@@ -645,7 +649,7 @@ html[data-theme="light"] #shield-current .btn-primary{background:var(--orange);c
 
 <div class="container"><nav class="shield-nav" aria-label="8Z Shield navigation">
 <a data-entry-link="" href="/index-atlas.html">← BD × AI Lab · Atlas</a>
-<div class="shield-controls"><button id="shield-lang-en" type="button" data-set-lang="en" aria-pressed="true">EN</button><button id="shield-lang-sl" type="button" data-set-lang="sl" aria-pressed="false">SL</button><button id="shield-light" type="button" data-set-theme="light" aria-pressed="false"><span class="lang-en" lang="en">Light</span><span class="lang-sl" lang="sl">Svetlo</span></button><button id="shield-dark" type="button" data-set-theme="dark" aria-pressed="true"><span class="lang-en" lang="en">Dark</span><span class="lang-sl" lang="sl">Temno</span></button></div>
+<div class="shield-controls"><button id="shield-lang-en" type="button" data-set-lang="en" aria-pressed="true">EN</button><button id="shield-lang-sl" type="button" data-set-lang="sl" aria-pressed="false">SL</button><div class="shield-font-controls" role="group" aria-label="Text size / Velikost besedila"><button type="button" data-shield-font="-1" aria-label="Smaller text / Manjše besedilo">A−</button><button type="button" data-shield-font="0" aria-label="Reset text size / Ponastavi velikost besedila">100%</button><button type="button" data-shield-font="1" aria-label="Larger text / Večje besedilo">A+</button></div><button id="shield-light" type="button" data-set-theme="light" aria-pressed="false"><span class="lang-en" lang="en">Light</span><span class="lang-sl" lang="sl">Svetlo</span></button><button id="shield-dark" type="button" data-set-theme="dark" aria-pressed="true"><span class="lang-en" lang="en">Dark</span><span class="lang-sl" lang="sl">Temno</span></button></div>
 </nav></div>
 <main id="shield-current">
 <section class="hero shield-current-hero" id="shield-overview"><div class="hero-bg"></div><div class="container hero-content">
@@ -1223,6 +1227,16 @@ setTimeout(() => document.querySelectorAll('.vis').forEach(el => el.classList.ad
   var initial='dark';try{initial=localStorage.getItem('bd-shield-presentation-theme')||initial;}catch(_){}
   theme(initial==='light'?'light':'dark');
   document.querySelectorAll('[data-set-theme]').forEach(function(b){b.addEventListener('click',function(){theme(b.dataset.setTheme);try{localStorage.setItem('bd-shield-presentation-theme',b.dataset.setTheme);}catch(_){}});});
+  var fontScale=1, fontButtons=document.querySelectorAll('[data-shield-font]');
+  function setFont(value,persist){
+    fontScale=Math.round(Math.max(.9,Math.min(1.25,value))*100)/100;
+    root.style.setProperty('--shield-font-scale',String(fontScale));
+    fontButtons.forEach(function(b){var step=Number(b.dataset.shieldFont);if(step===0)b.textContent=Math.round(fontScale*100)+'%';b.disabled=(step<0&&fontScale<=.9)||(step>0&&fontScale>=1.25);});
+    if(persist)try{localStorage.setItem('mdlxdcc-font',String(fontScale));}catch(_){}
+  }
+  try{fontScale=Number(localStorage.getItem('mdlxdcc-font')||'1');}catch(_){}
+  setFont(Number.isFinite(fontScale)?fontScale:1,false);
+  fontButtons.forEach(function(b){b.addEventListener('click',function(){var step=Number(b.dataset.shieldFont);setFont(step===0?1:fontScale+step*.05,true);});});
   window.addEventListener('mdlxdcc:language',sync);sync();
 })();
 </script>
