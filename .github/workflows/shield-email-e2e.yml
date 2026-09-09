@@ -18,7 +18,7 @@ jobs:
           set -euo pipefail
           preview='https://deploy-preview-5--chessbd.netlify.app'
           for i in $(seq 1 40); do
-            code=$(curl -sS -o /dev/null -w '%{http_code}' "$preview/index-search.html" || true)
+            code=$(curl -sSL -o /dev/null -w '%{http_code}' "$preview/index-search.html" || true)
             if [ "$code" = "200" ]; then exit 0; fi
             sleep 5
           done
@@ -31,7 +31,7 @@ jobs:
           set -euo pipefail
           preview='https://deploy-preview-5--chessbd.netlify.app'
 
-          invalid_code=$(curl -sS -o /tmp/invalid.json -w '%{http_code}' \
+          invalid_code=$(curl -sSL -o /tmp/invalid.json -w '%{http_code}' \
             -X POST "$preview/api/shield-email-access" \
             -H 'Content-Type: application/json' \
             --data '{"email":"not-an-email","page":"/index-search.html"}')
@@ -43,13 +43,13 @@ jobs:
           assert x.get('ok') is False and x.get('error')=='email'
           PY
 
-          valid_code=$(curl -sS -o /tmp/valid.json -w '%{http_code}' \
+          valid_code=$(curl -sSL -o /tmp/valid.json -w '%{http_code}' \
             -X POST "$preview/api/shield-email-access" \
             -H 'Content-Type: application/json' \
             --data '{"email":"bd@siol.net","page":"/index-search.html"}')
           test "$valid_code" = '200'
 
-          second_code=$(curl -sS -o /tmp/valid2.json -w '%{http_code}' \
+          second_code=$(curl -sSL -o /tmp/valid2.json -w '%{http_code}' \
             -X POST "$preview/api/shield-email-access" \
             -H 'Content-Type: application/json' \
             --data '{"email":"bd@siol.net","page":"/crp/8z_MDLxDCC.html"}')
@@ -66,8 +66,8 @@ jobs:
               assert isinstance(x.get('ip'), str)
           PY
 
-          curl -sS "$preview/index-search.html" -o /tmp/index-search.html
-          curl -sS "$preview/crp/8z_MDLxDCC.html" -o /tmp/mdlxdcc.html
+          curl -sSL "$preview/index-search.html" -o /tmp/index-search.html
+          curl -sSL "$preview/crp/8z_MDLxDCC.html" -o /tmp/mdlxdcc.html
 
       - name: Prove returned credential decrypts Shield ciphertext on both pages
         shell: bash
