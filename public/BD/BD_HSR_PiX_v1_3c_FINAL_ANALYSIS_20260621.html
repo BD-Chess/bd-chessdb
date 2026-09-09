@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -296,101 +296,36 @@ input[type="checkbox"] {
     blockquote, pre, table { break-inside: avoid; }
 }
 </style>
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<style id="trading-protected-shell-style">
+  body.trading-protected-outer{margin:0!important;min-width:0!important;background:radial-gradient(circle at 14% -8%,rgba(62,155,134,.22),transparent 34rem),#071018!important;color:#e8eff5!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.55!important}
+  .trading-protected-outer *{box-sizing:border-box}.trading-protected-outer a{color:inherit}.trading-protected-page{max-width:960px!important;margin:0 auto!important;padding:1rem 1rem 4rem!important}.trading-protected-bar{display:flex;justify-content:space-between;gap:1rem;align-items:center;border-bottom:1px solid rgba(179,201,217,.22);padding:.3rem 0 .9rem;color:#b9c9d7;font-size:.83rem}.trading-protected-bar a{font-weight:700;text-decoration:none}.trading-protected-bar a:hover{text-decoration:underline}.trading-protected-card{margin-top:clamp(2rem,7vw,5rem);padding:clamp(1.25rem,4vw,2.5rem);border:1px solid rgba(180,205,222,.25);border-radius:1.15rem;background:rgba(14,27,40,.82);box-shadow:0 24px 70px rgba(0,0,0,.28)}.trading-protected-eyebrow{margin:0 0 .85rem;color:#80d8bd;font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}.trading-protected-card h1{margin:0;font-size:clamp(2rem,6vw,4.2rem);line-height:.98;letter-spacing:-.055em}.trading-protected-kind{margin:.75rem 0 0;color:#f1c778;font:700 .78rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}.trading-protected-copy{max-width:68ch;margin:1.45rem 0 0;color:#bdcbd6;font-size:1rem}.trading-protected-copy p{margin:.65rem 0}.trading-protected-badge{display:inline-flex;margin-top:1.35rem;border:1px solid rgba(128,216,189,.48);border-radius:999px;padding:.4rem .6rem;color:#8be3c7;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase}.trading-protected-note{margin-top:1.4rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;background:rgba(201,154,59,.08);color:#cbd6df;font-size:.88rem}.trading-protected-note strong{color:#f1c778}.trading-protected-section{margin-top:1.4rem}.trading-protected-footer{margin-top:1.25rem;color:#90a2b3;font-size:.78rem}.trading-protected-lang-sl{display:none}@media(max-width:620px){.trading-protected-page{padding:.75rem .75rem 2.5rem!important}.trading-protected-bar{align-items:flex-start;flex-direction:column;gap:.35rem}.trading-protected-card{margin-top:1.2rem}.trading-protected-copy{font-size:.95rem}}
+</style>
+
 </head>
-<body>
-<main class="page-shell">
-    <div class="source-label">BD_HSR_PiX_v1_3c_FINAL_ANALYSIS_20260621.md</div>
-    <article class="reader" id="reader"><h1>BD HSR PiX Arena v1.3c — Final Real-1m Deep Optimizer Analysis</h1>
-<p><strong>Source:</strong> <code>LIVE_EXTRACT_HSR_PIX_REAL1M_V13_FOR_GPT_20260621_061652.zip</code> <strong>Status:</strong> COMPLETE — 300,000 / 300,000 tasks</p>
-<h2>Final headline</h2>
-<ul><li>10,000 candidate configurations; 60,000 candidate asset×cost rows and 240,000 matched-control rows.</li><li>4,785 candidate rows beat the best matched control by profile score: <strong>7.975%</strong>.</li><li>119 configurations achieved <strong>6/6</strong> score wins across BTC, ETH, SOL × zero and realistic costs: <strong>1.19%</strong> of the search.</li><li>Profile distribution: P0 13, P1 21, P2 22, P3 23, P4 26, P5 14.</li><li>All 115 configurations present at the 96.18% checkpoint remained; four new 6/6 configurations were added.</li></ul>
-<h2>Strongest results</h2>
-<ul><li>Raw ETH P5 leader: realistic-cost MTM <strong>+$1,736.20</strong>, realized <strong>+$1,434.52</strong>, fixed-$500 max drawdown <strong>67.75%</strong>.</li><li>Cross-asset P5 seed <code>t2000_m60_b2.76_flat5</code>: realistic MTM/realized BTC <strong>+$626.96/+494.43</strong>, ETH <strong>+$905.02/+483.18</strong>, SOL <strong>+$887.82/+475.19</strong>.</li><li>Strong P3 seed <code>t1600_m50_b1.5525_none</code>: minimum score lift <strong>+379.24</strong>, minimum candidate MTM <strong>+$399.48</strong> across six tests.</li><li>SOL P4 fixed-$500 stop breach still showed realistic-cost MTM <strong>+$2,175.88</strong> and realized <strong>+$816.64</strong>; preserve it for capital-truth replay.</li></ul>
-<h2>Important limits</h2>
-<ol><li>6/6 is based on <code>risk_profile_score</code>, not guaranteed raw-MTM dominance in every row.</li><li>Fixed $500 and profile-specific stop rules truncate paths; they do not determine whether a strategy is intrinsically good.</li><li><code>reanchor_target_separation_roe</code> was stored but not used; <code>mega_rescue_close_winner_on_trigger</code> was stored but not executed.</li><li>Winner-side pyramiding, staged winner scale-out and trailing were not tested.</li><li>One Jan–Jun 2026 interval is not endpoint/holdout proof. v1.4 needs wallet-neutral full paths, rolling windows, phenotype deduplication and paper/shadow validation.</li></ol>
-<h2>Folder transition</h2>
-<ul><li>Run <code>CLEAN_V13_KEEP_WARM_START_FOR_V14.bat</code> first in preview, then with <code>APPLY</code>.</li><li>Keep cleaned v1.3 as an immutable warm-start archive.</li><li>Install v1.4 in <code>D:\8Z\8z\BDH\v1.4</code>, not over v1.3.</li><li>Import <code>V14_WARM_START_FROM_V13.zip</code>; do not reuse v1.3c task IDs under changed semantics.</li></ul></article>
-</main>
-
-<div class="font-controls" role="group" aria-label="Text size controls">
-    <button id="fontDown" type="button" aria-label="Decrease text size" title="Decrease text size">A−</button>
-    <button id="fontUp" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
-</div>
-
-<script>
-(() => {
-    const DESKTOP_BASE = 18;
-    const MOBILE_BASE = 21;
-    const MIN_SCALE = 0.72;
-    const MAX_SCALE = 1.72;
-    const STEP = 0.10;
-    const STORAGE_KEY = "md-dark-reader-font-scale";
-    const mobileQuery = window.matchMedia("(max-width: 700px)");
-
-    let scale = Number.parseFloat(localStorage.getItem(STORAGE_KEY) || "1");
-    if (!Number.isFinite(scale)) scale = 1;
-    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-
-    function applyFontSize() {
-        const base = mobileQuery.matches ? MOBILE_BASE : DESKTOP_BASE;
-        document.documentElement.style.fontSize = `${(base * scale).toFixed(2)}px`;
-        document.getElementById("fontDown").title = `Decrease text size (${Math.round(scale * 100)}%)`;
-        document.getElementById("fontUp").title = `Increase text size (${Math.round(scale * 100)}%)`;
-    }
-
-    function changeScale(delta) {
-        scale = Math.round((scale + delta) * 100) / 100;
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-        localStorage.setItem(STORAGE_KEY, String(scale));
-        applyFontSize();
-    }
-
-    document.getElementById("fontDown").addEventListener("click", () => changeScale(-STEP));
-    document.getElementById("fontUp").addEventListener("click", () => changeScale(STEP));
-
-    if (typeof mobileQuery.addEventListener === "function") {
-        mobileQuery.addEventListener("change", applyFontSize);
-    } else if (typeof mobileQuery.addListener === "function") {
-        mobileQuery.addListener(applyFontSize);
-    }
-
-    // Give headings stable link targets without requiring a Markdown extension.
-    const usedIds = new Set();
-    document.querySelectorAll("#reader h1, #reader h2, #reader h3, #reader h4, #reader h5, #reader h6")
-        .forEach((heading, index) => {
-            if (heading.id) {
-                usedIds.add(heading.id);
-                return;
-            }
-            let slug = heading.textContent
-                .normalize("NFKD")
-                .toLowerCase()
-                .replace(/[^\p{L}\p{N}]+/gu, "-")
-                .replace(/^-+|-+$/g, "") || `section-${index + 1}`;
-            const baseSlug = slug;
-            let suffix = 2;
-            while (usedIds.has(slug)) slug = `${baseSlug}-${suffix++}`;
-            usedIds.add(slug);
-            heading.id = slug;
-        });
-
-    // Wrap tables so wide content scrolls cleanly on phones.
-    document.querySelectorAll("#reader table").forEach(table => {
-        if (table.parentElement && table.parentElement.classList.contains("table-wrap")) return;
-        const wrapper = document.createElement("div");
-        wrapper.className = "table-wrap";
-        table.parentNode.insertBefore(wrapper, table);
-        wrapper.appendChild(table);
-    });
-
-    // External links open safely in a new tab; local and anchor links remain normal.
-    document.querySelectorAll('#reader a[href^="http://"], #reader a[href^="https://"]').forEach(link => {
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-    });
-
-    applyFontSize();
-})();
-</script>
+<body class="trading-protected-outer">
+  <main class="trading-protected-page">
+    <nav class="trading-protected-bar" aria-label="Trading research navigation">
+      <a href="/bd/trading">BD Trading</a>
+      <a href="/bd/trading-research-atlas">Research Atlas</a>
+      <button type="button" class="trading-protected-lang-toggle" data-trading-language-toggle aria-label="Switch language">SL</button>
+    </nav>
+    <article class="trading-protected-card">
+      <p class="trading-protected-eyebrow">BD × AI · Trading Research</p>
+      <h1>HSR / PiX Final Analysis</h1>
+      <p class="trading-protected-kind"><span class="trading-protected-lang-en">Arena analysis</span><span class="trading-protected-lang-sl">Analiza arene</span></p>
+      <div class="trading-protected-copy">
+        <p class="trading-protected-lang-en">A detailed historical HSR / PiX analysis page. It remains available to the research session, with its technical analysis and implementation-adjacent material encrypted.</p>
+        <p class="trading-protected-lang-sl">Podrobna zgodovinska HSR / PiX analiza. Ostaja dostopna raziskovalni seji, njena tehnična analiza in izvedbeno bližnje gradivo pa sta šifrirana.</p>
+      </div>
+      <span class="trading-protected-badge">PASSWORD-ONLY · TRADING NAMESPACE</span>
+      <div class="trading-protected-note"><strong>EN</strong> This page uses the separate Trading passphrase only. It does not use the site-wide email gate. Protected material is encrypted before access; after legitimate unlock it can be viewed and used in this browser session. <strong>SL</strong> Ta stran uporablja samo ločeno Trading geslo. Ne uporablja site-wide email gatea. Zaščiteno gradivo je pred dostopom šifrirano; po legitimnem unlocku je vidno in uporabno v tej brskalniški seji.</div>
+      <section class="trading-protected-section" data-trading-shield data-shield-label="Complete working page — protected / Celotna delovna stran — zaščiteno" data-shield-sub="Engine, exact mechanics and reproduction-level configuration are encrypted before access. / Engine, natančna mehanika in konfiguracija na ravni reprodukcije so pred dostopom šifrirani." data-8z-blob="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"></section>
+      <p class="trading-protected-footer">File: BD_HSR_PiX_v1_3c_FINAL_ANALYSIS_20260621.html · Offline research / virtual-money paper trading where stated · No financial advice.</p>
+    </article>
+  </main>
+  <script defer src="/js/trading-password-shield.js"></script>
 </body>
 </html>

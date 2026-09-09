@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -26,237 +26,36 @@ code{font-family:Consolas,Menlo,monospace;background:#0a1020;border:1px solid va
 .calc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end}.field label{display:block;font-size:.72em;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}.field input{width:100%;background:#0a1020;border:1px solid var(--line2);border-radius:10px;color:var(--text);padding:10px;font-size:1em}.output{font-family:Consolas,Menlo,monospace;font-weight:950;color:var(--green);font-size:1.1em}.footer{margin-top:70px;padding:26px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:.82em}
 @media(max-width:1100px){.six{grid-template-columns:repeat(3,1fr)}}@media(max-width:1000px){:root{--baseFont:20px}.wrap{padding:18px 12px 78px}.nav{margin:0 -12px;padding:9px 12px}.cards,.two,.three,.six,.calc{grid-template-columns:1fr}h1{font-size:clamp(2.1rem,12vw,3.8rem)}.node{flex:1 1 145px}.arrow{display:none}table{min-width:720px}.fontbar{right:10px;bottom:10px}}@media print{.nav,.fontbar{display:none}.wrap{max-width:none}.card,.callout,.table-card,.formula,.flow,.note,.danger,.good{box-shadow:none}body{background:#fff;color:#111}}
 </style>
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<style id="trading-protected-shell-style">
+  body.trading-protected-outer{margin:0!important;min-width:0!important;background:radial-gradient(circle at 14% -8%,rgba(62,155,134,.22),transparent 34rem),#071018!important;color:#e8eff5!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.55!important}
+  .trading-protected-outer *{box-sizing:border-box}.trading-protected-outer a{color:inherit}.trading-protected-page{max-width:960px!important;margin:0 auto!important;padding:1rem 1rem 4rem!important}.trading-protected-bar{display:flex;justify-content:space-between;gap:1rem;align-items:center;border-bottom:1px solid rgba(179,201,217,.22);padding:.3rem 0 .9rem;color:#b9c9d7;font-size:.83rem}.trading-protected-bar a{font-weight:700;text-decoration:none}.trading-protected-bar a:hover{text-decoration:underline}.trading-protected-card{margin-top:clamp(2rem,7vw,5rem);padding:clamp(1.25rem,4vw,2.5rem);border:1px solid rgba(180,205,222,.25);border-radius:1.15rem;background:rgba(14,27,40,.82);box-shadow:0 24px 70px rgba(0,0,0,.28)}.trading-protected-eyebrow{margin:0 0 .85rem;color:#80d8bd;font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}.trading-protected-card h1{margin:0;font-size:clamp(2rem,6vw,4.2rem);line-height:.98;letter-spacing:-.055em}.trading-protected-kind{margin:.75rem 0 0;color:#f1c778;font:700 .78rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}.trading-protected-copy{max-width:68ch;margin:1.45rem 0 0;color:#bdcbd6;font-size:1rem}.trading-protected-copy p{margin:.65rem 0}.trading-protected-badge{display:inline-flex;margin-top:1.35rem;border:1px solid rgba(128,216,189,.48);border-radius:999px;padding:.4rem .6rem;color:#8be3c7;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase}.trading-protected-note{margin-top:1.4rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;background:rgba(201,154,59,.08);color:#cbd6df;font-size:.88rem}.trading-protected-note strong{color:#f1c778}.trading-protected-section{margin-top:1.4rem}.trading-protected-footer{margin-top:1.25rem;color:#90a2b3;font-size:.78rem}.trading-protected-lang-sl{display:none}@media(max-width:620px){.trading-protected-page{padding:.75rem .75rem 2.5rem!important}.trading-protected-bar{align-items:flex-start;flex-direction:column;gap:.35rem}.trading-protected-card{margin-top:1.2rem}.trading-protected-copy{font-size:.95rem}}
+</style>
+
 </head>
-<body>
-<div class="fontbar" aria-label="Font size controls"><button onclick="fontStep(-0.08)">A−</button><button onclick="fontReset()">A</button><button onclick="fontStep(0.08)">A+</button></div>
-
-<div class="wrap">
-<header class="hero" id="top">
-<div class="eyebrow">Current manual method · completed v1.3c baseline · v1.5.3b RHP live research</div>
-<h1>BD Hedge Separation PiX Strategy</h1>
-<p class="subtitle">A three-layer authority page: the current BD manual hedge-separation method, the completed narrower v1.3c replay evidence, and the in-progress v1.5.3b RHP stage-atomic research run.</p>
-<p class="small">Real BTC/ETH/SOL 1m replay, 1 January–14 June 2026, virtual fills only. No live-order path.</p>
-</header>
-<nav class="nav"><a href="#manual-current">Current manual method</a><a href="#manual-delayed-add">Delayed-add gate</a><a href="#strategy">v1.3c engine</a><a href="#flow">Tested flow</a><a href="#evidence">Evidence</a><a href="#lanes">Risk lanes</a><a href="#manual-balanced-sol">v1.3c seed refs</a><a href="#capital">Capital truth</a><a href="#limits">Limits</a><a href="#v153b">v1.5.3b live</a><a href="#v14">Next gate</a></nav>
-
-<section id="manual-current">
-<h2>Current BD manual method — separate from the arena seeds</h2>
-<p class="muted">This is the present human operating logic. It is not identical to the completed v1.3c engine and it is not a claim that v1.5.3b has already validated every manual action. The arena is being used to test and decompose this method under matched controls.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Base clip parity</div><div class="num cyan">1 / .001 / .04</div><p class="small">1 SOL, 0.001 BTC or 0.04 ETH per leg.</p></div>
-<div class="card"><div class="label">Initial state</div><div class="num gold">LONG + SHORT</div><p class="small">Open both directions on the same instrument.</p></div>
-<div class="card"><div class="label">Working leverage</div><div class="num red">300×</div><p class="small">Cross-margin / wallet-silo context with deliberately small clips.</p></div>
-<div class="card"><div class="label">Primary objective</div><div class="num green">Harvest excess</div><p class="small">Realize rescue and winner profit while preserving useful cores.</p></div>
-</div>
-<div class="table-card"><h3>Rounded cross-asset base quantities</h3><div class="table-wrap"><table><thead><tr><th>Instrument</th><th>Base quantity per LONG leg</th><th>Base quantity per SHORT leg</th><th>Role</th></tr></thead><tbody>
-<tr><td>SOLUSDT</td><td class="num">1 SOL</td><td class="num">1 SOL</td><td>Canonical manual reference clip</td></tr>
-<tr><td>BTCUSDT</td><td class="num">0.001 BTC</td><td class="num">0.001 BTC</td><td>Rounded SOL-comparable clip</td></tr>
-<tr><td>ETHUSDT</td><td class="num">0.04 ETH</td><td class="num">0.04 ETH</td><td>Rounded SOL-comparable clip</td></tr>
-</tbody></table></div><p class="small" style="margin-top:10px">These are intentionally rounded asset quantities, not continuously price-rebalanced equal notionals. The v1.5.3b primary leaderboard remains a separate fixed-notional lane.</p></div>
-
-<div class="flow" style="margin-top:16px"><div class="flow-row"><div class="node long">Winner side<small>let trend earn size</small></div><div class="node short">Losing side<small>wait for adverse threshold</small></div><span class="arrow">→</span><div class="node pix">Structure check<small>trend, corridor, stabilization</small></div><span class="arrow">→</span><div class="node">Add / re-anchor<small>timed, not blind</small></div><span class="arrow">→</span><div class="node core">Close excess<small>retain useful core</small></div></div></div>
-
-<div class="steps">
-<div class="step"><strong>Open the hedge.</strong> Start with the same rounded base quantity LONG and SHORT. The hedge supplies time and optionality; it is not the edge by itself.</div>
-<div class="step"><strong>Separate the books.</strong> Manage the profitable and losing sides independently. Do not automatically flatten the winner merely because the other side needs repair.</div>
-<div class="step"><strong>First adverse add.</strong> Around <code>−200% ROE</code>, the usual manual candidate is an add of roughly <code>2×</code> the current losing-side size, but only after reading trend, volume, extension and available margin.</div>
-<div class="step"><strong>Escalate by distance, not panic.</strong> Later adverse thresholds and add sizes may approximately double (<code>−400%</code>, <code>−800%</code> … and 2× size steps). This is a discretionary ladder, not a requirement to add blindly.</div>
-<div class="step"><strong>Harvest the rescue clip.</strong> When the newly added excess earns roughly <code>+2%</code>, close that excess and preserve the intended base or residual position.</div>
-<div class="step"><strong>Harvest the winner progressively.</strong> Around <code>+200% ROE</code>, realize or protect roughly half while locking about <code>+100%</code>; around <code>+400%</code> and <code>+500%</code>, progressively lock additional profit near <code>+300%</code> and <code>+400%</code>. Exact fractions remain situational.</div>
-<div class="step"><strong>Grow a clean winner selectively.</strong> On a rapid, well-confirmed continuation, add roughly <code>2–3×</code> to the profitable leg. Across successful harvest cycles, the retained core may step from roughly <code>2 → 4 → 8 SOL</code> rather than resetting to the original base every time.</div>
-<div class="step"><strong>Re-anchor when separation becomes useful.</strong> When the losing side is badly displaced—often near a roughly <code>500% ROE</code> separation—close and reopen it at a better level rather than carrying a permanently poor entry.</div>
-<div class="step"><strong>Use a large rescue only after stabilization.</strong> A typical SOL example is adding <code>10–20 SOL</code>, then closing most of it at <code>+1–2%</code> on the rescue clip—for example, close 18 and retain about 2 SOL as core.</div>
-</div>
-
-<div class="grid two" style="margin-top:16px">
-<div class="good"><h3>What makes the method distinct</h3><ul class="list"><li>Both directions remain available.</li><li>The winner may be grown and harvested instead of sacrificed.</li><li>The loser is repaired through timing, re-anchoring and excess-close cycles.</li><li>Risky variants remain testable and are classified by capital-at-risk rather than deleted.</li></ul></div>
-<div class="danger"><h3>Hard reality</h3><ul class="list"><li>300× leverage magnifies execution and liquidation errors.</li><li>A constant hedge does not remove gross exposure or margin risk.</li><li>Zero trading fee does not mean zero funding, spread or slippage.</li><li>A one-way trend can outrun every rescue ladder if sizing and wallet limits are wrong.</li></ul></div>
-</div>
-</section>
-
-<section id="manual-delayed-add">
-<h2>Delayed-add stabilization gate — experimental risk governor</h2>
-<p>Instead of adding immediately after an adverse threshold, wait a short causal 1m observation window and classify what happened: <code>snapback</code>, <code>stabilization</code>, <code>deeper extension</code> or <code>adverse acceleration</code>. The result may allow, delay, reduce, deepen or veto the add.</p>
-<div class="note"><strong>Current evidence boundary:</strong> delayed-add remains a <em>risk-governor watch branch</em>, not a proven profit engine. It must beat instant-add, fixed-wait, random-wait, no-add and same-ladder/no-sensor controls before stronger promotion.</div>
-</section>
-
-
-<section id="manual-vs-arena">
-<h2>Manual method, v1.3c and v1.5.3b are different authorities</h2>
-<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Layer</th><th>Contains</th><th>Evidence status</th></tr></thead><tbody>
-<tr><td>Current BD manual method</td><td>Rounded 1 SOL / 0.001 BTC / 0.04 ETH bases; adverse ladder; selective 2–3× winner adds; staged winner protection; dynamic re-anchor; 10–20 SOL rescue clips.</td><td>Current operating method and research seed. Not yet fully encoded or matched-control validated.</td></tr>
-<tr><td>Completed v1.3c engine</td><td>Equal hedge; losing-side re-anchor; bounded fixed-multiple rescue; excess close; retained residual. No active winner pyramiding or staged winner ladder.</td><td>Completed 300,000-task real-1m replay baseline.</td></tr>
-<tr><td>v1.5.3b RHP arena</td><td>Corrected barscope and sizing; stage-atomic retry/resume; typed AI families; exact legacy lane; controls; walk-forward and locked holdout ladder.</td><td>In progress. Discovery leaders are not final winners before locked holdout.</td></tr>
-</tbody></table></div></div>
-</section>
-
-
-
-<section id="strategy">
-<h2>What the v1.3c strategy actually was</h2>
-<div class="grid cards">
-<div class="card"><div class="label">Initial state</div><div class="num cyan">Equal hedge</div><p class="small">Open LONG and SHORT at the same notional.</p></div>
-<div class="card"><div class="label">Loss response</div><div class="num gold">Re-anchor</div><p class="small">Close and reopen the deeply losing side when its trigger and trend gate pass.</p></div>
-<div class="card"><div class="label">Recovery engine</div><div class="num red">Mega rescue</div><p class="small">Increase the re-anchored losing side to a bounded multiple of the original base.</p></div>
-<div class="card"><div class="label">Profit realization</div><div class="num green">Excess close</div><p class="small">When the rescued side recovers beyond its weighted entry, close the excess and keep a residual.</p></div>
-</div>
-<div class="danger"><strong>Not tested in v1.3c:</strong> adding to the profitable side, staged winner exits, winner trailing, or force-closing the winner when mega rescue fires. Older manual text implying those behaviors has been removed.</div>
-</section>
-
-<section id="flow">
-<h2>The tested state machine</h2>
-<div class="flow"><div class="flow-row"><div class="node long">LONG base<small>equal notional</small></div><div class="node short">SHORT base<small>equal notional</small></div><span class="arrow">→</span><div class="node pix">Trigger + gate<small>losing side only</small></div><span class="arrow">→</span><div class="node">Re-anchor<small>close + delayed reopen</small></div><span class="arrow">→</span><div class="node short">Mega rescue<small>target total multiple</small></div><span class="arrow">→</span><div class="node core">Excess close<small>retain residual hedge</small></div></div></div>
-<div class="steps">
-<div class="step"><strong>Open both sides.</strong> The base size is expressed as fixed notional derived from <code>base_sol × $150</code>, then converted to asset quantity at the first close.</div>
-<div class="step"><strong>Identify the losing side.</strong> Re-anchor is eligible when its ROE crosses the configured negative trigger, the opposite side is positive, and the trend gate passes.</div>
-<div class="step"><strong>Close and reopen the loser.</strong> Reopen after the configured number of completed 1m bars and at the configured base multiple.</div>
-<div class="step"><strong>Allow mega rescue after re-anchor.</strong> If the same side again crosses the trigger, add until the configured total multiple is reached, capped by <code>max_total_side_multiplier</code>.</div>
-<div class="step"><strong>Harvest the rescue.</strong> When that rescued side moves the configured percentage beyond its weighted average in the profitable direction, close everything above the residual keep multiple.</div>
-<div class="step"><strong>Respect event caps.</strong> Each policy limits re-anchor and mega-rescue counts; the ending residual hedge remains open unless the replay stop ends the path.</div>
-</div>
-<div class="grid two" style="margin-top:16px">
-<div class="formula"><div class="title">ROE approximation</div>price move % ≈ |ROE %| ÷ leverage</div>
-<div class="calc"><div class="field"><label for="lev">Leverage</label><input id="lev" type="number" value="300" oninput="calcRoe()"/></div><div class="field"><label for="roe">ROE trigger</label><input id="roe" type="number" value="500" oninput="calcRoe()"/></div><div class="output" id="roeOut"></div></div>
-</div>
-</section>
-
-<section id="profit">
-<h2>How profit taking worked</h2>
-<div class="grid two">
-<div class="good"><h3>What happened</h3><ul class="list"><li>The enlarged formerly losing side recovered past its weighted average entry.</li><li>The engine closed the excess quantity in one event.</li><li>A configured 1×, 2×, 3× or 5× base residual remained.</li><li>Realized rescue profit and ending unrealized hedge PnL were both counted in final MTM.</li></ul></div>
-<div class="note"><h3>What did not happen</h3><ul class="list"><li>No adding to the already profitable side.</li><li>No +200%/+400% winner ladder.</li><li>No multi-stage winner scale-out.</li><li>No trailing winner stop.</li><li>No execution of the stored <code>close_winner_on_mega</code> flag.</li></ul></div>
-</div>
-</section>
-
-<section id="evidence">
-<h2>Completed evidence</h2>
-<div class="grid cards"><div class="card"><div class="label">Tasks</div><div class="num green">300,000</div><p class="small">complete</p></div><div class="card"><div class="label">Candidates</div><div class="num cyan">10,000</div><p class="small">wide deterministic sample</p></div><div class="card"><div class="label">Control-beating rows</div><div class="num violet">4,785</div><p class="small">7.98% of candidate rows</p></div><div class="card"><div class="label">Full 6/6</div><div class="num gold">119</div><p class="small">1.19% of configurations</p></div></div>
-<div class="good"><strong>Why this matters:</strong> the result was selective. Roughly 92% of candidate tests did not beat their best matched control, yet a persistent frontier survived all six asset×cost comparisons.</div>
-<div class="grid six" style="margin-top:16px"><div class="card"><div class="label">P0 Survival Max</div><div class="num cyan">13</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P1 Conservative</div><div class="num cyan">21</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P2 Balanced</div><div class="num cyan">22</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P3 Aggressive</div><div class="num cyan">23</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P4 Moonshot</div><div class="num cyan">26</div><p class="small">full 6/6 configurations</p></div><div class="card"><div class="label">P5 Tiny-Wallet Blast</div><div class="num cyan">14</div><p class="small">full 6/6 configurations</p></div></div>
-</section>
-
-<section id="lanes">
-<h2>Risk lanes and representative robust seeds</h2>
-<p class="muted">These are not one universal ranking. Each profile has a different utility function. High PnL and high risk remain visible rather than being deleted by a single wallet preference.</p>
-<div class="table-card"><div class="table-wrap"><table><thead><tr><th>Lane</th><th>Representative 6/6 seed</th><th>Avg MTM</th><th>Worst MTM</th><th>Avg score lift</th><th>Worst score lift</th></tr></thead><tbody><tr>
-<td>P0 Survival Max</td>
-<td><code>deep_p0_t500_sep300_m50_b1p1_same3_83dc7823</code></td>
-<td class="num">$220.69</td>
-<td class="num">$166.04</td>
-<td class="num">+127.49</td>
-<td class="num">+76.68</td>
-</tr><tr>
-<td>P1 Conservative</td>
-<td><code>deep_p1_t2000_sep2000_m40_b1p0125_flat3_ce1751a4</code></td>
-<td class="num">$202.12</td>
-<td class="num">$147.60</td>
-<td class="num">+120.72</td>
-<td class="num">+84.39</td>
-</tr><tr>
-<td>P2 Balanced</td>
-<td><code>deep_p2_t2000_sep1100_m50_b1p15_none_9cb5d2d0</code></td>
-<td class="num">$240.14</td>
-<td class="num">$201.91</td>
-<td class="num">+168.55</td>
-<td class="num">+26.12</td>
-</tr><tr>
-<td>P3 Aggressive</td>
-<td><code>deep_p3_t1600_sep700_m50_b1p5525_none_71657874</code></td>
-<td class="num">$468.31</td>
-<td class="num">$399.48</td>
-<td class="num">+436.67</td>
-<td class="num">+379.24</td>
-</tr><tr>
-<td>P4 Moonshot</td>
-<td><code>deep_p4_t2000_sep1100_m60_b3p6_none_4d8476d0</code></td>
-<td class="num">$922.13</td>
-<td class="num">$772.98</td>
-<td class="num">+451.52</td>
-<td class="num">+21.06</td>
-</tr><tr>
-<td>P5 Tiny-Wallet Blast</td>
-<td><code>deep_p5_t2000_sep500_m60_b2p76_flat5_68e39a6f</code></td>
-<td class="num">$853.98</td>
-<td class="num">$626.96</td>
-<td class="num">+582.30</td>
-<td class="num">+465.72</td>
-</tr></tbody></table></div></div>
-</section>
-
-<section id="manual-balanced-sol">
-<h2>Historical v1.3c P2 reference — not the current manual protocol</h2>
-<p><code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code></p>
-<div class="grid cards"><div class="card"><div class="label">Zero-cost SOL MTM</div><div class="num green">+$156.68</div></div><div class="card"><div class="label">Realized</div><div class="num green">+$60.39</div></div><div class="card"><div class="label">Max drawdown</div><div class="num cyan">8.43%</div></div><div class="card"><div class="label">Cross-asset status</div><div class="num gold">6/6</div></div></div>
-<div class="note">This seed used the narrower v1.3c state machine: losing-side re-anchor, one bounded rescue and one excess close. It did <strong>not</strong> execute the current manual winner-add, staged winner-harvest or large discretionary rescue logic.</div>
-</section>
-
-<section id="manual-max-risk-sol">
-<h2>Historical v1.3c P5 reference — explicit all-risk lane</h2>
-<p><code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code></p>
-<div class="grid cards"><div class="card"><div class="label">Zero-cost SOL MTM</div><div class="num green">+$1,673.27</div></div><div class="card"><div class="label">Realized</div><div class="num green">+$1,386.71</div></div><div class="card"><div class="label">Max drawdown</div><div class="num red">68.79%</div></div><div class="card"><div class="label">Historical rescue target</div><div class="num red">≈195 SOL</div></div></div>
-<div class="danger"><strong>Reference only:</strong> this seed demonstrated why raw PnL cannot be read without capital-at-risk. It is preserved as a high-risk research surface, not presented as the current manual default.</div>
-</section>
-
-<section id="capital">
-<h2>Wallet size is an output, not a strategy gate</h2>
-<div class="good"><p>v1.3c used a fixed virtual $500 wallet. That baseline is useful for comparison, but it must not decide whether a strategy exists. A trader may intentionally allocate $100, $1,000, $10,000 or much more to different risk lanes.</p><p>v1.4 must report the minimum tested wallet for full-path survival, probability of total loss, PnL by horizon and capital efficiency—while retaining even strategies that fail a chosen wallet.</p></div>
-<div class="danger"><h3>Extreme P4 watchlist</h3><p><code>deep_p4_t1000_sep300_m30_b5p4_same5_37ae672d</code> reached +$2,233.19 MTM zero-cost and +$2,175.88 realistic-cost on SOL before the fixed-$500 drawdown rule stopped the replay on 6 February. Positive equity remained. Only wallet-neutral full-path replay can determine the required capital and final outcome.</p></div>
-</section>
-
-<section id="limits">
-<h2>Known limits of the current evidence</h2>
-<div class="grid two"><div class="callout"><h3>Engine semantics</h3><ul class="list"><li><code>reanchor_target_separation_roe</code> was named and stored but never checked in the replay.</li><li><code>mega_rescue_close_winner_on_trigger</code> was stored but never executed.</li><li>Winner-side pyramiding and trailing were absent.</li><li>The fixed-$500 drawdown stop truncated some high-PnL paths.</li></ul></div><div class="callout"><h3>Validation scope</h3><ul class="list"><li>One historical Jan–Jun 2026 interval.</li><li>Virtual fills, not exchange execution.</li><li>Cross-margin and liquidation mechanics remain simplified.</li><li>6/6 is a profile-score win against controls, not guaranteed raw-PnL dominance.</li><li>Zero-cost is a diagnostic scenario, not a universal live-cost assumption.</li></ul></div></div>
-</section>
-
-
-<section id="v153b">
-<h2>v1.5.3b RHP live extract — stage-atomic run</h2>
-<p class="muted">Latest live checkpoint: <code>LIVE_EXTRACT_BDTA_V153B_RHP_SLIM_FOR_GPT_20260625_131601.zip</code>. This is still an in-progress research run, not a final winner report.</p>
-<div class="grid cards">
-<div class="card"><div class="label">Current stage</div><div class="num cyan">Daily24h</div><p class="small">08_DAILY24H_DISCOVERY running</p></div>
-<div class="card"><div class="label">Completed tasks</div><div class="num green">74,728</div><p class="small">0 task-attempt errors in extract</p></div>
-<div class="card"><div class="label">Daily active time</div><div class="num gold">6.75h</div><p class="small">28.1% of 24h target observed</p></div>
-<div class="card"><div class="label">Sizing contract</div><div class="num violet">1 / .001 / .04</div><p class="small">SOL / BTC / ETH asset-parity lane</p></div>
-</div>
-<div class="good"><strong>What is better now:</strong> v1.5.3b fixes the v1.5.3a stage-skip/MemoryError problem in this extract. Smoke, Standard, Strict Controls and Deep6h are complete; Daily24h is running; no retry error is visible.</div>
-<div class="grid two" style="margin-top:16px">
-<div class="table-card"><h3>Stage progress</h3><div class="table-wrap"><table><thead><tr><th>Stage</th><th>Status</th><th>PASS tasks</th><th>Active time</th></tr></thead><tbody><tr><td>04_SMOKE_DISCOVERY</td><td>complete</td><td class="num">5,112</td><td class="num">0.08h</td></tr><tr><td>05_STANDARD_DISCOVERY</td><td>complete</td><td class="num">43,092</td><td class="num">5.47h</td></tr><tr><td>06_STRICT_CONTROLS</td><td>complete</td><td class="num">4,104</td><td class="num">1.80h</td></tr><tr><td>07_DEEP6H_DISCOVERY</td><td>complete</td><td class="num">10,414</td><td class="num">6.00h</td></tr><tr><td>08_DAILY24H_DISCOVERY</td><td>running</td><td class="num">12,006</td><td class="num">6.75h</td></tr></tbody></table></div></div>
-<div class="table-card"><h3>Corrected test contract</h3><div class="table-wrap"><table><tbody>
-<tr><th>Smoke</th><td>6,000-bar scope</td></tr>
-<tr><th>Standard</th><td>50,000-bar scope</td></tr>
-<tr><th>Strict controls</th><td>full 236,161-row scope</td></tr>
-<tr><th>Deep/Daily</th><td>180,000-bar scope</td></tr>
-<tr><th>Primary ranking</th><td>fixed-notional 100 USDT per leg</td></tr>
-<tr><th>Asset-parity diagnostic</th><td>1 SOL, 0.001 BTC, 0.04 ETH</td></tr>
-</tbody></table></div></div>
-</div>
-<div class="note" style="margin-top:16px"><strong>Control caution:</strong> the root <code>candidate_vs_matched_controls.csv</code> in this extract reflects the latest completed Deep6h discovery report and uses global v1.4.2a controls. Candidate-specific controls are present in the strict-control stage, but final promotion should wait for the locked holdout/control-aware verdict.</div>
-<div class="grid two" style="margin-top:16px">
-<div class="table-card"><h3>Daily24h partial watch-list</h3><div class="table-wrap"><table><thead><tr><th>Family</th><th>Program</th><th>Rows</th><th>Median PnL</th><th>Worst PnL</th><th>Survived</th></tr></thead><tbody><tr><td>clock_phase_control</td><td><code>AI15-CLOCK_PHASE_CONTRO-1405551790</code></td><td class="num">17</td><td class="num">$1,189.03</td><td class="num">$-112.99</td><td class="num">76%</td></tr><tr><td>volatility_budgeted_rescue</td><td><code>AI15-VOLATILITY_BUDGETE-80befdc946</code></td><td class="num">17</td><td class="num">$508.83</td><td class="num">$236.26</td><td class="num">47%</td></tr><tr><td>clock_phase_control</td><td><code>AI15-CLOCK_PHASE_CONTRO-e1e4f05a0b</code></td><td class="num">17</td><td class="num">$180.63</td><td class="num">$-321.37</td><td class="num">65%</td></tr><tr><td>volatility_budgeted_rescue</td><td><code>AI15-VOLATILITY_BUDGETE-1d417ab897</code></td><td class="num">17</td><td class="num">$86.47</td><td class="num">$-115.61</td><td class="num">100%</td></tr><tr><td>fractal_coherence_switch</td><td><code>AI15-FRACTAL_COHERENCE_-5060b177af</code></td><td class="num">17</td><td class="num">$41.49</td><td class="num">$-89.02</td><td class="num">88%</td></tr></tbody></table></div></div>
-<div class="table-card"><h3>Deep6h robust-score leaders</h3><div class="table-wrap"><table><thead><tr><th>Family</th><th>Program</th><th>Score</th><th>Median FC</th><th>Worst FC</th></tr></thead><tbody><tr><td>trend_exhaustion_handoff</td><td><code>AI15-TREND_EXHAUSTION_H-db9986c439</code></td><td class="num">169.66</td><td class="num">$804.78</td><td class="num">$45.54</td></tr><tr><td>multi_horizon_pressure</td><td><code>AI15-MULTI_HORIZON_PRES-330ab0df2a</code></td><td class="num">152.96</td><td class="num">$128.75</td><td class="num">$1.61</td></tr><tr><td>multi_horizon_pressure</td><td><code>AI15-MULTI_HORIZON_PRES-9c24860cb1</code></td><td class="num">132.32</td><td class="num">$30.88</td><td class="num">$1.50</td></tr><tr><td>pi_phase_gate</td><td><code>AI15-PI_PHASE_GATE-15987285bb</code></td><td class="num">109.43</td><td class="num">$903.28</td><td class="num">$28.47</td></tr><tr><td>inventory_corridor_rescue</td><td><code>AI15-INVENTORY_CORRIDOR-f7371b8ba5</code></td><td class="num">105.69</td><td class="num">$308.00</td><td class="num">$-51.16</td></tr></tbody></table></div></div>
-</div>
-<div class="danger" style="margin-top:16px"><strong>Do not overclaim yet:</strong> high force-close PnL remains a hypothesis until Daily24h, Weekly168h, Walkforward and Locked Holdout finish. Treat these rows as seed candidates, not proven live edges.</div>
-</section>
-
-<section id="v14">
-<h2>Next research gate after v1.5.3b</h2>
-<div class="grid three"><div class="callout"><h3>Finish the evidence ladder</h3><p>Complete Daily24h, Weekly168h, Walkforward and Locked Holdout before final promotion.</p></div><div class="callout"><h3>Encode manual parity</h3><p>Translate the −200% ladder, 2–3× winner adds, staged protection, dynamic re-anchor and bounded 10–20 SOL rescue into causal arena programs.</p></div><div class="callout"><h3>Capital and control truth</h3><p>Require candidate-specific controls and report minimum surviving wallet, gross notional, drawdown, liquidation buffer and open-tail dependency.</p></div></div>
-<pre>current manual seed → causal ProgramIR translation
-                         ↓
-matched controls + exact legacy comparison
-                         ↓
-Daily / Weekly / Walkforward / Locked Holdout
-                         ↓
-P0–P5 and Pareto frontiers by capital-at-risk</pre>
-</section>
-<div class="footer">BD Hedge Separation PiX Strategy · current manual method + v1.3c evidence + v1.5.3b research · offline research only · not financial advice.</div>
-</div>
-
-<script>
-function fontStep(delta){const root=document.documentElement;const cur=parseFloat(getComputedStyle(root).getPropertyValue('--fontScale'))||1;const next=Math.max(.78,Math.min(1.6,cur+delta));root.style.setProperty('--fontScale',next.toFixed(2));localStorage.setItem('bd_hsr_fontScale',next.toFixed(2));}
-function fontReset(){document.documentElement.style.setProperty('--fontScale','1');localStorage.setItem('bd_hsr_fontScale','1');}
-function calcRoe(){const lev=parseFloat(document.getElementById('lev')?.value)||300;const roe=Math.abs(parseFloat(document.getElementById('roe')?.value)||500);const move=roe/lev;const out=document.getElementById('roeOut');if(out)out.textContent=roe.toFixed(0)+'% ROE ≈ '+move.toFixed(3)+'% price move before costs/execution';}
-(function(){const s=localStorage.getItem('bd_hsr_fontScale');if(s)document.documentElement.style.setProperty('--fontScale',s);calcRoe();})();
-</script>
+<body class="trading-protected-outer">
+  <main class="trading-protected-page">
+    <nav class="trading-protected-bar" aria-label="Trading research navigation">
+      <a href="/bd/trading">BD Trading</a>
+      <a href="/bd/trading-research-atlas">Research Atlas</a>
+      <button type="button" class="trading-protected-lang-toggle" data-trading-language-toggle aria-label="Switch language">SL</button>
+    </nav>
+    <article class="trading-protected-card">
+      <p class="trading-protected-eyebrow">BD × AI · Trading Research</p>
+      <h1>Hedge Separation PiX</h1>
+      <p class="trading-protected-kind"><span class="trading-protected-lang-en">Strategy explainer &amp; evidence</span><span class="trading-protected-lang-sl">Razlaga strategije in evidence</span></p>
+      <div class="trading-protected-copy">
+        <p class="trading-protected-lang-en">A PiX strategy explainer linking a distinctive book-management hypothesis with arena evidence. Reproduction-level rules and operational detail require Trading access.</p>
+        <p class="trading-protected-lang-sl">PiX razlaga strategije, ki povezuje posebno hipotezo o vodenju knjige z evidenco aren. Pravila na ravni reprodukcije in operativne podrobnosti zahtevajo Trading dostop.</p>
+      </div>
+      <span class="trading-protected-badge">PASSWORD-ONLY · TRADING NAMESPACE</span>
+      <div class="trading-protected-note"><strong>EN</strong> This page uses the separate Trading passphrase only. It does not use the site-wide email gate. Protected material is encrypted before access; after legitimate unlock it can be viewed and used in this browser session. <strong>SL</strong> Ta stran uporablja samo ločeno Trading geslo. Ne uporablja site-wide email gatea. Zaščiteno gradivo je pred dostopom šifrirano; po legitimnem unlocku je vidno in uporabno v tej brskalniški seji.</div>
+      <section class="trading-protected-section" data-trading-shield data-shield-label="Complete working page — protected / Celotna delovna stran — zaščiteno" data-shield-sub="Engine, exact mechanics and reproduction-level configuration are encrypted before access. / Engine, natančna mehanika in konfiguracija na ravni reprodukcije so pred dostopom šifrirani." data-8z-blob="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"></section>
+      <p class="trading-protected-footer">File: BD_Hedge_Separation_PiX_Strategy_Explainer.html · Offline research / virtual-money paper trading where stated · No financial advice.</p>
+    </article>
+  </main>
+  <script defer src="/js/trading-password-shield.js"></script>
 </body>
 </html>

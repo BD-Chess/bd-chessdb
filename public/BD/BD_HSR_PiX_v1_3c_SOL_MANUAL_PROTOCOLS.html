@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -296,99 +296,36 @@ input[type="checkbox"] {
     blockquote, pre, table { break-inside: avoid; }
 }
 </style>
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<style id="trading-protected-shell-style">
+  body.trading-protected-outer{margin:0!important;min-width:0!important;background:radial-gradient(circle at 14% -8%,rgba(62,155,134,.22),transparent 34rem),#071018!important;color:#e8eff5!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.55!important}
+  .trading-protected-outer *{box-sizing:border-box}.trading-protected-outer a{color:inherit}.trading-protected-page{max-width:960px!important;margin:0 auto!important;padding:1rem 1rem 4rem!important}.trading-protected-bar{display:flex;justify-content:space-between;gap:1rem;align-items:center;border-bottom:1px solid rgba(179,201,217,.22);padding:.3rem 0 .9rem;color:#b9c9d7;font-size:.83rem}.trading-protected-bar a{font-weight:700;text-decoration:none}.trading-protected-bar a:hover{text-decoration:underline}.trading-protected-card{margin-top:clamp(2rem,7vw,5rem);padding:clamp(1.25rem,4vw,2.5rem);border:1px solid rgba(180,205,222,.25);border-radius:1.15rem;background:rgba(14,27,40,.82);box-shadow:0 24px 70px rgba(0,0,0,.28)}.trading-protected-eyebrow{margin:0 0 .85rem;color:#80d8bd;font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}.trading-protected-card h1{margin:0;font-size:clamp(2rem,6vw,4.2rem);line-height:.98;letter-spacing:-.055em}.trading-protected-kind{margin:.75rem 0 0;color:#f1c778;font:700 .78rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}.trading-protected-copy{max-width:68ch;margin:1.45rem 0 0;color:#bdcbd6;font-size:1rem}.trading-protected-copy p{margin:.65rem 0}.trading-protected-badge{display:inline-flex;margin-top:1.35rem;border:1px solid rgba(128,216,189,.48);border-radius:999px;padding:.4rem .6rem;color:#8be3c7;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase}.trading-protected-note{margin-top:1.4rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;background:rgba(201,154,59,.08);color:#cbd6df;font-size:.88rem}.trading-protected-note strong{color:#f1c778}.trading-protected-section{margin-top:1.4rem}.trading-protected-footer{margin-top:1.25rem;color:#90a2b3;font-size:.78rem}.trading-protected-lang-sl{display:none}@media(max-width:620px){.trading-protected-page{padding:.75rem .75rem 2.5rem!important}.trading-protected-bar{align-items:flex-start;flex-direction:column;gap:.35rem}.trading-protected-card{margin-top:1.2rem}.trading-protected-copy{font-size:.95rem}}
+</style>
+
 </head>
-<body>
-<main class="page-shell">
-    <div class="source-label">BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.md</div>
-    <article class="reader" id="reader"><h1>BD HSR PiX v1.3c — SOL Manual Protocol Refresh</h1>
-<p>The former manual table was not aligned with the completed v1.3c engine. It has been replaced by two evidence-labelled sections:</p>
-<h2>Balanced SOL</h2>
-<ul><li>Candidate: <code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code></li><li>Robustness: 6/6 score wins across BTC/ETH/SOL × zero/realistic costs</li><li>SOL zero-cost: +$156.68 MTM, +$60.39 realized</li><li>Fixed-$500 max drawdown: 8.43%</li><li>Core mechanics: equal hedge; up to two -500% same3 re-anchors; one 50× rescue; +0.75% excess close; keep 2× base</li></ul>
-<h2>Max-Risk SOL</h2>
-<ul><li>Candidate: <code>deep_p5_t1300_sep2000_m50_b3p24_same3_b478159a</code></li><li>SOL zero-cost: +$1,673.27 MTM, +$1,386.71 realized</li><li>Fixed-$500 max drawdown: 68.79%</li><li>Core mechanics: equal hedge; up to two -1300% same3 re-anchors; reopen at 3× base; up to two 50× rescues; +3% excess close; keep 3× base</li></ul>
-<h2>Truth limits</h2>
-<ul><li>Zero-cost means fee, slippage and funding were all zero.</li><li>Winner-side pyramiding, trailing and staged winner exits were not tested.</li><li>The named separation field was not enforced.</li><li><code>close_winner_on_mega</code> was stored but not executed.</li><li>The extreme P4 raw-PnL SOL seed remains a v1.4 wallet-neutral watchlist candidate because its fixed-$500 path was truncated.</li></ul></article>
-</main>
-
-<div class="font-controls" role="group" aria-label="Text size controls">
-    <button id="fontDown" type="button" aria-label="Decrease text size" title="Decrease text size">A−</button>
-    <button id="fontUp" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
-</div>
-
-<script>
-(() => {
-    const DESKTOP_BASE = 18;
-    const MOBILE_BASE = 21;
-    const MIN_SCALE = 0.72;
-    const MAX_SCALE = 1.72;
-    const STEP = 0.10;
-    const STORAGE_KEY = "md-dark-reader-font-scale";
-    const mobileQuery = window.matchMedia("(max-width: 700px)");
-
-    let scale = Number.parseFloat(localStorage.getItem(STORAGE_KEY) || "1");
-    if (!Number.isFinite(scale)) scale = 1;
-    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-
-    function applyFontSize() {
-        const base = mobileQuery.matches ? MOBILE_BASE : DESKTOP_BASE;
-        document.documentElement.style.fontSize = `${(base * scale).toFixed(2)}px`;
-        document.getElementById("fontDown").title = `Decrease text size (${Math.round(scale * 100)}%)`;
-        document.getElementById("fontUp").title = `Increase text size (${Math.round(scale * 100)}%)`;
-    }
-
-    function changeScale(delta) {
-        scale = Math.round((scale + delta) * 100) / 100;
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-        localStorage.setItem(STORAGE_KEY, String(scale));
-        applyFontSize();
-    }
-
-    document.getElementById("fontDown").addEventListener("click", () => changeScale(-STEP));
-    document.getElementById("fontUp").addEventListener("click", () => changeScale(STEP));
-
-    if (typeof mobileQuery.addEventListener === "function") {
-        mobileQuery.addEventListener("change", applyFontSize);
-    } else if (typeof mobileQuery.addListener === "function") {
-        mobileQuery.addListener(applyFontSize);
-    }
-
-    // Give headings stable link targets without requiring a Markdown extension.
-    const usedIds = new Set();
-    document.querySelectorAll("#reader h1, #reader h2, #reader h3, #reader h4, #reader h5, #reader h6")
-        .forEach((heading, index) => {
-            if (heading.id) {
-                usedIds.add(heading.id);
-                return;
-            }
-            let slug = heading.textContent
-                .normalize("NFKD")
-                .toLowerCase()
-                .replace(/[^\p{L}\p{N}]+/gu, "-")
-                .replace(/^-+|-+$/g, "") || `section-${index + 1}`;
-            const baseSlug = slug;
-            let suffix = 2;
-            while (usedIds.has(slug)) slug = `${baseSlug}-${suffix++}`;
-            usedIds.add(slug);
-            heading.id = slug;
-        });
-
-    // Wrap tables so wide content scrolls cleanly on phones.
-    document.querySelectorAll("#reader table").forEach(table => {
-        if (table.parentElement && table.parentElement.classList.contains("table-wrap")) return;
-        const wrapper = document.createElement("div");
-        wrapper.className = "table-wrap";
-        table.parentNode.insertBefore(wrapper, table);
-        wrapper.appendChild(table);
-    });
-
-    // External links open safely in a new tab; local and anchor links remain normal.
-    document.querySelectorAll('#reader a[href^="http://"], #reader a[href^="https://"]').forEach(link => {
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-    });
-
-    applyFontSize();
-})();
-</script>
+<body class="trading-protected-outer">
+  <main class="trading-protected-page">
+    <nav class="trading-protected-bar" aria-label="Trading research navigation">
+      <a href="/bd/trading">BD Trading</a>
+      <a href="/bd/trading-research-atlas">Research Atlas</a>
+      <button type="button" class="trading-protected-lang-toggle" data-trading-language-toggle aria-label="Switch language">SL</button>
+    </nav>
+    <article class="trading-protected-card">
+      <p class="trading-protected-eyebrow">BD × AI · Trading Research</p>
+      <h1>HSR / PiX SOL Manual Protocols</h1>
+      <p class="trading-protected-kind"><span class="trading-protected-lang-en">Protocol research</span><span class="trading-protected-lang-sl">Raziskava protokolov</span></p>
+      <div class="trading-protected-copy">
+        <p class="trading-protected-lang-en">A practical HSR / PiX protocol page. Its research lineage and role are public, while the actionable sequence and parameter-level protocol are encrypted.</p>
+        <p class="trading-protected-lang-sl">Praktična HSR / PiX protokolna stran. Raziskovalna lineage in vloga sta javni, izvedljivo zaporedje in protokol na ravni parametrov pa sta šifrirana.</p>
+      </div>
+      <span class="trading-protected-badge">PASSWORD-ONLY · TRADING NAMESPACE</span>
+      <div class="trading-protected-note"><strong>EN</strong> This page uses the separate Trading passphrase only. It does not use the site-wide email gate. Protected material is encrypted before access; after legitimate unlock it can be viewed and used in this browser session. <strong>SL</strong> Ta stran uporablja samo ločeno Trading geslo. Ne uporablja site-wide email gatea. Zaščiteno gradivo je pred dostopom šifrirano; po legitimnem unlocku je vidno in uporabno v tej brskalniški seji.</div>
+      <section class="trading-protected-section" data-trading-shield data-shield-label="Complete working page — protected / Celotna delovna stran — zaščiteno" data-shield-sub="Engine, exact mechanics and reproduction-level configuration are encrypted before access. / Engine, natančna mehanika in konfiguracija na ravni reprodukcije so pred dostopom šifrirani." data-8z-blob="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"></section>
+      <p class="trading-protected-footer">File: BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.html · Offline research / virtual-money paper trading where stated · No financial advice.</p>
+    </article>
+  </main>
+  <script defer src="/js/trading-password-shield.js"></script>
 </body>
 </html>
