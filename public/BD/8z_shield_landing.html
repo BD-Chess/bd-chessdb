@@ -515,6 +515,7 @@ html[data-theme="light"] #shield-current .btn-primary{background:var(--orange);c
 .shield-current-footer a{color:var(--teal);text-underline-offset:4px}
 .shield-controls{display:flex;flex-wrap:wrap;gap:6px}.shield-controls button{font:inherit;color:var(--text2);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer}
 .shield-controls button[aria-pressed="true"]{color:var(--text);border-color:var(--orange)}
+.shield-controls .shield-theme-toggle{display:grid;place-items:center;padding:8px;min-width:36px;min-height:36px}.shield-theme-toggle svg{width:18px;height:18px}
 .shield-font-controls{display:flex;gap:6px}.shield-controls button:disabled{opacity:.45;cursor:default}.shield-controls button:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
 #shield-current{overflow-wrap:anywhere}#shield-current .hero-eyebrow,#shield-current .section-tag{font-size:.6875rem}#shield-current .btn-primary{font-size:.8125rem}#shield-current .btn-secondary{font-size:.75rem}
 .shield-current-hero{min-height:0;padding:70px 0 48px}.shield-current-hero .hero-sub{max-width:760px;font-size:1.125rem}.shield-current-hero .hero-title{font-size:calc(clamp(42px,7vw,76px) * var(--shield-font-scale))}
@@ -649,7 +650,7 @@ html[data-theme="light"] #shield-current .btn-primary{background:var(--orange);c
 
 <div class="container"><nav class="shield-nav" aria-label="8Z Shield navigation">
 <a data-entry-link="" href="/index-atlas.html">← BD × AI Lab · Atlas</a>
-<div class="shield-controls"><button id="shield-lang-en" type="button" data-set-lang="en" aria-pressed="true">EN</button><button id="shield-lang-sl" type="button" data-set-lang="sl" aria-pressed="false">SL</button><div class="shield-font-controls" role="group" aria-label="Text size / Velikost besedila"><button type="button" data-shield-font="-1" aria-label="Smaller text / Manjše besedilo">A−</button><button type="button" data-shield-font="0" aria-label="Reset text size / Ponastavi velikost besedila">100%</button><button type="button" data-shield-font="1" aria-label="Larger text / Večje besedilo">A+</button></div><button id="shield-light" type="button" data-set-theme="light" aria-pressed="false"><span class="lang-en" lang="en">Light</span><span class="lang-sl" lang="sl">Svetlo</span></button><button id="shield-dark" type="button" data-set-theme="dark" aria-pressed="true"><span class="lang-en" lang="en">Dark</span><span class="lang-sl" lang="sl">Temno</span></button></div>
+<div class="shield-controls"><button id="shield-lang-en" type="button" data-set-lang="en" aria-pressed="true">EN</button><button id="shield-lang-sl" type="button" data-set-lang="sl" aria-pressed="false">SL</button><div class="shield-font-controls" role="group" aria-label="Text size / Velikost besedila"><button type="button" data-shield-font="-1" aria-label="Smaller text / Manjše besedilo">A−</button><button type="button" data-shield-font="0" aria-label="Reset text size / Ponastavi velikost besedila">100%</button><button type="button" data-shield-font="1" aria-label="Larger text / Večje besedilo">A+</button></div><button id="shield-theme-toggle" class="shield-theme-toggle" type="button" aria-label="Switch to light theme"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg></button></div>
 </nav></div>
 <main id="shield-current">
 <section class="hero shield-current-hero" id="shield-overview"><div class="hero-bg"></div><div class="container hero-content">
@@ -1220,13 +1221,14 @@ setTimeout(() => document.querySelectorAll('.vis').forEach(el => el.classList.ad
 </div></details>
 <footer class="container shield-current-footer">8Z Shield · BD × AI Lab · <span class="lang-en" lang="en">Current product overview · 9 September 2026</span><span class="lang-sl" lang="sl">Aktualni pregled izdelka · 9. september 2026</span><br><a data-entry-link="" href="/index-atlas.html">Atlas</a> · <a data-entry-link="" href="/BD/index.html">BD</a> · <a href="#shield-overview"><span class="lang-en" lang="en">Back to current overview</span><span class="lang-sl" lang="sl">Nazaj na aktualni pregled</span></a></footer>
 <script id="shield-presentation-controls">+(function(){
-  var root=document.documentElement;
-  function sync(){document.querySelectorAll('[data-set-lang]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.setLang===root.dataset.lang));});}
+  var root=document.documentElement, themeToggle=document.getElementById('shield-theme-toggle');
+  function themeLabel(){var light=root.dataset.theme==='light',sl=root.dataset.lang==='sl';var label=sl?(light?'Preklopi na temno temo':'Preklopi na svetlo temo'):(light?'Switch to dark theme':'Switch to light theme');themeToggle.setAttribute('aria-label',label);themeToggle.title=label;}
+  function sync(){document.querySelectorAll('[data-set-lang]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.setLang===root.dataset.lang));});themeLabel();}
   document.querySelectorAll('[data-set-lang]').forEach(function(b){b.addEventListener('click',function(){if(window.MDLxDCCLocale)window.MDLxDCCLocale.choose(b.dataset.setLang);else{root.dataset.lang=b.dataset.setLang;root.lang=b.dataset.setLang;}sync();});});
-  function theme(value){root.dataset.theme=value;document.querySelectorAll('[data-set-theme]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.setTheme===value));});}
-  var initial='dark';try{initial=localStorage.getItem('bd-shield-presentation-theme')||initial;}catch(_){}
+  function theme(value){root.dataset.theme=value;themeLabel();}
+  var initial='dark';try{initial=localStorage.getItem('mdlxdcc-theme')||localStorage.getItem('bd-shield-presentation-theme')||initial;}catch(_){}
   theme(initial==='light'?'light':'dark');
-  document.querySelectorAll('[data-set-theme]').forEach(function(b){b.addEventListener('click',function(){theme(b.dataset.setTheme);try{localStorage.setItem('bd-shield-presentation-theme',b.dataset.setTheme);}catch(_){}});});
+  themeToggle.addEventListener('click',function(){theme(root.dataset.theme==='dark'?'light':'dark');try{localStorage.setItem('mdlxdcc-theme',root.dataset.theme);}catch(_){}});
   var fontScale=1, fontButtons=document.querySelectorAll('[data-shield-font]');
   function setFont(value,persist){
     fontScale=Math.round(Math.max(.9,Math.min(1.25,value))*100)/100;
