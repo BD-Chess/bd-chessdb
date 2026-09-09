@@ -36,7 +36,8 @@ export default async (req, context) => {
   }
 
   // The owner password stays server-side in Netlify. Never publish it or the
-  // derived password-equivalent credential in GitHub source.
+  // derived password-equivalent credential in GitHub source. Environment-variable
+  // changes require a fresh Netlify deploy before a preview/production function sees them.
   const password = Netlify.env.get("SHIELD_EMAIL_PASSWORD");
   if (!password) {
     console.error("shield-email-access: missing SHIELD_EMAIL_PASSWORD");
