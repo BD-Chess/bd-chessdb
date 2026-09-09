@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/BD/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a1019">
+<title>BD HSR PiX v1.3c — SOL Manual Protocol Refresh</title>
+<style>
+:root {
+    --bg-0: #070b11;
+    --bg-1: #0a111b;
+    --bg-2: #101a28;
+    --panel: rgba(15, 24, 37, 0.94);
+    --panel-soft: rgba(21, 32, 48, 0.78);
+    --text: #e8eef7;
+    --muted: #aab8ca;
+    --faint: #74839a;
+    --accent: #83c8ff;
+    --accent-2: #b7a2ff;
+    --accent-soft: rgba(131, 200, 255, 0.14);
+    --border: rgba(169, 196, 224, 0.17);
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+    --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+    font-size: 18px;
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(74, 120, 179, 0.20), transparent 36rem),
+        radial-gradient(circle at 92% 20%, rgba(125, 93, 190, 0.13), transparent 30rem),
+        linear-gradient(145deg, var(--bg-0), var(--bg-1) 46%, #080d14);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.72;
+    overflow-wrap: anywhere;
+}
+
+.page-shell {
+    width: min(100% - 32px, 980px);
+    margin: 0 auto;
+    padding: 48px 0 110px;
+}
+
+.source-label {
+    margin: 0 8px 12px;
+    color: var(--faint);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.reader {
+    position: relative;
+    padding: clamp(30px, 6vw, 72px);
+    background: linear-gradient(180deg, rgba(18, 28, 43, 0.96), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+}
+
+.reader > :first-child { margin-top: 0; }
+.reader > :last-child { margin-bottom: 0; }
+
+h1, h2, h3, h4, h5, h6 {
+    color: #f7faff;
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+    scroll-margin-top: 1rem;
+}
+
+h1 {
+    margin: 0 0 1.1em;
+    font-size: clamp(2rem, 5.2vw, 3.35rem);
+    line-height: 1.05;
+    background: linear-gradient(115deg, #ffffff 8%, var(--accent) 58%, var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+h2 {
+    margin: 2.2em 0 0.75em;
+    padding-bottom: 0.34em;
+    font-size: clamp(1.5rem, 3.4vw, 2.15rem);
+    border-bottom: 1px solid var(--border);
+}
+
+h3 { margin: 1.85em 0 0.65em; font-size: 1.35rem; color: #dcecff; }
+h4 { margin: 1.6em 0 0.55em; font-size: 1.15rem; color: #d8e5f5; }
+h5, h6 { margin: 1.4em 0 0.5em; color: var(--muted); }
+
+p { margin: 0 0 1.05em; }
+strong { color: #ffffff; font-weight: 750; }
+em { color: #d9e5f4; }
+del { color: var(--faint); }
+
+mark {
+    color: #fff4c7;
+    background: rgba(255, 205, 86, 0.20);
+    border-radius: 0.25em;
+    padding: 0.04em 0.22em;
+}
+
+a {
+    color: var(--accent);
+    text-decoration-color: rgba(131, 200, 255, 0.46);
+    text-underline-offset: 0.18em;
+}
+a:hover { color: #b8e1ff; text-decoration-color: currentColor; }
+a:focus-visible, button:focus-visible {
+    outline: 3px solid rgba(131, 200, 255, 0.72);
+    outline-offset: 3px;
+}
+
+ul, ol {
+    margin: 0 0 1.1em;
+    padding-left: 1.45em;
+}
+li { margin: 0.28em 0; padding-left: 0.18em; }
+li::marker { color: var(--accent); font-weight: 700; }
+
+blockquote {
+    margin: 1.55em 0;
+    padding: 1.05em 1.2em 1.05em 1.35em;
+    color: #d9e5f2;
+    background: linear-gradient(90deg, var(--accent-soft), rgba(131, 200, 255, 0.035));
+    border-left: 4px solid var(--accent);
+    border-radius: 0 14px 14px 0;
+}
+blockquote > :last-child { margin-bottom: 0; }
+
+hr {
+    height: 1px;
+    margin: 2.5em 0;
+    border: 0;
+    background: linear-gradient(90deg, transparent, rgba(131, 200, 255, 0.55), transparent);
+}
+
+code, kbd, samp {
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+:not(pre) > code {
+    padding: 0.13em 0.38em;
+    color: #d6efff;
+    background: rgba(4, 10, 17, 0.62);
+    border: 1px solid var(--border);
+    border-radius: 0.38em;
+    font-size: 0.91em;
+}
+
+pre {
+    max-width: 100%;
+    margin: 1.45em 0;
+    padding: 1.1em 1.2em;
+    overflow: auto;
+    color: #dce8f7;
+    background: #060a10;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+    tab-size: 4;
+}
+pre code { font-size: 0.86rem; line-height: 1.58; }
+
+.table-wrap {
+    max-width: 100%;
+    margin: 1.5em 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    background: rgba(5, 10, 16, 0.34);
+}
+th, td {
+    padding: 0.72em 0.85em;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    vertical-align: top;
+}
+th:last-child, td:last-child { border-right: 0; }
+tr:last-child td { border-bottom: 0; }
+th {
+    color: #f6f9ff;
+    background: rgba(131, 200, 255, 0.10);
+    text-align: left;
+}
+tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.018); }
+
+img, video, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.4em auto;
+    border-radius: 14px;
+}
+
+.task-list-item { list-style: none; margin-left: -1.2em; }
+input[type="checkbox"] {
+    width: 1em;
+    height: 1em;
+    margin: 0 0.45em 0 0;
+    accent-color: var(--accent);
+}
+
+.footnotes {
+    margin-top: 3em;
+    padding-top: 1.2em;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.font-controls {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(7, 12, 19, 0.90);
+    border: 1px solid rgba(169, 196, 224, 0.26);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(14px);
+}
+
+.font-controls button {
+    min-width: 52px;
+    min-height: 48px;
+    padding: 0 13px;
+    color: #f6f9ff;
+    background: linear-gradient(180deg, #1c2a3e, #121c2b);
+    border: 1px solid rgba(169, 196, 224, 0.20);
+    border-radius: 11px;
+    font: 800 0.98rem/1 system-ui, sans-serif;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+}
+.font-controls button:hover { background: linear-gradient(180deg, #263a54, #19283b); }
+.font-controls button:active { transform: translateY(1px); }
+
+@media (max-width: 700px) {
+    html { font-size: 21px; }
+    body { line-height: 1.68; }
+    .page-shell {
+        width: min(100% - 16px, 980px);
+        padding: 12px 0 104px;
+    }
+    .source-label { margin: 0 7px 8px; font-size: 0.64rem; }
+    .reader {
+        padding: 24px 18px 32px;
+        border-radius: 16px;
+    }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.48rem; margin-top: 1.9em; }
+    h3 { font-size: 1.24rem; }
+    blockquote { margin-left: 0; margin-right: 0; padding: 0.9em 0.9em 0.9em 1em; }
+    pre { margin-left: -6px; margin-right: -6px; padding: 0.9em; }
+    .font-controls button { min-width: 56px; min-height: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+@media print {
+    html { font-size: 11pt !important; }
+    body { color: #111; background: #fff; }
+    .page-shell { width: 100%; padding: 0; }
+    .source-label, .font-controls { display: none !important; }
+    .reader { padding: 0; background: #fff; border: 0; border-radius: 0; box-shadow: none; }
+    h1, h2, h3, h4, h5, h6, strong, a { color: #000 !important; background: none !important; }
+    blockquote, pre, table { break-inside: avoid; }
+}
+</style>
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+
+<style id="trading-protected-shell-style">
+  body.trading-protected-outer{margin:0!important;min-width:0!important;background:radial-gradient(circle at 14% -8%,rgba(62,155,134,.22),transparent 34rem),#071018!important;color:#e8eff5!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;line-height:1.55!important}
+  .trading-protected-outer *{box-sizing:border-box}.trading-protected-outer a{color:inherit}.trading-protected-page{max-width:960px!important;margin:0 auto!important;padding:1rem 1rem 4rem!important}.trading-protected-bar{display:flex;justify-content:space-between;gap:1rem;align-items:center;border-bottom:1px solid rgba(179,201,217,.22);padding:.3rem 0 .9rem;color:#b9c9d7;font-size:.83rem}.trading-protected-bar a{font-weight:700;text-decoration:none}.trading-protected-bar a:hover{text-decoration:underline}.trading-protected-card{margin-top:clamp(2rem,7vw,5rem);padding:clamp(1.25rem,4vw,2.5rem);border:1px solid rgba(180,205,222,.25);border-radius:1.15rem;background:rgba(14,27,40,.82);box-shadow:0 24px 70px rgba(0,0,0,.28)}.trading-protected-eyebrow{margin:0 0 .85rem;color:#80d8bd;font:700 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}.trading-protected-card h1{margin:0;font-size:clamp(2rem,6vw,4.2rem);line-height:.98;letter-spacing:-.055em}.trading-protected-kind{margin:.75rem 0 0;color:#f1c778;font:700 .78rem/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}.trading-protected-copy{max-width:68ch;margin:1.45rem 0 0;color:#bdcbd6;font-size:1rem}.trading-protected-copy p{margin:.65rem 0}.trading-protected-badge{display:inline-flex;margin-top:1.35rem;border:1px solid rgba(128,216,189,.48);border-radius:999px;padding:.4rem .6rem;color:#8be3c7;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;text-transform:uppercase}.trading-protected-note{margin-top:1.4rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;background:rgba(201,154,59,.08);color:#cbd6df;font-size:.88rem}.trading-protected-note strong{color:#f1c778}.trading-protected-section{margin-top:1.4rem}.trading-protected-footer{margin-top:1.25rem;color:#90a2b3;font-size:.78rem}.trading-protected-lang-sl{display:none}@media(max-width:620px){.trading-protected-page{padding:.75rem .75rem 2.5rem!important}.trading-protected-bar{align-items:flex-start;flex-direction:column;gap:.35rem}.trading-protected-card{margin-top:1.2rem}.trading-protected-copy{font-size:.95rem}}
+</style>
+
+</head>
+<body class="trading-protected-outer">
+  <main class="trading-protected-page">
+    <nav class="trading-protected-bar" aria-label="Trading research navigation">
+      <a href="/bd/trading">BD Trading</a>
+      <a href="/bd/trading-research-atlas">Research Atlas</a>
+      <button type="button" class="trading-protected-lang-toggle" data-trading-language-toggle aria-label="Switch language">SL</button>
+    </nav>
+    <article class="trading-protected-card">
+      <p class="trading-protected-eyebrow">BD × AI · Trading Research</p>
+      <h1>HSR / PiX SOL Manual Protocols</h1>
+      <p class="trading-protected-kind"><span class="trading-protected-lang-en">Protocol research</span><span class="trading-protected-lang-sl">Raziskava protokolov</span></p>
+      <div class="trading-protected-copy">
+        <p class="trading-protected-lang-en">A practical HSR / PiX protocol page. Its research lineage and role are public, while the actionable sequence and parameter-level protocol are encrypted.</p>
+        <p class="trading-protected-lang-sl">Praktična HSR / PiX protokolna stran. Raziskovalna lineage in vloga sta javni, izvedljivo zaporedje in protokol na ravni parametrov pa sta šifrirana.</p>
+      </div>
+      <span class="trading-protected-badge">PASSWORD-ONLY · TRADING NAMESPACE</span>
+      <div class="trading-protected-note"><strong>EN</strong> This page uses the separate Trading passphrase only. It does not use the site-wide email gate. Protected material is encrypted before access; after legitimate unlock it can be viewed and used in this browser session. <strong>SL</strong> Ta stran uporablja samo ločeno Trading geslo. Ne uporablja site-wide email gatea. Zaščiteno gradivo je pred dostopom šifrirano; po legitimnem unlocku je vidno in uporabno v tej brskalniški seji.</div>
+      <section class="trading-protected-section" data-trading-shield data-shield-label="Complete working page — protected / Celotna delovna stran — zaščiteno" data-shield-sub="Engine, exact mechanics and reproduction-level configuration are encrypted before access. / Engine, natančna mehanika in konfiguracija na ravni reprodukcije so pred dostopom šifrirani." data-8z-blob="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"></section>
+      <p class="trading-protected-footer">File: BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.html · Offline research / virtual-money paper trading where stated · No financial advice.</p>
+    </article>
+  </main>
+  <script defer src="/js/trading-password-shield.js"></script>
+</body>
+</html>
