@@ -1,0 +1,100 @@
+name: Shield email gate E2E
+
+on:
+  push:
+    branches:
+      - codex/shield-email-access-20260909
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Netlify Deploy Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview='https://deploy-preview-5--chessbd.netlify.app'
+          for i in $(seq 1 40); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$preview/index-search.html" || true)
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 5
+          done
+          echo 'Deploy Preview did not become ready in time.' >&2
+          exit 1
+
+      - name: Validate email gate and record one test access
+        shell: bash
+        run: |
+          set -euo pipefail
+          preview='https://deploy-preview-5--chessbd.netlify.app'
+
+          invalid_code=$(curl -sS -o /tmp/invalid.json -w '%{http_code}' \
+            -X POST "$preview/api/shield-email-access" \
+            -H 'Content-Type: application/json' \
+            --data '{"email":"not-an-email","page":"/index-search.html"}')
+          test "$invalid_code" = '400'
+          python - <<'PY'
+          import json
+          with open('/tmp/invalid.json', encoding='utf-8') as f:
+              x=json.load(f)
+          assert x.get('ok') is False and x.get('error')=='email'
+          PY
+
+          valid_code=$(curl -sS -o /tmp/valid.json -w '%{http_code}' \
+            -X POST "$preview/api/shield-email-access" \
+            -H 'Content-Type: application/json' \
+            --data '{"email":"bd@siol.net","page":"/index-search.html"}')
+          test "$valid_code" = '200'
+          python - <<'PY'
+          import json,re
+          with open('/tmp/valid.json', encoding='utf-8') as f:
+              x=json.load(f)
+          assert x.get('ok') is True
+          assert re.fullmatch(r'[A-Za-z0-9+/]{43}=', x.get('credential',''))
+          assert isinstance(x.get('accessedAt'), str) and x['accessedAt'].endswith('Z')
+          assert isinstance(x.get('ip'), str)
+          PY
+
+          second_code=$(curl -sS -o /tmp/valid2.json -w '%{http_code}' \
+            -X POST "$preview/api/shield-email-access" \
+            -H 'Content-Type: application/json' \
+            --data '{"email":"bd@siol.net","page":"/crp/8z_MDLxDCC.html"}')
+          test "$second_code" = '200'
+          python - <<'PY'
+          import json,re
+          with open('/tmp/valid2.json', encoding='utf-8') as f:
+              x=json.load(f)
+          assert x.get('ok') is True
+          assert re.fullmatch(r'[A-Za-z0-9+/]{43}=', x.get('credential',''))
+          PY
+
+          accessed_at=$(python - <<'PY'
+          import json
+          print(json.load(open('/tmp/valid.json', encoding='utf-8'))['accessedAt'])
+          PY
+          )
+          ip=$(python - <<'PY'
+          import json
+          print(json.load(open('/tmp/valid.json', encoding='utf-8')).get('ip',''))
+          PY
+          )
+
+          form_code=$(curl -sS -o /tmp/form-response.txt -w '%{http_code}' \
+            -X POST "$preview/shield-access-form.html" \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'form-name=shield-access' \
+            --data-urlencode 'bot-field=' \
+            --data-urlencode 'email=bd@siol.net' \
+            --data-urlencode "accessed_at=$accessed_at" \
+            --data-urlencode "ip=$ip" \
+            --data-urlencode 'page=/index-search.html' \
+            --data-urlencode 'user_agent=MDLxDCC automated E2E verification')
+          case "$form_code" in
+            200|201|202|204|301|302|303) ;;
+            *) echo "Unexpected form status: $form_code" >&2; exit 1;;
+          esac
+
+          echo 'Email gate E2E passed without exposing the Shield credential.'
