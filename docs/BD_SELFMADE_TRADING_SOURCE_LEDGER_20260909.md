@@ -56,3 +56,13 @@ It is deliberately source-bounded. A result marked `DIRECT_PACKAGE` was read fro
 - `BB / Neutral Lock`: use only as a clearly labelled secondary preliminary donor signal until the named primary extracts are reviewed.
 - `Reanchor convergence`: described as recurring mechanism focus and a promising frontier; it is not called a proven universal law or a fully quantified independently replicated result.
 - `No global leaderboard`: every prominent number keeps its own asset, timeframe, reference quantity, execution lane, evidence status and caveat.
+
+## Trading Hub Q1s visual mapping — 2026-09-10
+
+`public/BD/BD_Trading_Hub.html` uses only the public numerical evidence already governed by `TR-501` through `TR-504`:
+
+- three separate raw-PnL bars: `TR-501`, `TR-502`, `TR-504`;
+- BREATHE-versus-matched-fixed changes: `TR-503`;
+- the 200-dot add-surface visual: `TR-504`.
+
+The visual intentionally names the selected research-week / oracle replay lane beside the chart and introduces no exact entry, exit, add, quantity, leverage or wallet rule.
