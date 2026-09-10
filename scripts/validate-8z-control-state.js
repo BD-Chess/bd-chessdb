@@ -17,6 +17,7 @@ const required = [
   'workers', 'machine', 'next_action', 'attention', 'confidence', 'notes'
 ];
 const sensitive = /(api[_ -]?key|password|secret|bearer\s+|\bsk-[a-z0-9]|(?:[a-z]:\\)|(?:\/users\/)|(?:\/home\/))/i;
+const safePublicPath = value => typeof value === 'string' && /^\/(?!\/)[a-z0-9._/-]*$/i.test(value);
 const fail = message => { throw new Error(message); };
 
 if (!Array.isArray(register.arenas)) fail('Register has no arenas array.');
@@ -32,6 +33,7 @@ for (const arena of register.arenas) {
   if (arena.running !== (arena.status === 'RUNNING')) fail(`running/status mismatch for ${arena.arena_id}.`);
   if (!['OK', 'WATCH', 'ACTION'].includes(arena.attention)) fail(`Unsupported attention for ${arena.arena_id}.`);
   if (!['HIGH', 'MEDIUM', 'LOW'].includes(arena.confidence)) fail(`Unsupported confidence for ${arena.arena_id}.`);
+  if (arena.public_link !== undefined && arena.public_link !== null && !safePublicPath(arena.public_link)) fail(`Unsafe public_link for ${arena.arena_id}.`);
   if (sensitive.test(JSON.stringify(arena))) fail(`Potentially sensitive content in ${arena.arena_id}.`);
   ids.add(arena.arena_id);
   counts[arena.status] = (counts[arena.status] || 0) + 1;

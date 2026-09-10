@@ -192,6 +192,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 70px;color:var(--muted);f
 #8z-control .arena-data div{padding-top:9px}
 #8z-control .arena-data div:last-child{grid-column:1/-1}
 #8z-control .arena-data span{font-size:12px;line-height:1.42}
+#8z-control .arena-public-link{display:inline-flex;align-items:center;min-height:30px;margin:12px 0 0;color:var(--cyan);font:700 11px var(--mono);letter-spacing:.03em;text-decoration:none}
+#8z-control .arena-public-link:hover,#8z-control .arena-public-link:focus-visible{color:#fff;text-decoration:none;outline:none}
 #8z-control .delta-arena-link,#8z-control .needs-link{color:inherit;text-decoration:none}
 #8z-control .delta-arena-link:hover,#8z-control .needs-link:hover{color:var(--cyan);text-decoration:none}
 #8z-control .needs-link{display:block;color:#fff;font-size:14px;font-weight:750;line-height:1.35}
@@ -447,6 +449,11 @@ python my-play.py</div>
 <section id="news" lang="en">
 <div class="section-title"><h2>News &amp; announcements</h2><p>Short public-facing updates and current work signals.</p></div><div class="card"><span class="date">2026-09-08</span><h3>Four entrances, one site.</h3><p>The technical search page, full portfolio Atlas, personal workbench and animated introduction now have distinct routes. The portrait moves to <a data-entry-link="" href="/BD/index.html">BD</a>; <a href="BD/BDR.html">BDR</a> stays beside it.</p><p><a href="index.html">Choose an entrance →</a> · <a href="index-search.html">MDL×DCC →</a> · <a href="index-atlas.html">Atlas →</a></p></div><div class="card"><span class="date">2026-09-07 / 08</span><h3>Current technical reading: R6, 8zCoding, Shield and RHP.</h3><p>Use the dated evidence receipts for measurements. R6 and future reasoning reuse remain research directions, not newly claimed benchmark wins.</p><p><a href="crp/AI8_Sudoku_R6.html">Sudoku R6</a> · <a href="crp/8zCoding.html">8zCoding</a> · <a href="BD/BD_AIM3_RHP.html">RHP / wRHP</a> · <a href="BD/8z_shield_landing.html">8Z Shield</a></p></div>
 <div class="news-list">
+<div class="news" id="news-ai8-foundry">
+<div class="news-date">2026-09-10</div>
+<div><b>AI8 Arena Foundry is now a public research-infrastructure branch.</b><br/><span><a href="/ai8/ai8_arena_foundry">Arena Foundry</a> is a governed proposal for turning a research seed into constitution, build, test, evidence, critique and the next bounded branch. It is recorded in 8Z Control as <b>NEXT</b>—not a running arena and not an AGI claim. The companion <a href="AI8/AI8_Preparation_Genesis.html">Preparation / Genesis Plane</a> remains experimental and validator-hardened, pending evidence.</span></div>
+<a class="pill blue" href="/ai8/ai8_arena_foundry">Arena Foundry</a><a class="pill gold" href="AI8/AI8_Preparation_Genesis.html">Preparation / Genesis</a>
+</div>
 <div class="news">
 <div class="news-date">2026-08-24</div>
 <div><b>An Armed Armistice for Ukraine — option-preserving policy proposal published.</b><br/><span><a href="BD/Ukraine_Armed_Armistice.html">The new proposal</a> explores a monitored two-stage cessation that concedes no sovereign title, keeps Ukraine armed and alliance-free to choose, protects people under occupation, and preserves diplomatic and future territorial-restoration options. Version 0.2 includes the RHP legal, strategic, humanitarian, political, and implementation audit trail.</span></div>
@@ -802,7 +809,7 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
       noClosed:'No blocked, uncertain, or closed arena matches the active filters.',
       version:'Version / branch', checkpoint:'Checkpoint / output', best:'Best / result', progress:'Progress', workers:'Workers',
       machine:'Machine', verified:'Last seen', health:'Health', evidence:'Evidence', confidence:'Confidence',
-      next:'Next action', notes:'Notes', openAll:'Open all', collapseAll:'Collapse all', arenaCatalogue:'Arena catalogue', fresh:'fresh', aging:'aging',
+      next:'Next action', notes:'Notes', priority:'Priority', publicPage:'Public page', openAll:'Open all', collapseAll:'Collapse all', arenaCatalogue:'Arena catalogue', fresh:'fresh', aging:'aging',
       stale:'stale', unknown:'unknown', live:'live', clearProject:'Clear project',
       unavailableText:'The canonical state files could not be loaded. This page has not inferred an arena state; reload the online page when the data endpoint is available.'
     },
@@ -820,7 +827,7 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
       noClosed:'Pod aktivnimi filtri ni blokirane, negotove ali zaključene arene.',
       version:'Verzija / veja', checkpoint:'Checkpoint / izhod', best:'Best / rezultat', progress:'Napredek', workers:'Workerji',
       machine:'Računalnik', verified:'Zadnje opaženo', health:'Zdravje', evidence:'Dokaz', confidence:'Zanesljivost',
-      next:'Naslednja akcija', notes:'Opombe', openAll:'Odpri vse', collapseAll:'Zapri vse', arenaCatalogue:'Kazalo aren', fresh:'sveže', aging:'starejše',
+      next:'Naslednja akcija', notes:'Opombe', priority:'Prioriteta', publicPage:'Javna stran', openAll:'Odpri vse', collapseAll:'Zapri vse', arenaCatalogue:'Kazalo aren', fresh:'sveže', aging:'starejše',
       stale:'zastarelo', unknown:'neznano', live:'aktivno', clearProject:'Počisti projekt',
       unavailableText:'Canonical state datotek ni bilo mogoče naložiti. Stran ni sklepala o stanju aren; ponovno naloži spletno stran, ko je podatkovni endpoint dosegljiv.'
     }
@@ -828,6 +835,7 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
   const language = () => window.MDLxDCCLocale && window.MDLxDCCLocale.current && window.MDLxDCCLocale.current() === 'sl' ? 'sl' : 'en';
   const t = key => (words[language()] && words[language()][key]) || words.en[key] || key;
   const clean = value => value === null || value === undefined || value === '' ? '—' : String(value);
+  const safePublicPath = value => typeof value === 'string' && /^\/(?!\/)[a-z0-9._/-]*$/i.test(value);
   const byId = (tag, id, className) => {
     const node = document.createElement(tag);
     if (id) node.id = id;
@@ -878,6 +886,7 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
       ids.add(arena.arena_id);
       if (!ALL_STATUSES.has(arena.status)) throw new Error('Unsupported arena status.');
       if (Boolean(arena.running) !== (arena.status === 'RUNNING')) throw new Error('RUNNING flag/status mismatch.');
+      if (arena.public_link !== undefined && arena.public_link !== null && !safePublicPath(arena.public_link)) throw new Error('Unsafe public arena link.');
     }
     const calculated = countStatus(register.arenas);
     for (const status of ALL_STATUSES) {
@@ -952,10 +961,17 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
       field(t('evidence'), [arena.last_verified_source, arena.source_chat].filter(Boolean).join(' · ')),
       field(t('confidence'), arena.confidence),
       field(t('health'), arena.attention || 'OK'),
+      arena.priority ? field(t('priority'), arena.priority) : null,
       field(t('next'), arena.next_action),
       field(t('notes'), arena.notes)
     );
     append(detail, data);
+    if (safePublicPath(arena.public_link)) {
+      const publicLink = byId('a', null, 'arena-public-link');
+      publicLink.href = arena.public_link;
+      publicLink.textContent = t('publicPage') + ' ↗';
+      detail.appendChild(publicLink);
+    }
     append(card, summary, detail);
     card.addEventListener('toggle', () => {
       if (card.open) { model.openArenaIds.add(arena.arena_id); setArenaHash(arena.arena_id); }

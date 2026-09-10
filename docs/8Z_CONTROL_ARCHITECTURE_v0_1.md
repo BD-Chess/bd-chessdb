@@ -49,11 +49,13 @@ Every `arenas[]` item has a stable `arena_id` and at least:
   "next_action": "next safe action",
   "attention": "OK | WATCH | ACTION",
   "confidence": "HIGH | MEDIUM | LOW",
+  "priority": "P0.5–P1 or null (optional)",
+  "public_link": "/same-origin-public-route (optional)",
   "notes": "short safe qualification"
 }
 ```
 
-`running` must be `true` only with `status: "RUNNING"`. `ACTION` means BD has a concrete decision or operation to perform; it is not a generic reminder.
+`running` must be `true` only with `status: "RUNNING"`. `ACTION` means BD has a concrete decision or operation to perform; it is not a generic reminder. When present, `public_link` is a deliberately safe, same-origin relative route rendered only inside the expanded arena detail; protected or private resources never use it.
 
 ## Material change log
 
@@ -90,7 +92,7 @@ Each status group is an index of collapsed arena rows: name, expansion arrow, an
 
 Stable deep links use the canonical `arena_id`, for example `index-todo.html#arena=tsp-dev23-nu3496`. A link clears transient filters, opens the required status group and arena, then scrolls to that record. `Open all` and `Collapse all` operate on the arenas matching the active filters; opening also reveals the relevant status groups. `Collapse all` restores a compact catalogue view without changing canonical state.
 
-Run `node scripts/validate-8z-control-state.js` before every state commit. It validates all three JSON files, IDs, state/counter coherence, project and delta references, and a conservative public-safety pattern check.
+Run `node scripts/validate-8z-control-state.js` before every state commit. It validates all three JSON files, IDs, state/counter coherence, project and delta references, same-origin public links, and a conservative public-safety pattern check.
 
 ## Deployment and rollback
 
