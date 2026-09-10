@@ -86,7 +86,7 @@ Search and filters are client-side and dependency-free. `RUNNING` remains first 
 
 ### v0.1.1 compact arena index
 
-Each status group is an index of collapsed arena rows: name, expansion arrow, and only a small `WATCH`/`ACTION` dot or current Morning Delta `Δ` marker when applicable. Expanding a row reveals the safe evidence fields. Multiple arena rows can remain open for comparison; this is deliberately not an accordion.
+Each status group is an index of collapsed arena rows: name, expansion arrow, and only a small `WATCH`/`ACTION` dot or current Morning Delta `Δ` marker when applicable. Expanding a row reveals the safe evidence fields. Multiple arena rows can remain open for comparison; this is deliberately not an accordion. On a fresh load Morning Delta, Needs BD, and Running are open; Build / Test / Next is open; Standby, Blocked / Uncertain / Closed, and every individual arena row are closed. The view resets these defaults explicitly so browser-restored disclosure state cannot make Standby appear expanded by accident.
 
 Stable deep links use the canonical `arena_id`, for example `index-todo.html#arena=tsp-dev23-nu3496`. A link clears transient filters, opens the required status group and arena, then scrolls to that record. `Open all` and `Collapse all` operate on the arenas matching the active filters; opening also reveals the relevant status groups. `Collapse all` restores a compact catalogue view without changing canonical state.
 

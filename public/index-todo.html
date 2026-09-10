@@ -1040,6 +1040,12 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
     if (!hasActiveFilters()) return;
     arenas.forEach(openFoldForArena);
   }
+  function resetFoldDefaults() {
+    const standby = $('control-standby-fold'), build = $('control-build-fold'), blocked = $('control-blocked-fold');
+    if (standby) standby.open = false;
+    if (build) build.open = true;
+    if (blocked) blocked.open = false;
+  }
   function renderArenas(arenas) {
     const visible = sorted(arenas.filter(match));
     const running = visible.filter(a => a.status === 'RUNNING');
@@ -1224,6 +1230,7 @@ $('stateFile').addEventListener('change',async e=>{const file=e.target.files[0];
       ]);
       validate(payload[0], payload[1], payload[2]);
       model.register = payload[0]; model.projects = payload[1]; model.delta = payload[2];
+      resetFoldDefaults();
       render();
       revealArenaFromHash(true);
     } catch (error) { unavailable(error); }
