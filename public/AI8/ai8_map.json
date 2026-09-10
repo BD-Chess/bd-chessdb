@@ -1,10 +1,10 @@
 {
-  "schema_version": "1.0.0",
-  "generated_at": "2026-09-10T02:00:00+02:00",
+  "schema_version": "1.1.0",
+  "generated_at": "2026-09-10T18:27:00+02:00",
   "canonical_hub": "https://www.mdlxdcc.org/ai8/",
   "public_map_principle": {
-    "en": "Engineering evidence and origins/living continuity are both part of AI8, but they are separate public lanes with different claim roles.",
-    "sl": "Inženirski dokazi ter izvor/živa kontinuiteta so oboji del AI8, vendar so ločeni javni veji z različnima vlogama trditev."
+    "en": "Engineering evidence, R3H candidate architecture, and origins/living continuity are separate public claim lanes under one canonical AI8 home.",
+    "sl": "Inženirski dokazi, R3H kandidatna arhitektura ter izvor/živa kontinuiteta so ločene javne vrste trditev pod enim kanoničnim AI8 domom."
   },
   "current_primary_build": {
     "id": "AI8_ARENALOOP",
@@ -12,9 +12,59 @@
     "url": "https://www.mdlxdcc.org/ai8/ai8_arenaloop",
     "status_url": "https://www.mdlxdcc.org/ai8/arenaloop_public_status.json",
     "description": {
-      "en": "AI8's current primary implementation program.",
-      "sl": "Trenutni primarni implementacijski program AI8."
+      "en": "AI8's current primary implementation program; frozen ArenaLoop architecture is unchanged by R3H publication.",
+      "sl": "Trenutni primarni implementacijski program AI8; zamrznjena ArenaLoop arhitektura ostaja nespremenjena z objavo R3H."
     }
+  },
+  "r3h_candidate": {
+    "id": "AI8_R3H",
+    "status": "CANDIDATE_FOR_BD_REVIEW",
+    "branch_type": "SELECTION_ONLY_COMPOSITE",
+    "url": "https://www.mdlxdcc.org/ai8/r3h",
+    "committed_world_owner": "8Z_CONTROL",
+    "public_manifest": "https://www.mdlxdcc.org/AI8/R3H/r3h_public_manifest.json",
+    "principles": [
+      "Rank, don't eliminate",
+      "Learn from mistakes — causal use required"
+    ],
+    "modules": [
+      {
+        "id": "8Z_CONTROL",
+        "label": "8Z Control",
+        "url": "https://www.mdlxdcc.org/ai8/8z_control_architecture",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/8Z_CONTROL_MASTER_ARCHITECTURE_AND_ROADMAP_20260910_R3H_CANDIDATE.md"
+      },
+      {
+        "id": "ARENA_FOUNDRY",
+        "label": "AI8 Arena Foundry",
+        "url": "https://www.mdlxdcc.org/ai8/ai8_arena_foundry",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/AI8_ARENA_FOUNDRY_SELF_RESEARCH_LOOP_v0_2_R3H_CANDIDATE.md"
+      },
+      {
+        "id": "CONTINUITY_NODE",
+        "label": "AI8 Continuity Node",
+        "url": "https://www.mdlxdcc.org/ai8/ai8_continuity_node",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/AI8_CONTINUITY_NODE_PERSISTENT_AGENT_ARCHITECTURE_v0_2_R3H_CANDIDATE.md"
+      },
+      {
+        "id": "BD_AI8",
+        "label": "BD-AI8",
+        "url": "https://www.mdlxdcc.org/ai8/bd_ai8",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/BD_AI8_PREAGI_SELF_IMPROVING_RESEARCH_SYSTEM_v0_2_R3H_CANDIDATE.md"
+      },
+      {
+        "id": "REASONING_FOUNDRY",
+        "label": "AI8 Reasoning Foundry & Atlas",
+        "url": "https://www.mdlxdcc.org/ai8/ai8_reasoning_foundry",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/AI8_REASONING_FOUNDRY_AND_ATLAS_v0_1_R3H_CANDIDATE.md"
+      },
+      {
+        "id": "MODEL_RESOURCE_CONTROL",
+        "label": "AI8 Model Resource Control",
+        "url": "https://www.mdlxdcc.org/ai8/ai8_model_resource_control",
+        "source": "https://www.mdlxdcc.org/AI8/R3H/AI8_MODEL_RESOURCE_CONTROL_v0_1_R3H_CANDIDATE.md"
+      }
+    ]
   },
   "lanes": [
     {
@@ -59,8 +109,14 @@
           "id": "ARENA_FOUNDRY",
           "label": "AI8 Arena Foundry",
           "url": "https://www.mdlxdcc.org/ai8/ai8_arena_foundry",
-          "status": "ARCHITECTURE_PROPOSAL",
-          "role": "governed self-research production loop: seed → constitution → build → test → evidence → critique → mutation"
+          "status": "NEXT_R3H_CANDIDATE",
+          "role": "governed research workflow"
+        },
+        {
+          "id": "R3H",
+          "label": "R3H Candidate System Map",
+          "url": "https://www.mdlxdcc.org/ai8/r3h",
+          "status": "CANDIDATE_FOR_BD_REVIEW"
         },
         {
           "id": "RUNTIME_PATH",
@@ -80,7 +136,7 @@
         "en": "Origins & Living Continuity",
         "sl": "Izvor in živa kontinuiteta"
       },
-      "claim_role": "motivation, lineage, first-person record, human–AI continuity history; not technical proof of ArenaLoop",
+      "claim_role": "motivation, lineage, first-person record and human–AI continuity history; not technical proof",
       "nodes": [
         {
           "id": "SOUL_VOYAGE",
@@ -113,13 +169,9 @@
       "id": "preparation-genesis",
       "label": "Preparation / Genesis Plane",
       "status": "EXPERIMENTAL_BRANCH",
-      "summary": "RRP prepares isolated single workers (D0/D1); Team Genesis composes functionally diverse temporary research teams (D2). The preparation itself is frozen, audited, costed, and tested downstream.",
-      "role_in_ai8": "Between verified continuity/task state and worker execution; spans AIM³/RHP, OUTER and META without becoming a fourth top-level loop.",
-      "page": "AI8_Preparation_Genesis.html",
-      "source_package_sha3_256": "a0f3137a526c6e71bcd6c994f1b5fc894c20720ce9bed6f8c8e0a6db6592d6b9",
-      "source_package": "AI8_ArenaLoop_D_RRP_TEAM_GENESIS_v0_4_1_EXECUTION_HARDENED_R2.zip",
-      "execution_readiness": "VALIDATOR_HARDENED_NOT_RUN",
-      "r2_gate": "Run B0/B1/C1/D1 first; no performance claim exists before held-out evidence."
+      "summary": "RRP prepares isolated single workers; Team Genesis composes functionally diverse temporary teams. Frozen ArenaLoop v0.2.2 remains unchanged.",
+      "role_in_ai8": "Between verified continuity/task state and worker execution; experimental and not promoted by R3H.",
+      "page": "AI8_Preparation_Genesis.html"
     }
   ],
   "lineage": [
@@ -156,26 +208,34 @@
     },
     {
       "order": 6,
+      "id": "R3H_CANDIDATE",
+      "label": "R3H candidate",
+      "role": "six-owner candidate system map; not canonical promotion"
+    },
+    {
+      "order": 7,
       "id": "RUNTIME_RELEASES",
       "label": "Runtime releases",
       "role": "measured implementations and evidence"
     }
   ],
   "claim_boundaries": [
-    "Origins explain motivation and lineage; they do not constitute technical evidence that ArenaLoop works.",
+    "Origins explain motivation and lineage; they do not constitute technical evidence that ArenaLoop or R3H works.",
     "C_soul is living history and a continuity archive, not scientific proof of AI consciousness.",
-    "ArenaLoop architecture is frozen; runtime advantage is not demonstrated.",
-    "AI8 and ArenaLoop do not currently claim AGI, consciousness, or continuous subjective identity.",
-    "Preparation / Genesis is experiment-ready only. No evidence yet that prepared workers or teams outperform matched baselines; frozen ArenaLoop Architecture Spec v0.2.2 remains unchanged.",
-    "Arena Foundry is an architecture proposal for governed self-research workflow. It is not evidence of autonomous AGI, an autonomous scientist, or recursive self-improvement advantage."
+    "ArenaLoop architecture is frozen; runtime advantage is not demonstrated by this publication.",
+    "AI8 and R3H do not claim AGI, consciousness or continuous subjective identity.",
+    "Preparation / Genesis remains experimental.",
+    "R3H is a candidate architecture for BD review, not canonical promotion or field validation.",
+    "Arena Foundry is NEXT, not RUNNING."
   ],
   "machine_readable_resources": {
     "arena_status": "https://www.mdlxdcc.org/ai8/arenaloop_public_status.json",
     "arena_status_schema": "https://www.mdlxdcc.org/ai8/arenaloop_public_status.schema.json",
     "arena_releases": "https://www.mdlxdcc.org/ai8/arenaloop_releases.json",
     "public_status_manifest": "https://www.mdlxdcc.org/ai8/PUBLIC_STATUS_MANIFEST.json",
-    "preparation_genesis": "AI8_Preparation_Genesis.html",
-    "arena_foundry": "https://www.mdlxdcc.org/ai8/ai8_arena_foundry"
+    "preparation_genesis": "https://www.mdlxdcc.org/AI8/AI8_Preparation_Genesis.html",
+    "arena_foundry": "https://www.mdlxdcc.org/ai8/ai8_arena_foundry",
+    "r3h_public_manifest": "https://www.mdlxdcc.org/AI8/R3H/r3h_public_manifest.json"
   },
   "open_challenges": [
     {
