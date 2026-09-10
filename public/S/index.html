@@ -217,6 +217,11 @@ body::after{
 .topbar .tb-version{color:rgba(94,113,146,0.6)}
 
 /* ── Collapsible research notes ── */
+.r6-update{margin:0 0 14px;padding:15px 17px;border:1px solid var(--border);border-radius:9px;color:var(--text);line-height:1.7}
+.r6-update summary{cursor:pointer;color:var(--cyan);font-size:.88rem;font-weight:600}
+.r6-update p{font-size:.9rem;color:rgba(226,232,244,.78);margin-top:12px}
+.r6-update a{color:var(--cyan)}
+.r6-update summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
 .research-notes{width:100%;max-width:1200px;padding:0 20px 8px;margin-top:8px}
 .collapse-hdr{
   font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.2em;
@@ -332,7 +337,7 @@ body::after{
 <div class="topbar">
   <a href="/BD/">← BD Lab</a>
   <span class="tb-center">BD Sudoku × MDL</span>
-  <span class="tb-version">Phase 1 · ρ = 0.85 · Logic/Trace v1.2 RC7 · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
+  <span class="tb-version">Phase 1 · ρ = 0.85 · Logic/Trace v1.2 RC7 · <a href="/crp/AI8_Sudoku_R6.html">R6 Arena ↗</a> · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
 </div>
 
 <div class="page">
@@ -481,7 +486,17 @@ body::after{
 <!-- Research notes — collapsible -->
 <div class="research-notes">
 
-  <!-- NEW: Phase 1 Founding Hypothesis -->
+  <details class="r6-update" id="r6-arena-update">
+    <summary>New: R6 HF3 HF1 research arena · September 2026</summary>
+    <p>The Python arena now combines multiple Sudoku representations, independently checked proofs,
+      Proof Atlas memory and resumable experiments. Its new causal study separates MDL prediction,
+      DCC allocation and learned transfer, with seeded MRV and Luby restarts as strong comparisons.</p>
+    <p>This browser game continues to use Logic/Trace v1.2 RC7. The R6 arena is a separate research program;
+      its specialists are being evaluated before browser integration. The current experiment has not yet established an MDL- or DCC-specific advantage.</p>
+    <p><a href="/crp/AI8_Sudoku_R6.html">Explore the new arena, solving logic and evidence ↗</a></p>
+  </details>
+
+  <!-- Historical Phase 1 Founding Hypothesis -->
   <div class="collapse-hdr" id="chP1" onclick="toggleCollapse('cbP1','chP1')">
     <span>Phase 1 — Founding Hypothesis Confirmed · <span style="color:var(--gold)">ρ = 0.85</span></span>
     <span class="arrow">▶</span>
@@ -1749,3 +1764,4 @@ buildGrid();updateHumanTraceStatus();restoreStoredHumanTraceOnLoad();
 </script>
 </body>
 </html>
+
