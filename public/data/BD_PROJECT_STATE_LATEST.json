@@ -1,7 +1,7 @@
 {
   "schema_version": "8z-control.v0.1",
   "title": "BD — Project State",
-  "generated_at": "2026-09-10T09:03:52+02:00",
+  "generated_at": "2026-09-11T02:24:00+02:00",
   "source_register": "BD_MASTER_ARENA_REGISTER_LATEST.json",
   "source_boundary": "PROJECT CHATS ONLY",
   "family_order": [
@@ -23,12 +23,15 @@
       "gpu": "NVIDIA RTX 3080 Laptop GPU",
       "active_arena_ids": [
         "tsp-dev23-nu3496",
+        "tsp-dev24-nu3496",
+        "tspes-v0142",
+        "bd-rphs-uy734",
         "8ztsp-r-multiview",
         "materials-a3-legacy",
         "bb-surfing-hedge"
       ],
-      "known_active_allocation": "W4 + one GPU/W1 assignment; other active worker counts are unconfirmed",
-      "allocation_note": "Do not interrupt stable active arenas solely to optimize allocation."
+      "known_active_allocation": "Five TSP arenas are directly reported active: DEV2.3 GPU/W1, DEV2.4 GPU/W1, TSPES W6, BD-RPHS W4, and 8zTSP-R GPU-strict/W1; Materials Legacy A3 and BB Surfing Hedge are also retained as active from their latest direct evidence.",
+      "allocation_note": "Do not infer or rebalance GPU/CPU scheduling beyond direct arena evidence; do not interrupt stable active arenas solely to optimize allocation."
     },
     {
       "machine": "Work PC",
@@ -39,15 +42,9 @@
       "allocation_note": "Preferred for isolated build, test, and resume checks when capacity is available."
     }
   ],
-  "needs_bd": [
-    {
-      "arena_id": "tsp-dev24-nu3496",
-      "action": "Confirm the GPU slot is free, then run the approved repair-resume.",
-      "why": "The current hard-tail run is repairable but blocked; repeating the failed start would not help."
-    }
-  ],
+  "needs_bd": [],
   "projects": [
-    {"project": "TSP & TSPES", "status": "RUNNING", "arena_ids": ["tsp-dev23-nu3496", "8ztsp-r-multiview", "tsp-dev24-nu3496", "tspes-v0142", "bd-rphs-uy734"], "last_change": "DEV2.3 and 8zTSP-R have direct running evidence", "next_action": "Protect the active runs; repair DEV2.4 only after confirming GPU capacity."},
+    {"project": "TSP & TSPES", "status": "RUNNING", "arena_ids": ["tsp-dev23-nu3496", "8ztsp-r-multiview", "tsp-dev24-nu3496", "tspes-v0142", "bd-rphs-uy734"], "last_change": "Five deliberately different TSP research arenas now have direct RUNNING evidence; 8zTSP-R v0.2.0 MVC is RUNNING / EARLY.", "next_action": "Protect all five active runs and compare their different representations, search regimes and governance hypotheses through shared evidence."},
     {"project": "TSP Solver Family", "status": "STANDBY", "arena_ids": ["tspts-thin-solver"], "last_change": "Current resume-safe comparator retained", "next_action": "Use only the current family build when capacity opens."},
     {"project": "ChessBest", "status": "BUILD", "arena_ids": ["8zchess-paired-ab", "chesstsp"], "last_change": "Paired runner remains to be located/built", "next_action": "Build the paired runner before moving to the ChessTSP research sequence."},
     {"project": "Sudoku R6", "status": "BUILD", "arena_ids": ["sudoku-r6-proofatlas"], "last_change": "HF2 snapshot exposed a checkpoint/finalization confound", "next_action": "Isolate the confound, then run a clean confirmation test."},
