@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="sl" data-lang="sl"><head><meta charset="utf-8">
+<script id="mdlxdcc-locale">
+/* MDLxDCC shared language preference v1.0 · 2026-09-08
+   Explicit choice > remembered choice > Netlify country (SI → sl, else en).
+   No IP, city or location is stored. No third-party calls. */
+(function () {
+  'use strict';
+  if (window.MDLxDCCLocale) return;
+  const root = document.documentElement;
+  const KEY = 'mdlxdcc-locale-v1', LEGACY = 'mdlxdcc-lang', COOKIE = 'mdlxdcc_locale';
+  const listeners = new Set();
+  let selection = null, generation = 0, controller = null;
+  const valid = value => value === 'en' || value === 'sl';
+  const get = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
+  function parse(value) {
+    try {
+      const x = JSON.parse(value);
+      return x && valid(x.lang) && ['manual', 'geo'].includes(x.source) &&
+        Number.isFinite(x.at) && x.at >= 0 ? {lang:x.lang, source:x.source, at:x.at} : null;
+    } catch (_) { return null; }
+  }
+  function cookieSelection() {
+    try {
+      const item = document.cookie.split(';').map(x => x.trim()).find(x => x.startsWith(COOKIE + '='));
+      return item ? parse(decodeURIComponent(item.slice(COOKIE.length + 1))) : null;
+    } catch (_) { return null; }
+  }
+  function read() {
+    const local = parse(get(KEY)), cookie = cookieSelection();
+    let value = !local ? cookie : !cookie ? local : cookie.at > local.at ? cookie : local;
+    const legacy = get(LEGACY);
+    // A legacy page may still save just the original shared key. Adopt its explicit change.
+    if (valid(legacy) && (!value || (value.lang !== legacy && (!cookie || (local && local.at >= cookie.at))))) {
+      value = {lang:legacy, source:'manual', at:Date.now()};
+    }
+    return value;
+  }
+  function persist() {
+    if (!selection) return;
+    const data = JSON.stringify(selection);
+    try {
+      localStorage.setItem(LEGACY, selection.lang);
+      localStorage.setItem('bdPortraitLang', selection.lang);
+      localStorage.setItem(KEY, data);
+    } catch (_) {}
+    try {
+      if (!/^https?:$/.test(location.protocol)) return;
+      const host = location.hostname.toLowerCase();
+      const domain = host === 'mdlxdcc.org' || host === 'www.mdlxdcc.org' ? '; Domain=mdlxdcc.org' : '';
+      document.cookie = COOKIE + '=' + encodeURIComponent(data) + '; Path=/; Max-Age=31536000; SameSite=Lax' + domain +
+        (location.protocol === 'https:' ? '; Secure' : '');
+    } catch (_) {}
+  }
+  function current() { return selection ? selection.lang : 'en'; }
+  function apply() {
+    const lang = current();
+    root.lang = lang; root.dataset.lang = lang;
+    root.dataset.localeSource = selection ? selection.source : 'fallback';
+    listeners.forEach(fn => { try { fn(lang); } catch (error) { console.warn('Language view could not update.', error); } });
+    window.dispatchEvent(new CustomEvent('mdlxdcc:language', {detail:{lang, source:root.dataset.localeSource}}));
+  }
+  function choose(lang) {
+    if (!valid(lang)) return;
+    generation++;
+    if (controller) controller.abort();
+    selection = {lang, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+    persist(); apply();
+  }
+  function subscribe(fn) {
+    if (typeof fn !== 'function') return () => {};
+    listeners.add(fn); fn(current());
+    return () => listeners.delete(fn);
+  }
+  function refresh() {
+    const next = read();
+    if (next && (!selection || next.at > selection.at || next.lang !== selection.lang)) {
+      generation++; if (controller) controller.abort();
+      selection = next; persist(); apply();
+    }
+  }
+  selection = read();
+  try {
+    const requested = new URLSearchParams(location.search).get('lang');
+    if (valid(requested)) selection = {lang:requested, source:'manual', at:Math.max(Date.now(), (selection ? selection.at : 0) + 1)};
+  } catch (_) {}
+  window.MDLxDCCLocale = Object.freeze({current, choose, subscribe, refresh, version:'1.0'});
+  root.classList.add('js');
+  if (selection) persist();
+  apply();
+  window.addEventListener('storage', event => { if ([KEY, LEGACY, null].includes(event.key)) refresh(); });
+  window.addEventListener('pageshow', refresh);
+  window.addEventListener('focus', refresh);
+  if (!selection && /^https?:$/.test(location.protocol) && typeof fetch === 'function') {
+    const start = generation;
+    controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let expired = false;
+    const timeout = setTimeout(() => { expired = true; if (controller) controller.abort(); }, 2200);
+    fetch('/api/entry-locale', {cache:'no-store', credentials:'omit', headers:{'Accept':'application/json'},
+      ...(controller ? {signal:controller.signal} : {})})
+      .then(response => {
+        if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('No country response');
+        return response.json();
+      })
+      .then(data => {
+        // A late response must never replace a manual choice or a choice made in another tab.
+        if (expired || generation !== start || selection || !data || !valid(data.language)) return;
+        const saved = read();
+        selection = saved || {lang:data.language, source:'geo', at:Date.now()};
+        persist(); apply();
+      })
+      .catch(() => { /* English stays usable when offline, unknown, or unavailable. */ })
+      .finally(() => clearTimeout(timeout));
+  }
+})();
+
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>8zMaterials — native MDL×DCC materials discovery | BD × AI Lab</title>
+<meta name="description" content="8zMaterials: native B6/H1 MDL×DCC research arena, multilevel search, Atlas transfer and verified September 2026 material-candidate evidence.">
+<meta name="author" content="BD — Bojan Dobrečevič">
+<link rel="canonical" href="https://www.mdlxdcc.org/8zMaterials.html">
+<meta property="og:title" content="8zMaterials — native MDL×DCC materials discovery">
+<meta property="og:description" content="A research arena where learned structure changes future search. B6/H1 architecture and a dated, verified evidence snapshot.">
+<meta property="og:type" content="article"><meta property="og:url" content="https://www.mdlxdcc.org/8zMaterials.html">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2712%27 fill=%27%230c1525%27/%3E%3Ctext x=%278%27 y=%2744%27 font-size=%2737%27 font-family=%27monospace%27 font-weight=%27bold%27 fill=%27%2322d3ee%27%3E8z%3C/text%3E%3C/svg%3E">
+<style>
+:root{color-scheme:dark;--bg:#05070d;--panel:#0c1525;--line:#26364d;--text:#e5edf8;--muted:#a8bad1;--cyan:#22d3ee;--green:#34d399;--violet:#c4b5fd;--reader-scale:1;font-size:calc(16px * var(--reader-scale))}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:2rem}body{margin:0;background:radial-gradient(ellipse at 90% 0,rgba(34,211,238,.07),transparent 40rem),var(--bg);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.65}a{color:var(--cyan);text-underline-offset:4px}button{font:inherit;color:inherit;cursor:pointer}.wrap{width:min(1140px,calc(100% - 40px));margin-inline:auto}.top{border-bottom:1px solid var(--line)}.top .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 0;flex-wrap:wrap}.brand{color:var(--text);font-weight:750;text-decoration:none}.nav,.controls,.links{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.nav a,.controls button{font-size:.875rem}.controls button{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:7px 10px;min-height:38px}.controls button[aria-pressed=true]{border-color:var(--cyan);color:var(--cyan)}.skip{position:absolute;top:-100px;left:20px;background:var(--panel);padding:12px;z-index:5}.skip:focus{top:12px}:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.hero{padding:48px 0 26px}.eyebrow,.tag{font-size:.875rem;color:var(--green);font-weight:650;letter-spacing:.04em}.eyebrow{display:flex;gap:12px;flex-wrap:wrap}h1{font-size:clamp(2.7rem,7vw,5.1rem);line-height:1.04;letter-spacing:-.045em;margin:18px 0}h1 span{color:var(--cyan)}.lead{font-size:clamp(1.125rem,2vw,1.375rem);max-width:880px;color:var(--muted)}.meta{font-size:.875rem;color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:28px 0 18px;background:var(--panel)}.stat{padding:20px;border-right:1px solid var(--line)}.stat:last-child{border-right:0}.stat b{display:block;font:700 clamp(1.8rem,4vw,2.6rem) ui-monospace,Consolas,monospace;color:var(--cyan)}.stat span{font-size:.9rem;color:var(--muted)}.jump{display:flex;flex-wrap:wrap;gap:12px 22px;padding:18px 0 24px;border-bottom:1px solid var(--line)}section{padding:32px 0;border-bottom:1px solid var(--line)}h2{font-size:clamp(1.65rem,3vw,2.2rem);letter-spacing:-.025em;line-height:1.2;margin:0 0 18px}h3{font-size:1.2rem;line-height:1.3;margin:10px 0}p{margin:10px 0 16px}.muted,.card p{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:22px}.level{border-top:3px solid var(--cyan)}.level:nth-child(2){border-top-color:var(--violet)}.level:nth-child(3){border-top-color:var(--green)}.level b{font-family:ui-monospace,Consolas,monospace;color:var(--cyan)}.band{padding:18px 22px;border-left:3px solid var(--green);background:#0d221f;margin:20px 0}.band p:last-child{margin-bottom:0}.costs{margin:20px 0}.cost-row{display:grid;grid-template-columns:115px 1fr 96px;align-items:center;gap:12px;margin:14px 0;font-size:.875rem}.track{height:16px;background:#19273c;border-radius:4px}.bar{height:100%;background:var(--cyan);border-radius:4px}.bar.control{background:#74869f}.cost-row strong{text-align:right}.metric-line{font-size:1.8rem;font-weight:750;color:var(--green)}.small-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.small-grid b{display:block;color:var(--violet);font-size:1.5rem}.small-grid div{border-top:1px solid var(--line);padding-top:12px}table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:.875rem;color:var(--muted)}td:not(:first-child),th:not(:first-child){text-align:right}.arms td,.arms th{text-align:left!important}.table-wrap{overflow:auto}caption{text-align:left;color:var(--muted);font-size:.875rem;margin-bottom:12px}details{border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:18px 0;background:var(--panel)}summary{cursor:pointer;font-weight:650}details[open] summary{margin-bottom:18px}.checklist{padding-left:24px}.checklist li{padding-left:6px;margin:18px 0}.hash{font:.8rem/1.7 ui-monospace,Consolas,monospace;overflow-wrap:anywhere;color:var(--muted)}.source-name{overflow-wrap:anywhere}footer{padding:36px 0 50px;color:var(--muted);font-size:.875rem}.en{display:none}html[data-lang=en] .sl{display:none}html[data-lang=en] .en{display:revert}sub{line-height:0}button:disabled{opacity:.5;cursor:default}
+@media(max-width:760px){.levels,.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid var(--line)}.top .wrap{align-items:flex-start}.hero{padding-top:30px}.small-grid{grid-template-columns:1fr}.wrap{width:calc(100% - 28px)}.card{padding:18px}}
+@media(max-width:430px){.nav{gap:8px 14px}.cost-row{grid-template-columns:92px 1fr 85px;gap:8px}.stat{padding:14px}.jump{font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body>
+<a class="skip" href="#main"><span class="sl">Preskoči na vsebino</span><span class="en">Skip to content</span></a>
+<header class="top"><div class="wrap"><a class="brand" href="/BD/index.html">BD × AI LAB</a><nav class="nav" aria-label="Navigation"><a href="/index-atlas.html">Atlas</a><a href="/index-todo.html#arena=materials-v020-native">8Z Control</a><a href="/crp/MDLxDCC.html">MDL×DCC</a><div class="controls"><button type="button" data-language="sl" aria-pressed="false">SL</button><button type="button" data-language="en" aria-pressed="false">EN</button><button type="button" id="text-smaller" aria-label="Manjša pisava / Smaller text">A−</button><button type="button" id="text-larger" aria-label="Večja pisava / Larger text">A+</button></div></nav></div></header>
+<main class="wrap" id="main"><div class="hero"><div class="eyebrow"><span>v0.2.0 · RC1 HF2</span><span>B6 / H1 · 2 CPU</span><span><span class="sl">Posnetek tekoče raziskave · 11. 9. 2026</span><span class="en">Running research snapshot · 11 Sep 2026</span></span></div>
+<h1>8z<span>Materials</span></h1>
+<p class="lead"><span class="sl">Arena, ki se iz iskanja materialov uči, <strong>kako iskati naprej.</strong> MDL×DCC izbira prihodnje delo; Atlas naučene vzorce preizkuša na novih sestavah.</span><span class="en">An arena that learns from materials search <strong>how to search next.</strong> MDL×DCC selects future work; the Atlas tests learned patterns on other compositions.</span></p>
+<p class="meta"><span class="sl">Človeški arhitekt in končna avtoriteta: BD. Izvedba in preverjanje: BD × AI Lab.</span><span class="en">Human architect and final authority: BD. Implementation and verification: BD × AI Lab.</span></p>
+<div class="stats"><div class="stat"><b>1&#8239;222</b><span class="sl">zaključenih epoh</span><span class="en">committed epochs</span></div>
+<div class="stat"><b>1&#8239;308</b><span class="sl">kandidatnih poskusov</span><span class="en">candidate attempts</span></div>
+<div class="stat"><b>39</b><span class="sl">zgodovinsko F2 kvalificiranih struktur</span><span class="en">historically F2-qualified structures</span></div>
+<div class="stat"><b>41</b><span class="sl">izbir dela z dokazano povezavo do L2</span><span class="en">selected work actions causally bound to L2</span></div></div>
+<p class="meta"><span class="sl">Datiran posnetek, ne sprotni števec. F2 je kvalifikacija ML relaksacije. Novost, stabilnost in uporabnost materialov še niso potrjene.</span><span class="en">A dated snapshot, not a live counter. F2 qualifies an ML relaxation. Material novelty, stability and usefulness are not yet confirmed.</span></p></div>
+<nav class="jump" aria-label="Page sections"><a href="#method"><span class="sl">Kako rešuje</span><span class="en">How it searches</span></a><a href="#evidence"><span class="sl">Kaj je izmerjeno</span><span class="en">Measured evidence</span></a><a href="#candidates"><span class="sl">Kandidati</span><span class="en">Candidates</span></a><a href="#discovery"><span class="sl">Od kandidata do odkritja</span><span class="en">From candidate to discovery</span></a><a href="#provenance"><span class="sl">Izvor in preverjanje</span><span class="en">Provenance and checks</span></a></nav>
+<section id="method"><h2><span class="sl">MDL×DCC ustvarja prihodnje delo</span><span class="en">MDL×DCC produces future work</span></h2><p><span class="sl">Glavna veja je <strong>B6/H1</strong>: hitra zanka iskanja je povezana s počasnejšo zanko učenja Atlasa. MDL (Minimum Description Length) ocenjuje, kateri modeli in vzorci gospodarno pojasnjujejo opažanja. DCC (Dynamic Complexity Controller) vpliva na izbiro nadaljnjih akcij. MACE ocenjuje energije in sile kandidatnih struktur.</span><span class="en">The mainline is <strong>B6/H1</strong>: a fast search loop is coupled to a slower Atlas learning loop. MDL (Minimum Description Length) evaluates which models and patterns explain observations economically. DCC (Dynamic Complexity Controller) influences subsequent action selection. MACE evaluates candidate structures through energies and forces.</span></p>
+<div class="levels"><article class="card level"><b>L0</b><h3><span class="sl">Naslednji del izračuna</span><span class="en">The next piece of computation</span></h3><p><span class="sl">Odloča o nadaljevanju posamezne relaksacije: še dela, vrne kandidata v obdelavo ali zaključi porabo.</span><span class="en">Decides how to continue an individual relaxation: do more work, return a candidate for further processing, or end the allocation.</span></p></article><article class="card level"><b>L1</b><h3><span class="sl">Izbira iskalne akcije</span><span class="en">Selecting the search action</span></h3><p><span class="sl">Primerja napovedi za dovoljene akcije in razporeja delo med sestave, generatorje ter reprezentacije.</span><span class="en">Compares predictions for legal actions and allocates work across compositions, generators and representations.</span></p></article><article class="card level"><b>L2</b><h3><span class="sl">Učenje, ki spremeni iskanje</span><span class="en">Learning that changes search</span></h3><p><span class="sl">Atlas oblikuje pravila, jih rangira in odpira za preizkus. Njegove odločitve lahko spremenijo prihodnji nabor izvedljivih akcij.</span><span class="en">The Atlas forms and ranks rules, making them available for probing. Its decisions can change the future set of executable actions.</span></p></article></div>
+<div class="band"><strong><span class="sl">Povratna puščica: naučeno se vrne v delo.</span><span class="en">The reverse arrow: learning returns to work.</span></strong><p><span class="sl">Opažanje → naučeno pravilo → dejanska nova akcija → primerjalni preizkus prenosa → obračun celotnega stroška → promocija ali ohranjena zavrnitev s pogojem ponovnega odprtja.</span><span class="en">Observation → learned rule → actual new action → matched transfer validation → full cost accounting → promotion or a retained rejection with a reopening condition.</span></p></div>
+<div class="grid"><article class="card"><h3>Rank, don’t eliminate.</h3><p><span class="sl">Slabši rezultat zmanjša prednost. Arhiv ohrani razlog, dokaz in možnost ponovnega odprtja. Omejen aktivni Atlas lahko tako ostaja živ tudi po zapolnitvi.</span><span class="en">A weaker result lowers priority. The archive retains the reason, evidence and opportunity to reopen. A bounded active Atlas can keep learning after it fills up.</span></p></article><article class="card"><h3>Learn from mistakes.</h3><p><span class="sl">Napake pri obnovi, nepravilni sestavi ali prenosu pravil postanejo trajni regresijski testi in preizkusi z znanim pravilnim izidom.</span><span class="en">Resume errors, composition violations and rule-transfer failures become durable regression tests and canaries with known expected outcomes.</span></p></article></div>
+<details><summary><span class="sl">Primerjalne veje in poštena meritev</span><span class="en">Comparison arms and fair measurement</span></summary><div class="table-wrap"><table class="arms"><thead><tr><th><span class="sl">Veja</span><span class="en">Arm</span></th><th><span class="sl">Vloga</span><span class="en">Role</span></th></tr></thead><tbody>
+<tr><td>B2</td><td><span class="sl">Običajni stroškovno občutljiv UCB comparator.</span><span class="en">Ordinary cost-aware UCB comparator.</span></td></tr>
+<tr><td>B5</td><td>MDL-M + DCC-S</td></tr>
+<tr><td>B6/H0</td><td><span class="sl">B6 z izključeno H1 Atlas zanko; kontrola učinka učenja.</span><span class="en">B6 without the H1 Atlas loop; a control for the learning effect.</span></td></tr>
+<tr><td>B6/H1</td><td><span class="sl">Glavna native večnivojska raziskovalna veja.</span><span class="en">The main native multilevel research arm.</span></td></tr>
+<tr><td>H2</td><td><span class="sl">ssMDL×DCC kot omejen eksperiment.</span><span class="en">ssMDL×DCC as a bounded experiment.</span></td></tr>
+</tbody></table></div><p><span class="sl">Napoved je zabeležena pred izidom, logične epohe so deterministične, učenje se knjiži natanko enkrat. Primerjave morajo imeti iste informacije in primerljive proračune. Ta posnetek sam ne dokazuje prednosti pred B2 ali H0.</span><span class="en">Predictions are recorded before outcomes, logical epochs are deterministic, and learning is committed exactly once. Comparisons require the same information and comparable budgets. This snapshot alone does not establish superiority over B2 or H0.</span></p></details></section>
+<section id="evidence"><h2><span class="sl">Atlas že vpliva na dejansko iskanje</span><span class="en">The Atlas already affects actual search</span></h2><div class="grid"><article class="card"><h3><span class="sl">Od odločitve do izvedene akcije</span><span class="en">From a decision to an executed action</span></h3><p><span class="sl">Med 305 izmerjenimi L2 odločitvami jih je 248 spremenilo prihodnji nabor akcij. Izvedenih je bilo 256 akcij z naučenimi pravili; pri 41 izbirah je strogo zabeležena povezava med spremembo L2 in novim delom.</span><span class="en">Of 305 measured L2 decisions, 248 changed the future action space. There were 256 executed rule-guided actions; 41 selections have a strict recorded link from an L2 change to new work.</span></p>
+<div class="small-grid"><div><b>260</b><span class="sl">ustvarjenih pravil</span><span class="en">rules created</span></div><div><b>16</b><span class="sl">aktivnih probe pravil</span><span class="en">active probe rules</span></div><div><b>0</b><span class="sl">promoviranih pravil</span><span class="en">promoted rules</span></div></div><p class="meta"><span class="sl">149 ponovnih odprtij in 393 arhiviranj. To so dogodki, ki se lahko nanašajo na ista pravila. Števcev ne seštevamo kot neodvisnih uspehov.</span><span class="en">149 reopening and 393 archive events. Events may concern the same rules. These counters are not additive independent successes.</span></p></article>
+<article class="card"><div class="tag">Mg₂SiO₄ → Ca₂SiO₄ · <span class="sl">epoha</span><span class="en">epoch</span> 552</div><h3><span class="sl">Prvi uspešen primerjalni transfer</span><span class="en">First accepted matched transfer</span></h3><p><span class="sl">Naučeno pravilo je v enem F1 paru doseglo nižjo ML energijo ob manjši primerjani CPU porabi. Strošek pravila vključuje pripisano učenje, načrtovanje in validacijo.</span><span class="en">A learned rule achieved a lower ML energy with less compared CPU cost in one F1 pair. Rule cost includes the attributed mining, planning and validation.</span></p>
+<div class="costs"><div class="cost-row"><span><span class="sl">Pravilo</span><span class="en">Rule</span></span><div class="track"><div class="bar" style="width:57.536%"></div></div><strong>43.78 s</strong></div><div class="cost-row"><span><span class="sl">Kontrola</span><span class="en">Control</span></span><div class="track"><div class="bar control" style="width:100%"></div></div><strong>76.09 s</strong></div></div>
+<div class="metric-line">−42.46% <span class="meta"><span class="sl">CPU stroška v enem paru</span><span class="en">CPU cost in one pair</span></span></div><p><span class="sl">Od 141 transfer preizkusov je bil sprejet eden, zavrnjenih 140. Poznejši preizkus istega pravila ni prestal kakovosti oziroma konvergence.</span><span class="en">One of 141 transfer trials was accepted; 140 were rejected. A later trial of the same rule failed the quality/convergence check.</span></p><p class="meta"><span class="sl">Pravilo še ni povrnilo stroška svojega opisa v knjižnici, zato ni promovirano. To ni splošna 42-odstotna pospešitev arene.</span><span class="en">The rule has not repaid its library description cost, so it is not promoted. This is not a general 42% arena speedup.</span></p></article></div></section>
+<section id="candidates"><h2><span class="sl">Kaj je med kandidati zanimivega?</span><span class="en">What is interesting among the candidates?</span></h2><p><span class="sl">Trenutno iskanje zajema 12 določenih oksidnih in silikatnih sestav iz Mg, Ca, Al, Si in O. Zgodovinsko je F2 doseglo 39 struktur. Pri naknadni primerjavi jih 16 ostane znotraj 0,2 eV/atom od trenutno najboljšega PASS rezultata iste sestave. Vseh 39 ostane ohranjenih.</span><span class="en">The current search covers 12 fixed oxide and silicate compositions from Mg, Ca, Al, Si and O. Historically, 39 structures reached F2. In a posthoc comparison, 16 remain within 0.2 eV/atom of the current best PASS result of the same composition. All 39 are retained.</span></p>
+<div class="grid"><article class="card"><div class="tag">MgCaSiO₄</div><h3><span class="sl">Kandidat za nadaljnje preverjanje</span><span class="en">A candidate for further checking</span></h3><p><span class="sl">Struktura iz epohe 1100 je dosegla F2: ML energija −6,940381 eV/atom in največja sila 0,034441 eV/Å.</span><span class="en">The structure from epoch 1100 reached F2: ML energy −6.940381 eV/atom and maximum force 0.034441 eV/Å.</span></p><p><span class="sl">V preprosti uravnoteženi primerjavi z MgO + CaO + SiO₂ iz istega runa je njena energija približno 0,113 eV/atom nižja.</span><span class="en">In a simple balanced comparison with MgO + CaO + SiO₂ from the same run, its energy is about 0.113 eV/atom lower.</span></p><p class="meta"><span class="sl">Nepopoln interni ML presejalni signal. Referenčne strukture imajo različne ravni relaksacije; celotna energijska ovojnica, negotovost modela in novost še niso preverjene.</span><span class="en">An incomplete internal ML screening signal. Reference structures have different relaxation levels; the full convex hull, model uncertainty and novelty have not been checked.</span></p></article>
+<article class="card"><div class="tag">Al₂SiO₅</div><h3><span class="sl">Zakaj F2 sam ne zadošča</span><span class="en">Why F2 alone is not enough</span></h3><p><span class="sl">Najboljši F2 kandidat te sestave je v analogni primerjavi približno 0,142 eV/atom nad mešanico Al₂O₃ + SiO₂. Dobro zaključena relaksacija torej sama še ne pomeni ugodne stabilnosti proti razpadu.</span><span class="en">The best F2 candidate of this composition is about 0.142 eV/atom above the Al₂O₃ + SiO₂ mixture in an analogous comparison. A well-converged relaxation alone does not establish favourable stability against decomposition.</span></p><p class="meta"><span class="sl">Tudi ta kandidat ostane v arhivu. Analitični vrstni red ne spreminja zamrznjene politike ali že pripisane zasluge v runu.</span><span class="en">This candidate also stays in the archive. The analytical ranking does not change the frozen policy or credit already assigned in the run.</span></p></article></div>
+<details><summary><span class="sl">Vseh 12 sestav: F2 in naknadni vrstni red</span><span class="en">All 12 compositions: F2 and posthoc ranking</span></summary><div class="table-wrap"><table><caption><span class="sl">Znotraj okna = največ 0,2 eV/atom nad trenutno najboljšim PASS iste sestave.</span><span class="en">Within window = at most 0.2 eV/atom above the current best PASS of the same composition.</span></caption><thead><tr><th><span class="sl">Sestava</span><span class="en">Composition</span></th><th><span class="sl">Zgodovinski F2</span><span class="en">Historical F2</span></th><th><span class="sl">Znotraj okna</span><span class="en">Within window</span></th></tr></thead><tbody>
+<tr><td>Al<sub>2</sub>O<sub>3</sub></td><td>3</td><td>2</td></tr>
+<tr><td>Al<sub>2</sub>SiO<sub>5</sub></td><td>3</td><td>1</td></tr>
+<tr><td>Ca<sub>2</sub>SiO<sub>4</sub></td><td>2</td><td>0</td></tr>
+<tr><td>CaAl<sub>2</sub>O<sub>4</sub></td><td>7</td><td>3</td></tr>
+<tr><td>CaO</td><td>7</td><td>1</td></tr>
+<tr><td>CaSiO<sub>3</sub></td><td>3</td><td>3</td></tr>
+<tr><td>Mg<sub>2</sub>SiO<sub>4</sub></td><td>1</td><td>0</td></tr>
+<tr><td>MgAl<sub>2</sub>O<sub>4</sub></td><td>2</td><td>1</td></tr>
+<tr><td>MgCaSiO<sub>4</sub></td><td>2</td><td>1</td></tr>
+<tr><td>MgO</td><td>5</td><td>1</td></tr>
+<tr><td>MgSiO<sub>3</sub></td><td>2</td><td>1</td></tr>
+<tr><td>SiO<sub>2</sub></td><td>2</td><td>2</td></tr>
+</tbody><tfoot><tr><th><span class="sl">Skupaj</span><span class="en">Total</span></th><th>39</th><th>16</th></tr></tfoot></table></div><p class="meta"><span class="sl">Surovih energij različnih kemijskih sestav ne razvrščamo neposredno med seboj. Potrebne so uravnotežene primerjave.</span><span class="en">Raw energies of different chemical compositions are not ranked directly against each other. Balanced comparisons are required.</span></p></details></section>
+<section id="discovery"><h2><span class="sl">Kako bomo prepoznali nov, uporaben material?</span><span class="en">How will we recognise a new, useful material?</span></h2><p><span class="sl">Arena danes hrani lasten Atlas in primerja strukture znotraj runa. Pripravljeni so vmesniki za referenčne zbirke, vendar ta run še nima priklopljene napolnjene zunanje knjižnice. MACE je model energije in sil; ni katalog za potrjevanje novosti.</span><span class="en">The arena currently keeps its own Atlas and matches structures within the run. Reference-data interfaces are prepared, but this run has no populated external library connected. MACE is an energy and force model; it is not a novelty-verification catalogue.</span></p>
+<ol class="checklist"><li><b><span class="sl">Preveri strukturo proti znanim materialom.</span><span class="en">Match the structure against known materials.</span></b> <span class="sl">Polna periodična struktura se primerja z datiranimi zbirkami, kot sta <a href="https://docs.materialsproject.org/downloading-data/using-the-api/querying-data">Materials Project</a> in <a href="https://www.crystallography.net/cod/index.php">COD</a>. Enaka formula ne pomeni enake strukture; brez zadetka še ne pomeni dokazano novega materiala.</span><span class="en">Compare the full periodic structure with dated collections such as <a href="https://docs.materialsproject.org/downloading-data/using-the-api/querying-data">Materials Project</a> and <a href="https://www.crystallography.net/cod/index.php">COD</a>. The same formula does not imply the same structure; no match is not yet proof of a new material.</span></li>
+<li><b><span class="sl">Preveri fizikalno obstojnost.</span><span class="en">Check physical stability.</span></b> <span class="sl">Neodvisen DFT izračun, primerljive energije vseh konkurenčnih faz in <a href="https://docs.materialsproject.org/methodology/materials-methodology/thermodynamic-stability/phase-diagrams-pds">fazni diagram oziroma energijska ovojnica</a>; nato dinamična in mehanska stabilnost.</span><span class="en">Independent DFT calculations, compatible energies for competing phases and a <a href="https://docs.materialsproject.org/methodology/materials-methodology/thermodynamic-stability/phase-diagrams-pds">phase diagram / convex hull</a>, followed by dynamical and mechanical stability checks.</span></li>
+<li><b><span class="sl">Izmeri lastnost, zaradi katere je material dober.</span><span class="en">Measure the property that makes the material useful.</span></b> <span class="sl">Na primer ionsko prevodnost, trdoto ali temperaturno obstojnost proti jasnemu referenčnemu materialu. Sedanji F2 tega ne meri. Sinteza in eksperimentalna meritev zaključita preverjanje.</span><span class="en">For example, ionic conductivity, hardness or temperature tolerance against a clear reference material. Current F2 does not measure these. Synthesis and experimental measurement complete the verification.</span></li></ol></section>
+<section id="provenance"><h2><span class="sl">Kaj je preverjeno in na katerem posnetku</span><span class="en">What was checked, and on which snapshot</span></h2><p><span class="sl">Na BD-jevi Windows napravi je HF2 verifier opravil 260 testov brez napak ali preskokov; preverjanja D0–D23 so bila PASS. Rich extract je dodatno pregledan na ravni integritete, končnega stanja, povezav zgodovine, 141 transfer receiptov in 39 F2 struktur.</span><span class="en">On BD’s Windows machine, the HF2 verifier completed 260 tests with no failures or skips; checks D0–D23 were PASS. The rich extract was additionally reviewed for integrity, final state, history links, 141 transfer receipts and 39 F2 structures.</span></p><p class="meta"><span class="sl">To sta različna obsega preverjanja. Paket vsebuje 17 celotnih surovih epoh; iz njega ni bil izveden celoten policy replay vseh 1.222 epoh.</span><span class="en">These are different verification scopes. The package contains 17 complete raw epochs; a full policy replay of all 1,222 epochs was not performed from it.</span></p>
+<details><summary><span class="sl">Vir, merilni obseg in odprti rezultati</span><span class="en">Source, measurement scope and open outcomes</span></summary><p class="source-name">8zMaterials_NATIVE_RICH_EXTRACT_20260911_123120_095725.zip</p><p class="hash">SHA3-256: 305353d1770a13c45c7cba482f77db7bb49a9c6ad2820c1f8a1d8e3e6fc79535</p><p><span class="sl">181,23 MB · 11.064 članov · 2.444 glavnih delovnih nalog. Izidi: 885 PASS, 1.550 LIMIT, 8 zavrnjenih generacij in 1 numerična napaka. LIMIT označuje doseženo omejitev izračuna.</span><span class="en">181.23 MB · 11,064 members · 2,444 primary work leases. Outcomes: 885 PASS, 1,550 LIMIT, 8 generation rejections and 1 numerical error. LIMIT denotes a reached computation limit.</span></p><p><span class="sl">En rezultat nadaljevanja je bil zavrnjen zaradi neujemanja vhodne strukture; run je nadaljeval. Poraba ob posnetku: 55.504,84 od 518.400 CPU-sekund. Odstotek porabe ni odstotek dokončanega odkritja.</span><span class="en">One continuation result was rejected for an input-structure mismatch; the run continued. Snapshot expenditure: 55,504.84 of 518,400 CPU-seconds. Budget consumption is not a percentage of discovery completed.</span></p></details>
+<div class="links"><a href="/evidence/8zMaterials_NATIVE_20260911.json"><span class="sl">Javni merilni zapis · JSON</span><span class="en">Public evidence record · JSON</span></a><a href="/index-todo.html#arena=materials-v020-native"><span class="sl">Zapis arene v 8Z Control</span><span class="en">Arena record in 8Z Control</span></a></div></section></main>
+<footer class="wrap"><b>BD × AI Lab · 8zMaterials</b><p>Rank, don’t eliminate. Learn from mistakes.</p><p><span class="sl">Posodobljeno 11. 9. 2026. Raziskovalni kandidati; brez potrjene trditve o novem materialu.</span><span class="en">Updated 11 Sep 2026. Research candidates; no confirmed new-material claim.</span></p></footer>
+<script>
+(function(){'use strict';
+ const buttons=[...document.querySelectorAll('[data-language]')];
+ buttons.forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.language)));
+ window.MDLxDCCLocale.subscribe(lang=>buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===lang))));
+ const sizes=[1,1.125,1.25,1.5];let index=0;
+ try{const saved=Number(localStorage.getItem('8zmaterials-reader-size'));if(Number.isInteger(saved)&&saved>=0&&saved<sizes.length)index=saved;}catch(_){}
+ function resize(){document.documentElement.style.setProperty('--reader-scale',sizes[index]);document.getElementById('text-smaller').disabled=index===0;document.getElementById('text-larger').disabled=index===sizes.length-1;try{localStorage.setItem('8zmaterials-reader-size',String(index));}catch(_){}}
+ document.getElementById('text-smaller').addEventListener('click',()=>{index=Math.max(0,index-1);resize();});
+ document.getElementById('text-larger').addEventListener('click',()=>{index=Math.min(sizes.length-1,index+1);resize();});resize();
+})();
+</script></body></html>
