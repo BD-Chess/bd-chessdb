@@ -1,0 +1,130 @@
+name: 8Z TSP five-arena staging
+
+on:
+  push:
+    branches:
+      - codex/tsp-five-arena-state-20260911
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/tsp-five-arena-state-20260911
+          fetch-depth: 0
+
+      - name: Patch current public presentation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          todo = Path('public/index-todo.html')
+          s = todo.read_text(encoding='utf-8')
+          replacements = [
+            ('<details class="entry-updates" data-entry-updated="2026-09-08"><summary><span><span class="entry-update-label">08 / 09 / 2026</span>',
+             '<details class="entry-updates" data-entry-updated="2026-09-11"><summary><span><span class="entry-update-label">11 / 09 / 2026</span>'),
+            ('<article class="entry-update-item"><a data-entry-link="" href="BD/BD_8ZRP.html">TSP ×4</a><p><span class="entry-en" lang="en">Four independent arenas in testing</span><span class="entry-sl" lang="sl">Štiri neodvisne arene v testiranju</span></p></article>',
+             '<article class="entry-update-item"><a data-entry-link="" href="BD/BD_TSP_5_ARENAS.html">TSP ×5 · RUNNING</a><p><span class="entry-en" lang="en">Five parallel arenas: DEV2.3 · DEV2.4 · TSPES · BD-RPHS · 8zTSP-R MVC. Different search regimes and representations; shared evidence.</span><span class="entry-sl" lang="sl">Pet vzporednih aren: DEV2.3 · DEV2.4 · TSPES · BD-RPHS · 8zTSP-R MVC. Različni režimi iskanja in predstavitve; skupni dokazi.</span></p></article>'),
+            ('<span class="entry-en" lang="en">Priority workbench · 8 September 2026</span><span class="entry-sl" lang="sl">Prednostna delovna miza · 8. september 2026</span>',
+             '<span class="entry-en" lang="en">Priority workbench · 11 September 2026</span><span class="entry-sl" lang="sl">Prednostna delovna miza · 11. september 2026</span>'),
+            ('<span class="entry-en" lang="en">Testing · 4 arenas</span><span class="entry-sl" lang="sl">Testiranje · 4 arene</span>',
+             '<span class="entry-en" lang="en">Running · 5 arenas</span><span class="entry-sl" lang="sl">Teče · 5 aren</span>'),
+            ('<span class="entry-en" lang="en">in testing</span><span class="entry-sl" lang="sl">v testiranju</span>',
+             '<span class="entry-en" lang="en">running</span><span class="entry-sl" lang="sl">tečejo</span>'),
+            ('<span class="entry-en" lang="en">Four different TSP arenas are running as separate research lines.</span><span class="entry-sl" lang="sl">Štiri različne TSP arene tečejo kot ločene raziskovalne veje.</span>',
+             '<span class="entry-en" lang="en">Five deliberately different TSP research arenas are running in parallel—not five copies of one solver. They test different representations, search regimes and governance hypotheses against shared evidence.</span><span class="entry-sl" lang="sl">Pet namenoma različnih TSP raziskovalnih aren teče vzporedno—ne pet kopij istega solverja. Preizkušajo različne predstavitve, režime iskanja in hipoteze upravljanja na skupnih dokazih.</span>'),
+            ('<span class="entry-en" lang="en">Collect the newest result from all four arenas.</span><span class="entry-sl" lang="sl">Zberi najnovejši rezultat vseh štirih aren.</span>',
+             '<span class="entry-en" lang="en">Collect the newest result from all five arenas.</span><span class="entry-sl" lang="sl">Zberi najnovejši rezultat vseh petih aren.</span>'),
+            ('<div class="priority-links"><a href="BD/BD_8ZRP.html">TSP / 8Z-RP</a></div></article>',
+             '<div class="priority-links"><a href="BD/BD_TSP_5_ARENAS.html">5 arenas overview</a><a href="BD/BD_8ZRP.html">TSP / 8Z-RP</a></div></article>'),
+            ('Active lanes (BD status, 2026-09-08):\\n1. TSP: four separate arenas in testing',
+             'Active lanes (BD status, 2026-09-11):\\n1. TSP: five parallel research arenas running')
+          ]
+          for old, new in replacements:
+            if old not in s:
+              raise SystemExit('index-todo expected text not found: ' + old[:100])
+            s = s.replace(old, new, 1)
+
+          marker = '<div class="news-list">\n'
+          if marker not in s:
+            raise SystemExit('index-todo news-list marker not found')
+          news = '''<div class="news" id="news-tsp-five-arenas">\n<div class="news-date">2026-09-11</div>\n<div><b>Five TSP arenas are now running in parallel.</b><br/><span>DEV2.3, DEV2.4 HF3, TSPES v0.1.4.2, BD-RPHS v0.1.2 and 8zTSP-R v0.2.0 MVC deliberately test different search regimes, representations and governance hypotheses. 8zTSP-R is still EARLY, so no performance claim is made for it yet.</span></div>\n<a class="pill green" href="BD/BD_TSP_5_ARENAS.html">5 arenas · RUNNING</a>\n</div>\n'''
+          s = s.replace(marker, marker + news, 1)
+          todo.write_text(s, encoding='utf-8', newline='\n')
+
+          rp = Path('public/BD/BD_8ZRP.html')
+          r = rp.read_text(encoding='utf-8')
+          if 'id="five-parallel-arenas"' in r:
+            raise SystemExit('five-arena block already present unexpectedly')
+
+          style = '''\n<style id="five-arena-live-style">\n.five-arena-live{padding:40px 0}.five-arena-live-box{border:1px solid rgba(52,211,153,.30);border-radius:20px;padding:24px;background:linear-gradient(135deg,rgba(52,211,153,.075),rgba(34,211,238,.045) 55%,rgba(167,139,250,.055))}.five-arena-live-head{display:flex;align-items:flex-end;justify-content:space-between;gap:22px}.five-arena-live h2{margin:5px 0 8px}.five-arena-live p{color:var(--muted)}.five-arena-live-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:18px}.five-arena-live-lane{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.025)}.five-arena-live-lane b{display:block;color:#fff;font-size:13px}.five-arena-live-lane span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.five-arena-live-note{margin-top:15px;font-size:13px}.five-arena-live-actions{display:flex;gap:9px;flex-wrap:wrap;flex-shrink:0}@media(max-width:900px){.five-arena-live-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.five-arena-live-head{align-items:flex-start;flex-direction:column}}@media(max-width:560px){.five-arena-live-grid{grid-template-columns:1fr}.five-arena-live{padding:28px 0}.five-arena-live-box{padding:18px}}\n</style>\n'''
+          if '</head>' not in r:
+            raise SystemExit('BD_8ZRP head marker not found')
+          r = r.replace('</head>', style + '</head>', 1)
+
+          browser_marker = '  <!-- ===== BROWSER-NATIVE PUBLIC PRODUCT ===== -->'
+          if browser_marker not in r:
+            raise SystemExit('BD_8ZRP browser product marker not found')
+          block = '''  <!-- ===== FIVE PARALLEL TSP RESEARCH ARENAS · 2026-09-11 ===== -->\n  <section class="five-arena-live" id="five-parallel-arenas" aria-labelledby="five-parallel-arenas-title">\n    <div class="wrap">\n      <div class="five-arena-live-box">\n        <div class="five-arena-live-head">\n          <div>\n            <span class="sec-tag green">Live research architecture · 11 September 2026</span>\n            <h2 id="five-parallel-arenas-title">Five parallel research arenas</h2>\n            <p><strong>Five arenas. One TSP research loop. Different representations, different search regimes, shared evidence.</strong></p>\n          </div>\n          <div class="five-arena-live-actions"><a class="btn btn-primary" href="BD_TSP_5_ARENAS.html">Open five-arena overview →</a><a class="btn btn-secondary" href="BD_8ZRP_nu3496_status.html">Current nu3496 status →</a></div>\n        </div>\n        <div class="five-arena-live-grid">\n          <div class="five-arena-live-lane"><b>DEV2.3</b><span>durable record search</span></div>\n          <div class="five-arena-live-lane"><b>DEV2.4 HF3</b><span>hard-tail attack</span></div>\n          <div class="five-arena-live-lane"><b>TSPES</b><span>full governed / product research</span></div>\n          <div class="five-arena-live-lane"><b>BD-RPHS</b><span>recursive / polyhedral geometry</span></div>\n          <div class="five-arena-live-lane"><b>8zTSP-R MVC</b><span>native multi-view compression</span></div>\n        </div>\n        <p class="five-arena-live-note">All five lanes are currently <strong>RUNNING</strong>. The newest 8zTSP-R v0.2.0 MVC lane is still <strong>EARLY</strong>, so it carries no performance claim yet. The newer verified nu3496 project incumbent is <strong>96,780 / 0.674073%</strong>; the historical <strong>96,793</strong> completed milestone below remains preserved as its own dated evidence.</p>\n      </div>\n    </div>\n  </section>\n\n'''
+          r = r.replace(browser_marker, block + browser_marker, 1)
+          rp.write_text(r, encoding='utf-8', newline='\n')
+
+      - name: Validate state and public structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m json.tool public/data/BD_MASTER_ARENA_REGISTER_LATEST.json >/dev/null
+          python -m json.tool public/data/BD_PROJECT_STATE_LATEST.json >/dev/null
+          python -m json.tool public/data/BD_MORNING_DELTA_LATEST.json >/dev/null
+          node scripts/validate-8z-control-state.js
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          reg=json.loads(Path('public/data/BD_MASTER_ARENA_REGISTER_LATEST.json').read_text())
+          proj=json.loads(Path('public/data/BD_PROJECT_STATE_LATEST.json').read_text())
+          delta=json.loads(Path('public/data/BD_MORNING_DELTA_LATEST.json').read_text())
+          ids=['tsp-dev23-nu3496','tsp-dev24-nu3496','tspes-v0142','bd-rphs-uy734','8ztsp-r-multiview']
+          m={a['arena_id']:a for a in reg['arenas']}
+          assert all(m[i]['status']=='RUNNING' and m[i]['running'] is True for i in ids)
+          assert m['8ztsp-r-multiview']['version']=='v0.2.0'
+          assert m['8ztsp-r-multiview']['attention']=='WATCH'
+          assert 'EARLY' in m['8ztsp-r-multiview']['progress']
+          assert reg['status_counts']['RUNNING']==7
+          assert reg['status_counts']['STANDBY']==11
+          assert reg['status_counts']['BLOCKED']==2
+          tsp=next(p for p in proj['projects'] if p['project']=='TSP & TSPES')
+          assert len(tsp['arena_ids'])==5
+          assert not proj['needs_bd']
+          home=next(x for x in proj['machines'] if x['machine']=='Home PC')
+          assert all(i in home['active_arena_ids'] for i in ids)
+          assert len(delta['changes'])==4
+          todo=Path('public/index-todo.html').read_text()
+          assert 'BD/BD_TSP_5_ARENAS.html' in todo
+          assert 'TSP ×5 · RUNNING' in todo
+          assert 'five parallel research arenas running' in todo
+          assert 'TSP ×4' not in todo
+          rp=Path('public/BD/BD_8ZRP.html').read_text()
+          assert 'id="five-parallel-arenas"' in rp
+          assert 'BD_TSP_5_ARENAS.html' in rp
+          assert 'BD_8ZRP_nu3496_status.html' in rp
+          assert '96,793' in rp
+          assert '96,780 / 0.674073%' in rp
+          for path in ['public/BD/BD_TSP_5_ARENAS.html','public/BD/BD_8ZRP_nu3496_status.html','public/BD/BD_8ZRP.html','public/index-todo.html']:
+              assert Path(path).is_file(), path
+          print('TSP five-arena consistency: PASS')
+          PY
+
+      - name: Commit staged public changes and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "8Z Control staging"
+          git config user.email "actions@users.noreply.github.com"
+          git rm .github/workflows/8z-tsp-five-arena-staging.yml
+          git add public/index-todo.html public/BD/BD_8ZRP.html
+          git commit -m "Stage five-arena TSP presentation and validate state"
+          git push origin HEAD:codex/tsp-five-arena-state-20260911
