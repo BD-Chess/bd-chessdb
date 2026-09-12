@@ -75,7 +75,7 @@ Please inspect the homepage and a representative sample across branches. At mini
 ### Practical tools / games / demos
 
 - Trip Optimizer: https://www.mdlxdcc.org/Trip/
-- ChessBest: https://www.mdlxdcc.org/chess.html
+- ChessBest: https://chessbest.org/
 - Flip 4 Magnetic: https://www.mdlxdcc.org/F4M/F4M.html
 - Sudoku: https://www.mdlxdcc.org/S/index.html
 - Crosswords: https://www.mdlxdcc.org/CW/index.html
