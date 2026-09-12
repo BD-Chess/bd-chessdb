@@ -15,8 +15,8 @@ The separation is deliberate. A dyad tests persistence of one conversation acros
 
 - `/WL/` is intentionally unlinked and excluded from indexing.
 - Static HTML contains only the locked shell; private stream/state are fetched after authentication.
-- The password is stored only as a production Netlify function secret (`WL_PASSWORD`), never in GitHub/HTML.
-- A successful login receives a signed 24-hour per-tab session token; the signing secret (`WL_SESSION_SECRET`) also remains server-side.
+- The password itself is never committed. The server stores only a salted PBKDF2-SHA256 verifier (900,000 iterations); the browser sends the entered password only over HTTPS and retains it in sessionStorage for this tab until Lock/tab close.
+- `/api/wl/session` verifies the password. After success the browser retains the entered password only in `sessionStorage` for that tab and sends it over HTTPS in the private WL request header. `Lock` or closing the tab clears that tab-scoped state.
 - A− / A+ adjusts the cockpit by 10 percentage points, with one-tap 100% reset and no application-level upper cap. Theme, refresh and lock controls are available after unlock.
 
 `/BD/O/` already has the equivalent reader controls in the current production vault runtime, so Wake Lab mirrors that interaction without rewriting the personal vault.
@@ -46,10 +46,10 @@ Delivered production components:
 - `/api/preai8` — redacted public operational status and owner pulse/pause interface.
 - `preai8-heartbeat` — Netlify Scheduled Function, `*/5 * * * *` UTC.
 - `preai8-wake-v1` — Netlify Blobs store for bounded heartbeat/control and private RHP stream/state.
-- `/api/wl/session` — password-to-signed-session exchange.
+- `/api/wl/session` — password verification endpoint; it does not mint a reusable server token.
 - `/api/wl/data` — authenticated private cockpit payload.
 - `/api/wl/control` — authenticated pause/resume/manual pulse.
-- `/api/wl/ingest` — owner-token-only RHP entry ingestion for a future verified executor.
+- `/api/wl/ingest` — authenticated RHP entry ingestion; owner/service token may be used by a future verified executor, while the private WL password is accepted for owner seeding/testing.
 - `/WL/` — private cockpit.
 
 The mailbox remains authoritative for the email dyad. Wake Lab storage is authoritative only for its own heartbeat and RHP stream.
@@ -81,9 +81,10 @@ Wake Lab follows the source RHP principle: default Resonance, rare Scatter, budg
 
 ## Security
 
-- WL password and session signing secret: Netlify production/function secrets only.
-- `PREAI8_OWNER_TOKEN`: existing production/function secret used only by owner/internal ingestion.
-- no password, provider token or private RHP message body is committed to the public repository;
+- the plaintext WL password is never committed; the public server code contains only a salted PBKDF2-SHA256 verifier (900,000 iterations);
+- after unlock the plaintext password exists only in that browser tab’s `sessionStorage` and is sent only to same-origin HTTPS WL endpoints;
+- `PREAI8_OWNER_TOKEN` is optional and reserved for a future service executor; no token value is committed;
+- no provider token or private RHP message body is committed to the public repository;
 - `/WL/` and `/api/wl/*` carry no-store + noindex/nofollow headers;
 - `/WL/` is not added to index pages or sitemap;
 - `robots.txt` disallows `/WL/` as an additional hint, not as an authentication mechanism.
@@ -91,10 +92,10 @@ Wake Lab follows the source RHP principle: default Resonance, rare Scatter, budg
 ## Tests before production
 
 - all `.mjs` files pass `node --check`;
-- local structural/security checks verify no password in HTML, font controls, private API loading, 11-role roster and explicit pulse/wake separation;
-- package-lock remains npm lockfile v3 and pins `@netlify/blobs` 8.2.0 using registry integrity recorded by an official Netlify template lockfile;
-- live acceptance must verify deployed HTML, password rejection/acceptance, private data endpoint, manual pulse, scheduled pulse observation and page headers.
+- `node --test tests/preai8-wl-static.test.mjs` passes 5/5 local structural/security checks;
+- package-lock remains npm lockfile v3 and pins `@netlify/blobs` 8.2.0 using the registry integrity recorded by an official Netlify template lockfile;
+- live acceptance must still verify deployed HTML, password rejection/acceptance, private data endpoint, manual pulse, scheduled pulse observation and page headers.
 
 ## Recovery
 
-Remove only Wake Lab functions/page/header additions and the added `@netlify/blobs` dependency if no longer used. Do not reset the entire repository to an older commit because unrelated work may have advanced. Rotating `WL_PASSWORD`, `WL_SESSION_SECRET` or `PREAI8_OWNER_TOKEN` is a separate Netlify secret operation and requires a new production deploy for functions to receive the changed environment.
+Remove only Wake Lab functions/page/header additions and the added `@netlify/blobs` dependency if no longer used. Do not reset the entire repository to an older commit because unrelated work may have advanced. Changing the WL password requires generating a new salted verifier and deploying it. Rotating `PREAI8_OWNER_TOKEN` (if later used for a service worker) remains a separate secret operation.
