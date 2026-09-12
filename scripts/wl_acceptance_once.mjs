@@ -2,6 +2,7 @@
  * transmitted in an envelope encrypted for this runner's ephemeral key. */
 import {generateKeyPairSync,privateDecrypt,createDecipheriv,constants} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 const REPO='BD-Chess/bd-chessdb',BRANCH='ops/wl-deploy-exchange';
 const ID=process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT;
 const auth=process.env.GITHUB_TOKEN;
@@ -41,4 +42,6 @@ function run(cmd,args,extra={}){
 run('python3',['-m','venv','/tmp/wl-accept']);
 run('/tmp/wl-accept/bin/pip',['install','--quiet','playwright==1.55.0']);
 run('/tmp/wl-accept/bin/python',['tests/wl_live_test.py'],{WL_TEST_PASSWORD:payload.password});
-await put('.wl-exchange/result-'+ID+'.json',{schema:'WL-LIVE-ACCEPTANCE-1',id:ID,source_sha:process.env.GITHUB_SHA,status:'PASS',checks:31,viewports:[320,390,1440],site:'https://www.mdlxdcc.org/WL/',completed_at:new Date().toISOString(),private_content_published:false});
+const measured=JSON.parse(readFileSync('/tmp/wl-live-result.json','utf8'));
+if(measured.status!=='PASS'||measured.checks!==44||measured.rules_version!=='1.0.0')throw Error('invalid measured acceptance receipt');
+await put('.wl-exchange/result-'+ID+'.json',{schema:'WL-LIVE-ACCEPTANCE-1',id:ID,source_sha:process.env.GITHUB_SHA,status:'PASS',checks:measured.checks,rules_version:measured.rules_version,viewports:[320,390,1440],site:'https://www.mdlxdcc.org/WL/',completed_at:new Date().toISOString(),private_content_published:false});
