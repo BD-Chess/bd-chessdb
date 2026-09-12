@@ -42,10 +42,13 @@
       <ul>
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
-        <li><strong>3. Optimize:</strong> Use "Standard" for fast results or "Deep Search" for complex routes.</li>
-        <li><strong>4. Navigation:</strong> Use the toggle above the list to switch between Google/Apple Maps for turn-by-turn guidance.</li>
-        <li><strong>5. Share:</strong> Click the button at the bottom to create a shareable link.</li>
+        <li><strong>3. Prepare distances:</strong> Fetch or refresh the road distance table. Drive and Walk use different tables. You can inspect the table below the route list.</li>
+        <li><strong>4. Optimize:</strong> Fast and Deep search locally using the prepared road distances. Missing distances are fetched automatically. Direct Line uses approximate straight-line distances instead.</li>
+        <li><strong>5. Navigation:</strong> Use the toggle above the list to switch between Google/Apple Maps for turn-by-turn guidance.</li>
+        <li><strong>6. Share:</strong> Click the button at the bottom to create a shareable link.</li>
       </ul>
+      <p>The road table is working data for the current open trip and is discarded on reload. Google receives the coordinates to calculate routes. Preparing a table uses Google API quota; repeated local searches reuse it.</p>
+      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Search does not guarantee a global optimum. Road mode supports up to 100 stops.</p>
     </div>
   `;
 
