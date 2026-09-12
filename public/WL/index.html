@@ -5,6 +5,20 @@
 <title>Wake Lab · RHP-11</title>
 <style>
 :root{--bg:#07100f;--panel:#0d1a18;--panel2:#12231f;--ink:#edf8f3;--muted:#9fb7ad;--line:#294139;--a:#a8ef8c;--b:#7fdaca;--warn:#f4c37f;--scale:1;color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}html[data-theme=light]{--bg:#f3f6ef;--panel:#fff;--panel2:#e8efe4;--ink:#183126;--muted:#526b5e;--line:#bdcdbf;--a:#315d1c;--b:#116452;--warn:#8b5b13;color-scheme:light}*{box-sizing:border-box}html{font-size:calc(16px * var(--scale))}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55}.wrap{width:min(1180px,calc(100% - 34px));margin:auto}.gate{min-height:100svh;display:grid;place-items:center;padding:24px}.gatebox{width:min(620px,100%);padding:clamp(24px,6vw,44px);border:1px solid var(--line);border-radius:26px;background:var(--panel);box-shadow:0 20px 70px #0005}.eyebrow{color:var(--b);font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}h1{font-size:clamp(2.5rem,9vw,5rem);letter-spacing:-.055em;line-height:.96;margin:18px 0}h2{font-size:clamp(1.7rem,4vw,2.6rem);letter-spacing:-.035em;margin:.2em 0}.muted{color:var(--muted)}.field{display:flex;gap:8px;margin-top:18px}.field input{width:100%;min-width:0;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit}.btn,button{font:inherit;font-weight:750;min-height:44px;padding:10px 14px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}.btn:hover,button:hover{border-color:var(--b)}button:disabled{opacity:.5;cursor:default}.primary{border-color:var(--a);color:var(--a)}#unlock{width:100%;margin-top:10px}.error{min-height:1.5em;color:#ff8f9d}.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.topin{display:flex;align-items:center;gap:10px;min-height:70px;flex-wrap:wrap}.brand{font-weight:800;letter-spacing:-.03em}.brand small{display:block;color:var(--muted);font-weight:600;letter-spacing:.03em}.tools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.tools button{min-width:44px}.hero{padding:56px 0 30px}.hero p{max-width:760px;font-size:1.08em}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid var(--line);border-radius:99px;padding:6px 10px;font-size:.78em;color:var(--muted)}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-bottom:24px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;min-width:0}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.stat{padding:14px;background:var(--panel2);border-radius:12px}.stat b{display:block;font-size:1.35em;color:var(--a)}.roster{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.agent{padding:12px;border:1px solid var(--line);border-radius:12px}.agent b{display:block}.agent small{color:var(--muted)}.stream{display:flex;flex-direction:column;gap:12px}.entry{border-left:3px solid var(--b);background:var(--panel2);padding:14px 16px;border-radius:0 12px 12px 0}.entry .meta{font-size:.74em;color:var(--muted);margin-bottom:6px}.empty{padding:28px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}.foot{padding:30px 0 60px;color:var(--muted);font-size:.82em}.pulse{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}[hidden]{display:none!important}:focus-visible{outline:3px solid var(--warn);outline-offset:3px}@media(max-width:780px){.grid{grid-template-columns:1fr}.status{grid-template-columns:repeat(2,1fr)}.roster{grid-template-columns:1fr}.tools{margin-left:0}.topin{padding:8px 0}}@media(max-width:380px){.wrap{width:min(100% - 20px,1180px)}.status{grid-template-columns:1fr}.field{display:block}.field button{width:100%;margin-top:8px}}
+
+/* WL reader, 2026-09-12: keep controls reachable and dynamic text scalable. */
+.top{font-size:16px}.topin{min-width:0;padding-top:8px;padding-bottom:8px}
+.brand{font-size:20px}.brand small{font-size:12px}
+.tools{min-width:0;max-width:100%}.tools button{font-size:16px;min-width:44px;min-height:44px}
+#fontReset{min-width:5em;font-variant-numeric:tabular-nums}
+main,article,section,.card,.stat,.agent,.entry,.hero,.empty{min-width:0;overflow-wrap:anywhere}
+.status{grid-template-columns:repeat(4,minmax(0,1fr))}
+.roster{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pulse button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+html[data-wl-large-font="true"] .grid,html[data-wl-large-font="true"] .status,
+html[data-wl-large-font="true"] .roster{grid-template-columns:minmax(0,1fr)}
+@media(max-width:780px){.status{grid-template-columns:repeat(2,minmax(0,1fr))}.roster{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:380px){.status{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
 <section id="gate" class="gate"><main class="gatebox"><div class="eyebrow">BD × AI · PRIVATE</div><h1>Wake Lab</h1><p class="muted">RHP-11 observatorij. Ena seja odklene celoten cockpit v tem zavihku.</p><form id="login"><label for="pw">Geslo</label><div class="field"><input id="pw" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required><button type="button" id="show">Pokaži</button></div><button id="unlock" class="primary" type="submit">Odkleni</button><p id="err" class="error" role="status" aria-live="polite"></p></form><p class="muted"><small>Noindex · brez javnih povezav · geslo ni v HTML/GitHub kodi.</small></p></main></section>
 <div id="app" hidden><header class="top"><div class="wrap topin"><div class="brand">WL · Wake Lab<small>RHP-11 · AI Continuity</small></div><div class="tools"><button id="fontMinus" aria-label="Zmanjšaj črke">A−</button><button id="fontReset" aria-label="Ponastavi velikost">100%</button><button id="fontPlus" aria-label="Povečaj črke">A+</button><button id="theme" aria-label="Preklopi temo">◐</button><button id="refresh">Osveži</button><button id="lock">Zakleni</button></div></div></header>
@@ -16,7 +30,18 @@
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id),S='wl-session-v1',FS='wl-font-v1',TS='wl-theme-v1';let token=sessionStorage.getItem(S)||'',scale=Number(localStorage.getItem(FS)||'100');
 function theme(v){document.documentElement.dataset.theme=v;localStorage.setItem(TS,v)}theme(localStorage.getItem(TS)||'dark');
-function font(v){if(!Number.isFinite(v))v=100;scale=Math.max(70,v);document.documentElement.style.setProperty('--scale',scale/100);$('fontReset').textContent=scale+'%';$('fontMinus').disabled=scale<=70;localStorage.setItem(FS,String(scale))}
+// Shared reader behavior mirrors BD/O: 10 percentage points, no upper cap.
+function font(v){
+ if(!Number.isFinite(v)||v<=0)v=100;
+ scale=Math.max(70,Math.round(v));
+ document.documentElement.style.setProperty('--scale',scale/100);
+ document.documentElement.dataset.wlLargeFont=String(scale>=200);
+ $('fontReset').textContent=scale+'%';
+ $('fontReset').title='Povrni običajno velikost črk (100 %)';
+ $('fontReset').setAttribute('aria-label','Velikost '+scale+' %. Povrni na 100 %.');
+ $('fontMinus').disabled=scale<=70;$('fontPlus').disabled=false;
+ try{localStorage.setItem(FS,String(scale))}catch(_){}
+}
 async function api(path,opt={}){const h={'Content-Type':'application/json',...(opt.headers||{})};if(token)h.Authorization='Bearer '+token;const r=await fetch(path,{...opt,headers:h,cache:'no-store'});let j={};try{j=await r.json()}catch(_){}if(r.status===401){sessionStorage.removeItem(S);token='';showGate('Seja je potekla. Vnesi geslo znova.');throw new Error('unauthorized')}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
 function showGate(msg=''){$('app').hidden=true;$('gate').hidden=false;$('err').textContent=msg;$('pw').focus()}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
