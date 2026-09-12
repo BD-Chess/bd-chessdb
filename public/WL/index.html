@@ -44,7 +44,7 @@ function font(v){
 }
 async function api(path,opt={}){const h={'Content-Type':'application/json',...(opt.headers||{})};if(password)h['X-WL-Password']=password;const r=await fetch(path,{...opt,headers:h,cache:'no-store'});let j={};try{j=await r.json()}catch(_){}if(r.status===401){sessionStorage.removeItem(S);password='';showGate('Geslo ni več veljavno. Vnesi ga znova.');throw new Error('unauthorized')}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
 function showGate(msg=''){$('app').hidden=true;$('gate').hidden=false;$('err').textContent=msg;$('pw').focus()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(t){if(!t)return '—';try{return new Date(t).toLocaleString('sl-SI')}catch(_){return t}}
 function render(d){$('gate').hidden=true;$('app').hidden=false;font(scale);const rs=d.rhp_plane.state||{},hb=d.heartbeat||{},wb=d.wake_bridge||{};$('stats').innerHTML=`<div class="stat"><span class="muted">RHP faza</span><b>${esc(rs.phase||'—')}</b></div><div class="stat"><span class="muted">Runda</span><b>${esc(rs.round??0)}</b></div><div class="stat"><span class="muted">Wake bridge</span><b>${wb.configured?'CONFIG':'OFF'}</b></div><div class="stat"><span class="muted">Heartbeat</span><b>${hb.paused?'PAUSED':'LIVE'}</b></div>`;
 $('rhpState').textContent=`Execution: ${rs.execution||'NOT_CONNECTED'} · Posodobljeno: ${fmt(rs.updated_at)}`;
