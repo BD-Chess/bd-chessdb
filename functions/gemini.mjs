@@ -16,8 +16,9 @@ function settings() {
   const key = Netlify.env.get('GEMINI_API_KEY');
   const base = (Netlify.env.get('GOOGLE_GEMINI_BASE_URL') ||
     'https://generativelanguage.googleapis.com').replace(/\/+$/, '');
-  const model = Netlify.env.get('TRIP_GEMINI_MODEL') || 'gemini-2.5-flash';
-  return { key, base, model };
+  const model = Netlify.env.get('TRIP_GEMINI_MODEL') || 'gemini-3.5-flash-lite';
+  const searchEnabled = Netlify.env.get('TRIP_GEMINI_SEARCH') === 'true';
+  return { key, base, model, searchEnabled };
 }
 
 function safeLink(value) {
@@ -28,24 +29,10 @@ function safeLink(value) {
 }
 
 export default async (req) => {
-  const { key, base, model } = settings();
+  const { key, base, model, searchEnabled } = settings();
   const transport = base === 'https://generativelanguage.googleapis.com' ? 'google-direct' : 'netlify-ai-gateway';
-  if (req.method === 'GET' && new URL(req.url).searchParams.get('models') === '1') {
-    if (!key) return failure('AI_NOT_CONFIGURED', 'Gemini is not configured.', 503);
-    try {
-      // Read-only availability check. Publish model identifiers, never credentials or raw errors.
-      const response = await fetch(base + '/v1beta/models?pageSize=1000', {
-        headers: { 'x-goog-api-key': key }, signal: AbortSignal.timeout(8000), redirect: 'error'
-      });
-      if (!response.ok) return failure('MODEL_LIST_FAILED', 'Model availability could not be checked.', 502, { upstreamStatus: response.status });
-      const data = await response.json();
-      return json({ ok: true, configuredModel: model, models: (data.models || [])
-        .filter(item => item.supportedGenerationMethods?.includes('generateContent'))
-        .map(item => item.name) });
-    } catch { return failure('MODEL_LIST_FAILED', 'Model availability could not be checked.', 502); }
-  }
   if (req.method === 'GET') {
-    return json({ ok: true, configured: Boolean(key), model, transport });
+    return json({ ok: true, configured: Boolean(key), model, transport, searchEnabled });
   }
   if (req.method !== 'POST') return failure('METHOD_NOT_ALLOWED', 'Use POST to send a message.', 405);
   const origin = req.headers.get('origin');
@@ -83,7 +70,9 @@ export default async (req) => {
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: body.prompt }] }],
         generationConfig: { maxOutputTokens: 8192 },
-        tools: [{ google_search: {} }]
+        ...(searchEnabled ? { tools: [{ google_search: {} }] } : {
+          systemInstruction: { parts: [{ text: 'You are a travel planning assistant without live web access. Do not claim to have searched the web or verified current weather, opening hours, prices, or availability. Explain when those details need checking. You may suggest itineraries and approximate coordinates.' }] }
+        })
       }),
       signal: AbortSignal.timeout(50000),
       redirect: 'error'
@@ -91,15 +80,7 @@ export default async (req) => {
     // Never pass raw provider errors, headers or URLs back to the browser.
     if (res.status === 429) return failure('RATE_LIMITED', 'Gemini is at its usage limit. Please wait a minute and try again.', 429);
     if (res.status === 401 || res.status === 403) return failure('PROVIDER_AUTH', 'Gemini rejected the server credentials or access permissions. Please contact the site owner.', 503);
-    if (res.status === 404) {
-      let detail = '';
-      try {
-        const provider = await res.json();
-        detail = String(provider.error?.message || '').split(key).join('[redacted]')
-          .replace(/AIza[\w-]+/g, '[redacted]').replace(/https?:\/\/\S+/g, '[provider URL]').slice(0, 500);
-      } catch {}
-      return failure('MODEL_UNAVAILABLE', 'The configured Gemini model is unavailable. ' + detail, 503);
-    }
+    if (res.status === 404) return failure('MODEL_UNAVAILABLE', 'The configured Gemini model is unavailable. The site owner needs to update it.', 503);
     if (!res.ok) return failure('PROVIDER_ERROR', 'Gemini could not complete this request. Please try again shortly.', 502, { upstreamStatus: res.status });
     let data;
     try { data = await res.json(); } catch { return failure('INVALID_RESPONSE', 'Gemini returned an unreadable response. Please try again.', 502); }
@@ -116,7 +97,7 @@ export default async (req) => {
       const url = safeLink(chunk.web?.uri);
       return url ? [{ title: String(chunk.web.title || 'Source'), url }] : [];
     });
-    return json({ ok: true, text, model: data.modelVersion || model, transport, sources,
+    return json({ ok: true, text, model: data.modelVersion || model, transport, searchEnabled, sources,
       searchSuggestionsHtml: typeof grounding.searchEntryPoint?.renderedContent === 'string' ? grounding.searchEntryPoint.renderedContent : '' });
   } catch (error) {
     if (['TimeoutError', 'AbortError'].includes(error?.name)) {

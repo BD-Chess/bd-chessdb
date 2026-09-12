@@ -16,3 +16,14 @@ The Maps JavaScript browser key is intentionally visible to the browser and must
 - JavaScript syntax passed.
 - Handler checks passed: Maps-only response; no reads of Gemini credentials; no-store; POST 405; missing Maps configuration 503.
 - Production integration will be checked after deployment.
+
+## Production observations and Gemini correction
+- Maps loaded on www.mdlxdcc.org and a Ljubljana/Kranj/Bled itinerary optimized and displayed.
+- Google models.list includes gemini-2.5-flash, but generateContent returned HTTP 404 with: "This model models/gemini-2.5-flash is no longer available to new users."
+- Catalog presence therefore is not sufficient proof that inference is available to a new project.
+- Default changed to gemini-3.5-flash-lite, listed in the authenticated catalog and official stable-model documentation.
+- Google pricing documents free inference but no free Google Search grounding for this model. Search tools are disabled by default and require explicit server opt-in TRIP_GEMINI_SEARCH=true. The UI no longer advertises Internet Enabled.
+- Added system instruction to avoid claiming current web verification without search.
+- Temporary public model diagnostics removed; provider errors again fully normalized.
+- All 13 Gemini regression tests pass, including no search tools by default and explicit search opt-in.
+- Official references: https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite and https://ai.google.dev/gemini-api/docs/pricing

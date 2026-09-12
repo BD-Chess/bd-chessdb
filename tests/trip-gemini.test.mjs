@@ -21,7 +21,7 @@ test('configuration health performs no inference and exposes no credentials', as
   const response = await handler(new Request('https://www.mdlxdcc.org/.netlify/functions/gemini'));
   const data = await response.json();
   assert.equal(data.configured, true);
-  assert.equal(data.model, 'gemini-2.5-flash');
+  assert.equal(data.model, 'gemini-3.5-flash-lite');
   assert.equal(fetchMock.mock.calls.length, 0);
   assert.doesNotMatch(JSON.stringify(data), /test-server-key/);
   assert.equal(response.headers.get('cache-control'), 'no-store');
@@ -52,15 +52,16 @@ test('rejects malformed, empty, excessive and foreign-origin requests without in
 
 test('joins answer parts, excludes thoughts, preserves itinerary and returns safe grounding sources', async t => {
   setup(t, async (url, options) => {
-    assert.equal(String(url), 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
+    assert.equal(String(url), 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent');
     assert.equal(options.headers['x-goog-api-key'], 'test-server-key');
     assert.equal(options.redirect, 'error');
     assert.ok(options.signal instanceof AbortSignal);
     const body = JSON.parse(options.body);
     assert.equal(body.contents[0].parts[0].text, 'Plan a walk in Rome.');
-    assert.deepEqual(body.tools, [{ google_search: {} }]);
+    assert.equal(body.tools, undefined);
+    assert.match(body.systemInstruction.parts[0].text, /without live web access/);
     assert.equal(body.generationConfig.maxOutputTokens, 8192);
-    return Response.json({ modelVersion: 'gemini-2.5-flash', candidates: [{ finishReason: 'STOP',
+    return Response.json({ modelVersion: 'gemini-3.5-flash-lite', candidates: [{ finishReason: 'STOP',
       content: { parts: [{ thought: true, text: 'private thought' }, { text: 'Here is your trip.\n' },
         { text: '{REPLACE:\nRome | 41.9, 12.5 START\nColosseum | 41.89, 12.49\n}' }] },
       groundingMetadata: { groundingChunks: [{ web: { title: 'Rome', uri: 'https://example.org/rome' } },
@@ -131,4 +132,12 @@ test('timeouts and unreachable providers produce distinct retryable errors', asy
     assert.equal(data.error.code, code);
     assert.doesNotMatch(JSON.stringify(data), /test-server-key/);
   }
+});
+
+ test('search tools require explicit server opt-in', async t => {
+  setup(t, async (url, options) => {
+    assert.deepEqual(JSON.parse(options.body).tools, [{ google_search: {} }]);
+    return Response.json({ candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }] });
+  }, { GEMINI_API_KEY: 'test-server-key', TRIP_GEMINI_SEARCH: 'true' });
+  assert.equal((await handler(request())).status, 200);
 });

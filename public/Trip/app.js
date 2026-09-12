@@ -879,7 +879,7 @@ Bad example:
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
         bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
-        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini (Internet Enabled)..."><button id="btnSendBigChat">➤</button></div>`;
+        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini..."><button id="btnSendBigChat">➤</button></div>`;
         rightPanel.appendChild(bigChat);
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
