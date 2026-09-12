@@ -91,7 +91,15 @@ export default async (req) => {
     // Never pass raw provider errors, headers or URLs back to the browser.
     if (res.status === 429) return failure('RATE_LIMITED', 'Gemini is at its usage limit. Please wait a minute and try again.', 429);
     if (res.status === 401 || res.status === 403) return failure('PROVIDER_AUTH', 'Gemini rejected the server credentials or access permissions. Please contact the site owner.', 503);
-    if (res.status === 404) return failure('MODEL_UNAVAILABLE', 'The configured Gemini model is unavailable. The site owner needs to update it.', 503);
+    if (res.status === 404) {
+      let detail = '';
+      try {
+        const provider = await res.json();
+        detail = String(provider.error?.message || '').split(key).join('[redacted]')
+          .replace(/AIza[\\w-]+/g, '[redacted]').replace(/https?:\\/\\/\\S+/g, '[provider URL]').slice(0, 500);
+      } catch {}
+      return failure('MODEL_UNAVAILABLE', 'The configured Gemini model is unavailable. ' + detail, 503);
+    }
     if (!res.ok) return failure('PROVIDER_ERROR', 'Gemini could not complete this request. Please try again shortly.', 502, { upstreamStatus: res.status });
     let data;
     try { data = await res.json(); } catch { return failure('INVALID_RESPONSE', 'Gemini returned an unreadable response. Please try again.', 502); }
