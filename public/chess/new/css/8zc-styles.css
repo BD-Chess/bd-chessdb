@@ -1340,3 +1340,8 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 .dcc-analysis-pv, .dcc-info-summary { color: var(--ui-muted); line-height: 1.6; }
 #dccInfoPanel { background: var(--ui-inset); border-color: var(--ui-border); color: var(--ui-text); }
 @media (max-width: 790px) { .dcc-details-button { min-height: 40px; } }
+
+/* Keep all five analysis mode buttons together at narrow widths. */
+#viewToggle { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px !important; }
+#viewToggle .btn { margin-left: 0 !important; width: 100%; padding-inline: 3px !important; }
+#dccProgress { grid-column: 1 / -1; order: 2; text-align: right; }

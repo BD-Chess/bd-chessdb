@@ -331,7 +331,8 @@ gameBuckets.forEach(bucket => {
 	  game.load_pgn(cleanPgn);
 
 	  // Update UI
-	  document.getElementById('gameTitle').innerHTML = title;
+      const tags = game.header();
+      document.getElementById('gameTitle').textContent = tags.White && tags.Black && tags.White !== 'Book' ? `${tags.White} vs ${tags.Black}` : title;
 	  updateBoard(true);
 	  showOpening();
 	  lastMoveIndex = game.history().length - 1;
@@ -698,6 +699,7 @@ gameBuckets.forEach(bucket => {
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
   ------------------------------------------------------------------*/
   function applySettings() {
+    document.getElementById('settingEvalMode').value = settings.evalMode;
     /* theme */
 	document.body.classList.toggle('light-theme', settings.theme === 'light');
 	// sync the Settings-panel checkbox
@@ -1449,6 +1451,7 @@ function jumpTo(i){
     18. SETTINGS PANEL HANDLERS  (updated to include delay settings)
  ------------------------------------------------------------------*/
 	[
+      'settingEvalMode',
 	  'settingTopN',
 	  'settingHistorySize',
 	  'settingBg',
@@ -1474,6 +1477,7 @@ function jumpTo(i){
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
+          case 'settingEvalMode': settings.evalMode = e.target.value === 'proxy' ? 'proxy' : 'direct'; break;
 		  case 'settingTopN':
 			settings.topN = e.target.value === 'all'
 			  ? Infinity
@@ -1863,7 +1867,7 @@ function jumpTo(i){
 
   // Main simulation orchestrator
   async function runSimulation(dccColor, startFen) {
-    if (simRunning) { simAbort = true; invalidateDCCAnalysis(); return; }
+    if (simRunning) { simAbort = true; invalidateDCCAnalysis(); updateSimStatus('Stopping simulation…'); return; }
     if (replayRunning || playState.active) return;
     invalidateDCCAnalysis();
     simRunning = true;
@@ -2163,7 +2167,7 @@ function syncSimModalState() {
   
 function openSimModal(launchMode = 'sim') {
   if (replayRunning) { stopReplay(); return; }
-  if (simRunning) { simAbort = true; invalidateDCCAnalysis(); return; }
+  if (simRunning) { simAbort = true; invalidateDCCAnalysis(); updateSimStatus('Stopping simulation…'); return; }
   if (playState.active) {
     leaveActiveSession(playState.mode === 'lichess'
       ? 'Local live session stopped. The Lichess game may still be running.'
@@ -3353,7 +3357,7 @@ async function launchFromSimModal() {
         dccEvalFloor: settings.dccEvalFloor, simSpeed: settings.simSpeed
       };
       const overrides = {
-        dccDepth: number('replayDepth', saved.dccDepth, 1, 30),
+        dccDepth: number('replayDepth', saved.dccDepth, 1, 10),
         dccTopCandidates: number('replayTopC', saved.dccTopCandidates, 1, 10),
         dccEvalFloor: number('replayFloor', saved.dccEvalFloor, 0, 1000),
         simSpeed: number('replaySpeed', saved.simSpeed, 0, 10000)

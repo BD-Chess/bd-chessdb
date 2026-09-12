@@ -27,7 +27,7 @@ Static review of Sudoku R6 0.2.0-R1-HF3-HF3 (SHA3-256 03df23c114299366284a9acf91
 
 ## Verification
 
-Run `node --test public/chess/new/research/*test.cjs` from the repository root. Tests use deterministic fixtures and the bundled chess rules library, not external challenges. Full HTML/JS boot was checked with a DOM harness (64 squares, new dialog, SimW/SimB modals, New game). Browser visual and interaction checks follow on the deployed isolated path. No real Lichess challenge is sent by automated tests.
+Run `node --test public/chess/new/research/*test.cjs` from the repository root. All 24 tests passed. Tests use deterministic fixtures and the bundled chess rules library, not external challenges. Full HTML/JS boot was checked with a DOM harness (64 squares, new dialog, SimW/SimB modals, New game). Live browser checks passed on the deployed isolated path: desktop, 390px phone and 768px tablet layouts; dark and light themes; the new dialog; 405-game library search and loading; first/next navigation; actual local SimW engine move e2e4; automated local Sim start/Stop; and completed Replay with annotated PGN export available. No application console errors were observed (browser-extension messages were excluded). No real Lichess challenge is sent by automated tests.
 
 Upstream API references: https://www.chessdb.cn/cloudbookc_api_en.html and https://lichess.org/api .
 
