@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1422">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Flip4M by Bojan Dobrečevič. Connect four. Turn gravity. Master the magnets. Independent Classical / AI+DCC laboratory with reproducible paired experiments.">
+<title>Flip4M Lab — Classical AI × AI+DCC</title>
+<link rel="stylesheet" href="f4m.css?v=2.1.0">
+<script src="f4m-core.js?v=2.1.0" defer></script>
+<script src="f4m-search.js?v=2.1.0" defer></script>
+<script src="f4m-classical.js?v=2.1.0" defer></script>
+<script src="f4m-dcc.js?v=2.1.0" defer></script>
+<script src="f4m-time.js?v=2.1.0" defer></script>
+<script src="f4m-sim.js?v=2.1.0" defer></script>
+<script src="f4m-store.js?v=2.1.0" defer></script>
+<script src="f4m-ui.js?v=2.1.0" defer></script>
+</head>
+<body>
+<header class="topbar">
+ <a href="/BD/" class="lab">BD <span>×</span> AI LAB</a>
+ <nav aria-label="Navigation"><a href="/f4m/" data-i18n="about">O igri</a><a href="/f4m/new/" data-i18n="previewGame">Igra v2</a><button id="lang" class="small" aria-label="Switch language">EN</button><button id="theme" class="small" aria-label="Switch theme">◐</button></nav>
+</header>
+<main>
+ <header class="hero"><div><div class="eyebrow"><span class="brand-mark"><i></i><i></i><i></i><i></i></span> FLIP · FOUR · MAGNETIC</div><h1>Flip<span>4</span>M<span class="preview">LAB · 2.1</span></h1><p data-i18n="tagline">Štiri v vrsto. Ena poteza spremeni vse.</p></div><div class="hero-tools"><button id="sim" class="sim-button">▶ Sim</button><button class="outline" id="help" data-i18n="how">Kako igrati?</button></div></header>
+ <div class="layout">
+  <section class="play-panel" aria-label="Flip4M game">
+   <div class="players">
+    <div id="player1" class="player red"><span class="player-disc">●</span><div><strong id="name1">Ti</strong><div id="resources1" class="resources"></div><strong class="player-clock" id="clock1" hidden>0:00</strong></div><span class="turn-mark">●</span></div>
+    <span class="versus">VS</span>
+    <div id="player2" class="player yellow"><span class="player-disc">◆</span><div><strong id="name2">AI</strong><div id="resources2" class="resources"></div><strong class="player-clock" id="clock2" hidden>0:00</strong></div><span class="turn-mark">●</span></div>
+   </div>
+   <div class="status-strip"><span id="status" role="status" aria-live="polite"></span><span id="gravity"></span></div>
+   <div id="arena" class="arena"><div id="rotor" class="rotor"><div class="board-frame"><div id="matrix" class="matrix"></div><div id="pieces" class="pieces" aria-hidden="true"></div><div id="ghost" class="pieces" aria-hidden="true"></div></div><div id="rim"></div></div></div>
+   <div id="outcome" class="outcome" hidden><strong id="outcomeTitle"></strong><span id="outcomeText"></span><button id="rematch" data-i18n="rematch">Še ena igra</button></div>
+   <div class="board-caption"><span id="instruction"></span><span id="ply"></span></div>
+   <div class="actions" aria-label="Game actions"><button id="flipLeft"><span class="action-icon">↶</span><span data-i18n="left">Obrni levo</span></button><button id="magnet"><span class="action-icon">⊓</span><span data-i18n="magnet">Magnet</span></button><button id="flipRight"><span class="action-icon">↷</span><span data-i18n="right">Obrni desno</span></button></div>
+   <div class="utility"><button id="undo" data-i18n="undo">↶ Razveljavi</button><button id="hint" data-i18n="hint">✦ Namig</button><button id="pause" data-i18n="pause">Ⅱ Premor</button><button id="newGame" data-i18n="new">＋ Nova igra</button></div>
+   <p id="feedback" class="feedback" aria-live="polite"></p>
+  </section>
+  <aside class="sidebar">
+   <section class="setup card">
+    <div class="section-heading"><h2 data-i18n="yourGame">Tvoja igra</h2><span class="label" data-i18n="local">LOKALNO</span></div>
+    <label><span data-i18n="opponent">Nasprotnik</span><select id="mode"><option value="cpu" data-i18n="cpu">Igraj proti AI</option><option value="pvp" data-i18n="pvp">Dva igralca</option></select></label>
+    <label><span data-i18n="tools">Pravila / orodja na igralca</span><select id="tools"><option value="0" data-i18n="classic">Klasika · brez orodij</option><option value="2" selected data-i18n="magnetic">Flip4M · 2 obrata + 2 magneta</option><option value="3" data-i18n="pro">Pro · 3 obrati + 3 magneti</option></select></label>
+    <label><span data-i18n="engine">Igralni motor</span><select id="cpuEngine"><option value="classical">Classical AI</option><option value="dcc">AI + DCC</option></select></label>
+    <label><span data-i18n="difficulty">Moč AI</span><select id="difficulty"><option value="beginner" data-i18n="beginner">Začetnik</option><option value="casual" selected data-i18n="casual">Sproščeno</option><option value="strong" data-i18n="strong">Izziv</option><option value="master" data-i18n="master">Mojster</option></select></label>
+    <div class="two-fields"><label><span data-i18n="first">Začne</span><select id="first"><option value="human" data-i18n="you">Ti</option><option value="cpu">AI</option></select></label></div>
+    <details class="settings-fold"><summary data-i18n="timeSettings">Časi in prikazi</summary>
+     <label class="check"><input type="checkbox" id="showTimers"><span data-i18n="showTimers">Prikaži uri</span></label>
+     <label class="check"><input type="checkbox" id="showTimestamps"><span data-i18n="showStamps">Prikaži timestamps</span></label>
+     <label><span data-i18n="timeControl">Čas na igralca</span><select id="timeControl"><option value="0">∞</option><option value="182">3 + 2</option><option value="303">5 + 3</option><option value="600">10 + 0</option><option value="custom" data-i18n="custom">Po meri</option></select></label>
+     <div id="customTime" class="two-fields" hidden><label><span data-i18n="seconds">Sekunde</span><input id="customSeconds" type="number" min="1" max="86400" value="300"></label><label><span data-i18n="increment">Dodatek (s)</span><input id="customIncrement" type="number" min="0" max="3600" value="3"></label></div>
+     <p class="tiny" data-i18n="clockNote">Animacije in premor ne porabljajo časa. Sim nima časovne omejitve partije.</p>
+    </details>
+    <button id="start" class="primary" data-i18n="start">Začni novo igro →</button><p class="tiny" data-i18n="settingsNote">Pravila in igralci se spremenijo šele z novo igro. Moč AI lahko spremeniš med igro.</p>
+   </section>
+   <details class="card" id="analysisPanel"><summary data-i18n="analysis">Pod pokrovom · AI in DCC</summary><div class="detail-content">
+    <div id="decision" class="decision-box" role="status"></div>
+    <button id="compare" class="outline" data-i18n="compare">Primerjaj ta položaj</button>
+    <details class="settings-fold"><summary data-i18n="sensors">DCC senzorji / ablation</summary>
+      <label><span data-i18n="guard">Varnostni pas (F4M točke)</span><select id="guard"><option value="0">0</option><option value="12" selected>12</option><option value="24">24</option></select></label>
+      <label class="check"><input type="checkbox" id="sensorGs" checked><span>Gravitational Stability</span></label>
+      <label class="check"><input type="checkbox" id="sensorMr" checked><span>Magnet Robustness</span></label>
+      <label class="check"><input type="checkbox" id="sensorThrift" checked><span>Resource Thrift</span></label>
+      <label class="check"><input type="checkbox" id="sensorPath" checked><span data-i18n="depthStability">Stabilnost med globinami</span></label>
+    </details>
+    <p class="tiny" data-i18n="dccNote">Pri skoraj enakih ocenah primerja odpornost na obrat in porabo orodij. Ne sme preglasiti izračunane zmage ali taktične varnosti.</p>
+    <div class="engine-stats"><div><span data-i18n="depth">Globina</span><strong id="statDepth">—</strong></div><div><span data-i18n="nodes">Vozlišča</span><strong id="statNodes">—</strong></div><div><span data-i18n="time">Čas</span><strong id="statTime">—</strong></div></div><div class="search-track"><span id="searchBar"></span></div><p class="tiny" id="searchInfo"></p><div id="candidates" class="candidates"></div><p id="sensorDetails" class="tiny"></p>
+   </div></details>
+   <details class="card" id="batchPanel"><summary data-i18n="experiments">Sim · poskusi in rezultati</summary><div class="detail-content">
+    <div id="batchStatus" role="status" class="tiny"></div><div id="batchStats" class="tiny"></div>
+    <div class="save-actions"><button id="resumeBatch" data-i18n="resumeBatch">Nadaljuj Sim</button><button id="backToPlay" data-i18n="backToPlay">Nazaj v igro</button></div>
+    <div class="save-actions"><button id="exportBatch">JSON</button><button id="exportCSV">CSV</button></div>
+    <div id="runList" class="move-list"></div><select id="experimentHistory" aria-label="Earlier experiments"></select><p class="tiny" data-i18n="batchEvidence">Rezultati so poskusi politik. Ponovitve iste pozicije niso neodvisni dokazi.</p>
+   </div></details>
+   <details class="card" id="historyPanel"><summary data-i18n="history">Zgodovina in shranjevanje</summary><div class="detail-content"><div class="history-nav"><button id="prev" aria-label="Previous position">←</button><span id="historyCount">0 / 0</span><button id="next" aria-label="Next position">→</button></div><div id="moveList" class="move-list"></div><div class="save-actions"><button id="bookmark" data-i18n="bookmark">Shrani pozicijo</button></div><div class="save-actions"><button id="save" data-i18n="save">Izvozi JSON</button><button id="load" data-i18n="load">Uvozi JSON</button></div><p class="tiny" id="saveStatus"></p></div></details>
+   <div class="note"><span>✦</span><p data-i18n="note">Začni brez orodij. Ko obvladaš štiri v vrsto, vključi rotacije in magnete — ista plošča, povsem nova globina.</p></div>
+  </aside>
+ </div>
+ <footer><span><a href="/BD/">Bojan Dobrečevič</a> · BD × AI Lab · 2026</span><span data-i18n="privacy">Brez računa. Brez API-ja. Vse ostane v tvojem brskalniku.</span><span>Lab 2.1.0 · <a href="release.json" data-i18n="receipt">Zapis izdaje</a></span></footer>
+</main>
+<dialog id="helpDialog"><div class="dialog-title"><div><div class="eyebrow">FLIP4M</div><h2 data-i18n="how">Kako igrati?</h2></div><button id="closeHelp" aria-label="Close">✕</button></div><div id="helpText"></div><button id="helpDone" class="primary" data-i18n="play">Igrajmo →</button></dialog>
+<dialog id="simDialog"><div class="dialog-title"><h2>Sim · Classical × DCC</h2><button id="closeSim" aria-label="Close">✕</button></div>
+ <p class="tiny" data-i18n="simIntro">Isti fizika, iskanje in proračun. Drugačna izbira poteze.</p>
+ <div class="two-fields"><label><span data-i18n="redEngine">Rdeči motor</span><select id="simRed"><option value="classical">Classical AI</option><option value="dcc">AI + DCC</option></select></label><label><span data-i18n="yellowEngine">Rumeni motor</span><select id="simYellow"><option value="classical">Classical AI</option><option value="dcc" selected>AI + DCC</option></select></label></div>
+ <button id="swapEngines" class="outline" data-i18n="swap">⇄ Zamenjaj motorja</button>
+ <label><span data-i18n="simStartAt">Začetna pozicija</span><select id="simStartAt"><option value="current" data-i18n="current">Trenutna pozicija</option><option value="seeded" selected data-i18n="seeded">Različne začetne pozicije iz seeda</option><option value="stress" data-i18n="stressSeeds">Seed · rotacije in magneti</option><option value="empty" data-i18n="empty">Prazna plošča</option></select></label>
+ <div class="two-fields"><label><span data-i18n="tools">Pravila</span><select id="simTools"><option value="0">Classic</option><option value="2" selected>Flip4M · F2 M2</option><option value="3">Pro · F3 M3</option></select></label><label><span>Seed</span><input id="simSeed" type="number" min="0" max="4294967295" value="20260912"></label></div>
+ <label><span data-i18n="simLength">Dolžina poskusa</span><select id="simLength"><option value="single" data-i18n="single">Ena igra</option><option value="1" selected data-i18n="onePair">Par · zamenjani barvi</option><option value="5">5 × 2</option><option value="10">10 × 2</option><option value="25">25 × 2</option><option value="50">50 × 2</option><option value="100">100 × 2</option></select></label>
+ <label><span data-i18n="computeMode">Računski proračun</span><select id="computeMode"><option value="work" selected data-i18n="workMode">Ponovljivo · število prehodov</option><option value="time" data-i18n="timeMode">Čas na odločitev</option></select></label>
+ <div class="two-fields"><label><span data-i18n="workUnits">Prehodi stanja</span><select id="simWork"><option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="25000">25,000</option><option value="100000">100,000</option></select></label><label><span data-i18n="milliseconds">Milisekunde</span><select id="simMs"><option value="150">150</option><option value="500" selected>500</option><option value="1600">1,600</option><option value="4500">4,500</option></select></label></div>
+ <label><span data-i18n="presentation">Prikaz</span><select id="simDisplay"><option value="watch" selected data-i18n="watchMode">Gledanje · animacije</option><option value="fast" data-i18n="fastMode">Hitro · brez animacij</option></select></label>
+ <p class="tiny" data-i18n="simNote">Sim ne izgublja na čas. Nastavitev omejuje računanje posamezne poteze. Oba motorja dobita isti analizator, vključno s senzorji. Hiter način ne spremeni proračuna.</p>
+ <p id="simNotice" class="tiny"></p><button id="startSim" class="primary" data-i18n="startSim">Začni Sim →</button>
+</dialog>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<noscript>Flip4M needs JavaScript to play. / Za igranje omogoči JavaScript.</noscript>
+</body>
+</html>

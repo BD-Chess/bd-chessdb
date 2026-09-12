@@ -1,0 +1,197 @@
+{
+  "schema": "flip4m.lab.release.v1",
+  "version": "2.1.0",
+  "date": "2026-09-12",
+  "status": "TESTED_LAB",
+  "scope": "Only public/F4M/lab/plus/. Existing lab, game, v2 preview, presentation and chess are unchanged.",
+  "source": {
+    "repository": "BD-Chess/bd-chessdb",
+    "read_main": "1d54ef1efe40006cc23def3bf3201cea1d1e19b2",
+    "game_path": "public/F4M/new/index.html",
+    "game_blob": "04b1cff571d5a83b572c989c441bb26529a3f571",
+    "chess_time_blob": "67a911f12a249030ed339b1ba76b8cfe82ff49e7",
+    "chess_dcc_blob": "d6705898a93a7a6756685b78b1e5261fcd7d4d06"
+  },
+  "rules": "f4m-production-ui-2026-09",
+  "method": {
+    "engines": [
+      "Classical AI",
+      "AI + DCC"
+    ],
+    "shared": "Same legal actions, rules, evaluation, candidate analysis, physical sensors and budget. Only final selection differs.",
+    "determinism": "Work mode counts executed state transitions, including shared sensor probes. Time mode is hardware-dependent.",
+    "dcc": "Bounded GS/MR/thrift/depth-volatility selector. Default guard 12 F4M heuristic points. Complete comparable coverage required; protects immediate wins and known tactical safety. All sensor weights can be disabled independently.",
+    "not_implemented": [
+      "Full three-level recursive DCC",
+      "TSP-inspired adversarial route specialist",
+      "Wasm or GPU engine"
+    ],
+    "scope_of_inference": "Selection-policy experiments, not independent-engine speed, Elo or consciousness evidence."
+  },
+  "tests": {
+    "core": {
+      "status": "PASS",
+      "checks": 34824,
+      "groups": {
+        "rules": 34620,
+        "state-key": 14,
+        "clock": 12,
+        "search": 148,
+        "tactics": 18,
+        "dcc": 4,
+        "sim": 8
+      },
+      "productionTransitionsCompared": 8355,
+      "seed": 7141226,
+      "node": "v22.16.0",
+      "scope": "Actual executed assertions; new Lab rules vs pinned production-v2 oracle. Search compared to exhaustive minimax at depth 2."
+    },
+    "resume": {
+      "status": "PASS",
+      "checks": 8,
+      "resume": {
+        "stoppedAfterPly": 5,
+        "finalPlies": 33,
+        "sameMoves": true,
+        "sameOutcome": true,
+        "sameFinalKey": true
+      },
+      "dccWitness": {
+        "classical": "d4",
+        "dcc": "d5",
+        "rawGap": 0,
+        "coverage": "complete"
+      },
+      "browserBatchRevalidated": true
+    },
+    "browser": {
+      "status": "PASS",
+      "checks": 52,
+      "browser": "144.0.7559.96",
+      "viewport_widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "errors": [],
+      "context": "Executed offline on a deterministic bundle of these exact modules, with real Blob Workers. Serialized storage roundtrip tested using an explicit memory localStorage adapter in a fresh JS realm. Native IndexedDB, actual-origin reload and interactive live-domain navigation were not tested; network navigation was administrator-blocked."
+    }
+  },
+  "smoke_experiments": {
+    "total_games": 12,
+    "dcc_wins": 6,
+    "classical_wins": 6,
+    "draws": 0,
+    "red_wins": 12,
+    "yellow_wins": 0,
+    "work_per_decision": 5000,
+    "max_depth": 5,
+    "seeds": [
+      20260912,
+      20260913,
+      20260914
+    ],
+    "normal": {
+      "games": 6,
+      "tools": 2,
+      "opening_plies": 6,
+      "dcc_wins": 3,
+      "classical_wins": 3,
+      "dcc_changes": 0,
+      "checkpoint_sha256": "535e115ef57e8efdd9385367bda707b0f497ac6075936f4fa6b28d61cc104ab8"
+    },
+    "stress": {
+      "games": 6,
+      "tools": 3,
+      "opening_plies": 12,
+      "dcc_wins": 3,
+      "classical_wins": 3,
+      "dcc_changes": 2,
+      "checkpoint_sha256": "72e5925d87d36b76fe4ff52023b3aeebbce9a0b1e6e637ea90d2b1ad8d910eb9"
+    },
+    "interpretation": "Engineering acceptance sample. All games won by red. No demonstrated playing-strength advantage; do not extrapolate win rate."
+  },
+  "receipts": {
+    "core-tests.json": "46cdeab375f433b292697d54ac7e17c1055bb5c3a58dab9994ba9d6aadce8eb2",
+    "resume-tests.json": "31001c785a75a8faa7f85db8718f8d19a8a0075b11e003c9a7185832c9df5233",
+    "browser-tests.json": "70f43eaea8a9f5ea89d13696c521b652224c77433e07f4a2140f3a6e41d11c27"
+  },
+  "artifacts": [
+    {
+      "path": "f4m-classical.js",
+      "bytes": 755,
+      "sha256": "316e2d33b7ceb70ebead6fac84b6bf4deb5c72e9a4e31987c0debd6c7d572b11",
+      "git_blob": "f366f31fc7d27af337fd0a6aac8b5520b380a9c1"
+    },
+    {
+      "path": "f4m-core.js",
+      "bytes": 9159,
+      "sha256": "1fa673e1ff62ba3f1ae57e988b461d719234c66315b4e1b2f6c74f3f418f327e",
+      "git_blob": "d59c88e5fcf0df2f7973b8bdb2057e497a2b22da"
+    },
+    {
+      "path": "f4m-dcc.js",
+      "bytes": 2900,
+      "sha256": "02ce303c0f1877bb6ce8d5322e98d5651f2be2f4ee369dacb2575fae68fe2905",
+      "git_blob": "49fbeadb3ec0b3a612ef1ab6ebf39d6cfe069d8f"
+    },
+    {
+      "path": "f4m-search.js",
+      "bytes": 4817,
+      "sha256": "36a621c5e2f528d443f33802b5ec22bad4804bfbd6aedc944ad1c712a298467e",
+      "git_blob": "7ddcb4b34d3a0fb12609790e299b7785bee291b7"
+    },
+    {
+      "path": "f4m-sim.js",
+      "bytes": 11358,
+      "sha256": "31d7eed0cf42975b0ebef3cd692958f0aaa6f9b66f6ed5bc618f0fb06113407d",
+      "git_blob": "4d323a1ae00cd6ba22a22c490fe0ed57f78c1614"
+    },
+    {
+      "path": "f4m-store.js",
+      "bytes": 2902,
+      "sha256": "abf0e167f2745da317247bd7d9082b41bb40669186f0046af77c332dbb5c1449",
+      "git_blob": "dc9dc02a475a7a607156bd0938259899601adc78"
+    },
+    {
+      "path": "f4m-time.js",
+      "bytes": 2447,
+      "sha256": "2994f8febf538c9617fc1e7d222d688071d353e2bb50a32d71dfbcc84d962209",
+      "git_blob": "c3624d88e8ee08954d333a905c82fe11ac7c81f6"
+    },
+    {
+      "path": "f4m-ui.js",
+      "bytes": 50774,
+      "sha256": "6e0ef86162943e9373391648797d4afdccbc20be3a32043fb44d8da5f5e66687",
+      "git_blob": "7f4ca443d9130a3f2c4e28108dc5d741b43a38b0"
+    },
+    {
+      "path": "f4m-worker.js",
+      "bytes": 406,
+      "sha256": "8d38c646a605e7a83c751d6c9e234cc351af12347f5cc4d37bc698b07b6fc46d",
+      "git_blob": "91a4d1554d6d14dba4a3ff60374abf4ee8601bda"
+    },
+    {
+      "path": "f4m.css",
+      "bytes": 14168,
+      "sha256": "39b33144c7cc09a316a5107e8f4f60dc9dee522c41878f2e1a6589612b267e5c",
+      "git_blob": "e9462c49607a0250dfd70c65e8a9cf1b2a8dcf85"
+    },
+    {
+      "path": "index.html",
+      "bytes": 14090,
+      "sha256": "34211cde98a7252b8b0a34af086d3aa577aeffb5787d0a25c01d1fdc2c0b2dd4",
+      "git_blob": "8c6391f79043460d79e81182f28d911a5619bd66"
+    }
+  ],
+  "delivery": "Review package includes modules, deterministic standalone builder, Node CLI, tests, raw experiment checkpoints, CSV, screenshots and SHA-256 manifest. Production deployment verification is recorded separately.",
+  "placement": {
+    "requested": "/f4m/lab/",
+    "actual": "/f4m/lab/plus/",
+    "reason": "A concurrent independently authored lab appeared on main during this build. Preserve it rather than overwrite it.",
+    "preserved_lab_commit": "8778894720d8478e53bed768b847708173cfa9af",
+    "preserved_lab_tree": "b6e6dcca5302a1044242e1c1fead7bcef5d8a96e",
+    "storage": "Separate flip4m-lab-2.1 / flip4m.lab.2.1.preferences namespace."
+  }
+}
