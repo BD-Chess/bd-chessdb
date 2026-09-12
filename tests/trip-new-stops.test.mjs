@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('../public/Trip/new/app.js', import.meta.url), 'utf8');
+const matrixSource = readFileSync(new URL('../public/Trip/new/road-matrix.js', import.meta.url), 'utf8');
 const sample = 'Nova Gorica START\nLjubljana\nMaribor\nNovo Mesto\nKoper\nPtuj';
 
 function harness(geocode) {
@@ -11,7 +12,7 @@ function harness(geocode) {
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
       style: {}, classList: { add() {}, remove() {} }, checked: false,
-      value: '', innerHTML: '', textContent: '', appendChild() {}
+      value: '', innerHTML: '', textContent: '', appendChild() {}, replaceChildren() {}
     });
     return elements.get(id);
   };
@@ -21,15 +22,17 @@ function harness(geocode) {
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
     console, google, window: { google }, Map, Set,
-    document: { getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
+    document: { createElement: () => ({style:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { postMessage(msg) { jobs.push(msg); } },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
     clearTimeout(id) { timerJobs.delete(id); }
   });
+  vm.runInContext(matrixSource, context);
+  element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
@@ -85,6 +88,7 @@ test('coordinate input works without geocoding and keeps a nonfirst START', asyn
   await h.api.run('standard');
   assert.equal(h.jobs.length, 1);
   assert.equal(h.jobs[0].startIdx, 1);
+  h.api.cancelWork();
   h.element('input').value = 'Invalid | 91,14\nPtuj | 46,15 START';
   await h.api.run('standard');
   assert.equal(h.jobs.length, 1);
@@ -103,6 +107,7 @@ test('old success timers cannot hide a later lookup error', () => {
 function mapHarness(computeRoutes) {
   const h = harness(success);
   h.api.setMap({ fitBounds() {} });
+  h.element('chkDirect').checked = false;
   const lines = [];
   Object.assign(h.google.maps, {
     Marker: class { addListener() {} setMap() {} },
@@ -196,6 +201,32 @@ test('legacy rejection falls back to Routes and handles the SDK rejected promise
 });
 
 const twoStops = [{ name: 'Ljubljana', lat: 46.057, lon: 14.506 }, { name: 'Nova Gorica', lat: 45.955, lon: 13.649 }];
+
+test('Prepare distances fetches the road matrix; Optimize sends those local values to the worker', async () => {
+  const h = harness(success);
+  h.element('chkDirect').checked = false;
+  h.element('input').value = sample;
+  let calls = 0;
+  h.google.maps.importLibrary = async () => ({RouteMatrix:{computeRouteMatrix:async req=>{
+    calls++;
+    return {matrix:{rows:req.origins.map((_,i)=>({items:req.destinations.map((_,j)=>({condition:'ROUTE_EXISTS',distanceMeters:i===j?0:10000+i*100+j}))}))}};
+  }}});
+  await h.api.run('prepare');
+  assert.equal(calls,1);assert.equal(h.jobs.length,0);
+  await h.api.run('standard');
+  assert.equal(calls,1);assert.equal(h.jobs.length,1);
+  assert.equal(h.jobs[0].distanceMatrix.length,6);
+  assert.notEqual(h.jobs[0].distanceMatrix[0][1],h.jobs[0].distanceMatrix[1][0]);
+  assert.match(h.element('matrixStatus').textContent,/Reusing 30/);
+});
+
+test('a denied matrix request never launches the aerial solver in road mode', async () => {
+  const h=harness(success);
+  h.element('chkDirect').checked=false;h.element('input').value=sample;
+  h.google.maps.importLibrary=async()=>({RouteMatrix:{computeRouteMatrix:async()=>{throw Object.assign(new Error('blocked'),{code:'PERMISSION_DENIED'});}}});
+  await h.api.run('standard');
+  assert.equal(h.jobs.length,0);assert.match(h.element('status').textContent,/Road optimization has not run/);
+});
 
 test('road distance replaces the direct estimate; Direct Line restores it without another request', async () => {
   let calls = 0;

@@ -46,6 +46,12 @@
       </div>
 
       <div class="grid-2">
+        <button id="btnPrepare" class="btn-neutral" title="Fetch or refresh the road distance table for this trip. Google API usage applies.">Prepare distances</button>
+        <button id="btnCancelWork" class="btn-neutral" disabled>Cancel calculation</button>
+      </div>
+      <p id="matrixStatus" style="font-size:12px;color:#94a3b8;line-height:1.4;">Drive / Walk optimize road distances. Missing distances are prepared automatically.</p>
+
+      <div class="grid-2">
         <button id="btnDriving" class="btn-mode active">🚗 Drive</button>
         <button id="btnWalking" class="btn-mode">🚶 Walk</button>
       </div>
@@ -70,7 +76,7 @@
       
       <div class="stats">
         <div><span id="distanceLabel">Distance:</span> <span id="distKm" class="val">—</span></div>
-        <div title="Estimated reduction in direct-line distance from reordering stops; road savings have not been calculated.">Direct saving (est.): <span id="savedKm" class="saved">—</span></div>
+        <div id="savingBox"><span id="savingLabel">Saving:</span> <span id="savedKm" class="saved">—</span></div>
       </div>
 
       <div id="mapContainer">
@@ -82,6 +88,11 @@
       </div>
 
       <ul id="routeList"></ul>
+      <details id="roadTablePanel" style="display:none;margin:12px 0;">
+        <summary>Road distance table</summary>
+        <p id="roadTableInfo" style="font-size:12px;color:#94a3b8;"></p>
+        <div id="roadTable" style="overflow:auto;max-height:300px;"></div>
+      </details>
       <div id="links" class="links-area"></div>
     </div>
 
@@ -114,7 +125,8 @@
   <script src="trips.js"></script>
   <script src="about.js"></script>
   <script src="help.js"></script>
-  <script src="app.js?v=20260912-road-distance7"></script>
+  <script src="road-matrix.js?v=20260913-road-matrix8"></script>
+  <script src="app.js?v=20260913-road-matrix8"></script>
 
 </body>
 </html>

@@ -8,7 +8,11 @@
   // Same-origin function: credentials and the Gemini model are configured server-side.
   const PROXY_URL = '/.netlify/functions/gemini';
   
-  const worker = new Worker('worker.js');
+  const worker = new Worker('worker.js?v=20260913-road-matrix8');
+  const roadPlanner = new globalThis.TripRoadMatrix();
+  let jobVersion = 0;
+  let activeJob = null;
+  let lastResolvedStops = null;
   const STORAGE_KEY = '8z_trip_backup_v2'; 
 
   // --- 2. GLOBAL STATE ---
@@ -370,11 +374,6 @@
     const dr = $('btnDriving'), wk = $('btnWalking');
     if (currentTravelMode === 'DRIVING') { dr.classList.add('active'); wk.classList.remove('active'); }
     else { wk.classList.add('active'); dr.classList.remove('active'); }
-    if (lastSolvedPoints) {
-      updateMapVisualization(lastSolvedPoints);
-      const links = buildMapsLegLinks(lastSolvedPoints, $('chkRoundTrip').checked, currentTravelMode);
-      renderLinks(links);
-    }
   }
 
   // --- 7. INPUT & MAPS ---
@@ -787,9 +786,9 @@
           const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
           item.onclick = () => { 
             $('input').value = trip.data; saveState(); 
-            if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING'); }
-            else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING'); }
-            else { $('chkDirect').checked = false; setTravelMode('DRIVING'); }
+            if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING', false); }
+            else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING', false); }
+            else { $('chkDirect').checked = false; setTravelMode('DRIVING', false); }
             setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
@@ -1015,7 +1014,8 @@ Bad example:
         overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
         document.body.appendChild(overlay);
     }
-    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div>`;
+    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div><button id="busyCancel" style="width:auto;margin-top:20px;">Cancel calculation</button>`;
+    $('busyCancel').onclick = () => { cancelWork(); setStatus('Calculation cancelled.', 'warn'); };
     overlay.style.display = 'flex';
   }
   function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
@@ -1046,14 +1046,54 @@ Bad example:
     }
   }
 
-  async function run(profile) {
+  function finishWork() {
+    optimizationPending = false;
+    $('btnCancelWork').disabled = true;
+    hideBusy();
+  }
+
+  function cancelWork() {
+    ++jobVersion;
+    ++visualizationVersion;
+    activeJob = null;
+    finishWork();
+  }
+
+  function showRoadTable(points, data) {
+    const panel = $('roadTable');
+    panel.replaceChildren();
+    const table = document.createElement('table');
+    table.style.cssText = 'border-collapse:collapse;white-space:nowrap;font-size:12px;';
+    const addRow = (values, header = false) => {
+      const row = document.createElement('tr');
+      values.forEach(value => {
+        const cell = document.createElement(header ? 'th' : 'td');
+        cell.textContent = value;
+        cell.style.cssText = 'padding:5px 10px;border:1px solid #334155;text-align:right;';
+        row.appendChild(cell);
+      });
+      table.appendChild(row);
+    };
+    addRow(['From → To', ...points.map(p => p.name)], true);
+    points.forEach((p, i) => addRow([p.name, ...data.distanceMatrix[i].map(m => formatKm(m/1000))]));
+    panel.appendChild(table);
+    $('roadTableInfo').textContent = `Google Maps · ${data.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${new Date(data.measuredAt).toLocaleTimeString()} · Kept only for the current open trip.`;
+    $('roadTablePanel').style.display = 'block';
+    $('matrixStatus').textContent = `${data.reused ? 'Reusing' : 'Ready:'} ${points.length * (points.length-1)} directed road distances. Optimization runs locally.`;
+  }
+
+  async function run(profile, forceMatrix = false) {
     if (optimizationPending) return;
     optimizationPending = true;
+    activeJob = null;
+    const jobId = ++jobVersion;
+    $('btnCancelWork').disabled = false;
     // An earlier route response must not overwrite this new calculation.
     ++visualizationVersion;
     lastDirectKm = null;
     showDistance(null, 'Distance');
     $('savedKm').textContent = '—';
+    let posted = false;
     try {
     setPlanningMode(false);
     if (!(window.google && window.google.maps)) {
@@ -1068,29 +1108,69 @@ Bad example:
       setStatus('Trip Editor text repaired to Trip Library format.', 'warn');
     }
     const raw = $('input').value;
+    const mode = currentTravelMode, direct = $('chkDirect').checked, roundTrip = $('chkRoundTrip').checked;
+    const current = () => jobId === jobVersion && $('input').value === raw && currentTravelMode === mode &&
+      $('chkDirect').checked === direct && $('chkRoundTrip').checked === roundTrip;
     let { pts, startIdx } = parseStops(raw);
     if (pts.length < 2) { setStatus('Enter at least 2 stops, one per line.', 'bad'); return; }
-    try { pts = await geocodeMissingPoints(pts); } catch (e) { setStatus(e.message, 'bad'); return; }
+    const stopKey = JSON.stringify(pts);
+    try {
+      pts = lastResolvedStops?.key === stopKey ? lastResolvedStops.points.map(p => ({...p})) : await geocodeMissingPoints(pts);
+    } catch (e) { if (current()) setStatus(e.message, 'bad'); return; }
+    if (!current()) return;
+    lastResolvedStops = {key:stopKey, points:pts.map(p => ({...p}))};
     // Never silently drop an unresolved stop or move START to another city.
     const valid = pts;
+    let roadData = null;
+    if (!direct) {
+      $('matrixStatus').textContent = 'Preparing road distances…';
+      try {
+        roadData = await roadPlanner.prepare(valid, mode, {
+          loadRoutes: () => google.maps.importLibrary('routes'), current, force:forceMatrix,
+          progress: text => { if (current()) { $('matrixStatus').textContent = text; setStatus(text, 'warn'); } }
+        });
+        if (!current()) return;
+        showRoadTable(valid, roadData);
+      } catch (error) {
+        if (!current()) return;
+        $('matrixStatus').textContent = 'Road distances not ready.';
+        const info = routeErrorInfo(error);
+        const message = /PERMISSION|DENIED|QUOTA|RESOURCE_EXHAUSTED|429/.test(info.code + ' ' + info.detail) ? info.message : info.detail;
+        setStatus(message + ' Road optimization has not run.', 'bad');
+        return;
+      }
+    } else {
+      $('matrixStatus').textContent = 'Direct Line: optimization uses approximate straight-line distances.';
+      $('roadTablePanel').style.display = 'none';
+    }
+    if (profile === 'prepare') {
+      setStatus(direct ? 'Select Drive or Walk and turn off Direct Line to prepare road distances.' : 'Road distances ready. Choose Optimize (Fast) or Optimize (Deep).', 'ok');
+      return;
+    }
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
-    if (profile === 'deep') showBusy("Deep Genetic Optimization...");
-    worker.postMessage({ type: 'solve', profile: profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0, roundTrip: $('chkRoundTrip').checked });
-    } finally { optimizationPending = false; }
+    if (profile === 'deep') showBusy("Optimizing stop order...");
+    activeJob = {jobId, current, mode, direct};
+    worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
+      roundTrip, distanceMatrix:roadData?.distanceMatrix });
+    posted = true;
+    } finally { if (!posted && jobId === jobVersion) finishWork(); }
   }
 
   worker.onmessage = (ev) => {
     const msg = ev.data || {};
+    if (!activeJob || msg.jobId !== activeJob.jobId) return;
+    if (!activeJob.current()) { activeJob = null; finishWork(); return; }
     if (msg.type === 'progress') showBusy(msg.text); 
+    else if (msg.type === 'error') { finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
-      hideBusy();
+      finishWork();
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
       
-      // The solver optimizes direct-distance estimates. Road kilometers come
-      // only from the same Google response used to draw the displayed route.
-      lastDirectKm = totalKm;
-      showDistance(totalKm, 'Direct distance (est.)');
+      lastDirectKm = msg.directKm;
+      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Direct saving (est.):';
+      $('savingBox').title = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Estimated reduction in direct-line distance.';
+      showDistance(lastDirectKm, 'Direct distance (est.)');
       $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
 
       renderRouteList(pointsSorted);
@@ -1106,10 +1186,16 @@ Bad example:
     const restored = restoreState();
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
+    $('btnPrepare').onclick = () => run('prepare', true);
+    $('btnCancelWork').onclick = () => { cancelWork(); setStatus('Calculation cancelled.', 'warn'); };
+    $('input').addEventListener('input', () => {
+      cancelWork(); $('matrixStatus').textContent = 'Stops changed. Road distances will be checked on the next optimization.';
+      $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); $('savedKm').textContent = '—';
+    });
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
-    $('chkDirect').onchange = () => { if (lastSolvedPoints) updateMapVisualization(lastSolvedPoints); };
-    $('chkRoundTrip').onchange = () => { if (lastSolvedPoints) run('standard'); };
+    $('chkDirect').onchange = () => { cancelWork(); if (lastSolvedPoints) run('standard'); };
+    $('chkRoundTrip').onchange = () => { cancelWork(); if (lastSolvedPoints) run('standard'); };
     $('btnEnableMap').onclick = () => ensureMapsLoaded().catch(e => console.error('[8Z Trip] Map load button failed:', e));
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();
@@ -1135,5 +1221,11 @@ Bad example:
     } else { setPlanningMode(true); }
   });
   
-  function setTravelMode(mode) { currentTravelMode = mode; updateModeButtons(); }
+  function setTravelMode(mode, optimize = true) {
+    if (mode === currentTravelMode) return;
+    cancelWork(); currentTravelMode = mode; updateModeButtons();
+    $('roadTablePanel').style.display = 'none';
+    $('matrixStatus').textContent = 'Travel mode changed. Road distances will be checked on the next optimization.';
+    if (optimize && lastSolvedPoints) run('standard');
+  }
 })();
