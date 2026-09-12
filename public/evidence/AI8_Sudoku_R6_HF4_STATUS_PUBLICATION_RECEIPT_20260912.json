@@ -1,11 +1,12 @@
 {
-  "schema": "AI8_SUDOKU_R6_STATUS_PUBLICATION_RECEIPT_V1",
-  "generated_at": "2026-09-12T22:47:59+02:00",
+  "schema": "AI8_SUDOKU_R6_STATUS_PUBLICATION_RECEIPT_V2",
+  "generated_at": "2026-09-12T22:52:08+02:00",
   "source_bundle": {
     "filename": "HF3_ALL_LIVE_1789236581472973300.zip",
     "sha256": "e1c5b282beaa0ef14a7ff15cc166852ca5e05c9ef459f9521243ca99f42a2b5f"
   },
   "validated_state_commit": "e9a9edd10b1e1dec4be11dae3cbc7360cffe0786",
+  "state_publication_commit": "55bf8d72fed5dd2770da0e80e785e1c8c07f6994",
   "validation_workflow": {
     "run_id": 34718026580,
     "name": "AI8 Sudoku status one-shot",
@@ -37,12 +38,22 @@
     "public/evidence/AI8_Sudoku_R6_HF4_BOUNDED_FINAL_20260912.json": {
       "git_blob_sha": "ddf93068ae3ca55029ac033290f7acb79cf1f48c",
       "sha256": "160d5a8f4820700f1bf9e32ca04cb39580147f0752030ebb116a3374ad923e04"
+    },
+    "public/index-todo.html": {
+      "sha256": "f80cbf47854a6962bfec8ad0fc69ef0aaa224fdd2e1b19398657aa2279a014db",
+      "bytes": 160308
     }
   },
   "html_projection": {
     "path": "public/index-todo.html",
-    "source_change_required": false,
-    "reason": "The existing 8Z Control HTML already renders the authoritative LATEST register, project-state and delta JSON files."
+    "source_change_required": true,
+    "reason": "The data-driven 8Z Control projection was already accurate, but the visible static Sudoku status card, priority workbench and copied plan still described the arena as being built. Those Sudoku-only surfaces were corrected while the explicitly dated 11 September snapshot was retained as history.",
+    "validation": {
+      "html_parse": "PASS",
+      "inline_javascript_syntax": "PASS_6_OF_6",
+      "authoritative_json_references": "PASS",
+      "unrelated_page_sections_preserved": true
+    }
   },
-  "production_action": "This direct evidence commit triggers the existing GitHub-to-Netlify and GitHub Pages deployment workflows for the already validated state."
+  "production_action": "The exact state and minimal Sudoku-only HTML correction are committed to GitHub main and published by the existing GitHub-to-Netlify and GitHub Pages workflows."
 }
