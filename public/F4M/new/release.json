@@ -1,0 +1,89 @@
+{
+  "schema": "flip4m.release.v1",
+  "version": "2.0.0",
+  "release_date": "2026-09-12",
+  "status": "VERIFIED_PREVIEW",
+  "scope": "public/F4M/new/ only; original game and presentation unchanged",
+  "rules": "f4m-production-ui-2026-09",
+  "source": {
+    "repository": "BD-Chess/bd-chessdb",
+    "commit": "7ba0010f23d448311834cdc30a4e772e0da057ff",
+    "path": "public/F4M/F4M.html",
+    "git_blob": "fc8993a238c7ceed634329b8f2c31f2cb9fd89da",
+    "presentation_git_blob": "d9737669390b429034755dbb030f1d323062736c"
+  },
+  "artifact": {
+    "file": "index.html",
+    "bytes": 64025,
+    "sha256": "073811cc9f1e528fa595fe3afd98c295b9857001cb2ebdbded9f1fae7859eaef",
+    "git_blob": "04b1cff571d5a83b572c989c441bb26529a3f571",
+    "self_contained": true,
+    "external_runtime_dependencies": 0
+  },
+  "tests": {
+    "rules_and_engine_assertions": 146452,
+    "rules_and_engine_status": "PASS",
+    "browser_checks": 38,
+    "browser_status": "PASS",
+    "browser": "Chromium 144.0.7559.96",
+    "viewport_widths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "browser_context": "Exact standalone HTML tested through offline set_content with real Blob Workers. Live URL navigation is separately verified after deployment.",
+    "storage_context": "Unavailable native storage handled safely; persistence roundtrip tested with an explicit memory Storage adapter, not real-origin navigation.",
+    "match": {
+      "status": "PASS",
+      "games": 8,
+      "new_wins": 5,
+      "legacy_wins": 3,
+      "draws": 0,
+      "requested_budget_ms": 150,
+      "paired_openings": 4,
+      "seeds": [
+        20260912,
+        20260913,
+        20260914,
+        20260915
+      ],
+      "tool_presets": [
+        0,
+        2,
+        3,
+        2
+      ],
+      "dcc": false,
+      "timing": {
+        "new": {
+          "moves": 91,
+          "total_ms": 12385.47,
+          "max_ms": 152.03
+        },
+        "legacy": {
+          "moves": 90,
+          "total_ms": 12082.76,
+          "max_ms": 276.71
+        }
+      },
+      "illegal_moves": 0,
+      "rules_differential_failures": 0,
+      "interpretation": "Engineering smoke test only; not an Elo estimate or proof of superiority. Equal requested budgets, actual durations differ; legacy soft deadlines overshoot. Three of four pairs split by first player."
+    }
+  },
+  "policy": {
+    "dcc_default": false,
+    "dcc": "Experimental root re-ranking within 12 evaluation points, same tactical-safety class, no mate override. Not the full research rDCC architecture.",
+    "stronger_engine_claim": "Not established by this small sample. Correctness defects and UI responsiveness independently tested."
+  },
+  "preserved_rules": [
+    "8x8 board; first-empty drop entry",
+    "magnet order: top, bottom, left, right",
+    "settle then detect win/full then decay and change player",
+    "expired magnet releases at next settlement",
+    "simultaneous wins retain original top-left scan precedence",
+    "full board without a win is a draw"
+  ],
+  "review_pack": "Source, build script, deterministic tests, raw match logs, browser receipts and screenshots provided to BD separately."
+}
