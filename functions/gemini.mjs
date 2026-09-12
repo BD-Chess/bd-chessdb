@@ -96,7 +96,7 @@ export default async (req) => {
       try {
         const provider = await res.json();
         detail = String(provider.error?.message || '').split(key).join('[redacted]')
-          .replace(/AIza[\\w-]+/g, '[redacted]').replace(/https?:\\/\\/\\S+/g, '[provider URL]').slice(0, 500);
+          .replace(/AIza[\w-]+/g, '[redacted]').replace(/https?:\/\/\S+/g, '[provider URL]').slice(0, 500);
       } catch {}
       return failure('MODEL_UNAVAILABLE', 'The configured Gemini model is unavailable. ' + detail, 503);
     }
