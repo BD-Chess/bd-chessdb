@@ -1,0 +1,28 @@
+name: WL owner-authorized deployment
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/wl-deploy-once.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: wl-owner-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply exact reviewed release if present
+        run: |
+          if [ -d ops/wl-release ]; then python3 scripts/wl_apply_release.py; fi
+      - name: Ephemeral encrypted handoff and deployment
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/wl_deploy_once.mjs
