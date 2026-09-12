@@ -513,9 +513,9 @@ gameBuckets.forEach(bucket => {
     if (keys.length > 1500) keys.slice(0, keys.length - 1200).forEach(k => delete evalCache[k]);
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(evalCache)); } catch (_) {}
   }
-  async function fetchChessText(action, fen) {
+  async function fetchChessText(action, fen, learn = 0) {
     const source = settings.evalMode;
-    const key = `${DCC.VERSION}:${source}:${action}:${fen}`;
+    const key = `${DCC.VERSION}:${source}:${action}:learn=${learn}:${fen}`;
     const cached = evalCache[key];
     if (cached && Date.now() - cached.time < 300000) return cached.text;
     if (requestPending.has(key)) return requestPending.get(key);
@@ -527,7 +527,7 @@ gameBuckets.forEach(bucket => {
         const base = source === 'proxy' && action === 'queryall'
           ? '/.netlify/functions/queryall?'
           : `https://www.chessdb.cn/cdb.php?action=${action}&`;
-        const response = await fetch(`${base}board=${encodeURIComponent(fen)}&learn=0&showall=1`, { signal: controller.signal });
+        const response = await fetch(`${base}board=${encodeURIComponent(fen)}&learn=${learn}&showall=1`, { signal: controller.signal });
         if (!response.ok) throw new Error(`ChessDB HTTP ${response.status}`);
         const text = (await response.text()).trim();
         // Unknown, rate limited and error responses are deliberately not persisted.
@@ -545,11 +545,24 @@ gameBuckets.forEach(bucket => {
     return pending;
   }
   async function cachedFetchChessDB(fen) {
-    const text = await fetchChessText('queryall', fen);
-    const moves = text.split('|').map(line => {
-      const m = line.match(/move:([a-h][1-8][a-h][1-8][qrbn]?),score:(-?\d+),rank:(\d+)/);
-      return m ? { move: m[1], score: Number(m[2]), rank: Number(m[3]) } : null;
-    }).filter(Boolean);
+    // Match the original /chess/ source contract. learn=0 can leave all but
+    // one score unknown; learn=1 supplies the other evaluated candidates.
+    // Each request has its own cache key and may fail independently.
+    const [verified, cloud] = await Promise.all([
+      fetchChessText('queryall', fen, 0), fetchChessText('queryall', fen, 1)
+    ]);
+    const moveMap = new Map();
+    for (const text of [cloud, verified]) {
+      for (const line of text.split('|')) {
+        const m = line.match(/move:([a-h][1-8][a-h][1-8][qrbn]?),score:(-?\d+),rank:(\d+)/);
+        if (!m) continue; // Unknown scores must not overwrite measured values.
+        const score = Number(m[2]), rank = Number(m[3]);
+        if (score <= -999 && rank < 2) continue; // Original unverified-loss filter.
+        moveMap.set(m[1], { move: m[1], score, rank });
+      }
+    }
+    // Preserve ChessDB's order within score/rank ties (not alphabetical UCI).
+    const moves = Array.from(moveMap.values(), (move, sourceOrder) => ({ ...move, sourceOrder }));
     return { fen, moves: DCC.legalMoves(Chess, fen, moves) };
   }
   async function fetchPV(fen) {

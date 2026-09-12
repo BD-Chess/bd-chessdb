@@ -1345,3 +1345,21 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 #viewToggle { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px !important; }
 #viewToggle .btn { margin-left: 0 !important; width: 100%; padding-inline: 3px !important; }
 #dccProgress { grid-column: 1 / -1; order: 2; text-align: right; }
+
+/* Let the board frame determine the desktop row height. Size containment
+   prevents long history/settings content from stretching both columns. */
+@media (min-width: 791px) {
+  #controls, body.light-theme #controls {
+    align-self: stretch;
+    contain: size;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  #controls > * { flex-shrink: 0; }
+  #controls > #moves, #controls > #dccAnalysisPanel {
+    flex: 1 0 140px;
+    height: auto !important;
+    min-height: 140px;
+    max-height: none !important;
+  }
+}

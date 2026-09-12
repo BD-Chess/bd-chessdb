@@ -8,7 +8,7 @@
   else root.ChessDCC = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '0.7.0-new';
+  const VERSION = '0.7.1-new';
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const uciObject = uci => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci || '')
@@ -88,7 +88,8 @@
       const board = new Chess(fen);
       if (!play(board, m.move)) return false;
       seen.add(m.move); return true;
-    }).map(m => ({ ...m })).sort((a, b) => b.score - a.score || (a.rank || 0) - (b.rank || 0) || a.move.localeCompare(b.move));
+    }).map(m => ({ ...m })).sort((a, b) => b.score - a.score || (a.rank || 0) - (b.rank || 0)
+      || (a.sourceOrder ?? Infinity) - (b.sourceOrder ?? Infinity) || a.move.localeCompare(b.move));
   }
   async function analyze({ Chess, fen, settings = {}, moves, getMoves, getPV, getScore, cancelled = () => false, progress = () => {} }) {
     const cfg = config(settings), rootSide = new Chess(fen).turn();

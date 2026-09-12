@@ -34,3 +34,24 @@ Upstream API references: https://www.chessdb.cn/cloudbookc_api_en.html and https
 ## Next research steps
 
 Compare raw and DCC under equal compute, fixed openings, paired colors and logged source versions before claiming playing-strength gains. Preserve missing/limited outcomes. Rerun historical EndEval comparisons after explicit POV and zero-value auditing; old descriptive percentages are not independent validation.
+
+## 2026-09-12 follow-up: top five and workspace height
+
+Reproduced the opening-position regression against the original live page. ChessDB's
+`queryall&learn=0&showall=1` returned one measured score and 19 unknowns; the matching
+`learn=1` response returned 20 measured scores. Restored the original merge: cloud
+first, measured verified values override, unknowns do not. Score/rank ties preserve
+the provider's order. The same merged legal list feeds board annotations and the
+shared DCC/Sim/Replay policy. Each mode has a distinct cache/in-flight key; failures
+are retried independently. Version 0.7.1 bypasses the previous cached responses.
+This uses two initial candidate requests; the DCC probe budget is unchanged.
+
+Desktop controls stretch to the board frame height, with the available space given
+to Moves or DCC. Size containment prevents long lists from stretching the board;
+expanded settings remain accessible through scrolling. Below 791px the existing
+stacked layout and history-size setting are retained. The new dialog explains both
+changes and how to check them.
+
+All 30 deterministic regression tests pass, including six new checks for opening
+top-five order, measured/unknown precedence, legality, partial source failures,
+separate caches and the annotation-to-DCC integration.
