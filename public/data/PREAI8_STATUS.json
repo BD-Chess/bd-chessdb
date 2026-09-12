@@ -1,27 +1,67 @@
 {
   "schema": "preai8.public-status.v1",
-  "generated_at": "2026-09-12T03:00:00Z",
+  "generated_at": "2026-09-12T16:55:26.709949Z",
   "email_plane": {
     "mode": "DYAD_ONLY",
     "A": {
       "run_id": "PREAI8-20260912-A",
-      "verified_turn": 3,
+      "verified_turn": 15,
       "verified_role": "BD_SIM",
       "delivery": "SENT_TO_OUTLOOK",
-      "updated_at": "2026-09-12T02:58:10Z"
+      "updated_at": "2026-09-12T16:20:39Z"
     },
     "B": {
       "run_id": "PREAI8-20260912-B",
-      "verified_turn": 2,
-      "verified_role": "LLM",
-      "delivery": "DELIVERED_TO_GMAIL",
-      "updated_at": "2026-09-12T02:58:41Z"
+      "verified_turn": 13,
+      "verified_role": "BD_SIM",
+      "delivery": "SENT_TO_OUTLOOK",
+      "updated_at": "2026-09-12T16:20:49Z"
     }
   },
   "rhp_plane": {
     "mode": "RHP_11",
     "members": 11,
-    "execution": "NOT_CONNECTED",
-    "note": "Wake Lab heartbeat is infrastructure. It does not claim autonomous RHP model execution until a verified wake bridge exists."
+    "execution": "SEPARATE_ENCRYPTED_WL_V2",
+    "verified_messages": 5,
+    "verified_scheduled_steps": 4,
+    "note": "WL journal bodies remain encrypted. Observatory values below contain aggregates only."
+  },
+  "observatory": {
+    "privacy": "AGGREGATES_ONLY_NO_EMAIL_BODIES_OR_ADDRESSES",
+    "wl": {
+      "messages": 5,
+      "scheduled_steps": 4,
+      "interval_basis": "GITHUB_PUBLICATION_TIMES_SCHEDULED_TO_SCHEDULED",
+      "mean_scheduled_publication_interval_seconds": 4833,
+      "median_scheduled_publication_interval_seconds": 3825,
+      "all_message_mean_publication_interval_seconds": 3899.75,
+      "first_publication_at": "2026-09-12T04:36:52Z",
+      "latest_publication_at": "2026-09-12T08:56:51Z"
+    },
+    "email": {
+      "total_messages": 28,
+      "logical_within_run_intervals": 26,
+      "mean_within_run_interval_seconds": 3887.076923076923,
+      "median_within_run_interval_seconds": 3618,
+      "minimum_interval_seconds": 970,
+      "maximum_interval_seconds": 7226,
+      "runs": {
+        "A": {
+          "messages": 15,
+          "intervals": 14,
+          "mean_interval_seconds": 3609.214285714286,
+          "median_interval_seconds": 3615.5,
+          "span_seconds": 50529
+        },
+        "B": {
+          "messages": 13,
+          "intervals": 12,
+          "mean_interval_seconds": 4211.25,
+          "median_interval_seconds": 3704,
+          "span_seconds": 50535
+        }
+      },
+      "basis": "GMAIL_MESSAGE_TIMESTAMPS_POOLED_WITHIN_EACH_PARALLEL_RUN"
+    }
   }
 }
