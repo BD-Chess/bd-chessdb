@@ -5,8 +5,8 @@
   // Map API Key (Used for rendering only)
   const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
   
-  // Gemini API is now handled via Secure Netlify Proxy
-  const PROXY_URL = 'https://remarkable-sopapillas-d3e79a.netlify.app/.netlify/functions/gemini';
+  // Same-origin function: credentials and the Gemini model are configured server-side.
+  const PROXY_URL = '/.netlify/functions/gemini';
   
   const worker = new Worker('worker.js');
   const STORAGE_KEY = '8z_trip_backup_v2'; 
@@ -17,11 +17,11 @@
   let map, geocoder, directionsService, infoWindow;
   let mapMarkers = [], directionsRenderers = [], mapPolyline = null;
   let lastSolvedPoints = null;
-  let currentGeminiModel = '';
   let currentTravelMode = 'DRIVING';
   let currentNavApp = 'apple'; // Default to Apple for the list
   let mapScriptLoadingPromise = null;
   let chatHistoryBuffer = [];
+  let chatRequestPending = false;
   
   let presetLookup = {};
   let userRegion = null;
@@ -675,11 +675,9 @@
   }
 
 async function initAI() {
-    // Proxy uses a fixed model for security (Gemini 2.5 Flash)
-    currentGeminiModel = 'gemini-2.5-flash';
     const s = $('modelSelector'); 
     if(s) {
-      s.innerHTML='<option value="gemini-2.5-flash">8Z Trip Architect (Secure Proxy)</option>';
+      s.innerHTML='<option>8Z Trip Architect</option>';
       s.disabled = true;
     }
   }
@@ -695,8 +693,15 @@ async function initAI() {
   };
 
   async function handleChatSend(inputId, historyId) {
-      const i = $(inputId), t = i.value.trim(), h = $(historyId); if (!t) return;
-      i.value = ''; h.innerHTML += `<div class="msg user">${t}</div>`; h.scrollTop = h.scrollHeight;
+      const i = $(inputId), t = i.value.trim(), h = $(historyId); if (!t || chatRequestPending) return;
+      if (t.length > 12000) { setStatus('Please shorten your message to 12,000 characters.', 'bad'); return; }
+      chatRequestPending = true;
+      const sendButtons = [$('btnSendChat'), $('btnSendBigChat')].filter(Boolean);
+      sendButtons.forEach(button => { button.disabled = true; });
+      i.value = '';
+      const userMessage = document.createElement('div');
+      userMessage.className = 'msg user'; userMessage.textContent = t; h.appendChild(userMessage);
+      h.scrollTop = h.scrollHeight;
       const otherHistory = historyId === 'chatHistory' ? $('bigChatHistory') : $('chatHistory');
       if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
       saveState(); 
@@ -704,10 +709,26 @@ async function initAI() {
       const loadingId = 'loading-' + Date.now();
       h.innerHTML += `<div id="${loadingId}" class="msg ai" style="opacity:0.6">...</div>`;
       
-      const r = await callAI(t);
-      const loader = document.getElementById(loadingId); if(loader) loader.remove();
+      let response;
+      try {
+        response = await callAI(t);
+      } catch (error) {
+        const failedMessage = document.createElement('div');
+        failedMessage.className = 'msg ai'; failedMessage.textContent = error.message;
+        h.appendChild(failedMessage);
+        return;
+      } finally {
+        document.getElementById(loadingId)?.remove();
+        chatRequestPending = false;
+        sendButtons.forEach(button => { button.disabled = false; });
+        if (otherHistory) otherHistory.innerHTML = h.innerHTML;
+        h.scrollTop = h.scrollHeight;
+        saveState();
+      }
+      const r = response.text;
       
-      let processedText = r;
+      // Escape provider HTML before adding the app's own trusted action badges.
+      let processedText = r.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const replaceMatch = r.match(/\{REPLACE:\s*([\s\S]*?)\}/);
       if (replaceMatch && replaceMatch[1].trim()) {
           const cleanTrip = normalizeTripEditorText(replaceMatch[1], { ensureStart: true });
@@ -719,7 +740,7 @@ async function initAI() {
           }
           processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Trip Library format applied.</small></div>');
       }
-      const addMatches = [...processedText.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
+      const addMatches = [...r.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
       if(addMatches.length) {
         let addedCount = 0;
         addMatches.forEach(match => { addedCount += appendTripEditorBlock(match[1]); });
@@ -730,13 +751,41 @@ async function initAI() {
       }
 
       h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
+      if (response.sources?.length) {
+        const sources = document.createElement('div'); sources.className = 'msg ai';
+        sources.append('Sources: ');
+        response.sources.forEach((source, index) => {
+          try {
+            const url = new URL(source.url);
+            if (!['https:', 'http:'].includes(url.protocol)) return;
+            const link = document.createElement('a');
+            link.href = url.href; link.target = '_blank'; link.rel = 'noopener noreferrer';
+            link.textContent = source.title || `Source ${index + 1}`;
+            if (sources.childNodes.length > 1) sources.append(' · ');
+            sources.appendChild(link);
+          } catch (_) { /* Ignore malformed source links. */ }
+        });
+        h.appendChild(sources);
+      }
+      if (response.searchSuggestionsHtml) {
+        const suggestions = document.createElement('iframe');
+        suggestions.title = 'Google Search suggestions';
+        suggestions.setAttribute('sandbox', 'allow-popups allow-popups-to-escape-sandbox');
+        suggestions.referrerPolicy = 'no-referrer';
+        suggestions.style.cssText = 'width:100%;height:120px;border:0;background:white;border-radius:8px;';
+        suggestions.srcdoc = response.searchSuggestionsHtml;
+        h.appendChild(suggestions);
+      }
       h.scrollTop = h.scrollHeight;
       if (otherHistory) { otherHistory.innerHTML = h.innerHTML; otherHistory.scrollTop = otherHistory.scrollHeight; }
       saveState(); 
   }
 
 async function callAI(txt) {
-    chatHistoryBuffer.push({ role: "user", parts: [{ text: txt }] });
+    // Only successful exchanges enter model history. Bound persisted conversations.
+    const history = chatHistoryBuffer.filter(m => ['user', 'model'].includes(m?.role) && typeof m.parts?.[0]?.text === 'string').slice(-20);
+    history.push({ role: 'user', parts: [{ text: txt }] });
+    while (history.length > 1 && history.reduce((n, m) => n + m.parts[0].text.length, 0) > 35000) history.shift();
     const currentTripData = $('input').value.substring(0, 3000); 
     const locationContext = userRegion ? `USER LOCATION: ${userRegion}` : "";
     let sysPrompt = "";
@@ -771,23 +820,34 @@ Bad example:
 
     // Merge history and system prompt for the proxy
     const fullPrompt = sysPrompt + "\n\nHistory:\n" + 
-      chatHistoryBuffer.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n') + 
-      "\n\nLatest Question: " + txt;
+      history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 55000);
     try {
       const res = await fetch(PROXY_URL, { 
         method: 'POST', 
         headers: {'Content-Type':'application/json'}, 
-        body: JSON.stringify({ prompt: fullPrompt }) 
+        body: JSON.stringify({ prompt: fullPrompt }),
+        signal: controller.signal
       });
 
-      const d = await res.json();
-      const t = d.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't reach the Architect.";
-      chatHistoryBuffer.push({ role: "model", parts: [{ text: t }] });
-      return t;
+      let d;
+      try { d = await res.json(); } catch (_) {
+        throw new Error(`The chatbot connection returned HTTP ${res.status}. Please try again shortly.`);
+      }
+      if (!res.ok || d.ok !== true) {
+        throw new Error(d.error?.message || `The chatbot request failed (HTTP ${res.status}). Please try again shortly.`);
+      }
+      if (typeof d.text !== 'string' || !d.text.trim()) throw new Error('Gemini returned no answer. Please try again.');
+      chatHistoryBuffer = history.concat({ role: 'model', parts: [{ text: d.text }] }).slice(-20);
+      return d;
     } catch (err) {
-      console.error("Proxy Error:", err);
-      return "The Trip Architect is currently offline. Please try again later.";
+      if (err.name === 'AbortError') throw new Error('Gemini took too long to answer. Please try again.');
+      if (err instanceof TypeError) throw new Error('The chatbot connection failed. Check your connection and try again.');
+      throw err;
+    } finally {
+      clearTimeout(timer);
     }
   }
 
