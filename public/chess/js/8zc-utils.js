@@ -1,6 +1,6 @@
 function initAll() {
-  const STORAGE_KEY_SETTINGS = 'chessBestSettings';
-  const STORAGE_KEY_GAME     = 'chessBestGame';
+  const STORAGE_KEY_SETTINGS = 'chessNewSettings-v7';
+  const STORAGE_KEY_GAME     = 'chessNewGame-v7';
   const ENABLE_COACH         = false;
 
   /* ------------------------------------------------------------------
@@ -15,13 +15,16 @@ function initAll() {
 	flipBoard: false,
     theme: 'dark',
     topN: 5,
-    bg: '#2e2e2e',
+    bg: '#151a19',
     notation: 'score',
     font: '14px',
     pieceSize: 'medium',
     /* historySize: 'small', */
     historySize: window.innerWidth <= 600 ? 'smallest' : 'small',
     nextDot: true,     // show next‑move preview by default
+    showTimers: true,
+    timerDisplayDefaults: 2,
+    showTimestamps: false,
     ioFormat: 'fen',   // NEW  (fen | pgn)  for Format / Input / Copy row
     /* DCC Lookahead settings */
     dccEnabled: true,
@@ -45,6 +48,15 @@ function initAll() {
   // v0.6.1: Per-move DCC annotations for PGN export
   // Keyed by half-move index → best DCC result at that position
   let dccMoveAnnotations = {};
+  // Ownership of Sim/Replay UI. New game invalidates pending cleanup as well
+  // as pending moves, so an old request cannot restore an old result panel.
+  let activityEpoch = 0;
+  let simRunning = false;
+  let simAbort = false;
+  let replayRunning = false;
+  let replayAbort = false;
+  let simSession = null;
+  const simExperiments = [];
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -69,7 +81,14 @@ function initAll() {
   ------------------------------------------------------------------*/
   const saved = localStorage.getItem(STORAGE_KEY_SETTINGS);
   if (saved) {
-    try { Object.assign(settings, JSON.parse(saved)); }
+    try {
+      const prior = JSON.parse(saved);
+      Object.assign(settings, prior);
+      // Adopt the requested new default once, then retain the user's later choice.
+      if (prior.timerDisplayDefaults !== 2) settings.showTimers = true;
+      settings.timerDisplayDefaults = 2;
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    }
     catch (e) { console.error('Bad settings JSON', e); }
   }
   if (!ENABLE_COACH) {
@@ -77,6 +96,7 @@ function initAll() {
     settings.coachOpen = false;
   }
   function saveSettings() {
+    invalidateDCCAnalysis();
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
   }
   const LICHESS_TOKEN_KEY   = 'chessBestLichessToken';
@@ -247,7 +267,9 @@ function buildPrettyGameTitle(tags, bucket, file, fallbackCoreTitle) {
 
 
   const panel = document.getElementById('popularGamesPanel');
-  panel.innerHTML = '';
+  const libraryHeader = panel.querySelector('.drawer-heading');
+  panel.replaceChildren();
+  if (libraryHeader) panel.appendChild(libraryHeader);
   const heading = document.createElement('div');
   heading.innerText = 'Load a game:';
   heading.style.fontWeight = 'bold';
@@ -315,6 +337,7 @@ gameBuckets.forEach(bucket => {
 	// 3) Wire up load-on-change
 	sel.onchange = e => {
 	  if (!e.target.value) return;
+      if (playState.active || simRunning || replayRunning) return;
 
 	  // Remember this PGN string and reset
 	  lastLoadedPGN = e.target.value;
@@ -328,9 +351,11 @@ gameBuckets.forEach(bucket => {
 	  bookFlags = extractBookFlags(e.target.value);
 	  const cleanPgn = makeLoadablePgn(e.target.value);
 	  game.load_pgn(cleanPgn);
+      workspace.reset();
 
 	  // Update UI
-	  document.getElementById('gameTitle').innerHTML = title;
+      const tags = game.header();
+      document.getElementById('gameTitle').textContent = tags.White && tags.Black && tags.White !== 'Book' ? `${tags.White} vs ${tags.Black}` : title;
 	  updateBoard(true);
 	  showOpening();
 	  lastMoveIndex = game.history().length - 1;
@@ -376,12 +401,20 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      6. CHESSBOARD.JS
   ------------------------------------------------------------------*/
+  let resizeFrame = 0;
+  window.addEventListener('8zc:resize', () => {
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => { board.resize(); });
+  });
   const board = Chessboard('board', {
     draggable: true,
     position : game.fen(),
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
 	
 	onDrop: (src, dst) => {
+      if (simRunning || replayRunning) return 'snapback';
+      if (!workspace.beforeMove()) return 'snapback';
+      if (playState.active && playState.mode === 'lichess' && (!playState.lichess.ready || playState.lichess.pendingMove)) return 'snapback';
 	  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
 	    if (playState.autoPilot) return 'snapback';
 	    if (playState.waiting) return 'snapback';
@@ -396,6 +429,9 @@ gameBuckets.forEach(bucket => {
 	  // Make the move
 	  const m = game.move({ from: src, to: dst, promotion: 'q' });
 	  if (!m) return 'snapback';
+      if (playState.mode !== 'lichess' && !workspace.recordMove(fenBeforeMove, m) && workspace.isTimed()) {
+        game.undo(); return 'snapback';
+      }
 
 	  // Check if new move breaks the PGN history
 	  const curAfter = game.history().map(x => x.san);
@@ -428,6 +464,7 @@ gameBuckets.forEach(bucket => {
   let divergedIndex = -1;  // NEW: index of divergence from PGN history
   let lastAction = null;
   let showEval      = true;
+  let evalBarVisible = true;
   // per‐move “in book” flags parsed from PGN comments
   let bookFlags = [];
   let evalRetries = 0;
@@ -435,7 +472,7 @@ gameBuckets.forEach(bucket => {
 
 
   function persistGame() {
-    if (game.history().length)
+    if (game.history().length || game.fen() !== new Chess().fen())
       localStorage.setItem(STORAGE_KEY_GAME, game.pgn());
     else
       localStorage.removeItem(STORAGE_KEY_GAME);
@@ -471,777 +508,206 @@ gameBuckets.forEach(bucket => {
      8a. MDL+DCC EVAL LAYER — Core Functions
   ------------------------------------------------------------------*/
 
-  // ── LZ76 Complexity ─────────────────────────────────────────────
-  function lz76(str) {
-    if (str.length <= 1) return str.length;
-    let c = 1, l = 1, i = 0, k = 1, kmax = 1;
-    while (true) {
-      if (str[i + k - 1] === str[l + k - 1]) {
-        k++;
-        if (l + k > str.length) { c++; break; }
-      } else {
-        if (k > kmax) kmax = k;
-        i++;
-        if (i === l) { c++; l += kmax; if (l >= str.length) break; i = 0; k = 1; kmax = 1; }
-        else k = 1;
-      }
-    }
-    return c;
-  }
-
-  function fenComplexity(fen) {
-    const placement = fen.split(' ')[0];
-    return lz76(placement) / placement.length;
-  }
-
-  // ── Eval sequence stability via LZ76 ────────────────────────────
-  function evalSeqStability(evalSeq) {
-    if (evalSeq.length < 3) return 0.5; // v0.6.0: neutral default for short seqs (was 1.0 for <2)
-    // Encode deltas as characters for LZ analysis
-    const deltas = evalSeq.slice(1).map((v, i) => {
-      const d = v - evalSeq[i];
-      if (d > 15) return 'A';       // strong rise
-      if (d > 5)  return 'B';       // mild rise
-      if (d > -5) return 'C';       // flat
-      if (d > -15) return 'D';      // mild drop
-      return 'E';                    // strong drop
-    }).join('');
-    const raw = lz76(deltas) / Math.max(deltas.length, 1);
-    // Invert: low LZ = compressible = stable → high stability score
-    return Math.max(0, Math.min(1, 1 - raw));
-  }
-
-  // ── Trend calculation ───────────────────────────────────────────
-  function evalTrend(evalSeq) {
-    if (evalSeq.length < 2) return 'stable';
-    const first = evalSeq[0], last = evalSeq[evalSeq.length - 1];
-    const diff = last - first;
-    if (diff > 15) return 'rising';
-    if (diff < -15) return 'falling';
-    return 'stable';
-  }
-
-  function trendArrow(trend) {
-    return { rising: '↑', falling: '↓', stable: '→' }[trend] || '→';
-  }
-
-  // ── ADSR Analysis on eval sequence ──────────────────────────────
-  // Attack-Decay-Sustain-Release shape signature
-  // Same sensor that achieved ρ = −0.50 on Sudoku, confirmed across TSP and F4M
-  function adsrAnalysis(evalSeq) {
-    if (evalSeq.length < 2) {
-      return { attack: 0, decay: 0, sustain: 0, release: 0, shape: 'unknown', label: '?' };
-    }
-
-    const baseline = evalSeq[0];
-    const deltas = evalSeq.map(v => v - baseline); // normalize to start
-
-    // Attack: maximum positive excursion from baseline
-    const peak = Math.max(...deltas);
-    const peakIdx = deltas.indexOf(peak);
-    const attack = peak; // how much we gain at best
-
-    // Decay: drop from peak to subsequent minimum (before release)
-    const afterPeak = deltas.slice(peakIdx);
-    const valley = Math.min(...afterPeak);
-    const decay = peak - valley; // how much we lose after peak
-
-    // Sustain: average level in the middle 60% of the sequence
-    const startIdx = Math.max(1, Math.floor(deltas.length * 0.2));
-    const endIdx = Math.max(startIdx + 2, Math.floor(deltas.length * 0.8));
-    // ^^ v0.6.0 fix: minimum 2 elements in midSlice (was startIdx+1)
-    const midSlice = deltas.slice(startIdx, endIdx);
-    const sustain = midSlice.length > 0
-      ? midSlice.reduce((a, b) => a + b, 0) / midSlice.length
-      : 0;
-
-    // Release: final value relative to sustain
-    const release = deltas[deltas.length - 1] - sustain;
-
-    // Shape classification
-    const absAttack = Math.abs(attack);
-    const absDecay = Math.abs(decay);
-    const range = Math.max(...evalSeq) - Math.min(...evalSeq);
-    const normalized = range > 0 ? absDecay / range : 0;
-
-    let shape, label;
-    // v0.6.0 order: sustained → spike → building → collapse → volatile → mixed
-    if (absAttack < 10 && absDecay < 10) {
-      shape = 'sustained'; label = '▬';  // flat line, solid
-    } else if (absAttack > 20 && normalized > 0.5) {
-      shape = 'spike'; label = '⚡';      // sharp gain then collapse
-    } else if (attack > 10 && absDecay < 10 && release > -5) {
-      shape = 'building'; label = '▲';    // steadily growing (now before collapse)
-    } else if (sustain < -10) {
-      shape = 'collapse'; label = '▼';    // falls below starting level
-    } else if (absDecay > 15 && absAttack > 15) {
-      shape = 'volatile'; label = '〜';   // wild oscillation
-    } else {
-      shape = 'mixed'; label = '◆';       // doesn't fit clean pattern
-    }
-
-    return { attack, decay, sustain: Math.round(sustain), release: Math.round(release), shape, label };
-  }
-
-  // ADSR shape descriptions for tooltips/display
-  const ADSR_SHAPES = {
-    sustained: { color: '#34d399', desc: 'Solid — holds advantage through depth' },
-    building:  { color: '#00e5ff', desc: 'Building — advantage grows with depth' },
-    spike:     { color: '#f59e0b', desc: 'Spike — sharp gain then fades' },
-    collapse:  { color: '#ff4c4c', desc: 'Collapse — falls apart with best play' },
-    volatile:  { color: '#a78bfa', desc: 'Volatile — wild swings, tactical chaos' },
-    mixed:     { color: '#888',    desc: 'Mixed — no clear pattern' },
-    unknown:   { color: '#555',    desc: 'Insufficient data' }
-  };
-
-  // ── v0.6.0: DCC Weight Constants ─────────────────────────────────
-  // For v0.7.0: MDL arena over these weights — P17 on weights.
-  const DCC_WEIGHTS = {
-    stability: 20,
-    adsr_sustained: 10, adsr_building: 15,
-    adsr_spike: -5, adsr_collapse: -20, adsr_volatile: -10,
-    momentum_max: 5,
-    endgame_known: 25, endgame_unknown: -15,
-    tunnel: 10,
-    complexity: 10
-  };
-
-  // ── v0.6.0 Feature 1: Self-calibrating DCC Governor [P17] ──────
-  let dccGovernor = {
-    allDeltas: [],
-    threshDrop: -15,  // initial defaults (same as v0.5.0 hardcoded)
-    threshRise: 5,
-
-    observe(evalSeq) {
-      for (let i = 1; i < evalSeq.length; i++)
-        this.allDeltas.push(evalSeq[i] - evalSeq[i-1]);
-      // Keep bounded
-      if (this.allDeltas.length > 500)
-        this.allDeltas = this.allDeltas.slice(-300);
-      if (this.allDeltas.length >= 10) this.recalibrate();
+  const DCC = window.ChessDCC;
+  const SIM = window.ChessSim;
+  let analysisGeneration = 0;
+  let activeLookaheadId = 0;
+  let latestDCCReceipt = null;
+  const analysisMemo = new Map();
+  const analysisPending = new Map();
+  const requestPending = new Map();
+  const simRequests = new Set();
+  const positionEval = window.ChessEvalBar.create({ game, settings,
+    isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked) });
+  const workspace = window.ChessWorkspace.create({ Chess, game, settings,
+    onDisplaySettings: () => {
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      renderHistory(); renderLichessClocks();
     },
-
-    recalibrate() {
-      const s = [...this.allDeltas].sort((a, b) => a - b);
-      this.threshDrop = s[Math.floor(s.length * 0.15)];
-      this.threshRise = s[Math.floor(s.length * 0.75)];
-    }
-  };
-
-  // ── v0.6.0 Feature 2: Positional Momentum ──────────────────────
-  function evalMomentum(evalSeq) {
-    if (evalSeq.length < 3) return 0;
-    let accSum = 0;
-    for (let i = 2; i < evalSeq.length; i++)
-      accSum += (evalSeq[i] - evalSeq[i-1]) - (evalSeq[i-1] - evalSeq[i-2]);
-    return accSum / (evalSeq.length - 2);
-  }
-
-  // ── v0.6.0 Feature 3: Endgame Transition Detector ──────────────
-  function materialCount(fen) {
-    return fen.split(' ')[0].replace(/[/1-8]/g, '').length;
-  }
-
-  // ── v0.6.0 Feature 4: Tunneling Detector ───────────────────────
-  // Moves that look bad shallow but become good deep.
-  // Same principle as TSP tunneling sensor: barrier shape matters.
-  function detectTunnel(evalSeq) {
-    if (evalSeq.length < 4) return false;
-    const start = evalSeq[0];
-    const mid = evalSeq.slice(1, -1);
-    const minMid = Math.min(...mid);
-    const end = evalSeq[evalSeq.length - 1];
-    return minMid < start - 20 && end > start + 10;
-  }
-
-  // ── DCC Governance: should we look deeper? ──────────────────────
-  // v0.6.0: uses self-calibrating thresholds from dccGovernor [P17]
-  function shouldGoDeeper(evalSeq) {
-    if (evalSeq.length < 2) return true;
-    const last = evalSeq[evalSeq.length - 1];
-    const prev = evalSeq[evalSeq.length - 2];
-    const trend = last - prev;
-    // Falling eval → danger, look deeper
-    if (trend < dccGovernor.threshDrop) return true;
-    // Rising and stable → no surprises, stop
-    if (trend > dccGovernor.threshRise && evalSeqStability(evalSeq) > 0.5) return false;
-    // Oscillating → look deeper
-    const oscillation = evalSeq.some((v, i) =>
-      i > 1 && Math.sign(v - evalSeq[i-1]) !== Math.sign(evalSeq[i-1] - evalSeq[i-2])
-    );
-    if (oscillation) return true;
-    return evalSeq.length < 3; // minimum 3 half-moves
-  }
-
-  // ── Eval Cache (localStorage) ───────────────────────────────────
+    analyze: (fen, cancelled) => DCC.analyze({ Chess, fen, settings: { ...settings },
+      getMoves: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore, cancelled }),
+    onAnnotations: (fen, rows) => { dccMoveAnnotations[fen] = rows; },
+    getAnalysis: () => ({ receipt: latestDCCReceipt, candidates: latestDCCResults }),
+    isBusy: () => playState.active || simRunning || replayRunning,
+    stopActivities: () => { activityEpoch++; invalidateDCCAnalysis(); simSession = null; }
+  });
+  const CACHE_KEY = 'chessNewEvalCache-v7';
   let evalCache = {};
-  try {
-    evalCache = JSON.parse(localStorage.getItem('dccEvalCache') || '{}');
-  } catch(e) { evalCache = {}; }
-
+  try { evalCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (_) {}
+  const ADSR_SHAPES = {
+    sustained: { color: '#75e3b2', desc: 'Sustained: small evaluation changes' },
+    building: { color: '#8cddff', desc: 'Building: evaluation improves along the line' },
+    spike: { color: '#ffd58a', desc: 'Spike: a gain then a retreat' },
+    collapse: { color: '#ff9da7', desc: 'Declining evaluation along the line' },
+    volatile: { color: '#d3b8ff', desc: 'Volatile: large evaluation changes' },
+    mixed: { color: '#bfccd9', desc: 'Mixed trajectory' },
+    unknown: { color: '#a4b6c8', desc: 'Insufficient measured samples' }
+  };
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function invalidateDCCAnalysis() {
+    analysisGeneration++;
+    activeLookaheadId++;
+    latestDCCResults = [];
+    latestDCCReceipt = null;
+  }
+  function evalTrend(seq) { return DCC.sensors(seq, game.fen()).trend; }
+  function trendArrow(trend) { return { rising: '↑', falling: '↓', stable: '→' }[trend] || '—'; }
   function persistEvalCache() {
     const keys = Object.keys(evalCache);
-    if (keys.length > 10000) {
-      // Evict oldest 2000 entries
-      keys.slice(0, 2000).forEach(k => delete evalCache[k]);
-    }
-    try {
-      localStorage.setItem('dccEvalCache', JSON.stringify(evalCache));
-    } catch(e) { /* quota exceeded — silently fail */ }
+    if (keys.length > 1500) keys.slice(0, keys.length - 1200).forEach(k => delete evalCache[k]);
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(evalCache)); } catch (_) {}
   }
-
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  // ── Raw chessdb fetch with caching + rate limiting ──────────────
-  async function cachedFetchChessDB(fen) {
-    const key = fen.split(' ').slice(0, 4).join(' '); // normalize
-    if (evalCache[key]) return evalCache[key];
-    await sleep(200); // rate limit guard
-    const useProxy = settings.evalMode === 'proxy';
-    const baseURL = useProxy
-      ? '/.netlify/functions/queryall?'
-      : 'https://www.chessdb.cn/cdb.php?action=queryall&';
-    const url = `${baseURL}board=${encodeURIComponent(fen)}&learn=0&showall=1`;
-    try {
-      const txt = await fetch(url).then(r => r.text());
-      const moves = txt.split('|').map(line => {
-        const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
-        if (!m || m[2] === '??') return null;
-        const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
-        if (isNaN(score)) return null;
-        return { move: m[1], score, rank };
-      }).filter(Boolean).sort((a, b) => b.score - a.score || a.rank - b.rank);
-      const result = { moves, fen };
-      evalCache[key] = result;
-      persistEvalCache();
-      return result;
-    } catch(e) {
-      console.warn('DCC cachedFetch error:', e);
-      return { moves: [], fen };
-    }
-  }
-
-  // ── querypv: single call returns score + depth + full PV line ───
-  async function fetchPV(fen) {
-    const key = 'pv:' + fen.split(' ').slice(0, 4).join(' ');
-    if (evalCache[key]) return evalCache[key];
-    await sleep(200);
-    const url = `https://www.chessdb.cn/cdb.php?action=querypv&board=${encodeURIComponent(fen)}&learn=0`;
-    try {
-      const txt = await fetch(url).then(r => r.text());
-      // Format: score:SCORE,depth:DEPTH,pv:MOVE1|MOVE2|...|MOVEn
-      // Or: "unknown" / "invalid board"
-      if (txt === 'unknown' || txt.startsWith('invalid')) {
-        const result = { score: null, depth: 0, pv: [], raw: txt };
-        evalCache[key] = result;
-        persistEvalCache();
-        return result;
-      }
-      const scoreMatch = txt.match(/score:([-\d]+)/);
-      const depthMatch = txt.match(/depth:(\d+)/);
-      const pvMatch    = txt.match(/pv:(.+)/);
-      const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-      const depth = depthMatch ? parseInt(depthMatch[1], 10) : 0;
-      const pv    = pvMatch ? pvMatch[1].split('|').filter(Boolean) : [];
-      const result = { score, depth, pv, raw: txt };
-      evalCache[key] = result;
-      persistEvalCache();
-      return result;
-    } catch(e) {
-      console.warn('fetchPV error:', e);
-      return { score: null, depth: 0, pv: [], raw: '' };
-    }
-  }
-
-  // ── queryscore: lightweight single-score probe ─────────────────
-  async function fetchScore(fen) {
-    const key = 'sc:' + fen.split(' ').slice(0, 4).join(' ');
-    if (evalCache[key] !== undefined) return evalCache[key];
-    await sleep(150); // slightly lighter rate limit
-    const url = `https://www.chessdb.cn/cdb.php?action=queryscore&board=${encodeURIComponent(fen)}&learn=0`;
-    try {
-      const txt = await fetch(url).then(r => r.text());
-      // Format: eval:SCORE or "unknown"
-      const m = txt.match(/eval:([-\d]+)/);
-      const score = m ? parseInt(m[1], 10) : null;
-      evalCache[key] = score;
-      persistEvalCache();
-      return score;
-    } catch(e) {
-      console.warn('fetchScore error:', e);
-      return null;
-    }
-  }
-
-  // ── DCC Lookahead — querypv first, then selective queryscore ────
-  //
-  // v0.6.0 SIGN CONVENTION VERIFICATION (C1 review item):
-  // Scholar's Mate FEN (Black won): querypv returns NEGATIVE score
-  // when White (losing side) is to move. Both querypv and queryscore
-  // return from the perspective of the side to move. The sign flipping
-  // in the loop below (odd plies get negated) is CORRECT — it keeps
-  // all values normalized to the root side's perspective.
-  //
-  // Flow per candidate move M:
-  //   1. Make M on board copy → FEN_after
-  //   2. fetchPV(FEN_after) → score, depth, PV line  [1 API call]
-  //   3. Walk PV moves to build intermediate FENs
-  //   4. fetchScore on key intermediates based on DCC governance
-  //      [0-3 lightweight API calls, governed by shouldGoDeeper]
-  //   5. Return evalSequence + movePath for display
-  //
-  // Total: ~1-4 API calls per candidate vs. old 5-10
-  //
-  async function dccLookahead(gameCopy, maxHalfMoves) {
-    const evalSequence = [];
-    const movePath = [];
-    const fen = gameCopy.fen();
-
-    // Step 1: get the full PV from this position
-    const pvResult = await fetchPV(fen);
-    if (pvResult.score === null || pvResult.pv.length === 0) {
-      return { evalSequence, movePath };
-    }
-
-    // The PV score is from the side to move's perspective
-    evalSequence.push(pvResult.score);
-
-    // Step 2: walk the PV to build intermediate positions
-    const probe = new Chess(fen);
-    const pvMoves = pvResult.pv.slice(0, maxHalfMoves);
-
-    for (let i = 0; i < pvMoves.length; i++) {
-      const uci = pvMoves[i];
-      const m = probe.move({
-        from: uci.slice(0, 2),
-        to: uci.slice(2, 4),
-        promotion: uci.length > 4 ? uci[4] : undefined
-      });
-      if (!m) break;
-      movePath.push(uci);
-
-      // DCC governance: only probe intermediate scores when interesting
-      if (i < pvMoves.length - 1) {
-        // Score every 2nd position, or always if sequence is oscillating
-        const needsScore = (i % 2 === 1) || !shouldGoDeeper(evalSequence);
-        if (needsScore || evalSequence.length < 3) {
-          const intScore = await fetchScore(probe.fen());
-          if (intScore !== null) {
-            // Normalize: queryscore returns from side-to-move POV
-            // Flip sign on odd plies to keep consistent perspective
-            const normalized = (i % 2 === 0) ? -intScore : intScore;
-            evalSequence.push(normalized);
-          }
-          // DCC: if stable and rising, stop probing intermediates
-          if (evalSequence.length >= 3 && !shouldGoDeeper(evalSequence)) break;
+  async function fetchChessText(action, fen, learn = 0) {
+    const source = settings.evalMode;
+    const key = `${DCC.VERSION}:${source}:${action}:learn=${learn}:${fen}`;
+    const cached = evalCache[key];
+    if (cached && Date.now() - cached.time < 300000) return cached.text;
+    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal');
+    if (requestPending.has(pendingKey)) return requestPending.get(pendingKey);
+    const unhurried = simRunning, requestEpoch = activityEpoch;
+    const pending = (async () => {
+      await sleep(150);
+      if (unhurried && requestEpoch !== activityEpoch) { requestPending.delete(pendingKey); return ''; }
+      const controller = new AbortController();
+      if (unhurried) simRequests.add(controller);
+      const timer = unhurried ? null : setTimeout(() => controller.abort(), 15000);
+      try {
+        const base = source === 'proxy' && action === 'queryall'
+          ? '/.netlify/functions/queryall?'
+          : `https://www.chessdb.cn/cdb.php?action=${action}&`;
+        const response = await fetch(`${base}board=${encodeURIComponent(fen)}&learn=${learn}&showall=1`, { signal: controller.signal });
+        if (!response.ok) throw new Error(`ChessDB HTTP ${response.status}`);
+        const text = (await response.text()).trim();
+        // Unknown, rate limited and error responses are deliberately not persisted.
+        if (/^(move:|score:|eval:|checkmate|stalemate)/.test(text)) {
+          evalCache[key] = { time: Date.now(), text };
+          persistEvalCache();
         }
-      }
-    }
-
-    // Always include the endpoint score (from PV)
-    if (pvMoves.length > 0 && evalSequence.length === 1) {
-      // We only have the root score — try to get the endpoint
-      const endScore = await fetchScore(probe.fen());
-      if (endScore !== null) {
-        const normalized = (pvMoves.length % 2 === 0) ? endScore : -endScore;
-        evalSequence.push(normalized);
-      }
-    }
-
-    // v0.6.0: Feed results to self-calibrating governor
-    if (evalSequence.length >= 2) {
-      dccGovernor.observe(evalSequence);
-    }
-
-    return { evalSequence, movePath, pvDepth: pvResult.depth };
+        return text;
+      } catch (err) {
+        console.warn(`ChessDB ${action} unavailable:`, err.name);
+        return '';
+      } finally { clearTimeout(timer); simRequests.delete(controller); requestPending.delete(pendingKey); }
+    })();
+    requestPending.set(pendingKey, pending);
+    return pending;
   }
-
-  let activeLookaheadId = 0; // cancel stale lookaheads on board change
-
-  // ── DCC Progress indicator ───────────────────────────────────────
+  async function cachedFetchChessDB(fen) {
+    const generation = analysisGeneration;
+    // Match the original /chess/ source contract. learn=0 can leave all but
+    // one score unknown; learn=1 supplies the other evaluated candidates.
+    // Each request has its own cache key and may fail independently.
+    const [verified, cloud] = await Promise.all([
+      fetchChessText('queryall', fen, 0), fetchChessText('queryall', fen, 1)
+    ]);
+    const moveMap = new Map();
+    for (const text of [cloud, verified]) {
+      for (const line of text.split('|')) {
+        const m = line.match(/move:([a-h][1-8][a-h][1-8][qrbn]?),score:(-?\d+),rank:(\d+)/);
+        if (!m) continue; // Unknown scores must not overwrite measured values.
+        const score = Number(m[2]), rank = Number(m[3]);
+        if (score <= -999 && rank < 2) continue; // Original unverified-loss filter.
+        moveMap.set(m[1], { move: m[1], score, rank });
+      }
+    }
+    // Preserve ChessDB's order within score/rank ties (not alphabetical UCI).
+    const moves = Array.from(moveMap.values(), (move, sourceOrder) => ({ ...move, sourceOrder }));
+    const legal = DCC.legalMoves(Chess, fen, moves);
+    if (generation === analysisGeneration) positionEval.update(fen, legal[0]?.score);
+    return { fen, moves: legal };
+  }
+  async function fetchPV(fen) {
+    const text = await fetchChessText('querypv', fen);
+    const score = text.match(/score:(-?\d+)/), depth = text.match(/depth:(\d+)/), pv = text.match(/pv:([^\r\n]+)/);
+    return { score: score ? Number(score[1]) : null, depth: depth ? Number(depth[1]) : 0, pv: pv ? pv[1].split('|').filter(Boolean) : [] };
+  }
+  async function fetchScore(fen) {
+    const text = await fetchChessText('queryscore', fen);
+    const score = text.match(/eval:(-?\d+)/);
+    return score ? Number(score[1]) : null;
+  }
   function updateDCCProgress(done, total) {
     const el = document.getElementById('dccProgress');
     if (!el) return;
-    if (total <= 0) { el.textContent = ''; return; }
-    if (done >= total) {
-      el.textContent = 'DCC ✓';
-      el.style.color = '#34d399';
-      setTimeout(() => { if (el.textContent === 'DCC ✓') { el.textContent = ''; } }, 3000);
-    } else {
-      const pct = Math.round(100 * done / total);
-      el.textContent = `DCC ${pct}%`;
-      el.style.color = '#00e5ff';
-    }
+    el.textContent = total > 0 ? `DCC ${done}/${total}` : '';
+    el.style.color = '#8cddff';
   }
-
   async function runDCCLookahead(moveList, baseFen) {
-    const thisId = ++activeLookaheadId;
-    const maxHalfMoves = settings.dccDepth * 2;
-    latestDCCResults = []; // reset for this position
-
-    // Smart candidate selection: eval floor + max candidates
-    const bestScore = moveList.length > 0 ? moveList[0].score : 0;
-    const candidates = moveList.filter(m =>
-      Math.abs(bestScore - m.score) <= settings.dccEvalFloor
-    ).slice(0, settings.dccTopCandidates);
-
-    updateDCCProgress(0, candidates.length);
-
-    for (let i = 0; i < candidates.length; i++) {
-      if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
-
-      const mv = candidates[i];
-      const probe = new Chess(baseFen);
-      const m = probe.move({
-        from: mv.move.slice(0, 2),
-        to: mv.move.slice(2, 4),
-        promotion: mv.move.length > 4 ? mv.move[4] : 'q'
-      });
-      if (!m) continue;
-
-      // Show loading indicator on badge
-      updateDCCBadge(mv.move, null, 'loading');
-
-      const { evalSequence, movePath, pvDepth } = await dccLookahead(probe, maxHalfMoves);
-      if (thisId !== activeLookaheadId) { updateDCCProgress(0, 0); return; }
-
-      if (evalSequence.length > 0) {
-        const trend = evalTrend(evalSequence);
-        const stability = evalSeqStability(evalSequence);
-        const arrow = trendArrow(trend);
-        const adsr = adsrAnalysis(evalSequence);
-        const momentum = evalMomentum(evalSequence);  // v0.6.0
-        const tunnel = detectTunnel(evalSequence);     // v0.6.0
-        const data = {
-          move: mv.move, trend, stability, arrow, evalSequence, movePath,
-          score: mv.score, pvDepth: pvDepth || 0, adsr, momentum, tunnel,
-          isMdlPick: !!document.querySelector(`.square-${mv.move.slice(-2)} .overlay.dcc-mdl-pick`)
-        };
-        updateDCCBadge(mv.move, data, 'done');
-        latestDCCResults.push(data);
-      } else {
-        updateDCCBadge(mv.move, null, 'none');
-      }
-      // Update progress + DCC view panel
-      updateDCCProgress(i + 1, candidates.length);
-      renderDCCView();
-      if (settings.dccOnly) applyDCCOnlyBadges();
-    }
-
-    // v0.6.1: Store results for PGN export, keyed by position FEN
-    if (latestDCCResults.length > 0) {
-      const fenKey = baseFen.split(' ').slice(0, 4).join(' ');
-      dccMoveAnnotations[fenKey] = latestDCCResults.slice();
-    }
+    const id = ++activeLookaheadId;
+    latestDCCResults = [];
+    latestDCCReceipt = { status: 'pending' };
+    renderDCCView();
+    const result = await analyzePosition(baseFen, moveList);
+    if (!result || id !== activeLookaheadId || game.fen() !== baseFen || !showEval) return;
+    latestDCCResults = result.candidates.map(c => c.data);
+    latestDCCReceipt = result.receipt;
+    latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
+    dccMoveAnnotations[baseFen] = latestDCCResults.slice();
+    const progress = document.getElementById('dccProgress');
+    if (progress) progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;
+    renderDCCView();
+    if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, 'raw', result.allMoves, result), baseFen);
+    if (settings.dccOnly) applyDCCOnlyBadges();
   }
-
-  // ── Update badge with DCC data ──────────────────────────────────
   function updateDCCBadge(move, data, status) {
-    const sq = move.slice(-2);
-    const cell = document.querySelector(`.square-${sq}`);
-    if (!cell) return;
-    const ov = cell.querySelector('.overlay');
-    if (!ov) return;
-
-    // Remove old DCC indicators
-    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label').forEach(e => e.remove());
+    const cell = document.querySelector(`.square-${move.slice(2, 4)}`);
+    const ov = cell && cell.querySelector('.overlay');
+    if (!ov || ov.dataset.move !== move) return;
+    ov.querySelectorAll('.dcc-arrow,.dcc-loading,.dcc-adsr-label,.dcc-mdl-star,.dcc-tunnel-label').forEach(e => e.remove());
     ov.classList.remove('dcc-stable', 'dcc-unstable', 'dcc-mdl-pick');
-
-    if (status === 'loading') {
-      const dot = document.createElement('span');
-      dot.className = 'dcc-loading';
-      dot.textContent = '…';
-      ov.appendChild(dot);
-      return;
+    if (status !== 'done' || !data) return;
+    ov.dataset.dccMove = move;
+    ov.dataset.dccTrend = data.trend;
+    ov.dataset.dccStability = Number.isFinite(data.stability) ? data.stability.toFixed(2) : '';
+    ov.dataset.dccRank = String(latestDCCResults.findIndex(r => r.move === move) + 1);
+    const mark = document.createElement('span');
+    mark.className = 'dcc-arrow';
+    mark.textContent = ' ' + (data.arrow || '—');
+    ov.appendChild(mark);
+    if (data.isMdlPick) {
+      ov.classList.add('dcc-mdl-pick');
+      const star = document.createElement('span'); star.className = 'dcc-mdl-star'; star.textContent = ' ★';
+      star.title = 'Shared DCC policy choice (see DCC panel for reason)'; ov.appendChild(star);
     }
-
-    if (status === 'done' && data) {
-      // Add trend arrow
-      const arrowEl = document.createElement('span');
-      arrowEl.className = `dcc-arrow dcc-trend-${data.trend}`;
-      arrowEl.textContent = ' ' + data.arrow;
-      ov.appendChild(arrowEl);
-
-      // Add ADSR shape label
-      if (data.adsr && data.adsr.shape !== 'unknown') {
-        const adsrEl = document.createElement('span');
-        const shapeInfo = ADSR_SHAPES[data.adsr.shape] || ADSR_SHAPES.unknown;
-        adsrEl.className = 'dcc-adsr-label';
-        adsrEl.textContent = data.adsr.label;
-        adsrEl.style.color = shapeInfo.color;
-        adsrEl.title = shapeInfo.desc;
-        ov.appendChild(adsrEl);
-      }
-
-      // v0.6.0: Tunnel flag — move looks bad shallow but good deep
-      if (data.tunnel) {
-        const tunnelEl = document.createElement('span');
-        tunnelEl.className = 'dcc-tunnel-label';
-        tunnelEl.textContent = '⛏';
-        tunnelEl.title = 'Tunnel move — looks bad shallow, good deep';
-        tunnelEl.style.color = '#f59e0b';
-        ov.appendChild(tunnelEl);
-      }
-
-      // Add stability border class
-      if (data.stability > 0.6) ov.classList.add('dcc-stable');
-      else if (data.stability < 0.35) ov.classList.add('dcc-unstable');
-
-      // Store data for info panel
-      ov.dataset.dccEvalSeq = JSON.stringify(data.evalSequence);
-      ov.dataset.dccMovePath = JSON.stringify(data.movePath);
-      ov.dataset.dccTrend = data.trend;
-      ov.dataset.dccStability = data.stability.toFixed(2);
-      ov.dataset.dccScore = data.score;
-      ov.dataset.dccPvDepth = data.pvDepth || 0;
-      ov.dataset.dccAdsrShape = data.adsr ? data.adsr.shape : '';
-      ov.dataset.dccAdsrLabel = data.adsr ? data.adsr.label : '';
-      ov.dataset.dccAdsr = data.adsr ? JSON.stringify(data.adsr) : '';
-      ov.dataset.dccMomentum = data.momentum !== undefined ? data.momentum.toFixed(2) : '';
-      ov.dataset.dccTunnel = data.tunnel ? '1' : '';
-      // hover disabled intentionally; click still opens DCC info panel
-    }
+    if (Number.isFinite(data.stability)) ov.classList.add(data.stability > 0.6 ? 'dcc-stable' : 'dcc-unstable');
+    ov.title = `${move}: raw ${data.raw ?? data.score} cp; ${data.status || 'partial'} DCC; mover perspective`;
   }
-
-  // ── LZ Tiebreaker — mark MDL pick among tied moves ─────────────
-  function applyLZTiebreaker(moveList, baseFen) {
-    if (moveList.length < 2) return;
-    const threshold = settings.dccTieThreshold;
-    const bestScore = moveList[0].score;
-
-    // Find all moves within threshold of the best
-    const tied = moveList.filter(m => Math.abs(m.score - bestScore) <= threshold);
-    if (tied.length < 2) return;
-
-    // Compute FEN complexity for each tied move
-    let minComplexity = Infinity, mdlPick = null;
-    tied.forEach(m => {
-      const probe = new Chess(baseFen);
-      const result = probe.move({
-        from: m.move.slice(0, 2),
-        to: m.move.slice(2, 4),
-        promotion: m.move.length > 4 ? m.move[4] : 'q'
-      });
-      if (result) {
-        const cx = fenComplexity(probe.fen());
-        m._lzComplexity = cx;
-        if (cx < minComplexity) {
-          minComplexity = cx;
-          mdlPick = m.move;
-        }
-      }
-    });
-
-    // Mark the MDL pick on the badge
-    if (mdlPick) {
-      const sq = mdlPick.slice(-2);
-      const cell = document.querySelector(`.square-${sq}`);
-      if (cell) {
-        const ov = cell.querySelector('.overlay');
-        if (ov) {
-          ov.classList.add('dcc-mdl-pick');
-          const star = document.createElement('span');
-          star.className = 'dcc-mdl-star';
-          star.textContent = ' ★';
-          star.title = 'MDL tiebreaker: most compressible resulting position';
-          ov.appendChild(star);
-        }
-      }
-    }
-  }
-
-  // ── Info Panel — show eval path on click ────────────────────────
   function showDCCInfoPanel(ov) {
+    const data = latestDCCResults.find(r => r.move === (ov.dataset.dccMove || ov.dataset.move));
+    if (data) showDCCDetails(data);
+  }
+  function formatDCCScore(value) { return Number.isFinite(value) ? `${value > 0 ? '+' : ''}${Math.round(value)}` : '—'; }
+  function showDCCDetails(r) {
     const panel = document.getElementById('dccInfoPanel');
     if (!panel) return;
-    const evalSeq = JSON.parse(ov.dataset.dccEvalSeq || '[]');
-    const movePath = JSON.parse(ov.dataset.dccMovePath || '[]');
-    const trend = ov.dataset.dccTrend || '?';
-    const stability = parseFloat(ov.dataset.dccStability || '0');
-    const pvDepth = parseInt(ov.dataset.dccPvDepth || '0', 10);
-
-    if (evalSeq.length === 0 && movePath.length === 0) {
-      panel.style.display = 'none';
-      return;
-    }
-
-    // Build PV display: show all moves, scores where available
-    const moveStr = movePath.map((m, i) => {
-      const scoreStr = evalSeq[i + 1] !== undefined
-        ? `<span class="dcc-path-eval">${evalSeq[i+1] > 0 ? '+' : ''}${evalSeq[i+1]}</span>`
-        : '';
-      return `<span class="dcc-path-move">${m}</span>${scoreStr}`;
-    }).join('<span class="dcc-path-arrow">→</span>');
-
-    const rootScore = evalSeq[0] !== undefined ? `${evalSeq[0] > 0 ? '+' : ''}${evalSeq[0]}` : '?';
-    const stabilityPct = Math.round(stability * 100);
-    const trendLabel = { rising: '↑ rising', falling: '↓ falling', stable: '→ stable' }[trend] || trend;
-    const depthStr = pvDepth > 0 ? ` · d${pvDepth}` : '';
-
-    // ADSR shape display
-    let adsrStr = '';
-    try {
-      const adsr = JSON.parse(ov.dataset.dccAdsr || '{}');
-      if (adsr.shape && adsr.shape !== 'unknown') {
-        const shapeInfo = ADSR_SHAPES[adsr.shape] || ADSR_SHAPES.unknown;
-        adsrStr = ` &nbsp;|&nbsp; <span class="dcc-adsr-info" style="color:${shapeInfo.color}">${adsr.label} ${shapeInfo.desc}</span>`;
-      }
-    } catch(e) {}
-
-    // v0.6.1: Momentum + Tunnel
-    let momStr = '';
-    const mom = parseFloat(ov.dataset.dccMomentum || '0');
-    if (mom !== 0) {
-      const momColor = mom > 0.5 ? '#34d399' : mom < -0.5 ? '#ff4c4c' : '#888';
-      const momSign = mom > 0 ? '+' : '';
-      momStr = ` &nbsp;|&nbsp; <span style="color:${momColor}">Mom: ${momSign}${mom.toFixed(1)}</span>`;
-    }
-    const tunnelStr = ov.dataset.dccTunnel === '1'
-      ? ' &nbsp;|&nbsp; <span style="color:#f59e0b">⛏ Tunnel</span>'
-      : '';
-
-    panel.innerHTML = `
-      <div class="dcc-info-path"><span class="dcc-path-eval">${rootScore}</span><span class="dcc-path-arrow">→</span>${moveStr}</div>
-      <div class="dcc-info-summary">
-        Trend: <span class="dcc-trend-${trend}">${trendLabel}</span>
-        &nbsp;|&nbsp; Stability: ${stabilityPct}%${depthStr}${adsrStr}${momStr}${tunnelStr}
-      </div>
-    `;
+    const samples = (r.samples || []).map(s => `<span class="dcc-path-move">${s.move} <small>p${s.ply}: ${formatDCCScore(s.score)}</small></span>`).join(' <span aria-hidden="true">→</span> ');
+    panel.innerHTML = `<strong>${r.move} · ${r.status}</strong><div class="dcc-info-path">${samples || 'No measured line available.'}</div><div class="dcc-info-summary">Mover POV · floor ${formatDCCScore(r.floor)} cp · variation ${formatDCCScore(r.volatility)} cp · recovery ${formatDCCScore(r.recovery)} cp<br>Observed ${r.observedPlies}/${r.targetPlies} plies · requested ${r.requestedPlies} · source PV depth ${r.pvDepth || '—'}</div>`;
     panel.style.display = 'block';
   }
-
-  // ── Render DCC Analysis Panel (replaces moves when toggled) ──────
   function renderDCCView() {
     const panel = document.getElementById('dccAnalysisPanel');
     if (!panel) return;
-    if (!dccViewActive) { panel.style.display = 'none'; return; }
-
-    panel.style.display = 'block';
-    if (latestDCCResults.length === 0) {
-      panel.innerHTML = '<div class="dcc-analysis-empty">DCC analysis loading…</div>';
+    panel.style.display = dccViewActive ? 'block' : 'none';
+    if (!dccViewActive) return;
+    if (!latestDCCResults.length) {
+      panel.innerHTML = `<div class="dcc-analysis-empty">${latestDCCReceipt?.status === 'pending' ? 'Measuring candidate lines…' : 'No evaluated candidates yet. Show Eval or try another position.'}</div>`;
       return;
     }
-
-    // Sort by stability (highest first), then by score
-    const sorted = latestDCCResults.slice().sort((a, b) => {
-      const sa = a.stability || 0, sb = b.stability || 0;
-      if (Math.abs(sb - sa) > 0.05) return sb - sa;
-      return (b.score || 0) - (a.score || 0);
-    });
-
-    let html = '<table class="dcc-analysis-table">';
-    html += '<tr class="dcc-analysis-header"><th>#</th><th>Move</th><th>Eval</th><th></th><th>Stab</th><th>Mom</th><th>ADSR</th><th></th></tr>';
-    sorted.forEach((r, i) => {
-      const rank = i + 1;
-      const score = r.score !== undefined ? (r.score > 0 ? '+' + r.score : r.score) : '?';
-      const arrow = r.arrow || '';
-      const trendClass = r.trend ? 'dcc-trend-' + r.trend : '';
-      const stabPct = r.stability !== undefined ? Math.round(r.stability * 100) + '%' : '—';
-      const stabClass = r.stability > 0.6 ? 'dcc-stab-high' : r.stability < 0.35 ? 'dcc-stab-low' : 'dcc-stab-mid';
-      const mdl = r.isMdlPick ? '<span class="star">★</span>' : '';
-      const tunnelFlag = r.tunnel ? '<span style="color:#f59e0b" title="Tunnel move">⛏</span>' : '';
-      const mom = r.momentum !== undefined ? (r.momentum > 0.5 ? '+' : r.momentum < -0.5 ? '−' : '·') : '·';
-      const momColor = r.momentum > 0.5 ? '#34d399' : r.momentum < -0.5 ? '#ff4c4c' : '#666';
-      const momTitle = r.momentum !== undefined ? `Momentum: ${r.momentum.toFixed(1)}` : '';
-      const adsr = r.adsr || {};
-      const adsrLabel = adsr.label || '';
-      const adsrInfo = ADSR_SHAPES[adsr.shape] || ADSR_SHAPES.unknown;
-      const pvStr = (r.movePath || []).join(' → ');
-      html += `<tr class="dcc-analysis-row" data-move="${r.move}" title="${adsrInfo.desc} · PV: ${pvStr}">`;
-      html += `<td class="dcc-rank">${rank}</td>`;
-      html += `<td class="dcc-move-name">${r.move}${tunnelFlag}</td>`;
-      html += `<td class="dcc-eval-cell">${score}</td>`;
-      html += `<td class="${trendClass}">${arrow}</td>`;
-      html += `<td class="${stabClass}">${stabPct}</td>`;
-      html += `<td style="color:${momColor}" title="${momTitle}">${mom}</td>`;
-      html += `<td style="color:${adsrInfo.color}" title="${adsrInfo.desc}">${adsrLabel}</td>`;
-      html += `<td>${mdl}</td>`;
-      html += `</tr>`;
-    });
-    html += '</table>';
-
-    // Show PV of the top DCC-ranked move
-    const top = sorted[0];
-    if (top && top.movePath && top.movePath.length > 0) {
-      const pvDisplay = top.movePath.join(' → ');
-      const depthStr = top.pvDepth ? ` · d${top.pvDepth}` : '';
-      html += `<div class="dcc-analysis-pv">PV: ${pvDisplay}${depthStr}</div>`;
-    }
-
-    panel.innerHTML = html;
-
-    // Click rows to show that move's full info
-    panel.querySelectorAll('.dcc-analysis-row').forEach(row => {
-      row.style.cursor = 'pointer';
-      row.addEventListener('click', () => {
-        const mv = row.dataset.move;
-        const r = latestDCCResults.find(x => x.move === mv);
-        if (r && r.evalSequence) {
-          const infoPanel = document.getElementById('dccInfoPanel');
-          if (infoPanel) {
-            const moveStr = (r.movePath || []).map((m, i) => {
-              const s = r.evalSequence[i + 1];
-              const scoreStr = s !== undefined ? `<span class="dcc-path-eval">${s > 0 ? '+' : ''}${s}</span>` : '';
-              return `<span class="dcc-path-move">${m}</span>${scoreStr}`;
-            }).join('<span class="dcc-path-arrow">→</span>');
-            const rootScore = r.evalSequence[0] !== undefined ? `${r.evalSequence[0] > 0 ? '+' : ''}${r.evalSequence[0]}` : '?';
-            const trendLabel = { rising: '↑ rising', falling: '↓ falling', stable: '→ stable' }[r.trend] || r.trend;
-            const depthStr = r.pvDepth ? ` · d${r.pvDepth}` : '';
-            infoPanel.innerHTML = `
-              <div class="dcc-info-path"><span class="dcc-path-eval">${rootScore}</span><span class="dcc-path-arrow">→</span>${moveStr}</div>
-              <div class="dcc-info-summary">Trend: <span class="dcc-trend-${r.trend}">${trendLabel}</span> &nbsp;|&nbsp; Stability: ${Math.round((r.stability||0)*100)}%${depthStr}</div>
-            `;
-            infoPanel.style.display = 'block';
-          }
-        }
-      });
-    });
+    const rows = latestDCCResults.map((r, i) => `<tr class="dcc-analysis-row" data-move="${r.move}"><td>${r.isMdlPick ? '★' : i + 1}</td><td><button class="dcc-details-button" type="button" data-move="${r.move}" aria-label="Inspect ${r.move}">${r.move}</button></td><td>${formatDCCScore(r.raw)}</td><td>${formatDCCScore(r.endEval)}</td><td>${Number.isFinite(r.stability) ? Math.round(r.stability * 100) + '%' : '—'}</td><td>${r.observedPlies}/${r.targetPlies}${r.complete ? '' : ' · ?'}</td></tr>`).join('');
+    panel.innerHTML = `<div class="dcc-policy-note">★ Shared DCC choice · scores in cp, mover POV</div><table class="dcc-analysis-table"><thead><tr><th>Pick</th><th>Move</th><th title="ChessDB candidate evaluation">Raw</th><th title="Last measured evaluation, mover perspective">End</th><th title="Stability requires at least 3 samples">Stable</th><th title="Observed / funded half-moves; ? means incomplete scores">Plies</th></tr></thead><tbody>${rows}</tbody></table><div class="dcc-analysis-pv">${latestDCCReceipt?.reason || ''}<br>${latestDCCReceipt?.completed || 0}/${latestDCCReceipt?.total || latestDCCResults.length} complete · ${latestDCCReceipt?.calls || 0} probes${latestDCCReceipt?.limited ? ' · time limit reached' : ''}. DCC rank is a heuristic, not an engine evaluation.</div>`;
+    panel.querySelectorAll('.dcc-details-button').forEach(button => button.addEventListener('click', () => showDCCDetails(latestDCCResults.find(r => r.move === button.dataset.move))));
   }
-
-  // ── DCC-only badge mode: replace raw score with DCC info ────────
   function applyDCCOnlyBadges() {
     if (!settings.dccOnly) return;
-    // For each overlay with DCC data, replace the text content
     document.querySelectorAll('.overlay').forEach(ov => {
-      if (!ov.dataset.dccTrend) {
-        // No DCC data yet — dim the badge
-        ov.style.opacity = '0.3';
-        return;
-      }
+      const index = latestDCCResults.findIndex(r => r.move === ov.dataset.move);
+      if (index < 0) { ov.style.opacity = '0.45'; return; }
+      const r = latestDCCResults[index];
       ov.style.opacity = '1';
-      const trend = ov.dataset.dccTrend;
-      const stability = parseFloat(ov.dataset.dccStability || '0');
-      const arrow = { rising: '↑', falling: '↓', stable: '→' }[trend] || '→';
-
-      // Compute DCC rank by stability among visible overlays
-      const allStabs = [];
-      document.querySelectorAll('.overlay[data-dcc-stability]').forEach(o => {
-        allStabs.push({ el: o, stab: parseFloat(o.dataset.dccStability || '0') });
-      });
-      allStabs.sort((a, b) => b.stab - a.stab);
-      const rank = allStabs.findIndex(x => x.el === ov) + 1;
-
-      // Replace badge text: arrow + rank
-      // Keep only the arrow span, remove text nodes
-      const arrowEl = ov.querySelector('.dcc-arrow');
-      const starEl = ov.querySelector('.dcc-mdl-star');
-      ov.childNodes.forEach(n => {
-        if (n.nodeType === 3) n.textContent = ''; // clear text nodes
-      });
-      // Set new content
-      if (!ov.querySelector('.dcc-only-label')) {
-        const label = document.createElement('span');
-        label.className = 'dcc-only-label';
-        ov.insertBefore(label, ov.firstChild);
-      }
-      const label = ov.querySelector('.dcc-only-label');
-      label.textContent = `${arrow}${rank}`;
-
-      // Recolor badge by stability instead of eval sign
-      ov.classList.remove('positive', 'negative', 'zero');
-      if (stability > 0.6) ov.classList.add('positive');
-      else if (stability < 0.35) ov.classList.add('negative');
-      else ov.classList.add('zero');
+      ov.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ''; });
+      let label = ov.querySelector('.dcc-only-label');
+      if (!label) { label = document.createElement('span'); label.className = 'dcc-only-label'; ov.prepend(label); }
+      label.textContent = `${index + 1}${r.complete ? '' : '?'}`;
     });
   }
 
@@ -1298,6 +764,7 @@ gameBuckets.forEach(bucket => {
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
   ------------------------------------------------------------------*/
   function applySettings() {
+    document.getElementById('settingEvalMode').value = settings.evalMode;
     /* theme */
 	document.body.classList.toggle('light-theme', settings.theme === 'light');
 	// sync the Settings-panel checkbox
@@ -1307,6 +774,7 @@ gameBuckets.forEach(bucket => {
 	  
 	/* board orientation */
 	board.orientation(settings.flipBoard ? 'black' : 'white');
+    positionEval.render();
 
     /* CSS vars */
     document.documentElement.style.setProperty('--overlay-font', settings.font);
@@ -1396,99 +864,27 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
-	async function fetchAnnotations() {
-	  if (playState.active && playState.assistanceLocked) return;
-	  const fen = encodeURIComponent(game.fen());
-
-	  function parseResponse(text) {
-		return text.split('|').map(line => {
-		  const m = line.match(/move:(\w+),score:([-\d\?]+),rank:(\d+),/);
-		  if (!m || m[2] === '??') return null;
-		  const score = parseInt(m[2], 10), rank = parseInt(m[3], 10);
-		  if (isNaN(score) || (score <= -999 && rank < 2)) return null;
-		  return { move: m[1], score, rank };
-		}).filter(Boolean);
-	  }
-
-	  const useProxy = settings.evalMode === 'proxy';
-	  const baseURL = useProxy
-		? '/.netlify/functions/queryall?'
-		: 'https://www.chessdb.cn/cdb.php?action=queryall&';
-
-	  const vURL = `${baseURL}board=${fen}&learn=0&showall=1`;
-	  const cURL = `${baseURL}board=${fen}&learn=1&showall=1`;
-
-	  let vTxt = null, cTxt = null;
-
-	  try {
-		[vTxt, cTxt] = await Promise.all([
-		  fetch(vURL).then(r => r.text()),
-		  fetch(cURL).then(r => r.text())
-		]);
-	  } catch (e) {
-		console.warn('Fetch error:', e);
-	  }
-
-	  // Retry once with fallback if direct mode failed
-	  if ((!vTxt || !cTxt) && !useProxy) {
-		console.warn('Switching to fallback eval mode (proxy)');
-		settings.evalMode = 'proxy';
-		localStorage.setItem('chessBestSettings', JSON.stringify(settings));
-		return fetchAnnotations(); // retry
-	  }
-
-	  try {
-		const moveMap = new Map();
-		parseResponse(cTxt).forEach(m => moveMap.set(m.move, m)); // cloud first
-		parseResponse(vTxt).forEach(m => moveMap.set(m.move, m)); // verified overrides
-
-		//const allMoves = Array.from(moveMap.values())
-		//  .sort((a, b) => b.rank - a.rank || b.score - a.score);
-
-		//const list = isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
-		
-		const allMoves = Array.from(moveMap.values())
-		  // 1) highest score first, 2) lowest rank next
-		  .sort((a, b) => b.score - a.score || a.rank - b.rank);
-
-		const list = isFinite(settings.topN)
-		  ? allMoves.slice(0, settings.topN)
-		  : allMoves;
-		
-    if (list.length > 0) {
-      // Cancel any pending retry loop and reset the button immediately
-      if (evalRetryTimer) {
-        clearInterval(evalRetryTimer);
-        evalRetryTimer = null;
-      }
-      const btn = document.getElementById('btnHideEval');
-      btn.innerText = 'Hide Eval';
-      btn.style.background = '';
+  async function fetchAnnotations() {
+    if (!showEval || simRunning || replayRunning || (playState.active && playState.assistanceLocked)) return;
+    const baseFen = game.fen(), generation = analysisGeneration;
+    const response = await cachedFetchChessDB(baseFen);
+    if (generation !== analysisGeneration || game.fen() !== baseFen || !showEval || simRunning || replayRunning) return;
+    const allMoves = response.moves;
+    const list = Number.isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
+    if (list.length) {
+      clearInterval(evalRetryTimer); evalRetryTimer = null;
+      const btn = document.getElementById('btnHideEval'); btn.innerText = 'Hide Eval'; btn.style.background = '';
     }
-    
-    list.forEach((m, i) => annotateMove(m.move, m.score, i === 0));
-
-      // ── DCC Layer: tiebreaker + lookahead ────────────────────────
-      if (settings.dccEnabled && list.length > 0) {
-        const baseFen = game.fen();
-        // LZ Tiebreaker for tied moves
-        applyLZTiebreaker(list, baseFen);
-        // Async lookahead for top N moves
-        runDCCLookahead(list, baseFen);
-      }
-      // ─────────────────────────────────────────────────────────────
-
-	  } catch (err) {
-		console.error('Failed to fetch annotations:', err);
-	  }
-	}
-
+    list.forEach((move, i) => annotateMove(move.move, move.score, i === 0));
+    if (settings.dccEnabled && allMoves.length) await runDCCLookahead(allMoves, baseFen);
+    else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; renderDCCView(); }
+  }
 
   /* ------------------------------------------------------------------
      10. BOARD OVERLAYS / HISTORY RENDER (unchanged logic)
   ------------------------------------------------------------------*/
   function annotateMove(move, score, best) {
-    const sq   = move.slice(-2);
+    const sq   = move.slice(2, 4);
     const cell = document.querySelector(`.square-${sq}`);
     if (!cell) return;
 
@@ -1515,13 +911,17 @@ gameBuckets.forEach(bucket => {
 
 	ov.onclick = e => {
 	  e.stopPropagation();
+      if (playState.active || simRunning || replayRunning) return;
+      if (!workspace.beforeMove()) return;
+      const fenBeforeMove = game.fen();
 	  // Capture the position before branching
 	  const curBefore = game.history().map(x => x.san);
 	  const refBefore = fullHistory.map(x => x.san).slice(0, curBefore.length + 1);
 
 	  // Execute the move
-	  const m = game.move({ from: move.slice(0,2), to: sq, promotion: 'q' });
+	  const m = game.move({ from: move.slice(0,2), to: sq, promotion: move[4] || 'q' });
 	  if (m) {
+        if (!workspace.recordMove(fenBeforeMove, m) && workspace.isTimed()) { game.undo(); updateBoard(false); return; }
 		// Compare to the original PGN path
 		const curAfter = game.history().map(x => x.san);
 		const refAfter = fullHistory.map(x => x.san).slice(0, curAfter.length);
@@ -1538,7 +938,7 @@ gameBuckets.forEach(bucket => {
 
 	// ── DCC: click to show eval path in info panel ──────────────
 	ov.addEventListener('click', (e) => {
-	  if (ov.dataset.dccEvalSeq) {
+	  if (ov.dataset.dccMove) {
 	    showDCCInfoPanel(ov);
 	  }
 	}, true);
@@ -1546,7 +946,7 @@ gameBuckets.forEach(bucket => {
 
 	// clear preview highlights on mousedown (before your existing click logic runs)
 	ov.addEventListener('mousedown', () => {
-	  fromCell.classList.remove('preview-square');
+      document.querySelector(`.square-${move.slice(0, 2)}`)?.classList.remove('preview-square');
 	  cell.classList.remove('preview-square');
 	});
 	// ──────────────────────────────────────────────────────────────────────────
@@ -1576,18 +976,26 @@ gameBuckets.forEach(bucket => {
   }
 
   function renderHistory() {
+    const display = document.getElementById('workspaceDisplay');
+    const savedScroll = display?.scrollTop || 0;
     const div=document.getElementById('moves'); div.innerHTML='';
     const tbl=document.createElement('table');
     const pairs=[];
-    for(let i=0;i<fullHistory.length;i+=2)
-      pairs.push({ w:fullHistory[i], b:fullHistory[i+1], iW:i, iB:i+1 });
+    let moveNumber = Number((game.header().FEN || getStartFen()).split(' ')[5]);
+    fullHistory.forEach((move, i) => {
+      if (!pairs.length || move.color === 'w') pairs.push({ number: moveNumber, iW: -1, iB: -1 });
+      const pair = pairs[pairs.length - 1];
+      pair[move.color] = move;
+      pair[move.color === 'w' ? 'iW' : 'iB'] = i;
+      if (move.color === 'b') moveNumber++;
+    });
 
     const rev=pairs.slice().reverse(), total=rev.length, cur=game.history().length-1;
     rev.forEach((p,idx)=>{
       const tr=document.createElement('tr');
       if(p.iW===cur||p.iB===cur) tr.classList.add('selected');
       const tdNum=document.createElement('td');
-      tdNum.textContent=`${total-idx}.`; tr.appendChild(tdNum);
+      tdNum.textContent=`${p.number}.`; tr.appendChild(tdNum);
 
       ['W','B'].forEach(col=>{
         const mv=p[`i${col}`]>=0 ? p[col.toLowerCase()] : null;
@@ -1595,7 +1003,11 @@ gameBuckets.forEach(bucket => {
         td.textContent=mv?mv.san:'';
         td.className='move';
         if(mv){
+          workspace.decorate(td, p[`i${col}`], mv);
           td.onclick=()=>jumpTo(p[`i${col}`]);
+          td.setAttribute('role', 'button'); td.tabIndex = 0;
+          td.setAttribute('aria-label', `Go to ${mv.san} at ply ${p[`i${col}`] + 1}`);
+          td.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); td.click(); } };
           if (p[`i${col}`] === cur) td.classList.add('current');
 		  if (
 		    divergedIndex >= 0 &&
@@ -1613,20 +1025,18 @@ gameBuckets.forEach(bucket => {
     });
     div.appendChild(tbl);
 
-    // Auto-scroll to show current move row
-	const selected = tbl.querySelector('tr.selected');
-	if (selected) {
-		const container = document.getElementById('moves');
-		const offsetTop = selected.offsetTop;
-		const offsetHeight = selected.offsetHeight;
-		const containerHeight = container.clientHeight;
-
-		// Scroll the container so that selected is centered inside it
-		container.scrollTo({
-			top: offsetTop - (containerHeight / 2) + (offsetHeight / 2),
-			behavior: 'smooth'
-		});
-	}
+    // Automated play never scrolls the reading area or page. User navigation
+    // may reveal a selected row, within this central area only.
+    const selected = tbl.querySelector('tr.selected');
+    if (display) {
+      if (simRunning || replayRunning || playState.autoPilot) display.scrollTop = savedScroll;
+      else if (selected && !dccViewActive) {
+        const row = selected.getBoundingClientRect(), area = display.getBoundingClientRect();
+        if (row.top < area.top || row.bottom > area.bottom) {
+          display.scrollTop += row.top - area.top - (display.clientHeight - row.height) / 2;
+        }
+      }
+    }
 
   }
 
@@ -1645,13 +1055,17 @@ gameBuckets.forEach(bucket => {
 	  }
 
 	  board.position(game.fen());
+	  positionEval.render();
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 	  // Cancel any running DCC lookahead
-	  activeLookaheadId++;
+	  invalidateDCCAnalysis();
+	  renderDCCView();
 	  updateDCCProgress(0, 0); // clear progress indicator
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
 	  if (dccPanel) dccPanel.style.display = 'none';
+      const decisionPanel = document.getElementById('simDecisionPanel');
+      if (decisionPanel) decisionPanel.style.display = 'none';
 	  
 		if (reset) {
 		  // only reload original PGN on a true reset
@@ -1737,16 +1151,7 @@ gameBuckets.forEach(bucket => {
 	  }
 	  // 3) Three-fold repetition (custom)
 	  else {
-		// build a list of FEN signatures (fields 0–3) from initial position through every move
-		const hist    = game.history();              // array of SAN strings
-		const clone   = new Chess();                  // fresh board
-		const sigs    = [ clone.fen().split(' ').slice(0,4).join(' ') ];
-		hist.forEach(move => {
-		  clone.move(move);
-		  sigs.push(clone.fen().split(' ').slice(0,4).join(' '));
-		});
-		const curSig  = sigs[sigs.length - 1];
-		const count   = sigs.filter(s => s === curSig).length;
+        const count = game.in_threefold_repetition() ? 3 : 0;
 		if (count >= 3) {
 		  drawMsg = 'Draw — threefold repetition';
 		}
@@ -1862,25 +1267,32 @@ function startEvalRetry() {
      12. JUMP TO MOVE & NAV BUTTONS
   ------------------------------------------------------------------*/
 function jumpTo(i){
-  if (playState.active) return;
-  game.reset();
+  if (playState.active || replayRunning) return;
+  if (simRunning) pauseSimulation('Paused at the selected move. Open Sim to choose engines and continue.');
+  const headers = game.header();
+  game.load(headers.FEN || new Chess().fen());
+  Object.entries(headers).forEach(([k,v]) => game.header(k,v));
   fullHistory.forEach((m,idx)=>{ if(idx<=i) game.move(m.san); });
+  workspace.history();
   lastAction = 'history';
   updateBoard(false);
 }
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
-      if (playState.active) return;
-      if(id==='first') jumpTo(0);
+      if (playState.active || replayRunning) return;
+      if (simRunning) pauseSimulation();
+      if(id==='first') jumpTo(-1);
       else if(id==='prev'){
         game.undo();
+        workspace.history();
         updateBoard(false);
       }
       else if(id==='next'){
         const m=fullHistory[game.history().length];
         if(m){
           game.move(m.san);
+          workspace.history();
           updateBoard(false);
         }
       }
@@ -1898,60 +1310,64 @@ function jumpTo(i){
   };
 
   document.getElementById('btnInput').onclick = () => {
-    if (settings.ioFormat==='fen') {
-      const inp=prompt('FEN & moves');
-      if(!inp) return;
-      const [fen,mvs]=inp.split(' moves ');
-      game.load(fen);
-      mvs?.split(' ').forEach(m=>
-        game.move({from:m.slice(0,2), to:m.slice(2,4) })
-      );
-    } else {
-      const p=prompt('Paste PGN');
-      if (p) {
-        lastLoadedPGN = p;
-        bookFlags = extractBookFlags(p);
-        game.load_pgn(makeLoadablePgn(p));
+    if (playState.active || simRunning || replayRunning) return;
+    const value = prompt(settings.ioFormat === 'fen' ? 'FEN (optionally followed by moves in UCI)' : 'Paste PGN');
+    if (!value) return;
+    const probe = new Chess();
+    try {
+      if (settings.ioFormat === 'fen') {
+        const [fen, line] = value.trim().split(/\s+moves\s+/);
+        if (!probe.load(fen)) throw new Error('Invalid FEN');
+        for (const uci of (line || '').split(/\s+/).filter(Boolean)) if (!DCC.play(probe, uci)) throw new Error('Illegal move: ' + uci);
+        lastLoadedPGN = null; bookFlags = [];
+      } else {
+        if (!probe.load_pgn(makeLoadablePgn(value))) throw new Error('Invalid PGN');
+        lastLoadedPGN = value; bookFlags = extractBookFlags(value);
       }
-    }
-    updateBoard(true);
-	showOpening();
+      game.load_pgn(probe.pgn());
+      if (!probe.history().length) game.load(probe.fen());
+      workspace.reset();
+      window._skipDivergedReset = false;
+      updateBoard(true); showOpening();
+    } catch (err) { alert(err.message + '. The current game was kept.'); }
   };
 
   // ── v0.6.1: Generate PGN with DCC comments ────────────────────
   function generateDCCPgn() {
-    const replay = new Chess();
+    const replay = new Chess(game.header().FEN || undefined);
     const hist = game.history({ verbose: true });
     const headers = game.header();
     let pgn = '';
 
     // PGN headers
     for (const [k, v] of Object.entries(headers)) {
-      pgn += `[${k} "${v}"]\n`;
+      const value = String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]/g, ' ');
+      pgn += `[${k} "${value}"]\n`;
     }
     if (Object.keys(headers).length > 0) pgn += '\n';
 
     for (let i = 0; i < hist.length; i++) {
-      const fenKey = replay.fen().split(' ').slice(0, 4).join(' ');
+      const fenKey = replay.fen();
       const mv = hist[i];
 
       // Move number
-      if (i % 2 === 0) pgn += `${Math.floor(i / 2) + 1}. `;
-      else if (i === 0) pgn += '1... ';
+      const moveNumber = Number(replay.fen().split(' ')[5]);
+      if (replay.turn() === 'w') pgn += `${moveNumber}. `;
+      else if (i === 0) pgn += `${moveNumber}... `;
 
       pgn += mv.san + ' ';
 
       // Look up DCC data for this position → this move
       const dccResults = dccMoveAnnotations[fenKey];
       if (dccResults) {
-        const uci = mv.from + mv.to;
+        const uci = mv.from + mv.to + (mv.promotion || '');
         const match = dccResults.find(r =>
-          r.move && r.move.slice(0, 4) === uci.slice(0, 4)
+          r.move === uci
         );
         if (match) {
-          const parts = [`DCC: ${match.score > 0 ? '+' : ''}${match.score}`];
+          const parts = [`Raw cp: ${match.score > 0 ? '+' : ''}${match.score}`, `DCC rank-score: ${match.dccScore?.toFixed(1) ?? '?'}`, `coverage:${match.status || 'partial'}`, `plies:${match.observedPlies}/${match.targetPlies}`, 'POV:mover'];
           parts.push(match.arrow + (match.adsr ? match.adsr.label : ''));
-          if (match.stability !== undefined)
+          if (Number.isFinite(match.stability))
             parts.push(`stab:${match.stability.toFixed(2)}`);
           if (match.momentum !== undefined && Math.abs(match.momentum) > 0.1)
             parts.push(`momentum:${match.momentum > 0 ? '+' : ''}${match.momentum.toFixed(0)}`);
@@ -1963,6 +1379,8 @@ function jumpTo(i){
       }
 
       replay.move(mv.san);
+      const timing = workspace.pgnTime(i, mv, fenKey);
+      if (timing) pgn += `{${timing}} `;
     }
 
     // Result
@@ -1977,8 +1395,8 @@ function jumpTo(i){
 	document.getElementById('btnCopy').onclick = () => {
 	  if (settings.ioFormat === 'fen') {
 		// ChessDB style: initial position + full move list
-		const initialFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-		const moves = fullHistory.map(m => m.from + m.to).join(' ');
+		const initialFen = game.header().FEN || new Chess().fen();
+		const moves = game.history({ verbose: true }).map(m => m.from + m.to + (m.promotion || '')).join(' ');
 		copyText(`${initialFen} moves ${moves}`);
 	  } else {
 		copyText(generateDCCPgn());
@@ -2002,18 +1420,51 @@ function jumpTo(i){
      14. ROW 2  (New | Save | Load)
   ------------------------------------------------------------------*/
 
-  document.getElementById('btnNew').onclick = () => {
-	divergedIndex = -1;
+  function startNewGame() {
+    const wasLichess = playState.active && playState.mode === 'lichess';
+    if (simRunning) pauseSimulation();
+    activityEpoch++;
+    simRequests.forEach(controller => controller.abort());
+    simAbort = true;
+    replayAbort = true;
+    simRunning = false;
+    replayRunning = false;
+    playState.replaying = false;
+    leaveActiveSession('');
+    closeSimModal();
+    document.getElementById('replayModal').style.display = 'none';
+    clearInterval(evalRetryTimer); evalRetryTimer = null;
+    lastLoadedPGN = null; bookFlags = []; dccMoveAnnotations = {};
+    fullHistory = []; lastMoveIndex = -1; lastAction = null; divergedIndex = -1;
+    preSimFen = null; preSimMoveIndex = -1;
+    simSession = null;
+    window._skipDivergedReset = false;
     game.reset();
+    workspace.reset();
+    showEval = true;
+    setBoardThinking(false);
+    document.getElementById('board-container').style.opacity = '1';
+    for (const id of ['simStatsPanel', 'simStatusBar', 'simDecisionPanel', 'dccInfoPanel', 'dccAccuracyPanel']) {
+      const panel = document.getElementById(id);
+      if (panel) { panel.replaceChildren(); panel.style.display = 'none'; }
+    }
+    document.getElementById('moves').style.display = dccViewActive ? 'none' : '';
+    document.getElementById('dccAnalysisPanel').style.display = dccViewActive ? 'block' : 'none';
+    const replayButton = document.getElementById('btnReplay');
+    replayButton.textContent = 'Replay'; replayButton.style.background = '';
+    refreshPlayUi();
     updateBoard(true);
     document.getElementById('openingName').textContent = '';
-    // reset title to the original placeholder
-    document.getElementById('gameTitle').innerHTML = 'Analyse moves with ChessDB';
-  };
+    document.getElementById('gameTitle').textContent = 'Your next move starts here';
+    if (wasLichess) updateSimStatus('New local game. The previous game remains on Lichess.');
+  }
+  document.getElementById('btnNew').onclick = startNewGame;
 
 
   document.getElementById('btnSave').onclick = () => {
-    const blob=new Blob([generateDCCPgn()],{type:'text/plain'});
+    const text = simSession?.trace.length && simSession.finalFen === game.fen()
+      ? SIM.toPGN(Chess, simSession) : generateDCCPgn();
+    const blob=new Blob([text],{type:'text/plain'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download='chessbest_dcc_game.pgn';
@@ -2035,7 +1486,8 @@ function jumpTo(i){
 		  // parse out “{Book}” flags, then strip comments before loading
 		  bookFlags = extractBookFlags(evt.target.result);
 		  const clean = makeLoadablePgn(evt.target.result);
-		  game.load_pgn(clean);
+	  game.load_pgn(clean);
+          workspace.reset();
 		  document.getElementById('gameTitle').innerText = file.name;
 		  updateBoard(true);
 		  showOpening();
@@ -2051,9 +1503,22 @@ function jumpTo(i){
   /* ------------------------------------------------------------------
      15. ROW 3  (Games | Theme | Settings)
   ------------------------------------------------------------------*/
-  document.getElementById('btnGames').onclick = () =>
-    document.getElementById('popularGamesPanel')
-      .classList.toggle('open');
+  const workspaceDrawers = [['popularGamesPanel', 'btnGames', 'btnCloseGames'], ['settingsPanel', 'btnSettings', 'btnCloseSettings']];
+  workspaceDrawers.forEach(([panelId, buttonId, closeId]) => {
+    const panel = document.getElementById(panelId), button = document.getElementById(buttonId);
+    const close = () => { panel.classList.remove('open'); button.setAttribute('aria-expanded', 'false'); button.focus({ preventScroll: true }); };
+    button.onclick = () => {
+      const open = !panel.classList.contains('open');
+      workspaceDrawers.forEach(([otherId, otherButton]) => {
+        document.getElementById(otherId).classList.remove('open');
+        document.getElementById(otherButton).setAttribute('aria-expanded', 'false');
+      });
+      panel.classList.toggle('open', open); button.setAttribute('aria-expanded', String(open));
+      if (open) document.getElementById(closeId).focus({ preventScroll: true });
+    };
+    document.getElementById(closeId).onclick = close;
+    panel.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); close(); } });
+  });
 
   document.getElementById('btnFlip').onclick = () => {
     settings.flipBoard = !settings.flipBoard;
@@ -2061,10 +1526,6 @@ function jumpTo(i){
     applySettings();
     updateBoard(false);
   };
-
-  document.getElementById('btnSettings').onclick = () =>
-    document.getElementById('settingsPanel')
-      .classList.toggle('open');
 
   // Reset all settings back to defaults
   document.getElementById('btnResetSettings').onclick = () => {
@@ -2079,7 +1540,14 @@ function jumpTo(i){
   ------------------------------------------------------------------*/
 
 	document.getElementById('btnHideEval').onclick = () => {
+      if (simRunning || replayRunning) {
+        evalBarVisible = !evalBarVisible;
+        positionEval.render();
+        document.getElementById('btnHideEval').textContent = evalBarVisible ? 'Hide Eval' : 'Show Eval';
+        return;
+      }
 	  showEval = !showEval;
+	  positionEval.render();
 	  // cancel any pending retries when hiding
 	  if (!showEval && evalRetryTimer) clearInterval(evalRetryTimer);
 	  const label = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
@@ -2122,6 +1590,7 @@ function jumpTo(i){
     18. SETTINGS PANEL HANDLERS  (updated to include delay settings)
  ------------------------------------------------------------------*/
 	[
+      'settingEvalMode',
 	  'settingTopN',
 	  'settingHistorySize',
 	  'settingBg',
@@ -2141,12 +1610,10 @@ function jumpTo(i){
 	  'settingDccEvalFloor',
 	  'settingDccOnly',
 	  'settingSimSpeed',
-	  'settingSimGames',
-	  'settingDccTakeover',
-	  'settingOpponentModel'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
+          case 'settingEvalMode': settings.evalMode = e.target.value === 'proxy' ? 'proxy' : 'direct'; break;
 		  case 'settingTopN':
 			settings.topN = e.target.value === 'all'
 			  ? Infinity
@@ -2181,8 +1648,8 @@ function jumpTo(i){
 			  settings.bg = '#ffffff';
 			  document.getElementById('settingBg').value = '#ffffff';
 			} else {
-			  settings.bg = '#2e2e2e';
-			  document.getElementById('settingBg').value = '#2e2e2e';
+			  settings.bg = '#151a19';
+			  document.getElementById('settingBg').value = '#151a19';
 			}
 			break;
 		  // ─── New delay settings ───
@@ -2217,16 +1684,7 @@ function jumpTo(i){
 		  case 'settingSimSpeed':
 			settings.simSpeed = parseInt(e.target.value, 10);
 			break;
-		  case 'settingSimGames':
-			settings.simGames = parseInt(e.target.value, 10) || 5;
-			break;
-		  case 'settingDccTakeover':
-			settings.dccTakeover = e.target.value === 'auto' ? 'auto' : parseInt(e.target.value, 10);
-			break;
-		  // v0.6.0: Opponent model
-		  case 'settingOpponentModel':
-			settings.opponentModel = e.target.value;
-			break;
+
 		  // ────────────────────────────
 		}
 		saveSettings();
@@ -2249,22 +1707,43 @@ function jumpTo(i){
      19. KEYBOARD NAVIGATION  (unchanged)
   ------------------------------------------------------------------*/
   document.addEventListener('keydown',e=>{
-    if (playState.active) return;
+    if (playState.active || replayRunning || e.target.closest('[role=dialog], dialog')) return;
+    if (simRunning && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) pauseSimulation();
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
 	const btn = document.getElementById('btnHideEval');
 	btn.innerText = 'Hide Eval';
 	btn.style.background = '';
-    if(e.key==='ArrowLeft'){ game.undo(); updateBoard(false); }
+    if(e.key==='ArrowLeft'){ game.undo(); workspace.history(); updateBoard(false); }
     else if(e.key==='ArrowRight'){
       const m=fullHistory[game.history().length];
-      if(m){ game.move(m.san); updateBoard(false); }
-    } else if(e.key==='Home') jumpTo(0);
+      if(m){ game.move(m.san); workspace.history(); updateBoard(false); }
+    } else if(e.key==='Home') jumpTo(-1);
     else if(e.key==='End')  jumpTo(fullHistory.length-1);
   });
 
   /* ------------------------------------------------------------------
      INIT
   ------------------------------------------------------------------*/
+  window.ChessGemini.create({ currentFen: () => game.fen(), snapshot: () => {
+    const fen = game.fen(), current = latestDCCReceipt?.fen === fen;
+    const config = DCC.config({ ...settings, dccNoDeadline: simRunning });
+    const memo = analysisMemo.get(`${fen}|${JSON.stringify(config)}`)?.result;
+    const data = current ? latestDCCResults : [];
+    return { capturedAt: new Date().toISOString(), fen, sideToMove: game.turn(),
+      assistanceLocked: !!playState.assistanceLocked,
+      mode: simRunning ? 'sim' : workspace.isHuman() ? 'two local humans' : playState.active ? playState.mode : 'analysis',
+      historySAN: game.history().slice(-100), headers: game.header(),
+      legalMoves: game.moves({ verbose: true }).map(m => ({ san: m.san, uci: normalizeUci(m) })),
+      scorePOV: 'root player to move; centipawns', dccConfig: config,
+      cdbCandidates: (memo?.allMoves || []).slice(0, 10).map(m => ({ move: m.move, san: uciToSan(fen, m.move), score: m.score })),
+      dccReceipt: current ? latestDCCReceipt : { status: 'unknown', reason: 'Current-position DCC analysis is not ready.' },
+      dccCandidates: data.map(r => ({ move: r.move, san: uciToSan(fen, r.move), rawCp: r.raw,
+        dccRankScore: r.dccScore, endCp: r.endEval, stability: r.stability, shape: r.adsr?.shape,
+        status: r.status, observedPlies: r.observedPlies, targetPlies: r.targetPlies,
+        chosen: r.isMdlPick, samples: (r.samples || []).slice(0, 10) })),
+      previousMoveReview: workspace.lastReview()?.afterFen === fen ? workspace.lastReview() : null,
+      timers: workspace.clockSnapshot() };
+  } });
   applySettings();
   updateBoard(true);
   showOpening();
@@ -2275,6 +1754,11 @@ function jumpTo(i){
   document.querySelectorAll('input[name="simOpponent"]').forEach(el => {
     el.addEventListener('change', syncSimModalState);
   });
+  document.getElementById('simSwapEngines').onclick = () => {
+    const white = document.getElementById('simWhiteEngine');
+    const black = document.getElementById('simBlackEngine');
+    [white.value, black.value] = [black.value, white.value];
+  };
   const simStartBtn = document.getElementById('simStartBtn');
   if (simStartBtn) simStartBtn.addEventListener('click', () => {
     launchFromSimModal().catch(err => {
@@ -2314,98 +1798,21 @@ function jumpTo(i){
   // SIMULATION ENGINE — DCC vs Raw ChessDB
   // ═══════════════════════════════════════════════════════════════════
 
-  let simRunning = false;
-  let simAbort = false;
   let preSimFen = null;      // saved before sim starts
   let preSimMoveIndex = -1;  // where we were in the game
 
   // Pick move using DCC: eval floor + candidates + PV+ADSR ranking
   async function pickDCCMove(simGame, overrideCandidates) {
     const fen = simGame.fen();
-    const result = await cachedFetchChessDB(fen);
-    if (!result.moves || result.moves.length === 0) return null;
-
-    // Smart candidate selection: eval floor + max candidates
-    const bestRawScore = result.moves[0].score;
-    const maxCandidates = overrideCandidates || settings.dccTopCandidates;
-    const candidates = result.moves.filter(m =>
-      Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
-    ).slice(0, maxCandidates);
-
-    let bestMove = result.moves[0]; // fallback: raw best
-    let bestScore = -Infinity;
-
-    for (let i = 0; i < candidates.length; i++) {
-      const mv = candidates[i];
-      const probe = new Chess(fen);
-      const m = probe.move({
-        from: mv.move.slice(0, 2), to: mv.move.slice(2, 4),
-        promotion: mv.move.length > 4 ? mv.move[4] : 'q'
-      });
-      if (!m) continue;
-
-      const pvResult = await fetchPV(probe.fen());
-      if (pvResult.score === null) continue;
-
-      const evalSeq = [pvResult.score];
-      // Quick intermediate score if PV has moves
-      if (pvResult.pv.length > 1) {
-        const walk = new Chess(probe.fen());
-        for (let j = 0; j < Math.min(4, pvResult.pv.length); j++) {
-          const uci = pvResult.pv[j];
-          const wm = walk.move({
-            from: uci.slice(0, 2), to: uci.slice(2, 4),
-            promotion: uci.length > 4 ? uci[4] : undefined
-          });
-          if (!wm) break;
-          if (j % 2 === 1) {
-            const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
-          }
-        }
-      }
-
-      const stability = evalSeqStability(evalSeq);
-      const adsr = adsrAnalysis(evalSeq);
-      // v0.6.0: Combined DCC score using DCC_WEIGHTS constants
-      let dccScore = mv.score;
-      dccScore += stability * DCC_WEIGHTS.stability;
-      if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
-      else if (adsr.shape === 'building') dccScore += DCC_WEIGHTS.adsr_building;
-      else if (adsr.shape === 'spike') dccScore += DCC_WEIGHTS.adsr_spike;
-      else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
-      else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
-
-      // v0.6.0 Feature 2: Positional momentum
-      const momentum = evalMomentum(evalSeq);
-      dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
-
-      // v0.6.0 Feature 3: Endgame transition detector
-      if (materialCount(probe.fen()) <= 7) {
-        const probeResult = await cachedFetchChessDB(probe.fen());
-        if (probeResult.moves.length > 0) dccScore += DCC_WEIGHTS.endgame_known;
-        else dccScore += DCC_WEIGHTS.endgame_unknown;
-      }
-
-      // v0.6.0 Feature 4: Tunneling bonus
-      if (detectTunnel(evalSeq)) dccScore += DCC_WEIGHTS.tunnel;
-
-      // LZ tiebreaker on resulting position
-      const cx = fenComplexity(probe.fen());
-      dccScore -= cx * DCC_WEIGHTS.complexity;
-
-      if (dccScore > bestScore) {
-        bestScore = dccScore;
-        bestMove = mv;
-        // v0.6.1: attach DCC metadata for CSV export
-        bestMove._dccScore = dccScore;
-        bestMove._stability = stability;
-        bestMove._adsrShape = adsr.shape;
-        bestMove._momentum = momentum;
-        bestMove._tunnel = detectTunnel(evalSeq);
-      }
-    }
-    return bestMove;
+    const analysis = await analyzePosition(fen, undefined, { settings: overrideCandidates ? { dccTopCandidates: overrideCandidates } : {} });
+    if (!analysis || simGame.fen() !== fen || !analysis.dcc1Move) return null;
+    const selected = analysis.allMoves.find(m => m.move === analysis.dcc1Move);
+    if (!selected) return null;
+    const detail = analysis.candidates.find(c => c.move === selected.move)?.data;
+    dccMoveAnnotations[fen] = analysis.candidates.map(c => c.data);
+    return { ...selected, _dccScore: detail?.dccScore, _stability: detail?.stability,
+      _adsrShape: detail?.adsr.shape, _momentum: detail?.momentum, _tunnel: detail?.tunnel,
+      _receipt: analysis.receipt };
   }
 
   // Pick move using raw ChessDB: opponent model governs selection
@@ -2441,323 +1848,167 @@ function jumpTo(i){
     if (bar) { bar.textContent = msg; bar.style.display = 'block'; }
   }
 
-  // v0.6.1: Export sim results as CSV for Python analysis
-  function exportSimCSV(stats) {
-    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by\n';
-    let csv = header;
-    stats.games.forEach((g, gi) => {
-      (g.moveLog || []).forEach(row => {
-        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by}\n`;
-      });
-    });
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'chessdcc_sim_results.csv';
-    a.click(); URL.revokeObjectURL(a.href);
+  function downloadSimExperiments(format) {
+    const text = format === 'csv' ? SIM.toCSV(simExperiments)
+      : simExperiments.map(run => SIM.toPGN(Chess, run)).join('\n\n');
+    const blob = new Blob([text], { type: format === 'csv' ? 'text/csv' : 'application/x-chess-pgn' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `chessbest_position_experiments.${format}`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // Render sim stats dashboard
-  function renderSimStats(stats) {
-    const panel = document.getElementById('simStatsPanel');
-    if (!panel) return;
-
-    const total = stats.games.length;
-    const dccWins = stats.games.filter(g => g.winner === 'dcc').length;
-    const rawWins = stats.games.filter(g => g.winner === 'raw').length;
-    const draws = stats.games.filter(g => g.winner === 'draw').length;
-    const avgLen = total > 0 ? Math.round(stats.games.reduce((a, g) => a + g.moves, 0) / total) : 0;
-    const dccPct = total > 0 ? Math.round(100 * dccWins / total) : 0;
-
-    const isBoth = stats.dccColor === 'both';
-    const subtitle = isBoth
-      ? `Both colors · ${settings.dccTopCandidates} candidates · ${settings.dccEvalFloor}cp floor`
-      : `DCC plays ${stats.dccColor === 'w' ? 'White' : 'Black'}`;
-
-    let html = `
-      <div class="sim-stats-header">
-        <span class="sim-title">DCC vs Raw ChessDB — ${total} game${total !== 1 ? 's' : ''}</span>
-        <span class="sim-subtitle">${subtitle}</span>
-      </div>
-      <div class="sim-stats-grid">
-        <div class="sim-stat"><div class="sim-num" style="color:#34d399">${dccWins}</div><div class="sim-label">DCC wins</div></div>
-        <div class="sim-stat"><div class="sim-num" style="color:#ff4c4c">${rawWins}</div><div class="sim-label">Raw wins</div></div>
-        <div class="sim-stat"><div class="sim-num" style="color:#888">${draws}</div><div class="sim-label">Draws</div></div>
-        <div class="sim-stat"><div class="sim-num" style="color:#00e5ff">${dccPct}%</div><div class="sim-label">DCC rate</div></div>
-        <div class="sim-stat"><div class="sim-num" style="color:#f59e0b">${avgLen}</div><div class="sim-label">Avg moves</div></div>
-      </div>`;
-
-    // Per-color breakdown for Sim mode (both sides DCC)
-    if (isBoth) {
-      const wGames = stats.games.filter(g => g.dccSide === 'w');
-      const bGames = stats.games.filter(g => g.dccSide === 'b');
-      const wWins = wGames.filter(g => g.winner === 'dcc').length;
-      const bWins = bGames.filter(g => g.winner === 'dcc').length;
-      const wPct = wGames.length > 0 ? Math.round(100 * wWins / wGames.length) : 0;
-      const bPct = bGames.length > 0 ? Math.round(100 * bWins / bGames.length) : 0;
-      html += `<div class="sim-color-breakdown">
-        <span>As White: <strong style="color:#34d399">${wWins}/${wGames.length}</strong> (${wPct}%)</span>
-        <span>As Black: <strong style="color:#a78bfa">${bWins}/${bGames.length}</strong> (${bPct}%)</span>
-      </div>`;
-    }
-
-    html += '<div class="sim-games-list">';
-    stats.games.forEach((g, i) => {
-      const icon = g.winner === 'dcc' ? '✓' : g.winner === 'raw' ? '✗' : '=';
-      const color = g.winner === 'dcc' ? '#34d399' : g.winner === 'raw' ? '#ff4c4c' : '#888';
-      const sideTag = g.dccSide ? (g.dccSide === 'w' ? 'W' : 'B') : '';
-      html += `<div class="sim-game-row" style="color:${color}">
-        <span>${icon} ${sideTag ? '[' + sideTag + '] ' : ''}Game ${i + 1}</span>
-        <span>${g.moves} moves</span>
-        <span>${g.result}</span>
-      </div>`;
-    });
-
-    html += '</div>';
-
-    // v0.6.1: Export CSV button (only when games have data)
-    const hasLogs = stats.games.some(g => g.moveLog && g.moveLog.length > 0);
-    if (hasLogs) {
-      html += '<div style="margin-top:8px;text-align:center"><button id="btnExportCSV" style="background:#00e5ff;color:#000;border:none;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px">Export CSV</button></div>';
-    }
-
-    panel.innerHTML = html;
+  function renderSimDecision(pick, fen, caption = 'Current position') {
+    const panel = document.getElementById('simDecisionPanel');
+    if (!panel || !pick) return;
+    const san = move => move ? uciToSan(fen, move) : 'unknown';
+    panel.replaceChildren();
+    const heading = document.createElement('strong');
+    heading.textContent = `${caption} · ${pick.side === 'w' ? 'White' : 'Black'} to move`;
+    const choices = document.createElement('div');
+    choices.textContent = `CDB: ${san(pick.raw_best)} (${pick.raw_best_score > 0 ? '+' : ''}${pick.raw_best_score} cp) · DCC: ${san(pick.dcc_choice)}`;
+    const ties = document.createElement('div');
+    ties.textContent = `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
+    const verdict = document.createElement('div');
+    verdict.textContent = pick.dcc_choice ? (pick.dcc_choice === pick.raw_best ? 'Same choice.' : 'DCC chooses a different move.') : 'DCC comparison unavailable.';
+    verdict.textContent += ` Coverage: ${pick.coverage}. Scores are from the mover’s perspective.`;
+    panel.append(heading, choices, ties, verdict);
+    panel.dataset.fen = fen;
     panel.style.display = 'block';
-
-    // Wire up CSV export button
-    const csvBtn = document.getElementById('btnExportCSV');
-    if (csvBtn) csvBtn.onclick = () => exportSimCSV(stats);
   }
 
-  // Run one simulated game
-  async function runOneGame(dccColor, gameNum, totalGames, visualize, startFen) {
-    const simGame = new Chess(startFen || undefined);
-    let moveCount = 0;
-    const maxMoves = 200;
-    const bothDCC = (dccColor === 'both');
-    let dccActive = false; // DCC hasn't taken over yet
-    const moveLog = []; // v0.6.1: per-move data for CSV export
-
-    // Book phase: play from ChessDB top moves until DCC takeover
-    // Skip if starting from a custom position (user navigated there)
-    const isStartPos = !startFen || startFen === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    const takeoverSetting = settings.dccTakeover;
-    const maxBookMoves = (takeoverSetting === 'auto') ? 30 : parseInt(takeoverSetting, 10);
-
-    if (isStartPos) {
-      for (let i = 0; i < maxBookMoves && !simGame.game_over(); i++) {
-        if (simAbort) return { winner: 'abort', moves: 0, result: 'aborted' };
-        const result = await cachedFetchChessDB(simGame.fen());
-        if (!result.moves || result.moves.length === 0) break;
-
-        // Auto mode: DCC takes over when DB coverage thins out (< 3 candidates)
-        if (takeoverSetting === 'auto' && result.moves.length < 3) {
-          dccActive = true;
-          break;
-        }
-
-        // Book move: pick randomly from top 3 (creates variety between games)
-        const pool = result.moves.slice(0, Math.min(3, result.moves.length));
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        const m = simGame.move({
-          from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
-          promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-        });
-        if (!m) break;
-        moveCount++;
-
-        updateSimStatus(`Game ${gameNum}/${totalGames} · Book move ${moveCount}: ${pick.move} (${result.moves.length} candidates)`);
-
-        if (visualize && settings.simSpeed > 0) {
-          board.position(simGame.fen());
-          await sleep(Math.max(100, settings.simSpeed / 3));
-        }
-      }
-    }
-    dccActive = true; // DCC always active after book phase
-
-    // Main game loop
-    while (!simGame.game_over() && moveCount < maxMoves) {
-      if (simAbort) return { winner: 'abort', moves: moveCount, result: 'aborted' };
-
-      const turn = simGame.turn(); // 'w' or 'b'
-      // In 'both' mode: both sides use DCC. Otherwise: DCC vs Raw.
-      const useDCC = bothDCC || (turn === dccColor);
-      let pick = useDCC ? await pickDCCMove(simGame) : await pickRawMove(simGame);
-
-      // Fallback: try querybest if queryall returned nothing
-      if (!pick) {
-        await sleep(200);
-        try {
-          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
-          const fbTxt = await fetch(fbUrl).then(r => r.text());
-          const fbm = fbTxt.match(/move:(\w+)/);
-          if (fbm) pick = { move: fbm[1], score: 0 };
-        } catch(e) {}
-      }
-
-      if (!pick) break; // truly unknown position
-
-      const m = simGame.move({
-        from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
-        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-      });
-      if (!m) break;
-      moveCount++;
-
-      // v0.6.1: Log move data for CSV export
-      moveLog.push({
-        move_num: moveCount,
-        fen: simGame.fen(),
-        move: pick.move,
-        raw_score: pick.score,
-        dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
-        stability: pick._stability !== undefined ? pick._stability.toFixed(2) : '',
-        adsr_shape: pick._adsrShape || '',
-        momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
-        tunnel: pick._tunnel ? 'true' : 'false',
-        picked_by: useDCC ? 'dcc' : 'raw'
-      });
-
-      const sideLabel = bothDCC ? (turn === 'w' ? 'W' : 'B') : (useDCC ? 'DCC' : 'Raw');
-      updateSimStatus(`Game ${gameNum}/${totalGames} · Move ${moveCount} · ${sideLabel}: ${pick.move} (${pick.score > 0 ? '+' : ''}${pick.score})`);
-
-      if (visualize && settings.simSpeed > 0) {
-        board.position(simGame.fen());
-        await sleep(settings.simSpeed);
-      }
-    }
-
-    // Determine winner
-    let winner = 'draw', result = 'draw';
-    if (simGame.in_checkmate()) {
-      const loser = simGame.turn(); // side that's in checkmate
-      if (bothDCC) {
-        // Both sides DCC: report which color won
-        winner = loser === 'w' ? 'black' : 'white';
-      } else {
-        winner = (loser === dccColor) ? 'raw' : 'dcc';
-      }
-      result = loser === 'w' ? '0-1' : '1-0';
-    } else if (simGame.in_stalemate()) {
-      result = '½-½ stalemate';
-    } else if (simGame.in_draw()) {
-      result = '½-½ draw';
-    } else if (moveCount >= maxMoves) {
-      result = '½-½ (200 moves)';
-    } else {
-      result = '½-½ (no DB moves)';
-    }
-
-    if (visualize && settings.simSpeed > 0) {
-      board.position(simGame.fen());
-    }
-
-    return { winner, moves: moveCount, result, moveLog };
+  function renderSimStats() {
+    const panel = document.getElementById('simStatsPanel');
+    if (!panel || !simExperiments.length) return;
+    const open = !!panel.querySelector('details')?.open;
+    const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    panel.innerHTML = `<details class="sim-experiments"${open ? ' open' : ''}><summary>Position experiments (${simExperiments.length})</summary>
+      <p>Return to the same starting position, change an engine in Sim, and compare the new line. Repeated positions are not independent strength evidence.</p>
+      <div class="sim-experiment-list">${simExperiments.map((run, i) => {
+        const changes = run.trace.filter(row => row.changed).length;
+        const gaps = run.trace.filter(row => row.coverage !== 'complete').length;
+        return `<div class="sim-experiment-row"><strong>#${run.id} · W ${SIM.label(run.white)} / B ${SIM.label(run.black)}</strong><span>${run.trace.length} plies · ${escape(run.state)} · ${escape(run.result)} · ${changes} changes from CDB · ${gaps} coverage gaps</span><button class="btn" data-sim-start="${i}">Return to start #${run.id}</button></div>`;
+      }).join('')}</div><div class="btn-group"><button class="btn" id="btnExportSimPGN">Export experiments PGN</button><button class="btn" id="btnExportCSV">Export CSV</button></div></details>`;
+    panel.style.display = 'block';
+    panel.querySelectorAll('[data-sim-start]').forEach(button => {
+      button.onclick = () => returnToSimStart(Number(button.dataset.simStart));
+    });
+    document.getElementById('btnExportCSV').onclick = () => downloadSimExperiments('csv');
+    document.getElementById('btnExportSimPGN').onclick = () => downloadSimExperiments('pgn');
   }
 
-  // Main simulation orchestrator
-  async function runSimulation(dccColor, startFen) {
-    if (simRunning) { simAbort = true; return; }
-    simRunning = true;
-    simAbort = false;
+  function returnToSimStart(index) {
+    const run = simExperiments[index];
+    if (!run || playState.active || replayRunning) return;
+    pauseSimulation('Paused to revisit a starting position.');
+    invalidateDCCAnalysis();
+    if (!run.startPgn || !game.load_pgn(run.startPgn)) game.load(run.startFen);
+    workspace.history();
+    lastLoadedPGN = null; bookFlags = []; divergedIndex = -1;
+    window._skipDivergedReset = false;
+    updateBoard(true);
+    document.getElementById('gameTitle').textContent = `Experiment #${run.id} · starting position`;
+    updateSimStatus('Choose engines in Sim to explore another line from this position.');
+  }
 
-    const isBoth = (dccColor === 'both');
-    const numGames = settings.simGames;
-    const visualize = settings.simSpeed > 0;
-    const statsPanel = document.getElementById('simStatsPanel');
-    const statusBar = document.getElementById('simStatusBar');
-    const btnW = document.getElementById('btnSimW');
-    const btnB = document.getElementById('btnSimB');
-    const btnS = document.getElementById('btnSim');
-
-    // Update button states
-    if (isBoth) {
-      btnS.textContent = 'Stop';
-      btnS.style.background = '#ff4c4c';
-      btnS.style.color = '#fff';
-    } else {
-      const activeBtn = dccColor === 'w' ? btnW : btnB;
-      activeBtn.textContent = 'Stop';
-      activeBtn.style.background = '#ff4c4c';
-      activeBtn.style.color = '#fff';
-    }
-
-    // Disable eval badges during simulation — they can't keep up
-    showEval = false;
-    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-    document.getElementById('btnHideEval').innerHTML = 'Sim…';
-    document.getElementById('btnHideEval').style.background = '#34d399';
-
-    // Save pre-sim position for title-click restore
-    preSimFen = game.fen();
-    preSimMoveIndex = game.history().length - 1;
-
-    if (!visualize) {
-      document.getElementById('board-container').style.opacity = '0.2';
-      document.getElementById('moves').style.display = 'none';
-    } else {
-      document.getElementById('moves').style.display = 'none';
-    }
-
-    statusBar.style.display = 'block';
-
-    const colorLabel = isBoth ? 'both' : (dccColor === 'w' ? 'White' : 'Black');
-    const stats = { dccColor: colorLabel, games: [] };
-
-    // Show stats panel immediately (don't wait for first game to finish)
-    renderSimStats(stats);
-
-    // Build schedule
-    const schedule = [];
-    if (isBoth) {
-      // Sim mode: both sides DCC, N games from current position
-      for (let i = 0; i < numGames; i++) {
-        schedule.push({ color: 'both', label: `${i+1}` });
-      }
-    } else {
-      // SimW/SimB: DCC vs Raw, N games from current position
-      for (let i = 0; i < numGames; i++) {
-        schedule.push({ color: dccColor, label: `${i+1}` });
-      }
-    }
-
-    for (let i = 0; i < schedule.length; i++) {
-      if (simAbort) break;
-      const s = schedule[i];
-      const modeLabel = s.color === 'both' ? 'DCC vs DCC' : `DCC=${s.color === 'w' ? 'White' : 'Black'}`;
-      updateSimStatus(`Game ${s.label} (${modeLabel}) ${i+1}/${schedule.length}…`);
-      const result = await runOneGame(s.color, i + 1, schedule.length, visualize, startFen);
-      if (result.winner === 'abort') break;
-      result.dccSide = s.color;
-      stats.games.push(result);
-      renderSimStats(stats);
-    }
-
-    // Restore UI fully
+  function pauseSimulation(message = 'Paused. Choose a position, then open Sim to continue.') {
+    if (!simRunning) return;
+    const run = simSession;
+    activityEpoch++;
+    simAbort = true;
     simRunning = false;
-    simAbort = false;
-    btnW.textContent = 'SimW'; btnW.style.background = '#2a3020'; btnW.style.color = '#34d399';
-    btnB.textContent = 'SimB'; btnB.style.background = '#2a2030'; btnB.style.color = '#a78bfa';
-    btnS.textContent = 'Sim'; btnS.style.background = '#2a2520'; btnS.style.color = '#f59e0b';
-    statusBar.style.display = 'none';
-    document.getElementById('board-container').style.opacity = '1';
-    document.getElementById('moves').style.display = '';
-
-    // Restore eval badges
+    simRequests.forEach(controller => controller.abort());
+    workspace.pause();
+    invalidateDCCAnalysis();
+    if (run) { Object.assign(run, SIM.outcome(game)); run.finalFen = game.fen(); }
     showEval = true;
-    const hideBtn = document.getElementById('btnHideEval');
-    hideBtn.innerHTML = 'Hide<br>Eval';
-    hideBtn.style.background = '';
+    setBoardThinking(false);
+    refreshPlayUi();
+    document.getElementById('board-container').style.opacity = '1';
+    renderSimStats();
+    updateSimStatus(message);
+    fetchAnnotations();
+  }
 
-    // Restore board to the real game position
-    board.position(game.fen());
-    updateBoard(false);
-
-    // Show final stats
-    renderSimStats(stats);
-    updateSimStatus(`Done: ${stats.games.length} games`);
-    setTimeout(() => { statusBar.style.display = 'none'; }, 3000);
+  // A position experiment commits to the real game/history. Navigation can
+  // pause it synchronously; every awaited decision checks ownership and FEN.
+  async function runSimulation(white, black, startFen) {
+    if (simRunning || replayRunning || playState.active) return;
+    const epoch = ++activityEpoch;
+    invalidateDCCAnalysis();
+    const snapshot = { ...settings, dccNoDeadline: true };
+    const run = {
+      id: simExperiments.length + 1, startedAt: new Date().toISOString(),
+      white: SIM.policy(white), black: SIM.policy(black), startFen: startFen || game.fen(),
+      startPgn: game.pgn(), config: DCC.config(snapshot), trace: [], state: 'running', result: '*', reason: ''
+    };
+    simSession = run; simExperiments.push(run);
+    simRunning = true; simAbort = false;
+    workspace.start('sim');
+    preSimFen = null; preSimMoveIndex = -1;
+    showEval = false;
+    clearInterval(evalRetryTimer); evalRetryTimer = null;
+    dccViewActive = false;
+    document.getElementById('moves').style.display = '';
+    document.getElementById('dccAnalysisPanel').style.display = 'none';
+    document.getElementById('btnViewToggle').textContent = 'DCC';
+    document.getElementById('gameTitle').textContent = `White: ${SIM.label(run.white)} · Black: ${SIM.label(run.black)}`;
+    refreshPlayUi();
+    renderSimStats();
+    const owns = () => epoch === activityEpoch && simRunning && !simAbort;
+    try {
+      while (owns() && !game.game_over() && run.trace.length < 200) {
+        const fen = game.fen(), generation = analysisGeneration, started = Date.now();
+        const engine = game.turn() === 'w' ? run.white : run.black;
+        setBoardThinking(true);
+        updateSimStatus(`${game.turn() === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} · comparing choices…`);
+        const result = await cachedFetchChessDB(fen);
+        if (!owns() || game.fen() !== fen) return;
+        // Both modes observe DCC. Only the selected policy may choose the move.
+        const analysis = result.moves.length ? await analyzePosition(fen, result.moves, { settings: snapshot }) : null;
+        if (!owns() || game.fen() !== fen) return;
+        if (generation !== analysisGeneration || JSON.stringify(DCC.config({ ...settings, dccNoDeadline: true })) !== JSON.stringify(run.config)) {
+          pauseSimulation('Paused after settings changed. Open Sim to continue.'); return;
+        }
+        const pick = SIM.decision(Chess, fen, engine, result.moves, analysis);
+        if (!pick) { Object.assign(run, SIM.outcome(game, 'no evaluated move')); break; }
+        const elapsed = Date.now() - started;
+        if (analysis) {
+          latestDCCResults = analysis.candidates.map(c => c.data);
+          latestDCCReceipt = analysis.receipt;
+          dccMoveAnnotations[fen] = latestDCCResults.slice();
+          renderDCCView();
+        }
+        renderSimDecision(pick, fen);
+        setBoardThinking(false);
+        updateSimStatus(`${pick.side === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} chooses ${uciToSan(fen, pick.move)} · ${pick.changed ? 'different from CDB top 1' : 'same as CDB top 1'}`);
+        // Always yield, including fast mode, so history clicks can pause.
+        await sleep(Math.max(100, snapshot.simSpeed || 0));
+        if (!owns() || game.fen() !== fen) return;
+        if (generation !== analysisGeneration) { pauseSimulation(); return; }
+        const played = applyUciMove(game, pick.move);
+        if (!played) throw new Error('The selected simulation move is no longer legal.');
+        const timing = workspace.recordMove(fen, played, { analysis_ms: elapsed, pause_ms: Math.max(100, snapshot.simSpeed || 0) });
+        run.trace.push({ ...pick, ply: run.trace.length + 1, fen, san: played.san, elapsed_ms: elapsed,
+          at_utc: timing?.at_utc, turn_ms: timing?.think_ms, pause_ms: timing?.pause_ms,
+          white_elapsed_ms: timing?.white_elapsed_ms, black_elapsed_ms: timing?.black_elapsed_ms });
+        run.finalFen = game.fen();
+        lastAction = 'move'; window._skipDivergedReset = true;
+        updateBoard(false);
+        renderSimStats();
+      }
+      if (owns() && run.state === 'running') Object.assign(run, SIM.outcome(game, 'move limit reached'));
+    } catch (err) {
+      if (owns()) Object.assign(run, SIM.outcome(game, 'analysis error: ' + describeErr(err)));
+    } finally {
+      // Pause/New game/new experiment owns the UI once this epoch is replaced.
+      if (epoch === activityEpoch) {
+        workspace.pause();
+        simRunning = false; simAbort = false; showEval = true;
+        setBoardThinking(false); refreshPlayUi(); updateBoard(false);
+        renderSimStats();
+        updateSimStatus(`Experiment #${run.id}: ${run.state} · ${run.result} · ${run.reason}`);
+      }
+    }
   }
 
 
@@ -2894,7 +2145,7 @@ function jumpTo(i){
       timeSel.appendChild(opt);
     });
     if (!defaultTimeMatched && timeSel.options.length) timeSel.options[0].selected = true;
-    if (lichessRadio) lichessRadio.checked = true;
+    // Keep the selected local/remote mode; loading bot metadata must not change it.
     syncSimModalState();
   }
 
@@ -2913,6 +2164,12 @@ function syncSimModalState() {
   const hint = document.getElementById('simModeHint');
   const colorSel = document.getElementById('simColorSelect');
   const colorLabel = document.getElementById('simColorLabel');
+  const localSim = launchMode === 'sim' && mode !== 'lichess';
+  document.getElementById('simLocalMatch').hidden = !localSim;
+  document.getElementById('simSessionOptions').hidden = localSim;
+  document.getElementById('simLocalBotOption').hidden = launchMode === 'sim';
+  document.getElementById('simLocalSpeed').value = String(settings.simSpeed);
+  document.getElementById('simPositionInfo').textContent = `Starts at the displayed position · ${game.turn() === 'w' ? 'White' : 'Black'} to move · move ${game.fen().split(' ')[5]}`;
 
   if (lichessControls) lichessControls.style.display = mode === 'lichess' ? 'grid' : 'none';
 
@@ -2927,8 +2184,8 @@ function syncSimModalState() {
     if (colorLabel) colorLabel.textContent = 'Engine color';
     if (colorSel) { colorSel.value = 'black'; colorSel.disabled = true; }
   } else {
-    if (title) title.textContent = 'Sim — 8Z DCC research';
-    if (hint) hint.textContent = 'Automatic research mode. 8Z plays the chosen side, DCC stays on, both sides are analyzed, and DCC data is kept for PGN export.';
+    if (title) title.textContent = 'Sim — test DCC at this position';
+    if (hint) hint.textContent = 'Choose each side’s move policy. Click a move in the history to pause there. Open Sim again to change engines and continue from that position.';
     if (colorLabel) colorLabel.textContent = '8Z color';
     if (colorSel) { colorSel.disabled = false; }
   }
@@ -2939,6 +2196,8 @@ function syncSimModalState() {
       note.textContent = launchMode === 'sim'
         ? 'Lichess bot research mode. 8Z will challenge the selected Lichess bot and auto-play the chosen color.'
         : 'Lichess bot + human mode. The selected engine color is played by the Lichess bot. The opposite color is human. DCC remains on for both sides.';
+    } else if (localSim) {
+      note.textContent = 'CDB selects top 1, keeping ChessDB order for equal evaluations. CDB + DCC uses the shared 10 cp guard. Both sides record the comparison; raw moves stay raw. Return to an experiment’s start to test the other policy from the same position.';
     } else if (mode === 'dccbot') {
       note.textContent = launchMode === 'sim'
         ? '8Z local bot mode. Use this for browser-side training and debugging without Lichess.'
@@ -2952,24 +2211,21 @@ function syncSimModalState() {
 
   
 function openSimModal(launchMode = 'sim') {
-  playState.launchMode = launchMode || 'sim';
-  if (simRunning) {
-    simAbort = true;
-    return;
-  }
-  if (playState.active && (playState.mode === 'dccbot' || playState.mode === 'lichess')) {
+  if (workspace.isHuman()) workspace.stop();
+  if (replayRunning) { stopReplay(); return; }
+  if (simRunning) pauseSimulation('Paused to choose engines. Start continues from the displayed position.');
+  if (playState.active) {
     leaveActiveSession(playState.mode === 'lichess'
-      ? 'Live session stopped.'
+      ? 'Local live session stopped. The Lichess game may still be running.'
       : '8Z session stopped.');
     return;
   }
-  const lichessRadio = document.querySelector('input[name="simOpponent"][value="lichess"]');
-  if (lichessRadio) lichessRadio.checked = true;
+  playState.launchMode = launchMode || 'sim';
+  if (launchMode === 'sim' && currentSimMode() === 'dccbot') document.querySelector('input[name="simOpponent"][value="self"]').checked = true;
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
   syncSimModalState();
 }
-
 
   function closeSimModal() {
     const modal = document.getElementById('simModal');
@@ -2978,128 +2234,131 @@ function openSimModal(launchMode = 'sim') {
 
   
 function refreshPlayUi() {
+  document.getElementById('controls')?.classList.toggle('is-automating', simRunning || replayRunning || !!playState.autoPilot);
+  positionEval.render();
+  const busy = playState.active || simRunning || !!playState.replaying;
   const btnSim = document.getElementById('btnSim');
   const btnSimW = document.getElementById('btnSimW');
   const btnSimB = document.getElementById('btnSimB');
   const btnReplay = document.getElementById('btnReplay');
   const btnView = document.getElementById('btnViewToggle');
   const btnHide = document.getElementById('btnHideEval');
-
   if (btnSim) {
-    btnSim.textContent = playState.active ? 'Stop' : 'Sim';
+    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Sim';
+    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Sim: configure automatic play');
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
+    btnSim.disabled = !!playState.replaying;
   }
-  if (btnSimW) btnSimW.disabled = playState.active;
-  if (btnSimB) btnSimB.disabled = playState.active;
-  if (btnReplay) btnReplay.disabled = playState.active;
+  if (btnSimW) btnSimW.disabled = busy;
+  if (btnSimB) btnSimB.disabled = busy;
+  if (btnReplay) btnReplay.disabled = playState.active || simRunning;
   if (btnView) btnView.disabled = false;
   if (btnHide) btnHide.disabled = false;
-
   const askInput = document.getElementById('coachAskInput');
   const askBtn = document.getElementById('btnCoachAsk');
   if (askInput) askInput.disabled = !ENABLE_COACH;
   if (askBtn) askBtn.disabled = !ENABLE_COACH;
-
   if (!playState.active) setCoachNotice('');
-  if (btnHide) btnHide.innerHTML = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
+  if (btnHide) btnHide.textContent = ((simRunning || replayRunning) ? evalBarVisible : showEval) ? 'Hide Eval' : 'Show Eval';
 }
 
-
-  
 function enterActiveSession(mode, opts = {}) {
+  if (playState.active || replayRunning || simRunning) throw new Error('Stop the current activity before starting a game.');
+  invalidateDCCAnalysis();
+  clearLichessStreams();
+  playState.sessionId = (playState.sessionId || 0) + 1;
+  playState.sessionAbort = new AbortController();
   playState.active = true;
   playState.mode = mode;
+  workspace.start(mode);
   playState.userColor = opts.userColor || 'w';
-  playState.waiting = false;
+  playState.waiting = mode === 'lichess';
   playState.startFen = opts.startFen || game.fen();
   playState.preSessionFen = game.fen();
   playState.preSessionPgn = game.pgn();
   playState.assistanceLocked = false;
   playState.prevShowEval = showEval;
-  playState.coachWarningShown = false;
   playState.autoPilot = !!opts.autoPilot;
   playState.autoMoveBusy = false;
-  playState.lichess.botUsername = opts.botUsername || '';
-  playState.lichess.selectedColor = opts.selectedColor || 'random';
-  playState.lichess.timeLabel = opts.timeLabel || '';
-  playState.lichess.lastMoves = '';
-  playState.lichess.ready = false;
-  playState.lichess.openingRetryCount = 0;
-  playState.lichess.preparedOpeningUci = '';
-  playState.lichess.preparedOpeningSan = '';
-  playState.lichess.preparedOpeningApplied = false;
-  playState.lichess.preparedOpeningSent = false;
-
+  const live = playState.lichess;
+  live.botUsername = opts.botUsername || '';
+  live.selectedColor = opts.selectedColor || 'random';
+  live.timeLabel = opts.timeLabel || '';
+  live.lastMoves = null;
+  live.initialFen = getStartFen();
+  live.gameId = null;
+  live.challengeId = null;
+  live.ready = false;
+  live.pendingMove = null;
+  live.headers = null;
+  live.apiKind = 'board';
+  live.clocks = null;
   clearCoachMessages();
   if (mode === 'dccbot') {
     setCoachPanelOpen(true);
-    if (playState.autoPilot) {
-      queueCoachMessage('system', 'Auto research mode started. 8Z-CDB-DCC will play the chosen side automatically.', `${playState.userColor === 'w' ? '8Z = White' : '8Z = Black'}`);
-      setPlayTitle('8Z-CDB-DCC Auto Research');
-      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
-    } else {
-      queueCoachMessage('system', 'Training mode started. You are playing against 8Z-CDB-DCC locally in the browser.', `You are ${playState.userColor === 'w' ? 'White' : 'Black'}`);
-      setPlayTitle('8Z-CDB-DCC Training');
-      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
-    }
+    setPlayTitle('8Z-CDB-DCC Training');
+    queueCoachMessage('system', 'Local training started.', `You are ${playState.userColor === 'w' ? 'White' : 'Black'}`);
   } else if (mode === 'lichess') {
     setCoachPanelOpen(true);
-    if (playState.autoPilot) {
-      queueCoachMessage('system', '8Z vs Lichess bot mode started. DCC stays on and will drive the selected color automatically.', opts.botUsername || 'Lichess');
-      setPlayTitle(`8Z vs ${opts.botUsername || 'Bot'}`);
-    } else {
-      queueCoachMessage('system', 'Human vs engine mode started. DCC stays on for both sides and the selected engine is routed through Lichess.', opts.botUsername || 'Lichess');
-      setPlayTitle(`Human vs ${opts.botUsername || 'Bot'}`);
-    }
+    setPlayTitle(`${playState.autoPilot ? '8Z' : 'Human'} vs ${opts.botUsername || 'Bot'}`);
     game.reset();
+    window._skipDivergedReset = false;
     updateBoard(true);
-    board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+    renderLichessClocks();
   }
+  board.orientation(playState.userColor === 'b' ? 'black' : 'white');
   refreshPlayUi();
+  return playState.sessionId;
 }
-
 
   function setPlayTitle(text) {
     const el = document.getElementById('gameTitle');
     if (el) el.innerHTML = text;
   }
 
-  function clearLichessStreams() {
-    try { playState.lichess.streamAbort && playState.lichess.streamAbort.abort(); } catch (_) {}
-    try { playState.lichess.eventAbort && playState.lichess.eventAbort.abort(); } catch (_) {}
-    playState.lichess.streamAbort = null;
-    playState.lichess.eventAbort = null;
-  }
+function clearLichessStreams() {
+  try { playState.lichess.streamAbort?.abort(); } catch (_) {}
+  try { playState.lichess.eventAbort?.abort(); } catch (_) {}
+  playState.lichess.streamAbort = null;
+  playState.lichess.eventAbort = null;
+}
 
-  function leaveActiveSession(message = '') {
-    clearLichessStreams();
-    setBoardThinking(false);
-    const wasLocked = playState.assistanceLocked;
-    playState.active = false;
-    playState.mode = 'idle';
-    playState.waiting = false;
-    playState.assistanceLocked = false;
-    playState.lichess.gameId = null;
-    playState.lichess.challengeId = null;
-    playState.lichess.lastMoves = '';
-    playState.lichess.ready = false;
-    playState.lichess.openingRetryCount = 0;
-    playState.lichess.preparedOpeningUci = '';
-    playState.lichess.preparedOpeningSan = '';
-    playState.lichess.preparedOpeningApplied = false;
-    playState.lichess.preparedOpeningSent = false;
-    playState.autoPilot = false;
-    playState.autoMoveBusy = false;
-    if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
-    applySettings();
-    refreshPlayUi();
-    if (message) {
-      updateSimStatus(message);
-      queueCoachMessage('system', message);
-    }
-    if (wasLocked) updateBoard(false);
+function leaveActiveSession(message = '') {
+  workspace.stop();
+  invalidateDCCAnalysis();
+  playState.sessionId = (playState.sessionId || 0) + 1;
+  try { playState.sessionAbort?.abort(); } catch (_) {}
+  playState.sessionAbort = null;
+  clearLichessStreams();
+  clearTimeout(playState.lichess.autoTimer);
+  clearInterval(playState.lichess.clockTimer);
+  playState.lichess.autoTimer = null;
+  playState.lichess.clockTimer = null;
+  const clocks = playState.lichess.clocks;
+  if (clocks) clocks.running = false;
+  renderLichessClocks();
+  setBoardThinking(false);
+  const wasLocked = playState.assistanceLocked;
+  playState.active = false;
+  playState.mode = 'idle';
+  playState.waiting = false;
+  playState.assistanceLocked = false;
+  playState.lichess.gameId = null;
+  playState.lichess.challengeId = null;
+  playState.lichess.ready = false;
+  playState.lichess.pendingMove = null;
+  playState.autoPilot = false;
+  playState.autoMoveBusy = false;
+  if (typeof playState.prevShowEval === 'boolean') showEval = playState.prevShowEval;
+  applySettings();
+  refreshPlayUi();
+  if (message) {
+    updateSimStatus(message);
+    queueCoachMessage('system', message);
   }
+  if (wasLocked) updateBoard(false);
+}
 
   function applyUciMove(targetGame, uci) {
     if (!uci || uci.length < 4) return null;
@@ -3125,9 +2384,60 @@ function enterActiveSession(mode, opts = {}) {
     playState.lichess.token = '';
   }
 
-  function describeErr(err) {
-    return String(err?.message || err || 'unknown error').replace(/\s+/g, ' ').trim();
+function describeErr(err) {
+  return String(err?.message || err || 'unknown error').replace(/\s+/g, ' ').trim();
+}
+
+function sessionIsCurrent(sessionId, mode, gameId) {
+  return playState.active && playState.sessionId === sessionId &&
+    (!mode || playState.mode === mode) &&
+    (!gameId || playState.lichess.gameId === gameId);
+}
+
+function sessionAbortError() {
+  return new DOMException('Session stopped or replaced.', 'AbortError');
+}
+
+function renderLichessClocks() {
+  const host = document.getElementById('workspaceClockSlot');
+  if (!host) return;
+  let row = document.getElementById('liveClocks');
+  if (!row) {
+    row = document.createElement('div');
+    row.id = 'liveClocks';
+    row.className = 'live-clocks';
+    row.setAttribute('aria-label', 'Lichess clocks');
+    row.innerHTML = '<span class="live-clock" data-side="w"></span><span class="live-clock" data-side="b"></span>';
+    host.appendChild(row);
   }
+  const clocks = playState.lichess.clocks;
+  row.hidden = !clocks || !settings.showTimers;
+  if (!clocks) return;
+  const elapsed = clocks.running && playState.lichess.ready ? Math.max(0, Date.now() - clocks.receivedAt) : 0;
+  row.classList.toggle('stale', !playState.lichess.ready && clocks.running);
+  for (const side of ['w', 'b']) {
+    const node = row.querySelector(`[data-side="${side}"]`);
+    const active = clocks.running && clocks.turn === side;
+    const remaining = Math.max(0, clocks[side] - (active ? elapsed : 0));
+    const seconds = Math.ceil(remaining / 1000);
+    node.textContent = `${side === 'w' ? 'White' : 'Black'} ${active && elapsed > 0 ? '~' : ''}${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    node.classList.toggle('is-running', active);
+    node.title = playState.lichess.ready ? 'Server clock, interpolated between updates' : 'Last server clock; reconnecting';
+  }
+}
+
+function updateLichessClocks(state) {
+  if (Number.isFinite(state?.wtime) && Number.isFinite(state?.btime)) {
+    playState.lichess.clocks = {
+      w: state.wtime, b: state.btime, turn: game.turn(), receivedAt: Date.now(),
+      running: state.status === 'started'
+    };
+    if (!playState.lichess.clockTimer) {
+      playState.lichess.clockTimer = setInterval(renderLichessClocks, 250);
+    }
+  }
+  renderLichessClocks();
+}
 
   function reportSessionIssue(prefix, err, opts = {}) {
     let msg = `${prefix}: ${describeErr(err)}`;
@@ -3141,56 +2451,64 @@ function enterActiveSession(mode, opts = {}) {
     return msg;
   }
 
-  function syncGameFromMoves(movesStr, initialFen = 'startpos') {
-    const moves = (movesStr || '').trim() ? movesStr.trim().split(/\s+/) : [];
-    if ((playState.lichess.lastMoves || '').trim() === (movesStr || '').trim()) return;
-
-    const keepPreparedOpening =
-      playState.active &&
-      playState.mode === 'lichess' &&
-      playState.autoPilot &&
-      playState.userColor === 'w' &&
-      playState.lichess.preparedOpeningApplied &&
-      !playState.lichess.preparedOpeningSent &&
-      moves.length === 0 &&
-      (!initialFen || initialFen === 'startpos');
-
-    if (!keepPreparedOpening) {
-      if (initialFen && initialFen !== 'startpos') game.load(initialFen);
-      else game.reset();
-      moves.forEach(uci => applyUciMove(game, uci));
-      updateBoard(true);
-    } else {
-      updateBoard(false);
+function syncGameFromMoves(movesStr, initialFen) {
+  const live = playState.lichess;
+  const normalized = String(movesStr || '').trim().split(/\s+/).filter(Boolean).join(' ');
+  const moves = normalized ? normalized.split(' ') : [];
+  const startFen = initialFen === 'startpos' ? getStartFen() : (initialFen || live.initialFen || getStartFen());
+  // Validate the entire server snapshot before touching the visible game.
+  const authoritative = new Chess(startFen);
+  for (const uci of moves) {
+    if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci) || !applyUciMove(authoritative, uci)) {
+      throw new Error('Lichess sent a move list that cannot be reconstructed.');
     }
-    playState.lichess.lastMoves = movesStr || '';
   }
+  const changed = normalized !== live.lastMoves || startFen !== live.initialFen || game.fen() !== authoritative.fen();
+  live.initialFen = startFen;
+  live.lastMoves = normalized;
+  const pending = live.pendingMove;
+  if (pending && moves.length > pending.ply) {
+    pending.confirmed = moves[pending.ply] === pending.uci;
+    live.pendingMove = null;
+  }
+  if (changed) {
+    game.load(startFen);
+    for (const uci of moves) applyUciMove(game, uci);
+    if (live.headers) for (const [key, value] of Object.entries(live.headers)) game.header(key, String(value));
+    lastAction = 'move';
+    window._skipDivergedReset = false;
+    updateBoard(true);
+  }
+  return changed;
+}
 
-  async function readNdjsonStream(response, onEvent, signal) {
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+async function readNdjsonStream(response, onEvent, signal) {
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.body) throw new Error('Lichess streaming response has no body.');
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  try {
     while (true) {
-      if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      if (signal?.aborted) throw sessionAbortError();
       const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
+      if (signal?.aborted) throw sessionAbortError();
+      buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
       for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        const payload = JSON.parse(trimmed);
-        const maybe = await onEvent(payload);
-        if (maybe) return maybe;
+        if (!line.trim()) continue;
+        const result = await onEvent(JSON.parse(line));
+        if (result !== null && result !== undefined && result !== false) return result;
       }
+      if (done) break;
     }
-    if (buffer.trim()) {
-      return await onEvent(JSON.parse(buffer.trim()));
-    }
-    return null;
+    return buffer.trim() ? await onEvent(JSON.parse(buffer)) : null;
+  } finally {
+    await reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
+}
 
   function unmaskLichessTokenText(text) {
     const raw = String(text || '');
@@ -3274,192 +2592,231 @@ function enterActiveSession(mode, opts = {}) {
     return (key || '').trim();
   }
 
-  function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
-    if (selectedColor === 'white') return 'w';
-    if (selectedColor === 'black') return 'b';
-    const bot = (botUsername || '').toLowerCase();
-    const whiteName = `${payload?.white?.id || ''} ${payload?.white?.name || ''}`.toLowerCase();
-    const blackName = `${payload?.black?.id || ''} ${payload?.black?.name || ''}`.toLowerCase();
-    if (bot && whiteName.includes(bot)) return 'b';
-    if (bot && blackName.includes(bot)) return 'w';
-    return playState.userColor || 'w';
-  }
+function guessUserColorFromGameFull(payload, botUsername, selectedColor) {
+  const account = (playState.lichess.accountId || '').toLowerCase();
+  const white = String(payload?.white?.id || payload?.white?.name || '').toLowerCase();
+  const black = String(payload?.black?.id || payload?.black?.name || '').toLowerCase();
+  if (account && white === account) return 'w';
+  if (account && black === account) return 'b';
+  const bot = String(botUsername || '').toLowerCase();
+  if (bot && white === bot) return 'b';
+  if (bot && black === bot) return 'w';
+  return selectedColor === 'black' ? 'b' : 'w';
+}
 
-  async function startLichessEventWait(token) {
-    const ctrl = new AbortController();
-    playState.lichess.eventAbort = ctrl;
-    const res = await fetch('https://lichess.org/api/stream/event', {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: ctrl.signal
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      if (res.status === 401 || res.status === 403) {
-        clearStoredLichessToken();
-        throw new Error((txt || `Lichess event stream failed (${res.status})`) + ' Token rejected.');
-      }
-      throw new Error(txt || `Lichess event stream failed (${res.status})`);
-    }
-    return readNdjsonStream(res, async evt => {
-      if (evt?.type === 'gameStart') {
-        return evt.game?.gameId || evt.game?.id || evt.id || evt.gameId || null;
-      }
-      return null;
-    }, ctrl.signal);
-  }
-
-  async function challengeLichessBot(botUsername, selectedColor, clock) {
-    const token = await ensureLichessToken();
-    if (!token) throw new Error('Missing Lichess token.');
-    playState.lichess.token = token;
-    const body = new URLSearchParams();
-    body.set('rated', 'false');
-    body.set('clock.limit', String(clock.limit || 180));
-    body.set('clock.increment', String(clock.increment || 0));
-    body.set('color', selectedColor || 'random');
-
-    const startPromise = startLichessEventWait(token);
-    const resp = await fetch(`https://lichess.org/api/challenge/${encodeURIComponent(botUsername)}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body
-    });
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => '');
-      if (resp.status === 401 || resp.status === 403) {
-        clearStoredLichessToken();
-        throw new Error((txt || `Challenge failed (${resp.status})`) + ' Token rejected.');
-      }
-      throw new Error(txt || `Challenge failed (${resp.status})`);
-    }
-    const data = await resp.json().catch(() => ({}));
-    playState.lichess.challengeId = data?.challenge?.id || null;
-    const gameId = await Promise.race([
-      startPromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out waiting for Lichess gameStart event.')), 30000))
-    ]);
-    return gameId;
-  }
-
-  
-async function startLichessGameStream(gameId) {
-  const token = playState.lichess.token;
+async function startLichessEventWait(token, sessionId, challengeReady) {
   const ctrl = new AbortController();
-  playState.lichess.streamAbort = ctrl;
-  const res = await fetch(`https://lichess.org/api/board/game/stream/${encodeURIComponent(gameId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    signal: ctrl.signal
+  playState.lichess.eventAbort = ctrl;
+  const res = await fetch('https://lichess.org/api/stream/event', {
+    headers: { Authorization: `Bearer ${token}` }, signal: ctrl.signal
   });
   if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    if (res.status === 401 || res.status === 403) {
-      clearStoredLichessToken();
-      throw new Error((txt || `Game stream failed (${res.status})`) + ' Token rejected.');
-    }
-    throw new Error(txt || `Game stream failed (${res.status})`);
+    const text = await res.text().catch(() => '');
+    throw new Error(text || `Lichess event stream failed (${res.status})`);
   }
-
-  await readNdjsonStream(res, async payload => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return null;
-    if (payload?.type === 'gameFull') {
-      playState.userColor = guessUserColorFromGameFull(payload, playState.lichess.botUsername, playState.lichess.selectedColor);
-      playState.lichess.ready = true;
-      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
-      syncGameFromMoves(payload?.state?.moves || '', payload?.initialFen || 'startpos');
-      playState.waiting = game.turn() !== playState.userColor;
-      if (playState.autoPilot) {
-        updateSimStatus(`8Z live · ${playState.lichess.botUsername}`);
-        if (!game.game_over() && game.turn() === playState.userColor) setTimeout(() => { runLichessAutoMove().catch(console.error); }, 180);
-      } else {
-        updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
-      }
-      return null;
-    }
-    if (payload?.type === 'gameState' || payload?.moves !== undefined) {
-      playState.lichess.ready = true;
-      syncGameFromMoves(payload.moves || '', 'startpos');
-      playState.waiting = game.turn() !== playState.userColor;
-      if (payload.status && payload.status !== 'started') {
-        leaveActiveSession('Lichess session closed.');
-        return null;
-      }
-      if (playState.autoPilot) {
-        if (!game.game_over() && game.turn() === playState.userColor) {
-          setTimeout(() => { runLichessAutoMove().catch(console.error); }, 120);
-        } else {
-          updateSimStatus(`Waiting for ${playState.lichess.botUsername}…`);
-        }
-      } else {
-        updateSimStatus(game.turn() === playState.userColor ? 'Your move.' : `Waiting for ${playState.lichess.botUsername}…`);
-      }
-      return null;
+  return readNdjsonStream(res, async evt => {
+    const challengeId = await challengeReady;
+    if (!sessionIsCurrent(sessionId, 'lichess') || !challengeId) throw sessionAbortError();
+    const id = evt?.game?.gameId || evt?.game?.id || evt?.gameId;
+    if (evt?.type === 'gameStart' && id === challengeId) return id;
+    if ((evt?.type === 'challengeDeclined' || evt?.type === 'challengeCanceled') && evt.challenge?.id === challengeId) {
+      throw new Error(`Lichess challenge ${evt.type === 'challengeDeclined' ? 'declined' : 'canceled'}.`);
     }
     return null;
   }, ctrl.signal);
 }
 
-async function startLichessGameStreamLoop(gameId) {
-  let attempt = 0;
-  while (playState.active && playState.mode === 'lichess' && playState.lichess.gameId === gameId) {
-    try {
-      attempt += 1;
-      await startLichessGameStream(gameId);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      // Normal stream end without explicit finish signal: retry softly.
-      updateSimStatus(`Lichess stream ended · reconnect ${attempt}`);
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.warn('Lichess stream error:', err);
-      if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId) return;
-      updateSimStatus(`Lichess reconnecting… (${attempt})`);
-    }
-    await sleep(Math.min(1500, 300 + attempt * 250));
+async function challengeLichessBot(botUsername, selectedColor, clock, sessionId) {
+  const token = await ensureLichessToken();
+  if (!sessionIsCurrent(sessionId, 'lichess')) throw sessionAbortError();
+  if (!token) throw new Error('Missing Lichess token.');
+  const live = playState.lichess;
+  live.token = token;
+  const signal = playState.sessionAbort.signal;
+  const profileResponse = await fetch('https://lichess.org/api/account', {
+    headers: { Authorization: `Bearer ${token}` }, signal
+  });
+  if (!profileResponse.ok) throw new Error(`Lichess account lookup failed (${profileResponse.status}).`);
+  const profile = await profileResponse.json();
+  if (!sessionIsCurrent(sessionId, 'lichess')) throw sessionAbortError();
+  live.accountId = profile.id || profile.username || '';
+  live.apiKind = profile.title === 'BOT' ? 'bot' : 'board';
+  if (playState.autoPilot && live.apiKind !== 'bot') {
+    throw new Error('Automated Sim requires a Lichess BOT account with bot:play access. Use SimW or SimB for human play.');
   }
-}
-
-function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
-  const kick = async (remaining) => {
-    if (!playState.active || playState.mode !== 'lichess' || playState.lichess.gameId !== gameId || !playState.autoPilot) return;
-    if (game.game_over()) return;
-    if (!playState.lichess.ready) {
-      if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-      return;
-    }
-    if (game.turn() !== playState.userColor) return;
-    try {
-      await runLichessAutoMove();
-      return;
-    } catch (err) {
-      console.warn('Opening kick failed:', err);
-    }
-    if (remaining > 1) setTimeout(() => kick(remaining - 1), delayMs);
-  };
-  setTimeout(() => kick(tries), delayMs);
-}
-
-
-  async function sendLichessMove(uci) {
-    const token = playState.lichess.token;
-    const gameId = playState.lichess.gameId;
-    const resp = await fetch(`https://lichess.org/api/board/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
+  const body = new URLSearchParams();
+  body.set('rated', 'false');
+  body.set('clock.limit', String(Math.max(15, Number(clock.limit) || 180)));
+  body.set('clock.increment', String(Math.max(0, Number(clock.increment) || 0)));
+  body.set('color', selectedColor || 'random');
+  let resolveChallenge;
+  const challengeReady = new Promise(resolve => { resolveChallenge = resolve; });
+  const startPromise = startLichessEventWait(token, sessionId, challengeReady);
+  // Attach a rejection handler immediately, including while the challenge POST is pending.
+  startPromise.catch(() => {});
+  let timeout;
+  try {
+    const resp = await fetch(`https://lichess.org/api/challenge/${encodeURIComponent(botUsername)}`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}` }, body, signal
     });
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => '');
-      if (resp.status === 401 || resp.status === 403) {
-        clearStoredLichessToken();
-        throw new Error((txt || `Move rejected (${resp.status})`) + ' Token rejected.');
-      }
-      throw new Error(txt || `Move rejected (${resp.status})`);
+    if (!resp.ok) throw new Error(await resp.text().catch(() => '') || `Challenge failed (${resp.status})`);
+    const data = await resp.json();
+    if (!sessionIsCurrent(sessionId, 'lichess')) throw sessionAbortError();
+    live.challengeId = data?.challenge?.id || data?.id || null;
+    if (!live.challengeId) throw new Error('Lichess did not return a challenge ID.');
+    resolveChallenge(live.challengeId);
+    const gameId = await Promise.race([
+      startPromise,
+      new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('Timed out waiting for this Lichess challenge to start.')), 30000); })
+    ]);
+    if (!sessionIsCurrent(sessionId, 'lichess')) throw sessionAbortError();
+    if (!gameId) throw new Error('Lichess event stream closed before the challenge started.');
+    return gameId;
+  } finally {
+    clearTimeout(timeout);
+    resolveChallenge(null);
+    // This per-challenge event stream is no longer needed after matching a game.
+    if (playState.sessionId === sessionId) {
+      live.eventAbort?.abort();
+      live.eventAbort = null;
     }
   }
+}
+
+async function startLichessGameStream(gameId, sessionId) {
+  if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return;
+  const live = playState.lichess;
+  const ctrl = new AbortController();
+  live.streamAbort = ctrl;
+  live.ready = false;
+  playState.waiting = true;
+  renderLichessClocks();
+  const res = await fetch(`https://lichess.org/api/${live.apiKind || 'board'}/game/stream/${encodeURIComponent(gameId)}`, {
+    headers: { Authorization: `Bearer ${live.token}` }, signal: ctrl.signal
+  });
+  if (!res.ok) {
+    const error = new Error(await res.text().catch(() => '') || `Game stream failed (${res.status})`);
+    error.httpStatus = res.status;
+    throw error;
+  }
+  await readNdjsonStream(res, async payload => {
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId) || ctrl.signal.aborted) return true;
+    const isFull = payload?.type === 'gameFull';
+    if (!isFull && payload?.type !== 'gameState') return null;
+    if (isFull) {
+      playState.userColor = guessUserColorFromGameFull(payload, live.botUsername, live.selectedColor);
+      board.orientation(playState.userColor === 'b' ? 'black' : 'white');
+      live.headers = {
+        Event: 'Lichess casual game', Site: `https://lichess.org/${gameId}`,
+        White: payload.white?.name || payload.white?.id || 'White',
+        Black: payload.black?.name || payload.black?.id || 'Black', Result: '*'
+      };
+    }
+    const state = isFull ? payload.state || {} : payload;
+    syncGameFromMoves(state.moves || '', isFull ? payload.initialFen || 'startpos' : undefined);
+    live.ready = true;
+    // A failed network send is retried only after a fresh full server snapshot.
+    if (isFull && live.pendingMove?.uncertain && !live.pendingMove.inflight) live.pendingMove = null;
+    updateLichessClocks(state);
+    if (state.status && state.status !== 'started' && state.status !== 'created') {
+      const result = state.winner === 'white' ? '1-0' : state.winner === 'black' ? '0-1'
+        : ['draw', 'stalemate'].includes(state.status) ? '1/2-1/2' : '*';
+      game.header('Result', result);
+      leaveActiveSession(`Lichess game finished: ${state.status}${result !== '*' ? ` (${result})` : ''}.`);
+      return true;
+    }
+    playState.waiting = !!live.pendingMove || game.turn() !== playState.userColor;
+    if (live.pendingMove) updateSimStatus('Move sent · awaiting Lichess confirmation…');
+    else if (game.turn() !== playState.userColor) updateSimStatus(`Waiting for ${live.botUsername}…`);
+    else if (playState.autoPilot) {
+      updateSimStatus('8Z-DCC is preparing a move…');
+      scheduleLichessOpeningKick(gameId, 1, 80);
+    } else updateSimStatus('Your move.');
+    return null;
+  }, ctrl.signal);
+}
+
+async function startLichessGameStreamLoop(gameId, sessionId = playState.sessionId) {
+  let attempt = 0;
+  while (sessionIsCurrent(sessionId, 'lichess', gameId)) {
+    try {
+      await startLichessGameStream(gameId, sessionId);
+    } catch (err) {
+      if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return;
+      if (err.httpStatus === 401 || err.httpStatus === 403 || err.httpStatus === 404) {
+        leaveActiveSession(`Lichess stream unavailable: ${describeErr(err)}`);
+        return;
+      }
+      if (err.name !== 'AbortError') console.warn('Lichess stream error:', err);
+    }
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return;
+    playState.lichess.ready = false;
+    playState.waiting = true;
+    renderLichessClocks();
+    updateSimStatus(`Lichess reconnecting… (${++attempt})`);
+    await sleep(Math.min(5000, 500 * attempt));
+  }
+}
+
+function scheduleLichessOpeningKick(gameId, tries = 1, delayMs = 120) {
+  const live = playState.lichess;
+  const sessionId = playState.sessionId;
+  clearTimeout(live.autoTimer);
+  live.autoTimer = setTimeout(() => {
+    live.autoTimer = null;
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return;
+    runLichessAutoMove().catch(err => {
+      if (sessionIsCurrent(sessionId, 'lichess', gameId)) reportSessionIssue('8Z move failed', err);
+    });
+  }, delayMs);
+}
+
+async function sendLichessMove(uci, expectedFen = game.fen(), sessionId = playState.sessionId) {
+  const live = playState.lichess;
+  const gameId = live.gameId;
+  if (!sessionIsCurrent(sessionId, 'lichess', gameId) || !live.ready || game.fen() !== expectedFen) return false;
+  if (live.pendingMove) return false;
+  if (!applyUciMove(new Chess(expectedFen), uci)) throw new Error('Move is illegal in the confirmed Lichess position.');
+  const pending = {
+    uci, ply: (live.lastMoves || '').split(/\s+/).filter(Boolean).length,
+    fen: expectedFen, inflight: true, uncertain: false, confirmed: false
+  };
+  live.pendingMove = pending;
+  playState.waiting = true;
+  try {
+    const resp = await fetch(`https://lichess.org/api/${live.apiKind || 'board'}/game/${encodeURIComponent(gameId)}/move/${encodeURIComponent(uci)}`, {
+      method: 'POST', headers: { Authorization: `Bearer ${live.token}` }, signal: playState.sessionAbort.signal
+    });
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return false;
+    if (!resp.ok) {
+      const error = new Error(await resp.text().catch(() => '') || `Move rejected (${resp.status})`);
+      error.httpStatus = resp.status;
+      throw error;
+    }
+    // The board advances only when the server move stream confirms the move.
+    pending.accepted = true;
+    return true;
+  } catch (err) {
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return false;
+    if (pending.confirmed) return true;
+    if (live.pendingMove === pending) {
+      if (err.httpStatus && err.httpStatus < 500) live.pendingMove = null;
+      else pending.uncertain = true;
+      live.ready = false;
+      playState.waiting = true;
+      live.streamAbort?.abort();
+    }
+    throw err;
+  } finally {
+    pending.inflight = false;
+  }
+}
 
   async function buildCoachSnapshot(preFen, moveObj, actorLabel) {
     const analysis = await analyzePosition(preFen);
     const uci = normalizeUci(moveObj);
     const sorted = (analysis?.candidates || []).slice().sort((a, b) => b.dcc - a.dcc);
-    const played = sorted.find(c => c.move.slice(0, 4) === uci.slice(0, 4)) || null;
+    const played = sorted.find(c => c.move === uci) || null;
     const dccRank = played ? (sorted.findIndex(c => c === played) + 1) : null;
     const best = sorted[0] || null;
     return {
@@ -3583,256 +2940,164 @@ function scheduleLichessOpeningKick(gameId, tries = 12, delayMs = 300) {
     }
   }
 
-  async function runDccBotTurn() {
-    if (!playState.active || playState.mode !== 'dccbot') return;
-    if (game.game_over()) {
-      leaveActiveSession('Game over. Load the PGN or use Replay for a deeper DCC review.');
-      return;
-    }
-    setBoardThinking(true);
-    playState.waiting = true;
-    updateSimStatus('8Z-CDB-DCC is thinking…');
-    const fenBefore = game.fen();
-    try {
-      const pick = await pickDCCMove(game);
-      if (!pick) throw new Error('No DCC move found.');
-      const move = game.move({
-        from: pick.move.slice(0, 2),
-        to: pick.move.slice(2, 4),
-        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-      });
-      if (!move) throw new Error('DCC move became illegal in the current position.');
-      lastAction = 'move';
-      window._skipDivergedReset = true;
-      updateBoard(false);
-      updateSimStatus(`8Z played ${move.san}`);
-      await maybeEmitCoach('8Z', fenBefore, move);
-      if (game.game_over()) {
-        leaveActiveSession('Game over. Training session finished.');
-        return;
-      }
-    } catch (err) {
-      reportSessionIssue('8Z move failed', err);
-      leaveActiveSession('Training session stopped because the local bot hit an error.');
-      return;
-    } finally {
-      setBoardThinking(false);
-      playState.waiting = false;
-    }
-    updateSimStatus('Your move.');
-  }
-
-
-async function prepareLocalLichessOpeningPreview() {
-  if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return null;
-  if (playState.userColor !== 'w') return null;
-  if (game.game_over() || game.turn() !== 'w') return null;
-  if (playState.lichess.preparedOpeningApplied && playState.lichess.preparedOpeningUci) {
-    return playState.lichess.preparedOpeningUci;
-  }
-
-  setBoardThinking(true);
-  playState.waiting = true;
-  updateSimStatus('8Z-DCC is preparing the White opening locally…');
-  const fenBefore = game.fen();
-  try {
-    const pick = await pickDCCMove(game);
-    if (!pick || !pick.move) throw new Error('No DCC opening move found.');
-    const move = game.move({
-      from: pick.move.slice(0, 2),
-      to: pick.move.slice(2, 4),
-      promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-    });
-    if (!move) throw new Error('Local opening move became illegal.');
-    lastAction = 'move';
-    window._skipDivergedReset = true;
-    playState.lichess.preparedOpeningUci = pick.move;
-    playState.lichess.preparedOpeningSan = move.san || uciToSan(fenBefore, pick.move);
-    playState.lichess.preparedOpeningApplied = true;
-    playState.lichess.preparedOpeningSent = false;
-    updateBoard(false);
-    updateSimStatus(`8Z local opening ${playState.lichess.preparedOpeningSan} · connecting to Lichess…`);
-    return pick.move;
-  } finally {
-    setBoardThinking(false);
-  }
-}
-
-async function runLichessAutoMove() {
-  if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
-  if (playState.autoMoveBusy) return;
-  if (!playState.lichess.ready) return;
-  if (game.game_over()) {
-    leaveActiveSession('Game over. Lichess bot session finished.');
-    return;
-  }
-  if (game.turn() !== playState.userColor) return;
-
+async function runDccBotTurn() {
+  const sessionId = playState.sessionId;
+  if (!sessionIsCurrent(sessionId, 'dccbot') || playState.autoMoveBusy || game.turn() === playState.userColor) return;
+  if (game.game_over()) { leaveActiveSession('Game over. Training session finished.'); return; }
   playState.autoMoveBusy = true;
   playState.waiting = true;
   setBoardThinking(true);
-
-  const noMovesYet = !(playState.lichess.lastMoves || '').trim();
-  const usePreparedOpening =
-    noMovesYet &&
-    playState.userColor === 'w' &&
-    playState.lichess.preparedOpeningApplied &&
-    !playState.lichess.preparedOpeningSent &&
-    !!playState.lichess.preparedOpeningUci;
-
-  updateSimStatus(usePreparedOpening ? 'Sending prepared White opening to Lichess…' : '8Z-DCC is thinking…');
+  updateSimStatus('8Z-CDB-DCC is thinking…');
   const fenBefore = game.fen();
   try {
-    let moveUci = '';
-    let san = '';
-    if (usePreparedOpening) {
-      moveUci = playState.lichess.preparedOpeningUci;
-      san = playState.lichess.preparedOpeningSan || uciToSan(playState.startFen || 'startpos', moveUci);
-    } else {
-      const pick = await pickDCCMove(game);
-      if (!pick || !pick.move) throw new Error('No DCC move found.');
-      moveUci = pick.move;
-      san = uciToSan(fenBefore, pick.move);
-    }
-
-    await sendLichessMove(moveUci);
-    playState.lichess.openingRetryCount = 0;
-    if (usePreparedOpening) playState.lichess.preparedOpeningSent = true;
-    updateSimStatus(`8Z played ${san} · waiting for ${playState.lichess.botUsername || 'bot'}…`);
+    const pick = await pickDCCMove(new Chess(fenBefore));
+    if (!sessionIsCurrent(sessionId, 'dccbot') || game.fen() !== fenBefore) return;
+    if (!pick?.move) throw new Error('No DCC move is available for this position.');
+    const move = applyUciMove(game, pick.move);
+    if (!move) throw new Error('DCC move became illegal in the current position.');
+    workspace.recordMove(fenBefore, move);
+    lastAction = 'move';
+    window._skipDivergedReset = true;
+    updateBoard(false);
+    updateSimStatus(`8Z played ${move.san}`);
+    await maybeEmitCoach('8Z', fenBefore, move);
+    if (!sessionIsCurrent(sessionId, 'dccbot')) return;
+    if (game.game_over()) leaveActiveSession('Game over. Training session finished.');
+    else updateSimStatus('Your move.');
   } catch (err) {
-    console.error('8Z auto move failed:', err);
-    const msg = describeErr(err);
-    const retryCap = noMovesYet ? 20 : 8;
-    const retryDelay = noMovesYet ? 500 : 900;
-    const retryCount = Number(playState.lichess.openingRetryCount || 0);
-    if (retryCount < retryCap) {
-      playState.lichess.openingRetryCount = retryCount + 1;
-      updateSimStatus(noMovesYet
-        ? `Opening sync… retry ${playState.lichess.openingRetryCount}/${retryCap} · ${msg}`
-        : `Move relay retry ${playState.lichess.openingRetryCount}/${retryCap} · ${msg}`);
-      setTimeout(() => {
-        if (!playState.active || playState.mode !== 'lichess' || !playState.autoPilot) return;
-        runLichessAutoMove().catch(console.error);
-      }, retryDelay);
-    } else {
-      playState.waiting = false;
-      reportSessionIssue('8Z auto move stalled', err);
-    }
+    if (sessionIsCurrent(sessionId, 'dccbot')) leaveActiveSession(`Training stopped: ${describeErr(err)}`);
   } finally {
-    setBoardThinking(false);
-    playState.autoMoveBusy = false;
+    if (sessionIsCurrent(sessionId, 'dccbot')) {
+      setBoardThinking(false);
+      playState.autoMoveBusy = false;
+      playState.waiting = game.turn() !== playState.userColor;
+    }
   }
 }
 
-  async function handleLiveUserMove(moveObj, fenBeforeMove) {
-    if (!playState.active) return;
-    if (playState.mode === 'dccbot') {
-      await maybeEmitCoach('You', fenBeforeMove, moveObj);
-      if (game.game_over()) {
-        leaveActiveSession('Game over. Training session finished.');
-        return;
-      }
-      await sleep(180);
-      await runDccBotTurn();
-      return;
-    }
-    if (playState.mode === 'lichess') {
-      playState.waiting = true;
-      updateSimStatus('Sending move to Lichess…');
-      try {
-        await sendLichessMove(normalizeUci(moveObj));
-        updateSimStatus(`Waiting for ${playState.lichess.botUsername || 'bot'}…`);
-      } catch (err) {
-        game.undo();
-        playState.waiting = false;
-        updateBoard(false);
-        throw err;
-      }
-    }
-  }
+async function prepareLocalLichessOpeningPreview() {
+  // Opening selection starts from the first authoritative gameFull snapshot.
+  return null;
+}
 
-  async function startDccBotSession(selectedColor) {
-    const userColor = selectedColor === 'random'
-      ? (Math.random() < 0.5 ? 'w' : 'b')
-      : (selectedColor === 'black' ? 'b' : 'w');
-    enterActiveSession('dccbot', { userColor, startFen: game.fen(), selectedColor });
-    updateSimStatus(`8Z-CDB-DCC live · You are ${userColor === 'w' ? 'White' : 'Black'}`);
-    if (game.turn() !== userColor) {
-      await sleep(180);
-      await runDccBotTurn();
-    }
-  }
-
-  
-async function startLichessSession(botUsername, selectedColor, clock, timeLabel, opts = {}) {
-  const guessedColor = selectedColor === 'black' ? 'b' : 'w';
-  enterActiveSession('lichess', {
-    userColor: guessedColor,
-    botUsername,
-    selectedColor,
-    timeLabel,
-    startFen: getStartFen(),
-    autoPilot: !!opts.autoPilot
-  });
-  updateSimStatus(opts.autoPilot
-    ? `8Z is challenging ${botUsername} on Lichess…`
-    : `Starting human vs ${botUsername}…`);
-
-  const openingPrepPromise = (opts.autoPilot && guessedColor === 'w')
-    ? prepareLocalLichessOpeningPreview().catch(err => {
-        reportSessionIssue('Local opening preview failed', err);
-        return null;
-      })
-    : Promise.resolve(null);
-
+async function runLichessAutoMove() {
+  const sessionId = playState.sessionId;
+  const live = playState.lichess;
+  const gameId = live.gameId;
+  if (!sessionIsCurrent(sessionId, 'lichess', gameId) || !playState.autoPilot) return;
+  if (playState.autoMoveBusy || !live.ready || live.pendingMove || game.turn() !== playState.userColor || game.game_over()) return;
+  playState.autoMoveBusy = true;
+  playState.waiting = true;
+  setBoardThinking(true);
+  updateSimStatus('8Z-DCC is thinking…');
+  const fenBefore = game.fen();
   try {
-    const gameId = await challengeLichessBot(botUsername, selectedColor, clock);
-    await openingPrepPromise;
-    playState.lichess.gameId = gameId;
-    updateSimStatus(`Lichess game ${gameId} started.`);
-    startLichessGameStreamLoop(gameId).catch(err => {
-      if (err?.name === 'AbortError') return;
-      reportSessionIssue('Lichess stream loop crashed', err);
-    });
-    if (opts.autoPilot && guessedColor === 'w') {
-      scheduleLichessOpeningKick(gameId, 12, 300);
+    const pick = await pickDCCMove(new Chess(fenBefore));
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId) || !live.ready || game.fen() !== fenBefore) return;
+    if (!pick?.move) throw new Error('No DCC move is available for this position.');
+    const sent = await sendLichessMove(pick.move, fenBefore, sessionId);
+    if (sent && sessionIsCurrent(sessionId, 'lichess', gameId) && game.fen() === fenBefore) {
+      updateSimStatus(`8Z submitted ${uciToSan(fenBefore, pick.move)} · awaiting Lichess confirmation…`);
     }
   } catch (err) {
-    await openingPrepPromise.catch(() => null);
-    reportSessionIssue('Lichess start failed', err, { clearToken: /token rejected/i.test(describeErr(err)) });
-    leaveActiveSession('');
+    if (!sessionIsCurrent(sessionId, 'lichess', gameId)) return;
+    reportSessionIssue('8Z move paused', err);
+  } finally {
+    if (sessionIsCurrent(sessionId, 'lichess', gameId)) {
+      setBoardThinking(false);
+      playState.autoMoveBusy = false;
+      playState.waiting = !live.ready || !!live.pendingMove || game.turn() !== playState.userColor;
+      if (game.fen() !== fenBefore && live.ready && !live.pendingMove && game.turn() === playState.userColor) {
+        scheduleLichessOpeningKick(gameId);
+      }
+    }
   }
 }
 
+async function handleLiveUserMove(moveObj, fenBeforeMove) {
+  const sessionId = playState.sessionId;
+  if (!playState.active) return;
+  if (playState.mode === 'dccbot') {
+    playState.waiting = true;
+    await maybeEmitCoach('You', fenBeforeMove, moveObj);
+    if (!sessionIsCurrent(sessionId, 'dccbot')) return;
+    if (game.game_over()) { leaveActiveSession('Game over. Training session finished.'); return; }
+    await sleep(180);
+    if (sessionIsCurrent(sessionId, 'dccbot')) await runDccBotTurn();
+    return;
+  }
+  if (playState.mode === 'lichess') {
+    // onDrop may have applied the human move locally. Undo it synchronously,
+    // preserving history, and relay from the latest confirmed server position.
+    syncGameFromMoves(playState.lichess.lastMoves || '');
+    if (game.fen() !== fenBeforeMove) return;
+    playState.waiting = true;
+    updateSimStatus('Sending move to Lichess…');
+    try {
+      const sent = await sendLichessMove(normalizeUci(moveObj), fenBeforeMove, sessionId);
+      if (sent && sessionIsCurrent(sessionId, 'lichess') && game.fen() === fenBeforeMove) {
+        updateSimStatus('Move submitted · awaiting Lichess confirmation…');
+      }
+    } catch (err) {
+      if (sessionIsCurrent(sessionId, 'lichess')) reportSessionIssue('Move relay paused; reconnecting', err);
+    }
+  }
+}
 
-  
+async function startDccBotSession(selectedColor) {
+  const userColor = selectedColor === 'random' ? (Math.random() < 0.5 ? 'w' : 'b') : (selectedColor === 'black' ? 'b' : 'w');
+  const sessionId = enterActiveSession('dccbot', { userColor, startFen: game.fen(), selectedColor });
+  updateSimStatus(`8Z-CDB-DCC live · You are ${userColor === 'w' ? 'White' : 'Black'}`);
+  if (game.turn() !== userColor) {
+    playState.waiting = true;
+    await sleep(180);
+    if (sessionIsCurrent(sessionId, 'dccbot')) await runDccBotTurn();
+  }
+}
+
+async function startLichessSession(botUsername, selectedColor, clock, timeLabel, opts = {}) {
+  if (!String(botUsername || '').trim()) throw new Error('Choose a Lichess opponent first.');
+  const sessionId = enterActiveSession('lichess', {
+    userColor: selectedColor === 'black' ? 'b' : 'w', botUsername, selectedColor,
+    timeLabel, startFen: getStartFen(), autoPilot: !!opts.autoPilot
+  });
+  updateSimStatus(`Challenging ${botUsername} on Lichess…`);
+  try {
+    const gameId = await challengeLichessBot(botUsername, selectedColor, clock, sessionId);
+    if (!sessionIsCurrent(sessionId, 'lichess')) return;
+    playState.lichess.gameId = gameId;
+    updateSimStatus(`Lichess game ${gameId} started · synchronizing board…`);
+    startLichessGameStreamLoop(gameId, sessionId).catch(err => {
+      if (sessionIsCurrent(sessionId, 'lichess', gameId)) leaveActiveSession(`Lichess connection stopped: ${describeErr(err)}`);
+    });
+  } catch (err) {
+    if (!sessionIsCurrent(sessionId, 'lichess')) return;
+    leaveActiveSession(`Lichess start failed: ${describeErr(err)}`);
+  }
+}
+
 async function launchFromSimModal() {
+  if (playState.active || simRunning || replayRunning) {
+    closeSimModal();
+    updateSimStatus('Stop the current activity before starting another.');
+    return;
+  }
   const mode = currentSimMode();
   const launchMode = playState.launchMode || 'sim';
-  const colorSel = document.getElementById('simColorSelect');
-  const selectedColor = colorSel?.value || 'random';
+  const selectedColor = document.getElementById('simColorSelect')?.value || 'random';
   const timeSel = document.getElementById('simTimeSelect');
   const timeLabel = timeSel?.selectedOptions?.[0]?.textContent || 'Blitz 3+0';
   let clock = { limit: 180, increment: 0 };
-  try { clock = JSON.parse(timeSel?.value || '{}'); } catch (_) {}
+  try { clock = { ...clock, ...JSON.parse(timeSel?.value || '{}') }; } catch (_) {}
   closeSimModal();
-
-  if (launchMode === 'sim') {
-    if (mode === 'self') {
-      runSimulation('both', game.fen());
-      return;
-    }
-    if (mode === 'dccbot') {
-      runSimulation('both', game.fen());
-      return;
-    }
-    if (mode === 'lichess') {
-      const botUsername = document.getElementById('lichessBotLevel')?.value || (botsConfig.lichess_bots?.[0]?.username || '');
-      await startLichessSession(botUsername, selectedColor, clock, timeLabel, { autoPilot: true });
-      return;
-    }
+  if (launchMode === 'sim' && (mode === 'self' || mode === 'dccbot')) {
+    const white = document.getElementById('simWhiteEngine').value;
+    const black = document.getElementById('simBlackEngine').value;
+    settings.simSpeed = Number(document.getElementById('simLocalSpeed').value);
+    saveSettings();
+    await runSimulation(white, black, game.fen());
+    return;
   }
-
   const engineColor = launchMode === 'simw' ? 'white' : 'black';
   const humanColor = engineColor === 'white' ? 'black' : 'white';
   if (mode === 'self' || mode === 'dccbot') {
@@ -3840,11 +3105,11 @@ async function launchFromSimModal() {
     return;
   }
   if (mode === 'lichess') {
-    const botUsername = document.getElementById('lichessBotLevel')?.value || (botsConfig.lichess_bots?.[0]?.username || '');
-    await startLichessSession(botUsername, humanColor, clock, timeLabel, { autoPilot: false, engineColor, humanColor });
+    const botUsername = document.getElementById('lichessBotLevel')?.value || botsConfig.lichess_bots?.[0]?.username || '';
+    await startLichessSession(botUsername, launchMode === 'sim' ? selectedColor : humanColor,
+      clock, timeLabel, { autoPilot: launchMode === 'sim' });
   }
 }
-
 
   // ─── Sim button handlers ───────────────────────────────────────────
   const btnSimW = document.getElementById('btnSimW');
@@ -3880,385 +3145,287 @@ async function launchFromSimModal() {
   // DCC REPLAY — Analyze loaded game with DCC eval (v0.6.1)
   // ═══════════════════════════════════════════════════════════════════
 
-  let replayRunning = false;
-  let replayAbort = false;
-
   // Analyze a single position: return DCC data for all candidates + identify DCC #1
-  async function analyzePosition(fen) {
-    const result = await cachedFetchChessDB(fen);
-    if (!result.moves || result.moves.length === 0) return null;
-
-    const bestRawScore = result.moves[0].score;
-    const candidates = result.moves.filter(m =>
-      Math.abs(bestRawScore - m.score) <= settings.dccEvalFloor
-    ).slice(0, settings.dccTopCandidates);
-
-    let bestDCCMove = null, bestDCCScore = -Infinity;
-    const analyzed = [];
-
-    for (const mv of candidates) {
-      const probe = new Chess(fen);
-      const m = probe.move({
-        from: mv.move.slice(0, 2), to: mv.move.slice(2, 4),
-        promotion: mv.move.length > 4 ? mv.move[4] : 'q'
-      });
-      if (!m) continue;
-
-      const pvResult = await fetchPV(probe.fen());
-      if (pvResult.score === null) continue;
-
-      const evalSeq = [pvResult.score];
-      if (pvResult.pv.length > 1) {
-        const walk = new Chess(probe.fen());
-        const maxWalk = Math.min(settings.dccDepth || 4, pvResult.pv.length);
-        for (let j = 0; j < maxWalk; j++) {
-          const uci = pvResult.pv[j];
-          const wm = walk.move({ from: uci.slice(0, 2), to: uci.slice(2, 4),
-            promotion: uci.length > 4 ? uci[4] : undefined });
-          if (!wm) break;
-          if (j % 2 === 1) {
-            const sc = await fetchScore(walk.fen());
-            if (sc !== null) evalSeq.push((j % 2 === 0) ? -sc : sc);
-          }
-        }
+  async function analyzePosition(fen, suppliedMoves, options = {}) {
+    const generation = analysisGeneration;
+    const snapshot = { ...settings, ...(options.settings || {}) };
+    const signature = JSON.stringify(DCC.config(snapshot));
+    const key = `${fen}|${signature}`;
+    const stale = () => generation !== analysisGeneration || JSON.stringify(DCC.config({ ...settings, ...(options.settings || {}) })) !== signature;
+    const cached = analysisMemo.get(key);
+    if (cached && Date.now() - cached.time < 120000) return cached.result;
+    const pendingKey = generation + '|' + key;
+    if (analysisPending.has(pendingKey)) return analysisPending.get(pendingKey);
+    const pending = DCC.analyze({ Chess, fen, settings: snapshot, moves: suppliedMoves,
+      getMoves: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore,
+      cancelled: stale, progress: (done, total) => { if (!stale()) updateDCCProgress(done, total); }
+    }).then(result => {
+      if (stale()) return null;
+      if (result.receipt.status === 'complete') {
+        if (analysisMemo.size > 100) analysisMemo.delete(analysisMemo.keys().next().value);
+        analysisMemo.set(key, { time: Date.now(), result });
       }
-
-      const stability = evalSeqStability(evalSeq);
-      const adsr = adsrAnalysis(evalSeq);
-      const momentum = evalMomentum(evalSeq);
-      const tunnel = detectTunnel(evalSeq);
-      const trend = trendArrow(evalTrend(evalSeq));
-
-      let dccScore = mv.score;
-      dccScore += stability * DCC_WEIGHTS.stability;
-      if (adsr.shape === 'sustained') dccScore += DCC_WEIGHTS.adsr_sustained;
-      else if (adsr.shape === 'building') dccScore += DCC_WEIGHTS.adsr_building;
-      else if (adsr.shape === 'spike') dccScore += DCC_WEIGHTS.adsr_spike;
-      else if (adsr.shape === 'collapse') dccScore += DCC_WEIGHTS.adsr_collapse;
-      else if (adsr.shape === 'volatile') dccScore += DCC_WEIGHTS.adsr_volatile;
-      dccScore += Math.sign(momentum) * Math.min(Math.abs(momentum), DCC_WEIGHTS.momentum_max);
-      if (materialCount(probe.fen()) <= 7) {
-        const pr = await cachedFetchChessDB(probe.fen());
-        dccScore += pr.moves.length > 0 ? DCC_WEIGHTS.endgame_known : DCC_WEIGHTS.endgame_unknown;
-      }
-      if (tunnel) dccScore += DCC_WEIGHTS.tunnel;
-      const cx = fenComplexity(probe.fen());
-      dccScore -= cx * DCC_WEIGHTS.complexity;
-
-      const entry = { move: mv.move, raw: mv.score, dcc: Math.round(dccScore),
-        stability, adsr: adsr.shape, trend, momentum, tunnel };
-      analyzed.push(entry);
-
-      if (dccScore > bestDCCScore) { bestDCCScore = dccScore; bestDCCMove = mv.move; }
-    }
-
-    return { candidates: analyzed, dcc1Move: bestDCCMove, allMoves: result.moves };
+      return result;
+    }).catch(err => {
+      if (err.name !== 'AbortError') console.warn('DCC analysis unavailable:', err.message);
+      return null;
+    }).finally(() => analysisPending.delete(pendingKey));
+    analysisPending.set(pendingKey, pending);
+    return pending;
   }
 
-  // Main replay function
-  async function replayGame() {
-    if (replayRunning) { replayAbort = true; return; }
-    if (fullHistory.length === 0) { alert('Load a PGN game first.'); return; }
+  // Main replay function. Raw database evaluations and DCC preference scores
+  // remain separate; matching DCC #1 is agreement, not engine accuracy.
+  function stopReplay() {
+    if (!replayRunning) return;
+    replayAbort = true;
+    invalidateDCCAnalysis();
+    updateSimStatus('Stopping Replay…');
+  }
 
-    replayRunning = true;
-    replayAbort = false;
+  function replayAgreement(annotations, side) {
+    const known = annotations.filter(a => a.side === side && a.isDCC1 !== null);
+    const matched = known.filter(a => a.isDCC1).length;
+    return { known: known.length, matched, pct: known.length ? Math.round(100 * matched / known.length) : null };
+  }
 
-    const btnReplay = document.getElementById('btnReplay');
-    btnReplay.textContent = 'Stop';
-    btnReplay.style.background = '#ff4c4c'; btnReplay.style.color = '#fff';
-
-    const statusBar = document.getElementById('simStatusBar');
-    statusBar.style.display = 'block';
-
-    const moves = fullHistory.slice();
-    const headers = game.header();
-    const annotations = [];
-
-    // Rewind to start
-    while (game.history().length > 0) game.undo();
-    board.position(game.fen());
-    // Clear stale badges from pre-replay position
-    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-
-    for (let i = 0; i < moves.length; i++) {
-      if (replayAbort) break;
-
-      const fen = game.fen();
-      const side = game.turn();
-      const mv = moves[i];
-      const moveUci = mv.from + mv.to + (mv.promotion || '');
-
-      // Clear badges from previous position
-      document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-
-      updateSimStatus(`Analyzing ${i + 1}/${moves.length}: ${mv.san}…`);
-
-      const analysis = await analyzePosition(fen);
-      let ann = { ply: i + 1, side, san: mv.san, uci: moveUci,
-        raw: null, dcc: null, stability: null, adsr: null,
-        trend: '', momentum: 0, tunnel: false, isDCC1: null };
-
-      if (analysis) {
-        // Show badges for this position's candidates
-        if (settings.simSpeed > 0) {
-          analysis.allMoves.slice(0, settings.topN || 5).forEach((m, idx) =>
-            annotateMove(m.move, m.score, idx === 0));
-          // Overlay DCC data on analyzed candidates
-          for (const c of analysis.candidates) {
-            updateDCCBadge(c.move, {
-              trend: evalTrend([c.raw, c.dcc || c.raw]),
-              stability: c.stability, arrow: c.trend,
-              adsr: { shape: c.adsr, label: (ADSR_SHAPES[c.adsr] || {}).desc || '' },
-              tunnel: c.tunnel, momentum: c.momentum,
-              evalSequence: [], movePath: [], score: c.raw, pvDepth: 0
-            }, 'done');
-          }
-        }
-
-        // Find the played move in analyzed candidates
-        const played = analysis.candidates.find(c =>
-          c.move.slice(0, 4) === moveUci.slice(0, 4));
-        if (played) {
-          ann.raw = played.raw;
-          ann.dcc = played.dcc;
-          ann.stability = played.stability;
-          ann.adsr = played.adsr;
-          ann.trend = played.trend;
-          ann.momentum = played.momentum;
-          ann.tunnel = played.tunnel;
-        } else {
-          // Played move wasn't in DCC candidates — get raw score
-          const rawMatch = analysis.allMoves.find(m =>
-            m.move.slice(0, 4) === moveUci.slice(0, 4));
-          if (rawMatch) ann.raw = rawMatch.score;
-        }
-        ann.isDCC1 = analysis.dcc1Move
-          ? analysis.dcc1Move.slice(0, 4) === moveUci.slice(0, 4) : null;
-      }
-
-      annotations.push(ann);
-
-      // v0.6.1: Live stats update — show running accuracy as it builds
-      {
-        const wA = annotations.filter(a => a.side === 'w' && a.isDCC1 !== null);
-        const bA = annotations.filter(a => a.side === 'b' && a.isDCC1 !== null);
-        const wM = wA.filter(a => a.isDCC1).length;
-        const bM = bA.filter(a => a.isDCC1).length;
-        const wP = wA.length > 0 ? Math.round(100 * wM / wA.length) : 0;
-        const bP = bA.length > 0 ? Math.round(100 * bM / bA.length) : 0;
-        const pct = Math.round(100 * (i + 1) / moves.length);
-        const panel = document.getElementById('simStatsPanel');
-        panel.innerHTML = `
-          <div style="padding:10px; font-size:13px; color:#ddd; line-height:1.7;">
-            <div style="color:#00e5ff; font-weight:700; margin-bottom:6px;">
-              DCC Replay — ${i + 1}/${moves.length} (${pct}%)
-            </div>
-            <div style="display:flex; gap:24px;">
-              <div>
-                <span style="color:#34d399; font-weight:600;">White</span>
-                DCC#1: <strong>${wP}%</strong>
-                <span style="color:#666">(${wM}/${wA.length})</span>
-              </div>
-              <div>
-                <span style="color:#a78bfa; font-weight:600;">Black</span>
-                DCC#1: <strong>${bP}%</strong>
-                <span style="color:#666">(${bM}/${bA.length})</span>
-              </div>
-            </div>
-            <div style="margin-top:6px; height:4px; background:#333; border-radius:2px;">
-              <div style="height:100%; width:${pct}%; background:#00e5ff; border-radius:2px; transition:width 0.2s;"></div>
-            </div>
-          </div>`;
-        panel.style.display = 'block';
-      }
-
-      // Play the move forward
-      game.move(mv.san);
-      board.position(game.fen());
-      // Update history panel to follow current move
-      renderHistory();
-
-      if (settings.simSpeed > 0) {
-        await sleep(Math.max(80, settings.simSpeed));
-      }
-    }
-
-    // Final: clear replay badges, restore clean board
-    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-    // Restore board
-    board.position(game.fen());
-
-    // Build summary
-    const wAnns = annotations.filter(a => a.side === 'w' && a.isDCC1 !== null);
-    const bAnns = annotations.filter(a => a.side === 'b' && a.isDCC1 !== null);
-    const wMatch = wAnns.filter(a => a.isDCC1).length;
-    const bMatch = bAnns.filter(a => a.isDCC1).length;
-    const wPct = wAnns.length > 0 ? Math.round(100 * wMatch / wAnns.length) : 0;
-    const bPct = bAnns.length > 0 ? Math.round(100 * bMatch / bAnns.length) : 0;
-
-    const countShapes = anns => {
-      const c = { sustained: 0, building: 0, spike: 0, collapse: 0, volatile: 0, mixed: 0 };
-      anns.forEach(a => { if (a.adsr && c[a.adsr] !== undefined) c[a.adsr]++; });
-      return c;
-    };
-    const avgStab = anns => {
-      const valid = anns.filter(a => a.stability !== null);
-      return valid.length > 0 ? (valid.reduce((s, a) => s + a.stability, 0) / valid.length) : 0;
-    };
-    const tunnelCount = anns => anns.filter(a => a.tunnel).length;
-
-    const wShapes = countShapes(wAnns);
-    const bShapes = countShapes(bAnns);
-    const wName = headers.White || 'White';
-    const bName = headers.Black || 'Black';
-    const shapeStr = s => Object.entries(s).filter(([,v]) => v > 0).map(([k,v]) => `${v} ${k}`).join(', ');
-
-    // Generate annotated PGN
-    const annotatedPGN = generateAnnotatedPGN(headers, moves, annotations, wPct, bPct);
-
-    // Render summary
+  function renderReplayProgress(annotations, total, phase = 'Reviewing', headers = {}) {
     const panel = document.getElementById('simStatsPanel');
-    panel.innerHTML = `
-      <div class="sim-stats-header">
-        <span class="sim-title">DCC Replay Complete — ${annotations.length} moves analyzed</span>
-      </div>
-      <div style="padding:8px; font-size:12px; line-height:1.6; color:#ddd;">
-        <div style="margin-bottom:8px;">
-          <strong style="color:#34d399">${wName} (White)</strong><br>
-          DCC accuracy: <strong>${wPct}%</strong> (${wMatch}/${wAnns.length} matched DCC #1)<br>
-          Avg stability: ${avgStab(wAnns).toFixed(2)} · Tunnels: ${tunnelCount(wAnns)}<br>
-          <span style="color:#888">${shapeStr(wShapes)}</span>
-        </div>
-        <div style="margin-bottom:8px;">
-          <strong style="color:#a78bfa">${bName} (Black)</strong><br>
-          DCC accuracy: <strong>${bPct}%</strong> (${bMatch}/${bAnns.length} matched DCC #1)<br>
-          Avg stability: ${avgStab(bAnns).toFixed(2)} · Tunnels: ${tunnelCount(bAnns)}<br>
-          <span style="color:#888">${shapeStr(bShapes)}</span>
-        </div>
-        <div style="color:#f59e0b; font-style:italic;">
-          ${bPct > wPct ? 'DCC says: Black played more aligned with DCC preferences.'
-           : wPct > bPct ? 'DCC says: White played more aligned with DCC preferences.'
-           : 'DCC says: Both sides equally aligned with DCC preferences.'}
-        </div>
-      </div>
-      <div style="text-align:center; margin-top:6px;">
-        <button id="btnSaveAnnotatedPGN" style="background:#00e5ff; color:#000; border:none; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;">Save Annotated PGN</button>
+    if (!panel) return;
+    const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    const processed = annotations.length;
+    const pct = total ? Math.round(100 * processed / total) : 0;
+    const scored = annotations.filter(a => a.isDCC1 !== null).length;
+    const row = side => {
+      const stats = replayAgreement(annotations, side);
+      const label = side === 'w' ? 'White' : 'Black';
+      const player = headers[label] || label;
+      const sampled = annotations.filter(a => a.side === side && Number.isFinite(a.stability));
+      const stability = sampled.length ? (sampled.reduce((sum, a) => sum + a.stability, 0) / sampled.length).toFixed(2) : 'unknown';
+      return `<div class="replay-side"><strong>${escape(player)} (${label})</strong><br>DCC #1 agreement: <strong>${stats.pct === null ? '—' : `${stats.pct}%`}</strong> (${stats.matched}/${stats.known} comparable plies)<br>Mean sampled stability: ${stability}</div>`;
+    };
+    panel.innerHTML = `<div class="sim-stats-header"><span class="sim-title">DCC Replay · ${escape(phase)}</span></div>
+      <div class="replay-summary" style="padding:10px;line-height:1.7">
+        <div>${processed}/${total} plies reviewed (${pct}%) · ${scored} with DCC comparison · ${processed - scored} unavailable</div>
+        <progress value="${processed}" max="${Math.max(1, total)}" aria-label="Replay progress" style="width:100%"></progress>
+        ${row('w')}${row('b')}
+        <div class="replay-method-note">Agreement measures the sampled DCC preference, not engine accuracy. Raw centipawn evaluation and DCC rank score are separate values; missing samples remain unknown.</div>
       </div>`;
     panel.style.display = 'block';
+  }
 
-    // Wire save button
-    document.getElementById('btnSaveAnnotatedPGN').onclick = () => {
-      const blob = new Blob([annotatedPGN], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'chessdcc_replay.pgn';
-      a.click(); URL.revokeObjectURL(a.href);
-    };
-
-    // Cleanup
-    replayRunning = false;
+  async function replayGame(overrides = {}) {
+    if (replayRunning) { stopReplay(); return; }
+    if (playState.active || simRunning) { updateSimStatus('Stop the current game or simulation before Replay.'); return; }
+    if (fullHistory.length === 0) { alert('Load a PGN game first.'); return; }
+    workspace.stop();
+    const epoch = ++activityEpoch;
+    const snapshot = { ...settings, ...overrides };
+    invalidateDCCAnalysis();
+    const generation = analysisGeneration;
+    replayRunning = true;
     replayAbort = false;
-    btnReplay.textContent = 'Replay';
-    btnReplay.style.background = '#203030'; btnReplay.style.color = '#00e5ff';
-    statusBar.style.display = 'none';
-  }
-
-  // Generate annotated PGN with DCC headers + per-move comments
-  function generateAnnotatedPGN(headers, moves, annotations, wPct, bPct) {
-    let pgn = '';
-    for (const [k, v] of Object.entries(headers)) {
-      pgn += `[${k} "${v}"]\n`;
+    playState.replaying = true;
+    refreshPlayUi();
+    const btn = document.getElementById('btnReplay');
+    if (btn) {
+      btn.textContent = 'Stop';
+      btn.style.background = '#ff4c4c';
+      btn.style.color = '#fff';
     }
-    pgn += `[DCC_Version "0.6.1"]\n`;
-    pgn += `[DCC_Depth "${settings.dccDepth}"]\n`;
-    pgn += `[DCC_TopCandidates "${settings.dccTopCandidates}"]\n`;
-    pgn += `[DCC_WhiteAccuracy "${wPct}%"]\n`;
-    pgn += `[DCC_BlackAccuracy "${bPct}%"]\n`;
-    pgn += '\n';
-
-    for (let i = 0; i < moves.length; i++) {
-      if (i % 2 === 0) pgn += `${Math.floor(i / 2) + 1}. `;
-      pgn += moves[i].san + ' ';
-
-      const ann = annotations[i];
-      if (ann && ann.raw !== null) {
-        const parts = [];
-        parts.push(`raw=${ann.raw > 0 ? '+' : ''}${ann.raw}`);
-        if (ann.dcc !== null) parts.push(`dcc=${ann.dcc > 0 ? '+' : ''}${ann.dcc}`);
-        if (ann.stability !== null) parts.push(`stab=${ann.stability.toFixed(2)}`);
-        if (ann.adsr) parts.push(`ADSR=${ann.adsr}`);
-        if (ann.trend) parts.push(ann.trend);
-        if (ann.momentum !== undefined && ann.momentum !== 0)
-          parts.push(`mom=${ann.momentum > 0 ? '+' : ''}${Math.round(ann.momentum)}`);
-        if (ann.isDCC1 !== null)
-          parts.push(`DCC#1=${ann.isDCC1 ? 'yes' : 'NO'}`);
-        if (ann.tunnel) parts.push('⛏');
-        pgn += `{DCC: ${parts.join(' ')}} `;
+    const moves = fullHistory.map(move => ({ ...move }));
+    const headers = { ...game.header() };
+    const annotations = [];
+    const replaySettings = {
+      depth: snapshot.dccDepth, candidates: snapshot.dccTopCandidates, floor: snapshot.dccEvalFloor
+    };
+    let state = 'stopped';
+    let failure = '';
+    let initialFen;
+    try {
+      while (game.history().length > 0) game.undo();
+      initialFen = game.fen();
+      board.position(initialFen);
+      positionEval.render();
+      document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+      renderReplayProgress(annotations, moves.length, 'Reviewing', headers);
+      for (let i = 0; i < moves.length; i++) {
+        if (replayAbort || analysisGeneration !== generation) break;
+        const fen = game.fen();
+        const side = game.turn();
+        const mv = moves[i];
+        const moveUci = normalizeUci(mv);
+        document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+        updateSimStatus(`Replay ${i + 1}/${moves.length}: analyzing ${mv.san}…`);
+        const analysis = await analyzePosition(fen, undefined, { settings: snapshot });
+        // Stop/navigation/settings changes may happen while requests are pending.
+        if (replayAbort || analysisGeneration !== generation || game.fen() !== fen || playState.active || simRunning) break;
+        const ann = {
+          ply: i + 1, side, san: mv.san, uci: moveUci, raw: null, dcc: null,
+          stability: null, adsr: null, trend: '', momentum: null, tunnel: false,
+          isDCC1: null, observedPlies: null, samplePlies: null, coverage: 'unknown'
+        };
+        if (analysis) {
+          positionEval.update(fen, analysis.allMoves[0]?.score);
+          latestDCCResults = analysis.candidates.map(candidate => candidate.data).filter(Boolean);
+          latestDCCReceipt = analysis.receipt;
+          renderDCCView();
+          if (snapshot.simSpeed > 0) {
+            analysis.allMoves.slice(0, snapshot.topN || 5).forEach((m, idx) => annotateMove(m.move, m.score, idx === 0));
+            for (const candidate of analysis.candidates) {
+              if (candidate.data) updateDCCBadge(candidate.move, candidate.data, 'done');
+            }
+          }
+          // Full UCI matching is required: queen and knight promotions differ.
+          const played = analysis.candidates.find(c => c.move === moveUci);
+          const rawMatch = analysis.allMoves.find(m => m.move === moveUci);
+          ann.raw = played?.raw ?? rawMatch?.score ?? null;
+          if (played) {
+            ann.dcc = played.dcc;
+            ann.stability = played.stability;
+            ann.adsr = played.adsr;
+            ann.trend = played.trend;
+            ann.momentum = played.momentum;
+            ann.tunnel = played.tunnel;
+            ann.observedPlies = played.data?.observedPlies ?? null;
+            ann.samplePlies = played.data?.targetPlies ?? null;
+          }
+          ann.coverage = analysis.receipt?.status || 'unknown';
+          ann.isDCC1 = analysis.dcc1Move && ann.coverage === 'complete' ? analysis.dcc1Move === moveUci : null;
+        }
+        const playedMove = applyUciMove(game, moveUci);
+        if (!playedMove) throw new Error(`PGN move ${i + 1} (${mv.san}) is illegal at the replay position.`);
+        annotations.push(ann);
+        board.position(game.fen());
+        positionEval.render();
+        renderHistory();
+        renderReplayProgress(annotations, moves.length, 'Reviewing', headers);
+        if (snapshot.simSpeed > 0) await sleep(Math.max(80, snapshot.simSpeed));
       }
-      if (i % 2 === 1) pgn += '\n';
+      if (annotations.length === moves.length && !replayAbort && analysisGeneration === generation) {
+        state = annotations.every(a => a.isDCC1 !== null) ? 'complete' : 'finished with gaps';
+      }
+    } catch (err) {
+      state = 'failed';
+      failure = describeErr(err);
+      console.warn('Replay failed:', err);
+    } finally {
+      if (epoch !== activityEpoch) return;
+      replayRunning = false;
+      replayAbort = false;
+      playState.replaying = false;
+      invalidateDCCAnalysis();
+      if (btn) {
+        btn.textContent = 'Replay';
+        btn.style.background = '#203030';
+        btn.style.color = '#00e5ff';
+      }
+      refreshPlayUi();
+      document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+      board.position(game.fen());
+      renderHistory();
+      renderReplayProgress(annotations, moves.length, state, headers);
+      const white = replayAgreement(annotations, 'w');
+      const black = replayAgreement(annotations, 'b');
+      const annotatedPGN = generateAnnotatedPGN(headers, moves, annotations, white.pct, black.pct,
+        { state, initialFen, settings: replaySettings });
+      const panel = document.getElementById('simStatsPanel');
+      if (panel) {
+        const save = document.createElement('button');
+        save.id = 'btnSaveAnnotatedPGN';
+        save.textContent = state === 'complete' ? 'Save Annotated PGN' : 'Save Partial Review PGN';
+        save.onclick = () => {
+          const blob = new Blob([annotatedPGN], { type: 'application/x-chess-pgn' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'chessdcc_replay.pgn';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        };
+        panel.appendChild(save);
+      }
+      updateSimStatus(`Replay ${state}: ${annotations.length}/${moves.length} plies reviewed.${failure ? ` ${failure}` : ''}`);
     }
-
-    pgn += (headers.Result || '*') + '\n';
-    return pgn;
   }
 
-  // Replay button handler — show settings modal first
+  function generateAnnotatedPGN(headers, moves, annotations, wPct, bPct, meta = {}) {
+    const escapeTag = value => String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ');
+    const tags = { ...headers };
+    // Replace old ambiguous accuracy tags when re-reviewing an earlier export.
+    delete tags.DCC_WhiteAccuracy;
+    delete tags.DCC_BlackAccuracy;
+    if (meta.initialFen && meta.initialFen !== getStartFen()) {
+      tags.SetUp = '1';
+      tags.FEN = meta.initialFen;
+    }
+    const used = meta.settings || { depth: settings.dccDepth, candidates: settings.dccTopCandidates, floor: settings.dccEvalFloor };
+    Object.assign(tags, {
+      DCC_Version: 'new', DCC_Depth: used.depth, DCC_TopCandidates: used.candidates,
+      DCC_EvalFloor: used.floor, DCC_Completion: meta.state || 'partial',
+      DCC_ReviewedPlies: annotations.length, DCC_TotalPlies: moves.length,
+      DCC_WhiteAgreement: wPct === null ? 'unknown' : `${wPct}%`,
+      DCC_BlackAgreement: bPct === null ? 'unknown' : `${bPct}%`,
+      DCC_RawPerspective: 'side to move before played move',
+      DCC_ScoreMeaning: 'raw_cp is database evaluation; dcc_rank is a preference score, not an engine evaluation'
+    });
+    let pgn = Object.entries(tags).filter(([key]) => /^[A-Za-z0-9_]+$/.test(key))
+      .map(([key, value]) => `[${key} "${escapeTag(value)}"]`).join('\n') + '\n\n';
+    const start = (meta.initialFen || headers.FEN || getStartFen()).split(/\s+/);
+    let side = start[1] === 'b' ? 'b' : 'w';
+    let number = Number(start[5]) || 1;
+    for (let i = 0; i < moves.length; i++) {
+      if (side === 'w') pgn += `${number}. `;
+      else if (i === 0) pgn += `${number}... `;
+      pgn += `${moves[i].san} `;
+      const ann = annotations[i];
+      if (ann) {
+        const parts = [`coverage=${ann.coverage || 'unknown'}`];
+        if (Number.isFinite(ann.raw)) parts.push(`raw_cp=${ann.raw}`);
+        if (Number.isFinite(ann.dcc)) parts.push(`dcc_rank=${ann.dcc}`);
+        if (Number.isFinite(ann.stability)) parts.push(`stability=${ann.stability.toFixed(2)}`);
+        if (ann.adsr) parts.push(`ADSR=${ann.adsr}`);
+        if (ann.isDCC1 !== null) parts.push(`DCC#1=${ann.isDCC1 ? 'yes' : 'no'}`);
+        if (Number.isFinite(ann.observedPlies)) parts.push(`observed_plies=${ann.observedPlies}`);
+        if (Number.isFinite(ann.samplePlies)) parts.push(`sample_plies=${ann.samplePlies}`);
+        pgn += `{DCC: ${parts.length ? parts.join(' ') : 'unavailable'}} `;
+      } else if (i === annotations.length) pgn += '{DCC: remaining plies not reviewed} ';
+      if (side === 'b') { pgn += '\n'; number++; }
+      side = side === 'w' ? 'b' : 'w';
+    }
+    return pgn + (/^(1-0|0-1|1\/2-1\/2|\*)$/.test(headers.Result || '') ? headers.Result : '*') + '\n';
+  }
+
   const btnReplay = document.getElementById('btnReplay');
   const replayModal = document.getElementById('replayModal');
-
   if (btnReplay && replayModal) {
     btnReplay.onclick = () => {
-      // If replay running, act as Stop button
-      if (replayRunning) { replayAbort = true; return; }
-      // Show modal
+      if (replayRunning) { stopReplay(); return; }
+      if (playState.active || simRunning) { updateSimStatus('Stop the current game or simulation before Replay.'); return; }
       replayModal.style.display = 'flex';
     };
-
-    document.getElementById('replayCancel').onclick = () => {
-      replayModal.style.display = 'none';
-    };
-
-    // Click outside modal content to cancel
-    replayModal.onclick = (e) => {
-      if (e.target === replayModal) replayModal.style.display = 'none';
-    };
-
+    document.getElementById('replayCancel').onclick = () => { replayModal.style.display = 'none'; };
+    replayModal.onclick = event => { if (event.target === replayModal) replayModal.style.display = 'none'; };
     document.getElementById('replayStart').onclick = async () => {
       replayModal.style.display = 'none';
-
-      // Read replay-specific settings from modal
-      const rDepth = parseInt(document.getElementById('replayDepth').value, 10);
-      const rTopC = parseInt(document.getElementById('replayTopC').value, 10);
-      const rFloor = parseInt(document.getElementById('replayFloor').value, 10);
-      const rSpeed = parseInt(document.getElementById('replaySpeed').value, 10);
-
-      // Save current global settings
-      const saved = {
-        dccDepth: settings.dccDepth,
-        dccTopCandidates: settings.dccTopCandidates,
-        dccEvalFloor: settings.dccEvalFloor,
-        simSpeed: settings.simSpeed
+      if (playState.active || simRunning || replayRunning) return;
+      const number = (id, fallback, min, max) => {
+        const value = Number(document.getElementById(id)?.value);
+        return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
       };
-
-      // Temporarily override for replay
-      settings.dccDepth = rDepth;
-      settings.dccTopCandidates = rTopC;
-      settings.dccEvalFloor = rFloor;
-      settings.simSpeed = rSpeed;
-
-      try {
-        await replayGame();
-      } finally {
-        // Restore global settings — always, even on abort
-        settings.dccDepth = saved.dccDepth;
-        settings.dccTopCandidates = saved.dccTopCandidates;
-        settings.dccEvalFloor = saved.dccEvalFloor;
-        settings.simSpeed = saved.simSpeed;
-      }
+      const saved = {
+        dccDepth: settings.dccDepth, dccTopCandidates: settings.dccTopCandidates,
+        dccEvalFloor: settings.dccEvalFloor, simSpeed: settings.simSpeed
+      };
+      const overrides = {
+        dccDepth: number('replayDepth', saved.dccDepth, 1, 10),
+        dccTopCandidates: number('replayTopC', saved.dccTopCandidates, 1, 10),
+        dccEvalFloor: number('replayFloor', saved.dccEvalFloor, 0, 1000),
+        simSpeed: number('replaySpeed', saved.simSpeed, 0, 10000)
+      };
+      await replayGame(overrides);
     };
   }
-
-  // ────────────────────────────────────────────────────────────────────
 
   // ─── DCC View toggle button ────────────────────────────────────────
   const btnToggle = document.getElementById('btnViewToggle');
@@ -4290,11 +3457,11 @@ async function launchFromSimModal() {
   const titleEl = document.getElementById('gameTitle');
   titleEl.style.cursor = 'pointer';
   titleEl.onclick = () => {
-    if (playState.active) return;
+    if (playState.active || replayRunning) return;
     // If sim is running → stop it
     if (simRunning) {
-      simAbort = true;
-      return; // restore happens in runSimulation cleanup
+      pauseSimulation();
+      return;
     }
 
     // If we just returned from a sim → restore pre-sim position
@@ -4334,13 +3501,16 @@ async function launchFromSimModal() {
   // ─── “ChessBest.org” link replays the best (blue) move ────────────────
 document.getElementById('bestMoveLink').addEventListener('click', e => {
   e.preventDefault();
-  if (playState.active && playState.mode === 'lichess') return;
+  if (playState.active || simRunning || replayRunning) return;
   const bestOv = document.querySelector('.overlay.best');
   if (!bestOv) return;
+  if (!workspace.beforeMove()) return;
+  const fenBeforeMove = game.fen();
   const mv   = bestOv.dataset.move;
   const from = mv.slice(0,2), to = mv.slice(2,4);
-  const m    = game.move({ from, to, promotion: 'q' });
+  const m    = game.move({ from, to, promotion: mv[4] || 'q' });
   if (!m) return;
+  if (!workspace.recordMove(fenBeforeMove, m) && workspace.isTimed()) { game.undo(); updateBoard(false); return; }
   lastAction = 'move';
   window._skipDivergedReset = true;
   updateBoard(false);
@@ -4351,32 +3521,12 @@ document.getElementById('bestMoveLink').addEventListener('click', e => {
 const mainEl = document.getElementById('main');
 mainEl.addEventListener('click', e => {
   if (e.target.closest(
-    '#board, #controls, #gameTitle, #pageSubtitle, a, button, input, select, label'
+    '#board-container, #controls, #gameTitle, #pageSubtitle, a, button, input, select, label'
   )) return;
   document.getElementById('bestMoveLink').click();
 });
 // ────────────────────────────────────────────────────────────────────────
   
-  // Hidden “Author” link toggles board size—desktop only
-  (function() {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    if (isMobile) return;  // no-op on mobile
-
-    const authorLink = document.getElementById("authorLink");
-    const boardEl    = document.getElementById("board");
-
-	authorLink.addEventListener("click", e => {
-	  e.preventDefault();
-	  boardEl.classList.toggle("scaled");
-	  board.resize(); // recalculate click coordinates
-
-	  settings.doubleBoard = boardEl.classList.contains("scaled");
-	  document.getElementById('settingDoubleBoard').checked = settings.doubleBoard;
-
-	  saveSettings();
-	});
-
-  })();
   // ────────────────────────────────────────────────────────────────────────
 
 }

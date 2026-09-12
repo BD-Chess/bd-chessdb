@@ -46,7 +46,7 @@
     const board = new Chess(run.startFen);
     const cfg = run.config || {};
     const tags = {
-      Event: 'ChessBest position experiment', Site: 'https://www.mdlxdcc.org/chess/new/',
+      Event: 'ChessBest position experiment', Site: 'https://www.mdlxdcc.org/chess/',
       Date: (run.startedAt || '').slice(0, 10).replace(/-/g, '.'), Round: run.id,
       White: label(run.white), Black: label(run.black), Result: run.result || '*',
       SetUp: '1', FEN: run.startFen, Termination: run.reason || run.state,

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import endpoint, { quotaInfo } from '../../../../functions/chess-gemini.mjs';
+import endpoint, { quotaInfo } from '../../../functions/chess-gemini.mjs';
 const fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const request = body => new Request('https://www.mdlxdcc.org/.netlify/functions/chess-gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
