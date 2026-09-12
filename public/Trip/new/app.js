@@ -20,6 +20,7 @@
   let statusTimer;
   let optimizationPending = false;
   let lastSolvedPoints = null;
+  let lastDirectKm = null;
   let currentTravelMode = 'DRIVING';
   let currentNavApp = 'apple'; // Default to Apple for the list
   let mapScriptLoadingPromise = null;
@@ -533,6 +534,16 @@
     return { code, detail, message };
   }
 
+  function formatKm(km) {
+    if (!Number.isFinite(km) || km < 0) return '—';
+    return (useMiles ? km * 0.621371 : km).toFixed(2) + (useMiles ? ' mi' : ' km');
+  }
+
+  function showDistance(km, label) {
+    $('distanceLabel').textContent = label + ':';
+    $('distKm').textContent = formatKm(km);
+  }
+
   async function updateMapVisualization(points) {
     if (!map) return;
     const version = ++visualizationVersion;
@@ -557,6 +568,7 @@
     const path = points.map(p => ({ lat: p.lat, lng: p.lon }));
     if ($('chkRoundTrip').checked && path.length > 1) path.push(path[0]);
     if ($('chkDirect').checked) {
+      showDistance(lastDirectKm, 'Direct distance (est.)');
       mapPolyline = new google.maps.Polyline({ path, geodesic: true, strokeColor: '#3b82f6', strokeWeight: 4 });
       mapPolyline.setMap(map);
       setStatus('Stop order ready. Showing direct lines; distances are straight-line estimates.', 'ok');
@@ -564,7 +576,12 @@
     }
     setStatus('Stop order ready. Loading road route...', 'warn');
     const mode = currentTravelMode;
+    const distanceLabel = mode === 'WALKING' ? 'Walking distance' : 'Road distance';
+    showDistance(null, distanceLabel);
+    $('distKm').textContent = 'Loading…';
     const pendingPolylines = [];
+    let totalRoadMeters = 0;
+    let completeDistance = true;
     try {
       // Keep the original DirectionsService path for projects that already allow
       // it; use Routes when the legacy service is unavailable or denied.
@@ -573,7 +590,7 @@
       for (let i = 0; i < path.length - 1; i += 24) {
         if (version !== visualizationVersion) return;
         const seg = path.slice(i, i + 25);
-        let roadPath;
+        let roadPath, segmentMeters;
         if (legacyAvailable) {
           let legacyTimer;
           try {
@@ -591,6 +608,11 @@
             }).finally(() => clearTimeout(legacyTimer));
             roadPath = result?.routes?.[0]?.overview_path;
             if (!roadPath?.length) throw new Error('NO_ROUTE');
+            const legs = result.routes[0].legs;
+            if (legs?.length === seg.length - 1 && legs.every(leg =>
+              Number.isFinite(leg.distance?.value) && leg.distance.value >= 0)) {
+              segmentMeters = legs.reduce((sum, leg) => sum + leg.distance.value, 0);
+            }
           } catch (error) {
             legacyAvailable = false;
             const info = routeErrorInfo(error);
@@ -604,14 +626,17 @@
             origin: seg[0], destination: seg[seg.length - 1],
             intermediates: seg.slice(1, -1).map(location => ({ location })),
             travelMode: mode, optimizeWaypointOrder: false,
-            fields: ['path']
+            fields: ['path', 'distanceMeters']
           }),
           new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('ROUTE_TIMEOUT')), 20000); })
           ]).finally(() => clearTimeout(timer));
           roadPath = routes?.[0]?.path;
+          segmentMeters = routes?.[0]?.distanceMeters;
         }
         if (version !== visualizationVersion) return;
         if (!roadPath?.length) throw new Error('NO_ROUTE');
+        if (Number.isFinite(segmentMeters) && segmentMeters >= 0) totalRoadMeters += segmentMeters;
+        else completeDistance = false;
         pendingPolylines.push(new google.maps.Polyline({
           path: roadPath, strokeColor: '#3b82f6', strokeWeight: 5
         }));
@@ -619,9 +644,12 @@
       if (version !== visualizationVersion) return;
       routePolylines = pendingPolylines;
       routePolylines.forEach(polyline => polyline.setMap(map));
-      setStatus('Road route displayed. Distance and savings shown are straight-line estimates.', 'ok');
+      showDistance(completeDistance ? totalRoadMeters / 1000 : null, distanceLabel);
+      setStatus(completeDistance ? 'Road route displayed. Distance follows the route shown on the map.' :
+        'Road route displayed. Google did not return a complete distance.', completeDistance ? 'ok' : 'warn');
     } catch (error) {
       if (version !== visualizationVersion) return;
+      showDistance(null, distanceLabel);
       const info = routeErrorInfo(error);
       console.warn('[8Z Trip route] ' + info.code + ': ' + info.detail);
       // Show the stop order even when road geometry is unavailable; never present
@@ -1021,6 +1049,11 @@ Bad example:
   async function run(profile) {
     if (optimizationPending) return;
     optimizationPending = true;
+    // An earlier route response must not overwrite this new calculation.
+    ++visualizationVersion;
+    lastDirectKm = null;
+    showDistance(null, 'Distance');
+    $('savedKm').textContent = '—';
     try {
     setPlanningMode(false);
     if (!(window.google && window.google.maps)) {
@@ -1054,23 +1087,11 @@ Bad example:
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
       
-      // UPDATED: Convert to Miles if useMiles is true
-      let distDisplay = totalKm.toFixed(2) + ' km';
-      let savedDisplay = '';
-      
-      if (useMiles) {
-        const totalMi = totalKm * 0.621371;
-        const baseMi = baseKm * 0.621371;
-        const savedMi = baseMi - totalMi;
-        distDisplay = totalMi.toFixed(2) + ' mi';
-        savedDisplay = savedMi > 0 ? savedMi.toFixed(2) + ' mi' : '—';
-      } else {
-        const savedKm = baseKm - totalKm;
-        savedDisplay = savedKm > 0 ? savedKm.toFixed(2) + ' km' : '—';
-      }
-
-      $('distKm').textContent = distDisplay;
-      $('savedKm').textContent = savedDisplay;
+      // The solver optimizes direct-distance estimates. Road kilometers come
+      // only from the same Google response used to draw the displayed route.
+      lastDirectKm = totalKm;
+      showDistance(totalKm, 'Direct distance (est.)');
+      $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
 
       renderRouteList(pointsSorted);
       updateMapVisualization(pointsSorted);

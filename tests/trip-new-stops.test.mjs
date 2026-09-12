@@ -30,7 +30,7 @@ function harness(geocode) {
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
     'window.test = { parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
-    'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; } };',
+    'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
   return { api: context.window.test, elements, element, jobs, google, timerJobs };
@@ -119,7 +119,7 @@ function mapHarness(computeRoutes) {
 
 test('modern Routes draws ordered waypoints and closes a round trip without reoptimizing', async () => {
   const requests = [];
-  const h = mapHarness(async req => { requests.push(req); return { routes: [{ path: [req.origin, req.destination] }] }; });
+  const h = mapHarness(async req => { requests.push(req); return { routes: [{ path: [req.origin, req.destination], distanceMeters: 125600 }] }; });
   h.element('chkRoundTrip').checked = true;
   const pts = Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon }));
   await h.api.updateMapVisualization(pts);
@@ -127,6 +127,8 @@ test('modern Routes draws ordered waypoints and closes a round trip without reop
   assert.equal(requests[0].intermediates.length, 5);
   assert.deepEqual(requests[0].origin, requests[0].destination);
   assert.equal(requests[0].optimizeWaypointOrder, false);
+  assert.deepEqual(Array.from(requests[0].fields), ["path", "distanceMeters"]);
+  assert.equal(h.element("distKm").textContent, "125.60 km");
   assert.equal(h.lines.filter(l => l.map).length, 1);
   assert.match(h.element('status').textContent, /Road route displayed/);
 });
@@ -161,13 +163,14 @@ test('the original Directions service draws roads without requiring Routes acces
   h.google.maps.importLibrary = async () => ({
     DirectionsService: class { route(req, callback) {
       request = req;
-      callback({ routes: [{ overview_path: [req.origin, { lat: 46, lng: 15 }, req.destination] }] }, 'OK');
+      callback({ routes: [{ overview_path: [req.origin, { lat: 46, lng: 15 }, req.destination], legs: Array.from({length: req.waypoints.length + 1}, () => ({distance: {value: 20000, text: "12.4 mi"}})) }] }, 'OK');
     } }
   });
   h.element('chkRoundTrip').checked = true;
   await h.api.updateMapVisualization(Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon })));
   assert.equal(request.optimizeWaypoints, false);
   assert.equal(request.waypoints.length, 5);
+  assert.equal(h.element("distKm").textContent, "120.00 km");
   assert.deepEqual(request.origin, request.destination);
   assert.equal(h.lines[0].options.path.length, 3);
   assert.match(h.element('status').textContent, /Road route displayed/);
@@ -184,10 +187,83 @@ test('legacy rejection falls back to Routes and handles the SDK rejected promise
     } },
     Route: { computeRoutes: async req => {
       modernCalls++;
-      return { routes: [{ path: [req.origin, req.destination] }] };
+      return { routes: [{ path: [req.origin, req.destination], distanceMeters: 125600 }] };
     } }
   });
   await h.api.updateMapVisualization(Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon })));
   assert.equal(modernCalls, 1);
   assert.match(h.element('status').textContent, /Road route displayed/);
+});
+
+const twoStops = [{ name: 'Ljubljana', lat: 46.057, lon: 14.506 }, { name: 'Nova Gorica', lat: 45.955, lon: 13.649 }];
+
+test('road distance replaces the direct estimate; Direct Line restores it without another request', async () => {
+  let calls = 0;
+  const h = mapHarness(async req => {
+    calls++;
+    return { routes: [{ path: [req.origin, req.destination], distanceMeters: 109876 }] };
+  });
+  h.api.setDirect(67.11);
+  await h.api.updateMapVisualization(twoStops);
+  assert.equal(h.element('distKm').textContent, '109.88 km');
+  assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
+  h.element('chkDirect').checked = true;
+  await h.api.updateMapVisualization(twoStops);
+  assert.equal(h.element('distKm').textContent, '67.11 km');
+  assert.equal(h.element('distanceLabel').textContent, 'Direct distance (est.):');
+  assert.equal(calls, 1);
+});
+
+test('multi-request round trips sum each road chunk once and convert the total to miles', async () => {
+  const requests = [];
+  const h = mapHarness(async req => {
+    requests.push(req);
+    return { routes: [{ path: [req.origin, req.destination], distanceMeters: requests.length === 1 ? 100000 : 25000 }] };
+  });
+  h.api.setMiles(true);
+  h.api.setMode('WALKING');
+  h.element('chkRoundTrip').checked = true;
+  const pts = Array.from({ length: 26 }, (_, i) => ({ name: 'Stop ' + i, lat: 46, lon: 14 + i / 100 }));
+  await h.api.updateMapVisualization(pts);
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests[0].destination, requests[1].origin);
+  assert.deepEqual(requests[1].destination, requests[0].origin);
+  assert.equal(requests[1].travelMode, 'WALKING');
+  assert.equal(h.element('distKm').textContent, '77.67 mi');
+  assert.equal(h.element('distanceLabel').textContent, 'Walking distance:');
+});
+
+test('late road results cannot overwrite a newer Direct Line selection', async () => {
+  let resolve;
+  let started;
+  const requestStarted = new Promise(r => { started = r; });
+  const h = mapHarness(() => new Promise(r => { resolve = r; started(); }));
+  h.api.setDirect(67.11);
+  const pending = h.api.updateMapVisualization(twoStops);
+  await requestStarted;
+  assert.equal(h.element('distKm').textContent, 'Loading…');
+  h.element('chkDirect').checked = true;
+  await h.api.updateMapVisualization(twoStops);
+  resolve({ routes: [{ path: [{ lat: 46, lng: 14 }], distanceMeters: 109876 }] });
+  await pending;
+  assert.equal(h.element('distKm').textContent, '67.11 km');
+  assert.equal(h.element('distanceLabel').textContent, 'Direct distance (est.):');
+  assert.equal(h.lines.filter(l => l.map).length, 1);
+});
+
+test('missing or failed road measurements never show a stale road total or an air estimate', async () => {
+  let n = 0;
+  const h = mapHarness(async req => {
+    if (++n === 3) throw new Error('NO_ROUTE');
+    return { routes: [{ path: [req.origin, req.destination], distanceMeters: n === 1 ? 109876 : undefined }] };
+  });
+  h.api.setDirect(67.11);
+  await h.api.updateMapVisualization(twoStops);
+  assert.equal(h.element('distKm').textContent, '109.88 km');
+  await h.api.updateMapVisualization(twoStops);
+  assert.equal(h.element('distKm').textContent, '—');
+  assert.match(h.element('status').textContent, /did not return a complete distance/);
+  await h.api.updateMapVisualization(twoStops);
+  assert.equal(h.element('distKm').textContent, '—');
+  assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
 });
