@@ -566,13 +566,40 @@
     const mode = currentTravelMode;
     const pendingPolylines = [];
     try {
-      // Routes Library replaces DirectionsService, which new projects cannot activate.
-      const { Route } = await google.maps.importLibrary('routes');
+      // Keep the original DirectionsService path for projects that already allow
+      // it; use Routes when the legacy service is unavailable or denied.
+      const { Route, DirectionsService } = await google.maps.importLibrary('routes');
+      let legacyAvailable = typeof DirectionsService === 'function';
       for (let i = 0; i < path.length - 1; i += 24) {
         if (version !== visualizationVersion) return;
         const seg = path.slice(i, i + 25);
-        let timer;
-        const { routes } = await Promise.race([
+        let roadPath;
+        if (legacyAvailable) {
+          let legacyTimer;
+          try {
+            const result = await new Promise((resolve, reject) => {
+              legacyTimer = setTimeout(() => reject(new Error('ROUTE_TIMEOUT')), 20000);
+              const pending = new DirectionsService().route({
+                origin: seg[0], destination: seg[seg.length - 1],
+                waypoints: seg.slice(1, -1).map(location => ({ location, stopover: true })),
+                travelMode: mode, optimizeWaypoints: false
+              }, (response, status) => {
+                if (status === 'OK') resolve(response);
+                else reject(Object.assign(new Error('DirectionsService: ' + status), { code: status }));
+              });
+              if (pending && typeof pending.catch === 'function') pending.catch(reject);
+            }).finally(() => clearTimeout(legacyTimer));
+            roadPath = result?.routes?.[0]?.overview_path;
+            if (!roadPath?.length) throw new Error('NO_ROUTE');
+          } catch (error) {
+            legacyAvailable = false;
+            const info = routeErrorInfo(error);
+            console.warn('[8Z Trip legacy route] ' + info.code + ': ' + info.detail);
+          }
+        }
+        if (!roadPath) {
+          let timer;
+          const { routes } = await Promise.race([
           Route.computeRoutes({
             origin: seg[0], destination: seg[seg.length - 1],
             intermediates: seg.slice(1, -1).map(location => ({ location })),
@@ -580,11 +607,13 @@
             fields: ['path']
           }),
           new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('ROUTE_TIMEOUT')), 20000); })
-        ]).finally(() => clearTimeout(timer));
+          ]).finally(() => clearTimeout(timer));
+          roadPath = routes?.[0]?.path;
+        }
         if (version !== visualizationVersion) return;
-        if (!routes?.[0]?.path?.length) throw new Error('NO_ROUTE');
+        if (!roadPath?.length) throw new Error('NO_ROUTE');
         pendingPolylines.push(new google.maps.Polyline({
-          path: routes[0].path, strokeColor: '#3b82f6', strokeWeight: 5
+          path: roadPath, strokeColor: '#3b82f6', strokeWeight: 5
         }));
       }
       if (version !== visualizationVersion) return;

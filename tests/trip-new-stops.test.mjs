@@ -154,3 +154,40 @@ test('SDK programming errors are not reported as missing API permissions; diagno
   const redacted = h.api.routeErrorInfo(new Error('bad https://maps.example/test?key=AIzaPRIVATE_TOKEN key AIzaPRIVATE_TOKEN'));
   assert.doesNotMatch(redacted.detail, /AIza|https:/);
 });
+
+test('the original Directions service draws roads without requiring Routes access', async () => {
+  const h = mapHarness(() => { throw new Error('Routes must not be called'); });
+  let request;
+  h.google.maps.importLibrary = async () => ({
+    DirectionsService: class { route(req, callback) {
+      request = req;
+      callback({ routes: [{ overview_path: [req.origin, { lat: 46, lng: 15 }, req.destination] }] }, 'OK');
+    } }
+  });
+  h.element('chkRoundTrip').checked = true;
+  await h.api.updateMapVisualization(Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon })));
+  assert.equal(request.optimizeWaypoints, false);
+  assert.equal(request.waypoints.length, 5);
+  assert.deepEqual(request.origin, request.destination);
+  assert.equal(h.lines[0].options.path.length, 3);
+  assert.match(h.element('status').textContent, /Road route displayed/);
+  assert.equal(h.timerJobs.size, 1); // only the status auto-hide timer remains
+});
+
+test('legacy rejection falls back to Routes and handles the SDK rejected promise', async () => {
+  const h = mapHarness(() => {});
+  let modernCalls = 0;
+  h.google.maps.importLibrary = async () => ({
+    DirectionsService: class { route(req, callback) {
+      callback(null, 'REQUEST_DENIED');
+      return Promise.reject(new Error('legacy denied'));
+    } },
+    Route: { computeRoutes: async req => {
+      modernCalls++;
+      return { routes: [{ path: [req.origin, req.destination] }] };
+    } }
+  });
+  await h.api.updateMapVisualization(Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon })));
+  assert.equal(modernCalls, 1);
+  assert.match(h.element('status').textContent, /Road route displayed/);
+});
