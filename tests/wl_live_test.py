@@ -28,11 +28,13 @@ with sync_playwright() as p:
         page.click('#lock');assert page.locator('#app').is_hidden() and page.locator('.entry').count()==0;checks+=1
         assert not page.evaluate("() => sessionStorage.getItem('wl-v2-session')");checks+=1
         page.close()
-    # Authenticated control acceptance; restore the original pause value.
+        print('WL viewport',width,': 9 checks PASS',flush=True)
+    # Controls are intentionally in a closed disclosure; open it like a user.
     page=b.new_page(viewport={'width':390,'height':1000})
     page.goto(URL,wait_until='domcontentloaded',timeout=60000)
     page.fill('#pw',secret);page.click('#unlock')
     page.wait_for_selector('#app',state='visible',timeout=60000)
+    page.get_by_text('Izvajanje in nadzor',exact=True).click()
     runtime=page.request.get('https://www.mdlxdcc.org/api/wl/runtime').json()
     assert runtime['ok'] and runtime['protocol']=='WL-RUNTIME-2';checks+=1
     prior=runtime['paused']
