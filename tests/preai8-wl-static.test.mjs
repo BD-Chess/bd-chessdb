@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const html=fs.readFileSync(new URL('../public/WL/index.html',import.meta.url),'utf8');
 const core=fs.readFileSync(new URL('../functions/preai8-core.mjs',import.meta.url),'utf8');
-test('WL is noindex and shell has password gate',()=>{assert.match(html,/noindex,nofollow/);assert.match(html,/id="login"/);assert.doesNotMatch(html,/bdai4ever/i)});
+test('WL is noindex and shell has password gate',()=>{assert.match(html,/noindex,nofollow/);assert.match(html,/id="login"/);assert.doesNotMatch(html,/WL_EXPECTED|WL_SALT|PREAI8_OWNER_TOKEN/)});
 test('font controls exist',()=>{for(const x of ['fontMinus','fontPlus','fontReset'])assert.match(html,new RegExp(`id="${x}"`))});
 test('private stream is API-loaded',()=>{assert.match(html,/\/api\/wl\/session/);assert.match(html,/\/api\/wl\/data/);assert.doesNotMatch(html,/PREAI8 \/ TEK A — TURN 2/)});
 test('RHP roster has eleven roles',()=>{assert.equal((core.match(/\{ id:/g)||[]).length,11)});
