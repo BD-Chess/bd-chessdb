@@ -27,6 +27,7 @@ function context() {
   elements.set('btnReplay', node());
   elements.set('simStatsPanel', node());
   const c = {
+    positionEval: { render() {}, update() {} },
     simRequests: new Set(),
     workspace: { reset() {}, start() {}, pause() {}, stop() {}, history() {}, recordMove() {} },
     Chess, AbortController, DOMException, TextDecoder, URL, URLSearchParams, Blob,

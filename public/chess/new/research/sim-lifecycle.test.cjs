@@ -22,6 +22,7 @@ function context() {
     classList: { toggle() {} }, setAttribute() {}, appendChild() {} });
   const el = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   const c = {
+    positionEval: { render() {}, update() {} },
     simRequests: new Set(),
     workspace: { reset() {}, start() {}, pause() {}, stop() {}, history() {}, recordMove() {} },
     Chess, DCC, SIM, AbortController, console, Date, game: new Chess(),

@@ -28,7 +28,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912f">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912g">
 
 
   <!-- ── Structured data: tool + parent research program for search engines & AI ── -->
@@ -93,7 +93,13 @@
     <!-- --------------- BOARD --------------- -->
     <section id="board-container" aria-label="Chess analysis board">
       <div class="board-heading"><span class="section-kicker">ANALYSIS BOARD</span><span class="research-tag">8Z · MDL×DCC</span></div>
-      <div id="board" aria-label="Interactive chess board"></div>
+      <div class="board-stage">
+        <div id="positionEval" class="position-eval is-pending" role="img" aria-label="Position evaluation pending" title="CDB position evaluation · White perspective">
+          <div class="eval-white" aria-hidden="true"></div><span class="eval-midpoint" aria-hidden="true"></span>
+          <span id="positionEvalLabel" class="eval-label" aria-hidden="true">…</span>
+        </div>
+        <div id="board" aria-label="Interactive chess board"></div>
+      </div>
       <div class="board-actions">
         <p>Drag a piece or select a move badge.</p>
         <button type="button" class="best-move-action" id="btnPlayBest" title="Play the best available move">Play best move <span aria-hidden="true">↗</span></button>
@@ -108,16 +114,14 @@
 
     <!-- --------------- CONTROLS --------------- -->
     <section id="controls" aria-label="Game and analysis controls">
+      <div class="workspace-top">
       <div class="section-kicker workspace-heading">YOUR WORKSPACE <button type="button" id="btnGemini" class="gemini-toggle" title="Ask Gemini about this position" aria-label="Open Gemini chess assistant" aria-expanded="false" aria-controls="geminiPanel">✦</button></div>
-      <!-- Navigation row -->
-      <div class="btn-group top-buttons">
-        <button class="btn btn-nav" id="first" aria-label="First position" title="First position (Home)">|&lt;</button>
-        <button class="btn btn-nav" id="prev" aria-label="Previous move" title="Previous move (Left arrow)">←</button>
-        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
-        <button class="btn btn-nav" id="next" aria-label="Next move" title="Next move (Right arrow)">→</button>
-        <button class="btn btn-nav" id="last" aria-label="Last position" title="Last position (End)">&gt;|</button>
+      <div id="workspaceClockSlot">
+      <div id="workspaceTimers" class="workspace-timers" aria-label="Player timers">
+        <div class="timer-pair"><div id="timerWhite" class="player-timer"><span>White</span><strong>0:00</strong></div><div id="timerBlack" class="player-timer"><span>Black</span><strong>0:00</strong></div></div>
+        <small id="timerCaption">Elapsed per player · no time limit</small>
       </div>
-
+      </div>
       <!-- Game title -->
       <div class="game-title" id="gameTitle">
         Your next move starts here
@@ -125,15 +129,6 @@
 
       <!-- Opening name -->
       <div id="openingName"></div>
-      <div id="workspaceTimers" class="workspace-timers" hidden aria-label="Player timers">
-        <div class="timer-pair"><div id="timerWhite" class="player-timer"><span>White</span><strong>0:00</strong></div><div id="timerBlack" class="player-timer"><span>Black</span><strong>0:00</strong></div></div>
-        <small id="timerCaption">Elapsed per player · no time limit</small>
-      </div>
-      <div id="humanSession" class="human-session" hidden>
-        <div class="human-session-actions"><strong id="humanSessionState">Two players</strong><button class="btn" id="btnHumanPause">Pause game</button><button class="btn" id="btnHumanFinish">End study</button></div>
-        <small id="humanReview"></small>
-      </div>
-
       <!-- Move/DCC/Sim toggle -->
       <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
         <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Automated game: DCC vs selected opponent" aria-label="Sim: automated DCC versus opponent">Sim</button>
@@ -146,6 +141,24 @@
       </div>
 
       <p class="mode-hint">Sim: watch a match <span>·</span> SimW / SimB: play the engine</p>
+      </div>
+
+      <div class="workspace-analysis">
+      <!-- Navigation row -->
+      <div class="btn-group top-buttons">
+        <button class="btn btn-nav" id="first" aria-label="First position" title="First position (Home)">|&lt;</button>
+        <button class="btn btn-nav" id="prev" aria-label="Previous move" title="Previous move (Left arrow)">←</button>
+        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
+        <button class="btn btn-nav" id="next" aria-label="Next move" title="Next move (Right arrow)">→</button>
+        <button class="btn btn-nav" id="last" aria-label="Last position" title="Last position (End)">&gt;|</button>
+      </div>
+
+      <div id="workspaceDisplay" class="workspace-display" tabindex="0" aria-label="Moves and DCC analysis">
+      <div id="humanSession" class="human-session" hidden>
+        <div class="human-session-actions"><strong id="humanSessionState">Two players</strong><button class="btn" id="btnHumanPause">Pause game</button><button class="btn" id="btnHumanFinish">End study</button></div>
+        <small id="humanReview"></small>
+      </div>
+
       <div id="simDecisionPanel" class="sim-decision" style="display:none;" aria-label="CDB and DCC decision comparison"></div>
 
       <!-- Move history (default view) -->
@@ -184,30 +197,10 @@
         </div>
       </div>
 
-      <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
-      <div class="btn-group">
-        <button class="btn btn-fen" id="btnFormat" title="Choose FEN position or PGN game format">FEN|pgn</button>
-        <button class="btn btn-fen" id="btnInput" title="Paste a FEN position or PGN game">Input</button>
-        <button class="btn btn-fen" id="btnCopy" title="Copy the selected FEN or PGN format">Copy</button>
       </div>
-
-      <!-- ---------- ROW 2  New | Save | Load ---------- -->
-      <div class="btn-group">
-        <button class="btn btn-new" id="btnNew" title="Start a new game">New game</button>
-        <button class="btn btn-pgn" id="btnSave" title="Download your game as PGN">Save PGN</button>
-        <button class="btn btn-pgn" id="btnLoad" title="Load a PGN file">Load PGN</button>
-        <input type="file" id="filePGN" accept=".pgn,.txt" style="display:none">
-      </div>
-
-      <!-- ---------- ROW 3  Games | Theme | Settings ---------- -->
-      <div class="btn-group bottom-controls">
-        <button class="btn btn-nav" id="btnGames" aria-controls="popularGamesPanel" aria-expanded="false">Game library</button>
-        <button class="btn btn-nav" id="btnFlip" title="Flip the board orientation">Flip board</button>
-        <button class="btn btn-nav" id="btnSettings" aria-controls="settingsPanel" aria-expanded="false">Settings</button>
-      </div>
-
       <!-- Popular games panel -->
-      <div id="popularGamesPanel" class="panel">
+      <div id="popularGamesPanel" class="panel workspace-drawer" aria-label="Game library">
+        <div class="drawer-heading"><strong>Game library</strong><button type="button" class="btn" id="btnCloseGames" aria-label="Close game library">×</button></div>
         <label for="popularGamesSelect">Load a game:</label>
         <select id="popularGamesSelect">
           <option value="">— select —</option>
@@ -215,12 +208,13 @@
       </div>
 
       <!-- Settings panel -->
-      <div id="settingsPanel" class="panel">
+      <div id="settingsPanel" class="panel workspace-drawer" aria-label="Workspace settings">
+        <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
         <div class="dcc-settings-group timing-settings">
           <div class="dcc-settings-title">Time &amp; two players</div>
-          <label><input type="checkbox" id="settingShowTimers"> Show player timers</label>
+          <label><input type="checkbox" id="settingShowTimers" checked> Show player timers</label>
           <label><input type="checkbox" id="settingShowTimestamps"> Show move timestamps</label>
-          <p class="setting-note">Both displays are off by default. Sim counts elapsed time without a time limit. Move timestamps use your local timezone.</p>
+          <p class="setting-note">Player timers are on by default; timestamps are off. Sim counts elapsed time without a time limit. Move timestamps use your local timezone.</p>
           <button type="button" class="btn" id="btnTwoPlayers">Two players · same board</button>
         </div>
         <label for="settingTopN">Show top moves:</label>
@@ -376,7 +370,31 @@
         </div>
       </div>
 
-      <div class="spacer"></div>
+      </div>
+
+      <div class="workspace-bottom">
+      <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-fen" id="btnFormat" title="Choose FEN position or PGN game format">FEN|pgn</button>
+        <button class="btn btn-fen" id="btnInput" title="Paste a FEN position or PGN game">Input</button>
+        <button class="btn btn-fen" id="btnCopy" title="Copy the selected FEN or PGN format">Copy</button>
+      </div>
+
+      <!-- ---------- ROW 2  New | Save | Load ---------- -->
+      <div class="btn-group">
+        <button class="btn btn-new" id="btnNew" title="Start a new game">New game</button>
+        <button class="btn btn-pgn" id="btnSave" title="Download your game as PGN">Save PGN</button>
+        <button class="btn btn-pgn" id="btnLoad" title="Load a PGN file">Load PGN</button>
+        <input type="file" id="filePGN" accept=".pgn,.txt" style="display:none">
+      </div>
+
+      <!-- ---------- ROW 3  Games | Theme | Settings ---------- -->
+      <div class="btn-group bottom-controls">
+        <button class="btn btn-nav" id="btnGames" aria-controls="popularGamesPanel" aria-expanded="false">Game library</button>
+        <button class="btn btn-nav" id="btnFlip" title="Flip the board orientation">Flip board</button>
+        <button class="btn btn-nav" id="btnSettings" aria-controls="settingsPanel" aria-expanded="false">Settings</button>
+      </div>
+
 
       <nav id="info-links" aria-label="Chess resources">
         <a href="8zc-pgn.html">PGN picks</a>
@@ -387,7 +405,7 @@
         By <a href="mailto:bd@siol.net" id="authorLink" title="Email Bojan D.">Bojan D.</a>
         <span>·</span> <strong>2026.09</strong> <span>·</span> Experimental analysis
       </div>
-      <div class="dcc-badge-label">8Z · MDL+DCC <span>·</span> <a href="https://www.mdlxdcc.org/BD/">BD Portfolio <span aria-hidden="true">↗</span></a></div>
+      </div>
     </section>
   </main>
 
@@ -396,10 +414,12 @@
     <h2 id="whatsNewTitle">Ista šahovnica.<br><span>Jasnejši vpogled.</span></h2>
     <p class="dialog-intro">Kaj je novega v tej različici?</p>
     <ul class="upgrade-list">
+      <li><strong>Mirnejša delovna plošča.</strong> Uri sta na vrhu, puščice tik nad potezami in DCC, spodnji gumbi pa ostajajo pri miru. Sim ne pomika seznama sam; po starejših potezah se pomakni ročno.</li>
+      <li><strong>Ocena ob šahovnici.</strong> Navpični trak levo prikazuje surovo oceno CDB: plus za bele, minus za črne. Obrni šahovnico ali skrij ocene za preizkus. Neznana ocena je označena z »—«.</li>
       <li><strong>Sim kot preizkus DCC.</strong> Za bele in črne izberi <b>CDB (top 1)</b> ali <b>CDB + DCC</b>. Prikaz primerja obe izbiri, število izenačenih potez in razliko ocen.</li>
       <li><strong>Pavza na izbranem položaju.</strong> Klikni potezo v zgodovini; Sim se takoj ustavi. Ponovno odpri <b>Sim</b>, zamenjaj motorja in nadaljuj. V <b>Position experiments</b> se vrni na začetek posamezne veje ali izvozi PGN/CSV.</li>
       <li><strong>New game deluje tudi med igro.</strong> Prekine lokalni Sim/SimB/SimW ali Replay, ponastavi šahovnico in zavrže zapoznele poteze. <b>Bojan D.</b> zdaj odpre e-pošto.</li>
-      <li><strong>Časi po izbiri.</strong> V <b>Settings</b> neodvisno vključi <b>Show player timers</b> in <b>Show move timestamps</b>; privzeto sta oba skrita. Sim meri čas brez časovne omejitve. PGN/CSV vsebuje tudi časovne zapise.</li>
+      <li><strong>Časi po izbiri.</strong> V <b>Settings</b> neodvisno vključi <b>Show player timers</b> in <b>Show move timestamps</b>; uri sta privzeto vidni na vrhu, časovni zapisi potez pa skriti. Sim meri čas brez časovne omejitve. PGN/CSV vsebuje tudi časovne zapise.</li>
       <li><strong>Dva igralca.</strong> <b>Settings → Two players · same board</b>: oba igrata na isti napravi, CDB + DCC pa spremlja poteze. Izberi čas in dodatek ali igraj brez omejitve.</li>
       <li><strong>Gemini ob šahovnici.</strong> Klikni <b>✦</b> ob YOUR WORKSPACE in vprašaj o položaju ali DCC. Vsak odgovor se nanaša na položaj ob tvojem vprašanju.</li>
       <li><strong>Top 5 je spet celoten.</strong> Obnovljeno združevanje ocen ChessDB in vrstni red iz stare strani. Odpri <b>New game</b>: ob nastavitvi Top 5 se prikaže pet ocenjenih potez.</li>
@@ -519,7 +539,7 @@
     <p id="twoPlayersNotice">Play together on this device. CDB + DCC observes both players.</p>
     <div class="study-fields"><label>White name<input id="humanWhiteName" maxlength="60" placeholder="Human White"></label><label>Black name<input id="humanBlackName" maxlength="60" placeholder="Human Black"></label></div>
     <div class="study-fields"><label>Time per player<select id="humanMinutes"><option value="0" selected>No limit · elapsed time</option><option value="1">1 minute</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label><label>Increment per move<select id="humanIncrement"><option value="0" selected>None</option><option value="1">1 second</option><option value="2">2 seconds</option><option value="3">3 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option></select></label></div>
-    <p class="setting-note">Player timers and timestamps are shown only if enabled in Settings. A local clock reaching zero pauses the study game. You can continue without a limit.</p>
+    <p class="setting-note">Player timers are on by default; timestamps can be enabled separately in Settings. A local clock reaching zero pauses the study game. You can continue without a limit.</p>
     <div class="dialog-actions"><button class="btn" id="humanCancel">Cancel</button><button class="btn btn-new" id="humanStart">Start from this position</button></div>
   </dialog>
   <aside id="geminiPanel" class="gemini-panel" hidden role="dialog" aria-modal="false" aria-labelledby="geminiTitle">
@@ -539,13 +559,14 @@
   <script>
 </script>
   <!-- DCC-enhanced utils -->
-  <script src="js/8zc-dcc-core.js?v=20260912f"></script>
-  <script src="js/8zc-sim-core.js?v=20260912f"></script>
-  <script src="js/8zc-time-core.js?v=20260912f"></script>
-  <script src="js/8zc-workspace.js?v=20260912f"></script>
-  <script src="js/8zc-gemini.js?v=20260912f"></script>
-  <script src="js/8zc-utils.js?v=20260912f"></script>
-  <script src="js/8zc-new-ui.js?v=20260912f"></script>
+  <script src="js/8zc-dcc-core.js?v=20260912g"></script>
+  <script src="js/8zc-sim-core.js?v=20260912g"></script>
+  <script src="js/8zc-time-core.js?v=20260912g"></script>
+  <script src="js/8zc-eval-bar.js?v=20260912g"></script>
+  <script src="js/8zc-workspace.js?v=20260912g"></script>
+  <script src="js/8zc-gemini.js?v=20260912g"></script>
+  <script src="js/8zc-utils.js?v=20260912g"></script>
+  <script src="js/8zc-new-ui.js?v=20260912g"></script>
 
 </body>
 </html>

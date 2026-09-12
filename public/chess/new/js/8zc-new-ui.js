@@ -50,7 +50,9 @@
       legacy.className = 'library-native-selects';
       legacy.hidden = true;
       nativeSelects.forEach(select => legacy.appendChild(select));
+      const drawerHeader = panel.querySelector('.drawer-heading');
       panel.replaceChildren();
+      if (drawerHeader) panel.appendChild(drawerHeader);
       const top = document.createElement('div');
       top.className = 'library-title';
       top.append(document.createTextNode('Find your next game'));

@@ -1365,25 +1365,18 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 #moves td[role="button"]:hover { background: var(--ui-raised); }
 @media (max-width: 790px) { #simLocalMatch select { font-size: 16px; } .sim-experiments summary { min-height: 44px; } }
 
-/* Let the board frame determine the desktop row height. Size containment
-   prevents long history/settings content from stretching both columns. */
+/* Let the board frame determine the desktop row height. Only the central
+   analysis area scrolls; dynamic results never push the bottom controls. */
 @media (min-width: 791px) {
+  #main { align-items: stretch; }
   #controls, body.light-theme #controls {
     align-self: stretch;
     contain: size;
-    min-height: 0;
-    overflow-y: auto;
-  }
-  #controls > * { flex-shrink: 0; }
-  #controls > #moves, #controls > #dccAnalysisPanel {
-    flex: 1 0 140px;
-    height: auto !important;
-    min-height: 140px;
-    max-height: none !important;
+    min-height: 740px;
   }
 }
 
-/* Time displays are opt-in; the assistant stays a small header action. */
+/* Player clocks lead the workspace; timestamps remain optional. */
 .workspace-heading { display: flex; align-items: center; gap: 10px; }
 .gemini-toggle { display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--ui-border); border-radius: 8px; color: var(--ui-accent); background: var(--ui-raised); font-size: 20px; cursor: pointer; }
 .gemini-toggle:hover, .gemini-toggle[aria-expanded="true"] { border-color: var(--ui-accent); }
@@ -1436,3 +1429,47 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
   .gemini-panel button { min-height: 42px; }
   #geminiQuestion, .study-fields input, .study-fields select { font-size: 16px; }
 }
+
+/* Stable workspace: top, navigation + reading area, and a stationary toolbar. */
+#controls, body.light-theme #controls { overflow: clip; }
+.workspace-top, .workspace-bottom { flex: 0 0 auto; min-width: 0; }
+.workspace-analysis { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; min-width: 0; position: relative; }
+.workspace-analysis > .top-buttons { flex: 0 0 auto; margin: 0 0 8px; }
+.workspace-analysis > .top-buttons .btn { height: 44px; min-height: 44px; line-height: 1.15; }
+.workspace-display { flex: 1 1 0; min-height: 0; min-width: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-inset); padding: 8px; }
+.workspace-display:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: -2px; }
+#controls.is-automating .workspace-display { scrollbar-color: transparent transparent; }
+#controls.is-automating .workspace-display:hover, #controls.is-automating .workspace-display:focus-within { scrollbar-color: auto; }
+.workspace-display::-webkit-scrollbar { width: 8px; height: 8px; }
+.workspace-display::-webkit-scrollbar-thumb { background: var(--ui-muted); border-radius: 8px; }
+#controls.is-automating .workspace-display:not(:hover):not(:focus-within)::-webkit-scrollbar-thumb { background: transparent; }
+.workspace-display #moves, .workspace-display #dccAnalysisPanel, body.light-theme .workspace-display #moves, body.light-theme .workspace-display #dccAnalysisPanel { height: auto !important; min-height: 0; max-height: none !important; overflow: visible !important; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; }
+.workspace-display .sim-experiment-list { max-height: none; overflow: visible; }
+.workspace-bottom { padding-top: 12px; }
+.workspace-bottom .bottom-controls { margin-top: 9px; }
+.workspace-top .game-title { margin: 0 0 3px; height: 44px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.workspace-top #openingName { height: 17px; margin: 0 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#dccProgress, #dccProgress:empty { display: block; height: 15px; line-height: 15px; overflow: hidden; white-space: nowrap; }
+.workspace-top .mode-hint { margin: 3px 0 12px; }
+.workspace-top #timerCaption { min-height: 15px; line-height: 15px; }
+.workspace-top .live-clocks { margin: 4px 0 12px; }
+.workspace-analysis #settingsPanel, .workspace-analysis #popularGamesPanel, body.light-theme .workspace-analysis .workspace-drawer { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; overflow: auto; overscroll-behavior: contain; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: -14px; background: var(--ui-inset); z-index: 1; padding: 6px 0 9px; border-bottom: 1px solid var(--ui-border); }
+.drawer-heading .btn { min-width: 36px; font-size: 20px; background: var(--ui-raised); }
+
+/* The bar shares the board's exact height, including when the board is flipped. */
+.board-stage { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 9px; align-items: stretch; }
+.board-stage #board { min-width: 0; }
+.position-eval { position: relative; overflow: hidden; border-radius: 4px; background: #252b2a; border: 1px solid #65716b; --eval-white: 50%; }
+.eval-white { position: absolute; bottom: 0; left: 0; right: 0; height: var(--eval-white); background: #f0f0df; transition: height .35s ease; }
+.position-eval.is-flipped .eval-white { bottom: auto; top: 0; }
+.eval-midpoint { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #849187; opacity: .75; }
+.eval-label { position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%); writing-mode: vertical-rl; rotate: 180deg; padding: 5px 2px; border-radius: 3px; color: #1c2620; background: #f0f0df; font: 700 10px/1.3 system-ui; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.position-eval.is-flipped .eval-label { bottom: auto; top: 7px; }
+.position-eval.is-pending, .position-eval.is-unknown, .position-eval.is-hidden { background: repeating-linear-gradient(135deg, #343e38 0 5px, #3e4942 5px 10px); }
+.position-eval.is-pending .eval-white, .position-eval.is-unknown .eval-white, .position-eval.is-hidden .eval-white { visibility: hidden; }
+@media (max-width: 790px) {
+  .workspace-analysis { flex: 0 0 auto; height: 340px; }
+  .board-stage { grid-template-columns: 22px minmax(0, 1fr); gap: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .eval-white { transition: none; } }

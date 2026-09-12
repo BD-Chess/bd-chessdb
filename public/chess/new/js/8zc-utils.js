@@ -22,7 +22,8 @@ function initAll() {
     /* historySize: 'small', */
     historySize: window.innerWidth <= 600 ? 'smallest' : 'small',
     nextDot: true,     // show next‑move preview by default
-    showTimers: false,
+    showTimers: true,
+    timerDisplayDefaults: 2,
     showTimestamps: false,
     ioFormat: 'fen',   // NEW  (fen | pgn)  for Format / Input / Copy row
     /* DCC Lookahead settings */
@@ -80,7 +81,14 @@ function initAll() {
   ------------------------------------------------------------------*/
   const saved = localStorage.getItem(STORAGE_KEY_SETTINGS);
   if (saved) {
-    try { Object.assign(settings, JSON.parse(saved)); }
+    try {
+      const prior = JSON.parse(saved);
+      Object.assign(settings, prior);
+      // Adopt the requested new default once, then retain the user's later choice.
+      if (prior.timerDisplayDefaults !== 2) settings.showTimers = true;
+      settings.timerDisplayDefaults = 2;
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    }
     catch (e) { console.error('Bad settings JSON', e); }
   }
   if (!ENABLE_COACH) {
@@ -259,7 +267,9 @@ function buildPrettyGameTitle(tags, bucket, file, fallbackCoreTitle) {
 
 
   const panel = document.getElementById('popularGamesPanel');
-  panel.innerHTML = '';
+  const libraryHeader = panel.querySelector('.drawer-heading');
+  panel.replaceChildren();
+  if (libraryHeader) panel.appendChild(libraryHeader);
   const heading = document.createElement('div');
   heading.innerText = 'Load a game:';
   heading.style.fontWeight = 'bold';
@@ -454,6 +464,7 @@ gameBuckets.forEach(bucket => {
   let divergedIndex = -1;  // NEW: index of divergence from PGN history
   let lastAction = null;
   let showEval      = true;
+  let evalBarVisible = true;
   // per‐move “in book” flags parsed from PGN comments
   let bookFlags = [];
   let evalRetries = 0;
@@ -506,6 +517,8 @@ gameBuckets.forEach(bucket => {
   const analysisPending = new Map();
   const requestPending = new Map();
   const simRequests = new Set();
+  const positionEval = window.ChessEvalBar.create({ game, settings,
+    isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked) });
   const workspace = window.ChessWorkspace.create({ Chess, game, settings,
     onDisplaySettings: () => {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -580,6 +593,7 @@ gameBuckets.forEach(bucket => {
     return pending;
   }
   async function cachedFetchChessDB(fen) {
+    const generation = analysisGeneration;
     // Match the original /chess/ source contract. learn=0 can leave all but
     // one score unknown; learn=1 supplies the other evaluated candidates.
     // Each request has its own cache key and may fail independently.
@@ -598,7 +612,9 @@ gameBuckets.forEach(bucket => {
     }
     // Preserve ChessDB's order within score/rank ties (not alphabetical UCI).
     const moves = Array.from(moveMap.values(), (move, sourceOrder) => ({ ...move, sourceOrder }));
-    return { fen, moves: DCC.legalMoves(Chess, fen, moves) };
+    const legal = DCC.legalMoves(Chess, fen, moves);
+    if (generation === analysisGeneration) positionEval.update(fen, legal[0]?.score);
+    return { fen, moves: legal };
   }
   async function fetchPV(fen) {
     const text = await fetchChessText('querypv', fen);
@@ -758,6 +774,7 @@ gameBuckets.forEach(bucket => {
 	  
 	/* board orientation */
 	board.orientation(settings.flipBoard ? 'black' : 'white');
+    positionEval.render();
 
     /* CSS vars */
     document.documentElement.style.setProperty('--overlay-font', settings.font);
@@ -959,6 +976,8 @@ gameBuckets.forEach(bucket => {
   }
 
   function renderHistory() {
+    const display = document.getElementById('workspaceDisplay');
+    const savedScroll = display?.scrollTop || 0;
     const div=document.getElementById('moves'); div.innerHTML='';
     const tbl=document.createElement('table');
     const pairs=[];
@@ -1006,20 +1025,18 @@ gameBuckets.forEach(bucket => {
     });
     div.appendChild(tbl);
 
-    // Auto-scroll to show current move row
-	const selected = tbl.querySelector('tr.selected');
-	if (selected) {
-		const container = document.getElementById('moves');
-		const offsetTop = selected.offsetTop;
-		const offsetHeight = selected.offsetHeight;
-		const containerHeight = container.clientHeight;
-
-		// Scroll the container so that selected is centered inside it
-		container.scrollTo({
-			top: offsetTop - (containerHeight / 2) + (offsetHeight / 2),
-			behavior: 'smooth'
-		});
-	}
+    // Automated play never scrolls the reading area or page. User navigation
+    // may reveal a selected row, within this central area only.
+    const selected = tbl.querySelector('tr.selected');
+    if (display) {
+      if (simRunning || replayRunning || playState.autoPilot) display.scrollTop = savedScroll;
+      else if (selected && !dccViewActive) {
+        const row = selected.getBoundingClientRect(), area = display.getBoundingClientRect();
+        if (row.top < area.top || row.bottom > area.bottom) {
+          display.scrollTop += row.top - area.top - (display.clientHeight - row.height) / 2;
+        }
+      }
+    }
 
   }
 
@@ -1038,6 +1055,7 @@ gameBuckets.forEach(bucket => {
 	  }
 
 	  board.position(game.fen());
+	  positionEval.render();
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 	  // Cancel any running DCC lookahead
 	  invalidateDCCAnalysis();
@@ -1485,9 +1503,22 @@ function jumpTo(i){
   /* ------------------------------------------------------------------
      15. ROW 3  (Games | Theme | Settings)
   ------------------------------------------------------------------*/
-  document.getElementById('btnGames').onclick = () =>
-    document.getElementById('popularGamesPanel')
-      .classList.toggle('open');
+  const workspaceDrawers = [['popularGamesPanel', 'btnGames', 'btnCloseGames'], ['settingsPanel', 'btnSettings', 'btnCloseSettings']];
+  workspaceDrawers.forEach(([panelId, buttonId, closeId]) => {
+    const panel = document.getElementById(panelId), button = document.getElementById(buttonId);
+    const close = () => { panel.classList.remove('open'); button.setAttribute('aria-expanded', 'false'); button.focus({ preventScroll: true }); };
+    button.onclick = () => {
+      const open = !panel.classList.contains('open');
+      workspaceDrawers.forEach(([otherId, otherButton]) => {
+        document.getElementById(otherId).classList.remove('open');
+        document.getElementById(otherButton).setAttribute('aria-expanded', 'false');
+      });
+      panel.classList.toggle('open', open); button.setAttribute('aria-expanded', String(open));
+      if (open) document.getElementById(closeId).focus({ preventScroll: true });
+    };
+    document.getElementById(closeId).onclick = close;
+    panel.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); close(); } });
+  });
 
   document.getElementById('btnFlip').onclick = () => {
     settings.flipBoard = !settings.flipBoard;
@@ -1495,10 +1526,6 @@ function jumpTo(i){
     applySettings();
     updateBoard(false);
   };
-
-  document.getElementById('btnSettings').onclick = () =>
-    document.getElementById('settingsPanel')
-      .classList.toggle('open');
 
   // Reset all settings back to defaults
   document.getElementById('btnResetSettings').onclick = () => {
@@ -1513,7 +1540,14 @@ function jumpTo(i){
   ------------------------------------------------------------------*/
 
 	document.getElementById('btnHideEval').onclick = () => {
+      if (simRunning || replayRunning) {
+        evalBarVisible = !evalBarVisible;
+        positionEval.render();
+        document.getElementById('btnHideEval').textContent = evalBarVisible ? 'Hide Eval' : 'Show Eval';
+        return;
+      }
 	  showEval = !showEval;
+	  positionEval.render();
 	  // cancel any pending retries when hiding
 	  if (!showEval && evalRetryTimer) clearInterval(evalRetryTimer);
 	  const label = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
@@ -2200,6 +2234,8 @@ function openSimModal(launchMode = 'sim') {
 
   
 function refreshPlayUi() {
+  document.getElementById('controls')?.classList.toggle('is-automating', simRunning || replayRunning || !!playState.autoPilot);
+  positionEval.render();
   const busy = playState.active || simRunning || !!playState.replaying;
   const btnSim = document.getElementById('btnSim');
   const btnSimW = document.getElementById('btnSimW');
@@ -2224,7 +2260,7 @@ function refreshPlayUi() {
   if (askInput) askInput.disabled = !ENABLE_COACH;
   if (askBtn) askBtn.disabled = !ENABLE_COACH;
   if (!playState.active) setCoachNotice('');
-  if (btnHide) btnHide.innerHTML = showEval ? 'Hide<br>Eval' : 'Show<br>Eval';
+  if (btnHide) btnHide.textContent = ((simRunning || replayRunning) ? evalBarVisible : showEval) ? 'Hide Eval' : 'Show Eval';
 }
 
 function enterActiveSession(mode, opts = {}) {
@@ -2363,7 +2399,7 @@ function sessionAbortError() {
 }
 
 function renderLichessClocks() {
-  const host = document.getElementById('board-container');
+  const host = document.getElementById('workspaceClockSlot');
   if (!host) return;
   let row = document.getElementById('liveClocks');
   if (!row) {
@@ -3210,6 +3246,7 @@ async function launchFromSimModal() {
       while (game.history().length > 0) game.undo();
       initialFen = game.fen();
       board.position(initialFen);
+      positionEval.render();
       document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
       renderReplayProgress(annotations, moves.length, 'Reviewing', headers);
       for (let i = 0; i < moves.length; i++) {
@@ -3229,6 +3266,7 @@ async function launchFromSimModal() {
           isDCC1: null, observedPlies: null, samplePlies: null, coverage: 'unknown'
         };
         if (analysis) {
+          positionEval.update(fen, analysis.allMoves[0]?.score);
           latestDCCResults = analysis.candidates.map(candidate => candidate.data).filter(Boolean);
           latestDCCReceipt = analysis.receipt;
           renderDCCView();
@@ -3259,6 +3297,7 @@ async function launchFromSimModal() {
         if (!playedMove) throw new Error(`PGN move ${i + 1} (${mv.san}) is illegal at the replay position.`);
         annotations.push(ann);
         board.position(game.fen());
+        positionEval.render();
         renderHistory();
         renderReplayProgress(annotations, moves.length, 'Reviewing', headers);
         if (snapshot.simSpeed > 0) await sleep(Math.max(80, snapshot.simSpeed));

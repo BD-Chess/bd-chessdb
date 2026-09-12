@@ -19,6 +19,7 @@ const verified = opening.map((m, i) => row(m, i ? '??' : 1, i ? 0 : 2)).join('|'
 function context(responses = [verified, cloud]) {
   const calls = [], badges = [];
   const c = {
+    positionEval: { render() {}, update() {} },
     activityEpoch: 0, simRequests: new Set(),
     Chess, DCC, AbortController, console: { warn() {} },
     settings: { evalMode: 'direct', topN: 5, dccEnabled: true },

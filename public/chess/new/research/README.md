@@ -124,3 +124,28 @@ elapsed/countdown clocks, increment, pause accounting, request cancellation and
 Gemini quota/secret/grounding tests. Full HTML/JS DOM smoke passed two independent
 display switches during Sim, two human colors, timestamps, clock pause/resume,
 FEN-grounded chat, safe plain-text rendering and stale-position reply labels.
+
+
+## 2026-09-12 steady workspace and position evaluation
+
+Player clocks are on by default at the top. Existing pre-layout settings adopt
+this default once (timerDisplayDefaults=2), then later choices persist. Timestamps
+still default off. Local and Lichess clocks share the top clock slot.
+
+Controls use separate top, central and bottom regions. Only the central reading
+area scrolls; navigation is directly above it. Settings and library are exclusive
+drawers over this area with close/Escape controls. Automatic Sim/Replay preserves
+the reading scroll position; its scrollbar becomes visible on hover/focus. The
+previous whole-workspace scrollbar and duplicate Portfolio footer are removed.
+Mobile/tablet use a fixed 340px central area; desktop stretches with the board.
+
+The new evaluation bar consumes existing CDB queries, adds no API calls and uses
+the full displayed FEN. It normalizes mover scores to White POV, handles unknown
+values and actual terminal positions separately, and follows board orientation.
+CDB decisive sentinels are labelled W/B, not a fabricated mate distance. The
+bounded tanh fill is a visual scale, not a calibrated win probability.
+
+Validation: 55 deterministic tests pass, including score perspective, unknown/decisive
+values, terminal outcomes and late-response isolation for the new bar. Full DOM
+boot covers the actual presentation helpers, both drawers, timers, SimB/New game,
+automatic play, navigation pause, local human play and the assistant.

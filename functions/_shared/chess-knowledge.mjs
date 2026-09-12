@@ -54,8 +54,12 @@ same settings and comparable CDB data; one line or duplicated position is not a 
 SimW: engine White, human Black. SimB: engine Black, human White. New game resets locally.
 Settings -> Two players starts a LOCAL shared-board game, both sides human, CDB+DCC
 observing in the background. There is no multiplayer room or remote synchronisation.
-Settings independently enables player timers and move timestamps; both are hidden by
-default. Sim counts elapsed time without a clock deadline; waiting for CDB is included.
+Settings independently enables player timers and move timestamps. Timers are on by
+default at the top of Your Workspace; timestamps are off. The bottom controls stay fixed
+while the central moves/DCC area scrolls manually, with navigation directly above it.
+The vertical bar left of the board is the raw CDB position score in WHITE perspective
+(+1.00 means 100cp for White). Its height is not a win probability or a DCC rank.
+It follows board orientation; pending/unavailable values are labelled, never assumed zero. Sim counts elapsed time without a clock deadline; waiting for CDB is included.
 The selected Sim pause (e.g. 1 s) is added AFTER analysis. Analysis time and display pause
 are recorded separately. Optional countdown + increment applies only to local human games.
 Timestamps are observed client UTC move times shown in the browser's local timezone,
