@@ -60,6 +60,8 @@ test('joins answer parts, excludes thoughts, preserves itinerary and returns saf
     assert.equal(body.contents[0].parts[0].text, 'Plan a walk in Rome.');
     assert.equal(body.tools, undefined);
     assert.match(body.systemInstruction.parts[0].text, /without live web access/);
+    assert.match(body.systemInstruction.parts[0].text, /Optimize \(Fast\)/);
+    assert.match(body.systemInstruction.parts[0].text, /Never include actions in ordinary help/);
     assert.equal(body.generationConfig.maxOutputTokens, 8192);
     return Response.json({ modelVersion: 'gemini-3.5-flash-lite', candidates: [{ finishReason: 'STOP',
       content: { parts: [{ thought: true, text: 'private thought' }, { text: 'Here is your trip.\n' },
@@ -140,4 +142,28 @@ test('timeouts and unreachable providers produce distinct retryable errors', asy
     return Response.json({ candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }] });
   }, { GEMINI_API_KEY: 'test-server-key', TRIP_GEMINI_SEARCH: 'true' });
   assert.equal((await handler(request())).status, 200);
+});
+
+test('zero, daily and minute quotas give distinct guidance without exposing provider data', async t => {
+  const fetchMock = setup(t);
+  for (const [quotaId, message, expected] of [
+    ['GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'Quota exceeded, limit: 0, model: hidden', 'QUOTA_UNAVAILABLE'],
+    ['GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'Quota exceeded, limit: 20', 'DAILY_QUOTA_EXCEEDED'],
+    ['GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'Quota exceeded, limit: 10', 'RATE_LIMITED']
+  ]) {
+    fetchMock.mock.mockImplementation(async () => Response.json({ error: {
+      message: message + ' test-server-key',
+      details: [
+        { '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId, subject: 'private-project' }] },
+        { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '42.7s' }
+      ]
+    } }, { status: 429 }));
+    const response = await handler(request());
+    const data = await response.json();
+    assert.equal(response.status, 429);
+    assert.equal(data.error.code, expected);
+    assert.doesNotMatch(JSON.stringify(data), /test-server-key|private-project|hidden/);
+    if (expected === 'RATE_LIMITED') assert.equal(data.retryAfterSeconds, 43);
+    else assert.equal(data.retryAfterSeconds, undefined);
+  }
 });
