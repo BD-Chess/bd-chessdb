@@ -28,7 +28,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912e">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912f">
 
 
   <!-- ── Structured data: tool + parent research program for search engines & AI ── -->
@@ -108,7 +108,7 @@
 
     <!-- --------------- CONTROLS --------------- -->
     <section id="controls" aria-label="Game and analysis controls">
-      <div class="section-kicker workspace-heading">YOUR WORKSPACE</div>
+      <div class="section-kicker workspace-heading">YOUR WORKSPACE <button type="button" id="btnGemini" class="gemini-toggle" title="Ask Gemini about this position" aria-label="Open Gemini chess assistant" aria-expanded="false" aria-controls="geminiPanel">✦</button></div>
       <!-- Navigation row -->
       <div class="btn-group top-buttons">
         <button class="btn btn-nav" id="first" aria-label="First position" title="First position (Home)">|&lt;</button>
@@ -125,6 +125,14 @@
 
       <!-- Opening name -->
       <div id="openingName"></div>
+      <div id="workspaceTimers" class="workspace-timers" hidden aria-label="Player timers">
+        <div class="timer-pair"><div id="timerWhite" class="player-timer"><span>White</span><strong>0:00</strong></div><div id="timerBlack" class="player-timer"><span>Black</span><strong>0:00</strong></div></div>
+        <small id="timerCaption">Elapsed per player · no time limit</small>
+      </div>
+      <div id="humanSession" class="human-session" hidden>
+        <div class="human-session-actions"><strong id="humanSessionState">Two players</strong><button class="btn" id="btnHumanPause">Pause game</button><button class="btn" id="btnHumanFinish">End study</button></div>
+        <small id="humanReview"></small>
+      </div>
 
       <!-- Move/DCC/Sim toggle -->
       <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
@@ -208,6 +216,13 @@
 
       <!-- Settings panel -->
       <div id="settingsPanel" class="panel">
+        <div class="dcc-settings-group timing-settings">
+          <div class="dcc-settings-title">Time &amp; two players</div>
+          <label><input type="checkbox" id="settingShowTimers"> Show player timers</label>
+          <label><input type="checkbox" id="settingShowTimestamps"> Show move timestamps</label>
+          <p class="setting-note">Both displays are off by default. Sim counts elapsed time without a time limit. Move timestamps use your local timezone.</p>
+          <button type="button" class="btn" id="btnTwoPlayers">Two players · same board</button>
+        </div>
         <label for="settingTopN">Show top moves:</label>
         <select id="settingTopN">
           <option value="3">3</option>
@@ -384,13 +399,16 @@
       <li><strong>Sim kot preizkus DCC.</strong> Za bele in črne izberi <b>CDB (top 1)</b> ali <b>CDB + DCC</b>. Prikaz primerja obe izbiri, število izenačenih potez in razliko ocen.</li>
       <li><strong>Pavza na izbranem položaju.</strong> Klikni potezo v zgodovini; Sim se takoj ustavi. Ponovno odpri <b>Sim</b>, zamenjaj motorja in nadaljuj. V <b>Position experiments</b> se vrni na začetek posamezne veje ali izvozi PGN/CSV.</li>
       <li><strong>New game deluje tudi med igro.</strong> Prekine lokalni Sim/SimB/SimW ali Replay, ponastavi šahovnico in zavrže zapoznele poteze. <b>Bojan D.</b> zdaj odpre e-pošto.</li>
+      <li><strong>Časi po izbiri.</strong> V <b>Settings</b> neodvisno vključi <b>Show player timers</b> in <b>Show move timestamps</b>; privzeto sta oba skrita. Sim meri čas brez časovne omejitve. PGN/CSV vsebuje tudi časovne zapise.</li>
+      <li><strong>Dva igralca.</strong> <b>Settings → Two players · same board</b>: oba igrata na isti napravi, CDB + DCC pa spremlja poteze. Izberi čas in dodatek ali igraj brez omejitve.</li>
+      <li><strong>Gemini ob šahovnici.</strong> Klikni <b>✦</b> ob YOUR WORKSPACE in vprašaj o položaju ali DCC. Vsak odgovor se nanaša na položaj ob tvojem vprašanju.</li>
       <li><strong>Top 5 je spet celoten.</strong> Obnovljeno združevanje ocen ChessDB in vrstni red iz stare strani. Odpri <b>New game</b>: ob nastavitvi Top 5 se prikaže pet ocenjenih potez.</li>
       <li><strong>Več prostora za analizo.</strong> Na računalniku je desna plošča visoka kot levi okvir. Preklopi <b>DCC / Moves</b>: seznam zapolni dodatno višino; na telefonu in tablici ostane postavitev navpična.</li>
       <li><strong>Pregleden DCC.</strong> Surova ocena in hevristični rang sta ločena. Pri običajnih ocenah izbira ostane največ 10 cp pod najboljšo surovo oceno; preverjeni mat ima prednost.</li>
       <li><strong>Izmerjeno, ne domnevano.</strong> Analiza loči izmerjeno pokritost od neznanih podatkov ter spremlja dno, nihanje, okrevanje in strukturo poti.</li>
       <li><strong>Igraj ali opazuj.</strong> Sim za samodejni dvoboj; SimW pomeni motor z belimi, SimB motor s črnimi. Pri zadnjih dveh igraš drugo stran.</li>
       <li><strong>Udobnejši vmesnik.</strong> Prilagodljiva šahovnica, iskanje po zbirki partij, večji gumbi in berljive povezave.</li>
-      <li><strong>Zanesljivejši odzivi.</strong> Časovne omejitve, predpomnilnik in preverjanje položaja preprečujejo uporabo zastarelih odgovorov.</li>
+      <li><strong>Zanesljivejši odzivi.</strong> Predpomnilnik, preklic in preverjanje položaja preprečujejo uporabo zastarelih odgovorov. Sim počaka na načrtovano analizo brez časovnega reza.</li>
     </ul>
     <div class="try-it"><strong>Preizkusi v eni minuti</strong><ol><li>Odpri <b>Game library</b>, poišči igralca in naloži partijo.</li><li>Korakaj z ← / → in odpri <b>DCC</b>. Primerjaj surovo oceno, rang in pokritost.</li><li>Izberi <b>SimW</b> ali <b>SimB</b> za igro; <b>Sim</b> za opazovanje dvoboja.</li><li>Spremeni širino okna in preizkusi svetlo temo v <b>Settings</b>.</li></ol></div>
     <p class="research-note">DCC je eksperimentalna hevristika; prikaz ne dokazuje izboljšanja Elo.</p>
@@ -496,6 +514,24 @@
     </div>
   </div>
 
+  <dialog id="twoPlayersDialog" class="study-dialog" aria-labelledby="twoPlayersTitle">
+    <h2 id="twoPlayersTitle">Two players</h2>
+    <p id="twoPlayersNotice">Play together on this device. CDB + DCC observes both players.</p>
+    <div class="study-fields"><label>White name<input id="humanWhiteName" maxlength="60" placeholder="Human White"></label><label>Black name<input id="humanBlackName" maxlength="60" placeholder="Human Black"></label></div>
+    <div class="study-fields"><label>Time per player<select id="humanMinutes"><option value="0" selected>No limit · elapsed time</option><option value="1">1 minute</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label><label>Increment per move<select id="humanIncrement"><option value="0" selected>None</option><option value="1">1 second</option><option value="2">2 seconds</option><option value="3">3 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option></select></label></div>
+    <p class="setting-note">Player timers and timestamps are shown only if enabled in Settings. A local clock reaching zero pauses the study game. You can continue without a limit.</p>
+    <div class="dialog-actions"><button class="btn" id="humanCancel">Cancel</button><button class="btn btn-new" id="humanStart">Start from this position</button></div>
+  </dialog>
+  <aside id="geminiPanel" class="gemini-panel" hidden role="dialog" aria-modal="false" aria-labelledby="geminiTitle">
+    <div class="gemini-header"><div><strong id="geminiTitle">✦ Gemini</strong><small>Chess &amp; DCC companion</small></div><div><button type="button" id="geminiClear" title="Start a new chat">Clear</button><button type="button" id="geminiClose" aria-label="Close Gemini">×</button></div></div>
+    <p class="gemini-note">Each question shares the current board and available CDB/DCC analysis with Gemini.</p>
+    <div class="gemini-prompts"><button data-question="Explain the current position and suggest a practical plan.">Explain position</button><button data-question="Compare the CDB top move and DCC choice here. What do the actual scores and coverage tell us?">CDB vs DCC</button><button data-question="How can I test DCC in this chess app?">How to test</button></div>
+    <div id="geminiMessages" class="gemini-messages" role="log" aria-live="polite"></div>
+    <div id="geminiStatus" role="status"></div>
+    <form id="geminiForm"><label class="sr-only" for="geminiQuestion">Ask Gemini about this game</label><textarea id="geminiQuestion" rows="2" maxlength="4000" placeholder="Ask about this game…"></textarea><button id="geminiSend" type="submit">Send ↗</button></form>
+    <small class="gemini-footnote">Advice is tied to the position at the time of your question.</small>
+  </aside>
+
   <!-- Scripts — shared libraries from existing paths -->
   <script src="js/jquery-3.6.0.min.js"></script>
   <script src="js/chess.min.js"></script>
@@ -503,10 +539,13 @@
   <script>
 </script>
   <!-- DCC-enhanced utils -->
-  <script src="js/8zc-dcc-core.js?v=20260912e"></script>
-  <script src="js/8zc-sim-core.js?v=20260912e"></script>
-  <script src="js/8zc-utils.js?v=20260912e"></script>
-  <script src="js/8zc-new-ui.js?v=20260912e"></script>
+  <script src="js/8zc-dcc-core.js?v=20260912f"></script>
+  <script src="js/8zc-sim-core.js?v=20260912f"></script>
+  <script src="js/8zc-time-core.js?v=20260912f"></script>
+  <script src="js/8zc-workspace.js?v=20260912f"></script>
+  <script src="js/8zc-gemini.js?v=20260912f"></script>
+  <script src="js/8zc-utils.js?v=20260912f"></script>
+  <script src="js/8zc-new-ui.js?v=20260912f"></script>
 
 </body>
 </html>

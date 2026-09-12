@@ -86,3 +86,41 @@ assignments, exact/near ties, underpromotion, export round-trips, the reported
 SimB reset, history pause, late requests after replacement, and Replay reset.
 A full HTML/JavaScript DOM smoke check also passed boot, SimB/c4/New game, engine
 swap, automatic history updates, click-to-pause, dialog reopening and final reset.
+
+## 2026-09-12 optional clocks, local human study and Gemini
+
+DCC core 0.7.2 distinguishes a no-deadline Sim contract from the bounded interactive
+analysis contract in memo/config identities. Sim has no wall-time analysis or client
+request timeout. Pause/New game aborts its pending network requests; candidate/depth
+probe budgets remain finite. Database absence/network failures remain incomplete (*).
+
+ChessTime 1.0 uses monotonic elapsed time and separate observed UTC timestamps. Sim
+counts up. Only an explicitly configured local human study can count down with
+increment. At zero it pauses; no tournament result is inferred. Display toggles are
+both false by default and do not invalidate analysis. Real committed local moves
+are timestamped; navigating, imported PGNs and Replay never fabricate historical
+move times. Current local timing restores paused after reload. Sim export 1.1 logs
+analysis_ms (legacy CSV elapsed_ms), pause_ms, turn_ms and per-side elapsed totals.
+
+Two players share the same device. A serial observer queue reviews each played
+position independently of subsequent board navigation. Data is bound to full FEN
+and the actual recorded move; a replaced game cancels old reviews.
+
+Gemini uses functions/chess-gemini.mjs and its own GEMINI_API_CHESS environment key,
+following the Trip server-proxy pattern without modifying Trip. Server-owned
+_shared/chess-knowledge.mjs holds the versioned controller/GUI/grounding contract.
+Each question carries a labelled current position; no automated move execution or
+background chat calls. Chat text is rendered as text, never executable markup.
+Quota handling distinguishes temporary/daily/zero-available quota and never exposes
+raw provider errors or credentials. Optional CHESS_GEMINI_MODEL defaults to the
+verified Gemini 3.5 Flash-Lite identifier (also used by current Trip).
+
+Validation command: node --test public/chess/new/research/*test.cjs public/chess/new/research/*test.mjs
+Provider references: https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite
+and https://ai.google.dev/gemini-api/docs/rate-limits .
+
+Pre-deploy verification: 51 deterministic tests passed, including long-wait DCC,
+elapsed/countdown clocks, increment, pause accounting, request cancellation and
+Gemini quota/secret/grounding tests. Full HTML/JS DOM smoke passed two independent
+display switches during Sim, two human colors, timestamps, clock pause/resume,
+FEN-grounded chat, safe plain-text rendering and stale-position reply labels.

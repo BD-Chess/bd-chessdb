@@ -1382,3 +1382,57 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
     max-height: none !important;
   }
 }
+
+/* Time displays are opt-in; the assistant stays a small header action. */
+.workspace-heading { display: flex; align-items: center; gap: 10px; }
+.gemini-toggle { display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--ui-border); border-radius: 8px; color: var(--ui-accent); background: var(--ui-raised); font-size: 20px; cursor: pointer; }
+.gemini-toggle:hover, .gemini-toggle[aria-expanded="true"] { border-color: var(--ui-accent); }
+#workspaceTimers[hidden], #humanSession[hidden], #geminiPanel[hidden], #liveClocks[hidden] { display: none !important; }
+.workspace-timers { margin: 4px 0 12px; }
+.timer-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.player-timer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid var(--ui-border); border-radius: 6px; background: var(--ui-inset); }
+.player-timer span { font-size: 11px; color: var(--ui-muted); }
+.player-timer strong { font-size: 20px; font-variant-numeric: tabular-nums; color: var(--ui-text); }
+.player-timer.is-running { border-color: var(--ui-accent); }
+#timerCaption { display: block; margin-top: 5px; font-size: 10px; color: var(--ui-muted); }
+.move-timestamp { display: block; color: var(--ui-muted); font-size: 10px; font-weight: 400; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.human-session { padding: 10px; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-inset); margin-bottom: 10px; }
+.human-session-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.human-session-actions strong { flex: 1 0 100%; font-size: 12px; }
+.human-session .btn { padding: 6px 9px; font-size: 11px; }
+.human-session small { display: block; margin-top: 8px; font-size: 11px; line-height: 1.6; color: var(--ui-muted); }
+.study-dialog { width: min(520px, calc(100vw - 32px)); box-sizing: border-box; padding: 25px; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); color: var(--ui-text); max-height: calc(100dvh - 32px); overflow: auto; }
+.study-dialog::backdrop { background: rgba(0,0,0,.65); }
+.study-dialog h2 { margin-top: 0; }
+.study-dialog p { line-height: 1.7; font-size: 13px; color: var(--ui-muted); }
+.study-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.study-fields label { font-size: 12px; color: var(--ui-muted); }
+.study-fields input, .study-fields select { display: block; width: 100%; min-width: 0; box-sizing: border-box; margin-top: 6px; padding: 10px 7px; background: var(--ui-inset); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 5px; font: inherit; }
+.gemini-panel { position: fixed; right: 24px; bottom: 24px; width: min(430px, calc(100vw - 32px)); height: min(650px, calc(100dvh - 48px)); z-index: 1200; display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); color: var(--ui-text); box-shadow: 0 16px 60px rgba(0,0,0,.5); overflow: hidden; }
+.gemini-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 18px 10px; }
+.gemini-header strong { font-size: 19px; color: var(--ui-accent); }
+.gemini-header small { display: block; color: var(--ui-muted); font-size: 11px; margin-top: 3px; }
+.gemini-panel button { background: var(--ui-raised); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 5px; padding: 7px 9px; min-height: 34px; font-size: 12px; cursor: pointer; }
+.gemini-panel button:hover { border-color: var(--ui-accent); }
+.gemini-note, .gemini-footnote { color: var(--ui-muted); font-size: 10px; line-height: 1.6; margin: 0 18px 9px; }
+.gemini-prompts { display: flex; gap: 5px; flex-wrap: wrap; margin: 0 18px 10px; }
+.gemini-prompts button { font-size: 11px; }
+.gemini-messages { flex: 1; min-height: 100px; overflow-y: auto; padding: 2px 18px 14px; overscroll-behavior: contain; }
+.gemini-message { background: var(--ui-inset); padding: 12px; border-radius: 8px; margin: 8px 0; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
+.gemini-message.user { border-left: 2px solid var(--ui-muted); }
+.gemini-message.model { border-left: 2px solid var(--ui-accent); }
+.gemini-message.system { border: 1px solid #b88b54; }
+.gemini-message > strong { display: block; font-size: 11px; color: var(--ui-accent); margin-bottom: 5px; }
+.gemini-message-text { white-space: pre-wrap; }
+.gemini-message small { display: block; color: var(--ui-muted); font-size: 10px; margin-top: 6px; }
+#geminiStatus { font-size: 11px; padding: 0 18px; color: var(--ui-muted); }
+#geminiForm { display: flex; gap: 7px; padding: 10px 18px; }
+#geminiQuestion { flex: 1; width: 0; min-width: 0; resize: vertical; max-height: 120px; padding: 9px; font: inherit; font-size: 13px; background: var(--ui-inset); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 6px; }
+#geminiSend { background: var(--ui-accent); color: var(--ui-ink); font-weight: 600; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 790px) {
+  .gemini-toggle { width: 38px; height: 38px; }
+  .gemini-panel { right: 12px; bottom: 12px; width: calc(100vw - 24px); height: min(620px, calc(100dvh - 24px)); }
+  .gemini-panel button { min-height: 42px; }
+  #geminiQuestion, .study-fields input, .study-fields select { font-size: 16px; }
+}

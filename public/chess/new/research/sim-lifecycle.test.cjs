@@ -22,6 +22,8 @@ function context() {
     classList: { toggle() {} }, setAttribute() {}, appendChild() {} });
   const el = id => { if (!nodes.has(id)) nodes.set(id, node()); return nodes.get(id); };
   const c = {
+    simRequests: new Set(),
+    workspace: { reset() {}, start() {}, pause() {}, stop() {}, history() {}, recordMove() {} },
     Chess, DCC, SIM, AbortController, console, Date, game: new Chess(),
     settings: { evalMode: 'direct', simSpeed: 0, dccDepth: 5, dccTopCandidates: 3, dccEvalFloor: 80 },
     activityEpoch: 0, analysisGeneration: 0, activeLookaheadId: 0,

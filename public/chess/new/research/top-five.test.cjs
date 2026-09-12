@@ -19,6 +19,7 @@ const verified = opening.map((m, i) => row(m, i ? '??' : 1, i ? 0 : 2)).join('|'
 function context(responses = [verified, cloud]) {
   const calls = [], badges = [];
   const c = {
+    activityEpoch: 0, simRequests: new Set(),
     Chess, DCC, AbortController, console: { warn() {} },
     settings: { evalMode: 'direct', topN: 5, dccEnabled: true },
     requestPending: new Map(), evalCache: {}, sleep: async () => {},
@@ -45,6 +46,17 @@ function context(responses = [verified, cloud]) {
   }
   return c;
 }
+
+test('pausing Sim before a delayed API request starts clears its pending identity', async () => {
+  const c = context(); c.simRunning = true;
+  let release; c.sleep = () => new Promise(resolve => { release = resolve; });
+  const old = c.fetchChessText('queryall', start, 0);
+  c.activityEpoch++; release(); await old;
+  assert.equal(c.requestPending.size, 0); assert.equal(c.calls.length, 0);
+  c.sleep = async () => {};
+  const text = await c.fetchChessText('queryall', start, 0);
+  assert.ok(text); assert.equal(c.calls.length, 1);
+});
 
 test('restores all five opening moves, retaining provider order in zero-score ties', async () => {
   const c = context();

@@ -6,7 +6,7 @@
   else root.ChessSim = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
   const policy = value => value === 'dcc' ? 'dcc' : 'raw';
   const label = value => policy(value) === 'dcc' ? 'CDB + DCC' : 'CDB (top 1)';
   const escapeTag = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ');
@@ -53,6 +53,7 @@
       ExperimentState: run.state, SimVersion: VERSION, DCCVersion: cfg.version,
       CDBSource: cfg.source, DCCDepth: cfg.depth, DCCCandidates: cfg.candidates,
       DCCWindowCp: cfg.window, DCCGuardCp: cfg.guard,
+      TimeControl: '-', DCCDeadline: cfg.noDeadline ? 'none' : '20s', UTCStart: run.startedAt,
       DCCCoverageGaps: run.trace.filter(row => row.coverage !== 'complete').length
     };
     const lines = Object.entries(tags).map(([k, v]) => `[${k} "${escapeTag(v)}"]`);
@@ -63,7 +64,7 @@
       const prefix = board.turn() === 'w' ? `${number}. ` : i === 0 ? `${number}... ` : '';
       const played = board.move({ from: row.move.slice(0, 2), to: row.move.slice(2, 4), promotion: row.move[4] });
       if (!played) throw new Error('Experiment PGN contains an illegal move');
-      moves.push(`${prefix}${played.san} {policy=${row.picked_by}; raw_cp=${row.raw_score}; POV=mover; CDB=${row.raw_best}; DCC=${row.dcc_choice || '?'}; gap_cp=${row.raw_gap}; exact_ties=${row.exact_ties}; coverage=${row.coverage}; DCC_rank=${row.dcc_score ?? '?'}}`);
+      moves.push(`${prefix}${played.san} {policy=${row.picked_by}; raw_cp=${row.raw_score}; POV=mover; CDB=${row.raw_best}; DCC=${row.dcc_choice || '?'}; gap_cp=${row.raw_gap}; exact_ties=${row.exact_ties}; coverage=${row.coverage}; DCC_rank=${row.dcc_score ?? '?'}; analysis_ms=${row.elapsed_ms ?? '?'}; pause_ms=${row.pause_ms ?? '?'}${row.at_utc ? '; [%timestamp ' + row.at_utc + ']' : ''}${Number.isFinite(row.turn_ms) ? '; [%emt ' + (row.turn_ms / 1000).toFixed(3) + ']' : ''}}`);
     });
     return lines.join('\n') + '\n\n' + moves.join(' ') + ' ' + (run.result || '*');
   }
@@ -72,7 +73,8 @@
       'ply', 'fen', 'side', 'move', 'policy', 'picked_by', 'raw_best', 'dcc_choice',
       'raw_score', 'raw_gap', 'dcc_raw_gap', 'exact_ties', 'near_ties', 'changed',
       'coverage', 'dcc_score', 'stability', 'probes', 'elapsed_ms',
-      'dcc_version', 'source', 'depth', 'candidates', 'window_cp', 'guard_cp'];
+      'dcc_version', 'source', 'depth', 'candidates', 'window_cp', 'guard_cp',
+      'at_utc', 'turn_ms', 'pause_ms', 'white_elapsed_ms', 'black_elapsed_ms'];
     const quote = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const rows = [keys.join(',')];
     for (const run of runs) for (const row of run.trace) {

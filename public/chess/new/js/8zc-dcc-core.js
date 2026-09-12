@@ -8,7 +8,7 @@
   else root.ChessDCC = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '0.7.1-new';
+  const VERSION = '0.7.2-new';
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const uciObject = uci => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci || '')
@@ -28,6 +28,7 @@
       window: clamp(Number(input.dccEvalFloor) || 80, 10, 200),
       guard: 10,
       source: input.evalMode === 'proxy' ? 'proxy' : 'direct',
+      noDeadline: input.dccNoDeadline === true,
       version: VERSION
     };
   }
@@ -107,7 +108,7 @@
     const maxCalls = selected.length * cfg.depth;
     async function request(fn, position) {
       stopped();
-      if (calls >= maxCalls || Date.now() - started >= 20000) { limited = true; return null; }
+      if (calls >= maxCalls || (!cfg.noDeadline && Date.now() - started >= 20000)) { limited = true; return null; }
       calls++;
       const result = await fn(position);
       stopped();
