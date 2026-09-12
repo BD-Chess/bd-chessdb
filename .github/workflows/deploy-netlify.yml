@@ -1,0 +1,56 @@
+name: Deploy to Netlify production
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout exact main commit
+        uses: actions/checkout@v4
+
+      - name: Require configured Netlify token
+        shell: bash
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "NETLIFY_AUTH_TOKEN GitHub secret is not configured; refusing unauthenticated production deploy."
+            exit 2
+          fi
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Deploy public site and functions to existing Netlify project
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy \
+            --prod \
+            --no-build \
+            --dir public \
+            --functions functions \
+            --skip-functions-cache \
+            --site "$NETLIFY_SITE_ID" \
+            --auth "$NETLIFY_AUTH_TOKEN" \
+            --message "GitHub main ${GITHUB_SHA}" \
+            --json > netlify-deploy.json
+          node -e 'const d=require("./netlify-deploy.json"); console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
