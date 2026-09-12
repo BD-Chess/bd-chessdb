@@ -6,7 +6,7 @@ const TE=new TextEncoder(), TD=new TextDecoder('utf-8',{fatal:true});
 const $=id=>document.getElementById(id);
 const from64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const to64=u=>btoa(String.fromCharCode(...new Uint8Array(u)));
-const allowedNotes=['bd-o-font-size','bd-cardio-prep-v1','bd-cardio-prep-v1-size'];
+const allowedNotes=['bd-o-font-size','bd-cardio-prep-v1','bd-cardio-prep-v1-size','bd-o-reader-percent-v1'];
 let cfg, master, bundle, sessionValue, storeData={}, queue=Promise.resolve();
 let nativeStore, nativeSession;
 const aad=kind=>TE.encode('BD/O:v2:'+kind+':'+(kind==='data'?cfg.release:cfg.vault));
@@ -58,6 +58,60 @@ async function lock(){
  eraseSession();master=null;bundle=null;storeData={};document.documentElement.style.visibility='hidden';location.replace(ROOT+'index.html');
 }
 function guard(){if(!readSession()){document.documentElement.style.visibility='hidden';location.replace(ROOT+'index.html');return false;}document.documentElement.style.visibility='';return true;}
+// Shared reader: +10 percentage points per tap, no application-level upper cap.
+function installReader(){
+ const root=document.documentElement, pref='bd-o-reader-percent-v1';
+ const minus=$('fontMinus')||$('smaller'), plus=$('fontPlus')||$('larger');
+ if(!minus||!plus||$('bdoFontReset'))return;
+ const previousBody=parseFloat(getComputedStyle(document.body).fontSize);
+ root.dataset.size='2';
+ const normalBody=parseFloat(getComputedStyle(document.body).fontSize);
+ const saved=safeStore.getItem(pref), parsed=Number(saved);
+ let percent=saved!==null&&Number.isFinite(parsed)&&parsed>0?parsed:Math.round(previousBody/normalBody*100);
+ if(!Number.isFinite(percent)||percent<=0)percent=100;
+ percent=Math.max(70,percent);
+ const reset=document.createElement('button');reset.id='bdoFontReset';reset.type='button';
+ reset.title='Povrni običajno velikost črk (100 %)';
+ plus.insertAdjacentElement('afterend',reset);
+ minus.setAttribute('aria-label','Zmanjšaj črke');plus.setAttribute('aria-label','Povečaj črke');
+ const style=document.createElement('style');style.id='bdoReaderStyle';style.textContent=`
+ .top,.topbar{font-size:20px!important}
+ .topin{flex-wrap:wrap;min-width:0;padding-top:6px;padding-bottom:6px}
+ .tools{flex-wrap:wrap;max-width:100%;min-width:0}
+ .tools button,.tools a{font-size:16px!important;min-height:44px;min-width:44px}
+ #bdoFontReset{font-variant-numeric:tabular-nums;min-width:5em}
+ main,article,section,.card,.content,.hero,.qcard,.summary,.priority,.list{min-width:0;overflow-wrap:anywhere}
+ .actions button{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+ .qhead{grid-template-columns:28px auto minmax(0,1fr)}
+ .qhead .num{width:auto;height:auto;min-width:42px;min-height:42px;padding:.15em .3em}
+ html[data-bdo-large-font="true"] .qhead .qtitle{grid-column:1/-1}
+ pre{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:auto}
+ `;document.head.appendChild(style);
+ // Read every baseline before writing: nested elements are scaled once, not recursively.
+ // Capturing computed sizes also includes fixed-pixel card captions and table text.
+ const elements=[document.body,...document.body.querySelectorAll('*')].filter(el=>
+  !['SCRIPT','STYLE','LINK','META','NOSCRIPT'].includes(el.tagName)&&!el.closest('.top,.topbar'));
+ const rows=elements.map(el=>({el,value:el.style.getPropertyValue('font-size'),priority:el.style.getPropertyPriority('font-size'),px:0}));
+ function measure(){
+  for(const row of rows){if(row.value)row.el.style.setProperty('font-size',row.value,row.priority);else row.el.style.removeProperty('font-size');}
+  for(const row of rows)row.px=parseFloat(getComputedStyle(row.el).fontSize);
+ }
+ function paint(){
+  for(const row of rows){const px=row.px*percent/100;if(Number.isFinite(px)&&px>0)row.el.style.setProperty('font-size',px+'px','important');}
+  root.dataset.bdoFontPercent=String(percent);root.dataset.bdoLargeFont=String(percent>=200);
+  reset.textContent=percent+'%';reset.setAttribute('aria-label','Velikost '+percent+' %. Povrni na 100 %.');
+  minus.disabled=percent<=70;plus.disabled=false;
+ }
+ function change(value){
+  // Reject only invalid arithmetic; do not clamp legitimate large sizes.
+  if(!Number.isFinite(value)||value<=0)return;
+  percent=Math.max(70,value);paint();safeStore.setItem(pref,String(percent));
+ }
+ minus.onclick=()=>change(percent-10);plus.onclick=()=>change(percent+10);reset.onclick=()=>change(100);
+ measure();paint();
+ let pending=0;
+ window.addEventListener('resize',()=>{cancelAnimationFrame(pending);pending=requestAnimationFrame(()=>{measure();paint();});});
+}
 function afterRender(){
  document.body.dataset.bdoUnlocked='true';
  let button=$('lockNow');
@@ -75,6 +129,7 @@ function afterRender(){
  });
  const note=document.createElement('p');note.className='footer';note.style.cssText='font:14px/1.5 system-ui;color:#aebdd0;text-align:center;padding:14px';
  note.textContent='Odklenjeno v tem zavihku. Po uporabi izberi Zakleni. Zapiski so šifrirani v tem brskalniku; niso sinhronizirani med napravami.';document.body.appendChild(note);
+ installReader();
 }
 function render(name){
  let html=decodedPage(name);
