@@ -4,12 +4,14 @@
 
 ## Boundary and evidence policy
 
-- Authoritative scan boundary: **project chats only** across ChatGPT projects.
-- Project files may corroborate a current run, checkpoint, result, builder handoff, or resume state.
-- Non-project chats are never a daily source. If a meaningful orphan is found during a one-off review, record a migration need and move its authority to an appropriate project context before it joins the daily scan.
+- Evidence precedence: **current GPT Project artifacts/project chats first; then verified Google Drive `Live_Extracts/Home` + `Live_Extracts/Work`; OneDrive/SharePoint only when current Drive evidence is missing or history/recovery is required.**
+- Current GPT Project artifacts may establish project truth; verified Google Drive live extracts may establish operational run/checkpoint/result truth when newer than summaries.
+- Non-project chats are not promoted as authority. OneDrive/SharePoint is fallback evidence only; duplicates or mirrored copies are not independent evidence.
 - Evidence priority: newer direct evidence (fresh CMD/output, live extract, checkpoint, PID/process proof, explicit BD confirmation) beats an older summary.
 - `ready`, `next`, `resume`, `planned`, `builder`, and `handoff` are not evidence that a process is running.
 - Absence of a newer message never changes `RUNNING` to a stopped state by itself.
+
+- Progress guards must inspect the arena's native checkpoint dimensions. Example: `visits_completed=0` is not by itself a stall when committed generation/proposal/checkpoint state is advancing.
 
 ## Files
 
@@ -64,7 +66,7 @@ Every `arenas[]` item has a stable `arena_id` and at least:
 ## Refresh algorithm
 
 1. Read the last successful register and delta.
-2. Scan only project chats changed since the last successful refresh, then check every `RUNNING` arena for later direct evidence of alive/progress/best/checkpoint/stop/crash/required action.
+2. Inspect current GPT Project evidence first; then the newest verified Google Drive Home+Work live extracts. Use OneDrive/SharePoint only as fallback. Check every `RUNNING` arena for later direct evidence of alive/progress/best/checkpoint/stop/crash/required action.
 3. Normalize each finding against the evidence policy. Preserve active processes unless later direct stop/failure evidence exists.
 4. Update arena records, project roll-up/machine facts, and the material `state_history`.
 5. Compute `BD_MORNING_DELTA_LATEST.json`. If there is no material change, set its `changes` to `[]` and use the exact no-change message; do not invent a delta.
