@@ -20,7 +20,8 @@ with sync_playwright() as p:
         assert page.locator('#app').is_hidden();checks+=1
         page.fill('#pw',secret);page.click('#unlock')
         page.wait_for_selector('#app',state='visible',timeout=60000)
-        page.wait_for_function("!!sessionStorage.getItem('wl-v2-session')",timeout=30000)
+        expect(page.locator('#unlock')).to_be_enabled(timeout=30000)
+        assert page.evaluate("() => !!sessionStorage.getItem('wl-v2-session')")
         assert page.locator('.member').count()==11 and page.locator('.entry').count()>=1;checks+=1
         assert page.locator('#rulesVersion').inner_text()=='v1.0.0';checks+=1
         page.locator('#rulesPanel summary').click()
