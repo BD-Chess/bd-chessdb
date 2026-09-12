@@ -28,7 +28,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912d">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912e">
 
 
   <!-- ── Structured data: tool + parent research program for search engines & AI ── -->
@@ -138,6 +138,7 @@
       </div>
 
       <p class="mode-hint">Sim: watch a match <span>·</span> SimW / SimB: play the engine</p>
+      <div id="simDecisionPanel" class="sim-decision" style="display:none;" aria-label="CDB and DCC decision comparison"></div>
 
       <!-- Move history (default view) -->
       <div id="moves"></div>
@@ -326,37 +327,15 @@
 
           <label for="settingSimSpeed">Sim speed:</label>
           <select id="settingSimSpeed">
+            <option value="5000">Study (5s/move)</option>
             <option value="2000">Slow (2s/move)</option>
             <option value="1000" selected>Normal (1s)</option>
             <option value="400">Fast (0.4s)</option>
-            <option value="0">Max (no board updates)</option>
+            <option value="0">Fast (keep board visible)</option>
           </select>
 
-          <label for="settingSimGames">Sim games per run:</label>
-          <select id="settingSimGames">
-            <option value="1">1</option>
-            <option value="5" selected>5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
+          <p class="setting-note">Choose White / Black engines in <b>Sim</b>. CDB comparisons use top 1 from the first move of the displayed position.</p>
 
-          <label for="settingDccTakeover">DCC takeover:</label>
-          <select id="settingDccTakeover">
-            <option value="auto" selected>Auto (when DB thins out)</option>
-            <option value="4">After move 2 (4 half-moves)</option>
-            <option value="6">After move 3 (6 half-moves)</option>
-            <option value="8">After move 4 (8 half-moves)</option>
-            <option value="10">After move 5 (10 half-moves)</option>
-            <option value="12">After move 6 (12 half-moves)</option>
-          </select>
-
-          <label for="settingOpponentModel">Opponent model (Sim):</label>
-          <select id="settingOpponentModel">
-            <option value="perfect">Perfect (always top-1)</option>
-            <option value="realistic" selected>Realistic (weighted top-3)</option>
-            <option value="weak">Weak (random top-5)</option>
-          </select>
         </div>
         <!-- ─────────────────────────────────────────────────────── -->
 
@@ -390,7 +369,7 @@
         <a href="8zc-help.html">Help &amp; shortcuts</a>
       </nav>
       <div id="credits">
-        By <a href="https://www.mdlxdcc.org/BD/" id="authorLink" title="Toggle larger board">Bojan D.</a>
+        By <a href="mailto:bd@siol.net" id="authorLink" title="Email Bojan D.">Bojan D.</a>
         <span>·</span> <strong>2026.09</strong> <span>·</span> Experimental analysis
       </div>
       <div class="dcc-badge-label">8Z · MDL+DCC <span>·</span> <a href="https://www.mdlxdcc.org/BD/">BD Portfolio <span aria-hidden="true">↗</span></a></div>
@@ -402,6 +381,9 @@
     <h2 id="whatsNewTitle">Ista šahovnica.<br><span>Jasnejši vpogled.</span></h2>
     <p class="dialog-intro">Kaj je novega v tej različici?</p>
     <ul class="upgrade-list">
+      <li><strong>Sim kot preizkus DCC.</strong> Za bele in črne izberi <b>CDB (top 1)</b> ali <b>CDB + DCC</b>. Prikaz primerja obe izbiri, število izenačenih potez in razliko ocen.</li>
+      <li><strong>Pavza na izbranem položaju.</strong> Klikni potezo v zgodovini; Sim se takoj ustavi. Ponovno odpri <b>Sim</b>, zamenjaj motorja in nadaljuj. V <b>Position experiments</b> se vrni na začetek posamezne veje ali izvozi PGN/CSV.</li>
+      <li><strong>New game deluje tudi med igro.</strong> Prekine lokalni Sim/SimB/SimW ali Replay, ponastavi šahovnico in zavrže zapoznele poteze. <b>Bojan D.</b> zdaj odpre e-pošto.</li>
       <li><strong>Top 5 je spet celoten.</strong> Obnovljeno združevanje ocen ChessDB in vrstni red iz stare strani. Odpri <b>New game</b>: ob nastavitvi Top 5 se prikaže pet ocenjenih potez.</li>
       <li><strong>Več prostora za analizo.</strong> Na računalniku je desna plošča visoka kot levi okvir. Preklopi <b>DCC / Moves</b>: seznam zapolni dodatno višino; na telefonu in tablici ostane postavitev navpična.</li>
       <li><strong>Pregleden DCC.</strong> Surova ocena in hevristični rang sta ločena. Pri običajnih ocenah izbira ostane največ 10 cp pod najboljšo surovo oceno; preverjeni mat ima prednost.</li>
@@ -423,7 +405,7 @@
     <div id="simModeHint" class="sim-inline-note" style="display:block; margin:-4px 0 12px; line-height:1.45;">DCC stays on in every mode, analyzes both sides, and is saved into the PGN/comments.</div>
     <label class="sim-option-row">
       <input type="radio" name="simOpponent" value="self" checked>
-      <span>Self <span class="sim-inline-note">(current engine — default)</span></span>
+      <span>Local engines <span class="sim-inline-note">(CDB / CDB + DCC)</span></span>
     </label>
     <label class="sim-option-row">
       <input type="radio" name="simOpponent" value="lichess">
@@ -433,11 +415,23 @@
       <label>Level</label>
       <select id="lichessBotLevel"></select>
     </div>
-    <label class="sim-option-row">
+    <label class="sim-option-row" id="simLocalBotOption">
       <input type="radio" name="simOpponent" value="dccbot">
       <span>8Z-CDB-DCC <span class="sim-inline-note">(browser bot)</span></span>
     </label>
-    <div class="sim-form-grid">
+    <div id="simLocalMatch">
+      <p class="sim-position-info" id="simPositionInfo"></p>
+      <div class="sim-form-grid">
+        <label for="simWhiteEngine">White engine</label>
+        <select id="simWhiteEngine"><option value="raw" selected>CDB (top 1)</option><option value="dcc">CDB + DCC</option></select>
+        <label for="simBlackEngine">Black engine</label>
+        <select id="simBlackEngine"><option value="raw">CDB (top 1)</option><option value="dcc" selected>CDB + DCC</option></select>
+        <label for="simLocalSpeed">Move pause</label>
+        <select id="simLocalSpeed"><option value="5000">5s · inspect choices</option><option value="2000">2s</option><option value="1000" selected>1s</option><option value="400">0.4s</option><option value="0">Fast · keep board visible</option></select>
+      </div>
+      <button type="button" id="simSwapEngines" class="btn">Swap White / Black</button>
+    </div>
+    <div class="sim-form-grid" id="simSessionOptions">
       <label for="simColorSelect" id="simColorLabel">8Z color</label>
       <select id="simColorSelect">
         <option value="white">White</option>
@@ -509,9 +503,10 @@
   <script>
 </script>
   <!-- DCC-enhanced utils -->
-  <script src="js/8zc-dcc-core.js?v=20260912d"></script>
-  <script src="js/8zc-utils.js?v=20260912d"></script>
-  <script src="js/8zc-new-ui.js?v=20260912d"></script>
+  <script src="js/8zc-dcc-core.js?v=20260912e"></script>
+  <script src="js/8zc-sim-core.js?v=20260912e"></script>
+  <script src="js/8zc-utils.js?v=20260912e"></script>
+  <script src="js/8zc-new-ui.js?v=20260912e"></script>
 
 </body>
 </html>

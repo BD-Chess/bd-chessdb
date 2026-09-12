@@ -45,6 +45,15 @@ function initAll() {
   // v0.6.1: Per-move DCC annotations for PGN export
   // Keyed by half-move index → best DCC result at that position
   let dccMoveAnnotations = {};
+  // Ownership of Sim/Replay UI. New game invalidates pending cleanup as well
+  // as pending moves, so an old request cannot restore an old result panel.
+  let activityEpoch = 0;
+  let simRunning = false;
+  let simAbort = false;
+  let replayRunning = false;
+  let replayAbort = false;
+  let simSession = null;
+  const simExperiments = [];
 
 
 	// ─── display the PGN “Opening” tag under the moves ─────────────────
@@ -481,6 +490,7 @@ gameBuckets.forEach(bucket => {
   ------------------------------------------------------------------*/
 
   const DCC = window.ChessDCC;
+  const SIM = window.ChessSim;
   let analysisGeneration = 0;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
@@ -595,6 +605,7 @@ gameBuckets.forEach(bucket => {
     const progress = document.getElementById('dccProgress');
     if (progress) progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;
     renderDCCView();
+    if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, 'raw', result.allMoves, result), baseFen);
     if (settings.dccOnly) applyDCCOnlyBadges();
   }
   function updateDCCBadge(move, data, status) {
@@ -923,15 +934,21 @@ gameBuckets.forEach(bucket => {
     const div=document.getElementById('moves'); div.innerHTML='';
     const tbl=document.createElement('table');
     const pairs=[];
-    for(let i=0;i<fullHistory.length;i+=2)
-      pairs.push({ w:fullHistory[i], b:fullHistory[i+1], iW:i, iB:i+1 });
+    let moveNumber = Number((game.header().FEN || getStartFen()).split(' ')[5]);
+    fullHistory.forEach((move, i) => {
+      if (!pairs.length || move.color === 'w') pairs.push({ number: moveNumber, iW: -1, iB: -1 });
+      const pair = pairs[pairs.length - 1];
+      pair[move.color] = move;
+      pair[move.color === 'w' ? 'iW' : 'iB'] = i;
+      if (move.color === 'b') moveNumber++;
+    });
 
     const rev=pairs.slice().reverse(), total=rev.length, cur=game.history().length-1;
     rev.forEach((p,idx)=>{
       const tr=document.createElement('tr');
       if(p.iW===cur||p.iB===cur) tr.classList.add('selected');
       const tdNum=document.createElement('td');
-      tdNum.textContent=`${total-idx}.`; tr.appendChild(tdNum);
+      tdNum.textContent=`${p.number}.`; tr.appendChild(tdNum);
 
       ['W','B'].forEach(col=>{
         const mv=p[`i${col}`]>=0 ? p[col.toLowerCase()] : null;
@@ -940,6 +957,9 @@ gameBuckets.forEach(bucket => {
         td.className='move';
         if(mv){
           td.onclick=()=>jumpTo(p[`i${col}`]);
+          td.setAttribute('role', 'button'); td.tabIndex = 0;
+          td.setAttribute('aria-label', `Go to ${mv.san} at ply ${p[`i${col}`] + 1}`);
+          td.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); td.click(); } };
           if (p[`i${col}`] === cur) td.classList.add('current');
 		  if (
 		    divergedIndex >= 0 &&
@@ -997,6 +1017,8 @@ gameBuckets.forEach(bucket => {
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
 	  if (dccPanel) dccPanel.style.display = 'none';
+      const decisionPanel = document.getElementById('simDecisionPanel');
+      if (decisionPanel) decisionPanel.style.display = 'none';
 	  
 		if (reset) {
 		  // only reload original PGN on a true reset
@@ -1198,7 +1220,8 @@ function startEvalRetry() {
      12. JUMP TO MOVE & NAV BUTTONS
   ------------------------------------------------------------------*/
 function jumpTo(i){
-  if (playState.active || simRunning || replayRunning) return;
+  if (playState.active || replayRunning) return;
+  if (simRunning) pauseSimulation('Paused at the selected move. Open Sim to choose engines and continue.');
   const headers = game.header();
   game.load(headers.FEN || new Chess().fen());
   Object.entries(headers).forEach(([k,v]) => game.header(k,v));
@@ -1209,7 +1232,8 @@ function jumpTo(i){
 
   ['first','prev','next','last'].forEach(id=>{
     document.getElementById(id).onclick=()=>{
-      if (playState.active || simRunning || replayRunning) return;
+      if (playState.active || replayRunning) return;
+      if (simRunning) pauseSimulation();
       if(id==='first') jumpTo(-1);
       else if(id==='prev'){
         game.undo();
@@ -1342,20 +1366,49 @@ function jumpTo(i){
      14. ROW 2  (New | Save | Load)
   ------------------------------------------------------------------*/
 
-  document.getElementById('btnNew').onclick = () => {
-    if (playState.active || simRunning || replayRunning) return;
-    lastLoadedPGN = null; bookFlags = []; dccMoveAnnotations = {}; window._skipDivergedReset = false;
-	divergedIndex = -1;
+  function startNewGame() {
+    const wasLichess = playState.active && playState.mode === 'lichess';
+    if (simRunning) pauseSimulation();
+    activityEpoch++;
+    simAbort = true;
+    replayAbort = true;
+    simRunning = false;
+    replayRunning = false;
+    playState.replaying = false;
+    leaveActiveSession('');
+    closeSimModal();
+    document.getElementById('replayModal').style.display = 'none';
+    clearInterval(evalRetryTimer); evalRetryTimer = null;
+    lastLoadedPGN = null; bookFlags = []; dccMoveAnnotations = {};
+    fullHistory = []; lastMoveIndex = -1; lastAction = null; divergedIndex = -1;
+    preSimFen = null; preSimMoveIndex = -1;
+    simSession = null;
+    window._skipDivergedReset = false;
     game.reset();
+    showEval = true;
+    setBoardThinking(false);
+    document.getElementById('board-container').style.opacity = '1';
+    for (const id of ['simStatsPanel', 'simStatusBar', 'simDecisionPanel', 'dccInfoPanel', 'dccAccuracyPanel']) {
+      const panel = document.getElementById(id);
+      if (panel) { panel.replaceChildren(); panel.style.display = 'none'; }
+    }
+    document.getElementById('moves').style.display = dccViewActive ? 'none' : '';
+    document.getElementById('dccAnalysisPanel').style.display = dccViewActive ? 'block' : 'none';
+    const replayButton = document.getElementById('btnReplay');
+    replayButton.textContent = 'Replay'; replayButton.style.background = '';
+    refreshPlayUi();
     updateBoard(true);
     document.getElementById('openingName').textContent = '';
-    // reset title to the original placeholder
-    document.getElementById('gameTitle').innerHTML = 'Analyse moves with ChessDB';
-  };
+    document.getElementById('gameTitle').textContent = 'Your next move starts here';
+    if (wasLichess) updateSimStatus('New local game. The previous game remains on Lichess.');
+  }
+  document.getElementById('btnNew').onclick = startNewGame;
 
 
   document.getElementById('btnSave').onclick = () => {
-    const blob=new Blob([generateDCCPgn()],{type:'text/plain'});
+    const text = simSession?.trace.length && simSession.finalFen === game.fen()
+      ? SIM.toPGN(Chess, simSession) : generateDCCPgn();
+    const blob=new Blob([text],{type:'text/plain'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download='chessbest_dcc_game.pgn';
@@ -1484,9 +1537,6 @@ function jumpTo(i){
 	  'settingDccEvalFloor',
 	  'settingDccOnly',
 	  'settingSimSpeed',
-	  'settingSimGames',
-	  'settingDccTakeover',
-	  'settingOpponentModel'
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -1561,16 +1611,7 @@ function jumpTo(i){
 		  case 'settingSimSpeed':
 			settings.simSpeed = parseInt(e.target.value, 10);
 			break;
-		  case 'settingSimGames':
-			settings.simGames = parseInt(e.target.value, 10) || 5;
-			break;
-		  case 'settingDccTakeover':
-			settings.dccTakeover = e.target.value === 'auto' ? 'auto' : parseInt(e.target.value, 10);
-			break;
-		  // v0.6.0: Opponent model
-		  case 'settingOpponentModel':
-			settings.opponentModel = e.target.value;
-			break;
+
 		  // ────────────────────────────
 		}
 		saveSettings();
@@ -1593,7 +1634,8 @@ function jumpTo(i){
      19. KEYBOARD NAVIGATION  (unchanged)
   ------------------------------------------------------------------*/
   document.addEventListener('keydown',e=>{
-    if (playState.active || simRunning || replayRunning || e.target.closest('[role=dialog], dialog')) return;
+    if (playState.active || replayRunning || e.target.closest('[role=dialog], dialog')) return;
+    if (simRunning && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) pauseSimulation();
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
 	const btn = document.getElementById('btnHideEval');
 	btn.innerText = 'Hide Eval';
@@ -1619,6 +1661,11 @@ function jumpTo(i){
   document.querySelectorAll('input[name="simOpponent"]').forEach(el => {
     el.addEventListener('change', syncSimModalState);
   });
+  document.getElementById('simSwapEngines').onclick = () => {
+    const white = document.getElementById('simWhiteEngine');
+    const black = document.getElementById('simBlackEngine');
+    [white.value, black.value] = [black.value, white.value];
+  };
   const simStartBtn = document.getElementById('simStartBtn');
   if (simStartBtn) simStartBtn.addEventListener('click', () => {
     launchFromSimModal().catch(err => {
@@ -1658,8 +1705,6 @@ function jumpTo(i){
   // SIMULATION ENGINE — DCC vs Raw ChessDB
   // ═══════════════════════════════════════════════════════════════════
 
-  let simRunning = false;
-  let simAbort = false;
   let preSimFen = null;      // saved before sim starts
   let preSimMoveIndex = -1;  // where we were in the game
 
@@ -1710,281 +1755,159 @@ function jumpTo(i){
     if (bar) { bar.textContent = msg; bar.style.display = 'block'; }
   }
 
-  // v0.6.1: Export sim results as CSV for Python analysis
-  function exportSimCSV(stats) {
-    const header = 'game,move_num,fen,move,raw_score,dcc_score,stability,adsr_shape,momentum,tunnel,picked_by\n';
-    let csv = header;
-    stats.games.forEach((g, gi) => {
-      (g.moveLog || []).forEach(row => {
-        csv += `${gi+1},${row.move_num},"${row.fen}",${row.move},${row.raw_score},${row.dcc_score},${row.stability},${row.adsr_shape},${row.momentum},${row.tunnel},${row.picked_by}\n`;
-      });
-    });
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'chessdcc_sim_results.csv';
-    a.click(); URL.revokeObjectURL(a.href);
+  function downloadSimExperiments(format) {
+    const text = format === 'csv' ? SIM.toCSV(simExperiments)
+      : simExperiments.map(run => SIM.toPGN(Chess, run)).join('\n\n');
+    const blob = new Blob([text], { type: format === 'csv' ? 'text/csv' : 'application/x-chess-pgn' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `chessbest_position_experiments.${format}`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // Render sim stats dashboard
-  function renderSimStats(stats) {
-    const panel = document.getElementById('simStatsPanel');
-    if (!panel) return;
-    const both = stats.dccColor === 'both';
-    const first = stats.games.filter(g => g.winner === (both ? 'white' : 'dcc')).length;
-    const second = stats.games.filter(g => g.winner === (both ? 'black' : 'raw')).length;
-    const draws = stats.games.filter(g => g.winner === 'draw').length;
-    const incomplete = stats.games.filter(g => g.winner === 'incomplete').length;
-    const title = both ? 'DCC self-play' : 'DCC vs Raw ChessDB';
-    panel.innerHTML = `<div class="sim-stats-header"><span class="sim-title">${title} · ${stats.games.length} games</span></div>
-      <div class="sim-stats-grid"><div class="sim-stat"><strong class="sim-num">${first}</strong><div>${both ? 'White' : 'DCC'} wins</div></div><div class="sim-stat"><strong class="sim-num">${second}</strong><div>${both ? 'Black' : 'Raw'} wins</div></div><div class="sim-stat"><strong class="sim-num">${draws}</strong><div>Draws</div></div><div class="sim-stat"><strong class="sim-num">${incomplete}</strong><div>Incomplete</div></div></div>
-      <div class="sim-games-list">${stats.games.map((g,i) => `<div class="sim-game-row"><span>Game ${i+1}</span><span>${g.moves} plies</span><span>${g.result}</span></div>`).join('')}</div>
-      <p class="dcc-policy-note">${both ? 'Both colors use the same DCC policy.' : 'Exploratory games with the selected opponent model.'} Interrupted or unknown positions are not counted as draws. This is not an Elo benchmark.</p>
-      ${stats.games.some(g => g.moveLog?.length) ? '<button id="btnExportCSV" class="btn">Export CSV</button>' : ''}`;
+  function renderSimDecision(pick, fen, caption = 'Current position') {
+    const panel = document.getElementById('simDecisionPanel');
+    if (!panel || !pick) return;
+    const san = move => move ? uciToSan(fen, move) : 'unknown';
+    panel.replaceChildren();
+    const heading = document.createElement('strong');
+    heading.textContent = `${caption} · ${pick.side === 'w' ? 'White' : 'Black'} to move`;
+    const choices = document.createElement('div');
+    choices.textContent = `CDB: ${san(pick.raw_best)} (${pick.raw_best_score > 0 ? '+' : ''}${pick.raw_best_score} cp) · DCC: ${san(pick.dcc_choice)}`;
+    const ties = document.createElement('div');
+    ties.textContent = `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
+    const verdict = document.createElement('div');
+    verdict.textContent = pick.dcc_choice ? (pick.dcc_choice === pick.raw_best ? 'Same choice.' : 'DCC chooses a different move.') : 'DCC comparison unavailable.';
+    verdict.textContent += ` Coverage: ${pick.coverage}. Scores are from the mover’s perspective.`;
+    panel.append(heading, choices, ties, verdict);
+    panel.dataset.fen = fen;
     panel.style.display = 'block';
-    const button = document.getElementById('btnExportCSV');
-    if (button) button.onclick = () => exportSimCSV(stats);
   }
 
-  // Run one simulated game
-  async function runOneGame(dccColor, gameNum, totalGames, visualize, startFen) {
-    const generation = analysisGeneration;
-    const simGame = new Chess(startFen || undefined);
-    let moveCount = 0;
-    const maxMoves = 200;
-    const bothDCC = (dccColor === 'both');
-    let dccActive = false; // DCC hasn't taken over yet
-    const moveLog = []; // v0.6.1: per-move data for CSV export
-
-    // Book phase: play from ChessDB top moves until DCC takeover
-    // Skip if starting from a custom position (user navigated there)
-    const isStartPos = !startFen || startFen === 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-    const takeoverSetting = settings.dccTakeover;
-    const maxBookMoves = (takeoverSetting === 'auto') ? 30 : parseInt(takeoverSetting, 10);
-
-    if (isStartPos) {
-      for (let i = 0; i < maxBookMoves && !simGame.game_over(); i++) {
-        if (simAbort || generation !== analysisGeneration) return { winner: 'abort', moves: 0, result: 'aborted' };
-        const result = await cachedFetchChessDB(simGame.fen());
-        if (simAbort || generation !== analysisGeneration) return { winner: 'abort', moves: moveCount, result: 'aborted' };
-        if (!result.moves || result.moves.length === 0) break;
-
-        // Auto mode: DCC takes over when DB coverage thins out (< 3 candidates)
-        if (takeoverSetting === 'auto' && result.moves.length < 3) {
-          dccActive = true;
-          break;
-        }
-
-        // Book move: pick randomly from top 3 (creates variety between games)
-        const pool = result.moves.slice(0, Math.min(3, result.moves.length));
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        const m = simGame.move({
-          from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
-          promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-        });
-        if (!m) break;
-        moveCount++;
-
-        updateSimStatus(`Game ${gameNum}/${totalGames} · Book move ${moveCount}: ${pick.move} (${result.moves.length} candidates)`);
-
-        if (visualize && settings.simSpeed > 0) {
-          board.position(simGame.fen());
-          await sleep(Math.max(100, settings.simSpeed / 3));
-        }
-      }
-    }
-    dccActive = true; // DCC always active after book phase
-
-    // Main game loop
-    while (!simGame.game_over() && moveCount < maxMoves) {
-      if (simAbort || generation !== analysisGeneration) return { winner: 'abort', moves: moveCount, result: 'aborted' };
-
-      const turn = simGame.turn(); // 'w' or 'b'
-      // In 'both' mode: both sides use DCC. Otherwise: DCC vs Raw.
-      const useDCC = bothDCC || (turn === dccColor);
-      let pick = useDCC ? await pickDCCMove(simGame) : await pickRawMove(simGame);
-
-      if (simAbort || generation !== analysisGeneration) return { winner: 'abort', moves: moveCount, result: 'aborted' };
-      // Fallback: try querybest if queryall returned nothing
-      if (!pick) {
-        await sleep(200);
-        try {
-          const fbUrl = `https://www.chessdb.cn/cdb.php?action=querybest&board=${encodeURIComponent(simGame.fen())}&learn=0`;
-          const fbTxt = await fetchChessText('querybest', simGame.fen());
-          const fbm = fbTxt.match(/move:(\w+)/);
-          if (fbm) pick = { move: fbm[1], score: null };
-        } catch(e) {}
-      }
-
-      if (simAbort || generation !== analysisGeneration) return { winner: 'abort', moves: moveCount, result: 'aborted' };
-      if (!pick) break; // truly unknown position
-
-      const decisionFen = simGame.fen();
-      const m = simGame.move({
-        from: pick.move.slice(0, 2), to: pick.move.slice(2, 4),
-        promotion: pick.move.length > 4 ? pick.move[4] : 'q'
-      });
-      if (!m) break;
-      moveCount++;
-
-      // v0.6.1: Log move data for CSV export
-      moveLog.push({
-        move_num: moveCount,
-        fen: decisionFen,
-        move: pick.move,
-        raw_score: pick.score,
-        dcc_score: pick._dccScore !== undefined ? pick._dccScore.toFixed(1) : '',
-        stability: Number.isFinite(pick._stability) ? pick._stability.toFixed(2) : '',
-        adsr_shape: pick._adsrShape || '',
-        momentum: pick._momentum !== undefined ? pick._momentum.toFixed(1) : '',
-        tunnel: pick._tunnel ? 'true' : 'false',
-        picked_by: useDCC && pick._receipt ? 'dcc' : 'raw-fallback'
-      });
-
-      const sideLabel = bothDCC ? (turn === 'w' ? 'W' : 'B') : (useDCC ? 'DCC' : 'Raw');
-      updateSimStatus(`Game ${gameNum}/${totalGames} · Move ${moveCount} · ${sideLabel}: ${pick.move} (${pick.score > 0 ? '+' : ''}${pick.score})`);
-
-      if (visualize && settings.simSpeed > 0) {
-        board.position(simGame.fen());
-        await sleep(settings.simSpeed);
-      }
-    }
-
-    // Determine winner
-    let winner = 'incomplete', result = '* incomplete';
-    if (simGame.in_checkmate()) {
-      const loser = simGame.turn(); // side that's in checkmate
-      if (bothDCC) {
-        // Both sides DCC: report which color won
-        winner = loser === 'w' ? 'black' : 'white';
-      } else {
-        winner = (loser === dccColor) ? 'raw' : 'dcc';
-      }
-      result = loser === 'w' ? '0-1' : '1-0';
-    } else if (simGame.in_stalemate()) {
-      winner = 'draw'; result = '½-½ stalemate';
-    } else if (simGame.in_draw()) {
-      winner = 'draw'; result = '½-½ draw';
-    } else if (moveCount >= maxMoves) {
-      result = '* move limit reached';
-    } else {
-      result = '* incomplete: no evaluated move';
-    }
-
-    if (visualize && settings.simSpeed > 0) {
-      board.position(simGame.fen());
-    }
-
-    return { winner, moves: moveCount, result, moveLog };
+  function renderSimStats() {
+    const panel = document.getElementById('simStatsPanel');
+    if (!panel || !simExperiments.length) return;
+    const open = !!panel.querySelector('details')?.open;
+    const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    panel.innerHTML = `<details class="sim-experiments"${open ? ' open' : ''}><summary>Position experiments (${simExperiments.length})</summary>
+      <p>Return to the same starting position, change an engine in Sim, and compare the new line. Repeated positions are not independent strength evidence.</p>
+      <div class="sim-experiment-list">${simExperiments.map((run, i) => {
+        const changes = run.trace.filter(row => row.changed).length;
+        const gaps = run.trace.filter(row => row.coverage !== 'complete').length;
+        return `<div class="sim-experiment-row"><strong>#${run.id} · W ${SIM.label(run.white)} / B ${SIM.label(run.black)}</strong><span>${run.trace.length} plies · ${escape(run.state)} · ${escape(run.result)} · ${changes} changes from CDB · ${gaps} coverage gaps</span><button class="btn" data-sim-start="${i}">Return to start #${run.id}</button></div>`;
+      }).join('')}</div><div class="btn-group"><button class="btn" id="btnExportSimPGN">Export experiments PGN</button><button class="btn" id="btnExportCSV">Export CSV</button></div></details>`;
+    panel.style.display = 'block';
+    panel.querySelectorAll('[data-sim-start]').forEach(button => {
+      button.onclick = () => returnToSimStart(Number(button.dataset.simStart));
+    });
+    document.getElementById('btnExportCSV').onclick = () => downloadSimExperiments('csv');
+    document.getElementById('btnExportSimPGN').onclick = () => downloadSimExperiments('pgn');
   }
 
-  // Main simulation orchestrator
-  async function runSimulation(dccColor, startFen) {
-    if (simRunning) { simAbort = true; invalidateDCCAnalysis(); updateSimStatus('Stopping simulation…'); return; }
-    if (replayRunning || playState.active) return;
+  function returnToSimStart(index) {
+    const run = simExperiments[index];
+    if (!run || playState.active || replayRunning) return;
+    pauseSimulation('Paused to revisit a starting position.');
     invalidateDCCAnalysis();
-    simRunning = true;
-    simAbort = false;
+    if (!run.startPgn || !game.load_pgn(run.startPgn)) game.load(run.startFen);
+    lastLoadedPGN = null; bookFlags = []; divergedIndex = -1;
+    window._skipDivergedReset = false;
+    updateBoard(true);
+    document.getElementById('gameTitle').textContent = `Experiment #${run.id} · starting position`;
+    updateSimStatus('Choose engines in Sim to explore another line from this position.');
+  }
 
-    const isBoth = (dccColor === 'both');
-    const numGames = settings.simGames;
-    const visualize = settings.simSpeed > 0;
-    const statsPanel = document.getElementById('simStatsPanel');
-    const statusBar = document.getElementById('simStatusBar');
-    const btnW = document.getElementById('btnSimW');
-    const btnB = document.getElementById('btnSimB');
-    const btnS = document.getElementById('btnSim');
-
-    // Update button states
-    if (isBoth) {
-      btnS.textContent = 'Stop';
-      btnS.style.background = '#ff4c4c';
-      btnS.style.color = '#fff';
-    } else {
-      const activeBtn = dccColor === 'w' ? btnW : btnB;
-      activeBtn.textContent = 'Stop';
-      activeBtn.style.background = '#ff4c4c';
-      activeBtn.style.color = '#fff';
-    }
-
-    // Disable eval badges during simulation — they can't keep up
-    showEval = false;
-    document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
-    document.getElementById('btnHideEval').innerHTML = 'Sim…';
-    document.getElementById('btnHideEval').style.background = '#34d399';
-
-    // Save pre-sim position for title-click restore
-    preSimFen = game.fen();
-    preSimMoveIndex = game.history().length - 1;
-
-    if (!visualize) {
-      document.getElementById('board-container').style.opacity = '0.2';
-      document.getElementById('moves').style.display = 'none';
-    } else {
-      document.getElementById('moves').style.display = 'none';
-    }
-
-    statusBar.style.display = 'block';
-
-    const colorLabel = isBoth ? 'both' : dccColor;
-    const stats = { dccColor: colorLabel, games: [] };
-
-    // Show stats panel immediately (don't wait for first game to finish)
-    renderSimStats(stats);
-
-    // Build schedule
-    const schedule = [];
-    if (isBoth) {
-      // Sim mode: both sides DCC, N games from current position
-      for (let i = 0; i < numGames; i++) {
-        schedule.push({ color: 'both', label: `${i+1}` });
-      }
-    } else {
-      // SimW/SimB: DCC vs Raw, N games from current position
-      for (let i = 0; i < numGames; i++) {
-        schedule.push({ color: dccColor, label: `${i+1}` });
-      }
-    }
-
-    try {
-    for (let i = 0; i < schedule.length; i++) {
-      if (simAbort) break;
-      const s = schedule[i];
-      const modeLabel = s.color === 'both' ? 'DCC vs DCC' : `DCC=${s.color === 'w' ? 'White' : 'Black'}`;
-      updateSimStatus(`Game ${s.label} (${modeLabel}) ${i+1}/${schedule.length}…`);
-      const result = await runOneGame(s.color, i + 1, schedule.length, visualize, startFen);
-      if (result.winner === 'abort') break;
-      result.dccSide = s.color;
-      stats.games.push(result);
-      renderSimStats(stats);
-    }
-
-    } catch (err) { updateSimStatus('Simulation stopped: ' + err.message); } finally {
-    // Restore UI fully
+  function pauseSimulation(message = 'Paused. Choose a position, then open Sim to continue.') {
+    if (!simRunning) return;
+    const run = simSession;
+    activityEpoch++;
+    simAbort = true;
     simRunning = false;
-    simAbort = false;
-    btnW.textContent = 'SimW'; btnW.style.background = '#2a3020'; btnW.style.color = '#34d399';
-    btnB.textContent = 'SimB'; btnB.style.background = '#2a2030'; btnB.style.color = '#a78bfa';
-    btnS.textContent = 'Sim'; btnS.style.background = '#2a2520'; btnS.style.color = '#f59e0b';
-    statusBar.style.display = 'none';
-    document.getElementById('board-container').style.opacity = '1';
-    document.getElementById('moves').style.display = '';
-
-    // Restore eval badges
+    invalidateDCCAnalysis();
+    if (run) { Object.assign(run, SIM.outcome(game)); run.finalFen = game.fen(); }
     showEval = true;
-    const hideBtn = document.getElementById('btnHideEval');
-    hideBtn.innerHTML = 'Hide<br>Eval';
-    hideBtn.style.background = '';
+    setBoardThinking(false);
+    refreshPlayUi();
+    document.getElementById('board-container').style.opacity = '1';
+    renderSimStats();
+    updateSimStatus(message);
+    fetchAnnotations();
+  }
 
-    // Restore board to the real game position
-    board.position(game.fen());
-    updateBoard(false);
-
+  // A position experiment commits to the real game/history. Navigation can
+  // pause it synchronously; every awaited decision checks ownership and FEN.
+  async function runSimulation(white, black, startFen) {
+    if (simRunning || replayRunning || playState.active) return;
+    const epoch = ++activityEpoch;
+    invalidateDCCAnalysis();
+    const snapshot = { ...settings };
+    const run = {
+      id: simExperiments.length + 1, startedAt: new Date().toISOString(),
+      white: SIM.policy(white), black: SIM.policy(black), startFen: startFen || game.fen(),
+      startPgn: game.pgn(), config: DCC.config(snapshot), trace: [], state: 'running', result: '*', reason: ''
+    };
+    simSession = run; simExperiments.push(run);
+    simRunning = true; simAbort = false;
+    preSimFen = null; preSimMoveIndex = -1;
+    showEval = false;
+    clearInterval(evalRetryTimer); evalRetryTimer = null;
+    dccViewActive = false;
+    document.getElementById('moves').style.display = '';
+    document.getElementById('dccAnalysisPanel').style.display = 'none';
+    document.getElementById('btnViewToggle').textContent = 'DCC';
+    document.getElementById('gameTitle').textContent = `White: ${SIM.label(run.white)} · Black: ${SIM.label(run.black)}`;
+    refreshPlayUi();
+    renderSimStats();
+    const owns = () => epoch === activityEpoch && simRunning && !simAbort;
+    try {
+      while (owns() && !game.game_over() && run.trace.length < 200) {
+        const fen = game.fen(), generation = analysisGeneration, started = Date.now();
+        const engine = game.turn() === 'w' ? run.white : run.black;
+        setBoardThinking(true);
+        updateSimStatus(`${game.turn() === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} · comparing choices…`);
+        const result = await cachedFetchChessDB(fen);
+        if (!owns() || game.fen() !== fen) return;
+        // Both modes observe DCC. Only the selected policy may choose the move.
+        const analysis = result.moves.length ? await analyzePosition(fen, result.moves, { settings: snapshot }) : null;
+        if (!owns() || game.fen() !== fen) return;
+        if (generation !== analysisGeneration || JSON.stringify(DCC.config(settings)) !== JSON.stringify(run.config)) {
+          pauseSimulation('Paused after settings changed. Open Sim to continue.'); return;
+        }
+        const pick = SIM.decision(Chess, fen, engine, result.moves, analysis);
+        if (!pick) { Object.assign(run, SIM.outcome(game, 'no evaluated move')); break; }
+        const elapsed = Date.now() - started;
+        if (analysis) {
+          latestDCCResults = analysis.candidates.map(c => c.data);
+          latestDCCReceipt = analysis.receipt;
+          dccMoveAnnotations[fen] = latestDCCResults.slice();
+          renderDCCView();
+        }
+        renderSimDecision(pick, fen);
+        setBoardThinking(false);
+        updateSimStatus(`${pick.side === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} chooses ${uciToSan(fen, pick.move)} · ${pick.changed ? 'different from CDB top 1' : 'same as CDB top 1'}`);
+        // Always yield, including fast mode, so history clicks can pause.
+        await sleep(Math.max(100, snapshot.simSpeed || 0));
+        if (!owns() || game.fen() !== fen) return;
+        if (generation !== analysisGeneration) { pauseSimulation(); return; }
+        const played = applyUciMove(game, pick.move);
+        if (!played) throw new Error('The selected simulation move is no longer legal.');
+        run.trace.push({ ...pick, ply: run.trace.length + 1, fen, san: played.san, elapsed_ms: elapsed });
+        run.finalFen = game.fen();
+        lastAction = 'move'; window._skipDivergedReset = true;
+        updateBoard(false);
+        renderSimStats();
+      }
+      if (owns() && run.state === 'running') Object.assign(run, SIM.outcome(game, 'move limit reached'));
+    } catch (err) {
+      if (owns()) Object.assign(run, SIM.outcome(game, 'analysis error: ' + describeErr(err)));
+    } finally {
+      // Pause/New game/new experiment owns the UI once this epoch is replaced.
+      if (epoch === activityEpoch) {
+        simRunning = false; simAbort = false; showEval = true;
+        setBoardThinking(false); refreshPlayUi(); updateBoard(false);
+        renderSimStats();
+        updateSimStatus(`Experiment #${run.id}: ${run.state} · ${run.result} · ${run.reason}`);
+      }
     }
-    // Show final stats
-    renderSimStats(stats);
-    updateSimStatus(`Done: ${stats.games.length} games`);
-    setTimeout(() => { statusBar.style.display = 'none'; }, 3000);
   }
 
 
@@ -2121,7 +2044,7 @@ function jumpTo(i){
       timeSel.appendChild(opt);
     });
     if (!defaultTimeMatched && timeSel.options.length) timeSel.options[0].selected = true;
-    if (lichessRadio) lichessRadio.checked = true;
+    // Keep the selected local/remote mode; loading bot metadata must not change it.
     syncSimModalState();
   }
 
@@ -2140,6 +2063,12 @@ function syncSimModalState() {
   const hint = document.getElementById('simModeHint');
   const colorSel = document.getElementById('simColorSelect');
   const colorLabel = document.getElementById('simColorLabel');
+  const localSim = launchMode === 'sim' && mode !== 'lichess';
+  document.getElementById('simLocalMatch').hidden = !localSim;
+  document.getElementById('simSessionOptions').hidden = localSim;
+  document.getElementById('simLocalBotOption').hidden = launchMode === 'sim';
+  document.getElementById('simLocalSpeed').value = String(settings.simSpeed);
+  document.getElementById('simPositionInfo').textContent = `Starts at the displayed position · ${game.turn() === 'w' ? 'White' : 'Black'} to move · move ${game.fen().split(' ')[5]}`;
 
   if (lichessControls) lichessControls.style.display = mode === 'lichess' ? 'grid' : 'none';
 
@@ -2154,8 +2083,8 @@ function syncSimModalState() {
     if (colorLabel) colorLabel.textContent = 'Engine color';
     if (colorSel) { colorSel.value = 'black'; colorSel.disabled = true; }
   } else {
-    if (title) title.textContent = 'Sim — 8Z DCC research';
-    if (hint) hint.textContent = 'Automatic research mode. 8Z plays the chosen side, DCC stays on, both sides are analyzed, and DCC data is kept for PGN export.';
+    if (title) title.textContent = 'Sim — test DCC at this position';
+    if (hint) hint.textContent = 'Choose each side’s move policy. Click a move in the history to pause there. Open Sim again to change engines and continue from that position.';
     if (colorLabel) colorLabel.textContent = '8Z color';
     if (colorSel) { colorSel.disabled = false; }
   }
@@ -2166,6 +2095,8 @@ function syncSimModalState() {
       note.textContent = launchMode === 'sim'
         ? 'Lichess bot research mode. 8Z will challenge the selected Lichess bot and auto-play the chosen color.'
         : 'Lichess bot + human mode. The selected engine color is played by the Lichess bot. The opposite color is human. DCC remains on for both sides.';
+    } else if (localSim) {
+      note.textContent = 'CDB selects top 1, keeping ChessDB order for equal evaluations. CDB + DCC uses the shared 10 cp guard. Both sides record the comparison; raw moves stay raw. Return to an experiment’s start to test the other policy from the same position.';
     } else if (mode === 'dccbot') {
       note.textContent = launchMode === 'sim'
         ? '8Z local bot mode. Use this for browser-side training and debugging without Lichess.'
@@ -2180,7 +2111,7 @@ function syncSimModalState() {
   
 function openSimModal(launchMode = 'sim') {
   if (replayRunning) { stopReplay(); return; }
-  if (simRunning) { simAbort = true; invalidateDCCAnalysis(); updateSimStatus('Stopping simulation…'); return; }
+  if (simRunning) pauseSimulation('Paused to choose engines. Start continues from the displayed position.');
   if (playState.active) {
     leaveActiveSession(playState.mode === 'lichess'
       ? 'Local live session stopped. The Lichess game may still be running.'
@@ -2188,6 +2119,7 @@ function openSimModal(launchMode = 'sim') {
     return;
   }
   playState.launchMode = launchMode || 'sim';
+  if (launchMode === 'sim' && currentSimMode() === 'dccbot') document.querySelector('input[name="simOpponent"][value="self"]').checked = true;
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
   syncSimModalState();
@@ -2200,7 +2132,7 @@ function openSimModal(launchMode = 'sim') {
 
   
 function refreshPlayUi() {
-  const busy = playState.active || !!playState.replaying;
+  const busy = playState.active || simRunning || !!playState.replaying;
   const btnSim = document.getElementById('btnSim');
   const btnSimW = document.getElementById('btnSimW');
   const btnSimB = document.getElementById('btnSimB');
@@ -2208,14 +2140,15 @@ function refreshPlayUi() {
   const btnView = document.getElementById('btnViewToggle');
   const btnHide = document.getElementById('btnHideEval');
   if (btnSim) {
-    btnSim.textContent = playState.active ? 'Stop' : 'Sim';
+    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Sim';
+    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Sim: configure automatic play');
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
     btnSim.disabled = !!playState.replaying;
   }
   if (btnSimW) btnSimW.disabled = busy;
   if (btnSimB) btnSimB.disabled = busy;
-  if (btnReplay) btnReplay.disabled = playState.active;
+  if (btnReplay) btnReplay.disabled = playState.active || simRunning;
   if (btnView) btnView.disabled = false;
   if (btnHide) btnHide.disabled = false;
   const askInput = document.getElementById('coachAskInput');
@@ -3051,7 +2984,11 @@ async function launchFromSimModal() {
   try { clock = { ...clock, ...JSON.parse(timeSel?.value || '{}') }; } catch (_) {}
   closeSimModal();
   if (launchMode === 'sim' && (mode === 'self' || mode === 'dccbot')) {
-    await runSimulation('both', game.fen());
+    const white = document.getElementById('simWhiteEngine').value;
+    const black = document.getElementById('simBlackEngine').value;
+    settings.simSpeed = Number(document.getElementById('simLocalSpeed').value);
+    saveSettings();
+    await runSimulation(white, black, game.fen());
     return;
   }
   const engineColor = launchMode === 'simw' ? 'white' : 'black';
@@ -3100,9 +3037,6 @@ async function launchFromSimModal() {
   // ═══════════════════════════════════════════════════════════════════
   // DCC REPLAY — Analyze loaded game with DCC eval (v0.6.1)
   // ═══════════════════════════════════════════════════════════════════
-
-  let replayRunning = false;
-  let replayAbort = false;
 
   // Analyze a single position: return DCC data for all candidates + identify DCC #1
   async function analyzePosition(fen, suppliedMoves, options = {}) {
@@ -3173,10 +3107,12 @@ async function launchFromSimModal() {
     panel.style.display = 'block';
   }
 
-  async function replayGame() {
+  async function replayGame(overrides = {}) {
     if (replayRunning) { stopReplay(); return; }
     if (playState.active || simRunning) { updateSimStatus('Stop the current game or simulation before Replay.'); return; }
     if (fullHistory.length === 0) { alert('Load a PGN game first.'); return; }
+    const epoch = ++activityEpoch;
+    const snapshot = { ...settings, ...overrides };
     invalidateDCCAnalysis();
     const generation = analysisGeneration;
     replayRunning = true;
@@ -3193,7 +3129,7 @@ async function launchFromSimModal() {
     const headers = { ...game.header() };
     const annotations = [];
     const replaySettings = {
-      depth: settings.dccDepth, candidates: settings.dccTopCandidates, floor: settings.dccEvalFloor
+      depth: snapshot.dccDepth, candidates: snapshot.dccTopCandidates, floor: snapshot.dccEvalFloor
     };
     let state = 'stopped';
     let failure = '';
@@ -3212,7 +3148,7 @@ async function launchFromSimModal() {
         const moveUci = normalizeUci(mv);
         document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
         updateSimStatus(`Replay ${i + 1}/${moves.length}: analyzing ${mv.san}…`);
-        const analysis = await analyzePosition(fen);
+        const analysis = await analyzePosition(fen, undefined, { settings: snapshot });
         // Stop/navigation/settings changes may happen while requests are pending.
         if (replayAbort || analysisGeneration !== generation || game.fen() !== fen || playState.active || simRunning) break;
         const ann = {
@@ -3224,8 +3160,8 @@ async function launchFromSimModal() {
           latestDCCResults = analysis.candidates.map(candidate => candidate.data).filter(Boolean);
           latestDCCReceipt = analysis.receipt;
           renderDCCView();
-          if (settings.simSpeed > 0) {
-            analysis.allMoves.slice(0, settings.topN || 5).forEach((m, idx) => annotateMove(m.move, m.score, idx === 0));
+          if (snapshot.simSpeed > 0) {
+            analysis.allMoves.slice(0, snapshot.topN || 5).forEach((m, idx) => annotateMove(m.move, m.score, idx === 0));
             for (const candidate of analysis.candidates) {
               if (candidate.data) updateDCCBadge(candidate.move, candidate.data, 'done');
             }
@@ -3253,7 +3189,7 @@ async function launchFromSimModal() {
         board.position(game.fen());
         renderHistory();
         renderReplayProgress(annotations, moves.length, 'Reviewing', headers);
-        if (settings.simSpeed > 0) await sleep(Math.max(80, settings.simSpeed));
+        if (snapshot.simSpeed > 0) await sleep(Math.max(80, snapshot.simSpeed));
       }
       if (annotations.length === moves.length && !replayAbort && analysisGeneration === generation) {
         state = annotations.every(a => a.isDCC1 !== null) ? 'complete' : 'finished with gaps';
@@ -3263,6 +3199,7 @@ async function launchFromSimModal() {
       failure = describeErr(err);
       console.warn('Replay failed:', err);
     } finally {
+      if (epoch !== activityEpoch) return;
       replayRunning = false;
       replayAbort = false;
       playState.replaying = false;
@@ -3375,13 +3312,7 @@ async function launchFromSimModal() {
         dccEvalFloor: number('replayFloor', saved.dccEvalFloor, 0, 1000),
         simSpeed: number('replaySpeed', saved.simSpeed, 0, 10000)
       };
-      Object.assign(settings, overrides);
-      try { await replayGame(); }
-      finally {
-        // Preserve any deliberate setting change made while Replay was pending.
-        for (const key of Object.keys(saved)) if (settings[key] === overrides[key]) settings[key] = saved[key];
-        invalidateDCCAnalysis();
-      }
+      await replayGame(overrides);
     };
   }
 
@@ -3418,8 +3349,8 @@ async function launchFromSimModal() {
     if (playState.active || replayRunning) return;
     // If sim is running → stop it
     if (simRunning) {
-      simAbort = true;
-      return; // restore happens in runSimulation cleanup
+      pauseSimulation();
+      return;
     }
 
     // If we just returned from a sim → restore pre-sim position
@@ -3482,26 +3413,6 @@ mainEl.addEventListener('click', e => {
 });
 // ────────────────────────────────────────────────────────────────────────
   
-  // Hidden “Author” link toggles board size—desktop only
-  (function() {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    if (isMobile) return;  // no-op on mobile
-
-    const authorLink = document.getElementById("authorLink");
-    const boardEl    = document.getElementById("board");
-
-	authorLink.addEventListener("click", e => {
-	  e.preventDefault();
-	  boardEl.classList.toggle("scaled");
-	  board.resize(); // recalculate click coordinates
-
-	  settings.doubleBoard = boardEl.classList.contains("scaled");
-	  document.getElementById('settingDoubleBoard').checked = settings.doubleBoard;
-
-	  saveSettings();
-	});
-
-  })();
   // ────────────────────────────────────────────────────────────────────────
 
 }

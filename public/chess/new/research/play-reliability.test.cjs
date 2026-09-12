@@ -37,7 +37,7 @@ function context() {
         lastMoves: '', initialFen: new Chess().fen(), pendingMove: null, botUsername: 'opponent' }
     },
     settings: { simSpeed: 0, dccDepth: 5, dccTopCandidates: 3, dccEvalFloor: 80 },
-    analysisGeneration: 0, replayRunning: false, replayAbort: false, simRunning: false,
+    analysisGeneration: 0, activityEpoch: 0, replayRunning: false, replayAbort: false, simRunning: false,
     fullHistory: [], lastAction: null, window: {},
     board: { position() {}, orientation() {} }, document: {
       getElementById: id => elements.get(id) || null,

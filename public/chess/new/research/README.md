@@ -55,3 +55,34 @@ changes and how to check them.
 All 30 deterministic regression tests pass, including six new checks for opening
 top-five order, measured/unknown precedence, legality, partial source failures,
 separate caches and the annotation-to-DCC integration.
+
+## 2026-09-12 position experiments and New game
+
+Reproduced New game ignoring clicks in a live local SimB session after c4 and an
+engine response. The handler returned early for every active session. New game now
+ends local activity immediately and invalidates both pending moves and pending
+UI cleanup. Sim/Replay activity ownership prevents an old async task from replacing
+the new board, history or result panel. Replay settings are scoped to the run.
+
+Sim now plays from the displayed full FEN with a separate CDB top-1 / CDB+DCC choice
+for White and Black. The real move history is updated. Clicking a history move
+synchronously pauses at that position; opening Sim allows engine reassignment and
+a new branch. Pause also opens that dialog. Experiment start snapshots and played
+traces are retained for the tab session, with Return to start and PGN/CSV exports.
+The author link is mailto:bd@siol.net; Portfolio retains /BD/.
+
+Raw selection preserves provider tie ordering. Both policies observe the shared
+DCC analysis, but only the selected policy chooses. The comparison card records
+top-1, DCC choice, exact ties, candidates within 10 cp, score gap and coverage.
+Exports record actual selected moves, raw/DCC alternatives, full initial FEN,
+engine colors, controller configuration and unknown/partial observations. The old
+random book warmup and randomized opponent model do not apply to these position
+experiments. Pauses, absent evaluations and the 200-ply limit retain result '*'.
+Different choices are observations, not evidence of a playing-strength gain;
+repeated positions and changing live database responses remain explicit limits.
+
+Verification: 43 deterministic tests pass, including policy routing for both color
+assignments, exact/near ties, underpromotion, export round-trips, the reported
+SimB reset, history pause, late requests after replacement, and Replay reset.
+A full HTML/JavaScript DOM smoke check also passed boot, SimB/c4/New game, engine
+swap, automatic history updates, click-to-pause, dialog reopening and final reset.
