@@ -7,15 +7,15 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="Flip4M by Bojan Dobrečevič. Connect four. Turn gravity. Master the magnets. Independent Classical / AI+DCC laboratory with reproducible paired experiments.">
 <title>Flip4M Lab — Classical AI × AI+DCC</title>
-<link rel="stylesheet" href="f4m.css?v=2.1.0">
-<script src="f4m-core.js?v=2.1.0" defer></script>
-<script src="f4m-search.js?v=2.1.0" defer></script>
-<script src="f4m-classical.js?v=2.1.0" defer></script>
-<script src="f4m-dcc.js?v=2.1.0" defer></script>
-<script src="f4m-time.js?v=2.1.0" defer></script>
-<script src="f4m-sim.js?v=2.1.0" defer></script>
-<script src="f4m-store.js?v=2.1.0" defer></script>
-<script src="f4m-ui.js?v=2.1.0" defer></script>
+<link rel="stylesheet" href="f4m.css?v=2.1.1">
+<script src="f4m-core.js?v=2.1.1" defer></script>
+<script src="f4m-search.js?v=2.1.1" defer></script>
+<script src="f4m-classical.js?v=2.1.1" defer></script>
+<script src="f4m-dcc.js?v=2.1.1" defer></script>
+<script src="f4m-time.js?v=2.1.1" defer></script>
+<script src="f4m-sim.js?v=2.1.1" defer></script>
+<script src="f4m-store.js?v=2.1.1" defer></script>
+<script src="f4m-ui.js?v=2.1.1" defer></script>
 </head>
 <body>
 <header class="topbar">
@@ -45,7 +45,8 @@
     <label><span data-i18n="opponent">Nasprotnik</span><select id="mode"><option value="cpu" data-i18n="cpu">Igraj proti AI</option><option value="pvp" data-i18n="pvp">Dva igralca</option></select></label>
     <label><span data-i18n="tools">Pravila / orodja na igralca</span><select id="tools"><option value="0" data-i18n="classic">Klasika · brez orodij</option><option value="2" selected data-i18n="magnetic">Flip4M · 2 obrata + 2 magneta</option><option value="3" data-i18n="pro">Pro · 3 obrati + 3 magneti</option></select></label>
     <label><span data-i18n="engine">Igralni motor</span><select id="cpuEngine"><option value="classical">Classical AI</option><option value="dcc">AI + DCC</option></select></label>
-    <label><span data-i18n="difficulty">Moč AI</span><select id="difficulty"><option value="beginner" data-i18n="beginner">Začetnik</option><option value="casual" selected data-i18n="casual">Sproščeno</option><option value="strong" data-i18n="strong">Izziv</option><option value="master" data-i18n="master">Mojster</option></select></label>
+    <label><span data-i18n="difficulty">Moč AI</span><select id="difficulty"><option value="beginner" data-i18n="beginner">Začetnik</option><option value="casual" selected data-i18n="casual">Sproščeno</option><option value="strong" data-i18n="strong">Izziv</option><option value="master" data-i18n="master">Mojster</option><option value="grandmaster" data-i18n="grandmaster">Velemojster · 1 min</option><option value="champion" data-i18n="champion">Prvak · 2 min</option></select></label>
+    <p class="tiny" data-i18n="longThinkNote">Velemojster: 60 s; Prvak: 120 s na odločitev. Ob dokazanem izidu lahko konča prej.</p>
     <div class="two-fields"><label><span data-i18n="first">Začne</span><select id="first"><option value="human" data-i18n="you">Ti</option><option value="cpu">AI</option></select></label></div>
     <details class="settings-fold"><summary data-i18n="timeSettings">Časi in prikazi</summary>
      <label class="check"><input type="checkbox" id="showTimers"><span data-i18n="showTimers">Prikaži uri</span></label>
@@ -79,7 +80,7 @@
    <div class="note"><span>✦</span><p data-i18n="note">Začni brez orodij. Ko obvladaš štiri v vrsto, vključi rotacije in magnete — ista plošča, povsem nova globina.</p></div>
   </aside>
  </div>
- <footer><span><a href="/BD/">Bojan Dobrečevič</a> · BD × AI Lab · 2026</span><span data-i18n="privacy">Brez računa. Brez API-ja. Vse ostane v tvojem brskalniku.</span><span>Lab 2.1.0 · <a href="release.json" data-i18n="receipt">Zapis izdaje</a></span></footer>
+ <footer><span><a href="/BD/">Bojan Dobrečevič</a> · BD × AI Lab · 2026</span><span data-i18n="privacy">Brez računa. Brez API-ja. Vse ostane v tvojem brskalniku.</span><span>Lab 2.1.1 · <a href="release.json" data-i18n="receipt">Zapis izdaje</a></span></footer>
 </main>
 <dialog id="helpDialog"><div class="dialog-title"><div><div class="eyebrow">FLIP4M</div><h2 data-i18n="how">Kako igrati?</h2></div><button id="closeHelp" aria-label="Close">✕</button></div><div id="helpText"></div><button id="helpDone" class="primary" data-i18n="play">Igrajmo →</button></dialog>
 <dialog id="simDialog"><div class="dialog-title"><h2>Sim · Classical × DCC</h2><button id="closeSim" aria-label="Close">✕</button></div>
@@ -90,7 +91,7 @@
  <div class="two-fields"><label><span data-i18n="tools">Pravila</span><select id="simTools"><option value="0">Classic</option><option value="2" selected>Flip4M · F2 M2</option><option value="3">Pro · F3 M3</option></select></label><label><span>Seed</span><input id="simSeed" type="number" min="0" max="4294967295" value="20260912"></label></div>
  <label><span data-i18n="simLength">Dolžina poskusa</span><select id="simLength"><option value="single" data-i18n="single">Ena igra</option><option value="1" selected data-i18n="onePair">Par · zamenjani barvi</option><option value="5">5 × 2</option><option value="10">10 × 2</option><option value="25">25 × 2</option><option value="50">50 × 2</option><option value="100">100 × 2</option></select></label>
  <label><span data-i18n="computeMode">Računski proračun</span><select id="computeMode"><option value="work" selected data-i18n="workMode">Ponovljivo · število prehodov</option><option value="time" data-i18n="timeMode">Čas na odločitev</option></select></label>
- <div class="two-fields"><label><span data-i18n="workUnits">Prehodi stanja</span><select id="simWork"><option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="25000">25,000</option><option value="100000">100,000</option></select></label><label><span data-i18n="milliseconds">Milisekunde</span><select id="simMs"><option value="150">150</option><option value="500" selected>500</option><option value="1600">1,600</option><option value="4500">4,500</option></select></label></div>
+ <div class="two-fields"><label><span data-i18n="workUnits">Prehodi stanja</span><select id="simWork"><option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="25000">25,000</option><option value="100000">100,000</option></select></label><label><span data-i18n="milliseconds">Milisekunde</span><select id="simMs"><option value="150">150</option><option value="500" selected>500</option><option value="1600">1,600</option><option value="4500">4,500</option><option value="60000" data-i18n="grandmaster">Velemojster · 1 min</option><option value="120000" data-i18n="champion">Prvak · 2 min</option></select></label></div>
  <label><span data-i18n="presentation">Prikaz</span><select id="simDisplay"><option value="watch" selected data-i18n="watchMode">Gledanje · animacije</option><option value="fast" data-i18n="fastMode">Hitro · brez animacij</option></select></label>
  <p class="tiny" data-i18n="simNote">Sim ne izgublja na čas. Nastavitev omejuje računanje posamezne poteze. Oba motorja dobita isti analizator, vključno s senzorji. Hiter način ne spremeni proračuna.</p>
  <p id="simNotice" class="tiny"></p><button id="startSim" class="primary" data-i18n="startSim">Začni Sim →</button>

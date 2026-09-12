@@ -7,7 +7,7 @@ const E=root.F4M||(typeof require==='function'?require('./f4m-core.js'):null);
 const S=root.F4MSearch||(typeof require==='function'?require('./f4m-search.js'):null);
 const C=root.F4MClassical||(typeof require==='function'?require('./f4m-classical.js'):null);
 const D=root.F4MDCC||(typeof require==='function'?require('./f4m-dcc.js'):null);
-const VERSION='1.0.0',clone=x=>JSON.parse(JSON.stringify(x));
+const VERSION='1.1.0',clone=x=>JSON.parse(JSON.stringify(x));
 function rng(seed){let x=seed>>>0;return ()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296;};}
 function fingerprint(text){let a=2166136261;for(const c of text){a^=c.charCodeAt(0);a=Math.imul(a,16777619);}return (a>>>0).toString(16).padStart(8,'0');}
 function opening(tools,seed,plies=6,stress=false){
@@ -28,8 +28,7 @@ function create(config={},current=E.create(2)){
   seed:(Number.isFinite(Number(config.seed))?Number(config.seed):20260912)>>>0,tools:[0,2,3].includes(Number(config.tools))?Number(config.tools):2,
   start:['seeded','stress','current','empty'].includes(config.start)?config.start:'seeded',
   red:config.red==='dcc'?'dcc':'classical',yellow:config.yellow==='classical'?'classical':'dcc',
-  budget:{mode:config.budget?.mode==='time'?'time':'work',ms:Math.max(30,Math.min(60000,Number(config.budget?.ms)||500)),
-   work:Math.max(128,Math.min(2000000,Math.trunc(config.budget?.work||10000))),depth:Math.max(1,Math.min(16,Math.trunc(config.budget?.depth||8)))},
+  budget:S.normalizeBudget({mode:'work',work:10000,...config.budget}),
   dcc:clone(config.dcc||{}),maxPlies:Math.max(1,Math.min(256,Math.trunc(config.maxPlies||96)))};
  const starts=[];
  for(let i=0;i<(cfg.single?1:cfg.pairs);i++){
@@ -60,6 +59,7 @@ function append(batch,bundle,presentationMs=0,wallMs=bundle.total_ms){
  const row={ply:run.trace.length+1,side:before.curPlayer,policy,move:clone(m),beforeKey:key,afterKey:E.key(after),
   rawBest:raw.id,dccChoice:bundle.dcc.selected?.id||null,rawScore:choice.selected.score,rawGap:raw.score-choice.selected.score,
   changed:choice.selected.id!==raw.id,dccWouldChange:bundle.dcc.changed,dccCoverage:bundle.dcc.coverage,reason:choice.reason,
+  engineVersion:report.version,stopReason:report.stopReason,effectiveBudget:clone(report.budget),
   depth:report.depth,work:report.work,nodes:report.nodes,compute_ms:bundle.total_ms,analysis_ms:report.elapsed,policy_ms:bundle.policy_ms,
   presentation_ms:presentationMs,wall_ms:wallMs,atUTC:new Date().toISOString(),
   sensors:clone(choice.selected.sensors),rootCandidates:report.candidates.map(c=>({id:c.id,score:c.score,depth:c.depth,safe:c.safe,byDepth:c.byDepth,sensors:c.sensors}))};
@@ -74,7 +74,9 @@ function restore(raw){
  if(!raw||raw.format!=='flip4m.lab.batch'||raw.schema!==1||raw.rules!==E.RULES)throw Error('Invalid batch schema');
  if(!Array.isArray(raw.starts)||raw.starts.length>100||!Array.isArray(raw.runs)||raw.runs.length>200)throw Error('Invalid batch size');
  const out=clone(raw),cfg=out.config;
- if(!cfg||!['time','work'].includes(cfg.budget?.mode)||!Number.isInteger(cfg.budget.work)||cfg.budget.work<128||cfg.budget.work>2000000||!Number.isFinite(cfg.budget.ms)||cfg.budget.ms<30||cfg.budget.ms>60000||!Number.isInteger(cfg.budget.depth)||cfg.budget.depth<1||cfg.budget.depth>16||!Number.isInteger(out.nextIndex)||!Number.isInteger(cfg.pairs)||cfg.pairs<1||cfg.pairs>100||!['seeded','stress','current','empty'].includes(cfg.start)||![0,2,3].includes(cfg.tools)||!['classical','dcc'].includes(cfg.red)||!['classical','dcc'].includes(cfg.yellow)||!Number.isInteger(cfg.maxPlies)||cfg.maxPlies<1||cfg.maxPlies>256)throw Error('Invalid batch configuration');
+ // Pre-1.1 experiments used a combined deadline+work cap. Preserve their contract.
+ if(out.version==='1.0.0'&&cfg?.budget?.mode==='time')cfg.budget.legacyWorkLimit=true;
+ if(!cfg||!['time','work'].includes(cfg.budget?.mode)||!Number.isInteger(cfg.budget.work)||cfg.budget.work<128||cfg.budget.work>2000000||!Number.isFinite(cfg.budget.ms)||cfg.budget.ms<30||cfg.budget.ms>S.LIMITS.ms||!Number.isInteger(cfg.budget.depth)||cfg.budget.depth<1||cfg.budget.depth>S.LIMITS.depth||!Number.isInteger(out.nextIndex)||!Number.isInteger(cfg.pairs)||cfg.pairs<1||cfg.pairs>100||!['seeded','stress','current','empty'].includes(cfg.start)||![0,2,3].includes(cfg.tools)||!['classical','dcc'].includes(cfg.red)||!['classical','dcc'].includes(cfg.yellow)||!Number.isInteger(cfg.maxPlies)||cfg.maxPlies<1||cfg.maxPlies>256)throw Error('Invalid batch configuration');
  if(out.starts.length!==(cfg.single?1:cfg.pairs))throw Error('Opening count mismatch');
  out.starts.forEach(x=>{x.state=E.validate(x.state);});
  function verify(run){
