@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="sl" data-size="2">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>BD — vprašanja za kardiologa</title>
+<style>
+:root{
+  --bg:#050913;--panel:#0e1728;--panel2:#121f34;--line:#2b4263;
+  --text:#f2f7ff;--muted:#bfccdc;--dim:#8393aa;--blue:#76bdff;
+  --cyan:#61e3dc;--gold:#ffd56a;--green:#67dfa0;--red:#ff8a98;
+  --shadow:0 18px 58px rgba(0,0,0,.42);--r:20px;
+  --body:21px;--small:15px;--h1:44px;--h2:28px;
+}
+html[data-size="1"]{--body:18px;--small:13px;--h1:37px;--h2:24px}
+html[data-size="3"]{--body:24px;--small:17px;--h1:51px;--h2:32px}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+font-size:var(--body);line-height:1.55;background:
+radial-gradient(circle at 8% -5%,rgba(118,189,255,.18),transparent 27rem),
+radial-gradient(circle at 96% 4%,rgba(97,227,220,.10),transparent 24rem),
+linear-gradient(180deg,#050913,#081120);min-height:100vh}
+button,textarea,input{font:inherit}
+.top{position:sticky;top:0;z-index:10;background:rgba(5,9,19,.92);backdrop-filter:blur(16px);
+border-bottom:1px solid rgba(118,189,255,.22);padding:10px max(13px,env(safe-area-inset-left))}
+.topin{max-width:760px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-size:14px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.tools{display:flex;gap:6px}
+.tools button{border:1px solid var(--line);border-radius:999px;background:#0c1628;color:var(--text);padding:8px 12px;font-weight:800}
+.wrap{width:min(760px,calc(100% - 24px));margin:auto;padding:28px 0 90px}
+.hero{padding:24px;border:1px solid rgba(118,189,255,.30);border-radius:26px;
+background:linear-gradient(140deg,rgba(118,189,255,.12),rgba(97,227,220,.04)),var(--panel);
+box-shadow:var(--shadow)}
+.kicker{font-size:var(--small);font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+h1{font-size:var(--h1);line-height:1.0;letter-spacing:-.045em;margin:10px 0 14px}
+.lead{color:var(--muted);margin:0}
+.ref{display:grid;gap:8px;margin-top:18px}
+.chip{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025);padding:11px 13px;
+font-size:var(--small);color:var(--muted)}
+.chip strong{color:var(--text)}
+.alert{margin-top:12px;border-left:4px solid var(--gold);background:rgba(255,213,106,.08);
+padding:13px 15px;border-radius:0 14px 14px 0;color:var(--muted)}
+.section{margin-top:24px}
+.section h2{font-size:var(--h2);margin:0 0 12px;letter-spacing:-.02em}
+.summary{border:1px solid rgba(97,227,220,.28);border-radius:20px;background:rgba(97,227,220,.055);
+padding:19px;box-shadow:var(--shadow)}
+.summary p{margin:0;color:#deebf8}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.actions button{border:1px solid var(--line);border-radius:999px;background:#0b1628;color:var(--blue);
+padding:9px 13px;font-size:var(--small);font-weight:900}
+.priority{border:1px solid rgba(255,213,106,.30);border-radius:20px;padding:18px;background:rgba(255,213,106,.055)}
+.priority ol{margin:0;padding-left:1.35em}
+.priority li{margin:.55em 0;color:#fff}
+.qcard{margin:14px 0;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+padding:19px;box-shadow:0 12px 34px rgba(0,0,0,.24)}
+.qhead{display:grid;grid-template-columns:28px 42px 1fr;gap:10px;align-items:center;cursor:pointer}
+.done{width:24px;height:24px;accent-color:var(--green)}
+.num{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(118,189,255,.38);
+border-radius:13px;background:rgba(118,189,255,.08);color:var(--blue);font-weight:950}
+.qtitle{font-size:1.18em;font-weight:900;line-height:1.15}
+.qcard p{color:var(--muted);margin:15px 0}
+.notes-label{display:block;font-size:var(--small);font-weight:850;color:var(--gold);margin-bottom:7px}
+.notes{width:100%;resize:vertical;min-height:92px;border:1px solid var(--line);border-radius:14px;
+background:#071121;color:var(--text);padding:13px;outline:none}
+.notes:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(118,189,255,.10)}
+.done:checked ~ .qtitle{text-decoration:line-through;color:var(--green)}
+.list{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:18px}
+.list ul{margin:0;padding-left:1.25em}
+.list li{margin:.5em 0;color:var(--muted)}
+.footer{margin-top:24px;color:var(--dim);font-size:var(--small);text-align:center}
+@media(max-width:520px){
+  :root{--body:20px;--h1:40px;--h2:27px}
+  .wrap{width:min(100% - 18px,760px);padding-top:18px}
+  .hero,.qcard,.summary,.priority,.list{padding:16px;border-radius:18px}
+  .brand{font-size:12px}
+  .tools button{padding:7px 10px}
+}
+@media print{.top,.actions{display:none}body{background:#fff;color:#000}.hero,.summary,.priority,.qcard,.list{box-shadow:none;background:#fff;border-color:#aaa}.lead,.qcard p,.list li,.summary p{color:#222}.notes{color:#000;background:#fff}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="topin">
+    <div class="brand">BD · Kardiolog</div>
+    <div class="tools">
+      <button id="smaller" type="button" aria-label="Zmanjšaj črke">A−</button>
+      <button id="larger" type="button" aria-label="Povečaj črke">A+</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="kicker">UZ srca + prvi kardiološki pregled</div>
+    <h1>Ključna vprašanja</h1>
+    <p class="lead">Samo bistveno: diagnoza, LVOT, troponin, aorta, tlak, preventiva in šport.</p>
+    <div class="ref">
+      <div class="chip"><strong>UZ srca — HITRO</strong><br>2026090600804</div>
+      <div class="chip"><strong>Kardiolog, prvi — HITRO</strong><br>2026090600805</div>
+    </div>
+    <div class="alert"><strong>Naročilo:</strong> kardiološko napotnico predloži najpozneje do <strong>27. 9. 2026</strong>.</div>
+  </section>
+
+  <section class="section">
+    <h2>60-sekundni uvod</h2>
+    <div class="summary">
+      <p id="summaryText">Imam dolgoletno hipertenzijo; posebej spodnji tlak je pogosto previsok. Leta 2021 sem po hudi okužbi imel povišan troponin. MR srca je opisal do 15 mm zadebelitev, mezokardni LGE/brazgotino in možno začetno LVOT obstrukcijo brez SAM ter omenil HCM. UZ mesec pozneje je pokazal le blago koncentrično hipertrofijo, EF 66 % in hipertenzivno bolezen srca. Septembra 2026 sem po približno mesecu brez Exforge HCT imel hs-troponin 160 → 147; CTA je pokazal CAD-RADS 1, LAD 10–20 %, ponovno približno 15 mm bazalno steno ter aorto 41/39 mm. Želim razjasniti diagnozo, terapijo tlaka in varno športno aktivnost. Brat je imel infarkt in štiri stente.</p>
+      <div class="actions">
+        <button id="copySummary" type="button">Kopiraj uvod</button>
+        <button id="copyQuestions" type="button">Kopiraj vprašanja</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Če bo časa le za tri</h2>
+    <div class="priority">
+      <ol>
+        <li>Kaj je moja dejanska diagnoza: HCM, hipertenzivno srce, postmiokarditis ali kombinacija?</li>
+        <li>Ali imam LVOT obstrukcijo in ali je sedanja terapija glede na to prava?</li>
+        <li>Kako konkretno uredimo predvsem diastolični tlak: cilj, zdravila in kontrole?</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="questions">
+    <h2>Šest vprašanj</h2>
+    
+    <article class="qcard" data-q="1">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">1</span>
+        <span class="qtitle">Kaj je prava diagnoza?</span>
+      </label>
+      <p>Ali je slika bolj skladna s pravo HCM, hipertenzivno hipertrofijo, prebolelim miokarditisom po okužbi leta 2021 ali kombinacijo? Kako razlagate mezokardni LGE/brazgotino in ponovno debelino okoli 15 mm? Ali je smiseln ponovni CMR?</p>
+      <label class="notes-label" for="note-1">Odgovor / zapiski</label>
+      <textarea id="note-1" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+
+    <article class="qcard" data-q="2">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">2</span>
+        <span class="qtitle">Ali imam LVOT obstrukcijo?</span>
+      </label>
+      <p>MR 2021 je omenil začetno obstrukcijo brez SAM. Ali jo sedanji UZ potrdi ali izključi? Prosim za LVOT gradient v mirovanju in ob Valsalvi/provokaciji, SAM, največjo debelino sten, EF/GLS in diastolično funkcijo.</p>
+      <label class="notes-label" for="note-2">Odgovor / zapiski</label>
+      <textarea id="note-2" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+
+    <article class="qcard" data-q="3">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">3</span>
+        <span class="qtitle">Zakaj je bil troponin povišan?</span>
+      </label>
+      <p>Kako razlagate hs-troponin 160 → 147 ng/L ob minimalni koronarni bolezni in podobno epizodo leta 2021? Je šlo za hipertenzivno poškodbo, HCM/LVOT obremenitev, miokarditis ali kaj drugega? Ali potrebujem Holter, obremenitveni test ali ponovni CMR?</p>
+      <label class="notes-label" for="note-3">Odgovor / zapiski</label>
+      <textarea id="note-3" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+
+    <article class="qcard" data-q="4">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">4</span>
+        <span class="qtitle">Kaj pomeni aorta 41/39 mm?</span>
+      </label>
+      <p>Je pri višini 190 cm aorta res razširjena? Prosim za indeksacijo glede na višino/BSA in razlago razlike proti UZ 2021 (30/28 mm). Kdaj je kontrola in kakšne so omejitve pri športu ali dvigovanju bremen?</p>
+      <label class="notes-label" for="note-4">Odgovor / zapiski</label>
+      <textarea id="note-4" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+
+    <article class="qcard" data-q="5">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">5</span>
+        <span class="qtitle">Kako naj uredimo tlak?</span>
+      </label>
+      <p>Več kot 1.200 meritev kaže dolgotrajno visok predvsem diastolični tlak. Je Exforge HCT 5/160/12,5 prava kombinacija in jakost? Kakšen je moj ciljni domači tlak? Ali prilagodimo posamezno komponento, naredimo 24-h ABPM ter preverimo elektrolite, ledvice in spalno apnejo?</p>
+      <label class="notes-label" for="note-5">Odgovor / zapiski</label>
+      <textarea id="note-5" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+
+    <article class="qcard" data-q="6">
+      <label class="qhead">
+        <input class="done" type="checkbox" aria-label="Označi vprašanje kot obravnavano">
+        <span class="num">6</span>
+        <span class="qtitle">Katere preventive in omejitve res potrebujem?</span>
+      </label>
+      <p>Ali potrebujem Aspirin Protect dolgoročno ob CAD-RADS 1 brez infarkta ali stenta? Je Sorvasta 20 mg prava in kakšen je ciljni LDL? Ali potrebujem genetiko, družinski screening ali Holter? Ali je odbojka varna in kaj velja pred morebitno operacijo žolčnika?</p>
+      <label class="notes-label" for="note-6">Odgovor / zapiski</label>
+      <textarea id="note-6" class="notes" rows="3" placeholder="Zapiši odgovor kardiologa …"></textarea>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>Trenutna terapija</h2>
+    <div class="list">
+      <ul>
+        <li><strong>Exforge HCT 5/160/12,5 mg</strong> — zjutraj</li>
+        <li><strong>Aspirin Protect 100 mg</strong> — dnevno</li>
+        <li><strong>Sorvasta 20 mg</strong> — zvečer</li>
+        <li><strong>Claritine 10 mg</strong> — po potrebi</li>
+        <li><strong>Brufen 600 mg</strong> — samo ena tableta enkrat, ne redno</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Dokumenti s seboj</h2>
+    <div class="list">
+      <ul>
+        <li>MR srca 6. 6. 2021</li>
+        <li>UZ srca 20. 7. 2021</li>
+        <li>IPP + laboratorij 6. 9. 2026</li>
+        <li>CTA koronarnih arterij 6. 9. 2026</li>
+        <li>Apple Health analiza in BP dnevnik</li>
+        <li>seznam zdravil</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="footer">Priprava za pogovor s kardiologom · ne spreminjaj zdravil brez izrecnega načrta.</p>
+</main>
+
+<script>
+(function(){
+  const KEY='bd-cardio-prep-v1';
+  const sizeKey=KEY+'-size';
+  const root=document.documentElement;
+  let size=Number(localStorage.getItem(sizeKey)||2);
+  function setSize(v){size=Math.max(1,Math.min(3,v));root.dataset.size=String(size);localStorage.setItem(sizeKey,String(size));}
+  setSize(size);
+  document.getElementById('smaller').onclick=()=>setSize(size-1);
+  document.getElementById('larger').onclick=()=>setSize(size+1);
+
+  function save(){
+    const state={};
+    document.querySelectorAll('.qcard').forEach(card=>{
+      const id=card.dataset.q;
+      state[id]={
+        done:card.querySelector('.done').checked,
+        note:card.querySelector('.notes').value
+      };
+    });
+    localStorage.setItem(KEY,JSON.stringify(state));
+  }
+  try{
+    const state=JSON.parse(localStorage.getItem(KEY)||'{}');
+    document.querySelectorAll('.qcard').forEach(card=>{
+      const s=state[card.dataset.q];
+      if(s){card.querySelector('.done').checked=!!s.done;card.querySelector('.notes').value=s.note||'';}
+    });
+  }catch(e){}
+  document.querySelectorAll('.done,.notes').forEach(el=>el.addEventListener('input',save));
+  document.querySelectorAll('.done').forEach(el=>el.addEventListener('change',save));
+
+  async function copyText(text,btn){
+    try{await navigator.clipboard.writeText(text);const old=btn.textContent;btn.textContent='Kopirano ✓';setTimeout(()=>btn.textContent=old,1200);}
+    catch(e){alert('Kopiranje ni uspelo. Označi besedilo ročno.');}
+  }
+  document.getElementById('copySummary').onclick=function(){copyText(document.getElementById('summaryText').innerText,this);};
+  document.getElementById('copyQuestions').onclick=function(){
+    const txt=[...document.querySelectorAll('.qcard')].map((c,i)=>`${i+1}. ${c.querySelector('.qtitle').innerText}\n${c.querySelector('p').innerText}`).join('\n\n');
+    copyText(txt,this);
+  };
+})();
+</script>
+</body>
+</html>
