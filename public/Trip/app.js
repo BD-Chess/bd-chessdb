@@ -2,8 +2,8 @@
   'use strict';
 
   // --- 1. CONFIGURATION ---
-  // Map API Key (Used for rendering only)
-  const GOOGLE_API_KEY = 'AIzaSyDnoXSDUJx19gruRE3ZRzgQRYZwWDa4KlA'; 
+  // Domain-restricted browser key is supplied at runtime by Netlify.
+  const MAPS_CONFIG_URL = '/.netlify/functions/trip-maps-config';
   
   // Same-origin function: credentials and the Gemini model are configured server-side.
   const PROXY_URL = '/.netlify/functions/gemini';
@@ -459,20 +459,28 @@
         resolve();
       };
 
-      const s = document.createElement('script');
-      s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=initMap&loading=async&v=weekly`;
-      s.async = true;
-      s.onerror = function(e) {
-        fail('Google Maps script failed to load. Check network, blocker, or API-key restrictions.', e);
-      };
-      document.body.appendChild(s);
-      if(btn) { btn.textContent = 'Loading API...'; btn.disabled = true; }
-
-      timeoutId = setTimeout(() => {
-        if (!(window.google && window.google.maps)) {
-          fail('Google Maps did not finish loading. Check JavaScript Console for the exact Google Maps API error.');
-        }
-      }, 12000);
+      if (btn) { btn.textContent = 'Loading API...'; btn.disabled = true; }
+      fetch(MAPS_CONFIG_URL, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
+        .then(async response => {
+          if (!response.ok) throw new Error('Map configuration is unavailable.');
+          const config = await response.json();
+          if (typeof config.mapsBrowserKey !== 'string' || !config.mapsBrowserKey.trim()) {
+            throw new Error('Map configuration is incomplete.');
+          }
+          if (finished) return;
+          const s = document.createElement('script');
+          const params = new URLSearchParams({
+            key: config.mapsBrowserKey, callback: 'initMap', loading: 'async', v: 'weekly'
+          });
+          s.src = 'https://maps.googleapis.com/maps/api/js?' + params;
+          s.async = true;
+          s.onerror = () => fail('Google Maps script failed to load. Check network or API-key restrictions.');
+          timeoutId = setTimeout(() => {
+            fail('Google Maps did not finish loading. Please retry.');
+          }, 12000);
+          document.body.appendChild(s);
+        })
+        .catch(() => fail('Map configuration could not be loaded. Please retry or contact the site owner.'));
     });
     return mapScriptLoadingPromise;
   }
