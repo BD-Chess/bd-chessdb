@@ -1,5 +1,5 @@
-name: WL owner-authorized deployment
-# R2: restore the complete registry integrity hash before retrying production.
+name: WL live acceptance
+# The site is already deployed. This job tests it without weakening CSP.
 on:
   push:
     branches: [main]
@@ -9,21 +9,20 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: wl-owner-deployment
+  group: wl-owner-acceptance
   cancel-in-progress: false
 jobs:
-  deploy:
+  acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply exact reviewed release if present
-        run: |
-          if [ -d ops/wl-release ]; then python3 scripts/wl_apply_release.py; fi
-      - name: Ephemeral encrypted handoff and deployment
+      - name: Live private browser acceptance
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/wl_deploy_once.mjs
+        run: node scripts/wl_acceptance_once.mjs
