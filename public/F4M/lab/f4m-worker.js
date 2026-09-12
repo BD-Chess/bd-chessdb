@@ -1,0 +1,3 @@
+'use strict';
+importScripts('f4m-core.js?v=2.1.0-lab.1','f4m-search.js?v=2.1.0-lab.1','f4m-classical.js?v=2.1.0-lab.1','f4m-dcc.js?v=2.1.0-lab.1');
+self.onmessage=e=>{const {id,state,options}=e.data;try{const start=performance.now();const report=F4MSearch.analyze(state,options,p=>postMessage({id,type:'progress',answer:p}));const mark=performance.now(),classical=F4MClassical.choose(report),dcc=F4MDCC.choose(report,options);postMessage({id,type:'result',answer:{report,classical,dcc,compute_ms:performance.now()-start,selector_ms:performance.now()-mark}});}catch(error){postMessage({id,type:'error',error:String(error.message||error)});}};
