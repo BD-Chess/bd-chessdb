@@ -1,89 +1,138 @@
 {
-  "schema": "flip4m.release.v1",
-  "version": "2.0.0",
-  "release_date": "2026-09-12",
-  "status": "VERIFIED_PREVIEW",
-  "scope": "public/F4M/new/ only; original game and presentation unchanged",
-  "rules": "f4m-production-ui-2026-09",
+  "schema": "flip4m.lab.release.v1",
+  "version": "2.1.1",
+  "date": "2026-09-12",
+  "status": "TESTED_LONG_THINK_PROFILES",
+  "scope": "Only six existing files under public/F4M/lab/plus/ updated. No new game branch; all other pages and game variants unchanged.",
   "source": {
     "repository": "BD-Chess/bd-chessdb",
-    "commit": "7ba0010f23d448311834cdc30a4e772e0da057ff",
-    "path": "public/F4M/F4M.html",
-    "git_blob": "fc8993a238c7ceed634329b8f2c31f2cb9fd89da",
-    "presentation_git_blob": "d9737669390b429034755dbb030f1d323062736c"
+    "inspected_main": "7a06507f44f3c7dc324b493bdcdc096f5d029bd0",
+    "prior_version": "2.1.0",
+    "prior_review_pack_sha256": "c632354b94b62763bc18a8acebef1234a675b74b58e30a4c6e6accd5ebe3ec59"
   },
-  "artifact": {
-    "file": "index.html",
-    "bytes": 64025,
-    "sha256": "073811cc9f1e528fa595fe3afd98c295b9857001cb2ebdbded9f1fae7859eaef",
-    "git_blob": "04b1cff571d5a83b572c989c441bb26529a3f571",
-    "self_contained": true,
-    "external_runtime_dependencies": 0
-  },
-  "tests": {
-    "rules_and_engine_assertions": 146452,
-    "rules_and_engine_status": "PASS",
-    "browser_checks": 38,
-    "browser_status": "PASS",
-    "browser": "Chromium 144.0.7559.96",
-    "viewport_widths": [
-      320,
-      390,
-      768,
-      1440
-    ],
-    "browser_context": "Exact standalone HTML tested through offline set_content with real Blob Workers. Production publication verified via Netlify deploy metadata. Direct live HTTP and remote interactive browser checks were blocked by this environment and are not claimed.",
-    "storage_context": "Unavailable native storage handled safely; persistence roundtrip tested with an explicit memory Storage adapter, not real-origin navigation.",
-    "match": {
-      "status": "PASS",
-      "games": 8,
-      "new_wins": 5,
-      "legacy_wins": 3,
-      "draws": 0,
-      "requested_budget_ms": 150,
-      "paired_openings": 4,
-      "seeds": [
-        20260912,
-        20260913,
-        20260914,
-        20260915
-      ],
-      "tool_presets": [
-        0,
-        2,
-        3,
-        2
-      ],
-      "dcc": false,
-      "timing": {
-        "new": {
-          "moves": 91,
-          "total_ms": 12385.47,
-          "max_ms": 152.03
-        },
-        "legacy": {
-          "moves": 90,
-          "total_ms": 12082.76,
-          "max_ms": 276.71
-        }
-      },
-      "illegal_moves": 0,
-      "rules_differential_failures": 0,
-      "interpretation": "Engineering smoke test only; not an Elo estimate or proof of superiority. Equal requested budgets, actual durations differ; legacy soft deadlines overshoot. Three of four pairs split by first player."
+  "profiles": {
+    "master": {
+      "ms": 4500,
+      "requested_depth": 14
+    },
+    "grandmaster": {
+      "sl": "Velemojster",
+      "ms": 60000,
+      "requested_depth": 320
+    },
+    "champion": {
+      "sl": "Prvak",
+      "ms": 120000,
+      "requested_depth": 320
     }
   },
-  "policy": {
-    "dcc_default": false,
-    "dcc": "Experimental root re-ranking within 12 evaluation points, same tactical-safety class, no mate override. Not the full research rDCC architecture.",
-    "stronger_engine_claim": "Not established by this small sample. Correctness defects and UI responsiveness independently tested."
+  "budget_contract": {
+    "time_mode": "No implicit action-work cutoff. Search deadline up to 120000 ms; policy selection overhead separately measured. Early proven results return immediately.",
+    "depth": "Long profiles use remaining empty squares plus all remaining tools as the finite complete-game horizon, not the old fixed 14/16-ply cap. Maximum supported imported-state horizon: 320.",
+    "work_mode": "Existing deterministic bounded state-transition mode retained.",
+    "legacy_resume": "Pre-1.1.0 time-mode Sim batches retain their original combined time/work cap via legacyWorkLimit.",
+    "progress": "Liveness pulses at about 250 ms; committed candidate scores only from fully completed root iterations.",
+    "clock": "Decision budget is separate from player game clock. Sim remains free of game-clock forfeits. Pause terminates the Worker; Continue recomputes the current move, not a saved partial search tree."
   },
-  "preserved_rules": [
-    "8x8 board; first-empty drop entry",
-    "magnet order: top, bottom, left, right",
-    "settle then detect win/full then decay and change player",
-    "expired magnet releases at next settlement",
-    "simultaneous wins retain original top-left scan precedence",
-    "full board without a win is a draw"
+  "tests": {
+    "core_assertions": 34824,
+    "production_transition_comparisons": 8355,
+    "resume_assertions": 8,
+    "long_budget_assertions": 32,
+    "code_assertions_total": 34864,
+    "browser_regression_checks": 52,
+    "browser_long_think_checks": 26,
+    "browser_checks_total": 78,
+    "status": "PASS",
+    "real_60s": {
+      "status": "PASS",
+      "runtime": "Node.js v22.16.0",
+      "requested_ms": 60000,
+      "analysis_ms": 60000.147741,
+      "total_decision_ms": 60007.575418,
+      "work": 2957817,
+      "nodes": 285944,
+      "completed_depth": 4,
+      "effective_depth_limit": 76,
+      "work_limit": null,
+      "stop_reason": "time-limit"
+    },
+    "real_120s": {
+      "status": "PASS",
+      "runtime": "Chromium 144.0.7559.96; real Blob Worker",
+      "requested_ms": 120000,
+      "analysis_ms": 120000.49999999994,
+      "total_decision_ms": 120002.79999999999,
+      "work": 4537221,
+      "nodes": 741504,
+      "completed_depth": 5,
+      "effective_depth_limit": 76,
+      "work_limit": null,
+      "stop_reason": "time-limit"
+    },
+    "strength_claim": null
+  },
+  "verification_limits": [
+    "Browser tests use offline exact bundled modules with real Workers and a memory storage adapter. Native-origin IndexedDB and remote interactive navigation were not tested.",
+    "Direct HTTP from the container fails DNS; production publication is confirmed separately through GitHub and Netlify metadata.",
+    "The real 60-second and 120-second tests ran in different runtimes. Their throughput is not a controlled cross-runtime performance comparison.",
+    "Earlier paired-smoke and stress-smoke fixtures are retained for provenance only, not claimed as new long-time-control strength results."
   ],
-  "review_pack": "Source, build script, deterministic tests, raw match logs, browser receipts and screenshots provided to BD separately."
+  "artifacts": {
+    "f4m-classical.js": {
+      "bytes": 755,
+      "sha256": "316e2d33b7ceb70ebead6fac84b6bf4deb5c72e9a4e31987c0debd6c7d572b11",
+      "git_blob": "f366f31fc7d27af337fd0a6aac8b5520b380a9c1"
+    },
+    "f4m-core.js": {
+      "bytes": 9159,
+      "sha256": "1fa673e1ff62ba3f1ae57e988b461d719234c66315b4e1b2f6c74f3f418f327e",
+      "git_blob": "d59c88e5fcf0df2f7973b8bdb2057e497a2b22da"
+    },
+    "f4m-dcc.js": {
+      "bytes": 2900,
+      "sha256": "02ce303c0f1877bb6ce8d5322e98d5651f2be2f4ee369dacb2575fae68fe2905",
+      "git_blob": "49fbeadb3ec0b3a612ef1ab6ebf39d6cfe069d8f"
+    },
+    "f4m-search.js": {
+      "bytes": 6462,
+      "sha256": "5180a3aa56cd75116b6027ad0ca2cd4b7cc04a85ddc33e15ea3578ac74723b07",
+      "git_blob": "e0dc98845c7b12d799f173a2c3ee785c458b2f61"
+    },
+    "f4m-sim.js": {
+      "bytes": 11446,
+      "sha256": "6fa97cc717f810159bc7cd0569731ac2716f84483b75af16c6e38893fecacd4a",
+      "git_blob": "78b9b1540ddef597976088dbbdfd930b7b4fff06"
+    },
+    "f4m-store.js": {
+      "bytes": 2902,
+      "sha256": "abf0e167f2745da317247bd7d9082b41bb40669186f0046af77c332dbb5c1449",
+      "git_blob": "dc9dc02a475a7a607156bd0938259899601adc78"
+    },
+    "f4m-time.js": {
+      "bytes": 2447,
+      "sha256": "2994f8febf538c9617fc1e7d222d688071d353e2bb50a32d71dfbcc84d962209",
+      "git_blob": "c3624d88e8ee08954d333a905c82fe11ac7c81f6"
+    },
+    "f4m-ui.js": {
+      "bytes": 52068,
+      "sha256": "b6374736f6a6f01a4d82e1ba5787de4b8584d60becd650f4219d927184547fc2",
+      "git_blob": "e2e8de46f7f60e0b5435245a0f22937fedf27453"
+    },
+    "f4m-worker.js": {
+      "bytes": 446,
+      "sha256": "ea7734743c4ba262ec9212f5e0161562666d1090085efc3c25e029c56ba97c62",
+      "git_blob": "1d481a1a5ae518ac87774ad6c2593df8e8d7a81f"
+    },
+    "f4m.css": {
+      "bytes": 14168,
+      "sha256": "39b33144c7cc09a316a5107e8f4f60dc9dee522c41878f2e1a6589612b267e5c",
+      "git_blob": "e9462c49607a0250dfd70c65e8a9cf1b2a8dcf85"
+    },
+    "index.html": {
+      "bytes": 14517,
+      "sha256": "277a764b83bda9ad0567d2dfea75696277cf76b8cd8a256c75c77996bf2cd1fe",
+      "git_blob": "de472212454f40e742dee30e70343072b946f393"
+    }
+  }
 }
