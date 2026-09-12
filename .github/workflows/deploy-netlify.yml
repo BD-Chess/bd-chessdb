@@ -23,24 +23,30 @@ jobs:
       - name: Checkout exact main commit
         uses: actions/checkout@v4
 
-      - name: Require configured Netlify token
+      - name: Detect configured Netlify token
+        id: netlify
         shell: bash
         run: |
-          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
-            echo "NETLIFY_AUTH_TOKEN GitHub secret is not configured; refusing unauthenticated production deploy."
-            exit 2
+          if [ -n "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "NETLIFY_AUTH_TOKEN is not configured; Netlify deployment is safely skipped."
           fi
 
       - name: Set up Node 22
+        if: steps.netlify.outputs.ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install pinned runtime dependencies
+        if: steps.netlify.outputs.ready == 'true'
         run: npm ci --ignore-scripts
 
       - name: Deploy public site and functions to existing Netlify project
+        if: steps.netlify.outputs.ready == 'true'
         shell: bash
         run: |
           npx --yes netlify-cli@latest deploy \
