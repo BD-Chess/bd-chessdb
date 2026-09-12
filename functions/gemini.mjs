@@ -30,6 +30,20 @@ function safeLink(value) {
 export default async (req) => {
   const { key, base, model } = settings();
   const transport = base === 'https://generativelanguage.googleapis.com' ? 'google-direct' : 'netlify-ai-gateway';
+  if (req.method === 'GET' && new URL(req.url).searchParams.get('models') === '1') {
+    if (!key) return failure('AI_NOT_CONFIGURED', 'Gemini is not configured.', 503);
+    try {
+      // Read-only availability check. Publish model identifiers, never credentials or raw errors.
+      const response = await fetch(base + '/v1beta/models?pageSize=1000', {
+        headers: { 'x-goog-api-key': key }, signal: AbortSignal.timeout(8000), redirect: 'error'
+      });
+      if (!response.ok) return failure('MODEL_LIST_FAILED', 'Model availability could not be checked.', 502, { upstreamStatus: response.status });
+      const data = await response.json();
+      return json({ ok: true, configuredModel: model, models: (data.models || [])
+        .filter(item => item.supportedGenerationMethods?.includes('generateContent'))
+        .map(item => item.name) });
+    } catch { return failure('MODEL_LIST_FAILED', 'Model availability could not be checked.', 502); }
+  }
   if (req.method === 'GET') {
     return json({ ok: true, configured: Boolean(key), model, transport });
   }
