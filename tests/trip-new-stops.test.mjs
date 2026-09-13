@@ -62,6 +62,7 @@ test('Deep budget button continues the same worker with a new ID and no new look
   assert.equal(h.jobs.filter(m=>m.type==='solve'&&m.profile==='deep').length,1);assert.equal(h.workers[0].terminated,undefined);
   assert.equal(h.element('continueDeep').hidden,true);assert.equal(h.element('btnDeep').disabled,true);
   assert.match(h.element('searchProgressText').textContent,/Računanje/);
+  assert.match(h.window.TripUI.t('Running · best found · Above known optimum: 357 EUC_2D (3.82%)','sl'),/Računanje · najboljša najdena/);
   assert.equal(h.element('searchBudget').textContent,'2,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
   h.api.continueDeep(60000);assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
   h.api.handleWorkerMessage({data:{...result,jobId:first.jobId}});assert.equal(h.element('continueDeep').hidden,true,'old final response ignored');

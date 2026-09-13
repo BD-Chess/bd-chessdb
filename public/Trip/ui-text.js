@@ -244,6 +244,7 @@
     'Deep continuation is no longer available. Start a new calculation.':'Nadaljevanje poglobljenega iskanja ni več na voljo. Zaženi nov izračun.'
   });
   const fragments={
+    'Running · best found':'Računanje · najboljša najdena',
 "Stopping calculation…":"Ustavljanje računanja …","Candidates started / completed":"Začeti / dokončani kandidati","Time budget remaining":"Preostali časovni proračun","Deep time budget":"Časovni proračun poglobljenega iskanja","Time budget used · best found":"Časovni proračun porabljen · najboljša najdena","Preparing local distances":"Lokalna priprava razdalj"," time budget used":" časovnega proračuna porabljenega","Cancelled · best found":"Prekinjeno · najboljša najdena","Known optimum reached · gap 0%":"Znani optimum dosežen · odstopanje 0 %",
 
     'Known optimum:':'Znani optimum:', 'Above known optimum:':'Nad znanim optimumom:', 'Best TSP distance:':'Najboljša vrednost TSP:', 'Planar TSP (EUC_2D)':'Ravninske razdalje TSP (EUC_2D)',
