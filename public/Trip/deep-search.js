@@ -24,7 +24,11 @@
     const now = hooks.now || (()=>performance.now()), started = hooks.started ?? now();
     const points=msg.points, n=points.length, planar=msg.metric==='tsp-euc2d';
     const metric=planar ? 'tsp-euc2d' : msg.distanceMatrix==null ? 'direct' : 'road';
-    const budget=budgetMs(n), deadline=started+budget;
+    const increment=budgetMs(n);
+    let budget=increment, segmentStarted=started, carried=0, stoppedAt=null;
+    const elapsed=()=>Math.max(0,carried+(stoppedAt??now())-segmentStarted);
+    const freeze=()=>{if(stoppedAt===null)stoppedAt=now();};
+    const canResume=()=>reason==='budget'||reason==='cancelled';
     const start=Number.isInteger(msg.startIdx)&&msg.startIdx>=0&&msg.startIdx<n ? msg.startIdx : 0;
     if (n<2 || points.some(p=>!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||Math.abs(p.lat)>90||Math.abs(p.lon)>180 || (planar&&(!Number.isFinite(p.x)||!Number.isFinite(p.y))))) throw Error('All stops must have valid coordinates.');
     const D=msg.distanceMatrix;
@@ -94,24 +98,33 @@
     }
     const iterator=search();
     function snapshot() {
-      const elapsed=Math.max(0,now()-started);
+      if(reason)freeze();
+      const used=elapsed();
       let air=0; for(let i=1;i<n;i++)air+=TripAirDistance.meters(points[best[i-1]],points[best[i]]);if(msg.roundTrip)air+=TripAirDistance.meters(points[best[n-1]],points[best[0]]);
       return {algorithm:'deep',metric,pointsSorted:best.map(i=>points[i]),totalCost:cost,baseCost:base,totalKm:planar?null:cost/1000,baseKm:planar?null:base/1000,directKm:air/1000,
-        elapsedMs:elapsed,budgetMs:budget,remainingMs:Math.max(0,budget-elapsed),candidates,completed,improvements,work,phase,bestVersion:version,
+        elapsedMs:used,budgetMs:budget,additionalBudgetMs:increment,remainingMs:Math.max(0,budget-used),candidates,completed,improvements,work,phase,bestVersion:version,
         reason,cancelled:reason==='cancelled',exact:reason==='optimum',error};
     }
     return {
       setTarget(r){target=r;verifyBest();},
       cancel(){cancelled=true;},
+      resume() {
+        if(!canResume())return false;
+        carried=elapsed();segmentStarted=now();stoppedAt=null;
+        budget+=increment;reason=null;cancelled=false;
+        return true;
+      },
+      get canResume(){return canResume();},
       step(sliceMs=8) {
         const sliceEnd=now()+sliceMs;
         do {
           if(cancelled){reason='cancelled';break;}
           if(reason)break;
-          if(now()>=deadline || (hooks.workLimit!=null&&work>=hooks.workLimit)){reason='budget';break;}
+          if(elapsed()>=budget || (hooks.workLimit!=null&&work>=hooks.workLimit)){reason='budget';break;}
           const v=iterator.next();
           if(v.done)break;
         }while(now()<sliceEnd);
+        if(reason)freeze();
         return !!reason;
       }, snapshot,
       get done(){return !!reason;}

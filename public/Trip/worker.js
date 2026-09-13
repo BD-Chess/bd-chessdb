@@ -1,11 +1,12 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-deep1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-continue1');
 if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume2');
 let bruteJob = null;
 let deepJob = null;
-if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-deep1');
+let pausedDeepJob = null;
+if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-continue1');
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -229,16 +230,24 @@ function startBruteForce(msg) {
 // Cooperative Deep runs independently from the unchanged Fast and BF engines.
 function startDeep(msg) {
   const started=performance.now();
-  if (!globalThis.TripDeepSearch) importScripts('deep-search.js?v=20260913-deep1');
+  if (!globalThis.TripDeepSearch) importScripts('deep-search.js?v=20260913-continue1');
   const engine=TripDeepSearch.create(msg,{started});
-  const job={msg,engine,timer:null,lastReport:-Infinity}; deepJob=job;
+  const job={msg,engine,timer:null,lastReport:-Infinity,verified:false}; deepJob=job;
   function report(final=false, failure=null) {
     const state=engine.snapshot();
-    self.postMessage({type:final?'result':'progress',jobId:msg.jobId,...state,
+    self.postMessage({type:final?'result':'progress',jobId:job.msg.jobId,...state,canContinue:final&&!failure&&job.verified&&engine.canResume,
       ...(failure ? {reason:'error',error:failure,exact:false} : {})});
     job.lastReport=performance.now();
   }
-  job.finish=()=>{clearTimeout(job.timer);report(true);if(deepJob===job)deepJob=null;};
+  job.finish=()=>{
+    clearTimeout(job.timer);report(true);
+    if(deepJob===job){pausedDeepJob=job.verified&&engine.canResume?job:null;deepJob=null;}
+  };
+  job.resume=newId=>{
+    if(!engine.resume())return false;
+    job.msg={...job.msg,jobId:newId};job.lastReport=-Infinity;
+    deepJob=job;pausedDeepJob=null;report();job.timer=setTimeout(tick,0);return true;
+  };
   function tick() {
     if(deepJob!==job)return;
     try {
@@ -250,18 +259,27 @@ function startDeep(msg) {
   report();
   TripDeepSearch.verifyTarget(msg).then(target=>{
     if(deepJob!==job)return;
-    engine.setTarget(target);job.timer=setTimeout(tick,0);
+    job.verified=true;engine.setTarget(target);job.timer=setTimeout(tick,0);
   }).catch(error=>{if(deepJob===job){report(true,String(error));deepJob=null;}});
 }
 
 self.onmessage = (ev) => {
   const msg = ev.data;
+  if (msg.type === 'continue-deep') {
+    // Retain the generator, candidate and RNG in this worker. Never restart from its seed.
+    if(!deepJob && pausedDeepJob?.msg.jobId===msg.previousJobId) {
+      if(!pausedDeepJob.resume(msg.jobId))self.postMessage({type:'error',jobId:msg.jobId,error:'Deep continuation is no longer available. Start a new calculation.'});
+    }
+    return;
+  }
+  if (msg.type === 'discard-deep') { pausedDeepJob=null;return; }
   if (msg.type === 'cancel') {
     if (bruteJob?.msg.jobId === msg.jobId) bruteJob.finish(true);
     if (deepJob?.msg.jobId === msg.jobId) { deepJob.engine.cancel(); deepJob.engine.step(8); deepJob.finish(); }
     return;
   }
   if (msg.type === 'solve') {
+    pausedDeepJob=null;
     if (bruteJob) { clearTimeout(bruteJob.timer); bruteJob = null; }
     if (deepJob) { clearTimeout(deepJob.timer); deepJob=null; }
     activeJobId = msg.jobId;

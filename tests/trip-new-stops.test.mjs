@@ -39,7 +39,7 @@ function harness(geocode, fetcher) {
   element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { buildMapsLegLinks, ensureAirComparison, showSolvedRoute, showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { buildMapsLegLinks, ensureAirComparison, showSolvedRoute, showSavings, continueDeep, refreshDeepContinue, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
@@ -50,6 +50,42 @@ const known = {
   'Nova Gorica': [45.956, 13.648], Ljubljana: [46.057, 14.506], Maribor: [46.555, 15.646],
   'Novo Mesto': [45.804, 15.169], Koper: [45.548, 13.73], Ptuj: [46.42, 15.87]
 };
+
+test('Deep budget button continues the same worker with a new ID and no new lookups',async()=>{
+  const h=harness(success);h.element('input').value=sample;await h.api.run('deep');const first=h.jobs.at(-1);
+  const result={type:'result',algorithm:'deep',jobId:first.jobId,reason:'budget',canContinue:true,exact:false,elapsedMs:60000,budgetMs:60000,additionalBudgetMs:60000,candidates:39,completed:38,totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points};
+  h.api.handleWorkerMessage({data:result});
+  assert.equal(h.element('continueDeep').hidden,false);assert.equal(h.element('continueDeep').textContent,'Continue calculating (+1 min)');
+  h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeep').textContent,'Nadaljuj računanje (+1 min)');
+  h.tick(3600000);h.api.continueDeep();const next=h.jobs.at(-1);
+  assert.equal(next.type,'continue-deep');assert.equal(next.previousJobId,first.jobId);assert.notEqual(next.jobId,first.jobId);
+  assert.equal(h.jobs.filter(m=>m.type==='solve'&&m.profile==='deep').length,1);assert.equal(h.workers[0].terminated,undefined);
+  assert.equal(h.element('continueDeep').hidden,true);assert.equal(h.element('btnDeep').disabled,true);
+  assert.equal(h.element('searchBudget').textContent,'2,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
+  h.api.continueDeep();assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
+  h.api.handleWorkerMessage({data:{...result,jobId:first.jobId}});assert.equal(h.element('continueDeep').hidden,true,'old final response ignored');
+  h.api.requestCancel();assert.equal(h.jobs.at(-1).jobId,next.jobId);
+  h.api.handleWorkerMessage({data:{...result,jobId:next.jobId,reason:'cancelled',cancelled:true,elapsedMs:62000,budgetMs:120000}});
+  assert.equal(h.element('continueDeep').hidden,false);h.api.continueDeep();assert.equal(h.jobs.at(-1).previousJobId,next.jobId);
+  h.api.cancelWork();
+});
+
+test('Deep continuation is absent after optimum/error; edits and fresh calculations invalidate it',async()=>{
+  for(const change of ['optimum','error','stops','mode','direct','round','planar','fresh','clear']){
+    const h=harness(success);h.element('input').value=sample;await h.api.run('deep');const first=h.jobs.at(-1);
+    h.api.handleWorkerMessage({data:{type:'result',algorithm:'deep',jobId:first.jobId,reason:change==='optimum'?'optimum':'budget',exact:change==='optimum',error:change==='error'?'failure':null,canContinue:true,elapsedMs:10000,budgetMs:10000,additionalBudgetMs:10000,totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points}});
+    if(change==='stops')h.element('input').value+='\nMadrid';
+    if(change==='mode')h.api.setMode('WALKING');
+    if(change==='direct')h.element('chkDirect').checked=false;
+    if(change==='round')h.element('chkRoundTrip').checked=true;
+    if(change==='planar')h.element('chkPlanar').checked=true;
+    if(change==='fresh')await h.api.run('standard');
+    if(change==='clear')h.api.clearComparison();
+    h.api.refreshDeepContinue();assert.equal(h.element('continueDeep').hidden,true,change);
+    h.api.continueDeep();assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false,change);
+    h.api.cancelWork();
+  }
+});
 function success({ address }, cb) {
   const coords = known[address];
   cb(coords ? [{ geometry: { location: { lat: () => coords[0], lng: () => coords[1] } } }] : [], coords ? 'OK' : 'ZERO_RESULTS');
