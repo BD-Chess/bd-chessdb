@@ -12,8 +12,9 @@
     // Migrate only the exact built-in greeting from previous releases.
     const welcome='Welcome to 8Z! Load a Library trip or enter your destinations. Ask the assistant for suggestions or help with Trip Optimizer.';
     document.querySelectorAll('#chatHistory .msg.ai, #bigChatHistory .msg.ai').forEach(el=>{
-      const value=el.textContent.trim().replace(/^Gemini:\s*/, '');
-      if(value===welcome || value==='Welcome to 8Z! 🌍 I can build optimized itineraries, find the perfect "Base Camp" hotel for your route, and suggest dining spots. Where are we going?') {el.classList.add('welcome-message');UI.set(el,welcome);}
+      const value=el.textContent.trim().replace(/^(?:Gemini|Trip Assistant):\s*/, '');
+      if(value==='Welcome to 8Z! 🌍 Load a Trip Library tour, or send your destinations to plan a trip. I can suggest stops and help you use Trip Optimizer.' || value===welcome || value==='Welcome to 8Z! 🌍 I can build optimized itineraries, find the perfect "Base Camp" hotel for your route, and suggest dining spots. Where are we going?') {el.classList.add('welcome-message');UI.set(el,welcome);}
+      else if(value==='Gemini usage limit reached. Please try later. The site owner can check the active quota in AI Studio.') UI.set(el,value);
     });
     const heads=['Method','Compute time','Table distance','Result'];
     document.querySelectorAll('#comparisonPanel th').forEach((el,i)=>UI.set(el,heads[i]));
