@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>8Z Trip Optimizer · LAB</title>
-  <script src="locale.js?v=20260913-demo-load2"></script>
-  <link rel="stylesheet" href="style.css?v=20260913-demo-load2">
+  <script src="locale.js?v=20260913-live1"></script>
+  <link rel="stylesheet" href="style.css?v=20260913-live1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="ui-text.js?v=20260913-demo-load2"></script>
+  <script src="ui-text.js?v=20260913-live1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
@@ -85,6 +85,9 @@
       </div>
       
       <p id="bruteInfo" class="brute-info"></p>
+      <label class="map-refresh-control" for="mapRefreshInterval"><span data-ui-text="Map refresh interval">Map refresh interval</span>
+        <select id="mapRefreshInterval"><option value="1000">1 s</option><option value="5000" selected>5 s</option><option value="15000">15 s</option><option value="30000">30 s</option><option value="60000">1 min</option></select>
+      </label>
       <div id="status" class="status"></div>
     </div>
 
@@ -119,6 +122,17 @@
           <thead><tr><th>Method</th><th>Compute time</th><th>Table distance</th><th>Result</th></tr></thead>
           <tbody id="comparisonRows"></tbody>
         </table></div>
+      </section>
+      <section id="searchProgress" class="brute-progress search-progress" hidden>
+        <div class="search-progress-heading"><strong id="searchProgressText" role="status"></strong><button id="searchCancel" class="btn-neutral" data-ui-text="Cancel calculation">Cancel calculation</button></div>
+        <progress id="searchProgressBar" max="1" value="0" data-ui-aria="Optimization progress" aria-label="Optimization progress"></progress>
+        <dl class="search-metrics">
+          <div><dt data-ui-text="Completed search starts">Completed search starts</dt><dd id="searchStarts">—</dd></div>
+          <div><dt data-ui-text="Compute time">Compute time</dt><dd id="searchElapsed">—</dd></div>
+          <div><dt data-ui-text="Estimated remaining">Estimated remaining</dt><dd id="searchEta">—</dd></div>
+          <div><dt id="searchMetric">Distance</dt><dd id="searchBest">—</dd></div>
+        </dl>
+        <p data-ui-text="Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.">Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.</p>
       </section>
       <div id="bruteProgress" class="brute-progress" hidden>
         <div id="bruteProgressText" role="status" aria-live="polite"></div>
@@ -175,21 +189,23 @@
     <div class="modal-content">
       <div id="helpBody" class="info-body" tabindex="-1"></div>
       <div class="info-actions">
-        <button id="infoLoadDemo" class="btn-primary" hidden>Load LJ + EU14</button>
+        <button id="infoLoadDemo14" class="btn-primary" hidden>Load 14 EU capitals</button>
+        <button id="infoLoadDemo" class="btn-primary" hidden>Load 15 EU capitals</button>
+        <p id="infoDemoInstructions" class="demo-load-instructions" hidden></p>
         <a id="infoMore" class="btn-primary" href="help.html" target="_blank" rel="noopener">More →</a>
         <button id="btnCloseHelp" class="btn-neutral">Close</button>
       </div>
     </div>
   </dialog>
 
-  <script src="tsp-catalog.js?v=20260913-demo-load2"></script>
-  <script src="tsp-library.js?v=20260913-demo-load2"></script>
-  <script src="trips.js?v=20260913-demo-load2"></script>
-  <script src="help.js?v=20260913-demo-load2"></script>
+  <script src="tsp-catalog.js?v=20260913-live1"></script>
+  <script src="tsp-library.js?v=20260913-live1"></script>
+  <script src="trips.js?v=20260913-live1"></script>
+  <script src="help.js?v=20260913-live1"></script>
   <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-demo-load2"></script>
-  <script src="app.js?v=20260913-demo-load2"></script>
-  <script src="lab.js?v=20260913-demo-load2"></script>
+  <script src="brute-force.js?v=20260913-live1"></script>
+  <script src="app.js?v=20260913-live1"></script>
+  <script src="lab.js?v=20260913-live1"></script>
 
 </body>
 </html>

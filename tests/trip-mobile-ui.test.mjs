@@ -79,18 +79,22 @@ test('Demo opens its own short content and links to the full article within LAB'
   assert.doesNotMatch(html,/id="btnAbout"/);
 });
 
-test('Demo load closes the dialog before loading the 15-city preset; Help hides that action',()=>{
-  const h=setup();let called=0;
+test('both capital buttons close first, localize instructions, and stay hidden in Help',()=>{
+  const h=setup();let expected,called=0;
   h.window.TripDemo={load(preset,options){
-    called++;assert.equal(preset,'eu15');assert.equal(options.focus,true);
-    assert.equal(h.el('helpOverlay').open,false);
-    assert.equal(h.body.style.position,'relative');
+    called++;assert.equal(preset,expected);assert.equal(options.focus,true);
+    assert.equal(h.el('helpOverlay').open,false);assert.equal(h.body.style.position,'relative');
   }};
-  h.el('btnDemo').onclick();h.choose('sl');
-  assert.equal(h.el('infoLoadDemo').textContent,'Naloži LJ + EU14');
-  h.el('infoLoadDemo').onclick();assert.equal(called,1);
-  h.el('btnHelp').onclick();assert.equal(h.el('infoLoadDemo').hidden,true);
-  h.el('btnCloseHelp').onclick();assert.equal(called,1);
+  for(const [id,preset,label] of [['infoLoadDemo14','capitals14','Naloži 14 glavnih EU mest'],['infoLoadDemo','capitals15','Naloži 15 glavnih EU mest']]){
+    expected=preset;h.el('btnDemo').onclick();h.choose('sl');
+    assert.equal(h.el(id).hidden,false);assert.equal(h.el(id).textContent,label);
+    assert.match(h.el('infoDemoInstructions').textContent,/Optimiziraj \(hitro\).*Optimiziraj \(poglobljeno\).*Zaženi Brute Force/);
+    assert.doesNotMatch(h.el('infoDemoInstructions').textContent,/Optimize|Run Brute Force/);
+    h.el(id).onclick();
+  }
+  assert.equal(called,2);h.el('btnHelp').onclick();
+  for(const id of ['infoLoadDemo14','infoLoadDemo','infoDemoInstructions'])assert.equal(h.el(id).hidden,true);
+  h.el('btnCloseHelp').onclick();assert.equal(called,2);
 });
 
 test('full Help reserves all six exact screenshot names without loading the superseded GUI images',()=>{

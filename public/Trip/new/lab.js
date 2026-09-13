@@ -74,7 +74,7 @@
     for(const [link,target] of [['jumpLibrary','tripSearch'],['jumpEditor','input']])$(link).onclick=e=>{e.preventDefault();const section=$(link==='jumpLibrary'?'librarySection':'editorPanel');section.tabIndex=-1;section.focus({preventScroll:true});section.scrollIntoView({block:'start'});};
     // Standalone Demo loads a city set only; never starts a calculation.
     const preset=new URLSearchParams(location.search).get('preset');
-    if(['eu14','eu15'].includes(preset)){
+    if(['eu14','eu15','capitals14','capitals15'].includes(preset)){
       window.TripDemo.load(preset);
       const url=new URL(location.href);url.searchParams.delete('preset');history.replaceState(null,'',url.pathname+url.search+url.hash);
     }

@@ -11,6 +11,11 @@ const $=id=>document.getElementById(id);
       <h1 id="demoTitle">${bi('4 milliseconds to a solution.<br>57 minutes to exhaustive confirmation.','4 milisekunde do rešitve.<br>57 minut do popolnega preverjanja.')}</h1>
       <p>${bi('One extra city. Fourteen times as many orders. Explore BD’s recorded European road trips and the difference between finding a good route and checking every possible order.','En dodaten kraj. Štirinajstkrat več vrstnih redov. Razišči BD-jevi evropski cestni poti in razliko med iskanjem dobre poti ter preverjanjem vseh možnih vrstnih redov.')}</p>
       <div class="demo-cards"><div><strong><span data-ui-text="87,178,291,200">87,178,291,200</span></strong>${bi('orders checked · EU15','preverjenih vrstnih redov · EU15')}</div><div><strong><span data-ui-text="9,801.35 km">9,801.35 km</span></strong>${bi('Deep = completed Brute Force','Poglobljena metoda = dokončani Brute Force')}</div><div><strong><span data-ui-text="≈ 855,000×">≈ 855,000×</span></strong>${bi('ratio of displayed compute times','razmerje prikazanih časov izračuna')}</div></div></div>
+      <section><h2>${bi('Try the EU capitals','Preizkusi prestolnice EU')}</h2>
+      <p>${bi('Two new sets of selected EU capitals, sorted alphabetically in the selected language: 14 starts in Amsterdam; 15 adds Ljubljana as START. They are separate from the historical EU14/EU15 city sets measured below. Loading replaces the editor without starting a calculation.','Dva nova seznama izbranih prestolnic EU, po abecedi izbranega jezika: 14 ima izhodišče v Amsterdamu, 15 doda Ljubljano kot START. To sta druga seznama od spodaj izmerjenih zgodovinskih primerov EU14/EU15. Nalaganje zamenja urejevalnik brez zagona računanja.')}</p>
+      <div class="demo-actions"><button id="demoLoadCapitals14" class="btn-secondary" data-ui-text="Load 14 EU capitals">Load 14 EU capitals</button><button id="demoLoadCapitals15" class="btn-primary" data-ui-text="Load 15 EU capitals">Load 15 EU capitals</button></div>
+      <p data-ui-text="First try Optimize (Fast), then Optimize (Deep). Compare their routes, then select the Brute Force checkbox and press Run Brute Force to check every order. You can cancel and resume the calculation."></p>
+      <p class="demo-note"><a href="https://european-union.europa.eu/principles-countries-history/eu-countries_en" target="_blank" rel="noopener">${bi('EU country profiles','Podatki o državah EU')}</a></p></section>
       <section><h2>${bi('The measurements','Meritve')}</h2>
       <p>${bi('BD’s screenshots, 13 September 2026; iPhone 16 Pro as reported by BD. Drive · Round Trip · fixed START · the same directed road table within each case.','BD-jeve slike, 13. september 2026; iPhone 16 Pro po BD-jevem podatku. Vožnja · Povratna pot · fiksen START · ista usmerjena cestna matrika znotraj posameznega primera.')}</p>
       <div class="comparison-scroll"><table class="demo-table"><thead><tr><th>${bi('Case','Primer')}</th><th>${bi('Fast','Hitro')}</th><th>${bi('Deep','Poglobljeno')}</th><th>Brute Force</th></tr></thead><tbody>
@@ -47,6 +52,8 @@ const $=id=>document.getElementById(id);
     function load(withLj) {
       location.href = 'index.html?lang='+window.MDLxDCCLocale.current()+'&preset='+(withLj?'eu15':'eu14');
     }
+    $('demoLoadCapitals14').onclick=()=>{location.href='index.html?lang='+window.MDLxDCCLocale.current()+'&preset=capitals14';};
+    $('demoLoadCapitals15').onclick=()=>{location.href='index.html?lang='+window.MDLxDCCLocale.current()+'&preset=capitals15';};
     $('demoLoad14').onclick=()=>load(false); $('demoLoad15').onclick=()=>load(true);
   }
 document.addEventListener('DOMContentLoaded',()=>{renderDemo();window.MDLxDCCLocale.subscribe(()=>{document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===window.MDLxDCCLocale.current())));$('demoCities').oninput();});document.querySelectorAll('[data-language]').forEach(b=>b.onclick=()=>window.MDLxDCCLocale.choose(b.dataset.language));});

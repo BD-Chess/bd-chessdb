@@ -105,3 +105,20 @@ test('worker rejects incomplete matrices instead of reverting to aerial costs an
   assert.equal(messages.at(-1).type,'error');assert.equal(messages.at(-1).jobId,71);
   assert.match(messages.at(-1).error,/Incomplete road distance matrix/);
 });
+
+test('Deep reports valid best routes and actual start counts without changing the result',()=>{
+  const {c,messages}=worker();
+  const points=pts(6), D=Array.from({length:6},(_,i)=>Array.from({length:6},(_,j)=>i===j?0:1+(i*17+j*29)%101));
+  const result=c.solve(points,3,'deep',true,D);
+  const updates=messages.filter(m=>m.type==='progress');
+  assert.equal(updates[0].completed,0);assert.equal(updates.at(-1).completed,128);
+  let best=Infinity,count=-1,time=-1;
+  for(const m of updates){
+    assert.equal(m.starts,128);assert.ok(m.completed>count);assert.ok(m.elapsedMs>=time);assert.ok(m.totalKm<=best);
+    const order=Array.from(m.pointsSorted,p=>Number(p.name.slice(6)));
+    assert.equal(order[0],3);assert.equal(new Set(order).size,6);
+    assert.equal(m.totalKm,length(order,D,true)/1000);
+    best=m.totalKm;count=m.completed;time=m.elapsedMs;
+  }
+  assert.equal(best,result.totalKm);
+});

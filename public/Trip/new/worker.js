@@ -91,6 +91,8 @@ function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
 }
 
 function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
+  const started = performance.now();
+  let lastReport = -Infinity;
   const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
   const airD = TripAirDistance.matrix(points);
   if (validIndices.length !== points.length || points.length < 2) throw new Error('All stops must have valid coordinates.');
@@ -123,6 +125,17 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
   let bestRoute = baseline.slice();
   let bestLen = baseLen;
 
+  function report(completed) {
+    const now = performance.now();
+    if (completed !== 0 && completed !== starts && now - lastReport < 250) return;
+    lastReport = now;
+    self.postMessage({type:'progress', jobId:activeJobId, algorithm:profile,
+      completed, starts, elapsedMs:now-started, metric,
+      pointsSorted:bestRoute.map(i => points[i]), totalKm:bestLen/1000,
+      baseKm:baseLen/1000, directKm:routeLength(bestRoute,airD,roundTrip)/1000});
+  }
+  report(0);
+
   // Optimization Loop
   for (let s = 0; s < starts; s++) {
     // 1. Determine Start Node
@@ -149,11 +162,8 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
 
     if (len < bestLen) { bestLen = len; bestRoute = route.slice(); }
 
-    // 4. Progress Reporting (Added feature)
-    if (s % 50 === 0 || s === starts - 1) {
-      const pct = Math.min(99, Math.round((s + 1) / starts * 100));
-      postMessage({ type: 'progress', jobId: activeJobId, text: `Search: ${pct}% (${s+1}/${starts})` });
-    }
+    // Report actual completed starts and the best route, without changing search order.
+    report(s + 1);
   }
 
   // Reconstruct

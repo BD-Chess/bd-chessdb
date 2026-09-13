@@ -12,6 +12,8 @@ window.TRIP_LIBRARY = [
       {
         name: "🧪 Optimization demos",
         items: [
+          { id: "DEMO_CAPITALS14", label: "14 EU capitals · alphabetical · Amsterdam START", demoPreset: "capitals14" },
+          { id: "DEMO_CAPITALS15", label: "15 EU capitals · alphabetical · Ljubljana START", demoPreset: "capitals15" },
           { id: "DEMO_EU15", label: "LJ + EU14 · 15 stops · Ljubljana START", demoPreset: "eu15" },
           { id: "DEMO_EU14", label: "EU14 · 14 stops · Berlin START", demoPreset: "eu14" }
         ]

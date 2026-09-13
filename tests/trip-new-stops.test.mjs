@@ -411,18 +411,19 @@ test('changing the problem clears Resume, while changing only the algorithm pres
   }
 });
 
-test('live map refresh is adaptive, improved-only, visible-only, and preserves the camera',async()=>{
+test('live map refresh uses the selected interval, improved-only, visible-only, and preserves the camera',async()=>{
   let calls=0;
   const h=mapHarness(async req=>{calls++;return {routes:[{path:[req.origin,req.destination],distanceMeters:100000}]};});
   const job={profile:'brute',mode:'DRIVING',roundTrip:false,direct:false,mapPending:false,mapBestKm:Infinity,lastMapRefresh:0};
   const msg={checked:10,total:100,elapsedMs:1000,totalKm:100,baseKm:200,directKm:80,pointsSorted:twoStops};
-  h.tick(29999);h.api.refreshBruteMap(msg,job);assert.equal(calls,0);
+  h.tick(4999);h.api.refreshBruteMap(msg,job);assert.equal(calls,0);
   h.tick(1);h.api.refreshBruteMap(msg,job);
   await new Promise(r=>setImmediate(r));
   assert.equal(calls,1);assert.equal(h.cameraChanges(),0);
   h.tick(30000);h.api.refreshBruteMap(msg,job);assert.equal(calls,1); // unchanged best
   h.doc.hidden=true;h.api.refreshBruteMap({...msg,totalKm:99},job);assert.equal(calls,1);
   h.doc.hidden=false;
+  h.element('mapRefreshInterval').value='60000';
   const long={...msg,total:100000,totalKm:99};h.api.refreshBruteMap(long,job);assert.equal(calls,1);
   h.tick(30000);h.api.refreshBruteMap(long,job);await new Promise(r=>setImmediate(r));
   assert.equal(calls,2);assert.equal(h.cameraChanges(),0);
@@ -486,7 +487,7 @@ test('loading either demo stops the old job, clears results and sets its route w
   assert.equal(h.jobs.length,count);
   const ctx={window:{}};vm.runInNewContext(readFileSync(new URL('../public/Trip/new/trips.js',import.meta.url),'utf8'),ctx);
   const demos=ctx.window.TRIP_LIBRARY[0].categories.find(c=>c.name==='🧪 Optimization demos');
-  assert.deepEqual(Array.from(demos.items,i=>i.demoPreset),['eu15','eu14']);
+  assert.deepEqual(Array.from(demos.items,i=>i.demoPreset),['capitals14','capitals15','eu15','eu14']);
 });
 
 const tspResponse = async url => ({ok:true,json:async()=>JSON.parse(readFileSync(new URL('../public/Trip/new/'+url.split('?')[0],import.meta.url),'utf8'))});
@@ -552,4 +553,57 @@ test('large TSP counts stay compact and fully translated; node IDs are not Maps 
   assert.doesNotMatch(links[0].urlPins,/lu980/);
   const normal=h.api.buildMapsLegLinks([{name:'Ljubljana',lat:46,lon:14},{name:'Koper',lat:45,lon:13}],false,'DRIVING');
   assert.match(normal[0].urlNames,/origin=Ljubljana/);
+});
+
+
+test('new capital sets are localized, alphabetic, distinct and preserve START without auto-running',()=>{
+  const h=harness(()=>{throw new Error('No automatic lookup');});
+  for(const lang of ['en','sl'])for(const n of [14,15]){
+    h.window.MDLxDCCLocale={current:()=>lang};
+    assert.equal(h.window.TripDemo.load('capitals'+n),true);
+    const {pts,startIdx}=h.api.parseStops(h.element('input').value);
+    const names=Array.from(pts,p=>p.name);
+    assert.equal(names.length,n);assert.equal(new Set(names).size,n);
+    assert.deepEqual(names,names.slice().sort((a,b)=>a.localeCompare(b,lang)));
+    assert.match(names[startIdx],n===15?/^Ljubljana,/:/^Amsterdam,/);
+    assert.doesNotMatch(names.join('\n'),/Barcelona|Hamburg|Munich|Milan/);
+    assert.ok(names.includes(lang==='sl'?'Bratislava, Slovaška':'Bratislava, Slovakia'));
+    assert.ok(names.includes(lang==='sl'?'Dunaj, Avstrija':'Vienna, Austria'));
+    assert.equal(h.element('chkBrute').checked,false);assert.equal(h.element('chkDirect').checked,false);
+    assert.equal(h.element('chkRoundTrip').checked,true);assert.equal(h.jobs.length,0);
+  }
+  h.window.TripDemo.load('eu15');
+  assert.match(h.element('input').value,/Hamburg, Germany/); // Historic benchmark set is unchanged.
+});
+
+test('Deep progress remains below the map, has an ETA, and cancellation retains its best route',async()=>{
+  const h=harness(success);h.element('input').value=sample;
+  await h.api.run('deep');const job=h.jobs.at(-1);
+  const progress={type:'progress',jobId:job.jobId,algorithm:'deep',completed:100,starts:2000,
+    elapsedMs:5000,totalKm:120,baseKm:200,directKm:120,metric:'direct',pointsSorted:job.points};
+  h.api.handleWorkerMessage({data:progress});
+  assert.equal(h.element('searchProgress').hidden,false);
+  assert.equal(h.element('searchProgressBar').value,.05);
+  assert.equal(h.element('searchStarts').textContent,'100 / 2,000');
+  assert.notEqual(h.element('searchEta').textContent,'measuring…');
+  assert.equal(h.elements.has('busyOverlay'),false);
+  h.api.requestCancel();
+  assert.equal(h.workers[0].terminated,true);
+  assert.equal(h.element('searchCancel').disabled,true);
+  assert.match(h.element('searchProgressText').textContent,/Cancelled/);
+  const stopped=h.element('searchProgressText').textContent;
+  h.api.handleWorkerMessage({data:{...progress,completed:200}});
+  assert.equal(h.element('searchProgressText').textContent,stopped);
+});
+
+test('Deep map preview respects 1 second selection; completion bypasses the interval',async()=>{
+  let calls=0;
+  const h=mapHarness(async req=>{calls++;return {routes:[{path:[req.origin,req.destination],distanceMeters:100000}]};});
+  h.element('mapRefreshInterval').value='1000';
+  const job={profile:'deep',mode:'DRIVING',roundTrip:false,direct:false,mapPending:false,mapBestKm:Infinity,lastMapRefresh:0};
+  const msg={completed:1,starts:128,elapsedMs:1000,totalKm:100,baseKm:200,directKm:80,pointsSorted:twoStops};
+  h.tick(999);h.api.refreshBruteMap(msg,job);assert.equal(calls,0);
+  h.tick(1);h.api.refreshBruteMap(msg,job);await new Promise(r=>setImmediate(r));
+  assert.equal(calls,1);assert.equal(h.cameraChanges(),0);
+  await h.api.showSolvedRoute({...msg,totalKm:99},job);assert.equal(calls,2);
 });

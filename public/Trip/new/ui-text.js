@@ -2,6 +2,11 @@
 (() => {
   'use strict';
   const words={
+    "Map refresh interval":"Čas osveževanja mape",
+    "Optimization progress":"Napredek optimizacije",
+    "Completed search starts":"Končani zagoni iskanja",
+    "Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.":"Napredek šteje zagone iskanja, ne vseh možnih vrstnih redov. Preostali čas je ocena; optimum ni dokazan.",
+
     "🇫🇷 Eiffel Tower & Around (Paris)":"🇫🇷 Eifflov stolp in okolica (Pariz)",
     "🇮🇹 Colosseum & Ancient Rome":"🇮🇹 Kolosej in antični Rim",
     "🇺🇸 Statue of Liberty & Lower Manhattan":"🇺🇸 Kip svobode in spodnji Manhattan",
@@ -114,6 +119,13 @@
     'TSP data is incomplete. Your current trip is unchanged.':'Podatki TSP niso popolni. Trenutna pot je ohranjena.',
     'TSP coordinates are invalid. Your current trip is unchanged.':'Koordinate TSP niso veljavne. Trenutna pot je ohranjena.',
     'Load LJ + EU14':'Naloži LJ + EU14',
+    'Load 14 EU capitals':'Naloži 14 glavnih EU mest',
+    'Load 15 EU capitals':'Naloži 15 glavnih EU mest',
+    '14 EU capitals · alphabetical · Amsterdam START':'14 glavnih EU mest · po abecedi · Amsterdam START',
+    '15 EU capitals · alphabetical · Ljubljana START':'15 glavnih EU mest · po abecedi · Ljubljana START',
+    '14 EU capitals loaded · alphabetical order · Amsterdam START · Drive · Round Trip.':'Naloženih je 14 glavnih EU mest · po abecedi · Amsterdam START · Vožnja · Povratna pot.',
+    '15 EU capitals loaded · alphabetical order · Ljubljana START · Drive · Round Trip.':'Naloženih je 15 glavnih EU mest · po abecedi · Ljubljana START · Vožnja · Povratna pot.',
+    'First try Optimize (Fast), then Optimize (Deep). Compare their routes, then select the Brute Force checkbox and press Run Brute Force to check every order. You can cancel and resume the calculation.':'Najprej poskusi z gumbom Optimiziraj (hitro), nato z Optimiziraj (poglobljeno). Primerjaj poti, zatem označi potrditveno polje Brute Force in pritisni Zaženi Brute Force, da preveriš vse vrstne rede. Računanje lahko prekličeš in nadaljuješ.',
     '🧪 Optimization demos':'🧪 Demonstracije optimizacije',
     'LJ + EU14 · 15 stops · Ljubljana START':'LJ + EU14 · 15 postankov · Ljubljana START',
     'EU14 · 14 stops · Berlin START':'EU14 · 14 postankov · Berlin START',
@@ -222,6 +234,7 @@
     'Google Route Matrix is unavailable in the loaded Maps library.':'Matrika cestnih razdalj ni na voljo v naloženem zemljevidu.'
   };
   const fragments={
+    'Our Optimize (Deep)':'Naša optimizacija (poglobljeno)', 'Our Optimize (Fast)':'Naša optimizacija (hitro)',
     'Compute time:':'Čas računanja:', '1 compute thread':'1 računska nit',
     'Entered order:':'Prvotni vrstni red:', 'Optimized order:':'Optimizirani vrstni red:',
 

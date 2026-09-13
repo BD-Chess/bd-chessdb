@@ -1020,7 +1020,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. The map refreshes better routes every 30 seconds for up to 10 minutes remaining, otherwise 60 seconds. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep progress counts planned search starts, not exhaustive orders; ETA is an estimate. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -1076,7 +1076,7 @@ Bad example:
   const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-resume2');
+    const w = new Worker('worker.js?v=20260913-live1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1137,6 +1137,7 @@ Bad example:
     UI.set($('bruteMini'), '');
     $('comparisonPanel').hidden = true;
     $('bruteProgress').hidden = true;
+    $('searchProgress').hidden = true;
   }
 
   function displayComparison(msg, job) {
@@ -1182,7 +1183,7 @@ Bad example:
     }
     if (airWorker) return;
     const expectedComparison = comparisonKey;
-    const w = new Worker('worker.js?v=20260913-resume2'); airWorker = w;
+    const w = new Worker('worker.js?v=20260913-live1'); airWorker = w;
     w.onmessage = ({data:m}) => {
       if (m.type !== 'result' && m.type !== 'error') return;
       w.terminate(); if (airWorker === w) airWorker = null;
@@ -1237,14 +1238,32 @@ Bad example:
     return updateMapVisualization(msg.pointsSorted, {preview, routeContext});
   }
 
+  function mapRefreshInterval() {
+    const selected = Number($('mapRefreshInterval')?.value);
+    return [1000,5000,15000,30000,60000].includes(selected) ? selected : 5000;
+  }
+
   function refreshBruteMap(msg, job) {
-    if (!msg.checked || job.mapPending || document.hidden || msg.totalKm >= job.mapBestKm) return;
-    const rate = msg.elapsedMs > 0 ? msg.checked / (msg.elapsedMs / 1000) : 0;
-    const remaining = rate > 0 ? (msg.total - msg.checked) / rate : Infinity;
-    const interval = remaining <= 600 ? 30000 : 60000;
-    if (performance.now() - job.lastMapRefresh < interval) return;
+    if (!(msg.checked || msg.completed) || !msg.pointsSorted || job.mapPending || document.hidden || msg.totalKm >= job.mapBestKm) return;
+    if (performance.now() - job.lastMapRefresh < mapRefreshInterval()) return;
     job.lastMapRefresh = performance.now(); job.mapBestKm = msg.totalKm; job.mapPending = true;
-    showSolvedRoute(msg, job, true).finally(() => { job.mapPending = false; });
+    showSolvedRoute(msg, job, true).catch(error => console.warn('[8Z Trip] Route preview:', error)).finally(() => { job.mapPending = false; });
+  }
+
+  function displaySearchProgress(msg, job, finished = false) {
+    const completed = msg.completed || 0, starts = msg.starts || 0;
+    const fraction = starts ? Math.min(1, completed / starts) : 0;
+    const elapsed = (msg.elapsedMs || 0) / 1000;
+    const state = msg.cancelled ? 'Cancelled' : finished ? 'Complete' : 'Running';
+    $('searchProgress').hidden = false;
+    UI.set($('searchProgressText'), `${job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)'} · ${state} · ${BF.percent(completed, starts || 1)}`);
+    $('searchProgressBar').value = fraction;
+    UI.set($('searchStarts'), `${completed.toLocaleString('en-US')} / ${starts.toLocaleString('en-US')}`);
+    UI.set($('searchElapsed'), BF.duration(elapsed));
+    UI.set($('searchEta'), finished ? (msg.cancelled ? '—' : '0 s') : completed > 0 ? BF.duration(elapsed * (starts-completed) / completed) : 'measuring…');
+    UI.set($('searchMetric'), job.direct ? 'Great-circle air distances' : 'Road distance table');
+    UI.set($('searchBest'), Number.isFinite(msg.totalKm) ? formatKm(msg.totalKm) : '—');
+    $('searchCancel').disabled = finished;
   }
 
   function requestCancel() {
@@ -1256,22 +1275,11 @@ Bad example:
       setStatus('Stopping calculation and keeping the best route…', 'warn');
       worker.postMessage({type:'cancel', jobId:activeJob.jobId});
     } else {
+      const job = activeJob, latest = job?.latest, stillCurrent = job?.current();
       cancelWork(); setStatus('Calculation cancelled.', 'warn');
+      if (latest?.pointsSorted && stillCurrent) { displayComparison(latest,job); showSolvedRoute({...latest,cancelled:true}, job); }
     }
   }
-
-  function showBusy(msg) {
-    let overlay = $('busyOverlay');
-    if (!overlay) {
-        overlay = document.createElement('div'); overlay.id = 'busyOverlay';
-        overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
-        document.body.appendChild(overlay);
-    }
-    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${t(msg)}</div><div style="margin-top:10px;color:#6aa9ff;">${t("Please wait...")}</div><button id="busyCancel" style="width:auto;margin-top:20px;"><span data-ui-text="Cancel calculation">Cancel calculation</span></button>`;
-    $('busyCancel').onclick = requestCancel;
-    overlay.style.display = 'flex';
-  }
-  function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
 
   function setPlanningMode(enabled) {
     document.body.classList.toggle('planning-mode', enabled);
@@ -1306,7 +1314,7 @@ Bad example:
   function finishWork() {
     optimizationPending = false;
     $('btnCancelWork').disabled = true;
-    hideBusy();
+    $('searchCancel').disabled = true;
     refreshBruteInfo();
   }
 
@@ -1316,7 +1324,10 @@ Bad example:
     ++visualizationVersion;
     if (activeJob) {
       worker.terminate(); worker = createWorker();
-      if (activeJob.latest) displayBruteProgress({...activeJob.latest,cancelled:true},activeJob);
+      if (activeJob.latest) {
+        if (activeJob.profile === 'brute') displayBruteProgress({...activeJob.latest,cancelled:true},activeJob);
+        else displaySearchProgress({...activeJob.latest,cancelled:true},activeJob,true);
+      }
     }
     activeJob = null;
     finishWork();
@@ -1433,13 +1444,13 @@ Bad example:
       return;
     }
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
-    if (profile === 'deep') showBusy("Optimizing stop order...");
     const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,roadData?.distanceMatrix]);
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
     activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx,
       distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
+    if (profile !== 'brute') displaySearchProgress({},activeJob);
     refreshBruteInfo();
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, distanceMatrix:roadData?.distanceMatrix });
@@ -1453,13 +1464,15 @@ Bad example:
     if (!activeJob.current()) { cancelWork(); return; }
     const job = activeJob;
     if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); refreshBruteMap(msg, job); return; }
-    if (msg.type === 'progress') showBusy(msg.text); 
+    if (msg.type === 'progress') {
+      job.latest = msg; displaySearchProgress(msg, job); refreshBruteMap(msg, job);
+    }
     else if (msg.type === 'error') { activeJob = null; finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
       if (msg.algorithm === 'brute') pausedBrute = msg.cancelled && msg.resumeState
         ? {signature:problemSignature(), state:msg.resumeState, job} : null;
       if (msg.algorithm === 'brute') displayBruteProgress(msg, job);
-      else displayComparison(msg, job);
+      else { displaySearchProgress({...job.latest,...msg}, job, true); displayComparison(msg, job); }
       activeJob = null;
       finishWork();
       ensureAirComparison(job.points, job.startIdx, job);
@@ -1514,6 +1527,26 @@ Bad example:
 
   // Shared by short Demo, its article and Library; loading never starts a solver.
   window.TripDemo = {load(preset, {focus = false} = {}) {
+    if (['capitals14','capitals15'].includes(preset)) {
+      // Selected EU capitals, distinct from the historically measured EU14/EU15 city sets.
+      const capitals = [
+        ['Amsterdam, Netherlands','Amsterdam, Nizozemska'],['Berlin, Germany','Berlin, Nemčija'],
+        ['Bratislava, Slovakia','Bratislava, Slovaška'],['Brussels, Belgium','Bruselj, Belgija'],
+        ['Bucharest, Romania','Bukarešta, Romunija'],['Budapest, Hungary','Budimpešta, Madžarska'],
+        ['Madrid, Spain','Madrid, Španija'],['Paris, France','Pariz, Francija'],
+        ['Prague, Czechia','Praga, Češka'],['Rome, Italy','Rim, Italija'],
+        ['Sofia, Bulgaria','Sofija, Bolgarija'],['Vienna, Austria','Dunaj, Avstrija'],
+        ['Warsaw, Poland','Varšava, Poljska'],['Zagreb, Croatia','Zagreb, Hrvaška']
+      ];
+      const withLj = preset === 'capitals15', lang = window.MDLxDCCLocale?.current() || 'en';
+      if (withLj) capitals.push(['Ljubljana, Slovenia','Ljubljana, Slovenija']);
+      const cities = capitals.map(pair => pair[lang === 'sl' ? 1 : 0]).sort((a,b) => a.localeCompare(b,lang));
+      const start = withLj ? 'Ljubljana,' : 'Amsterdam,';
+      return loadEditorPreset(cities.map(city => city + (city.startsWith(start) ? ' START' : '')).join('\n'), {focus,
+        matrixStatus:'Demo loaded. Choose Fast, Deep or Brute Force to calculate.',
+        status:withLj ? '15 EU capitals loaded · alphabetical order · Ljubljana START · Drive · Round Trip.'
+          : '14 EU capitals loaded · alphabetical order · Amsterdam START · Drive · Round Trip.'});
+    }
     if (!['eu14','eu15'].includes(preset)) return false;
     const cities = ['Berlin, Germany','Madrid, Spain','Rome, Italy','Paris, France','Vienna, Austria','Hamburg, Germany','Warsaw, Poland','Bucharest, Romania','Barcelona, Spain','Budapest, Hungary','Munich, Germany','Prague, Czechia','Milan, Italy','Sofia, Bulgaria'];
     if (preset === 'eu15') cities.unshift('Ljubljana, Slovenia');
@@ -1547,6 +1580,8 @@ Bad example:
     $('btnDeep').onclick = () => run('deep');
     $('btnPrepare').onclick = () => run('prepare', true);
     $('btnCancelWork').onclick = requestCancel;
+    $('searchCancel').onclick = requestCancel;
+    $('mapRefreshInterval').onchange = () => { if (activeJob?.latest) refreshBruteMap(activeJob.latest,activeJob); };
     $('chkBrute').onchange = () => { cancelWork(); refreshBruteInfo(); };
     refreshBruteInfo();
     window.MDLxDCCLocale.subscribe(refreshBruteInfo);

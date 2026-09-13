@@ -307,6 +307,16 @@ header > nav:not(.bd-versions) { display:flex; flex-wrap:wrap; gap:2px; }
 #bruteMini { align-self:center; font:500 12px/1.5 'JetBrains Mono',monospace; color:#93c5fd; overflow-wrap:anywhere; }
 #librarySection { margin-top:20px; }
 #bruteProgress { margin:16px 0; }
+.map-refresh-control { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; font-size:12px; color:var(--text-dim); }
+.map-refresh-control select { width:auto; min-width:90px; padding:8px; color:var(--text-main); background:var(--bg-input); border:1px solid var(--border); border-radius:6px; }
+.search-progress { margin:16px 0; }
+.search-progress-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; color:var(--primary); }
+.search-progress-heading button { width:auto; padding:8px 12px; }
+.search-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:10px 0; }
+.search-metrics dt { color:var(--text-dim); }
+.search-metrics dd { margin:0; font-size:14px; overflow-wrap:anywhere; }
+.search-progress p { color:var(--text-dim); margin:6px 0 0; }
+@media (max-width:700px) { .search-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 #chatGroundingNote { font-size:11px; margin:0; padding:8px 14px; background:var(--bg-input); }
 #chatPanel:not(.open) #chatGroundingNote { display:none; }
 .maps-citation { display:inline-block; white-space:normal; margin:4px; }
@@ -416,8 +426,8 @@ html[lang="sl"] #chatPanel.open .chat-state-text::after { content:'(zapri)' }
 .info-body ul { padding-left:20px; }
 .info-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px 20px; padding-bottom:max(14px,env(safe-area-inset-bottom)); border-top:1px solid var(--border); background:#0f1621; flex:0 0 auto; }
 .info-actions a { display:flex; align-items:center; justify-content:center; text-decoration:none; border-radius:8px; padding:12px; font-weight:700; }
-#infoLoadDemo { grid-column:1 / -1; }
-#infoLoadDemo[hidden] { display:none; }
+.demo-load-instructions { grid-column:1 / -1; margin:0; color:var(--text-dim); font-size:12px; line-height:1.5; }
+#infoLoadDemo[hidden],#infoLoadDemo14[hidden],#infoDemoInstructions[hidden] { display:none; }
 .map-route-caption { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; padding:10px 12px; margin-bottom:10px; border:1px solid var(--border); border-radius:8px; font-size:13px; line-height:1.5; color:var(--text-dim); }
 .map-route-caption strong,.map-route-measure b { color:var(--text-main); }
 .map-route-caption[hidden],.planning-mode .map-route-caption { display:none; }
