@@ -1,0 +1,39 @@
+name: WL Legacy on-demand probe
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: >-
+      github.repository == 'BD-Chess/bd-chessdb' &&
+      github.event.issue.number == 17 &&
+      github.event.sender.id == 208290645 &&
+      github.event.comment.user.id == 208290645 &&
+      startsWith(github.event.comment.body, 'WL_PROBE_V1 ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    concurrency:
+      group: wl-legacy-probe-${{ github.event.comment.id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate owner request, collect exact encrypted inputs and fresh control
+        id: probe
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/wl_legacy_probe.py
+      - name: Transfer public encrypted inputs without model or plaintext
+        if: steps.probe.outputs.snapshot == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.probe.outputs.artifact_name }}
+          path: ${{ steps.probe.outputs.snapshot_path }}/
+          if-no-files-found: error
+          retention-days: 2
