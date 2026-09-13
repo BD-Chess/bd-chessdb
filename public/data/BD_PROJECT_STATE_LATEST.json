@@ -11,8 +11,8 @@
     "Physics / Engineering",
     "8Z / Compression"
   ],
-  "generated_at": "2026-09-13T08:59:34+02:00",
-  "last_successful_refresh": "2026-09-13T08:59:34+02:00",
+  "generated_at": "2026-09-13T13:42:02+02:00",
+  "last_successful_refresh": "2026-09-13T13:42:02+02:00",
   "machines": [
     {
       "active_arena_ids": [
@@ -43,8 +43,8 @@
     }
   ],
   "needs_bd": [],
-  "partial_update_at": "2026-09-13T08:59:34+02:00",
-  "partial_update_scope": "Daily project-chat-only refresh: legacy Materials A3 completion plus AI8 Wake Lab project registration; all unrelated state retained.",
+  "partial_update_at": "2026-09-13T13:42:02+02:00",
+  "partial_update_scope": "Full bd2ai8 all-source freshness pass. Arena statuses are preserved unless exact evidence changed; Wake Lab operational prerequisite evidence is updated, while newest TSP/Trading capture receipts are recorded without result promotion because their ZIP binaries were not available in Drive/OneDrive during this refresh.",
   "projects": [
     {
       "arena_ids": [
@@ -315,15 +315,42 @@
       "arena_ids": [
         "ai8-wake-lab-v01"
       ],
-      "last_change": "R8 architecture review ACCEPT; exact R6 TRI-MODE builder mandate assigned. No completed converged build/runtime acceptance is yet verified.",
-      "next_action": "Complete the hash-bound R6 build and its manifests, receipts and runtime acceptance gates; report any concrete blocker.",
+      "last_change": "Legacy WL prerequisite repair is now operationally evidenced on GitHub main: the owner-only probe/transport exists, the encrypted journal advanced through e000007, and scheduled WL control witness run 11 completed SUCCESS. This does not constitute converged R6 live acceptance.",
+      "next_action": "Keep Legacy WL under the repaired controls and continue verifying continuity; defer the converged R6 upgrade until its own offline harness, secrets/key wiring and controlled live runtime acceptance are complete.",
       "project": "AI8 Wake Lab",
       "status": "BUILD"
     }
   ],
-  "provenance_rule": "Only conversations inside ChatGPT projects are inspected for current state; project files may corroborate versions, runs, checkpoints, live extracts, handoffs, results, or resume state. Non-project sessions and orphan arenas are excluded.",
+  "freshness_observations": [
+    {
+      "scope": "AI8 Wake Lab Legacy",
+      "observed_at": "2026-09-13T12:52:08+02:00",
+      "status": "VERIFIED",
+      "evidence": "GitHub main contains encrypted journal entry e000007 and the Legacy WL owner-only probe/transport; scheduled WL control witness run 11 completed SUCCESS and its observe job verified the production pause flag path.",
+      "inference": "The Legacy control/continuity repair is operationally evidenced. This is not evidence that the converged R6 system is live-accepted."
+    },
+    {
+      "scope": "TSP",
+      "observed_at": "2026-09-13T11:46:55+02:00",
+      "status": "CAPTURE_RECEIPT_ONLY",
+      "bundle": "TSP_ACTIVE_ARENAS_LIVE_EXTRACTS_20260913_114637_314251.zip",
+      "sha256": "23aec6179c1ee4e9d6a82761d7a392a64cee79878f5c703dcd604922baf48b59",
+      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
+      "inference": "No TSP arena result or status is promoted from receipt-only evidence."
+    },
+    {
+      "scope": "Trading",
+      "observed_at": "2026-09-13T11:46:55+02:00",
+      "status": "CAPTURE_RECEIPT_ONLY",
+      "bundle": "TRADING_ACTIVE_ARENAS_LIVE_EXTRACTS_2_20260913_114655_284056.zip",
+      "sha256": "fba34b4dafec0eab9998471eb741f8d2ef4195edc4a9194275f1ae48f47ab6d3",
+      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
+      "inference": "No Trading arena result or status is promoted from receipt-only evidence."
+    }
+  ],
+  "provenance_rule": "Current state uses all-source freshness: GPT Project/File Library, Google Drive, OneDrive/SharePoint and GitHub main/live evidence are compared by artifact role, version/content, hashes and timestamps; duplicate copies are not independent evidence.",
   "schema_version": "8z-control.v0.1",
-  "source_boundary": "CHATGPT PROJECT CHATS ONLY; PROJECT FILES MAY CORROBORATE",
+  "source_boundary": "ALL-SOURCE FRESHNESS: GPT PROJECT/FILE LIBRARY + GOOGLE DRIVE + ONEDRIVE/SHAREPOINT + GITHUB MAIN/LIVE",
   "source_register": "BD_MASTER_ARENA_REGISTER_LATEST.json",
   "title": "BD — Project State"
 }
