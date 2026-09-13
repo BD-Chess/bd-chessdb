@@ -1,6 +1,11 @@
 name: WL control witness hourly safety net
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/wl-control-witness-hourly.yml
+      - scripts/wl_observe_control.mjs
   schedule:
     - cron: '48 * * * *'
     - cron: '53 * * * *'
