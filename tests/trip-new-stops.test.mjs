@@ -11,7 +11,7 @@ function harness(geocode) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      style: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
+      style: {}, dataset: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
       value: '', innerHTML: '', textContent: '', appendChild() {}, replaceChildren() {}
     });
     return elements.get(id);
@@ -23,12 +23,13 @@ function harness(geocode) {
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
     console, google, window: { google }, Map, Set,
-    document: { body:{classList:{remove(){}}}, createElement: () => ({style:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
+    document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
     clearTimeout(id) { timerJobs.delete(id); }
   });
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/ui-text.js', import.meta.url), 'utf8'), context);
   vm.runInContext(matrixSource, context);
   vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js', import.meta.url), 'utf8'), context);
   element('chkDirect').checked = true;
@@ -342,10 +343,11 @@ test('Brute Force cancellation preserves road data for the next Optimize and sta
 
 test('LAB adds one independent Deep Air row without comparing it to the road optimum',()=>{
   const elements=new Map();
-  const el=()=>({children:[],style:{},classList:{remove(){}},appendChild(c){this.children.push(c);},replaceChildren(){this.children=[];}});
+  const el=()=>({children:[],style:{},dataset:{},classList:{remove(){}},appendChild(c){this.children.push(c);},replaceChildren(){this.children=[];}});
   const get=id=>{if(!elements.has(id))elements.set(id,el());return elements.get(id);};
   const workers=[];
   const c=vm.createContext({console,window:{},document:{getElementById:get,addEventListener(){},createElement:el},Worker:class{constructor(){workers.push(this);}terminate(){this.stopped=true;}postMessage(m){this.message=m;}},setTimeout,clearTimeout});
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/ui-text.js',import.meta.url),'utf8'),c);
   vm.runInContext(matrixSource,c);vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js',import.meta.url),'utf8'),c);
   vm.runInContext(source.replace(/\}\)\(\);\s*$/,`window.test={displayComparison,ensureAirComparison,clearComparison, setKey(k){comparisonKey=k;}};})();`),c);
   const api=c.window.test,job={profile:'deep',mode:'DRIVING',direct:false,roundTrip:true,jobId:1};
@@ -355,7 +357,7 @@ test('LAB adds one independent Deep Air row without comparing it to the road opt
   const air=workers.at(-1);assert.equal(air.message.profile,'deep');assert.equal(air.message.distanceMatrix,undefined);
   air.onmessage({data:{type:'result',totalKm:80,elapsedMs:5}});
   let rows=get('comparisonRows').children.map(r=>r.children.map(c=>c.textContent));
-  assert.equal(rows.length,3);assert.equal(rows[1][3],'Matches exact optimum');assert.match(rows[2][0],/Deep · Air/);assert.match(rows[2][3],/not proven/);assert.doesNotMatch(rows[2][3],/above exact/);
+  assert.equal(rows.length,3);assert.equal(rows[0][0],'Our Optimize (Deep)');assert.equal(rows[0][3],'Matches exact optimum');assert.match(rows[2][0],/Deep · Air/);assert.match(rows[2][3],/not proven/);assert.doesNotMatch(rows[2][3],/above exact/);
   api.ensureAirComparison([{lat:0,lon:0},{lat:0,lon:1}],0,job);
   assert.equal(workers.length,2); // Main worker + one cached Air worker; no second Air run.
   api.clearComparison();api.setKey('roadB');api.displayComparison({algorithm:'deep',totalKm:300,elapsedMs:2},job);

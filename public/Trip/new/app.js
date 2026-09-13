@@ -17,6 +17,8 @@
 
   // --- 2. GLOBAL STATE ---
   const $ = (id) => document.getElementById(id);
+  const UI = window.TripUI;
+  const t = text => UI.t(text);
   
   let map, geocoder, infoWindow;
   let mapMarkers = [], routePolylines = [], mapPolyline = null;
@@ -36,22 +38,6 @@
   let useMiles = false; // New flag for Unit Conversion
 
   // --- 3. HTML CONTENT ---
-  const HELP_HTML = `
-    <div class="help-block">
-      <h2>How to Use</h2>
-      <ul>
-        <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
-        <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
-        <li><strong>3. Prepare distances:</strong> Fetch or refresh the road distance table. Drive and Walk use different tables. You can inspect the table below the route list.</li>
-        <li><strong>4. Optimize:</strong> Fast and Deep search locally using the prepared road distances. Missing distances are fetched automatically. Direct Line uses great-circle air distances instead.</li>
-        <li><strong>5. Navigation:</strong> Use the toggle above the list to switch between Google/Apple Maps for turn-by-turn guidance.</li>
-        <li><strong>6. Share:</strong> Click the button at the bottom to create a shareable link.</li>
-      </ul>
-      <p>The road table is working data for the current open trip and is discarded on reload. Google receives the coordinates to calculate routes. Preparing a table uses Google API quota; repeated local searches reuse it.</p>
-      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Fast and Deep do not guarantee a global optimum. Brute Force is a separate manual option for 2–16 stops, including START. It checks all (n−1)! orders locally and proves an optimum for the selected table only when complete. Cancel calculation keeps its best route and comparison. Above 16 stops, only the count and a clearly labelled time estimate are shown. Changing options never starts Brute Force automatically. Road mode supports up to 100 stops.</p>
-    </div>
-  `;
-
   const DARK_STYLE = [
     {elementType:"geometry",stylers:[{color:"#242f3e"}]},
     {elementType:"labels.text.stroke",stylers:[{color:"#242f3e"}]},
@@ -67,7 +53,7 @@
     clearTimeout(statusTimer);
     const el = $('status'); 
     if(el) {
-      el.textContent = msg; 
+      UI.set(el, msg); 
       el.style.display = 'block';
       el.style.color = cls === 'bad' ? '#ef4444' : (cls === 'warn' ? '#f59e0b' : '#10b981');
       if (cls === 'ok') statusTimer = setTimeout(() => { el.style.display = 'none'; }, 4000);
@@ -313,9 +299,9 @@
           setStatus('Link copied!', 'ok');
           const btn = $('btnShareTrip');
           const originalText = btn.innerHTML;
-          btn.innerHTML = '✅ Copied!';
-          setTimeout(() => btn.innerHTML = originalText, 2000);
-      }).catch(() => prompt("Copy this link:", url));
+          UI.set(btn, '✅ Copied!');
+          setTimeout(() => {delete btn.dataset.uiText;btn.innerHTML = originalText;}, 2000);
+      }).catch(() => prompt(t("Copy this link:"), url));
   };
 
   // --- GPX EXPORT LOGIC ---
@@ -473,7 +459,7 @@
         if (timeoutId) clearTimeout(timeoutId);
         console.error('[8Z Trip] Google Maps load failed:', message, err || '');
         setStatus(message, 'bad');
-        if (btn) { btn.textContent = 'Retry Map'; btn.disabled = false; }
+        if (btn) { UI.set(btn, 'Retry Map'); btn.disabled = false; }
         mapScriptLoadingPromise = null;
         reject(err || new Error(message));
       }
@@ -490,11 +476,11 @@
         geocoder = new google.maps.Geocoder();
         infoWindow = new google.maps.InfoWindow();
         const ph = $('mapPlaceholder'); if(ph) ph.style.display = 'none';
-        if (btn) btn.textContent = 'Map Loaded';
+        if (btn) UI.set(btn, 'Map Loaded');
         resolve();
       };
 
-      if (btn) { btn.textContent = 'Loading API...'; btn.disabled = true; }
+      if (btn) { UI.set(btn, 'Loading API...'); btn.disabled = true; }
       fetch(MAPS_CONFIG_URL, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
         .then(async response => {
           if (!response.ok) throw new Error('Map configuration is unavailable.');
@@ -545,8 +531,8 @@
   }
 
   function showDistance(km, label) {
-    $('distanceLabel').textContent = label + ':';
-    $('distKm').textContent = formatKm(km);
+    UI.set($('distanceLabel'), label + ':');
+    UI.set($('distKm'), formatKm(km));
   }
 
   async function updateMapVisualization(points) {
@@ -583,7 +569,7 @@
     const mode = currentTravelMode;
     const distanceLabel = mode === 'WALKING' ? 'Walking distance' : 'Road distance';
     showDistance(null, distanceLabel);
-    $('distKm').textContent = 'Loading…';
+    UI.set($('distKm'), 'Loading…');
     const pendingPolylines = [];
     let totalRoadMeters = 0;
     let completeDistance = true;
@@ -697,14 +683,15 @@
     const el = $('links'); 
     
     // UPDATED: Added Header "Open in Google Maps"
-    el.innerHTML = '<h4>Open in Google Maps</h4>';
+    el.innerHTML = '<h4><span data-ui-text="Open in Google Maps">Open in Google Maps</span></h4>';
     
     for (const L of links) {
       const row = document.createElement('div'); row.className = 'linkrow';
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
       
       // UPDATED: Changed label from 'Open in Google Map' to 'Pins'
-      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;">📍 Pins</a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;">🏷️ Names</a></div>`;
+      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;"><span data-ui-text="📍 Pins">📍 Pins</span></a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;"><span data-ui-text="🏷️ Names">🏷️ Names</span></a></div>`;
+      UI.set(row.querySelector('.badge'), L.label);
       el.appendChild(row);
     }
     const shareArea = document.createElement('div');
@@ -714,8 +701,8 @@
     // UPDATED: Darkened GPX button background to #14532d (Dark Green)
     shareArea.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()">🔗 Share trip</button>
-        <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()">⛰️ Save GPX</button>
+        <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()"><span data-ui-text="🔗 Share trip">🔗 Share trip</span></button>
+        <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()"><span data-ui-text="⛰️ Save GPX">⛰️ Save GPX</span></button>
       </div>
     `;
     el.appendChild(shareArea);
@@ -748,7 +735,7 @@
               if (i === 0) navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
               else { const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`; navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`; }
           }
-          li.innerHTML = `<a href="${navUrl}" target="_blank">${i + 1}. ${p.name}<small>Tap to navigate here ↗</small></a>`;
+          li.innerHTML = `<a href="${navUrl}" target="_blank">${i + 1}. ${p.name}<small><span data-ui-text="Tap to navigate here ↗">Tap to navigate here ↗</span></small></a>`;
           list.appendChild(li); 
       });
   }
@@ -819,16 +806,16 @@
     box.className = 'suggestions-box';
     
     // HELP HTML (Shared)
-    const helpHtml = `<div class="suggestion-group"><div class="suggestion-label">ℹ️ Help</div><div class="chip-grid"><div class="chip" onclick="window.sendChat('How do I use the Trip Library?')">How to use Library?</div><div class="chip" onclick="window.sendChat('What does Optimize do?')">Explain Optimization</div></div></div>`;
+    const helpHtml = `<div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="ℹ️ Help">ℹ️ Help</span></div><div class="chip-grid"><div class="chip" onclick="window.sendChat('How do I use the Trip Library?')"><span data-ui-text="How to use Library?">How to use Library?</span></div><div class="chip" onclick="window.sendChat('What does Optimize do?')"><span data-ui-text="Explain Optimization">Explain Optimization</span></div></div></div>`;
 
     if (isNew) {
         let regionChip = "";
         if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
         if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
         
-        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">✨ Start a New Adventure</div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')">Create 3-Day Rome Itinerary</div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')">Paris Weekend</div></div></div>${helpHtml}`;
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="✨ Start a New Adventure">✨ Start a New Adventure</span></div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')"><span data-ui-text="Create 3-Day Rome Itinerary">Create 3-Day Rome Itinerary</span></div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')"><span data-ui-text="Paris Weekend">Paris Weekend</span></div></div></div>${helpHtml}`;
     } else {
-        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label">🛏️ Sleeping Strategy</div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')">Find Best Base Camp</div></div></div><div class="suggestion-group"><div class="suggestion-label">🍴 Eating</div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')">Best Cheap Eats</div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')">Romantic Dinner</div></div></div><div class="suggestion-group"><div class="suggestion-label">🚕 Logistics</div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')">Time per Stop?</div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')">Walk vs Taxi</div></div></div>${helpHtml}`;
+        box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="🛏️ Sleeping Strategy">🛏️ Sleeping Strategy</span></div><div class="chip-grid"><div class="chip sleep" onclick="window.sendChat('Where should I stay? Calculate the best base camp.')"><span data-ui-text="Find Best Base Camp">Find Best Base Camp</span></div></div></div><div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="🍴 Eating">🍴 Eating</span></div><div class="chip-grid"><div class="chip eat" onclick="window.sendChat('Suggest lunch spots with high ratings but low price')"><span data-ui-text="Best Cheap Eats">Best Cheap Eats</span></div><div class="chip eat" onclick="window.sendChat('Where is a good romantic dinner spot nearby?')"><span data-ui-text="Romantic Dinner">Romantic Dinner</span></div></div></div><div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="🚕 Logistics">🚕 Logistics</span></div><div class="chip-grid"><div class="chip logistics" onclick="window.sendChat('How much time do I need for each stop?')"><span data-ui-text="Time per Stop?">Time per Stop?</span></div><div class="chip logistics" onclick="window.sendChat('Is this route walkable or do I need a taxi?')"><span data-ui-text="Walk vs Taxi">Walk vs Taxi</span></div></div></div>${helpHtml}`;
     }
     el.insertBefore(box, el.firstChild);
   }
@@ -874,8 +861,7 @@ async function initAI() {
       } catch (error) {
         const failedMessage = document.createElement('div');
         failedMessage.className = 'msg ai';
-        failedMessage.textContent = window.MDLxDCCLocale.current() === 'sl' && /Gemini usage limit reached/.test(error.message)
-          ? 'Dosežena je omejitev porabe Gemini. Poskusi pozneje. Lastnik strani lahko preveri aktivno kvoto v AI Studio.' : error.message;
+        UI.set(failedMessage, error.message);
         h.appendChild(failedMessage);
         return;
       } finally {
@@ -900,7 +886,7 @@ async function initAI() {
             setStatus('Trip Editor updated in Trip Library format.', 'ok');
             setTimeout(() => { renderSuggestions('bigChatHistory'); if (historyId === 'chatHistory') renderSuggestions('chatHistory'); }, 500);
           }
-          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong>Trip Editor Updated</strong><small>Trip Library format applied.</small></div>');
+          processedText = processedText.replace(/\{REPLACE:\s*[\s\S]*?\}/g, '<div class="action-badge">📋 <strong><span data-ui-text="Trip Editor Updated">Trip Editor Updated</span></strong><small><span data-ui-text="Trip Library format applied.">Trip Library format applied.</span></small></div>');
       }
       const addMatches = [...r.matchAll(/\{ADD:\s*([\s\S]*?)\}/g)];
       if(addMatches.length) {
@@ -908,15 +894,15 @@ async function initAI() {
         addMatches.forEach(match => { addedCount += appendTripEditorBlock(match[1]); });
         if(addedCount > 0) { saveState(); setStatus(`AI added ${addedCount} Trip Editor line(s).`, 'ok'); renderSuggestions('bigChatHistory'); }
         processedText = processedText
-          .replace(/```(?:json|text|txt)?\s*\{ADD:\s*[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Trip Library format applied.</small></div>')
-          .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Trip Library format applied.</small></div>');
+          .replace(/```(?:json|text|txt)?\s*\{ADD:\s*[\s\S]*?\}\s*```/g, '<div class="action-badge">➕ <strong><span data-ui-text="Stops Added">Stops Added</span></strong><small><span data-ui-text="Trip Library format applied.">Trip Library format applied.</span></small></div>')
+          .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong><span data-ui-text="Stops Added">Stops Added</span></strong><small><span data-ui-text="Trip Library format applied.">Trip Library format applied.</span></small></div>');
       }
 
       const modelLabel = /^gemini-[a-z0-9.-]{1,72}$/.test(response.model || '')
         ? response.model.replace(/^gemini-/, 'Gemini ') : 'Gemini';
-      h.innerHTML += `<div class="msg ai"><strong>${modelLabel}${response.fallbackUsed ? ' (backup model)' : ''}:</strong> ${formatMarkdown(processedText)}</div>`;
+      h.innerHTML += `<div class="msg ai"><strong>${modelLabel}${response.fallbackUsed ? UI.t(' (backup model)') : ''}:</strong> ${formatMarkdown(processedText)}</div>`;
       if (response.mapsEnabled === false && window.MDLxDCCLocale.current() === 'en') {
-        const note = document.createElement('small'); note.textContent = 'Web search mode'; h.appendChild(note);
+        const note = document.createElement('small'); UI.set(note, 'Web search mode'); h.appendChild(note);
       }
       if (response.sources?.length) {
         const sources = document.createElement('div'); sources.className = 'msg ai';
@@ -988,7 +974,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nHelp and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -1052,20 +1038,20 @@ Bad example:
     const allowed = n >= 2 && n <= BF.MAX_STOPS && !invalid;
     $('chkBrute').disabled = !allowed;
     if (!allowed) $('chkBrute').checked = false;
-    $('btnStandard').textContent = $('chkBrute').checked ? 'Run Brute Force' : (window.MDLxDCCLocale?.current() === 'sl' ? 'Optimiziraj (Fast)' : 'Optimize (Fast)');
+    $('btnStandard').textContent = $('chkBrute').checked ? t('Run Brute Force') : (window.MDLxDCCLocale?.current() === 'sl' ? 'Optimiziraj (Fast)' : 'Optimize (Fast)');
     $('btnDeep').hidden = $('chkBrute').checked;
     $('bruteMini').hidden = !$('chkBrute').checked;
-    if ($('chkBrute').checked && !$('bruteMini').textContent) $('bruteMini').textContent = 'Ready · progress appears here';
+    if ($('chkBrute').checked && !$('bruteMini').textContent) UI.set($('bruteMini'), 'Ready · progress appears here');
     $('bruteOption').classList.toggle('unavailable', !allowed);
     const rate = measuredBruteRate?.rate || 1000000;
     const rateNote = measuredBruteRate
       ? `extrapolated at ${Math.round(rate).toLocaleString('en-US')} orders/s measured with ${measuredBruteRate.n} stops`
       : 'illustration at 1,000,000 orders/s; actual speed depends on this device';
-    $('bruteInfo').textContent = !total
+    UI.set($('bruteInfo'), !total
       ? (n > 1000 ? 'Brute Force unavailable above 16 stops.' : 'Brute Force: enter 2–16 stops including START.')
       : `${n} stops · (${n}−1)! = ${total.toLocaleString('en-US')} possible orders. ` +
         `Estimated full search: ${BF.duration(Number(total)/rate)} (${rateNote}). ` +
-        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 16 stops.' : 'START stays fixed; each direction is counted separately.');
+        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 16 stops.' : 'START stays fixed; each direction is counted separately.'));
     return {n, allowed};
   }
 
@@ -1073,7 +1059,7 @@ Bad example:
     comparisonKey = null; comparisonInput = null; provenExactKm = null; comparisons.clear();
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     airCache = null; comparisonJob = null;
-    $('bruteMini').textContent = '';
+    UI.set($('bruteMini'), '');
     $('comparisonPanel').hidden = true;
     $('bruteProgress').hidden = true;
   }
@@ -1093,19 +1079,21 @@ Bad example:
     const job = comparisonJob;
     if (!job) return;
     const body = $('comparisonRows'); body.replaceChildren();
-    for (const [method, result] of comparisons) {
+    for (const [method, result] of [...comparisons].sort((a,b)=>['Our Optimize (Fast)','Our Optimize (Deep)','Brute Force',AIR_NAME].indexOf(a[0])-['Our Optimize (Fast)','Our Optimize (Deep)','Brute Force',AIR_NAME].indexOf(b[0]))) {
       const row = document.createElement('tr');
+      if (method === AIR_NAME) row.className = 'air-comparison';
       let description = result.state;
       if (method !== 'Brute Force' && method !== AIR_NAME && provenExactKm !== null) {
         description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatKm(result.km-provenExactKm)} above exact optimum`;
       }
       for (const value of [method, result.time, formatKm(result.km), description]) {
-        const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell);
+        const cell = document.createElement('td'); UI.set(cell, value); row.appendChild(cell);
       }
       body.appendChild(row);
     }
     $('comparisonPanel').hidden = false;
-    $('comparisonNote').textContent = `${job.direct ? 'Great-circle air distances' : 'Road distance table'} · ${job.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${job.roundTrip ? 'Round trip' : 'Open trip'}. Same stops and START. Air row uses its own great-circle costs; it is not a road-distance saving or a proven optimum. Times exclude address lookup, table preparation and map drawing.`;
+    UI.set($('comparisonNote'), `${job.direct ? 'Great-circle air distances' : 'Road distance table'} · ${job.roundTrip ? 'Round trip' : 'Open trip'} · START`);
+    UI.set($('comparisonDetails'), 'Same stops and START. Deep Air searches its own great-circle table; it is not a road saving. Fast and Deep report the best route found. Only completed Brute Force proves the optimum of its table. Times exclude address lookup, table preparation and map drawing.');
   }
 
   function ensureAirComparison(points, startIdx, job) {
@@ -1138,11 +1126,11 @@ Bad example:
     }
     const state = msg.exact ? 'Complete' : msg.cancelled ? 'Cancelled' : 'Running';
     const remaining = msg.exact ? '0 s' : rate > 0 ? BF.duration((msg.total-msg.checked)/rate) : 'measuring…';
-    $('bruteProgressText').textContent = `${state} · ${BF.percent(msg.checked,msg.total)} done · ${msg.checked.toLocaleString('en-US')} / ${msg.total.toLocaleString('en-US')} orders checked`;
-    $('bruteMini').textContent = `${BF.percent(msg.checked,msg.total)} · ${state} · ${remaining} remaining`;
+    UI.set($('bruteProgressText'), `${state} · ${BF.percent(msg.checked,msg.total)} done · ${msg.checked.toLocaleString('en-US')} / ${msg.total.toLocaleString('en-US')} orders checked`);
+    UI.set($('bruteMini'), `${BF.percent(msg.checked,msg.total)} · ${state} · ${remaining} remaining`);
     $('bruteProgressBar').value = msg.checked / msg.total;
-    $('bruteTiming').textContent = `Elapsed: ${BF.duration(msg.elapsedMs/1000)} · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`;
-    $('bruteBest').textContent = `Best ${job.direct ? 'direct' : 'road-table'} distance: ${formatKm(msg.totalKm)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`;
+    UI.set($('bruteTiming'), `Elapsed: ${BF.duration(msg.elapsedMs/1000)} · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`);
+    UI.set($('bruteBest'), `Best ${job.direct ? 'direct' : 'road-table'} distance: ${formatKm(msg.totalKm)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`);
     displayComparison(msg, job);
   }
 
@@ -1165,13 +1153,14 @@ Bad example:
         overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:sans-serif;";
         document.body.appendChild(overlay);
     }
-    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${msg}</div><div style="margin-top:10px;color:#6aa9ff;">Please wait...</div><button id="busyCancel" style="width:auto;margin-top:20px;">Cancel calculation</button>`;
+    overlay.innerHTML = `<div style="font-size:2rem;margin-bottom:20px;">🧬</div><div style="font-size:1.2rem;font-weight:bold;">${t(msg)}</div><div style="margin-top:10px;color:#6aa9ff;">${t("Please wait...")}</div><button id="busyCancel" style="width:auto;margin-top:20px;"><span data-ui-text="Cancel calculation">Cancel calculation</span></button>`;
     $('busyCancel').onclick = requestCancel;
     overlay.style.display = 'flex';
   }
   function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
 
   function setPlanningMode(enabled) {
+    document.body.classList.toggle('planning-mode', enabled);
     document.body.classList.remove('demo-open');
     $('demoPanel').hidden = true; $('btnDemo').classList.remove('active');
     const rightPanel = $('resultsPanel');
@@ -1233,12 +1222,12 @@ Bad example:
       });
       table.appendChild(row);
     };
-    addRow(['From → To', ...points.map(p => p.name)], true);
+    addRow([t('From → To'), ...points.map(p => p.name)], true);
     points.forEach((p, i) => addRow([p.name, ...data.distanceMatrix[i].map(m => formatKm(m/1000))]));
     panel.appendChild(table);
-    $('roadTableInfo').textContent = `Google Maps · ${data.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${new Date(data.measuredAt).toLocaleTimeString()} · Kept only for the current open trip.`;
+    UI.set($('roadTableInfo'), `Google Maps · ${data.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${new Date(data.measuredAt).toLocaleTimeString()} · Kept only for the current open trip.`);
     $('roadTablePanel').style.display = 'block';
-    $('matrixStatus').textContent = `${data.reused ? 'Reusing' : 'Ready:'} ${points.length * (points.length-1)} directed road distances. Optimization runs locally.`;
+    UI.set($('matrixStatus'), `${data.reused ? 'Reusing' : 'Ready:'} ${points.length * (points.length-1)} directed road distances. Optimization runs locally.`);
   }
 
   async function run(profile, forceMatrix = false) {
@@ -1288,24 +1277,24 @@ Bad example:
     const valid = pts;
     let roadData = null;
     if (!direct) {
-      $('matrixStatus').textContent = 'Preparing road distances…';
+      UI.set($('matrixStatus'), 'Preparing road distances…');
       try {
         roadData = await roadPlanner.prepare(valid, mode, {
           loadRoutes: () => google.maps.importLibrary('routes'), current, force:forceMatrix,
-          progress: text => { if (current()) { $('matrixStatus').textContent = text; setStatus(text, 'warn'); } }
+          progress: text => { if (current()) { UI.set($('matrixStatus'), text); setStatus(text, 'warn'); } }
         });
         if (!current()) return;
         showRoadTable(valid, roadData);
       } catch (error) {
         if (!current()) return;
-        $('matrixStatus').textContent = 'Road distances not ready.';
+        UI.set($('matrixStatus'), 'Road distances not ready.');
         const info = routeErrorInfo(error);
         const message = /PERMISSION|DENIED|QUOTA|RESOURCE_EXHAUSTED|429/.test(info.code + ' ' + info.detail) ? info.message : info.detail;
         setStatus(message + ' Road optimization has not run.', 'bad');
         return;
       }
     } else {
-      $('matrixStatus').textContent = 'Direct Line: optimization uses great-circle air distances.';
+      UI.set($('matrixStatus'), 'Direct Line: optimization uses great-circle air distances.');
       $('roadTablePanel').style.display = 'none';
     }
     if (profile === 'prepare') {
@@ -1317,7 +1306,7 @@ Bad example:
     const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,roadData?.distanceMatrix]);
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
-    if (profile === 'brute') { $('bruteProgress').hidden = false; $('bruteProgressText').textContent = 'Starting exhaustive search…'; }
+    if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
     activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx};
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, distanceMatrix:roadData?.distanceMatrix });
@@ -1344,8 +1333,9 @@ Bad example:
       lastSolvedPoints = pointsSorted;
       
       lastDirectKm = msg.directKm;
-      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Air saving:';
-      $('savingBox').title = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Estimated reduction in direct-line distance.';
+      UI.set($('savingLabel'), msg.metric === 'road' ? 'Road saving (table):' : 'Air saving:');
+      $('savingBox').dataset.uiTitle = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Reduction versus entered order with START first, measured using the same great-circle distances.';
+      UI.render();
       showDistance(lastDirectKm, 'Air distance (great circle)');
       $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
 
@@ -1367,7 +1357,7 @@ Bad example:
     $('chkBrute').onchange = () => { cancelWork(); refreshBruteInfo(); };
     refreshBruteInfo();
     $('input').addEventListener('input', () => {
-      cancelWork(); clearComparison(); refreshBruteInfo(); $('matrixStatus').textContent = 'Stops changed. Road distances will be checked on the next optimization.';
+      cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
       $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); $('savedKm').textContent = '—';
     });
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
@@ -1389,11 +1379,10 @@ Bad example:
     };
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
     $('chatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('chatInput', 'chatHistory'); };
-    const h=$('helpOverlay'); $('btnHelp').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=HELP_HTML;}; $('btnAbout').onclick=()=>{h.style.display='flex';$('helpBody').innerHTML=window.ABOUT_CONTENT || "About content missing.";}; $('btnCloseHelp').onclick=()=>h.style.display='none';
     if(restored) {
         const historyEl = $('chatHistory');
         if(!historyEl.querySelector('.recovery-msg')) {
-             historyEl.innerHTML += `<div class="msg ai recovery-msg" style="border-left:3px solid var(--success)"><strong>System:</strong> Session restored.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Fresh Start</button></div></div>`;
+             historyEl.innerHTML += `<div class="msg ai recovery-msg" style="border-left:3px solid var(--success)"><strong><span data-ui-text="System:">System:</span></strong> <span data-ui-text="Session restored.">Session restored.</span><div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)"><span data-ui-text="✅ Continue">✅ Continue</span></button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()"><span data-ui-text="🗑️ Fresh Start">🗑️ Fresh Start</span></button></div></div>`;
         }
         setPlanningMode(false);
     } else { setPlanningMode(false); }
@@ -1403,7 +1392,7 @@ Bad example:
     if (mode === currentTravelMode) return;
     cancelWork(); clearComparison(); currentTravelMode = mode; updateModeButtons(); refreshBruteInfo();
     $('roadTablePanel').style.display = 'none';
-    $('matrixStatus').textContent = 'Travel mode changed. Road distances will be checked on the next optimization.';
+    UI.set($('matrixStatus'), 'Travel mode changed. Road distances will be checked on the next optimization.');
     if (optimize && lastSolvedPoints && !$('chkBrute').checked) run('standard');
   }
 })();
