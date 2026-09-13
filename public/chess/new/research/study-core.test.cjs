@@ -43,6 +43,24 @@ test('invalid appended line is transactional and cannot leave partial branch dat
   assert.throws(() => C.addLine(Chess, s, ['e4', 'e5', 'Kh5']), /Illegal/);
   assert.equal(JSON.stringify(s), before);
 });
+test('projecting a library game or variation retains player identity without claiming the original result', () => {
+  const library = require('node:fs').readFileSync(require('node:path').join(__dirname, '../Games/Various_Games.pgn'), 'utf8');
+  const study = C.parsePGN(Chess, library.split(/\n\s*(?=\[Event )/)[0]);
+  let last = study.nodes.root;
+  while (last.children.length) last = study.nodes[last.children[0]];
+  const branch = C.addLine(Chess, study, ['d2d4', 'd7d5']);
+  for (const id of ['root', study.nodes.root.children[0], last.id, branch]) {
+    const game = new Chess();
+    assert.equal(game.load_pgn(C.pathPGN(Chess, study, id)), true);
+    assert.equal(game.header().White, 'Dommaraju Gukesh');
+    assert.equal(game.header().Black, 'Magnus Carlsen');
+    assert.equal(game.header().Date, '2023.08.17');
+    assert.equal(game.header().Event, 'FIDE World Cup');
+    assert.equal(game.header().Result, '*');
+    assert.equal(game.fen(), study.nodes[id].fen);
+  }
+  assert.equal(study.headers.Result, '1-0', 'the source game remains intact');
+});
 test('PGN import rejects illegal branches, unmatched nesting, multiple games and invalid NAGs', () => {
   for (const text of ['1. e4 (1. e5) *', '1. e4 (1. d4 *', '1. e4 ) *', '1. e4 () *', '1. e4 {unterminated', '1. e4 $999 *', '1. e4 * 1. d4 *', '1. e4 *\n[Event "second"]\n*'])
     assert.throws(() => C.parsePGN(Chess, text), undefined, text);

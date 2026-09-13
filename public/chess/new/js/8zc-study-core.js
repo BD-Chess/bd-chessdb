@@ -195,6 +195,9 @@
   }
   function pathPGN(Chess, study, id) {
     const copy = create(Chess, { rootFen: study.rootFen, title: study.title });
+    // A selected line still belongs to its source game. Keep its identity;
+    // toPGN retains the projected line's own unfinished result.
+    copy.headers = Object.assign(Object.create(null), study.headers);
     addLine(Chess, copy, path(study, id).map(n => n.move)); return toPGN(Chess, copy);
   }
   function validate(Chess, input) {

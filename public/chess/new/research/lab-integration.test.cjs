@@ -89,9 +89,11 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const host=w.ChessLabHost;
  // Import real nested PGN through the application Input path and export through Copy.
  el('btnFormat').click(); // FEN -> PGN
- w.prompt=()=> '[Event "Nested integration"]\n\n1. e4 {keep} (1. d4 d5 (1... Nf6)) e5 2. Nf3 *';
+ w.prompt=()=> '[Event "Nested integration"]\n[White "Player A"]\n[Black "Player B"]\n\n1. e4 {keep} (1. d4 d5 (1... Nf6)) e5 2. Nf3 *';
  el('btnInput').click();
  assert.equal(host.getContext().moves.join(' '),'e2e4 e7e5 g1f3');
+ assert.equal(el('boardGameTitle').textContent, 'Player A vs Player B');
+ assert.equal(el('boardGameTitle').hidden, false);
  let copied='';Object.defineProperty(w.navigator,'clipboard',{value:{writeText:async text=>{copied=text}},configurable:true});
  el('btnCopy').click();await new Promise(r=>setTimeout(r,5));
  assert.match(copied,/d4/);assert.match(copied,/Nf6/);assert.match(copied,/keep/);
@@ -105,6 +107,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  // Malformed path is validated before it mutates the board.
  const before=host.getContext().fen;assert.throws(()=>host.navigate({startFen:new w.Chess().fen(),moves:['e2e5']}),/illegal/);assert.equal(host.getContext().fen,before);
  assert.equal(errors.length,0,errors.join('\n'));
+ el('btnNew').click();assert.equal(el('boardGameTitle').hidden,true,'New game clears the loaded identity');
 
  console.log('PASS: optional displays, timestamp records, two human players, countdown + increment, pause/resume, grounded Gemini request, safe reply text, stale-position label;  complete HTML/JS boot, SimB c4 + New game, engine swap, automatic history, pause, reopen GUI, late-result reset');
  w.close();
