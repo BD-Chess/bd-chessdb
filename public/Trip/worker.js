@@ -1,5 +1,8 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
+let activeJobId;
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-brute15-chat1');
+let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -95,42 +98,45 @@ function nearestNeighbor(start, D, allowed) {
 }
 
 function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
-  const n = route.length;
-  const t0 = performance.now();
-  if (n < 4) return route;
-
+  const n = route.length, t0 = performance.now();
+  // Directed costs: reversing a segment also reverses every interior edge.
+  // Restart after acceptance so the prefix differences always match the route.
   for (let pass = 0; pass < maxPasses; pass++) {
-    let improved = false;
-    for (let i = 1; i < n - 2; i++) {
-      const a = route[i-1], b = route[i];
-      for (let k = i + 1; k < n - 1; k++) {
-        const c = route[k], d = route[k+1];
-        const delta = (D[a][c] + D[b][d]) - (D[a][b] + D[c][d]);
-        if (delta < -1e-9) {
-          // Reverse segment [i, k]
-          let L = i, R = k;
-          while (L < R) { const tmp = route[L]; route[L] = route[R]; route[R] = tmp; L++; R--; }
-          improved = true;
-        }
-        if ((performance.now() - t0) > timeLimit) return route;
-      }
+    const reverseDelta = new Float64Array(n);
+    for (let k = 0; k < n - 1; k++)
+      reverseDelta[k+1] = reverseDelta[k] + D[route[k+1]][route[k]] - D[route[k]][route[k+1]];
+    let bestDelta = -1e-9, bestI = -1, bestK = -1;
+    for (let i = 1; i < n - 1; i++) for (let k = i + 1; k < n; k++) {
+      const a = route[i-1], b = route[i], c = route[k];
+      let delta = D[a][c] - D[a][b] + reverseDelta[k] - reverseDelta[i];
+      if (k < n - 1) delta += D[b][route[k+1]] - D[c][route[k+1]];
+      else if (roundTrip) delta += D[b][route[0]] - D[c][route[0]];
+      if (delta < bestDelta) { bestDelta = delta; bestI = i; bestK = k; }
     }
-    if (!improved) break;
+    if (bestI < 0) break;
+    let L = bestI, R = bestK;
+    while (L < R) { [route[L], route[R]] = [route[R], route[L]]; L++; R--; }
+    if (performance.now() - t0 > timeLimit) break;
   }
   return route;
 }
 
-function solve(points, startIdx, profile, roundTrip) {
+function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
   const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
   const xy = toXYMeters(validIndices.map(i => points[i]));
-  const D = buildDistanceMatrix(xy);
+  if (validIndices.length !== points.length || points.length < 2) throw new Error('All stops must have valid coordinates.');
+  if (distanceMatrix != null && (distanceMatrix.length !== points.length || distanceMatrix.some(row =>
+    !row || row.length !== points.length || Array.from(row).some(v => !Number.isFinite(v) || v < 0))))
+    throw new Error('Incomplete road distance matrix.');
+  const D = distanceMatrix == null ? buildDistanceMatrix(xy) : distanceMatrix;
+  const metric = distanceMatrix == null ? 'direct' : 'road';
 
   // --- SETTINGS (The only change) ---
   let starts = 2, passes = 4, time = 300;
   
   if (profile === 'deep') { 
-    // SUPERCHARGED: 2000 attempts to find the absolute global minimum
-    starts = 2000; 
+    // Bounded multistart search; no global-optimum claim.
+    starts = distanceMatrix == null ? 2000 : 128; 
     passes = 10; 
     time = 2000; // 2s budget per start (plenty for 2-opt to converge)
   } else if (profile === 'standard') {
@@ -138,14 +144,15 @@ function solve(points, startIdx, profile, roundTrip) {
   }
 
   // Seed Generator
-  const seed = points.map(p => `${p.lat},${p.lon}`).join('|') + `|${startIdx}|${profile}|${roundTrip}`;
+  const seed = points.map(p => `${p.lat},${p.lon}`).join('|') + `|${startIdx}|${profile}|${roundTrip}|${JSON.stringify(distanceMatrix || null)}`;
   const rng = new XorShift64Star(fnv1a64(seed));
 
-  let bestRoute = null;
-  let bestLen = Infinity;
-
-  // Base Calculation
-  const baseLen = routeLength(validIndices.map((_, i) => i), D, roundTrip);
+  // Compare with the entered order after moving START to the front.
+  const fixedStart = startIdx >= 0 && startIdx < points.length ? startIdx : 0;
+  const baseline = [fixedStart, ...validIndices.filter(i => i !== fixedStart)];
+  const baseLen = routeLength(baseline, D, roundTrip);
+  let bestRoute = baseline.slice();
+  let bestLen = baseLen;
 
   // Optimization Loop
   for (let s = 0; s < starts; s++) {
@@ -176,7 +183,7 @@ function solve(points, startIdx, profile, roundTrip) {
     // 4. Progress Reporting (Added feature)
     if (s % 50 === 0 || s === starts - 1) {
       const pct = Math.min(99, Math.round((s + 1) / starts * 100));
-      postMessage({ type: 'progress', text: `Deep Search: ${pct}% (${s+1}/${starts})` });
+      postMessage({ type: 'progress', jobId: activeJobId, text: `Search: ${pct}% (${s+1}/${starts})` });
     }
   }
 
@@ -187,25 +194,66 @@ function solve(points, startIdx, profile, roundTrip) {
   return { 
     pointsSorted: sortedPoints, 
     totalKm: bestLen / 1000.0, 
-    baseKm: baseLen / 1000.0 
+    baseKm: baseLen / 1000.0,
+    metric,
+    directKm: routeLength(bestRoute, buildDistanceMatrix(xy), roundTrip) / 1000.0 
   };
 }
 
-// 4. Message Handler
+// 4. Cooperative exhaustive search. Yield within ~20ms so Cancel can be handled.
+function startBruteForce(msg) {
+  if (msg.points.length < 2 || msg.points.length > TripBruteForce.MAX_STOPS)
+    throw new Error('Brute Force supports 2–15 stops including START.');
+  if (msg.points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon)))
+    throw new Error('All stops must have valid coordinates.');
+  const directD = buildDistanceMatrix(toXYMeters(msg.points));
+  const D = msg.distanceMatrix == null ? directD : msg.distanceMatrix;
+  const start = Number.isInteger(msg.startIdx) && msg.startIdx >= 0 && msg.startIdx < msg.points.length ? msg.startIdx : 0;
+  const job = {msg, directD, engine:TripBruteForce.create(D, start, msg.roundTrip),
+    started:performance.now(), lastReport:0, timer:null};
+  bruteJob = job;
+  function report(final = false, cancelled = false) {
+    const state = job.engine.snapshot();
+    const elapsedMs = Math.max(0, performance.now() - job.started);
+    self.postMessage({type:final ? 'result' : 'brute-progress', jobId:msg.jobId,
+      algorithm:'brute', exact:state.done, cancelled:cancelled && !state.done,
+      checked:state.checked, total:state.total, elapsedMs,
+      metric:msg.distanceMatrix == null ? 'direct' : 'road',
+      pointsSorted:state.route.map(i => msg.points[i]), totalKm:state.bestLength/1000,
+      baseKm:state.baseLength/1000,
+      directKm:routeLength(state.route, directD, msg.roundTrip)/1000});
+  }
+  job.finish = cancelled => { clearTimeout(job.timer); report(true, cancelled); bruteJob = null; };
+  function tick() {
+    if (bruteJob !== job) return;
+    const until = performance.now() + 20;
+    let done;
+    do { done = job.engine.step(2048); } while (!done && performance.now() < until);
+    if (done) { job.finish(false); return; }
+    if (performance.now() - job.lastReport >= 200) { report(); job.lastReport = performance.now(); }
+    job.timer = setTimeout(tick, 0);
+  }
+  report();
+  job.timer = setTimeout(tick, 0);
+}
+
 self.onmessage = (ev) => {
   const msg = ev.data;
+  if (msg.type === 'cancel') {
+    if (bruteJob?.msg.jobId === msg.jobId) bruteJob.finish(true);
+    return;
+  }
   if (msg.type === 'solve') {
+    if (bruteJob) { clearTimeout(bruteJob.timer); bruteJob = null; }
+    activeJobId = msg.jobId;
     try {
-      const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip);
-      
-      self.postMessage({
-        type: 'result', 
-        pointsSorted: result.pointsSorted,
-        totalKm: result.totalKm,
-        baseKm: result.baseKm
-      });
+      if (msg.profile === 'brute') { startBruteForce(msg); return; }
+      const started = performance.now();
+      const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip, msg.distanceMatrix);
+      self.postMessage({type:'result', jobId:msg.jobId, ...result,
+        algorithm:msg.profile, exact:false, elapsedMs:performance.now()-started});
     } catch (e) {
-      self.postMessage({ type: 'error', error: e.toString() });
+      self.postMessage({ type:'error', jobId:msg.jobId, error:e.toString() });
     }
   }
 };

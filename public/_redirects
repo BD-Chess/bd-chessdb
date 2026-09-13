@@ -128,6 +128,11 @@
 /bd/index-bd.html   /bd/       301
 /bd/index-bd        /bd/       301
 
-# Trip development version: keep the original Trip entry intact.
+# Trip Optimizer: current primary, previous primary snapshot, and compatible preview.
+# Netlify normalizes trailing slashes: use rewrites, never slash-only redirects.
+/trip/old2 /Trip/old2/index.html 200!
+/trip/old2/* /Trip/old2/:splat 200!
 /trip/new /Trip/new/index.html 200!
 /trip/new/* /Trip/new/:splat 200!
+/trip /Trip/index.html 200!
+/trip/* /Trip/:splat 200!

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>8Z Trip Optimizer</title>
-  <link rel="stylesheet" href="style.css?v=20260913-brute15-chat1">
+  <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -46,12 +46,6 @@
       </div>
 
       <div class="grid-2">
-        <button id="btnPrepare" class="btn-neutral" title="Fetch or refresh the road distance table for this trip. Google API usage applies.">Prepare distances</button>
-        <button id="btnCancelWork" class="btn-neutral" disabled>Cancel calculation</button>
-      </div>
-      <p id="matrixStatus" style="font-size:12px;color:#94a3b8;line-height:1.4;">Drive / Walk optimize road distances. Missing distances are prepared automatically.</p>
-
-      <div class="grid-2">
         <button id="btnDriving" class="btn-mode active">🚗 Drive</button>
         <button id="btnWalking" class="btn-mode">🚶 Walk</button>
       </div>
@@ -59,20 +53,12 @@
       <div class="options">
         <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
         <label><input type="checkbox" id="chkDirect"> Direct Line</label>
-        <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> Brute Force</label>
         <input type="checkbox" id="chkGoogleStyle" hidden>
         <button id="btnCollapse" hidden></button>
         <button id="btnExpand" hidden></button>
         <button id="btnChatToggle" hidden></button>
       </div>
       
-      <p id="bruteInfo" class="brute-info"></p>
-      <div id="bruteProgress" class="brute-progress" hidden>
-        <div id="bruteProgressText" role="status" aria-live="polite"></div>
-        <progress id="bruteProgressBar" max="1" value="0" aria-label="Brute Force progress"></progress>
-        <div id="bruteTiming"></div>
-        <div id="bruteBest"></div>
-      </div>
       <div id="status" class="status"></div>
     </div>
 
@@ -83,8 +69,8 @@
       </div>
       
       <div class="stats">
-        <div><span id="distanceLabel">Distance:</span> <span id="distKm" class="val">—</span></div>
-        <div id="savingBox"><span id="savingLabel">Saving:</span> <span id="savedKm" class="saved">—</span></div>
+        <div>Dist: <span id="distKm" class="val">—</span></div>
+        <div>Saved: <span id="savedKm" class="saved">—</span></div>
       </div>
 
       <div id="mapContainer">
@@ -96,19 +82,6 @@
       </div>
 
       <ul id="routeList"></ul>
-      <details id="roadTablePanel" style="display:none;margin:12px 0;">
-        <summary>Road distance table</summary>
-        <p id="roadTableInfo" style="font-size:12px;color:#94a3b8;"></p>
-        <div id="roadTable" style="overflow:auto;max-height:300px;"></div>
-      </details>
-      <section id="comparisonPanel" class="comparison-panel" hidden>
-        <h3>Calculation comparison</h3>
-        <p id="comparisonNote"></p>
-        <div class="comparison-scroll"><table>
-          <thead><tr><th>Method</th><th>Compute time</th><th>Table distance</th><th>Result</th></tr></thead>
-          <tbody id="comparisonRows"></tbody>
-        </table></div>
-      </section>
       <div id="links" class="links-area"></div>
     </div>
 
@@ -122,7 +95,7 @@
       </div>
       
       <div id="chatHistory">
-        <div class="msg ai"><strong>Trip Assistant:</strong> Welcome to 8Z! 🌍 Load a Trip Library tour, or send your destinations to plan a trip. I can suggest stops and help you use Trip Optimizer.</div>
+        <div class="msg ai"><strong>Gemini:</strong> Welcome to 8Z! 🌍 I can build optimized itineraries, find the perfect "Base Camp" hotel for your route, and suggest dining spots. Where are we going?</div>
       </div>
       
       <div class="chat-input">
@@ -141,9 +114,7 @@
   <script src="trips.js"></script>
   <script src="about.js"></script>
   <script src="help.js"></script>
-  <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-brute15-chat1"></script>
-  <script src="app.js?v=20260913-brute15-chat1"></script>
+  <script src="app.js?v=20260912-geocoding-routes4"></script>
 
 </body>
 </html>
