@@ -1,4 +1,4 @@
-/* LAB UI only: no solver or route-state changes. */
+/* LAB layout, localization and explicit Demo preset entrypoint. */
 (() => {
   'use strict';
   const $=id=>document.getElementById(id), UI=window.TripUI;
@@ -75,10 +75,7 @@
     // Standalone Demo loads a city set only; never starts a calculation.
     const preset=new URLSearchParams(location.search).get('preset');
     if(['eu14','eu15'].includes(preset)){
-      const cities=['Berlin, Germany','Madrid, Spain','Rome, Italy','Paris, France','Vienna, Austria','Hamburg, Germany','Warsaw, Poland','Bucharest, Romania','Barcelona, Spain','Budapest, Hungary','Munich, Germany','Prague, Czechia','Milan, Italy','Sofia, Bulgaria'];
-      if(preset==='eu15')cities.unshift('Ljubljana, Slovenia');
-      $('input').value=cities.map((s,i)=>s+(i?'':' START')).join('\n');
-      $('input').dispatchEvent(new Event('input',{bubbles:true}));
+      window.TripDemo.load(preset);
       const url=new URL(location.href);url.searchParams.delete('preset');history.replaceState(null,'',url.pathname+url.search+url.hash);
     }
   });

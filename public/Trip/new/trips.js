@@ -10,12 +10,23 @@ window.TRIP_LIBRARY = [
     region: "⭐ Special Collections",
     categories: [
       {
-        name: "🏆 Top 10 Global Tourist Destinations",
+        name: "🧪 Optimization demos",
+        items: [
+          { id: "DEMO_EU15", label: "LJ + EU14 · 15 stops · Ljubljana START", demoPreset: "eu15" },
+          { id: "DEMO_EU14", label: "EU14 · 14 stops · Berlin START", demoPreset: "eu14" }
+        ]
+      },
+      {
+        name: "🧩 TSP country collection",
+        items: (window.TRIP_TSP_CATALOG || []).map(entry => ({id:"TSP_" + entry.id, tspPreset:entry.id, label:entry.name}))
+      },
+      {
+        name: "🏆 Selected world landmarks",
         items: [
           { 
             id: "GLOBAL_TOP_10", 
-            label: "The World's Most Visited (Mixed)", 
-            data: `# 🏆 Top 10 Global Tourist Landmarks
+            label: "World landmarks (illustrative tour)", 
+            data: `# 🏆 Selected Global Tourist Landmarks
 # Note: This is a hypothetical "World Tour"
 Eiffel Tower, Paris | 48.8584, 2.2945 START
 Colosseum, Rome | 41.8902, 12.4922
@@ -187,6 +198,7 @@ Museum of the Future | 25.2191, 55.2818`
       },
       {
         name: "🚶 All 27 EU Capitals (Walking)",
+        mode: "WALKING",
         items: [
           { id: "VIENNA", label: "🇦🇹 Vienna", data: `# 🇦🇹 Vienna Walking Tour\nSt. Stephen's Cathedral | 48.2085, 16.3738 START\nHofburg Palace | 48.2065, 16.3651\nSchönbrunn Palace | 48.1848, 16.3122\nBelvedere Palace | 48.1915, 16.3809\nPrater (Giant Ferris Wheel) | 48.2173, 16.3976\nNaschmarkt | 48.1983, 16.3619\nVienna Opera House | 48.2030, 16.3691\nRathaus (City Hall) | 48.2109, 16.3571\nMuseumsquartier | 48.2037, 16.3589\nKarlskirche | 48.1982, 16.3713` },
           { id: "BRUSSELS", label: "🇧🇪 Brussels", data: `# 🇧🇪 Brussels Walking Tour\nGrand Place | 50.8467, 4.3524 START\nManneken Pis | 50.8450, 4.3499\nAtomium | 50.8949, 4.3415\nRoyal Palace of Brussels | 50.8422, 4.3629\nParc du Cinquantenaire | 50.8407, 4.3945\nMagritte Museum | 50.8424, 4.3582\nMont des Arts | 50.8433, 4.3578\nSt. Michael Cathedral | 50.8477, 4.3601\nRoyal Gallery of Saint Hubert | 50.8475, 4.3546\nEuropean Parliament | 50.8371, 4.3737` },
@@ -251,7 +263,7 @@ Museum of the Future | 25.2191, 55.2818`
     region: "🌏 Asia",
     categories: [
       {
-        name: "🚗 Top 10 Driving/Train",
+        name: "🚗 Asia itineraries",
         items: [
           { id: "JP_DRIVE", label: "Japan Golden Route", data: `# 🇯🇵 Japan Golden Route\nTokyo, Japan START\nNikko, Japan\nHakone (Mt Fuji), Japan\nTakayama, Japan\nKyoto, Japan\nNara, Japan\nOsaka, Japan\nHimeji, Japan\nHiroshima, Japan` },
           { id: "TH_DRIVE", label: "Thailand Explore", data: `# 🇹🇭 Thailand Explore\nBangkok, Thailand START\nAyutthaya, Thailand\nKanchanaburi, Thailand\nSukhothai, Thailand\nChiang Mai, Thailand\nPai, Thailand\nChiang Rai, Thailand\nPhuket, Thailand\nKrabi, Thailand` },
@@ -279,7 +291,7 @@ Museum of the Future | 25.2191, 55.2818`
           { id: "CA_WEST_DRIVE", label: "Canada Rockies", data: `# 🇨🇦 Canada Rockies\nVancouver, BC START\nWhistler, BC\nKamloops, BC\nJasper National Park, AB\nLake Louise, AB\nBanff, AB\nCalgary, AB` },
           { id: "CA_EAST_DRIVE", label: "Canada Cities", data: `# 🇨🇦 Canada Cities\nToronto, ON START\nNiagara Falls, ON\nOttawa, ON\nMontreal, QC\nQuebec City, QC\nMont Tremblant, QC\nKingston, ON` },
           { id: "MX_DRIVE", label: "Mexico Heritage", data: `# 🇲🇽 Mexico Heritage\nMexico City, Mexico START\nTeotihuacan, Mexico\nPuebla, Mexico\nOaxaca, Mexico\nSan Cristobal de las Casas, Mexico\nPalenque, Mexico\nMerida, Mexico\nChichen Itza, Mexico\nCancun, Mexico` },
-          { id: "NY", label: "NYC Manhattan (Walking)", data: `# 🇺🇸 New York Manhattan (Walking)\nTimes Square, New York START\nCentral Park, New York\nEmpire State Building, New York\nBrooklyn Bridge, New York\nStatue of Liberty, New York\n9/11 Memorial, New York` }
+          { id: "NY", mode: "WALKING", label: "NYC Manhattan (Walking)", data: `# 🇺🇸 New York Manhattan (Walking)\nTimes Square, New York START\nCentral Park, New York\nEmpire State Building, New York\nBrooklyn Bridge, New York\nStatue of Liberty, New York\n9/11 Memorial, New York` }
         ]
       },
       {

@@ -7,7 +7,7 @@ const source = readFileSync(new URL('../public/Trip/new/app.js', import.meta.url
 const matrixSource = readFileSync(new URL('../public/Trip/new/road-matrix.js', import.meta.url), 'utf8');
 const sample = 'Nova Gorica START\nLjubljana\nMaribor\nNovo Mesto\nKoper\nPtuj';
 
-function harness(geocode) {
+function harness(geocode, fetcher) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
@@ -22,7 +22,7 @@ function harness(geocode) {
   let nextTimer = 0, clock = 0;
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
-    console, google, window: { google }, Map, Set, performance: {now: () => clock},
+    console, google, window: { google }, fetch:fetcher, Map, Set, performance: {now: () => clock},
     document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}, querySelector:()=>({dataset:{},textContent:''})}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
@@ -30,16 +30,18 @@ function harness(geocode) {
     clearTimeout(id) { timerJobs.delete(id); }
   });
   vm.runInContext(readFileSync(new URL('../public/Trip/new/ui-text.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/tsp-catalog.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/tsp-library.js', import.meta.url), 'utf8'), context);
   vm.runInContext(matrixSource, context);
   vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js', import.meta.url), 'utf8'), context);
   element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { ensureAirComparison, showSolvedRoute, showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
-  return { api: context.window.test, elements, element, jobs, google, timerJobs, workers, doc:context.document, tick(ms){clock += ms;} };
+  return { window:context.window, api: context.window.test, elements, element, jobs, google, timerJobs, workers, doc:context.document, tick(ms){clock += ms;} };
 }
 
 const known = {
@@ -368,13 +370,20 @@ test('LAB adds one independent Deep Air row without comparing it to the road opt
 
 test('Cancel offers Resume and sends the saved search without new address or matrix lookups',async()=>{
   const h=harness(success);h.element('input').value=sample;h.element('chkBrute').checked=true;
-  await h.api.run('standard');const first=h.jobs.at(-1);
-  h.api.requestCancel(); // A real first cancellation sets the per-job flag.
+  const pending=h.api.run('standard');
+  assert.equal(h.element('btnStandard').disabled,true);
+  assert.equal(h.element('btnStandard').textContent,'Preparing route…');
+  await pending;const first=h.jobs.at(-1);
+  assert.equal(h.element('btnStandard').textContent,'Brute Force running…');
+  await h.api.run('standard');assert.equal(h.jobs.length,1);
+  h.api.requestCancel();
+  assert.equal(h.element('btnStandard').textContent,'Stopping Brute Force…'); // A real first cancellation sets the per-job flag.
   const state={engine:{checked:37},elapsedMs:250};
   h.api.handleWorkerMessage({data:{type:'result',algorithm:'brute',jobId:first.jobId,
     checked:37,total:120,cancelled:true,exact:false,resumeState:state,elapsedMs:250,
     totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points}});
   assert.equal(h.element('btnStandard').textContent,'Resume Brute Force');
+  assert.equal(h.element('btnStandard').disabled,false);
   h.tick(3_600_000);await h.api.run('standard');
   const resumed=h.jobs.at(-1);
   assert.equal(resumed.resumeState,state);assert.equal(resumed.points,first.points);
@@ -426,4 +435,101 @@ test('savings show the input baseline and percent separately from map distance',
   assert.equal(h.element('savedKm').textContent,'10,137.10 km (50.84%)');
   assert.match(h.element('savingDetails').textContent,/Entered order: 19,938.45 km · Optimized order: 9,801.35 km/);
   assert.equal(h.element('savingLabel').textContent,'Saving vs entered order:');
+});
+
+test('the map caption changes only with committed geometry and ignores stale responses',async()=>{
+  const resolve=[];
+  const h=mapHarness(()=>new Promise(done=>resolve.push(done)));
+  const first={method:'Our Optimize (Deep)',state:'Best found · optimum not proven'};
+  const brute={method:'Brute Force',state:'Running · best found'};
+  const draw=(context)=>h.api.updateMapVisualization(twoStops,{preview:true,routeContext:context});
+  const a=draw(first);await new Promise(r=>setImmediate(r));
+  resolve[0]({routes:[{path:[],distanceMeters:999}]});await a;
+  assert.equal(h.element('mapRouteState').textContent,'Stop order only · road route unavailable');
+  assert.equal(h.element('mapRouteDistance').textContent,'');
+  const b=draw(first);await new Promise(r=>setImmediate(r));
+  resolve[1]({routes:[{path:[{},{}],distanceMeters:134220}]});await b;
+  assert.equal(h.element('mapRouteMethod').textContent,'Our Optimize (Deep)');
+  assert.equal(h.element('mapRouteDistance').textContent,'134.22 km');
+  const c=draw(brute);await new Promise(r=>setImmediate(r));
+  assert.equal(h.element('mapRouteMethod').textContent,'Our Optimize (Deep)');
+  assert.equal(h.lines.filter(l=>l.map).length,1);
+  h.element('chkDirect').checked=true;h.api.setDirect(80);
+  await draw(first);
+  resolve[2]({routes:[{path:[{},{}],distanceMeters:200000}]});await c;
+  assert.equal(h.element('mapRouteMethod').textContent,'Our Optimize (Deep)');
+  assert.equal(h.element('mapRouteDistance').textContent,'80.00 km');
+  h.element('chkDirect').checked=false;
+  const d=draw(brute);await new Promise(r=>setImmediate(r));
+  resolve[3]({routes:[{path:[{},{}],distanceMeters:130000}]});await d;
+  assert.equal(h.element('mapRouteMethod').textContent,'Brute Force');
+  assert.equal(h.element('mapRouteState').textContent,'Running · best found');
+  assert.equal(h.element('mapRouteDistance').textContent,'130.00 km');
+});
+
+test('loading either demo stops the old job, clears results and sets its route without a calculation',async()=>{
+  const h=harness(success);h.element('input').value=sample;h.element('chkBrute').checked=true;
+  await h.api.run('standard');const old=h.jobs.at(-1);const count=h.jobs.length;
+  h.window.TripDemo.load('eu15');
+  const lines=h.element('input').value.split('\n');
+  assert.equal(lines.length,15);assert.equal(lines[0],'Ljubljana, Slovenia START');
+  assert.equal(lines[14],'Sofia, Bulgaria');
+  assert.equal(lines.filter(l=>l.includes('START')).length,1);
+  assert.equal(h.element('chkDirect').checked,false);assert.equal(h.element('chkRoundTrip').checked,true);
+  assert.equal(h.element('chkBrute').checked,false);assert.equal(h.api.resumeAvailable(),false);
+  assert.equal(h.element('comparisonPanel').hidden,true);assert.equal(h.element('mapRouteCaption').hidden,true);
+  assert.equal(h.jobs.length,count);assert.equal(h.workers[0].terminated,true);
+  h.api.handleWorkerMessage({data:{type:'result',jobId:old.jobId,pointsSorted:old.points}});
+  assert.equal(h.element('input').value.split('\n').length,15);
+  h.window.TripDemo.load('eu14');
+  assert.equal(h.element('input').value,lines.slice(1).map((l,i)=>l+(i?'':' START')).join('\n'));
+  assert.equal(h.jobs.length,count);
+  const ctx={window:{}};vm.runInNewContext(readFileSync(new URL('../public/Trip/new/trips.js',import.meta.url),'utf8'),ctx);
+  const demos=ctx.window.TRIP_LIBRARY[0].categories.find(c=>c.name==='🧪 Optimization demos');
+  assert.deepEqual(Array.from(demos.items,i=>i.demoPreset),['eu15','eu14']);
+});
+
+const tspResponse = async url => ({ok:true,json:async()=>JSON.parse(readFileSync(new URL('../public/Trip/new/'+url.split('?')[0],import.meta.url),'utf8'))});
+test('all TSP nodes including coincident coordinates survive the real editor and reach the direct solver',async()=>{
+  const h=harness(()=>{throw new Error('TSP must not geocode');},tspResponse);
+  for(const id of ['lu980','nu3496']) {
+    assert.equal(await h.window.TripTsp.load(id),true);
+    assert.equal(h.element('chkDirect').checked,true);
+    assert.equal(h.element('chkBrute').disabled,true);
+    assert.equal(h.element('tspNotice').hidden,false);
+    assert.equal(h.element('tspOriginal').download,id+'.tsp');
+    const before=h.jobs.length;
+    await h.api.run('standard');
+    assert.equal(h.jobs.length,before+1);
+    const job=h.jobs.at(-1);
+    assert.equal(job.points.length,id==='lu980'?980:3496);
+    assert.equal(new Set(Array.from(job.points,p=>p.name)).size,job.points.length);
+    assert.equal(job.startIdx,0);assert.equal(job.distanceMatrix,undefined);
+    if(id==='lu980') assert.deepEqual([job.points[0].lat,job.points[0].lon],[job.points[1].lat,job.points[1].lon]);
+    else assert.ok(job.points.every(p=>p.lat>10&&p.lat<16&&p.lon< -83&&p.lon> -88));
+    h.api.cancelWork();
+    const workers=h.workers.length;
+    h.api.ensureAirComparison(job.points,0,{direct:true,roundTrip:true});
+    assert.equal(h.workers.length,workers); // no hidden lengthy Deep search after Fast
+  }
+  h.element('chkDirect').checked=false;
+  const jobs=h.jobs.length;await h.api.run('standard');
+  assert.equal(h.jobs.length,jobs);
+  assert.match(h.element('status').textContent,/2–100 stops/);
+});
+
+test('TSP download does not auto-run, and failed or superseded downloads do not overwrite the editor',async()=>{
+  let resolve;
+  const h=harness(success,()=>new Promise(r=>{resolve=r;}));
+  h.element('input').value='Original START\nSecond';
+  const pending=h.window.TripTsp.load('dj38');
+  assert.equal(h.jobs.length,0);assert.match(h.element('input').value,/Original/);
+  h.window.TripDemo.load('eu15');
+  resolve(await tspResponse('tsp/dj38.json'));
+  assert.equal(await pending,false);assert.match(h.element('input').value,/Ljubljana/);
+  const failed=h.window.TripTsp.load('wi29');resolve({ok:false});
+  assert.equal(await failed,false);assert.match(h.element('input').value,/Ljubljana/);
+  const loaded=h.window.TripTsp.load('dj38');resolve(await tspResponse('tsp/dj38.json'));
+  assert.equal(await loaded,true);assert.equal(h.jobs.length,0);
+  assert.equal(h.api.parseStops(h.element('input').value).pts.length,38);
 });

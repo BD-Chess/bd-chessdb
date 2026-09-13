@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>8Z Trip Optimizer · LAB</title>
-  <script src="locale.js?v=20260913-resume2"></script>
-  <link rel="stylesheet" href="style.css?v=20260913-resume2">
+  <script src="locale.js?v=20260913-demo-load1"></script>
+  <link rel="stylesheet" href="style.css?v=20260913-demo-load1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="ui-text.js?v=20260913-resume2"></script>
+  <script src="ui-text.js?v=20260913-demo-load1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
@@ -50,6 +50,12 @@
     <div class="panel" id="editorPanel">
       <div class="section-heading"><h3>Trip Editor</h3><a id="jumpLibrary" href="#librarySection">Library ↓</a></div>
       <textarea id="input" placeholder="Enter stops (e.g. Paris, London)..." spellcheck="false"></textarea>
+      <aside id="tspNotice" class="tsp-notice" hidden>
+        <strong id="tspDatasetName"></strong>
+        <p data-ui-text="TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.">TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.</p>
+        <p data-ui-text="These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.">These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.</p>
+        <a id="tspOriginal" download data-ui-text="Original .tsp">Original .tsp</a> · <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html" target="_blank" rel="noopener" data-ui-text="Dataset source">Dataset source</a>
+      </aside>
       
       <div class="grid-2" id="optimizeActions">
         <button id="btnStandard" class="btn-primary">Optimize (Fast)</button>
@@ -93,6 +99,11 @@
         <div id="savingBox"><span id="savingLabel" data-ui-text="Saving vs entered order:">Saving vs entered order:</span> <span id="savedKm" class="saved">—</span><details class="saving-explanation"><summary data-ui-text="Compared with what?">Compared with what?</summary><p id="savingDetails"></p><p data-ui-text="Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.">Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.</p></details></div>
       </div>
 
+      <div id="mapRouteCaption" class="map-route-caption" role="status" hidden>
+        <span data-ui-text="Showing:">Showing:</span> <strong id="mapRouteMethod"></strong>
+        <span class="map-route-measure"><span id="mapRouteMetric"></span> <b id="mapRouteDistance"></b></span>
+        <span id="mapRouteState"></span>
+      </div>
       <div id="mapContainer">
         <div id="mapPlaceholder">
           <p><span data-ui-text="Map Inactive">Map Inactive</span></p>
@@ -164,18 +175,21 @@
     <div class="modal-content">
       <div id="helpBody" class="info-body" tabindex="-1"></div>
       <div class="info-actions">
+        <button id="infoLoadDemo" class="btn-primary" hidden>Load LJ + EU14</button>
         <a id="infoMore" class="btn-primary" href="help.html" target="_blank" rel="noopener">More →</a>
         <button id="btnCloseHelp" class="btn-neutral">Close</button>
       </div>
     </div>
   </dialog>
 
-  <script src="trips.js"></script>
-  <script src="help.js?v=20260913-resume2"></script>
+  <script src="tsp-catalog.js?v=20260913-demo-load1"></script>
+  <script src="tsp-library.js?v=20260913-demo-load1"></script>
+  <script src="trips.js?v=20260913-demo-load1"></script>
+  <script src="help.js?v=20260913-demo-load1"></script>
   <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-resume2"></script>
-  <script src="app.js?v=20260913-resume2"></script>
-  <script src="lab.js?v=20260913-resume2"></script>
+  <script src="brute-force.js?v=20260913-demo-load1"></script>
+  <script src="app.js?v=20260913-demo-load1"></script>
+  <script src="lab.js?v=20260913-demo-load1"></script>
 
 </body>
 </html>

@@ -34,6 +34,7 @@
   let chatRequestPending = false;
   
   let presetLookup = {};
+  let presetRequest = 0;
   let userRegion = null;
   let useMiles = false; // New flag for Unit Conversion
 
@@ -243,12 +244,15 @@
 
   // --- 6. PERSISTENCE ---
   function saveState() { 
+    refreshTspNotice();
     refreshBruteInfo();
     if (activeJob && !activeJob.current()) cancelWork();
     if (comparisonInput !== null && comparisonInput !== $('input').value) clearComparison();
     const state = {
         t: $('input').value,
         m: currentTravelMode,
+        direct: $('chkDirect').checked,
+        roundTrip: $('chkRoundTrip').checked,
         chatBuf: chatHistoryBuffer,
         chatHTML: $('chatHistory').innerHTML,
         ts: Date.now()
@@ -263,6 +267,7 @@
         try {
             const sharedTrip = decodeURIComponent(params.get('trip'));
             $('input').value = sharedTrip;
+            if (/^# TSP source: /m.test(sharedTrip)) $('chkDirect').checked = true;
             window.history.replaceState({}, document.title, window.location.pathname);
             setStatus('Shared trip loaded!', 'ok');
             setPlanningMode(true); 
@@ -277,6 +282,8 @@
         const s = JSON.parse(sStr);
         $('input').value = s.t || ''; 
         currentTravelMode = s.m || 'DRIVING'; 
+        $('chkDirect').checked = typeof s.direct === 'boolean' ? s.direct : /^# TSP source: /m.test($('input').value);
+        if (typeof s.roundTrip === 'boolean') $('chkRoundTrip').checked = s.roundTrip;
         updateModeButtons(); 
 
         if (s.chatBuf && s.chatHTML) {
@@ -535,21 +542,36 @@
     UI.set($('distKm'), formatKm(km));
   }
 
-  async function updateMapVisualization(points, {preview = false} = {}) {
+  function showMapCaption(context, km, metric, fallback = false) {
+    $('mapRouteCaption').hidden = !context;
+    if (!context) return;
+    UI.set($('mapRouteMethod'), context.method);
+    UI.set($('mapRouteState'), fallback ? 'Stop order only · road route unavailable' : context.state);
+    UI.set($('mapRouteMetric'), fallback ? '' : metric + ':');
+    UI.set($('mapRouteDistance'), fallback ? '' : formatKm(km));
+  }
+
+  async function updateMapVisualization(points, {preview = false, routeContext = null} = {}) {
     if (!map) return;
     const version = ++visualizationVersion;
     const ph = $('mapPlaceholder'); if (ph) ph.style.display = 'none';
-    mapMarkers.forEach(m => m.setMap(null)); mapMarkers = [];
     const clearLines = () => {
       routePolylines.forEach(p => p.setMap(null)); routePolylines = [];
       if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
     };
-    if (!preview) clearLines();
+    if (!preview) { clearLines(); $('mapRouteCaption').hidden = true; }
     const bounds = new google.maps.LatLngBounds();
+    points.forEach(pt => bounds.extend({lat:pt.lat,lng:pt.lon}));
+    // Commit markers and the caption with their geometry, never with a pending response.
+    const drawMarkers = () => {
+    mapMarkers.forEach(m => m.setMap(null)); mapMarkers = [];
     points.forEach((pt, i) => {
       const loc = { lat: pt.lat, lng: pt.lon };
-      bounds.extend(loc);
-      const marker = new google.maps.Marker({ position: loc, map, label: String(i + 1), title: pt.name });
+      const dense = points.length > 200;
+      const marker = new google.maps.Marker({ position: loc, map,
+        label: dense ? undefined : String(i + 1), title: '#' + (i + 1) + ' ' + pt.name,
+        ...(dense ? {optimized:true, icon:{path:google.maps.SymbolPath.CIRCLE, scale:i === 0 ? 6 : 3,
+          fillColor:i === 0 ? '#10b981' : '#ef4444', fillOpacity:1, strokeColor:'#0f172a', strokeWeight:1}} : {}) });
       marker.addListener('click', () => {
         const title = document.createElement('strong');
         title.textContent = '#' + (i + 1) + ' ' + pt.name;
@@ -557,6 +579,7 @@
       });
       mapMarkers.push(marker);
     });
+    };
     google.maps.event.trigger(map, 'resize');
     if (!preview) map.fitBounds(bounds);
     const path = points.map(p => ({ lat: p.lat, lng: p.lon }));
@@ -566,6 +589,8 @@
       showDistance(lastDirectKm, 'Air distance (great circle)');
       mapPolyline = new google.maps.Polyline({ path, geodesic: true, strokeColor: '#3b82f6', strokeWeight: 4 });
       mapPolyline.setMap(map);
+      drawMarkers();
+      showMapCaption(routeContext, lastDirectKm, 'Air distance (great circle)');
       if (!preview) setStatus('Stop order ready. Showing great-circle air routes and distances.', 'ok');
       return;
     }
@@ -639,7 +664,9 @@
       clearLines();
       routePolylines = pendingPolylines;
       routePolylines.forEach(polyline => polyline.setMap(map));
+      drawMarkers();
       showDistance(completeDistance ? totalRoadMeters / 1000 : null, distanceLabel);
+      showMapCaption(routeContext, completeDistance ? totalRoadMeters / 1000 : null, distanceLabel);
       if (!preview) setStatus(completeDistance ? 'Road route displayed. Distance follows the route shown on the map.' :
         'Road route displayed. Google did not return a complete distance.', completeDistance ? 'ok' : 'warn');
     } catch (error) {
@@ -655,6 +682,8 @@
         icons: [{ icon: { path: 'M 0,-1 0,1', strokeColor: '#f59e0b', strokeOpacity: 1, scale: 3 }, offset: '0', repeat: '16px' }]
       });
       mapPolyline.setMap(map);
+      drawMarkers();
+      showMapCaption(routeContext, null, distanceLabel, true);
       setStatus(info.message + ' Dashed lines show stop order, NOT roads. Navigation links remain available.', 'warn');
     }
   }
@@ -783,12 +812,20 @@
         const cGroup = cNode.querySelector('.tree-group');
         cat.items.forEach(trip => {
           presetLookup[trip.id] = trip.data;
-          const item = document.createElement('span'); item.className = 'tree-item'; item.textContent = trip.label;
+          const item = document.createElement('span'); item.className = 'tree-item';
+          if (trip.tspPreset) item.dataset.tspId = trip.tspPreset;
+          else UI.set(item, trip.label);
+          item.tabIndex = 0; item.setAttribute('role', 'button');
+          item.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); item.click(); } };
           item.onclick = () => { 
-            $('input').value = trip.data; saveState(); 
+            if (trip.demoPreset) { window.TripDemo.load(trip.demoPreset, {focus:true}); return; }
+            if (trip.tspPreset) { window.TripTsp.load(trip.tspPreset, {focus:true}); return; }
+            ++presetRequest; cancelWork(); clearComparison();
+            $('input').value = normalizeTripEditorText(trip.data, {ensureStart:true});
             if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING', false); }
-            else if (trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING', false); }
+            else if ((trip.mode || cat.mode) === 'WALKING' || trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING', false); }
             else { $('chkDirect').checked = false; setTravelMode('DRIVING', false); }
+            saveState(); $('mapRouteCaption').hidden = true;
             setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
           cGroup.appendChild(item);
@@ -799,6 +836,7 @@
       rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.querySelector('.tree-arrow').textContent = rGroup.classList.contains('open') ? '⌄' : '›'; };
       tree.appendChild(rNode);
     });
+    refreshTspLabels();
   }
 
   // --- 10. AI & SUGGESTIONS (FIXED) ---
@@ -1054,7 +1092,10 @@ Bad example:
     const allowed = n >= 2 && n <= BF.MAX_STOPS && !invalid;
     $('chkBrute').disabled = !allowed;
     if (!allowed) $('chkBrute').checked = false;
-    UI.set($('btnStandard'), $('chkBrute').checked ? (resumeAvailable() ? 'Resume Brute Force' : 'Run Brute Force') : 'Optimize (Fast)');
+    const busyLabel = activeJob?.cancelling ? 'Stopping Brute Force…' : activeJob?.profile === 'brute'
+      ? 'Brute Force running…' : activeJob ? 'Calculating…' : 'Preparing route…';
+    UI.set($('btnStandard'), optimizationPending ? busyLabel : $('chkBrute').checked ? (resumeAvailable() ? 'Resume Brute Force' : 'Run Brute Force') : 'Optimize (Fast)');
+    for (const id of ['btnStandard','btnDeep','btnPrepare']) $(id).disabled = optimizationPending;
     $('btnDeep').hidden = $('chkBrute').checked;
     $('bruteMini').hidden = !$('chkBrute').checked;
     if ($('chkBrute').checked && !$('bruteMini').textContent) UI.set($('bruteMini'), 'Ready · progress appears here');
@@ -1115,6 +1156,9 @@ Bad example:
   }
 
   function ensureAirComparison(points, startIdx, job) {
+    // Large direct datasets already use air distances; do not start a second,
+    // expensive Deep job silently after the user's explicit Fast calculation.
+    if (job.direct && points.length > 100) return;
     const key = JSON.stringify([points.map(p => [p.lat,p.lon]),startIdx,job.roundTrip]);
     if (airCache?.key === key) {
       comparisons.set(AIR_NAME, airCache.result); renderComparison(); return;
@@ -1168,7 +1212,12 @@ Bad example:
     showSavings(msg);
     renderRouteList(msg.pointsSorted);
     renderLinks(buildMapsLegLinks(msg.pointsSorted, job.roundTrip, job.mode));
-    return updateMapVisualization(msg.pointsSorted, {preview});
+    const brute = job.profile === 'brute';
+    const routeContext = {
+      method: brute ? 'Brute Force' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)',
+      state: brute ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found') : 'Best found · optimum not proven'
+    };
+    return updateMapVisualization(msg.pointsSorted, {preview, routeContext});
   }
 
   function refreshBruteMap(msg, job) {
@@ -1185,6 +1234,7 @@ Bad example:
     if (activeJob?.profile === 'brute') {
       if (activeJob.cancelling) return;
       activeJob.cancelling = true;
+      refreshBruteInfo();
       $('btnCancelWork').disabled = true;
       setStatus('Stopping calculation and keeping the best route…', 'warn');
       worker.postMessage({type:'cancel', jobId:activeJob.jobId});
@@ -1290,6 +1340,7 @@ Bad example:
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     optimizationPending = true;
     activeJob = null;
+    refreshBruteInfo();
     const jobId = ++jobVersion;
     $('btnCancelWork').disabled = false;
     // An earlier route response must not overwrite this new calculation.
@@ -1372,6 +1423,7 @@ Bad example:
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
     activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx,
       distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
+    refreshBruteInfo();
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, distanceMatrix:roadData?.distanceMatrix });
     posted = true;
@@ -1399,10 +1451,81 @@ Bad example:
     }
   };
 
+  function refreshTspLabels() {
+    document.querySelectorAll('[data-tsp-id]').forEach(item => {
+      const entry = window.TripTspLibrary?.get(item.dataset.tspId);
+      if (entry) item.textContent = window.TripTspLibrary.label(entry);
+    });
+    refreshTspNotice();
+  }
+
+  function refreshTspNotice() {
+    const code = /^# TSP source: ([a-z]+\d+)$/m.exec($('input').value)?.[1];
+    const entry = window.TripTspLibrary?.get(code);
+    if (!$('tspNotice')) return;
+    $('tspNotice').hidden = !entry;
+    if (entry) {
+      $('tspDatasetName').textContent = window.TripTspLibrary.label(entry);
+      $('tspOriginal').href = `tsp/${entry.id}.tsp`;
+      $('tspOriginal').download = `${entry.id}.tsp`;
+    }
+  }
+
+  function loadEditorPreset(text, {direct=false, focus=false, status, matrixStatus} = {}) {
+    ++presetRequest;
+    cancelWork(); clearComparison();
+    $('input').value = text;
+    currentTravelMode = 'DRIVING';
+    $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false;
+    updateModeButtons();
+    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null;
+    mapMarkers.forEach(marker => marker.setMap(null)); mapMarkers = [];
+    routePolylines.forEach(line => line.setMap(null)); routePolylines = [];
+    if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
+    $('mapRouteCaption').hidden = true; $('roadTablePanel').style.display = 'none';
+    $('routeList').replaceChildren(); $('links').replaceChildren();
+    showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
+    UI.set($('matrixStatus'), matrixStatus);
+    saveState(); setPlanningMode(false);
+    setStatus(status, 'ok');
+    if (focus) {
+      const panel = $('editorPanel'); panel.tabIndex = -1;
+      panel.focus({preventScroll:true}); panel.scrollIntoView({block:'start'});
+    }
+    return true;
+  }
+
+  // Shared by short Demo, its article and Library; loading never starts a solver.
+  window.TripDemo = {load(preset, {focus = false} = {}) {
+    if (!['eu14','eu15'].includes(preset)) return false;
+    const cities = ['Berlin, Germany','Madrid, Spain','Rome, Italy','Paris, France','Vienna, Austria','Hamburg, Germany','Warsaw, Poland','Bucharest, Romania','Barcelona, Spain','Budapest, Hungary','Munich, Germany','Prague, Czechia','Milan, Italy','Sofia, Bulgaria'];
+    if (preset === 'eu15') cities.unshift('Ljubljana, Slovenia');
+    return loadEditorPreset(cities.map((city,i) => city + (i ? '' : ' START')).join('\n'), {focus,
+      matrixStatus:'Demo loaded. Choose Fast, Deep or Brute Force to calculate.',
+      status:preset === 'eu15' ? 'LJ + EU14 loaded · 15 stops · Ljubljana START · Drive · Round Trip.' : 'EU14 loaded · 14 stops · Berlin START · Drive · Round Trip.'});
+  }};
+
+  window.TripTsp = {async load(id, {focus=false} = {}) {
+    const request = ++presetRequest, version = jobVersion, input = $('input').value;
+    const current = () => request === presetRequest && version === jobVersion && input === $('input').value;
+    setStatus('Loading TSP points…', 'warn');
+    try {
+      const {entry, text} = await window.TripTspLibrary.read(id);
+      if (!current()) return false;
+      return loadEditorPreset(text, {direct:true, focus,
+        matrixStatus:'TSP loaded with Direct Line. Choose Fast or Deep to calculate locally.',
+        status:'Loaded: ' + window.TripTspLibrary.label(entry)});
+    } catch (error) {
+      if (current()) setStatus(error.message, 'bad');
+      return false;
+    }
+  }};
+
   // --- 12. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     initTripTree(); initAI(); 
     const restored = restoreState();
+    refreshTspNotice();
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnPrepare').onclick = () => run('prepare', true);
@@ -1410,7 +1533,10 @@ Bad example:
     $('chkBrute').onchange = () => { cancelWork(); refreshBruteInfo(); };
     refreshBruteInfo();
     window.MDLxDCCLocale.subscribe(refreshBruteInfo);
+    window.MDLxDCCLocale.subscribe(refreshTspLabels);
     $('input').addEventListener('input', () => {
+      ++presetRequest; refreshTspNotice();
+      $('mapRouteCaption').hidden = true;
       cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
       $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
     });
@@ -1425,9 +1551,12 @@ Bad example:
     $('btnPlanMode').onclick = () => setPlanningMode(true);
     $('btnMapMode').onclick = () => setPlanningMode(false);
     $('tripSearch').oninput = (e) => { 
-        const q=e.target.value.toLowerCase(); 
+        const fold = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const q=fold(e.target.value);
         document.querySelectorAll('.tree-item').forEach(i => { 
-          const match = i.textContent.toLowerCase().includes(q); i.style.display = match ? 'block' : 'none';
+          const entry = window.TripTspLibrary?.get(i.dataset.tspId);
+          const searchable = [i.textContent, i.dataset.uiText || '', entry?.name || '', entry?.sl || ''].join(' ');
+          const match = fold(searchable).includes(q); i.style.display = match ? 'block' : 'none';
           if(q && match){ let p=i.parentElement; while(p.id!=='presetTree'){ if(p.classList.contains('tree-group')) { p.classList.add('open'); const arrow = p.previousElementSibling?.querySelector('.tree-arrow'); if(arrow) arrow.textContent = '⌄'; } p=p.parentElement; } }
         }); 
     };

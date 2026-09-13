@@ -70,12 +70,27 @@ test('Help locks the background and Close restores its exact scroll, styles and 
 
 test('Demo opens its own short content and links to the full article within LAB',()=>{
   const h=setup();h.el('btnDemo').onclick();
+  assert.equal(h.el('infoLoadDemo').hidden,false);
   assert.match(h.el('helpBody').innerHTML,/87,178,291,200/);
   assert.equal(h.el('infoMore').href,'demo.html?lang=en');
   assert.doesNotMatch(h.el('helpBody').innerHTML,/<img/);
   const html=read('index.html');
   assert.match(html,/<a id="infoMore"[^>]+target="_blank"/);
   assert.doesNotMatch(html,/id="btnAbout"/);
+});
+
+test('Demo load closes the dialog before loading the 15-city preset; Help hides that action',()=>{
+  const h=setup();let called=0;
+  h.window.TripDemo={load(preset,options){
+    called++;assert.equal(preset,'eu15');assert.equal(options.focus,true);
+    assert.equal(h.el('helpOverlay').open,false);
+    assert.equal(h.body.style.position,'relative');
+  }};
+  h.el('btnDemo').onclick();h.choose('sl');
+  assert.equal(h.el('infoLoadDemo').textContent,'Naloži LJ + EU14');
+  h.el('infoLoadDemo').onclick();assert.equal(called,1);
+  h.el('btnHelp').onclick();assert.equal(h.el('infoLoadDemo').hidden,true);
+  h.el('btnCloseHelp').onclick();assert.equal(called,1);
 });
 
 test('full Help reserves all six exact screenshot names without loading the superseded GUI images',()=>{
@@ -87,12 +102,14 @@ test('full Help reserves all six exact screenshot names without loading the supe
 
 test('resume, algorithm names, savings and live timing switch completely between SL and EN',()=>{
   const h=setup(),ui=h.window.TripUI;
-  const examples={resume:'Resume Brute Force',fast:'Optimize (Fast)',deep:'Optimize (Deep)',
+  const examples={resume:'Resume Brute Force',running:'Brute Force running…',map:'Showing:',fast:'Optimize (Fast)',deep:'Optimize (Deep)',
     saving:'10,137.10 km (50.84%)',timing:'Compute time: 2.5 hours · 1 compute thread · Speed: 9,664,336 orders/s',
     region:'🇪🇺 Europe',category:'🚗 Top 10 Driving Tours'};
   for(const [id,text] of Object.entries(examples))ui.set(h.el(id),text);
   h.choose('sl');
   assert.equal(h.el('resume').textContent,'Nadaljuj Brute Force');
+  assert.equal(h.el('running').textContent,'Brute Force računa …');
+  assert.equal(h.el('map').textContent,'Prikaz:');
   assert.equal(h.el('fast').textContent,'Optimiziraj (hitro)');
   assert.equal(h.el('deep').textContent,'Optimiziraj (poglobljeno)');
   assert.equal(h.el('saving').textContent,'10.137,10 km (50,84%)');
