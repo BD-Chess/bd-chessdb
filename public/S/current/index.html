@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#020409"><title>8zSudoku — Proof Coach Preview | BD × AI Lab</title>
+<style>html,body{height:100%;margin:0}body{display:grid;place-items:center;background:#020409;color:#e2e8f4;font:16px/1.5 system-ui}.boot{max-width:42rem;padding:2rem;text-align:center}.boot b{color:#00e5ff}.err{color:#ff6b8a;white-space:pre-wrap}</style></head>
+<body><main class="boot"><b>8zSudoku Proof Edition</b><p id="boot">Loading the verified game…</p></main>
+<script>
+(async()=>{
+ const el=document.getElementById('boot');
+ try{
+  const files=['payload/part-01.txt','payload/part-02.txt','payload/part-03.txt','payload/part-04.txt','payload/part-05.txt','payload/part-06.txt','payload/part-07.txt','payload/part-08.txt'];
+  const chunks=await Promise.all(files.map(async p=>{const r=await fetch(p,{cache:'no-store'});if(!r.ok)throw new Error(`${p}: HTTP ${r.status}`);return (await r.text()).trim();}));
+  const b64=chunks.join('');
+  if(b64.length!==52104)throw new Error(`payload length ${b64.length} != 52104`);
+  if(!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))throw new Error('payload contains a non-Base64 character');
+  let h=0x811c9dc5;for(let i=0;i<b64.length;i++){h^=b64.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+  if(h.toString(16).padStart(8,'0')!=='8a24e159')throw new Error('payload checksum mismatch');
+  const bin=atob(b64), bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  if(typeof DecompressionStream!=='function')throw new Error('This browser does not support gzip decompression. Please use a current Chrome, Edge, Firefox, or Safari.');
+  const text=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  if(!text.startsWith('<!DOCTYPE html>')||!text.includes('8zSudoku Proof Coach'))throw new Error('decoded game failed identity checks');
+  document.open();document.write(text);document.close();
+ }catch(e){el.className='err';el.textContent='Unable to start the standalone preview: '+(e&&e.message?e.message:e);console.error(e);}
+})();
+</script></body></html>
