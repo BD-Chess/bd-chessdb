@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku × MDL — Phase 1 + Human Trace v1.2 RC7 | AIM³ Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
+<!-- Offline/local-first release: system font fallbacks are used; no remote font request. -->
+<style>
+:root{
+  --bg:#020409;--bg2:#060a14;--bg3:#0b1120;
+  --surface:rgba(15,23,41,0.82);--surface2:#141e33;
+  --border:rgba(0,229,255,0.10);--border2:rgba(0,229,255,0.22);
+  --cyan:#00e5ff;--cyan-dim:rgba(0,229,255,0.12);--cyan-glow:rgba(0,229,255,0.25);
+  --gold:#f59e0b;--gold-dim:rgba(245,158,11,0.12);
+  --green:#34d399;--green-dim:rgba(52,211,153,0.12);
+  --violet:#a78bfa;--violet-dim:rgba(167,139,250,0.12);
+  --rose:#ff6b8a;--rose-dim:rgba(255,107,138,0.12);
+  --orange:#fb923c;--orange-dim:rgba(251,146,60,0.12);
+  --text:#e2e8f4;--muted:#5e7192;--subtle:#1a2540;
+  --cell:52px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(circle at 20% 18%,rgba(16,120,80,0.22),transparent 32%),
+    radial-gradient(circle at 80% 70%,rgba(0,229,255,0.08),transparent 28%),
+    linear-gradient(180deg,#090b10 0%,#06070a 100%);
+  color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;align-items:center;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;
+  filter:blur(80px);opacity:.30;pointer-events:none;z-index:0;
+}
+body::before{
+  width:42vw;height:42vw;left:-8vw;top:-12vh;
+  background:radial-gradient(circle,rgba(52,211,153,0.30),rgba(16,80,60,0.15) 48%,transparent 72%);
+  animation:flA 18s ease-in-out infinite;
+}
+body::after{
+  width:38vw;height:38vw;right:-10vw;bottom:-18vh;
+  background:radial-gradient(circle,rgba(0,229,255,0.12),rgba(16,60,80,0.15) 44%,transparent 72%);
+  animation:flB 24s ease-in-out infinite;
+}
+@keyframes flA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}
+@keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}
+.noise{
+  position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.page{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.header{width:100%;max-width:1200px;padding:16px 20px 0;display:flex;justify-content:space-between;align-items:baseline}
+.logo{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;color:var(--cyan);letter-spacing:.3em;text-transform:uppercase}
+.logo span{color:var(--gold)}
+.timer{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--muted);letter-spacing:.1em}
+.title-block{text-align:center;padding:8px 20px 0}
+.title{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.title .accent{color:var(--cyan)}
+.subtitle{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:var(--muted);margin-top:2px}
+.status{text-align:center;font-size:.75rem;color:var(--muted);min-height:1.2em;margin:4px 0;font-family:'JetBrains Mono',monospace}
+.status.win{color:var(--gold);font-weight:600}
+.status.solving{color:var(--cyan)}
+
+/* ── 3-COLUMN LAYOUT ── */
+.main{
+  display:grid;grid-template-columns:200px auto 220px;grid-template-areas:"left center right";
+  gap:14px;padding:6px 20px;max-width:1240px;width:100%;flex:1;align-content:start;
+}
+.col-left{grid-area:left;display:flex;flex-direction:column;gap:8px}
+.col-center{grid-area:center;display:flex;flex-direction:column;align-items:center;justify-content:start}
+.col-right{grid-area:right;display:flex;flex-direction:column;gap:8px}
+
+/* ── GRID ── */
+.grid-wrap{
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;
+  box-shadow:0 0 60px rgba(0,229,255,0.04),0 0 120px rgba(52,211,153,0.02);
+  backdrop-filter:blur(12px);
+}
+.grid{display:grid;grid-template-columns:repeat(9,var(--cell));grid-template-rows:repeat(9,var(--cell));gap:1px}
+.cell{
+  width:var(--cell);height:var(--cell);
+  background:rgba(11,17,32,0.7);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell)*0.46);font-weight:700;
+  color:var(--text);cursor:pointer;position:relative;
+  transition:background .12s,border-color .12s;
+}
+.cell:hover{background:var(--subtle);border-color:var(--border2)}
+.cell.selected{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;box-shadow:0 0 10px var(--cyan-glow)}
+.cell.given{color:var(--muted);cursor:default}.cell.given:hover{background:rgba(11,17,32,0.7)}
+.cell.error{color:var(--rose)!important;border-color:var(--rose)!important;background:var(--rose-dim)!important}
+.cell.highlight{background:rgba(0,229,255,0.04)}
+.cell.same-value{background:rgba(0,229,255,0.07)}
+.cell.cascade-flash{animation:cFlash .5s ease-out}
+.cell .notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;position:absolute;inset:0;font-size:calc(var(--cell)*0.2);color:var(--muted);font-weight:400}
+.cell .notes span{display:flex;align-items:center;justify-content:center}
+.cell.ai-naked{background:var(--green-dim)!important;border-color:var(--green)!important;color:var(--green)!important}
+.cell.ai-hidden{background:var(--cyan-dim)!important;border-color:var(--cyan)!important;color:var(--cyan)!important}
+.cell.ai-guess{background:var(--orange-dim)!important;border-color:var(--orange)!important;color:var(--orange)!important}
+.cell.ai-backtrack{background:var(--rose-dim)!important;border-color:var(--rose)!important}
+.cell.ai-pointing{background:var(--violet-dim)!important;border-color:var(--violet)!important;color:var(--violet)!important}
+.cell:nth-child(3n){border-right:2px solid var(--border2)}.cell:nth-child(9n){border-right:1px solid var(--border)}
+.cell:nth-child(n+19):nth-child(-n+27),.cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--border2)}
+@keyframes cFlash{0%{box-shadow:inset 0 0 18px var(--cyan-glow)}100%{box-shadow:none}}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;backdrop-filter:blur(8px)}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:.56rem;font-weight:600;color:var(--cyan);letter-spacing:.22em;text-transform:uppercase;margin-bottom:8px}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.numpad button,.btn{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);padding:7px 4px;border-radius:4px;cursor:pointer;transition:all .12s}
+.numpad button:hover,.btn:hover{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.numpad button.used{opacity:0.2;pointer-events:none}
+.btn{padding:7px 10px;width:100%;text-align:center;font-size:.7rem;letter-spacing:.06em}
+.btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold-dim)}
+.btn.green{border-color:var(--green);color:var(--green)}.btn.green:hover{background:var(--green-dim)}
+.btn.rose{border-color:var(--rose);color:var(--rose)}.btn.rose:hover{background:var(--rose-dim)}
+.btn.violet{border-color:var(--violet);color:var(--violet)}.btn.violet:hover{background:var(--violet-dim)}
+.btn-row{display:flex;gap:3px}.btn-row .btn{flex:1}
+.diff-btns{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.metric{display:flex;justify-content:space-between;align-items:baseline;padding:2px 0}
+.metric-label{font-size:.72rem;color:var(--muted)}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700}
+.bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
+.bar{height:100%;border-radius:2px;transition:width .4s ease}
+.bar.cyan{background:var(--cyan)}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}.bar.violet{background:var(--violet)}.bar.rose{background:var(--rose)}.bar.orange{background:var(--orange)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px}
+.legend-item{display:flex;align-items:center;gap:3px;font-size:.58rem;color:var(--muted)}
+.legend-dot{width:7px;height:7px;border-radius:2px}
+.footer{text-align:center;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);letter-spacing:.12em}
+.footer a{color:var(--cyan);text-decoration:none}
+
+/* ── Strategy selector ── */
+.strat-group{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px}
+.strat-btn{
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;font-weight:600;
+  padding:4px 6px;border-radius:3px;cursor:pointer;
+  background:rgba(11,17,32,0.5);border:1px solid var(--border);color:var(--muted);
+  transition:all .15s;letter-spacing:.04em;flex:1;text-align:center;min-width:0;
+}
+.strat-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.strat-btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+
+/* ── Compare table ── */
+.compare-table{
+  width:100%;border-collapse:collapse;margin-top:6px;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+}
+.compare-table th{
+  text-align:left;padding:3px 4px;color:var(--muted);font-weight:600;
+  border-bottom:1px solid var(--border);letter-spacing:.08em;font-size:.5rem;
+}
+.compare-table td{
+  padding:3px 4px;color:var(--text);border-bottom:1px solid rgba(0,229,255,0.04);
+}
+.compare-table tr.winner td{color:var(--green);font-weight:700}
+.compare-table .strat-name{color:var(--muted);font-weight:400}
+
+/* ── Welcome modal ── */
+.welcome-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:10;border-radius:10px;background:rgba(2,4,9,0.72);backdrop-filter:blur(4px);
+  transition:opacity .35s ease;
+}
+.welcome-overlay.hidden{opacity:0;pointer-events:none}
+.welcome-card{
+  text-align:center;padding:28px 32px;max-width:300px;
+  background:rgba(11,17,32,0.92);border:1px solid rgba(52,211,153,0.22);
+  border-radius:10px;box-shadow:0 0 40px rgba(52,211,153,0.08),0 20px 60px rgba(0,0,0,0.5);
+  animation:cardIn .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes cardIn{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.welcome-card .wc-icon{font-size:2rem;margin-bottom:10px;line-height:1}
+.welcome-card h2{font-family:'Rajdhani',sans-serif;font-size:1.35rem;font-weight:700;color:var(--text);letter-spacing:.02em;margin-bottom:6px;line-height:1.2}
+.welcome-card h2 span{color:var(--green)}
+.welcome-card p{font-size:.82rem;color:rgba(226,232,244,0.55);line-height:1.6;font-family:'JetBrains Mono',monospace;margin-bottom:20px}
+.welcome-card .diff-hint{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:6px}
+.welcome-card .diff-hint span{
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
+  padding:12px 8px;border-radius:5px;border:1px solid var(--border);
+  color:var(--muted);letter-spacing:.06em;transition:all .15s;user-select:none;cursor:pointer;
+}
+.welcome-card .diff-hint span:hover{border-color:var(--green);color:var(--green);background:rgba(52,211,153,0.08);transform:translateY(-1px)}
+.welcome-card .diff-hint .d-evil{border-color:rgba(255,107,138,0.3);color:var(--rose)}
+.welcome-card .diff-hint .d-evil:hover{border-color:var(--rose);background:rgba(255,107,138,0.08);color:var(--rose)}
+
+/* ── Tooltip ── */
+.tip{position:relative;cursor:help;border-bottom:1px dotted rgba(245,158,11,0.4)}
+.tip::after{
+  content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(11,17,32,0.97);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 12px;
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:400;
+  color:rgba(226,232,244,0.82);letter-spacing:.04em;line-height:1.55;
+  white-space:pre-line;max-width:260px;pointer-events:none;
+  opacity:0;transition:opacity .18s;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.tip::before{
+  content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:rgba(245,158,11,0.25);
+  opacity:0;transition:opacity .18s;z-index:201;pointer-events:none;
+}
+.tip:hover::after,.tip:hover::before{opacity:1}
+
+.topbar{
+  width:100%;background:rgba(6,10,20,0.85);border-bottom:1px solid rgba(0,229,255,0.08);
+  padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);backdrop-filter:blur(8px);
+  position:sticky;top:0;z-index:100;
+}
+.topbar a{color:var(--cyan);text-decoration:none;transition:opacity .15s}.topbar a:hover{opacity:.7}
+.topbar .tb-center{color:var(--text);font-weight:600}
+.topbar .tb-version{color:rgba(94,113,146,0.6)}
+
+/* ── Collapsible research notes ── */
+.r6-update{margin:0 0 14px;padding:15px 17px;border:1px solid var(--border);border-radius:9px;color:var(--text);line-height:1.7}
+.r6-update summary{cursor:pointer;color:var(--cyan);font-size:.88rem;font-weight:600}
+.r6-update p{font-size:.9rem;color:rgba(226,232,244,.78);margin-top:12px}
+.r6-update a{color:var(--cyan)}
+.r6-update summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
+.research-notes{width:100%;max-width:1200px;padding:0 20px 8px;margin-top:8px}
+.collapse-hdr{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;
+  padding:13px 4px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  transition:color .15s;user-select:none;
+}
+.collapse-hdr:hover{color:var(--cyan)}
+.collapse-hdr.open{color:var(--cyan)}
+.collapse-hdr .arrow{transition:transform .3s;font-size:.6rem;opacity:.6}
+.collapse-hdr.open .arrow{transform:rotate(90deg)}
+.collapse-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+  font-size:.9rem;color:rgba(226,232,244,0.72);line-height:1.7;padding:0 4px;
+}
+.collapse-body.open{max-height:3000px}
+.collapse-body p{margin-bottom:12px}
+.collapse-body .stat-inline{
+  display:inline-block;font-family:'JetBrains Mono',monospace;
+  font-size:1.6rem;font-weight:700;line-height:1;margin:4px 12px 4px 0;vertical-align:middle;
+}
+.collapse-body .note-meta{
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);
+  letter-spacing:.1em;margin-bottom:14px;border-left:2px solid rgba(0,229,255,0.2);padding-left:10px;
+}
+
+/* ── Hint button ── */
+.cell.ai-hint{box-shadow:inset 0 0 0 2px var(--gold),0 0 12px rgba(245,158,11,0.3);animation:hintPulse 1s ease-in-out 3}
+@keyframes hintPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--gold),0 0 8px rgba(245,158,11,0.2)}50%{box-shadow:inset 0 0 0 2px var(--gold),0 0 18px rgba(245,158,11,0.45)}}
+.cell.ai-correction{background:var(--rose-dim)!important;border-color:var(--rose)!important;color:var(--rose)!important;box-shadow:inset 0 0 0 2px var(--rose),0 0 14px rgba(255,107,138,0.35);animation:wrongHintPulse 1s ease-in-out 4}
+@keyframes wrongHintPulse{0%,100%{box-shadow:inset 0 0 0 2px var(--rose),0 0 8px rgba(255,107,138,0.22)}50%{box-shadow:inset 0 0 0 2px var(--rose),0 0 22px rgba(255,107,138,0.55)}}
+
+/* ── Stats bar ── */
+.stats-bar{
+  width:100%;max-width:1200px;padding:5px 20px 2px;
+  font-family:'JetBrains Mono',monospace;font-size:.58rem;
+  color:var(--muted);letter-spacing:.05em;display:flex;gap:16px;flex-wrap:wrap;
+}
+.stats-bar span{white-space:nowrap}
+.stats-bar .sv{color:var(--text)}
+
+/* ── Phase 1 results table in collapsible ── */
+.p1-table{
+  width:100%;border-collapse:collapse;margin:10px 0 14px;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+}
+.p1-table th{text-align:left;padding:5px 8px;color:var(--cyan);font-weight:600;border-bottom:1px solid var(--border2);font-size:.6rem;letter-spacing:.1em}
+.p1-table td{padding:5px 8px;color:var(--text);border-bottom:1px solid rgba(0,229,255,0.05)}
+.p1-table tr:last-child td{border-bottom:none}
+.p1-table .winner{color:var(--green);font-weight:700}
+
+/* ── Sensor section styling ── */
+.sensor-divider{
+  font-family:'JetBrains Mono',monospace;font-size:.48rem;font-weight:600;
+  color:var(--green);letter-spacing:.2em;text-transform:uppercase;
+  margin-top:8px;margin-bottom:2px;padding-top:6px;border-top:1px solid rgba(52,211,153,0.12);
+}
+
+/* ── Compare overlay ── */
+.compare-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:10;border-radius:10px;background:rgba(2,4,9,0.82);backdrop-filter:blur(4px);
+}
+.compare-card{
+  text-align:center;padding:18px;width:90%;max-width:340px;
+  background:rgba(11,17,32,0.95);border:1px solid var(--border2);border-radius:10px;
+  box-shadow:0 0 40px rgba(0,229,255,0.06);animation:cardIn .3s cubic-bezier(.22,1,.36,1);
+}
+.compare-card .cc-title{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.2em;color:var(--cyan);text-transform:uppercase;margin-bottom:8px}
+.compare-card .cc-status{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:10px}
+.compare-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:760px){
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px}
+  .col-left,.col-right{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .col-left .panel,.col-right .panel{flex:1;min-width:140px}
+  .topbar .tb-version{display:none}
+  body{font-size:19px}
+  .title{font-size:clamp(1.7rem,6vw,2.6rem)}
+  .subtitle{font-size:1.05rem}
+  .status{font-size:.88rem}
+  .panel-title{font-size:.72rem;letter-spacing:.18em}
+  .btn{font-size:.88rem;padding:10px 8px}
+  .numpad button{font-size:1rem;padding:10px 4px}
+  .metric-label{font-size:.88rem}
+  .metric-value{font-size:1rem}
+  .legend-item{font-size:.72rem}
+  .timer{font-size:1.3rem}
+  .logo{font-size:.72rem}
+  .topbar{font-size:.68rem;padding:9px 16px}
+  .collapse-hdr{font-size:.82rem;padding:15px 4px}
+  .collapse-body{font-size:1rem}
+  .collapse-body .note-meta{font-size:.74rem}
+  .stats-bar{font-size:.72rem}
+  .footer{font-size:.65rem}
+  .welcome-card h2{font-size:1.6rem}
+  .welcome-card p{font-size:.92rem}
+  .welcome-card .diff-hint span{font-size:.92rem;padding:14px 8px}
+  .strat-btn{font-size:.72rem;padding:6px}
+}
+
+/* ── v1.2 local-first human trace contract ── */
+.trace-contract{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--muted);line-height:1.45;margin-top:5px}
+.trace-status{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--muted);margin-top:5px;word-break:break-word}
+.trace-status.on{color:var(--green)}.trace-status.paused{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<div class="topbar">
+  <a href="/BD/">← BD Lab</a>
+  <span class="tb-center">BD Sudoku × MDL</span>
+  <span class="tb-version">Phase 1 · ρ = 0.85 · Logic/Trace v1.2 RC7 · <a href="/crp/AI8_Sudoku_R6.html">R6 Arena ↗</a> · <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none">Investor Brief ↗</a></span>
+</div>
+
+<div class="page">
+<div class="header">
+  <div class="logo">AIM³ <span>Lab</span> · Sudoku × MDL</div>
+  <div class="timer" id="timer">00:00</div>
+</div>
+<div class="title-block">
+  <h1 class="title">Sudoku <span class="accent">Phase 1</span></h1>
+  <p class="subtitle">"En kernel. Štiri abecede. ρ = 0.85."</p>
+</div>
+<div class="status" id="status">Select difficulty to begin</div>
+<div class="main">
+  <div class="col-left">
+    <div class="panel"><div class="panel-title">New Game</div>
+      <div class="diff-btns">
+        <button class="btn" onclick="newGame('easy')">Easy</button>
+        <button class="btn" onclick="newGame('medium')">Medium</button>
+        <button class="btn gold" onclick="newGame('hard')">Hard</button>
+        <button class="btn rose" onclick="newGame('evil')">Evil</button>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Numbers</div>
+      <div class="numpad" id="numpad"></div>
+      <div style="margin-top:5px"><button class="btn" id="notesBtn" onclick="toggleNotes()">Notes: OFF</button></div>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="eraseCell()">Erase</button>
+        <button class="btn" onclick="undoMove()">Undo</button>
+      </div>
+      <button class="btn" onclick="showHelp()" style="margin-top:3px;border-color:rgba(167,139,250,0.4);color:var(--violet)">? Help</button>
+    </div>
+    <div class="panel" id="humanTracePanel"><div class="panel-title">Human Trace v1.2</div>
+      <button class="btn green" id="traceConsentBtn" onclick="consentHumanTrace()">Enable with consent</button>
+      <button class="btn green" id="traceContinueBtn" onclick="continueRecoveredHumanTrace('pointer')" style="display:none;margin-top:3px">Continue recovered session</button>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" id="tracePauseBtn" onclick="toggleHumanTracePause()">Pause</button>
+        <button class="btn gold" onclick="exportHumanTrace()">Export</button>
+      </div>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="ignoreCurrentHint('pointer','explicit_ignore')">Ignore hint</button>
+        <button class="btn rose" onclick="deleteHumanTrace()">Delete</button>
+      </div>
+      <div class="trace-status" id="traceStatus">Consent required · local only</div>
+      <div class="trace-contract">50 ms export bins · touch|pointer|key · no device ID · no UI snapshots</div>
+    </div>
+  </div>
+  <div class="col-center">
+    <div class="grid-wrap" id="gridWrap" style="position:relative">
+      <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-card">
+          <div class="wc-icon">♟</div>
+          <h2>BD <span>Sudoku</span></h2>
+          <p>choose your difficulty</p>
+          <div class="diff-hint">
+            <span onclick="newGame('easy')">Easy</span>
+            <span onclick="newGame('medium')">Medium</span>
+            <span onclick="newGame('hard')">Hard</span>
+            <span class="d-evil" onclick="newGame('evil')">Evil ☠</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+  <div class="col-right">
+    <div class="panel"><div class="panel-title">AI Solver</div>
+      <div style="margin-bottom:6px">
+        <div style="font-size:.5rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px">Strategy</div>
+        <div class="strat-group" id="stratGroup">
+          <div class="strat-btn" data-strat="random" onclick="setStrategy('random')">Random</div>
+          <div class="strat-btn" data-strat="mrv" onclick="setStrategy('mrv')">MRV</div>
+          <div class="strat-btn" data-strat="naked" onclick="setStrategy('naked')">Naked</div>
+          <div class="strat-btn active" data-strat="full" onclick="setStrategy('full')">Full</div>
+          <div class="strat-btn" data-strat="human" onclick="setStrategy('human')">Human</div>
+        </div>
+      </div>
+      <button class="btn green" id="solveBtn" onclick="aiSolve()">▶ AI Solve</button>
+      <button class="btn gold" id="hintBtn" onclick="aiHint()" style="margin-top:3px">💡 Hint</button>
+      <div class="btn-row" style="margin-top:3px">
+        <button class="btn" onclick="aiStep()">Step</button>
+        <button class="btn rose" onclick="aiReset()">Reset</button>
+      </div>
+      <button class="btn violet" onclick="compareAll()" style="margin-top:3px" id="compareBtn">⚡ Compare All</button>
+      <div style="margin-top:5px"><label style="font-size:.6rem;color:var(--muted)">Speed</label>
+        <input type="range" id="speedSlider" min="1" max="100" value="50" style="width:100%;accent-color:var(--cyan)">
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Naked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Hidden</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--violet)"></div>Point</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Guess</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>BT</div>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-title">Live Metrics</div>
+      <div class="metric"><span class="metric-label">Steps</span><span class="metric-value" id="mSteps">0</span></div>
+      <div class="metric"><span class="metric-label">Backtracks</span><span class="metric-value" id="mBT" style="color:var(--rose)">0</span></div>
+      <div class="metric"><span class="metric-label">Guesses</span><span class="metric-value" id="mGuesses" style="color:var(--orange)">0</span></div>
+      <div class="metric"><span class="metric-label">Candidates</span><span class="metric-value" id="mCands" style="color:var(--cyan)">0</span></div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label">Progress</span><span class="metric-value" id="mProgress" style="color:var(--violet)">0%</span></div>
+        <div class="bar-wrap"><div class="bar violet" id="barProgress" style="width:0%"></div></div>
+      </div>
+
+      <!-- Phase 1 winning sensors -->
+      <div class="sensor-divider">Phase 1 Sensors</div>
+
+      <div style="margin-top:4px">
+        <div class="metric"><span class="metric-label tip" data-tip="LZ76 complexity of entropy-delta sequence.&#10;Lower = more structured process.&#10;Smarter solver → more compressible.&#10;ρ = −0.79">LZ Complexity</span><span class="metric-value" id="mLZ" style="color:var(--cyan)">—</span></div>
+        <div class="bar-wrap"><div class="bar cyan" id="barLZ" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Gini coefficient of cascade depths.&#10;Higher = more unequal distribution.&#10;Smart solver: rare deep cascades + many zeros.&#10;ρ = +0.83">Gini Cascade</span><span class="metric-value" id="mGini" style="color:var(--green)">—</span></div>
+        <div class="bar-wrap"><div class="bar green" id="barGini" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Weighted cascade power: depth × Δentropy.&#10;Higher = steps that trigger cascades&#10;are more informative.&#10;ρ = +0.84">Cascade Power</span><span class="metric-value" id="mCascPow" style="color:var(--gold)">—</span></div>
+        <div class="bar-wrap"><div class="bar gold" id="barCascPow" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="Smoothness of candidate-count reduction.&#10;Lower = smoother descent.&#10;Structured solving = steady flow.&#10;ρ = −0.76">Density Flow</span><span class="metric-value" id="mDensity" style="color:var(--orange)">—</span></div>
+        <div class="bar-wrap"><div class="bar orange" id="barDensity" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:3px">
+        <div class="metric"><span class="metric-label tip" data-tip="ADSR bimodality — cascade vs isolation.&#10;High = structured cascades. Low = chaos.&#10;Phase 0 winner, Phase 1 context sensor.">ADSR</span><span class="metric-value" id="mADSR" style="color:var(--muted)">—</span></div>
+        <div class="bar-wrap"><div class="bar gold" id="barADSR" style="width:0%;opacity:.4"></div></div>
+      </div>
+    </div>
+
+    <!-- Compare results panel (hidden until Compare All) -->
+    <div id="comparePanel" style="display:none;padding:4px 2px">
+      <div class="panel-title" style="padding-left:2px">Strategy Comparison</div>
+      <div id="compareResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar" id="statsBar" style="display:none">
+  <span>Played: <span class="sv" id="stPlayed">0</span></span>
+  <span>Hints: <span class="sv" id="stHints">0</span></span>
+  <span id="stBestEasy" style="display:none">Best easy: <span class="sv" id="stBEval">—</span></span>
+  <span id="stBestEvil" style="display:none">Best evil: <span class="sv" id="stBEvil">—</span></span>
+</div>
+
+<!-- Research notes — collapsible -->
+<div class="research-notes">
+
+  <details class="r6-update" id="r6-arena-update">
+    <summary>New: R6 HF3 HF1 research arena · September 2026</summary>
+    <p>The Python arena now combines multiple Sudoku representations, independently checked proofs,
+      Proof Atlas memory and resumable experiments. Its new causal study separates MDL prediction,
+      DCC allocation and learned transfer, with seeded MRV and Luby restarts as strong comparisons.</p>
+    <p>This browser game continues to use Logic/Trace v1.2 RC7. The R6 arena is a separate research program;
+      its specialists are being evaluated before browser integration. The current experiment has not yet established an MDL- or DCC-specific advantage.</p>
+    <p><a href="/crp/AI8_Sudoku_R6.html">Explore the new arena, solving logic and evidence ↗</a></p>
+  </details>
+
+  <!-- Historical Phase 1 Founding Hypothesis -->
+  <div class="collapse-hdr" id="chP1" onclick="toggleCollapse('cbP1','chP1')">
+    <span>Phase 1 — Founding Hypothesis Confirmed · <span style="color:var(--gold)">ρ = 0.85</span></span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cbP1">
+    <div class="note-meta">March 25, 2026 · AIM³ Lab · 200 puzzles × 5 strategies = 1000 solve logs</div>
+    <p>
+      <span class="stat-inline" style="color:var(--gold)">ρ = 0.85</span>
+      Smarter algorithm → more compressible solving process. Same kernel, different domain. TSP ρ = 0.80 on geometry. Sudoku ρ = 0.85 on constraint satisfaction. The kernel is domain-independent — because it works on a different alphabet.
+    </p>
+    <p>Per-strategy averages (seed99, 200 puzzles):</p>
+    <table class="p1-table">
+      <tr><th>Strategy</th><th>Steps</th><th>BT</th><th>Guesses</th><th>LZ<sub>proc</sub></th><th>Gini</th><th>Casc.Wt</th></tr>
+      <tr><td class="strat-name">random</td><td>6419</td><td>3200</td><td>3218</td><td>1.020</td><td>0.000</td><td>low</td></tr>
+      <tr><td class="strat-name">mrv</td><td>282</td><td>116</td><td>166</td><td>0.957</td><td>0.000</td><td>low</td></tr>
+      <tr><td class="strat-name">naked</td><td>339</td><td>19</td><td>23</td><td>0.455</td><td>0.971</td><td>high</td></tr>
+      <tr><td class="strat-name">full</td><td>59</td><td>0.6</td><td>1.3</td><td>0.411</td><td>0.975</td><td>high</td></tr>
+      <tr class="winner"><td>human</td><td>62</td><td>0.5</td><td>1.1</td><td>0.388</td><td>0.976</td><td>high</td></tr>
+    </table>
+    <p>Top sensors by |ρ|(strategy_rank, sensor):</p>
+    <table class="p1-table">
+      <tr><th>#</th><th>Sensor</th><th>|ρ|</th></tr>
+      <tr><td>1</td><td>n_guesses</td><td style="color:var(--gold)">0.853</td></tr>
+      <tr><td>2</td><td>cascade_weighted</td><td style="color:var(--gold)">0.839</td></tr>
+      <tr><td>3</td><td>gini_cascade</td><td style="color:var(--gold)">0.829</td></tr>
+      <tr><td>4</td><td>LZ_multi |Σ|=4</td><td style="color:var(--gold)">0.805</td></tr>
+      <tr><td>5</td><td>LZ_process</td><td style="color:var(--green)">0.786</td></tr>
+      <tr><td>6</td><td>density_flow</td><td style="color:var(--green)">0.762</td></tr>
+      <tr><td>7</td><td>LZ_cascade</td><td style="color:var(--green)">0.741</td></tr>
+      <tr><td>8</td><td>n_backtracks</td><td style="color:var(--green)">0.716</td></tr>
+    </table>
+    <p>
+      12 of 14 sensors |ρ| > 0.3. Eight above |ρ| > 0.7. LZ_process flipped from ρ = +0.09 (Phase 0, measuring problem difficulty) to ρ = −0.786 (Phase 1, measuring algorithm quality). Exactly as predicted: the real test is different algorithms on the same problem.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch1" onclick="toggleCollapse('cb1','ch1')">
+    <span>Origin Story — one afternoon, one question, one answer</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb1">
+    <div class="note-meta">March 23, 2026 · AIM³ Lab · Ljubljana</div>
+    <p>
+      <span class="stat-inline" style="color:var(--cyan)">310</span>
+      lines of code. That's the entire engine — puzzle generator, backtracking solver with snapshot-based state restoration, live metrics, AI animation, keyboard shortcuts, notes mode, undo history, and the ADSR measurement system. Not 310 lines for the game loop. 310 lines for everything.
+    </p>
+    <p>
+      The question that started it: does the same MDL kernel that finds optimal TSP tours — the one that navigates 3,496 cities in Nicaragua — also work on constraint satisfaction? In TSP, the founding insight was simple: the shortest route has the most structured search process (Spearman ρ = +0.80, verified on official Waterloo benchmarks). In Sudoku, the question becomes: do easier puzzles have more structured solving processes?
+    </p>
+    <p>
+      We built a backtracking solver with full process logging. Ran it on 1,000 puzzles across four difficulty levels. Measured ADSR bimodality — whether the solving process cleanly separates into cascading chain-reactions and isolated single-placements.
+    </p>
+    <p>
+      Result: <strong style="color:var(--gold)">ρ = −0.50 (p &lt; 10⁻⁶⁴)</strong>. Easier puzzles score higher. Evil puzzles drop below 0.95. The same principle that guides the TSP solver through a combinatorial space of 10<sup>1783</sup> possible tours also predicts how hard a Sudoku puzzle is. One kernel. One afternoon. Third domain confirmed.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch2" onclick="toggleCollapse('cb2','ch2')">
+    <span>What the sensors are actually measuring</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb2">
+    <div class="note-meta">Phase 1 winning sensors · live metrics</div>
+    <p>
+      Every Sudoku app solves puzzles. This is the only one that <em>watches itself solve</em> and shows you the structure of what it sees.
+    </p>
+    <p>
+      <strong style="color:var(--cyan)">LZ Complexity</strong> (ρ = −0.79) — Lempel-Ziv compression of the entropy-delta sequence. Each step changes the grid's uncertainty by some amount. We encode these changes as a binary string (above/below median) and compress it. Lower = the process is more structured. A smart solver produces highly compressible patterns — it finds the same lever and pulls it repeatedly.
+    </p>
+    <p>
+      <strong style="color:var(--green)">Gini Cascade</strong> (ρ = +0.83) — Inequality of cascade depths. When a smart solver places a digit, it triggers chain reactions — one move resolves 5, 10, 15 more cells. The Gini coefficient measures how unequal these cascades are: a few deep ones + many zeros = high Gini = structured solving. Random has Gini = 0 (no cascades at all).
+    </p>
+    <p>
+      <strong style="color:var(--gold)">Cascade Power</strong> (ρ = +0.84) — Weighted cascade strength: depth × entropy-delta for each step. Higher = the steps that trigger cascades are more informative. The best solvers make moves that ripple far and reduce a lot of uncertainty each time.
+    </p>
+    <p>
+      <strong style="color:var(--orange)">Density Flow</strong> (ρ = −0.76) — Smoothness of candidate-count reduction over the solving process. A structured solver drains candidates steadily. A random solver has a jagged, chaotic descent. We measure this with LZ compression on the candidate flow — lower = smoother = better.
+    </p>
+    <p>
+      <strong style="color:var(--muted)">ADSR</strong> (ρ = −0.12 on Phase 1) — Attack-Decay-Sustain-Release bimodality. This was the Phase 0 winner (ρ = −0.50 for problem difficulty) but is weak for algorithm quality. It measures problem structure, not solver intelligence. Kept as context.
+    </p>
+  </div>
+
+  <div class="collapse-hdr" id="ch3" onclick="toggleCollapse('cb3','ch3')">
+    <span>How to play</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cb3">
+    <div class="note-meta">Quick guide</div>
+    <p><strong>Select</strong> a cell by clicking or tapping. Highlighted cells share a row, column, or box with your selection.</p>
+    <p><strong>Place</strong> a number using the numpad below the grid, or press 1–9 on your keyboard. Click the same number again to clear it. Arrow keys move the selection.</p>
+    <p><strong>Notes mode</strong> — toggle with the Notes button or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. Numbers become small pencil marks — candidates you're considering.</p>
+    <p><strong>Undo</strong> with the button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. Erase with button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
+    <p><strong>💡 Hint</strong> — first checks whether your entered values contradict the unique solution. If so, it highlights all wrong entries and jumps to the most recently changed one. Otherwise it highlights the next logical cell and explains why. It never places the number.</p>
+    <p><strong>AI Solve</strong> — select a strategy, watch the solving process animated. Green = naked single. Blue = hidden single. Violet = pointing pair. Orange = guess. Red = backtrack. Step through one move at a time.</p>
+    <p><strong>⚡ Compare All</strong> — runs all 5 strategies on the current puzzle and shows a comparison table with steps, backtracks, and sensor readings.</p>
+    <p><strong>Difficulty:</strong> Easy has 36–42 given digits and solves with pure logic. Evil has only 20–23 — watch the sensors diverge.</p>
+  </div>
+
+
+  <div class="collapse-hdr" id="chInvestor" onclick="toggleCollapse('cbInvestor','chInvestor')">
+    <span>Investor Snapshot — why this is more than commodity Sudoku</span>
+    <span class="arrow">▶</span>
+  </div>
+  <div class="collapse-body" id="cbInvestor">
+    <div class="note-meta">Companion page · monetization lens</div>
+    <p>
+      This is not just a Sudoku skin. The real asset is the engine that shows <em>how</em> a puzzle is solved: path of play, strategy choice, cascade structure, stability, and low-entropy decision flow. The teaching effect is part of the product, not decoration.
+    </p>
+    <p>
+      The monetization logic is therefore broader than ads alone: free reach, premium coaching and explainable hints, advanced compare/replay features, subscription as reasoning training, and possible licensing into education, brain-training, or explainable decision products.
+    </p>
+    <p>
+      <a href="8zSudoku-investor.html" style="color:var(--gold);text-decoration:none;font-family:'JetBrains Mono',monospace;letter-spacing:.08em">Open the investor brief ↗</a>
+    </p>
+  </div>
+
+</div>
+
+<!-- Help modal -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(2,4,9,0.82);backdrop-filter:blur(6px);align-items:center;justify-content:center" onclick="if(event.target===this)hideHelp()">
+  <div style="background:#0b1120;border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:28px 32px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:cardIn .3s cubic-bezier(.22,1,.36,1)">
+    <button onclick="hideHelp()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:color .15s" onmouseover="this.style.color='var(--violet)'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--violet);margin-bottom:16px">How to Play · Phase 1</div>
+    <div style="font-size:.92rem;color:rgba(226,232,244,0.75);line-height:1.7">
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Select</strong> a cell by clicking/tapping. <strong style="color:var(--text)">Place</strong> with numpad or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">1–9</kbd>.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">Notes</strong> — press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. <strong style="color:var(--text)">Undo</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. <strong style="color:var(--text)">Erase</strong> — <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--gold)">💡 Hint</strong> — correction first: wrong entered cells are highlighted and the newest one is selected; when the board is consistent, the next logical step is shown.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--green)">AI Strategies:</strong> Random (blind), MRV (fewest candidates), Naked (naked singles + MRV), Full (naked + hidden + MRV), Human (+ pointing pairs).</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--violet)">⚡ Compare All</strong> — run all 5 strategies and compare sensors.</p>
+      <div style="border-top:1px solid var(--border);padding-top:12px;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted)">
+        Easy: 36–42 givens · Medium: 28–35 · Hard: 24–27 · Evil: 20–23
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>
+
+<div class="footer">AIM³ Lab · Bojan Dobrečevič × C · 2026 · <a href="https://chessbest.org/bd/">chessbest.org/bd</a></div>
+</div>
+
+<script>
+/* Embedded ai8_sudoku_truth_v1.js — standalone/offline safety */
+/* AI8 Sudoku v1.2.0 shared JavaScript truth kernel.
+ * Python remains authoritative. This module exists for golden-fixture parity
+ * and browser-side canonical state hashing. It implements K0 only.
+ */
+(function(root, factory){
+  const api=factory();
+  if(typeof module==='object'&&module.exports) module.exports=api;
+  root.AI8SudokuTruth=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  const SIZE=9, FULL_MASK=0x1ff;
+  const ENGINE_ID='AI8_SUDOKU_LOGIC_V1_2_0';
+  const PROOF_SCHEMA_VERSION='AI8_SUDOKU_PROOF_TRANSACTION_V1';
+  const TECHNIQUE_VERSIONS={
+    'K0.CANDIDATE_INIT':'1.0.0',
+    'K0.NAKED_SINGLE':'1.0.0',
+    'K0.HIDDEN_SINGLE':'1.0.0',
+    'K0.CONTRADICTION':'1.0.0'
+  };
+  const TRANSACTION_KEYS=['schema_version','engine_id','sequence','technique','premises','affected_units','affected_cells','affected_candidates','placements','eliminations','candidate_initializations','contradictions','pre_board_hash','pre_candidate_hash','pre_state_hash','post_board_hash','post_candidate_hash','post_state_hash','verifier_result','transaction_hash'];
+  const TECHNIQUE_KEYS=['id','version','tier','requires_uniqueness'];
+  const VERIFIER_RESULT_KEYS=['status','code','details'];
+  const STATE_INPUT_KEYS=['board','candidates','candidate_initialized'];
+
+  function utf8Bytes(text){
+    const s=unescape(encodeURIComponent(text));
+    const out=new Array(s.length);
+    for(let i=0;i<s.length;i++) out[i]=s.charCodeAt(i);
+    return out;
+  }
+  function rrot(n,x){return (x>>>n)|(x<<(32-n));}
+  function sha256(text){
+    const K=[
+      0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+    const bytes=utf8Bytes(String(text));
+    const bitLen=bytes.length*8;
+    bytes.push(0x80);
+    while((bytes.length%64)!==56) bytes.push(0);
+    const hi=Math.floor(bitLen/0x100000000), lo=bitLen>>>0;
+    for(let i=3;i>=0;i--) bytes.push((hi>>>(i*8))&255);
+    for(let i=3;i>=0;i--) bytes.push((lo>>>(i*8))&255);
+    let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const w=new Array(64);
+    for(let off=0;off<bytes.length;off+=64){
+      for(let i=0;i<16;i++) w[i]=((bytes[off+4*i]<<24)|(bytes[off+4*i+1]<<16)|(bytes[off+4*i+2]<<8)|bytes[off+4*i+3])>>>0;
+      for(let i=16;i<64;i++){
+        const s0=(rrot(7,w[i-15])^rrot(18,w[i-15])^(w[i-15]>>>3))>>>0;
+        const s1=(rrot(17,w[i-2])^rrot(19,w[i-2])^(w[i-2]>>>10))>>>0;
+        w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;
+      }
+      let [a,b,c,d,e,f,g,h]=H;
+      for(let i=0;i<64;i++){
+        const S1=(rrot(6,e)^rrot(11,e)^rrot(25,e))>>>0;
+        const ch=((e&f)^((~e)&g))>>>0;
+        const t1=(h+S1+ch+K[i]+w[i])>>>0;
+        const S0=(rrot(2,a)^rrot(13,a)^rrot(22,a))>>>0;
+        const maj=((a&b)^(a&c)^(b&c))>>>0;
+        const t2=(S0+maj)>>>0;
+        h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+      }
+      H=[(H[0]+a)>>>0,(H[1]+b)>>>0,(H[2]+c)>>>0,(H[3]+d)>>>0,(H[4]+e)>>>0,(H[5]+f)>>>0,(H[6]+g)>>>0,(H[7]+h)>>>0];
+    }
+    return H.map(x=>x.toString(16).padStart(8,'0')).join('');
+  }
+
+  function canonicalStringify(v){
+    if(v===null) return 'null';
+    if(typeof v==='string') return JSON.stringify(v);
+    if(typeof v==='number'){
+      if(!Number.isFinite(v)) throw new Error('non-finite number');
+      return JSON.stringify(v);
+    }
+    if(typeof v==='boolean') return v?'true':'false';
+    if(Array.isArray(v)) return '['+v.map(canonicalStringify).join(',')+']';
+    if(typeof v==='object'){
+      return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonicalStringify(v[k])).join(',')+'}';
+    }
+    throw new Error('unsupported canonical value');
+  }
+  function canonicalHash(v){return sha256(canonicalStringify(v));}
+  function deepClone(v){return JSON.parse(JSON.stringify(v));}
+
+  function parseBoard(input){
+    if(typeof input==='string'){
+      const s=input.replace(/\s/g,'').replace(/\./g,'0');
+      if(s.length!==81||!/^[0-9]{81}$/.test(s)) throw new Error('invalid board string');
+      return Array.from(s,ch=>Number(ch));
+    }
+    if(Array.isArray(input)&&input.length===9&&input.every(r=>Array.isArray(r)&&r.length===9)) return input.flat().map(Number);
+    if(!Array.isArray(input)||input.length!==81) throw new Error('board must have 81 cells');
+    const b=input.slice();
+    if(b.some(v=>!Number.isInteger(v)||v<0||v>9)) throw new Error('invalid board value');
+    return b;
+  }
+  function rowOf(c){return Math.floor(c/9);} function colOf(c){return c%9;}
+  function boxOf(c){return Math.floor(rowOf(c)/3)*3+Math.floor(colOf(c)/3);}
+  const ROWS=Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>r*9+c));
+  const COLS=Array.from({length:9},(_,c)=>Array.from({length:9},(_,r)=>r*9+c));
+  const BOXES=Array.from({length:9},(_,b)=>{const br=Math.floor(b/3)*3,bc=(b%3)*3;const a=[];for(let dr=0;dr<3;dr++)for(let dc=0;dc<3;dc++)a.push((br+dr)*9+bc+dc);return a;});
+  const UNIT_ORDER=[...Array.from({length:9},(_,i)=>'R'+(i+1)),...Array.from({length:9},(_,i)=>'C'+(i+1)),...Array.from({length:9},(_,i)=>'B'+(i+1))];
+  const UNIT_CELLS={}; ROWS.forEach((u,i)=>UNIT_CELLS['R'+(i+1)]=u); COLS.forEach((u,i)=>UNIT_CELLS['C'+(i+1)]=u); BOXES.forEach((u,i)=>UNIT_CELLS['B'+(i+1)]=u);
+  const CELL_UNITS=Array.from({length:81},(_,c)=>['R'+(rowOf(c)+1),'C'+(colOf(c)+1),'B'+(boxOf(c)+1)]);
+  const PEERS=Array.from({length:81},(_,c)=>Array.from(new Set([...ROWS[rowOf(c)],...COLS[colOf(c)],...BOXES[boxOf(c)]])).filter(x=>x!==c).sort((a,b)=>a-b));
+  function normalizeUnits(units){const rank={R:0,C:1,B:2};return Array.from(new Set(units)).sort((a,b)=>(rank[a[0]]-rank[b[0]])||(Number(a.slice(1))-Number(b.slice(1))));}
+  function valuesFromMask(mask){const a=[];for(let v=1;v<=9;v++)if(mask&(1<<(v-1)))a.push(v);return a;}
+  function validateBoard(board){
+    try{board=parseBoard(board);}catch(e){return {ok:false,message:String(e.message||e)};}
+    for(const uid of UNIT_ORDER){const vals=UNIT_CELLS[uid].map(c=>board[c]).filter(Boolean);if(new Set(vals).size!==vals.length)return{ok:false,message:'duplicate value in unit '+uid};}
+    return{ok:true,message:''};
+  }
+  function legalMask(board,cell){if(board[cell]!==0)return 0;let used=0;for(const p of PEERS[cell])if(board[p])used|=1<<(board[p]-1);return FULL_MASK&~used;}
+  function exactCandidates(board){return board.map((v,c)=>v===0?legalMask(board,c):0);}
+  function boardString(board){return parseBoard(board).join('');}
+  function boardHash(board){return sha256(boardString(board));}
+  function exactKeys(value,keys){return !!value&&typeof value==='object'&&!Array.isArray(value)&&same(Object.keys(value).sort(),keys.slice().sort());}
+  function validCell(v){return Number.isInteger(v)&&v>=0&&v<81;}
+  function validDigit(v){return Number.isInteger(v)&&v>=1&&v<=9;}
+  function validHash(v){return typeof v==='string'&&/^[0-9a-f]{64}$/.test(v);}
+  function cellValueShape(v){return exactKeys(v,['cell','value'])&&validCell(v.cell)&&validDigit(v.value);}
+  function effectShape(v){return exactKeys(v,['cell','value','effect'])&&validCell(v.cell)&&validDigit(v.value)&&['initialize','consume_by_placement','eliminate'].includes(v.effect);}
+  function canonicalCellValues(items){return items.every(cellValueShape)&&same(items,items.slice().sort((a,b)=>a.cell-b.cell||a.value-b.value))&&new Set(items.map(x=>x.cell+':'+x.value)).size===items.length;}
+  function canonicalEffects(items){return items.every(effectShape)&&same(items,items.slice().sort((a,b)=>a.cell-b.cell||a.value-b.value||a.effect.localeCompare(b.effect)))&&new Set(items.map(x=>x.cell+':'+x.value+':'+x.effect)).size===items.length;}
+  function candidateString(cands,init){
+    if(!Array.isArray(cands)||cands.length!==81||cands.some(m=>!Number.isInteger(m)||m<0||m>FULL_MASK))throw new Error('invalid candidates');
+    return(init?'1':'0')+':'+cands.map(m=>m.toString(16).padStart(3,'0')).join(',');
+  }
+  function candidateHash(cands,init){return sha256(candidateString(cands,init));}
+  function stateHash(board,cands,init){return canonicalHash({board_hash:boardHash(board),candidate_hash:candidateHash(cands,init),candidate_initialized:!!init});}
+  function makeState(value){
+    if(!exactKeys(value,STATE_INPUT_KEYS))throw new Error('invalid state keys');
+    const board=parseBoard(value.board), candidates=value.candidates.slice();
+    if(typeof value.candidate_initialized!=='boolean')throw new Error('invalid initialized flag');
+    const init=value.candidate_initialized;
+    candidateString(candidates,init);
+    return{board,candidates,candidate_initialized:init,board_hash:boardHash(board),candidate_hash:candidateHash(candidates,init),state_hash:stateHash(board,candidates,init)};
+  }
+  function k0Truth(state){
+    const vb=validateBoard(state.board);if(!vb.ok)return vb;
+    if(!state.candidate_initialized)return{ok:state.candidates.every(x=>x===0),message:'uninitialized candidate state'};
+    const expected=exactCandidates(state.board);
+    for(let i=0;i<81;i++)if(state.candidates[i]!==expected[i])return{ok:false,message:'stale candidates at '+i};
+    return{ok:true,message:''};
+  }
+  function txHash(tx){const x=deepClone(tx);x.transaction_hash='';return canonicalHash(x);}
+  function same(a,b){return canonicalStringify(a)===canonicalStringify(b);}
+  function postHashesMatch(tx,post){return tx.post_board_hash===boardHash(post.board)&&tx.post_candidate_hash===candidateHash(post.candidates,post.candidate_initialized)&&tx.post_state_hash===stateHash(post.board,post.candidates,post.candidate_initialized);}
+  function placementTransition(state,tx,cell,value){
+    if(tx.placements.length!==1||!cellValueShape(tx.placements[0])||!same(tx.placements[0],{cell,value}))return{accepted:false,code:'PLACEMENT_PREMISE_MISMATCH'};
+    if(!canonicalCellValues(tx.eliminations))return{accepted:false,code:'MALFORMED_OR_NONCANONICAL_ELIMINATIONS'};
+    if(tx.candidate_initializations.length||tx.contradictions.length)return{accepted:false,code:'FORBIDDEN_PLACEMENT_PAYLOAD'};
+    if(!canonicalEffects(tx.affected_candidates))return{accepted:false,code:'MALFORMED_OR_NONCANONICAL_AFFECTED_CANDIDATES'};
+    if(state.board[cell]!==0||!(state.candidates[cell]&(1<<(value-1)))||!(legalMask(state.board,cell)&(1<<(value-1))))return{accepted:false,code:'ILLEGAL_PLACEMENT'};
+    const post={board:state.board.slice(),candidates:state.candidates.slice(),candidate_initialized:true};
+    const targetValues=valuesFromMask(post.candidates[cell]);post.board[cell]=value;post.candidates[cell]=0;
+    const bit=1<<(value-1),elims=[],changed=new Set([cell]);
+    for(const p of PEERS[cell])if(post.board[p]===0&&(post.candidates[p]&bit)){post.candidates[p]&=~bit;elims.push({cell:p,value});changed.add(p);}
+    elims.sort((a,b)=>a.cell-b.cell||a.value-b.value);
+    if(!same(tx.eliminations,elims))return{accepted:false,code:'ELIMINATIONS_MISMATCH'};
+    const effects=targetValues.map(v=>({cell,value:v,effect:'consume_by_placement'})).concat(elims.map(e=>({cell:e.cell,value:e.value,effect:'eliminate'}))).sort((a,b)=>a.cell-b.cell||a.value-b.value||a.effect.localeCompare(b.effect));
+    if(!same(tx.affected_candidates,effects))return{accepted:false,code:'AFFECTED_CANDIDATES_MISMATCH'};
+    if(!same(tx.affected_cells,Array.from(changed).sort((a,b)=>a-b)))return{accepted:false,code:'AFFECTED_CELLS_MISMATCH'};
+    if(!same(tx.affected_units,normalizeUnits(CELL_UNITS[cell])))return{accepted:false,code:'AFFECTED_UNITS_MISMATCH'};
+    if(!postHashesMatch(tx,post))return{accepted:false,code:'POST_HASH_MISMATCH'};
+    const truth=k0Truth(post);if(!truth.ok)return{accepted:false,code:'POST_STATE_CANDIDATE_TRUTH_FAILURE'};
+    return{accepted:true,code:'OK',post_state:makeState(post)};
+  }
+  function verifyCommitted(stateValue,tx){
+    let state;
+    try{state=makeState(stateValue);}catch(e){return{accepted:false,code:'MALFORMED_STATE'};}
+    if(!exactKeys(tx,TRANSACTION_KEYS))return{accepted:false,code:'MALFORMED_TRANSACTION_KEYS'};
+    if(tx.schema_version!==PROOF_SCHEMA_VERSION)return{accepted:false,code:'UNSUPPORTED_SCHEMA'};
+    if(tx.engine_id!==ENGINE_ID)return{accepted:false,code:'WRONG_ENGINE'};
+    if(!Number.isInteger(tx.sequence)||tx.sequence<0)return{accepted:false,code:'MALFORMED_SEQUENCE'};
+    if(!exactKeys(tx.technique,TECHNIQUE_KEYS))return{accepted:false,code:'MALFORMED_TECHNIQUE'};
+    const id=tx.technique.id;
+    if(!Object.prototype.hasOwnProperty.call(TECHNIQUE_VERSIONS,id))return{accepted:false,code:'UNSUPPORTED_TECHNIQUE'};
+    if(tx.technique.version!==TECHNIQUE_VERSIONS[id])return{accepted:false,code:'UNSUPPORTED_TECHNIQUE_VERSION'};
+    if(tx.technique.tier!=='K0')return{accepted:false,code:'UNSUPPORTED_TECHNIQUE_TIER'};
+    if(typeof tx.technique.requires_uniqueness!=='boolean')return{accepted:false,code:'MALFORMED_UNIQUENESS_FLAG'};
+    if(tx.technique.requires_uniqueness)return{accepted:false,code:'UNIQUENESS_DEPENDENT_UNSUPPORTED'};
+    for(const k of ['premises','affected_units','affected_cells','affected_candidates','placements','eliminations','candidate_initializations','contradictions'])if(!Array.isArray(tx[k]))return{accepted:false,code:'MALFORMED_ARRAY'};
+    if(tx.affected_units.some(u=>typeof u!=='string'||!UNIT_CELLS[u])||!same(tx.affected_units,normalizeUnits(tx.affected_units)))return{accepted:false,code:'MALFORMED_OR_NONCANONICAL_AFFECTED_UNITS'};
+    if(tx.affected_cells.some(c=>!validCell(c))||!same(tx.affected_cells,Array.from(new Set(tx.affected_cells)).sort((a,b)=>a-b)))return{accepted:false,code:'MALFORMED_OR_NONCANONICAL_AFFECTED_CELLS'};
+    for(const k of ['pre_board_hash','pre_candidate_hash','pre_state_hash','post_board_hash','post_candidate_hash','post_state_hash'])if(!validHash(tx[k]))return{accepted:false,code:'MALFORMED_HASH'};
+    if(tx.pre_board_hash!==state.board_hash)return{accepted:false,code:'STALE_PRE_BOARD_HASH'};
+    if(tx.pre_candidate_hash!==state.candidate_hash)return{accepted:false,code:'STALE_PRE_CANDIDATE_HASH'};
+    if(tx.pre_state_hash!==state.state_hash)return{accepted:false,code:'STALE_PRE_STATE_HASH'};
+    if(!exactKeys(tx.verifier_result,VERIFIER_RESULT_KEYS)||!Array.isArray(tx.verifier_result.details)||tx.verifier_result.details.some(x=>typeof x!=='string'))return{accepted:false,code:'MALFORMED_VERIFIER_RESULT'};
+    if(tx.verifier_result.status!=='ACCEPTED'||tx.verifier_result.code!=='OK'||!same(tx.verifier_result.details,[]))return{accepted:false,code:'NOT_COMMITTED'};
+    if(!validHash(tx.transaction_hash)||txHash(tx)!==tx.transaction_hash)return{accepted:false,code:'TRANSACTION_HASH_MISMATCH'};
+    const truth=k0Truth(state);if(!truth.ok)return{accepted:false,code:'PRE_STATE_CANDIDATE_TRUTH_FAILURE'};
+    if(id==='K0.CANDIDATE_INIT'){
+      if(state.candidate_initialized)return{accepted:false,code:'CANDIDATES_ALREADY_INITIALIZED'};
+      if(!same(tx.premises,[{board_valid:true,candidate_rule:'row_col_box_exclusion'}])||tx.placements.length||tx.eliminations.length||tx.contradictions.length)return{accepted:false,code:'INVALID_CANDIDATE_INIT_PREMISE'};
+      const masks=exactCandidates(state.board),init=[];for(let c=0;c<81;c++)if(state.board[c]===0)init.push({cell:c,values:valuesFromMask(masks[c])});
+      if(!same(tx.candidate_initializations,init))return{accepted:false,code:'INVALID_CANDIDATE_INITIALIZATION'};
+      const effects=[];for(const item of init)for(const value of item.values)effects.push({cell:item.cell,value,effect:'initialize'});effects.sort((a,b)=>a.cell-b.cell||a.value-b.value||a.effect.localeCompare(b.effect));
+      if(!same(tx.affected_candidates,effects))return{accepted:false,code:'AFFECTED_CANDIDATES_MISMATCH'};
+      if(!same(tx.affected_cells,init.map(x=>x.cell)))return{accepted:false,code:'AFFECTED_CELLS_MISMATCH'};
+      if(!same(tx.affected_units,UNIT_ORDER))return{accepted:false,code:'AFFECTED_UNITS_MISMATCH'};
+      const post={board:state.board.slice(),candidates:masks,candidate_initialized:true};
+      if(!postHashesMatch(tx,post))return{accepted:false,code:'POST_HASH_MISMATCH'};
+      return{accepted:true,code:'OK',post_state:makeState(post)};
+    }
+    if(id==='K0.NAKED_SINGLE'){
+      const p=tx.premises&&tx.premises[0];if(tx.premises.length!==1||!exactKeys(p,['cell','candidate_mask','only_value'])||!validCell(p.cell)||!Number.isInteger(p.candidate_mask)||!validDigit(p.only_value))return{accepted:false,code:'MALFORMED_NAKED_SINGLE_PREMISE'};
+      if(state.board[p.cell]!==0||state.candidates[p.cell]!==p.candidate_mask||valuesFromMask(p.candidate_mask).length!==1||valuesFromMask(p.candidate_mask)[0]!==p.only_value)return{accepted:false,code:'INVALID_NAKED_SINGLE'};
+      return placementTransition(state,tx,p.cell,p.only_value);
+    }
+    if(id==='K0.HIDDEN_SINGLE'){
+      const p=tx.premises&&tx.premises[0];if(tx.premises.length!==1||!exactKeys(p,['unit','value','candidate_cells','target_cell'])||!UNIT_CELLS[p.unit]||!validDigit(p.value)||!Array.isArray(p.candidate_cells)||p.candidate_cells.some(c=>!validCell(c))||!validCell(p.target_cell))return{accepted:false,code:'MALFORMED_HIDDEN_SINGLE_PREMISE'};
+      if(UNIT_CELLS[p.unit].some(c=>state.board[c]===p.value))return{accepted:false,code:'INVALID_HIDDEN_SINGLE'};
+      const bit=1<<(p.value-1),computed=UNIT_CELLS[p.unit].filter(c=>state.board[c]===0&&(state.candidates[c]&bit));
+      if(!same(p.candidate_cells,computed)||computed.length!==1||p.target_cell!==computed[0])return{accepted:false,code:'INVALID_HIDDEN_SINGLE'};
+      return placementTransition(state,tx,p.target_cell,p.value);
+    }
+    if(id==='K0.CONTRADICTION'){
+      if(tx.placements.length||tx.eliminations.length||tx.candidate_initializations.length||tx.affected_candidates.length)return{accepted:false,code:'CONTRADICTION_MUTATES_STATE'};
+      const c=tx.contradictions&&tx.contradictions[0];if(tx.contradictions.length!==1||tx.premises.length!==1||!same(tx.premises,tx.contradictions)||!c||typeof c!=='object')return{accepted:false,code:'MALFORMED_CONTRADICTION'};
+      let real=false,units=[],cells=[];
+      if(c.kind==='EMPTY_CELL_NO_CANDIDATES'&&exactKeys(c,['kind','cell'])&&validCell(c.cell)){real=state.candidate_initialized&&state.board[c.cell]===0&&state.candidates[c.cell]===0;cells=[c.cell];}
+      else if(c.kind==='UNIT_VALUE_NO_LOCATION'&&exactKeys(c,['kind','unit','value'])&&UNIT_CELLS[c.unit]&&validDigit(c.value)){const bit=1<<(c.value-1);real=state.candidate_initialized&&!UNIT_CELLS[c.unit].some(x=>state.board[x]===c.value)&&!UNIT_CELLS[c.unit].some(x=>state.board[x]===0&&(state.candidates[x]&bit));units=[c.unit];}
+      else if(c.kind==='EXACT_ORACLE_NO_SOLUTION')return{accepted:false,code:'ORACLE_REQUIRED_PYTHON_AUTHORITY'};
+      else return{accepted:false,code:'MALFORMED_OR_UNSUPPORTED_CONTRADICTION'};
+      if(!real)return{accepted:false,code:'FALSE_CONTRADICTION'};
+      if(!same(tx.affected_units,units)||!same(tx.affected_cells,cells))return{accepted:false,code:'AFFECTED_SCOPE_MISMATCH'};
+      if(!postHashesMatch(tx,state))return{accepted:false,code:'POST_HASH_MISMATCH'};
+      return{accepted:true,code:'OK',post_state:state};
+    }
+    return{accepted:false,code:'UNSUPPORTED_TECHNIQUE'};
+  }
+
+  return {SIZE,ENGINE_ID,PROOF_SCHEMA_VERSION,sha256,canonicalStringify,canonicalHash,parseBoard,valuesFromMask,validateBoard,legalMask,exactCandidates,boardHash,candidateHash,stateHash,makeState,transactionHash:txHash,verifyCommitted};
+});
+
+</script>
+<script>
+/* Embedded ai8_sudoku_human_trace_v1.js — standalone/offline safety */
+/* AI8_SUDOKU_HUMAN_EVENT_V1 local-first event recorder. */
+(function(root,factory){
+  const api=factory(root.AI8SudokuTruth||(typeof require==='function'?require('./ai8_sudoku_truth_v1.js'):null));
+  if(typeof module==='object'&&module.exports)module.exports=api;
+  root.AI8SudokuHumanTrace=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(Truth){
+  'use strict';
+  if(!Truth)throw new Error('AI8SudokuTruth is required');
+  const SCHEMA='AI8_SUDOKU_HUMAN_EVENT_V1';
+  const ENGINE='8Z_SUDOKU_HTML_HUMAN_TRACE_V1_2_0';
+  const STORAGE_KEY='ai8SudokuHumanTraceV1';
+  const CONSENT_KEY='ai8SudokuHumanTraceConsentV1';
+  const ALLOWED_SOURCE=new Set(['touch','pointer','key']);
+  const ALLOWED_ACTION=new Set(['select_cell','place_value','erase_value','add_note','remove_note','undo','request_hint','accept_hint','ignore_hint','start','pause','resume','session_resume','finish']);
+  const MUTATING_ACTION=new Set(['place_value','erase_value','add_note','remove_note']);
+  const PAYLOAD_KEYS={
+    start:['reason','difficulty'],
+    select_cell:['cell','selected'],
+    place_value:['cell','value','previous_value','previous_notes'],
+    erase_value:['cell','previous_value','previous_notes'],
+    add_note:['cell','value'],
+    remove_note:['cell','value'],
+    undo:['cell','restored_value','restored_notes','replaced_value','replaced_notes','reverted_action'],
+    request_hint:['hint_id','cell','value','technique'],
+    accept_hint:['hint_id'],
+    ignore_hint:['hint_id','reason'],
+    pause:[],resume:[],session_resume:['reason'],finish:['outcome']
+  };
+  const PRIVACY={
+    local_first:true,
+    device_identifiers:false,
+    hidden_fingerprinting:false,
+    input_source_domain:['touch','pointer','key'],
+    export_time_quantum_ms:50,
+    redundant_visible_ui_snapshot:false
+  };
+  function clone(v){return JSON.parse(JSON.stringify(v));}
+  function isInt(v,a,b){return Number.isInteger(v)&&v>=a&&v<=b;}
+  function boundedText(v,max){return typeof v==='string'&&v.length>0&&v.length<=max&&![...v].some(ch=>ch.codePointAt(0)<32);}
+  function noteList(v){return Array.isArray(v)&&v.every(x=>isInt(x,1,9))&&JSON.stringify(v)===JSON.stringify(Array.from(new Set(v)).sort((a,b)=>a-b));}
+  function exactKeys(obj,expected){return obj&&typeof obj==='object'&&!Array.isArray(obj)&&JSON.stringify(Object.keys(obj).sort())===JSON.stringify(expected.slice().sort());}
+  function sanitizePayload(action,payload){
+    if(!ALLOWED_ACTION.has(action))throw new Error('unsupported human action '+action);
+    const expected=PAYLOAD_KEYS[action];
+    if(!exactKeys(payload,expected))throw new Error('human trace payload keys mismatch for '+action);
+    const p=clone(payload);
+    if(action==='start'&&(!boundedText(p.reason,64)||!boundedText(p.difficulty,32)))throw new Error('invalid start payload');
+    if(action==='select_cell'&&(!isInt(p.cell,0,80)||typeof p.selected!=='boolean'))throw new Error('invalid selected cell payload');
+    if(action==='place_value'&&(!isInt(p.cell,0,80)||!isInt(p.value,1,9)||!isInt(p.previous_value,0,9)||!noteList(p.previous_notes)))throw new Error('invalid placement payload');
+    if(action==='erase_value'&&(!isInt(p.cell,0,80)||!isInt(p.previous_value,0,9)||!noteList(p.previous_notes)))throw new Error('invalid erase payload');
+    if((action==='add_note'||action==='remove_note')&&(!isInt(p.cell,0,80)||!isInt(p.value,1,9)))throw new Error('invalid note payload');
+    if(action==='undo'&&(!isInt(p.cell,0,80)||!isInt(p.restored_value,0,9)||!isInt(p.replaced_value,0,9)||!noteList(p.restored_notes)||!noteList(p.replaced_notes)||!MUTATING_ACTION.has(p.reverted_action)))throw new Error('invalid undo payload');
+    if(action==='request_hint'&&(!boundedText(p.hint_id,96)||!isInt(p.cell,0,80)||!isInt(p.value,1,9)||!boundedText(p.technique,96)))throw new Error('invalid hint request payload');
+    if(action==='accept_hint'&&!boundedText(p.hint_id,96))throw new Error('invalid hint acceptance payload');
+    if(action==='ignore_hint'&&(!boundedText(p.hint_id,96)||!boundedText(p.reason,96)))throw new Error('invalid hint ignore payload');
+    if(action==='session_resume'&&!boundedText(p.reason,64))throw new Error('invalid session resume payload');
+    if(action==='finish'&&!boundedText(p.outcome,64))throw new Error('invalid finish payload');
+    return p;
+  }
+  function normalizeSource(source){if(!ALLOWED_SOURCE.has(source))throw new Error('invalid input source');return source;}
+  function noteMasksFromSets(notes){
+    const out=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++){let m=0;for(const v of notes[r][c])m|=1<<(v-1);out.push(m);}return out;
+  }
+  function stateObject(board,candidates){
+    const b=Truth.parseBoard(board),c=candidates.slice();
+    if(c.length!==81||c.some(m=>!isInt(m,0,0x1ff)))throw new Error('invalid human candidate state');
+    if(b.some((v,i)=>v!==0&&c[i]!==0))throw new Error('notes on filled cell');
+    return{board:b,candidates:c,board_hash:Truth.boardHash(b),candidate_hash:Truth.candidateHash(c,true)};
+  }
+  function eventHash(event){const p=clone(event);p.event_hash='';return Truth.canonicalHash(p);}
+  function traceHash(trace){const p=clone(trace);p.trace_hash='';return Truth.canonicalHash(p);}
+  class Recorder{
+    constructor(getState){
+      if(typeof getState!=='function')throw new Error('getState function required');
+      this.getState=getState;this.trace=null;this.lastClock=null;this.finished=false;this.memoryConsent=false;this.memoryStored=null;
+    }
+    hasConsent(){try{return localStorage.getItem(CONSENT_KEY)==='yes'||this.memoryConsent;}catch(_){return this.memoryConsent;}}
+    setConsent(granted){
+      this.memoryConsent=!!granted;
+      try{if(granted)localStorage.setItem(CONSENT_KEY,'yes');else localStorage.removeItem(CONSENT_KEY);}catch(_){}
+      if(!granted){this.trace=null;this.finished=false;this.lastClock=null;this.memoryStored=null;try{localStorage.removeItem(STORAGE_KEY);}catch(_){}}
+      return !!granted;
+    }
+    hasTrace(){return !!this.trace&&this.hasConsent();}
+    isActive(){return this.hasTrace()&&!this.finished;}
+    isLocked(){return this.hasTrace();}
+    _now(){return(typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();}
+    _delta(){const now=this._now();const d=this.lastClock===null?0:Math.max(0,now-this.lastClock);this.lastClock=now;return Math.round(d/50)*50;}
+    _current(){const s=this.getState();return stateObject(s.board,s.candidates);}
+    start(source='pointer',payload={reason:'session_start',difficulty:'unknown'}){
+      if(!this.hasConsent())return false;
+      source=normalizeSource(source);payload=sanitizePayload('start',payload);
+      const raw=this.getState(),initial=stateObject(raw.board,raw.candidates);
+      const givens=Array.isArray(raw.givens)?Array.from(new Set(raw.givens)).sort((a,b)=>a-b):initial.board.map((v,i)=>v?i:null).filter(v=>v!==null);
+      if(givens.some(i=>!isInt(i,0,80)||initial.board[i]===0))throw new Error('given cells do not match initial board');
+      this.trace={schema_version:SCHEMA,engine_id:ENGINE,consent:{granted:true,scope:'local_human_action_trace'},privacy_contract:clone(PRIVACY),initial_state:initial,given_cells:givens,events:[],final_state:initial,trace_hash:''};
+      this.lastClock=this._now();this.finished=false;
+      this.capture('start',source,payload,()=>{});
+      return true;
+    }
+    capture(action,source,payload,mutate){
+      if(typeof mutate!=='function')mutate=()=>{};
+      if(!this.isActive()){
+        // No consent/no trace: preserve normal game behaviour.  A completed trace,
+        // however, must not acquire unrecorded post-finish state mutations.
+        if(!(this.trace&&this.finished))mutate();
+        return null;
+      }
+      source=normalizeSource(source);payload=sanitizePayload(action,payload||{});
+      const before=this._current();
+      mutate();
+      const after=this._current();
+      const event={
+        sequence:this.trace.events.length,
+        action,
+        input_source:source,
+        delta_ms_50:this._delta(),
+        payload,
+        before_board_hash:before.board_hash,
+        before_candidate_hash:before.candidate_hash,
+        after_board_hash:after.board_hash,
+        after_candidate_hash:after.candidate_hash,
+        event_hash:''
+      };
+      event.event_hash=eventHash(event);
+      this.trace.events.push(event);this.trace.final_state=after;this.trace.trace_hash=traceHash(this.trace);this._persist();
+      if(action==='finish')this.finished=true;
+      return event;
+    }
+    noMutation(action,source,payload){return this.capture(action,source,payload,()=>{});}
+    exportObject(){
+      if(!this.trace)return null;
+      // A finished trace is immutable. Never rewrite final_state from later UI state.
+      if(!this.finished)this.trace.final_state=this._current();
+      this.trace.trace_hash=traceHash(this.trace);this._persist();return clone(this.trace);
+    }
+    _persist(){this.memoryStored=clone(this.trace);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(this.trace));}catch(_){} }
+    storedObject(){try{const raw=localStorage.getItem(STORAGE_KEY);return raw?JSON.parse(raw):clone(this.memoryStored);}catch(_){return clone(this.memoryStored);}}
+    validateStoredObject(obj){
+      try{
+        if(!obj||obj.schema_version!==SCHEMA||obj.engine_id!==ENGINE||!Array.isArray(obj.events))return{ok:false,code:'STORED_SCHEMA_MISMATCH'};
+        if(!obj.initial_state||!obj.final_state||typeof obj.trace_hash!=='string')return{ok:false,code:'STORED_STATE_MISSING'};
+        if(traceHash(obj)!==obj.trace_hash)return{ok:false,code:'STORED_TRACE_HASH_MISMATCH'};
+        for(let i=0;i<obj.events.length;i++){const e=obj.events[i];if(!e||e.sequence!==i||eventHash(e)!==e.event_hash)return{ok:false,code:'STORED_EVENT_HASH_MISMATCH'};}
+        if(obj.events.length&&obj.events[0].action!=='start')return{ok:false,code:'STORED_START_MISSING'};
+        return{ok:true,code:'OK'};
+      }catch(_){return{ok:false,code:'STORED_PARSE_ERROR'};}
+    }
+    loadStored(){
+      const obj=this.storedObject();if(!obj)return{ok:false,code:'NO_STORED_TRACE'};
+      const v=this.validateStoredObject(obj);if(!v.ok)return v;
+      this.trace=clone(obj);this.finished=!!(this.trace.events.length&&this.trace.events[this.trace.events.length-1].action==='finish');this.lastClock=this._now();this.memoryStored=clone(obj);return{ok:true,code:'OK',trace:clone(obj)};
+    }
+    deleteAll(){this.setConsent(false);}
+  }
+  return{SCHEMA,ENGINE,STORAGE_KEY,CONSENT_KEY,PRIVACY,PAYLOAD_KEYS,Recorder,noteMasksFromSets,stateObject,eventHash,traceHash,sanitizePayload};
+});
+</script>
+<script>
+// ── Dynamic cell sizing ──
+function calcCellSize(){
+  const w=window.innerWidth,h=window.innerHeight;
+  if(w<760){const avail=Math.min(w-40,h*0.5);return Math.max(30,Math.floor((avail-20)/9.5))}
+  const availW=w-490,availH=h-160;
+  return Math.max(36,Math.min(Math.floor((availW-20)/9.5),Math.floor((availH-20)/9.5),72));
+}
+function applyCellSize(){document.documentElement.style.setProperty('--cell',calcCellSize()+'px')}
+applyCellSize();window.addEventListener('resize',applyCellSize);
+
+// ════════════════════════════════════════════════════════
+//  CORE ENGINE
+// ════════════════════════════════════════════════════════
+const SIZE=9,BOX=3;
+
+function getCandidates(g,r,c){
+  if(g[r][c]!==0)return new Set();
+  const u=new Set();
+  for(let i=0;i<9;i++){u.add(g[r][i]);u.add(g[i][c])}
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)u.add(g[i][j]);
+  u.delete(0);const s=new Set();for(let v=1;v<=9;v++)if(!u.has(v))s.add(v);return s;
+}
+function getAllCandidates(g){
+  const m=new Map();
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)m.set(r*9+c,getCandidates(g,r,c));
+  return m;
+}
+function countCandidates(g){let t=0;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)t+=getCandidates(g,r,c).size;return t}
+function isValid(g,r,c,v){for(let i=0;i<9;i++){if(i!==c&&g[r][i]===v)return false;if(i!==r&&g[i][c]===v)return false}const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return false;return true}
+function isSolved(g){for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)return false;return true}
+function copyGrid(g){return g.map(r=>[...r])}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// ── Generator ──
+function generateFull(){const g=Array.from({length:9},()=>Array(9).fill(0));function f(p){if(p===81)return true;const r=Math.floor(p/9),c=p%9;for(const v of shuffle([1,2,3,4,5,6,7,8,9])){if(isValid(g,r,c,v)){g[r][c]=v;if(f(p+1))return true;g[r][c]=0}}return false}f(0);return g}
+function countSolutions(g,lim=2){const t=copyGrid(g);let cnt=0;function s(p){if(cnt>=lim)return;while(p<81){if(t[Math.floor(p/9)][p%9]===0)break;p++}if(p>=81){cnt++;return}const r=Math.floor(p/9),c=p%9;for(let v=1;v<=9;v++){if(isValid(t,r,c,v)){t[r][c]=v;s(p+1);if(cnt>=lim){t[r][c]=0;return}t[r][c]=0}}}s(0);return cnt}
+function generatePuzzle(diff){const ranges={easy:[36,42],medium:[28,35],hard:[24,27],evil:[20,23]};const[lo,hi]=ranges[diff]||[28,35];const target=lo+Math.floor(Math.random()*(hi-lo+1));const sol=generateFull(),puz=copyGrid(sol);let removed=0;for(const pos of shuffle([...Array(81).keys()])){if(removed>=81-target)break;const r=Math.floor(pos/9),c=pos%9,saved=puz[r][c];puz[r][c]=0;if(countSolutions(puz)===1)removed++;else puz[r][c]=saved}return{puzzle:puz,solution:sol}}
+
+// ════════════════════════════════════════════════════════
+//  LZ76 — from TSP arena, proven implementation
+// ════════════════════════════════════════════════════════
+function lz76(s){
+  const n=s.length;if(n<=1)return n;
+  let c=1,l=1,i=0,k=1,km=1;
+  while(true){
+    if(s[i+k-1]===s[l+k-1]){k++;if(l+k>n){c++;break}}
+    else{if(k>km)km=k;i++;if(i===l){c++;l+=km;if(l>=n)break;i=0;k=1;km=1}else k=1}
+  }return c;
+}
+function lz76norm(s){const n=s.length;if(n<=1)return 0;return lz76(s)/(n/Math.max(Math.log2(n),1))}
+
+// ════════════════════════════════════════════════════════
+//  STRATEGY-SPECIFIC SOLVERS (Phase 1)
+// ════════════════════════════════════════════════════════
+
+function findNaked(g){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(g[r][c]===0){const cs=getCandidates(g,r,c);if(cs.size===1)return{r,c,v:[...cs][0],strategy:'naked_single'}}
+  }return null;
+}
+function findHidden(g){
+  const check=(cells)=>{for(let v=1;v<=9;v++){if(cells.some(([r,c])=>g[r][c]===v))continue;const p=cells.filter(([r,c])=>g[r][c]===0&&getCandidates(g,r,c).has(v));if(p.length===1)return{r:p[0][0],c:p[0][1],v,strategy:'hidden_single'}}return null};
+  for(let r=0;r<9;r++){const res=check([...Array(9).keys()].map(c=>[r,c]));if(res)return res}
+  for(let c=0;c<9;c++){const res=check([...Array(9).keys()].map(r=>[r,c]));if(res)return res}
+  for(let br=0;br<9;br+=3)for(let bc=0;bc<9;bc+=3){const cells=[];for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)cells.push([i,j]);const res=check(cells);if(res)return res}
+  return null;
+}
+function findPointing(g){
+  const cands=getAllCandidates(g);
+  for(let br=0;br<9;br+=3)for(let bc=0;bc<9;bc+=3){
+    for(let v=1;v<=9;v++){
+      const cells=[];
+      for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++){const k=i*9+j;if(cands.has(k)&&cands.get(k).has(v))cells.push([i,j])}
+      if(cells.length<2)continue;
+      const rows=new Set(cells.map(c=>c[0])),cols=new Set(cells.map(c=>c[1]));
+      if(rows.size===1){const row=[...rows][0];for(let c2=0;c2<9;c2++){if(c2>=bc&&c2<bc+3)continue;const k=row*9+c2;if(cands.has(k)&&cands.get(k).has(v)&&cands.get(k).size===2){const rem=new Set(cands.get(k));rem.delete(v);if(rem.size===1)return{r:row,c:c2,v:[...rem][0],strategy:'pointing_pair'}}}}
+      if(cols.size===1){const col=[...cols][0];for(let r2=0;r2<9;r2++){if(r2>=br&&r2<br+3)continue;const k=r2*9+col;if(cands.has(k)&&cands.get(k).has(v)&&cands.get(k).size===2){const rem=new Set(cands.get(k));rem.delete(v);if(rem.size===1)return{r:r2,c:col,v:[...rem][0],strategy:'pointing_pair'}}}}
+    }
+  }
+  return null;
+}
+
+function cascadeCount(g,r,c,v){const t=copyGrid(g);t[r][c]=v;let n=0,ch=true;while(ch){ch=false;for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(t[i][j]===0){const cs=getCandidates(t,i,j);if(cs.size===1){t[i][j]=[...cs][0];n++;ch=true}}}return n}
+
+// Main solver with strategy routing
+function solveWithStrategy(grid_input,strategy){
+  const g=copyGrid(grid_input);const log=[];let step=0;const MAX=10000;const t0=performance.now();
+
+  const techniques={random:[],mrv:[],naked:['naked'],full:['naked','hidden'],human:['naked','hidden','pointing']}[strategy]||['naked','hidden'];
+
+  function propagate(g,techs){
+    const placed=[];let progress=true;
+    while(progress){
+      progress=false;
+      if(techs.includes('naked')){const f=findNaked(g);if(f){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+      if(techs.includes('hidden')){const f=findHidden(g);if(f&&g[f.r][f.c]===0){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+      if(techs.includes('pointing')){const f=findPointing(g);if(f&&g[f.r][f.c]===0){g[f.r][f.c]=f.v;placed.push(f);progress=true;continue}}
+    }
+    return placed;
+  }
+
+  function solve(g){
+    if(step>=MAX||(performance.now()-t0)>8000)return false;
+    const cb=countCandidates(g);
+    const placed=propagate(g,techniques);
+    const cl=placed.length;
+    for(let i=0;i<placed.length;i++){
+      step++;const p=placed[i];const ca=countCandidates(g);
+      log.push({step,r:p.r,c:p.c,v:p.v,strategy:p.strategy,cascade:cl-1>0&&i===0?cl-1:0,backtrack:false,cb,ca});
+    }
+    // Check contradiction
+    for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0&&getCandidates(g,r,c).size===0){
+      for(const p of [...placed].reverse())g[p.r][p.c]=0;return false;
+    }
+    if(isSolved(g))return true;
+    // No empty cells check
+    const empty=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)empty.push([r,c]);
+    if(!empty.length)return true;
+
+    // Cell selection
+    let cr,cc,vals;
+    if(strategy==='random'){
+      const idx=Math.floor(Math.random()*empty.length);
+      [cr,cc]=empty[idx];const cs=getCandidates(g,cr,cc);vals=shuffle([...cs]);
+    }else{
+      let best=null,bestN=10;
+      for(const[r,c]of empty){const n=getCandidates(g,r,c).size;if(n===0){for(const p of[...placed].reverse())g[p.r][p.c]=0;return false}if(n<bestN){bestN=n;best=[r,c]}}
+      [cr,cc]=best;vals=[...getCandidates(g,cr,cc)].sort();
+    }
+    if(!vals||!vals.length){for(const p of[...placed].reverse())g[p.r][p.c]=0;return false}
+
+    for(const v of vals){
+      step++;const cbg=countCandidates(g);const snap=copyGrid(g);
+      g[cr][cc]=v;const cag=countCandidates(g);
+      log.push({step,r:cr,c:cc,v,strategy:'guess',cascade:0,backtrack:false,cb:cbg,ca:cag});
+      if(solve(g))return true;
+      // Backtrack
+      step++;
+      const restore=[];for(let i=0;i<9;i++)for(let j=0;j<9;j++)if(g[i][j]!==snap[i][j])restore.push({r:i,c:j});
+      for(let i=0;i<9;i++)for(let j=0;j<9;j++)g[i][j]=snap[i][j];
+      const ca2=countCandidates(g);
+      log.push({step,r:cr,c:cc,v,strategy:'backtrack',cascade:0,backtrack:true,restore,cb:cag,ca:ca2});
+    }
+    for(const p of[...placed].reverse())g[p.r][p.c]=0;
+    return false;
+  }
+  solve(g);return{solved:g,log};
+}
+
+// ════════════════════════════════════════════════════════
+//  LIVE SENSOR COMPUTATION
+// ════════════════════════════════════════════════════════
+
+function computeSensors(log){
+  if(!log||log.length<2)return{lz:0,gini:0,cascPow:0,density:0,adsr:0};
+  const nonBT=log.filter(s=>!s.backtrack);
+  // LZ_process: entropy deltas → binary → LZ
+  const deltas=log.map(s=>(s.cb||0)-(s.ca||0));
+  let lzProc=0;
+  if(deltas.length>=2){
+    const sorted=[...deltas].sort((a,b)=>a-b);const med=sorted[Math.floor(sorted.length/2)];
+    const bits=deltas.map(d=>d>med?'1':'0').join('');
+    lzProc=lz76norm(bits);
+  }
+  // Gini on cascade depths
+  const cascades=nonBT.map(s=>s.cascade||0);
+  let gini=0;
+  if(cascades.length>0){
+    const s=[...cascades].sort((a,b)=>a-b);const n=s.length;const total=s.reduce((a,b)=>a+b,0);
+    if(total>0){let cum=0;for(let i=0;i<n;i++)cum+=(2*i-n-1+2)*s[i];gini=Math.abs(cum/(n*total))}
+  }
+  // Cascade weighted: sum(cascade × delta) / n
+  let cascPow=0;
+  if(nonBT.length>0){
+    let cw=0;for(const s of nonBT)cw+=(s.cascade||0)*Math.max((s.cb||0)-(s.ca||0),0);
+    cascPow=cw/nonBT.length;
+  }
+  // Density flow: LZ on candidate flow
+  let density=0;
+  const flow=nonBT.map(s=>s.ca||0);
+  if(flow.length>=2){
+    const sorted=[...flow].sort((a,b)=>a-b);const med=sorted[Math.floor(sorted.length/2)];
+    const bits=flow.map(f=>f>med?'1':'0').join('');
+    density=lz76norm(bits);
+  }
+  // ADSR (fixed threshold = 5)
+  let adsr=0;
+  if(cascades.length>0){
+    const nz=cascades.filter(d=>d===0).length;const nd=cascades.filter(d=>d>=5).length;
+    adsr=(nz+nd)/cascades.length;
+  }
+  return{lz:lzProc,gini,cascPow,density,adsr};
+}
+
+// ════════════════════════════════════════════════════════
+//  UI STATE
+// ════════════════════════════════════════════════════════
+let puzzle=null,solution=null,playerGrid=null,givenCells=null,selectedCell=null,notesMode=false,notes=null,history=[];
+let timerInterval=null,timerSeconds=0,aiLog=null,aiStepIndex=0,aiAnimating=false,aiTimeout=null;
+let currentStrategy='full';
+let aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};
+let fullLog=[];// accumulated log for sensor computation
+
+// ── v1.2 AI8_SUDOKU_HUMAN_EVENT_V1 ──
+let activeHumanHint=null,tracePaused=false,traceFinishRecorded=false,traceHistoryFloor=0,recoveryAwaitingContinue=false,correctionHighlightActive=false;
+function humanCandidateMasks(){
+  if(!notes)return Array(81).fill(0);
+  return AI8SudokuHumanTrace.noteMasksFromSets(notes);
+}
+const humanTraceRecorder=new AI8SudokuHumanTrace.Recorder(()=>({
+  board:playerGrid?playerGrid.flat():Array(81).fill(0),
+  candidates:humanCandidateMasks(),
+  givens:givenCells?givenCells.flat().map((v,i)=>v?i:null).filter(v=>v!==null):[]
+}));
+function ai8InputSource(ev){
+  if(ev&&ev.type&&String(ev.type).startsWith('key'))return'key';
+  if(ev&&((ev.pointerType&&ev.pointerType==='touch')||(ev.sourceCapabilities&&ev.sourceCapabilities.firesTouchEvents)))return'touch';
+  return'pointer';
+}
+function updateHumanTraceStatus(){
+  const el=document.getElementById('traceStatus'),consent=document.getElementById('traceConsentBtn'),pause=document.getElementById('tracePauseBtn'),cont=document.getElementById('traceContinueBtn');
+  if(!el)return;
+  if(!humanTraceRecorder.hasConsent()){
+    el.textContent='Consent required · local only';el.className='trace-status';
+    if(consent){consent.textContent='Enable with consent';consent.style.display=''};
+    if(cont)cont.style.display='none';
+    if(pause)pause.textContent='Pause';return;
+  }
+  if(consent)consent.style.display='none';
+  if(cont)cont.style.display=(recoveryAwaitingContinue&&!humanTraceRecorder.finished)?'':'none';
+  const trace=humanTraceRecorder.exportObject();
+  const count=trace?trace.events.length:0;
+  if(recoveryAwaitingContinue&&!humanTraceRecorder.finished){
+    el.textContent=`Recovered after page reload · ${count} events · Continue to resume same trace`;el.className='trace-status paused';
+  }else{
+    el.textContent=humanTraceRecorder.finished?`Complete · ${count} events stored locally`:(tracePaused?`Paused · ${count} events stored locally`:`Recording locally · ${count} events`);
+    el.className='trace-status '+(tracePaused?'paused':'on');
+  }
+  if(pause)pause.textContent=tracePaused?'Resume':'Pause';
+}
+function consentHumanTrace(){
+  humanTraceRecorder.setConsent(true);tracePaused=false;
+  if(playerGrid)startHumanTrace('pointer',{reason:'consent',difficulty:currentDiff||'fixture'});
+  updateHumanTraceStatus();
+}
+function startHumanTrace(source='pointer',payload={}){
+  traceFinishRecorded=false;tracePaused=false;activeHumanHint=null;traceHistoryFloor=history.length;recoveryAwaitingContinue=false;correctionHighlightActive=false;
+  if(humanTraceRecorder.hasConsent()&&playerGrid)humanTraceRecorder.start(source,payload);
+  updateHumanTraceStatus();
+}
+function humanCapture(action,source,payload,mutate){
+  if(recoveryAwaitingContinue){setStatus('Recovered trace is waiting · click Continue recovered session first','');return null;}
+  if(tracePaused){setStatus('Human trace is paused · resume before solving','');return null;}
+  const ev=humanTraceRecorder.capture(action,source,payload,mutate);updateHumanTraceStatus();return ev;
+}
+function humanNoMutation(action,source,payload){
+  if(recoveryAwaitingContinue&&action!=='session_resume')return null;
+  if(tracePaused&&!['resume','session_resume'].includes(action))return null;
+  const ev=humanTraceRecorder.noMutation(action,source,payload);updateHumanTraceStatus();return ev;
+}
+function continueRecoveredHumanTrace(source='pointer'){
+  if(!recoveryAwaitingContinue||!humanTraceRecorder.isActive())return false;
+  const wasPaused=tracePaused;
+  recoveryAwaitingContinue=false;
+  const ev=humanTraceRecorder.noMutation('session_resume',source,{reason:'page_reload'});
+  if(!ev){recoveryAwaitingContinue=true;updateHumanTraceStatus();return false;}
+  if(!wasPaused)resumeTimer();
+  setStatus(wasPaused?'Recovered session continued · trace remains paused':'Recovered session continued · same trace','win');
+  updateHumanTraceStatus();return true;
+}
+function blockAIWhileHumanTrace(actionLabel){
+  if(humanTraceRecorder.isLocked()){
+    setStatus(`${actionLabel} blocked while a human trace exists · Export/Delete the trace first`,'');
+    return true;
+  }
+  return false;
+}
+function ignoreCurrentHint(source='pointer',reason='other_action'){
+  if(!activeHumanHint)return;
+  const wasCorrection=activeHumanHint.technique==='correction';
+  humanNoMutation('ignore_hint',source,{hint_id:activeHumanHint.hint_id,reason});activeHumanHint=null;
+  if(wasCorrection&&['explicit_ignore','test_ignore','export','paused','session_finished','new_game'].includes(reason))correctionHighlightActive=false;
+}
+function resolveHintForPlacement(cell,value,source,notesAction){
+  if(!activeHumanHint)return;
+  if(!notesAction&&activeHumanHint.cell===cell&&activeHumanHint.value===value){
+    humanNoMutation('accept_hint',source,{hint_id:activeHumanHint.hint_id});activeHumanHint=null;
+  }else ignoreCurrentHint(source,'different_action');
+}
+function isHumanSolvedCorrectly(){
+  if(!playerGrid||!solution||!isSolved(playerGrid))return false;
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])return false;
+  return true;
+}
+function currentWrongEntries(){
+  if(!playerGrid||!solution||!givenCells)return[];
+  const wrong=[];
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    if(givenCells[r][c])continue;
+    const current=playerGrid[r][c],expected=solution[r][c];
+    if(current!==0&&current!==expected)wrong.push({cell:r*9+c,r,c,current,expected});
+  }
+  return wrong;
+}
+function primaryWrongEntry(wrong){
+  if(!wrong.length)return null;
+  const byCell=new Map(wrong.map(x=>[x.cell,x]));
+  for(let i=history.length-1;i>=0;i--){const x=byCell.get(history[i].r*9+history[i].c);if(x)return x;}
+  return wrong[0];
+}
+function maybeFinishHumanTrace(source='pointer',outcome='solved'){
+  if(traceFinishRecorded||!isHumanSolvedCorrectly())return;
+  ignoreCurrentHint(source,'session_finished');
+  humanNoMutation('finish',source,{outcome});traceFinishRecorded=true;
+}
+function toggleHumanTracePause(){
+  if(recoveryAwaitingContinue){setStatus('Click Continue recovered session first','');return;}
+  if(!humanTraceRecorder.hasConsent()||!humanTraceRecorder.trace)return;
+  if(tracePaused){tracePaused=false;humanNoMutation('resume','pointer',{});resumeTimer();}
+  else{ignoreCurrentHint('pointer','paused');humanNoMutation('pause','pointer',{});tracePaused=true;stopTimer();}
+  updateHumanTraceStatus();
+}
+function exportHumanTrace(){
+  if(activeHumanHint)ignoreCurrentHint('pointer','export');
+  const trace=humanTraceRecorder.exportObject();if(!trace){setStatus('No consented human trace to export','');return null;}
+  const text=JSON.stringify(trace,null,2);const blob=new Blob([text+'\n'],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='AI8_SUDOKU_HUMAN_EVENT_V1.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+  setStatus(`Human trace exported · ${trace.events.length} events`,'win');return trace;
+}
+function deleteHumanTrace(){
+  humanTraceRecorder.deleteAll();activeHumanHint=null;tracePaused=false;traceFinishRecorded=false;recoveryAwaitingContinue=false;correctionHighlightActive=false;updateHumanTraceStatus();setStatus('Human trace and consent deleted locally','');
+}
+
+function buildGrid(){
+  const grid=document.getElementById('grid');grid.innerHTML='';
+  for(let i=0;i<81;i++){const cell=document.createElement('div');cell.className='cell';cell.dataset.index=i;cell.addEventListener('click',ev=>selectCell(i,ai8InputSource(ev)));grid.appendChild(cell)}
+  const np=document.getElementById('numpad');np.innerHTML='';
+  for(let n=1;n<=9;n++){const b=document.createElement('button');b.textContent=n;b.addEventListener('click',ev=>placeNumber(n,ai8InputSource(ev)));np.appendChild(b)}
+}
+
+function render(){
+  if(!playerGrid)return;
+  const cells=document.querySelectorAll('.cell');const counts=Array(10).fill(0);
+  const sR=selectedCell!==null?Math.floor(selectedCell/9):-1,sC=selectedCell!==null?selectedCell%9:-1;
+  const sV=selectedCell!==null?playerGrid[sR]?.[sC]:0;
+  const correctionWrong=correctionHighlightActive?currentWrongEntries():[];
+  if(correctionHighlightActive&&!correctionWrong.length)correctionHighlightActive=false;
+  const correctionSet=new Set(correctionWrong.map(x=>x.cell));
+  cells.forEach((cell,i)=>{
+    const r=Math.floor(i/9),c=i%9,v=playerGrid[r][c],isG=givenCells[r][c];
+    const keep=[...cell.classList].find(name=>['ai-naked','ai-hidden','ai-guess','ai-backtrack','ai-pointing','ai-hint'].includes(name));cell.className='cell';
+    if(isG)cell.classList.add('given');
+    if(selectedCell===i)cell.classList.add('selected');
+    if(selectedCell!==null&&(r===sR||c===sC||(Math.floor(r/3)===Math.floor(sR/3)&&Math.floor(c/3)===Math.floor(sC/3))))cell.classList.add('highlight');
+    if(v!==0&&sV!==0&&v===sV&&i!==selectedCell)cell.classList.add('same-value');
+    if(v!==0&&!isG){const tmp=playerGrid[r][c];playerGrid[r][c]=0;if(!isValid(playerGrid,r,c,tmp))cell.classList.add('error');playerGrid[r][c]=tmp}
+    if(keep)cell.classList.add(keep[0]);
+    if(correctionSet.has(i))cell.classList.add('ai-correction');
+    if(v!==0){cell.innerHTML=v;counts[v]++}
+    else if(notes&&notes[r][c].size>0){let h='<div class="notes">';for(let n=1;n<=9;n++)h+=`<span>${notes[r][c].has(n)?n:''}</span>`;cell.innerHTML=h+'</div>'}
+    else cell.innerHTML='';
+  });
+  document.querySelectorAll('#numpad button').forEach((b,i)=>b.classList.toggle('used',counts[i+1]>=9));
+  if(isSolved(playerGrid)){
+    let ok=true;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])ok=false;
+    if(ok){setStatus('Puzzle solved! 🎉','win');stopTimer();
+      if(currentDiff&&(!gameStats.bestTimes[currentDiff]||timerSeconds<gameStats.bestTimes[currentDiff])){gameStats.bestTimes[currentDiff]=timerSeconds;saveStats();renderStats()}}
+  }
+  updateMetrics();
+}
+
+function selectCell(i,source='pointer'){
+  if(aiAnimating)return;const next=(selectedCell===i)?null:i;
+  humanCapture('select_cell',source,{cell:i,selected:next===i},()=>{selectedCell=next;render()});
+}
+function placeNumber(n,source='pointer'){
+  if(selectedCell===null||aiAnimating)return;const cell=selectedCell,r=Math.floor(cell/9),c=cell%9;if(givenCells[r][c])return;
+  resolveHintForPlacement(cell,n,source,notesMode);
+  const prev=playerGrid[r][c],pn=new Set(notes[r][c]);
+  if(notesMode){
+    const adding=!notes[r][c].has(n),action=adding?'add_note':'remove_note';
+    humanCapture(action,source,{cell,value:n},()=>{history.push({r,c,prev,pn,action});if(adding)notes[r][c].add(n);else notes[r][c].delete(n);playerGrid[r][c]=0;render()});
+  }else if(playerGrid[r][c]===n){
+    humanCapture('erase_value',source,{cell,previous_value:prev,previous_notes:[...pn].sort((a,b)=>a-b)},()=>{history.push({r,c,prev,pn,action:'erase_value'});playerGrid[r][c]=0;notes[r][c].clear();render()});
+  }else{
+    humanCapture('place_value',source,{cell,value:n,previous_value:prev,previous_notes:[...pn].sort((a,b)=>a-b)},()=>{history.push({r,c,prev,pn,action:'place_value'});playerGrid[r][c]=n;notes[r][c].clear();render()});
+  }
+  maybeFinishHumanTrace(source);
+}
+function eraseCell(source='pointer'){
+  if(selectedCell===null||aiAnimating)return;const cell=selectedCell,r=Math.floor(cell/9),c=cell%9;if(givenCells[r][c])return;
+  ignoreCurrentHint(source,'erase');const prev=playerGrid[r][c],pn=new Set(notes[r][c]);
+  humanCapture('erase_value',source,{cell,previous_value:prev,previous_notes:[...pn].sort((a,b)=>a-b)},()=>{history.push({r,c,prev,pn,action:'erase_value'});playerGrid[r][c]=0;notes[r][c].clear();render()});
+}
+function undoMove(source='pointer'){
+  if(!history.length||aiAnimating)return;
+  if(humanTraceRecorder.isActive()&&history.length<=traceHistoryFloor){setStatus('Undo before trace start is unavailable while recording','');return;}
+ignoreCurrentHint(source,'undo');const item=history[history.length-1];const{r,c,prev,pn}=item,cell=r*9+c;
+  const replacedValue=playerGrid[r][c],replacedNotes=[...notes[r][c]].sort((a,b)=>a-b);
+  const payload={cell,restored_value:prev,restored_notes:[...pn].sort((a,b)=>a-b),replaced_value:replacedValue,replaced_notes:replacedNotes,reverted_action:item.action||'unknown'};
+  humanCapture('undo',source,payload,()=>{history.pop();playerGrid[r][c]=prev;notes[r][c]=new Set(pn);render()});
+}
+function toggleNotes(){notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode)}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){hideHelp();return}
+  if(document.getElementById('helpModal').style.display==='flex')return;
+  if(e.key>='1'&&e.key<='9'){placeNumber(+e.key,'key');return}
+  if(e.key==='Backspace'||e.key==='Delete'){eraseCell('key');return}
+  if(e.key==='n'){toggleNotes();return}
+  if(e.key==='z'&&(e.ctrlKey||e.metaKey)){undoMove('key');e.preventDefault();return}
+  if(selectedCell!==null){const r=Math.floor(selectedCell/9),c=selectedCell%9;
+    if(e.key==='ArrowUp'&&r>0){selectCell((r-1)*9+c,'key');e.preventDefault()}
+    if(e.key==='ArrowDown'&&r<8){selectCell((r+1)*9+c,'key');e.preventDefault()}
+    if(e.key==='ArrowLeft'&&c>0){selectCell(r*9+c-1,'key');e.preventDefault()}
+    if(e.key==='ArrowRight'&&c<8){selectCell(r*9+c+1,'key');e.preventDefault()}}
+});
+
+function startTimer(){stopTimer();timerSeconds=0;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
+function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null}}
+function resumeTimer(){if(timerInterval)return;timerInterval=setInterval(()=>{timerSeconds++;document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0')},1000)}
+
+// ── Strategy selector ──
+function setStrategy(s){
+  if(blockAIWhileHumanTrace('Strategy change'))return;
+  currentStrategy=s;
+  document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===s));
+  if(puzzle){
+    aiReset();
+    const res=solveWithStrategy(copyGrid(puzzle),s);
+    aiLog=res.log;aiStepIndex=0;
+    const givens=puzzle.flat().filter(v=>v!==0).length;
+    setStatus(`${currentDiff?.toUpperCase()||''} · ${givens} givens · ${s.toUpperCase()} · ${aiLog.length} AI steps`,'');
+  }
+}
+
+function newGame(diff,source='pointer'){
+  if(humanTraceRecorder.isLocked()){setStatus('Existing human trace protected · Export/Delete it before starting a new game','');return;}
+  const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
+  currentDiff=diff;gameStats.currentHints=0;gameStats.gamesPlayed++;saveStats();renderStats();aiReset();
+  document.getElementById('comparePanel').style.display='none';
+  setStatus('Generating...','solving');
+  setTimeout(()=>{
+    const res=generatePuzzle(diff);puzzle=res.puzzle;solution=res.solution;
+    playerGrid=copyGrid(puzzle);givenCells=puzzle.map(r=>r.map(v=>v!==0));
+    notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;
+    const solveRes=solveWithStrategy(copyGrid(puzzle),currentStrategy);
+    aiLog=solveRes.log;aiStepIndex=0;resetM();
+    const givens=puzzle.flat().filter(v=>v!==0).length;
+    setStatus(`${diff.toUpperCase()} · ${givens} givens · ${currentStrategy.toUpperCase()} · ${aiLog.length} AI steps`,'');
+    startTimer();render();startHumanTrace(source,{reason:'new_game',difficulty:diff});
+  },50);
+}
+
+function getSpeed(){return Math.max(10,500-document.getElementById('speedSlider').value*4.8)}
+function aiSolve(){if(blockAIWhileHumanTrace('AI Solve'))return;if(!puzzle||aiAnimating||!aiLog?.length)return;aiAnimating=true;setStatus('AI solving ('+currentStrategy.toUpperCase()+')...','solving');document.getElementById('solveBtn').textContent='⏸ Pause';document.getElementById('solveBtn').onclick=aiPause;animNext()}
+function animNext(){
+  if(!aiAnimating||aiStepIndex>=aiLog.length){aiAnimating=false;document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;if(aiStepIndex>=aiLog.length)setStatus('AI finished ('+currentStrategy.toUpperCase()+') ✓','win');return}
+  applyEntry(aiLog[aiStepIndex++],true);aiTimeout=setTimeout(animNext,getSpeed());
+}
+function applyEntry(e,anim){
+  const sp=getSpeed();
+  if(e.backtrack){
+    if(e.restore)for(const{r,c}of e.restore)if(!givenCells[r][c]){playerGrid[r][c]=0;
+      if(anim){const cl=document.querySelector(`.cell[data-index="${r*9+c}"]`);if(cl){cl.classList.add('ai-backtrack');setTimeout(()=>cl.classList.remove('ai-backtrack'),sp*2)}}}
+    aiM.bt++;
+  }else{
+    playerGrid[e.r][e.c]=e.v;if(notes)notes[e.r][e.c].clear();
+    aiM.steps++;if(e.strategy==='guess')aiM.guesses++;
+    if(e.cascade>0)aiM.cascades+=e.cascade;aiM.cl.push(e.cascade||0);
+    if(anim){
+      const cls={naked_single:'ai-naked',hidden_single:'ai-hidden',guess:'ai-guess',pointing_pair:'ai-pointing'}[e.strategy]||'';
+      const cl=document.querySelector(`.cell[data-index="${e.r*9+e.c}"]`);
+      if(cl&&cls){cl.classList.add(cls);if(e.cascade>0)cl.classList.add('cascade-flash');setTimeout(()=>cl.classList.remove(cls,'cascade-flash'),sp*3)}
+    }
+  }
+  fullLog.push(e);
+  render();updateMetrics();
+}
+function aiPause(){aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);document.getElementById('solveBtn').textContent='▶ Continue';document.getElementById('solveBtn').onclick=aiSolve;setStatus('Paused','')}
+function aiStep(){
+  if(blockAIWhileHumanTrace('AI Step'))return;
+  if(!puzzle||!aiLog||aiStepIndex>=aiLog.length)return;
+  aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);
+  const e=aiLog[aiStepIndex++];applyEntry(e,true);
+  selectedCell=e.r*9+e.c;
+  const sn=e.backtrack?'BACKTRACK':e.strategy.replace('_',' ').toUpperCase();
+  setStatus(`Step ${aiStepIndex}: ${sn} → R${e.r+1}C${e.c+1}=${e.v}`,'solving');render();
+}
+function aiReset(){
+  if(blockAIWhileHumanTrace('AI Reset'))return;
+  aiAnimating=false;if(aiTimeout)clearTimeout(aiTimeout);aiStepIndex=0;resetM();
+  if(puzzle){playerGrid=copyGrid(puzzle);notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));render()}
+  document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;
+}
+function resetM(){aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};fullLog=[];updateMetrics()}
+
+function updateMetrics(){
+  document.getElementById('mSteps').textContent=aiM.steps;
+  document.getElementById('mBT').textContent=aiM.bt;
+  document.getElementById('mGuesses').textContent=aiM.guesses;
+  document.getElementById('mCands').textContent=playerGrid?countCandidates(playerGrid):0;
+  if(playerGrid){const pct=Math.round(playerGrid.flat().filter(v=>v!==0).length/81*100);document.getElementById('mProgress').textContent=`${pct}%`;document.getElementById('barProgress').style.width=`${pct}%`}
+
+  // Compute live sensors
+  const s=computeSensors(fullLog);
+  document.getElementById('mLZ').textContent=s.lz>0?s.lz.toFixed(3):'—';
+  document.getElementById('barLZ').style.width=`${Math.min(s.lz*100,100)}%`;
+  document.getElementById('mGini').textContent=s.gini>0?s.gini.toFixed(3):'—';
+  document.getElementById('barGini').style.width=`${Math.min(s.gini*100,100)}%`;
+  document.getElementById('mCascPow').textContent=s.cascPow>0?s.cascPow.toFixed(1):'—';
+  document.getElementById('barCascPow').style.width=`${Math.min(s.cascPow/5*100,100)}%`;// normalize to ~5 max
+  document.getElementById('mDensity').textContent=s.density>0?s.density.toFixed(3):'—';
+  document.getElementById('barDensity').style.width=`${Math.min(s.density*100,100)}%`;
+  document.getElementById('mADSR').textContent=s.adsr>0?s.adsr.toFixed(3):'—';
+  document.getElementById('barADSR').style.width=`${s.adsr*100}%`;
+}
+
+// ── Compare All ──
+function compareAll(){
+  if(!puzzle)return;
+  const panel=document.getElementById('comparePanel');panel.style.display='block';
+  const wrap=document.getElementById('gridWrap');
+  // Show overlay
+  let overlay=document.getElementById('compareOverlay');
+  if(!overlay){overlay=document.createElement('div');overlay.id='compareOverlay';overlay.className='compare-overlay';wrap.appendChild(overlay)}
+  overlay.style.display='flex';
+  overlay.innerHTML='<div class="compare-card"><div class="cc-title">Strategy Comparison</div><div class="cc-status" id="compareStatus"><span class="compare-spinner"></span>Running random...</div></div>';
+
+  const strats=['random','mrv','naked','full','human'];
+  const results=[];let idx=0;
+
+  function runNext(){
+    if(idx>=strats.length){showCompareResults(results);overlay.style.display='none';return}
+    const s=strats[idx];
+    document.getElementById('compareStatus').innerHTML=`<span class="compare-spinner"></span>Running ${s}... (${idx+1}/5)`;
+    setTimeout(()=>{
+      const res=solveWithStrategy(copyGrid(puzzle),s);
+      const sensors=computeSensors(res.log);
+      const steps=res.log.filter(l=>!l.backtrack).length;
+      const bt=res.log.filter(l=>l.backtrack).length;
+      const guesses=res.log.filter(l=>l.strategy==='guess').length;
+      results.push({strategy:s,steps,bt,guesses,lz:sensors.lz,gini:sensors.gini,cascPow:sensors.cascPow,density:sensors.density});
+      idx++;runNext();
+    },20);
+  }
+  runNext();
+}
+
+function showCompareResults(results){
+  // Find winner (fewest steps)
+  const minSteps=Math.min(...results.map(r=>r.steps));
+  let html='<table class="compare-table"><tr><th></th><th>Steps</th><th>BT</th><th>LZ</th><th>Gini</th><th>Casc</th><th>Flow</th></tr>';
+  for(const r of results){
+    const win=r.steps===minSteps?' winner':'';
+    html+=`<tr class="${win}"><td class="strat-name">${r.strategy}</td><td>${r.steps}</td><td>${r.bt}</td><td>${r.lz.toFixed(2)}</td><td>${r.gini.toFixed(2)}</td><td>${r.cascPow.toFixed(1)}</td><td>${r.density.toFixed(2)}</td></tr>`;
+  }
+  html+='</table>';
+  if(minSteps>0){
+    const w=results.find(r=>r.steps===minSteps);
+    html+=`<div style="font-size:.52rem;color:var(--green);margin-top:4px;letter-spacing:.06em">← ${w.strategy} wins</div>`;
+  }
+  document.getElementById('compareResults').innerHTML=html;
+}
+
+function showHelp(){document.getElementById('helpModal').style.display='flex'}
+function hideHelp(){document.getElementById('helpModal').style.display='none'}
+function setStatus(msg,cls){const el=document.getElementById('status');el.textContent=msg;el.className='status '+(cls||'')}
+
+// ── Game stats ──
+let gameStats={gamesPlayed:0,currentHints:0,bestTimes:{easy:null,medium:null,hard:null,evil:null}};
+let currentDiff=null;
+function loadStats(){try{const s=localStorage.getItem('bdSudokuStats');if(s)gameStats=JSON.parse(s)}catch(e){}}
+function saveStats(){try{localStorage.setItem('bdSudokuStats',JSON.stringify(gameStats))}catch(e){}}
+function renderStats(){
+  const bar=document.getElementById('statsBar');if(!bar)return;bar.style.display='flex';
+  document.getElementById('stPlayed').textContent=gameStats.gamesPlayed;
+  document.getElementById('stHints').textContent=gameStats.currentHints;
+  const bt=gameStats.bestTimes;
+  const fmt=s=>s?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'):'—';
+  if(bt.easy){document.getElementById('stBestEasy').style.display='';document.getElementById('stBEval').textContent=fmt(bt.easy)}
+  if(bt.evil){document.getElementById('stBestEvil').style.display='';document.getElementById('stBEvil').textContent=fmt(bt.evil)}
+}
+loadStats();
+
+// ── Collapsible ──
+function toggleCollapse(bodyId,hdrId){
+  const b=document.getElementById(bodyId),h=document.getElementById(hdrId);if(!b||!h)return;
+  const open=b.classList.toggle('open');h.classList.toggle('open',open);
+}
+
+// ── Hint ──
+function aiHint(source='pointer'){
+  if(!puzzle||aiAnimating)return;
+  if(tracePaused){setStatus('Hint blocked while human trace is paused · Resume first','');return;}
+  if(activeHumanHint)ignoreCurrentHint(source,'superseded_hint');
+  const hintId='hint-'+String((humanTraceRecorder.trace?.events.length||0)).padStart(4,'0');
+
+  // Correction mode has priority over forward solving. A logical next move is
+  // misleading when the human board already contains wrong entries. Highlight
+  // every wrong non-given entry and jump to the most recently changed one.
+  const wrong=currentWrongEntries();
+  if(wrong.length){
+    const primary=primaryWrongEntry(wrong);
+    correctionHighlightActive=true;
+    const candidateHint={hint_id:hintId,cell:primary.cell,value:primary.expected,technique:'correction',wrong_cells:wrong.map(x=>x.cell)};
+    let recorded=true;
+    if(humanTraceRecorder.isActive())recorded=!!humanNoMutation('request_hint',source,{hint_id:hintId,cell:primary.cell,value:primary.expected,technique:'correction'});
+    if(humanTraceRecorder.isActive()&&!recorded){setStatus('Hint request was not recorded · hint cancelled','');return;}
+    activeHumanHint=humanTraceRecorder.isActive()?candidateHint:candidateHint;
+    gameStats.currentHints++;saveStats();renderStats();
+    selectedCell=primary.cell;
+    const noun=wrong.length===1?'entry is':'entries are';
+    setStatus(`Correction hint: ${wrong.length} wrong ${noun} highlighted · R${primary.r+1}C${primary.c+1} is ${primary.current}, should be ${primary.expected}`,'solving');
+    render();
+    return;
+  }
+
+  // Recompute from the CURRENT player state. The initial aiLog is not a valid human-hint source
+  // after the player has changed the board.
+  correctionHighlightActive=false;
+  const dynamic=solveWithStrategy(copyGrid(playerGrid),currentStrategy);
+  const hintStep=dynamic.log.find(e=>!e.backtrack&&playerGrid[e.r][e.c]===0&&(!solution||e.v===solution[e.r][e.c]));
+  if(!hintStep){setStatus('No hints available','');return}
+  const candidateHint={hint_id:hintId,cell:hintStep.r*9+hintStep.c,value:hintStep.v,technique:hintStep.strategy};
+  let recorded=true;
+  if(humanTraceRecorder.isActive())recorded=!!humanNoMutation('request_hint',source,{hint_id:hintId,cell:candidateHint.cell,value:hintStep.v,technique:hintStep.strategy});
+  if(humanTraceRecorder.isActive()&&!recorded){setStatus('Hint request was not recorded · hint cancelled','');return;}
+  activeHumanHint=humanTraceRecorder.isActive()?candidateHint:null;
+  gameStats.currentHints++;saveStats();renderStats();
+  const stratNames={
+    'naked_single':'Naked single — only one candidate in this cell',
+    'hidden_single':'Hidden single — only place for this digit in its group',
+    'pointing_pair':'Pointing pair — box constraint eliminates candidates',
+    'guess':'No logical step — requires a guess (MRV: fewest candidates)'
+  };
+  selectedCell=hintStep.r*9+hintStep.c;
+  setStatus(`Hint: R${hintStep.r+1}C${hintStep.c+1} = ${hintStep.v} · ${stratNames[hintStep.strategy]||hintStep.strategy}`,'solving');
+  const cell=document.querySelector(`.cell[data-index="${hintStep.r*9+hintStep.c}"]`);
+  if(cell){cell.classList.add('ai-hint');setTimeout(()=>cell.classList.remove('ai-hint'),3000)}
+  render();
+}
+
+function replayStoredTraceState(trace){
+  if(!trace||!trace.initial_state)return null;
+  const board=trace.initial_state.board.slice(),masks=trace.initial_state.candidates.slice();
+  const hist=[];
+  let unresolvedHint=null,paused=false,selected=null;
+  function maskToSet(m){const s=new Set();for(let v=1;v<=9;v++)if(m&(1<<(v-1)))s.add(v);return s;}
+  function setToMask(s){let m=0;for(const v of s)m|=1<<(v-1);return m;}
+  for(const e of trace.events){
+    const p=e.payload||{};
+    if(e.action==='place_value'||e.action==='erase_value'||e.action==='add_note'||e.action==='remove_note'){
+      const cell=p.cell,r=Math.floor(cell/9),c=cell%9,prev=board[cell],pn=maskToSet(masks[cell]);
+      hist.push({r,c,prev,pn,action:e.action});
+      if(e.action==='place_value'){board[cell]=p.value;masks[cell]=0;}
+      else if(e.action==='erase_value'){board[cell]=0;masks[cell]=0;}
+      else {const s=maskToSet(masks[cell]);if(e.action==='add_note')s.add(p.value);else s.delete(p.value);board[cell]=0;masks[cell]=setToMask(s);}
+    }else if(e.action==='undo'){
+      if(hist.length)hist.pop();board[p.cell]=p.restored_value;masks[p.cell]=setToMask(new Set(p.restored_notes||[]));
+    }else if(e.action==='request_hint')unresolvedHint={hint_id:p.hint_id,cell:p.cell,value:p.value,technique:p.technique};
+    else if((e.action==='accept_hint'||e.action==='ignore_hint')&&unresolvedHint&&p.hint_id===unresolvedHint.hint_id)unresolvedHint=null;
+    else if(e.action==='select_cell')selected=p.selected?p.cell:null;
+    else if(e.action==='pause')paused=true;
+    else if(e.action==='resume')paused=false;
+    else if(e.action==='session_resume'){}
+  }
+  const bh=AI8SudokuTruth.boardHash(board),ch=AI8SudokuTruth.candidateHash(masks,true);
+  if(bh!==trace.final_state.board_hash||ch!==trace.final_state.candidate_hash)return null;
+  return{board,masks,history:hist,unresolvedHint,paused,selected};
+}
+function restoreStoredHumanTraceOnLoad(){
+  if(!humanTraceRecorder.hasConsent())return false;
+  const loaded=humanTraceRecorder.loadStored();if(!loaded.ok)return false;
+  const trace=loaded.trace,st=replayStoredTraceState(trace);if(!st){setStatus('Stored trace failed local integrity replay · Export/Delete only','');updateHumanTraceStatus();return false;}
+  const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
+  const ib=trace.initial_state.board;
+  puzzle=Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>trace.given_cells.includes(r*9+c)?ib[r*9+c]:0));
+  playerGrid=Array.from({length:9},(_,r)=>st.board.slice(r*9,r*9+9));
+  givenCells=puzzle.map(row=>row.map(v=>v!==0));
+  notes=Array.from({length:9},(_,r)=>Array.from({length:9},(_,c)=>{const m=st.masks[r*9+c],s=new Set();for(let v=1;v<=9;v++)if(m&(1<<(v-1)))s.add(v);return s;}));
+  history=st.history;traceHistoryFloor=0;activeHumanHint=st.unresolvedHint;tracePaused=st.paused;traceFinishRecorded=humanTraceRecorder.finished;selectedCell=st.selected;recoveryAwaitingContinue=!humanTraceRecorder.finished;
+  const firstStart=trace.events.find(e=>e.action==='start');currentDiff=firstStart?.payload?.difficulty||'restored';
+  timerSeconds=Math.max(0,Math.round(trace.events.reduce((a,e)=>a+(e.delta_ms_50||0),0)/1000));document.getElementById('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');stopTimer();
+  const solved=solveWithStrategy(copyGrid(puzzle),'full');solution=solved.solved;if(activeHumanHint&&activeHumanHint.technique==='correction')correctionHighlightActive=true;aiLog=solveWithStrategy(copyGrid(playerGrid),currentStrategy).log;aiStepIndex=0;resetM();render();
+  setStatus(humanTraceRecorder.finished?'Stored completed trace restored · Export or Delete':'Page reload detected · same game and trace restored · click Continue','win');updateHumanTraceStatus();return true;
+}
+function loadTraceTestPuzzle(puzzleString,solutionString,source='pointer'){
+  const p=AI8SudokuTruth.parseBoard(puzzleString),sol=AI8SudokuTruth.parseBoard(solutionString);
+  const ov=document.getElementById('welcomeOverlay');if(ov)ov.classList.add('hidden');
+  currentDiff='fixture';puzzle=[];solution=[];for(let r=0;r<9;r++){puzzle.push(p.slice(r*9,r*9+9));solution.push(sol.slice(r*9,r*9+9));}
+  playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(v=>v!==0));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;notesMode=false;
+  document.getElementById('notesBtn').textContent='Notes: OFF';document.getElementById('notesBtn').classList.remove('active');
+  const solveRes=solveWithStrategy(copyGrid(puzzle),currentStrategy);aiLog=solveRes.log;aiStepIndex=0;resetM();startTimer();render();startHumanTrace(source,{reason:'test_fixture',difficulty:'fixture'});return true;
+}
+window.AI8SudokuTestAPI={
+  consent:()=>{consentHumanTrace();return true;},
+  loadPuzzle:loadTraceTestPuzzle,
+  selectCell:(cell,source='pointer')=>selectCell(cell,source),
+  placeValue:(value,source='pointer')=>placeNumber(value,source),
+  erase:(source='pointer')=>eraseCell(source),
+  undo:(source='pointer')=>undoMove(source),
+  toggleNotes:()=>toggleNotes(),
+  hint:(source='pointer')=>aiHint(source),
+  ignoreHint:(source='pointer')=>ignoreCurrentHint(source,'test_ignore'),
+  pause:()=>{if(!tracePaused)toggleHumanTracePause();},
+  resume:()=>{if(tracePaused)toggleHumanTracePause();},
+  continueRecovered:(source='pointer')=>continueRecoveredHumanTrace(source),
+  exportTrace:()=>humanTraceRecorder.exportObject(),
+  deleteTrace:()=>deleteHumanTrace(),
+  state:()=>({board:playerGrid?playerGrid.flat():[],candidates:humanCandidateMasks()})
+};
+window.addEventListener('beforeunload',()=>{try{if(humanTraceRecorder.hasTrace())humanTraceRecorder.exportObject();}catch(_){}});
+buildGrid();updateHumanTraceStatus();restoreStoredHumanTraceOnLoad();
+</script>
+</body>
+</html>
+
