@@ -1160,6 +1160,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 #main:focus { outline: none; }
 #board-container { padding: 20px; margin: 0; min-width: 0; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); text-align: left; }
 .board-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
+/* Keep the loaded game's identity visible even while the workspace shows DCC or a drawer. */
+.board-heading-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
+.board-heading-title .section-kicker { white-space: nowrap; }
+.board-heading-title:has(.board-game-title:not([hidden])) .section-kicker::after { content: ":"; }
+.board-game-title { min-width: 0; color: var(--ui-text); font-size: 13px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; }
+.board-heading .research-tag { flex-shrink: 0; }
 .research-tag { color: var(--ui-accent); border: 1px solid var(--ui-border); border-radius: 5px; padding: 3px 7px; font-size: 10px; letter-spacing: .03em; }
 #board, #board.scaled { width: 100% !important; height: auto !important; aspect-ratio: 1; margin: 0 auto; }
 #board .board-b72b1 { border: 0; border-radius: 3px; overflow: hidden; }
