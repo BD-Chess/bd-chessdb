@@ -1,12 +1,12 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-continue1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-budget1');
 if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume2');
 let bruteJob = null;
 let deepJob = null;
 let pausedDeepJob = null;
-if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-continue1');
+if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-budget1');
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -230,7 +230,7 @@ function startBruteForce(msg) {
 // Cooperative Deep runs independently from the unchanged Fast and BF engines.
 function startDeep(msg) {
   const started=performance.now();
-  if (!globalThis.TripDeepSearch) importScripts('deep-search.js?v=20260913-continue1');
+  if (!globalThis.TripDeepSearch) importScripts('deep-search.js?v=20260913-budget1');
   const engine=TripDeepSearch.create(msg,{started});
   const job={msg,engine,timer:null,lastReport:-Infinity,verified:false}; deepJob=job;
   function report(final=false, failure=null) {
@@ -243,8 +243,8 @@ function startDeep(msg) {
     clearTimeout(job.timer);report(true);
     if(deepJob===job){pausedDeepJob=job.verified&&engine.canResume?job:null;deepJob=null;}
   };
-  job.resume=newId=>{
-    if(!engine.resume())return false;
+  job.resume=(newId,additionalMs)=>{
+    if(!TripDeepSearch.additionalBudgetsMs.includes(additionalMs) || !engine.resume(additionalMs))return false;
     job.msg={...job.msg,jobId:newId};job.lastReport=-Infinity;
     deepJob=job;pausedDeepJob=null;report();job.timer=setTimeout(tick,0);return true;
   };
@@ -268,7 +268,7 @@ self.onmessage = (ev) => {
   if (msg.type === 'continue-deep') {
     // Retain the generator, candidate and RNG in this worker. Never restart from its seed.
     if(!deepJob && pausedDeepJob?.msg.jobId===msg.previousJobId) {
-      if(!pausedDeepJob.resume(msg.jobId))self.postMessage({type:'error',jobId:msg.jobId,error:'Deep continuation is no longer available. Start a new calculation.'});
+      if(!pausedDeepJob.resume(msg.jobId,msg.additionalBudgetMs))self.postMessage({type:'error',jobId:msg.jobId,error:'Deep continuation is no longer available. Start a new calculation.'});
     }
     return;
   }

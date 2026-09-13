@@ -59,8 +59,26 @@ test('worker resumes only its retained job, ignores stale IDs and releases it on
   assert.ok(timers.size);tick();clock=60001;tick();const first=messages.at(-1);
   assert.equal(first.reason,'budget');assert.equal(first.canContinue,true);const frozen=first.elapsedMs;
   clock+=500000;send({type:'continue-deep',previousJobId:0,jobId:2});assert.equal(messages.at(-1),first);
-  send({type:'continue-deep',previousJobId:1,jobId:2});let m=messages.at(-1);assert.equal(m.jobId,2);assert.equal(m.budgetMs,120000);assert.ok(Math.abs(m.elapsedMs-frozen)<1);assert.equal(m.work,first.work);
+  for(const invalid of [undefined,0,-1,NaN,Infinity,10000,'60000',86400001]){
+    send({type:'continue-deep',previousJobId:1,jobId:9,additionalBudgetMs:invalid});assert.equal(messages.at(-1).type,'error');
+  }
+  send({type:'continue-deep',previousJobId:1,jobId:2,additionalBudgetMs:300000});let m=messages.at(-1);assert.equal(m.jobId,2);assert.equal(m.budgetMs,360000);assert.ok(Math.abs(m.elapsedMs-frozen)<1);assert.equal(m.work,first.work);
   send({type:'cancel',jobId:1});assert.equal(messages.at(-1),m);tick();send({type:'cancel',jobId:2});m=messages.at(-1);assert.equal(m.reason,'cancelled');assert.equal(m.canContinue,true);assert.ok(m.work>first.work);assert.equal(m.totalCost,score(m));
   send({...msg,type:'solve',profile:'standard',jobId:3});const fast=messages.at(-1);assert.equal(fast.algorithm,'standard');
   send({type:'continue-deep',previousJobId:2,jobId:4});assert.equal(messages.at(-1),fast);
+});
+
+test('selected extra time accumulates through one day without reset, overflow or counting pauses',()=>{
+  const c=context(),msg=dataset(c);let clock=0;const hooks={now:()=>clock,workLimit:25600};const e=c.TripDeepSearch.create(msg,hooks);e.step();
+  let budget=60000;
+  const allowed=[60000,300000,900000,3600000,14400000,43200000,86400000];
+  assert.deepEqual(Array.from(c.TripDeepSearch.additionalBudgetsMs),allowed);
+  for(const ms of allowed){
+    const before=e.snapshot();clock+=86_400_000;
+    for(const invalid of [0,-1,NaN,Infinity,1.5,'60000',86400001,Number.MAX_SAFE_INTEGER])assert.equal(e.resume(invalid),false);
+    assert.equal(e.canResume,true);assert.equal(e.resume(ms),true);budget+=ms;const resumed=e.snapshot();
+    assert.equal(resumed.budgetMs,budget);assert.equal(resumed.elapsedMs,before.elapsedMs);
+    assert.equal(resumed.totalCost,before.totalCost);assert.equal(resumed.work,before.work);assert.equal(resumed.candidates,before.candidates);assert.deepEqual(resumed.pointsSorted,before.pointsSorted);
+    hooks.workLimit+=25600;e.step();const after=e.snapshot();assert.equal(after.totalCost,score(after));assert.ok(after.totalCost<=before.totalCost);assert.ok(after.work>before.work);
+  }
 });

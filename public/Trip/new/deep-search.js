@@ -4,6 +4,7 @@
 (() => {
   'use strict';
   function budgetMs(n) { return n <= 50 ? 10000 : n <= 100 ? 30000 : n <= 500 ? 60000 : n <= 1000 ? 180000 : 300000; }
+  const additionalBudgetsMs=Object.freeze([60000,300000,900000,3600000,14400000,43200000,86400000]);
   async function verifyTarget(msg) {
     const p = msg.tspProof, r = p?.reference, e = p?.entry;
     if (msg.metric !== 'tsp-euc2d' || msg.distanceMatrix != null || !msg.roundTrip || !r || !e ||
@@ -108,10 +109,10 @@
     return {
       setTarget(r){target=r;verifyBest();},
       cancel(){cancelled=true;},
-      resume() {
-        if(!canResume())return false;
+      resume(additionalMs=increment) {
+        if(!canResume() || !Number.isSafeInteger(additionalMs) || additionalMs<=0 || additionalMs>86400000 || !Number.isSafeInteger(budget+additionalMs))return false;
         carried=elapsed();segmentStarted=now();stoppedAt=null;
-        budget+=increment;reason=null;cancelled=false;
+        budget+=additionalMs;reason=null;cancelled=false;
         return true;
       },
       get canResume(){return canResume();},
@@ -130,5 +131,5 @@
       get done(){return !!reason;}
     };
   }
-  globalThis.TripDeepSearch={budgetMs,create,verifyTarget};
+  globalThis.TripDeepSearch={budgetMs,additionalBudgetsMs,create,verifyTarget};
 })();

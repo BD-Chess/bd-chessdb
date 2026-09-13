@@ -55,19 +55,19 @@ test('Deep budget button continues the same worker with a new ID and no new look
   const h=harness(success);h.element('input').value=sample;await h.api.run('deep');const first=h.jobs.at(-1);
   const result={type:'result',algorithm:'deep',jobId:first.jobId,reason:'budget',canContinue:true,exact:false,elapsedMs:60000,budgetMs:60000,additionalBudgetMs:60000,candidates:39,completed:38,totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points};
   h.api.handleWorkerMessage({data:result});
-  assert.equal(h.element('continueDeep').hidden,false);assert.equal(h.element('continueDeep').textContent,'Continue calculating (+1 min)');
-  h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeep').textContent,'Nadaljuj računanje (+1 min)');
-  h.tick(3600000);h.api.continueDeep();const next=h.jobs.at(-1);
+  assert.equal(h.element('continueDeep').hidden,false);assert.equal(h.element('continueDeepLabel').textContent,'Continue calculating:');
+  h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeepLabel').textContent,'Nadaljuj računanje:');
+  h.tick(3600000);h.api.continueDeep(60000);const next=h.jobs.at(-1);
   assert.equal(next.type,'continue-deep');assert.equal(next.previousJobId,first.jobId);assert.notEqual(next.jobId,first.jobId);
   assert.equal(h.jobs.filter(m=>m.type==='solve'&&m.profile==='deep').length,1);assert.equal(h.workers[0].terminated,undefined);
   assert.equal(h.element('continueDeep').hidden,true);assert.equal(h.element('btnDeep').disabled,true);
   assert.match(h.element('searchProgressText').textContent,/Računanje/);
   assert.equal(h.element('searchBudget').textContent,'2,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
-  h.api.continueDeep();assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
+  h.api.continueDeep(60000);assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
   h.api.handleWorkerMessage({data:{...result,jobId:first.jobId}});assert.equal(h.element('continueDeep').hidden,true,'old final response ignored');
   h.api.requestCancel();assert.equal(h.jobs.at(-1).jobId,next.jobId);
   h.api.handleWorkerMessage({data:{...result,jobId:next.jobId,reason:'cancelled',cancelled:true,elapsedMs:62000,budgetMs:120000}});
-  assert.equal(h.element('continueDeep').hidden,false);h.api.continueDeep();assert.equal(h.jobs.at(-1).previousJobId,next.jobId);
+  assert.equal(h.element('continueDeep').hidden,false);h.api.continueDeep(60000);assert.equal(h.jobs.at(-1).previousJobId,next.jobId);
   h.api.cancelWork();
 });
 
@@ -83,7 +83,7 @@ test('Deep continuation is absent after optimum/error; edits and fresh calculati
     if(change==='fresh')await h.api.run('standard');
     if(change==='clear')h.api.clearComparison();
     h.api.refreshDeepContinue();assert.equal(h.element('continueDeep').hidden,true,change);
-    h.api.continueDeep();assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false,change);
+    h.api.continueDeep(60000);assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false,change);
     h.api.cancelWork();
   }
 });
@@ -698,3 +698,21 @@ test('20-stop UI keeps large checked counts exact and posts the checkpoint on Re
  const h=harness(success);h.element('input').value=sample;await h.api.run('deep');h.api.requestCancel();[...h.timerJobs.values()].at(-1)();
  assert.equal(h.workers[0].terminated,true);assert.match(h.element('searchProgressText').textContent,/before a route was reported/);assert.equal(h.element('searchBest').textContent,'—');assert.equal(h.element('searchCancel').disabled,true);
  });
+
+test('all seven extra-time buttons use the selected budget, static label and SL/EN text',async()=>{
+  const choices=[[60000,'+1 min','+1 min'],[300000,'+5 min','+5 min'],[900000,'+15 min','+15 min'],[3600000,'+1 hour','+1 ura'],[14400000,'+4 hours','+4 ure'],[43200000,'+12 hours','+12 ur'],[86400000,'+1 day','+1 dan']];
+  const html=readFileSync(new URL('../public/Trip/new/index.html',import.meta.url),'utf8');
+  assert.match(html,/<span id="continueDeepLabel"/);assert.doesNotMatch(html,/<button id="continueDeep"/);
+  for(const [ms,en,sl] of choices){
+    const h=harness(success);h.element('input').value=sample;await h.api.run('deep');const first=h.jobs.at(-1);
+    h.api.handleWorkerMessage({data:{type:'result',algorithm:'deep',jobId:first.jobId,reason:'cancelled',canContinue:true,exact:false,elapsedMs:2000,budgetMs:10000,candidates:39,completed:38,totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points}});
+    assert.equal(h.element('continueDeep'+ms).disabled,false);assert.equal(h.element('continueDeep'+ms).textContent,en);
+    h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeep'+ms).textContent,sl);
+    assert.ok(html.includes(`id="continueDeep${ms}"`));
+    for(const invalid of [undefined,0,-1,NaN,Infinity,10000,'60000',86400001])h.api.continueDeep(invalid);
+    assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false);assert.equal(h.element('continueDeep').hidden,false);
+    h.api.continueDeep(ms);const next=h.jobs.at(-1);assert.equal(next.additionalBudgetMs,ms);assert.equal(next.previousJobId,first.jobId);
+    assert.equal(h.element('continueDeep'+ms).disabled,true);assert.match(h.element('searchStarts').textContent,/39.*38/);
+    assert.equal(h.jobs.filter(j=>j.type==='solve'&&j.profile==='deep').length,1);h.api.cancelWork();
+  }
+});

@@ -1035,7 +1035,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating adds another size-based budget to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +1, +5 or +15 minutes, +1, +4 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -1088,20 +1088,21 @@ Bad example:
     pausedDeep=null;
     if($('continueDeep'))$('continueDeep').hidden=true;
   }
+  const deepBudgetChoices = [[60000,'+1 min'],[300000,'+5 min'],[900000,'+15 min'],[3600000,'+1 hour'],[14400000,'+4 hours'],[43200000,'+12 hours'],[86400000,'+1 day']];
   function refreshDeepContinue() {
     if(pausedDeep && pausedDeep.signature!==problemSignature())discardDeep();
-    const button=$('continueDeep');
-    if(!button)return;
-    button.hidden=!pausedDeep||optimizationPending;
-    button.disabled=!pausedDeep||optimizationPending;
-    if(pausedDeep) {
-      const seconds=pausedDeep.result.additionalBudgetMs/1000;
-      UI.set(button,`Continue calculating (+${seconds>=60?seconds/60+' min':seconds+' s'})`);
+    const group=$('continueDeep');
+    if(!group)return;
+    group.hidden=!pausedDeep||optimizationPending;
+    UI.set($('continueDeepLabel'),'Continue calculating:');
+    for(const [ms,label] of deepBudgetChoices) {
+      const button=$('continueDeep'+ms);
+      if(button){button.disabled=group.hidden;UI.set(button,label);}
     }
   }
-  function continueDeep() {
+  function continueDeep(additionalBudgetMs) {
     refreshDeepContinue();
-    if(optimizationPending||!pausedDeep)return;
+    if(optimizationPending||!pausedDeep || !deepBudgetChoices.some(([ms])=>ms===additionalBudgetMs))return;
     const saved=pausedDeep, jobId=++jobVersion;
     pausedDeep=null;optimizationPending=true;++visualizationVersion;
     if(airWorker){airWorker.terminate();airWorker=null;}
@@ -1110,11 +1111,11 @@ Bad example:
       latest:saved.result,lastMapRefresh:performance.now(),mapPending:false};
     setPlanningMode(false);
     const progress={...saved.result,type:'progress',reason:null,cancelled:false,phase:'searching',
-      budgetMs:saved.result.budgetMs+saved.result.additionalBudgetMs};
+      budgetMs:saved.result.budgetMs+additionalBudgetMs};
     displaySearchProgress(progress,activeJob);displayComparison(progress,activeJob);
     refreshBruteInfo();$('btnCancelWork').disabled=false;
     setStatus('Continuing Deep with additional time. Best route and search state kept; paused time is excluded.','ok');
-    worker.postMessage({type:'continue-deep',previousJobId:saved.job.jobId,jobId});
+    worker.postMessage({type:'continue-deep',previousJobId:saved.job.jobId,jobId,additionalBudgetMs});
   }
   function problemSignature() {
     return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked, planarSelected()]);
@@ -1126,7 +1127,7 @@ Bad example:
   const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-continue1');
+    const w = new Worker('worker.js?v=20260913-budget1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; discardDeep(); finishWork();
@@ -1241,7 +1242,7 @@ Bad example:
     }
     if (airWorker) return;
     const expectedComparison = comparisonKey;
-    const w = new Worker('worker.js?v=20260913-continue1'); airWorker = w;
+    const w = new Worker('worker.js?v=20260913-budget1'); airWorker = w;
     w.onmessage = ({data:m}) => {
       if (m.type !== 'result' && m.type !== 'error') return;
       w.terminate(); if (airWorker === w) airWorker = null;
@@ -1720,7 +1721,7 @@ Bad example:
     $('btnPrepare').onclick = () => run('prepare', true);
     $('btnCancelWork').onclick = requestCancel;
     $('searchCancel').onclick = requestCancel;
-    $('continueDeep').onclick = continueDeep;
+    for(const [ms] of deepBudgetChoices) $('continueDeep'+ms).onclick = ()=>continueDeep(ms);
     $('mapRefreshInterval').onchange = () => { if (activeJob?.latest) refreshBruteMap(activeJob.latest,activeJob); };
     $('chkBrute').onchange = () => { cancelWork(); refreshBruteInfo(); };
     refreshBruteInfo();
