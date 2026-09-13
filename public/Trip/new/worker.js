@@ -1,7 +1,7 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-brute14b');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-brute15-chat1');
 let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)
@@ -203,7 +203,7 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
 // 4. Cooperative exhaustive search. Yield within ~20ms so Cancel can be handled.
 function startBruteForce(msg) {
   if (msg.points.length < 2 || msg.points.length > TripBruteForce.MAX_STOPS)
-    throw new Error('Brute Force supports 2–14 stops including START.');
+    throw new Error('Brute Force supports 2–15 stops including START.');
   if (msg.points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon)))
     throw new Error('All stops must have valid coordinates.');
   const directD = buildDistanceMatrix(toXYMeters(msg.points));

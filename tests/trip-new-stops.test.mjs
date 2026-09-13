@@ -301,18 +301,18 @@ test('missing or failed road measurements never show a stale road total or an ai
   assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
 });
 
-test('manual Brute Force is available through 14; 15 disables it without starting another algorithm', async()=>{
+test('manual Brute Force is available through 15; 16 disables it without starting another algorithm', async()=>{
   const h=harness(()=>{throw new Error('No geocoding expected');});
   const input=n=>Array.from({length:n},(_,i)=>`Place ${i} | ${46+i/100}, ${14+i/100}${i===2?' START':''}`).join('\n');
-  h.element('input').value=input(14);
+  h.element('input').value=input(15);
   h.api.refreshBruteInfo();
   assert.equal(h.element('chkBrute').disabled,false);assert.equal(h.element('chkBrute').checked,false);
-  assert.match(h.element('bruteInfo').textContent,/6,227,020,800/);
+  assert.match(h.element('bruteInfo').textContent,/87,178,291,200/);
   h.element('chkBrute').checked=true;
   await h.api.run('standard');assert.equal(h.jobs[0].profile,'brute');assert.equal(h.jobs[0].startIdx,2);
   assert.equal(h.element('btnDeep').hidden,true);
   h.api.cancelWork();assert.equal(h.workers[0].terminated,true);
-  h.element('input').value=input(15);h.element('chkBrute').checked=true;
+  h.element('input').value=input(16);h.element('chkBrute').checked=true;
   await h.api.run('standard');
   assert.equal(h.jobs.length,1);assert.equal(h.element('chkBrute').disabled,true);
   assert.equal(h.element('chkBrute').checked,false);assert.equal(h.element('btnDeep').hidden,false);

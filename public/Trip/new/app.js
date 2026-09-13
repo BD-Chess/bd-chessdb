@@ -48,7 +48,7 @@
         <li><strong>6. Share:</strong> Click the button at the bottom to create a shareable link.</li>
       </ul>
       <p>The road table is working data for the current open trip and is discarded on reload. Google receives the coordinates to calculate routes. Preparing a table uses Google API quota; repeated local searches reuse it.</p>
-      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Fast and Deep do not guarantee a global optimum. Brute Force is a separate manual option for 2–14 stops, including START. It checks all (n−1)! orders locally and proves an optimum for the selected table only when complete. Cancel calculation keeps its best route and comparison. Above 14 stops, only the count and a clearly labelled time estimate are shown. Changing options never starts Brute Force automatically. Road mode supports up to 100 stops.</p>
+      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Fast and Deep do not guarantee a global optimum. Brute Force is a separate manual option for 2–15 stops, including START. It checks all (n−1)! orders locally and proves an optimum for the selected table only when complete. Cancel calculation keeps its best route and comparison. Above 15 stops, only the count and a clearly labelled time estimate are shown. Changing options never starts Brute Force automatically. Road mode supports up to 100 stops.</p>
     </div>
   `;
 
@@ -909,7 +909,9 @@ async function initAI() {
           .replace(/\{ADD:\s*[\s\S]*?\}/g, '<div class="action-badge">➕ <strong>Stops Added</strong><small>Trip Library format applied.</small></div>');
       }
 
-      h.innerHTML += `<div class="msg ai"><strong>Gemini:</strong> ${formatMarkdown(processedText)}</div>`;
+      const modelLabel = /^gemini-[a-z0-9.-]{1,72}$/.test(response.model || '')
+        ? response.model.replace(/^gemini-/, 'Gemini ') : 'Gemini';
+      h.innerHTML += `<div class="msg ai"><strong>${modelLabel}${response.fallbackUsed ? ' (backup model)' : ''}:</strong> ${formatMarkdown(processedText)}</div>`;
       if (response.sources?.length) {
         const sources = document.createElement('div'); sources.className = 'msg ai';
         sources.append('Sources: ');
@@ -979,7 +981,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -989,7 +991,7 @@ Bad example:
       const res = await fetch(PROXY_URL, { 
         method: 'POST', 
         headers: {'Content-Type':'application/json'}, 
-        body: JSON.stringify({ prompt: fullPrompt }),
+        body: JSON.stringify({ prompt: fullPrompt, guiVersion: 'road-matrix-brute15' }),
         signal: controller.signal
       });
 
@@ -1022,7 +1024,7 @@ Bad example:
   const comparisons = new Map();
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-brute14b');
+    const w = new Worker('worker.js?v=20260913-brute15-chat1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1047,10 +1049,10 @@ Bad example:
       ? `extrapolated at ${Math.round(rate).toLocaleString('en-US')} orders/s measured with ${measuredBruteRate.n} stops`
       : 'illustration at 1,000,000 orders/s; actual speed depends on this device';
     $('bruteInfo').textContent = !total
-      ? (n > 1000 ? 'Brute Force unavailable above 14 stops.' : 'Brute Force: enter 2–14 stops including START.')
+      ? (n > 1000 ? 'Brute Force unavailable above 15 stops.' : 'Brute Force: enter 2–15 stops including START.')
       : `${n} stops · (${n}−1)! = ${total.toLocaleString('en-US')} possible orders. ` +
         `Estimated full search: ${BF.duration(Number(total)/rate)} (${rateNote}). ` +
-        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 14 stops.' : 'START stays fixed; each direction is counted separately.');
+        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 15 stops.' : 'START stays fixed; each direction is counted separately.');
     return {n, allowed};
   }
 
@@ -1194,7 +1196,7 @@ Bad example:
     if (optimizationPending) return;
     const requestedBrute = profile === 'brute' || (profile !== 'prepare' && $('chkBrute').checked);
     const eligibility = refreshBruteInfo();
-    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–14 valid stops including START.', 'warn'); return; }
+    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–15 valid stops including START.', 'warn'); return; }
     if (requestedBrute) profile = 'brute';
     optimizationPending = true;
     activeJob = null;
