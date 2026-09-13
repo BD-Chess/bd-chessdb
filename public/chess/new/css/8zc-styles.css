@@ -1453,11 +1453,14 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 .workspace-top .mode-hint { margin: 3px 0 12px; }
 .workspace-top #timerCaption { min-height: 15px; line-height: 15px; }
 .workspace-top .live-clocks { margin: 4px 0 12px; }
-.workspace-analysis #popularGamesPanel, body.light-theme .workspace-analysis .workspace-drawer { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; overflow: auto; overscroll-behavior: contain; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
-/* Settings covers the whole workspace while its underlying layout stays still. */
-#controls > #settingsPanel, body.light-theme #controls > #settingsPanel { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; border: 0; border-radius: inherit; overflow: auto; overscroll-behavior: contain; }
-#controls:has(> #settingsPanel.open) > :not(#settingsPanel) { visibility: hidden; }
-#settingsPanel .btn { background: var(--ui-raised); color: var(--ui-text); }
+/* Drawers cover the whole workspace while its underlying layout stays still. */
+#controls > .workspace-drawer, body.light-theme #controls > .workspace-drawer { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; border: 0; border-radius: inherit; overflow: auto; overscroll-behavior: contain; }
+#controls:has(> .workspace-drawer.open) > :not(.workspace-drawer) { visibility: hidden; }
+#controls > .workspace-drawer .btn { background: var(--ui-raised); color: var(--ui-text); }
+#controls > #popularGamesPanel.open { display: flex; flex-direction: column; }
+#popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
+#popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
+#popularGamesPanel .library-result { flex-shrink: 0; }
 .drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: -14px; background: var(--ui-inset); z-index: 1; padding: 6px 0 9px; border-bottom: 1px solid var(--ui-border); }
 .drawer-heading .btn { min-width: 36px; font-size: 20px; background: var(--ui-raised); }
 

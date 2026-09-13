@@ -38,9 +38,9 @@
       const reflect = () => {
         const open = panel.classList.contains('open');
         byId(buttonId).setAttribute('aria-expanded', String(open));
-        if (panelId === 'settingsPanel' && open && !wasOpen) {
-          // The Settings button is near the bottom on phones. Bring the full
-          // workspace's settings header into view only after this user action.
+        if (open && !wasOpen) {
+          // Drawer buttons are near the bottom on phones. Bring the full
+          // workspace header into view only after this user action.
           const heading = panel.querySelector('.drawer-heading').getBoundingClientRect();
           if (heading.top < 0 || heading.bottom > window.innerHeight) panel.scrollIntoView({ block: 'start' });
         }
