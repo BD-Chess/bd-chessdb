@@ -3,7 +3,7 @@
   "version": "2.1.2-smart-time",
   "date": "2026-09-13",
   "path": "/f4m/",
-  "role": "primary game",
+  "role": "CURRENT",
   "base": "Flip4M Lab Plus 2.1.1",
   "smart_time": {
     "applies_to": ["grandmaster", "champion"],
@@ -15,7 +15,15 @@
     "contract": "60s/120s are ceilings, not mandatory waits. Classical and DCC receive the same deterministic effective budget. Proven results may still finish early."
   },
   "storage": "Primary IndexedDB/localStorage namespace is isolated from /f4m/new/ so future experiments cannot overwrite the primary checkpoint.",
-  "navigation": {"document": "/f4m/f4m/", "legacy": "/f4m/old/", "experimental": "/f4m/new/"},
+  "versioning": {
+    "standard": "BD_WEB_APP_VERSIONING_V1",
+    "current": "/f4m/",
+    "previous": "/f4m/old/",
+    "lab": "/f4m/new/",
+    "archive_pattern": "/f4m/old/NNN/",
+    "seed_archive": "/f4m/old/001/",
+    "document": "/f4m/f4m/"
+  },
   "tests": {
     "smart_time_unit": "PASS",
     "master_4500_unchanged": true,
@@ -25,5 +33,5 @@
     "first_reply_champion_ms": 3000,
     "syntax": "PASS"
   },
-  "note": "Route promotion only; no new playing-strength claim is made."
+  "note": "Version selector and metadata only; no gameplay/search/rules change is introduced by the BD versioning standard."
 }

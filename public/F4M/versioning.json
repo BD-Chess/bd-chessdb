@@ -1,0 +1,23 @@
+{
+  "schema": "bd.webapp.versioning.v1",
+  "app": "Flip4M",
+  "current": "/f4m/",
+  "previous": "/f4m/old/",
+  "lab": "/f4m/new/",
+  "archive_pattern": "/f4m/old/NNN/",
+  "document": "/f4m/f4m/",
+  "next_archive": "002",
+  "selector": {
+    "labels": ["CURRENT", "PREVIOUS", "LAB"],
+    "active_is_highlighted": true,
+    "present_on": ["CURRENT", "PREVIOUS", "LAB"]
+  },
+  "promotion_order": [
+    "Archive PREVIOUS to the next free /old/NNN/ and never edit that archive again.",
+    "Move CURRENT to PREVIOUS at /old/.",
+    "Promote verified LAB to CURRENT at /.",
+    "Keep /new/ as the development route for the next cycle."
+  ],
+  "archive_policy": "Archives are immutable and as self-contained as practical; copy version-specific assets rather than depending on moving CURRENT/LAB assets.",
+  "git_policy": "Before every write, read latest main; preserve unrelated concurrent changes; use a minimal non-force fast-forward commit; do not change application functionality solely for versioning."
+}
