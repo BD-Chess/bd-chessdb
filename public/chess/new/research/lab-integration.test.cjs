@@ -3,10 +3,11 @@ const assert=require('node:assert/strict');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const base=require('node:path').resolve(__dirname,'..')+'/';
 const test=require('node:test');
-test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:20000}, async()=>{
+test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:20000}, async(t)=>{
  const errors=[]; const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(fs.readFileSync(base+'index.html','utf8'),{url:'https://www.mdlxdcc.org/chess/new/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  const w=dom.window;
+ t.after(()=>w.close());
  Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent},set(v){this.textContent=String(v)},configurable:true});
  await new Promise(resolve=>w.addEventListener('load',resolve));
  w.HTMLElement.prototype.scrollTo=function(){};w.HTMLElement.prototype.scrollIntoView=function(){};
