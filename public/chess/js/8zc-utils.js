@@ -32,6 +32,7 @@ function initAll() {
     dccTopCandidates: 3, // how many top moves DCC evaluates (1-10)
     dccEvalFloor: 80,    // ignore moves more than this many cp below best
     dccTieThreshold: 10, // centipawns — below this = "tied"
+    dccClickAction: 'hybrid', // details, play, or both
     dccOnly: false,      // hide raw ChessDB scores, show only DCC view
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
     simGames: 5,         // games per simulation run
@@ -45,6 +46,7 @@ function initAll() {
   let dccViewActive = false;
   // Store latest DCC results for the analysis panel
   let latestDCCResults = [];
+  let pinnedDCCDetails = null;
   // v0.6.1: Per-move DCC annotations for PGN export
   // Keyed by half-move index → best DCC result at that position
   let dccMoveAnnotations = {};
@@ -411,7 +413,12 @@ gameBuckets.forEach(bucket => {
     position : game.fen(),
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
 	
-	onDrop: (src, dst) => {
+    onDrop: (src, dst) => playManualMove(src, dst)
+
+  });
+
+  // Shared with DCC candidate buttons: preserve the board's move, clock and live-session rules.
+  function playManualMove(src, dst, promotion = 'q') {
       if (simRunning || replayRunning) return 'snapback';
       if (!workspace.beforeMove()) return 'snapback';
       if (playState.active && playState.mode === 'lichess' && (!playState.lichess.ready || playState.lichess.pendingMove)) return 'snapback';
@@ -427,7 +434,7 @@ gameBuckets.forEach(bucket => {
 	  const refBefore = fullHistory.map(x => x.san).slice(0, curBefore.length + 1);
 
 	  // Make the move
-	  const m = game.move({ from: src, to: dst, promotion: 'q' });
+	  const m = game.move({ from: src, to: dst, promotion });
 	  if (!m) return 'snapback';
       if (playState.mode !== 'lichess' && !workspace.recordMove(fenBeforeMove, m) && workspace.isTimed()) {
         game.undo(); return 'snapback';
@@ -440,6 +447,7 @@ gameBuckets.forEach(bucket => {
 		  branchIndex = curBefore.length - 1;
 		}
 
+    pinnedDCCDetails = null;
 	lastAction = 'move';
 	window._skipDivergedReset = true;
 	updateBoard(false);
@@ -451,9 +459,7 @@ gameBuckets.forEach(bucket => {
 	    });
 	  }
 
-	}
-
-  });
+  }
 
   /* ------------------------------------------------------------------
      7. STATE
@@ -677,12 +683,42 @@ gameBuckets.forEach(bucket => {
     if (data) showDCCDetails(data);
   }
   function formatDCCScore(value) { return Number.isFinite(value) ? `${value > 0 ? '+' : ''}${Math.round(value)}` : '—'; }
-  function showDCCDetails(r) {
+  function showDCCDetails(r, fen = latestDCCReceipt?.fen || game.fen(), pinned = false) {
     const panel = document.getElementById('dccInfoPanel');
-    if (!panel) return;
+    if (!panel || !r) return;
     const samples = (r.samples || []).map(s => `<span class="dcc-path-move">${s.move} <small>p${s.ply}: ${formatDCCScore(s.score)}</small></span>`).join(' <span aria-hidden="true">→</span> ');
     panel.innerHTML = `<strong>${r.move} · ${r.status}</strong><div class="dcc-info-path">${samples || 'No measured line available.'}</div><div class="dcc-info-summary">Mover POV · floor ${formatDCCScore(r.floor)} cp · variation ${formatDCCScore(r.volatility)} cp · recovery ${formatDCCScore(r.recovery)} cp<br>Observed ${r.observedPlies}/${r.targetPlies} plies · requested ${r.requestedPlies} · source PV depth ${r.pvDepth || '—'}</div>`;
+    markDCCDetails(panel, r, fen, pinned);
     panel.style.display = 'block';
+  }
+  function dccClickAction() {
+    return ['details', 'play', 'hybrid'].includes(settings.dccClickAction) ? settings.dccClickAction : 'hybrid';
+  }
+  function dccClickLabel(move) {
+    return (dccClickAction() === 'details' ? 'Inspect ' : dccClickAction() === 'play' ? 'Play ' : 'Play and inspect ') + move;
+  }
+  function handleDCCCandidateClick(data, fen) {
+    if (!data || fen !== game.fen() || playState.assistanceLocked) return;
+    const mode = dccClickAction();
+    const played = mode !== 'details' && playDCCCandidate(data.move, fen);
+    if (mode !== 'play') showDCCDetails(data, fen, !!played);
+  }
+  function markDCCDetails(panel, data, fen, pinned) {
+    pinnedDCCDetails = pinned ? { data, fen } : null;
+    panel.dataset.fen = fen;
+    if (pinned) {
+      const origin = document.createElement('div');
+      origin.className = 'dcc-info-summary';
+      origin.textContent = `Selected ${uciToSan(fen, data.move)} (${data.move}) · analysis of the position before this move.`;
+      origin.title = fen; panel.prepend(origin);
+    }
+  }
+  function playDCCCandidate(move, fen) {
+    // A rendered recommendation belongs to one exact position. Never replay a stale click.
+    if (fen !== game.fen() || replayRunning || playState.assistanceLocked) return false;
+    if (!DCC.play(new Chess(fen), move)) return false;
+    if (simRunning) pauseSimulation('Paused to play the selected DCC candidate. Open Sim to choose engines and continue.');
+    return playManualMove(move.slice(0, 2), move.slice(2, 4), move[4] || 'q') !== 'snapback';
   }
   function renderDCCView() {
     const panel = document.getElementById('dccAnalysisPanel');
@@ -693,9 +729,11 @@ gameBuckets.forEach(bucket => {
       panel.innerHTML = `<div class="dcc-analysis-empty">${latestDCCReceipt?.status === 'pending' ? 'Measuring candidate lines…' : 'No evaluated candidates yet. Show Eval or try another position.'}</div>`;
       return;
     }
-    const rows = latestDCCResults.map((r, i) => `<tr class="dcc-analysis-row" data-move="${r.move}"><td>${r.isMdlPick ? '★' : i + 1}</td><td><button class="dcc-details-button" type="button" data-move="${r.move}" aria-label="Inspect ${r.move}">${r.move}</button></td><td>${formatDCCScore(r.raw)}</td><td>${formatDCCScore(r.endEval)}</td><td>${Number.isFinite(r.stability) ? Math.round(r.stability * 100) + '%' : '—'}</td><td>${r.observedPlies}/${r.targetPlies}${r.complete ? '' : ' · ?'}</td></tr>`).join('');
-    panel.innerHTML = `<div class="dcc-policy-note">★ Shared DCC choice · scores in cp, mover POV</div><table class="dcc-analysis-table"><thead><tr><th>Pick</th><th>Move</th><th title="ChessDB candidate evaluation">Raw</th><th title="Last measured evaluation, mover perspective">End</th><th title="Stability requires at least 3 samples">Stable</th><th title="Observed / funded half-moves; ? means incomplete scores">Plies</th></tr></thead><tbody>${rows}</tbody></table><div class="dcc-analysis-pv">${latestDCCReceipt?.reason || ''}<br>${latestDCCReceipt?.completed || 0}/${latestDCCReceipt?.total || latestDCCResults.length} complete · ${latestDCCReceipt?.calls || 0} probes${latestDCCReceipt?.limited ? ' · time limit reached' : ''}. DCC rank is a heuristic, not an engine evaluation.</div>`;
-    panel.querySelectorAll('.dcc-details-button').forEach(button => button.addEventListener('click', () => showDCCDetails(latestDCCResults.find(r => r.move === button.dataset.move))));
+    const fen = latestDCCReceipt?.fen || game.fen();
+    const candidates = latestDCCResults.slice();
+    const rows = candidates.map((r, i) => `<tr class="dcc-analysis-row" data-move="${r.move}"><td>${r.isMdlPick ? '★' : i + 1}</td><td><button class="dcc-details-button dcc-candidate-button" type="button" data-move="${r.move}" aria-label="${dccClickLabel(r.move)}" title="${dccClickLabel(r.move)}">${r.move}</button></td><td>${formatDCCScore(r.raw)}</td><td>${formatDCCScore(r.endEval)}</td><td>${Number.isFinite(r.stability) ? Math.round(r.stability * 100) + '%' : '—'}</td><td>${r.observedPlies}/${r.targetPlies}${r.complete ? '' : ' · ?'}</td></tr>`).join('');
+    panel.innerHTML = `<div class="dcc-policy-note">★ Shared DCC choice · scores in cp, mover POV<br>Move click: ${dccClickAction()} · change in Settings.</div><table class="dcc-analysis-table"><thead><tr><th>Pick</th><th>Move</th><th title="ChessDB candidate evaluation">Raw</th><th title="Last measured evaluation, mover perspective">End</th><th title="Stability requires at least 3 samples">Stable</th><th title="Observed / funded half-moves; ? means incomplete scores">Plies</th></tr></thead><tbody>${rows}</tbody></table><div class="dcc-analysis-pv">${latestDCCReceipt?.reason || ''}<br>${latestDCCReceipt?.completed || 0}/${latestDCCReceipt?.total || latestDCCResults.length} complete · ${latestDCCReceipt?.calls || 0} probes${latestDCCReceipt?.limited ? ' · time limit reached' : ''}. DCC rank is a heuristic, not an engine evaluation.</div>`;
+    panel.querySelectorAll('.dcc-candidate-button').forEach(button => button.addEventListener('click', () => handleDCCCandidateClick(candidates.find(r => r.move === button.dataset.move), fen)));
   }
   function applyDCCOnlyBadges() {
     if (!settings.dccOnly) return;
@@ -833,6 +871,8 @@ gameBuckets.forEach(bucket => {
     // ─── DCC Lookahead settings sync ─────────────────────────────────
     const dccEl = document.getElementById('settingDccEnabled');
     if (dccEl) dccEl.checked = settings.dccEnabled;
+    const dccClickEl = document.getElementById('settingDccClickAction');
+    if (dccClickEl) dccClickEl.value = dccClickAction();
     const dccDepthEl = document.getElementById('settingDccDepth');
     if (dccDepthEl) dccDepthEl.value = settings.dccDepth;
     const dccTopEl = document.getElementById('settingDccTopCandidates');
@@ -1063,7 +1103,9 @@ gameBuckets.forEach(bucket => {
 	  updateDCCProgress(0, 0); // clear progress indicator
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
-	  if (dccPanel) dccPanel.style.display = 'none';
+      if (lastAction === 'history' || (reset && !playState.active)) pinnedDCCDetails = null;
+      if (pinnedDCCDetails) showDCCDetails(pinnedDCCDetails.data, pinnedDCCDetails.fen, true);
+      else if (dccPanel) dccPanel.style.display = 'none';
       const decisionPanel = document.getElementById('simDecisionPanel');
       if (decisionPanel) decisionPanel.style.display = 'none';
 	  
@@ -1421,6 +1463,7 @@ function jumpTo(i){
   ------------------------------------------------------------------*/
 
   function startNewGame() {
+    pinnedDCCDetails = null;
     const wasLichess = playState.active && playState.mode === 'lichess';
     if (simRunning) pauseSimulation();
     activityEpoch++;
@@ -3426,6 +3469,13 @@ async function launchFromSimModal() {
       await replayGame(overrides);
     };
   }
+
+  document.getElementById('settingDccClickAction').onchange = event => {
+    settings.dccClickAction = event.target.value;
+    settings.dccClickAction = dccClickAction();
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    renderDCCView();
+  };
 
   // ─── DCC View toggle button ────────────────────────────────────────
   const btnToggle = document.getElementById('btnViewToggle');
