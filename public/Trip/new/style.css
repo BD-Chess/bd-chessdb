@@ -373,8 +373,15 @@ header { display:flex; flex-direction:column; align-items:stretch; gap:4px; }
 .comparison-explanation { margin-bottom:12px; color:var(--text-dim); }
 .comparison-explanation summary { cursor:pointer; color:#93c5fd; padding:6px 0; }
 .comparison-explanation p { margin:5px 0 12px; }
-.air-comparison { background:rgba(45,212,191,.06); }
-.air-comparison td { border-top:2px solid rgba(45,212,191,.35); color:#99f6e4; }
+.deep-comparison { background:rgba(16,185,129,.09); }
+.deep-comparison td { color:#6ee7b7; font-weight:600; }
+.air-comparison { background:rgba(148,163,184,.025); }
+.air-comparison td { border-top:1px solid var(--border); color:#9ca3af; font-weight:400; }
+.stats { align-items:flex-start; flex-wrap:wrap; gap:12px 24px; }
+#savingBox { max-width:100%; text-align:right; }
+.saving-explanation { font:12px/1.5 Inter,sans-serif; color:var(--text-dim); max-width:580px; margin-top:5px; }
+.saving-explanation summary { cursor:pointer; color:#93c5fd; }
+.saving-explanation p { margin:7px 0; }
 input,textarea,select { font-size:16px; }
 #chatPanel { height:auto; max-height:none; overflow:hidden; transition:none; }
 #chatPanel:not(.open) #chatHistory,#chatPanel:not(.open) .chat-input,#chatPanel:not(.open) #chatGroundingNote { display:none; }
@@ -433,10 +440,19 @@ html[lang="sl"] #chatPanel.open .chat-state-text::after { content:'(zapri)' }
   .header-main .nav-btn { font-size:14px; }
   .header-meta { gap:18px; }
   #chatPanel.open { height:450px; max-height:50vh; }
+  #editorPanel { display:flex; flex-direction:column; min-height:0; overflow-y:auto; }
+  #editorPanel > * { flex:0 0 auto; }
+  #editorPanel #input { flex:1 1 180px; height:auto; min-height:180px; max-height:420px; line-height:1.45; }
+  #editorPanel #librarySection { display:flex; flex-direction:column; flex:1.5 1 220px; min-height:220px; margin-top:12px; }
+  #librarySection .section-heading,#librarySection #tripSearch { flex:0 0 auto; }
+  #editorPanel #presetTree { flex:1 1 auto; min-height:120px; max-height:none; margin-bottom:0; }
+  #editorPanel .grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #editorPanel .grid-2 button { padding-left:8px; padding-right:8px; }
 }
 @media(max-width:1023px) {
   body { padding-bottom:calc(var(--chat-bar-height) + env(safe-area-inset-bottom) + 10px); }
   .app-wrapper { gap:12px; }
+  #savingBox { text-align:left; }
   header { padding:6px 8px; }
   #chatPanel { bottom:var(--keyboard-gap); padding-bottom:env(safe-area-inset-bottom); }
   .keyboard-visible #chatPanel { padding-bottom:0; }

@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>8Z Trip Optimizer · LAB</title>
-  <script src="locale.js?v=20260913-mobile2"></script>
-  <link rel="stylesheet" href="style.css?v=20260913-mobile2">
+  <script src="locale.js?v=20260913-resume1"></script>
+  <link rel="stylesheet" href="style.css?v=20260913-resume1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="ui-text.js?v=20260913-mobile2"></script>
+  <script src="ui-text.js?v=20260913-resume1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
@@ -25,7 +25,7 @@
   <div class="app-wrapper">
     <header>
       <div class="header-main"><div class="brand">8Z <span>Optimizer</span></div>
-      <nav aria-label="Trip navigation">
+      <nav data-ui-aria="Trip navigation" aria-label="Trip navigation">
         <button id="btnPlanMode" class="nav-btn">Plan</button>
         <button id="btnMapMode" class="nav-btn">Map</button>
         
@@ -36,7 +36,7 @@
       </nav>
       </div><div class="header-meta"><div class="language-switch" role="group" aria-label="Language / Jezik"><button data-language="en">EN</button><button data-language="sl">SL</button></div>
       <!-- BD VERSION SELECTOR START -->
-      <nav class="bd-versions" aria-label="Trip version">
+      <nav class="bd-versions" data-ui-aria="Trip version" aria-label="Trip version">
 <a href="/trip/">CURRENT</a>
 <span aria-hidden="true">·</span>
 <a href="/trip/new/" aria-current="page">LAB</a>
@@ -71,7 +71,7 @@
       <div class="options">
         <label><input type="checkbox" id="chkRoundTrip" checked> <span data-ui-text="Round Trip">Round Trip</span></label>
         <label><input type="checkbox" id="chkDirect"> <span data-ui-text="Direct Line">Direct Line</span></label>
-        <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> Brute Force</label>
+        <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> <span data-ui-text="Brute Force">Brute Force</span></label>
         <input type="checkbox" id="chkGoogleStyle" hidden>
         <button id="btnCollapse" hidden></button>
         <button id="btnExpand" hidden></button>
@@ -90,7 +90,7 @@
       
       <div class="stats">
         <div><span id="distanceLabel"><span data-ui-text="Distance:">Distance:</span></span> <span id="distKm" class="val">—</span></div>
-        <div id="savingBox"><span id="savingLabel"><span data-ui-text="Saving:">Saving:</span></span> <span id="savedKm" class="saved">—</span></div>
+        <div id="savingBox"><span id="savingLabel" data-ui-text="Saving vs entered order:">Saving vs entered order:</span> <span id="savedKm" class="saved">—</span><details class="saving-explanation"><summary data-ui-text="Compared with what?">Compared with what?</summary><p id="savingDetails"></p><p data-ui-text="Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.">Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.</p></details></div>
       </div>
 
       <div id="mapContainer">
@@ -111,7 +111,7 @@
       </section>
       <div id="bruteProgress" class="brute-progress" hidden>
         <div id="bruteProgressText" role="status" aria-live="polite"></div>
-        <progress id="bruteProgressBar" max="1" value="0" aria-label="Brute Force progress"></progress>
+        <progress id="bruteProgressBar" max="1" value="0" data-ui-aria="Brute Force progress" aria-label="Brute Force progress"></progress>
         <div id="bruteTiming"></div>
         <div id="bruteBest"></div>
       </div>
@@ -171,11 +171,11 @@
   </dialog>
 
   <script src="trips.js"></script>
-  <script src="help.js?v=20260913-mobile2"></script>
+  <script src="help.js?v=20260913-resume1"></script>
   <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-mobile2"></script>
-  <script src="app.js?v=20260913-mobile2"></script>
-  <script src="lab.js?v=20260913-mobile2"></script>
+  <script src="brute-force.js?v=20260913-resume1"></script>
+  <script src="app.js?v=20260913-resume1"></script>
+  <script src="lab.js?v=20260913-resume1"></script>
 
 </body>
 </html>

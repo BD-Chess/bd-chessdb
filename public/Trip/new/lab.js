@@ -39,7 +39,7 @@
       $('tripSearch').setAttribute('aria-label',sl?'Išči po knjižnici':'Search library');
       head.setAttribute('aria-label',sl?'Odpri ali zapri pomočnika':'Open or close trip assistant');
       $('btnPrepare').title=sl?'Pridobi ali osveži cestne razdalje. Porablja Googlovo API-kvoto.':'Fetch or refresh road distances. Uses Google API quota.';
-      $('btnStandard').textContent=UI.t($('chkBrute').checked?'Run Brute Force':'Optimize (Fast)');
+      // The optimizer owns Start/Resume state; translation must preserve it.
       document.querySelector('.chat-title').firstChild.textContent=sl?'✨ Pomočnik za potovanja ':'✨ AI Trip Assistant ';
       UI.render();
     };

@@ -42,7 +42,7 @@ test('changing language translates live application labels and preserves origina
   ui.set(h.el('progress'),'Running · 12.30% done');
   h.choose('sl');
   assert.match(h.el('status').textContent,/Cestna pot je prikazana/);
-  assert.equal(h.el('progress').textContent,'Računanje · 12.30% končano');
+  assert.equal(h.el('progress').textContent,'Računanje · 12,30% končano');
   assert.equal(city.textContent,'Running Springs');
   h.choose('en');
   assert.equal(h.el('status').textContent,'Road route displayed. Distance follows the route shown on the map.');
@@ -83,4 +83,21 @@ test('full Help reserves all six exact screenshot names without loading the supe
   const slots=[...html.matchAll(/data-screenshot="([^"]+)" hidden/g)].map(m=>m[1]);
   assert.deepEqual(slots,['01_Route_Editor.png','02_Results_Route_Map.jpeg','03_Results_Comparison.png','04_Share_GPX_Library.png','05_AI_Chatbot.png','06_AI_Chatbot_Keyboard.png']);
   assert.doesNotMatch(html,/<img/);
+});
+
+test('resume, algorithm names, savings and live timing switch completely between SL and EN',()=>{
+  const h=setup(),ui=h.window.TripUI;
+  const examples={resume:'Resume Brute Force',fast:'Optimize (Fast)',deep:'Optimize (Deep)',
+    saving:'10,137.10 km (50.84%)',timing:'Compute time: 2.5 hours · 1 compute thread · Speed: 9,664,336 orders/s',
+    region:'🇪🇺 Europe',category:'🚗 Top 10 Driving Tours'};
+  for(const [id,text] of Object.entries(examples))ui.set(h.el(id),text);
+  h.choose('sl');
+  assert.equal(h.el('resume').textContent,'Nadaljuj Brute Force');
+  assert.equal(h.el('fast').textContent,'Optimiziraj (hitro)');
+  assert.equal(h.el('deep').textContent,'Optimiziraj (poglobljeno)');
+  assert.equal(h.el('saving').textContent,'10.137,10 km (50,84%)');
+  assert.equal(h.el('timing').textContent,'Čas računanja: 2,5 h · 1 računska nit · Hitrost: 9.664.336 vrstnih redov/s');
+  assert.equal(h.el('region').textContent,'🇪🇺 Evropa');
+  assert.equal(h.el('category').textContent,'🚗 10 izbranih cestnih poti');
+  h.choose('en');for(const [id,text] of Object.entries(examples))assert.equal(h.el(id).textContent,text);
 });

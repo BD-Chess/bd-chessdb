@@ -109,3 +109,49 @@ test('worker rejects 17 stops even if the UI guard is bypassed',()=>{
   w.onmessage({data:{type:'solve',profile:'brute',jobId:94,points:points(17),distanceMatrix:costs(17),startIdx:0,roundTrip:true}});
   assert.equal(messages.length,1);assert.equal(messages[0].type,'error');assert.match(messages[0].error,/2–16/);
 });
+
+test('serialized checkpoints resume every cursor exactly once and retain the oracle optimum',()=>{
+  for (const closed of [false,true]) for (const start of [0,3,6]) {
+    const D=costs(7,5), expected=oracle(D,start,closed);
+    let search=BF.create(D,start,closed), previous=0;
+    while (!search.snapshot().done) {
+      search.step(37);
+      const before=search.snapshot();
+      assert.equal(before.checked,Math.min(previous+37,expected.count));
+      search=BF.create(D,start,closed,JSON.parse(JSON.stringify(search.checkpoint())));
+      assert.deepEqual(search.snapshot(),before);
+      previous=before.checked;
+    }
+    assert.equal(search.snapshot().bestLength,expected.best);
+    assert.equal(search.snapshot().checked,expected.count);
+  }
+});
+
+test('checkpoints reject changed matrices, START, round trip and corrupted enumeration positions',()=>{
+  const D=costs(8), search=BF.create(D,3,true);search.step(71);
+  const state=JSON.parse(JSON.stringify(search.checkpoint()));
+  assert.throws(()=>BF.create(costs(8,9),3,true,state),/Incompatible/);
+  assert.throws(()=>BF.create(D,0,true,state),/Incompatible/);
+  assert.throws(()=>BF.create(D,3,false,state),/Incompatible/);
+  assert.throws(()=>BF.create(D,3,true,{...state,checked:72}),/cursor/);
+});
+
+test('worker resumes active time and count while excluding a long pause',()=>{
+  const messages=[],timers=new Map();let clock=0,timerId=0;
+  const c=vm.createContext({performance:{now:()=>++clock},self:{postMessage:m=>messages.push(m)},
+    setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);}});
+  vm.runInContext(core,c);vm.runInContext(workerSource,c);
+  const msg={type:'solve',profile:'brute',jobId:95,points:points(16),distanceMatrix:costs(16),startIdx:5,roundTrip:true};
+  c.self.onmessage({data:msg});
+  const [id,tick]=timers.entries().next().value;timers.delete(id);tick();
+  c.self.onmessage({data:{type:'cancel',jobId:95}});
+  const paused=messages.at(-1);assert.ok(paused.checked>0);assert.ok(paused.resumeState);
+  clock+=3_600_000;
+  c.self.onmessage({data:{...msg,jobId:96,resumeState:paused.resumeState}});
+  const resumed=messages.at(-1);
+  assert.equal(resumed.checked,paused.checked);
+  assert.equal(resumed.totalKm,paused.totalKm);
+  assert.ok(resumed.elapsedMs>=paused.elapsedMs&&resumed.elapsedMs<paused.elapsedMs+10);
+  c.self.onmessage({data:{type:'cancel',jobId:96}});
+  assert.equal(timers.size,0);
+});

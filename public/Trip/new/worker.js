@@ -1,8 +1,8 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-lab16-1');
-if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-lab16-1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-resume1');
+if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume1');
 let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)
@@ -178,15 +178,18 @@ function startBruteForce(msg) {
   const directD = TripAirDistance.matrix(msg.points);
   const D = msg.distanceMatrix == null ? directD : msg.distanceMatrix;
   const start = Number.isInteger(msg.startIdx) && msg.startIdx >= 0 && msg.startIdx < msg.points.length ? msg.startIdx : 0;
-  const job = {msg, directD, engine:TripBruteForce.create(D, start, msg.roundTrip),
+  const previousMs = msg.resumeState?.elapsedMs || 0;
+  if (!Number.isFinite(previousMs) || previousMs < 0) throw new Error('Invalid Brute Force elapsed time.');
+  const job = {msg, directD, engine:TripBruteForce.create(D, start, msg.roundTrip, msg.resumeState?.engine),
     started:performance.now(), lastReport:0, timer:null};
   bruteJob = job;
   function report(final = false, cancelled = false) {
     const state = job.engine.snapshot();
-    const elapsedMs = Math.max(0, performance.now() - job.started);
+    const elapsedMs = previousMs + Math.max(0, performance.now() - job.started);
     self.postMessage({type:final ? 'result' : 'brute-progress', jobId:msg.jobId,
       algorithm:'brute', exact:state.done, cancelled:cancelled && !state.done,
       checked:state.checked, total:state.total, elapsedMs,
+      resumeState:cancelled && !state.done ? {engine:job.engine.checkpoint(), elapsedMs} : null,
       metric:msg.distanceMatrix == null ? 'direct' : 'road',
       pointsSorted:state.route.map(i => msg.points[i]), totalKm:state.bestLength/1000,
       baseKm:state.baseLength/1000,

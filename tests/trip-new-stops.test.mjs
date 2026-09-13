@@ -11,7 +11,7 @@ function harness(geocode) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      style: {}, dataset: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
+      setAttribute() {}, style: {}, dataset: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
       value: '', innerHTML: '', textContent: '', appendChild() {}, replaceChildren() {}
     });
     return elements.get(id);
@@ -19,11 +19,11 @@ function harness(geocode) {
   const jobs = [];
   const workers = [];
   const timerJobs = new Map();
-  let nextTimer = 0;
+  let nextTimer = 0, clock = 0;
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
-    console, google, window: { google }, Map, Set,
-    document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
+    console, google, window: { google }, Map, Set, performance: {now: () => clock},
+    document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}, querySelector:()=>({dataset:{},textContent:''})}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
@@ -35,11 +35,11 @@ function harness(geocode) {
   element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
-  return { api: context.window.test, elements, element, jobs, google, timerJobs, workers };
+  return { api: context.window.test, elements, element, jobs, google, timerJobs, workers, doc:context.document, tick(ms){clock += ms;} };
 }
 
 const known = {
@@ -109,7 +109,8 @@ test('old success timers cannot hide a later lookup error', () => {
 
 function mapHarness(computeRoutes) {
   const h = harness(success);
-  h.api.setMap({ fitBounds() {} });
+  let cameraChanges=0;
+  h.api.setMap({ fitBounds() {cameraChanges++;} });
   h.element('chkDirect').checked = false;
   const lines = [];
   Object.assign(h.google.maps, {
@@ -122,7 +123,7 @@ function mapHarness(computeRoutes) {
     event: { trigger() {} },
     importLibrary: async name => { assert.equal(name, 'routes'); return { Route: { computeRoutes } }; }
   });
-  return { ...h, lines };
+  return { ...h, lines, cameraChanges:()=>cameraChanges };
 }
 
 test('modern Routes draws ordered waypoints and closes a round trip without reoptimizing', async () => {
@@ -240,7 +241,7 @@ test('road distance replaces the direct estimate; Direct Line restores it withou
   h.api.setDirect(67.11);
   await h.api.updateMapVisualization(twoStops);
   assert.equal(h.element('distKm').textContent, '109.88 km');
-  assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
+  assert.equal(h.element('distanceLabel').textContent, 'Road distance (map):');
   h.element('chkDirect').checked = true;
   await h.api.updateMapVisualization(twoStops);
   assert.equal(h.element('distKm').textContent, '67.11 km');
@@ -264,7 +265,7 @@ test('multi-request round trips sum each road chunk once and convert the total t
   assert.deepEqual(requests[1].destination, requests[0].origin);
   assert.equal(requests[1].travelMode, 'WALKING');
   assert.equal(h.element('distKm').textContent, '77.67 mi');
-  assert.equal(h.element('distanceLabel').textContent, 'Walking distance:');
+  assert.equal(h.element('distanceLabel').textContent, 'Walking distance (map):');
 });
 
 test('late road results cannot overwrite a newer Direct Line selection', async () => {
@@ -299,7 +300,7 @@ test('missing or failed road measurements never show a stale road total or an ai
   assert.match(h.element('status').textContent, /did not return a complete distance/);
   await h.api.updateMapVisualization(twoStops);
   assert.equal(h.element('distKm').textContent, '—');
-  assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
+  assert.equal(h.element('distanceLabel').textContent, 'Road distance (map):');
 });
 
 test('manual Brute Force is available through 16; 17 disables it without starting another algorithm', async()=>{
@@ -363,4 +364,63 @@ test('LAB adds one independent Deep Air row without comparing it to the road opt
   api.clearComparison();api.setKey('roadB');api.displayComparison({algorithm:'deep',totalKm:300,elapsedMs:2},job);
   air.onmessage({data:{type:'result',totalKm:80,elapsedMs:5}});
   rows=get('comparisonRows').children;assert.equal(rows.length,1); // Stale Air result is ignored.
+});
+
+test('Cancel offers Resume and sends the saved search without new address or matrix lookups',async()=>{
+  const h=harness(success);h.element('input').value=sample;h.element('chkBrute').checked=true;
+  await h.api.run('standard');const first=h.jobs.at(-1);
+  const state={engine:{checked:37},elapsedMs:250};
+  h.api.handleWorkerMessage({data:{type:'result',algorithm:'brute',jobId:first.jobId,
+    checked:37,total:120,cancelled:true,exact:false,resumeState:state,elapsedMs:250,
+    totalKm:100,baseKm:150,directKm:100,metric:'direct',pointsSorted:first.points}});
+  assert.equal(h.element('btnStandard').textContent,'Resume Brute Force');
+  h.tick(3_600_000);await h.api.run('standard');
+  const resumed=h.jobs.at(-1);
+  assert.equal(resumed.resumeState,state);assert.equal(resumed.points,first.points);
+  assert.notEqual(resumed.jobId,first.jobId);assert.equal(resumed.startIdx,first.startIdx);
+  h.api.cancelWork();
+});
+
+test('changing the problem clears Resume, while changing only the algorithm preserves it',async()=>{
+  for (const change of ['stops','round','direct','mode','algorithm']) {
+    const h=harness(success);h.element('input').value=sample;h.element('chkBrute').checked=true;
+    await h.api.run('standard');const first=h.jobs.at(-1);
+    h.api.handleWorkerMessage({data:{type:'result',algorithm:'brute',jobId:first.jobId,
+      checked:37,total:120,cancelled:true,exact:false,resumeState:{engine:{checked:37},elapsedMs:250},
+      elapsedMs:250,totalKm:100,baseKm:150,directKm:100,pointsSorted:first.points}});
+    if(change==='stops')h.element('input').value+='\nParis';
+    if(change==='round')h.element('chkRoundTrip').checked=true;
+    if(change==='direct')h.element('chkDirect').checked=false;
+    if(change==='mode')h.api.setMode('WALKING');
+    if(change==='algorithm'){h.element('chkBrute').checked=false;h.api.refreshBruteInfo();h.element('chkBrute').checked=true;}
+    h.api.refreshBruteInfo();
+    assert.equal(h.api.resumeAvailable(),change==='algorithm',change);
+    assert.equal(h.element('btnStandard').textContent,change==='algorithm'?'Resume Brute Force':'Run Brute Force');
+  }
+});
+
+test('live map refresh is adaptive, improved-only, visible-only, and preserves the camera',async()=>{
+  let calls=0;
+  const h=mapHarness(async req=>{calls++;return {routes:[{path:[req.origin,req.destination],distanceMeters:100000}]};});
+  const job={profile:'brute',mode:'DRIVING',roundTrip:false,direct:false,mapPending:false,mapBestKm:Infinity,lastMapRefresh:0};
+  const msg={checked:10,total:100,elapsedMs:1000,totalKm:100,baseKm:200,directKm:80,pointsSorted:twoStops};
+  h.tick(29999);h.api.refreshBruteMap(msg,job);assert.equal(calls,0);
+  h.tick(1);h.api.refreshBruteMap(msg,job);
+  await new Promise(r=>setImmediate(r));
+  assert.equal(calls,1);assert.equal(h.cameraChanges(),0);
+  h.tick(30000);h.api.refreshBruteMap(msg,job);assert.equal(calls,1); // unchanged best
+  h.doc.hidden=true;h.api.refreshBruteMap({...msg,totalKm:99},job);assert.equal(calls,1);
+  h.doc.hidden=false;
+  const long={...msg,total:100000,totalKm:99};h.api.refreshBruteMap(long,job);assert.equal(calls,1);
+  h.tick(30000);h.api.refreshBruteMap(long,job);await new Promise(r=>setImmediate(r));
+  assert.equal(calls,2);assert.equal(h.cameraChanges(),0);
+  await h.api.updateMapVisualization(twoStops);assert.equal(h.cameraChanges(),1); // explicit/final display still fits
+});
+
+test('savings show the input baseline and percent separately from map distance',()=>{
+  const h=harness(success);
+  h.api.showSavings({baseKm:19938.45,totalKm:9801.35,metric:'road'});
+  assert.equal(h.element('savedKm').textContent,'10,137.10 km (50.84%)');
+  assert.match(h.element('savingDetails').textContent,/Entered order: 19,938.45 km · Optimized order: 9,801.35 km/);
+  assert.equal(h.element('savingLabel').textContent,'Saving vs entered order:');
 });

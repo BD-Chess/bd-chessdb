@@ -2,18 +2,49 @@
 (() => {
   'use strict';
   const words={
+    '⭐ Special Collections':'⭐ Posebne zbirke','🇪🇺 Europe':'🇪🇺 Evropa','🌍 Africa':'🌍 Afrika','🌏 Asia':'🌏 Azija',
+    '🌎 Americas (North & Central)':'🌎 Severna in Srednja Amerika','🌎 South America':'🌎 Južna Amerika','🌏 Oceania':'🌏 Oceanija',
+    '🏆 Top 10 Global Tourist Destinations':'🏆 10 priljubljenih svetovnih znamenitosti',
+    '🚗 Top 10 Driving Tours':'🚗 10 izbranih cestnih poti','🚶 All 27 EU Capitals (Walking)':'🚶 Vseh 27 prestolnic EU (peš)',
+    '🇪🇺 Extreme / Full Region':'🇪🇺 Daljše poti / celotno območje','🚗 Top 10 Driving/Safari':'🚗 10 poti z avtom / safari',
+    '🚗 Top 10 Driving/Train':'🚗 10 poti z avtom / vlakom','🚗 North America (Major)':'🚗 Severna Amerika (glavne poti)',
+    '🌴 Central America':'🌴 Srednja Amerika','🏖️ The Caribbean':'🏖️ Karibi','🚗 Top 10 Tours':'🚗 10 izbranih poti','🚗 Top 5 Tours':'🚗 5 izbranih poti',
+    'Resume Brute Force':'Nadaljuj Brute Force',
+    'Saving vs entered order:':'Prihranek glede na prvotni vrstni red:',
+    'Compared with what?':'V primerjavi s čim?',
+    'Road distance (map):':'Cestna razdalja (zemljevid):',
+    'Walking distance (map):':'Razdalja hoje (zemljevid):',
+    'Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.':'Prihranek uporablja isto tabelo razdalj za oba vrstna reda s START na začetku. Razdalja na zemljevidu izhaja iz ločene cestne zahteve in se lahko nekoliko razlikuje.',
+    'Resuming from the first unchecked order. Paused time is excluded.':'Nadaljevanje od prvega še nepreverjenega vrstnega reda. Čas premora se ne šteje.',
+    'Calculation paused. Resume is available for this unchanged trip.':'Računanje je prekinjeno. Isto pot lahko nadaljuješ od mesta prekinitve.',
+    'Informational · great-circle air · best found, not proven':'Informativno · razdalje po velikem krogu · najboljša najdena, optimum ni dokazan',
+    '🇪🇺 Classic Europe Tour':'🇪🇺 Klasična evropska pot', '🇺🇸 USA West Coast':'🇺🇸 Zahodna obala ZDA',
+    'Brute Force progress':'Napredek Brute Force', 'Trip navigation':'Navigacija po aplikaciji', 'Trip version':'Različica aplikacije',
+    'Search':'Iskanje', 'Sources':'Viri', 'Trip Assistant':'Pomočnik za potovanja',
+    'How do I use the Trip Library?':'Kako uporabljam knjižnico poti?',
+    'What does Optimize do?':'Kaj naredi optimizacija?',
+    'Plan a classic Europe tour (Paris, Rome, Berlin)':'Načrtuj klasično evropsko pot (Pariz, Rim, Berlin)',
+    'Plan a USA West Coast road trip':'Načrtuj cestno pot po zahodni obali ZDA',
+    'Create a 3-day itinerary for Rome, Italy':'Pripravi tridnevni načrt za Rim v Italiji',
+    'Suggest a romantic weekend in Paris':'Predlagaj romantičen vikend v Parizu',
+    'Where should I stay? Calculate the best base camp.':'Kje naj prenočujem? Predlagaj najboljše izhodišče za izlete.',
+    'Suggest lunch spots with high ratings but low price':'Predlagaj dobro ocenjene in cenovno ugodne restavracije za kosilo',
+    'Where is a good romantic dinner spot nearby?':'Kje v bližini je dobra restavracija za romantično večerjo?',
+    'How much time do I need for each stop?':'Koliko časa potrebujem za posamezen postanek?',
+    'Is this route walkable or do I need a taxi?':'Lahko to pot prehodim ali potrebujem taksi?',
+
     'Web search mode':'Način spletnega iskanja','Plan':'Načrt','Map':'Mapa','Help':'Pomoč','More →':'Več →','Close':'Zapri','Open application':'Odpri aplikacijo',
     'Trip Editor':'Urejevalnik poti','Trip Library':'Knjižnica poti','Library ↓':'Knjižnica ↓','Editor ↑':'Urejevalnik ↑',
-    'Optimize (Fast)':'Optimiziraj (Fast)','Optimize (Deep)':'Optimiziraj (Deep)','Run Brute Force':'Zaženi Brute Force',
+    'Optimize (Fast)':'Optimiziraj (hitro)','Optimize (Deep)':'Optimiziraj (poglobljeno)','Run Brute Force':'Zaženi Brute Force',
     'Prepare distances':'Pripravi razdalje','Cancel calculation':'Prekliči računanje','🚗 Drive':'🚗 Vožnja','🚶 Walk':'🚶 Hoja',
     '💾 Save':'💾 Shrani','📂 Load':'📂 Naloži','Load Map':'Naloži mapo','Retry Map':'Ponovi nalaganje mape','Map Loaded':'Mapa naložena','Loading API...':'Nalaganje API-ja …',
     'Round Trip':'Povratna pot','Direct Line':'Zračna linija','Results':'Rezultati','See map links ↓':'Navigacijske povezave ↓',
     'Distance:':'Razdalja:','Saving:':'Prihranek:','Road distance:':'Cestna razdalja:','Walking distance:':'Razdalja hoje:','Air distance (great circle):':'Zračna razdalja (veliki krog):','Road saving (table):':'Cestni prihranek (matrika):','Air saving:':'Zračni prihranek:',
     'Map Inactive':'Mapa še ni naložena','Road distance table':'Matrika cestnih razdalj','Loading trips...':'Nalaganje poti …','Loading…':'Nalaganje …',
     'Calculation comparison':'Primerjava izračunov','Method':'Metoda','Compute time':'Čas izračuna','Table distance':'Razdalja po matriki','Result':'Rezultat','How to read this table':'Kako brati tabelo',
-    'Our Optimize (Fast)':'Naš Optimize (Fast)','Our Optimize (Deep)':'Naš Optimize (Deep)','Our Optimize (Deep · Air)':'Naš Optimize (Deep · zrak)',
-    'Exact optimum for this table':'Dokazan optimum te matrike','Cancelled · best found':'Preklicano · najboljša najdena','Running · best found':'Računanje · najboljša najdena','Best found · optimum not proven':'Najboljša najdena · optimum ni dokazan','Great-circle air · best found, not proven':'Veliki krog · najboljša najdena, ni dokazana','Matches exact optimum':'Ujema se z dokazanim optimumom',
-    'Same stops and START. Deep Air searches its own great-circle table; it is not a road saving. Fast and Deep report the best route found. Only completed Brute Force proves the optimum of its table. Times exclude address lookup, table preparation and map drawing.':'Isti postanki in START. Deep Air uporablja svojo matriko razdalj po velikem krogu; rezultat ni cestni prihranek. Fast in Deep pokažeta najboljšo najdeno pot. Optimum svoje matrike potrdi šele dokončan Brute Force. Časi ne vključujejo iskanja naslovov, priprave matrike in risanja mape.',
+    'Our Optimize (Fast)':'Naša optimizacija (hitro)','Our Optimize (Deep)':'Naša optimizacija (poglobljeno)','Our Optimize (Deep · Air)':'Naša optimizacija (poglobljeno · zrak)',
+    'Exact optimum for this table':'Dokazan optimum te matrike','Cancelled · best found':'Prekinjeno · najboljša najdena','Running · best found':'Računanje · najboljša najdena','Best found · optimum not proven':'Najboljša najdena · optimum ni dokazan','Great-circle air · best found, not proven':'Veliki krog · najboljša najdena, ni dokazana','Matches exact optimum':'Ujema se z dokazanim optimumom',
+    'Same stops and START. Deep Air searches its own great-circle table; it is not a road saving. Fast and Deep report the best route found. Only completed Brute Force proves the optimum of its table. Times exclude address lookup, table preparation and map drawing.':'Isti postanki in START. Poglobljena zračna primerjava uporablja razdalje po velikem krogu in je informativna. Hitra in poglobljena metoda pokažeta najboljšo najdeno pot. Optimum svoje matrike potrdi šele dokončan Brute Force. Časi ne vključujejo iskanja naslovov, priprave matrike in risanja mape.',
     'Drive / Walk optimize road distances. Missing distances are prepared automatically.':'Vožnja in Hoja optimizirata cestne razdalje. Manjkajoče razdalje se pripravijo samodejno.',
     'Welcome to 8Z! Load a Library trip or enter your destinations. Ask the assistant for suggestions or help with Trip Optimizer.':'Dobrodošel v 8Z! Naloži pot iz knjižnice ali vnesi svoje kraje. Pomočnika lahko vprašaš za predloge in uporabo aplikacije.',
     'The assistant can consult current web sources; English place queries can also use Maps. Check dates, opening hours and bookable prices at the source.':'Pomočnik lahko preveri aktualne spletne vire; pri vprašanjih o krajih v angleščini tudi Maps. Datume, odpiralni čas in cene rezervacij preveri pri viru.',
@@ -28,7 +59,7 @@
     'Preparing road distances…':'Priprava cestnih razdalj …','Road distances not ready.':'Cestne razdalje še niso pripravljene.',
     'Direct Line: optimization uses great-circle air distances.':'Zračna linija: optimizacija uporablja razdalje po velikem krogu.',
     'Select Drive or Walk and turn off Direct Line to prepare road distances.':'Za cestne razdalje izberi Vožnjo ali Hojo in izklopi Zračno linijo.',
-    'Road distances ready. Choose Optimize (Fast) or Optimize (Deep).':'Cestne razdalje so pripravljene. Izberi Optimiziraj (Fast) ali (Deep).',
+    'Road distances ready. Choose Optimize (Fast) or Optimize (Deep).':'Cestne razdalje so pripravljene. Izberi Optimiziraj (hitro) ali (poglobljeno).',
     'Starting exhaustive search…':'Začetek preverjanja vseh vrstnih redov …','Calculation cancelled.':'Računanje preklicano.',
     'Stopping calculation and keeping the best route…':'Ustavljanje izračuna in ohranjanje najboljše poti …',
     'All orders checked. Exact optimum for this distance table.':'Vsi vrstni redi preverjeni. Optimum te matrike je dokazan.',
@@ -70,13 +101,16 @@
     'Google Route Matrix is unavailable in the loaded Maps library.':'Matrika cestnih razdalj ni na voljo v naloženem zemljevidu.'
   };
   const fragments={
+    'Compute time:':'Čas računanja:', '1 compute thread':'1 računska nit',
+    'Entered order:':'Prvotni vrstni red:', 'Optimized order:':'Optimizirani vrstni red:',
+
     'Great-circle air distances':'Zračne razdalje po velikem krogu','Road distance table':'Matrika cestnih razdalj','Round trip':'Povratna pot','Open trip':'Enosmerna pot',
     'above exact optimum':'nad dokazanim optimumom','All orders checked; optimum proven for this table.':'Vsi vrstni redi preverjeni; optimum matrike dokazan.','Optimum not yet proven.':'Optimum še ni dokazan.',
     'Best road-table distance:':'Najboljša cestna razdalja po matriki:','Best direct distance:':'Najboljša zračna razdalja:',
     'Full-search time remaining at this rate':'Preostali čas celotnega iskanja pri tej hitrosti','Estimated remaining':'Ocenjeni preostali čas','Elapsed:':'Preteklo:','Speed:':'Hitrost:',
-    'Complete':'Končano','Cancelled':'Preklicano','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
+    'Complete':'Končano','Cancelled':'Prekinjeno','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
     ' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
-    'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1,000,000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
+    'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1.000.000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
     'extrapolated at ':'ocenjeno pri ',' measured with ':' izmerjeno pri ',' stops':' postankov',
     'Kept only for the current open trip.':'Shranjeno le za trenutno odprto pot.',
     ' directed road distances. Optimization runs locally.':' usmerjenih cestnih razdalj. Optimizacija poteka lokalno.',
@@ -90,15 +124,19 @@
     const text=String(raw??'');if(lang!=='sl')return text;
     if(words[text])return words[text];
     let s=text;
+    if (!/^Loaded:|^Invalid coordinates|^Address lookup|^"/.test(s)) {
+      s=s.replace(/(?<![\w.])\d{1,3}(?:,\d{3})+(?:\.\d+)?|(?<![\w.])\d+\.\d+(?![\w.])/g, value=>value.replace(/,/g,'_').replace('.',',').replace(/_/g,'.'));
+    }
+
     // Sentence translations first; proper names/addresses stay exactly as supplied.
     for(const [a,b] of Object.entries(words).sort((a,b)=>b[0].length-a[0].length))if(a.length>40)s=s.split(a).join(b);
-    const patterns=[[/^Invalid coordinates for "(.*?)"\. Latitude must be -90…90 and longitude -180…180\.$/,'Neveljavne koordinate za »$1«. Širina mora biti −90…90, dolžina −180…180.'],[/^Address lookup timed out for "(.*?)"\. Please retry\.$/,'Iskanje naslova za »$1« je poteklo. Poskusi znova.'],[/^Loaded: (.*)$/,'Naloženo: $1'],[/^Optimizing (\d+) stops\.\.\.$/,'Optimizacija $1 postankov …'],[/^Looking up (\d+) addresses\.\.\.$/,'Iskanje $1 naslovov …'],[/^AI added (\d+) Trip Editor line\(s\)\.$/,'Pomočnik je dodal $1 vrstic v urejevalnik.'],[/^Leg (\d+) \((\d+) stops\)$/,'Odsek $1 ($2 postankov)'],[/^Reading road distances: (.*?) batches \((.*?) route elements\)\.$/,'Pridobivanje cestnih razdalj: $1 sklopov ($2 elementov poti).'],[/^Air comparison could not complete: /,'Zračna primerjava ni uspela: '],[/^Optimization failed: /,'Optimizacija ni uspela: '],[/^Road route could not be drawn \((.*?)\)\./,'Cestne poti ni bilo mogoče izrisati ($1).'],[/^The chatbot (?:connection returned|request failed \()HTTP (\d+)\)?\. Please try again shortly\.$/,'Povezava s pomočnikom je vrnila HTTP $1. Poskusi znova.']];
+    const patterns=[[/^Invalid coordinates for "(.*?)"\. Latitude must be -90…90 and longitude -180…180\.$/,'Neveljavne koordinate za »$1«. Širina mora biti −90…90, dolžina −180…180.'],[/^Address lookup timed out for "(.*?)"\. Please retry\.$/,'Iskanje naslova za »$1« je poteklo. Poskusi znova.'],[/^Loaded: (.*)$/,'Naloženo: $1'],[/^Optimizing (\d+) stops\.\.\.$/,'Optimizacija $1 postankov …'],[/^Looking up (\d+) addresses\.\.\.$/,'Iskanje $1 naslovov …'],[/^AI added (\d+) Trip Editor line\(s\)\.$/,'Pomočnik je dodal $1 vrstic v urejevalnik.'],[/^Leg (\d+) \((\d+) stops\)$/,'Odsek $1 ($2 postankov)'],[/^Reading road distances: (.*?) batches \((.*?) route elements\)\.$/,'Pridobivanje cestnih razdalj: $1 sklopov ($2 elementov poti).'],[/^Search: /,'Iskanje: '],[/^Incompatible Brute Force checkpoint\.$/,'Shranjeni izračun ne ustreza tej poti.'],[/^Invalid Brute Force cursor\.$/,'Neveljavno stanje prekinjenega izračuna.'],[/^Air comparison could not complete: /,'Zračna primerjava ni uspela: '],[/^Optimization failed: /,'Optimizacija ni uspela: '],[/^Road route could not be drawn \((.*?)\)\./,'Cestne poti ni bilo mogoče izrisati ($1).'],[/^The chatbot (?:connection returned|request failed \()HTTP (\d+)\)?\. Please try again shortly\.$/,'Povezava s pomočnikom je vrnila HTTP $1. Poskusi znova.']];
     for(const [a,b] of patterns)s=s.replace(a,b);
     for(const [a,b] of Object.entries(fragments).sort((a,b)=>b[0].length-a[0].length))s=s.split(a).join(b);
     return s;
   }
   function set(el,raw){if(!el)return;el.dataset.uiText=String(raw??'');const text=t(raw);if(el.textContent!==text)el.textContent=text;}
-  function render(root=document){root.querySelectorAll('[data-ui-title]').forEach(el=>{el.title=t(el.dataset.uiTitle);});root.querySelectorAll('[data-ui-text]').forEach(el=>{const text=t(el.dataset.uiText);if(el.textContent!==text)el.textContent=text;});}
+  function render(root=document){root.querySelectorAll('[data-ui-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.uiAria)));root.querySelectorAll('[data-ui-title]').forEach(el=>{el.title=t(el.dataset.uiTitle);});root.querySelectorAll('[data-ui-text]').forEach(el=>{const text=t(el.dataset.uiText);if(el.textContent!==text)el.textContent=text;});}
   window.TripUI={t,set,render};
   document.addEventListener('DOMContentLoaded',()=>{
     window.MDLxDCCLocale.subscribe(()=>render());

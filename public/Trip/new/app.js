@@ -527,7 +527,7 @@
 
   function formatKm(km) {
     if (!Number.isFinite(km) || km < 0) return '—';
-    return (useMiles ? km * 0.621371 : km).toFixed(2) + (useMiles ? ' mi' : ' km');
+    return (useMiles ? km * 0.621371 : km).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}) + (useMiles ? ' mi' : ' km');
   }
 
   function showDistance(km, label) {
@@ -535,13 +535,16 @@
     UI.set($('distKm'), formatKm(km));
   }
 
-  async function updateMapVisualization(points) {
+  async function updateMapVisualization(points, {preview = false} = {}) {
     if (!map) return;
     const version = ++visualizationVersion;
     const ph = $('mapPlaceholder'); if (ph) ph.style.display = 'none';
     mapMarkers.forEach(m => m.setMap(null)); mapMarkers = [];
-    routePolylines.forEach(p => p.setMap(null)); routePolylines = [];
-    if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
+    const clearLines = () => {
+      routePolylines.forEach(p => p.setMap(null)); routePolylines = [];
+      if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
+    };
+    if (!preview) clearLines();
     const bounds = new google.maps.LatLngBounds();
     points.forEach((pt, i) => {
       const loc = { lat: pt.lat, lng: pt.lon };
@@ -555,21 +558,21 @@
       mapMarkers.push(marker);
     });
     google.maps.event.trigger(map, 'resize');
-    map.fitBounds(bounds);
+    if (!preview) map.fitBounds(bounds);
     const path = points.map(p => ({ lat: p.lat, lng: p.lon }));
     if ($('chkRoundTrip').checked && path.length > 1) path.push(path[0]);
     if ($('chkDirect').checked) {
+      clearLines();
       showDistance(lastDirectKm, 'Air distance (great circle)');
       mapPolyline = new google.maps.Polyline({ path, geodesic: true, strokeColor: '#3b82f6', strokeWeight: 4 });
       mapPolyline.setMap(map);
-      setStatus('Stop order ready. Showing great-circle air routes and distances.', 'ok');
+      if (!preview) setStatus('Stop order ready. Showing great-circle air routes and distances.', 'ok');
       return;
     }
-    setStatus('Stop order ready. Loading road route...', 'warn');
+    if (!preview) setStatus('Stop order ready. Loading road route...', 'warn');
     const mode = currentTravelMode;
-    const distanceLabel = mode === 'WALKING' ? 'Walking distance' : 'Road distance';
-    showDistance(null, distanceLabel);
-    UI.set($('distKm'), 'Loading…');
+    const distanceLabel = mode === 'WALKING' ? 'Walking distance (map)' : 'Road distance (map)';
+    if (!preview) { showDistance(null, distanceLabel); UI.set($('distKm'), 'Loading…'); }
     const pendingPolylines = [];
     let totalRoadMeters = 0;
     let completeDistance = true;
@@ -633,13 +636,15 @@
         }));
       }
       if (version !== visualizationVersion) return;
+      clearLines();
       routePolylines = pendingPolylines;
       routePolylines.forEach(polyline => polyline.setMap(map));
       showDistance(completeDistance ? totalRoadMeters / 1000 : null, distanceLabel);
-      setStatus(completeDistance ? 'Road route displayed. Distance follows the route shown on the map.' :
+      if (!preview) setStatus(completeDistance ? 'Road route displayed. Distance follows the route shown on the map.' :
         'Road route displayed. Google did not return a complete distance.', completeDistance ? 'ok' : 'warn');
     } catch (error) {
       if (version !== visualizationVersion) return;
+      clearLines();
       showDistance(null, distanceLabel);
       const info = routeErrorInfo(error);
       console.warn('[8Z Trip route] ' + info.code + ': ' + info.detail);
@@ -768,11 +773,13 @@
     sortedLib.forEach((regionData, idx) => {
       const rNode = document.createElement('div');
       const isUserRegion = idx === 0 && region; 
-      rNode.innerHTML = `<div class="tree-header">${isUserRegion?'⌄':'›'} ${regionData.region}</div><div class="tree-group${isUserRegion?' open':''}"></div>`;
+      rNode.innerHTML = `<div class="tree-header"><span class="tree-arrow">${isUserRegion?'⌄':'›'}</span> <span class="tree-label"></span></div><div class="tree-group${isUserRegion?' open':''}"></div>`;
+      UI.set(rNode.querySelector('.tree-label'), regionData.region);
       const rGroup = rNode.querySelector('.tree-group');
       regionData.categories.forEach(cat => {
         const cNode = document.createElement('div');
-        cNode.innerHTML = `<div class="tree-header">› ${cat.name}</div><div class="tree-group"></div>`;
+        cNode.innerHTML = `<div class="tree-header"><span class="tree-arrow">›</span> <span class="tree-label"></span></div><div class="tree-group"></div>`;
+        UI.set(cNode.querySelector('.tree-label'), cat.name);
         const cGroup = cNode.querySelector('.tree-group');
         cat.items.forEach(trip => {
           presetLookup[trip.id] = trip.data;
@@ -786,10 +793,10 @@
           };
           cGroup.appendChild(item);
         });
-        cNode.querySelector('.tree-header').onclick = function() { cGroup.classList.toggle('open'); this.textContent = (cGroup.classList.contains('open') ? '⌄ ' : '› ') + cat.name; };
+        cNode.querySelector('.tree-header').onclick = function() { cGroup.classList.toggle('open'); this.querySelector('.tree-arrow').textContent = cGroup.classList.contains('open') ? '⌄' : '›'; };
         rGroup.appendChild(cNode);
       });
-      rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.textContent = (rGroup.classList.contains('open') ? '⌄ ' : '› ') + regionData.region; };
+      rNode.querySelector('.tree-header').onclick = function() { rGroup.classList.toggle('open'); this.querySelector('.tree-arrow').textContent = rGroup.classList.contains('open') ? '⌄' : '›'; };
       tree.appendChild(rNode);
     });
   }
@@ -810,8 +817,8 @@
 
     if (isNew) {
         let regionChip = "";
-        if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')">🇪🇺 Classic Europe Tour</div>';
-        if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')">🇺🇸 USA West Coast</div>';
+        if (userRegion === 'Europe') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a classic Europe tour (Paris, Rome, Berlin)\')"><span data-ui-text="🇪🇺 Classic Europe Tour">🇪🇺 Classic Europe Tour</span></div>';
+        if (userRegion === 'Americas') regionChip = '<div class="chip logistics" onclick="window.sendChat(\'Plan a USA West Coast road trip\')"><span data-ui-text="🇺🇸 USA West Coast">🇺🇸 USA West Coast</span></div>';
         
         box.innerHTML = `<div class="suggestion-group"><div class="suggestion-label"><span data-ui-text="✨ Start a New Adventure">✨ Start a New Adventure</span></div><div class="chip-grid">${regionChip}<div class="chip logistics" onclick="window.sendChat('Create a 3-day itinerary for Rome, Italy')"><span data-ui-text="Create 3-Day Rome Itinerary">Create 3-Day Rome Itinerary</span></div><div class="chip logistics" onclick="window.sendChat('Suggest a romantic weekend in Paris')"><span data-ui-text="Paris Weekend">Paris Weekend</span></div></div></div>${helpHtml}`;
     } else {
@@ -830,10 +837,10 @@ async function initAI() {
 
   window.sendChat = function(text) {
       if(document.getElementById('bigChatInput').offsetParent) {
-          document.getElementById('bigChatInput').value = text;
+          document.getElementById('bigChatInput').value = t(text);
           handleChatSend('bigChatInput', 'bigChatHistory');
       } else {
-          document.getElementById('chatInput').value = text;
+          document.getElementById('chatInput').value = t(text);
           handleChatSend('chatInput', 'chatHistory');
       }
   };
@@ -974,7 +981,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nHelp and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. The map refreshes better routes every 30 seconds for up to 10 minutes remaining, otherwise 60 seconds. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -1018,10 +1025,19 @@ Bad example:
   let airWorker = null;
   let airCache = null;
   let comparisonJob = null;
+  // Only the current page owns this checkpoint; no persisted road data or background run.
+  let pausedBrute = null;
+  function problemSignature() {
+    return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked]);
+  }
+  function resumeAvailable() {
+    if (pausedBrute && pausedBrute.signature !== problemSignature()) pausedBrute = null;
+    return !!pausedBrute;
+  }
   const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-lab16-1');
+    const w = new Worker('worker.js?v=20260913-resume1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1038,7 +1054,7 @@ Bad example:
     const allowed = n >= 2 && n <= BF.MAX_STOPS && !invalid;
     $('chkBrute').disabled = !allowed;
     if (!allowed) $('chkBrute').checked = false;
-    $('btnStandard').textContent = $('chkBrute').checked ? t('Run Brute Force') : (window.MDLxDCCLocale?.current() === 'sl' ? 'Optimiziraj (Fast)' : 'Optimize (Fast)');
+    UI.set($('btnStandard'), $('chkBrute').checked ? (resumeAvailable() ? 'Resume Brute Force' : 'Run Brute Force') : 'Optimize (Fast)');
     $('btnDeep').hidden = $('chkBrute').checked;
     $('bruteMini').hidden = !$('chkBrute').checked;
     if ($('chkBrute').checked && !$('bruteMini').textContent) UI.set($('bruteMini'), 'Ready · progress appears here');
@@ -1056,6 +1072,7 @@ Bad example:
   }
 
   function clearComparison() {
+    pausedBrute = null;
     comparisonKey = null; comparisonInput = null; provenExactKm = null; comparisons.clear();
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     airCache = null; comparisonJob = null;
@@ -1082,6 +1099,7 @@ Bad example:
     for (const [method, result] of [...comparisons].sort((a,b)=>['Our Optimize (Fast)','Our Optimize (Deep)','Brute Force',AIR_NAME].indexOf(a[0])-['Our Optimize (Fast)','Our Optimize (Deep)','Brute Force',AIR_NAME].indexOf(b[0]))) {
       const row = document.createElement('tr');
       if (method === AIR_NAME) row.className = 'air-comparison';
+      else if (method === 'Our Optimize (Deep)') row.className = 'deep-comparison';
       let description = result.state;
       if (method !== 'Brute Force' && method !== AIR_NAME && provenExactKm !== null) {
         description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatKm(result.km-provenExactKm)} above exact optimum`;
@@ -1103,13 +1121,13 @@ Bad example:
     }
     if (airWorker) return;
     const expectedComparison = comparisonKey;
-    const w = new Worker('worker.js?v=20260913-lab16-1'); airWorker = w;
+    const w = new Worker('worker.js?v=20260913-resume1'); airWorker = w;
     w.onmessage = ({data:m}) => {
       if (m.type !== 'result' && m.type !== 'error') return;
       w.terminate(); if (airWorker === w) airWorker = null;
       if (comparisonKey !== expectedComparison) return;
       if (m.type === 'result') {
-        const result = {time:BF.duration(m.elapsedMs/1000), km:m.totalKm, state:'Great-circle air · best found, not proven'};
+        const result = {time:BF.duration(m.elapsedMs/1000), km:m.totalKm, state:'Informational · great-circle air · best found, not proven'};
         airCache = {key,result}; comparisons.set(AIR_NAME,result); renderComparison();
       } else setStatus('Air comparison could not complete: ' + m.error, 'warn');
     };
@@ -1129,9 +1147,38 @@ Bad example:
     UI.set($('bruteProgressText'), `${state} · ${BF.percent(msg.checked,msg.total)} done · ${msg.checked.toLocaleString('en-US')} / ${msg.total.toLocaleString('en-US')} orders checked`);
     UI.set($('bruteMini'), `${BF.percent(msg.checked,msg.total)} · ${state} · ${remaining} remaining`);
     $('bruteProgressBar').value = msg.checked / msg.total;
-    UI.set($('bruteTiming'), `Elapsed: ${BF.duration(msg.elapsedMs/1000)} · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`);
+    UI.set($('bruteTiming'), `Compute time: ${BF.duration(msg.elapsedMs/1000)} · 1 compute thread · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`);
     UI.set($('bruteBest'), `Best ${job.direct ? 'direct' : 'road-table'} distance: ${formatKm(msg.totalKm)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`);
     displayComparison(msg, job);
+  }
+
+  function showSavings(msg) {
+    const saving = Math.max(0, msg.baseKm - msg.totalKm);
+    const percent = msg.baseKm > 0 ? 100 * saving / msg.baseKm : 0;
+    UI.set($('savingLabel'), 'Saving vs entered order:');
+    UI.set($('savedKm'), `${formatKm(saving)} (${percent.toFixed(2)}%)`);
+    UI.set($('savingDetails'), `Entered order: ${formatKm(msg.baseKm)} · Optimized order: ${formatKm(msg.totalKm)} · ${msg.metric === 'road' ? 'Road distance table' : 'Great-circle air distances'} · START`);
+    $('savingBox').dataset.uiTitle = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Reduction versus entered order with START first, measured using the same great-circle distances.';
+    UI.render();
+  }
+
+  function showSolvedRoute(msg, job, preview = false) {
+    lastSolvedPoints = msg.pointsSorted;
+    lastDirectKm = msg.directKm;
+    showSavings(msg);
+    renderRouteList(msg.pointsSorted);
+    renderLinks(buildMapsLegLinks(msg.pointsSorted, job.roundTrip, job.mode));
+    return updateMapVisualization(msg.pointsSorted, {preview});
+  }
+
+  function refreshBruteMap(msg, job) {
+    if (!msg.checked || job.mapPending || document.hidden || msg.totalKm >= job.mapBestKm) return;
+    const rate = msg.elapsedMs > 0 ? msg.checked / (msg.elapsedMs / 1000) : 0;
+    const remaining = rate > 0 ? (msg.total - msg.checked) / rate : Infinity;
+    const interval = remaining <= 600 ? 30000 : 60000;
+    if (performance.now() - job.lastMapRefresh < interval) return;
+    job.lastMapRefresh = performance.now(); job.mapBestKm = msg.totalKm; job.mapPending = true;
+    showSolvedRoute(msg, job, true).finally(() => { job.mapPending = false; });
   }
 
   function requestCancel() {
@@ -1193,6 +1240,7 @@ Bad example:
     optimizationPending = false;
     $('btnCancelWork').disabled = true;
     hideBusy();
+    refreshBruteInfo();
   }
 
   function cancelWork() {
@@ -1214,15 +1262,16 @@ Bad example:
     table.style.cssText = 'border-collapse:collapse;white-space:nowrap;font-size:12px;';
     const addRow = (values, header = false) => {
       const row = document.createElement('tr');
-      values.forEach(value => {
+      values.forEach((value, index) => {
         const cell = document.createElement(header ? 'th' : 'td');
-        cell.textContent = value;
+        if ((!header && index > 0) || (header && index === 0)) UI.set(cell, value);
+        else cell.textContent = value;
         cell.style.cssText = 'padding:5px 10px;border:1px solid #334155;text-align:right;';
         row.appendChild(cell);
       });
       table.appendChild(row);
     };
-    addRow([t('From → To'), ...points.map(p => p.name)], true);
+    addRow(['From → To', ...points.map(p => p.name)], true);
     points.forEach((p, i) => addRow([p.name, ...data.distanceMatrix[i].map(m => formatKm(m/1000))]));
     panel.appendChild(table);
     UI.set($('roadTableInfo'), `Google Maps · ${data.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${new Date(data.measuredAt).toLocaleTimeString()} · Kept only for the current open trip.`);
@@ -1236,6 +1285,8 @@ Bad example:
     const eligibility = refreshBruteInfo();
     if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–16 valid stops including START.', 'warn'); return; }
     if (requestedBrute) profile = 'brute';
+    if (forceMatrix) pausedBrute = null;
+    const resume = requestedBrute && resumeAvailable() ? pausedBrute : null;
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     optimizationPending = true;
     activeJob = null;
@@ -1243,9 +1294,21 @@ Bad example:
     $('btnCancelWork').disabled = false;
     // An earlier route response must not overwrite this new calculation.
     ++visualizationVersion;
+    if (resume) {
+      setPlanningMode(false);
+      const current = () => jobId === jobVersion && problemSignature() === resume.signature && $('chkBrute').checked;
+      activeJob = {...resume.job, jobId, current, lastMapRefresh:performance.now(), mapPending:false};
+      pausedBrute = null;
+      setStatus('Resuming from the first unchecked order. Paused time is excluded.', 'ok');
+      refreshBruteInfo();
+      worker.postMessage({type:'solve',jobId,profile:'brute',points:activeJob.points,startIdx:activeJob.startIdx,
+        roundTrip:activeJob.roundTrip,distanceMatrix:activeJob.distanceMatrix,resumeState:resume.state});
+      return;
+    }
     lastDirectKm = null;
     showDistance(null, 'Distance');
-    $('savedKm').textContent = '—';
+    UI.set($('savedKm'), '—');
+    UI.set($('savingDetails'), '');
     let posted = false;
     try {
     setPlanningMode(false);
@@ -1307,7 +1370,8 @@ Bad example:
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
-    activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx};
+    activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx,
+      distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, distanceMatrix:roadData?.distanceMatrix });
     posted = true;
@@ -1319,30 +1383,19 @@ Bad example:
     if (!activeJob || msg.jobId !== activeJob.jobId) return;
     if (!activeJob.current()) { cancelWork(); return; }
     const job = activeJob;
-    if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); return; }
+    if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); refreshBruteMap(msg, job); return; }
     if (msg.type === 'progress') showBusy(msg.text); 
     else if (msg.type === 'error') { activeJob = null; finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
+      if (msg.algorithm === 'brute') pausedBrute = msg.cancelled && msg.resumeState
+        ? {signature:problemSignature(), state:msg.resumeState, job} : null;
       if (msg.algorithm === 'brute') displayBruteProgress(msg, job);
       else displayComparison(msg, job);
       activeJob = null;
       finishWork();
       ensureAirComparison(job.points, job.startIdx, job);
-      if (msg.algorithm === 'brute') setStatus(msg.exact ? 'All orders checked. Exact optimum for this distance table.' : 'Calculation cancelled. Best route and comparison kept.', msg.exact ? 'ok' : 'warn');
-      const { pointsSorted, totalKm, baseKm } = msg;
-      lastSolvedPoints = pointsSorted;
-      
-      lastDirectKm = msg.directKm;
-      UI.set($('savingLabel'), msg.metric === 'road' ? 'Road saving (table):' : 'Air saving:');
-      $('savingBox').dataset.uiTitle = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Reduction versus entered order with START first, measured using the same great-circle distances.';
-      UI.render();
-      showDistance(lastDirectKm, 'Air distance (great circle)');
-      $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
-
-      renderRouteList(pointsSorted);
-      updateMapVisualization(pointsSorted);
-      const links = buildMapsLegLinks(pointsSorted, $('chkRoundTrip').checked, currentTravelMode);
-      renderLinks(links);
+      if (msg.algorithm === 'brute') setStatus(msg.exact ? 'All orders checked. Exact optimum for this distance table.' : 'Calculation paused. Resume is available for this unchanged trip.', msg.exact ? 'ok' : 'warn');
+      showSolvedRoute(msg, job);
     }
   };
 
@@ -1356,9 +1409,10 @@ Bad example:
     $('btnCancelWork').onclick = requestCancel;
     $('chkBrute').onchange = () => { cancelWork(); refreshBruteInfo(); };
     refreshBruteInfo();
+    window.MDLxDCCLocale.subscribe(refreshBruteInfo);
     $('input').addEventListener('input', () => {
       cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
-      $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); $('savedKm').textContent = '—';
+      $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
     });
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
@@ -1374,7 +1428,7 @@ Bad example:
         const q=e.target.value.toLowerCase(); 
         document.querySelectorAll('.tree-item').forEach(i => { 
           const match = i.textContent.toLowerCase().includes(q); i.style.display = match ? 'block' : 'none';
-          if(q && match){ let p=i.parentElement; while(p.id!=='presetTree'){ if(p.classList.contains('tree-group')) { p.classList.add('open'); const h = p.previousElementSibling; if(h) h.textContent = h.textContent.replace('›', '⌄'); } p=p.parentElement; } }
+          if(q && match){ let p=i.parentElement; while(p.id!=='presetTree'){ if(p.classList.contains('tree-group')) { p.classList.add('open'); const arrow = p.previousElementSibling?.querySelector('.tree-arrow'); if(arrow) arrow.textContent = '⌄'; } p=p.parentElement; } }
         }); 
     };
     $('btnSendChat').onclick = () => handleChatSend('chatInput', 'chatHistory');
