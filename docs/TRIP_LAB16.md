@@ -19,3 +19,10 @@ Sources checked 2026-09-13:
 Source baseline: GitHub main 1c961013b08c3f0345008bde0e88538f723d367d; Trip assets matched Drive package BD_TRIP_VERSIONING_ece3267.zip. Original Drive Mobile Screenshots folder: 1bD0-4ousXgiYaRODYKNdf__Tzatpsnwe.
 
 Validation: node --test tests/*.test.mjs. Additional responsive inspection: public/Trip/new/research/responsive-check.html?width=393 (and width=852). Full enumeration of 16 stops is intentionally not run as a test; small cases are checked against an independent exact oracle, and 16-stop progress/cancel are tested.
+
+Live verification after 3d18f5ff34906d9863871ab0f693dac379099d9f / Netlify 6aa69bc584bfaa000801bd6a:
+- 16-stop direct search reported 1,307,674,368,000 orders and live progress; cancel preserved its 38.75km best.
+- Six Slovenian stops, Ljubljana START, road round trip: Fast=Deep=completed BF 660.16km on the same road table (120/120 orders); separate Deep Air=441.96km. These are live endpoint-dependent results, not fixed fixtures.
+- 393px and 852px responsive layouts inspected; mobile progress appears beside the run button.
+- EN and SL live chat calls both returned Gemini usage-limit errors. Native Maps/SL Search and fallback request/response handling passed controlled tests, but a successful grounded provider response remains unverified while quota is exhausted.
+- Follow-up UI polish wraps the narrow comparison table, fixes the air-saving label, and localizes the chat prompt and usage-limit message.

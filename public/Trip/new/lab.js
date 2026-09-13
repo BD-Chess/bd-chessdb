@@ -60,6 +60,7 @@
       for(const [id,pair] of Object.entries(labels)) $(id).textContent=pair[sl?1:0];
       document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===lang)));
       $('chatInput').placeholder=sl?'Vprašaj pomočnika …':'Ask the trip assistant …';
+      if ($('bigChatInput')) $('bigChatInput').placeholder=$('chatInput').placeholder;
       $('input').placeholder=sl?'En postanek v vsako vrstico. START označi izhodišče.':'One stop per line. START fixes the starting stop.';
       $('tripSearch').placeholder=sl?'Išči po knjižnici …':'Search library…';
       $('btnStandard').textContent=$('chkBrute').checked?'Run Brute Force':sl?'Optimiziraj (Fast)':'Optimize (Fast)';

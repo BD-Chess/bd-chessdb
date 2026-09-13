@@ -873,7 +873,9 @@ async function initAI() {
         response = await callAI(t);
       } catch (error) {
         const failedMessage = document.createElement('div');
-        failedMessage.className = 'msg ai'; failedMessage.textContent = error.message;
+        failedMessage.className = 'msg ai';
+        failedMessage.textContent = window.MDLxDCCLocale.current() === 'sl' && /Gemini usage limit reached/.test(error.message)
+          ? 'Dosežena je omejitev porabe Gemini. Poskusi pozneje. Lastnik strani lahko preveri aktivno kvoto v AI Studio.' : error.message;
         h.appendChild(failedMessage);
         return;
       } finally {
@@ -1178,7 +1180,7 @@ Bad example:
     let bigChat = $('bigChatContainer');
     if (!bigChat) {
         bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
-        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini..."><button id="btnSendBigChat">➤</button></div>`;
+        bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="${window.MDLxDCCLocale.current() === 'sl' ? 'Vprašaj pomočnika …' : 'Ask the trip assistant …'}"><button id="btnSendBigChat">➤</button></div>`;
         rightPanel.appendChild(bigChat);
         $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
@@ -1342,7 +1344,7 @@ Bad example:
       lastSolvedPoints = pointsSorted;
       
       lastDirectKm = msg.directKm;
-      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Air saving::';
+      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Air saving:';
       $('savingBox').title = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Estimated reduction in direct-line distance.';
       showDistance(lastDirectKm, 'Air distance (great circle)');
       $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
