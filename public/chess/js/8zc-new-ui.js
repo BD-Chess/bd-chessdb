@@ -34,7 +34,18 @@
     // Reflect panels opened by the existing application handlers.
     [['btnGames', 'popularGamesPanel'], ['btnSettings', 'settingsPanel']].forEach(([buttonId, panelId]) => {
       const panel = byId(panelId);
-      const reflect = () => byId(buttonId).setAttribute('aria-expanded', String(panel.classList.contains('open')));
+      let wasOpen = false;
+      const reflect = () => {
+        const open = panel.classList.contains('open');
+        byId(buttonId).setAttribute('aria-expanded', String(open));
+        if (panelId === 'settingsPanel' && open && !wasOpen) {
+          // The Settings button is near the bottom on phones. Bring the full
+          // workspace's settings header into view only after this user action.
+          const heading = panel.querySelector('.drawer-heading').getBoundingClientRect();
+          if (heading.top < 0 || heading.bottom > window.innerHeight) panel.scrollIntoView({ block: 'start' });
+        }
+        wasOpen = open;
+      };
       new MutationObserver(reflect).observe(panel, { attributes: true, attributeFilter: ['class'] });
       reflect();
     });
