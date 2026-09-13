@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>8Z Trip Optimizer</title>
-  <link rel="stylesheet" href="style.css?v=20260913-brute15-chat1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>8Z Trip Optimizer · CURRENT</title>
+  <script src="locale.js?v=20260913-live1"></script>
+  <link rel="stylesheet" href="style.css?v=20260913-live1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="ui-text.js?v=20260913-live1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
-    .bd-versions { flex: 0 0 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; }
+    .bd-versions { flex: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; }
     .bd-versions a { color: var(--text-dim, #94a3b8); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
     .bd-versions a:hover { color: var(--text-main, #f1f5f9); }
     .bd-versions a[aria-current="page"] { color: var(--primary, #38bdf8); font-weight: 700; border-bottom-color: currentColor; }
@@ -22,18 +24,19 @@
 
   <div class="app-wrapper">
     <header>
-      <div class="brand">8Z <span>Optimizer</span></div>
-      <nav>
+      <div class="header-main"><div class="brand">8Z <span>Optimizer</span></div>
+      <nav data-ui-aria="Trip navigation" aria-label="Trip navigation">
         <button id="btnPlanMode" class="nav-btn">Plan</button>
         <button id="btnMapMode" class="nav-btn">Map</button>
         
-        <span style="color:var(--border); margin:0 5px;">|</span>
+
         
-        <button id="btnAbout" class="nav-btn">About</button>
+        <button id="btnDemo" class="nav-btn" aria-controls="helpOverlay">Demo</button>
         <button id="btnHelp" class="nav-btn">Help</button>
       </nav>
+      </div><div class="header-meta"><div class="language-switch" role="group" aria-label="Language / Jezik"><button data-language="en">EN</button><button data-language="sl">SL</button></div>
       <!-- BD VERSION SELECTOR START -->
-      <nav class="bd-versions" aria-label="Trip version">
+      <nav class="bd-versions" data-ui-aria="Trip version" aria-label="Trip version">
 <a href="/trip/" aria-current="page">CURRENT</a>
 <span aria-hidden="true">·</span>
 <a href="/trip/new/">LAB</a>
@@ -41,28 +44,23 @@
 <a href="/trip/old/">PREVIOUS</a>
 </nav>
       <!-- BD VERSION SELECTOR END -->
+      </div>
     </header>
 
-    <div class="panel">
-      <h3>Plan Your Trip</h3>
-      
-      <input type="text" id="tripSearch" placeholder="Search library..." style="margin-bottom: 8px;">
-      <div id="presetTree" class="library-box">
-        <div style="padding:10px; color:#64748b;">Loading trips...</div>
-      </div>
-
-      <h3>Trip Editor</h3>
+    <div class="panel" id="editorPanel">
+      <div class="section-heading"><h3>Trip Editor</h3><a id="jumpLibrary" href="#librarySection">Library ↓</a></div>
       <textarea id="input" placeholder="Enter stops (e.g. Paris, London)..." spellcheck="false"></textarea>
+      <aside id="tspNotice" class="tsp-notice" hidden>
+        <strong id="tspDatasetName"></strong>
+        <p data-ui-text="TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.">TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.</p>
+        <p data-ui-text="These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.">These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.</p>
+        <a id="tspOriginal" download data-ui-text="Original .tsp">Original .tsp</a> · <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html" target="_blank" rel="noopener" data-ui-text="Dataset source">Dataset source</a>
+      </aside>
       
-      <div class="grid-2">
-        <button id="btnSave" class="btn-neutral">💾 Save</button>
-        <button id="btnLoad" class="btn-neutral">📂 Load</button>
-        <input type="file" id="fileLoader" hidden>
-      </div>
-
-      <div class="grid-2">
+      <div class="grid-2" id="optimizeActions">
         <button id="btnStandard" class="btn-primary">Optimize (Fast)</button>
         <button id="btnDeep" class="btn-secondary">Optimize (Deep)</button>
+        <div id="bruteMini" hidden role="status" aria-live="off"></div>
       </div>
 
       <div class="grid-2">
@@ -77,9 +75,9 @@
       </div>
 
       <div class="options">
-        <label><input type="checkbox" id="chkRoundTrip" checked> Round Trip</label>
-        <label><input type="checkbox" id="chkDirect"> Direct Line</label>
-        <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> Brute Force</label>
+        <label><input type="checkbox" id="chkRoundTrip" checked> <span data-ui-text="Round Trip">Round Trip</span></label>
+        <label><input type="checkbox" id="chkDirect"> <span data-ui-text="Direct Line">Direct Line</span></label>
+        <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> <span data-ui-text="Brute Force">Brute Force</span></label>
         <input type="checkbox" id="chkGoogleStyle" hidden>
         <button id="btnCollapse" hidden></button>
         <button id="btnExpand" hidden></button>
@@ -87,53 +85,88 @@
       </div>
       
       <p id="bruteInfo" class="brute-info"></p>
-      <div id="bruteProgress" class="brute-progress" hidden>
-        <div id="bruteProgressText" role="status" aria-live="polite"></div>
-        <progress id="bruteProgressBar" max="1" value="0" aria-label="Brute Force progress"></progress>
-        <div id="bruteTiming"></div>
-        <div id="bruteBest"></div>
-      </div>
+      <label class="map-refresh-control" for="mapRefreshInterval"><span data-ui-text="Map refresh interval">Map refresh interval</span>
+        <select id="mapRefreshInterval"><option value="1000">1 s</option><option value="5000" selected>5 s</option><option value="15000">15 s</option><option value="30000">30 s</option><option value="60000">1 min</option></select>
+      </label>
       <div id="status" class="status"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="resultsPanel">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
-        <h3 style="margin:0; border:none; padding:0;">Results</h3>
-        <a href="#links" style="font-size:0.85rem; color:var(--primary); text-decoration:none;">See map links ↓</a>
+        <h3 style="margin:0; border:none; padding:0;"><span data-ui-text="Results">Results</span></h3>
+        <a href="#links" style="font-size:0.85rem; color:var(--primary); text-decoration:none;"><span data-ui-text="See map links ↓">See map links ↓</span></a>
       </div>
       
       <div class="stats">
-        <div><span id="distanceLabel">Distance:</span> <span id="distKm" class="val">—</span></div>
-        <div id="savingBox"><span id="savingLabel">Saving:</span> <span id="savedKm" class="saved">—</span></div>
+        <div><span id="distanceLabel"><span data-ui-text="Distance:">Distance:</span></span> <span id="distKm" class="val">—</span></div>
+        <div id="savingBox"><span id="savingLabel" data-ui-text="Saving vs entered order:">Saving vs entered order:</span> <span id="savedKm" class="saved">—</span><details class="saving-explanation"><summary data-ui-text="Compared with what?">Compared with what?</summary><p id="savingDetails"></p><p data-ui-text="Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.">Saving uses the same distance table for both orders, with START first. The map distance comes from a separate route request and can differ slightly.</p></details></div>
       </div>
 
+      <div id="mapRouteCaption" class="map-route-caption" role="status" hidden>
+        <span data-ui-text="Showing:">Showing:</span> <strong id="mapRouteMethod"></strong>
+        <span class="map-route-measure"><span id="mapRouteMetric"></span> <b id="mapRouteDistance"></b></span>
+        <span id="mapRouteState"></span>
+      </div>
       <div id="mapContainer">
         <div id="mapPlaceholder">
-          <p>Map Inactive</p>
-          <button id="btnEnableMap" class="btn-primary" style="width:auto;">Load Map</button>
+          <p><span data-ui-text="Map Inactive">Map Inactive</span></p>
+          <button id="btnEnableMap" data-ui-text="Load Map" class="btn-primary" style="width:auto;">Load Map</button>
         </div>
         <div id="map"></div>
       </div>
 
-      <ul id="routeList"></ul>
-      <details id="roadTablePanel" style="display:none;margin:12px 0;">
-        <summary>Road distance table</summary>
-        <p id="roadTableInfo" style="font-size:12px;color:#94a3b8;"></p>
-        <div id="roadTable" style="overflow:auto;max-height:300px;"></div>
-      </details>
       <section id="comparisonPanel" class="comparison-panel" hidden>
         <h3>Calculation comparison</h3>
-        <p id="comparisonNote"></p>
+        <p id="comparisonNote"></p><details class="comparison-explanation"><summary data-ui-text="How to read this table">How to read this table</summary><p id="comparisonDetails"></p></details>
         <div class="comparison-scroll"><table>
           <thead><tr><th>Method</th><th>Compute time</th><th>Table distance</th><th>Result</th></tr></thead>
           <tbody id="comparisonRows"></tbody>
         </table></div>
       </section>
+      <section id="searchProgress" class="brute-progress search-progress" hidden>
+        <div class="search-progress-heading"><strong id="searchProgressText" role="status"></strong><button id="searchCancel" class="btn-neutral" data-ui-text="Cancel calculation">Cancel calculation</button></div>
+        <progress id="searchProgressBar" max="1" value="0" data-ui-aria="Optimization progress" aria-label="Optimization progress"></progress>
+        <dl class="search-metrics">
+          <div><dt data-ui-text="Completed search starts">Completed search starts</dt><dd id="searchStarts">—</dd></div>
+          <div><dt data-ui-text="Compute time">Compute time</dt><dd id="searchElapsed">—</dd></div>
+          <div><dt data-ui-text="Estimated remaining">Estimated remaining</dt><dd id="searchEta">—</dd></div>
+          <div><dt id="searchMetric">Distance</dt><dd id="searchBest">—</dd></div>
+        </dl>
+        <p data-ui-text="Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.">Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.</p>
+      </section>
+      <div id="bruteProgress" class="brute-progress" hidden>
+        <div id="bruteProgressText" role="status" aria-live="polite"></div>
+        <progress id="bruteProgressBar" max="1" value="0" data-ui-aria="Brute Force progress" aria-label="Brute Force progress"></progress>
+        <div id="bruteTiming"></div>
+        <div id="bruteBest"></div>
+      </div>
+      <ul id="routeList"></ul>
+      <details id="roadTablePanel" style="display:none;margin:12px 0;">
+        <summary><span data-ui-text="Road distance table">Road distance table</span></summary>
+        <p id="roadTableInfo" style="font-size:12px;color:#94a3b8;"></p>
+        <div id="roadTable" style="overflow:auto;max-height:300px;"></div>
+      </details>
       <div id="links" class="links-area"></div>
+<section id="librarySection">      <div class="section-heading"><h3>Trip Library</h3><a id="jumpEditor" href="#editorPanel">Editor ↑</a></div>
+      
+      <input type="text" id="tripSearch" placeholder="Search library..." style="margin-bottom: 8px;">
+      <div id="presetTree" class="library-box">
+        <div style="padding:10px; color:#64748b;"><span data-ui-text="Loading trips...">Loading trips...</span></div>
+      </div>
+
+</section>      <div class="grid-2">
+        <button id="btnSave" class="btn-neutral">💾 Save</button>
+        <button id="btnLoad" class="btn-neutral">📂 Load</button>
+        <input type="file" id="fileLoader" hidden>
+      </div>
+
+
     </div>
 
+    <div id="demoPanel" class="panel" hidden aria-labelledby="demoTitle"></div>
+
     <div id="chatPanel">
-      <div class="chat-head" onclick="this.parentElement.classList.toggle('open')">
+      <div class="chat-head" role="button" tabindex="0" aria-expanded="false" aria-controls="chatHistory chatInput" aria-label="Open trip assistant">
         <div class="chat-title">✨ AI Trip Chatbot <small class="chat-state-text" style="opacity:0.7; font-weight:400; margin-left:8px;"></small></div>
         <div style="display:none;">
           <select id="modelSelector"></select>
@@ -142,7 +175,7 @@
       </div>
       
       <div id="chatHistory">
-        <div class="msg ai"><strong>Trip Assistant:</strong> Welcome to 8Z! 🌍 Load a Trip Library tour, or send your destinations to plan a trip. I can suggest stops and help you use Trip Optimizer.</div>
+        <div class="msg ai welcome-message" data-ui-text="Welcome to 8Z! Load a Library trip or enter your destinations. Ask the assistant for suggestions or help with Trip Optimizer.">Welcome to 8Z! Load a Library trip or enter your destinations. Ask the assistant for suggestions or help with Trip Optimizer.</div>
       </div>
       
       <div class="chat-input">
@@ -151,19 +184,28 @@
       </div>
     </div>
 
-  </div> <div id="helpOverlay">
-    <div class="modal-content">
-      <button id="btnCloseHelp" class="close-icon">×</button>
-      <div id="helpBody"></div>
-    </div>
   </div>
+  <dialog id="helpOverlay" aria-labelledby="infoTitle">
+    <div class="modal-content">
+      <div id="helpBody" class="info-body" tabindex="-1"></div>
+      <div class="info-actions">
+        <button id="infoLoadDemo14" class="btn-primary" hidden>Load 14 EU capitals</button>
+        <button id="infoLoadDemo" class="btn-primary" hidden>Load 15 EU capitals</button>
+        <p id="infoDemoInstructions" class="demo-load-instructions" hidden></p>
+        <a id="infoMore" class="btn-primary" href="help.html" target="_blank" rel="noopener">More →</a>
+        <button id="btnCloseHelp" class="btn-neutral">Close</button>
+      </div>
+    </div>
+  </dialog>
 
-  <script src="trips.js"></script>
-  <script src="about.js"></script>
-  <script src="help.js"></script>
+  <script src="tsp-catalog.js?v=20260913-live1"></script>
+  <script src="tsp-library.js?v=20260913-live1"></script>
+  <script src="trips.js?v=20260913-live1"></script>
+  <script src="help.js?v=20260913-live1"></script>
   <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-brute15-chat1"></script>
-  <script src="app.js?v=20260913-brute15-chat1"></script>
+  <script src="brute-force.js?v=20260913-live1"></script>
+  <script src="app.js?v=20260913-live1"></script>
+  <script src="lab.js?v=20260913-live1"></script>
 
 </body>
 </html>

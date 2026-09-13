@@ -20,7 +20,7 @@ test('old2 preserves every prior primary file, byte for byte',()=>{
 });
 
 test('live channels and archives resolve their own relative assets',()=>{
-  for(const folder of ['','new/','old/','old/001/','old2/']) {
+  for(const folder of ['','new/','old/','old/001/','old/002/','old2/']) {
     const html=read('public/Trip/'+folder+'index.html').toString();
     const relative=[...html.matchAll(/(?:src|href)="([^"?:#]+)(?:\?[^"#]*)?"/g)].map(m=>m[1]).filter(v=>!v.includes(':')&&!v.startsWith('/'));
     assert.ok(relative.length>=5);
@@ -37,7 +37,7 @@ test('route rewrites keep archived and preview assets separate from primary asse
       if(from.replace(/\/$/,'')===path)return [to,status];
     }
   }
-  for(const folder of ['','new/','old/','old/001/','old2/']) {
+  for(const folder of ['','new/','old/','old/001/','old/002/','old2/']) {
     assert.deepEqual(resolve('/trip/'+folder),['/Trip/'+folder+'index.html','200!']);
     for(const asset of ['app.js','worker.js','style.css']) {
       const [target,status]=resolve('/trip/'+folder+asset);
@@ -60,7 +60,7 @@ test('all three channels link to each other with exactly one active channel',()=
 
 test('archive 001 is the complete immutable previous release; previous adds only selector',()=>{
   const versions=JSON.parse(read('public/Trip/versions.json'));
-  assert.equal(versions.nextArchive,'002');
+  assert.equal(versions.nextArchive,'003');
   assert.equal(versions.archives[0].files.length,15);
   for(const entry of versions.archives[0].files) {
     const b=read('public/Trip/old/001/'+entry.path);
@@ -69,5 +69,22 @@ test('archive 001 is the complete immutable previous release; previous adds only
     const previous=read('public/Trip/old/'+entry.path);
     if(entry.path==='index.html') assert.equal(withoutSelector(previous.toString()),b.toString());
     else assert.deepEqual(previous,b);
+  }
+});
+
+
+test('archive 002 preserves prior CURRENT while CURRENT and LAB share runtime assets',()=>{
+  const versions=JSON.parse(read('public/Trip/versions.json'));
+  const archive=versions.archives.find(a=>a.id==='002');
+  assert.equal(archive.immutable,true);assert.equal(archive.sourceDirectory,'public/Trip');
+  for(const entry of archive.files){
+    const b=read('public/Trip/old/002/'+entry.path);
+    assert.equal(createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex'),entry.gitBlobSha,entry.path);
+  }
+  for(const file of ['app.js','worker.js','style.css','trips.js','help.js','demo.js','lab.js','ui-text.js','tsp-catalog.js','tsp-library.js','road-matrix.js','brute-force.js','air-distance.js'])
+    assert.deepEqual(read('public/Trip/'+file),read('public/Trip/new/'+file),file);
+  for(const file of ['index.html','help.html','demo.html']){
+    const current=read('public/Trip/'+file).toString();const lab=read('public/Trip/new/'+file).toString();
+    assert.equal(current,lab.replace('Trip LAB</title>','Trip CURRENT</title>').replace('Trip Optimizer · LAB</title>','Trip Optimizer · CURRENT</title>').replace('<a href="/trip/">CURRENT</a>','<a href="/trip/" aria-current="page">CURRENT</a>').replace('<a href="/trip/new/" aria-current="page">LAB</a>','<a href="/trip/new/">LAB</a>'));
   }
 });

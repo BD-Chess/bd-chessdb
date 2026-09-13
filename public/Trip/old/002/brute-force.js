@@ -1,7 +1,7 @@
 /* Shared exhaustive-order engine and display helpers. No network or persistent storage. */
 (() => {
   'use strict';
-  const MAX_STOPS = 16;
+  const MAX_STOPS = 15;
   function orders(n) {
     if (!Number.isInteger(n) || n < 2 || n > 1000) return null;
     let total = 1n;
@@ -10,7 +10,7 @@
   }
   function duration(seconds) {
     if (!Number.isFinite(seconds)) return 'too large to estimate';
-    if (seconds <= 0) return '< timer resolution';
+    if (seconds <= 0) return '0 s';
     if (seconds < 1) return (seconds * 1000).toFixed(2) + ' ms';
     if (seconds < 60) return seconds.toFixed(1) + ' s';
     if (seconds < 3600) return (seconds / 60).toFixed(1) + ' min';
@@ -27,10 +27,10 @@
     const p = checked / total * 100;
     return p < 0.01 ? p.toExponential(2) + '%' : (Math.floor(p * 100) / 100).toFixed(2) + '%';
   }
-  function create(D, startIdx, roundTrip, checkpoint = null) {
+  function create(D, startIdx, roundTrip) {
     const n = D?.length;
     if (!Number.isInteger(n) || n < 2 || n > MAX_STOPS)
-      throw new Error('Brute Force supports 2–16 stops including START.');
+      throw new Error('Brute Force supports 2–15 stops including START.');
     if (D.some(row => !row || row.length !== n || Array.from(row).some(v => !Number.isFinite(v) || v < 0)))
       throw new Error('Brute Force requires a complete distance table.');
     if (!Number.isInteger(startIdx) || startIdx < 0 || startIdx >= n)
@@ -41,32 +41,9 @@
       for (let i = 1; i < n; i++) sum += D[route[i-1]][route[i]];
       return sum + (roundTrip ? D[route[n-1]][route[0]] : 0);
     }
-    const total = Number(orders(n)); // 15! < Number.MAX_SAFE_INTEGER; all live counts are exact.
+    const total = Number(orders(n)); // 14! < Number.MAX_SAFE_INTEGER; all live counts are exact.
     const baseLength = length();
     let bestLength = baseLength, bestRoute = route.slice(), checked = 0, done = false;
-    const signature = JSON.stringify([startIdx, !!roundTrip, D]);
-    if (checkpoint) {
-      const validRoute = a => Array.isArray(a) && a.length === n && a[0] === startIdx &&
-        new Set(a).size === n && a.every(i => Number.isInteger(i) && i >= 0 && i < n);
-      if (checkpoint.version !== 1 || checkpoint.signature !== signature ||
-          !validRoute(checkpoint.cursor) || !validRoute(checkpoint.route) ||
-          !Number.isSafeInteger(checkpoint.checked) || checkpoint.checked < 0 || checkpoint.checked > total ||
-          checkpoint.done !== (checkpoint.checked === total)) throw new Error('Incompatible Brute Force checkpoint.');
-      // The lexicographic cursor must be exactly the first unchecked order.
-      let rank = 0;
-      for (let i = 1; i < n; i++) {
-        let smaller = 0, factorial = 1;
-        for (let j = i + 1; j < n; j++) if (checkpoint.cursor[j] < checkpoint.cursor[i]) smaller++;
-        for (let j = 2; j < n - i; j++) factorial *= j;
-        rank += smaller * factorial;
-      }
-      if (rank !== Math.min(checkpoint.checked, total - 1)) throw new Error('Invalid Brute Force cursor.');
-      route.splice(0, n, ...checkpoint.route);
-      bestLength = length(); bestRoute = route.slice();
-      if (bestLength !== checkpoint.bestLength) throw new Error('Invalid Brute Force best route.');
-      route.splice(0, n, ...checkpoint.cursor);
-      checked = checkpoint.checked; done = checkpoint.done;
-    }
     function next() {
       let i = n - 2;
       while (i >= 1 && route[i] >= route[i+1]) i--;
@@ -88,8 +65,7 @@
         }
         return done;
       },
-      snapshot() { return {checked, total, done, bestLength, baseLength, route:bestRoute.slice()}; },
-      checkpoint() { return {version:1, signature, cursor:route.slice(), ...this.snapshot()}; }
+      snapshot() { return {checked, total, done, bestLength, baseLength, route:bestRoute.slice()}; }
     };
   }
   globalThis.TripBruteForce = {MAX_STOPS, orders, duration, percent, create};
