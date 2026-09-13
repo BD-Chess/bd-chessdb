@@ -1336,8 +1336,11 @@ Bad example:
           if(latest?.pointsSorted) {
             const result={...latest,cancelled:true,exact:false,reason:'unresponsive'};
             displaySearchProgress(result,job,true);displayComparison(result,job);showSolvedRoute(result,job);
+            setStatus('Worker did not respond · last reported route kept','warn');
+          } else {
+            const error='Calculation stopped before a route was reported.';
+            displaySearchProgress({reason:'error',error},job,true);setStatus(error,'warn');
           }
-          setStatus('Worker did not respond · last reported route kept','warn');
         },1000);
       }
     } else {

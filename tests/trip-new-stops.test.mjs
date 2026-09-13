@@ -656,3 +656,8 @@ test('20-stop UI keeps large checked counts exact and posts the checkpoint on Re
   await h.api.run('brute');assert.equal(h.jobs.at(-1).resumeState.engine.checked,checked.toString());
   h.api.cancelWork();
 });
+
+ test('Deep startup fallback reports no result when the worker has not reported any route',async()=>{
+ const h=harness(success);h.element('input').value=sample;await h.api.run('deep');h.api.requestCancel();[...h.timerJobs.values()].at(-1)();
+ assert.equal(h.workers[0].terminated,true);assert.match(h.element('searchProgressText').textContent,/before a route was reported/);assert.equal(h.element('searchBest').textContent,'—');assert.equal(h.element('searchCancel').disabled,true);
+ });
