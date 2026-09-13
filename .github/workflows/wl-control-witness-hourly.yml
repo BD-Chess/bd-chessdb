@@ -1,0 +1,28 @@
+name: WL control witness hourly safety net
+
+on:
+  schedule:
+    - cron: '48 * * * *'
+    - cron: '53 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wl-control-witness
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Observe production pause flag without private data
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/wl_observe_control.mjs
