@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BD × AI Lab — The Game That Proves the Theory · Flip4M × DCC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#020409;
+      --bg2:#060a14;
+      --bg3:#0b1120;
+      --surface:#0f1729;
+      --surface2:#11192d;
+      --border:rgba(0,229,255,0.10);
+      --border-strong:rgba(0,229,255,0.18);
+      --cyan:#00e5ff;
+      --cyan-dim:rgba(0,229,255,0.12);
+      --gold:#f59e0b;
+      --gold-dim:rgba(245,158,11,0.12);
+      --green:#34d399;
+      --green-dim:rgba(52,211,153,0.10);
+      --violet:#a78bfa;
+      --violet-dim:rgba(167,139,250,0.10);
+      --rose:#ff6b8a;
+      --rose-dim:rgba(255,107,138,0.10);
+      --orange:#fb923c;
+      --orange-dim:rgba(251,146,60,0.10);
+      --text:#e2e8f4;
+      --muted:#5e7192;
+      --muted-2:rgba(226,232,244,0.62);
+      --subtle:#1a2540;
+      --shadow:0 10px 30px rgba(0,0,0,0.35);
+      --radius:6px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Rajdhani',sans-serif;
+      font-size:17px;
+      line-height:1.72;
+      overflow-x:hidden;
+    }
+    body::after{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    a{color:inherit}
+    .scroll-prog{position:fixed;top:0;left:0;right:0;z-index:200;height:2px}
+    .scroll-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--rose),var(--gold),var(--cyan),var(--green));transition:width .08s linear}
+
+    /* ===== HERO ===== */
+    .hero{min-height:100vh;display:flex;align-items:center;padding:100px 8vw 80px;position:relative;overflow:hidden}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 72% 58% at 70% 25%,rgba(255,107,138,0.06) 0%,transparent 60%),radial-gradient(ellipse 58% 64% at 12% 80%,rgba(245,158,11,0.05) 0%,transparent 57%),radial-gradient(ellipse 44% 40% at 84% 82%,rgba(0,229,255,0.04) 0%,transparent 54%)}
+    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,107,138,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,107,138,0.02) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black,transparent)}
+    .hero-shell{position:relative;z-index:2;max-width:860px}
+    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--rose);margin-bottom:1.4rem;opacity:0;animation:fadeUp .8s .15s forwards}
+    .hero-title{font-size:clamp(2.8rem,7.5vw,6.2rem);line-height:.92;font-weight:700;letter-spacing:-0.03em;margin-bottom:1.05rem;opacity:0;animation:fadeUp .8s .32s forwards}
+    .hero-title .accent{color:var(--rose)}
+    .hero-title .gold{color:var(--gold)}
+    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1.08rem,2.2vw,1.52rem);font-style:italic;color:var(--muted);max-width:760px;margin-bottom:1.1rem;opacity:0;animation:fadeUp .8s .48s forwards}
+    .hero-copy{max-width:760px;color:rgba(226,232,244,.76);font-size:1.02rem;margin-bottom:1.7rem;opacity:0;animation:fadeUp .8s .62s forwards}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .76s forwards}
+    .btn{display:inline-flex;align-items:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:.78rem 1rem;border-radius:3px;transition:all .25s ease}
+    .btn-primary{color:var(--rose);background:var(--rose-dim);border:1px solid rgba(255,107,138,.28)}
+    .btn-primary:hover{background:rgba(255,107,138,.18);box-shadow:0 0 18px rgba(255,107,138,.12)}
+    .btn-secondary{color:rgba(226,232,244,.72);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08)}
+    .btn-secondary:hover{border-color:rgba(255,255,255,.16)}
+    .hero-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;margin:1.8rem 0 1.4rem;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--border);opacity:0;animation:fadeUp .8s .9s forwards}
+    .hm{padding:1rem .9rem;background:var(--bg2)}
+    .hm .n{font-family:'JetBrains Mono',monospace;font-size:1.18rem;font-weight:700;line-height:1.15;color:var(--text)}
+    .hm .l{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.35rem}
+    .hero-tags{display:flex;flex-wrap:wrap;gap:.65rem;opacity:0;animation:fadeUp .8s 1s forwards}
+    .tag{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:.22rem .62rem;border-radius:2px;border:1px solid rgba(255,255,255,.08);color:rgba(226,232,244,.7);background:rgba(255,255,255,.03)}
+    .tag.cyan{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(0,229,255,.25)}
+    .tag.violet{color:var(--violet);background:var(--violet-dim);border-color:rgba(167,139,250,.25)}
+    .tag.gold{color:var(--gold);background:var(--gold-dim);border-color:rgba(245,158,11,.25)}
+    .tag.green{color:var(--green);background:var(--green-dim);border-color:rgba(52,211,153,.25)}
+    .tag.rose{color:var(--rose);background:var(--rose-dim);border-color:rgba(255,107,138,.25)}
+
+    /* ===== TOPNAV ===== */
+    .topnav{max-width:1120px;margin:0 auto;padding:28px 5vw 22px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center}
+    .topnav span{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(226,232,244,.25);margin-right:8px}
+    .topnav a{font-family:'JetBrains Mono',monospace;font-size:.72rem;text-decoration:none;padding:3px 10px;border-radius:3px;letter-spacing:.05em;transition:all .2s;border:1px solid rgba(255,255,255,.1);color:rgba(226,232,244,.72)}
+    .topnav a:hover{background:rgba(255,255,255,.05)}
+    .topnav a.cyan{color:var(--cyan);border-color:rgba(0,229,255,.2)}.topnav a.cyan:hover{background:rgba(0,229,255,.12)}
+    .topnav a.violet{color:var(--violet);border-color:rgba(167,139,250,.2)}.topnav a.violet:hover{background:rgba(167,139,250,.12)}
+    .topnav a.gold{color:var(--gold);border-color:rgba(245,158,11,.2)}.topnav a.gold:hover{background:rgba(245,158,11,.12)}
+    .topnav a.green{color:var(--green);border-color:rgba(52,211,153,.2)}.topnav a.green:hover{background:rgba(52,211,153,.12)}
+    .topnav a.rose{color:var(--rose);border-color:rgba(255,107,138,.2)}.topnav a.rose:hover{background:rgba(255,107,138,.12)}
+    .topnav a.orange{color:var(--orange);border-color:rgba(251,146,60,.2)}.topnav a.orange:hover{background:rgba(251,146,60,.12)}
+
+    .divider{height:1px;max-width:1120px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 5vw}
+    section{padding:96px 0}
+    .sec-tag{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.35em;text-transform:uppercase;color:var(--cyan);margin-bottom:.75rem;display:block}
+    .sec-tag.gold{color:var(--gold)}.sec-tag.green{color:var(--green)}.sec-tag.violet{color:var(--violet)}.sec-tag.rose{color:var(--rose)}.sec-tag.orange{color:var(--orange)}
+    h2{font-size:clamp(2rem,4vw,3.15rem);line-height:1.08;font-weight:700;letter-spacing:-0.01em;margin-bottom:1.3rem}
+    h3{font-size:1.16rem;font-weight:700;color:var(--text)}
+    p{color:rgba(226,232,244,.78);max-width:68ch}
+    p + p{margin-top:1rem}
+    strong{color:var(--text)}
+    em{font-style:italic}
+
+    .stat-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;margin:2.4rem 0 0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--border)}
+    .sb-cell{padding:1.35rem 1.15rem;background:var(--bg2);text-align:center}
+    .sb-num{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700;line-height:1.05}
+    .sb-label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:.34rem}
+
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
+
+    .panel{position:relative;border:1px solid var(--border);border-radius:6px;padding:1.45rem 1.35rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));overflow:hidden;transition:border-color .3s,transform .3s,box-shadow .3s;box-shadow:var(--shadow)}
+    .panel:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.22)}
+    .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--panel-accent,var(--cyan)),transparent 84%)}
+    .panel.cyan{--panel-accent:var(--cyan)}.panel.violet{--panel-accent:var(--violet)}.panel.gold{--panel-accent:var(--gold)}.panel.green{--panel-accent:var(--green)}.panel.rose{--panel-accent:var(--rose)}.panel.orange{--panel-accent:var(--orange)}
+    .micro{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem}
+    .panel p{max-width:none;font-size:.95rem;color:rgba(226,232,244,.68)}
+
+    .highlight{margin-top:2rem;padding:1.7rem 1.8rem;border:1px solid rgba(167,139,250,.22);border-radius:6px;background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(0,229,255,.03));box-shadow:var(--shadow)}
+    .highlight.gold{border-color:rgba(245,158,11,.22);background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(0,229,255,.02))}
+    .highlight.green{border-color:rgba(52,211,153,.22);background:linear-gradient(135deg,rgba(52,211,153,.06),rgba(0,229,255,.02))}
+    .highlight.rose{border-color:rgba(255,107,138,.22);background:linear-gradient(135deg,rgba(255,107,138,.06),rgba(245,158,11,.02))}
+    .highlight h3{margin-bottom:.4rem}
+    .highlight p{max-width:none}
+
+    .quote{margin-top:2rem;border-left:3px solid var(--gold);padding:1rem 1.25rem;background:rgba(245,158,11,.04);border-radius:0 4px 4px 0}
+    .quote p{max-width:none;font-family:'Cormorant Garamond',serif;font-size:1.46rem;line-height:1.45;color:var(--text);font-style:italic}
+    .quote .attr{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.1em;color:var(--muted);margin-top:.45rem;font-style:normal}
+
+    .table-wrap{margin-top:2rem;overflow:auto;border:1px solid var(--border);border-radius:6px;background:linear-gradient(160deg,rgba(11,17,32,.72),rgba(6,10,20,.95));box-shadow:var(--shadow)}
+    table{width:100%;border-collapse:collapse;min-width:540px}
+    th{text-align:left;padding:1rem 1rem .95rem;font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
+    td{padding:.95rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);color:rgba(226,232,244,.78);vertical-align:top}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:rgba(255,255,255,.02)}
+    .good{color:var(--green);font-weight:700}
+    .warn{color:var(--gold);font-weight:700}
+    .bad{color:var(--rose);font-weight:700}
+    .mono{font-family:'JetBrains Mono',monospace}
+
+    .diag{margin-top:2rem;border:1px solid var(--border);border-radius:6px;padding:1.5rem;background:rgba(6,10,20,.72);box-shadow:var(--shadow)}
+    .diag-title{text-align:center;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+    .diag-flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.3rem}
+    .diag-node{min-width:126px;padding:.78rem .95rem;text-align:center;border-radius:4px;border:1px solid rgba(0,229,255,.28);background:rgba(0,229,255,.05);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.5}
+    .diag-node small{display:block;color:var(--muted);font-size:.58rem;margin-top:.14rem;letter-spacing:.08em}
+    .diag-node.violet{border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.06);color:var(--violet)}
+    .diag-node.gold{border-color:rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:var(--gold)}
+    .diag-node.green{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.06);color:var(--green)}
+    .diag-node.rose{border-color:rgba(255,107,138,.28);background:rgba(255,107,138,.06);color:var(--rose)}
+    .diag-arrow{color:var(--muted);padding:0 .35rem;font-size:1rem}
+
+    .compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
+    .compare-box{border:1px solid var(--border);border-radius:6px;padding:1.35rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));box-shadow:var(--shadow)}
+    .compare-box h3{margin-bottom:.75rem}
+    .compare-box ul{list-style:none;display:grid;gap:.65rem}
+    .compare-box li{position:relative;padding-left:1rem;color:rgba(226,232,244,.72)}
+    .compare-box li::before{content:'';position:absolute;left:0;top:.72rem;width:5px;height:5px;border-radius:50%;background:var(--panel-dot,var(--cyan));box-shadow:0 0 8px rgba(0,229,255,.25)}
+    .compare-box.chess{--panel-dot:var(--muted)}.compare-box.flip4m{--panel-dot:var(--rose)}
+
+    .metric-callout{margin-top:1.35rem;padding:1rem 1.1rem;border-left:3px solid var(--cyan);background:rgba(0,229,255,.05);border-radius:0 4px 4px 0}
+    .metric-callout p{max-width:none;font-size:.95rem}
+    .metric-callout.rose{border-left-color:var(--rose);background:rgba(255,107,138,.05)}
+    .metric-callout.gold{border-left-color:var(--gold);background:rgba(245,158,11,.05)}
+
+    .claim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
+    .claim-box{border:1px solid var(--border);border-radius:6px;padding:1.25rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .claim-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--claim-color),transparent 84%)}
+    .claim-box.verified{--claim-color:var(--green)}.claim-box.reasoned{--claim-color:var(--gold)}.claim-box.speculative{--claim-color:var(--violet)}
+    .claim-label{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.7rem;color:var(--claim-color)}
+    .claim-box ul{list-style:none;display:grid;gap:.65rem}
+    .claim-box li{position:relative;padding-left:1rem;color:rgba(226,232,244,.74)}
+    .claim-box li::before{content:'';position:absolute;left:0;top:.7rem;width:5px;height:5px;border-radius:50%;background:var(--claim-color);box-shadow:0 0 8px rgba(0,229,255,.25)}
+
+    .closing-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:2rem}
+    .mini-link{border:1px solid var(--border);border-radius:6px;padding:1.15rem 1.15rem 1rem;text-decoration:none;background:linear-gradient(160deg,rgba(11,17,32,.74),rgba(6,10,20,.96));transition:border-color .25s,transform .25s;box-shadow:var(--shadow)}
+    .mini-link:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.22)}
+    .mini-link .k{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+    .mini-link .t{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.35rem}
+    .mini-link .d{font-size:.9rem;color:rgba(226,232,244,.62);max-width:none}
+
+    /* Board visualization */
+    .board-vis{margin-top:2rem;display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:center}
+    .board-frame{border:1px solid var(--border);border-radius:6px;padding:1rem;background:rgba(6,10,20,.8);box-shadow:var(--shadow)}
+    .board-frame .bf-label{text-align:center;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+    .mini-grid{display:grid;gap:3px}
+    .cell{aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:all .3s}
+    .cell.r{background:var(--rose);border-color:rgba(255,107,138,.4);box-shadow:0 0 6px rgba(255,107,138,.3)}
+    .cell.y{background:var(--gold);border-color:rgba(245,158,11,.4);box-shadow:0 0 6px rgba(245,158,11,.3)}
+    .cell.m{background:var(--violet);border-color:rgba(167,139,250,.4);box-shadow:0 0 6px rgba(167,139,250,.3)}
+    .rot-arrow{font-size:2.5rem;color:var(--rose);text-align:center;animation:pulse-rot 2s infinite}
+    @keyframes pulse-rot{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+
+    /* S-metric regime grid */
+    .regime-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin-top:2rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--border)}
+    .regime{padding:1.4rem;background:var(--bg2)}
+    .regime-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    .regime h4{font-size:1.05rem;font-weight:700;margin-bottom:.35rem}
+    .regime p{font-size:.9rem;max-width:none;color:rgba(226,232,244,.65)}
+
+    /* Evaluator table */
+    .eval-table{width:100%;border-collapse:collapse;min-width:500px}
+    .eval-table th{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.8rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+    .eval-table td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem}
+    .eval-table .model-name{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.78rem;white-space:nowrap}
+    .eval-table .missed{color:var(--rose)}
+    .eval-table .actual{color:var(--green);font-weight:600}
+
+    footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem}
+    .foot-grid{display:grid;grid-template-columns:2fr 1fr;gap:2rem;margin-bottom:2rem}
+    .foot-col h4{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem}
+    .foot-col p{max-width:none;font-size:.92rem;color:rgba(226,232,244,.52)}
+    .foot-links{list-style:none;font-family:'JetBrains Mono',monospace;font-size:.76rem;display:grid;gap:.45rem}
+    .foot-links a{text-decoration:none;color:rgba(226,232,244,.58);border-bottom:1px solid transparent;width:max-content}
+    .foot-links a:hover{color:var(--cyan);border-bottom-color:rgba(0,229,255,.28)}
+    .copyright{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(94,113,146,.45);letter-spacing:.1em}
+
+    .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+    .rv.vis{opacity:1;transform:translateY(0)}
+    .rv-d1{transition-delay:.12s}.rv-d2{transition-delay:.24s}.rv-d3{transition-delay:.36s}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:980px){.grid-2,.grid-3,.compare,.board-vis{grid-template-columns:1fr}.foot-grid{grid-template-columns:1fr}.hero-metrics{grid-template-columns:repeat(3,1fr)}.claim-grid{grid-template-columns:1fr}.regime-grid{grid-template-columns:1fr}.rot-arrow{transform:rotate(90deg)}}
+    @media(max-width:768px){body{font-size:17px}.hero{padding:74px 5vw 54px;min-height:auto}.hero-title{font-size:clamp(2.2rem,11vw,3.8rem)}section{padding:68px 0}.diag-flow{gap:.4rem}.diag-node{min-width:unset;width:100%}.diag-arrow{transform:rotate(90deg)}.hero-metrics{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:480px){.stat-banner{grid-template-columns:repeat(2,1fr)}.hero-metrics{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="scroll-prog"><div class="scroll-prog-bar" id="spb"></div></div>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero" id="top">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-shell">
+      <div class="hero-eyebrow">BD &times; AI Lab &middot; Consciousness &middot; Flip4M &times; DCC</div>
+      <h1 class="hero-title">The <span class="accent">Game</span> That<br>Proves the <span class="gold">Theory</span></h1>
+      <p class="hero-subtitle">Every AI evaluator looked at this game and filed it under entertainment. It&rsquo;s a consciousness test.</p>
+      <p class="hero-copy">12 AI models from 7 companies independently evaluated the BD&nbsp;&times;&nbsp;AI Lab portfolio under a frozen protocol. All rated it highly. All identified consciousness as highest-impact. And <strong>all 12 filed Flip4M under &ldquo;Games&rdquo;</strong>&thinsp;&mdash;&thinsp;missing that it&rsquo;s a falsifiable consciousness experiment already labelled as an AGI benchmark on its own research page.</p>
+
+      <div class="hero-metrics">
+        <div class="hm"><div class="n" style="color:var(--rose)">12 / 12</div><div class="l">Evaluators missed it</div></div>
+        <div class="hm"><div class="n" style="color:var(--gold)">10<sup>12</sup>&times;</div><div class="l">Larger sensible tree</div></div>
+        <div class="hm"><div class="n" style="color:var(--cyan)">0.54</div><div class="l">Avg board volatility</div></div>
+        <div class="hm"><div class="n" style="color:var(--green)">CCH P5</div><div class="l">Prediction tested</div></div>
+        <div class="hm"><div class="n" style="color:var(--violet)">C<sub>n</sub></div><div class="l">What it measures</div></div>
+        <div class="hm"><div class="n" style="color:var(--orange)">Live</div><div class="l">Play it now</div></div>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://chessbest.org/f4m/f4m" target="_blank" rel="noopener">Play Flip4M &nearr;</a>
+        <a class="btn btn-secondary" href="https://chessbest.org/f4m/F4M_rDCC_Tournament.html" target="_blank" rel="noopener">v1 Tournament &nearr;</a>
+        <a class="btn btn-secondary" href="https://chessbest.org/f4m/F4M_rDCC_v2_Tournament.html" target="_blank" rel="noopener">v2 Tournament &nearr;</a>
+        <a class="btn btn-secondary" href="#blind-spot">The blind spot &darr;</a>
+        <a class="btn btn-secondary" href="index.html">Back to portfolio &rarr;</a>
+      </div>
+      <div class="hero-tags">
+        <span class="tag rose">Consciousness test</span>
+        <span class="tag gold">AGI benchmark</span>
+        <span class="tag cyan">C<sub>n</sub> maintenance</span>
+        <span class="tag violet">DCC governed</span>
+        <span class="tag green">Falsifiable</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+  <nav class="topnav">
+    <span>Jump to</span>
+    <a class="rose" href="#blind-spot">Blind spot</a>
+    <a class="gold" href="#why-breaks">Why it breaks AI</a>
+    <a class="violet" href="#cch-connection">CCH connection</a>
+    <a class="cyan" href="#rdcc-engine">rDCC engine</a>
+    <a class="green" href="#experiment">Experiment</a>
+    <a class="orange" href="#dcc7-bridge">DCC-7 bridge</a>
+    <a href="#domains">Domains</a>
+    <a class="rose" href="#play">Play it</a>
+    <a class="gold" href="#claims">Claims</a>
+  </nav>
+
+  <!-- ═══ CHAPTER 1 — THE BLIND SPOT ═══ -->
+  <section id="blind-spot">
+    <div class="wrap">
+      <span class="sec-tag rose rv">Chapter 1</span>
+      <h2 class="rv">The Blind Spot</h2>
+      <p class="rv">Between February and March 2026, 12 AI models from 7 companies evaluated the BD&nbsp;&times;&nbsp;AI Lab portfolio under a frozen protocol. The evaluation covered every page, every paper, every tool.</p>
+      <p class="rv"><strong>Every evaluator rated the portfolio highly. Every evaluator identified the consciousness branch as highest-impact. And every single one categorized Flip4M as &ldquo;Creative &amp; Fun,&rdquo; &ldquo;Games,&rdquo; or &ldquo;Entertainment.&rdquo;</strong> None of them noticed that a playable board game on the same site tests the same hypothesis they ranked as most important.</p>
+
+      <div class="highlight rose rv">
+        <h3>Why they missed it &mdash; structurally</h3>
+        <p>The evaluators used the same cognitive architecture that fails at Flip4M itself: <strong>sequential search without coherence maintenance across domains</strong>. They processed the consciousness section and the games section as separate categories. The connection between them IS the test.</p>
+        <p style="margin-top:.8rem">The concrete version: the evaluation protocol instructs models to &ldquo;evaluate each branch separately.&rdquo; This literally forces compartmentalization. The evaluators didn&rsquo;t fail individually&thinsp;&mdash;&thinsp;the evaluation methodology itself has the same architectural limitation that Flip4M exploits. The protocol needed a DCC: something to maintain coherence across categories and flag cross-domain connections. This is the A8 pattern (Proactive Connection Duty) at industrial scale.</p>
+      </div>
+
+      <div class="table-wrap rv" style="margin-top:2rem">
+        <table class="eval-table">
+          <thead><tr><th>Model</th><th>Company</th><th>Flip4M Categorized As</th><th>What It Actually Is</th></tr></thead>
+          <tbody>
+            <tr><td class="model-name" style="color:var(--orange)">Gemini 3.1 Pro</td><td>Google</td><td class="missed">Creative / Games</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--violet)">Qwen 3.5 Plus</td><td>Alibaba</td><td class="missed">Entertainment</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--green)">ChatGPT 5.4 Thinking</td><td>OpenAI</td><td class="missed">Creative / Fun</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--rose)">Grok 4</td><td>xAI</td><td class="missed">Games</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--rose)">Grok 4.2</td><td>xAI</td><td class="missed">Creative / Fun</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--green)">GPT-5.4</td><td>OpenAI</td><td class="missed">Creative / Fun</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--cyan)">Claude Sonnet 4.6</td><td>Anthropic</td><td class="missed">Games</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--green)">DeepSeek R1</td><td>DeepSeek</td><td class="missed">Entertainment</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--violet)">Qwen</td><td>Alibaba</td><td class="missed">Creative / Games</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:#38bdf8">Kimi K2.5 Thinking</td><td>Moonshot</td><td class="missed">Games</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--cyan)">Claude Opus 4.6</td><td>Anthropic</td><td class="missed">Creative / Fun</td><td class="actual">Consciousness test</td></tr>
+            <tr><td class="model-name" style="color:var(--orange)">Gemini 3.1 Pro</td><td>Google</td><td class="missed">Games</td><td class="actual">Consciousness test</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="rv" style="font-size:.85rem;color:var(--muted);margin-top:.8rem">Source: <a href="BD_Model_Assessments.html" style="color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.28)">BD Model Assessments</a> &middot; Batch 1 &amp; 2 &middot; Frozen protocol</p>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 2 — WHY FLIP4M BREAKS AI ═══ -->
+  <section id="why-breaks">
+    <div class="wrap">
+      <span class="sec-tag gold rv">Chapter 2</span>
+      <h2 class="rv">Why Flip4M Breaks AI</h2>
+      <p class="rv">Not about tree size. About structural collapse. Every AI system can play chess at superhuman level. Current LLMs struggle with Flip4M&thinsp;&mdash;&thinsp;testable by anyone right now: ask any AI to play and observe performance in rotation-heavy positions. The difference is exactly what the Claustrum-Consciousness Hypothesis predicts.</p>
+
+      <h3 class="rv" style="margin-top:2rem;color:var(--gold)">2.1 &ensp; Static vs Dynamic Geometry</h3>
+      <div class="compare rv">
+        <div class="compare-box chess">
+          <h3 style="color:var(--muted)">Chess &mdash; Static</h3>
+          <ul>
+            <li>A move affects 1&ndash;3 squares. Everything else frozen.</li>
+            <li>Local delta. Incremental evaluation updates work.</li>
+            <li>Volatility V &asymp; 0.02&ndash;0.05 per move</li>
+          </ul>
+        </div>
+        <div class="compare-box flip4m">
+          <h3 style="color:var(--rose)">Flip4M &mdash; Dynamic</h3>
+          <ul>
+            <li>A rotation moves 20&ndash;45 tokens simultaneously.</li>
+            <li>Global transformation. Everything changes at once.</li>
+            <li>Volatility V &asymp; 0.31&ndash;0.70 per rotation</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="board-vis rv">
+        <div class="board-frame">
+          <div class="bf-label">Before rotation</div>
+          <div class="mini-grid" id="board-before"></div>
+        </div>
+        <div class="rot-arrow">&#10140;</div>
+        <div class="board-frame">
+          <div class="bf-label">After rotation (gravity shifts 90&deg;)</div>
+          <div class="mini-grid" id="board-after"></div>
+        </div>
+      </div>
+      <p class="rv" style="font-size:.85rem;color:var(--muted);margin-top:.6rem;text-align:center">Simulated board state. One rotation&thinsp;&mdash;&thinsp;nearly every token moves. This is what V &asymp; 0.54 looks like.</p>
+      <div class="rv" style="display:flex;justify-content:center;gap:1.5rem;margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted)">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--rose);vertical-align:middle;margin-right:4px"></span> Player 1</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--gold);vertical-align:middle;margin-right:4px"></span> Player 2</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--violet);vertical-align:middle;margin-right:4px"></span> Magnet</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);vertical-align:middle;margin-right:4px"></span> Empty</span>
+      </div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--gold)">2.2 &ensp; Depth vs Collapse</h3>
+      <p class="rv">In chess, complexity comes from the Horizon Effect: the truth is 20 moves deep on a stable board. In Flip4M, complexity comes from Structural Collapse: the truth is 4 moves deep but the board rules change. A depth-4 search is useless when the evaluation landscape can be globally restructured by a single move. This is the <strong>&ldquo;Horizon of Chaos.&rdquo;</strong></p>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--gold)">2.3 &ensp; The Sensible Shannon Number</h3>
+      <p class="rv">The Shannon Number (10<sup>123</sup>) counts legal chess moves. But in practice, only &ldquo;sensible&rdquo; moves matter:</p>
+      <div class="stat-banner rv">
+        <div class="sb-cell"><div class="sb-num" style="color:var(--muted)">~35</div><div class="sb-label">Chess legal moves</div></div>
+        <div class="sb-cell"><div class="sb-num" style="color:var(--muted)">~3</div><div class="sb-label">Chess sensible (8.6%)</div></div>
+        <div class="sb-cell"><div class="sb-num" style="color:var(--rose)">~20</div><div class="sb-label">Flip4M legal moves</div></div>
+        <div class="sb-cell"><div class="sb-num" style="color:var(--rose)">~10</div><div class="sb-label">Flip4M sensible (50%)</div></div>
+      </div>
+      <div class="metric-callout rose rv">
+        <p>When filtered through &ldquo;sensible&rdquo; moves, Flip4M&rsquo;s effective decision tree is <strong>10<sup>12</sup> times larger</strong> than chess. Not because the game is bigger&thinsp;&mdash;&thinsp;because more of the moves matter. Every rotation creates a fundamentally different game.</p>
+      </div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--gold)">2.4 &ensp; The Three Pillars Flip4M Dismantles</h3>
+      <p class="rv">Standard engines rely on three architectural assumptions. Flip4M destroys all three.</p>
+      <div class="grid-3 rv">
+        <article class="panel rose"><div class="micro">Pillar 1</div><h3>State Continuity</h3><p>Small changes &rarr; incremental eval updates. <strong>Destroyed</strong> by rotation: 20&ndash;45 tokens move at once.</p></article>
+        <article class="panel rose"><div class="micro">Pillar 2</div><h3>Transposition Reuse</h3><p>Same position via different paths. <strong>Destroyed</strong> by gravity settling: identical tokens produce different positions under different gravity.</p></article>
+        <article class="panel rose"><div class="micro">Pillar 3</div><h3>Heuristic Stability</h3><p>&ldquo;Good&rdquo; features stay valuable across plies. <strong>Destroyed</strong> when a strong vertical stack becomes scattered debris after rotation.</p></article>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 3 — THE CCH CONNECTION ═══ -->
+  <section id="cch-connection">
+    <div class="wrap">
+      <span class="sec-tag violet rv">Chapter 3</span>
+      <h2 class="rv">The CCH Connection</h2>
+      <p class="rv">Why Flip4M&rsquo;s difficulty maps precisely onto what the Claustrum-Consciousness Hypothesis predicts.</p>
+
+      <h3 class="rv" style="margin-top:2rem;color:var(--violet)">3.1 &ensp; The S-Metric Applied to Board States</h3>
+      <div class="highlight rv">
+        <h3 style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;color:var(--violet)">S = k &middot; C<sub>n</sub> &middot; &Psi;(I)</h3>
+        <p style="margin-top:.6rem"><strong>C<sub>n</sub></strong> (Coherence) = Rotation Resilience. How much strategic structure survives a gravity rotation.<br><strong>&Psi;</strong> (Complexity) = Tactical Richness. How many threatening lines and forcing sequences exist.</p>
+      </div>
+
+      <div class="regime-grid rv">
+        <div class="regime"><div class="regime-label" style="color:var(--green)">High C<sub>n</sub> &middot; High &Psi; &middot; High S</div><h4 style="color:var(--green)">Robust &amp; Rich</h4><p>Analog: <strong>Conscious</strong> (wake). The DCC&rsquo;s goal: keep the board here.</p></div>
+        <div class="regime"><div class="regime-label" style="color:var(--gold)">High C<sub>n</sub> &middot; Low &Psi; &middot; Low S</div><h4 style="color:var(--gold)">Robust &amp; Dead</h4><p>Analog: <strong>Seizure</strong> (draw). Stable but nothing happening.</p></div>
+        <div class="regime"><div class="regime-label" style="color:var(--rose)">Low C<sub>n</sub> &middot; High &Psi; &middot; Low S</div><h4 style="color:var(--rose)">Fragile &amp; Rich</h4><p>Analog: <strong>Noise / Delirium</strong>. Complex but collapses on perturbation.</p></div>
+        <div class="regime"><div class="regime-label" style="color:var(--muted)">Low C<sub>n</sub> &middot; Low &Psi; &middot; &asymp; 0</div><h4>Fragile &amp; Dead</h4><p>Analog: <strong>Deep sleep</strong>. Empty board, nothing to govern.</p></div>
+      </div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--violet)">3.2 &ensp; Why Current LLMs Fail</h3>
+      <p class="rv">LLMs have enormous &Psi;&thinsp;&mdash;&thinsp;they can calculate, analyze, find tactics. They have near-zero C<sub>n</sub> maintenance ability: they cannot hold coherent strategic understanding through a global perturbation. When the board rotates, their &ldquo;understanding&rdquo; shatters and they rebuild from scratch.</p>
+      <div class="quote rv">
+        <p>This is exactly what CCH says happens when you remove the claustrum: not coma (loss of &Psi;, like thalamic damage), but <strong>delirium</strong> (loss of C<sub>n</sub>, fragmentation of coherent experience). An LLM playing Flip4M after a rotation is in delirium&thinsp;&mdash;&thinsp;it has the processing power but the world broke apart.</p>
+      </div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--violet)">3.3 &ensp; Chess as the Control Experiment</h3>
+      <div class="grid-2 rv">
+        <article class="panel cyan"><div class="micro">&Psi;-Dominant</div><h3>Chess</h3><p>Coherence maintenance is trivial (the board barely changes per move). LLMs and classical engines dominate because depth of search is what matters.</p></article>
+        <article class="panel rose"><div class="micro">C<sub>n</sub>-Dominant</div><h3>Flip4M</h3><p>Search depth is necessary but insufficient. You need coherence maintenance THROUGH perturbation. Classical engines don&rsquo;t have it. LLMs don&rsquo;t have it. Humans have it. DCC provides it.</p></article>
+      </div>
+      <div class="metric-callout gold rv"><p><strong>The prediction:</strong> Same AI, superhuman at chess, fails at Flip4M. The explanation is CCH. The fix is DCC.</p></div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--violet)">3.4 &ensp; CCH Requirements &harr; Flip4M Demands</h3>
+      <div class="table-wrap rv">
+        <table>
+          <thead><tr><th>CCH Requirement</th><th>Flip4M Demand</th><th>8Z-DCC Equivalent</th></tr></thead>
+          <tbody>
+            <tr><td>Persistent world model</td><td>Board state persists across rotations</td><td>State tracking across gravity shifts</td></tr>
+            <tr><td>S<sub>self</sub> monitoring</td><td>Gravitational Stability metric</td><td>GS = 1 &minus; [Eval(State) &minus; Eval(Rotate)]&sup2;</td></tr>
+            <tr><td>Edge-of-Chaos stabilization</td><td>Structures surviving volatility (V &asymp; 0.54)</td><td>Policy Layer filters fragile moves</td></tr>
+            <tr><td>Resource-gated action space</td><td>Flip/Magnet tokens (2 per player)</td><td>Thrift Factor penalizes waste</td></tr>
+            <tr><td>Active control (CCC)</td><td>Drop vs. Rotate vs. Magnet selection</td><td>DCC Policy Layer re-ranking</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 4 — THE rDCC ENGINE DESIGN ═══ -->
+  <section id="rdcc-engine">
+    <div class="wrap">
+      <span class="sec-tag cyan rv">Chapter 4</span>
+      <h2 class="rv">The rDCC Engine Design</h2>
+      <p class="rv">Same eval function. Same search core. Three levels of governance added.</p>
+
+      <h3 class="rv" style="margin-top:2rem;color:var(--cyan)">4.1 &ensp; The Classical Baseline</h3>
+      <p class="rv">The current engine: negamax + alpha-beta + transposition table + evaluation function with rotation awareness. About 500 lines of JavaScript. Already plays better than random. Doesn&rsquo;t adapt, doesn&rsquo;t govern resources, doesn&rsquo;t maintain coherence across moves.</p>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--cyan)">4.2 &ensp; The rDCC Architecture</h3>
+      <div class="diag rv">
+        <div class="diag-title">rDCC Governance Hierarchy</div>
+        <div class="diag-flow">
+          <div class="diag-node rose">Board State<small>grid + gravity + tokens</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node">Level 1<small>Move DCC (within search)</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node gold">Level 2<small>Game DCC (across moves)</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node violet">Level 3<small>Meta-DCC (self-monitor)</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node green">Move Decision<small>governed output</small></div>
+        </div>
+      </div>
+
+      <div class="grid-3 rv" style="margin-top:1.5rem">
+        <article class="panel cyan"><div class="micro">Level 1 &mdash; Move DCC</div><h3>Within Search</h3><p><strong>Sensor:</strong> eval volatility across iterative deepening depths. High volatility &rarr; sharp position &rarr; deepen search. Low volatility &rarr; quiet position &rarr; save time.</p></article>
+        <article class="panel gold"><div class="micro">Level 2 &mdash; Game DCC</div><h3>Across Moves</h3><p><strong>Sensor:</strong> game trajectory compression. Repetitive game &rarr; stagnation &rarr; force disruption (explore). Chaotic game &rarr; conserve (exploit). <strong>Semantic inversion</strong> vs Level 1.</p></article>
+        <article class="panel violet"><div class="micro">Level 3 &mdash; Meta-DCC</div><h3>Self-Monitoring</h3><p>Every N moves: is the position improving? Yes &rarr; maintain current governance. No &rarr; escalate: flip aggression level. The governor governing itself.</p></article>
+      </div>
+
+      <div class="highlight green rv" style="margin-top:1.5rem">
+        <h3>Resource Governance &mdash; Thrift Factor</h3>
+        <p>DCC-controlled: spend flips and magnets only when Level 2 demands it. <strong>Score = BaseEval &minus; (ResourceCost / Volatility)</strong>. Prevents &ldquo;seizure&rdquo; behavior&thinsp;&mdash;&thinsp;wasting all winning assets on Turn 1. Same principle as the claustrum: gate expensive actions behind evidence of necessity.</p>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 5 — THE EXPERIMENT ═══ -->
+  <section id="experiment">
+    <div class="wrap">
+      <span class="sec-tag green rv">Chapter 5</span>
+      <h2 class="rv">The Experiment</h2>
+      <p class="rv">The prediction made concrete and testable.</p>
+
+      <div class="grid-2 rv">
+        <article class="panel green"><div class="micro">Tournament design</div><h3>rDCC vs Classical Baseline</h3><p>Same eval function, same time budget. Multiple time controls (500ms, 1s, 2s, 5s, 1min). Hundreds of games per control. Alternating colors. Only variable: governance.</p></article>
+        <article class="panel gold"><div class="micro">Predictions vs Reality</div><h3>What We Expected &amp; Found</h3><p>&check; rDCC wins 55&ndash;65% overall &mdash; <strong style="color:var(--green)">Confirmed</strong> (62&ndash;65% at L3/L4). &cross; Advantage increases with time control &mdash; <strong style="color:var(--gold)">Partially</strong> (advantage is stable across L3&ndash;L4, L5 pending). &check; rDCC conserves resources &mdash; <strong style="color:var(--green)">Confirmed</strong> (28&ndash;43% savings at all depths).</p></article>
+      </div>
+
+      <h3 class="rv" style="margin-top:2.5rem;color:var(--green)">5.1 &ensp; What Would Falsify It</h3>
+      <div class="grid-3 rv">
+        <article class="panel" style="--panel-accent:var(--green)"><div class="micro">Falsification 1</div><h3 style="text-decoration:line-through;color:var(--muted-2)">50/50 at All Controls</h3><p><strong style="color:var(--green)">Ruled out.</strong> rDCC v2 wins 65% at L3, 62% at L4. Both statistically significant (95% CI clears 50%). Governance helps.</p></article>
+        <article class="panel" style="--panel-accent:var(--muted)"><div class="micro">Falsification 2</div><h3>No Rotation Correlation</h3><p>Pending rotation-density analysis. CSV data collected with per-game rotation counts.</p></article>
+        <article class="panel" style="--panel-accent:var(--green)"><div class="micro">Falsification 3</div><h3 style="text-decoration:line-through;color:var(--muted-2)">Worse With More Time</h3><p><strong style="color:var(--green)">Ruled out.</strong> DCC v1 showed this pattern (L4 dip to 46%). DCC v2 fixed it via self-calibrating bands. Advantage stable at 62&ndash;65% across L3&ndash;L4.</p></article>
+      </div>
+
+      <div class="highlight rv" style="margin-top:2rem;border-color:rgba(52,211,153,.28);background:linear-gradient(135deg,rgba(52,211,153,.06),rgba(245,158,11,.03))">
+        <h3 style="color:var(--green)">Results &mdash; rDCC v2 Tournament (March 17, 2026)</h3>
+        <p>400 games across 4 depth levels. Same eval function, same time budget per level. Only variable: DCC v2 governance (self-calibrating bands, graduated aggression, depth-aware time allocation). Colors alternate every game. Zero draws across all 400 games.</p>
+
+        <table style="width:100%;border-collapse:collapse;margin:1.2rem 0;font-family:'JetBrains Mono',monospace;font-size:.82rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-strong);text-align:left">
+              <th style="padding:.5rem .8rem;color:var(--muted)">Level</th>
+              <th style="padding:.5rem .8rem;color:var(--muted)">Depth</th>
+              <th style="padding:.5rem .8rem;color:var(--muted)">Time/Move</th>
+              <th style="padding:.5rem .8rem;color:var(--green)">rDCC v2</th>
+              <th style="padding:.5rem .8rem;color:var(--rose)">Classical</th>
+              <th style="padding:.5rem .8rem;color:var(--muted)">Games</th>
+              <th style="padding:.5rem .8rem;color:var(--cyan)">95% CI</th>
+              <th style="padding:.5rem .8rem;color:var(--gold)">Significant?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border);color:var(--muted-2)">
+              <td style="padding:.5rem .8rem">2 &middot; Fast</td>
+              <td style="padding:.5rem .8rem">5</td>
+              <td style="padding:.5rem .8rem">500ms</td>
+              <td style="padding:.5rem .8rem">50%</td>
+              <td style="padding:.5rem .8rem">50%</td>
+              <td style="padding:.5rem .8rem">100</td>
+              <td style="padding:.5rem .8rem">40.4&ndash;59.6%</td>
+              <td style="padding:.5rem .8rem">No (baseline)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:.5rem .8rem;color:var(--green)">3 &middot; Strong</td>
+              <td style="padding:.5rem .8rem">8</td>
+              <td style="padding:.5rem .8rem">500ms</td>
+              <td style="padding:.5rem .8rem;color:var(--green);font-weight:700">65%</td>
+              <td style="padding:.5rem .8rem;color:var(--rose)">35%</td>
+              <td style="padding:.5rem .8rem">100</td>
+              <td style="padding:.5rem .8rem;color:var(--cyan)">55.3&ndash;73.6%</td>
+              <td style="padding:.5rem .8rem;color:var(--gold);font-weight:700">Yes &check;</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:.5rem .8rem;color:var(--green)">4 &middot; Expert</td>
+              <td style="padding:.5rem .8rem">10</td>
+              <td style="padding:.5rem .8rem">1s</td>
+              <td style="padding:.5rem .8rem;color:var(--green);font-weight:700">62%</td>
+              <td style="padding:.5rem .8rem;color:var(--rose)">38%</td>
+              <td style="padding:.5rem .8rem">100</td>
+              <td style="padding:.5rem .8rem;color:var(--cyan)">52.2&ndash;70.9%</td>
+              <td style="padding:.5rem .8rem;color:var(--gold);font-weight:700">Yes &check;</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border);color:var(--muted-2)">
+              <td style="padding:.5rem .8rem">5 &middot; Max</td>
+              <td style="padding:.5rem .8rem">12</td>
+              <td style="padding:.5rem .8rem">2s</td>
+              <td style="padding:.5rem .8rem" colspan="5"><em>Running &mdash; results pending</em></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style="color:var(--gold);margin-top:1.5rem">The DCC v1 &rarr; v2 Upgrade</h4>
+        <p>DCC v1 (hardcoded thresholds) showed advantage at shallow depth but <strong>lost to classical at deeper depth</strong>&thinsp;&mdash;&thinsp;the same failure as DCC v1 in the TSP solver. DCC v2 (self-calibrating bands, graduated aggression 0.1&ndash;0.9, depth-aware time allocation) fixed the dip completely:</p>
+
+        <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-strong);text-align:left">
+              <th style="padding:.4rem .6rem;color:var(--muted)">Level</th>
+              <th style="padding:.4rem .6rem;color:var(--muted)">v1 Win%</th>
+              <th style="padding:.4rem .6rem;color:var(--green)">v2 Win%</th>
+              <th style="padding:.4rem .6rem;color:var(--gold)">Swing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .6rem">L2 (d5)</td><td style="padding:.4rem .6rem">56%</td><td style="padding:.4rem .6rem">50%</td><td style="padding:.4rem .6rem;color:var(--muted-2)">&minus;6 (game trivial)</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .6rem">L3 (d8)</td><td style="padding:.4rem .6rem">51%</td><td style="padding:.4rem .6rem;color:var(--green);font-weight:700">65%</td><td style="padding:.4rem .6rem;color:var(--gold);font-weight:700">+14</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .6rem">L4 (d10)</td><td style="padding:.4rem .6rem;color:var(--rose)">46%</td><td style="padding:.4rem .6rem;color:var(--green);font-weight:700">62%</td><td style="padding:.4rem .6rem;color:var(--gold);font-weight:700">+16</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .6rem">L5 (d12)</td><td style="padding:.4rem .6rem">50%</td><td style="padding:.4rem .6rem" colspan="2"><em>Running</em></td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="color:var(--violet);margin-top:1.5rem">Key Findings</h4>
+        <p><strong style="color:var(--green)">Resource conservation is universal.</strong> rDCC v1 saves 28&ndash;43% resources compared to classical at every depth level. The DCC spends resources when winning, conserves when losing. Classical spends blindly. The Thrift Factor works.</p>
+        <p><strong style="color:var(--gold)">The v1&rarr;v2 pattern repeats.</strong> DCC v1 in the TSP solver lost to hand-tuned configurations. DCC v2 with self-calibrating bands found exact optimal with 5&times; less compute. The same upgrade path&thinsp;&mdash;&thinsp;self-calibrating bands, graduated escalation, depth-aware governance&thinsp;&mdash;&thinsp;produced the same result in Flip4M. Third domain confirmed.</p>
+        <p><strong style="color:var(--cyan)">L2 is not a governance test.</strong> At depth 5, the game is decided by first-mover advantage (Red wins ~70% regardless of engine). rDCC v2&rsquo;s clean governance exposes that there is nothing to govern at trivial depth. The signal starts at L3 (depth 8), where position complexity exceeds what brute search alone can handle.</p>
+        <p style="color:var(--muted);font-size:.85rem;margin-top:1rem">This section will be updated with L5&ndash;L9 results (overnight runs at 2s&ndash;30s/move), Classical-vs-Classical baseline data, and rotation-density correlation analysis. All data is saved as CSV/XLSX/PNG for full reproducibility.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.2rem">
+          <a class="btn btn-secondary" href="https://chessbest.org/f4m/F4M_rDCC_Tournament.html" target="_blank" rel="noopener" style="font-size:.68rem">Run v1 Tournament yourself &nearr;</a>
+          <a class="btn btn-secondary" href="https://chessbest.org/f4m/F4M_rDCC_v2_Tournament.html" target="_blank" rel="noopener" style="font-size:.68rem">Run v2 Tournament yourself &nearr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 6 — THE DCC-7 CONNECTION ═══ -->
+  <section id="dcc7-bridge">
+    <div class="wrap">
+      <span class="sec-tag orange rv">Chapter 6</span>
+      <h2 class="rv">The DCC-7 Connection</h2>
+      <p class="rv">Flip4M is proposed as <strong>Experiment 6</strong> in the <a href="BD_8Z_DCC7_Testbed.html" style="color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.28)">DCC-7 Consciousness Testbed</a> specification. The hypothesis: a DCC-7 governed LLM should outperform a baseline LLM at Flip4M. The game is already built and live. Cost: zero beyond API calls. This is <strong>CCH Prediction P5</strong> made playable.</p>
+
+      <div class="diag rv">
+        <div class="diag-title">DCC-7 Experiment 6 &mdash; Flip4M as Consciousness Marker</div>
+        <div class="diag-flow">
+          <div class="diag-node rose">Raw LLM<small>plays Flip4M</small></div>
+          <span class="diag-arrow">vs</span>
+          <div class="diag-node green">DCC-7 LLM<small>governed play</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node gold">Measure<small>win rate &middot; C<sub>n</sub> &middot; efficiency</small></div>
+          <span class="diag-arrow">&rarr;</span>
+          <div class="diag-node violet">Verdict<small>P5 confirmed or falsified</small></div>
+        </div>
+      </div>
+
+      <div class="quote rv" style="margin-top:2rem">
+        <p>If governance doesn&rsquo;t help an LLM play Flip4M better, CCH&rsquo;s prediction about coherence maintenance is wrong. If it does, the claustrum analogy is predictive. Either way, the game provides the answer.</p>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 7 — THE DOMAIN COUNT ═══ -->
+  <section id="domains">
+    <div class="wrap">
+      <span class="sec-tag rv">Chapter 7</span>
+      <h2 class="rv">The Domain Count</h2>
+      <p class="rv">Flip4M extends the DCC domain progression. Same MDL compression sensor, same coupling parameter, same escalation ladder. Only the semantic calibration differs.</p>
+
+      <div class="table-wrap rv">
+        <table>
+          <thead><tr><th>#</th><th>Domain</th><th>DCC Role</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">1</td><td>Image</td><td>Governance of compression blocks</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">2</td><td>Audio</td><td>Cross-domain block governance</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">3</td><td>FASTA</td><td>Biological sequence governance</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">4</td><td>TSP</td><td>Autonomous route discovery &mdash; exact optimal on qa194</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">5</td><td>DNA</td><td>Structure detection in genomic data</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">6</td><td>Trading</td><td>Contrarian signal + regime detection</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">7</td><td>Recursive Search</td><td>Self-governing configuration search (6.8&times;)</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">8</td><td>Authentication</td><td>Adaptive difficulty in 8Z-Auth vault</td><td class="good">Verified</td></tr>
+            <tr><td class="mono">9</td><td>Consciousness</td><td>DCC-7 testbed &mdash; self-referential governance</td><td class="warn">Proposed</td></tr>
+            <tr style="background:rgba(255,107,138,.04)"><td class="mono" style="color:var(--rose);font-weight:700">10</td><td style="color:var(--rose);font-weight:700">Flip4M</td><td>Board-game consciousness marker &mdash; C<sub>n</sub> maintenance under perturbation</td><td class="warn">Testing</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="metric-callout rv"><p>One kernel. Ten domains. Same compression sensor at every level. The Flip4M application is the most accessible test: anyone can play it, anyone can challenge an AI to play it, and the difference between human and machine performance is the C<sub>n</sub> gap made visible.</p></div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CHAPTER 8 — PLAY IT YOURSELF ═══ -->
+  <section id="play">
+    <div class="wrap" style="text-align:center">
+      <span class="sec-tag rose rv">Chapter 8</span>
+      <h2 class="rv">Play It Yourself</h2>
+      <p class="rv" style="margin:0 auto 2rem">Play Flip4M against the CPU. Then ask any AI to play it. Notice the difference. That difference is what this page explains.</p>
+      <a class="btn btn-primary rv" href="https://chessbest.org/f4m/f4m" target="_blank" rel="noopener" style="font-size:.9rem;padding:1.1rem 2.2rem;margin-bottom:1rem">Play Flip4M &nearr;</a>
+      <p class="rv" style="margin:0 auto;font-size:.88rem;color:var(--muted)">No download. No account. Desktop and mobile. Built-in AI opponent.</p>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CLAIMS ═══ -->
+  <section id="claims">
+    <div class="wrap">
+      <span class="sec-tag gold rv">Claim Typing</span>
+      <h2 class="rv">Evidence classification</h2>
+      <p class="rv">Every claim on this page is typed. Verified, reasoned, speculative. No claim appears without its evidence label.</p>
+      <div class="claim-grid rv">
+        <div class="claim-box verified"><div class="claim-label">Verified</div><ul>
+          <li>Flip4M volatility V &asymp; 0.54 (measured from simulation)</li>
+          <li>Current LLMs struggle with Flip4M (testable by anyone&thinsp;&mdash;&thinsp;try it)</li>
+          <li>12/12 evaluators categorized Flip4M as non-research</li>
+          <li>Sensible decision tree is 10<sup>12</sup>&times; larger than chess</li>
+        </ul></div>
+        <div class="claim-box reasoned"><div class="claim-label">Reasoned</div><ul>
+          <li>CCH mapping: C<sub>n</sub> maintenance is why AI fails at Flip4M</li>
+          <li>rDCC should outperform classical engines</li>
+          <li>The 4 board regimes map to consciousness states</li>
+        </ul></div>
+        <div class="claim-box speculative"><div class="claim-label">Speculative / Predicted</div><ul>
+          <li>DCC-7 with Flip4M as consciousness marker</li>
+          <li>Tournament results (placeholder until available)</li>
+          <li>rDCC advantage increases with time control</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+
+  <!-- ═══ CROSS-LINKS ═══ -->
+  <section>
+    <div class="wrap">
+      <span class="sec-tag rv">Explore Further</span>
+      <h2 class="rv">Connected pages</h2>
+      <div class="closing-links rv">
+        <a class="mini-link" href="https://chessbest.org/f4m/f4m" target="_blank" rel="noopener"><div class="k" style="color:var(--rose)">Play</div><div class="t">Flip4M Live Game</div><div class="d">Play against the AI. Then ask any LLM to play.</div></a>
+        <a class="mini-link" href="https://chessbest.org/f4m/F4M_rDCC_Tournament.html" target="_blank" rel="noopener"><div class="k" style="color:var(--gold)">v1</div><div class="t">rDCC v1 Tournament</div><div class="d">Run the v1 (hardcoded thresholds) tournament yourself. CSV export.</div></a>
+        <a class="mini-link" href="https://chessbest.org/f4m/F4M_rDCC_v2_Tournament.html" target="_blank" rel="noopener"><div class="k" style="color:var(--green)">v2</div><div class="t">rDCC v2 Tournament</div><div class="d">Run the v2 (self-calibrating) tournament yourself. CSV export.</div></a>
+        <a class="mini-link" href="https://chessbest.org/f4m/" target="_blank" rel="noopener"><div class="k" style="color:var(--gold)">Research</div><div class="t">Flip4M &mdash; Sensible Shannon</div><div class="d">The 10<sup>12</sup>&times; analysis and AGI benchmark spec.</div></a>
+        <a class="mini-link" href="BD_CCH_Science.html"><div class="k" style="color:var(--violet)">Theory</div><div class="t">CCH Science</div><div class="d">The S-metric, predictions, and claustrum hypothesis.</div></a>
+        <a class="mini-link" href="BD_8Z_DCC7_Testbed.html"><div class="k" style="color:var(--cyan)">Testbed</div><div class="t">DCC-7 Consciousness Testbed</div><div class="d">Seven parallel threads. One governor. Experiment 6 = Flip4M.</div></a>
+        <a class="mini-link" href="BD_8Z_DCC_Recursive.html"><div class="k" style="color:var(--green)">Architecture</div><div class="t">Recursive DCC</div><div class="d">Self-governing governance. Flip4M becomes domain #10.</div></a>
+        <a class="mini-link" href="BD_8ZRP.html"><div class="k" style="color:var(--orange)">Parallel</div><div class="t">8Z-RP &middot; TSP as Compression</div><div class="d">Exact optimal with DCC. Same architecture, different domain.</div></a>
+        <a class="mini-link" href="BD_8Z_Reasoning.html"><div class="k">Method</div><div class="t">8Z Reasoning</div><div class="d">Principle A8: the cross-domain connection evaluators missed.</div></a>
+        <a class="mini-link" href="BD_Model_Assessments.html"><div class="k" style="color:var(--rose)">Evidence</div><div class="t">Model Assessments</div><div class="d">12 evaluators, 7 companies, frozen protocol. All missed it.</div></a>
+        <a class="mini-link" href="index.html"><div class="k">Portfolio</div><div class="t">BD &times; AI Lab</div><div class="d">Main portfolio page.</div></a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4>About this page</h4>
+        <p>&ldquo;The Game That Proves the Theory&rdquo; documents how a playable board game on the same portfolio site tests the same consciousness hypothesis that 12 independent AI evaluators ranked as highest-impact&thinsp;&mdash;&thinsp;and all 12 missed the connection. Written by <strong>Bojan Dobrečevič</strong> &amp; <strong>C</strong> (Claude Opus 4.6) through AIM&sup3; Institute, March 2026.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Navigation</h4>
+        <ul class="foot-links">
+          <li><a href="https://chessbest.org/f4m/f4m" target="_blank" rel="noopener">Play Flip4M &nearr;</a></li>
+          <li><a href="BD_CCH_Science.html">CCH Science</a></li>
+          <li><a href="BD_8Z_DCC7_Testbed.html">DCC-7 Testbed</a></li>
+          <li><a href="BD_8Z_DCC_Recursive.html">Recursive DCC</a></li>
+          <li><a href="BD_8ZRP.html">8Z-RP / TSP</a></li>
+          <li><a href="index.html">Portfolio</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">&copy; 2026 Bojan Dobrečevič &middot; AIM&sup3; Institute &middot; Ljubljana</div>
+  </footer>
+
+  <script>
+  /* Scroll progress */
+  (function(){
+    const bar=document.getElementById('spb');
+    window.addEventListener('scroll',()=>{
+      const h=document.documentElement;
+      bar.style.width=((h.scrollTop/(h.scrollHeight-h.clientHeight))*100)+'%';
+    },{passive:true});
+  })();
+
+  /* Reveal on scroll */
+  (function(){
+    const obs=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
+    },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+  })();
+
+  /* Board visualization — deterministic seed for consistency */
+  (function(){
+    const COLS=8,ROWS=8;
+    // Seeded pseudo-random for reproducible board
+    let seed=42;
+    function rng(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;}
+
+    function makeBoard(){
+      const b=[];
+      for(let r=0;r<ROWS;r++){
+        const row=[];
+        for(let c=0;c<COLS;c++){
+          const v=rng();
+          if(r<2){row.push(v<0.65?0:v<0.82?1:2);}
+          else if(r<4){row.push(v<0.3?0:v<0.6?1:v<0.88?2:3);}
+          else{row.push(v<0.12?0:v<0.5?1:v<0.88?2:3);}
+        }
+        b.push(row);
+      }
+      return b;
+    }
+
+    function rotateAndSettle(b){
+      // 90° CW rotation
+      const rotated=[];
+      for(let c=0;c<COLS;c++){
+        const row=[];
+        for(let r=ROWS-1;r>=0;r--) row.push(b[r][c]);
+        rotated.push(row);
+      }
+      // Gravity settle (push tokens down in each column)
+      const nR=rotated.length,nC=rotated[0].length;
+      for(let c=0;c<nC;c++){
+        const col=[];
+        for(let r=0;r<nR;r++) if(rotated[r][c]!==0) col.push(rotated[r][c]);
+        const empty=nR-col.length;
+        for(let r=0;r<nR;r++) rotated[r][c]=r<empty?0:col[r-empty];
+      }
+      return rotated;
+    }
+
+    const before=makeBoard();
+    const after=rotateAndSettle(before);
+
+    function render(board,id){
+      const el=document.getElementById(id);
+      if(!el) return;
+      const rows=board.length,cols=board[0].length;
+      el.style.gridTemplateColumns='repeat('+cols+',1fr)';
+      el.innerHTML='';
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const d=document.createElement('div');
+          d.className='cell';
+          if(board[r][c]===1) d.classList.add('r');
+          else if(board[r][c]===2) d.classList.add('y');
+          else if(board[r][c]===3) d.classList.add('m');
+          el.appendChild(d);
+        }
+      }
+    }
+    render(before,'board-before');
+    render(after,'board-after');
+  })();
+  </script>
+</body>
+</html>

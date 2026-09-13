@@ -73,7 +73,6 @@
     X-Content-Type-Options = "nosniff"
     Content-Security-Policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; object-src 'none'"
 
-
 # WL encrypted journal. No public navigation is added.
 [[headers]]
   for = "/WL/*"
@@ -83,3 +82,33 @@
     Referrer-Policy = "no-referrer"
     X-Content-Type-Options = "nosniff"
     Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://raw.githubusercontent.com; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'"
+
+# Flip4M route stabilization · 2026-09-13.
+# The public game is /f4m/. The game document is /f4m/f4m/.
+[[redirects]]
+  from = "/f4m/f4m"
+  to = "/F4M/f4m/document.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/f4m/f4m/"
+  to = "/F4M/f4m/document.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/f4m/old/F4M_paper.html"
+  to = "/f4m/f4m/"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/f4m/f4m"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+[[headers]]
+  for = "/f4m/f4m/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
