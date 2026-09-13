@@ -19,14 +19,10 @@ ISSUE = 17
 BRANCH = 'ops/wl-runtime-state'
 RUNTIME = 'https://www.mdlxdcc.org/api/wl/runtime'
 FIXED = ('scripts/wl_codec.py', 'scripts/wl_rules_guard.py', 'public/WL/vault.json',
-         'public/WL/rules.manifest.json', 'public/WL/rules/v1.0.0.enc.json',
-         'public/WL/state.enc.json')
-PINS = {
-    'scripts/wl_codec.py': '552d164bc420d42ed1c4bf3694b3973dbe29beefa10cb560e8f927be1668de1e',
-    'scripts/wl_rules_guard.py': '1d0f991ddcf3f35d1dc3c8e048b3584b7b3d5f1bc727bfa714eb05db2ad9aaf6',
-    'public/WL/rules.manifest.json': 'e39662d7d5287a2ae61a6f3de7e5ba3fbed483b0a0a6295f3e67b28e5cdb46a2',
-    'public/WL/rules/v1.0.0.enc.json': '17b857895a2d511260369d062e1f4a9c661671f8f76bdb6cfb3783f281cb81fe',
-}
+         'public/WL/rules.manifest.json', 'public/WL/rules/v1.0.1.enc.json',
+         'public/WL/state.enc.json', 'public/WL/gmail-writer.enc.json',
+         'public/WL/recovery/e000009-rejected.json', 'scripts/wl_legacy_step.py')
+PINS = {'scripts/wl_codec.py': '5330bcd18b5680e974d18a7c27ba91cbe18204073e83348f5f933df74b4fa0db', 'scripts/wl_rules_guard.py': 'b3c3e57502362f816bc9287bcdb5d10a0a23e70fcefb2c145abf284134240f5d', 'scripts/wl_legacy_step.py': '982b005a944e85b611b034b9d006df78437cb69c2dedb563448fccc30cafe305', 'public/WL/rules.manifest.json': 'b8c4c4e7144fd2264fbcaa40b759315ecc8e8d6532d434233b447dcba330c35c', 'public/WL/rules/v1.0.1.enc.json': '08d77d0258b906f60cf43545af01a28f0a10ffc58ae1a262637aebd2b73313d7', 'public/WL/gmail-writer.enc.json': 'e0268836f533d65f819e815984e3637c0017e5afbebfe4ca66436afc8625dc79', 'public/WL/recovery/e000009-rejected.json': '58ce780cb6b0ff6a46490916ac3333c4b073b7e7c1cf2f86458223ab73524e54'}
 
 class ProbeError(ValueError):
     pass
@@ -79,6 +75,9 @@ def validate_file(path, obj):
     sha = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
     need(sha == obj.get('sha'), 'GIT_BLOB_MISMATCH')
     need(path not in PINS or digest(raw) == PINS[path], 'PIN_MISMATCH')
+    if path == 'public/WL/data/entries/e000009.enc.json':
+        need(digest(raw) == '982a58e7048e497ce2e0fe4cb035622e46a845ed46533407b8319b92d5d35e34', 'REJECTED_ATTEMPT_CHANGED')
+        return raw
     if path.endswith('.enc.json'):
         box = json.loads(raw)
         need(box.get('format') == 'WL-ENC-2', 'INVALID_ENCRYPTED_INPUT')

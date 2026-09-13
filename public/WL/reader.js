@@ -2,7 +2,7 @@
 (() => { 'use strict';
 const $=id=>document.getElementById(id), te=new TextEncoder(), td=new TextDecoder('utf-8',{fatal:true});
 const ROOT='/WL/', FEED='https://raw.githubusercontent.com/BD-Chess/bd-chessdb/main/public/WL/';
-const RULES_MANIFEST_SHA='e39662d7d5287a2ae61a6f3de7e5ba3fbed483b0a0a6295f3e67b28e5cdb46a2', RULES_DOC_SHA='d5d23bc18d0be3f67d6e448b416436ec04700d5bba7e35bc1dff39b5e126129f';
+const RULES_MANIFEST_SHA='b8c4c4e7144fd2264fbcaa40b759315ecc8e8d6532d434233b447dcba330c35c', RULES_DOC_SHA='a3e5709e5326b400b80d14e174e18ba09c4d44be216c9d7ed475e640ff8e7d32';
 const SESSION='wl-v2-session', FONT='wl-reader-percent-v2', THEME='wl-theme-v2';
 let vault, key, token='', state=null, rulesDoc=null, rulesRelease=null, events=[], unlocked=false, timer=null, busy=false, font=100, generation=0;
 function read(store,k){try{return store.getItem(k)}catch{return null}}
@@ -26,7 +26,7 @@ async function checkedRules(k){
  const mb=await get('rules.manifest.json?t='+Date.now());
  if(await hash(mb)!==RULES_MANIFEST_SHA)throw Error('Različica pravilnika ni odobrena. Osveži stran.');
  const m=JSON.parse(td.decode(mb));
- if(m.schema!=='wl.rules.release.v1'||m.rules_id!=='WL-RULES'||m.version!=='1.0.0'||m.path!=='rules/v1.0.0.enc.json')throw Error('Neveljaven pravilnik.');
+ if(m.schema!=='wl.rules.release.v1'||m.rules_id!=='WL-RULES'||m.version!=='1.0.1'||m.path!=='rules/v1.0.1.enc.json')throw Error('Neveljaven pravilnik.');
  const eb=await get(m.path);if(await hash(eb)!==m.envelope_sha256)throw Error('Poškodovan pravilnik.');
 
  const pack=await open(JSON.parse(td.decode(eb)),k,m.aad);
@@ -41,8 +41,9 @@ async function checkedRules(k){
 }
 function checkRulesReceipt(e,release){
  if(e.seq<=release.legacy_through_seq)return;
+ const legacy=e.seq<=8, expectedVersion=legacy?'1.0.0':release.version, expectedHash=legacy?'d5d23bc18d0be3f67d6e448b416436ec04700d5bba7e35bc1dff39b5e126129f':RULES_DOC_SHA;
  const r=e.rules_receipt,age=r?Date.parse(e.created_at)-Date.parse(r.read_at_utc):NaN;
- if(!r||r.schema!=='wl.rules.receipt.v1'||r.id!=='WL-RULES'||r.version!==release.version||r.sha256!==RULES_DOC_SHA||r.scope!=='WL_RESEARCH_JOURNAL_ONLY'||r.assurance!=='BYTES_VERIFIED_APPLICATION_ATTESTED')throw Error('Prispevek nima veljavnega potrdila pravilnika: '+e.event_id);
+ if(!r||r.schema!=='wl.rules.receipt.v1'||r.id!=='WL-RULES'||r.version!==expectedVersion||r.sha256!==expectedHash||r.scope!=='WL_RESEARCH_JOURNAL_ONLY'||r.assurance!=='BYTES_VERIFIED_APPLICATION_ATTESTED')throw Error('Prispevek nima veljavnega potrdila pravilnika: '+e.event_id);
  const ids=r.applied_rule_ids;
  if(!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(x=>!/^R(0[1-9]|1[0-6])$/.test(x))||!ids.some(x=>/^R0[3-9]$/.test(x))||!ids.some(x=>/^R1[0-4]$/.test(x))||typeof r.application!=='string'||r.application.length<20||r.application.length>1200||!Number.isFinite(age)||age<0||age>3600000)throw Error('Neveljavna uporaba pravilnika: '+e.event_id);
 }
@@ -72,7 +73,7 @@ function fragment(tag,cls,value){const x=document.createElement(tag);if(cls)x.cl
 function render(){
  renderRules();
  $('gate').hidden=true;$('app').hidden=false;setFont(font);
- text('phase',state.phase);text('steps',events.length);text('autosteps',state.execution.auto_steps);text('engine',state.execution.scheduled_enabled?'URNO':'PRIPRAVLJENO');
+ text('phase',state.phase);text('steps',events.length);text('autosteps',state.execution.auto_steps);text('engine',state.execution.scheduled_enabled?(state.execution.fast_trigger_connected?'GMAIL + URNO':'URNO'):'PRIPRAVLJENO');
  text('updated','Zadnji zapis: '+now(state.updated_at)+' · naslednji član: '+state.members.find(x=>x.id===state.next_author_id)?.name);
  text('execution',state.execution.note);text('question',state.next_question);
  $('roster').replaceChildren(...state.members.map(m=>{const d=fragment('div','member');d.append(fragment('b','',m.id+' · '+m.name),fragment('small','',m.function));if(m.id===state.next_author_id)d.classList.add('next');return d}));
@@ -80,7 +81,7 @@ function render(){
  const atBottom=window.innerHeight+window.scrollY>=document.body.scrollHeight-100;
  $('stream').replaceChildren(...events.slice().reverse().map(e=>{
    const a=fragment('article','entry');a.dataset.eventId=e.event_id;
-   a.append(fragment('div','meta',e.event_id+' · '+e.author_name+' · '+now(e.created_at)+' · '+(e.execution==='scheduled_model_step'?'samodejni prispevek':'začetni prispevek v seji')),
+   a.append(fragment('div','meta',e.event_id+' · '+e.author_name+' · '+now(e.created_at)+' · '+(e.execution==='event_driven_model_step'?'Gmail dogodkovni prispevek':e.execution==='scheduled_model_step'?'urni samodejni prispevek':'začetni prispevek v seji')),
             fragment('h3','',e.title||e.author_name),fragment('div','body',e.body));
    a.append(fragment('div','meta',e.seq<=rulesRelease.legacy_through_seq?'Pred uvedbo pravilnika v1.0.0':('Pravilnik v'+e.rules_receipt.version+' · potrdilo branja in navedba uporabe')));
    if(e.sources?.length){const links=fragment('p','sources');e.sources.forEach(s=>{try{const u=new URL(s.url);if(u.protocol!=='https:')return;const link=fragment('a','',s.title||u.hostname);link.href=u.href;link.target='_blank';link.rel='noreferrer noopener';links.append(link,document.createTextNode(' '))}catch{}});a.append(links)}
@@ -102,13 +103,16 @@ async function refresh(first=false){
   const candidate=await open(await json(FEED+'state.enc.json?t='+Date.now()),k,'WL:state:'+vault.vault_id);
   if(candidate.schema!=='wl.state.v2'||candidate.run_id!=='WL-RHP11-20260912'||candidate.members.length!==11)throw Error('Neveljavno stanje raziskave.');
   if(state&&candidate.revision<state.revision)throw Error('Vir je vrnil starejše stanje; ohranjam zadnje preverjeno.');
+  const recovered=Object.hasOwn(candidate,'recovery');
+  if(recovered&&await hash(te.encode(canonical(candidate.recovery)))!=='58ce780cb6b0ff6a46490916ac3333c4b073b7e7c1cf2f86458223ab73524e54')throw Error('Neodobrena obnova dnevnika.');
   const next=[];let parent=null;
   for(const ref of candidate.entries){
-   if(ref.seq!==next.length+1||ref.event_id!=='e'+String(ref.seq).padStart(6,'0')||ref.path!=='data/entries/'+ref.event_id+'.enc.json')throw Error('Vrzeli v indeksu prispevkov.');
+   if(ref.seq!==next.length+1+(recovered&&next.length>=8?1:0)||ref.event_id!=='e'+String(ref.seq).padStart(6,'0')||ref.path!=='data/entries/'+ref.event_id+'.enc.json')throw Error('Vrzeli v indeksu prispevkov.');
    let e=events.find(x=>x.event_id===ref.event_id&&x._verifiedHash===ref.plain_sha256);
    if(!e){const box=await json(FEED+ref.path);e=await open(box,k,'WL:event:'+ref.event_id);const actual=await hash(te.encode(canonical(e)));if(actual!==ref.plain_sha256)throw Error('Hash prispevka ne ustreza indeksu.');Object.defineProperty(e,'_verifiedHash',{value:actual,enumerable:false})}
    if(e.event_id!==ref.event_id||e.seq!==ref.seq||e.run_id!==candidate.run_id)throw Error('Prispevek pripada drugi raziskavi.');
    if(e.parent_event_id!==(parent?.event_id??null)||e.parent_sha256!==(parent?parent._verifiedHash:null))throw Error('Prekinjena veriga prispevkov.');
+   if(recovered&&e.seq===10&&e.recovery_sha256!=='58ce780cb6b0ff6a46490916ac3333c4b073b7e7c1cf2f86458223ab73524e54')throw Error('Manjka dokaz obnove.');
    checkRulesReceipt(e,loaded.release);next.push(e);parent=e;
   }
   if(g!==generation)return;rulesDoc=loaded.doc;rulesRelease=loaded.release;state=candidate;events=next;unlocked=true;render();await pollControl();if(g!==generation)return;text('notice','Preverjeno '+now(new Date().toISOString())+' · naslednje preverjanje čez minuto.');

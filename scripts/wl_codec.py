@@ -9,6 +9,8 @@ import hashlib
 import json
 import os
 from typing import Any
+
+RECOVERY_SHA256 = '58ce780cb6b0ff6a46490916ac3333c4b073b7e7c1cf2f86458223ab73524e54'
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
@@ -85,7 +87,12 @@ def validate_event(event: dict, parent: dict | None = None) -> None:
     if not isinstance(event.get("body"), str) or not 1 <= len(event["body"]) <= 24000:
         raise ValueError("invalid body")
     if parent:
-        if event["seq"] != parent["seq"] + 1 or event.get("parent_event_id") != parent["event_id"] or event.get("parent_sha256") != sha256(canonical(parent)):
+        expected = parent['seq'] + 1
+        if parent['seq'] == 8 and event['seq'] == 10:
+            if event.get('recovery_sha256') != RECOVERY_SHA256:
+                raise ValueError('unattested recovery gap')
+            expected = 10
+        if event["seq"] != expected or event.get("parent_event_id") != parent["event_id"] or event.get("parent_sha256") != sha256(canonical(parent)):
             raise ValueError("broken parent chain")
     elif event["seq"] == 1 and (event.get("parent_event_id") is not None or event.get("parent_sha256") is not None):
         raise ValueError("invalid root")
@@ -96,11 +103,24 @@ def validate_state(state: dict) -> None:
         raise ValueError("wrong state")
     if sorted(m["id"] for m in state["members"]) != [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11]:
         raise ValueError("invalid roster")
+    recovered = 'recovery' in state
+    if recovered and sha256(canonical(state['recovery'])) != RECOVERY_SHA256:
+        raise ValueError('unapproved recovery')
     for n, ref in enumerate(state["entries"], 1):
+        if recovered and n >= 9:
+            n += 1
         if ref["seq"] != n or ref["event_id"] != f"e{n:06d}" or ref["path"] != f"data/entries/e{n:06d}.enc.json":
             raise ValueError("invalid entry index")
     if state["next_author_id"] not in [m["id"] for m in state["members"]]:
         raise ValueError("invalid next author")
+
+
+def next_seq(state: dict) -> int:
+    validate_state(state)
+    n = state['entries'][-1]['seq'] + 1
+    if n == 9 and 'recovery' in state:
+        return 10
+    return n
 
 
 if __name__ == "__main__":
