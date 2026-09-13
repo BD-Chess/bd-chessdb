@@ -1,6 +1,8 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-brute14');
+let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -198,23 +200,60 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
   };
 }
 
-// 4. Message Handler
+// 4. Cooperative exhaustive search. Yield within ~20ms so Cancel can be handled.
+function startBruteForce(msg) {
+  if (msg.points.length < 2 || msg.points.length > TripBruteForce.MAX_STOPS)
+    throw new Error('Brute Force supports 2–14 stops including START.');
+  if (msg.points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon)))
+    throw new Error('All stops must have valid coordinates.');
+  const directD = buildDistanceMatrix(toXYMeters(msg.points));
+  const D = msg.distanceMatrix == null ? directD : msg.distanceMatrix;
+  const start = Number.isInteger(msg.startIdx) && msg.startIdx >= 0 && msg.startIdx < msg.points.length ? msg.startIdx : 0;
+  const job = {msg, directD, engine:TripBruteForce.create(D, start, msg.roundTrip),
+    started:performance.now(), lastReport:0, timer:null};
+  bruteJob = job;
+  function report(final = false, cancelled = false) {
+    const state = job.engine.snapshot();
+    const elapsedMs = Math.max(0, performance.now() - job.started);
+    self.postMessage({type:final ? 'result' : 'brute-progress', jobId:msg.jobId,
+      algorithm:'brute', exact:state.done, cancelled:cancelled && !state.done,
+      checked:state.checked, total:state.total, elapsedMs,
+      metric:msg.distanceMatrix == null ? 'direct' : 'road',
+      pointsSorted:state.route.map(i => msg.points[i]), totalKm:state.bestLength/1000,
+      baseKm:state.baseLength/1000,
+      directKm:routeLength(state.route, directD, msg.roundTrip)/1000});
+  }
+  job.finish = cancelled => { clearTimeout(job.timer); report(true, cancelled); bruteJob = null; };
+  function tick() {
+    if (bruteJob !== job) return;
+    const until = performance.now() + 20;
+    let done;
+    do { done = job.engine.step(2048); } while (!done && performance.now() < until);
+    if (done) { job.finish(false); return; }
+    if (performance.now() - job.lastReport >= 200) { report(); job.lastReport = performance.now(); }
+    job.timer = setTimeout(tick, 0);
+  }
+  report();
+  job.timer = setTimeout(tick, 0);
+}
+
 self.onmessage = (ev) => {
   const msg = ev.data;
+  if (msg.type === 'cancel') {
+    if (bruteJob?.msg.jobId === msg.jobId) bruteJob.finish(true);
+    return;
+  }
   if (msg.type === 'solve') {
+    if (bruteJob) { clearTimeout(bruteJob.timer); bruteJob = null; }
     activeJobId = msg.jobId;
     try {
+      if (msg.profile === 'brute') { startBruteForce(msg); return; }
+      const started = performance.now();
       const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip, msg.distanceMatrix);
-      
-      self.postMessage({
-        type: 'result', jobId: msg.jobId, metric: result.metric, directKm: result.directKm,
-        pointsSorted: result.pointsSorted,
-        totalKm: result.totalKm,
-        baseKm: result.baseKm
-      });
+      self.postMessage({type:'result', jobId:msg.jobId, ...result,
+        algorithm:msg.profile, exact:false, elapsedMs:performance.now()-started});
     } catch (e) {
-      self.postMessage({ type: 'error', jobId: msg.jobId, error: e.toString() });
+      self.postMessage({ type:'error', jobId:msg.jobId, error:e.toString() });
     }
   }
 };
-

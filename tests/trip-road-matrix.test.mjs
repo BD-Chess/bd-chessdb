@@ -13,6 +13,7 @@ function planner() {
 function worker() {
   const messages = [];
   const c = vm.createContext({performance, postMessage:m=>messages.push(m), self:{postMessage:m=>messages.push(m)}});
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js', import.meta.url), 'utf8'), c);
   vm.runInContext(workerSource, c);
   return {c,messages};
 }

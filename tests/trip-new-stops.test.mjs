@@ -11,12 +11,13 @@ function harness(geocode) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      style: {}, classList: { add() {}, remove() {} }, checked: false,
+      style: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
       value: '', innerHTML: '', textContent: '', appendChild() {}, replaceChildren() {}
     });
     return elements.get(id);
   };
   const jobs = [];
+  const workers = [];
   const timerJobs = new Map();
   let nextTimer = 0;
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
@@ -24,19 +25,20 @@ function harness(geocode) {
     console, google, window: { google }, Map, Set,
     document: { createElement: () => ({style:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
     localStorage: { setItem() {} },
-    Worker: class { postMessage(msg) { jobs.push(msg); } },
+    Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
     clearTimeout(id) { timerJobs.delete(id); }
   });
   vm.runInContext(matrixSource, context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js', import.meta.url), 'utf8'), context);
   element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
-  return { api: context.window.test, elements, element, jobs, google, timerJobs };
+  return { api: context.window.test, elements, element, jobs, google, timerJobs, workers };
 }
 
 const known = {
@@ -297,4 +299,43 @@ test('missing or failed road measurements never show a stale road total or an ai
   await h.api.updateMapVisualization(twoStops);
   assert.equal(h.element('distKm').textContent, '—');
   assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
+});
+
+test('manual Brute Force is available through 14; 15 disables it without starting another algorithm', async()=>{
+  const h=harness(()=>{throw new Error('No geocoding expected');});
+  const input=n=>Array.from({length:n},(_,i)=>`Place ${i} | ${46+i/100}, ${14+i/100}${i===2?' START':''}`).join('\n');
+  h.element('input').value=input(14);
+  h.api.refreshBruteInfo();
+  assert.equal(h.element('chkBrute').disabled,false);assert.equal(h.element('chkBrute').checked,false);
+  assert.match(h.element('bruteInfo').textContent,/6,227,020,800/);
+  h.element('chkBrute').checked=true;
+  await h.api.run('standard');assert.equal(h.jobs[0].profile,'brute');assert.equal(h.jobs[0].startIdx,2);
+  assert.equal(h.element('btnDeep').hidden,true);
+  h.api.cancelWork();assert.equal(h.workers[0].terminated,true);
+  h.element('input').value=input(15);h.element('chkBrute').checked=true;
+  await h.api.run('standard');
+  assert.equal(h.jobs.length,1);assert.equal(h.element('chkBrute').disabled,true);
+  assert.equal(h.element('chkBrute').checked,false);assert.equal(h.element('btnDeep').hidden,false);
+  h.element('input').value=input(30);h.api.refreshBruteInfo();
+  assert.match(h.element('bruteInfo').textContent,/8,841,761,993,739,701,954,543,616,000,000/);
+  assert.match(h.element('bruteInfo').textContent,/2.80 × 10\^17 years/);
+});
+
+test('Brute Force cancellation preserves road data for the next Optimize and stale replies are ignored',async()=>{
+  const h=harness(success); h.element('input').value=sample;h.element('chkDirect').checked=false;
+  let calls=0;
+  h.google.maps.importLibrary=async()=>({RouteMatrix:{computeRouteMatrix:async req=>{
+    calls++;return {matrix:{rows:req.origins.map((_,i)=>({items:req.destinations.map((_,j)=>({condition:'ROUTE_EXISTS',distanceMeters:i===j?0:10000+i*100+j}))}))}};
+  }}});
+  h.element('chkBrute').checked=true;await h.api.run('standard');
+  const first=h.jobs[0];h.api.requestCancel();
+  assert.equal(h.jobs[1].type,'cancel');assert.equal(h.jobs[1].jobId,first.jobId);
+  assert.equal(h.workers[0].terminated,undefined);
+  // Editing/toggling invalidates this job and terminates its worker immediately.
+  h.api.cancelWork();h.element('chkBrute').checked=false;
+  await h.api.run('standard');assert.equal(calls,1);
+  assert.equal(h.jobs.at(-1).profile,'standard');
+  assert.deepEqual(h.jobs.at(-1).distanceMatrix,first.distanceMatrix);
+  h.api.handleWorkerMessage({data:{type:'brute-progress',jobId:first.jobId}});
+  assert.match(h.element('matrixStatus').textContent,/Reusing 30/);
 });
