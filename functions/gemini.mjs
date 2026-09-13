@@ -21,7 +21,7 @@ function settings() {
   // Separate models may have available quota. An explicit empty value disables fallback.
   // Gateway model support is configured by its owner; direct Google defaults stay here.
   const fallbackNames = configuredFallbacks == null
-    ? (base === 'https://generativelanguage.googleapis.com' ? ['gemini-3.1-flash-lite', 'gemini-2.5-flash-lite'] : [])
+    ? (base === 'https://generativelanguage.googleapis.com' ? ['gemini-3.1-flash-lite', 'gemini-3.8-flash'] : [])
     : configuredFallbacks.split(',').map(value => value.trim()).filter(Boolean);
   const models = [...new Set([model, ...fallbackNames])].slice(0, 3);
   const searchEnabled = Netlify.env.get('TRIP_GEMINI_SEARCH') === 'true';

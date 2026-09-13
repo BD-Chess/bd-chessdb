@@ -22,7 +22,7 @@ test('configuration health performs no inference and exposes no credentials', as
   const data = await response.json();
   assert.equal(data.configured, true);
   assert.equal(data.model, 'gemini-3.5-flash-lite');
-  assert.deepEqual(data.fallbackModels, ['gemini-3.1-flash-lite', 'gemini-2.5-flash-lite']);
+  assert.deepEqual(data.fallbackModels, ['gemini-3.1-flash-lite', 'gemini-3.8-flash']);
   assert.equal(fetchMock.mock.calls.length, 0);
   assert.doesNotMatch(JSON.stringify(data), /test-server-key/);
   assert.equal(response.headers.get('cache-control'), 'no-store');
@@ -152,7 +152,7 @@ test('unavailable first backup proceeds to the second, without repeating a model
   let calls=0;
   setup(t, async () => ++calls === 1 ? quota() : calls === 2 ? new Response('',{status:404}) : answer('OK'));
   const data = await (await handler(request())).json();
-  assert.equal(calls,3); assert.equal(data.model,'gemini-2.5-flash-lite');
+  assert.equal(calls,3); assert.equal(data.model,'gemini-3.8-flash');
   assert.equal(data.fallbackUsed,true);
   assert.deepEqual(data.attempts.map(a=>a.outcome),['RATE_LIMITED','MODEL_UNAVAILABLE','OK']);
 });
@@ -183,7 +183,7 @@ test('fallback configuration can disable, deduplicate and cap attempts; gateways
   assert.equal(data.attempts.length,1);
   env={GEMINI_API_KEY:'test-server-key',GOOGLE_GEMINI_BASE_URL:'https://gateway.example/google'};
   data=await(await handler(request())).json(); assert.equal(data.attempts.length,1);
-  env={GEMINI_API_KEY:'test-server-key',TRIP_GEMINI_FALLBACK_MODELS:'gemini-3.5-flash-lite, gemini-3.1-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite,gemini-extra'};
+  env={GEMINI_API_KEY:'test-server-key',TRIP_GEMINI_FALLBACK_MODELS:'gemini-3.5-flash-lite, gemini-3.1-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash,gemini-extra'};
   data=await(await handler(request())).json(); assert.equal(data.attempts.length,3);
   assert.equal(f.mock.calls.length,5);
 });
