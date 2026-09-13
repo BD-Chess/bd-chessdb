@@ -1,8 +1,8 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-resume1');
-if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-resume2');
+if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume2');
 let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)

@@ -369,6 +369,7 @@ test('LAB adds one independent Deep Air row without comparing it to the road opt
 test('Cancel offers Resume and sends the saved search without new address or matrix lookups',async()=>{
   const h=harness(success);h.element('input').value=sample;h.element('chkBrute').checked=true;
   await h.api.run('standard');const first=h.jobs.at(-1);
+  h.api.requestCancel(); // A real first cancellation sets the per-job flag.
   const state={engine:{checked:37},elapsedMs:250};
   h.api.handleWorkerMessage({data:{type:'result',algorithm:'brute',jobId:first.jobId,
     checked:37,total:120,cancelled:true,exact:false,resumeState:state,elapsedMs:250,
@@ -378,6 +379,8 @@ test('Cancel offers Resume and sends the saved search without new address or mat
   const resumed=h.jobs.at(-1);
   assert.equal(resumed.resumeState,state);assert.equal(resumed.points,first.points);
   assert.notEqual(resumed.jobId,first.jobId);assert.equal(resumed.startIdx,first.startIdx);
+  h.api.requestCancel();
+  assert.equal(h.jobs.at(-1).type,'cancel');assert.equal(h.jobs.at(-1).jobId,resumed.jobId);
   h.api.cancelWork();
 });
 

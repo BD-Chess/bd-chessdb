@@ -1037,7 +1037,7 @@ Bad example:
   const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-resume1');
+    const w = new Worker('worker.js?v=20260913-resume2');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1121,7 +1121,7 @@ Bad example:
     }
     if (airWorker) return;
     const expectedComparison = comparisonKey;
-    const w = new Worker('worker.js?v=20260913-resume1'); airWorker = w;
+    const w = new Worker('worker.js?v=20260913-resume2'); airWorker = w;
     w.onmessage = ({data:m}) => {
       if (m.type !== 'result' && m.type !== 'error') return;
       w.terminate(); if (airWorker === w) airWorker = null;
@@ -1297,7 +1297,7 @@ Bad example:
     if (resume) {
       setPlanningMode(false);
       const current = () => jobId === jobVersion && problemSignature() === resume.signature && $('chkBrute').checked;
-      activeJob = {...resume.job, jobId, current, lastMapRefresh:performance.now(), mapPending:false};
+      activeJob = {...resume.job, jobId, current, cancelling:false, lastMapRefresh:performance.now(), mapPending:false};
       pausedBrute = null;
       setStatus('Resuming from the first unchecked order. Paused time is excluded.', 'ok');
       refreshBruteInfo();
