@@ -29,6 +29,9 @@ test('exact factorial counts at the 14/15 boundary and the 30-stop demonstration
   assert.equal(BF.orders(14),6227020800n); assert.equal(BF.orders(15),87178291200n);
   assert.equal(BF.orders(30),8841761993739701954543616000000n);
   assert.equal(BF.orders(1),null);
+  assert.equal(BF.duration(0),'0 s');
+  assert.equal(BF.duration(0.0006),'0.60 ms');
+  assert.equal(BF.duration(0.25),'250.00 ms');
   assert.match(BF.duration(Number(BF.orders(30))/1e6),/2.80 × 10\^17 years/);
   assert.equal(BF.percent(999999,1000000),'99.99%');
   assert.equal(BF.percent(1000000,1000000),'100.00%');

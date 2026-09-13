@@ -1022,7 +1022,7 @@ Bad example:
   const comparisons = new Map();
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-brute14');
+    const w = new Worker('worker.js?v=20260913-brute14b');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();

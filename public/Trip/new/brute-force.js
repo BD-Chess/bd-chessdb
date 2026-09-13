@@ -10,7 +10,8 @@
   }
   function duration(seconds) {
     if (!Number.isFinite(seconds)) return 'too large to estimate';
-    if (seconds < 1) return seconds.toFixed(2) + ' s';
+    if (seconds <= 0) return '0 s';
+    if (seconds < 1) return (seconds * 1000).toFixed(2) + ' ms';
     if (seconds < 60) return seconds.toFixed(1) + ' s';
     if (seconds < 3600) return (seconds / 60).toFixed(1) + ' min';
     if (seconds < 86400) return (seconds / 3600).toFixed(1) + ' hours';
