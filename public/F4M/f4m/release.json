@@ -1,0 +1,29 @@
+{
+  "schema": "flip4m.release.v1",
+  "version": "2.1.2-smart-time",
+  "date": "2026-09-13",
+  "path": "/f4m/f4m/",
+  "role": "primary game",
+  "base": "Flip4M Lab Plus 2.1.1",
+  "smart_time": {
+    "applies_to": ["grandmaster", "champion"],
+    "unchanged_profiles": ["beginner", "casual", "strong", "master"],
+    "grandmaster_max_ms": 60000,
+    "champion_max_ms": 120000,
+    "opening": {"empty_ms": 1000, "first_reply_grandmaster_ms": 2000, "first_reply_champion_ms": 3000, "two_to_three_tokens_grandmaster_ms": 4000, "two_to_three_tokens_champion_ms": 6000},
+    "complexity_inputs": ["occupied tokens", "open two/three threats", "active magnets", "remaining tools"],
+    "contract": "60s/120s are ceilings, not mandatory waits. Classical and DCC receive the same deterministic effective budget. Proven results may still finish early."
+  },
+  "storage": "Primary IndexedDB/localStorage namespace is isolated from /f4m/new/ so future experiments cannot overwrite the primary checkpoint.",
+  "navigation": {"legacy": "/f4m/old/", "experimental": "/f4m/new/", "presentation": "/f4m/"},
+  "tests": {
+    "smart_time_unit": "PASS",
+    "master_4500_unchanged": true,
+    "empty_grandmaster_ms": 1000,
+    "empty_champion_ms": 1000,
+    "first_reply_grandmaster_ms": 2000,
+    "first_reply_champion_ms": 3000,
+    "syntax": "PASS"
+  },
+  "note": "No new playing-strength claim is made by this timing revision."
+}
