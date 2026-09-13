@@ -43,12 +43,12 @@
         <li><strong>1. Trip Library:</strong> Click [+] to expand continents. Click a tour name to load it.</li>
         <li><strong>2. Edit:</strong> Add or remove stops in the text box.</li>
         <li><strong>3. Prepare distances:</strong> Fetch or refresh the road distance table. Drive and Walk use different tables. You can inspect the table below the route list.</li>
-        <li><strong>4. Optimize:</strong> Fast and Deep search locally using the prepared road distances. Missing distances are fetched automatically. Direct Line uses approximate straight-line distances instead.</li>
+        <li><strong>4. Optimize:</strong> Fast and Deep search locally using the prepared road distances. Missing distances are fetched automatically. Direct Line uses great-circle air distances instead.</li>
         <li><strong>5. Navigation:</strong> Use the toggle above the list to switch between Google/Apple Maps for turn-by-turn guidance.</li>
         <li><strong>6. Share:</strong> Click the button at the bottom to create a shareable link.</li>
       </ul>
       <p>The road table is working data for the current open trip and is discarded on reload. Google receives the coordinates to calculate routes. Preparing a table uses Google API quota; repeated local searches reuse it.</p>
-      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Fast and Deep do not guarantee a global optimum. Brute Force is a separate manual option for 2–15 stops, including START. It checks all (n−1)! orders locally and proves an optimum for the selected table only when complete. Cancel calculation keeps its best route and comparison. Above 15 stops, only the count and a clearly labelled time estimate are shown. Changing options never starts Brute Force automatically. Road mode supports up to 100 stops.</p>
+      <p>Road saving compares the entered order (START first) with the selected order using that table. The map distance is measured from the displayed route and can differ from the sum of independently calculated pairs. Drive uses traffic-unaware distances, not live journey times. Fast and Deep do not guarantee a global optimum. Brute Force is a separate manual option for 2–16 stops, including START. It checks all (n−1)! orders locally and proves an optimum for the selected table only when complete. Cancel calculation keeps its best route and comparison. Above 16 stops, only the count and a clearly labelled time estimate are shown. Changing options never starts Brute Force automatically. Road mode supports up to 100 stops.</p>
     </div>
   `;
 
@@ -573,10 +573,10 @@
     const path = points.map(p => ({ lat: p.lat, lng: p.lon }));
     if ($('chkRoundTrip').checked && path.length > 1) path.push(path[0]);
     if ($('chkDirect').checked) {
-      showDistance(lastDirectKm, 'Direct distance (est.)');
+      showDistance(lastDirectKm, 'Air distance (great circle)');
       mapPolyline = new google.maps.Polyline({ path, geodesic: true, strokeColor: '#3b82f6', strokeWeight: 4 });
       mapPolyline.setMap(map);
-      setStatus('Stop order ready. Showing direct lines; distances are straight-line estimates.', 'ok');
+      setStatus('Stop order ready. Showing great-circle air routes and distances.', 'ok');
       return;
     }
     setStatus('Stop order ready. Loading road route...', 'warn');
@@ -892,6 +892,7 @@ async function initAI() {
       if (replaceMatch && replaceMatch[1].trim()) {
           const cleanTrip = normalizeTripEditorText(replaceMatch[1], { ensureStart: true });
           if (cleanTrip) {
+            cancelWork(); clearComparison();
             $('input').value = cleanTrip;
             saveState();
             setStatus('Trip Editor updated in Trip Library format.', 'ok');
@@ -912,16 +913,20 @@ async function initAI() {
       const modelLabel = /^gemini-[a-z0-9.-]{1,72}$/.test(response.model || '')
         ? response.model.replace(/^gemini-/, 'Gemini ') : 'Gemini';
       h.innerHTML += `<div class="msg ai"><strong>${modelLabel}${response.fallbackUsed ? ' (backup model)' : ''}:</strong> ${formatMarkdown(processedText)}</div>`;
+      if (response.mapsEnabled === false && window.MDLxDCCLocale.current() === 'en') {
+        const note = document.createElement('small'); note.textContent = 'Web search mode'; h.appendChild(note);
+      }
       if (response.sources?.length) {
         const sources = document.createElement('div'); sources.className = 'msg ai';
-        sources.append('Sources: ');
+        sources.append(window.MDLxDCCLocale.current() === 'sl' ? 'Viri: ' : 'Sources: ');
         response.sources.forEach((source, index) => {
           try {
             const url = new URL(source.url);
             if (!['https:', 'http:'].includes(url.protocol)) return;
             const link = document.createElement('a');
             link.href = url.href; link.target = '_blank'; link.rel = 'noopener noreferrer';
-            link.textContent = source.title || `Source ${index + 1}`;
+            link.textContent = (source.provider === 'Google Maps' ? 'Google Maps · ' : '') + (source.title || `Source ${index + 1}`);
+            if (source.provider === 'Google Maps') { link.translate = false; link.className = 'maps-citation'; }
             if (sources.childNodes.length > 1) sources.append(' · ');
             sources.appendChild(link);
           } catch (_) { /* Ignore malformed source links. */ }
@@ -991,7 +996,7 @@ Bad example:
       const res = await fetch(PROXY_URL, { 
         method: 'POST', 
         headers: {'Content-Type':'application/json'}, 
-        body: JSON.stringify({ prompt: fullPrompt, guiVersion: 'road-matrix-brute15' }),
+        body: JSON.stringify({ prompt: fullPrompt, guiVersion: 'road-matrix-brute16-lab', language: window.MDLxDCCLocale.current(), query: txt }),
         signal: controller.signal
       });
 
@@ -1015,16 +1020,20 @@ Bad example:
   }
 
   // --- 11. OPTIMIZER ---
-  // Manual exhaustive mode. Counts use BigInt; an enabled run never exceeds 13!.
+  // Manual exhaustive mode. Counts use BigInt; an enabled run never exceeds 15!.
   const BF = globalThis.TripBruteForce;
   let measuredBruteRate = null;
   let comparisonKey = null;
   let comparisonInput = null;
   let provenExactKm = null;
   const comparisons = new Map();
+  let airWorker = null;
+  let airCache = null;
+  let comparisonJob = null;
+  const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-brute15-chat1');
+    const w = new Worker('worker.js?v=20260913-lab16-1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1041,23 +1050,28 @@ Bad example:
     const allowed = n >= 2 && n <= BF.MAX_STOPS && !invalid;
     $('chkBrute').disabled = !allowed;
     if (!allowed) $('chkBrute').checked = false;
-    $('btnStandard').textContent = $('chkBrute').checked ? 'Run Brute Force' : 'Optimize (Fast)';
+    $('btnStandard').textContent = $('chkBrute').checked ? 'Run Brute Force' : (window.MDLxDCCLocale?.current() === 'sl' ? 'Optimiziraj (Fast)' : 'Optimize (Fast)');
     $('btnDeep').hidden = $('chkBrute').checked;
+    $('bruteMini').hidden = !$('chkBrute').checked;
+    if ($('chkBrute').checked && !$('bruteMini').textContent) $('bruteMini').textContent = 'Ready · progress appears here';
     $('bruteOption').classList.toggle('unavailable', !allowed);
     const rate = measuredBruteRate?.rate || 1000000;
     const rateNote = measuredBruteRate
       ? `extrapolated at ${Math.round(rate).toLocaleString('en-US')} orders/s measured with ${measuredBruteRate.n} stops`
       : 'illustration at 1,000,000 orders/s; actual speed depends on this device';
     $('bruteInfo').textContent = !total
-      ? (n > 1000 ? 'Brute Force unavailable above 15 stops.' : 'Brute Force: enter 2–15 stops including START.')
+      ? (n > 1000 ? 'Brute Force unavailable above 16 stops.' : 'Brute Force: enter 2–16 stops including START.')
       : `${n} stops · (${n}−1)! = ${total.toLocaleString('en-US')} possible orders. ` +
         `Estimated full search: ${BF.duration(Number(total)/rate)} (${rateNote}). ` +
-        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 15 stops.' : 'START stays fixed; each direction is counted separately.');
+        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 16 stops.' : 'START stays fixed; each direction is counted separately.');
     return {n, allowed};
   }
 
   function clearComparison() {
     comparisonKey = null; comparisonInput = null; provenExactKm = null; comparisons.clear();
+    if (airWorker) { airWorker.terminate(); airWorker = null; }
+    airCache = null; comparisonJob = null;
+    $('bruteMini').textContent = '';
     $('comparisonPanel').hidden = true;
     $('bruteProgress').hidden = true;
   }
@@ -1069,11 +1083,18 @@ Bad example:
       : 'Best found · optimum not proven';
     if (msg.algorithm === 'brute' && msg.exact) provenExactKm = msg.totalKm;
     comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:msg.totalKm, state});
+    comparisonJob = job;
+    renderComparison();
+  }
+
+  function renderComparison() {
+    const job = comparisonJob;
+    if (!job) return;
     const body = $('comparisonRows'); body.replaceChildren();
     for (const [method, result] of comparisons) {
       const row = document.createElement('tr');
       let description = result.state;
-      if (method !== 'Brute Force' && provenExactKm !== null) {
+      if (method !== 'Brute Force' && method !== AIR_NAME && provenExactKm !== null) {
         description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatKm(result.km-provenExactKm)} above exact optimum`;
       }
       for (const value of [method, result.time, formatKm(result.km), description]) {
@@ -1082,7 +1103,28 @@ Bad example:
       body.appendChild(row);
     }
     $('comparisonPanel').hidden = false;
-    $('comparisonNote').textContent = `${job.direct ? 'Direct Line estimates' : 'Road distance table'} · ${job.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${job.roundTrip ? 'Round trip' : 'Open trip'}. Same stops, START and costs. Times exclude address lookup, table preparation and map drawing.`;
+    $('comparisonNote').textContent = `${job.direct ? 'Great-circle air distances' : 'Road distance table'} · ${job.mode === 'WALKING' ? 'Walk' : 'Drive'} · ${job.roundTrip ? 'Round trip' : 'Open trip'}. Same stops and START. Air row uses its own great-circle costs; it is not a road-distance saving or a proven optimum. Times exclude address lookup, table preparation and map drawing.`;
+  }
+
+  function ensureAirComparison(points, startIdx, job) {
+    const key = JSON.stringify([points.map(p => [p.lat,p.lon]),startIdx,job.roundTrip]);
+    if (airCache?.key === key) {
+      comparisons.set(AIR_NAME, airCache.result); renderComparison(); return;
+    }
+    if (airWorker) return;
+    const expectedComparison = comparisonKey;
+    const w = new Worker('worker.js?v=20260913-lab16-1'); airWorker = w;
+    w.onmessage = ({data:m}) => {
+      if (m.type !== 'result' && m.type !== 'error') return;
+      w.terminate(); if (airWorker === w) airWorker = null;
+      if (comparisonKey !== expectedComparison) return;
+      if (m.type === 'result') {
+        const result = {time:BF.duration(m.elapsedMs/1000), km:m.totalKm, state:'Great-circle air · best found, not proven'};
+        airCache = {key,result}; comparisons.set(AIR_NAME,result); renderComparison();
+      } else setStatus('Air comparison could not complete: ' + m.error, 'warn');
+    };
+    w.onerror = () => { w.terminate(); if (airWorker === w) airWorker = null; };
+    w.postMessage({type:'solve',profile:'deep',jobId:job.jobId,points,startIdx,roundTrip:job.roundTrip});
   }
 
   function displayBruteProgress(msg, job) {
@@ -1093,8 +1135,9 @@ Bad example:
       refreshBruteInfo();
     }
     const state = msg.exact ? 'Complete' : msg.cancelled ? 'Cancelled' : 'Running';
-    const remaining = rate > 0 ? BF.duration((msg.total-msg.checked)/rate) : 'measuring…';
+    const remaining = msg.exact ? '0 s' : rate > 0 ? BF.duration((msg.total-msg.checked)/rate) : 'measuring…';
     $('bruteProgressText').textContent = `${state} · ${BF.percent(msg.checked,msg.total)} done · ${msg.checked.toLocaleString('en-US')} / ${msg.total.toLocaleString('en-US')} orders checked`;
+    $('bruteMini').textContent = `${BF.percent(msg.checked,msg.total)} · ${state} · ${remaining} remaining`;
     $('bruteProgressBar').value = msg.checked / msg.total;
     $('bruteTiming').textContent = `Elapsed: ${BF.duration(msg.elapsedMs/1000)} · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`;
     $('bruteBest').textContent = `Best ${job.direct ? 'direct' : 'road-table'} distance: ${formatKm(msg.totalKm)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`;
@@ -1127,7 +1170,9 @@ Bad example:
   function hideBusy() { const o = $('busyOverlay'); if (o) o.style.display = 'none'; }
 
   function setPlanningMode(enabled) {
-    const rightPanel = document.querySelector('.panel:nth-of-type(2)');
+    document.body.classList.remove('demo-open');
+    $('demoPanel').hidden = true; $('btnDemo').classList.remove('active');
+    const rightPanel = $('resultsPanel');
     const mapCont = $('mapContainer'), stats = document.querySelector('.stats'), list = $('routeList'), links = $('links');
     const btnPlan = $('btnPlanMode'), btnMap = $('btnMapMode');
     let bigChat = $('bigChatContainer');
@@ -1135,6 +1180,7 @@ Bad example:
         bigChat = document.createElement('div'); bigChat.id = 'bigChatContainer'; bigChat.style.display = 'none';
         bigChat.innerHTML = `<div id="bigChatHistory" style="flex:1; overflow-y:auto; padding:20px; border-bottom:1px solid #1f2a3a;"></div><div class="chat-input" style="padding:15px; background:#0f1621;"><input type="text" id="bigChatInput" placeholder="Message Gemini..."><button id="btnSendBigChat">➤</button></div>`;
         rightPanel.appendChild(bigChat);
+        $('bigChatHistory').innerHTML = $('chatHistory').innerHTML;
         $('btnSendBigChat').onclick = () => handleChatSend('bigChatInput', 'bigChatHistory');
         $('bigChatInput').onkeypress = (e) => { if(e.key==='Enter') handleChatSend('bigChatInput', 'bigChatHistory'); };
     }
@@ -1159,6 +1205,7 @@ Bad example:
   }
 
   function cancelWork() {
+    if (airWorker) { airWorker.terminate(); airWorker = null; }
     ++jobVersion;
     ++visualizationVersion;
     if (activeJob) {
@@ -1196,8 +1243,9 @@ Bad example:
     if (optimizationPending) return;
     const requestedBrute = profile === 'brute' || (profile !== 'prepare' && $('chkBrute').checked);
     const eligibility = refreshBruteInfo();
-    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–15 valid stops including START.', 'warn'); return; }
+    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–16 valid stops including START.', 'warn'); return; }
     if (requestedBrute) profile = 'brute';
+    if (airWorker) { airWorker.terminate(); airWorker = null; }
     optimizationPending = true;
     activeJob = null;
     const jobId = ++jobVersion;
@@ -1255,7 +1303,7 @@ Bad example:
         return;
       }
     } else {
-      $('matrixStatus').textContent = 'Direct Line: optimization uses approximate straight-line distances.';
+      $('matrixStatus').textContent = 'Direct Line: optimization uses great-circle air distances.';
       $('roadTablePanel').style.display = 'none';
     }
     if (profile === 'prepare') {
@@ -1268,7 +1316,7 @@ Bad example:
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
     if (profile === 'brute') { $('bruteProgress').hidden = false; $('bruteProgressText').textContent = 'Starting exhaustive search…'; }
-    activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length};
+    activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx};
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, distanceMatrix:roadData?.distanceMatrix });
     posted = true;
@@ -1288,14 +1336,15 @@ Bad example:
       else displayComparison(msg, job);
       activeJob = null;
       finishWork();
+      ensureAirComparison(job.points, job.startIdx, job);
       if (msg.algorithm === 'brute') setStatus(msg.exact ? 'All orders checked. Exact optimum for this distance table.' : 'Calculation cancelled. Best route and comparison kept.', msg.exact ? 'ok' : 'warn');
       const { pointsSorted, totalKm, baseKm } = msg;
       lastSolvedPoints = pointsSorted;
       
       lastDirectKm = msg.directKm;
-      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Direct saving (est.):';
+      $('savingLabel').textContent = msg.metric === 'road' ? 'Road saving (table):' : 'Air saving::';
       $('savingBox').title = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Estimated reduction in direct-line distance.';
-      showDistance(lastDirectKm, 'Direct distance (est.)');
+      showDistance(lastDirectKm, 'Air distance (great circle)');
       $('savedKm').textContent = baseKm > totalKm ? formatKm(baseKm - totalKm) : '—';
 
       renderRouteList(pointsSorted);
@@ -1344,8 +1393,8 @@ Bad example:
         if(!historyEl.querySelector('.recovery-msg')) {
              historyEl.innerHTML += `<div class="msg ai recovery-msg" style="border-left:3px solid var(--success)"><strong>System:</strong> Session restored.<div style="margin-top:10px; display:flex; gap:10px;"><button class="chip logistics" onclick="window.continueSession(this)">✅ Continue</button><button class="chip eat" style="border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.1)" onclick="window.resetSession()">🗑️ Fresh Start</button></div></div>`;
         }
-        setPlanningMode(true);
-    } else { setPlanningMode(true); }
+        setPlanningMode(false);
+    } else { setPlanningMode(false); }
   });
   
   function setTravelMode(mode, optimize = true) {

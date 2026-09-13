@@ -1,3 +1,4 @@
+import {labOptions, supportsCombinedMaps, interactionBody, interactionResult, LAB_VERSION} from './lib/trip-lab-ai.mjs';
 // Trip Optimizer's same-origin Gemini endpoint. Provider credentials stay server-side.
 function json(body, status = 200) {
   return Response.json(body, {
@@ -49,6 +50,7 @@ const TRIP_INSTRUCTIONS = [
 ].join('\n');
 
 function optimizationInstructions(guiVersion) {
+  if (guiVersion === LAB_VERSION) return optimizationInstructions('road-matrix-brute15').replaceAll('2–15','2–16').replaceAll('Above 15','Above 16').replace('approximate straight-line distances','great-circle surface distances on a sphere') + ' Calculation comparison adds Our Optimize (Deep · Air), independently optimized with great-circle costs. Do not compare its kilometers against a road optimum. Demo shows historical EU14/EU15 measurements; they do not prove Fast or Deep always finds the optimum.';
   return guiVersion === 'road-matrix-brute15'
     ? 'This GUI uses road-distance tables in Drive/Walk when Direct Line is off. Prepare distances obtains directed distances between stops; Fast, Deep and Brute Force use that same local table. Direct Line instead uses approximate straight-line distances. Brute Force is manually selected, supports 2–15 stops including fixed START, checks (n−1)! orders, and proves the optimum for the chosen table only when complete. It never starts automatically. Cancel calculation preserves the best route found. Above 15 it shows the count and time estimate but cannot run. Road mode supports up to 100 stops; Drive distances are traffic-unaware. Do not equate the table optimum with the shortest possible trip under live traffic. Google draws the chosen road route afterward.'
     : 'This is the legacy GUI: stop ordering uses straight-line distances, then Google draws the road route. Brute Force and Prepare distances are available in the current Trip Optimizer, not this legacy GUI.';
@@ -90,7 +92,8 @@ async function quotaFailure(res) {
 }
 
 export default async (req) => {
-  const { key, base, model, models, searchEnabled } = settings();
+  const { key, base, model, models, searchEnabled: configuredSearch } = settings();
+  let searchEnabled = configuredSearch;
   const transport = base === 'https://generativelanguage.googleapis.com' ? 'google-direct' : 'netlify-ai-gateway';
   if (req.method === 'GET') {
     return json({ ok: true, configured: Boolean(key), model, fallbackModels: models.slice(1), transport, searchEnabled });
@@ -118,6 +121,8 @@ export default async (req) => {
   if (models.some(name => !/^gemini-[a-z0-9.-]{1,72}$/.test(name))) {
     return failure('MODEL_NOT_CONFIGURED', 'The chatbot model configuration needs attention from the site owner.', 503);
   }
+  const options = labOptions(body);
+  if (options.lab) searchEnabled = true;
   const deadline = Date.now() + 49000;
   const attempts = [];
   let quotaIssue = null;
@@ -132,10 +137,11 @@ export default async (req) => {
     if (status === 429) quotaIssue = lastFailure;
     attempts.push({model:name, outcome:code});
   }
+  const languageInstruction = options.lab ? `\nRespond in ${options.language === 'sl' ? 'Slovenian' : 'English'}, matching the selected site language. Use current sources for weather, travel advisories, openings and prices. Hotel availability and bookable prices require checking a booking provider for the actual dates. Never invent a verified booking or weather forecast outside the available forecast horizon. Use Google Maps for place recommendations when available, Search for broader current information. Do not use Maps for GUI help. Cite only sources returned by the tools.` : '';
   const providerBody = {
     contents: [{ role: 'user', parts: [{ text: body.prompt }] }],
     generationConfig: { maxOutputTokens: 8192 },
-    systemInstruction: { parts: [{ text: TRIP_INSTRUCTIONS + '\n' + optimizationInstructions(body.guiVersion) + '\n' + (searchEnabled
+    systemInstruction: { parts: [{ text: TRIP_INSTRUCTIONS + '\n' + optimizationInstructions(body.guiVersion) + languageInstruction + '\n' + (searchEnabled
       ? 'Use search when current information is needed. Cite sources and distinguish verified facts from estimates.'
       : 'You are without live web access. Do not claim to have searched the web or verified current weather, opening hours, prices, or availability. Explain when those details need checking.') }] },
     ...(searchEnabled ? { tools: [{ google_search: {} }] } : {})
@@ -145,16 +151,17 @@ export default async (req) => {
   // deadline stays below the frontend timeout; no recursive retries or partial edits.
   for (const [index, candidateModel] of models.entries()) {
     if (Date.now() >= deadline || req.signal.aborted) break;
+    const mapsEnabled = options.maps && transport === 'google-direct' && supportsCombinedMaps(candidateModel);
     let upstream;
     try {
-      upstream = new URL(`${base}/v1beta/models/${candidateModel}:generateContent`);
+      upstream = new URL(mapsEnabled ? `${base}/v1beta/interactions` : `${base}/v1beta/models/${candidateModel}:generateContent`);
       if (upstream.protocol !== 'https:' || upstream.username || upstream.password) throw new Error('Invalid base URL');
     } catch { return failure('AI_NOT_CONFIGURED', 'The chatbot connection needs attention from the site owner.', 503); }
     try {
       const res = await fetch(upstream, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify(providerBody),
+        body: JSON.stringify(mapsEnabled ? interactionBody(candidateModel, body.prompt, providerBody.systemInstruction.parts[0].text) : providerBody),
         signal: AbortSignal.any([req.signal, AbortSignal.timeout(Math.max(1, Math.min(20000, deadline - Date.now())))]),
         redirect: 'error'
       });
@@ -183,6 +190,13 @@ export default async (req) => {
       let data;
       try { data = await res.json(); } catch { return failure('INVALID_RESPONSE', 'Gemini returned an unreadable response. Please try again.', 502); }
       if (data.error) return failure('PROVIDER_ERROR', 'Gemini could not complete this request. Please try again shortly.', 502);
+      if (mapsEnabled) {
+        const grounded = interactionResult(data);
+        if (grounded.error) return failure(grounded.error, 'Gemini did not finish the response. Please ask for a shorter itinerary.', 502);
+        if (!grounded.text) return failure('EMPTY_RESPONSE', 'Gemini returned no answer. Please try again.', 502);
+        attempts.push({model:candidateModel,outcome:'OK'});
+        return json({ok:true,...grounded,model:candidateModel,requestedModel:model,fallbackUsed:index>0,attempts,transport,searchEnabled,mapsEnabled:true,language:options.language});
+      }
       const candidate = data.candidates?.[0];
       if (data.promptFeedback?.blockReason || (candidate?.finishReason && !['STOP', 'MAX_TOKENS'].includes(candidate.finishReason))) {
         return failure('RESPONSE_BLOCKED', 'Gemini could not answer this message. Please rephrase it.', 422);
@@ -197,7 +211,7 @@ export default async (req) => {
       });
       attempts.push({model:candidateModel, outcome:'OK'});
       return json({ ok:true, text, model: /^gemini-[a-z0-9.-]{1,72}$/.test(data.modelVersion || '') ? data.modelVersion : candidateModel,
-        requestedModel:model, fallbackUsed:index > 0, attempts, transport, searchEnabled, sources,
+        requestedModel:model, fallbackUsed:index > 0, attempts, transport, searchEnabled, sources, ...(options.lab ? {mapsEnabled:false,language:options.language} : {}),
         searchSuggestionsHtml: typeof grounding.searchEntryPoint?.renderedContent === 'string' ? grounding.searchEntryPoint.renderedContent : '' });
     } catch (error) {
       if (['TimeoutError', 'AbortError'].includes(error?.name)) {

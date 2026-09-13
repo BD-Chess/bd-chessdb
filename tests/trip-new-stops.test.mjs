@@ -23,7 +23,7 @@ function harness(geocode) {
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
     console, google, window: { google }, Map, Set,
-    document: { createElement: () => ({style:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
+    document: { body:{classList:{remove(){}}}, createElement: () => ({style:{}, appendChild() {}}), getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
@@ -243,7 +243,7 @@ test('road distance replaces the direct estimate; Direct Line restores it withou
   h.element('chkDirect').checked = true;
   await h.api.updateMapVisualization(twoStops);
   assert.equal(h.element('distKm').textContent, '67.11 km');
-  assert.equal(h.element('distanceLabel').textContent, 'Direct distance (est.):');
+  assert.equal(h.element('distanceLabel').textContent, 'Air distance (great circle):');
   assert.equal(calls, 1);
 });
 
@@ -280,7 +280,7 @@ test('late road results cannot overwrite a newer Direct Line selection', async (
   resolve({ routes: [{ path: [{ lat: 46, lng: 14 }], distanceMeters: 109876 }] });
   await pending;
   assert.equal(h.element('distKm').textContent, '67.11 km');
-  assert.equal(h.element('distanceLabel').textContent, 'Direct distance (est.):');
+  assert.equal(h.element('distanceLabel').textContent, 'Air distance (great circle):');
   assert.equal(h.lines.filter(l => l.map).length, 1);
 });
 
@@ -301,18 +301,18 @@ test('missing or failed road measurements never show a stale road total or an ai
   assert.equal(h.element('distanceLabel').textContent, 'Road distance:');
 });
 
-test('manual Brute Force is available through 15; 16 disables it without starting another algorithm', async()=>{
+test('manual Brute Force is available through 16; 17 disables it without starting another algorithm', async()=>{
   const h=harness(()=>{throw new Error('No geocoding expected');});
   const input=n=>Array.from({length:n},(_,i)=>`Place ${i} | ${46+i/100}, ${14+i/100}${i===2?' START':''}`).join('\n');
-  h.element('input').value=input(15);
+  h.element('input').value=input(16);
   h.api.refreshBruteInfo();
   assert.equal(h.element('chkBrute').disabled,false);assert.equal(h.element('chkBrute').checked,false);
-  assert.match(h.element('bruteInfo').textContent,/87,178,291,200/);
+  assert.match(h.element('bruteInfo').textContent,/1,307,674,368,000/);
   h.element('chkBrute').checked=true;
   await h.api.run('standard');assert.equal(h.jobs[0].profile,'brute');assert.equal(h.jobs[0].startIdx,2);
   assert.equal(h.element('btnDeep').hidden,true);
   h.api.cancelWork();assert.equal(h.workers[0].terminated,true);
-  h.element('input').value=input(16);h.element('chkBrute').checked=true;
+  h.element('input').value=input(17);h.element('chkBrute').checked=true;
   await h.api.run('standard');
   assert.equal(h.jobs.length,1);assert.equal(h.element('chkBrute').disabled,true);
   assert.equal(h.element('chkBrute').checked,false);assert.equal(h.element('btnDeep').hidden,false);
@@ -338,4 +338,27 @@ test('Brute Force cancellation preserves road data for the next Optimize and sta
   assert.deepEqual(h.jobs.at(-1).distanceMatrix,first.distanceMatrix);
   h.api.handleWorkerMessage({data:{type:'brute-progress',jobId:first.jobId}});
   assert.match(h.element('matrixStatus').textContent,/Reusing 30/);
+});
+
+test('LAB adds one independent Deep Air row without comparing it to the road optimum',()=>{
+  const elements=new Map();
+  const el=()=>({children:[],style:{},classList:{remove(){}},appendChild(c){this.children.push(c);},replaceChildren(){this.children=[];}});
+  const get=id=>{if(!elements.has(id))elements.set(id,el());return elements.get(id);};
+  const workers=[];
+  const c=vm.createContext({console,window:{},document:{getElementById:get,addEventListener(){},createElement:el},Worker:class{constructor(){workers.push(this);}terminate(){this.stopped=true;}postMessage(m){this.message=m;}},setTimeout,clearTimeout});
+  vm.runInContext(matrixSource,c);vm.runInContext(readFileSync(new URL('../public/Trip/new/brute-force.js',import.meta.url),'utf8'),c);
+  vm.runInContext(source.replace(/\}\)\(\);\s*$/,`window.test={displayComparison,ensureAirComparison,clearComparison, setKey(k){comparisonKey=k;}};})();`),c);
+  const api=c.window.test,job={profile:'deep',mode:'DRIVING',direct:false,roundTrip:true,jobId:1};
+  api.setKey('roadA');api.displayComparison({algorithm:'brute',exact:true,totalKm:100,elapsedMs:1000},job);
+  api.displayComparison({algorithm:'deep',totalKm:100,elapsedMs:2},job);
+  api.ensureAirComparison([{lat:0,lon:0},{lat:0,lon:1}],0,job);
+  const air=workers.at(-1);assert.equal(air.message.profile,'deep');assert.equal(air.message.distanceMatrix,undefined);
+  air.onmessage({data:{type:'result',totalKm:80,elapsedMs:5}});
+  let rows=get('comparisonRows').children.map(r=>r.children.map(c=>c.textContent));
+  assert.equal(rows.length,3);assert.equal(rows[1][3],'Matches exact optimum');assert.match(rows[2][0],/Deep · Air/);assert.match(rows[2][3],/not proven/);assert.doesNotMatch(rows[2][3],/above exact/);
+  api.ensureAirComparison([{lat:0,lon:0},{lat:0,lon:1}],0,job);
+  assert.equal(workers.length,2); // Main worker + one cached Air worker; no second Air run.
+  api.clearComparison();api.setKey('roadB');api.displayComparison({algorithm:'deep',totalKm:300,elapsedMs:2},job);
+  air.onmessage({data:{type:'result',totalKm:80,elapsedMs:5}});
+  rows=get('comparisonRows').children;assert.equal(rows.length,1); // Stale Air result is ignored.
 });

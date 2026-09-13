@@ -1,7 +1,8 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-brute15-chat1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-lab16-1');
+if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-lab16-1');
 let bruteJob = null;
 
 // 1. Deterministic Random Number Generator (XorShift64*)
@@ -36,38 +37,6 @@ class XorShift64Star {
 }
 
 // 2. Geometry Helpers
-function toXYMeters(points) {
-  const R = 6371000.0;
-  let latSum = 0, cnt = 0;
-  for (const p of points) { if (isFinite(p.lat) && isFinite(p.lon)) { latSum += p.lat; cnt++; } }
-  const lat0 = (cnt ? (latSum / cnt) : 0) * Math.PI / 180.0;
-  const cos0 = Math.cos(lat0);
-
-  return points.map(p => {
-    if (!isFinite(p.lat) || !isFinite(p.lon)) return null;
-    const lat = p.lat * Math.PI / 180.0;
-    const lon = p.lon * Math.PI / 180.0;
-    return { x: R * lon * cos0, y: R * lat };
-  });
-}
-
-function buildDistanceMatrix(xy) {
-  const n = xy.length;
-  const D = new Array(n);
-  for (let i = 0; i < n; i++) {
-    D[i] = new Float64Array(n);
-    for (let j = 0; j < n; j++) {
-      if (i === j) D[i][j] = 0;
-      else {
-        const dx = xy[i].x - xy[j].x;
-        const dy = xy[i].y - xy[j].y;
-        D[i][j] = Math.sqrt(dx*dx + dy*dy);
-      }
-    }
-  }
-  return D;
-}
-
 function routeLength(route, D, roundTrip) {
   let sum = 0;
   for (let i = 0; i < route.length - 1; i++) sum += D[route[i]][route[i+1]];
@@ -123,12 +92,12 @@ function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
 
 function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
   const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
-  const xy = toXYMeters(validIndices.map(i => points[i]));
+  const airD = TripAirDistance.matrix(points);
   if (validIndices.length !== points.length || points.length < 2) throw new Error('All stops must have valid coordinates.');
   if (distanceMatrix != null && (distanceMatrix.length !== points.length || distanceMatrix.some(row =>
     !row || row.length !== points.length || Array.from(row).some(v => !Number.isFinite(v) || v < 0))))
     throw new Error('Incomplete road distance matrix.');
-  const D = distanceMatrix == null ? buildDistanceMatrix(xy) : distanceMatrix;
+  const D = distanceMatrix == null ? airD : distanceMatrix;
   const metric = distanceMatrix == null ? 'direct' : 'road';
 
   // --- SETTINGS (The only change) ---
@@ -196,17 +165,17 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
     totalKm: bestLen / 1000.0, 
     baseKm: baseLen / 1000.0,
     metric,
-    directKm: routeLength(bestRoute, buildDistanceMatrix(xy), roundTrip) / 1000.0 
+    directKm: routeLength(bestRoute, airD, roundTrip) / 1000.0 
   };
 }
 
 // 4. Cooperative exhaustive search. Yield within ~20ms so Cancel can be handled.
 function startBruteForce(msg) {
   if (msg.points.length < 2 || msg.points.length > TripBruteForce.MAX_STOPS)
-    throw new Error('Brute Force supports 2–15 stops including START.');
+    throw new Error('Brute Force supports 2–16 stops including START.');
   if (msg.points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon)))
     throw new Error('All stops must have valid coordinates.');
-  const directD = buildDistanceMatrix(toXYMeters(msg.points));
+  const directD = TripAirDistance.matrix(msg.points);
   const D = msg.distanceMatrix == null ? directD : msg.distanceMatrix;
   const start = Number.isInteger(msg.startIdx) && msg.startIdx >= 0 && msg.startIdx < msg.points.length ? msg.startIdx : 0;
   const job = {msg, directD, engine:TripBruteForce.create(D, start, msg.roundTrip),

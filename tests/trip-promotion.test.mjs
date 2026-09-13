@@ -19,11 +19,7 @@ test('old2 preserves every prior primary file, byte for byte',()=>{
   }
 });
 
-test('primary serves the verified current frontend and its relative assets',()=>{
-  for(const file of readdirSync(new URL('public/Trip/new/',root))) {
-    if(file==='index.html') assert.equal(withoutSelector(read('public/Trip/'+file).toString()),withoutSelector(read('public/Trip/new/'+file).toString()));
-    else assert.deepEqual(read('public/Trip/'+file),read('public/Trip/new/'+file),file);
-  }
+test('live channels and archives resolve their own relative assets',()=>{
   for(const folder of ['','new/','old/','old/001/','old2/']) {
     const html=read('public/Trip/'+folder+'index.html').toString();
     const relative=[...html.matchAll(/(?:src|href)="([^"?:#]+)(?:\?[^"#]*)?"/g)].map(m=>m[1]).filter(v=>!v.includes(':')&&!v.startsWith('/'));

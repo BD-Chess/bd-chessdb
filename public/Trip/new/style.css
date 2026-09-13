@@ -295,3 +295,60 @@ tr:last-child td { border-bottom: none; }
 .comparison-panel table { width: 100%; border-collapse: collapse; }
 .comparison-panel th, .comparison-panel td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
 [hidden] { display: none !important; }
+
+/* LAB16: editor first, results readable in portrait and landscape. */
+header { position:relative; top:auto; }
+header > nav:not(.bd-versions) { display:flex; flex-wrap:wrap; gap:2px; }
+.language-switch { display:flex; gap:3px; }
+.language-switch button { padding:6px 9px; color:var(--text-dim); background:transparent; }
+.language-switch [aria-pressed="true"] { color:white; background:var(--primary); }
+.options { flex-wrap:wrap; }
+#optimizeActions { grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:stretch; }
+#bruteMini { align-self:center; font:500 12px/1.5 'JetBrains Mono',monospace; color:#93c5fd; overflow-wrap:anywhere; }
+#librarySection { margin-top:20px; }
+#bruteProgress { margin:16px 0; }
+#chatGroundingNote { font-size:11px; margin:0; padding:8px 14px; background:var(--bg-input); }
+#chatPanel:not(.open) #chatGroundingNote { display:none; }
+.maps-citation { display:inline-block; white-space:normal; margin:4px; }
+#demoPanel { grid-column:1 / -1; grid-row:2 / -1; overflow:auto; min-width:0; }
+.demo-open #editorPanel,.demo-open #resultsPanel,.demo-open #chatPanel { display:none !important; }
+.demo-hero { padding:clamp(16px,4vw,50px); background:radial-gradient(ellipse at top right,#153a64,transparent 70%); border-radius:12px; }
+.demo-hero h1 { font-size:clamp(25px,3vw,48px); letter-spacing:-.04em; line-height:1.12; max-width:860px; }
+#demoPanel p { line-height:1.7; color:var(--text-dim); }
+#demoPanel section { margin:32px auto; max-width:1180px; }
+#demoPanel a { color:#93c5fd; }
+.demo-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:24px 0; }
+.demo-cards > div { padding:18px; border:1px solid var(--border); border-radius:10px; background:var(--bg-app); color:var(--text-dim); font-size:12px; }
+.demo-cards strong { display:block; color:#6ee7b7; font:700 clamp(15px,2vw,25px)/1.6 'JetBrains Mono',monospace; overflow-wrap:anywhere; }
+.demo-table { border-collapse:collapse; width:100%; font-size:14px; }
+.demo-table th,.demo-table td { text-align:left; padding:14px; border-bottom:1px solid var(--border); line-height:1.8; }
+.demo-table th { color:#93c5fd; }
+.demo-note { font-size:12px; }
+.demo-actions { display:flex; gap:12px; flex-wrap:wrap; }
+.demo-actions button { width:auto; }
+.demo-gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.demo-gallery figure { margin:0; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.demo-gallery img { display:block; width:100%; height:auto; }
+.demo-gallery figcaption { padding:10px; font-size:12px; color:var(--text-dim); }
+.factorial-lab { padding:20px; border:1px solid var(--primary); border-radius:12px; }
+.factorial-lab input { padding:12px 0; }
+.factorial-lab select { margin:12px 0; max-width:100%; color:var(--text-main); background:var(--bg-input); padding:10px; border:1px solid var(--border); border-radius:6px; }
+#factorialResult { overflow-wrap:anywhere; font-family:'JetBrains Mono',monospace; margin-top:16px; }
+.cosmic-scale { position:relative; height:46px; background:#172336; display:flex; justify-content:space-between; align-items:center; font-size:10px; overflow:hidden; border-radius:8px; padding:8px; }
+.cosmic-scale span { position:relative; z-index:1; text-shadow:0 1px 3px black; }
+#cosmicBar { position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,#174859,#4843a3); transition:width .2s; }
+html[lang="sl"] .lang-en,html:not([lang="sl"]) .lang-sl { display:none; }
+@media(max-width:1023px) {
+  body { padding-bottom:76px; }
+  header { padding:8px; gap:6px; }
+  header .bd-versions { justify-content:flex-start; }
+  .panel { min-width:0; padding:12px; }
+  #input { min-height:180px; font-size:16px; }
+  #mapContainer { height:clamp(280px,48vh,520px); }
+  #chatPanel { max-height:65vh; }
+  .stats { gap:10px; flex-wrap:wrap; font-size:12px; }
+  .comparison-panel th,.comparison-panel td { padding:7px 5px; vertical-align:top; }
+  .comparison-panel table { min-width:0; font-size:11px; }
+  .demo-gallery,.demo-cards { grid-template-columns:1fr; }
+  .demo-table { min-width:480px; }
+}

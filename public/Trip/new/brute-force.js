@@ -1,7 +1,7 @@
 /* Shared exhaustive-order engine and display helpers. No network or persistent storage. */
 (() => {
   'use strict';
-  const MAX_STOPS = 15;
+  const MAX_STOPS = 16;
   function orders(n) {
     if (!Number.isInteger(n) || n < 2 || n > 1000) return null;
     let total = 1n;
@@ -10,7 +10,7 @@
   }
   function duration(seconds) {
     if (!Number.isFinite(seconds)) return 'too large to estimate';
-    if (seconds <= 0) return '0 s';
+    if (seconds <= 0) return '< timer resolution';
     if (seconds < 1) return (seconds * 1000).toFixed(2) + ' ms';
     if (seconds < 60) return seconds.toFixed(1) + ' s';
     if (seconds < 3600) return (seconds / 60).toFixed(1) + ' min';
@@ -30,7 +30,7 @@
   function create(D, startIdx, roundTrip) {
     const n = D?.length;
     if (!Number.isInteger(n) || n < 2 || n > MAX_STOPS)
-      throw new Error('Brute Force supports 2–15 stops including START.');
+      throw new Error('Brute Force supports 2–16 stops including START.');
     if (D.some(row => !row || row.length !== n || Array.from(row).some(v => !Number.isFinite(v) || v < 0)))
       throw new Error('Brute Force requires a complete distance table.');
     if (!Number.isInteger(startIdx) || startIdx < 0 || startIdx >= n)
@@ -41,7 +41,7 @@
       for (let i = 1; i < n; i++) sum += D[route[i-1]][route[i]];
       return sum + (roundTrip ? D[route[n-1]][route[0]] : 0);
     }
-    const total = Number(orders(n)); // 14! < Number.MAX_SAFE_INTEGER; all live counts are exact.
+    const total = Number(orders(n)); // 15! < Number.MAX_SAFE_INTEGER; all live counts are exact.
     const baseLength = length();
     let bestLength = baseLength, bestRoute = route.slice(), checked = 0, done = false;
     function next() {
