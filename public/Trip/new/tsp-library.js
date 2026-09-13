@@ -25,7 +25,7 @@
   async function read(id) {
     const entry = get(id);
     if (!entry) throw new Error('Unknown TSP dataset.');
-    const response = await fetch(`tsp/${entry.id}.json?v=20260913-demo-load1`);
+    const response = await fetch(`tsp/${entry.id}.json?v=20260913-demo-load2`);
     if (!response.ok) throw new Error('TSP download failed. Your current trip is unchanged.');
     return {entry, text:toEditor(entry, await response.json())};
   }

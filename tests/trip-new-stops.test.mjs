@@ -37,7 +37,7 @@ function harness(geocode, fetcher) {
   element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { ensureAirComparison, showSolvedRoute, showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'window.test = { buildMapsLegLinks, ensureAirComparison, showSolvedRoute, showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
     'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
@@ -532,4 +532,24 @@ test('TSP download does not auto-run, and failed or superseded downloads do not 
   const loaded=h.window.TripTsp.load('dj38');resolve(await tspResponse('tsp/dj38.json'));
   assert.equal(await loaded,true);assert.equal(h.jobs.length,0);
   assert.equal(h.api.parseStops(h.element('input').value).pts.length,38);
+});
+
+
+test('large TSP counts stay compact and fully translated; node IDs are not Maps place queries',async()=>{
+  const h=harness(()=>{throw new Error('No geocoding expected');},tspResponse);
+  h.window.MDLxDCCLocale={current:()=> 'sl'};
+  await h.window.TripTsp.load('lu980');
+  const info=h.element('bruteInfo').textContent;
+  assert.ok(info.length<500, info.length);
+  assert.match(info,/× 10[⁰¹²³⁴⁵⁶⁷⁸⁹]+/);
+  assert.match(info,/Brute Force je nad 16 postanki izklopljen/);
+  assert.doesNotMatch(info,/unavailable|years|Infinity/);
+  assert.equal(h.element('chkBrute').disabled,true);
+  const {pts}=h.api.parseStops(h.element('input').value);
+  const links=h.api.buildMapsLegLinks(pts.slice(0,3),true,'DRIVING');
+  assert.equal(links[0].urlNames,null);
+  assert.match(links[0].urlPins,/origin=49/);
+  assert.doesNotMatch(links[0].urlPins,/lu980/);
+  const normal=h.api.buildMapsLegLinks([{name:'Ljubljana',lat:46,lon:14},{name:'Koper',lat:45,lon:13}],false,'DRIVING');
+  assert.match(normal[0].urlNames,/origin=Ljubljana/);
 });

@@ -232,6 +232,7 @@
     'Complete':'Končano','Cancelled':'Prekinjeno','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
     ' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
     'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1.000.000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
+    'Brute Force unavailable above 16 stops.':'Brute Force je nad 16 postanki izklopljen.',
     'extrapolated at ':'ocenjeno pri ',' measured with ':' izmerjeno pri ',' stops':' postankov',
     'Kept only for the current open trip.':'Shranjeno le za trenutno odprto pot.',
     ' directed road distances. Optimization runs locally.':' usmerjenih cestnih razdalj. Optimizacija poteka lokalno.',

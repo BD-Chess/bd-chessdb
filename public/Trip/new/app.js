@@ -692,7 +692,8 @@
   function buildMapsLegLinks(routePts, roundTrip, mode) {
     const travelmode = (mode === 'DRIVING') ? 'driving' : 'walking';
     const encodeCoords = (p) => `${p.lat.toFixed(6)},${p.lon.toFixed(6)}`;
-    const encodeName = (p) => { if (p.name.match(/^-?\d+\./)) return encodeCoords(p); return encodeURIComponent(p.name); };
+    const isTspNode = p => /^[a-z]+\d+ #\d+$/.test(p.name) && window.TripTspLibrary?.get(p.name.split(' ')[0]);
+    const encodeName = (p) => { if (isTspNode(p) || p.name.match(/^-?\d+\./)) return encodeCoords(p); return encodeURIComponent(p.name); };
     const seq = routePts.slice();
     if (roundTrip && seq.length > 1) seq.push(seq[0]);
     const links = []; let i = 0;
@@ -707,7 +708,7 @@
       const originName = encodeName(segment[0]); const destName = encodeName(segment[segment.length - 1]); const midsName = segment.slice(1, -1).map(encodeName);
       let urlNames = `https://www.google.com/maps/dir/?api=1&origin=${originName}&destination=${destName}&travelmode=${travelmode}`;
       if (midsName.length) urlNames += `&waypoints=${midsName.join('%7C')}`;
-      links.push({ label: `Leg ${links.length + 1} (${segment.length} stops)`, urlPins, urlNames });
+      links.push({ label: `Leg ${links.length + 1} (${segment.length} stops)`, urlPins, urlNames: segment.every(isTspNode) ? null : urlNames });
       i = j;
     }
     return links;
@@ -724,7 +725,7 @@
       row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.alignItems = 'center'; row.style.gap = '10px';
       
       // UPDATED: Changed label from 'Open in Google Map' to 'Pins'
-      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;"><span data-ui-text="📍 Pins">📍 Pins</span></a><a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;"><span data-ui-text="🏷️ Names">🏷️ Names</span></a></div>`;
+      row.innerHTML = `<span class="badge" style="min-width:60px;">${L.label}</span><div style="display:flex; gap:8px; flex:1;"><a href="${L.urlPins}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(59,130,246,0.1); border-radius:4px; font-size:0.85rem; text-decoration:none; color:#bfdbfe;"><span data-ui-text="📍 Pins">📍 Pins</span></a>${L.urlNames ? `<a href="${L.urlNames}" target="_blank" style="flex:1; text-align:center; padding:6px; background:rgba(16,185,129,0.1); color:#6ee7b7; border-radius:4px; font-size:0.85rem; text-decoration:none;"><span data-ui-text="🏷️ Names">🏷️ Names</span></a>` : ''}</div>`;
       UI.set(row.querySelector('.badge'), L.label);
       el.appendChild(row);
     }
@@ -1084,6 +1085,22 @@ Bad example:
     return w;
   }
 
+  function powerOfTen(exponent) {
+    return '10' + String(exponent).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]).join('');
+  }
+  function formatOrderCount(total) {
+    const digits = total.toString();
+    return digits.length <= 40 ? total.toLocaleString('en-US')
+      : `${(Number(digits.slice(0, 4)) / 1000).toFixed(3)} × ${powerOfTen(digits.length - 1)}`;
+  }
+  function estimateBruteDuration(total, rate) {
+    const seconds = Number(total) / rate;
+    if (Number.isFinite(seconds)) return BF.duration(seconds);
+    const digits = total.toString();
+    const logYears = Math.log10(Number(digits.slice(0, 15))) + digits.length - 15 - Math.log10(rate * 31557600);
+    return `${Math.pow(10, logYears % 1).toFixed(2)} × ${powerOfTen(Math.floor(logYears))} years`;
+  }
+
   function refreshBruteInfo() {
     const input = normalizeTripEditorText($('input').value, {ensureStart:true});
     const {pts} = parseStops(input);
@@ -1106,8 +1123,8 @@ Bad example:
       : 'illustration at 1,000,000 orders/s; actual speed depends on this device';
     UI.set($('bruteInfo'), !total
       ? (n > 1000 ? 'Brute Force unavailable above 16 stops.' : 'Brute Force: enter 2–16 stops including START.')
-      : `${n} stops · (${n}−1)! = ${total.toLocaleString('en-US')} possible orders. ` +
-        `Estimated full search: ${BF.duration(Number(total)/rate)} (${rateNote}). ` +
+      : `${n} stops · (${n}−1)! = ${formatOrderCount(total)} possible orders. ` +
+        `Estimated full search: ${estimateBruteDuration(total, rate)} (${rateNote}). ` +
         (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 16 stops.' : 'START stays fixed; each direction is counted separately.'));
     return {n, allowed};
   }
