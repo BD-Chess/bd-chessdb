@@ -6,6 +6,17 @@
   <title>8Z Trip Optimizer</title>
   <link rel="stylesheet" href="style.css?v=20260913-brute15-chat1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- BD VERSION SELECTOR STYLE START -->
+  <style>
+    header { flex-wrap: wrap; gap: 8px; }
+    .bd-versions { flex: 0 0 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; }
+    .bd-versions a { color: var(--text-dim, #94a3b8); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
+    .bd-versions a:hover { color: var(--text-main, #f1f5f9); }
+    .bd-versions a[aria-current="page"] { color: var(--primary, #38bdf8); font-weight: 700; border-bottom-color: currentColor; }
+    .bd-versions a:focus-visible { outline: 2px solid var(--primary, #38bdf8); outline-offset: 3px; }
+    .bd-versions span { color: var(--text-dim, #94a3b8); }
+  </style>
+  <!-- BD VERSION SELECTOR STYLE END -->
 </head>
 <body>
 
@@ -21,6 +32,15 @@
         <button id="btnAbout" class="nav-btn">About</button>
         <button id="btnHelp" class="nav-btn">Help</button>
       </nav>
+      <!-- BD VERSION SELECTOR START -->
+      <nav class="bd-versions" aria-label="Trip version">
+        <a href="/trip/">CURRENT</a>
+        <span aria-hidden="true">·</span>
+        <a href="/trip/old/">PREVIOUS</a>
+        <span aria-hidden="true">·</span>
+        <a href="/trip/new/" aria-current="page">LAB</a>
+      </nav>
+      <!-- BD VERSION SELECTOR END -->
     </header>
 
     <div class="panel">
