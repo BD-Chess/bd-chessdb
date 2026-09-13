@@ -20,7 +20,7 @@
       return `${entry.id} #${p[0]} | ${p[1]}, ${p[2]}${index === 0 ? ' START' : ''}`;
     });
     return [`# TSP source: ${entry.id}`, `# ${entry.name} · ${entry.count} nodes`,
-      '# Maps adaptation: great-circle kilometres, not the original EUC_2D score.', ...rows].join('\n');
+      '# Maps coordinates for display; Planar TSP uses original EUC_2D units, not kilometres.', ...rows].join('\n');
   }
   async function read(id) {
     const entry = get(id);
@@ -29,5 +29,27 @@
     if (!response.ok) throw new Error('TSP download failed. Your current trip is unchanged.');
     return {entry, text:toEditor(entry, await response.json())};
   }
-  window.TripTspLibrary = {get, label, read, toEditor};
+  const originals = new Map();
+  async function original(id) {
+    const entry = get(id);
+    if (!entry) throw new Error('Select a TSP collection to use Planar distances (TSP).');
+    if (!originals.has(id)) originals.set(id, (async () => {
+      const [raw, refs] = await Promise.all([fetch(`tsp/${id}.tsp`), fetch('tsp-optima.json?v=20260913-tsp1')]);
+      if (!raw.ok || !refs.ok) throw new Error('TSP reference download failed. Please try again.');
+      const bytes = await raw.arrayBuffer();
+      const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)), v=>v.toString(16).padStart(2,'0')).join('');
+      if (hash !== entry.originalSha256) throw new Error('Original TSP checksum does not match.');
+      const original = TripTspMetric.parse(new TextDecoder().decode(bytes),entry);
+      const reference = (await refs.json()).datasets.find(r=>r.id===id);
+      if (!reference || reference.originalSha256!==hash || reference.count!==entry.count || reference.metric!=='EUC_2D' || reference.status!=='proven' || !Number.isSafeInteger(reference.optimum) || reference.optimum<=0)
+        throw new Error('TSP reference does not match this dataset.');
+      return {entry, original, reference};
+    })().catch(error=>{originals.delete(id);throw error;}));
+    return originals.get(id);
+  }
+  async function prepare(id, points) {
+    const data = await original(id);
+    return {...data, points:TripTspMetric.authenticate(points,data.original,data.entry)};
+  }
+  window.TripTspLibrary = {get, label, read, toEditor, original, prepare};
 })();

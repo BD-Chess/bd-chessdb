@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
 const matrixSource = readFileSync(new URL('../public/Trip/new/road-matrix.js', import.meta.url), 'utf8');
-const workerSource = readFileSync(new URL('../public/Trip/new/air-distance.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/worker.js', import.meta.url), 'utf8');
+const workerSource = readFileSync(new URL('../public/Trip/new/tsp-metric.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/air-distance.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/worker.js', import.meta.url), 'utf8');
 function planner() {
   const c = vm.createContext({setTimeout, clearTimeout});
   vm.runInContext(matrixSource, c);

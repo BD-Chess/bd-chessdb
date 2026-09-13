@@ -1,9 +1,10 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-resume2');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-tsp1');
 if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume2');
 let bruteJob = null;
+if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-tsp1');
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -90,7 +91,7 @@ function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
   return route;
 }
 
-function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
+function solve(points, startIdx, profile, roundTrip, distanceMatrix, requestedMetric) {
   const started = performance.now();
   let lastReport = -Infinity;
   const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
@@ -99,8 +100,9 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
   if (distanceMatrix != null && (distanceMatrix.length !== points.length || distanceMatrix.some(row =>
     !row || row.length !== points.length || Array.from(row).some(v => !Number.isFinite(v) || v < 0))))
     throw new Error('Incomplete road distance matrix.');
-  const D = distanceMatrix == null ? airD : distanceMatrix;
-  const metric = distanceMatrix == null ? 'direct' : 'road';
+  const planar = requestedMetric === 'tsp-euc2d';
+  const D = planar ? TripTspMetric.matrix(points) : distanceMatrix == null ? airD : distanceMatrix;
+  const metric = planar ? 'tsp-euc2d' : distanceMatrix == null ? 'direct' : 'road';
 
   // --- SETTINGS (The only change) ---
   let starts = 2, passes = 4, time = 300;
@@ -131,8 +133,8 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
     lastReport = now;
     self.postMessage({type:'progress', jobId:activeJobId, algorithm:profile,
       completed, starts, elapsedMs:now-started, metric,
-      pointsSorted:bestRoute.map(i => points[i]), totalKm:bestLen/1000,
-      baseKm:baseLen/1000, directKm:routeLength(bestRoute,airD,roundTrip)/1000});
+      pointsSorted:bestRoute.map(i => points[i]), totalCost:bestLen, baseCost:baseLen,
+      totalKm:planar ? null : bestLen/1000, baseKm:planar ? null : baseLen/1000, directKm:routeLength(bestRoute,airD,roundTrip)/1000});
   }
   report(0);
 
@@ -172,8 +174,9 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
 
   return { 
     pointsSorted: sortedPoints, 
-    totalKm: bestLen / 1000.0, 
-    baseKm: baseLen / 1000.0,
+    totalCost:bestLen, baseCost:baseLen,
+    totalKm: planar ? null : bestLen / 1000.0,
+    baseKm: planar ? null : baseLen / 1000.0,
     metric,
     directKm: routeLength(bestRoute, airD, roundTrip) / 1000.0 
   };
@@ -182,11 +185,12 @@ function solve(points, startIdx, profile, roundTrip, distanceMatrix) {
 // 4. Cooperative exhaustive search. Yield within ~20ms so Cancel can be handled.
 function startBruteForce(msg) {
   if (msg.points.length < 2 || msg.points.length > TripBruteForce.MAX_STOPS)
-    throw new Error('Brute Force supports 2–16 stops including START.');
+    throw new Error('Brute Force supports 2–20 stops including START.');
   if (msg.points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon)))
     throw new Error('All stops must have valid coordinates.');
   const directD = TripAirDistance.matrix(msg.points);
-  const D = msg.distanceMatrix == null ? directD : msg.distanceMatrix;
+  const planar = msg.metric === 'tsp-euc2d';
+  const D = planar ? TripTspMetric.matrix(msg.points) : msg.distanceMatrix == null ? directD : msg.distanceMatrix;
   const start = Number.isInteger(msg.startIdx) && msg.startIdx >= 0 && msg.startIdx < msg.points.length ? msg.startIdx : 0;
   const previousMs = msg.resumeState?.elapsedMs || 0;
   if (!Number.isFinite(previousMs) || previousMs < 0) throw new Error('Invalid Brute Force elapsed time.');
@@ -200,9 +204,9 @@ function startBruteForce(msg) {
       algorithm:'brute', exact:state.done, cancelled:cancelled && !state.done,
       checked:state.checked, total:state.total, elapsedMs,
       resumeState:cancelled && !state.done ? {engine:job.engine.checkpoint(), elapsedMs} : null,
-      metric:msg.distanceMatrix == null ? 'direct' : 'road',
-      pointsSorted:state.route.map(i => msg.points[i]), totalKm:state.bestLength/1000,
-      baseKm:state.baseLength/1000,
+      metric:planar ? 'tsp-euc2d' : msg.distanceMatrix == null ? 'direct' : 'road',
+      pointsSorted:state.route.map(i => msg.points[i]), totalCost:state.bestLength, baseCost:state.baseLength,
+      totalKm:planar ? null : state.bestLength/1000, baseKm:planar ? null : state.baseLength/1000,
       directKm:routeLength(state.route, directD, msg.roundTrip)/1000});
   }
   job.finish = cancelled => { clearTimeout(job.timer); report(true, cancelled); bruteJob = null; };
@@ -231,7 +235,7 @@ self.onmessage = (ev) => {
     try {
       if (msg.profile === 'brute') { startBruteForce(msg); return; }
       const started = performance.now();
-      const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip, msg.distanceMatrix);
+      const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip, msg.distanceMatrix, msg.metric);
       self.postMessage({type:'result', jobId:msg.jobId, ...result,
         algorithm:msg.profile, exact:false, elapsedMs:performance.now()-started});
     } catch (e) {

@@ -27,6 +27,7 @@
   let optimizationPending = false;
   let lastSolvedPoints = null;
   let lastDirectKm = null;
+  let lastPlanarCost = null;
   let currentTravelMode = 'DRIVING';
   let currentNavApp = 'apple'; // Default to Apple for the list
   let mapScriptLoadingPromise = null;
@@ -209,7 +210,8 @@
       if (lat !== null && lon !== null) {
         const latN = Number(lat), lonN = Number(lon);
         if (Number.isFinite(latN) && Number.isFinite(lonN) && Math.abs(latN) <= 90 && Math.abs(lonN) <= 180) {
-          line = `${name} | ${compactCoord(latN)}, ${compactCoord(lonN)}${isStart ? ' START' : ''}`;
+          const format = /^[a-z]+\d+ #\d+$/.test(name) ? n => String(n) : compactCoord;
+          line = `${name} | ${format(latN)}, ${format(lonN)}${isStart ? ' START' : ''}`;
         } else {
           line = `${name} | ${lat}, ${lon}${isStart ? ' START' : ''}`;
         }
@@ -252,6 +254,7 @@
         t: $('input').value,
         m: currentTravelMode,
         direct: $('chkDirect').checked,
+        planar: $('chkPlanar').checked,
         roundTrip: $('chkRoundTrip').checked,
         chatBuf: chatHistoryBuffer,
         chatHTML: $('chatHistory').innerHTML,
@@ -267,7 +270,7 @@
         try {
             const sharedTrip = decodeURIComponent(params.get('trip'));
             $('input').value = sharedTrip;
-            if (/^# TSP source: /m.test(sharedTrip)) $('chkDirect').checked = true;
+            if (/^# TSP source: /m.test(sharedTrip)) { $('chkDirect').checked = true; $('chkPlanar').checked = true; }
             window.history.replaceState({}, document.title, window.location.pathname);
             setStatus('Shared trip loaded!', 'ok');
             setPlanningMode(true); 
@@ -283,6 +286,7 @@
         $('input').value = s.t || ''; 
         currentTravelMode = s.m || 'DRIVING'; 
         $('chkDirect').checked = typeof s.direct === 'boolean' ? s.direct : /^# TSP source: /m.test($('input').value);
+        $('chkPlanar').checked = $('chkDirect').checked && (typeof s.planar === 'boolean' ? s.planar : /^# TSP source: /m.test($('input').value));
         if (typeof s.roundTrip === 'boolean') $('chkRoundTrip').checked = s.roundTrip;
         updateModeButtons(); 
 
@@ -537,6 +541,12 @@
     return (useMiles ? km * 0.621371 : km).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2}) + (useMiles ? ' mi' : ' km');
   }
 
+  const planarSelected = () => !!$('chkPlanar')?.checked && $('chkDirect').checked;
+  const routeValue = msg => msg.metric === 'tsp-euc2d' ? msg.totalCost : msg.totalKm;
+  const baseValue = msg => msg.metric === 'tsp-euc2d' ? msg.baseCost : msg.baseKm;
+  const formatValue = (value, planar=false) => planar ? (Number.isFinite(value) && value >= 0 ? value.toLocaleString('en-US') + ' EUC_2D' : '—') : formatKm(value);
+  const metricName = job => job.planar ? 'Planar TSP (EUC_2D)' : job.direct ? 'Great-circle air distances' : 'Road distance table';
+
   function showDistance(km, label) {
     UI.set($('distanceLabel'), label + ':');
     UI.set($('distKm'), formatKm(km));
@@ -587,11 +597,15 @@
     if ($('chkDirect').checked) {
       clearLines();
       showDistance(lastDirectKm, 'Air distance (great circle)');
-      mapPolyline = new google.maps.Polyline({ path, geodesic: true, strokeColor: '#3b82f6', strokeWeight: 4 });
+      mapPolyline = new google.maps.Polyline({ path, geodesic: !planarSelected(), strokeColor: '#3b82f6', strokeWeight: 4 });
       mapPolyline.setMap(map);
       drawMarkers();
       showMapCaption(routeContext, lastDirectKm, 'Air distance (great circle)');
-      if (!preview) setStatus('Stop order ready. Showing great-circle air routes and distances.', 'ok');
+      if (planarSelected()) {
+        UI.set($('distanceLabel'), 'Planar TSP (EUC_2D)'); UI.set($('distKm'), formatValue(lastPlanarCost,true));
+        UI.set($('mapRouteMetric'), 'Planar TSP (EUC_2D)'); UI.set($('mapRouteDistance'), formatValue(lastPlanarCost,true));
+      }
+      if (!preview) setStatus(planarSelected() ? 'Showing the TSP route on Maps; cost uses original EUC_2D units.' : 'Stop order ready. Showing great-circle air routes and distances.', 'ok');
       return;
     }
     if (!preview) setStatus('Stop order ready. Loading road route...', 'warn');
@@ -823,6 +837,7 @@
             if (trip.tspPreset) { window.TripTsp.load(trip.tspPreset, {focus:true}); return; }
             ++presetRequest; cancelWork(); clearComparison();
             $('input').value = normalizeTripEditorText(trip.data, {ensureStart:true});
+            $('chkPlanar').checked = false;
             if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING', false); }
             else if ((trip.mode || cat.mode) === 'WALKING' || trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING', false); }
             else { $('chkDirect').checked = false; setTravelMode('DRIVING', false); }
@@ -1020,7 +1035,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep progress counts planned search starts, not exhaustive orders; ETA is an estimate. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep progress counts planned search starts, not exhaustive orders; ETA is an estimate. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
@@ -1030,7 +1045,7 @@ Bad example:
       const res = await fetch(PROXY_URL, { 
         method: 'POST', 
         headers: {'Content-Type':'application/json'}, 
-        body: JSON.stringify({ prompt: fullPrompt, guiVersion: 'road-matrix-brute16-lab', language: window.MDLxDCCLocale.current(), query: txt }),
+        body: JSON.stringify({ prompt: fullPrompt, guiVersion: 'road-matrix-brute20-lab', language: window.MDLxDCCLocale.current(), query: txt }),
         signal: controller.signal
       });
 
@@ -1054,20 +1069,21 @@ Bad example:
   }
 
   // --- 11. OPTIMIZER ---
-  // Manual exhaustive mode. Counts use BigInt; an enabled run never exceeds 15!.
+  // Manual exhaustive mode. Counts use BigInt; an enabled run never exceeds 19!.
   const BF = globalThis.TripBruteForce;
   let measuredBruteRate = null;
   let comparisonKey = null;
   let comparisonInput = null;
   let provenExactKm = null;
   const comparisons = new Map();
+  let referenceVersion = 0;
   let airWorker = null;
   let airCache = null;
   let comparisonJob = null;
   // Only the current page owns this checkpoint; no persisted road data or background run.
   let pausedBrute = null;
   function problemSignature() {
-    return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked]);
+    return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked, planarSelected()]);
   }
   function resumeAvailable() {
     if (pausedBrute && pausedBrute.signature !== problemSignature()) pausedBrute = null;
@@ -1076,7 +1092,7 @@ Bad example:
   const AIR_NAME = 'Our Optimize (Deep · Air)';
 
   function createWorker() {
-    const w = new Worker('worker.js?v=20260913-live1');
+    const w = new Worker('worker.js?v=20260913-tsp1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
       activeJob = null; finishWork();
@@ -1122,10 +1138,10 @@ Bad example:
       ? `extrapolated at ${Math.round(rate).toLocaleString('en-US')} orders/s measured with ${measuredBruteRate.n} stops`
       : 'illustration at 1,000,000 orders/s; actual speed depends on this device';
     UI.set($('bruteInfo'), !total
-      ? (n > 1000 ? 'Brute Force unavailable above 16 stops.' : 'Brute Force: enter 2–16 stops including START.')
+      ? (n > 1000 ? 'Brute Force unavailable above 20 stops.' : 'Brute Force: enter 2–20 stops including START.')
       : `${n} stops · (${n}−1)! = ${formatOrderCount(total)} possible orders. ` +
         `Estimated full search: ${estimateBruteDuration(total, rate)} (${rateNote}). ` +
-        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 16 stops.' : 'START stays fixed; each direction is counted separately.'));
+        (invalid ? 'Correct invalid coordinates first.' : n > BF.MAX_STOPS ? 'Brute Force unavailable above 20 stops.' : 'START stays fixed; each direction is counted separately.'));
     return {n, allowed};
   }
 
@@ -1145,8 +1161,9 @@ Bad example:
     const state = msg.algorithm === 'brute'
       ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found')
       : 'Best found · optimum not proven';
-    if (msg.algorithm === 'brute' && msg.exact) provenExactKm = msg.totalKm;
-    comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:msg.totalKm, state});
+    if (msg.algorithm === 'brute' && msg.exact) provenExactKm = routeValue(msg);
+    const assessment = job.planar ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
+    comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:routeValue(msg), planar:job.planar, assessment, state});
     comparisonJob = job;
     renderComparison();
   }
@@ -1161,29 +1178,33 @@ Bad example:
       else if (method === 'Our Optimize (Deep)') row.className = 'deep-comparison';
       let description = result.state;
       if (method !== 'Brute Force' && method !== AIR_NAME && provenExactKm !== null) {
-        description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatKm(result.km-provenExactKm)} above exact optimum`;
+        description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatValue(result.km-provenExactKm,result.planar)} above exact optimum`;
       }
-      for (const value of [method, result.time, formatKm(result.km), description]) {
+      if (result.assessment) {
+        const a=result.assessment;
+        description=a.reached ? 'Known optimum reached · gap 0%' : `Above known optimum: ${formatValue(a.gap,true)} (${a.gapPercent.toFixed(2)}%)`;
+      }
+      for (const value of [method, result.time, formatValue(result.km,result.planar), description]) {
         const cell = document.createElement('td'); UI.set(cell, value); row.appendChild(cell);
       }
       body.appendChild(row);
     }
     $('comparisonPanel').hidden = false;
-    UI.set($('comparisonNote'), `${job.direct ? 'Great-circle air distances' : 'Road distance table'} · ${job.roundTrip ? 'Round trip' : 'Open trip'} · START`);
-    UI.set($('comparisonDetails'), 'Same stops and START. Deep Air searches its own great-circle table; it is not a road saving. Fast and Deep report the best route found. Only completed Brute Force proves the optimum of its table. Times exclude address lookup, table preparation and map drawing.');
+    UI.set($('comparisonNote'), `${metricName(job)} · ${job.roundTrip ? 'Round trip' : 'Open trip'} · START`);
+    UI.set($('comparisonDetails'), 'Same stops and START. Each row states its distance units. Fast and Deep report the best route found. Completed Brute Force proves the table optimum. A matching known TSP optimum applies only to the complete original EUC_2D round trip. Times exclude data preparation and map drawing.');
   }
 
   function ensureAirComparison(points, startIdx, job) {
     // Large direct datasets already use air distances; do not start a second,
     // expensive Deep job silently after the user's explicit Fast calculation.
-    if (job.direct && points.length > 100) return;
+    if (job.planar || (job.direct && points.length > 100)) return;
     const key = JSON.stringify([points.map(p => [p.lat,p.lon]),startIdx,job.roundTrip]);
     if (airCache?.key === key) {
       comparisons.set(AIR_NAME, airCache.result); renderComparison(); return;
     }
     if (airWorker) return;
     const expectedComparison = comparisonKey;
-    const w = new Worker('worker.js?v=20260913-live1'); airWorker = w;
+    const w = new Worker('worker.js?v=20260913-tsp1'); airWorker = w;
     w.onmessage = ({data:m}) => {
       if (m.type !== 'result' && m.type !== 'error') return;
       w.terminate(); if (airWorker === w) airWorker = null;
@@ -1199,41 +1220,45 @@ Bad example:
 
   function displayBruteProgress(msg, job) {
     $('bruteProgress').hidden = false;
-    const rate = msg.elapsedMs > 0 ? msg.checked / (msg.elapsedMs/1000) : 0;
+    const rate = msg.elapsedMs > 0 ? Number(msg.checked) / (msg.elapsedMs/1000) : 0;
     if (msg.elapsedMs >= 200 && rate > 0) {
       measuredBruteRate = {rate, n:job.n};
       refreshBruteInfo();
     }
     const state = msg.exact ? 'Complete' : msg.cancelled ? 'Cancelled' : 'Running';
-    const remaining = msg.exact ? '0 s' : rate > 0 ? BF.duration((msg.total-msg.checked)/rate) : 'measuring…';
+    const remaining = msg.exact ? '0 s' : rate > 0 ? BF.duration(Number(msg.total-msg.checked)/rate) : 'measuring…';
     UI.set($('bruteProgressText'), `${state} · ${BF.percent(msg.checked,msg.total)} done · ${msg.checked.toLocaleString('en-US')} / ${msg.total.toLocaleString('en-US')} orders checked`);
     UI.set($('bruteMini'), `${BF.percent(msg.checked,msg.total)} · ${state} · ${remaining} remaining`);
-    $('bruteProgressBar').value = msg.checked / msg.total;
+    $('bruteProgressBar').value = Number(msg.checked) / Number(msg.total);
     UI.set($('bruteTiming'), `Compute time: ${BF.duration(msg.elapsedMs/1000)} · 1 compute thread · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`);
-    UI.set($('bruteBest'), `Best ${job.direct ? 'direct' : 'road-table'} distance: ${formatKm(msg.totalKm)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`);
+    UI.set($('bruteBest'), `Best ${job.planar ? 'TSP' : job.direct ? 'direct' : 'road-table'} distance: ${formatValue(routeValue(msg),job.planar)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`);
     displayComparison(msg, job);
   }
 
   function showSavings(msg) {
-    const saving = Math.max(0, msg.baseKm - msg.totalKm);
-    const percent = msg.baseKm > 0 ? 100 * saving / msg.baseKm : 0;
+    const planar = msg.metric === 'tsp-euc2d';
+    const base=baseValue(msg), value=routeValue(msg);
+    const saving = Math.max(0, base - value);
+    const percent = base > 0 ? 100 * saving / base : 0;
     UI.set($('savingLabel'), 'Saving vs entered order:');
-    UI.set($('savedKm'), `${formatKm(saving)} (${percent.toFixed(2)}%)`);
-    UI.set($('savingDetails'), `Entered order: ${formatKm(msg.baseKm)} · Optimized order: ${formatKm(msg.totalKm)} · ${msg.metric === 'road' ? 'Road distance table' : 'Great-circle air distances'} · START`);
-    $('savingBox').dataset.uiTitle = msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Reduction versus entered order with START first, measured using the same great-circle distances.';
+    UI.set($('savedKm'), `${formatValue(saving,planar)} (${percent.toFixed(2)}%)`);
+    UI.set($('savingDetails'), `Entered order: ${formatValue(base,planar)} · Optimized order: ${formatValue(value,planar)} · ${planar ? 'Planar TSP (EUC_2D)' : msg.metric === 'road' ? 'Road distance table' : 'Great-circle air distances'} · START`);
+    $('savingBox').dataset.uiTitle = planar ? 'Reduction versus the entered order, using original rounded EUC_2D costs.' : msg.metric === 'road' ? 'Reduction versus entered order with START first, measured using the same directed road distance table.' : 'Reduction versus entered order with START first, measured using the same great-circle distances.';
     UI.render();
   }
 
   function showSolvedRoute(msg, job, preview = false) {
     lastSolvedPoints = msg.pointsSorted;
     lastDirectKm = msg.directKm;
+    lastPlanarCost = job.planar ? msg.totalCost : null;
     showSavings(msg);
     renderRouteList(msg.pointsSorted);
     renderLinks(buildMapsLegLinks(msg.pointsSorted, job.roundTrip, job.mode));
     const brute = job.profile === 'brute';
+    const assessment = job.planar ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
     const routeContext = {
       method: brute ? 'Brute Force' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)',
-      state: brute ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found') : 'Best found · optimum not proven'
+      state: assessment?.reached ? 'Known optimum reached · gap 0%' : brute ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found') : 'Best found · optimum not proven'
     };
     return updateMapVisualization(msg.pointsSorted, {preview, routeContext});
   }
@@ -1244,9 +1269,9 @@ Bad example:
   }
 
   function refreshBruteMap(msg, job) {
-    if (!(msg.checked || msg.completed) || !msg.pointsSorted || job.mapPending || document.hidden || msg.totalKm >= job.mapBestKm) return;
+    if (!(msg.checked || msg.completed) || !msg.pointsSorted || job.mapPending || document.hidden || routeValue(msg) >= job.mapBestKm) return;
     if (performance.now() - job.lastMapRefresh < mapRefreshInterval()) return;
-    job.lastMapRefresh = performance.now(); job.mapBestKm = msg.totalKm; job.mapPending = true;
+    job.lastMapRefresh = performance.now(); job.mapBestKm = routeValue(msg); job.mapPending = true;
     showSolvedRoute(msg, job, true).catch(error => console.warn('[8Z Trip] Route preview:', error)).finally(() => { job.mapPending = false; });
   }
 
@@ -1261,8 +1286,8 @@ Bad example:
     UI.set($('searchStarts'), `${completed.toLocaleString('en-US')} / ${starts.toLocaleString('en-US')}`);
     UI.set($('searchElapsed'), BF.duration(elapsed));
     UI.set($('searchEta'), finished ? (msg.cancelled ? '—' : '0 s') : completed > 0 ? BF.duration(elapsed * (starts-completed) / completed) : 'measuring…');
-    UI.set($('searchMetric'), job.direct ? 'Great-circle air distances' : 'Road distance table');
-    UI.set($('searchBest'), Number.isFinite(msg.totalKm) ? formatKm(msg.totalKm) : '—');
+    UI.set($('searchMetric'), metricName(job));
+    UI.set($('searchBest'), formatValue(routeValue(msg),job.planar));
     $('searchCancel').disabled = finished;
   }
 
@@ -1361,7 +1386,7 @@ Bad example:
     if (optimizationPending) return;
     const requestedBrute = profile === 'brute' || (profile !== 'prepare' && $('chkBrute').checked);
     const eligibility = refreshBruteInfo();
-    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–16 valid stops including START.', 'warn'); return; }
+    if (requestedBrute && !eligibility.allowed) { setStatus('Brute Force supports 2–20 valid stops including START.', 'warn'); return; }
     if (requestedBrute) profile = 'brute';
     if (forceMatrix) pausedBrute = null;
     const resume = requestedBrute && resumeAvailable() ? pausedBrute : null;
@@ -1381,7 +1406,7 @@ Bad example:
       setStatus('Resuming from the first unchecked order. Paused time is excluded.', 'ok');
       refreshBruteInfo();
       worker.postMessage({type:'solve',jobId,profile:'brute',points:activeJob.points,startIdx:activeJob.startIdx,
-        roundTrip:activeJob.roundTrip,distanceMatrix:activeJob.distanceMatrix,resumeState:resume.state});
+        roundTrip:activeJob.roundTrip,distanceMatrix:activeJob.distanceMatrix,metric:activeJob.planar ? 'tsp-euc2d' : undefined,resumeState:resume.state});
       return;
     }
     lastDirectKm = null;
@@ -1403,9 +1428,9 @@ Bad example:
       setStatus('Trip Editor text repaired to Trip Library format.', 'warn');
     }
     const raw = $('input').value;
-    const mode = currentTravelMode, direct = $('chkDirect').checked, roundTrip = $('chkRoundTrip').checked;
+    const mode = currentTravelMode, direct = $('chkDirect').checked, roundTrip = $('chkRoundTrip').checked, planar = planarSelected();
     const current = () => jobId === jobVersion && $('input').value === raw && currentTravelMode === mode &&
-      $('chkDirect').checked === direct && $('chkRoundTrip').checked === roundTrip &&
+      $('chkDirect').checked === direct && $('chkRoundTrip').checked === roundTrip && planarSelected() === planar &&
       (profile === 'prepare' || $('chkBrute').checked === requestedBrute);
     let { pts, startIdx } = parseStops(raw);
     if (pts.length < 2) { setStatus('Enter at least 2 stops, one per line.', 'bad'); return; }
@@ -1416,7 +1441,14 @@ Bad example:
     if (!current()) return;
     lastResolvedStops = {key:stopKey, points:pts.map(p => ({...p}))};
     // Never silently drop an unresolved stop or move START to another city.
-    const valid = pts;
+    let valid = pts, tspData = null;
+    if (planar) {
+      try {
+        tspData = await window.TripTspLibrary.prepare(/^# TSP source: ([a-z]+\d+)$/m.exec(raw)?.[1], pts);
+        valid = tspData.points;
+      } catch(error) { if(current()) setStatus(error.message,'bad'); return; }
+      if (!current()) return;
+    }
     let roadData = null;
     if (!direct) {
       UI.set($('matrixStatus'), 'Preparing road distances…');
@@ -1436,7 +1468,7 @@ Bad example:
         return;
       }
     } else {
-      UI.set($('matrixStatus'), 'Direct Line: optimization uses great-circle air distances.');
+      UI.set($('matrixStatus'), planar ? 'Planar TSP: optimization uses original EUC_2D costs, not kilometres.' : 'Direct Line: optimization uses great-circle air distances.');
       $('roadTablePanel').style.display = 'none';
     }
     if (profile === 'prepare') {
@@ -1444,16 +1476,16 @@ Bad example:
       return;
     }
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
-    const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,roadData?.distanceMatrix]);
+    const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,planar,roadData?.distanceMatrix]);
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
-    activeJob = {jobId, current, mode, direct, roundTrip, profile, n:valid.length, points:valid, startIdx,
+    activeJob = {jobId, current, mode, direct, roundTrip, planar, reference:tspData?.reference, profile, n:valid.length, points:valid, startIdx,
       distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
     if (profile !== 'brute') displaySearchProgress({},activeJob);
     refreshBruteInfo();
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
-      roundTrip, distanceMatrix:roadData?.distanceMatrix });
+      roundTrip, metric:planar ? 'tsp-euc2d' : undefined, distanceMatrix:roadData?.distanceMatrix });
     posted = true;
     } finally { if (!posted && jobId === jobVersion) finishWork(); }
   }
@@ -1492,6 +1524,9 @@ Bad example:
   function refreshTspNotice() {
     const code = /^# TSP source: ([a-z]+\d+)$/m.exec($('input').value)?.[1];
     const entry = window.TripTspLibrary?.get(code);
+    $('chkPlanar').disabled = !entry;
+    if (!entry) $('chkPlanar').checked = false;
+    updateTspReference(entry);
     if (!$('tspNotice')) return;
     $('tspNotice').hidden = !entry;
     if (entry) {
@@ -1501,14 +1536,30 @@ Bad example:
     }
   }
 
-  function loadEditorPreset(text, {direct=false, focus=false, status, matrixStatus} = {}) {
+  async function updateTspReference(entry) {
+    const version=++referenceVersion, el=$('tspReference');
+    if (!el) return;
+    el.hidden=!entry;
+    if (!entry) return;
+    UI.set($('tspReferenceText'),'Checking the original TSP reference…');
+    try {
+      const data=await window.TripTspLibrary.original(entry.id);
+      if (version!==referenceVersion) return;
+      let complete=false;
+      try { complete=TripTspMetric.authenticate(parseStops($('input').value).pts,data.original,entry).length===entry.count; } catch {}
+      const applicable=complete && planarSelected() && $('chkRoundTrip').checked;
+      UI.set($('tspReferenceText'), `Known optimum: ${formatValue(data.reference.optimum,true)} · ${entry.id} · ` + (applicable ? 'Complete original round trip · reference applies.' : 'Reference only: requires the complete original dataset, Planar TSP and Round Trip.'));
+    } catch(error) { if(version===referenceVersion) UI.set($('tspReferenceText'),error.message); }
+  }
+
+  function loadEditorPreset(text, {direct=false, planar=false, focus=false, status, matrixStatus} = {}) {
     ++presetRequest;
     cancelWork(); clearComparison();
     $('input').value = text;
     currentTravelMode = 'DRIVING';
-    $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false;
+    $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false; $('chkPlanar').checked = planar;
     updateModeButtons();
-    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null;
+    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null; lastPlanarCost = null;
     mapMarkers.forEach(marker => marker.setMap(null)); mapMarkers = [];
     routePolylines.forEach(line => line.setMap(null)); routePolylines = [];
     if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
@@ -1562,8 +1613,8 @@ Bad example:
     try {
       const {entry, text} = await window.TripTspLibrary.read(id);
       if (!current()) return false;
-      return loadEditorPreset(text, {direct:true, focus,
-        matrixStatus:'TSP loaded with Direct Line. Choose Fast or Deep to calculate locally.',
+      return loadEditorPreset(text, {direct:true, planar:true, focus,
+        matrixStatus:'TSP loaded with Planar distances. Choose Fast or Deep to calculate locally.',
         status:'Loaded: ' + window.TripTspLibrary.label(entry)});
     } catch (error) {
       if (current()) setStatus(error.message, 'bad');
@@ -1594,8 +1645,9 @@ Bad example:
     });
     $('btnDriving').onclick = () => setTravelMode('DRIVING');
     $('btnWalking').onclick = () => setTravelMode('WALKING');
-    $('chkDirect').onchange = () => { cancelWork(); clearComparison(); refreshBruteInfo(); if (lastSolvedPoints && !$('chkBrute').checked) run('standard'); };
-    $('chkRoundTrip').onchange = () => { cancelWork(); clearComparison(); refreshBruteInfo(); if (lastSolvedPoints && !$('chkBrute').checked) run('standard'); };
+    $('chkPlanar').onchange = () => { if ($('chkPlanar').checked) $('chkDirect').checked = true; cancelWork(); clearComparison(); saveState(); if (lastSolvedPoints && !$('chkBrute').checked) run('standard'); };
+    $('chkDirect').onchange = () => { if (!$('chkDirect').checked) $('chkPlanar').checked = false; cancelWork(); clearComparison(); saveState(); refreshBruteInfo(); if (lastSolvedPoints && !$('chkBrute').checked) run('standard'); };
+    $('chkRoundTrip').onchange = () => { cancelWork(); clearComparison(); saveState(); refreshBruteInfo(); if (lastSolvedPoints && !$('chkBrute').checked) run('standard'); };
     $('btnEnableMap').onclick = () => ensureMapsLoaded().catch(e => console.error('[8Z Trip] Map load button failed:', e));
     $('btnSave').onclick = () => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('input').value],{type:'text/plain'})); a.download='trip.txt'; a.click(); };
     $('btnLoad').onclick = () => $('fileLoader').click();

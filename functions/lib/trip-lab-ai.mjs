@@ -1,7 +1,7 @@
 // LAB-only grounded chat. Existing CURRENT/PREVIOUS request contracts stay unchanged.
-export const LAB_VERSION = 'road-matrix-brute16-lab';
+export const LAB_VERSION = 'road-matrix-brute20-lab';
 export function labOptions(body) {
-  const lab = body.guiVersion === LAB_VERSION;
+  const lab = [LAB_VERSION,'road-matrix-brute16-lab'].includes(body.guiVersion);
   const language = body.language === 'sl' ? 'sl' : 'en';
   const query = typeof body.query === 'string' ? body.query.slice(0,12000) : '';
   const guiHelp = /\b(brute force|direct line|button|GUI|trip editor|calculation comparison|how.*(?:optimizer|library))\b/i.test(query);

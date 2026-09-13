@@ -20,7 +20,7 @@ test('great-circle distance handles global geometry, symmetry, poles and antipod
 });
 test('Deep Air uses the same great-circle metric as Direct Line and retains START',()=>{
   const result=[];const c=vm.createContext({performance,postMessage:m=>result.push(m),self:{postMessage:m=>result.push(m)}});
-  for(const file of ['air-distance.js','brute-force.js','worker.js'])vm.runInContext(read(file),c);
+  for(const file of ['tsp-metric.js','air-distance.js','brute-force.js','worker.js'])vm.runInContext(read(file),c);
   const points=[{lat:0,lon:179},{lat:0,lon:-179},{lat:1,lon:180},{lat:-1,lon:180}];
   c.self.onmessage({data:{type:'solve',points,startIdx:2,roundTrip:true,profile:'deep',jobId:1}});
   const r=result.at(-1);assert.equal(r.type,'result');assert.equal(r.metric,'direct');assert.equal(r.totalKm,r.directKm);assert.equal(r.pointsSorted[0].lat,1);
@@ -32,14 +32,14 @@ const req=(language,query)=>new Request('https://www.mdlxdcc.org/.netlify/functi
 const standard={candidates:[{finishReason:'STOP',content:{parts:[{text:'Test response'}]}}]};
 function setup(t, fn) {t.mock.method(Netlify.env,'get',k=>k==='GEMINI_API_KEY'?'test-key':undefined);t.mock.method(globalThis,'fetch',fn);}
 test('LAB SL enables Search with Slovenian instructions and no native Maps',async t=>{
-  setup(t,async(url,opts)=>{const b=JSON.parse(opts.body);assert.match(String(url),/:generateContent$/);assert.deepEqual(b.tools,[{google_search:{}}]);assert.match(b.systemInstruction.parts[0].text,/Respond in Slovenian/);assert.match(b.systemInstruction.parts[0].text,/2–16/);return Response.json(standard);});
+  setup(t,async(url,opts)=>{const b=JSON.parse(opts.body);assert.match(String(url),/:generateContent$/);assert.deepEqual(b.tools,[{google_search:{}}]);assert.match(b.systemInstruction.parts[0].text,/Respond in Slovenian/);assert.match(b.systemInstruction.parts[0].text,/2–20/);return Response.json(standard);});
   const r=await(await handler(req('sl','Priporoči kosilo v Ljubljani'))).json();assert.equal(r.ok,true);assert.equal(r.mapsEnabled,false);
 });
 test('English place queries use stateless Maps + Search and expose only final text and safe citations',async t=>{
   setup(t,async(url,opts)=>{const b=JSON.parse(opts.body);assert.match(String(url),/\/interactions$/);assert.equal(b.store,false);assert.deepEqual(b.tools,[{type:'google_maps'},{type:'google_search'}]);return Response.json({status:'completed',steps:[{type:'thought',content:[{type:'text',text:'private'}]},{type:'model_output',content:[{type:'text',text:'Try this restaurant.',annotations:[{type:'place_citation',name:'Cafe',url:'https://maps.google.com/?cid=123'},{type:'url_citation',title:'City',uri:'https://example.org'},{type:'place_citation',name:'bad',url:'javascript:evil()'}]}]}]});});
   const r=await(await handler(req('en','Where can I eat in Ljubljana?'))).json();assert.equal(r.ok,true);assert.equal(r.mapsEnabled,true);assert.equal(r.sources.length,2);assert.equal(r.sources[0].provider,'Google Maps');assert.doesNotMatch(r.text,/private/);
 });
-test('GUI help never needs Maps; CURRENT version is not opted into LAB',()=>{
+test('GUI help never needs Maps; legacy 15-stop version retains its original contract',()=>{
   assert.equal(labOptions({guiVersion:LAB_VERSION,language:'en',query:'How do I use the Trip Editor?'}).maps,false);
   assert.equal(labOptions({guiVersion:'road-matrix-brute15',language:'en',query:'Where can I eat?'}).lab,false);
 });

@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
 const core = readFileSync(new URL('../public/Trip/new/brute-force.js', import.meta.url), 'utf8');
-const workerSource = readFileSync(new URL('../public/Trip/new/air-distance.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/worker.js', import.meta.url), 'utf8');
+const workerSource = readFileSync(new URL('../public/Trip/new/tsp-metric.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/air-distance.js', import.meta.url), 'utf8') + '\n' + readFileSync(new URL('../public/Trip/new/worker.js', import.meta.url), 'utf8');
 const c = vm.createContext({}); vm.runInContext(core,c);
 const BF = c.TripBruteForce;
 const costs = (n,seed=1) => Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?0:1+(i*37+j*19+seed*13+i*j*seed)%137));
@@ -57,7 +57,7 @@ test('16-stop search is bounded per step, preserves best, and rejects oversized 
   assert.equal(second.checked,10000);assert.ok(second.bestLength<=first.bestLength);
   assert.ok(second.bestLength<=second.baseLength);
   assert.equal(second.total,1307674368000);
-  assert.throws(()=>BF.create(costs(17),0,true),/2–16/);
+  assert.throws(()=>BF.create(costs(21),0,true),/2–20/);
   assert.throws(()=>BF.create([[0,1],[2,NaN]],0,true),/complete distance table/);
 });
 
@@ -104,10 +104,10 @@ test('16-stop Cancel returns the latest best and stops; a subsequent heuristic j
   assert.equal(messages.at(-1).exact,false);
 });
 
-test('worker rejects 17 stops even if the UI guard is bypassed',()=>{
+test('worker rejects 21 stops even if the UI guard is bypassed',()=>{
   const messages=[],w=worker(m=>messages.push(m));
-  w.onmessage({data:{type:'solve',profile:'brute',jobId:94,points:points(17),distanceMatrix:costs(17),startIdx:0,roundTrip:true}});
-  assert.equal(messages.length,1);assert.equal(messages[0].type,'error');assert.match(messages[0].error,/2–16/);
+  w.onmessage({data:{type:'solve',profile:'brute',jobId:94,points:points(21),distanceMatrix:costs(21),startIdx:0,roundTrip:true}});
+  assert.equal(messages.length,1);assert.equal(messages[0].type,'error');assert.match(messages[0].error,/2–20/);
 });
 
 test('serialized checkpoints resume every cursor exactly once and retain the oracle optimum',()=>{
@@ -154,4 +154,43 @@ test('worker resumes active time and count while excluding a long pause',()=>{
   assert.ok(resumed.elapsedMs>=paused.elapsedMs&&resumed.elapsedMs<paused.elapsedMs+10);
   c.self.onmessage({data:{type:'cancel',jobId:96}});
   assert.equal(timers.size,0);
+});
+
+
+test('20-stop exact counters and JSON checkpoints cross 2^53 and finish the final orders without rounding',()=>{
+  const n=20,D=costs(n),total=BF.orders(n);
+  assert.equal(total,121645100408832000n);
+  const base=JSON.parse(JSON.stringify(BF.create(D,0,true).checkpoint()));
+  function cursor(rank) {
+    const pool=Array.from({length:n-1},(_,i)=>i+1),route=[0];
+    while(pool.length) {
+      let f=1n;for(let k=2;k<pool.length;k++)f*=BigInt(k);
+      const index=Number(rank/f);rank%=f;route.push(pool.splice(index,1)[0]);
+    }
+    return route;
+  }
+  for (const checked of [9007199254740991n,9007199254740993n,total-5n]) {
+    let engine=BF.create(D,0,true,{...base,checked:checked.toString(),cursor:cursor(checked)});
+    engine.step(3);assert.equal(engine.snapshot().checked,checked+3n);
+    engine=BF.create(D,0,true,JSON.parse(JSON.stringify(engine.checkpoint())));
+    assert.equal(engine.snapshot().checked,checked+3n);
+    if (checked===total-5n) {
+      assert.equal(engine.step(3),true);assert.equal(engine.snapshot().checked,total);
+      assert.equal(BF.percent(total-1n,total),'99.99%');assert.equal(BF.percent(total,total),'100.00%');
+      assert.equal(BF.create(D,0,true,JSON.parse(JSON.stringify(engine.checkpoint()))).snapshot().done,true);
+    }
+  }
+});
+
+test('20-stop worker cancellation/resume preserves BigInt counters and elapsed time',async()=>{
+  const messages=[];let w,paused;
+  paused=await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('20-stop cancel timeout')),2000);
+    w=worker(m=>{messages.push(m);if(m.type==='brute-progress'&&m.checked>0n)setTimeout(()=>w.onmessage({data:{type:'cancel',jobId:120}}),0);if(m.type==='result'){clearTimeout(timer);resolve(m);}});
+    w.onmessage({data:{type:'solve',profile:'brute',jobId:120,points:points(20),distanceMatrix:costs(20),startIdx:0,roundTrip:true}});
+  });
+  assert.equal(typeof paused.checked,'bigint');assert.equal(typeof paused.total,'bigint');assert.equal(paused.resumeState.engine.version,2);
+  w.onmessage({data:{type:'solve',profile:'brute',jobId:121,points:points(20),distanceMatrix:costs(20),startIdx:0,roundTrip:true,resumeState:JSON.parse(JSON.stringify(paused.resumeState))}});
+  assert.equal(messages.at(-1).checked,paused.checked);
+  w.onmessage({data:{type:'cancel',jobId:121}});assert.equal(messages.at(-1).cancelled,true);
 });

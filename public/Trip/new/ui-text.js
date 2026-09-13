@@ -2,10 +2,12 @@
 (() => {
   'use strict';
   const words={
+"Planar distances (TSP)":"Ravninske razdalje (TSP)","Planar TSP (EUC_2D)":"Ravninske razdalje TSP (EUC_2D)","Known optima source":"Vir znanih optimumov","Checking the original TSP reference…":"Preverjanje izvirne reference TSP …","Complete original round trip · reference applies.":"Celotna izvirna povratna pot · referenca velja.","Reference only: requires the complete original dataset, Planar TSP and Round Trip.":"Samo referenca: potrebni so celoten izvirni seznam, Ravninske razdalje TSP in Povratna pot.","Known optimum reached · gap 0%":"Dosežen znani optimum · odstopanje 0 %","TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.":"Točke TSP so prilagojene zemljevidu. Zračna linija uporablja kilometre po velikem krogu. Za izvirno metriko vključi Ravninske razdalje TSP.","TSP loads Planar distances by default: original rounded EUC_2D units, not kilometres. Turn off Planar distances to use great-circle kilometres. Duplicate locations keep their node IDs.":"TSP privzeto vključi ravninske razdalje: izvirne zaokrožene enote EUC_2D, ne kilometrov. Za kilometre po velikem krogu odznači ravninske razdalje. Ponovljene lokacije ohranijo oznake točk.","Showing the TSP route on Maps; cost uses original EUC_2D units.":"Prikazana je pot TSP na zemljevidu; izračun uporablja izvirne enote EUC_2D.","Planar TSP: optimization uses original EUC_2D costs, not kilometres.":"Ravninski TSP: optimizacija uporablja izvirne vrednosti EUC_2D, ne kilometrov.","TSP loaded with Planar distances. Choose Fast or Deep to calculate locally.":"TSP je naložen z ravninskimi razdaljami. Za lokalni izračun izberi hitro ali poglobljeno optimizacijo.","TSP stops were changed. Reload the collection or turn off Planar distances (TSP).":"Točke TSP so spremenjene. Znova naloži zbirko ali odznači Ravninske razdalje (TSP).","Select a TSP collection to use Planar distances (TSP).":"Za ravninske razdalje TSP izberi zbirko TSP.","Original TSP checksum does not match.":"Kontrolna vsota izvirnika TSP se ne ujema.","TSP reference download failed. Please try again.":"Prenos reference TSP ni uspel. Poskusi znova.","TSP reference does not match this dataset.":"Referenca TSP ne ustreza tej zbirki.","Invalid original TSP dataset.":"Neveljavna izvirna zbirka TSP.","Original TSP coordinates are required.":"Potrebne so izvirne koordinate TSP.","Reduction versus the entered order, using original rounded EUC_2D costs.":"Prihranek glede na vneseni vrstni red z izvirnimi zaokroženimi vrednostmi EUC_2D.","Same stops and START. Each row states its distance units. Fast and Deep report the best route found. Completed Brute Force proves the table optimum. A matching known TSP optimum applies only to the complete original EUC_2D round trip. Times exclude data preparation and map drawing.":"Isti postanki in START. Vsaka vrstica navaja svoje enote. Hitra in poglobljena metoda poročata o najboljši najdeni poti. Končan Brute Force dokaže optimum matrike. Ujemanje z znanim optimumom TSP velja le za celotno izvirno povratno pot EUC_2D. Časi ne vključujejo priprave podatkov in risanja zemljevida.",
+
     "Map refresh interval":"Čas osveževanja mape",
     "Optimization progress":"Napredek optimizacije",
     "Completed search starts":"Končani zagoni iskanja",
-    "Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.":"Napredek šteje zagone iskanja, ne vseh možnih vrstnih redov. Preostali čas je ocena; optimum ni dokazan.",
+    "Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.":"Napredek šteje zagone iskanja, ne vseh možnih vrstnih redov. Preostali čas je ocena do konca načrtovanega iskanja.",
 
     "🇫🇷 Eiffel Tower & Around (Paris)":"🇫🇷 Eifflov stolp in okolica (Pariz)",
     "🇮🇹 Colosseum & Ancient Rome":"🇮🇹 Kolosej in antični Rim",
@@ -224,9 +226,9 @@
     'Reduction versus entered order with START first, measured using the same directed road distance table.':'Prihranek glede na vneseni vrstni red s START na začetku, izmerjen po isti usmerjeni cestni matriki.',
     'Reduction versus entered order with START first, measured using the same great-circle distances.':'Prihranek glede na vneseni vrstni red s START na začetku, izmerjen po istih razdaljah po velikem krogu.',
     'Ready · progress appears here':'Pripravljeno · tukaj bo napredek',
-    'Brute Force unavailable above 16 stops.':'Brute Force je nad 16 postanki izklopljen.',
-    'Brute Force: enter 2–16 stops including START.':'Brute Force: vnesi 2–16 postankov, vključno s START.',
-    'Brute Force supports 2–16 valid stops including START.':'Brute Force podpira 2–16 veljavnih postankov, vključno s START.',
+    'Brute Force unavailable above 20 stops.':'Brute Force je nad 20 postanki izklopljen.',
+    'Brute Force: enter 2–20 stops including START.':'Brute Force: vnesi 2–20 postankov, vključno s START.',
+    'Brute Force supports 2–20 valid stops including START.':'Brute Force podpira 2–20 veljavnih postankov, vključno s START.',
     'Correct invalid coordinates first.':'Najprej popravi neveljavne koordinate.',
     'START stays fixed; each direction is counted separately.':'START ostane fiksen; vsaka smer se šteje posebej.',
     'Road optimization supports 2–100 stops. Use Direct Line for larger trips.':'Cestna optimizacija podpira 2–100 postankov. Za večje poti izberi Zračno linijo.',
@@ -234,6 +236,8 @@
     'Google Route Matrix is unavailable in the loaded Maps library.':'Matrika cestnih razdalj ni na voljo v naloženem zemljevidu.'
   };
   const fragments={
+    'Known optimum:':'Znani optimum:', 'Above known optimum:':'Nad znanim optimumom:', 'Best TSP distance:':'Najboljša vrednost TSP:', 'Planar TSP (EUC_2D)':'Ravninske razdalje TSP (EUC_2D)',
+
     'Our Optimize (Deep)':'Naša optimizacija (poglobljeno)', 'Our Optimize (Fast)':'Naša optimizacija (hitro)',
     'Compute time:':'Čas računanja:', '1 compute thread':'1 računska nit',
     'Entered order:':'Prvotni vrstni red:', 'Optimized order:':'Optimizirani vrstni red:',
@@ -245,7 +249,7 @@
     'Complete':'Končano','Cancelled':'Prekinjeno','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
     ' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
     'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1.000.000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
-    'Brute Force unavailable above 16 stops.':'Brute Force je nad 16 postanki izklopljen.',
+    'Brute Force unavailable above 20 stops.':'Brute Force je nad 20 postanki izklopljen.',
     'extrapolated at ':'ocenjeno pri ',' measured with ':' izmerjeno pri ',' stops':' postankov',
     'Kept only for the current open trip.':'Shranjeno le za trenutno odprto pot.',
     ' directed road distances. Optimization runs locally.':' usmerjenih cestnih razdalj. Optimizacija poteka lokalno.',

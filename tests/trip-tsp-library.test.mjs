@@ -30,7 +30,7 @@ test('complete supplied collection: every original node and signed Maps conversi
     assert.equal(new Set(data.points.map(p=>p.slice(1).join(','))).size,e.distinctCoordinates);
     const text=context.window.TripTspLibrary.toEditor(e,data);
     assert.equal(text.split('\n').filter(r=>!r.startsWith('#')).length,count);
-    assert.match(text,/not the original EUC_2D/);
+    assert.match(text,/original EUC_2D units, not kilometres/);
     assert.equal(e.mapsMetric,'great-circle-km');
   }
 });

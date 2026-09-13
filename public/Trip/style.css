@@ -497,3 +497,14 @@ html[lang="sl"] #chatPanel.open .chat-state-text::after { content:'(zapri)' }
 .tsp-notice p { margin:6px 0; }
 .tsp-notice a { color:#93c5fd; }
 .tree-item:focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
+
+/* Demo choices follow the introduction on desktop; mobile keeps its fixed actions. */
+.info-scroll { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; }
+.info-scroll .info-body { overflow:visible; }
+.info-demo-loads { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 24px 32px; }
+@media(max-width:1023px) {
+  .info-scroll { display:contents; }
+  .info-scroll .info-body { flex:1 1 auto; overflow:auto; }
+  .info-demo-loads { flex:0 0 auto; margin:0; padding:14px 16px 0; border-top:1px solid var(--border); background:#0f1621; }
+  .info-scroll:has(.info-demo-loads:not([hidden])) + .info-actions { border-top:0; padding-top:10px; }
+}

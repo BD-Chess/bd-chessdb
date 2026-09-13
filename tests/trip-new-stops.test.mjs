@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import {webcrypto} from 'node:crypto';
 
 const source = readFileSync(new URL('../public/Trip/new/app.js', import.meta.url), 'utf8');
 const matrixSource = readFileSync(new URL('../public/Trip/new/road-matrix.js', import.meta.url), 'utf8');
@@ -22,7 +23,7 @@ function harness(geocode, fetcher) {
   let nextTimer = 0, clock = 0;
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
-    console, google, window: { google }, fetch:fetcher, Map, Set, performance: {now: () => clock},
+    console, crypto:webcrypto, TextDecoder, google, window: { google }, fetch:fetcher, Map, Set, performance: {now: () => clock},
     document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}, querySelector:()=>({dataset:{},textContent:''})}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
     localStorage: { setItem() {} },
     Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
@@ -30,6 +31,7 @@ function harness(geocode, fetcher) {
     clearTimeout(id) { timerJobs.delete(id); }
   });
   vm.runInContext(readFileSync(new URL('../public/Trip/new/ui-text.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/new/tsp-metric.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('../public/Trip/new/tsp-catalog.js', import.meta.url), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('../public/Trip/new/tsp-library.js', import.meta.url), 'utf8'), context);
   vm.runInContext(matrixSource, context);
@@ -305,18 +307,18 @@ test('missing or failed road measurements never show a stale road total or an ai
   assert.equal(h.element('distanceLabel').textContent, 'Road distance (map):');
 });
 
-test('manual Brute Force is available through 16; 17 disables it without starting another algorithm', async()=>{
+test('manual Brute Force is available through 20; 21 disables it without starting another algorithm', async()=>{
   const h=harness(()=>{throw new Error('No geocoding expected');});
   const input=n=>Array.from({length:n},(_,i)=>`Place ${i} | ${46+i/100}, ${14+i/100}${i===2?' START':''}`).join('\n');
-  h.element('input').value=input(16);
+  h.element('input').value=input(20);
   h.api.refreshBruteInfo();
   assert.equal(h.element('chkBrute').disabled,false);assert.equal(h.element('chkBrute').checked,false);
-  assert.match(h.element('bruteInfo').textContent,/1,307,674,368,000/);
+  assert.match(h.element('bruteInfo').textContent,/121,645,100,408,832,000/);
   h.element('chkBrute').checked=true;
   await h.api.run('standard');assert.equal(h.jobs[0].profile,'brute');assert.equal(h.jobs[0].startIdx,2);
   assert.equal(h.element('btnDeep').hidden,true);
   h.api.cancelWork();assert.equal(h.workers[0].terminated,true);
-  h.element('input').value=input(17);h.element('chkBrute').checked=true;
+  h.element('input').value=input(21);h.element('chkBrute').checked=true;
   await h.api.run('standard');
   assert.equal(h.jobs.length,1);assert.equal(h.element('chkBrute').disabled,true);
   assert.equal(h.element('chkBrute').checked,false);assert.equal(h.element('btnDeep').hidden,false);
@@ -490,7 +492,7 @@ test('loading either demo stops the old job, clears results and sets its route w
   assert.deepEqual(Array.from(demos.items,i=>i.demoPreset),['capitals14','capitals15','eu15','eu14']);
 });
 
-const tspResponse = async url => ({ok:true,json:async()=>JSON.parse(readFileSync(new URL('../public/Trip/new/'+url.split('?')[0],import.meta.url),'utf8'))});
+const tspResponse = async url => { const bytes=readFileSync(new URL('../public/Trip/new/'+url.split('?')[0],import.meta.url)); return {ok:true,json:async()=>JSON.parse(bytes.toString()),arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)}; };
 test('all TSP nodes including coincident coordinates survive the real editor and reach the direct solver',async()=>{
   const h=harness(()=>{throw new Error('TSP must not geocode');},tspResponse);
   for(const id of ['lu980','nu3496']) {
@@ -501,11 +503,11 @@ test('all TSP nodes including coincident coordinates survive the real editor and
     assert.equal(h.element('tspOriginal').download,id+'.tsp');
     const before=h.jobs.length;
     await h.api.run('standard');
-    assert.equal(h.jobs.length,before+1);
+    assert.equal(h.jobs.length,before+1,h.element("status").textContent);
     const job=h.jobs.at(-1);
     assert.equal(job.points.length,id==='lu980'?980:3496);
     assert.equal(new Set(Array.from(job.points,p=>p.name)).size,job.points.length);
-    assert.equal(job.startIdx,0);assert.equal(job.distanceMatrix,undefined);
+    assert.equal(job.startIdx,0);assert.equal(job.distanceMatrix,undefined);assert.equal(job.metric,'tsp-euc2d');assert.ok(job.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
     if(id==='lu980') assert.deepEqual([job.points[0].lat,job.points[0].lon],[job.points[1].lat,job.points[1].lon]);
     else assert.ok(job.points.every(p=>p.lat>10&&p.lat<16&&p.lon< -83&&p.lon> -88));
     h.api.cancelWork();
@@ -543,7 +545,7 @@ test('large TSP counts stay compact and fully translated; node IDs are not Maps 
   const info=h.element('bruteInfo').textContent;
   assert.ok(info.length<500, info.length);
   assert.match(info,/× 10[⁰¹²³⁴⁵⁶⁷⁸⁹]+/);
-  assert.match(info,/Brute Force je nad 16 postanki izklopljen/);
+  assert.match(info,/Brute Force je nad 20 postanki izklopljen/);
   assert.doesNotMatch(info,/unavailable|years|Infinity/);
   assert.equal(h.element('chkBrute').disabled,true);
   const {pts}=h.api.parseStops(h.element('input').value);
@@ -606,4 +608,34 @@ test('Deep map preview respects 1 second selection; completion bypasses the inte
   h.tick(1);h.api.refreshBruteMap(msg,job);await new Promise(r=>setImmediate(r));
   assert.equal(calls,1);assert.equal(h.cameraChanges(),0);
   await h.api.showSolvedRoute({...msg,totalKm:99},job);assert.equal(calls,2);
+});
+
+
+test('planar TSP rejects changed coordinates, resets to ordinary mode for a demo, and displays EUC_2D without km',async()=>{
+  const h=harness(()=>{throw new Error('No geocoding');},tspResponse);
+  await h.window.TripTsp.load('wi29');
+  assert.equal(h.element('chkPlanar').checked,true);
+  await h.api.run('standard');
+  const job=h.jobs.at(-1);assert.ok(job,h.element("status").textContent);
+  const order=job.points;
+  h.api.handleWorkerMessage({data:{type:'result',jobId:job.jobId,algorithm:'standard',metric:'tsp-euc2d',pointsSorted:order,totalCost:60000,baseCost:70000,totalKm:null,directKm:2000,elapsedMs:2}});
+  assert.match(h.element('searchBest').textContent,/60,000 EUC_2D/);
+  assert.match(h.element('savingDetails').textContent,/70,000 EUC_2D/);
+  assert.doesNotMatch(h.element('searchBest').textContent,/km|mi/);
+  h.element('input').value=h.element('input').value.replace('20.8333333','20.8334');
+  const count=h.jobs.length;await h.api.run('standard');
+  assert.equal(h.jobs.length,count);assert.match(h.element('status').textContent,/TSP stops were changed/);
+  h.window.TripDemo.load('capitals14');assert.equal(h.element('chkPlanar').checked,false);
+});
+
+test('20-stop UI keeps large checked counts exact and posts the checkpoint on Resume',async()=>{
+  const h=harness(success);
+  h.element('input').value=Array.from({length:20},(_,i)=>`Node ${i} | ${40+i/100},14${i===0?' START':''}`).join('\n');
+  h.element('chkBrute').checked=true;
+  await h.api.run('brute');const job=h.jobs.at(-1), checked=9007199254740993n,total=121645100408832000n;
+  h.api.handleWorkerMessage({data:{type:'result',jobId:job.jobId,algorithm:'brute',metric:'direct',pointsSorted:job.points,totalKm:5,baseKm:9,directKm:5,checked,total,elapsedMs:1000,cancelled:true,exact:false,resumeState:{engine:{version:2,checked:checked.toString()},elapsedMs:1000}}});
+  assert.match(h.element('bruteProgressText').textContent,/9,007,199,254,740,993/);
+  assert.equal(h.element('btnStandard').textContent,'Resume Brute Force');
+  await h.api.run('brute');assert.equal(h.jobs.at(-1).resumeState.engine.checked,checked.toString());
+  h.api.cancelWork();
 });

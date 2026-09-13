@@ -23,20 +23,29 @@ location. Labels identify dataset and node number; they do not invent town names
 These nine files encode absolute decimal degrees multiplied by 1000. The adapter
 divides by 1000 and restores each known hemisphere as listed above. This mapping
 is specific to these files: arbitrary EUC_2D coordinates cannot be assumed to be GPS.
-The raw precision is retained in the JSON; the existing Trip Editor normalizer
-rounds coordinates to six decimal places (roughly a tenth of a metre).
+The raw precision is retained in the JSON and TSP editor rows.
 
-Maps optimization uses great-circle kilometres (or the UI's miles conversion).
-It does **not** use the original rounded Euclidean EUC_2D edge weights. Published
-benchmark optima must not be compared numerically with this adaptation. Original
-benchmarks remain available from the `.tsp` links. Road access has not been verified.
+Selecting a collection enables Direct Line, Planar distances (TSP) and Round Trip.
+It does not start a calculation. Map coordinates remain geographic display data.
+Planar optimization loads the original .tsp bytes, verifies their SHA-256, and uses
+`floor(hypot(x1-x2,y1-y2)+0.5)` for each edge. Values are original EUC_2D units,
+never kilometres or miles. Disabling Planar restores great-circle kilometres.
+Ordinary trips retain the existing road/great-circle behaviour.
 
-Selecting an entry downloads only that dataset, enables Direct Line and Round Trip,
-disables Brute Force, and does not start an optimization or road-matrix request.
-The first original node is START. Above 200 points, small markers replace numbered
-pins; all nodes remain present. Fast is the suggested first run. Deep is optional;
-no extra Deep Air worker starts automatically for direct datasets above 100 nodes.
-The road matrix guard remains 100 stops; exhaustive Brute Force remains 16 stops.
+`../tsp-optima.json` records all nine proven optima, count, original SHA-256 and
+sources (University of Waterloo National TSP summary, checked 2026-09-13).
+A returned complete Hamiltonian cycle is independently checked against the
+original nodes and its score recomputed before "Known optimum reached" is shown.
+Open/partial/edited inputs and other metrics cannot inherit that proof. Other
+complete EUC_2D results show the absolute and percentage gap to the reference.
+Known optimum matching does not mean every heuristic run finds an optimum.
 
-Rebuild from original files: `python scripts/build-trip-tsp.py` at repository root.
-Validate: `node --test tests/trip-tsp-library.test.mjs tests/trip-new-stops.test.mjs`.
+Duplicate locations keep distinct node IDs. Original files remain unchanged.
+The first node is START. Road access is unverified. Above 200 points, small markers
+replace numbered pins. No extra Deep Air search runs in Planar mode. Road matrices
+support up to 100 stops; manually selected Brute Force supports up to 20 including
+START, with exact BigInt counts and JSON-compatible in-tab pause/resume state.
+
+Rebuild mapped JSON from originals: `python scripts/build-trip-tsp.py`.
+The separate optimum metadata must keep matching the original checksums.
+Validate with the focused `tests/trip-*.test.mjs` suite.

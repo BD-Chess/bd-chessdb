@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>8Z Trip Optimizer · LAB</title>
-  <script src="locale.js?v=20260913-live1"></script>
-  <link rel="stylesheet" href="style.css?v=20260913-live1">
+  <script src="locale.js?v=20260913-tsp1"></script>
+  <link rel="stylesheet" href="style.css?v=20260913-tsp1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="ui-text.js?v=20260913-live1"></script>
+  <script src="ui-text.js?v=20260913-tsp1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
@@ -52,7 +52,7 @@
       <textarea id="input" placeholder="Enter stops (e.g. Paris, London)..." spellcheck="false"></textarea>
       <aside id="tspNotice" class="tsp-notice" hidden>
         <strong id="tspDatasetName"></strong>
-        <p data-ui-text="TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.">TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.</p>
+        <p data-ui-text="TSP loads Planar distances by default: original rounded EUC_2D units, not kilometres. Turn off Planar distances to use great-circle kilometres. Duplicate locations keep their node IDs.">TSP loads Planar distances by default: original rounded EUC_2D units, not kilometres. Turn off Planar distances to use great-circle kilometres. Duplicate locations keep their node IDs.</p>
         <p data-ui-text="These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.">These are benchmark points, not checked road stops. For large sets, start with Fast; Deep can take much longer. No calculation starts on load.</p>
         <a id="tspOriginal" download data-ui-text="Original .tsp">Original .tsp</a> · <a href="https://www.math.uwaterloo.ca/tsp/world/countries.html" target="_blank" rel="noopener" data-ui-text="Dataset source">Dataset source</a>
       </aside>
@@ -78,6 +78,7 @@
         <label><input type="checkbox" id="chkRoundTrip" checked> <span data-ui-text="Round Trip">Round Trip</span></label>
         <label><input type="checkbox" id="chkDirect"> <span data-ui-text="Direct Line">Direct Line</span></label>
         <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> <span data-ui-text="Brute Force">Brute Force</span></label>
+        <label id="planarOption"><input type="checkbox" id="chkPlanar" disabled> <span data-ui-text="Planar distances (TSP)">Planar distances (TSP)</span></label>
         <input type="checkbox" id="chkGoogleStyle" hidden>
         <button id="btnCollapse" hidden></button>
         <button id="btnExpand" hidden></button>
@@ -115,6 +116,7 @@
         <div id="map"></div>
       </div>
 
+      <aside id="tspReference" class="tsp-notice" hidden><p id="tspReferenceText"></p><a href="https://www.math.uwaterloo.ca/tsp/world/summary.html" target="_blank" rel="noopener" data-ui-text="Known optima source">Known optima source</a></aside>
       <section id="comparisonPanel" class="comparison-panel" hidden>
         <h3>Calculation comparison</h3>
         <p id="comparisonNote"></p><details class="comparison-explanation"><summary data-ui-text="How to read this table">How to read this table</summary><p id="comparisonDetails"></p></details>
@@ -132,7 +134,7 @@
           <div><dt data-ui-text="Estimated remaining">Estimated remaining</dt><dd id="searchEta">—</dd></div>
           <div><dt id="searchMetric">Distance</dt><dd id="searchBest">—</dd></div>
         </dl>
-        <p data-ui-text="Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.">Progress counts search starts, not all possible orders. ETA is an estimate; the optimum is not proven.</p>
+        <p data-ui-text="Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.">Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.</p>
       </section>
       <div id="bruteProgress" class="brute-progress" hidden>
         <div id="bruteProgressText" role="status" aria-live="polite"></div>
@@ -187,25 +189,30 @@
   </div>
   <dialog id="helpOverlay" aria-labelledby="infoTitle">
     <div class="modal-content">
+      <div class="info-scroll">
       <div id="helpBody" class="info-body" tabindex="-1"></div>
-      <div class="info-actions">
+      <div id="infoDemoLoads" class="info-demo-loads" hidden>
         <button id="infoLoadDemo14" class="btn-primary" hidden>Load 14 EU capitals</button>
         <button id="infoLoadDemo" class="btn-primary" hidden>Load 15 EU capitals</button>
         <p id="infoDemoInstructions" class="demo-load-instructions" hidden></p>
+        </div>
+      </div>
+      <div class="info-actions">
         <a id="infoMore" class="btn-primary" href="help.html" target="_blank" rel="noopener">More →</a>
         <button id="btnCloseHelp" class="btn-neutral">Close</button>
       </div>
     </div>
   </dialog>
 
-  <script src="tsp-catalog.js?v=20260913-live1"></script>
-  <script src="tsp-library.js?v=20260913-live1"></script>
-  <script src="trips.js?v=20260913-live1"></script>
-  <script src="help.js?v=20260913-live1"></script>
+  <script src="tsp-catalog.js?v=20260913-tsp1"></script>
+  <script src="tsp-metric.js?v=20260913-tsp1"></script>
+  <script src="tsp-library.js?v=20260913-tsp1"></script>
+  <script src="trips.js?v=20260913-tsp1"></script>
+  <script src="help.js?v=20260913-tsp1"></script>
   <script src="road-matrix.js?v=20260913-road-matrix8"></script>
-  <script src="brute-force.js?v=20260913-live1"></script>
-  <script src="app.js?v=20260913-live1"></script>
-  <script src="lab.js?v=20260913-live1"></script>
+  <script src="brute-force.js?v=20260913-tsp1"></script>
+  <script src="app.js?v=20260913-tsp1"></script>
+  <script src="lab.js?v=20260913-tsp1"></script>
 
 </body>
 </html>
