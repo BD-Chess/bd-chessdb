@@ -61,6 +61,7 @@ test('Deep budget button continues the same worker with a new ID and no new look
   assert.equal(next.type,'continue-deep');assert.equal(next.previousJobId,first.jobId);assert.notEqual(next.jobId,first.jobId);
   assert.equal(h.jobs.filter(m=>m.type==='solve'&&m.profile==='deep').length,1);assert.equal(h.workers[0].terminated,undefined);
   assert.equal(h.element('continueDeep').hidden,true);assert.equal(h.element('btnDeep').disabled,true);
+  assert.match(h.element('searchProgressText').textContent,/Računanje/);
   assert.equal(h.element('searchBudget').textContent,'2,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
   h.api.continueDeep();assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
   h.api.handleWorkerMessage({data:{...result,jobId:first.jobId}});assert.equal(h.element('continueDeep').hidden,true,'old final response ignored');

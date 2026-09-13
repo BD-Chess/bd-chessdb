@@ -1109,8 +1109,9 @@ Bad example:
     activeJob={...saved.job,jobId,current,cancelling:false,cancelTimer:null,
       latest:saved.result,lastMapRefresh:performance.now(),mapPending:false};
     setPlanningMode(false);
-    displaySearchProgress({...saved.result,reason:null,cancelled:false,phase:'searching',
-      budgetMs:saved.result.budgetMs+saved.result.additionalBudgetMs},activeJob);
+    const progress={...saved.result,type:'progress',reason:null,cancelled:false,phase:'searching',
+      budgetMs:saved.result.budgetMs+saved.result.additionalBudgetMs};
+    displaySearchProgress(progress,activeJob);displayComparison(progress,activeJob);
     refreshBruteInfo();$('btnCancelWork').disabled=false;
     setStatus('Continuing Deep with additional time. Best route and search state kept; paused time is excluded.','ok');
     worker.postMessage({type:'continue-deep',previousJobId:saved.job.jobId,jobId});
@@ -1195,6 +1196,7 @@ Bad example:
     const name = msg.algorithm === 'brute' ? 'Brute Force' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)';
     const state = msg.algorithm === 'brute'
       ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found')
+      : job.profile==='deep' && msg.type==='progress' ? 'Running · best found'
       : job.profile==='deep' && msg.reason ? deepFinishLabel(msg) : 'Best found · optimum not proven';
     if (msg.algorithm === 'brute' && msg.exact) provenExactKm = routeValue(msg);
     const assessment = job.planar ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
