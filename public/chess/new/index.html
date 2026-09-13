@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChessBest.org — 8Z DCC Analysis</title>
+  <title>ChessBest.org — DCC Analysis Lab</title>
 
   <!-- ── SEO / Social / AI-readability ── -->
   <meta name="description" content="Explore chess with ChessDB evaluations, DCC lookahead, measured line coverage, a searchable game library, and live play. An experimental analysis layer from BD × AI Lab.">
   <meta name="author" content="Bojan Dobrečevič">
   <meta name="keywords" content="chess analysis, ChessDB, MDL×DCC, MDLxDCC, DCC lookahead, 8Z, chess engine, BD AI Lab, AIM3, Bojan Dobrečevič, MDL DCC">
   <meta name="robots" content="noindex, nofollow, noarchive">
-  <link rel="canonical" href="https://chessbest.org/new/">
+  <link rel="canonical" href="https://www.mdlxdcc.org/chess/new/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ChessBest.org">
   <meta property="og:title" content="ChessBest.org — 8Z DCC Eval Layer (MDL×DCC)">
   <meta property="og:description" content="ChessDB analysis with transparent DCC line sensors, a shared move policy, and a responsive board.">
-  <meta property="og:url" content="https://chessbest.org/new/">
+  <meta property="og:url" content="https://www.mdlxdcc.org/chess/new/">
   <meta property="og:image" content="https://www.mdlxdcc.org/og-image.png">
   <meta property="og:locale" content="en_US">
 
@@ -28,7 +28,10 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260912h">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260913-lab1">
+  <link rel="stylesheet" href="css/8zc-study.css?v=20260913-lab1">
+  <link rel="stylesheet" href="css/8zc-deep.css?v=20260913-lab1">
+  <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
 
   <!-- ── Structured data: tool + parent research program for search engines & AI ── -->
@@ -56,7 +59,7 @@
       {
         "@type": "WebApplication",
         "name": "8Z DCC Eval Layer",
-        "url": "https://chessbest.org/new/",
+        "url": "https://www.mdlxdcc.org/chess/new/",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Web browser",
         "browserRequirements": "Requires JavaScript",
@@ -88,15 +91,15 @@
     <div class="brand-line">
       <div class="brand-mark" aria-hidden="true">8z</div>
       <div>
-        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB</div>
+        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB <span class="development-label">DEVELOPMENT</span></div>
         <h1 id="pageTitle">
           <a href="./" id="bestMoveLink" role="button" title="Play the best available move" aria-label="ChessBest.org — play the best available move">ChessBest.org</a>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
         </h1>
         <nav class="bd-version-selector" aria-label="Application versions">
-          <a href="/chess/" aria-current="page">CURRENT</a>
+          <a href="/chess/">CURRENT</a>
           <span class="bd-version-dot" aria-hidden="true">·</span> <a href="/chess/old/">PREVIOUS</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="/chess/new/">LAB</a>
+          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="/chess/new/" aria-current="page">LAB</a>
         </nav>
       </div>
     </div>
@@ -228,6 +231,33 @@
       <!-- Settings panel -->
       <div id="settingsPanel" class="panel workspace-drawer" aria-label="Workspace settings">
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
+        <details class="lab-settings-group" open>
+          <summary>Workspace &amp; simulation</summary>
+          <label for="settingLabFocusMode">Bottom tools during Sim:</label>
+          <select id="settingLabFocusMode">
+            <option value="auto" selected>Focus automatically</option>
+            <option value="expanded">Always expanded</option>
+          </select>
+          <p class="setting-note">Focus gives the saved toolbar space to the analysis. Pause and Tools remain available. Tools opens without moving the board.</p>
+          <label for="settingLabWorkspaceWidth">Workspace width on a wide screen:</label>
+          <select id="settingLabWorkspaceWidth">
+            <option value="0" selected>Default</option>
+            <option value="380">380 px</option>
+            <option value="440">440 px</option>
+            <option value="500">500 px</option>
+            <option value="560">560 px</option>
+          </select>
+          <label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+          <details class="lab-subsettings">
+            <summary>Pause Sim at an interesting position</summary>
+            <label><input type="checkbox" id="settingLabPauseDisagreement"> CDB and DCC choose different moves</label>
+            <label><input type="checkbox" id="settingLabPauseSwing"> Evaluation changes sharply</label>
+            <label for="settingLabPauseSwingCp">Evaluation change (centipawns):</label>
+            <input type="number" id="settingLabPauseSwingCp" value="50" min="10" max="2000" step="10" inputmode="numeric">
+            <label><input type="checkbox" id="settingLabPauseMissing"> Required analysis data is missing</label>
+            <p class="setting-note">All event pauses are optional. Sim has no time limit; slow responses are allowed. After a pause, Sim opens the engine choices again.</p>
+          </details>
+        </details>
         <div class="dcc-settings-group timing-settings">
           <div class="dcc-settings-title">Time &amp; two players</div>
           <label><input type="checkbox" id="settingShowTimers" checked> Show player timers</label>
@@ -328,9 +358,9 @@
             <option value="10">10</option>
           </select>
 
-          <label for="settingDccTopCandidates">Top candidates (DCC pool):</label>
+          <label for="settingDccTopCandidates">Extra inspection pool:</label>
           <select id="settingDccTopCandidates">
-            <option value="3" selected>3 (fast)</option>
+            <option value="3" selected>3 (default)</option>
             <option value="5">5</option>
             <option value="7">7</option>
             <option value="10">10 (thorough)</option>
@@ -346,7 +376,27 @@
             <option value="200">200cp (very wide)</option>
           </select>
 
-          <p class="setting-note">The candidate window controls which moves are inspected. The chosen move stays within 10cp of the raw engine best, except a verified immediate mate.</p>
+          <p class="setting-note">Balanced DCC includes the complete near-tied group within 10 cp, even when it exceeds this pool. The window adds other candidates for inspection. The decision guard uses the observed CDB scores; it is not a guarantee of objective move quality.</p>
+          <details class="lab-subsettings">
+            <summary>DCC policy, defences &amp; sensors</summary>
+            <label for="settingDccPolicy">Decision policy:</label>
+            <select id="settingDccPolicy"><option value="balanced" selected>Balanced · include all near ties</option><option value="legacy">Legacy · capped candidate pool</option></select>
+            <label><input type="checkbox" id="settingDccDefenseCheck" checked> Check alternative defensive replies</label>
+            <label for="settingDccDefenseCandidates">Defensive replies per candidate:</label>
+            <select id="settingDccDefenseCandidates"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>
+            <label for="settingDccDefensePlies">Defence continuation (half-moves):</label>
+            <select id="settingDccDefensePlies"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+            <label for="settingDccStructureMode">Structure signal:</label>
+            <select id="settingDccStructureMode"><option value="descriptive" selected>Describe only</option><option value="rank">Allow in experimental ranking</option></select>
+            <fieldset class="lab-sensor-options"><legend>Active ranking sensors</legend>
+              <label><input type="checkbox" id="settingDccSensorStability" checked> Stability</label>
+              <label><input type="checkbox" id="settingDccSensorFloor" checked> Evaluation floor</label>
+              <label><input type="checkbox" id="settingDccSensorVolatility" checked> Volatility</label>
+              <label><input type="checkbox" id="settingDccSensorTrend" checked> Trend</label>
+              <label><input type="checkbox" id="settingDccSensorStructure"> Structure</label>
+            </fieldset>
+            <p class="setting-note">Use Benchmark to compare sensor combinations. These half-move settings describe sampled continuations, not Stockfish search depth. Structure affects ranking only when both experimental ranking and its sensor are enabled.</p>
+          </details>
           <label>
             <input type="checkbox" id="settingDccOnly">
             DCC only (hide raw ChessDB scores)
@@ -391,6 +441,12 @@
       </div>
 
       <div class="workspace-bottom">
+      <div id="workspaceFocusBar" class="workspace-focus-bar" hidden>
+        <span class="focus-caption">SIM FOCUS</span>
+        <button type="button" class="btn" id="btnLabPause" title="Pause simulation at this position">Pause</button>
+        <button type="button" class="btn" id="btnLabTools" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">Tools</button>
+      </div>
+      <div id="workspaceToolContent" class="workspace-tool-content">
       <!-- ---------- ROW 1  Format | Input | Copy ---------- -->
       <div class="btn-group">
         <button class="btn btn-fen" id="btnFormat" title="Choose FEN position or PGN game format">FEN|pgn</button>
@@ -412,7 +468,12 @@
         <button class="btn btn-nav" id="btnFlip" title="Flip the board orientation">Flip board</button>
         <button class="btn btn-nav" id="btnSettings" aria-controls="settingsPanel" aria-expanded="false">Settings</button>
       </div>
-
+      <div class="lab-research-tools" aria-label="Analysis lab tools">
+        <button type="button" class="btn" id="btnStudy" aria-haspopup="dialog" title="Saved variations and pinned A/B comparison">Study</button>
+        <button type="button" class="btn" id="btnDeepAnalysis" aria-haspopup="dialog" title="Analyse this position with a local engine">Deep analysis</button>
+        <button type="button" class="btn" id="btnEvidence" aria-haspopup="dialog" title="Inspect and export the analysis evidence">Evidence</button>
+        <button type="button" class="btn" id="btnBenchmark" aria-haspopup="dialog" title="Compare DCC policies and sensors">Benchmark</button>
+      </div>
 
       <nav id="info-links" aria-label="Chess resources">
         <a href="8zc-pgn.html">PGN picks</a>
@@ -424,32 +485,36 @@
         <span>·</span> <strong>2026.09</strong> <span>·</span> Experimental analysis
       </div>
       </div>
+      </div>
     </section>
   </main>
 
+  <dialog id="labToolsDialog" class="lab-tools-dialog" aria-labelledby="labToolsTitle">
+    <div class="dialog-topline"><h2 id="labToolsTitle">Workspace tools</h2><button type="button" class="dialog-close" id="btnCloseLabTools" aria-label="Close workspace tools">×</button></div>
+    <p class="setting-note">Simulation continues until you pause or choose an action that changes the position.</p>
+    <div id="labToolsBody"></div>
+  </dialog>
+
   <dialog id="whatsNewDialog" class="whats-new-dialog" aria-labelledby="whatsNewTitle" lang="sl">
     <div class="dialog-topline"><span class="section-kicker">CHESSBEST · SEPTEMBER 2026</span><button type="button" class="dialog-close" id="btnCloseWhatsNew" aria-label="Zapri novosti">×</button></div>
-    <h2 id="whatsNewTitle">Ista šahovnica.<br><span>Jasnejši vpogled.</span></h2>
-    <p class="dialog-intro">Kaj je novega v tej različici?</p>
+    <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
+    <p class="dialog-intro">Razvojni Analysis Lab. Trenutna potrjena stran je še vedno na <a href="/chess/">/chess/</a>.</p>
     <ul class="upgrade-list">
-      <li><strong>Mirnejša delovna plošča.</strong> Uri sta na vrhu, puščice tik nad potezami in DCC, spodnji gumbi pa ostajajo pri miru. Sim ne pomika seznama sam; po starejših potezah se pomakni ročno.</li>
-      <li><strong>Ocena ob šahovnici.</strong> Navpični trak levo prikazuje surovo oceno CDB: plus za bele, minus za črne. Obrni šahovnico ali skrij ocene za preizkus. Neznana ocena je označena z »—«.</li>
-      <li><strong>Sim kot preizkus DCC.</strong> Za bele in črne izberi <b>CDB (top 1)</b> ali <b>CDB + DCC</b>. Prikaz primerja obe izbiri, število izenačenih potez in razliko ocen.</li>
-      <li><strong>Pavza na izbranem položaju.</strong> Klikni potezo v zgodovini; Sim se takoj ustavi. Ponovno odpri <b>Sim</b>, zamenjaj motorja in nadaljuj. V <b>Position experiments</b> se vrni na začetek posamezne veje ali izvozi PGN/CSV.</li>
-      <li><strong>New game deluje tudi med igro.</strong> Prekine lokalni Sim/SimB/SimW ali Replay, ponastavi šahovnico in zavrže zapoznele poteze. <b>Bojan D.</b> zdaj odpre e-pošto.</li>
-      <li><strong>Časi po izbiri.</strong> V <b>Settings</b> neodvisno vključi <b>Show player timers</b> in <b>Show move timestamps</b>; uri sta privzeto vidni na vrhu, časovni zapisi potez pa skriti. Sim meri čas brez časovne omejitve. PGN/CSV vsebuje tudi časovne zapise.</li>
-      <li><strong>Dva igralca.</strong> <b>Settings → Two players · same board</b>: oba igrata na isti napravi, CDB + DCC pa spremlja poteze. Izberi čas in dodatek ali igraj brez omejitve.</li>
-      <li><strong>Gemini ob šahovnici.</strong> Klikni <b>✦</b> ob YOUR WORKSPACE in vprašaj o položaju ali DCC. Vsak odgovor se nanaša na položaj ob tvojem vprašanju.</li>
-      <li><strong>Top 5 je spet celoten.</strong> Obnovljeno združevanje ocen ChessDB in vrstni red iz stare strani. Odpri <b>New game</b>: ob nastavitvi Top 5 se prikaže pet ocenjenih potez.</li>
-      <li><strong>Več prostora za analizo.</strong> Na računalniku je desna plošča visoka kot levi okvir. Preklopi <b>DCC / Moves</b>: seznam zapolni dodatno višino; na telefonu in tablici ostane postavitev navpična.</li>
-      <li><strong>Pregleden DCC.</strong> Surova ocena in hevristični rang sta ločena. Pri običajnih ocenah izbira ostane največ 10 cp pod najboljšo surovo oceno; preverjeni mat ima prednost.</li>
-      <li><strong>Izmerjeno, ne domnevano.</strong> Analiza loči izmerjeno pokritost od neznanih podatkov ter spremlja dno, nihanje, okrevanje in strukturo poti.</li>
-      <li><strong>Igraj ali opazuj.</strong> Sim za samodejni dvoboj; SimW pomeni motor z belimi, SimB motor s črnimi. Pri zadnjih dveh igraš drugo stran.</li>
-      <li><strong>Udobnejši vmesnik.</strong> Prilagodljiva šahovnica, iskanje po zbirki partij, večji gumbi in berljive povezave.</li>
-      <li><strong>Zanesljivejši odzivi.</strong> Predpomnilnik, preklic in preverjanje položaja preprečujejo uporabo zastarelih odgovorov. Sim počaka na načrtovano analizo brez časovnega reza.</li>
+      <li><strong>Sim Focus.</strong> Zaženi <b>Sim</b>: spodnja orodja se umaknejo, prostor dobijo poteze in DCC. <b>Pause</b> ostane pri roki; <b>Tools</b> odpre ista orodja brez premikanja šahovnice. V Settings izberi <b>Always expanded</b> za prejšnji prikaz.</li>
+      <li><strong>Celotna skupina izenačenih potez.</strong> Balanced DCC vključi vse razpoložljive poteze znotraj 10 cp od vrha. V DCC primerjaj število pregledanih kandidatov z nastavitvijo <b>Extra inspection pool</b>.</li>
+      <li><strong>Preverjanje obramb.</strong> DCC preverja tudi alternativne odgovore nasprotnika. V <b>Settings → DCC policy, defences &amp; sensors</b> primerjaj analizo z vključenim in izključenim pregledom obramb.</li>
+      <li><strong>Deep analysis.</strong> Odpri lokalni motor in preglej več variant iste pozicije. Izberi globino oziroma računski proračun; analiza ostane vezana na položaj, za katerega je bila sprožena.</li>
+      <li><strong>Uravnotežen pregled kandidatov.</strong> Kandidati dobijo osnovni pregled pred nadaljnjim poglabljanjem. Sim počaka tudi na počasen CDB, brez časovnega poraza; <b>Pause</b> prekliče nadaljevanje.</li>
+      <li><strong>Senzorji pod drobnogledom.</strong> V Settings vključi ali izključi posamezna merila. Struktura je privzeto opisna; eksperimentalni vpliv na rang vključi posebej in ga primerjaj v Benchmark.</li>
+      <li><strong>Evidence.</strong> Preglej uporabljene odgovore, nastavitve in izvor ocene ter izvozi zapis analize. Neznana globina ali manjkajoča meritev ostaneta jasno označeni.</li>
+      <li><strong>Study in ohranjene variante.</strong> Nadaljevanja pregleduj z običajnimi šahovskimi zapisi. Shrani razvejitve in komentarje; izvozi ter ponovno uvozi študijski PGN za preverjanje ohranjenih variant.</li>
+      <li><strong>Pripeta primerjava A/B.</strong> Iz istega položaja pripni dve kandidatki in svoje vprašanje. Nadaljuj eno vejo, nato primerjaj obe, ne da bi izgubil prvo.</li>
+      <li><strong>Pavza ob zanimivem dogodku.</strong> V Settings izbirno vključi pavzo ob različni izbiri CDB/DCC, večji spremembi ocene ali manjkajočih podatkih. Klik poteze še vedno ustavi Sim; ponovni <b>Sim</b> odpre izbiro motorjev.</li>
+      <li><strong>Več udobja pri branju.</strong> Izbrano mesto v zgodovini se ohranja tudi ob novih potezah. Preizkusi širši workspace na velikem zaslonu in <b>Compact analysis spacing</b>; na telefonu se orodja prilagodijo širini.</li>
+      <li><strong>Benchmark.</strong> Primerjaj politike in senzorje na istih položajih. Loči primerjavo hevristik od globlje presoje kakovosti potez; shrani podatke, nastavitve in rezultate za ponovitev.</li>
     </ul>
-    <div class="try-it"><strong>Preizkusi v eni minuti</strong><ol><li>Odpri <b>Game library</b>, poišči igralca in naloži partijo.</li><li>Korakaj z ← / → in odpri <b>DCC</b>. Primerjaj surovo oceno, rang in pokritost.</li><li>Izberi <b>SimW</b> ali <b>SimB</b> za igro; <b>Sim</b> za opazovanje dvoboja.</li><li>Spremeni širino okna in preizkusi svetlo temo v <b>Settings</b>.</li></ol></div>
-    <p class="research-note">DCC je eksperimentalna hevristika; prikaz ne dokazuje izboljšanja Elo.</p>
+    <div class="try-it"><strong>Prvi preizkus</strong><ol><li>Odpri <b>New game → Sim</b>: beli CDB, črni CDB+DCC. Preveri dodatni prostor in <b>Tools</b>.</li><li>Klikni potezo v zgodovini. Odpri <b>Study</b> in shrani dve nadaljevanji iste pozicije.</li><li>Odpri <b>Evidence</b> in nato <b>Deep analysis</b>. Primerjaj izvor in globino ocen.</li><li>V Settings vključi pavzo ob različni izbiri, ponovno odpri Sim ter zamenjaj motorja.</li></ol></div>
+    <p class="research-note">DCC ostaja eksperimentalna hevristika. Dodana orodja omogočajo preverjanje; sama po sebi ne dokazujejo izboljšanja Elo.</p>
     <div class="dialog-actions"><a href="8zc-help.html">Odpri Help <span aria-hidden="true">↗</span></a><button type="button" id="btnStartExploring">Nazaj na šahovnico →</button></div>
   </dialog>
 
@@ -577,14 +642,22 @@
   <script>
 </script>
   <!-- DCC-enhanced utils -->
-  <script src="js/8zc-dcc-core.js?v=20260912g"></script>
-  <script src="js/8zc-sim-core.js?v=20260912g"></script>
-  <script src="js/8zc-time-core.js?v=20260912g"></script>
-  <script src="js/8zc-eval-bar.js?v=20260912g"></script>
-  <script src="js/8zc-workspace.js?v=20260912g"></script>
-  <script src="js/8zc-gemini.js?v=20260912g"></script>
-  <script src="js/8zc-utils.js?v=20260912g"></script>
-  <script src="js/8zc-new-ui.js?v=20260912g"></script>
+  <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
+  <script src="js/8zc-sim-core.js?v=20260913-lab1"></script>
+  <script src="js/8zc-time-core.js?v=20260913-lab1"></script>
+  <script src="js/8zc-eval-bar.js?v=20260913-lab1"></script>
+  <script src="js/8zc-workspace.js?v=20260913-lab1"></script>
+  <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
+  <script src="js/8zc-study-core.js?v=20260913-lab1"></script>
+  <script src="js/8zc-study-ui.js?v=20260913-lab1"></script>
+  <script src="js/8zc-deep-engine.js?v=20260913-lab1"></script>
+  <script src="js/8zc-deep-ui.js?v=20260913-lab1"></script>
+  <script src="js/8zc-evidence.js?v=20260913-lab1"></script>
+  <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
+  <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
+  <script src="js/8zc-utils.js?v=20260913-lab1"></script>
+  <script src="js/8zc-new-ui.js?v=20260913-lab1"></script>
+  <script src="js/8zc-lab-layout.js?v=20260913-lab1"></script>
 
 </body>
 </html>
