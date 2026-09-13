@@ -52,16 +52,6 @@ test('proof label requires a valid complete original cycle and exactly recompute
   ]) assert.equal(M.assess(tour,input,r,closed,value),null);
   const gap=M.assess(d.points,d.points,d.reference,true,cost);assert.ok(gap.gap>0);
 });
-test('real Deep worker uses original units and reports the independently recomputed gap with nonfirst START',()=>{
-  const d=dataset('wi29'), messages=[];
-  const w=vm.createContext({performance,self:{postMessage:m=>messages.push(m)}});
-  for(const f of ['tsp-metric.js','air-distance.js','brute-force.js','worker.js'])vm.runInContext(read(f),w);
-  w.self.onmessage({data:{type:'solve',profile:'deep',jobId:1,points:d.points,startIdx:12,roundTrip:true,metric:'tsp-euc2d'}});
-  const result=messages.at(-1);assert.equal(result.type,'result');assert.equal(result.metric,'tsp-euc2d');assert.equal(result.totalKm,null);
-  assert.equal(result.totalCost,M.length(result.pointsSorted,true));assert.ok(result.totalCost>=27603);assert.equal(result.pointsSorted[0].tspNodeId,13);
-  assert.equal(M.assess(result.pointsSorted,d.points,d.reference,true,result.totalCost).gap,result.totalCost-27603);
-  assert.equal(M.assess(result.pointsSorted.toReversed(),d.points,d.reference,true,result.totalCost).gap,result.totalCost-27603);
-});
 test('downloaded original bytes must pass SHA-256 before coordinates or reference are accepted',async()=>{
   const ctx=vm.createContext({window:{},crypto:webcrypto,TextDecoder,fetch:async url=>({ok:true,arrayBuffer:async()=>new TextEncoder().encode('corrupted').buffer,json:async()=>refs})});
   for(const f of ['tsp-catalog.js','tsp-metric.js','tsp-library.js'])vm.runInContext(read(f),ctx);

@@ -39,11 +39,12 @@
       const bytes = await raw.arrayBuffer();
       const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)), v=>v.toString(16).padStart(2,'0')).join('');
       if (hash !== entry.originalSha256) throw new Error('Original TSP checksum does not match.');
-      const original = TripTspMetric.parse(new TextDecoder().decode(bytes),entry);
+      const originalText = new TextDecoder().decode(bytes);
+      const original = TripTspMetric.parse(originalText,entry);
       const reference = (await refs.json()).datasets.find(r=>r.id===id);
       if (!reference || reference.originalSha256!==hash || reference.count!==entry.count || reference.metric!=='EUC_2D' || reference.status!=='proven' || !Number.isSafeInteger(reference.optimum) || reference.optimum<=0)
         throw new Error('TSP reference does not match this dataset.');
-      return {entry, original, reference};
+      return {entry, original, reference, originalText};
     })().catch(error=>{originals.delete(id);throw error;}));
     return originals.get(id);
   }

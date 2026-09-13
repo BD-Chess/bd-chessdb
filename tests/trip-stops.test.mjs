@@ -2,38 +2,48 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import {webcrypto} from 'node:crypto';
+const matrixSource=readFileSync(new URL('../public/Trip/road-matrix.js',import.meta.url),'utf8');
 
 const source = readFileSync(new URL('../public/Trip/app.js', import.meta.url), 'utf8');
 const sample = 'Nova Gorica START\nLjubljana\nMaribor\nNovo Mesto\nKoper\nPtuj';
 
-function harness(geocode) {
+function harness(geocode, fetcher) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      style: {}, classList: { add() {}, remove() {} }, checked: false,
-      value: '', innerHTML: '', textContent: '', appendChild() {}
+      setAttribute() {}, style: {}, dataset: {}, classList: { add() {}, remove() {}, toggle() {} }, checked: false,
+      value: '', innerHTML: '', textContent: '', appendChild() {}, replaceChildren() {}
     });
     return elements.get(id);
   };
   const jobs = [];
+  const workers = [];
   const timerJobs = new Map();
-  let nextTimer = 0;
+  let nextTimer = 0, clock = 0;
   const google = { maps: { Geocoder: class { geocode(req, cb) { return geocode(req, cb); } } } };
   const context = vm.createContext({
-    console, google, window: { google }, Map, Set,
-    document: { getElementById: element, querySelector: () => element('panel'), addEventListener() {} },
+    console, crypto:webcrypto, TextDecoder, google, window: { google }, fetch:fetcher, Map, Set, performance: {now: () => clock},
+    document: { body:{classList:{remove(){},toggle(){}}}, createElement: () => ({style:{}, dataset:{}, appendChild() {}, querySelector:()=>({dataset:{},textContent:''})}), getElementById: element, querySelector: () => element('panel'), querySelectorAll: () => [], addEventListener() {} },
     localStorage: { setItem() {} },
-    Worker: class { postMessage(msg) { jobs.push(msg); } },
+    Worker: class { constructor() {workers.push(this);} postMessage(msg) {jobs.push(msg);} terminate() {this.terminated=true;} },
     setTimeout(fn, ms) { if (ms === 250) { queueMicrotask(fn); return 0; } const id = ++nextTimer; timerJobs.set(id, fn); return id; },
     clearTimeout(id) { timerJobs.delete(id); }
   });
+  vm.runInContext(readFileSync(new URL('../public/Trip/ui-text.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/tsp-metric.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/tsp-catalog.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/tsp-library.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(matrixSource, context);
+  vm.runInContext(readFileSync(new URL('../public/Trip/brute-force.js', import.meta.url), 'utf8'), context);
+  element('chkDirect').checked = true;
   // Test-only access to the real closure: no production debug API or duplicate parser.
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, [
-    'window.test = { parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization,',
-    'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; } };',
+    'window.test = { buildMapsLegLinks, ensureAirComparison, showSolvedRoute, showSavings, resumeAvailable, refreshBruteMap, refreshBruteInfo, requestCancel, handleWorkerMessage, clearComparison, cancelWork, parseStops, normalizeTripEditorText, geocodeMissingPoints, run, setStatus, updateMapVisualization, routeErrorInfo,',
+    'setMap(value) { map = value; }, setMode(value) { currentTravelMode = value; }, setDirect(km) { lastDirectKm = km; }, setMiles(value) { useMiles = value; } };',
     '})();'
   ].join('\n')), context);
-  return { api: context.window.test, elements, element, jobs, google, timerJobs };
+  return { window:context.window, api: context.window.test, elements, element, jobs, google, timerJobs, workers, doc:context.document, tick(ms){clock += ms;} };
 }
 
 const known = {
@@ -85,6 +95,7 @@ test('coordinate input works without geocoding and keeps a nonfirst START', asyn
   await h.api.run('standard');
   assert.equal(h.jobs.length, 1);
   assert.equal(h.jobs[0].startIdx, 1);
+  h.api.cancelWork();
   h.element('input').value = 'Invalid | 91,14\nPtuj | 46,15 START';
   await h.api.run('standard');
   assert.equal(h.jobs.length, 1);
@@ -103,6 +114,7 @@ test('old success timers cannot hide a later lookup error', () => {
 function mapHarness(computeRoutes) {
   const h = harness(success);
   h.api.setMap({ fitBounds() {} });
+  h.element('chkDirect').checked=false;
   const lines = [];
   Object.assign(h.google.maps, {
     Marker: class { addListener() {} setMap() {} },
@@ -136,10 +148,11 @@ test('Routes denial stays visible; Direct Line draws the full closed route witho
   const h = mapHarness(async () => { calls++; throw new Error('Denied with private details'); });
   const pts = Object.entries(known).map(([name, [lat, lon]]) => ({ name, lat, lon }));
   await h.api.updateMapVisualization(pts);
-  assert.match(h.element('status').textContent, /enable Routes API/);
+  assert.match(h.element('status').textContent, /Road route could not be drawn/);
   assert.doesNotMatch(h.element('status').textContent, /private details/);
   h.element('chkDirect').checked = h.element('chkRoundTrip').checked = true;
   await h.api.updateMapVisualization(pts);
   assert.equal(calls, 1);
-  assert.equal(h.lines[0].options.path.length, 7);
+  assert.equal(h.lines.at(-1).options.path.length, 7);
 });
+

@@ -22,7 +22,7 @@ test('Deep Air uses the same great-circle metric as Direct Line and retains STAR
   const result=[];const c=vm.createContext({performance,postMessage:m=>result.push(m),self:{postMessage:m=>result.push(m)}});
   for(const file of ['tsp-metric.js','air-distance.js','brute-force.js','worker.js'])vm.runInContext(read(file),c);
   const points=[{lat:0,lon:179},{lat:0,lon:-179},{lat:1,lon:180},{lat:-1,lon:180}];
-  c.self.onmessage({data:{type:'solve',points,startIdx:2,roundTrip:true,profile:'deep',jobId:1}});
+  c.self.onmessage({data:{type:'solve',points,startIdx:2,roundTrip:true,profile:'air-comparison',jobId:1}});
   const r=result.at(-1);assert.equal(r.type,'result');assert.equal(r.metric,'direct');assert.equal(r.totalKm,r.directKm);assert.equal(r.pointsSorted[0].lat,1);
   let meters=0;for(let i=0;i<4;i++)meters+=A.meters(r.pointsSorted[i],r.pointsSorted[(i+1)%4]);
   assert.ok(Math.abs(meters/1000-r.totalKm)<1e-6);assert.ok(r.totalKm<1000);

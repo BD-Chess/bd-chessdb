@@ -359,7 +359,7 @@ test('LAB adds one independent Deep Air row without comparing it to the road opt
   api.setKey('roadA');api.displayComparison({algorithm:'brute',exact:true,totalKm:100,elapsedMs:1000},job);
   api.displayComparison({algorithm:'deep',totalKm:100,elapsedMs:2},job);
   api.ensureAirComparison([{lat:0,lon:0},{lat:0,lon:1}],0,job);
-  const air=workers.at(-1);assert.equal(air.message.profile,'deep');assert.equal(air.message.distanceMatrix,undefined);
+  const air=workers.at(-1);assert.equal(air.message.profile,'air-comparison');assert.equal(air.message.distanceMatrix,undefined);
   air.onmessage({data:{type:'result',totalKm:80,elapsedMs:5}});
   let rows=get('comparisonRows').children.map(r=>r.children.map(c=>c.textContent));
   assert.equal(rows.length,3);assert.equal(rows[0][0],'Our Optimize (Deep)');assert.equal(rows[0][3],'Matches exact optimum');assert.match(rows[2][0],/Deep · Air/);assert.match(rows[2][3],/not proven/);assert.doesNotMatch(rows[2][3],/above exact/);
@@ -578,24 +578,41 @@ test('new capital sets are localized, alphabetic, distinct and preserve START wi
   assert.match(h.element('input').value,/Hamburg, Germany/); // Historic benchmark set is unchanged.
 });
 
-test('Deep progress remains below the map, has an ETA, and cancellation retains its best route',async()=>{
+test('Deep shows time budget and cooperatively returns its last improvement on cancel',async()=>{
   const h=harness(success);h.element('input').value=sample;
   await h.api.run('deep');const job=h.jobs.at(-1);
-  const progress={type:'progress',jobId:job.jobId,algorithm:'deep',completed:100,starts:2000,
+  const progress={type:'progress',jobId:job.jobId,algorithm:'deep',completed:99,candidates:100,budgetMs:10000,
     elapsedMs:5000,totalKm:120,baseKm:200,directKm:120,metric:'direct',pointsSorted:job.points};
   h.api.handleWorkerMessage({data:progress});
   assert.equal(h.element('searchProgress').hidden,false);
-  assert.equal(h.element('searchProgressBar').value,.05);
-  assert.equal(h.element('searchStarts').textContent,'100 / 2,000');
-  assert.notEqual(h.element('searchEta').textContent,'measuring…');
+  assert.equal(h.element('searchProgressBar').value,.5);
+  assert.equal(h.element('searchStarts').textContent,'100 / 99');
+  assert.match(h.element('searchProgressText').textContent,/50.00% time budget used/);
   assert.equal(h.elements.has('busyOverlay'),false);
   h.api.requestCancel();
-  assert.equal(h.workers[0].terminated,true);
+  assert.notEqual(h.workers[0].terminated,true);
+  assert.equal(h.jobs.at(-1).type,'cancel');
+  h.api.handleWorkerMessage({data:{...progress,type:'result',reason:'cancelled',cancelled:true,totalKm:119}});
   assert.equal(h.element('searchCancel').disabled,true);
   assert.match(h.element('searchProgressText').textContent,/Cancelled/);
+  assert.match(h.element('searchBest').textContent,/119/);
   const stopped=h.element('searchProgressText').textContent;
   h.api.handleWorkerMessage({data:{...progress,completed:200}});
   assert.equal(h.element('searchProgressText').textContent,stopped);
+});
+
+test('Deep fallback is bounded and a rapid restart ignores the previous job and timer',async()=>{
+  const h=harness(success);h.element('input').value=sample;
+  await h.api.run('deep');const first=h.jobs.at(-1);
+  const p={type:'progress',jobId:first.jobId,algorithm:'deep',budgetMs:10000,elapsedMs:5,totalKm:120,baseKm:200,directKm:120,pointsSorted:first.points};
+  h.api.handleWorkerMessage({data:p});h.api.requestCancel();
+  const callbacks=[...h.timerJobs.values()];callbacks.at(-1)();
+  assert.equal(h.workers[0].terminated,true);assert.match(h.element('searchProgressText').textContent,/last reported route kept/);
+  await h.api.run('deep');const second=h.jobs.at(-1);assert.notEqual(second.jobId,first.jobId);
+  h.api.handleWorkerMessage({data:{...p,jobId:second.jobId}});const text=h.element('searchProgressText').textContent;
+  h.api.handleWorkerMessage({data:{...p,type:'result',reason:'optimum',exact:true}});
+  callbacks.at(-1)();assert.equal(h.element('searchProgressText').textContent,text);
+  h.api.cancelWork();
 });
 
 test('Deep map preview respects 1 second selection; completion bypasses the interval',async()=>{

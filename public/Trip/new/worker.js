@@ -1,10 +1,11 @@
 /* Web Worker: Deterministic Route Optimization (XorShift64+ & 2-Opt) */
 'use strict';
 let activeJobId;
-if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-tsp1');
+if (!globalThis.TripBruteForce) importScripts('brute-force.js?v=20260913-deep1');
 if (!globalThis.TripAirDistance) importScripts('air-distance.js?v=20260913-resume2');
 let bruteJob = null;
-if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-tsp1');
+let deepJob = null;
+if (!globalThis.TripTspMetric) importScripts('tsp-metric.js?v=20260913-deep1');
 
 // 1. Deterministic Random Number Generator (XorShift64*)
 function fnv1a64(str) {
@@ -92,6 +93,8 @@ function twoOpt(route, D, roundTrip, maxPasses, timeLimit) {
 }
 
 function solve(points, startIdx, profile, roundTrip, distanceMatrix, requestedMetric) {
+  // Informational air row preserves its former bounded work and deterministic seed.
+  if (profile === 'air-comparison') profile = 'deep';
   const started = performance.now();
   let lastReport = -Infinity;
   const validIndices = points.map((p, i) => (isFinite(p.lat) && isFinite(p.lon)) ? i : -1).filter(i => i !== -1);
@@ -223,16 +226,47 @@ function startBruteForce(msg) {
   job.timer = setTimeout(tick, 0);
 }
 
+// Cooperative Deep runs independently from the unchanged Fast and BF engines.
+function startDeep(msg) {
+  const started=performance.now();
+  if (!globalThis.TripDeepSearch) importScripts('deep-search.js?v=20260913-deep1');
+  const engine=TripDeepSearch.create(msg,{started});
+  const job={msg,engine,timer:null,lastReport:-Infinity}; deepJob=job;
+  function report(final=false, failure=null) {
+    const state=engine.snapshot();
+    self.postMessage({type:final?'result':'progress',jobId:msg.jobId,...state,
+      ...(failure ? {reason:'error',error:failure,exact:false} : {})});
+    job.lastReport=performance.now();
+  }
+  job.finish=()=>{clearTimeout(job.timer);report(true);if(deepJob===job)deepJob=null;};
+  function tick() {
+    if(deepJob!==job)return;
+    try {
+      if(engine.step(8)){job.finish();return;}
+      if(performance.now()-job.lastReport>=200)report();
+      job.timer=setTimeout(tick,0);
+    } catch(error) {report(true,String(error));deepJob=null;}
+  }
+  report();
+  TripDeepSearch.verifyTarget(msg).then(target=>{
+    if(deepJob!==job)return;
+    engine.setTarget(target);job.timer=setTimeout(tick,0);
+  }).catch(error=>{if(deepJob===job){report(true,String(error));deepJob=null;}});
+}
+
 self.onmessage = (ev) => {
   const msg = ev.data;
   if (msg.type === 'cancel') {
     if (bruteJob?.msg.jobId === msg.jobId) bruteJob.finish(true);
+    if (deepJob?.msg.jobId === msg.jobId) { deepJob.engine.cancel(); deepJob.engine.step(8); deepJob.finish(); }
     return;
   }
   if (msg.type === 'solve') {
     if (bruteJob) { clearTimeout(bruteJob.timer); bruteJob = null; }
+    if (deepJob) { clearTimeout(deepJob.timer); deepJob=null; }
     activeJobId = msg.jobId;
     try {
+      if (msg.profile === 'deep') { startDeep(msg); return; }
       if (msg.profile === 'brute') { startBruteForce(msg); return; }
       const started = performance.now();
       const result = solve(msg.points, msg.startIdx, msg.profile, msg.roundTrip, msg.distanceMatrix, msg.metric);
