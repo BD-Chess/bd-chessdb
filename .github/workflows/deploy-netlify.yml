@@ -23,6 +23,19 @@ jobs:
       - name: Checkout exact main commit
         uses: actions/checkout@v4
 
+      - name: Prepare protected pages for browser password managers
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/js/bd-password-manager.js
+          node --check public/js/trading-password-shield.js
+          node --check public/BD/O/vault.js
+          node --check public/WL/reader.js
+          node --check public/WL/BD/reader.js
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+          node --check public/Trip/old/004/private-client.js
+
       - name: Detect configured Netlify token
         id: netlify
         shell: bash
