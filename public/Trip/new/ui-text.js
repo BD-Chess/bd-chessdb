@@ -267,7 +267,7 @@
     'Best road-table distance:':'Najboljša cestna razdalja po matriki:','Best direct distance:':'Najboljša zračna razdalja:',
     'Full-search time remaining at this rate':'Preostali čas celotnega iskanja pri tej hitrosti','Estimated remaining':'Ocenjeni preostali čas','Elapsed:':'Preteklo:','Speed:':'Hitrost:',
     'Complete':'Končano','Cancelled':'Prekinjeno','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
-    ' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
+    ' CPU workers':' CPU delavcev',' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
     'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1.000.000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
     'Brute Force unavailable above 20 stops.':'Brute Force je nad 20 postanki izklopljen.',
     'extrapolated at ':'ocenjeno pri ',' measured with ':' izmerjeno pri ',' stops':' postankov',
@@ -281,6 +281,14 @@
   };
   function t(raw, lang=window.MDLxDCCLocale?.current()||'en'){
     const text=String(raw??'');if(lang!=='sl')return text;
+    const poolWords={
+      'CPU workers':'CPU delavci',
+      'Import previous one-worker run (copy)':'Uvozi prejšnji tek z enim delavcem (kopija)',
+      'Default 1. The device limit is a browser estimate. Changes apply to a new Deep run; Continue keeps its saved worker count.':'Privzeto 1. Meja naprave je ocena brskalnika. Sprememba velja za nov Deep tek; Nadaljuj ohrani shranjeno število delavcev.'
+    };
+    if(poolWords[text])return poolWords[text];
+    if(text.startsWith('Pool active wall time;'))return text.replace('Pool active wall time; pauses and checkpoint storage are separate. Hidden tabs pause calculation.','Aktivni čas celotnega poola; premori in shranjevanje so ločeni. Skrit zavihek računanje ustavi.').replace('CPU workers','CPU delavcev').replace('Sum of worker active time:','Vsota aktivnih časov delavcev:');
+
     if(words[text])return words[text];
     let s=text;
     if (!/^Loaded:|^Invalid coordinates|^Address lookup|^"/.test(s)) {

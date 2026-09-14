@@ -80,15 +80,17 @@
         <label id="bruteOption"><input type="checkbox" id="chkBrute" disabled> <span data-ui-text="Brute Force">Brute Force</span></label>
         <label id="planarOption"><input type="checkbox" id="chkPlanar" disabled> <span data-ui-text="Planar distances (TSP)">Planar distances (TSP)</span></label>
         <label id="mdlOption"><input type="checkbox" id="chkMdl" autocomplete="off"> <span>Enable MDLxDCC (experimental)</span></label>
+        <label class="mdl-worker-option"><span data-ui-text="CPU workers">CPU workers</span> <select id="mdlWorkers" aria-label="CPU workers" data-ui-aria="CPU workers"><option value="1" selected>1</option></select></label>
         <input type="checkbox" id="chkGoogleStyle" hidden>
         <button id="btnCollapse" hidden></button>
         <button id="btnExpand" hidden></button>
         <button id="btnChatToggle" hidden></button>
       </div>
       <div class="mdl-controls">
+        <p class="mdl-worker-help" data-ui-text="Default 1. The device limit is a browser estimate. Changes apply to a new Deep run; Continue keeps its saved worker count.">Default 1. The device limit is a browser estimate. Changes apply to a new Deep run; Continue keeps its saved worker count.</p>
         <p data-ui-text="Experimental Deep runs on this device. Hidden or closed tabs pause calculation. Unlock to recover the last encrypted checkpoint (up to 7 days); a new run replaces it.">Experimental Deep runs on this device. Hidden or closed tabs pause calculation. Unlock to recover the last encrypted checkpoint (up to 7 days); a new run replaces it.</p>
         <p id="mdlStatus" role="status" aria-live="polite"></p>
-        <details><summary data-ui-text="Local checkpoint">Local checkpoint</summary><button id="mdlRefresh" type="button" data-ui-text="Recover saved run">Recover saved run</button><button id="mdlDelete" type="button" data-ui-text="Delete saved run">Delete saved run</button></details>
+        <details><summary data-ui-text="Local checkpoint">Local checkpoint</summary><button id="mdlRefresh" type="button" data-ui-text="Recover saved run">Recover saved run</button><button id="mdlImportLegacy" type="button" data-ui-text="Import previous one-worker run (copy)">Import previous one-worker run (copy)</button><button id="mdlDelete" type="button" data-ui-text="Delete saved run">Delete saved run</button></details>
       </div>
       
       <p id="bruteInfo" class="brute-info"></p>
@@ -235,9 +237,9 @@
       <div class="grid-2"><button id="mdlUnlockSubmit" type="submit" data-ui-text="Unlock">Unlock</button><button id="mdlUnlockCancel" type="button" data-ui-text="Cancel">Cancel</button></div>
     </form>
   </dialog>
-  <script src="shield-codec.js?v=20260914-mdl-browser1"></script>
-  <script src="private-client.js?v=20260914-mdl-browser1"></script>
-  <script src="app.js?v=20260914-mdl-browser1"></script>
+  <script src="shield-codec.js?v=20260914-mdl-pool1"></script>
+  <script src="private-client.js?v=20260914-mdl-pool1"></script>
+  <script src="app.js?v=20260914-mdl-pool1"></script>
   <script src="lab.js?v=20260913-budget1"></script>
 
 </body>

@@ -13,7 +13,7 @@
     return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:500000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt']);
   }
   async function decrypt(payload,credential){
-    if(payload?.schema!=='TripShieldWorkerV1'||payload.engine!=='bd-trip-browser-r1.1.0'||typeof payload.blob!=='string'||payload.blob.length>4000000)throw Error('Invalid encrypted Worker');
+    if(payload?.schema!=='TripShieldWorkerV1'||payload.engine!=='bd-trip-browser-r1.2.0'||typeof payload.blob!=='string'||payload.blob.length>4000000)throw Error('Invalid encrypted Worker');
     const raw=bytes(payload.blob);if(raw.length<60)throw Error('Invalid encrypted Worker');
     const hash=Array.from(await sha(raw),b=>b.toString(16).padStart(2,'0')).join('');if(hash!==payload.sha256)throw Error('Damaged encrypted Worker');
     const key=await derive(credential,raw.slice(0,32));

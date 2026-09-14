@@ -1213,7 +1213,7 @@ Bad example:
       : job.profile==='deep' && msg.reason ? deepFinishLabel(msg) : 'Best found · optimum not proven';
     if (msg.algorithm === 'brute' && msg.exact) provenExactKm = routeValue(msg);
     const assessment = job.planar && (!job.private || msg.privateReceipt?.referenceApplicable) ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
-    comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:routeValue(msg), planar:job.planar, assessment, state});
+    comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:routeValue(msg), planar:job.planar, assessment, state, workers:job.private?msg.privateReceipt?.workerCount:null});
     comparisonJob = job;
     renderComparison();
   }
@@ -1237,6 +1237,7 @@ Bad example:
         const a=result.assessment;
         description=a.reached ? 'Known optimum reached · gap 0%' : `${result.state} · Above known optimum: ${formatValue(a.gap,true)} (${a.gapPercent.toFixed(2)}%)`;
       }
+      if(result.workers)description+=' · '+result.workers+' CPU workers';
       for (const value of [method, result.time, formatValue(result.km,result.planar), description]) {
         const cell = document.createElement('td'); UI.set(cell, value); row.appendChild(cell);
       }
@@ -1342,7 +1343,7 @@ Bad example:
     UI.set($('searchStartsLabel'),timed?'Candidates started / completed':'Completed search starts');
     UI.set($('searchEtaLabel'),timed?'Time budget remaining':'Estimated remaining');
     UI.set($('searchProgressHint'),timed?'Progress shows time budget used, not the probability of optimality. Local preparation is included; Google data fetching and map drawing are separate.':'Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.');
-    if(job.private) UI.set($('searchProgressHint'),'Active time includes local preparation, models and verification. Pauses, checkpoint storage and map drawing are separate. Hidden tabs pause calculation.');
+    if(job.private) UI.set($('searchProgressHint'),`Pool active wall time; pauses and checkpoint storage are separate. Hidden tabs pause calculation. · ${msg.privateReceipt?.workerCount||1} CPU workers · Sum of worker active time: ${BF.duration((msg.privateReceipt?.workerActiveMs||0)/1000)}`);
     if(timed) {
       const used=msg.elapsedMs||0, budget=msg.budgetMs||0;
       const state=finished?deepFinishLabel(msg):job.private?msg.phase||'preparing':msg.phase==='preparing'?'Preparing local distances':'Running';
