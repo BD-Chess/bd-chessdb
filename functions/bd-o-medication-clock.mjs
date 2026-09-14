@@ -16,11 +16,12 @@ async function gmailAccessToken(){
  if(!r.ok)throw new Error('gmail_token_'+r.status);
  const x=await r.json();if(!x.access_token)throw new Error('gmail_token_missing');return x.access_token;
 }
-async function sendGmail(dueAt){
+async function sendGmail(dueAt,label){
  const access=await gmailAccessToken(),to=env('BD_MED_REMINDER_TO');
  const local=new Intl.DateTimeFormat('sl-SI',{timeZone:'Europe/Ljubljana',hour:'2-digit',minute:'2-digit'}).format(new Date(dueAt));
- const subject='Opomnik: dnevni načrt tablet';
- const body=`Načrtovani odmerek ob ${local} še ni označen kot vzet več kot 30 minut po času.\n\nOdpri: https://www.mdlxdcc.org/BD/O/tablete.html\n\nSamodejni opomnik BD · Osebno`;
+ const what=label||'načrtovani odmerek';
+ const subject=`Opomnik: ${what}`;
+ const body=`${what} je bil načrtovan ob ${local} in še ni označen kot vzet več kot 30 minut po času.\n\nOdpri: https://www.mdlxdcc.org/BD/O/tablete.html\n\nSamodejni opomnik BD · Osebno`;
  const raw=`To: ${to}\r\nSubject: ${subject}\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${body}`;
  const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{method:'POST',headers:{Authorization:`Bearer ${access}`,'Content-Type':'application/json'},body:JSON.stringify({raw:b64url(raw)})});
  if(!r.ok)throw new Error('gmail_send_'+r.status);
@@ -30,16 +31,16 @@ export default async()=>{
  const date=ljDate(),key='day-'+date,x=await store.get(key,{type:'json'});if(!x||!Array.isArray(x.blocks))return;
  const now=Date.now(),grace=30*60000;let dirty=false;
  for(const b of x.blocks){
-  if(!b||b.reminderSentAt)continue;
+  if(!b||b.remind===false||b.reminderSentAt)continue;
   const due=Date.parse(b.dueAt);if(!Number.isFinite(due)||now<due+grace)continue;
   const pending=(b.itemIds||[]).filter(id=>!x.items?.[id]?.takenAt);
   if(!pending.length)continue;
   b.reminderDueAt=b.reminderDueAt||new Date().toISOString();dirty=true;
   if(gmailReady()){
-   try{await sendGmail(b.dueAt);b.reminderSentAt=new Date().toISOString();console.log(JSON.stringify({event:'bd-med-reminder-sent',date,block:b.id,dueAt:b.dueAt}));}
+   try{await sendGmail(b.dueAt,b.label);b.reminderSentAt=new Date().toISOString();console.log(JSON.stringify({event:'bd-med-reminder-sent',date,block:b.id,label:b.label,dueAt:b.dueAt}));}
    catch(e){console.error('bd-med-reminder-gmail',e)}
   }else{
-   console.log(JSON.stringify({event:'bd-med-reminder-due-email-unconfigured',date,block:b.id,dueAt:b.dueAt}));
+   console.log(JSON.stringify({event:'bd-med-reminder-due-email-unconfigured',date,block:b.id,label:b.label,dueAt:b.dueAt}));
   }
  }
  if(dirty){x.updatedAt=new Date().toISOString();x.emailReady=gmailReady();await store.setJSON(key,x)}
