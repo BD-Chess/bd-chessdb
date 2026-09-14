@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),te=new TextEncoder(),td=new TextDecoder('utf-8',{fatal:true});
 const ROOT='/WL/',SESSION='wl-v2-session';
-let vault=null,key=null,font=100,timer=null;
+let vault=null,key=null,font=100,timer=null,generation=0;
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 function read(store,k){try{return store.getItem(k)}catch{return null}}
 function write(store,k,v){try{store.setItem(k,v)}catch{}}
@@ -26,7 +26,9 @@ function setFont(n){
  $('reset').textContent=font+'%';
 }
 function clearView(message='',forgetSession=false){
- key=null;vault=null;clearInterval(timer);timer=null;
+ generation++;key=null;vault=null;clearInterval(timer);timer=null;
+ ['emailSections','rhpSections'].forEach(id=>$(id).replaceChildren());
+ ['generated','emailCount','emailFrontier','rhpCount','rhpFrontier','emailTitle','emailOverview','emailAssessment','rhpTitle','rhpOverview','rhpAssessment','status'].forEach(id=>$(id).textContent='');
  if(forgetSession)erase(sessionStorage,SESSION);
  $('app').hidden=true;$('gate').hidden=false;$('pw').value='';$('error').textContent=message;
 }
@@ -54,14 +56,14 @@ function render(s){
  $('status').textContent='Frontier: email A'+s.frontiers.email.A_turn+'/B'+s.frontiers.email.B_turn+' · WL '+s.frontiers.rhp.event_id+'.';
 }
 async function load(){
- if(!key)return;
+ if(!key)return;const g=generation,k=key;
  $('status').textContent='Preverjam najnovejši šifrirani povzetek …';
  try{
   const box=await fetchJSON('/WL/BD/summary.enc.json');
-  const s=await openBox(box,key,'WL:BD:summary:v1');
+  const s=await openBox(box,k,'WL:BD:summary:v1');
   if(s.schema!=='wl.bd.summary.v1')throw Error('Neveljaven povzetek.');
-  render(s);
- }catch(e){$('status').textContent=e.message||'Povzetka ni bilo mogoče prebrati.'}
+  if(g!==generation||!key)return;render(s);
+ }catch(e){if(g!==generation)return;$('status').textContent=e.message||'Povzetka ni bilo mogoče prebrati.'}
 }
 async function activateWithRawKey(rawKeyB64,persist=true){
  key=await aes(b64(rawKeyB64));
