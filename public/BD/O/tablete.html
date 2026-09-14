@@ -5,74 +5,223 @@
 <meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><meta name="color-scheme" content="dark">
 <title>BD · Tablete</title>
 <style>
-:root{color-scheme:dark;--bg:#050913;--panel:#0d1727;--line:#2d465f;--text:#f2f7ff;--muted:#b8c7d8;--cyan:#67e0d7;--gold:#ffd56a;--green:#6ce0a5;--red:#ff8c9b}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--text);font:20px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 5% -5%,#163346,transparent 28rem),linear-gradient(180deg,#050913,#081321);min-height:100vh}.top{position:sticky;top:0;background:#050913ed;border-bottom:1px solid #29415f;z-index:20}.topin,.wrap{width:min(760px,calc(100% - 18px));margin:auto}.topin{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px}.top a{color:var(--cyan);font-weight:900;text-decoration:none}.tools{display:flex;gap:6px}.tools button,.quick button{border:1px solid var(--line);border-radius:12px;background:#091522;color:#fff;padding:8px 11px;font-weight:850}.wrap{padding:20px 0 70px}.hero,.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#101f34,#091421);padding:17px;margin-bottom:14px}.hero{border-color:#356480}.kicker{font-size:.72em;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--gold)}h1{font-size:clamp(2.7rem,11vw,4.8rem);line-height:.95;margin:.2em 0}h2{margin:.1em 0 .65em}.field{display:grid;gap:6px;margin:10px 0}.field span{font-weight:850}.field input,.field select{min-height:50px;border:1px solid #3c5875;border-radius:12px;background:#071120;color:#fff;padding:10px 12px;font:inherit}.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick .active{border-color:var(--cyan);color:var(--cyan)}.meds{display:grid;gap:9px}.med{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:15px;background:#081421;padding:13px}.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input{width:25px;height:25px;accent-color:#68dba2}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:.82em}.timepill{display:inline-flex;align-items:center;border:1px solid #44627f;border-radius:999px;padding:3px 8px;background:#0b1b2b;color:#fff;font-weight:900}.status{font-weight:900;color:var(--gold)}.done .status{color:var(--green)}.late .status{color:var(--red)}.sub,.foot{color:var(--muted);font-size:.86em}details{border:1px solid var(--line);border-radius:14px;background:#081421;margin:8px 0;padding:0 13px}summary{padding:13px 0;font-weight:900;cursor:pointer}details p{color:var(--muted)}.hold{border-color:#6d5b2d}.mail{margin-top:10px;padding:10px 12px;border:1px solid #37516b;border-radius:12px;color:var(--muted)}.ok{color:var(--green)}.warn{color:var(--gold)}.foot{text-align:center;padding:12px}@media(max-width:520px){body{font-size:19px}.hero,.panel{padding:14px}.med{padding:12px}.topin{align-items:flex-start;padding:7px 0}.tools{flex-wrap:wrap}}
+:root{color-scheme:dark;--bg:#050913;--panel:#0d1727;--line:#2d465f;--text:#f2f7ff;--muted:#b8c7d8;--cyan:#67e0d7;--gold:#ffd56a;--green:#6ce0a5;--red:#ff8c9b;--blue:#79c0ff}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--text);font:20px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 5% -5%,#163346,transparent 28rem),linear-gradient(180deg,#050913,#081321);min-height:100vh}
+a{color:var(--cyan)}.top{position:sticky;top:0;background:#050913ed;border-bottom:1px solid #29415f;z-index:20;backdrop-filter:blur(14px)}
+.topin,.wrap{width:min(820px,calc(100% - 18px));margin:auto}.topin{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px}.top a{font-weight:900;text-decoration:none}
+.tools{display:flex;gap:6px}.tools button,.quick button{border:1px solid var(--line);border-radius:12px;background:#091522;color:#fff;padding:8px 11px;font-weight:850}
+.wrap{padding:20px 0 70px}.hero,.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#101f34,#091421);padding:17px;margin-bottom:14px;box-shadow:0 12px 30px #0003}
+.hero{border-color:#356480}.kicker{font-size:.72em;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--gold)}h1{font-size:clamp(2.7rem,11vw,4.8rem);line-height:.95;margin:.2em 0}h2{margin:.1em 0 .65em}h3{font-size:1em;color:#fff;margin:1em 0 .25em}
+.field{display:grid;gap:6px;margin:10px 0}.field span{font-weight:850}.field input,.field select{min-height:50px;border:1px solid #3c5875;border-radius:12px;background:#071120;color:#fff;padding:10px 12px;font:inherit}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick .active{border-color:var(--cyan);color:var(--cyan)}
+.meds{display:grid;gap:9px}.med{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:15px;background:#081421;padding:13px}
+.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input{width:25px;height:25px;accent-color:#68dba2}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:.82em}.timepill{display:inline-flex;align-items:center;border:1px solid #44627f;border-radius:999px;padding:3px 8px;background:#0b1b2b;color:#fff;font-weight:900}.status{font-weight:900;color:var(--gold)}.done .status{color:var(--green)}.late .status{color:var(--red)}
+.sub,.foot,.detailbody{color:var(--muted);font-size:.9em}.mail,.note{margin-top:10px;padding:10px 12px;border:1px solid #37516b;border-radius:12px;color:var(--muted)}.ok{color:var(--green)}.warn{color:var(--gold)}
+details{border:1px solid var(--line);border-radius:14px;background:#081421;margin:9px 0;padding:0 13px}summary{padding:13px 0;font-weight:900;cursor:pointer}.detailbody{padding:0 0 14px}.detailbody p{margin:.45em 0}.detailbody ul{margin:.35em 0 .75em;padding-left:1.25em}.detailbody li{margin:.3em 0}.src{font-size:.86em;border-top:1px solid #23364d;padding-top:9px;margin-top:11px}.src a{word-break:break-word}.hold{border-color:#6d5b2d}.pain{border-color:#74404a}.warningbox{border-left:4px solid var(--gold);background:#201c0d;padding:11px 13px;border-radius:0 12px 12px 0;color:#e9ddae;margin:.8em 0}.foot{text-align:center;padding:12px}
+@media(max-width:520px){body{font-size:19px}.hero,.panel{padding:14px}.med{padding:12px}.topin{align-items:flex-start;padding:7px 0}.tools{flex-wrap:wrap}}
 </style>
 </head>
 <body>
 <header class="top"><div class="topin"><a href="/BD/O/">← BD · Osebno</a><div class="tools"><button id="minus" type="button">A−</button><button id="plus" type="button">A+</button></div></div></header>
 <main class="wrap">
 <section class="hero"><div class="kicker">Dnevni načrt</div><h1>Tablete</h1><p class="sub">Ure se prilagodijo času vstajanja.</p></section>
-<section class="panel"><div class="quick"><button id="todayBtn" type="button">Danes</button><button id="tomorrowBtn" type="button">Jutri</button></div><label class="field"><span>Dan</span><input id="date" type="date"></label><label class="field"><span>Vstal bom / sem vstal ob</span><select id="wake"></select></label><div class="mail" id="mail">Nalagam stanje opomnikov …</div></section>
+
+<section class="panel">
+  <div class="quick"><button id="todayBtn" type="button">Danes</button><button id="tomorrowBtn" type="button">Jutri</button></div>
+  <label class="field"><span>Dan</span><input id="date" type="date"></label>
+  <label class="field"><span>Vstal bom / sem vstal ob</span><select id="wake"></select></label>
+  <div class="mail" id="mail">Nalagam stanje opomnikov …</div>
+</section>
+
 <section class="panel"><h2>Redno</h2><div class="meds" id="regular"></div></section>
 <section class="panel"><h2>Po potrebi</h2><div class="meds" id="optional"></div></section>
-<section class="panel"><h2>Vsa zdravila in dodatki</h2>
-<details><summary>Exforge HCT 5/160/12,5 mg</summary><p>Glavno zdravilo za krvni tlak. Zjutraj; v načrtu 30 minut po vstajanju.</p></details>
-<details><summary>Aspirin Protect 100 mg</summary><p>Enkrat dnevno po trenutnem režimu; v načrtu približno pet ur po vstajanju. Ne ukinjaj ali podvajaj na lastno pest.</p></details>
-<details><summary>Sorvasta 20 mg</summary><p>Rosuvastatin za znižanje LDL in kardiovaskularno zaščito. Zvečer; v načrtu približno 12 ur po vstajanju.</p></details>
-<details><summary>Two-Per-Day</summary><p>1 kapsula zjutraj in 1 ob kosilu, z obrokom.</p></details>
-<details><summary>Claritine 10 mg</summary><p>Samo po potrebi zaradi alergije. Če ga tisti dan jemlješ, je v načrtu zvečer.</p></details>
-<details><summary>Melatonin IR/XR 1,5 mg</summary><p>Samo po potrebi, približno 30–60 minut pred spanjem.</p></details>
+<section class="panel pain"><h2>Ob bolečini</h2><p class="sub">Brez vnaprej določene ure in brez avtomatskega alarma. Checkbox pomeni: danes sem to zdravilo vsaj enkrat vzel.</p><div class="meds" id="pain"></div></section>
+
+<section class="panel"><h2>Vsa zdravila in dodatki</h2><p class="sub">Tapni posamezno vrstico. Najprej je kratek praktični povzetek, nato sestava, koristi, možni minusi in uradni vir.</p>
+
+<details><summary>Exforge HCT 5/160/12,5 mg</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Tvoja glavna kombinacija za krvni tlak. Ker vsebuje tudi diuretik, je jutranji termin praktičen; EMA navaja jemanje enkrat dnevno, po možnosti zjutraj.</p>
+<h3>Kaj vsebuje</h3><p>1 tableta: <strong>amlodipin 5 mg + valsartan 160 mg + hidroklorotiazid 12,5 mg</strong>.</p>
+<h3>Plusi</h3><ul><li>Amlodipin sprošča žilje prek kalcijevih kanalov.</li><li>Valsartan blokira angiotenzin II in s tem zmanjšuje krčenje žil.</li><li>Hidroklorotiazid poveča izločanje vode in soli. Trije različni mehanizmi se dopolnjujejo pri zniževanju tlaka.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Med pogostejšimi neželenimi učinki so omotica, glavobol, prenizek tlak, pogostejše uriniranje, utrujenost, otekanje in nizek kalij.</li><li><strong>NSAID zdravila, kamor sodi ibuprofen/Brufen, lahko oslabijo antihipertenzivni učinek ter poslabšajo ledvično funkcijo; EMA priporoča previdnost, ustrezno hidracijo in spremljanje ledvic.</strong></li></ul>
+<div class="src">Uradni vir: <a target="_blank" rel="noopener noreferrer" href="https://www.ema.europa.eu/sl/medicines/human/EPAR/exforge-hct">EMA — Exforge HCT</a></div>
+</div></details>
+
+<details><summary>Aspirin Protect 100 mg</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Nizkodozni antiagregacijski aspirin: ni namenjen lajšanju bolečine, ampak zmanjšanju zlepljanja trombocitov in s tem nastajanja krvnih strdkov.</p>
+<h3>Kaj vsebuje</h3><p>1 gastrorezistentna tableta vsebuje <strong>100 mg acetilsalicilne kisline</strong>. Obloga je odporna proti želodčni kislini in razpade šele v črevesju.</p>
+<h3>Plusi</h3><ul><li>Zavira agregacijo trombocitov.</li><li>Uradno je namenjen več srčno-žilnim indikacijam za zmanjševanje trombotičnega tveganja.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Glavna praktična cena učinka je <strong>večja nagnjenost h krvavitvam</strong>; navodilo navaja tudi krvavitve iz nosu, prebavil, sečil, hematome in redkeje resnejše krvavitve.</li><li>Ne podvajaj odmerka ob pozabljeni tableti in ga ne ukinjaj na lastno pest.</li><li>Zaradi njega je pri Brufenu/ibuprofenu potrebna dodatna previdnost.</li></ul>
+<div class="src">Uradni vir: <a target="_blank" rel="noopener noreferrer" href="https://www.cbz.si/zzzs/pao/bazazdr2.nsf/o/8B5C40B2B505B0B7C12579C2003F4ACE/$File/a-030525.pdf">CBZ/JAZMP — Aspirin Protect 100 mg, navodilo</a></div>
+</div></details>
+
+<details><summary>Sorvasta 20 mg</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Rosuvastatin za zniževanje LDL in dolgoročno zmanjševanje srčno-žilnega tveganja. Večerni termin je v tvojem načrtu predvsem zaradi rutine; rosuvastatin se jemlje enkrat dnevno.</p>
+<h3>Kaj vsebuje</h3><p>1 tableta vsebuje <strong>rosuvastatin 20 mg</strong>.</p>
+<h3>Plusi</h3><ul><li>Znižuje LDL in lahko zviša HDL.</li><li>Krka v uradnem navodilu navaja uporabo pri zvišanem holesterolu in pri osebah z dejavniki tveganja za preprečevanje večjih srčno-žilnih dogodkov.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Pomembni so nepojasnjene ali ponavljajoče se mišične bolečine/šibkost, zlasti z vročino ali slabim počutjem.</li><li>Statini lahko vplivajo na jetra; navodilo omenja spremljanje jetrnih encimov.</li><li>Pri ljudeh z dejavniki tveganja lahko nekoliko poveča verjetnost razvoja sladkorne bolezni, zato se to spremlja.</li></ul>
+<div class="src">Uradni vir: <a target="_blank" rel="noopener noreferrer" href="https://www.krka.si/_assets/Sorvasta-PI_Text077332_4-SI-PIL.pdf">Krka — Sorvasta, slovensko navodilo za uporabo</a></div>
+</div></details>
+
+<details><summary>Two-Per-Day Capsules, EU</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Močan multivitaminsko-mineralni dodatek. Tvoj režim 1 kapsula zjutraj + 1 ob kosilu sledi uradnemu navodilu proizvajalca: dve kapsuli dnevno v razdeljenih odmerkih z obroki.</p>
+<h3>Kaj vsebuje — dnevni odmerek 2 kapsul</h3><p>Med drugim: vitamin C 470 mg, D 25 µg, E 57 mg, B1 25 mg, B2 25 mg, niacin 50 mg NE, B6 10 mg, folna kislina 400 µg, B12 300 µg, magnezij 100 mg, cink 14 mg, selen 100 µg, jod 150 µg, krom 200 µg, molibden 100 µg, mangan 2 mg, inozitol 50 mg, alfa-lipoična kislina 25 mg, bor 3 mg ter rastlinske sestavine.</p>
+<h3>Plusi</h3><ul><li>V dveh kapsulah pokrije širok spekter vitaminov in mineralov.</li><li>Razdeljen odmerek z obroki je enostaven za rutino.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>To je <strong>prehransko dopolnilo, ne zdravilo</strong>; več ni nujno bolje.</li><li>Vitamin B6 je 10 mg/dan; EFSA ima za odrasle zgornjo dopustno mejo <strong>12 mg/dan</strong> iz vseh virov, zato ne bi dodajal še dodatnega B-kompleksa/B6 brez razloga.</li><li>Vitamin E je razmeroma visok; pri kombiniranju več dodatkov ne podvajaj podobnih formul.</li></ul>
+<div class="src">Uradna vira: <a target="_blank" rel="noopener noreferrer" href="https://www.lifeextensioneurope.com/two-per-day-capsules-120-caps-eu">Life Extension Europe — EU formula</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.efsa.europa.eu/sites/default/files/2023-11/ul_summary_tables-version-8.pdf">EFSA — zgornje dopustne meje</a></div>
+</div></details>
+
+<details><summary>Claritine 10 mg</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Antihistaminik za alergijski rinitis in koprivnico. V tvojem seznamu ostaja <strong>po potrebi</strong>, ne kot obvezna dnevna tableta.</p>
+<h3>Kaj vsebuje</h3><p>1 tableta vsebuje <strong>loratadin 10 mg</strong>.</p>
+<h3>Plusi</h3><ul><li>Zavira delovanje histamina in lajša kihanje, izcedek/srbenje nosu, srbeče ali pekoče oči ter simptome koprivnice.</li><li>Uradno navodilo navaja, da učinek traja ves dan.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Če imaš bolezen jeter, je potreben posvet glede uporabe.</li><li>Kot pri vsakem antihistaminiku spremljaj, kako vpliva nate; če opaziš izrazito zaspanost ali nenavadne simptome, ga ne obravnavaj kot povsem nevtralnega.</li></ul>
+<div class="src">Uradni vir: <a target="_blank" rel="noopener noreferrer" href="https://www.cbz.si/zzzs/pao/bazazdr2.nsf/o/F9F328F3450276BEC12579C2003F58C4/$File/a-025975.pdf">CBZ/JAZMP — Claritine 10 mg, navodilo</a></div>
+</div></details>
+
+<details><summary>Melatonin IR/XR 1,5 mg</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Dodatek za spanje z mešanico takojšnjega in podaljšanega sproščanja. Pri tebi samo po potrebi, približno 30–60 minut pred spanjem.</p>
+<h3>Kaj vsebuje</h3><p>1 kapsula: <strong>1,5 mg melatonina MicroActive®</strong>. Pomožne sestavine vključujejo mikrokristalinično celulozo, želatino, HPMC, natrijev alginat, karnauba vosek in silicijev dioksid.</p>
+<h3>Plusi</h3><ul><li>Proizvajalec kombinira takojšnje in podaljšano sproščanje ter navaja približno 7 ur podpore.</li><li>Enostaven enkratni odmerek pred spanjem.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Po zaužitju ne vozi in ne upravljaj strojev.</li><li>Proizvajalec izrecno opozarja na alkohol in svetuje posvet, če se zdraviš zaradi bolezni.</li></ul>
+<div class="src">Uradni vir proizvajalca: <a target="_blank" rel="noopener noreferrer" href="https://www.lifeextensioneurope.com/melatonin-ir-xr">Life Extension Europe — Melatonin IR/XR</a></div>
+</div></details>
+
+<details><summary>LEKADOL 500 mg — ob bolečini</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Paracetamol za blago do zmerno bolečino in zvišano temperaturo. Za tvoj seznam je smiselna prva preprosta možnost ob bolečini, kadar ni razloga za protivnetni NSAID.</p>
+<h3>Kaj vsebuje</h3><p>1 tableta vsebuje <strong>paracetamol 500 mg</strong>.</p>
+<h3>Plusi</h3><ul><li>Lajša bolečino in znižuje zvišano telesno temperaturo.</li><li>Uradno navodilo izrecno navaja, da <strong>ne draži želodčne sluznice</strong> in ga lahko jemljejo tudi bolniki z želodčnimi težavami ali razjedo.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Največja nevarnost je <strong>prevelik skupni odmerek paracetamola</strong>, predvsem za jetra.</li><li>Ne kombiniraj ga z drugim zdravilom, ki že vsebuje paracetamol, ne da bi to všteval v skupni odmerek.</li><li>Navodilo za samozdravljenje navaja največ 7 dni za bolečino in 3 dni za vročino brez posveta.</li></ul>
+<div class="src">Uradni vir: <a target="_blank" rel="noopener noreferrer" href="https://www.cbz.si/zzzs/pao/bazazdr2.nsf/o/8D8E477EADBFEDB1C12579F90049231A/$File/a-029576.pdf">CBZ/JAZMP — LEKADOL 500 mg, navodilo</a></div>
+</div></details>
+
+<details><summary>Brufen 600 mg — ob bolečini</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p><strong>Ibuprofen 600 mg je receptna jakost NSAID.</strong> Deluje proti bolečini in vnetju, vendar je pri tvoji kombinaciji z Aspirinom in Exforge HCT bistveno manj “nevtralna” izbira kot paracetamol. Uporabljaj ga samo skladno z navodilom zdravnika.</p>
+<h3>Kaj vsebuje</h3><p>1 filmsko obložena tableta vsebuje <strong>ibuprofen 600 mg</strong>.</p>
+<h3>Plusi</h3><ul><li>Ima analgetični in protivnetni učinek.</li><li>Uporablja se pri več bolečinskih in vnetnih stanjih.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>NSAID lahko povzročijo draženje, razjede ali krvavitve v prebavilih ter vplivajo na ledvice in srčno-žilno tveganje.</li><li>Uradno navodilo poudarja <strong>najmanjši učinkoviti odmerek za najkrajši potreben čas</strong>.</li><li>Za blage do zmerne bolečine uradno navodilo za Brufen 200/400/600 mg navaja, da posamezni odmerki nad 400 mg niso pokazali dodatnega analgetičnega učinka.</li><li><strong>Zate posebej:</strong> EMA za Exforge HCT opozarja, da lahko NSAID oslabijo antihipertenzivni učinek valsartana/HCT ter poslabšajo ledvično funkcijo. Aspirin pa že poveča krvavitveno tveganje.</li></ul>
+<div class="warningbox">Brufen 600 mg ni “rezervna tableta za vsak slučaj”. Če ni bolečine, ga ne jemlješ. Če se bolečina ponavlja ali zahteva večkratno uporabo, je to razlog za preverjanje vzroka, ne za avtomatsko stopnjevanje NSAID.</div>
+<div class="src">Uradni viri: <a target="_blank" rel="noopener noreferrer" href="https://www.cbz.si/cbz/bazazdr2.nsf/o/DF95DC927331FC79C12579EC001FFE0C">CBZ — Brufen 600 mg tablete</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.cbz.si/zzzs/pao/bazazdr2.nsf/o/5CD71D2484BD8950C12579EC001FFE0A/$File/a-026358.pdf">CBZ/JAZMP — Brufen 200/400/600 mg, navodilo</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.ema.europa.eu/en/documents/product-information/exforge-hct-epar-product-information_en.pdf">EMA — Exforge HCT interakcije z NSAID</a></div>
+</div></details>
+
 </section>
+
 <section class="panel hold"><h2>Imam doma, vendar za zdaj ne jemljem</h2>
-<details><summary>Super Omega-3 Plus</summary><p>Za zdaj na čakanju zaradi Aspirina in možnega operativnega posega.</p></details>
-<details><summary>PalmettoGuard</summary><p>Za zdaj na čakanju.</p></details>
-<details><summary>ProstaPollen</summary><p>Ni nujen del trenutnega režima; lahko se uvede kasneje.</p></details>
+
+<details><summary>Super Omega-3 Plus EPA/DHA, EU</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Kakovostno sestavljen omega-3 dodatek, vendar ga pri tebi za zdaj ne bi dodajal, ker uradna etiketa izrecno zahteva posvet ob sočasnem jemanju antiagregacijskih zdravil — ti jemlješ Aspirin.</p>
+<h3>Kaj vsebuje — dnevni odmerek proizvajalca 4 kapsule</h3><p>4700 mg koncentratov ribjega in krilovega olja, ki zagotavljajo <strong>EPA 1500 mg + DHA 1020 mg</strong>, 120 mg fosfolipidov; 400 mg olivnega ekstrakta, 10 mg sezamovega ekstrakta in 4 mg astaksantina.</p>
+<h3>Plusi</h3><ul><li>Visok odmerek EPA+DHA.</li><li>Dodani olivni polifenoli, krilovo olje, sezamovi lignani in astaksantin.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Vsebuje ribe, kril (rak), sezam in želatino.</li><li>Uradna etiketa: ob antikoagulantih ali <strong>antiagregacijskih zdravilih</strong> oziroma motnjah krvavenja se je treba pred uporabo posvetovati z zdravstvenim strokovnjakom.</li></ul>
+<div class="src">Uradni vir proizvajalca: <a target="_blank" rel="noopener noreferrer" href="https://www.lifeextensioneurope.com/super-omega-3-plus-epa-dha-w.-sesame-olive-krill-astax.-eu">Life Extension Europe — #01988EU</a></div>
+</div></details>
+
+<details><summary>PalmettoGuard®</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Prostatni prehranski dodatek. Formula je tehnično zanimiva, toda razlog, da ga zdaj ne bi uvajal, je predvsem to, da pri tebi trenutno nimamo jasne potrebe za zdravljenje urinarnih simptomov, dokazi za saw palmetto pa niso prepričljivi.</p>
+<h3>Kaj vsebuje — 1 kapsula</h3><p><strong>Saw palmetto CO₂ ekstrakt 160 mg</strong> (136 mg maščobnih kislin), beta-sitosterol 45 mg, izvlečka korenine koprive 120 mg in bor 1,5 mg.</p>
+<h3>Plusi</h3><ul><li>V eni formuli združi saw palmetto, beta-sitosterol, koprivo in bor.</li><li>Proizvajalec ga trži za podporo normalnemu uriniranju in prostati.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>Gre za prehransko dopolnilo, ne zdravilo za BPH.</li><li>NCCIH (NIH) po novejših pregledih ocenjuje, da saw palmetto sam pri simptomih povečane prostate verjetno daje malo ali nič koristi; neželeni učinki so običajno blagi, npr. prebavne težave, omotica ali glavobol.</li></ul>
+<div class="src">Vira: <a target="_blank" rel="noopener noreferrer" href="https://www.lifeextension.com/vitamins-supplements/item01790/palmettoguard-saw-palmetto-nettle-root-formula-with-beta-sitosterol">Life Extension — PalmettoGuard</a> · <a target="_blank" rel="noopener noreferrer" href="https://www.nccih.nih.gov/health/saw-palmetto">NCCIH/NIH — Saw Palmetto: Usefulness and Safety</a></div>
+</div></details>
+
+<details><summary>Triple Strength ProstaPollen™</summary><div class="detailbody">
+<h3>Moj kratek povzetek</h3><p>Prehranski dodatek iz standardiziranih cvetnih/pelodno-žitnih ekstraktov za prostato. Trenutno ni bistven del tvojega režima.</p>
+<h3>Kaj vsebuje — 1 kapsula</h3><p><strong>378 mg Graminex® Flower Pollen Extract™ iz rži</strong>: 360 mg vodotopne frakcije G60™ + 18 mg lipidotopne frakcije NAX™. Vsebuje sojo.</p>
+<h3>Plusi</h3><ul><li>Enkrat dnevno.</li><li>Proizvajalec navaja podporo normalnemu uriniranju in funkciji prostate.</li></ul>
+<h3>Možni minusi / na kaj pazi</h3><ul><li>To ni zdravilo; trditve proizvajalca niso enakovredne odobreni terapevtski indikaciji.</li><li>Če nimaš simptomov spodnjih sečil/BPH, ni jasnega razloga, da bi ga dodajal samo zato, ker ga imaš doma.</li><li>Vsebuje sojo.</li></ul>
+<div class="src">Uradni vir proizvajalca: <a target="_blank" rel="noopener noreferrer" href="https://www.lifeextension.com/vitamins-supplements/item01909/triple-strength-prostapollen">Life Extension — Triple Strength ProstaPollen</a></div>
+</div></details>
+
 </section>
-<p class="foot">Osebni organizator jemanja; ob spremembi zdravniške terapije je treba posodobiti tudi ta načrt.</p>
+<p class="foot">Osebni organizator jemanja. Uradni viri so navedeni pri vsaki postavki; ob spremembi zdravniške terapije je treba posodobiti tudi ta načrt.</p>
 </main>
+
 <script>
 (()=>{'use strict';
 const API='/api/bd-o-medication-state',TZ='Europe/Ljubljana',GRACE=30;
 const regList=[
  {id:'exforge',name:'Exforge HCT',dose:'5/160/12,5 mg',offset:30,block:'morning'},
- {id:'twoperday_am',name:'Two-Per-Day',dose:'1 kapsula',offset:30,block:'morning'},
+ {id:'twoperday_am',name:'Two-Per-Day',dose:'1. kapsula',offset:30,block:'morning'},
  {id:'aspirin',name:'Aspirin Protect',dose:'100 mg',offset:300,block:'lunch'},
- {id:'twoperday_pm',name:'Two-Per-Day',dose:'1 kapsula',offset:300,block:'lunch'},
+ {id:'twoperday_pm',name:'Two-Per-Day',dose:'2. kapsula',offset:300,block:'lunch'},
  {id:'sorvasta',name:'Sorvasta',dose:'20 mg',offset:720,block:'evening'}
 ];
 const optList=[
  {id:'claritine',name:'Claritine',dose:'10 mg',offset:720},
  {id:'melatonin',name:'Melatonin IR/XR',dose:'1,5 mg',offset:1020}
 ];
+const painList=[
+ {id:'lekadol',name:'LEKADOL',dose:'500 mg'},
+ {id:'brufen',name:'Brufen',dose:'600 mg · samo skladno z navodilom zdravnika'}
+];
 let state;
-const dateEl=document.getElementById('date'),wakeEl=document.getElementById('wake'),todayBtnEl=document.getElementById('todayBtn'),tomorrowBtnEl=document.getElementById('tomorrowBtn'),regEl=document.getElementById('regular'),optEl=document.getElementById('optional'),mailEl=document.getElementById('mail'),minusEl=document.getElementById('minus'),plusEl=document.getElementById('plus');
+const dateEl=document.getElementById('date'),wakeEl=document.getElementById('wake'),todayBtnEl=document.getElementById('todayBtn'),tomorrowBtnEl=document.getElementById('tomorrowBtn'),regEl=document.getElementById('regular'),optEl=document.getElementById('optional'),painEl=document.getElementById('pain'),mailEl=document.getElementById('mail'),minusEl=document.getElementById('minus'),plusEl=document.getElementById('plus');
 const pad=n=>String(n).padStart(2,'0');
 const today=()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`};
 const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
 function epoch(date,time){const [y,m,d]=date.split('-').map(Number),[h,mi]=time.split(':').map(Number),want=Date.UTC(y,m-1,d,h,mi);let g=want;const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});for(let i=0;i<4;i++){const p=Object.fromEntries(f.formatToParts(new Date(g)).map(x=>[x.type,x.value])),got=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second),z=want-g;if(!z)break;g+=z}return g}
 function at(w,o){const [h,m]=w.split(':').map(Number),v=((h*60+m+o)%1440+1440)%1440;return pad(Math.floor(v/60))+':'+pad(v%60)}
-function plan(date,wake){const items={},blocks={};for(const x of [...regList,...optList])items[x.id]={takenAt:null};for(const x of regList){const due=new Date(epoch(date,wake)+x.offset*60000).toISOString(),b=blocks[x.block]||(blocks[x.block]={id:x.block,dueAt:due,itemIds:[]});b.itemIds.push(x.id)}return {date,wake,timezone:TZ,items,blocks:Object.values(blocks)}}
+function plan(date,wake){
+ const items={},blocks={};
+ for(const x of [...regList,...optList,...painList])items[x.id]={takenAt:null};
+ for(const x of regList){const due=new Date(epoch(date,wake)+x.offset*60000).toISOString(),b=blocks[x.block]||(blocks[x.block]={id:x.block,dueAt:due,itemIds:[]});b.itemIds.push(x.id)}
+ return {date,wake,timezone:TZ,items,blocks:Object.values(blocks)}
+}
 async function api(method,date,body){const r=await fetch(API+(date?'?date='+encodeURIComponent(date):''),{method,cache:'no-store',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Napaka');return j}
 function takenText(iso){return 'Vzeto '+new Intl.DateTimeFormat('sl-SI',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}).format(new Date(iso))}
-function card(x,opt=false){const taken=state.items?.[x.id]?.takenAt||null,due=epoch(state.date,state.wake)+x.offset*60000,late=state.date===today()&&!taken&&Date.now()>due+GRACE*60000,status=taken?takenText(taken):late?'ZAMUJA':'ni še označeno',cls=taken?'done':late?'late':'',recommended=at(state.wake,x.offset);return `<label class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob ${recommended}</span><span class="status">${status}</span>${opt?'<span>po potrebi</span>':''}</span></span></label>`}
+function card(x,opt=false){
+ const taken=state.items?.[x.id]?.takenAt||null,due=epoch(state.date,state.wake)+x.offset*60000,late=state.date===today()&&!taken&&Date.now()>due+GRACE*60000,status=taken?takenText(taken):late?'ZAMUJA':'ni še označeno',cls=taken?'done':late?'late':'',recommended=at(state.wake,x.offset);
+ return `<label class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob ${recommended}</span><span class="status">${status}</span>${opt?'<span>po potrebi</span>':''}</span></span></label>`
+}
+function painCard(x){
+ const taken=state.items?.[x.id]?.takenAt||null,status=taken?takenText(taken):'nisem vzel',cls=taken?'done':'';
+ return `<label class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Ob bolečini · brez urnika</span><span class="status">${status}</span></span></span></label>`
+}
+function preserveIntoPlan(remote){
+ const p=plan(remote.date,remote.wake||'08:00');
+ for(const [id,v] of Object.entries(remote.items||{}))if(p.items[id]&&v?.takenAt)p.items[id].takenAt=v.takenAt;
+ return p
+}
+function hasAllItems(s){return [...regList,...optList,...painList].every(x=>s?.items&&Object.prototype.hasOwnProperty.call(s.items,x.id))}
+function bindChecks(){
+ document.querySelectorAll('.med input').forEach(c=>c.onchange=async()=>{
+  const old=c.checked;c.disabled=true;
+  try{const j=await api('POST','',{action:'taken',date:state.date,id:c.dataset.id,taken:old,takenAt:old?new Date().toISOString():null});state=j.state;render()}
+  catch(e){c.checked=!old;c.disabled=false;alert('Shranjevanje ni uspelo: '+e.message)}
+ })
+}
 function render(){
  dateEl.value=state.date;wakeEl.value=state.wake;
  todayBtnEl.classList.toggle('active',state.date===today());tomorrowBtnEl.classList.toggle('active',state.date===add(today(),1));
- regEl.innerHTML=regList.map(x=>card(x)).join('');optEl.innerHTML=optList.map(x=>card(x,true)).join('');
- mailEl.innerHTML=`Opomnik po <strong>${GRACE} min</strong> zamude · `+(state.emailReady?'<span class="ok">Gmail opomniki pripravljeni</span>':'<span class="warn">Gmail opomniki še niso avtorizirani</span>');
- document.querySelectorAll('.med input').forEach(c=>c.onchange=async()=>{const old=c.checked;c.disabled=true;try{const j=await api('POST','',{action:'taken',date:state.date,id:c.dataset.id,taken:old,takenAt:old?new Date().toISOString():null});state=j.state;render()}catch(e){c.checked=!old;c.disabled=false;alert('Shranjevanje ni uspelo: '+e.message)}})
+ regEl.innerHTML=regList.map(x=>card(x)).join('');
+ optEl.innerHTML=optList.map(x=>card(x,true)).join('');
+ painEl.innerHTML=painList.map(x=>painCard(x)).join('');
+ mailEl.innerHTML=`Opomnik po <strong>${GRACE} min</strong> zamude za redna zdravila · `+(state.emailReady?'<span class="ok">Gmail opomniki pripravljeni</span>':'<span class="warn">Gmail opomniki še niso avtorizirani</span>');
+ bindChecks()
 }
 async function load(date){
  let j=await api('GET',date);
- if(!j.state){const defaultWake=date==='2026-09-14'?'09:00':'08:00';j=await api('POST','',{action:'plan',plan:plan(date,defaultWake)})}
- state=j.state;render();
+ if(!j.state){
+   const defaultWake=date==='2026-09-14'?'09:00':'08:00';
+   j=await api('POST','',{action:'plan',plan:plan(date,defaultWake)})
+ }else if(!hasAllItems(j.state)){
+   j=await api('POST','',{action:'plan',plan:preserveIntoPlan(j.state)})
+ }
+ state=j.state;render()
 }
 for(let h=0;h<24;h++)for(let m=0;m<60;m+=15)wakeEl.add(new Option(pad(h)+':'+pad(m),pad(h)+':'+pad(m)));
 state=plan(today(),today()==='2026-09-14'?'09:00':'08:00');state.emailReady=false;render();
 dateEl.onchange=()=>load(dateEl.value).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
 todayBtnEl.onclick=()=>load(today()).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
 tomorrowBtnEl.onclick=()=>load(add(today(),1)).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
-wakeEl.onchange=async()=>{const p=plan(state.date,wakeEl.value);for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;state=p;state.emailReady=false;render();try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}catch(e){mailEl.textContent='Nova ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}};
+wakeEl.onchange=async()=>{
+ const p=plan(state.date,wakeEl.value);
+ for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
+ state=p;state.emailReady=false;render();
+ try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}
+ catch(e){mailEl.textContent='Nova ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}
+};
 let fs=100;minusEl.onclick=()=>{fs=Math.max(70,fs-10);document.documentElement.style.fontSize=fs/100*16+'px'};plusEl.onclick=()=>{fs+=10;document.documentElement.style.fontSize=fs/100*16+'px'};
 load(today()).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
 })();
