@@ -1,0 +1,149 @@
+name: Patch tablete editable times
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-tablete-editable-times.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply patch
+        shell: bash
+        run: |
+          cat > /tmp/tablete.patch <<'PATCH'
+          --- a/public/BD/O/tablete.html
+          +++ b/public/BD/O/tablete.html
+          @@ -15,7 +15,7 @@
+           .field{display:grid;gap:6px;margin:10px 0}.field span{font-weight:850}.field input,.field select{min-height:50px;border:1px solid #3c5875;border-radius:12px;background:#071120;color:#fff;padding:10px 12px;font:inherit}
+           .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick .active{border-color:var(--cyan);color:var(--cyan)}
+           .meds{display:grid;gap:9px}.med{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:15px;background:#081421;padding:13px}
+          -.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input{width:25px;height:25px;accent-color:#68dba2}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}
+          +.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input[type="checkbox"]{width:25px;height:25px;accent-color:#68dba2}.timeedit{min-height:32px;border:1px solid #55738f;border-radius:9px;background:#071120;color:#fff;padding:3px 7px;font:900 1em/1 system-ui;letter-spacing:.02em}.timeedit:focus{outline:2px solid #67e0d755;outline-offset:1px}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}
+           .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:.82em}.timepill{display:inline-flex;align-items:center;border:1px solid #44627f;border-radius:999px;padding:3px 8px;background:#0b1b2b;color:#fff;font-weight:900}.status{font-weight:900;color:var(--gold)}.done .status{color:var(--green)}.late .status{color:var(--red)}
+           .sub,.foot,.detailbody{color:var(--muted);font-size:.9em}.mail,.note{margin-top:10px;padding:10px 12px;border:1px solid #37516b;border-radius:12px;color:var(--muted)}.ok{color:var(--green)}.warn{color:var(--gold)}
+           details{border:1px solid var(--line);border-radius:14px;background:#081421;margin:9px 0;padding:0 13px}summary{padding:13px 0;font-weight:900;cursor:pointer}.detailbody{padding:0 0 14px}.detailbody p{margin:.45em 0}.detailbody ul{margin:.35em 0 .75em;padding-left:1.25em}.detailbody li{margin:.3em 0}.src{font-size:.86em;border-top:1px solid #23364d;padding-top:9px;margin-top:11px}.src a{word-break:break-word}.hold{border-color:#6d5b2d}.pain{border-color:#74404a}.warningbox{border-left:4px solid var(--gold);background:#201c0d;padding:11px 13px;border-radius:0 12px 12px 0;color:#e9ddae;margin:.8em 0}.foot{text-align:center;padding:12px}
+          @@ -25,7 +25,7 @@
+           <body>
+           <header class="top"><div class="topin"><a href="/BD/O/">← BD · Osebno</a><div class="tools"><button id="minus" type="button">A−</button><button id="plus" type="button">A+</button></div></div></header>
+           <main class="wrap">
+          -<section class="hero"><div class="kicker">Dnevni načrt</div><h1>Tablete</h1><p class="sub">Ure se prilagodijo času vstajanja.</p></section>
+          +<section class="hero"><div class="kicker">Dnevni načrt</div><h1>Tablete</h1><p class="sub">Ure se prilagodijo času vstajanja. Vsako priporočeno uro lahko tudi ročno popraviš.</p></section>
+          @@ -141,15 +141,15 @@
+           (()=>{'use strict';
+           const API='/api/bd-o-medication-state',TZ='Europe/Ljubljana',GRACE=30;
+           const regList=[
+          - {id:'exforge',name:'Exforge HCT',dose:'5/160/12,5 mg',offset:30,block:'morning'},
+          - {id:'twoperday_am',name:'Two-Per-Day',dose:'1. kapsula',offset:30,block:'morning'},
+          - {id:'aspirin',name:'Aspirin Protect',dose:'100 mg',offset:300,block:'lunch'},
+          - {id:'twoperday_pm',name:'Two-Per-Day',dose:'2. kapsula',offset:300,block:'lunch'},
+          - {id:'sorvasta',name:'Sorvasta',dose:'20 mg',offset:720,block:'evening'}
+          + {id:'exforge',name:'Exforge HCT',dose:'5/160/12,5 mg',offset:30,remind:true},
+          + {id:'twoperday_am',name:'Two-Per-Day',dose:'1. kapsula',offset:30,remind:true},
+          + {id:'aspirin',name:'Aspirin Protect',dose:'100 mg',offset:300,remind:true},
+          + {id:'twoperday_pm',name:'Two-Per-Day',dose:'2. kapsula',offset:300,remind:true},
+          + {id:'sorvasta',name:'Sorvasta',dose:'20 mg',offset:720,remind:true}
+           ];
+           const optList=[
+          - {id:'claritine',name:'Claritine',dose:'10 mg',offset:720},
+          - {id:'melatonin',name:'Melatonin IR/XR',dose:'1,5 mg',offset:1020}
+          + {id:'claritine',name:'Claritine',dose:'10 mg',offset:720,remind:false},
+          + {id:'melatonin',name:'Melatonin IR/XR',dose:'1,5 mg',offset:1020,remind:false,rollover:true}
+           ];
+          @@ -162,43 +162,63 @@
+           const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+           function epoch(date,time){const [y,m,d]=date.split('-').map(Number),[h,mi]=time.split(':').map(Number),want=Date.UTC(y,m-1,d,h,mi);let g=want;const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});for(let i=0;i<4;i++){const p=Object.fromEntries(f.formatToParts(new Date(g)).map(x=>[x.type,x.value])),got=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second),z=want-g;if(!z)break;g+=z}return g}
+           function at(w,o){const [h,m]=w.split(':').map(Number),v=((h*60+m+o)%1440+1440)%1440;return pad(Math.floor(v/60))+':'+pad(v%60)}
+          -function plan(date,wake){
+          - const items={},blocks={};
+          +function mins(t){const [h,m]=String(t).split(':').map(Number);return h*60+m}
+          +function localDueEpoch(date,wake,time,x){let v=epoch(date,time);if(x.rollover&&mins(time)<mins(wake))v+=86400000;return v}
+          +function defaultTime(wake,x){return at(wake,x.offset)}
+          +function blockFor(id){return (state?.blocks||[]).find(b=>b.id==='med_'+id)}
+          +function displayedTime(x){const b=blockFor(x.id);if(b?.dueAt)return new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(b.dueAt));return defaultTime(state.wake,x)}
+          +function dueFor(x){const b=blockFor(x.id);return b?.dueAt?Date.parse(b.dueAt):localDueEpoch(state.date,state.wake,defaultTime(state.wake,x),x)}
+          +function plan(date,wake,timeMap={}){
+          + const items={},blocks=[];
+            for(const x of [...regList,...optList,...painList])items[x.id]={takenAt:null};
+          - for(const x of regList){const due=new Date(epoch(date,wake)+x.offset*60000).toISOString(),b=blocks[x.block]||(blocks[x.block]={id:x.block,dueAt:due,itemIds:[]});b.itemIds.push(x.id)}
+          - return {date,wake,timezone:TZ,items,blocks:Object.values(blocks)}
+          + for(const x of [...regList,...optList]){
+          +  const time=timeMap[x.id]||defaultTime(wake,x);
+          +  blocks.push({id:'med_'+x.id,dueAt:new Date(localDueEpoch(date,wake,time,x)).toISOString(),itemIds:[x.id],remind:x.remind!==false,label:x.name+(x.dose?' '+x.dose:'')});
+          + }
+          + return {date,wake,timezone:TZ,items,blocks}
+           }
+          +function currentTimeMap(){const out={};for(const x of [...regList,...optList])out[x.id]=displayedTime(x);return out}
+           async function api(method,date,body){const r=await fetch(API+(date?'?date='+encodeURIComponent(date):''),{method,cache:'no-store',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Napaka');return j}
+           function takenText(iso){return 'Vzeto '+new Intl.DateTimeFormat('sl-SI',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}).format(new Date(iso))}
+           function card(x,opt=false){
+          - const taken=state.items?.[x.id]?.takenAt||null,due=epoch(state.date,state.wake)+x.offset*60000,late=state.date===today()&&!taken&&Date.now()>due+GRACE*60000,status=taken?takenText(taken):late?'ZAMUJA':'ni še označeno',cls=taken?'done':late?'late':'',recommended=at(state.wake,x.offset);
+          - return `<label class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob ${recommended}</span><span class="status">${status}</span>${opt?'<span>po potrebi</span>':''}</span></span></label>`
+          + const taken=state.items?.[x.id]?.takenAt||null,due=dueFor(x),late=state.date===today()&&!taken&&x.remind!==false&&Date.now()>due+GRACE*60000,status=taken?takenText(taken):late?'ZAMUJA':'ni še označeno',cls=taken?'done':late?'late':'',recommended=displayedTime(x);
+          + return `<div class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob <input class="timeedit" type="time" step="300" data-time-id="${x.id}" value="${recommended}" aria-label="Priporočena ura za ${x.name}"></span><span class="status">${status}</span>${opt?'<span>po potrebi · brez e-mail alarma</span>':''}</span></span></div>`
+           }
+           function painCard(x){
+            const taken=state.items?.[x.id]?.takenAt||null,status=taken?takenText(taken):'nisem vzel',cls=taken?'done':'';
+          - return `<label class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Ob bolečini · brez urnika</span><span class="status">${status}</span></span></span></label>`
+          + return `<div class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Ob bolečini · brez urnika</span><span class="status">${status}</span></span></span></div>`
+           }
+           function preserveIntoPlan(remote){
+          - const p=plan(remote.date,remote.wake||'08:00');
+          + const times={};for(const x of [...regList,...optList]){const b=(remote.blocks||[]).find(z=>z.id==='med_'+x.id);if(b?.dueAt)times[x.id]=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(b.dueAt))}const p=plan(remote.date,remote.wake||'08:00',times);
+            for(const [id,v] of Object.entries(remote.items||{}))if(p.items[id]&&v?.takenAt)p.items[id].takenAt=v.takenAt;
+            return p
+           }
+           function hasAllItems(s){return [...regList,...optList,...painList].every(x=>s?.items&&Object.prototype.hasOwnProperty.call(s.items,x.id))}
+           function bindChecks(){
+          - document.querySelectorAll('.med input').forEach(c=>c.onchange=async()=>{
+          + document.querySelectorAll('.med input[type=checkbox]').forEach(c=>c.onchange=async()=>{
+             const old=c.checked;c.disabled=true;
+             try{const j=await api('POST','',{action:'taken',date:state.date,id:c.dataset.id,taken:old,takenAt:old?new Date().toISOString():null});state=j.state;render()}
+             catch(e){c.checked=!old;c.disabled=false;alert('Shranjevanje ni uspelo: '+e.message)}
+            })
+           }
+          +function bindTimes(){
+          + document.querySelectorAll('.timeedit').forEach(t=>t.onchange=async()=>{
+          +  const times=currentTimeMap();times[t.dataset.timeId]=t.value;
+          +  const p=plan(state.date,state.wake,times);
+          +  for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
+          +  p.emailReady=state.emailReady;state=p;render();
+          +  try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}
+          +  catch(e){mailEl.textContent='Ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}
+          + })
+          +}
+           function render(){
+            dateEl.value=state.date;wakeEl.value=state.wake;
+            todayBtnEl.classList.toggle('active',state.date===today());tomorrowBtnEl.classList.toggle('active',state.date===add(today(),1));
+            regEl.innerHTML=regList.map(x=>card(x)).join('');
+            optEl.innerHTML=optList.map(x=>card(x,true)).join('');
+            painEl.innerHTML=painList.map(x=>painCard(x)).join('');
+          - mailEl.innerHTML=`Opomnik po <strong>${GRACE} min</strong> zamude za redna zdravila · `+(state.emailReady?'<span class="ok">Gmail opomniki pripravljeni</span>':'<span class="warn">Gmail opomniki še niso avtorizirani</span>');
+          - bindChecks()
+          + mailEl.innerHTML=`E-mail opomnik po <strong>${GRACE} min</strong> zamude samo za redna zdravila · `+(state.emailReady?'<span class="ok">pošiljanje je vključeno</span>':'<span class="warn">pošiljanje še ni povezano z Gmailom</span>');
+          + bindChecks();bindTimes()
+           }
+          @@ -218,7 +238,7 @@
+           wakeEl.onchange=async()=>{
+            const p=plan(state.date,wakeEl.value);
+            for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
+          - state=p;state.emailReady=false;render();
+          + p.emailReady=state.emailReady;state=p;render();
+            try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}
+            catch(e){mailEl.textContent='Nova ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}
+           };
+          PATCH
+          git apply /tmp/tablete.patch
+      - name: Commit patched page
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/BD/O/tablete.html
+          git commit -m 'Make medication reminder times editable'
+          git push
