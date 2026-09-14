@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>8Z Trip Optimizer · LAB</title>
   <script src="locale.js?v=20260913-budget1"></script>
-  <link rel="stylesheet" href="style.css?v=20260913-budget2">
+  <link rel="stylesheet" href="style.css?v=20260914-diag1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <script src="ui-text.js?v=20260913-budget2"></script>
+  <script src="ui-text.js?v=20260914-diag1"></script>
   <!-- BD VERSION SELECTOR STYLE START -->
   <style>
     header { flex-wrap: wrap; gap: 8px; }
@@ -138,7 +138,7 @@
         <progress id="searchProgressBar" max="1" value="0" data-ui-aria="Optimization progress" aria-label="Optimization progress"></progress>
         <dl class="search-metrics">
           <div><dt id="searchStartsLabel" data-ui-text="Completed search starts">Completed search starts</dt><dd id="searchStarts">—</dd></div>
-          <div><dt data-ui-text="Compute time">Compute time</dt><dd id="searchElapsed">—</dd></div>
+          <div><dt id="searchElapsedLabel" data-ui-text="Compute time">Compute time</dt><dd id="searchElapsed">—</dd></div>
           <div><dt id="searchEtaLabel" data-ui-text="Estimated remaining">Estimated remaining</dt><dd id="searchEta">—</dd></div>
           <div id="searchBudgetBox" hidden><dt data-ui-text="Deep time budget">Deep time budget</dt><dd id="searchBudget">—</dd></div>
           <div><dt id="searchMetric">Distance</dt><dd id="searchBest">—</dd></div>
@@ -153,6 +153,36 @@
           <button id="continueDeep86400000" type="button" class="btn-primary deep-budget-desktop" disabled data-ui-text="+1 day">+1 day</button>
         </div>
       </section>
+      <details id="diagnosticsPanel" class="diagnostics-panel">
+        <summary data-ui-text="Diagnostics">Diagnostics</summary>
+        <p data-ui-text="Logs stay on this device. Export only downloads a file when you click; nothing is uploaded.">Logs stay on this device. Export only downloads a file when you click; nothing is uploaded.</p>
+        <label class="diagnostics-choice"><input type="checkbox" id="diagnosticsEnabled" checked><span data-ui-text="Record local diagnostics">Record local diagnostics</span></label>
+        <p id="diagnosticsRun" class="diagnostics-id" data-ui-text="Start or recover a Deep run to inspect its diagnostics.">Start or recover a Deep run to inspect its diagnostics.</p>
+        <dl class="diagnostics-metrics">
+          <div><dt data-ui-text="Elapsed time">Elapsed time</dt><dd id="diagnosticsElapsed">—</dd></div>
+          <div><dt data-ui-text="Budget used">Budget used</dt><dd id="diagnosticsUsed">—</dd></div>
+          <div><dt data-ui-text="Remaining budget">Remaining budget</dt><dd id="diagnosticsRemaining">—</dd></div>
+          <div><dt data-ui-text="Worker compute time — sum">Worker compute time — sum</dt><dd id="diagnosticsCompute">—</dd></div>
+          <div><dt data-ui-text="Explicit pauses">Explicit pauses</dt><dd id="diagnosticsPauses">—</dd></div>
+          <div><dt data-ui-text="Budget overrun">Budget overrun</dt><dd id="diagnosticsOverrun">—</dd></div>
+          <div><dt data-ui-text="Local initialization">Local initialization</dt><dd id="diagnosticsInit">—</dd></div>
+          <div><dt data-ui-text="Checkpoint storage">Checkpoint storage</dt><dd id="diagnosticsStorage">—</dd></div>
+          <div><dt data-ui-text="Diagnostic work">Diagnostic work</dt><dd id="diagnosticsWork">—</dd></div>
+          <div><dt data-ui-text="Finalization">Finalization</dt><dd id="diagnosticsFinalization">—</dd></div>
+        </dl>
+        <p data-ui-text="Worker compute time is the measured sum of instrumented sections, not OS CPU time. With several workers it can exceed elapsed time. Concurrent timings overlap and must not be added as a breakdown of one minute.">Worker compute time is the measured sum of instrumented sections, not OS CPU time. With several workers it can exceed elapsed time. Concurrent timings overlap and must not be added as a breakdown of one minute.</p>
+        <p id="diagnosticsTimingNote"></p>
+        <p id="diagnosticsCoverage"></p>
+        <p id="diagnosticsPersistence" role="status" aria-live="polite"></p>
+        <label class="diagnostics-choice"><input type="checkbox" id="diagnosticsIncludeInput"><span data-ui-text="Include reproduction input">Include reproduction input</span></label>
+        <p id="diagnosticsInput" data-ui-text="Off by default. Reproduction input may contain private coordinates or the road matrix; no stop names, passwords or API credentials are included.">Off by default. Reproduction input may contain private coordinates or the road matrix; no stop names, passwords or API credentials are included.</p>
+        <p id="diagnosticsEstimate"></p>
+        <div class="diagnostics-actions">
+          <button id="diagnosticsExport" type="button" class="btn-neutral" disabled data-ui-text="Export diagnostics (.zip)">Export diagnostics (.zip)</button>
+          <button id="diagnosticsExportCancel" type="button" class="btn-neutral" hidden data-ui-text="Cancel export">Cancel export</button>
+        </div>
+        <p id="diagnosticsExportStatus" role="status" aria-live="polite"></p>
+      </details>
       <div id="bruteProgress" class="brute-progress" hidden>
         <div id="bruteProgressText" role="status" aria-live="polite"></div>
         <progress id="bruteProgressBar" max="1" value="0" data-ui-aria="Brute Force progress" aria-label="Brute Force progress"></progress>
@@ -238,8 +268,8 @@
     </form>
   </dialog>
   <script src="shield-codec.js?v=20260914-mdl-pool1"></script>
-  <script src="private-client.js?v=20260914-mdl-pool1"></script>
-  <script src="app.js?v=20260914-mdl-pool1"></script>
+  <script src="private-client.js?v=20260914-diag1"></script>
+  <script src="app.js?v=20260914-diag1"></script>
   <script src="lab.js?v=20260913-budget1"></script>
 
 </body>
