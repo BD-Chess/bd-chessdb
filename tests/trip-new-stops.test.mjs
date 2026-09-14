@@ -57,18 +57,18 @@ test('Deep budget button continues the same worker with a new ID and no new look
   h.api.handleWorkerMessage({data:result});
   assert.equal(h.element('continueDeep').hidden,false);assert.equal(h.element('continueDeepLabel').textContent,'Continue calculating:');
   h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeepLabel').textContent,'Nadaljuj računanje:');
-  h.tick(3600000);h.api.continueDeep(60000);const next=h.jobs.at(-1);
+  h.tick(3600000);h.api.continueDeep(300000);const next=h.jobs.at(-1);
   assert.equal(next.type,'continue-deep');assert.equal(next.previousJobId,first.jobId);assert.notEqual(next.jobId,first.jobId);
   assert.equal(h.jobs.filter(m=>m.type==='solve'&&m.profile==='deep').length,1);assert.equal(h.workers[0].terminated,undefined);
   assert.equal(h.element('continueDeep').hidden,true);assert.equal(h.element('btnDeep').disabled,true);
   assert.match(h.element('searchProgressText').textContent,/Računanje/);
   assert.match(h.window.TripUI.t('Running · best found · Above known optimum: 357 EUC_2D (3.82%)','sl'),/Računanje · najboljša najdena/);
-  assert.equal(h.element('searchBudget').textContent,'2,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
-  h.api.continueDeep(60000);assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
+  assert.equal(h.element('searchBudget').textContent,'6,0 min');assert.equal(h.element('searchElapsed').textContent,'1,0 min');
+  h.api.continueDeep(300000);assert.equal(h.jobs.at(-1),next,'double click cannot add twice');
   h.api.handleWorkerMessage({data:{...result,jobId:first.jobId}});assert.equal(h.element('continueDeep').hidden,true,'old final response ignored');
   h.api.requestCancel();assert.equal(h.jobs.at(-1).jobId,next.jobId);
-  h.api.handleWorkerMessage({data:{...result,jobId:next.jobId,reason:'cancelled',cancelled:true,elapsedMs:62000,budgetMs:120000}});
-  assert.equal(h.element('continueDeep').hidden,false);h.api.continueDeep(60000);assert.equal(h.jobs.at(-1).previousJobId,next.jobId);
+  h.api.handleWorkerMessage({data:{...result,jobId:next.jobId,reason:'cancelled',cancelled:true,elapsedMs:62000,budgetMs:360000}});
+  assert.equal(h.element('continueDeep').hidden,false);h.api.continueDeep(300000);assert.equal(h.jobs.at(-1).previousJobId,next.jobId);
   h.api.cancelWork();
 });
 
@@ -84,7 +84,7 @@ test('Deep continuation is absent after optimum/error; edits and fresh calculati
     if(change==='fresh')await h.api.run('standard');
     if(change==='clear')h.api.clearComparison();
     h.api.refreshDeepContinue();assert.equal(h.element('continueDeep').hidden,true,change);
-    h.api.continueDeep(60000);assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false,change);
+    h.api.continueDeep(300000);assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false,change);
     h.api.cancelWork();
   }
 });
@@ -700,8 +700,20 @@ test('20-stop UI keeps large checked counts exact and posts the checkpoint on Re
  assert.equal(h.workers[0].terminated,true);assert.match(h.element('searchProgressText').textContent,/before a route was reported/);assert.equal(h.element('searchBest').textContent,'—');assert.equal(h.element('searchCancel').disabled,true);
  });
 
-test('all seven extra-time buttons use the selected budget, static label and SL/EN text',async()=>{
-  const choices=[[60000,'+1 min','+1 min'],[300000,'+5 min','+5 min'],[900000,'+15 min','+15 min'],[3600000,'+1 hour','+1 ura'],[14400000,'+4 hours','+4 ure'],[43200000,'+12 hours','+12 ur'],[86400000,'+1 day','+1 dan']];
+test('both channels expose five desktop budgets and only 5/15 minutes on mobile',()=>{
+  for(const channel of ['Trip','Trip/new']){
+    const html=readFileSync(new URL(`../public/${channel}/index.html`,import.meta.url),'utf8');
+    const buttons=[...html.matchAll(/<button id="continueDeep(\d+)"[^>]*>/g)];
+    assert.deepEqual(buttons.map(m=>Number(m[1])),[300000,900000,3600000,43200000,86400000]);
+    assert.deepEqual(buttons.filter(m=>!m[0].includes('deep-budget-desktop')).map(m=>Number(m[1])),[300000,900000]);
+    assert.doesNotMatch(html,/id="continueDeep(?:60000|14400000)"/);
+    const css=readFileSync(new URL(`../public/${channel}/style.css`,import.meta.url),'utf8');
+    assert.match(css,/@media\s*\(max-width:\s*1023px\)[\s\S]*\.deep-budget-choices\s*>\s*\.deep-budget-desktop\s*\{\s*display:\s*none/);
+  }
+});
+
+test('all five extra-time buttons use the selected budget, static label and SL/EN text',async()=>{
+  const choices=[[300000,'+5 min','+5 min'],[900000,'+15 min','+15 min'],[3600000,'+1 hour','+1 ura'],[43200000,'+12 hours','+12 ur'],[86400000,'+1 day','+1 dan']];
   const html=readFileSync(new URL('../public/Trip/new/index.html',import.meta.url),'utf8');
   assert.match(html,/<span id="continueDeepLabel"/);assert.doesNotMatch(html,/<button id="continueDeep"/);
   for(const [ms,en,sl] of choices){
@@ -710,7 +722,7 @@ test('all seven extra-time buttons use the selected budget, static label and SL/
     assert.equal(h.element('continueDeep'+ms).disabled,false);assert.equal(h.element('continueDeep'+ms).textContent,en);
     h.window.MDLxDCCLocale={current:()=> 'sl'};h.api.refreshDeepContinue();assert.equal(h.element('continueDeep'+ms).textContent,sl);
     assert.ok(html.includes(`id="continueDeep${ms}"`));
-    for(const invalid of [undefined,0,-1,NaN,Infinity,10000,'60000',86400001])h.api.continueDeep(invalid);
+    for(const invalid of [undefined,0,-1,NaN,Infinity,10000,60000,14400000,'60000',86400001])h.api.continueDeep(invalid);
     assert.equal(h.jobs.some(j=>j.type==='continue-deep'),false);assert.equal(h.element('continueDeep').hidden,false);
     h.api.continueDeep(ms);const next=h.jobs.at(-1);assert.equal(next.additionalBudgetMs,ms);assert.equal(next.previousJobId,first.jobId);
     assert.equal(h.element('continueDeep'+ms).disabled,true);assert.match(h.element('searchStarts').textContent,/39.*38/);
