@@ -12,7 +12,7 @@ const headers={
 const answer=(x,status=200)=>new Response(JSON.stringify(x),{status,headers});
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
-const ID_RE=/^[a-z][a-z0-9_-]{0,24}$/i;
+const ID_RE=/^[a-z][a-z0-9_-]{0,32}$/i;
 
 function env(name){try{return Netlify.env.get(name)||''}catch(_){return ''}}
 function gmailReady(){
@@ -30,7 +30,15 @@ function cleanPlan(p){
   if(!b||!ID_RE.test(String(b.id||''))||!Array.isArray(b.itemIds)||!Number.isFinite(Date.parse(b.dueAt)))continue;
   const ids=b.itemIds.map(String).filter(x=>ID_RE.test(x)&&x in items).slice(0,12);
   if(!ids.length)continue;
-  blocks.push({id:String(b.id),dueAt:new Date(b.dueAt).toISOString(),itemIds:ids,reminderSentAt:null,reminderDueAt:null});
+  blocks.push({
+   id:String(b.id),
+   dueAt:new Date(b.dueAt).toISOString(),
+   itemIds:ids,
+   remind:b.remind!==false,
+   label:typeof b.label==='string'?b.label.slice(0,120):'',
+   reminderSentAt:null,
+   reminderDueAt:null
+  });
  }
  return {date:String(p.date),wake:String(p.wake),timezone:'Europe/Ljubljana',items,blocks,updatedAt:new Date().toISOString(),emailReady:gmailReady()};
 }
