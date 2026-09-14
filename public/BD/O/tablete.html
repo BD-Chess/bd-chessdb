@@ -15,22 +15,25 @@ a{color:var(--cyan)}.top{position:sticky;top:0;background:#050913ed;border-botto
 .field{display:grid;gap:6px;margin:10px 0}.field span{font-weight:850}.field input,.field select{min-height:50px;border:1px solid #3c5875;border-radius:12px;background:#071120;color:#fff;padding:10px 12px;font:inherit}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick .active{border-color:var(--cyan);color:var(--cyan)}
 .meds{display:grid;gap:9px}.med{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:15px;background:#081421;padding:13px}
-.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input[type="checkbox"]{width:25px;height:25px;accent-color:#68dba2}.timeedit{min-height:32px;border:1px solid #55738f;border-radius:9px;background:#071120;color:#fff;padding:3px 7px;font:900 1em/1 system-ui;letter-spacing:.02em}.timeedit:focus{outline:2px solid #67e0d755;outline-offset:1px}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}
-.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:.82em}.timepill{display:inline-flex;align-items:center;border:1px solid #44627f;border-radius:999px;padding:3px 8px;background:#0b1b2b;color:#fff;font-weight:900}.status{font-weight:900;color:var(--gold)}.done .status{color:var(--green)}.late .status{color:var(--red)}
+.med.done{border-color:#2e7657;background:#0b2018}.med.late{border-color:#8a3643;background:#281119}.med input[type="checkbox"]{width:25px;height:25px;accent-color:#68dba2}.timeedit{min-height:44px;min-width:112px;border:1px solid #55738f;border-radius:9px;background:#071120;color:#fff;padding:3px 7px;font:900 1em/1 system-ui;letter-spacing:.02em}.timeedit:focus{outline:2px solid #67e0d755;outline-offset:1px}.name{display:block;font-weight:900}.dose{display:block;color:var(--muted);font-size:.82em}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:.82em}.timepill{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid #44627f;border-radius:999px;padding:3px 8px;background:#0b1b2b;color:#fff;font-weight:900}.status{font-weight:900;color:var(--gold)}.done .status{color:var(--green)}.late .status{color:var(--red)}
 .sub,.foot,.detailbody{color:var(--muted);font-size:.9em}.mail,.note{margin-top:10px;padding:10px 12px;border:1px solid #37516b;border-radius:12px;color:var(--muted)}.ok{color:var(--green)}.warn{color:var(--gold)}
 details{border:1px solid var(--line);border-radius:14px;background:#081421;margin:9px 0;padding:0 13px}summary{padding:13px 0;font-weight:900;cursor:pointer}.detailbody{padding:0 0 14px}.detailbody p{margin:.45em 0}.detailbody ul{margin:.35em 0 .75em;padding-left:1.25em}.detailbody li{margin:.3em 0}.src{font-size:.86em;border-top:1px solid #23364d;padding-top:9px;margin-top:11px}.src a{word-break:break-word}.hold{border-color:#6d5b2d}.pain{border-color:#74404a}.warningbox{border-left:4px solid var(--gold);background:#201c0d;padding:11px 13px;border-radius:0 12px 12px 0;color:#e9ddae;margin:.8em 0}.foot{text-align:center;padding:12px}
 @media(max-width:520px){body{font-size:19px}.hero,.panel{padding:14px}.med{padding:12px}.topin{align-items:flex-start;padding:7px 0}.tools{flex-wrap:wrap}}
+.savebar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.savebar button{min-height:44px;border:1px solid var(--cyan);border-radius:12px;background:#123336;color:var(--text);padding:9px 14px;font:inherit;font-weight:800}.savebar button:disabled{opacity:.45}.sync{font-size:.85em;color:var(--muted);margin:9px 0 0;min-height:1.5em}
 </style>
 </head>
 <body>
 <header class="top"><div class="topin"><a href="/BD/O/">← BD · Osebno</a><div class="tools"><button id="minus" type="button">A−</button><button id="plus" type="button">A+</button></div></div></header>
 <main class="wrap">
-<section class="hero"><div class="kicker">Dnevni načrt</div><h1>Tablete</h1><p class="sub">Ure se prilagodijo času vstajanja. Vsako priporočeno uro lahko tudi ročno popraviš.</p></section>
+<section class="hero"><div class="kicker">Dnevni načrt</div><h1>Tablete</h1><p class="sub">Ure se prilagodijo času vstajanja. Tapni priporočeno uro, jo popravi in izberi »Shrani ure«. Spremembe veljajo za izbrani dan.</p></section>
 
 <section class="panel">
   <div class="quick"><button id="todayBtn" type="button">Danes</button><button id="tomorrowBtn" type="button">Jutri</button></div>
   <label class="field"><span>Dan</span><input id="date" type="date"></label>
   <label class="field"><span>Vstal bom / sem vstal ob</span><select id="wake"></select></label>
+  <div class="savebar"><button id="saveTimes" type="button" disabled>Shrani ure</button><button id="cancelTimes" type="button" disabled>Prekliči spremembe</button></div>
+  <p id="sync" class="sync" role="status" aria-live="polite">Nalagam shranjeni načrt …</p>
   <div class="mail" id="mail">Nalagam stanje opomnikov …</div>
 </section>
 
@@ -155,15 +158,17 @@ const painList=[
  {id:'lekadol',name:'LEKADOL',dose:'500 mg'},
  {id:'brufen',name:'Brufen',dose:'600 mg · samo skladno z navodilom zdravnika'}
 ];
-let state;
+let state,busy=false,loaded=false,draftTimes={};
+const syncEl=document.getElementById('sync'),saveTimesEl=document.getElementById('saveTimes'),cancelTimesEl=document.getElementById('cancelTimes');
+const TIME_RE=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const dateEl=document.getElementById('date'),wakeEl=document.getElementById('wake'),todayBtnEl=document.getElementById('todayBtn'),tomorrowBtnEl=document.getElementById('tomorrowBtn'),regEl=document.getElementById('regular'),optEl=document.getElementById('optional'),painEl=document.getElementById('pain'),mailEl=document.getElementById('mail'),minusEl=document.getElementById('minus'),plusEl=document.getElementById('plus');
 const pad=n=>String(n).padStart(2,'0');
 const today=()=>{const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`};
 const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
-function epoch(date,time){const [y,m,d]=date.split('-').map(Number),[h,mi]=time.split(':').map(Number),want=Date.UTC(y,m-1,d,h,mi);let g=want;const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});for(let i=0;i<4;i++){const p=Object.fromEntries(f.formatToParts(new Date(g)).map(x=>[x.type,x.value])),got=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second),z=want-g;if(!z)break;g+=z}return g}
+function epoch(date,time){const [y,m,d]=date.split('-').map(Number),[h,mi]=time.split(':').map(Number),want=Date.UTC(y,m-1,d,h,mi);let g=want;const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});for(let i=0;i<4;i++){const p=Object.fromEntries(f.formatToParts(new Date(g)).map(x=>[x.type,x.value])),got=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second),z=want-got;if(!z)return g;g+=z}throw Error('Ta lokalna ura zaradi premika poletnega časa ne obstaja. Izberi drugo uro.')}
 function at(w,o){const [h,m]=w.split(':').map(Number),v=((h*60+m+o)%1440+1440)%1440;return pad(Math.floor(v/60))+':'+pad(v%60)}
 function mins(t){const [h,m]=String(t).split(':').map(Number);return h*60+m}
-function localDueEpoch(date,wake,time,x){let v=epoch(date,time);if(x.rollover&&mins(time)<mins(wake))v+=86400000;return v}
+function localDueEpoch(date,wake,time,x){return epoch(x.rollover&&mins(time)<mins(wake)?add(date,1):date,time)}
 function defaultTime(wake,x){return at(wake,x.offset)}
 function blockFor(id){return (state?.blocks||[]).find(b=>b.id==='med_'+id)}
 function displayedTime(x){const b=blockFor(x.id);if(b?.dueAt)return new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(b.dueAt));return defaultTime(state.wake,x)}
@@ -182,7 +187,7 @@ async function api(method,date,body){const r=await fetch(API+(date?'?date='+enco
 function takenText(iso){return 'Vzeto '+new Intl.DateTimeFormat('sl-SI',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}).format(new Date(iso))}
 function card(x,opt=false){
  const taken=state.items?.[x.id]?.takenAt||null,due=dueFor(x),late=state.date===today()&&!taken&&x.remind!==false&&Date.now()>due+GRACE*60000,status=taken?takenText(taken):late?'ZAMUJA':'ni še označeno',cls=taken?'done':late?'late':'',recommended=displayedTime(x);
- return `<div class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob <input class="timeedit" type="time" step="300" data-time-id="${x.id}" value="${recommended}" aria-label="Priporočena ura za ${x.name}"></span><span class="status">${status}</span>${opt?'<span>po potrebi · brez e-mail alarma</span>':''}</span></span></div>`
+ return `<div class="med ${cls}"><input type="checkbox" data-id="${x.id}" ${taken?'checked':''} ${state.date>today()?'disabled':''}><span><span class="name">${x.name}</span><span class="dose">${x.dose}</span><span class="meta"><span class="timepill">Priporočeno ob <input class="timeedit" type="time" step="60" data-time-id="${x.id}" value="${recommended}" aria-label="Priporočena ura za ${x.name} ${x.dose}"></span><span class="status">${status}</span>${opt?'<span>po potrebi · brez e-mail alarma</span>':''}</span></span></div>`
 }
 function painCard(x){
  const taken=state.items?.[x.id]?.takenAt||null,status=taken?takenText(taken):'nisem vzel',cls=taken?'done':'';
@@ -194,56 +199,88 @@ function preserveIntoPlan(remote){
  return p
 }
 function hasAllItems(s){return [...regList,...optList,...painList].every(x=>s?.items&&Object.prototype.hasOwnProperty.call(s.items,x.id))}
+function dirty(){return Object.keys(draftTimes).length>0}
+function controls(){
+ for(const el of [dateEl,wakeEl,todayBtnEl,tomorrowBtnEl])el.disabled=busy||!loaded||dirty();
+ document.querySelectorAll('.med input[type=checkbox]').forEach(c=>c.disabled=busy||!loaded||dirty()||state.date>today());
+ document.querySelectorAll('.timeedit').forEach(t=>t.disabled=busy||!loaded);
+ saveTimesEl.disabled=busy||!loaded||!dirty();cancelTimesEl.disabled=busy||!loaded||!dirty();
+}
+function message(text,error=false){syncEl.textContent=text;syncEl.classList.toggle('warn',error)}
 function bindChecks(){
  document.querySelectorAll('.med input[type=checkbox]').forEach(c=>c.onchange=async()=>{
-  const old=c.checked;c.disabled=true;
-  try{const j=await api('POST','',{action:'taken',date:state.date,id:c.dataset.id,taken:old,takenAt:old?new Date().toISOString():null});state=j.state;render()}
-  catch(e){c.checked=!old;c.disabled=false;alert('Shranjevanje ni uspelo: '+e.message)}
+  const checked=c.checked,id=c.dataset.id;busy=true;controls();message('Shranjujem oznako …');
+  try{const j=await api('POST','',{action:'taken',date:state.date,id,taken:checked,takenAt:checked?new Date().toISOString():null});state=j.state;message('Oznaka je shranjena.')}
+  catch(e){message('Oznaka ni shranjena: '+e.message,true)}
+  finally{busy=false;render()}
  })
 }
 function bindTimes(){
- document.querySelectorAll('.timeedit').forEach(t=>t.onchange=async()=>{
-  const times=currentTimeMap();times[t.dataset.timeId]=t.value;
-  const p=plan(state.date,state.wake,times);
-  for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
-  p.emailReady=state.emailReady;state=p;render();
-  try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}
-  catch(e){mailEl.textContent='Ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}
+ document.querySelectorAll('.timeedit').forEach(t=>t.oninput=()=>{
+  const x=[...regList,...optList].find(x=>x.id===t.dataset.timeId);
+  if(t.value===displayedTime(x))delete draftTimes[x.id];else draftTimes[x.id]=t.value;
+  message(dirty()?'Ure so spremenjene. Potrdi jih z »Shrani ure«.':'Ure so shranjene.');controls();
  })
 }
+async function saveTimes(){
+ if(busy||!loaded||!dirty())return;
+ if(Object.values(draftTimes).some(t=>!TIME_RE.test(t))){message('Vnesi veljavno uro v vsa spremenjena polja.',true);return}
+ busy=true;controls();message('Shranjujem ure …');
+ try{
+  const latest=await api('GET',state.date),p=latest.state;
+  if(!p)throw Error('Načrt ni dosegljiv. Ponovno naloži stran.');
+  for(const [id,time] of Object.entries(draftTimes)){
+   const x=[...regList,...optList].find(x=>x.id===id),b=p.blocks.find(b=>b.id==='med_'+id),before=blockFor(id);
+   if(!b||!before||b.dueAt!==before.dueAt||p.wake!==state.wake)throw Error('Urnik je bil medtem spremenjen drugje. Prekliči spremembe in preveri nov načrt.');
+   b.dueAt=new Date(localDueEpoch(p.date,p.wake,time,x)).toISOString();
+  }
+  const j=await api('POST','',{action:'plan',plan:p});state=j.state;draftTimes={};message('Ure so shranjene. Opomniki bodo sledili tem uram.');
+ }catch(e){message('Ure niso shranjene: '+e.message,true)}
+ finally{busy=false;if(dirty())controls();else render()}
+}
+saveTimesEl.onclick=saveTimes;
+cancelTimesEl.onclick=()=>{draftTimes={};load(state.date).catch(e=>message('Nalaganje ni uspelo: '+e.message,true))};
 function render(){
  dateEl.value=state.date;wakeEl.value=state.wake;
  todayBtnEl.classList.toggle('active',state.date===today());tomorrowBtnEl.classList.toggle('active',state.date===add(today(),1));
  regEl.innerHTML=regList.map(x=>card(x)).join('');
  optEl.innerHTML=optList.map(x=>card(x,true)).join('');
  painEl.innerHTML=painList.map(x=>painCard(x)).join('');
- mailEl.innerHTML=`E-mail opomnik po <strong>${GRACE} min</strong> zamude samo za redna zdravila · `+(state.emailReady?'<span class="ok">pošiljanje je vključeno</span>':'<span class="warn">pošiljanje še ni povezano z Gmailom</span>');
- bindChecks();bindTimes()
+ mailEl.innerHTML=`E-mail opomnik po <strong>${GRACE} min</strong> zamude samo za redna zdravila · `+(state.emailReady?'<span class="ok">pošiljanje je vključeno</span>':'<span class="warn">pošiljanje še ni vključeno</span>');
+ bindChecks();bindTimes();controls()
 }
 async function load(date){
- let j=await api('GET',date);
- if(!j.state){
+ busy=true;controls();message('Nalagam shranjeni načrt …');
+ try{
+  let j=await api('GET',date);
+  if(!j.state){
    const defaultWake=date==='2026-09-14'?'09:00':'08:00';
    j=await api('POST','',{action:'plan',plan:plan(date,defaultWake)})
- }else if(!hasAllItems(j.state)){
+  }else if(!hasAllItems(j.state)){
    j=await api('POST','',{action:'plan',plan:preserveIntoPlan(j.state)})
- }
- state=j.state;render()
+  }
+  state=j.state;loaded=true;message('Načrt je naložen. Ure lahko spremeniš in shraniš.');
+ }finally{busy=false;render()}
 }
 for(let h=0;h<24;h++)for(let m=0;m<60;m+=15)wakeEl.add(new Option(pad(h)+':'+pad(m),pad(h)+':'+pad(m)));
 state=plan(today(),today()==='2026-09-14'?'09:00':'08:00');state.emailReady=false;render();
-dateEl.onchange=()=>load(dateEl.value).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
-todayBtnEl.onclick=()=>load(today()).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
-tomorrowBtnEl.onclick=()=>load(add(today(),1)).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
+const loadError=e=>message('Sinhronizacija ni uspela: '+e.message+' · prikazane ure niso potrjene.',true);
+dateEl.onchange=()=>load(dateEl.value).catch(loadError);
+todayBtnEl.onclick=()=>load(today()).catch(loadError);
+tomorrowBtnEl.onclick=()=>load(add(today(),1)).catch(loadError);
 wakeEl.onchange=async()=>{
- const p=plan(state.date,wakeEl.value);
- for(const [id,v] of Object.entries(state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
- p.emailReady=state.emailReady;state=p;render();
- try{const j=await api('POST','',{action:'plan',plan:p});state=j.state;render()}
- catch(e){mailEl.textContent='Nova ura je prikazana, strežniško shranjevanje pa ni uspelo: '+e.message}
+ busy=true;controls();message('Shranjujem načrt glede na vstajanje …');
+ try{
+  const wake=wakeEl.value,latest=await api('GET',state.date);
+  if(latest.state?.updatedAt!==state.updatedAt)throw Error('Načrt je bil medtem spremenjen drugje. Ponovno naloži stran.');
+  const p=plan(state.date,wake);
+  for(const [id,v] of Object.entries(latest.state.items||{}))if(v?.takenAt&&p.items[id])p.items[id].takenAt=v.takenAt;
+  const j=await api('POST','',{action:'plan',plan:p});state=j.state;message('Čas vstajanja in priporočene ure so shranjeni.');
+ }catch(e){message('Novi načrt ni shranjen: '+e.message,true)}
+ finally{busy=false;render()}
 };
 let fs=100;minusEl.onclick=()=>{fs=Math.max(70,fs-10);document.documentElement.style.fontSize=fs/100*16+'px'};plusEl.onclick=()=>{fs+=10;document.documentElement.style.fontSize=fs/100*16+'px'};
-load(today()).catch(e=>{mailEl.textContent='Sinhronizacija ni uspela: '+e.message+' · plan je še vedno viden.'});
+load(today()).catch(loadError);
 })();
 </script>
 </body></html>
