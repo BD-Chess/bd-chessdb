@@ -1226,6 +1226,9 @@ Bad example:
       const row = document.createElement('tr');
       if (method === AIR_NAME) row.className = 'air-comparison';
       else if (method === 'Our Optimize (Deep)') row.className = 'deep-comparison';
+      else if (method === 'Our Optimize (Deep · MDLxDCC)') {
+        row.style.cssText = 'background:rgba(212,175,55,.12);color:#f4d675;font-weight:600';
+      }
       let description = result.state;
       if (method !== 'Brute Force' && method !== AIR_NAME && provenExactKm !== null) {
         description = Math.abs(result.km-provenExactKm) <= 1e-9 ? 'Matches exact optimum' : `${formatValue(result.km-provenExactKm,result.planar)} above exact optimum`;
