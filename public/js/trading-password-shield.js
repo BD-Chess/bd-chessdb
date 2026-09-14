@@ -150,16 +150,14 @@
     const keyMaterial = await crypto.subtle.importKey('raw', material, 'PBKDF2', false, ['deriveBits']);
     return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: ITERS, hash: 'SHA-256' }, keyMaterial, 256));
   }
+
+  // Read the gzip stream concurrently. Waiting for writer.close() before reading
+  // can deadlock on larger protected pages because of stream backpressure.
   async function decompress(data) {
-    const stream = new DecompressionStream('gzip');
-    const writer = stream.writable.getWriter();
-    const reader = stream.readable.getReader();
-    await writer.write(data);
-    await writer.close();
-    const chunks = [];
-    while (true) { const item = await reader.read(); if (item.done) break; chunks.push(item.value); }
-    return merge(...chunks);
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
   }
+
   async function decrypt(blob, passHash) {
     const bytes = from64(blob);
     if (bytes.length < 60) throw new Error('Invalid protected payload');
