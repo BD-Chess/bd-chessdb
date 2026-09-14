@@ -117,6 +117,11 @@ function afterRender(){
  let button=$('lockNow');
  if(!button){button=document.createElement('button');button.id='lockNow';button.type='button';button.textContent='Zakleni';const box=document.querySelector('.tools,.top-actions,.actions')||document.body;box.appendChild(button);}
  button.onclick=lock;
+ const here=location.pathname.replace(/\/+$/,'/');
+ if(/\/BD\/O\/(?:index\.html)?$/i.test(here)){
+  let sef=$('bdoSefLink');
+  if(!sef){sef=document.createElement('a');sef.id='bdoSefLink';sef.href=ROOT+'sef.html';sef.textContent='🔐 Sef';sef.title='Skrite poti, gesla in dostopi';sef.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 12px;border:1px solid #4c7b75;border-radius:999px;background:#10252b;color:#7fe8dd;font:800 14px/1.2 system-ui;text-decoration:none';const box=document.querySelector('.tools,.top-actions,.actions')||document.body;box.appendChild(sef);}
+ }
  window.addEventListener('pageshow',guard);
  window.addEventListener('pagehide',()=>{document.documentElement.style.visibility='hidden';});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)guard();});
