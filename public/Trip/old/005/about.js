@@ -1,0 +1,1 @@
+/* About content now lives in help.js as the second Help paragraph and in help.html. */

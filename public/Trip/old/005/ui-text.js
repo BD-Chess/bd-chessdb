@@ -2,15 +2,6 @@
 (() => {
   'use strict';
   const words={
-    "Reference is informational: numerical conventions differ for this dataset.":"Referenca je informativna: numerični konvenciji se pri tej zbirki razlikujeta.",
-    "Experimental Deep runs on this device. Hidden or closed tabs pause calculation. Unlock to recover the last encrypted checkpoint (up to 7 days); a new run replaces it.":"Eksperimentalni Deep računa na tej napravi. Skrit ali zaprt zavihek računanje ustavi. Po odklepu obnovi zadnje šifrirano stanje (do 7 dni); nov izračun ga nadomesti.",
-    "Local checkpoint":"Lokalno shranjeno stanje",
-    "Recover saved run":"Obnovi shranjeni izračun",
-    "Delete saved run":"Izbriši shranjeni izračun",
-    "Unlock experimental calculation":"Odkleni eksperimentalni izračun",
-    "Private access password":"Geslo za zasebni dostop",
-    "Unlock":"Odkleni",
-    "Active time includes local preparation, models and verification. Pauses, checkpoint storage and map drawing are separate. Hidden tabs pause calculation.":"Aktivni čas vključuje lokalno pripravo, modele in preverjanje. Pavze, hramba stanja in risanje mape so ločeni. Skrit zavihek računanje ustavi.",
 "Planar distances (TSP)":"Ravninske razdalje (TSP)","Planar TSP (EUC_2D)":"Ravninske razdalje TSP (EUC_2D)","Known optima source":"Vir znanih optimumov","Checking the original TSP reference…":"Preverjanje izvirne reference TSP …","Complete original round trip · reference applies.":"Celotna izvirna povratna pot · referenca velja.","Reference only: requires the complete original dataset, Planar TSP and Round Trip.":"Samo referenca: potrebni so celoten izvirni seznam, Ravninske razdalje TSP in Povratna pot.","Known optimum reached · gap 0%":"Znani optimum dosežen · odstopanje 0 %","TSP points adapted for Maps. Direct Line uses great-circle kilometres, not the original EUC_2D benchmark score. Duplicate locations keep their node IDs.":"Točke TSP so prilagojene zemljevidu. Zračna linija uporablja kilometre po velikem krogu. Za izvirno metriko vključi Ravninske razdalje TSP.","TSP loads Planar distances by default: original rounded EUC_2D units, not kilometres. Turn off Planar distances to use great-circle kilometres. Duplicate locations keep their node IDs.":"TSP privzeto vključi ravninske razdalje: izvirne zaokrožene enote EUC_2D, ne kilometrov. Za kilometre po velikem krogu odznači ravninske razdalje. Ponovljene lokacije ohranijo oznake točk.","Showing the TSP route on Maps; cost uses original EUC_2D units.":"Prikazana je pot TSP na zemljevidu; izračun uporablja izvirne enote EUC_2D.","Planar TSP: optimization uses original EUC_2D costs, not kilometres.":"Ravninski TSP: optimizacija uporablja izvirne vrednosti EUC_2D, ne kilometrov.","TSP loaded with Planar distances. Choose Fast or Deep to calculate locally.":"TSP je naložen z ravninskimi razdaljami. Za lokalni izračun izberi hitro ali poglobljeno optimizacijo.","TSP stops were changed. Reload the collection or turn off Planar distances (TSP).":"Točke TSP so spremenjene. Znova naloži zbirko ali odznači Ravninske razdalje (TSP).","Select a TSP collection to use Planar distances (TSP).":"Za ravninske razdalje TSP izberi zbirko TSP.","Original TSP checksum does not match.":"Kontrolna vsota izvirnika TSP se ne ujema.","TSP reference download failed. Please try again.":"Prenos reference TSP ni uspel. Poskusi znova.","TSP reference does not match this dataset.":"Referenca TSP ne ustreza tej zbirki.","Invalid original TSP dataset.":"Neveljavna izvirna zbirka TSP.","Original TSP coordinates are required.":"Potrebne so izvirne koordinate TSP.","Reduction versus the entered order, using original rounded EUC_2D costs.":"Prihranek glede na vneseni vrstni red z izvirnimi zaokroženimi vrednostmi EUC_2D.","Same stops and START. Each row states its distance units. Fast and Deep report the best route found. Completed Brute Force proves the table optimum. A matching known TSP optimum applies only to the complete original EUC_2D round trip. Times exclude data preparation and map drawing.":"Isti postanki in START. Vsaka vrstica navaja svoje enote. Hitra in poglobljena metoda poročata o najboljši najdeni poti. Končan Brute Force dokaže optimum matrike. Ujemanje z znanim optimumom TSP velja le za celotno izvirno povratno pot EUC_2D. Časi ne vključujejo priprave podatkov in risanja zemljevida.",
 
     "Map refresh interval":"Čas osveževanja mape",
@@ -267,7 +258,7 @@
     'Best road-table distance:':'Najboljša cestna razdalja po matriki:','Best direct distance:':'Najboljša zračna razdalja:',
     'Full-search time remaining at this rate':'Preostali čas celotnega iskanja pri tej hitrosti','Estimated remaining':'Ocenjeni preostali čas','Elapsed:':'Preteklo:','Speed:':'Hitrost:',
     'Complete':'Končano','Cancelled':'Prekinjeno','Running':'Računanje','measuring…':'merjenje …',' remaining':' do konca',' done':' končano',
-    ' CPU workers':' CPU delavcev',' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
+    ' orders checked':' preverjenih vrstnih redov',' orders/s':' vrstnih redov/s',' possible orders.':' možnih vrstnih redov.',
     'Estimated full search:':'Ocenjeni čas celotnega iskanja:','illustration at 1.000.000 orders/s; actual speed depends on this device':'ponazoritev pri 1.000.000 vrstnih redih/s; dejanska hitrost je odvisna od naprave',
     'Brute Force unavailable above 20 stops.':'Brute Force je nad 20 postanki izklopljen.',
     'extrapolated at ':'ocenjeno pri ',' measured with ':' izmerjeno pri ',' stops':' postankov',
@@ -281,14 +272,6 @@
   };
   function t(raw, lang=window.MDLxDCCLocale?.current()||'en'){
     const text=String(raw??'');if(lang!=='sl')return text;
-    const poolWords={
-      'CPU workers':'CPU delavci',
-      'Import previous one-worker run (copy)':'Uvozi prejšnji tek z enim delavcem (kopija)',
-      'Default 1. The device limit is a browser estimate. Changes apply to a new Deep run; Continue keeps its saved worker count.':'Privzeto 1. Meja naprave je ocena brskalnika. Sprememba velja za nov Deep tek; Nadaljuj ohrani shranjeno število delavcev.'
-    };
-    if(poolWords[text])return poolWords[text];
-    if(text.startsWith('Pool active wall time;'))return text.replace('Pool active wall time; pauses and checkpoint storage are separate. Hidden tabs pause calculation.','Aktivni čas celotnega poola; premori in shranjevanje so ločeni. Skrit zavihek računanje ustavi.').replace('CPU workers','CPU delavcev').replace('Sum of worker active time:','Vsota aktivnih časov delavcev:');
-
     if(words[text])return words[text];
     let s=text;
     if (!/^Loaded:|^Invalid coordinates|^Address lookup|^"/.test(s)) {
