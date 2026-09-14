@@ -1142,6 +1142,7 @@ Bad example:
   function renderDiagnostics(){
     const run=diagnosticsRun;if(!run)return;
     const receipt=run.receipt,timing=run.kind==='private'?receipt.timing:ordinaryTiming(run),diag=receipt?.diagnostics;
+    $('diagnosticsRun').removeAttribute('data-ui-text');
     $('diagnosticsRun').textContent=(run.kind==='private'?'MDLxDCC':'Deep')+' · '+run.runId;
     const fields={diagnosticsElapsed:'elapsed_wall_ms',diagnosticsUsed:'budget_used_ms',diagnosticsRemaining:'remaining_ms',diagnosticsCompute:'worker_compute_ms_sum',diagnosticsOverrun:'budget_overrun_ms',diagnosticsInit:'initialization_ms',diagnosticsStorage:'storage_ms',diagnosticsWork:'diagnostic_ms',diagnosticsFinalization:'finalization_ms'};
     for(const [id,key] of Object.entries(fields))UI.set($(id),diagnosticDuration(timing?.[key]));
