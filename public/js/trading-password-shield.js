@@ -1,6 +1,6 @@
 /*
   8Z Shield — Trading password-only runtime.
-  Supports both encrypted HTML fragments and encrypted complete documents.
+  Supports encrypted HTML fragments and encrypted complete documents.
   No plaintext passphrase or derived credential is stored in this file.
 */
 (function () {
@@ -53,6 +53,11 @@
   })();
   let copy = copies[language];
 
+  function isBBSHPage() {
+    return /BB Surfing Hedge/i.test(document.title) ||
+      /\/bd\/(?:bbsh(?:\.html)?|trading\/bb-surfing-hedge)\/?$/i.test(location.pathname);
+  }
+
   function injectStyle() {
     if (document.getElementById('trading-shield-style')) return;
     const style = document.createElement('style');
@@ -83,6 +88,14 @@
       @media print{[data-trading-shield] .trading-shield-content{display:none!important}.trading-shield-dialog{display:none!important}}
       @media(max-width:600px){.trading-shield-shell{grid-template-columns:auto 1fr}.trading-shield-button{grid-column:2;justify-self:start}}
     `;
+    if (isBBSHPage()) {
+      style.textContent += `
+        @media(min-width:981px){
+          body.trading-protected-outer .trading-protected-page{max-width:1500px!important;width:calc(100% - 32px)!important;padding-left:0!important;padding-right:0!important}
+          body.trading-protected-outer .trading-protected-card{padding:clamp(1.2rem,2.2vw,2.2rem)!important}
+        }
+      `;
+    }
     document.head.append(style);
   }
 
@@ -199,19 +212,16 @@
   function isCompleteDocument(html) {
     return /^\s*<!doctype\s+html/i.test(html) || /<html(?:\s|>)/i.test(html);
   }
-
   function replaceWithDocument(html) {
     document.open();
     document.write(html);
     document.close();
   }
-
   function mount(section, html) {
     if (isCompleteDocument(html)) {
       replaceWithDocument(html);
       return;
     }
-
     const content = section.querySelector('.trading-shield-content');
     if (!content || section.dataset.mounted === '1') return;
     content.innerHTML = html;
