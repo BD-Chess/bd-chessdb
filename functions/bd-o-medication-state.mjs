@@ -18,6 +18,8 @@ function env(name){try{return Netlify.env.get(name)||''}catch(_){return ''}}
 function gmailReady(){
  return Boolean(env('BD_MED_GMAIL_CLIENT_ID')&&env('BD_MED_GMAIL_CLIENT_SECRET')&&env('BD_MED_GMAIL_REFRESH_TOKEN')&&env('BD_MED_REMINDER_TO'));
 }
+function netlifyEmailReady(){return env('BD_MED_NETLIFY_FORM_EMAIL')==='1'&&Boolean(env('BD_MED_REMINDER_TO'))}
+function emailReady(){return gmailReady()||netlifyEmailReady()}
 function cleanPlan(p){
  if(!p||!DATE_RE.test(String(p.date||''))||!TIME_RE.test(String(p.wake||'')))throw new Error('plan');
  const items={};
@@ -40,11 +42,11 @@ function cleanPlan(p){
    reminderDueAt:null
   });
  }
- return {date:String(p.date),wake:String(p.wake),timezone:'Europe/Ljubljana',items,blocks,updatedAt:new Date().toISOString(),emailReady:gmailReady()};
+ return {date:String(p.date),wake:String(p.wake),timezone:'Europe/Ljubljana',items,blocks,updatedAt:new Date().toISOString(),emailReady:emailReady()};
 }
 async function read(store,date){
  const x=await store.get('day-'+date,{type:'json'});
- if(x)x.emailReady=gmailReady();
+ if(x)x.emailReady=emailReady();
  return x||null;
 }
 
@@ -54,7 +56,7 @@ export default async req=>{
  if(req.method==='GET'){
   const date=String(url.searchParams.get('date')||'');
   if(!DATE_RE.test(date))return answer({ok:false,error:'date'},400);
-  return answer({ok:true,state:await read(store,date),emailReady:gmailReady()});
+  return answer({ok:true,state:await read(store,date),emailReady:emailReady()});
  }
  if(req.method!=='POST')return answer({ok:false,error:'method'},405);
  let body;try{body=await req.json()}catch(_){return answer({ok:false,error:'json'},400)}
@@ -72,7 +74,7 @@ export default async req=>{
    if(!DATE_RE.test(date)||!ID_RE.test(id))return answer({ok:false,error:'input'},400);
    const x=await read(store,date);if(!x||!x.items?.[id])return answer({ok:false,error:'not_found'},404);
    x.items[id].takenAt=body.taken?(Number.isFinite(Date.parse(body.takenAt))?new Date(body.takenAt).toISOString():new Date().toISOString()):null;
-   x.updatedAt=new Date().toISOString();x.emailReady=gmailReady();
+   x.updatedAt=new Date().toISOString();x.emailReady=emailReady();
    await store.setJSON('day-'+date,x);return answer({ok:true,state:x});
   }
   return answer({ok:false,error:'action'},400);
