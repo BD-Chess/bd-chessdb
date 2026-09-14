@@ -119,6 +119,15 @@ function afterRender(){
  button.onclick=lock;
  const here=location.pathname.replace(/\/+$/,'/');
  if(/\/BD\/O\/(?:index\.html)?$/i.test(here)){
+  let med=$('bdoMedicationShortcut');
+  if(!med){
+   med=document.createElement('a');med.id='bdoMedicationShortcut';med.href=ROOT+'tablete.html';med.setAttribute('aria-label','Odpri dnevni načrt tablet');
+   med.innerHTML='<span style="font-size:1.7em;line-height:1">💊</span><span style="min-width:0"><strong style="display:block;color:#fff;font:900 1.15em/1.2 system-ui,-apple-system,Segoe UI,sans-serif">Tablete · dnevni načrt</strong><small style="display:block;margin-top:4px;color:#b8c7d8;font:700 .78em/1.35 system-ui,-apple-system,Segoe UI,sans-serif">Danes / jutri · ura vstajanja · checkboxi · opomniki</small></span><span style="font-size:1.5em;color:#67e0d7;font-weight:900">→</span>';
+   med.style.cssText='display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-decoration:none;color:#f3f8ff;border:1px solid rgba(103,224,215,.65);border-radius:20px;background:linear-gradient(135deg,rgba(103,224,215,.15),rgba(121,192,255,.08)),#0d1727;padding:16px 18px;margin:0 0 16px;box-shadow:0 14px 36px rgba(0,0,0,.28);min-width:0';
+   const hero=document.querySelector('.hero');
+   const host=document.querySelector('main,.wrap,.container,.content');
+   if(hero&&hero.parentNode)hero.insertAdjacentElement('afterend',med);else if(host)host.prepend(med);else document.body.prepend(med);
+  }
   let sef=$('bdoSefLink');
   if(!sef){sef=document.createElement('a');sef.id='bdoSefLink';sef.href=ROOT+'sef.html';sef.textContent='🔐 Sef';sef.title='Skrite poti, gesla in dostopi';sef.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 12px;border:1px solid #4c7b75;border-radius:999px;background:#10252b;color:#7fe8dd;font:800 14px/1.2 system-ui;text-decoration:none';const box=document.querySelector('.tools,.top-actions,.actions')||document.body;box.appendChild(sef);}
  }
