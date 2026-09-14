@@ -13,8 +13,11 @@ function lockAll(){try{sessionStorage.removeItem(PORTAL_SESSION);sessionStorage.
 async function openSef(raw){
  if(sefCfg.format!=='BD-O-SEF-2'||sefCfg.vault!==portalCfg.vault)throw new Error('Sef ne pripada trenutni BD/O različici.');
  const key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);
- const c=sefCfg.cipher;let out;
- try{out=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(c.iv),additionalData:TE.encode(c.aad)},key,from64(c.data)));}
+ const c=sefCfg.cipher;
+ const chunks=await Promise.all(sefCfg.data.parts.map(async part=>{const r=await fetch(ROOT+part.path,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});if(!r.ok)throw new Error('Prenos Sef podatkov ni uspel.');const t=await r.text();if(await sha256hex(TE.encode(t))!==part.sha256)throw new Error('Preverjanje celovitosti Sef dela ni uspelo.');return t;}));
+ const encoded=chunks.join('');if(await sha256hex(TE.encode(encoded))!==sefCfg.data.sha256)throw new Error('Preverjanje celovitosti Sefa ni uspelo.');
+ let out;
+ try{out=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(c.iv),additionalData:TE.encode(c.aad)},key,from64(encoded)));}
  catch(_){throw new Error('BD/O seja ne more odpreti Sefa. Osveži Osebno in poskusi znova.');}
  if(sefCfg.compression==='gzip'){const stream=new Blob([out]).stream().pipeThrough(new DecompressionStream('gzip'));out=new Uint8Array(await new Response(stream).arrayBuffer());}
  if(await sha256hex(out)!==sefCfg.plaintext_sha256)throw new Error('Preverjanje celovitosti Sefa ni uspelo.');
