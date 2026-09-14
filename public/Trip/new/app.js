@@ -1036,7 +1036,10 @@ Bad example:
 
     // Merge history and system prompt for the proxy
     const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +5 or +15 minutes, +1 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. Mobile displays only +5 min and +15 min; desktop shows all five extra-time options. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
-    const fullPrompt = sysPrompt + guiContext + "\n\nHistory:\n" + 
+    const experimentalContext = window.TripPrivate?.enabled()
+      ? '\nLAB experimental mode is enabled for Optimize (Deep): it runs locally in a browser Worker and pauses when the tab is hidden or closed. Unlock again to recover the last encrypted local checkpoint including the input and distance table. Continue adds time without fetching another road table. Fast and Brute Force keep their existing behavior.\n'
+      : '';
+    const fullPrompt = sysPrompt + guiContext + experimentalContext + "\n\nHistory:\n" +
       history.map(m => `${m.role.toUpperCase()}: ${m.parts[0].text}`).join('\n');
 
     const controller = new AbortController();
@@ -1109,6 +1112,15 @@ Bad example:
     const current=()=>jobId===jobVersion&&problemSignature()===saved.signature;
     activeJob={...saved.job,jobId,current,cancelling:false,cancelTimer:null,
       latest:saved.result,lastMapRefresh:performance.now(),mapPending:false};
+    if(activeJob.private) {
+      window.TripPrivate.setBusy(true);refreshBruteInfo();$('btnCancelWork').disabled=false;
+      const job=activeJob;
+      window.TripPrivate.resume(job,additionalBudgetMs).catch(error=>{
+        if(activeJob!==job)return;
+        activeJob=null;pausedDeep=saved;finishWork();setStatus(error.message,'bad');
+      });
+      return;
+    }
     setPlanningMode(false);
     const progress={...saved.result,type:'progress',reason:null,cancelled:false,phase:'searching',
       budgetMs:saved.result.budgetMs+additionalBudgetMs};
@@ -1118,7 +1130,7 @@ Bad example:
     worker.postMessage({type:'continue-deep',previousJobId:saved.job.jobId,jobId,additionalBudgetMs});
   }
   function problemSignature() {
-    return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked, planarSelected()]);
+    return JSON.stringify([$('input').value, currentTravelMode, $('chkDirect').checked, $('chkRoundTrip').checked, planarSelected(),!!window.TripPrivate?.enabled()]);
   }
   function resumeAvailable() {
     if (pausedBrute && pausedBrute.signature !== problemSignature()) pausedBrute = null;
@@ -1194,13 +1206,13 @@ Bad example:
   }
 
   function displayComparison(msg, job) {
-    const name = msg.algorithm === 'brute' ? 'Brute Force' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)';
+    const name = msg.algorithm === 'brute' ? 'Brute Force' : job.private ? 'Our Optimize (Deep · MDLxDCC)' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)';
     const state = msg.algorithm === 'brute'
       ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found')
       : job.profile==='deep' && msg.type==='progress' ? 'Running · best found'
       : job.profile==='deep' && msg.reason ? deepFinishLabel(msg) : 'Best found · optimum not proven';
     if (msg.algorithm === 'brute' && msg.exact) provenExactKm = routeValue(msg);
-    const assessment = job.planar ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
+    const assessment = job.planar && (!job.private || msg.privateReceipt?.referenceApplicable) ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
     comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:routeValue(msg), planar:job.planar, assessment, state});
     comparisonJob = job;
     renderComparison();
@@ -1293,9 +1305,9 @@ Bad example:
     renderRouteList(msg.pointsSorted);
     renderLinks(buildMapsLegLinks(msg.pointsSorted, job.roundTrip, job.mode));
     const brute = job.profile === 'brute';
-    const assessment = job.planar ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
+    const assessment = job.planar && (!job.private || msg.privateReceipt?.referenceApplicable) ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
     const routeContext = {
-      method: brute ? 'Brute Force' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)',
+      method: brute ? 'Brute Force' : job.private ? 'Our Optimize (Deep · MDLxDCC)' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)',
       state: assessment?.reached ? 'Known optimum reached · gap 0%' : brute ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found') : 'Best found · optimum not proven'
     };
     return updateMapVisualization(msg.pointsSorted, {preview, routeContext});
@@ -1327,11 +1339,12 @@ Bad example:
     UI.set($('searchStartsLabel'),timed?'Candidates started / completed':'Completed search starts');
     UI.set($('searchEtaLabel'),timed?'Time budget remaining':'Estimated remaining');
     UI.set($('searchProgressHint'),timed?'Progress shows time budget used, not the probability of optimality. Local preparation is included; Google data fetching and map drawing are separate.':'Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.');
+    if(job.private) UI.set($('searchProgressHint'),'Active time includes local preparation, models and verification. Pauses, checkpoint storage and map drawing are separate. Hidden tabs pause calculation.');
     if(timed) {
       const used=msg.elapsedMs||0, budget=msg.budgetMs||0;
-      const state=finished?deepFinishLabel(msg):msg.phase==='preparing'?'Preparing local distances':'Running';
+      const state=finished?deepFinishLabel(msg):job.private?msg.phase||'preparing':msg.phase==='preparing'?'Preparing local distances':'Running';
       $('searchProgress').hidden=false;
-      UI.set($('searchProgressText'),`Our Optimize (Deep) · ${state} · ${budget?(100*Math.min(1,used/budget)).toFixed(2)+'% time budget used':'…'}`);
+      UI.set($('searchProgressText'),`${job.private?'Our Optimize (Deep · MDLxDCC)':'Our Optimize (Deep)'} · ${state} · ${budget?(100*Math.min(1,used/budget)).toFixed(2)+'% time budget used':'…'}`);
       $('searchProgressBar').value=budget?Math.min(1,used/budget):0;
       UI.set($('searchStarts'),`${(msg.candidates||0).toLocaleString('en-US')} / ${(msg.completed||0).toLocaleString('en-US')}`);
       UI.set($('searchElapsed'),BF.duration(used/1000));
@@ -1358,6 +1371,11 @@ Bad example:
   }
 
   function requestCancel() {
+    if(activeJob?.private) {
+      const job=activeJob;if(job.cancelling)return;job.cancelling=true;$('btnCancelWork').disabled=true;
+      window.TripPrivate.cancel().catch(error=>{if(activeJob===job){job.cancelling=false;$('btnCancelWork').disabled=false;setStatus(error.message,'bad');}});
+      return;
+    }
     if (activeJob?.profile === 'brute' || activeJob?.profile === 'deep') {
       if (activeJob.cancelling) return;
       activeJob.cancelling = true;
@@ -1420,12 +1438,14 @@ Bad example:
 
   function finishWork() {
     optimizationPending = false;
+    window.TripPrivate?.setBusy(false);
     $('btnCancelWork').disabled = true;
     $('searchCancel').disabled = true;
     refreshBruteInfo();
   }
 
   function cancelWork() {
+    if(activeJob?.private)window.TripPrivate.detach();
     discardDeep();
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     ++jobVersion;
@@ -1477,6 +1497,7 @@ Bad example:
     const resume = requestedBrute && resumeAvailable() ? pausedBrute : null;
     if (airWorker) { airWorker.terminate(); airWorker = null; }
     optimizationPending = true;
+    window.TripPrivate?.setBusy(true);
     activeJob = null;
     refreshBruteInfo();
     const jobId = ++jobVersion;
@@ -1567,6 +1588,12 @@ Bad example:
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
     activeJob = {jobId, current, mode, direct, roundTrip, planar, reference:tspData?.reference, profile, n:valid.length, points:valid, startIdx,
       distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
+    if(profile==='deep'&&window.TripPrivate?.enabled()) {
+      activeJob.private=true;displaySearchProgress({},activeJob);refreshBruteInfo();
+      try{await window.TripPrivate.start(activeJob,tspData);posted=true;}
+      catch(error){if(current()){activeJob=null;setStatus(error.message,'bad');}}
+      return;
+    }
     if (profile !== 'brute') displaySearchProgress({},activeJob);
     refreshBruteInfo();
     worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
@@ -1636,6 +1663,8 @@ Bad example:
       if (version!==referenceVersion) return;
       let complete=false;
       try { complete=TripTspMetric.authenticate(parseStops($('input').value).pts,data.original,entry).length===entry.count; } catch {}
+      const uncertain=window.TripPrivate?.enabled()&&['zi929','lu980','rw1621','mu1979'].includes(entry.id);
+      if(uncertain){UI.set($('tspReferenceText'),'Reference is informational: numerical conventions differ for this dataset.');return;}
       const applicable=complete && planarSelected() && $('chkRoundTrip').checked;
       UI.set($('tspReferenceText'), `Known optimum: ${formatValue(data.reference.optimum,true)} · ${entry.id} · ` + (applicable ? 'Complete original round trip · reference applies.' : 'Reference only: requires the complete original dataset, Planar TSP and Round Trip.'));
     } catch(error) { if(version===referenceVersion) UI.set($('tspReferenceText'),error.message); }
@@ -1713,6 +1742,25 @@ Bad example:
 
   // --- 12. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
+    window.TripPrivate.init({message:handleWorkerMessage,
+      modeChanged(){discardDeep();refreshBruteInfo();refreshTspNotice();},
+      disconnected(error){activeJob=null;discardDeep();finishWork();setStatus(error.message,'warn');},
+      deleted(){activeJob=null;discardDeep();finishWork();},
+      async recover(saved){
+        if(optimizationPending)throw Error('Pause the current calculation first.');
+        cancelWork();clearComparison();
+        $('input').value=saved.editor;currentTravelMode=saved.mode;
+        $('chkDirect').checked=saved.direct;$('chkRoundTrip').checked=saved.roundTrip;
+        $('chkBrute').checked=false;$('chkPlanar').checked=saved.planar;
+        updateModeButtons();refreshTspNotice();saveState();setPlanningMode(false);
+        const points=saved.points,signature=problemSignature(),jobId=++jobVersion;
+        const job={jobId,private:true,profile:'deep',n:points.length,points,startIdx:saved.startIdx,planar:saved.planar,reference:saved.reference,
+          mode:saved.mode,direct:saved.direct,roundTrip:saved.roundTrip,distanceMatrix:saved.distanceMatrix,
+          current:()=>jobVersion===jobId&&problemSignature()===signature,lastMapRefresh:performance.now(),mapBestKm:Infinity,mapPending:false};
+        if(!saved.direct)showRoadTable(points,{distanceMatrix:saved.distanceMatrix,mode:saved.mode,measuredAt:new Date().toISOString(),reused:true});
+        activeJob=job;optimizationPending=true;window.TripPrivate.setBusy(true);return job;
+      }
+    });
     initTripTree(); initAI(); 
     const restored = restoreState();
     refreshTspNotice();
