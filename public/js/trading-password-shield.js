@@ -1,12 +1,12 @@
 /*
   8Z Shield — Trading password-only runtime.
-  No password or derived credential is stored in this file.
+  Supports both encrypted HTML fragments and encrypted complete documents.
+  No plaintext passphrase or derived credential is stored in this file.
 */
 (function () {
   'use strict';
 
   const STORE = '8z-shield:bd-trading:password-only:v1';
-  const LANGUAGE = 'bd-trading-protected-shell-language-v1';
   const ITERS = 500000;
   const ROUNDS = 1024;
   const MASK = (1n << 64n) - 1n;
@@ -16,16 +16,15 @@
   let busy = false;
   let authorized = false;
   let target = null;
-  let language = (() => {
-    try { return localStorage.getItem(LANGUAGE) === 'sl' ? 'sl' : 'en'; }
-    catch (_) { return 'en'; }
-  })();
 
+  const LANGUAGE = 'bd-trading-protected-shell-language-v1';
   const copies = {
     en: {
       title: 'Trading technical access',
       body: 'Enter the Trading passphrase to open protected mechanics or a paper-trading engine. This is a separate password-only Trading session; it does not use the site email gate.',
-      label: 'Trading passphrase', unlock: 'Unlock', cancel: 'Cancel',
+      label: 'Trading passphrase',
+      unlock: 'Unlock',
+      cancel: 'Cancel',
       wrong: 'The passphrase did not unlock this page.',
       working: 'Decrypting protected Trading content…',
       open: 'Open protected section',
@@ -36,7 +35,9 @@
     sl: {
       title: 'Trading tehnični dostop',
       body: 'Vnesi Trading geslo za odprtje zaščitene mehanike ali paper-trading engina. To je ločena Trading seja samo z geslom; ne uporablja site-wide email gatea.',
-      label: 'Trading geslo', unlock: 'Odkleni', cancel: 'Prekliči',
+      label: 'Trading geslo',
+      unlock: 'Odkleni',
+      cancel: 'Prekliči',
       wrong: 'Geslo te strani ni odklenilo.',
       working: 'Dešifriram zaščiteno Trading vsebino …',
       open: 'Odpri zaščiten odsek',
@@ -45,6 +46,11 @@
       engineHold: 'Migracija engina čaka. Ta zaščiten zgodovinski vmesnik je ohranjen, vendar njegov ločeno šifrirani legacy engine v tej izdaji ni aktiviran.'
     }
   };
+
+  let language = (() => {
+    try { return localStorage.getItem(LANGUAGE) === 'sl' ? 'sl' : 'en'; }
+    catch (_) { return 'en'; }
+  })();
   let copy = copies[language];
 
   function injectStyle() {
@@ -56,21 +62,24 @@
       [data-trading-shield].trading-shield-opened{border-left-color:#3faf83}
       .trading-shield-shell{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;padding:1rem 1.05rem}
       .trading-shield-icon{font-size:1.15rem;line-height:1}
-      .trading-shield-copy{min-width:0}.trading-shield-copy strong{display:block;font:700 .72rem/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#c99a3b}.trading-shield-copy span{display:block;margin-top:.28rem;font-size:.83rem;line-height:1.4;opacity:.78}
-      .trading-shield-button{appearance:none;border:1px solid rgba(201,154,59,.75);border-radius:.55rem;background:transparent;color:#e6c16e;padding:.55rem .66rem;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;cursor:pointer;white-space:nowrap}
-      .trading-shield-button:hover,.trading-shield-button:focus-visible{background:rgba(201,154,59,.12);outline:none}
+      .trading-shield-copy{min-width:0}
+      .trading-shield-copy strong{display:block;font:700 .72rem/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#c99a3b}
+      .trading-shield-copy span{display:block;margin-top:.28rem;font-size:.83rem;line-height:1.4;opacity:.78}
+      .trading-shield-button{appearance:none;border:1px solid rgba(201,154,59,.75);border-radius:.55rem;background:transparent;color:#e6c16e;padding:.55rem .66rem;font:700 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer;white-space:nowrap}
       .trading-shield-content{display:none}
       [data-trading-shield].trading-shield-opened>.trading-shield-content{display:block}
-      .trading-shield-engine-hold{position:relative;z-index:10001;margin:0 0 1rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;border-radius:.55rem;background:#101722;color:#e6edf3;font:500 .88rem/1.5 ui-sans-serif,system-ui,sans-serif}
+      .trading-shield-engine-hold{margin:0 0 1rem;padding:1rem 1.05rem;border-left:3px solid #c99a3b;border-radius:.55rem;background:#101722;color:#e6edf3;font:500 .88rem/1.5 ui-sans-serif,system-ui,sans-serif}
       .trading-shield-dialog{width:min(32rem,calc(100vw - 2rem));border:1px solid rgba(201,154,59,.46);border-radius:1rem;background:#101722;color:#eef3f8;box-shadow:0 24px 80px rgba(0,0,0,.58);padding:0}
       .trading-shield-dialog::backdrop{background:rgba(2,6,12,.76);backdrop-filter:blur(4px)}
-      .trading-shield-dialog form{padding:1.25rem}.trading-shield-dialog h2{margin:0;font-size:1.18rem}.trading-shield-dialog p{margin:.65rem 0 1rem;line-height:1.5;font-size:.9rem;color:#c6d0db}
+      .trading-shield-dialog form{padding:1.25rem}
+      .trading-shield-dialog h2{margin:0;font-size:1.18rem}
+      .trading-shield-dialog p{margin:.65rem 0 1rem;line-height:1.5;font-size:.9rem;color:#c6d0db}
       .trading-shield-dialog label{display:block;font:700 .67rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#c6d0db}
       .trading-shield-dialog input{box-sizing:border-box;width:100%;margin-top:.45rem;border:1px solid #445064;border-radius:.55rem;background:#080d15;color:#eef3f8;padding:.7rem .75rem;font:inherit}
-      .trading-shield-dialog-actions{display:flex;justify-content:flex-end;gap:.55rem;margin-top:1rem}.trading-shield-dialog-actions button{border:1px solid #4b5668;border-radius:.55rem;background:transparent;color:#eef3f8;padding:.57rem .75rem;cursor:pointer;font:700 .7rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}.trading-shield-dialog-actions button[type=submit]{border-color:#c99a3b;color:#e6c16e}
+      .trading-shield-dialog-actions{display:flex;justify-content:flex-end;gap:.55rem;margin-top:1rem}
+      .trading-shield-dialog-actions button{border:1px solid #4b5668;border-radius:.55rem;background:transparent;color:#eef3f8;padding:.57rem .75rem;cursor:pointer;font:700 .7rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+      .trading-shield-dialog-actions button[type=submit]{border-color:#c99a3b;color:#e6c16e}
       .trading-shield-status{min-height:1.25rem;margin:.65rem 0 0;color:#efb05a;font-size:.8rem}
-      .trading-protected-lang-toggle{appearance:none;border:1px solid rgba(128,216,189,.44);border-radius:.45rem;background:transparent;color:#9be3ce;padding:.32rem .46rem;font:700 .67rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em;cursor:pointer}
-      html[data-trading-lang="sl"] .trading-protected-lang-en{display:none!important}html[data-trading-lang="sl"] span.trading-protected-lang-sl{display:inline!important}html[data-trading-lang="sl"] p.trading-protected-lang-sl{display:block!important}
       @media print{[data-trading-shield] .trading-shield-content{display:none!important}.trading-shield-dialog{display:none!important}}
       @media(max-width:600px){.trading-shield-shell{grid-template-columns:auto 1fr}.trading-shield-button{grid-column:2;justify-self:start}}
     `;
@@ -81,11 +90,9 @@
     language = next === 'sl' ? 'sl' : 'en';
     copy = copies[language];
     document.documentElement.dataset.tradingLang = language;
-    document.documentElement.lang = language;
     try { localStorage.setItem(LANGUAGE, language); } catch (_) {}
     for (const toggle of document.querySelectorAll('[data-trading-language-toggle]')) {
       toggle.textContent = language === 'en' ? 'SL' : 'EN';
-      toggle.setAttribute('aria-label', language === 'en' ? 'Preklopi v slovenščino' : 'Switch to English');
     }
     for (const section of sections) {
       if (section.dataset.mounted === '1') continue;
@@ -149,7 +156,7 @@
     const stateHash = await digest(u64ToBytes(state));
     const material = merge(passHash, stateHash);
     const keyMaterial = await crypto.subtle.importKey('raw', material, 'PBKDF2', false, ['deriveBits']);
-    return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:ITERS,hash:'SHA-256'}, keyMaterial, 256));
+    return new Uint8Array(await crypto.subtle.deriveBits({ name:'PBKDF2', salt, iterations:ITERS, hash:'SHA-256' }, keyMaterial, 256));
   }
   async function decompress(data) {
     const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'));
@@ -163,9 +170,10 @@
     const ciphertext = bytes.slice(44);
     const keyBytes = await deriveKey(passHash, salt);
     const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
-    const compressed = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128}, key, ciphertext));
+    const compressed = new Uint8Array(await crypto.subtle.decrypt({ name:'AES-GCM', iv, tagLength:128 }, key, ciphertext));
     return new TextDecoder().decode(await decompress(compressed));
   }
+
   function storedHash() {
     try {
       const r = JSON.parse(sessionStorage.getItem(STORE) || 'null');
@@ -175,23 +183,35 @@
     } catch (_) { return null; }
   }
   function remember(passHash) {
-    try { sessionStorage.setItem(STORE, JSON.stringify({v:2,origin:location.origin,p:b64(passHash)})); } catch (_) {}
+    try { sessionStorage.setItem(STORE, JSON.stringify({ v:2, origin:location.origin, p:b64(passHash) })); }
+    catch (_) {}
   }
 
   function activateScripts(root) {
-    const scripts = [...root.querySelectorAll('script')];
-    for (const oldScript of scripts) {
+    for (const oldScript of [...root.querySelectorAll('script')]) {
       const replacement = document.createElement('script');
       for (const a of oldScript.attributes) replacement.setAttribute(a.name, a.value);
       replacement.textContent = oldScript.textContent;
       oldScript.replaceWith(replacement);
     }
-    if (scripts.length) {
-      document.dispatchEvent(new Event('DOMContentLoaded'));
-      window.dispatchEvent(new Event('DOMContentLoaded'));
-    }
   }
+
+  function isCompleteDocument(html) {
+    return /^\s*<!doctype\s+html/i.test(html) || /<html(?:\s|>)/i.test(html);
+  }
+
+  function replaceWithDocument(html) {
+    document.open();
+    document.write(html);
+    document.close();
+  }
+
   function mount(section, html) {
+    if (isCompleteDocument(html)) {
+      replaceWithDocument(html);
+      return;
+    }
+
     const content = section.querySelector('.trading-shield-content');
     if (!content || section.dataset.mounted === '1') return;
     content.innerHTML = html;
@@ -208,7 +228,8 @@
       activateScripts(content);
     }
   }
-  async function open(section, passHash) {
+
+  async function openSection(section, passHash) {
     if (busy || section.dataset.mounted === '1') return;
     busy = true;
     try { mount(section, await decrypt(section.getAttribute('data-8z-blob'), passHash)); }
@@ -221,7 +242,7 @@
     dialog = document.createElement('dialog');
     dialog.id = 'trading-password-dialog';
     dialog.className = 'trading-shield-dialog';
-    dialog.innerHTML = `<form method="dialog" novalidate><h2></h2><p></p><label for="trading-password-input"></label><input id="trading-password-input" type="password" autocomplete="current-password" required><div class="trading-shield-status" aria-live="polite"></div><div class="trading-shield-dialog-actions"><button type="button"></button><button type="submit"></button></div></form>`;
+    dialog.innerHTML = '<form method="dialog" novalidate><h2></h2><p></p><label for="trading-password-input"></label><input id="trading-password-input" type="password" autocomplete="current-password" required><div class="trading-shield-status" aria-live="polite"></div><div class="trading-shield-dialog-actions"><button type="button"></button><button type="submit"></button></div></form>';
     document.body.append(dialog);
     dialog.querySelector('button[type=button]').addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => {
@@ -231,6 +252,7 @@
     dialog.querySelector('form').addEventListener('submit', unlockFromDialog);
     return dialog;
   }
+
   async function unlockFromDialog(event) {
     event.preventDefault();
     if (busy) return;
@@ -248,23 +270,27 @@
       remember(passHash);
       authorized = true;
       input.value = '';
+      if (!isCompleteDocument(html)) dialog.close();
       mount(section, html);
-      dialog.close();
     } catch (_) {
       input.value = '';
       status.textContent = copy.wrong;
       input.focus();
-    } finally { busy = false; }
+    } finally {
+      busy = false;
+    }
   }
-  function requestOpen(section) {
+
+  async function requestOpen(section) {
     const passHash = storedHash();
-    if (authorized && passHash) { open(section, passHash); return; }
+    if (authorized && passHash) return openSection(section, passHash);
     target = section;
     const dialog = makeDialog();
     setLanguage(language);
     dialog.showModal();
     setTimeout(() => dialog.querySelector('input').focus(), 0);
   }
+
   async function resume() {
     const passHash = storedHash();
     if (!passHash) return;
@@ -276,10 +302,11 @@
       try { sessionStorage.removeItem(STORE); } catch (__) {}
     }
   }
+
   function renderShell(section) {
     const label = section.dataset.shieldLabel || copy.protected;
     const sub = section.dataset.shieldSub || copy.sub;
-    section.innerHTML = `<div class="trading-shield-shell"><div class="trading-shield-icon" aria-hidden="true">🔐</div><div class="trading-shield-copy"><strong></strong><span></span></div><button type="button" class="trading-shield-button"></button></div><div class="trading-shield-content"></div>`;
+    section.innerHTML = '<div class="trading-shield-shell"><div class="trading-shield-icon" aria-hidden="true">🔐</div><div class="trading-shield-copy"><strong></strong><span></span></div><button type="button" class="trading-shield-button"></button></div><div class="trading-shield-content"></div>';
     section.querySelector('strong').textContent = label;
     section.querySelector('span').textContent = sub;
     const button = section.querySelector('button');
