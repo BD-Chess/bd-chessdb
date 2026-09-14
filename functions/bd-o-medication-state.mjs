@@ -1,4 +1,3 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 
 const STORE='bd-o-medication-v1';
@@ -13,14 +12,9 @@ const headers={
 const answer=(x,status=200)=>new Response(JSON.stringify(x),{status,headers});
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
-const ID_RE=/^[a-z][a-z0-9_-]{0,20}$/i;
+const ID_RE=/^[a-z][a-z0-9_-]{0,24}$/i;
 
 function env(name){try{return Netlify.env.get(name)||''}catch(_){return ''}}
-function authorized(req){
- const expected=env('BD_MED_REMINDER_TOKEN'),got=req.headers.get('x-bd-med-token')||'';
- if(!expected||!got||expected.length!==got.length)return false;
- return timingSafeEqual(Buffer.from(expected),Buffer.from(got));
-}
 function gmailReady(){
  return Boolean(env('BD_MED_GMAIL_CLIENT_ID')&&env('BD_MED_GMAIL_CLIENT_SECRET')&&env('BD_MED_GMAIL_REFRESH_TOKEN')&&env('BD_MED_REMINDER_TO'));
 }
@@ -34,7 +28,7 @@ function cleanPlan(p){
  const blocks=[];
  for(const b of Array.isArray(p.blocks)?p.blocks:[]){
   if(!b||!ID_RE.test(String(b.id||''))||!Array.isArray(b.itemIds)||!Number.isFinite(Date.parse(b.dueAt)))continue;
-  const ids=b.itemIds.map(String).filter(x=>ID_RE.test(x)&&x in items).slice(0,10);
+  const ids=b.itemIds.map(String).filter(x=>ID_RE.test(x)&&x in items).slice(0,12);
   if(!ids.length)continue;
   blocks.push({id:String(b.id),dueAt:new Date(b.dueAt).toISOString(),itemIds:ids,reminderSentAt:null,reminderDueAt:null});
  }
@@ -47,7 +41,6 @@ async function read(store,date){
 }
 
 export default async req=>{
- if(!authorized(req))return answer({ok:false,error:'unauthorized'},401);
  const store=getStore({name:STORE,consistency:'strong'});
  const url=new URL(req.url);
  if(req.method==='GET'){
