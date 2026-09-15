@@ -12,8 +12,49 @@
     "Physics / Engineering",
     "8Z / Compression"
   ],
-  "generated_at": "2026-09-15T08:58:23+02:00",
-  "last_successful_refresh": "2026-09-15T08:58:23+02:00",
+  "freshness_observations": [
+    {
+      "evidence": "GitHub main contains encrypted journal entry e000007 and the Legacy WL owner-only probe/transport; scheduled WL control witness run 11 completed SUCCESS and its observe job verified the production pause flag path.",
+      "inference": "The Legacy control/continuity repair is operationally evidenced. This is not evidence that the converged R6 system is live-accepted.",
+      "observed_at": "2026-09-13T12:52:08+02:00",
+      "scope": "AI8 Wake Lab Legacy",
+      "status": "VERIFIED"
+    },
+    {
+      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
+      "bundle": "TSP_ACTIVE_ARENAS_LIVE_EXTRACTS_20260913_114637_314251.zip",
+      "inference": "No TSP arena result or status is promoted from receipt-only evidence.",
+      "observed_at": "2026-09-13T11:46:55+02:00",
+      "scope": "TSP",
+      "sha256": "23aec6179c1ee4e9d6a82761d7a392a64cee79878f5c703dcd604922baf48b59",
+      "status": "CAPTURE_RECEIPT_ONLY"
+    },
+    {
+      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
+      "bundle": "TRADING_ACTIVE_ARENAS_LIVE_EXTRACTS_2_20260913_114655_284056.zip",
+      "inference": "No Trading arena result or status is promoted from receipt-only evidence.",
+      "observed_at": "2026-09-13T11:46:55+02:00",
+      "scope": "Trading",
+      "sha256": "fba34b4dafec0eab9998471eb741f8d2ef4195edc4a9194275f1ae48f47ab6d3",
+      "status": "CAPTURE_RECEIPT_ONLY"
+    },
+    {
+      "evidence": "Project-chat report: e000013 EXACT_READBACK_PASS; Gmail wake enabled with last_run_time=null and no source=GMAIL_WEBHOOK STARTED/PASS receipt.",
+      "inference": "Legacy hourly fallback is alive. The Gmail event → subscription → platform Trigger → Work invocation path is not operationally proven.",
+      "observed_at": "2026-09-13",
+      "scope": "AI8 Wake Lab Legacy/event wake",
+      "status": "PARTIAL: FALLBACK VERIFIED / EVENT BLOCKED"
+    },
+    {
+      "evidence": "Project-chat v2.0 builder mandate for isolated /trip/new/ work plus BD-confirmed working baseline.",
+      "inference": "A BUILD stream exists; assignment alone is not RUNNING or completion evidence.",
+      "observed_at": "2026-09-13",
+      "scope": "Trip Optimizer MDL×DCC upgrade",
+      "status": "BUILD ASSIGNED"
+    }
+  ],
+  "generated_at": "2026-09-15T09:16:37+02:00",
+  "last_successful_refresh": "2026-09-15T09:16:37+02:00",
   "machines": [
     {
       "active_arena_ids": [
@@ -44,7 +85,7 @@
     }
   ],
   "needs_bd": [],
-  "partial_update_at": "2026-09-15T08:58:23+02:00",
+  "partial_update_at": "2026-09-15T09:16:37+02:00",
   "partial_update_scope": "Daily project-conversation-only refresh; no material arena-state changes; all RUNNING states retained absent later direct stop/failure evidence.",
   "projects": [
     {
@@ -329,47 +370,6 @@
       "next_action": "Implement and test the isolated core, preserve concurrent main changes, and return fair baseline comparisons before any promotion.",
       "project": "Trip Optimizer",
       "status": "BUILD"
-    }
-  ],
-  "freshness_observations": [
-    {
-      "scope": "AI8 Wake Lab Legacy",
-      "observed_at": "2026-09-13T12:52:08+02:00",
-      "status": "VERIFIED",
-      "evidence": "GitHub main contains encrypted journal entry e000007 and the Legacy WL owner-only probe/transport; scheduled WL control witness run 11 completed SUCCESS and its observe job verified the production pause flag path.",
-      "inference": "The Legacy control/continuity repair is operationally evidenced. This is not evidence that the converged R6 system is live-accepted."
-    },
-    {
-      "scope": "TSP",
-      "observed_at": "2026-09-13T11:46:55+02:00",
-      "status": "CAPTURE_RECEIPT_ONLY",
-      "bundle": "TSP_ACTIVE_ARENAS_LIVE_EXTRACTS_20260913_114637_314251.zip",
-      "sha256": "23aec6179c1ee4e9d6a82761d7a392a64cee79878f5c703dcd604922baf48b59",
-      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
-      "inference": "No TSP arena result or status is promoted from receipt-only evidence."
-    },
-    {
-      "scope": "Trading",
-      "observed_at": "2026-09-13T11:46:55+02:00",
-      "status": "CAPTURE_RECEIPT_ONLY",
-      "bundle": "TRADING_ACTIVE_ARENAS_LIVE_EXTRACTS_2_20260913_114655_284056.zip",
-      "sha256": "fba34b4dafec0eab9998471eb741f8d2ef4195edc4a9194275f1ae48f47ab6d3",
-      "availability": "Master collector receipt and hash sidecar are in Google Drive; the ZIP binary was not located in Google Drive or OneDrive during this refresh.",
-      "inference": "No Trading arena result or status is promoted from receipt-only evidence."
-    },
-    {
-      "scope": "AI8 Wake Lab Legacy/event wake",
-      "observed_at": "2026-09-13",
-      "status": "PARTIAL: FALLBACK VERIFIED / EVENT BLOCKED",
-      "evidence": "Project-chat report: e000013 EXACT_READBACK_PASS; Gmail wake enabled with last_run_time=null and no source=GMAIL_WEBHOOK STARTED/PASS receipt.",
-      "inference": "Legacy hourly fallback is alive. The Gmail event → subscription → platform Trigger → Work invocation path is not operationally proven."
-    },
-    {
-      "scope": "Trip Optimizer MDL×DCC upgrade",
-      "observed_at": "2026-09-13",
-      "status": "BUILD ASSIGNED",
-      "evidence": "Project-chat v2.0 builder mandate for isolated /trip/new/ work plus BD-confirmed working baseline.",
-      "inference": "A BUILD stream exists; assignment alone is not RUNNING or completion evidence."
     }
   ],
   "provenance_rule": "Newer direct evidence in ChatGPT project conversations overrides older summaries. Project files may corroborate; non-project sessions and orphan arenas are excluded.",
