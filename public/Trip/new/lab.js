@@ -105,8 +105,41 @@
     $('input')?.addEventListener('input',refreshHelpLabels);
     window.MDLxDCCLocale.subscribe(updateHelpLabels);
   }
+
+  function promoteTspLibraryForTesting(){
+    const tree=$('presetTree');
+    if(!tree) return;
+    const direct=(node,selector)=>node ? [...node.children].find(el=>el.matches(selector)) : null;
+    const labelOf=node=>direct(direct(node,'.tree-header'),'.tree-label')?.dataset.uiText;
+    const openNode=node=>{
+      const header=direct(node,'.tree-header'), group=direct(node,'.tree-group');
+      if(!header || !group) return;
+      group.classList.add('open');
+      const arrow=direct(header,'.tree-arrow');
+      if(arrow) arrow.textContent='⌄';
+    };
+    const promote=()=>{
+      const special=[...tree.children].find(node=>labelOf(node)==='⭐ Special Collections');
+      if(!special) return false;
+      const regionGroup=direct(special,'.tree-group');
+      if(!regionGroup) return false;
+      const tsp=[...regionGroup.children].find(node=>labelOf(node)==='🧩 TSP country collection');
+      if(!tsp) return false;
+      if(tree.firstElementChild!==special) tree.prepend(special);
+      if(regionGroup.firstElementChild!==tsp) regionGroup.prepend(tsp);
+      openNode(special);
+      openNode(tsp);
+      return true;
+    };
+    if(promote()) return;
+    const observer=new MutationObserver(()=>{if(promote()) observer.disconnect();});
+    observer.observe(tree,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),5000);
+  }
+
   document.addEventListener('DOMContentLoaded',()=>{
     installCollapsibleHelp();
+    promoteTspLibraryForTesting();
     const labels={btnPlanMode:'Plan',btnMapMode:'Map',btnHelp:'Help',btnDeep:'Optimize (Deep)',btnPrepare:'Prepare distances',btnCancelWork:'Cancel calculation',btnDriving:'🚗 Drive',btnWalking:'🚶 Walk',btnSave:'💾 Save',btnLoad:'📂 Load',jumpLibrary:'Library ↓',jumpEditor:'Editor ↑'};
     for(const [id,text] of Object.entries(labels)) UI.set($(id),text);
     UI.set(document.querySelector('#editorPanel h3'),'Trip Editor');
