@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0a1019">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="dark" name="color-scheme"/>
+<meta content="#0a1019" name="theme-color"/>
 <title>BD HSR PiX v1.3c — SOL Manual Protocol Refresh</title>
 <style>
 :root {
@@ -299,8 +300,8 @@ input[type="checkbox"] {
 </head>
 <body>
 <main class="page-shell">
-    <div class="source-label">BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.md</div>
-    <article class="reader" id="reader"><h1>BD HSR PiX v1.3c — SOL Manual Protocol Refresh</h1>
+<div class="source-label">BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.md</div>
+<article class="reader" id="reader"><h1>BD HSR PiX v1.3c — SOL Manual Protocol Refresh</h1>
 <p>The former manual table was not aligned with the completed v1.3c engine. It has been replaced by two evidence-labelled sections:</p>
 <h2>Balanced SOL</h2>
 <ul><li>Candidate: <code>deep_p2_t500_sep1500_m50_b1p15_same3_e55b312a</code></li><li>Robustness: 6/6 score wins across BTC/ETH/SOL × zero/realistic costs</li><li>SOL zero-cost: +$156.68 MTM, +$60.39 realized</li><li>Fixed-$500 max drawdown: 8.43%</li><li>Core mechanics: equal hedge; up to two -500% same3 re-anchors; one 50× rescue; +0.75% excess close; keep 2× base</li></ul>
@@ -309,86 +310,10 @@ input[type="checkbox"] {
 <h2>Truth limits</h2>
 <ul><li>Zero-cost means fee, slippage and funding were all zero.</li><li>Winner-side pyramiding, trailing and staged winner exits were not tested.</li><li>The named separation field was not enforced.</li><li><code>close_winner_on_mega</code> was stored but not executed.</li><li>The extreme P4 raw-PnL SOL seed remains a v1.4 wallet-neutral watchlist candidate because its fixed-$500 path was truncated.</li></ul></article>
 </main>
+<div aria-label="Text size controls" class="font-controls" role="group">
 
-<div class="font-controls" role="group" aria-label="Text size controls">
-    <button id="fontDown" type="button" aria-label="Decrease text size" title="Decrease text size">A−</button>
-    <button id="fontUp" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+
 </div>
 
-<script>
-(() => {
-    const DESKTOP_BASE = 18;
-    const MOBILE_BASE = 21;
-    const MIN_SCALE = 0.72;
-    const MAX_SCALE = 1.72;
-    const STEP = 0.10;
-    const STORAGE_KEY = "md-dark-reader-font-scale";
-    const mobileQuery = window.matchMedia("(max-width: 700px)");
-
-    let scale = Number.parseFloat(localStorage.getItem(STORAGE_KEY) || "1");
-    if (!Number.isFinite(scale)) scale = 1;
-    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-
-    function applyFontSize() {
-        const base = mobileQuery.matches ? MOBILE_BASE : DESKTOP_BASE;
-        document.documentElement.style.fontSize = `${(base * scale).toFixed(2)}px`;
-        document.getElementById("fontDown").title = `Decrease text size (${Math.round(scale * 100)}%)`;
-        document.getElementById("fontUp").title = `Increase text size (${Math.round(scale * 100)}%)`;
-    }
-
-    function changeScale(delta) {
-        scale = Math.round((scale + delta) * 100) / 100;
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-        localStorage.setItem(STORAGE_KEY, String(scale));
-        applyFontSize();
-    }
-
-    document.getElementById("fontDown").addEventListener("click", () => changeScale(-STEP));
-    document.getElementById("fontUp").addEventListener("click", () => changeScale(STEP));
-
-    if (typeof mobileQuery.addEventListener === "function") {
-        mobileQuery.addEventListener("change", applyFontSize);
-    } else if (typeof mobileQuery.addListener === "function") {
-        mobileQuery.addListener(applyFontSize);
-    }
-
-    // Give headings stable link targets without requiring a Markdown extension.
-    const usedIds = new Set();
-    document.querySelectorAll("#reader h1, #reader h2, #reader h3, #reader h4, #reader h5, #reader h6")
-        .forEach((heading, index) => {
-            if (heading.id) {
-                usedIds.add(heading.id);
-                return;
-            }
-            let slug = heading.textContent
-                .normalize("NFKD")
-                .toLowerCase()
-                .replace(/[^\p{L}\p{N}]+/gu, "-")
-                .replace(/^-+|-+$/g, "") || `section-${index + 1}`;
-            const baseSlug = slug;
-            let suffix = 2;
-            while (usedIds.has(slug)) slug = `${baseSlug}-${suffix++}`;
-            usedIds.add(slug);
-            heading.id = slug;
-        });
-
-    // Wrap tables so wide content scrolls cleanly on phones.
-    document.querySelectorAll("#reader table").forEach(table => {
-        if (table.parentElement && table.parentElement.classList.contains("table-wrap")) return;
-        const wrapper = document.createElement("div");
-        wrapper.className = "table-wrap";
-        table.parentNode.insertBefore(wrapper, table);
-        wrapper.appendChild(table);
-    });
-
-    // External links open safely in a new tab; local and anchor links remain normal.
-    document.querySelectorAll('#reader a[href^="http://"], #reader a[href^="https://"]').forEach(link => {
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-    });
-
-    applyFontSize();
-})();
-</script>
-</body>
+<script id="bd-access-data" type="application/json">{"schema":"BD_ACCESS_V1","path":"8ZT/BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.html","pair":"cb85ff984c4125557f90e8bf","kdf":{"name":"PBKDF2-SHA256","iterations":600000,"salt":"wDt0B9zRBGKuWhAr69AFIKACSP1q3uz0jZqQtlsLJFQ="},"wrap":{"iv":"i1uz7YR27Ee9eYq9","cipher":"9kf2xMhdWctrL0WWyvnWJD9mXD3DIN6ZMGQ/MuvNhrMVtVPC5qFVF8rAOY+Wqu1i"},"units":[{"id":0,"kind":"document","target":null,"iv":"fDFGUaJAF4yOR/2W","cipher":"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","aad":"BD_ACCESS_V1:8ZT/BD_HSR_PiX_v1_3c_SOL_MANUAL_PROTOCOLS.html:cb85ff984c4125557f90e8bf:0:document"}]}</script><script defer="" src="/js/bd-owner-access-v1.js"></script></body>
 </html>
