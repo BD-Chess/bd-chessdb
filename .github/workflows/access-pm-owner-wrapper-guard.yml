@@ -1,0 +1,71 @@
+name: Access password-manager owner-wrapper guard
+on:
+  push:
+    branches: [access-pm-owner-wrapper-guard-20260915-r1]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: access-pm-owner-wrapper-guard-20260915-r1
+      - name: Patch inventory verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/inject_password_manager.py')
+          s=p.read_text()
+          old="""def verify(root):
+    pages=inputs=forms=noform=0;api=[];issues=[]
+    for p in root.rglob('*.html'):
+        s=p.read_text();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]
+        if not real:
+            if allm:api.append(p.relative_to(root).as_posix())
+            continue
+        pages+=1;inputs+=len(real)
+"""
+          new="""def verify(root):
+    pages=inputs=forms=noform=owner_wrapped=0;api=[];issues=[]
+    for p in root.rglob('*.html'):
+        s=p.read_text();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]
+        owner=('id=\"bd-access-data\"' in s and '/js/bd-owner-access-v1.js' in s)
+        if owner:owner_wrapped+=1
+        if not real:
+            if allm:api.append(p.relative_to(root).as_posix())
+            continue
+        pages+=1;inputs+=len(real)
+"""
+          if old not in s: raise SystemExit('verify header block not found')
+          s=s.replace(old,new,1)
+          old2="""    if pages<52:issues.append(['inventory',pages])
+    if not {'BD/BD_AIM3_RHPm.html','BD/BD_AIM3_RHPm_v1_6_1.html'}.issubset(set(api)):issues.append(['api-exclusion',api])
+    if issues:raise RuntimeError(json.dumps(issues[:20]))
+    return {'version':VERSION,'password_pages':pages,'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}
+"""
+          new2="""    owner_helper=root/'js/bd-owner-access-v1.js'
+    if owner_wrapped:
+        if not owner_helper.exists():issues.append(['owner-helper','missing'])
+        else:
+            oh=owner_helper.read_text()
+            if \"autocomplete='current-password'\" not in oh or \"autocomplete='username'\" not in oh:issues.append(['owner-helper','password-manager metadata'])
+    effective=pages+owner_wrapped
+    if effective<52:issues.append(['inventory',{'static_password_pages':pages,'owner_wrapped_pages':owner_wrapped,'effective_password_pages':effective}])
+    if not {'BD/BD_AIM3_RHPm.html','BD/BD_AIM3_RHPm_v1_6_1.html'}.issubset(set(api)):issues.append(['api-exclusion',api])
+    if issues:raise RuntimeError(json.dumps(issues[:20]))
+    return {'version':VERSION,'password_pages':pages,'owner_wrapped_pages':owner_wrapped,'effective_password_pages':effective,'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}
+"""
+          if old2 not in s: raise SystemExit('inventory block not found')
+          p.write_text(s.replace(old2,new2,1))
+          PY
+          python -m py_compile scripts/inject_password_manager.py
+          rm -f .github/workflows/access-pm-owner-wrapper-guard.yml
+          git add -A
+          git diff --cached --check
+          git config user.name 'Bojan Dobrečevič'
+          git config user.email 'bd@siol.net'
+          git commit -m 'Access: count owner wrappers in password-manager inventory'
+          git push origin HEAD:access-pm-owner-wrapper-guard-20260915-r1
