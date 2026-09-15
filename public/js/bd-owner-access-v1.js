@@ -1,4 +1,4 @@
-/* BD owner access v1. Resource-scoped random keys; no password persistence. */
+/* BD owner access v1. Resource-scoped random keys; no password persistence. Production owner-unification entrypoint. */
 (()=>{'use strict';
 const node=document.getElementById('bd-access-data');if(!node)return;
 const pack=JSON.parse(node.textContent),te=new TextEncoder(),td=new TextDecoder('utf-8',{fatal:true});
