@@ -1,0 +1,60 @@
+name: Access owner wrapper verifier repair
+on:
+  push:
+    branches:
+      - access-pm-owner-wrapper-guard-20260916-r2
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch and validate verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/inject_password_manager.py')
+          s=p.read_text()
+          reps=[
+            ("pages=inputs=forms=noform=0;api=[];issues=[]", "pages=inputs=forms=noform=owner_wrapped=0;api=[];issues=[];protected_paths=set()"),
+            ("s=p.read_text();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]", "s=p.read_text();rel=p.relative_to(root).as_posix();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]\n        if 'id=\"bd-access-data\"' in s and '/js/bd-owner-access-v1.js' in s:\n            owner_wrapped+=1;protected_paths.add(rel)"),
+            ("if allm:api.append(p.relative_to(root).as_posix())", "if allm:api.append(rel)"),
+            ("pages+=1;inputs+=len(real)", "pages+=1;inputs+=len(real);protected_paths.add(rel)"),
+            ("if pages<52:issues.append(['inventory',pages])", "if len(protected_paths)<52:issues.append(['inventory',{'password_pages':pages,'owner_wrapped_pages':owner_wrapped,'protected_pages':len(protected_paths)}])"),
+            ("return {'version':VERSION,'password_pages':pages,'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}", "return {'version':VERSION,'password_pages':pages,'owner_wrapped_pages':owner_wrapped,'protected_pages':len(protected_paths),'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}"),
+          ]
+          for old,new in reps:
+              if old not in s:
+                  raise SystemExit('expected text missing: '+old[:100])
+              s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          python3 -m py_compile scripts/inject_password_manager.py
+          rm -rf /tmp/mdl-public-test
+          cp -a public /tmp/mdl-public-test
+          python3 scripts/inject_password_manager.py /tmp/mdl-public-test --report /tmp/password-manager-compat-report.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/password-manager-compat-report.json'))
+          assert r['issues']==0, r
+          assert r['protected_pages']>=52, r
+          assert r['owner_wrapped_pages']>0, r
+          print({k:r[k] for k in ('password_pages','owner_wrapped_pages','protected_pages','issues')})
+          PY
+      - name: Commit to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add scripts/inject_password_manager.py
+          test -n "$(git diff --cached --name-only)"
+          git config user.name 'Bojan Dobrečevič'
+          git config user.email 'bd@siol.net'
+          git commit -m 'Access: count owner wrappers in password inventory'
+          git push origin HEAD:main
