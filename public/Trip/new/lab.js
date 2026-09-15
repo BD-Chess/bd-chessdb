@@ -82,6 +82,9 @@
     }
 
     function editorStopCount(){
+      const raw=bruteInfo?.dataset.uiText||'';
+      const fromInfo=/^(\d+)\s+stops\b/.exec(raw);
+      if(fromInfo)return Number(fromInfo[1]);
       return String($('input')?.value||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!line.startsWith('#')).length;
     }
     function updateCompactHelp(lang=window.MDLxDCCLocale.current()){
