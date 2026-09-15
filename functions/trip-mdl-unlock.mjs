@@ -1,29 +1,29 @@
-import {scrypt,createHash,timingSafeEqual} from 'node:crypto';
+import {createHash,createHmac,timingSafeEqual} from 'node:crypto';
 import {getStore} from '@netlify/blobs';
 
 const TEMP_ACCESS_MS=30*24*60*60*1000;
 const ACCESS_STORE='trip-mdl-access';
+const TEMP_INVITE_ID='trip-mdl-temp-20260915-r1';
+const OWNER_AUTH_TAG='dca4939357422d63d748abd63a81106b0bdbc8469feb15f972898ff6abb758b5';
+const TEMP_AUTH_TAG='2440ee508fe3111a0e52daa65724c416846d7616dcb84bea48a041949ffb7842';
 
 function json(body,status=200){return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate','Pragma':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'}});}
 function limiter(){return limiter.state??=(new Map());}
 function allowed(ip){const now=Date.now(),map=limiter();for(const [key,row]of map)if(row.until<now)map.delete(key);if(map.size>=10000&&!map.has(ip))return false;const row=map.get(ip)||{n:0,until:now+900000};map.set(ip,row);return ++row.n<=8;}
-function derive(password,salt){return new Promise((resolve,reject)=>scrypt(password,salt,32,{N:131072,r:8,p:1,maxmem:256*1024*1024},(error,key)=>error?reject(error):resolve(key)));}
-function parseRecord(record){const [saltHex,expectedHex]=String(record||'').split(':');if(!/^[a-f0-9]{64}$/.test(saltHex||'')||!/^[a-f0-9]{64}$/.test(expectedHex||''))return null;return {salt:Buffer.from(saltHex,'hex'),expected:Buffer.from(expectedHex,'hex')};}
-async function matches(password,record){const parsed=parseRecord(record);if(!parsed)return false;const actual=await derive(password,parsed.salt);return timingSafeEqual(actual,parsed.expected);}
 function sha(text){return createHash('sha256').update(String(text),'utf8').digest('hex');}
 function credential(master){return createHash('sha256').update(master+'||mdlxdcc.org||trip-mdl-v1','utf8').digest('base64');}
+function authTag(master,kind,password){return createHmac('sha256',master).update(kind+'|'+password,'utf8').digest();}
+function matches(master,kind,password,expectedHex){const expected=Buffer.from(expectedHex,'hex'),actual=authTag(master,kind,password);return expected.length===actual.length&&timingSafeEqual(actual,expected);}
 function configState(){
   const master=Netlify.env.get('TRIP_MDL_MASTER');
-  const ownerRecord=Netlify.env.get('TRIP_MDL_OWNER_PASSWORD_SCRYPT');
-  const tempRecord=Netlify.env.get('TRIP_MDL_TEMP_PASSWORD_SCRYPT');
-  const tempInviteId=Netlify.env.get('TRIP_MDL_TEMP_INVITE_ID');
-  return {master,ownerRecord,tempRecord,tempInviteId,configured:!!(master&&master.length>=43&&parseRecord(ownerRecord)&&parseRecord(tempRecord)&&tempInviteId)};
+  const tagsOk=/^[a-f0-9]{64}$/.test(OWNER_AUTH_TAG)&&/^[a-f0-9]{64}$/.test(TEMP_AUTH_TAG);
+  return {master,configured:!!(master&&master.length>=43&&tagsOk)};
 }
 
 export default async function unlock(req,context){
   if(req.method==='GET'){
     const {configured}=configState();
-    return json({schema:'TripUnlockHealthV1',configured},configured?200:503);
+    return json({schema:'TripUnlockHealthV1',configured,policy:'owner-permanent+temporary-30d-first-use'},configured?200:503);
   }
   if(req.method!=='POST')return json({error:'method'},405);
   const origin=req.headers.get('origin');if(!origin||origin!==new URL(req.url).origin)return json({error:'origin'},403);
@@ -35,24 +35,24 @@ export default async function unlock(req,context){
     const body=JSON.parse(Buffer.concat(parts).toString('utf8'));
     if(body.schema!=='TripUnlockV1'||typeof body.password!=='string'||!body.password.length||body.password.length>1024)return json({error:'input'},400);
 
-    const {master,ownerRecord,tempRecord,tempInviteId,configured}=configState();
+    const {master,configured}=configState();
     if(!configured)return json({error:'unavailable'},503);
 
     let accessClass=null,temporaryExpiresAt=null;
-    if(await matches(body.password,ownerRecord)){
+    if(matches(master,'owner',body.password,OWNER_AUTH_TAG)){
       accessClass='owner';
-    }else if(await matches(body.password,tempRecord)){
+    }else if(matches(master,'temp',body.password,TEMP_AUTH_TAG)){
       const now=Date.now();
       const store=getStore(ACCESS_STORE,{consistency:'strong'});
-      const key='temp/'+sha(origin+'|'+tempInviteId);
+      const key='temp/'+sha(origin+'|'+TEMP_INVITE_ID);
       let state=await store.get(key,{type:'json'});
       if(!state){
-        state={schema:'TripTempAccessV1',inviteIdHash:sha(tempInviteId),originHash:sha(origin),activatedAt:new Date(now).toISOString(),expiresAt:new Date(now+TEMP_ACCESS_MS).toISOString()};
+        state={schema:'TripTempAccessV1',inviteIdHash:sha(TEMP_INVITE_ID),originHash:sha(origin),activatedAt:new Date(now).toISOString(),expiresAt:new Date(now+TEMP_ACCESS_MS).toISOString()};
         await store.setJSON(key,state);
         state=await store.get(key,{type:'json'});
       }
       const expires=Date.parse(state?.expiresAt||'');
-      if(state?.schema!=='TripTempAccessV1'||state?.inviteIdHash!==sha(tempInviteId)||state?.originHash!==sha(origin)||!Number.isFinite(expires)||expires<=now)return json({error:'temporary_expired'},401);
+      if(state?.schema!=='TripTempAccessV1'||state?.inviteIdHash!==sha(TEMP_INVITE_ID)||state?.originHash!==sha(origin)||!Number.isFinite(expires)||expires<=now)return json({error:'temporary_expired'},401);
       accessClass='temporary';temporaryExpiresAt=state.expiresAt;
     }else{
       body.password='';return json({error:'unlock'},401);
