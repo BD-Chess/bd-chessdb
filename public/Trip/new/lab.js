@@ -9,6 +9,98 @@
     UI.set(document.querySelector('#librarySection h3'),'Trip Library');
     UI.set(document.querySelector('#comparisonPanel h3'),'Calculation comparison');
     UI.set($('matrixStatus'),$('matrixStatus').dataset.uiText || $('matrixStatus').textContent);
+
+    // LAB-only compact help: preserve the existing nodes/IDs/listeners and only change presentation.
+    const compactStyle=document.createElement('style');
+    compactStyle.id='tripLabCollapsibleHelpStyle';
+    compactStyle.textContent=`
+      .trip-help-details{margin:7px 0;color:var(--text-dim);font-size:12px;line-height:1.45}
+      .trip-help-details>summary{cursor:pointer;font-weight:600;color:var(--text-main,#f1f5f9);line-height:1.4;padding:5px 2px;overflow-wrap:anywhere}
+      .trip-help-details>summary:focus-visible{outline:2px solid var(--primary,#38bdf8);outline-offset:3px;border-radius:4px}
+      .trip-help-details>.trip-help-body{padding:2px 0 2px 18px}
+      .trip-help-details>.trip-help-body>p{margin:5px 0}
+      #tspNotice.trip-collapsible-notice{padding-top:5px;padding-bottom:5px}
+      #tspNotice.trip-collapsible-notice .trip-help-details{margin:0}
+      #tspNotice.trip-collapsible-notice .trip-help-details>summary{padding:0}
+      #tspNotice.trip-collapsible-notice .trip-help-body{padding-top:5px}
+      .trip-checkpoint-actions{display:flex;flex-wrap:wrap;gap:7px;padding:6px 0 2px 18px}
+      .trip-checkpoint-actions button{flex:1 1 150px;min-width:0;width:auto;margin:0;white-space:normal}
+      #bruteInfoDetails>.trip-help-body{padding-left:18px}
+      #bruteInfoDetails #bruteInfo{margin:4px 0 0}
+      @media(max-width:430px){.trip-help-details>.trip-help-body,.trip-checkpoint-actions,#bruteInfoDetails>.trip-help-body{padding-left:14px}.trip-checkpoint-actions button{flex-basis:100%}}
+    `;
+    document.head.appendChild(compactStyle);
+
+    function makeDetails(summaryNode,bodyNodes,className=''){
+      const details=document.createElement('details');
+      details.className=`trip-help-details ${className}`.trim();
+      const summary=document.createElement('summary');
+      summary.className='trip-help-summary';
+      summary.appendChild(summaryNode);
+      const body=document.createElement('div');
+      body.className='trip-help-body';
+      bodyNodes.forEach(node=>body.appendChild(node));
+      details.append(summary,body);
+      return details;
+    }
+
+    const tspNotice=$('tspNotice'),tspDatasetName=$('tspDatasetName');
+    if(tspNotice&&tspDatasetName&&!tspNotice.querySelector(':scope > details.trip-tsp-help')){
+      const original=[...tspNotice.childNodes].filter(node=>node!==tspDatasetName);
+      const details=makeDetails(tspDatasetName,original,'trip-tsp-help');
+      tspNotice.replaceChildren(details);
+      tspNotice.classList.add('trip-collapsible-notice');
+    }
+
+    const mdlControls=document.querySelector('.mdl-controls');
+    if(mdlControls){
+      const workerHelp=mdlControls.querySelector(':scope > .mdl-worker-help');
+      const deviceHelp=workerHelp?.nextElementSibling?.tagName==='P' ? workerHelp.nextElementSibling : null;
+      if(workerHelp&&deviceHelp&&!mdlControls.querySelector(':scope > details.trip-mdl-help')){
+        const title=document.createElement('span');title.id='mdlHelpSummary';
+        const details=makeDetails(title,[workerHelp,deviceHelp],'trip-mdl-help');
+        mdlControls.insertBefore(details,$('mdlStatus'));
+      }
+      const checkpoint=[...mdlControls.querySelectorAll(':scope > details')].find(details=>details.querySelector('summary[data-ui-text="Local checkpoint"]'));
+      if(checkpoint&&!checkpoint.classList.contains('trip-checkpoint-help')){
+        checkpoint.classList.add('trip-help-details','trip-checkpoint-help');
+        const buttons=[...checkpoint.children].filter(node=>node.tagName==='BUTTON');
+        if(buttons.length){
+          const actions=document.createElement('div');actions.className='trip-checkpoint-actions';
+          buttons.forEach(button=>actions.appendChild(button));checkpoint.appendChild(actions);
+        }
+      }
+    }
+
+    const bruteInfo=$('bruteInfo');
+    if(bruteInfo&&!$('bruteInfoDetails')){
+      const bruteParent=bruteInfo.parentNode, bruteNext=bruteInfo.nextSibling;
+      const summaryText=document.createElement('span');summaryText.id='bruteInfoSummary';
+      const details=makeDetails(summaryText,[bruteInfo],'trip-brute-help');
+      details.id='bruteInfoDetails';
+      bruteParent.insertBefore(details,bruteNext);
+    }
+
+    function editorStopCount(){
+      return String($('input')?.value||'').split(/\r?\n/).map(line=>line.trim()).filter(line=>line&&!line.startsWith('#')).length;
+    }
+    function updateCompactHelp(lang=window.MDLxDCCLocale.current()){
+      const sl=lang==='sl';
+      const mdlTitle=$('mdlHelpSummary');
+      if(mdlTitle)mdlTitle.textContent=sl?'O delavcih in načinu MDL×DCC':'About workers and MDL×DCC';
+      const code=/^# TSP source: ([a-z]+\d+)$/m.exec($('input')?.value||'')?.[1];
+      const entry=code&&window.TripTspLibrary?.get(code);
+      if(entry&&$('tspDatasetName'))$('tspDatasetName').textContent=window.TripTspLibrary.label(entry,lang);
+      const n=editorStopCount(),details=$('bruteInfoDetails'),summary=$('bruteInfoSummary');
+      if(details&&summary){
+        const hasInfo=!!String(bruteInfo?.textContent||'').trim();
+        details.hidden=!hasInfo||n===0;
+        if(!details.hidden)summary.textContent=sl?`Zahtevnost iskanja · ${n} ${n===1?'postanek':'postankov'}`:`Search complexity · ${n} ${n===1?'stop':'stops'}`;
+      }
+    }
+    $('input')?.addEventListener('input',()=>updateCompactHelp());
+    if(bruteInfo)new MutationObserver(()=>updateCompactHelp()).observe(bruteInfo,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['data-ui-text']});
+
     // Migrate only the exact built-in greeting from previous releases.
     const welcome='Welcome to 8Z! Load a Library trip or enter your destinations. Ask the assistant for suggestions or help with Trip Optimizer.';
     document.querySelectorAll('#chatHistory .msg.ai, #bigChatHistory .msg.ai').forEach(el=>{
@@ -42,6 +134,7 @@
       // The optimizer owns Start/Resume state; translation must preserve it.
       document.querySelector('.chat-title').firstChild.textContent=sl?'✨ Pomočnik za potovanja ':'✨ AI Trip Assistant ';
       UI.render();
+      updateCompactHelp(lang);
     };
     window.MDLxDCCLocale.subscribe(apply);
     document.querySelectorAll('[data-language]').forEach(b=>b.onclick=()=>window.MDLxDCCLocale.choose(b.dataset.language));
