@@ -20,7 +20,8 @@
       #editorPanel details.tsp-notice p { margin:6px 0; }
       #editorPanel .mdl-controls > .collapsible-help { margin:6px 0; }
       #editorPanel .mdl-checkpoint-details button { width:auto; max-width:100%; padding:7px 10px; font-size:12px; margin:6px 6px 0 0; white-space:normal; overflow-wrap:anywhere; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border); box-shadow:none; }
-      #editorPanel .mdl-checkpoint-details button:hover { background:#111827; border-color:#334155; color:#fff; }
+      #editorPanel .mdl-checkpoint-details button:not(:disabled):hover { background:#111827; border-color:#334155; color:#fff; }
+      #editorPanel .mdl-checkpoint-details button:disabled { opacity:1; background:#1f2937; color:#60a5fa; border-color:#334155; }
       #editorPanel .mdl-checkpoint-details button:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
       html, body, * { scrollbar-width:thin; scrollbar-color:#334155 #0b0f14; }
       *::-webkit-scrollbar { width:10px; height:10px; }
