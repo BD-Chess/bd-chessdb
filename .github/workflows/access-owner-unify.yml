@@ -1,0 +1,44 @@
+name: Access owner unification installer
+on:
+  push:
+    branches: [access-owner-unify-20260915-r1]
+permissions:
+  contents: write
+concurrency:
+  group: access-owner-unify-20260915-r1
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: access-owner-unify-20260915-r1
+          fetch-depth: 0
+      - name: Download verified locked-public pack
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output /tmp/owner-unify.zip 'https://sdmntprnortheu.oaiusercontent.com/files/00000000-c17c-81f4-ab9e-be2aa1491209/raw?se=2026-09-15T22%3A06%3A08Z&sp=r&sv=2026-02-06&sr=b&scid=0784ac99-79e9-58f7-9d62-7e91e159d756&skoid=b971d227-1348-4524-8797-edb0fdf15147&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-15T05%3A42%3A27Z&ske=2026-09-16T05%3A42%3A27Z&sks=b&skv=2026-02-06&sig=wA2zA5jtRrEBS4qUC1btkOqcrIe%2Brt3Sy5sboFuMBOs%3D'
+          echo '0d2c693f79005177e3a705388007da97b8677fdbfa6fe67ada4826aa496d18d1  /tmp/owner-unify.zip' | sha256sum -c -
+          python - <<'PY'
+          import zipfile
+          z=zipfile.ZipFile('/tmp/owner-unify.zip')
+          bad=[n for n in z.namelist() if not (n.startswith('public/') or n=='OWNER_UNIFICATION_MANIFEST.json') or '..' in n.split('/')]
+          if bad: raise SystemExit('unexpected archive paths: '+repr(bad))
+          if z.testzip(): raise SystemExit('zip CRC failure')
+          PY
+          unzip -oq /tmp/owner-unify.zip -d .
+          rm -f OWNER_UNIFICATION_MANIFEST.json
+      - name: Commit migration on staging branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/access-owner-unify.yml
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git config user.name 'Bojan Dobrečevič'
+          git config user.email 'bd@siol.net'
+          git commit -m 'Access: unify owner password on recoverable locked pages'
+          git push origin HEAD:access-owner-unify-20260915-r1
