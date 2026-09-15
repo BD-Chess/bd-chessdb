@@ -2,7 +2,104 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id), UI=window.TripUI;
+
+  function installCollapsibleHelp(){
+    const editor=$('editorPanel');
+    if(!editor || $('tripCollapsibleHelpStyles')) return;
+
+    const style=document.createElement('style');
+    style.id='tripCollapsibleHelpStyles';
+    style.textContent=`
+      #editorPanel .collapsible-help { border:1px solid var(--border); border-radius:8px; margin:8px 0; color:var(--text-dim); font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+      #editorPanel .collapsible-help > summary { cursor:pointer; padding:9px 10px; color:var(--text-main); font-weight:600; line-height:1.35; }
+      #editorPanel .collapsible-help > summary:focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:6px; }
+      #editorPanel .collapsible-help[open] > summary { border-bottom:1px solid var(--border); }
+      #editorPanel .collapsible-help-body { padding:4px 10px 9px; }
+      #editorPanel details.tsp-notice { padding:0; }
+      #editorPanel details.tsp-notice .collapsible-help-body { padding:4px 12px 10px; }
+      #editorPanel details.tsp-notice p { margin:6px 0; }
+      #editorPanel .mdl-controls > .collapsible-help { margin:6px 0; }
+      #editorPanel .mdl-checkpoint-details button { width:auto; max-width:100%; padding:7px 10px; font-size:12px; margin:6px 6px 0 0; white-space:normal; overflow-wrap:anywhere; }
+      #editorPanel .brute-help-details #bruteInfo { padding:0 10px 8px; margin:6px 0 0; }
+      #editorPanel #bruteHelpCount { font-weight:400; color:var(--text-dim); }
+    `;
+    document.head.append(style);
+
+    const tsp=$('tspNotice');
+    if(tsp && tsp.tagName!=='DETAILS'){
+      const details=document.createElement('details');
+      for(const attr of [...tsp.attributes]) details.setAttribute(attr.name,attr.value);
+      details.classList.add('collapsible-help');
+      details.open=false;
+      const summary=document.createElement('summary');
+      const datasetName=$('tspDatasetName');
+      if(datasetName) summary.append(datasetName);
+      const body=document.createElement('div');
+      body.className='collapsible-help-body';
+      while(tsp.firstChild) body.append(tsp.firstChild);
+      details.append(summary,body);
+      tsp.replaceWith(details);
+    }
+
+    const controls=document.querySelector('.mdl-controls'), mdlStatus=$('mdlStatus');
+    if(controls && mdlStatus){
+      const paragraphs=[...controls.children].filter(el=>el.tagName==='P' && el!==mdlStatus).slice(0,2);
+      if(paragraphs.length && !controls.querySelector('.mdl-help-details')){
+        const details=document.createElement('details');
+        details.className='collapsible-help mdl-help-details';
+        details.open=false;
+        const summary=document.createElement('summary');
+        summary.id='mdlHelpSummary';
+        const body=document.createElement('div');
+        body.className='collapsible-help-body';
+        paragraphs[0].before(details);
+        paragraphs.forEach(p=>body.append(p));
+        details.append(summary,body);
+      }
+      const checkpoint=[...controls.children].find(el=>el.tagName==='DETAILS' && !el.classList.contains('mdl-help-details'));
+      if(checkpoint){checkpoint.classList.add('collapsible-help','mdl-checkpoint-details');checkpoint.open=false;}
+    }
+
+    const brute=$('bruteInfo');
+    if(brute && !$('bruteHelpDetails')){
+      const details=document.createElement('details');
+      details.id='bruteHelpDetails';
+      details.className='collapsible-help brute-help-details';
+      details.open=false;
+      const summary=document.createElement('summary');
+      const title=document.createElement('span');
+      title.id='bruteHelpTitle';
+      const count=document.createElement('span');
+      count.id='bruteHelpCount';
+      summary.append(title,count);
+      brute.before(details);
+      details.append(summary,brute);
+    }
+
+    const countStops=()=>{
+      const raw=$('bruteInfo')?.dataset.uiText || '';
+      const fromInfo=/^(\d+)\s+stops\b/.exec(raw);
+      if(fromInfo) return Number(fromInfo[1]);
+      return String($('input')?.value || '').split(/\r?\n/).map(x=>x.trim()).filter(x=>x && !x.startsWith('#')).length;
+    };
+    const slStopWord=n=>n===1?'postanek':'postankov';
+    const updateHelpLabels=lang=>{
+      const sl=lang==='sl';
+      if($('mdlHelpSummary')) $('mdlHelpSummary').textContent=sl?'O delavcih in načinu MDL×DCC':'About workers and MDL×DCC';
+      if($('bruteHelpTitle')) $('bruteHelpTitle').textContent=sl?'Zahtevnost iskanja':'Search complexity';
+      if($('bruteHelpCount')){
+        const n=countStops();
+        $('bruteHelpCount').textContent=n?` · ${n.toLocaleString(sl?'sl-SI':'en-US')} ${sl?slStopWord(n):(n===1?'stop':'stops')}`:'';
+      }
+    };
+    const refreshHelpLabels=()=>updateHelpLabels(window.MDLxDCCLocale.current());
+    const bruteInfo=$('bruteInfo');
+    if(bruteInfo) new MutationObserver(refreshHelpLabels).observe(bruteInfo,{attributes:true,attributeFilter:['data-ui-text'],childList:true,characterData:true,subtree:true});
+    $('input')?.addEventListener('input',refreshHelpLabels);
+    window.MDLxDCCLocale.subscribe(updateHelpLabels);
+  }
   document.addEventListener('DOMContentLoaded',()=>{
+    installCollapsibleHelp();
     const labels={btnPlanMode:'Plan',btnMapMode:'Map',btnHelp:'Help',btnDeep:'Optimize (Deep)',btnPrepare:'Prepare distances',btnCancelWork:'Cancel calculation',btnDriving:'🚗 Drive',btnWalking:'🚶 Walk',btnSave:'💾 Save',btnLoad:'📂 Load',jumpLibrary:'Library ↓',jumpEditor:'Editor ↑'};
     for(const [id,text] of Object.entries(labels)) UI.set($(id),text);
     UI.set(document.querySelector('#editorPanel h3'),'Trip Editor');
