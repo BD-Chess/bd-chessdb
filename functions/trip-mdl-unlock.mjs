@@ -12,8 +12,19 @@ function parseRecord(record){const [saltHex,expectedHex]=String(record||'').spli
 async function matches(password,record){const parsed=parseRecord(record);if(!parsed)return false;const actual=await derive(password,parsed.salt);return timingSafeEqual(actual,parsed.expected);}
 function sha(text){return createHash('sha256').update(String(text),'utf8').digest('hex');}
 function credential(master){return createHash('sha256').update(master+'||mdlxdcc.org||trip-mdl-v1','utf8').digest('base64');}
+function configState(){
+  const master=Netlify.env.get('TRIP_MDL_MASTER');
+  const ownerRecord=Netlify.env.get('TRIP_MDL_OWNER_PASSWORD_SCRYPT');
+  const tempRecord=Netlify.env.get('TRIP_MDL_TEMP_PASSWORD_SCRYPT');
+  const tempInviteId=Netlify.env.get('TRIP_MDL_TEMP_INVITE_ID');
+  return {master,ownerRecord,tempRecord,tempInviteId,configured:!!(master&&master.length>=43&&parseRecord(ownerRecord)&&parseRecord(tempRecord)&&tempInviteId)};
+}
 
 export default async function unlock(req,context){
+  if(req.method==='GET'){
+    const {configured}=configState();
+    return json({schema:'TripUnlockHealthV1',configured},configured?200:503);
+  }
   if(req.method!=='POST')return json({error:'method'},405);
   const origin=req.headers.get('origin');if(!origin||origin!==new URL(req.url).origin)return json({error:'origin'},403);
   if(!allowed(String(context?.ip||'unknown')))return json({error:'rate'},429);
@@ -24,16 +35,13 @@ export default async function unlock(req,context){
     const body=JSON.parse(Buffer.concat(parts).toString('utf8'));
     if(body.schema!=='TripUnlockV1'||typeof body.password!=='string'||!body.password.length||body.password.length>1024)return json({error:'input'},400);
 
-    const master=Netlify.env.get('TRIP_MDL_MASTER');
-    const ownerRecord=Netlify.env.get('TRIP_MDL_OWNER_PASSWORD_SCRYPT');
-    const tempRecord=Netlify.env.get('TRIP_MDL_TEMP_PASSWORD_SCRYPT');
-    const tempInviteId=Netlify.env.get('TRIP_MDL_TEMP_INVITE_ID');
-    if(!master||master.length<43||!parseRecord(ownerRecord))return json({error:'unavailable'},503);
+    const {master,ownerRecord,tempRecord,tempInviteId,configured}=configState();
+    if(!configured)return json({error:'unavailable'},503);
 
     let accessClass=null,temporaryExpiresAt=null;
     if(await matches(body.password,ownerRecord)){
       accessClass='owner';
-    }else if(parseRecord(tempRecord)&&tempInviteId&&await matches(body.password,tempRecord)){
+    }else if(await matches(body.password,tempRecord)){
       const now=Date.now();
       const store=getStore(ACCESS_STORE,{consistency:'strong'});
       const key='temp/'+sha(origin+'|'+tempInviteId);
@@ -53,4 +61,4 @@ export default async function unlock(req,context){
     return json({schema:'TripUnlockV1',engine:'bd-trip-browser-r1.1.0',credential:credential(master),accessClass,temporaryExpiresAt});
   }catch(_){return json({error:'unlock'},400);}
 }
-export const config={path:'/api/trip-mdl-unlock',method:'POST',rateLimit:{windowLimit:8,windowSize:60,aggregateBy:['ip','domain']}};
+export const config={path:'/api/trip-mdl-unlock',rateLimit:{windowLimit:8,windowSize:60,aggregateBy:['ip','domain']}};
