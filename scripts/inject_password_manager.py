@@ -127,13 +127,15 @@ def patch_runtime(root):
         p=root/rel;s=p.read_text();s=s.replace("let password=$('mdlPassword').value;$('mdlPassword').value='';","let password=$('mdlPassword').value;",1);s=s.replace("catch(_){password='';","catch(_){password='';$('mdlPassword').value='';",1);p.write_text(s);out.append(rel)
     return out
 def verify(root):
-    pages=inputs=forms=noform=0;api=[];issues=[]
+    pages=inputs=forms=noform=owner_wrapped=0;api=[];issues=[];protected_paths=set()
     for p in root.rglob('*.html'):
-        s=p.read_text();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]
+        s=p.read_text();rel=p.relative_to(root).as_posix();allm=list(PW_RE.finditer(s));real=[m for m in allm if not is_api(m.group(0))]
+        if 'id="bd-access-data"' in s and '/js/bd-owner-access-v1.js' in s:
+            owner_wrapped+=1;protected_paths.add(rel)
         if not real:
-            if allm:api.append(p.relative_to(root).as_posix())
+            if allm:api.append(rel)
             continue
-        pages+=1;inputs+=len(real)
+        pages+=1;inputs+=len(real);protected_paths.add(rel)
         if HELPER_TAG not in s:issues.append([str(p),'helper'])
         for m in real:
             if 'current-password' not in m.group(0).lower():issues.append([str(p),'autocomplete'])
@@ -145,10 +147,10 @@ def verify(root):
     helper=(root/'js/bd-password-manager.js').read_text()
     for x in ['localStorage','sessionStorage','XMLHttpRequest','sendBeacon','fetch(']:
         if x in helper:issues.append(['helper','forbidden '+x])
-    if pages<52:issues.append(['inventory',pages])
+    if len(protected_paths)<52:issues.append(['inventory',{'password_pages':pages,'owner_wrapped_pages':owner_wrapped,'protected_pages':len(protected_paths)}])
     if not {'BD/BD_AIM3_RHPm.html','BD/BD_AIM3_RHPm_v1_6_1.html'}.issubset(set(api)):issues.append(['api-exclusion',api])
     if issues:raise RuntimeError(json.dumps(issues[:20]))
-    return {'version':VERSION,'password_pages':pages,'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}
+    return {'version':VERSION,'password_pages':pages,'owner_wrapped_pages':owner_wrapped,'protected_pages':len(protected_paths),'password_inputs':inputs,'passwords_in_forms':forms,'runtime_associated_passwords':noform,'api_key_only_pages':sorted(api),'issues':0}
 def main():
     a=argparse.ArgumentParser();a.add_argument('public',type=Path);a.add_argument('--report',type=Path);x=a.parse_args();root=x.public.resolve();(root/'js').mkdir(parents=True,exist_ok=True);(root/'js/bd-password-manager.js').write_text(HELPER_JS)
     touched=[];excluded=0
