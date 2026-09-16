@@ -1,0 +1,35 @@
+name: One-time HTML relative fix
+on:
+  push:
+    branches: [tmp-html-link-audit-20260916]
+permissions:
+  contents: write
+jobs:
+  fix-main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply safe relative-link normalization
+        run: |
+          git show origin/tmp-html-link-audit-20260916:.github/html_relative_fix.py > /tmp/fix.py
+          python3 /tmp/fix.py
+          git diff --check
+      - name: Commit and push
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add public
+          if git diff --cached --quiet; then
+            echo 'No changes required.'
+          else
+            git commit -m "HTML: make internal navigation and assets relative"
+            git push origin HEAD:main
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: html-relative-fix-report
+          path: /tmp/html-relative-fix-report.json
+          if-no-files-found: error
