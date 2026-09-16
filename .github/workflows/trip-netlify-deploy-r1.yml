@@ -14,30 +14,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Verify production source commit
+      - name: Verify production source content
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "c37d95e9042bc3a0de288c66c5a9bed19c746ee3"
+          grep -Fq 'value="300000">5 min' public/Trip/new/index.html
+          grep -Fq 'value="900000">15 min' public/Trip/new/index.html
           grep -Fq 'value="3600000">1 h' public/Trip/new/index.html
           grep -Fq 'Map/table refresh interval' public/Trip/new/index.html
           grep -Fq '[1000,5000,15000,30000,60000,300000,900000,3600000]' public/Trip/new/app.js
-          grep -Fq 'job.lastComparisonRefresh' public/Trip/new/app.js
+          grep -Fq 'refreshComparisonAtSelectedInterval' public/Trip/new/app.js
+          grep -Fq 'Čas osveževanja mape/tabele' public/Trip/new/ui-text.js
+          node --check public/Trip/new/app.js
+          node --check public/Trip/new/ui-text.js
       - name: Deploy current main to production
         shell: bash
         run: |
-          npx -y @netlify/mcp@latest --site-id 17b4124d-c197-4c0a-a711-8b2c08d91088 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..miqUbqlv9Lbqo7Ba.XIh53XYvZJ4maJREJ-Kq4BJeCFPrmz5KGV1UKNOgZJmDsoPWDrQUgH08_Iq4-KfrfjDEPinwS84h4WpRzKbmua8dwqg8FiPK6rXXoAkE93og-KmHjKG0MG7AF0eAegUS2G6UqIbyDLGetN7muRDrT7z686owLHINLNT5u_tONXKtzoW4iTpcRvXjFsgg3DYzVPqficzUS1B5oQLGp99QGzSQdp2tQG0caVtojO_Dsw56XMsndMnJ-aKvrjntWPtUvOV3DjKu5s3Pl6DxJN3sh00a9bhMInvFKAXevRsbnnAjcgH9aj9eUUzuwbD72KkE6_Hc-vNmcoq5u8uA_Z29pXrHT1dlAO54Kd-QrU-7wgfJ1v0ZFqQcUEsF9PT8NAKLILDAoKjL.pmUgGfCr9Lfuo6DDWVnHAQ"
+          npx -y @netlify/mcp@latest --site-id 17b4124d-c197-4c0a-a711-8b2c08d91088 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..d0mFX2aR2Nf110zc.zTxfxvdw1DuMaAaBFbRMrNZ9k-DopIQYkz4fM2t333AUvtaX0-NjWBnBGOWfspqqm9weAr1YeYtJFFpBKnNyS2MjOMhbiDfDwG5B_RodNS_2emL2AkmypX2cjzvmDWqoFauii2iLVvL2wy2SWABG1ilgXR84EgOXPuGH0M_C9ieYdOprSaYSoO-Ry7FigS8XXI0SvOaKnIa4E3cebChz4nhHz-IUmk-dvFGwojXwZFamwxjzm8CuM7ylazvYs7b8WFqNjlKqljVTVWIMHHnX50iR-T9w-QyBIf_3XpifcgS_Ioy9PMNa3mMoxK3xxb0Om4QfhyWqm6e3Es3bTMSIeItsLyOA_2g3JrQYAfmSe1xKeZraPV5wJBL25Y6u7Oyck4XoRVct.RuB7VbO6iInHkdiKZK9INQ"
       - name: Verify live production
         shell: bash
         run: |
           ok=0
-          for i in $(seq 1 12); do
+          for i in $(seq 1 18); do
             html="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/ || true)"
             app="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/app.js || true)"
             ui="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/ui-text.js || true)"
             if printf '%s' "$html" | grep -Fq 'value="3600000">1 h' \
               && printf '%s' "$html" | grep -Fq 'Map/table refresh interval' \
               && printf '%s' "$app" | grep -Fq '[1000,5000,15000,30000,60000,300000,900000,3600000]' \
-              && printf '%s' "$app" | grep -Fq 'job.lastComparisonRefresh' \
+              && printf '%s' "$app" | grep -Fq 'refreshComparisonAtSelectedInterval' \
               && printf '%s' "$ui" | grep -Fq 'Čas osveževanja mape/tabele'; then
               ok=1
               break
