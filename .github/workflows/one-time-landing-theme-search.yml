@@ -15,6 +15,15 @@ jobs:
       - name: Apply staged patch
         run: |
           git show origin/tmp-landing-theme-search-20260916:.github/one_time_landing_theme_search.py > /tmp/patch.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/patch.py')
+          s=p.read_text()
+          old="""s = one(\n    s,\n    '.topline,main,footer{width:calc(100% - 48px)}',\n    '.topline,main,footer,.explore-more{width:calc(100% - 48px)}',\n    'explore-more mobile width'\n)"""
+          new="""n=s.count('.topline,main,footer{width:calc(100% - 48px)}')\nif n < 1: raise SystemExit(f'explore-more mobile width: expected at least 1 occurrence, found {n}')\ns=s.replace('.topline,main,footer{width:calc(100% - 48px)}','.topline,main,footer,.explore-more{width:calc(100% - 48px)}')"""
+          if old not in s: raise SystemExit('runner patch anchor missing')
+          p.write_text(s.replace(old,new,1))
+          PY
           python3 /tmp/patch.py
           git diff --check
       - name: Commit source changes
