@@ -7,11 +7,11 @@ forms. The visible UX remains password-only; technical usernames are offscreen,
 stable, non-secret identifiers used only for credential grouping.
 """
 from __future__ import annotations
-import argparse, html, json, re
+import argparse, html, json, os, re
 from pathlib import Path
 
 VERSION = "20260914-pm1"
-HELPER_TAG = '<script src="/js/bd-password-manager.js" defer></script>'
+HELPER_FILE = 'bd-password-manager.js'
 TECH_STYLE = 'position:fixed;left:-10000px;top:0;width:1px;height:1px;padding:0;border:0;opacity:.01;pointer-events:none'
 API_RE = re.compile(r'api.?key|apikey|openai|anthropic|gemini.?key|\bsk-[a-z0-9_-]*', re.I)
 PW_RE = re.compile(r'<input\b[^>]*\btype\s*=\s*(["\'])password\1[^>]*>', re.I)
@@ -35,13 +35,13 @@ HELPER_JS = r'''/*
   function isPassword(input) { return input instanceof HTMLInputElement && input.type === 'password' && !isApiCredential(input); }
   function groupFor(input) {
     const p = location.pathname.toLowerCase(), id = text(input.id);
-    if (p === '/bd/o' || p.startsWith('/bd/o/')) return 'bd-o';
-    if (p === '/wl' || p.startsWith('/wl/')) return 'wake-lab';
-    if (id === 'mdlpassword' || (p.startsWith('/trip/') && id.includes('mdl'))) return 'trip-mdl';
+    if (p.endsWith('/bd/o') || p.includes('/bd/o/')) return 'bd-o';
+    if (p.endsWith('/wl') || p.includes('/wl/')) return 'wake-lab';
+    if (id === 'mdlpassword' || (p.includes('/trip/') && id.includes('mdl'))) return 'trip-mdl';
     if (p.includes('/trip/') && (id === '_8zp' || id.includes('pass'))) return 'trip-protected';
     if (p.includes('c_soul')) return 'bd-soul';
-    if (p.startsWith('/aim3/')) return 'aim3-malm';
-    if (p.startsWith('/crp/') && p.includes('mentalarena_malm')) return 'crp-malm';
+    if (p.includes('/aim3/')) return 'aim3-malm';
+    if (p.includes('/crp/') && p.includes('mentalarena_malm')) return 'crp-malm';
     if (id === 'shield-password') return 'mdlxdcc-technical';
     if (p.includes('/8zt/bdt')) return 'bdt';
     if (p.includes('bd_8z_dcc_trading')) return 'bd-8z-dcc-trading';
@@ -109,9 +109,11 @@ def patch_html(path,root):
         if not ps:return f
         g=group_for(rel,ps[0]);u=f'<input type="text" name="username" autocomplete="username" value="{html.escape(g)}" tabindex="-1" aria-hidden="true" data-bd-pm-username="1" data-bd-pm-group="{html.escape(g)}" style="{TECH_STYLE}">';pos=f.find('>')+1;return f[:pos]+u+f[pos:]
     s=FORM_RE.sub(fsub,s)
-    if HELPER_TAG not in s:
+    helper_rel=Path(os.path.relpath(root/'js'/HELPER_FILE,path.parent)).as_posix()
+    helper_tag=f'<script src="{helper_rel}" defer></script>'
+    if HELPER_FILE not in s:
         if not re.search(r'</head\s*>',s,re.I):raise RuntimeError('missing head '+rel)
-        s=re.sub(r'</head\s*>',HELPER_TAG+'\n</head>',s,count=1,flags=re.I)
+        s=re.sub(r'</head\s*>',helper_tag+'\n</head>',s,count=1,flags=re.I)
     path.write_text(s);return True,len(real),len(ms)-len(real)
 def rep(path,old,new,label):
     s=path.read_text()
@@ -136,7 +138,7 @@ def verify(root):
             if allm:api.append(rel)
             continue
         pages+=1;inputs+=len(real);protected_paths.add(rel)
-        if HELPER_TAG not in s:issues.append([str(p),'helper'])
+        if HELPER_FILE not in s:issues.append([str(p),'helper'])
         for m in real:
             if 'current-password' not in m.group(0).lower():issues.append([str(p),'autocomplete'])
             b=s[:m.start()];fs=b.lower().rfind('<form');fe=b.lower().rfind('</form')
