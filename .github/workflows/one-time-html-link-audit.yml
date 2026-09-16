@@ -1,0 +1,25 @@
+name: One-time HTML link audit
+on:
+  push:
+    branches: [tmp-html-link-audit-20260916]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Run audit
+        run: |
+          git show origin/tmp-html-link-audit-20260916:.github/html_link_audit.py > /tmp/audit.py
+          python3 /tmp/audit.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: html-link-audit
+          path: |
+            /tmp/html-link-audit.json
+            /tmp/html-link-audit.md
+          if-no-files-found: error
