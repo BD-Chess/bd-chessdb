@@ -289,7 +289,7 @@ const normalize=s=>String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').to
 function smartQuery(raw){let q=normalize(raw),compact=q.replace(/\s+/g,'');if(['mdldcc','mdlxdcc','8zmdldcc','8zmdlxdcc'].includes(compact))return 'mdl dcc';if(compact==='tripoptimizer'||compact==='8ztripoptimizer')return 'trip';if(compact==='flip4m')return 'flip4m';return q;}
 function stripBase(path){path=String(path||'').replace(/\/{2,}/g,'/');if(BASE_PATH!=='/'&&path.startsWith(BASE_PATH))path='/'+path.slice(BASE_PATH.length);return path||'/';}
 function localURL(raw){const u=new URL(String(raw).replace(/^\/+/,''),SITE_BASE);return u.pathname+u.search+u.hash;}
-const PRIVATE_SHORTCUTS=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html'});
+const PRIVATE_SHORTCUTS=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html',sef:'BD/O/sef.html'});
 function privateShortcut(raw){const key=normalize(raw);return Object.prototype.hasOwnProperty.call(PRIVATE_SHORTCUTS,key)?PRIVATE_SHORTCUTS[key]:null;}
 function shortcutURL(path){return location.protocol==='file:'?'https://www.mdlxdcc.org/'+path:new URL(path,location.href).href;}
 const text=(en,sl)=>document.documentElement.dataset.lang==='sl'?sl:en;

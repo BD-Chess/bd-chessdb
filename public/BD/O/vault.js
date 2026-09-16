@@ -168,6 +168,7 @@ async function unlock(ev){
   sessionValue={vault:cfg.vault,key:to64(raw)};raw.fill(0);
   nativeSession.setItem(SESSION,JSON.stringify(sessionValue));nativeSession.removeItem('_bd_o_pp');
   const next=new URLSearchParams(location.search).get('next');
+  if(next==='sef'){location.replace(ROOT+'sef.html');return;}
   if(validPage(next)&&next!=='index.html'){location.replace(ROOT+next);return;}
   if(location.search)history.replaceState(null,'',ROOT+'index.html');render('index.html');
  }catch(err){master=null;bundle=null;eraseSession();showError(err.message||'Odklepanje ni uspelo.');}

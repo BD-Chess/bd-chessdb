@@ -1,7 +1,7 @@
 /* BD/O central private vault v2. Uses the already-authenticated BD/O tab session; no second password. */
 (async function(){
 'use strict';
-const ROOT='/BD/O/', PORTAL_SESSION='bd-o-v2-session', OLD_SEF_SESSION='bd-o-sef-v1-session';
+const ROOT=new URL('./',location.href).pathname, PORTAL_SESSION='bd-o-v2-session', OLD_SEF_SESSION='bd-o-sef-v1-session';
 const TE=new TextEncoder(), TD=new TextDecoder('utf-8',{fatal:true});
 const $=id=>document.getElementById(id);
 const from64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -47,7 +47,7 @@ try{
  portalCfg=await getJSON(ROOT+'vault.json');sefCfg=await getJSON(ROOT+'sef-config.json');
  if(portalCfg.format!=='BD-O-VAULT-2')throw new Error('Neveljavna BD/O nastavitev.');
  const session=portalSession();
- if(!session){location.replace(ROOT);return;}
+ if(!session){location.replace(ROOT+'index.html?next=sef');return;}
  try{sessionStorage.removeItem(OLD_SEF_SESSION)}catch(_){}
  const raw=from64(session.key);const obj=await openSef(raw);raw.fill(0);render(obj);
 }catch(err){$('loading').hidden=false;$('loadingTitle').textContent='Sef se ni odprl';$('loadingText').textContent=err.message||'Napaka zaščite.';const back=$('backLink');if(back)back.hidden=false;}
