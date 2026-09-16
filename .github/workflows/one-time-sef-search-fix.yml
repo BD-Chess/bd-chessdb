@@ -1,0 +1,28 @@
+name: One-time sef search fix
+on:
+  push:
+    branches: [tmp-sef-search-fix-20260916]
+permissions:
+  contents: write
+jobs:
+  patch-main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply staged fix
+        run: |
+          git show origin/tmp-sef-search-fix-20260916:.github/one_time_sef_search_fix.py > /tmp/patch.py
+          python3 /tmp/patch.py
+          node --check public/BD/O/sef.js
+          node --check public/BD/O/vault.js
+          git diff --check
+      - name: Commit source changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add public/index.html public/BD/O/sef.html public/BD/O/sef.js public/BD/O/vault.js
+          git commit -m "BD/O Sef: project-safe unlock and search shortcut"
+          git push origin HEAD:main
