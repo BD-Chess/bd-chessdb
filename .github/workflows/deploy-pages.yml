@@ -37,6 +37,23 @@ jobs:
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
           node --check public/Trip/old/004/private-client.js
+      - name: Route Trip LAB unlock through Cloudflare on GitHub Pages
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('public/Trip/new/private-client.js')
+          s = p.read_text(encoding='utf-8')
+          old = "fetch('/api/trip-mdl-unlock',{method:'POST',credentials:'same-origin',cache:'no-store'"
+          new = "fetch('https://mdlxdcc-trip-auth.iemcccc.workers.dev/',{method:'POST',credentials:'omit',cache:'no-store'"
+          if s.count(old) != 1:
+              raise SystemExit(f'Expected one Trip LAB auth endpoint, found {s.count(old)}')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+      - name: Verify Trip LAB Pages auth migration
+        shell: bash
+        run: |
+          grep -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip/new/private-client.js
+          if grep -F "fetch('/api/trip-mdl-unlock'" public/Trip/new/private-client.js; then exit 1; fi
+          node --check public/Trip/new/private-client.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
