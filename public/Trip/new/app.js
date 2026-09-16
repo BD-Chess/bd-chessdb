@@ -1391,6 +1391,13 @@ Bad example:
     w.postMessage({type:'solve',profile:'air-comparison',jobId:job.jobId,points,startIdx,roundTrip:job.roundTrip});
   }
 
+  function refreshComparisonAtSelectedInterval(msg, job) {
+    const now = performance.now();
+    if (now - (job.lastComparisonRefresh || 0) < mapRefreshInterval()) return;
+    job.lastComparisonRefresh = now;
+    displayComparison(msg, job);
+  }
+
   function displayBruteProgress(msg, job) {
     $('bruteProgress').hidden = false;
     const rate = msg.elapsedMs > 0 ? Number(msg.checked) / (msg.elapsedMs/1000) : 0;
@@ -1405,7 +1412,7 @@ Bad example:
     $('bruteProgressBar').value = Number(msg.checked) / Number(msg.total);
     UI.set($('bruteTiming'), `Compute time: ${BF.duration(msg.elapsedMs/1000)} · 1 compute thread · Speed: ${rate > 0 ? Math.round(rate).toLocaleString('en-US') + ' orders/s' : 'measuring…'} · ${msg.cancelled ? 'Full-search time remaining at this rate' : 'Estimated remaining'}: ${remaining}`);
     UI.set($('bruteBest'), `Best ${job.planar ? 'TSP' : job.direct ? 'direct' : 'road-table'} distance: ${formatValue(routeValue(msg),job.planar)} · ${msg.exact ? 'All orders checked; optimum proven for this table.' : 'Optimum not yet proven.'}`);
-    displayComparison(msg, job);
+    refreshComparisonAtSelectedInterval(msg, job);
   }
 
   function showSavings(msg) {
@@ -1744,7 +1751,7 @@ Bad example:
     if(job.profile==='deep'){if(job.private)observePrivateDiagnostics(msg,job);else observeOrdinaryDiagnostics(msg,job);}
     if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); refreshBruteMap(msg, job); return; }
     if (msg.type === 'progress') {
-      job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);
+      job.latest = msg; displaySearchProgress(msg, job); refreshComparisonAtSelectedInterval(msg, job); refreshBruteMap(msg, job);
     }
     else if (msg.type === 'error') { clearTimeout(job.cancelTimer); activeJob = null; finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
