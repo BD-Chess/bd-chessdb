@@ -1,4 +1,4 @@
-name: Trip LAB Netlify deploy R1
+name: Trip LAB live verify R1
 
 on:
   push:
@@ -8,44 +8,27 @@ on:
       - .github/workflows/trip-netlify-deploy-r1.yml
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Verify production source content
+      - name: Verify live Trip LAB content
         shell: bash
         run: |
-          grep -Fq 'value="300000">5 min' public/Trip/new/index.html
-          grep -Fq 'value="900000">15 min' public/Trip/new/index.html
-          grep -Fq 'value="3600000">1 h' public/Trip/new/index.html
-          grep -Fq 'Map/table refresh interval' public/Trip/new/index.html
-          grep -Fq '[1000,5000,15000,30000,60000,300000,900000,3600000]' public/Trip/new/app.js
-          grep -Fq 'refreshComparisonAtSelectedInterval' public/Trip/new/app.js
-          grep -Fq 'Čas osveževanja mape/tabele' public/Trip/new/ui-text.js
-          node --check public/Trip/new/app.js
-          node --check public/Trip/new/ui-text.js
-      - name: Deploy current main to production
-        shell: bash
-        run: |
-          npx -y @netlify/mcp@latest --site-id 17b4124d-c197-4c0a-a711-8b2c08d91088 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..d0mFX2aR2Nf110zc.zTxfxvdw1DuMaAaBFbRMrNZ9k-DopIQYkz4fM2t333AUvtaX0-NjWBnBGOWfspqqm9weAr1YeYtJFFpBKnNyS2MjOMhbiDfDwG5B_RodNS_2emL2AkmypX2cjzvmDWqoFauii2iLVvL2wy2SWABG1ilgXR84EgOXPuGH0M_C9ieYdOprSaYSoO-Ry7FigS8XXI0SvOaKnIa4E3cebChz4nhHz-IUmk-dvFGwojXwZFamwxjzm8CuM7ylazvYs7b8WFqNjlKqljVTVWIMHHnX50iR-T9w-QyBIf_3XpifcgS_Ioy9PMNa3mMoxK3xxb0Om4QfhyWqm6e3Es3bTMSIeItsLyOA_2g3JrQYAfmSe1xKeZraPV5wJBL25Y6u7Oyck4XoRVct.RuB7VbO6iInHkdiKZK9INQ"
-      - name: Verify live production
-        shell: bash
-        run: |
-          ok=0
-          for i in $(seq 1 18); do
-            html="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/ || true)"
-            app="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/app.js || true)"
-            ui="$(curl -fsSL --max-time 20 https://www.mdlxdcc.org/trip/new/ui-text.js || true)"
-            if printf '%s' "$html" | grep -Fq 'value="3600000">1 h' \
-              && printf '%s' "$html" | grep -Fq 'Map/table refresh interval' \
-              && printf '%s' "$app" | grep -Fq '[1000,5000,15000,30000,60000,300000,900000,3600000]' \
-              && printf '%s' "$app" | grep -Fq 'refreshComparisonAtSelectedInterval' \
-              && printf '%s' "$ui" | grep -Fq 'Čas osveževanja mape/tabele'; then
-              ok=1
-              break
-            fi
-            sleep 5
-          done
-          test "$ok" = 1
+          set -euo pipefail
+          html="$(curl -fsSL --max-time 30 https://www.mdlxdcc.org/trip/new/)"
+          app="$(curl -fsSL --max-time 30 https://www.mdlxdcc.org/trip/new/app.js)"
+          ui="$(curl -fsSL --max-time 30 https://www.mdlxdcc.org/trip/new/ui-text.js)"
+          echo "HTML_LABEL=$(printf '%s' "$html" | grep -Foc 'Map/table refresh interval' || true)"
+          echo "HTML_5MIN=$(printf '%s' "$html" | grep -Foc 'value=\"300000\">5 min' || true)"
+          echo "HTML_15MIN=$(printf '%s' "$html" | grep -Foc 'value=\"900000\">15 min' || true)"
+          echo "HTML_1H=$(printf '%s' "$html" | grep -Foc 'value=\"3600000\">1 h' || true)"
+          echo "APP_WHITELIST=$(printf '%s' "$app" | grep -Foc '[1000,5000,15000,30000,60000,300000,900000,3600000]' || true)"
+          echo "APP_COMPARE_HELPER=$(printf '%s' "$app" | grep -Foc 'refreshComparisonAtSelectedInterval' || true)"
+          echo "UI_SL=$(printf '%s' "$ui" | grep -Foc 'Čas osveževanja mape/tabele' || true)"
+          printf '%s' "$html" | grep -Fq 'Map/table refresh interval'
+          printf '%s' "$html" | grep -Fq 'value="300000">5 min'
+          printf '%s' "$html" | grep -Fq 'value="900000">15 min'
+          printf '%s' "$html" | grep -Fq 'value="3600000">1 h'
+          printf '%s' "$app" | grep -Fq '[1000,5000,15000,30000,60000,300000,900000,3600000]'
+          printf '%s' "$app" | grep -Fq 'refreshComparisonAtSelectedInterval'
+          printf '%s' "$ui" | grep -Fq 'Čas osveževanja mape/tabele'
