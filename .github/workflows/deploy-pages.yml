@@ -37,6 +37,25 @@ jobs:
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
           node --check public/Trip/old/004/private-client.js
+      - name: Fix owner-access asset paths for GitHub Pages project base
+        shell: python
+        run: |
+          from pathlib import Path
+          old = 'src="/js/bd-owner-access-v1.js"'
+          new = 'src="/bd-chessdb/js/bd-owner-access-v1.js"'
+          changed = []
+          for p in sorted(Path('public').rglob('*.html')):
+              s = p.read_text(encoding='utf-8')
+              n = s.count(old)
+              if n:
+                  p.write_text(s.replace(old, new), encoding='utf-8')
+                  changed.append((p.as_posix(), n))
+          if not changed:
+              raise SystemExit('No BD_ACCESS_V1 owner-access script references found')
+          print('GitHub Pages owner-access path fixes:', changed)
+          bbsh = Path('public/BD/BBSH.html').read_text(encoding='utf-8')
+          if new not in bbsh or '"schema":"BD_ACCESS_V1"' not in bbsh:
+              raise SystemExit('BBSH owner-access Pages guard failed')
       - name: Route all Trip unlock clients through Cloudflare on GitHub Pages
         shell: python
         run: |
