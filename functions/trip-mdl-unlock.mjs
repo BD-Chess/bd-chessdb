@@ -8,8 +8,6 @@ const OWNER_AUTH_TAG='dca4939357422d63d748abd63a81106b0bdbc8469feb15f972898ff6ab
 const TEMP_AUTH_TAG='2440ee508fe3111a0e52daa65724c416846d7616dcb84bea48a041949ffb7842';
 
 function json(body,status=200){return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store, no-cache, must-revalidate','Pragma':'no-cache','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'}});}
-function limiter(){return limiter.state??=(new Map());}
-function allowed(ip){const now=Date.now(),map=limiter();for(const [key,row]of map)if(row.until<now)map.delete(key);if(map.size>=10000&&!map.has(ip))return false;const row=map.get(ip)||{n:0,until:now+900000};map.set(ip,row);return ++row.n<=8;}
 function sha(text){return createHash('sha256').update(String(text),'utf8').digest('hex');}
 function credential(master){return createHash('sha256').update(master+'||mdlxdcc.org||trip-mdl-v1','utf8').digest('base64');}
 function authTag(master,kind,password){return createHmac('sha256',master).update(kind+'|'+password,'utf8').digest();}
@@ -20,14 +18,13 @@ function configState(){
   return {master,configured:!!(master&&master.length>=43&&tagsOk)};
 }
 
-export default async function unlock(req,context){
+export default async function unlock(req){
   if(req.method==='GET'){
     const {configured}=configState();
     return json({schema:'TripUnlockHealthV1',configured,policy:'owner-permanent+temporary-30d-first-use'},configured?200:503);
   }
   if(req.method!=='POST')return json({error:'method'},405);
   const origin=req.headers.get('origin');if(!origin||origin!==new URL(req.url).origin)return json({error:'origin'},403);
-  if(!allowed(String(context?.ip||'unknown')))return json({error:'rate'},429);
   if(!req.headers.get('content-type')?.startsWith('application/json'))return json({error:'input'},400);
   try{
     const reader=req.body?.getReader();if(!reader)return json({error:'input'},400);let size=0,parts=[];
