@@ -30,6 +30,7 @@ jobs:
           node --check public/js/bd-password-manager.js
           node --check public/js/trading-password-shield.js
           node --check public/js/bd-owner-access-v1.js
+          node --check public/BD/BBSH-loader.js
           node --check public/BD/O/vault.js
           node --check public/WL/reader.js
           node --check public/WL/BD/reader.js
@@ -52,6 +53,11 @@ jobs:
               s = p.read_text(encoding='utf-8')
               if '"schema":"BD_ACCESS_V1"' not in s:
                   continue
+              # BBSH.pack.html is an encrypted same-origin payload carrier. Its
+              # runtime reference is intentionally inert because BBSH-loader.js
+              # extracts only bd-access-data and loads the shared helper itself.
+              if p.as_posix() == 'public/BD/BBSH.pack.html':
+                  continue
               out = s
               n = 0
               for pat in patterns:
@@ -66,11 +72,14 @@ jobs:
               raise SystemExit('No BD_ACCESS_V1 pages found for owner-runtime inlining')
           print('Inlined owner runtime:', changed)
           bbsh = Path('public/BD/BBSH.html').read_text(encoding='utf-8')
-          required = ['"schema":"BD_ACCESS_V1"', "bar.id='bd-owner-access'", "input.id='bd-owner-password'"]
-          if not all(x in bbsh for x in required):
-              raise SystemExit('BBSH owner-access runtime guard failed')
-          if '/js/bd-owner-access-v1.js' in bbsh or '/bd-chessdb/js/bd-owner-access-v1.js' in bbsh:
-              raise SystemExit('BBSH still depends on external owner-access runtime')
+          bbsh_loader = Path('public/BD/BBSH-loader.js').read_text(encoding='utf-8')
+          bbsh_pack = Path('public/BD/BBSH.pack.html').read_text(encoding='utf-8')
+          if './BBSH-loader.js?v=20260916-bbsh2' not in bbsh or 'bbsh-loader-status' not in bbsh:
+              raise SystemExit('BBSH bootstrap page guard failed')
+          if 'BBSH.pack.html' not in bbsh_loader or '../js/bd-owner-access-v1.js' not in bbsh_loader:
+              raise SystemExit('BBSH loader route guard failed')
+          if '"schema":"BD_ACCESS_V1"' not in bbsh_pack or '"path":"BD/BBSH.html"' not in bbsh_pack:
+              raise SystemExit('BBSH encrypted payload guard failed')
       - name: Route all Trip unlock clients through Cloudflare on GitHub Pages
         shell: python
         run: |
