@@ -23,7 +23,7 @@ with sync_playwright() as p:
         expect(page.locator('#unlock')).to_be_enabled(timeout=30000)
         assert page.evaluate("() => !!sessionStorage.getItem('wl-v2-session')")
         assert page.locator('.member').count()==11 and page.locator('.entry').count()>=1;checks+=1
-        assert page.locator('#rulesVersion').inner_text()=='v1.0.0';checks+=1
+        assert page.locator('#rulesVersion').inner_text()=='v1.0.1';checks+=1
         page.locator('#rulesPanel summary').click()
         expect(page.locator('#rulesText')).to_contain_text('R16',timeout=30000)
         expect(page.locator('#rulesStatus')).to_contain_text('Potrdilo branja ni dokaz');checks+=1
@@ -64,5 +64,5 @@ with sync_playwright() as p:
         expect(page.locator('#control')).to_have_text('ZAUSTAVLJENO' if prior else 'DOVOLJENO',timeout=30000)
     page.close();b.close()
 assert checks==44
-Path('/tmp/wl-live-result.json').write_text(json.dumps({'checks':checks,'rules_version':'1.0.0','status':'PASS'}))
+Path('/tmp/wl-live-result.json').write_text(json.dumps({'checks':checks,'rules_version':'1.0.1','status':'PASS'}))
 print('WL live browser acceptance:',checks,'PASS')
