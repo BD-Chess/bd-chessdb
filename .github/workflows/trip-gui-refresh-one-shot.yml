@@ -12,46 +12,47 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Patch Trip LAB refresh control
+      - name: Finalize Trip LAB shared refresh control
         run: |
           python - <<'PY'
           from pathlib import Path
           index = Path('public/Trip/new/index.html')
           app = Path('public/Trip/new/app.js')
-          s = index.read_text()
-          old = '<label class="map-refresh-control" for="mapRefreshInterval"><span data-ui-text="Map refresh interval">Map refresh interval</span>\n        <select id="mapRefreshInterval"><option value="1000">1 s</option><option value="5000" selected>5 s</option><option value="15000">15 s</option><option value="30000">30 s</option><option value="60000">1 min</option></select>'
-          new = '<label class="map-refresh-control" for="mapRefreshInterval"><span data-ui-text="Map/table refresh interval">Map/table refresh interval</span>\n        <select id="mapRefreshInterval"><option value="1000">1 s</option><option value="5000" selected>5 s</option><option value="15000">15 s</option><option value="30000">30 s</option><option value="60000">1 min</option><option value="300000">5 min</option><option value="900000">15 min</option><option value="3600000">1 h</option></select>'
-          assert s.count(old) == 1
-          index.write_text(s.replace(old, new))
+          h = index.read_text()
+          assert 'Map/table refresh interval' in h
+          for v,label in [('300000','5 min'),('900000','15 min'),('3600000','1 h')]:
+              assert f'value="{v}">{label}' in h
           s = app.read_text()
-          a = "return [1000,5000,15000,30000,60000].includes(selected) ? selected : 5000;"
-          b = "return [1000,5000,15000,30000,60000,300000,900000,3600000].includes(selected) ? selected : 5000;"
-          assert s.count(a) == 1
-          s = s.replace(a,b)
-          marker = "  function displayBruteProgress(msg, job) {"
+          old = 'return [1000,5000,15000,30000,60000].includes(selected) ? selected : 5000;'
+          new = 'return [1000,5000,15000,30000,60000,300000,900000,3600000].includes(selected) ? selected : 5000;'
+          if old in s:
+              s = s.replace(old,new,1)
+          assert new in s
           helper = "  function refreshComparisonAtSelectedInterval(msg, job) {\n    const now = performance.now();\n    if (now - (job.lastComparisonRefresh || 0) < mapRefreshInterval()) return;\n    job.lastComparisonRefresh = now;\n    displayComparison(msg, job);\n  }\n\n"
-          assert s.count(marker) == 1
-          s = s.replace(marker, helper + marker)
+          marker = '  function displayBruteProgress(msg, job) {'
+          if 'function refreshComparisonAtSelectedInterval' not in s:
+              assert s.count(marker) == 1
+              s = s.replace(marker,helper+marker,1)
           a = "    displayComparison(msg, job);\n  }\n\n  function showSavings"
           b = "    refreshComparisonAtSelectedInterval(msg, job);\n  }\n\n  function showSavings"
-          assert s.count(a) == 1
-          s = s.replace(a,b)
-          a = "if (msg.type === 'progress') {\n      job.latest = msg; displaySearchProgress(msg, job); refreshBruteMap(msg, job);\n    }"
-          b = "if (msg.type === 'progress') {\n      job.latest = msg; displaySearchProgress(msg, job); refreshComparisonAtSelectedInterval(msg, job); refreshBruteMap(msg, job);\n    }"
-          assert s.count(a) == 1
-          app.write_text(s.replace(a,b))
+          if a in s:
+              s = s.replace(a,b,1)
+          assert b in s
+          a = "job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);"
+          b = "job.latest = msg; displaySearchProgress(msg, job); refreshComparisonAtSelectedInterval(msg, job); refreshBruteMap(msg, job);"
+          if a in s:
+              s = s.replace(a,b,1)
+          assert b in s
+          app.write_text(s)
           PY
           node --check public/Trip/new/app.js
-          grep -q 'value="300000">5 min' public/Trip/new/index.html
-          grep -q 'value="900000">15 min' public/Trip/new/index.html
-          grep -q 'value="3600000">1 h' public/Trip/new/index.html
-          grep -q 'refreshComparisonAtSelectedInterval' public/Trip/new/app.js
-      - name: Commit surgical patch and remove one-shot workflow
+          git diff --check
+      - name: Commit final patch and remove one-shot workflow
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/trip-gui-refresh-one-shot.yml
           git add public/Trip/new/index.html public/Trip/new/app.js
           git diff --cached --check
-          git commit -m 'Trip LAB: share map and comparison refresh interval'
+          git commit -m 'Trip LAB: throttle comparison with map refresh setting'
           git push origin HEAD:main
