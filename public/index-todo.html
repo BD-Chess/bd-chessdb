@@ -129,6 +129,7 @@
 <meta content="BD × AI Lab — 8Z Control, workbench &amp; todo" property="og:title"/>
 <meta content="Verified operational state for projects, arenas, runs and next actions; with the retained personal workbench below." property="og:description"/>
 <meta content="https://www.mdlxdcc.org/index-todo.html" property="og:url"/>
+<script id="entry-theme-preference">(function(){try{document.documentElement.dataset.theme=localStorage.getItem('mdlxdcc-theme')==='light'?'light':'dark'}catch(_){document.documentElement.dataset.theme='dark'}})();</script>
 <style>
 :root{
   --bg:#05070d; --bg2:#080d18; --panel:rgba(15,23,42,.84); --panel2:rgba(20,31,54,.94);
@@ -234,7 +235,17 @@ html[data-theme="light"] .entry-nav{background:#edf3ea;color:#395349;border-colo
 .entry-en,.entry-sl{display:contents}html:not([data-lang=sl]) .entry-sl,html[data-lang=sl] .entry-en{display:none!important}
 .entry-language{display:none;align-items:center;gap:3px;flex-shrink:0;padding:3px;border:1px solid currentColor;border-radius:8px}.js .entry-language{display:inline-flex}.entry-language button{font:600 11px/1.2 system-ui,sans-serif;min-width:34px;min-height:32px;padding:6px;border:0;border-radius:5px;color:inherit;background:transparent;cursor:pointer}.entry-language button[aria-pressed=true]{background:#698f8955}.entry-language button:focus-visible{outline:2px solid #a5ddcb;outline-offset:3px}.entry-nav{flex-wrap:wrap;gap:8px}.entry-choices{flex-wrap:wrap}.entry-language-note{max-width:1200px;margin:12px auto;padding:10px 20px;color:inherit;font:400 13px/1.6 system-ui,sans-serif;opacity:.85}
 </style>
-<style id="todo-narrow-fit">.grid>*,.card,.priority-card,.task label{min-width:0}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.task label{overflow-wrap:anywhere}@media(max-width:700px){.grid.two{grid-template-columns:minmax(0,1fr)}}</style></head>
+<style id="todo-narrow-fit">.grid>*,.card,.priority-card,.task label{min-width:0}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.task label{overflow-wrap:anywhere}@media(max-width:700px){.grid.two{grid-template-columns:minmax(0,1fr)}}</style><style id="entry-shared-light-theme">
+html[data-theme="light"]{color-scheme:light;--bg:#f4f6f3;--bg2:#eef3f6;--panel:#fff;--panel2:#f2f5f8;--line:rgba(54,79,93,.18);--line2:rgba(49,97,146,.30);--text:#172331;--muted:#566678;--dim:#738195;--blue:#2c65a4;--cyan:#17717b;--green:#2c7452;--gold:#956400;--rose:#a33c55;--violet:#6954ad;--orange:#a85b1e;--shadow:0 18px 48px rgba(47,64,78,.12)}
+html[data-theme="light"] body{background:radial-gradient(circle at 12% 8%,rgba(44,101,164,.10),transparent 32%),radial-gradient(circle at 86% 18%,rgba(44,116,82,.08),transparent 28%),linear-gradient(180deg,#f7f9f6 0%,#eef3f6 100%);color:var(--text)}
+html[data-theme="light"] .topbar{background:rgba(248,250,247,.90)}
+html[data-theme="light"] :is(.card,.news,.task,.plan-toolbar,.step,.link-card,.details,.reader-tools,.priority-shell,.control-shell,.arena-card,.status-card,.project-card,.metric-card,.run-card,.evidence-card,.control-card){background:#fff;color:var(--text)}
+html[data-theme="light"] :is(.hero h1 .white,.card h3,.news b,.plan-toolbar b,.step b,.link-card b,.details summary,.reader-tools button,.priority-intro h2,.priority-card h3,.task label){color:var(--text)}
+html[data-theme="light"] :is(.topnav a,.button.ghost,.plan-toolbar button,.plan-toolbar a,.reader-tools button){background:rgba(255,255,255,.78);color:var(--text)}
+html[data-theme="light"] .notes{background:#fff;color:var(--text)}
+html[data-theme="light"] .toast{background:#fff;color:var(--text)}
+</style>
+</head>
 <body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a data-entry-link="" href="index-atlas.html">Atlas</a><a aria-current="page" data-entry-link="" href="index-todo.html">Todo</a><a data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="/BD/index.html">BD ↗</a></div><div aria-label="Language / Jezik" class="entry-language" role="group"><button aria-pressed="true" data-entry-language="en" type="button">EN</button><button aria-pressed="false" data-entry-language="sl" type="button">SL</button></div></nav>
 <header class="topbar">
 <div class="wrap topbar-inner">
@@ -1290,6 +1301,7 @@ window.MDLxDCCLocale.subscribe(lang=>{root.dataset.lang=lang;root.lang=lang;docu
 });
 document.querySelectorAll('[data-entry-language]').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.entryLanguage)));
 })();</script>
+<script id="entry-theme-sync-runtime">(function(){addEventListener('storage',function(e){if(e.key==='mdlxdcc-theme')document.documentElement.dataset.theme=e.newValue==='light'?'light':'dark';});})();</script>
 </body>
 </html>
 

@@ -127,12 +127,20 @@
 
 :root{color-scheme:dark;--bg:#0a1014;--ink:#edf2ee;--muted:#a4b1b6;--line:#29383f;--green:#aadbb7;--blue:#98bee8;--amber:#e4c091;--cyan:#89d7d3;--card-ink:#f0f5f1;--max:1040px;font-family:'Segoe UI',Arial,sans-serif}
 :root[data-theme=light]{color-scheme:light;--bg:#f2f1eb;--ink:#1b2c2b;--muted:#566a6c;--line:#c5cfca;--green:#3b684e;--blue:#325b8b;--amber:#886126;--cyan:#1c6a6e}
+/* landing light cards v2 */
+:root[data-theme=light]{--card-ink:#1b2c2b}
+:root[data-theme=light] .door{background:#f7f8f3;border-color:#b8c5bf;color:var(--card-ink);box-shadow:0 14px 34px rgba(48,66,62,.12)}
+:root[data-theme=light] .preview img{opacity:.52;filter:brightness(1.35) contrast(.67) saturate(.58)}
+:root[data-theme=light] .preview-shade{background:linear-gradient(180deg,rgba(242,241,235,.34) 10%,rgba(242,241,235,.62) 45%,rgba(242,241,235,.95) 73%,#f2f1eb 100%)}
+:root[data-theme=light] .door-copy p{color:#526563}
+:root[data-theme=light] .enter{border-color:#617b7d55}
+@media(hover:hover) and (pointer:fine){:root[data-theme=light] .door{filter:opacity(.55) brightness(1)}:root[data-theme=light] .door:hover,:root[data-theme=light] .door:focus-visible{filter:opacity(1) brightness(1)}}
 *{box-sizing:border-box}html{min-height:100%;scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body:before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 15% 10%,#3c705814,transparent 50%),radial-gradient(ellipse at 95% 90%,#274e8114,transparent 50%)}
 a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;color:inherit}a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}a:focus-visible,button:focus-visible{outline:2px solid var(--cyan);outline-offset:6px}::selection{background:#9ddbb9;color:#101813}
 .en,.sl{display:contents}html:not([data-lang=sl]) .sl,html[data-lang=sl] .en{display:none!important}
-.topline,main,footer{max-width:var(--max);width:calc(100% - 80px);margin-inline:auto}
+.topline,main,footer,.explore-more{max-width:var(--max);width:calc(100% - 80px);margin-inline:auto}
 .topline{padding-top:max(22px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:20px}
 .signature{display:flex;align-items:center;flex-wrap:wrap;column-gap:.65em;font:12px/1.5 Consolas,monospace;letter-spacing:.1em;color:var(--muted);min-width:0}
 .signature-core{display:inline-flex;gap:.65em;align-items:center;white-space:nowrap}.signature-note{display:inline-flex;gap:.65em}
@@ -152,14 +160,14 @@ a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;color:in
 .desktop-title{display:contents}.mobile-title{display:none}
 .about{margin:54px 0 0;padding:30px 0 0;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.7fr;gap:32px;align-items:start}
 .about h2{font-size:23px;margin:0;line-height:1.3;letter-spacing:-.025em}.about-body{max-width:68ch}.about p{margin:0;color:var(--muted);font-size:16px;line-height:1.75}.about strong{color:var(--ink);font-weight:550}.about-link{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin-top:10px;color:var(--green);font-size:15px;text-decoration:underline;text-underline-offset:4px}.about-link svg{width:16px;height:16px;flex:none}
-.explore-more{margin:38px 0 0;padding:30px 0 2px;border-top:1px solid var(--line)}
+.explore-more{margin:38px auto 0;padding:30px 0 2px;border-top:1px solid var(--line)}
 .explore-more-head{display:flex;align-items:end;justify-content:space-between;gap:22px;margin-bottom:14px}.explore-more h2{font-size:23px;margin:0;line-height:1.3;letter-spacing:-.025em}.explore-more-head p{margin:0;color:var(--muted);font-size:14px;text-align:right}.link-row{display:grid;grid-template-columns:82px repeat(5,minmax(0,1fr));gap:8px;margin-top:8px;align-items:stretch}.link-group{display:flex;align-items:center;font:700 10px/1.4 Consolas,monospace;letter-spacing:.13em;color:var(--muted)}.explore-link{display:flex;align-items:center;justify-content:center;min-height:48px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:13px;line-height:1.25;text-align:center;background:color-mix(in srgb,var(--bg) 94%,var(--ink) 6%);transition:border-color .18s,background .18s,transform .18s}.explore-link:hover{border-color:var(--cyan);background:color-mix(in srgb,var(--bg) 88%,var(--cyan) 12%);transform:translateY(-1px)}
 footer{margin-top:30px;padding:24px 0 max(30px,env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px;color:var(--muted)}.motto{font:500 clamp(22px,2.4vw,28px)/1.35 'Segoe UI',Arial,sans-serif;letter-spacing:-.025em;color:var(--ink)}.footer-links{display:flex;align-items:center;gap:12px;font:13px/1.5 Consolas,monospace;white-space:nowrap}.footer-links a{display:inline-flex;align-items:center;min-height:44px}
 .skip{position:fixed;top:-80px;left:20px;background:var(--ink);color:var(--bg);padding:10px 18px;z-index:100}.skip:focus{top:10px}
 @media(hover:hover) and (pointer:fine){.door{filter:brightness(.5)}.door:hover,.door:focus-visible{filter:brightness(1)}.door:hover{transform:translateY(-3px);border-color:var(--edge);box-shadow:0 18px 40px #00000035}.door:hover .preview img{transform:scale(1.045);opacity:1}.door:hover .enter{background:#38545866}}
-@media(min-width:760px) and (max-width:900px){.topline,main,footer{width:calc(100% - 48px)}.entrances{gap:30px 24px}.audience{font-size:18px}.door-copy{left:22px;right:22px;bottom:23px}.door-copy h2{font-size:27px}.door-copy p{font-size:13px;max-width:82%}.edge-mark{left:22px;bottom:155px}.door-label{font-size:9px}.enter{right:20px;bottom:23px;width:30px;height:30px}}
+@media(min-width:760px) and (max-width:900px){.topline,main,footer,.explore-more{width:calc(100% - 48px)}.entrances{gap:30px 24px}.audience{font-size:18px}.door-copy{left:22px;right:22px;bottom:23px}.door-copy h2{font-size:27px}.door-copy p{font-size:13px;max-width:82%}.edge-mark{left:22px;bottom:155px}.door-label{font-size:9px}.enter{right:20px;bottom:23px;width:30px;height:30px}}
 @media screen and (max-width:759px), screen and (max-width:960px) and (pointer:coarse){
- :root{--max:600px}.topline,main,footer{width:calc(100% - 48px)}
+ :root{--max:600px}.topline,main,footer,.explore-more{width:calc(100% - 48px)}
  .topline{padding-top:max(16px,env(safe-area-inset-top));gap:12px}.signature{font-size:11px;letter-spacing:.06em}.signature-note{display:none}
  .hero{padding:32px 20px 25px}.hero h1{font-size:clamp(2rem,9.5vw,2.75rem)}.hero p{font-size:13px;margin-top:12px}
  .entrances{grid-template-columns:minmax(0,1fr);gap:0}.entrance+.entrance{border-top:1px solid var(--line)}
@@ -171,7 +179,7 @@ footer{margin-top:30px;padding:24px 0 max(30px,env(safe-area-inset-bottom));bord
  .explore-more{margin-top:28px;padding-top:24px}.explore-more-head{display:block;margin-bottom:12px}.explore-more-head p{text-align:left;margin-top:6px}.link-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.link-group{grid-column:1/-1;min-height:24px;margin-top:5px}.explore-link{min-height:46px;font-size:13px}
  footer{margin-top:26px;padding-top:22px;gap:14px;flex-wrap:wrap}.motto{font-size:24px}.footer-links{font-size:12px;margin-left:auto}
 }
-@media screen and (max-width:350px){.topline,main,footer{width:calc(100% - 36px)}.hero{padding-inline:12px}.door{gap:12px}.door-copy h2{font-size:25px}.hero p{font-size:12px}.motto{font-size:22px}.footer-links{margin-left:0}}
+@media screen and (max-width:350px){.topline,main,footer,.explore-more{width:calc(100% - 36px)}.hero{padding-inline:12px}.door{gap:12px}.door-copy h2{font-size:25px}.hero p{font-size:12px}.motto{font-size:22px}.footer-links{margin-left:0}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.door:hover{transform:none}}
 @media print{body{background:white;color:#111}.top-tools{display:none!important}.topline,main,footer{width:100%;max-width:none}.door{break-inside:avoid;box-shadow:none}.hero{padding:15px}.audience,.about p,.about h2,.motto{color:#111}.about{display:block}.about h2{margin-bottom:12px}footer{padding:0}}
 
@@ -250,18 +258,48 @@ legacy();window.addEventListener('hashchange',legacy);
 const dialog=document.getElementById('site-search-dialog'),opener=document.getElementById('site-search-toggle'),input=document.getElementById('site-search-input'),list=document.getElementById('site-search-results'),status=document.getElementById('site-search-status'),historyList=document.getElementById('site-search-history'),historyTitle=document.getElementById('site-search-history-title'),clear=document.getElementById('site-search-clear-history');
 if(!dialog||!opener||!input)return;
 const STORE='mdlxdcc-search-history-v1',MAX_HISTORY=12,MAX_QUERY=120;
+const SITE_BASE=new URL('./',location.href),BASE_PATH=SITE_BASE.pathname.endsWith('/')?SITE_BASE.pathname:SITE_BASE.pathname+'/';
+const SMART_ROUTES=Object.freeze([
+ {path:'Trip/',title:'8z Trip Optimizer',aliases:'trip route routes travel journey planner optimizer optimisation tsp app application map maps',description:'Interactive trip and route optimizer.',priority:320},
+ {path:'chess/',title:'ChessDCC',aliases:'chess chessdcc chessdb dcc board analysis app application game',description:'ChessDB + DCC analysis application.',priority:315},
+ {path:'S/',title:'8z Sudoku',aliases:'sudoku puzzle proof proofatlas app application game solver',description:'Sudoku reasoning and proof application.',priority:310},
+ {path:'F4M/',title:'Flip 4M',aliases:'flip flip4m f4m connect four game app application magnets gravity',description:'Flip4M playable game and DCC laboratory.',priority:305},
+ {path:'CW/',title:'Crosswords',aliases:'crossword crosswords words puzzle app application game mdl',description:'Crossword × MDL application.',priority:300},
+ {path:'AI8/',title:'AI8',aliases:'ai8 architecture arenaloop evidence continuity agi agents research',description:'AI8 architecture, evidence and continuity.',priority:290},
+ {path:'BD/BD_AIM3.html',title:'AIm3',aliases:'aim3 aim³ mental arena multi llm reasoning council orchestration',description:'AIm3 reasoning and orchestration system.',priority:285},
+ {path:'BD/BD_AIM3_RHP.html',title:'RHP',aliases:'rhp resonance work reasoning protocol prompt adaptive front door',description:'RHP adaptive reasoning front door.',priority:280},
+ {path:'BD/BD_AIM3_RHPm.html',title:'AIm3 Protocols',aliases:'aim3 aim³ protocols rhpm prompt builder reasoning protocols genes',description:'AIm3 / RHPm protocol tools.',priority:275},
+ {path:'crp/8z_MDLxDCC.html',title:'8z–MDL×DCC architecture',aliases:'mdl dcc mdldcc mdlxdcc 8z minimum description length dynamic complexity controller architecture evidence',description:'Core 8z–MDL×DCC architecture and evidence.',priority:330},
+ {path:'crp/MDLxDCC.html',title:'MDL×DCC Explained',aliases:'mdl dcc mdldcc mdlxdcc minimum description length dynamic complexity controller explained domain map',description:'Public MDL×DCC explanation and domain map.',priority:325},
+ {path:'BD/BD_8ZRP.html',title:'8Z-RP / Different TSP',aliases:'tsp traveling travelling salesman 8z rp route routing optimizer different tsp',description:'8Z-RP and TSP research.',priority:265},
+ {path:'8zMaterials.html',title:'8zMaterials',aliases:'materials material discovery chemistry b6 h1 arena mdl dcc',description:'Native MDL×DCC materials discovery.',priority:260},
+ {path:'BD/BD_CCH_Consciousness_Field.html',title:'CFH / CCH',aliases:'cfh cch consciousness claustrum field hypothesis consciousness hypothesis',description:'Consciousness hypothesis lineage and science boundary.',priority:250},
+ {path:'BD/8z_shield_landing.html',title:'8Z Shield',aliases:'shield encryption encrypted html protection security password access',description:'Encrypted HTML protection technology.',priority:245},
+ {path:'Nara/',title:'Nara / Illuminara Stories',aliases:'nara illuminara story stories fiction literature narrative creative',description:'Nara and Illuminara story world.',priority:270},
+ {path:'Birds/',title:'The Birds — story world',aliases:'birds bird story stories fiction horror flying salami narrative creative',description:'The Birds cinematic horror story project.',priority:268},
+ {path:'crp/Top100I.html',title:'Top100I — Inventions',aliases:'devices device machines machine inventions invention physical engineering hardware concepts apparatus proposals',description:'Top inventions, devices and machine concepts.',priority:275},
+ {path:'crp/Top100.html',title:'Top 100 Atlas',aliases:'problems theories inventions devices machines atlas ideas',description:'Problems, theories and inventions atlas.',priority:230},
+ {path:'index-atlas.html',title:'The whole atlas',aliases:'portfolio atlas projects inventions devices machines physical engineering stories apps applications',description:'Complete BD × AI portfolio atlas.',priority:240},
+ {path:'BD-work-at-a-glance.html',title:'BD — work at a glance',aliases:'portfolio work inventions devices machines projects overview',description:'Plain-language guide to the work.',priority:220},
+ {path:'BD/BD_Trading_Research_Atlas.html',title:'BD Trading Research Atlas',aliases:'trading trader markets crypto strategies arena evidence',description:'Trading research, strategies and evidence.',priority:220},
+ {path:'BD/',title:'BD portfolio',aliases:'bd bojan portfolio person projects ideas inventions',description:'BD portfolio and personal project map.',priority:210},
+ {path:'crp/',title:'Core research papers',aliases:'crp core research papers mdl dcc research',description:'Core research-paper hub.',priority:205}
+]);
 const normalize=s=>String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+function smartQuery(raw){let q=normalize(raw),compact=q.replace(/\s+/g,'');if(['mdldcc','mdlxdcc','8zmdldcc','8zmdlxdcc'].includes(compact))return 'mdl dcc';if(compact==='tripoptimizer'||compact==='8ztripoptimizer')return 'trip';if(compact==='flip4m')return 'flip4m';return q;}
+function stripBase(path){path=String(path||'').replace(/\/{2,}/g,'/');if(BASE_PATH!=='/'&&path.startsWith(BASE_PATH))path='/'+path.slice(BASE_PATH.length);return path||'/';}
+function localURL(raw){const u=new URL(String(raw).replace(/^\/+/,''),SITE_BASE);return u.pathname+u.search+u.hash;}
 const PRIVATE_SHORTCUTS=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html'});
 function privateShortcut(raw){const key=normalize(raw);return Object.prototype.hasOwnProperty.call(PRIVATE_SHORTCUTS,key)?PRIVATE_SHORTCUTS[key]:null;}
 function shortcutURL(path){return location.protocol==='file:'?'https://www.mdlxdcc.org/'+path:new URL(path,location.href).href;}
 const text=(en,sl)=>document.documentElement.dataset.lang==='sl'?sl:en;
 let history=[],storageOK=true,pages=[],results=[],active=-1,returnFocus=opener,indexState='idle',indexPromise=null,indexError='';
 try{const v=JSON.parse(localStorage.getItem(STORE)||'[]');if(Array.isArray(v))history=v.filter(x=>typeof x==='string'&&x.trim()&&x.length<=MAX_QUERY).slice(0,MAX_HISTORY);}catch(_){storageOK=false;}
-function siteKey(raw){try{let p=new URL(raw,location.href).pathname.replace(/\/{2,}/g,'/').replace(/\.(?:html?|htm)$/i,'').replace(/\/index$/i,'').replace(/\/$/,'');return (p||'/').toLowerCase();}catch(_){return '';}}
-function safePath(raw){try{const u=new URL(raw,location.href),allowed=new Set([location.hostname.toLowerCase(),'www.mdlxdcc.org','mdlxdcc.org']);if(!allowed.has(u.hostname.toLowerCase()))return null;return {key:siteKey(u.href),url:u.pathname+(u.search||'')};}catch(_){return null;}}
-function indexedPage(p){return {...p,nt:normalize(p.title),np:normalize(p.url),na:normalize(p.aliases||''),nd:normalize(p.description||'')};}
+function siteKey(raw){try{let p=stripBase(new URL(raw,location.href).pathname).replace(/\.(?:html?|htm)$/i,'').replace(/\/index$/i,'').replace(/\/$/,'');return (p||'/').toLowerCase();}catch(_){return '';}}
+function safePath(raw){try{const u=new URL(raw,location.href),allowed=new Set([location.hostname.toLowerCase(),'www.mdlxdcc.org','mdlxdcc.org']);if(!allowed.has(u.hostname.toLowerCase()))return null;const canonical=stripBase(u.pathname);return {key:siteKey(canonical),url:localURL(canonical+(u.search||''))};}catch(_){return null;}}
+function indexedPage(p){const route=siteKey(p.url).split('/').filter(Boolean).join(' '),aliases=((p.aliases||'')+' '+route).trim();return {...p,aliases,nt:normalize(p.title),np:normalize(p.url),na:normalize(aliases),nd:normalize(p.description||'')};}
 function rankPages(query){
- const q=normalize(query);if(!q)return [];
+ const q=smartQuery(query);if(!q)return [];
  const tokens=[...new Set(q.split(' '))].slice(0,16);
  return pages.map(p=>{
   const all=[p.nt,p.np,p.na,p.nd].join(' '),words=all.split(' ');
@@ -290,9 +328,9 @@ async function loadIndex(){
  if(indexPromise)return indexPromise;indexState='loading';indexError='';render();
  indexPromise=(async()=>{
   let site=null,ref=[];
-  try{const [sm,ix]=await Promise.all([fetchText('/sitemap.xml'),fetchText('/index-search.html')]);site=sitemapRecords(sm.text);ref=referenceItems(ix.text);}catch(primary){
-   try{site=sitemapRecords((await fetchText('/sitemap.xml')).text);}catch(_){}
-   try{ref=referenceItems((await fetchText('/index-search.html')).text);}catch(_){}
+  try{const [sm,ix]=await Promise.all([fetchText(new URL('sitemap.xml',SITE_BASE).href),fetchText(new URL('index-search.html',SITE_BASE).href)]);site=sitemapRecords(sm.text);ref=referenceItems(ix.text);}catch(primary){
+   try{site=sitemapRecords((await fetchText(new URL('sitemap.xml',SITE_BASE).href)).text);}catch(_){}
+   try{ref=referenceItems((await fetchText(new URL('index-search.html',SITE_BASE).href)).text);}catch(_){}
    if(!site&&!ref.length)throw primary;
   }
   const byKey=new Map();
@@ -301,6 +339,12 @@ async function loadIndex(){
    const missing=[...site.values()].filter(rec=>!byKey.has(rec.key));
    for(const p of await hydrateMissing(missing)){const key=siteKey(p.url);if(key&&!byKey.has(key))byKey.set(key,p);}
   }else{for(const p of ref){const key=siteKey(p.url);if(key&&!byKey.has(key))byKey.set(key,p);}}
+  for(const item of SMART_ROUTES){
+   const smart={...item,url:localURL(item.path)},key=siteKey(smart.url),prior=byKey.get(key);
+   if(!key)continue;
+   if(prior)byKey.set(key,{...prior,aliases:((prior.aliases||'')+' '+smart.aliases).trim(),priority:Math.max(Number(prior.priority)||0,smart.priority||0),description:prior.description||smart.description,title:prior.title||smart.title});
+   else byKey.set(key,smart);
+  }
   pages=[...byKey.values()].filter(p=>p&&p.url&&p.title).map(indexedPage);
   if(!pages.length)throw new Error('Empty search index');
   indexState='ready';render();return pages;
@@ -308,20 +352,20 @@ async function loadIndex(){
  return indexPromise;
 }
 function saveQuery(q){q=q.trim().slice(0,MAX_QUERY);if(!q||privateShortcut(q))return;history=[q,...history.filter(x=>normalize(x)!==normalize(q))].slice(0,MAX_HISTORY);try{localStorage.setItem(STORE,JSON.stringify(history));}catch(_){storageOK=false;}renderHistory();}
-function renderHistory(){historyList.replaceChildren();historyTitle.textContent=history.length?text('Recent searches','Zadnja iskanja'):text('Quick picks','Bližnjice');clear.hidden=!history.length;for(const q of history.length?history:['history','Sudoku','DGTE']){const b=document.createElement('button');b.type='button';b.className='search-history-chip';b.textContent=q;b.addEventListener('click',()=>{input.value=q;render();input.focus();});historyList.appendChild(b);}const note=document.getElementById('site-search-local-note');note.textContent=storageOK?text('Search stays on this device. History is stored only in this browser.','Iskanje ostane na tej napravi. Zgodovina se hrani samo v tem brskalniku.'):text('Search works; persistent history is unavailable in this browser.','Iskanje deluje; trajna zgodovina v tem brskalniku ni na voljo.');}
+function renderHistory(){historyList.replaceChildren();historyTitle.textContent=history.length?text('Recent searches','Zadnja iskanja'):text('Quick picks','Bližnjice');clear.hidden=!history.length;for(const q of history.length?history:['Trip','MDL×DCC','stories','devices']){const b=document.createElement('button');b.type='button';b.className='search-history-chip';b.textContent=q;b.addEventListener('click',()=>{input.value=q;render();input.focus();});historyList.appendChild(b);}const note=document.getElementById('site-search-local-note');note.textContent=storageOK?text('Search stays on this device. History is stored only in this browser.','Iskanje ostane na tej napravi. Zgodovina se hrani samo v tem brskalniku.'):text('Search works; persistent history is unavailable in this browser.','Iskanje deluje; trajna zgodovina v tem brskalniku ni na voljo.');}
 function targetURL(p){return location.protocol==='file:'?'https://www.mdlxdcc.org'+p.url:p.url;}
 function setActive(n){active=n;const anchors=[...list.querySelectorAll('a')];anchors.forEach((a,i)=>a.setAttribute('aria-selected',String(i===n)));if(n>=0&&anchors[n]){input.setAttribute('aria-activedescendant',anchors[n].id);anchors[n].scrollIntoView({block:'nearest'});}else input.removeAttribute('aria-activedescendant');}
 function render(){
  results=[];active=-1;input.removeAttribute('aria-activedescendant');list.replaceChildren();const q=input.value.trim();
  if(indexState==='idle'||indexState==='loading'){status.textContent=text('Loading the public-page index from sitemap.xml…','Nalaganje seznama javnih strani iz sitemap.xml…');return;}
  if(indexState==='error'){status.textContent=text('Search index could not be loaded. Try again after reloading the page.','Iskalnega indeksa ni bilo mogoče naložiti. Poskusi znova po osvežitvi strani.');return;}
- const matches=rankPages(q);results=matches.slice(0,30).map(x=>x.page);status.textContent=!q?text('Search '+pages.length+' public sitemap pages by title, topic or path.','Išči med '+pages.length+' javnimi stranmi iz sitemap.xml po naslovu, temi ali poti.'):matches.length?text(matches.length+' matches'+(matches.length>30?' · first 30 shown':''),matches.length+' zadetkov'+(matches.length>30?' · prikazanih prvih 30':'')):text('No matches. Try a shorter title or a different keyword.','Ni zadetkov. Poskusi krajši naslov ali drugo ključno besedo.');
+ const matches=rankPages(q);results=matches.slice(0,30).map(x=>x.page);status.textContent=!q?text('Search '+pages.length+' public pages and smart routes by title, topic or path.','Išči med '+pages.length+' javnimi stranmi in pametnimi potmi po naslovu, temi ali poti.'):matches.length?text(matches.length+' matches'+(matches.length>30?' · first 30 shown':''),matches.length+' zadetkov'+(matches.length>30?' · prikazanih prvih 30':'')):text('No matches. Try a shorter title or a different keyword.','Ni zadetkov. Poskusi krajši naslov ali drugo ključno besedo.');
  for(const [i,p] of results.entries()){const li=document.createElement('li');li.setAttribute('role','presentation');const a=document.createElement('a');a.id='site-search-result-'+i;a.href=targetURL(p);a.className='search-result';a.setAttribute('role','option');a.setAttribute('aria-selected','false');const title=document.createElement('strong');title.textContent=p.title;a.appendChild(title);if(p.description){const desc=document.createElement('span');desc.className='search-result-description';desc.textContent=p.description;a.appendChild(desc);}const path=document.createElement('span');path.className='search-result-path';path.textContent=p.url;a.appendChild(path);a.addEventListener('click',()=>saveQuery(input.value));a.addEventListener('auxclick',e=>{if(e.button===1)saveQuery(input.value);});li.appendChild(a);list.appendChild(li);}
 }
 function open(){if(dialog.open)return;returnFocus=document.activeElement;renderHistory();render();dialog.showModal();document.documentElement.classList.add('search-open');opener.setAttribute('aria-expanded','true');input.focus();input.select();loadIndex();}
 function close(){if(dialog.open){saveQuery(input.value);dialog.close();document.documentElement.classList.remove('search-open');opener.setAttribute('aria-expanded','false');if(returnFocus?.isConnected)returnFocus.focus();}}
 dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}},true);dialog.addEventListener('cancel',e=>{e.preventDefault();close();});opener.addEventListener('click',open);document.getElementById('site-search-close').addEventListener('click',close);dialog.addEventListener('close',()=>{document.documentElement.classList.remove('search-open');opener.setAttribute('aria-expanded','false');if(returnFocus?.isConnected)returnFocus.focus();});dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();});input.addEventListener('input',render);input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'&&results.length){e.preventDefault();setActive((active+1)%results.length);}else if(e.key==='ArrowUp'&&results.length){e.preventDefault();setActive(active<=0?results.length-1:active-1);}});document.getElementById('site-search-form').addEventListener('submit',e=>{e.preventDefault();const shortcut=privateShortcut(input.value);if(shortcut){location.assign(shortcutURL(shortcut));return;}saveQuery(input.value);if(results.length)list.querySelectorAll('a')[Math.max(0,active)].click();});clear.addEventListener('click',()=>{history=[];try{localStorage.removeItem(STORE);}catch(_){storageOK=false;}input.value='';renderHistory();render();input.focus();});document.addEventListener('keydown',e=>{const editing=e.target?.closest?.('input,textarea,select,[contenteditable="true"]');if(((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k')||(e.key==='/'&&!editing&&!e.ctrlKey&&!e.metaKey&&!e.altKey)){e.preventDefault();open();}});
-function labels(){opener.setAttribute('aria-label',text('Search the site','Išči po spletišču'));opener.title=text('Search · Ctrl+K or /','Iskanje · Ctrl+K ali /');input.placeholder=text('history, Sudoku, DGTE…','history, Sudoku, DGTE…');document.getElementById('site-search-close').setAttribute('aria-label',text('Close search','Zapri iskanje'));renderHistory();if(dialog.open)render();}
+function labels(){opener.setAttribute('aria-label',text('Search the site','Išči po spletišču'));opener.title=text('Search · Ctrl+K or /','Iskanje · Ctrl+K ali /');input.placeholder=text('Trip, MDL×DCC, stories, devices…','Trip, MDL×DCC, stories, devices…');document.getElementById('site-search-close').setAttribute('aria-label',text('Close search','Zapri iskanje'));renderHistory();if(dialog.open)render();}
 new MutationObserver(labels).observe(document.documentElement,{attributes:true,attributeFilter:['data-lang']});labels();
 })();
 </script>
