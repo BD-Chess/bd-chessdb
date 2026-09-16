@@ -1,7 +1,7 @@
 /* WL BD private summary reader. Uses the same in-tab WL v2 session key as /WL/. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id),te=new TextEncoder(),td=new TextDecoder('utf-8',{fatal:true});
-const ROOT='/WL/',SESSION='wl-v2-session';
+const ROOT=new URL('../',location.href).pathname,SESSION='wl-v2-session';
 let vault=null,key=null,font=100,timer=null,generation=0;
 const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 function read(store,k){try{return store.getItem(k)}catch{return null}}
@@ -59,7 +59,7 @@ async function load(){
  if(!key)return;const g=generation,k=key;
  $('status').textContent='Preverjam najnovejši šifrirani povzetek …';
  try{
-  const box=await fetchJSON('/WL/BD/summary.enc.json');
+  const box=await fetchJSON(ROOT+'BD/summary.enc.json');
   const s=await openBox(box,k,'WL:BD:summary:v1');
   if(s.schema!=='wl.bd.summary.v1')throw Error('Neveljaven povzetek.');
   if(g!==generation||!key)return;render(s);

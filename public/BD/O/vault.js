@@ -1,7 +1,7 @@
 /* BD O vault v2: one password entry, authenticated ciphertext, no plaintext password storage. */
 (async function () {
 'use strict';
-const ROOT='/BD/O/', SESSION='bd-o-v2-session', NOTES='bd-o-private-notes-v2';
+const ROOT=new URL('./',location.href).pathname, SESSION='bd-o-v2-session', NOTES='bd-o-private-notes-v2';
 const TE=new TextEncoder(), TD=new TextDecoder('utf-8',{fatal:true});
 const $=id=>document.getElementById(id);
 const from64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));

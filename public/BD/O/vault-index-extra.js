@@ -6,11 +6,11 @@ function inject(){
   if(!document.body||document.getElementById(ID))return;
   if(document.body.dataset.bdoUnlocked!=='true')return;
   const path=location.pathname.replace(/\/+$/,'');
-  if(path!=='/BD/O'&&path!=='/BD/O/index.html')return;
+  if(!/\/BD\/O(?:\/index\.html)?$/i.test(path))return;
   const box=document.createElement('div');box.id=ID;
   box.style.cssText='width:min(760px,calc(100% - 18px));margin:12px auto 16px;position:relative;z-index:50';
   const a=document.createElement('a');
-  a.href='/BD/O/tablete.html';
+  a.href=new URL('tablete.html',location.href).href;
   a.textContent='💊 Tablete · dnevni načrt';
   a.style.cssText='display:flex;align-items:center;justify-content:center;min-height:62px;padding:14px 18px;border:2px solid #58d9cf;border-radius:17px;background:linear-gradient(135deg,#12313a,#0b1d2b);color:#eafffc;text-decoration:none;font:900 20px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 12px 34px #0005;letter-spacing:.01em';
   box.appendChild(a);
