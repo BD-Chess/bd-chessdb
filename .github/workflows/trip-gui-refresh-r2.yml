@@ -28,19 +28,19 @@ jobs:
           if s.count(helper) != 1:
               raise SystemExit(f'expected one helper, got {s.count(helper)}')
           s=s.replace(helper,'\n',1)
-          old='    refreshComparisonAtSelectedInterval(msg, job);'
-          if s.count(old) != 1:
-              raise SystemExit(f'expected one helper call, got {s.count(old)}')
-          s=s.replace(old,'    displayComparison(msg, job);',1)
+          old='refreshComparisonAtSelectedInterval(msg, job)'
+          if s.count(old) != 2:
+              raise SystemExit(f'expected two helper calls, got {s.count(old)}')
+          s=s.replace(old,'displayComparison(msg, job)')
           p.write_text(s,encoding='utf-8')
 
-          # Required final invariants.
           s=p.read_text(encoding='utf-8')
           assert 'refreshComparisonAtSelectedInterval' not in s
           assert "const running = msg?.type === 'progress' || msg?.type === 'brute-progress';" in s
           assert "if (now - (job.lastComparisonRefresh ?? -Infinity) < mapRefreshInterval()) return;" in s
           assert '[1000,5000,15000,30000,60000,300000,900000,3600000]' in s
           assert 'job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);' in s
+          assert 'UI.set($(\'bruteBest\')' in s and 'displayComparison(msg, job);' in s
           PY
       - name: Validate final source
         shell: bash
