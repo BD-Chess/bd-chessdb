@@ -37,23 +37,32 @@ jobs:
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
           node --check public/Trip/old/004/private-client.js
-      - name: Route Trip LAB unlock through Cloudflare on GitHub Pages
+      - name: Route all Trip unlock clients through Cloudflare on GitHub Pages
         shell: python
         run: |
           from pathlib import Path
-          p = Path('public/Trip/new/private-client.js')
-          s = p.read_text(encoding='utf-8')
+          root = Path('public/Trip')
           old = "fetch('/api/trip-mdl-unlock',{method:'POST',credentials:'same-origin',cache:'no-store'"
           new = "fetch('https://mdlxdcc-trip-auth.iemcccc.workers.dev/',{method:'POST',credentials:'omit',cache:'no-store'"
-          if s.count(old) != 1:
-              raise SystemExit(f'Expected one Trip LAB auth endpoint, found {s.count(old)}')
-          p.write_text(s.replace(old, new, 1), encoding='utf-8')
-      - name: Verify Trip LAB Pages auth migration
+          changed = []
+          for p in sorted(root.rglob('*.js')):
+              s = p.read_text(encoding='utf-8')
+              n = s.count(old)
+              if n:
+                  p.write_text(s.replace(old, new), encoding='utf-8')
+                  changed.append((p.as_posix(), n))
+          if not changed:
+              raise SystemExit('No Trip auth clients found to route through Cloudflare')
+          print('Routed Trip auth clients:', changed)
+      - name: Verify all Trip Pages auth migration
         shell: bash
         run: |
-          grep -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip/new/private-client.js
-          if grep -F "fetch('/api/trip-mdl-unlock'" public/Trip/new/private-client.js; then exit 1; fi
-          node --check public/Trip/new/private-client.js
+          grep -R -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip --include='*.js'
+          if grep -R -F "fetch('/api/trip-mdl-unlock'" public/Trip --include='*.js'; then
+            echo 'Found a Trip client still using the Netlify-only relative auth endpoint.' >&2
+            exit 1
+          fi
+          while IFS= read -r f; do node --check "$f"; done < <(grep -R -l -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip --include='*.js')
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
