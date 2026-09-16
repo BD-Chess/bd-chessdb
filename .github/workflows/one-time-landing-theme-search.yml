@@ -1,0 +1,26 @@
+name: One-time landing theme and smart search
+on:
+  push:
+    branches: [tmp-landing-theme-search-20260916]
+permissions:
+  contents: write
+jobs:
+  patch-main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply staged patch
+        run: |
+          git show origin/tmp-landing-theme-search-20260916:.github/one_time_landing_theme_search.py > /tmp/patch.py
+          python3 /tmp/patch.py
+          git diff --check
+      - name: Commit source changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add public/index.html public/index-search.html public/index-atlas.html public/index-todo.html public/index-intro.html
+          git commit -m "Landing: light theme inheritance and smarter search"
+          git push origin HEAD:main
