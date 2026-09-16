@@ -111,6 +111,7 @@ def patch_html(path,root):
     s=FORM_RE.sub(fsub,s)
     helper_rel=Path(os.path.relpath(root/'js'/HELPER_FILE,path.parent)).as_posix()
     helper_tag=f'<script src="{helper_rel}" defer></script>'
+    s=re.sub(r'<script\b[^>]*\bsrc=(["\'])(?:/js/|(?:\.\./)+js/)?bd-password-manager\.js\1[^>]*></script\s*>',helper_tag,s,flags=re.I)
     if HELPER_FILE not in s:
         if not re.search(r'</head\s*>',s,re.I):raise RuntimeError('missing head '+rel)
         s=re.sub(r'</head\s*>',helper_tag+'\n</head>',s,count=1,flags=re.I)
