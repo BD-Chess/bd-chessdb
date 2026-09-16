@@ -1,0 +1,64 @@
+name: Trip LAB GUI refresh fix R2
+
+on:
+  push:
+    branches:
+      - trip-gui-refresh-r2
+    paths:
+      - .github/workflows/trip-gui-refresh-r2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: trip-gui-refresh-r2
+      - name: Remove double comparison throttle
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('public/Trip/new/app.js')
+          s=p.read_text(encoding='utf-8')
+          helper="""\n  function refreshComparisonAtSelectedInterval(msg, job) {\n    const now = performance.now();\n    if (now - (job.lastComparisonRefresh || 0) < mapRefreshInterval()) return;\n    job.lastComparisonRefresh = now;\n    displayComparison(msg, job);\n  }\n"""
+          if s.count(helper) != 1:
+              raise SystemExit(f'expected one helper, got {s.count(helper)}')
+          s=s.replace(helper,'\n',1)
+          old='    refreshComparisonAtSelectedInterval(msg, job);'
+          if s.count(old) != 1:
+              raise SystemExit(f'expected one helper call, got {s.count(old)}')
+          s=s.replace(old,'    displayComparison(msg, job);',1)
+          p.write_text(s,encoding='utf-8')
+
+          # Required final invariants.
+          s=p.read_text(encoding='utf-8')
+          assert 'refreshComparisonAtSelectedInterval' not in s
+          assert "const running = msg?.type === 'progress' || msg?.type === 'brute-progress';" in s
+          assert "if (now - (job.lastComparisonRefresh ?? -Infinity) < mapRefreshInterval()) return;" in s
+          assert '[1000,5000,15000,30000,60000,300000,900000,3600000]' in s
+          assert 'job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);' in s
+          PY
+      - name: Validate final source
+        shell: bash
+        run: |
+          node --check public/Trip/new/app.js
+          grep -Fq 'Map/table refresh interval' public/Trip/new/index.html
+          grep -Fq 'value="300000">5 min' public/Trip/new/index.html
+          grep -Fq 'value="900000">15 min' public/Trip/new/index.html
+          grep -Fq 'value="3600000">1 h' public/Trip/new/index.html
+          grep -Fq '"Map/table refresh interval":"Čas osveževanja mape/tabele"' public/Trip/new/ui-text.js
+          git diff --check
+      - name: Commit final source only
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/trip-gui-refresh-r2.yml
+          git add public/Trip/new/app.js
+          git diff --cached --check
+          git commit -m "Trip LAB: fix comparison refresh throttle"
+          git push origin HEAD:trip-gui-refresh-r2
