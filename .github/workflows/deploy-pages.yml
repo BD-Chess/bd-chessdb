@@ -10,8 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# GitHub Pages accepts only one deployment at a time. Serialize main pushes so
-# rapid commits queue instead of racing and failing with an in-progress deploy.
 concurrency:
   group: github-pages
   cancel-in-progress: false
@@ -31,31 +29,48 @@ jobs:
           python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
           node --check public/js/bd-password-manager.js
           node --check public/js/trading-password-shield.js
+          node --check public/js/bd-owner-access-v1.js
           node --check public/BD/O/vault.js
           node --check public/WL/reader.js
           node --check public/WL/BD/reader.js
           node --check public/Trip/private-client.js
           node --check public/Trip/new/private-client.js
           node --check public/Trip/old/004/private-client.js
-      - name: Fix owner-access asset paths for GitHub Pages project base
+      - name: Inline owner-access runtime for GitHub Pages
         shell: python
         run: |
           from pathlib import Path
-          old = 'src="/js/bd-owner-access-v1.js"'
-          new = 'src="/bd-chessdb/js/bd-owner-access-v1.js"'
+          import re
+          helper = Path('public/js/bd-owner-access-v1.js').read_text(encoding='utf-8')
+          patterns = [
+              re.compile(r'<script\s+defer(?:="")?\s+src="/js/bd-owner-access-v1\.js"></script>'),
+              re.compile(r'<script\s+src="/js/bd-owner-access-v1\.js"\s+defer(?:="")?></script>'),
+          ]
+          replacement = '<script>\n' + helper + '\n</script>'
           changed = []
           for p in sorted(Path('public').rglob('*.html')):
               s = p.read_text(encoding='utf-8')
-              n = s.count(old)
+              if '"schema":"BD_ACCESS_V1"' not in s:
+                  continue
+              out = s
+              n = 0
+              for pat in patterns:
+                  out, k = pat.subn(replacement, out)
+                  n += k
               if n:
-                  p.write_text(s.replace(old, new), encoding='utf-8')
+                  p.write_text(out, encoding='utf-8')
                   changed.append((p.as_posix(), n))
+              else:
+                  raise SystemExit(f'BD_ACCESS_V1 page lacks expected owner runtime reference: {p}')
           if not changed:
-              raise SystemExit('No BD_ACCESS_V1 owner-access script references found')
-          print('GitHub Pages owner-access path fixes:', changed)
+              raise SystemExit('No BD_ACCESS_V1 pages found for owner-runtime inlining')
+          print('Inlined owner runtime:', changed)
           bbsh = Path('public/BD/BBSH.html').read_text(encoding='utf-8')
-          if new not in bbsh or '"schema":"BD_ACCESS_V1"' not in bbsh:
-              raise SystemExit('BBSH owner-access Pages guard failed')
+          required = ['"schema":"BD_ACCESS_V1"', "bar.id='bd-owner-access'", "input.id='bd-owner-password'"]
+          if not all(x in bbsh for x in required):
+              raise SystemExit('BBSH owner-access runtime guard failed')
+          if '/js/bd-owner-access-v1.js' in bbsh or '/bd-chessdb/js/bd-owner-access-v1.js' in bbsh:
+              raise SystemExit('BBSH still depends on external owner-access runtime')
       - name: Route all Trip unlock clients through Cloudflare on GitHub Pages
         shell: python
         run: |
