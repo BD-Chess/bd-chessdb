@@ -43,9 +43,11 @@ jobs:
           from pathlib import Path
           import re
           helper = Path('public/js/bd-owner-access-v1.js').read_text(encoding='utf-8')
+          # Protected HTML now uses portable relative helper paths. Accept any
+          # depth that resolves to js/bd-owner-access-v1.js, plus legacy /js/.
           patterns = [
-              re.compile(r'<script\s+defer(?:="")?\s+src="/js/bd-owner-access-v1\.js"></script>'),
-              re.compile(r'<script\s+src="/js/bd-owner-access-v1\.js"\s+defer(?:="")?></script>'),
+              re.compile(r'<script\s+defer(?:="")?\s+src="(?:/|(?:\.\./)*|\./)js/bd-owner-access-v1\.js"></script>'),
+              re.compile(r'<script\s+src="(?:/|(?:\.\./)*|\./)js/bd-owner-access-v1\.js"\s+defer(?:="")?></script>'),
           ]
           replacement = '<script>\n' + helper + '\n</script>'
           changed = []
