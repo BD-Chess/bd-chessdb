@@ -45,9 +45,9 @@ jobs:
               s=s.replace(old_label,new_label,1)
 
           s=s.replace("['OS/','8Z OS','8z os os 8zos operating system 8z operating system claustrum digital claustrum'", "['OS/index.html','8Z OS','8Z OS OS 8zos operating system 8z operating system claustrum digital claustrum'",1)
-          s=s.replace("'8z os':'OS/',os:'OS/',8zos:'OS/'", "'8z os':'OS/index.html',os:'OS/index.html',8zos:'OS/index.html'",1)
+          s=s.replace("'8z os':'OS/',os:'OS/',8zos:'OS/'", "'8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'",1)
 
-          boot='''<script id="search-boot">(function(){\n'use strict';\nconst b=document.getElementById('search-open'),d=document.getElementById('search-dialog'),f=document.getElementById('search-form'),i=document.getElementById('search-input');\nif(!b||!d||!f||!i)return;\nconst norm=s=>String(s||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();\nconst direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html',8zos:'OS/index.html'};\nfunction open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}\nb.addEventListener('click',open);\nf.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);\n})();</script>\n<!-- LANDING_SEARCH_REPAIR_20260917_R3 -->\n'''
+          boot='''<script id="search-boot">(function(){\n'use strict';\nconst b=document.getElementById('search-open'),d=document.getElementById('search-dialog'),f=document.getElementById('search-form'),i=document.getElementById('search-input'),c=document.getElementById('search-close');\nif(!b||!d||!f||!i)return;\nconst norm=s=>String(s||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();\nconst direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'};\nfunction open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}\nb.addEventListener('click',open);\nif(c)c.addEventListener('click',()=>{if(d.open)d.close();});\nd.addEventListener('close',()=>{document.documentElement.classList.remove('search-open');b.setAttribute('aria-expanded','false');});\nf.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);\n})();</script>\n<!-- LANDING_SEARCH_REPAIR_20260917_R3 -->\n'''
           anchor='<script id="landing-runtime">'
           if 'id="search-boot"' not in s:
               if anchor not in s:
@@ -68,6 +68,7 @@ jobs:
           assert 'LANDING_SEARCH_REPAIR_20260917_R3' in s
           assert "toe:'crp/ToE.html'" in s
           assert "'8z os':'OS/index.html'" in s
+          assert "'8zos':'OS/index.html'" in s
           assert '8Z OS OS 8zos' in s
           assert 'id="tool-more-toggle"' in s
           assert 'id="search-boot"' in s
