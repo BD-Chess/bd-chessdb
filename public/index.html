@@ -133,7 +133,7 @@ html.search-open{overflow:hidden}dialog{width:min(660px,calc(100% - 28px));max-h
 <!-- LANDING_COMPRESSED_LINKS_20260917 -->
 <!-- LANDING_TOE_SEARCH_20260917 -->
 <nav class="tools" aria-label="Compressed project map">
-<button class="tools-heading" id="tool-map-toggle" type="button" aria-expanded="false" aria-controls="tool-more"><span><span class="en" lang="en">From ideas to experience</span><span class="sl" lang="sl">Iz idej v izkušnjo</span></span><span class="tools-toggle" aria-hidden="true"></span></button>
+<p class="tools-heading"><span class="en" lang="en">From ideas to experience</span><span class="sl" lang="sl">Iz idej v izkušnjo</span></p>
 <div class="tool-rows">
 <div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Apps</span><span class="sl" lang="sl">Aplikacije</span></span><div class="tool-links"><a class="tool-link" href="./Trip/">Trip<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./chess/"><span class="en" lang="en">Chess</span><span class="sl" lang="sl">Šah</span><span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./S/">Sudoku<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./F4M/">Flip4M<span class="arrow" aria-hidden="true">↗</span></a></div></div>
 <div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Core</span><span class="sl" lang="sl">Jedro</span></span><div class="tool-links"><a class="tool-link" href="./crp/8z_MDLxDCC.html">MDL×DCC<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./8Z/8Z_compression.html">8Z<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./AI8/">AI8<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./crp/MDLxDCC-Arenas.html">Arenas<span class="arrow" aria-hidden="true">↗</span></a></div></div>
@@ -152,6 +152,19 @@ html.search-open{overflow:hidden}dialog{width:min(660px,calc(100% - 28px));max-h
 </main>
 <footer class="footer wrap"><span><span class="en" lang="en">Independent work. Shared with curiosity.</span><span class="sl" lang="sl">Neodvisno delo. Skupna radovednost.</span></span><nav class="footer-links" aria-label="About the makers"><a class="by" href="./bd/">BD</a><a href="./bd/BDR.html">BDR</a><a href="mailto:bd@siol.net"><span class="en" lang="en">Say hello ↗</span><span class="sl" lang="sl">Piši ↗</span></a></nav></footer>
 <dialog id="search-dialog" aria-labelledby="search-heading"><div class="search-top"><h2 id="search-heading"><span class="en" lang="en">A world to explore.</span><span class="sl" lang="sl">Svet za raziskovanje.</span></h2><button class="close" id="search-close" type="button" aria-label="Close search">×</button></div><form class="search-form" role="search" id="search-form"><label for="search-input"><span class="en" lang="en">Title, keyword or path</span><span class="sl" lang="sl">Naslov, ključna beseda ali pot</span></label><input id="search-input" type="search" maxlength="120" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Trip, MDL×DCC, consciousness…" role="combobox" aria-autocomplete="list" aria-controls="search-results" aria-expanded="true"></form><div class="search-history" id="search-history"></div><p class="search-status" id="search-status" aria-live="polite"></p><ul class="search-results" id="search-results" role="listbox" aria-label="Search results"></ul><div class="search-footer"><span><span class="en" lang="en">History stays on this device.</span><span class="sl" lang="sl">Zgodovina ostane na tej napravi.</span></span><button type="button" id="clear-history"><span class="en" lang="en">Clear history</span><span class="sl" lang="sl">Izbriši zgodovino</span></button><a href="./index-search.html"><span class="en" lang="en">Full index ↗</span><span class="sl" lang="sl">Celoten indeks ↗</span></a></div></dialog>
+<script id="search-boot">(function(){
+'use strict';
+const b=document.getElementById('search-open'),d=document.getElementById('search-dialog'),f=document.getElementById('search-form'),i=document.getElementById('search-input'),c=document.getElementById('search-close');
+if(!b||!d||!f||!i)return;
+const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'};
+function open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}
+b.addEventListener('click',open);
+if(c)c.addEventListener('click',()=>{if(d.open)d.close();});
+d.addEventListener('close',()=>{document.documentElement.classList.remove('search-open');b.setAttribute('aria-expanded','false');});
+f.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);
+})();</script>
+<!-- LANDING_SEARCH_REPAIR_20260917_R3 -->
 <script id="landing-runtime">(function(){
 'use strict';
 const root=document.documentElement,$=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
@@ -165,7 +178,7 @@ $('#font-down').setAttribute('aria-label',text('Smaller text','Manjše besedilo'
 $('#search-open').setAttribute('aria-label',text('Search the site','Išči po strani'));$('#search-close').setAttribute('aria-label',text('Close search','Zapri iskanje'));
 $('#search-input').placeholder=text('Trip, MDL×DCC, ToE, consciousness…','Trip, MDL×DCC, ToE, zavest…');$('#search-results').setAttribute('aria-label',text('Search results','Rezultati iskanja'));
 $('.font-buttons').setAttribute('aria-label',text('Text size','Velikost besedila'));$('.languages').setAttribute('aria-label',text('Language','Jezik'));$('.view-switch').setAttribute('aria-label',text('Drawing representation','Predstavitev risbe'));
-$('.tools').setAttribute('aria-label',text('Compressed project map','Stisnjen zemljevid projektov'));const mt=$('#tool-map-toggle'),mmt=$('#tool-more-toggle');if(mt)mt.setAttribute('aria-label',mt.getAttribute('aria-expanded')==='true'?text('Collapse project links','Strni projektne povezave'):text('Expand project links','Razgrni projektne povezave'));if(mmt)mmt.setAttribute('aria-label',mmt.getAttribute('aria-expanded')==='true'?text('Collapse extra project links','Strni dodatne projektne povezave'):text('Explore more project links','Razišči več projektnih povezav'));$('.footer-links').setAttribute('aria-label',text('About the makers','O ustvarjalcih'));
+$('.tools').setAttribute('aria-label',text('Compressed project map','Stisnjen zemljevid projektov'));const mmt=$('#tool-more-toggle');if(mmt)mmt.setAttribute('aria-label',mmt.getAttribute('aria-expanded')==='true'?text('Collapse extra project links','Strni dodatne projektne povezave'):text('Explore more project links','Razišči več projektnih povezav'));$('.footer-links').setAttribute('aria-label',text('About the makers','O ustvarjalcih'));
 $('#art-title').textContent=text('One ellipse, forty-eight rotations','Ena elipsa, oseminštirideset zasukov');
 $('#art-description').textContent=text('A rosette from the ellipse centred at (294,240), radii (63,168), rotated 48 times around (240,240) in 7.5 degree steps. Rule shows the source ellipse.','Rozeta iz elipse s središčem (294,240) in polosema (63,168), 48-krat zasukane okoli (240,240) po 7,5 stopinje. Pravilo pokaže izvorno elipso.');
 }
@@ -175,9 +188,9 @@ $('#font-down').addEventListener('click',()=>fontSize(font-.05));$('#font-up').a
 $$('[data-lang]').filter(x=>x.tagName==='BUTTON').forEach(b=>b.addEventListener('click',()=>window.MDLxDCCLocale.choose(b.dataset.lang)));
 function setView(mode,announce=true){const rule=mode==='rule';$('#study').dataset.mode=rule?'rule':'pattern';$$('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===mode)));if(announce)$('#art-status').textContent=rule?text('One source ellipse. Select Pattern to reconstruct all 48 rotations.','Ena izvorna elipsa. Izberi Vzorec za obnovo vseh 48 zasukov.'):text('All 48 rotations reconstructed from the same ellipse.','Vseh 48 zasukov je obnovljenih iz iste elipse.');}
 $$('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-const toolMapToggle=$('#tool-map-toggle'),toolMoreToggle=$('#tool-more-toggle'),toolMore=$('#tool-more');
-function setToolMap(open,persist=true){if(!toolMapToggle||!toolMore)return;toolMapToggle.setAttribute('aria-expanded',String(open));if(toolMoreToggle)toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
-if(toolMapToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMapToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));if(toolMoreToggle)toolMoreToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));}
+const toolMoreToggle=$('#tool-more-toggle'),toolMore=$('#tool-more');
+function setToolMap(open,persist=true){if(!toolMoreToggle||!toolMore)return;toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
+if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMoreToggle.addEventListener('click',()=>setToolMap(toolMoreToggle.getAttribute('aria-expanded')!=='true'));}
 
 // Reuse the exact four original cards only on demand. The byte-identical archive
 // is the source, not an obsolete project attachment. No archive scripts execute.
@@ -209,7 +222,7 @@ const seed=[
 ['crp/8z_MDLxDCC.html','8z–MDL×DCC architecture','mdl dcc mdlxdcc mdldcc 8z architecture minimum description length dynamic complexity controller arhitektura metoda','Core architecture and evidence.','Osrednja arhitektura in dokazni zapisi.'],
 ['crp/MDLxDCC.html','MDL×DCC Explained','mdl dcc mdlxdcc explained domain map metoda razlaga','MDL×DCC explanation and domain map.','Razlaga MDL×DCC in zemljevid domen.'],
 ['crp/ToE.html','8Z × CFH ToE','toe theory of encoding theory of everything 8z cfh cch compression entropy information physics consciousness encoding zavest entropija fizika','8Z × CFH Theory of Encoding research programme.','Raziskovalni program 8Z × CFH Theory of Encoding.'],
-['OS/','8Z OS','8z os os 8zos operating system 8z operating system claustrum digital claustrum','8Z OS origin story and operating-system project.','Izvorna zgodba in projekt operacijskega sistema 8Z OS.'],
+['OS/index.html','8Z OS','8Z OS OS 8zos operating system 8z operating system claustrum digital claustrum','8Z OS origin story and operating-system project.','Izvorna zgodba in projekt operacijskega sistema 8Z OS.'],
 ['Nara/','Nara / Illuminara','nara illuminara story stories fiction literature narrative zgodba zgodbe','A world of stories.','Svet zgodb.'],
 ['Birds/','The Birds','birds story stories fiction horror narrative ptici zgodba zgodbe','The Birds story world.','Svet zgodbe The Birds.'],
 ['F4M/','Flip 4M','flip flip4m f4m connect four magnets gravity game igra','Playable game and DCC laboratory.','Igra in laboratorij DCC.'],
@@ -240,7 +253,7 @@ return new URL(path+u.search+u.hash,BASE).href;
 function key(raw){try{return new URL(raw,BASE).pathname.replace(/\.(?:html?|htm)$/i,'').replace(/\/index$/i,'').replace(/\/$/,'').toLowerCase();}catch(_){return '';}}
 let pages=seed.map((p,i)=>({url:new URL(p[0],BASE).href,title:p[1],aliases:p[2],description:p[3],sl:p[4],priority:320-i}));
 let indexState='idle',indexPromise=null;
-const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html',sef:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/',os:'OS/',8zos:'OS/'}),STORE='mdlxdcc-search-history-v1';
+const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html',sef:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'}),STORE='mdlxdcc-search-history-v1';
 let history=[];try{const h=JSON.parse(read(STORE,'[]'));if(Array.isArray(h))history=h.filter(x=>typeof x==='string'&&x.trim()&&x.length<=120&&!PRIVATE[norm(x)]).slice(0,12);}catch(_){}
 const dialog=$('#search-dialog'),input=$('#search-input'),list=$('#search-results'),status=$('#search-status');let results=[],active=-1,returnFocus=null;
 async function loadIndex(){if(indexPromise)return indexPromise;indexState='loading';render();
