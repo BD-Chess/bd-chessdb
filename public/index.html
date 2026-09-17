@@ -121,6 +121,8 @@ html.search-open{overflow:hidden}dialog{width:min(660px,calc(100% - 28px));max-h
 
 /* PI_BASE_PRESETS_AND_HERO_HINT_VISIBILITY_20260918_R1 */
 @media(min-width:701px){.hero-canvas-wrap{overflow:visible!important}.hero-click-hint{display:block}}
+
+/* PI_SINGLE_POLYGON_EXACT_20260918_R1: n=1 uses the exact regular-polygon area formula in runtime. */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 </head>
@@ -408,7 +410,7 @@ class Claustrum{
  start(){if(this.running||document.hidden)return;if(reduced()){for(let i=0;i<240;i++)this.draw();return;}this.running=true;this.last=0;requestAnimationFrame(this.loop)} stop(){this.running=false;}
 }
 function gcd(a,b){a=Math.abs(a|0);b=Math.abs(b|0);while(b){const t=b;b=a%b;a=t;}return a||1;}
-function piEstimate(k,n,samples=3000){k=Math.max(3,Math.min(3000,k|0));n=Math.max(1,Math.min(3000,n|0));const d=2*Math.PI/samples,half=Math.PI/k,sector=2*Math.PI/k,cs=Math.cos(half);let sum=0;for(let i=0;i<samples;i++){const th=i*d;let hm=0;for(let j=0;j<n;j++){const phi=2*Math.PI*j/n,t=(th-phi+2*Math.PI)%(2*Math.PI),local=(t%sector)-half,h=cs/Math.cos(local);if(h>hm)hm=h;}sum+=.5*hm*hm*d;}return sum;}
+function piEstimate(k,n,samples=3000){k=Math.max(3,Math.min(3000,k|0));n=Math.max(1,Math.min(3000,n|0));if(n===1)return .5*k*Math.sin(2*Math.PI/k);const d=2*Math.PI/samples,half=Math.PI/k,sector=2*Math.PI/k,cs=Math.cos(half);let sum=0;for(let i=0;i<samples;i++){const th=i*d;let hm=0;for(let j=0;j<n;j++){const phi=2*Math.PI*j/n,t=(th-phi+2*Math.PI)%(2*Math.PI),local=(t%sector)-half,h=cs/Math.cos(local);if(h>hm)hm=h;}sum+=.5*hm*hm*d;}return sum;}
 class PiStudy{
  constructor(canvas,detail=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.detail=detail;this.k=3;this.n=4;this.shown=reduced()?4:1;this.running=false;this.last=0;this.rot=0;this.value=piEstimate(3,4);this.draw();}
  set(k,n){this.k=Math.max(3,Math.min(3000,Math.round(k)));this.n=Math.max(1,Math.min(3000,Math.round(n)));this.shown=reduced()?this.n:Math.min(this.shown,this.n);this.value=piEstimate(this.k,this.n);this.draw();this.metrics();}
