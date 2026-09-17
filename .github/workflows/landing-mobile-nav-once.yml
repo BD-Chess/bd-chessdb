@@ -1,0 +1,63 @@
+name: Landing mobile nav one-shot
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/landing-mobile-nav-once.yml'
+permissions:
+  contents: write
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Refine mobile project navigation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('public/index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='LANDING_MOBILE_NAV_20260917_R1'
+          if marker in s:
+              raise SystemExit(0)
+
+          # Force text presentation for the north-east arrow so iOS does not render a blue emoji tile.
+          s=s.replace('>↗</span>', '>↗︎</span>')
+          s=s.replace("content:'↗'", "content:'↗︎'")
+
+          css='''\n/* LANDING_MOBILE_NAV_20260917_R1 */\n@media(max-width:700px){\n  .tool-row{grid-template-columns:1fr;gap:8px;padding:12px 0;min-height:0}\n  .tool-row-label{margin:0 0 1px;font-size:.78rem}\n  .tool-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;width:100%}\n  .tool-link{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;min-height:50px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:.96rem;line-height:1.2}\n  .tool-link:hover,.tool-link:focus-visible{color:var(--ink);border-color:var(--accent)}\n  .tool-link .arrow{flex:none;margin-left:auto;color:var(--accent);font-family:Arial,sans-serif;font-size:.78rem;line-height:1;font-variant-emoji:text;transition:transform .2s}\n  .tools-heading{min-height:48px;padding:0;font-size:.74rem}\n  .tools-toggle{font-size:1rem}\n  .idea>summary:after{font-family:Arial,sans-serif;font-size:1rem;font-variant-emoji:text}\n  .footer-links a{white-space:nowrap}\n}\n@media(max-width:360px){\n  .tool-links{grid-template-columns:1fr}\n}\n'''
+          anchor='</style>'
+          if anchor not in s:
+              raise SystemExit('style closing tag not found')
+          s=s.replace(anchor,css+anchor,1)
+          p.write_text(s,encoding='utf-8',newline='\n')
+          PY
+      - name: Static acceptance
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('public/index.html').read_text(encoding='utf-8')
+          assert 'LANDING_MOBILE_NAV_20260917_R1' in s
+          assert 'grid-template-columns:repeat(2,minmax(0,1fr))' in s
+          assert 'min-height:50px' in s
+          assert 'font-variant-emoji:text' in s
+          assert '>↗︎</span>' in s
+          m=re.search(r'<script id="landing-runtime">(.*?)</script>',s,re.S)
+          if not m: raise SystemExit('landing-runtime missing')
+          Path('/tmp/landing-runtime.js').write_text(m.group(1),encoding='utf-8')
+          PY
+          node --check /tmp/landing-runtime.js
+      - name: Commit mobile refinement
+        shell: bash
+        run: |
+          if git diff --quiet -- public/index.html; then exit 0; fi
+          git config user.name "BD-AI8 production bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/index.html
+          git commit -m "Refine mobile landing navigation"
+          git push origin HEAD:main
