@@ -1,0 +1,78 @@
+name: One-shot 8Z OS R2 refinement
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/os-r2-one-shot.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply guarded 8Z OS R2 refinements
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('public/OS/index.html')
+          s = p.read_text(encoding='utf-8')
+          assert 'OS-WEB-20260917-R1' in s and 'OS-WEB-20260917-R2' not in s
+          assert s.count('class="mobile-toc"') == 0
+          assert 'DCC currently means Dynamic Complexity Controller' not in s
+          assert 'The OS remains unfinished by design' not in s
+
+          s = s.replace('OS-WEB-20260917-R1','OS-WEB-20260917-R2')
+
+          old = '.index a:hover{color:var(--mint)}.tools{display:flex;'
+          new = '.index a:hover{color:var(--mint)}.mobile-toc{display:none}.tools{display:flex;'
+          assert old in s
+          s = s.replace(old,new,1)
+
+          old = '@media(max-width:600px){body{font-size:16px}.container{padding:0 20px}'
+          new = '@media(max-width:600px){body{font-size:16px}.container{padding:0 20px}.index{display:none}.mobile-toc{display:block;margin:25px 0 0;border-color:var(--line);background:transparent}.mobile-toc summary{font:11px/1.8 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:15px 0}.mobile-toc summary:hover{background:transparent;color:var(--mint)}.mobile-toc .index-links{display:flex;flex-direction:column;gap:0;padding:8px 0 14px}.mobile-toc .index-links a{padding:8px 0;font-size:13px;color:var(--ink);text-decoration:none}.mobile-toc .index-links a:hover{color:var(--mint)}'
+          assert old in s
+          s = s.replace(old,new,1)
+
+          old = '.masthead,.progress,.tools,.actions,.index,dialog,.skip{display:none!important}'
+          new = '.masthead,.progress,.tools,.actions,.index,.mobile-toc,dialog,.skip{display:none!important}'
+          assert old in s
+          s = s.replace(old,new,1)
+
+          nav = '<nav aria-label="On this page" class="index"><div class="index-label">Inside the story</div><div class="index-links"><a href="#origin">01 / The premise</a><a href="#engineering">02 / The first boot</a><a href="#matrix">03 / Digital Lava</a><a href="#claustrum">04 / Digital Claustrum</a><a href="#evidence">05 / What the test found</a><a href="#zoo">06 / The growing OS</a><a href="#dcc">07 / The DCC connection</a><a href="#future">08 / What comes next</a><a href="#sources">09 / Sources</a></div></nav>'
+          mobile = '<details class="mobile-toc"><summary>Contents / Vsebina</summary><div class="index-links"><a href="#origin">01 / The premise</a><a href="#engineering">02 / The first boot</a><a href="#matrix">03 / Digital Lava</a><a href="#claustrum">04 / Digital Claustrum</a><a href="#evidence">05 / What the test found</a><a href="#zoo">06 / The growing OS</a><a href="#dcc">07 / The DCC connection</a><a href="#future">08 / What comes next</a><a href="#sources">09 / Sources</a></div></details>'
+          assert nav in s
+          s = s.replace(nav, nav + '\n' + mobile, 1)
+
+          intro = "<p>That is the connection from the early Digital Claustrum to the later DCC research line. The OS archives directly document the bridge from 8Z and CCH into E4-Metal. The broader lineage to DCC combines BD's project continuity with an architectural comparison. It is not evidence that every subsequent controller copied the same function unchanged.</p>"
+          note = '<div class="note"><span class="label">Terminology</span><p>On MDL×DCC.org, <strong>DCC currently means Dynamic Complexity Controller</strong>. The 2025 Digital Claustrum is presented here as an architectural ancestor of DCC—not as the same implementation, and not as evidence of a biological or conscious claustrum. “Digital Claustrum Controller” is therefore not used here as the current expansion of DCC.</p></div>'
+          assert intro in s
+          s = s.replace(intro, intro + note, 1)
+
+          closing = '<p>8Z OS is both a small engineering artifact and a place where a larger research idea took executable form. Its limitations belong in the story—because they tell the next experiment where to begin.</p>'
+          bridge = '<p><strong>The OS remains unfinished by design:</strong> the next goal is not a prettier demo, but a stronger native mathematical engine with an increasingly capable dedicated host.</p>'
+          assert closing in s
+          s = s.replace(closing, closing + bridge, 1)
+
+          p.write_text(s, encoding='utf-8')
+
+          out = p.read_text(encoding='utf-8')
+          assert out.count('OS-WEB-20260917-R2') >= 1
+          assert out.count('class="mobile-toc"') == 1
+          assert out.count('DCC currently means Dynamic Complexity Controller') == 1
+          assert out.count('The OS remains unfinished by design') == 1
+          print('8Z OS R2 guarded patch PASS')
+      - name: Commit R2
+        shell: bash
+        run: |
+          git config user.name 'BD-Chess'
+          git config user.email 'bd@siol.net'
+          git add public/OS/index.html
+          git diff --cached --check
+          git commit -m 'OS: refine mobile contents and DCC terminology'
+          git push origin HEAD:main
