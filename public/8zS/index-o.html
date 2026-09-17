@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8Z Shield v1.0</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<style>
+:root{
+  --bg:#06070a;--bg2:#0d1016;--bg3:#141922;--card:#10151f;
+  --border:#1c2431;--border2:#2b3646;
+  --text:#e5e9f2;--text2:#c8cfdd;--muted:#8c96ab;
+  --orange:#ff8f1f;--orange-dim:rgba(255,143,31,.11);
+  --gold:#ffc629;--gold-dim:rgba(255,198,41,.12);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.10);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.11);
+  --deepred:#9a1020;--deepred-dim:rgba(154,16,32,.18);
+  --teal:#2dd4bf;--teal-dim:rgba(45,212,191,.11);
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,.11);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,.11);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,Liberation Mono,monospace;
+  --sans:Inter,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;
+  --transition-fast:.15s;--transition-normal:.25s;--transition-slow:.38s;
+  --radius-sm:6px;--radius-md:10px;--radius-lg:14px;
+}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-behavior:smooth}
+body{min-height:100%;background:radial-gradient(ellipse at top,#0a0d13 0%,#06070a 48%,#040507 100%);color:var(--text);font-family:var(--sans);font-size:16px;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+::selection{background:var(--orange);color:#000}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--muted)}::-webkit-resizer{background-color:transparent;background-image:linear-gradient(135deg,transparent 40%,var(--muted) 40%,var(--muted) 50%,transparent 50%,transparent 70%,var(--muted) 70%,var(--muted) 80%,transparent 80%);background-repeat:no-repeat;background-position:bottom right;background-size:12px 12px}
+.bgfx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;filter:saturate(1.05)}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.34;mix-blend-mode:screen;transform:translateZ(0)}
+.orb1{width:38vw;height:38vw;min-width:320px;min-height:320px;left:-8vw;top:-10vh;background:radial-gradient(circle at 30% 30%,rgba(255,110,64,.45),rgba(176,20,44,.28) 42%,rgba(60,6,14,0) 72%);animation:floatA 19s ease-in-out infinite}
+.orb2{width:42vw;height:42vw;min-width:360px;min-height:360px;right:-12vw;top:18vh;background:radial-gradient(circle at 50% 50%,rgba(163,23,52,.44),rgba(92,0,18,.22) 45%,rgba(20,0,6,0) 74%);animation:floatB 23s ease-in-out infinite}
+.orb3{width:46vw;height:46vw;min-width:380px;min-height:380px;left:28vw;bottom:-28vh;background:radial-gradient(circle at 50% 50%,rgba(255,120,0,.19),rgba(120,16,36,.25) 45%,rgba(20,0,6,0) 74%);animation:floatC 27s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(4vw,6vh,0) scale(1.08)}}
+@keyframes floatB{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-6vw,-5vh,0) scale(1.05)}}
+@keyframes floatC{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-3vw,-8vh,0) scale(1.09)}}
+.shell{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:24px 24px 48px}
+.hdr{display:flex;align-items:center;gap:16px;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}.hdr-brand{flex:1;display:flex;align-items:baseline;gap:8px;min-width:220px}.hdr-mark{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.5px}.hdr-mark em{font-style:normal;color:var(--orange)}.hdr-ver{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2)}.hdr-nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav-pill{font-family:var(--mono);font-size:10px;letter-spacing:.5px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all var(--transition-normal);background:transparent;text-transform:uppercase}.nav-pill:hover{border-color:var(--text2);color:var(--text);background:var(--bg2)}.nav-pill:focus-visible,.links-bar a:focus-visible,.viewer-close:focus-visible,.book:focus-visible,.btn:focus-visible,.dl:focus-visible,.ai-send:focus-visible,.mini-btn:focus-visible,.drop:focus-visible{outline:2px solid var(--orange);outline-offset:2px}.nav-pill.active{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}.nav-pill.danger{border-color:var(--red);color:var(--red)}.nav-pill.danger:hover{background:var(--red-dim)}.nav-pill.danger.active{background:var(--red-dim);box-shadow:0 0 18px rgba(239,68,68,.12)}
+.links-bar{display:flex;gap:16px;align-items:center;margin-bottom:24px;padding:12px 18px;background:rgba(13,16,22,.82);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius-md);flex-wrap:wrap}.links-bar a{font-family:var(--mono);font-size:10px;color:var(--text2);text-decoration:none;letter-spacing:.5px;transition:color var(--transition-fast);display:inline-flex;align-items:center;gap:5px}.links-bar a:hover{color:var(--orange)}.links-bar .sep{width:1px;height:14px;background:var(--border);flex-shrink:0}
+.help-panel{display:none;background:rgba(16,21,31,.92);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 26px;margin-bottom:24px;font-size:13px;color:var(--text2);line-height:1.8;animation:panelIn var(--transition-slow) ease}.help-panel.show{display:block}.help-panel h3{font-family:var(--mono);font-size:11px;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin:18px 0 10px}.help-panel h3:first-child{margin-top:0}.help-panel ol,.help-panel ul{margin:0 0 12px 22px}.help-panel li{margin-bottom:6px}.help-panel code{font-family:var(--mono);font-size:11px;background:var(--bg3);padding:2px 7px;border-radius:3px;color:var(--teal)}
+.drop{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:48px 28px;text-align:center;cursor:pointer;transition:all var(--transition-slow) cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;margin-bottom:28px;background:rgba(13,16,22,.72);backdrop-filter:blur(10px)}.drop::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,120,96,.12) 0%,transparent 62%);opacity:0;transition:opacity var(--transition-normal);pointer-events:none}.drop:hover::after{opacity:1}.drop:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 0 36px rgba(154,16,32,.18)}.drop.over{border-color:var(--orange);background:rgba(154,16,32,.12);transform:scale(1.01)}.drop.loaded{border-color:var(--green);border-style:solid;background:var(--green-dim)}.drop-icon{font-size:36px;margin-bottom:10px;opacity:.68;transition:all var(--transition-normal)}.drop:hover .drop-icon{opacity:1;transform:scale(1.1)}.drop-text{font-family:var(--mono);font-size:13px;color:var(--text2);line-height:1.7}.drop-hint{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}.drop.loaded .drop-text{color:var(--green)}.drop input[type=file]{display:none}
+.panel{display:none;animation:panelIn var(--transition-slow) ease}.panel.show{display:block}@keyframes panelIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block}.inp{width:100%;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}.inp:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-dim)}.inp::placeholder{color:var(--muted)}.fg{margin-bottom:14px}
+.pass-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:-4px;margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--muted);flex-wrap:wrap}.pass-strength{padding:3px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition-fast)}.pass-strength.weak{color:var(--red);border-color:var(--red);background:var(--red-dim)}.pass-strength.medium{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}.pass-strength.strong{color:var(--green);border-color:var(--green);background:var(--green-dim)}.pass-confirm{font-family:var(--mono);font-size:10px;margin-top:-4px;margin-bottom:12px}.pass-confirm.ok{color:var(--green)}.pass-confirm.err{color:var(--red)}.pass-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:-4px;margin-bottom:8px}.pass-estimate{font-family:var(--mono);font-size:10px;color:var(--muted)}.mini-btn{padding:7px 10px;background:rgba(59,130,246,.08);border:1px solid var(--blue);border-radius:var(--radius-sm);color:var(--blue);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all var(--transition-fast)}.mini-btn:hover{background:rgba(59,130,246,.18)}
+.btn{width:100%;padding:14px;background:transparent;border:2px solid var(--orange);border-radius:var(--radius-md);color:var(--orange);font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all var(--transition-normal);position:relative;overflow:hidden}.btn:hover:not(:disabled){background:var(--orange-dim);box-shadow:0 0 28px rgba(255,143,31,.12)}.btn:disabled{opacity:.35;cursor:not-allowed}.btn.working{border-color:var(--gold);color:var(--gold)}.btn.done{border-color:var(--green);color:var(--green);background:var(--green-dim)}.btn-prog{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:0 0 var(--radius-md) var(--radius-md);width:0%;transition:width var(--transition-normal)}.stat{font-family:var(--mono);font-size:10px;text-align:center;margin-top:10px;min-height:16px;color:var(--text2)}.stat.ok{color:var(--green)}.stat.err{color:var(--red)}.stat.wrk{color:var(--gold)}.divider{border:none;border-top:1px solid var(--border);margin:18px 0}.body-note{font-size:11px;color:var(--muted);line-height:1.7}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:10px;color:var(--teal);transition:all var(--transition-fast)}.chip:hover{border-color:var(--teal)}.chip .dim{color:var(--muted)}.badge{font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:4px;letter-spacing:.5px;font-weight:600;display:inline-flex;align-items:center;gap:4px}.badge.crit{background:var(--red-dim);color:var(--red)}.badge.high{background:var(--orange-dim);color:var(--orange)}.badge.med{background:var(--gold-dim);color:var(--gold)}.badge.low{background:var(--teal-dim);color:var(--teal)}.badge.info{background:var(--blue-dim);color:var(--blue)}
+.findings{max-height:280px;overflow-y:auto;margin-bottom:16px;padding-right:4px}.fd{background:rgba(16,21,31,.88);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:6px;border-left:4px solid var(--border);cursor:pointer;transition:all var(--transition-fast)}.fd:hover{background:var(--bg2)}.fd.sel{border-left-color:var(--orange);background:var(--orange-dim)}.fd.r-critical{border-left-color:var(--red)}.fd.r-high{border-left-color:var(--orange)}.fd.r-medium{border-left-color:var(--gold)}.fd-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}.fd-type{font-family:var(--mono);font-size:10px;color:var(--text2)}.fd-desc{font-size:12px;color:var(--text2);line-height:1.5}.fd-snip{margin-top:6px;padding:6px 10px;background:var(--bg3);border-radius:4px;font-family:var(--mono);font-size:10px;color:var(--red);overflow-x:auto;white-space:nowrap}.fd-file{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px}.fd-chk{margin-left:auto;width:18px;height:18px;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all var(--transition-fast)}.fd.sel .fd-chk{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+.ai{margin-bottom:16px;background:rgba(16,21,31,.9);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden}.ai-hd{padding:12px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:.5px;transition:background var(--transition-fast)}.ai-hd:hover{background:var(--purple-dim)}.ai-bd{display:none;padding:0 16px 16px}.ai-bd.show{display:block}.ai-log{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);height:200px;min-height:100px;max-height:60vh;resize:vertical;overflow-y:auto;padding:10px;margin-bottom:10px;font-size:12px;line-height:1.6}.ai-m{margin-bottom:6px;padding:6px 10px;border-radius:var(--radius-sm)}.ai-m.s{background:var(--purple-dim);border-left:3px solid var(--purple)}.ai-m.u{background:var(--blue-dim);border-left:3px solid var(--blue)}.ai-m .role{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;color:var(--purple)}.ai-m.u .role{color:var(--blue)}.ai-m p{color:var(--text2);margin:0;font-size:12px;line-height:1.6}.ai-row{display:flex;gap:8px}.ai-in{flex:1;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color var(--transition-fast)}.ai-in:focus{border-color:var(--purple)}.ai-in::placeholder{color:var(--muted)}.ai-send{padding:10px 16px;background:var(--purple-dim);border:1px solid var(--purple);border-radius:var(--radius-sm);color:var(--purple);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all var(--transition-fast)}.ai-send:hover{background:rgba(167,139,250,.2)}.ai-key-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.ai-key-row .ai-in{min-width:220px}.ai-key-stat{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px}.ai-key-stat.ready{color:var(--green)}.ai-key-stat.off{color:var(--muted)}.ai-key-stat.err{color:var(--red)}
+.out{display:none;margin-top:18px;background:rgba(16,21,31,.92);border:1px solid var(--green);border-radius:var(--radius-lg);padding:20px}.out.show{display:block;animation:panelIn var(--transition-slow) ease}.out-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:16px}.out-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.out-cell{text-align:center;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 6px;transition:all var(--transition-fast)}.out-cell:hover{border-color:var(--border2)}.out-cell .n{font-family:var(--mono);font-size:18px;font-weight:700}.out-cell .n.o{color:var(--orange)}.out-cell .n.t{color:var(--teal)}.out-cell .n.r{color:var(--red)}.out-cell .n.g{color:var(--green)}.out-cell .l{font-size:8px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.dl{width:100%;padding:12px;border-radius:var(--radius-sm);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all var(--transition-fast);margin-bottom:6px;border:1px solid var(--green);color:var(--green);background:var(--green-dim)}.dl:hover{background:rgba(34,197,94,.2);transform:translateY(-1px)}.dl.alt{border-color:var(--red);color:var(--red);background:var(--red-dim)}.dl.alt:hover{background:rgba(239,68,68,.2)}.dl.gold{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}.dl.gold:hover{background:rgba(255,198,41,.2)}.dl.blue{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}.dl.blue:hover{background:rgba(59,130,246,.2)}
+.shelf-hdr{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}.shelf-hdr::after{content:"";flex:1;height:1px;background:var(--border)}.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:32px}.book{background:rgba(16,21,31,.88);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px 14px;cursor:pointer;transition:all var(--transition-normal) cubic-bezier(.4,0,.2,1);text-align:center;position:relative;overflow:hidden}.book::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(154,16,32,.18),transparent);opacity:0;transition:opacity var(--transition-normal)}.book:hover{transform:translateY(-4px);border-color:var(--orange);box-shadow:0 10px 34px rgba(154,16,32,.14)}.book:hover::before{opacity:1}.book-ico{font-size:40px;margin-bottom:10px;display:block;filter:saturate(.8)}.book-name{font-family:var(--mono);font-size:11px;color:var(--teal);word-break:break-all;line-height:1.5}.book-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px}.book-badge{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg)}.book-badge.locked{background:var(--gold)}.book-badge.open{background:var(--green)}.shelf-zero{text-align:center;padding:36px 24px;border:2px dashed var(--border);border-radius:var(--radius-lg);margin-bottom:32px}.shelf-zero-text{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.8}
+.trace-area{width:100%;min-height:160px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:11px;line-height:1.6;outline:none;resize:vertical;transition:border-color var(--transition-fast)}.trace-area:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-dim)}.trace-area::placeholder{color:var(--muted)}.trace-res{margin-top:16px;padding:18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-md);display:none}.trace-res.show{display:block;animation:panelIn var(--transition-slow) ease}.trace-id{font-family:var(--mono);font-size:22px;font-weight:700;margin-bottom:8px}.trace-id.hit{color:var(--red)}.trace-id.miss{color:var(--muted)}.trace-conf{font-family:var(--mono);font-size:12px;color:var(--text2);margin-bottom:12px}.trace-chs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.trace-ch{font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:4px;transition:all var(--transition-fast)}.trace-ch.on{background:var(--red-dim);color:var(--red)}.trace-ch.off{background:var(--bg3);color:var(--muted)}.trace-ev{font-family:var(--mono);font-size:10px;color:var(--text2);line-height:1.8}.trace-ev .row{padding:4px 0;border-bottom:1px solid var(--border)}.trace-ev .row:last-child{border-bottom:none}.trace-note{margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.7}.trace-verdict{font-family:var(--mono);font-size:12px;margin-bottom:10px;color:var(--text2)}.trace-runner{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.dec-list{margin-top:12px}.dec-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;font-family:var(--mono);font-size:11px;transition:all var(--transition-fast)}.dec-row:hover{border-color:var(--border2)}.dec-row .nm{color:var(--teal);word-break:break-all}.dec-row .sz{color:var(--muted);font-size:10px;flex-shrink:0;margin:0 10px}.dec-row .sv{padding:4px 12px;background:var(--green-dim);border:1px solid var(--green);border-radius:4px;color:var(--green);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all var(--transition-fast);flex-shrink:0}.dec-row .sv:hover{background:rgba(34,197,94,.25)}
+.modal-bg{position:fixed;inset:0;background:rgba(6,8,12,.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:900}.modal-bg.show{display:flex}.modal{width:400px;max-width:92%;background:rgba(13,16,22,.94);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:30px;animation:panelIn var(--transition-slow) ease;box-shadow:0 25px 50px -12px rgba(0,0,0,.5)}.modal-title{font-family:var(--mono);font-size:13px;color:var(--gold);text-align:center;margin-bottom:22px;letter-spacing:1px}.modal-actions{display:flex;gap:8px;flex-wrap:wrap}.modal-actions .btn{flex:1}
+.viewer{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:1000}.viewer.show{display:flex}.viewer-bar{background:var(--bg2);padding:12px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}.viewer-name{font-family:var(--mono);font-size:13px;color:var(--teal)}.viewer-close{font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;padding:6px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition-fast)}.viewer-close:hover{border-color:var(--text2);color:var(--text);background:var(--bg3)}.viewer-frame{flex:1;border:none;width:100%;background:#fff}
+.ft{text-align:center;margin-top:24px;font-family:var(--mono);font-size:9px;color:var(--muted);opacity:.52;line-height:1.8}.ft a{color:var(--gold);text-decoration:none;transition:color var(--transition-fast)}.ft a:hover{color:var(--orange)}
+@media (max-width:768px){body{font-size:17px}.shell{padding:16px 16px 36px}.hdr{flex-direction:column;align-items:flex-start;gap:14px}.hdr-brand{width:100%}.links-bar{flex-direction:column;align-items:flex-start;gap:14px}.links-bar .sep{display:none}.lbl{font-size:11px}.inp{font-size:16px;padding:14px 16px}.btn{font-size:14px;padding:16px}.nav-pill{font-size:12px;padding:10px 16px}.out-grid{grid-template-columns:repeat(2,1fr);gap:12px}.drop{padding:44px 18px}.drop-text{font-size:15px}.modal{padding:24px}.shelf{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}.pass-tools{align-items:flex-start}.pass-estimate{display:block;width:100%}}
+</style>
+</head>
+<body>
+<div class="bgfx" aria-hidden="true"><span class="orb orb1"></span><span class="orb orb2"></span><span class="orb orb3"></span></div>
+<div class="shell">
+<header class="hdr"><div class="hdr-brand"><div class="hdr-mark">8Z<em>Shield</em></div><span class="hdr-ver">v1.0</span></div><nav class="hdr-nav"><button class="nav-pill active" id="navHome" onclick="goHome()">Home</button><button class="nav-pill danger" id="navTrace" onclick="goTrace()">Trace</button></nav></header>
+<div class="links-bar">
+  <a href="#" onclick="event.preventDefault();toggleHelp()">&#9881; How to use</a><span class="sep"></span>
+  <a href="8z_shield_landing.html#cases" target="_blank" rel="noopener noreferrer">&#128161; Use cases</a><span class="sep"></span>
+  <a href="8z_shield_landing.html" target="_blank" rel="noopener noreferrer">&#128640; 8Z Shield</a><span class="sep"></span>
+  <a href="BD_8z_publish.html" target="_blank" rel="noopener noreferrer">&#128220; Technical paper</a><span class="sep"></span>
+  <a href="BD_8Z_Auth.html" target="_blank" rel="noopener noreferrer">&#128272; 8Z-Auth</a>
+</div>
+  <div class="help-panel" id="helpPanel">
+    <h3>What is 8Z Shield?</h3>
+    One tool to protect, read, and trace your digital content. No server, no account, no dependencies. Just a browser and a passphrase. Everything runs locally — nothing leaves your machine.
+    <h3>Protecting your files (3 steps)</h3>
+    <ol>
+      <li><strong>Drop files</strong> into the box below — <code>.html</code>, <code>.js</code>, <code>.css</code> files, or a <code>.zip</code></li>
+      <li><strong>Review findings</strong> — the scanner identifies API keys, algorithms, and sensitive code. Check what to protect</li>
+      <li><strong>Set a passphrase</strong> and click Shield. You get an encrypted <code>.8zv</code> bundle plus a trace manifest</li>
+    </ol>
+    <h3>Reading protected content</h3>
+    Drop any <code>.8zv</code> file into the box. It appears on your bookshelf. Click it, enter the passphrase, view full-screen. Your library lives as long as the tab is open.
+    <h3>Tracing a leak</h3>
+    Click <span style="color:var(--red)">Trace</span> in the top right. Load the <code>.trace.json</code> manifest, paste the leaked content, click Analyze. 4 forensic channels identify who leaked it.
+    <h3>Download options</h3>
+    After shielding, download either a single <code>.8zv</code> bundle (one file with everything), or the individual encrypted HTML files separately — useful for hosting each page as a standalone protected file.
+  </div>
+  <div class="drop" id="drop" role="button" tabindex="0" aria-label="Drop files here or click to select"><div class="drop-icon" id="dropIco">&#128737;</div><div class="drop-text" id="dropText">Drop anything here</div><div class="drop-hint" id="dropHint">.html .js .css .json .zip to protect&ensp;&middot;&ensp;.8zv or protected .html to read</div><input type="file" id="fileIn" accept=".html,.htm,.js,.css,.json,.zip,.8zv" multiple></div>
+  <div id="shieldPanel" class="panel"></div>
+  <div id="tracePanel" class="panel"></div>
+  <div id="decryptPanel" class="panel"></div>
+  <div id="shelfWrap"></div>
+  <footer class="ft">8Z Shield &bull; AIM&sup3; Institute &bull; <a href="BD_8Z_Auth.html" target="_blank" rel="noopener noreferrer">8Z-Auth</a><br>Bojan Dobrecevic (bd@siol.net) &amp; 8Z Shield v1.0 &bull; 2026</footer>
+</div>
+<div class="modal-bg" id="modalBg"><div class="modal"><div class="modal-title" id="modalTitle">Unlock</div><div class="fg"><label class="lbl">Passphrase</label><input class="inp" id="modalPass" type="password" placeholder="Enter passphrase" autocomplete="current-password"></div><button class="btn" id="modalBtn" onclick="doModalUnlock()" style="border-color:var(--gold);color:var(--gold)">Unlock</button><div class="stat" id="modalStat"></div></div></div>
+<div class="viewer" id="viewer"><div class="viewer-bar"><div class="viewer-name" id="viewerName"></div><div class="viewer-close" onclick="closeViewer()" role="button" tabindex="0">&times;&ensp;Close</div></div><iframe class="viewer-frame" id="viewerFrame" sandbox="allow-scripts allow-same-origin"></iframe></div>
+<script>
+
+'use strict';
+// ═══════════════ APP / AI / KDF ═══════════════
+const INTERNAL_VERSION='4.0';
+const PUBLIC_VERSION='1.0';
+const AI_STORAGE_KEY='8z_shield_gemini_key_session';
+const GMODEL='models/gemini-2.5-flash';
+
+// ═══════════════ 8Z CRYPTO ═══════════════
+const MAGIC=new Uint8Array([0x38,0x5A,0x56,0x31]);
+const VERSION=3,PBKDF2_ITERS=10000000,XOR_ROUNDS=1024;
+const KDF_PROFILE='pbkdf2-v1';
+const KDF_COMPAT_NOTE='Bundle format v3 stays PBKDF2-compatible. A future Argon2id/WASM path should ship as a new profile/version rather than silently changing old bundle behavior.';
+let aiSessionKey='';
+const M64=(1n<<64n)-1n;
+class XS{constructor(s){let v=s&M64;this.state=v===0n?0x9E3779B97F4A7C15n:v}
+n(){let x=this.state;x=(x^((x>>12n)&M64))&M64;x=(x^((x<<25n)&M64))&M64;x=(x^((x>>27n)&M64))&M64;this.state=x;return(x*2685821657736338717n)&M64}}
+function u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}
+function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
+async function sha(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
+function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
+async function deriveKeyPBKDF2v1(pp,salt){const ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));const rng=new XS(b2u(sm.slice(0,8)));for(let i=0;i<XOR_ROUNDS;i++)rng.n();const sh=await sha(u2b(rng.state)),c=cat(ph,sh);const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:PBKDF2_ITERS,hash:'SHA-256'},km,256))}
+async function deriveKeyByProfile(pp,salt,profile=KDF_PROFILE){if(profile==='pbkdf2-v1')return deriveKeyPBKDF2v1(pp,salt);throw new Error('Unsupported KDF profile: '+profile)}
+async function deriveKey(pp,salt){return deriveKeyByProfile(pp,salt,KDF_PROFILE)}
+
+async function gzipC(data){const cs=new CompressionStream('gzip');const w=cs.writable.getWriter(),r=cs.readable.getReader();w.write(data);w.close();const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;const o=new Uint8Array(t);let p=0;for(const c of ch){o.set(c,p);p+=c.length}return o}
+async function gzipD(data){const ds=new DecompressionStream('gzip');const w=ds.writable.getWriter(),r=ds.readable.getReader();w.write(data);w.close();const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;const o=new Uint8Array(t);let p=0;for(const c of ch){o.set(c,p);p+=c.length}return o}
+async function encryptBundle(filesObj,pp){const json=JSON.stringify(filesObj);const plain=new TextEncoder().encode(json);const compressed=await gzipC(plain);const salt=crypto.getRandomValues(new Uint8Array(32));const iv=crypto.getRandomValues(new Uint8Array(12));const kb=await deriveKey(pp,salt);const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['encrypt']);const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,compressed));const vb=new Uint8Array(4);new DataView(vb.buffer).setUint32(0,VERSION,true);return cat(MAGIC,vb,salt,iv,ct)}
+async function decryptBundle(blob,pp){const buf=new Uint8Array(blob);if(buf.length<52)throw new Error('Too small');for(let i=0;i<4;i++)if(buf[i]!==MAGIC[i])throw new Error('Not a .8zv file');const salt=buf.slice(8,40),iv=buf.slice(40,52),ct=buf.slice(52);const kb=await deriveKey(pp,salt);const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);const compressed=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,ct));const plain=await gzipD(compressed);return JSON.parse(new TextDecoder().decode(plain))}
+async function encryptSection(html,pp){const plain=new TextEncoder().encode(html);const compressed=await gzipC(plain);const salt=crypto.getRandomValues(new Uint8Array(32)),iv=crypto.getRandomValues(new Uint8Array(12));const kb=await deriveKey(pp,salt);const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['encrypt']);const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,compressed));const blob=cat(salt,iv,ct);let bin='';for(let i=0;i<blob.length;i++)bin+=String.fromCharCode(blob[i]);return btoa(bin)}
+async function decryptSinglePayload(b64, pp) {
+  const bin = atob(b64);
+  const buf = new Uint8Array(bin.length);
+  for(let i=0; i<bin.length; i++) buf[i] = bin.charCodeAt(i);
+  const salt = buf.slice(0,32), iv = buf.slice(32,44), ct = buf.slice(44);
+  const kb = await deriveKey(pp, salt);
+  const k = await crypto.subtle.importKey('raw', kb, 'AES-GCM', false, ['decrypt']);
+  const comp = new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM', iv:iv, tagLength:128}, k, ct));
+  const plain = await gzipD(comp);
+  return new TextDecoder().decode(plain);
+}
+
+// ═══════════════ REDIRECT GENERATOR (TOP-BREAKOUT + DOMAIN HANDOFF) ═══════════════
+function generateScrambledRedirect(targetUrl, vaultDomain = '') {
+    const b64 = btoa(targetUrl);
+    const partLen = Math.ceil(b64.length / 3);
+    const p1 = b64.substring(0, partLen);
+    const p2 = b64.substring(partLen, partLen * 2);
+    const p3 = b64.substring(partLen * 2);
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <script>
+        const p1 = "${p1}";
+        const p2 = "${p2}";
+        const p3 = "${p3}";
+        const target = atob(p1 + p2 + p3);
+        let pp = '';
+        try {
+            pp = sessionStorage.getItem('_8z_pp') || '';
+            sessionStorage.removeItem('_8z_pp');
+        } catch(e) {}
+        const vd = "${vaultDomain}";
+        if (pp && vd && !pp.includes('||')) {
+            pp += '||' + vd;
+        }
+        const finalTarget = target + (pp ? '#' + encodeURIComponent(pp) : '');
+        function go(){
+            try {
+                if (window.top && window.top !== window) {
+                    window.top.location.replace(finalTarget);
+                    return;
+                }
+            } catch(e) {}
+            window.location.replace(finalTarget);
+        }
+        window.addEventListener('load', go);
+        setTimeout(go, 80);
+    ${'<' + '/script>'}
+</head>
+<body style="background: #0a0c10; color: #8b93a6; font-family: monospace; text-align: center; padding: 50px 20px;">
+    <p>Initializing secure routing...</p>
+    <p style="margin-top:12px;font-size:12px;opacity:.8"><a id="_8zGo" href="#" style="color:#ffc629">Click here to continue</a></p>
+    <noscript>JavaScript is required for secure routing.</noscript>
+    <script>
+      (function(){
+        let pp = '';
+        try { pp = sessionStorage.getItem('_8z_pp') || ''; } catch(e) {}
+        const vd = "${vaultDomain}";
+        if (pp && vd && !pp.includes('||')) pp += '||' + vd;
+        const finalTarget = atob("${b64}") + (pp ? '#' + encodeURIComponent(pp) : '');
+        const a = document.getElementById('_8zGo');
+        if (a) a.href = finalTarget;
+      })();
+    ${'<' + '/script>'}
+</body>
+</html>`;
+}
+
+// ═══════════════ 8Z TRACE — 4-CHANNEL FORENSIC WATERMARKING ═══════════════
+const TRACE_VERSION='8ZT1';
+const ZW0='\u200B',ZW1='\u200C',ZW_DELIM='\u200D';
+const SYNONYM_SETS=[
+  {id:'however_but',variants:['however','but']},{id:'therefore_so',variants:['therefore','so']},
+  {id:'for_example_eg',variants:['for example','e.g.']},{id:'purchase_buy',variants:['purchase','buy']},
+  {id:'start_begin',variants:['start','begin']},{id:'show_display',variants:['show','display']},
+  {id:'help_assist',variants:['help','assist']},{id:'therefore_thus',variants:['therefore','thus']},
+  {id:'specifically_particularly',variants:['specifically','particularly']},
+  {id:'fundamental_basic',variants:['fundamental','basic']},{id:'ensure_guarantee',variants:['ensure','guarantee']},
+  {id:'robust_strong',variants:['robust','strong']},{id:'vital_crucial',variants:['vital','crucial']},
+  {id:'optimal_ideal',variants:['optimal','ideal']},{id:'adequate_sufficient',variants:['adequate','sufficient']},
+  {id:'application_app',variants:['application','app']},{id:'repository_repo',variants:['repository','repo']},
+  {id:'utilize_use',variants:['utilize','use']},{id:'execute_run',variants:['execute','run']},
+  {id:'parameters_arguments',variants:['parameters','arguments']},{id:'functionality_feature',variants:['functionality','feature']},
+  {id:'developer_programmer',variants:['developer','programmer']},{id:'authentication_login',variants:['authentication','login']},
+  {id:'database_db',variants:['database','db']},{id:'configuration_config',variants:['configuration','config']},
+  {id:'information_info',variants:['information','info']},{id:'administrator_admin',variants:['administrator','admin']},
+  {id:'architecture_structure',variants:['architecture','structure']},{id:'component_module',variants:['component','module']},
+  {id:'interface_ui',variants:['interface','ui']},{id:'modification_change',variants:['modification','change']},
+  {id:'verify_check',variants:['verify','check']},{id:'generate_create',variants:['generate','create']},
+  {id:'terminate_stop',variants:['terminate','stop']},{id:'initialize_setup',variants:['initialize','setup']},
+  {id:'navigate_browse',variants:['navigate','browse']},{id:'optimization_improvement',variants:['optimization','improvement']},
+  {id:'implement_build',variants:['implement','build']},{id:'deploy_publish',variants:['deploy','publish']},
+  {id:'requirement_prerequisite',variants:['requirement','prerequisite']},
+  {id:'maintain_preserve',variants:['maintain','preserve']},{id:'choose_select',variants:['choose','select']},
+  {id:'issue_problem',variants:['issue','problem']},{id:'repair_fix',variants:['repair','fix']},
+  {id:'protect_secure',variants:['protect','secure']},{id:'temporary_transient',variants:['temporary','transient']},
+  {id:'accurate_precise',variants:['accurate','precise']},{id:'before_prior',variants:['before','prior to']},
+  {id:'because_since',variants:['because','since']},{id:'promptly_immediately',variants:['promptly','immediately']}
+];
+const CHANNEL_WEIGHTS={honey:0.40,synonyms:0.25,css:0.20,zws:0.15};
+function bytesToHex(b){return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('')}
+function hexToBytes(h){const r=new Uint8Array(h.length/2);for(let i=0;i<h.length;i+=2)r[i/2]=parseInt(h.substr(i,2),16);return r}
+function bytesToBase32(b){const a='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits='';for(const byte of b)bits+=byte.toString(2).padStart(8,'0');let out='';for(let i=0;i<bits.length;i+=5)out+=a[parseInt(bits.substr(i,5).padEnd(5,'0'),2)];return out}
+function bytesToBits(b){let s='';for(const byte of b)s+=byte.toString(2).padStart(8,'0');return s}
+function escapeRx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function normalizeText(s){return(s||'').replace(/\s+/g,' ').trim().toLowerCase()}
+function crc16(data){let crc=0xFFFF;for(let i=0;i<data.length;i++){crc^=data[i];for(let j=0;j<8;j++)crc=(crc&1)?(crc>>>1)^0xA001:crc>>>1}return crc&0xFFFF}
+async function deriveTraceSubseed(seed,label){return await sha(cat(seed,new TextEncoder().encode(TRACE_VERSION+'|'+label)))}
+function rngFromSeed(s){return new XS(b2u(s.slice(0,8)))}
+function getEligibleTextNodes(root){const out=[];const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){if(!n.nodeValue||!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;const p=n.parentElement;if(!p)return NodeFilter.FILTER_REJECT;if(/^(SCRIPT|STYLE|PRE|CODE|TEXTAREA|NOSCRIPT)$/i.test(p.tagName))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT}});let n;while((n=w.nextNode()))out.push(n);return out}
+function shuffleWithRng(arr,rng){for(let i=arr.length-1;i>0;i--){const j=Number(rng.n()%BigInt(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}}
+function permute(arr,rng){const a=[...arr];shuffleWithRng(a,rng);return a}
+
+// CH1: Zero-Width Steganography
+function buildTracePayloadBits(traceId){const raw=new TextEncoder().encode(TRACE_VERSION+'|'+traceId);const crc=crc16(raw);const full=new Uint8Array(raw.length+2);full.set(raw,0);full[raw.length]=(crc>>8)&0xFF;full[raw.length+1]=crc&0xFF;return bytesToBits(full)}
+function injectZeroWidth(dom,payloadBits,seedBytes,repeats){
+  const rng=rngFromSeed(seedBytes);const nodes=getEligibleTextNodes(dom.body).filter(n=>n.nodeValue.trim().length>40);
+  const fullBits=payloadBits.repeat(repeats);let bitIdx=0,inserted=0;
+  for(const node of nodes){if(bitIdx>=fullBits.length)break;const src=node.nodeValue;const anchors=[];
+    for(let i=0;i<src.length;i++){if(/[ .,;:!?)]/.test(src[i]))anchors.push(i)}
+    if(anchors.length<8)continue;const step=3+Number(rng.n()%5n);let out='',last=0;
+    for(let ai=0;ai<anchors.length&&bitIdx<fullBits.length;ai+=step){const pos=anchors[ai];out+=src.slice(last,pos+1);out+=(fullBits[bitIdx++]==='1')?ZW1:ZW0;last=pos+1;inserted++}
+    out+=src.slice(last);node.nodeValue=out}
+  return{manifest:{payloadBits,repeats,inserted}}}
+function extractZeroWidthBits(text){let bits='';for(const ch of text){if(ch===ZW0)bits+='0';else if(ch===ZW1)bits+='1'}return bits}
+
+// CH2: Synonym Micro-Swaps
+function injectSynonymSlots(dom,seedBytes,maxSlots){
+  const rng=rngFromSeed(seedBytes);const manifest=[];const nodes=getEligibleTextNodes(dom.body);let slots=[];
+  nodes.forEach((node,ni)=>{const text=node.nodeValue;SYNONYM_SETS.forEach(set=>{set.variants.forEach((v,ci)=>{
+    const re=new RegExp('\\b'+escapeRx(v)+'\\b','gi');let m;
+    while((m=re.exec(text))!==null){slots.push({node,ni,setId:set.id,ci,source:m[0],start:m.index,end:m.index+v.length,variants:set.variants})}})})});
+  const seen=new Set();slots=slots.filter(s=>{const k=s.ni+'|'+s.setId+'|'+s.start;if(seen.has(k))return false;seen.add(k);return true});
+  shuffleWithRng(slots,rng);slots=slots.slice(0,maxSlots);slots.sort((a,b)=>b.start-a.start);
+  for(let i=0;i<slots.length;i++){const s=slots[i];const choice=Number(rng.n()%BigInt(s.variants.length));const repl=s.variants[choice];
+    const t=s.node.nodeValue;const isCap=s.source[0]===s.source[0].toUpperCase()&&s.source[0]!==s.source[0].toLowerCase();
+    const final=isCap?repl.charAt(0).toUpperCase()+repl.slice(1):repl;s.node.nodeValue=t.slice(0,s.start)+final+t.slice(s.end);
+    manifest.push({slotId:'syn_'+String(i).padStart(3,'0'),setId:s.setId,choiceIndex:choice,selected:repl.toLowerCase()})}
+  return{manifest}}
+
+// CH3: CSS Ordering Signature
+function injectCssOrdering(dom,traceId,seedBytes){
+  const rng=rngFromSeed(seedBytes);const head=dom.head||dom.documentElement;const perms=[];
+  for(let b=0;b<2;b++){const ids=['a','b','c','d'];const perm=permute(ids,rng);const style=dom.createElement('style');
+    style.setAttribute('data-8zt-css','css_'+b);style.textContent=perm.map(id=>'._8zt_'+traceId+'_'+id+'{--x:'+id.length+';}').join('\n');
+    head.appendChild(style);perms.push({id:'css_'+b,perm:perm.map(x=>ids.indexOf(x))})}
+  return{manifest:{blockIds:perms}}}
+function extractCssSignature(html){const m=[...html.matchAll(/<style[^>]*data-8zt-css="([^"]+)"[^>]*>([\s\S]*?)<\/style>/gi)];return m.map(x=>({id:x[1],order:[...x[2].matchAll(/_8zt_[A-Z0-9]+_([a-d])\{/gi)].map(y=>y[1])}))}
+
+// CH4: Honey-Links
+function injectHoneyLinks(dom,ctx,traceId,seedBytes){
+  const token='h_'+bytesToHex(seedBytes.slice(0,6));const url=(ctx.baseTraceUrl||'https://t.8z.pub/r')+'/'+token;
+  let target=dom.querySelector('footer a, nav a[href], a[href*="contact"], a[href*="help"]');
+  if(target){const sep=target.href.includes('?')?'&':'?';target.href+=sep+'t='+token;target.setAttribute('data-8zt-honey',token)}
+  else{const f=dom.createElement('div');f.setAttribute('data-8zt-license',traceId);f.style.cssText='font-size:11px;opacity:.65;margin-top:20px;';
+    f.innerHTML='Licensed copy \u2022 <a href="'+url+'" data-8zt-honey="'+token+'">Verify</a>';(dom.body||dom.documentElement).appendChild(f)}
+  return{manifest:{token,url}}}
+function extractHoneyTokens(html){const t=new Set();[...html.matchAll(/[?&]t=(h_[a-f0-9]{12})/gi)].forEach(m=>t.add(m[1]));[...html.matchAll(/data-8zt-honey="(h_[a-f0-9]{12})"/gi)].forEach(m=>t.add(m[1]));[...html.matchAll(/href="[^"]*\/(h_[a-f0-9]{12})"/gi)].forEach(m=>t.add(m[1]));return[...t]}
+
+// Visible stamp (optional)
+function injectVisibleStamp(dom,code){const el=dom.createElement('div');el.setAttribute('data-8zt-visible',code);el.style.cssText='position:fixed;right:12px;bottom:8px;font:11px monospace;opacity:.35;z-index:2147483647;';el.textContent='Licensed '+code;(dom.body||dom.documentElement).appendChild(el)}
+
+// ═══════════════ FINGERPRINT ORCHESTRATOR ═══════════════
+async function fingerprint(html,ctx){
+  const seedBytes=typeof ctx.customerSeed==='string'?hexToBytes(ctx.customerSeed):ctx.customerSeed;
+  const traceIdBytes=await sha(cat(seedBytes,new TextEncoder().encode(TRACE_VERSION+'|traceId|'+ctx.assetId+'|'+ctx.customerId)));
+  const traceId=bytesToBase32(traceIdBytes.slice(0,5));
+  const dom=new DOMParser().parseFromString(html,'text/html');
+  const me={customerId:ctx.customerId,traceId,seedHash:'sha256:'+bytesToHex(await sha(seedBytes)),channels:{}};
+  {const sub=await deriveTraceSubseed(seedBytes,'honey');me.channels.honey=injectHoneyLinks(dom,ctx,traceId,sub).manifest}
+  {const sub=await deriveTraceSubseed(seedBytes,'css');me.channels.css=injectCssOrdering(dom,traceId,sub).manifest}
+  {const sub=await deriveTraceSubseed(seedBytes,'syn');me.channels.synonyms=injectSynonymSlots(dom,sub,ctx.maxSynonymSlots||12).manifest}
+  {const sub=await deriveTraceSubseed(seedBytes,'zws');const pb=buildTracePayloadBits(traceId);me.channels.zws=injectZeroWidth(dom,pb,sub,ctx.zwsRepeats||3).manifest}
+  if(ctx.enableVisibleStamp){const code=traceId.slice(0,4)+'-'+traceId.slice(4);injectVisibleStamp(dom,code);me.channels.visible={enabled:true,code}}
+  else{me.channels.visible={enabled:false,code:null}}
+  return{html:'<!DOCTYPE html>\n'+dom.documentElement.outerHTML,manifestEntry:me}}
+
+// ═══════════════ TRACE DETECTOR ═══════════════
+function stripHtml(h){return h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()}
+function extractLeakFeatures(lk){return{isHtml:/<html|<body|<div|<style/i.test(lk),raw:lk,text:normalizeText(stripHtml(lk)),zwsBits:extractZeroWidthBits(lk),honeyTokens:extractHoneyTokens(lk),cssSig:extractCssSignature(lk)}}
+function scoreCss(ext,man){if(!man||!man.blockIds||!ext||!ext.length)return 0;let mc=0,tot=man.blockIds.length;for(const mb of man.blockIds){for(const es of ext){if(es.id===mb.id){const exp=mb.perm.map(i=>['a','b','c','d'][i]);if(JSON.stringify(es.order)===JSON.stringify(exp))mc++;else if(es.order.length>0)mc+=0.5}}}return tot>0?mc/tot:0}
+function scoreZws(ext,man){if(!man||!man.payloadBits||!ext||ext.length<8)return 0;const exp=man.payloadBits.repeat(man.repeats||3);let matched=0;const comp=Math.min(ext.length,exp.length);for(let i=0;i<comp;i++){if(ext[i]===exp[i])matched++}return comp>0?matched/comp:0}
+function scoreSynonyms(text,man){if(!man||!man.length)return 0;let m=0;for(const s of man){if(new RegExp('\\b'+escapeRx(s.selected)+'\\b','i').test(text))m++}return m/man.length}
+function detect(lk,db){
+  const feat=extractLeakFeatures(lk);const wt=db.channelWeights||CHANNEL_WEIGHTS;let best=null,second=null;
+  for(const rec of db.customers){const ev=[];let total=0;
+    const hon=rec.channels.honey;if(hon&&feat.honeyTokens.includes(hon.token)){ev.push({channel:'honey',match:1,observed:hon.token,weight:wt.honey});total+=wt.honey}
+    const cs=scoreCss(feat.cssSig,rec.channels.css);if(cs>0){ev.push({channel:'css',match:cs,weight:wt.css});total+=wt.css*cs}
+    const ss=scoreSynonyms(feat.text,rec.channels.synonyms);if(ss>0){ev.push({channel:'synonyms',match:ss,weight:wt.synonyms});total+=wt.synonyms*ss}
+    const zs=scoreZws(feat.zwsBits,rec.channels.zws);if(zs>0){ev.push({channel:'zws',match:zs,weight:wt.zws});total+=wt.zws*zs}
+    const c={customerId:rec.customerId,traceId:rec.traceId,score:total,evidence:ev};
+    if(!best||c.score>best.score){second=best;best=c}else if(!second||c.score>second.score){second=c}}
+  if(!best)return{customerId:null,confidence:0,channelsMatched:[],evidence:[],runnerUp:null};
+  const margin=second?(best.score-second.score):best.score;const conf=Math.min(0.15+0.70*best.score+0.25*margin,0.99);
+  if(best.score<0.45||margin<0.08)return{customerId:null,confidence:conf*0.5,channelsMatched:best.evidence.map(e=>e.channel),evidence:best.evidence,runnerUp:second?{customerId:second.customerId,score:second.score}:null};
+  return{customerId:best.customerId,traceId:best.traceId,confidence:conf,channelsMatched:best.evidence.map(e=>e.channel),evidence:best.evidence,runnerUp:second?{customerId:second.customerId,score:second.score}:null}}
+
+// ═══════════════ ZIP READER ═══════════════
+async function readZip(ab){const buf=new Uint8Array(ab);const files={};let pos=0;while(pos<buf.length-4){const sig=(buf[pos])|(buf[pos+1]<<8)|(buf[pos+2]<<16)|(buf[pos+3]<<24);if(sig!==0x04034b50)break;const method=(buf[pos+8])|(buf[pos+9]<<8);const cSize=(buf[pos+18])|(buf[pos+19]<<8)|(buf[pos+20]<<16)|(buf[pos+21]<<24);const uSize=(buf[pos+22])|(buf[pos+23]<<8)|(buf[pos+24]<<16)|(buf[pos+25]<<24);const nameLen=(buf[pos+26])|(buf[pos+27]<<8);const extraLen=(buf[pos+28])|(buf[pos+29]<<8);const name=new TextDecoder().decode(buf.slice(pos+30,pos+30+nameLen));const dataStart=pos+30+nameLen+extraLen;const dataEnd=dataStart+(cSize||uSize);if(!name.endsWith('/')){let content;if(method===0){content=buf.slice(dataStart,dataEnd)}else if(method===8){const raw=buf.slice(dataStart,dataStart+cSize);try{const ds=new DecompressionStream('deflate-raw');const w=ds.writable.getWriter(),r=ds.readable.getReader();w.write(raw);w.close();const ch=[];while(true){const{done,value}=await r.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;content=new Uint8Array(t);let o=0;for(const c of ch){content.set(c,o);o+=c.length}}catch(e){content=raw}}else{content=buf.slice(dataStart,dataEnd)}const sn=name.includes('/')?name.split('/').pop():name;if(sn)files[sn]=new TextDecoder().decode(content)}pos=dataEnd}return files}
+
+// ═══════════════ STATIC ANALYSIS ═══════════════
+const PATTERNS=[
+{re:/['"`]AIza[A-Za-z0-9_-]{30,}['"`]/g,type:'Google Maps API Key',risk:'medium',desc:'Public-facing key. Ensure HTTP Referrer restrictions are set in Google Console.'},
+  {re:/['"`]sk-[A-Za-z0-9]{20,}['"`]/g,type:'OpenAI API Key',risk:'critical',desc:'OpenAI API key exposed.'},
+  {re:/['"`]sk_live_[A-Za-z0-9]{20,}['"`]/g,type:'Stripe Secret Key',risk:'critical',desc:'Stripe secret key found!'},
+  {re:/atob\s*\(\s*['"`][A-Za-z0-9+/=]{16,}['"`]\s*\)/g,type:'Obfuscated Secret (base64)',risk:'critical',desc:'Base64 value decoded at runtime — likely a hidden API key.'},
+  {re:/fetch\s*\(\s*[`'"]https:\/\/generativelanguage\.googleapis\.com/g,type:'Gemini API Call',risk:'high',desc:'Direct call to Google Gemini API.'},
+  {re:/googleapis\.com\/maps\/api\/js\?key=/g,type:'Maps Script + Key',risk:'info',desc:'Maps JS API requires client-side key. Mitigation: Referrer Restrictions.'},  {re:/class\s+XorShift|xorshift/gi,type:'PRNG Algorithm',risk:'info',desc:'Deterministic PRNG — used for seeded results.'},
+  {re:/function\s+\w*(solve|optimize|twoOpt|nearestNeighbor)\w*/gi,type:'Optimization Algorithm',risk:'info',desc:'Core logic — consider shielding to protect IP.'},
+  {re:/function\s+\w*(buildDistanceMatrix|routeLength|toXYMeters)\w*/gi,type:'Proprietary Math',risk:'info',desc:'Mathematical engine — core intellectual property.'},  {re:/new\s+Worker\s*\(\s*['"`][^'"`]+['"`]\s*\)/g,type:'Web Worker',risk:'medium',desc:'External worker file — computation logic.'},
+  {re:/You are (?:the |a )?[A-Z][a-z]+ [A-Z]/g,type:'AI Persona',risk:'medium',desc:'AI prompt engineering — valuable IP.'},
+  {re:/function\s+\w*(?:price|billing|payment|checkout)\w*/gi,type:'Payment Logic',risk:'high',desc:'Payment/pricing logic.'}
+];
+function staticScan(files){const findings=[];let id=0;for(const[fn,content]of Object.entries(files)){const lines=content.split('\n');for(const pat of PATTERNS){const re=new RegExp(pat.re.source,pat.re.flags);let m;while((m=re.exec(content))!==null){let pos=0,ln=1;for(const line of lines){if(pos+line.length>=m.index)break;pos+=line.length+1;ln++}const snip=m[0].substring(0,80);if(findings.some(f=>f.snip===snip&&f.file===fn))continue;findings.push({id:id++,risk:pat.risk,type:pat.type,desc:pat.desc,snip,file:fn,line:ln,selected:pat.risk==='critical'||pat.risk==='high'})}}}const ro={critical:0,high:1,medium:2,low:3};findings.sort((a,b)=>ro[a.risk]-ro[b.risk]);return findings}
+
+// ═══════════════ STATE ═══════════════
+let loadedFiles={},mode=null,vault8zv=null,findings=[],aiHistory=[],traceManifest=null,loadedManifest=null,singlePayloadMode=null;
+let library=[],currentBookIdx=-1,uiView='home';
+const DEFAULT_SHIELD_SETTINGS=Object.freeze({destUrl:'',chkEndpoint:true,custId:'',passF:'',passConfirm:''});
+let shieldSettings={...DEFAULT_SHIELD_SETTINGS};
+const dz=document.getElementById('drop');
+const fileIn=document.getElementById('fileIn');
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function parseMD(v){
+  let t = esc(v);
+  t = t.replace(/### (.*?)(<br>|\n|$)/g, '<strong style="color:var(--orange);display:block;margin-top:8px">$1</strong><br>');
+  t = t.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text)">$1</strong>');
+  t = t.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  t = t.replace(/`(.*?)`/g, '<code style="background:var(--bg3);padding:2px 4px;border-radius:3px;color:var(--teal)">$1</code>');
+  t = t.replace(/\n/g, '<br>');
+  return t;
+}
+function fmtB(n){n=Number(n)||0;const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return (i===0?Math.round(n):n.toFixed(n>=100?0:n>=10?1:2))+' '+u[i];}
+function normalizePassInput(v){return String(v||'').trim()}
+function extractPassphrases(v){return normalizePassInput(v).split('|').map(x=>x.trim()).filter(Boolean)}
+function extractMasterPassphrase(v){const arr=extractPassphrases(v);return arr[0]||''}
+function evaluatePassStrength(pass){let score=0;if(pass.length>=10)score++;if(pass.length>=16)score++;if(/[A-Z]/.test(pass)&&/[a-z]/.test(pass))score++;if(/\d/.test(pass))score++;if(/[^A-Za-z0-9]/.test(pass))score++;if(score<=2)return{label:'Weak',cls:'weak'};if(score<=4)return{label:'Medium',cls:'medium'};return{label:'Strong',cls:'strong'}}
+function estimatePassResistance(pass){const p=String(pass||'');if(!p)return 'Rough resistance: —';let charset=0;if(/[a-z]/.test(p))charset+=26;if(/[A-Z]/.test(p))charset+=26;if(/\d/.test(p))charset+=10;if(/[^A-Za-z0-9]/.test(p))charset+=33;if(!charset)charset=1;let entropy=p.length*Math.log2(charset);if(p.includes('-')||p.includes(' '))entropy+=8;const label=entropy<40?'low':entropy<60?'moderate':entropy<80?'high':'very high';const rough=entropy<40?'minutes to days':entropy<60?'months to years':entropy<80?'centuries+':'impractical with commodity offline guessing';return 'Rough resistance: '+label+' ('+rough+')';}
+const PASSPHRASE_WORDS=['amber','anchor','apex','ash','atlas','binary','bloom','cinder','cipher','comet','copper','crystal','delta','ember','falcon','forest','gamma','glacier','harbor','helios','ivory','jaguar','keystone','lagoon','lumen','magnet','matrix','mercury','nebula','onyx','orbit','phoenix','quartz','raven','signal','silver','solstice','titan','umbra','vector','violet','vortex','willow','zephyr'];
+function randBelow(max){
+  if(max<=0)throw new Error('max must be > 0');
+  const buf=new Uint32Array(1);
+  const limit=Math.floor(0x100000000/max)*max;
+  let x;
+  do{
+    crypto.getRandomValues(buf);
+    x=buf[0];
+  }while(x>=limit);
+  return x%max;
+}
+function generateStrongPassphrase(){
+  const words=[];
+  for(let i=0;i<6;i++)words.push(PASSPHRASE_WORDS[randBelow(PASSPHRASE_WORDS.length)]);
+  const suffix=(randBelow(90)+10).toString()+['!','@','#','$','%','&'][randBelow(6)];
+  return words.join('-')+'-'+suffix;
+}
+function fillGeneratedPassphrase(){const pass=generateStrongPassphrase();const passEl=document.getElementById('passF');const confirmEl=document.getElementById('passConfirm');if(passEl)passEl.value=pass;if(confirmEl)confirmEl.value=extractMasterPassphrase(pass);try{if(navigator.clipboard)navigator.clipboard.writeText(pass)}catch(e){}updBtn();const status=document.getElementById('status');if(status){status.textContent='Strong passphrase generated and copied if clipboard was allowed.';status.className='stat ok';}}
+function getAIKey(){return (aiSessionKey||'').trim()}
+function initAIKey(){let seeded='';try{seeded=(window.__8Z_GEMINI_API_KEY||'').trim()}catch(e){}try{aiSessionKey=(sessionStorage.getItem(AI_STORAGE_KEY)||'').trim()||seeded;if(aiSessionKey)sessionStorage.setItem(AI_STORAGE_KEY,aiSessionKey)}catch(e){aiSessionKey=seeded}}
+function refreshAIKeyUI(message='',kind=''){const stat=document.getElementById('aiKeyStat');const inp=document.getElementById('aiKeyInp');const modalInp=document.getElementById('apiModalInp');const modalStat=document.getElementById('apiModalStat');const key=getAIKey();if(inp&&document.activeElement!==inp)inp.value=key;if(modalInp&&document.activeElement!==modalInp)modalInp.value=key;const ready=!!key;const msg=message||(ready?'AI Advisor ready for this browser session.':'AI Advisor disabled — no API key set.');if(stat){stat.className='ai-key-stat '+(kind||(ready?'ready':'off'));stat.textContent=msg}if(modalStat){modalStat.className='stat '+(ready?'ok':'');modalStat.textContent=ready?'Session key loaded.':msg}} 
+function setAIKeyFromUI(){const inp=document.getElementById('aiKeyInp');const key=(inp?inp.value:'').trim();aiSessionKey=key;try{if(key)sessionStorage.setItem(AI_STORAGE_KEY,key);else sessionStorage.removeItem(AI_STORAGE_KEY)}catch(e){}refreshAIKeyUI(key?'AI Advisor ready for this browser session.':'AI Advisor disabled — no API key set.', key?'ready':'off')}
+function clearAIKeyFromUI(){aiSessionKey='';try{sessionStorage.removeItem(AI_STORAGE_KEY)}catch(e){}refreshAIKeyUI('AI Advisor disabled — session key cleared.','off')}
+function openApiModal(){refreshAIKeyUI();document.getElementById('apiModalBg').classList.add('show');const inp=document.getElementById('apiModalInp');if(inp){setTimeout(()=>inp.focus(),30)}}
+function closeApiModal(){const el=document.getElementById('apiModalBg');if(el)el.classList.remove('show')}
+function saveApiKeyFromModal(){const inp=document.getElementById('apiModalInp');aiSessionKey=(inp?inp.value:'').trim();try{if(aiSessionKey)sessionStorage.setItem(AI_STORAGE_KEY,aiSessionKey);else sessionStorage.removeItem(AI_STORAGE_KEY)}catch(e){}refreshAIKeyUI(aiSessionKey?'AI Advisor ready for this browser session.':'AI Advisor disabled — no API key set.',aiSessionKey?'ready':'off');const stat=document.getElementById('apiModalStat');if(stat){stat.textContent=aiSessionKey?'Saved for this session.':'Cleared.';stat.className='stat ok'}setTimeout(closeApiModal,500)}
+function clearApiKeyFromModal(){aiSessionKey='';try{sessionStorage.removeItem(AI_STORAGE_KEY)}catch(e){}refreshAIKeyUI('AI Advisor disabled — session key cleared.','off');const stat=document.getElementById('apiModalStat');if(stat){stat.textContent='Session key cleared.';stat.className='stat ok'}setTimeout(closeApiModal,500)}
+function downloadBlob(blob,name){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=name||'download';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function getMimeType(name){const n=(name||'').toLowerCase();if(n.endsWith('.html')||n.endsWith('.htm'))return 'text/html';if(n.endsWith('.js'))return 'application/javascript';if(n.endsWith('.css'))return 'text/css';if(n.endsWith('.json'))return 'application/json';if(n.endsWith('.txt')||n.endsWith('.md'))return 'text/plain';if(n.endsWith('.svg'))return 'image/svg+xml';return 'application/octet-stream';}
+function buildTargetUrl(destUrl,hf){const raw=(destUrl||'').trim();if(!raw)throw new Error('Destination URL is empty');const full=raw.includes('://')?raw:'https://'+raw;const parsed=new URL(full);const looksLikeFile=/\/[^/]+\.[a-z0-9]+$/i.test(parsed.pathname);return looksLikeFile?parsed.href:new URL(hf, parsed.href.endsWith('/')?parsed.href:(parsed.href+'/')).href;}
+function isVaultFile(name){return /\.8zv$/i.test(name||'')}
+function isSupportedSourceFile(name){return /\.(html?|js|css|json|zip)$/i.test(name||'')}
+
+function snapshotShieldSettings(){
+  const next={...shieldSettings};
+  const dest=document.getElementById('destUrl'); if(dest)next.destUrl=dest.value;
+  const chk=document.getElementById('chkEndpoint'); if(chk)next.chkEndpoint=!!chk.checked;
+  const cust=document.getElementById('custId'); if(cust)next.custId=cust.value;
+  const pass=document.getElementById('passF'); if(pass)next.passF=pass.value;
+  const confirm=document.getElementById('passConfirm'); if(confirm)next.passConfirm=confirm.value;
+  shieldSettings=next;
+  return shieldSettings;
+}
+
+function applyShieldSettings(){
+  const st=shieldSettings||DEFAULT_SHIELD_SETTINGS;
+  const dest=document.getElementById('destUrl'); if(dest)dest.value=st.destUrl||'';
+  const chk=document.getElementById('chkEndpoint'); if(chk)chk.checked=(typeof st.chkEndpoint==='boolean'?st.chkEndpoint:DEFAULT_SHIELD_SETTINGS.chkEndpoint);
+  const cust=document.getElementById('custId'); if(cust)cust.value=st.custId||'';
+  const pass=document.getElementById('passF'); if(pass)pass.value=st.passF||'';
+  const confirm=document.getElementById('passConfirm'); if(confirm)confirm.value=st.passConfirm||'';
+}
+
+function resetShieldSettings(){
+  shieldSettings={...DEFAULT_SHIELD_SETTINGS};
+  applyShieldSettings();
+  updBtn();
+  const status=document.getElementById('status');
+  if(status){
+    status.textContent='Settings cleared. Loaded files kept.';
+    status.className='stat ok';
+  }
+}
+
+async function loadSourceFiles(files){
+  snapshotShieldSettings();
+  const out={};
+  for(const f of files){
+    const name=f.name||'file';
+    const lower=name.toLowerCase();
+    if(lower.endsWith('.zip')){
+      const zipped=await readZip(await f.arrayBuffer());
+      Object.assign(out,zipped);
+    }else{
+      out[name]=await f.text();
+    }
+  }
+  loadedFiles=out;
+  vault8zv=null;
+  mode='shield';
+  setDropOk2(Object.keys(out).length+' file'+(Object.keys(out).length===1?'':'s')+' loaded');
+  uShowShield();
+}
+
+async function loadVaultFiles(files){
+  const arr=Array.from(files||[]);
+  if(!arr.length)return;
+  const added=[];
+  for(const f of arr){
+    const buf=await f.arrayBuffer();
+    const entry={name:f.name||'bundle.8zv',buffer:buf.slice(0),decrypted:null};
+    library.push(entry);
+    added.push(entry);
+  }
+  mode='decrypt';
+  renderShelf();
+  setDropOk2(arr.length+' protected file'+(arr.length===1?'':'s')+' loaded');
+  if(added.length===1){
+    singlePayloadMode=null;
+    vault8zv=added[0].buffer.slice(0);
+    renderDecryptUI();
+    document.getElementById('decryptPanel').className='panel show';
+  }else{
+    vault8zv=null;
+    hideAll();
+  }
+}
+
+async function detectSingleEncryptedHtml(file){
+  if(!file)return false;
+  const name=(file.name||'').toLowerCase();
+  if(!(name.endsWith('.html')||name.endsWith('.htm')))return false;
+  const text=await file.text();
+  const b64Match=text.match(/<div id="_8zD" style="display:none">([\s\S]*?)<\/div>/i);
+  const isMasterTool=text.includes('const MAGIC=new Uint8Array([0x38,0x5A,0x56,0x31])');
+  if(!b64Match||!b64Match[1]||isMasterTool)return false;
+  loadedFiles={};
+  mode='decrypt';
+  vault8zv=null;
+  singlePayloadMode={name:file.name||'protected.html',b64:b64Match[1]};
+  setDropOk2((file.name||'protected.html')+' loaded');
+  renderDecryptUI();
+  document.getElementById('decryptPanel').className='panel show';
+  return true;
+}
+
+async function handleDroppedFiles(fileList){
+  const files=Array.from(fileList||[]);
+  if(!files.length)return;
+  const all8zv=files.every(f=>isVaultFile(f.name||''));
+  const any8zv=files.some(f=>isVaultFile(f.name||''));
+  if(any8zv && !all8zv)throw new Error('Do not mix source files and .8zv files in one drop.');
+  const unsupported=files.filter(f=>!isVaultFile(f.name||'')&&!isSupportedSourceFile(f.name||''));
+  if(unsupported.length)throw new Error('Unsupported file type: '+unsupported.map(f=>f.name||'unnamed').join(', ')+'. Allowed: .html .htm .js .css .json .zip .8zv');
+  if(all8zv){
+    await loadVaultFiles(files);
+    return;
+  }
+  if(files.length===1 && await detectSingleEncryptedHtml(files[0])){
+    return;
+  }
+  await loadSourceFiles(files);
+}
+
+
+// ═══════════════ DROP ZONE ═══════════════
+document.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation()});
+document.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation()});
+if(dz&&fileIn){
+  dz.addEventListener('click',()=>fileIn.click());
+  dz.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileIn.click();}});
+  fileIn.addEventListener('change',e=>handleDroppedFiles(e.target.files).catch(err=>alert('Load failed: '+err.message)).finally(()=>{fileIn.value='';}));
+  dz.addEventListener('dragenter',()=>dz.classList.add('over'));
+  dz.addEventListener('dragleave',e=>{if(e.target===dz)dz.classList.remove('over');});
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');const r=dz.getBoundingClientRect();dz.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');dz.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+  dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');handleDroppedFiles(e.dataTransfer.files).catch(err=>alert('Load failed: '+err.message));});
+  dz.addEventListener('mousemove',e=>{const r=dz.getBoundingClientRect();dz.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');dz.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+}
+
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target===document.getElementById('modalBg'))document.getElementById('modalBg').classList.remove('show')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.getElementById('viewer').classList.remove('show');document.getElementById('modalBg').classList.remove('show');closeApiModal();}});
+
+function renderFindings(){
+  const el=document.getElementById('fList');
+  if(!el)return;
+  el.innerHTML='';
+  findings.forEach(f=>{
+    const d=document.createElement('div');
+    d.className='fd r-'+f.risk+(f.selected?' sel':'');
+    d.onclick=()=>{
+      f.selected=!f.selected;
+      renderFindings();
+      updBtn();
+    };
+    d.innerHTML=
+      '<div class="fd-top">' +
+        '<span class="badge '+(f.risk==='critical'?'crit':f.risk==='high'?'high':f.risk==='medium'?'med':'low')+'">'+esc(f.risk)+'</span>' +
+        '<span class="fd-type">'+esc(f.type)+'</span>' +
+        '<div class="fd-chk">'+(f.selected?'✓':'')+'</div>' +
+      '</div>' +
+      '<div class="fd-desc">'+esc(f.desc)+'</div>' +
+      '<div class="fd-snip">'+esc(f.snip)+'</div>' +
+      '<div class="fd-file">'+esc(f.file)+':'+f.line+'</div>';
+    el.appendChild(d);
+  });
+  updBtn();
+}
+function acceptAll(){findings.forEach(f=>f.selected=true);renderFindings()}
+
+// --- UPDATED VALIDATION ENGINE (EMAIL ENFORCEMENT) ---
+function updBtn(){
+  const btn=document.getElementById('actBtn');
+  if(!btn)return;
+  const passEl=document.getElementById('passF');
+  const confirmEl=document.getElementById('passConfirm');
+  const emailInp=document.getElementById('custId');
+  const passMeta=document.getElementById('passMeta');
+  const passStrength=document.getElementById('passStrength');
+  const passConfirmStat=document.getElementById('passConfirmStat');
+  const emailRx=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const master=extractMasterPassphrase(passEl?passEl.value:'');
+  const aliases=Math.max(0,extractPassphrases(passEl?passEl.value:'').length-1);
+  const confirmValue=confirmEl?confirmEl.value:'';
+  const confirmOk=!confirmEl || !master || confirmValue===master;
+  const isEmailValid=!!(emailInp && emailRx.test(emailInp.value.trim()));
+  const isPassValid=master.length>0;
+  btn.disabled=!(isEmailValid && isPassValid && confirmOk);
+  const passEstimate=document.getElementById('passEstimate');
+  if(passMeta)passMeta.textContent=aliases>0?('Master + '+aliases+' alias'+(aliases===1?'':'es')):'Master only';
+  if(passStrength){
+    const s=master?evaluatePassStrength(master):{label:'—',cls:''};
+    passStrength.textContent='Strength: '+s.label;
+    passStrength.className='pass-strength '+(s.cls||'');
+  }
+  if(passEstimate)passEstimate.textContent=estimatePassResistance(master);
+  if(passConfirmStat){
+    if(!master && !confirmValue){passConfirmStat.textContent='Confirm the master passphrase. Aliases after | do not need separate confirmation.';passConfirmStat.className='pass-confirm';}
+    else if(confirmOk){passConfirmStat.textContent='Master confirmation matches.';passConfirmStat.className='pass-confirm ok';}
+    else{passConfirmStat.textContent='Master confirmation does not match.';passConfirmStat.className='pass-confirm err';}
+  }
+}
+
+
+// ═══════════════ SHIELD + BUNDLE (with forensic watermarking & geofence) ═══════════════
+async function doShield(){
+  const custIdInput=(document.getElementById('custId').value||'').trim();
+  const destUrl=(document.getElementById('destUrl')?document.getElementById('destUrl').value:'').trim();
+  const chkEndpoint=document.getElementById('chkEndpoint');
+  const useEndpoint=chkEndpoint && chkEndpoint.checked && destUrl;
+  let vaultDomain='';
+
+  const btn=document.getElementById('actBtn'),prog=document.getElementById('prog'),stat=document.getElementById('status');
+  btn.disabled=true;btn.classList.add('working');btn.childNodes[0].textContent='Shielding... ';prog.style.width='0%';
+  document.getElementById('outCard').classList.remove('show');
+
+  if(useEndpoint){
+    try{vaultDomain=new URL(destUrl.includes('://')?destUrl:'https://'+destUrl).hostname;}
+    catch(e){vaultDomain=destUrl.split('/')[0];}
+    if(vaultDomain){
+      stat.textContent='Verifying destination domain...';
+      stat.className='stat wrk';
+      try{
+        const dRes=await fetch('https://dns.google/resolve?name='+encodeURIComponent(vaultDomain));
+        const dJson=await dRes.json();
+        if(dJson.Status !== 0){
+          stat.textContent='Destination domain does not resolve. Check the URL.';
+          stat.className='stat err';
+          btn.disabled=false;btn.classList.remove('working');btn.childNodes[0].textContent='Shield & Bundle ';
+          return;
+        }
+      }catch(e){console.warn('DNS check skipped:', e);}
+    }
+  }
+
+  const passInput=document.getElementById('passF')?document.getElementById('passF').value:'';
+  const masterConfirm=document.getElementById('passConfirm')?document.getElementById('passConfirm').value:'';
+  const rawKeys=extractPassphrases(passInput);
+  if(!rawKeys.length){
+    stat.textContent='Enter a master passphrase.';
+    stat.className='stat err';
+    btn.disabled=false;btn.classList.remove('working');btn.childNodes[0].textContent='Shield & Bundle ';
+    return;
+  }
+  const masterPassphrase=rawKeys[0];
+  if(masterConfirm!==masterPassphrase){
+    stat.textContent='Master passphrase confirmation does not match.';
+    stat.className='stat err';
+    btn.disabled=false;btn.classList.remove('working');btn.childNodes[0].textContent='Shield & Bundle ';
+    return;
+  }
+
+  let keyVaultMap=null;
+  if(rawKeys.length>1){
+    keyVaultMap={};
+    stat.textContent='Generating alias vault...';
+    stat.className='stat wrk';
+    for(const key of rawKeys){
+      const keyLower=key.toLowerCase();
+      const userHash=bytesToHex(await sha(keyLower));
+      const encryptedMaster=await encryptSection(masterPassphrase,keyLower);
+      keyVaultMap[userHash]=encryptedMaster;
+    }
+  }
+
+  const payloadPassphrase=useEndpoint?(masterPassphrase+"||"+vaultDomain):masterPassphrase;
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+  const outputFiles={},allNames=Object.keys(loadedFiles);
+  const htmlFiles=allNames.filter(n=>n.endsWith('.html')||n.endsWith('.htm'));
+  const jsFiles=allNames.filter(n=>n.endsWith('.js'));
+  const otherFiles=allNames.filter(n=>!n.endsWith('.html')&&!n.endsWith('.htm')&&!n.endsWith('.js'));
+  let shieldCount=0,traceCount=0;
+
+  const manifest={traceVersion:TRACE_VERSION,assetId:htmlFiles[0]||'bundle',assetHash:null,createdAt:new Date().toISOString(),channelWeights:CHANNEL_WEIGHTS,customers:[]};
+  otherFiles.forEach(n=>{outputFiles[n]=loadedFiles[n]});
+  const allContent=allNames.map(n=>loadedFiles[n]).join('');
+  manifest.assetHash='sha256:'+bytesToHex(await sha(allContent));
+
+  let consumedWorkers=new Set();
+  for(const jsFile of jsFiles){
+    if(loadedFiles[jsFile]){
+      loadedFiles[jsFile]=loadedFiles[jsFile].replace(/new\s+Worker\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,(match,wName)=>{
+        const wFile=Object.keys(loadedFiles).find(k=>k.endsWith(wName));
+        if(wFile&&loadedFiles[wFile]){
+          consumedWorkers.add(wFile);
+          const wCode=loadedFiles[wFile];
+          const base64Code=btoa(unescape(encodeURIComponent(wCode)));
+          const blobStr=`URL.createObjectURL(new Blob([new Uint8Array(atob('${base64Code}').split('').map(c=>c.charCodeAt(0)))], {type:'application/javascript'}))`;
+          return `new Worker(${blobStr})`;
+        }
+        return match;
+      });
+    }
+  }
+
+  for(let hi=0;hi<htmlFiles.length;hi++){
+    const htmlFile=htmlFiles[hi];let html=loadedFiles[htmlFile];
+    stat.textContent='Inlining scripts into '+htmlFile+'...';
+    stat.className='stat wrk';
+    prog.style.width=(hi/Math.max(1,htmlFiles.length)*20)+'%';
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    for(const jsFile of jsFiles){
+      if(loadedFiles[jsFile]){
+        const closeTag='<'+'/script>';
+        const escaped=jsFile.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        const pat=new RegExp('<script[^>]*src=["\'](?:\\.\\.?/)*'+escaped+'["\'][^>]*>\\s*'+closeTag,'gi');
+        if(pat.test(html))html=html.replace(new RegExp(pat.source,'gi'),'<script>\n'+loadedFiles[jsFile]+'\n'+closeTag);
+      }
+    }
+
+    stat.textContent='Watermarking '+htmlFile+'...';
+    prog.style.width=(20+hi/Math.max(1,htmlFiles.length)*20)+'%';
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const customerId=custIdInput;
+    const customerSeed=await sha(cat(await sha(masterPassphrase),new TextEncoder().encode(TRACE_VERSION+'|'+manifest.assetId+'|'+customerId)));
+    try{
+      const traced=await fingerprint(html,{traceVersion:TRACE_VERSION,assetId:manifest.assetId,customerId,customerSeed,baseTraceUrl:'https://t.8z.pub/r',enableVisibleStamp:false,maxSynonymSlots:12,zwsRepeats:3});
+      html=traced.html;manifest.customers.push(traced.manifestEntry);traceCount++;
+    }catch(e){console.warn('Trace skipped for '+htmlFile+':',e)}
+
+    stat.textContent='Encrypting '+htmlFile+' ('+KDF_PROFILE+')...';
+    prog.style.width=(40+hi/Math.max(1,htmlFiles.length)*40)+'%';
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    try{
+      const encBlob=await encryptSection(html,payloadPassphrase);
+      outputFiles[htmlFile]=buildDecoderShell(encBlob,htmlFile,useEndpoint,keyVaultMap,useEndpoint?vaultDomain:'');
+      shieldCount++;
+    }catch(e){
+      stat.textContent='Encryption error: '+e.message;
+      stat.className='stat err';
+      btn.disabled=false;btn.classList.remove('working');btn.childNodes[0].textContent='Shield & Bundle ';
+      return;
+    }
+  }
+
+  for(const jsFile of jsFiles){
+    let wasInlined=consumedWorkers.has(jsFile);
+    for(const htmlFile of htmlFiles){
+      const escaped=jsFile.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      if(new RegExp('<script[^>]*src=["\'](?:\\.\\.?/)*'+escaped+'["\']','i').test(loadedFiles[htmlFile])){wasInlined=true;break}
+    }
+    if(!wasInlined)outputFiles[jsFile]=loadedFiles[jsFile]
+  }
+
+  stat.textContent='Bundling into .8zv...';
+  prog.style.width='85%';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{
+    const bundle=await encryptBundle(outputFiles,masterPassphrase);
+    prog.style.width='100%';
+    traceManifest=manifest;
+    stat.textContent='Done. '+shieldCount+' page(s) shielded, '+traceCount+' watermarked. '+KDF_COMPAT_NOTE;
+    stat.className='stat ok';
+    document.getElementById('oFiles').textContent=Object.keys(outputFiles).length;
+    document.getElementById('oShielded').textContent=shieldCount;
+    document.getElementById('oTraced').textContent=traceCount;
+    document.getElementById('oSize').textContent=fmtB(bundle.byteLength);
+    document.getElementById('outCard').classList.add('show');
+
+    document.getElementById('dlBtn').onclick=()=>downloadBlob(new Blob([bundle],{type:'application/octet-stream'}),(htmlFiles[0]||'bundle').replace(/\.html?$/i,'')+'.8zv');
+    if(traceCount>0){
+      const dlM=document.getElementById('dlManifest');
+      dlM.style.display='';
+      dlM.onclick=()=>downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),(htmlFiles[0]||'bundle').replace(/\.html?$/i,'')+'.trace.json');
+    }
+    if(shieldCount>0){
+      const dlI=document.getElementById('dlIndiv');
+      if(dlI){dlI.style.display='';dlI.onclick=()=>downloadAllZip(outputFiles,(htmlFiles[0]||'bundle').replace(/\.html?$/i,'')+'_payloads.zip')}
+    }
+    const dlR=document.getElementById('dlRedirects');
+    if(shieldCount>0 && destUrl && dlR){
+      dlR.style.display='';
+      dlR.onclick=async ()=>{
+        const rbtn=document.getElementById('dlRedirects');
+        const origTxt=rbtn.textContent;
+        rbtn.textContent='Generating...';
+        rbtn.disabled=true;
+        try{
+          const redirects={};
+          for(const hf of htmlFiles){
+            const finalTarget=buildTargetUrl(destUrl,hf);
+            const rawRedirect=generateScrambledRedirect(finalTarget,useEndpoint?vaultDomain:'');
+            const encBlob=await encryptSection(rawRedirect,masterPassphrase);
+            redirects[hf]=buildDecoderShell(encBlob,hf.replace(/\.html?$/i,'')+' (Routing)',false,keyVaultMap,'');
+          }
+          const zipBase=(htmlFiles[0]||'bundle').replace(/\.html?$/i,'');
+          downloadAllZip(redirects,zipBase+'_redirects.zip');
+        }catch(e){
+          alert('Redirect generation failed: '+e.message);
+        }finally{
+          rbtn.textContent=origTxt;
+          rbtn.disabled=false;
+        }
+      };
+    }
+
+    const bundleCopy=new Uint8Array(bundle);
+    library.push({name:(htmlFiles[0]||'bundle').replace(/\.html?$/i,'')+'.8zv',buffer:bundleCopy.buffer.slice(0),decrypted:null});
+  }catch(e){
+    stat.textContent='Bundle error: '+e.message;
+    stat.className='stat err';
+  }
+  btn.classList.remove('working');btn.classList.add('done');btn.childNodes[0].textContent='\u2713 Done ';
+  setTimeout(()=>{btn.classList.remove('done');btn.childNodes[0].textContent='Shield & Bundle ';btn.disabled=false},3000)
+}
+
+
+// ═══════════════ DECODER SHELL (WITH HASH HANDOFF & STEALTH MODE) ═══════════════
+function buildDecoderShell(encBase64, title, lockDomain = false, keyVault = null, boundDomain = ''){
+  const rt=`'use strict';const M64=(1n<<64n)-1n;class X{constructor(s){let v=s&M64;this.state=v===0n?0x9E3779B97F4A7C15n:v}n(){let x=this.state;x=(x^((x>>12n)&M64))&M64;x=(x^((x<<25n)&M64))&M64;x=(x^((x>>27n)&M64))&M64;this.state=x;return(x*2685821657736338717n)&M64}}function u2b(v){const b=new Uint8Array(8);for(let i=7;i>=0;i--){b[i]=Number(v&0xFFn);v>>=8n}return b}function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}function b2h(b){return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('')}async function h(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}async function dk(pp,salt){const ph=await h(pp),sm=await h(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));const r=new X(b2u(sm.slice(0,8)));for(let i=0;i<1024;i++)r.n();const sh=await h(u2b(r.state)),c=cat(ph,sh);const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt,iterations:10000000,hash:'SHA-256'},km,256))}async function dec(b64,pp){const bin=atob(b64);const buf=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);const salt=buf.slice(0,32),iv=buf.slice(32,44),ct=buf.slice(44);const kb=await dk(pp,salt);const k=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);const comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,tagLength:128},k,ct));const ds=new DecompressionStream('gzip'),w=ds.writable.getWriter(),rd=ds.readable.getReader();w.write(comp);w.close();const ch=[];while(true){const{done,value}=await rd.read();if(done)break;ch.push(value)}let t=0;for(const c of ch)t+=c.length;const res=new Uint8Array(t);let o=0;for(const c of ch){res.set(c,o);o+=c.length}return new TextDecoder().decode(res)}const _8zVault=${keyVault?JSON.stringify(keyVault):'null'};const _8zBoundDomain=${JSON.stringify(boundDomain||'')};document.getElementById('_8zForm').addEventListener('submit',async function(e){e.preventDefault();const pp=document.getElementById('_8zP').value;if(!pp)return;const btn=document.getElementById('_8zB'),st=document.getElementById('_8zS');btn.disabled=true;st.textContent='Deriving key...';st.style.color='#ffd740';await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));try{const rawInput=pp.trim();const loweredInput=rawInput.toLowerCase();const isLocal=(window.location.protocol==='file:');const currentHost=(window.location.hostname||'').toLowerCase();const expectedHost=(_8zBoundDomain||'').toLowerCase();let actualKey=rawInput;if(_8zVault){let vaultKey=loweredInput;let encMaster=null;if(rawInput.includes('||')){const baseAlias=rawInput.split('||')[0].trim().toLowerCase();if(baseAlias){vaultKey=baseAlias;encMaster=_8zVault[b2h(await h(baseAlias))]||null;}}if(!encMaster){encMaster=_8zVault[b2h(await h(vaultKey))]||null;}if(!encMaster)throw new Error('Unauthorized access');actualKey=await dec(encMaster,vaultKey);}let finalKey=actualKey;${lockDomain ? `if(expectedHost){if(rawInput.includes('||')){const inputParts=rawInput.split('||');const suffix=((inputParts[1]||'').trim()).toLowerCase();if(suffix!==expectedHost)throw new Error('Domain lock mismatch');if(!isLocal&&currentHost!==expectedHost)throw new Error('Domain lock mismatch');finalKey=(actualKey.includes('||')?actualKey.split('||')[0]:actualKey)+'||'+expectedHost;}else{if(isLocal)throw new Error('Local unlock requires owner override');if(currentHost!==expectedHost)throw new Error('Domain lock mismatch');finalKey=(actualKey.includes('||')?actualKey.split('||')[0]:actualKey)+'||'+expectedHost;}}` : ''}const html=await dec(document.getElementById('_8zD').textContent,finalKey);try{sessionStorage.setItem('_8z_pp',pp)}catch(err){}document.body.innerHTML='<iframe id="_8zF" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;margin:0;padding:0;z-index:999999;" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>';const f=document.getElementById('_8zF');f.contentWindow.document.open();f.contentWindow.document.write(html);f.contentWindow.document.close();}catch(ex){st.textContent='';btn.disabled=false;const v=document.getElementById('_8zV');v.style.animation='none';v.offsetHeight;v.style.animation='sh .4s ease';st.textContent='Wrong passphrase or unauthorized alias';st.style.color='#ef4444';document.getElementById('_8zP').value='';document.getElementById('_8zP').focus()}});if(window.location.hash){const passedKey=decodeURIComponent(window.location.hash.substring(1));history.replaceState(null,"",window.location.pathname+window.location.search);document.getElementById('_8zP').value=passedKey;setTimeout(()=>document.getElementById('_8zB').click(),50)}else{document.getElementById('_8zP').focus()}`;
+  return'<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>'+esc(title.replace(/\.html?$/i,''))+'</title>\n<style>\n:root{--bg:#07080b;--bg2:#11151d;--border:#2b3240;--text:#e8eaf0;--muted:#7b869d;--orange:#ff8f1f;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--body:Inter,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif}*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}body{background:radial-gradient(circle at 20% 18%,rgba(160,18,40,.28),transparent 32%),radial-gradient(circle at 80% 70%,rgba(255,124,0,.14),transparent 28%),linear-gradient(180deg,#090b10 0%,#06070a 100%);color:var(--text);font-family:var(--body);display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;overflow:hidden}body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(80px);opacity:.34;pointer-events:none}body::before{width:42vw;height:42vw;left:-8vw;top:-12vh;background:radial-gradient(circle,rgba(255,105,84,.4),rgba(145,12,40,.18) 48%,transparent 72%);animation:flA 18s ease-in-out infinite}body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gradient(circle,rgba(255,139,26,.18),rgba(120,12,34,.2) 44%,transparent 72%);animation:flB 24s ease-in-out infinite}@keyframes flA{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(5vw,4vh,0)}}@keyframes flB{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-4vw,-6vh,0)}}#_8zV{width:390px;max-width:90vw;text-align:center;animation:fi .6s ease;padding:28px 26px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(15,18,24,.78);backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.35)}@keyframes fi{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes sh{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}._logo{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:var(--orange);text-transform:uppercase;margin-bottom:8px;opacity:.9}._sub{font-size:12px;color:var(--muted);margin-bottom:28px}form{width:100%}input{width:100%;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:12px}input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,143,31,.10)}input::placeholder{color:var(--muted)}button{width:100%;padding:14px;background:transparent;border:1px solid var(--orange);border-radius:10px;color:var(--orange);font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}button:hover{background:rgba(255,143,31,.08)}button:disabled{opacity:.3;cursor:wait}#_8zS{font-family:var(--mono);font-size:12px;margin-top:16px;min-height:18px}._ft{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);opacity:.48}\n</style>\n</head>\n<body>\n<div id="_8zV">\n<div class="_logo">8Z&middot;Shield</div>\n<div class="_sub">Protected Content • v1.0</div>\n<form id="_8zForm" action="#" method="post" autocomplete="off">\n<input id="_8zU" type="text" name="8z_u" placeholder="Username" autocomplete="off" value="8z" style="display:none">\n<input id="_8zP" type="password" name="8z_p" placeholder="Passphrase" autocomplete="new-password">\n<button type="submit" id="_8zB">Unlock</button>\n</form>\n<div id="_8zS"></div>\n</div>\n<div id="_8zD" style="display:none">'+encBase64+'</div>\n<div class="_ft">8Z&middot;Shield v1.0 &bull; AIM&sup3; Institute</div>\n<script>'+rt+'<'+'/script>\n</body>\n</html>'}
+
+
+// ═══════════════ DECRYPT UI ═══════════════
+function renderDecryptUI(){
+  const p=document.getElementById('decryptPanel');
+  p.innerHTML=
+    '<div class="fg"><label class="lbl">Passphrase</label><input class="inp" id="decPass" type="password" placeholder="Enter passphrase" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')doDecrypt()"></div>'+
+    '<div class="stat body-note" style="margin-top:-4px;margin-bottom:10px">Single protected HTML is auto-detected here. For many .8zv files, use the Library below and unlock one book at a time.</div>'+
+    '<button class="btn" id="decBtn" onclick="doDecrypt()">Unlock &amp; Extract</button>'+
+    '<div class="stat" id="decStatus"></div>'+
+    '<div class="out" id="decOutCard"><div class="out-title">✓ Bundle Decrypted</div><div class="dec-list" id="decFiles"></div><button class="dl gold" id="dlAllBtn" style="margin-top:10px">Download All as .zip</button></div>';
+}
+
+let decryptedFiles=null;
+async function doDecrypt(){
+  const passEl=document.getElementById('decPass');
+  const statusEl=document.getElementById('decStatus');
+  const btn=document.getElementById('decBtn');
+  const outCard=document.getElementById('decOutCard');
+  if(!passEl||!statusEl||!btn||!outCard)return;
+  const pp=passEl.value;
+  if(!pp)return;
+  btn.disabled=true;btn.classList.add('working');btn.textContent='Decrypting...';
+  statusEl.textContent='Deriving key...';statusEl.className='stat wrk';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{
+    if(singlePayloadMode){
+      const rawText=await decryptSinglePayload(singlePayloadMode.b64,pp);
+      const outName=singlePayloadMode.name.replace(/\.html?$/i,'_raw.html');
+      decryptedFiles={ [outName]: rawText };
+    }else if(vault8zv){
+      decryptedFiles=await decryptBundle(vault8zv,pp);
+    }else if(library.length===1 && library[0] && library[0].buffer){
+      const only=library[0];
+      decryptedFiles=await decryptBundle(only.buffer.slice(0),pp);
+      only.decrypted=decryptedFiles;
+      renderShelf();
+    }else{
+      throw new Error('Drop a single protected file here, or unlock a specific book from the library.');
+    }
+    const names=Object.keys(decryptedFiles);
+    statusEl.textContent=names.length+' files extracted';
+    statusEl.className='stat ok';
+    outCard.classList.add('show');
+    const list=document.getElementById('decFiles');list.innerHTML='';
+    names.forEach(name=>{
+      const content=decryptedFiles[name];
+      const openBtn=/\.html?$/i.test(name)?'<button class="sv" onclick="openDecryptedHtml('+JSON.stringify(name)+')">Open</button>':'';
+      const d=document.createElement('div');
+      d.className='dec-row';
+      d.innerHTML='<span class="nm">'+esc(name)+'</span><span class="sz">'+fmtB(new TextEncoder().encode(content).length)+'</span><div style="display:flex;gap:6px">'+openBtn+'<button class="sv" onclick="saveFile('+JSON.stringify(name)+')">Save</button></div>';
+      list.appendChild(d);
+    });
+    document.getElementById('dlAllBtn').onclick=()=>downloadAllZip(decryptedFiles,'8z_extracted.zip');
+    if(names.length===1 && /\.html?$/i.test(names[0]))openDecryptedHtml(names[0]);
+  }catch(e){
+    statusEl.textContent='Wrong passphrase or corrupt file';
+    statusEl.className='stat err';
+    passEl.value='';passEl.focus();
+  }finally{
+    btn.classList.remove('working');btn.textContent='Unlock & Extract';btn.disabled=false;
+  }
+}
+
+function openDecryptedHtml(name){if(!decryptedFiles||!decryptedFiles[name])return;document.getElementById('viewerName').textContent=name;document.getElementById('viewerFrame').srcdoc=decryptedFiles[name];document.getElementById('viewer').classList.add('show')}
+function saveFile(name){
+  if(!decryptedFiles||!decryptedFiles[name])return;
+  downloadBlob(new Blob([decryptedFiles[name]],{type:getMimeType(name)}),name);
+}
+function downloadAllZip(files,zipName='8z_extracted.zip'){
+  const entries=Object.entries(files).map(([name,content])=>({name,data:new TextEncoder().encode(content)}));
+  const parts=[],cd=[];let offset=0;
+  for(const f of entries){
+    const nb=new TextEncoder().encode(f.name);
+    const lh=new Uint8Array(30+nb.length);const lv=new DataView(lh.buffer);
+    lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);
+    const crc=crc32(f.data);lv.setUint32(14,crc,true);lv.setUint32(18,f.data.length,true);lv.setUint32(22,f.data.length,true);lv.setUint16(26,nb.length,true);lh.set(nb,30);
+    parts.push(lh,f.data);
+    const ce=new Uint8Array(46+nb.length);const cv=new DataView(ce.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint32(16,crc,true);cv.setUint32(20,f.data.length,true);cv.setUint32(24,f.data.length,true);cv.setUint16(28,nb.length,true);cv.setUint32(42,offset,true);ce.set(nb,46);
+    cd.push(ce);
+    offset+=lh.length+f.data.length;
+  }
+  const cdStart=offset;let cdSize=0;for(const c of cd)cdSize+=c.length;
+  const end=new Uint8Array(22);const ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(8,entries.length,true);ev.setUint16(10,entries.length,true);ev.setUint32(12,cdSize,true);ev.setUint32(16,cdStart,true);
+  const zip=cat(...parts,...cd,end);
+  downloadBlob(new Blob([zip],{type:'application/zip'}),zipName);
+}
+function crc32(data){let c=0xFFFFFFFF;for(let i=0;i<data.length;i++){c^=data[i];for(let j=0;j<8;j++)c=(c>>>1)^(c&1?0xEDB88320:0)}return(c^0xFFFFFFFF)>>>0}
+
+// ═══════════════ AI ADVISOR ═══════════════
+async function genAISummary(){
+  const summary=findings.map(f=>`[${f.risk.toUpperCase()}] ${f.type} in ${f.file}:${f.line}`).join('\n');
+  const fileList=Object.keys(loadedFiles).map(n=>`${n} (${fmtB(loadedFiles[n].length)})`).join(', ');
+  const prompt=`You are 8Z Shield Security Advisor. Analyze these scan findings. 
+  STRICT RULES: 
+  1. If there are CRITICAL/HIGH findings, focus 100% on them. 
+  2. If there are ONLY 'Info' findings, say "No critical leaks found. Your proprietary algorithms are visible; use Shield to protect this IP." and STOP. 
+  3. NEVER explain what a PRNG or XorShift is unless specifically asked. 
+  4. Max 2-3 sentences total.
+  Files: ${fileList}\n\nFindings:\n${summary}`;
+  
+  try{
+    // YOUR PRIVATE PROXY
+    const res=await fetch('https://remarkable-sopapillas-d3e79a.netlify.app/.netlify/functions/gemini',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ prompt: prompt })
+    });
+    
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error?.message || 'Proxy error');
+    
+const t = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if(t){
+      const chat=document.getElementById('aiChat');
+      if(!chat)return;
+      chat.innerHTML+='<div class="ai-m s"><div class="role">8Z Advisor</div><p>'+parseMD(t)+'</p></div>';
+      chat.scrollTop=chat.scrollHeight;
+  }  } catch (e) {
+    console.error("Proxy connection failed:", e);
+  }
+}
+
+async function sendAI(){
+  const chat=document.getElementById('aiChat');
+  const inp=document.getElementById('aiInp');
+  if(!inp||!chat)return;
+const text=inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  chat.innerHTML+='<div class="ai-m u"><div class="role">You</div><p>'+parseMD(text)+'</p></div>';
+  chat.scrollTop=chat.scrollHeight;
+  
+  const fileCtx=Object.entries(loadedFiles).map(([n,c])=>`=== ${n} ===\n${c.substring(0,2000)}${c.length>2000?'\n[...truncated...]':''}`).join('\n\n');
+  const findCtx=findings.map(f=>`[${f.risk}] ${f.type}: ${f.snip} (${f.file}:${f.line})`).join('\n');
+const sys=`You are 8Z Shield Security Advisor. 
+  STRICT ROLE: You are a silent guardian. 
+  - If a user explains why a key is exposed (e.g., "Maps JS API requires it"), acknowledge the point, mention HTTP Referrer restrictions as the standard mitigation, and DO NOT argue further.
+  - Do NOT lecture on PRNGs or XorShift; treat them as valid IP to be hidden. 
+  - Only give warnings for CRITICAL leaks. 
+  - Be direct, cold, and professional. Never be repetitive.
+  \n\nFILES:\n${fileCtx}\n\nFINDINGS:\n${findCtx}`;
+  
+  // Combine context for the proxy
+  const fullPrompt = sys + "\n\nUser Question: " + text;
+  
+  chat.innerHTML+='<div class="ai-m s" id="aiLoad"><div class="role">8Z Advisor</div><p style="opacity:.5">Thinking through proxy...</p></div>';
+  
+  try {
+    // YOUR PRIVATE PROXY
+    const res = await fetch('https://remarkable-sopapillas-d3e79a.netlify.app/.netlify/functions/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: fullPrompt })
+    });
+
+    const d = await res.json();
+    if (!res.ok) throw new Error('Proxy error');
+
+const reply = d.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+    const ld = document.getElementById('aiLoad');
+    if (ld) ld.remove();
+
+    chat.innerHTML += '<div class="ai-m s"><div class="role">8Z Advisor</div><p>' + parseMD(reply) + '</p></div>';
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    const ld = document.getElementById('aiLoad');
+    if (ld) ld.remove();
+    chat.innerHTML += '<div class="ai-m s"><div class="role">Error</div><p>Could not reach your Netlify Proxy.</p></div>';
+    chat.scrollTop = chat.scrollHeight;
+  }
+}
+
+function resetDrop2(){dz.className='drop';document.getElementById('dropIco').textContent='\u{1F6E1}';document.getElementById('dropText').textContent='Drop anything here';document.getElementById('dropHint').textContent='.html .js .css .json .zip to protect \u00b7 .8zv or protected .html to read'}
+function setDropOk2(msg){dz.classList.add('loaded');document.getElementById('dropIco').textContent='\u2713';document.getElementById('dropText').textContent=msg;document.getElementById('dropHint').textContent=''}
+function hideAll(){document.getElementById('shieldPanel').className='panel';document.getElementById('tracePanel').className='panel';document.getElementById('decryptPanel').className='panel'}
+
+function goHome(){singlePayloadMode=null;uiView='home';document.getElementById('navHome').classList.add('active');document.getElementById('navTrace').classList.remove('active');if(dz)dz.style.display='';hideAll();renderShelf()}
+function goTrace(){singlePayloadMode=null;uiView='trace';document.getElementById('navTrace').classList.add('active');document.getElementById('navHome').classList.remove('active');if(dz)dz.style.display='none';hideAll();document.getElementById('tracePanel').className='panel show';renderTrace()}
+
+// ═══════════════ BOOKSHELF ═══════════════
+function renderShelf(){
+  const w=document.getElementById('shelfWrap');
+  if(!library.length){w.innerHTML='<div class="shelf-zero"><div class="shelf-zero-text">Your library is empty<br>Drop .8zv files to build your bookshelf<br>or drop source files to protect them</div></div>';return}
+  let h='<div class="shelf-hdr">Library \u2014 '+library.length+' book'+(library.length>1?'s':'')+'</div><div class="shelf">';
+  library.forEach((b,i)=>{const isOpen=!!b.decrypted;h+='<div class="book" onclick="openBook('+i+')"><div class="book-badge '+(isOpen?'open':'locked')+'"></div><div class="book-ico">'+(isOpen?'\u{1F4D6}':'\u{1F512}')+'</div><div class="book-name">'+esc(b.name.replace(/\.8zv$/i,''))+'</div><div class="book-meta">'+fmtB(b.buffer.byteLength)+'</div></div>'});
+  h+='</div>';w.innerHTML=h}
+
+function openBook(idx){
+  currentBookIdx=idx;const b=library[idx];
+  if(b.decrypted){showBookContent(idx);return}
+  document.getElementById('modalTitle').textContent=b.name;
+  document.getElementById('modalPass').value='';
+  document.getElementById('modalStat').textContent='';
+  document.getElementById('modalBtn').disabled=false;
+  document.getElementById('modalBtn').textContent='UNLOCK';
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(()=>document.getElementById('modalPass').focus(),100)}
+
+document.getElementById('modalPass').addEventListener('keydown',e=>{if(e.key==='Enter')doModalUnlock()});
+
+async function doModalUnlock(){
+  const pp=document.getElementById('modalPass').value.trim();if(!pp)return;
+  const btn=document.getElementById('modalBtn'),stat=document.getElementById('modalStat');
+  btn.disabled=true;btn.textContent='DERIVING KEY...';stat.textContent='10M PBKDF2 iterations';stat.className='stat wrk';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  try{const buf=library[currentBookIdx].buffer.slice(0);const bundle=await decryptBundle(buf,pp);library[currentBookIdx].decrypted=bundle;document.getElementById('modalBg').classList.remove('show');renderShelf();showBookContent(currentBookIdx)}
+  catch(e){stat.textContent='Wrong passphrase';stat.className='stat err';btn.disabled=false;btn.textContent='UNLOCK';document.getElementById('modalPass').value='';document.getElementById('modalPass').focus()}}
+
+function showBookContent(idx){
+  const b=library[idx];
+  if(!b.decrypted)return;
+  const keys=Object.keys(b.decrypted);
+  const htmlKeys=keys.filter(k=>/\.html?$/i.test(k));
+  if(htmlKeys.length===1 && keys.length===1){
+    document.getElementById('viewerName').textContent=b.name+' — '+htmlKeys[0];
+    document.getElementById('viewerFrame').srcdoc=b.decrypted[htmlKeys[0]];
+    document.getElementById('viewer').classList.add('show');
+    return;
+  }
+  hideAll();
+  const p=document.getElementById('decryptPanel');
+  p.className='panel show';
+  let h='<div class="out show"><div class="out-title">'+esc(b.name)+' — '+keys.length+' files</div><div class="dec-list">';
+  keys.forEach(k=>{
+    const openBtn=/\.html?$/i.test(k) ? '<button class="sv" onclick="openBookHtml('+idx+','+JSON.stringify(k)+')">Open</button>' : '';
+    h+='<div class="dec-row"><span class="nm">'+esc(k)+'</span><span class="sz">'+fmtB(new TextEncoder().encode(b.decrypted[k]).length)+'</span><div style="display:flex;gap:6px">'+openBtn+'<button class="sv" onclick="dlBookFile('+idx+','+JSON.stringify(k)+')">Save</button></div></div>';
+  });
+  h+='</div><button class="dl gold" style="margin-top:10px" onclick="downloadAllZip(library['+idx+'].decrypted,'+JSON.stringify((b.name||'bundle').replace(/\.8zv$/i,'')+'_contents.zip')+')">Download All as .zip</button></div>';
+  p.innerHTML=h;
+}
+function openBookHtml(idx,name){
+  const b=library[idx];
+  if(!b||!b.decrypted||!b.decrypted[name])return;
+  document.getElementById('viewerName').textContent=b.name+' — '+name;
+  document.getElementById('viewerFrame').srcdoc=b.decrypted[name];
+  document.getElementById('viewer').classList.add('show');
+}
+function dlBookFile(idx,name){
+  const c=library[idx].decrypted[name];
+  if(!c)return;
+  downloadBlob(new Blob([c],{type:getMimeType(name)}),name);
+}
+function closeViewer(){document.getElementById('viewer').classList.remove('show')}
+
+// ═══════════════ UNIFIED SHIELD UI ═══════════════
+function uShowShield(){
+  snapshotShieldSettings();
+  singlePayloadMode=null;
+  hideAll();
+  const p=document.getElementById('shieldPanel');
+  p.className='panel show';
+  findings=staticScan(loadedFiles);
+  const fns=Object.keys(loadedFiles);
+  const cnt={critical:0,high:0,medium:0,low:0};
+  findings.forEach(f=>cnt[f.risk]++);
+  let sumH='';
+  if(cnt.critical)sumH+='<span class="badge crit">'+cnt.critical+' Critical</span> ';
+  if(cnt.high)sumH+='<span class="badge high">'+cnt.high+' High</span> ';
+  if(cnt.medium)sumH+='<span class="badge med">'+cnt.medium+' Medium</span> ';
+  if(!findings.length)sumH='<span class="badge info">Clean</span>';
+  let chH='';
+  fns.forEach(n=>{chH+='<span class="chip">'+esc(n)+' <span class="dim">'+fmtB(loadedFiles[n].length)+'</span></span>'});
+  p.innerHTML=
+    '<div class="chips">'+chH+'</div>'+
+    '<div style="margin-bottom:12px">'+sumH+'</div>'+
+    (findings.length?'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="lbl" style="margin:0">'+findings.length+' Findings</span><button class="badge high" style="cursor:pointer;border:none" onclick="acceptAll()">Accept All</button></div><div class="findings" id="fList"></div>':'')+
+'<div class="ai">'+
+      '<div class="ai-hd" onclick="toggleAI()"><span>✨ AI Security Advisor</span><span id="aiArrow" style="transition:transform .2s;transform:rotate(180deg)">▼</span></div>'+
+      '<div class="ai-bd show" id="aiBody">'+
+        '<div class="ai-log" id="aiChat"><div class="ai-m s"><div class="role">8Z Advisor</div><p>Welcome to 8Z Shield Security. Ask me questions to help secure your files.</p></div></div>'+
+        '<div class="ai-row"><input class="ai-in" id="aiInp" placeholder="Ask about your code..." onkeydown="if(event.key===\'Enter\')sendAI()"><button class="ai-send" onclick="sendAI()">Ask</button></div>'+
+      '</div>'+
+    '</div>'+
+    '<hr class="divider">'+
+    '<div class="fg"><label class="lbl">Destination URL or Folder</label><input class="inp" id="destUrl" type="text" placeholder="e.g. https://your-domain.com/path/ or https://your-domain.com/zz.html"></div>'+
+    '<div class="fg" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;margin-top:-6px"><input type="checkbox" id="chkEndpoint" checked><label class="lbl" style="margin:0;color:var(--teal)">Enable advanced endpoint/domain handoff</label></div>'+
+    '<div class="fg"><label class="lbl">Customer Email</label><input class="inp" id="custId" type="text" name="8z_email_field_no_autofill" autocomplete="one-time-code" spellcheck="false" placeholder="Required for forensic watermarking" oninput="updBtn()"></div>'+
+    '<div class="fg"><label class="lbl">Passphrase(s)</label><input class="inp" id="passF" type="password" placeholder="master | alias1 | alias2" autocomplete="new-password" oninput="updBtn()"></div>'+
+    '<div class="pass-tools"><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="mini-btn" onclick="fillGeneratedPassphrase()">Generate Strong Passphrase</button><button type="button" class="mini-btn" onclick="resetShieldSettings()">Reset Settings</button></div><span class="pass-estimate" id="passEstimate">Rough resistance: —</span></div>'+
+    '<div class="pass-meta"><span id="passMeta">Master only</span><span class="pass-strength" id="passStrength">Strength: —</span></div>'+
+    '<div class="fg"><label class="lbl">Confirm Master Passphrase</label><input class="inp" id="passConfirm" type="password" placeholder="Confirm only the first passphrase" autocomplete="new-password" oninput="updBtn()"></div>'+
+    '<div class="pass-confirm" id="passConfirmStat">Confirm the master passphrase. Aliases after | do not need separate confirmation.</div>'+
+    '<div class="stat body-note" style="margin-top:-2px;margin-bottom:10px">First passphrase is the master. Extra passphrases are aliases stored in a key vault. KDF path stays PBKDF2-compatible in v3 bundles for safe backward decryptability. Save your passphrase separately from the bundle and trace manifest.</div>'+
+    '<button class="btn" id="actBtn" onclick="doShield()" disabled>Shield &amp; Bundle<div class="btn-prog" id="prog"></div></button><div class="stat" id="status"></div>'+
+    '<div class="out" id="outCard"><div class="out-title">✓ Bundle Ready</div><div class="out-grid"><div class="out-cell"><div class="n o" id="oFiles">—</div><div class="l">Files</div></div><div class="out-cell"><div class="n t" id="oShielded">—</div><div class="l">Shielded</div></div><div class="out-cell"><div class="n r" id="oTraced">—</div><div class="l">Traced</div></div><div class="out-cell"><div class="n g" id="oSize">—</div><div class="l">Bundle</div></div></div>'+
+    '<button class="dl" id="dlBtn">Download .8zv Bundle</button>'+
+    '<button class="dl gold" id="dlIndiv" style="display:none">Download Encrypted Payloads (.zip)</button>'+
+    '<button class="dl" id="dlRedirects" style="display:none; border-color:var(--blue); color:var(--blue); background:rgba(59,130,246,.10)">Download Encrypted Redirects (.zip)</button>'+
+    '<button class="dl alt" id="dlManifest" style="display:none">Download Trace Manifest</button></div>';
+  renderFindings();
+  applyShieldSettings();
+  refreshAIKeyUI();
+  updBtn();
+  if(findings.length)genAISummary();
+  renderShelf();
+}
+
+
+function toggleAI(){const b=document.getElementById('aiBody');if(!b)return;b.classList.toggle('show');const a=document.getElementById('aiArrow');if(a)a.style.transform=b.classList.contains('show')?'rotate(180deg)':''}
+
+// ═══════════════ TRACE UI (UNIFIED) ═══════════════
+function renderTrace(){
+  const p=document.getElementById('tracePanel');
+  p.innerHTML=
+    '<div class="fg"><label class="lbl">1. Load Manifest</label><p style="font-size:11px;color:var(--muted);margin-bottom:8px">'+
+    (traceManifest?'<span style="color:var(--green)">✓ Manifest in memory ('+traceManifest.customers.length+' customers)</span> or load another:':'Load the .trace.json from your Shield build:')+
+    '</p><input type="file" id="manIn" accept=".json" style="display:none" onchange="loadManU(this.files)"><button class="dl alt" onclick="document.getElementById(\'manIn\').click()">Load Manifest JSON</button></div>'+
+    '<div class="fg"><label class="lbl">2. Paste Leaked Content</label><textarea class="trace-area" id="leakIn" placeholder="Paste leaked HTML or text here..."></textarea></div>'+
+    '<button class="btn" style="border-color:var(--red);color:var(--red)" onclick="runTraceU()">Analyze Leak</button>'+
+    '<div class="stat" id="tStat"></div>'+
+    '<div class="trace-res" id="tRes"></div>';
+}
+
+
+function loadManU(files){if(!files||!files.length)return;const r=new FileReader();r.onload=()=>{try{loadedManifest=JSON.parse(r.result);document.getElementById('tStat').textContent='Loaded: '+loadedManifest.customers.length+' records';document.getElementById('tStat').className='stat ok'}catch(e){document.getElementById('tStat').textContent='Invalid JSON';document.getElementById('tStat').className='stat err'}};r.readAsText(files[0])}
+
+function runTraceU(){
+  const lk=document.getElementById('leakIn').value,st=document.getElementById('tStat'),re=document.getElementById('tRes');
+  if(!lk.trim()){st.textContent='Paste content first';st.className='stat err';return}
+  const man=loadedManifest||traceManifest;
+  if(!man||!man.customers||!man.customers.length){st.textContent='Load a manifest first';st.className='stat err';return}
+  const r=detect(lk,man);
+  st.textContent='';
+  re.classList.add('show');
+  const chs=['honey','css','synonyms','zws'].map(c=>'<span class="trace-ch '+(r.channelsMatched.includes(c)?'on':'off')+'">'+c.toUpperCase()+(r.channelsMatched.includes(c)?' ✓':' ✗')+'</span>').join('');
+  let evH='';
+  if(r.evidence.length){
+    evH='<div class="trace-ev">';
+    for(const e of r.evidence)evH+='<div class="row"><span style="color:var(--red);font-weight:700">'+e.channel.toUpperCase()+'</span> '+(e.match*100).toFixed(0)+'% (w:'+e.weight+')'+(e.observed?' — '+esc(String(e.observed)):'')+'</div>';
+    evH+='</div>';
+  }
+  const cp=(r.confidence*100).toFixed(1),cl=r.confidence>=.85?'HIGH':r.confidence>=.60?'MEDIUM':'LOW',cc=r.confidence>=.85?'var(--red)':r.confidence>=.60?'var(--orange)':'var(--muted)';
+  const runner=r.runnerUp?'<div class="trace-runner">Runner-up: '+esc(r.runnerUp.customerId)+' ('+(r.runnerUp.score*100).toFixed(1)+' weighted score)</div>':'';
+  if(r.customerId){
+    re.innerHTML=
+      '<div class="trace-id hit">⚠ '+esc(r.customerId)+'</div>'+
+      '<div class="trace-verdict">Verdict: likely match. Multiple forensic channels align.</div>'+
+      '<div class="trace-conf">Confidence: <span style="color:'+cc+';font-weight:700">'+cp+'% ('+cl+')</span>'+(r.traceId?' • '+r.traceId:'')+'</div>'+
+      '<div class="trace-chs">'+chs+'</div>'+evH+runner+
+      '<div class="trace-note">Conservative attribution only. Treat this as strong evidence, not courtroom proof.</div>';
+  }else if(r.evidence.length){
+    re.innerHTML=
+      '<div class="trace-id miss">? POSSIBLE PARTIAL MATCH</div>'+
+      '<div class="trace-verdict">Verdict: signal exists, but not enough to accuse safely.</div>'+
+      '<div class="trace-conf">Score: '+cp+'% — below attribution threshold</div>'+
+      '<div class="trace-chs">'+chs+'</div>'+evH+runner+
+      '<div class="trace-note">Edits, copy/paste cleanup, or format conversion can weaken channels. By design this tool prefers false negatives over false accusations.</div>';
+  }else{
+    re.innerHTML=
+      '<div class="trace-id miss">✗ NO RELIABLE ATTRIBUTION</div>'+
+      '<div class="trace-verdict">Verdict: no meaningful forensic match.</div>'+
+      '<div class="trace-conf">Score: '+cp+'%</div>'+
+      '<div class="trace-chs">'+chs+'</div>'+
+      '<div class="trace-note">No accusation. Try a less edited leak sample or load the correct manifest.</div>';
+  }
+}
+
+
+function toggleHelp(){document.getElementById('helpPanel').classList.toggle('show')}
+const origDoShield = doShield;
+doShield = async function(){
+  await origDoShield();
+  renderShelf();
+};
+
+// Init
+initAIKey();
+renderShelf();
+
+</script>
+</body>
+</html>
