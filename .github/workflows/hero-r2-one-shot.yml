@@ -1,0 +1,95 @@
+name: One-shot MDLxDCC hero R2
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hero-r2-one-shot
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Guard and patch hero R2
+        shell: bash
+        run: |
+          if grep -q 'HERO_TRIPTYCH_R2_20260917' public/index.html; then
+            echo 'R2 already present; nothing to do.'
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('public/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace(".hero-more{margin:9px auto 0;border:0;border-bottom:1px solid var(--accent);background:none;color:var(--accent);padding:5px 2px 4px;font-size:.72rem}.hero-more:hover{color:var(--ink)}",".hero-more{border:0;border-bottom:1px solid var(--accent);background:none;color:var(--accent);padding:4px 2px 3px;font:500 .68rem/1.2 Consolas,monospace;letter-spacing:.04em}.hero-more:hover{color:var(--ink)}.hero-top-more{margin-right:3px;white-space:nowrap}.hero-click-open{cursor:pointer}.hero-click-open:focus-visible{outline:2px solid var(--accent2);outline-offset:-6px;border-radius:50%}.pi-slider-block{display:grid;gap:7px}.pi-input-row{display:flex;align-items:center;gap:8px}.pi-input-row input[type=number]{width:88px;min-height:42px}.pi-slider-block input[type=range]{width:100%}.pi-presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}.pi-preset{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;min-height:38px;padding:6px 12px;font-size:.7rem}.pi-preset:hover,.pi-preset:focus-visible{color:var(--ink);border-color:var(--accent)}.hero-speed-note{font:400 .62rem/1.4 Consolas,monospace;color:var(--muted)}")
+          s=s.replace(".hero-mini-metrics{font-size:.61rem}.hero-more{font-size:.68rem}",".hero-mini-metrics{font-size:.61rem}.hero-more{font-size:.68rem}.hero-top-more{font-size:.64rem}.pi-preset{min-height:42px;font-size:.68rem}")
+          old='<span class="hero-pager" aria-label="Hero studies"><button id="hero-prev" class="hero-nav" type="button" aria-label="Previous study">‹</button><span id="hero-count">1 / 3</span><button id="hero-next" class="hero-nav" type="button" aria-label="Next study">›</button></span>'
+          new='<span class="hero-pager" aria-label="Hero studies"><button id="hero-more-top" class="hero-more hero-top-more" type="button"><span class="en" lang="en">More /</span><span class="sl" lang="sl">Več /</span></button><button id="hero-prev" class="hero-nav" type="button" aria-label="Previous study">‹</button><span id="hero-count">1 / 3</span><button id="hero-next" class="hero-nav" type="button" aria-label="Next study">›</button></span>'
+          assert old in s
+          s=s.replace(old,new)
+          s=s.replace('<div class="art-wrap hero-canvas-wrap claustrum-wrap">','<div class="art-wrap hero-canvas-wrap claustrum-wrap hero-click-open" data-open-current-detail tabindex="0" role="button">')
+          s=s.replace('<div class="art-wrap hero-canvas-wrap pi-wrap">','<div class="art-wrap hero-canvas-wrap pi-wrap hero-click-open" data-open-current-detail tabindex="0" role="button">')
+          s=s.replace('<div class="art-wrap"><svg viewBox="0 0 480 480"','<div class="art-wrap hero-click-open" data-open-current-detail tabindex="0" role="button"><svg viewBox="0 0 480 480"')
+          import re
+          s=re.sub(r'<button class="hero-more" type="button" data-hero-more="(?:claustrum|pi|pattern)"><span class="en" lang="en">More ↗</span><span class="sl" lang="sl">Več ↗</span></button>','',s)
+          s=s.replace('1 polygon × <span id="pi-main-n">17</span> rotations. Area → π.','1 polygon × <span id="pi-main-n">4</span> rotations. Area → π.')
+          s=s.replace('1 mnogokotnik × <span id="pi-main-n-sl">17</span> zasukov. Površina → π.','1 mnogokotnik × <span id="pi-main-n-sl">4</span> zasukov. Površina → π.')
+          s=s.replace('<span>k <b id="pi-main-k">4</b></span><span>π ≈ <b id="pi-main-value">3.004905</b></span>','<span>k <b id="pi-main-k">3</b></span><span>π ≈ <b id="pi-main-value">2.196163</b></span>')
+          s=s.replace('<text class="art-label" x="240" y="17" text-anchor="middle">48 × 7.5°</text><text class="art-label" x="240" y="468" text-anchor="middle">8z / GENERATIVE STUDY</text>','<text class="art-label" x="240" y="468" text-anchor="middle">8z / GENERATIVE STUDY (48 × 7.5°)</text>')
+          old_core='<div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Core</span><span class="sl" lang="sl">Jedro</span></span><div class="tool-links"><a class="tool-link" href="./crp/8z_MDLxDCC.html">MDL×DCC<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./8Z/8Z_compression.html">8Z<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./AI8/">AI8<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./crp/MDLxDCC-Arenas.html">Arenas<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./OS/index.html">8Z OS<span class="arrow" aria-hidden="true">↗</span></a></div></div>'
+          new_core='<div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Core</span><span class="sl" lang="sl">Jedro</span></span><div class="tool-links"><a class="tool-link" href="./crp/8z_MDLxDCC.html">MDL×DCC<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./AI8/">AI8<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./BD/BD_8ZRP.html">TSP<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./8Z/8Z_compression.html">8Z<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./OS/index.html">8Z OS<span class="arrow" aria-hidden="true">↗</span></a></div></div>'
+          assert old_core in s
+          s=s.replace(old_core,new_core)
+          old_res='<div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Research</span><span class="sl" lang="sl">Raziskave</span></span><div class="tool-links"><a class="tool-link" href="./BD/BD_CCH_Consciousness_Field.html"><span class="en" lang="en">Consciousness</span><span class="sl" lang="sl">Zavest</span><span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./crp/ToE.html">ToE<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./8zMaterials.html">8zMaterials<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./BD/BD_Trading_Research_Atlas.html">Trading<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./BD/BD_8ZRP.html">TSP<span class="arrow" aria-hidden="true">↗</span></a></div></div>'
+          new_res='<div class="tool-row"><span class="tool-row-label"><span class="en" lang="en">Research</span><span class="sl" lang="sl">Raziskave</span></span><div class="tool-links"><a class="tool-link" href="./BD/BD_CCH_Consciousness_Field.html"><span class="en" lang="en">Consciousness</span><span class="sl" lang="sl">Zavest</span><span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./crp/ToE.html">ToE<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./8zMaterials.html">8zMaterials<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./BD/BD_Trading_Research_Atlas.html">Trading<span class="arrow" aria-hidden="true">↗</span></a><a class="tool-link" href="./crp/MDLxDCC-Arenas.html">Arenas<span class="arrow" aria-hidden="true">↗</span></a></div></div>'
+          assert old_res in s
+          s=s.replace(old_res,new_res)
+          needle='<label class="hero-control"><span><span class="en" lang="en">Target complexity</span><span class="sl" lang="sl">Ciljna kompleksnost</span></span><input id="dc-target-input" type="range" min="5" max="30" step="1" value="15"><output id="dc-target-output">15</output></label>'
+          repl=needle+'<label class="hero-control"><span><span class="en" lang="en">Simulation speed</span><span class="sl" lang="sl">Hitrost simulacije</span></span><input id="dc-speed-input" type="range" min="1" max="16" step="1" value="8"><output id="dc-speed-output">8×</output></label><p class="hero-speed-note"><span class="en" lang="en">The main hero runs slowly; opening More switches to the faster lab view.</span><span class="sl" lang="sl">Glavni hero teče počasi; odprtje Več preklopi na hitrejši laboratorijski pogled.</span></p>'
+          assert needle in s
+          s=s.replace(needle,repl)
+          start=s.index('<section data-hero-detail="pi" hidden>')
+          end=s.index('</section>',start)+len('</section>')
+          new='''<section data-hero-detail="pi" hidden><p class="hero-detail-kicker">PI BY AREA · v0.1 · JULY 2025</p><h3><span class="en" lang="en">π emerging from rotated polygons.</span><span class="sl" lang="sl">π vznikne iz zasukanih mnogokotnikov.</span></h3><p><span class="en" lang="en">Rotate the same regular k-gon through n evenly spaced orientations. At every polar angle keep the farthest polygon boundary, integrate the covered union area, then divide by r².</span><span class="sl" lang="sl">Isti pravilni k-kotnik zasukaj skozi n enakomerno razporejenih orientacij. Pri vsakem polarnem kotu ohrani najbolj oddaljeno mejo mnogokotnikov, integriraj površino unije in jo deli z r².</span></p><div class="hero-equation">π̂ = Area(∪ R<sub>φ</sub>P<sub>k</sub>) / r²</div><div class="hero-live"><div><small>π̂</small><strong id="pi-detail-value">2.196163</strong></div><div><small>|π − π̂|</small><strong id="pi-detail-error">0.945429</strong></div></div><div class="pi-controls"><label class="pi-slider-block"><span>k · <span class="en" lang="en">sides</span><span class="sl" lang="sl">stranice</span></span><span class="pi-input-row"><input id="pi-k-input" type="number" min="3" max="3000" step="1" value="3"></span><input id="pi-k-slider" type="range" min="3" max="1000" step="1" value="3"></label><label class="pi-slider-block"><span>n · <span class="en" lang="en">rotations</span><span class="sl" lang="sl">zasuki</span></span><span class="pi-input-row"><input id="pi-n-input" type="number" min="1" max="3000" step="1" value="4"></span><input id="pi-n-slider" type="range" min="0" max="1000" step="1" value="173" aria-label="Rotations logarithmic slider"></label></div><div class="pi-presets" role="group" aria-label="Pi by Area presets"><button class="pi-preset" type="button" data-pi-preset="3,4">Seed · 3/4</button><button class="pi-preset" type="button" data-pi-preset="4,17">Rotate · 4/17</button><button class="pi-preset" type="button" data-pi-preset="12,139">Refine · 12/139</button><button class="pi-preset" type="button" data-pi-preset="72,1901">Near π · 72/1901</button><button class="pi-preset" type="button" data-pi-preset="1000,3">High-k · 1000/3</button></div><label class="pi-check"><input id="pi-coprime" type="checkbox" checked> <span class="en" lang="en">Skip repeated/non-optimal orientations (gcd(n,k)=1)</span><span class="sl" lang="sl">Preskoči ponovljene/neoptimalne orientacije (gcd(n,k)=1)</span></label><button class="hero-action" id="pi-reset" type="button"><span class="en" lang="en">Reset to k=3, n=4</span><span class="sl" lang="sl">Ponastavi na k=3, n=4</span></button><p class="hero-boundary"><span class="en" lang="en">The number is computed from the original polar-union estimator; the browser drawing samples the same rotations. This is not the classical perimeter construction.</span><span class="sl" lang="sl">Število izračuna izvirni polarni ocenjevalnik unije; brskalniška risba vzorči iste zasuke. To ni klasična konstrukcija z obsegom.</span></p></section>'''
+          s=s[:start]+new+s[end:]
+          s=s.replace("constructor(canvas,detail=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.detail=detail;this.running=false;this.last=0;this.target=15;this.reset();}","constructor(canvas,detail=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.detail=detail;this.running=false;this.last=0;this.target=15;this.speed=detail?8:1;this.reset();}")
+          s=s.replace("setTarget(v){this.target=Math.max(5,Math.min(30,Math.round(v)));if(this.detail){$('#dc-detail-target').textContent=this.target;$('#dc-target-output').value=this.target;}else $('#dc-target').textContent=this.target;}","setTarget(v){this.target=Math.max(5,Math.min(30,Math.round(v)));if(this.detail){$('#dc-detail-target').textContent=this.target;$('#dc-target-output').value=this.target;}else $('#dc-target').textContent=this.target;} setSpeed(v){this.speed=Math.max(1,Math.min(16,Math.round(v)));if(this.detail)$('#dc-speed-output').value=this.speed+'×';}")
+          s=s.replace("for(let s=0;s<6;s++){this.step();","const steps=Math.max(1,Math.round(this.speed*2));for(let s=0;s<steps;s++){this.step();")
+          s=s.replace("if(!this.last||t-this.last>30){this.draw();this.last=t;}","if(!this.last||t-this.last>(this.detail?28:55)){this.draw();this.last=t;}")
+          s=s.replace("constructor(canvas,detail=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.detail=detail;this.k=4;this.n=17;this.shown=reduced()?17:1;this.running=false;this.last=0;this.rot=0;this.value=piEstimate(4,17);this.draw();}","constructor(canvas,detail=false){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.detail=detail;this.k=3;this.n=4;this.shown=reduced()?4:1;this.running=false;this.last=0;this.rot=0;this.value=piEstimate(3,4);this.draw();}")
+          s=s.replace("if(kind==='claustrum'){detailRenderer=new Claustrum(cv,true);detailRenderer.setTarget(Number($('#dc-target-input').value));}else{detailRenderer=new PiStudy(cv,true);detailRenderer.set(Number($('#pi-k-input').value),Number($('#pi-n-input').value));}","if(kind==='claustrum'){detailRenderer=new Claustrum(cv,true);detailRenderer.setTarget(Number($('#dc-target-input').value));detailRenderer.setSpeed(Number($('#dc-speed-input').value));}else{detailRenderer=new PiStudy(cv,true);detailRenderer.set(Number($('#pi-k-input').value),Number($('#pi-n-input').value));detailRenderer.shown=reduced()?detailRenderer.n:1;}")
+          s=s.replace("$$('[data-hero-more]').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.heroMore)));","$('#hero-more-top').addEventListener('click',()=>openDetail(slides[index]));$$('[data-open-current-detail]').forEach(el=>{el.addEventListener('click',()=>openDetail(el.closest('[data-hero-slide]').dataset.heroSlide));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(el.closest('[data-hero-slide]').dataset.heroSlide);}});});")
+          needle2="$('#dc-target-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-target-output').value=v;$('#dc-detail-target').textContent=v;mainDC.setTarget(v);if(detailRenderer instanceof Claustrum)detailRenderer.setTarget(v);});"
+          s=s.replace(needle2,needle2+"$('#dc-speed-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-speed-output').value=v+'×';if(detailRenderer instanceof Claustrum)detailRenderer.setSpeed(v);});")
+          oldblock="let piTimer=null;function nextCoprime(n,k){if(!$('#pi-coprime').checked)return n;while(n<=3000&&gcd(n,k)!==1)n++;return Math.min(n,3000);}function updatePiInputs(){clearTimeout(piTimer);piTimer=setTimeout(()=>{let k=Math.max(3,Math.min(3000,Number($('#pi-k-input').value)||4)),n=Math.max(1,Math.min(3000,Number($('#pi-n-input').value)||17));n=nextCoprime(Math.round(n),Math.round(k));$('#pi-k-input').value=Math.round(k);$('#pi-n-input').value=Math.round(n);mainPI.set(k,n);if(detailRenderer instanceof PiStudy)detailRenderer.set(k,n);},120);}$('#pi-k-input').addEventListener('change',updatePiInputs);$('#pi-n-input').addEventListener('change',updatePiInputs);$('#pi-coprime').addEventListener('change',updatePiInputs);$('#pi-reset').addEventListener('click',()=>{$('#pi-k-input').value=4;$('#pi-n-input').value=17;$('#pi-coprime').checked=true;mainPI.shown=reduced()?17:1;updatePiInputs();});"
+          newblock="""let piTimer=null;const NMAX=3000;function nToSlider(n){n=Math.max(1,Math.min(NMAX,n));return Math.round(Math.log(n)/Math.log(NMAX)*1000);}function sliderToN(v){return Math.max(1,Math.min(NMAX,Math.round(Math.exp(Number(v)/1000*Math.log(NMAX)))));}function nextCoprime(n,k){if(!$('#pi-coprime').checked)return n;while(n<=NMAX&&gcd(n,k)!==1)n++;return Math.min(n,NMAX);}function syncPiSliders(k,n){$('#pi-k-slider').value=Math.min(1000,Math.max(3,k));$('#pi-n-slider').value=nToSlider(n);}function applyPi(k,n,build=true){k=Math.max(3,Math.min(3000,Math.round(k)));n=nextCoprime(Math.max(1,Math.min(NMAX,Math.round(n))),k);$('#pi-k-input').value=k;$('#pi-n-input').value=n;syncPiSliders(k,n);mainPI.set(k,n);if(build)mainPI.shown=reduced()?n:1;if(detailRenderer instanceof PiStudy){detailRenderer.set(k,n);if(build)detailRenderer.shown=reduced()?n:1;}}function updatePiInputs(){clearTimeout(piTimer);piTimer=setTimeout(()=>applyPi(Number($('#pi-k-input').value)||3,Number($('#pi-n-input').value)||4,true),90);}$('#pi-k-input').addEventListener('change',updatePiInputs);$('#pi-n-input').addEventListener('change',updatePiInputs);$('#pi-k-slider').addEventListener('input',e=>{$('#pi-k-input').value=e.target.value;updatePiInputs();});$('#pi-n-slider').addEventListener('input',e=>{$('#pi-n-input').value=sliderToN(e.target.value);updatePiInputs();});$('#pi-coprime').addEventListener('change',updatePiInputs);$$('[data-pi-preset]').forEach(b=>b.addEventListener('click',()=>{const [k,n]=b.dataset.piPreset.split(',').map(Number);applyPi(k,n,true);}));$('#pi-reset').addEventListener('click',()=>{$('#pi-coprime').checked=true;applyPi(3,4,true);});syncPiSliders(3,4);"""
+          assert oldblock in s
+          s=s.replace(oldblock,newblock)
+          if '<!-- HERO_TRIPTYCH_R2_20260917 -->' not in s:
+              s=s.replace('<script id="hero-triptych-runtime">','<!-- HERO_TRIPTYCH_R2_20260917 -->\n<script id="hero-triptych-runtime">')
+          p.write_text(s,encoding='utf-8')
+          print('patched',len(s))
+          PY
+          node -e "const fs=require('fs');const s=fs.readFileSync('public/index.html','utf8'); for(const m of s.matchAll(/<script[^>]*>([\\s\\S]*?)<\\/script>/g)){ if(m[1].trim() && !m[0].includes('application/ld+json')) new Function(m[1]); } console.log('JS syntax PASS')"
+      - name: Commit R2
+        shell: bash
+        run: |
+          if git diff --quiet -- public/index.html; then
+            echo 'No index change.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/index.html
+          git commit -m 'Refine BD × AI hero triptych controls'
+          git pull --rebase origin main
+          git push origin HEAD:main
