@@ -65,7 +65,7 @@
   // --- 5. MARKDOWN PARSER ---
   function formatMarkdown(text) {
     if (!text) return '';
-    const lines = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').split('\n');
+    const lines = text.split('\n');
     let inTable = false;
     let html = '';
     
@@ -268,7 +268,7 @@
     const params = new URLSearchParams(window.location.search);
     if (params.has('trip')) {
         try {
-            const sharedTrip = params.get('trip');
+            const sharedTrip = decodeURIComponent(params.get('trip'));
             $('input').value = sharedTrip;
             if (/^# TSP source: /m.test(sharedTrip)) { $('chkDirect').checked = true; $('chkPlanar').checked = true; }
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -278,9 +278,10 @@
         } catch(e) { console.error("Share load failed", e); }
     }
 
+    const sStr = localStorage.getItem(STORAGE_KEY);
+    if (!sStr) return false;
+
     try {
-        const sStr = localStorage.getItem(STORAGE_KEY);
-        if (!sStr) return false;
         const s = JSON.parse(sStr);
         $('input').value = s.t || ''; 
         currentTravelMode = s.m || 'DRIVING'; 
@@ -783,10 +784,7 @@
               if (i === 0) navUrl = `https://www.google.com/maps/dir/?api=1&destination=${destCoords}&travelmode=${googleMode}`;
               else { const prevCoords = `${points[i-1].lat.toFixed(6)},${points[i-1].lon.toFixed(6)}`; navUrl = `https://www.google.com/maps/dir/?api=1&origin=${prevCoords}&destination=${destCoords}&travelmode=${googleMode}`; }
           }
-          const link=document.createElement('a');link.href=navUrl;link.target='_blank';link.rel='noopener';
-          link.append(document.createTextNode(`${i + 1}. ${p.name}`));
-          const detail=document.createElement('small'),label=document.createElement('span');
-          UI.set(label,'Tap to navigate here ↗');detail.append(label);link.append(detail);li.append(link);
+          li.innerHTML = `<a href="${navUrl}" target="_blank">${i + 1}. ${p.name}<small><span data-ui-text="Tap to navigate here ↗">Tap to navigate here ↗</span></small></a>`;
           list.appendChild(li); 
       });
   }
@@ -1037,7 +1035,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map/table refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, 5 or 15 minutes, or 1 hour; default 5 seconds. It controls both improved map redraws and the active calculation-comparison row. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +5 or +15 minutes, +1 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. Mobile displays only +5 min and +15 min; desktop shows all five extra-time options. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +5 or +15 minutes, +1 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. Mobile displays only +5 min and +15 min; desktop shows all five extra-time options. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const experimentalContext = window.TripPrivate?.enabled()
       ? '\nLAB experimental mode is enabled for Optimize (Deep): it runs locally in a browser Worker and pauses when the tab is hidden or closed. Unlock again to recover the last encrypted local checkpoint including the input and distance table. Continue adds time without fetching another road table. Fast and Brute Force keep their existing behavior.\n'
       : '';
@@ -1078,7 +1076,6 @@ Bad example:
   const BF = globalThis.TripBruteForce;
   let measuredBruteRate = null;
   let comparisonKey = null;
-  const comparisonMatrices=new WeakMap();let nextComparisonMatrixId=0;
   let comparisonInput = null;
   let provenExactKm = null;
   const comparisons = new Map();
@@ -1089,110 +1086,6 @@ Bad example:
   // Only the current page owns this checkpoint; no persisted road data or background run.
   let pausedBrute = null;
   let pausedDeep = null;
-  // Diagnostic state never feeds the solver or its random stream.
-  let diagnosticsRun=null,diagnosticsExportController=null;
-  const numeric=value=>Number.isFinite(value)?value:null;
-  function diagnosticDuration(value){return value===null||value===undefined?'—':(Math.max(0,value)/1000).toFixed(2)+' s';}
-  function ordinaryTiming(run,at=performance.now()){
-    const used=run.usedMs+(run.runningSince===null?0:Math.max(0,at-run.runningSince));
-    return {timing_semantics:'ordinary-deep-client-observed-wall-v1',allocated_ms:run.allocatedMs,budget_used_ms:used,remaining_ms:Math.max(0,run.allocatedMs-used),elapsed_wall_ms:Math.max(0,at-run.startedAt),explicit_pause_ms:{user_or_terminal:Math.max(0,at-run.startedAt-used)},worker_compute_ms_sum:null,initialization_ms:null,storage_ms:null,diagnostic_ms:null,export_ms:null,finalization_ms:null,budget_overrun_ms:Math.max(0,used-run.allocatedMs),stop_latency_ms:null,timing_segments:run.segments.slice(),clock_discontinuities:[],quality:['Observed on the page from dispatch to result receipt; includes message and UI latency.','Worker internal deadline uses ordinary-deep monotonic elapsed intervals.','Hidden tabs do not pause ordinary Deep.','No ordinary Deep recovery after reload.']};
-  }
-  function diagnosticEvent(run,type,detail={}){
-    if(!run.enabled&&type!=='diagnostics_coverage')return;
-    const event={schema_version:1,run_id:run.runId,session_id:run.sessionId,worker_id:'coordinator',sequence:++run.sequence,coordinator_receive_sequence:run.sequence,event_type:type,local_monotonic_ms:performance.now(),budget_used_ms:ordinaryTiming(run).budget_used_ms,checkpoint_generation:null,segment_id:run.sessionId+':'+run.segments.length,...detail};
-    run.events.push(event);
-    if(run.events.length>512){run.events.splice(1,1);run.dropped++;}
-  }
-  function beginOrdinaryDiagnostics(job,tspData){
-    if(diagnosticsExportController)diagnosticsExportController.abort();
-    const now=Number.isFinite(job.localStartRequested)?Math.min(performance.now(),job.localStartRequested-performance.timeOrigin):performance.now(),count=job.points.length;
-    const problem={schema:'ProblemV2',nodeIds:job.planar?job.points.map(p=>String(p.tspNodeId)):job.points.map((_,i)=>String(i)),start:job.startIdx,closed:job.roundTrip,directed:!!job.distanceMatrix,cost:job.planar?{schema:'CostSpecV2',kind:'catalog-euc2d',units:'EUC_2D',numeric:'binary64-browser-halfup-v1',instanceId:tspData.entry.id,originalSha256:tspData.entry.originalSha256}:job.distanceMatrix?{schema:'CostSpecV2',kind:'matrix',units:'m',values:job.distanceMatrix}:{schema:'CostSpecV2',kind:'haversine',units:'m',points:job.points.map(p=>[p.lat,p.lon])}};
-    const run={kind:'ordinary',runId:crypto.randomUUID(),sessionId:crypto.randomUUID(),job,problem,entry:tspData?.entry||null,source:tspData?.originalText||null,reference:tspData?.reference||null,startedAt:now,runningSince:now,usedMs:0,allocatedMs:count<=50?10000:count<=100?30000:count<=500?60000:count<=1000?180000:300000,segments:[],events:[],sequence:0,dropped:0,enabled:$('diagnosticsEnabled').checked,coverageChanges:[],latest:null,lastSampleAt:-Infinity,createdUTC:new Date().toISOString()};
-    job.diagnostics=run;diagnosticsRun=run;$('diagnosticsIncludeInput').checked=false;
-    diagnosticEvent(run,'run_start');diagnosticEvent(run,'input_ready');diagnosticEvent(run,'budget_start');renderDiagnostics();
-  }
-  function observeOrdinaryDiagnostics(msg,job){
-    const run=job.diagnostics;if(!run||run.kind!=='ordinary')return;
-    run.latest=msg;run.allocatedMs=msg.budgetMs??run.allocatedMs;
-    const now=performance.now();
-    if(msg.type==='result'||msg.type==='error'){
-      if(run.runningSince!==null){const duration=Math.max(0,now-run.runningSince);run.usedMs+=duration;run.segments.push({session_id:run.sessionId,start_monotonic_ms:run.runningSince,end_monotonic_ms:now,duration_ms:duration,stop_reason:msg.reason||'error'});run.runningSince=null;}
-      diagnosticEvent(run,'run_end',{stop_reason:msg.reason||'error'});
-    }else if(now-run.lastSampleAt>=5000){diagnosticEvent(run,'periodic_snapshot',{candidates_ready:numeric(msg.candidates),candidates_completed:numeric(msg.completed),work_units:numeric(msg.work),best_cost:numeric(msg.totalCost)});run.lastSampleAt=now;}
-    run.cutTiming=ordinaryTiming(run,now);run.cutSequence=run.sequence;
-    diagnosticsRun=run;renderDiagnostics();
-  }
-  function resumeOrdinaryDiagnostics(job,additionalMs){
-    const run=job.diagnostics;if(!run)return;run.job=job;
-    diagnosticEvent(run,'continue_requested',{additional_budget_ms:additionalMs});run.runningSince=performance.now();run.allocatedMs+=additionalMs;
-    diagnosticEvent(run,'continue_applied',{additional_budget_ms:additionalMs});diagnosticsRun=run;renderDiagnostics();
-  }
-  function observePrivateDiagnostics(msg,job){
-    const receipt=msg.privateReceipt;if(!receipt)return;
-    if(diagnosticsRun?.runId!==receipt.jobId){if(diagnosticsExportController)diagnosticsExportController.abort();$('diagnosticsIncludeInput').checked=false;}
-    diagnosticsRun={kind:'private',runId:receipt.jobId,job,receipt};
-    if(typeof receipt.diagnostics?.enabled==='boolean')$('diagnosticsEnabled').checked=receipt.diagnostics.enabled;
-    renderDiagnostics();
-  }
-  function diagnosticInputEstimate(run){
-    const n=run.job.points.length;
-    // Conservative text estimate; exact bytes/hashes are calculated off-thread on export.
-    return run.job.distanceMatrix?{bytes:n*n*25+n*20+2048,kind:'Road matrix and numeric node order'}:run.job.planar?{bytes:n*80+2048,kind:'Original public TSP coordinates and numeric node order'}:{bytes:n*90+2048,kind:'Private geographic coordinates and numeric node order'};
-  }
-  function renderDiagnostics(){
-    const run=diagnosticsRun;if(!run)return;
-    const receipt=run.receipt,timing=run.kind==='private'?receipt.timing:ordinaryTiming(run),diag=receipt?.diagnostics;
-    $('diagnosticsRun').removeAttribute('data-ui-text');
-    $('diagnosticsRun').textContent=(run.kind==='private'?'MDLxDCC':'Deep')+' · '+run.runId;
-    const fields={diagnosticsElapsed:'elapsed_wall_ms',diagnosticsUsed:'budget_used_ms',diagnosticsRemaining:'remaining_ms',diagnosticsCompute:'worker_compute_ms_sum',diagnosticsOverrun:'budget_overrun_ms',diagnosticsInit:'initialization_ms',diagnosticsStorage:'storage_ms',diagnosticsWork:'diagnostic_ms',diagnosticsFinalization:'finalization_ms'};
-    for(const [id,key] of Object.entries(fields))UI.set($(id),diagnosticDuration(timing?.[key]));
-    const pauses=timing?.explicit_pause_ms;
-    UI.set($('diagnosticsPauses'),pauses&&typeof pauses==='object'?Object.entries(pauses).map(([reason,ms])=>t(reason)+': '+diagnosticDuration(ms)).join(' · ')||'0 s':diagnosticDuration(pauses));
-    UI.set($('diagnosticsTimingNote'),timing?.mixed_timing_semantics?'Mixed timing: the saved legacy time keeps its original meaning. New continuation uses elapsed time minus explicit pauses.':run.kind==='ordinary'?'Ordinary Deep: observed wall time includes dispatch and result-delivery latency. Its existing deadline is unchanged; hidden tabs do not pause this mode. Internal compute time is unavailable.':timing?.clock_discontinuities?.length?'Elapsed time contains observed segments only; closed-page gaps and an uncommitted tail are uncertain. Budget excludes closed time.':'Budget includes local preparation, worker scheduling, checkpoint storage and diagnostics. Only explicit pauses are excluded. Hidden tabs pause MDLxDCC.');
-    UI.set($('diagnosticsCoverage'),run.kind==='ordinary'?(run.enabled?'Basic diagnostics ON · internal method details unavailable.':'Diagnostics OFF · coverage gaps are recorded.')+(run.dropped?' · '+run.dropped+' older events compacted.':''):diag?.enabled===false?'Diagnostics OFF · coverage gaps are recorded.':diag?.coverage?.partial||diag?.partial?'Partial diagnostic coverage; inspect the exported summary.':'Diagnostics ON · the export states sequence coverage and gaps.');
-    const mode=diag?.storage_mode||diag?.storage?.mode||diag?.status;
-    UI.set($('diagnosticsPersistence'),run.kind==='ordinary'?'Ordinary diagnostics are in memory only; export before closing this page.':diag?.error||diag?.storage_error||mode==='in_memory_only'?'Diagnostics are in memory only; keep this page open and export.':mode==='persistent'?'Encrypted diagnostics saved on this device.':mode==='partial'?'Diagnostic storage is partial; inspect coverage in the export.':'Diagnostic storage status is included in the export.');
-    const estimate=diagnosticInputEstimate(run);
-    UI.set($('diagnosticsEstimate'),`${estimate.kind} · Estimated input size: ${Math.ceil(estimate.bytes/1024).toLocaleString('en-US')} KiB · ${$('diagnosticsIncludeInput').checked?'Input will be included.':'Input will be omitted.'}`);
-    $('diagnosticsExport').disabled=!!diagnosticsExportController||(run.kind==='private'?!window.TripPrivate?.diagnosticsAvailable():!run.latest?.pointsSorted);
-  }
-  function ordinaryExportPayload(run){
-    const msg=run.latest,job=run.job,timing=run.cutTiming||ordinaryTiming(run),exportId=crypto.randomUUID();
-    if(!msg?.pointsSorted)throw Error('No verified route available for export.');
-    // Ordinary worker echoes stable input indices; no names or raw editor text enter this payload.
-    const route=msg.pointsSorted.map(p=>p.diagnosticNodeIndex);
-    if(route.some(i=>!Number.isInteger(i)))throw Error('Route identity is unavailable.');
-    const summary={schema:'TripDiagnosticsV1',identity:{run_id:run.runId,session_id:run.sessionId,export_id:exportId,engine_version:'ordinary-deep',core_version:null,build_source_hash:null,numerics_version:run.problem.cost.numeric||'binary64',timing_semantics:timing.timing_semantics,diag_schema_version:1},problem:{input_type:run.problem.cost.kind,instance_id:run.entry?.id||null,node_count:job.n,source_sha256:run.entry?.originalSha256||null,normalized_input_sha256:null,objective:'distance',units:run.problem.cost.units,metric:run.problem.cost.kind,rounding:job.planar?'floor(hypot(dx,dy)+0.5)':'binary64',directed:run.problem.directed,closed:run.problem.closed,start:run.problem.start},reference:{value:run.reference?.optimum??null,source:run.reference?.source||null,type:'informational',applicable_for_stop:!!msg.exact,reason:msg.exact?null:'Only a verified ordinary-engine target can stop the solver.'},configuration:{research_arm:'ordinary-deep',base_seed:null,seed_reason:'Existing deterministic input-derived seed; numeric seed is not emitted.',worker_count:1,requested_worker_count:1,diagnostics_enabled:run.enabled},environment:{user_agent:navigator.userAgent,platform:navigator.platform||null,hardware_concurrency:navigator.hardwareConcurrency||null,worker_count:1},timing,result:{state:msg.type==='result'?'stopped':'running',stop_reason:msg.reason||null,baseline_cost:numeric(msg.baseCost),best_cost:numeric(msg.totalCost),best_version:numeric(msg.bestVersion),verified:false,reference_gap:null,time_to_reference_ms:msg.exact?timing.budget_used_ms:null,candidates_started:null,candidates_ready:numeric(msg.candidates),candidates_completed:numeric(msg.completed),candidates_inflight:null,work_units:numeric(msg.work)},coverage:{scope:'ordinary-basic-observation',export_cut:{coordinator_sequence:run.cutSequence??run.sequence,worker_sequences:{}},snapshot_kind:'last_received_ordinary_worker_result',stale:run.runningSince!==null,started_utc:run.createdUTC,sequence:run.sequence,complete:false,internal_methods:'unsupported',candidate_start_semantics:'Only existing candidates-ready count is available.',sampled:true,dropped_events:run.dropped,coverage_changes:run.coverageChanges},reproducibility:{can_verify_cost:true,input_included:$('diagnosticsIncludeInput').checked,seed_known:false,exact_parallel_replay:false},storage:{mode:'in_memory_only',retention:'Current ordinary Deep run in this page; no ordinary recovery after reload.'}};
-    return {summary,events:run.events.filter(event=>event.coordinator_receive_sequence<=(run.cutSequence??run.sequence)),methods:[],bestTour:{route,cost:msg.totalCost},verificationInput:job.planar?{problem:run.problem,catalogCoordinates:job.points.map(p=>[p.x,p.y]),originalSource:run.source}:run.problem,exportId};
-  }
-  async function exportDiagnostics(){
-    const run=diagnosticsRun;if(!run||diagnosticsExportController)return;
-    const controller=new AbortController();diagnosticsExportController=controller;const includeInput=$('diagnosticsIncludeInput').checked;
-    $('diagnosticsExportCancel').hidden=false;UI.set($('diagnosticsExportStatus'),'Preparing a diagnostic snapshot; calculation continues.');renderDiagnostics();
-    try{
-      const options={includeInput,signal:controller.signal};
-      const result=run.kind==='private'?await window.TripPrivate.exportDiagnostics(options):await window.TripDiagnosticExport.request({type:'diagnostics-export',payload:ordinaryExportPayload(run),includeInput},options);
-      if(controller.signal.aborted||diagnosticsRun!==run&&diagnosticsRun?.runId!==run.runId)return;
-      if(!result.bytes||!result.filename)throw Error('Invalid diagnostic export.');
-      const blob=new Blob([result.bytes],{type:'application/zip'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-      link.href=url;link.download=result.filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-      UI.set($('diagnosticsExportStatus'),'Diagnostics exported. The ZIP is a snapshot, not a solver checkpoint.');
-    }catch(error){UI.set($('diagnosticsExportStatus'),error.name==='AbortError'?'Export cancelled. Calculation is unchanged.':'Diagnostic export failed. Calculation is unchanged; try again.');}
-    finally{if(diagnosticsExportController===controller){diagnosticsExportController=null;$('diagnosticsExportCancel').hidden=true;renderDiagnostics();}}
-  }
-  function initDiagnostics(){
-    $('diagnosticsExport').onclick=exportDiagnostics;
-    $('diagnosticsExportCancel').onclick=()=>diagnosticsExportController?.abort();
-    $('diagnosticsIncludeInput').onchange=renderDiagnostics;
-    $('diagnosticsEnabled').onchange=async()=>{
-      const run=diagnosticsRun,enabled=$('diagnosticsEnabled').checked;if(!run)return;
-      if(run.kind==='ordinary'){run.enabled=enabled;run.coverageChanges.push({enabled,monotonic_ms:performance.now(),budget_used_ms:ordinaryTiming(run).budget_used_ms});diagnosticEvent(run,'diagnostics_coverage',{enabled});renderDiagnostics();}
-      else try{await window.TripPrivate.setDiagnostics(enabled);}catch(_){$('diagnosticsEnabled').checked=!enabled;UI.set($('diagnosticsExportStatus'),'Diagnostic setting was not applied. Calculation is unchanged.');}
-    };
-    document.addEventListener('visibilitychange',()=>{if(diagnosticsRun?.kind==='ordinary')diagnosticEvent(diagnosticsRun,'visibility',{visible:!document.hidden});});
-    window.addEventListener('pagehide',()=>diagnosticsExportController?.abort());
-  }
-
   function discardDeep() {
     if(pausedDeep)worker.postMessage({type:'discard-deep'});
     pausedDeep=null;
@@ -1228,7 +1121,6 @@ Bad example:
       });
       return;
     }
-    resumeOrdinaryDiagnostics(activeJob,additionalBudgetMs);
     setPlanningMode(false);
     const progress={...saved.result,type:'progress',reason:null,cancelled:false,phase:'searching',
       budgetMs:saved.result.budgetMs+additionalBudgetMs};
@@ -1250,7 +1142,6 @@ Bad example:
     const w = new Worker('worker.js?v=20260913-budget1');
     w.onmessage = handleWorkerMessage;
     w.onerror = () => {
-      if(activeJob?.diagnostics)observeOrdinaryDiagnostics({...activeJob.latest,type:'error',reason:'worker_error'},activeJob);
       activeJob = null; discardDeep(); finishWork();
       setStatus('Calculation worker failed. Reload the page and try again.', 'bad');
     };
@@ -1315,12 +1206,6 @@ Bad example:
   }
 
   function displayComparison(msg, job) {
-    const running = msg?.type === 'progress' || msg?.type === 'brute-progress';
-    if (running) {
-      const now = performance.now();
-      if (now - (job.lastComparisonRefresh ?? -Infinity) < mapRefreshInterval()) return;
-      job.lastComparisonRefresh = now;
-    }
     const name = msg.algorithm === 'brute' ? 'Brute Force' : job.private ? 'Our Optimize (Deep · MDLxDCC)' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)';
     const state = msg.algorithm === 'brute'
       ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found')
@@ -1328,10 +1213,7 @@ Bad example:
       : job.profile==='deep' && msg.reason ? deepFinishLabel(msg) : 'Best found · optimum not proven';
     if (msg.algorithm === 'brute' && msg.exact) provenExactKm = routeValue(msg);
     const assessment = job.planar && (!job.private || msg.privateReceipt?.referenceApplicable) ? TripTspMetric.assess(msg.pointsSorted,job.points,job.reference,job.roundTrip,msg.totalCost) : null;
-    const timing=job.private?msg.privateReceipt?.timing:job.diagnostics?ordinaryTiming(job.diagnostics):null;
-    const comparableMs=timing?.mixed_timing_semantics?null:timing?.budget_used_ms??msg.elapsedMs;
-    const timeLabel=timing?.mixed_timing_semantics?'Mixed legacy / elapsed time':job.private?'Budget used':job.profile==='deep'?'Observed wall time':'Compute time';
-    comparisons.set(name, {time:comparableMs===null?'Mixed timing':BF.duration((comparableMs||0)/1000),timeLabel, km:routeValue(msg), planar:job.planar, assessment, state, workers:job.private?msg.privateReceipt?.workerCount:null});
+    comparisons.set(name, {time:BF.duration((msg.elapsedMs || 0)/1000), km:routeValue(msg), planar:job.planar, assessment, state, workers:job.private?msg.privateReceipt?.workerCount:null});
     comparisonJob = job;
     renderComparison();
   }
@@ -1356,15 +1238,14 @@ Bad example:
         description=a.reached ? 'Known optimum reached · gap 0%' : `${result.state} · Above known optimum: ${formatValue(a.gap,true)} (${a.gapPercent.toFixed(2)}%)`;
       }
       if(result.workers)description+=' · '+result.workers+' CPU workers';
-      for (const value of [method, result.time+(result.timeLabel?' · '+result.timeLabel:''), formatValue(result.km,result.planar), description]) {
+      for (const value of [method, result.time, formatValue(result.km,result.planar), description]) {
         const cell = document.createElement('td'); UI.set(cell, value); row.appendChild(cell);
       }
       body.appendChild(row);
     }
     $('comparisonPanel').hidden = false;
-    UI.set(document.querySelectorAll('#comparisonPanel th')[1],'Budget / observed time');
     UI.set($('comparisonNote'), `${metricName(job)} · ${job.roundTrip ? 'Round trip' : 'Open trip'} · START`);
-    UI.set($('comparisonDetails'), 'Same stops, START and distance units are required. MDLxDCC reports elapsed budget including local overhead, minus explicit pauses. Ordinary Deep reports observed wall time, including message latency. Worker compute time is separate. Mixed legacy timing is not comparable. External Google data fetching is separate.');
+    UI.set($('comparisonDetails'), 'Same stops and START. Each row states its distance units. Fast and Deep report the best route found. Completed Brute Force proves the table optimum. A matching known TSP optimum applies only to the complete original EUC_2D round trip. Deep time includes local preparation. Google lookup/table download and map drawing are separate.');
   }
 
   function ensureAirComparison(points, startIdx, job) {
@@ -1390,7 +1271,6 @@ Bad example:
     w.onerror = () => { w.terminate(); if (airWorker === w) airWorker = null; };
     w.postMessage({type:'solve',profile:'air-comparison',jobId:job.jobId,points,startIdx,roundTrip:job.roundTrip});
   }
-
 
   function displayBruteProgress(msg, job) {
     $('bruteProgress').hidden = false;
@@ -1439,7 +1319,7 @@ Bad example:
 
   function mapRefreshInterval() {
     const selected = Number($('mapRefreshInterval')?.value);
-    return [1000,5000,15000,30000,60000,300000,900000,3600000].includes(selected) ? selected : 5000;
+    return [1000,5000,15000,30000,60000].includes(selected) ? selected : 5000;
   }
 
   function refreshBruteMap(msg, job) {
@@ -1453,7 +1333,6 @@ Bad example:
     if(msg.reason==='optimum')return 'Known optimum reached · gap 0%';
     if(msg.reason==='budget')return 'Time budget used · best found';
     if(msg.reason==='cancelled')return 'Cancelled · best found';
-    if(msg.reason==='hidden')return 'Paused after hiding tab · best found';
     if(msg.reason==='unresponsive')return 'Worker did not respond · last reported route kept';
     return msg.error || 'Best found · optimum not proven';
   }
@@ -1461,16 +1340,13 @@ Bad example:
   function displaySearchProgress(msg, job, finished = false) {
     const timed=job.profile==='deep';
     $('searchBudgetBox').hidden=!timed;
-    UI.set($('searchElapsedLabel'),timed?'Budget used':'Compute time');
-    UI.set($('searchStartsLabel'),timed?'Candidates ready / completed':'Completed search starts');
+    UI.set($('searchStartsLabel'),timed?'Candidates started / completed':'Completed search starts');
     UI.set($('searchEtaLabel'),timed?'Time budget remaining':'Estimated remaining');
     UI.set($('searchProgressHint'),timed?'Progress shows time budget used, not the probability of optimality. Local preparation is included; Google data fetching and map drawing are separate.':'Progress counts search starts, not all possible orders. ETA estimates the remaining planned search.');
-    if(job.private) UI.set($('searchProgressHint'),'Budget includes local preparation, worker scheduling, checkpoint storage and diagnostics. Only explicit pauses are excluded. Hidden tabs pause MDLxDCC.');
-    else if(timed)UI.set($('searchProgressHint'),'Ordinary Deep retains its existing elapsed-time budget. Observed wall time and timing limitations are shown in Diagnostics.');
+    if(job.private) UI.set($('searchProgressHint'),`Pool active wall time; pauses and checkpoint storage are separate. Hidden tabs pause calculation. · ${msg.privateReceipt?.workerCount||1} CPU workers · Sum of worker active time: ${BF.duration((msg.privateReceipt?.workerActiveMs||0)/1000)}`);
     if(timed) {
-      const used=msg.privateReceipt?.timing?.budget_used_ms??msg.elapsedMs??0, budget=msg.budgetMs||0;
-      if(msg.privateReceipt?.timing?.mixed_timing_semantics)UI.set($('searchElapsedLabel'),'Mixed legacy / elapsed time');
-      const state=finished?deepFinishLabel(msg):job.private?(msg.privateReceipt?.timing?.remaining_ms===0&&!finished?'Budget used; saving…':msg.phase||'preparing'):msg.phase==='preparing'?'Preparing local distances':'Running';
+      const used=msg.elapsedMs||0, budget=msg.budgetMs||0;
+      const state=finished?deepFinishLabel(msg):job.private?msg.phase||'preparing':msg.phase==='preparing'?'Preparing local distances':'Running';
       $('searchProgress').hidden=false;
       UI.set($('searchProgressText'),`${job.private?'Our Optimize (Deep · MDLxDCC)':'Our Optimize (Deep)'} · ${state} · ${budget?(100*Math.min(1,used/budget)).toFixed(2)+'% time budget used':'…'}`);
       $('searchProgressBar').value=budget?Math.min(1,used/budget):0;
@@ -1507,7 +1383,6 @@ Bad example:
     if (activeJob?.profile === 'brute' || activeJob?.profile === 'deep') {
       if (activeJob.cancelling) return;
       activeJob.cancelling = true;
-      if(activeJob.diagnostics)diagnosticEvent(activeJob.diagnostics,'cancel_requested');
       refreshBruteInfo();
       $('btnCancelWork').disabled = true;
       setStatus('Stopping calculation and keeping the best route…', 'warn');
@@ -1517,7 +1392,6 @@ Bad example:
         job.cancelTimer=setTimeout(()=>{
           if(activeJob!==job||!job.current())return;
           const latest=job.latest;
-          if(job.diagnostics)observeOrdinaryDiagnostics({...latest,type:'error',reason:'unresponsive'},job);
           worker.terminate();worker=createWorker();activeJob=null;finishWork();
           if(latest?.pointsSorted) {
             const result={...latest,cancelled:true,exact:false,reason:'unresponsive'};
@@ -1581,7 +1455,6 @@ Bad example:
     ++jobVersion;
     ++visualizationVersion;
     if (activeJob) {
-      if(activeJob.diagnostics)observeOrdinaryDiagnostics({...activeJob.latest,type:'error',reason:'input_changed_or_discarded'},activeJob);
       clearTimeout(activeJob.cancelTimer);
       worker.terminate(); worker = createWorker();
       if (activeJob.latest) {
@@ -1653,7 +1526,7 @@ Bad example:
     let posted = false;
     try {
     setPlanningMode(false);
-    if (!$('chkDirect').checked && !(window.google && window.google.maps)) {
+    if (!(window.google && window.google.maps)) {
       setStatus('Loading Map API...', 'ok');
       try { await ensureMapsLoaded(); }
       catch (e) { console.error('[8Z Trip] Cannot optimize with map/geocoder unavailable:', e); return; }
@@ -1712,25 +1585,22 @@ Bad example:
       setStatus(direct ? 'Select Drive or Walk and turn off Direct Line to prepare road distances.' : 'Road distances ready. Choose Optimize (Fast) or Optimize (Deep).', 'ok');
       return;
     }
-    const localStartRequested=performance.timeOrigin+performance.now();
     setStatus(`Optimizing ${valid.length} stops...`, 'warn');
-    const matrix=roadData?.distanceMatrix;if(matrix&&!comparisonMatrices.has(matrix))comparisonMatrices.set(matrix,++nextComparisonMatrixId);
-    const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,planar,matrix?comparisonMatrices.get(matrix):null]);
+    const key = JSON.stringify([valid.map(p=>[p.lat,p.lon]),startIdx,mode,direct,roundTrip,planar,roadData?.distanceMatrix]);
     if (comparisonKey !== key) clearComparison();
     comparisonKey = key; comparisonInput = raw;
     if (profile === 'brute') { $('bruteProgress').hidden = false; UI.set($('bruteProgressText'), 'Starting exhaustive search…'); }
-    activeJob = {jobId, current, mode, direct, roundTrip, planar,localStartRequested, reference:tspData?.reference, profile, n:valid.length, points:valid, startIdx,
+    activeJob = {jobId, current, mode, direct, roundTrip, planar, reference:tspData?.reference, profile, n:valid.length, points:valid, startIdx,
       distanceMatrix:roadData?.distanceMatrix, lastMapRefresh:performance.now(), mapBestKm:Infinity, mapPending:false};
     if(profile==='deep'&&window.TripPrivate?.enabled()) {
-      activeJob.private=true;diagnosticsRun=null;$('diagnosticsExport').disabled=true;displaySearchProgress({},activeJob);refreshBruteInfo();
+      activeJob.private=true;displaySearchProgress({},activeJob);refreshBruteInfo();
       try{await window.TripPrivate.start(activeJob,tspData);posted=true;}
       catch(error){if(current()){activeJob=null;setStatus(error.message,'bad');}}
       return;
     }
-    if(profile==='deep')beginOrdinaryDiagnostics(activeJob,tspData);
     if (profile !== 'brute') displaySearchProgress({},activeJob);
     refreshBruteInfo();
-    worker.postMessage({ type: 'solve', jobId, profile, points:profile==='deep'?valid.map((p,i)=>({...p,diagnosticNodeIndex:i})):valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
+    worker.postMessage({ type: 'solve', jobId, profile, points: valid, startIdx: (startIdx < valid.length) ? startIdx : 0,
       roundTrip, metric:planar ? 'tsp-euc2d' : undefined, distanceMatrix:roadData?.distanceMatrix,
       tspProof:profile==='deep' && tspData ? {entry:tspData.entry,reference:tspData.reference,originalText:tspData.originalText} : undefined });
     posted = true;
@@ -1742,10 +1612,9 @@ Bad example:
     if (!activeJob || msg.jobId !== activeJob.jobId) return;
     if (!activeJob.current()) { cancelWork(); return; }
     const job = activeJob;
-    if(job.profile==='deep'){if(job.private)observePrivateDiagnostics(msg,job);else observeOrdinaryDiagnostics(msg,job);}
     if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); refreshBruteMap(msg, job); return; }
     if (msg.type === 'progress') {
-      job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);
+      job.latest = msg; displaySearchProgress(msg, job); refreshBruteMap(msg, job);
     }
     else if (msg.type === 'error') { clearTimeout(job.cancelTimer); activeJob = null; finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
@@ -1878,8 +1747,7 @@ Bad example:
   // --- 12. INIT ---
   document.addEventListener('DOMContentLoaded', () => {
     window.TripPrivate.init({message:handleWorkerMessage,
-      modeChanged(){discardDeep();refreshBruteInfo();refreshTspNotice();renderDiagnostics();},
-      diagnostics(receipt){if(diagnosticsRun?.kind==='private'&&diagnosticsRun.runId===receipt.jobId){diagnosticsRun.receipt=receipt;renderDiagnostics();}},
+      modeChanged(){discardDeep();refreshBruteInfo();refreshTspNotice();},
       disconnected(error){activeJob=null;discardDeep();finishWork();setStatus(error.message,'warn');},
       deleted(){activeJob=null;discardDeep();finishWork();},
       async recover(saved){
@@ -1897,7 +1765,6 @@ Bad example:
         activeJob=job;optimizationPending=true;window.TripPrivate.setBusy(true);return job;
       }
     });
-    initDiagnostics();
     initTripTree(); initAI(); 
     const restored = restoreState();
     refreshTspNotice();
