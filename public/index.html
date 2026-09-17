@@ -267,7 +267,8 @@ $('#search-open').addEventListener('click',openSearch);$('#search-close').addEve
 dialog.addEventListener('close',()=>{root.classList.remove('search-open');$('#search-open').setAttribute('aria-expanded','false');if(returnFocus&&returnFocus.isConnected)returnFocus.focus();});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
 input.addEventListener('input',render);input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(results.length)select((active+(e.key==='ArrowDown'?1:results.length-1)+results.length)%results.length);}});
-$('#search-form').addEventListener('submit',e=>{e.preventDefault();const direct=PRIVATE[norm(input.value)];if(direct){location.href=new URL(direct,BASE).href;return;}const p=results[active>=0?active:0];if(p){remember(input.value);location.href=p.url;}});
+/* LANDING_TOE_ENTER_20260917 */
+$('#search-form').addEventListener('submit',e=>{e.preventDefault();const q=norm(input.value);if(q==='toe'){remember(input.value);location.href=new URL('crp/ToE.html',BASE).href;return;}const direct=PRIVATE[q];if(direct){location.href=new URL(direct,BASE).href;return;}const p=results[active>=0?active:0];if(p){remember(input.value);location.href=p.url;}});
 $('#clear-history').addEventListener('click',()=>{history=[];save(STORE,'[]');historyView();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog.open){e.preventDefault();dialog.close();return;}const editing=e.target.closest('input,textarea,select,[contenteditable="true"]');if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();}else if(!editing&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(e.key==='/'||e.key.toLowerCase()==='s')){e.preventDefault();openSearch();}});
 // Keep bookmarks from the preceding landing pointed at their established owners.
