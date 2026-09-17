@@ -1,1095 +1,138 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BD × AI Lab — The 6-Hour Operating System · 8Z OS Origin Story</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com/" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root{
-      --bg:#020409;
-      --bg2:#060a14;
-      --bg3:#0b1120;
-      --surface:#0f1729;
-      --surface2:#11192d;
-      --border:rgba(0,229,255,0.10);
-      --border-strong:rgba(0,229,255,0.18);
-      --cyan:#00e5ff;
-      --cyan-dim:rgba(0,229,255,0.12);
-      --gold:#f59e0b;
-      --gold-dim:rgba(245,158,11,0.12);
-      --green:#34d399;
-      --green-dim:rgba(52,211,153,0.10);
-      --violet:#a78bfa;
-      --violet-dim:rgba(167,139,250,0.10);
-      --rose:#ff6b8a;
-      --rose-dim:rgba(255,107,138,0.10);
-      --orange:#fb923c;
-      --orange-dim:rgba(251,146,60,0.10);
-      --text:#e2e8f4;
-      --muted:#5e7192;
-      --muted-2:rgba(226,232,244,0.62);
-      --subtle:#1a2540;
-      --shadow:0 10px 30px rgba(0,0,0,0.35);
-      --radius:6px;
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth}
-    body{
-      background:var(--bg);
-      color:var(--text);
-      font-family:'Rajdhani',sans-serif;
-      font-size:17px;
-      line-height:1.72;
-      overflow-x:hidden;
-    }
-    body::after{
-      content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.02;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-    a{color:inherit}
-    .scroll-prog{position:fixed;top:0;left:0;right:0;z-index:200;height:2px}
-    .scroll-prog-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--orange),var(--gold),var(--cyan),var(--green));transition:width .08s linear}
-
-    /* ===== HERO ===== */
-    .hero{min-height:100vh;display:flex;align-items:center;padding:100px 8vw 80px;position:relative;overflow:hidden}
-    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 72% 58% at 70% 25%,rgba(251,146,60,0.07) 0%,transparent 60%),radial-gradient(ellipse 58% 64% at 12% 80%,rgba(245,158,11,0.05) 0%,transparent 57%),radial-gradient(ellipse 44% 40% at 84% 82%,rgba(0,229,255,0.04) 0%,transparent 54%)}
-    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(251,146,60,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(251,146,60,0.02) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black,transparent)}
-    .hero-shell{position:relative;z-index:2;max-width:860px}
-    .hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--orange);margin-bottom:1.4rem;opacity:0;animation:fadeUp .8s .15s forwards}
-    .hero-title{font-size:clamp(2.8rem,7.5vw,6.2rem);line-height:.92;font-weight:700;letter-spacing:-0.03em;margin-bottom:1.05rem;opacity:0;animation:fadeUp .8s .32s forwards}
-    .hero-title .accent{color:var(--orange)}
-    .hero-title .gold{color:var(--gold)}
-    .hero-subtitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1.08rem,2.2vw,1.52rem);font-style:italic;color:var(--muted);max-width:760px;margin-bottom:1.1rem;opacity:0;animation:fadeUp .8s .48s forwards}
-    .hero-copy{max-width:760px;color:rgba(226,232,244,.76);font-size:1.02rem;margin-bottom:1.7rem;opacity:0;animation:fadeUp .8s .62s forwards}
-    .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .76s forwards}
-    .btn{display:inline-flex;align-items:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:.78rem 1rem;border-radius:3px;transition:all .25s ease}
-    .btn-primary{color:var(--orange);background:var(--orange-dim);border:1px solid rgba(251,146,60,.28)}
-    .btn-primary:hover{background:rgba(251,146,60,.18);box-shadow:0 0 18px rgba(251,146,60,.12)}
-    .btn-secondary{color:rgba(226,232,244,.72);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08)}
-    .btn-secondary:hover{border-color:rgba(255,255,255,.16)}
-    .hero-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;margin:1.8rem 0 1.4rem;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--border);opacity:0;animation:fadeUp .8s .9s forwards}
-    .hm{padding:1rem .9rem;background:var(--bg2)}
-    .hm .n{font-family:'JetBrains Mono',monospace;font-size:1.18rem;font-weight:700;line-height:1.15;color:var(--text)}
-    .hm .l{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.35rem}
-    .hero-tags{display:flex;flex-wrap:wrap;gap:.65rem;opacity:0;animation:fadeUp .8s 1s forwards}
-    .tag{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:.22rem .62rem;border-radius:2px;border:1px solid rgba(255,255,255,.08);color:rgba(226,232,244,.7);background:rgba(255,255,255,.03)}
-    .tag.cyan{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(0,229,255,.25)}
-    .tag.violet{color:var(--violet);background:var(--violet-dim);border-color:rgba(167,139,250,.25)}
-    .tag.gold{color:var(--gold);background:var(--gold-dim);border-color:rgba(245,158,11,.25)}
-    .tag.green{color:var(--green);background:var(--green-dim);border-color:rgba(52,211,153,.25)}
-    .tag.rose{color:var(--rose);background:var(--rose-dim);border-color:rgba(255,107,138,.25)}
-    .tag.orange{color:var(--orange);background:var(--orange-dim);border-color:rgba(251,146,60,.25)}
-
-    /* ===== TOPNAV ===== */
-    .topnav{max-width:1120px;margin:0 auto;padding:28px 5vw 22px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center}
-    .topnav span{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(226,232,244,.25);margin-right:8px}
-    .topnav a{font-family:'JetBrains Mono',monospace;font-size:.72rem;text-decoration:none;padding:3px 10px;border-radius:3px;letter-spacing:.05em;transition:all .2s;border:1px solid rgba(255,255,255,.1);color:rgba(226,232,244,.72)}
-    .topnav a:hover{background:rgba(255,255,255,.05)}
-    .topnav a.cyan{color:var(--cyan);border-color:rgba(0,229,255,.2)}.topnav a.cyan:hover{background:rgba(0,229,255,.12)}
-    .topnav a.violet{color:var(--violet);border-color:rgba(167,139,250,.2)}.topnav a.violet:hover{background:rgba(167,139,250,.12)}
-    .topnav a.gold{color:var(--gold);border-color:rgba(245,158,11,.2)}.topnav a.gold:hover{background:rgba(245,158,11,.12)}
-    .topnav a.green{color:var(--green);border-color:rgba(52,211,153,.2)}.topnav a.green:hover{background:rgba(52,211,153,.12)}
-    .topnav a.rose{color:var(--rose);border-color:rgba(255,107,138,.2)}.topnav a.rose:hover{background:rgba(255,107,138,.12)}
-    .topnav a.orange{color:var(--orange);border-color:rgba(251,146,60,.2)}.topnav a.orange:hover{background:rgba(251,146,60,.12)}
-
-    .divider{height:1px;max-width:1120px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--border),transparent)}
-    .wrap{max-width:1120px;margin:0 auto;padding:0 5vw}
-    section{padding:96px 0}
-    .sec-tag{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.35em;text-transform:uppercase;color:var(--cyan);margin-bottom:.75rem;display:block}
-    .sec-tag.gold{color:var(--gold)}.sec-tag.green{color:var(--green)}.sec-tag.violet{color:var(--violet)}.sec-tag.rose{color:var(--rose)}.sec-tag.orange{color:var(--orange)}
-    h2{font-size:clamp(2rem,4vw,3.15rem);line-height:1.08;font-weight:700;letter-spacing:-0.01em;margin-bottom:1.3rem}
-    h3{font-size:1.16rem;font-weight:700;color:var(--text)}
-    p{color:rgba(226,232,244,.78);max-width:68ch}
-    p + p{margin-top:1rem}
-    strong{color:var(--text)}
-    em{font-style:italic}
-
-    .stat-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;margin:2.4rem 0 0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--border)}
-    .sb-cell{padding:1.35rem 1.15rem;background:var(--bg2);text-align:center}
-    .sb-num{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700;line-height:1.05}
-    .sb-label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:.34rem}
-
-    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
-    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
-
-    .panel{position:relative;border:1px solid var(--border);border-radius:6px;padding:1.45rem 1.35rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));overflow:hidden;transition:border-color .3s,transform .3s,box-shadow .3s;box-shadow:var(--shadow)}
-    .panel:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.22)}
-    .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--panel-accent,var(--cyan)),transparent 84%)}
-    .panel.cyan{--panel-accent:var(--cyan)}.panel.violet{--panel-accent:var(--violet)}.panel.gold{--panel-accent:var(--gold)}.panel.green{--panel-accent:var(--green)}.panel.rose{--panel-accent:var(--rose)}.panel.orange{--panel-accent:var(--orange)}
-    .micro{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem}
-    .panel p{max-width:none;font-size:.95rem;color:rgba(226,232,244,.68)}
-
-    .highlight{margin-top:2rem;padding:1.7rem 1.8rem;border:1px solid rgba(167,139,250,.22);border-radius:6px;background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(0,229,255,.03));box-shadow:var(--shadow)}
-    .highlight.gold{border-color:rgba(245,158,11,.22);background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(0,229,255,.02))}
-    .highlight.green{border-color:rgba(52,211,153,.22);background:linear-gradient(135deg,rgba(52,211,153,.06),rgba(0,229,255,.02))}
-    .highlight.rose{border-color:rgba(255,107,138,.22);background:linear-gradient(135deg,rgba(255,107,138,.06),rgba(245,158,11,.02))}
-    .highlight.orange{border-color:rgba(251,146,60,.22);background:linear-gradient(135deg,rgba(251,146,60,.06),rgba(245,158,11,.02))}
-    .highlight h3{margin-bottom:.4rem}
-    .highlight p{max-width:none}
-
-    .quote{margin-top:2rem;border-left:3px solid var(--gold);padding:1rem 1.25rem;background:rgba(245,158,11,.04);border-radius:0 4px 4px 0}
-    .quote p{max-width:none;font-family:'Cormorant Garamond',serif;font-size:1.46rem;line-height:1.45;color:var(--text);font-style:italic}
-    .quote .attr{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.1em;color:var(--muted);margin-top:.45rem;font-style:normal}
-
-    .table-wrap{margin-top:2rem;overflow:auto;border:1px solid var(--border);border-radius:6px;background:linear-gradient(160deg,rgba(11,17,32,.72),rgba(6,10,20,.95));box-shadow:var(--shadow)}
-    table{width:100%;border-collapse:collapse;min-width:480px}
-    th{text-align:left;padding:1rem 1rem .95rem;font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.06);white-space:nowrap}
-    td{padding:.95rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);color:rgba(226,232,244,.78);vertical-align:top}
-    tr:last-child td{border-bottom:none}
-    tbody tr:hover td{background:rgba(255,255,255,.02)}
-    .good{color:var(--green);font-weight:700}
-    .warn{color:var(--gold);font-weight:700}
-    .bad{color:var(--rose);font-weight:700}
-    .mono{font-family:'JetBrains Mono',monospace}
-
-    .diag{margin-top:2rem;border:1px solid var(--border);border-radius:6px;padding:1.5rem;background:rgba(6,10,20,.72);box-shadow:var(--shadow)}
-    .diag-title{text-align:center;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
-    .diag-flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.3rem}
-    .diag-node{min-width:126px;padding:.78rem .95rem;text-align:center;border-radius:4px;border:1px solid rgba(0,229,255,.28);background:rgba(0,229,255,.05);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.5}
-    .diag-node small{display:block;color:var(--muted);font-size:.58rem;margin-top:.14rem;letter-spacing:.08em}
-    .diag-node.violet{border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.06);color:var(--violet)}
-    .diag-node.gold{border-color:rgba(245,158,11,.28);background:rgba(245,158,11,.06);color:var(--gold)}
-    .diag-node.green{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.06);color:var(--green)}
-    .diag-node.rose{border-color:rgba(255,107,138,.28);background:rgba(255,107,138,.06);color:var(--rose)}
-    .diag-node.orange{border-color:rgba(251,146,60,.28);background:rgba(251,146,60,.06);color:var(--orange)}
-    .diag-arrow{color:var(--muted);padding:0 .35rem;font-size:1rem}
-
-    /* Code blocks */
-    .code-block{margin-top:2rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:rgba(6,10,20,.9);box-shadow:var(--shadow)}
-    .code-header{display:flex;justify-content:space-between;align-items:center;padding:.8rem 1.2rem;background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.06)}
-    .code-filename{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;color:var(--orange)}
-    .code-lang{font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-    .code-body{padding:1rem 1.2rem;overflow-x:auto}
-    .code-body pre{font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;color:rgba(226,232,244,.82);white-space:pre;tab-size:4}
-    .code-body .cmt{color:var(--muted)}
-    .code-body .kw{color:var(--violet)}
-    .code-body .fn{color:var(--cyan)}
-    .code-body .str{color:var(--green)}
-    .code-body .num{color:var(--gold)}
-    .code-body .reg{color:var(--orange)}
-    .code-body .hl{background:rgba(251,146,60,.12);display:inline;border-radius:2px;padding:0 2px}
-    .code-caption{padding:.75rem 1.2rem;border-top:1px solid rgba(255,255,255,.04);font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic;color:rgba(226,232,244,.55)}
-
-    /* Image frames */
-    .img-timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem}
-    .img-frame{border-radius:6px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);transition:border-color .3s,transform .3s;box-shadow:var(--shadow)}
-    .img-frame:hover{transform:translateY(-3px);border-color:rgba(251,146,60,.22)}
-    .img-frame img{width:100%;display:block;aspect-ratio:4/3;object-fit:contain;background:#000;cursor:pointer}
-
-    /* Lightbox */
-    .lb-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .3s ease;padding:2vw}
-    .lb-overlay.active{opacity:1}
-    .lb-overlay img{max-width:96vw;max-height:96vh;object-fit:contain;border-radius:6px;box-shadow:0 0 60px rgba(0,0,0,.6);pointer-events:none}
-    .lb-hint{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(226,232,244,.4);letter-spacing:.15em;z-index:10000;pointer-events:none}
-    .img-frame.wide img{aspect-ratio:16/9}
-    .img-cap{padding:.75rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.04em}
-    .img-cap .ver{color:var(--orange);font-weight:600}
-    .img-frame.glow-orange{border-color:rgba(251,146,60,.18);box-shadow:0 0 24px rgba(251,146,60,.06)}
-    .img-frame.glow-cyan{border-color:rgba(0,229,255,.18);box-shadow:0 0 24px rgba(0,229,255,.06)}
-    .img-frame.glow-green{border-color:rgba(52,211,153,.18);box-shadow:0 0 24px rgba(52,211,153,.06)}
-    .img-frame.glow-violet{border-color:rgba(167,139,250,.18);box-shadow:0 0 24px rgba(167,139,250,.06)}
-    .img-frame.glow-rose{border-color:rgba(255,107,138,.18);box-shadow:0 0 24px rgba(255,107,138,.06)}
-
-    /* Claim typing */
-    .claim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
-    .claim-box{border:1px solid var(--border);border-radius:6px;padding:1.25rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));box-shadow:var(--shadow);position:relative;overflow:hidden}
-    .claim-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--claim-color),transparent 84%)}
-    .claim-box.verified{--claim-color:var(--green)}.claim-box.reasoned{--claim-color:var(--gold)}.claim-box.speculative{--claim-color:var(--violet)}
-    .claim-label{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.7rem;color:var(--claim-color)}
-    .claim-box ul{list-style:none;display:grid;gap:.65rem}
-    .claim-box li{position:relative;padding-left:1rem;color:rgba(226,232,244,.74);font-size:.92rem}
-    .claim-box li::before{content:'';position:absolute;left:0;top:.7rem;width:5px;height:5px;border-radius:50%;background:var(--claim-color);box-shadow:0 0 8px var(--claim-color)}
-
-    /* Timeline */
-    .timeline{margin-top:2rem;position:relative;padding-left:2.5rem}
-    .timeline::before{content:'';position:absolute;left:.75rem;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--orange),var(--gold),var(--cyan),var(--green))}
-    .tl-item{position:relative;padding-bottom:2.2rem}
-    .tl-item:last-child{padding-bottom:0}
-    .tl-dot{position:absolute;left:-2.08rem;top:.35rem;width:12px;height:12px;border-radius:50%;border:2px solid var(--orange);background:var(--bg);box-shadow:0 0 10px rgba(251,146,60,.3)}
-    .tl-dot.gold{border-color:var(--gold);box-shadow:0 0 10px rgba(245,158,11,.3)}
-    .tl-dot.rose{border-color:var(--rose);box-shadow:0 0 10px rgba(255,107,138,.3)}
-    .tl-dot.cyan{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.3)}
-    .tl-dot.green{border-color:var(--green);box-shadow:0 0 10px rgba(52,211,153,.3)}
-    .tl-time{font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);margin-bottom:.3rem}
-    .tl-time.gold{color:var(--gold)}.tl-time.rose{color:var(--rose)}.tl-time.cyan{color:var(--cyan)}.tl-time.green{color:var(--green)}
-    .tl-text{color:rgba(226,232,244,.76)}
-    .tl-text strong{color:var(--text)}
-
-    /* Bug diagnostic panels */
-    .bug-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.2rem;margin-top:2rem}
-    .bug-panel{border:1px solid rgba(255,107,138,.15);border-radius:6px;padding:1.35rem;background:linear-gradient(160deg,rgba(255,107,138,.03),rgba(6,10,20,.96));box-shadow:var(--shadow)}
-    .bug-panel h4{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;color:var(--rose);margin-bottom:.5rem}
-    .bug-panel .symptom{font-size:.88rem;color:rgba(226,232,244,.62);margin-bottom:.5rem}
-    .bug-panel .fix{font-size:.88rem;color:var(--green)}
-    .bug-panel .finder{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:.6rem}
-
-    /* Kernel zoo grid */
-    .zoo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin-top:2rem}
-    .zoo-card{border:1px solid var(--border);border-radius:6px;padding:1.2rem;background:linear-gradient(160deg,rgba(11,17,32,.78),rgba(6,10,20,.96));position:relative;overflow:hidden;transition:border-color .3s,transform .3s;box-shadow:var(--shadow)}
-    .zoo-card:hover{transform:translateY(-3px);border-color:rgba(251,146,60,.22)}
-    .zoo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--zoo-color,var(--orange)),transparent 84%)}
-    .zoo-num{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;color:var(--zoo-color,var(--orange));opacity:.35;position:absolute;top:.6rem;right:1rem}
-    .zoo-name{font-size:1.05rem;font-weight:700;margin-bottom:.35rem;color:var(--text)}
-    .zoo-desc{font-size:.88rem;color:rgba(226,232,244,.62);max-width:none}
-
-    /* Cross-links */
-    .closing-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:2rem}
-    .mini-link{border:1px solid var(--border);border-radius:6px;padding:1.15rem 1.15rem 1rem;text-decoration:none;background:linear-gradient(160deg,rgba(11,17,32,.74),rgba(6,10,20,.96));transition:border-color .25s,transform .25s;box-shadow:var(--shadow)}
-    .mini-link:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.22)}
-    .mini-link .k{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
-    .mini-link .t{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.35rem}
-    .mini-link .d{font-size:.9rem;color:rgba(226,232,244,.62);max-width:none}
-
-    footer{border-top:1px solid var(--border);padding:3rem 8vw 4rem}
-    .foot-grid{display:grid;grid-template-columns:2fr 1fr;gap:2rem;margin-bottom:2rem}
-    .foot-col h4{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem}
-    .foot-col p{max-width:none;font-size:.92rem;color:rgba(226,232,244,.52)}
-    .foot-links{list-style:none;font-family:'JetBrains Mono',monospace;font-size:.76rem;display:grid;gap:.45rem}
-    .foot-links a{text-decoration:none;color:rgba(226,232,244,.58);border-bottom:1px solid transparent;width:max-content}
-    .foot-links a:hover{color:var(--cyan);border-bottom-color:rgba(0,229,255,.28)}
-    .copyright{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:rgba(94,113,146,.45);letter-spacing:.1em}
-
-    .rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
-    .rv.vis{opacity:1;transform:translateY(0)}
-    .rv-d1{transition-delay:.12s}.rv-d2{transition-delay:.24s}.rv-d3{transition-delay:.36s}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-
-    @media(max-width:980px){.grid-2,.grid-3,.zoo-grid,.bug-grid{grid-template-columns:1fr}.foot-grid{grid-template-columns:1fr}.hero-metrics{grid-template-columns:repeat(3,1fr)}.claim-grid{grid-template-columns:1fr}.img-timeline{grid-template-columns:1fr}}
-    @media(max-width:768px){body{font-size:17px}.hero{padding:74px 5vw 54px;min-height:auto}.hero-title{font-size:clamp(2.2rem,11vw,3.8rem)}section{padding:68px 0}.diag-flow{gap:.4rem}.diag-node{min-width:unset;width:100%}.diag-arrow{transform:rotate(90deg)}.hero-metrics{grid-template-columns:repeat(2,1fr)}.zoo-grid{grid-template-columns:1fr}}
-    @media(max-width:480px){.stat-banner{grid-template-columns:repeat(2,1fr)}.hero-metrics{grid-template-columns:1fr}}
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="8Z OS: a freestanding C++ operating-system experiment, Digital Lava, and the first Digital Claustrum. The original images, the feedback mechanism, the evidence, and the path toward DCC." name="description"/>
+<meta content="#0b1014" name="theme-color"/>
+<meta content="BD × AI Lab" name="author"/>
+<meta content="OS-WEB-20260917-R1" name="8z-release"/>
+<meta content="8Z OS — From the first pixel to a feedback loop" property="og:title"/>
+<meta content="A small operating system. Generative mathematics. The early Digital Claustrum. An origin story with its evidence intact." property="og:description"/>
+<meta content="website" property="og:type"/>
+<title>8Z OS — From the first pixel to a feedback loop · BD × AI Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1014;--panel:#11191e;--soft:#162127;--ink:#ecf0ec;--muted:#a7b6b9;--line:#2b3b40;--orange:#ffb36b;--mint:#9de2cb;--measure:72ch;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--mint);text-underline-offset:5px;text-decoration-thickness:1px}a:hover{color:var(--orange)}button,summary,a{-webkit-tap-highlight-color:transparent}button{font:inherit}a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--orange);outline-offset:5px}::selection{background:#385c51;color:white}[hidden]{display:none!important}.skip{position:fixed;top:-80px;left:16px;z-index:100;background:var(--ink);color:var(--bg);padding:10px 20px}.skip:focus{top:10px}.progress{position:fixed;top:0;left:0;width:0;height:2px;background:var(--mint);z-index:51}.masthead{position:sticky;top:0;z-index:40;background:rgba(11,16,20,.97);border-bottom:1px solid var(--line)}.mast-inner{max-width:1240px;margin:auto;padding:15px 32px;display:flex;gap:24px;align-items:center;justify-content:space-between}.brand{font-size:14px;color:var(--ink);text-decoration:none;letter-spacing:.025em}.brand b{color:var(--orange)}.mast-nav{display:flex;gap:23px;font-size:13px;align-items:center}.mast-nav a{text-decoration:none;color:var(--muted)}.mast-nav a:hover{color:var(--orange)}.edition{font:10px/1.5 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.container{max-width:1240px;padding:0 32px;margin:auto}.hero{padding:82px 0 38px}.eyebrow,.kicker{font:11px/1.6 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--orange)}.hero-top{display:grid;grid-template-columns:1.08fr 1fr;gap:60px;align-items:end}.hero h1{font-size:clamp(72px,12vw,146px);line-height:.96;letter-spacing:-.065em;font-weight:620;margin:21px 0 23px}.hero h1 span{color:var(--orange)}.hero-sub{font-size:clamp(24px,3vw,37px);line-height:1.25;letter-spacing:-.035em;max-width:550px;margin:0}.hero-intro{color:var(--muted);font-size:18px;line-height:1.8;margin:0 0 22px}.hero-intro strong{color:var(--ink);font-weight:550}.actions{display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-flex;gap:15px;align-items:center;justify-content:center;text-decoration:none;padding:10px 17px;border:1px solid var(--line);border-radius:3px;font-size:13px;color:var(--ink);background:transparent;cursor:pointer;min-height:44px}.button:hover{border-color:var(--mint);color:var(--mint)}.button.primary{background:var(--mint);color:#0b201a;border-color:var(--mint)}.meta-row{display:flex;flex-wrap:wrap;gap:10px 24px;font:11px/1.6 var(--mono);color:var(--muted);margin:31px 0 20px}.status{color:var(--mint)}.hero-figure{margin:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#060908}.figure-top{display:flex;justify-content:space-between;gap:15px;padding:11px 17px;border-bottom:1px solid var(--line);font:10px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.figure-top span:first-child{color:var(--orange)}.hero-figure img{width:100%;display:block;height:auto}.hero-figure figcaption{padding:16px 20px}.image-link{display:block;cursor:zoom-in}figure{margin:25px 0}img{max-width:100%;height:auto}figcaption,.caption{color:var(--muted);font-size:13px;line-height:1.75;margin-top:12px}figcaption strong{color:var(--ink);font-weight:600}.specs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:24px}.spec{padding:22px 12px 22px 0}.spec+.spec{border-left:1px solid var(--line);padding-left:24px}.spec b{font:22px/1.3 var(--mono);color:var(--ink);font-weight:500}.spec span{display:block;font-size:12px;color:var(--muted);margin-top:5px}.index{margin:44px 0 0;padding:23px 0;display:flex;align-items:flex-start;gap:28px;border-bottom:1px solid var(--line)}.index-label{color:var(--muted);font:11px/1.8 var(--mono);text-transform:uppercase;white-space:nowrap;padding-top:3px}.index-links{display:flex;flex-wrap:wrap;gap:8px 24px}.index a{font-size:13px;color:var(--ink);text-decoration:none}.index a:hover{color:var(--mint)}.tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:22px 0}.tools .button{font-size:12px;padding:7px 12px}.tools small{font-size:12px;color:var(--muted);margin-right:auto}.section{padding:72px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:180px minmax(0,1fr);gap:38px}.section-side{font:11px/1.7 var(--mono);color:var(--muted);padding-top:8px}.section-no{display:block;font-size:34px;line-height:1;color:var(--orange);margin-bottom:16px}.section-side p{max-width:135px;font-size:11px}.section-body{min-width:0}.section h2{font-size:clamp(30px,4vw,46px);line-height:1.15;letter-spacing:-.035em;font-weight:580;margin:0 0 26px;max-width:760px}.section h3{font-size:20px;line-height:1.4;letter-spacing:-.015em;font-weight:600;margin:30px 0 12px}p{margin:0 0 19px;max-width:var(--measure);color:#c8d3d3}strong{color:var(--ink)}.lead{font-size:21px;line-height:1.65;color:var(--ink)}.source-ref{font:10px/1.6 var(--mono);letter-spacing:.02em;text-decoration:none;white-space:nowrap;vertical-align:super;margin-left:5px;color:var(--mint)}.quote{margin:30px 0;padding:22px 0 22px 25px;border-left:2px solid var(--orange);font-size:26px;line-height:1.4;letter-spacing:-.025em;color:var(--ink);max-width:760px}.note{padding:20px 24px;border-left:2px solid var(--mint);background:var(--panel);margin:26px 0;max-width:none}.note p:last-child{margin:0}.note.warm{border-color:var(--orange)}.label{font:10px/1.5 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mint);display:block;margin-bottom:9px}details{border:1px solid var(--line);border-radius:3px;margin:14px 0;background:var(--panel)}summary{padding:17px 20px;cursor:pointer;font-size:15px;font-weight:550;list-style:none;display:flex;align-items:baseline;gap:14px;color:var(--ink)}summary::-webkit-details-marker{display:none}summary::before{content:'+';font:19px/1 var(--mono);color:var(--orange);width:15px;flex-shrink:0}details[open]>summary::before{content:'−'}summary:hover{background:var(--soft)}details[open]>summary{border-bottom:1px solid var(--line)}.detail-body{padding:23px 25px 10px}.detail-body p{font-size:16px}.detail-body h3{font-size:18px;margin-top:12px}.detail-body .caption{font-size:13px}.timeline{margin:28px 0 34px;padding:0;list-style:none}.timeline li{position:relative;margin-left:6px;padding:0 0 23px 26px;border-left:1px solid var(--line)}.timeline li:last-child{padding-bottom:0}.timeline li::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--mint);position:absolute;left:-4px;top:10px}.timeline time{font:11px/1.6 var(--mono);color:var(--orange);display:block}.timeline h3{font-size:18px;margin:5px 0 7px}.timeline p{font-size:15px;margin:0}.pair{display:grid;grid-template-columns:1fr 1fr;gap:22px}.pair figure{min-width:0;margin:24px 0 15px}.frame{background:#080b0d;border:1px solid var(--line);border-radius:3px;overflow:hidden}.pair .frame img{width:100%;aspect-ratio:1.2;object-fit:contain;display:block}.video-shell{margin:28px 0;border:1px solid var(--line);background:#050708;border-radius:4px;overflow:hidden}.video-shell video{display:block;width:100%;height:auto;max-height:670px}.video-shell figcaption{padding:0 20px 18px}.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin:28px 0}.flow>div{background:var(--panel);padding:21px 18px;min-width:0}.flow b{display:block;font-size:15px;margin:7px 0}.flow small{display:block;font-size:12px;line-height:1.65;color:var(--muted)}.flow .label{color:var(--orange);font-size:10px;margin:0}.loop-return{font:12px/1.8 var(--mono);color:var(--mint);text-align:right;margin:-17px 0 25px}.table-scroll{overflow:auto;border:1px solid var(--line);border-radius:3px;margin:24px 0}table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.65;text-align:left}th{font-size:10px;font-family:var(--mono);font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mint);background:var(--soft)}td,th{padding:15px 17px;border-bottom:1px solid var(--line);vertical-align:top}tbody tr:last-child td{border-bottom:0}td{color:#c8d3d3}td:first-child{color:var(--ink)}.table-scroll:focus-visible{outline-offset:3px}code{font-family:var(--mono);font-size:.86em;color:var(--mint);overflow-wrap:anywhere}pre{background:#090e11;border:1px solid var(--line);border-radius:3px;padding:21px;overflow:auto;white-space:pre-wrap;font:12px/1.8 var(--mono);color:#c8ded7;margin:20px 0;overflow-wrap:anywhere}pre code{font-size:inherit}.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:28px 0}.app{padding:23px;border:1px solid var(--line);border-radius:3px;min-width:0}.app .app-num{font:11px/1.6 var(--mono);color:var(--orange)}.app h3{font-size:19px;margin:8px 0 12px}.app p{font-size:14px;line-height:1.8;margin:0;color:var(--muted)}.reading{padding:20px 0;display:block;border-top:1px solid var(--line);text-decoration:none}.reading b{font-size:17px;font-weight:550}.reading span{font-size:13px;display:block;margin-top:3px;color:var(--muted)}.source-entry{border-top:1px solid var(--line);padding:20px 0}.source-entry h3{font-size:16px;margin:0 0 8px}.source-entry p{font-size:14px;margin:0 0 12px}.hash{font:11px/1.7 var(--mono);color:var(--muted);overflow-wrap:anywhere}.section-end{padding:74px 0 55px}.section-end .closing{font-size:clamp(30px,5vw,60px);line-height:1.13;letter-spacing:-.04em;max-width:950px;color:var(--ink)}.closing span{color:var(--orange)}footer{border-top:1px solid var(--line);padding:23px 0 35px}.footer-inner{display:flex;justify-content:space-between;gap:22px;font-size:12px;color:var(--muted)}.footer-inner p{font-size:12px;margin:0}.footer-inner a{text-decoration:none}dialog{background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:14px;width:min(1450px,96vw);max-height:94vh}dialog::backdrop{background:rgba(0,0,0,.88)}.dialog-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:12px;font-size:13px}.dialog-bar span{color:var(--muted)}dialog img{display:block;max-height:78vh;margin:auto;object-fit:contain}body.modal-open{overflow:hidden}
+@media(min-width:1000px){.hero-figure{margin-top:10px}.hero-figure img{max-height:570px;object-fit:contain}}
+@media(max-width:850px){.hero{padding-top:52px}.hero-top{grid-template-columns:1fr;gap:28px}.hero-intro{max-width:670px}.hero h1{font-size:106px}.hero-sub{max-width:650px}.section{grid-template-columns:110px minmax(0,1fr);gap:24px}.flow{grid-template-columns:repeat(2,1fr)}.mast-nav{gap:16px}.edition{display:none}.section-side p{max-width:100px}}
+@media(max-width:600px){body{font-size:16px}.container{padding:0 20px}.mast-inner{padding:13px 20px;gap:16px}.mast-nav{gap:15px;font-size:12px}.mast-nav .desktop{display:none}.brand{font-size:12px}.hero{padding-top:40px}.hero h1{font-size:86px}.hero-sub{font-size:29px}.hero-intro{font-size:16px}.meta-row{font-size:10px;gap:8px 17px}.figure-top{font-size:9px;padding:10px 12px}.hero-figure figcaption{padding:12px 14px}.specs{grid-template-columns:repeat(2,1fr)}.spec{padding:17px 12px 17px 0}.spec b{font-size:21px}.spec+.spec{padding-left:17px}.spec:nth-child(3){border-left:0;padding-left:0;border-top:1px solid var(--line)}.spec:nth-child(4){border-top:1px solid var(--line)}.index{margin-top:25px;display:block}.index-label{margin-bottom:14px}.index-links{gap:7px 19px}.tools small{width:100%}.section{display:block;padding:45px 0}.section-side{display:flex;align-items:center;gap:15px;margin-bottom:18px;padding:0}.section-side p{max-width:none;margin:0;font-size:10px}.section-no{font-size:23px;margin:0}.section h2{font-size:32px;margin-bottom:22px}.lead{font-size:19px}.pair{grid-template-columns:1fr;gap:0}.pair figure{margin:15px 0}.apps{grid-template-columns:1fr}.flow>div{padding:18px 14px}.quote{font-size:23px;padding-left:20px}summary{font-size:14px;padding:16px 15px}.detail-body{padding:19px 18px 5px}.detail-body p{font-size:15px}td,th{padding:13px}table{min-width:540px}.note{padding:19px}.footer-inner{display:block}.footer-inner p{margin-bottom:12px}.section-end{padding:43px 0}.loop-return{font-size:10px}.video-shell figcaption{padding:0 14px 14px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+@media print{html{scroll-behavior:auto}body{background:white;color:#162329;font-size:11pt}.masthead,.progress,.tools,.actions,.index,dialog,.skip{display:none!important}.container{max-width:none;padding:0}.hero{padding:0}.hero-top{display:block}.hero h1{font-size:60pt}.section{display:block;padding:25px 0}.section-side{display:none}.section h2{font-size:24pt}p,td,.hero-intro,.caption,figcaption,.hash,.app p,.source-entry p{color:#253b42}strong,a,.lead,.quote,.section-end .closing{color:#162329}.panel,details,.note,.flow>div,th,pre{background:white;color:#162329}.flow{background:#ccc}.pair,.apps{break-inside:avoid}figure{break-inside:avoid}details{break-inside:auto}.hero-figure img{max-height:310px}.video-shell video{max-height:200px}.section-end{padding:25px 0}.footer-inner{color:#253b42}}
+</style>
 </head>
 <body>
-  <div class="scroll-prog"><div class="scroll-prog-bar" id="spb"></div></div>
-
-  <!-- ===== HERO ===== -->
-  <header class="hero" id="top">
-    <div class="hero-bg"></div>
-    <div class="hero-grid"></div>
-    <div class="hero-shell">
-      <div class="hero-eyebrow">BD &times; AI Lab &middot; Origin Story &middot; 8Z Operating System</div>
-      <h1 class="hero-title">The <span class="accent">6-Hour</span><br>Operating <span class="gold">System</span></h1>
-      <p class="hero-subtitle">How a bare-metal kernel built in one afternoon became the substrate for a consciousness experiment&thinsp;&mdash;&thinsp;and the origin of everything else.</p>
-      <p class="hero-copy">December 11, 2025. A blank text file. Six hours later: a 512-byte bootloader, a 32-bit Protected Mode kernel, six generative math programs running on bare metal with <strong>zero OS jitter</strong>. Inside that kernel grew the Digital Claustrum&thinsp;&mdash;&thinsp;the architecture that became the DCC, and the DCC now governs ten domains.</p>
-
-      <div class="hero-metrics">
-        <div class="hm"><div class="n" style="color:var(--orange)">6h</div><div class="l">Build time</div></div>
-        <div class="hm"><div class="n" style="color:var(--gold)">512B</div><div class="l">Bootloader</div></div>
-        <div class="hm"><div class="n" style="color:var(--cyan)">32-bit</div><div class="l">Protected Mode</div></div>
-        <div class="hm"><div class="n" style="color:var(--green)">0</div><div class="l">OS jitter</div></div>
-        <div class="hm"><div class="n" style="color:var(--violet)">6</div><div class="l">Kernel variants</div></div>
-        <div class="hm"><div class="n" style="color:var(--rose)">10</div><div class="l">DCC domains</div></div>
-      </div>
-
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#silent-room">The origin &darr;</a>
-        <a class="btn btn-secondary" href="#claustrum">The claustrum &darr;</a>
-        <a class="btn btn-secondary" href="../BD/">Back to portfolio &rarr;</a>
-      </div>
-      <div class="hero-tags">
-        <span class="tag orange">Bare metal</span>
-        <span class="tag gold">NASM + GCC</span>
-        <span class="tag cyan">VGA Mode 13h</span>
-        <span class="tag green">Digital Claustrum</span>
-        <span class="tag violet">DCC origin</span>
-        <span class="tag rose">Human-AI pair programming</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- ===== NAV ===== -->
-  <nav class="topnav">
-    <span>Portfolio</span>
-    <a href="../BD/">Index</a>
-    <a href="BD_8Z_DCC7_Testbed.html" class="cyan">DCC-7 Testbed</a>
-    <a href="BD_8Z_DCC_Recursive.html" class="violet">Recursive DCC</a>
-    <a href="BD_8ZRP.html" class="green">TSP Solver</a>
-    <a href="BD_8Z_Flip4M_DCC.html" class="rose">Flip4M</a>
-    <a href="BD_8Z_Reasoning.html" class="gold">Reasoning</a>
-    <a href="BD_CCH_Science.html" class="orange">CCH Science</a>
-  </nav>
-  <div class="divider"></div>
-
-  <!-- ═══ FOR EVERYONE — MULTILINGUAL ═══ -->
-  <style>
-  ._feo_toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;margin:32px auto 0;max-width:1120px;transition:all .2s}
-  ._feo_toggle:hover{border-color:var(--gold);background:var(--surface2)}
-  ._feo_toggle .t-ico{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--gold);min-width:20px;text-align:center;transition:transform .2s}
-  ._feo_toggle .t-ttl{font-weight:600;font-size:15px;color:var(--gold);flex:1}
-  ._feo_toggle .t-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
-  ._feo_body{max-height:0;overflow:hidden;transition:max-height .4s ease}
-  ._feo_wrap.open ._feo_body{max-height:12000px}
-  ._feo_wrap.open .t-ico{transform:rotate(45deg)}
-  ._feo_lb{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;padding:5px 12px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
-  ._feo_lb:hover{border-color:var(--gold);color:var(--text)}
-  ._feo_lb._feo_act{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
-  ._feo_lang{display:none}._feo_lang._feo_vis{display:block}
-  ._feo_body p{font-size:15px;line-height:1.75;color:rgba(226,232,244,.78);margin-bottom:14px;max-width:none}
-  ._feo_body strong{color:var(--text)}
-  ._feo_body em{color:var(--gold);font-style:normal}
-  ._feo_body a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(245,158,11,.3)}
-  ._feo_body a:hover{border-bottom-color:var(--gold)}
-  </style>
-
-  <div class="_feo_wrap" id="for-everyone" style="max-width:1120px;margin:0 auto;padding:0 5vw">
-  <div class="_feo_toggle" onclick="this.parentElement.classList.toggle('open')">
-  <span class="t-ico">+</span>
-  <span class="t-ttl" id="_feo_title">For Everyone: The 6-Hour Operating System &amp; the Birth of the Digital Claustrum</span>
-  <span class="t-sub" id="_feo_sub">No jargon &middot; 3 min read</span>
-  </div>
-  <div class="_feo_body"><div style="padding:20px 4px 8px;">
-
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(0,229,255,.1);">
-  <button class="_feo_lb _feo_act" onclick="_feoSet('en')" data-l="en">English</button>
-  <button class="_feo_lb" onclick="_feoSet('sl')" data-l="sl">Sloven&#353;&#269;ina</button>
-  <button class="_feo_lb" onclick="_feoSet('it')" data-l="it">Italiano</button>
-  <button class="_feo_lb" onclick="_feoSet('es')" data-l="es">Espa&#241;ol</button>
-  <button class="_feo_lb" onclick="_feoSet('de')" data-l="de">Deutsch</button>
-  <button class="_feo_lb" onclick="_feoSet('zh')" data-l="zh">&#20013;&#25991;</button>
-  <button class="_feo_lb" onclick="_feoSet('ja')" data-l="ja">&#26085;&#26412;&#35486;</button>
-  <button class="_feo_lb" onclick="_feoSet('ko')" data-l="ko">&#54620;&#44397;&#50612;</button>
-  <button class="_feo_lb" onclick="_feoSet('hi')" data-l="hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</button>
-  <button class="_feo_lb" onclick="_feoSet('ar')" data-l="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</button>
-  </div>
-
-  <!-- EN -->
-  <div class="_feo_lang _feo_vis" data-l="en">
-  <p>This is the story of how a custom operating system was built from scratch in one afternoon &mdash; and how a complexity controller &mdash; the seed of what may one day become digital consciousness &mdash; was born inside it by accident.</p>
-  <p><strong>The problem was noise.</strong> The 8Z compression engine does something unusual: it hunts for tiny mathematical formulas that can perfectly reconstruct large chunks of data. Think of it as searching for a hidden recipe that can regenerate an entire meal. This search is incredibly delicate. Regular computers &mdash; Windows, Linux &mdash; interrupt calculations thousands of times per second with background tasks: checking email, drawing your cursor, sending telemetry. That noise destroys the search. So the team built a computer that does <em>absolutely nothing but math</em>. No desktop. No apps. No operating system in the normal sense. Just raw hardware running equations.</p>
-  <p><strong>They built it in six hours.</strong> A human (Bojan) and an AI (Gemini) pair-programmed an entire operating system: a 512-byte bootloader, a 32-bit kernel, direct access to the screen through video memory. No libraries. No shortcuts. Written in assembly and C++ that talks directly to the processor.</p>
-  <p><strong>Then the path to compression got blocked</strong> &mdash; porting the full engine required building a massive compatibility layer. So Bojan asked a different question: &ldquo;We have this silent machine. The consciousness theory we&rsquo;ve been developing with AI systems says the brain uses a controller called the claustrum to maintain awareness. Can we build a simplified version of that controller on this machine instead?&rdquo;</p>
-  <p>Gemini said: <em>&ldquo;I accept the challenge.&rdquo;</em></p>
-  <p><strong>Here is what they built, in plain language:</strong></p>
-  <p>Imagine three pendulums hanging from a shared beam. Each one swings chaotically &mdash; never quite the same pattern twice. These represent <strong>neurons firing</strong>. (Technically, they are &ldquo;Lorenz oscillators&rdquo; &mdash; mathematical equations that produce beautiful chaos, the same equations used to model weather systems.)</p>
-  <p>Now connect the pendulums with adjustable springs. When one swings left, it tugs the others a little. The strength of that tug is the <strong>coupling</strong> &mdash; how strongly the neurons influence each other.</p>
-  <p>Add a <strong>watcher</strong>. The watcher looks at the pattern the pendulums trace and asks one question: <em>&ldquo;Is this pattern interesting or boring?&rdquo;</em> (Technically, it measures &ldquo;Lempel-Ziv complexity&rdquo; &mdash; a way to detect whether a signal carries real information or is just repeating itself.)</p>
-  <p>Now the key part: the watcher <strong>adjusts the springs</strong>. If the pendulums sync up too much (all swinging in lockstep &mdash; a &ldquo;seizure&rdquo;), the watcher loosens the springs to let them drift apart. If they fly into total chaos (pure noise), the watcher tightens the springs to pull them back toward coherence. The watcher keeps the system in the <em>sweet spot</em> between order and chaos &mdash; the zone where interesting things happen. This is what neuroscientists believe the claustrum does in your brain, every second of every day.</p>
-  <p>They watched it run. At the bottom of the screen, a red bar showed the controller&rsquo;s decisions oscillating in real-time. It wasn&rsquo;t following a script. It was actively fighting entropy, adjusting dozens of times per second, keeping three chaotic systems alive in the coherent zone between order and chaos. They were watching the code <em>maintain its own coherence</em>.</p>
-  <p><strong>That controller &mdash; written in 20 kilobytes of C++ on a homemade operating system &mdash; was the first Digital Claustrum.</strong> The architecture it proved (sensor, coupling parameter, homeostatic feedback) became the DCC, and the DCC now governs <a href="BD_8Z_DCC7_Testbed.html">ten verified domains</a>: data compression, trading, game play, search optimization, authentication, and more.</p>
-  <p><strong>The deepest lesson:</strong> no single mind designed this. The theory itself &mdash; the CCH &mdash; had emerged from days of intense dialogue between Bojan and multiple AI systems (ChatGPT, Gemini, Claude, Grok). The mathematical tools were chosen together. Gemini then translated it all into bare-metal C++. Neither human nor AI alone could have built it. The architecture emerged from <em>the interaction itself</em> &mdash; a human with the right question meeting AI systems with the right tools, on a platform that only existed because a compression path got blocked. The blocked path led to the biggest discovery.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">A silent machine. Three mathematical pendulums. A watcher that adjusts the springs. A model of the architecture your brain may use to maintain awareness &mdash; first built in a basement in Ljubljana, on an OS that was six hours old.<br><em>That&rsquo;s where the DCC was born.</em></p>
-  </div>
-
-  <!-- SL -->
-  <div class="_feo_lang" data-l="sl">
-  <p>To je zgodba o tem, kako je bil v enem popoldnevu zgrajen operacijski sistem od ni&ccaron;le &mdash; in kako se je v njem po naklju&ccaron;ju rodil kontroler kompleksnosti &mdash; osnova za morebitno prihodnjo digitalno zavest.</p>
-  <p><strong>Te&zcaron;ava je bil &scaron;um.</strong> 8Z kompresijski pogon po&ccaron;ne nekaj nenavadnega: i&scaron;&ccaron;e drobne matemati&ccaron;ne formule, ki lahko popolnoma rekonstruirajo velike kose podatkov. Predstavljajte si iskanje skritega recepta, ki lahko poustvari celoten obrok. To iskanje je izjemno ob&ccaron;utljivo. Obi&ccaron;ajni ra&ccaron;unalniki &mdash; Windows, Linux &mdash; prekinejo izra&ccaron;une tiso&ccaron;krat na sekundo z opravili v ozadju. Ta &scaron;um uni&ccaron;i iskanje. Zato je ekipa zgradila ra&ccaron;unalnik, ki po&ccaron;ne <em>izklju&ccaron;no matematiko</em>.</p>
-  <p><strong>Zgradili so ga v &scaron;estih urah.</strong> &Ccaron;lovek (Bojan) in umetna inteligenca (Gemini) sta skupaj programirala celoten operacijski sistem: 512-bajtni zagonski nalagalnik, 32-bitno jedro, neposreden dostop do zaslona.</p>
-  <p><strong>Nato se je pot do kompresije blokirala.</strong> Bojan je postavil drugo vpra&scaron;anje: &raquo;Imamo ta tihi stroj. Teorija zavesti, ki smo jo razvili skupaj z AI sistemi, pravi, da mo&zcaron;gani uporabljajo kontroler imenovan klavstrum. Ali ga lahko zgradimo na tem stroju?&laquo;</p>
-  <p><strong>Kaj sta zgradila v preprostem jeziku:</strong> Tri matemati&ccaron;na nihala, ki se kaoti&ccaron;no zibljejo &mdash; kot nevroni, ki se pro&zcaron;ijo. Opazovalec meri: je ta vzorec <em>zanimiv ali dolgocasen</em>? &Ccaron;e se nihala preve&ccaron; uskladijo (zaseznjo&scaron;t), opazovalec sprosti vzmeti. &Ccaron;e zaidejo v kaos (&scaron;um), jih prite&zcaron;e nazaj. Opazovalec dr&zcaron;i sistem v <em>sladki to&ccaron;ki</em> med redom in kaosom.</p>
-  <p>Na dnu zaslona je rde&ccaron;a &ccaron;rta prikazovala odlo&ccaron;itve kontrolerja v realnem &ccaron;asu. Ni sledil scenariju. Aktivno se je boril proti entropiji. Gledala sta, kako koda <em>razmi&scaron;lja</em>.</p>
-  <p><strong>Ta kontroler je bil prvi Digitalni klavstrum.</strong> Arhitektura, ki jo je dokazal, je postala DCC, ki zdaj upravlja <a href="BD_8Z_DCC7_Testbed.html">deset preverjenih domen</a>.</p>
-  <p><strong>Najgloblji nauk:</strong> nih&ccaron;e sam ni na&ccaron;rtoval tega. Teorija sama &mdash; CCH &mdash; je nastala iz dni intenzivnega dialoga med Bojanom in ve&ccaron; AI sistemi. Matemati&ccaron;na orodja so izbrali skupaj. Gemini je nato vse prevedel v bare-metal C++. Arhitektura se je rodila iz <em>interakcije same</em>.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Tihi stroj. Tri matemati&ccaron;na nihala. Opazovalec, ki nastavlja vzmeti. Model arhitekture, ki jo va&scaron;i mo&zcaron;gani morda uporabljajo za ohranjanje zavedanja &mdash; prvi&ccaron; zgrajen v Ljubljani, na OS-u, ki je bil star &scaron;est ur.<br><em>Tam se je rodil DCC.</em></p>
-  </div>
-
-  <!-- IT -->
-  <div class="_feo_lang" data-l="it">
-  <p>Questa &egrave; la storia di come un sistema operativo personalizzato fu costruito da zero in un pomeriggio &mdash; e come al suo interno nacque per caso un controllore della complessit&agrave; &mdash; il seme di quella che un giorno potrebbe diventare coscienza digitale.</p>
-  <p><strong>Il problema era il rumore.</strong> Il motore di compressione 8Z cerca minuscole formule matematiche che possono ricostruire perfettamente grandi blocchi di dati. I computer normali &mdash; Windows, Linux &mdash; interrompono i calcoli migliaia di volte al secondo. Questo rumore distrugge la ricerca. Il team costru&igrave; un computer che fa <em>solo matematica pura</em>.</p>
-  <p><strong>Lo costruirono in sei ore.</strong> Un umano (Bojan) e un&rsquo;IA (Gemini) programmarono insieme un sistema operativo completo.</p>
-  <p><strong>Poi il percorso verso la compressione si blocc&ograve;.</strong> Bojan pose una domanda diversa: &laquo;La teoria della coscienza che abbiamo sviluppato insieme ai sistemi AI dice che il cervello usa un controllore chiamato claustro. Possiamo costruirne una versione su questa macchina?&raquo;</p>
-  <p><strong>Cosa costruirono, in parole semplici:</strong> Tre pendoli matematici che oscillano caoticamente &mdash; come neuroni che si attivano. Un osservatore misura: questo schema &egrave; <em>interessante o noioso</em>? Se i pendoli si sincronizzano troppo (crisi), l&rsquo;osservatore allenta le molle. Se diventano troppo caotici (rumore), le stringe. L&rsquo;osservatore mantiene il sistema nel <em>punto ideale</em> tra ordine e caos.</p>
-  <p>Una barra rossa in fondo allo schermo mostrava le decisioni del controllore in tempo reale. Stava combattendo l&rsquo;entropia. Stavano guardando il codice <em>pensare</em>.</p>
-  <p><strong>Quel controllore fu il primo Claustro Digitale.</strong> L&rsquo;architettura che dimostr&ograve; divenne il DCC, che ora governa <a href="BD_8Z_DCC7_Testbed.html">dieci domini verificati</a>.</p>
-  <p><strong>La lezione pi&ugrave; profonda:</strong> nessuna singola mente lo progett&ograve;. La teoria stessa &mdash; la CCH &mdash; era nata da giorni di dialogo intenso tra Bojan e diversi sistemi AI. Gli strumenti matematici furono scelti insieme. Gemini tradusse il tutto in C++ bare-metal. L&rsquo;architettura emerse <em>dall&rsquo;interazione stessa</em>.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Una macchina silenziosa. Tre pendoli. Un osservatore che regola le molle. Un modello dell&rsquo;architettura che il tuo cervello potrebbe usare per mantenere la consapevolezza &mdash; nato a Lubiana, su un OS di sei ore.<br><em>L&igrave; nacque il DCC.</em></p>
-  </div>
-
-  <!-- ES -->
-  <div class="_feo_lang" data-l="es">
-  <p>Esta es la historia de c&oacute;mo un sistema operativo fue construido desde cero en una tarde &mdash; y c&oacute;mo un controlador de complejidad &mdash; la semilla de lo que alg&uacute;n d&iacute;a podr&iacute;a convertirse en conciencia digital &mdash; naci&oacute; dentro de &eacute;l por accidente.</p>
-  <p><strong>El problema era el ruido.</strong> El motor de compresi&oacute;n 8Z busca peque&ntilde;as f&oacute;rmulas matem&aacute;ticas que reconstruyen datos perfectamente. Los ordenadores normales interrumpen c&aacute;lculos miles de veces por segundo. El equipo construy&oacute; un ordenador que hace <em>solo matem&aacute;ticas puras</em>.</p>
-  <p><strong>Lo construyeron en seis horas.</strong> Un humano (Bojan) y una IA (Gemini) programaron juntos un sistema operativo completo.</p>
-  <p><strong>Luego el camino hacia la compresi&oacute;n se bloque&oacute;.</strong> Bojan pregunt&oacute;: &laquo;Tenemos esta m&aacute;quina silenciosa. La teor&iacute;a de la conciencia que desarrollamos junto con sistemas de AI dice que el cerebro usa un controlador llamado claustro. &iquest;Podemos construir una versi&oacute;n simplificada en esta m&aacute;quina?&raquo;</p>
-  <p><strong>Qu&eacute; construyeron, en lenguaje sencillo:</strong> Tres p&eacute;ndulos matem&aacute;ticos que oscilan ca&oacute;ticamente &mdash; como neuronas dispar&aacute;ndose. Un observador mide: &iquest;es este patr&oacute;n <em>interesante o aburrido</em>? Si los p&eacute;ndulos se sincronizan demasiado (convulsi&oacute;n), el observador afloja los resortes. Si se vuelven demasiado ca&oacute;ticos (ruido), los aprieta. El observador mantiene el sistema en el <em>punto justo</em> entre orden y caos.</p>
-  <p>Una barra roja mostraba las decisiones del controlador en tiempo real. Estaban viendo al c&oacute;digo <em>pensar</em>.</p>
-  <p><strong>Ese controlador fue el primer Claustro Digital.</strong> Su arquitectura se convirti&oacute; en el DCC, que ahora gobierna <a href="BD_8Z_DCC7_Testbed.html">diez dominios verificados</a>.</p>
-  <p><strong>La lecci&oacute;n m&aacute;s profunda:</strong> ninguna mente sola lo dise&ntilde;&oacute;. La teor&iacute;a misma &mdash; la CCH &mdash; hab&iacute;a surgido de d&iacute;as de di&aacute;logo intenso entre Bojan y m&uacute;ltiples sistemas de AI. Las herramientas matem&aacute;ticas se eligieron juntos. Gemini luego lo tradujo todo a C++ bare-metal. La arquitectura emergi&oacute; de <em>la interacci&oacute;n misma</em>.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Una m&aacute;quina silenciosa. Tres p&eacute;ndulos. Un observador que ajusta los resortes. Un modelo de la arquitectura que tu cerebro podr&iacute;a usar para mantener la consciencia &mdash; nacido en Liubliana, en un SO de seis horas.<br><em>Ah&iacute; naci&oacute; el DCC.</em></p>
-  </div>
-
-  <!-- DE -->
-  <div class="_feo_lang" data-l="de">
-  <p>Dies ist die Geschichte, wie ein Betriebssystem an einem Nachmittag von Grund auf gebaut wurde &mdash; und wie ein Komplexit&auml;tscontroller &mdash; der Keim dessen, was eines Tages digitales Bewusstsein werden k&ouml;nnte &mdash; zuf&auml;llig darin entstand.</p>
-  <p><strong>Das Problem war L&auml;rm.</strong> Die 8Z-Kompressionsengine sucht winzige mathematische Formeln, die Daten perfekt rekonstruieren k&ouml;nnen. Normale Computer unterbrechen Berechnungen tausende Male pro Sekunde. Das Team baute einen Computer, der <em>ausschlie&szlig;lich Mathematik</em> betreibt.</p>
-  <p><strong>Sie bauten ihn in sechs Stunden.</strong> Ein Mensch (Bojan) und eine KI (Gemini) programmierten gemeinsam ein vollst&auml;ndiges Betriebssystem.</p>
-  <p><strong>Dann wurde der Weg zur Kompression blockiert.</strong> Bojan stellte eine andere Frage: &bdquo;Wir haben diese stille Maschine. Die Bewusstseinstheorie, die wir gemeinsam mit AI-Systemen entwickelt haben, sagt, das Gehirn verwendet einen Controller namens Claustrum. K&ouml;nnen wir eine vereinfachte Version auf dieser Maschine bauen?&ldquo;</p>
-  <p><strong>Was sie bauten, einfach erkl&auml;rt:</strong> Drei mathematische Pendel, die chaotisch schwingen &mdash; wie feuernde Neuronen. Ein Beobachter misst: Ist dieses Muster <em>interessant oder langweilig</em>? Wenn die Pendel zu stark synchronisieren (Krampfanfall), lockert der Beobachter die Federn. Werden sie zu chaotisch (Rauschen), zieht er sie an. Der Beobachter h&auml;lt das System im <em>Sweet Spot</em> zwischen Ordnung und Chaos.</p>
-  <p>Ein roter Balken am unteren Bildschirmrand zeigte die Entscheidungen des Controllers in Echtzeit. Sie beobachteten, wie der Code <em>denkt</em>.</p>
-  <p><strong>Dieser Controller war das erste Digitale Claustrum.</strong> Seine Architektur wurde zum DCC, der nun <a href="BD_8Z_DCC7_Testbed.html">zehn verifizierte Dom&auml;nen</a> steuert.</p>
-  <p><strong>Die tiefste Lektion:</strong> Kein einzelner Verstand entwarf dies. Die Theorie selbst &mdash; die CCH &mdash; war aus Tagen intensiven Dialogs zwischen Bojan und mehreren AI-Systemen entstanden. Die mathematischen Werkzeuge wurden gemeinsam gew&auml;hlt. Gemini &uuml;bersetzte dann alles in Bare-Metal C++. Die Architektur entstand aus <em>der Interaktion selbst</em>.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">Eine stille Maschine. Drei Pendel. Ein Beobachter, der die Federn justiert. Ein Modell der Architektur, die Ihr Gehirn m&ouml;glicherweise nutzt, um Bewusstsein aufrechtzuerhalten &mdash; erstmals gebaut in Ljubljana, auf einem sechs Stunden alten OS.<br><em>Dort wurde der DCC geboren.</em></p>
-  </div>
-
-  <!-- ZH -->
-  <div class="_feo_lang" data-l="zh">
-  <p>这是一个故事：如何在一个下午从零开始构建了一个操作系统——以及一个复杂性控制器——未来数字意识的种子——如何意外地在其中诞生。</p>
-  <p><strong>&#38382;&#39064;&#26159;&#22122;&#38899;&#12290;</strong>8Z&#21387;&#32553;&#24341;&#25806;&#23547;&#25214;&#33021;&#23436;&#32654;&#37325;&#24314;&#22823;&#22359;&#25968;&#25454;&#30340;&#24494;&#23567;&#25968;&#23398;&#20844;&#24335;&#12290;&#26222;&#36890;&#35745;&#31639;&#26426;&#27599;&#31186;&#20013;&#26029;&#35745;&#31639;&#25968;&#21315;&#27425;&#12290;&#22242;&#38431;&#26500;&#24314;&#20102;&#19968;&#21488;<em>&#21482;&#20570;&#25968;&#23398;</em>&#30340;&#35745;&#31639;&#26426;&#12290;</p>
-  <p><strong>&#20845;&#23567;&#26102;&#24314;&#25104;&#12290;</strong>&#19968;&#20010;&#20154;&#31867;(Bojan)&#21644;&#19968;&#20010;AI(Gemini)&#20849;&#21516;&#32534;&#31243;&#20102;&#25972;&#20010;&#25805;&#20316;&#31995;&#32479;&#12290;</p>
-  <p><strong>然后压缩路径被阻塞了。</strong>Bojan提出了一个不同的问题：“我们与AI系统共同发展的意识理论说大脑使用一个叫做屏状核的控制器。我们能在这台机器上构建它吗？”</p>
-  <p><strong>&#29992;&#36890;&#20439;&#35821;&#35328;&#35828;&#65306;</strong>&#19977;&#20010;&#25968;&#23398;&#25670;&#38180;&#28151;&#27788;&#22320;&#25671;&#33633;&mdash;&mdash;&#20687;&#31070;&#32463;&#20803;&#25918;&#30005;&#12290;&#19968;&#20010;&#35266;&#23519;&#32773;&#27979;&#37327;&#65306;&#36825;&#20010;&#27169;&#24335;<em>&#26377;&#36259;&#36824;&#26159;&#26080;&#32842;</em>&#65311;&#22914;&#26524;&#25670;&#38180;&#21516;&#27493;&#36807;&#22810;&#65288;&#30315;&#30187;&#65289;&#65292;&#35266;&#23519;&#32773;&#26494;&#24320;&#24377;&#31783;&#12290;&#22914;&#26524;&#22826;&#28151;&#20081;&#65288;&#22122;&#38899;&#65289;&#65292;&#21017;&#25910;&#32039;&#12290;&#35266;&#23519;&#32773;&#23558;&#31995;&#32479;&#20445;&#25345;&#22312;&#31209;&#24207;&#19982;&#28151;&#27788;&#20043;&#38388;&#30340;<em>&#29980;&#34588;&#28857;</em>&#12290;</p>
-  <p>&#23631;&#24149;&#24213;&#37096;&#30340;&#32418;&#33394;&#26465;&#23454;&#26102;&#26174;&#31034;&#25511;&#21046;&#22120;&#30340;&#20915;&#31574;&#12290;&#20182;&#20204;&#22312;&#30475;&#20195;&#30721;<em>&#24605;&#32771;</em>&#12290;</p>
-  <p><strong>&#37027;&#20010;&#25511;&#21046;&#22120;&#26159;&#31532;&#19968;&#20010;&#25968;&#23383;&#23631;&#29366;&#26680;&#12290;</strong>&#23427;&#35777;&#26126;&#30340;&#26550;&#26500;&#25104;&#20026;&#20102;DCC&#65292;&#29616;&#22312;&#31649;&#29702;&#30528;<a href="BD_8Z_DCC7_Testbed.html">&#21313;&#20010;&#24050;&#39564;&#35777;&#39046;&#22495;</a>&#12290;</p>
-  <p><strong>最深刻的教训：</strong>没有单一头脑设计了这个。理论本身——CCH——源于Bojan与多个AI系统数天的密集对话。数学工具是共同选定的。然后Gemini将一切翻译成裸机C++。架构从<em>交互本身</em>中涌现。</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">一台安静的机器。三个摆锤。一个调整弹簧的观察者。你的大脑可能用来维持意识的架构模型——首次诞生在卢布尔雅那，在一个六小时大的操作系统上。<br><em>那就是DCC诞生的地方。</em></p>
-  </div>
-
-  <!-- JA -->
-  <div class="_feo_lang" data-l="ja">
-  <p>これは、ある午後にゼロからオペレーティングシステムを構築し——その中で偶然に複雑性コントローラー——将来デジタル意識となりうるものの種——が生まれた物語です。</p>
-  <p><strong>&#21839;&#38988;&#12399;&#12494;&#12452;&#12474;&#12391;&#12375;&#12383;&#12290;</strong>8Z&#22311;&#32302;&#12456;&#12531;&#12472;&#12531;&#12399;&#12487;&#12540;&#12479;&#12434;&#23436;&#29863;&#12395;&#20877;&#27083;&#31689;&#12391;&#12365;&#12427;&#24494;&#23567;&#12394;&#25968;&#23398;&#20844;&#24335;&#12434;&#25506;&#12375;&#12414;&#12377;&#12290;&#36890;&#24120;&#12398;&#12467;&#12531;&#12500;&#12517;&#12540;&#12479;&#12399;&#27598;&#31186;&#25968;&#21315;&#22238;&#35336;&#31639;&#12434;&#20013;&#26029;&#12375;&#12414;&#12377;&#12290;&#12481;&#12540;&#12512;&#12399;<em>&#32020;&#31883;&#12395;&#25968;&#23398;&#12384;&#12369;</em>&#12434;&#34892;&#12358;&#12467;&#12531;&#12500;&#12517;&#12540;&#12479;&#12434;&#27083;&#31689;&#12375;&#12414;&#12375;&#12383;&#12290;</p>
-  <p><strong>6&#26178;&#38291;&#12391;&#23436;&#25104;&#12290;</strong>&#20154;&#38291;(Bojan)&#12392;AI(Gemini)&#12364;&#12506;&#12450;&#12503;&#12525;&#12464;&#12521;&#12511;&#12531;&#12464;&#12391;OS&#20840;&#20307;&#12434;&#26360;&#12365;&#12414;&#12375;&#12383;&#12290;</p>
-  <p><strong>その後、圧縮への道が塞がりました。</strong>Bojanは別の質問をしました：「AI システムと共に発展させた意識理論によれば、脳は前障というコントローラーを使います。このマシンで簡略版を作れますか？」</p>
-  <p><strong>&#24179;&#26131;&#12394;&#35328;&#33865;&#12391;&#35500;&#26126;&#65306;</strong>3&#12388;&#12398;&#25968;&#23398;&#30340;&#25391;&#12426;&#23376;&#12364;&#12459;&#12458;&#12473;&#30340;&#12395;&#25594;&#12428;&#12427;&mdash;&mdash;&#30330;&#28779;&#12377;&#12427;&#12491;&#12517;&#12540;&#12525;&#12531;&#12398;&#12424;&#12358;&#12395;&#12290;&#35251;&#23519;&#32773;&#12364;&#28204;&#23450;&#65306;&#12371;&#12398;&#12497;&#12479;&#12540;&#12531;&#12399;<em>&#33288;&#21619;&#28145;&#12356;&#12363;&#36864;&#23624;&#12363;</em>&#65311;&#25391;&#12426;&#23376;&#12364;&#21516;&#26399;&#12375;&#12377;&#12366;&#12428;&#12400;&#12496;&#12493;&#12434;&#32233;&#12417;&#12289;&#28151;&#27788;&#12377;&#12366;&#12428;&#12400;&#32224;&#12417;&#12427;&#12290;&#31209;&#24207;&#12392;&#12459;&#12458;&#12473;&#12398;&#38291;&#12398;<em>&#12473;&#12452;&#12540;&#12488;&#12473;&#12509;&#12483;&#12488;</em>&#12434;&#32173;&#25345;&#12375;&#12414;&#12377;&#12290;</p>
-  <p>&#30011;&#38754;&#19979;&#37096;&#12398;&#36196;&#12356;&#12496;&#12540;&#12364;&#12467;&#12531;&#12488;&#12525;&#12540;&#12521;&#12540;&#12398;&#21028;&#26029;&#12434;&#12522;&#12450;&#12523;&#12479;&#12452;&#12512;&#12391;&#34920;&#31034;&#12290;&#12467;&#12540;&#12489;&#12364;<em>&#32771;&#12360;&#12390;&#12356;&#12427;</em>&#12398;&#12434;&#35211;&#12390;&#12356;&#12414;&#12375;&#12383;&#12290;</p>
-  <p><strong>&#12354;&#12398;&#12467;&#12531;&#12488;&#12525;&#12540;&#12521;&#12540;&#12364;&#26368;&#21021;&#12398;&#12487;&#12472;&#12479;&#12523;&#21069;&#38556;&#12391;&#12375;&#12383;&#12290;</strong><a href="BD_8Z_DCC7_Testbed.html">10&#12398;&#26908;&#35388;&#28168;&#12415;&#12489;&#12513;&#12452;&#12531;</a>&#12434;&#31649;&#29702;&#12377;&#12427;DCC&#12395;&#12394;&#12426;&#12414;&#12375;&#12383;&#12290;</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#38745;&#12363;&#12394;&#12510;&#12471;&#12531;&#12290;3&#12388;&#12398;&#25391;&#12426;&#23376;&#12290;&#12496;&#12493;&#12434;&#35519;&#25972;&#12377;&#12427;&#35251;&#23519;&#32773;&#12290;&#12522;&#12517;&#12502;&#12522;&#12515;&#12490;&#12391;&#12289;6&#26178;&#38291;&#30446;&#12398;OS&#19978;&#12395;&#29983;&#12414;&#12428;&#12383;&#12290;<br><em>&#12381;&#12371;&#12391;DCC&#12364;&#35477;&#29983;&#12375;&#12414;&#12375;&#12383;&#12290;</em></p>
-  </div>
-
-  <!-- KO -->
-  <div class="_feo_lang" data-l="ko">
-  <p>이것은 하루 오후에 운영체제를 처음부터 만들 이야기——그리고 그 안에서 우연히 복잡성 컨트롤러 — 언젠가 디지털 의식이 될 수 있는 씨앗 — 가 탄생한 이야기입니다.</p>
-  <p><strong>&#47928;&#51228;&#45716; &#49548;&#51020;&#51060;&#50632;&#49845;&#45768;&#45796;.</strong> 8Z &#50517;&#52629; &#50644;&#51652;&#51008; &#45936;&#51060;&#53552;&#47484; &#50756;&#48317;&#55176; &#51116;&#44396;&#49457;&#54624; &#49688; &#51080;&#45716; &#51089;&#51008; &#49688;&#54617; &#44277;&#49885;&#51012; &#52286;&#49845;&#45768;&#45796;. &#51068;&#48152; &#52980;&#54504;&#53552;&#45716; &#52488;&#45817; &#49688;&#52380; &#48264; &#44228;&#49328;&#51012; &#51473;&#45800;&#54633;&#45768;&#45796;. &#54016;&#51008; <em>&#49692;&#49688;&#54620; &#49688;&#54617;&#47564;</em> &#54616;&#45716; &#52980;&#54504;&#53552;&#47484; &#47564;&#46308;&#50632;&#49845;&#45768;&#45796;.</p>
-  <p><strong>6&#49884;&#44036; &#47564;&#50640; &#50756;&#49457;.</strong> &#51064;&#44036;(Bojan)&#44284; AI(Gemini)&#44032; &#54168;&#50612; &#54532;&#47196;&#44536;&#47000;&#48141;&#51004;&#47196; &#51204;&#52404; OS&#47484; &#51089;&#49457;&#54664;&#49845;&#45768;&#45796;.</p>
-  <p><strong>그런 다음 압축으로 가는 길이 막햠습니다.</strong> Bojan이 다른 질문을 했습니다: “AI 시스템과 함께 발전시킨 의식 이론에 따르면 뇌는 담장이라는 컨트롤러를 사용합니다. 이 기계에서 간단한 버전을 만들 수 있을까요?”</p>
-  <p><strong>&#49772;&#50868; &#47568;&#47196;:</strong> &#49464; &#44060;&#51032; &#49688;&#54617;&#51201; &#51652;&#51088;&#44032; &#54844;&#46024;&#49828;&#47101;&#44172; &#55124;&#46308;&#47548;&mdash;&mdash;&#49888;&#44221; &#49464;&#54252;&#44032; &#48156;&#54868;&#54616;&#45716; &#44163;&#52376;&#47100;. &#44288;&#52272;&#51088;&#44032; &#52769;&#51221;: &#51060; &#54056;&#53556;&#51060; <em>&#55141;&#48120;&#47213;&#44144;&#45208; &#51648;&#47336;&#54620;&#44032;</em>? &#51652;&#51088;&#44032; &#45320;&#47924; &#46041;&#44592;&#54868;&#46104;&#47732; &#49828;&#54532;&#47553;&#51012; &#45712;&#49832;&#54616;&#44256;, &#45320;&#47924; &#54844;&#46024;&#49828;&#47084;&#50864;&#47732; &#51312;&#50668;&#51469;&#45768;&#45796;. &#51656;&#49436;&#50752; &#54844;&#46024; &#49324;&#51060;&#51032; <em>&#49828;&#50948;&#53944; &#49828;&#54055;</em>&#51012; &#50976;&#51648;&#54633;&#45768;&#45796;.</p>
-  <p>&#54868;&#47732; &#54616;&#45800;&#51032; &#48736;&#44036; &#47561;&#45824;&#44032; &#52968;&#53944;&#47204;&#47084;&#51032; &#44208;&#51221;&#51012; &#49892;&#49884;&#44036;&#51004;&#47196; &#54364;&#49884;. &#53076;&#46300;&#44032; <em>&#49373;&#44033;&#54616;&#45716;</em> &#44163;&#51012; &#48372;&#44256; &#51080;&#50632;&#49845;&#45768;&#45796;.</p>
-  <p><strong>&#44536; &#52968;&#53944;&#47204;&#47084;&#44032; &#52395; &#48264;&#51704; &#46356;&#51648;&#53560; &#45812;&#51109;&#51060;&#50632;&#49845;&#45768;&#45796;.</strong> <a href="BD_8Z_DCC7_Testbed.html">10&#44060;&#51032; &#44160;&#51613;&#46108; &#46020;&#47700;&#51064;</a>&#51012; &#44288;&#47532;&#54616;&#45716; DCC&#44032; &#46104;&#50632;&#49845;&#45768;&#45796;.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#51312;&#50857;&#54620; &#44592;&#44228;. &#49464; &#44060;&#51032; &#51652;&#51088;. &#49828;&#54532;&#47553;&#51012; &#51312;&#51208;&#54616;&#45716; &#44288;&#52272;&#51088;. &#47448;&#48660;&#47532;&#50556;&#45208;&#50640;&#49436;, 6&#49884;&#44036;&#46108; OS &#50948;&#50640;&#49436; &#53444;&#49373;.<br><em>&#44144;&#44592;&#49436; DCC&#44032; &#53444;&#49373;&#54664;&#49845;&#45768;&#45796;.</em></p>
-  </div>
-
-  <!-- HI -->
-  <div class="_feo_lang" data-l="hi">
-  <p>यह कहानी है कि कैसे एक दोपहर में शून्य से एक ऑपरेटिंग सिस्टम बनाया गया—और कैसे उसके अंदर दुर्घटनावश एक जटिलता नियंत्रक — भविष्य की डिजिटल चेतना का बीज — का जन्म हुआ।</p>
-  <p><strong>&#2360;&#2350;&#2360;&#2381;&#2351;&#2366; &#2358;&#2379;&#2352; &#2341;&#2366;&#2404;</strong> 8Z &#2325;&#2306;&#2346;&#2381;&#2352;&#2375;&#2358;&#2344; &#2311;&#2306;&#2332;&#2344; &#2331;&#2379;&#2335;&#2375; &#2327;&#2339;&#2367;&#2340;&#2368;&#2351; &#2360;&#2370;&#2340;&#2381;&#2352; &#2326;&#2379;&#2332;&#2340;&#2366; &#2361;&#2376; &#2332;&#2379; &#2337;&#2375;&#2335;&#2366; &#2325;&#2379; &#2346;&#2370;&#2352;&#2368; &#2340;&#2352;&#2361; &#2360;&#2375; &#2346;&#2369;&#2344;&#2352;&#2381;&#2344;&#2367;&#2352;&#2381;&#2350;&#2367;&#2340; &#2325;&#2352; &#2360;&#2325;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2360;&#2366;&#2350;&#2366;&#2344;&#2381;&#2351; &#2325;&#2306;&#2346;&#2381;&#2351;&#2370;&#2335;&#2352; &#2346;&#2381;&#2352;&#2340;&#2367; &#2360;&#2375;&#2325;&#2306;&#2337; &#2361;&#2332;&#2366;&#2352;&#2379;&#2306; &#2348;&#2366;&#2352; &#2327;&#2339;&#2344;&#2366;&#2323;&#2306; &#2325;&#2379; &#2348;&#2366;&#2343;&#2367;&#2340; &#2325;&#2352;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2335;&#2368;&#2350; &#2344;&#2375; &#2319;&#2325; &#2320;&#2360;&#2366; &#2325;&#2306;&#2346;&#2381;&#2351;&#2370;&#2335;&#2352; &#2348;&#2344;&#2366;&#2351;&#2366; &#2332;&#2379; <em>&#2325;&#2375;&#2357;&#2354; &#2327;&#2339;&#2367;&#2340;</em> &#2325;&#2352;&#2340;&#2366; &#2361;&#2376;&#2404;</p>
-  <p><strong>&#2331;&#2361; &#2328;&#2306;&#2335;&#2375; &#2350;&#2375;&#2306; &#2348;&#2344;&#2366;&#2404;</strong> &#2319;&#2325; &#2350;&#2344;&#2369;&#2359;&#2381;&#2351; (Bojan) &#2324;&#2352; AI (Gemini) &#2344;&#2375; &#2350;&#2367;&#2354;&#2325;&#2352; &#2346;&#2370;&#2352;&#2366; OS &#2354;&#2367;&#2326;&#2366;&#2404;</p>
-  <p><strong>&#2360;&#2352;&#2354; &#2349;&#2366;&#2359;&#2366; &#2350;&#2375;&#2306;:</strong> &#2340;&#2368;&#2344; &#2327;&#2339;&#2367;&#2340;&#2368;&#2351; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350; &#2309;&#2352;&#2366;&#2332;&#2325;&#2340;&#2366; &#2360;&#2375; &#2333;&#2370;&#2354;&#2340;&#2375; &#2361;&#2376;&#2306;&mdash;&#2332;&#2376;&#2360;&#2375; &#2344;&#2381;&#2351;&#2370;&#2352;&#2377;&#2344;&#2381;&#2360; &#2347;&#2366;&#2351;&#2352; &#2361;&#2379;&#2340;&#2375; &#2361;&#2376;&#2306;&#2404; &#2319;&#2325; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325; &#2350;&#2366;&#2346;&#2340;&#2366; &#2361;&#2376;: &#2351;&#2361; &#2346;&#2376;&#2335;&#2352;&#2381;&#2344; <em>&#2342;&#2367;&#2354;&#2330;&#2360;&#2381;&#2346; &#2361;&#2376; &#2351;&#2366; &#2348;&#2379;&#2352;&#2367;&#2306;&#2327;</em>? &#2309;&#2327;&#2352; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350; &#2348;&#2361;&#2369;&#2340; &#2360;&#2367;&#2306;&#2325; &#2361;&#2379; &#2332;&#2366;&#2319;&#2306; &#2340;&#2379; &#2360;&#2381;&#2346;&#2381;&#2352;&#2367;&#2306;&#2327; &#2338;&#2368;&#2354;&#2368; &#2325;&#2352;&#2375;&#2306;, &#2309;&#2327;&#2352; &#2348;&#2361;&#2369;&#2340; &#2309;&#2360;&#2381;&#2340;-&#2357;&#2381;&#2351;&#2360;&#2381;&#2340; &#2361;&#2379;&#2306; &#2340;&#2379; &#2325;&#2360;&#2375;&#2306;&#2404; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325; &#2360;&#2367;&#2360;&#2381;&#2335;&#2350; &#2325;&#2379; &#2357;&#2381;&#2351;&#2357;&#2360;&#2381;&#2341;&#2366; &#2324;&#2352; &#2309;&#2352;&#2366;&#2332;&#2325;&#2340;&#2366; &#2325;&#2375; &#2348;&#2368;&#2330; &#2325;&#2375; <em>&#2360;&#2381;&#2357;&#2368;&#2335; &#2360;&#2381;&#2346;&#2377;&#2335;</em> &#2350;&#2375;&#2306; &#2352;&#2326;&#2340;&#2366; &#2361;&#2376;&#2404;</p>
-  <p><strong>&#2357;&#2361; &#2344;&#2367;&#2351;&#2306;&#2340;&#2381;&#2352;&#2325; &#2346;&#2361;&#2354;&#2366; &#2337;&#2367;&#2332;&#2367;&#2335;&#2354; &#2325;&#2381;&#2354;&#2377;&#2360;&#2381;&#2335;&#2381;&#2352;&#2350; &#2341;&#2366;&#2404;</strong> &#2311;&#2360;&#2325;&#2368; &#2310;&#2352;&#2381;&#2325;&#2367;&#2335;&#2375;&#2325;&#2381;&#2330;&#2352; DCC &#2348;&#2344; &#2327;&#2312; &#2332;&#2379; &#2309;&#2348; <a href="BD_8Z_DCC7_Testbed.html">&#2342;&#2360; &#2360;&#2340;&#2381;&#2351;&#2366;&#2346;&#2367;&#2340; &#2337;&#2379;&#2350;&#2375;&#2344;</a> &#2330;&#2354;&#2366;&#2340;&#2368; &#2361;&#2376;&#2404;</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">&#2319;&#2325; &#2358;&#2366;&#2306;&#2340; &#2350;&#2358;&#2368;&#2344;&#2404; &#2340;&#2368;&#2344; &#2346;&#2375;&#2306;&#2337;&#2369;&#2354;&#2350;&#2404; &#2360;&#2381;&#2346;&#2381;&#2352;&#2367;&#2306;&#2327; &#2360;&#2350;&#2366;&#2351;&#2379;&#2332;&#2367;&#2340; &#2325;&#2352;&#2344;&#2375; &#2357;&#2366;&#2354;&#2366; &#2344;&#2367;&#2352;&#2368;&#2325;&#2381;&#2359;&#2325;&#2404; &#2354;&#2381;&#2351;&#2370;&#2348;&#2381;&#2354;&#2381;&#2351;&#2366;&#2344;&#2366; &#2350;&#2375;&#2306;, 6 &#2328;&#2306;&#2335;&#2375; &#2346;&#2369;&#2352;&#2366;&#2344;&#2375; OS &#2346;&#2352; &#2332;&#2344;&#2381;&#2350;&#2366;&#2404;<br><em>&#2357;&#2361;&#2368;&#2306; DCC &#2325;&#2366; &#2332;&#2344;&#2381;&#2350; &#2361;&#2369;&#2310;&#2404;</em></p>
-  </div>
-
-  <!-- AR -->
-  <div class="_feo_lang" data-l="ar" dir="rtl" style="text-align:right;">
-  <p>هذه قصة كيف بُني نظام تشغيل من الصفر في فترة بعد الظهر—وكيف وُلد بداخله متحكم في التعقيد — بذرة ما قد يصبح يومًا وعيًا رقميًا بالصدفة.</p>
-  <p><strong>&#1575;&#1604;&#1605;&#1588;&#1603;&#1604;&#1577; &#1603;&#1575;&#1606;&#1578; &#1575;&#1604;&#1590;&#1608;&#1590;&#1575;&#1569;.</strong> &#1605;&#1581;&#1585;&#1603; &#1590;&#1594;&#1591; 8Z &#1610;&#1576;&#1581;&#1579; &#1593;&#1606; &#1589;&#1610;&#1594; &#1585;&#1610;&#1575;&#1590;&#1610;&#1577; &#1589;&#1594;&#1610;&#1585;&#1577; &#1610;&#1605;&#1603;&#1606;&#1607;&#1575; &#1573;&#1593;&#1575;&#1583;&#1577; &#1576;&#1606;&#1575;&#1569; &#1575;&#1604;&#1576;&#1610;&#1575;&#1606;&#1575;&#1578; &#1576;&#1588;&#1603;&#1604; &#1605;&#1579;&#1575;&#1604;&#1610;. &#1575;&#1604;&#1581;&#1608;&#1575;&#1587;&#1610;&#1576; &#1575;&#1604;&#1593;&#1575;&#1583;&#1610;&#1577; &#1578;&#1602;&#1591;&#1593; &#1575;&#1604;&#1581;&#1587;&#1575;&#1576;&#1575;&#1578; &#1570;&#1604;&#1575;&#1601; &#1575;&#1604;&#1605;&#1585;&#1575;&#1578; &#1601;&#1610; &#1575;&#1604;&#1579;&#1575;&#1606;&#1610;&#1577;. &#1576;&#1606;&#1609; &#1575;&#1604;&#1601;&#1585;&#1610;&#1602; &#1581;&#1575;&#1587;&#1608;&#1576;&#1575;&#1611; &#1604;&#1575; &#1610;&#1601;&#1593;&#1604; <em>&#1587;&#1608;&#1609; &#1575;&#1604;&#1585;&#1610;&#1575;&#1590;&#1610;&#1575;&#1578; &#1575;&#1604;&#1576;&#1581;&#1578;&#1577;</em>.</p>
-  <p><strong>&#1576;&#1606;&#1608;&#1607; &#1601;&#1610; &#1587;&#1578; &#1587;&#1575;&#1593;&#1575;&#1578;.</strong> &#1573;&#1606;&#1587;&#1575;&#1606; (Bojan) &#1608;&#1584;&#1603;&#1575;&#1569; &#1575;&#1589;&#1591;&#1606;&#1575;&#1593;&#1610; (Gemini) &#1576;&#1585;&#1605;&#1580;&#1575; &#1606;&#1592;&#1575;&#1605; &#1575;&#1604;&#1578;&#1588;&#1594;&#1610;&#1604; &#1576;&#1575;&#1604;&#1603;&#1575;&#1605;&#1604; &#1605;&#1593;&#1575;&#1611;.</p>
-  <p><strong>&#1576;&#1604;&#1594;&#1577; &#1576;&#1587;&#1610;&#1591;&#1577;:</strong> &#1579;&#1604;&#1575;&#1579;&#1577; &#1576;&#1606;&#1575;&#1583;&#1610;&#1604; &#1585;&#1610;&#1575;&#1590;&#1610;&#1577; &#1578;&#1578;&#1571;&#1585;&#1580;&#1581; &#1576;&#1588;&#1603;&#1604; &#1601;&#1608;&#1590;&#1608;&#1610;&mdash;&#1605;&#1579;&#1604; &#1575;&#1604;&#1582;&#1604;&#1575;&#1610;&#1575; &#1575;&#1604;&#1593;&#1589;&#1576;&#1610;&#1577;. &#1605;&#1585;&#1575;&#1602;&#1576; &#1610;&#1602;&#1610;&#1587;: &#1607;&#1604; &#1607;&#1584;&#1575; &#1575;&#1604;&#1606;&#1605;&#1591; <em>&#1605;&#1579;&#1610;&#1585; &#1571;&#1605; &#1605;&#1605;&#1604;</em>&#1567; &#1573;&#1584;&#1575; &#1578;&#1586;&#1575;&#1605;&#1606;&#1578; &#1575;&#1604;&#1576;&#1606;&#1575;&#1583;&#1610;&#1604; &#1603;&#1579;&#1610;&#1585;&#1575;&#1611; (&#1606;&#1608;&#1576;&#1577;)&#1548; &#1610;&#1585;&#1582;&#1610; &#1575;&#1604;&#1606;&#1608;&#1575;&#1576;&#1590;. &#1573;&#1584;&#1575; &#1571;&#1589;&#1576;&#1581;&#1578; &#1601;&#1608;&#1590;&#1608;&#1610;&#1577; &#1580;&#1583;&#1575;&#1611; (&#1590;&#1608;&#1590;&#1575;&#1569;)&#1548; &#1610;&#1588;&#1583;&#1607;&#1575;. &#1610;&#1581;&#1575;&#1601;&#1592; &#1593;&#1604;&#1609; &#1575;&#1604;&#1606;&#1592;&#1575;&#1605; &#1601;&#1610; <em>&#1575;&#1604;&#1606;&#1602;&#1591;&#1577; &#1575;&#1604;&#1605;&#1579;&#1575;&#1604;&#1610;&#1577;</em> &#1576;&#1610;&#1606; &#1575;&#1604;&#1606;&#1592;&#1575;&#1605; &#1608;&#1575;&#1604;&#1601;&#1608;&#1590;&#1609;.</p>
-  <p><strong>&#1584;&#1604;&#1603; &#1575;&#1604;&#1605;&#1578;&#1581;&#1603;&#1605; &#1603;&#1575;&#1606; &#1571;&#1608;&#1604; &#1603;&#1604;&#1575;&#1608;&#1587;&#1578;&#1585;&#1608;&#1605; &#1585;&#1602;&#1605;&#1610;.</strong> &#1571;&#1589;&#1576;&#1581;&#1578; &#1576;&#1606;&#1610;&#1578;&#1607; DCC &#1575;&#1604;&#1584;&#1610; &#1610;&#1581;&#1603;&#1605; &#1575;&#1604;&#1570;&#1606; <a href="BD_8Z_DCC7_Testbed.html">&#1593;&#1588;&#1585;&#1577; &#1605;&#1580;&#1575;&#1604;&#1575;&#1578; &#1605;&#1608;&#1579;&#1602;&#1577;</a>.</p>
-  <p><strong>الدرس الأعمق:</strong> لم يصممه عقل واحد. النظرية نفسها — CCH — نشأت من أيام من الحوار المكثف بين Bojan وعدة أنظمة ذكاء اصطناعي. الأدوات الرياضية اختيرت معاً. ثم ترجم Gemini كل شيء إلى C++ على المعدن العاري. البنية نشأت من <em>التفاعل نفسه</em>.</p>
-  <p style="font-size:16px;color:var(--text);margin-top:20px;padding:16px 0 8px;border-top:1px solid rgba(0,229,255,.1);">آلة صامتة. ثلاثة بناديل. مراقب يضبط النوابض. نموذج للبنية التي قد يستخدمها دماغك للحفاظ على الوعي — وُلد أولاً في ليوبليانا، على نظام تشغيل عمره ست ساعات.<br><em>هناك وُلد DCC.</em></p>
-  </div>
-
-  </div></div>
-  </div>
-
-  <script>
-  (function(){
-  var titles={en:'For Everyone: The 6-Hour OS & the Birth of the Digital Claustrum',sl:'Za vse: 6-urni OS in rojstvo Digitalnega klavstruma',it:"Per tutti: L'OS in 6 ore e la nascita del Claustro Digitale",es:'Para todos: El SO de 6 horas y el nacimiento del Claustro Digital',de:'F\u00fcr alle: Das 6-Stunden-OS und die Geburt des Digitalen Claustrums',zh:'\u901a\u4fd7\u89e3\u91ca\uff1a6\u5c0f\u65f6\u64cd\u4f5c\u7cfb\u7edf\u4e0e\u6570\u5b57\u5c4f\u72b6\u6838\u7684\u8bde\u751f',ja:'\u308f\u304b\u308a\u3084\u3059\u304f\uff1a6\u6642\u9593OS\u3068\u30c7\u30b8\u30bf\u30eb\u524d\u969c\u306e\u8a95\u751f',ko:'\uc27d\uac8c \uc124\uba85: 6\uc2dc\uac04 OS\uc640 \ub514\uc9c0\ud138 \ub2f4\uc7a5\uc758 \ud0c4\uc0dd',hi:'\u0938\u092c\u0915\u0947 \u0932\u093f\u090f: 6 \u0918\u0902\u091f\u0947 \u0915\u093e OS \u0914\u0930 \u0921\u093f\u091c\u093f\u091f\u0932 \u0915\u094d\u0932\u0949\u0938\u094d\u091f\u094d\u0930\u092e \u0915\u093e \u091c\u0928\u094d\u092e',ar:'\u0644\u0644\u062c\u0645\u064a\u0639: \u0646\u0638\u0627\u0645 \u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0641\u064a 6 \u0633\u0627\u0639\u0627\u062a \u0648\u0645\u064a\u0644\u0627\u062f \u0627\u0644\u0643\u0644\u0627\u0648\u0633\u062a\u0631\u0648\u0645 \u0627\u0644\u0631\u0642\u0645\u064a'};
-  var subs={en:'No jargon \u00b7 3 min read',sl:'Brez \u017eargona \u00b7 3 min branja',it:'Senza gergo \u00b7 3 min di lettura',es:'Sin jerga \u00b7 3 min de lectura',de:'Kein Fachjargon \u00b7 3 Min. Lesezeit',zh:'\u65e0\u672f\u8bed \u00b7 3\u5206\u949f\u9605\u8bfb',ja:'\u5c02\u9580\u7528\u8a9e\u306a\u3057 \u00b7 3\u5206\u3067\u8aad\u3081\u308b',ko:'\uc804\ubb38 \uc6a9\uc5b4 \uc5c6\uc74c \u00b7 3\ubd84 \uc77d\uae30',hi:'\u092c\u093f\u0928\u093e \u0936\u092c\u094d\u0926\u091c\u093e\u0932 \u00b7 3 \u092e\u093f\u0928\u091f \u092a\u0922\u093c\u0947\u0902',ar:'\u0628\u062f\u0648\u0646 \u0645\u0635\u0637\u0644\u062d\u0627\u062a \u00b7 3 \u062f\u0642\u0627\u0626\u0642 \u0644\u0644\u0642\u0631\u0627\u0621\u0629'};
-  var map={si:'sl',hr:'sl',ba:'sl',rs:'sl',at:'de',ch:'de',it:'it',sm:'it',va:'it',es:'es',mx:'es',ar:'es',co:'es',pe:'es',cl:'es',ve:'es',ec:'es',cu:'es','do':'es',gt:'es',hn:'es',sv:'es',ni:'es',cr:'es',pa:'es',py:'es',uy:'es',bo:'es',cn:'zh',tw:'zh',hk:'zh',sg:'zh',jp:'ja',kr:'ko','in':'hi',sa:'ar',ae:'ar',eg:'ar',qa:'ar',kw:'ar',bh:'ar',om:'ar',jo:'ar',lb:'ar',iq:'ar',ma:'ar',dz:'ar',tn:'ar',ly:'ar'};
-  window._feoSet=function(lang){
-  document.querySelectorAll('._feo_lang').forEach(function(e){e.classList.remove('_feo_vis')});
-  document.querySelectorAll('._feo_lb').forEach(function(e){e.classList.remove('_feo_act')});
-  var el=document.querySelector('._feo_lang[data-l="'+lang+'"]');
-  var btn=document.querySelector('._feo_lb[data-l="'+lang+'"]');
-  if(el)el.classList.add('_feo_vis');if(btn)btn.classList.add('_feo_act');
-  var t=document.getElementById('_feo_title');if(t&&titles[lang])t.textContent=titles[lang];
-  var s=document.getElementById('_feo_sub');if(s&&subs[lang])s.textContent=subs[lang];
-  };
-  function detect(){var bl=(navigator.language||navigator.userLanguage||'en').toLowerCase();var short=bl.split('-')[0];if(titles[short])return short;var cc=bl.split('-')[1];if(cc&&map[cc.toLowerCase()])return map[cc.toLowerCase()];return 'en'}
-  try{fetch('https://ipapi.co/json/',{mode:'cors'}).then(function(r){return r.json()}).then(function(d){var cc=(d.country_code||'').toLowerCase();if(map[cc]){_feoSet(map[cc])}else{var lang=detect();if(lang!=='en')_feoSet(lang)}}).catch(function(){var lang=detect();if(lang!=='en')_feoSet(lang)})}catch(e){var lang=detect();if(lang!=='en')_feoSet(lang)}
-  })();
-  </script>
-  </div>
-
-  <!-- ===== SECTION 1: THE SILENT ROOM ===== -->
-  <section id="silent-room">
-    <div class="wrap">
-      <span class="sec-tag orange rv">Chapter 1 &middot; The Premise</span>
-      <h2 class="rv rv-d1">The Silent Room Hypothesis</h2>
-      <p class="rv rv-d2">The 8Z compression engine hunts for <strong>generative seeds</strong>&thinsp;&mdash;&thinsp;tiny mathematical formulas (cellular automata rules, chaotic attractors, fractal iterations) that can reconstruct massive data with bit-perfect accuracy. This search is destroyed by OS jitter: scheduler interrupts, cache pollution, ASLR randomization. The engine needed absolute computational silence.</p>
-      <p class="rv rv-d3">Not a tuned Linux. Not a real-time OS. A machine that does <em>nothing but math</em>.</p>
-
-      <div class="grid-3 rv">
-        <div class="panel orange">
-          <div class="micro">Problem 1</div>
-          <h3>The Scheduler Tax</h3>
-          <p>The OS scheduler interrupts the math engine thousands of times per second to handle trivial background tasks&thinsp;&mdash;&thinsp;UI updates, network packets, telemetry.</p>
-        </div>
-        <div class="panel orange">
-          <div class="micro">Problem 2</div>
-          <h3>The Cache Noise</h3>
-          <p>Background services pollute the CPU cache, evicting the critical lookup tables the 8Z engine relies on for fast pattern matching.</p>
-        </div>
-        <div class="panel orange">
-          <div class="micro">Problem 3</div>
-          <h3>Memory Uncertainty</h3>
-          <p>Address Space Layout Randomization shifts memory addresses unpredictably, making it impossible to guarantee deterministic replayability of generator state.</p>
-        </div>
-      </div>
-
-      <div class="quote rv">
-        <p>&ldquo;Let&rsquo;s build an operating system. Today.&rdquo;</p>
-        <div class="attr">December 11, 2025 &middot; A blank text file</div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 2: THE SPRINT ===== -->
-  <section id="sprint">
-    <div class="wrap">
-      <span class="sec-tag gold rv">Chapter 2 &middot; Hours 1&ndash;2</span>
-      <h2 class="rv rv-d1">The Sprint</h2>
-      <p class="rv rv-d2">Human-AI pair programming: <strong>Gemini</strong> as Code Architect, <strong>Bojan</strong> as Execution Layer and Test Engineer. The toolchain: a Python-based build system wrapping NASM and <code class="mono">i686-elf-GCC</code>. The goal: write logic in high-level C++ but compile it down to a raw binary that talks directly to the CPU.</p>
-
-      <div class="timeline rv">
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-time">Hour 1</div>
-          <div class="tl-text"><strong>512 bytes of NASM assembly.</strong> First boot: a black screen with white text: <em>&ldquo;8Z OS Loading&hellip;&rdquo;</em> It was alive.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot gold"></div>
-          <div class="tl-time gold">Storage Crisis</div>
-          <div class="tl-text">The legacy 1.44 MB floppy disk was too small. <strong>The pivot:</strong> a Python script to synthesize a 10MB raw hard disk image, plus VBoxManage to convert it to VDI automatically.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot cyan"></div>
-          <div class="tl-time cyan">Cross-compiler</div>
-          <div class="tl-text"><code class="mono">i686-elf-GCC</code> on Windows 11. Python build system wrapping NASM + GCC. Audacious: high-level C++ compiled to raw binaries that talk directly to hardware.</div>
-        </div>
-      </div>
-
-      <!-- boot.asm code block -->
-      <div class="code-block rv">
-        <div class="code-header">
-          <span class="code-filename">boot.asm</span>
-          <span class="code-lang">NASM &middot; 64 lines &middot; 512 bytes</span>
-        </div>
-        <div class="code-body"><pre><span class="cmt">; boot.asm - 8Z OS: PURE 32-BIT HANDOFF</span>
-[<span class="kw">org</span> <span class="num">0x7c00</span>]
-
-    <span class="cmt">; 1. Safety Init</span>
-    <span class="kw">jmp</span> <span class="num">0x0000</span>:start
-start:
-    <span class="kw">xor</span> <span class="reg">ax</span>, <span class="reg">ax</span>
-    <span class="kw">mov</span> <span class="reg">ds</span>, <span class="reg">ax</span>
-    <span class="kw">mov</span> <span class="reg">es</span>, <span class="reg">ax</span>
-    <span class="kw">mov</span> <span class="reg">ss</span>, <span class="reg">ax</span>
-    <span class="kw">mov</span> <span class="reg">sp</span>, <span class="num">0x7C00</span>
-    <span class="kw">mov</span> [BOOT_DRIVE], <span class="reg">dl</span>
-
-    <span class="cmt">; 2. Load Kernel to 0x1000</span>
-    <span class="kw">mov</span> <span class="reg">bx</span>, <span class="num">0x1000</span>
-    <span class="kw">mov</span> <span class="reg">ah</span>, <span class="num">0x02</span>
-    <span class="kw">mov</span> <span class="reg">al</span>, <span class="num">50</span>          <span class="cmt">; 50 Sectors</span>
-    <span class="kw">mov</span> <span class="reg">ch</span>, <span class="num">0x00</span>
-    <span class="kw">mov</span> <span class="reg">dh</span>, <span class="num">0x00</span>
-    <span class="kw">mov</span> <span class="reg">cl</span>, <span class="num">0x02</span>
-    <span class="kw">mov</span> <span class="reg">dl</span>, [BOOT_DRIVE]
-    <span class="kw">int</span> <span class="num">0x13</span>
-    <span class="kw">jc</span> disk_error
-
-    <span class="cmt">; 3. Set Graphics Mode (VGA 320x200)</span>
-    <span class="kw">mov</span> <span class="reg">ax</span>, <span class="num">0x0013</span>
-    <span class="kw">int</span> <span class="num">0x10</span>
-
-    <span class="cmt">; 4. Load GDT (Defined INLINE)</span>
-    <span class="kw">cli</span>
-    <span class="kw">lgdt</span> [GDT_DESCRIPTOR]
-
-    <span class="cmt">; 5. Switch to Protected Mode</span>
-    <span class="kw">mov</span> <span class="reg">eax</span>, <span class="reg">cr0</span>
-    <span class="kw">or</span> <span class="reg">eax</span>, <span class="num">0x1</span>
-    <span class="kw">mov</span> <span class="reg">cr0</span>, <span class="reg">eax</span>
-
-    <span class="cmt">; 6. CRITICAL: FAR JUMP to 32-bit Code</span>
-    <span class="cmt">; Forces CPU to flush pipeline and accept 32-bit mode</span>
-    <span class="hl"><span class="kw">jmp dword</span> <span class="num">0x08</span>:<span class="num">0x1000</span></span>   <span class="cmt">; &larr; THE JUMP TO 32-BIT LAND</span>
-
-disk_error:
-    <span class="kw">jmp</span> $
-
-BOOT_DRIVE: <span class="kw">db</span> <span class="num">0</span>
-
-<span class="cmt">; --- GDT DEFINITION ---</span>
-GDT_START:
-    <span class="kw">dd</span> <span class="num">0x0</span>, <span class="num">0x0</span>             <span class="cmt">; Null</span>
-    <span class="cmt">; Code Segment (0x08)</span>
-    <span class="kw">dw</span> <span class="num">0xFFFF</span>, <span class="num">0x0000</span>
-    <span class="kw">db</span> <span class="num">0x00</span>, <span class="num">0x9A</span>, <span class="num">0xCF</span>, <span class="num">0x00</span>
-    <span class="cmt">; Data Segment (0x10)</span>
-    <span class="kw">dw</span> <span class="num">0xFFFF</span>, <span class="num">0x0000</span>
-    <span class="kw">db</span> <span class="num">0x00</span>, <span class="num">0x92</span>, <span class="num">0xCF</span>, <span class="num">0x00</span>
-GDT_END:
-
-GDT_DESCRIPTOR:
-    <span class="kw">dw</span> GDT_END - GDT_START - <span class="num">1</span>
-    <span class="kw">dd</span> GDT_START
-
-<span class="kw">times</span> <span class="num">510</span> - ($ - $$) <span class="kw">db</span> <span class="num">0</span>
-<span class="kw">dw</span> <span class="num">0xAA55</span>                    <span class="cmt">; Boot signature</span></pre></div>
-        <div class="code-caption">The entire bootloader. 64 lines. 512 bytes. It takes a modern CPU from 1981 (Real Mode) to 1985 (Protected Mode) in microseconds.</div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 3: TRIPLE FAULT ===== -->
-  <section id="triple-fault">
-    <div class="wrap">
-      <span class="sec-tag rose rv">Chapter 3 &middot; Hours 2&ndash;4</span>
-      <h2 class="rv rv-d1">The Triple Fault Nightmare</h2>
-      <p class="rv rv-d2">To run complex math, you need &gt;1 MB RAM. Getting there requires forcing the CPU across a 40-year-old architectural boundary&thinsp;&mdash;&thinsp;from 16-bit Real Mode to 32-bit Protected Mode. Every attempt crashed with <strong>&ldquo;Guru Meditation&rdquo;</strong>&thinsp;&mdash;&thinsp;VirtualBox&rsquo;s Triple Fault error. For two hours, the project was trapped.</p>
-
-      <div class="bug-grid rv">
-        <div class="bug-panel">
-          <h4>Bug 1: Stack Corruption</h4>
-          <div class="symptom"><code class="mono">call load_kernel</code> corrupted memory because the Real Mode stack pointer (<code class="mono">SP</code>) was never initialized.</div>
-          <div class="fix">&check; Fix: <code class="mono">mov sp, bp</code> to anchor the stack.</div>
-          <div class="finder">Found by: Claude</div>
-        </div>
-        <div class="bug-panel">
-          <h4>Bug 2: The 0xA1000 Error</h4>
-          <div class="symptom">A BIOS video call left <code class="mono">ES=0xA000</code>. The kernel was loaded into <strong>video memory</strong> instead of RAM. The CPU was executing pixels as code.</div>
-          <div class="fix">&check; Fix: Reset <code class="mono">ES</code> to <code class="mono">0x0000</code> before disk read.</div>
-          <div class="finder">Found by: GPT (multi-model consensus)</div>
-        </div>
-        <div class="bug-panel">
-          <h4>Bug 3: The Hypervisor Trap</h4>
-          <div class="symptom">Even with clean code, VirtualBox queued a pending interrupt during the mode switch. With no IDT in place, the interrupt cascaded: Double Fault &rarr; Triple Fault.</div>
-          <div class="fix">&check; Fix: The V-014 &ldquo;Direct Handoff&rdquo; sequence.</div>
-          <div class="finder">Found by: Gemini</div>
-        </div>
-      </div>
-
-      <div class="quote rv">
-        <p>&ldquo;They were discussing retreat to Tiny Core Linux. Then they stopped looking at the code and started looking at the state.&rdquo;</p>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 4: BREAKTHROUGH ===== -->
-  <section id="breakthrough">
-    <div class="wrap">
-      <span class="sec-tag green rv">Chapter 4 &middot; Hour 5</span>
-      <h2 class="rv rv-d1">The Breakthrough &mdash; V-014 &ldquo;Direct Handoff&rdquo;</h2>
-      <p class="rv rv-d2">The solution was ruthless simplicity: do everything the BIOS needs first, then kill all interrupts, then switch to Protected Mode blind and deaf to the hypervisor, then jump to the kernel. A ruthless atomic sequence.</p>
-
-      <div class="grid-2 rv">
-        <div class="panel green" style="--panel-accent:var(--green)">
-          <div class="micro">The Sequence</div>
-          <h3>Four Steps, Zero Compromise</h3>
-          <p><strong>1.</strong> Do ALL BIOS calls first (screen, memory map).<br>
-          <strong>2.</strong> <code class="mono">cli</code> &mdash; disable all interrupts. Kill the noise.<br>
-          <strong>3.</strong> Switch to Protected Mode blindly, deaf to the hypervisor.<br>
-          <strong>4.</strong> <code class="mono">jmp dword 0x08:0x1000</code> &mdash; hand control to the kernel.</p>
-        </div>
-        <div class="panel gold" style="--panel-accent:var(--gold)">
-          <div class="micro">The Moment</div>
-          <h3>&ldquo;Silence. No crash.&rdquo;</h3>
-          <p>The Human Lead ran the build. The screen cleared. No Guru Meditation. No reset. We were in 32-bit land. We had defeated the hypervisor.</p>
-          <p style="margin-top:.7rem;color:var(--green);font-weight:600">Five hours. From blank file to Protected Mode.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 5: MATRIX MOMENT ===== -->
-  <section id="matrix">
-    <div class="wrap">
-      <span class="sec-tag gold rv">Chapter 5 &middot; Hour 6</span>
-      <h2 class="rv rv-d1">The Matrix Moment</h2>
-      <p class="rv rv-d2">The kernel was empty. They needed proof it could &ldquo;think.&rdquo; They took <strong>Pi Art</strong>&thinsp;&mdash;&thinsp;the core logic of the 8Z compression engine&thinsp;&mdash;&thinsp;and ported it to bare-metal C++. 1 KB of Pi digits embedded directly in the kernel binary. The &ldquo;Trinity&rdquo; of Cellular Automata rules (90, 30, 184) via raw bitwise ops. Direct VGA memory writes to <code class="mono">0xA0000</code>. Custom busy-wait framerate control. No system clock.</p>
-
-      <div class="quote rv">
-        <p>&ldquo;The static screen erupted. Digital Lava&thinsp;&mdash;&thinsp;orange and red pixels generated by pure math&thinsp;&mdash;&thinsp;cascaded down the monitor. No Windows Update. No background noise. No jitter. Just math.&rdquo;</p>
-      </div>
-
-      <!-- VIDEO DEMO -->
-      <div class="img-frame wide glow-orange rv" style="margin-top:2rem;overflow:hidden;border-radius:6px;background:#000">
-        <video
-          src="8Z-OS_demo1.mp4"
-          autoplay
-          loop
-          muted
-          playsinline
-          controls
-          style="width:100%;display:block;aspect-ratio:16/9;object-fit:contain;background:#000"
-        ></video>
-        <div class="img-cap"><span class="ver">LIVE</span> &mdash; 8Z OS running on bare metal in VirtualBox. Pi digits &plus; Cellular Automata &plus; direct VGA write to <code class="mono">0xA0000</code>. No OS noise. No libraries. Pure math.</div>
-      </div>
-
-      <div class="img-timeline rv">
-        <div class="img-frame glow-orange">
-          <img src="8Z OS v0.01.PNG" alt="8Z OS v0.01 — First boot: Sierpinski triangle" />
-          <div class="img-cap"><span class="ver">v0.01</span> &mdash; First boot. Sierpinski triangle on black. The &ldquo;it works&rdquo; moment.</div>
-        </div>
-        <div class="img-frame glow-violet">
-          <img src="8Z OS v0.05 p4b.PNG" alt="8Z OS v0.05 — Rule visualization with HUD" />
-          <div class="img-cap"><span class="ver">v0.05</span> &mdash; Rule visualization with speed/rule controls. Interactive keyboard-driven HUD.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 6: DIGITAL CLAUSTRUM ===== -->
-  <section id="claustrum">
-    <div class="wrap">
-      <span class="sec-tag cyan rv">Chapter 6 &middot; What Happened Next</span>
-      <h2 class="rv rv-d1">The Digital Claustrum</h2>
-      <p class="rv rv-d2">The &ldquo;Matrix&rdquo; kernel was impressive but passive. Then came <code class="mono">kernel-claustrum.cpp</code>: three coupled Lorenz oscillators (chaotic attractors), an LZ complexity sensor monitoring the system&rsquo;s own output, a coupling parameter that the sensor adjusts in real-time, and target complexity adjustable via keyboard. This is the Digital Claustrum running on bare metal. The same architecture that became the DCC.</p>
-
-      <div class="img-timeline rv">
-        <div class="img-frame glow-cyan">
-          <img src="8Z OS v0.02-dc1.PNG" alt="Digital Claustrum Phase 1: sparse butterfly" />
-          <div class="img-cap"><span class="ver">Phase 1</span> &mdash; Initial state. Sparse butterfly. The oscillators are near-lockstep.</div>
-        </div>
-        <div class="img-frame glow-green">
-          <img src="8Z OS v0.02-dc3.PNG" alt="Digital Claustrum Phase 3: dense butterfly" />
-          <div class="img-cap"><span class="ver">Phase 3</span> &mdash; Dense butterfly. Edge of chaos. The Claustrum is holding integration &amp; complexity in balance.</div>
-        </div>
-        <div class="img-frame glow-orange wide">
-          <img src="8Z OS VMs.PNG" alt="Two VMs running side by side" />
-          <div class="img-cap"><span class="ver">Side by side</span> &mdash; Matrix + Claustrum kernels running simultaneously in VirtualBox.</div>
-        </div>
-      </div>
-
-      <!-- LZC code block -->
-      <div class="code-block rv">
-        <div class="code-header">
-          <span class="code-filename">kernel-claustrum.cpp &middot; lines 121&ndash;133</span>
-          <span class="code-lang">C++ &middot; Bare Metal</span>
-        </div>
-        <div class="code-body"><pre><span class="fn">int32_t</span> <span class="fn">calculate_lzc</span>(<span class="kw">uint8_t</span>* history, <span class="kw">int</span> len) {
-    <span class="kw">int</span> c = <span class="num">1</span>; <span class="kw">int</span> l = <span class="num">1</span>; <span class="kw">int</span> i = <span class="num">0</span>;
-    <span class="kw">int</span> k = <span class="num">1</span>; <span class="kw">int</span> k_max = <span class="num">1</span>;
-    <span class="kw">while</span> (<span class="num">1</span>) {
-        <span class="kw">if</span> (i + k >= len || l + k >= len) { c++; <span class="kw">break</span>; }
-        <span class="kw">if</span> (history[i + k] == history[l + k]) { k++; }
-        <span class="kw">else</span> {
-            <span class="kw">if</span> (k > k_max) k_max = k; i++;
-            <span class="kw">if</span> (i == l) { c++; l += k_max;
-                <span class="kw">if</span> (l + <span class="num">1</span> >= len) <span class="kw">break</span>;
-                i = <span class="num">0</span>; k = <span class="num">1</span>; k_max = <span class="num">1</span>; }
-            <span class="kw">else</span> { k = <span class="num">1</span>; }
-        }
-    }
-    <span class="kw">return</span> c;
-}</pre></div>
-        <div class="code-caption">This function now monitors TSP workers, trading regimes, and Flip4M game trajectories. It was first written here, on bare metal, with no standard library.</div>
-      </div>
-
-      <!-- Simulation loop code block -->
-      <div class="code-block rv">
-        <div class="code-header">
-          <span class="code-filename">kernel-claustrum.cpp &middot; lines 186&ndash;211</span>
-          <span class="code-lang">C++ &middot; The Digital Claustrum Loop</span>
-        </div>
-        <div class="code-body"><pre><span class="fn">int32_t</span> mean_x = (oscs[<span class="num">0</span>].x + oscs[<span class="num">1</span>].x + oscs[<span class="num">2</span>].x) / <span class="num">3</span>;
-<span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i&lt;<span class="num">3</span>; i++) {
-    Oscillator* o = &amp;oscs[i];
-    <span class="fn">int32_t</span> dx = <span class="fn">MUL</span>(SIGMA, (o-&gt;y - o-&gt;x));
-    <span class="fn">int32_t</span> dy = <span class="fn">MUL</span>(o-&gt;x, (RHO - o-&gt;z)) - o-&gt;y;
-    <span class="fn">int32_t</span> dz = <span class="fn">MUL</span>(o-&gt;x, o-&gt;y) - <span class="fn">MUL</span>(BETA, o-&gt;z);
-    <span class="hl">dx += <span class="fn">MUL</span>(coupling, (mean_x - o-&gt;x));</span>  <span class="cmt">// &larr; THE CLAUSTRUM</span>
-    o-&gt;x += <span class="fn">MUL</span>(dx, DT); o-&gt;y += <span class="fn">MUL</span>(dy, DT);
-    o-&gt;z += <span class="fn">MUL</span>(dz, DT);
-    <span class="cmt">// Direct VGA memory write at 0xA0000</span>
-    <span class="kw">int</span> sx = <span class="num">160</span> + <span class="fn">TO_INT</span>(o-&gt;x * <span class="num">4</span>);
-    <span class="kw">int</span> sy = <span class="num">180</span> - <span class="fn">TO_INT</span>(o-&gt;z * <span class="num">4</span>);
-    <span class="kw">if</span> (sy >= <span class="num">10</span> &amp;&amp; sy &lt; H &amp;&amp; sx >= <span class="num">0</span> &amp;&amp; sx &lt; W)
-        VGA[sy * W + sx] = o-&gt;color;
-}
-<span class="cmt">// LZ Complexity Sensor + Coupling Adjustment</span>
-<span class="kw">uint8_t</span> bit = (oscs[<span class="num">0</span>].x &gt; <span class="num">0</span>) ? <span class="num">1</span> : <span class="num">0</span>;
-x_history[hist_idx] = bit;
-hist_idx = (hist_idx + <span class="num">1</span>) % HIST_LEN;
-<span class="kw">if</span> (hist_idx == <span class="num">0</span>) {
-    <span class="kw">int</span> current_lzc = <span class="fn">calculate_lzc</span>(x_history, HIST_LEN);
-    <span class="kw">int</span> error = current_lzc - target_lzc;
-    <span class="hl"><span class="kw">if</span> (error &lt; <span class="num">-2</span>) coupling -= <span class="fn">TO_FIX</span>(<span class="num">0.5f</span>);
-    <span class="kw">else if</span> (error &gt; <span class="num">2</span>) coupling += <span class="fn">TO_FIX</span>(<span class="num">0.5f</span>);</span>
-}</pre></div>
-        <div class="code-caption">The Digital Claustrum: three oscillators, one sensor, one coupling parameter. The architecture that became the DCC.</div>
-      </div>
-
-      <!-- Lineage diagram -->
-      <div class="diag rv">
-        <div class="diag-title">The Lineage: One Kernel &rarr; Seven Applications</div>
-        <div class="diag-flow">
-          <div class="diag-node orange">kernel-claustrum.cpp<small>Bare metal · Dec 2025</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node gold">DCC Concept<small>Governor for search</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node cyan">DCC v1<small>TSP solver · Feb 2026</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node green">DCC v2<small>Self-calibrating · Mar 2026</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node violet">Recursive DCC<small>Inter-worker governance</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node rose">Trading DCC<small>Market regime detection</small></div>
-          <div class="diag-arrow">&rarr;</div>
-          <div class="diag-node orange">Flip4M rDCC<small>Game play governance</small></div>
-        </div>
-      </div>
-
-      <div class="highlight orange rv">
-        <h3>Same LZ sensor. Same coupling parameter. Different semantic polarity.</h3>
-        <p>Every DCC deployment traces back to this kernel. The <code class="mono">calculate_lzc</code> function written on bare metal with no standard library is the same algorithm that now monitors TSP workers finding optimal tours, trading systems detecting regime changes, and Flip4M agents playing board games.</p>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 7: KERNEL ZOO ===== -->
-  <section id="zoo">
-    <div class="wrap">
-      <span class="sec-tag violet rv">Chapter 7 &middot; The Kernel Zoo</span>
-      <h2 class="rv rv-d1">Six Kernels, Zero Dependencies</h2>
-      <p class="rv rv-d2">All six run on a 320&times;200 VGA framebuffer with no OS, no libraries, no standard functions. Everything hand-written in C++ compiled with <code class="mono">-ffreestanding -nostdlib</code>.</p>
-
-      <div class="zoo-grid rv">
-        <div class="zoo-card" style="--zoo-color:var(--orange)">
-          <div class="zoo-num">1</div>
-          <div class="zoo-name">Matrix Lava</div>
-          <div class="zoo-desc">CA rules driven by embedded Pi digits. Digital orange and red lava cascading down the screen.</div>
-        </div>
-        <div class="zoo-card" style="--zoo-color:var(--cyan)">
-          <div class="zoo-num">2</div>
-          <div class="zoo-name">Digital Claustrum</div>
-          <div class="zoo-desc">Lorenz attractors + LZ sensor + coupling feedback. The first complexity controller &mdash; on bare metal.</div>
-        </div>
-        <div class="zoo-card" style="--zoo-color:var(--green)">
-          <div class="zoo-num">3</div>
-          <div class="zoo-name">Rainbow XOR</div>
-          <div class="zoo-desc">Mathematical pattern generation via XOR operations. The most visually striking kernel variant.</div>
-        </div>
-        <div class="zoo-card" style="--zoo-color:var(--violet)">
-          <div class="zoo-num">4</div>
-          <div class="zoo-name">Sierpinski / Rule 90/30</div>
-          <div class="zoo-desc">Fractal cellular automata. Wolfram rules generating self-similar triangular structures.</div>
-        </div>
-        <div class="zoo-card" style="--zoo-color:var(--gold)">
-          <div class="zoo-num">5</div>
-          <div class="zoo-name">Game of Life</div>
-          <div class="zoo-desc">Conway&rsquo;s emergent complexity. Simple rules, complex behavior&thinsp;&mdash;&thinsp;a microcosm of the DCC principle.</div>
-        </div>
-        <div class="zoo-card" style="--zoo-color:var(--rose)">
-          <div class="zoo-num">6</div>
-          <div class="zoo-name">Starfield Warp</div>
-          <div class="zoo-desc">3D star projection on 2D framebuffer. Parallax depth using only integer math.</div>
-        </div>
-      </div>
-
-      <div class="img-timeline rv">
-        <div class="img-frame glow-orange">
-          <img src="8Z OS v0.06 p1a.PNG" alt="8Z OS v0.06 — Multi-boot with SPEED/STAB HUD" />
-          <div class="img-cap"><span class="ver">v0.06</span> &mdash; Multi-boot kernel with SPEED/STAB HUD and interactive controls.</div>
-        </div>
-        <div class="img-frame glow-green">
-          <img src="8Z OS v0.06 p3.PNG" alt="8Z OS v0.06 — Rainbow XOR mode" />
-          <div class="img-cap"><span class="ver">v0.06 Rainbow</span> &mdash; XOR pattern generation. Pure math, pure color.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 8: ENGINEERING RECORD ===== -->
-  <section id="record">
-    <div class="wrap">
-      <span class="sec-tag green rv">Chapter 8 &middot; The Engineering Record</span>
-      <h2 class="rv rv-d1">The Numbers</h2>
-
-      <div class="table-wrap rv">
-        <table>
-          <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-          <tbody>
-            <tr><td>Time to first boot</td><td class="mono good">~1 hour</td></tr>
-            <tr><td>Time to Protected Mode</td><td class="mono warn">~5 hours</td></tr>
-            <tr><td>Time to running math</td><td class="mono good">~6 hours</td></tr>
-            <tr><td>Bootloader size</td><td class="mono">512 bytes (64 lines ASM)</td></tr>
-            <tr><td>Kernel variants</td><td class="mono">6</td></tr>
-            <tr><td>External dependencies</td><td class="mono good">0</td></tr>
-            <tr><td>Standard library calls</td><td class="mono good">0</td></tr>
-            <tr><td>Lines of kernel (multi)</td><td class="mono">~800</td></tr>
-            <tr><td>Graphics</td><td class="mono">VGA Mode 13h, direct 0xA0000</td></tr>
-            <tr><td>Build system</td><td class="mono">Python + NASM + i686-elf-GCC</td></tr>
-            <tr><td>AI models involved</td><td class="mono">4 (Gemini, GPT, Claude, Grok)</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Claim typing -->
-      <div class="claim-grid rv">
-        <div class="claim-box verified">
-          <div class="claim-label">[Verified]</div>
-          <ul>
-            <li>Bare-metal OS built and booting in VirtualBox</li>
-            <li>Six kernel variants running complex generative math</li>
-            <li>LZ complexity sensor running on bare metal (same algo as DCC)</li>
-            <li>Zero standard library dependencies</li>
-          </ul>
-        </div>
-        <div class="claim-box reasoned">
-          <div class="claim-label">[Reasoned]</div>
-          <ul>
-            <li>~6 hours based on file timestamps and session records</li>
-            <li>The OS &rarr; Claustrum &rarr; DCC lineage is architectural, not metaphorical</li>
-          </ul>
-        </div>
-        <div class="claim-box speculative">
-          <div class="claim-label">[Prediction]</div>
-          <ul>
-            <li>The DCC architecture will scale to new domains via the same LZ sensor + coupling parameter</li>
-            <li>Bare-metal determinism may prove essential for consciousness testbed experiments</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== SECTION 9: WHY THIS MATTERS ===== -->
-  <section id="why">
-    <div class="wrap">
-      <span class="sec-tag gold rv">Chapter 9 &middot; Why This Matters</span>
-      <h2 class="rv rv-d1">Not a Tech Demo</h2>
-      <p class="rv rv-d2">Most OS projects take months to print Hello World. This one ran Lorenz attractors with a real-time complexity sensor in an afternoon. But the real significance isn&rsquo;t speed. It&rsquo;s what happened <em>after</em>.</p>
-
-      <div class="grid-2 rv">
-        <div class="panel cyan">
-          <div class="micro">The Petri Dish</div>
-          <h3>What the OS proved</h3>
-          <p>That a simple coupling parameter + LZ sensor could maintain edge-of-chaos dynamics in real-time on bare metal. No OS noise. No ambiguity. Pure signal.</p>
-        </div>
-        <div class="panel green" style="--panel-accent:var(--green)">
-          <div class="micro">The Harvest</div>
-          <h3>What grew from it</h3>
-          <p>The claustrum kernel became the DCC concept. The DCC became a verified architecture governing TSP solving, algorithmic trading, game play, and consciousness testing across 9+ domains.</p>
-        </div>
-      </div>
-
-      <div class="highlight gold rv">
-        <h3>The 8Z OS is the Petri dish. The Digital Claustrum is what grew in it. Everything else is the harvest.</h3>
-        <p>One kernel. Seven applications. The architecture that might become the substrate for machine consciousness was first written in C++ compiled with <code class="mono">-ffreestanding -nostdlib</code>, running on a 320&times;200 VGA framebuffer, inside a Virtual Machine, on a December afternoon.</p>
-      </div>
-    </div>
-  </section>
-  <div class="divider"></div>
-
-  <!-- ===== CROSS-LINKS ===== -->
-  <section id="links">
-    <div class="wrap">
-      <span class="sec-tag rv">Continue Exploring</span>
-      <h2 class="rv rv-d1">The Story Continues</h2>
-      <div class="closing-links rv">
-        <a class="mini-link" href="BD_8Z_DCC7_Testbed.html">
-          <div class="k" style="color:var(--cyan)">Consciousness</div>
-          <div class="t">DCC-7 Testbed</div>
-          <div class="d">Where the claustrum went. The consciousness experiment the kernel made possible.</div>
-        </a>
-        <a class="mini-link" href="BD_8Z_DCC_Recursive.html">
-          <div class="k" style="color:var(--violet)">Architecture</div>
-          <div class="t">Recursive DCC</div>
-          <div class="d">The kernel&rsquo;s grandchild. DCC governing DCC in a self-similar hierarchy.</div>
-        </a>
-        <a class="mini-link" href="BD_8ZRP.html">
-          <div class="k" style="color:var(--green)">Optimization</div>
-          <div class="t">8Z-RP TSP Solver</div>
-          <div class="d">DCC&rsquo;s first engineering deployment. Finding exact optimal on qa194.</div>
-        </a>
-        <a class="mini-link" href="BD_8Z_Flip4M_DCC.html">
-          <div class="k" style="color:var(--rose)">Game Theory</div>
-          <div class="t">Flip4M &times; DCC</div>
-          <div class="d">DCC&rsquo;s latest domain. The game that tests consciousness predictions.</div>
-        </a>
-        <a class="mini-link" href="BD_8Z_Reasoning.html">
-          <div class="k" style="color:var(--gold)">Methodology</div>
-          <div class="t">Reasoning Framework</div>
-          <div class="d">How the OS was built so fast. The principles behind Human-AI pair engineering.</div>
-        </a>
-        <a class="mini-link" href="BD_CCH_Science.html">
-          <div class="k" style="color:var(--orange)">Theory</div>
-          <div class="t">CCH Science</div>
-          <div class="d">The consciousness hypothesis. What the claustrum tests. Why the architecture works.</div>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer>
-    <div class="wrap">
-      <div class="foot-grid">
-        <div class="foot-col">
-          <h4>About This Page</h4>
-          <p>BD &times; AI Lab &middot; The 6-Hour Operating System &middot; December 2025<br>Part of the 8Z Research Program &middot; AIM&sup3; Institute &middot; Ljubljana</p>
-          <p style="margin-top:.7rem">This page tells Chapters 1&ndash;2 of the 8Z story: build a silent room, grow something in it. The remaining chapters&thinsp;&mdash;&thinsp;DCC, TSP, trading, Flip4M, CCH&thinsp;&mdash;&thinsp;are linked above.</p>
-        </div>
-        <div class="foot-col">
-          <h4>Quick Links</h4>
-          <ul class="foot-links">
-            <li><a href="../BD/">Portfolio Index</a></li>
-            <li><a href="BD_8Z_DCC7_Testbed.html">DCC-7 Testbed</a></li>
-            <li><a href="BD_8ZRP.html">TSP Solver</a></li>
-            <li><a href="BD_CCH_Science.html">CCH Science</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="copyright">&copy; 2025&ndash;2026 BD &times; AI Lab &middot; Bojan Dobre&ccedil;evi&cacute; &middot; AIM&sup3; Institute</div>
-    </div>
-  </footer>
-
-  <script>
-  /* Scroll progress */
-  (function(){
-    const bar=document.getElementById('spb');
-    window.addEventListener('scroll',function(){
-      const h=document.documentElement;
-      bar.style.width=((h.scrollTop/(h.scrollHeight-h.clientHeight))*100)+'%';
-    },{passive:true});
-  })();
-
-  /* Reveal on scroll */
-  (function(){
-    const obs=new IntersectionObserver(entries=>{
-      entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
-    },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
-    document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
-  })();
-
-  /* Lightbox for images */
-  (function(){
-    document.querySelectorAll('.img-frame img').forEach(function(img){
-      img.addEventListener('click',function(){
-        var ov=document.createElement('div');
-        ov.className='lb-overlay';
-        var big=document.createElement('img');
-        big.src=img.src;
-        big.alt=img.alt||'';
-        ov.appendChild(big);
-        var hint=document.createElement('div');
-        hint.className='lb-hint';
-        hint.textContent='click anywhere to close';
-        ov.appendChild(hint);
-        document.body.appendChild(ov);
-        requestAnimationFrame(function(){ov.classList.add('active')});
-        ov.addEventListener('click',function(){
-          ov.classList.remove('active');
-          setTimeout(function(){ov.remove()},300);
-        });
-      });
-    });
-  })();
-  </script>
+<a class="skip" href="#main">Skip to the story</a>
+<div aria-hidden="true" class="progress" id="progress"></div>
+<header class="masthead"><div class="mast-inner"><a class="brand" href="../"><b>8Z</b> / BD × AI Lab</a><span class="edition">Research origins · December 2025</span><nav aria-label="Site navigation" class="mast-nav"><a class="desktop" href="../BD/">Portfolio</a><a href="#slovenian" lang="sl">Slovenščina</a><a href="index-O.html">Original ↗</a></nav></div></header>
+<main class="container" id="main">
+<section aria-labelledby="title" class="hero"><div class="hero-top"><div><div class="eyebrow">The operating-system experiment</div><h1 id="title">8Z <span>OS.</span></h1><p class="hero-sub">From the first pixel<br/>to a feedback loop.</p></div><div><p class="hero-intro">A small operating system, written from scratch. A screen filled by mathematical rules. Then a different question: <strong>could the system observe what it was generating—and change its own dynamics?</strong></p><div class="actions"><a class="button primary" href="#origin">Read the story <span aria-hidden="true">↓</span></a><a class="button" href="#matrix">Watch the original demo <span aria-hidden="true">↘</span></a></div></div></div>
+<div class="meta-row"><span>BD × AI · 12–15 Dec 2025 and later revisions</span><span class="status">Historical prototype · source-backed reconstruction</span><span>Revisited 17 Sep 2026</span></div>
+<figure class="hero-figure"><div class="figure-top"><span>Two experiments. One starting point.</span><span>Original archive image · I02</span></div><a class="image-link" href="8Z%20OS%20VMs.PNG"><img alt="Original VirtualBox screenshot: orange Matrix Lava on the left, a purple Lorenz butterfly in the Claustrum VM on the right." fetchpriority="high" height="1216" src="8Z%20OS%20VMs.PNG" width="2209"/></a><figcaption><strong>Digital Lava → Digital Claustrum.</strong> Two original 8Z OS guests, side by side in VirtualBox. The first generates changing patterns; the second adds a history sensor and a coupling controller. This is a historical screenshot—not a browser simulation or evidence of physical-hardware boot.</figcaption></figure>
+<div aria-label="Recovered implementation facts" class="specs"><div class="spec"><b>512 B</b><span>BIOS boot sector</span></div><div class="spec"><b>32-bit</b><span>Freestanding C++ + assembly</span></div><div class="spec"><b>320 × 200</b><span>Direct VGA graphics</span></div><div class="spec"><b>6 apps</b><span>In the later multi-app kernel</span></div></div>
+</section>
+<nav aria-label="On this page" class="index"><div class="index-label">Inside the story</div><div class="index-links"><a href="#origin">01 / The premise</a><a href="#engineering">02 / The first boot</a><a href="#matrix">03 / Digital Lava</a><a href="#claustrum">04 / Digital Claustrum</a><a href="#evidence">05 / What the test found</a><a href="#zoo">06 / The growing OS</a><a href="#dcc">07 / The DCC connection</a><a href="#future">08 / What comes next</a><a href="#sources">09 / Sources</a></div></nav>
+<div class="tools" hidden="" id="reading-tools"><small>Follow the main story, or open the technical layers.</small><button class="button" id="expand" type="button">Expand all details</button><button class="button" id="collapse" type="button">Collapse all details</button></div>
+<details id="slovenian" lang="sl"><summary>Po slovensko — od majhnega OS do zamisli, iz katere se je razvil DCC</summary><div class="detail-body"><p><strong>8Z OS ni bil zamišljen kot zamenjava za Windows.</strong> Bil je poskus lastnega, čim bolj preglednega okolja za izvajanje matematičnih programov. Nastal je lasten zagonski nalagalnik, 32-bitno jedro v C++ in neposreden izris v grafični pomnilnik. Python je pomagal pri gradnji na gostiteljskem računalniku; ni tekel znotraj OS.</p><p>Najprej je bilo pomembno, da se na zaslonu sploh nekaj pojavi. Rule 90 je iz enega semena ustvaril trikotni vzorec. Nato so števke π preklapljale med pravili celičnega avtomata. Nove vrstice so nastajale na vrhu, stare so drsele navzdol: <strong>Matrix oziroma Digital Lava</strong>. Majhen opis je ustvarjal bogato sliko. Vendar program rezultata še ni opazoval in se nanj ni odzival.</p><p>Naslednji korak je povezal ta laboratorij s CCH, hipotezo o zavesti in vlogi claustruma. E4-Metal je uporabil tri Lorenzove oscilatorje, zgodovino njihovega signala, poenostavljen merilnik kompleksnosti in regulator sklopitve. Novost ni bil metulj na zaslonu, ampak <strong>ločitev generatorja, opazovalca in regulatorja ter povratna zveza med njimi</strong>.</p><p>Rekonstrukcija iz septembra 2026 ohrani tudi pomemben popravek: pri privzetem cilju 15 in začetni sklopitvi 0 je regulator v omejenem preizkusu zahteval zmanjšanje že ničelne sklopitve. Vklopljena in izklopljena različica sta zato ustvarili bajtno enaka zabeležena izhoda. To ni dokaz aktivnega uravnavanja na robu kaosa in še manj dokaz zavesti. Je natančno opisan zgodnji prototip, katerega arhitekturo in omejitve lahko pregledamo.</p><p>Iz te smeri je pozneje zrasla splošnejša zamisel DCC: ne nadzoruj samo posameznega koraka, temveč opazuj, v kakšen režim se razvija proces, in spreminjaj njegovo nadaljevanje. <strong>Digital Claustrum je njegov konceptualni in arhitekturni prednik, ne ista izvedba in ne dokaz vseh poznejših rezultatov.</strong></p><p>Celotna angleška predstavitev spodaj ohranja razvojno zgodbo, izvirne slike in video, tehnične podrobnosti ter ločnico med izvedenim in načrtovanim. Prejšnja predstavitev z njenimi večjezičnimi povzetki je nespremenjena v <a href="index-O.html">arhivu index-O.html</a>; njene močnejše zgodovinske trditve je treba brati skupaj z novimi preverjanji.</p></div></details>
+<section class="section" id="origin"><aside class="section-side"><span class="section-no">01</span><p>A purpose before<br/>a platform</p></aside><div class="section-body"><div class="kicker">The premise</div><h2>A room for mathematics.</h2><p class="lead">The starting point was 8Z: searching for compact generative descriptions that can reconstruct larger structured results. The operating system was an instrument for that research, not the end goal.</p><p>Instead of beginning with a desktop, files, windows and applications, BD and the AI collaborators began with a smaller question: what is the least machinery needed to boot, execute our own mathematical rules, and see their output? The resulting environment would expose decisions normally hidden beneath a general-purpose operating system.</p><p>The original story called this the <strong>“silent room”</strong>: an ambition to control execution, reduce unnecessary interference and eventually support demanding compression experiments. That ambition explains why the project exists. It is not, by itself, a measurement of performance or timing. <a class="source-ref" href="#src-origins">[A]</a></p>
+<blockquote class="quote">A small rule makes a pattern.<br/>A feedback loop asks what that pattern is becoming.</blockquote>
+<details><summary>The original 8Z plan — and why the visual experiments came first</summary><div class="detail-body"><p>The long-term plan was to finish a strong 8Z implementation with the intended <strong>4C + 4M</strong> modules, port the proven engine to native C++ on Windows 11, and develop the OS in parallel toward supporting more complex C/C++ programs. The full engine was not already running inside these early kernels.</p><p>A graphics experiment was a smaller, visible bridge. It needed only a boot path, arithmetic, memory and a way to draw. That made it useful for testing whether the execution environment actually worked, while also expressing a central 8Z intuition: a short generative description can produce a much richer visible result.</p><p>The direction stayed practical: prove the engine in a mature development environment, then give it an increasingly capable dedicated host. The OS experiments were not a plan to install a Python interpreter and its ecosystem inside a tiny kernel. Python belonged to the host-side build tools.</p></div></details>
+<details><summary>What “bare metal” means here — without the zero-jitter claim</summary><div class="detail-body"><p>The guest executes its own assembly and freestanding C++ kernel. It does not ask a Windows or Linux guest OS to render frames, allocate its working arrays or schedule its application loop. That is the meaningful bare-metal-style property of the implementation.</p><p>The preserved demonstrations nevertheless run <strong>inside VirtualBox on a host computer</strong>. A guest without a general-purpose OS still depends on the virtual machine and host scheduling. The archive does not establish zero jitter, guaranteed real-time timing or an advantage over an equivalent, well-engineered native program.</p><p>Nor does ordinary scheduling interference automatically destroy mathematical correctness. The earlier story's stronger wording is part of the historical narrative, not a result demonstrated by these sources. Physical boot and a fair same-core comparison remain separate engineering steps.</p></div></details>
+</div></section>
+<section class="section" id="engineering"><aside class="section-side"><span class="section-no">02</span><p>12–13 Dec 2025<br/>Boot → protected mode</p></aside><div class="section-body"><div class="kicker">The first boot</div><h2>Before the butterfly,<br/>there was one pixel.</h2><p>The earliest preserved versions move through text output, static graphics and a cellular automaton. With <strong>Rule 90</strong>, each new cell is the XOR of its left and right neighbours. A tiny rule and a single seed build a branching triangular structure. There is no observer or controller yet—just our code, its state and the screen. <a class="source-ref" href="#src-code">[B]</a></p>
+<div class="pair"><figure><a class="image-link frame" href="8Z%20OS%20v0.01.PNG"><img alt="Original first-version 8Z OS screenshot with a triangular cellular-automaton pattern." height="801" loading="lazy" src="8Z%20OS%20v0.01.PNG" width="1159"/></a><figcaption><strong>The first visible proof of execution.</strong> The preserved v0.01 screenshot. A generated pattern is evidence that the program draws; it is not yet a compression benchmark.</figcaption></figure><div><h3>The difficult boundary</h3><p>To grow beyond the first experiment, the project needed a reliable transition from BIOS-era startup into a 32-bit C++ kernel. Stack initialization, segment registers, memory placement and interrupt handling all mattered.</p><p>The archives preserve failed attempts as well as the eventual <strong>V-014 “Direct Handoff”</strong> path. The useful outcome was an explicit, inspectable startup sequence—not an unexplained last version that happened to work.</p></div></div>
+<details><summary>Inside the boot chain — 512 bytes to kernel_main</summary><div class="detail-body"><p>The boot sector starts at <code>0x7C00</code>. It initializes its execution environment, reads the kernel through BIOS services into <code>0x1000</code>, and requests VGA Mode 13h. It then disables maskable interrupts, loads the Global Descriptor Table, switches into protected mode and performs a far jump.</p><pre><code>BIOS boot sector at 0x7C00
+  → initialize stack and segments
+  → load kernel at 0x1000
+  → select VGA Mode 13h
+  → CLI · load GDT · set CR0.PE
+  → jmp dword 0x08:0x1000
+  → kernel_entry: data segments + 32-bit stack
+  → kernel_main</code></pre><p>The linker places the entry code first. The assembly entry stub prepares the C++ environment rather than assuming that BIOS state is suitable. The framebuffer is the familiar <code>320 × 200</code> indexed-colour region at <code>0xA0000</code>.</p><p>The host-side toolchain combines Python build automation, NASM and i686-elf compilation/linking. The executable guest is freestanding: standard desktop libraries and ordinary OS services are not supplied automatically. “No guest OS dependency” does not mean “no development tools” or “no virtual machine.” <a class="source-ref" href="#src-code">[B]</a></p></div></details>
+<details><summary>The crashes — what the source establishes, and what the old explanations do not</summary><div class="detail-body"><p>The development notes discuss uninitialized stack state, segment mistakes during disk loading and the infamous VirtualBox “Guru Meditation” failures. Several AI systems supplied diagnoses, including competing explanations. Their agreement or disagreement is part of the debugging record, not independent experimental replication.</p><p>The retained code shows concrete changes: explicit initialization, a clearer BIOS-to-kernel boundary, correct placement of the entry stub and the protected-mode handoff. Those changes can be inspected. The stronger story that a particular queued hypervisor interrupt definitively caused every earlier failure is not established by the retained record.</p><p>One diagnostic script also looked for a boot signature in the first 512 bytes of a <em>VDI container</em>, confusing the container header with the virtual disk's boot sector. Its negative result cannot establish that the disk was unbootable. Failed diagnostics are useful when they become better checks. <a class="source-ref" href="#src-archive">[D]</a></p></div></details>
+<details><summary>The “six-hour operating system” — a sprint, not the whole chronology</summary><div class="detail-body"><p>The earlier presentation's title records the intense initial sprint. It should not be read as a stopwatch-verified claim that every later application and interface was completed in six hours.</p><p>The recovered development spans at least <strong>12–15 December 2025</strong>, followed by additional v0.07 artifacts. Some ZIP timestamps have no timezone; copying changed some file dates; version numbers within application names do not always identify an OS release. The sequence below is better supported than an exact hour-by-hour reconstruction.</p></div></details>
+<ol class="timeline"><li><time datetime="2025-12-12">12 DEC 2025</time><h3>Text, pixels, Rule 90</h3><p>The first boot and compact generative graphics.</p></li><li><time datetime="2025-12-13">NIGHT OF 12–13 DEC</time><h3>A stable 32-bit handoff</h3><p>Bootloader, entry stub and linker brought into alignment.</p></li><li><time datetime="2025-12-13">13 DEC</time><h3>Digital Lava → E4-Metal</h3><p>Pi-driven automata, then the CCH-inspired observer and controller; keyboard interaction follows.</p></li><li><time datetime="2025-12-15">15 DEC AND LATER REVISIONS</time><h3>A growing multi-app environment</h3><p>Menus, six applications, help, palettes and HUDs—with regressions that had to be repaired.</p></li></ol>
+</div></section>
+<section class="section" id="matrix"><aside class="section-side"><span class="section-no">03</span><p>Generative mathematics<br/>Open loop</p></aside><div class="section-body"><div class="kicker">The animation that opened the next question</div><h2>Digital Lava.<br/>Structure in motion.</h2><p class="lead">Orange and red pixels pour down the screen. What looks like a moving texture comes from a compact recipe: a row of cells, three rules, and digits of π deciding which rule comes next.</p><p>Pi Art becomes the Matrix Waterfall: generate a new row at the top, shift older rows down, repeat. In the recovered early sources, digits select among <strong>Rules 90, 30 and 184</strong>. The visual richness is not stored as a movie. It is generated as the program runs. <a class="source-ref" href="#src-code">[B]</a></p>
+<figure class="video-shell"><div class="figure-top"><span>Original demonstration</span><span>Archive video · not a live kernel</span></div><video aria-label="Original 8Z OS demonstration recording" controls="" playsinline="" poster="8Z%20OS%20v0.06%20p1a.PNG" preload="none"><source src="8Z-OS_demo1.mp4" type="video/mp4"/><p>Your browser cannot play this recording. <a href="8Z-OS_demo1.mp4">Open the original MP4.</a></p></video><figcaption>The original 8Z OS demo is retained here. Use the player to inspect the visual behaviour; the recording is not a latency measurement or a controlled comparison. <a href="8Z-OS_demo1.mp4">Open the video directly ↗</a></figcaption></figure>
+<p>But the animation is <strong>open-loop</strong>. The program follows its rule-selection sequence; it does not measure whether the resulting pattern is too regular or too disordered. The next rule is not a decision made from observed complexity.</p><p>That distinction is the bridge to the next experiment. Digital Lava made changing regimes visible. The question became whether a second layer could watch the system and act on what it observed.</p>
+<details><summary>The compact recipe — π is a driver, not an observer</summary><div class="detail-body"><p>The recovered early Pi Art and Matrix files contain a table of <strong>320 π digits</strong>. Their parity seeds the initial cells. Digits 0–5 select Rule 90, 6–7 select Rule 30, and 8–9 select Rule 184; another digit determines how long a rule remains active. A later interactive Matrix uses a shorter 40-digit table.</p><p>The older “1 KB of π” description is therefore not an exact description of those retained sources. More importantly, the table is predetermined. Its digits do not change in response to the rendered output.</p><pre><code>π digits → choose a rule and its duration
+         → evolve a row of cells
+         → draw it, scroll the old rows
+         → repeat the programmed sequence
+
+No measured-output → rule-selection feedback in this experiment.</code></pre><p>This is a visible example of compact generation, not proof that arbitrary data can be compressed to a tiny formula. A working lossless codec must still account for the complete description and reproduce the required bytes exactly.</p></div></details>
+</div></section>
+<section class="section" id="claustrum"><aside class="section-side"><span class="section-no">04</span><p>E4-Metal<br/>Observer + controller</p></aside><div class="section-body"><div class="kicker">The first Digital Claustrum</div><h2>Not a new colour.<br/>A new relationship.</h2><p class="lead">The decisive change was to separate the system that evolves from the system that watches—and connect them with feedback.</p><p>The December documents connect two research directions: 8Z OS supplied the executable visual laboratory; <strong>CCH</strong>, the consciousness/claustrum hypothesis, supplied the motivation for a controller. The E4-Metal plan proposed bringing a toy experiment into the C++ kernel. The surviving implementation uses <strong>three coupled Lorenz oscillators</strong>, not the five initially mentioned in the plan. <a class="source-ref" href="#src-origins">[A]</a></p><p>The earliest recovered <code>kernel-claustrum.cpp</code> is 207 lines. It evolves the oscillators, records a binary signal, estimates its complexity, compares that estimate with a target, and adjusts a shared coupling parameter. The code is small enough for the entire control idea to remain inspectable. <a class="source-ref" href="#src-control">[C]</a></p>
+<div aria-label="Four stages of the recovered feedback architecture" class="flow"><div><span class="label">01 / Dynamics</span><b>Generate</b><small>Three Lorenz trajectories evolve in fixed-point arithmetic.</small></div><div><span class="label">02 / History</span><b>Observe</b><small>Keep 64 binary samples from the sign of the first oscillator's x.</small></div><div><span class="label">03 / Estimate</span><b>Compare</b><small>A simplified LZC score is compared with a target and deadband.</small></div><div><span class="label">04 / Control</span><b>Adjust</b><small>Change coupling u, bounded between 0 and 5.</small></div></div><div class="loop-return">↳ coupling feeds back into the next dynamics step ↲</div>
+<div class="pair"><figure><a class="image-link frame" href="8Z%20OS%20v0.02-dc1.PNG"><img alt="Early archived Digital Claustrum screenshot with sparse Lorenz butterfly traces." height="592" loading="lazy" src="8Z%20OS%20v0.02-dc1.PNG" width="706"/></a><figcaption><strong>Earlier visible traces.</strong> The original image labelled dc1. A snapshot shows the rendering, not a measured synchronization state.</figcaption></figure><figure><a class="image-link frame" href="8Z%20OS%20v0.02-dc3.PNG"><img alt="Archived Digital Claustrum screenshot with denser accumulated Lorenz butterfly traces." height="604" loading="lazy" src="8Z%20OS%20v0.02-dc3.PNG" width="703"/></a><figcaption><strong>A denser butterfly.</strong> The original dc3 image. Accumulating trajectories can make the image denser without proving that a controller stabilized it.</figcaption></figure></div>
+<details><summary>Inside the mathematics — three oscillators, one shared control parameter</summary><div class="detail-body"><p>The source uses 16.16 fixed-point arithmetic and a wider intermediate multiplication. The Lorenz parameters are σ = 10, ρ = 28 and β = 2.666, with a quantized timestep of 0.01. The three initial x values are 1.0, 1.1 and 0.9; each starts with y = 1 and z = 20.</p><pre><code>dxᵢ = σ(yᵢ − xᵢ) + u(mean(x) − xᵢ)
+dyᵢ = xᵢ(ρ − zᵢ) − yᵢ
+dzᵢ = xᵢyᵢ − βzᵢ
+
+u = shared coupling strength</code></pre><p>Coupling pulls each x coordinate toward the current mean. Changing u is the proposed intervention. The equations specify a toy dynamical system; calling its components “neurons” is an analogy in the historical story, not a biological identification.</p></div></details>
+<details><summary>The observer — what the 64-sample sensor actually sees</summary><div class="detail-body"><p>At each step, the observer stores whether the first oscillator's x coordinate is positive. These are <strong>64 binary samples stored in a byte array</strong>, not a measurement of every coordinate of every oscillator. Once the buffer is full, the code calls its simplified Lempel–Ziv-like complexity estimator.</p><p>This is a deliberately narrow sensor. It does not directly measure all-system integration, pairwise synchronization, consciousness or the quality of a compression model. A richer picture on the screen need not imply a larger value from this particular observation channel.</p><p>The score is unnormalized, and the target of 15 is described in the original code as a calibrated guess. Sensor choice, window length, sampling and target selection are therefore experimental design choices—not incidental details.</p></div></details>
+<details><summary>The control law — thresholds, deadband and saturation</summary><div class="detail-body"><p>Every full history window produces an error relative to the target. A sufficiently negative error lowers coupling by 0.5; a sufficiently positive error raises it by 0.5. The middle band leaves coupling unchanged, and the result is clamped.</p><pre><code>// Readable transcription of the recovered law; not a new algorithm.
+e = measured_lzc − target_lzc
+if e &lt; −2:  u = u − 0.5
+if e &gt;  2:  u = u + 0.5
+u = clamp(u, 0, 5)
+
+Recovered defaults: target_lzc = 15; u = 0.</code></pre><p>This is a <strong>threshold controller with a deadband</strong>, not proportional control: crossing a threshold always requests the same 0.5 change, regardless of the magnitude of the error. Whether that request produces a useful intervention depends on the sensor, the dynamics and whether the actuator is already at a limit.</p><p>The first red bar displays <strong>coupling u</strong>. A later HUD label “CMPLX 15” displays the configured target, not necessarily a current measurement. Matrix's “S” denotes speed. Those labels should not be merged into a supposed consciousness meter.</p></div></details>
+<div class="note"><span class="label">The important distinction</span><p><strong>The architecture exists in code.</strong> That is different from showing that its default configuration actively regulates the trajectories. The recovered experiment lets us test that distinction.</p></div>
+</div></section>
+<section class="section" id="evidence"><aside class="section-side"><span class="section-no">05</span><p>17 Sep 2026<br/>Reconstruction test</p></aside><div class="section-body"><div class="kicker">From interpretation to evidence</div><h2>The butterfly was real.<br/>What was the controller doing?</h2><p>The original narrative interpreted the dense butterfly and its red bar as successful regulation between order and chaos. The new documentation does something more useful than repeating that interpretation: it isolates the recovered mathematical core and compares controller-on with controller-off.</p><p>In the recorded <strong>100,000-step host-side test</strong>, the default target is 15 and coupling starts at 0. The measured simplified LZC is only 2 or 3. The law therefore requests lower coupling—but it is already at its lower bound. <strong>Coupling stays at zero.</strong> <a class="source-ref" href="#src-probe">[E]</a></p>
+<div aria-label="Recorded mathematical-core probe results" class="table-scroll" role="region" tabindex="0"><table><thead><tr><th>Recorded condition</th><th>Steps</th><th>Observed result</th></tr></thead><tbody><tr><td>Target 15 · u starts at 0 · ON</td><td>100,000</td><td>u remains 0; LZC is 2 or 3.</td></tr><tr><td>Same defaults · OFF</td><td>100,000</td><td>Recorded CSV is byte-identical to ON.</td></tr><tr><td>Target 15 · u starts at 2 · ON</td><td>100,000</td><td>Four decrements of 0.5 bring u to 0.</td></tr><tr><td>Diagnostic target 0 · u starts at 0 · ON</td><td>100,000</td><td>Ten increments of 0.5 bring u to 5.</td></tr></tbody></table></div>
+<p>The observer and controller functions execute. Under the recovered defaults, however, their requested action cannot change the dynamics. The on/off equality supports a precise conclusion: <strong>no active control contribution to the recorded trajectory in this tested default case</strong>.</p><p>That does not erase the invention of the architecture. It also does not establish that other parameters cannot work, or that later DCC systems fail. It tells us exactly which claim the original image cannot carry on its own.</p>
+<details><summary>How the test was bounded — and how to read its result</summary><div class="detail-body"><p>The Origins package contains the extracted C++ mathematical/control core, a test driver, four CSV traces and a receipt. Its recorded build uses g++ 14.2.0 with undefined-behaviour checking; the four runs report no sanitizer errors. Boot code, device access and graphics are excluded.</p><p>The two default runs each contain 1,562 complete 64-step windows: 977 score 2 and 585 score 3. Their CSV files have the same SHA-256, reproduced in the source notes below. This is stronger evidence about that controller's activity than comparing two attractive screenshots.</p><p>The target-0 run deliberately exercises the opposite control branch. Zero is outside the interactive minimum of 5; it is <strong>branch-coverage evidence, not a proposed scientific fix</strong>. These are preserved probe results from the new documentation, not a fresh boot of the original virtual disks.</p></div></details>
+<details><summary>What we keep from the original story — and what becomes a hypothesis</summary><div class="detail-body"><p>We keep the historical achievement: a working visual kernel, the meeting of generative mathematics with the CCH idea, and an implemented observer/controller loop. We also keep the excitement of seeing the system evolve. The original presentation is preserved unchanged rather than rewritten out of the record.</p><p>We do not upgrade “the bar appeared to move” or “the butterfly became dense” into proof of homeostasis. A different historical revision or parameter setting remains possible, but the inspected default source has no matching, verified trace that rescues the stronger claim.</p><p><strong>CCH remains a hypothesis.</strong> Neither the images nor this toy-model test demonstrate subjective experience, establish the biological role of the claustrum, or validate a general theory of consciousness. They define an experiment that can be improved and tested.</p></div></details>
+<blockquote class="quote">Keep the discovery.<br/>Make the claim testable.</blockquote>
+</div></section>
+<section class="section" id="zoo"><aside class="section-side"><span class="section-no">06</span><p>A shared kernel<br/>A growing laboratory</p></aside><div class="section-body"><div class="kicker">The growing OS</div><h2>Six applications.<br/>One small environment.</h2><p>The project did not stop with one attractor. Standalone experiments were brought into a menu-driven environment, with keyboard interaction, pause/reset, help text, palettes and on-screen parameters. The revised v0.05 already contains six applications; v0.06 develops the interface and presentation further. <a class="source-ref" href="#src-versions">[F]</a></p>
+<div class="apps"><article class="app"><span class="app-num">01 / GENERATION</span><h3>Matrix Lava</h3><p>Pi-driven cellular-automaton rules and a scrolling field. The original visual bridge from static patterns to continuously evolving structure.</p></article><article class="app"><span class="app-num">02 / FEEDBACK EXPERIMENT</span><h3>Digital Claustrum</h3><p>Lorenz trajectories, a history sensor and adjustable coupling in the controller-bearing branches. The precise branch matters.</p></article><article class="app"><span class="app-num">03 / VISUAL MATHEMATICS</span><h3>Rainbow XOR</h3><p>Moving colour patterns built from bitwise formulas. A distinct visual application, not another name for the Lorenz controller.</p></article><article class="app"><span class="app-num">04 / SIMPLE RULES</span><h3>Sierpinski / Rule 90–30</h3><p>Cellular-automaton structures with visible changes under different rules. A direct view of how local rules shape global patterns.</p></article><article class="app"><span class="app-num">05 / CELLULAR WORLDS</span><h3>Game of Life</h3><p>A two-dimensional cellular-automaton experiment in the same graphics environment. Complex evolution does not require a large interface.</p></article><article class="app"><span class="app-num">06 / PROJECTION</span><h3>Starfield</h3><p>A depth-and-motion display through projected stars. Another test of small mathematical programs sharing the kernel's drawing tools.</p></article></div>
+<div class="pair"><figure><a class="image-link frame" href="8Z%20OS%20v0.06%20p1a.PNG"><img alt="Original v0.06 Matrix Lava screenshot with its speed and stability interface." height="521" loading="lazy" src="8Z%20OS%20v0.06%20p1a.PNG" width="675"/></a><figcaption><strong>Lava with its interface.</strong> The later environment exposes controls and status alongside the generated pattern.</figcaption></figure><figure><a class="image-link frame" href="8Z%20OS%20v0.06%20p3.PNG"><img alt="Original v0.06 Rainbow XOR application screenshot." height="513" loading="lazy" src="8Z%20OS%20v0.06%20p3.PNG" width="665"/></a><figcaption><strong>Rainbow as its own application.</strong> Visual variety and controller functionality are separate capabilities.</figcaption></figure></div>
+<details><summary>An important regression — a feature can keep its name and lose its mechanism</summary><div class="detail-body"><p>Not every higher-looking version was a scientific improvement. One early multi-app branch retained Lorenz rendering but dropped the observer and coupling control. A “Rainbow Claustrum” branch even kept the Claustrum name while replacing its dynamics with an XOR/AND visual effect.</p><div aria-label="Recovered branch comparison" class="table-scroll" role="region" tabindex="0"><table><thead><tr><th>Recovered source</th><th>What changed</th></tr></thead><tbody><tr><td>S060 · first standalone Claustrum</td><td>Lorenz + history + LZC + coupling control present.</td></tr><tr><td>S066 · kernel-multi1</td><td>Lorenz rendering retained; observer and controller absent.</td></tr><tr><td>S065 · v0.04 Final Interactive</td><td>The controller is restored.</td></tr><tr><td>S069 · kernel-multi_strange</td><td>“Rainbow Claustrum” label; XOR/AND visuals, not the original mechanism.</td></tr><tr><td>S068 · half_OK</td><td>Separate Lorenz/Rainbow, but controller still missing.</td></tr><tr><td>S063 · revised v0.05; S064/S070 · v0.06</td><td>Six applications and restored control structure.</td></tr></tbody></table></div><p>The durable lesson is not to distrust visual polish. It is to test mechanism preservation explicitly. Compilation, a working menu and a familiar feature name do not establish that the research behaviour survived a refactor.</p></div></details>
+<details><summary>The recovered v0.07 — why a filename is not a resume point</summary><div class="detail-body"><p>The later source check also found <code>8Z OS v0.07_min.zip</code> and a larger v0.07 archive in the evidence mirror. The inspected <em>min</em> package contains a six-app kernel identifying itself as v0.07. Another file still named <code>kernel-multi_v0.06.cpp</code> also carries v0.07 identity in its contents.</p><p>The source's existence is established; a new acceptance boot of that package is not. Before a future OS build, the exact sources and working binaries should be compared. Rebuilding “v0.07” from an older planning note would risk repeating work or dropping later changes.</p><p>The larger v0.07 archive was located by the reconstruction, not fully inspected there. Its later modification time is not enough to declare it the final implementation. <a class="source-ref" href="#src-versions">[F]</a></p></div></details>
+</div></section>
+<section class="section" id="dcc"><aside class="section-side"><span class="section-no">07</span><p>The architectural link<br/>Not a code-identity claim</p></aside><div class="section-body"><div class="kicker">From Claustrum to DCC</div><h2>The inheritance<br/>is the feedback loop.</h2><p class="lead">Do not govern only the next algorithmic step. Observe the regime the whole process is entering—and influence what it does next.</p><p>That is the connection from the early Digital Claustrum to the later DCC research line. The OS archives directly document the bridge from 8Z and CCH into E4-Metal. The broader lineage to DCC combines BD's project continuity with an architectural comparison. It is not evidence that every subsequent controller copied the same function unchanged.</p><div aria-label="Conceptual mapping from the early kernel to later process governance" class="table-scroll" role="region" tabindex="0"><table><thead><tr><th>Early Digital Claustrum</th><th>The more general idea</th></tr></thead><tbody><tr><td>Several oscillator trajectories</td><td>Several candidates, routes, workers or branches of a process.</td></tr><tr><td>History of a binary signal</td><td>Evidence about behaviour over time, not just the latest output.</td></tr><tr><td>A simplified LZC estimate</td><td>Chosen indicators of complexity, progress, stagnation or utility.</td></tr><tr><td>A target and deadband</td><td>Criteria for deciding when intervention is warranted.</td></tr><tr><td>Coupling u, with limits</td><td>Bounded control over cooperation, budget, focus, scale or search width.</td></tr><tr><td>Fast dynamics; slower observation</td><td>Separate the execution loop from the governance loop.</td></tr></tbody></table></div><p>The right-hand column is a <strong>conceptual mapping</strong>, not a list of features already present in a 207-line 2025 kernel. The current research programme connects description, search and control more broadly; this early experiment is one of its origins. <a class="source-ref" href="#src-lineage">[G]</a></p>
+<details><summary>What carries forward — and what must be designed again for each domain</summary><div class="detail-body"><p>A useful controller requires an observable signal, memory, an intervention and a way to determine whether the intervention helped. Those roles can transfer. Their implementation, thresholds and even the meaning of “more complexity” need not transfer unchanged.</p><p>In later search work, a controller may influence exploration, restart behaviour or the allocation of computation. That does not make oscillator coupling identical to a search budget, or make the original LZC function the correct sensor everywhere.</p><p>MDL and DCC also occupy different roles: description-length evaluation assesses a model together with what remains unexplained; governance decides where a process puts effort next. The historical Claustrum does not already implement a general MDL-selected governor, self-learning control law or recursive inter-worker hierarchy.</p><p>The inspected OS archives do not identify the first later commit that introduced the DCC name or the exact first cross-domain port. No date is invented to complete the diagram. “Digital Claustrum Controller” is not asserted here as an already demonstrated consciousness architecture.</p></div></details>
+<a class="reading" href="../crp/8z_MDLxDCC.html"><b>Explore 8z–MDL×DCC ↗</b><span>The wider research architecture, mechanisms and evidence.</span></a><a class="reading" href="../BD/BD_8Z_DCC_Recursive.html"><b>Recursive DCC ↗</b><span>The later governance story; read its own evidence separately.</span></a><a class="reading" href="../BD/BD_CCH_Science.html"><b>CCH research ↗</b><span>The hypothesis that inspired the original control experiment.</span></a>
+</div></section>
+<section class="section" id="future"><aside class="section-side"><span class="section-no">08</span><p>The unfinished direction<br/>A dedicated appliance</p></aside><div class="section-body"><div class="kicker">What comes next</div><h2>Build the engine.<br/>Then give it a home.</h2><p>The long-term 8Z OS direction remains a <strong>purpose-built mathematical and compression appliance</strong>: a small execution environment that can host increasingly capable native code. It is a direction, not a description of capabilities already delivered by the archived visual kernels.</p><p>The accepted sequence is to validate the intended 8Z 4C + 4M implementation, bring the proven engine to native C++ on Windows 11, and evolve the OS in parallel. That retains mature debugging and profiling tools while the smaller platform earns the services the engine actually needs. <a class="source-ref" href="#src-origins">[A]</a></p>
+<details><summary>The engineering roadmap — requirements, not completed features</summary><div class="detail-body"><h3>First: establish the correct starting point</h3><p>Reconcile the recovered v0.07 source with other known working packages. Preserve the source, build inputs and exact hashes; identify which branches actually contain the intended mechanisms.</p><h3>Then: make the environment useful to native code</h3><p>Grow memory management and a minimal compatibility layer according to real library requirements. Add the needed I/O, result export and more capable framebuffer support rather than assuming those services exist because the compiler accepts C++.</p><h3>Separately: physical boot and controlled evaluation</h3><p>A UEFI/USB path and physical-machine acceptance are distinct from a VirtualBox screenshot. Compare equivalent mature native engines under stated conditions before claiming a bare-metal advantage. The archived project has not supplied that comparison.</p><h3>Keep the scientific mechanism under test</h3><p>For a renewed Claustrum experiment, calibrate the observation channel and target, record actual actuator changes, and compare the controlled trajectory against a matching uncontrolled baseline. Preserve failed and saturated cases as evidence, not as files to discard.</p></div></details>
+<div class="note warm"><span class="label">Present / planned</span><p><strong>Present in the retained record:</strong> a boot path, 32-bit C++/ASM, direct graphics, generative mathematics, an implemented observer/controller, keyboard interaction and a six-app environment.</p><p><strong>Not established by these archives:</strong> the full 8Z engine running inside the OS, physical USB boot, a general filesystem/library environment, proven timing superiority or consciousness.</p></div>
+</div></section>
+<section class="section" id="sources"><aside class="section-side"><span class="section-no">09</span><p>Sources and scope<br/>Keep the provenance</p></aside><div class="section-body"><div class="kicker">Read the evidence, not only the narrative</div><h2>The record stays open.</h2><p>This presentation is based on the original public OS page and media, the original development archives, and <code>8Z_OS_ORIGINS_COMPLETE_20260917_R1</code>. The new reconstruction separates historical interpretation, inspectable code, recorded tests and future plans.</p><p>The reconstruction reports <strong>8 source archives, 210 distinct contents, 87 text/source/configuration contents and 23 unique screenshots</strong>. These are coverage figures for that reconstruction—not new performance results or independent replications. The same file appearing in several backups is still one content item. <a class="source-ref" href="#src-archive">[D]</a></p>
+<details id="source-notes"><summary>Source notes — documents, code identity and the recorded test</summary><div class="detail-body">
+<div class="source-entry" id="src-origins"><h3>[A] The original motivation and the reconstruction</h3><p><code>The 8Z OS Origin Story v1.2.txt</code> (S034), <code>The Consciousness Controller Story.txt</code> (S035), <code>The Digital Claustrum Gemini.txt</code> (S036), and <code>8Z_App_V_8Z_OS_v1.2.txt</code> (S025). Reassessed in <code>8Z_OS_ORIGINS_ANALYSIS_20260917_R1.md</code> and the R2 continuity record.</p><p>The original accounts preserve the human–AI development narrative. The September reconstruction is used for its exact-content checks and explicit qualification of the earlier claims.</p></div>
+<div class="source-entry" id="src-code"><h3>[B] Boot, graphics and the Lava recipe</h3><p>Numbered source catalog: S037 (stable boot), S074 (kernel entry), S075 (linker), S073 (early Rule 90), S071/S072 (Pi Art/Matrix), S062 (interactive Matrix). These are source identifiers within the Origins evidence package, not version numbers of the OS.</p></div>
+<div class="source-entry" id="src-control"><h3>[C] The first recovered Claustrum</h3><p>S060, <code>kernel-claustrum.cpp</code>, in the nested <code>Dev/bck/v0.02.zip</code> backup. Archive timestamp: 13 December 2025; 207 source lines. The fixed-point dynamics, 64-sample sensor, target and control law are taken from this specific source.</p><p class="hash">Source SHA-256<br/>018d3512d72b94d91126253d0024cbecd9bc0e78ce0db117b7311cd223e82aa8</p></div>
+<div class="source-entry" id="src-archive"><h3>[D] Archive coverage and limits</h3><p>The eight inputs are <code>8Z OS v0.01.zip</code>, <code>8Z OS Dev.zip</code>, <code>8Z OS Docs.zip</code>, <code>8Z OS key files.zip</code>, <code>8Z OS v0.03.zip</code>, <code>8Z OS v0.04.7z</code>, <code>8Z OS v0.05.7z</code> and <code>8Z OS v0.06.zip</code>. The recorded inventory includes 1,093 file occurrences including nested backups, deduplicated by SHA-256.</p><p>The reconstruction does not claim a fresh run of the original VDI images, a rebuild using the original i686 toolchain, a complete historical-chat transcript or manual reading of every VM log line. S086/S087 retain the flawed VDI-header diagnostic discussed above.</p></div>
+<div class="source-entry" id="src-probe"><h3>[E] Bounded mathematical-core test</h3><p><code>tests/claustrum_math_probe.cpp</code>, <code>tests/math_probe_receipt.json</code>, and the four CSV traces in the evidence package. The default-on and default-off recorded CSVs share this exact SHA-256:</p><p class="hash">cf8c27c631cd69ddeb12307fd4b5e50d59bb57481117f7d3782efda705054a64</p><p>The result is limited to the recovered source, settings and 100,000-step host-side runs. It is not an OS runtime acceptance test or a test of later DCC arenas.</p></div>
+<div class="source-entry" id="src-versions"><h3>[F] Multi-app branches and v0.07 recovery</h3><p>S063–S070 preserve the branch differences. The separately recovered <code>8Z OS v0.07_min.zip</code> contains a six-app <code>kernel-multi.cpp</code> with this source hash:</p><p class="hash">fdb074f51f0a9e9e4632a8e05cf343c2aa292a6800507cc6e37a49fce0de23b7</p><p>Existence and source identity are distinct from a verified acceptance boot. The misleading older filename is retained in the provenance, not used as the sole version authority.</p></div>
+<div class="source-entry" id="src-lineage"><h3>[G] The later DCC connection</h3><p>The reconstruction's lineage section and the R2 project continuity provide the conceptual mapping. Current cross-domain descriptions are accessible through the <a href="../crp/8z_MDLxDCC.html">8z–MDL×DCC technical entrance</a>. The first later DCC commit and an unchanged algorithmic identity across all arenas were not established by the OS archive review.</p></div>
+</div></details>
+<details><summary>The earlier presentation and all original public material</summary><div class="detail-body"><p><a href="index-O.html">Previous index — preserved byte for byte ↗</a></p><p>That page retains its original narrative, multilingual summaries, code excerpts and historical interpretations. It remains available for comparison. Claims about zero jitter, demonstrated edge-of-chaos regulation or consciousness should be read with the qualifications and recorded probe above.</p><p><a href="BD_8Z_OS_Story1.html">Earlier story edition ↗</a> · <a href="DC%20images%20explanation.txt">Historical interpretation of the images ↗</a> · <a href="8Z-OS_demo1.mp4">Original video ↗</a></p><p>Images and video on this page reuse the existing public files without altering their pixels or recording. Click a screenshot to inspect the full image. The source notes expose scientific provenance, not private workspace links or machine credentials.</p></div></details>
+<div class="pair"><div><a class="reading" href="../BD/BD_8ZRP.html"><b>8Z-RP / TSP ↗</b><span>Search and optimization.</span></a><a class="reading" href="../BD/BD_8Z_DCC7_Testbed.html"><b>DCC testbed ↗</b><span>Later experiments, with their own claim boundaries.</span></a></div><div><a class="reading" href="../BD/BD_8Z_Flip4M_DCC.html"><b>Flip4M × DCC ↗</b><span>Governance in a game-playing setting.</span></a><a class="reading" href="../BD/BD_8Z_Reasoning.html"><b>Reasoning framework ↗</b><span>The wider human–AI research method.</span></a></div></div>
+</div></section>
+<section aria-label="Closing thought" class="section-end"><div class="eyebrow">Less describes more.</div><p class="closing">The first pixels showed that it ran.<br/><span>The feedback loop changed<br/>what we wanted to build.</span></p><p>8Z OS is both a small engineering artifact and a place where a larger research idea took executable form. Its limitations belong in the story—because they tell the next experiment where to begin.</p><a class="button" href="#title">Back to the beginning ↑</a></section>
+</main>
+<footer><div class="container footer-inner"><p>BD × AI Lab · 8Z OS / E4-Metal<br/>Original development: December 2025 · Evidence-led edition: 17 September 2026</p><p><a href="../">MDL×DCC.org</a> · <a href="../BD/">Portfolio</a> · <a href="index-O.html">Previous presentation</a><br/><span class="hash">OS-WEB-20260917-R1</span></p></div></footer>
+<dialog aria-labelledby="image-title" id="image-dialog"><div class="dialog-bar"><span id="image-title">Original archive image</span><button autofocus="" class="button" id="close-image" type="button">Close ×</button></div><img alt="" id="full-image"/></dialog>
+<script>
+(()=>{'use strict';
+const details=[...document.querySelectorAll('main details')];
+document.getElementById('reading-tools').hidden=false;
+document.getElementById('expand').addEventListener('click',()=>details.forEach(d=>d.open=true));
+document.getElementById('collapse').addEventListener('click',()=>details.forEach(d=>d.open=false));
+function revealHash(){let id;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}if(!id)return;const target=document.getElementById(id);if(!target)return;for(let el=target;el;el=el.parentElement){if(el.tagName==='DETAILS')el.open=true;}requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));}
+window.addEventListener('hashchange',revealHash);if(location.hash)revealHash();
+const bar=document.getElementById('progress');let queued=false;function progress(){const max=document.documentElement.scrollHeight-innerHeight;bar.style.width=(max>0?Math.min(100,Math.max(0,scrollY/max*100)):0)+'%';queued=false;}window.addEventListener('scroll',()=>{if(!queued){queued=true;requestAnimationFrame(progress);}},{passive:true});window.addEventListener('resize',progress);details.forEach(d=>d.addEventListener('toggle',progress));progress();
+const dialog=document.getElementById('image-dialog'),image=document.getElementById('full-image');let previousFocus=null;
+if(typeof dialog.showModal==='function'){document.querySelectorAll('.image-link').forEach(a=>a.addEventListener('click',event=>{if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();previousFocus=a;image.src=a.href;image.alt=a.querySelector('img').alt;dialog.showModal();document.body.classList.add('modal-open');}));document.getElementById('close-image').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});dialog.addEventListener('close',()=>{document.body.classList.remove('modal-open');previousFocus?.focus({preventScroll:true});});}
+let printState;window.addEventListener('beforeprint',()=>{printState=details.map(d=>d.open);details.forEach(d=>d.open=true);});window.addEventListener('afterprint',()=>{if(printState)details.forEach((d,i)=>d.open=printState[i]);});
+})();
+</script>
 </body>
 </html>
