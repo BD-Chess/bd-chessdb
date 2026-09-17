@@ -1,0 +1,61 @@
+name: One-shot 8Z OS smooth rainbow Auto Colors
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'Stage one-shot 8Z OS smooth rainbow Auto Colors'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply guarded R5 rainbow refinement
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          before=$(git rev-parse origin/main)
+          test "$(git rev-parse HEAD)" = "$before"
+          grep -q 'OS-WEB-20260917-R4' public/OS/index.html
+          grep -q "let autoColors=false,autoColorAt=0;const autoModes=" public/OS/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('public/OS/index.html')
+          s=p.read_text(encoding='utf-8')
+          def one(old,new):
+              global s
+              assert s.count(old)==1, (old[:100],s.count(old))
+              s=s.replace(old,new,1)
+          one('OS-WEB-20260917-R4','OS-WEB-20260917-R5')
+          one('“Auto colors” cycles display palettes without feeding anything back into the dynamics or controller.','“Auto colors” now flows continuously through rainbow hues, producing a gently changing rainbow butterfly without feeding anything back into the dynamics or controller.')
+          one("let autoColors=false,autoColorAt=0;const autoModes=['original','neon','matrix','fire','ice','violet','mono'];", "let autoColors=false,autoColorAt=0;\nfunction setRainbowPalette(phase){for(let n=0;n<256;n++){if(n===0){palette[0]=palette[1]=palette[2]=0;continue;}const h=(phase+n*4.6)%360,c=.92,x=c*(1-Math.abs((h/60)%2-1)),m=.08;let r=0,g=0,b=0;if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}const j=n*3;palette[j]=Math.round((r+m)*255);palette[j+1]=Math.round((g+m)*255);palette[j+2]=Math.round((b+m)*255);}}")
+          one("el.autoColors.addEventListener('click',()=>{autoColors=!autoColors;el.autoColors.textContent='Auto colors: '+(autoColors?'on':'off');el.autoColors.setAttribute('aria-pressed',String(autoColors));autoColorAt=0;});", "el.autoColors.addEventListener('click',()=>{autoColors=!autoColors;el.autoColors.textContent='Auto colors: '+(autoColors?'on':'off');el.autoColors.setAttribute('aria-pressed',String(autoColors));autoColorAt=0;if(!autoColors)applyPaletteSelection();});")
+          old="let last=0;function loop(ts){if(autoColors&&onscreen&&(autoColorAt===0||ts-autoColorAt>=3600)){const current=autoModes.indexOf(el.palette.value),next=autoModes[(current+1+autoModes.length)%autoModes.length];el.palette.value=next;el.customColors.hidden=true;setPalette(next);render();autoColorAt=ts;}if(running&&onscreen&&ts-last>=12){"
+          new="let last=0;function loop(ts){if(autoColors&&onscreen&&(autoColorAt===0||ts-autoColorAt>=40)){setRainbowPalette((ts*0.018)%360);render();autoColorAt=ts;}if(running&&onscreen&&ts-last>=12){"
+          one(old,new)
+          p.write_text(s,encoding='utf-8')
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('public/OS/index.html').read_text(encoding='utf-8')
+          assert 'OS-WEB-20260917-R5' in s
+          assert 'setRainbowPalette' in s
+          assert 'autoModes' not in s
+          a=s.index('<script id="claustrum-live-code">')+len('<script id="claustrum-live-code">')
+          b=s.index('</script>',a)
+          Path('/tmp/claustrum-r5.js').write_text(s[a:b],encoding='utf-8')
+          PY
+          node --check /tmp/claustrum-r5.js
+          git config user.name "BD-Chess"
+          git config user.email "bd@siol.net"
+          git add public/OS/index.html
+          git commit -m "OS: make Auto Colors a smooth rainbow flow"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$before"
+          git push origin HEAD:main
