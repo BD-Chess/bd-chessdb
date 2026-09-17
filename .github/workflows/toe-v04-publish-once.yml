@@ -1,0 +1,99 @@
+name: ToE v0.4 explicitly authorized one-shot publish
+# BD explicitly requested this release on 2026-09-17.
+# Does not re-enable deploy-netlify.yml push triggers or change their pause.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/toe-v04-publish-once.yml]
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'ToE v0.4 one-shot deployment authorized by BD'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_HTML_SHA256: 0df0a1d70e5251d424657ef5364606dceafca721f00a5953f6e2e5e595c0aa34
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bind source and inspect current public artifact
+        id: current
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum public/crp/ToE.html | cut -d ' ' -f 1)" = "$EXPECTED_HTML_SHA256"
+          if curl -fLsS --connect-timeout 10 --max-time 30 "https://www.mdlxdcc.org/crp/ToE.html?release_check=${GITHUB_SHA}" -o "$RUNNER_TEMP/toe-current.html" && test "$(sha256sum "$RUNNER_TEMP/toe-current.html" | cut -d ' ' -f 1)" = "$EXPECTED_HTML_SHA256"; then
+            echo 'needs_deploy=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'needs_deploy=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Require existing deployment secret
+        if: steps.current.outputs.needs_deploy == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: test -n "$NETLIFY_AUTH_TOKEN"
+      - name: Set up Node 22
+        if: steps.current.outputs.needs_deploy == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install existing dependencies
+        if: steps.current.outputs.needs_deploy == 'true'
+        run: npm ci --ignore-scripts
+      - name: Use existing protected-page preparation
+        if: steps.current.outputs.needs_deploy == 'true'
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/js/bd-password-manager.js
+          node --check public/js/trading-password-shield.js
+          node --check public/BD/O/vault.js
+          node --check public/WL/reader.js
+          node --check public/WL/BD/reader.js
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+          node --check public/Trip/old/004/private-client.js
+          test "$(sha256sum public/crp/ToE.html | cut -d ' ' -f 1)" = "$EXPECTED_HTML_SHA256"
+      - name: Publish once to the existing Netlify site
+        if: steps.current.outputs.needs_deploy == 'true'
+        shell: bash
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD authorized ToE v0.4 ${GITHUB_SHA}" --json > "$RUNNER_TEMP/netlify-toe-deploy.json"
+      - name: Verify public HTML bytes
+        shell: bash
+        env:
+          NEEDED_DEPLOY: ${{ steps.current.outputs.needs_deploy }}
+        run: |
+          set -euo pipefail
+          verified=false
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fLsS --connect-timeout 10 --max-time 30 "https://www.mdlxdcc.org/crp/ToE.html?release_check=${GITHUB_SHA}&attempt=${attempt}" -o "$RUNNER_TEMP/toe-live.html" && test "$(sha256sum "$RUNNER_TEMP/toe-live.html" | cut -d ' ' -f 1)" = "$EXPECTED_HTML_SHA256"; then
+              verified=true; break
+            fi
+            sleep 10
+          done
+          test "$verified" = true
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          raw=(root/'toe-live.html').read_bytes()
+          deploy_path=root/'netlify-toe-deploy.json'
+          d=json.loads(deploy_path.read_text()) if deploy_path.exists() else {}
+          receipt={'schema':'toe.public_release.v1','status':'PUBLIC_HTML_BYTES_MATCH','source_commit':os.environ['GITHUB_SHA'],'source_path':'public/crp/ToE.html','public_url':'https://www.mdlxdcc.org/crp/ToE.html','bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),'sha3_256':hashlib.sha3_256(raw).hexdigest(),'expected_sha256':os.environ['EXPECTED_HTML_SHA256'],'needed_deploy':os.environ['NEEDED_DEPLOY'],'deploy_id':d.get('deploy_id',d.get('deployId')),'deploy_url':d.get('deploy_url',d.get('url'))}
+          (root/'toe-v04-public-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt))
+          PY
+      - name: Save non-secret public verification receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: toe-v04-public-receipt
+          path: ${{ runner.temp }}/toe-v04-public-receipt.json
+          if-no-files-found: error
+          retention-days: 30
