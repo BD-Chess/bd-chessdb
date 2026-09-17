@@ -2,7 +2,8 @@ name: Landing search repair one-shot
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/landing-search-repair-once.yml']
+    paths:
+      - '.github/workflows/landing-search-repair-once.yml'
 permissions:
   contents: write
 jobs:
@@ -13,28 +14,28 @@ jobs:
         with:
           ref: main
       - name: Repair landing search and compact navigation
-        shell: python
+        shell: bash
         run: |
+          python3 - <<'PY'
           from pathlib import Path
           p=Path('public/index.html')
           s=p.read_text(encoding='utf-8')
-          marker='LANDING_SEARCH_REPAIR_20260917_R2'
+          marker='LANDING_SEARCH_REPAIR_20260917_R3'
           if marker in s:
               raise SystemExit(0)
 
-          # The third row alone expands the compressed project map.
           s=s.replace(
             '<button class="tools-heading" id="tool-map-toggle" type="button" aria-expanded="false" aria-controls="tool-more"><span><span class="en" lang="en">From ideas to experience</span><span class="sl" lang="sl">Iz idej v izkušnjo</span></span><span class="tools-toggle" aria-hidden="true"></span></button>',
             '<p class="tools-heading"><span class="en" lang="en">From ideas to experience</span><span class="sl" lang="sl">Iz idej v izkušnjo</span></p>',1)
 
           old_js="""const toolMapToggle=$('#tool-map-toggle'),toolMoreToggle=$('#tool-more-toggle'),toolMore=$('#tool-more');
-function setToolMap(open,persist=true){if(!toolMapToggle||!toolMore)return;toolMapToggle.setAttribute('aria-expanded',String(open));if(toolMoreToggle)toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
-if(toolMapToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMapToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));if(toolMoreToggle)toolMoreToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));}
-"""
+          function setToolMap(open,persist=true){if(!toolMapToggle||!toolMore)return;toolMapToggle.setAttribute('aria-expanded',String(open));if(toolMoreToggle)toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
+          if(toolMapToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMapToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));if(toolMoreToggle)toolMoreToggle.addEventListener('click',()=>setToolMap(toolMapToggle.getAttribute('aria-expanded')!=='true'));}
+          """.replace('\n          ','\n').strip()+"\n"
           new_js="""const toolMoreToggle=$('#tool-more-toggle'),toolMore=$('#tool-more');
-function setToolMap(open,persist=true){if(!toolMoreToggle||!toolMore)return;toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
-if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMoreToggle.addEventListener('click',()=>setToolMap(toolMoreToggle.getAttribute('aria-expanded')!=='true'));}
-"""
+          function setToolMap(open,persist=true){if(!toolMoreToggle||!toolMore)return;toolMoreToggle.setAttribute('aria-expanded',String(open));toolMore.hidden=!open;$$('.tool-more-sign').forEach(n=>n.textContent=open?'−':'+');if(persist)save('mdlxdcc-tools-expanded',open?'1':'0');labels();}
+          if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1',false);toolMoreToggle.addEventListener('click',()=>setToolMap(toolMoreToggle.getAttribute('aria-expanded')!=='true'));}
+          """.replace('\n          ','\n').strip()+"\n"
           if old_js in s:
               s=s.replace(old_js,new_js,1)
 
@@ -43,20 +44,20 @@ if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1'
           if old_label in s:
               s=s.replace(old_label,new_label,1)
 
-          # Canonical 8Z OS target and exact requested search aliases.
           s=s.replace("['OS/','8Z OS','8z os os 8zos operating system 8z operating system claustrum digital claustrum'", "['OS/index.html','8Z OS','8Z OS OS 8zos operating system 8z operating system claustrum digital claustrum'",1)
           s=s.replace("'8z os':'OS/',os:'OS/',8zos:'OS/'", "'8z os':'OS/index.html',os:'OS/index.html',8zos:'OS/index.html'",1)
 
-          # Independent minimal search bootstrap. This runs before the larger landing runtime,
-          # so S and exact direct routes still work even if an unrelated runtime enhancement fails.
-          boot='''<script id="search-boot">(function(){\n'use strict';\nconst b=document.getElementById('search-open'),d=document.getElementById('search-dialog'),f=document.getElementById('search-form'),i=document.getElementById('search-input');\nif(!b||!d||!f||!i)return;\nconst norm=s=>String(s||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();\nconst direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html',8zos:'OS/index.html'};\nfunction open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}\nb.addEventListener('click',open);\nf.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.href=new URL(path,document.baseURI).href;});\n})();</script>\n<!-- LANDING_SEARCH_REPAIR_20260917_R2 -->\n'''
+          boot='''<script id="search-boot">(function(){\n'use strict';\nconst b=document.getElementById('search-open'),d=document.getElementById('search-dialog'),f=document.getElementById('search-form'),i=document.getElementById('search-input');\nif(!b||!d||!f||!i)return;\nconst norm=s=>String(s||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();\nconst direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html',8zos:'OS/index.html'};\nfunction open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}\nb.addEventListener('click',open);\nf.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);\n})();</script>\n<!-- LANDING_SEARCH_REPAIR_20260917_R3 -->\n'''
           anchor='<script id="landing-runtime">'
           if 'id="search-boot"' not in s:
-              if anchor not in s: raise SystemExit('landing runtime anchor not found')
+              if anchor not in s:
+                  raise SystemExit('landing runtime anchor not found')
               s=s.replace(anchor,boot+anchor,1)
+          else:
+              s=s.replace('LANDING_SEARCH_REPAIR_20260917_R2','LANDING_SEARCH_REPAIR_20260917_R3',1)
 
           p.write_text(s,encoding='utf-8',newline='\n')
-
+          PY
       - name: Static acceptance
         shell: bash
         run: |
@@ -64,7 +65,7 @@ if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1'
           from pathlib import Path
           import re
           s=Path('public/index.html').read_text(encoding='utf-8')
-          assert 'LANDING_SEARCH_REPAIR_20260917_R2' in s
+          assert 'LANDING_SEARCH_REPAIR_20260917_R3' in s
           assert "toe:'crp/ToE.html'" in s
           assert "'8z os':'OS/index.html'" in s
           assert '8Z OS OS 8zos' in s
@@ -72,16 +73,18 @@ if(toolMoreToggle&&toolMore){setToolMap(read('mdlxdcc-tools-expanded','0')==='1'
           assert 'id="search-boot"' in s
           for sid in ('search-boot','landing-runtime'):
               m=re.search(r'<script id="'+re.escape(sid)+r'">(.*?)</script>',s,re.S)
-              if not m: raise SystemExit('missing '+sid)
+              if not m:
+                  raise SystemExit('missing '+sid)
               Path('/tmp/'+sid+'.js').write_text(m.group(1),encoding='utf-8')
           PY
           node --check /tmp/search-boot.js
           node --check /tmp/landing-runtime.js
       - name: Commit repair
+        shell: bash
         run: |
           if git diff --quiet -- public/index.html; then exit 0; fi
           git config user.name "BD-AI8 production bot"
           git config user.email "actions@users.noreply.github.com"
           git add public/index.html
-          git commit -m "Repair landing search and 8Z OS route"
+          git commit -m "Repair landing search popup and 8Z OS route"
           git push origin HEAD:main
