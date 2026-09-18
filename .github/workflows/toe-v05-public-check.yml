@@ -1,0 +1,48 @@
+name: ToE v0.5 public byte verification
+# One bounded read-only check. No deployment or reference update.
+on:
+  push:
+    branches: [toe-v05-stage-20260918]
+    paths: [.github/workflows/toe-v05-public-check.yml]
+permissions:
+  contents: read
+jobs:
+  verify:
+    if: github.event.head_commit.message == 'Read-only verification of published ToE v0.5 and companion bytes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Observe exact public bytes
+        shell: python
+        run: |
+          import hashlib,json,urllib.request,datetime,time
+          from pathlib import Path
+          expected={
+            'crp/ToE.html':'3b59a561fa722b198f5f0c35be153119c5a33880fb080ae0d673c5f7c4c7ff75',
+            'crp/Compression_Access.html':'c7c8aa7f7ab8f3461cd49c0c976223d188ad2d67962ea39c3fdb4a169e3ab5aa',
+            'crp/ToE_v0.5.md':'686a9d21a8f3eb4eeca0d85e24a129fb7d61f54c3ab08adb4267051b1dac191f',
+            'index.html':'4912292cdbd60b62c782696c346519b05109892646465432d2ea46fc68388224',
+            'crp/index.html':'c4de7e653cf16ea903074d87f756c3c11a2b9a5819b33e2a39342bec9d55e6ab',
+            'acp/index.html':'8ec0a5324c7eaf12af77d143daeba9c70224806bf2d669f4377011e3a6a84da3'}
+          rows=[]
+          for path,digest in expected.items():
+            for suffix in ['', '?toe_release=af043d6dc9d6cb388580fa77ec117e719e439f9a']:
+              url='https://bd-chess.github.io/bd-chessdb/'+path+suffix
+              row={'url':url,'path':path,'expected_sha256':digest,'checked_at':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+              try:
+                req=urllib.request.Request(url,headers={'User-Agent':'BD-ToE-v05-readback','Cache-Control':'no-cache'})
+                with urllib.request.urlopen(req,timeout=12) as response:
+                  raw=response.read(300001)
+                  row.update(status=response.status,final_url=response.url,bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),sha3_256=hashlib.sha3_256(raw).hexdigest())
+                  row['match']=row['sha256']==digest
+              except Exception as e:row.update(match=False,error=type(e).__name__+': '+str(e))
+              rows.append(row)
+              print('::notice title=ToE public readback::'+json.dumps(row,separators=(',',':')))
+          result={'scope':'PUBLIC_HTTPS_BYTES_NOT_BROWSER_INTERACTION','release_commit':'af043d6dc9d6cb388580fa77ec117e719e439f9a','all_match':all(x['match'] for x in rows),'rows':rows}
+          Path('PUBLIC_READBACK.json').write_text(json.dumps(result,indent=2)+'\n')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toe-v05-public-readback
+          path: PUBLIC_READBACK.json
+          retention-days: 2
+          if-no-files-found: error
