@@ -219,6 +219,24 @@ I(Y;Z | B,a) meri idealno dodatno napovedno informacijo
 
 [[S11]](#ref-S11)
 
+### Tri ravni, en nerazrešen most — informacija ↔ energija ↔ snov
+
+**BD-jevo seme i = Ec² = mc⁴ ostaja relacijska hipoteza.** Njegovo najmočnejše trenutno branje ni, da je en številčni koeficient v SI že temeljna konstanta, temveč da so informacija, energija in snov lahko povezani opisi ene globlje organizacije, ne tri medsebojno neodvisne osnove.
+
+informacija ↔ energija ↔ snov  
+delovno seme: i = Ec² = mc⁴  
+znana družina mej: B(E,L) = 2πEL/(ℏc ln2)
+
+**Naravne enote ne dokazujejo identitete.** Pri c = ℏ = 1 imata masa in energija isto enoto; iz tega samega še ne sledi, da je brezdimenzijska informacija energija. Preslikava potrebuje operativno definicijo, režim in skalo.
+
+**Režimi.** Pri L = λ̄_C = ℏ/(mc) je formalni mejni izraz 2π/ln2 ≈ 9,06472, neodvisno od mase. To je vrednost mejnega izraza pri privzeti skali, ne dokaz, da vsak kvant dobesedno vsebuje devet bitov. Če L sledi gravitacijskemu polmeru, struktura E·L skaluje kot M²; ploščinski zakoni črnih lukenj sodijo v drug režim z lastnimi predpostavkami.
+
+**»It from bit«** tukaj pomeni delovno ontološko držo, da je fizikalno razločljiva struktura morda informacijsko opisljiva; ne trditev, da je resničnost dobesedno sestavljena iz klasičnih bitov.
+
+**Ločena selekcijska problema:** (1) kaj določa relevantni L za sistem ali režim; (2) kaj izbere, uteži ali stabilizira eno globalno skladno realizacijo. Lahko sta povezana, nista pa isti problem.
+
+**Delovna hipoteza:** informacija, energija in snov so lahko efektivni obrazi ene temeljne relacijske Celote. Naslednja obveznost je i določiti neodvisno, režim in skalo zamrzniti pred pogledom na rezultat ter napovedati nov primer brez naknadne izbire polmera ali koeficienta.
+
 ## 13 / THE NEXT CONSTRUCTION — En mehanizem, več neodvisnih posledic.
 
 Naslednji fizikalni kandidat ne sme biti »seštevek vseh zanimivih teorij«. Začnimo z enim končnim pravilom, določeno družino sistemov in deklarirano množico opazljivk. Pravilo zamrznemo, preden vprašamo, kaj ustvari. Njegova kompaktnost je preverljiva prednost pri izbiri modela, ne zamenjava za fizikalno ujemanje.
