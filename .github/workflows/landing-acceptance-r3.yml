@@ -1,0 +1,25 @@
+name: Landing acceptance R3
+on:
+  push:
+    branches: [codex/landing-acceptance-20260918-r3]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install chromium
+      - name: Serve public
+        run: |
+          python3 -m http.server 8000 -d public >/tmp/mdl-http.log 2>&1 &
+          sleep 2
+      - name: Run landing acceptance
+        run: node tests/landing_acceptance_20260918_r3.mjs
