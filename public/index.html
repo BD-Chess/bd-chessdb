@@ -376,6 +376,8 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 #study.hero-demo-mode .art-wrap{touch-action:pan-y;cursor:default}
 @media(prefers-reduced-motion:reduce){#study.hero-demo-mode .hero-slide.is-active{animation:none!important}#study.hero-demo-mode .hero-demo-close{transition:none!important}}
 
+.hero-demo-pi-caption,.hero-demo-pi-intro{display:none}
+
 /* VISUALDCC_PROJECTION_PI_DEMOSHOW_20260918_R1: 5 render projections; demo uses 30s DCC / 36s Pi / 24s pattern with 6s internal changes. */
 
 /* VISUALPI_THREE_CYCLE_AUTOMATION_20260918_R1: landing 3→6 sides / 1→3 rotations over 30s; fullscreen Pi demo runs three accelerated 15s cycles to 100; popup exposes manual cycle buttons. */
@@ -395,6 +397,8 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 /* HERO_SWIPE_SLOW_SHOW_20260918_R1: 15s DCC projection dwell, 18s Pi phases, 30s pattern; photo-style horizontal swipes in fullscreen and popup. */
 
 /* HERO_PI_INTRO_STAY_CONTROL_20260918_R1: 3s Pi cycle explainers; Space/STAY holds current hero while animation keeps running; DCC presets dwell 18s. */
+
+/* HERO_DEMO_EXIT_CAPTION_FIX_20260918_R2: Pi demo-only UI hidden on landing; global click reveal; capture Escape exit. */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 </head>
@@ -787,7 +791,7 @@ function exitHeroDemo(){
   if(!heroDemoOpen)return;
   stopHeroDemoTimer();stopHeroDemoSubTimer();clearTimeout(heroDemoUiTimer);heroDemoUiTimer=null;
   const saved=heroDemoSaved;heroDemoOpen=false;heroDemoPaused=false;heroDemoStay=false;root.classList.remove('hero-demo-open');$('#study').classList.remove('hero-demo-mode','hero-demo-paused','hero-demo-dcc-fade','hero-demo-pi-intro-active');$('#study').removeAttribute('role');$('#study').removeAttribute('aria-modal');$('#study').removeAttribute('aria-label');setHeroDemoBackground(false);
-  $('#hero-demo-close').classList.remove('hero-demo-ui-hidden');$('#hero-demo-stay').classList.remove('hero-demo-ui-hidden');
+  $('#hero-demo-close').classList.remove('hero-demo-ui-hidden');$('#hero-demo-pause').classList.remove('hero-demo-ui-hidden');$('#hero-demo-stay').classList.remove('hero-demo-ui-hidden');
   if(saved){
     mainDC.setTrails(saved.trails);mainDC.setHeadWidth(saved.headWidth);mainDC.setProjection(saved.projection);mainDC.setTarget(saved.target);mainDC.setSpeed(saved.speed);mainDC.setRainbow(saved.rainbow);
     mainPI.detail=saved.piDetail;mainPI.set(saved.piK,saved.piN);mainPI.shown=saved.piShown;setHero(saved.index,false);
@@ -905,11 +909,23 @@ $('#study').addEventListener('keydown',e=>{
   }
 },true);
 $('#study').addEventListener('pointerdown',e=>{if(heroDemoOpen&&!(e.target.closest&&e.target.closest('#hero-demo-close,#hero-demo-pause,#hero-demo-stay')))showHeroDemoUi(true);});
+/* HERO_DEMO_GLOBAL_REVEAL_R1 */
+window.addEventListener('pointerdown',e=>{
+  if(!heroDemoOpen)return;
+  const inControl=e.target.closest&&e.target.closest('#hero-demo-close,#hero-demo-pause,#hero-demo-stay');
+  if(!inControl)showHeroDemoUi(true);
+},true);
+/* HERO_DEMO_ESCAPE_CAPTURE_R1 */
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&heroDemoOpen){
+    e.preventDefault();e.stopImmediatePropagation();exitHeroDemo();
+  }
+},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&heroDemoOpen){e.preventDefault();exitHeroDemo();}});
 $('#hero-dialog-close').addEventListener('click',()=>{exitDccImmersive();closeDetail();});$('#hero-dialog').addEventListener('cancel',e=>{e.preventDefault();if(dccImmersive)exitDccImmersive();else closeDetail();});$('#hero-dialog').addEventListener('click',e=>{if(e.target===$('#hero-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDetail();}});
 $('#dc-target-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-target-output').value=v;$('#dc-detail-target').textContent=v;mainDC.setTarget(v);if(detailRenderer instanceof Claustrum)detailRenderer.setTarget(v);});$('#dc-rainbow').addEventListener('click',()=>{claustrumRainbow=!claustrumRainbow;mainDC.setRainbow(claustrumRainbow);if(detailRenderer instanceof Claustrum)detailRenderer.setRainbow(claustrumRainbow);$('#dc-rainbow').setAttribute('aria-pressed',String(claustrumRainbow));});$('#dc-speed-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-speed-output').value=v+'×';if(detailRenderer instanceof Claustrum)detailRenderer.setSpeed(v);});$('#dc-trails-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-trails-output').value=v;if(detailRenderer instanceof Claustrum)detailRenderer.setTrails(v);});$('#dc-width-input').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-width-output').value=v;if(detailRenderer instanceof Claustrum)detailRenderer.setHeadWidth(v);});$('#dc-projection-input').addEventListener('change',e=>{const v=Number(e.target.value);$('#dc-projection-output').value=['','Butterfly','Wings','Flame','Column','Ribbon'][v];if(detailRenderer instanceof Claustrum)detailRenderer.setProjection(v);});$('#dc-speed-landscape').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-speed-input').value=v;$('#dc-speed-output').value=v+'×';$('#dc-speed-landscape-output').value=v+'×';if(detailRenderer instanceof Claustrum)detailRenderer.setSpeed(v);});$('#dc-target-landscape').addEventListener('input',e=>{const v=Number(e.target.value);$('#dc-target-input').value=v;$('#dc-target-output').value=v;$('#dc-detail-target').textContent=v;$('#dc-target-landscape-output').value=v;mainDC.setTarget(v);if(detailRenderer instanceof Claustrum)detailRenderer.setTarget(v);});$('#dc-restart').addEventListener('click',()=>{mainDC.reset();mainDC.setTarget(Number($('#dc-target-input').value));if(detailRenderer instanceof Claustrum){detailRenderer.setTrails(Number($('#dc-trails-input').value));detailRenderer.setHeadWidth(Number($('#dc-width-input').value));detailRenderer.reset();detailRenderer.setTarget(Number($('#dc-target-input').value));}});
 let piAutoFrame=null,piAutoMode=null,piAutoStart=0;
-function syncPiAutoButtons(){$('[data-pi-auto]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.piAuto===piAutoMode)));}
+function syncPiAutoButtons(){$$('[data-pi-auto]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.piAuto===piAutoMode)));}
 function stopPiAutoCycle(){if(piAutoFrame){cancelAnimationFrame(piAutoFrame);piAutoFrame=null;}piAutoMode=null;syncPiAutoButtons();}
 function startPiAutoCycle(mode){
   if(!(detailRenderer instanceof PiStudy))return;
@@ -923,7 +939,7 @@ function startPiAutoCycle(mode){
   };
   piAutoFrame=requestAnimationFrame(tick);
 }
-$('[data-pi-auto]').forEach(b=>b.addEventListener('click',()=>startPiAutoCycle(b.dataset.piAuto)));
+$$('[data-pi-auto]').forEach(b=>b.addEventListener('click',()=>startPiAutoCycle(b.dataset.piAuto)));
 let piTimer=null;const NMAX=3000,KMAX=3000;function kToSlider(k){k=Math.max(3,Math.min(KMAX,k));if(k<=30)return Math.round((k-3)/27*700);if(k<=100)return Math.round(700+(k-30)/70*200);return Math.round(900+(k-100)/(KMAX-100)*100);}function sliderToK(v){const x=Math.max(0,Math.min(1000,Number(v)));if(x<=700)return Math.max(3,Math.round(3+27*x/700));if(x<=900)return Math.round(30+70*(x-700)/200);return Math.min(KMAX,Math.round(100+(KMAX-100)*(x-900)/100));}function nToSlider(n){n=Math.max(1,Math.min(NMAX,n));if(n<=30)return Math.round((n-1)/29*700);if(n<=150)return Math.round(700+(n-30)/120*200);return Math.round(900+(n-150)/(NMAX-150)*100);}function sliderToN(v){const x=Math.max(0,Math.min(1000,Number(v)));if(x<=700)return Math.max(1,Math.round(1+29*x/700));if(x<=900)return Math.round(30+120*(x-700)/200);return Math.min(NMAX,Math.round(150+(NMAX-150)*(x-900)/100));}function nextCoprime(n,k){if(!$('#pi-coprime').checked)return n;while(n<=NMAX&&gcd(n,k)!==1)n++;return Math.min(n,NMAX);}function syncPiSliders(k,n){const kv=kToSlider(k),nv=nToSlider(n);$('#pi-k-slider').value=kv;$('#pi-n-slider').value=nv;const ks=$('#pi-k-landscape'),ns=$('#pi-n-landscape'),ko=$('#pi-k-landscape-output'),no=$('#pi-n-landscape-output');if(ks)ks.value=kv;if(ns)ns.value=nv;if(ko)ko.value=k;if(no)no.value=n;}function applyPi(k,n,build=true){k=Math.max(3,Math.min(3000,Math.round(k)));n=nextCoprime(Math.max(1,Math.min(NMAX,Math.round(n))),k);$('#pi-k-input').value=k;$('#pi-n-input').value=n;syncPiSliders(k,n);mainPI.set(k,n);if(build)mainPI.shown=reduced()?n:1;if(detailRenderer instanceof PiStudy){detailRenderer.set(k,n);if(build)detailRenderer.shown=reduced()?n:1;}}function updatePiInputs(){stopPiAutoCycle();clearTimeout(piTimer);piTimer=setTimeout(()=>applyPi(Number($('#pi-k-input').value)||3,Number($('#pi-n-input').value)||4,true),90);}$('#pi-k-input').addEventListener('change',updatePiInputs);$('#pi-n-input').addEventListener('change',updatePiInputs);$('#pi-k-slider').addEventListener('input',e=>{$('#pi-k-input').value=sliderToK(e.target.value);updatePiInputs();});$('#pi-n-slider').addEventListener('input',e=>{$('#pi-n-input').value=sliderToN(e.target.value);updatePiInputs();});$('#pi-k-landscape').addEventListener('input',e=>{stopPiAutoCycle();const k=sliderToK(e.target.value);$('#pi-k-input').value=k;applyPi(k,Number($('#pi-n-input').value)||4,true);});$('#pi-n-landscape').addEventListener('input',e=>{stopPiAutoCycle();const n=sliderToN(e.target.value);$('#pi-n-input').value=n;applyPi(Number($('#pi-k-input').value)||3,n,true);});$('#pi-coprime').addEventListener('change',updatePiInputs);$('[data-pi-preset]').forEach(b=>b.addEventListener('click',()=>{stopPiAutoCycle();const [k,n]=b.dataset.piPreset.split(',').map(Number);applyPi(k,n,true);}));$('#pi-reset').addEventListener('click',()=>{stopPiAutoCycle();$('#pi-coprime').checked=true;applyPi(3,4,true);});syncPiSliders(3,4);
 $$('[data-pattern-detail]').forEach(b=>b.addEventListener('click',()=>{const mode=b.dataset.patternDetail;$$('[data-pattern-detail]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));const main=$(`[data-view="${mode}"]`);if(main)main.click();clonePattern();}));
 window.addEventListener('mdlxdcc:language',()=>{setHero(index,false);});
