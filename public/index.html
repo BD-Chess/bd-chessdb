@@ -279,6 +279,8 @@ html.dcc-immersive,html.dcc-immersive body{overflow:hidden!important;overscroll-
   top:max(10px,env(safe-area-inset-top))!important;right:max(10px,env(safe-area-inset-right))!important;
   width:44px;height:44px;background:color-mix(in srgb,var(--bg) 72%,transparent);z-index:10001
 }
+#hero-dialog.immersive-dcc .dc-immersive-toggle{opacity:1;transition:opacity .65s ease,border-color .2s,color .2s}
+#hero-dialog.immersive-dcc .dc-immersive-toggle.dc-ui-hidden{opacity:0;pointer-events:none}
 #hero-dialog.immersive-dcc .dc-rotate-hint{display:none}
 @media (orientation:portrait) and (pointer:coarse){
   #hero-dialog.immersive-dcc .dc-rotate-hint{
@@ -295,6 +297,8 @@ html.dcc-immersive,html.dcc-immersive body{overflow:hidden!important;overscroll-
 /* PI_PLAY_SCALE_3_30_100_3000_20260918_R2: most slider travel is reserved for visually meaningful low polygon/rotation counts. */
 
 /* VISUALDCC_TRAILS_WIDTH_1_9_20260918_R1: popup can explore 1–9 coupled Lorenz systems and head width 1–9; canonical landing remains 3 systems. */
+
+/* VISUALDCC_IMMERSIVE_AUTOHIDE_5S_20260918_R1: immersive exit control fades after 5 s; tap reveals it without changing DCC controls. */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 </head>
@@ -602,23 +606,29 @@ function detailTitle(kind){return kind==='claustrum'?'Digital Claustrum':kind===
 function openDetail(kind){stopHeroAuto();if(dccImmersive)exitDccImmersive();detailKind=kind;const d=$('#hero-dialog');d.dataset.detail=kind;$('#hero-dialog-title').textContent=detailTitle(kind);$$('[data-hero-detail]').forEach(x=>x.hidden=x.dataset.heroDetail!==kind);const cv=$('#hero-detail-canvas'),ph=$('#hero-detail-pattern'),hcv=$('#hero-detail-head-canvas');if(hcv){hcv.hidden=kind!=='claustrum';if(kind!=='claustrum'){const hc=hcv.getContext('2d');hc.clearRect(0,0,hcv.width,hcv.height);}}if(detailRenderer)detailRenderer.stop();detailRenderer=null;if(kind==='pattern'){cv.hidden=true;ph.hidden=false;clonePattern();}else{ph.hidden=true;cv.hidden=false;if(kind==='claustrum'){detailRenderer=new Claustrum(cv,true);detailRenderer.setTrails(Number($('#dc-trails-input').value));detailRenderer.setHeadWidth(Number($('#dc-width-input').value));detailRenderer.setTarget(Number($('#dc-target-input').value));detailRenderer.setSpeed(Number($('#dc-speed-input').value));detailRenderer.setRainbow(claustrumRainbow);}else{detailRenderer=new PiStudy(cv,true);detailRenderer.set(Number($('#pi-k-input').value),Number($('#pi-n-input').value));detailRenderer.shown=reduced()?detailRenderer.n:1;}detailRenderer.start();}if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');root.classList.add('search-open');}
 $$('[data-open-current-detail]').forEach(el=>{el.addEventListener('click',()=>openDetail(el.closest('[data-hero-slide]').dataset.heroSlide));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail(el.closest('[data-hero-slide]').dataset.heroSlide);}});});
 function closeDetail(){const d=$('#hero-dialog');if(detailRenderer)detailRenderer.stop();detailRenderer=null;root.classList.remove('search-open');if(d.open&&typeof d.close==='function')d.close();else d.removeAttribute('open');startHeroAuto();}
-let dccImmersive=false,dccGesture=null;
+let dccImmersive=false,dccGesture=null,dccUiTimer=null,dccTapCandidate=null;
 function setImmersiveButton(on){
   const b=$('#dc-immersive-toggle');if(!b)return;
   b.textContent=on?'×':'⛶';
   b.setAttribute('aria-label',on?'Exit immersive view':'Enter immersive view');
   b.title=on?'Exit immersive view':'Immersive view';
 }
+function showDccImmersiveUi(autoHide=true){
+  const b=$('#dc-immersive-toggle');if(!b)return;
+  b.classList.remove('dc-ui-hidden');clearTimeout(dccUiTimer);dccUiTimer=null;
+  if(dccImmersive&&autoHide)dccUiTimer=setTimeout(()=>{if(dccImmersive)b.classList.add('dc-ui-hidden');},5000);
+}
+function hideDccImmersiveUi(){clearTimeout(dccUiTimer);dccUiTimer=null;const b=$('#dc-immersive-toggle');if(b)b.classList.add('dc-ui-hidden');}
 function enterDccImmersive(){
   if(detailKind!=='claustrum'||!(detailRenderer instanceof Claustrum))return;
   const d=$('#hero-dialog');dccImmersive=true;d.classList.add('immersive-dcc');root.classList.add('dcc-immersive');
-  detailRenderer.setRainbow(claustrumRainbow);detailRenderer.clear();setImmersiveButton(true);
+  detailRenderer.setRainbow(claustrumRainbow);detailRenderer.clear();setImmersiveButton(true);showDccImmersiveUi(true);
   requestAnimationFrame(()=>detailRenderer&&detailRenderer.draw());
 }
 function exitDccImmersive(){
   if(!dccImmersive)return;
   const d=$('#hero-dialog');dccImmersive=false;d.classList.remove('immersive-dcc');root.classList.remove('dcc-immersive');
-  dccGesture=null;setImmersiveButton(false);
+  dccGesture=null;dccTapCandidate=null;clearTimeout(dccUiTimer);dccUiTimer=null;setImmersiveButton(false);showDccImmersiveUi(false);
   if(detailRenderer instanceof Claustrum){detailRenderer.clear();requestAnimationFrame(()=>detailRenderer&&detailRenderer.draw());}
 }
 $('#dc-immersive-toggle').addEventListener('click',e=>{e.stopPropagation();dccImmersive?exitDccImmersive():enterDccImmersive();});
@@ -627,18 +637,22 @@ immersiveSurface.addEventListener('pointerdown',e=>{
   if(!dccImmersive||detailKind!=='claustrum'||!(detailRenderer instanceof Claustrum))return;
   if(e.target.closest&&e.target.closest('#dc-immersive-toggle'))return;
   immersiveSurface.setPointerCapture?.(e.pointerId);
+  dccTapCandidate={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};
   dccGesture={id:e.pointerId,x:e.clientX,y:e.clientY,speed:detailRenderer.speed,target:detailRenderer.target};
 });
 immersiveSurface.addEventListener('pointermove',e=>{
   if(!dccGesture||e.pointerId!==dccGesture.id||!dccImmersive||!(detailRenderer instanceof Claustrum))return;
   const r=immersiveSurface.getBoundingClientRect(),dx=e.clientX-dccGesture.x,dy=e.clientY-dccGesture.y;
+  if(Math.hypot(dx,dy)<10)return;
+  if(dccTapCandidate)dccTapCandidate.moved=true;
+  hideDccImmersiveUi();
   const speed=Math.max(1,Math.min(16,Math.round(dccGesture.speed+dx/Math.max(70,r.width*.035))));
   const target=Math.max(5,Math.min(30,Math.round(dccGesture.target-dy/Math.max(35,r.height*.025))));
   $('#dc-speed-input').value=speed;$('#dc-speed-output').value=speed+'×';
   $('#dc-target-input').value=target;$('#dc-target-output').value=target;$('#dc-detail-target').textContent=target;
   detailRenderer.setSpeed(speed);detailRenderer.setTarget(target);
 });
-function endDccGesture(e){if(dccGesture&&(!e||e.pointerId===dccGesture.id))dccGesture=null;}
+function endDccGesture(e){if(!dccGesture|| (e&&e.pointerId!==dccGesture.id))return;const wasTap=dccTapCandidate&&!dccTapCandidate.moved;dccGesture=null;dccTapCandidate=null;if(wasTap)showDccImmersiveUi(true);}
 immersiveSurface.addEventListener('pointerup',endDccGesture);
 immersiveSurface.addEventListener('pointercancel',endDccGesture);
 
