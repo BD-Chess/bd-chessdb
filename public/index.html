@@ -682,7 +682,7 @@ function updateHeroDemoPiCaption(k,n){
   if(a)a.textContent=k;if(b)b.textContent=n;if(c)c.textContent=formatArea(value);
 }
 function configureHeroDemoSlide(kind){
-  stopHeroDemoSubTimer();heroDemoSubIndex=0;
+  stopHeroDemoSubTimer();$('#study').classList.remove('hero-demo-dcc-fade');heroDemoSubIndex=0;
   if(kind==='claustrum'){
     mainDC.setProjection(HERO_DEMO_DCC_PROJECTIONS[0]);
     const change=()=>{
@@ -747,7 +747,7 @@ function enterHeroDemo(){
 function exitHeroDemo(){
   if(!heroDemoOpen)return;
   stopHeroDemoTimer();stopHeroDemoSubTimer();clearTimeout(heroDemoUiTimer);heroDemoUiTimer=null;
-  const saved=heroDemoSaved;heroDemoOpen=false;heroDemoPaused=false;root.classList.remove('hero-demo-open');$('#study').classList.remove('hero-demo-mode','hero-demo-paused');$('#study').removeAttribute('role');$('#study').removeAttribute('aria-modal');$('#study').removeAttribute('aria-label');setHeroDemoBackground(false);
+  const saved=heroDemoSaved;heroDemoOpen=false;heroDemoPaused=false;root.classList.remove('hero-demo-open');$('#study').classList.remove('hero-demo-mode','hero-demo-paused','hero-demo-dcc-fade');$('#study').removeAttribute('role');$('#study').removeAttribute('aria-modal');$('#study').removeAttribute('aria-label');setHeroDemoBackground(false);
   $('#hero-demo-close').classList.remove('hero-demo-ui-hidden');
   if(saved){
     mainDC.setTrails(saved.trails);mainDC.setHeadWidth(saved.headWidth);mainDC.setProjection(saved.projection);mainDC.setTarget(saved.target);mainDC.setSpeed(saved.speed);mainDC.setRainbow(saved.rainbow);
