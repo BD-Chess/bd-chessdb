@@ -1,0 +1,71 @@
+name: ToE v0.5 immutable blob staging
+# One bounded transport/verification job on this isolated branch only.
+# No deploy, ref update, secret-store read, arena run, or production workflow change.
+on:
+  push:
+    branches: [toe-v05-stage-20260918]
+    paths: [.github/workflows/toe-v05-stage.yml]
+permissions:
+  contents: write
+jobs:
+  stage:
+    if: github.event.head_commit.message == 'Stage verified ToE v0.5 public blobs without changing production refs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify public payload and create immutable file blobs
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os,json,base64,lzma,hashlib,urllib.request
+          from pathlib import Path
+          repo='BD-Chess/bd-chessdb'
+          base='e14205ff6cc25431cbde533206d2a8e6bf00540f'
+          api='https://api.github.com/repos/'+repo
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'BD-ToE-v05-stage'}
+          def call(path,data=None):
+              encoded=None if data is None else json.dumps(data).encode()
+              req=urllib.request.Request(api+path,data=encoded,headers=headers,method='GET' if data is None else 'POST')
+              with urllib.request.urlopen(req,timeout=25) as response:return json.load(response)
+          chunks=['829ddedc112213f8ac90f8790c28e409f473f4b1','fef2ee887698bd7532563cd4ac5f421ef266ea53','2e7ddbedbdcbf9a057b14141ed3bf88499dcfd1e','fd86ebcf58999b331f6c8e23b5cac566c888e7ab']
+          packed=b''.join(base64.b64decode(call('/git/blobs/'+sha)['content']) for sha in chunks)
+          assert len(packed)==30756
+          assert hashlib.sha1(b'blob '+str(len(packed)).encode()+b'\0'+packed).hexdigest()=='de462228ae2defd049fc9eafc9639572e14f0438'
+          raw=lzma.decompress(packed,memlimit=268435456)
+          assert len(raw)<150000
+          assert hashlib.sha256(raw).hexdigest()=='eddce45d0142a9742b50180d99d31ab058d88e3f92bdcc4592b5b647631ca8d0'
+          ops=json.loads(raw)
+          allowed={'public/crp/ToE.html','public/crp/Compression_Access.html','public/crp/ToE_v0.5.md','public/index.html','public/crp/index.html','public/acp/index.html'}
+          sources={'public/crp/ToE.html','public/index.html','public/crp/index.html','public/acp/index.html'}
+          assert len(ops)==6 and {o['target'] for o in ops}==allowed
+          cache={};out=[]
+          for op in ops:
+              if 'content' in op:text=op['content']
+              else:
+                  src=op['source'];assert src in sources
+                  if src not in cache:cache[src]=base64.b64decode(call('/contents/'+src+'?ref='+base)['content'])
+                  original=cache[src]
+                  assert hashlib.sha256(original).hexdigest()==op['source_sha256']
+                  text=original.decode('utf-8');last=len(text)
+                  for e in reversed(op['edits']):
+                      assert 0<=e['start']<=e['end']<=last
+                      text=text[:e['start']]+e['text']+text[e['end']:];last=e['start']
+              content=text.encode('utf-8')
+              assert len(content)==op['bytes']
+              assert hashlib.sha256(content).hexdigest()==op['sha256']
+              expected=hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+              assert expected==op['git_blob']
+              result=call('/git/blobs',{'content':base64.b64encode(content).decode(),'encoding':'base64'})
+              assert result['sha']==expected
+              out.append({'path':op['target'],'mode':'100644','type':'blob','sha':expected,'bytes':len(content),'sha256':op['sha256']})
+          receipt={'scope':'IMMUTABLE_BLOBS_ONLY_NO_REFS_UPDATED','source_base':base,'files':out}
+          Path('toe-v05-staged.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print('::notice title=TOE_V05_STAGED::'+json.dumps(receipt,separators=(',',':')))
+      - name: Preserve compact staging receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: toe-v05-staged
+          path: toe-v05-staged.json
+          retention-days: 2
+          if-no-files-found: error
