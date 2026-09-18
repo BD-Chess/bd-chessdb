@@ -3,6 +3,7 @@ const assert=(c,m)=>{if(!c)throw new Error(m)};
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1440,height:900}});
 const errors=[];
+await page.route('**/.netlify/functions/entry-locale',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({language:'en'})}));
 page.on('pageerror',e=>errors.push('pageerror: '+e.message));
 page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
 await page.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
@@ -55,6 +56,7 @@ await page.waitForFunction(()=>!document.documentElement.classList.contains('her
 // Mobile photo-style swipe in fullscreen and popup.
 const mobile=await browser.newPage({viewport:{width:393,height:852},isMobile:true,hasTouch:true});
 const merr=[];
+await mobile.route('**/.netlify/functions/entry-locale',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({language:'en'})}));
 mobile.on('pageerror',e=>merr.push('pageerror: '+e.message));
 await mobile.goto('http://127.0.0.1:8000/index.html',{waitUntil:'networkidle'});
 await mobile.locator('#slogan').tap();
