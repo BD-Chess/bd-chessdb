@@ -409,6 +409,8 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 /* HERO_DEMO_CLOSE_REPAIR_20260918_R2: X exits on pointerdown/click capture on all three hero slides; teardown is fail-safe. */
 
 /* LANDING_ACCEPTANCE_REPAIR_20260918_R3: restore hero popup listeners, open Four ways in, sequential transient rainbow on hero 3/3. */
+
+/* PATTERN_RAINBOW_REPEAT_GAP_20260918_R1: transient thread-by-thread rainbow repeats after a 2 s neutral-color gap. */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 </head>
@@ -677,10 +679,18 @@ const labels={
  pi:['PI BY AREA','PI PO POVRŠINI'],
  pattern:['A SMALL RULE. A RICH WORLD.','KRATKO PRAVILO. BOGAT SVET.']
 };
+const patternRainbowTimers=new WeakMap();
 function prepPatternRainbow(host){
   if(!host)return;
-  host.querySelectorAll('.petal').forEach((p,i)=>p.style.setProperty('--petal-i',String(i)));
+  const oldTimer=patternRainbowTimers.get(host);if(oldTimer)clearTimeout(oldTimer);
+  const petals=Array.from(host.querySelectorAll('.petal'));
+  petals.forEach((p,i)=>p.style.setProperty('--petal-i',String(i)));
   host.classList.remove('pattern-rainbow-run');void host.offsetWidth;host.classList.add('pattern-rainbow-run');
+  const cycleMs=2600+4800+Math.max(0,petals.length-1)*75+2000;
+  patternRainbowTimers.set(host,setTimeout(()=>{
+    patternRainbowTimers.delete(host);
+    if(host.isConnected&&!host.hidden)prepPatternRainbow(host);
+  },cycleMs));
 }
 function restartMainPatternRainbow(){prepPatternRainbow($('[data-hero-slide="pattern"]'));}
 function setHero(i,announce=true){index=(i+slides.length)%slides.length;const kind=slides[index];$('#study').dataset.slide=String(index);$$('[data-hero-slide]').forEach(x=>{const on=x.dataset.heroSlide===kind;x.hidden=!on;x.classList.toggle('is-active',on);});$('#hero-count').textContent=(index+1)+' / '+slides.length;$('#hero-kicker').innerHTML='<span class="en" lang="en">'+labels[kind][0]+'</span><span class="sl" lang="sl">'+labels[kind][1]+'</span>';$('#hero-kicker').classList.toggle('rainbow-toggle',kind==='claustrum');if(kind==='claustrum'){$('#hero-kicker').setAttribute('role','button');$('#hero-kicker').tabIndex=0;$('#hero-kicker').setAttribute('aria-label',isSl()?'Vključi ali izključi mavrični način':'Toggle rainbow mode');}else{$('#hero-kicker').removeAttribute('role');$('#hero-kicker').removeAttribute('tabindex');$('#hero-kicker').removeAttribute('aria-label');}$('#hero-prev').disabled=index===0;$('#hero-next').disabled=index===slides.length-1;if(kind==='claustrum')mainDC.start();else mainDC.stop();if(kind==='pi')mainPI.start();else mainPI.stop();if(kind==='pattern')restartMainPatternRainbow();if(heroDemoOpen)configureHeroDemoSlide(kind);if(heroDemoOpen&&heroDemoPaused){mainDC.stop();mainPI.stop();}if(heroDemoOpen&&!['hero-demo-close','hero-demo-pause'].includes(document.activeElement.id))$('#study').focus({preventScroll:true});if(announce){const s=$('#art-status');if(s)s.textContent=(index+1)+' / '+slides.length+' · '+labels[kind][isSl()?1:0];}}
