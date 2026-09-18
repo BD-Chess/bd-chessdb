@@ -1,0 +1,57 @@
+name: Hero show live readback
+on:
+  push:
+    branches: [codex/hero-show-verify-20260918-r1]
+    paths: [.github/workflows/hero-show-live-check-once.yml]
+permissions:
+  contents: read
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3c4ce4ce883701babf3031e9ff682d9ca48e98c1
+          sparse-checkout: public/index.html
+          sparse-checkout-cone-mode: false
+      - name: Verify public Pages HTML; at most six reads
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import urllib.request, re, hashlib, json, time, datetime
+          out=Path('live-readback');out.mkdir()
+          source=Path('public/index.html').read_text()
+          pattern=r'<script id="hero-triptych-runtime">([\s\S]*?)</script>'
+          expected=re.search(pattern,source).group(1)
+          receipt={'commit':'3c4ce4ce883701babf3031e9ff682d9ca48e98c1','attempts':[],'expected_runtime_sha256':hashlib.sha256(expected.encode()).hexdigest(),'scope':'HTTP and exact hero runtime; not physical Safari'}
+          url='https://bd-chess.github.io/bd-chessdb/index.html?hero_show=3c4ce4ce883701babf3031e9ff682d9ca48e98c1'
+          passed=False
+          for attempt in range(6):
+            item={'attempt':attempt+1,'time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'MDLxDCC-release-verifier','Cache-Control':'no-cache'})
+              with urllib.request.urlopen(req,timeout=12) as r:
+                raw=r.read(2000000); item.update(status=r.status,url=r.geturl(),content_type=r.headers.get('Content-Type'))
+              text=raw.decode('utf-8');found=re.search(pattern,text)
+              item['runtime_exact']=bool(found and found.group(1)==expected)
+              item['show_css_present']='HERO_DEMO_VERIFIED_20260918_R2' in text
+              item['slogan_trigger']=bool(re.search(r'<h1[^>]*id="slogan"[^>]*role="button"',text))
+              passed=item['status']==200 and item['runtime_exact'] and item['slogan_trigger']
+              item['html_sha256']=hashlib.sha256(raw).hexdigest()
+              if passed:(out/'live-index.html').write_bytes(raw)
+            except Exception as e:item['error']=str(e)
+            receipt['attempts'].append(item)
+            if passed:break
+            if attempt<5:time.sleep(15)
+          receipt['verdict']='PASS' if passed else 'NOT_VERIFIED'
+          (out/'receipt.json').write_text(json.dumps(receipt,indent=2))
+          print(json.dumps(receipt,indent=2))
+          assert passed,'Published hero runtime not confirmed within bounded readback'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hero-show-live-readback
+          path: live-readback/
+          retention-days: 7
