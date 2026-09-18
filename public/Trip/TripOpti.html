@@ -32,7 +32,7 @@ footer{padding:45px 0 70px;color:var(--muted);font-size:13px;border-top:1px soli
 <div class="actions"><a class="button" href="/Trip/">Open TripOpti →</a><a class="button alt" href="/Trip/new/">Open LAB →</a></div>
 <div class="metrics">
 <div class="metric"><b style="color:var(--green)">9 / 9</b><small>qa194 real-browser runs reached 9,352</small></div>
-<div class="metric"><b style="color:var(--cyan)">0.465%</b><small>uy734 interim MDL×DCC gap</small></div>
+<div class="metric"><b style="color:var(--cyan)">0.426%</b><small>uy734 interim MDL×DCC gap</small></div>
 <div class="metric"><b style="color:var(--gold)">1 CPU</b><small>paired Firefox uy734 snapshot</small></div>
 <div class="metric"><b style="color:var(--violet)">local</b><small>core stop-order search runs in-browser</small></div>
 </div>
@@ -64,15 +64,15 @@ footer{padding:45px 0 70px;color:var(--muted);font-size:13px;border-top:1px soli
 <div class="section-head"><h2>Current browser evidence</h2><p>These are diagnostic results, not a claim that TripOpti equals the full Python/Rust/GPU research stack.</p></div>
 <div class="card" style="margin-bottom:14px"><div class="kicker green">qa194 · known optimum 9,352</div><h3>Repeated exact result</h3><p>On the 194-city Qatar benchmark, nine real-browser R1.2.1 diagnostic runs reached and independently confirmed the known optimum <b>9,352</b>. That established that the browser branch can do more than “good enough” routing on a controlled benchmark.</p></div>
 <div class="card">
-<div class="kicker gold">uy734 · interim running snapshot · 18 Sep 2026</div>
+<div class="kicker gold">uy734 · paired 1 CPU evidence · 18 Sep 2026</div>
 <h3>1 CPU Firefox A/B</h3>
 <div class="table-wrap"><table class="table">
 <thead><tr><th>Engine</th><th>Elapsed snapshot</th><th>Best</th><th>Gap to 79,114</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td>Deep</td><td>20.59 h</td><td><b>84,217</b></td><td><b>+6.450%</b></td><td>running</td></tr>
-<tr><td>Deep · MDL×DCC</td><td>17.67 h</td><td><b class="win">79,482</b></td><td><b class="win">+0.465%</b></td><td>running</td></tr>
+<tr><td>Deep</td><td>24.05 h</td><td><b>84,217</b></td><td><b>+6.450%</b></td><td>complete</td></tr>
+<tr><td>Deep · MDL×DCC</td><td>22.46 h</td><td><b class="win">79,451</b></td><td><b class="win">+0.426%</b></td><td>running</td></tr>
 </tbody></table></div>
-<p style="color:var(--muted);margin-bottom:0">Same uy734 input, Firefox 158 and one CPU worker. This is an <b>interim snapshot</b>, not the final planned 24 h : 24 h comparison. Diagnostic work-unit counters are not treated as directly interchangeable between engines.</p>
+<p style="color:var(--muted);margin-bottom:0">Same uy734 input, Firefox 158 and one CPU worker. Classic Deep exhausted its full budget at <b>84,217</b>; after reaching that result it spent more than three additional hours without improvement. MDL×DCC is still running: at 22.46 h it had reached <b>79,451</b>, only 337 units above the 79,114 optimum, with its latest improvement recorded at 18.68 h. The final 24 h MDL×DCC export is still pending. Diagnostic work-unit counters are not treated as directly interchangeable between engines.</p>
 </div>
 </section>
 
@@ -96,7 +96,7 @@ footer{padding:45px 0 70px;color:var(--muted);font-size:13px;border-top:1px soli
 </div>
 </section>
 
-<div class="note"><b>Claim discipline.</b> The uy734 comparison above is still running. Final 24-hour exports should replace or extend that snapshot. TripOpti should be judged by reproducible browser diagnostics and controlled baselines, not by marketing language.</div>
+<div class="note"><b>Claim discipline.</b> The Classic 24 h baseline is complete; the MDL×DCC side is still an interim 22.46 h snapshot and should be replaced or extended by its final export. TripOpti should be judged by reproducible browser diagnostics and controlled baselines, not by marketing language.</div>
 </main>
 
 <footer><div class="wrap">TripOpti · BD × AI Lab · browser-native route optimization · research lineage preserved separately.</div></footer>
