@@ -344,7 +344,7 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 }
 #study.hero-demo-mode .hero-demo-close:hover,
 #study.hero-demo-mode .hero-demo-close:focus-visible{border-color:var(--accent);color:var(--accent);opacity:1}
-#study.hero-demo-mode .hero-demo-close.hero-demo-ui-hidden{opacity:0;pointer-events:none}
+#study.hero-demo-mode .hero-demo-close{pointer-events:auto!important}#study.hero-demo-mode .hero-demo-close.hero-demo-ui-hidden{opacity:0;pointer-events:none!important}
 @keyframes hero-demo-in{from{opacity:0}to{opacity:1}}
 
 /* HERO_DEMO_VERIFIED_R2_20260918: natural proportions, keyboard exit, pause and reduced motion. */
@@ -399,6 +399,8 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 /* HERO_PI_INTRO_STAY_CONTROL_20260918_R1: 3s Pi cycle explainers; Space/STAY holds current hero while animation keeps running; DCC presets dwell 18s. */
 
 /* HERO_DEMO_EXIT_CAPTION_FIX_20260918_R2: Pi demo-only UI hidden on landing; global click reveal; capture Escape exit. */
+
+/* HERO_DEMO_CLOSE_REPAIR_20260918_R2: X exits on pointerdown/click capture on all three hero slides; teardown is fail-safe. */
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 </head>
@@ -789,14 +791,24 @@ function enterHeroDemo(){
 }
 function exitHeroDemo(){
   if(!heroDemoOpen)return;
+  const saved=heroDemoSaved;
+  heroDemoOpen=false;heroDemoPaused=false;heroDemoStay=false;
+  root.classList.remove('hero-demo-open');
+  const study=$('#study');
+  study.classList.remove('hero-demo-mode','hero-demo-paused','hero-demo-dcc-fade','hero-demo-pi-intro-active');
+  study.removeAttribute('role');study.removeAttribute('aria-modal');study.removeAttribute('aria-label');
   stopHeroDemoTimer();stopHeroDemoSubTimer();clearTimeout(heroDemoUiTimer);heroDemoUiTimer=null;
-  const saved=heroDemoSaved;heroDemoOpen=false;heroDemoPaused=false;heroDemoStay=false;root.classList.remove('hero-demo-open');$('#study').classList.remove('hero-demo-mode','hero-demo-paused','hero-demo-dcc-fade','hero-demo-pi-intro-active');$('#study').removeAttribute('role');$('#study').removeAttribute('aria-modal');$('#study').removeAttribute('aria-label');setHeroDemoBackground(false);
-  $('#hero-demo-close').classList.remove('hero-demo-ui-hidden');$('#hero-demo-pause').classList.remove('hero-demo-ui-hidden');$('#hero-demo-stay').classList.remove('hero-demo-ui-hidden');
-  if(saved){
-    mainDC.setTrails(saved.trails);mainDC.setHeadWidth(saved.headWidth);mainDC.setProjection(saved.projection);mainDC.setTarget(saved.target);mainDC.setSpeed(saved.speed);mainDC.setRainbow(saved.rainbow);
-    mainPI.detail=saved.piDetail;mainPI.set(saved.piK,saved.piN);mainPI.shown=saved.piShown;setHero(saved.index,false);
-  }
-  heroDemoSaved=null;startHeroAuto();$('#slogan').focus({preventScroll:true});
+  ['#hero-demo-close','#hero-demo-pause','#hero-demo-stay'].forEach(sel=>{const el=$(sel);if(el)el.classList.remove('hero-demo-ui-hidden');});
+  try{setHeroDemoBackground(false);}catch(_){}
+  try{
+    if(saved){
+      mainDC.setTrails(saved.trails);mainDC.setHeadWidth(saved.headWidth);mainDC.setProjection(saved.projection);mainDC.setTarget(saved.target);mainDC.setSpeed(saved.speed);mainDC.setRainbow(saved.rainbow);
+      mainPI.detail=saved.piDetail;mainPI.set(saved.piK,saved.piN);mainPI.shown=saved.piShown;setHero(saved.index,false);
+    }
+  }catch(_){}
+  heroDemoSaved=null;
+  try{startHeroAuto();}catch(_){}
+  try{$('#slogan').focus({preventScroll:true});}catch(_){}
 }
 
 $('#slogan').addEventListener('click',enterHeroDemo);$('#slogan').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enterHeroDemo();}});function surpriseClaustrum(){if(slides[index]!=='claustrum')return;claustrumRainbow=true;mainDC.setRainbow(true);const b=$('#dc-rainbow');if(b)b.setAttribute('aria-pressed','true');openDetail('claustrum');requestAnimationFrame(()=>enterDccImmersive());}$('#hero-kicker').addEventListener('click',surpriseClaustrum);$('#hero-kicker').addEventListener('keydown',e=>{if(slides[index]==='claustrum'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();surpriseClaustrum();}});$('#hero-prev').addEventListener('click',()=>{setHero(index-1);resetHeroAuto();});$('#hero-next').addEventListener('click',()=>{setHero(index+1);resetHeroAuto();});
@@ -895,7 +907,8 @@ function endDccGesture(e){if(!dccGesture|| (e&&e.pointerId!==dccGesture.id))retu
 immersiveSurface.addEventListener('pointerup',endDccGesture);
 immersiveSurface.addEventListener('pointercancel',endDccGesture);
 
-$('#hero-demo-close').addEventListener('click',e=>{e.stopPropagation();exitHeroDemo();});
+$('#hero-demo-close').addEventListener('pointerdown',e=>{e.preventDefault();e.stopImmediatePropagation();exitHeroDemo();},true);
+$('#hero-demo-close').addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();exitHeroDemo();},true);
 $('#hero-demo-pause').addEventListener('click',e=>{e.stopPropagation();toggleHeroDemoPause();});$('#hero-demo-stay').addEventListener('click',e=>{e.stopPropagation();toggleHeroDemoStay();});
 $('#study').addEventListener('keydown',e=>{
   if(!heroDemoOpen)return;
@@ -914,6 +927,12 @@ window.addEventListener('pointerdown',e=>{
   if(!heroDemoOpen)return;
   const inControl=e.target.closest&&e.target.closest('#hero-demo-close,#hero-demo-pause,#hero-demo-stay');
   if(!inControl)showHeroDemoUi(true);
+},true);
+/* HERO_DEMO_CLOSE_CAPTURE_R2 */
+window.addEventListener('pointerdown',e=>{
+  if(!heroDemoOpen)return;
+  const close=e.target.closest&&e.target.closest('#hero-demo-close');
+  if(close){e.preventDefault();e.stopImmediatePropagation();exitHeroDemo();}
 },true);
 /* HERO_DEMO_ESCAPE_CAPTURE_R1 */
 window.addEventListener('keydown',e=>{
