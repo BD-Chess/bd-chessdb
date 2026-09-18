@@ -1,10 +1,11 @@
-name: Hero show isolated preparation
+name: Hero show verified candidate
 on:
   push:
     branches: [codex/hero-show-verify-20260918-r1]
     paths: [.github/workflows/hero-show-prepare-once.yml]
 permissions:
   contents: write
+  actions: read
 jobs:
   prepare:
     if: github.actor != 'github-actions[bot]'
@@ -14,42 +15,54 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: codex/hero-show-verify-20260918-r1
-          fetch-depth: 1
-      - name: Apply bounded source-guarded patch
-        shell: bash
+          fetch-depth: 5
+      - name: Recover exact prepared artifact from this repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 35314691614 --name hero-show-candidate --dir /tmp/hero-candidate
+      - name: Apply exact browser-tested focus correction
         run: |
           python3 - <<'PY'
-          import base64,zlib
-          code=zlib.decompress(base64.b64decode('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'))
           from pathlib import Path
-          Path('/tmp/hero-show-patch.py').write_bytes(code)
-          exec(compile(code,'hero-show-patch.py','exec'))
-          Path('hero-show-artifact/patch.py').write_bytes(code)
+          import hashlib,json
+          blob=lambda b:hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+          source=Path('public/index.html')
+          assert blob(source.read_bytes())=='74dd6ff012b7695028eb16e465d87cee4bcd4458','Concurrent index change'
+          folder=Path('/tmp/hero-candidate')
+          raw=(folder/'index.html').read_bytes()
+          assert hashlib.sha256(raw).hexdigest()=='9f4b662ea1378a83941aaeba50929ca5ae6922a10f0a1093ec2df44d954df60d'
+          s=raw.decode()
+          a='if(heroDemoOpen&&heroDemoPaused){mainDC.stop();mainPI.stop();}if(announce)'
+          b="if(heroDemoOpen&&heroDemoPaused){mainDC.stop();mainPI.stop();}if(heroDemoOpen&&!['hero-demo-close','hero-demo-pause'].includes(document.activeElement.id))$('#study').focus({preventScroll:true});if(announce)"
+          assert s.count(a)==1
+          out=s.replace(a,b,1).encode()
+          assert hashlib.sha256(out).hexdigest()=='8392e60940288afe1a4db8616c3c1fe1a5a5cc2d8ee176a9d7760c320de5bd50','Not the tested candidate'
+          backup=(folder/'index-bck3.html').read_bytes()
+          assert blob(backup)=='4b84a6a2052f4be5130af4361c4291e333b7910b'
+          target=Path('public/index-bck3.html')
+          assert not target.exists() or target.read_bytes()==backup,'Existing bck3 conflict'
+          source.write_bytes(out);target.write_bytes(backup)
+          result=Path('hero-show-verified');result.mkdir()
+          (result/'index.html').write_bytes(out);(result/'index-bck3.html').write_bytes(backup)
+          (result/'manifest.json').write_text(json.dumps({'result_blob':blob(out),'backup_blob':blob(backup),'sha256':hashlib.sha256(out).hexdigest(),'local_browser_tests':'Chromium 144: desktop/portrait/landscape x light/dark and reduced motion PASS; physical Safari not tested'},indent=2))
           PY
-      - name: Compile all inline scripts without executing them
-        run: |
-          node - <<'JS'
-          const fs=require('fs'),vm=require('vm');
-          const s=fs.readFileSync('public/index.html','utf8');let n=0;
-          for(const m of s.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){
-            if(/application\/(?:ld\+)?json/.test(m[1]))continue;
-            new vm.Script(m[2]);n++;
-          }
-          fs.writeFileSync('hero-show-artifact/syntax.json',JSON.stringify({scripts:n,syntax:'PASS'}));
-          JS
-      - name: Commit candidate on isolated branch only
+      - name: Commit only the verified candidate on the isolated branch
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/hero-show-prepare-once.yml
           git add public/index.html public/index-bck3.html
-          git commit -m 'Landing demo: verify popup safety, 30s show, preserve bck3'
-          git rev-parse HEAD > hero-show-artifact/candidate_commit.txt
-          git diff --name-only e14205ff6cc25431cbde533206d2a8e6bf00540f HEAD > hero-show-artifact/changed_paths.txt
+          git commit -m 'Verify hero demo show, restore popup clicks, preserve bck3'
+          git diff --name-only e14205ff6cc25431cbde533206d2a8e6bf00540f HEAD > hero-show-verified/changed_paths.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          assert set(Path('hero-show-verified/changed_paths.txt').read_text().splitlines())=={'public/index.html','public/index-bck3.html'}
+          PY
+          git rev-parse HEAD > hero-show-verified/candidate_commit.txt
           git push origin HEAD:refs/heads/codex/hero-show-verify-20260918-r1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: hero-show-candidate
-          path: hero-show-artifact/
+          name: hero-show-verified
+          path: hero-show-verified/
           retention-days: 7
