@@ -1,0 +1,49 @@
+name: ToE v0.5 landing rebase
+# Isolated branch only; prepares one immutable blob, never updates main or deploys.
+on:
+  push:
+    branches: [toe-v05-stage-20260918]
+    paths: [.github/workflows/toe-v05-landing-rebase.yml]
+permissions:
+  contents: write
+jobs:
+  rebase:
+    if: github.event.head_commit.message == 'Rebase ToE landing link onto concurrent landing edits without touching main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Preserve current landing and change only the ToE link label
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import os,json,base64,hashlib,urllib.request,difflib
+          from pathlib import Path
+          api='https://api.github.com/repos/BD-Chess/bd-chessdb'
+          source='286ccccc0341c624ffd59fdb029f3bf515c7a0ff'
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','User-Agent':'BD-ToE-landing-rebase'}
+          def call(path,data=None):
+              req=urllib.request.Request(api+path,data=None if data is None else json.dumps(data).encode(),headers=headers,method='GET' if data is None else 'POST')
+              with urllib.request.urlopen(req,timeout=25) as r:return json.load(r)
+          obj=call('/contents/public/index.html?ref='+source)
+          assert obj['sha']=='b69f4c4efd428faf5752d3fdc2cda6eab01fed26'
+          before=base64.b64decode(obj['content']);text=before.decode('utf-8')
+          old='<a class="tool-link" href="./crp/ToE.html">ToE<span class="arrow" aria-hidden="true">↗︎</span></a>'
+          new='<a class="tool-link" href="./crp/ToE.html" title="Whole-First Physicalization — candidate unification programme"><span class="en" lang="en">ToE / Whole</span><span class="sl" lang="sl">ToE / Celota</span><span class="arrow" aria-hidden="true">↗︎</span></a>'
+          assert text.count(old)==1, 'Exact ToE anchor changed; do not overwrite'
+          result=text.replace(old,new);after=result.encode('utf-8')
+          expected=hashlib.sha1(b'blob '+str(len(after)).encode()+b'\0'+after).hexdigest()
+          blob=call('/git/blobs',{'content':base64.b64encode(after).decode(),'encoding':'base64'})
+          assert blob['sha']==expected
+          out=Path('landing-rebase');out.mkdir()
+          (out/'index.before.html').write_bytes(before);(out/'index.html').write_bytes(after)
+          (out/'index.diff').write_text(''.join(difflib.unified_diff(text.splitlines(True),result.splitlines(True),fromfile='public/index.html@'+source,tofile='public/index.html@ToE-v05')))
+          receipt={'scope':'ONE_IMMUTABLE_BLOB_ONLY','source_commit':source,'source_blob':obj['sha'],'source_sha256':hashlib.sha256(before).hexdigest(),'path':'public/index.html','sha':expected,'bytes':len(after),'sha256':hashlib.sha256(after).hexdigest(),'sha3_256':hashlib.sha3_256(after).hexdigest(),'replacement_count':1}
+          (out/'receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print('::notice title=TOE_V05_LANDING_REBASED::'+json.dumps(receipt,separators=(',',':')))
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toe-v05-landing-rebase
+          path: landing-rebase/
+          retention-days: 2
+          if-no-files-found: error
