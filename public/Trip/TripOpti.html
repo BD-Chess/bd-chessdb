@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TripOpti — Browser-native route optimization · BD × AI Lab</title>
+<meta name="description" content="TripOpti is the browser-native route optimization product transfer from BD × AI Lab TSP research, with Fast, Deep and experimental Deep · MDL×DCC search modes.">
+<link rel="canonical" href="https://www.mdlxdcc.org/Trip/TripOpti.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TripOpti — Browser-native route optimization">
+<meta property="og:description" content="From TSP research to a local browser engine: Fast, Deep and experimental Deep · MDL×DCC.">
+<style>
+:root{--bg:#040811;--bg2:#07111f;--card:#0b1727;--line:rgba(148,163,184,.18);--text:#e8eef8;--muted:#9cafc5;--cyan:#22d3ee;--green:#34d399;--gold:#f59e0b;--violet:#a78bfa;--rose:#fb7185}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% 0,rgba(34,211,238,.11),transparent 31%),radial-gradient(circle at 88% 15%,rgba(167,139,250,.09),transparent 28%),linear-gradient(180deg,var(--bg),#020409 78%);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.65}a{color:inherit}.wrap{width:min(1120px,calc(100% - 34px));margin:auto}.top{position:sticky;top:0;z-index:20;background:rgba(4,8,17,.9);backdrop-filter:blur(15px);border-bottom:1px solid var(--line)}.top .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0}.brand{font:800 12px ui-monospace,Consolas,monospace;letter-spacing:.16em;color:var(--cyan);text-decoration:none}.nav{display:flex;gap:7px;flex-wrap:wrap}.nav a{font:11px ui-monospace,Consolas,monospace;text-decoration:none;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 9px}.nav a:hover{color:var(--cyan);border-color:rgba(34,211,238,.5)}
+.hero{padding:86px 0 48px}.eyebrow{font:700 12px ui-monospace,Consolas,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--green)}h1{font-size:clamp(54px,11vw,118px);line-height:.82;letter-spacing:-.07em;margin:16px 0 24px}h1 span{color:var(--cyan)}.lead{max-width:930px;color:var(--muted);font-size:clamp(19px,2.2vw,25px)}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px}.button{font:700 12px ui-monospace,Consolas,monospace;text-decoration:none;border:1px solid rgba(34,211,238,.35);border-radius:999px;padding:10px 14px;color:var(--cyan);background:rgba(34,211,238,.06)}.button.alt{color:var(--green);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.05)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-top:34px}.metric{background:rgba(8,17,30,.96);padding:18px}.metric b{display:block;font:800 clamp(22px,3vw,35px) ui-monospace,Consolas,monospace}.metric small{color:var(--muted)}
+section{padding:33px 0}.section-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:16px}.section-head h2{margin:0;font-size:clamp(29px,4vw,45px);letter-spacing:-.045em}.section-head p{margin:0;max-width:650px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(11,23,39,.96),rgba(6,12,22,.98));padding:21px}.card h3{font-size:24px;margin:5px 0 9px}.card p{color:var(--muted);margin:7px 0}.kicker{font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}.green{color:var(--green)}.gold{color:var(--gold)}.violet{color:var(--violet)}.rose{color:var(--rose)}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.step{border-top:2px solid var(--cyan);padding:14px 12px;background:rgba(34,211,238,.035);border-radius:0 0 12px 12px}.step b{display:block;font:700 11px ui-monospace,Consolas,monospace;color:var(--cyan);margin-bottom:6px}.step span{font-size:14px;color:var(--muted)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line)}.table th{font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}.table td b{font-family:ui-monospace,Consolas,monospace}.table tr:last-child td{border-bottom:0}.win{color:var(--green)}
+.note,.boundary{border:1px solid rgba(245,158,11,.26);background:rgba(245,158,11,.045);border-radius:15px;padding:18px;color:#d9e2ef}.boundary{border-color:rgba(34,211,238,.24);background:rgba(34,211,238,.035)}.related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.related a{display:block;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.015)}.related a:hover{border-color:rgba(34,211,238,.45)}.related b{display:block;color:var(--cyan)}.related span{display:block;color:var(--muted);font-size:14px;margin-top:4px}
+footer{padding:45px 0 70px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:20px}
+@media(max-width:850px){.metrics,.grid,.grid2,.flow,.related{grid-template-columns:1fr 1fr}}@media(max-width:560px){.metrics,.grid,.grid2,.flow,.related{grid-template-columns:1fr}.top .wrap{align-items:flex-start;flex-direction:column}.hero{padding-top:58px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><a class="brand" href="/">BD × AI LAB · TRIPOPTI</a><nav class="nav"><a href="/Trip/">CURRENT</a><a href="/Trip/new/">LAB</a><a href="/BD/BD_8ZRP.html">8Z-RP</a><a href="/BD/BD_TSP_6_ARENAS.html">6 TSP ARENAS</a></nav></div></div>
+
+<header class="hero"><div class="wrap">
+<div class="eyebrow">Research → product transfer · browser-native TSP / route optimization</div>
+<h1><span>TripOpti</span></h1>
+<p class="lead">A route optimizer that moved out of the research arena and into an ordinary browser. TripOpti keeps the simple user flow — open a page, load or paste stops, optimize — while exposing progressively deeper search: <b>Fast</b>, <b>Deep</b>, and an experimental <b>Deep · MDL×DCC</b> engine.</p>
+<div class="actions"><a class="button" href="/Trip/">Open TripOpti →</a><a class="button alt" href="/Trip/new/">Open LAB →</a></div>
+<div class="metrics">
+<div class="metric"><b style="color:var(--green)">9 / 9</b><small>qa194 real-browser runs reached 9,352</small></div>
+<div class="metric"><b style="color:var(--cyan)">0.465%</b><small>uy734 interim MDL×DCC gap</small></div>
+<div class="metric"><b style="color:var(--gold)">1 CPU</b><small>paired Firefox uy734 snapshot</small></div>
+<div class="metric"><b style="color:var(--violet)">local</b><small>core stop-order search runs in-browser</small></div>
+</div>
+</div></header>
+
+<main class="wrap">
+<section>
+<div class="section-head"><h2>Three search depths</h2><p>One interface, different compute budgets. The deeper modes do more work; MDL×DCC also changes how search effort is governed.</p></div>
+<div class="grid">
+<article class="card"><div class="kicker green">Fast</div><h3>Immediate route ordering</h3><p>For ordinary trip use where a strong answer is needed quickly. It keeps the interaction lightweight and browser-native.</p></article>
+<article class="card"><div class="kicker gold">Deep</div><h3>Classical deeper search</h3><p>Runs longer local search and keeps improving while the browser tab stays active. Useful as both a product mode and an A/B baseline.</p></article>
+<article class="card"><div class="kicker violet">Deep · MDL×DCC</div><h3>Governed search</h3><p>An experimental engine that watches search history, alternates exploration and intensification, keeps multiple operator families alive, and can use one or more CPU workers.</p></article>
+</div>
+</section>
+
+<section>
+<div class="section-head"><h2>How the MDL×DCC loop works</h2><p>The browser engine does not replace search with a single score. It uses diagnostics and history to decide how strongly to couple the search to its current basin.</p></div>
+<div class="flow">
+<div class="step"><b>01 · SEED</b><span>Start from a valid route and deterministic run state.</span></div>
+<div class="step"><b>02 · GENERATE</b><span>Produce candidate moves from several operator families.</span></div>
+<div class="step"><b>03 · SENSE</b><span>Read recent progress, stagnation and compressibility/history signals.</span></div>
+<div class="step"><b>04 · GOVERN</b><span>Switch between explore and intensify instead of holding one fixed regime.</span></div>
+<div class="step"><b>05 · RETAIN</b><span>Keep better tours, checkpoints, lineage and diagnostics for continuation.</span></div>
+</div>
+<div class="boundary" style="margin-top:15px"><b>Rank, don't eliminate.</b> TripOpti inherits a core TSP R&D lesson: a method that looks weak in one representation or phase may become useful later. The engine therefore ranks and reallocates rather than treating a temporary loser as permanently dead.</div>
+</section>
+
+<section id="evidence">
+<div class="section-head"><h2>Current browser evidence</h2><p>These are diagnostic results, not a claim that TripOpti equals the full Python/Rust/GPU research stack.</p></div>
+<div class="card" style="margin-bottom:14px"><div class="kicker green">qa194 · known optimum 9,352</div><h3>Repeated exact result</h3><p>On the 194-city Qatar benchmark, nine real-browser R1.2.1 diagnostic runs reached and independently confirmed the known optimum <b>9,352</b>. That established that the browser branch can do more than “good enough” routing on a controlled benchmark.</p></div>
+<div class="card">
+<div class="kicker gold">uy734 · interim running snapshot · 18 Sep 2026</div>
+<h3>1 CPU Firefox A/B</h3>
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Engine</th><th>Elapsed snapshot</th><th>Best</th><th>Gap to 79,114</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Deep</td><td>20.59 h</td><td><b>84,217</b></td><td><b>+6.450%</b></td><td>running</td></tr>
+<tr><td>Deep · MDL×DCC</td><td>17.67 h</td><td><b class="win">79,482</b></td><td><b class="win">+0.465%</b></td><td>running</td></tr>
+</tbody></table></div>
+<p style="color:var(--muted);margin-bottom:0">Same uy734 input, Firefox 158 and one CPU worker. This is an <b>interim snapshot</b>, not the final planned 24 h : 24 h comparison. Diagnostic work-unit counters are not treated as directly interchangeable between engines.</p>
+</div>
+</section>
+
+<section>
+<div class="section-head"><h2>Product boundary</h2><p>TripOpti is the deployment branch, not a rename of the whole TSP research program.</p></div>
+<div class="grid2">
+<div class="card"><div class="kicker">In the browser</div><h3>Local stop-order compute</h3><p>The core route-order optimization executes on the user's device. Deep runs can maintain local encrypted checkpoints and continue later. Supporting geocoding, maps, road directions or AI features may contact their respective external providers.</p></div>
+<div class="card"><div class="kicker rose">In the research stack</div><h3>Six TSP arenas stay six</h3><p>TSPES, DEV2.3, DEV2.4, BD-RPHS and the two 8zTSP-R lines remain distinct research arenas with different scientific roles. TripOpti is the <b>research → product transfer</b> that distills selected mechanisms into a browser-safe engine.</p></div>
+</div>
+</section>
+
+<section>
+<div class="section-head"><h2>Related TSP research</h2><p>The pages below are intentionally cross-linked so product behavior, benchmark evidence and research lineage stay connected without collapsing into one leaderboard.</p></div>
+<div class="related">
+<a href="/BD/BD_8ZRP.html"><b>8Z-RP · TSP as Compression</b><span>Main TSP research story and browser-native product bridge.</span></a>
+<a href="/BD/BD_TSP_6_ARENAS.html"><b>Six TSP Arenas</b><span>Why the six research lines remain separate and what each tests.</span></a>
+<a href="/BD/BD_8ZRP_nu3496_status.html"><b>nu3496 current status</b><span>Hard-tail donor/successor evidence on the 3,496-city instance.</span></a>
+<a href="/crp/MDLxDCC-Arenas.html"><b>MDL×DCC Arenas</b><span>Cross-domain arena map including TSP / TripOpti.</span></a>
+<a href="/BD/BD_8Z_DCC_Recursive.html"><b>Recursive DCC</b><span>How DCC governance transfers across search and fleet-level control.</span></a>
+<a href="/crp/MDLxDCC-Demon.html"><b>MDL×DCC Demon</b><span>Future process-information test lane; not a claim that Demon is already implemented in TripOpti.</span></a>
+</div>
+</section>
+
+<div class="note"><b>Claim discipline.</b> The uy734 comparison above is still running. Final 24-hour exports should replace or extend that snapshot. TripOpti should be judged by reproducible browser diagnostics and controlled baselines, not by marketing language.</div>
+</main>
+
+<footer><div class="wrap">TripOpti · BD × AI Lab · browser-native route optimization · research lineage preserved separately.</div></footer>
+</body>
+</html>
