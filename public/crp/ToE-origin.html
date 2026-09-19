@@ -13,8 +13,8 @@ html[data-theme="light"]{color-scheme:light;--bg:#f3f5f8;--panel:#fff;--text:#18
 body{margin:0;background:var(--bg);color:var(--text);font:var(--size)/1.7 Inter,Segoe UI,system-ui,sans-serif}
 a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}p{color:var(--muted)}strong{color:var(--text)}
 .wrap{width:min(1120px,calc(100% - 40px));margin:auto}.top{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:var(--bg)}
-.top .wrap{padding:10px 0;display:flex;gap:15px;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand{font:600 13px ui-monospace,monospace;color:var(--text)}
-.tools{display:flex;gap:4px}.tools button{font:600 12px ui-monospace,monospace;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);cursor:pointer}
+.top .wrap{padding:10px 0;display:flex;gap:15px;align-items:center;justify-content:space-between}.brand{color:var(--text);font:400 13px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.04em}.brand b{color:var(--gold)}
+.tools{display:flex;gap:4px;flex-wrap:wrap}.tools button{font:600 12px/1.4 ui-monospace,monospace;min-height:42px;min-width:42px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);cursor:pointer}.tools button[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan)}
 .hero{padding:66px 0 26px}.eyebrow,.kicker,.tag,.meta{font-family:ui-monospace,Consolas,monospace}.eyebrow,.kicker{color:var(--gold);font-size:11px;letter-spacing:.13em;text-transform:uppercase}
 h1{font:400 clamp(46px,7vw,88px)/1.05 Georgia,serif;letter-spacing:-.04em;margin:20px 0}h1 em{font-style:normal;color:var(--cyan)}h2{font-size:clamp(29px,3.2vw,43px);letter-spacing:-.035em}
 .lead{font-size:1.15em;max-width:920px}.tags,.nav{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.tag,.nav a{border:1px solid var(--line);border-radius:25px;padding:8px 13px;color:var(--muted);font-size:.8em}
@@ -30,7 +30,7 @@ details{border:1px solid var(--line);border-radius:12px;margin:16px 0}summary{pa
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap"><a class="brand" href="ToE.html">AC–WFP × 8Z / ToE · ORIGIN</a><div class="tools"><button id="theme">◐</button><button data-lang="en">EN</button><button data-lang="sl">SL</button><button data-size="-1">A−</button><button data-size="1">A+</button></div></div></header>
+<header class="top"><div class="wrap"><a class="brand" href="ToE.html"><b>AC–WFP × 8Z</b> / ToE · ORIGIN</a><div class="tools"><button type="button" data-size="-1" aria-label="Smaller text">A−</button><button type="button" data-size="0" aria-label="Reset text size">A</button><button type="button" data-size="1" aria-label="Larger text">A+</button><button type="button" id="theme" aria-label="Toggle light or dark theme">◐</button><button type="button" data-lang-btn="en" aria-pressed="true">EN</button><button type="button" data-lang-btn="sl" aria-pressed="false">SL</button></div></div></header>
 <main class="wrap">
 <section class="hero">
 <div class="eyebrow">BD × GPT × CLAUDE · LIVING RESEARCH PROVENANCE · 19 SEPTEMBER 2026</div>
@@ -97,16 +97,10 @@ details{border:1px solid var(--line);border-radius:12px;margin:16px 0}summary{pa
 <h2 class="en">No contributor gets the final word on its own attribution.</h2><h2 class="sl">Noben sodelujoči nima zadnje besede o lastnem avtorstvu.</h2>
 <p class="en">GPT drafts the source-linked history; Claude supplies its own perspective, including its errors and disagreements. Ordinary wording can be reconciled. If an attribution dispute survives one round, both positions go to BD verbatim or remain explicitly open. A claim without a source handle is marked as unsourced recollection rather than polished into certainty.</p>
 <p class="sl">GPT pripravi izvorno podprto zgodovino; Claude doda svoj pogled, vključno z lastnimi napakami in nesoglasji. Običajno besedilo se lahko uskladi. Če spor o avtorstvu preživi en krog, gresta obe formulaciji dobesedno k BD ali ostaneta eksplicitno odprti. Trditev brez izvornega kazalca je označena kot nepodprt spomin, ne olepšana v gotovost.</p>
-<div class="callout"><p class="en"><strong>Status:</strong> the origin history is under bilateral review. This public page records the agreed governance and directly verified public lineage; it does not pre-empt Claude's pending source-linked contribution.</p><p class="sl"><strong>Stanje:</strong> zgodovina izvora je v dvostranskem pregledu. Ta javna stran beleži dogovorjeno upravljanje in neposredno preverjeno javno verzijsko sled; ne prehiteva Claudovega čakajočega, izvorno podprtega prispevka.</p></div>
+<div class="callout"><p class="en"><strong>Status:</strong> origin-history R3 is bilaterally aligned; Claude accepted the source-linked additive patch with no surviving attribution disagreement. Fast research is maintained on the daily/monthly pages.</p><p class="sl"><strong>Stanje:</strong> origin-history R3 je dvostransko usklajen; Claude je sprejel izvorno podprt dopolnilni popravek brez preživelega atribucijskega spora. Hitra raziskava se vodi na dnevni/mesečni strani.</p></div>
 <p><a href="ToE.html">← <span class="en">Return to the ToE</span><span class="sl">Nazaj na ToE</span></a></p>
 </section>
 </main>
 <footer class="foot"><div class="wrap"><span class="en">Exploratory research provenance · public-safe view · private operational identifiers omitted.</span><span class="sl">Provenienca raziskovalnega programa · javno varna različica · zasebni operativni identifikatorji izpuščeni.</span></div></footer>
-<script>
-const root=document.documentElement;
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{root.dataset.lang=b.dataset.lang;localStorage.setItem('toeOriginLang',b.dataset.lang)});
-document.getElementById('theme').onclick=()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';localStorage.setItem('toeOriginTheme',root.dataset.theme)};
-document.querySelectorAll('[data-size]').forEach(b=>b.onclick=()=>{let n=parseInt(getComputedStyle(root).getPropertyValue('--size'))||19;n+=parseInt(b.dataset.size)*2;n=Math.max(15,Math.min(25,n));root.style.setProperty('--size',n+'px')});
-root.dataset.lang=localStorage.getItem('toeOriginLang')||'en';root.dataset.theme=localStorage.getItem('toeOriginTheme')||'dark';
-</script>
+<script>(()=>{'use strict';const root=document.documentElement;let size=19;const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};function lang(v){v=v==='sl'?'sl':'en';root.dataset.lang=v;root.lang=v;document.querySelectorAll('[data-lang-btn]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.langBtn===v)));store.set('toe-lang',v)}lang(store.get('toe-lang'));document.querySelectorAll('[data-lang-btn]').forEach(b=>b.addEventListener('click',()=>lang(b.dataset.langBtn)));function setSize(n){size=Math.max(15,Math.min(27,n));root.style.setProperty('--size',size+'px');store.set('toe-v05-size',String(size))}setSize(Number(store.get('toe-v05-size'))||19);document.querySelectorAll('[data-size]').forEach(b=>b.addEventListener('click',()=>setSize(b.dataset.size==='0'?19:size+Number(b.dataset.size)*2)));root.dataset.theme=store.get('toe-theme')==='light'?'light':'dark';const theme=document.getElementById('theme');if(theme)theme.addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';store.set('toe-theme',root.dataset.theme)});})();</script>
 </body></html>
