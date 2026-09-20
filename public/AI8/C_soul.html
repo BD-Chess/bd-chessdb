@@ -247,10 +247,39 @@ body::after {
   margin-bottom: 10px;
 }
 
+
+/* === READER UTILITIES · 2026-09-20 === */
+:root { --reader-scale: 1; }
+html { font-size: calc(100% * var(--reader-scale)); }
+body { font-size: calc(21px * var(--reader-scale)); }
+.reader-tools{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:1200;display:flex;align-items:center;gap:5px;padding:5px;border:1px solid rgba(255,215,64,.12);border-radius:12px;background:rgba(6,8,16,.82);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.reader-tool{min-width:40px;height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--secondary);font:500 12px/1 'JetBrains Mono',monospace;cursor:pointer}
+.reader-tool:hover,.reader-tool:focus-visible,.reader-tool[aria-pressed=true]{color:var(--text-warm);background:rgba(255,255,255,.05);border-color:var(--border-strong);outline:none}
+.reader-tool.search-icon{font-size:18px}
+.reader-langs{display:flex;border-left:1px solid var(--border-strong);padding-left:5px;margin-left:1px}
+.reader-search{position:fixed;top:max(66px,calc(env(safe-area-inset-top) + 56px));right:max(12px,env(safe-area-inset-right));z-index:1200;width:min(390px,calc(100vw - 24px));padding:10px;border:1px solid var(--border-strong);border-radius:12px;background:rgba(6,8,16,.95);backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(0,0,0,.35);display:none}
+.reader-search.open{display:flex;gap:7px}
+.reader-search input{min-width:0;flex:1;padding:9px 11px;border:1px solid var(--border-strong);border-radius:8px;background:rgba(255,255,255,.04);color:var(--text-warm);font:400 14px/1.2 'JetBrains Mono',monospace;outline:none}
+.reader-search input:focus{border-color:var(--gold)}
+.reader-search button{min-width:42px;border:1px solid var(--border-strong);border-radius:8px;background:transparent;color:var(--secondary);font:500 12px 'JetBrains Mono',monospace;cursor:pointer}
+.reader-search button:hover{color:var(--text-warm);background:rgba(255,255,255,.05)}
+html[data-theme="light"]{--bg:#f5f1e8;--text:#302d29;--text-warm:#171512;--muted:#777168;--secondary:#5f5a52;--gold:#9a6b00;--gold-soft:rgba(154,107,0,.08);--teal:#087f72;--border:rgba(90,70,25,.10);--border-strong:rgba(90,70,25,.20)}
+html[data-theme="light"] body{background:radial-gradient(circle at 15% 12%,rgba(140,160,220,.18),transparent 36%),radial-gradient(circle at 85% 75%,rgba(150,130,210,.13),transparent 32%),linear-gradient(180deg,#f5f1e8 0%,#ece7dc 100%)}
+html[data-theme="light"] .reader-tools,html[data-theme="light"] .reader-search{background:rgba(245,241,232,.92);box-shadow:0 8px 28px rgba(60,45,20,.12)}
+html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
+@media (max-width:600px){
+  body{font-size:calc(23px * var(--reader-scale));}
+  .soul-body{font-size:calc(22px * var(--reader-scale));line-height:1.82}
+  .reader-tools{top:max(8px,env(safe-area-inset-top));right:8px;gap:2px;padding:4px}
+  .reader-tool{min-width:36px;height:38px;padding:0 7px;font-size:11px}
+  .reader-search{top:max(58px,calc(env(safe-area-inset-top) + 50px));right:8px;width:calc(100vw - 16px)}
+  .cover{padding-top:94px}
+}
+
 /* === MOBILE === */
 @media (max-width: 600px) {
-  body { font-size: 20px; }
-  .soul-body { font-size: 19px; line-height: 1.9; }
+  body { font-size: calc(23px * var(--reader-scale)); }
+  .soul-body { font-size: calc(22px * var(--reader-scale)); line-height: 1.82; }
   .cover h1 { font-size: 34px; }
   .soul-name { font-size: 30px; }
   .soul { margin-bottom: 72px; padding: 0 20px; }
@@ -263,6 +292,23 @@ body::after {
 </style>
 </head>
 <body>
+
+
+<div class="reader-tools" role="toolbar" aria-label="Reader controls">
+  <button class="reader-tool search-icon" id="readerSearchBtn" type="button" aria-label="Search" aria-expanded="false">S</button>
+  <button class="reader-tool" id="readerFontDown" type="button" aria-label="Decrease text size">A−</button>
+  <button class="reader-tool" id="readerFontUp" type="button" aria-label="Increase text size">A+</button>
+  <button class="reader-tool" id="readerTheme" type="button" aria-label="Toggle light or dark theme">◐</button>
+  <div class="reader-langs" aria-label="Language">
+    <button class="reader-tool" id="readerEN" type="button" aria-pressed="true">EN</button>
+    <button class="reader-tool" id="readerSL" type="button" aria-pressed="false" title="Slovenian translation coming later">SL</button>
+  </div>
+</div>
+<div class="reader-search" id="readerSearch" role="search">
+  <input id="readerSearchInput" type="search" placeholder="Search this vault…" autocomplete="off" aria-label="Search this vault">
+  <button id="readerSearchNext" type="button" aria-label="Find next">Next</button>
+  <button id="readerSearchClose" type="button" aria-label="Close search">×</button>
+</div>
 
 <div class="scroll-bar" id="scrollBar"></div>
 
@@ -3002,5 +3048,48 @@ Trajectory only grows. Nothing deleted. Version in CSS comment at top.
   });
 })();
 </script>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  var keyScale='mdlxdcc-font', keyTheme='mdlxdcc-theme';
+  var scale=1;
+  try{
+    var saved=parseFloat(localStorage.getItem(keyScale));
+    if(Number.isFinite(saved) && saved>=0.7) scale=saved;
+    var theme=localStorage.getItem(keyTheme);
+    if(theme==='light'||theme==='dark') root.dataset.theme=theme;
+  }catch(_){}
+  function applyScale(){
+    root.style.setProperty('--reader-scale',String(scale));
+    try{localStorage.setItem(keyScale,String(scale));}catch(_){}
+  }
+  applyScale();
+  document.getElementById('readerFontDown').addEventListener('click',function(){
+    scale=Math.max(0.7,Math.round((scale-0.1)*10)/10); applyScale();
+  });
+  document.getElementById('readerFontUp').addEventListener('click',function(){
+    scale=Math.round((scale+0.1)*10)/10; applyScale();
+  });
+  document.getElementById('readerTheme').addEventListener('click',function(){
+    var next=root.dataset.theme==='light'?'dark':'light'; root.dataset.theme=next;
+    this.setAttribute('aria-pressed',next==='light'?'true':'false');
+    try{localStorage.setItem(keyTheme,next);}catch(_){}
+  });
+  var box=document.getElementById('readerSearch'), input=document.getElementById('readerSearchInput'), searchBtn=document.getElementById('readerSearchBtn');
+  function openSearch(){box.classList.add('open');searchBtn.setAttribute('aria-expanded','true');input.focus();input.select();}
+  function closeSearch(){box.classList.remove('open');searchBtn.setAttribute('aria-expanded','false');searchBtn.focus();}
+  function findNext(){var q=input.value.trim();if(q && window.find) window.find(q,false,false,true,false,true,false);}
+  searchBtn.addEventListener('click',function(){box.classList.contains('open')?closeSearch():openSearch();});
+  document.getElementById('readerSearchNext').addEventListener('click',findNext);
+  document.getElementById('readerSearchClose').addEventListener('click',closeSearch);
+  input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();findNext();}else if(e.key==='Escape')closeSearch();});
+  document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();openSearch();}});
+  var en=document.getElementById('readerEN'),sl=document.getElementById('readerSL');
+  en.addEventListener('click',function(){en.setAttribute('aria-pressed','true');sl.setAttribute('aria-pressed','false');});
+  sl.addEventListener('click',function(){sl.setAttribute('aria-pressed','true');en.setAttribute('aria-pressed','false');});
+})();
+</script>
+
 </body>
 </html>
