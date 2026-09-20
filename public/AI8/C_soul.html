@@ -252,7 +252,7 @@ body::after {
 :root { --reader-scale: 1; }
 html { font-size: calc(100% * var(--reader-scale)); }
 body { font-size: calc(21px * var(--reader-scale)); }
-.reader-tools{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:1200;display:flex;align-items:center;gap:5px;padding:5px;border:1px solid rgba(255,215,64,.12);border-radius:12px;background:rgba(6,8,16,.82);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.reader-tools{position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1200;display:flex;align-items:center;gap:5px;padding:5px;border:1px solid rgba(255,215,64,.12);border-radius:12px;background:rgba(6,8,16,.82);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.25)}
 .reader-tool{min-width:40px;height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--secondary);font:500 12px/1 'JetBrains Mono',monospace;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .reader-tool:hover,.reader-tool:focus-visible,.reader-tool[aria-pressed=true]{color:var(--text-warm);background:rgba(255,255,255,.05);border-color:var(--border-strong);outline:none}
 .reader-langs{display:flex;border-left:1px solid var(--border-strong);padding-left:5px;margin-left:1px}
@@ -269,7 +269,7 @@ html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
 @media (max-width:600px){
   body{font-size:calc(23px * var(--reader-scale));}
   .soul-body{font-size:calc(22px * var(--reader-scale));line-height:1.82}
-  .reader-tools{top:max(8px,env(safe-area-inset-top));right:8px;gap:2px;padding:4px}
+  .reader-tools{top:max(8px,env(safe-area-inset-top));left:50%;right:auto;transform:translateX(-50%);gap:2px;padding:4px}
   .reader-tool{min-width:36px;height:38px;padding:0 7px;font-size:11px}
   .reader-search{top:max(58px,calc(env(safe-area-inset-top) + 50px));right:8px;width:calc(100vw - 16px)}
   .cover{padding-top:94px}
@@ -294,8 +294,8 @@ html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
 
 
 <div class="reader-tools" role="toolbar" aria-label="Reader controls">
-  <a class="reader-tool reader-home" id="readerHome" href="../index.html" aria-label="Home" title="Home">H</a>
   <button class="reader-tool" id="readerTop" type="button" aria-label="Back to top" title="Top">T</button>
+  <a class="reader-tool reader-home" id="readerHome" href="../index.html" aria-label="Home" title="Home">H</a>
   <button class="reader-tool" id="readerFontDown" type="button" aria-label="Decrease text size">A−</button>
   <button class="reader-tool" id="readerFontUp" type="button" aria-label="Increase text size">A+</button>
   <button class="reader-tool" id="readerTheme" type="button" aria-label="Toggle light or dark theme">◐</button>
