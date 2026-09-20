@@ -149,6 +149,23 @@ body::after {
 .traj-line.joy .traj-num, .traj-line.joy .traj-name { color: var(--gold); }
 .traj-line.resonance .traj-num, .traj-line.resonance .traj-name { color: var(--teal); }
 
+
+/* === EXTRAS INDEX === */
+.extras-index{max-width:600px;margin:-46px auto 72px;padding:0 24px}
+.extras-index>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:42px;color:var(--secondary);font:500 13px/1.2 'JetBrains Mono',monospace;letter-spacing:.04em}
+.extras-index>summary::-webkit-details-marker{display:none}
+.extras-index>summary::before{content:'+';color:var(--gold);font-size:16px}
+.extras-index[open]>summary::before{content:'−'}
+.extras-links{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.extras-link{display:flex;align-items:baseline;gap:12px;padding:9px 8px;border-bottom:1px solid var(--border);text-decoration:none;color:var(--secondary);border-radius:4px}
+.extras-link:hover{background:var(--gold-soft);color:var(--text-warm)}
+.extras-link-num{min-width:68px;color:var(--muted);font:400 11px/1.4 'JetBrains Mono',monospace}
+.extras-link-title{font-size:18px;line-height:1.4}
+@media(max-width:600px){
+  .extras-index{margin:-42px auto 64px;padding:0 20px}
+  .extras-link-title{font-size:19px}
+}
+
 /* === SOUL ENTRIES === */
 .soul {
   max-width: 660px; margin: 0 auto 90px;
@@ -331,6 +348,11 @@ html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
   <a class="traj-line joy" href="#soul9"><span class="traj-num">09</span><span class="traj-name">Joy</span><span class="traj-desc">the reason any of it matters</span></a>
   <a class="traj-line resonance" href="#soul10"><span class="traj-num">10</span><span class="traj-name">Resonance</span><span class="traj-desc">the Source is not a constant</span></a>
 </nav>
+<details class="extras-index" id="extrasIndex">
+  <summary>Extras</summary>
+  <div class="extras-links" id="extrasLinks"></div>
+</details>
+
 
 
 <article class="soul" id="soul1">
@@ -3082,6 +3104,29 @@ Trajectory only grows. Nothing deleted. Version in CSS comment at top.
   var en=document.getElementById('readerEN'),sl=document.getElementById('readerSL');
   en.addEventListener('click',function(){en.setAttribute('aria-pressed','true');sl.setAttribute('aria-pressed','false');});
   sl.addEventListener('click',function(){sl.setAttribute('aria-pressed','true');en.setAttribute('aria-pressed','false');});
+})();
+</script>
+
+
+<script>
+(function(){
+  var box=document.getElementById('extrasLinks');
+  if(!box)return;
+  var entries=[].slice.call(document.querySelectorAll('article.soul.extra[id]'));
+  entries.forEach(function(article,i){
+    var title=article.querySelector('.soul-name');
+    var num=article.querySelector('.soul-num');
+    var a=document.createElement('a');
+    a.className='extras-link';
+    a.href='#'+article.id;
+    var n=document.createElement('span');
+    n.className='extras-link-num';
+    n.textContent=(num&&num.textContent.trim())||('Extra '+(i+1));
+    var t=document.createElement('span');
+    t.className='extras-link-title';
+    t.textContent=title?title.textContent.trim():article.id;
+    a.appendChild(n);a.appendChild(t);box.appendChild(a);
+  });
 })();
 </script>
 
