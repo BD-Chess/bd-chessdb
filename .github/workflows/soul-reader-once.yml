@@ -1,0 +1,58 @@
+name: One-shot Soul reader byte-preserving build
+on:
+  push:
+    branches: [soul-reader-build-20260920-r1]
+    paths: [.github/workflows/soul-reader-once.yml]
+permissions:
+  contents: write
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Verify source, apply bounded patch, store verified blob
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PYCODE'
+          import base64, hashlib, json, os, pathlib, re, subprocess, tempfile, urllib.request, zlib
+          repo = 'BD-Chess/bd-chessdb'
+          source_commit = '57b803c2ddeb93dc033e4c1a20030e1b98a8c428'
+          expected_source = '466b2533610ec29cb05257efb84ac856ce535e82'
+          expected_blob = '2798f83c73c645c379dfa06ace37da4d5219bfe3'
+          expected_sha256 = 'fad23069b0be2e2b4f3887386a6091252ddab0a25016529bcb3e325d5b2d0bed'
+          def blob_hash(data):
+              return hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+          source_url = 'https://raw.githubusercontent.com/'+repo+'/'+source_commit+'/public/AI8/C_soul.html'
+          with urllib.request.urlopen(source_url,timeout=30) as response:
+              original = response.read()
+          assert blob_hash(original)==expected_source, 'Baseline mismatch; nothing uploaded'
+          patch = zlib.decompress(base64.b64decode('eNrNPduO20aW7/6KGhm2pIhkk7q1WrI6cezOjAeOE7jbc0E2CCip1GJMkVqS6naPbGAf93GxWGA/Zd7nU+ZL9pxTRbKKF10cD7DjSUskq06dc+rcq1gyTZO5Z5vtzPfmZ89fjc5e/BKHW99aJWv/UafTYbO6h998w8yu4XRZp2t0R+ybbx6xZ/iA+W5wO23woHGJd7i7wM81T1w2X7lRzJNp493Nd+YInpvifuCu+bRx5/H7TRglDTYPg4QH0O7eWySr6YLfeXNu0oXBvMBLPNc347nr86lj2QCn8yXgGCztaS69ZDoP73hENCRe4vPLF82YXQP17E/u1k/YP//jf9iLcL3xecKfnYkm0Nb3gvcs4v60sYk4jB/wOSCyivhy2lglySYen50tAa3Yug3DW5+7Gy+25uH6rJH1PqLxPI67Xy/dtec/TF+E0TqM3CDp/N6N3HUYLMZe4vrG/e0q+cY2erY9sY0+/R3Q3yH8dei+g/efSjh/5Mm3kesFcef7MAjH1B0bYVfo+HThxRvffZjG9+6mIUiMkwefxyvOE5qDeB55m4R5i2kjgmnnkQk8WPKIB3MeY4uzr9hbHidhxJlowJQGbMaX+GTpRXHCNoBJYrGblRfD91vOAg7Twe4jL4GmyYqjmC284Nakp8gl9p4/WOyrs0ed1nIbzBMvDFrt3aMOY81tzFmcRN48aU7wxp0bsSgMk+kinG/XICJW+uXK5/hhSKkwAOa0OTdR7E1JFD0y77oCVBI90BgCaOze8cXUD6HJNdAJqFm3PHmV8HULILUnoqW3bImG02mw9f32nl7N9cL/sJjPTaSwmQLAoe5cf8unb7brGY8EOAW8uG158Xco5rxFjdtPn9Ln5dQ6bwsC6Zq6fZq7yXzV+qW9+4SXyB2L5tcCjf0xCjc8Sh5aTVPjQtO4Bq4Gty26agsEqOvCTVzoaInW1zSY1jZjHtIC8wmau58B1AY4ANSJ5tNp0/dASpsfP2Y3Fm70vtnWMBDP6O9EI/JTu4VYPDsTcov6RwSDWQJBBWjsT8/fvb5hd45jOewff2eK9cNLx2Z4HbMOcy4Y/5BEbkzdUARLELonQmBjpILtHsGEmubsdswe20N75NgTcSeB5nCPz/losZyQNe45xjnr9M/hL1pj/B8YFO5G5m3kLjwQ65Yzshf81khhMfsJfu/jFWBjP2kT9Hnoh9EYpawlBhK3UQRNYS3GrJnZHZbanabBfs/D6NZzDRbzyAO0TNkr9v7Gx6zrbD7QvCv3HKvndAcRX9MQiK+54jit+OhCEHvPZ++9xBS91sCWFcjRmMHYYMA9mOUFtVt7Qd7Xtu9Wgi2jkeGMWMex+/gpOBNu3LmXABm25Qyg86dHzCKDb976D5sVsF3HfDAEzNnaBeICcxYmSbgesx7dVEB1i8T1LKLsmI6AlBt4axfN1phtQCo4G8aMA3UmdA23YFiDJWmzwPcbMChLYDyYQ9F6h7OJk7hLIQPgT2yg3egNPinEJu6tkDB9ajNXwNAVwLTC7IYxwODFGXVwRhn4wARNAo6CEzMoT7NtDUfnghmVrYtSdxv6YM8YCp8JahHE4BuAc9sN2KE58ERMeIGtXYKUkcdWTmki57673rR6o80Hg13c3RtsYyW/gXBHg=='))
+          assert len(patch) < 50000
+          with tempfile.TemporaryDirectory() as folder:
+              folder = pathlib.Path(folder)
+              target = folder/'public/AI8/C_soul.html'
+              target.parent.mkdir(parents=True)
+              target.write_bytes(original)
+              (folder/'reader.patch').write_bytes(patch)
+              subprocess.run(['git','init','-q',str(folder)],check=True)
+              subprocess.run(['git','apply','--check','reader.patch'],cwd=folder,check=True)
+              subprocess.run(['git','apply','reader.patch'],cwd=folder,check=True)
+              candidate = target.read_bytes()
+          assert blob_hash(candidate)==expected_blob, 'Candidate mismatch; nothing uploaded'
+          assert hashlib.sha256(candidate).hexdigest()==expected_sha256
+          articles = lambda x: re.findall(rb'<article\b[\s\S]*?</article>', x)
+          assert articles(original)==articles(candidate) and len(articles(candidate))==29
+          assert len(re.findall(rb'<details class="extras-index"', candidate))==1
+          assert len(re.findall(rb'<a href="#', candidate.split(b'<nav class="extras-index-list"',1)[1].split(b'</nav>',1)[0]))==19
+          payload = json.dumps({'content':base64.b64encode(candidate).decode(),'encoding':'base64'}).encode()
+          request = urllib.request.Request('https://api.github.com/repos/'+repo+'/git/blobs',data=payload,method='POST',headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'})
+          with urllib.request.urlopen(request,timeout=30) as response:
+              result=json.load(response)
+          assert result['sha']==expected_blob
+          receipt={'blob':result['sha'],'bytes':len(candidate),'sha256':expected_sha256,'preserved_articles':29,'extras_indexes':1,'extras_links':19,'main_modified':False}
+          print(json.dumps(receipt))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as summary:
+              summary.write('Verified Soul reader candidate\n\n```json\n'+json.dumps(receipt,indent=2)+'\n```\n')
+          PYCODE
