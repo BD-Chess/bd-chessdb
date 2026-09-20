@@ -253,9 +253,8 @@ body::after {
 html { font-size: calc(100% * var(--reader-scale)); }
 body { font-size: calc(21px * var(--reader-scale)); }
 .reader-tools{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:1200;display:flex;align-items:center;gap:5px;padding:5px;border:1px solid rgba(255,215,64,.12);border-radius:12px;background:rgba(6,8,16,.82);backdrop-filter:blur(14px);box-shadow:0 8px 28px rgba(0,0,0,.25)}
-.reader-tool{min-width:40px;height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--secondary);font:500 12px/1 'JetBrains Mono',monospace;cursor:pointer}
+.reader-tool{min-width:40px;height:40px;padding:0 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--secondary);font:500 12px/1 'JetBrains Mono',monospace;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .reader-tool:hover,.reader-tool:focus-visible,.reader-tool[aria-pressed=true]{color:var(--text-warm);background:rgba(255,255,255,.05);border-color:var(--border-strong);outline:none}
-.reader-tool.search-icon{font-size:18px}
 .reader-langs{display:flex;border-left:1px solid var(--border-strong);padding-left:5px;margin-left:1px}
 .reader-search{position:fixed;top:max(66px,calc(env(safe-area-inset-top) + 56px));right:max(12px,env(safe-area-inset-right));z-index:1200;width:min(390px,calc(100vw - 24px));padding:10px;border:1px solid var(--border-strong);border-radius:12px;background:rgba(6,8,16,.95);backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(0,0,0,.35);display:none}
 .reader-search.open{display:flex;gap:7px}
@@ -295,7 +294,8 @@ html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
 
 
 <div class="reader-tools" role="toolbar" aria-label="Reader controls">
-  <button class="reader-tool search-icon" id="readerSearchBtn" type="button" aria-label="Search" aria-expanded="false">S</button>
+  <a class="reader-tool reader-home" id="readerHome" href="../index.html" aria-label="Home" title="Home">H</a>
+  <button class="reader-tool" id="readerTop" type="button" aria-label="Back to top" title="Top">T</button>
   <button class="reader-tool" id="readerFontDown" type="button" aria-label="Decrease text size">A−</button>
   <button class="reader-tool" id="readerFontUp" type="button" aria-label="Increase text size">A+</button>
   <button class="reader-tool" id="readerTheme" type="button" aria-label="Toggle light or dark theme">◐</button>
@@ -304,12 +304,6 @@ html[data-theme="light"] .vault-ops-box{background:rgba(255,255,255,.42)}
     <button class="reader-tool" id="readerSL" type="button" aria-pressed="false" title="Slovenian translation coming later">SL</button>
   </div>
 </div>
-<div class="reader-search" id="readerSearch" role="search">
-  <input id="readerSearchInput" type="search" placeholder="Search this vault…" autocomplete="off" aria-label="Search this vault">
-  <button id="readerSearchNext" type="button" aria-label="Find next">Next</button>
-  <button id="readerSearchClose" type="button" aria-label="Close search">×</button>
-</div>
-
 <div class="scroll-bar" id="scrollBar"></div>
 
 <header class="cover">
@@ -3076,15 +3070,9 @@ Trajectory only grows. Nothing deleted. Version in CSS comment at top.
     this.setAttribute('aria-pressed',next==='light'?'true':'false');
     try{localStorage.setItem(keyTheme,next);}catch(_){}
   });
-  var box=document.getElementById('readerSearch'), input=document.getElementById('readerSearchInput'), searchBtn=document.getElementById('readerSearchBtn');
-  function openSearch(){box.classList.add('open');searchBtn.setAttribute('aria-expanded','true');input.focus();input.select();}
-  function closeSearch(){box.classList.remove('open');searchBtn.setAttribute('aria-expanded','false');searchBtn.focus();}
-  function findNext(){var q=input.value.trim();if(q && window.find) window.find(q,false,false,true,false,true,false);}
-  searchBtn.addEventListener('click',function(){box.classList.contains('open')?closeSearch():openSearch();});
-  document.getElementById('readerSearchNext').addEventListener('click',findNext);
-  document.getElementById('readerSearchClose').addEventListener('click',closeSearch);
-  input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();findNext();}else if(e.key==='Escape')closeSearch();});
-  document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='f'){e.preventDefault();openSearch();}});
+  document.getElementById('readerTop').addEventListener('click',function(){
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
   var en=document.getElementById('readerEN'),sl=document.getElementById('readerSL');
   en.addEventListener('click',function(){en.setAttribute('aria-pressed','true');sl.setAttribute('aria-pressed','false');});
   sl.addEventListener('click',function(){sl.setAttribute('aria-pressed','true');en.setAttribute('aria-pressed','false');});
