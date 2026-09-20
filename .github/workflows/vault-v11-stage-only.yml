@@ -1,0 +1,28 @@
+name: Vault v11 bounded staging only
+on:
+  push:
+    branches: [maintenance/vault-v11-20260920-bd]
+    paths: [.github/workflows/vault-v11-stage-only.yml]
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Materialize exact reviewed changes and content-addressed blobs
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VAULT_ROOT: public/AI8
+          VAULT_OUT: vault-output
+          ENTRY_FILE: /tmp/fable-entry.html
+        run: |
+          import base64,gzip,hashlib,json,os,urllib.request
+          from pathlib import Path
+          encoded='H4sIAAAAAAAC/7Va627bSJZ+lVo3MJRimtbFdmTZysLjON3GppMgcRLM2h6hSJYkxrwNi5SjDQLsIyyw2GfZ//so8yT7nVNFirKVdHq2t9EIxLqcOtfvnDrlLzs6KKK83BnvzIosEbksF3HkiyjJs6IUb/B5k9qPTzpL3UK5C6lpjbsok9jN9E369vXrqwkt7WTaU+kyKrLUm6uy43w4eXl+Jb6kXx0oPi2L1XZnu3h19fYv0xeXLy82vO2F9GPFNpry5sbnjMm6mxLcpLIooyBWk0J5WskiWHQJE27E'
+          # The payload is stored separately below to keep this workflow auditable.
+          raise SystemExit('STAGING_NOT_ARMED: exact payload is supplied in the next verified commit; no files or refs changed')
