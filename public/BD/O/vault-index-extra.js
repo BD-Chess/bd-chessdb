@@ -3,7 +3,17 @@
 'use strict';
 
 const TOP_ID='bdoTableteTop', CENTER_ID='bdoControlCenter', STYLE_ID='bdoControlCenterStyle';
-const site=path=>new URL(path,location.origin).href;
+/* Site-root resolver works on both custom-domain root hosting and GitHub Pages project hosting. */
+const siteRoot=(()=>{
+  const p=location.pathname;
+  const gh=location.hostname.toLowerCase().endsWith('.github.io');
+  if(gh){
+    const m=p.match(/^\/([^/]+)(?:\/|$)/);
+    if(m)return new URL('/'+m[1]+'/',location.origin);
+  }
+  return new URL('/',location.origin);
+})();
+const site=path=>new URL(String(path).replace(/^\/+/,''),siteRoot).href;
 const local=path=>new URL(path,location.href).href;
 
 const sections=[
