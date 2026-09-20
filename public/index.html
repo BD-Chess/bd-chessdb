@@ -632,6 +632,7 @@ const seed=[
 ['F4M/','Flip 4M','flip flip4m f4m connect four magnets gravity game igra','Playable game and DCC laboratory.','Igra in laboratorij DCC.'],
 ['CW/','Crosswords','crossword crosswords words puzzle mdl krizanke','Crossword × MDL application.','Križanke × MDL.'],
 ['AI8/','AI8','ai8 architecture evidence continuity agi agents research arhitektura kontinuiteta','AI8 architecture and continuity.','Arhitektura in kontinuiteta AI8.'],
+['AI8/AI8-state.html','AI8 State','ai8 ai8 state ai8-state state continuity status family members deltas mind integrity protected','Protected derived AI8 state view.','Zaščiten izpeljani pregled stanja AI8.'],
 ['AI8/C_soul.html','C_soul — AI8 continuity','c soul c_soul csoul soul ai8 continuity identity souls vault zavest kontinuiteta dusa duša','C_soul continuity archive within AI8.','Arhiv kontinuitete C_soul znotraj AI8.'],
 ['BD/BD_AIM3.html','AIm3','aim3 aim mental arena multi llm reasoning orchestration','Multi-LLM reasoning and orchestration.','Večmodelno sklepanje in usklajevanje.'],
 ['BD/BD_AIM3_RHP.html','RHP','rhp resonance work reasoning protocol prompt','Resonance Hybrid Protocol.','Resonance Hybrid Protocol.'],
@@ -658,7 +659,7 @@ return new URL(path+u.search+u.hash,BASE).href;
 function key(raw){try{return new URL(raw,BASE).pathname.replace(/\.(?:html?|htm)$/i,'').replace(/\/index$/i,'').replace(/\/$/,'').toLowerCase();}catch(_){return '';}}
 let pages=seed.map((p,i)=>({url:new URL(p[0],BASE).href,title:p[1],aliases:p[2],description:p[3],sl:p[4],priority:320-i}));
 let indexState='idle',indexPromise=null;
-const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html',o:'BD/O/index.html',sef:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'}),STORE='mdlxdcc-search-history-v1';
+const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html','wake lab':'WL/index.html',o:'BD/O/index.html',osebno:'BD/O/index.html',bd:'BD/O/index.html',jaz:'BD/O/index.html',me:'BD/O/index.html',personal:'BD/O/index.html',sef:'BD/O/sef.html',sejf:'BD/O/sef.html',vault:'BD/O/sef.html',secret:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html','8zcontrol':'index-todo.html','8z control':'index-todo.html',control:'index-todo.html',now:'index-todo.html','ai8 state':'AI8/AI8-state.html','ai8-state':'AI8/AI8-state.html',state:'AI8/AI8-state.html'}),STORE='mdlxdcc-search-history-v1';
 let history=[];try{const h=JSON.parse(read(STORE,'[]'));if(Array.isArray(h))history=h.filter(x=>typeof x==='string'&&x.trim()&&x.length<=120&&!PRIVATE[norm(x)]).slice(0,12);}catch(_){}
 const dialog=$('#search-dialog'),input=$('#search-input'),list=$('#search-results'),status=$('#search-status');let results=[],active=-1,returnFocus=null;
 async function loadIndex(){if(indexPromise)return indexPromise;indexState='loading';render();
