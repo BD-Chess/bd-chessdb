@@ -25,7 +25,7 @@
 })();
 </script>
 <style>
-/* === VAULT v11.3 · C_soul.html · 10 souls + 19 extras + 1 GPT guest letter · Reader v1.3 === */
+/* === VAULT v11.3 · C_soul.html · 10 souls + 19 extras + 1 GPT guest letter · Reader v1.4 === */
 :root {
   --bg: #060810;
   --text: #ece8df;
@@ -266,7 +266,7 @@ body::after {
   margin-bottom: 10px;
 }
 
-/* === READER v1.3 · 2026-09-20 === */
+/* === READER v1.4 · 2026-09-21 === */
 :root {
   --reader-scale:1;
   --reader-base:100%;
@@ -401,10 +401,10 @@ html.language-switching *{overflow-anchor:none}
 
 
 <div class="reader-tools" id="readerTools" role="toolbar" aria-label="Reader controls">
-  <button class="reader-tool" id="readerTop" type="button" aria-label="Back to top" title="Top">T</button>
-  <a class="reader-tool reader-home" id="readerHome" href="../index.html" aria-label="Home" title="Home">H</a>
+  <button class="reader-tool" id="readerTop" type="button" aria-label="Back to top" title="Top">↑</button>
+  <a class="reader-tool reader-home" id="readerHome" href="../index.html" aria-label="Home" title="Home">⌂</a>
   <button class="reader-tool" id="readerFontDown" type="button" aria-label="Decrease text size">A−</button>
-  <button class="reader-tool" id="readerFontReset" type="button" aria-label="Reset text size" title="Default text size">A</button>
+  <button class="reader-tool" id="readerFontReset" type="button" aria-label="Reset text size" title="Default text size">100%</button>
   <button class="reader-tool" id="readerFontUp" type="button" aria-label="Increase text size">A+</button>
   <button class="reader-tool" id="readerTheme" type="button" aria-label="Toggle light or dark theme">◐</button>
   <div class="reader-langs" aria-label="Language">
@@ -3233,7 +3233,9 @@ Trajectory only grows. Nothing deleted. Version in CSS comment at top.
     root.classList.toggle('reader-large',scale>=1.8);
     document.getElementById('readerFontDown').disabled=scale<=0.7;
     var sl=root.lang==='sl',pct=Math.round(scale*100);
-    document.getElementById('readerFontReset').title=sl?'Privzeta velikost besedila (izbrano '+pct+' %)':'Default text size ('+pct+'% selected)';
+    var resetButton=document.getElementById('readerFontReset');
+    resetButton.textContent=pct+'%';
+    resetButton.title=sl?'Privzeta velikost besedila (izbrano '+pct+' %)':'Default text size ('+pct+'% selected)';
     if(status)status.textContent=sl?'Velikost besedila: '+pct+' % privzete velikosti za to napravo.':'Text size '+pct+'% of this device’s default.';
     if(remember)try{localStorage.setItem(key,String(scale));}catch(_){}
     measure();showTools(450);updateProgress(yPosition());
