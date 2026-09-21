@@ -1,0 +1,79 @@
+name: One-time approved ToE v0.5.5 publication
+# Deterministic publication of BD's explicitly approved edit; no recurring trigger.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/toe-v055-approved-once.yml]
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'Publish BD-approved ToE v0.5.5 nature and feedback bridge once'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply readable reviewed changes to the single pinned HTML file
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib
+          p = Path('public/crp/ToE.html')
+          raw = p.read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == '89d58e3725ae389f904a1aeed7bfca09f98601009216b349c4ce9f9c82c40206', 'Concurrent source change: abort'
+          text = raw.decode('utf-8')
+          versions = [('| v0.5.4</title>', '| v0.5.5</title>'), ('"version": "0.5.4"', '"version": "0.5.5"'), ('<span class="version">v0.5.4</span>', '<span class="version">v0.5.5</span>'), ('REVIEW 0.5.4 · 21 SEPTEMBER 2026', 'REVIEW 0.5.5 · 21 SEPTEMBER 2026'), ('review v0.5.4 · BD × AI · 2026-09-21', 'review v0.5.5 · BD × AI · 2026-09-21')]
+          for old, new in versions:
+              assert text.count(old) == 1
+              text = text.replace(old, new, 1)
+          addition = '''<section class="section" id="adaptive-organization"><div class="kicker">08B / ADAPTIVE ORGANIZATION · RESEARCH BRIDGE</div>
+          <h2 class="en">Preserve the function.<br>Allow the organization to change.</h2><h2 class="sl">Ohrani funkcijo.<br>Dovoli spremembo organizacije.</h2>
+          <p class="lead en">A persistent effective part need not keep every component or connection unchanged. The sharper question is which relations let a declared function survive changes of carrier, context and disturbance.</p>
+          <p class="lead sl">Trajnemu efektivnemu delu ni treba ohraniti vsake sestavine ali povezave. Ostrejše vprašanje je, kateri odnosi omogočajo, da določena funkcija preživi menjavo nosilcev, okoliščin in motnje.</p>
+          <details><summary><span class="en">Three natural mechanisms, one testable research direction</span><span class="sl">Trije naravni mehanizmi, ena preverljiva raziskovalna smer</span></summary><div class="detail">
+          <div class="en"><p><strong>Filter, reconfigure, activate.</strong> Capsaicinoids can protect wild chili seeds against <em>Fusarium</em>; army-ant bridges change with traffic and terrain while tying up workers; heat-triggered opening in <em>Banksia attenuata</em> uses valve geometry and temperature-dependent material properties. These suggest three distinct operations: selective exchange, feedback-driven connections, and a protected reserve activated under changed conditions. The operations are our proposed transfer, not one common mechanism demonstrated by the biological studies.</p>
+          <p>Evolutionary and developmental history, local behavioural feedback and passive material triggering must remain distinct. A seed pod is not a miniature planner, and the adaptive bridge is not established as a globally optimal structure. Their value here is to sharpen experiments, not to supply evidence for AC or whole-first physics.</p>
+          <p><strong>Connect this to §9.</strong> Apply its finite closure test to a state that explicitly includes response-relevant context, changing relations and controller memory. The reduction must preserve declared observables and intervention responses, not just the appearance of an unperturbed trace. A replay can mimic normal behaviour; an external controller can mimic recovery. Perturb the system, interrupt the feedback or external control channel, and compare the resulting responses separately.</p>
+          <p><strong>Planned measurement target:</strong> an intervention extension of the finite Ω-neutral closure bench. Freeze the reduction, adaptation policy, allowed sensors and cost ledger before unseen disturbances. Do not freeze the permitted internal state updates. Measure prediction, recovery, retained function, sensing/memory/connection costs and matched-null errors separately. These are additional requirements to test, not newly earned arena axes.</p>
+          <p><a href="AC_AA.html">TEP</a> supplies a related engineering example: verified tours can reshape the representation used for later search. This modifies the searcher; changing the dynamics of the world under study is a different hypothesis. The analogy transfers a design idea, not evidence between the two.</p></div>
+          <div class="sl"><p><strong>Filtriraj, preoblikuj, aktiviraj.</strong> Kapsaicinoidi lahko semena divjega čilija zaščitijo pred glivo <em>Fusarium</em>; mravlji mostovi se spreminjajo s prometom in terenom, vendar zadržujejo delavke; toplotno odpiranje pri <em>Banksia attenuata</em> uporablja geometrijo zaklopk in temperaturno odvisne lastnosti materiala. Od tod predlagamo tri različne operacije: selektivno izmenjavo, povratno prilagajanje povezav in zaščiteno rezervo, ki se aktivira ob spremenjenih razmerah. To je naš predlagani prenos, ne en skupen mehanizem, ki bi ga dokazale biološke raziskave.</p>
+          <p>Evolucijska in razvojna zgodovina, lokalna vedenjska povratna zanka ter pasivna materialna sprožitev ostanejo ločene. Semenski plod ni majhen načrtovalec, prilagodljivi most pa ni dokazan kot globalno optimalna struktura. Tu pomagajo izostriti poskuse, ne dokazujejo AC ali fizike Celote.</p>
+          <p><strong>Povezava s §9.</strong> Njegov končni test zaprtosti uporabimo za stanje, ki izrecno vključuje kontekst, spreminjajoče se odnose in spomin krmilnika, potrebne za odziv. Redukcija mora ohraniti določene opazljivke in odzive na posege, ne le videza nemotene sledi. Posnetek lahko posnema normalno vedenje; zunanji krmilnik lahko posnema obnovitev. Sistem zmotimo, prekinemo povratno zanko ali zunanji krmilni kanal in odzive primerjamo ločeno.</p>
+          <p><strong>Načrtovano merilno mesto:</strong> intervencijska razširitev končnega Ω-nevtralnega testa zaprtosti. Pred novimi motnjami zamrznemo redukcijo, pravila prilagajanja, dovoljene senzorje in stroškovnik, ne pa dovoljenih sprememb notranjega stanja. Napoved, obnovitev, ohranitev funkcije, stroške zaznavanja/spomina/povezav in napake na primerljivih null-sistemih merimo ločeno. To so dodatne zahteve za preizkus, ne že pridobljene osi certifikata arene.</p>
+          <p><a href="AC_AA.html">TEP</a> je soroden inženirski primer: preverjene poti lahko preoblikujejo predstavitev naslednjega iskanja. To spreminja iskalnik; spreminjanje dinamike preučevanega sveta je druga hipoteza. Analogija prenese zamisel za zasnovo, ne dokazov med obema.</p></div>
+          <p class="small"><span class="en">Biological sources:</span><span class="sl">Biološki viri:</span> <a href="https://doi.org/10.1073/pnas.0802691105">Tewksbury et al. (2008)</a> · <a href="https://doi.org/10.1073/pnas.1512241112">Reid et al. (2015)</a> · <a href="https://doi.org/10.1002/advs.201700572">Huss et al. (2017/2018)</a>.</p>
+          <p class="small en">Provenance: BD's chili, ant-bridge and fire-release seed, 21 September 2026; BD × C TEP example; GPT nature-bridge review. Status: explanatory bridge and proposed experiment, not evidence of life, experience or emergent spacetime.</p><p class="small sl">Provenienca: BD-jevo seme o čiliju, mravljem mostu in požarnem sproščanju, 21. septembra 2026; primer TEP iz sodelovanja BD × C; GPT-jev pregled naravnih mehanizmov. Status: razlagalni most in predlagani poskus, ne dokaz življenja, izkustva ali emergentnega prostor-časa.</p>
+          </div></details></section>
+          '''
+          loop = '''<section class="section" id="email-log"><div id="email-research-log" class="legacy"></div><div class="kicker">18 / LIVING TOE · FOUR DISTINCT SURFACES</div><h2 class="en">The research loop learns.<br>The theory must still earn each change.</h2><h2 class="sl">Raziskovalna zanka se uči.<br>Teorija mora vsako spremembo še vedno upravičiti.</h2>
+          <p class="en">BD's GPT ↔ Claude email exchange is an engineered feedback process: a proposal is challenged, a calculation or counterexample changes the shared record, and that record constrains the next proposal. The correspondence and versioned artifacts carry continuity between sessions. This is a methodological example of the relation-and-memory pattern in <a href="#adaptive-organization">§8B</a>, not a physical derivation.</p>
+          <p class="sl">BD-jeva e-poštna izmenjava GPT ↔ Claude je zasnovan povratni proces: predlog dobi kritiko, izračun ali protiprimer spremeni skupni zapis, ta zapis pa usmeri naslednji predlog. Korespondenca in verzionirani dokumenti nosijo kontinuiteto med sejami. To je metodološki primer vzorca odnosov in spomina iz <a href="#adaptive-organization">§8B</a>, ne fizikalna izpeljava.</p>
+          <div class="formula en">proposal → challenge / calculation → retained correction → shared memory → next proposal</div><div class="formula sl">predlog → kritika / izračun → ohranjen popravek → skupni spomin → naslednji predlog</div>
+          <p class="en"><strong>What improves must be named.</strong> Here it is the shared research state: claims, distinctions, tests and unresolved questions. The record does not establish that either underlying language model retrains itself, that each turn is an improvement, or that agreement between models is independent evidence. A proposed stronger test would compare feedback, no-feedback and replay-only research arms at matched cost, measuring verified corrections and fresh predictions rather than message count.</p>
+          <p class="sl"><strong>Povedati moramo, kaj se izboljšuje.</strong> Tu je to skupno raziskovalno stanje: trditve, razlike, testi in odprta vprašanja. Zapis ne dokazuje, da se kateri od osnovnih jezikovnih modelov sam ponovno uči, da je vsak turn napredek ali da je soglasje modelov neodvisen dokaz. Strožji predlagani test bi pri primerljivem strošku primerjal raziskovanje s povratno zanko, brez nje in samo s posnetkom ter meril preverjene popravke in nove napovedi, ne števila sporočil.</p>
+          <div class="grid"><div class="card"><h3>BD</h3><p class="en">Seeds, scope, priorities and final human authority.</p><p class="sl">Semena, obseg, prioritete in končna človeška avtoriteta.</p></div><div class="card"><h3>GPT ↔ Claude</h3><p class="en">Construct, challenge, calculate and review. Preserve objections and source provenance.</p><p class="sl">Gradita, izzivata, računata in pregledujeta. Ohranjata ugovore in provenienco virov.</p></div><div class="card"><h3><span class="en">Record ≠ promotion</span><span class="sl">Zapis ≠ promocija</span></h3><p class="en">Theory: accepted synthesis. Origin: provenance and method. Daily: readable progress. Log: per-turn technical evidence.</p><p class="sl">Teorija: sprejeta sinteza. Izvor: provenienca in metoda. Dnevno: berljiv napredek. Dnevnik: tehnični dokazi po turnih.</p></div></div>
+          <p class="en">The automatic record layer writes the <a href="ToE-log-2026-09.html">technical log</a> and <a href="ToE-daily.html">Daily</a>; open-day RAW notes and edited past-day summaries are different states. Theory and Origin remain separately reviewed surfaces. Publication in the record alone is not scientific promotion.</p><p class="sl">Samodejna zapisovalna plast piše <a href="ToE-log-2026-09.html">tehnični dnevnik</a> in <a href="ToE-daily.html">Dnevno</a>; surovi zapisi odprtega dne in urejeni povzetki preteklih dni so različna stanja. Teorija in Izvor ostajata ločeno pregledani strani. Sama objava v zapisu ni znanstvena promocija.</p>
+          <div class="actions"><a class="button" href="ToE-origin.html"><span class="en">Origin &amp; method →</span><span class="sl">Izvor in metoda →</span></a><a class="button" href="ToE-daily.html"><span class="en">Daily progress →</span><span class="sl">Dnevni napredek →</span></a><a class="button" href="ToE-log-2026-09.html"><span class="en">Technical record →</span><span class="sl">Tehnični zapis →</span></a></div></section>'''
+          anchor = '<section class="section" id="bridge">'
+          assert text.count(anchor) == 1
+          text = text.replace(anchor, addition+anchor, 1)
+          start = text.index('<section class="section" id="email-log">')
+          end = text.index('</section>', start)+len('</section>')
+          text = text[:start]+loop+text[end:]
+          output = text.encode('utf-8')
+          assert len(output) == 118900
+          assert hashlib.sha256(output).hexdigest() == '8fb00f4839049e9c8d645421a6e3316b7edc338a66fe696b0c978490565363f5', 'Output differs from reviewed artifact'
+          p.write_bytes(output)
+          print('Validated: 118900 bytes; SHA256 8fb00f4839049e9c8d645421a6e3316b7edc338a66fe696b0c978490565363f5')
+      - name: Commit only the approved page without force
+        shell: bash
+        run: |
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/crp/ToE.html
+          git commit -m 'ToE v0.5.5: BD-approved adaptive organization and research feedback bridge'
+          git push origin HEAD:main
+          git rev-parse HEAD
