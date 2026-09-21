@@ -115,10 +115,31 @@
       "observed_at": "2026-09-20T08:06:33+02:00",
       "scope": "Home TSP + Trading Live Extract",
       "status": "CAPTURE_RECEIPT_ONLY"
+    },
+    {
+      "evidence": "Verified complete Home bundle TSP_ACTIVE_ARENAS_LIVE_EXTRACTS_20260921_000441_256532.zip; parsed read-only.",
+      "inference": "DEV2.3, DEV2.4, MVC and RPHS advanced in committed work without a new listed incumbent.",
+      "observed_at": "2026-09-21T00:04:41+02:00",
+      "scope": "TSP / Home active arenas",
+      "status": "VERIFIED"
+    },
+    {
+      "evidence": "Direct Work 8zTSP-R v0.1.1 collector log through 00:45 local shows round 217, mu1979 instance 8/9, generation 1,732 and 13,856/13,888 proposals.",
+      "inference": "The relational-native line remains alive and distinct from MVC.",
+      "observed_at": "2026-09-21T00:45:19+02:00",
+      "scope": "8zTSP-R v0.1.1 relational-native",
+      "status": "VERIFIED RUNNING"
+    },
+    {
+      "evidence": "Materials collector log reports ROOT_BUDGET_EXHAUSTED at epoch 1,863 with checkpoint saved; Work master receipt reports TSP, Materials and Sudoku PASS with uploads.",
+      "inference": "Materials is a clean resumable STANDBY, while the Cockpit Work routing gate is complete.",
+      "observed_at": "2026-09-21T00:42:11+02:00",
+      "scope": "8zMaterials v0.3.0C1HF2 + 8zCockpit v0.3.3-HF1",
+      "status": "VERIFIED STOP / ACCEPTANCE PASS"
     }
   ],
-  "generated_at": "2026-09-20T09:01:25+02:00",
-  "last_successful_refresh": "2026-09-20T09:01:25+02:00",
+  "generated_at": "2026-09-21T09:03:10+02:00",
+  "last_successful_refresh": "2026-09-21T09:03:10+02:00",
   "machines": [
     {
       "active_arena_ids": [
@@ -131,30 +152,24 @@
       "allocation_note": "Do not infer or rebalance GPU/CPU scheduling beyond direct arena evidence; do not interrupt stable active arenas solely to optimize allocation.",
       "cpu_capacity": "~14 usable CPU workers",
       "gpu": "NVIDIA RTX 3080 Laptop GPU",
-      "known_active_allocation": "Five Home TSP lineages remain retained as RUNNING. The 08:06 TSP/Trading extraction passed, but its new ZIP internals were not yet available for a newer numerical checkpoint.",
+      "known_active_allocation": "Five Home TSP lineages remain retained RUNNING. The complete 00:04 rich extract promoted fresh checkpoints for DEV2.3, MVC, DEV2.4 and RPHS; TSPES remains unchanged.",
       "machine": "Home PC"
     },
     {
       "active_arena_ids": [
         "8ztsp-r-v011-relational-native",
-        "materials-v020-native",
         "bdta-v014"
       ],
       "allocation_note": "Preferred for isolated build, test, and resume checks when capacity is available.",
       "cpu_capacity": "~12 usable CPU workers",
       "gpu": null,
-      "known_active_allocation": "Current direct Work evidence confirms 8zMaterials v0.3.0C1HF2 compact W8 FORK1 on 8 CPU through epoch 1,863. 8zTSP-R v0.1.1 and BD Trading Atlas remain retained RUNNING without newer direct checkpoints.",
+      "known_active_allocation": "8zTSP-R v0.1.1 is directly verified RUNNING through round 217. BD Trading Atlas remains retained RUNNING. Materials FORK1 is STANDBY after a clean root-budget stop.",
       "machine": "Work PC"
     }
   ],
-  "needs_bd": [
-    {
-      "arena_id": "8zcockpit-v020",
-      "action": "Install v0.3.3-HF1 on Work and perform one real Materials HF2/FORK1 Live Extract + Drive acceptance without touching the research run."
-    }
-  ],
-  "partial_update_at": "2026-09-20T09:01:25+02:00",
-  "partial_update_scope": "Daily refresh: Materials current successor and Cockpit current hotfix reconciled; fresh Home receipt recorded without promoting uninspected ZIP contents.",
+  "needs_bd": [],
+  "partial_update_at": "2026-09-21T09:03:10+02:00",
+  "partial_update_scope": "Daily project refresh plus Monday orientation; fresh Home/Work operational evidence promoted without changing the HTML view contract.",
   "projects": [
     {
       "arena_ids": [
@@ -165,8 +180,8 @@
         "tspes-v0142",
         "bd-rphs-uy734"
       ],
-      "last_change": "20 Sep fresh LE: DEV2.4 advanced to generation 47,426 / 757,506 proposals with best 96,780 unchanged; RPHS W4 improved to 79,288 at cycle 199 / 1,595 chunks (A1_scale_coherence); 8zTSP-R v0.1.1 reached mu1979 round 185 and advanced to nu3496; MVC advanced to generation 6 / 24 of 64 with best 43,487; TSPES W6 remains on lu980 with public best 11,355.",
-      "next_action": "Protect all six TSP lineages; treat RPHS 79,288 as a verified W4 improvement but preserve the historical W6 null-control provenance; continue without superiority claims unsupported by matched evidence.",
+      "last_change": "21 Sep fresh evidence: DEV2.3 reached cycle 26/P2; DEV2.4 reached generation 50,541 / 807,250 proposals; MVC reached generation 7 / 28; relational-native reached round 217 on mu1979; RPHS reached cycle 210 / 1,683 chunks. No listed incumbent improved.",
+      "next_action": "Protect all six TSP lineages; preserve comparator/null-control provenance and continue without unsupported superiority claims.",
       "project": "TSP & TSPES",
       "status": "RUNNING"
     },
@@ -211,10 +226,10 @@
       "arena_ids": [
         "materials-v020-native"
       ],
-      "last_change": "Current v0.3.0C1HF2 compact W8 FORK1 is directly verified RUNNING through epoch 1,863 / 10,796 attempts with F2=110 and L2=454 on 8 CPU.",
-      "next_action": "Keep the same accepted FORK1 lineage running; gate any material claim on reference matching and higher-fidelity validation.",
+      "last_change": "v0.3.0C1HF2 compact W8 FORK1 reached ROOT_BUDGET_EXHAUSTED at epoch 1,863; its checkpoint was saved and the Work Live Extract + Drive route passed.",
+      "next_action": "Keep the frozen checkpoint/extract and explicitly choose a bounded successor/extension test; do not auto-resume or promote screening evidence.",
       "project": "8zMaterials v0.3.0",
-      "status": "RUNNING"
+      "status": "STANDBY"
     },
     {
       "arena_ids": [
@@ -443,10 +458,10 @@
       "arena_ids": [
         "8zcockpit-v020"
       ],
-      "last_change": "v0.3.3-HF1 is the current verified build: parent Home Windows PASS and all bounded checks PASS; Work Materials routing acceptance remains pending.",
-      "next_action": "Install HF1 once on Work, then run one real current Materials Live Extract + Drive acceptance without stopping or resetting the active research run.",
+      "last_change": "v0.3.3-HF1 Work acceptance passed: TSP, Materials and Sudoku extraction/upload succeeded, closing the Materials routing gate.",
+      "next_action": "Retain v0.3.3-HF1 as the accepted baseline; any successor must be versioned and re-tested.",
       "project": "8zCockpit",
-      "status": "TEST"
+      "status": "DONE"
     }
   ],
   "provenance_rule": "Newer direct evidence in ChatGPT project conversations overrides older summaries. Project files may corroborate; non-project sessions and orphan arenas are excluded.",
@@ -455,4 +470,3 @@
   "source_register": "BD_MASTER_ARENA_REGISTER_LATEST.json",
   "title": "BD — Project State"
 }
-
