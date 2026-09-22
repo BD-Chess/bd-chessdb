@@ -171,10 +171,17 @@
       "observed_at": "2026-09-22T09:48:00+02:00",
       "scope": "8zCockpit + Work operational state",
       "status": "VERIFIED"
+    },
+    {
+      "evidence": "Direct 8zCockpit status snapshots: Home observed 2026-09-22T08:12:36+02:00 with DEV2.3, DEV2.4, TSPES, RPHS and MVC ALIVE; Work observed 2026-09-22T12:46:48+02:00 with Materials W8 and 8zTSP-R v0.1.1 ALIVE.",
+      "inference": "Native process liveness supersedes older operational summaries. Materials is operationally RUNNING again in RUN_38 persistent INSPECT resume, while its scientific snapshot remains bounded at epoch 1,863 until new committed research evidence appears.",
+      "observed_at": "2026-09-22T12:46:48+02:00",
+      "scope": "8zCockpit direct process health / Home + Work",
+      "status": "VERIFIED RUNNING PROCESS STATE"
     }
   ],
-  "generated_at": "2026-09-22T17:33:00+02:00",
-  "last_successful_refresh": "2026-09-22T17:33:00+02:00",
+  "generated_at": "2026-09-22T17:50:00+02:00",
+  "last_successful_refresh": "2026-09-22T17:50:00+02:00",
   "machines": [
     {
       "active_arena_ids": [
@@ -187,23 +194,24 @@
       "allocation_note": "Do not infer or rebalance GPU/CPU scheduling beyond direct arena evidence; do not interrupt stable active arenas solely to optimize allocation.",
       "cpu_capacity": "~14 usable CPU workers",
       "gpu": "NVIDIA RTX 3080 Laptop GPU",
-      "known_active_allocation": "Five Home TSP lineages remain retained RUNNING. Fresh 22 Sep evidence advances DEV2.4, TSPES, RPHS and MVC while DEV2.3 heartbeat reconfirms the retained cycle-26 lineage.",
+      "known_active_allocation": "Five Home TSP lineages are directly ALIVE in the 08:12 Cockpit snapshot: DEV2.3 cycle 26 / branch 3 / 178 variants; DEV2.4 generation 55,935 / 893,426 proposals; TSPES lu980 best 11,352; RPHS cycle 226 / 1,811 chunks; MVC generation 8 / 32 proposals.",
       "machine": "Home PC"
     },
     {
       "active_arena_ids": [
-        "8ztsp-r-v011-relational-native"
+        "8ztsp-r-v011-relational-native",
+        "materials-v020-native"
       ],
       "allocation_note": "Preferred for isolated build, test, and resume checks when capacity is available.",
       "cpu_capacity": "~12 usable CPU workers",
       "gpu": null,
-      "known_active_allocation": "8zTSP-R v0.1.1 is directly verified RUNNING through round 241. BD Trading Atlas is STANDBY because no Trading arena was active during the 22 Sep Work collector test. Materials FORK1 and Sudoku R6 are STANDBY.",
+      "known_active_allocation": "12:46 Cockpit snapshot directly shows 8zTSP-R v0.1.1 and 8zMaterials v0.3.0C1HF2 W8 ALIVE. BD Trading Atlas remains STANDBY; Sudoku R6 remains STANDBY.",
       "machine": "Work PC"
     }
   ],
   "needs_bd": [],
-  "partial_update_at": "2026-09-22T17:33:00+02:00",
-  "partial_update_scope": "22 Sep Home/Work Live Extract refresh plus current 8zCockpit operational reconciliation.",
+  "partial_update_at": "2026-09-22T17:50:00+02:00",
+  "partial_update_scope": "22 Sep refresh finalized against direct Home/Work Cockpit process status and verified Drive rich extracts.",
   "projects": [
     {
       "arena_ids": [
@@ -214,8 +222,8 @@
         "tspes-v0142",
         "bd-rphs-uy734"
       ],
-      "last_change": "22 Sep fresh evidence: DEV2.4 reached generation 55,915 / 893,106 proposals; TSPES lu980 improved to 11,352 (12 above optimum); MVC reached generation 8 / 32; relational-native reached round 241; RPHS reached cycle 226 / 1,810 chunks; DEV2.3 heartbeat confirms cycle 26 alive.",
-      "next_action": "Protect all six TSP lineages; continue the active runs while preserving comparator/null-control provenance and claim boundaries.",
+      "last_change": "22 Sep direct Cockpit + rich evidence: DEV2.3 ALIVE at cycle 26 / branch 3 / 178 variants; DEV2.4 at generation 55,935 / 893,426 proposals; TSPES lu980 best 11,352; MVC generation 8 / 32; relational-native round 241 with process ALIVE; RPHS cycle 226 / 1,811 chunks.",
+      "next_action": "Protect all six live TSP lineages; preserve comparator/null-control provenance and require committed native evidence for scientific claims.",
       "project": "TSP & TSPES",
       "status": "RUNNING"
     },
@@ -260,10 +268,10 @@
       "arena_ids": [
         "materials-v020-native"
       ],
-      "last_change": "22 Sep fresh FORK1 rich extract reconfirms next_epoch 1,863, F2=110 and L2=454 with PARTIAL_HISTORY coverage; state remains frozen STANDBY and ML screening only.",
-      "next_action": "Keep the frozen checkpoint/extract and explicitly choose a bounded successor/extension test; do not auto-resume or promote screening evidence.",
+      "last_change": "22 Sep 12:46 Work Cockpit status shows the v0.3.0C1HF2 W8 native process ALIVE in RUN_38 persistent INSPECT resume. The fresh rich scientific snapshot still ends at next_epoch 1,863 with F2=110, L2=454 and PARTIAL_HISTORY coverage.",
+      "next_action": "Leave the live W8 process undisturbed. Promote scientific progress only from a newer committed native checkpoint/extract; no stable-material claim.",
       "project": "8zMaterials v0.3.0",
-      "status": "STANDBY"
+      "status": "RUNNING"
     },
     {
       "arena_ids": [
