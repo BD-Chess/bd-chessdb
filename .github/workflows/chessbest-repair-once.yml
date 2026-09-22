@@ -1,0 +1,68 @@
+name: One-time ChessBest production repair
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/chessbest-repair-once.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chessbest-production-repair
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout exact main commit
+        uses: actions/checkout@v4
+
+      - name: Verify ChessBest publish root
+        shell: bash
+        run: |
+          test -f public/chess/index.html
+          test -f public/chess/_redirects
+
+      - name: Detect configured Netlify token
+        id: netlify
+        shell: bash
+        run: |
+          if [ -n "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "NETLIFY_AUTH_TOKEN is not configured; deploy cannot proceed."
+            exit 1
+          fi
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Deploy ChessBest publish root to bd-chess
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy \
+            --prod \
+            --no-build \
+            --dir public/chess \
+            --functions functions \
+            --skip-functions-cache \
+            --site "$NETLIFY_SITE_ID" \
+            --auth "$NETLIFY_AUTH_TOKEN" \
+            --message "ChessBest publish-root repair ${GITHUB_SHA}" \
+            --json > netlify-deploy.json
+          node -e 'const d=require("./netlify-deploy.json"); console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
