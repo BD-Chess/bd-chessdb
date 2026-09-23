@@ -659,7 +659,12 @@ white-space:nowrap;padding:0 .5rem;
 .section-divider[data-cat="validation"] .sd-line{background:linear-gradient(90deg,transparent,rgba(52,211,153,.25),transparent)}
 
 /* ── INTRO 2026-09-23 REFRESH ── */
-@media(min-width:1180px){.live-grid,.proj-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1180px){
+  section>.wrap:has(>.live-grid),
+  section>.wrap:has(>.proj-grid),
+  section>.wrap:has(>.milestone-grid){max-width:1560px}
+  .live-grid,.proj-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 @media(min-width:769px) and (max-width:1179px){.live-grid,.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .section-divider{margin:3.1rem 0 1rem}
 .section-divider .sd-label{font-size:clamp(1.12rem,1.6vw,1.45rem);font-weight:650;letter-spacing:.08em;text-transform:none}
