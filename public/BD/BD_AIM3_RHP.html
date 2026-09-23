@@ -109,6 +109,7 @@ footer a{color:var(--green)}
  <a href="./">BD × AI Lab</a><span class="sep">/</span>
  <a href="./BD_AIM3.html">AIM³</a><span class="sep">/</span>
  <a class="active" href="#">RHP</a><span class="sep">/</span>
+ <a href="./RHP.md">RHP.md</a><span class="sep">/</span>
  <a href="./BD_AIM3_RHPm.html">RHPm · Prompt Builder</a><span class="sep">/</span>
  <a href="./BD_AIM3_RHPr.html">RHPr</a><span class="sep">/</span>
  <a href="../crp/AI8_Reasoning.html">8Z Reasoning</a>
@@ -120,16 +121,18 @@ footer a{color:var(--green)}
   <h1>Ask before you collapse.<br><em>Test before you believe.</em></h1>
   <p class="lead"><strong>RHP is an adaptive reasoning protocol for hard problems.</strong> When the real risk is a bad representation, it opens the question space first. Then it protects free Resonance, reframes only after something has been learned, tests what survives, and adds Work controls only when execution or evidence actually requires them.</p>
   <div class="badges">
-   <span class="badge">One RHP front door</span>
-   <span class="badge gold">Q0 candidate integrated</span>
+   <span class="badge">RHP 3.0-candidate R2</span>
+   <span class="badge">Standalone protocol</span>
+   <span class="badge gold">Q0 integrated</span>
    <span class="badge rose">Not field validated</span>
   </div>
   <div class="hero-actions">
    <a class="btn primary" href="#use">Use RHP</a>
    <a class="btn" href="#architecture">Architecture</a>
-   <a class="btn cyan" href="./BD_AIM3_RHPm.html">RHPm · Build a prompt →</a>
+   <a class="btn cyan" href="./RHP.md">RHP.md · Full protocol →</a>
+   <a class="btn" href="./BD_AIM3_RHPm.html">RHPm · Prompt Builder →</a>
   </div>
-  <p class="meta">Human architect / seed: <strong>Bojan Dobrečevič</strong> · developed with LLM collaborators · current Question Opening candidate converged through a GPT ↔ Claude peer-design pass · September 2026.</p>
+  <p class="meta">Human architect / seed: <strong>Bojan Dobrečevič</strong> · developed with LLM collaborators · standalone RHP 3.0-candidate R2 · Seed Dreamer and pilot-control clarifications accepted in the MiraG ↔ MiraC peer-design pass · September 2026.</p>
  </div>
 </header>
 
@@ -137,14 +140,14 @@ footer a{color:var(--green)}
 <section id="architecture">
  <div class="kicker">One surface · layered inside</div>
  <h2>One command. The smallest sufficient machinery.</h2>
- <p class="lead2">You should not have to choose between a “creative protocol” and a “work protocol” before the problem is understood. The public surface is simply <strong>RHP</strong>. Internally, the reasoning kernel and the Work assurance layer remain separate so each can evolve at the right speed.</p>
+ <p class="lead2">You should not have to choose between a “creative protocol” and a “work protocol” before the problem is understood. The public surface is simply <strong>RHP</strong>, and the complete governing source is one standalone <a href="./RHP.md"><strong>RHP.md</strong></a>. Internally it remains layered so reasoning, assurance and provider adaptation can be applied only where needed.</p>
  <div class="grid three">
   <div class="card">
    <div class="kicker">Layer A</div><h3>RHP reasoning kernel</h3>
    <p>Question Opening when representation is at risk, Dreamer/Child/Cartographer/Falsifier lenses, free Resonance, Bifurcation, late Reframing, Crystallize, Empiricist, Genome and skill extraction.</p>
   </div>
   <div class="card">
-   <div class="kicker">Layer B</div><h3>RHP Work</h3>
+   <div class="kicker">Layer B</div><h3>Work / assurance layer</h3>
    <p>Capability checks, bounded candidate lanes, isolation/exposure records, evidence discipline, budget, verifier separation, artifact freeze, delivery and provenance—only when the task needs them.</p>
   </div>
   <div class="card">
@@ -295,9 +298,10 @@ Done when: [observable checks]</pre>
 <section>
  <div class="kicker">RHP family</div>
  <h2>Different tools for different bottlenecks.</h2>
+ <p>RHP 3.0 is self-contained: rough-request framing and Retrieval Escape are already inside <a href="./RHP.md"><strong>RHP.md</strong></a>. RHPm and RHPr remain useful focused companion tools, not runtime dependencies of RHP.</p>
  <div class="family">
-  <a href="./BD_AIM3_RHPm.html"><div class="tag">Prompt forging</div><h3>RHPm · Prompt Builder</h3><p>Turn a rough request into a strong, structured session prompt. Still useful; now a secondary tool behind the main RHP front door.</p></a>
-  <a href="./BD_AIM3_RHPr.html"><div class="tag">Retrieval anti-lock</div><h3>RHPr</h3><p>Open missing drawers and stale assumptions when the model is stuck in the wrong knowledge/retrieval basin.</p></a>
+  <a href="./BD_AIM3_RHPm.html"><div class="tag">Prompt forging</div><h3>RHPm · Prompt Builder</h3><p>Optional prompt-forging companion: turn a rough request into a strong, structured session prompt when you specifically want a reusable prompt artifact.</p></a>
+  <a href="./BD_AIM3_RHPr.html"><div class="tag">Retrieval anti-lock</div><h3>RHPr</h3><p>Optional focused anti-lock companion. Its core retrieval-escape logic is already integrated into standalone RHP 3.0.</p></a>
   <a href="../crp/AI8_Reasoning.html"><div class="tag">Method spine</div><h3>8Z / AI8 Reasoning</h3><p>Seed → bridge → build → alternative explanation → kill test → result → transferable operator.</p></a>
   <a href="./BD_AIM3.html"><div class="tag">System</div><h3>AIM³</h3><p>The wider human–AI continuity, coordination and research environment around these reasoning protocols.</p></a>
  </div>
@@ -310,7 +314,7 @@ Done when: [observable checks]</pre>
  <div class="pilot">
   <div class="arm a"><b>A</b><h3>Current RHP</h3><p>No Q0. Same task, model/runtime and total budget.</p></div>
   <div class="arm b"><b>B</b><h3>RHP + Q0</h3><p>Triggered Question Opening when representation risk is frozen before the run.</p></div>
-  <div class="arm c"><b>C</b><h3>Placebo divergence</h3><p>Same protected opening budget, but an initial idea instead of a question.</p></div>
+  <div class="arm c"><b>C</b><h3>Placebo divergence</h3><p>Same protected opening budget, but an idea instead of a question. Classic: idea round 0. Partitioned: <code>R1i → candidate → R1c</code>.</p></div>
  </div>
  <div class="table-wrap">
   <table>
@@ -323,6 +327,7 @@ Done when: [observable checks]</pre>
    </tbody>
   </table>
  </div>
+ <p>For Q0, B uses <code>R1q → candidate → R1c</code>; C uses <code>R1i → candidate → R1c</code>. The opening budget is matched so the intended difference is <strong>question versus idea</strong>.</p>
  <p><strong>Initial minimum:</strong> at least 3 fresh-session runs per arm per task, with no cross-run visibility and equal total budget.</p>
  <p>No small pilot can establish universal superiority. The candidate advances only if the benefit survives cost, controls and multiple task families.</p>
 </section>
@@ -331,7 +336,7 @@ Done when: [observable checks]</pre>
  <div class="kicker">Research status</div>
  <h2>Open enough to discover. Bound enough to test.</h2>
  <div class="grid">
-  <div class="card"><div class="kicker">Converged design</div><p>The current Q0 candidate was independently challenged across GPT and Claude branches until the Work mapping, independence rule, trigger and pilot design converged.</p></div>
+  <div class="card"><div class="kicker">Standalone R2 converged</div><p>The Q0 architecture was challenged across GPT and Claude branches; after restoring Seed Dreamer and the exact placebo-control shape, the standalone 3.0-candidate R2 consolidation is accepted as <code>CONVERGED_CANDIDATE</code>.</p></div>
   <div class="card"><div class="kicker">Not canonical yet</div><p>The public page is a research candidate. Canonical promotion requires BD review and controlled evidence; the page does not self-authorize a protocol rewrite.</p></div>
  </div>
  <details>
@@ -345,7 +350,7 @@ Done when: [observable checks]</pre>
 
 <footer>
  <div class="wrap">
-  <p><strong>RHP — Resonance Hybrid Protocol</strong> · BD × AI Lab · AIM³</p>
+  <p><strong>RHP — Resonance Hybrid Protocol</strong> · BD × AI Lab · AIM³ · <a href="./RHP.md">RHP.md full source</a></p>
   <p>Human architect / seed: Bojan Dobrečevič · LLM collaboration across multiple reasoning and review passes · candidate architecture updated 2026-09-23.</p>
  </div>
 </footer>
