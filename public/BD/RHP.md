@@ -997,6 +997,7 @@ External, destructive, irreversible, paid, person-directed or secret-bearing act
 Branches, collisions, tests, repairs, package rebuilds, context, tools, artifacts, time and spend do not reset merely by relabelling an epoch or actor.
 
 Paid allowance defaults to zero unless authorized.
+
 ### K13 — Verifier separation
 
 For claim-bearing or non-deterministic final work, builder/integrator/repair actor is not the sole verifier where separation is materially required.
