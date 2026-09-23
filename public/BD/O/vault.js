@@ -7,7 +7,7 @@ const $=id=>document.getElementById(id);
 const from64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const to64=u=>btoa(String.fromCharCode(...new Uint8Array(u)));
 const allowedNotes=['bd-o-font-size','bd-cardio-prep-v1','bd-cardio-prep-v1-size','bd-o-reader-percent-v1'];
-let cfg, master, bundle, sessionValue, storeData={}, queue=Promise.resolve();
+let cfg, extraCfg={format:'BD-O-EXTRA-1',release:null,pages:{}}, master, bundle, sessionValue, storeData={}, queue=Promise.resolve();
 let nativeStore, nativeSession;
 const aad=kind=>TE.encode('BD/O:v2:'+kind+':'+(kind==='data'?cfg.release:cfg.vault));
 function showError(text){const e=$('error');if(e)e.textContent=text;const b=$('unlock');if(b){b.disabled=false;b.textContent='Odkleni';}}
@@ -17,7 +17,7 @@ async function getText(path){
  return r.text();
 }
 async function digest(bytes){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');}
-function validPage(s){return typeof s==='string'&&cfg.pages.includes(s);}
+function validPage(s){return typeof s==='string'&&(cfg.pages.includes(s)||Object.hasOwn(extraCfg.pages||{},s));}
 function loginURL(page){return ROOT+'index.html'+(page!=='index.html'?'?next='+encodeURIComponent(page):'');}
 function readSession(){try{const x=JSON.parse(nativeSession.getItem(SESSION)||'null');return x&&x.vault===cfg.vault&&typeof x.key==='string'&&from64(x.key).length===32?x:null;}catch(_){return null;}}
 function eraseSession(){try{nativeSession.removeItem(SESSION);nativeSession.removeItem('_bd_o_pp');}catch(_){}}
@@ -34,6 +34,14 @@ async function openBundle(){
  if(bundle.format!=='BD-O-PAGES-2'||!Array.isArray(bundle.fragments)||!bundle.pages||Object.keys(bundle.pages).length!==cfg.pages.length||!cfg.pages.every(p=>Array.isArray(bundle.pages[p])))throw new Error('Neveljaven zaščiten arhiv.');
 }
 function decodedPage(name){return bundle.pages[name].map(x=>typeof x==='number'?bundle.fragments[x]:x).join('');}
+async function decodedExtraPage(name){
+ const x=extraCfg.pages&&extraCfg.pages[name];if(!x)throw new Error('Zaščitena stran ni v dodatnem svežnju.');
+ const chunks=await Promise.all(x.parts.map(async p=>{const t=await getText(p.path);if(await digest(TE.encode(t))!==p.sha256)throw new Error('Preverjanje dodatne strani ni uspelo.');return t;}));
+ const bytes=from64(chunks.join(''));if(await digest(bytes)!==x.sha256)throw new Error('Celovitost dodatne strani ni potrjena.');
+ const compressed=await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(x.iv),additionalData:TE.encode('BD/O:v2:extra:'+cfg.release+':'+name)},master,bytes);
+ const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
+ return TD.decode(await new Response(stream).arrayBuffer());
+}
 async function persistNotes(){
  const payload=JSON.stringify(storeData);
  queue=queue.then(async()=>{
@@ -128,6 +136,13 @@ function afterRender(){
    const host=document.querySelector('main,.wrap,.container,.content');
    if(hero&&hero.parentNode)hero.insertAdjacentElement('afterend',med);else if(host)host.prepend(med);else document.body.prepend(med);
   }
+  let dossier=$('bdoDossierShortcut');
+  if(!dossier&&validPage('dosje.html')){
+   dossier=document.createElement('a');dossier.id='bdoDossierShortcut';dossier.href=ROOT+'dosje.html';dossier.setAttribute('aria-label','Odpri celovit zdravstveni dosje');
+   dossier.innerHTML='<span style="font-size:1.7em;line-height:1">🩺</span><span style="min-width:0"><strong style="display:block;color:#fff;font:900 1.15em/1.2 system-ui,-apple-system,Segoe UI,sans-serif">Zdravstveni dosje</strong><small style="display:block;margin-top:4px;color:#b8c7d8;font:700 .78em/1.35 system-ui,-apple-system,Segoe UI,sans-serif">Celovit pregled · izvidi · zdravila · napotnice · časovnica</small></span><span style="font-size:1.5em;color:#79c0ff;font-weight:900">→</span>';
+   dossier.style.cssText='display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;text-decoration:none;color:#f3f8ff;border:1px solid rgba(121,192,255,.65);border-radius:20px;background:linear-gradient(135deg,rgba(121,192,255,.15),rgba(103,224,215,.06)),#0d1727;padding:16px 18px;margin:0 0 16px;box-shadow:0 14px 36px rgba(0,0,0,.28);min-width:0';
+   if(med&&med.parentNode)med.insertAdjacentElement('afterend',dossier);else if(hero&&hero.parentNode)hero.insertAdjacentElement('afterend',dossier);else if(host)host.prepend(dossier);else document.body.prepend(dossier);
+  }
   let sef=$('bdoSefLink');
   if(!sef){sef=document.createElement('a');sef.id='bdoSefLink';sef.href=ROOT+'sef.html';sef.textContent='🔐 Sef';sef.title='Skrite poti, gesla in dostopi';sef.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 12px;border:1px solid #4c7b75;border-radius:999px;background:#10252b;color:#7fe8dd;font:800 14px/1.2 system-ui;text-decoration:none';const box=document.querySelector('.tools,.top-actions,.actions')||document.body;box.appendChild(sef);}
  }
@@ -145,8 +160,8 @@ function afterRender(){
  note.textContent='Odklenjeno v tem zavihku. Po uporabi izberi Zakleni. Zapiski so šifrirani v tem brskalniku; niso sinhronizirani med napravami.';document.body.appendChild(note);
  installReader();
 }
-function render(name){
- let html=decodedPage(name);
+async function render(name){
+ let html=(extraCfg.pages&&extraCfg.pages[name])?await decodedExtraPage(name):decodedPage(name);
  // Only storage plumbing changes; original article markup and wording stay intact.
  html=html.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi,(_,attrs,body)=>'<script'+attrs+'>'+body.replace(/\blocalStorage\b/g,'window.BDO.store')+'<\/script>');
  html=html.replace('</head>','<meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="referrer" content="no-referrer"></head>');
@@ -170,7 +185,7 @@ async function unlock(ev){
   const next=new URLSearchParams(location.search).get('next');
   if(next==='sef'){location.replace(ROOT+'sef.html');return;}
   if(validPage(next)&&next!=='index.html'){location.replace(ROOT+next);return;}
-  if(location.search)history.replaceState(null,'',ROOT+'index.html');render('index.html');
+  if(location.search)history.replaceState(null,'',ROOT+'index.html');await render('index.html');
  }catch(err){master=null;bundle=null;eraseSession();showError(err.message||'Odklepanje ni uspelo.');}
 }
 try{
@@ -179,13 +194,14 @@ try{
  const probe='bdo-test';nativeSession.setItem(probe,'1');nativeSession.removeItem(probe);
  cfg=JSON.parse(await getText('vault.json'));
  if(cfg.format!=='BD-O-VAULT-2'||cfg.kdf.iterations<600000)throw new Error('Neveljavna nastavitev zaščite.');
+ try{const x=JSON.parse(await getText('vault-extra.json'));if(x.format==='BD-O-EXTRA-1'&&x.release===cfg.release&&x.pages)extraCfg=x;}catch(_){extraCfg={format:'BD-O-EXTRA-1',release:cfg.release,pages:{}};}
  const leaf=decodeURIComponent(location.pathname.split('/').filter(Boolean).pop()||'');
  const page=leaf==='O'?'index.html':leaf.endsWith('.html')?leaf:leaf+'.html';
  const target=validPage(page)?page:'index.html';
  const existing=readSession();
  if(!existing&&target!=='index.html'){location.replace(loginURL(target));return;}
  $('gate').hidden=false;
- if(existing){try{master=await importMaster(from64(existing.key));await openBundle();await loadNotes();sessionValue=existing;render(target);return;}catch(_){eraseSession();master=null;bundle=null;if(target!=='index.html'){location.replace(loginURL(target));return;}}}
+ if(existing){try{master=await importMaster(from64(existing.key));await openBundle();await loadNotes();sessionValue=existing;await render(target);return;}catch(_){eraseSession();master=null;bundle=null;if(target!=='index.html'){location.replace(loginURL(target));return;}}}
  $('form').addEventListener('submit',unlock);$('unlock').disabled=false;
  $('show').addEventListener('click',()=>{const p=$('pw');p.type=p.type==='password'?'text':'password';$('show').textContent=p.type==='password'?'Pokaži':'Skrij';});
 }catch(err){if($('gate'))$('gate').hidden=false;showError(err.message||'Zaščiteni portal trenutno ni dosegljiv.');}
