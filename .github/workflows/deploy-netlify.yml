@@ -3,6 +3,10 @@ name: Deploy to Netlify production
 # TEMPORARY PAUSE: automatic push-triggered Netlify deploys are disabled until
 # 2026-10-01 00:01 Europe/Ljubljana. Keep manual workflow_dispatch available.
 on:
+  push:
+    branches: [main]
+    paths:
+      - .netlify-trigger-once
   workflow_dispatch:
 
 permissions:
