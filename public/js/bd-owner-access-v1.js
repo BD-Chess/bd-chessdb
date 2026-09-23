@@ -40,6 +40,13 @@ async function scripts(root){
 }
 function addLock(){const b=document.createElement('button');b.type='button';b.id='bd-owner-lock';b.textContent=say('Lock','Zakleni');b.style.cssText='position:fixed;right:12px;bottom:12px;z-index:2147483000;padding:9px 16px;border:1px solid #697586;border-radius:8px;background:#17212d;color:white;cursor:pointer';b.addEventListener('click',lock);document.body.appendChild(b)}
 function showAssets(){for(const el of document.querySelectorAll('img[src],source[src]')){const url=assetURLs.get(new URL(el.getAttribute('src'),location.href).pathname);if(url)el.src=url}}
+function documentPresentation(text){
+ if(pack.path!=='AI8/AI8-state.html'||text.includes('data-ai8-member-collapse-v1'))return text;
+ if(!text.includes('</head>')||!text.includes('</body>'))return text;
+ const style='<link rel="stylesheet" href="./ai8-member-collapse-v1.css" data-ai8-member-collapse-v1="style">';
+ const script='<scr'+'ipt defer src="./ai8-member-collapse-v1.js" data-ai8-member-collapse-v1="script"></scr'+'ipt>';
+ return text.replace('</head>',style+'</head>').replace('</body>',script+'</body>');
+}
 async function display(contents,token){
  // All authentication completes before any protected content becomes visible.
  if(token!==epoch)throw Error('cancelled');
@@ -51,7 +58,7 @@ async function display(contents,token){
   if(u.kind==='asset')continue;
   if(u.kind==='document'){
    const onload=()=>{showAssets();addLock();window.addEventListener('pageshow',e=>{if(e.persisted&&!saved())location.reload()});};
-   document.open();document.write(text);document.close();
+   const rendered=documentPresentation(text);document.open();document.write(rendered);document.close();
    if(document.readyState==='complete')onload();else window.addEventListener('load',onload,{once:true});
    return;
   }

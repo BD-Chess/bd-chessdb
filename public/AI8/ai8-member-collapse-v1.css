@@ -1,0 +1,19 @@
+/* AI8 State R5 — compact member accordion. Presentation only; no source-authority effect. */
+.member-card.ai8-member-collapsed{padding:0;overflow:hidden}
+.member-toggle{width:100%;margin:0;border:0;background:transparent;color:inherit;display:flex;align-items:center;gap:10px;padding:18px 22px;cursor:pointer;text-align:left;transition:background .18s ease}
+.member-toggle:hover{background:rgba(255,255,255,.025)}
+.member-toggle:focus-visible{outline:2px solid var(--cyan);outline-offset:-3px}
+.member-toggle .member-name{flex:0 1 auto}
+.member-toggle .member-lineage{flex:0 0 auto}
+.member-toggle-spacer{flex:1}
+.member-toggle-hint{color:var(--muted);font:700 .56rem/1 var(--mono);letter-spacing:.07em;text-transform:uppercase}
+.member-toggle-chevron{width:1.55rem;height:1.55rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;color:var(--cyan);font:800 .85rem/1 var(--mono);transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.member-toggle[aria-expanded="true"] .member-toggle-chevron{transform:rotate(180deg);border-color:rgba(75,225,206,.38);background:rgba(75,225,206,.07)}
+.member-collapse-body{padding:0 22px 22px;border-top:1px solid var(--line)}
+.member-collapse-body[hidden]{display:none!important}
+.member-collapse-body>.member-head{margin:0;padding:17px 0 16px;grid-template-columns:minmax(0,1fr) auto}
+.member-collapse-body .member-id{display:none}
+.member-collapse-body .member-kind{margin-top:0}
+.member-card.ai8-member-collapsed[hidden]{display:none}
+@media(max-width:920px){.member-collapse-body>.member-head{grid-template-columns:1fr}.member-collapse-body .coverage{justify-content:flex-start}}
+@media(max-width:560px){.member-toggle{padding:15px 16px;gap:8px}.member-toggle .member-name{font-size:1.8rem}.member-toggle-hint{display:none}.member-collapse-body{padding:0 16px 16px}.member-toggle-chevron{width:1.4rem;height:1.4rem}}
