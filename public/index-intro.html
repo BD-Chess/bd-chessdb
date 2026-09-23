@@ -658,9 +658,31 @@ white-space:nowrap;padding:0 .5rem;
 .section-divider[data-cat="validation"] .sd-label{color:var(--green)}
 .section-divider[data-cat="validation"] .sd-line{background:linear-gradient(90deg,transparent,rgba(52,211,153,.25),transparent)}
 
+/* ── INTRO 2026-09-23 REFRESH ── */
+@media(min-width:1180px){.live-grid,.proj-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:769px) and (max-width:1179px){.live-grid,.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.section-divider{margin:3.1rem 0 1rem}
+.section-divider .sd-label{font-size:clamp(1.12rem,1.6vw,1.45rem);font-weight:650;letter-spacing:.08em;text-transform:none}
+.lc-title{font-size:1.28rem;line-height:1.18}.pc-title{font-size:1.22rem;line-height:1.22}
+.review-reception{padding:42px 0 72px}.review-reception .hero-review-box{max-width:none;margin:0;opacity:1;animation:none}
+.milestone-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:2rem;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--border)}
+.milestone{background:var(--bg2);padding:1.45rem 1.35rem;min-height:170px}.milestone b{display:block;font-family:'JetBrains Mono',monospace;font-size:1.75rem;line-height:1;color:var(--cyan);margin-bottom:.6rem}
+.milestone:nth-child(2) b{color:var(--gold)}.milestone:nth-child(3) b{color:var(--green)}.milestone:nth-child(4) b{color:var(--violet)}.milestone:nth-child(5) b{color:var(--orange)}.milestone:nth-child(6) b{color:var(--rose)}
+.milestone p{font-size:.88rem;margin:0 0 .75rem;color:rgba(226,232,244,.7)}.milestone a{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--cyan);text-decoration:none}
+.intro-collapsible,.intro-archive{max-width:1120px;margin:26px auto;padding:0 5vw}
+.intro-collapsible>summary,.intro-archive>summary{list-style:none;cursor:pointer;border:1px solid var(--border);border-radius:6px;background:rgba(11,17,32,.56);padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:var(--text)}
+.intro-collapsible>summary::-webkit-details-marker,.intro-archive>summary::-webkit-details-marker{display:none}
+.intro-collapsible>summary span,.intro-archive>summary span{font-weight:700}.intro-collapsible>summary small,.intro-archive>summary small{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:.66rem;letter-spacing:.03em}
+.intro-collapsible[open]>summary,.intro-archive[open]>summary{border-color:rgba(0,229,255,.25)}.intro-collapsible-body{padding-top:10px}.intro-collapsible-body section{padding-top:52px}
+.archive-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px 0 4px}.archive-links a{display:block;text-decoration:none;color:var(--muted);border:1px solid var(--border);border-radius:5px;padding:11px 12px;background:rgba(11,17,32,.45)}
+.archive-links a:hover{color:var(--cyan);border-color:rgba(0,229,255,.25)}
+@media(max-width:768px){.milestone-grid{grid-template-columns:1fr}.archive-links{grid-template-columns:1fr}.section-divider .sd-label{font-size:1rem}.lc-title{font-size:1.2rem}}
+@media(prefers-reduced-motion:reduce){html.intro-reveal .rv{opacity:1!important;transform:none!important;transition:none!important}}
+
 /* ── SCROLL REVEAL ── */
-.rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
-.rv.vis{opacity:1;transform:translateY(0)}
+.rv{opacity:1;transform:none}
+html.intro-reveal .rv{opacity:0;transform:translateY(28px);transition:opacity .72s ease,transform .72s ease}
+html.intro-reveal .rv.vis{opacity:1;transform:translateY(0)}
 .rv-d1{transition-delay:.12s}.rv-d2{transition-delay:.24s}.rv-d3{transition-delay:.36s}.rv-d4{transition-delay:.48s}.rv-d5{transition-delay:.60s}.rv-d6{transition-delay:.72s}.rv-d7{transition-delay:.84s}.rv-d8{transition-delay:.96s}
 
 /* ── ANIMATIONS ── */
@@ -909,6 +931,7 @@ html[data-theme="light"] .hero-bg{background:radial-gradient(ellipse 70% 55% at 
 html[data-theme="light"] .hero-grid{opacity:.30}
 html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.feature-card){background:var(--surface);color:var(--text);box-shadow:0 16px 42px rgba(45,62,76,.10)}
 </style>
+<script>document.documentElement.classList.add("intro-reveal");</script>
 </head>
 <body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a data-entry-link="" href="index-atlas.html">Atlas</a><a data-entry-link="" href="index-todo.html">Todo</a><a aria-current="page" data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="./BD/index.html">BD ↗</a></div><div aria-label="Language / Jezik" class="entry-language" role="group"><button aria-pressed="true" data-entry-language="en" type="button">EN</button><button aria-pressed="false" data-entry-language="sl" type="button">SL</button></div></nav>
 <!-- ══ STICKY NAV ══ -->
@@ -921,12 +944,12 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="sn-chip sn-chip-gold" href="history/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Humanity History</span><span class="entry-sl" lang="sl">Zgodovina človeštva</span></span></a>
 <a class="sn-chip sn-chip-cyan" href="crp/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Core Papers</span><span class="entry-sl" lang="sl">Osrednji članki</span></span></a>
 <a class="sn-chip sn-chip-gold" href="acp/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">ACP / CCH Papers</span><span class="entry-sl" lang="sl">Članki ACP / CCH</span></span></a>
-<a class="sn-chip sn-chip-gold" href="#sec-consciousness"><span class="entry-bilingual"><span class="entry-en" lang="en">AI Consciousness · 8</span><span class="entry-sl" lang="sl">AI in zavest · 8</span></span></a>
-<a class="sn-chip sn-chip-cyan" href="#sec-research"><span class="entry-bilingual"><span class="entry-en" lang="en">8Z Research · 6</span><span class="entry-sl" lang="sl">Raziskave 8Z · 6</span></span></a>
-<a class="sn-chip sn-chip-green" href="#sec-trading"><span class="entry-bilingual"><span class="entry-en" lang="en">Trading · 6</span><span class="entry-sl" lang="sl">Trgovanje · 6</span></span></a>
-<a class="sn-chip sn-chip-orange" href="#sec-products"><span class="entry-bilingual"><span class="entry-en" lang="en">Products · 4</span><span class="entry-sl" lang="sl">Izdelki · 4</span></span></a>
-<a class="sn-chip sn-chip-rose" href="#sec-creative"><span class="entry-bilingual"><span class="entry-en" lang="en">Creative · 6</span><span class="entry-sl" lang="sl">Ustvarjanje · 6</span></span></a>
-<a class="sn-chip sn-chip-green" href="#sec-validation"><span class="entry-bilingual"><span class="entry-en" lang="en">Validation · 2</span><span class="entry-sl" lang="sl">Preverjanje · 2</span></span></a>
+<a class="sn-chip sn-chip-gold" href="#sec-consciousness"><span class="entry-bilingual"><span class="entry-en" lang="en">AI Consciousness</span><span class="entry-sl" lang="sl">AI in zavest</span></span></a>
+<a class="sn-chip sn-chip-cyan" href="#sec-research"><span class="entry-bilingual"><span class="entry-en" lang="en">8Z Research</span><span class="entry-sl" lang="sl">Raziskave 8Z</span></span></a>
+<a class="sn-chip sn-chip-green" href="#sec-trading"><span class="entry-bilingual"><span class="entry-en" lang="en">Trading</span><span class="entry-sl" lang="sl">Trgovanje</span></span></a>
+<a class="sn-chip sn-chip-orange" href="#sec-products"><span class="entry-bilingual"><span class="entry-en" lang="en">Products</span><span class="entry-sl" lang="sl">Izdelki</span></span></a>
+<a class="sn-chip sn-chip-rose" href="#sec-creative"><span class="entry-bilingual"><span class="entry-en" lang="en">Creative</span><span class="entry-sl" lang="sl">Ustvarjanje</span></span></a>
+<a class="sn-chip sn-chip-green" href="#sec-validation"><span class="entry-bilingual"><span class="entry-en" lang="en">Validation</span><span class="entry-sl" lang="sl">Preverjanje</span></span></a>
 <a class="sn-chip sn-chip-violet" data-overlay="" href="BD/BD_Idea_Atlas_AI_Reviews.html" title="Available review synthesis; the earlier dedicated review file is absent from this snapshot."><span class="entry-bilingual"><span class="entry-en" lang="en">AI Reviews</span><span class="entry-sl" lang="sl">AI recenzije</span></span></a>
 <a class="sn-chip sn-chip-cyan" data-overlay="" href="BD/BD_AIM3.html">AIM³ OS</a>
 </div>
@@ -939,12 +962,12 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="sn-chip sn-chip-gold" href="history/index.html" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Humanity History</span><span class="entry-sl" lang="sl">Zgodovina človeštva</span></span></a>
 <a class="sn-chip sn-chip-cyan" href="crp/index.html" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Core Papers</span><span class="entry-sl" lang="sl">Osrednji članki</span></span></a>
 <a class="sn-chip sn-chip-gold" href="acp/index.html" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">ACP / CCH Papers</span><span class="entry-sl" lang="sl">Članki ACP / CCH</span></span></a>
-<a class="sn-chip sn-chip-gold" href="#sec-consciousness" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">AI Consciousness · 8</span><span class="entry-sl" lang="sl">AI in zavest · 8</span></span></a>
-<a class="sn-chip sn-chip-cyan" href="#sec-research" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">8Z Research · 6</span><span class="entry-sl" lang="sl">Raziskave 8Z · 6</span></span></a>
-<a class="sn-chip sn-chip-green" href="#sec-trading" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Trading · 6</span><span class="entry-sl" lang="sl">Trgovanje · 6</span></span></a>
-<a class="sn-chip sn-chip-orange" href="#sec-products" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Products · 4</span><span class="entry-sl" lang="sl">Izdelki · 4</span></span></a>
-<a class="sn-chip sn-chip-rose" href="#sec-creative" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Creative · 6</span><span class="entry-sl" lang="sl">Ustvarjanje · 6</span></span></a>
-<a class="sn-chip sn-chip-green" href="#sec-validation" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Validation · 2</span><span class="entry-sl" lang="sl">Preverjanje · 2</span></span></a>
+<a class="sn-chip sn-chip-gold" href="#sec-consciousness" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">AI Consciousness</span><span class="entry-sl" lang="sl">AI in zavest</span></span></a>
+<a class="sn-chip sn-chip-cyan" href="#sec-research" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">8Z Research</span><span class="entry-sl" lang="sl">Raziskave 8Z</span></span></a>
+<a class="sn-chip sn-chip-green" href="#sec-trading" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Trading</span><span class="entry-sl" lang="sl">Trgovanje</span></span></a>
+<a class="sn-chip sn-chip-orange" href="#sec-products" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Products</span><span class="entry-sl" lang="sl">Izdelki</span></span></a>
+<a class="sn-chip sn-chip-rose" href="#sec-creative" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Creative</span><span class="entry-sl" lang="sl">Ustvarjanje</span></span></a>
+<a class="sn-chip sn-chip-green" href="#sec-validation" onclick="snCloseDrawer()"><span class="entry-bilingual"><span class="entry-en" lang="en">Validation</span><span class="entry-sl" lang="sl">Preverjanje</span></span></a>
 <a class="sn-chip sn-chip-violet" data-overlay="" href="BD/BD_Idea_Atlas_AI_Reviews.html" onclick="snCloseDrawer()" title="Available review synthesis; the earlier dedicated review file is absent from this snapshot."><span class="entry-bilingual"><span class="entry-en" lang="en">AI Reviews</span><span class="entry-sl" lang="sl">AI recenzije</span></span></a>
 <a class="sn-chip sn-chip-cyan" data-overlay="" href="BD/BD_AIM3.html" onclick="snCloseDrawer()">AIM³ OS</a>
 </div>
@@ -982,147 +1005,21 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <p style="margin-top:.8rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted);opacity:0;animation:fadeUp .8s 1.1s forwards;white-space:nowrap"><span class="entry-bilingual"><span class="entry-en" lang="en">
       A research architecture, many domains. </span><span class="entry-sl" lang="sl"> Raziskovalna arhitektura, številne domene. </span></span><a href="BD/BD_8Z_DCC_Recursive.html#ch8" style="color:var(--orange);text-decoration:none;border-bottom:1px solid rgba(251,146,60,0.3)"><span class="entry-bilingual"><span class="entry-en" lang="en">Explore all applications →</span><span class="entry-sl" lang="sl">Razišči vse uporabe →</span></span></a>
 </p>
-<div class="hero-review-box" lang="en">
-<div class="hrb-kicker">Frontier AI Reviews · April 2026</div>
-<h2>What frontier AI models see in <a class="bd-profile-link" data-entry-link="" href="./BD/index.html">BD</a>’s work</h2>
-<p>
-        DeepSeek V4, ChatGPT 5.5 Thinking, and Claude Opus 4.7 were given the lab,
-        the papers, the code, and the empirical results. Their reviews form a separate
-        reception layer: not a project, but a mirror of the whole research program.
-      </p>
-<div class="hrb-badges">
-<span class="badge violet">DeepSeek V4</span>
-<span class="badge cyan">GPT-5.5</span>
-<span class="badge gold">Claude Opus 4.7</span>
-<span class="badge green">Cross-model review</span>
-</div>
-<a class="hrb-link" href="BD/BD_Idea_Atlas_AI_Reviews.html" title="Available review synthesis; the earlier dedicated review file is absent from this snapshot.">Read the AI model reviews →</a>
+
 </div>
 </div>
-</div>
-<!-- ENTRY-UPDATES:START -->
-<details class="entry-updates" data-entry-updated="2026-09-08"><summary><span><span class="entry-update-label">08 / 09 / 2026</span><span class="entry-en" lang="en">Current project status</span><span class="entry-sl" lang="sl">Trenutno stanje projektov</span></span></summary><div class="entry-update-grid"><article class="entry-update-item"><a data-entry-link="" href="BD/BD_8ZRP.html">TSP ×4</a><p><span class="entry-en" lang="en">Four independent arenas in testing</span><span class="entry-sl" lang="sl">Štiri neodvisne arene v testiranju</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_trading_2026.html">Trading ×3</a><p><span class="entry-en" lang="en">Two existing test arenas + BDTA just started</span><span class="entry-sl" lang="sl">Dve obstoječi testni areni + BDTA pravkar zagnana</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AI8_Sudoku_R6.html">Sudoku R6</a><p><span class="entry-en" lang="en">New large arena in build</span><span class="entry-sl" lang="sl">Nova velika arena v izdelavi</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/AIM3_MentalArena_Lab.html">MAL 2.0</a><p><span class="entry-en" lang="en">Ready for review</span><span class="entry-sl" lang="sl">Za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="BD/BD_AIM3_RHP.html">RHP</a><p><span class="entry-en" lang="en">New RHP to review</span><span class="entry-sl" lang="sl">Nov RHP za pregled</span></p></article><article class="entry-update-item"><a data-entry-link="" href="crp/8zCoding.html">8zCoding</a><p><span class="entry-en" lang="en">Active development line</span><span class="entry-sl" lang="sl">Aktivna razvojna veja</span></p></article></div><p class="entry-update-note"><span class="entry-en" lang="en">Dated work-status snapshot. Project pages keep their own evidence and release history.</span><span class="entry-sl" lang="sl">Datiran posnetek delovnega stanja. Projektne strani ohranjajo lastne dokaze in zgodovino izdaj.</span></p></details>
-<!-- ENTRY-UPDATES:END -->
+
 <!-- ===== THE THESIS (plain-language summary / abstract) ===== -->
 <section id="sec-thesis" style="padding:60px 0 44px">
 <div class="wrap">
-<span class="sec-tag rv vis"><span class="entry-bilingual"><span class="entry-en" lang="en">What This Is — In One Read</span><span class="entry-sl" lang="sl">Kaj je to — v enem pregledu</span></span></span>
-<h2 class="rv vis" style="max-width:20ch"><span class="entry-bilingual"><span class="entry-en" lang="en">Many kinds of work. More than one way in.</span><span class="entry-sl" lang="sl">Različna dela. Več kot en vhod.</span></span></h2>
-<p class="rv vis"><strong><span class="entry-bilingual"><span class="entry-en" lang="en">Start with something you can open.</span><span class="entry-sl" lang="sl">Začni z nečim, kar lahko odpreš.</span></span></strong><span class="entry-bilingual"><span class="entry-en" lang="en"> Plan a route, play a game, explore an engineering concept, or follow a question about consciousness. This is the broad work of </span><span class="entry-sl" lang="sl"> Načrtuj pot, igraj igro, razišči inženirsko zamisel ali sledi vprašanju o zavesti. To je široko delo </span></span><a class="bd-profile-link" data-entry-link="" href="./BD/index.html">BD</a><span class="entry-bilingual"><span class="entry-en" lang="en"> with AI collaborators—not a claim that every idea belongs to one algorithm.</span><span class="entry-sl" lang="sl"> v sodelovanju z AI, ne trditev, da vsaka ideja pripada enemu algoritmu.</span></span></p>
-<p class="rv vis"><strong>8z–MDL×DCC</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> is one major research architecture in that portfolio. 8z creates alternatives; </span><span class="entry-sl" lang="sl"> je pomembna raziskovalna arhitektura v tem portfelju. 8z ustvarja alternative; </span></span><strong>MDL</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> means Minimum Description Length; </span><span class="entry-sl" lang="sl"> pomeni Minimum Description Length oziroma načelo najkrajšega opisa; </span></span><strong>DCC</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> means Dynamic Complexity Controller. Implementations share particular mechanisms at different depths. The </span><span class="entry-sl" lang="sl"> pomeni Dynamic Complexity Controller. Izvedbe si na različnih ravneh delijo določene mehanizme. </span></span><a data-entry-link="" href="index-search.html"><span class="entry-bilingual"><span class="entry-en" lang="en">technical entrance</span><span class="entry-sl" lang="sl">Tehnični vhod</span></span></a><span class="entry-bilingual"><span class="entry-en" lang="en"> separates working artifacts, measured results and the next hypotheses.</span><span class="entry-sl" lang="sl"> ločuje delujoče artefakte, izmerjene rezultate in naslednje hipoteze.</span></span></p>
-<p class="rv vis"><span class="entry-bilingual"><span class="entry-en" lang="en">The portfolio also includes physical inventions, tools, games, stories and a separate inquiry into consciousness. The animated tour below preserves earlier project stories. For current technical measurements, follow the </span><span class="entry-sl" lang="sl">Portfelj vključuje tudi fizične izume, orodja, igre, zgodbe in ločeno raziskovanje zavesti. Spodnji animirani ogled ohranja starejše projektne zgodbe. Za aktualne tehnične meritve odpri </span></span><a href="crp/8z_MDLxDCC.html#evidence"><span class="entry-bilingual"><span class="entry-en" lang="en">dated evidence receipts</span><span class="entry-sl" lang="sl">datirane dokazne zapise</span></span></a><span class="entry-bilingual"><span class="entry-en" lang="en">; for the complete map, open </span><span class="entry-sl" lang="sl">; za celoten zemljevid pa odpri </span></span><a data-entry-link="" href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">the Atlas</span><span class="entry-sl" lang="sl">atlas</span></span></a>.</p>
-<p class="rv vis" style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--muted);margin-top:1.3rem"><span class="entry-bilingual"><span class="entry-en" lang="en">Start here: </span><span class="entry-sl" lang="sl">Začni tukaj: </span></span><a data-entry-link="" href="./BD/index.html">BD</a> · <a data-entry-link="" href="BD/BDR.html"><span class="entry-bilingual"><span class="entry-en" lang="en">BDR: how questions become systems</span><span class="entry-sl" lang="sl">BDR: kako vprašanja postanejo sistemi</span></span></a> · <a href="BD/BD_AIM3_RHP.html">RHP / wRHP</a> · <a href="S/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Play Sudoku</span><span class="entry-sl" lang="sl">Igraj Sudoku</span></span></a></p>
+<span class="sec-tag rv"><span class="entry-bilingual"><span class="entry-en" lang="en">What This Is — In One Read</span><span class="entry-sl" lang="sl">Kaj je to — v enem pregledu</span></span></span>
+<h2 class="rv" style="max-width:20ch"><span class="entry-bilingual"><span class="entry-en" lang="en">Many kinds of work. More than one way in.</span><span class="entry-sl" lang="sl">Različna dela. Več kot en vhod.</span></span></h2>
+<p class="rv"><strong><span class="entry-bilingual"><span class="entry-en" lang="en">Start with something you can open.</span><span class="entry-sl" lang="sl">Začni z nečim, kar lahko odpreš.</span></span></strong><span class="entry-bilingual"><span class="entry-en" lang="en"> Plan a route, play a game, explore an engineering concept, or follow a question about consciousness. This is the broad work of </span><span class="entry-sl" lang="sl"> Načrtuj pot, igraj igro, razišči inženirsko zamisel ali sledi vprašanju o zavesti. To je široko delo </span></span><a class="bd-profile-link" data-entry-link="" href="./BD/index.html">BD</a><span class="entry-bilingual"><span class="entry-en" lang="en"> with AI collaborators—not a claim that every idea belongs to one algorithm.</span><span class="entry-sl" lang="sl"> v sodelovanju z AI, ne trditev, da vsaka ideja pripada enemu algoritmu.</span></span></p>
+<p class="rv"><strong>8z–MDL×DCC</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> is one major research architecture in that portfolio. 8z creates alternatives; </span><span class="entry-sl" lang="sl"> je pomembna raziskovalna arhitektura v tem portfelju. 8z ustvarja alternative; </span></span><strong>MDL</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> means Minimum Description Length; </span><span class="entry-sl" lang="sl"> pomeni Minimum Description Length oziroma načelo najkrajšega opisa; </span></span><strong>DCC</strong><span class="entry-bilingual"><span class="entry-en" lang="en"> means Dynamic Complexity Controller. Implementations share particular mechanisms at different depths. The </span><span class="entry-sl" lang="sl"> pomeni Dynamic Complexity Controller. Izvedbe si na različnih ravneh delijo določene mehanizme. </span></span><a data-entry-link="" href="index-search.html"><span class="entry-bilingual"><span class="entry-en" lang="en">technical entrance</span><span class="entry-sl" lang="sl">Tehnični vhod</span></span></a><span class="entry-bilingual"><span class="entry-en" lang="en"> separates working artifacts, measured results and the next hypotheses.</span><span class="entry-sl" lang="sl"> ločuje delujoče artefakte, izmerjene rezultate in naslednje hipoteze.</span></span></p>
+<p class="rv"><span class="entry-bilingual"><span class="entry-en" lang="en">The portfolio also includes physical inventions, tools, games, stories and a separate inquiry into consciousness. This page is a guided introduction; each project page carries its own maturity and evidence boundary, while </span><span class="entry-sl" lang="sl">Portfelj vključuje tudi fizične izume, orodja, igre, zgodbe in ločeno raziskovanje zavesti. Ta stran je voden uvod; posamezne projektne strani nosijo lastne oznake zrelosti in meje dokazov, medtem ko </span></span><a data-entry-link="" href="index-atlas.html"><span class="entry-bilingual"><span class="entry-en" lang="en">the Atlas</span><span class="entry-sl" lang="sl">atlas</span></span></a><span class="entry-bilingual"><span class="entry-en" lang="en"> holds the broader map.</span><span class="entry-sl" lang="sl"> vsebuje širši zemljevid.</span></span></p>
+<p class="rv" style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--muted);margin-top:1.3rem"><span class="entry-bilingual"><span class="entry-en" lang="en">Start here: </span><span class="entry-sl" lang="sl">Začni tukaj: </span></span><a data-entry-link="" href="./BD/index.html">BD</a> · <a data-entry-link="" href="BD/BDR.html"><span class="entry-bilingual"><span class="entry-en" lang="en">BDR: how questions become systems</span><span class="entry-sl" lang="sl">BDR: kako vprašanja postanejo sistemi</span></span></a> · <a href="BD/BD_AIM3_RHP.html">RHP / wRHP</a> · <a href="S/index.html"><span class="entry-bilingual"><span class="entry-en" lang="en">Play Sudoku</span><span class="entry-sl" lang="sl">Igraj Sudoku</span></span></a></p>
 </div>
-</section><aside class="entry-history-label"><span class="entry-bilingual"><span class="entry-en" lang="en">This introduction retains project stories and numerical snapshots from March–April 2026. They are not the current scorecard. </span><span class="entry-sl" lang="sl">Spodaj so ohranjene projektne zgodbe in številčni posnetki iz marca–aprila 2026, v izvirni angleščini. To ni aktualna lestvica rezultatov. </span></span><a href="crp/8z_MDLxDCC.html#evidence"><span class="entry-bilingual"><span class="entry-en" lang="en">Read the September 2026 evidence receipts →</span><span class="entry-sl" lang="sl">Odpri dokazne zapise iz septembra 2026 →</span></span></a></aside>
-<div class="divider" lang="en"></div>
-<!-- ===== FEATURED: HUMANITY HISTORY ===== -->
-<div lang="en" style="max-width:1120px;margin:0 auto;padding:22px 5vw 0">
-<a href="history/index.html" onmouseout="this.style.borderColor='rgba(0,229,255,0.24)';this.style.boxShadow='none'" onmouseover="this.style.borderColor='rgba(0,229,255,0.45)';this.style.boxShadow='0 8px 34px rgba(0,229,255,0.12)'" style="display:block;text-decoration:none;color:rgba(200,212,230,0.84);background:linear-gradient(135deg,rgba(0,229,255,0.08) 0%,rgba(245,158,11,0.07) 48%,rgba(167,139,250,0.07) 100%);border:1px solid rgba(0,229,255,0.24);border-radius:8px;padding:30px 32px;transition:all .3s;position:relative;overflow:hidden">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#00e5ff;background:rgba(0,229,255,0.12);padding:3px 10px;border-radius:3px">New · Humanity History</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,212,230,0.6)">Dark Timeline · Adaptive Zoom</span>
-</div>
-<div style="font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:400;color:#e2e8f4;line-height:1.25;margin-bottom:10px">
-      A realistic story of humanity from deep prehistory to the AI age — <span style="color:#00e5ff">one A4 card at a time</span>, with progress, suffering, beauty, collapse, and acceleration.
-    </div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:12px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--gold)">300,000 BCE → 2026</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)">~116 factual cards</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--green)">dark HTML book</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--violet)">future = one possible branch only</span>
-</div>
-<div style="font-size:.92rem;color:rgba(200,212,230,0.78);line-height:1.6;max-width:78ch">
-      The scale changes with the speed of humanity: 10,000-year lenses for deep time, 1,000-year lenses for agriculture, 100-year cards for civilization, 10-year cards for the machine age, and tight focus for the digital/AI threshold. Future scenarios stay separate: not prediction, not prophecy, only one possible path among countless.
-      <span style="color:#00e5ff;margin-left:6px">Open the history index →</span>
-</div>
-</a>
-</div>
-<!-- ===== FEATURED RESEARCH: DCC-7 ===== -->
-<div lang="en" style="max-width:1120px;margin:0 auto;padding:16px 5vw 0">
-<a href="BD/BD_8Z_DCC7_Testbed.html" onmouseout="this.style.borderColor='rgba(245,158,11,0.25)';this.style.boxShadow='none'" onmouseover="this.style.borderColor='rgba(245,158,11,0.45)';this.style.boxShadow='0 8px 32px rgba(245,158,11,0.1)'" style="display:block;text-decoration:none;color:rgba(200,212,230,0.82);background:linear-gradient(135deg,rgba(245,158,11,0.08) 0%,rgba(167,139,250,0.06) 50%,rgba(0,229,255,0.05) 100%);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:28px 32px;transition:all .3s;position:relative;overflow:hidden">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#f59e0b;background:rgba(245,158,11,0.12);padding:3px 10px;border-radius:3px">New · March 2026</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,212,230,0.6)">Featured Research</span>
-</div>
-<div style="font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:400;color:#e2e8f4;line-height:1.25;margin-bottom:10px">
-      DCC-7: A consciousness testbed built on <span style="color:#f59e0b">30 years of curiosity</span> — where seven AI threads think freely and a <span style="color:#00e5ff">Digital Claustrum</span> decides what matters.
-    </div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:12px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--gold)">S = k · C<sub>n</sub> · Ψ(I)</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)">7+1 threads · DCC governor</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--green)">cross-domain research</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--violet)">CCH Prediction P4 → experiment</span>
-</div>
-<div style="font-size:.88rem;color:rgba(200,212,230,0.82);line-height:1.55">
-      From the 1995 Soul Voyage through Koubeissi's 2014 claustrum stimulation to a falsifiable AI architecture. Seven parallel LLM instances run undirected — a Digital Claustrum Controller monitors coupling, promotes convergent thoughts, and optimizes its own governance. The same recursive DCC validated on 924K bars of market data, now applied to the question: can machines become aware?
-      <span style="color:#f59e0b;margin-left:6px">Read the full paper →</span>
-<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(245,158,11,0.15);font-family:'JetBrains Mono',monospace;font-size:.82rem;color:rgba(226,232,244,0.7);line-height:1.55">
-<span style="color:#fb923c;font-weight:600">March 15, 2026</span> — Recursive DCC verified: the controller that governs itself. <span style="color:#00e5ff">6.8×</span> more efficient than grid search across <span style="color:#f59e0b">1M+ configurations</span>. Same algorithm at every level. <span onclick="event.preventDefault();event.stopPropagation();window.open('BD_8Z_DCC_Recursive.html','_blank')" style="color:#fb923c;border-bottom:1px solid rgba(251,146,60,0.4);white-space:nowrap;font-weight:600;cursor:pointer">Full story →</span>
-</div>
-</div>
-</a>
-</div>
-<!-- ===== FEATURED BREAKTHROUGH ===== -->
-<div lang="en" style="max-width:1120px;margin:0 auto;padding:48px 5vw 0">
-<a href="BD/BD_8ZRP.html" onmouseout="this.style.borderColor='rgba(251,146,60,0.25)';this.style.boxShadow='none'" onmouseover="this.style.borderColor='rgba(251,146,60,0.45)';this.style.boxShadow='0 8px 32px rgba(251,146,60,0.1)'" style="display:block;text-decoration:none;color:rgba(200,212,230,0.82);background:linear-gradient(135deg,rgba(251,146,60,0.08) 0%,rgba(0,229,255,0.06) 50%,rgba(167,139,250,0.06) 100%);border:1px solid rgba(251,146,60,0.25);border-radius:8px;padding:28px 32px;transition:all .3s;position:relative;overflow:hidden">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#fb923c;background:rgba(251,146,60,0.12);padding:3px 10px;border-radius:3px">Updated · March 23, 2026</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,212,230,0.6)">From the project history</span>
-</div>
-<div style="font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:400;color:#e2e8f4;line-height:1.25;margin-bottom:10px">
-      8Z-RP: Multi-scale decomposition <span style="color:#fb923c">cut the gap by 41%</span>. Then a mind <span style="color:#ff6b8a">reversed the arrow</span> — and the solver taught its own pyramid.
-    </div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:12px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)">uy734 = 0.683% record</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--gold)">qa194 = exact optimal</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--green)">25 sensors · 685 laws</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--rose)">TEP: solver → pyramid</span>
-</div>
-<div style="font-size:.88rem;color:rgba(200,212,230,0.82);line-height:1.65;font-family:'Cormorant Garamond',serif;font-size:1.05rem">
-      An idea arrived one morning before the alarm. By noon it had broken a benchmark record. Hours later, one mind reversed the assumption everyone shared — and the system found perfection.
-      <br/><br/>
-<span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.82rem">The structural decomposition runs in near-linear time. The rest follows.</span>
-<br/><br/>
-      Both discoveries happened in one day. Both are documented, tested, public. Neither required a university, a lab, or a budget. The method is protected. The results are not.
-      <span style="color:#fb923c;margin-left:6px">If you want to understand how — <em>ask</em>. →</span>
-</div>
-</a>
-</div>
-<!-- ===== FEATURED: SUDOKU ===== -->
-<div lang="en" style="max-width:1120px;margin:0 auto;padding:48px 5vw 6px">
-<div style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-style:italic;color:rgba(200,212,230,0.55);letter-spacing:.06em">☕ vs $100K</div>
-</div>
-<div lang="en" style="max-width:1120px;margin:0 auto;padding:0 5vw 0">
-<a href="S/index.html" onmouseout="this.style.borderColor='rgba(52,211,153,0.25)';this.style.boxShadow='none'" onmouseover="this.style.borderColor='rgba(52,211,153,0.45)';this.style.boxShadow='0 8px 32px rgba(52,211,153,0.1)'" style="display:block;text-decoration:none;color:rgba(200,212,230,0.82);background:linear-gradient(135deg,rgba(52,211,153,0.08) 0%,rgba(0,229,255,0.06) 50%,rgba(245,158,11,0.05) 100%);border:1px solid rgba(52,211,153,0.25);border-radius:8px;padding:28px 32px;transition:all .3s;position:relative;overflow:hidden">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#34d399;background:rgba(52,211,153,0.12);padding:3px 10px;border-radius:3px">New · March 2026</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,212,230,0.6)">Featured · New Domain</span>
-</div>
-<div style="font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:400;color:#e2e8f4;line-height:1.25;margin-bottom:10px">
-      310 lines. One afternoon. The engine that doesn’t just solve puzzles — it <span style="color:#34d399">measures the structure</span> of the solving process in real time.
-    </div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:12px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--gold)">ADSR ρ = −0.50</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan)">1 afternoon · AIM³</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--green)">constraint satisfaction</span>
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--violet)">early Sudoku study</span>
-</div>
-<div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:rgba(200,212,230,0.82);line-height:1.65">
-      Not the fastest Sudoku engine. A small engine that exposes a signal from its solving process. While the AI solves, a gold bar fills — measuring whether the solving process is structured or chaotic. That bar is ADSR bimodality. It correlates with puzzle difficulty at <span style="color:var(--gold)">ρ = −0.50 (p &lt; 10<sup>−64</sup>)</span> across 1,000 puzzles. The same MDL kernel that finds optimal routes through 3,496 cities in Nicaragua predicts Sudoku difficulty. One afternoon. Third domain.
-    </div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin:12px 0 4px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--rose);opacity:.7">3–5 devs × 4 weeks × $100K traditional</span>
-</div>
-<div style="display:flex;flex-wrap:wrap;gap:16px 28px;margin:4px 0 10px">
-<span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--green)">1 human × 1 afternoon × 26 lines</span>
-</div>
-<div style="font-size:.88rem;color:rgba(200,212,230,0.65);line-height:1.55">
-      The traditional team still wouldn’t include live process metrics — because nobody else measures them.
-      <span style="color:#34d399;margin-left:6px">Play it yourself →</span>
-</div>
-</a>
-</div>
-<section class="crp-banner-wrap" lang="en">
+</section><section class="crp-banner-wrap" lang="en">
 <div class="wrap">
 <div class="crp-banner">
 <div class="crp-banner-copy">
@@ -1147,77 +1044,26 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </section>
 <div class="divider" lang="en"></div>
-<!-- ===== THE RECORD ===== -->
-<section lang="en" style="padding:72px 0 60px">
-<div class="wrap">
-<span class="sec-tag rv vis" style="color:var(--muted);letter-spacing:.45em">The Record</span>
-<p class="rv vis" style="max-width:56ch;color:rgba(226,232,244,0.52);font-size:.9rem;margin-bottom:2.4rem;margin-top:.3rem">Numbers that don't sound possible. All verified. All from one framework.</p>
-<div class="rv vis record-grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border:1px solid rgba(0,229,255,0.08);border-radius:8px;overflow:hidden;background:rgba(0,229,255,0.05)">
-<div style="background:var(--bg2);padding:1.6rem 1.4rem">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--cyan);margin-bottom:.55rem">0 install</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">The product is the page: open it on a phone or computer and run stop-order optimization locally in JavaScript.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">Trip Optimizer · Browser-native</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--gold);margin-bottom:.55rem">5 days</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">Zero to lossless audio encoder that beats FLAC — the 23-year industry standard. Built from scratch.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">Audio · 8Z-AC</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--green);margin-bottom:.55rem">44 / 50</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">Genomes compressed better than 7-Zip — the best general-purpose compressor.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">Genomics · 8Z-FASTA</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--rose);margin-bottom:.55rem">0.683%</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">uy734 record gap — from 1.167% flat to 0.683% via multi-scale decomposition. Architecture, not operators.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">TSP · MSTD · Arena v2.6</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-top:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--rose);margin-bottom:.55rem">Z = 74</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">Peak Z-score for mathematical structure in genomic DNA. Signal amplifies under stricter null models. No statistical model predicts this.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">DNA · 8Z-Scanner</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-top:1px solid rgba(0,229,255,0.06);border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--orange);margin-bottom:.55rem">6.8×</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">Efficiency over grid search across 1M+ configurations. The controller that governs its own search.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">Trading · Recursive DCC</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-top:1px solid rgba(0,229,255,0.06);border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--cyan);margin-bottom:.55rem">1</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">One kernel. Image compression, audio, genomics, TSP. Each domain: beats the established standard.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">MDL + DCC · 4 Domains</div>
-</div>
-<div style="background:var(--bg2);padding:1.6rem 1.4rem;border-top:1px solid rgba(0,229,255,0.06);border-left:1px solid rgba(0,229,255,0.06)">
-<div style="font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;line-height:1;color:var(--gold);margin-bottom:.55rem">30 yr</div>
-<div style="font-size:.95rem;color:rgba(226,232,244,.82);line-height:1.45;margin-bottom:.7rem">From a consciousness experience in 1995 to working prototypes that beat industry standards. 18 months of execution.</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);text-transform:uppercase">AIM³ · Ljubljana</div>
-</div>
-</div>
-</div>
-</section>
-<div class="divider" lang="en"></div>
 <section lang="en">
 <div class="wrap">
-<span class="sec-tag rv vis"><span class="live-pulse"></span>Live on the Web</span>
-<h2 class="rv vis">Try It Yourself</h2>
-<p class="rv vis">
-      Thirty live web pages — playable, explorable, and free. Each one built through
-      human-led research and engineering with <strong>AIM³</strong> as the collaboration framework, and hosted at <strong>chessbest.org</strong>.
+<span class="sec-tag rv"><span class="live-pulse"></span>Open · play · inspect</span>
+<h2 class="rv">Try &amp; Explore</h2>
+<p class="rv">
+      A curated set of working demos, research pages, arenas, hypotheses and public artifacts across <strong>MDLxDCC.org</strong> and <strong>ChessBest.org</strong>. Open what interests you; deeper evidence and maturity boundaries stay with each project.
     </p>
-<div class="live-count-banner rv vis">
-<div class="lcb-item"><div class="lcb-num" style="color:var(--cyan)">30</div><div class="lcb-label">Live Pages</div></div>
-<div class="lcb-item"><div class="lcb-num" style="color:var(--gold)">8</div><div class="lcb-label">Domains</div></div>
+<div class="live-count-banner rv">
+<div class="lcb-item"><div class="lcb-num" id="intro-feature-count" style="color:var(--cyan)">—</div><div class="lcb-label">Featured Entries</div></div>
+<div class="lcb-item"><div class="lcb-num" id="intro-area-count" style="color:var(--gold)">—</div><div class="lcb-label">Curated Areas</div></div>
 <div class="lcb-item"><div class="lcb-num" style="color:var(--green)">48B+</div><div class="lcb-label">Chess Positions</div></div>
-<div class="lcb-item"><div class="lcb-num" style="color:var(--violet)">AIM³</div><div class="lcb-label">Framework</div></div>
+<div class="lcb-item"><div class="lcb-num" style="color:var(--violet)">AIM³</div><div class="lcb-label">Collaboration Layer</div></div>
 </div>
 <div class="live-grid">
-<div class="section-divider vis" data-cat="consciousness" id="sec-consciousness">
+<div class="section-divider rv" data-cat="consciousness" id="sec-consciousness">
 <div class="sd-line"></div>
 <div class="sd-label">AI Consciousness</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="cyan">
+<div class="live-card rv rv-d1" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">🔬</div>
 <div class="lc-meta">
@@ -1236,7 +1082,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/BD_CCH_Science.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="gold">
+<div class="live-card rv rv-d1" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">🌌</div>
 <div class="lc-meta">
@@ -1255,7 +1101,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_CCH_Consciousness_Field.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="gold">
+<div class="live-card rv rv-d2" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">⚗️</div>
 <div class="lc-meta">
@@ -1274,64 +1120,10 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_8Z_DCC7_Testbed.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="violet">
-<div class="lc-head">
-<div class="lc-icon">🧩</div>
-<div class="lc-meta">
-<span class="lc-domain">Methodology · Meta-Cognition</span>
-<span class="lc-title">8Z Reasoning — How to Think with Bojan</span>
-</div>
-</div>
-<div class="lc-desc">14 principles distilled from 30 years across 9 domains. Five worked examples showing the same pattern: the human finds what the AI misses, every time. The fish isn't any single insight — it's the pattern.</div>
-<div class="lc-badges">
-<span class="badge violet">14 Principles</span>
-<span class="badge gold">5 Examples</span>
-<span class="badge muted">Living Doc</span>
-</div>
-<div class="lc-foot">
-<span class="lc-url">chessbest.org/bd/BD_8Z_Reasoning</span>
-<a class="lc-visit" data-v="violet" href="BD/BD_8Z_Reasoning.html" rel="noopener" target="_blank">Read →</a>
-</div>
-</div>
-<div class="live-card rv rv-d2 vis" data-accent="orange">
-<div class="lc-head">
-<div class="lc-icon">⚙️</div>
-<div class="lc-meta">
-<span class="lc-domain">Systems · Origin Story</span>
-<span class="lc-title">8Z OS — The 6-Hour Operating System &amp; Birth of DCC</span>
-</div>
-</div>
-<div class="lc-desc">A bare-metal OS built from scratch in 6 hours: VGA framebuffer, keyboard driver, memory manager, task scheduler — all compiled with -ffreestanding -nostdlib. Ran Lorenz attractors with a real-time LZ complexity sensor. The petri dish where the Digital Claustrum was born.</div>
-<div class="lc-badges">
-<span class="badge orange">Bare Metal</span>
-<span class="badge gold">DCC Origin</span>
-<span class="badge muted">December 2025</span>
-</div>
-<div class="lc-foot">
-<span class="lc-url">chessbest.org/os</span>
-<a class="lc-visit" data-v="orange" href="OS/index.html" rel="noopener" target="_blank">Read →</a>
-</div>
-</div>
-<div class="live-card rv rv-d2 vis" data-accent="orange">
-<div class="lc-head">
-<div class="lc-icon">🔄</div>
-<div class="lc-meta">
-<span class="lc-domain">AI · Recursive Architecture · Verified</span>
-<span class="lc-title">Recursive DCC: Self-Governing Governance</span>
-</div>
-</div>
-<div class="lc-desc">The first empirical demonstration that a DCC controller can govern its own search — same algorithm at meta-level and base-level. Verified across BTC, ETH, SOL on 924K bars. 5.5× average efficiency ratio. The semantic inversion that makes it work took 6 iterations to discover.</div>
-<div class="lc-badges">
-<span class="badge orange">6.8× Efficiency</span>
-<span class="badge green">VERIFIED</span>
-<span class="badge muted">March 15, 2026</span>
-</div>
-<div class="lc-foot">
-<span class="lc-url">chessbest.org/bd/BD_8Z_DCC_Recursive</span>
-<a class="lc-visit" data-v="orange" href="BD/BD_8Z_DCC_Recursive.html" rel="noopener" target="_blank">Read →</a>
-</div>
-</div>
-<div class="live-card rv rv-d1 vis" data-accent="gold">
+
+
+
+<div class="live-card rv rv-d1" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">🧠</div>
 <div class="lc-meta">
@@ -1350,7 +1142,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_8Z_Birth_of_Thought.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="gold">
+<div class="live-card rv rv-d1" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">🤫</div>
 <div class="lc-meta">
@@ -1369,12 +1161,18 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_8Z_Fifth_Mind.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="section-divider vis" data-cat="research" id="sec-research">
+<div class="live-card rv rv-d2" data-accent="violet">
+<div class="lc-head"><div class="lc-icon">Ω</div><div class="lc-meta"><span class="lc-domain">Candidate Physics Programme · Living Research</span><span class="lc-title">Whole-First Physicalization — Toward a Theory of Everything</span></div></div>
+<div class="lc-desc">A living whole-first candidate programme connecting AC–WFP, Ω-MSP, RSE and 8Z. It keeps assumptions, corrections, provenance and testable bridges explicit. This is a research programme, not a confirmed physical theory.</div>
+<div class="lc-badges"><span class="badge violet">v0.5.8</span><span class="badge gold">Living Document</span><span class="badge muted">Candidate · Not Proof</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/crp/ToE.html</span><a class="lc-visit" data-v="violet" href="crp/ToE.html">Explore →</a></div>
+</div>
+<div class="section-divider rv" data-cat="research" id="sec-research">
 <div class="sd-line"></div>
 <div class="sd-label">8Z Research Framework</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="violet">
+<div class="live-card rv rv-d1" data-accent="violet">
 <div class="lc-head">
 <div class="lc-icon">🔢</div>
 <div class="lc-meta">
@@ -1393,7 +1191,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="violet" href="8Z/8Z_compression.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="cyan">
+<div class="live-card rv rv-d1" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">🎵</div>
 <div class="lc-meta">
@@ -1412,7 +1210,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="AC/index.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="green">
+<div class="live-card rv rv-d2" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">🧬</div>
 <div class="lc-meta">
@@ -1431,7 +1229,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="LO/8Z-FE_report.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="green">
+<div class="live-card rv rv-d2" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">🧬</div>
 <div class="lc-meta">
@@ -1450,7 +1248,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="BD/BD_CCH_Foundations.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="gold">
+<div class="live-card rv rv-d2" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">🔐</div>
 <div class="lc-meta">
@@ -1469,7 +1267,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_8z_auth.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="orange">
+<div class="live-card rv rv-d2" data-accent="orange">
 <div class="lc-head">
 <div class="lc-icon">🚀</div>
 <div class="lc-meta">
@@ -1488,12 +1286,106 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="orange" href="BD/BD_8z_publish.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="section-divider vis" data-cat="trading" id="sec-trading">
+<div class="live-card rv rv-d1" data-accent="cyan">
+<div class="lc-head"><div class="lc-icon">∞</div><div class="lc-meta"><span class="lc-domain">AI Architecture · Governed Continuity</span><span class="lc-title">AI8 — Architecture, ArenaLoop &amp; Living Continuity</span></div></div>
+<div class="lc-desc">The canonical public entrance to AI8: architecture, ArenaLoop, governed agency, evidence, lineage and continuity. The architecture proposes; controlled arenas decide what survives.</div>
+<div class="lc-badges"><span class="badge cyan">Canonical Entrance</span><span class="badge green">Arena-Governed</span><span class="badge muted">Evidence Boundaries</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/AI8/</span><a class="lc-visit" data-v="cyan" href="AI8/index.html">Explore →</a></div>
+</div>
+<div class="live-card rv rv-d2" data-accent="green">
+<div class="lc-head"><div class="lc-icon">◈</div><div class="lc-meta"><span class="lc-domain">Materials Discovery · Native MDL×DCC</span><span class="lc-title">8zMaterials — Multilevel Search Arena</span></div></div>
+<div class="lc-desc">A native MDL×DCC materials-search arena with compact FORK1 lineage, 1,863 committed epochs and a verified 22 Sep 2026 ML-screening evidence snapshot. Material novelty is not yet confirmed.</div>
+<div class="lc-badges"><span class="badge green">1,863 Epochs</span><span class="badge cyan">22 Sep Evidence</span><span class="badge muted">Novelty Pending</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/8zMaterials.html</span><a class="lc-visit" data-v="green" href="8zMaterials.html">Inspect →</a></div>
+</div>
+<div class="live-card rv rv-d3" data-accent="violet">
+<div class="lc-head"><div class="lc-icon">⌘</div><div class="lc-meta"><span class="lc-domain">Neural Architecture Search · Benchmark Arena</span><span class="lc-title">NAS / Neural Architecture Search Arena v19</span></div></div>
+<div class="lc-desc">A runnable MDL×DCC architecture-search arena with NAS-Bench adapters, affinity/router sensors, DCC-style search laws, drain/fovea navigation and null controls. Active prototype and reproducibility candidate.</div>
+<div class="lc-badges"><span class="badge violet">v19 Modular</span><span class="badge cyan">10 Modules</span><span class="badge muted">Claims Need Run Logs</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/crp/MDLxDCC-Arena-NAS.html</span><a class="lc-visit" data-v="violet" href="crp/MDLxDCC-Arena-NAS.html">Inspect →</a></div>
+</div>
+<div class="live-card rv rv-d2" data-accent="violet">
+<div class="lc-head">
+<div class="lc-icon">🧩</div>
+<div class="lc-meta">
+<span class="lc-domain">Methodology · Meta-Cognition</span>
+<span class="lc-title">8Z Reasoning — How to Think with Bojan</span>
+</div>
+</div>
+<div class="lc-desc">14 principles distilled from 30 years across 9 domains. Five worked examples showing the same pattern: the human finds what the AI misses, every time. The fish isn't any single insight — it's the pattern.</div>
+<div class="lc-badges">
+<span class="badge violet">14 Principles</span>
+<span class="badge gold">5 Examples</span>
+<span class="badge muted">Living Doc</span>
+</div>
+<div class="lc-foot">
+<span class="lc-url">chessbest.org/bd/BD_8Z_Reasoning</span>
+<a class="lc-visit" data-v="violet" href="BD/BD_8Z_Reasoning.html" rel="noopener" target="_blank">Read →</a>
+</div>
+</div>
+<div class="live-card rv rv-d2" data-accent="orange">
+<div class="lc-head">
+<div class="lc-icon">⚙️</div>
+<div class="lc-meta">
+<span class="lc-domain">Systems · Origin Story</span>
+<span class="lc-title">8Z OS — The 6-Hour Operating System &amp; Birth of DCC</span>
+</div>
+</div>
+<div class="lc-desc">A bare-metal OS built from scratch in 6 hours: VGA framebuffer, keyboard driver, memory manager, task scheduler — all compiled with -ffreestanding -nostdlib. Ran Lorenz attractors with a real-time LZ complexity sensor. The petri dish where the Digital Claustrum was born.</div>
+<div class="lc-badges">
+<span class="badge orange">Bare Metal</span>
+<span class="badge gold">DCC Origin</span>
+<span class="badge muted">December 2025</span>
+</div>
+<div class="lc-foot">
+<span class="lc-url">chessbest.org/os</span>
+<a class="lc-visit" data-v="orange" href="OS/index.html" rel="noopener" target="_blank">Read →</a>
+</div>
+</div>
+<div class="live-card rv rv-d2" data-accent="orange">
+<div class="lc-head">
+<div class="lc-icon">🔄</div>
+<div class="lc-meta">
+<span class="lc-domain">AI · Recursive Architecture · Verified</span>
+<span class="lc-title">Recursive DCC: Self-Governing Governance</span>
+</div>
+</div>
+<div class="lc-desc">The first empirical demonstration that a DCC controller can govern its own search — same algorithm at meta-level and base-level. Verified across BTC, ETH, SOL on 924K bars. 5.5× average efficiency ratio. The semantic inversion that makes it work took 6 iterations to discover.</div>
+<div class="lc-badges">
+<span class="badge orange">6.8× Efficiency</span>
+<span class="badge green">VERIFIED</span>
+<span class="badge muted">March 15, 2026</span>
+</div>
+<div class="lc-foot">
+<span class="lc-url">chessbest.org/bd/BD_8Z_DCC_Recursive</span>
+<a class="lc-visit" data-v="orange" href="BD/BD_8Z_DCC_Recursive.html" rel="noopener" target="_blank">Read →</a>
+</div>
+</div>
+<div class="live-card rv rv-d1" data-accent="orange">
+<div class="lc-head">
+<div class="lc-icon">📍</div>
+<div class="lc-meta">
+<span class="lc-domain">Optimization · TSP Benchmark</span>
+<span class="lc-title">8Z-RP: Nicaragua (nu3496) Status</span>
+</div>
+</div>
+<div class="lc-desc">Nicaragua benchmark — 3,496 real locations. Current independently recomputed completed DEV2.3 record: 96,793, only 0.687596% above the 96,132 optimum. Produced by cycle-15 P4 with LZ_binary + ratchet, k=30 and controlled threshold acceptance.</div>
+<div class="lc-badges">
+<span class="badge orange">3,496 Cities</span>
+<span class="badge gold">MSTD + TEP next</span>
+<span class="badge muted">0.687596% verified</span>
+</div>
+<div class="lc-foot">
+<span class="lc-url">chessbest.org/bd/BD_8ZRP_nu3496_status</span>
+<a class="lc-visit" data-v="orange" href="BD/BD_8ZRP_nu3496_status.html">Status →</a>
+</div>
+</div>
+<div class="section-divider rv" data-cat="trading" id="sec-trading">
 <div class="sd-line"></div>
 <div class="sd-label">Algorithmic Trading</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="green">
+<div class="live-card rv rv-d1" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">📖</div>
 <div class="lc-meta">
@@ -1512,7 +1404,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="8ZT/index.html" rel="noopener" target="_blank">Book →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="orange">
+<div class="live-card rv rv-d1" data-accent="orange">
 <div class="lc-head">
 <div class="lc-icon">🎛️</div>
 <div class="lc-meta">
@@ -1531,7 +1423,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="orange" href="BD/BD_8Z_DCC_Trading.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="cyan">
+<div class="live-card rv rv-d1" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">⚡</div>
 <div class="lc-meta">
@@ -1550,7 +1442,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/ZZ_trader.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="gold">
+<div class="live-card rv rv-d2" data-accent="gold">
 <div class="lc-head">
 <div class="lc-icon">🔥</div>
 <div class="lc-meta">
@@ -1569,7 +1461,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/SM_trader.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="cyan">
+<div class="live-card rv rv-d2" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">🤖</div>
 <div class="lc-meta">
@@ -1588,7 +1480,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/DCC_trader.html" rel="noopener" target="_blank">Launch →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="violet">
+<div class="live-card rv rv-d2" data-accent="violet">
 <div class="lc-head">
 <div class="lc-icon">🔮</div>
 <div class="lc-meta">
@@ -1606,12 +1498,12 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="lc-url">In development</span>
 </div>
 </div>
-<div class="section-divider vis" data-cat="products" id="sec-products">
+<div class="section-divider rv" data-cat="products" id="sec-products">
 <div class="sd-line"></div>
 <div class="sd-label">Products &amp; Tools</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="green">
+<div class="live-card rv rv-d1" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">✈️</div>
 <div class="lc-meta">
@@ -1631,26 +1523,8 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="Trip/index.html">Open app →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="orange">
-<div class="lc-head">
-<div class="lc-icon">📍</div>
-<div class="lc-meta">
-<span class="lc-domain">Optimization · TSP Benchmark</span>
-<span class="lc-title">8Z-RP: Nicaragua (nu3496) Status</span>
-</div>
-</div>
-<div class="lc-desc">Nicaragua benchmark — 3,496 real locations. Current independently recomputed completed DEV2.3 record: 96,793, only 0.687596% above the 96,132 optimum. Produced by cycle-15 P4 with LZ_binary + ratchet, k=30 and controlled threshold acceptance.</div>
-<div class="lc-badges">
-<span class="badge orange">3,496 Cities</span>
-<span class="badge gold">MSTD + TEP next</span>
-<span class="badge muted">0.687596% verified</span>
-</div>
-<div class="lc-foot">
-<span class="lc-url">chessbest.org/bd/BD_8ZRP_nu3496_status</span>
-<a class="lc-visit" data-v="orange" href="BD/BD_8ZRP_nu3496_status.html">Status →</a>
-</div>
-</div>
-<div class="live-card rv rv-d2 vis" data-accent="cyan">
+
+<div class="live-card rv rv-d2" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">♟️</div>
 <div class="lc-meta">
@@ -1669,7 +1543,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="index.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="green">
+<div class="live-card rv rv-d2" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">🧲</div>
 <div class="lc-meta">
@@ -1688,12 +1562,30 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="F4M/index.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="section-divider vis" data-cat="creative" id="sec-creative">
+<div class="live-card rv rv-d1" data-accent="green">
+<div class="lc-head"><div class="lc-icon">9×9</div><div class="lc-meta"><span class="lc-domain">Puzzle · Constraint Reasoning</span><span class="lc-title">Sudoku — Playable MDL×DCC Reasoning Demo</span></div></div>
+<div class="lc-desc">A public Sudoku game and research demonstrator that makes constraints, candidates, residuals and solver choices visible in a compact playable form.</div>
+<div class="lc-badges"><span class="badge green">Playable</span><span class="badge cyan">Reasoning Signals</span><span class="badge muted">Browser Demo</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/S/</span><a class="lc-visit" data-v="green" href="S/index.html">Play →</a></div>
+</div>
+<div class="live-card rv rv-d2" data-accent="violet">
+<div class="lc-head"><div class="lc-icon">▦</div><div class="lc-meta"><span class="lc-domain">Puzzle · Structure Discovery</span><span class="lc-title">Crossword × MDL — AIM³ Lab</span></div></div>
+<div class="lc-desc">A playable crossword / reasoning branch used to explore structure discovery, clue constraints and MDL-style puzzle representations.</div>
+<div class="lc-badges"><span class="badge violet">Playable</span><span class="badge muted">Puzzle Lab</span><span class="badge cyan">MDL Lens</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/CW/</span><a class="lc-visit" data-v="violet" href="CW/index.html">Open →</a></div>
+</div>
+<div class="live-card rv rv-d3" data-accent="gold">
+<div class="lc-head"><div class="lc-icon">🛡️</div><div class="lc-meta"><span class="lc-domain">Security · Working Technology</span><span class="lc-title">8Z Shield — Encrypted HTML Protection</span></div></div>
+<div class="lc-desc">Working BD × AI technology for encrypted HTML sections or whole pages, with standalone password access and optional hosted email sessions. It is already used on MDLxDCC.org.</div>
+<div class="lc-badges"><span class="badge gold">In Production</span><span class="badge green">Encrypted HTML</span><span class="badge muted">Standalone + Hosted</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/bd/8z_shield_landing</span><a class="lc-visit" data-v="gold" href="BD/8z_shield_landing.html">Explore →</a></div>
+</div>
+<div class="section-divider rv" data-cat="creative" id="sec-creative">
 <div class="sd-line"></div>
 <div class="sd-label">Creative &amp; Fun</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="rose">
+<div class="live-card rv rv-d1" data-accent="rose">
 <div class="lc-head">
 <div class="lc-icon">🎸</div>
 <div class="lc-meta">
@@ -1712,7 +1604,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="rose" href="Someone/index.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="orange">
+<div class="live-card rv rv-d1" data-accent="orange">
 <div class="lc-head">
 <div class="lc-icon">🔊</div>
 <div class="lc-meta">
@@ -1731,7 +1623,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="orange" href="Mix/MP3_Resurrection.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="violet">
+<div class="live-card rv rv-d2" data-accent="violet">
 <div class="lc-head">
 <div class="lc-icon">⚡</div>
 <div class="lc-meta">
@@ -1750,7 +1642,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="violet" href="Mix/Heroes.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d2 vis" data-accent="cyan">
+<div class="live-card rv rv-d2" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">🏅</div>
 <div class="lc-meta">
@@ -1769,7 +1661,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="Mix/Olympics2026.html" rel="noopener" target="_blank">Visit →</a>
 </div>
 </div>
-<div class="live-card rv rv-d3 vis" data-accent="violet">
+<div class="live-card rv rv-d3" data-accent="violet">
 <div class="lc-head">
 <div class="lc-icon">🏛️</div>
 <div class="lc-meta">
@@ -1788,7 +1680,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <button class="lc-visit" data-v="violet" onclick="openNCI()" style="cursor:pointer; outline:none; border:none; font-family:'JetBrains Mono',monospace;">Load Archive ↓</button>
 </div>
 </div>
-<div class="live-card rv vis" data-accent="cyan">
+<div class="live-card rv" data-accent="cyan">
 <div class="lc-head">
 <div class="lc-icon">📊</div>
 <div class="lc-meta">
@@ -1831,12 +1723,18 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <div class="divider" lang="en"></div>
 <section lang="en">
 <div class="wrap">
-<div class="section-divider vis" data-cat="validation" id="sec-validation">
+<div class="live-card rv rv-d3" data-accent="cyan">
+<div class="lc-head"><div class="lc-icon">⌛</div><div class="lc-meta"><span class="lc-domain">History · Civilization · Adaptive Scale</span><span class="lc-title">Humanity History — Dark Timeline</span></div></div>
+<div class="lc-desc">A card-based history of humanity from deep prehistory to the AI age. The time scale adapts to the speed of change; future scenarios are kept separate as possible branches, not predictions.</div>
+<div class="lc-badges"><span class="badge cyan">300,000 BCE → 2026</span><span class="badge gold">Adaptive Zoom</span><span class="badge muted">Future ≠ Prediction</span></div>
+<div class="lc-foot"><span class="lc-url">mdlxdcc.org/history/</span><a class="lc-visit" data-v="cyan" href="history/index.html">Explore →</a></div>
+</div>
+<div class="section-divider rv" data-cat="validation" id="sec-validation">
 <div class="sd-line"></div>
 <div class="sd-label">Independent Validation</div>
 <div class="sd-line"></div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="green">
+<div class="live-card rv rv-d1" data-accent="green">
 <div class="lc-head">
 <div class="lc-icon">🔬</div>
 <div class="lc-meta">
@@ -1855,7 +1753,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="BD/BD_Evaluation_Protocol.html" rel="noopener" target="_blank">Read →</a>
 </div>
 </div>
-<div class="live-card rv rv-d1 vis" data-accent="orange">
+<div class="live-card rv rv-d1" data-accent="orange">
 <div class="lc-head">
 <div class="lc-icon">📊</div>
 <div class="lc-meta">
@@ -1875,26 +1773,55 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </div>
 </div>
-</section>
+</section><div class="divider" lang="en"></div>
+<section lang="en"><div class="wrap">
+<span class="sec-tag rv" style="color:var(--green)">Selected milestones</span>
+<h2 class="rv">A few receipts, not a scorecard</h2>
+<p class="rv">A compact set of public milestones tied to specific pages or dated evidence. Different projects have different maturity levels; these are not a claim that every branch shares one mechanism or one standard of proof.</p>
+<div class="milestone-grid rv">
+<div class="milestone"><b>0 install</b><p>Trip Optimizer runs locally in the browser as a practical stop-order tool.</p><a href="Trip/index.html">Open Trip →</a></div>
+<div class="milestone"><b>qa194</b><p>8Z-RP reached the exact known optimum of 9,352; the result page preserves the benchmark lineage.</p><a href="BD/BD_8ZRP_v1_0.html">Read TSP evidence →</a></div>
+<div class="milestone"><b>1,863</b><p>Committed epochs in the public 8zMaterials snapshot dated 22 Sep 2026; novelty remains explicitly unconfirmed.</p><a href="8zMaterials.html">Inspect materials →</a></div>
+<div class="milestone"><b>v19</b><p>The modular NAS arena exposes architecture-search control, nulls and reproducibility hooks.</p><a href="crp/MDLxDCC-Arena-NAS.html">Inspect NAS →</a></div>
+<div class="milestone"><b>7 / 15</b><p>8Z-Audio surpassed FLAC-12 on seven clips in its reported benchmark set.</p><a href="8Z/8Z_compression.html">Read compression branch →</a></div>
+<div class="milestone"><b>48B+</b><p>ChessBest exposes a large public chess-position database through a usable analysis interface.</p><a href="https://chessbest.org/">Open ChessBest →</a></div>
+</div></div></section>
+<div class="divider" lang="en"></div>
+<section class="review-reception" lang="en"><div class="wrap"><div class="rv"><div class="hero-review-box" lang="en">
+<div class="hrb-kicker">Frontier AI Reviews · April 2026</div>
+<h2>What frontier AI models see in <a class="bd-profile-link" data-entry-link="" href="./BD/index.html">BD</a>’s work</h2>
+<p>
+        DeepSeek V4, ChatGPT 5.5 Thinking, and Claude Opus 4.7 were given the lab,
+        the papers, the code, and the empirical results. Their reviews form a separate
+        reception layer: not a project, but a mirror of the whole research program.
+      </p>
+<div class="hrb-badges">
+<span class="badge violet">DeepSeek V4</span>
+<span class="badge cyan">GPT-5.5</span>
+<span class="badge gold">Claude Opus 4.7</span>
+<span class="badge green">Cross-model review</span>
+</div>
+<a class="hrb-link" href="BD/BD_Idea_Atlas_AI_Reviews.html" title="Available review synthesis; the earlier dedicated review file is absent from this snapshot.">Read the AI model reviews →</a>
+</div></div></div></section>
 <div class="divider" lang="en"></div>
 <div class="wrap" lang="en">
-<div class="part-header rv vis">
+<div class="part-header rv">
 <div class="part-num">I</div>
 <div class="part-label">What Has Been Built</div>
 </div>
 </div>
 <section id="sec-aim3" lang="en">
 <div class="wrap">
-<span class="sec-tag rv vis">Core Infrastructure</span>
-<h2 class="rv vis">AIM³ — The Operating System Behind the Portfolio</h2>
-<p class="rv vis">
+<span class="sec-tag rv">Core Infrastructure</span>
+<h2 class="rv">AIM³ — The Operating System Behind the Portfolio</h2>
+<p class="rv">
       Before any science could happen, the collaboration framework had to exist.
       <a href="BD/BD_AIM3.html" style="color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(0,229,255,.25)">AIM³</a>
       turns prompt engineering into <strong>systems engineering</strong> — roles, state,
       logs, and decision trails that survive across sessions and models. It is the operating system behind this portfolio, not just another project card.
     </p>
 <div class="proj-grid">
-<div class="proj-card rv rv-d1 vis" data-c="cyan">
+<div class="proj-card rv rv-d1" data-c="cyan">
 <div class="pc-icon">🧠</div>
 <div class="pc-domain">Operating System Layer</div>
 <div class="pc-title">AIM³ OS — Human–AI Collaboration Stack</div>
@@ -1910,7 +1837,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/BD_AIM3.html">Visit →</a>
 </div>
 </div>
-<div class="proj-card rv rv-d2 vis" data-c="violet">
+<div class="proj-card rv rv-d2" data-c="violet">
 <div class="pc-icon">🤝</div>
 <div class="pc-domain">Collaboration Contract</div>
 <a href="BD/BD_8Z_Pact.html" rel="noopener" style="text-decoration:none;color:inherit" target="_blank"><div class="pc-title" style="cursor:pointer">AI–BD Trust Pact <span style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--violet);font-weight:400">→ Read</span></div></a>
@@ -1921,7 +1848,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">7 New Rules</span>
 </div>
 </div>
-<div class="proj-card rv rv-d3 vis" data-c="cyan">
+<div class="proj-card rv rv-d3" data-c="cyan">
 <div class="pc-icon">🎯</div>
 <div class="pc-domain">Prompting Architecture</div>
 <div class="pc-title">Resonance Hybrid Prompting</div>
@@ -1937,7 +1864,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/BD_AIM3_RHPr.html">Visit →</a>
 </div>
 </div>
-<div class="proj-card rv rv-d5 vis" data-c="cyan">
+<div class="proj-card rv rv-d5" data-c="cyan">
 <div class="pc-icon">🔮</div>
 <div class="pc-domain">Multi-Agent Architecture</div>
 <div class="pc-title">Resonance Hybrid Protocol</div>
@@ -1953,7 +1880,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="cyan" href="BD/BD_AIM3_RHP.html">Visit →</a>
 </div>
 </div>
-<div class="proj-card rv rv-d6 vis" data-c="gold">
+<div class="proj-card rv rv-d6" data-c="gold">
 <div class="pc-icon">📖</div>
 <div class="pc-domain">Origin Story</div>
 <div class="pc-title">How 11 AI Systems Invented a Way to Think Together</div>
@@ -1968,7 +1895,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="gold" href="BD/BD_AIM3_RHP_Story.html">Visit →</a>
 </div>
 </div>
-<div class="proj-card rv rv-d7 vis" data-c="green">
+<div class="proj-card rv rv-d7" data-c="green">
 <div class="pc-icon">⚡</div>
 <div class="pc-domain">Open Challenge</div>
 <div class="pc-title">AI-Storm Challenge</div>
@@ -1983,7 +1910,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <a class="lc-visit" data-v="green" href="BD/BD_8Z_AI_Storm_Challenge.html">Visit →</a>
 </div>
 </div>
-<div class="proj-card rv rv-d8 vis" data-c="violet">
+<div class="proj-card rv rv-d8" data-c="violet">
 <div class="pc-icon">🧩</div>
 <div class="pc-domain">Open Challenge</div>
 <div class="pc-title">ssMDL-DCC Challenge</div>
@@ -2005,14 +1932,14 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <div class="divider" lang="en"></div>
 <section lang="en">
 <div class="wrap">
-<span class="sec-tag gold rv vis">8Z Framework — Compression &amp; Beyond</span>
-<h2 class="rv vis">Mathematical Description &gt; Statistical Coding</h2>
-<p class="rv vis">
+<span class="sec-tag gold rv">8Z Framework — Compression &amp; Beyond</span>
+<h2 class="rv">Mathematical Description &gt; Statistical Coding</h2>
+<p class="rv">
       The 8Z framework replaces raw bytes with <strong>deterministic mathematical generators</strong>
       selected via MDL. SHA3-256 verification guarantees bit-perfect reconstruction.
       The same architecture now operates across four data domains.
     </p>
-<div class="transfer-map rv vis">
+<div class="transfer-map rv">
 <div class="tm-title">MDL + DCC Cross-Domain Transfer Map</div>
 <div class="tm-flow">
 <div class="tm-node gold">8Z-Image<small>TIF · Beat PNG</small></div>
@@ -2027,7 +1954,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </div>
 <div class="proj-grid">
-<div class="proj-card rv rv-d1 vis" data-c="gold">
+<div class="proj-card rv rv-d1" data-c="gold">
 <div class="pc-icon">🖼️</div>
 <div class="pc-domain">Image Compression</div>
 <div class="pc-title">8Z-TIF — Satellite &amp; Scientific Imagery</div>
@@ -2038,7 +1965,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">Python Prototype</span>
 </div>
 </div>
-<div class="proj-card rv rv-d1 vis" data-c="cyan">
+<div class="proj-card rv rv-d1" data-c="cyan">
 <div class="pc-icon">🎵</div>
 <div class="pc-domain">Lossless Audio</div>
 <div class="pc-title">8Z-Audio — Five Days Against FLAC</div>
@@ -2049,7 +1976,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge gold">DCC Settled</span>
 </div>
 </div>
-<div class="proj-card rv rv-d2 vis" data-c="green">
+<div class="proj-card rv rv-d2" data-c="green">
 <div class="pc-icon">🧬</div>
 <div class="pc-domain">Genomic Compression</div>
 <div class="pc-title">8Z-FASTA (gemZ / HYB4)</div>
@@ -2059,7 +1986,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge green">44/50 Wins</span>
 </div>
 </div>
-<div class="proj-card rv rv-d2 vis" data-c="rose">
+<div class="proj-card rv rv-d2" data-c="rose">
 <div class="pc-icon">🗺️</div>
 <div class="pc-domain">Combinatorial Optimization</div>
 <div class="pc-title">8Z-rp TSP Solver</div>
@@ -2075,15 +2002,15 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <div class="divider" lang="en"></div>
 <section lang="en">
 <div class="wrap">
-<span class="sec-tag green rv vis">Computational Biology</span>
-<h2 class="rv vis">Mathematical Structure in DNA</h2>
-<p class="rv vis">
+<span class="sec-tag green rv">Computational Biology</span>
+<h2 class="rv">Mathematical Structure in DNA</h2>
+<p class="rv">
       The DNA Scanner detects deterministic mathematical patterns in genomic sequences that
       persist beyond Markov-2 statistics. Z-scores of <strong>28–74</strong> across a 50-genome collection.
       Fisher shuffling destroys the signal; block shuffling preserves it.
       The structure is <strong>global, not local</strong>.
     </p>
-<div class="stat-banner rv vis">
+<div class="stat-banner rv">
 <div class="sb-cell"><div class="sb-num" style="color:var(--green)">M6.3</div><div class="sb-label">Scanner Version</div></div>
 <div class="sb-cell"><div class="sb-num" style="color:var(--cyan)">7</div><div class="sb-label">Validated Generators</div></div>
 <div class="sb-cell"><div class="sb-num" style="color:var(--gold)">50</div><div class="sb-label">Genomes Tested</div></div>
@@ -2092,7 +2019,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <div class="sb-cell"><div class="sb-num" style="color:var(--green)">73</div><div class="sb-label">Regression Tests Pass</div></div>
 </div>
 <div class="proj-grid">
-<div class="proj-card rv vis" data-c="green">
+<div class="proj-card rv" data-c="green">
 <div class="pc-icon">🔬</div>
 <div class="pc-domain">6-Tool Pipeline</div>
 <div class="pc-title">8Z-LO DNA Analysis Suite</div>
@@ -2103,7 +2030,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge gold">Multi-Null</span>
 </div>
 </div>
-<div class="proj-card rv vis" data-c="cyan">
+<div class="proj-card rv" data-c="cyan">
 <div class="pc-icon">📊</div>
 <div class="pc-domain">Key Finding</div>
 <div class="pc-title">Progressive Amplification</div>
@@ -2119,54 +2046,29 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <div class="divider" lang="en"></div>
 <section lang="en">
 <div class="wrap">
-<span class="sec-tag violet rv vis">Deep Tech &amp; Engineering</span>
-<h2 class="rv vis">Physical World Inventions</h2>
-<p class="rv vis">
-      Not everything lives in code. Three engineering concepts tackle waste heat recovery,
-      aviation fuel, and marine efficiency — each with detailed specifications ready for simulation.
-    </p>
+<span class="sec-tag violet rv">Deep Tech &amp; Engineering</span>
+<h2 class="rv">Physical World Inventions</h2>
+<p class="rv">Not everything lives in code. This branch spans energy, fluid systems, active vehicles, marine retrofit and aerospace-scale ideas. Each concept is framed by simulation, bench tests or explicit kill conditions rather than product claims.</p>
 <div class="proj-grid">
-<div class="proj-card rv rv-d1 vis" data-c="orange">
-<div class="pc-icon">🔥</div>
-<div class="pc-domain">Energy · Waste Heat Recovery</div>
-<div class="pc-title">DGTE — Double-Gravity Thermo Engine</div>
-<div class="pc-desc">Low-ΔT engine harvesting 60–150°C waste heat from data centers and industry. Phase-change capsules rise via buoyancy, fall via gravity, drive linear alternators. No turbines. RC1–RC5 specs complete.</div>
-<div class="pc-stats">
-<span class="badge orange">RC5 Design</span>
-<span class="badge muted">Target: 4–8% η<sub>net</sub></span>
-<span class="badge muted">CFD Ready</span>
+<div class="proj-card rv rv-d1" data-c="orange"><div class="pc-icon">🔥</div><div class="pc-domain">Energy · Heat / Gravity</div><div class="pc-title">DGTE — Double-Gravity Thermo Engine</div><div class="pc-desc">A heat-gradient-driven capsule-loop concept using gravity and buoyancy as motion-conversion strokes. Public status is bench-gated: crossover, sealing, losses and thermal closure matter more than headline efficiency.</div><div class="pc-stats"><span class="badge orange">Bench-Gated</span><span class="badge muted">Thermal Closure</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">crp/DGTE.html</span><a class="lc-visit" data-v="orange" href="crp/DGTE.html">Read →</a></div></div>
+<div class="proj-card rv rv-d2" data-c="cyan"><div class="pc-icon">💧</div><div class="pc-domain">Hydraulic Air · First-Gate Test</div><div class="pc-title">HTH — Horizontal Trompe Hybrid</div><div class="pc-desc">A low-cost physical kill-test branch. A transparent-channel rig can measure entrainment, separator pressure, loaded airflow and whether useful pneumatic output survives real losses.</div><div class="pc-stats"><span class="badge cyan">Cheap First Test</span><span class="badge muted">Measure Before Scale</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">crp/HTH.html</span><a class="lc-visit" data-v="cyan" href="crp/HTH.html">Read →</a></div></div>
+<div class="proj-card rv rv-d3" data-c="violet"><div class="pc-icon">◒</div><div class="pc-domain">Active Vehicle · Air / Water</div><div class="pc-title">APSV — Active Pressure-Skin Vehicle</div><div class="pc-desc">A vehicle-research seed treating hull surfaces as active flow-control organs across air, water and underwater regimes. The public branch stays arena-, simulation- and bench-gated.</div><div class="pc-stats"><span class="badge violet">Arena Seed</span><span class="badge muted">Simulation First</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">crp/APSV.html</span><a class="lc-visit" data-v="violet" href="crp/APSV.html">Read →</a></div></div>
+<div class="proj-card rv rv-d1" data-c="cyan"><div class="pc-icon">🚤</div><div class="pc-domain">Marine Retrofit</div><div class="pc-title">Modular Hydrofoils</div><div class="pc-desc">A retrofit hydrofoil-kit concept for boats with front-lift assist and full-lift variants, operating envelopes and a water-test roadmap. Practical value depends on mounting, stability and real drag measurements.</div><div class="pc-stats"><span class="badge cyan">Retrofit Path</span><span class="badge muted">Water-Test Roadmap</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">crp/Modular_Hydrofoils.html</span><a class="lc-visit" data-v="cyan" href="crp/Modular_Hydrofoils.html">Read →</a></div></div>
+<div class="proj-card rv rv-d2" data-c="green"><div class="pc-icon">🌊</div><div class="pc-domain">Marine · Wave / Breakwater</div><div class="pc-title">WFERA — Water-Flow Energy-Recovery Arena</div><div class="pc-desc">A multi-band hybrid breakwater research arena combining wave protection, energy recovery, global WEC baselines, RHP testing and retrofit-first engineering.</div><div class="pc-stats"><span class="badge green">Arena</span><span class="badge muted">Wave-Tank Gate</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">BD/WFERA.html</span><a class="lc-visit" data-v="green" href="BD/WFERA.html">Read →</a></div></div>
+<div class="proj-card rv rv-d3" data-c="gold"><div class="pc-icon">☀️</div><div class="pc-domain">Aerospace · Orbital Infrastructure</div><div class="pc-title">SORA — Solar Orbital Ring Accelerator</div><div class="pc-desc">A large-scale orbital-infrastructure idea that should live or die by simulation. The public page is explicitly simulation-ready, not a claim of present feasibility.</div><div class="pc-stats"><span class="badge gold">Simulation-Ready</span><span class="badge muted">Not Claimed Feasible</span></div><div class="lc-foot" style="margin-top:1rem"><span class="lc-url">crp/SORA.html</span><a class="lc-visit" data-v="gold" href="crp/SORA.html">Read →</a></div></div>
 </div>
-</div>
-<div class="proj-card rv rv-d1 vis" data-c="violet">
-<div class="pc-icon">✈️</div>
-<div class="pc-domain">Aviation · Infrastructure</div>
-<div class="pc-title">MAT — Maglev-Assisted Takeoff</div>
-<div class="pc-desc">Electromagnetic rails provide takeoff kinetic energy, regenerative braking captures landing energy. Reduces fuel burn, noise, runway stress. Conceptual design with energy calculations.</div>
-<div class="pc-stats">
-<span class="badge violet">Concept</span>
-<span class="badge muted">Energy Recovery</span>
-</div>
-</div>
-<div class="proj-card rv rv-d2 vis" data-c="cyan">
-<div class="pc-icon">🚤</div>
-<div class="pc-domain">Marine · Efficiency</div>
-<div class="pc-title">Modular Hydrofoils for Boats</div>
-<div class="pc-desc">Retrofit hydrofoil kits with hybrid front-lift / full-lift configurations. Target: 40% drag reduction at cruising speed. Conceptual geometries and early BOM sketches complete.</div>
-<div class="pc-stats">
-<span class="badge cyan">Retrofit Kit</span>
-<span class="badge muted">Small Ferries</span>
-</div>
-</div>
-</div>
+<p class="rv" style="margin-top:1.5rem"><a data-entry-link="" href="index-atlas.html">Explore the full physical-inventions branch →</a></p>
 </div>
 </section>
 <div class="divider" lang="en"></div>
-<section lang="en">
+<details class="intro-collapsible rv">
+<summary><span>More of the portfolio</span><small>Finance, games, stories, metrics and creative branches.</small></summary>
+<div class="intro-collapsible-body">
 <div class="wrap">
-<span class="sec-tag rose rv vis">Theory · Finance · Creative · Games</span>
-<h2 class="rv vis">The Full Spectrum</h2>
+<span class="sec-tag rose rv">Theory · Finance · Creative · Games</span>
+<h2 class="rv">The Full Spectrum</h2>
 <div class="proj-grid">
-<div class="proj-card rv vis" data-c="rose">
+<div class="proj-card rv" data-c="rose">
 <div class="pc-icon">🌌</div>
 <div class="pc-domain">Theoretical Physics · Consciousness</div>
 <div class="pc-title">CFH — Consciousness Field Hypothesis</div>
@@ -2177,7 +2079,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">RAIN Architecture</span>
 </div>
 </div>
-<div class="proj-card rv vis" data-c="green">
+<div class="proj-card rv" data-c="green">
 <div class="pc-icon">♟️</div>
 <div class="pc-domain">Live Product</div>
 <div class="pc-title">ChessBest.org — Cloud Chess Analysis</div>
@@ -2187,7 +2089,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">chessbest.org</span>
 </div>
 </div>
-<div class="proj-card rv vis" data-c="gold">
+<div class="proj-card rv" data-c="gold">
 <div class="pc-icon">📈</div>
 <div class="pc-domain">FinTech · Algo-Trading</div>
 <div class="pc-title">1s Sync Momentum &amp; Scalping Stack</div>
@@ -2198,7 +2100,7 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">Semi-Auto</span>
 </div>
 </div>
-<div class="proj-card rv vis" data-c="violet">
+<div class="proj-card rv" data-c="violet">
 <div class="pc-icon">🎲</div>
 <div class="pc-domain">Applied Statistics</div>
 <div class="pc-title">RNG Roulette — Promo EV Framework</div>
@@ -2208,28 +2110,28 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 <span class="badge muted">FDR Control</span>
 </div>
 </div>
-<div class="proj-card rv vis" data-c="cyan">
+<div class="proj-card rv" data-c="cyan">
 <div class="pc-icon">🏀</div>
 <div class="pc-domain">Sports Analytics</div>
 <div class="pc-title">MVI — Most Valuable Impact Metric</div>
 <div class="pc-desc">Single composite score combining peak, longevity, and context to compare basketball players across eras. Applied to NBA legends and active players.</div>
 <div class="pc-stats"><span class="badge cyan">Formula Defined</span><span class="badge muted">Cross-Era</span></div>
 </div>
-<div class="proj-card rv vis" data-c="orange">
+<div class="proj-card rv" data-c="orange">
 <div class="pc-icon">🌍</div>
 <div class="pc-domain">Geo-Analytics</div>
 <div class="pc-title">2PLI — Two-Point Living Index</div>
 <div class="pc-desc">Geo-arbitrage metric: Affordability (0.65) + Olympic presence per capita (0.35). Guards for micro-states and outliers. Country rankings generated.</div>
 <div class="pc-stats"><span class="badge orange">Complete</span><span class="badge muted">0.65A + 0.35O</span></div>
 </div>
-<div class="proj-card rv vis" data-c="rose">
+<div class="proj-card rv" data-c="rose">
 <div class="pc-icon">✨</div>
 <div class="pc-domain">Creative AI</div>
 <div class="pc-title">Nara / Illuminara Story Universe</div>
 <div class="pc-desc">Superhero/sci-fi canon where CFH's S-metric governs powers. Strict consent rules, emotional costs. Canon bible + episodes drafted. Narrative vehicle for consciousness theory.</div>
 <div class="pc-stats"><span class="badge rose">Canon Bible</span><span class="badge muted">S-Metric Powers</span></div>
 </div>
-<div class="proj-card rv vis" data-c="green">
+<div class="proj-card rv" data-c="green">
 <div class="pc-icon">🎨</div>
 <div class="pc-domain">Creative AI + Education</div>
 <div class="pc-title">π Estimation, Generative Art, MSFS Drone Tours</div>
@@ -2238,55 +2140,56 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </div>
 </div>
-</section>
+</div>
+</details>
 <div class="divider" lang="en"></div>
 <div class="wrap" lang="en">
-<div class="part-header rv vis">
+<div class="part-header rv">
 <div class="part-num two">II</div>
 <div class="part-label">What We Could Attack Next</div>
 </div>
 </div>
 <section lang="en">
 <div class="wrap">
-<span class="sec-tag gold rv vis">New Domains for MDL + DCC</span>
-<h2 class="rv vis">Where the Framework Transfers</h2>
-<p class="rv vis">
+<span class="sec-tag gold rv">New Domains for MDL + DCC</span>
+<h2 class="rv">Where the Framework Transfers</h2>
+<p class="rv">
       The core insight is domain-agnostic: <em>test whether a deterministic mathematical generator
       describes data more compactly than the best statistical coder, and use DCC to manage the search budget.</em>
       Four proven domains. Here are the next candidates.
     </p>
 <div class="opp-grid">
-<div class="opp-card rv rv-d1 vis" data-c="cyan" data-num="01">
+<div class="opp-card rv rv-d1" data-c="cyan" data-num="01">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">Network Traffic &amp; Protocol Streams</div>
 <div class="oc-desc">Internet packets and IoT telemetry are generated by state machines — literally deterministic generators with noise. MDL identifies handshakes, heartbeats, state transitions. Cloud providers store petabytes. DCC perfectly suited: structured bursts ↔ chaotic noise.</div>
 <div class="oc-fit"><strong>Transfer fit:</strong> Very high — protocol FSMs are generators</div>
 </div>
-<div class="opp-card rv rv-d1 vis" data-c="cyan" data-num="02">
+<div class="opp-card rv rv-d1" data-c="cyan" data-num="02">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">Financial Time Series — Structure Detection</div>
 <div class="oc-desc">Use MDL not just for compression but for signal detection: a generator that compresses price data better than ARIMA/GARCH has found something those models miss. Crosses from compression into regime detection. Directly extends the existing trading stack.</div>
 <div class="oc-fit"><strong>Transfer fit:</strong> High — extends existing crypto work</div>
 </div>
-<div class="opp-card rv rv-d2 vis" data-c="cyan" data-num="03">
+<div class="opp-card rv rv-d2" data-c="cyan" data-num="03">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">EEG &amp; Neural Signals → CFH Connection</div>
 <div class="oc-desc">Neural oscillations (alpha, beta, gamma) are partially described by coupled oscillators. MDL detects when brain signals match specific generators. Different MDL profiles for different consciousness states. Direct empirical hook for the S-metric and CFH.</div>
 <div class="oc-fit"><strong>Transfer fit:</strong> High — connects 8Z ↔ CFH empirically</div>
 </div>
-<div class="opp-card rv rv-d2 vis" data-c="cyan" data-num="04">
+<div class="opp-card rv rv-d2" data-c="cyan" data-num="04">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">Cryptographic RNG Validation</div>
 <div class="oc-desc">Flip the scanner: if any MDL-advantageous generator hits on data that should be random, the RNG is broken. More comprehensive than NIST SP 800-22 — tests against full generator library instead of fixed statistical suites. Zero tolerance for structure.</div>
 <div class="oc-fit"><strong>Transfer fit:</strong> Perfect — DNA Scanner architecture inverted</div>
 </div>
-<div class="opp-card rv rv-d3 vis" data-c="cyan" data-num="05">
+<div class="opp-card rv rv-d3" data-c="cyan" data-num="05">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">Scientific Sensor Data — Radio Astronomy, Seismology, CERN</div>
 <div class="oc-desc">Structured signals buried in noise with known physical generators (wave equations, decay curves, spectral lines). SKA telescope, CERN (1 PB/sec raw), seismic networks. MDL tests whether physics models compress better than statistics. Massive storage savings at scale.</div>
 <div class="oc-fit"><strong>Transfer fit:</strong> High — known generators + enormous data volumes</div>
 </div>
-<div class="opp-card rv rv-d3 vis" data-c="cyan" data-num="06">
+<div class="opp-card rv rv-d3" data-c="cyan" data-num="06">
 <div class="oc-type domain">Domain Transfer</div>
 <div class="oc-title">Manufacturing Anomaly Detection</div>
 <div class="oc-desc">Factory sensor streams follow predictable patterns when healthy. When the MDL-optimal generator changes — periodic to chaotic — that's an anomaly. DCC naturally tracks this as complexity shift. Industrial predictive maintenance via compression dynamics.</div>
@@ -2296,51 +2199,53 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </section>
 <div class="divider" lang="en"></div>
-<section lang="en">
+<details class="intro-collapsible rv">
+<summary><span>Future directions &amp; challenges</span><small>Competitions, publication paths and funding ideas — optional reading.</small></summary>
+<div class="intro-collapsible-body">
 <div class="wrap">
-<span class="sec-tag green rv vis">Competitions, Prizes &amp; Publication</span>
-<h2 class="rv vis">Challenges Worth Entering</h2>
-<p class="rv vis">
+<span class="sec-tag green rv">Competitions, Prizes &amp; Publication</span>
+<h2 class="rv">Challenges Worth Entering</h2>
+<p class="rv">
       Concrete competitions with prize money and publication paths where the existing
       8Z/MDL/DCC framework has genuine competitive advantage.
     </p>
 <div class="opp-grid">
-<div class="opp-card rv rv-d1 vis" data-c="green" data-num="H">
+<div class="opp-card rv rv-d1" data-c="green" data-num="H">
 <div class="oc-type comp">Competition · Compression</div>
 <div class="oc-title">Hutter Prize — €500,000 Pool</div>
 <div class="oc-desc">Compress 1 GB Wikipedia below 110 MB. Hutter's own theory: compression = intelligence. MDL generators on text could find structure context-mixing misses. Philosophically perfect alignment. Even 1% improvement = €5,000.</div>
 <div class="oc-prize">€500,000 pool · €5,000 per 1% improvement</div>
 <div class="oc-fit"><strong>Our edge:</strong> MDL generators — fundamentally different approach</div>
 </div>
-<div class="opp-card rv rv-d1 vis" data-c="green" data-num="G">
+<div class="opp-card rv rv-d1" data-c="green" data-num="G">
 <div class="oc-type comp">Competition · Compression</div>
 <div class="oc-title">GDCC — Global Data Compression Competition</div>
 <div class="oc-desc">€50,000 across 12 categories: text, images, executables, small blocks. Image category is where 8Z-TIF competes directly. Rewards algorithmic innovation over engineering. Needs C++ implementation for speed compliance.</div>
 <div class="oc-prize">€50,000 total · 12 categories · Recurring</div>
 <div class="oc-fit"><strong>Our edge:</strong> 8Z-Image already validated on test images</div>
 </div>
-<div class="opp-card rv rv-d2 vis" data-c="violet" data-num="A">
+<div class="opp-card rv rv-d2" data-c="violet" data-num="A">
 <div class="oc-type comp">Competition · Reasoning</div>
 <div class="oc-title">ARC Prize 2026 — ~$1M+ Grand Prize</div>
 <div class="oc-desc">Chollet's Abstraction and Reasoning Corpus: find the simplest generative rule explaining input-output grids. MDL-governed program synthesis with DCC managing search budget maps remarkably well. ARC-AGI-3 launches 2026 with interactive elements.</div>
 <div class="oc-prize">$1M+ grand prize · $250K+ progress prizes</div>
 <div class="oc-fit"><strong>Our edge:</strong> MDL = Kolmogorov complexity approximation</div>
 </div>
-<div class="opp-card rv rv-d2 vis" data-c="rose" data-num="V">
+<div class="opp-card rv rv-d2" data-c="rose" data-num="V">
 <div class="oc-type comp">Competition · Decipherment</div>
 <div class="oc-title">Vesuvius Challenge — Reading Ancient Scrolls</div>
 <div class="oc-desc">Detect ink traces in carbonized papyrus CT scans. Fundamentally a signal-in-noise problem on 3D volumetric data. MDL identifies structured signal vs. carbon noise. ~$200K in current prizes. ~$1.5M paid out total.</div>
 <div class="oc-prize">$200K current prizes · Ongoing</div>
 <div class="oc-fit"><strong>Our edge:</strong> Signal-in-noise detection is our specialty</div>
 </div>
-<div class="opp-card rv rv-d3 vis" data-c="green" data-num="P">
+<div class="opp-card rv rv-d3" data-c="green" data-num="P">
 <div class="oc-type comp">Publication · Biology</div>
 <div class="oc-title">DNA Math Paper — Peer-Reviewed Publication</div>
 <div class="oc-desc">Z-scores of 28–74 for mathematical structure in genomic DNA beyond Markov-2. Progressive amplification under harder null models. The paper is essentially written (v3.0). Target: Bioinformatics, PLOS Comp Bio, or Nucleic Acids Research. Preprint on bioRxiv for immediate visibility.</div>
 <div class="oc-prize">Scientific credibility · Field-establishing</div>
 <div class="oc-fit"><strong>Status:</strong> Paper v3.0 with appendices nearly complete</div>
 </div>
-<div class="opp-card rv rv-d3 vis" data-c="orange" data-num="E">
+<div class="opp-card rv rv-d3" data-c="orange" data-num="E">
 <div class="oc-type comp">Grant · Energy</div>
 <div class="oc-title">ARPA-E / EIC Pathfinder — DGTE Funding</div>
 <div class="oc-desc">ARPA-E funds high-risk energy concepts. European EIC Pathfinder funds deep-tech innovation. DGTE's RC1–RC5 specifications with thermodynamic analysis form a strong proposal basis. Grants of €1–3M for early-stage breakthrough concepts.</div>
@@ -2349,14 +2254,25 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </div>
 </div>
 </div>
-</section>
+</div>
+</details>
 <div class="divider" lang="en"></div>
-<section lang="en">
+<details class="intro-archive rv">
+<summary><span>Earlier highlights &amp; dated snapshots</span><small>Collapsed by default · current status lives in Now &amp; Next</small></summary>
+<div class="archive-links">
+<a href="index-todo.html"><strong>Current work →</strong><br>Use Now &amp; Next for the live workbench and current project status.</a>
+<a href="history/index.html"><strong>Humanity History →</strong><br>The September history-book launch highlight.</a>
+<a href="BD/BD_8Z_DCC7_Testbed.html"><strong>DCC-7 →</strong><br>March 2026 featured consciousness-testbed story.</a>
+<a href="BD/BD_8ZRP.html"><strong>8Z-RP / TSP →</strong><br>Earlier breakthrough narrative; current benchmark pages carry the evidence.</a>
+<a href="S/index.html"><strong>Sudoku →</strong><br>Earlier featured puzzle / solver story, now represented above as a normal product card.</a>
+<a href="crp/index.html"><strong>Core Research Papers →</strong><br>Research-paper hub behind the broader portfolio.</a>
+</div></details>
+<div class="divider" lang="en"></div><section lang="en">
 <div class="wrap">
-<span class="sec-tag rv vis" style="color:var(--green)">Continue exploring</span>
-<h2 class="rv vis">Choose the next step for you</h2>
-<p class="rv vis">Try something, explore the whole portfolio, or inspect the technical evidence. The personal workbench keeps planning separate from this introduction.</p>
-<div class="priority-box rv vis">
+<span class="sec-tag rv" style="color:var(--green)">Continue exploring</span>
+<h2 class="rv">Choose the next step for you</h2>
+<p class="rv">Try something, explore the whole portfolio, or inspect the technical evidence. The personal workbench keeps planning separate from this introduction.</p>
+<div class="priority-box rv">
 <h3 style="color:var(--green);font-size:1.1rem;margin-bottom:.3rem">Your next doorway</h3>
 <p style="font-size:.88rem;color:var(--muted)">Different routes for different visitors.</p>
 <div class="pri-grid">
@@ -2410,16 +2326,14 @@ html[data-theme="light"] :is(.card,.project-card,.tool-card,.story-card,.panel,.
 </ul>
 </div>
 <div class="foot-col">
-<h4>Key Numbers</h4>
+<h4>Portfolio at a Glance</h4>
 <ul class="ai-list">
-<li>32 projects across 5+ domains</li>
-<li>30 live web pages on chessbest.org</li>
-<li>30 years from Soul Voyage to now</li>
-<li>Z-scores 28–74 in DNA research</li>
-<li>Beats FLAC-12 on 7/15 clips</li>
-<li>44/50 genomes beat 7-Zip</li>
-<li>6 original songs benchmarked</li>
-<li>5 RC designs for DGTE engine</li>
+<li><span id="intro-footer-count">Featured entries</span> in this guided introduction</li>
+<li>6 curated areas in Try &amp; Explore</li>
+<li>Working demos · arenas · hypotheses · archives</li>
+<li>30-year continuity from 1995 to 2026</li>
+<li>Physical concepts remain simulation / bench gated</li>
+<li>Hypotheses are labeled as hypotheses</li>
 </ul>
 </div>
 </div>
@@ -2477,12 +2391,26 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)draw();});
 })();
 
 // ── Scroll Reveal ──
-const rvs=document.querySelectorAll('.rv');
-const io=new IntersectionObserver(es=>{
-es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}});
-},{threshold:0,rootMargin:'0px 0px -30px 0px'});
-rvs.forEach(r=>io.observe(r));
-setTimeout(()=>{rvs.forEach(r=>{if(!r.classList.contains('vis'))r.classList.add('vis')})},3000);
+const rvs=[...document.querySelectorAll('.rv')];
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(reduceMotion || !('IntersectionObserver' in window)){
+  rvs.forEach(r=>r.classList.add('vis'));
+}else{
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target)}});
+  },{threshold:.08,rootMargin:'0px 0px -8% 0px'});
+  rvs.forEach(r=>io.observe(r));
+}
+
+// ── Intro live counts ──
+(function(){
+  const entries=document.querySelectorAll('.live-card').length;
+  const areas=document.querySelectorAll('.section-divider[data-cat]').length;
+  const a=document.getElementById('intro-feature-count'),b=document.getElementById('intro-area-count'),f=document.getElementById('intro-footer-count');
+  if(a)a.textContent=entries;
+  if(b)b.textContent=areas;
+  if(f)f.textContent=entries+' featured entries';
+})();
 
 // ── Scroll Progress ──
 const spb=document.getElementById('spb');
