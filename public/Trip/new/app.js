@@ -26,6 +26,7 @@
   let statusTimer;
   let optimizationPending = false;
   let lastSolvedPoints = null;
+  let lastTravelSnapshot = null;
   let lastDirectKm = null;
   let lastPlanarCost = null;
   let currentTravelMode = 'DRIVING';
@@ -751,9 +752,47 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()"><span data-ui-text="🔗 Share trip">🔗 Share trip</span></button>
         <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()"><span data-ui-text="⛰️ Save GPX">⛰️ Save GPX</span></button>
+        <button id="btnTravel" type="button" class="btn-primary" style="grid-column:1/-1" data-ui-text="On the road →">On the road →</button>
       </div>
     `;
     el.appendChild(shareArea);
+    $('btnTravel').addEventListener('click', openTravelMode);
+  }
+
+  function openTravelMode() {
+    const snapshot = lastTravelSnapshot;
+    if (activeJob || !snapshot || snapshot.input !== $('input').value ||
+        snapshot.mode !== currentTravelMode || snapshot.roundTrip !== $('chkRoundTrip').checked ||
+        snapshot.direct !== $('chkDirect').checked || snapshot.planar !== planarSelected()) {
+      setStatus('Optimize this trip and finish the calculation before opening On the road.', 'warn');
+      return;
+    }
+    const stops = snapshot.stops;
+    if (!snapshot.direct || stops.some(p => p.lat === null)) {
+      setStatus('On the road saves Direct Line routes with coordinates entered in the editor. Switch to Direct Line and optimize again.', 'warn');
+      return;
+    }
+    if (stops.length > 250) {
+      setStatus('On the road supports up to 250 stops on a phone.', 'warn');
+      return;
+    }
+    if (stops.length < 2 || stops.some(p =>
+      !p.name || p.name.length > 500 ||
+      ((p.lat !== null || p.lon !== null) &&
+        (!Number.isFinite(p.lat) || !Number.isFinite(p.lon) ||
+         Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)))) {
+      setStatus('This route needs at least two valid stops.', 'warn');
+      return;
+    }
+    try {
+      localStorage.setItem('8z_trip_travel_route_v1', JSON.stringify({
+        version:1, savedAt:Date.now(), mode:snapshot.mode,
+        roundTrip:snapshot.roundTrip, stops, source:'lab'
+      }));
+      location.assign('travel.html');
+    } catch (error) {
+      setStatus('Could not save this route on this device. Check browser storage and retry.', 'bad');
+    }
   }
 
   window.setNavApp = function(app) {
@@ -1037,7 +1076,7 @@ Bad example:
     }
 
     // Merge history and system prompt for the proxy
-    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, default 5; only improved routes are redrawn. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +5 or +15 minutes, +1 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. Mobile displays only +5 min and +15 min; desktop shows all five extra-time options. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
+    const guiContext = `\nBrute Force can pause and resume in this open tab for the same stops, START, mode and distance table; reload or problem changes reset it. One compute worker runs on phones and desktops. Fast, Deep and Brute Force show live statistics below the map. Map/table refresh interval is selectable: 1, 5, 15, 30 or 60 seconds, 5 or 15 minutes, or 1 hour; default 5 seconds. It controls both improved map redraws and the active calculation-comparison row. Deep uses a shared local-time budget: 10s up to50 stops,30s up to100,60s up to500,180s up to1000,300s above1000. Deep stops on independently verified TSP optimum, timeout or cancellation. Continue calculating offers +5 or +15 minutes, +1 or +12 hours, or +1 day, adding the selected time to the same search and best route; paused time is excluded. Reload, problem changes or a new solve clear continuation. Mobile displays only +5 min and +15 min; desktop shows all five extra-time options. A verified optimum cannot be continued. Progress measures time-budget consumption, not optimality probability. Fast and the informational air row keep their prior bounded work. Savings compare to the entered order with START first. Help and Demo open short popups; More opens detailed articles in a separate tab. About is the second Help paragraph. Library is below results on phones. Current, Lab and Previous select versions. Save downloads editor text. GPX connects stop coordinates; it is not a detailed road track. Share encodes the current editor text in a URL.\nGUI state: mode=${currentTravelMode}; Round Trip=${$('chkRoundTrip').checked}; Direct Line=${$('chkDirect').checked}; Brute Force=${$('chkBrute').checked}; Planar TSP=${planarSelected()}. Planar TSP uses original rounded EUC_2D coordinates and units, not km. Known optimum comparison requires the full original round trip.\nOnly include editor commands when the user asks to create or change the trip. For help or discussion, explain without editing.\n`;
     const experimentalContext = window.TripPrivate?.enabled()
       ? '\nLAB experimental mode is enabled for Optimize (Deep): it runs locally in a browser Worker and pauses when the tab is hidden or closed. Unlock again to recover the last encrypted local checkpoint including the input and distance table. Continue adds time without fetching another road table. Fast and Brute Force keep their existing behavior.\n'
       : '';
@@ -1315,6 +1354,12 @@ Bad example:
   }
 
   function displayComparison(msg, job) {
+    const running = msg?.type === 'progress' || msg?.type === 'brute-progress';
+    if (running) {
+      const now = performance.now();
+      if (now - (job.lastComparisonRefresh ?? -Infinity) < mapRefreshInterval()) return;
+      job.lastComparisonRefresh = now;
+    }
     const name = msg.algorithm === 'brute' ? 'Brute Force' : job.private ? 'Our Optimize (Deep · MDLxDCC)' : job.profile === 'deep' ? 'Our Optimize (Deep)' : 'Our Optimize (Fast)';
     const state = msg.algorithm === 'brute'
       ? (msg.exact ? 'Exact optimum for this table' : msg.cancelled ? 'Cancelled · best found' : 'Running · best found')
@@ -1385,6 +1430,7 @@ Bad example:
     w.postMessage({type:'solve',profile:'air-comparison',jobId:job.jobId,points,startIdx,roundTrip:job.roundTrip});
   }
 
+
   function displayBruteProgress(msg, job) {
     $('bruteProgress').hidden = false;
     const rate = msg.elapsedMs > 0 ? Number(msg.checked) / (msg.elapsedMs/1000) : 0;
@@ -1416,6 +1462,19 @@ Bad example:
 
   function showSolvedRoute(msg, job, preview = false) {
     lastSolvedPoints = msg.pointsSorted;
+    lastTravelSnapshot = {
+      input:$('input').value, mode:job.mode, roundTrip:job.roundTrip,
+      direct:job.direct, planar:job.planar,
+      // Only coordinates authored in the editor may be saved. Geocoded Google
+      // coordinates, the road table and map geometry remain in memory only.
+      stops:msg.pointsSorted.map(p => {
+        const authored = parseStops(p.raw || '').pts[0];
+        const ownCoords = authored?.name === p.name && validCoordinates(authored) &&
+          authored.lat === p.lat && authored.lon === p.lon;
+        return {name:String(p.name || ''), lat:ownCoords ? authored.lat : null,
+          lon:ownCoords ? authored.lon : null};
+      })
+    };
     lastDirectKm = msg.directKm;
     lastPlanarCost = job.planar ? msg.totalCost : null;
     showSavings(msg);
@@ -1432,7 +1491,7 @@ Bad example:
 
   function mapRefreshInterval() {
     const selected = Number($('mapRefreshInterval')?.value);
-    return [1000,5000,15000,30000,60000].includes(selected) ? selected : 5000;
+    return [1000,5000,15000,30000,60000,300000,900000,3600000].includes(selected) ? selected : 5000;
   }
 
   function refreshBruteMap(msg, job) {
@@ -1738,7 +1797,7 @@ Bad example:
     if(job.profile==='deep'){if(job.private)observePrivateDiagnostics(msg,job);else observeOrdinaryDiagnostics(msg,job);}
     if (msg.type === 'brute-progress') { job.latest = msg; displayBruteProgress(msg, job); refreshBruteMap(msg, job); return; }
     if (msg.type === 'progress') {
-      job.latest = msg; displaySearchProgress(msg, job); refreshBruteMap(msg, job);
+      job.latest = msg; displaySearchProgress(msg, job); displayComparison(msg, job); refreshBruteMap(msg, job);
     }
     else if (msg.type === 'error') { clearTimeout(job.cancelTimer); activeJob = null; finishWork(); setStatus('Optimization failed: ' + msg.error, 'bad'); }
     else if (msg.type === 'result') {
@@ -1805,7 +1864,7 @@ Bad example:
     currentTravelMode = 'DRIVING';
     $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false; $('chkPlanar').checked = planar;
     updateModeButtons();
-    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null; lastPlanarCost = null;
+    lastResolvedStops = null; lastSolvedPoints = null; lastTravelSnapshot = null; lastDirectKm = null; lastPlanarCost = null;
     mapMarkers.forEach(marker => marker.setMap(null)); mapMarkers = [];
     routePolylines.forEach(line => line.setMap(null)); routePolylines = [];
     if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
@@ -1907,6 +1966,7 @@ Bad example:
     window.MDLxDCCLocale.subscribe(refreshTspLabels);
     $('input').addEventListener('input', () => {
       ++presetRequest; refreshTspNotice();
+      lastTravelSnapshot = null;
       $('mapRouteCaption').hidden = true;
       cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
       $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
