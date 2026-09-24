@@ -8,8 +8,8 @@
     notice.hidden = navigator.onLine && !pagesOnly;
     if (!navigator.onLine) {
       notice.textContent = window.MDLxDCCLocale?.current() === 'sl'
-        ? 'Brez povezave: shranjene strani in Direct Line z vnesenimi koordinatami delujejo. Spletna navigacija, zemljevid in AI potrebujejo povezavo.'
-        : 'Offline: saved pages and Direct Line with entered coordinates work. Online navigation, maps and AI need a connection.';
+        ? 'Brez povezave: knjižnični TSP in Direct Line delujeta lokalno. Za odklep MDL potrebuješ povezavo.'
+        : 'Offline: library TSP and Direct Line run locally. Unlocking MDL requires a connection.';
     } else if (pagesOnly) {
       notice.textContent = window.MDLxDCCLocale?.current() === 'sl'
         ? 'GitHub Pages: optimizacija Direct Line deluje z vnesenimi koordinatami. Cestne razdalje, vgrajeni zemljevid in AI tukaj niso na voljo.'
