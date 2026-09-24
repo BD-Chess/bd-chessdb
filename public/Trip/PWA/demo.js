@@ -1,0 +1,62 @@
+/* Historical demo data preserved from LAB16. */
+(() => {
+'use strict';
+const $=id=>document.getElementById(id);
+  const bi = (en,sl) => `<span class="lang-en">${en}</span><span class="lang-sl">${sl}</span>`;
+  const pagesOnly = location.hostname === 'bd-chess.github.io';
+  const cities = ['Berlin, Germany','Madrid, Spain','Rome, Italy','Paris, France','Vienna, Austria','Hamburg, Germany','Warsaw, Poland','Bucharest, Romania','Barcelona, Spain','Budapest, Hungary','Munich, Germany','Prague, Czechia','Milan, Italy','Sofia, Bulgaria'];
+  const photo = (file,en,sl) => `<figure><a href="images/${file}.webp" target="_blank" rel="noopener"><img loading="lazy" src="images/${file}.webp" alt="${en}"></a><figcaption>${bi(en,sl)}</figcaption></figure>`;
+  function renderDemo() {
+    $('demoPanel').innerHTML = `
+      <div class="demo-hero"><p class="eyebrow">8Z · EU15 · iPhone 16 Pro</p>
+      <h1 id="demoTitle">${bi('4 milliseconds to a solution.<br>57 minutes to exhaustive confirmation.','4 milisekunde do rešitve.<br>57 minut do popolnega preverjanja.')}</h1>
+      <p>${bi('One extra city. Fourteen times as many orders. Explore BD’s recorded European road trips and the difference between finding a good route and checking every possible order.','En dodaten kraj. Štirinajstkrat več vrstnih redov. Razišči BD-jevi evropski cestni poti in razliko med iskanjem dobre poti ter preverjanjem vseh možnih vrstnih redov.')}</p>
+      <div class="demo-cards"><div><strong><span data-ui-text="87,178,291,200">87,178,291,200</span></strong>${bi('orders checked · EU15','preverjenih vrstnih redov · EU15')}</div><div><strong><span data-ui-text="9,801.35 km">9,801.35 km</span></strong>${bi('Deep = completed Brute Force','Poglobljena metoda = dokončani Brute Force')}</div><div><strong><span data-ui-text="≈ 855,000×">≈ 855,000×</span></strong>${bi('ratio of displayed compute times','razmerje prikazanih časov izračuna')}</div></div></div>
+      ${pagesOnly ? `<p class="demo-note">${bi('These are historical road-distance results from the main site. City-only presets cannot run on GitHub Pages because address lookup is unavailable. To calculate here, choose a coordinate-backed trip from the Library or a TSP dataset.','To so zgodovinski rezultati s cestnimi razdaljami z glavnega spletnega mesta. Predlogov s samimi imeni mest na GitHub Pages ni mogoče izračunati, ker iskanje koordinat ni na voljo. Za izračun izberi primer s koordinatami iz knjižnice ali zbirko TSP.')}</p>` : ''}
+      <section><h2>${bi('Try the EU capitals','Preizkusi prestolnice EU')}</h2>
+      <p>${bi('Two new sets of selected EU capitals, sorted alphabetically in the selected language: 14 starts in Amsterdam; 15 adds Ljubljana as START. They are separate from the historical EU14/EU15 city sets measured below. Loading replaces the editor without starting a calculation.','Dva nova seznama izbranih prestolnic EU, po abecedi izbranega jezika: 14 ima izhodišče v Amsterdamu, 15 doda Ljubljano kot START. To sta druga seznama od spodaj izmerjenih zgodovinskih primerov EU14/EU15. Nalaganje zamenja urejevalnik brez zagona računanja.')}</p>
+      <div class="demo-actions"><button id="demoLoadCapitals14" class="btn-secondary" data-ui-text="Load 14 EU capitals" ${pagesOnly?'disabled title="Requires address lookup on the main site"':''}>Load 14 EU capitals</button><button id="demoLoadCapitals15" class="btn-primary" data-ui-text="Load 15 EU capitals" ${pagesOnly?'disabled title="Requires address lookup on the main site"':''}>Load 15 EU capitals</button></div>
+      <p data-ui-text="First try Optimize (Fast), then Optimize (Deep). Compare their routes, then select the Brute Force checkbox and press Run Brute Force to check every order. You can cancel and resume the calculation."></p>
+      <p class="demo-note"><a href="https://european-union.europa.eu/principles-countries-history/eu-countries_en" target="_blank" rel="noopener">${bi('EU country profiles','Podatki o državah EU')}</a></p></section>
+      <section><h2>${bi('The measurements','Meritve')}</h2>
+      <p>${bi('BD’s screenshots, 13 September 2026; iPhone 16 Pro as reported by BD. Drive · Round Trip · fixed START · the same directed road table within each case.','BD-jeve slike, 13. september 2026; iPhone 16 Pro po BD-jevem podatku. Vožnja · Povratna pot · fiksen START · ista usmerjena cestna matrika znotraj posameznega primera.')}</p>
+      <div class="comparison-scroll"><table class="demo-table"><thead><tr><th>${bi('Case','Primer')}</th><th>${bi('Fast','Hitro')}</th><th>${bi('Deep','Poglobljeno')}</th><th>Brute Force</th></tr></thead><tbody>
+      <tr><th>EU14 · 13!</th><td><span data-ui-text="1.00 ms">1.00 ms</span><br><span data-ui-text="9,633.59 km">9,633.59 km</span></td><td><span data-ui-text="12.00 ms">12.00 ms</span><br><span data-ui-text="9,633.59 km">9,633.59 km</span></td><td><span data-ui-text="3.5 min">3.5 min</span><br><span data-ui-text="9,633.59 km">9,633.59 km</span></td></tr>
+      <tr><th>EU15 · 14!</th><td>${bi('Below timer resolution¹','Pod ločljivostjo časovnika¹')}<br><span data-ui-text="10,177.43 km">10,177.43 km</span><br><small><span data-ui-text="+376.08 km">+376.08 km</span> · <span data-ui-text="+3.84%">+3.84%</span></small></td><td><span data-ui-text="4.00 ms">4.00 ms</span><br><span data-ui-text="9,801.35 km">9,801.35 km</span></td><td><span data-ui-text="57.0 min">57.0 min</span><br><span data-ui-text="9,801.35 km">9,801.35 km</span></td></tr></tbody></table></div>
+      <p class="demo-note">${bi('¹ The historical screenshot reads “0 s”; this does not mean zero computation. Displayed times are rounded and exclude geocoding, road-table retrieval and map drawing. Brute Force includes cooperative pauses. These are two observed cases, not a universal speed or optimality guarantee.','¹ Zgodovinska slika kaže »0 s«; to ne pomeni ničelnega časa izračuna. Prikazani časi so zaokroženi in ne vključujejo geokodiranja, pridobivanja cestne matrike in risanja mape. Brute Force vključuje premore za odzivnost. To sta dva opažena primera, ne splošno jamstvo hitrosti ali optimalnosti.')}</p>
+      <p>${bi('Deep matched the table optimum in both cases. Fast missed it in EU15. Full enumeration is one way to prove an optimum; faster exact algorithms also exist. The comparison is between our heuristic and full enumeration. It does not benchmark the best exact solvers.','Poglobljena metoda se v obeh primerih ujema z optimumom matrike. Hitra metoda ga pri EU15 ni dosegla. Popolno naštevanje je eden od načinov dokazovanja optimuma; obstajajo tudi hitrejši eksaktni algoritmi. Demo primerja našo hevristiko s popolnim naštevanjem, ne z najboljšimi eksaktnimi reševalniki.')}</p>
+      <div class="demo-actions"><button id="demoLoad14" class="btn-secondary" ${pagesOnly?'disabled title="Requires address lookup on the main site"':''}>${bi('Load EU14 city set','Naloži nabor EU14')}</button><button id="demoLoad15" class="btn-primary" ${pagesOnly?'disabled title="Requires address lookup on the main site"':''}>${bi('Load EU15 · Ljubljana START','Naloži EU15 · Ljubljana START')}</button></div>
+      <p class="demo-note">${bi('Loads the city names without starting calculation. These presets reproduce the city set, not the historical coordinates/table. Google may resolve different endpoints or update routes. EU14 uses Berlin as the preset START; EU15 uses Ljubljana.','Naloži imena mest in ne zažene računanja. Predlogi ponovijo nabor mest, ne zgodovinskih koordinat/matrike. Google lahko izbere drugačne točke ali posodobi poti. Predlog EU14 ima START v Berlinu, EU15 v Ljubljani.')}</p></section>
+      <section class="factorial-lab"><h2>${bi('How quickly does the search grow?','Kako hitro naraste prostor iskanja?')}</h2>
+      <label for="demoCities">${bi('Stops, including START','Postanki, vključno s START')} <output id="demoCityCount"><span data-ui-text="15">15</span></output></label>
+      <input id="demoCities" type="range" min="2" max="40" value="15">
+      <label for="demoRate">${bi('Orders checked per second','Preverjenih vrstnih redov na sekundo')}</label>
+      <select id="demoRate"><option value="25511839" data-ui-text="EU15 · 25,511,839 / s">EU15 · 25,511,839 / s</option><option value="1000000" data-ui-text="1,000,000 / s">1,000,000 / s</option><option value="1000000000" data-ui-text="1,000,000,000 / s">1,000,000,000 / s</option></select>
+      <div id="factorialResult" role="status"></div><div class="cosmic-scale"><span>${bi('A human journey','Človeško potovanje')}</span><div id="cosmicBar"></div><span>${bi('Age of the universe','Starost vesolja')}</span></div>
+      <p class="demo-note">${bi('Estimate = (n−1)! ÷ selected rate. START is fixed; opposite directions are counted separately. The rate is held constant for illustration; larger trips and phone backgrounding can be slower. The graphic uses a logarithmic time scale.','Ocena = (n−1)! ÷ izbrana hitrost. START je fiksen; nasprotni smeri se štejeta ločeno. Hitrost je za ponazoritev konstantna; večje poti in delo telefona v ozadju so lahko počasnejši. Grafika uporablja logaritemsko časovno skalo.')}
+      <a href="https://science.nasa.gov/universe/overview/" target="_blank" rel="noopener">${bi('NASA · ≈ 13.8 billion years','NASA · ≈ 13,8 milijarde let')}</a></p></section>
+      <section><h2>${bi('Original screenshots · tap to inspect','Izvirne slike · dotakni se za ogled')}</h2><div class="demo-gallery">
+      ${photo('EU-15-08-method-comparison-final','EU15 · final method comparison','EU15 · končna primerjava metod')}
+      ${photo('EU-15-07-bruteforce-complete','EU15 · all 87,178,291,200 orders checked','EU15 · preverjenih vseh 87.178.291.200 vrstnih redov')}
+      ${photo('EU-15-02-road-route','EU15 · road route','EU15 · cestna pot')}
+      ${photo('EU-14-06-method-comparison','EU14 · final method comparison','EU14 · končna primerjava metod')}
+      ${photo('EU-14-05-bruteforce-complete','EU14 · completed enumeration','EU14 · dokončano naštevanje')}
+      ${photo('EU-14-01-cities-top14','BD’s selected EU14 city list','BD-jev izbrani seznam mest EU14')}
+      </div><p class="demo-note">${bi('Original CURRENT screenshots are preserved unchanged. The road map displays 9,801.39 km while the EU15 comparison table sums to 9,801.35 km: a displayed multi-stop route can differ from independently routed pairs. The population list is BD’s input selection, not a verified population ranking.','Izvirne slike takratne verzije CURRENT so ohranjene brez sprememb. Cestna mapa kaže 9.801,39 km, matrika EU15 pa skupaj 9.801,35 km: prikazana pot z več postanki se lahko razlikuje od vsote neodvisno izračunanih odsekov. Seznam prebivalstva je BD-jev izbor vhodnih podatkov, ne preverjena demografska lestvica.')}</p></section>`;
+    const update = () => {
+      const n = Number($('demoCities').value), total = TripBruteForce.orders(n), rate = Number($('demoRate').value);
+      const sec = Number(total)/rate, age = 13.8e9*31557600, ratio = sec/age;
+      $('demoCityCount').textContent = n;
+      $('factorialResult').innerHTML = `<strong>(${n}−1)! = ${total.toLocaleString(window.MDLxDCCLocale.current()==='sl'?'sl-SI':'en-US')}</strong><p>${bi('Estimated full search','Ocenjen čas celotnega iskanja')}: <b>${window.TripUI.t(TripBruteForce.duration(sec))}</b></p><p>${window.TripUI.t(ratio.toExponential(2))} × ${bi('the age of the universe','starost vesolja')}</p>`;
+      $('cosmicBar').style.width = Math.max(0,Math.min(100,Math.log10(1+sec)/Math.log10(1+age)*100))+'%';
+    };
+    $('demoCities').oninput=update; $('demoRate').onchange=update; update();
+    function load(withLj) {
+      location.href = 'index.html?lang='+window.MDLxDCCLocale.current()+'&preset='+(withLj?'eu15':'eu14');
+    }
+    $('demoLoadCapitals14').onclick=()=>{location.href='index.html?lang='+window.MDLxDCCLocale.current()+'&preset=capitals14';};
+    $('demoLoadCapitals15').onclick=()=>{location.href='index.html?lang='+window.MDLxDCCLocale.current()+'&preset=capitals15';};
+    $('demoLoad14').onclick=()=>load(false); $('demoLoad15').onclick=()=>load(true);
+  }
+document.addEventListener('DOMContentLoaded',()=>{renderDemo();window.MDLxDCCLocale.subscribe(()=>{document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===window.MDLxDCCLocale.current())));$('demoCities').oninput();});document.querySelectorAll('[data-language]').forEach(b=>b.onclick=()=>window.MDLxDCCLocale.choose(b.dataset.language));});
+})();

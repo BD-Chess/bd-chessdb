@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="color-scheme" content="dark">
+  <title>8Z Trip · On the road</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="travel.css">
+  <script src="locale.js"></script>
+  <script src="travel.js" defer></script>
+  <script src="pwa.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="back" href="./" id="backLink">← <span data-t="back">Trip PWA</span></a>
+      <div class="brand"><span class="brand-mark">8Z</span> <span data-t="title">On the road</span></div>
+      <div class="language" role="group" aria-label="Language / Jezik">
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="sl" aria-pressed="false">SL</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="empty" class="panel empty" hidden>
+        <h1 data-t="emptyTitle">No route saved for travel</h1>
+        <p data-t="emptyBody">Optimize a trip in Trip PWA, then choose “On the road” from its route results.</p>
+        <a class="button primary" href="./" data-t="planRoute">Plan a route</a>
+      </section>
+
+      <div id="travel" hidden>
+        <div class="intro">
+          <div>
+            <div class="eyebrow">8Z TRIP · PWA</div>
+            <h1 data-t="title">On the road</h1>
+          </div>
+          <span class="mode" id="mode"></span>
+        </div>
+
+        <p id="savedInfo" class="saved-info"></p>
+        <p class="method-info" data-t="methodInfo">Stop order uses straight-line distances. Maps chooses the road or walking route to each stop.</p>
+        <div id="connectionInfo" class="notice" hidden data-t="offlineInfo">This route is saved on this device. Maps may need an internet connection.</div>
+
+        <section class="panel focus" aria-labelledby="nextHeading">
+          <div class="progress-head">
+            <h2 id="nextHeading" data-t="next">Next stop</h2>
+            <span id="progress" class="progress" aria-live="polite"></span>
+          </div>
+          <p class="current-label" data-t="current">Current stop</p>
+          <p class="current-place" id="currentPlace"></p>
+          <div class="direction" aria-hidden="true">↓</div>
+          <p class="next-place" id="nextPlace" aria-live="polite"></p>
+          <p id="navigationNote" class="navigation-note" data-t="navigationNote">Navigation opens from your current location. Check the destination before setting off.</p>
+          <div id="navigation" class="navigation">
+            <a id="appleLink" class="button apple" href="#" target="_blank" rel="noopener noreferrer" data-t="apple">Open Apple Maps ↗</a>
+            <a id="googleLink" class="button google" href="#" target="_blank" rel="noopener noreferrer" data-t="google">Open Google Maps ↗</a>
+          </div>
+          <div class="progress-actions">
+            <button id="previous" type="button" class="button secondary" data-t="previous">← Previous stop</button>
+            <button id="visited" type="button" class="button primary" data-t="visited">Mark stop visited ✓</button>
+          </div>
+          <p id="saveWarning" class="save-warning" role="status" hidden></p>
+        </section>
+
+        <section class="panel itinerary" aria-labelledby="stopsHeading">
+          <div class="section-heading">
+            <h2 id="stopsHeading" data-t="stops">Stops</h2>
+            <span id="stopCount"></span>
+          </div>
+          <ol id="stopList"></ol>
+        </section>
+
+        <div class="footer-actions">
+          <a class="edit" href="./" data-t="backToPlan">← Back to Trip PWA</a>
+          <button id="clear" type="button" class="clear" data-t="clear">Remove travel route</button>
+        </div>
+        <p class="privacy" data-t="localInfo">Route and visited stops stay in this browser. No live location tracking runs here.</p>
+      </div>
+    </main>
+  </div>
+  <noscript><p class="noscript">This travel view requires JavaScript. / Ta pogled potrebuje JavaScript.</p></noscript>
+</body>
+</html>
