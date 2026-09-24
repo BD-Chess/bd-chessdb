@@ -12,18 +12,22 @@ export function nextArchive(names) {
 }
 export function checkVersions(repo, base) {
   const app = path.join(repo, 'public/chess');
-  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new']];
+  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new'],['PWA','PWA']];
   for (const [name, dir] of channels) {
     const file = path.join(app, dir, 'index.html');
     if (!fs.existsSync(file)) { errors.push(`${name}: missing entry page`); continue; }
     const html = fs.readFileSync(file, 'utf8');
     const nav = html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/g) || [];
     if (nav.length !== 1) { errors.push(`${name}: expected one version selector`); continue; }
+    const links = [...nav[0].matchAll(/<a href="([^"]+)"([^>]*)>([^<]+)<\/a>/g)];
+    if (links.length !== channels.length) errors.push(`${name}: expected ${channels.length} version links`);
+    if (links.filter(link => link[2].includes('aria-current="page"')).length !== 1) errors.push(`${name}: expected one active channel`);
     for (const [label, suffix] of channels) {
-      const href = `/chess/${suffix ? suffix + '/' : ''}`;
-      const link = nav[0].match(new RegExp(`<a href="${href}"([^>]*)>${label}</a>`));
+      // Relative URLs also work when Pages hosts the repository below /bd-chessdb/.
+      const href = dir === suffix ? './' : `${dir ? '../' : './'}${suffix ? suffix + '/' : ''}`;
+      const link = links.find(candidate => candidate[1] === href && candidate[3] === label);
       if (!link) errors.push(`${name}: missing direct ${label} link`);
-      else if (link[1].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
+      else if (link[2].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
     }
     if (!html.includes('id="bd-version-style"')) errors.push(`${name}: selector CSS is not self-contained`);
   }
@@ -31,6 +35,7 @@ export function checkVersions(repo, base) {
   const archiveNames = fs.existsSync(old) ? fs.readdirSync(old,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name).filter(n=>/^\d{3,}$/.test(n)) : [];
   const next = nextArchive(archiveNames);
   const metadata = JSON.parse(fs.readFileSync(path.join(app,'versions.json'),'utf8'));
+  if (metadata.pwa !== '/chess/PWA/') errors.push('PWA metadata mismatch');
   const listed = (metadata.archives || []).map(a=>a.id).sort();
   if (JSON.stringify(archiveNames.sort()) !== JSON.stringify(listed)) errors.push('Archive directory/metadata mismatch');
   const redirects = fs.readFileSync(path.join(repo,'public/_redirects'),'utf8');

@@ -3,21 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChessBest.org — DCC Analysis Lab</title>
+  <title>ChessBest.org PWA — DCC Analysis Lab</title>
+  <meta name="theme-color" content="#16382b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ChessBest">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- ── SEO / Social / AI-readability ── -->
   <meta name="description" content="Explore chess with ChessDB evaluations, DCC lookahead, measured line coverage, a searchable game library, and live play. An experimental analysis layer from BD × AI Lab.">
   <meta name="author" content="Bojan Dobrečevič">
   <meta name="keywords" content="chess analysis, ChessDB, MDL×DCC, MDLxDCC, DCC lookahead, 8Z, chess engine, BD AI Lab, AIM3, Bojan Dobrečevič, MDL DCC">
   <meta name="robots" content="noindex, nofollow, noarchive">
-  <link rel="canonical" href="https://www.mdlxdcc.org/chess/new/">
+  <link rel="canonical" href="https://bd-chess.github.io/bd-chessdb/chess/PWA/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ChessBest.org">
   <meta property="og:title" content="ChessBest.org — 8Z DCC Eval Layer (MDL×DCC)">
   <meta property="og:description" content="ChessDB analysis with transparent DCC line sensors, a shared move policy, and a responsive board.">
-  <meta property="og:url" content="https://www.mdlxdcc.org/chess/new/">
+  <meta property="og:url" content="https://bd-chess.github.io/bd-chessdb/chess/PWA/">
   <meta property="og:image" content="https://www.mdlxdcc.org/og-image.png">
   <meta property="og:locale" content="en_US">
 
@@ -59,7 +65,7 @@
       {
         "@type": "WebApplication",
         "name": "8Z DCC Eval Layer",
-        "url": "https://www.mdlxdcc.org/chess/new/",
+        "url": "https://bd-chess.github.io/bd-chessdb/chess/PWA/",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Web browser",
         "browserRequirements": "Requires JavaScript",
@@ -83,6 +89,8 @@
     body.light-theme .bd-version-selector a[aria-current="page"]{color:#164c2c;background:#e1f3e6;border-color:#659275}
     .bd-version-selector--legacy{justify-content:center;margin:0 0 10px}
     @media(max-width:600px){.bd-version-selector a{min-height:32px}}
+    #chessPwaNotice{margin:0;padding:8px 16px;color:#f4eed7;background:#493714;font:600 13px/1.4 system-ui,sans-serif;text-align:center}
+    body.light-theme #chessPwaNotice{color:#513700;background:#ffecb2}
   </style>
 </head>
 <body>
@@ -91,7 +99,7 @@
     <div class="brand-line">
       <div class="brand-mark" aria-hidden="true">8z</div>
       <div>
-        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB <span class="development-label">DEVELOPMENT</span></div>
+        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB <span class="development-label">LAB · PWA</span> <span id="chessPwaReady" hidden>· Offline ready</span></div>
         <h1 id="pageTitle">
           <a href="./" id="bestMoveLink" role="button" title="Play the best available move" aria-label="ChessBest.org — play the best available move">ChessBest.org</a>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
@@ -99,8 +107,8 @@
         <nav class="bd-version-selector" aria-label="Application versions">
           <a href="../">CURRENT</a>
           <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../old/">PREVIOUS</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">LAB</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../PWA/">PWA</a>
+          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../new/">LAB</a>
+          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">PWA</a>
         </nav>
       </div>
     </div>
@@ -109,6 +117,7 @@
       <a href="8zc-help.html#dcc">How DCC works</a>
     </nav>
   </header>
+  <p id="chessPwaNotice" role="status" hidden>Offline: board, game library and local Stockfish work; ChessDB, Lichess and Gemini need internet access.</p>
   <div id="pageSubtitle">Read the position. Explore the line. <span>ChessDB + DCC lookahead.</span></div>
 
   <main id="main" tabindex="-1">
@@ -529,7 +538,7 @@
   </dialog>
 
   <!-- Sim Modal -->
-  
+
 <div id="simModal" class="sim-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="simModalTitle" style="display:none;">
   <div class="sim-modal-card">
     <div class="sim-modal-title" id="simModalTitle">Sim — 8Z DCC research</div>
@@ -668,6 +677,7 @@
   <script src="js/8zc-utils.js?v=20260913-click1"></script>
   <script src="js/8zc-new-ui.js?v=20260913-game-title1"></script>
   <script src="js/8zc-lab-layout.js?v=20260913-lab1"></script>
+  <script src="pwa.js"></script>
 
 </body>
 </html>
