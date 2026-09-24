@@ -1,0 +1,36 @@
+{
+  "schema": "flip4m.release.v1",
+  "version": "2.1.2-smart-time",
+  "date": "2026-09-13",
+  "path": "/bd-chessdb/F4M/PWA/",
+  "role": "PWA",
+  "base": "Flip4M LAB /F4M/new/ (2.1.2-smart-time)",
+  "smart_time": {
+    "applies_to": ["grandmaster", "champion"],
+    "unchanged_profiles": ["beginner", "casual", "strong", "master"],
+    "grandmaster_max_ms": 60000,
+    "champion_max_ms": 120000,
+    "opening": {"empty_ms": 1000, "first_reply_grandmaster_ms": 2000, "first_reply_champion_ms": 3000, "two_to_three_tokens_grandmaster_ms": 4000, "two_to_three_tokens_champion_ms": 6000},
+    "complexity_inputs": ["occupied tokens", "open two/three threats", "active magnets", "remaining tools"],
+    "contract": "60s/120s are ceilings, not mandatory waits. Classical and DCC receive the same deterministic effective budget. Proven results may still finish early."
+  },
+  "versioning": {
+    "standard": "BD_WEB_APP_VERSIONING_V1",
+    "current": "../",
+    "previous": "../old/",
+    "lab": "../new/",
+    "pwa": "./",
+    "archive_pattern": "../old/NNN/",
+    "document": "../f4m/"
+  },
+  "tests": {
+    "smart_time_unit": "PASS",
+    "master_4500_unchanged": true,
+    "empty_grandmaster_ms": 1000,
+    "empty_champion_ms": 1000,
+    "first_reply_grandmaster_ms": 2000,
+    "first_reply_champion_ms": 3000,
+    "syntax": "PASS"
+  },
+  "note": "PWA is copied from LAB. Same rules and local AI, with separately named storage and version-scoped offline cache."
+}
