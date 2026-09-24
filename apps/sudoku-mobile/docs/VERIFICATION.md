@@ -1,0 +1,11 @@
+# Build and verification receipt — candidate source, 2026-09-24 UTC
+
+Scope: SOURCE_PROJECT_READY; DEVICE_AND_STORE_PENDING. This receipt records the local source/project verification and is updated with the draft PR URL and tested commit once published.
+
+Source: BD-Chess/bd-chessdb main a837555dc5547958925be9c0fabd61b2c9980095. LAB donor public/S/new/app.html Git blob 9fbc5103e0bd621fc555760497d5eb2b528e454f, SHA-256 88b7e2ebed713edb46aa39dfc5e98003b7160aa0b1b9539b3ea2ae2ef6645050. PWA icon Git blob 43f57c20e60f0034d000286c791e34f4ac423c6b, SHA-256 85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc. The eight LAB payload text files are unused by the self-contained donor.
+
+Commands completed in Linux / Node v24.19.0 / npm 11.9.0: npm run verify:donor, npm ci, npm run sync, npm test (8 narrow tests PASS). Capacitor 8.5.2 generated Android and iOS projects; targetSdkVersion 36. Native copies contain web/index.html, web/bridge.js and icon.png after sync. Bundled index SHA-256: c122e92d04e8c02182ccb70964bed678672c083e32f3d5d298e7b4b82536eb53. Capacitor Doctor reports current v8.5.2 dependencies and Android configuration success; it exits with Xcode not installed in this Linux environment.
+
+Checks cover seeded unique puzzle and certified solution, checked hint and Game Review parity, entry/notes/erase/undo mutations, background save and guarded timer resume, all known local data keys on Delete local data (including unload event order), consent revocation for machine/tutor/trace, phone/tablet keypad transitions, and static no automatic network/no Android INTERNET permission. This does not claim device or native-binary success.
+
+Open gates: Android SDK and emulator/device were not present in this Linux environment, so there is no APK or AAB. macOS/Xcode 26 and an iPhone were unavailable, so there is no iOS compile/IPA/iPhone acceptance. The cloud browser refused localhost, so no visual/offline browser launch is claimed. Before release, run Android debug and iPhone Xcode installations, check airplane mode, import/share/save/delete, process termination, accessibility, insets and labels on actual devices. Then BD can review proposed identifier/icon and authorize any account/signing/store upload separately.
