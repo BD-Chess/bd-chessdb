@@ -28,7 +28,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260914-hd2">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260924-sf1">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260913-lab1">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20260913-lab1">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
@@ -109,7 +109,7 @@
       <a href="8zc-help.html#dcc">How DCC works</a>
     </nav>
   </header>
-  <div id="pageSubtitle">Read the position. Explore the line. <span>ChessDB + DCC lookahead.</span></div>
+  <div id="pageSubtitle">Read the position. Explore the line. <span>ChessDB or local Stockfish + DCC lookahead.</span></div>
 
   <main id="main" tabindex="-1">
     <!-- --------------- BOARD --------------- -->
@@ -152,6 +152,12 @@
       <!-- Opening name -->
       <div id="openingName"></div>
       <!-- Move/DCC/Sim toggle -->
+      <div class="analysis-source-row" aria-label="Main analysis source">
+        <label for="analysisSource">Analysis</label>
+        <select id="analysisSource" aria-label="Analysis source"><option value="auto">Auto</option><option value="cdb">CDB</option><option value="sf">SF</option></select>
+        <label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox"> DCC</label>
+        <span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span>
+      </div>
       <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
         <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Automated game: DCC vs selected opponent" aria-label="Sim: automated DCC versus opponent">Sim</button>
         <button class="btn btn-nav" id="btnSimW" style="font-size:11px; padding:3px 8px; background:#2a3020; border:1px solid rgba(52,211,153,0.25); color:#34d399;" title="Engine plays White; you play Black" aria-label="SimW: engine White, human Black">SimW</button>
@@ -181,7 +187,8 @@
         <small id="humanReview"></small>
       </div>
 
-      <div id="simDecisionPanel" class="sim-decision" style="display:none;" aria-label="CDB and DCC decision comparison"></div>
+      <div id="simDecisionPanel" class="sim-decision" style="display:none;" aria-label="Raw engine and DCC decision comparison"></div>
+      <div id="analysisCandidates" class="sim-decision" style="display:none;" aria-label="Active analysis candidates"></div>
 
       <!-- Move history (default view) -->
       <div id="moves"></div>
@@ -254,7 +261,7 @@
           <label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
           <details class="lab-subsettings">
             <summary>Pause Sim at an interesting position</summary>
-            <label><input type="checkbox" id="settingLabPauseDisagreement"> CDB and DCC choose different moves</label>
+            <label><input type="checkbox" id="settingLabPauseDisagreement"> Raw engine and DCC choose different moves</label>
             <label><input type="checkbox" id="settingLabPauseSwing"> Evaluation changes sharply</label>
             <label for="settingLabPauseSwingCp">Evaluation change (centipawns):</label>
             <input type="number" id="settingLabPauseSwingCp" value="50" min="10" max="2000" step="10" inputmode="numeric">
@@ -533,10 +540,10 @@
 <div id="simModal" class="sim-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="simModalTitle" style="display:none;">
   <div class="sim-modal-card">
     <div class="sim-modal-title" id="simModalTitle">Sim — 8Z DCC research</div>
-    <div id="simModeHint" class="sim-inline-note" style="display:block; margin:-4px 0 12px; line-height:1.45;">DCC stays on in every mode, analyzes both sides, and is saved into the PGN/comments.</div>
+    <div id="simModeHint" class="sim-inline-note" style="display:block; margin:-4px 0 12px; line-height:1.45;">Choose a source and controller independently for each side.</div>
     <label class="sim-option-row">
       <input type="radio" name="simOpponent" value="self" checked>
-      <span>Local engines <span class="sim-inline-note">(CDB / CDB + DCC)</span></span>
+      <span>Local engines <span class="sim-inline-note">(CDB, CDB + DCC, SF, SF + DCC)</span></span>
     </label>
     <label class="sim-option-row">
       <input type="radio" name="simOpponent" value="lichess">
@@ -554,13 +561,16 @@
       <p class="sim-position-info" id="simPositionInfo"></p>
       <div class="sim-form-grid">
         <label for="simWhiteEngine">White engine</label>
-        <select id="simWhiteEngine"><option value="raw" selected>CDB (top 1)</option><option value="dcc">CDB + DCC</option></select>
+        <select id="simWhiteEngine"><option value="raw" selected>CDB (top 1)</option><option value="dcc">CDB + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option></select>
         <label for="simBlackEngine">Black engine</label>
-        <select id="simBlackEngine"><option value="raw">CDB (top 1)</option><option value="dcc" selected>CDB + DCC</option></select>
+        <select id="simBlackEngine"><option value="raw">CDB (top 1)</option><option value="dcc" selected>CDB + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option></select>
+        <label for="simSFNodes">SF root budget</label>
+        <select id="simSFNodes"><option value="12000">12,000 nodes / side</option><option value="24000" selected>24,000 nodes / side</option><option value="48000">48,000 nodes / side</option></select>
         <label for="simLocalSpeed">Move pause</label>
         <select id="simLocalSpeed"><option value="5000">5s · inspect choices</option><option value="2000">2s</option><option value="1000" selected>1s</option><option value="400">0.4s</option><option value="0">Fast · keep board visible</option></select>
       </div>
       <button type="button" id="simSwapEngines" class="btn">Swap White / Black</button>
+      <div class="sim-inline-note">SF + DCC adds 3,000 nodes per continuation probe. Root and extra nodes are exported separately; compute is unmatched.</div>
     </div>
     <div class="sim-form-grid" id="simSessionOptions">
       <label for="simColorSelect" id="simColorLabel">8Z color</label>
@@ -653,19 +663,20 @@
 </script>
   <!-- DCC-enhanced utils -->
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
-  <script src="js/8zc-sim-core.js?v=20260913-lab1"></script>
+  <script src="js/8zc-sim-core.js?v=20260924-sf1"></script>
   <script src="js/8zc-time-core.js?v=20260913-lab1"></script>
-  <script src="js/8zc-eval-bar.js?v=20260913-lab1"></script>
+  <script src="js/8zc-eval-bar.js?v=20260924-sf1"></script>
   <script src="js/8zc-workspace.js?v=20260913-lab1"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
   <script src="js/8zc-study-ui.js?v=20260913-lab1"></script>
   <script src="js/8zc-deep-engine.js?v=20260913-lab1"></script>
+  <script src="js/8zc-sf-provider.js?v=20260924-sf1"></script>
   <script src="js/8zc-deep-ui.js?v=20260913-lab1"></script>
   <script src="js/8zc-evidence.js?v=20260913-lab1"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
-  <script src="js/8zc-utils.js?v=20260913-click1"></script>
+  <script src="js/8zc-utils.js?v=20260924-sf1"></script>
   <script src="js/8zc-new-ui.js?v=20260913-game-title1"></script>
   <script src="js/8zc-lab-layout.js?v=20260913-lab1"></script>
 

@@ -30,6 +30,7 @@ function context() {
     Chess, DCC, SIM, AbortController, console, Date, game: new Chess(),
     settings: { evalMode: 'direct', simSpeed: 0, dccDepth: 5, dccTopCandidates: 3, dccEvalFloor: 80 },
     activityEpoch: 0, analysisGeneration: 0, activeLookaheadId: 0,
+    localController: null, localProvider: null,
     simRunning: false, simAbort: false, replayRunning: false, replayAbort: false,
     simSession: null, simExperiments: [], showEval: true, fullHistory: [],
     playState: { active: false, mode: 'idle', sessionId: 1, lichess: {}, prevShowEval: true },
@@ -90,6 +91,35 @@ test('each color obeys its selected policy; raw is top 1 even when DCC differs',
     assert.deepEqual(Array.from(c.simSession.trace, r => r.policy), [white, black]);
     assert.equal(c.simSession.result, '*'); assert.equal(c.simSession.state, 'incomplete');
   }
+});
+test('SF versus SF+DCC and reversed run two legal plies without ChessDB', async () => {
+  for (const [white, black] of [['sf', 'sf-dcc'], ['sf-dcc', 'sf']]) {
+    const c = context(); let calls = 0;
+    c.cachedFetchChessDB = () => { throw new Error('SF game must not query ChessDB'); };
+    c.runLocalSF = async (fen, { dcc }) => {
+      if (calls++ >= 2) return { root: { moves: [], complete: false }, analysis: null, ledger: {} };
+      const legal = new Chess(fen).moves({ verbose: true }).slice(0, 2).map((m, i) => ({ move: m.from + m.to + (m.promotion || ''), score: -i * 2 }));
+      return { root: { moves: legal, complete: true, provider: 'SF' },
+        analysis: dcc ? { dcc1Move: legal[1].move, allMoves: legal,
+          candidates: [], receipt: { fen, provider: 'SF', status: 'complete', calls: 2, reason: 'comparable' } } : null,
+        ledger: { rootNodes: 24000, rootDepth: 8, rootElapsedMs: 5, extraNodes: dcc ? 6000 : 0, extraElapsedMs: dcc ? 10 : 0 } };
+    };
+    await c.runSimulation(white, black, c.game.fen());
+    assert.equal(c.simSession.trace.length, 2);
+    assert.deepEqual(Array.from(c.simSession.trace, r => r.policy), [white, black]);
+    assert.deepEqual(Array.from(c.simSession.trace, r => r.changed), [white === 'sf-dcc', black === 'sf-dcc']);
+    assert(c.simSession.trace.every(r => r.provider === 'SF' && r.root_nodes === 24000));
+    assert.equal(c.simSession.result, '*'); assert.equal(c.simSession.state, 'incomplete');
+  }
+});
+test('stopping a pending SF turn prevents a late move', async () => {
+  const c = context(), wait = deferred();
+  c.cachedFetchChessDB = () => { throw new Error('Unexpected CDB call'); };
+  c.runLocalSF = () => wait.promise;
+  const task = c.runSimulation('sf', 'sf-dcc', c.game.fen()); await flush();
+  c.pauseSimulation();
+  wait.resolve({ root: { complete: true, moves: [{ move: 'e2e4', score: 0 }] }, ledger: {} });
+  await task; assert.equal(c.game.fen(), new Chess().fen()); assert.equal(c.simSession.trace.length, 0);
 });
 test('history selection pauses exactly at that move, retaining the rest of the line', () => {
   const c = context(); ['c4', 'e6', 'g3', 'd5'].forEach(m => c.game.move(m));

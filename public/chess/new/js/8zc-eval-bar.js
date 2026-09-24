@@ -4,19 +4,19 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
-  function measure(fen, score, terminal) {
+  function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
     if (terminal === 'mate') return { label: '#', white: side === 'b' ? 100 : 0,
       description: `Checkmate · ${side === 'b' ? 'White' : 'Black'} wins`, state: 'known' };
     if (terminal === 'draw') return { label: '0.00', white: 50, description: 'Draw', state: 'known' };
-    if (!Number.isFinite(score)) return { label: '—', white: 50, description: 'CDB evaluation unavailable', state: 'unknown' };
+    if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
     // CDB decisive/tablebase sentinels are not ordinary centipawns. Do not invent mate distance.
     if (Math.abs(cp) >= 10000) return { label: cp > 0 ? 'W' : 'B', white: cp > 0 ? 100 : 0,
-      description: `CDB decisive score for ${cp > 0 ? 'White' : 'Black'} · raw ${score} from side to move`, state: 'known' };
+      description: `${source} decisive or mate score for ${cp > 0 ? 'White' : 'Black'} · raw ${score} from side to move`, state: 'known' };
     return { label: (cp > 0 ? '+' : '') + (cp / 100).toFixed(2),
       white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
-      description: `CDB ${cp === 0 ? 'equal' : (Math.abs(cp) / 100).toFixed(2) + ' pawns for ' + (cp > 0 ? 'White' : 'Black')} · White perspective`, state: 'known' };
+      description: `${source} ${cp === 0 ? 'equal' : (Math.abs(cp) / 100).toFixed(2) + ' pawns for ' + (cp > 0 ? 'White' : 'Black')} · White perspective`, state: 'known' };
   }
   function create({ game, settings, isVisible }) {
     const el = document.getElementById('positionEval');
@@ -28,8 +28,8 @@
       let entry = scores.get(fen);
       if (entry && Date.now() - entry.at > 300000) entry = null;
       const terminal = game.in_checkmate() ? 'mate' : game.in_draw() ? 'draw' : null;
-      const view = measure(fen, entry?.score, terminal);
-      if (!terminal && !entry) Object.assign(view, { label: '…', state: 'pending', description: 'Waiting for CDB evaluation of this position' });
+      const view = measure(fen, entry?.score, terminal, entry?.source || settings.analysisSource?.toUpperCase() || 'CDB');
+      if (!terminal && !entry) Object.assign(view, { label: '…', state: 'pending', description: 'Waiting for position evaluation' });
       const visible = isVisible();
       el.classList.toggle('is-flipped', !!settings.flipBoard);
       el.classList.toggle('is-pending', view.state === 'pending');
@@ -40,8 +40,8 @@
       el.title = visible ? view.description + '. Bar height is a visual scale, not a win probability.' : 'Show Eval to reveal the position evaluation';
       label.textContent = visible ? view.label : '—';
     }
-    function update(fen, score) {
-      scores.set(fen, { score, at: Date.now() });
+    function update(fen, score, source = 'CDB') {
+      scores.set(fen, { score, source, at: Date.now() });
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
