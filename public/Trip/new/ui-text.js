@@ -2,6 +2,12 @@
 (() => {
   'use strict';
   const words={
+    "On the road →":"Na poti →",
+    "Optimize this trip and finish the calculation before opening On the road.":"Optimiziraj to pot in počakaj, da se izračun konča, preden odpreš pogled Na poti.",
+    "On the road saves Direct Line routes with coordinates entered in the editor. Switch to Direct Line and optimize again.":"Na poti shrani pot v načinu Direct Line s koordinatami, vnesenimi v urejevalnik. Izberi Direct Line in znova optimiziraj.",
+    "On the road supports up to 250 stops on a phone.":"Pogled Na poti podpira do 250 postaj na telefonu.",
+    "This route needs at least two valid stops.":"Ta pot potrebuje vsaj dve veljavni postaji.",
+    "Could not save this route on this device. Check browser storage and retry.":"Poti ni bilo mogoče shraniti na tej napravi. Preveri shrambo brskalnika in poskusi znova.",
     "Paused after hiding tab · best found":"Premor po skritju zavihka · najboljša najdena pot",
     "Diagnostics":"Diagnostika",
     "Record local diagnostics":"Beleži lokalno diagnostiko",

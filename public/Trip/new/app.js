@@ -26,6 +26,7 @@
   let statusTimer;
   let optimizationPending = false;
   let lastSolvedPoints = null;
+  let lastTravelSnapshot = null;
   let lastDirectKm = null;
   let lastPlanarCost = null;
   let currentTravelMode = 'DRIVING';
@@ -751,9 +752,47 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()"><span data-ui-text="🔗 Share trip">🔗 Share trip</span></button>
         <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()"><span data-ui-text="⛰️ Save GPX">⛰️ Save GPX</span></button>
+        <button id="btnTravel" type="button" class="btn-primary" style="grid-column:1/-1" data-ui-text="On the road →">On the road →</button>
       </div>
     `;
     el.appendChild(shareArea);
+    $('btnTravel').addEventListener('click', openTravelMode);
+  }
+
+  function openTravelMode() {
+    const snapshot = lastTravelSnapshot;
+    if (activeJob || !snapshot || snapshot.input !== $('input').value ||
+        snapshot.mode !== currentTravelMode || snapshot.roundTrip !== $('chkRoundTrip').checked ||
+        snapshot.direct !== $('chkDirect').checked || snapshot.planar !== planarSelected()) {
+      setStatus('Optimize this trip and finish the calculation before opening On the road.', 'warn');
+      return;
+    }
+    const stops = snapshot.stops;
+    if (!snapshot.direct || stops.some(p => p.lat === null)) {
+      setStatus('On the road saves Direct Line routes with coordinates entered in the editor. Switch to Direct Line and optimize again.', 'warn');
+      return;
+    }
+    if (stops.length > 250) {
+      setStatus('On the road supports up to 250 stops on a phone.', 'warn');
+      return;
+    }
+    if (stops.length < 2 || stops.some(p =>
+      !p.name || p.name.length > 500 ||
+      ((p.lat !== null || p.lon !== null) &&
+        (!Number.isFinite(p.lat) || !Number.isFinite(p.lon) ||
+         Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)))) {
+      setStatus('This route needs at least two valid stops.', 'warn');
+      return;
+    }
+    try {
+      localStorage.setItem('8z_trip_travel_route_v1', JSON.stringify({
+        version:1, savedAt:Date.now(), mode:snapshot.mode,
+        roundTrip:snapshot.roundTrip, stops, source:'lab'
+      }));
+      location.assign('travel.html');
+    } catch (error) {
+      setStatus('Could not save this route on this device. Check browser storage and retry.', 'bad');
+    }
   }
 
   window.setNavApp = function(app) {
@@ -1423,6 +1462,19 @@ Bad example:
 
   function showSolvedRoute(msg, job, preview = false) {
     lastSolvedPoints = msg.pointsSorted;
+    lastTravelSnapshot = {
+      input:$('input').value, mode:job.mode, roundTrip:job.roundTrip,
+      direct:job.direct, planar:job.planar,
+      // Only coordinates authored in the editor may be saved. Geocoded Google
+      // coordinates, the road table and map geometry remain in memory only.
+      stops:msg.pointsSorted.map(p => {
+        const authored = parseStops(p.raw || '').pts[0];
+        const ownCoords = authored?.name === p.name && validCoordinates(authored) &&
+          authored.lat === p.lat && authored.lon === p.lon;
+        return {name:String(p.name || ''), lat:ownCoords ? authored.lat : null,
+          lon:ownCoords ? authored.lon : null};
+      })
+    };
     lastDirectKm = msg.directKm;
     lastPlanarCost = job.planar ? msg.totalCost : null;
     showSavings(msg);
@@ -1812,7 +1864,7 @@ Bad example:
     currentTravelMode = 'DRIVING';
     $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false; $('chkPlanar').checked = planar;
     updateModeButtons();
-    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null; lastPlanarCost = null;
+    lastResolvedStops = null; lastSolvedPoints = null; lastTravelSnapshot = null; lastDirectKm = null; lastPlanarCost = null;
     mapMarkers.forEach(marker => marker.setMap(null)); mapMarkers = [];
     routePolylines.forEach(line => line.setMap(null)); routePolylines = [];
     if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
@@ -1914,6 +1966,7 @@ Bad example:
     window.MDLxDCCLocale.subscribe(refreshTspLabels);
     $('input').addEventListener('input', () => {
       ++presetRequest; refreshTspNotice();
+      lastTravelSnapshot = null;
       $('mapRouteCaption').hidden = true;
       cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
       $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
