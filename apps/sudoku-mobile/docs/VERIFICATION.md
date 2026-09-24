@@ -1,6 +1,6 @@
 # Build and verification receipt — candidate source, 2026-09-24 UTC
 
-Scope: SOURCE_PROJECT_READY; DEVICE_AND_STORE_PENDING. This receipt records the local source/project verification and is updated with the draft PR URL and tested commit once published.
+Scope: SOURCE_PROJECT_READY; DEVICE_AND_STORE_PENDING. Draft PR: https://github.com/BD-Chess/bd-chessdb/pull/26 on branch feat/8zsudoku-mobile. Tested source commit: a4c7abd258f2b2e86ec546eea1ef98db67dc0902 (its Git tree bca2e489a95930234bd94f78bed673e73e3596a2 matched the local tested tree exactly). This documentation-only receipt update follows that commit.
 
 Source: BD-Chess/bd-chessdb main a837555dc5547958925be9c0fabd61b2c9980095. LAB donor public/S/new/app.html Git blob 9fbc5103e0bd621fc555760497d5eb2b528e454f, SHA-256 88b7e2ebed713edb46aa39dfc5e98003b7160aa0b1b9539b3ea2ae2ef6645050. PWA icon Git blob 43f57c20e60f0034d000286c791e34f4ac423c6b, SHA-256 85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc. The eight LAB payload text files are unused by the self-contained donor.
 
