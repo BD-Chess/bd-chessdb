@@ -79,7 +79,11 @@ function sourceRange(m){const a=block(state,'win_'+m.id),b=block(state,'med_'+m.
 function message(text,error=false){$('sync').textContent=text;$('sync').classList.toggle('error',error)}
 function changed(){dirty=true;message('Predlog je spremenjen, še ni shranjen.');controls()}
 function controls(){for(const id of ['date','wake','bed','todayBtn','tomorrowBtn','propose','reload'])$(id).disabled=busy;for(const el of document.querySelectorAll('[data-range]'))el.disabled=busy;for(const el of document.querySelectorAll('[data-taken]'))el.disabled=busy||!loaded||state.date>today();$('save').disabled=busy||!loaded||(!dirty&&hasRanges)}
-async function api(method,d,body){const r=await fetch(API+(d?'?date='+encodeURIComponent(d):''),{method,cache:'no-store',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>null);if(!r.ok||!j||j.ok===false)throw Error(j?.error||'Povezava s strežnikom ni uspelo.');return j}
+function localAll(){try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'{}')||{}}catch(_){return {}}}
+function localGet(d){const x=localAll()[d];return x&&x.date===d?x:null}
+function localSet(s){const a=localAll();a[s.date]=s;localStorage.setItem(LOCAL_KEY,JSON.stringify(a));return s}
+function localPlan(d){const s={date:d,wake,timezone:TZ,items:{},blocks:[],updatedAt:new Date().toISOString(),emailReady:false,storage:'device'};for(const m of meds)s.items[m.id]={takenAt:null};return s}
+async function api(method,d,body){const r=await fetch(API+(d?'?date='+encodeURIComponent(d):''),{method,cache:'no-store',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>null);if(!r.ok||!j||j.ok===false)throw Error(j?.error||'Povezava s strežnikom ni uspela.');return j}
 function card(m){const taken=state.items?.[m.id]?.takenAt,old=block(state,'med_'+m.id),existing=sourceRange(m),late=m.rx&&old?.remind!==false&&old?.dueAt&&!taken&&state.date===today()&&Date.now()>Date.parse(old.dueAt)+GRACE*60000;
  let status=taken?(Number.isFinite(Date.parse(taken))?'Zabeleženo '+new Intl.DateTimeFormat('sl-SI',{timeZone:TZ,dateStyle:'short',timeStyle:'short'}).format(new Date(taken)):'Ohranjena starejša oznaka'):m.rx?(late?'Preveri odmerek — shranjeni rok je pretekel':'Ni označeno'):'Ni označeno · ni obveznost';
  let r='';if(m.range){const v=draft[m.id];let suffix='';try{const b=bounds(m,v);suffix=b.sd!==state.date||b.ed!==state.date?' · +1 pomeni naslednji koledarski dan':''}catch(_){}
@@ -91,35 +95,25 @@ function render(){if(!state)return;$('date').value=state.date;$('wake').value=wa
  const oldAlarms=(state.blocks||[]).filter(b=>b.remind!==false&&(b.itemIds||[]).some(id=>meds.some(m=>m.id===id&&!m.rx)||id==='palmettoguard'));
  if(oldAlarms.length)legacy.push('Ta dan ima še stare opomnike za dodatke/po-potrebi. Nova različica jih izklopi šele ob izrecnem »Shrani območja« za ta dan.');
  $('legacy').hidden=!legacy.length;$('legacy').textContent=legacy.join(' ');
- $('mail').textContent=!loaded?'Strežniško stanje ni preverjeno.':state.emailReady?'Konfiguracija e-pošte je prisotna; dejanska dostava ni preizkušena tukaj. Obvestila sledijo shranjenim rokom, ne neshranjenemu predlogu.':'Pošiljanje e-pošte ni vključeno. Shranjevanje in oznake sta ločeni funkciji.';
+ $('mail').textContent=!loaded?'Strežniško stanje ni preverjeno.':state.emailReady?'Konfiguracija e-pošte je prisotna; dejanska dostava ni preizkušena tukaj. Obvestila sledijo shranjenim rokom, ne neshranjenemu predlogu.':'Netlify API/e-pošta nista potrebna za lokalne oznake. Podatki se ob nedosegljivem API shranijo samo v tem brskalniku/napravi.';
  document.querySelectorAll('[data-range]').forEach(el=>{el.oninput=()=>{draft[el.dataset.range][el.dataset.edge]=el.value;changed()};el.onchange=render});
  document.querySelectorAll('[data-taken]').forEach(el=>el.onchange=()=>mark(el.dataset.taken,el.checked));controls();
 }
-async function load(d){if(!validDate(d))throw Error('Neveljaven datum.');busy=true;loaded=false;controls();message('Nalagam izbrani dan …');try{const j=await api('GET',d);saved=!!j.state;state=j.state||{date:d,wake:wake,items:{},blocks:[],emailReady:!!j.emailReady};if(state.date!==d)throw Error('Strežnik je vrnil drug dan.');wake=TIME.test(state.wake)?state.wake:'08:00';const mr=block(state,'med_melatonin');if(block(state,'win_melatonin')&&mr?.dueAt)bed=hhmm(mins(localTime(mr.dueAt))+30);draft={};for(const m of timed)draft[m.id]=sourceRange(m)||proposed(m);hasRanges=timed.every(m=>!!sourceRange(m)&&!!state.items?.[m.id]);dirty=false;loaded=true;message(saved?(hasRanges?'Naložena so shranjena območja.':'Naložen je prejšnji načrt. Območja potrdi s »Shrani območja«; do takrat ostanejo stari roki.'):'Nov dan: prikazan je samo predlog. Shrani ga pred označevanjem.');}catch(e){loaded=false;saved=false;message('Ni naloženo: '+e.message,true);throw e}finally{busy=false;render()}}
+async function load(d){if(!validDate(d))throw Error('Neveljaven datum.');busy=true;loaded=false;controls();message('Nalagam izbrani dan …');
+ try{const j=await api('GET',d);saved=!!j.state;state=j.state||localGet(d)||localPlan(d);if(state.date!==d)throw Error('Strežnik je vrnil drug dan.');if(j.state)localSet(j.state);wake=TIME.test(state.wake)?state.wake:'08:00';const mr=block(state,'med_melatonin');if(block(state,'win_melatonin')&&mr?.dueAt)bed=hhmm(mins(localTime(mr.dueAt))+30);draft={};for(const m of timed)draft[m.id]=sourceRange(m)||proposed(m);hasRanges=timed.every(m=>!!sourceRange(m)&&!!state.items?.[m.id]);dirty=false;loaded=true;message(j.state?(hasRanges?'Naložena so shranjena območja.':'Naložen je strežniški načrt.'):(localGet(d)?'Netlify API ni na voljo; uporablja se shranjevanje v tej napravi.':'Netlify API ni na voljo; uporablja se lokalni načrt v tej napravi.'));}
+ catch(e){state=localGet(d)||localPlan(d);saved=!!localGet(d);wake=TIME.test(state.wake)?state.wake:'08:00';draft={};for(const m of timed)draft[m.id]=sourceRange(m)||proposed(m);hasRanges=timed.every(m=>!!sourceRange(m)&&!!state.items?.[m.id]);dirty=false;loaded=true;message('Netlify API ni na voljo; shranjevanje in checkboxi delajo lokalno v tem brskalniku/napravi.');}
+ finally{busy=false;render()}}
 async function navigate(d){if(dirty&&!confirm('Zavržem neshranjene spremembe območij?')){$('date').value=state.date;return}await load(d).catch(()=>{})}
 function compose(latest){const p=clone(latest||{date:state.date,wake,timezone:TZ,items:{},blocks:[]});p.wake=wake;p.items=p.items||{};p.blocks=p.blocks||[];for(const m of meds)if(!Object.prototype.hasOwnProperty.call(p.items,m.id))p.items[m.id]={takenAt:null};
  const ids=new Set(meds.filter(m=>!m.rx).map(m=>m.id));ids.add('palmettoguard');for(const b of p.blocks)if((b.itemIds||[]).some(id=>ids.has(id)))b.remind=false;
  for(const m of timed){const v=bounds(m,draft[m.id]);const old=block(p,'med_'+m.id),sent=!!old?.reminderSentAt;const end={...(old||{}),id:'med_'+m.id,dueAt:new Date(v.end).toISOString(),itemIds:[m.id],remind:!!m.rx&&!sent,label:m.name+' · konec območja'};const start={id:'win_'+m.id,dueAt:new Date(v.start).toISOString(),itemIds:[m.id],remind:false,label:m.name+' · začetek območja'};p.blocks=p.blocks.filter(b=>b.id!==end.id&&b.id!==start.id);p.blocks.push(start,end)}return p}
 function verified(p,s){if(!s||s.date!==p.date||s.wake!==p.wake)return false;for(const [id,item] of Object.entries(p.items))if(!(id in(s.items||{}))||s.items[id].takenAt!==item.takenAt)return false;for(const b of p.blocks){const x=block(s,b.id);if(!x||x.dueAt!==b.dueAt||x.remind!==b.remind||JSON.stringify(x.itemIds)!==JSON.stringify(b.itemIds))return false}return true}
-async function save(){if(!loaded||busy)return;try{for(const m of timed)bounds(m,draft[m.id])}catch(e){message(e.message,true);return}busy=true;controls();message('Preverjam sočasne spremembe in shranjujem …');let attempted=false;
- try{const j=await api('GET',state.date);if((j.state?.updatedAt||null)!==(state.updatedAt||null)||!!j.state!==saved)throw Error('Dan je bil spremenjen drugje. Ponovno ga naloži; nič ni bilo prepisano.');const p=compose(j.state);attempted=true;await api('POST','',{action:'plan',plan:p});const back=await api('GET',p.date);if(!verified(p,back.state))throw Error('Zapis ni potrjen z branjem. Ne ponavljaj slepo; ponovno naloži stanje.');state=back.state;saved=true;hasRanges=true;dirty=false;message('Območja so shranjena in ponovno prebrana. Oznake zaužitij so ohranjene.');}
- catch(e){if(attempted){loaded=false;saved=false}message((attempted?'Izid shranjevanja potrebuje ponovno nalaganje: ':'Ni shranjeno: ')+e.message,true)}finally{busy=false;render()}}
-async function mark(id,taken){if(busy||!loaded||state.date>today())return;busy=true;controls();message('Shranjujem oznako …');try{
- let latest=await api('GET',state.date);
- if((latest.state?.updatedAt||null)!==(state.updatedAt||null)||!!latest.state!==saved)throw Error('Dan je bil spremenjen drugje. Ponovno ga naloži.');
- if(!latest.state||!latest.state.items?.[id]){
-   const p=clone(latest.state||{date:state.date,wake,timezone:TZ,items:{},blocks:[]});
-   p.date=state.date;p.wake=p.wake||wake;p.timezone=p.timezone||TZ;p.items=p.items||{};p.blocks=p.blocks||[];
-   if(!p.items[id])p.items[id]={takenAt:null};
-   await api('POST','',{action:'plan',plan:p});
-   latest=await api('GET',state.date);
-   if(!latest.state?.items?.[id])throw Error('Manjkajoč zapis za oznako ni bil inicializiran.');
-   state=latest.state;saved=true;
- }
- const j=await api('POST','',{action:'taken',date:state.date,id,taken,takenAt:taken?new Date().toISOString():null});
- if(!j.state||j.state.date!==state.date||!!j.state.items?.[id]?.takenAt!==taken)throw Error('Oznaka ni potrjena.');
- state=j.state;saved=true;message('Oznaka je shranjena. Čas je čas označitve.');
- }catch(e){loaded=false;message('Izid oznake ni potrjen: '+e.message+' Ponovno naloži, preden ponoviš.',true)}finally{busy=false;render()}}
+async function save(){if(!loaded||busy)return;try{for(const m of timed)bounds(m,draft[m.id])}catch(e){message(e.message,true);return}busy=true;controls();message('Shranjujem območja …');
+ try{let p=compose(state);p.updatedAt=new Date().toISOString();localSet(p);state=p;saved=true;hasRanges=true;dirty=false;message('Območja so shranjena v tej napravi.');try{await api('POST','',{action:'plan',plan:p});message('Območja so shranjena tudi na strežniku.')}catch(_){}}
+ catch(e){message('Ni shranjeno: '+e.message,true)}finally{busy=false;render()}}
+async function mark(id,taken){if(busy||!loaded||state.date>today())return;busy=true;controls();message('Shranjujem oznako …');
+ try{const p=clone(state||localPlan(state.date));p.items=p.items||{};if(!p.items[id])p.items[id]={takenAt:null};p.items[id].takenAt=taken?new Date().toISOString():null;p.updatedAt=new Date().toISOString();localSet(p);state=p;saved=true;message('Oznaka je shranjena v tej napravi.');try{const j=await api('POST','',{action:'taken',date:state.date,id,taken,takenAt:p.items[id].takenAt});if(j.state){state=j.state;localSet(state);message('Oznaka je shranjena tudi na strežniku.')}}catch(_){}}
+ catch(e){message('Oznake ni bilo mogoče shraniti: '+e.message,true)}finally{busy=false;render()}}
 $('save').onclick=save;$('reload').onclick=()=>navigate(state.date);$('todayBtn').onclick=()=>navigate(today());$('tomorrowBtn').onclick=()=>navigate(add(today(),1));$('date').onchange=()=>navigate($('date').value);
 $('wake').oninput=()=>{if(TIME.test($('wake').value)){wake=$('wake').value;changed()}};$('bed').oninput=()=>{if(TIME.test($('bed').value)){bed=$('bed').value;draft.melatonin=proposed(meds.find(m=>m.id==='melatonin'));changed();render()}};
 $('propose').onclick=()=>{if(!TIME.test(wake)||!TIME.test(bed)){message('Vnesi veljaven okvir vstajanja in spanja.',true);return}for(const m of timed)draft[m.id]=proposed(m);changed();render()};
