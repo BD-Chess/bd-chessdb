@@ -2,6 +2,10 @@
 
 Separate Capacitor 8 application for iPhone and Android, built from the checked Sudoku LAB game. The phone launcher and both proposed store listing names are exactly **8zSudoku**. The identifier **org.chessbest.eightzsudoku** and current icon/splash are proposals for BD to review before distribution.
 
+## No Mac? Cloud build and TestFlight
+
+The existing iOS project now has a GitHub Actions route on standard macOS runners. See [the complete cloud/signing guide](docs/IOS_CLOUD_TESTFLIGHT.md) or [BD's Slovenian first steps](docs/IOS_BD_START_SL.md). The Windows helper prepares a CSR and encrypted signing package without a local Mac. Ordinary branch pushes verify only; signing/upload require a deliberate TestFlight tag, protected environment approval and an exact reviewed commit. No main merge or public App Store release is automatic. Actual build/signing/device status is recorded separately; a workflow definition is not a successful upload.
+
 ## Build from a fresh checkout
 
 Requires Node 22 or later. Install from the package lockfile and generate the offline bundle **before opening either native project**:
@@ -27,15 +31,15 @@ Requires Android Studio 2025.2.1 or later, Android SDK API 36, JDK 21, and an em
 
 On Windows, use gradlew.bat assembleDebug. Debug APK output is android/app/build/outputs/apk/debug/app-debug.apk. Install with adb install -r only on your test phone. No release keys, Play signing, or store upload are part of this PR. Capacitor 8 sets compileSdkVersion and targetSdkVersion to 36 in android/variables.gradle. Android uses portrait layout, has no INTERNET permission, and disables app-managed Android backups.
 
-## iPhone 16 Pro before the App Store
+## Alternative: local Mac / iPhone 16 Pro before the App Store
 
-Requires a Mac with Xcode 26 or later. From this directory on the Mac:
+This optional local route requires a Mac with Xcode 26 or later; the cloud route above does not require owning one. From this directory on the Mac:
 
     npm ci
     npm run sync
     npx cap open ios
 
-Select the App project and App target in Xcode, choose Signing & Capabilities, select your Personal Team (or your existing paid team), and adjust the proposed bundle identifier locally if your team requires another. Connect and trust your iPhone, enable Developer Mode if Xcode asks, select the iPhone as run destination and press Run. You can test on your own iPhone with a free Personal Team; its provisioning may expire after seven days and require a fresh build. This path does not upload anything to TestFlight or the App Store. Xcode uses the iOS project generated with Swift Package Manager; it has not been compiled in this Linux environment.
+Select the App project and App target in Xcode, choose Signing & Capabilities, select your Personal Team (or your existing paid team), and adjust the proposed bundle identifier locally if your team requires another. Connect and trust your iPhone, enable Developer Mode if Xcode asks, select the iPhone as run destination and press Run. You can test on your own iPhone with a free Personal Team; its provisioning may expire after seven days and require a fresh build. This path does not upload anything to TestFlight or the App Store. Xcode uses the iOS project generated with Swift Package Manager; the original Linux builder did not compile it. Consult the dated cloud verification receipt for subsequent macOS results.
 
 Phone orientation is portrait; iPad supports all orientations. Native lifecycle saves synchronously when the app backgrounds, then resumes the timer on foreground. Android Back closes an active dialog/help/details first and exits only from the game screen. External website links require a tap and open outside the game. Existing PWA progress has a different storage origin and does not automatically migrate; the game offers explicit JSON export/import, and each native export opens the OS share sheet.
 
