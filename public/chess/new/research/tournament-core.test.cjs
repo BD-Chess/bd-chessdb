@@ -59,3 +59,43 @@ test('selected round-robin engines are honored and invalid duels are never subst
   assert.throws(() => T.createSchedule({ engines: ['sf', 'unknown'] }, openings), /Unknown tournament engine/);
   assert.throws(() => T.createSchedule({ format: 'round-robin', rounds: 1000 }, openings), /10,000-game limit/);
 });
+
+test('bundled TCEC SuFi Auto opening ends at 9.Nf3 before the first out-of-book move', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const bundled = fs.readFileSync(path.join(__dirname, '../Games/TCEC_SuFi_and_Stockfish.pgn'), 'utf8');
+  const result = T.extractOpenings(Chess, bundled, { mode: 'auto' });
+  assert.equal(result.rejected.length, 0);
+  const first = result.openings[0], board = new Chess();
+  assert.equal(first.sourceHeaders.Event, 'TCEC Season 27 - Superfinal');
+  assert.equal(first.openingPlies, 17); assert.equal(first.detectedBookPlies, 17); assert.equal(first.boundary, 'book-comments');
+  assert(board.load_pgn(first.startPgn));
+  assert.equal(board.history().at(-1), 'Nf3'); assert.equal(board.turn(), 'b'); assert.equal(board.fen().split(' ')[5], '9');
+  assert.equal(board.get('g5').type, 'p'); assert.equal(board.get('g4'), null);
+  assert.equal(board.fen(), first.startFen);
+});
+
+test('book detection requires positive markers and excludes explicit exits and prose', () => {
+  for (const marker of ['Book', 'Book move', 'book,mb=+0.20', '[%book]', '[%book true]', '[%book opening]']) {
+    const result = T.extractOpenings(Chess, `1. e4 {${marker}} e5 *`);
+    assert.equal(result.openings[0].openingPlies, 1, marker);
+    assert.equal(result.openings[0].boundary, 'book-comments', marker);
+  }
+  for (const comment of ['First move out of book', 'Book exit', 'End of book', 'Not a book move', 'book; out of book',
+    'Book move; end of book', '[%book false]', 'The opening book recommends this move', 'Book moves were considered']) {
+    const result = T.extractOpenings(Chess, `1. e4 {Book} e5 {${comment}} 2. Nf3 *`);
+    assert.equal(result.openings[0].openingPlies, 1, comment);
+  }
+});
+
+test('a current custom FEN with no moves produces a loadable zero-ply opening', () => {
+  const fen = '7k/8/5KQ1/8/8/8/8/8 w - - 0 1', board = new Chess(fen);
+  assert.equal(new Chess().load_pgn(board.pgn()), false, 'fixture exposes bundled header-only PGN behavior');
+  for (const currentPgn of [board.pgn(), undefined]) {
+    const result = T.extractOpenings(Chess, '', { mode: 'current', currentFen: fen, currentPgn });
+    assert.equal(result.rejected.length, 0); assert.equal(result.openings.length, 1);
+    const first = result.openings[0], restored = new Chess();
+    assert.equal(first.startFen, fen); assert.equal(first.openingPlies, 0); assert.deepEqual(first.history, []);
+    assert(restored.load_pgn(first.startPgn)); assert.equal(restored.fen(), fen); assert.deepEqual(restored.history(), []);
+    assert(restored.moves().includes('Qg7#'));
+  }
+});

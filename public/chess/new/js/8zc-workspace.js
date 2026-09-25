@@ -116,7 +116,7 @@
         node.querySelector('strong').textContent = T.format(value);
         node.classList.toggle('is-running', clock.running && clock.turn === side);
       }
-      $('timerCaption').textContent = (kind === 'sim' ? clock.mode === 'countdown' ? 'Sim · time remaining' : 'Sim · computation elapsed · no time limit' : clock.mode === 'countdown' ? 'Local game · time remaining' : 'Elapsed per player · no time limit')
+      $('timerCaption').textContent = (kind === 'sim' ? clock.mode === 'countdown' ? 'Sim · time remaining' : 'Sim · computation elapsed' : clock.mode === 'countdown' ? 'Local game · time remaining' : 'Elapsed per player · no time limit')
         + (!clock.running ? ' · paused' : '');
       $('humanSession').hidden = !human;
       $('btnHumanPause').textContent = clock.flagged ? 'Continue untimed' : clock.running ? 'Pause game' : 'Resume game';

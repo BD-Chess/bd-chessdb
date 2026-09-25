@@ -84,7 +84,7 @@
             });
             mode = 'indexedDB';
             database.onversionchange = () => { database.close(); database = null; mode = 'unavailable'; warning = 'Archive changed in another tab. Reload this page before continuing.'; };
-            await startupRecovery(); return status();
+            await migrateFallback(); await startupRecovery(); return status();
           } catch (error) { reason = error.message || 'IndexedDB could not open'; }
         }
         try { fallbackRead(); mode = 'localStorage'; warning = reason + '; using browser localStorage for this archive.'; }
@@ -272,6 +272,42 @@
       if (storage.getItem(checkpointKey) === text) storage.removeItem(checkpointKey);
       if (recovered.length) changed('recovery', null);
       return { recovered: recovered.length };
+    }
+    async function migrateFallback() {
+      if (!storage) return;
+      const migrate = async () => {
+        const text = storage.getItem(storageKey);
+        if (!text) return;
+        const saved = archive(JSON.parse(text), false);
+        await new Promise((resolve, reject) => {
+          const transaction = database.transaction(['runs', 'events'], 'readwrite');
+          for (const kind of ['runs', 'events']) {
+            const object = transaction.objectStore(kind);
+            for (const incoming of saved[kind]) {
+              const request = object.get(incoming.id);
+              request.onsuccess = () => {
+                const existing = request.result;
+                const incomingAt = Date.parse(incoming.updatedAt || incoming.startedAt || incoming.createdAt || '');
+                const existingAt = existing && Date.parse(existing.updatedAt || existing.startedAt || existing.createdAt || '');
+                // A returning IndexedDB archive may already contain later play.
+                // Equal or unknown dates favor that existing durable record.
+                if (existing && (!Number.isFinite(incomingAt) || (Number.isFinite(existingAt) && existingAt >= incomingAt))) return;
+                const revision = existing ? Math.max(Number(existing._storeRevision) || 0, Number(incoming._storeRevision) || 0) + 1 : Number(incoming._storeRevision) || 1;
+                object.put({ ...incoming, _storeRevision: revision });
+              };
+            }
+          }
+          transaction.oncomplete = resolve;
+          transaction.onerror = transaction.onabort = () => reject(transaction.error || Error('Could not migrate the fallback game archive.'));
+        });
+        // The entire two-store transaction committed. Keep any concurrent
+        // fallback update for the next reload instead of deleting its data.
+        if (storage.getItem(storageKey) === text) storage.removeItem(storageKey);
+      };
+      try {
+        if (locks?.request) await locks.request(namespace + '-archive', migrate);
+        else await migrate();
+      } catch (error) { warning = [warning, 'Fallback archive migration failed; saved fallback was retained: ' + error.message].filter(Boolean).join(' '); }
     }
     async function startupRecovery() {
       try {

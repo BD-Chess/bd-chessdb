@@ -3563,11 +3563,19 @@ async function launchFromSimModal() {
   }
 }
 
+  let simLeaseRefreshTimer = null;
   async function refreshSimArchive() {
     if (!simStore) return;
     const [runs, events] = await Promise.all([simStore.listRuns(), simStore.listEvents()]);
     simExperiments.splice(0, simExperiments.length, ...runs);
-    const lease = JSON.parse(localStorage.getItem('chessSimRunnerLease-v1') || 'null');
+    clearTimeout(simLeaseRefreshTimer);
+    let lease = null;
+    try { lease = JSON.parse(localStorage.getItem('chessSimRunnerLease-v1') || 'null'); } catch (_) {}
+    if (!tournamentRunner?.busy() && lease?.expires > Date.now()) {
+      simLeaseRefreshTimer = setTimeout(() => {
+        refreshSimArchive().catch(error => updateSimStatus(error.message));
+      }, Math.min(35000, lease.expires - Date.now() + 50));
+    }
     if (!tournamentRunner?.busy() && (!lease || lease.expires <= Date.now())) {
       for (const event of events) if (event.state === 'running') event.state = 'paused';
       for (const run of runs) if (run.state === 'running') run.state = 'paused';
@@ -3640,7 +3648,7 @@ async function launchFromSimModal() {
       callbacks: {
         started(run) {
           activityEpoch++; invalidateDCCAnalysis(); simSession = run; simRunning = true; simAbort = false; showEval = false;
-          game.header('Event', run.eventName, 'White', SIM.label(run.white), 'Black', SIM.label(run.black), 'Result', '*');
+          game.header('Event', run.eventName, 'White', SIM.label(run.white), 'Black', SIM.label(run.black), 'Date', run.startedAt.slice(0, 10).replace(/-/g, '.'), 'Result', '*');
           clearInterval(evalRetryTimer); evalRetryTimer = null;
           lastLoadedPGN = null; lastDecision = null; divergedIndex = -1;
           bookFlags = Array(game.history().length).fill(true); window._skipDivergedReset = false;
@@ -3683,9 +3691,13 @@ async function launchFromSimModal() {
     });
     window.addEventListener('chess-sim-open-game', event => openArchivedGame(event.detail.id).catch(error => updateSimStatus(error.message)));
     const useOpening = document.createElement('button'); useOpening.type = 'button'; useOpening.className = 'btn';
-    useOpening.textContent = 'Use position in Sim / tournament'; useOpening.title = 'Use the displayed position as a paired opening';
-    useOpening.onclick = () => openTournamentUI(); document.getElementById('popularGamesPanel').appendChild(useOpening);
-    window.addEventListener('pagehide', () => { tournamentRunner.checkpoint(); tournamentRunner.pause('Browser closed; resume from saved game').catch(() => {}); });
+    useOpening.id = 'btnUseTournamentOpening'; useOpening.textContent = 'Use position in Sim / tournament'; useOpening.title = 'Use the displayed position as a paired opening';
+    useOpening.onclick = () => { panel.classList.remove('open'); openTournamentUI(); }; document.getElementById('popularGamesPanel').appendChild(useOpening);
+    window.addEventListener('pagehide', () => {
+      try { tournamentRunner.checkpoint(); }
+      catch (error) { updateSimStatus(`Checkpoint unavailable: ${error.message}`); }
+      finally { tournamentRunner.pause('Browser closed; resume from saved game').catch(() => {}); }
+    });
     simStore.ready().then(refreshSimArchive).catch(error => updateSimStatus(`Game archive unavailable: ${error.message}`));
   }
 

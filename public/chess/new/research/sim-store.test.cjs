@@ -138,3 +138,28 @@ test('IndexedDB recovery atomically restores an event and its current game from 
   assert.equal(saved.getItem('ChessBest-sim-v1-checkpoint'), null);
   await reopened.close();
 });
+
+test('fallback archive migrates into IndexedDB on recovery without replacing newer existing games', async () => {
+  const idb = new IDBFactory(), saved = storage(), options = { indexedDB: idb, localStorage: saved, locks: null };
+  const original = S.create(options);
+  await original.saveRun(run('shared', { state: 'complete', result: '1-0' }));
+  await original.close();
+  const temporary = fallback(saved);
+  await temporary.saveEvent({ id: 'fallback-cup', games: [{ id: 'slot', runId: 'fallback-game' }] });
+  await temporary.saveRun(run('fallback-game', { eventId: 'fallback-cup', trace: [{ move: 'e2e4' }] }));
+  await temporary.saveRun(run('shared', { state: 'paused', result: '*' }));
+  const text = JSON.parse(saved.getItem('ChessBest-sim-v1-fallback'));
+  text.runs.find(item => item.id === 'shared').updatedAt = '2000-01-01T00:00:00.000Z';
+  saved.setItem('ChessBest-sim-v1-fallback', JSON.stringify(text));
+  const restored = S.create(options); await restored.ready();
+  assert.equal(restored.status().mode, 'indexedDB');
+  assert.equal((await restored.listRuns()).length, 2);
+  assert.equal((await restored.getRun('shared')).result, '1-0');
+  assert.equal((await restored.getRun('fallback-game')).trace[0].move, 'e2e4');
+  assert.equal((await restored.getEvent('fallback-cup')).games[0].runId, 'fallback-game');
+  assert.equal(saved.getItem('ChessBest-sim-v1-fallback'), null);
+  await restored.close();
+  const reloaded = S.create(options);
+  assert.equal((await reloaded.listRuns()).length, 2);
+  await reloaded.close();
+});

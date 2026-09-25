@@ -233,3 +233,20 @@ test('initial durable-save failures leave no busy runner or tab lease', async t 
     assert.equal(sharedStorage.getItem('chessSimRunnerLease-v1'), null); assert.equal(x.stats.roots.length, 0);
   }
 });
+
+test('a paired event restores a zero-ply custom FEN and exports both complete games', async t => {
+  const fen = '7k/8/5KQ1/8/8/8/8/8 w - - 0 1', position = new Chess(fen);
+  const extracted = Tournament.extractOpenings(Chess, position.pgn(), { mode: 'current', currentFen: fen });
+  assert.equal(extracted.rejected.length, 0);
+  const x = harness(t, { plan: new Map([[fen, [{ move: 'g6g7', score: 30000 }]]]) });
+  const event = await startAndFinish(x, config({ format: 'duel', white: 'raw', black: 'sf' }), extracted.openings);
+  assert.equal(event.state, 'complete'); assert.equal(event.games.length, 2);
+  for (const item of event.games) {
+    const run = await x.store.getRun(item.runId), replay = new Chess();
+    assert.equal(run.startFen, fen); assert.equal(run.trace.length, 1); assert.equal(run.trace[0].move, 'g6g7');
+    assert.equal(run.result, '1-0'); assert.equal(run.reason, 'checkmate');
+    assert(replay.load_pgn(run.pgn)); assert.deepEqual(replay.history(), ['Qg7#']);
+    assert.equal(replay.header().FEN, fen); assert.equal(replay.header().OpeningPlies, '0');
+    assert(replay.in_checkmate());
+  }
+});

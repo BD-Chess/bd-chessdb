@@ -6,7 +6,7 @@
   else root.ChessTournament = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '1.0.0-lab';
+  const VERSION = '1.0.2-lab';
   const ENGINES = ['raw', 'dcc', 'sf', 'sf-dcc'];
   const LABELS = { raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC' };
   const integer = (value, fallback, low, high) => Number.isFinite(Number(value)) ? Math.min(high, Math.max(low, Math.trunc(Number(value)))) : fallback;
@@ -135,6 +135,21 @@
   }
   const escapeTag = value => String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]/g, ' ');
   const positionKey = fen => String(fen).split(/\s+/).slice(0, 4).join(' ');
+  function loadablePgn(pgn) {
+    const parsed = tokens(String(pgn || ''));
+    if (parsed.some(token => token.type === 'token' && !['*', '1-0', '0-1', '1/2-1/2'].includes(token.value))) return pgn;
+    // The bundled chess.js emits headers alone (or headers immediately followed
+    // by '*') for a zero-ply FEN. Its importer needs a separated movetext section.
+    const headers = parsed.filter(token => token.type === 'header').map(token => token.value);
+    return headers.length ? headers.join('\n') + '\n\n*' : '*';
+  }
+  function isBookMove(comments = []) {
+    // Book boundaries require a positive marker. Prose such as "out of book"
+    // describes engine play and must never extend the supplied opening.
+    const negative = /\b(?:out[\s-]+of|not(?:\s+(?:a|in))?|end(?:\s+of)?|exit(?:ed)?(?:\s+the)?|non)[\s-]+book\b|\bbook(?:\s+move)?[\s-]+(?:exit|end(?:ed)?|over)\b|\[%book\s+(?:0|false|no|off)\s*\]/i;
+    if (comments.some(comment => negative.test(comment))) return false;
+    return comments.some(comment => /^\s*book(?:\s+move)?\s*(?:$|[,;:])/i.test(comment) || /\[%book(?:\s+[^\]]*)?\]/i.test(comment));
+  }
   function extractOpenings(Chess, pgn, options = {}) {
     const mode = options.mode || options.openingMode || 'auto';
     const fullmoves = integer(options.fullmoves ?? options.openingFullmoves, 9, 0, 500);
@@ -149,13 +164,13 @@
       try {
         const board = new Chess();
         if (options.currentPgn || pgn) {
-          if (!board.load_pgn(options.currentPgn || pgn)) throw new Error('Current PGN is invalid.');
+          if (!board.load_pgn(loadablePgn(options.currentPgn || pgn))) throw new Error('Current PGN is invalid.');
           const variant = board.header().Variant;
           if (variant && !/^(standard|normal|chess|orthodox)$/i.test(variant)) throw new Error('Only orthodox chess is supported.');
           if (options.currentFen && board.fen() !== options.currentFen) throw new Error('Current PGN does not match the current position.');
         } else if (options.currentFen && !board.load(options.currentFen)) throw new Error('Current position is invalid.');
         const history = board.history({ verbose: true });
-        accept({ name: options.name || 'Current position', startFen: board.fen(), startPgn: board.pgn(),
+        accept({ name: options.name || 'Current position', startFen: board.fen(), startPgn: loadablePgn(board.pgn()),
           openingPlies: history.length, bookPlies: history.length, history: history.map(move => move.from + move.to + (move.promotion || '')),
           sourceHeaders: { ...board.header() }, boundary: 'current', sourceIndex: 0 });
       } catch (error) { rejected.push({ index: 0, reason: error.message }); }
@@ -170,7 +185,7 @@
             if (!match) throw new Error('Malformed PGN header.');
             headers[match[1]] = match[2].replace(/\\([\\"])/g, '$1');
           } else if (token.type === 'comment') {
-            if (moveTokens.length) comments[moveTokens.length - 1] = (comments[moveTokens.length - 1] || '') + ' ' + token.value;
+            if (moveTokens.length) (comments[moveTokens.length - 1] ||= []).push(token.value);
           } else {
             const value = token.value.replace(/^\d+\.(?:\.\.)?/, '').replace(/\$\d+/g, '');
             if (!value || /^\.+$/.test(value) || ['1-0', '0-1', '1/2-1/2', '*'].includes(value)) continue;
@@ -187,7 +202,7 @@
           moves.push(played);
         }
         let bookPlies = 0;
-        while (bookPlies < moves.length && /(?:\bbook\b|\[%book\b)/i.test(comments[bookPlies] || '')) bookPlies++;
+        while (bookPlies < moves.length && isBookMove(comments[bookPlies])) bookPlies++;
         const useBook = mode === 'auto' && bookPlies > 0;
         const count = useBook ? bookPlies : Math.min(moves.length, fullmoves * 2);
         const openingBoard = new Chess();
@@ -195,7 +210,7 @@
         openingBoard.header('Result', '*');
         for (const move of moves.slice(0, count)) openingBoard.move({ from: move.from, to: move.to, promotion: move.promotion });
         const name = headers.Opening || [headers.White, headers.Black].filter(Boolean).join(' – ') || headers.Event || `Opening ${index + 1}`;
-        accept({ name, startFen: openingBoard.fen(), startPgn: openingBoard.pgn(), openingPlies: count, bookPlies: count,
+        accept({ name, startFen: openingBoard.fen(), startPgn: loadablePgn(openingBoard.pgn()), openingPlies: count, bookPlies: count,
           history: moves.slice(0, count).map(move => move.from + move.to + (move.promotion || '')),
           sourceHeaders: headers, boundary: useBook ? 'book-comments' : 'fullmoves', sourceIndex: index,
           availablePlies: moves.length, detectedBookPlies: bookPlies, requestedFullmoves: useBook ? null : fullmoves });

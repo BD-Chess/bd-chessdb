@@ -91,6 +91,7 @@
       legacy.hidden = true;
       nativeSelects.forEach(select => legacy.appendChild(select));
       const drawerHeader = panel.querySelector('.drawer-heading');
+      const useOpening = byId('btnUseTournamentOpening');
       panel.replaceChildren();
       if (drawerHeader) panel.appendChild(drawerHeader);
       const top = document.createElement('div');
@@ -128,6 +129,7 @@
       status.setAttribute('role', 'status');
       status.setAttribute('aria-live', 'polite');
       panel.append(top, searchLabel, search, categoryLabel, category, results, status, legacy);
+      if (useOpening) panel.appendChild(useOpening);
       const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       const entryCache = new WeakMap();
       let entries = [];
