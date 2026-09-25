@@ -6,11 +6,14 @@ const SIM = require('../js/8zc-sim-core.js');
 
 const fen = new Chess().fen();
 const line = (move, score, rank = 1) => ({ multipv: rank, depth: 8, score: { type: 'cp', root: score, bound: 'exact' }, pv: [move] });
-function fixture({ incomplete = false, coverage = true } = {}) {
+function fixture({ incomplete = false, coverage = true, onSearch = () => {} } = {}) {
   const searches = [];
-  const Engine = { create: () => ({ destroy() {}, async analyze({ fen: position, nodes, depth, multiPV, signal }) {
+  const preparations = [];
+  const Engine = { create: () => ({ destroy() {}, async prepare(options) { preparations.push(options); },
+    async analyze({ fen: position, nodes, depth, movetime, history, multiPV, signal, onInfo }) {
     if (signal?.aborted) throw Object.assign(new Error('cancelled'), { name: 'AbortError' });
-    searches.push({ position, nodes, depth, multiPV });
+    searches.push({ position, nodes, depth, movetime, history, multiPV, signal, onInfo });
+    onSearch(searches.at(-1));
     if (position === fen) return { lines: [line('e2e4', 0), line('d2d4', -2, 2), line('g1f3', -40, 3)],
       completeMultiPV: !incomplete, expectedLines: 3, nodes, linesDepth: 8, elapsedMs: 9, bestMove: 'e2e4' };
     return { lines: [line('e7e5', -3)], completeMultiPV: true, expectedLines: 1,
@@ -27,7 +30,7 @@ function fixture({ incomplete = false, coverage = true } = {}) {
       receipt: { fen, status: coverage ? 'complete' : 'partial', calls: 2,
         coverage: { eligibleInspected: 2 }, reason: 'Comparable trajectory' } };
   } };
-  return { provider: SF.create({ Chess, Engine, DCC, multiPV: 3, rootNodes: 12000, probeNodes: 3000 }), searches };
+  return { provider: SF.create({ Chess, Engine, DCC, multiPV: 3, rootNodes: 12000, probeNodes: 3000 }), searches, preparations };
 }
 test('SF root is legal same-depth MultiPV; guarded DCC keeps original #1 and accounts extra nodes', async () => {
   const { provider, searches } = fixture();
@@ -86,5 +89,50 @@ test('review depth replaces the root node cap while Sim and DCC probes retain no
     assert.equal(searches[1].nodes, 3000); assert.equal(searches[1].depth, undefined);
     await provider.root(fen, { nodes: 48000 });
     assert.equal(searches.at(-1).nodes, 48000); assert.equal(searches.at(-1).depth, undefined);
+  } finally { provider.destroy(); }
+});
+test('Preparation and root searches forward the selected budget, history, signal and info callback', async () => {
+  const { provider, searches, preparations } = fixture();
+  const controller = new AbortController(), history = { startFen: fen, moves: [] }, onInfo = () => {};
+  try {
+    await provider.prepare({ signal: controller.signal });
+    assert.equal(preparations.length, 1); assert.equal(preparations[0].signal, controller.signal);
+    for (const budget of [{ depth: 12 }, { nodes: 9000 }, { movetime: 75 }]) {
+      const root = await provider.root(fen, { ...budget, history, signal: controller.signal, onInfo });
+      const search = searches.at(-1);
+      for (const key of ['nodes', 'depth', 'movetime']) assert.equal(search[key], budget[key]);
+      assert.deepEqual(search.history, history); assert.equal(search.signal, controller.signal);
+      assert.equal(search.onInfo, onInfo); assert.equal(root.complete, true);
+    }
+  } finally { provider.destroy(); }
+});
+test('An already expired DCC deadline retains the completed root without starting a probe', async t => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'performance');
+  Object.defineProperty(globalThis, 'performance', { configurable: true, value: { now: () => 100 } });
+  t.after(() => Object.defineProperty(globalThis, 'performance', descriptor));
+  const { provider, searches } = fixture();
+  try {
+    const root = await provider.root(fen, { movetime: 25 });
+    const result = await provider.analyzeDCC(fen, root, { dccTopCandidates: 3 }, undefined, { deadline: 100 });
+    assert.equal(result.receipt.status, 'partial'); assert.equal(result.dcc1Move, 'e2e4');
+    assert.deepEqual(result.allMoves, root.moves); assert.equal(searches.length, 1);
+    assert.equal(provider.ledger.probes, 0);
+  } finally { provider.destroy(); }
+});
+test('Timed DCC caps a probe to remaining time and stops scheduling when the deadline expires', async t => {
+  let now = 100;
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'performance');
+  Object.defineProperty(globalThis, 'performance', { configurable: true, value: { now: () => now } });
+  t.after(() => Object.defineProperty(globalThis, 'performance', descriptor));
+  const { provider, searches } = fixture({ onSearch: search => { if (search.position !== fen) now = 106; } });
+  try {
+    const root = await provider.root(fen, { movetime: 25 });
+    const result = await provider.analyzeDCC(fen, root, { dccTopCandidates: 3 }, undefined,
+      { deadline: 106, probeMovetime: 100 });
+    assert.equal(searches.length, 2, 'the second DCC request cannot launch after expiration');
+    assert.equal(searches[1].movetime, 6); assert.equal(searches[1].nodes, undefined);
+    assert.equal(searches[1].depth, undefined); assert.equal(provider.ledger.probes, 1);
+    assert.equal(result.receipt.status, 'partial'); assert.equal(result.dcc1Move, 'e2e4');
+    assert.deepEqual(result.allMoves, root.moves);
   } finally { provider.destroy(); }
 });

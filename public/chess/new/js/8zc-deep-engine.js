@@ -57,8 +57,12 @@
     const fen = validateFen(options.fen, Chess);
     const multiPV = finiteInt(options.multiPV, 3, 1, 256);
     const nodes = finiteInt(options.nodes, null, 1, Number.MAX_SAFE_INTEGER);
-    const depth = finiteInt(options.depth, options.infinite || nodes != null ? null : 14, 1, 128);
-    if (options.infinite && (nodes != null || options.depth != null)) throw new Error('Infinite analysis cannot have depth or node limits');
+    const movetime = finiteInt(options.movetime, null, 1, Number.MAX_SAFE_INTEGER);
+    const depth = finiteInt(options.depth, options.infinite || nodes != null || movetime != null ? null : 14, 1, 128);
+    if ([nodes, depth, movetime].filter(value => value != null).length + Number(!!options.infinite) !== 1)
+      throw new Error('Choose exactly one engine limit: depth, nodes, movetime or infinite');
+    const deadline = options.deadline == null ? null : Number(options.deadline);
+    if (deadline != null && (!Number.isFinite(deadline) || movetime == null)) throw new Error('A search deadline requires a timed limit');
     let searchMoves = options.searchMoves == null ? [] : options.searchMoves;
     if (!Array.isArray(searchMoves) || searchMoves.some(m => typeof m !== 'string' || !MOVE.test(m))) throw new Error('Invalid root moves');
     searchMoves = [...new Set(searchMoves)];
@@ -74,21 +78,68 @@
       if (game.fen() !== fen) throw new Error('Engine history does not reach the pinned position');
       history = { startFen, moves: options.history.moves.slice() };
     }
-    return { fen, multiPV, nodes, depth, infinite: !!options.infinite, searchMoves, history };
+    return { fen, multiPV, nodes, depth, movetime, deadline, infinite: !!options.infinite, searchMoves, history };
   }
   function create(config) {
     config = config || {};
     const Chess = config.Chess || root.Chess;
     const hashMB = finiteInt(config.hashMB, 16, 1, 128);
     const workerUrl = config.workerUrl || new URL('vendor/stockfish/stockfish-18-lite-single.js', root.document ? root.document.baseURI : 'http://localhost/chess/new/').href;
-    let active = null, serial = 0, destroyed = false;
+    let active = null, serial = 0, destroyed = false, prepared = null, warming = null, reusePrepared = false;
     const clone = value => JSON.parse(JSON.stringify(value));
+    const now = () => root.performance?.now ? root.performance.now() : Date.now();
+    function detach(worker) { worker.onmessage = null; worker.onerror = null; worker.onmessageerror = null; }
+    function prepare({ signal } = {}) {
+      if (destroyed) return Promise.reject(new Error('Engine has been destroyed'));
+      if (signal?.aborted) return Promise.reject(abortError());
+      if (active) return Promise.reject(new Error('Cannot prepare during an active search'));
+      reusePrepared = true;
+      if (prepared) return Promise.resolve();
+      if (warming) return warming.promise;
+      const state = { worker: null, timer: null, phase: 'uci', reportedName: null };
+      warming = state;
+      state.promise = new Promise((resolve, reject) => {
+        const done = error => {
+          if (warming !== state) return;
+          warming = null; clearTimeout(state.timer);
+          signal?.removeEventListener('abort', state.cancel);
+          if (state.worker) detach(state.worker);
+          if (error) { state.worker?.terminate(); reject(error); }
+          else { prepared = { worker: state.worker, reportedName: state.reportedName }; resolve(); }
+        };
+        state.cancel = () => done(abortError());
+        signal?.addEventListener('abort', state.cancel, { once: true });
+        try {
+          state.worker = config.workerFactory ? config.workerFactory(workerUrl) : new root.Worker(workerUrl);
+          state.worker.onerror = event => { event.preventDefault?.(); done(new Error(event.message || 'Stockfish could not load')); };
+          state.worker.onmessageerror = () => done(new Error('Stockfish worker message failed'));
+          state.worker.onmessage = event => {
+            for (const line of String(event.data).split(/\r?\n/)) {
+              if (warming !== state) break;
+              if (line.startsWith('id name ')) state.reportedName = line.slice(8);
+              if (line === 'uciok' && state.phase === 'uci') {
+                state.phase = 'ready';
+                ['setoption name Threads value 1', 'setoption name Hash value ' + hashMB,
+                  'setoption name UCI_ShowWDL value true', 'isready'].forEach(command => state.worker.postMessage(command));
+              } else if (line === 'readyok' && state.phase === 'ready') done();
+            }
+          };
+          state.timer = setTimeout(() => done(new Error('Stockfish did not become ready. Retry after the engine files finish loading.')), config.readyTimeoutMs || 60000);
+          state.worker.postMessage('uci');
+        } catch (error) { done(error); }
+      });
+      return state.promise;
+    }
     function finish(job, error, forced) {
       if (active !== job) return;
       active = null;
       clearTimeout(job.initTimer); clearTimeout(job.stopTimer);
       if (job.signal) job.signal.removeEventListener('abort', job.onAbort);
-      if (job.worker) { job.worker.onmessage = null; job.worker.onerror = null; job.worker.onmessageerror = null; job.worker.terminate(); }
+      if (job.worker) {
+        detach(job.worker);
+        if (reusePrepared && !error && !forced && !job.stopped) prepared = { worker: job.worker, reportedName: job.reportedName };
+        else job.worker.terminate();
+      }
       if (error) job.reject(error);
       else { const result = snapshot(job); result.forcedStop = !!forced; job.resolve(result); }
     }
@@ -104,7 +155,9 @@
         linesDepth: job.completeDepth ?? null, expectedLines: job.expectedLines,
         partialLines: job.completeLines && partial.some(line => line.depth > job.completeDepth) ? partial : [],
         bestMove: job.bestMove || null, ponder: job.ponder || null, nodes: job.nodes, depth: job.depth,
-        stopped: job.stopped, elapsedMs: Date.now() - job.started, startedAt: job.startedAt,
+        stopped: job.stopped, elapsedMs: now() - job.started, startedAt: job.startedAt,
+        searchElapsedMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
+        initializationMs: (job.searchStarted ?? now()) - job.started,
         positionHistory: job.limits.history ? 'Validated history supplied from startFen' : 'FEN only; repetition history before this position is unavailable',
         coldHash: true, perspective: 'root scores are for the side to move; white scores are for White' });
     }
@@ -123,17 +176,27 @@
       let limits;
       try { limits = limitsFor(options || {}, Chess); } catch (e) { return Promise.reject(e); }
       if (options.signal && options.signal.aborted) return Promise.reject(abortError());
+      if (warming) return new Promise((resolve, reject) => {
+        const signal = options.signal, onAbort = () => reject(abortError());
+        signal?.addEventListener('abort', onAbort, { once: true });
+        warming.promise.then(() => {
+          signal?.removeEventListener('abort', onAbort);
+          if (!signal?.aborted) resolve(analyze(options));
+        }, error => { signal?.removeEventListener('abort', onAbort); reject(error); });
+      });
       if (active) finish(active, abortError('Superseded by a new analysis'));
       return new Promise((resolve, reject) => {
-        const job = { id: ++serial, limits, resolve, reject, signal: options.signal, started: Date.now(),
+        const readyWorker = prepared; prepared = null;
+        const job = { id: ++serial, limits, resolve, reject, signal: options.signal, started: now(),
           startedAt: new Date().toISOString(), lines: new Map(), iterations: new Map(), nodes: null, depth: null, stopped: false, phase: 'uci',
+          reportedName: readyWorker?.reportedName || null, searchStarted: null,
           expectedLines: Math.min(limits.multiPV, limits.searchMoves.length || (Chess ? new Chess(limits.fen).moves().length : limits.multiPV)) };
         active = job;
         job.onAbort = () => { if (active === job) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, abortError()); } };
         if (job.signal) job.signal.addEventListener('abort', job.onAbort, { once: true });
         try {
-          // Fresh worker per run makes benchmark hash state reproducible and prevents late old UCI replies.
-          job.worker = config.workerFactory ? config.workerFactory(workerUrl) : new root.Worker(workerUrl);
+          // Manual analysis uses a fresh worker. Prepared Sim workers reset hash before every search.
+          job.worker = readyWorker?.worker || (config.workerFactory ? config.workerFactory(workerUrl) : new root.Worker(workerUrl));
           job.worker.onerror = event => { if (event.preventDefault) event.preventDefault(); finish(job, new Error(event.message || 'Stockfish could not load. Check browser WebAssembly support and retry.')); };
           job.worker.onmessageerror = () => finish(job, new Error('Stockfish worker message failed'));
           job.worker.onmessage = event => {
@@ -147,11 +210,16 @@
                   'setoption name MultiPV value ' + limits.multiPV, 'setoption name UCI_ShowWDL value true',
                   'ucinewgame', 'isready'].forEach(command => job.worker.postMessage(command));
               } else if (line === 'readyok' && job.phase === 'ready') {
-                clearTimeout(job.initTimer); job.phase = 'search';
+                clearTimeout(job.initTimer); job.phase = 'search'; job.searchStarted = now();
+                const remaining = limits.deadline == null ? null : Math.floor(limits.deadline - now());
+                if (remaining != null && remaining <= 0) {
+                  const error = new Error('Search deadline reached before search'); error.name = 'DeadlineError'; finish(job, error); break;
+                }
                 job.worker.postMessage(limits.history ? 'position fen ' + limits.history.startFen + ' moves ' + limits.history.moves.join(' ') : 'position fen ' + limits.fen);
                 let command = 'go';
                 if (limits.depth != null) command += ' depth ' + limits.depth;
                 if (limits.nodes != null) command += ' nodes ' + limits.nodes;
+                if (limits.movetime != null) command += ' movetime ' + (remaining == null ? limits.movetime : Math.min(limits.movetime, remaining));
                 if (limits.infinite) command += ' infinite';
                 if (limits.searchMoves.length) command += ' searchmoves ' + limits.searchMoves.join(' ');
                 job.worker.postMessage(command);
@@ -186,11 +254,18 @@
             }
           };
           job.initTimer = setTimeout(() => finish(job, new Error('Stockfish did not become ready. Retry after the engine files finish loading.')), config.readyTimeoutMs || 60000);
-          job.worker.postMessage('uci');
+          if (readyWorker) {
+            job.phase = 'ready';
+            ['setoption name MultiPV value ' + limits.multiPV, 'ucinewgame', 'isready'].forEach(command => job.worker.postMessage(command));
+          } else job.worker.postMessage('uci');
         } catch (e) { finish(job, e); }
       });
     }
-    return { analyze, stop, destroy() { destroyed = true; if (active) finish(active, abortError('Engine closed')); },
+    return { analyze, prepare, stop, destroy() {
+      destroyed = true; if (active) finish(active, abortError('Engine closed'));
+      if (warming) warming.cancel();
+      if (prepared) { detach(prepared.worker); prepared.worker.terminate(); prepared = null; }
+    },
       isRunning: () => !!active, engine: ENGINE };
   }
   return { create, parseInfo, limitsFor, validateFen, ENGINE };

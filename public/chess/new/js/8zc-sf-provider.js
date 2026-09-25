@@ -19,27 +19,31 @@
     if (!Chess || !Engine?.create) throw new Error('Local Stockfish is unavailable');
     const engine = Engine.create({ Chess });
     let destroyed = false;
+    const now = () => globalThis.performance?.now ? globalThis.performance.now() : Date.now();
     const ensure = signal => { if (destroyed || signal?.aborted) { const e = new Error('Stockfish analysis cancelled'); e.name = 'AbortError'; throw e; } };
-    const ledger = { rootNodes: 0, rootDepth: null, rootElapsedMs: 0, extraNodes: 0, extraElapsedMs: 0, probes: 0, probeDepths: [] };
+    const ledger = { rootNodes: 0, rootDepth: null, rootElapsedMs: 0, extraNodes: 0, extraElapsedMs: 0, probes: 0, probeDepths: [], initializationMs: 0 };
+    async function prepare(options = {}) { ensure(options.signal); await engine.prepare?.(options); ensure(options.signal); }
     async function search(fen, options, signal, isRoot = false) {
       ensure(signal);
       const result = await engine.analyze({ fen, ...options, signal });
       ensure(signal);
+      ledger.initializationMs += result.initializationMs || 0;
       if (isRoot) {
         ledger.rootNodes = result.nodes ?? 0; ledger.rootDepth = result.linesDepth ?? result.depth;
-        ledger.rootElapsedMs = result.elapsedMs;
+        ledger.rootElapsedMs = result.searchElapsedMs ?? result.elapsedMs;
       } else {
-        ledger.extraNodes += result.nodes ?? 0; ledger.extraElapsedMs += result.elapsedMs;
+        ledger.extraNodes += result.nodes ?? 0; ledger.extraElapsedMs += result.searchElapsedMs ?? result.elapsedMs;
         ledger.probes++; ledger.probeDepths.push(result.linesDepth ?? result.depth);
       }
       return result;
     }
-    async function root(fen, { nodes = rootNodes, depth, signal, onInfo } = {}) {
+    async function root(fen, { nodes, depth, movetime, deadline, history, signal, onInfo } = {}) {
       const count = Math.min(multiPV, new Chess(fen).moves().length);
       if (!count) return { fen, moves: [], provider: 'SF', source: SOURCE, complete: true, ledger };
-      // A review depth must not be cut short by the default simulation node budget.
-      const budget = depth == null ? { nodes } : { depth };
-      const result = await search(fen, { multiPV: count, ...budget, onInfo }, signal, true);
+      if ([nodes, depth, movetime].filter(value => value != null).length > 1) throw new Error('Choose exactly one SF budget');
+      // Review depth and timed play must not inherit the default simulation node cap.
+      const budget = movetime != null ? { movetime, deadline } : depth != null ? { depth } : { nodes: nodes ?? rootNodes };
+      const result = await search(fen, { multiPV: count, ...budget, history, onInfo }, signal, true);
       const lines = result.lines.filter(line => isScored(line) && legal(Chess, fen, uci(line)));
       const moves = lines.map((line, sourceOrder) => ({ move: uci(line), score: value(line), scoreType: line.score.type, mateIn: line.score.type === 'mate' ? line.score.root : null,
         rank: line.multipv, sourceOrder, depth: line.depth, pv: line.pv.slice(), source: 'SF' }));
@@ -52,22 +56,28 @@
       return { fen, moves, provider: 'SF', source: SOURCE, complete, unboundedTie,
         bestMove: moves[0]?.move || null, engineBestMove: result.bestMove, result, ledger };
     }
-    async function probePV(fen, signal, nodes = probeNodes) {
-      const r = await search(fen, { multiPV: 1, nodes }, signal);
+    async function probePV(fen, signal, nodes = probeNodes, timed = null) {
+      const r = await search(fen, { multiPV: 1, ...(timed || { nodes }) }, signal);
       const line = r.lines[0];
       return isCp(line) && legal(Chess, fen, uci(line)) ? { score: line.score.root, depth: line.depth, pv: line.pv, source: 'SF' } :
         { score: null, depth: r.depth || 0, pv: [], source: 'SF' };
     }
-    async function probeScore(fen, signal, nodes = probeNodes) {
-      const r = await search(fen, { multiPV: 1, nodes }, signal);
+    async function probeScore(fen, signal, nodes = probeNodes, timed = null) {
+      const r = await search(fen, { multiPV: 1, ...(timed || { nodes }) }, signal);
       return isCp(r.lines[0]) ? r.lines[0].score.root : null;
     }
-    async function analyzeDCC(fen, rootResult, settings, signal) {
+    async function analyzeDCC(fen, rootResult, settings, signal, { deadline = null, probeMovetime = 100 } = {}) {
       ensure(signal);
+      if (deadline != null && !Number.isFinite(deadline)) throw new Error('Invalid DCC deadline');
+      if (deadline != null && (!Number.isSafeInteger(probeMovetime) || probeMovetime < 1)) throw new Error('Invalid timed DCC probe budget');
+      const expired = () => deadline != null && now() >= deadline;
       const best = rootResult.moves[0];
       const incomplete = reason => ({ candidates: [], dcc1Move: best?.move || null, allMoves: rootResult.moves,
         receipt: { fen, provider: 'SF', status: 'partial', reason, calls: ledger.probes,
+          rootNodes: ledger.rootNodes, extraNodes: ledger.extraNodes, probeDepths: ledger.probeDepths.slice(),
+          computeMatch: deadline == null ? 'unmatched: root and DCC probe nodes reported separately' : 'shared decision deadline',
           rawBest: best?.move || null, coverage: { eligible: 0, eligibleInspected: 0 } } });
+      if (expired()) return incomplete('Decision time exhausted; SF #1 retained.');
       if (!best) return incomplete('No usable Stockfish centipawn candidate.');
       if (!rootResult.complete || rootResult.unboundedTie)
         return incomplete(rootResult.unboundedTie ? 'Near-tie group extends beyond the displayed MultiPV; SF #1 retained.' : 'Incomplete same-depth Stockfish MultiPV; SF #1 retained.');
@@ -80,10 +90,25 @@
       const sfSettings = { ...settings, dccDefenseCheck: false, dccEvalFloor: 10,
         dccTopCandidates: Math.max(eligible.length, settings.dccTopCandidates || 3),
         dccNoDeadline: true, dccPolicy: 'balanced' };
-      const analysis = await DCC.analyze({ Chess, fen, settings: sfSettings, moves: rootResult.moves,
-        getPV: position => probePV(position, signal), getScore: position => probeScore(position, signal),
-        cancelled: () => destroyed || !!signal?.aborted });
+      const timedBudget = () => {
+        if (deadline == null) return null;
+        const remaining = Math.floor(deadline - now());
+        if (remaining <= 0) { const error = new Error('Decision time exhausted'); error.name = 'DeadlineError'; throw error; }
+        return { movetime: Math.min(probeMovetime, remaining), deadline };
+      };
+      let analysis;
+      try {
+        analysis = await DCC.analyze({ Chess, fen, settings: sfSettings, moves: rootResult.moves,
+          getPV: position => probePV(position, signal, probeNodes, timedBudget()),
+          getScore: position => probeScore(position, signal, probeNodes, timedBudget()),
+          cancelled: () => destroyed || !!signal?.aborted || expired() });
+      } catch (error) {
+        ensure(signal);
+        if (expired() || error?.name === 'DeadlineError') return incomplete('Decision time exhausted; SF #1 retained.');
+        throw error;
+      }
       ensure(signal);
+      if (expired()) return incomplete('Decision time exhausted; SF #1 retained.');
       const contenders = analysis.candidates.map(c => c.data).filter(c => c.eligible);
       const targets = new Set(contenders.map(c => c.targetPlies));
       const observed = new Set(contenders.map(c => c.observedPlies));
@@ -91,14 +116,14 @@
         targets.size === 1 && observed.size === 1 && analysis.receipt.coverage.eligibleInspected === eligible.length;
       analysis.receipt.provider = 'SF'; analysis.receipt.rootNodes = ledger.rootNodes;
       analysis.receipt.extraNodes = ledger.extraNodes; analysis.receipt.probeDepths = ledger.probeDepths.slice();
-      analysis.receipt.computeMatch = 'unmatched: root and DCC probe nodes reported separately';
+      analysis.receipt.computeMatch = deadline == null ? 'unmatched: root and DCC probe nodes reported separately' : 'shared decision deadline';
       if (!comparable) {
         analysis.dcc1Move = best.move; analysis.receipt.status = 'partial';
         analysis.receipt.reason = 'Incomplete or incomparable SF continuation coverage; SF #1 retained.';
       }
       return analysis;
     }
-    return { root, probePV, probeScore, analyzeDCC, ledger, source: SOURCE,
+    return { root, prepare, probePV, probeScore, analyzeDCC, ledger, source: SOURCE,
       destroy() { destroyed = true; engine.destroy(); } };
   }
   return { SOURCE, create };

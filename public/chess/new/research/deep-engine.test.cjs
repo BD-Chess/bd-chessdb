@@ -41,6 +41,17 @@ test('Node and infinite budgets do not inherit a hidden depth cap', () => {
   assert.equal(Deep.limitsFor({ fen: START }, Chess).depth, 14);
   assert.throws(() => Deep.limitsFor({ fen: START, depth: 12, infinite: true }, Chess));
 });
+test('Search budgets are exclusive and movetime requires a positive integer', () => {
+  const limits = Deep.limitsFor({ fen: START, movetime: 125 }, Chess);
+  assert.equal(limits.movetime, 125); assert.equal(limits.depth, null); assert.equal(limits.nodes, null);
+  for (const budget of [{ depth: 8, nodes: 1000 }, { depth: 8, movetime: 125 },
+    { nodes: 1000, movetime: 125 }, { infinite: true, movetime: 125 }]) {
+    assert.throws(() => Deep.limitsFor({ fen: START, ...budget }, Chess));
+  }
+  for (const movetime of [0, -1, 1.5, NaN, Infinity]) {
+    assert.throws(() => Deep.limitsFor({ fen: START, movetime }, Chess));
+  }
+});
 test('Input validation blocks UCI injection, malformed FEN, illegal/promoted root moves', () => {
   assert.throws(() => Deep.validateFen(START + '\nquit', Chess));
   assert.throws(() => Deep.validateFen('8/8/8/8/8/8/8/8 w - - 0 1', Chess));
@@ -96,11 +107,72 @@ test('Partial rank exchange preserves the last complete comparable MultiPV itera
   assert.deepEqual(result.lines.map(line => line.score.root), [30, 25]);
   assert.equal(result.partialLines[0].depth, 11); assert.equal(result.bestMove, 'd2d4');
 });
+test('Timed search completes normally and keeps the last complete MultiPV', async () => {
+  const { engine, workers } = fixture();
+  const done = engine.analyze({ fen: START, multiPV: 2, movetime: 75 }); await ready();
+  const w = workers[0]; assert.equal(w.commands.at(-1), 'go movetime 75');
+  w.emit('info depth 8 multipv 1 score cp 30 nodes 1000 pv e2e4');
+  w.emit('info depth 8 multipv 2 score cp 25 nodes 1000 pv d2d4');
+  w.emit('info depth 9 multipv 1 score cp 35 nodes 1200 pv d2d4');
+  w.emit('bestmove d2d4');
+  const result = await done;
+  assert.equal(result.stopped, false); assert.equal(result.forcedStop, false);
+  assert.equal(result.completeMultiPV, true); assert.equal(result.linesDepth, 8);
+  assert.deepEqual(result.lines.map(l => l.pv[0]), ['e2e4', 'd2d4']);
+  assert.equal(result.partialLines[0].depth, 9);
+});
+test('Preparation reuses a ready worker and resets hash before each search', async () => {
+  const { engine, workers } = fixture();
+  try {
+    await engine.prepare();
+    assert.equal(workers.length, 1); const w = workers[0];
+    assert.equal(engine.isRunning(), false);
+    assert.equal(w.commands.some(command => command.startsWith('go')), false);
+    for (const position of [START, BLACK]) {
+      const offset = w.commands.length;
+      const done = engine.analyze({ fen: position, movetime: 50 }); await ready();
+      assert.equal(workers.length, 1, 'warmed engine avoids another worker load');
+      const commands = w.commands.slice(offset);
+      assert(commands.includes('ucinewgame'), 'every search clears earlier hash state');
+      assert(commands.indexOf('ucinewgame') < commands.findIndex(command => command.startsWith('go ')));
+      w.emit('bestmove ' + (position === START ? 'e2e4' : 'e7e5'));
+      assert.equal((await done).coldHash, true);
+      assert.equal(w.terminated, false);
+    }
+    assert.equal(w.commands.filter(command => command === 'uci').length, 1);
+  } finally { engine.destroy(); }
+  assert.equal(workers[0].terminated, true);
+});
+test('Aborting preparation terminates the loading worker and permits a fresh preparation', async () => {
+  const workers = [];
+  const { engine } = fixture({ workerFactory: () => {
+    const w = new WorkerStub(workers.length > 0); workers.push(w); return w;
+  } });
+  try {
+    const controller = new AbortController();
+    const preparation = engine.prepare({ signal: controller.signal }); controller.abort();
+    await assert.rejects(preparation, { name: 'AbortError' });
+    assert.equal(workers[0].terminated, true);
+    await engine.prepare(); assert.equal(workers.length, 2);
+  } finally { engine.destroy(); }
+});
 test('Unresponsive stop terminates worker without imposing a search deadline', async () => {
   const { engine, workers } = fixture({ stopGraceMs: 5 });
   const done = engine.analyze({ fen: START, infinite: true }); await ready(); engine.stop();
   const result = await done;
   assert.equal(result.stopped, true); assert.equal(result.forcedStop, true); assert(workers[0].terminated);
+});
+test('An analysis queued during preparation aborts without waiting for warmup', async () => {
+  const worker = new WorkerStub(false), engine = Deep.create({ Chess, workerFactory: () => worker });
+  const warming = engine.prepare();
+  const controller = new AbortController();
+  const search = engine.analyze({ fen: START, movetime: 20, signal: controller.signal });
+  controller.abort();
+  await assert.rejects(search, { name: 'AbortError' });
+  assert.equal(worker.terminated, false, 'the separate preparation remains owned by its caller');
+  worker.emit('uciok'); worker.emit('readyok'); await warming;
+  assert.equal(worker.commands.some(command => command.startsWith('go ')), false);
+  engine.destroy();
 });
 test('Abort cancels loading and search and suppresses late info', async () => {
   const { engine, workers } = fixture(); const controller = new AbortController(); let infoCount = 0;

@@ -69,6 +69,9 @@ function initAll() {
   let replayAbort = false;
   let simSession = null;
   const simExperiments = [];
+  let tournamentRunner = null, tournamentUI = null, simStore = null;
+  let simEvents = [];
+  const openingCollections = [];
   let studyUI = null, deepUI = null, researchUI = null;
   let lastAnalysisResult = null;
   let activeAnalysisProvider = null, activeAnalysisFen = null;
@@ -306,7 +309,9 @@ function buildPrettyGameTitle(tags, bucket, file, fallbackCoreTitle) {
   heading.style.marginBottom = '8px';
   panel.appendChild(heading);
 
-gameBuckets.forEach(bucket => {
+gameBuckets.forEach((bucket, bucketIndex) => {
+  const collection = { id: String(bucketIndex), label: bucket.name, games: [] };
+  openingCollections.push(collection);
   // 1) Create the <select> and placeholder up front, then append it immediately.
   const sel = document.createElement('select');
   sel.style.width  = '100%';
@@ -356,6 +361,7 @@ gameBuckets.forEach(bucket => {
             : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
 
           const title = buildPrettyGameTitle(tags, bucket, file, coreTitle);
+          collection.games.push({ id: `${bucketIndex}:${collection.games.length}`, label: title, pgn: gt });
           const opt = new Option(title, gt);
           opt.title = title;
           sel.appendChild(opt);
@@ -605,7 +611,7 @@ gameBuckets.forEach(bucket => {
     if (keys.length > 1500) keys.slice(0, keys.length - 1200).forEach(k => delete evalCache[k]);
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(evalCache)); } catch (_) {}
   }
-  async function fetchChessText(action, fen, learn = 0) {
+  async function fetchChessText(action, fen, learn = 0, requestOptions = {}) {
     const source = settings.evalMode;
     const key = `${DCC.VERSION}:${source}:${action}:learn=${learn}:${fen}`;
     const cached = evalCache[key];
@@ -621,16 +627,19 @@ gameBuckets.forEach(bucket => {
       const at = new Date().toISOString();
       return observe(cached.text, at, at, true, new Date(cached.time).toISOString());
     }
-    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal');
+    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '');
     if (requestPending.has(pendingKey)) return requestPending.get(pendingKey);
     const unhurried = simRunning, requestEpoch = activityEpoch;
     const pending = (async () => {
       const startedAt = new Date().toISOString();
-      await sleep(150);
+      if (!requestOptions.signal) await sleep(150);
       if (unhurried && requestEpoch !== activityEpoch) { requestPending.delete(pendingKey); return ''; }
       const controller = new AbortController();
       if (unhurried) simRequests.add(controller);
-      const timer = unhurried ? null : setTimeout(() => controller.abort(), 15000);
+      const abortRequest = () => controller.abort();
+      requestOptions.signal?.addEventListener('abort', abortRequest, { once: true });
+      if (requestOptions.signal?.aborted) controller.abort();
+      const timer = setTimeout(abortRequest, Math.max(1, requestOptions.timeoutMs || 15000));
       try {
         const base = source === 'proxy' && action === 'queryall'
           ? '/.netlify/functions/queryall?'
@@ -648,18 +657,18 @@ gameBuckets.forEach(bucket => {
       } catch (err) {
         console.warn(`ChessDB ${action} unavailable:`, err.name);
         return observe('', startedAt, new Date().toISOString(), false, null, err.name);
-      } finally { clearTimeout(timer); simRequests.delete(controller); requestPending.delete(pendingKey); }
+      } finally { clearTimeout(timer); requestOptions.signal?.removeEventListener('abort', abortRequest); simRequests.delete(controller); requestPending.delete(pendingKey); }
     })();
     requestPending.set(pendingKey, pending);
     return pending;
   }
-  async function cachedFetchChessDB(fen) {
+  async function cachedFetchChessDB(fen, options = {}) {
     if (offlineEvidence) return (await offlineEvidence.provider.getMoves(fen)) || { fen, moves: [] };
     // Match the original /chess/ source contract. learn=0 can leave all but
     // one score unknown; learn=1 supplies the other evaluated candidates.
     // Each request has its own cache key and may fail independently.
     const [verified, cloud] = await Promise.all([
-      fetchChessText('queryall', fen, 0), fetchChessText('queryall', fen, 1)
+      fetchChessText('queryall', fen, 0, options), fetchChessText('queryall', fen, 1, options)
     ]);
     const moveMap = new Map();
     for (const text of [cloud, verified]) {
@@ -698,15 +707,15 @@ gameBuckets.forEach(bucket => {
       provider.destroy();
     }
   }
-  async function fetchPV(fen) {
+  async function fetchPV(fen, options = {}) {
     if (offlineEvidence) return (await offlineEvidence.provider.getPV(fen)) || { score: null, depth: 0, pv: [] };
-    const text = await fetchChessText('querypv', fen);
+    const text = await fetchChessText('querypv', fen, 0, options);
     const score = text.match(/score:(-?\d+)/), depth = text.match(/depth:(\d+)/), pv = text.match(/pv:([^\r\n]+)/);
     return { score: score ? Number(score[1]) : null, depth: depth ? Number(depth[1]) : 0, pv: pv ? pv[1].split('|').filter(Boolean) : [] };
   }
-  async function fetchScore(fen) {
+  async function fetchScore(fen, options = {}) {
     if (offlineEvidence) return offlineEvidence.provider.getScore(fen);
-    const text = await fetchChessText('queryscore', fen);
+    const text = await fetchChessText('queryscore', fen, 0, options);
     const score = text.match(/eval:(-?\d+)/);
     return score ? Number(score[1]) : null;
   }
@@ -780,10 +789,10 @@ gameBuckets.forEach(bucket => {
     if (!probe.load_pgn(makeLoadablePgn(text))) throw new Error('Invalid PGN.');
     return probe;
   }
-  function loadStudyPGN(text, title = 'Imported study') {
+  function loadStudyPGN(text, title = 'Imported study', options = {}) {
     const probe = validateStudyPGN(text);
     if (playState.active || simRunning || replayRunning) throw new Error('Pause the current activity before loading a study.');
-    studyUI?.importPGN(text);
+    if (!options.archive) studyUI?.importPGN(text);
     game.load(probe.header().FEN || new Chess().fen());
     Object.entries(probe.header()).forEach(([k,v]) => game.header(k,v));
     probe.history({ verbose: true }).forEach(m => DCC.play(game, normalizeUci(m)));
@@ -2397,22 +2406,12 @@ function jumpTo(i){
   function renderSimStats() {
     const panel = document.getElementById('simStatsPanel');
     if (!panel || !simExperiments.length) return;
-    const open = !!panel.querySelector('details')?.open;
-    const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-    panel.innerHTML = `<details class="sim-experiments"${open ? ' open' : ''}><summary>Position experiments (${simExperiments.length})</summary>
-      <p>Return to the same starting position, change an engine in Sim, and compare the new line. Repeated positions are not independent strength evidence.</p>
-      <div class="sim-experiment-list">${simExperiments.map((run, i) => {
-        const changes = run.trace.filter(row => row.changed).length;
-        const gaps = run.trace.filter(row => row.coverage !== 'complete' && row.coverage !== 'not requested').length;
-        const sfBudget = run.white.startsWith('sf') || run.black.startsWith('sf') ? ` · SF ${run.sfRootNodes} base nodes, 3,000/probe extra` : '';
-        return `<div class="sim-experiment-row"><strong>#${run.id} · W ${SIM.label(run.white)} / B ${SIM.label(run.black)}</strong><span>${run.trace.length} plies · ${escape(run.state)} · ${escape(run.result)} · ${changes} DCC changes · ${gaps} coverage gaps${sfBudget}</span><button class="btn" data-sim-start="${i}">Return to start #${run.id}</button></div>`;
-      }).join('')}</div><div class="btn-group"><button class="btn" id="btnExportSimPGN">Export experiments PGN</button><button class="btn" id="btnExportCSV">Export CSV</button></div></details>`;
-    panel.style.display = 'block';
-    panel.querySelectorAll('[data-sim-start]').forEach(button => {
-      button.onclick = () => returnToSimStart(Number(button.dataset.simStart));
-    });
-    document.getElementById('btnExportCSV').onclick = () => downloadSimExperiments('csv');
-    document.getElementById('btnExportSimPGN').onclick = () => downloadSimExperiments('pgn');
+    panel.replaceChildren(); panel.style.display = 'block';
+    const line = document.createElement('div');
+    const run = simSession || simExperiments[simExperiments.length - 1];
+    line.textContent = `${SIM.label(run.white)} / ${SIM.label(run.black)} · ${run.trace.length} played plies · ${run.state} · ${run.result}`;
+    const button = document.createElement('button'); button.className = 'btn'; button.textContent = 'Matches & tournaments';
+    button.onclick = () => openTournamentUI(); panel.append(line, button);
   }
 
   function returnToSimStart(index) {
@@ -2430,6 +2429,10 @@ function jumpTo(i){
   }
 
   function pauseSimulation(message = 'Paused. Choose a position, then open Sim to continue.') {
+    if (tournamentRunner?.busy()) {
+      tournamentRunner.pause(message).catch(error => updateSimStatus(error.message));
+      return;
+    }
     if (!simRunning) return;
     const run = simSession;
     activityEpoch++;
@@ -2451,113 +2454,8 @@ function jumpTo(i){
   // A position experiment commits to the real game/history. Navigation can
   // pause it synchronously; every awaited decision checks ownership and FEN.
   async function runSimulation(white, black, startFen) {
-    if (simRunning || replayRunning || playState.active) return;
-    const epoch = ++activityEpoch;
-    invalidateDCCAnalysis();
-    const snapshot = { ...settings, dccNoDeadline: true };
-    const run = {
-      id: simExperiments.length + 1, startedAt: new Date().toISOString(),
-      white: SIM.policy(white), black: SIM.policy(black), startFen: startFen || game.fen(),
-      startPgn: game.pgn(), config: DCC.config(snapshot), sfRootNodes: snapshot.sfRootNodes, sfProbeNodes: 3000,
-      trace: [], state: 'running', result: '*', reason: ''
-    };
-    simSession = run; simExperiments.push(run);
-    simRunning = true; simAbort = false;
-    workspace.start('sim');
-    preSimFen = null; preSimMoveIndex = -1;
-    showEval = false;
-    clearInterval(evalRetryTimer); evalRetryTimer = null;
-    dccViewActive = false;
-    document.getElementById('moves').style.display = '';
-    document.getElementById('dccAnalysisPanel').style.display = 'none';
-    document.getElementById('btnViewToggle').textContent = 'DCC';
-    document.getElementById('gameTitle').textContent = `White: ${SIM.label(run.white)} · Black: ${SIM.label(run.black)}`;
-    refreshPlayUi();
-    renderSimStats();
-    const owns = () => epoch === activityEpoch && simRunning && !simAbort;
-    try {
-      while (owns() && !game.game_over() && run.trace.length < 200) {
-        const fen = game.fen(), generation = analysisGeneration, started = Date.now();
-        const engine = game.turn() === 'w' ? run.white : run.black;
-        setBoardThinking(true);
-        updateSimStatus(`${game.turn() === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} · comparing choices…`);
-        let result, analysis, local = null;
-        if (SIM.provider(engine) === 'SF') {
-          local = await runLocalSF(fen, { nodes: run.sfRootNodes, dcc: engine === 'sf-dcc', cancelled: () => !owns() || game.fen() !== fen });
-          if (!owns() || game.fen() !== fen) return;
-          result = local.root;
-          if (!result.complete) { Object.assign(run, SIM.outcome(game, 'incomplete SF MultiPV')); break; }
-          analysis = local.analysis;
-        } else result = await cachedFetchChessDB(fen);
-        if (!owns() || game.fen() !== fen) return;
-        if (SIM.provider(engine) === 'CDB' && !result.moves.length) {
-          Object.assign(run, SIM.outcome(game, result.reason || 'no evaluated CDB move')); break;
-        }
-        // Existing CDB modes observe DCC; SF only uses the declared root budget.
-        if (SIM.provider(engine) === 'CDB' && result.moves.length) analysis = await analyzePosition(fen, result.moves, { settings: snapshot });
-        if (!owns() || game.fen() !== fen) return;
-        if (generation !== analysisGeneration || JSON.stringify(DCC.config({ ...settings, dccNoDeadline: true })) !== JSON.stringify(run.config)) {
-          pauseSimulation('Paused after settings changed. Open Sim to continue.'); return;
-        }
-        const pick = SIM.decision(Chess, fen, engine, result.moves, analysis, local ? {
-          budgetNodes: run.sfRootNodes, rootNodes: local.ledger.rootNodes, rootDepth: local.ledger.rootDepth,
-          rootElapsedMs: local.ledger.rootElapsedMs, extraNodes: local.ledger.extraNodes,
-          extraElapsedMs: local.ledger.extraElapsedMs } : {});
-        if (!pick) { Object.assign(run, SIM.outcome(game, 'no evaluated move')); break; }
-        const elapsed = Date.now() - started;
-        if (analysis) {
-          latestDCCResults = analysis.candidates.map(c => c.data);
-          latestDCCReceipt = analysis.receipt;
-          dccMoveAnnotations[fen] = latestDCCResults.slice();
-          renderDCCView();
-        }
-        renderSimDecision(pick, fen);
-        setBoardThinking(false);
-        const lab = window.ChessLabLayout?.getSettings() || {};
-        const evalWhite = pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score;
-        const reasons = [];
-        if (lab.pauseOnDisagreement && pick.dcc_choice && pick.dcc_choice !== pick.raw_best) reasons.push(`${pick.provider} and DCC disagree`);
-        if (lab.pauseOnMissing && engine !== 'sf' && (!analysis || analysis.receipt.status !== 'complete')) reasons.push('incomplete source data');
-        if (lab.pauseOnSwing && Number.isFinite(run.previousEvalWhite) && Number.isFinite(evalWhite)
-          && Math.abs(evalWhite - run.previousEvalWhite) >= (Number(lab.pauseSwingCp) || 50)) reasons.push('position evaluation changed');
-        run.previousEvalWhite = evalWhite;
-        const pauseKey = `${fen}|${run.white}|${run.black}|${reasons.join(',')}`;
-        if (reasons.length && !acknowledgedAutoPauses.has(pauseKey)) {
-          acknowledgedAutoPauses.add(pauseKey);
-          pauseSimulation(`Auto-pause: ${reasons.join('; ')}. Open Sim to choose engines and continue.`);
-          if (analysis) { latestDCCResults = analysis.candidates.map(c => c.data); latestDCCReceipt = analysis.receipt; renderDCCView(); }
-          renderSimDecision(pick, fen, 'Paused before move');
-          return;
-        }
-        updateSimStatus(`${pick.side === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} chooses ${uciToSan(fen, pick.move)} · ${pick.changed ? 'different from' : 'same as'} ${pick.provider} #1`);
-        // Always yield, including fast mode, so history clicks can pause.
-        await sleep(Math.max(100, snapshot.simSpeed || 0));
-        if (!owns() || game.fen() !== fen) return;
-        if (generation !== analysisGeneration) { pauseSimulation(); return; }
-        const played = applyUciMove(game, pick.move);
-        if (!played) throw new Error('The selected simulation move is no longer legal.');
-        const timing = workspace.recordMove(fen, played, { analysis_ms: elapsed, pause_ms: Math.max(100, snapshot.simSpeed || 0) });
-        run.trace.push({ ...pick, ply: run.trace.length + 1, fen, san: played.san, elapsed_ms: elapsed,
-          at_utc: timing?.at_utc, turn_ms: timing?.think_ms, pause_ms: timing?.pause_ms,
-          white_elapsed_ms: timing?.white_elapsed_ms, black_elapsed_ms: timing?.black_elapsed_ms });
-        run.finalFen = game.fen();
-        lastAction = 'move'; window._skipDivergedReset = true;
-        updateBoard(false);
-        renderSimStats();
-      }
-      if (owns() && run.state === 'running') Object.assign(run, SIM.outcome(game, 'move limit reached'));
-    } catch (err) {
-      if (owns()) Object.assign(run, SIM.outcome(game, 'analysis error: ' + describeErr(err)));
-    } finally {
-      // Pause/New game/new experiment owns the UI once this epoch is replaced.
-      if (epoch === activityEpoch) {
-        simRunning = false; simAbort = false; showEval = true;
-        workspace.pause();
-        setBoardThinking(false); refreshPlayUi(); updateBoard(false);
-        renderSimStats();
-        updateSimStatus(`Experiment #${run.id}: ${run.state} · ${run.result} · ${run.reason}`);
-      }
-    }
+    return startTournament({ format: 'single', white, black, openingSource: 'current',
+      limitMode: 'depth', depth: settings.sfAnalysisDepth, movePauseMs: settings.simSpeed, openingCount: 1 });
   }
 
 
@@ -2747,7 +2645,7 @@ function syncSimModalState() {
         ? 'Lichess bot research mode. 8Z will challenge the selected Lichess bot and auto-play the chosen color.'
         : 'Lichess bot + human mode. The selected engine color is played by the Lichess bot. The opposite color is human. DCC remains on for both sides.';
     } else if (localSim) {
-      note.textContent = 'Choose CDB, CDB + DCC, SF or SF + DCC for each side. DCC uses a 10 cp safety guard; SF continuation probes use local Stockfish. Both SF sides share the selected root node budget. Extra DCC nodes are counted and exported separately.';
+      note.textContent = 'Choose CDB/SF, CDB/SF + DCC, SF or SF + DCC for each side. DCC uses a 10 cp safety guard; SF continuation probes use local Stockfish. Both SF sides share the selected root node budget. Extra DCC nodes are counted and exported separately.';
     } else if (mode === 'dccbot') {
       note.textContent = launchMode === 'sim'
         ? '8Z local bot mode. Use this for browser-side training and debugging without Lichess.'
@@ -2771,6 +2669,7 @@ function openSimModal(launchMode = 'sim') {
     return;
   }
   playState.launchMode = launchMode || 'sim';
+  if (launchMode === 'sim' && tournamentUI) { openTournamentUI(); return; }
   if (launchMode === 'sim' && currentSimMode() === 'dccbot') document.querySelector('input[name="simOpponent"][value="self"]').checked = true;
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
@@ -3663,6 +3562,132 @@ async function launchFromSimModal() {
       clock, timeLabel, { autoPilot: launchMode === 'sim' });
   }
 }
+
+  async function refreshSimArchive() {
+    if (!simStore) return;
+    const [runs, events] = await Promise.all([simStore.listRuns(), simStore.listEvents()]);
+    simExperiments.splice(0, simExperiments.length, ...runs);
+    const lease = JSON.parse(localStorage.getItem('chessSimRunnerLease-v1') || 'null');
+    if (!tournamentRunner?.busy() && (!lease || lease.expires <= Date.now())) {
+      for (const event of events) if (event.state === 'running') event.state = 'paused';
+      for (const run of runs) if (run.state === 'running') run.state = 'paused';
+    }
+    simEvents = events;
+    tournamentUI?.render(events, runs);
+    const collections = events.map(event => ({ id: event.id,
+      label: `${event.config?.format === 'single' ? 'My matches' : 'My tournaments'} · ${event.name}`,
+      games: runs.filter(run => run.eventId === event.id).map(run => ({ id: run.id,
+        label: `${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result} · ${run.state}`,
+        pgn: run.pgn || SIM.toPGN(Chess, run) })) })).filter(collection => collection.games.length);
+    window.dispatchEvent(new CustomEvent('chess-sim-collections', { detail: collections }));
+    renderSimStats();
+  }
+  function openTournamentUI() {
+    tournamentUI?.open({ currentGameTitle: document.getElementById('gameTitle').textContent,
+      collections: openingCollections.map(c => ({ id: c.id, label: c.label, count: c.games.length })) });
+    refreshSimArchive().catch(error => updateSimStatus(error.message));
+  }
+  async function startTournament(config) {
+    if (playState.active || replayRunning || simRunning) throw new Error('Pause the current activity first.');
+    const T = window.ChessTournament;
+    let extracted;
+    if (config.openingSource === 'collection') {
+      const collection = openingCollections.find(c => c.id === String(config.collectionId));
+      if (!collection?.games.length) throw new Error('This collection has not loaded or has no games. Choose another collection.');
+      extracted = T.extractOpenings(Chess, collection.games.map(g => g.pgn).join('\n\n'), {
+        mode: config.openingMode === 'moves' ? 'fullmoves' : 'auto', fullmoves: config.openingMoves || 9 });
+    } else extracted = T.extractOpenings(Chess, '', { mode: 'current', currentFen: game.fen(), currentPgn: game.pgn() });
+    extracted.openings = extracted.openings.filter(opening => !new Chess(opening.startFen).game_over());
+    if (!extracted.openings.length) throw new Error('No playable orthodox positions in this selection. Chess960 and finished games are excluded.');
+    if (config.format === 'duel' && config.white === config.black) throw new Error('Choose two different engines for a paired duel.');
+    if (Number(config.openingCount) > extracted.openings.length) throw new Error(`Only ${extracted.openings.length} unique playable openings are available. Lower the opening count.`);
+    // Freeze the source selection for repeatable paired games.
+    config.openingReport = { available: extracted.openings.length, rejected: extracted.rejected.length, duplicates: extracted.duplicates };
+    if (workspace.isHuman()) workspace.stop();
+    offlineEvidence = null; invalidateDCCAnalysis();
+    return tournamentRunner.start(config, extracted.openings);
+  }
+  async function openArchivedGame(id) {
+    if (tournamentRunner.busy()) { await tournamentRunner.pause('Paused to review an archived game'); await tournamentRunner.settled(); }
+    const run = await simStore.getRun(id);
+    if (!run) throw new Error('Saved game not found.');
+    loadStudyPGN(run.pgn || SIM.toPGN(Chess, run), `${run.eventName || 'Our engines'} · ${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result}`, { archive: true });
+    tournamentUI.close(); panel.classList.remove('open');
+  }
+  async function exportTournament(format, eventId) {
+    const runs = (await simStore.listRuns()).filter(run => !eventId || run.eventId === eventId);
+    let content;
+    if (format === 'json') {
+      const full = await simStore.exportJSON();
+      content = typeof full === 'string' ? full : JSON.stringify(full, null, 2);
+    } else content = format === 'csv' ? SIM.toCSV(runs) : runs.map(run => SIM.toPGN(Chess, run)).join('\n\n');
+    const url = URL.createObjectURL(new Blob([content], { type: format === 'json' ? 'application/json' : 'text/plain' }));
+    const a = document.createElement('a'); a.href = url; a.download = `ChessBest-${eventId || 'archive'}.${format}`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  if (window.ChessSimStore && window.ChessSimRunner && window.ChessTournamentUI) {
+    simStore = window.ChessSimStore.create();
+    const idle = (run, event) => {
+      simRunning = false; simAbort = false; showEval = true;
+      workspace.stop(); setBoardThinking(false); refreshPlayUi(); updateBoard(false);
+      renderSimStats();
+      updateSimStatus(`${event?.name || 'Simulation'}: ${event?.state || 'paused'}${run ? ` · ${run.result} · ${run.reason || ''}` : ''}`);
+      refreshSimArchive().catch(error => updateSimStatus(error.message));
+    };
+    tournamentRunner = window.ChessSimRunner.create({ Chess, SIM, Tournament: window.ChessTournament,
+      SF, Engine: window.ChessDeepEngine, DCC, game, workspace, store: simStore,
+      getCDB: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore, settings: () => ({ ...settings }),
+      callbacks: {
+        started(run) {
+          activityEpoch++; invalidateDCCAnalysis(); simSession = run; simRunning = true; simAbort = false; showEval = false;
+          game.header('Event', run.eventName, 'White', SIM.label(run.white), 'Black', SIM.label(run.black), 'Result', '*');
+          clearInterval(evalRetryTimer); evalRetryTimer = null;
+          lastLoadedPGN = null; lastDecision = null; divergedIndex = -1;
+          bookFlags = Array(game.history().length).fill(true); window._skipDivergedReset = false;
+          updateBoard(true); refreshPlayUi();
+          document.getElementById('gameTitle').textContent = `${run.eventName} · ${SIM.label(run.white)} vs ${SIM.label(run.black)}`;
+        },
+        thinking(run, policy, side) { setBoardThinking(true); updateSimStatus(`${side === 'w' ? 'White' : 'Black'} · ${SIM.label(policy)} · thinking…`); },
+        decision(decision) {
+          setBoardThinking(false); renderSimDecision(decision.pick, decision.fen);
+          if (decision.analysis) {
+            latestDCCResults = decision.analysis.candidates.map(c => c.data); latestDCCReceipt = decision.analysis.receipt;
+            dccMoveAnnotations[decision.fen] = latestDCCResults.slice(); renderDCCView();
+          }
+          updateSimStatus(`${SIM.label(decision.pick.policy)} · ${decision.pick.provider}${decision.pick.fallback_reason ? ' fallback' : ''} · ${uciToSan(decision.fen, decision.pick.move)}`);
+        },
+        move(run) { simSession = run; lastAction = 'move'; window._skipDivergedReset = true; updateBoard(false); },
+        shouldPause(decision, run) {
+          const lab = window.ChessLabLayout?.getSettings() || {}, pick = decision.pick;
+          const currentEval = pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score;
+          const prior = run.previousEvalWhite; run.previousEvalWhite = currentEval;
+          if (lab.pauseOnDisagreement && pick.changed) return 'Auto-pause: source and DCC disagree';
+          if (lab.pauseOnMissing && pick.dcc_requested && pick.coverage !== 'complete') return 'Auto-pause: incomplete DCC coverage';
+          if (lab.pauseOnSwing && Number.isFinite(prior) && Math.abs(currentEval - prior) >= (Number(lab.pauseSwingCp) || 50)) return 'Auto-pause: evaluation changed';
+          return null;
+        },
+        paused: idle, idle, change: () => { refreshSimArchive().catch(error => updateSimStatus(error.message)); },
+        error(error) { updateSimStatus(`Simulation paused: ${error.message}`); }
+      } });
+    tournamentUI = window.ChessTournamentUI.create({
+      onStart: startTournament,
+      onPause: () => tournamentRunner.pause(),
+      onResume: async id => { if (playState.active || replayRunning) throw new Error('Stop the current activity first.'); await tournamentRunner.resume(id); },
+      onOpenGame: openArchivedGame, onExport: exportTournament,
+      onImport: async data => {
+        if (tournamentRunner.busy()) throw new Error('Pause the simulation before importing.');
+        await simStore.importJSON(typeof data === 'string' ? data : JSON.stringify(data)); await refreshSimArchive();
+      },
+      onLichess() { playState.launchMode = 'sim'; document.querySelector('input[name="simOpponent"][value="lichess"]').checked = true;
+        document.getElementById('simModal').style.display = 'flex'; syncSimModalState(); }
+    });
+    window.addEventListener('chess-sim-open-game', event => openArchivedGame(event.detail.id).catch(error => updateSimStatus(error.message)));
+    const useOpening = document.createElement('button'); useOpening.type = 'button'; useOpening.className = 'btn';
+    useOpening.textContent = 'Use position in Sim / tournament'; useOpening.title = 'Use the displayed position as a paired opening';
+    useOpening.onclick = () => openTournamentUI(); document.getElementById('popularGamesPanel').appendChild(useOpening);
+    window.addEventListener('pagehide', () => { tournamentRunner.checkpoint(); tournamentRunner.pause('Browser closed; resume from saved game').catch(() => {}); });
+    simStore.ready().then(refreshSimArchive).catch(error => updateSimStatus(`Game archive unavailable: ${error.message}`));
+  }
 
   // ─── Sim button handlers ───────────────────────────────────────────
   const btnSimW = document.getElementById('btnSimW');

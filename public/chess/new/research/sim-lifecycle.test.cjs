@@ -32,7 +32,7 @@ function context() {
     activityEpoch: 0, analysisGeneration: 0, activeLookaheadId: 0,
     localController: null, localProvider: null,
     simRunning: false, simAbort: false, replayRunning: false, replayAbort: false,
-    simSession: null, simExperiments: [], showEval: true, fullHistory: [],
+    simSession: null, simExperiments: [], tournamentRunner: null, showEval: true, fullHistory: [],
     playState: { active: false, mode: 'idle', sessionId: 1, lichess: {}, prevShowEval: true },
     lastLoadedPGN: null, bookFlags: [], dccMoveAnnotations: {}, divergedIndex: -1,
     lastMoveIndex: -1, lastAction: null, preSimFen: null, preSimMoveIndex: -1,
@@ -40,7 +40,7 @@ function context() {
     window: {}, document: { getElementById: el, querySelectorAll: () => [], createElement: node },
     board: { position() {}, orientation() {} },
     setTimeout: () => 1, clearTimeout() {}, clearInterval() {}, sleep: async () => {},
-    applySettings() {}, refreshPlayUi() {}, renderLichessClocks() {}, closeSimModal() {},
+    applySettings() {}, refreshPlayUi() {}, renderLichessClocks() {}, closeSimModal() {}, syncSFAnalysisControl() {},
     queueCoachMessage() {}, maybeEmitCoach: async () => {}, renderHistory() {},
     fetchAnnotations() {}, renderDCCView() {}, renderSimDecision() {},
     setBoardThinking: on => { c.thinking = on; },
@@ -53,7 +53,7 @@ function context() {
   vm.createContext(c);
   for (const name of ['getStartFen', 'normalizeUci', 'applyUciMove', 'uciToSan', 'describeErr', 'sessionIsCurrent',
     'invalidateDCCAnalysis', 'clearLichessStreams', 'leaveActiveSession', 'startNewGame',
-    'pauseSimulation', 'runSimulation', 'jumpTo', 'runDccBotTurn', 'replayGame', 'stopReplay']) {
+    'pauseSimulation', 'jumpTo', 'runDccBotTurn', 'replayGame', 'stopReplay']) {
     vm.runInContext(extract(name), c, { filename: `production:${name}` });
   }
   c.el = el;
@@ -77,75 +77,19 @@ test('New game during a local bot request prevents the late e6 move', async () =
   pending.resolve({ move: 'e7e6' }); await task;
   assert.equal(c.game.fen(), new Chess().fen()); assert.equal(c.playState.active, false);
 });
-test('each color obeys its selected policy; raw is top 1 even when DCC differs', async () => {
-  for (const [white, black] of [['raw', 'dcc'], ['dcc', 'raw']]) {
-    const c = context(), expected = [], read = c.cachedFetchChessDB;
-    c.cachedFetchChessDB = async fen => {
-      if (expected.length === 2) return { moves: [] };
-      const result = await read(fen);
-      const engine = new Chess(fen).turn() === 'w' ? white : black;
-      expected.push(result.moves[engine === 'dcc' ? 1 : 0].move); return result;
-    };
-    await c.runSimulation(white, black, c.game.fen());
-    assert.deepEqual(Array.from(c.simSession.trace, r => r.move), expected);
-    assert.deepEqual(Array.from(c.simSession.trace, r => r.policy), [white, black]);
-    assert.equal(c.simSession.result, '*'); assert.equal(c.simSession.state, 'incomplete');
-  }
-});
-test('SF versus SF+DCC and reversed run two legal plies without ChessDB', async () => {
-  for (const [white, black] of [['sf', 'sf-dcc'], ['sf-dcc', 'sf']]) {
-    const c = context(); let calls = 0;
-    c.cachedFetchChessDB = () => { throw new Error('SF game must not query ChessDB'); };
-    c.runLocalSF = async (fen, { dcc }) => {
-      if (calls++ >= 2) return { root: { moves: [], complete: false }, analysis: null, ledger: {} };
-      const legal = new Chess(fen).moves({ verbose: true }).slice(0, 2).map((m, i) => ({ move: m.from + m.to + (m.promotion || ''), score: -i * 2 }));
-      return { root: { moves: legal, complete: true, provider: 'SF' },
-        analysis: dcc ? { dcc1Move: legal[1].move, allMoves: legal,
-          candidates: [], receipt: { fen, provider: 'SF', status: 'complete', calls: 2, reason: 'comparable' } } : null,
-        ledger: { rootNodes: 24000, rootDepth: 8, rootElapsedMs: 5, extraNodes: dcc ? 6000 : 0, extraElapsedMs: dcc ? 10 : 0 } };
-    };
-    await c.runSimulation(white, black, c.game.fen());
-    assert.equal(c.simSession.trace.length, 2);
-    assert.deepEqual(Array.from(c.simSession.trace, r => r.policy), [white, black]);
-    assert.deepEqual(Array.from(c.simSession.trace, r => r.changed), [white === 'sf-dcc', black === 'sf-dcc']);
-    assert(c.simSession.trace.every(r => r.provider === 'SF' && r.root_nodes === 24000));
-    assert.equal(c.simSession.result, '*'); assert.equal(c.simSession.state, 'incomplete');
-  }
-});
-test('stopping a pending SF turn prevents a late move', async () => {
-  const c = context(), wait = deferred();
-  c.cachedFetchChessDB = () => { throw new Error('Unexpected CDB call'); };
-  c.runLocalSF = () => wait.promise;
-  const task = c.runSimulation('sf', 'sf-dcc', c.game.fen()); await flush();
-  c.pauseSimulation();
-  wait.resolve({ root: { complete: true, moves: [{ move: 'e2e4', score: 0 }] }, ledger: {} });
-  await task; assert.equal(c.game.fen(), new Chess().fen()); assert.equal(c.simSession.trace.length, 0);
-});
+// Engine policy, cancellation and viewer-delay cases now exercise the production
+// ChessSimRunner in sim-runner.test.cjs; the old runSimulation loop is retired.
 test('history selection pauses exactly at that move, retaining the rest of the line', () => {
   const c = context(); ['c4', 'e6', 'g3', 'd5'].forEach(m => c.game.move(m));
   c.fullHistory = c.game.history({ verbose: true }); c.simRunning = true;
   c.simSession = { trace: [], state: 'running' };
+  let pauses = 0;
+  c.tournamentRunner = { busy: () => true, pause() { pauses++; c.simRunning = false; c.simSession.state = 'paused'; return Promise.resolve(); } };
   c.jumpTo(0);
+  assert.equal(pauses, 1, 'navigation pauses the production tournament runner');
   const expected = new Chess(); expected.move('c4');
   assert.equal(c.game.fen(), expected.fen()); assert.equal(c.fullHistory.length, 4);
   assert.equal(c.simRunning, false); assert.equal(c.simSession.state, 'paused');
-});
-test('an old paused request cannot play or clean up a replacement experiment', async () => {
-  const c = context(), a = deferred(), b = deferred(); let calls = 0;
-  c.analyzePosition = () => (++calls === 1 ? a.promise : b.promise);
-  const first = c.runSimulation('raw', 'dcc', c.game.fen()); await flush();
-  c.pauseSimulation(); const second = c.runSimulation('dcc', 'raw', c.game.fen()); await flush();
-  const renders = c.statsRenders; a.resolve(null); await first;
-  assert.equal(c.game.history().length, 0); assert.equal(c.simRunning, true);
-  assert.equal(c.simSession.id, 2); assert.equal(c.statsRenders, renders);
-  c.startNewGame(); b.resolve(null); await second;
-  assert.equal(c.game.history().length, 0); assert.equal(c.simRunning, false);
-});
-test('pause during the visible move delay prevents committing the shown candidate', async () => {
-  const c = context(), delay = deferred(); c.sleep = () => delay.promise;
-  const task = c.runSimulation('raw', 'dcc', c.game.fen()); await flush();
-  c.pauseSimulation(); delay.resolve(); await task;
-  assert.equal(c.game.history().length, 0); assert.equal(c.simSession.trace.length, 0);
 });
 test('Replay canceled by New game cannot restore the old move list or result panel', async () => {
   const c = context(), pending = deferred(); c.game.move('c4');

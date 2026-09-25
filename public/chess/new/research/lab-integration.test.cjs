@@ -15,13 +15,25 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.URL.createObjectURL=()=> 'blob:fixture'; w.URL.revokeObjectURL=()=>{};
  const realSetTimeout=w.setTimeout.bind(w);w.setTimeout=(fn,ms,...args)=>realSetTimeout(fn,ms===150?1:ms,...args);
  w.alert=msg=>{throw Error(msg)};w.confirm=()=>true;
+ w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
  w.AbortController=AbortController; w.HTMLDialogElement.prototype.showModal=function(){this.open=true}; w.HTMLDialogElement.prototype.close=function(){this.open=false};
  w.fetch=async url=>{const u=new URL(url,w.location.href);let text='';if(u.searchParams.get('action')==='queryall'){const b=new w.Chess(u.searchParams.get('board'));text=b.moves({verbose:true}).slice(0,5).map(m=>`move:${m.from+m.to+(m.promotion||'')},score:0,rank:1,note:*`).join('|');}return {ok:true,text:async()=>text,json:async()=>({})};};
- for(const file of ['js/chess.min.js','js/8zc-dcc-core.js','js/8zc-sim-core.js','js/8zc-time-core.js','js/8zc-eval-bar.js','js/8zc-workspace.js','js/8zc-gemini.js','js/8zc-study-core.js','js/8zc-study-ui.js','js/8zc-evidence.js','js/8zc-benchmark.js','js/8zc-deep-engine.js','js/8zc-deep-ui.js','js/8zc-research-ui.js','js/8zc-utils.js'])w.eval(fs.readFileSync(base+file,'utf8'));
- w.initAll();
- w.eval(fs.readFileSync(base+'js/8zc-lab-layout.js','utf8'));
- w.eval(fs.readFileSync(base+'js/8zc-new-ui.js','utf8'));
+ let sfPreparations=0;
+ // Boot the script list and order shipped by the page. Board geometry and the
+ // worker boundary are fixtures; store, runner, modal and host wiring are real.
+ const scripts=[...w.document.querySelectorAll('script[src]')].map(node=>node.getAttribute('src').split('?')[0]);
+ for(const file of scripts){
+  if(/jquery-|chessboard-/.test(file))continue;
+  w.eval(fs.readFileSync(base+file,'utf8'));
+  if(file==='js/8zc-sf-provider.js')w.ChessSFProvider.create=()=>({
+   prepare:async()=>{sfPreparations++;},destroy(){},ledger:{rootNodes:1,rootDepth:1,rootElapsedMs:0,extraNodes:0,extraElapsedMs:0},
+   root:async position=>({fen:position,provider:'SF',complete:true,moves:new w.Chess(position).moves({verbose:true}).slice(0,5).map((move,index)=>({move:move.from+move.to+(move.promotion||''),score:0,scoreType:'cp',rank:index+1,depth:1}))}),
+   analyzeDCC:async(position,result)=>({candidates:[],dcc1Move:result.moves[0]?.move,receipt:{fen:position,provider:'SF',status:'partial',calls:0}})
+  });
+  if(file==='js/8zc-utils.js')w.initAll();
+ }
  const el=id=>w.document.getElementById(id);
+ const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
@@ -42,17 +54,26 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  el('btnNew').click();
  assert.equal(fen,new w.Chess().fen());assert.equal(el('gameTitle').textContent,'Your next move starts here');
  assert.equal(el('workspaceTimers').hidden,true,'ending training restores review space');
- el('btnSim').click();assert.equal(el('simLocalMatch').hidden,false);
- assert.equal(el('simSessionOptions').hidden,true);
- el('simSwapEngines').click();assert.equal(el('simWhiteEngine').value,'dcc');assert.equal(el('simBlackEngine').value,'raw');
- el('simLocalSpeed').value='0';el('simStartBtn').click();
+ el('btnSim').click();
+ const tournament=el('simTournamentDialog'),sim=name=>tournament.querySelector('[data-ui="'+name+'"]');
+ assert.equal(tournament.open,true,'Sim opens the actual games and tournaments setup');
+ assert.equal(sim('format').value,'single');assert.equal(sim('depth').value,'15');
+ assert.equal(sim('white').options.length,4,'all four engines are available');
+ sim('white').value='raw';sim('black').value='raw';sim('name').value='Full-page integration';
+ sim('limit-mode').value='game-time';sim('limit-mode').dispatchEvent(new w.Event('change',{bubbles:true}));
+ assert.equal(tournament.querySelector('[data-limit="game-time"]').hidden,false);
+ assert.equal(tournament.querySelector('[data-limit="depth"]').hidden,true);
+ sim('game-time').value='60000';sim('increment').value='1000';sim('move-pause').value='400';
+ sim('start').click();
+ await until(()=>!tournament.open&&el('btnSim').textContent==='Pause','new Sim form starts the real runner');
  toggle('settingShowTimestamps');
  assert.equal(el('btnSim').textContent,'Pause','display settings must not pause Sim');
  assert(el('controls').classList.contains('is-sim-focus'));
  el('btnLabTools').click();assert.equal(el('labToolsDialog').open,true);
  el('btnCloseLabTools').click();assert.equal(el('labToolsDialog').open,false);
- assert.equal(el('workspaceTimers').hidden,false);
- await new Promise(r=>setTimeout(r,1500));
+ await until(()=>!el('workspaceTimers').hidden,'running Sim shows its clocks');
+ await until(()=>el('moves').querySelector('[role=button]'),'automatic moves appear in the real history');
+ assert(sfPreparations>0,'hybrid CDB simulation prepares the local fallback engine');
  const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
  move.click();assert.equal(el('btnSim').textContent,'Sim');
  assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
@@ -61,8 +82,23 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const reviewMove=new w.Chess(fen).moves({verbose:true})[0];
  boardOptions.onDrop(reviewMove.from,reviewMove.to);
  assert.equal(el('workspaceTimers').hidden,true,'a manual variation does not restart the Sim clock display');
- el('btnSim').click();assert.equal(el('simModal').style.display,'flex');
- el('simCancelBtn').click();el('btnNew').click();
+ const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest-sim-v1-fallback')||'null');
+ await until(()=>archive()?.events[0]?.state==='paused','pausing persists the resumable event');
+ const savedRun=archive().runs[0];assert(savedRun.trace.length>0);assert.equal(savedRun.clock.running,false);
+ assert.equal(savedRun.clock.mode,'countdown');assert.match(savedRun.pgn,/\[TimeControl "60\+1"\]/);
+ assert(savedRun.trace.every(row=>row.provider==='CDB'),'actual decision sources survive persistence');
+ el('btnSim').click();assert.equal(tournament.open,true,'paused simulation settings reopen');
+ await until(()=>sim('history').querySelector('[data-action="resume"]'),'saved event offers Resume');
+ tournament.querySelector('[data-action="close"]').click();
+ await until(()=>[...el('popularGamesSelect').options].some(option=>option.value.startsWith('sim:')),'saved matches appear in Game library');
+ el('btnGames').click();
+ const collection=[...el('popularGamesSelect').options].find(option=>option.value.startsWith('sim:'));
+ el('popularGamesSelect').value=collection.value;el('popularGamesSelect').dispatchEvent(new w.Event('change'));
+ assert.equal(el('popularGamesPanel').querySelectorAll('.library-result').length,1);
+ el('popularGamesPanel').querySelector('.library-result').click();
+ await until(()=>w.ChessLabHost.getContext().fen===savedRun.finalFen||w.ChessLabHost.getContext().moves.length===savedRun.trace.length,'archived game opens through Game library');
+ assert.equal(el('workspaceTimers').hidden,true,'archived game review has no clocks');
+ el('btnNew').click();
  await new Promise(r=>setTimeout(r,800));assert.equal(fen,new w.Chess().fen());
 
  el('btnTwoPlayers').click(); assert.equal(el('twoPlayersDialog').open,true);
@@ -124,6 +160,6 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(errors.length,0,errors.join('\n'));
  el('btnNew').click();assert.equal(el('boardGameTitle').hidden,true,'New game clears the loaded identity');
 
- console.log('PASS: optional displays, timestamp records, two human players, countdown + increment, pause/resume, grounded Gemini request, safe reply text, stale-position label;  complete HTML/JS boot, SimB c4 + New game, engine swap, automatic history, pause, reopen GUI, late-result reset');
+ console.log('PASS: shipped HTML script boot, new Sim form, countdown + increment, CDB decisions, durable pause and archive review; optional displays, timestamps, local humans, Deep analysis, evidence, nested PGN and grounded Gemini safety');
  w.close();
 });
