@@ -1569,3 +1569,22 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 .analysis-dcc-toggle{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
 #analysisSourceStatus{flex:1 1 130px;color:#9ddbc4;font-size:11px;line-height:1.3}
 body.light-theme .analysis-source-row select{background:#fff;color:#173b2b}
+
+/* Keep the primary actions in one line, leaving the reading area tall. */
+.workspace-primary-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.workspace-primary-actions .btn{min-width:0;min-height:44px;padding:6px 3px;font-size:11px;white-space:normal}
+#controls > .workspace-bottom > .workspace-tool-content{display:none}
+#controls.is-sim-focus .workspace-primary-actions{display:none}
+.lab-tools-dialog .workspace-tool-content{display:block!important}
+.sf-deepen{min-height:32px;padding:4px 9px}
+.sf-deepen[hidden]{display:none}
+.all-eval-badges[hidden]{display:none!important}
+.board-stage.has-all-evals{grid-template-columns:84px minmax(0,1fr)}
+.board-stage.has-all-evals .position-eval{display:none}
+.all-eval-badges{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
+.all-eval-badge{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;min-height:0;min-width:0;padding:4px 2px;border:1px solid var(--ui-border);border-radius:5px;background:var(--ui-inset);text-align:center;font-variant-numeric:tabular-nums}
+.all-eval-badge strong{color:var(--ui-accent);font-size:10px;letter-spacing:.07em}
+.all-eval-badge span{overflow-wrap:anywhere;font-size:13px;font-weight:700;line-height:1.25}
+.all-eval-badge small{font-size:9px;color:var(--ui-muted);line-height:1.2}
+.all-eval-badge.is-unknown span{color:var(--ui-muted)}
+@media(max-width:790px){.board-stage.has-all-evals{grid-template-columns:64px minmax(0,1fr)}.all-eval-badges{display:block}.all-eval-badge{height:100%}.all-eval-badge:not(.is-mobile-current){display:none}.all-eval-badge span{font-size:11px}}

@@ -49,3 +49,28 @@ test('late replies cannot paint another FEN; flipping, hiding and unavailable da
     assert.equal(bar.classes['is-unknown'], true);
   } finally { global.document = prior; }
 });
+test('All keeps independent CDB/SF scores and identifies DCC as a choice', () => {
+  const make = () => ({ textContent: '', className: '', children: [], hidden: false,
+    classList: { toggle() {} }, style: { setProperty() {} }, setAttribute() {},
+    append(...nodes) { this.children.push(...nodes); }, replaceChildren(...nodes) { this.children = nodes; } });
+  const bar = make(), label = make(), badges = make();
+  badges.parentElement = make();
+  const prior = global.document, priorMatch = global.matchMedia;
+  global.document = { hidden: false, getElementById: id => ({ positionEval: bar, positionEvalLabel: label, allEvalBadges: badges })[id],
+    createElement: make, addEventListener() {} };
+  global.matchMedia = () => ({ matches: false });
+  try {
+    const b = new Chess(), settings = { analysisSource: 'all', flipBoard: false };
+    const view = E.create({ game: b, settings, isVisible: () => true });
+    view.updateSource(b.fen(), 100, 'CDB');
+    view.updateSource(b.fen(), -30, 'SF', 18);
+    view.updateDCC(b.fen(), 'Nf3', 'CDB');
+    assert.deepEqual(badges.children.map(row => row.children[0].textContent), ['CDB', 'SF', 'DCC']);
+    assert.deepEqual(badges.children.map(row => row.children[1].textContent), ['+1.00', '-0.30', 'Nf3']);
+    assert.match(badges.children[2].children[2].textContent, /CDB lines · choice/);
+    assert.match(badges.children[1].children[2].textContent, /depth 18/);
+    b.move('e4'); view.render();
+    assert.equal(badges.children[0].children[1].textContent, '…');
+    assert.equal(badges.children[2].children[1].textContent, '—');
+  } finally { global.document = prior; global.matchMedia = priorMatch; }
+});

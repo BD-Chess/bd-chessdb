@@ -28,7 +28,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260924-sf1">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260925-all1">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260913-lab1">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20260913-lab1">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
@@ -120,6 +120,7 @@
           <div class="eval-white" aria-hidden="true"></div><span class="eval-midpoint" aria-hidden="true"></span>
           <span id="positionEvalLabel" class="eval-label" aria-hidden="true">…</span>
         </div>
+        <div id="allEvalBadges" class="all-eval-badges" aria-label="CDB, SF and DCC comparison" hidden></div>
         <div id="board" aria-label="Interactive chess board"></div>
       </div>
       <div class="board-actions">
@@ -154,9 +155,10 @@
       <!-- Move/DCC/Sim toggle -->
       <div class="analysis-source-row" aria-label="Main analysis source">
         <label for="analysisSource">Analysis</label>
-        <select id="analysisSource" aria-label="Analysis source"><option value="auto">Auto</option><option value="cdb">CDB</option><option value="sf">SF</option></select>
+        <select id="analysisSource" aria-label="Analysis source"><option value="auto">Auto</option><option value="cdb">CDB</option><option value="sf">SF</option><option value="dcc">DCC</option><option value="all">All</option></select>
         <label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox"> DCC</label>
         <span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span>
+        <button type="button" class="btn btn-nav sf-deepen" id="btnSFDeeper" hidden>Deeper</button>
       </div>
       <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
         <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Automated game: DCC vs selected opponent" aria-label="Sim: automated DCC versus opponent">Sim</button>
@@ -259,6 +261,13 @@
             <option value="560">560 px</option>
           </select>
           <label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+          <details class="lab-subsettings">
+            <summary>Mobile All score rotation</summary>
+            <p class="setting-note">Time each CDB, SF and DCC field stays on screen (seconds).</p>
+            <label for="settingAllCDBSeconds">CDB seconds</label><input type="number" id="settingAllCDBSeconds" min="1" max="30" step="1" inputmode="numeric" value="4">
+            <label for="settingAllSFSeconds">SF seconds</label><input type="number" id="settingAllSFSeconds" min="1" max="30" step="1" inputmode="numeric" value="4">
+            <label for="settingAllDCCSeconds">DCC seconds</label><input type="number" id="settingAllDCCSeconds" min="1" max="30" step="1" inputmode="numeric" value="4">
+          </details>
           <details class="lab-subsettings">
             <summary>Pause Sim at an interesting position</summary>
             <label><input type="checkbox" id="settingLabPauseDisagreement"> Raw engine and DCC choose different moves</label>
@@ -458,6 +467,7 @@
       </div>
 
       <div class="workspace-bottom">
+      <div id="workspacePrimaryActions" class="workspace-primary-actions"><button type="button" class="btn btn-nav" id="btnWorkspaceMore" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">More</button></div>
       <div id="workspaceFocusBar" class="workspace-focus-bar" hidden>
         <span class="focus-caption">SIM FOCUS</span>
         <button type="button" class="btn" id="btnLabPause" title="Pause simulation at this position">Pause</button>
@@ -665,7 +675,7 @@
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260924-sf1"></script>
   <script src="js/8zc-time-core.js?v=20260913-lab1"></script>
-  <script src="js/8zc-eval-bar.js?v=20260924-sf1"></script>
+  <script src="js/8zc-eval-bar.js?v=20260925-all1"></script>
   <script src="js/8zc-workspace.js?v=20260913-lab1"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
@@ -676,9 +686,9 @@
   <script src="js/8zc-evidence.js?v=20260913-lab1"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
-  <script src="js/8zc-utils.js?v=20260924-sf1"></script>
+  <script src="js/8zc-utils.js?v=20260925-all1"></script>
   <script src="js/8zc-new-ui.js?v=20260913-game-title1"></script>
-  <script src="js/8zc-lab-layout.js?v=20260913-lab1"></script>
+  <script src="js/8zc-lab-layout.js?v=20260925-all1"></script>
 
 </body>
 </html>

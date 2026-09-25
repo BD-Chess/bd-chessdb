@@ -22,6 +22,47 @@
     const el = document.getElementById('positionEval');
     const label = document.getElementById('positionEvalLabel');
     const scores = new Map();
+    const comparison = document.getElementById('allEvalBadges');
+    const sourceScores = new Map();
+    const dccChoices = new Map();
+    let mobileIndex = 0, mobileTimer = null, mobileKey = '';
+    const sources = ['CDB', 'SF', 'DCC'];
+    const duration = source => Math.max(1, Math.min(30, Number(settings[`all${source}Seconds`]) || 4)) * 1000;
+    function scheduleRotation() {
+      clearTimeout(mobileTimer); mobileTimer = null;
+      if (settings.analysisSource !== 'all' || !matchMedia('(max-width: 790px)').matches || document.hidden || !isVisible()) return;
+      mobileTimer = setTimeout(() => { mobileIndex = (mobileIndex + 1) % sources.length; render(); }, duration(sources[mobileIndex]));
+    }
+    function renderComparison(fen, visible) {
+      if (!comparison?.parentElement) return;
+      const all = settings.analysisSource === 'all' && visible;
+      comparison.hidden = !all;
+      comparison.parentElement.classList.toggle('has-all-evals', all);
+      if (!all) { clearTimeout(mobileTimer); mobileTimer = null; return; }
+      if (mobileKey !== fen) { mobileKey = fen; mobileIndex = 0; }
+      comparison.replaceChildren();
+      for (const [i, source] of sources.entries()) {
+        const badge = document.createElement('div'); badge.className = 'all-eval-badge';
+        badge.classList.toggle('is-mobile-current', i === mobileIndex);
+        const title = document.createElement('strong'); title.textContent = source;
+        const value = document.createElement('span'); const note = document.createElement('small');
+        if (source === 'DCC') {
+          const choice = dccChoices.get(fen);
+          value.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
+          note.textContent = choice?.provider ? `${choice.provider} lines · choice` : 'heuristic choice';
+        } else {
+          const entry = sourceScores.get(`${fen}:${source}`);
+          const fresh = entry && Date.now() - entry.at < 300000;
+          const result = measure(fen, fresh ? entry.score : null, null, source);
+          value.textContent = fresh ? result.label : '…';
+          note.textContent = source === 'SF' && entry?.depth ? `depth ${entry.depth}` : 'White POV';
+          badge.title = result.description;
+        }
+        badge.classList.toggle('is-unknown', value.textContent === '—');
+        badge.append(title, value, note); comparison.append(badge);
+      }
+      scheduleRotation();
+    }
     function render() {
       if (!el) return;
       const fen = game.fen();
@@ -31,6 +72,7 @@
       const view = measure(fen, entry?.score, terminal, entry?.source || settings.analysisSource?.toUpperCase() || 'CDB');
       if (!terminal && !entry) Object.assign(view, { label: '…', state: 'pending', description: 'Waiting for position evaluation' });
       const visible = isVisible();
+      renderComparison(fen, visible);
       el.classList.toggle('is-flipped', !!settings.flipBoard);
       el.classList.toggle('is-pending', view.state === 'pending');
       el.classList.toggle('is-unknown', view.state === 'unknown');
@@ -42,11 +84,24 @@
     }
     function update(fen, score, source = 'CDB') {
       scores.set(fen, { score, source, at: Date.now() });
+      if (source === 'CDB' || source === 'SF') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    return { render, update };
+    function updateSource(fen, score, source, depth = null) {
+      sourceScores.set(`${fen}:${source}`, { score, at: Date.now(), depth });
+      if (sourceScores.size > 500) sourceScores.delete(sourceScores.keys().next().value);
+      if (game.fen() === fen) render();
+    }
+    function updateDCC(fen, move, provider, status = 'ready') {
+      dccChoices.set(fen, { move, provider, status });
+      if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
+      if (game.fen() === fen) render();
+    }
+    document.addEventListener?.('visibilitychange', () => { if (document.hidden) clearTimeout(mobileTimer); else render(); });
+    if (typeof window !== 'undefined') window.addEventListener?.('resize', render);
+    return { render, update, updateSource, updateDCC };
   }
   return { measure, create };
 });

@@ -14,6 +14,7 @@ function initAll() {
 	evalMode: 'direct',
     analysisSource: 'auto', // provider selection is independent of CDB direct/proxy transport
     sfRootNodes: 24000,
+    allCDBSeconds: 4, allSFSeconds: 4, allDCCSeconds: 4,
 	flipBoard: false,
     theme: 'dark',
     topN: 5,
@@ -114,7 +115,9 @@ function initAll() {
     settings.coachMode = 'silent';
     settings.coachOpen = false;
   }
-  if (!['auto', 'cdb', 'sf'].includes(settings.analysisSource)) settings.analysisSource = 'auto';
+  if (!['auto', 'cdb', 'sf', 'dcc', 'all'].includes(settings.analysisSource)) settings.analysisSource = 'auto';
+  for (const key of ['allCDBSeconds', 'allSFSeconds', 'allDCCSeconds'])
+    settings[key] = Math.max(1, Math.min(30, Number(settings[key]) || 4));
   if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
   function saveSettings() {
     invalidateDCCAnalysis();
@@ -521,6 +524,7 @@ gameBuckets.forEach(bucket => {
   let analysisGeneration = 0;
   let annotationRequestId = 0;
   let localController = null, localProvider = null;
+  let sfAnalysisFen = null, sfAnalysisNodes = null, sfWorking = false;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
   const analysisMemo = new Map();
@@ -539,7 +543,7 @@ gameBuckets.forEach(bucket => {
       const stale = () => cancelled() || generation !== analysisGeneration || selected !== settings.analysisSource;
       const cdb = selected === 'sf' ? null : await cachedFetchChessDB(fen);
       if (stale()) return null;
-      if (selected === 'sf' || (selected === 'auto' && !cdb.moves.length)) {
+      if (selected === 'sf' || (['auto', 'dcc', 'all'].includes(selected) && !cdb.moves.length)) {
         const local = await runLocalSF(fen, { dcc: true, cancelled: stale });
         return stale() ? null : local.analysis;
       }
@@ -573,6 +577,9 @@ gameBuckets.forEach(bucket => {
     localController = null; localProvider = null;
     latestDCCResults = [];
     latestDCCReceipt = null;
+    sfWorking = false;
+    const deeper = document.getElementById('btnSFDeeper');
+    if (deeper) { deeper.textContent = 'Deeper'; deeper.disabled = false; }
   }
   function evalTrend(seq) { return DCC.sensors(seq, game.fen()).trend; }
   function trendArrow(trend) { return { rising: '↑', falling: '↓', stable: '→' }[trend] || '—'; }
@@ -797,12 +804,14 @@ gameBuckets.forEach(bucket => {
     const source = settings.analysisSource;
     latestDCCResults = [];
     latestDCCReceipt = { status: 'pending' };
+    positionEval.updateDCC(baseFen, null, null, 'pending');
     renderDCCView();
     const result = precomputed || await analyzePosition(baseFen, moveList);
     if (!result || id !== activeLookaheadId || settings.analysisSource !== source || game.fen() !== baseFen || !showEval) return;
     latestDCCResults = result.candidates.map(c => c.data);
     latestDCCReceipt = result.receipt;
     result.receipt.provider ||= 'CDB';
+    positionEval.updateDCC(baseFen, result.dcc1Move ? uciToSan(baseFen, result.dcc1Move) : null, result.receipt.provider);
     lastAnalysisResult = result;
     labListeners.forEach(listener => listener(getLabContext()));
     latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
@@ -1009,6 +1018,11 @@ gameBuckets.forEach(bucket => {
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
   ------------------------------------------------------------------*/
   function applySettings() {
+    for (const key of ['CDB', 'SF', 'DCC']) {
+      const input = document.getElementById(`settingAll${key}Seconds`);
+      if (input) input.value = settings[`all${key}Seconds`];
+    }
+    positionEval.render();
     document.getElementById('settingEvalMode').value = settings.evalMode;
     /* theme */
 	document.body.classList.toggle('light-theme', settings.theme === 'light');
@@ -1133,7 +1147,7 @@ gameBuckets.forEach(bucket => {
       const row = document.createElement('div');
       const score = move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
       const pv = move.pv?.slice(0, 5).join(' ') || '';
-      row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${pv ? ' · PV ' + pv : ''}`;
+      row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${move.depth ? ` · depth ${move.depth}` : ''}${pv ? ' · PV ' + pv : ''}`;
       panel.appendChild(row);
     }
     if (analysis?.receipt) {
@@ -1147,28 +1161,49 @@ gameBuckets.forEach(bucket => {
     const baseFen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource, requestId = ++annotationRequestId;
     const current = () => requestId === annotationRequestId && generation === analysisGeneration && epoch === activityEpoch && game.fen() === baseFen && settings.analysisSource === selected && showEval && !simRunning && !replayRunning;
     const status = document.getElementById('analysisSourceStatus');
-    status.textContent = selected === 'sf' ? 'SF local analysis…' : 'CDB analysis…';
-    let response, sf = null, provider = 'CDB';
+    const deeper = document.getElementById('btnSFDeeper');
+    if (selected === 'all' || selected === 'dcc') positionEval.updateDCC(baseFen, null, null, 'pending');
+    const usesSF = selected === 'sf' || selected === 'all';
+    deeper.hidden = !usesSF || !!offlineEvidence;
+    if (sfAnalysisFen !== baseFen) { sfAnalysisFen = baseFen; sfAnalysisNodes = null; }
+    status.textContent = usesSF ? 'SF local analysis…' : 'CDB analysis…';
+    if (usesSF) { sfWorking = true; deeper.textContent = 'Stop SF'; deeper.disabled = false; }
+    let response, sf = null, provider = 'CDB', cdb = null, sfError = null;
     try {
-      if (selected !== 'sf') response = await cachedFetchChessDB(baseFen);
+      if (selected !== 'sf') {
+        cdb = await cachedFetchChessDB(baseFen);
+        response = cdb;
+        if (current() && selected === 'all') positionEval.updateSource(baseFen, cdb.moves[0]?.score, 'CDB');
+      }
       if (!current()) return;
-      if (selected === 'sf' || (selected === 'auto' && !response.moves.length)) {
+      if (selected === 'sf' || selected === 'all' || ((selected === 'auto' || selected === 'dcc') && !response.moves.length)) {
         const reason = selected === 'auto' ? response.reason : null;
-        sf = await runLocalSF(baseFen, { dcc: settings.dccEnabled, cancelled: () => !current() });
+        try { sf = await runLocalSF(baseFen, { nodes: sfAnalysisNodes || settings.sfRootNodes,
+          dcc: settings.dccEnabled || selected === 'dcc' || (selected === 'all' && !cdb?.moves.length), cancelled: () => !current() }); }
+        catch (error) {
+          if (selected !== 'all' || !cdb?.moves.length || error.name === 'AbortError') throw error;
+          sfError = error;
+        }
         if (!current()) return;
-        response = sf.root; provider = 'SF';
-        status.textContent = (reason ? `${reason} · SF local fallback active` : 'SF local active') +
-          (sf.root.complete ? '' : ' · incomplete MultiPV, raw choice provisional');
+        if (sf) {
+          positionEval.updateSource(baseFen, sf.root.moves[0]?.score, 'SF', sf.ledger.rootDepth);
+          if (selected !== 'all' || !cdb?.moves.length) { response = sf.root; provider = 'SF'; }
+          status.textContent = (reason ? `${reason} · SF local fallback active` : selected === 'all' ? 'CDB + SF local active' : 'SF local active') +
+            ` · depth ${sf.ledger.rootDepth ?? '—'} · ${sf.ledger.rootNodes || 0} nodes` +
+            (sf.root.complete ? '' : ' · incomplete MultiPV, raw choice provisional');
+        } else status.textContent = `${cdb.reason} · SF unavailable: ${sfError.message}`;
       } else status.textContent = response.reason;
     } catch (error) {
       if (!current() || error.name === 'AbortError') return;
-      status.textContent = `${selected === 'auto' ? response?.reason + ' · ' : ''}SF local unavailable: ${error.message}`;
+      status.textContent = `${selected === 'auto' || selected === 'dcc' ? response?.reason + ' · ' : ''}${selected === 'cdb' ? 'CDB' : 'SF local'} unavailable: ${error.message}`;
       latestDCCResults = []; latestDCCReceipt = { status: 'unknown', reason: status.textContent };
       lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
       document.getElementById('analysisCandidates').style.display = 'none';
       document.querySelectorAll('.overlay').forEach(el => el.remove());
       renderDCCView(); positionEval.update(baseFen, null, 'SF');
       return;
+    } finally {
+      if (current() && usesSF) { sfWorking = false; deeper.textContent = 'Deeper'; deeper.disabled = false; }
     }
     const allMoves = response.moves;
     activeAnalysisProvider = provider; activeAnalysisFen = baseFen;
@@ -1181,8 +1216,9 @@ gameBuckets.forEach(bucket => {
     }
     list.forEach((move, i) => annotateMove(move.move, move.score, i === 0, provider, move));
     showAnalysisCandidates(allMoves, provider, sf?.analysis);
-    if (settings.dccEnabled && allMoves.length) await runDCCLookahead(allMoves, baseFen, sf?.analysis || null);
-    else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; renderDCCView(); }
+    if ((settings.dccEnabled || selected === 'dcc' || selected === 'all') && allMoves.length)
+      await runDCCLookahead(allMoves, baseFen, provider === 'SF' ? sf?.analysis || null : null);
+    else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; positionEval.updateDCC(baseFen, null, null); renderDCCView(); }
   }
 
   /* ------------------------------------------------------------------
@@ -2124,9 +2160,17 @@ function jumpTo(i){
   const sourceSelect = document.getElementById('analysisSource');
   const dccSelect = document.getElementById('analysisDCC');
   sourceSelect.value = settings.analysisSource;
-  dccSelect.checked = !!settings.dccEnabled;
+  function syncDCCSelector() {
+    const forced = settings.analysisSource === 'dcc' || settings.analysisSource === 'all';
+    dccSelect.checked = forced || !!settings.dccEnabled;
+    dccSelect.disabled = forced;
+    dccSelect.title = forced ? 'DCC is included in this analysis mode' : 'Include DCC lookahead';
+  }
+  syncDCCSelector();
   sourceSelect.addEventListener('change', () => {
     settings.analysisSource = sourceSelect.value;
+    syncDCCSelector();
+    sfAnalysisNodes = null;
     invalidateDCCAnalysis(); annotationRequestId++;
     clearInterval(evalRetryTimer); evalRetryTimer = null;
     document.querySelectorAll('.overlay').forEach(el => el.remove());
@@ -2135,10 +2179,34 @@ function jumpTo(i){
     lastDecision = null; document.getElementById('simDecisionPanel').style.display = 'none';
     lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
     renderDCCView();
+    positionEval.updateDCC(game.fen(), null, null, 'pending');
     positionEval.update(game.fen(), null, settings.analysisSource === 'sf' ? 'SF' : 'CDB');
     saveSettings(); fetchAnnotations();
   });
   dccSelect.addEventListener('change', () => { settings.dccEnabled = dccSelect.checked; saveSettings(); fetchAnnotations(); });
+  document.getElementById('btnSFDeeper').addEventListener('click', () => {
+    const button = document.getElementById('btnSFDeeper');
+    if (sfWorking) {
+      annotationRequestId++; if (localController) localController.abort();
+      if (localProvider) localProvider.destroy();
+      sfWorking = false; button.textContent = 'Deeper';
+      document.getElementById('analysisSourceStatus').textContent = 'SF stopped · previous completed scores remain visible';
+      return;
+    }
+    sfAnalysisFen = game.fen();
+    sfAnalysisNodes = Math.min(1536000, (sfAnalysisNodes || settings.sfRootNodes) * 4);
+    invalidateDCCAnalysis();
+    document.querySelectorAll('.overlay').forEach(el => el.remove());
+    fetchAnnotations();
+  });
+  for (const key of ['CDB', 'SF', 'DCC']) {
+    document.getElementById(`settingAll${key}Seconds`).addEventListener('change', event => {
+      const value = Math.max(1, Math.min(30, Number(event.target.value) || 4));
+      settings[`all${key}Seconds`] = value; event.target.value = String(value);
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      positionEval.render();
+    });
+  }
   updateBoard(true);
   showOpening();
   refreshPlayUi();
