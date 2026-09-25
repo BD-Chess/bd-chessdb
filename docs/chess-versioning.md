@@ -75,3 +75,14 @@ archives `001`/`002` stay byte-identical. CURRENT and LAB retain independent cop
 only channel navigation/metadata and repository-relative test imports differ.
 `versions.json.latest_promotion` records this transaction. GitHub Pages is the
 authorized publication route until 2026-10-01; Netlify remains deferred.
+
+## 2026-09-25 LAB review UI promotion without backup
+
+BD explicitly requested the complete current LAB in CURRENT and waived a backup
+for this transaction. LAB source: `a38e0e7a77040b9670dd2a933f464017dd546ae9`.
+No archive is created and PREVIOUS is not rotated; existing archives and PWA
+remain byte-identical. CURRENT retains its channel links/labels, canonical URLs
+and repository-relative test imports. Application assets match LAB; CURRENT's
+utils cache key is advanced to load the promoted clock-state integration.
+The previous promotion record is retained in `versions.json.promotion_history`.
+GitHub Pages remains the active publication route.

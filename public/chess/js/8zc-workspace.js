@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   root.ChessWorkspace = { create };
-  function create({ Chess, game, settings, onDisplaySettings, analyze, onAnnotations, getAnalysis, isBusy, stopActivities }) {
+  function create({ Chess, game, settings, onDisplaySettings, analyze, onAnnotations, getAnalysis, isBusy, isSimulationRunning, stopActivities }) {
     const T = root.ChessTime, $ = id => document.getElementById(id), now = () => performance.now();
     const STORAGE = 'chessLabTiming-v1';
     let clock = T.create({ turn: game.turn(), now: now() });
@@ -82,7 +82,9 @@
     function render() {
       T.tick(clock, now());
       const bar = $('workspaceTimers');
-      bar.hidden = !settings.showTimers || kind === 'lichess';
+      // Review needs the reading space; paused local games keep their clocks.
+      bar.hidden = !settings.showTimers || kind === 'analysis' || kind === 'lichess'
+        || (kind === 'sim' && !isSimulationRunning());
       for (const side of ['w', 'b']) {
         const node = $(side === 'w' ? 'timerWhite' : 'timerBlack');
         const value = clock.mode === 'countdown' ? clock.remaining[side] : clock.used[side];
@@ -145,6 +147,7 @@
       else { clock.turn = game.turn(); T.resume(clock, now()); selectedPly = null; render(); persist(); }
     };
     $('btnHumanFinish').onclick = () => { stop(); kind = 'analysis'; };
+    render();
     setInterval(render, 250);
     window.addEventListener('pagehide', pause);
     return { reset, start, pause, stop, beforeMove, recordMove, recordAt, history, decorate, render,
