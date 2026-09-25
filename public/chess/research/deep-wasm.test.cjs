@@ -41,6 +41,25 @@ test('Real pinned engine searches multiple targeted roots and returns legal prin
     }
   } finally { engine.destroy(); }
 });
+test('Real pinned engine reuses prepared workers for normal timed searches with game history', { timeout: 30000 }, async () => {
+  let workers = 0;
+  const engine = Deep.create({ Chess, workerFactory: () => { workers++; return cliWorker(); } });
+  try {
+    await engine.prepare();
+    const game = new Chess(), startFen = game.fen(), moves = [];
+    for (let turn = 0; turn < 2; turn++) {
+      const result = await engine.analyze({ fen: game.fen(), history: { startFen, moves }, movetime: 100, multiPV: 2 });
+      assert.equal(result.stopped, false); assert.equal(result.forcedStop, false);
+      assert.equal(result.completeMultiPV, true); assert.equal(result.lines.length, 2);
+      assert.equal(result.limits.nodes, null); assert.equal(result.limits.depth, null);
+      assert(result.searchElapsedMs > 0); assert.equal(result.coldHash, true);
+      const move = result.lines[0].pv[0];
+      assert(game.move({ from: move.slice(0, 2), to: move.slice(2, 4), promotion: move[4] }));
+      moves.push(move);
+    }
+    assert.equal(workers, 1, 'preparation covers both timed searches');
+  } finally { engine.destroy(); }
+});
 test('Real pinned engine resolves mate and obeys stop in infinite analysis', { timeout: 30000 }, async () => {
   const engine = Deep.create({ Chess, workerFactory: cliWorker });
   try {

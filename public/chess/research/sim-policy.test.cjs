@@ -46,10 +46,42 @@ test('PGN and CSV retain custom black-to-move start, both policies, gaps and par
     config: { version: 'test', depth: 5, candidates: 3, guard: 10, source: 'direct' },
     trace: [{ ...row, fen: startFen, ply: 1 }], state: 'paused', result: '*', reason: 'paused' };
   const pgn = SIM.toPGN(Chess, run), loaded = new Chess();
-  assert.match(pgn, /White "CDB \+ DCC"/); assert.match(pgn, /Black "CDB \(top 1\)"/);
-  assert.match(pgn, /1\.\.\. e6/); assert.match(pgn, /DCCCoverageGaps "1"/); assert.match(pgn, /\*$/);
+  assert.match(pgn, /White "CDB\/SF \+ DCC"/); assert.match(pgn, /Black "CDB\/SF"/);
+  assert.match(pgn, /1\.\.\. e6/); assert.match(pgn, /DCCCoverageGaps "0"/); assert.match(pgn, /\*$/);
   assert.equal(loaded.load_pgn(pgn), true); b.move('e6'); assert.equal(loaded.fen(), b.fen());
   const csv = SIM.toCSV([run]); assert.match(csv, /dcc_raw_gap,exact_ties/); assert.match(csv, /"cdb-top1"/);
   assert.match(csv, /"paused","\*","paused"/);
   assert.throws(() => SIM.toPGN(Chess, { ...run, startFen: fen }), /position mismatch/);
+});
+
+test('CDB policy uses actual SF fallback source and partial DCC is raw safety', () => {
+  const partial = { ...analysis, receipt: { fen, provider: 'SF', status: 'partial', reason: 'missing probes' } };
+  const row = SIM.decision(Chess, fen, 'dcc', moves, partial, {
+    provider: 'SF', fallbackReason: 'CDB has no evaluated moves', budgetMs: 200, budgetDepth: 12,
+    clockBeforeMs: 1000, clockAfterMs: 800, chargedMs: 200
+  });
+  assert.equal(row.move, 'e2e4'); assert.equal(row.provider, 'SF'); assert.equal(row.actual_provider, 'SF');
+  assert.equal(row.fallback, true); assert.equal(row.picked_by, 'sf-raw-safety'); assert.equal(row.dcc_choice, null);
+  assert.equal(row.root_budget_ms, 200); assert.equal(row.root_budget_depth, 12); assert.equal(row.clock_after_ms, 800);
+  assert.equal(row.coverage, 'partial'); assert.equal(row.fallback_reason, 'CDB has no evaluated moves');
+  const cdbPartial = SIM.decision(Chess, fen, 'dcc', moves, { ...analysis, receipt: { fen, status: 'partial' } });
+  assert.equal(cdbPartial.picked_by, 'cdb-fallback'); assert.equal(cdbPartial.move, 'e2e4');
+});
+test('PGN preserves opening history, source headers, clocks and actual fallback source', () => {
+  const board = new Chess();
+  board.header('Event', 'Source match', 'White', 'Original white', 'Black', 'Original black');
+  ['e4', 'e5', 'Nf3', 'Nc6'].forEach(move => board.move(move));
+  const startFen = board.fen(), startPgn = board.pgn();
+  const row = SIM.decision(Chess, startFen, 'raw', [{ move: 'f1b5', score: 22 }], null,
+    { provider: 'SF', fallbackReason: 'CDB empty', clockAfterMs: 61250, chargedMs: 750 });
+  const run = { id: 1, white: 'raw', black: 'sf', startFen, startPgn, timeControl: { baseMs: 60000, incrementMs: 2000 },
+    trace: [{ ...row, fen: startFen, ply: 5 }], state: 'paused', result: '*', reason: 'paused' };
+  const pgn = SIM.toPGN(Chess, run), loaded = new Chess();
+  assert.equal(loaded.load_pgn(pgn), true); assert.deepEqual(loaded.history(), ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5']);
+  assert.equal(loaded.header().TimeControl, '60+2'); assert.equal(loaded.header().OpeningSourceWhite, 'Original white');
+  assert.equal(loaded.header().ActualSources, 'SF'); assert.equal(loaded.header().FEN, undefined);
+  assert.match(pgn, /Opening boundary: 4 plies/); assert.match(pgn, /\[%clk 0:01:01.250\]/);
+  assert.match(pgn, /source=SF; policy=sf-top1/); assert.match(pgn, /fallback_reason=CDB empty/);
+  assert.throws(() => SIM.toPGN(Chess, { ...run, startFen: fen }), /opening position mismatch/);
+  assert.match(SIM.toCSV([run]), /actual_provider,requested_provider,fallback,fallback_reason/);
 });

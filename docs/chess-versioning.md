@@ -86,3 +86,44 @@ and repository-relative test imports. Application assets match LAB; CURRENT's
 utils cache key is advanced to load the promoted clock-state integration.
 The previous promotion record is retained in `versions.json.promotion_history`.
 GitHub Pages remains the active publication route.
+
+## 2026-09-26 Sim tournament promotion with standard backup
+
+The approved Sim games and tournaments release uses the standard rotation; the
+previous transaction's one-time backup waiver does not apply. Published LAB
+source: `dc58182bdd01d97f260b6d3b6d40ec58e497d144` (repository tree
+`afca7f634f4f2e22799d11fb8f7bba76ffefffc6`). Promotion follows verification of that
+LAB release; it does not publish the backup preparation as a separate release.
+
+The backup source is main `613121cd272e78b6965c4900e692c43f0bc14715`.
+Archive `004` preserves PREVIOUS v0.6.0: 79 source files plus its manifest,
+excluding numbered archives. The creation-only changes rebase navigation,
+canonical metadata and legacy board-document links, remove the active channel
+marker and add the fixed archive label. Source and final SHA-256 file hashes,
+rewrites and external service dependencies are recorded in
+`public/chess/old/004/ARCHIVE_MANIFEST.json`; its SHA-256 is
+`95ac0316b5ac4dfdba7991ca3b5546b3d791d1a16c19b4a968515a20f3279ff8`.
+
+The pre-release CURRENT's 136 own files become PREVIOUS. Its seven HTML channel
+navigation/metadata files and two repository-relative test imports are rebased;
+runtime JS, CSS, data, pieces and bundled Stockfish assets retain their source
+bytes. Verified LAB then becomes CURRENT, retaining CURRENT's channel metadata.
+LAB remains an independent copy. Archives `001`–`003` and PWA remain unchanged;
+`004` is immutable after the promotion commit. The earlier no-backup promotion
+record remains in `versions.json.promotion_history`.
+
+The version gate, backup manifests, static asset closure and the archive's local
+DOM boot/Flip/New checks are recorded in the release evidence. Live deployment
+and device checks belong to the promotion receipt and are not implied by those
+local checks. GitHub Pages remains the publication route; Netlify stays deferred
+until 2026-10-01. The next archive is `005`.
+
+Verification corrected exact TCEC book boundaries (the first SuFi opening ends
+at 9.Nf3), retained the use-position Collection action, and clarified active-game
+date/elapsed labels. Zero-move custom FEN openings remain loadable and exportable.
+Fallback history migrates into IndexedDB without replacing newer records and
+remains retained if migration fails. Page shutdown checkpoints and pauses the
+runner; archive close follows queued work. History refreshes stale running states
+when another tab's runner lease expires. All these corrections are included in
+the published source commit above. Final promoted LAB subtree:
+`56ce0d1426568e18338b819fbc16e12728bf1823`.

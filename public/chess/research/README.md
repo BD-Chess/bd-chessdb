@@ -200,3 +200,38 @@ Validation: 55 deterministic tests pass, including score perspective, unknown/de
 values, terminal outcomes and late-response isolation for the new bar. Full DOM
 boot covers the actual presentation helpers, both drawers, timers, SimB/New game,
 automatic play, navigation pause, local human play and the assistant.
+
+
+## Resumable SIM and tournaments (2026-09-26)
+
+SIM supports CDB/SF, CDB/SF + DCC, SF and SF + DCC. The hybrid checks CDB
+at every position and falls back to the pinned single-thread SF Lite when no
+usable database evaluation is available. The recorded source is the one used.
+
+Choose an SF depth (default 15), an SF root-node budget, a decision time, or a
+per-player game clock with increment. In timed modes CDB response time, SF and
+DCC share the decision budget; root-node mode reports additional DCC probes
+separately. Engine initialization, display rendering and Move pause are excluded
+from the clocks. A normal timed search can use its last complete MultiPV
+iteration; incomplete results are never fabricated.
+
+Single games, paired duels and paired round robins use either the current
+position or a selection from Collection. Auto uses contiguous Book comments;
+otherwise it takes nine full moves. A custom move boundary and repeat count
+are available. Orthodox legal positions are deduplicated; Chess960 is excluded.
+Opening history, source game tags and the engine handover are preserved in PGN.
+
+IndexedDB stores the frozen schedule/settings and each committed move. A small
+active-turn journal permits recovery after a reload. Explicit Pause/Resume
+preserves clocks and an already computed pending decision. Matches/tournaments
+appear in Game Collection without adding a Study entry. PGN and CSV export
+selected events; JSON exports/imports the full portable archive. Import merges
+with new IDs on collisions. Data is local to this browser and origin, shared
+between LAB and CURRENT on that origin, with no cross-device synchronization.
+The browser must remain active for computation; background throttling can
+reduce speed. A closed browser never continues a tournament on a server.
+
+Focused verification: sim-runner, sim-policy, tournament-core, sim-store,
+collection-dynamic, time-core, workspace-clock, deep-engine, sf-provider,
+deep-wasm and lab-integration. Long tournaments are separate local acceptance;
+the build does not establish an engine-strength result.

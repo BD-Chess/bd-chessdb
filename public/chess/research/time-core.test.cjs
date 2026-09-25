@@ -29,6 +29,42 @@ test('paused time and repeated renders do not consume or duplicate player time',
   assert.match(T.pgn(r), /\[%timestamp 2026-09-12T12:01:43.000Z\]/);
   assert.equal(T.pgn(null), '');
 });
+test('engine countdown charges computation only and increments once after the delay', () => {
+  const c = T.create({ mode: 'countdown', seconds: 60, increment: 2, running: false });
+  T.tick(c, 10000); assert.equal(c.remaining.w, 60000);
+  T.resume(c, 10000); T.pause(c, 13500);
+  T.tick(c, 18000); assert.equal(c.remaining.w, 56500);
+  const row = T.move(c, 'w', 'b', 20000, '2026-09-25T15:00:00.000Z', { allowPaused: true, pauseAfter: true });
+  assert.equal(row.think_ms, 3500); assert.equal(row.clock_ms, 58500);
+  assert.equal(c.running, false); assert.equal(row.after.running, false);
+  assert.equal(T.move(c, 'w', 'b', 20000, '', { allowPaused: true, pauseAfter: true }), null, 'the same move cannot earn increment twice');
+  T.tick(c, 60000); assert.equal(c.remaining.b, 60000);
+  T.resume(c, 60000); T.pause(c, 61500);
+  const reply = T.move(c, 'b', 'w', 70000, '', { allowPaused: true, pauseAfter: true });
+  assert.equal(reply.think_ms, 1500); assert.equal(reply.clock_ms, 60500);
+  assert.deepEqual(c.used, { w: 3500, b: 1500 });
+});
+test('restored engine clocks preserve a partial turn without charging time away', () => {
+  const c = T.create({ mode: 'countdown', seconds: 20, increment: 1, now: 500 });
+  T.pause(c, 3500);
+  const saved = JSON.parse(JSON.stringify(T.snapshot(c, 10000)));
+  const restored = T.restore(saved, 7);
+  T.tick(restored, 86400000); assert.equal(restored.remaining.w, 17000);
+  T.resume(restored, 86400000); T.pause(restored, 86402000);
+  const row = T.move(restored, 'w', 'b', 86408000, '', { allowPaused: true, pauseAfter: true });
+  assert.equal(row.think_ms, 5000); assert.equal(row.clock_ms, 16000);
+  assert.equal(saved.remaining.w, 17000, 'restoring does not mutate the checkpoint');
+  assert.throws(() => T.restore({ ...saved, remaining: { w: -1, b: 20 } }), /Invalid saved clock/);
+});
+test('expired engine clocks cannot receive increment when a delayed result arrives', () => {
+  const c = T.create({ mode: 'countdown', seconds: 1, increment: 5 });
+  T.pause(c, 1200);
+  assert.equal(c.flagged, 'w'); assert.equal(c.used.w, 1000);
+  assert.equal(T.move(c, 'w', 'b', 9000, '', { allowPaused: true, pauseAfter: true }), null);
+  assert.equal(c.remaining.w, 0); assert.equal(c.turn, 'w');
+  const restored = T.restore(JSON.parse(JSON.stringify(c)), 0);
+  T.resume(restored, 20); assert.equal(restored.running, false);
+});
 test('no-deadline DCC completes its requested probes even when CDB waits exceed 20 seconds', async () => {
   const realNow = Date.now; let wall = 0;
   Date.now = () => wall;

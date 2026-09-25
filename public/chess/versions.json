@@ -34,20 +34,52 @@
       "id": "003",
       "path": "/chess/old/003/",
       "manifest_sha256": "a80dcf913560cc9b817434c150822326ab17c46df82953d0d93098d8a1a59320"
+    },
+    {
+      "source_channel": "PREVIOUS",
+      "source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+      "source_tree": "49acdacc46827a4b21fea7eb984addfd6c7aaae8",
+      "purpose": "Immutable PREVIOUS v0.6.0 snapshot before standard CURRENT/PREVIOUS rotation for the approved Sim tournament release",
+      "id": "004",
+      "path": "/chess/old/004/",
+      "manifest_sha256": "95ac0316b5ac4dfdba7991ca3b5546b3d791d1a16c19b4a968515a20f3279ff8"
     }
   ],
   "promotion_requires": "explicit approval, verified LAB, fresh main, immutable archive check",
   "standard_introduced": "2026-09-13",
   "promotion_performed": true,
   "latest_promotion": {
-    "date": "2026-09-25",
+    "date": "2026-09-26",
     "source_channel": "LAB",
-    "source_base_commit": "a38e0e7a77040b9670dd2a933f464017dd546ae9",
+    "source_base_commit": "dc58182bdd01d97f260b6d3b6d40ec58e497d144",
+    "source_repository_tree": "afca7f634f4f2e22799d11fb8f7bba76ffefffc6",
+    "backup_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+    "backup_created": true,
+    "backup_rotation": "PREVIOUS to archive 004; CURRENT to PREVIOUS",
+    "archived_previous": "004",
+    "archive_source_channel": "PREVIOUS",
     "previous_current_archive": null,
-    "backup_created": false,
-    "authorization": "BD explicit full LAB to CURRENT copy; no backup this time (2026-09-25)",
+    "previous_root_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+    "authorization": "BD approved all discussed SIM and tournament features in LAB and PROD on 2026-09-25; standard version rotation applied",
     "lab_retained": true,
-    "previous_root_preserved": true
+    "previous_root_preserved": false,
+    "pwa_preserved": true,
+    "existing_archives_preserved": [
+      "001",
+      "002",
+      "003"
+    ],
+    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01",
+    "source_validation_fixes": [
+      "Exact positive TCEC Book markers; out-of-book comments excluded",
+      "Preserve use-position action in searchable Collection",
+      "Use simulation date in active board title; precise elapsed clock caption",
+      "Zero-move custom FEN openings remain loadable and exportable",
+      "Migrate fallback history to IndexedDB without replacing newer records; retain fallback on migration failure",
+      "Checkpoint and pause on page shutdown; serialize archive close after pending work",
+      "Refresh archived running states after another tab runner lease expires"
+    ],
+    "verified_lab_tree": "56ce0d1426568e18338b819fbc16e12728bf1823"
   },
   "promotion_history": [
     {
@@ -56,6 +88,16 @@
       "source_base_commit": "8bd5605bd9f96f4c5f4d2e73f30cdd62a5ffb18d",
       "previous_current_archive": "003",
       "authorization": "BD direct promotion request 2026-09-25; include Deep analysis SF badge sync and More button sizing",
+      "lab_retained": true,
+      "previous_root_preserved": true
+    },
+    {
+      "date": "2026-09-25",
+      "source_channel": "LAB",
+      "source_base_commit": "a38e0e7a77040b9670dd2a933f464017dd546ae9",
+      "previous_current_archive": null,
+      "backup_created": false,
+      "authorization": "BD explicit full LAB to CURRENT copy; no backup this time (2026-09-25)",
       "lab_retained": true,
       "previous_root_preserved": true
     }
