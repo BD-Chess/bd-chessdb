@@ -25,7 +25,7 @@
       $('geminiQuestion').value = ''; busy(true);
       controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 55000);
       try {
-        const response = await fetch('/.netlify/functions/chess-gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const response = await fetch('/.netlify/functions/chess-lab-gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: question, snapshot: captured, history }), signal: controller.signal });
         let data; try { data = await response.json(); } catch (_) { throw new Error(response.status === 429 ? 'Too many requests to the chess assistant. Please try again later.' : 'The chess assistant connection is unavailable. Please try again.'); }
         if (epoch !== generation) return;
@@ -44,7 +44,7 @@
     $('geminiQuestion').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e.target.value); } };
     panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
     panel.querySelectorAll('[data-question]').forEach(button => { button.onclick = () => send(button.dataset.question); });
-    message('model', 'Ask about the current position, compare CDB with DCC, or explore a plan. I use the board snapshot and available analysis for each question.');
+    message('model', 'Ask about the current position, compare the selected source with DCC, or explore a plan. I use the board snapshot and available analysis for each question.');
     return { open, close };
   } };
 })(window);

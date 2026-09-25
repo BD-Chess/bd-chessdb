@@ -65,3 +65,13 @@ failure does not authorize changing a sealed archive. Offer a new release instea
 
 No promotion, numbered archive, background deployment or recurring job is
 performed just by adopting this standard.
+
+## 2026-09-25 direct CURRENT promotion
+
+BD explicitly requested a copy of CURRENT into the next numbered archive, then
+LAB into CURRENT after the two approved UI refinements. Archive `003` therefore
+snapshots CURRENT (95 files), rather than PREVIOUS. Existing PREVIOUS, PWA and
+archives `001`/`002` stay byte-identical. CURRENT and LAB retain independent copies;
+only channel navigation/metadata and repository-relative test imports differ.
+`versions.json.latest_promotion` records this transaction. GitHub Pages is the
+authorized publication route until 2026-10-01; Netlify remains deferred.

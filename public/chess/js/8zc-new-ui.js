@@ -50,6 +50,27 @@
       reflect();
     });
 
+    // Use PGN identity, not the workspace's event/status message. The LAB host
+    // keeps this current for imports, history navigation, reloads and New game.
+    const boardGameTitle = byId('boardGameTitle');
+    const host = window.ChessLabHost;
+    if (boardGameTitle && host) {
+      const known = value => {
+        const text = String(value || '').trim();
+        return text && !/^(?:[?*.-]+|unknown|white|black|book)$/i.test(text) ? text : '';
+      };
+      const renderGameTitle = context => {
+        const headers = context.headers || {};
+        const white = known(headers.White), black = known(headers.Black);
+        const title = white && black ? `${white} vs ${black}` : known(headers.Opening) || known(headers.Event);
+        boardGameTitle.textContent = title;
+        boardGameTitle.hidden = !title;
+        boardGameTitle.title = [...new Set([title, known(headers.Event), known(headers.Date)].filter(Boolean))].join(' · ');
+      };
+      renderGameTitle(host.getContext());
+      host.onChange(renderGameTitle);
+    }
+
     setupLibrary();
     setupModalKeyboard();
 

@@ -2129,6 +2129,22 @@ function jumpTo(i){
   /* ------------------------------------------------------------------
      INIT
   ------------------------------------------------------------------*/
+  function beginDeepAnalysis() {
+    const fen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource;
+    // Opening/starting the pinned search supersedes pending main-analysis work.
+    const requestId = ++annotationRequestId;
+    sfWorking = false; syncSFAnalysisControl();
+    return snapshot => {
+      if (selected !== 'all' || settings.analysisSource !== selected || requestId !== annotationRequestId ||
+          generation !== analysisGeneration || epoch !== activityEpoch || game.fen() !== fen || snapshot.fen !== fen ||
+          !showEval || offlineEvidence || simRunning || replayRunning || playState.assistanceLocked) return;
+      const best = snapshot.lines?.find(line => (line.multipv || 1) === 1);
+      if (!best?.pv?.length || !['cp', 'mate'].includes(best.score?.type) || !Number.isFinite(best.score.white)) return;
+      const move = uciToSan(fen, best.pv[0]);
+      if (!move) return;
+      positionEval.updateSource(fen, best.score, 'SF', best.depth, move, !!snapshot.limits?.searchMoves?.length);
+    };
+  }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, pause: pauseLab, navigate: navigateStudy,
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
@@ -2139,7 +2155,7 @@ function jumpTo(i){
     captureEvidence: async () => { const fen = game.fen(); await analyzePosition(fen); return labSnapshots.get(fen) || null; },
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
-  deepUI = window.ChessDeepUI?.create(labHost) || null;
+  deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis }) || null;
   researchUI = window.ChessResearchUI?.create(labHost) || null;
   document.getElementById('btnStudy')?.addEventListener('click', () => { pauseLab(); studyUI?.open(); });
   document.getElementById('btnEvidence')?.addEventListener('click', () => { pauseLab(); researchUI?.open('evidence'); });

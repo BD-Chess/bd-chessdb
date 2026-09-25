@@ -42,7 +42,7 @@ export function checkVersions(repo, base) {
   if (/^\s*\/chess\/new\S*\s+\/chess\/(?:\s|:)/m.test(redirects)) errors.push('LAB is redirected to CURRENT');
   if (base) {
     if (!/^[a-f0-9]{40}$/.test(base)) throw new Error('Use the full inspected main commit SHA');
-    const entries = execFileSync('git',['ls-tree','-r',base,'--','public/chess/old'],{cwd:repo,encoding:'utf8'}).trim().split('\n').filter(Boolean);
+    const entries = execFileSync('git',['ls-tree','-rz',base,'--','public/chess/old'],{cwd:repo,encoding:'utf8'}).split('\0').filter(Boolean);
     for (const entry of entries) {
       const match = entry.match(/^\d+ blob ([a-f0-9]+)\t(public\/chess\/old\/\d{3,}\/.*)$/);
       if (!match) continue;

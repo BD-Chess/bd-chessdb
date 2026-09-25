@@ -1,4 +1,55 @@
-# ChessDCC new — 2026-09-12
+# ChessDCC LAB — 2026-09-13 R1
+
+Development target: https://www.mdlxdcc.org/chess/new/
+
+Base: current `public/chess` at `4ff3438217d6d077e8b589f564bd52a28e76833a`,
+tree `2f9ff9b458fc445d01d88eb174cf43dac066e5d6`. All 177 files of the existing
+CURRENT/PREVIOUS source snapshot were verified byte-identical to the newest
+Drive pack. See BUILD_PROVENANCE.json. This is not a promotion.
+
+## Current implementation and acceptance map
+
+| Request | Implementation | Evidence / limitation |
+|---|---|---|
+| D1, tied candidates | Include every scored legal root within the 10 cp guard, explicit inspected/omitted counts | dcc-research tests; top five remains a display limit only |
+| D2, strongest responses | Configurable sampled critical defenses, complete/partial status and legal SAN preview | Both-color and missing-reply regressions; not proof of a forced line |
+| D3, deeper analysis | Lazy local pinned Stockfish 18 single-thread WASM, MultiPV, depth/nodes/infinite, Stop, targeted roots | Real WASM search/mate/Stop tests; device-dependent speed |
+| D4, allocation | Deterministic round-robin probes and staged comparable coverage | Logical query budget is not known CDB CPU cost; Sim has no wall-time limit |
+| D5, sensor evaluation | Named sensor switches, descriptive structure default, legacy/rank alternatives, separate ablations | FEN compression is not objective positional strength |
+| D6, reproducibility | Candidate-list digest in memo identity; sealed source responses/settings/timestamps; frozen offline replay | Missing provider depth/version stays unknown; no hidden network fallback |
+| D7, controlled comparison | Frozen-source policies, equal requested-node raw/continuation experiments, separate deeper Stockfish adjudication | Actual node overshoot reported; smoke fixtures do not establish Elo gain |
+| U1, real studies | Nested PGN RAV/comments/NAGs, saved named alternatives, legal preview, export/import | Browser-local persistence; JSON/PGN move between devices, no automatic cloud sync |
+| U2, A/B | Immutable same-origin position snapshots with question and export | Different-origin comparisons rejected |
+| U3, interesting events | Optional pause on disagreement, score swing or missing data; pinned decision position | Opt-in; history click pauses immediately and Sim reopens configuration |
+| U4, Focus | Auto Sim collapses lower tools into a compact Pause/Tools strip | Always-expanded override; no change on each move |
+| U5, reading | Visible history anchor and offset, adjustable desktop width/density, editable keyboard guard | Scroll remains user-controlled |
+
+Gemini uses a separate `chess-lab-gemini.mjs` endpoint and versioned knowledge;
+CURRENT's endpoint is unchanged. Browser data uses separate LAB keys. Lichess
+credentials use the existing configured mechanism; no secret is in this package.
+
+The exact upstream engine source archive, GPL license and required network are
+bundled under vendor/stockfish. Runtime downloads only its JS/WASM on first use
+(about 7 MB), not the source archive or separate compliance network file.
+
+## Run current verification
+
+From `public/chess/new/research`: `npm install --ignore-scripts`, then `npm test`.
+Alternatively provide jsdom on NODE_PATH and run from the repository root:
+`node --test public/chess/new/research/*test.cjs public/chess/new/research/*test.mjs`.
+
+`node tools/chess-versioning.mjs --base <inspected-full-main-sha>` verifies direct
+channel links and protects already-sealed archives. The versioning contract is
+in `docs/chess-versioning.md`. Final run counts, commit and live checks belong in
+the delivery receipt, not in historical test counts below.
+
+The wRHP brainstorm proposed these changes; contextual AI role reviews are not
+independent empirical evidence. Implementation tests and actual browser checks
+are separate acceptance gates. No improvement in playing strength is claimed.
+
+---
+
+## Historical delivery notes — 2026-09-12 (not current defaults or test counts)
 
 Production copy: https://www.mdlxdcc.org/chess/new/
 Baseline: BD-Chess/bd-chessdb commit 1ed7041e6d2d70e62107c0203f3bd0f7cb23c8d2, complete public/chess subtree.

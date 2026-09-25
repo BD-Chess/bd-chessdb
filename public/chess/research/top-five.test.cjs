@@ -20,6 +20,8 @@ function context(responses = [verified, cloud]) {
   const calls = [], badges = [];
   const c = {
     positionEval: { render() {}, update() {} },
+    // The live-source branch has no frozen import; keep actual transport observations.
+    offlineEvidence: null, sourceObservations: new Map(),
     activityEpoch: 0, simRequests: new Set(),
     Chess, DCC, AbortController, console: { warn() {} },
     settings: { evalMode: 'direct', topN: 5, dccEnabled: true },

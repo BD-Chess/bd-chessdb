@@ -9,6 +9,15 @@
     if (terminal === 'mate') return { label: '#', white: side === 'b' ? 100 : 0,
       description: `Checkmate · ${side === 'b' ? 'White' : 'Black'} wins`, state: 'known' };
     if (terminal === 'draw') return { label: '0.00', white: 50, description: 'Draw', state: 'known' };
+    // Deep analysis supplies typed White-POV scores. Preserve mate distance
+    // and bounds instead of converting either into a centipawn evaluation.
+    if (score && ['cp', 'mate'].includes(score.type) && Number.isFinite(score.white)) {
+      const cp = score.white, mate = score.type === 'mate';
+      const bound = score.whiteBound === 'lower' ? '≥' : score.whiteBound === 'upper' ? '≤' : '';
+      const label = bound + (mate ? (cp < 0 ? '−' : '') + '#' + Math.abs(cp) : (cp > 0 ? '+' : '') + (cp / 100).toFixed(2));
+      return { label, white: mate ? (cp < 0 ? 0 : 100) : Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
+        description: `${source} ${label} · White perspective`, state: 'known' };
+    }
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
     // CDB decisive/tablebase sentinels are not ordinary centipawns. Do not invent mate distance.
@@ -25,13 +34,18 @@
     const comparison = document.getElementById('allEvalBadges');
     const sourceScores = new Map();
     const dccChoices = new Map();
-    let mobileIndex = 0, mobileTimer = null, mobileKey = '';
+    let mobileIndex = 0, mobileTimer = null, mobileKey = '', rotationKey = '';
     const sources = ['CDB', 'SF', 'DCC'];
     const duration = source => Math.max(1, Math.min(30, Number(settings[`all${source}Seconds`]) || 4)) * 1000;
     function scheduleRotation() {
-      clearTimeout(mobileTimer); mobileTimer = null;
-      if (settings.analysisSource !== 'all' || !matchMedia('(max-width: 790px)').matches || document.hidden || !isVisible()) return;
-      mobileTimer = setTimeout(() => { mobileIndex = (mobileIndex + 1) % sources.length; render(); }, duration(sources[mobileIndex]));
+      if (settings.analysisSource !== 'all' || !matchMedia('(max-width: 790px)').matches || document.hidden || !isVisible()) {
+        clearTimeout(mobileTimer); mobileTimer = null; return;
+      }
+      const key = `${mobileKey}:${mobileIndex}:${duration(sources[mobileIndex])}`;
+      // Streaming search updates must not postpone the mobile source rotation.
+      if (mobileTimer !== null && rotationKey === key) return;
+      clearTimeout(mobileTimer); rotationKey = key;
+      mobileTimer = setTimeout(() => { mobileTimer = null; mobileIndex = (mobileIndex + 1) % sources.length; render(); }, duration(sources[mobileIndex]));
     }
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
@@ -61,6 +75,7 @@
           badge.append(topMove);
           value.textContent = fresh ? result.label : '…';
           note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
+          if (fresh && entry.restricted) note.textContent += ' · selected moves';
           badge.title = result.description;
         }
         badge.classList.toggle('is-unknown', value.textContent === '—');
@@ -94,14 +109,15 @@
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    function updateSource(fen, score, source, depth = undefined, bestMove = undefined) {
+    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined) {
       const key = `${fen}:${source}`, previous = sourceScores.get(key);
       // Score-only refreshes must not erase root metadata. Explicit null clears it;
       // unavailable scores also clear omitted metadata rather than retain an old move.
-      const known = Number.isFinite(score);
+      const known = Number.isFinite(score) || (['cp', 'mate'].includes(score?.type) && Number.isFinite(score.white));
       sourceScores.set(key, { score, at: Date.now(),
         depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
-        bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove });
+        bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove,
+        restricted: restricted === undefined ? (depth === undefined && known ? previous?.restricted : false) : restricted });
       if (sourceScores.size > 500) sourceScores.delete(sourceScores.keys().next().value);
       if (game.fen() === fen) render();
     }
@@ -110,7 +126,7 @@
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    document.addEventListener?.('visibilitychange', () => { if (document.hidden) clearTimeout(mobileTimer); else render(); });
+    document.addEventListener?.('visibilitychange', () => { if (document.hidden) { clearTimeout(mobileTimer); mobileTimer = null; } else render(); });
     if (typeof window !== 'undefined') window.addEventListener?.('resize', render);
     return { render, update, updateSource, updateDCC };
   }

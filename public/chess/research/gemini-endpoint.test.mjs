@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import endpoint, { quotaInfo } from '../../../functions/chess-gemini.mjs';
+import endpoint, { quotaInfo } from '../../../functions/chess-lab-gemini.mjs';
 const fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-const request = body => new Request('https://www.mdlxdcc.org/.netlify/functions/chess-gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+const request = body => new Request('https://www.mdlxdcc.org/.netlify/functions/chess-lab-gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 test('quota metadata distinguishes zero quota, daily exhaustion and temporary limits', () => {
   assert.equal(quotaInfo({ message: 'Quota exceeded, limit: 0' }).kind, 'unavailable');
@@ -15,7 +15,7 @@ test('chess endpoint uses only its chess secret, server knowledge and supplied F
   let sent;
   globalThis.fetch = async (url, opts) => { sent = { url, opts, body: JSON.parse(opts.body) }; return Response.json({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'Consider e4.' }] } }] }); };
   try {
-    const health = await (await endpoint(new Request('https://www.mdlxdcc.org/.netlify/functions/chess-gemini'))).text();
+    const health = await (await endpoint(new Request('https://www.mdlxdcc.org/.netlify/functions/chess-lab-gemini'))).text();
     assert.doesNotMatch(health, /test-chess-secret/);
     const res = await endpoint(request({ message: 'Explain', snapshot: { fen, sideToMove: 'w', capturedAt: 'now' }, history: [] }));
     const data = await res.json(); assert.equal(data.ok, true); assert.equal(data.fen, fen);
