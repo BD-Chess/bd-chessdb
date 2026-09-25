@@ -49,7 +49,7 @@
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
           value.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
-          note.textContent = choice?.provider ? `${choice.provider} lines · choice` : 'heuristic choice';
+          note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) : 'heuristic choice';
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
           const fresh = entry && Date.now() - entry.at < 300000;

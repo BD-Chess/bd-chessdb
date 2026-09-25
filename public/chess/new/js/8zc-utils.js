@@ -811,7 +811,8 @@ gameBuckets.forEach(bucket => {
     latestDCCResults = result.candidates.map(c => c.data);
     latestDCCReceipt = result.receipt;
     result.receipt.provider ||= 'CDB';
-    positionEval.updateDCC(baseFen, result.dcc1Move ? uciToSan(baseFen, result.dcc1Move) : null, result.receipt.provider);
+    positionEval.updateDCC(baseFen, result.dcc1Move ? uciToSan(baseFen, result.dcc1Move) : null, result.receipt.provider, hasMeasuredDCCChoice(result) ? 'ready' : 'raw-safety');
+    showAnalysisCandidates(moveList, result.receipt.provider, result);
     lastAnalysisResult = result;
     labListeners.forEach(listener => listener(getLabContext()));
     latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
@@ -1136,6 +1137,11 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
+  function hasMeasuredDCCChoice(analysis) {
+    return !!analysis?.candidates?.some(candidate => candidate.move === analysis.dcc1Move && candidate.data?.isMdlPick) &&
+      /^(Raw and DCC agree|DCC preference|Verified immediate checkmate)/.test(analysis.receipt.reason || '') &&
+      (analysis.receipt.provider !== 'SF' || analysis.receipt.status === 'complete');
+  }
   function showAnalysisCandidates(moves, provider, analysis) {
     const panel = document.getElementById('analysisCandidates');
     if (!panel) return;
@@ -1152,7 +1158,7 @@ gameBuckets.forEach(bucket => {
     }
     if (analysis?.receipt) {
       const detail = document.createElement('div');
-      detail.textContent = `DCC choice ${analysis.dcc1Move ? uciToSan(game.fen(), analysis.dcc1Move) : '—'} · ${analysis.receipt.reason || analysis.receipt.status} · ${analysis.receipt.calls || 0} probes`;
+      detail.textContent = `${hasMeasuredDCCChoice(analysis) ? 'DCC choice' : 'Raw choice retained'} ${analysis.dcc1Move ? uciToSan(game.fen(), analysis.dcc1Move) : '—'} · ${analysis.receipt.reason || analysis.receipt.status} · ${analysis.receipt.calls || 0} probes`;
       panel.appendChild(detail);
     }
   }
@@ -1216,7 +1222,7 @@ gameBuckets.forEach(bucket => {
       const btn = document.getElementById('btnHideEval'); btn.innerText = 'Hide Eval'; btn.style.background = '';
     }
     list.forEach((move, i) => annotateMove(move.move, move.score, i === 0, provider, move));
-    showAnalysisCandidates(allMoves, provider, sf?.analysis);
+    showAnalysisCandidates(allMoves, provider, provider === 'SF' ? sf?.analysis : null);
     if ((settings.dccEnabled || selected === 'dcc' || selected === 'all') && allMoves.length)
       await runDCCLookahead(allMoves, baseFen, provider === 'SF' ? sf?.analysis || null : null);
     else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; positionEval.updateDCC(baseFen, null, null); renderDCCView(); }

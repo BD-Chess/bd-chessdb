@@ -69,6 +69,9 @@ test('All keeps independent CDB/SF scores and identifies DCC as a choice', () =>
     assert.deepEqual(badges.children.map(row => row.children[1].textContent), ['+1.00', '-0.30', 'Nf3']);
     assert.match(badges.children[2].children[2].textContent, /CDB lines · choice/);
     assert.match(badges.children[1].children[2].textContent, /depth 18/);
+    view.updateDCC(b.fen(), 'e4', 'CDB', 'raw-safety');
+    assert.equal(badges.children[2].children[1].textContent, 'e4');
+    assert.equal(badges.children[2].children[2].textContent, 'CDB · raw retained');
     b.move('e4'); view.render();
     assert.equal(badges.children[0].children[1].textContent, '…');
     assert.equal(badges.children[2].children[1].textContent, '—');
