@@ -662,7 +662,7 @@ gameBuckets.forEach(bucket => {
     return { fen, moves: legal, provider: 'CDB', reason: legal.length ? 'CDB evaluated candidates' :
       unavailable ? 'CDB network/provider unavailable' : 'CDB no usable database evaluation' };
   }
-  async function runLocalSF(fen, { nodes = settings.sfRootNodes, dcc = false, cancelled = () => false } = {}) {
+  async function runLocalSF(fen, { nodes = settings.sfRootNodes, dcc = false, cancelled = () => false, onInfo } = {}) {
     if (localController) localController.abort();
     if (localProvider) localProvider.destroy();
     const controller = new AbortController();
@@ -670,7 +670,7 @@ gameBuckets.forEach(bucket => {
     localController = controller; localProvider = provider;
     try {
       if (cancelled()) controller.abort();
-      const root = await provider.root(fen, { nodes, signal: controller.signal });
+      const root = await provider.root(fen, { nodes, signal: controller.signal, onInfo });
       if (cancelled()) controller.abort();
       const analysis = dcc && root.moves.length ? await provider.analyzeDCC(fen, root, settings, controller.signal) : null;
       if (cancelled()) controller.abort();
@@ -1179,7 +1179,8 @@ gameBuckets.forEach(bucket => {
       if (selected === 'sf' || selected === 'all' || ((selected === 'auto' || selected === 'dcc') && !response.moves.length)) {
         const reason = selected === 'auto' ? response.reason : null;
         try { sf = await runLocalSF(baseFen, { nodes: sfAnalysisNodes || settings.sfRootNodes,
-          dcc: settings.dccEnabled || selected === 'dcc' || (selected === 'all' && !cdb?.moves.length), cancelled: () => !current() }); }
+          dcc: settings.dccEnabled || selected === 'dcc' || (selected === 'all' && !cdb?.moves.length), cancelled: () => !current(),
+          onInfo: (_line, search) => { if (current() && search?.depth) status.textContent = `SF depth ${search.completeDepth || search.depth} · ${search.nodes || 0} nodes…`; } }); }
         catch (error) {
           if (selected !== 'all' || !cdb?.moves.length || error.name === 'AbortError') throw error;
           sfError = error;
