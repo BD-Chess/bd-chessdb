@@ -27,6 +27,9 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
  assert.equal(el('settingsPanel').classList.contains('open'),false);
+ assert.equal(el('settingSFDepth').value,'15','existing users get the new default');
+ el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
+ assert.equal(JSON.parse(w.localStorage.getItem('chessLabSettings-v8')).sfAnalysisDepth,12);
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
  assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
  el('btnSimB').click();w.document.querySelector('input[value=dccbot]').checked=true;

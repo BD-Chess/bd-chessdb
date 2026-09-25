@@ -34,10 +34,12 @@
       }
       return result;
     }
-    async function root(fen, { nodes = rootNodes, signal, onInfo } = {}) {
+    async function root(fen, { nodes = rootNodes, depth, signal, onInfo } = {}) {
       const count = Math.min(multiPV, new Chess(fen).moves().length);
       if (!count) return { fen, moves: [], provider: 'SF', source: SOURCE, complete: true, ledger };
-      const result = await search(fen, { multiPV: count, nodes, onInfo }, signal, true);
+      // A review depth must not be cut short by the default simulation node budget.
+      const budget = depth == null ? { nodes } : { depth };
+      const result = await search(fen, { multiPV: count, ...budget, onInfo }, signal, true);
       const lines = result.lines.filter(line => isScored(line) && legal(Chess, fen, uci(line)));
       const moves = lines.map((line, sourceOrder) => ({ move: uci(line), score: value(line), scoreType: line.score.type, mateIn: line.score.type === 'mate' ? line.score.root : null,
         rank: line.multipv, sourceOrder, depth: line.depth, pv: line.pv.slice(), source: 'SF' }));

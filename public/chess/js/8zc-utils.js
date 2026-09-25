@@ -14,6 +14,7 @@ function initAll() {
 	evalMode: 'direct',
     analysisSource: 'auto', // provider selection is independent of CDB direct/proxy transport
     sfRootNodes: 24000,
+    sfAnalysisDepth: 15,
     allCDBSeconds: 4, allSFSeconds: 4, allDCCSeconds: 4,
 	flipBoard: false,
     theme: 'dark',
@@ -119,6 +120,11 @@ function initAll() {
   for (const key of ['allCDBSeconds', 'allSFSeconds', 'allDCCSeconds'])
     settings[key] = Math.max(1, Math.min(30, Number(settings[key]) || 4));
   if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
+  function normalizeSFDepth(value) {
+    const depth = Number(value);
+    return value == null || value === '' || !Number.isFinite(depth) ? 15 : Math.max(1, Math.min(128, Math.round(depth)));
+  }
+  settings.sfAnalysisDepth = normalizeSFDepth(settings.sfAnalysisDepth);
   function saveSettings() {
     invalidateDCCAnalysis();
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -524,7 +530,7 @@ gameBuckets.forEach(bucket => {
   let analysisGeneration = 0;
   let annotationRequestId = 0;
   let localController = null, localProvider = null;
-  let sfAnalysisFen = null, sfAnalysisNodes = null, sfWorking = false;
+  let sfAnalysisFen = null, sfAnalysisDepth = null, sfWorking = false;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
   const analysisMemo = new Map();
@@ -672,7 +678,7 @@ gameBuckets.forEach(bucket => {
     return { fen, moves: legal, provider: 'CDB', reason: legal.length ? 'CDB evaluated candidates' :
       unavailable ? 'CDB network/provider unavailable' : 'CDB no usable database evaluation' };
   }
-  async function runLocalSF(fen, { nodes = settings.sfRootNodes, dcc = false, cancelled = () => false, onInfo } = {}) {
+  async function runLocalSF(fen, { nodes, depth = nodes == null ? settings.sfAnalysisDepth : undefined, dcc = false, cancelled = () => false, onInfo } = {}) {
     if (localController) localController.abort();
     if (localProvider) localProvider.destroy();
     const controller = new AbortController();
@@ -680,7 +686,7 @@ gameBuckets.forEach(bucket => {
     localController = controller; localProvider = provider;
     try {
       if (cancelled()) controller.abort();
-      const root = await provider.root(fen, { nodes, signal: controller.signal, onInfo });
+      const root = await provider.root(fen, { nodes, depth, signal: controller.signal, onInfo });
       if (cancelled()) controller.abort();
       const analysis = dcc && root.moves.length ? await provider.analyzeDCC(fen, root, settings, controller.signal) : null;
       if (cancelled()) controller.abort();
@@ -1029,6 +1035,7 @@ gameBuckets.forEach(bucket => {
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
   ------------------------------------------------------------------*/
   function applySettings() {
+    document.getElementById('settingSFDepth').value = settings.sfAnalysisDepth;
     for (const key of ['CDB', 'SF', 'DCC']) {
       const input = document.getElementById(`settingAll${key}Seconds`);
       if (input) input.value = settings[`all${key}Seconds`];
@@ -1180,7 +1187,7 @@ gameBuckets.forEach(bucket => {
     const status = document.getElementById('analysisSourceStatus');
     if (selected === 'all' || selected === 'dcc') positionEval.updateDCC(baseFen, null, null, 'pending');
     const usesSF = selected === 'sf' || selected === 'all';
-    if (sfAnalysisFen !== baseFen) { sfAnalysisFen = baseFen; sfAnalysisNodes = null; }
+    if (sfAnalysisFen !== baseFen) { sfAnalysisFen = baseFen; sfAnalysisDepth = null; }
     status.textContent = usesSF ? 'SF local analysis…' : 'CDB analysis…';
     if (usesSF) { sfWorking = true; syncSFAnalysisControl(); }
     let response, sf = null, provider = 'CDB', cdb = null, sfError = null;
@@ -1193,7 +1200,7 @@ gameBuckets.forEach(bucket => {
       if (!current()) return;
       if (selected === 'sf' || selected === 'all' || ((selected === 'auto' || selected === 'dcc') && !response.moves.length)) {
         const reason = selected === 'auto' ? response.reason : null;
-        try { sf = await runLocalSF(baseFen, { nodes: sfAnalysisNodes || settings.sfRootNodes,
+        try { sf = await runLocalSF(baseFen, { depth: sfAnalysisDepth || settings.sfAnalysisDepth,
           dcc: settings.dccEnabled || selected === 'dcc' || (selected === 'all' && !cdb?.moves.length), cancelled: () => !current(),
           onInfo: (_line, search) => { if (current() && search?.depth) status.textContent = `SF depth ${search.completeDepth || search.depth} · ${search.nodes || 0} nodes…`; } }); }
         catch (error) {
@@ -2199,10 +2206,21 @@ function jumpTo(i){
     dccSelect.title = forced ? 'DCC is included in this analysis mode' : 'Include DCC lookahead';
   }
   syncDCCSelector();
+  document.getElementById('settingSFDepth').addEventListener('change', event => {
+    settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
+    event.target.value = String(settings.sfAnalysisDepth);
+    sfAnalysisDepth = null;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    // The review limit does not interrupt a Sim or change its node budget.
+    if (simRunning || replayRunning || offlineEvidence || (playState.active && playState.assistanceLocked)) return;
+    invalidateDCCAnalysis();
+    annotationRequestId++;
+    fetchAnnotations();
+  });
   sourceSelect.addEventListener('change', () => {
     settings.analysisSource = sourceSelect.value;
     syncDCCSelector();
-    sfAnalysisNodes = null;
+    sfAnalysisDepth = null;
     invalidateDCCAnalysis(); annotationRequestId++;
     clearInterval(evalRetryTimer); evalRetryTimer = null;
     document.querySelectorAll('.overlay').forEach(el => el.remove());
@@ -2227,7 +2245,7 @@ function jumpTo(i){
       return;
     }
     sfAnalysisFen = game.fen();
-    sfAnalysisNodes = Math.min(1536000, (sfAnalysisNodes || settings.sfRootNodes) * 4);
+    sfAnalysisDepth = Math.min(128, (sfAnalysisDepth || settings.sfAnalysisDepth) + 2);
     invalidateDCCAnalysis();
     document.querySelectorAll('.overlay').forEach(el => el.remove());
     fetchAnnotations();

@@ -8,9 +8,9 @@ const fen = new Chess().fen();
 const line = (move, score, rank = 1) => ({ multipv: rank, depth: 8, score: { type: 'cp', root: score, bound: 'exact' }, pv: [move] });
 function fixture({ incomplete = false, coverage = true } = {}) {
   const searches = [];
-  const Engine = { create: () => ({ destroy() {}, async analyze({ fen: position, nodes, multiPV, signal }) {
+  const Engine = { create: () => ({ destroy() {}, async analyze({ fen: position, nodes, depth, multiPV, signal }) {
     if (signal?.aborted) throw Object.assign(new Error('cancelled'), { name: 'AbortError' });
-    searches.push({ position, nodes, multiPV });
+    searches.push({ position, nodes, depth, multiPV });
     if (position === fen) return { lines: [line('e2e4', 0), line('d2d4', -2, 2), line('g1f3', -40, 3)],
       completeMultiPV: !incomplete, expectedLines: 3, nodes, linesDepth: 8, elapsedMs: 9, bestMove: 'e2e4' };
     return { lines: [line('e7e5', -3)], completeMultiPV: true, expectedLines: 1,
@@ -72,4 +72,19 @@ test('mate remains typed and partial SF DCC cannot claim the raw move as a DCC s
     startFen: mateFen, trace: [{ ...choice, fen: mateFen, san: raw.san }], state: 'incomplete', result: '*', reason: 'stopped' };
   const pgn = SIM.toPGN(Chess, run);
   assert.match(pgn, /raw_mate_in=1/); assert.doesNotMatch(pgn, /raw_mate=29999|raw_cp=29999/);
+});
+
+
+test('review depth replaces the root node cap while Sim and DCC probes retain node budgets', async () => {
+  const { provider, searches } = fixture();
+  try {
+    const root = await provider.root(fen, { depth: 15 });
+    assert.equal(searches[0].depth, 15);
+    assert.equal(searches[0].nodes, undefined, 'no default node cap can stop a depth search early');
+    assert.equal(root.ledger.rootDepth, 8, 'ledger records reached depth');
+    await provider.analyzeDCC(fen, root, { dccTopCandidates: 3 });
+    assert.equal(searches[1].nodes, 3000); assert.equal(searches[1].depth, undefined);
+    await provider.root(fen, { nodes: 48000 });
+    assert.equal(searches.at(-1).nodes, 48000); assert.equal(searches.at(-1).depth, undefined);
+  } finally { provider.destroy(); }
 });

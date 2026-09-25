@@ -17,9 +17,11 @@ function harness(selected, cdb, sf) {
     setAttribute(name, value) { this.attrs[name] = value; },
     addEventListener(name, fn) { this.events[name] = fn; }, click() { this.events.click(); } };
   deepen.classList = { toggle: (name, value) => { deepen.classes[name] = value; } };
-  const c = { game: new Chess(), settings: { analysisSource: selected, dccEnabled: false, topN: 5, sfRootNodes: 24000 },
+  const depthInput = { value: '15', addEventListener: (_name, fn) => { depthInput.change = fn; } };
+  const stored = new Map();
+  const c = { depthInput, stored, STORAGE_KEY_SETTINGS: 'settings', localStorage: { setItem: (key, value) => stored.set(key, value) }, game: new Chess(), settings: { analysisSource: selected, dccEnabled: false, topN: 5, sfRootNodes: 24000, sfAnalysisDepth: 15 },
     analysisGeneration: 0, activityEpoch: 0, annotationRequestId: 0,
-    sfAnalysisFen: null, sfAnalysisNodes: null, sfWorking: false, offlineEvidence: null,
+    sfAnalysisFen: null, sfAnalysisDepth: null, sfWorking: false, offlineEvidence: null,
     localController: null, localProvider: null, activeLookaheadId: 0,
     lastAnalysisResult: null, activeAnalysisProvider: null, activeAnalysisFen: null,
     showEval: true, simRunning: false, replayRunning: false, playState: { active: false, assistanceLocked: false },
@@ -32,13 +34,17 @@ function harness(selected, cdb, sf) {
     annotateMove: (...args) => c.calls.annotations.push(args),
     showAnalysisCandidates() {}, runDCCLookahead: async () => {}, renderDCCView() {},
     latestDCCResults: [], latestDCCReceipt: null, evalRetryTimer: null, clearInterval() {},
-    document: { getElementById: id => id === 'analysisSourceStatus' ? status : id === 'btnAnalysisDeepen' ? deepen : button,
+    document: { getElementById: id => id === 'analysisSourceStatus' ? status : id === 'btnAnalysisDeepen' ? deepen : id === 'settingSFDepth' ? depthInput : button,
       querySelectorAll: () => [] },
     console };
   vm.createContext(c); vm.runInContext(source.slice(controlStart, controlEnd) + source.slice(start, end), c);
   const fetch = c.fetchAnnotations;
   c.fetchAnnotations = () => (c.pendingFetch = fetch());
   vm.runInContext(source.slice(clickStart, clickEnd), c);
+  const normalizeStart = source.indexOf('  function normalizeSFDepth(');
+  vm.runInContext(source.slice(normalizeStart, source.indexOf('  function saveSettings()', normalizeStart)), c);
+  const settingStart = source.indexOf("  document.getElementById('settingSFDepth').addEventListener('change'");
+  vm.runInContext(source.slice(settingStart, source.indexOf("  sourceSelect.addEventListener('change'", settingStart)), c);
   return c;
 }
 const root = { moves: [{ move: 'e2e4', score: 12 }], complete: true };
@@ -74,7 +80,7 @@ test('source or position switch discards late CDB and SF results', async () => {
   slow.game.move('e4'); slow.analysisGeneration++; finish(local); await another;
   assert.equal(slow.calls.annotations.length, 0);
 });
-test('Analysis label is disabled for CDB, deepens SF by four times and preserves source badge SAN', async () => {
+test('Analysis label is disabled for CDB, deepens SF by two plies and preserves source badge SAN', async () => {
   const cdb = harness('cdb', { ...root, reason: 'CDB evaluated candidates' }, local);
   cdb.syncSFAnalysisControl();
   assert.equal(cdb.deepen.disabled, true);
@@ -85,13 +91,16 @@ test('Analysis label is disabled for CDB, deepens SF by four times and preserves
   assert.equal(sf.deepen.disabled, false);
   assert.equal(sf.deepen.title, 'Click for deeper analysis');
   sf.deepen.click(); await sf.pendingFetch;
-  assert.equal(sf.calls.sfOptions[0].nodes, 24000);
-  assert.equal(sf.calls.sfOptions[1].nodes, 96000);
-  assert.equal(sf.sfAnalysisNodes, 96000);
+  assert.equal(sf.calls.sfOptions[0].depth, 15);
+  assert.equal(sf.calls.sfOptions[0].nodes, undefined);
+  assert.equal(sf.calls.sfOptions[1].depth, 17);
+  assert.equal(sf.sfAnalysisDepth, 17);
   assert.equal(sf.calls.sources.at(-1)[4], 'e4');
-  sf.sfAnalysisNodes = 1000000;
+  sf.sfAnalysisDepth = 127;
   sf.deepen.click(); await sf.pendingFetch;
-  assert.equal(sf.calls.sfOptions.at(-1).nodes, 1536000, 'deeper search respects the existing maximum budget');
+  assert.equal(sf.calls.sfOptions.at(-1).depth, 128);
+  sf.game.move('e4'); await sf.fetchAnnotations();
+  assert.equal(sf.calls.sfOptions.at(-1).depth, 15, 'a new position uses the saved depth again');
   const all = harness('all', { ...root, reason: 'CDB evaluated candidates' }, local);
   await all.fetchAnnotations();
   assert.deepEqual(all.calls.sources.map(args => [args[2], args[4]]), [['CDB', 'e4'], ['SF', 'e4']]);
@@ -162,4 +171,39 @@ test('Deep publisher refuses wrong pinned FEN, switched source, hidden/locked ev
     assert.equal(c.calls.sources[0][1].type, 'mate');
     mutate(c); publish(snapshot); assert.equal(c.calls.sources.length, 1);
   }
+});
+
+
+test('SF depth setting saves, cancels an older search and applies to SF, All and fallback', async () => {
+  for (const selected of ['sf', 'all', 'auto', 'dcc']) {
+    const c = harness(selected, { moves: [], reason: 'No CDB evaluation' }, local);
+    c.depthInput.value = '12'; c.depthInput.change({ target: c.depthInput });
+    await c.pendingFetch;
+    assert.equal(c.settings.sfAnalysisDepth, 12);
+    assert.equal(JSON.parse(c.stored.get('settings')).sfAnalysisDepth, 12);
+    assert.equal(c.calls.sfOptions.at(-1).depth, 12);
+  }
+  let finish;
+  const c = harness('sf', null, () => new Promise(resolve => { finish = resolve; }));
+  const old = c.fetchAnnotations(); const finishOld = finish;
+  let aborted = false;
+  c.localController = { abort() { aborted = true; } };
+  c.depthInput.value = '18'; c.depthInput.change({ target: c.depthInput });
+  assert.equal(aborted, true);
+  assert.equal(c.calls.sfOptions.at(-1).depth, 18);
+  finishOld(local); await old;
+  assert.equal(c.calls.sources.length, 0, 'old-depth results cannot repaint');
+  finish(local); await c.pendingFetch;
+  assert.equal(c.calls.sources.at(-1)[3], 7, 'report measured depth, never the target');
+});
+
+test('depth input normalizes limits and does not interrupt a simulation', () => {
+  const c = harness('sf', null, local);
+  for (const [input, expected] of [['',15], ['invalid',15], [null,15], [0,1], [-10,1], [500,128], [12.6,13]])
+    assert.equal(c.normalizeSFDepth(input), expected);
+  c.simRunning = true;
+  c.localController = { abort() { assert.fail('review depth must not abort Sim'); } };
+  c.depthInput.value = '20'; c.depthInput.change({ target: c.depthInput });
+  assert.equal(c.calls.sf, 0); assert.equal(c.settings.sfAnalysisDepth, 20);
+  assert.equal(c.settings.sfRootNodes, 24000);
 });
