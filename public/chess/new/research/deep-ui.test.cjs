@@ -85,6 +85,35 @@ test('Deep analysis publishes live and final snapshots, but never a late result 
   assert.equal(updates.length, count);
 });
 
+test('starting analysis reveals its toolbar once within the workspace and keeps later user scrolling', async t => {
+  const x = setup(t), workspace = x.get('workspaceDisplay'), panel = x.get('deepAnalysisPanel');
+  workspace.style.padding = '8px';
+  Object.defineProperty(workspace, 'clientHeight', { value: 500 });
+  Object.defineProperty(workspace, 'clientTop', { value: 1 });
+  workspace.getBoundingClientRect = () => ({ top: 100 });
+  panel.getBoundingClientRect = () => ({ top: 109 - workspace.scrollTop });
+  panel.querySelector('.deep-actions').getBoundingClientRect = () => ({ top: 389 - workspace.scrollTop });
+  workspace.scrollTop = 72;
+  x.get('btnDeepAnalysis').click();
+  x.el('roots').value = 'invalid'; x.el('start').click();
+  assert.equal(workspace.scrollTop, 0, 'invalid settings stay visible for correction');
+  x.el('roots').value = ''; x.el('start').click();
+  assert.equal(workspace.scrollTop, 280, 'toolbar is aligned with the workspace padding');
+  assert.equal(panel.style.minHeight, '764px', 'short results still have room beneath the toolbar');
+  assert.equal(x.w.scrollY, 0, 'the page itself never scrolls');
+  workspace.scrollTop = 340;
+  x.emit(x.snapshot()); x.finish(x.snapshot()); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(workspace.scrollTop, 340, 'live and final results do not steal the user’s scroll');
+  x.ui.close();
+  assert.equal(workspace.scrollTop, 72, 'the underlying Moves/DCC position is restored');
+  x.get('btnDeepAnalysis').click();
+  assert.equal(workspace.scrollTop, 340, 'returning to this analysis retains its scroll');
+  x.el('start').click();
+  assert.equal(workspace.scrollTop, 280, 'a new search reveals the toolbar again');
+  x.ui.close(); x.game.move('e4'); x.get('btnDeepAnalysis').click();
+  assert.equal(panel.style.minHeight, '', 'a newly pinned position returns to the settings layout');
+});
+
 test('closing Deep analysis cancels its worker and ignores late results without changing retained UI', async t => {
   const x = setup(t), { ui, el, get } = x;
   get('btnDeepAnalysis').click(); el('start').click();

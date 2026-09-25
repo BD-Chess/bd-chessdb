@@ -553,6 +553,7 @@ gameBuckets.forEach(bucket => {
     onAnnotations: (fen, rows) => { dccMoveAnnotations[fen] = rows; },
     getAnalysis: () => ({ receipt: latestDCCReceipt, candidates: latestDCCResults }),
     isBusy: () => playState.active || simRunning || replayRunning,
+    isSimulationRunning: () => simRunning,
     stopActivities: () => { activityEpoch++; invalidateDCCAnalysis(); simSession = null; }
   });
   const CACHE_KEY = 'chessLabEvalCache-v8';
@@ -2532,8 +2533,8 @@ function jumpTo(i){
     } finally {
       // Pause/New game/new experiment owns the UI once this epoch is replaced.
       if (epoch === activityEpoch) {
-        workspace.pause();
         simRunning = false; simAbort = false; showEval = true;
+        workspace.pause();
         setBoardThinking(false); refreshPlayUi(); updateBoard(false);
         renderSimStats();
         updateSimStatus(`Experiment #${run.id}: ${run.state} · ${run.result} · ${run.reason}`);

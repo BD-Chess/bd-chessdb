@@ -22,7 +22,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.eval(fs.readFileSync(base+'js/8zc-lab-layout.js','utf8'));
  w.eval(fs.readFileSync(base+'js/8zc-new-ui.js','utf8'));
  const el=id=>w.document.getElementById(id);
- assert.equal(el('workspaceTimers').hidden,false); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
+ assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
@@ -33,10 +33,12 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('input[value=dccbot]').dispatchEvent(new w.Event('change'));
  el('simStartBtn').click();
  assert.match(el('gameTitle').textContent,/Training/);
+ assert.equal(el('workspaceTimers').hidden,false,'engine training keeps clocks');
  boardOptions.onDrop('c2','c4');
  await new Promise(r=>setTimeout(r,1000));
  el('btnNew').click();
  assert.equal(fen,new w.Chess().fen());assert.equal(el('gameTitle').textContent,'Your next move starts here');
+ assert.equal(el('workspaceTimers').hidden,true,'ending training restores review space');
  el('btnSim').click();assert.equal(el('simLocalMatch').hidden,false);
  assert.equal(el('simSessionOptions').hidden,true);
  el('simSwapEngines').click();assert.equal(el('simWhiteEngine').value,'dcc');assert.equal(el('simBlackEngine').value,'raw');
@@ -50,6 +52,12 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  await new Promise(r=>setTimeout(r,1500));
  const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
  move.click();assert.equal(el('btnSim').textContent,'Sim');
+ assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
+ assert.equal(boardOptions.onDrop('a1','a8'),'snapback');
+ assert.equal(el('workspaceTimers').hidden,true,'an illegal review move does not show Sim clocks');
+ const reviewMove=new w.Chess(fen).moves({verbose:true})[0];
+ boardOptions.onDrop(reviewMove.from,reviewMove.to);
+ assert.equal(el('workspaceTimers').hidden,true,'a manual variation does not restart the Sim clock display');
  el('btnSim').click();assert.equal(el('simModal').style.display,'flex');
  el('simCancelBtn').click();el('btnNew').click();
  await new Promise(r=>setTimeout(r,800));assert.equal(fen,new w.Chess().fen());
@@ -57,10 +65,12 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  el('btnTwoPlayers').click(); assert.equal(el('twoPlayersDialog').open,true);
  el('humanMinutes').value='1';el('humanIncrement').value='2';el('humanStart').click();
  assert.equal(el('humanSession').hidden,false);
+ assert.equal(el('workspaceTimers').hidden,false,'local two-player game keeps clocks');
  assert.equal(boardOptions.onDrop('e2','e4'),undefined);
  assert.equal(boardOptions.onDrop('e7','e5'),undefined);
  assert.equal(el('moves').querySelectorAll('time').length,2);
  el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),'snapback');
+ assert.equal(el('workspaceTimers').hidden,false,'paused local game retains remaining time');
  el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),undefined);
  await new Promise(r=>setTimeout(r,400));
  assert.match(el('humanReview').textContent,/White|Black|Review/);
@@ -80,6 +90,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.match(el('geminiMessages').textContent,/board has moved/);
  el('geminiClose').click();el('btnNew').click();
  assert.equal(el('humanSession').hidden,true);assert.equal(fen,new w.Chess().fen());
+ toggle('settingShowTimers');assert.equal(el('workspaceTimers').hidden,true,'enabled preference does not show clocks during review');
  el('btnStudy').click();assert.equal(w.document.querySelector('.chess-study-overlay').hidden,false);
  w.document.querySelector('.chess-study-close').click();
  el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,false,'deep analysis opens inside the workspace');
@@ -94,6 +105,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(host.getContext().moves.join(' '),'e2e4 e7e5 g1f3');
  assert.equal(el('boardGameTitle').textContent, 'Player A vs Player B');
  assert.equal(el('boardGameTitle').hidden, false);
+ assert.equal(el('workspaceTimers').hidden,true,'loaded PGN review has no clocks');
  let copied='';Object.defineProperty(w.navigator,'clipboard',{value:{writeText:async text=>{copied=text}},configurable:true});
  el('btnCopy').click();await new Promise(r=>setTimeout(r,5));
  assert.match(copied,/d4/);assert.match(copied,/Nf6/);assert.match(copied,/keep/);

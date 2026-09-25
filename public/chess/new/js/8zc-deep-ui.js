@@ -29,6 +29,7 @@
       if (!next || !next.fen) throw new Error('No board position is available');
       if (next.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
       root.ChessDeepEngine.validateFen(next.fen, Chess); pinned = next;
+      panel.style.minHeight = '';
       el('fen').textContent = pinned.fen; el('roots').value = ''; result = null; preview = null;
       el('lines').replaceChildren(); el('preview').hidden = true; el('export').disabled = true;
       el('status').textContent = 'Position pinned. Choose your analysis settings.';
@@ -129,6 +130,16 @@
         return move.from + move.to + (move.promotion || '');
       });
     }
+    function revealSearch() {
+      const actions = panel.querySelector('.deep-actions');
+      const style = root.getComputedStyle(workspace);
+      const topPadding = parseFloat(style.paddingTop) || 0, bottomPadding = parseFloat(style.paddingBottom) || 0;
+      const offset = actions.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+      // Keep room below the toolbar even while the engine is loading or has
+      // only a short PV. Scroll this workspace once, never on streamed updates.
+      panel.style.minHeight = Math.max(0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
+      workspace.scrollTop += actions.getBoundingClientRect().top - workspace.getBoundingClientRect().top - workspace.clientTop - topPadding;
+    }
     async function start() {
       const token = ++run;
       try {
@@ -145,6 +156,7 @@
         if (!engine) engine = root.ChessDeepEngine.create({ Chess });
         el('start').disabled = true; el('stop').disabled = false;
         el('status').textContent = 'Loading Stockfish 18 Lite (~7 MB on first use)…';
+        revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
         const done = await engine.analyze(opts);
         if (token !== run) return;
