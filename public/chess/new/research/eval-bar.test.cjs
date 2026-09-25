@@ -49,31 +49,49 @@ test('late replies cannot paint another FEN; flipping, hiding and unavailable da
     assert.equal(bar.classes['is-unknown'], true);
   } finally { global.document = prior; }
 });
-test('All keeps independent CDB/SF scores and identifies DCC as a choice', () => {
+test('All keeps provider top moves with their scores/depth, clears stale FENs and identifies DCC choices', () => {
   const make = () => ({ textContent: '', className: '', children: [], hidden: false,
     classList: { toggle() {} }, style: { setProperty() {} }, setAttribute() {},
     append(...nodes) { this.children.push(...nodes); }, replaceChildren(...nodes) { this.children = nodes; } });
   const bar = make(), label = make(), badges = make();
   badges.parentElement = make();
-  const prior = global.document, priorMatch = global.matchMedia;
+  const prior = global.document, priorMatch = global.matchMedia, priorNow = Date.now;
   global.document = { hidden: false, getElementById: id => ({ positionEval: bar, positionEvalLabel: label, allEvalBadges: badges })[id],
     createElement: make, addEventListener() {} };
   global.matchMedia = () => ({ matches: false });
+  let now = 1000000; Date.now = () => now;
   try {
     const b = new Chess(), settings = { analysisSource: 'all', flipBoard: false };
     const view = E.create({ game: b, settings, isVisible: () => true });
-    view.updateSource(b.fen(), 100, 'CDB');
-    view.updateSource(b.fen(), -30, 'SF', 18);
+    const cells = source => badges.children.find(row => row.children[0].textContent === source).children.map(cell => cell.textContent);
+    view.updateSource(b.fen(), 100, 'CDB', null, 'e4');
+    view.updateSource(b.fen(), -30, 'SF', 18, 'Nf3');
     view.updateDCC(b.fen(), 'Nf3', 'CDB');
     assert.deepEqual(badges.children.map(row => row.children[0].textContent), ['CDB', 'SF', 'DCC']);
-    assert.deepEqual(badges.children.map(row => row.children[1].textContent), ['+1.00', '-0.30', 'Nf3']);
-    assert.match(badges.children[2].children[2].textContent, /CDB lines · choice/);
-    assert.match(badges.children[1].children[2].textContent, /depth 18/);
+    assert.deepEqual(cells('CDB'), ['CDB', 'e4', '+1.00', 'White POV']);
+    assert.deepEqual(cells('SF'), ['SF', 'Nf3', '-0.30', 'depth 18']);
+    assert.deepEqual(cells('DCC'), ['DCC', 'Nf3', 'CDB lines · choice']);
+    view.update(b.fen(), -30, 'SF');
+    assert.deepEqual(cells('SF'), ['SF', 'Nf3', '-0.30', 'depth 18'], 'generic score update preserves root move and depth');
+    view.updateSource(b.fen(), 42, 'SF', 22, 'd4');
+    assert.deepEqual(cells('SF'), ['SF', 'd4', '+0.42', 'depth 22']);
+    assert.deepEqual(cells('CDB'), ['CDB', 'e4', '+1.00', 'White POV'], 'SF refresh does not overwrite CDB');
     view.updateDCC(b.fen(), 'e4', 'CDB', 'raw-safety');
-    assert.equal(badges.children[2].children[1].textContent, 'e4');
-    assert.equal(badges.children[2].children[2].textContent, 'CDB · raw retained');
+    assert.deepEqual(cells('DCC'), ['DCC', 'e4', 'CDB · raw retained']);
     b.move('e4'); view.render();
-    assert.equal(badges.children[0].children[1].textContent, '…');
-    assert.equal(badges.children[2].children[1].textContent, '—');
-  } finally { global.document = prior; global.matchMedia = priorMatch; }
+    assert.deepEqual(cells('CDB'), ['CDB', '…', '…', 'White POV']);
+    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV']);
+    assert.equal(cells('DCC')[1], '—');
+    view.updateSource(b.fen(), 20, 'CDB', null, 'e5');
+    view.updateSource(white, 900, 'CDB', null, 'a4');
+    view.updateSource(white, 800, 'SF', 40, 'h4');
+    assert.deepEqual(cells('CDB'), ['CDB', 'e5', '-0.20', 'White POV'], 'late other-FEN result cannot paint current move');
+    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV']);
+    view.updateSource(b.fen(), 5, 'SF', 10, 'c5');
+    now += 300001; view.render();
+    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV'], 'expired metadata never shows stale depth or move');
+    view.updateSource(b.fen(), 8, 'SF', 12, 'e5');
+    view.update(b.fen(), null, 'SF');
+    assert.deepEqual(cells('SF'), ['SF', '—', '—', 'White POV'], 'unavailable provider clears its old move and depth');
+  } finally { global.document = prior; global.matchMedia = priorMatch; Date.now = priorNow; }
 });

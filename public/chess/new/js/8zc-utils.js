@@ -568,6 +568,17 @@ gameBuckets.forEach(bucket => {
     unknown: { color: '#a4b6c8', desc: 'Insufficient measured samples' }
   };
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function syncSFAnalysisControl() {
+    const button = document.getElementById('btnAnalysisDeepen');
+    if (!button) return;
+    const available = ['sf', 'all'].includes(settings.analysisSource) && !offlineEvidence && showEval &&
+      !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+    button.disabled = !available;
+    button.title = !available ? 'Choose SF or All with evaluation visible for deeper analysis' :
+      sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
+    button.setAttribute('aria-label', sfWorking && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
+    button.classList.toggle('is-working', sfWorking && available);
+  }
   function invalidateDCCAnalysis() {
     analysisGeneration++;
     activeLookaheadId++;
@@ -578,8 +589,7 @@ gameBuckets.forEach(bucket => {
     latestDCCResults = [];
     latestDCCReceipt = null;
     sfWorking = false;
-    const deeper = document.getElementById('btnSFDeeper');
-    if (deeper) { deeper.textContent = 'Deeper'; deeper.disabled = false; }
+    syncSFAnalysisControl();
   }
   function evalTrend(seq) { return DCC.sensors(seq, game.fen()).trend; }
   function trendArrow(trend) { return { rising: '↑', falling: '↓', stable: '→' }[trend] || '—'; }
@@ -1163,23 +1173,22 @@ gameBuckets.forEach(bucket => {
     }
   }
   async function fetchAnnotations() {
+    syncSFAnalysisControl();
     if (!showEval || simRunning || replayRunning || (playState.active && playState.assistanceLocked)) return;
     const baseFen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource, requestId = ++annotationRequestId;
     const current = () => requestId === annotationRequestId && generation === analysisGeneration && epoch === activityEpoch && game.fen() === baseFen && settings.analysisSource === selected && showEval && !simRunning && !replayRunning;
     const status = document.getElementById('analysisSourceStatus');
-    const deeper = document.getElementById('btnSFDeeper');
     if (selected === 'all' || selected === 'dcc') positionEval.updateDCC(baseFen, null, null, 'pending');
     const usesSF = selected === 'sf' || selected === 'all';
-    deeper.hidden = !usesSF || !!offlineEvidence;
     if (sfAnalysisFen !== baseFen) { sfAnalysisFen = baseFen; sfAnalysisNodes = null; }
     status.textContent = usesSF ? 'SF local analysis…' : 'CDB analysis…';
-    if (usesSF) { sfWorking = true; deeper.textContent = 'Stop SF'; deeper.disabled = false; }
+    if (usesSF) { sfWorking = true; syncSFAnalysisControl(); }
     let response, sf = null, provider = 'CDB', cdb = null, sfError = null;
     try {
       if (selected !== 'sf') {
         cdb = await cachedFetchChessDB(baseFen);
         response = cdb;
-        if (current() && selected === 'all') positionEval.updateSource(baseFen, cdb.moves[0]?.score, 'CDB');
+        if (current() && selected === 'all') positionEval.updateSource(baseFen, cdb.moves[0]?.score, 'CDB', null, cdb.moves[0] ? uciToSan(baseFen, cdb.moves[0].move) : null);
       }
       if (!current()) return;
       if (selected === 'sf' || selected === 'all' || ((selected === 'auto' || selected === 'dcc') && !response.moves.length)) {
@@ -1193,7 +1202,7 @@ gameBuckets.forEach(bucket => {
         }
         if (!current()) return;
         if (sf) {
-          positionEval.updateSource(baseFen, sf.root.moves[0]?.score, 'SF', sf.ledger.rootDepth);
+          positionEval.updateSource(baseFen, sf.root.moves[0]?.score, 'SF', sf.ledger.rootDepth, sf.root.moves[0] ? uciToSan(baseFen, sf.root.moves[0].move) : null);
           if (selected !== 'all' || !cdb?.moves.length) { response = sf.root; provider = 'SF'; }
           status.textContent = (reason ? `${reason} · SF local fallback active` : selected === 'all' ? 'CDB + SF local active' : 'SF local active') +
             ` · depth ${sf.ledger.rootDepth ?? '—'} · ${sf.ledger.rootNodes || 0} nodes` +
@@ -1210,7 +1219,7 @@ gameBuckets.forEach(bucket => {
       renderDCCView(); positionEval.update(baseFen, null, 'SF');
       return;
     } finally {
-      if (current() && usesSF) { sfWorking = false; deeper.textContent = 'Deeper'; deeper.disabled = false; }
+      if (current() && usesSF) { sfWorking = false; syncSFAnalysisControl(); }
     }
     const allMoves = response.moves;
     activeAnalysisProvider = provider; activeAnalysisFen = baseFen;
@@ -1388,7 +1397,7 @@ gameBuckets.forEach(bucket => {
     // Automated play never scrolls the reading area or page. User navigation
     // may reveal a selected row, within this central area only.
     const selected = tbl.querySelector('tr.selected');
-    if (display) {
+    if (display && !display.classList.contains('is-deep-analysis')) {
       if (simRunning || replayRunning || playState.autoPilot) {
         const restored = anchorKey && Array.from(tbl.querySelectorAll('tr')).find(row => row.dataset.historyPair === anchorKey);
         if (restored && anchorOffset !== null) display.scrollTop += restored.getBoundingClientRect().top - display.getBoundingClientRect().top - anchorOffset;
@@ -2191,12 +2200,13 @@ function jumpTo(i){
     saveSettings(); fetchAnnotations();
   });
   dccSelect.addEventListener('change', () => { settings.dccEnabled = dccSelect.checked; saveSettings(); fetchAnnotations(); });
-  document.getElementById('btnSFDeeper').addEventListener('click', () => {
-    const button = document.getElementById('btnSFDeeper');
+  document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
+    syncSFAnalysisControl();
+    if (document.getElementById('btnAnalysisDeepen').disabled) return;
     if (sfWorking) {
       annotationRequestId++; if (localController) localController.abort();
       if (localProvider) localProvider.destroy();
-      sfWorking = false; button.textContent = 'Deeper';
+      sfWorking = false; syncSFAnalysisControl();
       document.getElementById('analysisSourceStatus').textContent = 'SF stopped · previous completed scores remain visible';
       return;
     }

@@ -4,9 +4,11 @@
   function create(host) {
     host = host || {};
     const doc = document;
-    const dialog = doc.createElement('dialog'); dialog.className = 'deep-dialog'; dialog.id = 'deepAnalysisDialog';
-    dialog.setAttribute('aria-labelledby', 'deepAnalysisTitle');
-    dialog.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p>Stockfish 18 Lite · runs on this device</p></div><button type="button" data-deep="close" aria-label="Close deep analysis">×</button></header>
+    const workspace = doc.getElementById('workspaceDisplay');
+    if (!workspace) throw new Error('Deep analysis requires the analysis workspace');
+    const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
+    panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
+    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p>Stockfish 18 Lite · runs on this device</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze a pinned position, compare several lines, or challenge selected moves. The local engine loads when you start. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
       <div class="deep-settings"><label>Search budget<select data-deep="budget"><option value="depth:14">Depth 14</option><option value="depth:18">Depth 18</option><option value="nodes:250000">250,000 nodes</option><option value="nodes:1000000">1,000,000 nodes</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
@@ -16,10 +18,11 @@
       <div class="deep-lines" data-deep="lines" aria-label="Stockfish principal variations"></div>
       <section class="deep-preview" data-deep="preview" hidden><div data-deep="preview-board"></div><div><h3>Variation preview</h3><p data-deep="preview-text"></p><button type="button" data-deep="save">Save line to study</button><p class="deep-note">The main board stays at your original position.</p></div></section>
       <p class="deep-note">Lite is a compact build for desktop and mobile, with one CPU thread. This is a separate engine evaluation, not a DCC score. <a href="vendor/stockfish/README.md" target="_blank" rel="noopener">Build, source &amp; license</a></p>`;
-    doc.body.appendChild(dialog);
-    const el = name => dialog.querySelector('[data-deep="' + name + '"]');
+    workspace.appendChild(panel);
+    const el = name => panel.querySelector('[data-deep="' + name + '"]');
+    const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0;
-    let lastFocus = null;
+    let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null;
     const Chess = host.Chess || root.Chess;
     function setPinned(context) {
       const next = typeof context === 'string' ? { fen: context } : Object.assign({}, context);
@@ -31,17 +34,37 @@
       el('status').textContent = 'Position pinned. Choose your analysis settings.';
     }
     function open(context) {
-      if (engine?.isRunning()) engine.stop();
-      ++run; pinned = null;
-      try { if (host.pause) host.pause('deep-analysis'); setPinned(context || host.getContext?.()); }
-      catch (e) { el('status').textContent = e.message; }
-      lastFocus = doc.activeElement;
-      if (!dialog.open) dialog.showModal();
+      if (!panel.hidden) return;
+      try {
+        if (host.pause) host.pause('deep-analysis');
+        const next = context || host.getContext?.();
+        const fen = typeof next === 'string' ? next : next?.fen;
+        if (!fen || next?.assistanceLocked || pinned?.fen !== fen) { setPinned(next); deepScroll = 0; }
+      } catch (e) { pinned = null; el('status').textContent = e.message; }
+      lastFocus = doc.activeElement; workspaceScroll = workspace.scrollTop;
+      workspaceLabel = workspace.getAttribute('aria-label');
+      workspace.classList.add('is-deep-analysis');
+      workspace.setAttribute('aria-label', 'Deep analysis');
+      panel.hidden = false; trigger?.setAttribute('aria-expanded', 'true');
+      workspace.scrollTop = deepScroll;
       el('start').disabled = !pinned; el('stop').disabled = true;
+      el('close').focus({ preventScroll: true });
+      if (previewBoard) requestAnimationFrame(() => previewBoard.resize());
     }
     function close() {
-      ++run; engine?.stop(); dialog.close(); lastFocus?.focus?.();
+      if (panel.hidden) return;
+      const wasRunning = engine?.isRunning();
+      ++run; engine?.stop();
+      if (wasRunning) el('status').textContent = result?.lines?.length ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
+      el('start').disabled = !pinned; el('stop').disabled = true;
+      deepScroll = workspace.scrollTop; panel.hidden = true;
+      workspace.classList.remove('is-deep-analysis');
+      if (workspaceLabel === null) workspace.removeAttribute('aria-label'); else workspace.setAttribute('aria-label', workspaceLabel);
+      trigger?.setAttribute('aria-expanded', 'false');
+      workspace.scrollTop = workspaceScroll;
+      (lastFocus?.isConnected ? lastFocus : trigger)?.focus?.({ preventScroll: true });
     }
+    function toggle() { if (panel.hidden) open(); else close(); }
     function movesFor(fen, pv) {
       const game = new Chess(fen), list = [];
       for (const uci of pv) {
@@ -137,12 +160,16 @@
       link.download = 'Chess_Stockfish_Analysis_' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
       link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
-    dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
-    // Keep the main workspace shortcuts from consuming keys typed in this dialog.
-    dialog.addEventListener('keydown', event => { if (event.key !== 'Escape') event.stopPropagation(); });
-    const trigger = doc.getElementById('btnDeepAnalysis');
-    if (trigger) trigger.addEventListener('click', () => open());
-    return { open, close, stop: () => engine?.stop(), destroy() { ++run; engine?.destroy(); previewBoard?.destroy(); dialog.remove(); },
+    // Panel keyboard actions never move the main board or reach its shortcuts.
+    panel.addEventListener('keydown', event => {
+      event.stopPropagation();
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+    });
+    if (trigger) {
+      trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
+      trigger.addEventListener('click', toggle);
+    }
+    return { open, close, stop: () => engine?.stop(), destroy() { close(); ++run; engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

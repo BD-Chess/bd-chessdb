@@ -1,0 +1,85 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { JSDOM } = require('jsdom');
+
+function setup(t) {
+  const base = path.resolve(__dirname, '..');
+  const dom = new JSDOM('<!doctype html><button id="btnDeepAnalysis">Deep analysis</button><div id="workspaceDisplay" class="workspace-display" aria-label="Moves and DCC analysis"><div id="moves" style="display:none">1. e4</div><div id="dccAnalysisPanel" style="display:block"><button>DCC detail</button></div></div>', { runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window; t.after(() => w.close());
+  const style = w.document.createElement('style'); style.textContent = fs.readFileSync(path.join(base, 'css/8zc-deep.css'), 'utf8'); w.document.head.append(style);
+  w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
+  const game = new w.Chess(); let options, finish, running = false, stops = 0;
+  w.ChessDeepEngine = {
+    validateFen(fen) { if (!new w.Chess().validate_fen(fen).valid) throw Error('Invalid FEN'); },
+    create() { return {
+      isRunning: () => running,
+      analyze(opts) { running = true; options = opts; return new Promise(resolve => { finish = result => { running = false; resolve(result); }; }); },
+      stop() { stops++; running = false; }, destroy() { running = false; }
+    }; }
+  };
+  w.eval(fs.readFileSync(path.join(base, 'js/8zc-deep-ui.js'), 'utf8'));
+  const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen() }), pause() {} });
+  const el = name => w.document.querySelector('[data-deep="' + name + '"]');
+  const get = id => w.document.getElementById(id);
+  const snapshot = () => ({ fen: game.fen(), lines: [{ depth: 12, score: { type: 'cp', white: 25 }, pv: ['e2e4', 'e7e5'] }], nodes: 50000, elapsedMs: 1000, completeMultiPV: true, linesDepth: 12 });
+  return { w, ui, game, el, get, snapshot, emit: value => options.onInfo(null, value), finish: value => finish(value), stops: () => stops };
+}
+
+test('Deep analysis toggles in the workspace and restores DCC visibility, scroll, focus and retained analysis', t => {
+  const x = setup(t), { w, ui, game, el, get } = x;
+  const workspace = get('workspaceDisplay'), trigger = get('btnDeepAnalysis'), dcc = get('dccAnalysisPanel');
+  const originalDCC = dcc.firstElementChild, fen = game.fen(); workspace.scrollTop = 83; trigger.focus();
+  trigger.click();
+  assert.equal(get('deepAnalysisPanel').parentElement, workspace);
+  assert.equal(w.document.querySelector('dialog'), null);
+  assert.equal(w.getComputedStyle(dcc).display, 'none');
+  assert.equal(dcc.style.display, 'block');
+  assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+  el('budget').value = 'nodes:250000'; el('roots').value = 'e4';
+  el('start').click(); x.emit(x.snapshot());
+  el('lines').querySelector('button').click();
+  assert.equal(game.fen(), fen, 'variation preview leaves the main board pinned');
+  assert.equal(el('preview').hidden, false);
+  workspace.scrollTop = 124; trigger.click();
+  assert.equal(get('deepAnalysisPanel').hidden, true);
+  assert.equal(workspace.scrollTop, 83);
+  assert.equal(workspace.getAttribute('aria-label'), 'Moves and DCC analysis');
+  assert.equal(w.getComputedStyle(dcc).display, 'block');
+  assert.equal(get('moves').style.display, 'none');
+  assert.equal(dcc.firstElementChild, originalDCC);
+  assert.equal(w.document.activeElement, trigger);
+  assert.equal(x.stops(), 1);
+  trigger.click();
+  assert.equal(workspace.scrollTop, 124);
+  assert.equal(el('budget').value, 'nodes:250000');
+  assert.equal(el('roots').value, 'e4');
+  assert.match(el('lines').textContent, /\+0.25/);
+  assert.equal(el('preview').hidden, false);
+  el('roots').dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.equal(get('deepAnalysisPanel').hidden, true);
+  assert.equal(w.document.activeElement, trigger);
+  game.move('e4'); trigger.click();
+  assert.equal(el('fen').textContent, game.fen());
+  assert.equal(el('roots').value, '');
+  assert.equal(el('lines').children.length, 0);
+  assert.equal(el('preview').hidden, true);
+  ui.destroy();
+  assert.equal(workspace.classList.contains('is-deep-analysis'), false);
+});
+
+test('closing Deep analysis cancels its worker and ignores late results without changing retained UI', async t => {
+  const x = setup(t), { ui, el, get } = x;
+  get('btnDeepAnalysis').click(); el('start').click();
+  x.emit(x.snapshot()); ui.close();
+  const retained = el('lines').textContent, status = el('status').textContent;
+  const late = x.snapshot(); late.lines[0].score.white = 999;
+  x.emit(late); x.finish(late); await Promise.resolve();
+  assert.equal(el('lines').textContent, retained);
+  assert.equal(el('status').textContent, status);
+  assert.match(status, /stopped; results retained/);
+  assert.equal(el('stop').disabled, true);
+  assert.equal(el('start').disabled, false);
+  ui.destroy();
+});

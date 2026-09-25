@@ -46,6 +46,7 @@
         badge.classList.toggle('is-mobile-current', i === mobileIndex);
         const title = document.createElement('strong'); title.textContent = source;
         const value = document.createElement('span'); const note = document.createElement('small');
+        badge.append(title);
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
           value.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
@@ -54,12 +55,16 @@
           const entry = sourceScores.get(`${fen}:${source}`);
           const fresh = entry && Date.now() - entry.at < 300000;
           const result = measure(fen, fresh ? entry.score : null, null, source);
+          const topMove = document.createElement('span'); topMove.className = 'all-eval-move';
+          topMove.textContent = fresh ? entry.bestMove || '—' : '…';
+          topMove.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
+          badge.append(topMove);
           value.textContent = fresh ? result.label : '…';
-          note.textContent = source === 'SF' && entry?.depth ? `depth ${entry.depth}` : 'White POV';
+          note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
           badge.title = result.description;
         }
         badge.classList.toggle('is-unknown', value.textContent === '—');
-        badge.append(title, value, note); comparison.append(badge);
+        badge.append(value, note); comparison.append(badge);
       }
       scheduleRotation();
     }
@@ -89,8 +94,14 @@
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    function updateSource(fen, score, source, depth = null) {
-      sourceScores.set(`${fen}:${source}`, { score, at: Date.now(), depth });
+    function updateSource(fen, score, source, depth = undefined, bestMove = undefined) {
+      const key = `${fen}:${source}`, previous = sourceScores.get(key);
+      // Score-only refreshes must not erase root metadata. Explicit null clears it;
+      // unavailable scores also clear omitted metadata rather than retain an old move.
+      const known = Number.isFinite(score);
+      sourceScores.set(key, { score, at: Date.now(),
+        depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
+        bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove });
       if (sourceScores.size > 500) sourceScores.delete(sourceScores.keys().next().value);
       if (game.fen() === fen) render();
     }

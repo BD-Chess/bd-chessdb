@@ -82,9 +82,9 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(el('humanSession').hidden,true);assert.equal(fen,new w.Chess().fen());
  el('btnStudy').click();assert.equal(w.document.querySelector('.chess-study-overlay').hidden,false);
  w.document.querySelector('.chess-study-close').click();
- el('btnDeepAnalysis').click();assert(w.document.querySelector('.chess-deep-dialog')?.open || w.document.querySelector('.deep-dialog')?.open, 'deep analysis dialog opens');
- deepSmoke();
- function deepSmoke(){const d=w.document.querySelector('dialog[open]');if(d)d.close();}
+ el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,false,'deep analysis opens inside the workspace');
+ assert.equal(el('deepAnalysisPanel').parentElement,el('workspaceDisplay'));assert.equal(w.document.querySelector('dialog[open]'),null);
+ el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,true,'same button returns to Moves/DCC');
  el('btnEvidence').click();await new Promise(r=>setTimeout(r,20));assert(w.document.querySelector('.chess-research-dialog').open);w.document.querySelector('.research-close').click();
  const host=w.ChessLabHost;
  // Import real nested PGN through the application Input path and export through Copy.
