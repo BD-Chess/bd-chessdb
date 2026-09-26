@@ -20,7 +20,7 @@ function transform(source) {
   apply('async function restoreSession(s){', 'let pwaRestoreInFlight=0,pwaPendingReviews=0;\nasync function restoreSession(s){pwaRestoreInFlight++;try{return await restoreSessionBody(s);}finally{pwaRestoreInFlight--;}}\nasync function restoreSessionBody(s){');
   apply('reviewQueue=reviewQueue.catch(()=>{}).then(async()=>{', 'pwaPendingReviews++;reviewQueue=reviewQueue.catch(()=>{}).then(async()=>{');
   apply('if(gameId===taskGame){renderReviews();scheduleSave();}});}', 'if(gameId===taskGame){renderReviews();scheduleSave();}}).finally(()=>{pwaPendingReviews--;});}');
-  apply('window.SudokuNavigator={version:C.VERSION,', "window.SudokuNavigator={flushForUpdate(){if(booting||genJob||pwaRestoreInFlight||pwaPendingReviews||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);return puzzle?persist('session',snapshot()):true;},version:C.VERSION,");
+  apply('window.SudokuNavigator={version:C.VERSION,', "window.SudokuNavigator={flushForUpdate(){mobileUX.prepareUpdate();if(booting||genJob||pwaRestoreInFlight||pwaPendingReviews||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);return puzzle?persist('session',snapshot()):true;},version:C.VERSION,");
   return app.trimEnd() + '\n';
 }
 
