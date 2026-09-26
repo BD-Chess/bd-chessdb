@@ -1,6 +1,6 @@
 /* PWA-only, release-consistent cache. Online APIs and credentials are excluded. */
 'use strict';
-const RELEASE = "20260926-3b693e84465e";
+const RELEASE = "20260926-432d330a1255";
 const ASSETS = [
   "8zc-about.html",
   "8zc-help.html",
@@ -11,6 +11,7 @@ const ASSETS = [
   "Games/CapablancaJ_Selected.pgn",
   "Games/CarlsenM_Selected.pgn",
   "Games/CaruanaF_Selected.pgn",
+  "Games/ChessBest_Top_Picks.pgn",
   "Games/Chess_Openings_Top_Lines.pgn",
   "Games/DingL_Selected.pgn",
   "Games/FirouzjaA_Selected.pgn",
