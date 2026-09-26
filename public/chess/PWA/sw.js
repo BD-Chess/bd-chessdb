@@ -1,8 +1,6 @@
-/* This worker controls only /chess/PWA/. Online APIs and authentication are never cached. */
+/* PWA-only, release-consistent cache. Online APIs and credentials are excluded. */
 'use strict';
-const PREFIX = 'chessbest-lab-pwa-';
-const CACHE_NAME = PREFIX + '2026-09-24-1';
-const ROOT = new URL('./', self.location.href);
+const RELEASE = "20260926-7c5db221be9a";
 const ASSETS = [
   "8zc-about.html",
   "8zc-help.html",
@@ -52,6 +50,7 @@ const ASSETS = [
   "css/8zc-research.css",
   "css/8zc-study.css",
   "css/8zc-styles.css",
+  "css/8zc-tournament.css",
   "css/chessboard-1.0.0.min.css",
   "facts.html",
   "games-info.html",
@@ -81,10 +80,15 @@ const ASSETS = [
   "js/8zc-lab-layout.js",
   "js/8zc-new-ui.js",
   "js/8zc-research-ui.js",
+  "js/8zc-sf-provider.js",
   "js/8zc-sim-core.js",
+  "js/8zc-sim-runner.js",
+  "js/8zc-sim-store.js",
   "js/8zc-study-core.js",
   "js/8zc-study-ui.js",
   "js/8zc-time-core.js",
+  "js/8zc-tournament-core.js",
+  "js/8zc-tournament-ui.js",
   "js/8zc-utils.js",
   "js/8zc-workspace.js",
   "js/boardManager.js",
@@ -104,28 +108,41 @@ const ASSETS = [
   "vendor/stockfish/Copying.txt",
   "vendor/stockfish/README.md",
   "vendor/stockfish/UPSTREAM_README.md",
+  "vendor/stockfish/nn-9067e33176e8.nnue",
   "vendor/stockfish/provenance.json",
   "vendor/stockfish/stockfish-18-lite-single.js",
-  "vendor/stockfish/stockfish-18-lite-single.wasm"
+  "vendor/stockfish/stockfish-18-lite-single.wasm",
+  "vendor/stockfish/stockfish-js-18.0.0-source.zip"
 ];
+// END GENERATED PRECACHE
+const PREFIX = 'chessbest-lab-pwa-';
+const ROOT = new URL('./', self.location.href);
+const CACHE_NAME = PREFIX + encodeURIComponent(ROOT.pathname) + '-' + RELEASE;
 const CACHEABLE = new Set(ASSETS.map(path => new URL(path, ROOT).pathname));
 CACHEABLE.add(ROOT.pathname);
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Include the browser engine in the first download. "Offline ready" is shown
-    // only after the entire shell, PGN library and Stockfish WASM are cached.
     await cache.addAll(ASSETS.map(path => new Request(new URL(path, ROOT), { cache: 'reload' })));
-    await self.skipWaiting();
+    // Updates wait until old tabs close, or the user chooses the reload action.
+    // Never swap application modules underneath an active game or analysis.
   })());
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'ACTIVATE_UPDATE') event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const names = await caches.keys();
-    await Promise.all(names.filter(name => name.startsWith(PREFIX) && name !== CACHE_NAME)
-      .map(name => caches.delete(name)));
+    for (const name of names) {
+      if (name === CACHE_NAME || !name.startsWith(PREFIX)) continue;
+      const old = await caches.open(name);
+      // Shared origin may host another copy. Delete only caches for this scope.
+      if (await old.match(new URL('index.html', ROOT))) await caches.delete(name);
+    }
     await self.clients.claim();
   })());
 });
@@ -137,19 +154,11 @@ self.addEventListener('fetch', event => {
   if (url.origin !== ROOT.origin || !CACHEABLE.has(url.pathname)) return;
   const path = url.pathname === ROOT.pathname ? 'index.html' : url.pathname.slice(ROOT.pathname.length);
   const cacheKey = new URL(path, ROOT);
-
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    try {
-      const response = await fetch(request);
-      if (response.ok && response.type === 'basic' && !url.search) {
-        await cache.put(cacheKey, response.clone());
-      }
-      return response.ok ? response : (await cache.match(cacheKey)) || response;
-    } catch (error) {
-      const cached = await cache.match(cacheKey);
-      if (cached) return cached;
-      throw error;
-    }
+    // Query-versioned scripts resolve to this complete, installed release too.
+    // Network-first can mix new HTML with old JS during an interrupted update.
+    const cached = await cache.match(cacheKey);
+    return cached || fetch(request);
   })());
 });

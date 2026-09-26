@@ -1,0 +1,179 @@
+// Adapted from LAB research/lab-integration.test.cjs at source tree 56ce0d1.
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const {JSDOM,VirtualConsole}=require('jsdom');
+const base=require('node:path').resolve(__dirname,'../public/chess/PWA')+'/';
+const test=require('node:test');
+test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:20000}, async(t)=>{
+ const errors=[]; const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
+ const dom=new JSDOM(fs.readFileSync(base+'index.html','utf8'),{url:'https://bd-chess.github.io/bd-chessdb/chess/PWA/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ const w=dom.window;
+ t.after(()=>w.close());
+ Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent},set(v){this.textContent=String(v)},configurable:true});
+ await new Promise(resolve=>w.addEventListener('load',resolve));
+ w.HTMLElement.prototype.scrollTo=function(){};w.HTMLElement.prototype.scrollIntoView=function(){};
+ let boardOptions,fen;w.Chessboard=(id,options)=>{boardOptions=options;fen=options.position;for(let r=1;r<=8;r++)for(const f of 'abcdefgh'){const el=w.document.createElement('div');el.className='square-'+f+r;w.document.getElementById(id).append(el);}return {position:f=>{if(f)fen=f;return fen},resize(){},orientation(){}};};
+ w.URL.createObjectURL=()=> 'blob:fixture'; w.URL.revokeObjectURL=()=>{};
+ const realSetTimeout=w.setTimeout.bind(w);w.setTimeout=(fn,ms,...args)=>realSetTimeout(fn,ms===150?1:ms,...args);
+ w.alert=msg=>{throw Error(msg)};w.confirm=()=>true;
+ w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
+ w.AbortController=AbortController; w.HTMLDialogElement.prototype.showModal=function(){this.open=true}; w.HTMLDialogElement.prototype.close=function(){this.open=false};
+ w.fetch=async url=>{const u=new URL(url,w.location.href);let text='';if(u.searchParams.get('action')==='queryall'){const b=new w.Chess(u.searchParams.get('board'));text=b.moves({verbose:true}).slice(0,5).map(m=>`move:${m.from+m.to+(m.promotion||'')},score:0,rank:1,note:*`).join('|');}return {ok:true,text:async()=>text,json:async()=>({})};};
+ // Pre-upgrade PWA state and unrelated LAB state must survive startup.
+ w.localStorage.setItem('chessPwaLabSettings-v1', JSON.stringify({timerDisplayDefaults:2,showTimers:true,dccClickAction:'details'}));
+ w.localStorage.setItem('chessPwaLabGame-v1', '[White "Retained White"]\n[Black "Retained Black"]\n\n1. d4 d5 *');
+ w.localStorage.setItem('chessLabGame-v8', 'unrelated LAB sentinel');
+ let sfPreparations=0;
+ // Boot the script list and order shipped by the page. Board geometry and the
+ // worker boundary are fixtures; store, runner, modal and host wiring are real.
+ const scripts=[...w.document.querySelectorAll('script[src]')].map(node=>node.getAttribute('src').split('?')[0]);
+ for(const file of scripts){
+  if(/jquery-|chessboard-/.test(file))continue;
+  w.eval(fs.readFileSync(base+file,'utf8'));
+  if(file==='js/8zc-sf-provider.js')w.ChessSFProvider.create=()=>({
+   prepare:async()=>{sfPreparations++;},destroy(){},ledger:{rootNodes:1,rootDepth:1,rootElapsedMs:0,extraNodes:0,extraElapsedMs:0},
+   root:async position=>({fen:position,provider:'SF',complete:true,moves:new w.Chess(position).moves({verbose:true}).slice(0,5).map((move,index)=>({move:move.from+move.to+(move.promotion||''),score:0,scoreType:'cp',rank:index+1,depth:1}))}),
+   analyzeDCC:async(position,result)=>({candidates:[],dcc1Move:result.moves[0]?.move,receipt:{fen:position,provider:'SF',status:'partial',calls:0}})
+  });
+  if(file==='js/8zc-study-core.js') {
+   const study=w.ChessStudy.create(w.Chess,{name:'Retained PWA study'});
+   w.localStorage.setItem('chessPwaLabStudy-v1',JSON.stringify({schema:'chess-lab-studies',version:1,studies:[study],activeId:study.id}));
+  }
+  if(file==='js/8zc-utils.js')w.initAll();
+ }
+ const el=id=>w.document.getElementById(id);
+ const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
+ assert.equal(w.ChessLabHost.getContext().moves.join(' '),'d2d4 d7d5','old PWA game is restored');
+ assert.equal(el('boardGameTitle').textContent,'Retained White vs Retained Black');
+ assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).dccClickAction,'details','existing PWA preference is retained');
+ assert.equal(w.localStorage.getItem('chessLabGame-v8'),'unrelated LAB sentinel');
+ assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabStudy-v1')).studies.length,1);
+ assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
+ el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
+ el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
+ el('btnSettings').click();el('btnCloseSettings').click();
+ assert.equal(el('settingsPanel').classList.contains('open'),false);
+ assert.equal(el('settingSFDepth').value,'15','existing users get the new default');
+ el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
+ assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).sfAnalysisDepth,12);
+ const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
+ assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
+ el('btnSimB').click();w.document.querySelector('input[value=dccbot]').checked=true;
+ w.document.querySelector('input[value=dccbot]').dispatchEvent(new w.Event('change'));
+ el('simStartBtn').click();
+ assert.match(el('gameTitle').textContent,/Training/);
+ assert.equal(el('workspaceTimers').hidden,false,'engine training keeps clocks');
+ boardOptions.onDrop('c2','c4');
+ await new Promise(r=>setTimeout(r,1000));
+ el('btnNew').click();
+ assert.equal(fen,new w.Chess().fen());assert.equal(el('gameTitle').textContent,'Your next move starts here');
+ assert.equal(el('workspaceTimers').hidden,true,'ending training restores review space');
+ el('btnSim').click();
+ const tournament=el('simTournamentDialog'),sim=name=>tournament.querySelector('[data-ui="'+name+'"]');
+ assert.equal(tournament.open,true,'Sim opens the actual games and tournaments setup');
+ assert.equal(sim('format').value,'single');assert.equal(sim('depth').value,'15');
+ assert.equal(sim('white').options.length,4,'all four engines are available');
+ sim('white').value='raw';sim('black').value='raw';sim('name').value='Full-page integration';
+ sim('limit-mode').value='game-time';sim('limit-mode').dispatchEvent(new w.Event('change',{bubbles:true}));
+ assert.equal(tournament.querySelector('[data-limit="game-time"]').hidden,false);
+ assert.equal(tournament.querySelector('[data-limit="depth"]').hidden,true);
+ sim('game-time').value='60000';sim('increment').value='1000';sim('move-pause').value='400';
+ sim('start').click();
+ await until(()=>!tournament.open&&el('btnSim').textContent==='Pause','new Sim form starts the real runner');
+ toggle('settingShowTimestamps');
+ assert.equal(el('btnSim').textContent,'Pause','display settings must not pause Sim');
+ assert(el('controls').classList.contains('is-sim-focus'));
+ el('btnLabTools').click();assert.equal(el('labToolsDialog').open,true);
+ el('btnCloseLabTools').click();assert.equal(el('labToolsDialog').open,false);
+ await until(()=>!el('workspaceTimers').hidden,'running Sim shows its clocks');
+ await until(()=>el('moves').querySelector('[role=button]'),'automatic moves appear in the real history');
+ assert(sfPreparations>0,'hybrid CDB simulation prepares the local fallback engine');
+ const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
+ move.click();assert.equal(el('btnSim').textContent,'Sim');
+ assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
+ assert.equal(boardOptions.onDrop('a1','a8'),'snapback');
+ assert.equal(el('workspaceTimers').hidden,true,'an illegal review move does not show Sim clocks');
+ const reviewMove=new w.Chess(fen).moves({verbose:true})[0];
+ boardOptions.onDrop(reviewMove.from,reviewMove.to);
+ assert.equal(el('workspaceTimers').hidden,true,'a manual variation does not restart the Sim clock display');
+ const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest-pwa-sim-v1-fallback')||'null');
+ await until(()=>archive()?.events[0]?.state==='paused','pausing persists the resumable event');
+ const savedRun=archive().runs[0];assert(savedRun.trace.length>0);assert.equal(savedRun.clock.running,false);
+ assert.equal(savedRun.clock.mode,'countdown');assert.match(savedRun.pgn,/\[TimeControl "60\+1"\]/);
+ assert(savedRun.trace.every(row=>row.provider==='CDB'),'actual decision sources survive persistence');
+ el('btnSim').click();assert.equal(tournament.open,true,'paused simulation settings reopen');
+ await until(()=>sim('history').querySelector('[data-action="resume"]'),'saved event offers Resume');
+ tournament.querySelector('[data-action="close"]').click();
+ await until(()=>[...el('popularGamesSelect').options].some(option=>option.value.startsWith('sim:')),'saved matches appear in Game library');
+ el('btnGames').click();
+ const collection=[...el('popularGamesSelect').options].find(option=>option.value.startsWith('sim:'));
+ el('popularGamesSelect').value=collection.value;el('popularGamesSelect').dispatchEvent(new w.Event('change'));
+ assert.equal(el('popularGamesPanel').querySelectorAll('.library-result').length,1);
+ el('popularGamesPanel').querySelector('.library-result').click();
+ await until(()=>w.ChessLabHost.getContext().fen===savedRun.finalFen||w.ChessLabHost.getContext().moves.length===savedRun.trace.length,'archived game opens through Game library');
+ assert.equal(el('workspaceTimers').hidden,true,'archived game review has no clocks');
+ el('btnNew').click();
+ await new Promise(r=>setTimeout(r,800));assert.equal(fen,new w.Chess().fen());
+
+ el('btnTwoPlayers').click(); assert.equal(el('twoPlayersDialog').open,true);
+ el('humanMinutes').value='1';el('humanIncrement').value='2';el('humanStart').click();
+ assert.equal(el('humanSession').hidden,false);
+ assert.equal(el('workspaceTimers').hidden,false,'local two-player game keeps clocks');
+ assert.equal(boardOptions.onDrop('e2','e4'),undefined);
+ assert.equal(boardOptions.onDrop('e7','e5'),undefined);
+ assert.equal(el('moves').querySelectorAll('time').length,2);
+ el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),'snapback');
+ assert.equal(el('workspaceTimers').hidden,false,'paused local game retains remaining time');
+ el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),undefined);
+ await new Promise(r=>setTimeout(r,400));
+ assert.match(el('humanReview').textContent,/White|Black|Review/);
+ const timing=JSON.parse(w.localStorage.getItem('chessPwaLabTiming-v1'));
+ assert.equal(timing.records.length,3); assert.ok(timing.records[0].clock_ms>60000);
+ assert.match(timing.records[0].at_utc,/Z$/);
+ toggle('settingShowTimers');assert.equal(el('workspaceTimers').hidden,true);assert.equal(el('moves').querySelectorAll('time').length,3);
+ toggle('settingShowTimestamps');assert.equal(el('moves').querySelectorAll('time').length,0);
+ const fetchBefore=w.fetch;let sent,answer;
+ w.fetch=async(url,opts)=>{if(String(url).includes('chess-lab-gemini')){sent=JSON.parse(opts.body);return new Promise(resolve=>{answer=()=>resolve({ok:true,json:async()=>({ok:true,text:'<img src=x onerror=alert(1)> Test grounded answer'})});});}return fetchBefore(url,opts);};
+ el('btnGemini').click();assert.equal(el('geminiPanel').hidden,false);
+ el('geminiQuestion').value='Kaj DCC pomeni tukaj?';el('geminiForm').dispatchEvent(new w.Event('submit',{cancelable:true}));
+ assert.equal(sent.snapshot.fen,fen);assert.equal(sent.snapshot.mode,'two local humans');
+ assert.ok(sent.snapshot.legalMoves.length>0);assert.equal(sent.snapshot.assistanceLocked,false);
+ boardOptions.onDrop('b8','c6');answer();await new Promise(r=>setTimeout(r,5));
+ assert.equal(el('geminiMessages').querySelectorAll('img').length,0);
+ assert.match(el('geminiMessages').textContent,/board has moved/);
+ el('geminiClose').click();el('btnNew').click();
+ assert.equal(el('humanSession').hidden,true);assert.equal(fen,new w.Chess().fen());
+ toggle('settingShowTimers');assert.equal(el('workspaceTimers').hidden,true,'enabled preference does not show clocks during review');
+ el('btnStudy').click();assert.equal(w.document.querySelector('.chess-study-overlay').hidden,false);
+ w.document.querySelector('.chess-study-close').click();
+ el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,false,'deep analysis opens inside the workspace');
+ assert.equal(el('deepAnalysisPanel').parentElement,el('workspaceDisplay'));assert.equal(w.document.querySelector('dialog[open]'),null);
+ el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,true,'same button returns to Moves/DCC');
+ el('btnEvidence').click();await new Promise(r=>setTimeout(r,20));assert(w.document.querySelector('.chess-research-dialog').open);w.document.querySelector('.research-close').click();
+ const host=w.ChessLabHost;
+ // Import real nested PGN through the application Input path and export through Copy.
+ el('btnFormat').click(); // FEN -> PGN
+ w.prompt=()=> '[Event "Nested integration"]\n[White "Player A"]\n[Black "Player B"]\n\n1. e4 {keep} (1. d4 d5 (1... Nf6)) e5 2. Nf3 *';
+ el('btnInput').click();
+ assert.equal(host.getContext().moves.join(' '),'e2e4 e7e5 g1f3');
+ assert.equal(el('boardGameTitle').textContent, 'Player A vs Player B');
+ assert.equal(el('boardGameTitle').hidden, false);
+ assert.equal(el('workspaceTimers').hidden,true,'loaded PGN review has no clocks');
+ let copied='';Object.defineProperty(w.navigator,'clipboard',{value:{writeText:async text=>{copied=text}},configurable:true});
+ el('btnCopy').click();await new Promise(r=>setTimeout(r,5));
+ assert.match(copied,/d4/);assert.match(copied,/Nf6/);assert.match(copied,/keep/);
+ const reimport=w.ChessStudy.parsePGN(w.Chess,copied);
+ assert.equal(reimport.nodes.root.children.length,2,'RAV survives application PGN export');
+ const snapshot=await host.captureEvidence();assert(snapshot,'current source evidence captured');
+ const snapshotFen=snapshot.payload.fen;
+ host.onRestore(snapshot);await new Promise(r=>setTimeout(r,30));
+ assert.equal(host.getContext().fen,snapshotFen);assert.equal(host.getContext().evidenceMode,'offline');
+ host.resumeLive();assert.equal(host.getContext().evidenceMode,'live');
+ // Malformed path is validated before it mutates the board.
+ const before=host.getContext().fen;assert.throws(()=>host.navigate({startFen:new w.Chess().fen(),moves:['e2e5']}),/illegal/);assert.equal(host.getContext().fen,before);
+ assert.equal(errors.length,0,errors.join('\n'));
+ el('btnNew').click();assert.equal(el('boardGameTitle').hidden,true,'New game clears the loaded identity');
+
+ console.log('PASS: shipped HTML script boot, new Sim form, countdown + increment, CDB decisions, durable pause and archive review; optional displays, timestamps, local humans, Deep analysis, evidence, nested PGN and grounded Gemini safety');
+ w.close();
+});
