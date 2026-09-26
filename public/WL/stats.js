@@ -4,7 +4,8 @@ const $=id=>document.getElementById(id);
 const HOUR=60*60*1000;
 let timer=null,busy=false;
 function duration(value){
- const s=Math.round(Number(value));
+ if(typeof value!=='number')return '—';
+ const s=Math.round(value);
  if(!Number.isFinite(s)||s<0)return '—';
  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
  if(h)return `${h} h ${String(m).padStart(2,'0')} min ${String(sec).padStart(2,'0')} s`;
@@ -20,12 +21,12 @@ function render(data){
  set('obsWlMessages',liveSteps??wl.messages??'—');
  set('obsWlScheduled',liveAuto??wl.scheduled_steps??'—');
  set('obsWlAvg',duration(wl.mean_scheduled_publication_interval_seconds));
- set('obsEmailMessages',mail.total_messages??'—');
+ set('obsEmailMessages',mail.total_messages===undefined?'—':(mail.messages_kind==='LOWER_BOUND'?'≥ ':'')+mail.total_messages);
  set('obsEmailAvg',duration(mail.mean_within_run_interval_seconds));
  set('obsEmailMedian',duration(mail.median_within_run_interval_seconds));
  const A=mail.runs?.A,B=mail.runs?.B;
- set('obsEmailDetail',A&&B?`Tek A: ${A.messages} sporočil · povp. ${duration(A.mean_interval_seconds)}. Tek B: ${B.messages} sporočil · povp. ${duration(B.mean_interval_seconds)}.`:'Email statistika ni na voljo.');
- set('obsStatsTime',`Agregat osvežen: ${localTime(data?.generated_at)} · stran preveri nove agregate vsako uro.`);
+ set('obsEmailDetail',A&&B?`Tek A: ${A.count_kind==='LOWER_BOUND'?'≥ ':''}${A.messages} sporočil · povp. ${duration(A.mean_interval_seconds)}. Tek B: ${B.count_kind==='LOWER_BOUND'?'≥ ':''}${B.messages} sporočil · povp. ${duration(B.mean_interval_seconds)}.`:'Email statistika ni na voljo.');
+ set('obsStatsTime',`Pošta preverjena: ${localTime(mail.checked_at||data?.email_checked_at||data?.generated_at)} · agregat osvežen: ${localTime(data?.generated_at)} · stran preveri nove agregate vsako uro.`);
 }
 async function load(){
  if(busy||$('app')?.hidden)return;
@@ -44,3 +45,4 @@ const app=$('app');if(app)new MutationObserver(sync).observe(app,{attributes:tru
 $('refresh')?.addEventListener('click',()=>setTimeout(load,0));
 sync();
 })();
+

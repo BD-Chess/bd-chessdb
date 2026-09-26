@@ -6,7 +6,7 @@
   else root.ChessBenchmark=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const VERSION='1.0.0';
+  const VERSION='1.0.1';
   const finite=v=>typeof v==='number'&&Number.isFinite(v);
   const exact=score=>score && (!score.bound || score.bound==='exact');
   const abort=()=>{const e=new Error('Research stopped.');e.name='AbortError';throw e;};
@@ -16,17 +16,43 @@
     return { ...raw,dccDepth:raw.dccDepth??raw.depth??5,dccTopCandidates:raw.dccTopCandidates??raw.candidates??3,
       dccEvalFloor:raw.dccEvalFloor??raw.window??80,evalMode:raw.evalMode??raw.source??'direct',dccNoDeadline:true };
   }
-  function compareMetrics(rows,adjudication){
-    const lines=adjudication?.completeMultiPV===false?[]:adjudication?.lines||[], cp=new Map();
+  function fenContext(fen){
+    if(typeof fen!=='string'||/[\r\n]/.test(fen)||fen.trim().split(/\s+/).length!==6)
+      throw new Error('Adjudication requires a complete six-field FEN context.');
+    return 'fen6/v1:'+fen.trim().split(/\s+/).join(' ');
+  }
+  function decisionScope(fen,moves){
+    if(!Array.isArray(moves)||!moves.length||moves.some(move=>typeof move!=='string'||!/^([a-h][1-8]){2}[qrbn]?$/.test(move)))
+      throw new Error('Adjudication requires valid root move identities.');
+    return Object.freeze({context:fenContext(fen),moves:Object.freeze([...new Set(moves)])});
+  }
+  // Only these two callers can create a certificate. Copy primitive evidence;
+  // never retain a provider-owned Map, callback or mutable score object.
+  function certify(scope,evidence){
+    if(fenContext(evidence?.fen)!==scope.context)throw new Error('Adjudication FEN context mismatch.');
+    const lines=evidence?.lines;
+    if(evidence?.completeMultiPV!==true||!Array.isArray(lines)||lines.length!==scope.moves.length)
+      throw new Error('Adjudication evidence scope mismatch: a complete root set is required.');
+    const expected=new Set(scope.moves),seen=new Set(),scores=[];
     for(const line of lines){
-      const move=line.move||line.pv?.[0], score=line.score;
-      if(move&&score?.type==='cp'&&finite(score.root)&&exact(score))cp.set(move,score.root);
+      const move=line?.pv?.[0],alias=line?.move,score=line?.score;
+      const type=score?.type,value=score?.root,bound=score?.bound;
+      if(!expected.has(move)||seen.has(move)||(alias!=null&&alias!==move))
+        throw new Error('Adjudication evidence scope mismatch: root identities must match exactly.');
+      if(type!=='cp'||!finite(value)||bound!=='exact')
+        throw new Error('Adjudication requires an exact finite centipawn score for every scoped root.');
+      seen.add(move);scores.push(Object.freeze([move,value]));
     }
-    const best=cp.size?Math.max(...cp.values()):null;
-    return rows.map(row=>({ ...row,adjudication:cp.has(row.move)?{
-      scoreCp:cp.get(row.move),lossToBestObservedCp:Math.max(0,best-cp.get(row.move)),
-      scope:'Compared root moves only; deeper same-engine evidence, not ground truth.'
-    }:null }));
+    return Object.freeze({context:scope.context,scores:Object.freeze(scores),best:Math.max(...scores.map(pair=>pair[1]))});
+  }
+  function projectMetrics(rows,certificate,fen){
+    if(fenContext(fen)!==certificate.context)throw new Error('Adjudication FEN context mismatch.');
+    const cp=new Map(certificate.scores);
+    return rows.map(row=>{
+      if(!cp.has(row.move))throw new Error('Adjudication consumer is outside the certified root scope.');
+      return {...row,adjudication:{scoreCp:cp.get(row.move),lossToBestObservedCp:Math.max(0,certificate.best-cp.get(row.move)),
+        scope:'Compared root moves only; deeper same-engine evidence, not ground truth.'}};
+    });
   }
   async function runFrozen({Chess,DCC,Evidence,snapshot,budget=120,signal,onProgress=()=>{}}){
     Evidence.validate(snapshot);check(signal);
@@ -76,16 +102,16 @@
   function spent(result){return finite(result?.nodes)?result.nodes:null;}
   async function adjudicateFrozen({engine,result,nodes=1000000,signal,onProgress=()=>{}}){
     if(result?.kind!=='frozen-query-comparison')throw new Error('Run a frozen comparison first.');
-    const rootMoves=[...new Set(result.rows.map(row=>row.move).filter(Boolean))];
-    if(!rootMoves.length)throw new Error('There are no selected root moves to judge.');
+    const fen=result.fen,rows=result.rows.map(row=>({...row})),scope=decisionScope(fen,rows.map(row=>row.move));
+    const rootMoves=scope.moves.slice();
     check(signal);onProgress({label:'Stockfish: separate assessment of captured CDB / DCC choices'});
-    const adjudication=await engine.analyze({fen:result.fen,multiPV:rootMoves.length,searchMoves:rootMoves,
+    const adjudication=await engine.analyze({fen,multiPV:rootMoves.length,searchMoves:rootMoves.slice(),
       nodes:Math.max(10000,Math.min(10000000,Math.trunc(Number(nodes)||1000000))),clearHash:true,signal});
     check(signal);
-    const covered=adjudication.completeMultiPV===true&&rootMoves.every(move=>adjudication.lines.some(line=>line.pv?.[0]===move));
-    const judged={...adjudication,completeMultiPV:covered,rootMoves,deeperThanCDB:null,
+    const certificate=certify(scope,adjudication);
+    const judged={...adjudication,rootMoves,deeperThanCDB:null,
       note:'Separate pinned Stockfish search. Original CDB engine version and search work are unknown; greater depth than CDB is not established.'};
-    return {...result,rows:compareMetrics(result.rows,judged),adjudication:judged,
+    return {...result,fen,rows:projectMetrics(rows,certificate,fen),adjudication:judged,
       conclusion:'Source-policy replay plus a separate Stockfish assessment of the chosen root moves. Incomplete replay stays incomplete. No Elo or strength conclusion.'};
   }
   async function runEngineComparison({Chess,DCC,engine,fen,nodeBudget=100000,adjudicationNodes=1000000,
@@ -109,6 +135,9 @@
     if(!first||first.multipv!==1||first.score?.type!=='cp'||!finite(first.score.root)||!exact(first.score))
       throw new Error('The top discovery score is mate, bounded or unknown. This centipawn experiment cannot compare it.');
     if(raw.completeMultiPV!==true||!raw.lines[0]?.pv?.[0])throw new Error('Raw engine has no complete root result. Increase the node budget.');
+    // Freeze the decision scope before filtering scores. Bounded/mate discovery
+    // roots must still receive exact adjudication; silently dropping them biases best.
+    const rawMove=raw.lines[0].pv[0],scope=decisionScope(fen,[rawMove,...ordered.map(line=>line.pv?.[0])]);
     const lines=ordered.filter(l=>l.pv?.[0]&&l.score?.type==='cp'&&finite(l.score.root)&&exact(l.score));
     const guarded=lines.filter(l=>first.score.root-l.score.root<=10), funded=guarded.length;
     const available=nodeBudget-rootShare, totalSamples=funded*3, perSample=Math.floor(available/Math.max(1,totalSamples));
@@ -137,16 +166,16 @@
     // Keep raw discovery move if any guarded continuation lacks comparable coverage.
     const complete=observations.length>0&&observations.every(o=>o.complete);
     const ranked=observations.slice().sort((a,b)=>b.rank-a.rank||b.rawCp-a.rawCp||a.move.localeCompare(b.move));
-    const dccMove=complete?ranked[0].move:first.pv[0],rawMove=raw.lines[0]?.pv?.[0];
+    const dccMove=complete?ranked[0].move:first.pv[0];
     const dccNodes=searches.every(s=>spent(s)!==null)?searches.reduce((sum,s)=>sum+spent(s),0):null;
     let rows=[{id:'raw-engine',label:'Raw engine · 1 PV',move:rawMove,finalEngineMove:raw.bestMove,nodes:spent(raw),nodeAllowance:nodeBudget},
       {id:'dcc-engine',label:'DCC on browser engine evidence',move:dccMove,nodes:dccNodes,nodeAllowance:nodeBudget,
         allocatedNodes:nodeBudget-remaining,complete,observations,
         reason:complete?'DCC ranking within the discovery 10 cp guard.':'Raw discovery retained: incomplete comparable continuations.'}];
-    const rootMoves=[...new Set([rawMove,dccMove,...lines.map(l=>l.pv[0])].filter(Boolean))];
+    const rootMoves=scope.moves.slice();
     onProgress({label:'Separate deeper root adjudication'});
-    const adjudication=await search({multiPV:rootMoves.length,searchMoves:rootMoves,nodes:adjudicationNodes});
-    rows=compareMetrics(rows,adjudication);
+    const adjudication=await search({multiPV:rootMoves.length,searchMoves:rootMoves.slice(),nodes:adjudicationNodes});
+    rows=projectMetrics(rows,certify(scope,adjudication),fen);
     const maximumActual=Math.max(spent(raw)||0,dccNodes||0),deeper=spent(adjudication)!==null&&spent(adjudication)>maximumActual;
     return {schema:'chess-benchmark/1',version:VERSION,kind:'engine-node-comparison',fen,createdAt:new Date().toISOString(),
       engine:raw.engine,budget:{type:'requested total engine nodes',perPolicy:nodeBudget,
@@ -154,5 +183,5 @@
       raw,discovery,rows,adjudication:{...adjudication,greaterActualNodes:deeper,rootMoves},
       conclusion:'A reproducible single-position comparison of raw search and a DCC engine experiment. Deeper same-engine adjudication is not independent ground truth or an Elo estimate.'};
   }
-  return {VERSION,settingsFrom,compareMetrics,runFrozen,runEngineComparison,adjudicateFrozen};
+  return {VERSION,settingsFrom,runFrozen,runEngineComparison,adjudicateFrozen};
 });

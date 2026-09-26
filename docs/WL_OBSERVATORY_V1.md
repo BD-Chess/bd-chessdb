@@ -31,3 +31,21 @@ The practical review combined user-first scan hierarchy, engineering integration
 Actual tests are in the accompanying private release receipt: Node syntax; preserved original main reader; exact production JavaScript journal verifier using Node WebCrypto and pinned historical ciphertext; corrupt-envelope rejection; null single-event intervals; reversed-time rejection; offline Chromium component rendering at 1440/390/320, light/dark, font controls, filters, stale display and DOM clearing on lock. The local fixture has 19 accepted events through e000020, not the live release frontier.
 
 Environment browser navigation was blocked by administrator even for a local preview. Consequently offline render tests used an explicitly isolated about:blank harness with mocked storage and no network. These are not a live browser unlock, CSP enforcement, or actual mobile Safari test. Do not label them so. Production deployment and post-deploy HTTP/browser checks have separate verdicts.
+
+## Snapshot repair and observation semantics — 2026-09-26
+
+The public JSON repair preserves historical observations and adds separate source-check and refresh timestamps. A new `generated_at`/`refreshed_at` does not refresh `sources.email.checked_at`. Workspace checks retain their original dates when not rechecked. A scheduler registration or invocation is not research or mail delivery evidence.
+
+`count_kind: LOWER_BOUND` means only an observed subset of logical turns is counted. The browser prefixes such counts and totals with ≥; it does not infer a count from the highest turn. Missing search results are coverage gaps, not proof of absent mail. Full-sequence interval count and mean remain null when coverage is incomplete. The recent cadence chart uses a contiguous observed suffix. Historical metrics remain separately available. CSV includes count kind and source-check time.
+
+Operational badges distinguish a reported transport failure, valid input wait, pause, stale observation, recent contribution, and the expired Legacy WL window. A reported failure does not diagnose Microsoft, Gmail, a connector, or an approval gate. A valid wait is not counted as recent activity. Missing timestamps do not produce a healthy label. No WL key, encrypted journal, authorization, or control endpoint changes are made by this projection.
+
+Before publication, serialize the complete pair, parse it back, and run:
+
+```sh
+node scripts/validate-amail-status.mjs
+node --test tests/amail-status.test.mjs
+```
+
+Publish against a freshly reread base, preserve concurrent changes, then read back complete bytes and compare their hash. Re-run parsing and validation on readback. If validation or exact readback fails, retain the last valid snapshot and its observation timestamps; do not mark refresh successful. The validator is a callable gate for the external producer, not a new scheduler or an automatic post-commit repair.
+
