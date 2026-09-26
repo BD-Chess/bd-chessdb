@@ -21,13 +21,14 @@ function write(value){
 async function quarantine(){try{const db=await open(),raw=await get(db,KEY);if(raw)await new Promise((resolve,reject)=>{const tx=db.transaction('state','readwrite');tx.objectStore('state').put(raw,'recovery:'+new Date().toISOString());tx.oncomplete=resolve;tx.onerror=reject;});}catch(_){try{const raw=localStorage.getItem(NAME);if(raw)localStorage.setItem(NAME+'.recovery.'+Date.now(),raw);}catch(_){}}}
 root.F4MStore={read,write,quarantine,flush:()=>queue};
 
-/* Route-only navigation patch for the promoted /f4m/ primary. */
+/* Route-only navigation patch for the promoted primary on either host. */
 function patchPrimaryRoutes(){
  const nav=document.querySelector('.topbar nav');if(!nav)return;
- const about=nav.querySelector('a[data-i18n="about"]');if(about)about.href='/f4m/f4m/';
+ const base=new URL('./',location.href);
+ const about=nav.querySelector('a[data-i18n="about"]');if(about)about.href=new URL('f4m/',base).pathname;
  const lab=nav.querySelector('a[data-i18n="previewGame"]');
- if(lab){lab.href='/f4m/new/';lab.removeAttribute('data-i18n');lab.textContent='🧪 Lab';}
- if(!nav.querySelector('a[data-primary-old]')){const old=document.createElement('a');old.href='/f4m/old/';old.dataset.primaryOld='1';old.textContent='↔ Stara / Old';nav.insertBefore(old,lab||nav.querySelector('button'));}
+ if(lab){lab.href=new URL('new/',base).pathname;lab.removeAttribute('data-i18n');lab.textContent='🧪 Lab';}
+ if(!nav.querySelector('a[data-primary-old]')){const old=document.createElement('a');old.href=new URL('old/',base).pathname;old.dataset.primaryOld='1';old.textContent='↔ Stara / Old';nav.insertBefore(old,lab||nav.querySelector('button'));}
  const p=document.querySelector('[data-i18n="longThinkNote"]');if(p){p.removeAttribute('data-i18n');p.textContent='Velemojster/Grandmaster: do 60 s; Prvak/Champion: do 120 s. Zgodnje in enostavne pozicije dobijo manj časa; kompleksne lahko porabijo celoten maksimum.';}
 }
 if(typeof document!=='undefined')document.addEventListener('DOMContentLoaded',()=>setTimeout(patchPrimaryRoutes,0));

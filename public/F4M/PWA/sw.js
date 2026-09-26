@@ -1,7 +1,7 @@
 /* Only this PWA's local game assets are cached. No other versions or API traffic. */
 'use strict';
 const PREFIX = 'flip4m-pwa-';
-const CACHE = PREFIX + 'lab-2.1.2-v1';
+const CACHE = PREFIX + 'lab-2.1.2-v2';
 const BASE = new URL('./', self.location.href);
 const ASSETS = [
   '', 'index.html', 'manifest.webmanifest', 'pwa.js', 'f4m.css',
@@ -33,11 +33,16 @@ self.addEventListener('fetch', event => {
   event.respondWith(caches.open(CACHE).then(async cache => {
     try {
       const fresh = await fetch(request);
-      if (fresh.ok) await cache.put(key, fresh.clone());
-      return fresh;
+      if (fresh.ok) {
+        await cache.put(key, fresh.clone());
+        return fresh;
+      }
+      // HTTP failures resolve fetch; they need the same recovery as offline errors.
+      const cached = await cache.match(key);
+      return cached && cached.ok ? cached : fresh;
     } catch (error) {
       const cached = await cache.match(key);
-      if (cached) return cached;
+      if (cached && cached.ok) return cached;
       throw error;
     }
   }));

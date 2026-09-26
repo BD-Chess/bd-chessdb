@@ -1,6 +1,6 @@
 /* Offline shell for the public Trip PWA only. Bump CACHE with every PWA asset change.
    No API, road response, or encrypted payload is persisted. */
-const CACHE = '8z-trip-pwa-public-20260924-3';
+const CACHE = '8z-trip-pwa-public-20260926-4';
 const ROOT = new URL('./', self.location.href);
 const SHELL = [
   'index.html', 'travel.html', 'travel.css', 'travel.js',
@@ -49,10 +49,14 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      return await fetch(request);
+      const fresh = await fetch(request);
+      if (fresh.ok) return fresh;
+      // Keep query/API responses out of storage, including failed HTTP responses.
+      const fallback = await cache.match(cacheKey);
+      return fallback && fallback.ok ? fallback : fresh;
     } catch (error) {
       const fallback = await cache.match(cacheKey);
-      if (fallback) return fallback;
+      if (fallback && fallback.ok) return fallback;
       throw error;
     }
   })());

@@ -2,7 +2,7 @@
 
 // This worker controls only /S/PWA/. No other Sudoku versions or API requests are cached.
 const CACHE_PREFIX = '8zsudoku-pwa-';
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2-evidence-copy`;
 const BASE_URL = self.registration.scope;
 const ASSETS = [
   './',
