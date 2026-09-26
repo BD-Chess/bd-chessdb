@@ -74,7 +74,20 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  await until(()=>cards.querySelectorAll('.all-eval-move').length===3&&cards.querySelectorAll('.all-eval-move')[1].textContent!=='…','Auto measures its own SF card');
  const cardFor=source=>cards.querySelector(`[data-eval-source="${source}"]`);
  assert.equal(cardFor('CDB').tagName,'BUTTON');assert.equal(cardFor('SF').tagName,'BUTTON');
- assert.equal(cards.children[2].tagName,'DIV','DCC card is informational');
+ assert.equal(cardFor('DCC').tagName,'BUTTON','DCC card uses the same accessible control as the toolbar');
+ assert.equal(cardFor('DCC').getAttribute('aria-pressed'),'false');
+ const dccBoardFen=fen;
+ cardFor('DCC').click();
+ assert.equal(el('btnViewToggle').textContent,'Moves');
+ assert.equal(el('dccAnalysisPanel').style.display,'block');
+ assert.equal(el('moves').style.display,'none');
+ assert.equal(cardFor('DCC').getAttribute('aria-pressed'),'true');
+ assert.match(cardFor('DCC').title,/show moves/);
+ cardFor('DCC').click();
+ assert.equal(el('btnViewToggle').textContent,'DCC');
+ assert.equal(el('dccAnalysisPanel').style.display,'none');
+ assert.equal(cardFor('DCC').getAttribute('aria-pressed'),'false');
+ assert.equal(fen,dccBoardFen,'view switching never changes the playing position');
  assert.match(cardFor('SF').title,/Click for deeper analysis/);
  assert.match(cardFor('CDB').title,/Click to refresh CDB/);
  let cdbQueries=0;const priorFetch=w.fetch;
@@ -219,6 +232,20 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(notice.hidden,true);
  assert.equal(countStudies(),1,'only the new game is saved after removing the full collection');
  assert.equal(el('popularGamesPanel').classList.contains('open'),false);
+
+ // Move arrows retain the last drawn evaluation until the new FEN is measured.
+ w.prompt=()=> '[Event "Eval navigation"]\n\n1. a4 h5 2. Ra3 *';
+ el('btnInput').click();
+ await until(()=>host.getContext().moves.join(' ')==='a2a4 h7h5 a1a3','new game loads an unseen line');
+ const bar=el('positionEval'),value=el('positionEvalLabel');
+ await until(()=>value.textContent!=='…'&&value.textContent!=='—'&&!bar.classList.contains('is-awaiting'),'last position receives its own CDB evaluation');
+ const precedingScore=value.textContent;
+ el('prev').click();
+ assert.equal(value.textContent,precedingScore,'previous-position score stays drawn after moving backward');
+ assert.equal(bar.classList.contains('is-awaiting'),true);
+ assert.match(bar.getAttribute('aria-label'),/Previous position/,'retained value is identified as stale for the new FEN');
+ await until(()=>!bar.classList.contains('is-awaiting')&&value.textContent!=='…','current-position result eventually replaces the retained score');
+ assert.equal(errors.length,0,errors.join('\n'));
 
  console.log('PASS: shipped HTML script boot, new Sim form, countdown + increment, CDB decisions, durable pause and archive review; optional displays, timestamps, local humans, Deep analysis, evidence, nested PGN and grounded Gemini safety');
  w.close();
