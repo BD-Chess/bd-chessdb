@@ -11,7 +11,19 @@ vm.runInNewContext(read('../public/chess/new/js/8zc-study-core.js'), context);
 vm.runInNewContext(read('../public/chess/new/js/8zc-utils.js'), context);
 const { Chess, chessBestTopPickAnchor, chessBestTopPickTitle, chessBestTopPickResumeCursor } = context;
 const source = read('../public/chess/new/Games/GukeshD_Selected.pgn').split(/\n\s*\n(?=\[Event)/)[0];
-const curated = read('../public/chess/new/Games/ChessBest_Top_Picks.pgn');
+const catalog = JSON.parse(read('../public/chess/new/Games/ChessBest_Top_Picks.catalog.json'));
+const curatedByFile = new Map(catalog.collection_files.map(file => [
+  file, read('../public/chess/new/' + file).trim().split(/\n\s*\n(?=\[Event)/)
+]));
+const fileCursors = new Map();
+const curatedCases = catalog.cases.map(entry => {
+  const parts = curatedByFile.get(entry.curated_file);
+  assert.ok(parts, `curated file ${entry.curated_file}`);
+  const next = fileCursors.get(entry.curated_file) || 0;
+  fileCursors.set(entry.curated_file, next + 1);
+  assert.ok(parts[next], `curated game ${entry.id}`);
+  return { entry, pgn: parts[next] };
+});
 
 function parseGame(pgn) {
   const study = context.window.ChessStudy.parsePGN(Chess, pgn);
@@ -64,40 +76,56 @@ test('missing or corrupted anchor falls back to normal game load; ordinary games
   assert.equal(chessBestTopPickTitle(' \n ', 'Fallback'), 'Fallback');
 });
 
-test('all shipped Top Picks load in the actual LAB parser, retain full games and valid anchors', () => {
-  const parts = curated.trim().split(/\n\s*\n(?=\[Event)/);
-  const cases = [
-    { title: /Gukesh.*Carlsen/, anchor: 86, preceding: 'Rf2', played: 'f6', plies: 123 },
-    { title: /Carlsen.*Aronian/, anchor: 98, preceding: 'fxg5', played: 'g6', plies: 117 },
-    { title: /Leko.*Kramnik/, anchor: 61, preceding: 'Qg6', played: 'Rad7', plies: 72 },
-  ];
-  assert.equal(parts.length, cases.length);
-  for (const [i, pgn] of parts.entries()) {
+test('all seven Top Picks load in the LAB parser from both PGNs with valid full-game anchors', () => {
+  assert.equal(catalog.cases.length, 7);
+  assert.equal(curatedCases.length, 7);
+  assert.equal(curatedByFile.size, 2);
+  for (const [file, parts] of curatedByFile) {
+    assert.equal(fileCursors.get(file), parts.length, `catalog covers ${file}`);
+  }
+  for (const { entry, pgn } of curatedCases) {
     const game = parseGame(pgn);
     const history = game.history({ verbose: true });
-    const chosen = cases[i];
     const anchor = chessBestTopPickAnchor(game.header(), history, Chess);
-    assert.equal(history.length, chosen.plies, `full game ${i + 1}`);
-    assert.equal(anchor, chosen.anchor, `anchor ${i + 1}`);
-    assert.equal(history[anchor].san, chosen.preceding);
-    assert.equal(history[anchor + 1].san, chosen.played);
-    assert.match(chessBestTopPickTitle(game.header().ChessBestTitle, ''), chosen.title);
+    assert.equal(anchor, entry.anchor.ply_after - 1, entry.id);
+    assert.equal(history[anchor + 1].from + history[anchor + 1].to +
+      (history[anchor + 1].promotion || ''), entry.anchor.played_uci, entry.id);
+    assert.equal(game.header().ChessBestAnchorFEN, entry.anchor.fen_before_move, entry.id);
+    assert.ok(chessBestTopPickTitle(game.header().ChessBestTitle, ''), entry.id);
+    assert.ok(history.length > entry.anchor.ply_after, `full game ${entry.id}`);
+    if (entry.source.license) {
+      assert.equal(game.header().ChessBestLicense, entry.source.license, entry.id);
+      assert.equal(game.header().ChessBestLicenseNotice, entry.license_notice.split('/').pop(), entry.id);
+    }
   }
 });
 
 test('catalog sources and evidence hashes match the shipped complete game lines', () => {
-  const catalog = JSON.parse(read('../public/chess/new/Games/ChessBest_Top_Picks.catalog.json'));
-  const parts = curated.trim().split(/\n\s*\n(?=\[Event)/);
   assert.equal(catalog.schema_version, 1);
-  assert.equal(catalog.cases.length, parts.length);
+  assert.equal(catalog.cases.length, curatedCases.length);
   const digest = text => createHash('sha256').update(text).digest('hex');
-  for (const [i, entry] of catalog.cases.entries()) {
+  const checkEvidenceHashes = (value, id) => {
+    if (Array.isArray(value)) return value.forEach(item => checkEvidenceHashes(item, id));
+    if (!value || typeof value !== 'object') return;
+    for (const [pathField, hashField] of [
+      ['source_snapshot_path', 'source_snapshot_sha256'],
+      ['candidate_receipt_path', 'candidate_receipt_sha256'],
+      ['receipt_path', 'receipt_sha256']
+    ]) {
+      if (value[pathField]) assert.equal(digest(read('../' + value[pathField])), value[hashField],
+        `${id} ${pathField}`);
+    }
+    Object.values(value).forEach(item => checkEvidenceHashes(item, id));
+  };
+  for (const { entry, pgn } of curatedCases) {
     const sourceText = read('../public/chess/new/' + entry.source.path);
     assert.equal(digest(sourceText), entry.source.sha256, entry.id);
     const sourceParts = sourceText.trim().split(/\n\s*\n(?=\[Event)/);
     const original = parseGame(sourceParts[entry.source.game_index_1based - 1]);
-    const chosen = parseGame(parts[i]);
+    const chosen = parseGame(pgn);
     assert.deepEqual(chosen.history(), original.history(), entry.id);
+    assert.equal(digest(chosen.history({ verbose: true }).map(move =>
+      move.from + move.to + (move.promotion || '')).join(' ')), entry.source.mainline_uci_sha256, entry.id);
     const moves = chosen.history({ verbose: true });
     const position = new Chess();
     for (const move of moves.slice(0, entry.anchor.ply_after)) position.move(move.san);
@@ -105,16 +133,17 @@ test('catalog sources and evidence hashes match the shipped complete game lines'
     assert.equal(chosen.header().ChessBestAnchorFEN, entry.anchor.fen_before_move, entry.id);
     const played = moves[entry.anchor.ply_after];
     assert.equal(played.from + played.to + (played.promotion || ''), entry.anchor.played_uci, entry.id);
-    for (const evidence of Object.values(entry.evidence)) {
-      if (!evidence.source_snapshot_path) continue;
-      assert.equal(digest(read('../' + evidence.source_snapshot_path)), evidence.source_snapshot_sha256,
-        entry.id + ' evidence');
-    }
+    checkEvidenceHashes(entry.evidence, entry.id);
+    if (entry.curated_source) assert.equal(digest(read('../public/chess/new/' + entry.curated_source.path)),
+      entry.curated_source.sha256, entry.id);
+  }
+  for (const notice of catalog.license_notices) {
+    assert.equal(digest(read('../public/chess/new/' + notice.path)), notice.sha256, notice.path);
   }
 });
 
 test('resume marker restores the full source game and current cursor only for matching Top Picks PGN', () => {
-  const firstPick = curated.trim().split(/\n\s*\n(?=\[Event)/)[0];
+  const firstPick = curatedCases[0].pgn;
   const game = parseGame(firstPick);
   const history = game.history({ verbose: true });
   const marker = { cursor: 87, totalPlies: history.length, pgnLength: firstPick.length,

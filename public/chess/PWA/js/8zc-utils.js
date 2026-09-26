@@ -274,7 +274,7 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
-    { name: 'ChessBest Top Picks', file: 'ChessBest_Top_Picks.pgn', topPicks: true },
+    { name: 'ChessBest Top Picks', files: ['ChessBest_Top_Picks.pgn', 'ChessBest_Top_Picks_TCEC.pgn'], topPicks: true },
     { name: 'Openings - Top Lines',  files: [
       'TopLines/c4_top_43_moves.pgn',
       'TopLines/d4_top_22_moves.pgn',

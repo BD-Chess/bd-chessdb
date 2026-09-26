@@ -55,7 +55,8 @@ test('release hashes, LAB provenance, install identity and complete static asset
   assert.equal(hash(fs.readFileSync(path.join(base, 'sw.js'))), release.worker_sha256);
   const assets = Object.keys(release.pwa_assets_sha256);
   assert(!assets.some(name => /Lichess-API|\.url$|test\.|token/i.test(name)));
-  for (const required of ['js/8zc-sim-store.js', 'js/8zc-sim-runner.js', 'js/8zc-tournament-ui.js', 'css/8zc-tournament.css', 'vendor/stockfish/stockfish-18-lite-single.wasm']) assert(assets.includes(required));
+  for (const required of ['js/8zc-sim-store.js', 'js/8zc-sim-runner.js', 'js/8zc-tournament-ui.js', 'css/8zc-tournament.css', 'vendor/stockfish/stockfish-18-lite-single.wasm', 'Games/ChessBest_Top_Picks.pgn', 'Games/ChessBest_Top_Picks_TCEC.pgn', 'Games/ChessBest_Top_Picks_TCEC.LICENSE.md']) assert(assets.includes(required));
+  assert.match(fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks_TCEC.LICENSE.md'), 'utf8'), /CC BY-SA 3\.0/);
   const dom = new JSDOM(fs.readFileSync(path.join(base, 'index.html'), 'utf8'));
   for (const el of dom.window.document.querySelectorAll('script[src], link[rel=stylesheet], link[rel=manifest], link[rel=apple-touch-icon]')) {
     const ref = (el.getAttribute('src') || el.getAttribute('href')).split('?')[0];

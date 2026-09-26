@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "collection": "ChessBest Top Picks",
-  "description": "Human-reviewed full games with a position that reveals a consequential analysis difference. Numeric scores are time-stamped snapshots, not fixed facts.",
-  "score_convention": "All advantage_cp fields are from the mover side at the anchor. For Black at the first anchor, positive means advantage for Black. Positions after the played move are sign-flipped from White-to-move CDB responses.",
+  "description": "Seven curated complete games: five elite human games and two TCEC engine games. Each has a verified mainline and review-position FEN. Score differences are dated, configuration-specific observations; historical ChessDB cache leads are not current ChessDB results.",
+  "score_convention": "Signed centipawn fields marked mover or advantage_cp use the side choosing the reviewed move. Fields explicitly marked opponent use the other side. Compare scores only at the same position and under stated search settings; historical CDB entries are leads, not current measurements.",
   "cases": [
     {
       "id": "gukesh-carlsen-norway-2025-44-f6",
@@ -116,7 +116,8 @@
           "source_snapshot_path": "docs/chessbest-evidence/gukesh-carlsen-2025-sf-lite-cold-20260926.json",
           "source_snapshot_sha256": "267df097c56339fada41fee3d56f2a8d9490e88afdefa3b031682b968857b27a"
         }
-      }
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
     },
     {
       "id": "carlsen-aronian-london-2012-50-g6",
@@ -199,7 +200,8 @@
           ],
           "caveat": "Scores, rankings and move gaps can change with engine settings, hash warm state and search depth."
         }
-      }
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
     },
     {
       "id": "leko-kramnik-linares-2004-32-rad7",
@@ -282,7 +284,346 @@
           ],
           "caveat": "Root move restriction and Hash64 differ from the broad MultiPV8 lane; this is an independent deeper check, not identical configuration."
         }
-      }
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "kasparov-svidler-2004-47-kd6",
+      "status": "verified-game-and-local-SF; historical-CDB-triage-only",
+      "source": {
+        "path": "Games/KasparovG_Selected.pgn",
+        "sha256": "96138934231a82c237e3ea4ad0fdbbb5235e059fd96fcdbc90d727262de94286",
+        "game_index_1based": 7,
+        "mainline_uci_sha256": "0d4cf4effd86434305d4ccb4fac12c00c6067ad92ef26da899515386c4c2307c"
+      },
+      "game": {
+        "white": "Kasparov,G",
+        "black": "Svidler,P",
+        "date": "2004.11.24",
+        "event": "57th ch-RUS",
+        "result": "1-0"
+      },
+      "anchor": {
+        "ply_after": 93,
+        "move_to_review": "47...Kd6",
+        "fen_before_move": "8/3nk3/4p3/5pBp/7P/1R3PP1/1Pr5/5K2 b - - 2 47",
+        "played_uci": "e7d6",
+        "historical_CDB_single_observed_best_uci": "e7f7"
+      },
+      "reason": "After 47...Kd6, 48.Rd3+ gains time to activate White’s rook. In a depth-27 local line, 48...Kc6 49.Rc3+ leads to a favorable rook trade for White; 47...Kf7 keeps the black king away from the check. A single historical CDB snapshot suggested a bigger difference; current CDB has not been checked.",
+      "evidence": {
+        "historical_cdb": {
+          "source_archive": "ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip",
+          "source_archive_sha256": "26a485ec597e108e8cd6c5a9a4e7fc25b9626faf20095e016eb166497653f001",
+          "observed_regret_cp_mover": 277,
+          "root_coverage": 1,
+          "caveat": "One root move evaluated; historical four-field FEN keys lose 50-move counter. No fresh CDB validation and not proof of best legal alternative. Do not present as a fresh/current CDB score."
+        },
+        "sf_lite": {
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "engine_file_sha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8,
+            "search_sequence": "separate cold engine process for each depth"
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "multipv": 8,
+              "best_uci": "e7f7",
+              "best_cp_mover": -69,
+              "played_cp_mover": -93,
+              "regret_cp": 24,
+              "nodes": 585752,
+              "source_snapshot_path": "docs/chessbest-evidence/kasparov-svidler-2004-47-kd6-sf-lite-d15-20260926.json",
+              "source_snapshot_sha256": "ae3e640ee24daf01d8322c68abea7e4e9bcb05e62afe1cbd6f9519f4759339f1"
+            },
+            {
+              "depth": 21,
+              "multipv": 8,
+              "best_uci": "e7e8",
+              "best_cp_mover": -64,
+              "played_cp_mover": -70,
+              "regret_cp": 6,
+              "nodes": 5082862,
+              "source_snapshot_path": "docs/chessbest-evidence/kasparov-svidler-2004-47-kd6-sf-lite-d21-20260926.json",
+              "source_snapshot_sha256": "9da3a10e80af03eb33245a157ef64592fcccb84b9a7a2ad3170c6a0c1bb53412"
+            },
+            {
+              "depth": 27,
+              "multipv": 8,
+              "best_uci": "e7f7",
+              "best_cp_mover": -59,
+              "played_cp_mover": -165,
+              "regret_cp": 106,
+              "nodes": 27641580,
+              "source_snapshot_path": "docs/chessbest-evidence/kasparov-svidler-2004-47-kd6-sf-lite-d27-20260926.json",
+              "source_snapshot_sha256": "6f75fecfe1ba61861f4333817d5cfa73a740030eb778e1a8eb5ca3311acf8149"
+            }
+          ],
+          "caveat": "Evaluation differences depend on exact engine build, multipv, hash, hardware and search depth."
+        },
+        "candidate_receipt_path": "docs/chessbest-evidence/kasparov-svidler-2004-47-kd6-candidate-20260926.json",
+        "candidate_receipt_sha256": "0253377d8f45a61b8bdd87e66e485d5c108442c9984a7a22991e3842cebeb481"
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "carlsen-firouzja-2024-37-nf8",
+      "status": "verified-game-and-local-SF; historical-CDB-triage-only",
+      "source": {
+        "path": "Games/CarlsenM_Selected.pgn",
+        "sha256": "e748556297ba1af0baa2b0d9f900a37683f55e9399d36d8d9a8c2ded73cdd65d",
+        "game_index_1based": 4,
+        "mainline_uci_sha256": "e8f259f2eef422f0a0fddc152e7f37848a15435906bcc4eb4bbd8d932cd2ca3f"
+      },
+      "game": {
+        "white": "Carlsen,M",
+        "black": "Firouzja,Alireza",
+        "date": "2024.09.08",
+        "event": "SpeedChess Final 2024",
+        "result": "1-0"
+      },
+      "anchor": {
+        "ply_after": 73,
+        "move_to_review": "37...Nf8",
+        "fen_before_move": "2r1k3/3np3/pBr1bp1p/P1P1p1p1/B3P3/5P1P/3R2P1/3R2K1 b - - 1 37",
+        "played_uci": "d7f8",
+        "historical_CDB_single_observed_best_uci": "h6h5"
+      },
+      "reason": "37...Nf8 permits 38.Rd8+ and 39.Rxc8; in the played line White pushes the passed c-pawn and keeps a strong initiative. 37...h5 provides a more resilient defense in the local engine search. The depth-15 Lite score difference is small, growing at depths 21 and 24. A separate historical CDB result is unverified at current depth and date.",
+      "evidence": {
+        "historical_cdb": {
+          "source_archive": "ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip",
+          "source_archive_sha256": "26a485ec597e108e8cd6c5a9a4e7fc25b9626faf20095e016eb166497653f001",
+          "observed_regret_cp_mover": 271,
+          "root_coverage": 1,
+          "caveat": "One root move evaluated; historical four-field FEN keys lose 50-move counter. No fresh CDB validation and not proof of best legal alternative. Do not present as a fresh/current CDB score."
+        },
+        "sf_lite": {
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "engine_file_sha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8,
+            "search_sequence": "separate cold engine process for each depth"
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "multipv": 8,
+              "best_uci": "h6h5",
+              "best_cp_mover": -248,
+              "played_cp_mover": -271,
+              "regret_cp": 23,
+              "nodes": 410609,
+              "source_snapshot_path": "docs/chessbest-evidence/carlsen-firouzja-2024-37-nf8-sf-lite-d15-20260926.json",
+              "source_snapshot_sha256": "f909ef91ca831bf8b0b8146ab9d3ed2046af4d7e8583f393093221e7c5a3f9fb"
+            },
+            {
+              "depth": 21,
+              "multipv": 8,
+              "best_uci": "h6h5",
+              "best_cp_mover": -324,
+              "played_cp_mover": -508,
+              "regret_cp": 184,
+              "nodes": 16822894,
+              "source_snapshot_path": "docs/chessbest-evidence/carlsen-firouzja-2024-37-nf8-sf-lite-d21-20260926.json",
+              "source_snapshot_sha256": "cec1db70845bcd9770b756724bb220f06e5a0076891d77a0001a2680d66773b0"
+            },
+            {
+              "depth": 24,
+              "multipv": 8,
+              "best_uci": "h6h5",
+              "best_cp_mover": -303,
+              "played_cp_mover": -523,
+              "regret_cp": 220,
+              "nodes": 64915657,
+              "source_snapshot_path": "docs/chessbest-evidence/carlsen-firouzja-2024-37-nf8-sf-lite-d24-20260926.json",
+              "source_snapshot_sha256": "b20554eaf9b5c8373beedeb17ed0138aa93f7c4407bbee44830927d8fd584496"
+            }
+          ],
+          "caveat": "Evaluation differences depend on exact engine build, multipv, hash, hardware and search depth."
+        },
+        "candidate_receipt_path": "docs/chessbest-evidence/carlsen-firouzja-2024-37-nf8-candidate-20260926.json",
+        "candidate_receipt_sha256": "9f3fa5fe95c870a9cf45b2642e75e5397261cb3395587ccfec456f23590b7a4c"
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "su_fi_97_49_rba1",
+      "status": "verified-game-and-local-engine; historical-cdb-triage-only",
+      "source": {
+        "path": "Games/TCEC/TCEC_Season_27_-_Superfinal_97_org.pgn",
+        "sha256": "5d6c7a601dd6f7c5d7ccb6a586affafacd3bd50d3aefe55db907bd0765d0cb66",
+        "game_index_1based": 1,
+        "mainline_uci_sha256": "36428cc8a37ce34ff726c06eadfbe7e5817e354947f3667c53bbd6069ed23d9b",
+        "url": "https://github.com/TCEC-Chess/tcecgames",
+        "license": "CC BY-SA 3.0"
+      },
+      "game": {
+        "event": "TCEC Season 27 - Superfinal",
+        "date": "2025.01.02",
+        "round": "97.1",
+        "white": "LCZero 0.31-dag-f7fb268-BT4-6147500-it332",
+        "black": "Stockfish dev-20241208-cf10644d",
+        "result": "0-1"
+      },
+      "anchor": {
+        "ply_after": 96,
+        "move_to_review": "Rba1",
+        "fen_before_move": "8/5p2/4p3/kb2P3/1b6/p2p4/R5P1/1R1K4 w - - 0 49",
+        "played_uci": "b1a1",
+        "historical_cdb_best_uci": "a2f2"
+      },
+      "reason": "Black already has an advantage, with passed pawns on a3 and d3 backed by two bishops. The played 49.Rba1 gives way to 49...Ba4+ and a stronger attack. The local Stockfish Lite prefers 49.Rf2, keeping the rook active and offering more resistance; it does not change the reported game result.",
+      "evidence": {
+        "receipt_path": "docs/chessbest-evidence/tcec-candidates-20260926.json",
+        "live_cdb": "unavailable/unverified",
+        "historical_cdb": {
+          "archive": "ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip",
+          "entry": "Games/8zc_cache/cache.json",
+          "root_queryall_cp_mover": -278,
+          "root_best_uci": "a2f2",
+          "after_played_queryall_cp_opponent": 630,
+          "derived_after_played_cp_mover": -630,
+          "estimated_regret_cp_mover": 352,
+          "caveat": "Historical four-field FEN snapshots, possibly different dates/search depths; one scored root alternative only. Not live CDB or ground truth."
+        },
+        "sf_lite": {
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "engine_file_sha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "best_uci": "a2f2",
+              "best_cp_mover": -167,
+              "played_uci": "b1a1",
+              "played_cp_mover": -325,
+              "observed_gap_cp_mover": 158,
+              "sample_best_pv": "49. Rf2 Bc6 50. g3 Bc3"
+            },
+            {
+              "depth": 21,
+              "best_uci": "a2f2",
+              "best_cp_mover": -260,
+              "played_uci": "b1a1",
+              "played_cp_mover": -556,
+              "observed_gap_cp_mover": 296,
+              "sample_best_pv": "49. Rf2 Bc6 50. g3 Bc3"
+            }
+          ],
+          "caveat": "depths scanned in same engine session with fresh game tokens; played move forced if absent from MultiPV 8. Scores depend on search history; these are candidate receipts, not benchmark."
+        },
+        "receipt_sha256": "555abff55cae280da9356af2316e7466e9de15c1862bb137647d02f2ca00a9c0"
+      },
+      "curated_source": {
+        "path": "Games/ChessBest_Top_Picks_TCEC.pgn",
+        "sha256": "7face4c91e721f9582da50106c327038afdb16eebd06e7f7f68076b57ab8a139"
+      },
+      "curated_file": "Games/ChessBest_Top_Picks_TCEC.pgn",
+      "license_notice": "Games/ChessBest_Top_Picks_TCEC.LICENSE.md"
+    },
+    {
+      "id": "cup14_1_5_47_qb8",
+      "status": "verified-game-and-local-engine; historical-cdb-triage-only",
+      "source": {
+        "path": "Games/TCEC_Cup14_SF_vs_Lc0_2024.pgn",
+        "sha256": "7f58b6dc49de7f3e3d1a6c206a5b516e5fcf77ec399fa0520d3507e5466bf00f",
+        "game_index_1based": 11,
+        "mainline_uci_sha256": "c73c3ca8e4e5c311e9d5199a447ddc33c85ca17d643c88d92af4b9660e8f6408",
+        "url": "https://github.com/TCEC-Chess/tcecgames",
+        "license": "CC BY-SA 3.0"
+      },
+      "game": {
+        "event": "TCEC Cup 14 Final",
+        "date": "2024.10.13",
+        "round": "1.5",
+        "white": "LCZero 0.31-dag-4167c1e-BT4-6147500-it332",
+        "black": "Stockfish dev-20240928-d6043970",
+        "result": "1-0"
+      },
+      "anchor": {
+        "ply_after": 93,
+        "move_to_review": "Qb8",
+        "fen_before_move": "8/4p1bk/3pPp1p/5P1P/2pR2P1/1q6/4Q2K/8 b - - 5 47",
+        "played_uci": "b3b8",
+        "historical_cdb_best_uci": "c4c3"
+      },
+      "reason": "In the rook-and-queen endgame Black can activate the advanced c4 pawn with 47...c3. The played 47...Qb8 holds the pawn back and gives White more chances; this is a local candidate for deeper, current CDB and ChessDCC review.",
+      "evidence": {
+        "receipt_path": "docs/chessbest-evidence/tcec-candidates-20260926.json",
+        "live_cdb": "unavailable/unverified",
+        "historical_cdb": {
+          "archive": "ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip",
+          "entry": "Games/8zc_cache/cache.json",
+          "root_queryall_cp_mover": 0,
+          "root_best_uci": "c4c3",
+          "after_played_queryall_cp_opponent": 238,
+          "derived_after_played_cp_mover": -238,
+          "estimated_regret_cp_mover": 238,
+          "caveat": "Historical four-field FEN snapshots, possibly different dates/search depths; one scored root alternative only. Not live CDB or ground truth."
+        },
+        "sf_lite": {
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "engine_file_sha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "best_uci": "c4c3",
+              "best_cp_mover": 18,
+              "played_uci": "b3b8",
+              "played_cp_mover": -81,
+              "observed_gap_cp_mover": 99,
+              "sample_best_pv": "47...c3 48. Rd1 d5 49. Kg2 Qb7"
+            },
+            {
+              "depth": 21,
+              "best_uci": "c4c3",
+              "best_cp_mover": 0,
+              "played_uci": "b3b8",
+              "played_cp_mover": -111,
+              "observed_gap_cp_mover": 111,
+              "sample_best_pv": "47...c3 48. Rc4 d5 49. Rc5 d4"
+            }
+          ],
+          "caveat": "depths scanned in same engine session with fresh game tokens; played move forced if absent from MultiPV 8. Scores depend on search history; these are candidate receipts, not benchmark."
+        },
+        "receipt_sha256": "555abff55cae280da9356af2316e7466e9de15c1862bb137647d02f2ca00a9c0"
+      },
+      "curated_source": {
+        "path": "Games/ChessBest_Top_Picks_TCEC.pgn",
+        "sha256": "7face4c91e721f9582da50106c327038afdb16eebd06e7f7f68076b57ab8a139"
+      },
+      "curated_file": "Games/ChessBest_Top_Picks_TCEC.pgn",
+      "license_notice": "Games/ChessBest_Top_Picks_TCEC.LICENSE.md"
+    }
+  ],
+  "collection_files": [
+    "Games/ChessBest_Top_Picks.pgn",
+    "Games/ChessBest_Top_Picks_TCEC.pgn"
+  ],
+  "license_notices": [
+    {
+      "path": "Games/ChessBest_Top_Picks_TCEC.LICENSE.md",
+      "sha256": "9c26224193da9be6e9d53df8b11836ca542d0ba7344cf558b51486c3784d90dc",
+      "scope": "Two TCEC games in Games/ChessBest_Top_Picks_TCEC.pgn",
+      "source": "https://github.com/TCEC-Chess/tcecgames",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0/legalcode"
     }
   ]
 }

@@ -5,6 +5,17 @@ It reads the active `gameBuckets` list in `public/chess/new/js/8zc-utils.js`
 and only the PGNs named there. It excludes the derived
 `ChessBest_Top_Picks.pgn`, preventing self-selection. It does not
 modify the PGNs, browser Studies, CURRENT, PWA, or the online Game library.
+Use `--include-supplemental` to opt in to all other on-disk PGNs under
+`public/chess/new/Games/` that contain games, including additional TCEC and
+player files not currently shown in `gameBuckets`. This mode excludes the
+derived Top Picks and constructed `Chess_Openings_Top_Lines.pgn`, `TopLines/`
+and `Openings/` book files. Existing active files and their ordering remain
+unchanged. The run manifest pins hashes and labels each source `active` or
+`supplemental`; the summary counts parsed, duplicate, and bad games separately.
+Malformed supplementary PGNs are logged and skipped, and the same mainline
+encountered again is marked duplicate. A supplemental file over 64 MiB or a
+path escaping the Games directory fails closed. Use a new run directory when
+adding this option or when any source changes.
 Python 3.11+ and `python-chess` are needed; `node` is additionally needed for
 the bundled exact Stockfish 18 Lite lane. No token or account is used.
 
@@ -16,6 +27,15 @@ python tools/chessbest_power/arena.py run --repo . --run-dir /path/to/ChessBest_
   --focus 2025.06.01 --focus-ply 88 --max-positions 3
 python tools/chessbest_power/arena.py status --run-dir /path/to/ChessBest_Power_Run
 python tools/chessbest_power/arena.py extract --run-dir /path/to/ChessBest_Power_Run --out /path/to/ChessBest_Power_LE.zip
+```
+
+For an offline scan of all on-disk played/engine PGNs, including supplemental
+TCEC files, use a separate run directory:
+
+```bash
+python tools/chessbest_power/arena.py run --repo . --run-dir /path/to/ChessBest_Power_All_R1 \
+  --include-supplemental --frozen-cdb /path/to/ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip \
+  --max-positions 0
 ```
 
 The first command scans the library and may rank *historical triage* from the
@@ -115,7 +135,9 @@ python -m unittest discover -s tools/chessbest_power -p 'test_*.py' -v
 ```
 
 Tests cover same-command forced-kill recovery, idempotency, data-source change
-rejection, perspective conversion, sparse live-root gap triage, paths with spaces, and a read-only Live
+rejection, active/supplemental provenance and exclusions, malformed/duplicate
+supplemental PGNs, perspective conversion, sparse live-root gap triage, paths
+with spaces, and a read-only Live
 Extract from a paused active process. The CLI does not curate or publish cases,
 verify every candidate tactic, supply tablebase proof, or run the ChessDCC
 branch checker. Without opt-in CDB and SF measurements, results remain

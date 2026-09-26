@@ -38,6 +38,11 @@ HERE = Path(__file__).resolve().parent
 PGN_RE = re.compile(r"['\"]([^'\"\n]+\.pgn)['\"]", re.IGNORECASE)
 MOVE_RE = re.compile(r"move:([a-h][1-8][a-h][1-8][qrbn]?),score:(-?\d+),rank:(\d+)")
 MAX_RESPONSE_BYTES = 128 * 1024
+MAX_SUPPLEMENTAL_PGN_BYTES = 64 * 1024 * 1024
+# These are constructed opening lines, not games eligible for a showcase.
+CURATED_PGNS = {"ChessBest_Top_Picks.pgn", "ChessBest_Top_Picks_TCEC.pgn"}
+SUPPLEMENTAL_EXCLUDED = CURATED_PGNS | {"Chess_Openings_Top_Lines.pgn"}
+SUPPLEMENTAL_EXCLUDED_DIRS = {"TopLines", "Openings"}
 
 
 def sha(data: bytes) -> str:
@@ -103,7 +108,7 @@ def single_writer(run_dir: Path):
                 fcntl.flock(handle, fcntl.LOCK_UN)
 
 
-def game_files(repo: Path) -> list[dict]:
+def game_files(repo: Path, *, include_supplemental: bool = False) -> list[dict]:
     page = repo / "public/chess/new/js/8zc-utils.js"
     content = page.read_text(encoding="utf-8")
     start = content.find("const gameBuckets = [")
@@ -111,17 +116,39 @@ def game_files(repo: Path) -> list[dict]:
     if start < 0 or end < 0:
         raise ValueError("Active LAB gameBuckets block missing; refuse guessed library list")
     block = content[start:end + len("\n  ];")]
-    names = [n for n in dict.fromkeys(PGN_RE.findall(block)) if n != "ChessBest_Top_Picks.pgn"]
+    names = [n for n in dict.fromkeys(PGN_RE.findall(block)) if n not in CURATED_PGNS]
     if not names:
         raise ValueError("No base PGN inputs in active LAB gameBuckets; refuse broad scan")
     root = (repo / "public/chess/new/Games").resolve()
     rows = [{"name": "js/8zc-utils.js#gameBuckets", "sha256": sha(block.encode()), "bytes": len(block.encode()),
-             "excluded_curated_file": "ChessBest_Top_Picks.pgn"}]
+             "source_set": "library_index", "excluded_curated_files": sorted(CURATED_PGNS)}]
     for name in names:
         path = (root / name).resolve()
         if not path.is_relative_to(root) or not path.is_file():
             raise ValueError(f"Missing/unsafe loaded PGN: {name}")
-        rows.append({"name": f"Games/{name}", "sha256": sha(path.read_bytes()), "bytes": path.stat().st_size})
+        rows.append({"name": f"Games/{name}", "sha256": sha(path.read_bytes()),
+                     "bytes": path.stat().st_size, "source_set": "active"})
+    if include_supplemental:
+        active = set(names)
+        # An opt-in sweep extends the loaded library to player and TCEC PGNs
+        # already on disk. Directory/name exclusions keep generated books and
+        # the derived Top Picks from feeding their own selection back in.
+        for candidate in sorted(root.rglob("*")):
+            if candidate.suffix.casefold() != ".pgn":
+                continue
+            relative = candidate.relative_to(root)
+            name = relative.as_posix()
+            if (name in active or name in SUPPLEMENTAL_EXCLUDED or
+                    any(part in SUPPLEMENTAL_EXCLUDED_DIRS for part in relative.parts[:-1])):
+                continue
+            path = candidate.resolve()
+            if not path.is_relative_to(root) or not path.is_file():
+                raise ValueError(f"Missing/unsafe supplemental PGN: {name}")
+            size = path.stat().st_size
+            if size > MAX_SUPPLEMENTAL_PGN_BYTES:
+                raise ValueError(f"Supplemental PGN exceeds bounded input size: {name}")
+            rows.append({"name": f"Games/{name}", "sha256": sha(path.read_bytes()),
+                         "bytes": size, "source_set": "supplemental"})
     return rows
 
 
@@ -137,7 +164,7 @@ def sf_asset_hashes(repo: Path) -> dict[str, str]:
 
 def config_from_args(args: argparse.Namespace) -> dict:
     repo = Path(args.repo).resolve()
-    sources = game_files(repo)
+    sources = game_files(repo, include_supplemental=args.include_supplemental)
     frozen = None
     if args.frozen_cdb:
         path = Path(args.frozen_cdb).resolve()
@@ -149,6 +176,7 @@ def config_from_args(args: argparse.Namespace) -> dict:
         "schema": SCHEMA, "arena_version": VERSION, "arena_sha256": sha(Path(__file__).read_bytes()),
         "python_chess": getattr(chess, "__version__", "unknown"), "repo": str(repo),
         "inputs": sources, "frozen_cdb": frozen,
+        "include_supplemental": bool(args.include_supplemental),
         "min_ply": args.min_ply, "max_ply": args.max_ply,
         "focus": args.focus or "", "focus_ply": args.focus_ply,
         "max_positions": args.max_positions, "per_game_limit": args.per_game_limit,
@@ -463,7 +491,8 @@ def enrich(conn: sqlite3.Connection, config: dict, cache: dict) -> None:
     print("", flush=True)
 
 
-def candidates(conn: sqlite3.Connection, cache: dict, *, limit: int = 250, focus: str = "") -> list[dict]:
+def candidates(conn: sqlite3.Connection, cache: dict, *, limit: int = 250, focus: str = "",
+               supplemental_sources: frozenset[str] = frozenset()) -> list[dict]:
     rows = conn.execute("SELECT p.position_id,p.fen,p.after_fen,p.ply,p.played_uci,p.played_san,p.side,"
                         "g.source,g.source_index,g.headers,g.game_id FROM positions p JOIN games g ON g.game_id=p.game_id "
                         "WHERE g.status='ok'").fetchall()
@@ -518,6 +547,7 @@ def candidates(conn: sqlite3.Connection, cache: dict, *, limit: int = 250, focus
         elif origin == "CDB_historical_unverified" or child_origin == "CDB_historical_unverified":
             category = "HISTORICAL_TRIAGE_ONLY"
         result.append({"position_id": pid, "game_id": game_id, "source": source,
+                       "source_set": "supplemental" if source in supplemental_sources else "active",
                        "source_index": source_index, "headers": json.loads(headers_json),
                        "ply": ply, "move_number": int(fen.split()[5]),
                        "fen": fen, "after_fen": after, "side_to_move": side,
@@ -558,6 +588,12 @@ def candidates(conn: sqlite3.Connection, cache: dict, *, limit: int = 250, focus
 def summary(conn: sqlite3.Connection, config: dict, cache: dict) -> dict:
     games = dict(conn.execute("SELECT status,COUNT(*) FROM games GROUP BY status"))
     game_classes: dict[str, dict[str, int]] = {"played_or_engine_games": {}, "opening_book_lines": {}}
+    supplemental_sources = frozenset(row["name"] for row in config["inputs"]
+                                     if row.get("source_set") == "supplemental")
+    source_sets: dict[str, dict[str, int]] = {"active": {}, "supplemental": {}}
+    for source, status, n in conn.execute("SELECT source,status,COUNT(*) FROM games GROUP BY source,status"):
+        group = source_sets["supplemental" if source in supplemental_sources else "active"]
+        group[status] = group.get(status, 0) + n
     for source_class, status, n in conn.execute(
             "SELECT CASE WHEN source LIKE 'Games/TopLines/%' THEN 'opening_book_lines' ELSE 'played_or_engine_games' END, "
             "status,COUNT(*) FROM games GROUP BY 1,2"):
@@ -589,10 +625,11 @@ def summary(conn: sqlite3.Connection, config: dict, cache: dict) -> dict:
                        "error": error, "detail": detail})
     chosen = conn.execute("SELECT COUNT(*) FROM selected_positions").fetchone()[0]
     return {"schema": SCHEMA, "version": VERSION, "generated_at": timestamp(), "config_sha256": sha(canonical(config).encode()),
-            "games": games, "game_classes": game_classes,
+            "games": games, "game_classes": game_classes, "source_sets": source_sets,
             "positions": conn.execute("SELECT COUNT(*) FROM positions").fetchone()[0],
             "selected_positions": chosen, "observations": observations, "recent_observations": recent,
-            "candidates": candidates(conn, cache, limit=250, focus=config["focus"]),
+            "candidates": candidates(conn, cache, limit=250, focus=config["focus"],
+                                     supplemental_sources=supplemental_sources),
             "recent_events": [{"at":a,"kind":k,"detail":d} for a,k,d in
                               conn.execute("SELECT at,kind,detail FROM events ORDER BY id DESC LIMIT 30")]}
 
@@ -653,6 +690,8 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--repo", default=str(HERE.parents[1]), help="repository root, pinned by source hashes")
     run.add_argument("--run-dir", help="isolated durable directory; default ~/.chessbest_power/runs/<config-hash>")
     run.add_argument("--frozen-cdb", help="historical 8zc_cache/cache.json or source pack ZIP for offline TRIAGE only")
+    run.add_argument("--include-supplemental", action="store_true",
+                     help="also scan unlisted on-disk player/TCEC PGNs; excludes curated/book PGNs")
     run.add_argument("--min-ply", type=int, default=30)
     run.add_argument("--max-ply", type=int, default=140)
     run.add_argument("--focus", default="", help="prioritize player/date/source text, not a corpus filter")
@@ -704,11 +743,11 @@ def main(argv: list[str] | None = None) -> int:
         try:
             event(conn, "launch", f"identity={identity} resume")
             scan(conn, config)
-            if game_files(Path(config["repo"])) != config["inputs"]:
+            if game_files(Path(config["repo"]), include_supplemental=config["include_supplemental"]) != config["inputs"]:
                 raise ValueError("LAB game library changed during scan; source snapshot invalid")
             cache = load_frozen(config)
             enrich(conn, config, cache)
-            if game_files(Path(config["repo"])) != config["inputs"]:
+            if game_files(Path(config["repo"]), include_supplemental=config["include_supplemental"]) != config["inputs"]:
                 raise ValueError("LAB game library changed during enrichment; source snapshot invalid")
             if config["sf_lite"] and sf_asset_hashes(Path(config["repo"])) != config["sf_assets"]:
                 raise ValueError("SF Lite assets changed during enrichment; source snapshot invalid")
