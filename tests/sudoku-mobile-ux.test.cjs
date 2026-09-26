@@ -19,16 +19,16 @@ test('G01–G04: normal tap; digits 1–9 exactly once; Notes add/remove and Und
  h.w.toggleNotes();for(const expected of [[5],[]]){const n=history(h),l=await hold(h);releaseDigit(h,l,5);assert.deepEqual(h.get('[...notes[0][2]]'),expected);assert.equal(history(h),n+1);}h.w.undoMove();assert.deepEqual(h.get('[...notes[0][2]]'),[5]);h.w.undoMove();assert.deepEqual(h.get('[...notes[0][2]]'),[]);assert.deepEqual(h.errors,[]);
 });
 
-test('G05–G08: gaps/outside/origin never commit, reentry does; givens and stale targets cannot arm',async t=>{
+test('G05–G08: gaps/outside/origin never commit, reentry does; filled cells use loupe and stale targets cannot arm',async t=>{
  const h=await ready(t);layout(h);for(const where of ['gap','outside','origin']){const n=history(h),l=await hold(h);const r=l.targets[0],x=where==='gap'?r.right+2:where==='origin'?121:1,y=where==='gap'?r.top+15:where==='origin'?120:1;pointer(h,h.w.document,'pointermove',(r.left+r.right)/2,r.top+20);pointer(h,h.w.document,'pointerup',x,y);assert.equal(history(h),n);}
- const l=await hold(h);pointer(h,h.w.document,'pointermove',1,1);releaseDigit(h,l,4);assert.equal(h.get('playerGrid[0][2]'),4);begin(h,2);await sleep(330);assert.equal(h.el('uxPicker'),null);begin(h,0);await sleep(330);assert.equal(h.el('uxPicker'),null);h.w.undoMove();
+ const l=await hold(h);pointer(h,h.w.document,'pointermove',1,1);releaseDigit(h,l,4);assert.equal(h.get('playerGrid[0][2]'),4);for(const i of [2,0]){const p=begin(h,i);await until(()=>h.el('uxLoupe'),'filled-cell loupe');assert.equal(h.el('uxPicker'),null);pointer(h,h.w.document,'pointerup',p.x,p.y);assert.equal(h.el('uxLoupe'),null);}h.w.undoMove();
  begin(h,2);h.w.selectCell(3);h.w.placeNumber(6);await sleep(330);assert.equal(h.el('uxPicker'),null,'board/history revision invalidates arming');assert.deepEqual(h.errors,[]);
 });
 
 test('G08/G10: every cancellation is inert and the next ordinary tap survives',async t=>{
  const h=await ready(t);layout(h);const w=h.w;
  const cancel=[()=>pointer(h,w.document,'pointercancel',0,0),()=>h.el('grid').dispatchEvent(new w.Event('lostpointercapture')),()=>w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true})),()=>w.dispatchEvent(new w.Event('blur')),()=>w.dispatchEvent(new w.Event('scroll')),()=>w.dispatchEvent(new w.Event('resize')),()=>pointer(h,w.document,'pointermove',10,10,{buttons:2}),()=>pointer(h,w.document,'pointerdown',1,1,{isPrimary:false,pointerId:2}),()=>h.el('uxMore').click()];
- for(const fn of cancel){const n=history(h);await hold(h);fn();pointer(h,w.document,'pointerup',300,700);assert.equal(h.el('uxPicker'),null);assert.equal(history(h),n);if(!h.el('navModal').hidden)h.el('navClose').click();const c=w.document.querySelector('[data-index="3"]');pointer(h,c,'pointerdown',160,120);pointer(h,c,'pointerup',160,120);c.click();assert.equal(h.get('selectedCell'),3);}
+ for(const fn of cancel){const n=history(h);await hold(h);fn();pointer(h,w.document,'pointerup',300,700);assert.equal(h.el('uxPicker'),null);assert.equal(history(h),n);if(!h.el('navModal').hidden)h.el('navClose').click();const previous=h.get('selectedCell'),c=w.document.querySelector('[data-index="3"]');pointer(h,c,'pointerdown',160,120);pointer(h,c,'pointerup',160,120);c.click();assert.equal(h.get('selectedCell'),previous===3?null:3,'normal tap toggles selection exactly once');}
  begin(h,2);pointer(h,w.document,'pointermove',145,120);await sleep(330);assert.equal(h.el('uxPicker'),null,'early motion abandons recognizer');assert.deepEqual(h.errors,[]);
 });
 
