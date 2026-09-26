@@ -61,11 +61,12 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- source.value='all';source.dispatchEvent(new w.Event('change'));
- assert.equal(stage.contains(el('positionEval')),true,'All retains the ordinary score bar beside the board');
+ assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB → SF'],['sf','SF']]);
+ source.value='auto';source.dispatchEvent(new w.Event('change'));
+ assert.equal(stage.contains(el('positionEval')),true,'CDB-first retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
  assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
- assert.equal(stage.classList.contains('has-all-evals'),false,'All does not widen the left board column');
+ assert.equal(stage.classList.contains('has-all-evals'),false,'Comparison does not widen the left board column');
  el('btnHideEval').click();assert.equal(cards.parentElement.hidden,true,'Hide Eval hides the comparison row');
  el('btnHideEval').click();source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(cards.hidden,false);assert.equal(cards.parentElement.hidden,false,'Auto retains all three provider cards');

@@ -24,7 +24,9 @@ export function checkVersions(repo, base) {
     if (links.filter(link => link[2].includes('aria-current="page"')).length !== 1) errors.push(`${name}: expected one active channel`);
     for (const [label, suffix] of channels) {
       // Relative URLs also work when Pages hosts the repository below /bd-chessdb/.
-      const href = dir === suffix ? './' : `${dir ? '../' : './'}${suffix ? suffix + '/' : ''}`;
+      const href = label === 'PREVIOUS' && dir !== 'old'
+        ? `${dir ? '../' : './'}old/004/`
+        : dir === suffix ? './' : `${dir ? '../' : './'}${suffix ? suffix + '/' : ''}`;
       const link = links.find(candidate => candidate[1] === href && candidate[3] === label);
       if (!link) errors.push(`${name}: missing direct ${label} link`);
       else if (link[2].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
@@ -35,6 +37,8 @@ export function checkVersions(repo, base) {
   const archiveNames = fs.existsSync(old) ? fs.readdirSync(old,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name).filter(n=>/^\d{3,}$/.test(n)) : [];
   const next = nextArchive(archiveNames);
   const metadata = JSON.parse(fs.readFileSync(path.join(app,'versions.json'),'utf8'));
+  if (metadata.previous !== '/chess/old/004/') errors.push('PREVIOUS metadata mismatch');
+  if (!fs.readFileSync(path.join(old,'index.html'),'utf8').includes('http-equiv="refresh" content="0; url=004/"')) errors.push('PREVIOUS root does not lead to brown archive');
   if (metadata.pwa !== '/chess/PWA/') errors.push('PWA metadata mismatch');
   const listed = (metadata.archives || []).map(a=>a.id).sort();
   if (JSON.stringify(archiveNames.sort()) !== JSON.stringify(listed)) errors.push('Archive directory/metadata mismatch');

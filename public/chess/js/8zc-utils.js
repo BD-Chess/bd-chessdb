@@ -156,7 +156,10 @@ function initAll() {
     settings.coachMode = 'silent';
     settings.coachOpen = false;
   }
-  if (!['auto', 'cdb', 'sf', 'dcc', 'all'].includes(settings.analysisSource)) settings.analysisSource = 'auto';
+  // Older board modes now use the CDB-first board. Keep an explicitly saved
+  // DCC board preference when migrating the former DCC/All selections.
+  if (settings.analysisSource === 'dcc' || settings.analysisSource === 'all') settings.dccEnabled = true;
+  if (settings.analysisSource !== 'sf') settings.analysisSource = 'auto';
   for (const key of ['allCDBSeconds', 'allSFSeconds', 'allDCCSeconds'])
     settings[key] = Math.max(1, Math.min(30, Number(settings[key]) || 4));
   if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
@@ -2335,10 +2338,9 @@ function jumpTo(i){
   const dccSelect = document.getElementById('analysisDCC');
   sourceSelect.value = settings.analysisSource;
   function syncDCCSelector() {
-    const forced = settings.analysisSource === 'dcc' || settings.analysisSource === 'all';
-    dccSelect.checked = forced || !!settings.dccEnabled;
-    dccSelect.disabled = forced;
-    dccSelect.title = forced ? 'DCC details appear on the board' : 'Show DCC details on the board; its card is always calculated';
+    dccSelect.checked = !!settings.dccEnabled;
+    dccSelect.disabled = false;
+    dccSelect.title = 'Show DCC details on the board; its card is always calculated';
   }
   syncDCCSelector();
   document.getElementById('settingSFDepth').addEventListener('change', event => {
