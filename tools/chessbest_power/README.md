@@ -1,6 +1,43 @@
 # ChessBest Power — bounded, reproducible candidate arena
 
 This is a separate research tool for the current `/chess/new/` **Game library**.
+
+## Near-tie ChessDCC scan (archived CDB, offline)
+
+For an independent *research* list of positions with at least two legal root
+moves whose archived CDB scores differ by at most 10 cp, run the actual LAB
+ChessDCC 0.8 core against the September 2026 source pack:
+
+```bash
+python tools/chessbest_power/tie_scan.py \
+  --pack /path/to/ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip \
+  --repo . --out /path/to/tie_scan_depth5.json \
+  --max-positions 600 --min-ply 18 --per-game 20 --dcc-depth 5
+python -m unittest discover -s tools/chessbest_power -p test_tie_scan.py -v
+```
+
+This reads only source `Games/*.pgn`, skips constructed openings, malformed
+PGNs and games with broken player tags, and never queries the network.
+Historical cache keys use four FEN fields. For exact archival matching,
+python-chess keeps the en passant target square in FEN after a two-square pawn
+advance (`fen(en_passant='fen')`), matching the bundled LAB chess.js FEN.
+Cache entries that used a different en passant representation can be missed;
+the scanner does **not** silently match a different FEN. Root-score ties
+preserve the source provider's ordering, including equal scores. A mate-coded
+root score (absolute value at least 10000) or an illegal move is excluded.
+If historical `pv:` and `sc:` values at the same first child disagree by over
+20 cp, a completed disagreement is withheld from the shortlist. Legitimate
+`sc:0` is retained as a numeric evaluation. Results are labeled historical
+and print game/FEN/source hashes, 5-ply samples normalized to mover POV,
+candidate coverage, and core version; DCC rank score is a heuristic and SF
+finite-depth crosscheck is a **separate** step. The previous depth-40
+`2,115 positions` tiebreak claim is not a valid comparison baseline because
+the archived scorer mixed opposite perspectives. See
+`docs/chessbest-evidence/ChessBest_DCC08_Tie_Scan_20260926_R1.md` and its
+machine-readable receipt for the bounded R1 run, including a negative case.
+
+## Game corpus arena (`arena.py`)
+
 It reads the active `gameBuckets` list in `public/chess/new/js/8zc-utils.js`
 and only the PGNs named there. It excludes the derived
 `ChessBest_Top_Picks.pgn`, preventing self-selection. It does not
@@ -143,3 +180,21 @@ verify every candidate tactic, supply tablebase proof, or run the ChessDCC
 branch checker. Without opt-in CDB and SF measurements, results remain
 historical/offline candidates. No claimed Elo or engine-strength improvement
 is derived from the selected shortlist.
+
+## Local Stockfish/DCC tie probe
+
+For a small, repeatable same-provider example, run the exact pinned LAB
+Stockfish 18 Lite assets and actual ChessDCC 0.8 core from Node:
+
+```bash
+node tools/chessbest_power/sf_dcc_probe.mjs huebner-kasparov-10 18 20000 3 /tmp/huebner-dcc.json
+```
+
+Arguments are case ID, root depth, child probe nodes, ChessDCC trajectory plies
+and an optional JSON receipt path. Other included cases are
+`fischer-radojcic-9`, `vitiugov-kramnik-8` and `kramnik-kasparov-11`.
+`docs/chessbest-evidence/sf-dcc-tie-probes-20260926.json` records five complete
+runs, including a Hübner depth-5/50,000-node sensitivity check. The same
+Stockfish supplies both root and child scores. ChessDCC ranks normalized
+sampled continuations; this is neither independent best-move adjudication nor
+a measured playing-strength gain.
