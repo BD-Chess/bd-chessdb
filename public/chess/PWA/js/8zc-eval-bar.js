@@ -27,7 +27,7 @@
       white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
       description: `${source} ${cp === 0 ? 'equal' : (Math.abs(cp) / 100).toFixed(2) + ' pawns for ' + (cp > 0 ? 'White' : 'Black')} · White perspective`, state: 'known' };
   }
-  function create({ game, settings, isVisible }) {
+  function create({ game, settings, isVisible, onBadgeAction, getBadgeControl }) {
     const el = document.getElementById('positionEval');
     const label = document.getElementById('positionEvalLabel');
     const scores = new Map();
@@ -43,7 +43,17 @@
       if (!visible) return;
       comparison.replaceChildren();
       for (const source of sources) {
-        const badge = document.createElement('div'); badge.className = 'all-eval-badge';
+        const actionable = source !== 'DCC' && typeof onBadgeAction === 'function';
+        const badge = document.createElement(actionable ? 'button' : 'div'); badge.className = 'all-eval-badge';
+        if (actionable) {
+          badge.type = 'button'; badge.dataset.evalSource = source;
+          badge.addEventListener('click', () => onBadgeAction(source));
+          const control = getBadgeControl?.(source);
+          badge.disabled = !!control?.disabled;
+          badge.title = control?.title || '';
+          badge.setAttribute('aria-label', `${source}: ${badge.title || 'analysis'}`);
+          badge.classList.toggle('is-working', !!control?.working);
+        }
         const main = document.createElement('div'); main.className = 'all-eval-main';
         const title = document.createElement('strong'); title.textContent = `${source}:`;
         const move = document.createElement('span'); move.className = 'all-eval-move';
@@ -63,9 +73,10 @@
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
           score.textContent = fresh ? result.label : '…';
           main.append(score);
+          if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
           note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
-          badge.title = result.description;
+          if (!actionable) badge.title = result.description;
         }
         note.title = note.textContent;
         badge.classList.toggle('is-unknown', move.textContent === '—' || score.textContent === '—');

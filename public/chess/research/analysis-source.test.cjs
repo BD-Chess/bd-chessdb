@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const { Chess } = require('../js/chess.min.js');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../js/8zc-utils.js'), 'utf8');
-const start = source.indexOf('  async function fetchAnnotations()');
+const start = source.indexOf('  async function fetchAnnotations(');
 const end = source.indexOf('  /* ------------------------------------------------------------------\n     10. BOARD OVERLAYS', start);
 const controlStart = source.indexOf('  function syncSFAnalysisControl()');
 const controlEnd = source.indexOf('  function evalTrend(', controlStart);
@@ -50,10 +50,21 @@ function harness(selected, cdb, sf) {
 }
 const root = { moves: [{ move: 'e2e4', score: 12 }], complete: true };
 const local = { root: { ...root, provider: 'SF' }, analysis: null, ledger: { rootDepth: 7, rootNodes: 24024 } };
-test('all modes compute three independent cards; selector controls only board annotations and left score', async () => {
+test('old saved board selections migrate to CDB-first while retaining DCC visibility', () => {
+  const start = source.indexOf("  if (settings.analysisSource === 'dcc' || settings.analysisSource === 'all')");
+  const end = source.indexOf('  for (const key of', start);
+  assert(start >= 0 && end > start);
+  for (const old of ['auto', 'cdb', 'sf', 'dcc', 'all', 'unexpected']) {
+    const context = { settings: { analysisSource: old, dccEnabled: false } };
+    vm.runInNewContext(source.slice(start, end), context);
+    assert.equal(context.settings.analysisSource, old === 'sf' ? 'sf' : 'auto');
+    assert.equal(context.settings.dccEnabled, old === 'dcc' || old === 'all');
+  }
+});
+test('CDB-first and SF compute three independent cards; selector controls only board annotations and left score', async () => {
   const cdb = { ...root, reason: 'CDB evaluated candidates' };
   const sfResult = { ...local, root: { ...local.root, moves: [{ move: 'd2d4', score: 48 }] } };
-  for (const selected of ['auto', 'cdb', 'sf', 'dcc', 'all']) {
+  for (const selected of ['auto', 'sf']) {
     const c = harness(selected, cdb, sfResult); await c.fetchAnnotations();
     assert.equal(c.calls.cdb, 1, `${selected}: CDB card calculated`);
     assert.equal(c.calls.sf, 1, `${selected}: SF card calculated`);
@@ -66,23 +77,22 @@ test('all modes compute three independent cards; selector controls only board an
     assert.equal(c.calls.annotations[0][0], selected === 'sf' ? 'd2d4' : 'e2e4');
   }
 });
-test('missing CDB may select SF only in fallback modes, while the CDB card remains distinct', async () => {
+test('missing CDB falls back to SF while the CDB card remains distinct', async () => {
   const missing = { moves: [], reason: 'CDB no usable database evaluation' };
   const fallback = { ...local, analysis: { candidates: [], receipt: { provider: 'SF' } } };
-  for (const selected of ['auto', 'dcc', 'all', 'sf', 'cdb']) {
+  for (const selected of ['auto', 'sf']) {
     const c = harness(selected, missing, fallback); await c.fetchAnnotations();
     assert.equal(c.calls.cdb, 1); assert.equal(c.calls.sf, 1);
     assert.equal(c.calls.sources.some(args => args[2] === 'CDB' && !Number.isFinite(args[1])), true, `${selected}: CDB card unavailable`);
     assert.equal(c.calls.sources.some(args => args[2] === 'SF' && args[4] === 'e4'), true, `${selected}: SF card ready`);
     assert.equal(c.calls.dccLookahead.length, 1, `${selected}: DCC uses SF fallback candidates`);
     assert.equal(c.calls.dccLookahead[0][0][0].move, 'e2e4');
-    const fallbackAllowed = selected !== 'cdb';
-    assert.equal(c.calls.bar.at(-1)[2], fallbackAllowed ? 'SF' : 'CDB', `${selected}: selected board source stays explicit`);
-    assert.equal(c.calls.annotations.length, fallbackAllowed ? 1 : 0);
+    assert.equal(c.calls.bar.at(-1)[2], 'SF', `${selected}: missing CDB activates SF`);
+    assert.equal(c.calls.annotations.length, 1);
   }
 });
 test('SF failure leaves its card unavailable without blocking CDB board or DCC calculation', async () => {
-  for (const selected of ['auto', 'cdb', 'sf', 'dcc', 'all']) {
+  for (const selected of ['auto', 'sf']) {
     const c = harness(selected, { ...root, reason: 'CDB evaluated candidates' }, async () => { throw Error('local SF worker failed'); });
     await c.fetchAnnotations();
     assert.equal(c.calls.cdb, 1); assert.equal(c.calls.sf, 1);
@@ -94,14 +104,14 @@ test('SF failure leaves its card unavailable without blocking CDB board or DCC c
   }
 });
 test('while SF is still searching, CDB board can render but selected SF board waits for its own reply', async () => {
-  for (const selected of ['cdb', 'sf']) {
+  for (const selected of ['auto', 'sf']) {
     let finish;
     const c = harness(selected, { ...root, reason: 'CDB evaluated candidates' }, () => new Promise(resolve => { finish = resolve; }));
     const request = c.fetchAnnotations(); await new Promise(resolve => setImmediate(resolve));
     assert.equal(c.calls.sources.some(args => args[2] === 'CDB' && args[4] === 'e4'), true);
     assert.equal(c.calls.sources.some(args => args[2] === 'SF'), false, 'SF card has no speculative answer');
-    assert.equal(c.calls.bar.length, selected === 'cdb' ? 1 : 0, `${selected} bar follows the selected provider`);
-    assert.equal(c.calls.annotations.length, selected === 'cdb' ? 1 : 0, `${selected} overlays follow the selected provider`);
+    assert.equal(c.calls.bar.length, selected === 'auto' ? 1 : 0, `${selected} bar follows the selected provider`);
+    assert.equal(c.calls.annotations.length, selected === 'auto' ? 1 : 0, `${selected} overlays follow the selected provider`);
     finish(local); await request;
     assert.equal(c.calls.sources.some(args => args[2] === 'SF' && args[4] === 'e4'), true);
     assert.equal(c.calls.dccLookahead.length, 1);
@@ -200,7 +210,7 @@ test('Analysis label switches to stop while working and prevents stopped SF repl
   assert.equal(c.calls.bar.length, barCount, 'stopped SF cannot repaint the selected board score');
 });
 
-test('Deep analysis publishes only rank 1 for the active All position without discarding CDB and DCC', () => {
+test('Deep analysis publishes only rank 1 for the active position without discarding CDB and DCC', () => {
   const c = harness('all', root, local);
   const begin = source.indexOf('  function beginDeepAnalysis()');
   vm.runInContext(source.slice(begin, source.indexOf('  const labHost =', begin)), c);
@@ -281,8 +291,8 @@ test('Deep publisher refuses wrong pinned FEN, switched source, hidden/locked ev
 });
 
 
-test('SF depth setting saves, cancels an older search and applies to all five analysis modes', async () => {
-  for (const selected of ['sf', 'all', 'auto', 'dcc', 'cdb']) {
+test('SF depth setting saves, cancels an older search and applies to both board analysis modes', async () => {
+  for (const selected of ['sf', 'auto']) {
     const c = harness(selected, { moves: [], reason: 'No CDB evaluation' }, local);
     c.depthInput.value = '12'; c.depthInput.change({ target: c.depthInput });
     await c.pendingFetch;

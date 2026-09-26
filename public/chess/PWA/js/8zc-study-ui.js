@@ -21,7 +21,62 @@
     }
     const status = el('p', 'chess-study-status'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     const body = el('div', 'chess-study-body'); dialog.append(head, tabs, status, body); overlay.append(dialog); mount.append(overlay);
-    function guard(fn) { try { return fn(); } catch (e) { status.textContent = e.message || String(e); status.classList.add('is-error'); return undefined; } }
+    const noticeOverlay = el('div', 'chess-study-limit-overlay'); noticeOverlay.hidden = true;
+    const noticeDialog = el('section', 'chess-study-limit-dialog'); noticeDialog.setAttribute('role', 'dialog'); noticeDialog.setAttribute('aria-modal', 'true'); noticeDialog.setAttribute('aria-labelledby', 'chessStudyLimitTitle'); noticeDialog.tabIndex = -1;
+    noticeOverlay.append(noticeDialog); mount.append(noticeOverlay);
+    let noticeFocus = null, noticeOrigin = null;
+    function dismissNotice() {
+      noticeOverlay.hidden = true; noticeDialog.replaceChildren();
+      if (noticeFocus?.isConnected) noticeFocus.focus();
+      noticeOrigin = null;
+    }
+    function notice(title, explanation, actions) {
+      if (noticeOverlay.hidden) noticeFocus = document.activeElement;
+      noticeDialog.replaceChildren();
+      const heading = el('h2', '', title); heading.id = 'chessStudyLimitTitle';
+      const buttons = el('div', 'chess-study-limit-actions');
+      for (const [label, action, className] of actions) {
+        const control = el('button', className || '', label); control.type = 'button';
+        control.addEventListener('click', action); buttons.append(control);
+      }
+      noticeDialog.append(heading, el('p', '', explanation), buttons);
+      noticeOverlay.hidden = false; (buttons.querySelector('.chess-study-limit-primary') || buttons.querySelector('button') || noticeDialog).focus();
+    }
+    function showLoadProblem(error, studiesKept = true) {
+      const detail = error?.message || String(error);
+      notice('Game could not be loaded', detail + (studiesKept ? ' Your current game and saved studies were kept.' : ' Your saved studies were removed, but your current game was kept.'), [['OK', dismissNotice, 'chess-study-limit-primary']]);
+    }
+    function showLimitWarning(onCleared, previousCount) {
+      if (!noticeOverlay.hidden && previousCount === undefined) return;
+      const count = previousCount ?? state.studies.length;
+      if (previousCount === undefined) {
+        try { noticeOrigin = storage.getItem(KEY); } catch (error) { showLoadProblem(error); return; }
+      }
+      notice('Saved studies are full', `ChessBest keeps up to 20 saved studies in this browser. You have ${count}. The item you tried to load or save has not been added. Remove saved studies to make room, or export a copy first. Your current board and game library will remain available.`, [
+        ['Remove studies', () => {
+          notice('Remove all saved studies?', `This will permanently remove ${count} saved studies from this browser, including their variations and notes. Export a copy first if you want to keep them. Your current board, game library and A/B comparison will stay.`, [
+            ['Back', () => showLimitWarning(onCleared, count)],
+            ['Remove ' + count + ' studies', () => {
+              try {
+                if (storage.getItem(KEY) !== noticeOrigin || state.studies.length !== count) throw Error('Saved studies changed in another tab. Close this message and try again.');
+                const next = { ...state, studies: [], activeId: null };
+                storage.setItem(KEY, JSON.stringify(next));
+                state = next; persistenceMessage = ''; activePreview = null; treeLimit = 150;
+                if (visible) render();
+              } catch (error) { showLoadProblem(error); return; }
+              dismissNotice();
+              try { onCleared?.(); } catch (error) { showLoadProblem(error, false); }
+            }, 'chess-study-limit-danger']
+          ]);
+        }, 'chess-study-limit-primary'],
+        ['Export studies', () => {
+          try { download(exportJSON(), 'chess-lab-studies.json', 'application/json'); }
+          catch (error) { showLoadProblem(error); }
+        }],
+        ['Not now', dismissNotice]
+      ]);
+    }
+    function guard(fn) { try { return fn(); } catch (e) { if (e.code === 'STUDY_LIMIT') showLimitWarning(() => guard(fn)); else { status.textContent = e.message || String(e); status.classList.add('is-error'); } return undefined; } }
     function message(text) { status.textContent = text || persistenceMessage || loadWarning; status.classList.remove('is-error'); }
     function current() { return state.studies.find(s => s.id === state.activeId) || null; }
     function persist() {
@@ -51,7 +106,7 @@
       try { const damaged = storage.getItem(KEY); if (damaged) storage.setItem(KEY + '-recovery', damaged); } catch (_) { /* Keep current in-memory study usable. */ }
     }
     function appendStudy(study) {
-      if (state.studies.length >= 20) throw Error('20 saved studies reached. Export the collection, then remove an unneeded study.');
+      if (state.studies.length >= 20) { const error = Error('20 saved studies reached.'); error.code = 'STUDY_LIMIT'; throw error; }
       if (state.studies.some(s => s.id === study.id)) study.id = C.create(Chess).id;
       state.studies.push(study); state.activeId = study.id; activePreview = null; treeLimit = 150; persist(); return study;
     }
@@ -89,7 +144,7 @@
       if (parsed.schema === 'chess-lab-study') appendStudy(C.validate(Chess, parsed));
       else {
         const incoming = validatedState(parsed);
-        if (state.studies.length + incoming.studies.length > 20) throw Error('Import would exceed 20 saved studies; export/remove some first');
+        if (state.studies.length + incoming.studies.length > 20) { const error = Error('Import would exceed 20 saved studies'); error.code = 'STUDY_LIMIT'; throw error; }
         for (const study of incoming.studies) appendStudy(study);
         // A collection import explicitly restores its saved comparison.
         state.comparison = incoming.comparison; persist();
@@ -201,7 +256,7 @@
       const details = el('details', 'chess-study-import'); details.append(el('summary', '', 'Import PGN / JSON'));
       const text = el('textarea'); text.rows = 5; text.maxLength = C.LIMITS.bytes; text.placeholder = 'Paste one PGN game with variations and comments, or study JSON'; text.setAttribute('aria-label', 'PGN or study JSON');
       const input = el('input'); input.type = 'file'; input.accept = '.pgn,.json,text/plain,application/json'; input.setAttribute('aria-label', 'Import study file');
-      input.addEventListener('change', async () => { const file = input.files?.[0]; if (!file) return; if (file.size > 4500000) { message('File too large (4.5 MB maximum).'); return; } try { const value = await file.text(); if (file.name.toLowerCase().endsWith('.json')) importJSON(value); else importPGN(value); message('Imported as a saved study. Workspace unchanged.'); } catch (e) { message(e.message); } });
+      input.addEventListener('change', async () => { const file = input.files?.[0]; if (!file) return; if (file.size > 4500000) { message('File too large (4.5 MB maximum).'); return; } try { const value = await file.text(); guard(() => { if (file.name.toLowerCase().endsWith('.json')) importJSON(value); else importPGN(value); message('Imported as a saved study. Workspace unchanged.'); }); } catch (e) { message(e.message); } });
       details.append(text, button('Import as saved study', () => { if (text.value.trim().startsWith('{')) importJSON(text.value); else importPGN(text.value); message('Imported as a saved study. Workspace unchanged.'); }), input); target.append(details);
     }
     function renderPreview(target, compact) {
@@ -278,6 +333,16 @@
     function close() { visible = false; overlay.hidden = true; if (priorFocus?.isConnected) priorFocus.focus(); }
     overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
     function keys(event) {
+      if (!noticeOverlay.hidden) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); dismissNotice(); return; }
+        if (event.key !== 'Tab') return;
+        const items = [...noticeDialog.querySelectorAll('button:not([disabled])')];
+        const first = items[0], last = items.at(-1);
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === noticeDialog)) { last.focus(); event.preventDefault(); }
+        else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
+        return;
+      }
       if (!visible) return;
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); return; }
       if (event.key !== 'Tab') return;
@@ -289,9 +354,9 @@
     }
     document.addEventListener('keydown', keys, true);
     if (host.onChange) unsubscribe = host.onChange(ctx => guard(() => recordPosition(ctx)));
-    return { open, close, preview, pin, captureContext, recordPosition: ctx => guard(() => recordPosition(ctx)), importPGN, importJSON, exportPGN, exportJSON, newStudy, annotatePath, saveLine,
+    return { open, close, preview, pin, captureContext, recordPosition: ctx => guard(() => recordPosition(ctx)), importPGN, importJSON, exportPGN, exportJSON, newStudy, annotatePath, saveLine, showLimitWarning, showLoadProblem,
       getStudy: () => current(), getComparison: () => JSON.parse(JSON.stringify(state.comparison)),
-      destroy() { unsubscribe?.(); document.removeEventListener('keydown', keys, true); overlay.remove(); } };
+      destroy() { unsubscribe?.(); document.removeEventListener('keydown', keys, true); overlay.remove(); noticeOverlay.remove(); } };
   }
   root.ChessStudyUI = { create, STORAGE_KEY: KEY };
 })(typeof window === 'object' ? window : this);

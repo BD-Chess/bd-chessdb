@@ -198,7 +198,7 @@
               entry.select.value = entry.option.value;
               entry.select.dispatchEvent(new Event('change', { bubbles: true }));
             }
-            byId('first').focus({ preventScroll: true });
+            if (!document.querySelector('.chess-study-limit-overlay:not([hidden])')) byId('first').focus({ preventScroll: true });
           });
           fragment.appendChild(button);
         });
