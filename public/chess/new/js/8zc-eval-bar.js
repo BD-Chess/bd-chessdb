@@ -46,28 +46,31 @@
       comparison.replaceChildren();
       for (const source of sources) {
         const badge = document.createElement('div'); badge.className = 'all-eval-badge';
-        const title = document.createElement('strong'); title.textContent = source;
-        const value = document.createElement('span'); const note = document.createElement('small');
-        badge.append(title);
+        const main = document.createElement('div'); main.className = 'all-eval-main';
+        const title = document.createElement('strong'); title.textContent = `${source}:`;
+        const move = document.createElement('span'); move.className = 'all-eval-move';
+        const score = document.createElement('span'); score.className = 'all-eval-score';
+        const note = document.createElement('small');
+        main.append(title, move);
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
-          value.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
+          move.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
           note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) : 'heuristic choice';
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
           const fresh = entry && Date.now() - entry.at < 300000;
           const result = measure(fen, fresh ? entry.score : null, null, source);
-          const topMove = document.createElement('span'); topMove.className = 'all-eval-move';
-          topMove.textContent = fresh ? entry.bestMove || '—' : '…';
-          topMove.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
-          badge.append(topMove);
-          value.textContent = fresh ? result.label : '…';
+          move.textContent = fresh ? entry.bestMove || '—' : '…';
+          move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
+          score.textContent = fresh ? result.label : '…';
+          main.append(score);
           note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           badge.title = result.description;
         }
-        badge.classList.toggle('is-unknown', value.textContent === '—');
-        badge.append(value, note); comparison.append(badge);
+        note.title = note.textContent;
+        badge.classList.toggle('is-unknown', move.textContent === '—' || score.textContent === '—');
+        badge.append(main, note); comparison.append(badge);
       }
     }
     function render() {
