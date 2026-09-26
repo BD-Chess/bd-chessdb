@@ -372,6 +372,43 @@ body::after{
 @media(max-width:760px){.nav-panel{padding:13px!important}.nav-copy{font-size:.93rem}.nav-small{font-size:.73rem}.nav-actions .btn{font-size:.74rem}.nav-options select{font-size:.83rem}.nav-paths{grid-template-columns:1fr}.nav-dialog{padding:20px 15px}.nav-modal{padding:8px}}
 
 </style>
+<style id="mobile-play-style">
+/* Mobile Play UX: geometry accounts for this 6px outside shadow + 10px border/padding. */
+.ux-picker{position:fixed;z-index:1100;background:#0b1423;color:#fff;border:2px solid #00e5ff;border-radius:10px;padding:8px;box-shadow:0 0 0 6px #020409;user-select:none;-webkit-user-select:none;pointer-events:none}
+.ux-picker-title{height:24px;font:600 12px/20px system-ui;white-space:nowrap;overflow:hidden}
+.ux-picker-grid{display:grid;grid-template-columns:repeat(3,var(--ux-target));grid-template-rows:repeat(3,var(--ux-target));gap:4px}
+.ux-picker-digit{display:flex;align-items:center;justify-content:center;border:1px solid #547186;border-radius:6px;font:700 30px/1 ui-monospace,monospace;background:#152339;color:#fff}
+.ux-picker-digit.active{background:#23586a;border:2px solid #fff}.ux-picker-digit[aria-disabled=true]{opacity:.35}
+#grid.ux-holding{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.ux-toolbar{display:none}.ux-demo-grid{position:absolute;inset:var(--ux-grid-inset,10px);background:#0b1423;z-index:12;pointer-events:none}
+.ux-demo-cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);color:#fff;font:700 calc(var(--cell)*.46)/1 ui-monospace,monospace}
+.ux-demo-cell:nth-child(3n){border-right:2px solid var(--border2)}.ux-demo-cell:nth-child(9n){border-right:1px solid var(--border)}
+.ux-demo-cell:nth-child(n+19):nth-child(-n+27),.ux-demo-cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--border2)}
+.ux-demo-cell[data-kind=naked_single]{color:var(--green)}.ux-demo-cell[data-kind=hidden_single]{color:var(--cyan)}.ux-demo-cell[data-kind=guess]{color:var(--orange)}.ux-demo-cell[data-kind=pointing_pair]{color:var(--violet)}.ux-demo-cell[data-kind=backtrack]{background:var(--rose-dim)}
+.ux-demo-note{font:700 .85rem/1.5 system-ui;color:var(--gold)}
+.ux-safe-area{position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.ux-card .nav-close{min-width:44px;min-height:44px}.ux-menu{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ux-menu .btn{min-height:44px}
+.ux-toast{position:fixed;z-index:1101;max-width:330px;padding:10px;background:#0b1423;color:#fff;border:1px solid var(--border2);border-radius:8px;font:14px/1.4 system-ui;pointer-events:none}
+.nav-modal.ux-card{background:transparent;backdrop-filter:none;pointer-events:none;align-items:end;justify-content:center;padding:6px}
+.ux-card .nav-dialog{pointer-events:auto;max-width:500px;max-height:100%;box-shadow:0 0 0 2px #294356;font-size:1rem;padding:14px 14px 10px;overscroll-behavior:contain}
+.ux-card .nav-dialog h2{font-size:1.05rem;margin-bottom:5px;padding-right:44px}.ux-card .nav-dialog p{margin:5px 0}
+.ux-card .nav-close{right:4px;top:0}.ux-card details{font-size:.85rem}.ux-card #navModalBody{overflow-wrap:anywhere}
+@media(max-width:760px){
+  .topbar{padding:5px 10px;min-height:28px}.topbar .tb-center{display:none}
+  .header{padding:3px 12px 0}.header .logo{font-size:.6rem;letter-spacing:.12em}.timer{font-size:1rem}
+  .title-block{padding:0 8px}.title{font-size:1.45rem;line-height:1.15}.subtitle{display:none}
+  .status{font:.72rem/1.4 ui-monospace,monospace;padding:0 10px;margin:3px 0;min-height:1.4em;overflow-wrap:anywhere}
+  .mobile-input-panel{padding:8px;margin-top:6px}.mobile-input-panel>.panel-title{font-size:.62rem;margin-bottom:4px}
+  .mobile-input-panel .numpad button{min-height:44px;padding:7px 4px}
+  .mobile-input-panel .ux-old-controls{display:none}.ux-toolbar{display:grid;grid-template-columns:repeat(4,minmax(44px,1fr));gap:4px;margin-top:6px}
+  .ux-toolbar .btn{width:100%;min-height:48px;padding:3px 2px;font:600 .8rem/1.25 system-ui;letter-spacing:0;overflow-wrap:normal}
+  .ux-toolbar .btn:disabled{opacity:.45;cursor:default}.ux-toolbar #notesBtn{white-space:pre-line}
+  .ux-demo-cell{font-size:calc(var(--cell)*.5)}.ux-demo-grid{--ux-grid-inset:4px}
+  .nav-close{min-width:44px;min-height:44px}.nav-dialog .btn{min-height:44px}.nav-modal.ux-card{padding:6px}.ux-menu .btn{font-size:.9rem}
+}
+
+.ux-setting{margin:8px 0}.ux-setting label{display:block;font-size:.85rem}.ux-setting select{max-width:100%;font-size:1rem}.ux-demo-note .btn{min-height:44px}
+</style>
 </head>
 <body>
 <div class="noise"></div>
@@ -406,10 +443,10 @@ body::after{
       <div class="numpad" id="numpad"></div>
       <div style="margin-top:5px"><button class="btn" id="notesBtn" onclick="toggleNotes()">Notes: OFF</button></div>
       <div class="btn-row" style="margin-top:3px">
-        <button class="btn" onclick="eraseCell()">Erase</button>
-        <button class="btn" onclick="undoMove()">Undo</button>
+        <button class="btn" id="uxErase" onclick="eraseCell()">Erase</button>
+        <button class="btn" id="uxUndo" onclick="undoMove()">Undo</button>
       </div>
-      <button class="btn" onclick="showHelp()" style="margin-top:3px;border-color:rgba(167,139,250,0.4);color:var(--violet)">? Help</button>
+      <button class="btn" id="uxOldHelp" onclick="showHelp()" style="margin-top:3px;border-color:rgba(167,139,250,0.4);color:var(--violet)">? Help</button>
     </div>
     <div class="panel" id="humanTracePanel"><div class="panel-title">Human Trace v1.2</div>
       <button class="btn green" id="traceConsentBtn" onclick="consentHumanTrace()">Enable with consent</button>
@@ -1508,7 +1545,7 @@ function render(){
 }
 
 function selectCell(i,source='pointer'){
-  if(aiAnimating)return;const next=(selectedCell===i)?null:i;
+  if(window.SudokuNavigator?.ui.blocked()||aiAnimating)return;const next=(selectedCell===i)?null:i;
   humanCapture('select_cell',source,{cell:i,selected:next===i},()=>{selectedCell=next;render()});
 }
 function placeNumber(n,source='pointer'){
@@ -1538,7 +1575,7 @@ ignoreCurrentHint(source,'undo');const item=history[history.length-1];const{r,c,
   const payload={cell,restored_value:prev,restored_notes:[...pn].sort((a,b)=>a-b),replaced_value:replacedValue,replaced_notes:replacedNotes,reverted_action:item.action||'unknown'};
   humanCapture('undo',source,payload,()=>{history.pop();playerGrid[r][c]=prev;notes[r][c]=new Set(pn);render()});
 }
-function toggleNotes(){notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode)}
+function toggleNotes(){if(window.SudokuNavigator?.ui.blocked())return;notesMode=!notesMode;document.getElementById('notesBtn').textContent=`Notes: ${notesMode?'ON':'OFF'}`;document.getElementById('notesBtn').classList.toggle('active',notesMode);window.SudokuNavigator?.ui.sync()}
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){hideHelp();return}
@@ -2382,6 +2419,37 @@ return{ENGINE_REVISION,VERSION,COST_REVISION,CODEC,NAMES,LABELS,RANK,FAMILIES,U,
 });
 
 </script>
+<script id="mobile-play-geometry">
+/* Pure layout: all coordinates include the complete popup footprint. */
+window.SudokuMobileGeometry=(()=>{
+  const rect=(left,top,width,height)=>({left,top,right:left+width,bottom:top+height,width,height});
+  const overlap=(a,b,g=0)=>a.left<b.right+g&&a.right>b.left-g&&a.top<b.bottom+g&&a.bottom>b.top-g;
+  const inside=(a,b)=>a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom;
+  function union(rs){return rect(Math.min(...rs.map(r=>r.left)),Math.min(...rs.map(r=>r.top)),Math.max(...rs.map(r=>r.right))-Math.min(...rs.map(r=>r.left)),Math.max(...rs.map(r=>r.bottom))-Math.min(...rs.map(r=>r.top)));}
+  function place(cells,index,viewport){
+    if(!viewport||cells.length!==81||!Number.isInteger(index)||index<0||index>80||[viewport,...cells].some(r=>!r||![r.left,r.top,r.right,r.bottom].every(Number.isFinite)||r.right<=r.left||r.bottom<=r.top))return{ok:false,reason:'Invalid visible geometry'};
+    const board=union(cells);if(!inside(board,viewport))return{ok:false,reason:'Show the whole board, or use Numbers below'};
+    const row=union(cells.slice(Math.floor(index/9)*9,Math.floor(index/9)*9+9)),col=union(cells.filter((_,i)=>i%9===index%9)),target=cells[index];
+    const box=union(cells.filter((_,i)=>Math.floor(i/27)===Math.floor(index/27)&&Math.floor(i%9/3)===Math.floor(index%9/3)));
+    const cx=(target.left+target.right)/2,cy=(target.top+target.bottom)/2,clearance=4,frame=16,header=24,gap=4,choices=[];
+    for(const size of [68,64,60,56,52,48,44]){
+      const width=2*frame+size*3+gap*2,height=width+header;
+      const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+      const xs=[viewport.left,viewport.right-width,clamp(cx-width/2,viewport.left,viewport.right-width),... [row,col,box].flatMap(r=>[r.left-width-clearance,r.right+clearance])];
+      const ys=[viewport.top,viewport.bottom-height,clamp(cy-height/2,viewport.top,viewport.bottom-height),... [row,col,box].flatMap(r=>[r.top-height-clearance,r.bottom+clearance])];
+      for(const x of new Set(xs))for(const y of new Set(ys)){
+        const footprint=rect(x,y,width,height);if(!inside(footprint,viewport)||overlap(footprint,row,clearance)||overlap(footprint,col,clearance))continue;
+        const distance=Math.hypot(cx-clamp(cx,x,x+width),cy-clamp(cy,y,y+height));
+        const score=(68-size)*6+distance+(overlap(footprint,box,clearance)?28:0);
+        choices.push({ok:true,footprint,size,score,distance,clearance,targets:Array.from({length:9},(_,i)=>({...rect(x+frame+(i%3)*(size+gap),y+frame+header+Math.floor(i/3)*(size+gap),size,size),digit:i+1}))});
+      }
+    }
+    choices.sort((a,b)=>a.score-b.score||b.size-a.size||a.footprint.top-b.footprint.top||a.footprint.left-b.footprint.left);
+    return choices[0]||{ok:false,reason:'Not enough clear space; use Numbers below'};
+  }
+  return Object.freeze({place,rect,union,overlap,inside});
+})();
+</script>
 <script id="navigator-ui">
 /* Browser adapter for the checked, answer-blind Navigator. No external runtime assets. */
 (function(){
@@ -2393,6 +2461,7 @@ let machine=C.emptyModel(),tutor={version:C.VERSION,attempts:[]},memoryConsent=f
 let generationEvidence=null;
 let navState=null,lineage=null,gameId='',rows=[],assistance=[],recentGains=[],cache=null,level=0,selection=0,navJob=null,genJob=null,seq=0,practice=null,saveTimer=null,booting=true,storageWarning='',viewDigit=0;
 let renderBase=render,placeBase=ai8LegacyPlaceNumber,eraseBase=ai8LegacyErase,undoBase=ai8LegacyUndo,aiBase=aiSolve,resetBase=aiReset;
+let restoring=0;
 let undoNav=[],reviewQueue=Promise.resolve(),generationToken=0,solveJob=null,solveToken=0,preparedBoardKey=null;
 function cancelSolve(){solveToken++;solveJob?.cancel();solveJob=null;if(!navJob&&!genJob&&$('navCancel'))$('navCancel').hidden=true;}
 const jobs=new Set();
@@ -2400,7 +2469,7 @@ const legacyWorkerSource=[getCandidates,getAllCandidates,countCandidates,isValid
 const src=legacyWorkerSource+'\n'+$('navigator-core').textContent+`\nself.onmessage=function(e){const m=e.data;try{const C=SudokuNavCore;let r;if(m.kind==='search')r=C.search(m.data.state,m.data.options,m.data.model);else if(m.kind==='review')r=C.review(m.data.state,m.data.cell,m.data.value,m.data.options);else if(m.kind==='generate')r=C.generate(m.data);else if(m.kind==='legacy')r=solveWithStrategy(m.data.board,m.data.strategy);else if(m.kind==='certify')r=C.exact(m.data.board,300000);else if(m.kind==='controls'){r=[];for(const policy of ['OFF','ORDINARY','REAL','SHAM']){const x=C.search(m.data.state,{...m.data.options,policy},m.data.model);r.push({policy,work:x.work,found:x.foundConsequences,chosen:x.chosen,changed:x.changed,status:x.status,model:x.events[0]?.prediction?.model,reason:x.reason});}}else throw Error('UNKNOWN_REQUEST');self.postMessage({id:m.id,result:r});}catch(e){self.postMessage({id:m.id,error:e.message});}};`;
 const workerURL=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));
 function run(kind,data,timeout=9000){let worker,finished=false,timer;const id=++seq;let rejecter;const promise=new Promise((resolve,reject)=>{rejecter=reject;try{worker=new Worker(workerURL);jobs.add(worker);timer=setTimeout(()=>end(null,Error('LIMIT: worker time budget')),timeout);worker.onmessage=e=>{if(e.data.id!==id)return;end(e.data.result,e.data.error?Error(e.data.error):null);};worker.onerror=e=>end(null,Error(e.message||'WORKER_ERROR'));worker.postMessage({id,kind,data});}catch(e){end(null,Error('Worker unavailable: '+e.message));}function end(result,error){if(finished)return;finished=true;clearTimeout(timer);if(worker){worker.terminate();jobs.delete(worker);}error?reject(error):resolve(result);}});return{promise,cancel(){if(finished)return;finished=true;clearTimeout(timer);if(worker){worker.terminate();jobs.delete(worker);}rejecter(Error('CANCELLED'));}};}
-function notify(s){$('navCopy').textContent=s;}
+function notify(s){$('navCopy').textContent=s;mobileUX.cardText(s);}
 function settings(){return{policy:$('navPolicy').value,goal:$('navGoal').value,target:Number($('navTechnique').value),deep:$('navDeep').checked,budget:260000,eventPrefix:gameId,history:recentGains.slice(-32)};}
 function resetAnalysis(){if(navJob)navJob.cancel();navJob=null;cache=null;level=0;selection=0;viewDigit=0;clearProofHighlights();$('navApply').hidden=true;$('navDetails').innerHTML='';}
 function freshState(){if(!playerGrid)return null;try{navState=C.state(playerGrid);lineage={base:C.flat(playerGrid),ops:[]};return navState;}catch(e){navState=null;return null;}}
@@ -2411,37 +2480,39 @@ function answerCheck(pre,cell,value){if(!solution)return'UNCERTIFIED';return sol
 function checkPrefix(){if(!playerGrid||!solution)return true;const wrong=playerGrid.flat().map((v,i)=>v&&v!==solution.flat()[i]?i:-1).filter(i=>i>=0);if(wrong.length){expose('correction_feedback',1);correctionHighlightActive=true;selectedCell=wrong[0];render();notify('First check the highlighted entries. This is separate answer checking against the certified unique puzzle, not a deductive hint.');return false;}return true;}
 function rememberEvents(result){if(learningMode==='FROZEN_TRANSFER'||result.policy==='OFF')return;for(const e of result.events){try{C.observe(machine,e);}catch(err){storageWarning=err.message;break;}}if(memoryConsent)persist('machine',{version:C.VERSION,observations:machine.observations});updateMemory();}
 async function analyze(stage='nudge'){
+ if(mobileUX.hasDemo())return;
  if(!puzzle){notify('Choose a difficulty or create a practice exercise first.');return;}
  if(tracePaused){notify('Human Trace is paused. Resume before requesting help.');return;}
  if(!checkPrefix())return;const s=current();if(!s){notify('The entered grid has contradictory values or empty candidate support. Correct the entries before analysis.');return;}
  const id=C.key(s),opt=settings();
- if(!cache||cache.stateKey!==id||cache.policy!==opt.policy||cache.goal!==opt.goal||cache.target!==opt.target){
+ if(!cache||cache.stateKey!==id||cache.policy!==opt.policy||cache.goal!==opt.goal||cache.target!==opt.target||cache.deep!==opt.deep){
   if(navJob)navJob.cancel();notify('Looking for checked continuations…');$('navCancel').hidden=false;
   const job=run('search',{state:J(s),options:opt,model:J(machine)});navJob=job;
-  try{const r=await job.promise;if(navJob!==job||!current()||C.key(current())!==id)return;cache={...r,goal:opt.goal,target:opt.target};rememberEvents(r);selection=0;level=0;}
+  try{const r=await job.promise;if(navJob!==job||!current()||C.key(current())!==id)return;cache={...r,goal:opt.goal,target:opt.target,deep:opt.deep,disclosed:[]};rememberEvents(r);selection=0;level=0;}
   catch(e){if(e.message!=='CANCELLED')notify('Analysis stopped: '+e.message+'. No unverified suggestion was accepted.');return;}
   finally{if(navJob===job){navJob=null;$('navCancel').hidden=true;}}
  }
  if(!cache.candidates.length){notify(cache.status==='LIMIT'?'Analysis budget reached; this is not proof that no deduction exists.':'No proof found in the inspected families. Enable digit-path work in Lab for a broader bounded check.');showReceipt();return;}
  const q=cache.candidates[selection]?.q;if(!q||cache.stateKey!==C.key(s)||(q.t!==8&&!C.check(s,q))){resetAnalysis();notify('Stale proof rejected. Analyze the current position again.');return;}
- level=Math.max(level,stage==='nudge'?1:stage==='explain'?2:3);expose(stage,level);
+ stage=typeof stage==='function'?stage():stage;
+ level=Math.max(level,stage==='nudge'?1:stage==='explain'?2:3);if(!cache.disclosed.includes(stage)){cache.disclosed.push(stage);expose(stage,level);}
  const desc=C.describe(q,stage);notify(desc+(conditional()?' Conditional on your currently entered values.':''));
  const boxes=[...new Set(q.src.map(C.box))];proofCoachHighlights={focus:level>=3&&q.c>=0?[q.c]:[],sources:level===1?(C.U[q.u>=0?q.u:boxes[0]??18]):q.src,elims:level>=3?q.es.map(x=>x[0]):[]};
  if(level>=3&&q.c<0)$('navApply').hidden=false;else $('navApply').hidden=true;
- render();showReceipt();scheduleSave();
+ render();showReceipt();mobileUX.cardText($('navCopy').textContent);scheduleSave();
 }
 function showReceipt(){if(!cache)return;const c=cache.candidates[selection],p=cache.events.find(e=>e.prediction)?.prediction;
  $('navReceipt').textContent=`${cache.foundConsequences} checked consequences · ${cache.witnessCount} witnesses · ${cache.work.toLocaleString()} work ticks · ${cache.policy}${p?' · '+p.model:''}`;
  $('navLabResult').textContent=JSON.stringify({status:cache.status,reason:cache.reason,order:cache.order,chosen:cache.chosen,baseline:cache.baseline,changed:cache.changed,comparedPaths:cache.measured,counts:cache.counts,observedSensors:cache.sensors,coverage:cache.coverage},null,2);
  $('navDetails').innerHTML=c&&level>=2?`<span class="nav-chip">${esc(C.LABELS[c.q.t])}</span><span class="nav-chip">${c.bits} reference proof bits</span><span class="nav-chip">${c.witnesses.length} alternative witness${c.witnesses.length===1?'':'es'}</span><div class="nav-small">Literal codec ${C.CODEC}; current state + fixed checker are shared side information. Not a human skill score.</div>`:'';
 }
-function applyElimination(){const s=current(),q=cache?.candidates[selection]?.q;if(!s||!q||level<3||q.c>=0)return;try{const before=C.countCandidates(s);navState=C.apply(s,q);lineage.ops.push({kind:'proof',q:J(q)});recentGains.push(before-C.countCandidates(navState));expose('apply_revealed_elimination',3);resetAnalysis();notify('Checked elimination retained in the Navigator candidate state. Player values and pencil notes are unchanged.');render();scheduleSave();}catch(e){notify('Elimination rejected: '+e.message);}}
+function applyElimination(){if(mobileUX.blocked())return;const s=current(),q=cache?.candidates[selection]?.q;if(!s||!q||level<3||q.c>=0)return;try{const before=C.countCandidates(s);navState=C.apply(s,q);lineage.ops.push({kind:'proof',q:J(q)});recentGains.push(before-C.countCandidates(navState));expose('apply_revealed_elimination',3);resetAnalysis();notify('Checked elimination retained in the Navigator candidate state. Player values and pencil notes are unchanged.');render();scheduleSave();}catch(e){notify('Elimination rejected: '+e.message);}}
 async function comparePaths(){await analyze('nudge');if(!cache?.candidates.length)return;expose('path_comparison',4);const s=current();const cards=cache.candidates.slice(0,4);const html=cards.map((a,i)=>{let flow=a.flow;return`<article class="nav-path"><button class="btn" data-pick="${i}">${i===0?'A':String.fromCharCode(65+i)} · ${esc(C.describe(a.q))}</button><p>${a.bits} proof bits · ${a.witnesses.length} witness(es)</p>${flow?`<p>${flow.peerEliminations} immediate peer exclusions · ${flow.newSingles} new single(s) · ${flow.path.length} checked follow-up steps</p><ol>${flow.path.map(q=>'<li>'+esc(C.describe(q))+'</li>').join('')}</ol>`:'<p>Path not evaluated within comparable coverage.</p>'}<details><summary>Alternative explanations</summary>${a.witnesses.map(q=>'<p>'+esc(C.describe(q,'explain'))+'</p>').join('')}</details></article>`;}).join('');
  openDialog('Compare checked paths',`<p>Same pre-position; up to three following P0 steps. Different valid paths are not mistakes. ${esc(cache.reason)}</p><div class="nav-paths">${html}</div><p class="nav-small">Opening this comparison is recorded as assistance. The live grid is not changed.</p>`);
  $('navModalBody').querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{selection=Number(b.dataset.pick);closeDialog();analyze('reveal');});
 }
-function openDialog(title,html){$('navModalTitle').textContent=title;$('navModalBody').innerHTML=html;$('navModal').hidden=false;$('navClose').focus();}
-function closeDialog(){$('navModal').hidden=true;}
+function openDialog(title,html){mobileUX.beforeDialog();$('navModalTitle').textContent=title;$('navModalBody').innerHTML=html;$('navModal').hidden=false;$('navClose').focus({preventScroll:true});}
+function closeDialog(){$('navModal').hidden=true;mobileUX.finishDialog();$('navModal').querySelector('.nav-dialog').style.maxHeight='';}
 function renderDigit(){if(!playerGrid)return;for(const cell of document.querySelectorAll('.cell')){cell.classList.remove('nav-slice','nav-dim');if(!viewDigit)continue;const i=+cell.dataset.index,s=current();cell.classList.add((s?.m[i]&C.bit(viewDigit))||s?.b[i]===viewDigit?'nav-slice':'nav-dim');}}
 function digitView(){viewDigit=Number($('navDigit').value);if(viewDigit)expose('digit_slice',1);render();}
 function replayLineage(data,b){if(!data||!Array.isArray(data.ops)||data.ops.length>2048)throw Error('LINEAGE_LIMIT');let s=C.state(data.base);for(const op of data.ops){if(op.kind==='proof')s=C.apply(s,op.q);else if(op.kind==='entry'){if(!Number.isInteger(op.cell)||op.cell<0||op.cell>80||!Number.isInteger(op.value)||op.value<1||op.value>9||s.b[op.cell])throw Error('ENTRY_SCOPE');const n=s.b.slice();n[op.cell]=op.value;const updated=C.state(n);for(let i=0;i<81;i++)if(!n[i])updated.m[i]&=s.m[i];C.validate(updated);s=updated;}else throw Error('LINEAGE_OP');}if(s.b.join('')!==b.join(''))throw Error('LINEAGE_BOARD');return s;}
@@ -2458,11 +2529,11 @@ function showReview(id){const r=rows.find(x=>x.id===id);if(!r)return;expose('rev
 function wireAlternatives(r){const b=$('navReviewAlternatives');if(!b)return;b.onclick=async()=>{b.disabled=true;if(!r.pre){b.textContent='Pre-position not available';return;}try{const result=await run('search',{state:r.pre,options:{policy:'OFF',budget:180000},model:C.emptyModel()}).promise;if($('navReviewFrame'))$('navReviewFrame').insertAdjacentHTML('beforeend',`<p><b>Other found valid possibilities — not an optimal-regret score:</b></p>${result.candidates.slice(0,4).map(a=>'<p>'+esc(C.describe(a.q))+' · '+a.bits+' reference bits</p>').join('')}`);}catch(e){b.textContent=e.message;}};}
 function finishPractice(success,kind,cell,value){if(!practice||practice.finished)return;practice.tries++;if(!success){practice.assisted=true;notify('That does not match a verified consequence of the target technique in this exercise. Try another relationship.');return;}practice.finished=true;const record={id:gameId,technique:practice.target,correct:true,assisted:practice.assisted,tries:practice.tries,seconds:timerSeconds,seed:practice.seed,created:new Date().toISOString(),kind,cell,value,retention:practice.retention===true,evaluator:C.VERSION};if(tutorConsent&&!tutor.attempts.some(x=>x.id===record.id)){tutor.attempts.push(record);if(tutor.attempts.length>512)tutor.attempts.shift();persist('tutor',tutor);}notify(`Practice complete · ${practice.assisted?'assisted attempt':'no hint revealed'} · ${C.LABELS[practice.target]}. This is an observed exercise result, not proof of general skill.`);updateMemory();scheduleSave();}
 function placementPractice(cell,value,pre){if(!practice||practice.finished)return;const scan=C.enumerate(pre,C.FAMILIES[C.RANK[practice.target]],new C.Work(120000));finishPractice(scan.out.some(q=>q.t===practice.target&&q.c===cell&&q.v===value),'placement',cell,value);}
-function checkElimination(){if(!practice||practice.finished){notify('Start a practice exercise first.');return;}if(selectedCell===null){notify('Select the cell whose candidate you want to exclude.');return;}const d=Number($('navElimDigit').value),s=current();if(!s)return;let q;try{q=C.enumerate(s,C.FAMILIES[C.RANK[practice.target]],new C.Work(160000)).out.find(x=>x.t===practice.target&&x.es.some(e=>e[0]===selectedCell&&e[1]===d));}catch(e){notify(e.message);return;}if(!q){finishPractice(false,'elimination',selectedCell,d);return;}const help=J(assistance),pre=C.clone(s);navState=C.apply(s,q);lineage.ops.push({kind:'proof',q});rows.push({id:(rows.at(-1)?.id||0)+1,kind:'elimination',cell:selectedCell,value:d,pre,help,answer:'CHECKED',result:{status:'FOUND',found:true,path:[q],reference_proof_bits:C.encode(q).length*8,codec:C.CODEC},conditional:conditional(),sessionAssisted:assistance.length>0});finishPractice(true,'elimination',selectedCell,d);resetAnalysis();render();scheduleSave();}
+function checkElimination(){if(mobileUX.blocked())return;if(!practice||practice.finished){notify('Start a practice exercise first.');return;}if(selectedCell===null){notify('Select the cell whose candidate you want to exclude.');return;}const d=Number($('navElimDigit').value),s=current();if(!s)return;let q;try{q=C.enumerate(s,C.FAMILIES[C.RANK[practice.target]],new C.Work(160000)).out.find(x=>x.t===practice.target&&x.es.some(e=>e[0]===selectedCell&&e[1]===d));}catch(e){notify(e.message);return;}if(!q){finishPractice(false,'elimination',selectedCell,d);return;}const help=J(assistance),pre=C.clone(s);navState=C.apply(s,q);lineage.ops.push({kind:'proof',q});rows.push({id:(rows.at(-1)?.id||0)+1,kind:'elimination',cell:selectedCell,value:d,pre,help,answer:'CHECKED',result:{status:'FOUND',found:true,path:[q],reference_proof_bits:C.encode(q).length*8,codec:C.CODEC},conditional:conditional(),sessionAssisted:assistance.length>0});finishPractice(true,'elimination',selectedCell,d);resetAnalysis();render();scheduleSave();}
 function attachAdapters(){
- render=function(){renderBase();renderDigit();renderReviews();};renderGameReview=renderReviews;
+ render=function(){renderBase();renderDigit();renderReviews();mobileUX.sync();};renderGameReview=renderReviews;
  placeNumber=function(n,source='pointer'){
-  if(!playerGrid||selectedCell===null||aiAnimating)return;const cell=selectedCell,pre=current()?C.clone(current()):null,old=playerGrid.flat()[cell],inNotes=notesMode,oldKey=playerGrid.flat().join(''),trail=lineage?J(lineage):null;
+  if(mobileUX.blocked()||!playerGrid||selectedCell===null||aiAnimating)return;const cell=selectedCell,pre=current()?C.clone(current()):null,old=playerGrid.flat()[cell],inNotes=notesMode,oldKey=playerGrid.flat().join(''),trail=lineage?J(lineage):null;
   const help=assistance.filter(a=>a.index>(rows.at(-1)?.assistanceEnd||0)),isConditional=conditional();placeBase(n,source);
   if(playerGrid.flat().join('')===oldKey){scheduleSave();return;}if(pre)undoNav.push({key:oldKey,state:pre,lineage:trail});resetAnalysis();if(pre)alignAfter(pre);else freshState();
   if(!inNotes&&playerGrid.flat()[cell]===n&&old!==n){const answer=answerCheck(pre,cell,n),row={id:(rows.at(-1)?.id||0)+1,kind:'placement',cell,value:n,pre,at_s:timerSeconds,help:J(help),assistanceEnd:assistance.at(-1)?.index||0,sessionAssisted:assistance.length>0,conditional:isConditional,answer,reasoning_status:'UNKNOWN_REASONING',result:{status:answer==='WRONG'?'NOT_APPLICABLE':'PENDING',found:false}};rows.push(row);
@@ -2471,27 +2542,28 @@ function attachAdapters(){
   }else rows.push({id:(rows.at(-1)?.id||0)+1,kind:'erase',cell,pre,help:J(help),assistanceEnd:assistance.at(-1)?.index||0,sessionAssisted:assistance.length>0});
   renderReviews();scheduleSave();
  };
- eraseCell=function(source='pointer'){if(!playerGrid)return;const before=playerGrid.flat().join(''),pre=current()?C.clone(current()):null;eraseBase(source);if(playerGrid.flat().join('')!==before){if(pre)undoNav.push({key:before,state:pre,lineage:lineage?J(lineage):null});resetAnalysis();freshState();rows.push({id:(rows.at(-1)?.id||0)+1,kind:'erase',cell:selectedCell,pre,help:[],assistanceEnd:assistance.at(-1)?.index||0});notify('Analysis scope reset after erasure. Previous review evidence is retained.');}renderReviews();scheduleSave();};
- undoMove=function(source='pointer'){if(!playerGrid)return;const before=playerGrid.flat().join('');undoBase(source);if(playerGrid.flat().join('')!==before){resetAnalysis();const prev=undoNav.pop();if(prev&&prev.key===playerGrid.flat().join('')){navState=prev.state;lineage=prev.lineage;}else freshState();rows.push({id:(rows.at(-1)?.id||0)+1,kind:'undo',cell:selectedCell,pre:current()?C.clone(current()):null,help:[],assistanceEnd:assistance.at(-1)?.index||0});}renderReviews();scheduleSave();};
- proofCoachHint=function(mode='explain'){return analyze(mode);};aiHint=()=>analyze('explain');
+ eraseCell=function(source='pointer'){if(mobileUX.blocked()||!playerGrid)return;const before=playerGrid.flat().join(''),pre=current()?C.clone(current()):null;eraseBase(source);if(playerGrid.flat().join('')!==before){if(pre)undoNav.push({key:before,state:pre,lineage:lineage?J(lineage):null});resetAnalysis();freshState();rows.push({id:(rows.at(-1)?.id||0)+1,kind:'erase',cell:selectedCell,pre,help:[],assistanceEnd:assistance.at(-1)?.index||0});notify('Analysis scope reset after erasure. Previous review evidence is retained.');}renderReviews();scheduleSave();};
+ undoMove=function(source='pointer'){if(mobileUX.blocked()||!playerGrid)return;const before=playerGrid.flat().join('');undoBase(source);if(playerGrid.flat().join('')!==before){resetAnalysis();const prev=undoNav.pop();if(prev&&prev.key===playerGrid.flat().join('')){navState=prev.state;lineage=prev.lineage;}else freshState();rows.push({id:(rows.at(-1)?.id||0)+1,kind:'undo',cell:selectedCell,pre:current()?C.clone(current()):null,help:[],assistanceEnd:assistance.at(-1)?.index||0});}renderReviews();scheduleSave();};
+ proofCoachHint=function(mode='explain'){return mobileUX.mobile()?mobileUX.hint(mode):analyze(mode);};aiHint=()=>mobileUX.hint('explain');
  aiSolve=function(){expose('AI_solver',4);resetAnalysis();return aiBase();};
  const stepBase=aiStep;aiStep=function(){expose('AI_step',4);resetAnalysis();stepBase();freshState();scheduleSave();};
- aiReset=function(){cancelSolve();preparedBoardKey=null;aiLog=[];resetAnalysis();resetBase();freshState();scheduleSave();};
- newGame=function(diff,source='pointer'){return createGame(diff,null,source);};
- setStrategy=function(strategy){if(blockAIWhileHumanTrace('Strategy change'))return;currentStrategy=strategy;document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===strategy));aiReset();aiLog=[];cancelSolve();preparedBoardKey=null;notify('Solver selected: '+strategy+'. It runs only when requested.');};
- compareAll=async function(){if(!puzzle||blockAIWhileHumanTrace('Compare all'))return;expose('classical_comparison',4);const id=gameId,report=[];for(const strategy of ['fast','random','mrv','naked','full','human']){notify('Comparing classical solver: '+strategy);try{const r=await run('legacy',{board:copyGrid(puzzle),strategy},10000).promise;if(id!==gameId)return;report.push({strategy,status:r.status,steps:r.log.length,backtracks:r.log.filter(x=>x.backtrack).length,solved:isSolved(r.solved),sensors:computeSensors(r.log)});}catch(e){report.push({strategy,status:e.message});}}openDialog('Classical solver comparison','<p>8z Fast plus five original strategies, each with its own bounded worker. Sensor values are descriptive, not a learning score.</p><pre class="nav-lab">'+esc(JSON.stringify(report,null,2))+'</pre>');};
- clearGameReview=function(){rows=[];assistance=[];renderReviews();scheduleSave();};
+ aiReset=function(){if(mobileUX.blocked())return;cancelSolve();preparedBoardKey=null;aiLog=[];resetAnalysis();resetBase();freshState();scheduleSave();};
+ newGame=function(diff,source='pointer'){return mobileUX.mobile()?mobileUX.requestNew(diff):createGame(diff,null,source);};
+ setStrategy=function(strategy){if(mobileUX.blocked())return;if(blockAIWhileHumanTrace('Strategy change'))return;currentStrategy=strategy;document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===strategy));aiReset();aiLog=[];cancelSolve();preparedBoardKey=null;notify('Solver selected: '+strategy+'. It runs only when requested.');};
+ compareAll=async function(){if(!puzzle||blockAIWhileHumanTrace('Compare all'))return;expose('classical_comparison',4);const id=gameId,report=[];for(const strategy of ['fast','random','mrv','naked','full','human']){notify('Comparing classical solver: '+strategy);try{const r=await run('legacy',{board:copyGrid(puzzle),strategy},10000).promise;if(id!==gameId||mobileUX.hasDemo())return;report.push({strategy,status:r.status,steps:r.log.length,backtracks:r.log.filter(x=>x.backtrack).length,solved:isSolved(r.solved),sensors:computeSensors(r.log)});}catch(e){report.push({strategy,status:e.message});}}openDialog('Classical solver comparison','<p>8z Fast plus five original strategies, each with its own bounded worker. Sensor values are descriptive, not a learning score.</p><pre class="nav-lab">'+esc(JSON.stringify(report,null,2))+'</pre>');};
+ clearGameReview=function(){if(mobileUX.blocked())return;rows=[];assistance=[];renderReviews();scheduleSave();};
  exportGameReview=function(){return exportAll();};
  updateProofProfile=function(){$('coachProfile').textContent='Checked P0–P3 · optional digit-path support · explanations are bounded, not omniscient.';};
 }
-function showBusy(on){$('navCancel').hidden=!on;document.querySelectorAll('.diff-btns button,.welcome-card .diff-hint span').forEach(b=>b.style.pointerEvents=on?'none':'');}
+function showBusy(on){mobileUX.sync();$('navCancel').hidden=!on;document.querySelectorAll('.diff-btns button,.welcome-card .diff-hint span').forEach(b=>b.style.pointerEvents=on?'none':'');}
 async function createGame(diff,target=null,source='pointer',retention=false){
+ if(mobileUX.hasDemo()||!$('navModal').hidden||booting)return;mobileUX.cancelGesture();
  if(humanTraceRecorder.isLocked()){setStatus('Export/Delete the active Human Trace before starting a new game.','');return;}
  if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
- const job=run('generate',{diff,seed,target},15000);genJob=job;
- try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){notify(`Profile not fulfilled after ${g.attempts} attempts. No easier substitute was silently loaded. Try again or choose another technique.`);return;}
-  if(puzzle)persist('previousGame',snapshot());if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
+ const job=run('generate',{diff,seed,target},15000);genJob=job;mobileUX.sync();if(mobileUX.mobile())mobileUX.toast('Generating a certified new puzzle…');
+ try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){const message=`Profile not fulfilled after ${g.attempts} attempts. No easier substitute was silently loaded. Try again or choose another technique.`;notify(message);if(mobileUX.mobile())mobileUX.toast(message);return;}
+  if(puzzle&&!persist('previousGame',snapshot()))throw Error('Previous game could not be saved');if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
   generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
   if(g.exercise){navState=g.exercise.state;lineage={base:g.puzzle,ops:g.exercise.prefix.map(q=>({kind:'proof',q}))};}else freshState();
@@ -2501,8 +2573,8 @@ async function createGame(diff,target=null,source='pointer',retention=false){
   $('navPracticeInput').hidden=!(practice&&C.RANK[target]>0);$('navGoal').value=practice?'PRACTICE':'FLOW';if(practice)$('navTechnique').value=String(target);
   $('coachProfile').textContent=practice?`Practice checkpoint · ${C.LABELS[target]} · verified unique · PATH_CONTAINS_TECHNIQUE (bypass not excluded)`:`${g.givens} givens · uniqueness checked · target ${g.requestedGivens} givens`;
   setStatus(`${diff.toUpperCase()} · ${g.givens} original givens · ${practice?'practice checkpoint':'unique puzzle'} · Navigator ${C.VERSION}`,'');startTimer();render();startHumanTrace(source,{reason:'new_game',difficulty:diff});notify(practice?`Find a ${C.LABELS[target]} ${C.RANK[target]>0?'candidate elimination; select its cell and candidate below':'placement'}. Ask for help only when needed.`:'Your turn. Navigator stays quiet until you ask where to look.');scheduleSave();
- }catch(e){if(e.message!=='CANCELLED')notify('Generation stopped: '+e.message+'. Current game preserved.');}
- finally{if(genJob===job){genJob=null;showBusy(false);}}
+ }catch(e){if(e.message!=='CANCELLED'){const message='Generation stopped: '+e.message+'. Current game preserved.';notify(message);if(mobileUX.mobile())mobileUX.toast(message);}}
+ finally{if(genJob===job){genJob=null;showBusy(false);mobileUX.sync();}}
 }
 // Check the entire animation against the actual starting grid before displaying it.
 function checkedReplay(start,result){
@@ -2516,8 +2588,9 @@ function checkedReplay(start,result){
  return true;
 }
 const applyEntryBase=applyEntry;
-applyEntry=function(e,anim){applyEntryBase(e,anim);preparedBoardKey=playerGrid.flat().join('');freshState();scheduleSave();};
+applyEntry=function(e,anim){if(mobileUX.hasDemo())return;applyEntryBase(e,anim);preparedBoardKey=playerGrid.flat().join('');freshState();scheduleSave();};
 async function prepareLegacySolve(action){
+ if(mobileUX.blocked())return;
  if(blockAIWhileHumanTrace('AI solver')||!puzzle||genJob||solveJob)return;
  const id=gameId,strategy=currentStrategy,start=copyGrid(playerGrid),startKey=start.flat().join('');
  if(isSolved(start)){setStatus('Puzzle is already solved ✓','win');return;}
@@ -2530,13 +2603,15 @@ async function prepareLegacySolve(action){
  }
  action();
 }
-function persist(name,data){try{const text=JSON.stringify(data);if(text.length>3500000)throw Error('Storage size limit');localStorage.setItem(NS+'.'+name,text);return true;}catch(e){storageWarning='Not saved to disk: '+e.message;updateMemory();return false;}}
+function persist(name,data){try{const text=JSON.stringify(data);if(text.length>3500000)throw Error('Storage size limit');localStorage.setItem(NS+'.'+name,text);if(localStorage.getItem(NS+'.'+name)!==text)throw Error('Storage readback mismatch');return true;}catch(e){storageWarning='Not saved to disk: '+e.message;updateMemory();return false;}}
 function load(name){try{const s=localStorage.getItem(NS+'.'+name);return s?JSON.parse(s):null;}catch(e){storageWarning='Stored data could not be read';return null;}}
-function snapshot(){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version:C.VERSION,engineRevision:C.ENGINE_REVISION,generationEvidence,gameId,diff:currentDiff,puzzle:puzzle?.flat(),board:playerGrid?.flat(),notes:notes?.flat().map(s=>[...s]),time:timerSeconds,lineage,rows:rows.slice(-256),assistance:assistance.slice(-1024),coverage:{reviewTotal:rows.length,reviewSaved:Math.min(rows.length,256),assistanceTotal:assistance.length,assistanceSaved:Math.min(assistance.length,1024),bounded:true},recentGains:recentGains.slice(-32),practice,history:history.slice(-128).map(x=>({...x,pn:[...x.pn]})),settings:settings()};}
+function snapshot(){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version:C.VERSION,engineRevision:C.ENGINE_REVISION,generationEvidence,gameId,diff:currentDiff,puzzle:puzzle?.flat(),board:playerGrid?.flat(),notes:notes?.flat().map(s=>[...s]),time:timerSeconds,selectedCell,notesMode,timerRunning:mobileUX.timerRunning(),lineage,rows:rows.slice(-256),assistance:assistance.slice(-1024),coverage:{reviewTotal:rows.length,reviewSaved:Math.min(rows.length,256),assistanceTotal:assistance.length,assistanceSaved:Math.min(assistance.length,1024),bounded:true},recentGains:recentGains.slice(-32),practice,history:history.slice(-128).map(x=>({...x,pn:[...x.pn]})),settings:settings()};}
 function scheduleSave(){if(booting||!puzzle)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>persist('session',snapshot()),200);}
 let pwaRestoreInFlight=0,pwaPendingReviews=0;
 async function restoreSession(s){pwaRestoreInFlight++;try{return await restoreSessionBody(s);}finally{pwaRestoreInFlight--;}}
-async function restoreSessionBody(s){
+async function restoreSessionBody(s){restoring++;try{return await restoreSessionBodyShared(s);}finally{restoring--;mobileUX.sync();}}
+async function restoreSessionBodyShared(s){
+ if(mobileUX.hasDemo())throw Error('Return to your game before restoring');mobileUX.cancelGesture();
  if(!s||s.schema!=='AI8_SUDOKU_NAV_SESSION_V1'||s.version!==C.VERSION)return false;
  const restoreToken=++generationToken;cancelSolve();genJob?.cancel();genJob=null;showBusy(false);if(aiAnimating)aiPause();resetAnalysis();
  const b=C.flat(s.board),p=C.flat(s.puzzle);if(p.some((v,i)=>v&&v!==b[i]))throw Error('GIVENS_CHANGED');if(!Array.isArray(s.rows)||s.rows.length>256||!Array.isArray(s.assistance)||s.assistance.length>1024||!Array.isArray(s.notes)||s.notes.length!==81||s.notes.some(a=>!Array.isArray(a)||a.length>9||a.some(v=>!Number.isInteger(v)||v<1||v>9)))throw Error('SESSION_SCHEMA');
@@ -2545,36 +2620,162 @@ async function restoreSessionBody(s){
  validateSavedRows(s.rows,cert.solution);
  puzzle=grid2(p);solution=grid2(cert.solution);playerGrid=grid2(b);givenCells=puzzle.map(r=>r.map(Boolean));notes=Array.from({length:9},(_,r)=>s.notes.slice(r*9,r*9+9).map(a=>new Set(a)));history=(s.history||[]).filter(x=>Number.isInteger(x.r)&&Number.isInteger(x.c)&&x.r>=0&&x.r<9&&x.c>=0&&x.c<9&&Array.isArray(x.pn)).map(x=>({...x,pn:new Set(x.pn)}));
  generationEvidence=s.generationEvidence&&Number.isInteger(s.generationEvidence.seed)&&s.generationEvidence.seed>=0&&s.generationEvidence.seed<=4294967295?{engine:C.ENGINE_REVISION,seed:s.generationEvidence.seed,seedStatus:'RECORDED_METADATA_NOT_REPLAYED',uniqueness:{status:cert.status,count:cert.count,complete:cert.complete},difficulty:{basis:'CLUE_COUNT_PROFILE_NOT_HUMAN_RATING',actualGivens:p.filter(Boolean).length}}:null;
- gameId=String(s.gameId).slice(0,100);currentDiff=s.diff||'medium';timerSeconds=Math.max(0,Math.min(604800,Number(s.time)||0));navState=restored;lineage=s.lineage;rows=s.rows;assistance=s.assistance;recentGains=(s.recentGains||[]).filter(Number.isFinite).slice(-32);practice=s.practice&&Number.isInteger(s.practice.target)&&s.practice.target>=0&&s.practice.target<8?s.practice:null;if(s.settings){for(const [id,k] of [['navGoal','goal'],['navTechnique','target'],['navPolicy','policy']])if(s.settings[k]!=null)$(id).value=String(s.settings[k]);$('navDeep').checked=s.settings.deep===true;}selectedCell=null;aiLog=[];aiStepIndex=0;$('welcomeOverlay')?.classList.add('hidden');$('navPracticeInput').hidden=!(practice&&C.RANK[practice.target]>0);$('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');render();resumeTimer();notify('Saved game recovered. Rechecked uniqueness and replayed retained candidate deductions.');return true;
+ gameId=String(s.gameId).slice(0,100);currentDiff=s.diff||'medium';timerSeconds=Math.max(0,Math.min(604800,Number(s.time)||0));navState=restored;lineage=s.lineage;rows=s.rows;assistance=s.assistance;recentGains=(s.recentGains||[]).filter(Number.isFinite).slice(-32);practice=s.practice&&Number.isInteger(s.practice.target)&&s.practice.target>=0&&s.practice.target<8?s.practice:null;if(s.settings){for(const [id,k] of [['navGoal','goal'],['navTechnique','target'],['navPolicy','policy']])if(s.settings[k]!=null)$(id).value=String(s.settings[k]);$('navDeep').checked=s.settings.deep===true;}selectedCell=Number.isInteger(s.selectedCell)&&s.selectedCell>=0&&s.selectedCell<81?s.selectedCell:null;notesMode=s.notesMode===true;$('notesBtn').classList.toggle('active',notesMode);aiLog=[];aiStepIndex=0;$('welcomeOverlay')?.classList.add('hidden');$('navPracticeInput').hidden=!(practice&&C.RANK[practice.target]>0);$('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');setStatus(currentDiff.toUpperCase()+' · Saved game recovered','');render();if(s.timerRunning!==false)resumeTimer();else stopTimer();notify('Saved game recovered. Rechecked uniqueness and replayed retained candidate deductions.');return true;
 }
 function updateMemory(){if(!$('navMemory'))return;const m=C.predict(machine,current()?C.context(current(),recentGains):'0.0.0','P0');$('navMemory').textContent=`Machine: ${machine.observations.length} observations (${machine.censored||0} limited or older engine costs excluded) · ${m.model} · ${learningMode}${memoryConsent?' · stored locally':' · session only'}. Tutor: ${tutor.attempts.length} consented exercise results.${storageWarning?' '+storageWarning:''}`;}
-function consentMachine(){memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}updateMemory();}
-function consentTutor(){tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}
+function consentMachine(){if(mobileUX.hasDemo())return;memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}updateMemory();}
+function consentTutor(){if(mobileUX.hasDemo())return;tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}
 function nextPractice(){const target=Number($('navTechnique').value),history=tutor.attempts.filter(x=>x.technique===target),last=history.at(-1),due=last&&Date.now()-Date.parse(last.created)>86400000;return createGame('medium',target,'pointer',!!due);}
 function suggestPractice(){const allowed=[0,1,2,3,4,5,6,7],ranked=allowed.map(t=>{const a=tutor.attempts.filter(x=>x.technique===t),last=a.at(-1);return{t,n:a.length,rate:a.length?a.filter(x=>!x.assisted&&x.tries===1).length/a.length:0,due:last&&Date.now()-Date.parse(last.created)>86400000};}).sort((a,b)=>Number(b.due)-Number(a.due)||a.rate-b.rate||a.n-b.n||a.t-b.t);$('navTechnique').value=String(ranked[0].t);notify(`Suggested practice: ${C.LABELS[ranked[0].t]}. ${ranked[0].n?'Based on observed attempts and due review, not inferred thoughts.':'No personal evidence yet; using a simple progression default.'}`);}
 function profileDialog(){const html=C.NAMES.slice(0,8).map((name,t)=>{const a=tutor.attempts.filter(x=>x.technique===t);return`<tr><td>${esc(C.LABELS[t])}</td><td>${a.length}</td><td>${a.filter(x=>!x.assisted&&x.tries===1).length}</td><td>${a.filter(x=>x.assisted).length}</td></tr>`;}).join('');openDialog('Local learning · observed, not inferred',`<p>Separate machine experience and consented practice outcomes. No data is sent to a server.</p><table class="nav-table"><tr><th>Technique</th><th>Attempts</th><th>No hint / first try</th><th>Assisted</th></tr>${html}</table><p>These are descriptive counts under evaluator ${C.VERSION}, not a calibrated accuracy score or demonstrated learning effect. Retention review becomes due after a day; transformed or related puzzles are not independent evidence.</p><h3>MDL model bank</h3><table class="nav-table"><tr><th>Model</th><th>Structure bits</th><th>Prequential ideal bits</th></tr>${machine.models.map(m=>`<tr><td>${m.name}</td><td>${m.bits}</td><td>${m.loss.toFixed(2)}</td></tr>`).join('')}</table><p class="nav-small">Finite bank selector: minimum structure + past log-loss. Model structures cost 1/2/3 bytes in the fixed model language; prediction lengths are ideal −log₂ probabilities, not physical compressed files. Pooled may legitimately win. Learning does not change proof validity.</p>`);}
 function exportAll(){const report={schema:'AI8_SUDOKU_NAVIGATOR_EXPORT_V1',version:C.VERSION,engineRevision:C.ENGINE_REVISION,session:snapshot(),machine:{version:C.VERSION,observations:machine.observations},tutor,limits:{human_learning_effect:'NOT_MEASURED',proofs:'Conditional on stated pre-state; shortest found is not an optimum',library:'Known checked P0–P3 rules plus optional exact digit-path support; not an autonomous R7 forge'}};const body=JSON.stringify(report);const envelope={...report,sha256:AI8SudokuTruth.sha256(body)};download(JSON.stringify(envelope,null,2),'8zSudoku_Navigator_'+C.VERSION+'.json','application/json');return envelope;}
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function validateTutor(t){if(!t||t.version!==C.VERSION||!Array.isArray(t.attempts)||t.attempts.length>512)throw Error('TUTOR_SCHEMA');const seen=new Set();for(const a of t.attempts){if(!a||typeof a.id!=='string'||a.id.length>100||seen.has(a.id)||!Number.isInteger(a.technique)||a.technique<0||a.technique>7||a.correct!==true||typeof a.assisted!=='boolean'||!Number.isInteger(a.tries)||a.tries<1||a.tries>10000||!Number.isFinite(a.seconds)||a.seconds<0||a.seconds>604800||typeof a.created!=='string'||!Number.isFinite(Date.parse(a.created))||a.evaluator!==C.VERSION)throw Error('TUTOR_RECORD');seen.add(a.id);}return t;}
-async function importAll(file){try{if(!file||file.size>4000000)throw Error('IMPORT_SIZE');const d=JSON.parse(await file.text());if(d.schema!=='AI8_SUDOKU_NAVIGATOR_EXPORT_V1'||d.version!==C.VERSION)throw Error('IMPORT_VERSION');const supplied=d.sha256;delete d.sha256;if(AI8SudokuTruth.sha256(JSON.stringify(d))!==supplied)throw Error('IMPORT_HASH');const m=C.restoreModel(d.machine);validateTutor(d.tutor);if(humanTraceRecorder.isLocked())throw Error('Export/Delete active Human Trace first');if(!confirm('Import this local research/game file? Your current Navigator game will be retained as previousGame.'))return;if(puzzle)persist('previousGame',snapshot());resetAnalysis();genJob?.cancel();generationToken++;if(!await restoreSession(d.session))throw Error('SESSION_VERSION');machine=m;tutor=d.tutor;memoryConsent=false;tutorConsent=false;learningMode='FROZEN_TRANSFER';$('navLearningMode').value=learningMode;persist('consentMachine',false);persist('consentTutor',false);updateMemory();scheduleSave();notify('Imported with frozen machine memory; historical observations are user-supplied evidence, not independently verified performance. Re-enable local learning explicitly.');}catch(e){notify('Import rejected: '+e.message);}}
-function deleteAll(){if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}
+async function importAll(file){if(!file)return;if(mobileUX.blocked())return;const importGame=gameId,importRevision=generationToken;try{if(file.size>4000000)throw Error('IMPORT_SIZE');const d=JSON.parse(await file.text());if(mobileUX.blocked()||gameId!==importGame||generationToken!==importRevision)throw Error('Import superseded by another action');if(d.schema!=='AI8_SUDOKU_NAVIGATOR_EXPORT_V1'||d.version!==C.VERSION)throw Error('IMPORT_VERSION');const supplied=d.sha256;delete d.sha256;if(AI8SudokuTruth.sha256(JSON.stringify(d))!==supplied)throw Error('IMPORT_HASH');const m=C.restoreModel(d.machine);validateTutor(d.tutor);if(humanTraceRecorder.isLocked())throw Error('Export/Delete active Human Trace first');if(!confirm('Import this local research/game file? Your current Navigator game will be retained as previousGame.'))return;if(puzzle&&!persist('previousGame',snapshot()))throw Error('Previous game could not be saved');resetAnalysis();genJob?.cancel();generationToken++;if(!await restoreSession(d.session))throw Error('SESSION_VERSION');machine=m;tutor=d.tutor;memoryConsent=false;tutorConsent=false;learningMode='FROZEN_TRANSFER';$('navLearningMode').value=learningMode;persist('consentMachine',false);persist('consentTutor',false);updateMemory();scheduleSave();notify('Imported with frozen machine memory; historical observations are user-supplied evidence, not independently verified performance. Re-enable local learning explicitly.');}catch(e){notify('Import rejected: '+e.message);}}
+function deleteAll(){if(mobileUX.blocked())return;if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}
 async function controls(){const s=current();if(!s)return;expose('lab_comparison',4);$('navLabResult').textContent='Running isolated OFF / ordinary / REAL / matched SHAM comparisons…';try{const r=await run('controls',{state:J(s),options:settings(),model:J(machine)},12000).promise;$('navLabResult').textContent=JSON.stringify({fixture:'current pre-state; no learning updates',results:r,claim:'Mechanism comparison, not a human-learning or superiority benchmark'},null,2);}catch(e){$('navLabResult').textContent=e.message;}}
 function validateSavedRows(rs,sol){for(const r of rs){if(!r||!Number.isInteger(r.id)||r.id<1||!['placement','erase','undo','elimination'].includes(r.kind)||!(r.cell===null||Number.isInteger(r.cell)&&r.cell>=0&&r.cell<81)||r.value!=null&&(!Number.isInteger(r.value)||r.value<1||r.value>9)||!Array.isArray(r.help)||r.help.length>1024)throw Error('REVIEW_SCHEMA');if(r.pre)C.validate(r.pre);if(r.result?.found){if(!r.pre||!Array.isArray(r.result.path)||r.result.path.length>100)throw Error('REVIEW_PROOF_SCHEMA');let st=C.clone(r.pre),bits=0;for(const q of r.result.path){st=C.apply(st,q);bits+=C.encode(q).length*8;}if(bits!==r.result.reference_proof_bits||r.kind==='placement'&&st.b[r.cell]!==r.value)throw Error('REVIEW_PROOF_REPLAY');}if(r.kind==='placement'&&r.answer!==(sol[r.cell]===r.value?'CORRECT':'WRONG'))throw Error('REVIEW_ANSWER');r.reasoning_status='UNKNOWN_REASONING';}}
+/* One mobile interaction owner. Canonical play remains in the existing adapters. */
+const mobileUX=(()=>{
+ const G=window.SudokuMobileGeometry, slots=new Map();
+ let gesture=null,gestureSeq=0,suppress=null,touchUntil=0,dialog=null,helpRequest=null,dialogSeq=0,demo=null,demoSeq=0,toastTimer;
+ const mobile=()=>innerWidth<=760;
+ const modal=()=>!!$('navModal')&&!$('navModal').hidden;
+ const blocked=()=>!!demo||modal()||!!genJob||!!restoring||booting;
+ const playable=()=>!!playerGrid&&!aiAnimating&&!tracePaused&&!recoveryAwaitingContinue&&!blocked();
+ const eligible=i=>playable()&&Number.isInteger(i)&&i>=0&&i<81&&!givenCells[Math.floor(i/9)][i%9]&&!playerGrid[Math.floor(i/9)][i%9];
+ const key=()=>gameId+'|'+playerGrid?.flat().join('')+'|'+history.length+'|'+notesMode;
+ function visibleBounds(){
+  let left=0,top=0,right=innerWidth,bottom=innerHeight,win=window,ox=0,oy=0;
+  try{while(true){const vv=win.visualViewport;left=Math.max(left,(vv?.offsetLeft||0)-ox);top=Math.max(top,(vv?.offsetTop||0)-oy);right=Math.min(right,(vv?.offsetLeft||0)+(vv?.width||win.innerWidth)-ox);bottom=Math.min(bottom,(vv?.offsetTop||0)+(vv?.height||win.innerHeight)-oy);
+   if(win===win.parent)break;const frame=win.frameElement;if(!frame)return null;const r=frame.getBoundingClientRect();if(Math.abs(r.width-frame.offsetWidth)>.5||Math.abs(r.height-frame.offsetHeight)>.5)return null;ox+=r.left+frame.clientLeft;oy+=r.top+frame.clientTop;
+   // Actual clipping ancestors, not the nominal iframe height.
+   for(let p=frame.parentElement;p;p=p.parentElement){const cs=win.parent.getComputedStyle(p),b=p.getBoundingClientRect();if(/hidden|clip|auto|scroll/.test(cs.overflowX)){left=Math.max(left,b.left-ox);right=Math.min(right,b.right-ox);}if(/hidden|clip|auto|scroll/.test(cs.overflowY)){top=Math.max(top,b.top-oy);bottom=Math.min(bottom,b.bottom-oy);}}
+   win=win.parent;
+  }}catch(_){return null;}
+  const safe=getComputedStyle($('uxSafeArea'));left+=parseFloat(safe.paddingLeft)||0;top+=parseFloat(safe.paddingTop)||0;right-=parseFloat(safe.paddingRight)||0;bottom-=parseFloat(safe.paddingBottom)||0;
+  return G.rect(left+4,top+4,right-left-8,bottom-top-8);
+ }
+ function geometry(i){return G.place([...$('grid').children].map(c=>c.getBoundingClientRect()),i,visibleBounds());}
+ function toast(text){let n=$('uxToast');n.textContent=text;n.hidden=false;const v=visibleBounds();if(v){n.style.left=v.left+'px';n.style.top=v.top+'px';}clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.hidden=true,2400);}
+ function cancelGesture(consumed=false){const g=gesture;if(!g)return;gesture=null;gestureSeq++;clearTimeout(g.timer);$('uxPicker')?.remove();$('grid').classList.remove('ux-holding');if(g.active||consumed)suppress={until:Date.now()+850,x:g.x,y:g.y};if(g.capture)try{$('grid').releasePointerCapture(g.id);}catch(_){} }
+ function activate(token){const g=gesture;if(!g||g.token!==token||!eligible(g.index)||g.key!==key()){cancelGesture();return;}
+  const layout=geometry(g.index);if(!layout.ok){if(selectedCell!==g.index)selectCell(g.index,g.source);toast(layout.reason||'Use Numbers below');cancelGesture(true);return;}
+  if(selectedCell!==g.index)selectCell(g.index,g.source);
+  if(selectedCell!==g.index){cancelGesture();return;}g.active=true;g.layout=layout;g.disabled=[...$('numpad').children].map(b=>b.disabled||b.classList.contains('used'));$('grid').classList.add('ux-holding');
+  const p=document.createElement('div');p.id='uxPicker';p.className='ux-picker';p.setAttribute('role','presentation');p.style.cssText=`left:${layout.footprint.left+6}px;top:${layout.footprint.top+6}px;width:${layout.footprint.width-12}px;--ux-target:${layout.size}px`;
+  p.innerHTML='<div class="ux-picker-title">Slide to a number · release to enter</div><div class="ux-picker-grid">'+layout.targets.map(t=>`<div class="ux-picker-digit" data-digit="${t.digit}" aria-disabled="${!!g.disabled[t.digit-1]}">${t.digit}</div>`).join('')+'</div>';
+  document.body.appendChild(p);if(g.kind==='pointer')try{$('grid').setPointerCapture(g.id);g.capture=true;}catch(_){}
+ }
+ function arm(index,id,x,y,kind,source){cancelGesture();suppress=null;if(!mobile()||!eligible(index))return;const token=++gestureSeq;gesture={index,id,x,y,x0:x,y0:y,kind,source,key:key(),token,active:false};gesture.timer=setTimeout(()=>activate(token),300);}
+ function hover(g,x,y){if(x>=g.layout.footprint.left&&x<=g.layout.footprint.right&&y>=g.layout.footprint.top&&y<=g.layout.footprint.bottom){const t=g.layout.targets.find(t=>x>=t.left&&x<t.right&&y>=t.top&&y<t.bottom);return t&&!g.disabled[t.digit-1]?t.digit:0;}return 0;}
+ function move(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;if(g.key!==key()||!eligible(g.index)){cancelGesture();return;}if(!g.active){if(Math.hypot(x-g.x0,y-g.y0)>10)cancelGesture();return;}g.hover=hover(g,x,y);$('uxPicker').querySelectorAll('[data-digit]').forEach(n=>n.classList.toggle('active',+n.dataset.digit===g.hover));}
+ function release(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;const digit=g.active&&g.key===key()&&eligible(g.index)?hover(g,x,y):0;cancelGesture();if(digit){selectedCell=g.index;placeNumber(digit,g.source);sync();}}
+ function park(node,parent){if(!slots.has(node)){const marker=document.createComment('mobile control home');node.before(marker);slots.set(node,marker);}parent.appendChild(node);}
+ function unpark(node){const marker=slots.get(node);if(marker?.parentNode)marker.after(node);}
+ function sync(){
+  if(!$('uxToolbar'))return;const on=mobile(),notes=$('notesBtn');notes.textContent=on?'Notes\n'+(notesMode?'ON':'OFF'):'Notes: '+(notesMode?'ON':'OFF');notes.setAttribute('aria-pressed',String(notesMode));
+  const locked=!!demo||!!genJob||!!restoring;for(const id of ['notesBtn','uxErase','uxUndo','uxNew','uxHint','uxWhy','uxMore'])$(id).disabled=locked;
+  $('uxErase').disabled=locked||!playerGrid||selectedCell===null||givenCells?.[Math.floor(selectedCell/9)]?.[selectedCell%9]===true;
+  $('uxUndo').disabled=locked||!history.length;
+  if(on||demo){$('solveBtn').textContent=demo?(demo.phase==='STOPPED'?'Stopped':'Stop'):'AI Solve';$('solveBtn').disabled=!!demo&&demo.phase==='STOPPED';$('solveBtn').onclick=()=>demo?stopDemo():requestDemo();}
+ }
+ function resize(){cancelGesture();if(mobile()){if(solveJob)cancelSolve();if(aiAnimating)aiPause();}if(!mobile()&&demo)returnDemo();if(dialog)closeDialog();const toolbar=$('uxToolbar');if(!toolbar)return;
+  const nodes=['notesBtn','uxErase','uxUndo','uxNew','uxHint','uxWhy','solveBtn','uxMore'].map($);for(const n of nodes)mobile()?park(n,toolbar):unpark(n);
+  toolbar.hidden=!mobile();if(!mobile()){$('solveBtn').textContent='▶ AI Solve';$('solveBtn').disabled=false;$('solveBtn').onclick=aiSolve;}sync();
+ }
+ function beforeDialog(){cancelGesture();if(dialog)finishDialog(false);dialog={id:++dialogSeq,selected:selectedCell,focus:document.activeElement,returnNodes:[]};}
+ function finishDialog(restore=true){if(!dialog)return;const d=dialog;dialog=null;dialogSeq++;if(helpRequest){helpRequest=null;if(navJob){navJob.cancel();navJob=null;resetAnalysis();}else{clearProofHighlights();}}
+  for(const n of d.returnNodes)unpark(n);$('navModal').querySelector('.nav-dialog').style.maxHeight='';$('navModal').classList.remove('ux-card');$('navModal').removeAttribute('style');
+  if(restore){selectedCell=d.selected;render();try{d.focus?.focus({preventScroll:true});}catch(_){}}sync();
+ }
+ function cardLayout(){const v=visibleBounds();if(!v)return;const m=$('navModal'),board=$('gridWrap').getBoundingClientRect(),room=v.bottom-board.bottom-8;
+  m.style.left=v.left+'px';m.style.top=v.top+'px';m.style.width=v.width+'px';m.style.height=v.height+'px';m.style.right='auto';m.style.bottom='auto';
+  const d=m.querySelector('.nav-dialog');d.style.maxHeight=Math.min(v.height,Math.max(180,room))+'px';
+ }
+ function cardText(text){if(helpRequest&&dialog?.id===helpRequest.dialogId){$('uxHelpText').textContent=text;$('uxHelpDetail').innerHTML=$('navDetails').innerHTML;cardLayout();}}
+ async function hint(stage){if(!mobile())return analyze(stage);if(demo||genJob)return;
+  if(helpRequest){if(stage==='explain'){helpRequest.stage=stage;$('navModalTitle').textContent='Why?';if(!helpRequest.pending)await runHelp(helpRequest);}return;}
+  openDialog(stage==='nudge'?'Hint':'Why?','<p id="uxHelpText" aria-live="polite">Looking for a checked continuation…</p><div id="uxHelpDetail"></div><button class="btn" id="uxCardWhy">Why?</button>');
+  $('navModal').classList.add('ux-card');const req=helpRequest={dialogId:dialog.id,stage,pending:false};$('uxCardWhy').onclick=()=>hint('explain');cardLayout();await runHelp(req);
+ }
+ async function runHelp(req){req.pending=true;try{await analyze(()=>req.stage);}finally{req.pending=false;if(helpRequest===req)cardText($('navCopy').textContent);}}
+ function requestNew(diff){if(demo||genJob)return;if(humanTraceRecorder.isLocked()){toast('Export/Delete the active Human Trace first');return;}
+  const unfinished=playerGrid&&!isSolved(playerGrid);openDialog('New game',`<p>${unfinished?'Choose a difficulty. Your unfinished game is kept until the new puzzle is certified.':'Choose a difficulty.'}</p><div class="ux-menu">${['easy','medium','hard','evil'].map(d=>`<button class="btn" data-difficulty="${d}">${d[0].toUpperCase()+d.slice(1)}</button>`).join('')}</div><button class="btn" id="uxCancelNew">Cancel</button>`);
+  $('uxCancelNew').onclick=closeDialog;const choose=d=>{if(unfinished){openDialog('Replace unfinished game?',`<p>Start a new ${esc(d)} puzzle? The current game will be retained as previousGame.</p><button class="btn" id="uxConfirmNew">Start new game</button><button class="btn" id="uxCancelNew">Cancel</button>`);$('uxCancelNew').onclick=closeDialog;$('uxConfirmNew').onclick=()=>{closeDialog();createGame(d);};}else{closeDialog();createGame(d);}};
+  $('navModalBody').querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>choose(b.dataset.difficulty));if(diff)choose(diff);
+ }
+ function more(){if(demo||genJob)return;openDialog('More','<div class="ux-menu">'+['Review','Settings','Help','Import','Export'].map(s=>`<button class="btn" data-menu="${s}">${s}</button>`).join('')+'</div>');$('navModalBody').querySelectorAll('[data-menu]').forEach(b=>b.onclick=()=>{
+   const item=b.dataset.menu;if(item==='Review'){closeDialog();if(rows.length)showReview(rows.at(-1).id);else openDialog('Game Review','<p>No moves have been played in this game yet.</p>');}
+   if(item==='Help')openDialog('How to play','<p>Tap a cell, then a number. Or hold an empty cell for about 300 ms, keep touching and slide to 1–9; release on the number to enter it. Release outside or in a gap to cancel. If there is no clear space, use Numbers.</p><p>Notes toggles pencil marks. Undo reverses one move. Hint points you toward a thought; Why? explains that same checked thought. Neither enters a value.</p><p>AI Solve demonstrates on a copy. Stop freezes it; Return to my game brings back your untouched game. Human Trace must be exported/deleted explicitly before a demonstration.</p><p>The laboratory and research controls remain below the game.</p>');
+   if(item==='Settings'){openDialog('Settings','<div id="uxSettings"></div><p>These are the existing game and Navigator settings. Changes also update their laboratory controls.</p>');for(const id of ['speedSlider','navGoal','navTechnique','navPolicy','navDeep','navLearningMode','navLearn','navTutor']){const n=$(id);if(!n)continue;const row=document.createElement('div');row.className='ux-setting';const label=document.createElement('label');label.textContent=({speedSlider:'Demonstration speed',navGoal:'Goal',navTechnique:'Technique',navPolicy:'Controller',navDeep:'Allow bounded digit-path work',navLearningMode:'Machine learning'})[id]||'';label.htmlFor=id;row.appendChild(label);$('uxSettings').appendChild(row);park(n,row);dialog.returnNodes.push(n);}}
+   if(item==='Import'){closeDialog();$('navFile').value='';$('navFile').click();}if(item==='Export'){closeDialog();exportAll();}
+  });}
+ function requestDemo(){if(demo){stopDemo();return;}if(!puzzle||genJob||restoring||booting||aiAnimating)return;if(blockAIWhileHumanTrace('AI demonstration')){toast('Export/Delete the active Human Trace before AI demonstration');return;}if(isSolved(playerGrid)){toast('This puzzle is already solved');return;}
+  openDialog('AI demonstration','<p>Watch a checked solution on a separate copy. Your game, notes and Undo history stay intact. Viewing a step is recorded as assistance.</p><button class="btn" id="uxDemoConfirm">Start demonstration</button><button class="btn" id="uxDemoCancel">Cancel</button>');$('uxDemoCancel').onclick=closeDialog;$('uxDemoConfirm').onclick=()=>{closeDialog();startDemo();};
+ }
+ async function startDemo(){if(demo||!puzzle||genJob||restoring||booting||aiAnimating||humanTraceRecorder.isLocked())return;cancelGesture();resetAnalysis();clearTimeout(saveTimer);const d=demo={id:++demoSeq,gameId,key:key(),phase:'PREPARING',runningTimer:timerInterval!==null,disabled:[],board:copyGrid(playerGrid),log:[],index:0,job:null,timer:null,revealed:false};stopTimer();
+  $('uxToolbar').insertAdjacentHTML('afterend','<div class="ux-demo-note" id="uxDemoNote" role="status">Preparing a checked demonstration… <button class="btn" id="uxDemoReturn">Return to my game</button></div>');$('uxDemoReturn').onclick=returnDemo;for(const n of document.querySelectorAll('button,input,select,textarea')){if(['solveBtn','uxDemoReturn'].includes(n.id))continue;d.disabled.push([n,n.disabled]);n.disabled=true;}sync();
+  try{await reviewQueue;if(demo!==d||d.phase!=='PREPARING')return;if(!persist('session',snapshot()))throw Error('Original game could not be saved. Demonstration was not started');
+   d.job=run('legacy',{board:copyGrid(d.board),strategy:currentStrategy},10000);const result=await d.job.promise;d.job=null;if(demo!==d||d.phase!=='PREPARING'||d.gameId!==gameId||d.key!==key())return;checkedReplay(d.board,result);d.log=result.log;d.phase='RUNNING';paintDemo(d);demoStep(d);
+  }catch(e){if(demo!==d)return;d.job=null;d.phase='STOPPED';demoMessage(e.message==='CANCELLED'?'Demonstration stopped.':'Demonstration stopped: '+e.message);sync();}
+ }
+ function demoMessage(text){const n=$('uxDemoNote');if(n)n.firstChild.textContent=text+' ';}
+ function paintDemo(d,entry){let grid=$('uxDemoGrid');if(!grid){grid=document.createElement('div');grid.id='uxDemoGrid';grid.className='grid ux-demo-grid';grid.setAttribute('aria-label','AI demonstration, separate from your game');$('gridWrap').appendChild(grid);}
+  grid.innerHTML=d.board.flat().map((v,i)=>`<div class="ux-demo-cell" ${entry&&entry.r*9+entry.c===i?'data-kind="'+esc(entry.strategy||'')+'"':''}>${v||''}</div>`).join('');
+ }
+ function demoStep(d){if(demo!==d||d.phase!=='RUNNING')return;if(d.index>=d.log.length){d.phase='STOPPED';demoMessage('Demonstration complete. Your game is unchanged.');sync();return;}
+  if(!d.revealed){const oldAssistance=assistance.slice(),oldAssisted=practice?.assisted;expose('AI_solver',4);clearTimeout(saveTimer);if(!persist('session',snapshot())){assistance=oldAssistance;if(practice)practice.assisted=oldAssisted;d.phase='STOPPED';demoMessage('Could not save the assistance record; no step was shown.');sync();return;}d.revealed=true;}
+  const e=d.log[d.index++];if(e.backtrack)for(const p of e.restore)d.board[p.r][p.c]=0;else d.board[e.r][e.c]=e.v;paintDemo(d,e);demoMessage(`AI demonstration · ${d.index}/${d.log.length}`);d.timer=setTimeout(()=>demoStep(d),getSpeed());
+ }
+ function stopDemo(){const d=demo;if(!d)return;d.phase='STOPPED';d.job?.cancel();d.job=null;clearTimeout(d.timer);demoMessage('Demonstration stopped. Your game is unchanged.');sync();}
+ function returnDemo(){const d=demo;if(!d)return;demo=null;demoSeq++;d.job?.cancel();clearTimeout(d.timer);$('uxDemoGrid')?.remove();$('uxDemoNote')?.remove();for(const [n,disabled] of d.disabled)n.disabled=disabled;render();if(d.runningTimer&&!tracePaused&&!recoveryAwaitingContinue)resumeTimer();sync();scheduleSave();}
+ function prepareUpdate(){cancelGesture();if(modal())closeDialog();returnDemo();return true;}
+ function install(){
+  const panel=$('numpad').closest('.panel');panel.insertAdjacentHTML('beforeend','<div id="uxToolbar" class="ux-toolbar" aria-label="Game controls"></div><div id="uxControlHomes" hidden><button class="btn" id="uxNew">New game</button><button class="btn" id="uxHint">Hint</button><button class="btn" id="uxWhy">Why?</button><button class="btn" id="uxMore">More ⋯</button></div>');
+  $('notesBtn').parentElement.classList.add('ux-old-controls');$('uxErase').parentElement.classList.add('ux-old-controls');$('uxOldHelp').classList.add('ux-old-controls');
+  document.body.insertAdjacentHTML('beforeend','<div id="uxSafeArea" class="ux-safe-area"></div><div id="uxToast" class="ux-toast" role="status" hidden></div>');
+  $('uxNew').onclick=()=>requestNew();$('uxHint').onclick=()=>hint('nudge');$('uxWhy').onclick=()=>hint('explain');$('uxMore').onclick=more;
+  const grid=$('grid');grid.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||Date.now()<touchUntil)return;if(gesture||e.isPrimary===false||e.button!==0){cancelGesture();return;}const c=e.target.closest('.cell');if(c)arm(+c.dataset.index,e.pointerId,e.clientX,e.clientY,'pointer',e.pointerType==='pen'?'pointer':'pointer');});
+  document.addEventListener('pointerdown',e=>{if(e.isPrimary===false)cancelGesture();if(!gesture)suppress=null;},true);
+  document.addEventListener('pointermove',e=>{if(gesture?.kind!=='pointer'||gesture.id!==e.pointerId)return;if(e.buttons!==1){cancelGesture();return;}move(e.clientX,e.clientY);});
+  document.addEventListener('pointerup',e=>{if(gesture?.kind==='pointer'&&gesture.id===e.pointerId)release(e.clientX,e.clientY);});
+  document.addEventListener('pointercancel',e=>{if(gesture?.kind==='pointer'&&gesture.id===e.pointerId)cancelGesture();});grid.addEventListener('lostpointercapture',()=>{if(gesture?.kind==='pointer')cancelGesture();});
+  // A single Touch Events owner preserves native pre-hold scrolling. Only an
+  // activated, still-cancelable one-finger move is canceled. Pointer touch events
+  // never run a second recognizer. Real WebKit/device arbitration remains a gate.
+  grid.addEventListener('touchstart',e=>{touchUntil=Date.now()+1000;if(e.touches.length!==1||!e.cancelable){cancelGesture();return;}const t=e.changedTouches[0],c=e.target.closest('.cell');if(c)arm(+c.dataset.index,t.identifier,t.clientX,t.clientY,'touch','touch');},{passive:true});
+  grid.addEventListener('touchmove',e=>{const g=gesture;if(g?.kind!=='touch')return;if(e.touches.length!==1){cancelGesture();return;}const t=[...e.touches].find(t=>t.identifier===g.id);if(!t){cancelGesture();return;}if(g.active){if(!e.cancelable){cancelGesture();return;}e.preventDefault();}move(t.clientX,t.clientY);},{passive:false});
+  grid.addEventListener('touchend',e=>{if(gesture?.kind!=='touch')return;const t=[...e.changedTouches].find(t=>t.identifier===gesture.id);if(t){if(gesture.active&&e.cancelable)e.preventDefault();release(t.clientX,t.clientY);}},{passive:false});
+  grid.addEventListener('touchcancel',()=>cancelGesture());document.addEventListener('touchstart',e=>{if(e.touches.length>1)cancelGesture();},{capture:true,passive:true});
+  grid.addEventListener('contextmenu',e=>{if(gesture){e.preventDefault();}});
+  document.addEventListener('click',e=>{if(suppress&&Date.now()<suppress.until&&e.detail!==0&&(e.target.closest('#grid')||Math.hypot(e.clientX-suppress.x,e.clientY-suppress.y)<20)){suppress=null;e.preventDefault();e.stopImmediatePropagation();return;}
+   if(demo&&!e.target.closest('#solveBtn,#uxDemoReturn')){e.preventDefault();e.stopImmediatePropagation();return;}
+   if(modal()&&!e.target.closest('#navModal,#uxHint,#uxWhy')){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(gesture||modal())){cancelGesture();if(modal())closeDialog();e.stopImmediatePropagation();return;}const edit=e.target.closest?.('input,select,textarea,[contenteditable=true]');if(modal()){if(e.key==='Tab'){const nodes=[...$('navModal').querySelectorAll('button:not(:disabled),input,select,textarea,[tabindex="0"]')].filter(n=>!n.hidden);const a=nodes[0],b=nodes.at(-1);if(e.shiftKey&&document.activeElement===a){e.preventDefault();b?.focus();}else if(!e.shiftKey&&document.activeElement===b){e.preventDefault();a?.focus();}}e.stopImmediatePropagation();return;}if(demo||gesture?.active||edit){e.stopImmediatePropagation();if(!edit&&/^[1-9nN]$|Backspace|Delete|Arrow/.test(e.key))e.preventDefault();}},true);
+  window.addEventListener('blur',()=>cancelGesture());document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelGesture();if(demo)stopDemo();}});window.addEventListener('pagehide',prepareUpdate);
+  window.addEventListener('scroll',()=>cancelGesture(),{capture:true,passive:true});window.addEventListener('orientationchange',resize);window.addEventListener('resize',resize);window.visualViewport?.addEventListener('resize',resize);window.visualViewport?.addEventListener('scroll',()=>cancelGesture());
+  resize();
+ }
+ return{install,mobile,blocked,sync,toast,resize,hint,more,requestNew,requestDemo,beforeDialog,finishDialog,cardText,prepareUpdate,cancelGesture,geometry,visibleBounds,timerRunning:()=>demo?demo.runningTimer:timerInterval!==null,hasDemo:()=>!!demo,demoState:()=>demo?{phase:demo.phase,index:demo.index,revealed:demo.revealed}:null};
+})();
+
 function install(){
  $('proofCoachPanel')?.setAttribute('hidden','');
  document.querySelector('.col-center').insertAdjacentHTML('beforeend',`<section class="panel nav-panel" id="navigatorPanel"><div class="nav-heading"><div><div class="panel-title">DCC Navigator</div><span class="nav-small">Find the next useful thought.</span></div><span class="nav-badge">ENGINE ${C.ENGINE_REVISION}</span></div><div class="nav-options"><label>Goal <select id="navGoal"><option value="FLOW">Flow · keep moving</option><option value="PRACTICE">Practice a technique</option></select></label><label>Technique <select id="navTechnique">${C.LABELS.slice(0,8).map((n,i)=>`<option value="${i}" ${i===1?'selected':''}>${n}</option>`).join('')}</select></label></div><div class="btn-row"><button class="btn green" id="navNudge">◎ Where to look</button><button class="btn violet" id="navExplain">Why?</button><button class="btn gold" id="navReveal">Reveal</button></div><p class="nav-copy" id="navCopy" aria-live="polite">Choose a puzzle. The Navigator will remain quiet until you ask.</p><div id="navDetails"></div><button class="btn gold" id="navApply" hidden>Keep this checked elimination</button><div class="nav-actions"><button class="btn" id="navCompare">Compare paths</button><button class="btn" id="navPractice">New practice</button><button class="btn" id="navReviewCount">Review 0</button><button class="btn rose" id="navCancel" hidden>Cancel analysis</button></div><div class="nav-small" id="navReceipt"></div><div class="nav-practice" id="navPracticeInput" hidden><label>Candidate to exclude <select id="navElimDigit">${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><button class="btn green" id="navCheckElim">Check selected cell</button></div><details class="nav-extra"><summary>Views, learning & laboratory</summary><div class="nav-options"><label>Digit slice <select id="navDigit"><option value="0">Normal grid</option>${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><label>Controller <select id="navPolicy"><option value="REAL">DCC · real signal</option><option value="OFF">OFF · cheap checked baseline</option><option value="ORDINARY">Ordinary adaptive</option><option value="SHAM">SHAM · matched measurements</option></select></label></div><label class="nav-small"><input type="checkbox" id="navDeep"> Allow bounded digit-path specialist when needed</label><div class="nav-options"><button class="btn" id="navLearn">Machine memory: session</button><button class="btn" id="navTutor">Enable tutor profile</button></div><label class="nav-small">Machine learning <select id="navLearningMode"><option>COLD</option><option>ONLINE_PREQUENTIAL</option><option>FROZEN_TRANSFER</option><option>CACHE_REPEAT</option></select></label><p class="nav-small" id="navMemory"></p><div class="nav-actions"><button class="btn" id="navProfile">Learning profile</button><button class="btn" id="navSuggest">Suggest practice</button><button class="btn" id="navExport">Export</button><button class="btn" id="navImport">Import</button><button class="btn rose" id="navDelete">Delete local data</button></div><input id="navFile" type="file" accept="application/json,.json" hidden><button class="btn violet" id="navControls">Compare controllers on this position</button><pre id="navLabResult" class="nav-lab">No analysis requested.</pre><p class="nav-small">Real/OFF/SHAM are experimental selectors over the same verified rules. Machine learning ≠ measured human improvement. Unknown reasoning stays unknown. Game and review auto-save on this device. Machine history and tutor outcomes persist only when enabled. No external API, no background network.</p></details></section>`);
  document.body.insertAdjacentHTML('beforeend','<div class="nav-modal" id="navModal" hidden role="dialog" aria-modal="true" aria-labelledby="navModalTitle"><div class="nav-dialog"><button class="nav-close" id="navClose" aria-label="Close">×</button><h2 id="navModalTitle"></h2><div id="navModalBody"></div></div></div>');
- const events={navNudge:()=>analyze('nudge'),navExplain:()=>analyze('explain'),navReveal:()=>analyze('reveal'),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{cancelSolve();navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
+ const events={navNudge:()=>mobileUX.hint('nudge'),navExplain:()=>mobileUX.hint('explain'),navReveal:()=>analyze('reveal'),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{cancelSolve();navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
  $('navDigit').onchange=digitView;for(const id of ['navGoal','navTechnique','navPolicy','navDeep'])$(id).onchange=()=>{resetAnalysis();notify('Selection changed. Ask for a fresh checked suggestion.');};$('navLearningMode').onchange=()=>{learningMode=$('navLearningMode').value;if(learningMode==='COLD')machine=C.emptyModel();updateMemory();};$('navFile').onchange=e=>importAll(e.target.files[0]);$('navModal').onclick=e=>{if(e.target===$('navModal'))closeDialog();};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog();});
- $('hintBtn').onclick=()=>analyze('explain');$('hintBtn').textContent='◎ Navigator hint';
+ $('hintBtn').onclick=()=>mobileUX.hint('nudge');$('hintBtn').textContent='◎ Navigator hint';
  const title=document.querySelector('.title');if(title)title.innerHTML='8zSudoku <span class="accent">DCC Navigator</span>';const head=document.querySelector('.tb-center');if(head)head.textContent='8zSudoku · DCC Navigator';const version=document.querySelector('.tb-version');if(version)version.innerHTML='PWA · Engine '+C.ENGINE_REVISION+' · <a href="../../S/">Stable game ↗</a>';
  const info=$('preview-update');if(info)info.innerHTML='<summary>Engine 0.3.0 · fast solving, checked explanations</summary><p>8z Fast combines bitmask constraints, forced moves and bounded MRV search. New puzzles retain an exact uniqueness check. The Navigator uses cheap logic before deeper work, including pairs, triples and quads. DCC comparisons, consented learning and five classical strategies remain available.</p><p>Known rule library; no claim of an autonomous R7 rule forge or measured human learning. Every candidate deduction is checked. Export includes observations and scope.</p>';
- attachAdapters();const aiWrapped=aiSolve,stepWrapped=aiStep;aiSolve=()=>prepareLegacySolve(aiWrapped);aiStep=()=>prepareLegacySolve(stepWrapped);
+ attachAdapters();const aiWrapped=aiSolve,stepWrapped=aiStep;aiSolve=()=>mobileUX.mobile()?mobileUX.requestDemo():prepareLegacySolve(aiWrapped);aiStep=()=>mobileUX.mobile()?mobileUX.requestDemo():prepareLegacySolve(stepWrapped);
  memoryConsent=load('consentMachine')===true;tutorConsent=load('consentTutor')===true;if(memoryConsent){try{machine=C.restoreModel(load('machine')||C.emptyModel());learningMode='ONLINE_PREQUENTIAL';}catch(e){storageWarning='Machine memory rejected: '+e.message;}}const t=load('tutor');if(tutorConsent&&t){try{tutor=validateTutor(t);}catch(e){storageWarning='Tutor memory rejected: '+e.message;}}
  $('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';$('navLearningMode').value=learningMode;
  const saved=load('session');if(saved&&!humanTraceRecorder.isLocked())restoreSession(saved).catch(e=>{notify('Saved game was not restored: '+e.message);}).finally(()=>{booting=false;updateMemory();});else{booting=false;if(playerGrid)freshState();updateMemory();}
- window.addEventListener('pagehide',()=>{if(puzzle)persist('session',snapshot());});
- window.SudokuNavigator={flushForUpdate(){if(booting||genJob||pwaRestoreInFlight||pwaPendingReviews||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);return puzzle?persist('session',snapshot()):true;},version:C.VERSION,engineRevision:C.ENGINE_REVISION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};
+ window.addEventListener('pagehide',()=>{mobileUX.prepareUpdate();if(puzzle)persist('session',snapshot());});
+ window.SudokuNavigator={flushForUpdate(){mobileUX.prepareUpdate();if(booting||genJob||pwaRestoreInFlight||pwaPendingReviews||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);return puzzle?persist('session',snapshot()):true;},version:C.VERSION,ui:mobileUX,engineRevision:C.ENGINE_REVISION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};mobileUX.install();
 }
 install();
 })();
