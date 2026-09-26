@@ -380,6 +380,14 @@ body::after{
 .ux-picker-digit{display:flex;align-items:center;justify-content:center;border:1px solid #547186;border-radius:6px;font:700 30px/1 ui-monospace,monospace;background:#152339;color:#fff}
 .ux-picker-digit.active{background:#23586a;border:2px solid #fff}.ux-picker-digit[aria-disabled=true]{opacity:.35}
 #grid.ux-holding{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.ux-origin{outline:2px solid var(--cyan);outline-offset:-3px}
+.ux-loupe{position:fixed;box-sizing:border-box;z-index:1100;padding:10px;border:2px solid #00e5ff;border-radius:12px;background:#0b1423;color:#fff;box-shadow:0 8px 32px #000b;pointer-events:none;user-select:none;-webkit-user-select:none}
+.ux-loupe-title{height:24px;margin-bottom:6px;font:600 13px/24px system-ui;text-align:center}
+.ux-loupe-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);aspect-ratio:1;background:#547186;gap:2px}
+.ux-loupe-cell{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background:#152339;color:#fff;font:700 calc(var(--ux-loupe-cell)*.60)/1 ui-monospace,monospace}
+.ux-loupe-focus{outline:3px solid #00e5ff;outline-offset:-3px;background:#214558}.ux-loupe-edge{background:#0b1423}
+.ux-loupe-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:90%;height:90%;font:600 calc(var(--ux-loupe-cell)*.23)/1 ui-monospace,monospace;color:#b7cce4}
+.ux-loupe-notes span{display:flex;align-items:center;justify-content:center}.ux-loupe[data-outside=true] .ux-loupe-grid{opacity:.4}
 .ux-toolbar{display:none}.ux-demo-grid{position:absolute;inset:var(--ux-grid-inset,10px);background:#0b1423;z-index:12;pointer-events:none}
 .ux-demo-cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);color:#fff;font:700 calc(var(--cell)*.46)/1 ui-monospace,monospace}
 .ux-demo-cell:nth-child(3n){border-right:2px solid var(--border2)}.ux-demo-cell:nth-child(9n){border-right:1px solid var(--border)}
@@ -394,6 +402,10 @@ body::after{
 .ux-card .nav-dialog h2{font-size:1.05rem;margin-bottom:5px;padding-right:44px}.ux-card .nav-dialog p{margin:5px 0}
 .ux-card .nav-close{right:4px;top:0}.ux-card details{font-size:.85rem}.ux-card #navModalBody{overflow-wrap:anywhere}
 @media(max-width:760px){
+  /* Suppress native text/callout recognition before contact, not after 300 ms.
+     Keep native panning/pinch available; no mid-gesture touch-action switch. */
+  #grid,#grid *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  #grid .cell>*{pointer-events:none}
   .topbar{padding:5px 10px;min-height:28px}.topbar .tb-center{display:none}
   .header{padding:3px 12px 0}.header .logo{font-size:.6rem;letter-spacing:.12em}.timer{font-size:1rem}
   .title-block{padding:0 8px}.title{font-size:1.45rem;line-height:1.15}.subtitle{display:none}
@@ -2641,8 +2653,10 @@ const mobileUX=(()=>{
  const modal=()=>!!$('navModal')&&!$('navModal').hidden;
  const blocked=()=>!!demo||modal()||!!genJob||!!restoring||booting;
  const playable=()=>!!playerGrid&&!aiAnimating&&!tracePaused&&!recoveryAwaitingContinue&&!blocked();
- const eligible=i=>playable()&&Number.isInteger(i)&&i>=0&&i<81&&!givenCells[Math.floor(i/9)][i%9]&&!playerGrid[Math.floor(i/9)][i%9];
+ const inspectable=i=>playable()&&Number.isInteger(i)&&i>=0&&i<81;
+ const eligible=i=>inspectable(i)&&!givenCells[Math.floor(i/9)][i%9]&&!playerGrid[Math.floor(i/9)][i%9];
  const key=()=>gameId+'|'+playerGrid?.flat().join('')+'|'+history.length+'|'+notesMode;
+ const validGesture=g=>g.key===key()&&(g.mode==='picker'?eligible(g.index):inspectable(g.index)&&!!playerGrid[Math.floor(g.index/9)][g.index%9]);
  function visibleBounds(){
   let left=0,top=0,right=innerWidth,bottom=innerHeight,win=window,ox=0,oy=0;
   try{while(true){const vv=win.visualViewport;left=Math.max(left,(vv?.offsetLeft||0)-ox);top=Math.max(top,(vv?.offsetTop||0)-oy);right=Math.min(right,(vv?.offsetLeft||0)+(vv?.width||win.innerWidth)-ox);bottom=Math.min(bottom,(vv?.offsetTop||0)+(vv?.height||win.innerHeight)-oy);
@@ -2656,19 +2670,43 @@ const mobileUX=(()=>{
  }
  function geometry(i){return G.place([...$('grid').children].map(c=>c.getBoundingClientRect()),i,visibleBounds());}
  function toast(text){let n=$('uxToast');n.textContent=text;n.hidden=false;const v=visibleBounds();if(v){n.style.left=v.left+'px';n.style.top=v.top+'px';}clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.hidden=true,2400);}
- function cancelGesture(consumed=false){const g=gesture;if(!g)return;gesture=null;gestureSeq++;clearTimeout(g.timer);$('uxPicker')?.remove();$('grid').classList.remove('ux-holding');if(g.active||consumed)suppress={until:Date.now()+850,x:g.x,y:g.y};if(g.capture)try{$('grid').releasePointerCapture(g.id);}catch(_){} }
- function activate(token){const g=gesture;if(!g||g.token!==token||!eligible(g.index)||g.key!==key()){cancelGesture();return;}
-  const layout=geometry(g.index);if(!layout.ok){if(selectedCell!==g.index)selectCell(g.index,g.source);toast(layout.reason||'Use Numbers below');cancelGesture(true);return;}
-  if(selectedCell!==g.index)selectCell(g.index,g.source);
-  if(selectedCell!==g.index){cancelGesture();return;}g.active=true;g.layout=layout;g.disabled=[...$('numpad').children].map(b=>b.disabled||b.classList.contains('used'));$('grid').classList.add('ux-holding');
-  const p=document.createElement('div');p.id='uxPicker';p.className='ux-picker';p.setAttribute('role','presentation');p.style.cssText=`left:${layout.footprint.left+6}px;top:${layout.footprint.top+6}px;width:${layout.footprint.width-12}px;--ux-target:${layout.size}px`;
-  p.innerHTML='<div class="ux-picker-title">Slide to a number · release to enter</div><div class="ux-picker-grid">'+layout.targets.map(t=>`<div class="ux-picker-digit" data-digit="${t.digit}" aria-disabled="${!!g.disabled[t.digit-1]}">${t.digit}</div>`).join('')+'</div>';
-  document.body.appendChild(p);if(g.kind==='pointer')try{$('grid').setPointerCapture(g.id);g.capture=true;}catch(_){}
+ function cancelGesture(consumed=false){const g=gesture;if(!g)return;gesture=null;gestureSeq++;clearTimeout(g.timer);$('uxPicker')?.remove();$('uxLoupe')?.remove();$('grid').classList.remove('ux-holding');$('grid').children[g.index]?.classList.remove('ux-origin');if(g.active||consumed)suppress={until:Date.now()+850,x:g.x,y:g.y};if(g.capture)try{$('grid').releasePointerCapture(g.id);}catch(_){} }
+ function paintLoupe(g,x,y){
+  const p=$('uxLoupe');if(!p)return;const i=g.cells.findIndex(r=>x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom);
+  p.dataset.outside=String(i<0);if(i<0){p.querySelector('.ux-loupe-title').textContent='Slide over the grid';return;}
+  if(p.dataset.cell===String(i)){p.querySelector('.ux-loupe-title').textContent=`Magnifier · R${Math.floor(i/9)+1} C${i%9+1}`;return;}
+  p.dataset.cell=String(i);p.querySelector('.ux-loupe-title').textContent=`Magnifier · R${Math.floor(i/9)+1} C${i%9+1}`;
+  const view=p.querySelector('.ux-loupe-grid');view.replaceChildren();
+  // Read only the player's visible values/Notes. Never consult solution,
+  // candidates, proof/search, selection, history, review or assistance adapters.
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+   const r=Math.floor(i/9)+dy,c=i%9+dx,n=document.createElement('div');n.className='ux-loupe-cell'+(!dx&&!dy?' ux-loupe-focus':'');
+   if(r<0||r>8||c<0||c>8)n.classList.add('ux-loupe-edge');
+   else if(playerGrid[r][c])n.textContent=String(playerGrid[r][c]);
+   else if(notes[r][c].size){const marks=document.createElement('div');marks.className='ux-loupe-notes';for(let d=1;d<=9;d++){const s=document.createElement('span');s.textContent=notes[r][c].has(d)?String(d):'';marks.appendChild(s);}n.appendChild(marks);}
+   view.appendChild(n);
+  }
  }
- function arm(index,id,x,y,kind,source){cancelGesture();suppress=null;if(!mobile()||!eligible(index))return;const token=++gestureSeq;gesture={index,id,x,y,x0:x,y0:y,kind,source,key:key(),token,active:false};gesture.timer=setTimeout(()=>activate(token),300);}
+ function openLoupe(g){const v=visibleBounds();if(!v)return false;const width=Math.min(280,v.width-16,v.height-46),height=width+30;if(width<100)return false;
+  const p=document.createElement('div');p.id='uxLoupe';p.className='ux-loupe';p.setAttribute('aria-hidden','true');p.style.cssText=`left:${v.left+(v.width-width)/2}px;top:${v.top+(v.height-height)/2}px;width:${width}px;height:${height}px;--ux-loupe-cell:${(width-28)/3}px`;
+  p.innerHTML='<div class="ux-loupe-title"></div><div class="ux-loupe-grid"></div>';g.cells=[...$('grid').children].map(c=>c.getBoundingClientRect());document.body.appendChild(p);paintLoupe(g,g.x,g.y);return true;
+ }
+ function activate(token){const g=gesture;if(!g||g.token!==token||!validGesture(g)){cancelGesture();return;}
+  if(g.mode==='loupe'){if(!openLoupe(g)){cancelGesture(true);return;}}
+  else{
+   const layout=geometry(g.index);if(!layout.ok){toast(layout.reason||'Use Numbers below');cancelGesture(true);return;}
+   g.layout=layout;g.disabled=[...$('numpad').children].map(b=>b.disabled||b.classList.contains('used'));
+   const p=document.createElement('div');p.id='uxPicker';p.className='ux-picker';p.setAttribute('role','presentation');p.style.cssText=`left:${layout.footprint.left+6}px;top:${layout.footprint.top+6}px;width:${layout.footprint.width-12}px;--ux-target:${layout.size}px`;
+   p.innerHTML='<div class="ux-picker-title">Slide to a number · release to enter</div><div class="ux-picker-grid">'+layout.targets.map(t=>`<div class="ux-picker-digit" data-digit="${t.digit}" aria-disabled="${!!g.disabled[t.digit-1]}">${t.digit}</div>`).join('')+'</div>';document.body.appendChild(p);$('grid').children[g.index].classList.add('ux-origin');
+  }
+  // Do not render/select mid-contact: render replaces Notes descendants which
+  // may own the Touch target. Selection/transaction occurs only on valid release.
+  g.active=true;$('grid').classList.add('ux-holding');if(g.kind==='pointer')try{$('grid').setPointerCapture(g.id);g.capture=true;}catch(_){}
+ }
+ function arm(index,id,x,y,kind,source){cancelGesture();suppress=null;if(!mobile()||!inspectable(index))return;const mode=playerGrid[Math.floor(index/9)][index%9]?'loupe':'picker';if(mode==='picker'&&!eligible(index))return;const token=++gestureSeq;gesture={index,id,x,y,x0:x,y0:y,kind,source,mode,key:key(),token,active:false};gesture.timer=setTimeout(()=>activate(token),300);}
  function hover(g,x,y){if(x>=g.layout.footprint.left&&x<=g.layout.footprint.right&&y>=g.layout.footprint.top&&y<=g.layout.footprint.bottom){const t=g.layout.targets.find(t=>x>=t.left&&x<t.right&&y>=t.top&&y<t.bottom);return t&&!g.disabled[t.digit-1]?t.digit:0;}return 0;}
- function move(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;if(g.key!==key()||!eligible(g.index)){cancelGesture();return;}if(!g.active){if(Math.hypot(x-g.x0,y-g.y0)>10)cancelGesture();return;}g.hover=hover(g,x,y);$('uxPicker').querySelectorAll('[data-digit]').forEach(n=>n.classList.toggle('active',+n.dataset.digit===g.hover));}
- function release(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;const digit=g.active&&g.key===key()&&eligible(g.index)?hover(g,x,y):0;cancelGesture();if(digit){selectedCell=g.index;placeNumber(digit,g.source);sync();}}
+ function move(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;if(!validGesture(g)){cancelGesture();return;}if(!g.active){if(Math.hypot(x-g.x0,y-g.y0)>10)cancelGesture();return;}if(g.mode==='loupe'){paintLoupe(g,x,y);return;}g.hover=hover(g,x,y);$('uxPicker').querySelectorAll('[data-digit]').forEach(n=>n.classList.toggle('active',+n.dataset.digit===g.hover));}
+ function release(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;const digit=g.active&&g.mode==='picker'&&validGesture(g)?hover(g,x,y):0;cancelGesture();if(digit){if(selectedCell!==g.index)selectCell(g.index,g.source);if(selectedCell===g.index)placeNumber(digit,g.source);sync();}}
  function park(node,parent){if(!slots.has(node)){const marker=document.createComment('mobile control home');node.before(marker);slots.set(node,marker);}parent.appendChild(node);}
  function unpark(node){const marker=slots.get(node);if(marker?.parentNode)marker.after(node);}
  function sync(){
@@ -2705,7 +2743,7 @@ const mobileUX=(()=>{
  }
  function more(){if(demo||genJob)return;openDialog('More','<div class="ux-menu">'+['Review','Settings','Help','Import','Export'].map(s=>`<button class="btn" data-menu="${s}">${s}</button>`).join('')+'</div>');$('navModalBody').querySelectorAll('[data-menu]').forEach(b=>b.onclick=()=>{
    const item=b.dataset.menu;if(item==='Review'){closeDialog();if(rows.length)showReview(rows.at(-1).id);else openDialog('Game Review','<p>No moves have been played in this game yet.</p>');}
-   if(item==='Help')openDialog('How to play','<p>Tap a cell, then a number. Or hold an empty cell for about 300 ms, keep touching and slide to 1–9; release on the number to enter it. Release outside or in a gap to cancel. If there is no clear space, use Numbers.</p><p>Notes toggles pencil marks. Undo reverses one move. Hint points you toward a thought; Why? explains that same checked thought. Neither enters a value.</p><p>AI Solve demonstrates on a copy. Stop freezes it; Return to my game brings back your untouched game. Human Trace must be exported/deleted explicitly before a demonstration.</p><p>The laboratory and research controls remain below the game.</p>');
+   if(item==='Help')openDialog('How to play','<p>Tap a cell, then a number. Or hold an empty cell still for about 300 ms, keep touching and slide to 1–9; release on the number to enter it. Release outside or in a gap to cancel. If there is no clear space, use Numbers. Start moving before the hold to scroll normally.</p><p>Hold a filled cell to open the central magnifier. Keep your finger down and slide over the grid to enlarge the visible values and Notes. It stays a magnifier even over empty cells. Release to close; it never enters a move or reveals an answer.</p><p>Notes toggles pencil marks. Undo reverses one move. Hint points you toward a thought; Why? explains that same checked thought. Neither enters a value.</p><p>AI Solve demonstrates on a copy. Stop freezes it; Return to my game brings back your untouched game. Human Trace must be exported/deleted explicitly before a demonstration.</p><p>The laboratory and research controls remain below the game.</p>');
    if(item==='Settings'){openDialog('Settings','<div id="uxSettings"></div><p>These are the existing game and Navigator settings. Changes also update their laboratory controls.</p>');for(const id of ['speedSlider','navGoal','navTechnique','navPolicy','navDeep','navLearningMode','navLearn','navTutor']){const n=$(id);if(!n)continue;const row=document.createElement('div');row.className='ux-setting';const label=document.createElement('label');label.textContent=({speedSlider:'Demonstration speed',navGoal:'Goal',navTechnique:'Technique',navPolicy:'Controller',navDeep:'Allow bounded digit-path work',navLearningMode:'Machine learning'})[id]||'';label.htmlFor=id;row.appendChild(label);$('uxSettings').appendChild(row);park(n,row);dialog.returnNodes.push(n);}}
    if(item==='Import'){closeDialog();$('navFile').value='';$('navFile').click();}if(item==='Export'){closeDialog();exportAll();}
   });}
@@ -2735,17 +2773,19 @@ const mobileUX=(()=>{
   document.body.insertAdjacentHTML('beforeend','<div id="uxSafeArea" class="ux-safe-area"></div><div id="uxToast" class="ux-toast" role="status" hidden></div>');
   $('uxNew').onclick=()=>requestNew();$('uxHint').onclick=()=>hint('nudge');$('uxWhy').onclick=()=>hint('explain');$('uxMore').onclick=more;
   const grid=$('grid');grid.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||Date.now()<touchUntil)return;if(gesture||e.isPrimary===false||e.button!==0){cancelGesture();return;}const c=e.target.closest('.cell');if(c)arm(+c.dataset.index,e.pointerId,e.clientX,e.clientY,'pointer',e.pointerType==='pen'?'pointer':'pointer');});
-  document.addEventListener('pointerdown',e=>{if(e.isPrimary===false)cancelGesture();if(!gesture)suppress=null;},true);
+  document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||Date.now()<touchUntil)return;if(e.isPrimary===false)cancelGesture();if(!gesture)suppress=null;},true);
   document.addEventListener('pointermove',e=>{if(gesture?.kind!=='pointer'||gesture.id!==e.pointerId)return;if(e.buttons!==1){cancelGesture();return;}move(e.clientX,e.clientY);});
   document.addEventListener('pointerup',e=>{if(gesture?.kind==='pointer'&&gesture.id===e.pointerId)release(e.clientX,e.clientY);});
   document.addEventListener('pointercancel',e=>{if(gesture?.kind==='pointer'&&gesture.id===e.pointerId)cancelGesture();});grid.addEventListener('lostpointercapture',()=>{if(gesture?.kind==='pointer')cancelGesture();});
-  // A single Touch Events owner preserves native pre-hold scrolling. Only an
-  // activated, still-cancelable one-finger move is canceled. Pointer touch events
-  // never run a second recognizer. Real WebKit/device arbitration remains a gate.
-  grid.addEventListener('touchstart',e=>{touchUntil=Date.now()+1000;if(e.touches.length!==1||!e.cancelable){cancelGesture();return;}const t=e.changedTouches[0],c=e.target.closest('.cell');if(c)arm(+c.dataset.index,t.identifier,t.clientX,t.clientY,'touch','touch');},{passive:true});
-  grid.addEventListener('touchmove',e=>{const g=gesture;if(g?.kind!=='touch')return;if(e.touches.length!==1){cancelGesture();return;}const t=[...e.touches].find(t=>t.identifier===g.id);if(!t){cancelGesture();return;}if(g.active){if(!e.cancelable){cancelGesture();return;}e.preventDefault();}move(t.clientX,t.clientY);},{passive:false});
-  grid.addEventListener('touchend',e=>{if(gesture?.kind!=='touch')return;const t=[...e.changedTouches].find(t=>t.identifier===gesture.id);if(t){if(gesture.active&&e.cancelable)e.preventDefault();release(t.clientX,t.clientY);}},{passive:false});
-  grid.addEventListener('touchcancel',()=>cancelGesture());document.addEventListener('touchstart',e=>{if(e.touches.length>1)cancelGesture();},{capture:true,passive:true});
+  // Install non-passive listeners BEFORE any contact (WebKit arbitration).
+  // touchstart is never prevented, and its cancelable flag is NOT eligibility.
+  // The first pre-hold move yields the entire contact to native pan: a later
+  // timer must never try to reclaim a sequence whose default already ran.
+  // For a stationary hold, the FIRST move after activation is prevented.
+  grid.addEventListener('touchstart',e=>{touchUntil=Date.now()+1000;suppress=null;if(e.touches.length!==1){cancelGesture();return;}const t=e.changedTouches[0],c=e.target.closest('.cell');if(t&&c)arm(+c.dataset.index,t.identifier,t.clientX,t.clientY,'touch','touch');},{passive:false});
+  grid.addEventListener('touchmove',e=>{touchUntil=Date.now()+1000;const g=gesture;if(g?.kind!=='touch')return;if(e.touches.length!==1||!g.active){cancelGesture();return;}const t=[...e.touches].find(t=>t.identifier===g.id);if(!t||!e.cancelable){cancelGesture();return;}e.preventDefault();if(!e.defaultPrevented){cancelGesture();return;}move(t.clientX,t.clientY);},{passive:false});
+  grid.addEventListener('touchend',e=>{touchUntil=Date.now()+1000;const g=gesture;if(g?.kind!=='touch')return;const t=[...e.changedTouches].find(t=>t.identifier===g.id);if(!t||e.touches.length||g.active&&!e.cancelable){cancelGesture();return;}if(g.active)e.preventDefault();release(t.clientX,t.clientY);},{passive:false});
+  grid.addEventListener('touchcancel',()=>{touchUntil=Date.now()+1000;cancelGesture();});document.addEventListener('touchstart',e=>{if(e.touches.length>1)cancelGesture();},{capture:true,passive:true});
   grid.addEventListener('contextmenu',e=>{if(gesture){e.preventDefault();}});
   document.addEventListener('click',e=>{if(suppress&&Date.now()<suppress.until&&e.detail!==0&&(e.target.closest('#grid')||Math.hypot(e.clientX-suppress.x,e.clientY-suppress.y)<20)){suppress=null;e.preventDefault();e.stopImmediatePropagation();return;}
    if(demo&&!e.target.closest('#solveBtn,#uxDemoReturn')){e.preventDefault();e.stopImmediatePropagation();return;}
@@ -2781,4 +2821,3 @@ install();
 </script>
 </body>
 </html>
-
