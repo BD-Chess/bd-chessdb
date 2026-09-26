@@ -298,10 +298,16 @@ body::after{
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:760px){
-  /* Small-screen grid: retain entry > given > note contrast without overriding state colors. */
-  .cell.given{color:#b4c5df}
+  /* Phone play surface; intentional error/AI colors continue to override white. */
+  .cell{color:#fff;font-size:calc(var(--cell)*0.5)}
+  .cell.given{color:#fff}
   .cell .notes{color:#94a9c9}
-  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px}
+  .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px;padding:6px 10px}
+  .grid-wrap{padding:4px}
+  .header{padding:8px 12px 0}
+  .title-block{padding-top:3px}
+  .mobile-input-panel{width:100%;max-width:530px;margin-top:10px}
+  .mobile-input-panel .numpad button,.mobile-input-panel .btn{min-height:44px}
   .col-left,.col-right{flex-direction:row;flex-wrap:wrap;gap:6px}
   .col-left .panel,.col-right .panel{flex:1;min-width:140px}
   .topbar .tb-version{display:none}
@@ -1111,12 +1117,32 @@ body::after{
 // ── Dynamic cell sizing ──
 function calcCellSize(){
   const w=window.innerWidth,h=window.innerHeight;
-  if(w<760){const avail=Math.min(w-40,h*0.5);return Math.max(30,Math.floor((avail-20)/9.5))}
+  // APP phone sizing, capped to the mobile column's 500px maximum width.
+  if(w<=760){const avail=Math.min(w-24,h*0.57,476);return Math.max(30,Math.floor((avail-18)/9.1))}
   const availW=w-490,availH=h-160;
   return Math.max(36,Math.min(Math.floor((availW-20)/9.5),Math.floor((availH-20)/9.5),72));
 }
 function applyCellSize(){document.documentElement.style.setProperty('--cell',calcCellSize()+'px')}
 applyCellSize();window.addEventListener('resize',applyCellSize);
+
+// Keep the existing keypad next to the board on phones; preserve its desktop slot.
+(function setupMobileInputPanel(){
+  const panel=document.getElementById('numpad')?.closest('.panel');
+  const grid=document.getElementById('gridWrap');
+  if(!panel||!grid)return;
+  const desktopParent=panel.parentNode,desktopNext=panel.nextSibling;
+  function placeInputPanel(){
+    if(window.innerWidth<=760){
+      if(grid.nextElementSibling!==panel)grid.after(panel);
+      panel.classList.add('mobile-input-panel');
+    }else{
+      if(panel.parentNode!==desktopParent)desktopParent.insertBefore(panel,desktopNext);
+      panel.classList.remove('mobile-input-panel');
+    }
+  }
+  window.addEventListener('resize',placeInputPanel);
+  placeInputPanel();
+})();
 
 // ════════════════════════════════════════════════════════
 //  CORE ENGINE

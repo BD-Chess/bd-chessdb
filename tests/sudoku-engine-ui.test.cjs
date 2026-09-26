@@ -19,10 +19,11 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn,message,ms=10000){const end=Date.now()+ms;while(Date.now()<end){if(fn())return;await sleep(10);}assert.ok(fn(),message);}
 const plain=x=>JSON.parse(JSON.stringify(x));
 function valid(grid,givens){const b=grid.flat(),p=givens.flat();assert.equal(b.length,81);for(let i=0;i<81;i++)if(p[i])assert.equal(b[i],p[i],'givens retained');for(let k=0;k<9;k++){const row=b.slice(k*9,k*9+9),col=Array.from({length:9},(_,i)=>b[i*9+k]),box=Array.from({length:9},(_,i)=>b[(Math.floor(k/3)*3+Math.floor(i/3))*9+(k%3)*3+i%3]);for(const u of [row,col,box])assert.deepEqual(u.slice().sort(),[1,2,3,4,5,6,7,8,9]);}}
-async function boot(t,stored={}){
+async function boot(t,stored={},viewport){
  const errors=[],requests=[],workers=new Set(),urls=new Map(),downloads=[],delayKinds={},delayedTimers=new Set();let nextUrl=0;
  const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(fs.readFileSync(appPath,'utf8'),{url:`https://mdlxDcc.org/S/${appSegment}/app.html`,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;
+ if(viewport){w.innerWidth=viewport.width;w.innerHeight=viewport.height;}
  w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
  w.alert=s=>errors.push('alert: '+s);w.confirm=()=>true;
  w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLElement.prototype.scrollTo=function(){};
@@ -42,6 +43,51 @@ async function boot(t,stored={}){
  return{w,errors,requests,downloads,delayKinds,el:id=>w.document.getElementById(id),get:expression=>plain(w.eval(expression)),store:()=>Object.fromEntries(Array.from({length:w.localStorage.length},(_,i)=>{const k=w.localStorage.key(i);return[k,w.localStorage.getItem(k)];}))};
 }
 function savedFixture(version){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version,gameId:'legacy-shape-fixture',diff:'easy',puzzle:[...fixture].map(Number),board:[...fixture].map(Number),notes:Array.from({length:81},()=>[]),time:37,lineage:{base:[...fixture].map(Number),ops:[]},rows:[],assistance:[],recentGains:[],practice:null,history:[],settings:{policy:'REAL',goal:'FLOW',target:1,deep:false}};}
+
+// DOM/geometry-contract checks, not rendered viewport or physical-phone evidence.
+for(const [width,height] of [[402,874],[390,844],[320,568],[740,402],[760,900]]){
+ test(`phone keypad adjacency, sizing bounds and desktop restoration at ${width}x${height}`,async t=>{
+  const h=await boot(t,{}, {width,height}),{w}=h,grid=h.el('gridWrap');
+  const panel=h.el('numpad').closest('.panel'),left=w.document.querySelector('.col-left');
+  assert.equal(grid.nextElementSibling,panel,'no analysis or other panel between board and keypad');
+  assert.ok(panel.classList.contains('mobile-input-panel'));
+  assert.equal(w.document.querySelectorAll('#numpad').length,1);
+  const size=h.get('calcCellSize()');
+  assert.ok(9*size+18<=Math.min(width,500)-20,'cell tracks, gaps and wrapper fit the mobile column');
+  for(const diff of ['easy','medium','hard','evil'])assert.ok(left.querySelector(`[onclick="newGame('${diff}')"]`),'difficulty remains available');
+  w.innerWidth=1440;w.innerHeight=900;w.dispatchEvent(new w.Event('resize'));
+  assert.equal(panel.parentNode,left);assert.equal(left.children[1],panel,'restore exact original desktop slot');
+  assert.equal(panel.nextElementSibling,h.el('humanTracePanel'));
+  assert.equal(panel.classList.contains('mobile-input-panel'),false);
+  assert.equal(h.get('calcCellSize()'),72,'desktop sizing is unchanged');
+  for(const resized of [390,761,760,402]){w.innerWidth=resized;w.dispatchEvent(new w.Event('resize'));assert.equal(h.el('numpad').closest('.panel'),panel);assert.equal(resized<=760?grid.nextElementSibling:left.children[1],panel);}
+  assert.deepEqual(h.errors,[]);
+ });
+}
+
+test('moved phone keypad retains input handlers, notes, undo and review across resize',{timeout:30000},async t=>{
+ const h=await boot(t,{}, {width:402,height:874}),{w}=h;
+ await w.SudokuNavigator.restore(savedFixture(w.SudokuNavigator.version));
+ const panel=h.el('numpad').closest('.panel'),keys=[...h.el('numpad').children];
+ const empty=[...fixture].map((v,i)=>v==='0'?i:-1).filter(i=>i>=0);
+ for(const i of empty.slice(0,12)){
+  w.document.querySelector(`.cell[data-index="${i}"]`).click();
+  keys[Number(fixtureSolution[i])-1].click();
+  assert.equal(h.get(`playerGrid.flat()[${i}]`),Number(fixtureSolution[i]));
+  assert.equal(h.el('gridWrap').nextElementSibling,panel);
+ }
+ await w.SudokuNavigator.whenReviewed();
+ const i=empty[12],cell=w.document.querySelector(`.cell[data-index="${i}"]`);cell.click();
+ w.toggleNotes();for(const n of [1,2,4])keys[n-1].click();
+ assert.equal(h.el('notesBtn').textContent,'Notes: ON');assert.match(cell.querySelector('.notes').textContent,/1.*2.*4/);
+ w.eraseCell();assert.equal(cell.querySelector('.notes'),null);w.undoMove();assert.match(cell.querySelector('.notes').textContent,/1.*2.*4/);
+ w.toggleNotes();keys[Number(fixtureSolution[i])-1].click();w.eraseCell();assert.equal(h.get(`playerGrid.flat()[${i}]`),0);w.undoMove();assert.equal(h.get(`playerGrid.flat()[${i}]`),Number(fixtureSolution[i]));
+ await w.SudokuNavigator.whenReviewed();h.el('navReviewCount').click();assert.equal(h.el('navModal').hidden,false);h.el('navClose').click();
+ const before=h.get('playerGrid');w.innerWidth=1440;w.dispatchEvent(new w.Event('resize'));w.innerWidth=390;w.dispatchEvent(new w.Event('resize'));
+ assert.deepEqual(h.get('playerGrid'),before);assert.equal(h.el('gridWrap').nextElementSibling,panel);assert.equal(h.el('numpad').children[0],keys[0]);
+ w.document.querySelector(`.cell[data-index="${empty[13]}"]`).click();keys[Number(fixtureSolution[empty[13]])-1].click();await w.SudokuNavigator.whenReviewed();
+ assert.equal(h.get(`playerGrid.flat()[${empty[13]}]`),Number(fixtureSolution[empty[13]]));assert.deepEqual(h.errors,[]);
+});
 
 test('fresh game, checked hint and move review execute shipped worker code', {timeout:30000},async t=>{
  const h=await boot(t);const{w}=h;await w.newGame('easy');
