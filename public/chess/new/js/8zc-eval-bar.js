@@ -34,30 +34,18 @@
     const comparison = document.getElementById('allEvalBadges');
     const sourceScores = new Map();
     const dccChoices = new Map();
-    let mobileIndex = 0, mobileTimer = null, mobileKey = '', rotationKey = '';
     const sources = ['CDB', 'SF', 'DCC'];
-    const duration = source => Math.max(1, Math.min(30, Number(settings[`all${source}Seconds`]) || 4)) * 1000;
-    function scheduleRotation() {
-      if (settings.analysisSource !== 'all' || !matchMedia('(max-width: 790px)').matches || document.hidden || !isVisible()) {
-        clearTimeout(mobileTimer); mobileTimer = null; return;
-      }
-      const key = `${mobileKey}:${mobileIndex}:${duration(sources[mobileIndex])}`;
-      // Streaming search updates must not postpone the mobile source rotation.
-      if (mobileTimer !== null && rotationKey === key) return;
-      clearTimeout(mobileTimer); rotationKey = key;
-      mobileTimer = setTimeout(() => { mobileTimer = null; mobileIndex = (mobileIndex + 1) % sources.length; render(); }, duration(sources[mobileIndex]));
-    }
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
-      const all = settings.analysisSource === 'all' && visible;
+      const selectedAll = settings.analysisSource === 'all';
+      const all = selectedAll && visible;
       comparison.hidden = !all;
-      comparison.parentElement.classList.toggle('has-all-evals', all);
-      if (!all) { clearTimeout(mobileTimer); mobileTimer = null; return; }
-      if (mobileKey !== fen) { mobileKey = fen; mobileIndex = 0; }
+      comparison.parentElement.classList.toggle('has-all-evals', selectedAll);
+      comparison.parentElement.hidden = selectedAll && !visible;
+      if (!all) return;
       comparison.replaceChildren();
-      for (const [i, source] of sources.entries()) {
+      for (const source of sources) {
         const badge = document.createElement('div'); badge.className = 'all-eval-badge';
-        badge.classList.toggle('is-mobile-current', i === mobileIndex);
         const title = document.createElement('strong'); title.textContent = source;
         const value = document.createElement('span'); const note = document.createElement('small');
         badge.append(title);
@@ -81,7 +69,6 @@
         badge.classList.toggle('is-unknown', value.textContent === '—');
         badge.append(value, note); comparison.append(badge);
       }
-      scheduleRotation();
     }
     function render() {
       if (!el) return;
@@ -126,8 +113,6 @@
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    document.addEventListener?.('visibilitychange', () => { if (document.hidden) { clearTimeout(mobileTimer); mobileTimer = null; } else render(); });
-    if (typeof window !== 'undefined') window.addEventListener?.('resize', render);
     return { render, update, updateSource, updateDCC };
   }
   return { measure, create };

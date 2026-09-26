@@ -24,10 +24,6 @@
       if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeWhatsNew();
     });
     whatsNew.addEventListener('close', () => openWhatsNew.focus());
-    byId('btnPlayBest').addEventListener('click', () => byId('bestMoveLink').click());
-    byId('bestMoveLink').addEventListener('keydown', event => {
-      if (event.key === ' ') { event.preventDefault(); byId('bestMoveLink').click(); }
-    });
 
     // Keep the board library's internal square geometry synchronized with CSS.
     let resizeFrame = 0;

@@ -102,24 +102,25 @@ test('Deep SF scores preserve White POV, mate distance and upper/lower bounds', 
   assert.equal(E.measure(white, { type: 'mate', white: -2, whiteBound: 'exact' }, null, 'SF').label, '−#2');
 });
 
-test('streamed SF updates preserve mobile rotation deadlines; a new position resets rotation', t => {
+test('All shows three sources simultaneously on mobile; Hide Eval hides their row', t => {
   const { JSDOM } = require('jsdom'), fs = require('node:fs');
-  const dom = new JSDOM('<div><div id="allEvalBadges"></div></div><div id="positionEval"></div><span id="positionEvalLabel"></span>', {runScripts:'outside-only'});
+  const dom = new JSDOM('<div class="board-actions"><div id="allEvalBadges"></div></div><div id="positionEval"></div><span id="positionEvalLabel"></span>', {runScripts:'outside-only'});
   t.after(() => dom.window.close()); const w = dom.window;
   Object.defineProperty(w.document, 'hidden', { value: false }); w.matchMedia = () => ({ matches: true });
   const timers = new Map(); let next = 0;
   w.setTimeout = (fn, ms) => {timers.set(++next, {fn,ms}); return next;}; w.clearTimeout = id => timers.delete(id);
   w.eval(fs.readFileSync(require('node:path').join(__dirname,'../js/8zc-eval-bar.js'),'utf8'));
   const b = new Chess(), settings = {analysisSource:'all', allCDBSeconds:2, allSFSeconds:3};
-  const view = w.ChessEvalBar.create({game:b, settings, isVisible:()=>true});
+  let visible=true;
+  const view = w.ChessEvalBar.create({game:b, settings, isVisible:()=>visible});
   view.updateSource(b.fen(), 10, 'CDB', null, 'e4');
-  const deadline = next;
   for (let depth=8;depth<20;depth++) view.updateSource(b.fen(), {type:'cp',white:depth}, 'SF',depth,'Nf3');
-  assert.equal(next, deadline, 'SF updates do not restart the CDB timer');
-  assert.equal(timers.get(deadline).ms, 2000);
-  const timer=timers.get(deadline); timers.delete(deadline); timer.fn();
-  assert.match(w.document.querySelector('.is-mobile-current').textContent, /^SF/);
-  assert.equal(timers.get(next).ms, 3000);
-  b.move('e4'); view.render();
-  assert.match(w.document.querySelector('.is-mobile-current').textContent, /^CDB/);
+  const row=w.document.getElementById('allEvalBadges');
+  assert.deepEqual([...row.children].map(card=>card.querySelector('strong').textContent),['CDB','SF','DCC']);
+  assert.equal(timers.size,0,'saved rotation seconds do not schedule hidden mobile timers');
+  assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
+  visible=false; view.render();
+  assert.equal(row.hidden,true); assert.equal(row.parentElement.hidden,true);
+  visible=true; settings.analysisSource='auto'; view.render();
+  assert.equal(row.parentElement.hidden,false); assert.equal(row.parentElement.classList.contains('has-all-evals'),false);
 });
