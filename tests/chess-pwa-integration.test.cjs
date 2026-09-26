@@ -53,7 +53,7 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
  assert.equal(el('settingsPanel').classList.contains('open'),false);
- assert.equal(el('settingSFDepth').value,'15','existing users get the new default');
+ assert.equal(el('settingSFDepth').value,'11','users without a saved depth get the new default');
  el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
  assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).sfAnalysisDepth,12);
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
