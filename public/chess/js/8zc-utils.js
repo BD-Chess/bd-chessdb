@@ -1123,10 +1123,6 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   ------------------------------------------------------------------*/
   function applySettings() {
     document.getElementById('settingSFDepth').value = settings.sfAnalysisDepth;
-    for (const key of ['CDB', 'SF', 'DCC']) {
-      const input = document.getElementById(`settingAll${key}Seconds`);
-      if (input) input.value = settings[`all${key}Seconds`];
-    }
     positionEval.render();
     document.getElementById('settingEvalMode').value = settings.evalMode;
     /* theme */
@@ -2337,14 +2333,6 @@ function jumpTo(i){
     document.querySelectorAll('.overlay').forEach(el => el.remove());
     fetchAnnotations();
   });
-  for (const key of ['CDB', 'SF', 'DCC']) {
-    document.getElementById(`settingAll${key}Seconds`).addEventListener('change', event => {
-      const value = Math.max(1, Math.min(30, Number(event.target.value) || 4));
-      settings[`all${key}Seconds`] = value; event.target.value = String(value);
-      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
-      positionEval.render();
-    });
-  }
   if (restoreTopPickCursor !== null) {
     lastLoadedPGN = activeTopPickPGN;
     bookFlags = extractBookFlags(activeTopPickPGN);
@@ -4210,35 +4198,6 @@ async function launchFromSimModal() {
     }
   };
 
-  // ─── “ChessBest.org” link replays the best (blue) move ────────────────
-document.getElementById('bestMoveLink').addEventListener('click', e => {
-  e.preventDefault();
-  if (playState.active || simRunning || replayRunning) return;
-  const bestOv = document.querySelector('.overlay.best');
-  if (!bestOv) return;
-  if (!workspace.beforeMove()) return;
-  const fenBeforeMove = game.fen();
-  const mv   = bestOv.dataset.move;
-  const from = mv.slice(0,2), to = mv.slice(2,4);
-  const m    = game.move({ from, to, promotion: mv[4] || 'q' });
-  if (!m) return;
-  if (!workspace.recordMove(fenBeforeMove, m) && workspace.isTimed()) { game.undo(); updateBoard(false); return; }
-  lastAction = 'move';
-  window._skipDivergedReset = true;
-  updateBoard(false);
-});
-// ────────────────────────────────────────────────────────────────────────
-
-// ─── Background-click (non-interactive) also replays best move ─────────
-const mainEl = document.getElementById('main');
-mainEl.addEventListener('click', e => {
-  if (e.target.closest(
-    '#board-container, #controls, #gameTitle, #pageSubtitle, a, button, input, select, label'
-  )) return;
-  document.getElementById('bestMoveLink').click();
-});
-// ────────────────────────────────────────────────────────────────────────
-  
   // ────────────────────────────────────────────────────────────────────────
 
 }

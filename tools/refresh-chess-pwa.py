@@ -3,8 +3,8 @@
 from pathlib import Path
 import hashlib
 import json
+import os
 import re
-import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'public/chess/new'
@@ -32,6 +32,27 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def git_object_id(kind, data):
+    """Hash the actual local source bytes using Git's blob/tree format."""
+    return hashlib.sha1(kind.encode() + b' ' + str(len(data)).encode() + b'\0' + data).digest()
+
+
+def source_tree_id(directory):
+    entries = bytearray()
+    for path in sorted(directory.iterdir(), key=lambda p: os.fsencode(p.name) + (b'/' if p.is_dir() else b'')):
+        if path.is_symlink():
+            mode, oid = b'120000', git_object_id('blob', os.fsencode(os.readlink(path)))
+        elif path.is_dir():
+            mode, oid = b'40000', bytes.fromhex(source_tree_id(path))
+        elif path.is_file():
+            mode = b'100755' if path.stat().st_mode & 0o111 else b'100644'
+            oid = git_object_id('blob', path.read_bytes())
+        else:
+            continue
+        entries.extend(mode + b' ' + os.fsencode(path.name) + b'\0' + oid)
+    return git_object_id('tree', bytes(entries)).hex()
+
+
 def build():
     before = (TARGET / 'index.html').read_text()
     source_files = {}
@@ -47,7 +68,7 @@ def build():
             continue
         if path.suffix.lower() == '.url':
             continue
-        if rel.startswith('Games/') and path.suffix.lower() != '.pgn':
+        if rel.startswith('Games/') and path.suffix.lower() != '.pgn' and rel != 'Games/ChessBest_Top_Picks_TCEC.LICENSE.md':
             continue
         data = path.read_bytes()
         source_files[rel] = digest(data)
@@ -101,7 +122,7 @@ def build():
     manifest = {
         'schema': 'chessbest-pwa-release/1', 'version': version,
         'source_channel': 'LAB', 'source_path': 'public/chess/new',
-        'source_tree': subprocess.check_output(['git', 'rev-parse', 'HEAD:public/chess/new'], cwd=ROOT, text=True).strip(),
+        'source_tree': source_tree_id(SOURCE),
         'source_files_sha256': source_files, 'pwa_assets_sha256': hashes,
         'worker_sha256': digest(worker.encode()),
         'storage': 'Preserve existing PWA keys; isolated PWA SIM archive and runner lease.',

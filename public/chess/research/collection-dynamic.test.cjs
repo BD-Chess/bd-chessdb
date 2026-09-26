@@ -6,7 +6,7 @@ const { JSDOM } = require('jsdom');
 const script = fs.readFileSync(path.join(__dirname, '../js/8zc-new-ui.js'), 'utf8');
 const pgn = '[Event "Paired openings"]\n[White "CDB/SF"]\n[Black "SF+DCC"]\n[Opening "Sicilian"]\n[Result "1-0"]\n\n1. e4 c5 1-0';
 function fixture() {
-  const ids = ['btnWhatsNew', 'btnCloseWhatsNew', 'btnStartExploring', 'btnPlayBest', 'bestMoveLink', 'btnGames', 'btnSettings', 'simCancelBtn', 'replayCancel', 'first'];
+  const ids = ['btnWhatsNew', 'btnCloseWhatsNew', 'btnStartExploring', 'btnGames', 'btnSettings', 'simCancelBtn', 'replayCancel', 'first'];
   const dom = new JSDOM('<!doctype html>' + ids.map(id => `<button id="${id}">${id}</button>`).join('') + '<dialog id="whatsNewDialog"></dialog><div id="board"></div><div id="settingsPanel"><h2 class="drawer-heading">Settings</h2></div><div id="popularGamesPanel"><h2 class="drawer-heading">Games</h2><select><option value="">TCEC — Select a game</option><option value="native">Original TCEC game</option></select></div><div id="simModal" style="display:none"></div><div id="replayModal" style="display:none"></div>', { runScripts: 'outside-only', pretendToBeVisual: true });
   dom.window.eval(script);
   return dom;
