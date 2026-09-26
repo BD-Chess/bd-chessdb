@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8zSudoku — DCC Navigator 0.2.0 | BD × AI Lab</title>
+<title>8zSudoku — DCC Navigator · Engine 0.3.0 | BD × AI Lab</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
 <!-- Offline/local-first release: system font fallbacks are used; no remote font request. -->
@@ -457,10 +457,11 @@ body::after{
       <div style="margin-bottom:6px">
         <div style="font-size:.5rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px">Strategy</div>
         <div class="strat-group" id="stratGroup">
+          <div class="strat-btn active" data-strat="fast" onclick="setStrategy('fast')">8z Fast</div>
           <div class="strat-btn" data-strat="random" onclick="setStrategy('random')">Random</div>
           <div class="strat-btn" data-strat="mrv" onclick="setStrategy('mrv')">MRV</div>
           <div class="strat-btn" data-strat="naked" onclick="setStrategy('naked')">Naked</div>
-          <div class="strat-btn active" data-strat="full" onclick="setStrategy('full')">Full</div>
+          <div class="strat-btn" data-strat="full" onclick="setStrategy('full')">Full</div>
           <div class="strat-btn" data-strat="human" onclick="setStrategy('human')">Human</div>
         </div>
       </div>
@@ -650,7 +651,7 @@ body::after{
     <p><strong>💡 Hint</strong> — first checks whether your entered values contradict the unique solution. If so, it highlights all wrong entries and jumps to the most recently changed one. Otherwise it highlights the next logical cell and explains why. It never places the number.</p>
     <p><strong>AI Solve</strong> — select a strategy, watch the solving process animated. Green = naked single. Blue = hidden single. Violet = pointing pair. Orange = guess. Red = backtrack. Step through one move at a time.</p>
     <p><strong>⚡ Compare All</strong> — runs all 5 strategies on the current puzzle and shows a comparison table with steps, backtracks, and sensor readings.</p>
-    <p><strong>Difficulty:</strong> Easy has 36–42 given digits and solves with pure logic. Evil has only 20–23 — watch the sensors diverge.</p>
+    <p><strong>Difficulty:</strong> Easy targets 39 givens; Evil targets 24. Uniqueness is certified; clue counts are generation profiles, not measured human difficulty.</p>
   </div>
 
 
@@ -1134,7 +1135,7 @@ function getAllCandidates(g){
 }
 function countCandidates(g){let t=0;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)t+=getCandidates(g,r,c).size;return t}
 function isValid(g,r,c,v){for(let i=0;i<9;i++){if(i!==c&&g[r][i]===v)return false;if(i!==r&&g[i][c]===v)return false}const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=br;i<br+3;i++)for(let j=bc;j<bc+3;j++)if((i!==r||j!==c)&&g[i][j]===v)return false;return true}
-function isSolved(g){for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0)return false;return true}
+function isSolved(g){if(!Array.isArray(g)||g.length!==9||g.some(row=>!Array.isArray(row)||row.length!==9))return false;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(!Number.isInteger(g[r][c])||g[r][c]<1||g[r][c]>9||!isValid(g,r,c,g[r][c]))return false;return true}
 function copyGrid(g){return g.map(r=>[...r])}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
@@ -1191,6 +1192,7 @@ function cascadeCount(g,r,c,v){const t=copyGrid(g);t[r][c]=v;let n=0,ch=true;whi
 
 // Main solver with strategy routing
 function solveWithStrategy(grid_input,strategy){
+  if(strategy==='fast')return SudokuNavCore.solveFast(grid_input);
   const g=copyGrid(grid_input);const log=[];let step=0;const MAX=10000;const t0=performance.now();
 
   const techniques={random:[],mrv:[],naked:['naked'],full:['naked','hidden'],human:['naked','hidden','pointing']}[strategy]||['naked','hidden'];
@@ -1251,7 +1253,7 @@ function solveWithStrategy(grid_input,strategy){
     for(const p of[...placed].reverse())g[p.r][p.c]=0;
     return false;
   }
-  solve(g);return{solved:g,log};
+  const complete=solve(g)&&isSolved(g);return{solved:g,log,status:complete?'SOLVED':step>=MAX||(performance.now()-t0)>8000?'LIMIT':'NO_SOLUTION',complete};
 }
 
 // ════════════════════════════════════════════════════════
@@ -1304,7 +1306,7 @@ function computeSensors(log){
 // ════════════════════════════════════════════════════════
 let puzzle=null,solution=null,playerGrid=null,givenCells=null,selectedCell=null,notesMode=false,notes=null,history=[];
 let timerInterval=null,timerSeconds=0,aiLog=null,aiStepIndex=0,aiAnimating=false,aiTimeout=null;
-let currentStrategy='full';
+let currentStrategy='fast';
 let aiM={steps:0,bt:0,guesses:0,cascades:0,cl:[]};
 let fullLog=[];// accumulated log for sensor computation
 
@@ -1562,7 +1564,7 @@ function newGame(diff,source='pointer'){
 function getSpeed(){return Math.max(10,500-document.getElementById('speedSlider').value*4.8)}
 function aiSolve(){if(blockAIWhileHumanTrace('AI Solve'))return;if(!puzzle||aiAnimating||!aiLog?.length)return;aiAnimating=true;setStatus('AI solving ('+currentStrategy.toUpperCase()+')...','solving');document.getElementById('solveBtn').textContent='⏸ Pause';document.getElementById('solveBtn').onclick=aiPause;animNext()}
 function animNext(){
-  if(!aiAnimating||aiStepIndex>=aiLog.length){aiAnimating=false;document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;if(aiStepIndex>=aiLog.length)setStatus('AI finished ('+currentStrategy.toUpperCase()+') ✓','win');return}
+  if(!aiAnimating||aiStepIndex>=aiLog.length){aiAnimating=false;document.getElementById('solveBtn').textContent='▶ AI Solve';document.getElementById('solveBtn').onclick=aiSolve;if(aiStepIndex>=aiLog.length){const done=isSolved(playerGrid);setStatus(done?'AI finished ('+currentStrategy.toUpperCase()+') ✓':'AI stopped · no completed solution',done?'win':'');}return}
   applyEntry(aiLog[aiStepIndex++],true);aiTimeout=setTimeout(animNext,getSpeed());
 }
 function applyEntry(e,anim){
@@ -2059,7 +2061,9 @@ buildGrid();updateHumanTraceStatus();restoreStoredHumanTraceOnLoad();renderGameR
    Scores rank checked proposals; only the independent rule checker admits them. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.SudokuNavCore=api;})(typeof globalThis==='object'?globalThis:this,function(){
 'use strict';
+const ENGINE_REVISION='0.3.0';
 const VERSION='0.2.0', CODEC='SUDOKU_LITERAL_PROOF_U8_V1', FULL=511;
+const COST_REVISION='indexed-support-v1';
 const NAMES=['naked_single','hidden_single','pointing','claiming','naked_subset','hidden_subset','x_wing','xy_wing','digit_path'];
 const LABELS=['Naked single','Hidden single','Pointing','Claiming','Naked subset','Hidden subset','X-Wing','XY-Wing','Digit-path support'];
 const RANK=[0,0,1,1,2,2,3,3,4], FAMILIES=['P0','P1','P2','P3','PATH'];
@@ -2079,8 +2083,20 @@ function validate(s){
  for(let i=0;i<81;i++){const m=s.m[i];if(!Number.isInteger(m)||m<0||m>FULL||b[i]&&m||!b[i]&&(!m||(m&~basic(b,i))))throw Error('INVALID_DOMAIN_'+i);}
  for(const u of U){let used=0;for(const i of u)if(b[i]){if(used&bit(b[i]))throw Error('DUPLICATE_DIGIT');used|=bit(b[i]);}let sup=used;for(const i of u)sup|=s.m[i];if(sup!==FULL)throw Error('ZERO_UNIT_SUPPORT');}return true;
 }
-class Work{constructor(max=180000){this.max=Math.max(0,max);this.n=0;this.counts={};}add(n=1,k='scan'){if(this.n+n>this.max)throw Error('LIMIT');this.n+=n;this.counts[k]=(this.counts[k]||0)+n;}}
+class Work{constructor(max=180000){this.max=Number.isFinite(max)?Math.max(0,Math.floor(max)):0;this.n=0;this.counts={};}add(n=1,k='scan'){if(this.n+n>this.max)throw Error('LIMIT');this.n+=n;this.counts[k]=(this.counts[k]||0)+n;}}
 const support=(s,u,d)=>U[u].filter(i=>s.m[i]&bit(d));
+// Scoped to one immutable scan: never cache caller-owned mutable states.
+function supportIndex(s,work){
+ const index=Array.from({length:27},()=>Array.from({length:9},()=>[]));
+ for(let i=0;i<81;i++){work.add(1,'support_cell');const us=units(i);for(let m=s.m[i];m;m&=m-1){const d=31-Math.clz32(m&-m);work.add(3,'support_insert');for(const u of us)index[u][d].push(i);}}
+ return index;
+}
+function directPlacement(s,cell,value,work){
+ work.add(1,'direct');if(!Number.isInteger(cell)||cell<0||cell>80||!Number.isInteger(value)||value<1||value>9||s.b[cell]||!(s.m[cell]&bit(value)))return null;
+ if(s.m[cell]===bit(value))return proof(0,[cell],[],{c:cell,v:value});
+ for(const u of units(cell)){work.add(9,'direct');if(U[u].every(i=>i===cell||!(s.m[i]&bit(value))))return proof(1,[cell],[],{u,d:value,c:cell,v:value});}
+ return null;
+}
 function proof(t,src=[],es=[],extra={}){return{t,src:src.slice(),es:es.map(e=>e.slice()),u:-1,d:0,c:-1,v:0,o:0,ds:[],...extra};}
 function effects(q){return q.c>=0?`P:${q.c}:${q.v}`:'E:'+q.es.map(e=>e.join('.')).sort().join(',');}
 function enumerate(s,family,work=new Work(),cap=96){
@@ -2088,7 +2104,7 @@ function enumerate(s,family,work=new Work(),cap=96){
  try{
  if(family==='P0'){
   for(let i=0;i<81;i++){work.add();if(pop(s.m[i])===1)add(proof(0,[i],[],{c:i,v:digits(s.m[i])[0]}));}
-  for(let u=0;u<27;u++)for(let d=1;d<=9;d++){work.add(9);const a=support(s,u,d);if(a.length===1)add(proof(1,a,[],{u,d,c:a[0],v:d}));}
+  const index=supportIndex(s,work);for(let u=0;u<27;u++)for(let d=1;d<=9;d++){work.add(1,'support_query');const a=index[u][d-1];if(a.length===1)add(proof(1,a,[],{u,d,c:a[0],v:d}));}
  }else if(family==='P1'){
   for(let u=0;u<27;u++)for(let d=1;d<=9;d++){
    work.add(9);const a=support(s,u,d);if(a.length<2)continue;
@@ -2096,7 +2112,7 @@ function enumerate(s,family,work=new Work(),cap=96){
    else{const b=box(a[0]);if(a.every(i=>box(i)===b)){const es=support(s,b,d).filter(i=>!U[u].includes(i)).map(i=>[i,d]);if(es.length)add(proof(3,a,es,{u,d}));}}
   }
  }else if(family==='P2'){
-  for(let u=0;u<27;u++)for(let size=2;size<=3;size++){
+  for(let u=0;u<27;u++)for(let size=2;size<=4;size++){
    const cells=U[u].filter(i=>pop(s.m[i])>=2&&pop(s.m[i])<=size);
    combinations(cells,size,a=>{work.add(size);const m=a.reduce((v,i)=>v|s.m[i],0);if(pop(m)!==size)return;const es=[];for(const i of U[u])if(!a.includes(i))for(const d of digits(s.m[i]&m))es.push([i,d]);if(es.length)add(proof(4,a,es,{u,ds:digits(m)}));});
    const ds=[1,2,3,4,5,6,7,8,9].filter(d=>{const n=support(s,u,d).length;return n>0&&n<=size;});
@@ -2141,7 +2157,7 @@ function check(s,q,work=new Work(300000)){
   if(q.t===2||q.t===3){if(q.u<0||q.d<1||!allSameDigit||a.length<2||!equal(a,support(s,q.u,q.d)))return false;
    if(q.t===2){if(q.u<18)return false;const line=q.o?9+a[0]%9:Math.floor(a[0]/9);if(!a.every(i=>U[line].includes(i))||!q.es.every(([i])=>U[line].includes(i)&&!U[q.u].includes(i)))return false;}
    else{if(q.u>=18)return false;const b=box(a[0]);if(!a.every(i=>box(i)===b)||!q.es.every(([i])=>box(i)===b&&!U[q.u].includes(i)))return false;}
-  }else if(q.t===4||q.t===5){if(q.u<0||q.ds.length<2||q.ds.length>3||a.length!==q.ds.length||new Set(q.ds).size!==q.ds.length||q.ds.some(d=>!Number.isInteger(d)||d<1||d>9)||!a.every(i=>U[q.u].includes(i)&&s.m[i]))return false;const m=q.ds.reduce((x,d)=>x|bit(d),0);
+  }else if(q.t===4||q.t===5){if(q.u<0||q.ds.length<2||q.ds.length>4||a.length!==q.ds.length||new Set(q.ds).size!==q.ds.length||q.ds.some(d=>!Number.isInteger(d)||d<1||d>9)||!a.every(i=>U[q.u].includes(i)&&s.m[i]))return false;const m=q.ds.reduce((x,d)=>x|bit(d),0);
    if(q.t===4){if(a.reduce((m,i)=>m|s.m[i],0)!==m||!q.es.every(([i,d])=>U[q.u].includes(i)&&!a.includes(i)&&(m&bit(d))))return false;}
    else{const cells=[...new Set(q.ds.flatMap(d=>support(s,q.u,d)))];if(q.ds.some(d=>!support(s,q.u,d).length)||!equal(a,cells)||!q.es.every(([i,d])=>a.includes(i)&&!(m&bit(d))))return false;}
   }else if(q.t===6){if(!allSameDigit||q.d<1||a.length!==4)return false;const base=i=>q.o?9+i%9:Math.floor(i/9),cross=i=>q.o?Math.floor(i/9):9+i%9;
@@ -2164,38 +2180,50 @@ function decode(a){if(!Array.isArray(a)||a.some(x=>!Number.isInteger(x)||x<0||x>
 function codecRoundtrip(s,q,w){const bytes=encode(q),p=decode(bytes);if(!check(s,p,w))throw Error('CODEC_PROOF');return bytes;}
 function countCandidates(s){return s.m.reduce((a,m)=>a+pop(m),0);}
 function singles(s,w){const r=enumerate(s,'P0',w,256);const m=new Map();for(const q of r.out)if(!m.has(effects(q)))m.set(effects(q),q);return [...m.values()];}
-function consequences(s,q,horizon,w){const known=new Set(singles(s,w).map(effects)),before=countCandidates(s);let n=apply(s,q,w);const next=singles(n,w),newOnes=next.filter(z=>!known.has(effects(z)));const path=[],deltas=[];let prev=countCandidates(n);
- for(let k=0;k<horizon;k++){const a=singles(n,w);if(!a.length)break;const p=a[0];n=apply(n,p,w);const now=countCandidates(n);path.push(p);deltas.push(prev-now);prev=now;}
- return{peerEliminations:before-countCandidates(apply(s,q,w))-(q.c>=0?pop(s.m[q.c]):0),newSingles:newOnes.length,newSingleCells:newOnes.map(x=>x.c),path,pathGain:s.b.filter(v=>!v).length-n.b.filter(v=>!v).length,remaining:n.b.filter(v=>!v).length,deltas,horizon,checked:true};
+function consequences(s,q,horizon,w){
+ const known=new Set(singles(s,w).map(effects)),before=countCandidates(s);let n=apply(s,q,w),next=singles(n,w);
+ const newOnes=next.filter(z=>!known.has(effects(z))),peerEliminations=before-countCandidates(n)-(q.c>=0?pop(s.m[q.c]):0);
+ const path=[],deltas=[];let prev=countCandidates(n);
+ for(let k=0;k<horizon;k++){if(!next.length)break;const p=next[0];n=apply(n,p,w);const now=countCandidates(n);path.push(p);deltas.push(prev-now);prev=now;if(k+1<horizon)next=singles(n,w);}
+ return{peerEliminations,newSingles:newOnes.length,newSingleCells:newOnes.map(x=>x.c),path,pathGain:s.b.filter(v=>!v).length-n.b.filter(v=>!v).length,remaining:n.b.filter(v=>!v).length,deltas,horizon,checked:true};
 }
 function sensors(xs){if(xs.length<8)return{eligible:false,lz:null,gini:null,adsr:'insufficient',density:null};const a=xs.slice(-32),sum=a.reduce((s,x)=>s+x,0),sorted=a.slice().sort((a,b)=>a-b);let g=0;for(let i=0;i<sorted.length;i++)g+=(2*i-sorted.length+1)*sorted[i];const med=sorted[Math.floor(sorted.length/2)],word=a.map(x=>x>med?'1':'0').join('');let pos=0,lz=0;while(pos<word.length){let k=1;while(pos+k<=word.length&&word.slice(0,pos).includes(word.slice(pos,pos+k)))k++;pos+=k;lz++;}const changes=a.slice(1).map((x,i)=>Math.abs(x-a[i]));return{eligible:true,lz:lz/word.length,gini:sum?g/(a.length*sum):0,density:changes.reduce((a,b)=>a+b,0)/changes.length,adsr:a.slice(-3).every(x=>x===0)?'stalled':a.at(-1)>med?'building':'mixed'};}
 function context(s,h=[]){const sizes=s.m.map(pop),sens=sensors(h);return[Math.floor(sizes.filter(x=>x>0).length/21),Math.min(2,Math.floor(sizes.filter(x=>x===2).length/8)),sens.eligible&&sens.adsr==='stalled'?1:0].join('.');}
-function emptyModel(){return{version:VERSION,observations:[],models:[{name:'POOLED',bits:8,loss:0,table:{}},{name:'FAMILY',bits:16,loss:0,table:{}},{name:'CONTEXT',bits:24,loss:0,table:{}}],censored:0};}
+function emptyModel(){return{version:VERSION,costRevision:COST_REVISION,observations:[],models:[{name:'POOLED',bits:8,loss:0,table:{}},{name:'FAMILY',bits:16,loss:0,table:{}},{name:'CONTEXT',bits:24,loss:0,table:{}}],censored:0};}
 function modelKey(model,ctx,fam){return model.name==='POOLED'?'all':model.name==='FAMILY'?fam:fam+':'+ctx;}
 function predict(bank,ctx,fam){const selected=bank.models.slice().sort((a,b)=>a.bits+a.loss-b.bits-b.loss)[0],get=model=>{const x=model.table[modelKey(model,ctx,fam)]||{n:0,fire:0,cost:0,gain:0};return{p:(x.fire+1)/(x.n+2),cost:x.n?x.cost/x.n:1,gain:x.fire?x.gain/x.fire:1,n:x.n};};return{...get(selected),model:selected.name,idealBits:selected.loss,modelBits:selected.bits,all:bank.models.map(x=>({name:x.name,...get(x)}))};}
-function observe(bank,event){if(!event||typeof event.id!=='string'||event.id.length>600||!FAMILIES.includes(event.family)||!/^[0-3]\.[0-2]\.[01]$/.test(event.ctx)||!['FIRE','NO_FIRE','LIMIT'].includes(event.status)||!Number.isFinite(event.cost)||event.cost<0||!Number.isFinite(event.gain)||event.gain<0)throw Error('INVALID_OBSERVATION');if(bank.observations.some(x=>x.id===event.id))return false;if(bank.observations.length>=2048)throw Error('MEMORY_LIMIT_EXPORT_RESET');bank.observations.push(copy(event));if(event.status==='LIMIT'){bank.censored++;return true;}
+function observe(bank,event){if(!event||typeof event.id!=='string'||event.id.length>600||!FAMILIES.includes(event.family)||!/^[0-3]\.[0-2]\.[01]$/.test(event.ctx)||!['FIRE','NO_FIRE','LIMIT'].includes(event.status)||!Number.isFinite(event.cost)||event.cost<0||!Number.isFinite(event.gain)||event.gain<0)throw Error('INVALID_OBSERVATION');if(bank.observations.some(x=>x.id===event.id))return false;if(bank.observations.length>=2048)throw Error('MEMORY_LIMIT_EXPORT_RESET');bank.observations.push(copy(event));if(event.status==='LIMIT'||event.complete===false||event.costRevision!==COST_REVISION){bank.censored++;return true;}
  for(const model of bank.models){const k=modelKey(model,event.ctx,event.family),x=model.table[k]||{n:0,fire:0,cost:0,gain:0},p=(x.fire+1)/(x.n+2);model.loss-=Math.log2(event.status==='FIRE'?p:1-p);x.n++;x.fire+=event.status==='FIRE'?1:0;x.cost+=event.cost;x.gain+=event.gain;model.table[k]=x;}return true;}
 function restoreModel(data){if(!data||data.version!==VERSION||!Array.isArray(data.observations)||data.observations.length>2048)throw Error('MODEL_VERSION_OR_LIMIT');const b=emptyModel();for(const e of data.observations)if(!observe(b,e))throw Error('DUPLICATE_EVENT');return b;}
 function search(s,opts={},bank=emptyModel()){
  validate(s);const work=new Work(opts.budget??180000),events=[],all=[],h=opts.history||[],ctx=context(s,h),mode=opts.policy||'REAL';let families=['P0','P1','P2','P3'];if(opts.deep)families.push('PATH');
- let chosenOrder=families.slice();if(mode==='REAL'||mode==='SHAM'||mode==='ORDINARY'){
+ let chosenOrder=families.slice(),status='NO_WITNESS_FOUND';const target=Number.isInteger(opts.target)?opts.target:1;
+ try{
+ if(mode==='REAL'||mode==='SHAM'||mode==='ORDINARY'){
   work.add(81,'features');const order=families.slice(1).map(f=>({f,p:predict(bank,ctx,f)}));work.add(order.length*3,'model');
   if(mode==='ORDINARY')order.sort((a,b)=>b.p.p-a.p.p||FAMILIES.indexOf(a.f)-FAMILIES.indexOf(b.f));
   else order.sort((a,b)=>(b.p.p*b.p.gain/Math.max(1,b.p.cost))-(a.p.p*a.p.gain/Math.max(1,a.p.cost))||FAMILIES.indexOf(a.f)-FAMILIES.indexOf(b.f));
   if(mode==='SHAM')order.reverse();chosenOrder=['P0',...order.map(x=>x.f)];
  }
- const target=Number.isInteger(opts.target)?opts.target:1;if(opts.goal==='PRACTICE'){const f=FAMILIES[RANK[target]];chosenOrder=[f,...chosenOrder.filter(x=>x!==f)];}
- let status='NO_WITNESS_FOUND';
- try{for(const f of chosenOrder){const before=work.n,pred=mode==='OFF'?null:predict(bank,ctx,f);const r=enumerate(s,f,work);const checked=[];
-  for(const q of r.out){if(check(s,q,work)){const bytes=codecRoundtrip(s,q,work);checked.push({q,bits:bytes.length*8,bytes,consequence:effects(q)});}}
-  all.push(...checked);const e={id:(opts.eventPrefix||'session')+':'+key(s)+':'+f,ctx,family:f,status:checked.length?'FIRE':r.complete?'NO_FIRE':'LIMIT',cost:work.n-before,gain:checked.length?new Set(checked.map(x=>x.consequence)).size:0,prediction:pred};events.push(e);
-  if(checked.length){status='FOUND_ONLY';if(opts.goal!=='PRACTICE'||checked.some(x=>x.q.t===target))break;}if(!r.complete){status=all.length?'FOUND_PARTIAL':'LIMIT';break;}
- }}catch(e){if(e.message!=='LIMIT')throw e;status=all.length?'FOUND_PARTIAL':'LIMIT';}
+ if(opts.goal==='PRACTICE'){const f=FAMILIES[RANK[target]];chosenOrder=[f,...chosenOrder.filter(x=>x!==f)];}
+ for(const f of chosenOrder){
+  const before=work.n,pred=mode==='OFF'?null:predict(bank,ctx,f),r=enumerate(s,f,work),checked=[];
+  let complete=r.complete;
+  try{for(const q of r.out){if(check(s,q,work)){const bytes=codecRoundtrip(s,q,work);checked.push({q,bits:bytes.length*8,bytes,consequence:effects(q)});}}}
+  catch(e){if(e.message!=='LIMIT')throw e;complete=false;}
+  all.push(...checked);events.push({id:(opts.eventPrefix||'session')+':'+COST_REVISION+':'+key(s)+':'+f,ctx,family:f,status:complete?(checked.length?'FIRE':'NO_FIRE'):'LIMIT',complete,costRevision:COST_REVISION,cost:work.n-before,gain:checked.length?new Set(checked.map(x=>x.consequence)).size:0,prediction:pred});
+  if(!complete){status=all.length?'FOUND_PARTIAL':'LIMIT';break;}
+  if(checked.length){status='FOUND_ONLY';if(opts.goal!=='PRACTICE'||checked.some(x=>x.q.t===target))break;}
+ }
+ }catch(e){if(e.message!=='LIMIT')throw e;status=all.length?'FOUND_PARTIAL':'LIMIT';}
  const witnessCount=all.length,groups=new Map();for(const a of all){const prev=groups.get(a.consequence);if(!prev)groups.set(a.consequence,{...a,witnesses:[a.q]});else{prev.witnesses.push(a.q);if(a.bits<prev.bits){prev.q=a.q;prev.bits=a.bits;prev.bytes=a.bytes;}}}
  let candidates=[...groups.values()].sort((a,b)=>RANK[a.q.t]-RANK[b.q.t]||a.bits-b.bits||a.consequence.localeCompare(b.consequence));
  if(opts.goal==='PRACTICE')candidates.sort((a,b)=>Number(b.q.t===target)-Number(a.q.t===target)||RANK[a.q.t]-RANK[b.q.t]||a.bits-b.bits||a.consequence.localeCompare(b.consequence));
  const baseline=candidates[0]?.consequence??null;let measured=0,reason='Cheapest checked explanation; no additional intervention.';
- if(mode!=='OFF'&&candidates.length>1){
+ // Immediate placements already provide progress. Reserve speculative path comparisons for elimination choices.
+ const compare=mode!=='OFF'&&candidates.length>1&&candidates[0].q.c<0;
+ if(mode!=='OFF'&&candidates[0]?.q.c>=0)reason='NO_INTERVENTION: a checked single already makes progress; speculative path ranking skipped.';
+ if(compare){
   const contenders=candidates.filter(x=>RANK[x.q.t]===RANK[candidates[0].q.t]&&x.bits<=candidates[0].bits+24).slice(0,4),horizon=3;
   for(const a of contenders){try{a.flow=consequences(s,a.q,horizon,work);measured++;}catch(e){if(e.message!=='LIMIT')throw e;break;}}
   if(measured===contenders.length){let ranked=contenders.slice();
@@ -2205,24 +2233,94 @@ function search(s,opts={},bank=emptyModel()){
    const pick=ranked[0];if(pick){candidates=[pick,...candidates.filter(x=>x!==pick)];reason=pick.consequence===baseline?'NO_INTERVENTION: base choice retained after equal-horizon comparison.':'DCC preference: more newly opened singles, then bounded path progress, within the same technique tier.';}
   }else reason='Incomplete comparable coverage: original checked choice retained.';
  }
- return{version:VERSION,stateKey:key(s),status,candidates:candidates.slice(0,16),witnessCount,foundConsequences:groups.size,baseline,chosen:candidates[0]?.consequence??null,changed:!!candidates.length&&candidates[0].consequence!==baseline,reason,events,order:chosenOrder,ctx,sensors:mode==='OFF'?{eligible:false}:sensors(h),work:work.n,counts:work.counts,measured,policy:mode,codec:CODEC,coverage:'FOUND_ONLY; bounded family scans, at most 4 compared paths'};
+ return{version:VERSION,costRevision:COST_REVISION,stateKey:key(s),status,candidates:candidates.slice(0,16),witnessCount,foundConsequences:groups.size,baseline,chosen:candidates[0]?.consequence??null,changed:!!candidates.length&&candidates[0].consequence!==baseline,reason,events,order:chosenOrder,ctx,sensors:mode==='OFF'?{eligible:false}:sensors(h),work:work.n,counts:work.counts,measured,policy:mode,codec:CODEC,coverage:'FOUND_ONLY; bounded family scans, at most 4 compared elimination paths; checked singles bypass speculative ranking'};
 }
 function review(s,cell,value,opts={}){
  validate(s);const w=new Work(opts.budget??180000),path=[];let current=clone(s),found=null,status='NO_WITNESS_FOUND';
  try{for(let depth=0;depth<100;depth++){
   // Actual action first: direct witness is searched before unrelated alternatives.
-  const direct=enumerate(current,'P0',w,256).out.filter(q=>q.c===cell&&q.v===value).sort((a,b)=>encode(a).length-encode(b).length);
-  if(direct.length){found=direct[0];path.push(found);apply(current,found,w);status='FOUND';break;}
+  const direct=directPlacement(current,cell,value,w);
+  if(direct){found=direct;path.push(found);apply(current,found,w);status='FOUND';break;}
   if(current.b[cell])break;let next=null;for(const family of ['P0','P1','P2','P3']){const scan=enumerate(current,family,w);if(scan.out.length){next=scan.out[0];break;}if(!scan.complete)throw Error('LIMIT');}
   if(!next)break;current=apply(current,next,w);path.push(next);
  }}catch(e){if(e.message!=='LIMIT')throw e;status='LIMIT';}
  let bits=null,bytes=null;const replayWork=new Work(100000);if(found){let n=clone(s);bytes=[];for(const q of path){const b=codecRoundtrip(n,q,replayWork);replayWork.add(b.length,'codec');bytes.push(b);n=apply(n,q,replayWork);}bits=bytes.reduce((x,b)=>x+b.length*8,0);}
  return{status,reasoning_status:'UNKNOWN_REASONING',cell,value,found:!!found,technique:found?NAMES[found.t]:null,proof:found?found:null,path:found?path:[],proofBytes:bytes,reference_proof_bits:bits,codec:CODEC,work:w.n+replayWork.n,discoveryWork:w.n,replayWork:replayWork.n,coverage:'Shortest found in the declared bounded path, not a global optimum'};
 }
-function exact(board,maxNodes=100000,random=null){const b=flat(board);for(const u of U){const a=u.map(i=>b[i]).filter(Boolean);if(new Set(a).size!==a.length)return{count:0,complete:true,solution:null,nodes:0};}let count=0,answer=null,nodes=0,limit=false;
- function go(){if(++nodes>maxNodes){limit=true;return;}let c=-1,ds=null;for(let i=0;i<81;i++)if(!b[i]){const a=digits(basic(b,i));if(!a.length)return;if(!ds||a.length<ds.length){c=i;ds=a;if(a.length===1)break;}}
- if(c<0){count++;if(!answer)answer=b.slice();return;}if(random)shuffle(ds,random);for(const d of ds){b[c]=d;go();b[c]=0;if(count>=(random?1:2)||limit)return;}}
- go();return{count,complete:!limit,solution:answer,nodes};}
+// Exact 9x9 kernel: shared Sudoku rules, answer-blind MRV search and reversible propagation.
+// nodes = initial state + attempted assignments (forced placements are budgeted too).
+const EX_POP=new Uint8Array(512),EX_DIGIT=new Uint8Array(512),EX_ROW=new Uint8Array(81),EX_COL=new Uint8Array(81),EX_BOX=new Uint8Array(81);
+for(let m=1;m<512;m++)EX_POP[m]=EX_POP[m>>1]+(m&1);
+for(let d=1;d<=9;d++)EX_DIGIT[1<<(d-1)]=d;
+for(let i=0;i<81;i++){EX_ROW[i]=Math.floor(i/9);EX_COL[i]=9+i%9;EX_BOX[i]=18+Math.floor(i/27)*3+Math.floor(i%9/3);}
+function exactKernel(board,options={}){
+ const input=flat(board),b=Uint8Array.from(input),used=new Uint16Array(27),masks=new Uint16Array(81),trail=new Uint8Array(81);
+ const random=options.random||null,first=options.first===true||!!random,tracing=options.trace===true;
+ const rawMax=options.maxNodes??100000,maxNodes=Number.isFinite(rawMax)?Math.max(0,Math.floor(rawMax)):100000;
+ const rawLog=options.maxLog??20000,maxLog=Number.isFinite(rawLog)?Math.max(0,Math.floor(rawLog)):20000;
+ const log=[],stats={nodes:0,assignments:0,nakedSingles:0,hiddenSingles:0,guesses:0,backtracks:0,scans:0,maxDepth:0};
+ let top=0,count=0,answer=null,limit=false,reason=null;
+ const candidate=i=>FULL&~(used[EX_ROW[i]]|used[EX_COL[i]]|used[EX_BOX[i]]);
+ function totalCandidates(){let n=0;for(let i=0;i<81;i++)if(!b[i])n+=EX_POP[candidate(i)];return n;}
+ function failLimit(why){limit=true;reason=why;return false;}
+ function tick(){if(stats.nodes>=maxNodes)return failLimit('NODE_LIMIT');stats.nodes++;return true;}
+ function put(i,d,strategy){
+  if(tracing&&log.length>=maxLog)return failLimit('TRACE_LIMIT');
+  if(!tick())return false;
+  const cb=tracing?totalCandidates():0,bit=1<<(d-1);b[i]=d;trail[top++]=i;used[EX_ROW[i]]|=bit;used[EX_COL[i]]|=bit;used[EX_BOX[i]]|=bit;
+  stats.assignments++;if(strategy==='naked_single')stats.nakedSingles++;else if(strategy==='hidden_single')stats.hiddenSingles++;else stats.guesses++;
+  if(tracing)log.push({step:log.length+1,r:EX_ROW[i],c:i%9,v:d,strategy,cascade:0,backtrack:false,cb,ca:totalCandidates()});
+  return true;
+ }
+ function rollback(mark){
+  if(top===mark)return true;
+  if(tracing&&log.length>=maxLog)return failLimit('TRACE_LIMIT');
+  const cb=tracing?totalCandidates():0,restore=[],last=trail[top-1],value=b[last];
+  while(top>mark){const i=trail[--top],bit=1<<(b[i]-1);b[i]=0;used[EX_ROW[i]]^=bit;used[EX_COL[i]]^=bit;used[EX_BOX[i]]^=bit;if(tracing)restore.push({r:EX_ROW[i],c:i%9});}
+  stats.backtracks++;
+  if(tracing)log.push({step:log.length+1,r:EX_ROW[last],c:last%9,v:value,strategy:'backtrack',cascade:0,backtrack:true,restore,cb,ca:totalCandidates()});
+  return true;
+ }
+ // Propagate naked singles, then hidden singles. MRV is chosen only at the fixed point.
+ function propagateLoop(){
+  for(;;){
+   let changed=false,best=-1,bestSize=10;
+   for(let i=0;i<81;i++)if(!b[i]){
+    stats.scans++;const mask=candidate(i);masks[i]=mask;if(!mask)return -2;
+    const size=EX_POP[mask];if(size===1){if(!put(i,EX_DIGIT[mask],'naked_single'))return -3;changed=true;}else if(size<bestSize){bestSize=size;best=i;}
+   }else masks[i]=0;
+   if(changed)continue;if(best<0)return -1;
+   for(let u=0;u<27;u++){
+    let once=0,twice=0;for(const i of U[u]){const m=masks[i];twice|=once&m;once|=m;}
+    stats.scans+=9;if((once|used[u])!==FULL)return -2;
+    const singles=once&~twice;if(!singles)continue;
+    const digitBit=singles&-singles;for(const i of U[u])if(masks[i]&digitBit){if(!put(i,EX_DIGIT[digitBit],'hidden_single'))return -3;changed=true;break;}
+    if(changed)break;
+   }
+   if(!changed)return best;
+  }
+ }
+ function propagate(){
+  const start=log.length,result=propagateLoop();
+  if(tracing&&log.length>start){log[start].cascade=log.length-start-1;log[start].cascadeStatus=result===-2?'CONTRADICTION':result===-3?'LIMIT':'FIXED_POINT';}
+  return result;
+ }
+ function visit(depth){
+  if(depth>stats.maxDepth)stats.maxDepth=depth;
+  const cell=propagate();if(cell===-3||cell===-2)return false;
+  if(cell===-1){count++;if(!answer)answer=Array.from(b);return count>=(first?1:2);}
+  const mark=top;let mask=masks[cell];
+  if(random){const ds=[];for(let m=mask;m;m&=m-1)ds.push(EX_DIGIT[m&-m]);shuffle(ds,random);for(const d of ds){if(!put(cell,d,'guess'))return false;if(visit(depth+1))return true;if(limit||!rollback(mark))return false;}}
+  else for(;mask;mask&=mask-1){const d=EX_DIGIT[mask&-mask];if(!put(cell,d,'guess'))return false;if(visit(depth+1))return true;if(limit||!rollback(mark))return false;}
+  return false;
+ }
+ for(let i=0;i<81;i++)if(b[i]){const bit=1<<(b[i]-1),r=EX_ROW[i],c=EX_COL[i],z=EX_BOX[i];if((used[r]|used[c]|used[z])&bit)return{count:0,complete:true,solution:null,nodes:0,status:'INVALID',reason:'DUPLICATE_GIVEN',searchMode:first?'FIRST_SOLUTION':'COUNT_TO_TWO',log,board:input,stats};used[r]|=bit;used[c]|=bit;used[z]|=bit;}
+ if(tick()){const done=visit(0);if(!done&&!limit&&tracing)rollback(0);}
+ return{count,complete:!limit,solution:answer,nodes:stats.nodes,status:limit?'LIMIT':count===0?'UNSAT':first?'FOUND':count===1?'UNIQUE':'MULTIPLE',reason,searchMode:first?'FIRST_SOLUTION':'COUNT_TO_TWO',log,board:Array.from(b),stats};
+}
+function exact(board,maxNodes=100000,random=null){const r=exactKernel(board,{maxNodes,random});return{count:r.count,complete:r.complete,solution:r.solution,nodes:r.nodes,status:r.status,reason:r.reason,searchMode:r.searchMode,stats:r.stats};}
+function solveFast(board,opts={}){const r=exactKernel(board,{maxNodes:opts.maxNodes??100000,maxLog:opts.maxLog??20000,first:true,trace:true});return{solved:Array.from({length:9},(_,i)=>r.board.slice(i*9,i*9+9)),log:r.log,status:r.status==='FOUND'?'SOLVED':r.status,complete:r.complete,reason:r.reason,stats:r.stats,engine:'BITMASK_MRV_SINGLES_V1'};}
+
 function rng(seed){let x=(seed>>>0)||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296;};}
 function shuffle(a,rand){for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function generate(opts={}){
@@ -2233,9 +2331,10 @@ function generate(opts={}){
   const cert=exact(b,100000);totalNodes+=cert.nodes;if(!cert.complete||cert.count!==1)continue;
   let s=state(b),prefix=[],exercise=null;const w=new Work(700000);
   if(target!=null){try{for(let j=0;j<90;j++){const f=FAMILIES[RANK[target]],a=enumerate(s,f,w).out.filter(q=>q.t===target);if(a.length){exercise={state:clone(s),witness:a[0],prefix,profile:'PATH_CONTAINS_TECHNIQUE',technique:NAMES[target]};break;}let q=null;for(const family of ['P0','P1','P2','P3']){const a=enumerate(s,family,w);if(a.out.length){q=a.out[0];break;}}if(!q)break;s=apply(s,q,w);prefix.push(q);}}catch(e){if(e.message!=='LIMIT')throw e;}if(!exercise)continue;}
-  return{status:'GENERATED',puzzle:b,solution:cert.solution,unique:true,givens,requestedGivens:requested,seed:opts.seed,attempts:attempt+1,nodes:totalNodes,exercise,profile:exercise?'PATH_CONTAINS_TECHNIQUE':'CLUE_COUNT_PROFILE',requiresTechnique:false};
+  return{status:'GENERATED',puzzle:b,solution:cert.solution,unique:true,givens,requestedGivens:requested,seed:opts.seed,attempts:attempt+1,nodes:totalNodes,exercise,profile:exercise?'PATH_CONTAINS_TECHNIQUE':'CLUE_COUNT_PROFILE',requiresTechnique:false,engine:'BITMASK_MRV_SINGLES_V1',uniqueness:{status:cert.status,complete:cert.complete,count:cert.count,nodes:cert.nodes},difficultyEvidence:{basis:'CLUE_COUNT_PROFILE_NOT_HUMAN_RATING',requested:opts.diff||'medium',requestedGivens:requested,actualGivens:givens,requestedClueCountReached:givens===requested,solutionMethod:cert.stats.guesses?'SINGLES_AND_BACKTRACK_SEARCH':'NAKED_AND_HIDDEN_SINGLES',uniquenessSearch:cert.stats}};
  }return{status:'PROFILE_UNFULFILLED',target,attempts,nodes:totalNodes};
 }
+
 function describe(q,level='reveal'){
  const label=LABELS[q.t],areas=[...new Set(q.src.map(box))],u=q.u>=0?q.u:areas[0]??18;
  if(level==='nudge')return`Inspect ${unitName(u)}${q.t===6?' and its crossing lines':''}. A checked ${label.toLowerCase()} relationship is available. No answer has been revealed.`;
@@ -2250,7 +2349,7 @@ function describe(q,level='reveal'){
  }
  return q.c>=0?`${label}: ${rc(q.c)} = ${q.v}.`:`${label}: remove ${q.es.map(([i,d])=>d+'@'+rc(i)).join(', ')}. The player grid is not filled automatically.`;
 }
-return{VERSION,CODEC,NAMES,LABELS,RANK,FAMILIES,U,P,bit,pop,digits,rc,unitName,box,flat,state,validate,clone,key,Work,enumerate,check,apply,encode,decode,codecRoundtrip,effects,consequences,sensors,context,emptyModel,predict,observe,restoreModel,search,review,exact,rng,generate,describe,pathQuery,countCandidates};
+return{ENGINE_REVISION,VERSION,COST_REVISION,CODEC,NAMES,LABELS,RANK,FAMILIES,U,P,bit,pop,digits,rc,unitName,box,flat,state,validate,clone,key,Work,enumerate,check,apply,encode,decode,codecRoundtrip,effects,consequences,sensors,context,emptyModel,predict,observe,restoreModel,search,review,exact,solveFast,rng,generate,describe,pathQuery,countCandidates};
 });
 
 </script>
@@ -2262,9 +2361,11 @@ const C=SudokuNavCore, NS='ai8SudokuNavigatorV020', $=id=>document.getElementByI
 const grid2=b=>Array.from({length:9},(_,r)=>b.slice(r*9,r*9+9));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let machine=C.emptyModel(),tutor={version:C.VERSION,attempts:[]},memoryConsent=false,tutorConsent=false,learningMode='COLD';
+let generationEvidence=null;
 let navState=null,lineage=null,gameId='',rows=[],assistance=[],recentGains=[],cache=null,level=0,selection=0,navJob=null,genJob=null,seq=0,practice=null,saveTimer=null,booting=true,storageWarning='',viewDigit=0;
 let renderBase=render,placeBase=ai8LegacyPlaceNumber,eraseBase=ai8LegacyErase,undoBase=ai8LegacyUndo,aiBase=aiSolve,resetBase=aiReset;
-let undoNav=[],reviewQueue=Promise.resolve(),generationToken=0;
+let undoNav=[],reviewQueue=Promise.resolve(),generationToken=0,solveJob=null,solveToken=0,preparedBoardKey=null;
+function cancelSolve(){solveToken++;solveJob?.cancel();solveJob=null;if(!navJob&&!genJob&&$('navCancel'))$('navCancel').hidden=true;}
 const jobs=new Set();
 const legacyWorkerSource=[getCandidates,getAllCandidates,countCandidates,isValid,isSolved,copyGrid,shuffle,findNaked,findHidden,findPointing,solveWithStrategy].map(f=>f.toString()).join('\n');
 const src=legacyWorkerSource+'\n'+$('navigator-core').textContent+`\nself.onmessage=function(e){const m=e.data;try{const C=SudokuNavCore;let r;if(m.kind==='search')r=C.search(m.data.state,m.data.options,m.data.model);else if(m.kind==='review')r=C.review(m.data.state,m.data.cell,m.data.value,m.data.options);else if(m.kind==='generate')r=C.generate(m.data);else if(m.kind==='legacy')r=solveWithStrategy(m.data.board,m.data.strategy);else if(m.kind==='certify')r=C.exact(m.data.board,300000);else if(m.kind==='controls'){r=[];for(const policy of ['OFF','ORDINARY','REAL','SHAM']){const x=C.search(m.data.state,{...m.data.options,policy},m.data.model);r.push({policy,work:x.work,found:x.foundConsequences,chosen:x.chosen,changed:x.changed,status:x.status,model:x.events[0]?.prediction?.model,reason:x.reason});}}else throw Error('UNKNOWN_REQUEST');self.postMessage({id:m.id,result:r});}catch(e){self.postMessage({id:m.id,error:e.message});}};`;
@@ -2346,10 +2447,10 @@ function attachAdapters(){
  proofCoachHint=function(mode='explain'){return analyze(mode);};aiHint=()=>analyze('explain');
  aiSolve=function(){expose('AI_solver',4);resetAnalysis();return aiBase();};
  const stepBase=aiStep;aiStep=function(){expose('AI_step',4);resetAnalysis();stepBase();freshState();scheduleSave();};
- aiReset=function(){resetAnalysis();resetBase();freshState();scheduleSave();};
+ aiReset=function(){cancelSolve();preparedBoardKey=null;aiLog=[];resetAnalysis();resetBase();freshState();scheduleSave();};
  newGame=function(diff,source='pointer'){return createGame(diff,null,source);};
- setStrategy=function(strategy){if(blockAIWhileHumanTrace('Strategy change'))return;currentStrategy=strategy;document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===strategy));aiReset();aiLog=[];notify('Classical strategy selected: '+strategy+'. It runs only when requested.');};
- compareAll=async function(){if(!puzzle||blockAIWhileHumanTrace('Compare all'))return;expose('classical_comparison',4);const id=gameId,report=[];for(const strategy of ['random','mrv','naked','full','human']){notify('Comparing classical solver: '+strategy);try{const r=await run('legacy',{board:copyGrid(puzzle),strategy},10000).promise;if(id!==gameId)return;report.push({strategy,steps:r.log.length,backtracks:r.log.filter(x=>x.backtrack).length,solved:r.solved.flat().every(Boolean),sensors:computeSensors(r.log)});}catch(e){report.push({strategy,status:e.message});}}openDialog('Classical solver comparison','<p>Five original strategies, each with its own bounded worker. Sensor values are descriptive, not a learning score.</p><pre class="nav-lab">'+esc(JSON.stringify(report,null,2))+'</pre>');};
+ setStrategy=function(strategy){if(blockAIWhileHumanTrace('Strategy change'))return;currentStrategy=strategy;document.querySelectorAll('.strat-btn').forEach(b=>b.classList.toggle('active',b.dataset.strat===strategy));aiReset();aiLog=[];cancelSolve();preparedBoardKey=null;notify('Solver selected: '+strategy+'. It runs only when requested.');};
+ compareAll=async function(){if(!puzzle||blockAIWhileHumanTrace('Compare all'))return;expose('classical_comparison',4);const id=gameId,report=[];for(const strategy of ['fast','random','mrv','naked','full','human']){notify('Comparing classical solver: '+strategy);try{const r=await run('legacy',{board:copyGrid(puzzle),strategy},10000).promise;if(id!==gameId)return;report.push({strategy,status:r.status,steps:r.log.length,backtracks:r.log.filter(x=>x.backtrack).length,solved:isSolved(r.solved),sensors:computeSensors(r.log)});}catch(e){report.push({strategy,status:e.message});}}openDialog('Classical solver comparison','<p>8z Fast plus five original strategies, each with its own bounded worker. Sensor values are descriptive, not a learning score.</p><pre class="nav-lab">'+esc(JSON.stringify(report,null,2))+'</pre>');};
  clearGameReview=function(){rows=[];assistance=[];renderReviews();scheduleSave();};
  exportGameReview=function(){return exportAll();};
  updateProofProfile=function(){$('coachProfile').textContent='Checked P0–P3 · optional digit-path support · explanations are bounded, not omniscient.';};
@@ -2357,11 +2458,12 @@ function attachAdapters(){
 function showBusy(on){$('navCancel').hidden=!on;document.querySelectorAll('.diff-btns button,.welcome-card .diff-hint span').forEach(b=>b.style.pointerEvents=on?'none':'');}
 async function createGame(diff,target=null,source='pointer',retention=false){
  if(humanTraceRecorder.isLocked()){setStatus('Export/Delete the active Human Trace before starting a new game.','');return;}
- if(genJob)genJob.cancel();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
+ if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
  const job=run('generate',{diff,seed,target},15000);genJob=job;
  try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){notify(`Profile not fulfilled after ${g.attempts} attempts. No easier substitute was silently loaded. Try again or choose another technique.`);return;}
   if(puzzle)persist('previousGame',snapshot());if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
+  generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
   if(g.exercise){navState=g.exercise.state;lineage={base:g.puzzle,ops:g.exercise.prefix.map(q=>({kind:'proof',q}))};}else freshState();
   $('welcomeOverlay')?.classList.add('hidden');$('comparePanel').style.display='none';gameStats.gamesPlayed++;gameStats.currentHints=0;saveStats();renderStats();resetM();
@@ -2373,27 +2475,54 @@ async function createGame(diff,target=null,source='pointer',retention=false){
  }catch(e){if(e.message!=='CANCELLED')notify('Generation stopped: '+e.message+'. Current game preserved.');}
  finally{if(genJob===job){genJob=null;showBusy(false);}}
 }
-async function prepareLegacySolve(action){if(blockAIWhileHumanTrace('AI solver'))return;if(!puzzle)return;const id=gameId,strategy=currentStrategy;if(!aiLog?.length){notify('Preparing the selected classical solver in a worker…');try{const r=await run('legacy',{board:copyGrid(puzzle),strategy},10000).promise;if(gameId!==id||currentStrategy!==strategy)return;aiLog=r.log;aiStepIndex=0;}catch(e){notify('Classical solver stopped: '+e.message);return;}}action();}
+// Check the entire animation against the actual starting grid before displaying it.
+function checkedReplay(start,result){
+ if(result.status!=='SOLVED'||!isSolved(result.solved)||!Array.isArray(result.log)||result.log.length>100000)throw Error('Solver did not finish within its budget');
+ const board=copyGrid(start),fixed=start.map(row=>row.map(Boolean));
+ for(const e of result.log){
+  if(e.backtrack){if(!Array.isArray(e.restore))throw Error('Invalid rollback');for(const {r,c} of e.restore){if(!Number.isInteger(r)||!Number.isInteger(c)||r<0||r>8||c<0||c>8||fixed[r][c])throw Error('Invalid rollback');board[r][c]=0;}}
+  else{const {r,c,v}=e;if(!Number.isInteger(r)||!Number.isInteger(c)||r<0||r>8||c<0||c>8||!Number.isInteger(v)||v<1||v>9||fixed[r][c]||board[r][c]||!isValid(board,r,c,v))throw Error('Solver animation failed replay');board[r][c]=v;}
+ }
+ if(!isSolved(board)||board.flat().join('')!==result.solved.flat().join(''))throw Error('Solver animation failed replay');
+ return true;
+}
+const applyEntryBase=applyEntry;
+applyEntry=function(e,anim){applyEntryBase(e,anim);preparedBoardKey=playerGrid.flat().join('');freshState();scheduleSave();};
+async function prepareLegacySolve(action){
+ if(blockAIWhileHumanTrace('AI solver')||!puzzle||genJob||solveJob)return;
+ const id=gameId,strategy=currentStrategy,start=copyGrid(playerGrid),startKey=start.flat().join('');
+ if(isSolved(start)){setStatus('Puzzle is already solved ✓','win');return;}
+ if(!aiLog?.length||preparedBoardKey!==startKey){
+  aiLog=[];aiStepIndex=0;notify('Preparing and checking the solver path…');const token=++solveToken;
+  const job=run('legacy',{board:start,strategy},10000);solveJob=job;$('navCancel').hidden=false;
+  try{const r=await job.promise;if(token!==solveToken||gameId!==id||currentStrategy!==strategy||playerGrid.flat().join('')!==startKey)return;checkedReplay(start,r);aiLog=r.log;aiStepIndex=0;preparedBoardKey=startKey;}
+  catch(e){if(e.message!=='CANCELLED')notify('Solver stopped: '+e.message+'. No unchecked animation loaded.');return;}
+  finally{if(solveJob===job){solveJob=null;$('navCancel').hidden=true;}}
+ }
+ action();
+}
 function persist(name,data){try{const text=JSON.stringify(data);if(text.length>3500000)throw Error('Storage size limit');localStorage.setItem(NS+'.'+name,text);return true;}catch(e){storageWarning='Not saved to disk: '+e.message;updateMemory();return false;}}
 function load(name){try{const s=localStorage.getItem(NS+'.'+name);return s?JSON.parse(s):null;}catch(e){storageWarning='Stored data could not be read';return null;}}
-function snapshot(){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version:C.VERSION,gameId,diff:currentDiff,puzzle:puzzle?.flat(),board:playerGrid?.flat(),notes:notes?.flat().map(s=>[...s]),time:timerSeconds,lineage,rows:rows.slice(-256),assistance:assistance.slice(-1024),coverage:{reviewTotal:rows.length,reviewSaved:Math.min(rows.length,256),assistanceTotal:assistance.length,assistanceSaved:Math.min(assistance.length,1024),bounded:true},recentGains:recentGains.slice(-32),practice,history:history.slice(-128).map(x=>({...x,pn:[...x.pn]})),settings:settings()};}
+function snapshot(){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version:C.VERSION,engineRevision:C.ENGINE_REVISION,generationEvidence,gameId,diff:currentDiff,puzzle:puzzle?.flat(),board:playerGrid?.flat(),notes:notes?.flat().map(s=>[...s]),time:timerSeconds,lineage,rows:rows.slice(-256),assistance:assistance.slice(-1024),coverage:{reviewTotal:rows.length,reviewSaved:Math.min(rows.length,256),assistanceTotal:assistance.length,assistanceSaved:Math.min(assistance.length,1024),bounded:true},recentGains:recentGains.slice(-32),practice,history:history.slice(-128).map(x=>({...x,pn:[...x.pn]})),settings:settings()};}
 function scheduleSave(){if(booting||!puzzle)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>persist('session',snapshot()),200);}
 async function restoreSession(s){
  if(!s||s.schema!=='AI8_SUDOKU_NAV_SESSION_V1'||s.version!==C.VERSION)return false;
+ const restoreToken=++generationToken;cancelSolve();genJob?.cancel();genJob=null;showBusy(false);if(aiAnimating)aiPause();resetAnalysis();
  const b=C.flat(s.board),p=C.flat(s.puzzle);if(p.some((v,i)=>v&&v!==b[i]))throw Error('GIVENS_CHANGED');if(!Array.isArray(s.rows)||s.rows.length>256||!Array.isArray(s.assistance)||s.assistance.length>1024||!Array.isArray(s.notes)||s.notes.length!==81||s.notes.some(a=>!Array.isArray(a)||a.length>9||a.some(v=>!Number.isInteger(v)||v<1||v>9)))throw Error('SESSION_SCHEMA');
- const cert=await run('certify',{board:p},8000).promise;if(!cert.complete||cert.count!==1)throw Error('UNIQUENESS_NOT_CERTIFIED');
+ const cert=await run('certify',{board:p},8000).promise;if(restoreToken!==generationToken)throw Error('STALE_RESTORE');if(!cert.complete||cert.count!==1)throw Error('UNIQUENESS_NOT_CERTIFIED');
  let restored;try{restored=replayLineage(s.lineage,b);}catch(e){try{restored=C.state(b);s.lineage={base:b,ops:[]};}catch(_){restored=null;s.lineage=null;}storageWarning='Prior analysis could not be replayed; saved entries retained and analysis reset.';}
  validateSavedRows(s.rows,cert.solution);
  puzzle=grid2(p);solution=grid2(cert.solution);playerGrid=grid2(b);givenCells=puzzle.map(r=>r.map(Boolean));notes=Array.from({length:9},(_,r)=>s.notes.slice(r*9,r*9+9).map(a=>new Set(a)));history=(s.history||[]).filter(x=>Number.isInteger(x.r)&&Number.isInteger(x.c)&&x.r>=0&&x.r<9&&x.c>=0&&x.c<9&&Array.isArray(x.pn)).map(x=>({...x,pn:new Set(x.pn)}));
+ generationEvidence=s.generationEvidence&&Number.isInteger(s.generationEvidence.seed)&&s.generationEvidence.seed>=0&&s.generationEvidence.seed<=4294967295?{engine:C.ENGINE_REVISION,seed:s.generationEvidence.seed,seedStatus:'RECORDED_METADATA_NOT_REPLAYED',uniqueness:{status:cert.status,count:cert.count,complete:cert.complete},difficulty:{basis:'CLUE_COUNT_PROFILE_NOT_HUMAN_RATING',actualGivens:p.filter(Boolean).length}}:null;
  gameId=String(s.gameId).slice(0,100);currentDiff=s.diff||'medium';timerSeconds=Math.max(0,Math.min(604800,Number(s.time)||0));navState=restored;lineage=s.lineage;rows=s.rows;assistance=s.assistance;recentGains=(s.recentGains||[]).filter(Number.isFinite).slice(-32);practice=s.practice&&Number.isInteger(s.practice.target)&&s.practice.target>=0&&s.practice.target<8?s.practice:null;if(s.settings){for(const [id,k] of [['navGoal','goal'],['navTechnique','target'],['navPolicy','policy']])if(s.settings[k]!=null)$(id).value=String(s.settings[k]);$('navDeep').checked=s.settings.deep===true;}selectedCell=null;aiLog=[];aiStepIndex=0;$('welcomeOverlay')?.classList.add('hidden');$('navPracticeInput').hidden=!(practice&&C.RANK[practice.target]>0);$('timer').textContent=String(Math.floor(timerSeconds/60)).padStart(2,'0')+':'+String(timerSeconds%60).padStart(2,'0');render();resumeTimer();notify('Saved game recovered. Rechecked uniqueness and replayed retained candidate deductions.');return true;
 }
-function updateMemory(){if(!$('navMemory'))return;const m=C.predict(machine,current()?C.context(current(),recentGains):'0.0.0','P0');$('navMemory').textContent=`Machine: ${machine.observations.length} committed observations · ${m.model} · ${learningMode}${memoryConsent?' · stored locally':' · session only'}. Tutor: ${tutor.attempts.length} consented exercise results.${storageWarning?' '+storageWarning:''}`;}
+function updateMemory(){if(!$('navMemory'))return;const m=C.predict(machine,current()?C.context(current(),recentGains):'0.0.0','P0');$('navMemory').textContent=`Machine: ${machine.observations.length} observations (${machine.censored||0} limited or older engine costs excluded) · ${m.model} · ${learningMode}${memoryConsent?' · stored locally':' · session only'}. Tutor: ${tutor.attempts.length} consented exercise results.${storageWarning?' '+storageWarning:''}`;}
 function consentMachine(){memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}updateMemory();}
 function consentTutor(){tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}
 function nextPractice(){const target=Number($('navTechnique').value),history=tutor.attempts.filter(x=>x.technique===target),last=history.at(-1),due=last&&Date.now()-Date.parse(last.created)>86400000;return createGame('medium',target,'pointer',!!due);}
 function suggestPractice(){const allowed=[0,1,2,3,4,5,6,7],ranked=allowed.map(t=>{const a=tutor.attempts.filter(x=>x.technique===t),last=a.at(-1);return{t,n:a.length,rate:a.length?a.filter(x=>!x.assisted&&x.tries===1).length/a.length:0,due:last&&Date.now()-Date.parse(last.created)>86400000};}).sort((a,b)=>Number(b.due)-Number(a.due)||a.rate-b.rate||a.n-b.n||a.t-b.t);$('navTechnique').value=String(ranked[0].t);notify(`Suggested practice: ${C.LABELS[ranked[0].t]}. ${ranked[0].n?'Based on observed attempts and due review, not inferred thoughts.':'No personal evidence yet; using a simple progression default.'}`);}
 function profileDialog(){const html=C.NAMES.slice(0,8).map((name,t)=>{const a=tutor.attempts.filter(x=>x.technique===t);return`<tr><td>${esc(C.LABELS[t])}</td><td>${a.length}</td><td>${a.filter(x=>!x.assisted&&x.tries===1).length}</td><td>${a.filter(x=>x.assisted).length}</td></tr>`;}).join('');openDialog('Local learning · observed, not inferred',`<p>Separate machine experience and consented practice outcomes. No data is sent to a server.</p><table class="nav-table"><tr><th>Technique</th><th>Attempts</th><th>No hint / first try</th><th>Assisted</th></tr>${html}</table><p>These are descriptive counts under evaluator ${C.VERSION}, not a calibrated accuracy score or demonstrated learning effect. Retention review becomes due after a day; transformed or related puzzles are not independent evidence.</p><h3>MDL model bank</h3><table class="nav-table"><tr><th>Model</th><th>Structure bits</th><th>Prequential ideal bits</th></tr>${machine.models.map(m=>`<tr><td>${m.name}</td><td>${m.bits}</td><td>${m.loss.toFixed(2)}</td></tr>`).join('')}</table><p class="nav-small">Finite bank selector: minimum structure + past log-loss. Model structures cost 1/2/3 bytes in the fixed model language; prediction lengths are ideal −log₂ probabilities, not physical compressed files. Pooled may legitimately win. Learning does not change proof validity.</p>`);}
-function exportAll(){const report={schema:'AI8_SUDOKU_NAVIGATOR_EXPORT_V1',version:C.VERSION,session:snapshot(),machine:{version:C.VERSION,observations:machine.observations},tutor,limits:{human_learning_effect:'NOT_MEASURED',proofs:'Conditional on stated pre-state; shortest found is not an optimum',library:'Known checked P0–P3 rules plus optional exact digit-path support; not an autonomous R7 forge'}};const body=JSON.stringify(report);const envelope={...report,sha256:AI8SudokuTruth.sha256(body)};download(JSON.stringify(envelope,null,2),'8zSudoku_Navigator_'+C.VERSION+'.json','application/json');return envelope;}
+function exportAll(){const report={schema:'AI8_SUDOKU_NAVIGATOR_EXPORT_V1',version:C.VERSION,engineRevision:C.ENGINE_REVISION,session:snapshot(),machine:{version:C.VERSION,observations:machine.observations},tutor,limits:{human_learning_effect:'NOT_MEASURED',proofs:'Conditional on stated pre-state; shortest found is not an optimum',library:'Known checked P0–P3 rules plus optional exact digit-path support; not an autonomous R7 forge'}};const body=JSON.stringify(report);const envelope={...report,sha256:AI8SudokuTruth.sha256(body)};download(JSON.stringify(envelope,null,2),'8zSudoku_Navigator_'+C.VERSION+'.json','application/json');return envelope;}
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function validateTutor(t){if(!t||t.version!==C.VERSION||!Array.isArray(t.attempts)||t.attempts.length>512)throw Error('TUTOR_SCHEMA');const seen=new Set();for(const a of t.attempts){if(!a||typeof a.id!=='string'||a.id.length>100||seen.has(a.id)||!Number.isInteger(a.technique)||a.technique<0||a.technique>7||a.correct!==true||typeof a.assisted!=='boolean'||!Number.isInteger(a.tries)||a.tries<1||a.tries>10000||!Number.isFinite(a.seconds)||a.seconds<0||a.seconds>604800||typeof a.created!=='string'||!Number.isFinite(Date.parse(a.created))||a.evaluator!==C.VERSION)throw Error('TUTOR_RECORD');seen.add(a.id);}return t;}
 async function importAll(file){try{if(!file||file.size>4000000)throw Error('IMPORT_SIZE');const d=JSON.parse(await file.text());if(d.schema!=='AI8_SUDOKU_NAVIGATOR_EXPORT_V1'||d.version!==C.VERSION)throw Error('IMPORT_VERSION');const supplied=d.sha256;delete d.sha256;if(AI8SudokuTruth.sha256(JSON.stringify(d))!==supplied)throw Error('IMPORT_HASH');const m=C.restoreModel(d.machine);validateTutor(d.tutor);if(humanTraceRecorder.isLocked())throw Error('Export/Delete active Human Trace first');if(!confirm('Import this local research/game file? Your current Navigator game will be retained as previousGame.'))return;if(puzzle)persist('previousGame',snapshot());resetAnalysis();genJob?.cancel();generationToken++;if(!await restoreSession(d.session))throw Error('SESSION_VERSION');machine=m;tutor=d.tutor;memoryConsent=false;tutorConsent=false;learningMode='FROZEN_TRANSFER';$('navLearningMode').value=learningMode;persist('consentMachine',false);persist('consentTutor',false);updateMemory();scheduleSave();notify('Imported with frozen machine memory; historical observations are user-supplied evidence, not independently verified performance. Re-enable local learning explicitly.');}catch(e){notify('Import rejected: '+e.message);}}
@@ -2402,19 +2531,19 @@ async function controls(){const s=current();if(!s)return;expose('lab_comparison'
 function validateSavedRows(rs,sol){for(const r of rs){if(!r||!Number.isInteger(r.id)||r.id<1||!['placement','erase','undo','elimination'].includes(r.kind)||!(r.cell===null||Number.isInteger(r.cell)&&r.cell>=0&&r.cell<81)||r.value!=null&&(!Number.isInteger(r.value)||r.value<1||r.value>9)||!Array.isArray(r.help)||r.help.length>1024)throw Error('REVIEW_SCHEMA');if(r.pre)C.validate(r.pre);if(r.result?.found){if(!r.pre||!Array.isArray(r.result.path)||r.result.path.length>100)throw Error('REVIEW_PROOF_SCHEMA');let st=C.clone(r.pre),bits=0;for(const q of r.result.path){st=C.apply(st,q);bits+=C.encode(q).length*8;}if(bits!==r.result.reference_proof_bits||r.kind==='placement'&&st.b[r.cell]!==r.value)throw Error('REVIEW_PROOF_REPLAY');}if(r.kind==='placement'&&r.answer!==(sol[r.cell]===r.value?'CORRECT':'WRONG'))throw Error('REVIEW_ANSWER');r.reasoning_status='UNKNOWN_REASONING';}}
 function install(){
  $('proofCoachPanel')?.setAttribute('hidden','');
- document.querySelector('.col-center').insertAdjacentHTML('beforeend',`<section class="panel nav-panel" id="navigatorPanel"><div class="nav-heading"><div><div class="panel-title">DCC Navigator</div><span class="nav-small">Find the next useful thought.</span></div><span class="nav-badge">DEV ${C.VERSION}</span></div><div class="nav-options"><label>Goal <select id="navGoal"><option value="FLOW">Flow · keep moving</option><option value="PRACTICE">Practice a technique</option></select></label><label>Technique <select id="navTechnique">${C.LABELS.slice(0,8).map((n,i)=>`<option value="${i}" ${i===1?'selected':''}>${n}</option>`).join('')}</select></label></div><div class="btn-row"><button class="btn green" id="navNudge">◎ Where to look</button><button class="btn violet" id="navExplain">Why?</button><button class="btn gold" id="navReveal">Reveal</button></div><p class="nav-copy" id="navCopy" aria-live="polite">Choose a puzzle. The Navigator will remain quiet until you ask.</p><div id="navDetails"></div><button class="btn gold" id="navApply" hidden>Keep this checked elimination</button><div class="nav-actions"><button class="btn" id="navCompare">Compare paths</button><button class="btn" id="navPractice">New practice</button><button class="btn" id="navReviewCount">Review 0</button><button class="btn rose" id="navCancel" hidden>Cancel analysis</button></div><div class="nav-small" id="navReceipt"></div><div class="nav-practice" id="navPracticeInput" hidden><label>Candidate to exclude <select id="navElimDigit">${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><button class="btn green" id="navCheckElim">Check selected cell</button></div><details class="nav-extra"><summary>Views, learning & laboratory</summary><div class="nav-options"><label>Digit slice <select id="navDigit"><option value="0">Normal grid</option>${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><label>Controller <select id="navPolicy"><option value="REAL">DCC · real signal</option><option value="OFF">OFF · cheap checked baseline</option><option value="ORDINARY">Ordinary adaptive</option><option value="SHAM">SHAM · matched measurements</option></select></label></div><label class="nav-small"><input type="checkbox" id="navDeep"> Allow bounded digit-path specialist when needed</label><div class="nav-options"><button class="btn" id="navLearn">Machine memory: session</button><button class="btn" id="navTutor">Enable tutor profile</button></div><label class="nav-small">Machine learning <select id="navLearningMode"><option>COLD</option><option>ONLINE_PREQUENTIAL</option><option>FROZEN_TRANSFER</option><option>CACHE_REPEAT</option></select></label><p class="nav-small" id="navMemory"></p><div class="nav-actions"><button class="btn" id="navProfile">Learning profile</button><button class="btn" id="navSuggest">Suggest practice</button><button class="btn" id="navExport">Export</button><button class="btn" id="navImport">Import</button><button class="btn rose" id="navDelete">Delete local data</button></div><input id="navFile" type="file" accept="application/json,.json" hidden><button class="btn violet" id="navControls">Compare controllers on this position</button><pre id="navLabResult" class="nav-lab">No analysis requested.</pre><p class="nav-small">Real/OFF/SHAM are experimental selectors over the same verified rules. Machine learning ≠ measured human improvement. Unknown reasoning stays unknown. Game and review auto-save on this device. Machine history and tutor outcomes persist only when enabled. No external API, no background network.</p></details></section>`);
+ document.querySelector('.col-center').insertAdjacentHTML('beforeend',`<section class="panel nav-panel" id="navigatorPanel"><div class="nav-heading"><div><div class="panel-title">DCC Navigator</div><span class="nav-small">Find the next useful thought.</span></div><span class="nav-badge">ENGINE ${C.ENGINE_REVISION}</span></div><div class="nav-options"><label>Goal <select id="navGoal"><option value="FLOW">Flow · keep moving</option><option value="PRACTICE">Practice a technique</option></select></label><label>Technique <select id="navTechnique">${C.LABELS.slice(0,8).map((n,i)=>`<option value="${i}" ${i===1?'selected':''}>${n}</option>`).join('')}</select></label></div><div class="btn-row"><button class="btn green" id="navNudge">◎ Where to look</button><button class="btn violet" id="navExplain">Why?</button><button class="btn gold" id="navReveal">Reveal</button></div><p class="nav-copy" id="navCopy" aria-live="polite">Choose a puzzle. The Navigator will remain quiet until you ask.</p><div id="navDetails"></div><button class="btn gold" id="navApply" hidden>Keep this checked elimination</button><div class="nav-actions"><button class="btn" id="navCompare">Compare paths</button><button class="btn" id="navPractice">New practice</button><button class="btn" id="navReviewCount">Review 0</button><button class="btn rose" id="navCancel" hidden>Cancel analysis</button></div><div class="nav-small" id="navReceipt"></div><div class="nav-practice" id="navPracticeInput" hidden><label>Candidate to exclude <select id="navElimDigit">${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><button class="btn green" id="navCheckElim">Check selected cell</button></div><details class="nav-extra"><summary>Views, learning & laboratory</summary><div class="nav-options"><label>Digit slice <select id="navDigit"><option value="0">Normal grid</option>${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><label>Controller <select id="navPolicy"><option value="REAL">DCC · real signal</option><option value="OFF">OFF · cheap checked baseline</option><option value="ORDINARY">Ordinary adaptive</option><option value="SHAM">SHAM · matched measurements</option></select></label></div><label class="nav-small"><input type="checkbox" id="navDeep"> Allow bounded digit-path specialist when needed</label><div class="nav-options"><button class="btn" id="navLearn">Machine memory: session</button><button class="btn" id="navTutor">Enable tutor profile</button></div><label class="nav-small">Machine learning <select id="navLearningMode"><option>COLD</option><option>ONLINE_PREQUENTIAL</option><option>FROZEN_TRANSFER</option><option>CACHE_REPEAT</option></select></label><p class="nav-small" id="navMemory"></p><div class="nav-actions"><button class="btn" id="navProfile">Learning profile</button><button class="btn" id="navSuggest">Suggest practice</button><button class="btn" id="navExport">Export</button><button class="btn" id="navImport">Import</button><button class="btn rose" id="navDelete">Delete local data</button></div><input id="navFile" type="file" accept="application/json,.json" hidden><button class="btn violet" id="navControls">Compare controllers on this position</button><pre id="navLabResult" class="nav-lab">No analysis requested.</pre><p class="nav-small">Real/OFF/SHAM are experimental selectors over the same verified rules. Machine learning ≠ measured human improvement. Unknown reasoning stays unknown. Game and review auto-save on this device. Machine history and tutor outcomes persist only when enabled. No external API, no background network.</p></details></section>`);
  document.body.insertAdjacentHTML('beforeend','<div class="nav-modal" id="navModal" hidden role="dialog" aria-modal="true" aria-labelledby="navModalTitle"><div class="nav-dialog"><button class="nav-close" id="navClose" aria-label="Close">×</button><h2 id="navModalTitle"></h2><div id="navModalBody"></div></div></div>');
- const events={navNudge:()=>analyze('nudge'),navExplain:()=>analyze('explain'),navReveal:()=>analyze('reveal'),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
+ const events={navNudge:()=>analyze('nudge'),navExplain:()=>analyze('explain'),navReveal:()=>analyze('reveal'),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{cancelSolve();navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
  $('navDigit').onchange=digitView;for(const id of ['navGoal','navTechnique','navPolicy','navDeep'])$(id).onchange=()=>{resetAnalysis();notify('Selection changed. Ask for a fresh checked suggestion.');};$('navLearningMode').onchange=()=>{learningMode=$('navLearningMode').value;if(learningMode==='COLD')machine=C.emptyModel();updateMemory();};$('navFile').onchange=e=>importAll(e.target.files[0]);$('navModal').onclick=e=>{if(e.target===$('navModal'))closeDialog();};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog();});
  $('hintBtn').onclick=()=>analyze('explain');$('hintBtn').textContent='◎ Navigator hint';
- const title=document.querySelector('.title');if(title)title.innerHTML='8zSudoku <span class="accent">DCC Navigator</span>';const head=document.querySelector('.tb-center');if(head)head.textContent='8zSudoku · DCC Navigator';const version=document.querySelector('.tb-version');if(version)version.innerHTML='Development '+C.VERSION+' · <a href="../../s/">Stable game ↗</a>';
- const info=$('preview-update');if(info)info.innerHTML='<summary>DCC Navigator · local-first experimental edition</summary><p>Verified alternatives, literal proof bits, equal-horizon path comparison, FLOW/PRACTICE, an online prequential model bank and a separate consented tutor profile. The classical solver and its Phase Sensors remain available. This development file is independent of the stable game.</p><p>Known rule library; no claim of an autonomous R7 rule forge or measured human learning. Every candidate deduction is checked. Export includes observations and scope.</p>';
+ const title=document.querySelector('.title');if(title)title.innerHTML='8zSudoku <span class="accent">DCC Navigator</span>';const head=document.querySelector('.tb-center');if(head)head.textContent='8zSudoku · DCC Navigator';const version=document.querySelector('.tb-version');if(version)version.innerHTML='Engine '+C.ENGINE_REVISION+' · <a href="../../S/">Stable game ↗</a>';
+ const info=$('preview-update');if(info)info.innerHTML='<summary>Engine 0.3.0 · fast solving, checked explanations</summary><p>8z Fast combines bitmask constraints, forced moves and bounded MRV search. New puzzles retain an exact uniqueness check. The Navigator uses cheap logic before deeper work, including pairs, triples and quads. DCC comparisons, consented learning and five classical strategies remain available.</p><p>Known rule library; no claim of an autonomous R7 rule forge or measured human learning. Every candidate deduction is checked. Export includes observations and scope.</p>';
  attachAdapters();const aiWrapped=aiSolve,stepWrapped=aiStep;aiSolve=()=>prepareLegacySolve(aiWrapped);aiStep=()=>prepareLegacySolve(stepWrapped);
  memoryConsent=load('consentMachine')===true;tutorConsent=load('consentTutor')===true;if(memoryConsent){try{machine=C.restoreModel(load('machine')||C.emptyModel());learningMode='ONLINE_PREQUENTIAL';}catch(e){storageWarning='Machine memory rejected: '+e.message;}}const t=load('tutor');if(tutorConsent&&t){try{tutor=validateTutor(t);}catch(e){storageWarning='Tutor memory rejected: '+e.message;}}
  $('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';$('navLearningMode').value=learningMode;
  const saved=load('session');if(saved&&!humanTraceRecorder.isLocked())restoreSession(saved).catch(e=>{notify('Saved game was not restored: '+e.message);}).finally(()=>{booting=false;updateMemory();});else{booting=false;if(playerGrid)freshState();updateMemory();}
  window.addEventListener('pagehide',()=>{if(puzzle)persist('session',snapshot());});
- window.SudokuNavigator={version:C.VERSION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};
+ window.SudokuNavigator={version:C.VERSION,engineRevision:C.ENGINE_REVISION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};
 }
 install();
 })();
