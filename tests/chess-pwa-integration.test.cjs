@@ -56,6 +56,12 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  assert.equal(el('settingSFDepth').value,'11','users without a saved depth get the new default');
  el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
  assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).sfAnalysisDepth,12);
+ const initialCards=el('allEvalBadges');
+ await until(()=>initialCards.hidden===false && initialCards.children.length===3 &&
+   [...initialCards.querySelectorAll('.all-eval-move')].every(move=>move.textContent && !['…','—'].includes(move.textContent)) &&
+   [...initialCards.querySelectorAll('.all-eval-score')].length===2 &&
+   [...initialCards.querySelectorAll('.all-eval-score')].every(score=>score.textContent && !['…','—'].includes(score.textContent)),
+ 'Auto computes CDB, SF and DCC results in the three visible cards');
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
  assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
  el('btnSimB').click();w.document.querySelector('input[value=dccbot]').checked=true;
@@ -78,11 +84,12 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  source.value='all';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'All retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
- assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB','SF','DCC']);
+ assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
  assert.equal(stage.classList.contains('has-all-evals'),false,'All does not widen the left board column');
  el('btnHideEval').click();assert.equal(cards.parentElement.hidden,true,'Hide Eval hides the comparison row');
  el('btnHideEval').click();source.value='auto';source.dispatchEvent(new w.Event('change'));
- assert.equal(cards.hidden,true);assert.equal(cards.parentElement.hidden,false,'Auto restores the ordinary board hint');
+ assert.equal(cards.hidden,false);assert.equal(cards.parentElement.hidden,false,'Auto keeps the three source cards below the board');
+ assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
  el('btnSim').click();
  const tournament=el('simTournamentDialog'),sim=name=>tournament.querySelector('[data-ui="'+name+'"]');
  assert.equal(tournament.open,true,'Sim opens the actual games and tournaments setup');

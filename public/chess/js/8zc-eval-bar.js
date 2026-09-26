@@ -37,12 +37,10 @@
     const sources = ['CDB', 'SF', 'DCC'];
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
-      const selectedAll = settings.analysisSource === 'all';
-      const all = selectedAll && visible;
-      comparison.hidden = !all;
-      comparison.parentElement.classList.toggle('has-all-evals', selectedAll);
-      comparison.parentElement.hidden = selectedAll && !visible;
-      if (!all) return;
+      comparison.hidden = !visible;
+      comparison.parentElement.classList.toggle('has-all-evals', true);
+      comparison.parentElement.hidden = !visible;
+      if (!visible) return;
       comparison.replaceChildren();
       for (const source of sources) {
         const badge = document.createElement('div'); badge.className = 'all-eval-badge';
@@ -55,7 +53,8 @@
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
           move.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
-          note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) : 'heuristic choice';
+          note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) :
+            choice?.status === 'unavailable' ? 'unavailable' : 'heuristic choice';
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
           const fresh = entry && Date.now() - entry.at < 300000;
@@ -93,18 +92,25 @@
       label.textContent = visible ? view.label : '—';
     }
     function update(fen, score, source = 'CDB') {
-      scores.set(fen, { score, source, at: Date.now() });
+      const deep = source === 'SF' ? sourceScores.get(`${fen}:SF`) : null;
+      const preserved = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
+      scores.set(fen, { score: preserved ? deep.score : score, source, at: Date.now() });
       if (source === 'CDB' || source === 'SF') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined) {
+    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined, origin = 'regular') {
       const key = `${fen}:${source}`, previous = sourceScores.get(key);
+      // A shallower normal search must not replace the user's pinned Deep
+      // analysis, even if the main worker ignores a late abort.
+      if (source === 'SF' && previous?.origin === 'deep' && origin !== 'deep' &&
+          Date.now() - previous.at < 300000 && (!Number.isFinite(depth) || depth < previous.depth)) return;
       // Score-only refreshes must not erase root metadata. Explicit null clears it;
       // unavailable scores also clear omitted metadata rather than retain an old move.
       const known = Number.isFinite(score) || (['cp', 'mate'].includes(score?.type) && Number.isFinite(score.white));
       sourceScores.set(key, { score, at: Date.now(),
+        origin,
         depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
         bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove,
         restricted: restricted === undefined ? (depth === undefined && known ? previous?.restricted : false) : restricted });
@@ -116,7 +122,20 @@
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    return { render, update, updateSource, updateDCC };
+    function markComparisonPending(fen) {
+      // A new request for the same position must not expose another mode's old
+      // root move, depth or DCC decision while the three sources recalculate.
+      const deep = sourceScores.get(`${fen}:SF`);
+      const keepDeep = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
+      if (keepDeep && settings.analysisSource === 'sf') scores.set(fen, { score: deep.score, source: 'SF', at: Date.now() });
+      else scores.delete(fen);
+      sourceScores.delete(`${fen}:CDB`);
+      if (!keepDeep) sourceScores.delete(`${fen}:SF`);
+      dccChoices.set(fen, { move: null, provider: null, status: 'pending' });
+      if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
+      if (game.fen() === fen) render();
+    }
+    return { render, update, updateSource, updateDCC, markComparisonPending };
   }
   return { measure, create };
 });

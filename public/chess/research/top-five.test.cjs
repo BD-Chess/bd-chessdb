@@ -17,14 +17,15 @@ const cloud = opening.map((m, i) => row(m, i ? 0 : 1, i ? 1 : 2)).join('|');
 const verified = opening.map((m, i) => row(m, i ? '??' : 1, i ? 0 : 2)).join('|');
 
 function context(responses = [verified, cloud]) {
-  const calls = [], badges = [];
+  const calls = [], badges = [], sourceCards = [];
   const c = {
-    positionEval: { render() {}, update() {} },
+    positionEval: { render() {}, update() {}, markComparisonPending() {}, updateDCC() {},
+      updateSource: (...args) => sourceCards.push(args) },
     // The live-source branch has no frozen import; keep actual transport observations.
     offlineEvidence: null, sourceObservations: new Map(),
     activityEpoch: 0, simRequests: new Set(),
     Chess, DCC, AbortController, console: { warn() {} },
-    settings: { evalMode: 'direct', topN: 5, dccEnabled: true },
+    settings: { evalMode: 'direct', analysisSource: 'auto', topN: 5, dccEnabled: false, sfAnalysisDepth: 11 },
     requestPending: new Map(), evalCache: {}, sleep: async () => {},
     setTimeout: () => 1, clearTimeout() {}, clearInterval() {}, persistEvalCache() {},
     fetch: async url => {
@@ -35,11 +36,20 @@ function context(responses = [verified, cloud]) {
       return { ok: true, text: async () => text };
     },
     game: new Chess(), showEval: true, simRunning: false, replayRunning: false,
-    playState: { active: false }, analysisGeneration: 0, evalRetryTimer: 1,
-    document: { getElementById: () => ({ style: {} }) },
+    playState: { active: false, assistanceLocked: false }, analysisGeneration: 0, annotationRequestId: 0,
+    activeLookaheadId: 0, sfAnalysisFen: null, sfAnalysisDepth: null, sfWorking: false,
+    deepAnalysisFen: null,
+    evalRetryTimer: 1, latestDCCResults: [], latestDCCReceipt: null,
+    document: { getElementById: () => ({ style: {}, textContent: '' }), querySelectorAll: () => [] },
+    syncSFAnalysisControl() {},
+    runLocalSF: async (fen, options) => {
+      c.sfCall = { fen, options };
+      return { root: { moves: [{ move: 'd2d4', score: 25 }], complete: true }, ledger: { rootDepth: 11, rootNodes: 100 } };
+    },
+    uciToSan: (fen, move) => new Chess(fen).move({ from: move.slice(0, 2), to: move.slice(2, 4) })?.san,
     annotateMove: (...args) => badges.push(args),
     runDCCLookahead: async (moves, fen) => { c.analysisInput = { moves, fen }; },
-    renderDCCView() {}, calls, badges
+    showAnalysisCandidates() {}, renderDCCView() {}, calls, badges, sourceCards
   };
   vm.createContext(c);
   for (const name of ['fetchChessText', 'cachedFetchChessDB', 'fetchAnnotations']) {
@@ -117,4 +127,7 @@ test('board displays top five while shared DCC receives the full legal candidate
   assert.equal(c.badges.filter(b => b[2]).length, 1);
   assert.equal(c.analysisInput.moves.length, 6);
   assert.equal(c.analysisInput.fen, start);
+  assert.equal(c.sfCall.fen, start, 'SF still computes its independent card in Auto');
+  assert.equal(c.sfCall.options.depth, 11);
+  assert.deepEqual(c.sourceCards.map(args => [args[2], args[4]]), [['CDB', 'e4'], ['SF', 'd4']]);
 });

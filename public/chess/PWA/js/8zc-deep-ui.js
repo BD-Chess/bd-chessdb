@@ -64,6 +64,7 @@
       trigger?.setAttribute('aria-expanded', 'false');
       workspace.scrollTop = workspaceScroll;
       (lastFocus?.isConnected ? lastFocus : trigger)?.focus?.({ preventScroll: true });
+      host.onClose?.();
     }
     function toggle() { if (panel.hidden) open(); else close(); }
     function movesFor(fen, pv) {
