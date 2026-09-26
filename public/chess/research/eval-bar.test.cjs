@@ -49,7 +49,7 @@ test('late replies cannot paint another FEN; flipping, hiding and unavailable da
     assert.equal(bar.classes['is-unknown'], true);
   } finally { global.document = prior; }
 });
-test('All keeps provider top moves with their scores/depth, clears stale FENs and identifies DCC choices', () => {
+test('source cards keep provider top moves and depths, clear stale FENs and identify DCC choices in every mode', () => {
   const make = () => ({ textContent: '', className: '', children: [], hidden: false,
     classList: { toggle() {} }, style: { setProperty() {} }, setAttribute() {},
     append(...nodes) { this.children.push(...nodes); }, replaceChildren(...nodes) { this.children = nodes; } });
@@ -74,6 +74,14 @@ test('All keeps provider top moves with their scores/depth, clears stale FENs an
     assert.deepEqual(cells('CDB'), ['CDB:', 'e4', '+1.00', 'White POV']);
     assert.deepEqual(cells('SF'), ['SF:', 'Nf3', '-0.30', 'depth 18']);
     assert.deepEqual(cells('DCC'), ['DCC:', 'Nf3', 'CDB lines · choice']);
+    for (const selected of ['auto', 'cdb', 'sf', 'dcc', 'all']) {
+      settings.analysisSource = selected; view.render();
+      assert.equal(badges.hidden, false, `${selected} shows the three computed results`);
+      assert.deepEqual(badges.children.map(row => row.children[0].children[0].textContent), ['CDB:', 'SF:', 'DCC:']);
+      assert.deepEqual(cells('CDB'), ['CDB:', 'e4', '+1.00', 'White POV']);
+      assert.deepEqual(cells('SF'), ['SF:', 'Nf3', '-0.30', 'depth 18']);
+      assert.deepEqual(cells('DCC'), ['DCC:', 'Nf3', 'CDB lines · choice']);
+    }
     view.update(b.fen(), -30, 'SF');
     assert.deepEqual(cells('SF'), ['SF:', 'Nf3', '-0.30', 'depth 18'], 'generic score update preserves root move and depth');
     view.updateSource(b.fen(), 42, 'SF', 22, 'd4');
@@ -96,6 +104,30 @@ test('All keeps provider top moves with their scores/depth, clears stale FENs an
     view.updateSource(b.fen(), 8, 'SF', 12, 'e5');
     view.update(b.fen(), null, 'SF');
     assert.deepEqual(cells('SF'), ['SF:', '—', '—', 'White POV'], 'unavailable provider clears its old move and depth');
+    view.updateSource(b.fen(), 13, 'CDB', null, 'Nc6');
+    view.updateSource(b.fen(), 24, 'SF', 19, 'd5');
+    view.updateDCC(b.fen(), 'Nc6', 'CDB');
+    view.update(b.fen(), 13, 'CDB');
+    view.markComparisonPending(b.fen());
+    assert.deepEqual(cells('CDB'), ['CDB:', '…', '…', 'White POV']);
+    assert.deepEqual(cells('SF'), ['SF:', '…', '…', 'White POV'], 'same-FEN refresh discards old SF depth and choice');
+    assert.equal(cells('DCC')[1], '…', 'same-FEN refresh discards prior DCC choice');
+    assert.equal(label.textContent, '…', 'left bar waits for newly selected source');
+    view.updateSource(b.fen(), 31, 'CDB', null, 'Nc6');
+    assert.equal(cells('SF')[1], '…', 'CDB reply does not resurrect SF result from prior mode');
+    view.updateSource(b.fen(), { type: 'cp', white: 38 }, 'SF', 24, 'd5', false, 'deep');
+    view.updateSource(b.fen(), 4, 'SF', 9, 'a5');
+    assert.deepEqual(cells('SF'), ['SF:', 'd5', '+0.38', 'depth 24'], 'late shallow SF cannot replace Deep root');
+    settings.analysisSource = 'sf';
+    view.update(b.fen(), 4, 'SF');
+    assert.equal(label.textContent, '+0.38', 'SF board bar preserves the deeper White-POV score');
+    view.markComparisonPending(b.fen());
+    assert.deepEqual(cells('SF'), ['SF:', 'd5', '+0.38', 'depth 24'], 'same-FEN refresh retains the pinned Deep result');
+    assert.equal(label.textContent, '+0.38', 'switching back to SF keeps the pinned board score');
+    settings.analysisSource = 'cdb';
+    view.update(b.fen(), -100, 'CDB');
+    assert.equal(label.textContent, '+1.00', 'CDB selected board score is never replaced by deep SF');
+    assert.deepEqual(cells('SF'), ['SF:', 'd5', '+0.38', 'depth 24'], 'deep SF remains visible on its separate card');
   } finally { global.document = prior; global.matchMedia = priorMatch; Date.now = priorNow; }
 });
 
@@ -105,7 +137,7 @@ test('Deep SF scores preserve White POV, mate distance and upper/lower bounds', 
   assert.equal(E.measure(white, { type: 'mate', white: -2, whiteBound: 'exact' }, null, 'SF').label, '−#2');
 });
 
-test('All shows three sources simultaneously on mobile; Hide Eval hides their row', t => {
+test('every analysis mode shows three sources simultaneously on mobile; Hide Eval hides the row', t => {
   const { JSDOM } = require('jsdom'), fs = require('node:fs');
   const dom = new JSDOM('<div class="board-actions"><div id="allEvalBadges"></div></div><div id="positionEval"></div><span id="positionEvalLabel"></span>', {runScripts:'outside-only'});
   t.after(() => dom.window.close()); const w = dom.window;
@@ -119,11 +151,16 @@ test('All shows three sources simultaneously on mobile; Hide Eval hides their ro
   view.updateSource(b.fen(), 10, 'CDB', null, 'e4');
   for (let depth=8;depth<20;depth++) view.updateSource(b.fen(), {type:'cp',white:depth}, 'SF',depth,'Nf3');
   const row=w.document.getElementById('allEvalBadges');
-  assert.deepEqual([...row.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
+  for (const selected of ['auto','cdb','sf','dcc','all']) {
+    settings.analysisSource=selected;view.render();
+    assert.equal(row.hidden,false,`${selected} displays all provider cards`);
+    assert.deepEqual([...row.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
+    assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
+  }
   assert.equal(timers.size,0,'saved rotation seconds do not schedule hidden mobile timers');
-  assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
   visible=false; view.render();
   assert.equal(row.hidden,true); assert.equal(row.parentElement.hidden,true);
   visible=true; settings.analysisSource='auto'; view.render();
-  assert.equal(row.parentElement.hidden,false); assert.equal(row.parentElement.classList.contains('has-all-evals'),false);
+  assert.equal(row.hidden,false); assert.equal(row.parentElement.hidden,false);
+  assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
 });

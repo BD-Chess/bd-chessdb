@@ -64,11 +64,20 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  source.value='all';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'All retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
- assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB','SF','DCC']);
+ assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
  assert.equal(stage.classList.contains('has-all-evals'),false,'All does not widen the left board column');
  el('btnHideEval').click();assert.equal(cards.parentElement.hidden,true,'Hide Eval hides the comparison row');
  el('btnHideEval').click();source.value='auto';source.dispatchEvent(new w.Event('change'));
- assert.equal(cards.hidden,true);assert.equal(cards.parentElement.hidden,false,'Auto restores the ordinary board hint');
+ assert.equal(cards.hidden,false);assert.equal(cards.parentElement.hidden,false,'Auto retains all three provider cards');
+ assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
+ await until(()=>cards.querySelectorAll('.all-eval-move').length===3&&cards.querySelectorAll('.all-eval-move')[1].textContent!=='…','Auto measures its own SF card');
+ assert.match(el('positionEval').getAttribute('aria-label'),/CDB/,'Auto board bar still displays CDB');
+ assert.equal(el('btnAnalysisDeepen').disabled,false,'Auto supports deeper SF analysis in the background cards');
+ source.value='sf';source.dispatchEvent(new w.Event('change'));
+ assert.equal(cards.hidden,false,'SF mode keeps three cards under the board');
+ await until(()=>/SF/.test(el('positionEval').getAttribute('aria-label')),'SF selection changes the board score source');
+ assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
+ source.value='auto';source.dispatchEvent(new w.Event('change'));
  el('btnSim').click();
  const tournament=el('simTournamentDialog'),sim=name=>tournament.querySelector('[data-ui="'+name+'"]');
  assert.equal(tournament.open,true,'Sim opens the actual games and tournaments setup');
@@ -149,7 +158,9 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.chess-study-close').click();
  el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,false,'deep analysis opens inside the workspace');
  assert.equal(el('deepAnalysisPanel').parentElement,el('workspaceDisplay'));assert.equal(w.document.querySelector('dialog[open]'),null);
+ assert.equal(cards.querySelectorAll('.all-eval-move')[1].textContent,'—','opening Deep releases the ordinary SF card');
  el('btnDeepAnalysis').click();assert.equal(el('deepAnalysisPanel').hidden,true,'same button returns to Moves/DCC');
+ await until(()=>!['—','…'].includes(cards.querySelectorAll('.all-eval-move')[1]?.textContent),'closing Deep resumes SF for the three-card row');
  el('btnEvidence').click();await new Promise(r=>setTimeout(r,20));assert(w.document.querySelector('.chess-research-dialog').open);w.document.querySelector('.research-close').click();
  const host=w.ChessLabHost;
  // Import real nested PGN through the application Input path and export through Copy.
