@@ -8,8 +8,11 @@ const path=require('node:path');
 const vm=require('node:vm');
 const {Worker:Thread}=require('node:worker_threads');
 const {JSDOM,VirtualConsole}=require('jsdom');
-const appPath=path.resolve(__dirname,'../public/S/new/app.html');
-const NS='ai8SudokuNavigatorV020';
+const LANE=process.env.SUDOKU_APP_LANE||'LAB';
+assert.ok(['LAB','PWA'].includes(LANE),'SUDOKU_APP_LANE must be LAB or PWA');
+const appSegment=LANE==='PWA'?'PWA':'new';
+const appPath=path.resolve(__dirname,`../public/S/${appSegment}/app.html`);
+const NS='ai8SudokuNavigatorV020'+(LANE==='PWA'?'PWA':'');
 const fixture='530070000600195000098000060800060003400803001700020006060000280000419005000080079';
 const fixtureSolution='534678912672195348198342567859761423426853791713924856961537284287419635345286179';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -19,7 +22,7 @@ function valid(grid,givens){const b=grid.flat(),p=givens.flat();assert.equal(b.l
 async function boot(t,stored={}){
  const errors=[],requests=[],workers=new Set(),urls=new Map(),downloads=[],delayKinds={},delayedTimers=new Set();let nextUrl=0;
  const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
- const dom=new JSDOM(fs.readFileSync(appPath,'utf8'),{url:'https://mdlxDcc.org/S/new/app.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;
+ const dom=new JSDOM(fs.readFileSync(appPath,'utf8'),{url:`https://mdlxDcc.org/S/${appSegment}/app.html`,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;
  w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
  w.alert=s=>errors.push('alert: '+s);w.confirm=()=>true;
  w.HTMLElement.prototype.scrollIntoView=function(){};w.HTMLElement.prototype.scrollTo=function(){};
@@ -95,3 +98,51 @@ test('cancelled solver and superseded restore cannot overwrite new state', {time
  h.delayKinds.certify=450;const restoring=w.SudokuNavigator.restore(savedFixture('0.2.0')).catch(e=>{assert.match(e.message,/STALE_RESTORE|CANCELLED/);return false;});
  await w.newGame('easy');const fresh=h.get('playerGrid');await restoring;assert.deepEqual(h.get('playerGrid'),fresh,'late certification cannot overwrite the newer game');assert.deepEqual(h.errors,[]);
 });
+
+if(LANE==='PWA'){
+ test('PWA update flush durably preserves the old session schema and current move', {timeout:30000},async t=>{
+  const saved=JSON.stringify(savedFixture('0.2.0')),h=await boot(t,{[NS+'.session']:saved}),{w}=h;
+  await until(()=>w.SudokuNavigator.state(),'old PWA session restored');
+  assert.equal(typeof w.SudokuNavigator.flushForUpdate,'function','PWA exports explicit update-save bridge');
+  assert.equal(h.get('timerSeconds'),37);
+  w.selectCell(2,'pointer');w.placeNumber(4,'pointer');await w.SudokuNavigator.whenReviewed();
+  const live=h.get('playerGrid');assert.equal(w.SudokuNavigator.flushForUpdate(),true);
+  const persisted=JSON.parse(w.localStorage.getItem(NS+'.session'));
+  assert.equal(persisted.version,'0.2.0');assert.equal(persisted.board[2],4);assert.equal(persisted.time,37);
+  assert.deepEqual(persisted.board,live.flat());assert.equal(persisted.rows.at(-1).answer,'CORRECT');
+  const reloaded=await boot(t,h.store());await until(()=>reloaded.w.SudokuNavigator.state(),'flushed game restores');
+  assert.deepEqual(reloaded.get('playerGrid'),live);assert.deepEqual(h.errors,[]);assert.deepEqual(reloaded.errors,[]);
+ });
+
+ test('PWA failed storage flush returns false and preserves both live game and last saved bytes', {timeout:30000},async t=>{
+  const h=await boot(t),{w}=h;await w.SudokuNavigator.restore(savedFixture('0.2.0'));
+  assert.equal(w.SudokuNavigator.flushForUpdate(),true);const saved=w.localStorage.getItem(NS+'.session');
+  w.selectCell(2,'pointer');w.placeNumber(4,'pointer');await w.SudokuNavigator.whenReviewed();const live=h.get('playerGrid');
+  const original=w.Storage.prototype.setItem;let denied=0;
+  Object.defineProperty(w.Storage.prototype,'setItem',{configurable:true,value:function(k,v){if(k===NS+'.session'){denied++;throw new w.DOMException('Quota exceeded','QuotaExceededError');}return original.call(this,k,v);}});
+  assert.equal(w.SudokuNavigator.flushForUpdate(),false,'shell must not activate update after failed persistence');
+  assert.ok(denied>0);assert.deepEqual(h.get('playerGrid'),live);assert.equal(w.localStorage.getItem(NS+'.session'),saved);
+  assert.match(h.el('navMemory').textContent,/Not saved to disk|Quota/i);assert.equal(h.downloads.length,0);assert.deepEqual(h.errors,[],'flush does not trigger a reload/navigation');
+  Object.defineProperty(w.Storage.prototype,'setItem',{configurable:true,value:original});
+  assert.equal(w.SudokuNavigator.flushForUpdate(),true);assert.equal(JSON.parse(w.localStorage.getItem(NS+'.session')).board[2],4,'game can save after storage is available again');
+ });
+
+ test('PWA local state stays isolated from LAB and stable storage during save and delete', {timeout:30000},async t=>{
+  const external={'ai8SudokuNavigatorV020.session':JSON.stringify(savedFixture('0.2.0')),'ai8SudokuNavigatorV020.machine':'LAB history sentinel','ai8SudokuNavigatorV020.trace':'LAB trace sentinel','ai8SudokuStable.session':'stable game sentinel'};
+  const h=await boot(t,external),{w}=h;assert.equal(w.SudokuNavigator.state(),null,'PWA does not load LAB session');
+  await w.SudokuNavigator.restore(savedFixture('0.2.0'));assert.equal(w.SudokuNavigator.flushForUpdate(),true);assert.ok(w.localStorage.getItem(NS+'.session'));
+  for(const[k,v]of Object.entries(external))assert.equal(w.localStorage.getItem(k),v);
+  h.el('navDelete').onclick();
+  for(const[k,v]of Object.entries(external))assert.equal(w.localStorage.getItem(k),v,'deleting PWA data preserves other lanes');
+  assert.equal(w.localStorage.getItem(NS+'.session'),null);assert.deepEqual(h.errors,[]);
+ });
+
+ test('PWA refuses update flush while generation, certification, review or solving is active', {timeout:30000},async t=>{
+  const h=await boot(t),{w}=h;await w.SudokuNavigator.restore(savedFixture('0.2.0'));const initial=h.get('playerGrid');
+  h.delayKinds.generate=300;const generating=w.newGame('easy');assert.equal(w.SudokuNavigator.flushForUpdate(),false);assert.deepEqual(h.get('playerGrid'),initial);await generating;assert.equal(w.SudokuNavigator.flushForUpdate(),true);
+  h.delayKinds.certify=300;const restoring=w.SudokuNavigator.restore(savedFixture('0.2.0'));assert.equal(w.SudokuNavigator.flushForUpdate(),false);await restoring;assert.equal(w.SudokuNavigator.flushForUpdate(),true);assert.equal(h.get('playerGrid.flat().join(\'\')'),fixture);
+  h.delayKinds.review=300;w.selectCell(2,'pointer');w.placeNumber(4,'pointer');assert.equal(w.SudokuNavigator.flushForUpdate(),false,'pending move review is retained until it finishes');await w.SudokuNavigator.whenReviewed();assert.equal(w.SudokuNavigator.flushForUpdate(),true);
+  h.delayKinds.solve=300;const solving=w.aiStep();assert.equal(w.SudokuNavigator.flushForUpdate(),false,'pending solve cannot be interrupted by update');await solving;assert.equal(w.SudokuNavigator.flushForUpdate(),true);
+  await w.aiSolve();assert.equal(h.get('aiAnimating'),true);assert.equal(w.SudokuNavigator.flushForUpdate(),false,'active animation requires user pause');w.aiPause();assert.equal(w.SudokuNavigator.flushForUpdate(),true);assert.deepEqual(h.errors,[]);
+ });
+}
