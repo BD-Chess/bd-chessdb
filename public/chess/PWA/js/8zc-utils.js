@@ -623,6 +623,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const positionEval = window.ChessEvalBar.create({ game, settings,
     isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
     getBadgeControl: source => {
+      if (source === 'DCC') {
+        const toggle = document.getElementById('btnViewToggle');
+        return { disabled: !toggle || toggle.disabled,
+          title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
+      }
       const available = !offlineEvidence && !deepAnalysisFen && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
       if (source === 'SF') return { disabled: !available,
         title: !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') : sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis', working: sfWorking && available };
@@ -632,6 +637,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     onBadgeAction: source => {
       if (source === 'SF') document.getElementById('btnAnalysisDeepen')?.click();
       else if (source === 'CDB') refreshCDBCurrentPosition();
+      else if (source === 'DCC') document.getElementById('btnViewToggle')?.click();
     } });
   const workspace = window.ChessWorkspace.create({ Chess, game, settings,
     onDisplaySettings: () => {
@@ -685,6 +691,14 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       card.setAttribute('aria-label', `SF: ${card.querySelector('.all-eval-move')?.textContent || '…'} ${card.querySelector('.all-eval-score')?.textContent || '…'}. ${button.title}`);
       card.classList.toggle('is-working', sfWorking && available);
     }
+  }
+  function syncDCCBadgeControl() {
+    const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="DCC"]');
+    if (!card) return;
+    card.title = dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis';
+    card.setAttribute('aria-label', `DCC: ${card.querySelector('.all-eval-move')?.textContent || '—'}. ${card.title}`);
+    card.setAttribute('aria-pressed', String(dccViewActive));
+    card.classList.toggle('is-active', dccViewActive);
   }
   function invalidateDCCAnalysis() {
     analysisGeneration++;
@@ -1335,7 +1349,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       mainShown = true;
       activeAnalysisProvider = provider; activeAnalysisFen = baseFen;
       if (!allMoves.length) lastAnalysisResult = null;
-      positionEval.update(baseFen, allMoves[0]?.score, provider);
+      positionEval.update(baseFen, allMoves[0]?.score, provider, true);
       const list = Number.isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
       if (list.length) {
         clearInterval(evalRetryTimer); evalRetryTimer = null;
@@ -4226,6 +4240,8 @@ async function launchFromSimModal() {
   // ─── DCC View toggle button ────────────────────────────────────────
   const btnToggle = document.getElementById('btnViewToggle');
   if (btnToggle) {
+    btnToggle.title = 'Show DCC analysis';
+    btnToggle.setAttribute('aria-pressed', 'false');
     btnToggle.onclick = () => {
       dccViewActive = !dccViewActive;
       const movesEl = document.getElementById('moves');
@@ -4244,6 +4260,9 @@ async function launchFromSimModal() {
         btnToggle.style.background = '#2a3540';
         btnToggle.style.color = '#fff';
       }
+      btnToggle.title = dccViewActive ? 'Show moves' : 'Show DCC analysis';
+      btnToggle.setAttribute('aria-pressed', String(dccViewActive));
+      syncDCCBadgeControl();
     };
   }
   // ────────────────────────────────────────────────────────────────────

@@ -38,15 +38,29 @@ test('late replies cannot paint another FEN; flipping, hiding and unavailable da
     const b = new Chess(), settings = { flipBoard: false }; let visible = true;
     const view = E.create({ game: b, settings, isVisible: () => visible });
     view.update(b.fen(), 25); assert.equal(label.textContent, '+0.25');
-    b.move('e4'); view.render(); assert.equal(label.textContent, '…');
-    view.update(white, 800); assert.equal(label.textContent, '…');
+    assert.equal(bar.props['--eval-white'], E.measure(white, 25).white + '%');
+    b.move('e4'); view.render(); assert.equal(label.textContent, '+0.25');
+    assert.equal(bar.props['--eval-white'], E.measure(white, 25).white + '%', 'bar height remains while waiting');
+    assert.equal(bar.classes['is-awaiting'], true);
+    assert.match(bar.attrs['aria-label'], /Previous position.*awaiting evaluation for the current position/);
+    assert.match(bar.title, /Previous position.*awaiting evaluation for the current position/);
+    view.update(white, 800); assert.equal(label.textContent, '+0.25', 'late reply cannot change the visible bar');
     view.update(b.fen(), 80); assert.equal(label.textContent, '-0.80');
+    assert.equal(bar.classes['is-awaiting'], false);
+    assert.equal(bar.props['--eval-white'], E.measure(black, 80).white + '%');
     settings.flipBoard = true; view.render();
     assert.equal(bar.classes['is-flipped'], true); assert.equal(label.textContent, '-0.80');
     visible = false; view.render(); assert.equal(bar.classes['is-hidden'], true);
     assert.equal(bar.attrs['aria-label'], 'Position evaluation hidden');
-    visible = true; view.update(b.fen(), null); assert.equal(label.textContent, '—');
+    visible = true; view.update(b.fen(), null);
+    assert.equal(label.textContent, '-0.80', 'transient unavailability keeps the previous result');
+    assert.equal(bar.classes['is-pending'], false, 'pending CSS must not hide the previous fill');
+    view.update(b.fen(), null, 'CDB', true);
+    assert.equal(label.textContent, '—', 'a completed lookup without a score clears the old result');
     assert.equal(bar.classes['is-unknown'], true);
+    b.load('7k/6Q1/6K1/8/8/8/8/8 b - - 0 1'); view.render();
+    assert.equal(label.textContent, '#', 'a terminal position supersedes a previous unavailable evaluation immediately');
+    assert.equal(bar.classes['is-awaiting'], false);
   } finally { global.document = prior; }
 });
 test('source cards keep provider top moves and depths, clear stale FENs and identify DCC choices in every mode', () => {
@@ -112,7 +126,7 @@ test('source cards keep provider top moves and depths, clear stale FENs and iden
     assert.deepEqual(cells('CDB'), ['CDB:', '…', '…', 'White POV']);
     assert.deepEqual(cells('SF'), ['SF:', '…', '…', 'White POV'], 'same-FEN refresh discards old SF depth and choice');
     assert.equal(cells('DCC')[1], '…', 'same-FEN refresh discards prior DCC choice');
-    assert.equal(label.textContent, '…', 'left bar waits for newly selected source');
+    assert.equal(label.textContent, '-0.13', 'left bar retains its last score while awaiting the new source');
     view.updateSource(b.fen(), 31, 'CDB', null, 'Nc6');
     assert.equal(cells('SF')[1], '…', 'CDB reply does not resurrect SF result from prior mode');
     view.updateSource(b.fen(), { type: 'cp', white: 38 }, 'SF', 24, 'd5', false, 'deep');

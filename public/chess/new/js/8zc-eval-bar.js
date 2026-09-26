@@ -35,6 +35,7 @@
     const sourceScores = new Map();
     const dccChoices = new Map();
     const sources = ['CDB', 'SF', 'DCC'];
+    let lastKnown = null;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
       comparison.hidden = !visible;
@@ -43,7 +44,7 @@
       if (!visible) return;
       comparison.replaceChildren();
       for (const source of sources) {
-        const actionable = source !== 'DCC' && typeof onBadgeAction === 'function';
+        const actionable = typeof onBadgeAction === 'function';
         const badge = document.createElement(actionable ? 'button' : 'div'); badge.className = 'all-eval-badge';
         if (actionable) {
           badge.type = 'button'; badge.dataset.evalSource = source;
@@ -53,6 +54,10 @@
           badge.title = control?.title || '';
           badge.setAttribute('aria-label', `${source}: ${badge.title || 'analysis'}`);
           badge.classList.toggle('is-working', !!control?.working);
+          if (source === 'DCC') {
+            badge.setAttribute('aria-pressed', String(!!control?.pressed));
+            badge.classList.toggle('is-active', !!control?.pressed);
+          }
         }
         const main = document.createElement('div'); main.className = 'all-eval-main';
         const title = document.createElement('strong'); title.textContent = `${source}:`;
@@ -65,6 +70,7 @@
           move.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
           note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) :
             choice?.status === 'unavailable' ? 'unavailable' : 'heuristic choice';
+          if (actionable) badge.setAttribute('aria-label', `DCC: ${move.textContent}. ${badge.title}`);
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
           const fresh = entry && Date.now() - entry.at < 300000;
@@ -89,23 +95,34 @@
       let entry = scores.get(fen);
       if (entry && Date.now() - entry.at > 300000) entry = null;
       const terminal = game.in_checkmate() ? 'mate' : game.in_draw() ? 'draw' : null;
-      const view = measure(fen, entry?.score, terminal, entry?.source || settings.analysisSource?.toUpperCase() || 'CDB');
+      let view = measure(fen, entry?.score, terminal, entry?.source || settings.analysisSource?.toUpperCase() || 'CDB');
       if (!terminal && !entry) Object.assign(view, { label: '…', state: 'pending', description: 'Waiting for position evaluation' });
+      // Keep the last displayed height and number while an asynchronous request
+      // for another position is pending. Do not present them as this FEN's score.
+      let awaiting = false;
+      if (view.state === 'known') lastKnown = { fen, view };
+      else if (entry?.settled) lastKnown = null;
+      else if (lastKnown) {
+        awaiting = true;
+        view = { ...lastKnown.view,
+          description: `Previous position ${lastKnown.view.label}; awaiting evaluation for the current position` };
+      }
       const visible = isVisible();
       renderComparison(fen, visible);
       el.classList.toggle('is-flipped', !!settings.flipBoard);
       el.classList.toggle('is-pending', view.state === 'pending');
       el.classList.toggle('is-unknown', view.state === 'unknown');
+      el.classList.toggle('is-awaiting', awaiting);
       el.classList.toggle('is-hidden', !visible);
       el.style.setProperty('--eval-white', view.white + '%');
       el.setAttribute('aria-label', visible ? view.description : 'Position evaluation hidden');
       el.title = visible ? view.description + '. Bar height is a visual scale, not a win probability.' : 'Show Eval to reveal the position evaluation';
       label.textContent = visible ? view.label : '—';
     }
-    function update(fen, score, source = 'CDB') {
+    function update(fen, score, source = 'CDB', settled = false) {
       const deep = source === 'SF' ? sourceScores.get(`${fen}:SF`) : null;
       const preserved = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
-      scores.set(fen, { score: preserved ? deep.score : score, source, at: Date.now() });
+      scores.set(fen, { score: preserved ? deep.score : score, source, settled, at: Date.now() });
       if (source === 'CDB' || source === 'SF') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
