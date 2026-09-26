@@ -298,6 +298,9 @@ body::after{
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:760px){
+  /* Small-screen grid: retain entry > given > note contrast without overriding state colors. */
+  .cell.given{color:#b4c5df}
+  .cell .notes{color:#94a9c9}
   .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";max-width:500px}
   .col-left,.col-right{flex-direction:row;flex-wrap:wrap;gap:6px}
   .col-left .panel,.col-right .panel{flex:1;min-width:140px}
