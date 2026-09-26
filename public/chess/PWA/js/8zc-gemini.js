@@ -44,7 +44,7 @@
     $('geminiQuestion').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(e.target.value); } };
     panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
     panel.querySelectorAll('[data-question]').forEach(button => { button.onclick = () => send(button.dataset.question); });
-    message('model', 'Ask about the current position, compare CDB with DCC, or explore a plan. I use the board snapshot and available analysis for each question.');
+    message('model', 'Ask about the current position, compare the selected source with DCC, or explore a plan. I use the board snapshot and available analysis for each question.');
     return { open, close };
   } };
 })(window);

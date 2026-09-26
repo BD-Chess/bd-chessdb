@@ -101,6 +101,7 @@
     if (!elements || elements.dialog.open) return;
     elements.body.appendChild(elements.content);
     elements.tools.setAttribute('aria-expanded', 'true');
+    byId('btnWorkspaceMore').setAttribute('aria-expanded', 'true');
     elements.dialog.showModal();
     byId('btnCloseLabTools').focus({ preventScroll: true });
   }
@@ -108,6 +109,7 @@
     if (!elements) return;
     elements.bottom.appendChild(elements.content);
     elements.tools.setAttribute('aria-expanded', 'false');
+    byId('btnWorkspaceMore').setAttribute('aria-expanded', 'false');
     renderActivity();
     measureTools();
   }
@@ -117,7 +119,7 @@
     elements.dialog.close();
     restoreTools();
     if (!options || options.restoreFocus !== false) {
-      (focused ? elements.tools : byId('workspaceDisplay')).focus({ preventScroll: true });
+      (focused ? elements.tools : byId('btnWorkspaceMore')).focus({ preventScroll: true });
     }
     closing = false;
   }
@@ -126,6 +128,9 @@
     elements = { controls: byId('controls'), main: byId('main'), bottom: document.querySelector('.workspace-bottom'),
       content: byId('workspaceToolContent'), focusBar: byId('workspaceFocusBar'), tools: byId('btnLabTools'),
       pause: byId('btnLabPause'), dialog: byId('labToolsDialog'), body: byId('labToolsBody') };
+    const primary = byId('workspacePrimaryActions');
+    for (const id of ['btnNew', 'btnGames', 'btnDeepAnalysis']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    byId('btnWorkspaceMore').addEventListener('click', openTools);
     for (const [key, id] of Object.entries(fields)) {
       const field = byId(id);
       if (!field) continue;

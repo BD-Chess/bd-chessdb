@@ -1,17 +1,17 @@
 /* Local clocks use monotonic elapsed time; UTC records use the wall clock.
- * Sim always counts up. Pausing never charges the paused interval. */
+ * Engine turns explicitly pause outside computation. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ChessTime = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  function create({ mode = 'elapsed', seconds = 0, increment = 0, turn = 'w', now = 0 } = {}) {
+  function create({ mode = 'elapsed', seconds = 0, increment = 0, turn = 'w', now = 0, running = true } = {}) {
     const initial = Math.max(0, Number(seconds) || 0) * 1000;
     return { version: '1.0.0', mode: mode === 'countdown' && initial > 0 ? 'countdown' : 'elapsed',
       initial, increment: Math.max(0, Number(increment) || 0) * 1000, turn,
       used: { w: 0, b: 0 }, remaining: { w: initial, b: initial },
-      anchor: now, turnSpent: 0, running: true, flagged: null };
+      anchor: now, turnSpent: 0, running: !!running, flagged: null };
   }
   function tick(state, now) {
     if (!state.running) return state;
@@ -31,8 +31,8 @@
   }
   function pause(state, now) { tick(state, now); state.running = false; }
   function resume(state, now) { if (!state.flagged) { state.anchor = now; state.running = true; } }
-  function move(state, side, nextSide, now, atUTC) {
-    if (!state.running || state.turn !== side) return null;
+  function move(state, side, nextSide, now, atUTC, { allowPaused = false, pauseAfter = false } = {}) {
+    if ((!state.running && !allowPaused) || state.turn !== side) return null;
     tick(state, now);
     if (state.flagged) return null;
     const record = { at_utc: atUTC, think_ms: Math.round(state.turnSpent),
@@ -42,8 +42,23 @@
       record.clock_ms = Math.round(state.remaining[side]);
     }
     state.turn = nextSide; state.turnSpent = 0;
+    if (pauseAfter) state.running = false;
     record.after = snapshot(state, now);
     return record;
+  }
+  function restore(saved, now = 0) {
+    if (!saved || !['elapsed', 'countdown'].includes(saved.mode) || !['w', 'b'].includes(saved.turn)) throw new Error('Invalid saved clock');
+    const number = value => {
+      if (!Number.isFinite(value) || value < 0) throw new Error('Invalid saved clock time');
+      return value;
+    };
+    const state = { version: '1.0.0', mode: saved.mode, initial: number(saved.initial), increment: number(saved.increment),
+      turn: saved.turn, used: { w: number(saved.used?.w), b: number(saved.used?.b) },
+      remaining: { w: number(saved.remaining?.w), b: number(saved.remaining?.b) },
+      anchor: now, turnSpent: number(saved.turnSpent), running: false, flagged: saved.flagged ?? null };
+    if (state.flagged !== null && !['w', 'b'].includes(state.flagged)) throw new Error('Invalid saved clock flag');
+    if (state.mode === 'countdown' && state.remaining[state.turn] === 0) state.flagged = state.turn;
+    return state;
   }
   function format(ms) {
     const s = Math.max(0, Math.ceil(ms / 1000));
@@ -58,5 +73,5 @@
     if (record.at_utc) parts.push(`[%timestamp ${record.at_utc}]`);
     return parts.join(' ');
   }
-  return { create, tick, snapshot, pause, resume, move, format, pgn };
+  return { create, tick, snapshot, pause, resume, move, restore, format, pgn };
 });
