@@ -418,23 +418,20 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	  if (!e.target.value) return;
       if (playState.active || simRunning || replayRunning) return;
 
-      const title = e.target.selectedOptions[0].text;
+	  const title = e.target.selectedOptions[0].text;
+      const selectedPGN = e.target.value;
       try {
-        loadStudyPGN(e.target.value, title, { topPick: bucket.topPicks });
-        if (bucket.topPicks) {
-          const anchor = chessBestTopPickAnchor(game.header(), fullHistory, Chess);
-          if (anchor !== null) jumpTo(anchor);
-        }
+        loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks }, () => {
+          if (bucket.topPicks) {
+            const anchor = chessBestTopPickAnchor(game.header(), fullHistory, Chess);
+            if (anchor !== null) jumpTo(anchor);
+          }
+	      panel.classList.remove('open');
+	      document.getElementById('main').scrollIntoView({ behavior: 'smooth', block: 'start' });
+	      sel.selectedIndex = 0;
+        });
       }
-      catch (error) { alert(error.message + ' The current game was kept.'); return; }
-
-	  // Close panel and scroll into view
-	  panel.classList.remove('open');
-	  document.getElementById('main').scrollIntoView({
-		behavior: 'smooth',
-		block: 'start'
-	  });
-	  sel.selectedIndex = 0;
+      catch (error) { showGameLoadProblem(error); }
 	};
   
 });
@@ -615,7 +612,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   let analysisGeneration = 0;
   let annotationRequestId = 0;
   let localController = null, localProvider = null;
-  let sfAnalysisFen = null, sfAnalysisDepth = null, sfWorking = false;
+  let sfAnalysisFen = null, sfAnalysisDepth = null, sfWorking = false, cdbRefreshing = false;
   let deepAnalysisFen = null;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
@@ -624,7 +621,18 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const requestPending = new Map();
   const simRequests = new Set();
   const positionEval = window.ChessEvalBar.create({ game, settings,
-    isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked) });
+    isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
+    getBadgeControl: source => {
+      const available = !offlineEvidence && !deepAnalysisFen && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+      if (source === 'SF') return { disabled: !available,
+        title: !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') : sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis', working: sfWorking && available };
+      return { disabled: !available || cdbRefreshing,
+        title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
+    },
+    onBadgeAction: source => {
+      if (source === 'SF') document.getElementById('btnAnalysisDeepen')?.click();
+      else if (source === 'CDB') refreshCDBCurrentPosition();
+    } });
   const workspace = window.ChessWorkspace.create({ Chess, game, settings,
     onDisplaySettings: () => {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -671,6 +679,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
     button.setAttribute('aria-label', sfWorking && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
     button.classList.toggle('is-working', sfWorking && available);
+    const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="SF"]');
+    if (card) {
+      card.disabled = button.disabled; card.title = button.title;
+      card.setAttribute('aria-label', `SF: ${card.querySelector('.all-eval-move')?.textContent || '…'} ${card.querySelector('.all-eval-score')?.textContent || '…'}. ${button.title}`);
+      card.classList.toggle('is-working', sfWorking && available);
+    }
   }
   function invalidateDCCAnalysis() {
     analysisGeneration++;
@@ -703,17 +717,18 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         metadata: { fetchedAt, engineVersion: null, error } });
       return text;
     };
-    if (cached && Date.now() - cached.time < 300000) {
+    if (!requestOptions.force && cached && Date.now() - cached.time < 300000) {
       const at = new Date().toISOString();
       return observe(cached.text, at, at, true, new Date(cached.time).toISOString());
     }
-    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '');
+    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '') + (requestOptions.force ? ':refresh' : '');
     if (requestPending.has(pendingKey)) return requestPending.get(pendingKey);
     const unhurried = simRunning, requestEpoch = activityEpoch;
     const pending = (async () => {
       const startedAt = new Date().toISOString();
       if (!requestOptions.signal) await sleep(150);
       if (unhurried && requestEpoch !== activityEpoch) { requestPending.delete(pendingKey); return ''; }
+      const requestStartedMs = Date.now();
       const controller = new AbortController();
       if (unhurried) simRequests.add(controller);
       const abortRequest = () => controller.abort();
@@ -728,7 +743,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         if (!response.ok) throw new Error(`ChessDB HTTP ${response.status}`);
         const text = (await response.text()).trim();
         // Unknown, rate limited and error responses are deliberately not persisted.
-        if (/^(move:|score:|eval:|checkmate|stalemate)/.test(text)) {
+        if (/^(move:|score:|eval:|checkmate|stalemate)/.test(text) && (!evalCache[key] || evalCache[key].time <= requestStartedMs)) {
           evalCache[key] = { time: Date.now(), text };
           persistEvalCache();
         }
@@ -875,10 +890,21 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (!probe.load_pgn(makeLoadablePgn(text))) throw new Error('Invalid PGN.');
     return probe;
   }
-  function loadStudyPGN(text, title = 'Imported study', options = {}) {
+  function showGameLoadProblem(error) {
+    if (studyUI?.showLoadProblem) studyUI.showLoadProblem(error);
+    else updateSimStatus((error?.message || String(error)) + ' Your current game was kept.');
+  }
+  function loadStudyPGN(text, title = 'Imported study', options = {}, onLoaded) {
     const probe = validateStudyPGN(text);
     if (playState.active || simRunning || replayRunning) throw new Error('Pause the current activity before loading a study.');
-    if (!options.archive) studyUI?.importPGN(text);
+    if (!options.archive) {
+      try { studyUI?.importPGN(text); }
+      catch (error) {
+        if (error.code !== 'STUDY_LIMIT' || !studyUI?.showLimitWarning) throw error;
+        studyUI.showLimitWarning(() => loadStudyPGN(text, title, options, onLoaded));
+        return false;
+      }
+    }
     game.load(probe.header().FEN || new Chess().fen());
     Object.entries(probe.header()).forEach(([k,v]) => game.header(k,v));
     probe.history({ verbose: true }).forEach(m => DCC.play(game, normalizeUci(m)));
@@ -888,6 +914,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     updateBoard(true); showOpening();
     document.getElementById('gameTitle').textContent = title;
     lastMoveIndex = game.history().length - 1;
+    onLoaded?.();
+    return true;
   }
   function restoreEvidence(snapshot) {
     window.ChessEvidence.validate(snapshot);
@@ -1286,7 +1314,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       panel.appendChild(detail);
     }
   }
-  async function fetchAnnotations() {
+  async function fetchAnnotations({ refreshCDB = false } = {}) {
     syncSFAnalysisControl();
     if (!showEval || simRunning || replayRunning || (playState.active && playState.assistanceLocked)) return;
     const baseFen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource, requestId = ++annotationRequestId;
@@ -1317,7 +1345,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       showAnalysisCandidates(allMoves, provider, analysis);
     };
     try {
-      cdb = await cachedFetchChessDB(baseFen);
+      cdb = await cachedFetchChessDB(baseFen, { force: refreshCDB });
     } catch (error) {
       if (!current() || error.name === 'AbortError') return;
       cdbError = error;
@@ -1845,7 +1873,7 @@ function jumpTo(i){
       workspace.reset();
       window._skipDivergedReset = false;
       updateBoard(true); showOpening();
-    } catch (err) { alert(err.message + '. The current game was kept.'); }
+    } catch (err) { showGameLoadProblem(err); }
   };
 
   // ── v0.6.1: Generate PGN with DCC comments ────────────────────
@@ -1977,7 +2005,11 @@ function jumpTo(i){
     window._skipDivergedReset = false;
     game.reset();
     workspace.reset();
-    try { studyUI?.newStudy(); } catch (error) { updateSimStatus(error.message); }
+    try { studyUI?.newStudy(); }
+    catch (error) {
+      if (error.code === 'STUDY_LIMIT') studyUI.showLimitWarning(() => studyUI.newStudy());
+      else updateSimStatus(error.message);
+    }
     showEval = true;
     setBoardThinking(false);
     document.getElementById('board-container').style.opacity = '1';
@@ -2016,7 +2048,7 @@ function jumpTo(i){
 	  const reader = new FileReader();
       reader.onload = evt => {
         try { loadStudyPGN(String(evt.target.result), file.name); }
-        catch (error) { alert(error.message + ' The current game was kept.'); }
+        catch (error) { showGameLoadProblem(error); }
       };
 	  reader.readAsText(file);
 	  e.target.value = '';
@@ -2371,6 +2403,16 @@ function jumpTo(i){
     saveSettings(); fetchAnnotations();
   });
   dccSelect.addEventListener('change', () => { settings.dccEnabled = dccSelect.checked; saveSettings(); fetchAnnotations(); });
+  async function refreshCDBCurrentPosition() {
+    const card = document.getElementById('allEvalBadges')?.querySelector('[data-eval-source="CDB"]');
+    if (!card || card.disabled || cdbRefreshing) return;
+    cdbRefreshing = true; positionEval.render();
+    try { await fetchAnnotations({ refreshCDB: true }); }
+    catch (error) {
+      console.warn('CDB refresh unavailable:', error);
+      document.getElementById('analysisSourceStatus').textContent = 'CDB refresh failed. Try again later.';
+    } finally { cdbRefreshing = false; positionEval.render(); }
+  }
   document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
     syncSFAnalysisControl();
     if (document.getElementById('btnAnalysisDeepen').disabled) return;

@@ -61,17 +61,30 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- source.value='all';source.dispatchEvent(new w.Event('change'));
- assert.equal(stage.contains(el('positionEval')),true,'All retains the ordinary score bar beside the board');
+ assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB → SF'],['sf','SF']]);
+ source.value='auto';source.dispatchEvent(new w.Event('change'));
+ assert.equal(stage.contains(el('positionEval')),true,'CDB-first retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
  assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
- assert.equal(stage.classList.contains('has-all-evals'),false,'All does not widen the left board column');
+ assert.equal(stage.classList.contains('has-all-evals'),false,'Comparison does not widen the left board column');
  el('btnHideEval').click();assert.equal(cards.parentElement.hidden,true,'Hide Eval hides the comparison row');
  el('btnHideEval').click();source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(cards.hidden,false);assert.equal(cards.parentElement.hidden,false,'Auto retains all three provider cards');
  assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
  await until(()=>cards.querySelectorAll('.all-eval-move').length===3&&cards.querySelectorAll('.all-eval-move')[1].textContent!=='…','Auto measures its own SF card');
- assert.match(el('positionEval').getAttribute('aria-label'),/CDB/,'Auto board bar still displays CDB');
+ const cardFor=source=>cards.querySelector(`[data-eval-source="${source}"]`);
+ assert.equal(cardFor('CDB').tagName,'BUTTON');assert.equal(cardFor('SF').tagName,'BUTTON');
+ assert.equal(cards.children[2].tagName,'DIV','DCC card is informational');
+ assert.match(cardFor('SF').title,/Click for deeper analysis/);
+ assert.match(cardFor('CDB').title,/Click to refresh CDB/);
+ let cdbQueries=0;const priorFetch=w.fetch;
+ w.fetch=(...args)=>{if(String(args[0]).includes('action=queryall'))cdbQueries++;return priorFetch(...args);};
+ cardFor('CDB').click();
+ await until(()=>cdbQueries>=2,'CDB card re-queries both CDB learning modes despite a warm cache');
+ await until(()=>!cardFor('CDB').disabled,'CDB refresh finishes and restores its button');
+ let deepenClicks=0;el('btnAnalysisDeepen').addEventListener('click',()=>deepenClicks++);
+ cardFor('SF').click();assert.equal(deepenClicks,1,'SF card invokes the existing Analysis control');
+ await until(()=>/CDB/.test(el('positionEval').getAttribute('aria-label')),'Auto board bar still displays CDB after deeper SF starts');
  assert.equal(el('btnAnalysisDeepen').disabled,false,'Auto supports deeper SF analysis in the background cards');
  source.value='sf';source.dispatchEvent(new w.Event('change'));
  assert.equal(cards.hidden,false,'SF mode keeps three cards under the board');
@@ -185,6 +198,27 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const before=host.getContext().fen;assert.throws(()=>host.navigate({startFen:new w.Chess().fen(),moves:['e2e5']}),/illegal/);assert.equal(host.getContext().fen,before);
  assert.equal(errors.length,0,errors.join('\n'));
  el('btnNew').click();assert.equal(el('boardGameTitle').hidden,true,'New game clears the loaded identity');
+
+ // Import at the cap through the real Game library, then confirm bulk removal.
+ el('btnStudy').click();
+ const countStudies=()=>JSON.parse(w.localStorage.getItem('chessLabStudy-v1')).studies.length;
+ while(countStudies()<20){const newStudy=[...w.document.querySelectorAll('.chess-study-dialog button')].find(button=>button.textContent==='New study from workspace');assert(newStudy);newStudy.click();}
+ w.document.querySelector('.chess-study-close').click();
+ const beforeLoad=host.getContext().fen, savedAtCap=w.localStorage.getItem('chessLabStudy-v1');
+ const pick='[Event "Capacity example"]\n[White "Test A"]\n[Black "Test B"]\n\n1. e4 e5 *';
+ const topSelect=el('popularGamesPanel').querySelector('.library-native-selects select');topSelect.add(new w.Option('Capacity example',pick));
+ el('btnGames').click();
+ topSelect.value=pick;topSelect.dispatchEvent(new w.Event('change'));
+ const notice=w.document.querySelector('.chess-study-limit-overlay');
+ assert.equal(notice.hidden,false,'Game library shows styled ChessBest popup');
+ assert.equal(host.getContext().fen,beforeLoad,'loading at cap keeps current board');
+ assert.equal(w.localStorage.getItem('chessLabStudy-v1'),savedAtCap,'loading at cap keeps studies');
+ [...notice.querySelectorAll('button')].find(b=>b.textContent==='Remove studies').click();
+ [...notice.querySelectorAll('button')].find(b=>b.textContent==='Remove 20 studies').click();
+ await until(()=>host.getContext().moves.join(' ')==='e2e4 e7e5','selected game loads automatically after confirmation');
+ assert.equal(notice.hidden,true);
+ assert.equal(countStudies(),1,'only the new game is saved after removing the full collection');
+ assert.equal(el('popularGamesPanel').classList.contains('open'),false);
 
  console.log('PASS: shipped HTML script boot, new Sim form, countdown + increment, CDB decisions, durable pause and archive review; optional displays, timestamps, local humans, Deep analysis, evidence, nested PGN and grounded Gemini safety');
  w.close();

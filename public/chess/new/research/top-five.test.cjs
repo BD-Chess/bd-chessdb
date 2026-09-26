@@ -79,6 +79,15 @@ test('restores all five opening moves, retaining provider order in zero-score ti
   assert.equal(moves[1].score, 0);
   assert.equal(new Set(moves.map(m => m.move)).size, 6);
 });
+test('manual CDB refresh bypasses the five-minute query cache for both learn modes', async () => {
+  const c = context();
+  await c.cachedFetchChessDB(start);
+  assert.equal(c.calls.length, 2);
+  await c.cachedFetchChessDB(start);
+  assert.equal(c.calls.length, 2, 'ordinary review uses recent results');
+  await c.cachedFetchChessDB(start, { force: true });
+  assert.equal(c.calls.length, 4, 'explicit refresh contacts CDB again for learn=0 and learn=1');
+});
 
 test('verified measured values override cloud values, unknown values do not', async () => {
   const c = context([verified, cloud.replace('score:1', 'score:30')]);
