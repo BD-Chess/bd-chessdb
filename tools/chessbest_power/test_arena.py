@@ -177,8 +177,10 @@ class ArenaTests(unittest.TestCase):
         fixture(self.repo, 2)
         curated = self.repo / "public/chess/new/Games/ChessBest_Top_Picks.pgn"
         curated.write_text((self.repo / "public/chess/new/Games/Selected.pgn").read_text())
+        curated_tcec = curated.with_name("ChessBest_Top_Picks_TCEC.pgn")
+        curated_tcec.write_text(curated.read_text())
         active = self.repo / "public/chess/new/js/8zc-utils.js"
-        active.write_text(active.read_text().replace("  ];", "    { name: 'ChessBest Top Picks', file: 'ChessBest_Top_Picks.pgn' },\n  ];"))
+        active.write_text(active.read_text().replace("  ];", "    { name: 'ChessBest Top Picks', files: ['ChessBest_Top_Picks.pgn', 'ChessBest_Top_Picks_TCEC.pgn'] },\n  ];"))
         self.assertTrue(all("Top_Picks" not in x["name"] for x in arena.game_files(self.repo)))
         cmd = command(self.repo, self.run)
         ok = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
@@ -191,6 +193,59 @@ class ArenaTests(unittest.TestCase):
         reject = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
         self.assertEqual(reject.returncode, 2)
         self.assertIn("Run identity differs", reject.stderr)
+
+    def test_supplemental_tcec_sources_are_opt_in_pinned_and_labeled(self):
+        selected, _ = fixture(self.repo, 2)
+        games = selected.parent
+        (games / "TCEC").mkdir()
+        extra_game = chess.pgn.Game()
+        extra_game.headers["White"] = "Stockfish"
+        extra_game.headers["Black"] = "LCZero"
+        extra_game.add_variation(chess.Move.from_uci("d2d4")).add_variation(chess.Move.from_uci("d7d5"))
+        extra = games / "TCEC" / "Superfinal.pgn"
+        extra.write_text(str(extra_game) + "\n", encoding="utf-8")
+        (games / "Duplicate.pgn").write_text("[Event \"copy\"]\n\n1. e4 e5 *\n")
+        (games / "Broken.pgn").write_text("[Event \"broken\"]\n\n1. e4 e5 2. Ke5 *\n")
+        (games / "ChessBest_Top_Picks.pgn").write_text(extra.read_text())
+        (games / "ChessBest_Top_Picks_TCEC.pgn").write_text(extra.read_text())
+        (games / "Chess_Openings_Top_Lines.pgn").write_text(extra.read_text())
+        (games / "Openings").mkdir()
+        (games / "Openings" / "book.pgn").write_text(extra.read_text())
+        default = subprocess.run(command(self.repo, self.run / "active"), capture_output=True,
+                                 text=True, timeout=25)
+        self.assertEqual(default.returncode, 0, default.stderr)
+        with sqlite3.connect(self.run / "active" / "run.sqlite") as conn:
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM games").fetchone()[0], 2)
+        root = chess.Board().fen()
+        frozen = self.base / "cache.json"
+        frozen.write_text(json.dumps({"qa:" + " ".join(root.split()[:4]): {"moves": [
+            {"move": "e2e4", "score": 100, "rank": 1},
+            {"move": "d2d4", "score": 0, "rank": 2}]}}), encoding="utf-8")
+        cmd = command(self.repo, self.run / "supplemental", "--include-supplemental",
+                      "--frozen-cdb", str(frozen))
+        done = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        manifest = json.loads((self.run / "supplemental" / "manifest.json").read_text())
+        self.assertEqual(manifest["summary"]["source_sets"], {
+            "active": {"ok": 2},
+            "supplemental": {"ok": 1, "duplicate": 1, "bad_pgn": 1}})
+        sources = {x["name"] for x in manifest["config"]["inputs"]}
+        self.assertIn("Games/TCEC/Superfinal.pgn", sources)
+        self.assertTrue(all("ChessBest_Top_Picks" not in name and "Openings/" not in name
+                            and "Chess_Openings_Top_Lines" not in name for name in sources))
+        candidates = [json.loads(x) for x in (self.run / "supplemental" / "candidates.jsonl").read_text().splitlines()]
+        tcec = next(x for x in candidates if x["source"] == "Games/TCEC/Superfinal.pgn")
+        self.assertEqual(tcec["source_set"], "supplemental")
+        self.assertEqual(tcec["review_status"], "CANDIDATE_ONLY_NOT_VERIFIED")
+        with sqlite3.connect(self.run / "supplemental" / "run.sqlite") as conn:
+            self.assertTrue(any(kind == "scan_skip" and "Broken.pgn" in detail for kind, detail in
+                                conn.execute("SELECT kind,detail FROM events")))
+        rerun = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
+        self.assertEqual(rerun.returncode, 0, rerun.stderr)
+        extra.write_text(extra.read_text() + "\n{new comment}\n")
+        changed = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
+        self.assertEqual(changed.returncode, 2)
+        self.assertIn("Run identity differs", changed.stderr)
 
     def test_forced_kill_resume_and_readonly_live_extract(self):
         fixture(self.repo, 100)

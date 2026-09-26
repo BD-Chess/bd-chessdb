@@ -6,7 +6,9 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const base = path.resolve(__dirname, '../public/chess/PWA');
 const pgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks.pgn'), 'utf8');
+const tcecPgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks_TCEC.pgn'), 'utf8');
 const anchor = '1r6/5p2/3p2p1/4p1N1/R4nPP/1P1k4/5R1K/3r4 b - - 8 44';
+const tcecAnchor = '8/5p2/4p3/kb2P3/1b6/p2p4/R5P1/1R1K4 w - - 0 49';
 
 test('installed PWA opens Top Picks at the curated position and retains the full game on next move', { timeout: 15000 }, async t => {
   const errors = [], virtualConsole = new VirtualConsole();
@@ -43,7 +45,8 @@ test('installed PWA opens Top Picks at the curated position and retains the full
   w.HTMLDialogElement.prototype.close = function () { this.open = false; };
   w.fetch = async url => {
     const address = new URL(url, w.location.href);
-    const text = address.pathname.endsWith('/Games/ChessBest_Top_Picks.pgn') ? pgn : '';
+    const text = address.pathname.endsWith('/Games/ChessBest_Top_Picks.pgn') ? pgn
+      : address.pathname.endsWith('/Games/ChessBest_Top_Picks_TCEC.pgn') ? tcecPgn : '';
     return { ok: true, text: async () => text, json: async () => ({}) };
   };
   const scripts = [...w.document.querySelectorAll('script[src]')]
@@ -59,9 +62,10 @@ test('installed PWA opens Top Picks at the curated position and retains the full
   const until = async predicate => {
     const deadline = Date.now() + 4000;
     while (!predicate() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 20));
-    assert(predicate(), 'three curated games should finish loading');
+    assert(predicate(), 'seven curated games should finish loading');
   };
-  await until(() => get('popularGamesPanel').querySelectorAll('.library-result').length === 3);
+  await until(() => get('popularGamesPanel').querySelectorAll('.library-result').length === 7);
+  assert.equal(get('popularGamesPanel').querySelectorAll('.library-result')[5].textContent.includes('TCEC S27'), true);
   assert.match(get('popularGamesPanel').querySelector('.library-result').textContent, /44\.\.\.f6/);
   get('popularGamesPanel').querySelector('.library-result').click();
   assert.equal(w.ChessLabHost.getContext().fen, anchor);
@@ -71,5 +75,12 @@ test('installed PWA opens Top Picks at the curated position and retains the full
   get('next').click();
   assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabTopPickCursor-v1')).cursor, 88);
   assert.equal(w.localStorage.getItem('chessPwaLabGame-v1'), pgn.trim().split(/\n\s*\n(?=\[Event)/)[0]);
+  const tcec = [...get('popularGamesPanel').querySelectorAll('.library-result')]
+    .find(result => result.textContent.includes('TCEC S27 Superfinal'));
+  tcec.click();
+  assert.equal(w.ChessLabHost.getContext().fen, tcecAnchor);
+  assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabTopPickCursor-v1')).cursor, 96);
+  assert.match(w.localStorage.getItem('chessPwaLabGame-v1'), /ChessBestLicense "CC BY-SA 3\.0"/);
+  assert.equal(w.localStorage.getItem('chessLabTopPickCursor-v1'), null);
   assert.deepEqual(errors, []);
 });
