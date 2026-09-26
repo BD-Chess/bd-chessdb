@@ -50,7 +50,7 @@ function initAll() {
 	evalMode: 'direct',
     analysisSource: 'auto', // provider selection is independent of CDB direct/proxy transport
     sfRootNodes: 24000,
-    sfAnalysisDepth: 15,
+    sfAnalysisDepth: 11,
     allCDBSeconds: 4, allSFSeconds: 4, allDCCSeconds: 4,
 	flipBoard: false,
     theme: 'dark',
@@ -162,7 +162,7 @@ function initAll() {
   if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
   function normalizeSFDepth(value) {
     const depth = Number(value);
-    return value == null || value === '' || !Number.isFinite(depth) ? 15 : Math.max(1, Math.min(128, Math.round(depth)));
+    return value == null || value === '' || !Number.isFinite(depth) ? 11 : Math.max(1, Math.min(128, Math.round(depth)));
   }
   settings.sfAnalysisDepth = normalizeSFDepth(settings.sfAnalysisDepth);
   function saveSettings() {
