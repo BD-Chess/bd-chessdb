@@ -12,6 +12,10 @@ function initAll() {
     retryInterval: 6000,
     tryLaterDuration: 3000,
 	evalMode: 'direct',
+    analysisSource: 'auto', // provider selection is independent of CDB direct/proxy transport
+    sfRootNodes: 24000,
+    sfAnalysisDepth: 15,
+    allCDBSeconds: 4, allSFSeconds: 4, allDCCSeconds: 4,
 	flipBoard: false,
     theme: 'dark',
     topN: 5,
@@ -65,8 +69,12 @@ function initAll() {
   let replayAbort = false;
   let simSession = null;
   const simExperiments = [];
+  let tournamentRunner = null, tournamentUI = null, simStore = null;
+  let simEvents = [];
+  const openingCollections = [];
   let studyUI = null, deepUI = null, researchUI = null;
   let lastAnalysisResult = null;
+  let activeAnalysisProvider = null, activeAnalysisFen = null;
   let lastDecision = null;
   const labListeners = new Set();
   const sourceObservations = new Map();
@@ -111,6 +119,15 @@ function initAll() {
     settings.coachMode = 'silent';
     settings.coachOpen = false;
   }
+  if (!['auto', 'cdb', 'sf', 'dcc', 'all'].includes(settings.analysisSource)) settings.analysisSource = 'auto';
+  for (const key of ['allCDBSeconds', 'allSFSeconds', 'allDCCSeconds'])
+    settings[key] = Math.max(1, Math.min(30, Number(settings[key]) || 4));
+  if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
+  function normalizeSFDepth(value) {
+    const depth = Number(value);
+    return value == null || value === '' || !Number.isFinite(depth) ? 15 : Math.max(1, Math.min(128, Math.round(depth)));
+  }
+  settings.sfAnalysisDepth = normalizeSFDepth(settings.sfAnalysisDepth);
   function saveSettings() {
     invalidateDCCAnalysis();
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -292,7 +309,9 @@ function buildPrettyGameTitle(tags, bucket, file, fallbackCoreTitle) {
   heading.style.marginBottom = '8px';
   panel.appendChild(heading);
 
-gameBuckets.forEach(bucket => {
+gameBuckets.forEach((bucket, bucketIndex) => {
+  const collection = { id: String(bucketIndex), label: bucket.name, games: [] };
+  openingCollections.push(collection);
   // 1) Create the <select> and placeholder up front, then append it immediately.
   const sel = document.createElement('select');
   sel.style.width  = '100%';
@@ -342,6 +361,7 @@ gameBuckets.forEach(bucket => {
             : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
 
           const title = buildPrettyGameTitle(tags, bucket, file, coreTitle);
+          collection.games.push({ id: `${bucketIndex}:${collection.games.length}`, label: title, pgn: gt });
           const opt = new Option(title, gt);
           opt.title = title;
           sel.appendChild(opt);
@@ -512,7 +532,11 @@ gameBuckets.forEach(bucket => {
 
   const DCC = window.ChessDCC;
   const SIM = window.ChessSim;
+  const SF = window.ChessSFProvider;
   let analysisGeneration = 0;
+  let annotationRequestId = 0;
+  let localController = null, localProvider = null;
+  let sfAnalysisFen = null, sfAnalysisDepth = null, sfWorking = false;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
   const analysisMemo = new Map();
@@ -526,11 +550,22 @@ gameBuckets.forEach(bucket => {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
       renderHistory(); renderLichessClocks();
     },
-    analyze: (fen, cancelled) => DCC.analyze({ Chess, fen, settings: { ...settings },
-      getMoves: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore, cancelled }),
+    analyze: async (fen, cancelled) => {
+      const selected = settings.analysisSource, generation = analysisGeneration;
+      const stale = () => cancelled() || generation !== analysisGeneration || selected !== settings.analysisSource;
+      const cdb = selected === 'sf' ? null : await cachedFetchChessDB(fen);
+      if (stale()) return null;
+      if (selected === 'sf' || (['auto', 'dcc', 'all'].includes(selected) && !cdb.moves.length)) {
+        const local = await runLocalSF(fen, { dcc: true, cancelled: stale });
+        return stale() ? null : local.analysis;
+      }
+      return DCC.analyze({ Chess, fen, settings: { ...settings }, moves: cdb.moves,
+        getPV: fetchPV, getScore: fetchScore, cancelled: stale });
+    },
     onAnnotations: (fen, rows) => { dccMoveAnnotations[fen] = rows; },
     getAnalysis: () => ({ receipt: latestDCCReceipt, candidates: latestDCCResults }),
     isBusy: () => playState.active || simRunning || replayRunning,
+    isSimulationRunning: () => simRunning,
     stopActivities: () => { activityEpoch++; invalidateDCCAnalysis(); simSession = null; }
   });
   const CACHE_KEY = 'chessPwaLabEvalCache-v1';
@@ -546,11 +581,28 @@ gameBuckets.forEach(bucket => {
     unknown: { color: '#a4b6c8', desc: 'Insufficient measured samples' }
   };
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function syncSFAnalysisControl() {
+    const button = document.getElementById('btnAnalysisDeepen');
+    if (!button) return;
+    const available = ['sf', 'all'].includes(settings.analysisSource) && !offlineEvidence && showEval &&
+      !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+    button.disabled = !available;
+    button.title = !available ? 'Choose SF or All with evaluation visible for deeper analysis' :
+      sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
+    button.setAttribute('aria-label', sfWorking && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
+    button.classList.toggle('is-working', sfWorking && available);
+  }
   function invalidateDCCAnalysis() {
     analysisGeneration++;
     activeLookaheadId++;
+    lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
+    if (localController) localController.abort();
+    if (localProvider) localProvider.destroy();
+    localController = null; localProvider = null;
     latestDCCResults = [];
     latestDCCReceipt = null;
+    sfWorking = false;
+    syncSFAnalysisControl();
   }
   function evalTrend(seq) { return DCC.sensors(seq, game.fen()).trend; }
   function trendArrow(trend) { return { rising: '↑', falling: '↓', stable: '→' }[trend] || '—'; }
@@ -559,7 +611,7 @@ gameBuckets.forEach(bucket => {
     if (keys.length > 1500) keys.slice(0, keys.length - 1200).forEach(k => delete evalCache[k]);
     try { localStorage.setItem(CACHE_KEY, JSON.stringify(evalCache)); } catch (_) {}
   }
-  async function fetchChessText(action, fen, learn = 0) {
+  async function fetchChessText(action, fen, learn = 0, requestOptions = {}) {
     const source = settings.evalMode;
     const key = `${DCC.VERSION}:${source}:${action}:learn=${learn}:${fen}`;
     const cached = evalCache[key];
@@ -575,16 +627,19 @@ gameBuckets.forEach(bucket => {
       const at = new Date().toISOString();
       return observe(cached.text, at, at, true, new Date(cached.time).toISOString());
     }
-    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal');
+    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '');
     if (requestPending.has(pendingKey)) return requestPending.get(pendingKey);
     const unhurried = simRunning, requestEpoch = activityEpoch;
     const pending = (async () => {
       const startedAt = new Date().toISOString();
-      await sleep(150);
+      if (!requestOptions.signal) await sleep(150);
       if (unhurried && requestEpoch !== activityEpoch) { requestPending.delete(pendingKey); return ''; }
       const controller = new AbortController();
       if (unhurried) simRequests.add(controller);
-      const timer = unhurried ? null : setTimeout(() => controller.abort(), 15000);
+      const abortRequest = () => controller.abort();
+      requestOptions.signal?.addEventListener('abort', abortRequest, { once: true });
+      if (requestOptions.signal?.aborted) controller.abort();
+      const timer = setTimeout(abortRequest, Math.max(1, requestOptions.timeoutMs || 15000));
       try {
         const base = source === 'proxy' && action === 'queryall'
           ? '/.netlify/functions/queryall?'
@@ -602,19 +657,18 @@ gameBuckets.forEach(bucket => {
       } catch (err) {
         console.warn(`ChessDB ${action} unavailable:`, err.name);
         return observe('', startedAt, new Date().toISOString(), false, null, err.name);
-      } finally { clearTimeout(timer); simRequests.delete(controller); requestPending.delete(pendingKey); }
+      } finally { clearTimeout(timer); requestOptions.signal?.removeEventListener('abort', abortRequest); simRequests.delete(controller); requestPending.delete(pendingKey); }
     })();
     requestPending.set(pendingKey, pending);
     return pending;
   }
-  async function cachedFetchChessDB(fen) {
+  async function cachedFetchChessDB(fen, options = {}) {
     if (offlineEvidence) return (await offlineEvidence.provider.getMoves(fen)) || { fen, moves: [] };
-    const generation = analysisGeneration;
     // Match the original /chess/ source contract. learn=0 can leave all but
     // one score unknown; learn=1 supplies the other evaluated candidates.
     // Each request has its own cache key and may fail independently.
     const [verified, cloud] = await Promise.all([
-      fetchChessText('queryall', fen, 0), fetchChessText('queryall', fen, 1)
+      fetchChessText('queryall', fen, 0, options), fetchChessText('queryall', fen, 1, options)
     ]);
     const moveMap = new Map();
     for (const text of [cloud, verified]) {
@@ -629,18 +683,39 @@ gameBuckets.forEach(bucket => {
     // Preserve ChessDB's order within score/rank ties (not alphabetical UCI).
     const moves = Array.from(moveMap.values(), (move, sourceOrder) => ({ ...move, sourceOrder }));
     const legal = DCC.legalMoves(Chess, fen, moves);
-    if (generation === analysisGeneration) positionEval.update(fen, legal[0]?.score);
-    return { fen, moves: legal };
+    const observations = [0, 1].map(learn => sourceObservations.get(`queryall:${learn}:${fen}`));
+    const unavailable = observations.every(record => !record || !!record.metadata?.error);
+    return { fen, moves: legal, provider: 'CDB', reason: legal.length ? 'CDB evaluated candidates' :
+      unavailable ? 'CDB network/provider unavailable' : 'CDB no usable database evaluation' };
   }
-  async function fetchPV(fen) {
+  async function runLocalSF(fen, { nodes, depth = nodes == null ? settings.sfAnalysisDepth : undefined, dcc = false, cancelled = () => false, onInfo } = {}) {
+    if (localController) localController.abort();
+    if (localProvider) localProvider.destroy();
+    const controller = new AbortController();
+    const provider = SF.create({ Chess, Engine: window.ChessDeepEngine, DCC });
+    localController = controller; localProvider = provider;
+    try {
+      if (cancelled()) controller.abort();
+      const root = await provider.root(fen, { nodes, depth, signal: controller.signal, onInfo });
+      if (cancelled()) controller.abort();
+      const analysis = dcc && root.moves.length ? await provider.analyzeDCC(fen, root, settings, controller.signal) : null;
+      if (cancelled()) controller.abort();
+      if (controller.signal.aborted) { const e = new Error('Stale SF analysis'); e.name = 'AbortError'; throw e; }
+      return { root, analysis, ledger: { ...provider.ledger } };
+    } finally {
+      if (localController === controller) { localController = null; localProvider = null; }
+      provider.destroy();
+    }
+  }
+  async function fetchPV(fen, options = {}) {
     if (offlineEvidence) return (await offlineEvidence.provider.getPV(fen)) || { score: null, depth: 0, pv: [] };
-    const text = await fetchChessText('querypv', fen);
+    const text = await fetchChessText('querypv', fen, 0, options);
     const score = text.match(/score:(-?\d+)/), depth = text.match(/depth:(\d+)/), pv = text.match(/pv:([^\r\n]+)/);
     return { score: score ? Number(score[1]) : null, depth: depth ? Number(depth[1]) : 0, pv: pv ? pv[1].split('|').filter(Boolean) : [] };
   }
-  async function fetchScore(fen) {
+  async function fetchScore(fen, options = {}) {
     if (offlineEvidence) return offlineEvidence.provider.getScore(fen);
-    const text = await fetchChessText('queryscore', fen);
+    const text = await fetchChessText('queryscore', fen, 0, options);
     const score = text.match(/eval:(-?\d+)/);
     return score ? Number(score[1]) : null;
   }
@@ -667,8 +742,8 @@ gameBuckets.forEach(bucket => {
     const history = game.history({ verbose: true }).map(normalizeUci);
     return { fen, startFen: rootFen, rootFen, moves: history, history, positionHistory: { startFen: rootFen, moves: history }, pgn: game.pgn(),
       headers: { ...game.header() }, settings: JSON.parse(JSON.stringify(settings)),
-      analysis: lastAnalysisResult?.receipt?.fen === fen ? lastAnalysisResult : null,
-      evidence: labSnapshots.get(fen) || null, lastDecision,
+      analysis: lastAnalysisResult?.receipt?.fen === fen && lastAnalysisResult.receipt.provider === activeAnalysisProvider && activeAnalysisFen === fen ? lastAnalysisResult : null,
+      evidence: activeAnalysisProvider === 'CDB' && activeAnalysisFen === fen ? labSnapshots.get(fen) || null : null, lastDecision,
       assistanceLocked: !!playState.assistanceLocked, simRunning,
       evidenceMode: offlineEvidence ? 'offline' : 'live' };
   }
@@ -678,6 +753,9 @@ gameBuckets.forEach(bucket => {
     if (replayRunning) stopReplay();
     if (playState.active && playState.mode !== 'lichess') leaveActiveSession('Paused for study.');
     workspace.pause();
+    // Deep analysis owns its own worker; release the main local search first.
+    if (localController) localController.abort();
+    if (localProvider) localProvider.destroy();
   }
   function navigateStudy(request) {
     if (playState.active && playState.mode === 'lichess') throw new Error('End the live session before changing the study position.');
@@ -711,10 +789,10 @@ gameBuckets.forEach(bucket => {
     if (!probe.load_pgn(makeLoadablePgn(text))) throw new Error('Invalid PGN.');
     return probe;
   }
-  function loadStudyPGN(text, title = 'Imported study') {
+  function loadStudyPGN(text, title = 'Imported study', options = {}) {
     const probe = validateStudyPGN(text);
     if (playState.active || simRunning || replayRunning) throw new Error('Pause the current activity before loading a study.');
-    studyUI?.importPGN(text);
+    if (!options.archive) studyUI?.importPGN(text);
     game.load(probe.header().FEN || new Chess().fen());
     Object.entries(probe.header()).forEach(([k,v]) => game.header(k,v));
     probe.history({ verbose: true }).forEach(m => DCC.play(game, normalizeUci(m)));
@@ -747,21 +825,28 @@ gameBuckets.forEach(bucket => {
     el.textContent = total > 0 ? `DCC ${done}/${total}` : '';
     el.style.color = '#8cddff';
   }
-  async function runDCCLookahead(moveList, baseFen) {
+  async function runDCCLookahead(moveList, baseFen, precomputed = null) {
     const id = ++activeLookaheadId;
+    const source = settings.analysisSource;
     latestDCCResults = [];
     latestDCCReceipt = { status: 'pending' };
+    positionEval.updateDCC(baseFen, null, null, 'pending');
     renderDCCView();
-    const result = await analyzePosition(baseFen, moveList);
-    if (!result || id !== activeLookaheadId || game.fen() !== baseFen || !showEval) return;
+    const result = precomputed || await analyzePosition(baseFen, moveList);
+    if (!result || id !== activeLookaheadId || settings.analysisSource !== source || game.fen() !== baseFen || !showEval) return;
     latestDCCResults = result.candidates.map(c => c.data);
     latestDCCReceipt = result.receipt;
+    result.receipt.provider ||= 'CDB';
+    positionEval.updateDCC(baseFen, result.dcc1Move ? uciToSan(baseFen, result.dcc1Move) : null, result.receipt.provider, hasMeasuredDCCChoice(result) ? 'ready' : 'raw-safety');
+    showAnalysisCandidates(moveList, result.receipt.provider, result);
+    lastAnalysisResult = result;
+    labListeners.forEach(listener => listener(getLabContext()));
     latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
     dccMoveAnnotations[baseFen] = latestDCCResults.slice();
     const progress = document.getElementById('dccProgress');
     if (progress) progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;
     renderDCCView();
-    if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, 'raw', result.allMoves, result), baseFen);
+    if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, result.receipt.provider === 'SF' ? 'sf' : 'raw', result.allMoves, result), baseFen);
     if (settings.dccOnly) applyDCCOnlyBadges();
   }
   function updateDCCBadge(move, data, status) {
@@ -785,7 +870,7 @@ gameBuckets.forEach(bucket => {
       star.title = 'Shared DCC policy choice (see DCC panel for reason)'; ov.appendChild(star);
     }
     if (Number.isFinite(data.stability)) ov.classList.add(data.stability > 0.6 ? 'dcc-stable' : 'dcc-unstable');
-    ov.title = `${move}: raw ${data.raw ?? data.score} cp; ${data.status || 'partial'} DCC; mover perspective`;
+    ov.title = `${move}: raw ${Math.abs(data.raw ?? data.score) >= 10000 ? 'decisive/mate' : (data.raw ?? data.score) + ' cp'}; ${data.status || 'partial'} DCC; mover perspective`;
   }
   function showDCCInfoPanel(ov) {
     const data = latestDCCResults.find(r => r.move === (ov.dataset.dccMove || ov.dataset.move));
@@ -960,6 +1045,12 @@ gameBuckets.forEach(bucket => {
      8. APPLY SETTINGS  (theme, fonts, sizes, format‑label)
   ------------------------------------------------------------------*/
   function applySettings() {
+    document.getElementById('settingSFDepth').value = settings.sfAnalysisDepth;
+    for (const key of ['CDB', 'SF', 'DCC']) {
+      const input = document.getElementById(`settingAll${key}Seconds`);
+      if (input) input.value = settings[`all${key}Seconds`];
+    }
+    positionEval.render();
     document.getElementById('settingEvalMode').value = settings.evalMode;
     /* theme */
 	document.body.classList.toggle('light-theme', settings.theme === 'light');
@@ -1029,6 +1120,8 @@ gameBuckets.forEach(bucket => {
     // ─── DCC Lookahead settings sync ─────────────────────────────────
     const dccEl = document.getElementById('settingDccEnabled');
     if (dccEl) dccEl.checked = settings.dccEnabled;
+    const mainDccEl = document.getElementById('analysisDCC');
+    if (mainDccEl) mainDccEl.checked = settings.dccEnabled;
     const dccClickEl = document.getElementById('settingDccClickAction');
     if (dccClickEl) dccClickEl.value = dccClickAction();
     const dccDepthEl = document.getElementById('settingDccDepth');
@@ -1071,44 +1164,123 @@ gameBuckets.forEach(bucket => {
   /* ------------------------------------------------------------------
      9. FETCH ANNOTATIONS (ChessDB.cn)
   ------------------------------------------------------------------*/
+  function hasMeasuredDCCChoice(analysis) {
+    return !!analysis?.candidates?.some(candidate => candidate.move === analysis.dcc1Move && candidate.data?.isMdlPick) &&
+      /^(Raw and DCC agree|DCC preference|Verified immediate checkmate)/.test(analysis.receipt.reason || '') &&
+      (analysis.receipt.provider !== 'SF' || analysis.receipt.status === 'complete');
+  }
+  function showAnalysisCandidates(moves, provider, analysis) {
+    const panel = document.getElementById('analysisCandidates');
+    if (!panel) return;
+    panel.replaceChildren(); panel.style.display = moves.length ? 'block' : 'none';
+    if (!moves.length) return;
+    const title = document.createElement('strong'); title.textContent = `${provider === 'SF' ? 'Stockfish 18 Lite' : 'ChessDB'} · raw #1 ${uciToSan(game.fen(), moves[0].move)}`;
+    panel.appendChild(title);
+    for (const move of moves.slice(0, Math.min(settings.topN || 5, 8))) {
+      const row = document.createElement('div');
+      const score = move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
+      const pv = move.pv?.slice(0, 5).join(' ') || '';
+      row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${move.depth ? ` · depth ${move.depth}` : ''}${pv ? ' · PV ' + pv : ''}`;
+      panel.appendChild(row);
+    }
+    if (analysis?.receipt) {
+      const detail = document.createElement('div');
+      detail.textContent = `${hasMeasuredDCCChoice(analysis) ? 'DCC choice' : 'Raw choice retained'} ${analysis.dcc1Move ? uciToSan(game.fen(), analysis.dcc1Move) : '—'} · ${analysis.receipt.reason || analysis.receipt.status} · ${analysis.receipt.calls || 0} probes`;
+      panel.appendChild(detail);
+    }
+  }
   async function fetchAnnotations() {
+    syncSFAnalysisControl();
     if (!showEval || simRunning || replayRunning || (playState.active && playState.assistanceLocked)) return;
-    const baseFen = game.fen(), generation = analysisGeneration;
-    const response = await cachedFetchChessDB(baseFen);
-    if (generation !== analysisGeneration || game.fen() !== baseFen || !showEval || simRunning || replayRunning) return;
+    const baseFen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource, requestId = ++annotationRequestId;
+    const current = () => requestId === annotationRequestId && generation === analysisGeneration && epoch === activityEpoch && game.fen() === baseFen && settings.analysisSource === selected && showEval && !simRunning && !replayRunning;
+    const status = document.getElementById('analysisSourceStatus');
+    if (selected === 'all' || selected === 'dcc') positionEval.updateDCC(baseFen, null, null, 'pending');
+    const usesSF = selected === 'sf' || selected === 'all';
+    if (sfAnalysisFen !== baseFen) { sfAnalysisFen = baseFen; sfAnalysisDepth = null; }
+    status.textContent = usesSF ? 'SF local analysis…' : 'CDB analysis…';
+    if (usesSF) { sfWorking = true; syncSFAnalysisControl(); }
+    let response, sf = null, provider = 'CDB', cdb = null, sfError = null;
+    try {
+      if (selected !== 'sf') {
+        cdb = await cachedFetchChessDB(baseFen);
+        response = cdb;
+        if (current() && selected === 'all') positionEval.updateSource(baseFen, cdb.moves[0]?.score, 'CDB', null, cdb.moves[0] ? uciToSan(baseFen, cdb.moves[0].move) : null);
+      }
+      if (!current()) return;
+      if (selected === 'sf' || selected === 'all' || ((selected === 'auto' || selected === 'dcc') && !response.moves.length)) {
+        const reason = selected === 'auto' ? response.reason : null;
+        try { sf = await runLocalSF(baseFen, { depth: sfAnalysisDepth || settings.sfAnalysisDepth,
+          dcc: settings.dccEnabled || selected === 'dcc' || (selected === 'all' && !cdb?.moves.length), cancelled: () => !current(),
+          onInfo: (_line, search) => { if (current() && search?.depth) status.textContent = `SF depth ${search.completeDepth || search.depth} · ${search.nodes || 0} nodes…`; } }); }
+        catch (error) {
+          if (selected !== 'all' || !cdb?.moves.length || error.name === 'AbortError') throw error;
+          sfError = error;
+        }
+        if (!current()) return;
+        if (sf) {
+          positionEval.updateSource(baseFen, sf.root.moves[0]?.score, 'SF', sf.ledger.rootDepth, sf.root.moves[0] ? uciToSan(baseFen, sf.root.moves[0].move) : null);
+          if (selected !== 'all' || !cdb?.moves.length) { response = sf.root; provider = 'SF'; }
+          status.textContent = (reason ? `${reason} · SF local fallback active` : selected === 'all' ? 'CDB + SF local active' : 'SF local active') +
+            ` · depth ${sf.ledger.rootDepth ?? '—'} · ${sf.ledger.rootNodes || 0} nodes` +
+            (sf.root.complete ? '' : ' · incomplete MultiPV, raw choice provisional');
+        } else status.textContent = `${cdb.reason} · SF unavailable: ${sfError.message}`;
+      } else status.textContent = response.reason;
+    } catch (error) {
+      if (!current() || error.name === 'AbortError') return;
+      status.textContent = `${selected === 'auto' || selected === 'dcc' ? response?.reason + ' · ' : ''}${selected === 'cdb' ? 'CDB' : 'SF local'} unavailable: ${error.message}`;
+      latestDCCResults = []; latestDCCReceipt = { status: 'unknown', reason: status.textContent };
+      lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
+      document.getElementById('analysisCandidates').style.display = 'none';
+      document.querySelectorAll('.overlay').forEach(el => el.remove());
+      renderDCCView(); positionEval.update(baseFen, null, 'SF');
+      return;
+    } finally {
+      if (current() && usesSF) { sfWorking = false; syncSFAnalysisControl(); }
+    }
     const allMoves = response.moves;
+    activeAnalysisProvider = provider; activeAnalysisFen = baseFen;
+    if (!allMoves.length) lastAnalysisResult = null;
+    positionEval.update(baseFen, allMoves[0]?.score, provider);
     const list = Number.isFinite(settings.topN) ? allMoves.slice(0, settings.topN) : allMoves;
     if (list.length) {
       clearInterval(evalRetryTimer); evalRetryTimer = null;
       const btn = document.getElementById('btnHideEval'); btn.innerText = 'Hide Eval'; btn.style.background = '';
     }
-    list.forEach((move, i) => annotateMove(move.move, move.score, i === 0));
-    if (settings.dccEnabled && allMoves.length) await runDCCLookahead(allMoves, baseFen);
-    else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; renderDCCView(); }
+    list.forEach((move, i) => annotateMove(move.move, move.score, i === 0, provider, move));
+    showAnalysisCandidates(allMoves, provider, provider === 'SF' ? sf?.analysis : null);
+    if ((settings.dccEnabled || selected === 'dcc' || selected === 'all') && allMoves.length)
+      await runDCCLookahead(allMoves, baseFen, provider === 'SF' ? sf?.analysis || null : null);
+    else { latestDCCResults = []; latestDCCReceipt = { status: 'unknown' }; positionEval.updateDCC(baseFen, null, null); renderDCCView(); }
   }
 
   /* ------------------------------------------------------------------
      10. BOARD OVERLAYS / HISTORY RENDER (unchanged logic)
   ------------------------------------------------------------------*/
-  function annotateMove(move, score, best) {
+  function annotateMove(move, score, best, source = 'CDB', detail = null) {
     const sq   = move.slice(2, 4);
     const cell = document.querySelector(`.square-${sq}`);
     if (!cell) return;
 
-	// if there’s already an overlay here, keep only the higher score
-	const newScore = parseInt(score, 10);
+	// Raw #1 wins when two legal moves reach the same square. Compare stored
+	// numeric scores for other badges; visible mate/dot labels are not numbers.
+	const newScore = Number(score);
 	const existingOv = cell.querySelector('.overlay');
 	if (existingOv) {
-	  const oldScore = parseInt(existingOv.innerText.replace('+',''), 10);
-	  if (oldScore >= newScore) return;  // skip this weaker/duplicate badge
+	  if (existingOv.dataset.rawBest === 'true' && !best) return;
+	  const oldScore = Number(existingOv.dataset.rawScore);
+	  if (!best && Number.isFinite(oldScore) && (!Number.isFinite(newScore) || oldScore >= newScore)) return;
 	  existingOv.remove();              // remove the old, keep going to draw new
 	}
 	
 	// create the badge and tag it with its raw move string
 	const ov  = document.createElement('div');
 	ov.dataset.move = move;
+	ov.dataset.rawScore = Number.isFinite(newScore) ? String(newScore) : '';
+	ov.dataset.rawBest = String(!!best);
 	const num = parseInt(score, 10);
-	ov.innerText = settings.notation==='dot' ? '•' : num>0?`+${num}`:num;
+	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType === 'mate' ? `#${detail.mateIn}` : num>0?`+${num}`:num;
+	ov.title = `${source} ${detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
 
 	const badgeClass = Math.abs(num) <= 20 ? 'zero'
 					: num > 0 ? 'positive'
@@ -1242,7 +1414,7 @@ gameBuckets.forEach(bucket => {
     // Automated play never scrolls the reading area or page. User navigation
     // may reveal a selected row, within this central area only.
     const selected = tbl.querySelector('tr.selected');
-    if (display) {
+    if (display && !display.classList.contains('is-deep-analysis')) {
       if (simRunning || replayRunning || playState.autoPilot) {
         const restored = anchorKey && Array.from(tbl.querySelectorAll('tr')).find(row => row.dataset.historyPair === anchorKey);
         if (restored && anchorOffset !== null) display.scrollTop += restored.getBoundingClientRect().top - display.getBoundingClientRect().top - anchorOffset;
@@ -1276,6 +1448,8 @@ gameBuckets.forEach(bucket => {
 	  board.position(game.fen());
 	  positionEval.render();
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
+	  const candidatesPanel = document.getElementById('analysisCandidates');
+	  if (candidatesPanel) { candidatesPanel.replaceChildren(); candidatesPanel.style.display = 'none'; }
 	  // Cancel any running DCC lookahead
 	  invalidateDCCAnalysis();
 	  renderDCCView();
@@ -1418,7 +1592,7 @@ gameBuckets.forEach(bucket => {
 
 		const overlays = document.querySelectorAll('.overlay');
 		const btn = document.getElementById('btnHideEval');
-		if (overlays.length === 0 && settings.topN > 0) {
+		  if (overlays.length === 0 && settings.topN > 0 && settings.analysisSource === 'cdb') {
 		  setTimeout(() => {
 			if (document.querySelectorAll('.overlay').length === 0) {
 			  evalRetries = 0;
@@ -1898,6 +2072,7 @@ function jumpTo(i){
 		  // ─── DCC Lookahead settings ───
 		  case 'settingDccEnabled':
 			settings.dccEnabled = e.target.checked;
+			document.getElementById('analysisDCC').checked = settings.dccEnabled;
 			break;
 		  case 'settingDccDepth':
 			settings.dccDepth = parseInt(e.target.value, 10) || 5;
@@ -1971,6 +2146,22 @@ function jumpTo(i){
   /* ------------------------------------------------------------------
      INIT
   ------------------------------------------------------------------*/
+  function beginDeepAnalysis() {
+    const fen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource;
+    // Opening/starting the pinned search supersedes pending main-analysis work.
+    const requestId = ++annotationRequestId;
+    sfWorking = false; syncSFAnalysisControl();
+    return snapshot => {
+      if (selected !== 'all' || settings.analysisSource !== selected || requestId !== annotationRequestId ||
+          generation !== analysisGeneration || epoch !== activityEpoch || game.fen() !== fen || snapshot.fen !== fen ||
+          !showEval || offlineEvidence || simRunning || replayRunning || playState.assistanceLocked) return;
+      const best = snapshot.lines?.find(line => (line.multipv || 1) === 1);
+      if (!best?.pv?.length || !['cp', 'mate'].includes(best.score?.type) || !Number.isFinite(best.score.white)) return;
+      const move = uciToSan(fen, best.pv[0]);
+      if (!move) return;
+      positionEval.updateSource(fen, best.score, 'SF', best.depth, move, !!snapshot.limits?.searchMoves?.length);
+    };
+  }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, pause: pauseLab, navigate: navigateStudy,
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
@@ -1981,7 +2172,7 @@ function jumpTo(i){
     captureEvidence: async () => { const fen = game.fen(); await analyzePosition(fen); return labSnapshots.get(fen) || null; },
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
-  deepUI = window.ChessDeepUI?.create(labHost) || null;
+  deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis }) || null;
   researchUI = window.ChessResearchUI?.create(labHost) || null;
   document.getElementById('btnStudy')?.addEventListener('click', () => { pauseLab(); studyUI?.open(); });
   document.getElementById('btnEvidence')?.addEventListener('click', () => { pauseLab(); researchUI?.open('evidence'); });
@@ -1990,17 +2181,22 @@ function jumpTo(i){
   // Explicit board-state integration for extension panels; no engine commands are exposed to Gemini.
   window.ChessLabHost = labHost;
   window.ChessGemini.create({ currentFen: () => game.fen(), snapshot: () => {
-    const fen = game.fen(), current = latestDCCReceipt?.fen === fen;
+    const fen = game.fen(), current = latestDCCReceipt?.fen === fen && latestDCCReceipt.provider === activeAnalysisProvider && activeAnalysisFen === fen;
     const config = DCC.config({ ...settings, dccNoDeadline: simRunning });
-    const memo = lastAnalysisResult?.receipt?.fen === fen ? lastAnalysisResult : null;
+    const memo = lastAnalysisResult?.receipt?.fen === fen && lastAnalysisResult.receipt.provider === activeAnalysisProvider && activeAnalysisFen === fen ? lastAnalysisResult : null;
     const data = current ? latestDCCResults : [];
+    const provider = memo?.receipt.provider || null;
+    const candidates = (memo?.allMoves || []).slice(0, 10).map(m => ({ move: m.move, san: uciToSan(fen, m.move),
+      scoreType: m.scoreType === 'mate' ? 'mate' : 'cp', score: m.scoreType === 'mate' ? null : m.score,
+      mateIn: m.scoreType === 'mate' ? m.mateIn : null }));
     return { capturedAt: new Date().toISOString(), fen, sideToMove: game.turn(),
       assistanceLocked: !!playState.assistanceLocked,
       mode: simRunning ? 'sim' : workspace.isHuman() ? 'two local humans' : playState.active ? playState.mode : 'analysis',
       historySAN: game.history().slice(-100), headers: game.header(),
       legalMoves: game.moves({ verbose: true }).map(m => ({ san: m.san, uci: normalizeUci(m) })),
-      scorePOV: 'root player to move; centipawns', dccConfig: config,
-      cdbCandidates: (memo?.allMoves || []).slice(0, 10).map(m => ({ move: m.move, san: uciToSan(fen, m.move), score: m.score })),
+      scorePOV: 'root player to move; candidate scores are typed as cp or mate', analysisProvider: provider, dccConfig: config,
+      analysisCandidates: candidates, cdbCandidates: provider === 'CDB' ? candidates : [],
+      sfCandidates: provider === 'SF' ? candidates : [],
       dccReceipt: current ? latestDCCReceipt : { status: 'unknown', reason: 'Current-position DCC analysis is not ready.' },
       dccCandidates: data.slice(0, 10).map(r => ({ move: r.move, san: uciToSan(fen, r.move), rawCp: r.raw,
         dccRankScore: r.dccScore, endCp: r.endEval, stability: r.stability, shape: r.adsr?.shape,
@@ -2010,6 +2206,68 @@ function jumpTo(i){
       timers: workspace.clockSnapshot() };
   } });
   applySettings();
+  const sourceSelect = document.getElementById('analysisSource');
+  const dccSelect = document.getElementById('analysisDCC');
+  sourceSelect.value = settings.analysisSource;
+  function syncDCCSelector() {
+    const forced = settings.analysisSource === 'dcc' || settings.analysisSource === 'all';
+    dccSelect.checked = forced || !!settings.dccEnabled;
+    dccSelect.disabled = forced;
+    dccSelect.title = forced ? 'DCC is included in this analysis mode' : 'Include DCC lookahead';
+  }
+  syncDCCSelector();
+  document.getElementById('settingSFDepth').addEventListener('change', event => {
+    settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
+    event.target.value = String(settings.sfAnalysisDepth);
+    sfAnalysisDepth = null;
+    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    // The review limit does not interrupt a Sim or change its node budget.
+    if (simRunning || replayRunning || offlineEvidence || (playState.active && playState.assistanceLocked)) return;
+    invalidateDCCAnalysis();
+    annotationRequestId++;
+    fetchAnnotations();
+  });
+  sourceSelect.addEventListener('change', () => {
+    settings.analysisSource = sourceSelect.value;
+    syncDCCSelector();
+    sfAnalysisDepth = null;
+    invalidateDCCAnalysis(); annotationRequestId++;
+    clearInterval(evalRetryTimer); evalRetryTimer = null;
+    document.querySelectorAll('.overlay').forEach(el => el.remove());
+    const candidates = document.getElementById('analysisCandidates');
+    candidates.replaceChildren(); candidates.style.display = 'none';
+    lastDecision = null; document.getElementById('simDecisionPanel').style.display = 'none';
+    lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
+    renderDCCView();
+    positionEval.updateDCC(game.fen(), null, null, 'pending');
+    positionEval.update(game.fen(), null, settings.analysisSource === 'sf' ? 'SF' : 'CDB');
+    saveSettings(); fetchAnnotations();
+  });
+  dccSelect.addEventListener('change', () => { settings.dccEnabled = dccSelect.checked; saveSettings(); fetchAnnotations(); });
+  document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
+    syncSFAnalysisControl();
+    if (document.getElementById('btnAnalysisDeepen').disabled) return;
+    if (sfWorking) {
+      annotationRequestId++; if (localController) localController.abort();
+      if (localProvider) localProvider.destroy();
+      sfWorking = false; syncSFAnalysisControl();
+      document.getElementById('analysisSourceStatus').textContent = 'SF stopped · previous completed scores remain visible';
+      return;
+    }
+    sfAnalysisFen = game.fen();
+    sfAnalysisDepth = Math.min(128, (sfAnalysisDepth || settings.sfAnalysisDepth) + 2);
+    invalidateDCCAnalysis();
+    document.querySelectorAll('.overlay').forEach(el => el.remove());
+    fetchAnnotations();
+  });
+  for (const key of ['CDB', 'SF', 'DCC']) {
+    document.getElementById(`settingAll${key}Seconds`).addEventListener('change', event => {
+      const value = Math.max(1, Math.min(30, Number(event.target.value) || 4));
+      settings[`all${key}Seconds`] = value; event.target.value = String(value);
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      positionEval.render();
+    });
+  }
   updateBoard(true);
   showOpening();
   refreshPlayUi();
@@ -2131,12 +2389,12 @@ function jumpTo(i){
     const heading = document.createElement('strong');
     heading.textContent = `${caption} · ${pick.side === 'w' ? 'White' : 'Black'} to move${fen !== game.fen() ? ' · previous position' : ''}`;
     const choices = document.createElement('div');
-    choices.textContent = `CDB: ${san(pick.raw_best)} (${pick.raw_best_score > 0 ? '+' : ''}${pick.raw_best_score} cp) · DCC: ${san(pick.dcc_choice)}`;
+    choices.textContent = `${pick.provider} #1: ${san(pick.raw_best)} (${pick.score_type === 'mate' ? `mate ${pick.raw_best_mate_in > 0 ? '#' : '#-'}${Math.abs(pick.raw_best_mate_in)}` : `${pick.raw_best_score > 0 ? '+' : ''}${pick.raw_best_score} cp`}) · DCC: ${san(pick.dcc_choice)}`;
     const ties = document.createElement('div');
-    ties.textContent = `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
+    ties.textContent = pick.score_type === 'mate' ? 'Mate score · centipawn ties/gap not applicable' : `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
     const verdict = document.createElement('div');
     verdict.textContent = pick.dcc_choice ? (pick.dcc_choice === pick.raw_best ? 'Same choice.' : 'DCC chooses a different move.') : 'DCC comparison unavailable.';
-    verdict.textContent += ` Coverage: ${pick.coverage}. Scores are from the mover’s perspective.`;
+    verdict.textContent += ` Coverage: ${pick.coverage}${pick.coverage_reason ? ' · ' + pick.coverage_reason : ''}. Scores are from the mover’s perspective.${pick.provider === 'SF' ? ' Root '+(pick.root_nodes ?? '?')+' nodes; DCC extra '+(pick.dcc_extra_nodes ?? '?')+' nodes (compute unmatched).' : ''}`;
     const inspect = document.createElement('button'); inspect.type = 'button'; inspect.className = 'btn';
     inspect.textContent = 'Compare A/B';
     inspect.onclick = () => { pauseLab(); studyUI?.open('compare'); };
@@ -2148,21 +2406,12 @@ function jumpTo(i){
   function renderSimStats() {
     const panel = document.getElementById('simStatsPanel');
     if (!panel || !simExperiments.length) return;
-    const open = !!panel.querySelector('details')?.open;
-    const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-    panel.innerHTML = `<details class="sim-experiments"${open ? ' open' : ''}><summary>Position experiments (${simExperiments.length})</summary>
-      <p>Return to the same starting position, change an engine in Sim, and compare the new line. Repeated positions are not independent strength evidence.</p>
-      <div class="sim-experiment-list">${simExperiments.map((run, i) => {
-        const changes = run.trace.filter(row => row.changed).length;
-        const gaps = run.trace.filter(row => row.coverage !== 'complete').length;
-        return `<div class="sim-experiment-row"><strong>#${run.id} · W ${SIM.label(run.white)} / B ${SIM.label(run.black)}</strong><span>${run.trace.length} plies · ${escape(run.state)} · ${escape(run.result)} · ${changes} changes from CDB · ${gaps} coverage gaps</span><button class="btn" data-sim-start="${i}">Return to start #${run.id}</button></div>`;
-      }).join('')}</div><div class="btn-group"><button class="btn" id="btnExportSimPGN">Export experiments PGN</button><button class="btn" id="btnExportCSV">Export CSV</button></div></details>`;
-    panel.style.display = 'block';
-    panel.querySelectorAll('[data-sim-start]').forEach(button => {
-      button.onclick = () => returnToSimStart(Number(button.dataset.simStart));
-    });
-    document.getElementById('btnExportCSV').onclick = () => downloadSimExperiments('csv');
-    document.getElementById('btnExportSimPGN').onclick = () => downloadSimExperiments('pgn');
+    panel.replaceChildren(); panel.style.display = 'block';
+    const line = document.createElement('div');
+    const run = simSession || simExperiments[simExperiments.length - 1];
+    line.textContent = `${SIM.label(run.white)} / ${SIM.label(run.black)} · ${run.trace.length} played plies · ${run.state} · ${run.result}`;
+    const button = document.createElement('button'); button.className = 'btn'; button.textContent = 'Matches & tournaments';
+    button.onclick = () => openTournamentUI(); panel.append(line, button);
   }
 
   function returnToSimStart(index) {
@@ -2180,6 +2429,10 @@ function jumpTo(i){
   }
 
   function pauseSimulation(message = 'Paused. Choose a position, then open Sim to continue.') {
+    if (tournamentRunner?.busy()) {
+      tournamentRunner.pause(message).catch(error => updateSimStatus(error.message));
+      return;
+    }
     if (!simRunning) return;
     const run = simSession;
     activityEpoch++;
@@ -2201,99 +2454,8 @@ function jumpTo(i){
   // A position experiment commits to the real game/history. Navigation can
   // pause it synchronously; every awaited decision checks ownership and FEN.
   async function runSimulation(white, black, startFen) {
-    if (simRunning || replayRunning || playState.active) return;
-    const epoch = ++activityEpoch;
-    invalidateDCCAnalysis();
-    const snapshot = { ...settings, dccNoDeadline: true };
-    const run = {
-      id: simExperiments.length + 1, startedAt: new Date().toISOString(),
-      white: SIM.policy(white), black: SIM.policy(black), startFen: startFen || game.fen(),
-      startPgn: game.pgn(), config: DCC.config(snapshot), trace: [], state: 'running', result: '*', reason: ''
-    };
-    simSession = run; simExperiments.push(run);
-    simRunning = true; simAbort = false;
-    workspace.start('sim');
-    preSimFen = null; preSimMoveIndex = -1;
-    showEval = false;
-    clearInterval(evalRetryTimer); evalRetryTimer = null;
-    dccViewActive = false;
-    document.getElementById('moves').style.display = '';
-    document.getElementById('dccAnalysisPanel').style.display = 'none';
-    document.getElementById('btnViewToggle').textContent = 'DCC';
-    document.getElementById('gameTitle').textContent = `White: ${SIM.label(run.white)} · Black: ${SIM.label(run.black)}`;
-    refreshPlayUi();
-    renderSimStats();
-    const owns = () => epoch === activityEpoch && simRunning && !simAbort;
-    try {
-      while (owns() && !game.game_over() && run.trace.length < 200) {
-        const fen = game.fen(), generation = analysisGeneration, started = Date.now();
-        const engine = game.turn() === 'w' ? run.white : run.black;
-        setBoardThinking(true);
-        updateSimStatus(`${game.turn() === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} · comparing choices…`);
-        const result = await cachedFetchChessDB(fen);
-        if (!owns() || game.fen() !== fen) return;
-        // Both modes observe DCC. Only the selected policy may choose the move.
-        const analysis = result.moves.length ? await analyzePosition(fen, result.moves, { settings: snapshot }) : null;
-        if (!owns() || game.fen() !== fen) return;
-        if (generation !== analysisGeneration || JSON.stringify(DCC.config({ ...settings, dccNoDeadline: true })) !== JSON.stringify(run.config)) {
-          pauseSimulation('Paused after settings changed. Open Sim to continue.'); return;
-        }
-        const pick = SIM.decision(Chess, fen, engine, result.moves, analysis);
-        if (!pick) { Object.assign(run, SIM.outcome(game, 'no evaluated move')); break; }
-        const elapsed = Date.now() - started;
-        if (analysis) {
-          latestDCCResults = analysis.candidates.map(c => c.data);
-          latestDCCReceipt = analysis.receipt;
-          dccMoveAnnotations[fen] = latestDCCResults.slice();
-          renderDCCView();
-        }
-        renderSimDecision(pick, fen);
-        setBoardThinking(false);
-        const lab = window.ChessLabLayout?.getSettings() || {};
-        const evalWhite = pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score;
-        const reasons = [];
-        if (lab.pauseOnDisagreement && pick.dcc_choice && pick.dcc_choice !== pick.raw_best) reasons.push('CDB and DCC disagree');
-        if (lab.pauseOnMissing && (!analysis || analysis.receipt.status !== 'complete')) reasons.push('incomplete source data');
-        if (lab.pauseOnSwing && Number.isFinite(run.previousEvalWhite) && Number.isFinite(evalWhite)
-          && Math.abs(evalWhite - run.previousEvalWhite) >= (Number(lab.pauseSwingCp) || 50)) reasons.push('position evaluation changed');
-        run.previousEvalWhite = evalWhite;
-        const pauseKey = `${fen}|${run.white}|${run.black}|${reasons.join(',')}`;
-        if (reasons.length && !acknowledgedAutoPauses.has(pauseKey)) {
-          acknowledgedAutoPauses.add(pauseKey);
-          pauseSimulation(`Auto-pause: ${reasons.join('; ')}. Open Sim to choose engines and continue.`);
-          if (analysis) { latestDCCResults = analysis.candidates.map(c => c.data); latestDCCReceipt = analysis.receipt; renderDCCView(); }
-          renderSimDecision(pick, fen, 'Paused before move');
-          return;
-        }
-        updateSimStatus(`${pick.side === 'w' ? 'White' : 'Black'} · ${SIM.label(engine)} chooses ${uciToSan(fen, pick.move)} · ${pick.changed ? 'different from CDB top 1' : 'same as CDB top 1'}`);
-        // Always yield, including fast mode, so history clicks can pause.
-        await sleep(Math.max(100, snapshot.simSpeed || 0));
-        if (!owns() || game.fen() !== fen) return;
-        if (generation !== analysisGeneration) { pauseSimulation(); return; }
-        const played = applyUciMove(game, pick.move);
-        if (!played) throw new Error('The selected simulation move is no longer legal.');
-        const timing = workspace.recordMove(fen, played, { analysis_ms: elapsed, pause_ms: Math.max(100, snapshot.simSpeed || 0) });
-        run.trace.push({ ...pick, ply: run.trace.length + 1, fen, san: played.san, elapsed_ms: elapsed,
-          at_utc: timing?.at_utc, turn_ms: timing?.think_ms, pause_ms: timing?.pause_ms,
-          white_elapsed_ms: timing?.white_elapsed_ms, black_elapsed_ms: timing?.black_elapsed_ms });
-        run.finalFen = game.fen();
-        lastAction = 'move'; window._skipDivergedReset = true;
-        updateBoard(false);
-        renderSimStats();
-      }
-      if (owns() && run.state === 'running') Object.assign(run, SIM.outcome(game, 'move limit reached'));
-    } catch (err) {
-      if (owns()) Object.assign(run, SIM.outcome(game, 'analysis error: ' + describeErr(err)));
-    } finally {
-      // Pause/New game/new experiment owns the UI once this epoch is replaced.
-      if (epoch === activityEpoch) {
-        workspace.pause();
-        simRunning = false; simAbort = false; showEval = true;
-        setBoardThinking(false); refreshPlayUi(); updateBoard(false);
-        renderSimStats();
-        updateSimStatus(`Experiment #${run.id}: ${run.state} · ${run.result} · ${run.reason}`);
-      }
-    }
+    return startTournament({ format: 'single', white, black, openingSource: 'current',
+      limitMode: 'depth', depth: settings.sfAnalysisDepth, movePauseMs: settings.simSpeed, openingCount: 1 });
   }
 
 
@@ -2454,6 +2616,7 @@ function syncSimModalState() {
   document.getElementById('simSessionOptions').hidden = localSim;
   document.getElementById('simLocalBotOption').hidden = launchMode === 'sim';
   document.getElementById('simLocalSpeed').value = String(settings.simSpeed);
+  document.getElementById('simSFNodes').value = String(settings.sfRootNodes);
   document.getElementById('simPositionInfo').textContent = `Starts at the displayed position · ${game.turn() === 'w' ? 'White' : 'Black'} to move · move ${game.fen().split(' ')[5]}`;
 
   if (lichessControls) lichessControls.style.display = mode === 'lichess' ? 'grid' : 'none';
@@ -2482,7 +2645,7 @@ function syncSimModalState() {
         ? 'Lichess bot research mode. 8Z will challenge the selected Lichess bot and auto-play the chosen color.'
         : 'Lichess bot + human mode. The selected engine color is played by the Lichess bot. The opposite color is human. DCC remains on for both sides.';
     } else if (localSim) {
-      note.textContent = 'CDB selects top 1, keeping ChessDB order for equal evaluations. CDB + DCC uses the shared 10 cp guard. Both sides record the comparison; raw moves stay raw. Return to an experiment’s start to test the other policy from the same position.';
+      note.textContent = 'Choose CDB/SF, CDB/SF + DCC, SF or SF + DCC for each side. DCC uses a 10 cp safety guard; SF continuation probes use local Stockfish. Both SF sides share the selected root node budget. Extra DCC nodes are counted and exported separately.';
     } else if (mode === 'dccbot') {
       note.textContent = launchMode === 'sim'
         ? '8Z local bot mode. Use this for browser-side training and debugging without Lichess.'
@@ -2506,6 +2669,7 @@ function openSimModal(launchMode = 'sim') {
     return;
   }
   playState.launchMode = launchMode || 'sim';
+  if (launchMode === 'sim' && tournamentUI) { openTournamentUI(); return; }
   if (launchMode === 'sim' && currentSimMode() === 'dccbot') document.querySelector('input[name="simOpponent"][value="self"]').checked = true;
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
@@ -3381,6 +3545,7 @@ async function launchFromSimModal() {
     const white = document.getElementById('simWhiteEngine').value;
     const black = document.getElementById('simBlackEngine').value;
     settings.simSpeed = Number(document.getElementById('simLocalSpeed').value);
+    settings.sfRootNodes = Number(document.getElementById('simSFNodes').value);
     saveSettings();
     await runSimulation(white, black, game.fen());
     return;
@@ -3397,6 +3562,144 @@ async function launchFromSimModal() {
       clock, timeLabel, { autoPilot: launchMode === 'sim' });
   }
 }
+
+  let simLeaseRefreshTimer = null;
+  async function refreshSimArchive() {
+    if (!simStore) return;
+    const [runs, events] = await Promise.all([simStore.listRuns(), simStore.listEvents()]);
+    simExperiments.splice(0, simExperiments.length, ...runs);
+    clearTimeout(simLeaseRefreshTimer);
+    let lease = null;
+    try { lease = JSON.parse(localStorage.getItem('chessPwaSimRunnerLease-v1') || 'null'); } catch (_) {}
+    if (!tournamentRunner?.busy() && lease?.expires > Date.now()) {
+      simLeaseRefreshTimer = setTimeout(() => {
+        refreshSimArchive().catch(error => updateSimStatus(error.message));
+      }, Math.min(35000, lease.expires - Date.now() + 50));
+    }
+    if (!tournamentRunner?.busy() && (!lease || lease.expires <= Date.now())) {
+      for (const event of events) if (event.state === 'running') event.state = 'paused';
+      for (const run of runs) if (run.state === 'running') run.state = 'paused';
+    }
+    simEvents = events;
+    tournamentUI?.render(events, runs);
+    const collections = events.map(event => ({ id: event.id,
+      label: `${event.config?.format === 'single' ? 'My matches' : 'My tournaments'} · ${event.name}`,
+      games: runs.filter(run => run.eventId === event.id).map(run => ({ id: run.id,
+        label: `${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result} · ${run.state}`,
+        pgn: run.pgn || SIM.toPGN(Chess, run) })) })).filter(collection => collection.games.length);
+    window.dispatchEvent(new CustomEvent('chess-sim-collections', { detail: collections }));
+    renderSimStats();
+  }
+  function openTournamentUI() {
+    tournamentUI?.open({ currentGameTitle: document.getElementById('gameTitle').textContent,
+      collections: openingCollections.map(c => ({ id: c.id, label: c.label, count: c.games.length })) });
+    refreshSimArchive().catch(error => updateSimStatus(error.message));
+  }
+  async function startTournament(config) {
+    if (playState.active || replayRunning || simRunning) throw new Error('Pause the current activity first.');
+    const T = window.ChessTournament;
+    let extracted;
+    if (config.openingSource === 'collection') {
+      const collection = openingCollections.find(c => c.id === String(config.collectionId));
+      if (!collection?.games.length) throw new Error('This collection has not loaded or has no games. Choose another collection.');
+      extracted = T.extractOpenings(Chess, collection.games.map(g => g.pgn).join('\n\n'), {
+        mode: config.openingMode === 'moves' ? 'fullmoves' : 'auto', fullmoves: config.openingMoves || 9 });
+    } else extracted = T.extractOpenings(Chess, '', { mode: 'current', currentFen: game.fen(), currentPgn: game.pgn() });
+    extracted.openings = extracted.openings.filter(opening => !new Chess(opening.startFen).game_over());
+    if (!extracted.openings.length) throw new Error('No playable orthodox positions in this selection. Chess960 and finished games are excluded.');
+    if (config.format === 'duel' && config.white === config.black) throw new Error('Choose two different engines for a paired duel.');
+    if (Number(config.openingCount) > extracted.openings.length) throw new Error(`Only ${extracted.openings.length} unique playable openings are available. Lower the opening count.`);
+    // Freeze the source selection for repeatable paired games.
+    config.openingReport = { available: extracted.openings.length, rejected: extracted.rejected.length, duplicates: extracted.duplicates };
+    if (workspace.isHuman()) workspace.stop();
+    offlineEvidence = null; invalidateDCCAnalysis();
+    return tournamentRunner.start(config, extracted.openings);
+  }
+  async function openArchivedGame(id) {
+    if (tournamentRunner.busy()) { await tournamentRunner.pause('Paused to review an archived game'); await tournamentRunner.settled(); }
+    const run = await simStore.getRun(id);
+    if (!run) throw new Error('Saved game not found.');
+    loadStudyPGN(run.pgn || SIM.toPGN(Chess, run), `${run.eventName || 'Our engines'} · ${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result}`, { archive: true });
+    tournamentUI.close(); panel.classList.remove('open');
+  }
+  async function exportTournament(format, eventId) {
+    const runs = (await simStore.listRuns()).filter(run => !eventId || run.eventId === eventId);
+    let content;
+    if (format === 'json') {
+      const full = await simStore.exportJSON();
+      content = typeof full === 'string' ? full : JSON.stringify(full, null, 2);
+    } else content = format === 'csv' ? SIM.toCSV(runs) : runs.map(run => SIM.toPGN(Chess, run)).join('\n\n');
+    const url = URL.createObjectURL(new Blob([content], { type: format === 'json' ? 'application/json' : 'text/plain' }));
+    const a = document.createElement('a'); a.href = url; a.download = `ChessBest-${eventId || 'archive'}.${format}`;
+    a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  if (window.ChessSimStore && window.ChessSimRunner && window.ChessTournamentUI) {
+    simStore = window.ChessSimStore.create();
+    const idle = (run, event) => {
+      simRunning = false; simAbort = false; showEval = true;
+      workspace.stop(); setBoardThinking(false); refreshPlayUi(); updateBoard(false);
+      renderSimStats();
+      updateSimStatus(`${event?.name || 'Simulation'}: ${event?.state || 'paused'}${run ? ` · ${run.result} · ${run.reason || ''}` : ''}`);
+      refreshSimArchive().catch(error => updateSimStatus(error.message));
+    };
+    tournamentRunner = window.ChessSimRunner.create({ Chess, SIM, Tournament: window.ChessTournament,
+      SF, Engine: window.ChessDeepEngine, DCC, game, workspace, store: simStore,
+      getCDB: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore, settings: () => ({ ...settings }),
+      callbacks: {
+        started(run) {
+          activityEpoch++; invalidateDCCAnalysis(); simSession = run; simRunning = true; simAbort = false; showEval = false;
+          game.header('Event', run.eventName, 'White', SIM.label(run.white), 'Black', SIM.label(run.black), 'Date', run.startedAt.slice(0, 10).replace(/-/g, '.'), 'Result', '*');
+          clearInterval(evalRetryTimer); evalRetryTimer = null;
+          lastLoadedPGN = null; lastDecision = null; divergedIndex = -1;
+          bookFlags = Array(game.history().length).fill(true); window._skipDivergedReset = false;
+          updateBoard(true); refreshPlayUi();
+          document.getElementById('gameTitle').textContent = `${run.eventName} · ${SIM.label(run.white)} vs ${SIM.label(run.black)}`;
+        },
+        thinking(run, policy, side) { setBoardThinking(true); updateSimStatus(`${side === 'w' ? 'White' : 'Black'} · ${SIM.label(policy)} · thinking…`); },
+        decision(decision) {
+          setBoardThinking(false); renderSimDecision(decision.pick, decision.fen);
+          if (decision.analysis) {
+            latestDCCResults = decision.analysis.candidates.map(c => c.data); latestDCCReceipt = decision.analysis.receipt;
+            dccMoveAnnotations[decision.fen] = latestDCCResults.slice(); renderDCCView();
+          }
+          updateSimStatus(`${SIM.label(decision.pick.policy)} · ${decision.pick.provider}${decision.pick.fallback_reason ? ' fallback' : ''} · ${uciToSan(decision.fen, decision.pick.move)}`);
+        },
+        move(run) { simSession = run; lastAction = 'move'; window._skipDivergedReset = true; updateBoard(false); },
+        shouldPause(decision, run) {
+          const lab = window.ChessLabLayout?.getSettings() || {}, pick = decision.pick;
+          const currentEval = pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score;
+          const prior = run.previousEvalWhite; run.previousEvalWhite = currentEval;
+          if (lab.pauseOnDisagreement && pick.changed) return 'Auto-pause: source and DCC disagree';
+          if (lab.pauseOnMissing && pick.dcc_requested && pick.coverage !== 'complete') return 'Auto-pause: incomplete DCC coverage';
+          if (lab.pauseOnSwing && Number.isFinite(prior) && Math.abs(currentEval - prior) >= (Number(lab.pauseSwingCp) || 50)) return 'Auto-pause: evaluation changed';
+          return null;
+        },
+        paused: idle, idle, change: () => { refreshSimArchive().catch(error => updateSimStatus(error.message)); },
+        error(error) { updateSimStatus(`Simulation paused: ${error.message}`); }
+      } });
+    tournamentUI = window.ChessTournamentUI.create({
+      onStart: startTournament,
+      onPause: () => tournamentRunner.pause(),
+      onResume: async id => { if (playState.active || replayRunning) throw new Error('Stop the current activity first.'); await tournamentRunner.resume(id); },
+      onOpenGame: openArchivedGame, onExport: exportTournament,
+      onImport: async data => {
+        if (tournamentRunner.busy()) throw new Error('Pause the simulation before importing.');
+        await simStore.importJSON(typeof data === 'string' ? data : JSON.stringify(data)); await refreshSimArchive();
+      },
+      onLichess() { playState.launchMode = 'sim'; document.querySelector('input[name="simOpponent"][value="lichess"]').checked = true;
+        document.getElementById('simModal').style.display = 'flex'; syncSimModalState(); }
+    });
+    window.addEventListener('chess-sim-open-game', event => openArchivedGame(event.detail.id).catch(error => updateSimStatus(error.message)));
+    const useOpening = document.createElement('button'); useOpening.type = 'button'; useOpening.className = 'btn';
+    useOpening.id = 'btnUseTournamentOpening'; useOpening.textContent = 'Use position in Sim / tournament'; useOpening.title = 'Use the displayed position as a paired opening';
+    useOpening.onclick = () => { panel.classList.remove('open'); openTournamentUI(); }; document.getElementById('popularGamesPanel').appendChild(useOpening);
+    window.addEventListener('pagehide', () => {
+      try { tournamentRunner.checkpoint(); }
+      catch (error) { updateSimStatus(`Checkpoint unavailable: ${error.message}`); }
+      finally { tournamentRunner.pause('Browser closed; resume from saved game').catch(() => {}); }
+    });
+    simStore.ready().then(refreshSimArchive).catch(error => updateSimStatus(`Game archive unavailable: ${error.message}`));
+  }
 
   // ─── Sim button handlers ───────────────────────────────────────────
   const btnSimW = document.getElementById('btnSimW');
@@ -3456,6 +3759,7 @@ async function launchFromSimModal() {
     const key = `${fen}|${signature}|${identity}`;
     const cached = analysisMemo.get(key);
     if (cached && Date.now() - cached.time < 120000) {
+      cached.result.receipt.provider = 'CDB';
       lastAnalysisResult = cached.result;
       if (cached.evidence) labSnapshots.set(fen, cached.evidence);
       labListeners.forEach(listener => listener(getLabContext()));
@@ -3468,6 +3772,7 @@ async function launchFromSimModal() {
       cancelled: stale, progress: (done, total) => { if (!stale()) updateDCCProgress(done, total); }
     }).then(result => {
       if (stale()) return null;
+      result.receipt.provider = 'CDB';
       lastAnalysisResult = result;
       if (collector) {
         const evidence = collector.snapshot(result, { settings: snapshot, sourceVersion: DCC.VERSION, label: 'Position analysis' });

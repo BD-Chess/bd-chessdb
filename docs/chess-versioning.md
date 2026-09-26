@@ -127,3 +127,37 @@ runner; archive close follows queued work. History refreshes stale running state
 when another tab's runner lease expires. All these corrections are included in
 the published source commit above. Final promoted LAB subtree:
 `56ce0d1426568e18338b819fbc16e12728bf1823`.
+
+## 2026-09-26 PWA refresh from LAB
+
+BD requested an updated `/chess/PWA/` from the working LAB. This is a PWA-only
+refresh, not a CURRENT/PREVIOUS promotion. LAB source tree:
+`56ce0d1426568e18338b819fbc16e12728bf1823`. CURRENT, LAB, PREVIOUS and numbered
+archives remain unchanged. The former PWA is recoverable from parent commit
+`be86d9703bcc71132df3a326960343d016b29289`; no numbered archive is consumed.
+
+`tools/refresh-chess-pwa.py` copies an explicit runtime allowlist from LAB,
+retains the manifest id/start/scope/icons and existing PWA localStorage and
+IndexedDB names, and isolates the new tournament archive/runner lease. It does
+not copy token files, development tools or dated test results. The existing
+online Lichess token lookup remains external to the PWA cache. Other remote
+services remain online-only. Source/final hashes and source tree are retained
+in `public/chess/PWA/release.json`. Regeneration is deterministic for these inputs.
+
+The worker precaches 111 files, including bundled Stockfish, pieces, the PGN
+library and all SIM modules. It serves a complete release cache first, including
+query-versioned URLs, at both root and GitHub Pages nested paths. Updates wait
+for old tabs to close or the user to choose `Update ready · reload`. Activation
+only removes obsolete caches containing this PWA's entry page. Games, studies,
+settings and other applications' caches are not deleted. The first refresh from
+the old network-first worker may need an additional close/reopen to complete.
+
+Verification: `node --test tests/chess-pwa.test.cjs
+ tests/chess-pwa-integration.test.cjs` (on one line, with jsdom available).
+Seven checks cover source hashes, asset closure, offline worker responses at
+both paths, update/failure/cache isolation, restored PWA game/settings/study,
+actual page script boot, SIM pause/archive review, clocks, PGN, Study, Deep and
+Evidence integration. The DOM harness stubs board geometry and SF provider;
+the separate LAB `deep-wasm.test.cjs` exercised the byte-identical pinned engine
+in four real WASM tests. Offline transport tests simulate network loss; they do
+not claim physical iPhone/Android installation or operating-system offline QA.

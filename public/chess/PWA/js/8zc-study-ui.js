@@ -241,7 +241,8 @@
         if (item) {
           panel.append(el('strong', '', item.label || 'Analysis snapshot'), el('p', 'chess-study-hint', item.capturedAt));
           const candidates = Array.isArray(item.analysis.candidates) ? item.analysis.candidates : [], table = el('table'), thead = el('thead'), tr = el('tr');
-          for (const title of ['Candidate', 'CDB cp', 'DCC rank', 'Coverage']) tr.append(el('th', '', title)); thead.append(tr); table.append(thead);
+          const provider = item.analysis.receipt?.provider === 'SF' ? 'SF' : 'CDB';
+          for (const title of ['Candidate', `${provider} score`, 'DCC rank', 'Coverage']) tr.append(el('th', '', title)); thead.append(tr); table.append(thead);
           const tbody = el('tbody');
           for (const candidate of candidates.slice(0, 80)) {
             const row = el('tr'), move = candidate.move || candidate.uci;
@@ -252,7 +253,11 @@
               let line = pv; if (pv[0] !== move) line = [move, ...pv];
               preview({ fen: item.fen, moves: line, title: slot + ' · ' + san, analysis: item.analysis });
             }));
-            row.append(cell, el('td', '', Number.isFinite(candidate.raw) ? String(candidate.raw) : Number.isFinite(candidate.score) ? String(candidate.score) : 'unknown'), el('td', '', Number.isFinite(candidate.dccScore) ? candidate.dccScore.toFixed(2) : 'unknown'), el('td', '', candidate.complete === true ? 'sampled path complete' : 'partial / unknown')); tbody.append(row);
+            const root = item.analysis.allMoves?.find(m => m.move === move);
+            const raw = Number.isFinite(candidate.raw) ? candidate.raw : candidate.score;
+            const score = root?.scoreType === 'mate' ? `mate #${root.mateIn}` : Number.isFinite(raw) ? `${raw} cp` : 'unknown';
+            const data = candidate.data || candidate;
+            row.append(cell, el('td', '', score), el('td', '', Number.isFinite(data.dccScore) ? data.dccScore.toFixed(2) : 'unknown'), el('td', '', data.complete === true ? 'sampled path complete' : 'partial / unknown')); tbody.append(row);
           }
           table.append(tbody); panel.append(table);
           const receipt = el('details'); receipt.append(el('summary', '', 'Source and analysis receipt'), el('pre', '', JSON.stringify(item.analysis.receipt, null, 2))); panel.append(receipt);

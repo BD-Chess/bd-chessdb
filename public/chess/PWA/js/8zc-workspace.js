@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   root.ChessWorkspace = { create };
-  function create({ Chess, game, settings, onDisplaySettings, analyze, onAnnotations, getAnalysis, isBusy, stopActivities }) {
+  function create({ Chess, game, settings, onDisplaySettings, analyze, onAnnotations, getAnalysis, isBusy, isSimulationRunning, stopActivities }) {
     const T = root.ChessTime, $ = id => document.getElementById(id), now = () => performance.now();
     const STORAGE = 'chessPwaLabTiming-v1';
     let clock = T.create({ turn: game.turn(), now: now() });
@@ -30,8 +30,11 @@
     function start(mode = 'analysis', options = {}) {
       reviewEpoch++; kind = mode; human = mode === 'human'; selectedPly = null; lastReview = null;
       humanStartPly = game.history().length;
-      clock = T.create({ mode: human && options.seconds > 0 ? 'countdown' : 'elapsed',
-        seconds: human ? options.seconds : 0, increment: human ? options.increment : 0, turn: game.turn(), now: now() });
+      const simulation = mode === 'sim';
+      const seconds = simulation ? Math.max(0, Number(options.baseMs) || 0) / 1000 : human ? options.seconds : 0;
+      const increment = simulation ? Math.max(0, Number(options.incrementMs) || 0) / 1000 : human ? options.increment : 0;
+      clock = T.create({ mode: seconds > 0 ? 'countdown' : 'elapsed', seconds, increment,
+        turn: game.turn(), now: now(), running: !simulation });
       if (human) {
         game.header('Event', 'ChessBest assisted local study', 'White', options.white || 'Human White', 'Black', options.black || 'Human Black',
           'TimeControl', clock.mode === 'countdown' ? `${options.seconds}+${options.increment}` : '-', 'Result', '*');
@@ -41,17 +44,39 @@
     }
     function pause() { T.pause(clock, now()); render(); persist(); }
     function stop() { pause(); human = false; kind = 'analysis'; render(); persist(); }
+    function clockSnapshot() { return { kind, ...T.snapshot(clock, now()) }; }
+    function beginTurn() {
+      if (kind !== 'sim') throw new Error('Engine timing requires a simulation');
+      if (clock.turn !== game.turn()) throw new Error('The simulation clock does not match the board turn');
+      if (!clock.running) T.resume(clock, now());
+      render(); persist();
+      return !clock.flagged;
+    }
+    function endTurn() { pause(); return clockSnapshot(); }
+    function restoreClock(saved) {
+      const restored = T.restore(saved, now());
+      if (restored.turn !== game.turn()) throw new Error('The saved simulation clock does not match the board turn');
+      reviewEpoch++; kind = 'sim'; human = false; selectedPly = null; lastReview = null; clock = restored;
+      render(); persist(); return clockSnapshot();
+    }
     function beforeMove() {
+      // A finished timed game remains in its run checkpoint. Trying a review
+      // continuation must not inherit the game's expired clock.
+      if (kind === 'analysis' && clock.flagged) clock = T.create({ turn: game.turn(), now: now() });
       if (human && (!clock.running || clock.flagged)) return false;
-      if (!clock.running) { clock.turn = game.turn(); T.resume(clock, now()); }
+      if (!clock.running && kind !== 'sim') { clock.turn = game.turn(); T.resume(clock, now()); }
       T.tick(clock, now()); render();
       return !clock.flagged;
     }
     function recordMove(fen, move, extra = {}) {
       const index = game.history().length - 1;
-      if (clock.turn !== move.color) { clock = T.create({ turn: move.color, now: now() }); }
-      if (!clock.running && !human) T.resume(clock, now());
-      const time = T.move(clock, move.color, game.turn(), now(), new Date().toISOString());
+      if (clock.turn !== move.color) {
+        if (kind === 'sim') return null;
+        clock = T.create({ turn: move.color, now: now() });
+      }
+      if (!clock.running && !human && kind !== 'sim') T.resume(clock, now());
+      const time = T.move(clock, move.color, game.turn(), now(), new Date().toISOString(),
+        kind === 'sim' ? { allowPaused: true, pauseAfter: true } : undefined);
       if (!time) { render(); return null; }
       const row = { ...time, ...extra, fen, afterFen: game.fen(), move: move.from + move.to + (move.promotion || ''), san: move.san };
       records = records.slice(0, index); records[index] = row; selectedPly = null;
@@ -82,14 +107,16 @@
     function render() {
       T.tick(clock, now());
       const bar = $('workspaceTimers');
-      bar.hidden = !settings.showTimers || kind === 'lichess';
+      // Review needs the reading space; paused local games keep their clocks.
+      bar.hidden = !settings.showTimers || kind === 'analysis' || kind === 'lichess'
+        || (kind === 'sim' && !(isSimulationRunning?.() ?? clock.running));
       for (const side of ['w', 'b']) {
         const node = $(side === 'w' ? 'timerWhite' : 'timerBlack');
         const value = clock.mode === 'countdown' ? clock.remaining[side] : clock.used[side];
         node.querySelector('strong').textContent = T.format(value);
         node.classList.toggle('is-running', clock.running && clock.turn === side);
       }
-      $('timerCaption').textContent = (kind === 'sim' ? 'Sim · elapsed · no time limit' : clock.mode === 'countdown' ? 'Local game · time remaining' : 'Elapsed per player · no time limit')
+      $('timerCaption').textContent = (kind === 'sim' ? clock.mode === 'countdown' ? 'Sim · time remaining' : 'Sim · computation elapsed' : clock.mode === 'countdown' ? 'Local game · time remaining' : 'Elapsed per player · no time limit')
         + (!clock.running ? ' · paused' : '');
       $('humanSession').hidden = !human;
       $('btnHumanPause').textContent = clock.flagged ? 'Continue untimed' : clock.running ? 'Pause game' : 'Resume game';
@@ -145,11 +172,12 @@
       else { clock.turn = game.turn(); T.resume(clock, now()); selectedPly = null; render(); persist(); }
     };
     $('btnHumanFinish').onclick = () => { stop(); kind = 'analysis'; };
+    render();
     setInterval(render, 250);
     window.addEventListener('pagehide', pause);
-    return { reset, start, pause, stop, beforeMove, recordMove, recordAt, history, decorate, render,
+    return { reset, start, pause, stop, beginTurn, endTurn, restoreClock, beforeMove, recordMove, recordAt, history, decorate, render,
       isHuman: () => human, isTimed: () => human && clock.mode === 'countdown',
-      clockSnapshot: () => ({ kind, ...T.snapshot(clock, now()) }), lastReview: () => lastReview,
+      clockSnapshot, lastReview: () => lastReview,
       pgnTime: (i, move, fen) => T.pgn(recordAt(i, move, fen)),
       getAnalysis, humanStartPly: () => humanStartPly };
   }
