@@ -1,0 +1,592 @@
+{
+  "schema": "chessbest-sf-lite-dcc-tie-summary-v1",
+  "purpose": "Actual pinned LAB Stockfish 18 Lite root ties and LAB ChessDCC 0.8 continuation ranking; descriptive only.",
+  "generatedAt": "2026-09-26",
+  "script": "tools/chessbest_power/sf_dcc_probe.mjs",
+  "engine": {
+    "id": "Stockfish 18 Lite",
+    "jsSha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+    "wasmSha256": "a8fbc05ec6920b56d7485826dcb02c5ffd2826bcbf751cf973046f237a9096f1",
+    "threads": 1,
+    "hashMB": 16
+  },
+  "dcc": {
+    "version": "0.8.0-new",
+    "sha256": "21e8e9f1f4a51a5d57f9f1b6e17db1a6016ee649fedfc58101ce9e69e7a42520"
+  },
+  "interpretation": "The same Stockfish engine supplies root and child FEN evaluations. ChessDCC transforms the child score sequence and never supplies an independent judgement of which move is truly better. Scores are centipawns from the mover at root and children are normalized to that viewpoint; DCC adjusted score is a heuristic ranking, not calibrated centipawns. Repetition history before the FEN is unavailable.",
+  "sensitivity": "In the Hübner case, 3 plies at 20k nodes prefer Bb2, whereas 5 plies at 50k nodes prefer e4; both differ from root SF preference Rd1.",
+  "cases": [
+    {
+      "id": "fischer",
+      "fen": "r1bqkb1r/p4pp1/2p2n1p/n3p1N1/8/8/PPPPBPPP/RNBQK2R w KQkq - 0 9",
+      "title": "Fischer–Radojčić, before 9.Nh3",
+      "settings": {
+        "rootDepth": 18,
+        "rootMultiPV": 8,
+        "probeNodesPerContinuation": 20000,
+        "dccDepth": 3,
+        "coldHashPerSearch": true,
+        "FENOnly": true
+      },
+      "root": {
+        "multiPVComplete": true,
+        "linesDepth": 18,
+        "expectedLines": 8,
+        "actualNodes": 2262220,
+        "unboundedTie": false,
+        "top": [
+          {
+            "move": "g5h3",
+            "cpRootMover": -14
+          },
+          {
+            "move": "g5f3",
+            "cpRootMover": -15
+          },
+          {
+            "move": "b2b4",
+            "cpRootMover": -139
+          },
+          {
+            "move": "g5f7",
+            "cpRootMover": -190
+          },
+          {
+            "move": "d2d4",
+            "cpRootMover": -236
+          },
+          {
+            "move": "d2d3",
+            "cpRootMover": -245
+          }
+        ]
+      },
+      "dcc": {
+        "status": "complete",
+        "rawBest": "g5h3",
+        "sampledChoice": "g5h3",
+        "reason": "Raw and DCC agree inside the 10 cp guard.",
+        "calls": 6,
+        "eligibleCount": 2,
+        "eligibleInspected": 2,
+        "actualProbeNodes": 120121,
+        "guarded": [
+          {
+            "move": "g5h3",
+            "rawCpRootMover": -14,
+            "dccScore": -8.485965,
+            "sequenceCpRootMover": [
+              -28,
+              -17,
+              -23
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.614035087719298,
+              "floor": 0,
+              "volatility": -0.8500000000000001,
+              "trend": 0.75,
+              "structure": 0
+            }
+          },
+          {
+            "move": "g5f3",
+            "rawCpRootMover": -15,
+            "dccScore": -14.597561,
+            "sequenceCpRootMover": [
+              -37,
+              -51,
+              -23
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 3.9024390243902443,
+              "floor": -3.5,
+              "volatility": -2.1,
+              "trend": 2.1,
+              "structure": 0
+            }
+          }
+        ]
+      },
+      "elapsedMs": 3425
+    },
+    {
+      "id": "vitiugov",
+      "fen": "rn1qkb1r/pp3ppp/2p1pnb1/3p4/2PP3N/2N1PP2/PP4PP/R1BQKB1R w KQkq - 1 8",
+      "title": "Vitiugov–Kramnik, before 8.Qb3",
+      "settings": {
+        "rootDepth": 18,
+        "rootMultiPV": 8,
+        "probeNodesPerContinuation": 20000,
+        "dccDepth": 3,
+        "coldHashPerSearch": true,
+        "FENOnly": true
+      },
+      "root": {
+        "multiPVComplete": true,
+        "linesDepth": 18,
+        "expectedLines": 8,
+        "actualNodes": 3362796,
+        "unboundedTie": false,
+        "top": [
+          {
+            "move": "c1d2",
+            "cpRootMover": 33
+          },
+          {
+            "move": "f1e2",
+            "cpRootMover": 31
+          },
+          {
+            "move": "h4g6",
+            "cpRootMover": 30
+          },
+          {
+            "move": "d1b3",
+            "cpRootMover": 24
+          },
+          {
+            "move": "g2g3",
+            "cpRootMover": 22
+          },
+          {
+            "move": "c4d5",
+            "cpRootMover": 20
+          }
+        ]
+      },
+      "dcc": {
+        "status": "complete",
+        "rawBest": "c1d2",
+        "sampledChoice": "c1d2",
+        "reason": "Raw and DCC agree inside the 10 cp guard.",
+        "calls": 12,
+        "eligibleCount": 4,
+        "eligibleInspected": 4,
+        "actualProbeNodes": 240169,
+        "guarded": [
+          {
+            "move": "c1d2",
+            "rawCpRootMover": 33,
+            "dccScore": 38.472727,
+            "sequenceCpRootMover": [
+              30,
+              30,
+              26
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 7.2727272727272725,
+              "floor": -1,
+              "volatility": -0.2,
+              "trend": -0.6,
+              "structure": 0
+            }
+          },
+          {
+            "move": "f1e2",
+            "rawCpRootMover": 31,
+            "dccScore": 37.8,
+            "sequenceCpRootMover": [
+              17,
+              20,
+              41
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5,
+              "floor": 0,
+              "volatility": -1.2000000000000002,
+              "trend": 3,
+              "structure": 0
+            }
+          },
+          {
+            "move": "h4g6",
+            "rawCpRootMover": 30,
+            "dccScore": 33.876119,
+            "sequenceCpRootMover": [
+              23,
+              38,
+              26
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 4.776119402985074,
+              "floor": 0,
+              "volatility": -1.35,
+              "trend": 0.44999999999999996,
+              "structure": 0
+            }
+          },
+          {
+            "move": "d1b3",
+            "rawCpRootMover": 24,
+            "dccScore": 24.914286,
+            "sequenceCpRootMover": [
+              29,
+              32,
+              19
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.714285714285714,
+              "floor": -2.5,
+              "volatility": -0.8,
+              "trend": -1.5,
+              "structure": 0
+            }
+          }
+        ]
+      },
+      "elapsedMs": 4985
+    },
+    {
+      "id": "huebner",
+      "fen": "rn1q1rk1/pb2bppp/1p1ppn2/8/2PQ4/1PN2NP1/P3PPBP/R1B2RK1 w - - 1 10",
+      "title": "Hübner–Kasparov, before 10.e4",
+      "settings": {
+        "rootDepth": 18,
+        "rootMultiPV": 12,
+        "probeNodesPerContinuation": 20000,
+        "dccDepth": 3,
+        "coldHashPerSearch": true,
+        "FENOnly": true
+      },
+      "root": {
+        "multiPVComplete": true,
+        "linesDepth": 18,
+        "expectedLines": 12,
+        "actualNodes": 6577250,
+        "unboundedTie": false,
+        "top": [
+          {
+            "move": "f1d1",
+            "cpRootMover": 54
+          },
+          {
+            "move": "c1b2",
+            "cpRootMover": 52
+          },
+          {
+            "move": "e2e4",
+            "cpRootMover": 48
+          },
+          {
+            "move": "h2h3",
+            "cpRootMover": 41
+          },
+          {
+            "move": "f1e1",
+            "cpRootMover": 39
+          },
+          {
+            "move": "c1a3",
+            "cpRootMover": 38
+          }
+        ]
+      },
+      "dcc": {
+        "status": "complete",
+        "rawBest": "f1d1",
+        "sampledChoice": "c1b2",
+        "reason": "DCC preference inside the 10 cp guard, with comparable coverage.",
+        "calls": 9,
+        "eligibleCount": 3,
+        "eligibleInspected": 3,
+        "actualProbeNodes": 180142,
+        "guarded": [
+          {
+            "move": "c1b2",
+            "rawCpRootMover": 52,
+            "dccScore": 58.768182,
+            "sequenceCpRootMover": [
+              47,
+              46,
+              60
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.818181818181818,
+              "floor": -0.25,
+              "volatility": -0.75,
+              "trend": 1.95,
+              "structure": 0
+            }
+          },
+          {
+            "move": "f1d1",
+            "rawCpRootMover": 54,
+            "dccScore": 57.564035,
+            "sequenceCpRootMover": [
+              53,
+              60,
+              50
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.614035087719298,
+              "floor": -0.75,
+              "volatility": -0.8500000000000001,
+              "trend": -0.44999999999999996,
+              "structure": 0
+            }
+          },
+          {
+            "move": "e2e4",
+            "rawCpRootMover": 48,
+            "dccScore": 54.461111,
+            "sequenceCpRootMover": [
+              56,
+              58,
+              55
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 7.111111111111111,
+              "floor": -0.25,
+              "volatility": -0.25,
+              "trend": -0.15,
+              "structure": 0
+            }
+          }
+        ]
+      },
+      "elapsedMs": 8055
+    },
+    {
+      "id": "huebner_d5",
+      "fen": "rn1q1rk1/pb2bppp/1p1ppn2/8/2PQ4/1PN2NP1/P3PPBP/R1B2RK1 w - - 1 10",
+      "title": "Hübner–Kasparov, before 10.e4",
+      "settings": {
+        "rootDepth": 18,
+        "rootMultiPV": 12,
+        "probeNodesPerContinuation": 50000,
+        "dccDepth": 5,
+        "coldHashPerSearch": true,
+        "FENOnly": true
+      },
+      "root": {
+        "multiPVComplete": true,
+        "linesDepth": 18,
+        "expectedLines": 12,
+        "actualNodes": 6577250,
+        "unboundedTie": false,
+        "top": [
+          {
+            "move": "f1d1",
+            "cpRootMover": 54
+          },
+          {
+            "move": "c1b2",
+            "cpRootMover": 52
+          },
+          {
+            "move": "e2e4",
+            "cpRootMover": 48
+          },
+          {
+            "move": "h2h3",
+            "cpRootMover": 41
+          },
+          {
+            "move": "f1e1",
+            "cpRootMover": 39
+          },
+          {
+            "move": "c1a3",
+            "cpRootMover": 38
+          }
+        ]
+      },
+      "dcc": {
+        "status": "complete",
+        "rawBest": "f1d1",
+        "sampledChoice": "e2e4",
+        "reason": "DCC preference inside the 10 cp guard, with comparable coverage.",
+        "calls": 15,
+        "eligibleCount": 3,
+        "eligibleInspected": 3,
+        "actualProbeNodes": 750506,
+        "guarded": [
+          {
+            "move": "e2e4",
+            "rawCpRootMover": 48,
+            "dccScore": 55.388717,
+            "sequenceCpRootMover": [
+              54,
+              58,
+              64,
+              56,
+              71
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.663716814159292,
+              "floor": 0,
+              "volatility": -0.8250000000000001,
+              "trend": 2.55,
+              "structure": 0
+            }
+          },
+          {
+            "move": "c1b2",
+            "rawCpRootMover": 52,
+            "dccScore": 54.27451,
+            "sequenceCpRootMover": [
+              51,
+              46,
+              52,
+              42,
+              43
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 6.274509803921569,
+              "floor": -2.25,
+              "volatility": -0.55,
+              "trend": -1.2,
+              "structure": 0
+            }
+          },
+          {
+            "move": "f1d1",
+            "rawCpRootMover": 54,
+            "dccScore": 45.90908,
+            "sequenceCpRootMover": [
+              58,
+              76,
+              41,
+              73,
+              37
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 3.1840796019900495,
+              "floor": -5.25,
+              "volatility": -3.0250000000000004,
+              "trend": -3,
+              "structure": 0
+            }
+          }
+        ]
+      },
+      "elapsedMs": 9528
+    },
+    {
+      "id": "kramnik",
+      "fen": "rn2k2r/1R2ppbp/p5p1/q1p5/3PP1b1/2P1BN2/P2Q1PPP/4KB1R b Kkq - 0 11",
+      "title": "Kramnik–Kasparov, after 11.Rb7",
+      "settings": {
+        "rootDepth": 18,
+        "rootMultiPV": 12,
+        "probeNodesPerContinuation": 20000,
+        "dccDepth": 3,
+        "coldHashPerSearch": true,
+        "FENOnly": true
+      },
+      "root": {
+        "multiPVComplete": true,
+        "linesDepth": 18,
+        "expectedLines": 12,
+        "actualNodes": 6919449,
+        "unboundedTie": false,
+        "top": [
+          {
+            "move": "g4f3",
+            "cpRootMover": -46
+          },
+          {
+            "move": "e8g8",
+            "cpRootMover": -47
+          },
+          {
+            "move": "b8c6",
+            "cpRootMover": -50
+          },
+          {
+            "move": "b8d7",
+            "cpRootMover": -132
+          },
+          {
+            "move": "h7h5",
+            "cpRootMover": -132
+          },
+          {
+            "move": "h7h6",
+            "cpRootMover": -139
+          }
+        ]
+      },
+      "dcc": {
+        "status": "complete",
+        "rawBest": "g4f3",
+        "sampledChoice": "g4f3",
+        "reason": "Raw and DCC agree inside the 10 cp guard.",
+        "calls": 9,
+        "eligibleCount": 3,
+        "eligibleInspected": 3,
+        "actualProbeNodes": 180135,
+        "guarded": [
+          {
+            "move": "g4f3",
+            "rawCpRootMover": -46,
+            "dccScore": -39.820635,
+            "sequenceCpRootMover": [
+              -77,
+              -58,
+              -62
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 5.079365079365079,
+              "floor": 0,
+              "volatility": -1.1500000000000001,
+              "trend": 2.25,
+              "structure": 0
+            }
+          },
+          {
+            "move": "e8g8",
+            "rawCpRootMover": -47,
+            "dccScore": -42.997436,
+            "sequenceCpRootMover": [
+              -77,
+              -52,
+              -65
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 4.102564102564103,
+              "floor": 0,
+              "volatility": -1.9000000000000001,
+              "trend": 1.7999999999999998,
+              "structure": 0
+            }
+          },
+          {
+            "move": "b8c6",
+            "rawCpRootMover": -50,
+            "dccScore": -47.96422,
+            "sequenceCpRootMover": [
+              -84,
+              -41,
+              -67
+            ],
+            "status": "complete",
+            "contributions": {
+              "stability": 2.935779816513761,
+              "floor": 0,
+              "volatility": -3.45,
+              "trend": 2.55,
+              "structure": 0
+            }
+          }
+        ]
+      },
+      "elapsedMs": 8989
+    }
+  ]
+}
