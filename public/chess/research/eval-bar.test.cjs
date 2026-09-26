@@ -63,36 +63,39 @@ test('All keeps provider top moves with their scores/depth, clears stale FENs an
   try {
     const b = new Chess(), settings = { analysisSource: 'all', flipBoard: false };
     const view = E.create({ game: b, settings, isVisible: () => true });
-    const cells = source => badges.children.find(row => row.children[0].textContent === source).children.map(cell => cell.textContent);
+    const cells = source => {
+      const badge = badges.children.find(row => row.children[0].children[0].textContent === `${source}:`);
+      return [...badge.children[0].children.map(cell => cell.textContent), badge.children[1].textContent];
+    };
     view.updateSource(b.fen(), 100, 'CDB', null, 'e4');
     view.updateSource(b.fen(), -30, 'SF', 18, 'Nf3');
     view.updateDCC(b.fen(), 'Nf3', 'CDB');
-    assert.deepEqual(badges.children.map(row => row.children[0].textContent), ['CDB', 'SF', 'DCC']);
-    assert.deepEqual(cells('CDB'), ['CDB', 'e4', '+1.00', 'White POV']);
-    assert.deepEqual(cells('SF'), ['SF', 'Nf3', '-0.30', 'depth 18']);
-    assert.deepEqual(cells('DCC'), ['DCC', 'Nf3', 'CDB lines · choice']);
+    assert.deepEqual(badges.children.map(row => row.children[0].children[0].textContent), ['CDB:', 'SF:', 'DCC:']);
+    assert.deepEqual(cells('CDB'), ['CDB:', 'e4', '+1.00', 'White POV']);
+    assert.deepEqual(cells('SF'), ['SF:', 'Nf3', '-0.30', 'depth 18']);
+    assert.deepEqual(cells('DCC'), ['DCC:', 'Nf3', 'CDB lines · choice']);
     view.update(b.fen(), -30, 'SF');
-    assert.deepEqual(cells('SF'), ['SF', 'Nf3', '-0.30', 'depth 18'], 'generic score update preserves root move and depth');
+    assert.deepEqual(cells('SF'), ['SF:', 'Nf3', '-0.30', 'depth 18'], 'generic score update preserves root move and depth');
     view.updateSource(b.fen(), 42, 'SF', 22, 'd4');
-    assert.deepEqual(cells('SF'), ['SF', 'd4', '+0.42', 'depth 22']);
-    assert.deepEqual(cells('CDB'), ['CDB', 'e4', '+1.00', 'White POV'], 'SF refresh does not overwrite CDB');
+    assert.deepEqual(cells('SF'), ['SF:', 'd4', '+0.42', 'depth 22']);
+    assert.deepEqual(cells('CDB'), ['CDB:', 'e4', '+1.00', 'White POV'], 'SF refresh does not overwrite CDB');
     view.updateDCC(b.fen(), 'e4', 'CDB', 'raw-safety');
-    assert.deepEqual(cells('DCC'), ['DCC', 'e4', 'CDB · raw retained']);
+    assert.deepEqual(cells('DCC'), ['DCC:', 'e4', 'CDB · raw retained']);
     b.move('e4'); view.render();
-    assert.deepEqual(cells('CDB'), ['CDB', '…', '…', 'White POV']);
-    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV']);
+    assert.deepEqual(cells('CDB'), ['CDB:', '…', '…', 'White POV']);
+    assert.deepEqual(cells('SF'), ['SF:', '…', '…', 'White POV']);
     assert.equal(cells('DCC')[1], '—');
     view.updateSource(b.fen(), 20, 'CDB', null, 'e5');
     view.updateSource(white, 900, 'CDB', null, 'a4');
     view.updateSource(white, 800, 'SF', 40, 'h4');
-    assert.deepEqual(cells('CDB'), ['CDB', 'e5', '-0.20', 'White POV'], 'late other-FEN result cannot paint current move');
-    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV']);
+    assert.deepEqual(cells('CDB'), ['CDB:', 'e5', '-0.20', 'White POV'], 'late other-FEN result cannot paint current move');
+    assert.deepEqual(cells('SF'), ['SF:', '…', '…', 'White POV']);
     view.updateSource(b.fen(), 5, 'SF', 10, 'c5');
     now += 300001; view.render();
-    assert.deepEqual(cells('SF'), ['SF', '…', '…', 'White POV'], 'expired metadata never shows stale depth or move');
+    assert.deepEqual(cells('SF'), ['SF:', '…', '…', 'White POV'], 'expired metadata never shows stale depth or move');
     view.updateSource(b.fen(), 8, 'SF', 12, 'e5');
     view.update(b.fen(), null, 'SF');
-    assert.deepEqual(cells('SF'), ['SF', '—', '—', 'White POV'], 'unavailable provider clears its old move and depth');
+    assert.deepEqual(cells('SF'), ['SF:', '—', '—', 'White POV'], 'unavailable provider clears its old move and depth');
   } finally { global.document = prior; global.matchMedia = priorMatch; Date.now = priorNow; }
 });
 
@@ -116,7 +119,7 @@ test('All shows three sources simultaneously on mobile; Hide Eval hides their ro
   view.updateSource(b.fen(), 10, 'CDB', null, 'e4');
   for (let depth=8;depth<20;depth++) view.updateSource(b.fen(), {type:'cp',white:depth}, 'SF',depth,'Nf3');
   const row=w.document.getElementById('allEvalBadges');
-  assert.deepEqual([...row.children].map(card=>card.querySelector('strong').textContent),['CDB','SF','DCC']);
+  assert.deepEqual([...row.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
   assert.equal(timers.size,0,'saved rotation seconds do not schedule hidden mobile timers');
   assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
   visible=false; view.render();
