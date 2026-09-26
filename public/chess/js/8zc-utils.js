@@ -1,6 +1,42 @@
+// A curated anchor is a *position after* the given half-move. Verify it against
+// the loaded main line; malformed metadata never prevents the game from loading.
+function chessBestTopPickAnchor(headers, history, ChessCtor) {
+  const raw = headers && headers.ChessBestAnchorPly;
+  if (typeof raw !== 'string' || !/^[1-9]\d*$/.test(raw)) return null;
+  const ply = Number(raw);
+  if (!Number.isSafeInteger(ply) || ply > history.length) return null;
+  if (headers.ChessBestAnchorSAN && headers.ChessBestAnchorSAN !== history[ply - 1].san) return null;
+  if (headers.ChessBestAnchorFEN) {
+    try {
+      const replay = new ChessCtor(headers.FEN || new ChessCtor().fen());
+      for (let i = 0; i < ply; i++) {
+        if (!replay.move(history[i].san)) return null;
+      }
+      if (replay.fen() !== headers.ChessBestAnchorFEN) return null;
+    } catch (_) {
+      return null;
+    }
+  }
+  return ply - 1;
+}
+
+function chessBestTopPickTitle(value, fallback) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+    .replace(/<[^>]*>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 160) || fallback;
+}
+
+function chessBestTopPickResumeCursor(meta, pgn, headers, history, ChessCtor) {
+  if (!meta || !Number.isSafeInteger(meta.cursor) || meta.cursor < 0 || meta.cursor > history.length ||
+      meta.totalPlies !== history.length || meta.pgnLength !== pgn.length ||
+      meta.source !== (headers.ChessBestSource || '') ||
+      chessBestTopPickAnchor(headers, history, ChessCtor) === null) return null;
+  return meta.cursor;
+}
+
 function initAll() {
   const STORAGE_KEY_SETTINGS = 'chessLabSettings-v8';
   const STORAGE_KEY_GAME     = 'chessLabGame-v8';
+  const STORAGE_KEY_TOP_PICK = 'chessLabTopPickCursor-v1';
   const ENABLE_COACH         = false;
 
   /* ------------------------------------------------------------------
@@ -99,6 +135,7 @@ function initAll() {
   // ─── Track the most-recently loaded PGN and current move index ───
   let lastLoadedPGN = null;
   let lastMoveIndex  = -1;
+  let activeTopPickPGN = null, restoreTopPickCursor = null;
 
   /* ------------------------------------------------------------------
      2. LOAD SAVED SETTINGS
@@ -237,6 +274,7 @@ function initAll() {
      4. POPULAR GAMES  (PGN files per category)
   ------------------------------------------------------------------*/
   const gameBuckets = [
+    { name: 'ChessBest Top Picks', file: 'ChessBest_Top_Picks.pgn', topPicks: true },
     { name: 'Openings - Top Lines',  files: [
       'TopLines/c4_top_43_moves.pgn',
       'TopLines/d4_top_22_moves.pgn',
@@ -360,7 +398,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
             ? `${cleanOpeningTitle(tags.Opening)}${tags.Mode ? ` (${tags.Mode})` : ''}`
             : `${tags.Result||''} ${tags.White||''} vs. ${tags.Black||''} (${tags.Site||''}, ${tags.Date||''})`;
 
-          const title = buildPrettyGameTitle(tags, bucket, file, coreTitle);
+          const title = bucket.topPicks
+            ? chessBestTopPickTitle(tags.ChessBestTitle, coreTitle)
+            : buildPrettyGameTitle(tags, bucket, file, coreTitle);
           collection.games.push({ id: `${bucketIndex}:${collection.games.length}`, label: title, pgn: gt });
           const opt = new Option(title, gt);
           opt.title = title;
@@ -376,7 +416,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       if (playState.active || simRunning || replayRunning) return;
 
       const title = e.target.selectedOptions[0].text;
-      try { loadStudyPGN(e.target.value, title); }
+      try {
+        loadStudyPGN(e.target.value, title, { topPick: bucket.topPicks });
+        if (bucket.topPicks) {
+          const anchor = chessBestTopPickAnchor(game.header(), fullHistory, Chess);
+          if (anchor !== null) jumpTo(anchor);
+        }
+      }
       catch (error) { alert(error.message + ' The current game was kept.'); return; }
 
 	  // Close panel and scroll into view
@@ -412,8 +458,24 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 
   const savedGame = localStorage.getItem(STORAGE_KEY_GAME);
   if (savedGame) {
-    try { game.load_pgn(savedGame); }
-    catch (e) { console.error('Bad saved PGN', e); }
+    const storedTopPick = localStorage.getItem(STORAGE_KEY_TOP_PICK);
+    if (storedTopPick) {
+      try {
+        const meta = JSON.parse(storedTopPick);
+        if (game.load_pgn(validateStudyPGN(savedGame).pgn())) {
+          restoreTopPickCursor = chessBestTopPickResumeCursor(
+            meta, savedGame, game.header(), game.history({ verbose: true }), Chess);
+          if (restoreTopPickCursor !== null) activeTopPickPGN = savedGame;
+        }
+      } catch (error) { console.warn('Invalid Top Pick resume marker', error); }
+    }
+    if (restoreTopPickCursor === null) {
+      localStorage.removeItem(STORAGE_KEY_TOP_PICK);
+      try { game.load_pgn(savedGame); }
+      catch (e) { console.error('Bad saved PGN', e); }
+    }
+  } else {
+    localStorage.removeItem(STORAGE_KEY_TOP_PICK);
   }
 
   /* ------------------------------------------------------------------
@@ -494,6 +556,20 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 
 
   function persistGame() {
+    const moves = game.history();
+    if (activeTopPickPGN && lastLoadedPGN === activeTopPickPGN && moves.length <= fullHistory.length &&
+        moves.every((move, i) => move === fullHistory[i].san)) {
+      // Keep the whole curated PGN and its cursor, including after back/forward
+      // navigation. A changed line leaves this narrow resume mode immediately.
+      localStorage.setItem(STORAGE_KEY_GAME, activeTopPickPGN);
+      localStorage.setItem(STORAGE_KEY_TOP_PICK, JSON.stringify({
+        cursor: moves.length, totalPlies: fullHistory.length, pgnLength: activeTopPickPGN.length,
+        source: game.header().ChessBestSource || ''
+      }));
+      return;
+    }
+    activeTopPickPGN = null;
+    localStorage.removeItem(STORAGE_KEY_TOP_PICK);
     if (game.history().length || game.fen() !== new Chess().fen())
       localStorage.setItem(STORAGE_KEY_GAME, game.pgn());
     else
@@ -796,7 +872,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     game.load(probe.header().FEN || new Chess().fen());
     Object.entries(probe.header()).forEach(([k,v]) => game.header(k,v));
     probe.history({ verbose: true }).forEach(m => DCC.play(game, normalizeUci(m)));
-    lastLoadedPGN = text; lastDecision = null; divergedIndex = -1; bookFlags = extractBookFlags(text);
+    lastLoadedPGN = text; activeTopPickPGN = options.topPick ? text : null;
+    lastDecision = null; divergedIndex = -1; bookFlags = extractBookFlags(text);
     workspace.reset(); window._skipDivergedReset = false;
     updateBoard(true); showOpening();
     document.getElementById('gameTitle').textContent = title;
@@ -2268,7 +2345,16 @@ function jumpTo(i){
       positionEval.render();
     });
   }
+  if (restoreTopPickCursor !== null) {
+    lastLoadedPGN = activeTopPickPGN;
+    bookFlags = extractBookFlags(activeTopPickPGN);
+  }
   updateBoard(true);
+  if (restoreTopPickCursor !== null) {
+    jumpTo(restoreTopPickCursor - 1);
+    document.getElementById('gameTitle').textContent = chessBestTopPickTitle(
+      game.header().ChessBestTitle, 'ChessBest Top Pick');
+  }
   showOpening();
   refreshPlayUi();
   disableCoachUi();

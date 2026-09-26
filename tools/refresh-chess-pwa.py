@@ -12,6 +12,7 @@ TARGET = ROOT / 'public/chess/PWA'
 KEYS = {
     'chessLabSettings-v8': 'chessPwaLabSettings-v1',
     'chessLabGame-v8': 'chessPwaLabGame-v1',
+    'chessLabTopPickCursor-v1': 'chessPwaLabTopPickCursor-v1',
     'chessLabEvalCache-v8': 'chessPwaLabEvalCache-v1',
     'chessBestLichessToken': 'chessPwaLabLichessToken-v1',
     'chessBestAnthropicKey': 'chessPwaLabAnthropicKey-v1',

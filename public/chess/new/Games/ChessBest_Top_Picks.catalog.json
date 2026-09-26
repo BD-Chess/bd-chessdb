@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "collection": "ChessBest Top Picks",
+  "description": "Human-reviewed full games with a position that reveals a consequential analysis difference. Numeric scores are time-stamped snapshots, not fixed facts.",
+  "score_convention": "All advantage_cp fields are from the mover side at the anchor. For Black at the first anchor, positive means advantage for Black. Positions after the played move are sign-flipped from White-to-move CDB responses.",
+  "cases": [
+    {
+      "id": "gukesh-carlsen-norway-2025-44-f6",
+      "status": "verified-game-and-local-engine; live-cdb-snapshot",
+      "source": {
+        "path": "Games/GukeshD_Selected.pgn",
+        "sha256": "ef04652610f75ca7a5baf721fe22431a79b7eb59b0c5cd2533ade8262bc88781",
+        "game_index_1based": 1,
+        "mainline_uci_sha256": "3911c9ae419a2f92102be56e88f50a5ae66a000975255758c42fc37f1c35569a"
+      },
+      "game": {
+        "white": "Gukesh Dommaraju",
+        "black": "Magnus Carlsen",
+        "date": "2025.06.01",
+        "event": "Norway Chess 2025",
+        "result": "1-0"
+      },
+      "anchor": {
+        "ply_after": 87,
+        "move_to_review": "44...f6",
+        "fen_before_move": "1r6/5p2/3p2p1/4p1N1/R4nPP/1P1k4/5R1K/3r4 b - - 8 44",
+        "played_uci": "f7f6",
+        "cdb_best_uci": "b8h8"
+      },
+      "reason": "The f-pawn push attacks the g5 knight but offers 45.Rf3+; White can evacuate the knight via e4 and later take on f6. 44...Rh8 keeps rook activity against h4 and a materially larger advantage. Carlsen lost the game only after a later separate mistake at 52...Ne2+.",
+      "evidence": {
+        "archived_cdb": {
+          "archive": "ChessDCC_HOME_EVIDENCE_SOURCE_PACK_20260904.zip",
+          "entry": "Games/8zc_cache/cache.json",
+          "anchor_queryall_best_cp_black": 371,
+          "anchor_best_uci": "b8h8",
+          "after_f6_queryall_cp_white": -95,
+          "derived_after_f6_cp_black": 95,
+          "derived_before_after_drop_cp_black": 276,
+          "caveat": "Separate position scores in a historical cache; the root PV depth was only 5. Not a common-depth search."
+        },
+        "live_cdb": {
+          "fetched_utc": "2026-09-26T11:40:30Z–11:40:53Z",
+          "api": "https://www.chessdb.cn/cdb.php",
+          "parameters": {
+            "learn": 0
+          },
+          "root_queryscore_cp_black": 420,
+          "root_queryall_best_uci": "b8h8",
+          "root_queryall_best_cp_black": 417,
+          "root_queryall_f6": "unknown score",
+          "after_f6_queryscore_cp_white": -51,
+          "derived_after_f6_cp_black": 51,
+          "derived_before_after_drop_cp_black": 369,
+          "after_rh8_queryscore_cp_white": -420,
+          "derived_after_rh8_cp_black": 420,
+          "derived_child_branch_gap_cp_black": 369,
+          "caveat": "queryscore has no depth field; different positions may be updated independently. Move regret is an estimate, not a mathematically exact pawn loss.",
+          "source_snapshot_sha256": "34fbc8864d6e44dccff49190e649c0e4b747a956091e39b7210a2421c8b06b62",
+          "source_snapshot_path": "docs/chessbest-evidence/gukesh-carlsen-2025-cdb-20260926.json"
+        },
+        "sf_lite": {
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "engine_file_sha256": "2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe",
+          "runner": "Node UCI via python-chess",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8,
+            "search_sequence": "separate cold engine process for each depth"
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "best_uci": "f7f5",
+              "best_cp_black": 197,
+              "played_f6_cp_black": 131,
+              "estimated_gap_cp": 66,
+              "nodes": 1120529
+            },
+            {
+              "depth": 18,
+              "best_uci": "f7f5",
+              "best_cp_black": 215,
+              "played_f6_cp_black": 135,
+              "estimated_gap_cp": 80,
+              "nodes": 4059705
+            },
+            {
+              "depth": 21,
+              "best_uci": "b8h8",
+              "best_cp_black": 209,
+              "played_f6_cp_black": 120,
+              "estimated_gap_cp": 89,
+              "nodes": 12338479
+            }
+          ],
+          "deeper_check": {
+            "depth": 30,
+            "settings": {
+              "threads": 1,
+              "hash_mb": 64,
+              "multipv": 2,
+              "root_moves": [
+                "b8h8",
+                "f7f6"
+              ]
+            },
+            "best_rh8_cp_black": 345,
+            "played_f6_cp_black": 89,
+            "estimated_gap_cp": 256,
+            "source_snapshot_path": "docs/chessbest-evidence/gukesh-carlsen-2025-sf-lite-deep-20260926.json",
+            "source_snapshot_sha256": "7c7e7d769932230688013339e804652166233fa8daf35fee5b5e75f5384a2c81"
+          },
+          "caveat": "Different hash, root-move restriction and engine warm state affect exact scores. Evaluation gaps are centipawn score differences, not probabilities or guaranteed material.",
+          "source_snapshot_path": "docs/chessbest-evidence/gukesh-carlsen-2025-sf-lite-cold-20260926.json",
+          "source_snapshot_sha256": "267df097c56339fada41fee3d56f2a8d9490e88afdefa3b031682b968857b27a"
+        }
+      }
+    },
+    {
+      "id": "carlsen-aronian-london-2012-50-g6",
+      "status": "verified-game-and-local-engine; live-cdb-snapshot",
+      "source": {
+        "path": "Games/CarlsenM_Selected.pgn",
+        "sha256": "e748556297ba1af0baa2b0d9f900a37683f55e9399d36d8d9a8c2ded73cdd65d",
+        "game_index_1based": 12,
+        "mainline_uci_sha256": "168d471405dc6ef7983e4bda32033f16b71b6ed4726411ba5d130817a20b0151"
+      },
+      "game": {
+        "white": "Magnus Carlsen",
+        "black": "Levon Aronian",
+        "source_white": "Carlsen,M",
+        "source_black": "Aronian,L",
+        "source_date": "2012. 12. 02",
+        "date": "2012-12-02",
+        "event": "4th London Chess Classic",
+        "result": "1-0"
+      },
+      "anchor": {
+        "ply_after": 99,
+        "move_to_review": "50...g6",
+        "fen_before_move": "2k5/2p3pb/2Pp4/3P1pPP/3P4/p4KNr/P2R4/8 b - - 0 50",
+        "played_uci": "g7g6",
+        "cdb_best_uci": "f5f4"
+      },
+      "reason": "Black was already worse. 50...g6 lets White use hxg6 and then advance the remaining g-pawn; 50...f4 instead gains active rook counterplay with ...Rh4+. This is a loss of defensive chances from an already unfavorable position.",
+      "evidence": {
+        "live_cdb": {
+          "source_snapshot_path": "docs/chessbest-evidence/carlsen-aronian-2012-cdb-20260926.json",
+          "source_snapshot_sha256": "539b1f0db1475fbc2d5706a06fdd376b4eac615d16f59333091231f06aa04cd2",
+          "fetched_utc": "2026-09-26T11:44:30Z–11:44:39Z",
+          "api": "https://www.chessdb.cn/cdb.php",
+          "parameters": {
+            "learn": 0
+          },
+          "root_queryscore_cp_black": -141,
+          "root_queryall_best_uci": "f5f4",
+          "after_played_queryscore_cp_white": 539,
+          "derived_after_played_cp_black": -539,
+          "derived_before_after_drop_cp_black": 398,
+          "after_best_queryscore_cp_white": 141,
+          "derived_child_branch_gap_cp_black": 398,
+          "caveat": "CDB positions and PV may update separately; queryscore has no depth. Numeric changes measure evaluations, not material loss."
+        },
+        "sf_lite": {
+          "source_snapshot_path": "docs/chessbest-evidence/carlsen-aronian-2012-sf-lite-20260926.json",
+          "source_snapshot_sha256": "568317ce3e3b90d2fd2069262151810f3e5ab72e10c73e209020120bd0490781",
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "runner": "Node UCI via python-chess",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 16,
+            "multipv": 8,
+            "search_sequence": "same warm engine, increasing depths"
+          },
+          "root_runs": [
+            {
+              "depth": 15,
+              "best_uci": "c8d8",
+              "best_cp_white": 112,
+              "played_g6_cp_white": 260,
+              "estimated_gap_cp_white": 148
+            },
+            {
+              "depth": 18,
+              "best_uci": "f5f4",
+              "best_cp_white": 145,
+              "played_g6_cp_white": 336,
+              "estimated_gap_cp_white": 191
+            },
+            {
+              "depth": 21,
+              "best_uci": "f5f4",
+              "best_cp_white": 139,
+              "played_g6_cp_white": 464,
+              "estimated_gap_cp_white": 325
+            }
+          ],
+          "caveat": "Scores, rankings and move gaps can change with engine settings, hash warm state and search depth."
+        }
+      }
+    },
+    {
+      "id": "leko-kramnik-linares-2004-32-rad7",
+      "status": "verified-game-and-deep-local-engine; live-cdb-snapshot",
+      "source": {
+        "path": "Games/KramnikV_Selected.pgn",
+        "sha256": "53f9b867e25966b69f43d8739ebce8e07242535cc42188e0b4bed05003ff0be5",
+        "game_index_1based": 3,
+        "mainline_uci_sha256": "bcd5e94ab443c691862840c7e1e2011186190420a4a51da76dcf51501ae26c7b"
+      },
+      "game": {
+        "white": "Peter Leko",
+        "black": "Vladimir Kramnik",
+        "source_white": "Leko,P",
+        "source_black": "Kramnik,V",
+        "date": "2004.03.02",
+        "event": "XXI SuperGM",
+        "result": "0-1"
+      },
+      "anchor": {
+        "ply_after": 62,
+        "move_to_review": "32.Rad7",
+        "fen_before_move": "6rk/R5bp/6q1/1p2r3/5p2/2P1pP1Q/1P2B1PP/3R2K1 w - - 6 32",
+        "played_uci": "a7d7",
+        "cdb_best_uci": "g1h1"
+      },
+      "reason": "The white rook on a7 can answer ...Rh5 with Ra6!, attacking the black queen on g6. 32.Rad7 abandons that resource; ...Rh5 attacks White’s queen and ...Rg5 increases the pressure. Local Lite at depth 21 shows almost no gap, but a constrained same-root d30 search finds about 4.70 pawns of score difference between 32.Kh1 and 32.Rad7.",
+      "evidence": {
+        "live_cdb": {
+          "source_snapshot_path": "docs/chessbest-evidence/leko-kramnik-and-screen-20260926.json",
+          "source_snapshot_sha256": "0aafadc5bc9692c8e1034f5b73b2cd4c21ba492d608ef0f3fc70f89248edd4c6",
+          "fetched_utc": "2026-09-26T11:46:22Z–11:46:24Z",
+          "api": "https://www.chessdb.cn/cdb.php",
+          "parameters": {
+            "learn": 0
+          },
+          "root_queryscore_cp_white": -10,
+          "root_queryall_best_uci": "g1h1",
+          "after_played_queryscore_cp_black": 461,
+          "derived_after_played_cp_white": -461,
+          "derived_before_after_drop_cp_white": 451,
+          "root_querypv_depth_label": 2,
+          "after_played_querypv_depth_label": 3,
+          "caveat": "CDB PV depth labels are its own metadata, not UCI search depths; independent deep Stockfish check corroborates the large move-specific gap."
+        },
+        "sf_lite": {
+          "source_snapshot_path": "docs/chessbest-evidence/leko-kramnik-2004-sf-lite-20260926.json",
+          "source_snapshot_sha256": "a54223a60d2cc66986e4b85aa54a27121f04c5dc7b3b56cc73eb87920c186746",
+          "engine_file": "vendor/stockfish/stockfish-18-lite-single.js",
+          "runner": "Node UCI via python-chess",
+          "settings": {
+            "threads": 1,
+            "hash_mb": 64,
+            "multipv": 2,
+            "root_moves": [
+              "g1h1",
+              "a7d7"
+            ],
+            "search_sequence": "same warm engine, increasing depths"
+          },
+          "root_runs": [
+            {
+              "depth": 21,
+              "best_kh1_cp_white": -29,
+              "played_rad7_cp_white": -47,
+              "estimated_gap_cp": 18
+            },
+            {
+              "depth": 27,
+              "best_kh1_cp_white": -35,
+              "played_rad7_cp_white": -463,
+              "estimated_gap_cp": 428
+            },
+            {
+              "depth": 30,
+              "best_kh1_cp_white": -33,
+              "played_rad7_cp_white": -503,
+              "estimated_gap_cp": 470
+            }
+          ],
+          "caveat": "Root move restriction and Hash64 differ from the broad MultiPV8 lane; this is an independent deeper check, not identical configuration."
+        }
+      }
+    }
+  ]
+}

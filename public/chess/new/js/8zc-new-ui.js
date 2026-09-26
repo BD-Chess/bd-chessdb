@@ -121,6 +121,9 @@
         category.appendChild(new Option(name, String(index)));
         return name;
       });
+      const initialCollection = categories.indexOf('ChessBest Top Picks');
+      const defaultCollection = initialCollection < 0 ? 'all' : String(initialCollection);
+      category.value = defaultCollection;
       const results = document.createElement('div');
       results.className = 'library-result-list';
       results.setAttribute('aria-label', 'Matching games');
@@ -147,8 +150,15 @@
               const header = option.value.slice(0, 5000);
               for (const match of header.matchAll(/^\[(\w+)\s+"([^"\n]*)"\]\s*$/gm)) tags[match[1]] = match[2];
               const namedPlayers = tags.White && tags.Black && tags.White !== 'Book';
-              const title = namedPlayers ? `${tags.White} vs ${tags.Black}` : option.textContent;
-              const detail = [categories[collectionIndex], tags.Event && tags.Event !== title ? tags.Event : '', tags.Date?.replace(/\.\?\?\.\?\?$/, ''), tags.Result && tags.Result !== '*' ? tags.Result : ''].filter(Boolean).join(' · ');
+              // The curated label explains why this game is a Top Pick; the
+              // native option has already cleaned the PGN title as plain text.
+              const title = collectionIndex === initialCollection && tags.ChessBestTitle
+                ? option.textContent : namedPlayers ? `${tags.White} vs ${tags.Black}` : option.textContent;
+              const teaser = collectionIndex === initialCollection
+                ? String(tags.ChessBestTeaser || '').replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+                  .replace(/<[^>]*>/g, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 220)
+                : '';
+              const detail = [categories[collectionIndex], teaser || (tags.Event && tags.Event !== title ? tags.Event : ''), tags.Date?.replace(/\.\?\?\.\?\?$/, ''), tags.Result && tags.Result !== '*' ? tags.Result : ''].filter(Boolean).join(' · ');
               entry = { option, select, collectionIndex, collectionKey: String(collectionIndex), title, detail, search: normalize(`${title} ${detail} ${tags.Opening || ''} ${tags.ECO || ''} ${option.textContent}`) };
               entryCache.set(option, entry);
             }
@@ -171,7 +181,9 @@
       const render = () => {
         const terms = normalize(search.value).trim().split(/\s+/).filter(Boolean);
         const matches = entries.filter(entry => (category.value === 'all' || entry.collectionKey === category.value) && terms.every(term => entry.search.includes(term)));
-        count.textContent = `${entries.length.toLocaleString()} games`;
+        count.textContent = category.value === 'all'
+          ? `${entries.length.toLocaleString()} games`
+          : `${matches.length.toLocaleString()} of ${entries.length.toLocaleString()} games`;
         results.replaceChildren();
         const fragment = document.createDocumentFragment();
         matches.slice(0, 60).forEach(entry => {
@@ -195,7 +207,7 @@
           fragment.appendChild(button);
         });
         results.appendChild(fragment);
-        status.textContent = matches.length > 60 ? `Showing 60 of ${matches.length.toLocaleString()} matches. Refine your search to see more.` : matches.length ? `${matches.length.toLocaleString()} ${matches.length === 1 ? 'game' : 'games'} found. Select a game to load it.` : entries.length ? 'No games match. Try another player, year or collection.' : initialLoad ? 'Loading game collections…' : 'No collections loaded. Use Load PGN to open a game from your device.';
+        status.textContent = matches.length > 60 ? `Showing 60 of ${matches.length.toLocaleString()} matches. Refine your search to see more.` : matches.length ? `${matches.length.toLocaleString()} ${matches.length === 1 ? 'game' : 'games'} found. Select a game to load it.` : initialLoad && category.value === defaultCollection && !search.value ? 'Loading Top Picks…' : entries.length ? 'No games match. Try another player, year or collection.' : initialLoad ? 'Loading game collections…' : 'No collections loaded. Use Load PGN to open a game from your device.';
       };
       const observer = new MutationObserver(() => {
         if (!queued) { queued = true; requestAnimationFrame(indexGames); }
@@ -214,7 +226,7 @@
           const option = new Option(collection.label, 'sim:' + collection.id);
           option.dataset.simCollection = collection.id; category.appendChild(option);
         }
-        category.value = Array.from(category.options).some(option => option.value === selected) ? selected : 'all';
+        category.value = Array.from(category.options).some(option => option.value === selected) ? selected : defaultCollection;
         indexGames();
       };
       refreshSimulationCollections();
