@@ -905,6 +905,58 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       assistanceLocked: !!playState.assistanceLocked, simRunning,
       evidenceMode: offlineEvidence ? 'offline' : 'live' };
   }
+  // Review reads the complete loaded main line. getLabContext() deliberately
+  // describes only the current cursor, which can be midway through a game.
+  function getReviewGame() {
+    let headers = { ...game.header() };
+    const startFen = headers.FEN || new Chess().fen();
+    const moves = fullHistory.map(move => ({ san: move.san, from: move.from, to: move.to,
+      promotion: move.promotion || '' }));
+    const replay = new Chess(startFen);
+    Object.entries(headers).forEach(([key, value]) => replay.header(key, value));
+    for (const move of moves) {
+      if (!replay.move(move.san)) return { sourcePGN: '', headers, startFen, moves: [],
+        cursor: game.history().length, totalPly: 0, blocked: true };
+    }
+    // Original PGN may contain annotations absent from the board's PGN. Check
+    // the full line before attaching those annotations to a changed variation.
+    let sourcePGN = replay.pgn(), sourceIsOriginal = false;
+    if (lastLoadedPGN && lastLoadedPGN.length <= 2000000) {
+      try {
+        const original = validateStudyPGN(lastLoadedPGN);
+        const line = original.history();
+        if (line.length === moves.length && line.every((san, i) => san === moves[i].san)) {
+          sourcePGN = lastLoadedPGN;
+          sourceIsOriginal = true;
+        }
+      } catch (_) { /* Keep the reconstructed, verified main line. */ }
+    }
+    if (lastLoadedPGN && !sourceIsOriginal) {
+      // A manually explored branch is a different game record. In particular,
+      // the original Top Pick anchor and TCEC adjudication cannot describe it.
+      headers = Object.fromEntries(Object.entries(headers).filter(([key]) =>
+        !/^(?:ChessBest(?:AnchorPly|AnchorFEN|AnchorSAN|Teaser|Source|Title)|Result|Termination|TerminationDetails)$/i.test(key)));
+      const explored = new Chess(startFen);
+      Object.entries(headers).forEach(([key, value]) => explored.header(key, value));
+      for (const move of moves) explored.move(move.san);
+      sourcePGN = explored.pgn();
+    }
+    return { sourcePGN, sourceIsOriginal, lineChanged: !!lastLoadedPGN && !sourceIsOriginal,
+      headers, startFen, moves, cursor: game.history().length,
+      totalPly: moves.length, blocked: !!playState.active || replayRunning };
+  }
+  function navigateReview(ply) {
+    if (!Number.isSafeInteger(ply) || ply < 0 || ply > fullHistory.length)
+      throw new Error('This review moment is outside the loaded game.');
+    if (playState.active || replayRunning)
+      throw new Error('Pause the current game or Replay before reviewing a position.');
+    jumpTo(ply - 1);
+    return getLabContext();
+  }
+  function openReviewStudy(which = 'compare') {
+    pauseLab();
+    studyUI?.open(which === 'compare' ? 'compare' : 'study');
+  }
   function pauseLab(reason) {
     if (playState.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
     if (reason === 'deep-analysis') {
@@ -2410,7 +2462,8 @@ function jumpTo(i){
       if (selected === 'sf') positionEval.update(fen, best.score, 'SF');
     };
   }
-  const labHost = { Chess, mount: document.body, getContext: getLabContext, pause: pauseLab, navigate: navigateStudy,
+  const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
+    pause: pauseLab, navigate: navigateStudy,
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
     getEvidence: () => labSnapshots.get(game.fen()) || null,

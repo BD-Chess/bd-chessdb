@@ -18,7 +18,14 @@ async function boot(t, options = {}) {
     url: 'https://www.mdlxdcc.org/chess/new/', runScripts: 'outside-only',
     pretendToBeVisual: true, virtualConsole: vc
   });
-  const w = dom.window; t.after(() => w.close());
+  const w = dom.window;
+  const archiveReady = new Promise(resolve => w.addEventListener('chess-sim-collections', resolve, { once: true }));
+  t.after(async () => {
+    // The real boot opens the simulation archive asynchronously. Closing jsdom
+    // before its first render would turn its normal completion into a rejection.
+    await Promise.race([archiveReady, new Promise(resolve => setTimeout(resolve, 1500))]);
+    w.close();
+  });
   Object.defineProperty(w.HTMLElement.prototype, 'innerText', {
     get() { return this.textContent; }, set(value) { this.textContent = String(value); }, configurable: true
   });
