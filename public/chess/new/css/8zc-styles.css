@@ -1207,12 +1207,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 #viewToggle { gap: 5px !important; flex-wrap: wrap; margin: 6px 0 0 !important; }
 #viewToggle .btn { min-height: 36px; font-size: 11px !important; padding: 7px 10px !important; border-radius: 5px; }
 #btnSim { background: #353426 !important; color: #f0d48b !important; border-color: #5c5434 !important; }
-#btnSimW { background: #283b31 !important; color: #b5dfb6 !important; border-color: #44694e !important; }
-#btnSimB { background: #383340 !important; color: #d5c3ed !important; border-color: #5b4a72 !important; }
 #btnReplay, #btnViewToggle { background: var(--ui-raised) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important; }
 body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !important; border-color: #d1bd87 !important; }
-body.light-theme #btnSimW { background: #e4efdc !important; color: #315c2b !important; border-color: #b2cba5 !important; }
-body.light-theme #btnSimB { background: #eee7f4 !important; color: #684484 !important; border-color: #cbb6dd !important; }
 #dccProgress { font-size: 10px !important; color: var(--ui-accent) !important; min-width: 0 !important; }
 #dccProgress:empty { display: none; }
 .mode-hint { margin: 7px 0 12px; color: var(--ui-muted); font-size: 10px; line-height: 1.5; }
@@ -1347,9 +1343,9 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 #dccInfoPanel { background: var(--ui-inset); border-color: var(--ui-border); color: var(--ui-text); }
 @media (max-width: 790px) { .dcc-details-button { min-height: 40px; } }
 
-/* Keep all five analysis mode buttons together at narrow widths. */
-#viewToggle { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px !important; }
-#viewToggle .btn { margin-left: 0 !important; width: 100%; padding-inline: 3px !important; }
+/* Match the four primary actions below, including on narrow screens. */
+#viewToggle { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px !important; }
+#viewToggle .btn { margin-left: 0 !important; min-width: 0; min-height: 44px; width: 100%; padding: 6px 3px !important; }
 #dccProgress { grid-column: 1 / -1; order: 2; text-align: right; }
 
 #simModal [hidden] { display: none !important; }

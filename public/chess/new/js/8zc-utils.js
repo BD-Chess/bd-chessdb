@@ -2151,7 +2151,7 @@ function jumpTo(i){
     document.getElementById('moves').style.display = dccViewActive ? 'none' : '';
     document.getElementById('dccAnalysisPanel').style.display = dccViewActive ? 'block' : 'none';
     const replayButton = document.getElementById('btnReplay');
-    replayButton.textContent = 'Replay'; replayButton.style.background = '';
+    replayButton.textContent = 'DCC replay'; replayButton.style.background = '';
     refreshPlayUi();
     updateBoard(true);
     document.getElementById('openingName').textContent = '';
@@ -3006,22 +3006,17 @@ function refreshPlayUi() {
     kind: simRunning ? 'sim' : replayRunning ? 'replay' : playState.active ? 'local' : 'analysis', paused: !simRunning } }));
   document.getElementById('controls')?.classList.toggle('is-automating', simRunning || replayRunning || !!playState.autoPilot);
   positionEval.render();
-  const busy = playState.active || simRunning || !!playState.replaying;
   const btnSim = document.getElementById('btnSim');
-  const btnSimW = document.getElementById('btnSimW');
-  const btnSimB = document.getElementById('btnSimB');
   const btnReplay = document.getElementById('btnReplay');
   const btnView = document.getElementById('btnViewToggle');
   const btnHide = document.getElementById('btnHideEval');
   if (btnSim) {
-    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Sim';
-    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Sim: configure automatic play');
+    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Simulation';
+    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Simulation: games, tournaments or play against the engine');
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
     btnSim.disabled = !!playState.replaying;
   }
-  if (btnSimW) btnSimW.disabled = busy;
-  if (btnSimB) btnSimB.disabled = busy;
   if (btnReplay) btnReplay.disabled = playState.active || simRunning;
   if (btnView) btnView.disabled = false;
   if (btnHide) btnHide.disabled = false;
@@ -3412,7 +3407,7 @@ async function challengeLichessBot(botUsername, selectedColor, clock, sessionId)
   live.accountId = profile.id || profile.username || '';
   live.apiKind = profile.title === 'BOT' ? 'bot' : 'board';
   if (playState.autoPilot && live.apiKind !== 'bot') {
-    throw new Error('Automated Sim requires a Lichess BOT account with bot:play access. Use SimW or SimB for human play.');
+    throw new Error('Automated Sim requires a Lichess BOT account with bot:play access. Choose Play as White or Play as Black under Simulation for human play.');
   }
   const body = new URLSearchParams();
   body.set('rated', 'false');
@@ -4005,6 +4000,7 @@ async function launchFromSimModal() {
         if (tournamentRunner.busy()) throw new Error('Pause the simulation before importing.');
         await simStore.importJSON(typeof data === 'string' ? data : JSON.stringify(data)); await refreshSimArchive();
       },
+      onHuman(color) { openSimModal(color === 'black' ? 'simw' : 'simb'); },
       onLichess() { playState.launchMode = 'sim'; document.querySelector('input[name="simOpponent"][value="lichess"]').checked = true;
         document.getElementById('simModal').style.display = 'flex'; syncSimModalState(); }
     });
@@ -4021,10 +4017,6 @@ async function launchFromSimModal() {
   }
 
   // ─── Sim button handlers ───────────────────────────────────────────
-  const btnSimW = document.getElementById('btnSimW');
-  if (btnSimW) btnSimW.onclick = () => openSimModal('simw');
-  const btnSimB = document.getElementById('btnSimB');
-  if (btnSimB) btnSimB.onclick = () => openSimModal('simb');
   const btnSimMain = document.getElementById('btnSim');
   if (btnSimMain) btnSimMain.onclick = () => openSimModal('sim');
   const btnCoach = document.getElementById('btnCoach');
@@ -4254,7 +4246,7 @@ async function launchFromSimModal() {
       playState.replaying = false;
       invalidateDCCAnalysis();
       if (btn) {
-        btn.textContent = 'Replay';
+        btn.textContent = 'DCC replay';
         btn.style.background = '#203030';
         btn.style.color = '#00e5ff';
       }
@@ -4391,7 +4383,7 @@ async function launchFromSimModal() {
       } else {
         movesEl.style.display = '';
         dccPanel.style.display = 'none';
-        btnToggle.textContent = 'DCC';
+        btnToggle.textContent = 'DCC analysis';
         btnToggle.style.background = '#2a3540';
         btnToggle.style.color = '#fff';
       }

@@ -49,7 +49,16 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:settings')).sfAnalysisDepth,12);
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
  assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
- el('btnSimB').click();w.document.querySelector('input[value=dccbot]').checked=true;
+ const topButtons=[...el('viewToggle').querySelectorAll('button:not(#btnCoach)')];
+ assert.deepEqual(topButtons.map(button=>button.textContent),['Simulation','DCC replay','DCC analysis','Review game']);
+ assert.equal(el('btnSimW'),null);assert.equal(el('btnSimB'),null);
+ el('btnSim').click();
+ const humanChoices=el('simTournamentDialog');
+ assert.equal(humanChoices.open,true);
+ humanChoices.querySelector('[data-action="human-white"]').click();
+ assert.equal(humanChoices.open,false);
+ assert.match(el('simModalTitle').textContent,/Black engine, White human/);
+ w.document.querySelector('input[value=dccbot]').checked=true;
  w.document.querySelector('input[value=dccbot]').dispatchEvent(new w.Event('change'));
  el('simStartBtn').click();
  assert.match(el('gameTitle').textContent,/Training/);
@@ -89,7 +98,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(cardFor('DCC').getAttribute('aria-pressed'),'true');
  assert.match(cardFor('DCC').title,/show moves/);
  cardFor('DCC').click();
- assert.equal(el('btnViewToggle').textContent,'DCC');
+ assert.equal(el('btnViewToggle').textContent,'DCC analysis');
  assert.equal(el('dccAnalysisPanel').style.display,'none');
  assert.equal(cardFor('DCC').getAttribute('aria-pressed'),'false');
  assert.equal(fen,dccBoardFen,'view switching never changes the playing position');
@@ -130,7 +139,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  await until(()=>el('moves').querySelector('[role=button]'),'automatic moves appear in the real history');
  assert(sfPreparations>0,'hybrid CDB simulation prepares the local fallback engine');
  const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
- move.click();assert.equal(el('btnSim').textContent,'Sim');
+ move.click();assert.equal(el('btnSim').textContent,'Simulation');
  assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
  assert.equal(boardOptions.onDrop('a1','a8'),'snapback');
  assert.equal(el('workspaceTimers').hidden,true,'an illegal review move does not show Sim clocks');
@@ -155,6 +164,12 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(el('workspaceTimers').hidden,true,'archived game review has no clocks');
  el('btnNew').click();
  await new Promise(r=>setTimeout(r,800));assert.equal(fen,new w.Chess().fen());
+ el('btnSim').click();
+ assert.equal(tournament.open,true);
+ tournament.querySelector('[data-action="human-black"]').click();
+ assert.equal(tournament.open,false);
+ assert.match(el('simModalTitle').textContent,/White engine, Black human/);
+ el('simCancelBtn').click();
 
  el('btnTwoPlayers').click(); assert.equal(el('twoPlayersDialog').open,true);
  el('humanMinutes').value='1';el('humanIncrement').value='2';el('humanStart').click();

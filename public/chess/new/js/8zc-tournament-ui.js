@@ -9,6 +9,13 @@
     const engineOptions = Object.entries(ENGINES).map(([id, label]) => `<option value="${id}">${label}</option>`).join('');
     dialog.innerHTML = `<header class="tournament-header"><div><p class="tournament-kicker">LOCAL ENGINES</p><h2 id="simTournamentTitle">Sim · games & tournaments</h2></div><button type="button" data-action="close" aria-label="Close simulation settings">×</button></header>
       <p class="tournament-intro">Run games from the current position or compare engines across opening positions. Keep this browser open to compute; progress and history are stored in this browser.</p>
+      <section class="tournament-section-head" data-ui="human-play" aria-labelledby="simHumanTitle">
+        <h3 id="simHumanTitle">Play against engine</h3>
+        <div class="tournament-toolbar" role="group" aria-labelledby="simHumanTitle">
+          <button type="button" data-action="human-white">Play as White</button>
+          <button type="button" data-action="human-black">Play as Black</button>
+        </div>
+      </section>
       <form data-ui="form">
         <div class="tournament-setup">
           <fieldset><legend>1 · Match</legend>
@@ -101,6 +108,7 @@
       if ([...el('collection').options].some(option => option.value === previousCollection)) el('collection').value = previousCollection;
       el('current-title').textContent = context.currentGameTitle || context.title || 'Current board position';
       if (context.openingSource === 'current') el('opening-source').value = 'current';
+      el('human-play').hidden = typeof host.onHuman !== 'function';
       dialog.querySelector('[data-action="lichess"]').hidden = typeof host.onLichess !== 'function';
       updateSetup(); setStatus('');
       if (!dialog.open) {
@@ -224,6 +232,9 @@
         if (action === 'close') close();
         else if (action === 'import') el('import-file').click();
         else if (action === 'lichess') { close(); await host.onLichess?.(); }
+        else if ((action === 'human-white' || action === 'human-black') && typeof host.onHuman === 'function') {
+          close(); await host.onHuman(action === 'human-white' ? 'white' : 'black');
+        }
         else if (action === 'pause') { control.disabled = true; await host.onPause?.(id); }
         else if (action === 'resume') { control.disabled = true; if (await host.onResume?.(id) !== false) close(); }
         else if (action === 'game') { if (await host.onOpenGame?.(control.dataset.run, id) !== false) close(); }
