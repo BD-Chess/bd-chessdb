@@ -42,6 +42,8 @@ function context(responses = [verified, cloud]) {
     evalRetryTimer: 1, latestDCCResults: [], latestDCCReceipt: null,
     document: { getElementById: () => ({ style: {}, textContent: '' }), querySelectorAll: () => [] },
     syncSFAnalysisControl() {},
+    // Independent source persistence is exercised by source-context-integration.
+    recordSourceMoves() {},
     runLocalSF: async (fen, options) => {
       c.sfCall = { fen, options };
       return { root: { moves: [{ move: 'd2d4', score: 25 }], complete: true }, ledger: { rootDepth: 11, rootNodes: 100 } };

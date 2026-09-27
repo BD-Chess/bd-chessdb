@@ -10,7 +10,7 @@ let game;
 export function setupBoard() {
   game = new Chess();
 
-  const saved = localStorage.getItem('chessBestGame');
+  const saved = localStorage.getItem('ChessBest:LAB:v2:game');
   if (saved) {
     try { game.load_pgn(saved); } catch (e) { console.error('Bad saved PGN', e); }
   }

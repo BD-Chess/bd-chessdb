@@ -128,3 +128,15 @@ test('closing Deep analysis cancels its worker and ignores late results without 
   assert.equal(el('start').disabled, false);
   ui.destroy();
 });
+
+test('W0 Deep save awaits durable outcome, freezes its line and reports pending honestly', async t => {
+  let resolve, captured, count = 0;
+  const x = setup(t, { onSaveLine: line => { captured = line; count++; return new Promise(r => { resolve = r; }); } });
+  x.get('btnDeepAnalysis').click(); x.el('start').click(); x.emit(x.snapshot());
+  x.el('lines').querySelector('button').click();
+  x.el('save').click(); x.el('save').click(); assert.equal(count, 1); assert.equal(x.el('save').disabled, true);
+  assert.equal(captured.pv[0], 'e2e4');
+  resolve({ ok: false, code: 'CAPACITY' }); await new Promise(r => setImmediate(r));
+  assert.match(x.el('status').textContent, /Save pending/); assert.doesNotMatch(x.el('status').textContent, /Continuation saved/);
+  assert.equal(x.el('save').disabled, false);
+});

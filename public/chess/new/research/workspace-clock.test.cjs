@@ -15,7 +15,7 @@ function setup(t, { pgn, timing } = {}) {
   w.setInterval = () => 0;
   for (const file of ['chess.min.js', '8zc-time-core.js', '8zc-workspace.js']) w.eval(fs.readFileSync(path.join(base, 'js', file), 'utf8'));
   const game = new w.Chess(); if (pgn) assert(game.load_pgn(pgn));
-  if (timing) w.localStorage.setItem('chessLabTiming-v1', timing);
+  if (timing) w.localStorage.setItem('ChessBest:LAB:v2:timing', timing);
   const workspace = w.ChessWorkspace.create({ Chess: w.Chess, game, settings: { showTimers: true },
     onDisplaySettings() {}, analyze: async () => null, onAnnotations() {}, isBusy: () => false,
     isSimulationRunning: () => running, stopActivities() {} });
@@ -47,7 +47,7 @@ test('simulation reload and same-run resume retain clock totals, partial turn an
   const fen = x.game.fen(), move = x.game.move('e4'); ws.recordMove(fen, move);
   ws.beginTurn(); x.advance(3000); ws.endTurn();
   const saved = JSON.parse(JSON.stringify(ws.clockSnapshot()));
-  const y = setup(t, { pgn: x.game.pgn(), timing: x.w.localStorage.getItem('chessLabTiming-v1') });
+  const y = setup(t, { pgn: x.game.pgn(), timing: x.w.localStorage.getItem('ChessBest:LAB:v2:timing') });
   y.workspace.restoreClock(saved); y.advance(86400000); y.workspace.render();
   assert.equal(y.workspace.clockSnapshot().remaining.b, 27000);
   assert.equal(y.workspace.clockSnapshot().running, false);

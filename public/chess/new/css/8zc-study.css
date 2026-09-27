@@ -16,3 +16,21 @@ body.light-theme .chess-study-dialog,body.light .chess-study-dialog,body.light-m
 .chess-study-limit-actions button{box-sizing:border-box;min-height:39px;padding:8px 12px;border:1px solid #8290a777;border-radius:8px;background:#8290a722;color:inherit;font:inherit;font-weight:600;cursor:pointer}.chess-study-limit-actions button:hover{background:#8290a744}.chess-study-limit-actions button:focus-visible{outline:2px solid #67cad5;outline-offset:2px}.chess-study-limit-actions .chess-study-limit-primary{background:#178899;border-color:#50bcc9;color:white}.chess-study-limit-actions .chess-study-limit-danger{background:#a53628;border-color:#d57263;color:white}
 body.light-theme .chess-study-limit-dialog,body.light .chess-study-limit-dialog,body.light-mode .chess-study-limit-dialog,body[data-theme="light"] .chess-study-limit-dialog,html[data-theme="light"] .chess-study-limit-dialog{--study-bg:#f9fafc;--study-text:#172536}
 @media(max-width:500px){.chess-study-limit-overlay{padding:12px}.chess-study-limit-dialog{padding:20px}.chess-study-limit-actions button{flex:1 1 100%}}
+
+/* W0 capacity manager: theme-paired, scoped controls; stable channels have their own files. */
+.chess-study-dialog{--study-bg:var(--ui-surface,#1d2421);--study-text:var(--ui-text,#f0f1e9);--study-border:#899c8d}
+body.light-theme .chess-study-dialog{--study-border:#65785c}
+.chess-study-dialog button,.chess-study-dialog input,.chess-study-dialog select,.chess-study-dialog textarea{background:var(--ui-raised,#27302b);color:var(--study-text);border-color:var(--study-border)}
+.chess-study-dialog button:hover:not(:disabled):not(.chess-study-primary):not(.is-active):not(.is-selected):not(.chess-study-danger){background:var(--ui-inset,#19221d);border-color:var(--ui-accent,#c7df91)}
+.chess-study-dialog button.chess-study-primary{background:var(--ui-accent,#c7df91);color:var(--ui-ink,#182010)}
+.chess-study-dialog button.is-active,.chess-study-dialog button.is-selected,body.light-theme .chess-study-dialog button.is-active,body.light-theme .chess-study-dialog button.is-selected{background:var(--ui-accent,#c7df91);color:var(--ui-ink,#182010);border-color:var(--ui-accent,#c7df91)}
+.chess-study-dialog :is(button,input,select,textarea):focus-visible{outline-color:var(--ui-accent,#c7df91)}
+.chess-study-dialog button:disabled{opacity:1;color:var(--ui-muted,#b5beb0);border-style:dashed;cursor:default}
+.chess-study-dialog .chess-study-danger{border-color:#d98a78;color:#ffccbd;background:#422b25}
+body.light-theme .chess-study-dialog .chess-study-danger{border-color:#9b3224;color:#852819;background:#fff0eb}
+.chess-capacity-list{max-height:35dvh;overflow:auto;border:1px solid var(--ui-border,#45544b);border-radius:7px;margin-bottom:12px}
+.chess-capacity-row{display:flex;align-items:center;gap:12px;padding:10px;overflow-wrap:anywhere;min-height:44px}
+.chess-capacity-row[hidden],.chess-study-tabs[hidden]{display:none!important}
+.chess-capacity-row input{flex:0 0 18px;width:18px;height:18px;accent-color:var(--ui-accent,#c7df91)}
+.chess-capacity-confirm{border:2px solid var(--ui-border,#45544b);padding:12px;margin:12px 0}
+.chess-capacity-confirm button{margin:4px}
