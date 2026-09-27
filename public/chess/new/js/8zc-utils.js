@@ -2933,6 +2933,7 @@ function syncSimModalState() {
   const localSim = launchMode === 'sim' && mode !== 'lichess';
   document.getElementById('simLocalMatch').hidden = !localSim;
   document.getElementById('simSessionOptions').hidden = localSim;
+  document.getElementById('simSelfOption').hidden = launchMode !== 'sim';
   document.getElementById('simLocalBotOption').hidden = launchMode === 'sim';
   document.getElementById('simLocalSpeed').value = String(settings.simSpeed);
   document.getElementById('simSFNodes').value = String(settings.sfRootNodes);
@@ -2941,12 +2942,12 @@ function syncSimModalState() {
   if (lichessControls) lichessControls.style.display = mode === 'lichess' ? 'grid' : 'none';
 
   if (launchMode === 'simw') {
-    if (title) title.textContent = 'SimW — White engine, Black human';
+    if (title) title.textContent = 'Play as Black — White engine';
     if (hint) hint.textContent = 'White is the engine side you choose here. Black is human. DCC stays on for both sides and will be saved into the PGN.';
     if (colorLabel) colorLabel.textContent = 'Engine color';
     if (colorSel) { colorSel.value = 'white'; colorSel.disabled = true; }
   } else if (launchMode === 'simb') {
-    if (title) title.textContent = 'SimB — Black engine, White human';
+    if (title) title.textContent = 'Play as White — Black engine';
     if (hint) hint.textContent = 'Black is the engine side you choose here. White is human. DCC stays on for both sides and will be saved into the PGN.';
     if (colorLabel) colorLabel.textContent = 'Engine color';
     if (colorSel) { colorSel.value = 'black'; colorSel.disabled = true; }
@@ -2990,6 +2991,7 @@ function openSimModal(launchMode = 'sim') {
   playState.launchMode = launchMode || 'sim';
   if (launchMode === 'sim' && tournamentUI) { openTournamentUI(); return; }
   if (launchMode === 'sim' && currentSimMode() === 'dccbot') document.querySelector('input[name="simOpponent"][value="self"]').checked = true;
+  if (launchMode !== 'sim' && currentSimMode() === 'self') document.querySelector('input[name="simOpponent"][value="dccbot"]').checked = true;
   const modal = document.getElementById('simModal');
   if (modal) modal.style.display = 'flex';
   syncSimModalState();

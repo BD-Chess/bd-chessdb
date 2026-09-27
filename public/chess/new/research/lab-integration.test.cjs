@@ -57,9 +57,9 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(humanChoices.open,true);
  humanChoices.querySelector('[data-action="human-white"]').click();
  assert.equal(humanChoices.open,false);
- assert.match(el('simModalTitle').textContent,/Black engine, White human/);
- w.document.querySelector('input[value=dccbot]').checked=true;
- w.document.querySelector('input[value=dccbot]').dispatchEvent(new w.Event('change'));
+ assert.match(el('simModalTitle').textContent,/Play as White — Black engine/);
+ assert.equal(w.document.querySelector('input[value=dccbot]').checked,true,'human play defaults to its actual local bot');
+ assert.equal(el('simSelfOption').hidden,true,'automatic-only local engine selection is not offered for a human game');
  el('simStartBtn').click();
  assert.match(el('gameTitle').textContent,/Training/);
  assert.equal(el('workspaceTimers').hidden,false,'engine training keeps clocks');
@@ -168,7 +168,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(tournament.open,true);
  tournament.querySelector('[data-action="human-black"]').click();
  assert.equal(tournament.open,false);
- assert.match(el('simModalTitle').textContent,/White engine, Black human/);
+ assert.match(el('simModalTitle').textContent,/Play as Black — White engine/);
  el('simCancelBtn').click();
 
  el('btnTwoPlayers').click(); assert.equal(el('twoPlayersDialog').open,true);
