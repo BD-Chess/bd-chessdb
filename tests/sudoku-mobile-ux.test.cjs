@@ -20,7 +20,11 @@ test('G01–G04: normal tap; digits 1–9 exactly once; Notes add/remove and Und
 });
 
 test('G05–G08: gaps/outside/origin never commit, reentry does; filled cells use loupe and stale targets cannot arm',async t=>{
- const h=await ready(t);layout(h);for(const where of ['gap','outside','origin']){const n=history(h),l=await hold(h);const r=l.targets[0],x=where==='gap'?r.right+2:where==='origin'?121:1,y=where==='gap'?r.top+15:where==='origin'?120:1;pointer(h,h.w.document,'pointermove',(r.left+r.right)/2,r.top+20);pointer(h,h.w.document,'pointerup',x,y);assert.equal(history(h),n);}
+ const h=await ready(t);layout(h);
+ // Origin is outside the picker specifically in Keep context visible mode.
+ // At cell intentionally permits returning to an underlying digit after a slide.
+ h.el('uxMore').click();h.el('navModalBody').querySelector('[data-menu="Settings"]').click();h.el('uxPickerPosition').value='context';h.el('uxPickerPosition').dispatchEvent(new h.w.Event('change'));h.el('navClose').click();
+ for(const where of ['gap','outside','origin']){const n=history(h),l=await hold(h);const r=l.targets[0],x=where==='gap'?r.right+2:where==='origin'?121:1,y=where==='gap'?r.top+15:where==='origin'?120:1;pointer(h,h.w.document,'pointermove',(r.left+r.right)/2,r.top+20);pointer(h,h.w.document,'pointerup',x,y);assert.equal(history(h),n);}
  const l=await hold(h);pointer(h,h.w.document,'pointermove',1,1);releaseDigit(h,l,4);assert.equal(h.get('playerGrid[0][2]'),4);for(const i of [2,0]){const p=begin(h,i);await until(()=>h.el('uxLoupe'),'filled-cell loupe');assert.equal(h.el('uxPicker'),null);pointer(h,h.w.document,'pointerup',p.x,p.y);assert.equal(h.el('uxLoupe'),null);}h.w.undoMove();
  begin(h,2);h.w.selectCell(3);h.w.placeNumber(6);await sleep(330);assert.equal(h.el('uxPicker'),null,'board/history revision invalidates arming');assert.deepEqual(h.errors,[]);
 });

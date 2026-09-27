@@ -375,10 +375,16 @@ body::after{
 <style id="mobile-play-style">
 /* Mobile Play UX: geometry accounts for this 6px outside shadow + 10px border/padding. */
 .ux-picker{position:fixed;z-index:1100;background:#0b1423;color:#fff;border:2px solid #00e5ff;border-radius:10px;padding:8px;box-shadow:0 0 0 6px #020409;user-select:none;-webkit-user-select:none;pointer-events:none}
-.ux-picker-title{height:24px;font:600 12px/20px system-ui;white-space:nowrap;overflow:hidden}
+.ux-picker-title{height:24px;font:600 14px/20px system-ui;white-space:nowrap;overflow:hidden}
 .ux-picker-grid{display:grid;grid-template-columns:repeat(3,var(--ux-target));grid-template-rows:repeat(3,var(--ux-target));gap:4px}
-.ux-picker-digit{display:flex;align-items:center;justify-content:center;border:1px solid #547186;border-radius:6px;font:700 30px/1 ui-monospace,monospace;background:#152339;color:#fff}
-.ux-picker-digit.active{background:#23586a;border:2px solid #fff}.ux-picker-digit[aria-disabled=true]{opacity:.35}
+.ux-picker-digit{position:relative;display:flex;align-items:center;justify-content:center;border:1px solid #547186;border-radius:6px;font:700 calc(var(--ux-target)*.5)/1 ui-monospace,monospace;background:#152339;color:#fff}
+.ux-picker-digit.user-note{color:#9defff}
+.ux-picker-digit.user-note::after{content:'';position:absolute;bottom:4px;width:5px;height:5px;border-radius:50%;background:#9defff}
+.ux-picker-digit.conflict{color:#8c98a9}
+.ux-picker-digit.active{background:#23586a;border:2px solid #00e5ff;box-shadow:inset 0 0 0 1px #9defff}
+.ux-setting{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:10px 0;font:16px/1.5 system-ui}
+.ux-setting select{max-width:100%;min-height:44px;padding:6px 8px;background:#101c2e;color:var(--text);border:1px solid var(--border2);border-radius:5px;font:16px/1.4 system-ui}
+#uxDesktopSettings{margin-top:8px;width:100%;font-size:14px}
 #grid{-webkit-user-select:none;user-select:none}
 #grid.ux-holding{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .ux-origin{outline:2px solid var(--cyan);outline-offset:-3px}
@@ -705,7 +711,7 @@ body::after{
     <div class="note-meta">Quick guide</div>
     <p><strong>Select</strong> a cell by clicking or tapping. Highlighted cells share a row, column, or box with your selection.</p>
     <p><strong>Place</strong> a number using the numpad below the grid, or press 1–9 on your keyboard. Click the same number again to clear it. Arrow keys move the selection.</p>
-    <p><strong>Hold and slide</strong> — hold the left mouse button on an empty cell for about 300 ms, drag to a number, then release to enter it. Release outside the picker or press Escape to cancel. Hold a filled cell to inspect values and Notes in the central magnifier; release to close. If the board is clipped or space is limited, use Numbers.</p>
+    <p><strong>Hold and slide</strong> — hold the left mouse button on an empty cell for about 300 ms, deliberately drag to a number, then release to enter it. No slide means no entry. Release in a gap, outside the picker or press Escape to cancel. Hold a filled cell to inspect values and Notes in the central magnifier; release to close. Open Settings for At cell (default) or Keep context visible (protects the whole row and column), and Normal/Large/Extra Large sizing. Notes are cyan; Candidate Assist Auto grays direct row/column/box conflicts on Easy only. On/Off overrides persist; gray digits remain selectable. Use Numbers if space is insufficient.</p>
     <p><strong>Notes mode</strong> — toggle with the Notes button or press <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">N</kbd>. Numbers become small pencil marks — candidates you're considering.</p>
     <p><strong>Undo</strong> with the button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Ctrl+Z</kbd>. Erase with button or <kbd style="font-family:'JetBrains Mono',monospace;font-size:.78rem;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px">Backspace</kbd>.</p>
     <p><strong>💡 Hint</strong> — first checks whether your entered values contradict the unique solution. If so, it highlights all wrong entries and jumps to the most recently changed one. Otherwise it highlights the next logical cell and explains why. It never places the number.</p>
@@ -2441,13 +2447,27 @@ window.SudokuMobileGeometry=(()=>{
   const overlap=(a,b,g=0)=>a.left<b.right+g&&a.right>b.left-g&&a.top<b.bottom+g&&a.bottom>b.top-g;
   const inside=(a,b)=>a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom;
   function union(rs){return rect(Math.min(...rs.map(r=>r.left)),Math.min(...rs.map(r=>r.top)),Math.max(...rs.map(r=>r.right))-Math.min(...rs.map(r=>r.left)),Math.max(...rs.map(r=>r.bottom))-Math.min(...rs.map(r=>r.top)));}
-  function place(cells,index,viewport){
-    if(!viewport||cells.length!==81||!Number.isInteger(index)||index<0||index>80||[viewport,...cells].some(r=>!r||![r.left,r.top,r.right,r.bottom].every(Number.isFinite)||r.right<=r.left||r.bottom<=r.top))return{ok:false,reason:'Invalid visible geometry'};
+  function place(cells,index,viewport,options){
+    if(!viewport||!Array.isArray(cells)||cells.length!==81||!Number.isInteger(index)||index<0||index>80||[viewport,...cells].some(r=>!r||![r.left,r.top,r.right,r.bottom].every(Number.isFinite)||r.right<=r.left||r.bottom<=r.top))return{ok:false,reason:'Invalid visible geometry'};
+    // No options preserves the released protected-cross search exactly.
+    const requested=({normal:52,large:68,extraLarge:84})[options?.size]||68;
+    const sizes=Array.from({length:(requested-44)/4+1},(_,i)=>requested-i*4);
+    if(options?.position==='atCell'){
+      const target=cells[index];if(!overlap(target,viewport))return{ok:false,reason:'Show the target cell, or use Numbers below'};
+      for(const size of sizes){
+        const width=32+size*3+8,height=width+24;
+        if(width>viewport.right-viewport.left||height>viewport.bottom-viewport.top)continue;
+        const x=Math.max(viewport.left,Math.min(viewport.right-width,(target.left+target.right-width)/2));
+        const y=Math.max(viewport.top,Math.min(viewport.bottom-height,(target.top+target.bottom-height)/2));
+        return{ok:true,footprint:rect(x,y,width,height),size,targets:Array.from({length:9},(_,i)=>({...rect(x+16+(i%3)*(size+4),y+40+Math.floor(i/3)*(size+4),size,size),digit:i+1}))};
+      }
+      return{ok:false,reason:'Not enough visible space; use Numbers below'};
+    }
     const board=union(cells);if(!inside(board,viewport))return{ok:false,reason:'Show the whole board, or use Numbers below'};
     const row=union(cells.slice(Math.floor(index/9)*9,Math.floor(index/9)*9+9)),col=union(cells.filter((_,i)=>i%9===index%9)),target=cells[index];
     const box=union(cells.filter((_,i)=>Math.floor(i/27)===Math.floor(index/27)&&Math.floor(i%9/3)===Math.floor(index%9/3)));
     const cx=(target.left+target.right)/2,cy=(target.top+target.bottom)/2,clearance=4,frame=16,header=24,gap=4,choices=[];
-    for(const size of [68,64,60,56,52,48,44]){
+    for(const size of sizes){
       const width=2*frame+size*3+gap*2,height=width+header;
       const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
       const xs=[viewport.left,viewport.right-width,clamp(cx-width/2,viewport.left,viewport.right-width),... [row,col,box].flatMap(r=>[r.left-width-clearance,r.right+clearance])];
@@ -2455,7 +2475,7 @@ window.SudokuMobileGeometry=(()=>{
       for(const x of new Set(xs))for(const y of new Set(ys)){
         const footprint=rect(x,y,width,height);if(!inside(footprint,viewport)||overlap(footprint,row,clearance)||overlap(footprint,col,clearance))continue;
         const distance=Math.hypot(cx-clamp(cx,x,x+width),cy-clamp(cy,y,y+height));
-        const score=(68-size)*6+distance+(overlap(footprint,box,clearance)?28:0);
+        const score=(requested-size)*6+distance+(overlap(footprint,box,clearance)?28:0);
         choices.push({ok:true,footprint,size,score,distance,clearance,targets:Array.from({length:9},(_,i)=>({...rect(x+frame+(i%3)*(size+gap),y+frame+header+Math.floor(i/3)*(size+gap),size,size),digit:i+1}))});
       }
     }
@@ -2463,6 +2483,21 @@ window.SudokuMobileGeometry=(()=>{
     return choices[0]||{ok:false,reason:'Not enough clear space; use Numbers below'};
   }
   return Object.freeze({place,rect,union,overlap,inside});
+})();
+</script>
+<script id="picker-presentation">
+/* Presentation-only input contract: visible board, target Notes and difficulty.
+   No engine/global game access, hidden solution or candidate computation. */
+window.SudokuPickerPresentation=(()=>{
+ const choices={position:['atCell','context'],size:['normal','large','extraLarge'],assist:['auto','on','off']};
+ function validate(raw){const out={};if(raw&&typeof raw==='object'&&!Array.isArray(raw))for(const [k,values]of Object.entries(choices))if(values.includes(raw[k]))out[k]=raw[k];return out;}
+ function preferences(raw,mobile){return{position:'atCell',size:mobile?'large':'normal',assist:'auto',...validate(raw)};}
+ function preview(board,index,userNotes,difficulty,assist){
+  const active=assist==='on'||assist==='auto'&&difficulty==='easy',conflicts=new Set(),r=Math.floor(index/9),c=index%9;
+  if(active)for(let i=0;i<81;i++){if(i===index)continue;const y=Math.floor(i/9),x=i%9;if(y===r||x===c||Math.floor(y/3)===Math.floor(r/3)&&Math.floor(x/3)===Math.floor(c/3))conflicts.add(board[y][x]);}
+  return Array.from({length:9},(_,i)=>({digit:i+1,note:userNotes.has(i+1),conflict:active&&conflicts.has(i+1)}));
+ }
+ return Object.freeze({validate,preferences,preview});
 })();
 </script>
 <script id="navigator-ui">
@@ -2645,15 +2680,27 @@ function exportAll(){const report={schema:'AI8_SUDOKU_NAVIGATOR_EXPORT_V1',versi
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function validateTutor(t){if(!t||t.version!==C.VERSION||!Array.isArray(t.attempts)||t.attempts.length>512)throw Error('TUTOR_SCHEMA');const seen=new Set();for(const a of t.attempts){if(!a||typeof a.id!=='string'||a.id.length>100||seen.has(a.id)||!Number.isInteger(a.technique)||a.technique<0||a.technique>7||a.correct!==true||typeof a.assisted!=='boolean'||!Number.isInteger(a.tries)||a.tries<1||a.tries>10000||!Number.isFinite(a.seconds)||a.seconds<0||a.seconds>604800||typeof a.created!=='string'||!Number.isFinite(Date.parse(a.created))||a.evaluator!==C.VERSION)throw Error('TUTOR_RECORD');seen.add(a.id);}return t;}
 async function importAll(file){if(!file)return;if(mobileUX.blocked())return;const importGame=gameId,importRevision=generationToken;try{if(file.size>4000000)throw Error('IMPORT_SIZE');const d=JSON.parse(await file.text());if(mobileUX.blocked()||gameId!==importGame||generationToken!==importRevision)throw Error('Import superseded by another action');if(d.schema!=='AI8_SUDOKU_NAVIGATOR_EXPORT_V1'||d.version!==C.VERSION)throw Error('IMPORT_VERSION');const supplied=d.sha256;delete d.sha256;if(AI8SudokuTruth.sha256(JSON.stringify(d))!==supplied)throw Error('IMPORT_HASH');const m=C.restoreModel(d.machine);validateTutor(d.tutor);if(humanTraceRecorder.isLocked())throw Error('Export/Delete active Human Trace first');if(!confirm('Import this local research/game file? Your current Navigator game will be retained as previousGame.'))return;if(puzzle&&!persist('previousGame',snapshot()))throw Error('Previous game could not be saved');resetAnalysis();genJob?.cancel();generationToken++;if(!await restoreSession(d.session))throw Error('SESSION_VERSION');machine=m;tutor=d.tutor;memoryConsent=false;tutorConsent=false;learningMode='FROZEN_TRANSFER';$('navLearningMode').value=learningMode;persist('consentMachine',false);persist('consentTutor',false);updateMemory();scheduleSave();notify('Imported with frozen machine memory; historical observations are user-supplied evidence, not independently verified performance. Re-enable local learning explicitly.');}catch(e){notify('Import rejected: '+e.message);}}
-function deleteAll(){if(mobileUX.blocked())return;if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}
+function deleteAll(){if(mobileUX.blocked())return;if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';mobileUX.readPreferences();clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}
 async function controls(){const s=current();if(!s)return;expose('lab_comparison',4);$('navLabResult').textContent='Running isolated OFF / ordinary / REAL / matched SHAM comparisons…';try{const r=await run('controls',{state:J(s),options:settings(),model:J(machine)},12000).promise;$('navLabResult').textContent=JSON.stringify({fixture:'current pre-state; no learning updates',results:r,claim:'Mechanism comparison, not a human-learning or superiority benchmark'},null,2);}catch(e){$('navLabResult').textContent=e.message;}}
 function validateSavedRows(rs,sol){for(const r of rs){if(!r||!Number.isInteger(r.id)||r.id<1||!['placement','erase','undo','elimination'].includes(r.kind)||!(r.cell===null||Number.isInteger(r.cell)&&r.cell>=0&&r.cell<81)||r.value!=null&&(!Number.isInteger(r.value)||r.value<1||r.value>9)||!Array.isArray(r.help)||r.help.length>1024)throw Error('REVIEW_SCHEMA');if(r.pre)C.validate(r.pre);if(r.result?.found){if(!r.pre||!Array.isArray(r.result.path)||r.result.path.length>100)throw Error('REVIEW_PROOF_SCHEMA');let st=C.clone(r.pre),bits=0;for(const q of r.result.path){st=C.apply(st,q);bits+=C.encode(q).length*8;}if(bits!==r.result.reference_proof_bits||r.kind==='placement'&&st.b[r.cell]!==r.value)throw Error('REVIEW_PROOF_REPLAY');}if(r.kind==='placement'&&r.answer!==(sol[r.cell]===r.value?'CORRECT':'WRONG'))throw Error('REVIEW_ANSWER');r.reasoning_status='UNKNOWN_REASONING';}}
 /* One hold interaction owner for mobile touch and desktop mouse/pen.
    Canonical play remains in the existing adapters. */
 const mobileUX=(()=>{
- const G=window.SudokuMobileGeometry, slots=new Map();
+ const G=window.SudokuMobileGeometry,P=window.SudokuPickerPresentation,slots=new Map();
+ let preferenceRecord={};
  let gesture=null,gestureSeq=0,suppress=null,touchUntil=0,dialog=null,helpRequest=null,dialogSeq=0,demo=null,demoSeq=0,toastTimer;
  const mobile=()=>innerWidth<=760;
+ const preferences=()=>P.preferences(preferenceRecord,mobile()||window.matchMedia?.('(pointer: coarse)').matches===true);
+ function readPreferences(){const raw=load('uiPreferences');preferenceRecord=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};}
+ function setPreference(name,value){
+  const validated=P.validate({[name]:value});if(!Object.hasOwn(validated,name))return false;
+  cancelGesture();preferenceRecord={...preferenceRecord,...validated};
+  // A separate immediate write works before a game and never replaces a save.
+  // Imports deliberately leave these device/lane preferences unchanged.
+  const saved=persist('uiPreferences',preferenceRecord);
+  if($('uxPreferenceStatus'))$('uxPreferenceStatus').textContent=saved?'Saved on this device.':'For this tab only — could not save on this device.';
+  return saved;
+ }
  const modal=()=>!!$('navModal')&&!$('navModal').hidden;
  const blocked=()=>!!demo||modal()||!!genJob||!!restoring||booting;
  const playable=()=>!!playerGrid&&!aiAnimating&&!tracePaused&&!recoveryAwaitingContinue&&!blocked();
@@ -2672,7 +2719,7 @@ const mobileUX=(()=>{
   const safe=getComputedStyle($('uxSafeArea'));left+=parseFloat(safe.paddingLeft)||0;top+=parseFloat(safe.paddingTop)||0;right-=parseFloat(safe.paddingRight)||0;bottom-=parseFloat(safe.paddingBottom)||0;
   return G.rect(left+4,top+4,right-left-8,bottom-top-8);
  }
- function geometry(i){return G.place([...$('grid').children].map(c=>c.getBoundingClientRect()),i,visibleBounds());}
+ function geometry(i,prefs=preferences()){return G.place([...$('grid').children].map(c=>c.getBoundingClientRect()),i,visibleBounds(),prefs);}
  function toast(text){let n=$('uxToast');n.textContent=text;n.hidden=false;const v=visibleBounds();if(v){n.style.left=v.left+'px';n.style.top=v.top+'px';}clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.hidden=true,2400);}
  function cancelGesture(consumed=false){const g=gesture;if(!g)return;gesture=null;gestureSeq++;clearTimeout(g.timer);$('uxPicker')?.remove();$('uxLoupe')?.remove();$('grid').classList.remove('ux-holding');$('grid').children[g.index]?.classList.remove('ux-origin');if(g.active||consumed)suppress={until:Date.now()+850,x:g.x,y:g.y};if(g.capture)try{$('grid').releasePointerCapture(g.id);}catch(_){} }
  function paintLoupe(g,x,y){
@@ -2698,31 +2745,36 @@ const mobileUX=(()=>{
  function activate(token){const g=gesture;if(!g||g.token!==token||!validGesture(g)){cancelGesture();return;}
   if(g.mode==='loupe'){if(!openLoupe(g)){cancelGesture(true);return;}}
   else{
-   const layout=geometry(g.index);if(!layout.ok){toast(layout.reason||'Use Numbers below');cancelGesture(true);return;}
-   g.layout=layout;g.disabled=[...$('numpad').children].map(b=>b.disabled||b.classList.contains('used'));
+   const layout=geometry(g.index,g.preferences);if(!layout.ok){toast(layout.reason||'Use Numbers below');cancelGesture(true);return;}
+   g.layout=layout;g.openX=g.x;g.openY=g.y;g.intentional=false;
+   const marks=P.preview(playerGrid,g.index,notes[Math.floor(g.index/9)][g.index%9],currentDiff,g.preferences.assist);
    const p=document.createElement('div');p.id='uxPicker';p.className='ux-picker';p.setAttribute('role','presentation');p.style.cssText=`left:${layout.footprint.left+6}px;top:${layout.footprint.top+6}px;width:${layout.footprint.width-12}px;--ux-target:${layout.size}px`;
-   p.innerHTML='<div class="ux-picker-title">Slide to a number · release to enter</div><div class="ux-picker-grid">'+layout.targets.map(t=>`<div class="ux-picker-digit" data-digit="${t.digit}" aria-disabled="${!!g.disabled[t.digit-1]}">${t.digit}</div>`).join('')+'</div>';document.body.appendChild(p);$('grid').children[g.index].classList.add('ux-origin');
+   p.innerHTML='<div class="ux-picker-title">Slide · release to enter</div><div class="ux-picker-grid">'+marks.map(m=>`<div class="ux-picker-digit${m.note?' user-note':''}${m.conflict?' conflict':''}" data-digit="${m.digit}">${m.digit}</div>`).join('')+'</div>';document.body.appendChild(p);$('grid').children[g.index].classList.add('ux-origin');
   }
   // Do not render/select mid-contact: render replaces Notes descendants which
   // may own the Touch target. Selection/transaction occurs only on valid release.
   g.active=true;$('grid').classList.add('ux-holding');if(g.kind==='pointer')try{$('grid').setPointerCapture(g.id);g.capture=true;}catch(_){}
  }
- function arm(index,id,x,y,kind,source){cancelGesture();suppress=null;if((kind==='touch'&&!mobile())||!inspectable(index))return;const mode=playerGrid[Math.floor(index/9)][index%9]?'loupe':'picker';if(mode==='picker'&&!eligible(index))return;const token=++gestureSeq;gesture={index,id,x,y,x0:x,y0:y,kind,source,mode,key:key(),token,active:false};gesture.timer=setTimeout(()=>activate(token),300);}
- function hover(g,x,y){if(x>=g.layout.footprint.left&&x<=g.layout.footprint.right&&y>=g.layout.footprint.top&&y<=g.layout.footprint.bottom){const t=g.layout.targets.find(t=>x>=t.left&&x<t.right&&y>=t.top&&y<t.bottom);return t&&!g.disabled[t.digit-1]?t.digit:0;}return 0;}
- function move(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;if(!validGesture(g)){cancelGesture();return;}if(!g.active){if(Math.hypot(x-g.x0,y-g.y0)>10)cancelGesture();return;}if(g.mode==='loupe'){paintLoupe(g,x,y);return;}g.hover=hover(g,x,y);$('uxPicker').querySelectorAll('[data-digit]').forEach(n=>n.classList.toggle('active',+n.dataset.digit===g.hover));}
- function release(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;const digit=g.active&&g.mode==='picker'&&validGesture(g)?hover(g,x,y):0;cancelGesture();if(digit){if(selectedCell!==g.index)selectCell(g.index,g.source);if(selectedCell===g.index)placeNumber(digit,g.source);sync();}}
+ function arm(index,id,x,y,kind,source){cancelGesture();suppress=null;if((kind==='touch'&&!mobile())||!inspectable(index))return;const mode=playerGrid[Math.floor(index/9)][index%9]?'loupe':'picker';if(mode==='picker'&&!eligible(index))return;const token=++gestureSeq;gesture={index,id,x,y,x0:x,y0:y,kind,source,mode,preferences:preferences(),key:key(),token,active:false};gesture.timer=setTimeout(()=>activate(token),300);}
+ function hover(g,x,y){const t=g.layout.targets.find(t=>x>=t.left&&x<t.right&&y>=t.top&&y<t.bottom);return t?t.digit:0;}
+ function move(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;if(!validGesture(g)){cancelGesture();return;}if(!g.active){if(Math.hypot(x-g.x0,y-g.y0)>10)cancelGesture();return;}if(g.mode==='loupe'){paintLoupe(g,x,y);return;}
+  // Deliberate post-opening travel (8 CSS px), not accumulating small jitter.
+  if(Math.hypot(x-g.openX,y-g.openY)>=8)g.intentional=true;
+  g.hover=g.intentional?hover(g,x,y):0;$('uxPicker').querySelectorAll('[data-digit]').forEach(n=>n.classList.toggle('active',+n.dataset.digit===g.hover));
+ }
+ function release(x,y){const g=gesture;if(!g)return;g.x=x;g.y=y;const digit=g.active&&g.mode==='picker'&&g.intentional&&validGesture(g)?hover(g,x,y):0;cancelGesture();if(digit){if(selectedCell!==g.index)selectCell(g.index,g.source);if(selectedCell===g.index)placeNumber(digit,g.source);sync();}}
  function park(node,parent){if(!slots.has(node)){const marker=document.createComment('mobile control home');node.before(marker);slots.set(node,marker);}parent.appendChild(node);}
  function unpark(node){const marker=slots.get(node);if(marker?.parentNode)marker.after(node);}
  function sync(){
   if(!$('uxToolbar'))return;const on=mobile(),notes=$('notesBtn');notes.textContent=on?'Notes\n'+(notesMode?'ON':'OFF'):'Notes: '+(notesMode?'ON':'OFF');notes.setAttribute('aria-pressed',String(notesMode));
-  const locked=!!demo||!!genJob||!!restoring;for(const id of ['notesBtn','uxErase','uxUndo','uxNew','uxHint','uxWhy','uxMore'])$(id).disabled=locked;
+  const locked=!!demo||!!genJob||!!restoring;for(const id of ['notesBtn','uxErase','uxUndo','uxNew','uxHint','uxWhy','uxMore','uxDesktopSettings'])$(id).disabled=locked;
   $('uxErase').disabled=locked||!playerGrid||selectedCell===null||givenCells?.[Math.floor(selectedCell/9)]?.[selectedCell%9]===true;
   $('uxUndo').disabled=locked||!history.length;
   if(on||demo){$('solveBtn').textContent=demo?(demo.phase==='STOPPED'?'Stopped':'Stop'):'AI Solve';$('solveBtn').disabled=!!demo&&demo.phase==='STOPPED';$('solveBtn').onclick=()=>demo?stopDemo():requestDemo();}
  }
  function resize(){cancelGesture();if(mobile()){if(solveJob)cancelSolve();if(aiAnimating)aiPause();}if(!mobile()&&demo)returnDemo();if(dialog)closeDialog();const toolbar=$('uxToolbar');if(!toolbar)return;
   const nodes=['notesBtn','uxErase','uxUndo','uxNew','uxHint','uxWhy','solveBtn','uxMore'].map($);for(const n of nodes)mobile()?park(n,toolbar):unpark(n);
-  toolbar.hidden=!mobile();if(!mobile()){$('solveBtn').textContent='▶ AI Solve';$('solveBtn').disabled=false;$('solveBtn').onclick=aiSolve;}sync();
+  toolbar.hidden=!mobile();$('uxDesktopSettings').hidden=mobile();if(!mobile()){$('solveBtn').textContent='▶ AI Solve';$('solveBtn').disabled=false;$('solveBtn').onclick=aiSolve;}sync();
  }
  function beforeDialog(){cancelGesture();if(dialog)finishDialog(false);dialog={id:++dialogSeq,selected:selectedCell,focus:document.activeElement,returnNodes:[]};}
  function finishDialog(restore=true){if(!dialog)return;const d=dialog;dialog=null;dialogSeq++;if(helpRequest){helpRequest=null;if(navJob){navJob.cancel();navJob=null;resetAnalysis();}else{clearProofHighlights();}}
@@ -2745,10 +2797,16 @@ const mobileUX=(()=>{
   $('uxCancelNew').onclick=closeDialog;const choose=d=>{if(unfinished){openDialog('Replace unfinished game?',`<p>Start a new ${esc(d)} puzzle? The current game will be retained as previousGame.</p><button class="btn" id="uxConfirmNew">Start new game</button><button class="btn" id="uxCancelNew">Cancel</button>`);$('uxCancelNew').onclick=closeDialog;$('uxConfirmNew').onclick=()=>{closeDialog();createGame(d);};}else{closeDialog();createGame(d);}};
   $('navModalBody').querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>choose(b.dataset.difficulty));if(diff)choose(diff);
  }
+ function openSettings(){if(demo||genJob||restoring)return;
+  const prefs=preferences(),fields=[['uxPickerPosition','position','Number Picker Position',[['atCell','At cell'],['context','Keep context visible']]],['uxPickerSize','size','Picker Size',[['normal','Normal'],['large','Large'],['extraLarge','Extra Large']]],['uxCandidateAssist','assist','Candidate Assist',[['auto','Auto'],['on','On'],['off','Off']]]];
+  openDialog('Settings',fields.map(([id,name,label,options])=>`<div class="ux-setting"><label for="${id}">${label}</label><select id="${id}">${options.map(([value,text])=>`<option value="${value}"${prefs[name]===value?' selected':''}>${text}</option>`).join('')}</select></div>`).join('')+'<p id="uxPreferenceStatus" role="status">Picker choices apply to this device and edition.</p><p>Auto grays direct conflicts on Easy only. Your Notes stay cyan; gray digits can still be entered. Large layouts shrink only when space requires it.</p><div id="uxSettings"></div>');
+  for(const [id,name]of fields)$(id).onchange=()=>setPreference(name,$(id).value);
+  for(const id of ['speedSlider','navGoal','navTechnique','navPolicy','navDeep','navLearningMode','navLearn','navTutor']){const n=$(id);if(!n)continue;const row=document.createElement('div');row.className='ux-setting';const label=document.createElement('label');label.textContent=({speedSlider:'Demonstration speed',navGoal:'Goal',navTechnique:'Technique',navPolicy:'Controller',navDeep:'Allow bounded digit-path work',navLearningMode:'Machine learning'})[id]||'';label.htmlFor=id;row.appendChild(label);$('uxSettings').appendChild(row);park(n,row);dialog.returnNodes.push(n);}
+ }
  function more(){if(demo||genJob)return;openDialog('More','<div class="ux-menu">'+['Review','Settings','Help','Import','Export'].map(s=>`<button class="btn" data-menu="${s}">${s}</button>`).join('')+'</div>');$('navModalBody').querySelectorAll('[data-menu]').forEach(b=>b.onclick=()=>{
    const item=b.dataset.menu;if(item==='Review'){closeDialog();if(rows.length)showReview(rows.at(-1).id);else openDialog('Game Review','<p>No moves have been played in this game yet.</p>');}
-   if(item==='Help')openDialog('How to play','<p>Tap a cell, then a number. Or hold an empty cell still for about 300 ms, keep touching and slide to 1–9; release on the number to enter it. Release outside or in a gap to cancel. If there is no clear space, use Numbers. Start moving before the hold to scroll normally.</p><p>Hold a filled cell to open the central magnifier. Keep your finger down and slide over the grid to enlarge the visible values and Notes. It stays a magnifier even over empty cells. Release to close; it never enters a move or reveals an answer.</p><p>Notes toggles pencil marks. Undo reverses one move. Hint points you toward a thought; Why? explains that same checked thought. Neither enters a value.</p><p>AI Solve demonstrates on a copy. Stop freezes it; Return to my game brings back your untouched game. Human Trace must be exported/deleted explicitly before a demonstration.</p><p>The laboratory and research controls remain below the game.</p>');
-   if(item==='Settings'){openDialog('Settings','<div id="uxSettings"></div><p>These are the existing game and Navigator settings. Changes also update their laboratory controls.</p>');for(const id of ['speedSlider','navGoal','navTechnique','navPolicy','navDeep','navLearningMode','navLearn','navTutor']){const n=$(id);if(!n)continue;const row=document.createElement('div');row.className='ux-setting';const label=document.createElement('label');label.textContent=({speedSlider:'Demonstration speed',navGoal:'Goal',navTechnique:'Technique',navPolicy:'Controller',navDeep:'Allow bounded digit-path work',navLearningMode:'Machine learning'})[id]||'';label.htmlFor=id;row.appendChild(label);$('uxSettings').appendChild(row);park(n,row);dialog.returnNodes.push(n);}}
+   if(item==='Help')openDialog('How to play','<p>Tap a cell, then a number. Or hold an empty cell still for about 300 ms, then deliberately slide to a digit and release. Holding without sliding enters nothing; release in a gap or outside to cancel. Start moving before the hold to scroll normally.</p><p>Settings: At cell centers the picker near your cell; Keep context visible protects its whole row and column. Choose Normal, Large or Extra Large. If space is limited, it fits smaller or offers Numbers. Cyan marks your Notes. Candidate Assist Auto grays visible row, column and box conflicts on Easy only; On/Off overrides that rule. Gray digits remain selectable. A cyan dot retains a conflicting Note.</p><p>Hold a filled cell to open the central magnifier. Keep your finger down and slide over the grid to enlarge the visible values and Notes. It stays a magnifier even over empty cells. Release to close; it never enters a move or reveals an answer.</p><p>Notes toggles pencil marks. Undo reverses one move. Hint points you toward a thought; Why? explains that same checked thought. Neither enters a value.</p><p>AI Solve demonstrates on a copy. Stop freezes it; Return to my game brings back your untouched game. Human Trace must be exported/deleted explicitly before a demonstration.</p><p>The laboratory and research controls remain below the game.</p>');
+   if(item==='Settings')openSettings();
    if(item==='Import'){closeDialog();$('navFile').value='';$('navFile').click();}if(item==='Export'){closeDialog();exportAll();}
   });}
  function requestDemo(){if(demo){stopDemo();return;}if(!puzzle||genJob||restoring||booting||aiAnimating)return;if(blockAIWhileHumanTrace('AI demonstration')){toast('Export/Delete the active Human Trace before AI demonstration');return;}if(isSolved(playerGrid)){toast('This puzzle is already solved');return;}
@@ -2775,6 +2833,7 @@ const mobileUX=(()=>{
   const panel=$('numpad').closest('.panel');panel.insertAdjacentHTML('beforeend','<div id="uxToolbar" class="ux-toolbar" aria-label="Game controls"></div><div id="uxControlHomes" hidden><button class="btn" id="uxNew">New game</button><button class="btn" id="uxHint">Hint</button><button class="btn" id="uxWhy">Why?</button><button class="btn" id="uxMore">More ⋯</button></div>');
   $('notesBtn').parentElement.classList.add('ux-old-controls');$('uxErase').parentElement.classList.add('ux-old-controls');$('uxOldHelp').classList.add('ux-old-controls');
   document.body.insertAdjacentHTML('beforeend','<div id="uxSafeArea" class="ux-safe-area"></div><div id="uxToast" class="ux-toast" role="status" hidden></div>');
+  panel.insertAdjacentHTML('beforeend','<button class="btn" id="uxDesktopSettings">Settings</button>');$('uxDesktopSettings').onclick=openSettings;readPreferences();
   $('uxNew').onclick=()=>requestNew();$('uxHint').onclick=()=>hint('nudge');$('uxWhy').onclick=()=>hint('explain');$('uxMore').onclick=more;
   const grid=$('grid');grid.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||Date.now()<touchUntil)return;if(gesture||e.isPrimary===false||e.button!==0){cancelGesture();return;}const c=e.target.closest('.cell');if(c)arm(+c.dataset.index,e.pointerId,e.clientX,e.clientY,'pointer',e.pointerType==='pen'?'pointer':'pointer');});
   document.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||Date.now()<touchUntil)return;if(e.isPrimary===false)cancelGesture();if(!gesture)suppress=null;},true);
@@ -2800,7 +2859,7 @@ const mobileUX=(()=>{
   window.addEventListener('scroll',()=>cancelGesture(),{capture:true,passive:true});window.addEventListener('orientationchange',resize);window.addEventListener('resize',resize);window.visualViewport?.addEventListener('resize',resize);window.visualViewport?.addEventListener('scroll',()=>cancelGesture());
   resize();
  }
- return{install,mobile,blocked,sync,toast,resize,hint,more,requestNew,requestDemo,beforeDialog,finishDialog,cardText,prepareUpdate,cancelGesture,geometry,visibleBounds,timerRunning:()=>demo?demo.runningTimer:timerInterval!==null,hasDemo:()=>!!demo,demoState:()=>demo?{phase:demo.phase,index:demo.index,revealed:demo.revealed}:null};
+ return{install,mobile,blocked,sync,toast,resize,hint,more,preferences,readPreferences,requestNew,requestDemo,beforeDialog,finishDialog,cardText,prepareUpdate,cancelGesture,geometry,visibleBounds,timerRunning:()=>demo?demo.runningTimer:timerInterval!==null,hasDemo:()=>!!demo,demoState:()=>demo?{phase:demo.phase,index:demo.index,revealed:demo.revealed}:null};
 })();
 
 function install(){
