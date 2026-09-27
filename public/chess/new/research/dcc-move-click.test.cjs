@@ -75,7 +75,7 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   const el = id => w.document.getElementById(id);
   const mode = value => { el('settingDccClickAction').value = value; el('settingDccClickAction').dispatchEvent(new w.Event('change')); };
   const candidate = move => waitFor(() => el('dccAnalysisPanel').querySelector(`.dcc-candidate-button[data-move="${move}"]`), move).catch(error => { throw new Error(`${error.message}; panel=${el('dccAnalysisPanel').textContent}; errors=${errors.join(';')}`); });
-  const showDCC = () => { if (el('btnViewToggle').textContent === 'DCC') el('btnViewToggle').click(); };
+  const showDCC = () => { if (el('btnViewToggle').textContent === (channel === 'LAB' ? 'DCC analysis' : 'DCC')) el('btnViewToggle').click(); };
   const info = el('dccInfoPanel'), start = new w.Chess().fen();
   const reset = () => { el('btnNew').click(); showDCC(); };
   const loadFen = value => { w.prompt = () => value; el('btnInput').click(); showDCC(); };
@@ -110,12 +110,20 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   await candidate('d2d4'); mode('details'); (await candidate('d2d4')).click();
   assert.equal(el('btnSim').textContent, 'Pause', 'details-only remains observational');
   mode('hybrid'); (await candidate('d2d4')).click();
-  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, 'Sim');
+  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, channel === 'LAB' ? 'Simulation' : 'Sim');
   await new Promise(r => setTimeout(r, 1200)); assert.equal(fen, expected.fen(), 'queued automatic move was cancelled');
   assert.equal(info.style.display, 'block');
 
   // SimB accepts a manually chosen DCC move on the human turn, then retains its explanation.
-  reset(); el('btnSimB').click();
+  reset();
+  if (channel === 'LAB') {
+    el('btnSim').click();
+    const tournament = el('simTournamentDialog');
+    assert.equal(tournament.open, true);
+    tournament.querySelector('[data-action="human-white"]').click();
+    assert.equal(tournament.open, false);
+    assert.match(el('simModalTitle').textContent, /Black engine, White human/);
+  } else el('btnSimB').click();
   const localBot = w.document.querySelector('input[value=dccbot]'); localBot.checked = true; localBot.dispatchEvent(new w.Event('change'));
   el('simStartBtn').click(); showDCC(); (await candidate('d2d4')).click();
   await waitFor(() => new w.Chess(fen).turn() === 'w', 'black engine reply');
