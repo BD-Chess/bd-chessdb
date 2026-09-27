@@ -122,7 +122,9 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
     assert.equal(tournament.open, true);
     tournament.querySelector('[data-action="human-white"]').click();
     assert.equal(tournament.open, false);
-    assert.match(el('simModalTitle').textContent, /Black engine, White human/);
+    assert.match(el('simModalTitle').textContent, /Play as White — Black engine/);
+    assert.equal(el('simSelfOption').hidden, true);
+    assert.equal(w.document.querySelector('input[value=dccbot]').checked, true);
   } else el('btnSimB').click();
   const localBot = w.document.querySelector('input[value=dccbot]'); localBot.checked = true; localBot.dispatchEvent(new w.Event('change'));
   el('simStartBtn').click(); showDCC(); (await candidate('d2d4')).click();
