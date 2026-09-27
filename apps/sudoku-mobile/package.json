@@ -6,10 +6,13 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "verify:donor": "node scripts/build.mjs --verify-only",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs test/upstream/*.test.cjs",
     "sync": "npm run build && cap sync",
     "open:ios": "cap open ios",
-    "open:android": "cap open android"
+    "open:android": "cap open android",
+    "verify:package": "node scripts/verify-package.mjs",
+    "test:integration": "node --test test/native-integration.test.mjs",
+    "test:parity": "node --test test/upstream/*.test.cjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
@@ -23,6 +26,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.2",
     "esbuild": "^0.25.0",
+    "jsdom": "26.1.0",
     "typescript": "^5.9.3"
   },
   "engines": {

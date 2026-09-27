@@ -90,7 +90,7 @@ class GuardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             app=Path(d)/'App.app';web=Path(d)/'web';(app/'public').mkdir(parents=True);web.mkdir()
             (app/'Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier':ci.BUNDLE,'CFBundleDisplayName':'8zSudoku'}))
-            for n in ('index.html','bridge.js'):(app/'public'/n).write_bytes(b'test');(web/n).write_bytes(b'test')
+            for n in ('index.html','bridge.js','icon.png'):(app/'public'/n).write_bytes(b'test');(web/n).write_bytes(b'test')
             ci.verify_bundle(app,web)
             (web/'bridge.js').write_bytes(b'changed')
             with self.assertRaises(ValueError):ci.verify_bundle(app,web)

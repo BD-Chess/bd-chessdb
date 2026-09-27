@@ -1,24 +1,13 @@
-# 8zSudoku na iPhonu brez Maca — BD začetek
+# 8zSudoku — naslednja posodobitev na iPhonu
 
-25. september 2026 · nadaljevanje PR #26, brez združitve v main.
+27. september 2026 · nadaljevanje draft PR #26.
 
-**Najprej naredi samo to:** na iPhonu odpri Applovo aplikacijo **Apple Developer → Account → prijava z Apple računom → Enroll Now**. Dokončaj preverjanje identitete in članstvo. Potrebuješ vklopljeno dvostopenjsko preverjanje. Obstoječega aktivnega članstva ne kupuj ponovno. Apple navaja 99 USD/leto oziroma lokalno ceno, ki jo pokaže ob vpisu; naročnina v aplikaciji se samodejno podaljšuje.
+Prva namestitev TestFlight že obstaja: zgodovinsko potrjena različica **1.0 (1.2.1)**, podpisani run **36254855860**, stari SHA **4a6d0bc19dd2ac2de06c89aecaf3748f5d8630c2**. Vpisa v Apple, registracije aplikacije in izdelave ključev ne ponavljaj.
 
-Pri **Individual** bo prodajalec v App Storu tvoje pravno ime. Pri **Organization** moraš vpisati ustrezno pravno osebo in opraviti njeno preverjanje. Ime igre ostane **8zSudoku**.
+1. Po checkpointu faze A preklopi na **GPT-6 Luna / Max** in napiši **CONTINUE_TESTS**. Takrat se preveri celoten zamrznjeni APP in zažene obstoječa nepodpisana macOS gradnja.
+2. Po uspešnih zahtevanih preverjanjih dobiš **nov polni SHA**, rezultate in načrt build številke. Odobritev velja samo za ta kandidat. Stari »GO TestFlight« ne velja.
+3. Šele po novi odobritvi se preveri trenutna veja, nastavi IOS_APPROVED_SHA, enkratno vključi upload in ustvari nova unikatna oznaka. Obstoječe okolje 8zsudoku-testflight še vedno zahteva **Review deployments → Approve and deploy**. Točna navodila bodo vezana na preverjeni SHA.
+4. Po nalaganju se ločeno preveri Applova obdelava in vključitev builda v obstoječo interno skupino **BD**. Nato v TestFlight na iPhonu 16 Pro izberi **Update** za 8zSudoku. Aplikacije ne odstranjuj.
+5. Preveri nadaljevanje stare igre, kratek dotik, hold prazne/polne celice, slide, Notes/Undo, Hint/Why, Stop/Return, vrnitev iz ozadja, izvoz/uvoz in hladni zagon v letalskem načinu. Brisanje preverjamo na testnih podatkih.
 
-Ko Apple potrdi članstvo, se prijavi v **Apple Developer Account** in **App Store Connect**. Sam login še ni vse: za avtomatsko gradnjo potrebujemo še podpisno potrdilo/profil ter API ključ za nalaganje. Pripravljeni Windows pomočnik odstrani potrebo po Macu tudi pri izdelavi podpisnih datotek.
-
-Celotna navodila s kliki in PowerShell ukazi so v [IOS_CLOUD_TESTFLIGHT.md](IOS_CLOUD_TESTFLIGHT.md). Najkrajši nadaljnji tok:
-
-1. V Applovem portalu registriraš 8zSudoku in ustvariš API ključ. `.p8` preneseš le enkrat ter ga shraniš zasebno.
-2. Windows pomočnik izdela CSR; Apple izda potrdilo. Pomočnik ga poveže s tvojim zasebnim ključem v šifriran `.p12`. Preneseš še App Store Connect profil.
-3. V GitHubu pripraviš okolje `8zsudoku-testflight` z odobritvijo **BD-Chess**. Pomočnik vanj varno shrani ključe in pusti nalaganje izključeno.
-4. Odobriš točno različico, sprožiš namensko TestFlight oznako in potrdiš **Review deployments → Approve and deploy**. GitHubov Mac izvede gradnjo/podpis/nalaganje; tvojega Maca ne potrebujemo.
-5. Po Applovi obdelavi dodaš sebe in build v interno TestFlight skupino ter namestiš **8zSudoku** prek aplikacije **TestFlight**.
-
-**Gesla za Apple, kod 2FA, `.p8`, `.p12` ali zasebnega `.pem` ne pošiljaj v klepet.** Apple prijavo potrjuješ pri Applu, GitHub prijavo pri GitHubu; podpisne skrivnosti sodijo v zaščiteno GitHub okolje. Priprava še ne pomeni objave v App Storu in ne zagotavlja odobritve trgovine.
-
-Status gradnje in omejitve preverjanja so v ločenem datiranem poročilu ter rezultatu GitHub Actions. Koda pripravljena ≠ iOS build uspešen ≠ TestFlight dostavljen ≠ iPhone preizkušen.
-
-Apple: https://developer.apple.com/help/account/membership/enrolling-in-the-app
-GitHub PR: https://github.com/BD-Chess/bd-chessdb/pull/26
+Trenutni checkpoint še ni novi podpisani build. Marketing ostaja 1.0; CFBundleVersion izračuna obstoječi ios_ci.py iz dejanskega run/attempt. PR ostane draft in se ne združuje v main. Gesel, 2FA ali podpisnih datotek ne pošiljaj v klepet.

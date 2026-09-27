@@ -1,4 +1,4 @@
-import { readFile, mkdir, writeFile, cp } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, cp, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -27,29 +27,34 @@ if (process.argv.includes('--verify-only')) {
   process.exit(0);
 }
 let html = donor.toString('utf8');
+const transforms = [];
+const source = name => readFile(path.join(app, 'src', name), 'utf8');
 function replaceOnce(oldValue, newValue) {
   if (html.split(oldValue).length !== 2) throw Error(`Expected exactly one donor occurrence: ${oldValue.slice(0, 95)}`);
   html = html.replace(oldValue, newValue);
+  transforms.push({ anchor: oldValue.slice(0,100), matches: 1 });
 }
 replaceOnce('<meta name="viewport" content="width=device-width, initial-scale=1.0">',
   '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">');
-replaceOnce('<title>8zSudoku — DCC Navigator 0.2.0 | BD × AI Lab</title>', '<title>8zSudoku</title>');
+replaceOnce('<title>8zSudoku — DCC Navigator · Engine 0.3.0 | BD × AI Lab</title>', '<title>8zSudoku</title>');
 replaceOnce('<h2>BD <span>Sudoku</span></h2>', '<h2><span>8zSudoku</span></h2>');
-replaceOnce('const avail=Math.min(w-40,h*0.5);return Math.max(30,Math.floor((avail-20)/9.5))',
-  'const avail=Math.min(w-24,h*0.57);return Math.max(30,Math.floor((avail-18)/9.1))');
 replaceOnce("for(let i=0;i<81;i++){const cell=document.createElement('div');cell.className='cell';cell.dataset.index=i;cell.addEventListener('click',ev=>selectCell(i,ai8InputSource(ev)));grid.appendChild(cell)}",
   "for(let i=0;i<81;i++){const cell=document.createElement('button');cell.type='button';cell.className='cell';cell.dataset.index=i;cell.addEventListener('click',ev=>selectCell(i,ai8InputSource(ev)));grid.appendChild(cell)}");
 replaceOnce("    else cell.innerHTML='';\n  });",
   "    else cell.innerHTML='';\n    cell.setAttribute('aria-label',`Row ${r+1}, column ${c+1}, ${v?(isG?'given ':'')+v:notes[r][c].size?'notes '+[...notes[r][c]].sort((a,b)=>a-b).join(', '):'empty'}`);cell.setAttribute('aria-pressed',String(selectedCell===i));\n  });");
 // Relative website links would resolve inside the app. Make a deliberate user tap open a browser.
+let externalLinkCount = 0;
 html = html.replace(/href=(['"])(\.\.\/[^'"\s]+)\1/g, (_match, quote, relative) => {
+  externalLinkCount++;
   const url = new URL(relative, 'https://bd-chess.github.io/bd-chessdb/S/new/');
   return `href=${quote}${url.href}${quote} target="_blank" rel="noopener noreferrer"`;
 });
-replaceOnce("function consentMachine(){memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}updateMemory();}",
-  "function consentMachine(){memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}else{machine=C.emptyModel();localStorage.removeItem(NS+'.machine');learningMode='COLD';$('navLearningMode').value=learningMode;}updateMemory();}");
-replaceOnce("function consentTutor(){tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}",
-  "function consentTutor(){tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);if(!tutorConsent){tutor={version:C.VERSION,attempts:[]};localStorage.removeItem(NS+'.tutor');}$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}");
+if(externalLinkCount!==7)throw Error('Expected seven reviewed user-initiated external links');
+transforms.push({anchor:'relative user links',matches:externalLinkCount});
+replaceOnce("function consentMachine(){if(mobileUX.hasDemo())return;memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}updateMemory();}",
+  "function consentMachine(){if(mobileUX.hasDemo())return;memoryConsent=!memoryConsent;persist('consentMachine',memoryConsent);$('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';if(memoryConsent){learningMode='ONLINE_PREQUENTIAL';$('navLearningMode').value=learningMode;persist('machine',{version:C.VERSION,observations:machine.observations});}else{machine=C.emptyModel();localStorage.removeItem(NS+'.machine');learningMode='COLD';$('navLearningMode').value=learningMode;}updateMemory();}");
+replaceOnce("function consentTutor(){if(mobileUX.hasDemo())return;tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}",
+  "function consentTutor(){if(mobileUX.hasDemo())return;tutorConsent=!tutorConsent;persist('consentTutor',tutorConsent);if(!tutorConsent){tutor={version:C.VERSION,attempts:[]};localStorage.removeItem(NS+'.tutor');}$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';updateMemory();}");
 replaceOnce("function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}",
   "function download(text,name,type){if(window.SudokuMobileBridge?.isNative){window.SudokuMobileBridge.exportFile(text,name,type).then(()=>notify('Share sheet closed. Confirm your saved destination.')).catch(e=>notify('Export failed: '+e.message));return;}const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}");
 replaceOnce("window.addEventListener('beforeunload',()=>{try{if(humanTraceRecorder.hasTrace())humanTraceRecorder.exportObject();}catch(_){}});",
@@ -58,36 +63,28 @@ replaceOnce("  const text=JSON.stringify(trace,null,2);const blob=new Blob([text
   "  const text=JSON.stringify(trace,null,2)+'\\n';if(window.SudokuMobileBridge?.isNative){window.SudokuMobileBridge.exportFile(text,'AI8_SUDOKU_HUMAN_EVENT_V1.json','application/json').then(()=>setStatus('Share sheet closed; confirm trace destination','')).catch(e=>setStatus('Trace export failed: '+e.message,''));return trace;}const blob=new Blob([text],{type:'application/json'});const url=URL.createObjectURL(blob);\n  const a=document.createElement('a');a.href=url;a.download='AI8_SUDOKU_HUMAN_EVENT_V1.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);\n  setStatus(`Human trace download requested · ${trace.events.length} events`,'');return trace;");
 replaceOnce("  const blob=new Blob([JSON.stringify(report,null,2)+'\\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AI8_SUDOKU_GAME_REVIEW_PREVIEW_V1.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);setStatus(`Game Review exported · ${moveReviews.length} moves`,'win');return report;",
   "  const text=JSON.stringify(report,null,2)+'\\n';if(window.SudokuMobileBridge?.isNative){window.SudokuMobileBridge.exportFile(text,'AI8_SUDOKU_GAME_REVIEW_PREVIEW_V1.json','application/json').then(()=>setStatus('Share sheet closed; confirm review destination','')).catch(e=>setStatus('Review export failed: '+e.message,''));return report;}const blob=new Blob([text],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AI8_SUDOKU_GAME_REVIEW_PREVIEW_V1.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);setStatus(`Game Review download requested · ${moveReviews.length} moves`,'');return report;");
-replaceOnce("function deleteAll(){if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}",
-  "function deleteAll(){if(!confirm('Delete all 8zSudoku saved games, statistics, optional human trace, machine memory, tutor history and consents on this device?'))return;window.SudokuMobileDeleting=true;clearTimeout(saveTimer);stopTimer();humanTraceRecorder.deleteAll();puzzle=null;playerGrid=null;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}if(Object.keys(localStorage).some(k=>k.startsWith(NS+'.')))throw Error('Some keys remain');}catch(e){notify('Deletion incomplete: '+e.message+'. Please retry.');return;}location.reload();}");
-replaceOnce(" window.addEventListener('pagehide',()=>{if(puzzle)persist('session',snapshot());});",
-` let mobilePaused=false,mobileTimerWasRunning=false;
- window.SudokuMobileSession={
-  pause(){if(window.SudokuMobileDeleting)return;if(!mobilePaused){mobileTimerWasRunning=!!timerInterval;mobilePaused=true;}if(puzzle&&!booting){clearTimeout(saveTimer);persist('session',snapshot());}stopTimer();},
-  resume(){if(window.SudokuMobileDeleting||!mobilePaused)return;mobilePaused=false;if(mobileTimerWasRunning&&puzzle&&playerGrid&&!booting&&!tracePaused&&!recoveryAwaitingContinue)resumeTimer();mobileTimerWasRunning=false;},
-  back(){if(!$('navModal').hidden){closeDialog();return true;}if($('helpModal')?.style.display==='flex'){hideHelp();return true;}const open=[...document.querySelectorAll('details[open]')].at(-1);if(open){open.open=false;return true;}return false;},
-  deleteAll
- };
- window.addEventListener('pagehide',()=>window.SudokuMobileSession.pause());
- document.addEventListener('visibilitychange',()=>{if(document.hidden)window.SudokuMobileSession.pause();else window.SudokuMobileSession.resume();});`);
-replaceOnce('</head>', `<style id="native-mobile-style">
-:root{color-scheme:dark}
-html{overscroll-behavior:none}
-body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);touch-action:pan-y;-webkit-tap-highlight-color:transparent}
-button,.cell,select{touch-action:manipulation}
-.cell{appearance:none;padding:0}
-.mobile-input-panel{width:100%;max-width:530px;margin-top:10px}
-button:focus-visible,.cell:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.nav-modal{padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-.nav-dialog{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px)}
-@media(max-width:760px){.topbar{position:relative}.main{padding:6px 10px}.grid-wrap{padding:4px}.header{padding:8px 12px 0}.title-block{padding-top:3px}.cell{min-width:0;min-height:0}.numpad button,.btn{min-height:44px}.footer{padding-bottom:20px}}
-@media(prefers-reduced-motion:reduce){body::before,body::after,.cell,.welcome-card{animation:none!important;transition:none!important}}
-</style>
-</head>`);
+replaceOnce("function deleteAll(){if(mobileUX.blocked())return;if(!confirm('Delete only this development version’s saved game, machine memory and tutor profile? Production data is not touched.'))return;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}}catch(e){notify('Could not delete local storage: '+e.message+'. No deletion success is claimed.');return;}machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;rows=[];assistance=[];learningMode='COLD';$('navLearningMode').value=learningMode;$('navLearn').textContent='Machine memory: session';$('navTutor').textContent='Enable tutor profile';storageWarning='';clearTimeout(saveTimer);updateMemory();renderReviews();notify('Navigator storage deleted. Current unsaved grid remains open; later play may create a new session save.');}",
+  "function deleteAll(){if(!confirm('Delete all 8zSudoku saved games, statistics, optional human trace, machine memory, tutor history and consents on this device?'))return;window.SudokuMobileDeleting=true;mobileUX.prepareUpdate();cancelSolve();genJob?.cancel();genJob=null;generationToken++;resetAnalysis();booting=true;clearTimeout(saveTimer);stopTimer();humanTraceRecorder.deleteAll();machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;history=[];rows=[];assistance=[];puzzle=null;playerGrid=null;try{for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.'))localStorage.removeItem(k);}if(Object.keys(localStorage).some(k=>k.startsWith(NS+'.')))throw Error('Some keys remain');}catch(e){notify('Deletion incomplete: '+e.message+'. Please retry.');return;}Promise.resolve(window.SudokuMobileBridge?.deleteExports()).then(()=>location.reload()).catch(e=>notify('Game data deleted; temporary export cleanup failed: '+e.message+'. Retry Delete local data.'));}");
+// The donor's layout and gesture owner is retained; lifecycle integrates into it.
+replaceOnce(" window.addEventListener('pagehide',()=>{mobileUX.prepareUpdate();if(puzzle)persist('session',snapshot());});",
+  await source('session-adapter.js'));
+replaceOnce("window.addEventListener('pagehide',prepareUpdate);", "/* Native session adapter owns pagehide cleanup. */");
+replaceOnce("return{install,mobile,blocked,sync,toast,resize,hint,more,requestNew,requestDemo,beforeDialog,finishDialog,cardText,prepareUpdate,cancelGesture,geometry,visibleBounds,",
+  "return{back(){if(gesture){cancelGesture();return true;}if(modal()){closeDialog();return true;}if(demo){returnDemo();return true;}return false;},install,mobile,blocked,sync,toast,resize,hint,more,requestNew,requestDemo,beforeDialog,finishDialog,cardText,prepareUpdate,cancelGesture,geometry,visibleBounds,");
+replaceOnce("function resumeTimer(){if(timerInterval)return;", "function resumeTimer(){if(window.SudokuMobileDeleting)return;if(window.SudokuMobileSession?.paused){window.SudokuMobileSession.requestTimer();return;}if(timerInterval)return;");
+replaceOnce("timerRunning:mobileUX.timerRunning(),", "timerRunning:window.SudokuMobileSession?.paused?window.SudokuMobileSession.shouldResume:mobileUX.timerRunning(),");
+replaceOnce("function scheduleSave(){if(booting||!puzzle)return;", "function scheduleSave(){if(booting||!puzzle||window.SudokuMobileDeleting||window.SudokuMobileSession?.paused||nativeRecoveryBlocked)return;");
+replaceOnce("function persist(name,data){try{", "function persist(name,data){if(window.SudokuMobileDeleting||name==='session'&&nativeRecoveryBlocked)return false;try{");
+replaceOnce("const saved=load('session');if(saved&&!humanTraceRecorder.isLocked())restoreSession(saved).catch(e=>{notify('Saved game was not restored: '+e.message);}).finally(()=>{booting=false;updateMemory();});else{booting=false;if(playerGrid)freshState();updateMemory();}",
+  "const saved=load('session');if(!humanTraceRecorder.isLocked()&&(saved||localStorage.getItem(NS+'.session'))){Promise.resolve().then(()=>{if(!saved)throw Error('SESSION_JSON');return restoreSession(saved);}).then(ok=>{if(!ok)throw Error('SESSION_VERSION');}).catch(nativeRecovery).finally(()=>{booting=false;updateMemory();});}else{booting=false;if(playerGrid)freshState();updateMemory();}");
+replaceOnce("function persist(name,data)", (await source('recovery-adapter.js')) + "\nfunction persist(name,data)");
+replaceOnce('</head>', '<style id="native-mobile-style">\n' + await source('native.css') + '\n</style>\n</head>');
 replaceOnce('</body>', '<script type="module" src="./bridge.js"></script>\n</body>');
 const output = path.join(app, 'web');
+await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await writeFile(path.join(output, 'index.html'), html);
 await cp(path.join(app, 'assets/icon.png'), path.join(output, 'icon.png'));
 await build({ entryPoints: [path.join(app, 'src/bridge.js')], bundle: true, format: 'esm', platform: 'browser', target: 'es2022', outfile: path.join(output, 'bridge.js'), logLevel: 'silent', legalComments: 'none' });
+await writeFile(path.join(app, 'build-transforms.json'), JSON.stringify({donor:spec,transforms},null,2)+'\n');
 console.log(`Bundled 8zSudoku (${hash(Buffer.from(html), 'sha256')}) from ${spec.gitBlob}`);

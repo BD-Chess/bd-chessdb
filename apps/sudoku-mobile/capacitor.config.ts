@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// Proposed identifier: review against BD's final developer account before distribution.
+// Registered identity used by the existing installed TestFlight app; preserve it.
 const config: CapacitorConfig = {
   appId: 'org.chessbest.eightzsudoku',
   appName: '8zSudoku',

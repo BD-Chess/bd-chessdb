@@ -5,33 +5,32 @@ import { Share } from '@capacitor/share';
 
 const isNative = Capacitor.isNativePlatform();
 const safeName = name => String(name).replace(/[^a-z0-9_.-]/gi, '_').slice(0, 100);
-// Keep the 9-key pad immediately below the grid on phones; restore the desktop column on tablets.
-const phoneLayout = matchMedia('(max-width:760px)');
-function placeInputPanel() {
-  const panel = document.querySelector('#numpad')?.closest('.panel');
-  const grid = document.querySelector('#gridWrap');
-  const left = document.querySelector('.col-left');
-  if (!panel || !grid || !left) return;
-  if (phoneLayout.matches) {
-    grid.after(panel);
-    panel.classList.add('mobile-input-panel');
-  } else {
-    left.querySelector('.panel')?.after(panel);
-    panel.classList.remove('mobile-input-panel');
-  }
-}
-phoneLayout.addEventListener('change', placeInputPanel);
-placeInputPanel();
+let exportSequence = 0;
+const pendingWrites = new Set();
 window.SudokuMobileBridge = {
   isNative,
   async exportFile(text, name, type) {
     if (!isNative) throw Error('Native sharing is unavailable.');
-    const file = `export-${Date.now()}-${safeName(name)}`;
-    const { uri } = await Filesystem.writeFile({ path: file, data: String(text), directory: Directory.Cache, encoding: 'utf8' });
-    try {
-      await Share.share({ title: name, text: '8zSudoku local export', url: uri, dialogTitle: `Export ${name}` });
-    } finally {
-      await Filesystem.deleteFile({ path: file, directory: Directory.Cache }).catch(() => {});
+    if (window.SudokuMobileDeleting) throw Error('Local deletion is in progress.');
+    const file = `export-${Date.now()}-${++exportSequence}-${safeName(name)}`;
+    const writing = Filesystem.writeFile({ path: file, data: String(text), directory: Directory.Cache, encoding: 'utf8' });
+    pendingWrites.add(writing);
+    let uri;
+    try { ({ uri } = await writing); }
+    finally { pendingWrites.delete(writing); }
+    if (window.SudokuMobileDeleting) throw Error('Export canceled by local deletion.');
+    // Android chooser completion does not guarantee the target read the URI.
+    // Keep files in the app cache until explicit deletion or OS cache eviction.
+    await Share.share({ title: name, text: '8zSudoku local export', url: uri, dialogTitle: `Export ${name}` });
+  },
+  async deleteExports() {
+    if (!isNative) return;
+    await Promise.allSettled([...pendingWrites]);
+    const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache });
+    for (const file of files) {
+      if (/^export-\d+-[a-z0-9_.-]+$/i.test(file.name)) {
+        await Filesystem.deleteFile({ path: file.name, directory: Directory.Cache });
+      }
     }
   },
 };

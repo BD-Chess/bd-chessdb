@@ -1,5 +1,8 @@
 # 8zSudoku: iPhone builds without owning a Mac
 
+> 2026-09-27 update: initial enrollment, signing configuration and the first internal TestFlight release are complete (successful run 36254855860, old SHA 4a6d0bc19dd2ac2de06c89aecaf3748f5d8630c2; historical installed 1.0 (1.2.1)). Sections 1–4 below are retained setup/recovery reference, not work to repeat. The current LAB parity candidate is not approved for upload. Follow APP_LAB_PARITY_R1.md, then review the new exact SHA, run and build number. Reuse the registered ID, existing BD group, environment and credentials; no new keys or invitations.
+
+
 2026-09-25 · BD-directed continuation of draft PR #26. The existing Capacitor application is retained; only CI, signing helpers and documentation are added. This guide is implementation-specific. A workflow definition is not proof that an iOS build or Apple upload has succeeded; consult the dated verification receipt and the exact GitHub run.
 
 ## What runs, and what does not

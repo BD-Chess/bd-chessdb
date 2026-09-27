@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = await readFile(path.join(app, 'web/index.html'), 'utf8');
+// Old extracted lifecycle/delete/layout checks are now N03-N05/N08 in
+// native-integration.test.mjs: full generated page and compiled bridge.
 const native = await readFile(path.join(app, 'src/bridge.js'), 'utf8');
 function extract(id) {
   const match = html.match(new RegExp('<script id="' + id + '">([\\s\\S]*?)<\\/script>'));
@@ -80,101 +82,6 @@ test('entry, pencil note, erase and undo change the same board state', () => {
   assert.equal(runtime.playerGrid[0][0], 5);
 });
 
-test('native pause flushes gameplay and resume restarts the timer', () => {
-  const m = html.match(/window\.SudokuMobileSession=\{([\s\S]*?)\n \};/);
-  assert.ok(m);
-  const actions = [];
-  const fakeWindow = {};
-  const scope = {
-    window: fakeWindow, puzzle: {}, playerGrid: {}, booting: false, saveTimer: 1,
-    timerInterval: 17, mobilePaused: false, mobileTimerWasRunning: false,
-    tracePaused: false, recoveryAwaitingContinue: false, isSolved: () => false,
-    clearTimeout: () => actions.push('clear'),
-    persist: (name, data) => actions.push([name, data]),
-    snapshot: () => ({ puzzle: 'saved' }),
-    stopTimer: () => actions.push('stop'),
-    resumeTimer: () => actions.push('resume'),
-    deleteAll: () => {},
-    $: () => ({ hidden: true, style: { display: 'none' } }),
-    document: { querySelectorAll: () => [] },
-  };
-  vm.runInNewContext('window.SudokuMobileSession={' + m[1] + '\n};', scope);
-  fakeWindow.SudokuMobileSession.pause();
-  assert.deepEqual(JSON.parse(JSON.stringify(actions)), ['clear', ['session', { puzzle: 'saved' }], 'stop']);
-  scope.timerInterval = null;
-  fakeWindow.SudokuMobileSession.pause();
-  fakeWindow.SudokuMobileSession.resume();
-  assert.equal(actions.at(-1), 'resume');
-  let resumes = actions.filter(x => x === 'resume').length;
-  scope.timerInterval = null;
-  fakeWindow.SudokuMobileSession.pause();
-  fakeWindow.SudokuMobileSession.resume();
-  assert.equal(actions.filter(x => x === 'resume').length, resumes, 'Already stopped timer stays stopped');
-  scope.timerInterval = 17;
-  scope.tracePaused = true;
-  fakeWindow.SudokuMobileSession.pause();
-  fakeWindow.SudokuMobileSession.resume();
-  assert.equal(actions.filter(x => x === 'resume').length, resumes, 'Trace pause stays paused');
-  scope.tracePaused = false;
-  scope.timerInterval = 17;
-  fakeWindow.SudokuMobileSession.pause();
-  fakeWindow.SudokuMobileSession.resume();
-  resumes++;
-  assert.equal(actions.filter(x => x === 'resume').length, resumes, 'A running timer resumes even if the grid is full');
-  assert.match(native, /appStateChange/);
-  assert.match(native, /backButton/);
-});
-
-test('delete-all removes all game, statistics, trace and consent keys', () => {
-  const f = extract('navigator-ui').match(/function deleteAll\(\)\{[^\n]*\}/);
-  assert.ok(f);
-  const keys = [
-    'session', 'stats', 'trace', 'traceConsent', 'machine',
-    'tutor', 'consentMachine', 'consentTutor',
-  ].map(s => 'ai8SudokuNavigatorV020.' + s);
-  const values = Object.fromEntries(keys.map(k => [k, 'private']));
-  values.unrelated = 'keep';
-  const storage = new Proxy(values, {
-    get(target, property) {
-      if (property === 'length') return Object.keys(target).length;
-      if (property === 'key') return i => Object.keys(target)[i];
-      if (property === 'removeItem') return k => { delete target[k]; };
-      if (property === 'setItem') return (k,v) => { target[k] = v; };
-      return target[property];
-    },
-  });
-  let reload = 0;
-  const handlers = {};
-  const fakeWindow = { addEventListener: (event, fn) => { handlers[event] = fn; } };
-  const trace = {
-    live: true,
-    hasTrace() { return this.live; },
-    exportObject() { storage.setItem('ai8SudokuNavigatorV020.trace', 'resurrected'); },
-    deleteAll() { this.live = false; storage.removeItem('ai8SudokuNavigatorV020.trace'); storage.removeItem('ai8SudokuNavigatorV020.traceConsent'); },
-  };
-  const ctx = {
-    confirm: () => true, clearTimeout: () => {}, saveTimer: null,
-    stopTimer: () => {}, localStorage: storage, window: fakeWindow,
-    humanTraceRecorder: trace, puzzle: {}, playerGrid: {}, booting: false,
-    mobilePaused: false, mobileTimerWasRunning: false, timerInterval: 17,
-    persist: (name, data) => storage.setItem('ai8SudokuNavigatorV020.' + name, JSON.stringify(data)),
-    snapshot: () => ({ game: 'resurrected' }), resumeTimer: () => {},
-    deleteAll: () => {},
-    $: () => ({ hidden: true, style: {} }), document: { querySelectorAll: () => [] },
-    NS: 'ai8SudokuNavigatorV020',
-    location: { reload: () => { handlers.beforeunload(); handlers.pagehide(); fakeWindow.SudokuMobileSession.pause(); reload++; } },
-  };
-  vm.createContext(ctx);
-  const before = html.match(/window.addEventListener\('beforeunload',[^\n]+/);
-  const page = html.match(/window.addEventListener\('pagehide',[^\n]+/);
-  const mobile = html.match(/window\.SudokuMobileSession=\{([\s\S]*?)\n \};/);
-  assert.ok(before && page && mobile);
-  vm.runInContext(before[0] + '\nwindow.SudokuMobileSession={' + mobile[1] + '\n};\n' + page[0], ctx);
-  vm.runInContext(f[0] + ';deleteAll()', ctx);
-  assert.deepEqual(Object.keys(values), ['unrelated']);
-  assert.equal(reload, 1);
-});
-
 test('turning optional consents off removes machine, tutor and trace records', () => {
   const script = extract('navigator-ui');
   const machine = script.match(/function consentMachine\(\)\{[^\n]*\}/);
@@ -193,6 +100,7 @@ test('turning optional consents off removes machine, tutor and trace records', (
   };
   const ui = Object.fromEntries(['navLearn','navTutor','navLearningMode'].map(k => [k, {}]));
   const scope = {
+    mobileUX: { hasDemo: () => false },
     memoryConsent: true, tutorConsent: true, machine: { observations: [1] },
     tutor: { attempts: [1] }, learningMode: 'ONLINE_PREQUENTIAL',
     C: { VERSION: '0.2.0', emptyModel: () => ({ observations: [] }) },
@@ -214,27 +122,6 @@ test('turning optional consents off removes machine, tutor and trace records', (
   assert.equal(items['ai8SudokuNavigatorV020.traceConsent'], undefined);
 });
 
-test('phone/tablet transitions keep the number pad and trace panels in the right places', () => {
-  const start = native.indexOf('const phoneLayout =');
-  const end = native.indexOf('window.SudokuMobileBridge =', start);
-  assert.ok(start > 0 && end > start);
-  const phoneLayout = { matches: true, addEventListener: (_name, fn) => { phoneLayout.changed = fn; } };
-  const panel = { parent: 'left', classList: { add() {}, remove() {} } };
-  const tracePanel = { parent: 'left' };
-  const firstPanel = { after: el => { el.parent = 'left'; } };
-  const grid = { after: el => { el.parent = 'center'; } };
-  const document = {
-    querySelector: sel => ({ '#numpad': { closest: () => panel }, '#gridWrap': grid, '.col-left': { querySelector: () => firstPanel } })[sel],
-  };
-  vm.runInNewContext(native.slice(start, end), { matchMedia: () => phoneLayout, document });
-  assert.equal(panel.parent, 'center');
-  phoneLayout.matches = false; phoneLayout.changed();
-  assert.equal(panel.parent, 'left');
-  phoneLayout.matches = true; phoneLayout.changed();
-  assert.equal(panel.parent, 'center');
-  assert.equal(tracePanel.parent, 'left');
-});
-
 test('bundle has no automatic external resources or Android network permission', async () => {
   const android = await readFile(path.join(app, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
   const ios = await readFile(path.join(app, 'ios/App/App/Info.plist'), 'utf8');
@@ -250,6 +137,18 @@ test('bundle has no automatic external resources or Android network permission',
   assert.match(ios, /<key>CFBundleDisplayName<\/key>\s*<string>8zSudoku<\/string>/);
   assert.match(native, /Filesystem\.writeFile/);
   assert.match(native, /Share\.share/);
-  assert.match(native, /querySelector\('#numpad'\)\?\.closest/);
+  assert.doesNotMatch(native, /placeInputPanel|phoneLayout/);
+  assert.match(html, /function setupMobileInputPanel/);
   assert.doesNotMatch(native, /\.panel:nth-child/);
+});
+
+test('native transforms preserve the entire pinned engine and geometry, without competing touch/layout policy', async () => {
+  const donor=await readFile(path.join(app,'donor/app.html'),'utf8');
+  for(const id of ['navigator-core','mobile-play-geometry']) {
+    const body=donor.match(new RegExp('<script id="'+id+'">([\\s\\S]*?)<\\/script>'))[1];
+    assert.equal(extract(id),body,id+' preserved byte for byte');
+  }
+  const css=await readFile(path.join(app,'src/native.css'),'utf8');
+  assert.doesNotMatch(css,/touch-action|\.header\{|\.title-block\{|\.mobile-input-panel/);
+  assert.equal((html.match(/function setupMobileInputPanel/g)||[]).length,1);
 });

@@ -113,7 +113,7 @@ def verify_bundle(app: Path, web: Path) -> None:
         info = plistlib.load(f)
     if info.get("CFBundleIdentifier") != BUNDLE or info.get("CFBundleDisplayName") != "8zSudoku":
         raise ValueError("Built app identity mismatch")
-    for name in ("index.html", "bridge.js"):
+    for name in ("index.html", "bridge.js", "icon.png"):
         if (web / name).read_bytes() != (app / "public" / name).read_bytes():
             raise ValueError(f"Bundled asset mismatch: {name}")
 
