@@ -49,6 +49,8 @@ test('DESK03: secondary buttons/early drag do not arm; cancellation and clipped-
  pointer(h,cell(h,2),'pointerdown',point(2));pointer(h,w.document,'pointermove',{x:600,y:300});await sleep(330);assert.equal(h.el('uxPicker'),null);
  const before=state(h),cancel=[()=>pointer(h,w.document,'pointerup',{x:1,y:1}),()=>pointer(h,w.document,'pointercancel',point(2)),()=>h.el('grid').dispatchEvent(new w.Event('lostpointercapture')),()=>w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true})),()=>w.dispatchEvent(new w.Event('blur')),()=>w.dispatchEvent(new w.Event('scroll')),()=>w.dispatchEvent(new w.Event('resize'))];
  for(const fn of cancel){await hold(h,2);fn();assert.equal(h.el('uxPicker'),null);assert.deepEqual(state(h),before);}
+ // Full-board visibility is still required in the explicit protected mode.
+ h.el('uxDesktopSettings').click();h.el('uxPickerPosition').value='context';h.el('uxPickerPosition').dispatchEvent(new w.Event('change'));h.el('navClose').click();
  h.w.innerHeight=400;pointer(h,cell(h,2),'pointerdown',point(2));await until(()=>!h.el('uxToast').hidden,'explicit fallback');assert.equal(h.el('uxPicker'),null);assert.deepEqual(state(h),before);
  click(h,3);assert.equal(h.get('selectedCell'),3);assert.equal(h.get('history.length'),0);assert.deepEqual(h.errors,[]);
 });
