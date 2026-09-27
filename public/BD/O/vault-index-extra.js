@@ -36,7 +36,8 @@ const sections=[
       ['♥','Zdravje','Glavni osebni zdravstveni pregled.','zdravje.html','VAULT'],
       ['＋','Kardiolog','Kardiološki zapiski in priprava.','kardiolog.html','VAULT'],
       ['⌚','Apple Health','Osebni Apple Health pregled.','apple-health.html','VAULT'],
-      ['→','Napotnice','Napotnice in povezani koraki.','napotnice.html','VAULT']
+      ['→','Napotnice','Napotnice in povezani koraki.','napotnice.html','VAULT'],
+      ['🧭','Moji izleti','Javni itinerarji za neposredno deljenje.','izleti/','PUBLIC']
     ]
   },
   {
