@@ -19,7 +19,8 @@ function harness(selected, cdb, sf) {
   deepen.classList = { toggle: (name, value) => { deepen.classes[name] = value; } };
   const depthInput = { value: '15', addEventListener: (_name, fn) => { depthInput.change = fn; } };
   const stored = new Map();
-  const c = { depthInput, stored, STORAGE_KEY_SETTINGS: 'settings', localStorage: { setItem: (key, value) => stored.set(key, value) }, game: new Chess(), settings: { analysisSource: selected, dccEnabled: false, topN: 5, sfRootNodes: 24000, sfAnalysisDepth: 15 },
+  const c = { Chess, depthInput, stored, STORAGE_KEY_SETTINGS: 'settings', localStorage: { setItem: (key, value) => stored.set(key, value) }, game: new Chess(), settings: { analysisSource: selected, dccEnabled: false, topN: 5, sfRootNodes: 24000, sfAnalysisDepth: 15 },
+    sourceAnalyses: { CDB: null, SF: null, DCC: null }, normalizeUci: move => move.from + move.to + (move.promotion || ''),
     analysisGeneration: 0, activityEpoch: 0, annotationRequestId: 0,
     sfAnalysisFen: null, sfAnalysisDepth: null, sfWorking: false, offlineEvidence: null, deepAnalysisFen: null,
     localController: null, localProvider: null, activeLookaheadId: 0,
@@ -38,7 +39,8 @@ function harness(selected, cdb, sf) {
     document: { getElementById: id => id === 'analysisSourceStatus' ? status : id === 'btnAnalysisDeepen' ? deepen : id === 'settingSFDepth' ? depthInput : button,
       querySelectorAll: () => [] },
     console };
-  vm.createContext(c); vm.runInContext(source.slice(controlStart, controlEnd) + source.slice(start, end), c);
+  const contextHelpers = source.slice(source.indexOf('  function recordSourceAnalysis('), source.indexOf('  function getLabContext()'));
+  vm.createContext(c); vm.runInContext(contextHelpers + source.slice(controlStart, controlEnd) + source.slice(start, end), c);
   const fetch = c.fetchAnnotations;
   c.fetchAnnotations = () => (c.pendingFetch = fetch());
   vm.runInContext(source.slice(clickStart, clickEnd), c);
@@ -212,7 +214,7 @@ test('Analysis label switches to stop while working and prevents stopped SF repl
 
 test('Deep analysis publishes only rank 1 for the active position without discarding CDB and DCC', () => {
   const c = harness('all', root, local);
-  const begin = source.indexOf('  function beginDeepAnalysis()');
+  const begin = source.indexOf('  function beginDeepAnalysis(');
   vm.runInContext(source.slice(begin, source.indexOf('  const labHost =', begin)), c);
   const publish = c.beginDeepAnalysis(), fen = c.game.fen();
   assert.equal(c.annotationRequestId, 0, 'Deep SF does not cancel independent CDB and DCC requests');
@@ -238,7 +240,7 @@ test('starting Deep while CDB is pending still fills CDB and DCC cards and retai
   const c = harness('all', () => waitingCDB, async () => {
     const stopped = Error('Deep analysis stopped the previous SF worker'); stopped.name = 'AbortError'; throw stopped;
   });
-  const begin = source.indexOf('  function beginDeepAnalysis()');
+  const begin = source.indexOf('  function beginDeepAnalysis(');
   vm.runInContext(source.slice(begin, source.indexOf('  const labHost =', begin)), c);
   const previous = c.fetchAnnotations();
   const publishDeep = c.beginDeepAnalysis(); const fen = c.game.fen();
@@ -258,7 +260,7 @@ test('late shallow SF replies cannot overwrite a deeper pinned search or starve 
   let releaseShallow;
   const waitingSF = new Promise(resolve => { releaseShallow = resolve; });
   const c = harness('sf', { ...root, reason: 'CDB evaluated candidates' }, () => waitingSF);
-  const begin = source.indexOf('  function beginDeepAnalysis()');
+  const begin = source.indexOf('  function beginDeepAnalysis(');
   vm.runInContext(source.slice(begin, source.indexOf('  const labHost =', begin)), c);
   const previous = c.fetchAnnotations(); await new Promise(resolve => setImmediate(resolve));
   assert.equal(c.calls.dccLookahead.length, 1, 'CDB DCC computes while SF is still searching');
@@ -278,7 +280,7 @@ test('late shallow SF replies cannot overwrite a deeper pinned search or starve 
 test('Deep publisher refuses wrong pinned FEN, switched source, hidden/locked evaluation and superseded requests', () => {
   for (const mutate of [c => c.settings.analysisSource = 'sf', c => c.annotationRequestId++, c => c.activityEpoch++,
     c => c.showEval = false, c => c.playState.assistanceLocked = true, c => c.offlineEvidence = {}, c => c.simRunning = true]) {
-    const c = harness('all', root, local), begin = source.indexOf('  function beginDeepAnalysis()');
+    const c = harness('all', root, local), begin = source.indexOf('  function beginDeepAnalysis(');
     vm.runInContext(source.slice(begin, source.indexOf('  const labHost =', begin)), c);
     const publish = c.beginDeepAnalysis(), fen = c.game.fen();
     const snapshot = { fen, lines: [{ multipv: 1, depth: 18, score: { type: 'mate', white: -3 }, pv: ['e2e4'] }] };

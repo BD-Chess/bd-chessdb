@@ -24,7 +24,7 @@
   function create({ Chess, SIM, Tournament, SF, Engine, DCC, game, workspace, store,
     getCDB, getPV, getScore, settings, callbacks = {}, now = () => performance.now(), storage = globalThis.localStorage }) {
     let active = null, token = 0, controller = null, provider = null, heartbeat = null, task = null;
-    const owner = store.createId('tab'), leaseKey = 'chessSimRunnerLease-v1';
+    const owner = store.createId('tab'), leaseKey = 'ChessBest:LAB:v2:sim-lease';
     const emit = (name, ...args) => callbacks[name]?.(...args);
     function acquire() {
       if (!storage) return;

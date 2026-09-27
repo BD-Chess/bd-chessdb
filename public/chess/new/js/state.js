@@ -1,8 +1,8 @@
 // File: js/state.js
 // Holds global state and handles settings persistence
 
-export const STORAGE_KEY_SETTINGS = 'chessBestSettings';
-export const STORAGE_KEY_GAME     = 'chessBestGame';
+export const STORAGE_KEY_SETTINGS = 'ChessBest:LAB:v2:settings';
+export const STORAGE_KEY_GAME     = 'ChessBest:LAB:v2:game';
 
 export const settings = {
   drawDelay: 5000,

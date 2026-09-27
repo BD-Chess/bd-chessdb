@@ -29,7 +29,7 @@
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
   <link rel="stylesheet" href="css/8zc-styles.css?v=20260927-eval-dcc1">
-  <link rel="stylesheet" href="css/8zc-study.css?v=20260926-study-cards1">
+  <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20260925-review1">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
@@ -524,11 +524,14 @@
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
     <p class="dialog-intro">Razvojni Analysis Lab. Trenutna potrjena stran je še vedno na <a href="../">/chess/</a>.</p>
     <ul class="upgrade-list">
+      <li><strong>Samostojni podatki LAB.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi LAB imajo prednost; izvirniki CURRENT ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
+      <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
+      <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
       <li><strong>Sim Focus.</strong> Zaženi <b>Sim</b>: spodnja orodja se umaknejo, prostor dobijo poteze in DCC. <b>Pause</b> ostane pri roki; <b>Tools</b> odpre ista orodja brez premikanja šahovnice. V Settings izberi <b>Always expanded</b> za prejšnji prikaz.</li>
       <li><strong>Celotna skupina izenačenih potez.</strong> Balanced DCC vključi vse razpoložljive poteze znotraj 10 cp od vrha. V DCC primerjaj število pregledanih kandidatov z nastavitvijo <b>Extra inspection pool</b>.</li>
       <li><strong>Preverjanje obramb.</strong> DCC preverja tudi alternativne odgovore nasprotnika. V <b>Settings → DCC policy, defences &amp; sensors</b> primerjaj analizo z vključenim in izključenim pregledom obramb.</li>
       <li><strong>Deep analysis.</strong> Odpri lokalni motor in preglej več variant iste pozicije. Izberi globino oziroma računski proračun; analiza ostane vezana na položaj, za katerega je bila sprožena.</li>
-      <li><strong>Uravnotežen pregled kandidatov.</strong> Kandidati dobijo osnovni pregled pred nadaljnjim poglabljanjem. Sim počaka tudi na počasen CDB, brez časovnega poraza; <b>Pause</b> prekliče nadaljevanje.</li>
+      <li><strong>Uravnotežen pregled kandidatov.</strong> Kandidati dobijo osnovni pregled pred nadaljnjim poglabljanjem. Nečasovni opazovalni tek in dvoboj z igralno uro imata različne časovne pogoje; v <b>Matches &amp; tournaments</b> izberi proračun ali uro. <b>Pause</b> ustavi nadaljevanje.</li>
       <li><strong>Senzorji pod drobnogledom.</strong> V Settings vključi ali izključi posamezna merila. Struktura je privzeto opisna; eksperimentalni vpliv na rang vključi posebej in ga primerjaj v Benchmark.</li>
       <li><strong>Evidence.</strong> Preglej uporabljene odgovore, nastavitve in izvor ocene ter izvozi zapis analize. Neznana globina ali manjkajoča meritev ostaneta jasno označeni.</li>
       <li><strong>Study in ohranjene variante.</strong> Nadaljevanja pregleduj z običajnimi šahovskimi zapisi. Shrani razvejitve in komentarje; izvozi ter ponovno uvozi študijski PGN za preverjanje ohranjenih variant.</li>
@@ -668,28 +671,30 @@
   <script src="js/chessboard-1.0.0.min.js"></script>
   <script>
 </script>
+  <script src="js/8zc-lab-storage.js?v=20260927-w0r2"></script>
   <!-- DCC-enhanced utils -->
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-time-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-eval-bar.js?v=20260927-eval-dcc1"></script>
-  <script src="js/8zc-workspace.js?v=20260926-sim2"></script>
+  <script src="js/8zc-workspace.js?v=20260927-w0r2"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
-  <script src="js/8zc-study-ui.js?v=20260926-study-cards1"></script>
+  <script src="js/8zc-study-store.js?v=20260927-w0r3"></script>
+  <script src="js/8zc-study-ui.js?v=20260927-w0r3"></script>
   <script src="js/8zc-deep-engine.js?v=20260926-sim2"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
-  <script src="js/8zc-deep-ui.js?v=20260926-all-modes"></script>
-  <script src="js/8zc-evidence.js?v=20260913-lab1"></script>
+  <script src="js/8zc-deep-ui.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
   <script src="js/8zc-tournament-core.js?v=20260926-sim2"></script>
-  <script src="js/8zc-sim-store.js?v=20260926-sim2"></script>
-  <script src="js/8zc-sim-runner.js?v=20260926-sim2"></script>
+  <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
   <script src="js/8zc-tournament-ui.js?v=20260926-sim2"></script>
-  <script src="js/8zc-utils.js?v=20260927-eval-dcc1"></script>
-  <script src="js/8zc-new-ui.js?v=20260926-study-cards1"></script>
-  <script src="js/8zc-lab-layout.js?v=20260925-all1"></script>
+  <script src="js/8zc-utils.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-new-ui.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-lab-layout.js?v=20260927-w0r2"></script>
 
 </body>
 </html>

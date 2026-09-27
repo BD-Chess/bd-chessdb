@@ -4,7 +4,7 @@
   root.ChessWorkspace = { create };
   function create({ Chess, game, settings, onDisplaySettings, analyze, onAnnotations, getAnalysis, isBusy, isSimulationRunning, stopActivities }) {
     const T = root.ChessTime, $ = id => document.getElementById(id), now = () => performance.now();
-    const STORAGE = 'chessLabTiming-v1';
+    const STORAGE = 'ChessBest:LAB:v2:timing';
     let clock = T.create({ turn: game.turn(), now: now() });
     let records = [], kind = 'analysis', human = false, reviewEpoch = 0, reviewQueue = Promise.resolve();
     let lastReview = null, selectedPly = null, humanStartPly = 0;
