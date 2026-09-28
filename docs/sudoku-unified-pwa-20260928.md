@@ -13,7 +13,7 @@ The former `/S/PWA/` is a recovery entry with its original manifest identity and
 ## Verification
 
 - `node scripts/build-sudoku-pwa.cjs --check`: all three complete packages reproduce exactly.
-- `NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-pwa.test.cjs`: 21/21 targeted checks pass (about 16 seconds), including CURRENT hold input and LAB stationary-release input in Play/Learn/Lab.
+- `NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-pwa.test.cjs tests/sudoku-desktop-hold.test.cjs`: 21/21 targeted checks pass (about 16 seconds), including CURRENT hold input and LAB stationary-release input in Play/Learn/Lab.
 - Checks cover both deployment bases, offline dependency closure, request boundaries, mixed/failed installs, evicted assets, cache isolation, explicit activation, save failures, concurrent writers, Notes/Undo/Redo/timer restoration, language changes and tutorial/lesson state preservation.
 - `git diff --check` and JavaScript parsing pass.
 - These are bounded VM/jsdom/worker tests, not physical-device acceptance. Actual iPhone Home Screen installation, offline relaunch, VoiceOver and mobile zoom remain BD checks.
