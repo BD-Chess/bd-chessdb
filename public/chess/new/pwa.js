@@ -1,7 +1,8 @@
 /* Each chess channel installs only its own service worker and keeps its own data. */
 (() => {
   const notice = document.getElementById('chessPwaNotice');
-  const readyBadge = document.getElementById('chessPwaReady');
+  const labLink = document.getElementById('chessPwaLabLink');
+  const labHint = document.getElementById('chessPwaLabHint');
   const installButton = document.getElementById('chessPwaInstall');
   const installHint = document.getElementById('chessPwaHint');
   const updateButton = document.getElementById('chessPwaUpdate');
@@ -13,7 +14,12 @@
   }
   function showReady() {
     const controller = navigator.serviceWorker?.controller;
-    if (readyBadge) readyBadge.hidden = !controller || controller.scriptURL !== workerURL;
+    if (labLink?.getAttribute('aria-current') !== 'page') return;
+    const ready = !!controller && controller.scriptURL === workerURL;
+    const message = ready ? 'LAB · Offline ready'
+      : 'LAB · Installable; offline after the first complete download';
+    labLink.title = message;
+    if (labHint) labHint.textContent = message;
   }
   function showUpdate() {
     if (updateButton) updateButton.hidden = !registration?.waiting || !navigator.serviceWorker?.controller;
@@ -71,7 +77,10 @@
       await navigator.serviceWorker.ready;
       showReady(); showUpdate();
     } catch (error) {
-      if (readyBadge) { readyBadge.hidden = false; readyBadge.textContent = 'Offline setup unavailable'; }
+      if (labLink?.getAttribute('aria-current') === 'page') {
+        labLink.title = 'LAB · Offline setup unavailable; reopen while connected';
+        if (labHint) labHint.textContent = labLink.title;
+      }
       console.warn('ChessBest offline setup unavailable:', error);
     }
   });
