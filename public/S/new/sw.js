@@ -2,19 +2,19 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "e00c0df907eb4fcf7c44f34a197fd493e1b45565a7297082b920e33e1255b149",
+  "id": "e940f7580f3705156320a72b3cc7841fdd1a6496de1a3dec3cf99ab16dce20ff",
   "channel": "LAB",
   "engine": "0.3.0",
   "assets": {
     "index.html": "981b0b1b63d410c12167097100332dfcd2b0a9964c92f364e47219214e2ffc77",
     "manifest.webmanifest": "d7c7f785f2e80cedf1d39e666729d0693587c282a43ce17de6d95ba004d31cfb",
     "../_pwa/client.js": "14379d71aad8a0c97a5b739499e94cab83bbf19e2d880cd10adb39ef0f792ffc",
-    "../_pwa/i18n.js": "c39eab73a9869350c364ab74455e539189c0e2f2d0da31583a9cabce209d456a",
+    "../_pwa/i18n.js": "610d14970f73403b4769f3bf4f47283c8666aa99a51e5a1639db0d250ae92bf4",
     "../_pwa/shell.css": "c2c4f904e9ddd3558aad392e1a76d75efbd380e20a8e9eb270ffac85955216f9",
     "../_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "../_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
     "../_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
-    "app.html": "2f9380faf7560e557ce145eb40c59fefb35727eff12d13bf136c0afa473eac77"
+    "app.html": "e7a6b675e9e7d213a51f13e5cb05ce7d33c6c83aaf90b04c83abcdd0f8528dc2"
   }
 };
 // END GENERATED RELEASE

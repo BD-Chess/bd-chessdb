@@ -205,6 +205,7 @@
   const output=language==='sl'?translate(original):original;records[key]={source:original,output};attributes.set(el,records);
   if(output!==value)el.setAttribute(key,output);
  }
+ SL['Correct moves stay UNKNOWN_REASONING unless this browser can find a proof from the state before the move.']='Pravilne poteze ostanejo označene kot UNKNOWN_REASONING, dokler brskalnik ne najde dokaza iz stanja pred potezo.';
  const skip='script,style,pre,code,textarea,[contenteditable],[data-no-i18n]';
  let observer,scheduled=false,disposed=false;
  function dispose(){disposed=true;observer?.disconnect();}
