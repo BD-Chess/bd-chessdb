@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nextArchive, checkVersions } from '../../../../tools/chess-versioning.mjs';
+import { nextArchive, checkVersions } from '../../../tools/chess-versioning.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -10,14 +10,14 @@ test('BD archives increment monotonically and never fill historical gaps',()=>{
   assert.equal(nextArchive(['999']),'1000');
   assert.throws(()=>nextArchive(['001','0001']),/Duplicate/);
 });
-test('CURRENT/PREVIOUS/LAB/PWA each link directly to all channels with one active marker',()=>{
-  const result=checkVersions(fileURLToPath(new URL('../../../../',import.meta.url)));
+test('CURRENT and LAB are active installable channels; PREVIOUS keeps its original links',()=>{
+  const result=checkVersions(fileURLToPath(new URL('../../../',import.meta.url)));
   assert.equal(result.ok,true,result.errors.join('\n'));
   assert.equal(result.promotionPerformed,false);
 });
 test('PREVIOUS opens the brown v0.6.0 application at old/ without redirects',()=>{
-  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
-  for(const [name,href] of [['index.html','./old/'],['new/index.html','../old/'],['PWA/index.html','../old/']]){
+  const root=fileURLToPath(new URL('../../../public/chess/',import.meta.url));
+  for(const [name,href] of [['index.html','./old/'],['new/index.html','../old/']]){
     assert.match(readFileSync(root+name,'utf8'),new RegExp(`href="${href.replaceAll('/','\\/')}"\>PREVIOUS`));
   }
   const html=readFileSync(root+'old/index.html','utf8');
@@ -29,7 +29,7 @@ test('PREVIOUS opens the brown v0.6.0 application at old/ without redirects',()=
   assert.match(css,/#f0d9b5/);assert.match(css,/#b58863/);
 });
 test('PREVIOUS root contains the copied legacy app, and numbered snapshots remain sealed',()=>{
-  const root=fileURLToPath(new URL('../../../../public/chess/old/',import.meta.url));
+  const root=fileURLToPath(new URL('../../../public/chess/old/',import.meta.url));
   const archive=JSON.parse(readFileSync(root+'004/ARCHIVE_MANIFEST.json','utf8'));
   const names=[];
   function walk(folder,prefix=''){

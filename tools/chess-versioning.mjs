@@ -12,7 +12,7 @@ export function nextArchive(names) {
 }
 export function checkVersions(repo, base) {
   const app = path.join(repo, 'public/chess');
-  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new'],['PWA','PWA']];
+  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new']];
   for (const [name, dir] of channels) {
     const file = path.join(app, dir, 'index.html');
     if (!fs.existsSync(file)) { errors.push(`${name}: missing entry page`); continue; }
@@ -20,7 +20,10 @@ export function checkVersions(repo, base) {
     const nav = html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/g) || [];
     if (nav.length !== 1) { errors.push(`${name}: expected one version selector`); continue; }
     const links = [...nav[0].matchAll(/<a href="([^"]+)"([^>]*)>([^<]+)<\/a>/g)];
-    if (links.length !== channels.length) errors.push(`${name}: expected ${channels.length} version links`);
+    // PREVIOUS is a byte-preserved legacy release. Its fourth link still points
+    // to the retired PWA route, whose entry page redirects to LAB.
+    const expectedLinks = name === 'PREVIOUS' ? channels.length + 1 : channels.length;
+    if (links.length !== expectedLinks) errors.push(`${name}: expected ${expectedLinks} version links`);
     if (links.filter(link => link[2].includes('aria-current="page"')).length !== 1) errors.push(`${name}: expected one active channel`);
     for (const [label, suffix] of channels) {
       // Relative URLs also work when Pages hosts the repository below /bd-chessdb/.
@@ -28,6 +31,12 @@ export function checkVersions(repo, base) {
       const link = links.find(candidate => candidate[1] === href && candidate[3] === label);
       if (!link) errors.push(`${name}: missing direct ${label} link`);
       else if (link[2].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
+    }
+    if (name === 'PREVIOUS') {
+      const legacy = links.find(link => link[1] === '../PWA/' && link[3] === 'PWA');
+      if (!legacy || legacy[2].includes('aria-current="page"')) errors.push('PREVIOUS: legacy PWA link changed');
+    } else if (links.some(link => link[3] === 'PWA')) {
+      errors.push(`${name}: retired PWA is still listed as an active channel`);
     }
     if (!html.includes('id="bd-version-style"')) errors.push(`${name}: selector CSS is not self-contained`);
   }
@@ -37,7 +46,32 @@ export function checkVersions(repo, base) {
   const metadata = JSON.parse(fs.readFileSync(path.join(app,'versions.json'),'utf8'));
   if (metadata.previous !== '/chess/old/') errors.push('PREVIOUS metadata mismatch');
   if (/<meta\b[^>]*http-equiv=["']refresh["']/i.test(fs.readFileSync(path.join(old,'index.html'),'utf8'))) errors.push('PREVIOUS root redirects away from legacy application');
-  if (metadata.pwa !== '/chess/PWA/') errors.push('PWA metadata mismatch');
+  const installable = { CURRENT: '/chess/', LAB: '/chess/new/' };
+  if (!metadata.installable_channels ||
+      Object.keys(metadata.installable_channels).sort().join(',') !== Object.keys(installable).sort().join(',') ||
+      Object.entries(installable).some(([name, route]) => metadata.installable_channels[name] !== route)) {
+    errors.push('CURRENT/LAB installable channel metadata mismatch');
+  }
+  if (Object.hasOwn(metadata, 'pwa')) errors.push('Legacy standalone PWA is still listed as an active channel');
+  for (const [name, directory] of [['CURRENT',''], ['LAB','new']]) {
+    const entry = path.join(app, directory);
+    const html = fs.readFileSync(path.join(entry, 'index.html'), 'utf8');
+    if (!/<link\b(?=[^>]*\brel=["']manifest["'])(?=[^>]*\bhref=["'](?:\.\/)?manifest\.webmanifest["'])[^>]*>/i.test(html)) {
+      errors.push(`${name}: missing local install manifest link`);
+    }
+    if (!/<script\b[^>]*src=["'](?:\.\/)?pwa\.js["']/i.test(html)) {
+      errors.push(`${name}: missing local PWA update registration`);
+    }
+    if (!fs.existsSync(path.join(entry, 'sw.js'))) errors.push(`${name}: missing scoped service worker`);
+    const manifestPath = path.join(entry, 'manifest.webmanifest');
+    if (!fs.existsSync(manifestPath)) { errors.push(`${name}: missing local install manifest`); continue; }
+    let manifest;
+    try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); }
+    catch (_) { errors.push(`${name}: unreadable install manifest`); continue; }
+    if (manifest.id !== './' || manifest.start_url !== './' || manifest.scope !== './') {
+      errors.push(`${name}: install identity, start URL or scope crosses its channel`);
+    }
+  }
   const listed = (metadata.archives || []).map(a=>a.id).sort();
   if (JSON.stringify(archiveNames.sort()) !== JSON.stringify(listed)) errors.push('Archive directory/metadata mismatch');
   const redirects = fs.readFileSync(path.join(repo,'public/_redirects'),'utf8');
