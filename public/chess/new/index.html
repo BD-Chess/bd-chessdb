@@ -94,7 +94,6 @@
     body.light-theme #chessPwaNotice{color:#513700;background:#ffecb2}
     .chess-pwa-action{font:600 12px/1.4 system-ui,sans-serif;color:var(--ui-accent);background:transparent;border:1px solid currentColor;border-radius:6px;padding:5px 9px;cursor:pointer;min-height:34px}
     .chess-pwa-action:hover{color:var(--ui-text)}
-    #chessPwaReady{font:600 11px/1.3 system-ui,sans-serif;color:var(--ui-muted)}
     .chess-pwa-hint{padding:7px 11px;border:1px solid var(--ui-border);border-radius:8px;color:var(--ui-text);background:var(--ui-surface);font:12px/1.5 system-ui,sans-serif;max-width:280px}
     .header-nav{flex-wrap:wrap}
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
@@ -118,7 +117,8 @@
       <nav class="bd-version-selector" aria-label="Application versions">
         <a href="../">CURRENT</a>
         <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../old/">PREVIOUS</a>
-        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">LAB</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" id="chessPwaLabLink" aria-current="page" title="LAB · Installable; offline after the first complete download" aria-describedby="chessPwaLabHint">LAB</a>
+        <span id="chessPwaLabHint" class="sr-only">LAB is installable and works offline after the first complete download.</span>
       </nav>
       <nav class="header-nav" aria-label="Main navigation">
         <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
@@ -126,7 +126,6 @@
         <button id="chessPwaInstall" class="chess-pwa-action" type="button" aria-controls="chessPwaHint">Install LAB</button>
         <button id="chessPwaUpdate" class="chess-pwa-action" type="button" hidden>Update ready · reload</button>
       </nav>
-      <span id="chessPwaReady" role="status" hidden>Offline ready</span>
       <span id="chessPwaHint" class="chess-pwa-hint" role="status" hidden></span>
     </div>
   </header>
