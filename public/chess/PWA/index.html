@@ -34,7 +34,7 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260928-sim1">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260928-header1">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20260927-review1">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20260925-review1">
@@ -89,7 +89,7 @@
     body.light-theme .bd-version-selector a:hover,body.light-theme .bd-version-selector a:focus-visible{color:#163b27;border-color:#658879}
     body.light-theme .bd-version-selector a[aria-current="page"]{color:#164c2c;background:#e1f3e6;border-color:#659275}
     .bd-version-selector--legacy{justify-content:center;margin:0 0 10px}
-    @media(max-width:600px){.bd-version-selector a{min-height:32px}}
+    @media(max-width:790px){.bd-version-selector a{min-height:44px}.bd-version-selector .bd-version-dot{display:none}}
     #chessPwaNotice{margin:0;padding:8px 16px;color:#f4eed7;background:#493714;font:600 14px/1.4 system-ui,sans-serif;text-align:center}
     body.light-theme #chessPwaNotice{color:#513700;background:#ffecb2}
     #chessPwaReady{font-size:12px}
@@ -102,24 +102,26 @@
   <header class="app-header">
     <div class="brand-line">
       <div class="brand-mark" aria-hidden="true">8z</div>
-      <div>
-        <div class="brand-kicker">CHESS ANALYSIS · BD × AI <span class="development-label">PWA</span> <span id="chessPwaReady" role="status" hidden>· Offline ready</span> <button id="chessPwaUpdate" type="button" hidden>Update ready · reload</button></div>
+      <div class="brand-copy">
         <h1 id="pageTitle">
           <span class="brand-title">ChessBest.org</span>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
         </h1>
-        <nav class="bd-version-selector" aria-label="Application versions">
-          <a href="../">CURRENT</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../old/">PREVIOUS</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../new/">LAB</a>
-          <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">PWA</a>
-        </nav>
+        <div class="brand-kicker">CHESS ANALYSIS · BD × AI <span class="development-label">PWA</span> <span id="chessPwaReady" role="status" hidden>· Offline ready</span> <button id="chessPwaUpdate" type="button" hidden>Update ready · reload</button></div>
       </div>
     </div>
-    <nav class="header-nav" aria-label="Main navigation">
-      <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
-      <a href="8zc-help.html#dcc">How DCC works</a>
-    </nav>
+    <div class="header-links">
+      <nav class="bd-version-selector" aria-label="Application versions">
+        <a href="../">CURRENT</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../old/">PREVIOUS</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../new/">LAB</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">PWA</a>
+      </nav>
+      <nav class="header-nav" aria-label="Main navigation">
+        <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
+        <a href="8zc-help.html#dcc">How DCC works</a>
+      </nav>
+    </div>
   </header>
   <p id="chessPwaNotice" role="status" hidden>Offline: board, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
   <div id="pageSubtitle">Read the position. Explore the line. <span>ChessDB or local Stockfish + DCC lookahead.</span></div>
