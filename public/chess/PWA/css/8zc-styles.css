@@ -1146,13 +1146,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .app-header, #pageSubtitle, #main { width: 100%; max-width: 1160px; margin-left: auto; margin-right: auto; }
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .brand-line { display: flex; align-items: center; gap: 13px; }
-.brand-mark { width: 48px; height: 52px; display: grid; place-items: center; background: var(--ui-accent); color: var(--ui-ink); border-radius: 9px 9px 20px 9px; font-size: 23px; font-weight: 800; letter-spacing: -2px; }
+.brand-mark { width: 48px; height: 52px; flex: 0 0 auto; display: grid; place-items: center; background: var(--ui-accent); color: var(--ui-ink); border-radius: 9px 9px 20px 9px; font-size: 23px; font-weight: 800; letter-spacing: -2px; }
+.brand-copy { min-width: 0; }
 .brand-kicker, .section-kicker { color: var(--ui-muted); font-size: 10px; font-weight: 700; letter-spacing: .16em; }
-.brand-kicker { margin-bottom: 1px; }
+.brand-kicker { margin-top: 4px; }
 #pageTitle { display: flex; align-items: center; gap: 12px; font-size: 27px; letter-spacing: -1.1px; line-height: 1.35; margin: 0; text-align: left; }
 #pageTitle .brand-title { color: var(--ui-text); }
 .new-badge { min-height: 32px; padding: 3px 10px 5px; border: 1px solid var(--ui-accent); color: var(--ui-accent); background: transparent; border-radius: 7px; font-size: 12px; line-height: 1; cursor: pointer; letter-spacing: 0; }
 .new-badge:hover { background: var(--ui-accent); color: var(--ui-ink); }
+.header-links { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.header-links .bd-version-selector { margin-top: 0; justify-content: flex-end; }
 .header-nav { display: flex; align-items: center; gap: 24px; font-size: 13px; }
 .header-nav a { color: var(--ui-muted); text-decoration: none; min-height: 40px; display: inline-flex; align-items: center; gap: 12px; }
 .header-nav a:hover { color: var(--ui-accent); }
@@ -1283,8 +1286,10 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 @media (max-width: 790px) {
   body { display: block; padding: 20px 18px 28px; }
   .app-header, #pageSubtitle, #main { max-width: 600px; }
+  .app-header { flex-direction: column; align-items: stretch; gap: 4px; }
+  .header-links { align-items: flex-start; gap: 0; }
+  .header-links .bd-version-selector { justify-content: flex-start; }
   .header-nav { gap: 14px; }
-  .header-nav a:last-child { display: none; }
   #main { display: flex; flex-direction: column; gap: 16px; }
   #board-container, #controls, body.light-theme #controls { width: 100%; max-width: none; }
   #board-container { padding: 16px; }

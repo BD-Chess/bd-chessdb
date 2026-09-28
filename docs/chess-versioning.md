@@ -182,7 +182,7 @@ namespaces. Their first-run migration copies each channel's existing browser dat
 readback and without removing the source or overwriting a newer destination.
 The numbered archive writes to its own 005 namespace when opened at the same
 origin; archived browser data starts fresh while the legacy source records stay
-available for CURRENT's copy. PWA release `pwa-123cfe8d4e02` caches 119 files
+available for CURRENT's copy. PWA release `pwa-123cfe8d4e02` cached 119 files
 and retains the installed manifest identity, update flow and PWA v1 source data.
 The archive manifest SHA-256 is
 `778f5d27e90657f9c77ffbc6ec5756335273adce84790bbb5aef6227e73b9294`.
@@ -194,3 +194,12 @@ CURRENT first-run isolation including cross-tab and failure cases, PWA offline
 updates, and page script integration. They do not establish device installation
 behavior or live deployment; those checks are recorded separately in the
 publication receipt. Netlify publication remains deferred until its quota allows it.
+
+## 2026-09-28 channel header layout
+
+CURRENT, LAB and PWA place the application name above the channel description;
+version links sit to the right above Help on wide screens and below the name
+on narrow screens. PWA release `pwa-319772b48cea` refreshes its 119-file cache from LAB tree
+`571191b6ededa1d21c4bd918436b2c25efd501f3` with its installed identity
+and existing user storage unchanged. The PREVIOUS legacy app and all numbered
+archives remain untouched. GitHub Pages publication is checked separately.
