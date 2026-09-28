@@ -50,7 +50,7 @@
     } else { installPanel.hidden = !installPanel.hidden; }
   });
   $('pwaInstallClose')?.addEventListener('click', () => { installPanel.hidden = true; });
-  window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; });
+  window.addEventListener('beforeinstallprompt', event => { if (install) { event.preventDefault(); installPrompt = event; } });
   window.addEventListener('appinstalled', () => { installPrompt = null; if (install) install.textContent = 'INSTALLED'; installPanel.hidden = true; });
   if (new URL(location.href).searchParams.has('install') && installPanel) installPanel.hidden = false;
   $('legacyRecover')?.addEventListener('click', () => {

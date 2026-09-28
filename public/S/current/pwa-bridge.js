@@ -45,8 +45,8 @@
   // Save after settled user actions and on leaving; never overwrite another tab.
   let pending;
   const queue = () => { clearTimeout(pending); pending = setTimeout(save, 350); };
-  document.addEventListener('click', queue); document.addEventListener('keydown', queue);
+  document.addEventListener('pointerup', queue); document.addEventListener('click', queue); document.addEventListener('keydown', queue);
   window.addEventListener('pagehide', save);
   document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
-  window.SudokuCurrentPWA = {flushForUpdate: save};
+  window.SudokuCurrentPWA = {flushForUpdate: () => { window.SudokuCurrentHold?.cancel(); return save(); }};
 })();
