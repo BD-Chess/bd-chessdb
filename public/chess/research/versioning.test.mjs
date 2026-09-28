@@ -10,7 +10,7 @@ test('BD archives increment monotonically and never fill historical gaps',()=>{
   assert.equal(nextArchive(['999']),'1000');
   assert.throws(()=>nextArchive(['001','0001']),/Duplicate/);
 });
-test('CURRENT and LAB are active installable channels; PREVIOUS keeps its original links',()=>{
+test('CURRENT and LAB are installable; PREVIOUS links to the three active channels',()=>{
   const result=checkVersions(fileURLToPath(new URL('../../../',import.meta.url)));
   assert.equal(result.ok,true,result.errors.join('\n'));
   assert.equal(result.promotionPerformed,false);
