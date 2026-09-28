@@ -195,3 +195,48 @@ test('CURRENT and LAB copy shared legacy data into separate namespaces without o
   assert.equal(storage.getItem('ChessBest:CURRENT:v2:game'), null, 'deleted records stay deleted');
   assert.equal(storage.getItem('ChessBest:LAB:v2:game'), 'existing LAB game');
 });
+
+test('the retired PWA worker releases its old shell and sends cached visitors to LAB', async () => {
+  const root = new URL('https://example.test/bd-chessdb/chess/PWA/');
+  const oldCache = 'chessbest-lab-pwa-old-release';
+  const otherCache = 'chessbest-chess-lab-current-release';
+  const names = new Map([
+    [oldCache, new Map([[new URL('index.html', root).href, { old: true }]])],
+    [otherCache, new Map()]
+  ]);
+  const handlers = {}, visits = [];
+  const self = {
+    location: { href: new URL('sw.js', root).href },
+    addEventListener(name, listener) { handlers[name] = listener; },
+    skipWaiting: async () => visits.push('skipWaiting'),
+    clients: {
+      claim: async () => visits.push('claim'),
+      matchAll: async () => [
+        { url: root.href, navigate: async url => visits.push(url) },
+        { url: new URL('../new/', root).href, navigate: async () => { throw Error('LAB must stay untouched'); } }
+      ]
+    }
+  };
+  const caches = {
+    keys: async () => [...names.keys()],
+    delete: async name => names.delete(name),
+    open: async name => ({ match: async url => names.get(name).get(url.href) })
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(chessRoot, 'PWA/sw.js'), 'utf8'),
+    { self, caches, URL, Response });
+  async function dispatch(type, extra = {}) {
+    let promise;
+    handlers[type]({ waitUntil: value => promise = value, respondWith: value => promise = value, ...extra });
+    return promise;
+  }
+  await dispatch('install');
+  await dispatch('activate');
+  assert.deepEqual(visits, ['skipWaiting', 'claim', new URL('../new/', root).href]);
+  assert(!names.has(oldCache));
+  assert(names.has(otherCache));
+  const redirect = await dispatch('fetch', { request: { url: root.href, mode: 'navigate' } });
+  assert.equal(redirect.status, 302);
+  assert.equal(redirect.headers.get('location'), new URL('../new/', root).href);
+  assert.equal(await dispatch('fetch', { request: new Request(new URL('../old/', root)) }), undefined);
+  assert.match(fs.readFileSync(path.join(chessRoot, 'PWA/index.html'), 'utf8'), /url=\.\.\/new\//);
+});
