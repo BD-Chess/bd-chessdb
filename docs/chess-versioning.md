@@ -212,8 +212,12 @@ archives remain untouched. GitHub Pages publication is checked separately.
 BD retired the unused, unpublished `/chess/PWA/` application after the prior
 LAB-to-CURRENT promotion. `/chess/` and `/chess/new/` now each provide their own
 manifest identity (`./` resolved within that channel), scoped worker, update
-button, and channel-specific offline cache. The former URL keeps only an HTML
-link/redirect to LAB; no data migration from its unused PWA namespace is run.
+button, and channel-specific offline cache. The former URL keeps an HTML
+link/redirect to LAB and a small retirement worker. Browsers that had already
+cached the old standalone PWA receive the replacement worker at their old
+script URL; it releases only the retired PWA's own cache and sends old tabs
+and visits to LAB. It never clears storage keys or IndexedDB. No data migration
+from its unused PWA namespace is run.
 The earlier `/PWA/` refresh recipe above is historical and its refresh script
 is retired. Run `python3 tools/build-chess-channel-pwas.py` after any active
 runtime asset changes, then `python3 tools/build-chess-channel-pwas.py --check`.
