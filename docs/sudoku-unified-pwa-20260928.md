@@ -6,14 +6,14 @@ CURRENT `/S/` and LAB `/S/new/` are independent installable channels. Their mani
 
 Play/Learn center the board and move news, optional practice and one human status below it. Technical rating remains in Lab. EN/SL changes visible UI, help, tutorials and learning text, persists the choice and preserves machine values, game state and evidence. Historical research prose and technical identifiers retain their original language.
 
-CURRENT's compressed game payload and LAB's navigator-core are unchanged. CURRENT gains a separate validated session adapter (`8zSudokuCurrent.pwaSessionV1`). LAB retains its existing session/library namespace. An update reload requires a completed save, readback and a final state check; generation, animation, quota errors or concurrent writes block it. Other tabs are never automatically reloaded.
+CURRENT's compressed game payload and LAB's navigator-core are unchanged. CURRENT also gains mouse/pen hold-and-slide input and a read-only filled-cell magnifier, using the existing canonical input/Notes/Undo transactions and presentation-only geometry. Desktop click-and-hold now leaves a clickable number picker open after a stationary release in both channels; drag/release input and touch cancellation stay intact. LAB has no Install button in its top navigation; native browser installation remains available. CURRENT gains a separate validated session adapter (`8zSudokuCurrent.pwaSessionV1`). LAB retains its existing session/library namespace. An update reload requires a completed save, readback and a final state check; generation, animation, quota errors or concurrent writes block it. Other tabs are never automatically reloaded.
 
 The former `/S/PWA/` is a recovery entry with its original manifest identity and byte-identical frozen game. Existing installations and data are preserved. Export the old session and explicitly import it into LAB; verify the imported game before retiring the old installation. iOS may use separate storage containers. No automatic storage migration or deletion occurs.
 
 ## Verification
 
 - `node scripts/build-sudoku-pwa.cjs --check`: all three complete packages reproduce exactly.
-- `NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-pwa.test.cjs`: 16/16 targeted checks pass (about 12 seconds).
+- `NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-pwa.test.cjs`: 21/21 targeted checks pass (about 16 seconds), including CURRENT hold input and LAB stationary-release input in Play/Learn/Lab.
 - Checks cover both deployment bases, offline dependency closure, request boundaries, mixed/failed installs, evicted assets, cache isolation, explicit activation, save failures, concurrent writers, Notes/Undo/Redo/timer restoration, language changes and tutorial/lesson state preservation.
 - `git diff --check` and JavaScript parsing pass.
 - These are bounded VM/jsdom/worker tests, not physical-device acceptance. Actual iPhone Home Screen installation, offline relaunch, VoiceOver and mobile zoom remain BD checks.

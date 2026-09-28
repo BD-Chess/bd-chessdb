@@ -2,14 +2,14 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "35b7e4aaa9ee42b54aa38763f06a2014fa7412f9156a87cab1549460afaf8be5",
+  "id": "3040ea57f28b18f4002ff7758e1ae92030edcf031878f08a173f21f654638bb7",
   "channel": "LEGACY_RECOVERY",
   "engine": "0.3.0",
   "assets": {
     "index.html": "27e0c50405fe43c9dee6caa75559442b38852a940d226127cbde380de8d9130d",
     "manifest.webmanifest": "4baae5319b988bb1239c3bb481c52007b4e292c84c7483c5d6c383faa1af7154",
-    "../_pwa/client.js": "14379d71aad8a0c97a5b739499e94cab83bbf19e2d880cd10adb39ef0f792ffc",
-    "../_pwa/i18n.js": "e1ea2357fd866c2376b3ab9b423b6bf08a7783c28bb76c4407d56aa6827be5c6",
+    "../_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
+    "../_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
     "../_pwa/shell.css": "c2c4f904e9ddd3558aad392e1a76d75efbd380e20a8e9eb270ffac85955216f9",
     "../_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "../_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",

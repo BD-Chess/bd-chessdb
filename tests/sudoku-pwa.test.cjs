@@ -36,7 +36,7 @@ test('CURRENT and LAB install in place; legacy identity and source stay recovera
   assert.deepEqual([m.id,m.start_url,m.scope],['./','./','./']);assert.equal(m.name,name);assert.equal(m.display,'standalone');
   const dom=new JSDOM(fs.readFileSync(path.join(p,'index.html'),'utf8'));
   assert.deepEqual([...dom.window.document.querySelectorAll('.version-nav a')].map(x=>x.textContent),['CURRENT','LAB','PREVIOUS']);
-  assert.equal(!!dom.window.document.getElementById('pwaInstall'),dir!=='PWA');dom.window.close();
+  assert.equal(!!dom.window.document.getElementById('pwaInstall'),dir==='');dom.window.close();
  }
  const legacy=fs.readFileSync(path.resolve(__dirname,'../public/S/PWA/app.html'));
  assert.equal(hash(legacy),'73639dde9e8e7534fd1090b5b422206820583a77a0b59e904dfdd906262a048b','legacy recovery game stays frozen');
@@ -143,9 +143,30 @@ function currentHarness(t,stored={}){
  for(const [key,value] of Object.entries(stored))w.localStorage.setItem(key,value);
  for(const script of w.document.querySelectorAll('script'))if(!script.src)vm.runInContext(script.textContent,dom.getInternalVMContext());
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- for(const script of ['../_pwa/current-ui.js','pwa-bridge.js','../_pwa/i18n.js'])vm.runInContext(fs.readFileSync(path.join(p,script),'utf8'),dom.getInternalVMContext());
+ for(const script of ['../_pwa/current-ui.js','hold-input.js','pwa-bridge.js','../_pwa/i18n.js'])vm.runInContext(fs.readFileSync(path.join(p,script),'utf8'),dom.getInternalVMContext());
  t.after(()=>{w.SudokuI18n?.dispose();w.close();});return{w,store:()=>Object.fromEntries(Array.from({length:w.localStorage.length},(_,i)=>{const k=w.localStorage.key(i);return[k,w.localStorage.getItem(k)];}))};
 }
+test('CURRENT mouse hold opens the picker; one canonical move, Notes, Undo, cancellation and update cleanup',async t=>{
+ const {fixture,fixtureSolution,until,sleep}=require('./sudoku-ui-harness.cjs');
+ const h=currentHarness(t),w=h.w;w.AI8SudokuTestAPI.loadPuzzle(fixture,fixtureSolution);w.stopTimer();
+ Object.defineProperty(w,'innerWidth',{value:1440,configurable:true});Object.defineProperty(w,'innerHeight',{value:900,configurable:true});
+ const grid=w.document.getElementById('grid'),G=w.SudokuMobileGeometry;
+ [...grid.children].forEach((el,i)=>el.getBoundingClientRect=()=>G.rect(373+i%9*73,190+Math.floor(i/9)*73,72,72));
+ grid.setPointerCapture=()=>{};grid.releasePointerCapture=()=>{};
+ const emit=(target,type,x,y,extra={})=>{const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:type==='pointerup'?0:1,...extra});for(const[k,v]of Object.entries({pointerId:1,pointerType:'mouse',isPrimary:true}))Object.defineProperty(e,k,{value:v});target.dispatchEvent(e);};
+ const begin=(i=2)=>{const r=grid.children[i].getBoundingClientRect();emit(grid.children[i],'pointerdown',r.left+36,r.top+36);};
+ const hold=async(i=2,id='uxPicker')=>{begin(i);await until(()=>w.document.getElementById(id),'CURRENT '+id,1000);};
+ const enter=d=>{const r=w.SudokuCurrentHold.geometry(2).targets[d-1],x=r.left+r.width/2,y=r.top+r.height/2;emit(w.document,'pointermove',x,y);emit(w.document,'pointerup',x,y);grid.children[2].dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1,clientX:x,clientY:y}));};
+ begin();emit(grid.children[2],'pointerup',555,226);grid.children[2].click();assert.equal(w.eval('selectedCell'),2);await sleep(330);assert.equal(w.document.getElementById('uxPicker'),null);
+ await hold();enter(4);assert.equal(w.eval('playerGrid[0][2]'),4);assert.equal(w.eval('history.length'),1);assert.equal(w.eval('selectedCell'),2);w.undoMove();assert.equal(w.eval('playerGrid[0][2]'),0);
+ w.toggleNotes();await hold();enter(6);assert.equal(w.eval('notes[0][2].has(6)'),true);assert.equal(w.eval('history.length'),1);w.undoMove();assert.equal(w.eval('notes[0][2].size'),0);w.toggleNotes();
+ await hold();emit(w.document,'pointerup',555,226);assert.equal(w.eval('history.length'),0,'stationary hold never enters a digit');assert.equal(w.document.getElementById('uxPicker').dataset.pinned,'true');w.document.getElementById('uxPicker').querySelector('[data-digit="4"]').click();assert.equal(w.eval('playerGrid[0][2]'),4);assert.equal(w.eval('history.length'),1);w.undoMove();
+ await hold();w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(w.document.getElementById('uxPicker'),null);assert.equal(w.eval('history.length'),0);
+ await hold(0,'uxLoupe');assert.equal(w.document.getElementById('uxPicker'),null);emit(w.document,'pointerup',409,226);assert.equal(w.eval('history.length'),0,'given inspection stays read-only');
+ await hold();assert.equal(w.SudokuCurrentPWA.flushForUpdate(),true);assert.equal(w.document.getElementById('uxPicker'),null);assert.equal(w.eval('history.length'),0);
+ assert.ok(h.store()['8zSudokuCurrent.pwaSessionV1']);
+});
+
 test('frozen CURRENT update adapter restores board, Notes, Undo and timer without touching LAB or legacy data',t=>{
  const {fixture,fixtureSolution}=require('./sudoku-ui-harness.cjs');
  const h=currentHarness(t,{'ai8SudokuNavigatorV020.session':'lab-data','ai8SudokuNavigatorV020PWA.session':'legacy-data'});

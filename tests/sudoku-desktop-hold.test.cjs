@@ -54,3 +54,17 @@ test('DESK03: secondary buttons/early drag do not arm; cancellation and clipped-
  h.w.innerHeight=400;pointer(h,cell(h,2),'pointerdown',point(2));await until(()=>!h.el('uxToast').hidden,'explicit fallback');assert.equal(h.el('uxPicker'),null);assert.deepEqual(state(h),before);
  click(h,3);assert.equal(h.get('selectedCell'),3);assert.equal(h.get('history.length'),0);assert.deepEqual(h.errors,[]);
 });
+
+test('DESK04: stationary desktop release keeps a clickable picker in Play/Learn/Lab; compatibility click, Notes and cancellation are safe',async t=>{
+ const h=await ready(t),w=h.w;
+ const pin=async()=>{await hold(h,2);pointer(h,w.document,'pointerup',point(2));h.el('grid').dispatchEvent(new w.Event('lostpointercapture'));assert.equal(h.el('uxPicker').dataset.pinned,'true');cell(h,2).dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1}));assert.equal(h.get('history.length'),0,'release click cannot select a number');assert.ok(h.el('uxPicker'));};
+ for(const view of ['play','learn','lab']){
+  const tab=w.document.querySelector('[data-pl-view="'+view+'"]');assert.ok(tab);tab.click();
+  await pin();const digit=h.el('uxPicker').querySelector('[data-digit="4"]');pointer(h,digit,'pointerdown',point(2));pointer(h,digit,'pointerup',point(2));digit.click();
+  assert.equal(h.get('playerGrid[0][2]'),4);assert.equal(h.get('history.length'),1);assert.equal(h.el('uxPicker'),null);w.undoMove();
+ }
+ w.toggleNotes();await pin();w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'6',bubbles:true}));assert.deepEqual(h.get('[...notes[0][2]]'),[6]);assert.equal(h.get('history.length'),1);w.undoMove();w.toggleNotes();
+ await pin();w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(h.el('uxPicker'),null);assert.equal(h.get('history.length'),0);
+ await pin();pointer(h,h.el('notesBtn'),'pointerdown',{x:1,y:1});assert.equal(h.el('uxPicker'),null);assert.equal(h.get('history.length'),0);
+ assert.deepEqual(h.errors,[]);
+});
