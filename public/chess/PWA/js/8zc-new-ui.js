@@ -263,6 +263,7 @@
       }, true);
     }
   }
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start);
+  const startWhenReady = () => Promise.resolve(window.ChessLabReady || window.ChessLabStorage?.ready).then(start).catch(() => window.ChessLabStorage?.showFailure());
+  if (document.readyState === 'complete') startWhenReady();
+  else window.addEventListener('load', startWhenReady);
 })();

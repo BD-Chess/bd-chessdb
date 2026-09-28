@@ -55,6 +55,11 @@ The research upgrade is confined to LAB and its separate Gemini endpoint.
    archive's asset closure, board, local interactions and mobile layout. Store
    exact package, manifests, tests and live receipts in `GPT Projects/Chess/`.
 
+Steps 3 and 6 describe the ordinary rotation when PREVIOUS is also promoted.
+If BD explicitly retains PREVIOUS as an independent legacy application, copy
+CURRENT directly into the next numbered archive and leave `/chess/old/` root
+unchanged. Document that exception in the release metadata and receipt.
+
 ## Archive boundary
 
 Self-contained means the static application and its bundled analysis engine are
@@ -161,3 +166,31 @@ Evidence integration. The DOM harness stubs board geometry and SF provider;
 the separate LAB `deep-wasm.test.cjs` exercised the byte-identical pinned engine
 in four real WASM tests. Offline transport tests simulate network loss; they do
 not claim physical iPhone/Android installation or operating-system offline QA.
+
+## 2026-09-28 direct CURRENT promotion and PWA refresh
+
+BD approved bringing the verified `/chess/new/` LAB release to `/chess/` CURRENT
+and refreshing `/chess/PWA/` from the same LAB. Archive `/chess/old/005/`
+preserves 149 prepromotion CURRENT files from the inspected base, with a
+creation-only storage and navigation rebase. The active `/chess/old/` PREVIOUS remains the legacy
+application and must stay byte-identical; archives `001`–`004` remain sealed.
+The earlier one-time waiver of a CURRENT backup does not apply here. LAB stays
+an independent application after promotion.
+
+The promoted CURRENT and regenerated PWA use their own browser storage
+namespaces. Their first-run migration copies each channel's existing browser data once, with verified
+readback and without removing the source or overwriting a newer destination.
+The numbered archive writes to its own 005 namespace when opened at the same
+origin; archived browser data starts fresh while the legacy source records stay
+available for CURRENT's copy. PWA release `pwa-e1fd1166c8a8` caches 119 files
+and retains the installed manifest identity, update flow and PWA v1 source data.
+The archive manifest SHA-256 is
+`778f5d27e90657f9c77ffbc6ec5756335273adce84790bbb5aef6227e73b9294`.
+
+The source GitHub `main` is `2152f5bd15745287f39d531c76e2ebf8d985d204`
+with LAB tree `f5717c330757f346c5342f046855ea78eeda5285`.
+The prepublication gates cover archive hashes and links, unchanged PREVIOUS,
+CURRENT first-run isolation including cross-tab and failure cases, PWA offline
+updates, and page script integration. They do not establish device installation
+behavior or live deployment; those checks are recorded separately in the
+publication receipt. Netlify publication remains deferred until its quota allows it.

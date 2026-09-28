@@ -169,7 +169,13 @@
     el('start').onclick = start; el('stop').onclick = () => { engine?.stop(); el('status').textContent = 'Stopping…'; };
     el('close').onclick = close;
     el('use').onclick = () => { engine?.stop(); ++run; pinned = null; try { if (host.pause) host.pause('deep-analysis'); setPinned(host.getContext?.()); } catch (e) { el('status').textContent = e.message; } el('start').disabled = !pinned; el('stop').disabled = true; };
-    el('save').onclick = () => { if (preview && host.onSaveLine) host.onSaveLine(preview); };
+    el('save').onclick = async () => {
+      if (!preview || !host.onSaveLine || el('save').disabled) return;
+      const frozen = JSON.parse(JSON.stringify(preview)); el('save').disabled = true;
+      try { const saved = await host.onSaveLine(frozen); el('status').textContent = saved?.ok ? saved.message || 'Continuation saved.' : 'Save pending. Open Manage Studies to continue.'; }
+      catch (e) { el('status').textContent = 'Save failed: ' + e.message; }
+      finally { el('save').disabled = false; }
+    };
     el('export').onclick = () => {
       if (!result) return;
       const blob = new Blob([JSON.stringify(result, null, 2) + '\n'], { type: 'application/json' });

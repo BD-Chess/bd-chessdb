@@ -1,7 +1,7 @@
 /* Analysis-lab presentation only. Chess state and cancellation belong to utils. */
 (function (root) {
   'use strict';
-  const STORAGE_KEY = '8zc-lab-layout-v1';
+  const STORAGE_KEY = 'ChessBest:CURRENT:v2:layout';
   const defaults = Object.freeze({ focusMode: 'auto', workspaceWidth: 0, compact: false,
     pauseOnDisagreement: false, pauseOnSwing: false, pauseSwingCp: 50, pauseOnMissing: false });
   const fields = {
@@ -24,7 +24,7 @@
     };
   }
   let preferences = { ...defaults };
-  try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
+
   let activity = { simRunning: false, kind: 'analysis', paused: false };
   let elements = null;
   let focused = false;
@@ -124,6 +124,7 @@
     closing = false;
   }
   function start() {
+  try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
     if (elements || !byId('labToolsDialog')) return;
     elements = { controls: byId('controls'), main: byId('main'), bottom: document.querySelector('.workspace-bottom'),
       content: byId('workspaceToolContent'), focusBar: byId('workspaceFocusBar'), tools: byId('btnLabTools'),
@@ -188,6 +189,7 @@
   }
   document.addEventListener('chess:activity', event => update(event.detail));
   root.ChessLabLayout = Object.freeze({ update, getSettings, setSettings, openTools, closeTools });
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
-  else start();
+  const startWhenReady = () => Promise.resolve(root.ChessLabReady || root.ChessLabStorage?.ready).then(start).catch(() => root.ChessLabStorage?.showFailure());
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startWhenReady, { once: true });
+  else startWhenReady();
 })(window);

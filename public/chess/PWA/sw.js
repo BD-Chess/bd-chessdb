@@ -1,6 +1,6 @@
 /* PWA-only, release-consistent cache. Online APIs and credentials are excluded. */
 'use strict';
-const RELEASE = "20260926-04eab849a79c";
+const RELEASE = "pwa-e1fd1166c8a8";
 const ASSETS = [
   "8zc-about.html",
   "8zc-help.html",
@@ -51,6 +51,7 @@ const ASSETS = [
   "config/coach.json",
   "css/8zc-deep.css",
   "css/8zc-research.css",
+  "css/8zc-review.css",
   "css/8zc-study.css",
   "css/8zc-styles.css",
   "css/8zc-tournament.css",
@@ -81,13 +82,17 @@ const ASSETS = [
   "js/8zc-evidence.js",
   "js/8zc-gemini.js",
   "js/8zc-lab-layout.js",
+  "js/8zc-lab-storage.js",
   "js/8zc-new-ui.js",
   "js/8zc-research-ui.js",
+  "js/8zc-review-core.js",
+  "js/8zc-review-ui.js",
   "js/8zc-sf-provider.js",
   "js/8zc-sim-core.js",
   "js/8zc-sim-runner.js",
   "js/8zc-sim-store.js",
   "js/8zc-study-core.js",
+  "js/8zc-study-store.js",
   "js/8zc-study-ui.js",
   "js/8zc-time-core.js",
   "js/8zc-tournament-core.js",

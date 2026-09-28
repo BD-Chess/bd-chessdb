@@ -28,8 +28,9 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260927-eval-dcc1">
-  <link rel="stylesheet" href="css/8zc-study.css?v=20260926-study-cards1">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20260928-sim1">
+  <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
+  <link rel="stylesheet" href="css/8zc-review.css?v=20260927-review1">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20260925-review1">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
@@ -92,7 +93,7 @@
     <div class="brand-line">
       <div class="brand-mark" aria-hidden="true">8z</div>
       <div>
-        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB</div>
+        <div class="brand-kicker">CHESS ANALYSIS · BD × AI</div>
         <h1 id="pageTitle">
           <span class="brand-title">ChessBest.org</span>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
@@ -159,16 +160,15 @@
         <span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span>
       </div>
       <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
-        <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Automated game: DCC vs selected opponent" aria-label="Sim: automated DCC versus opponent">Sim</button>
-        <button class="btn btn-nav" id="btnSimW" style="font-size:11px; padding:3px 8px; background:#2a3020; border:1px solid rgba(52,211,153,0.25); color:#34d399;" title="Engine plays White; you play Black" aria-label="SimW: engine White, human Black">SimW</button>
-        <button class="btn btn-nav" id="btnSimB" style="font-size:11px; padding:3px 8px; background:#2a2030; border:1px solid rgba(167,139,250,0.25); color:#a78bfa;" title="Engine plays Black; you play White" aria-label="SimB: engine Black, human White">SimB</button>
-        <button class="btn btn-nav" id="btnReplay" style="font-size:11px; padding:3px 8px; background:#203030; border:1px solid rgba(0,229,255,0.3); color:#00e5ff;" title="Replay loaded game with DCC analysis">Replay</button>
+        <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Set up a simulation or play against the engine" aria-label="Simulation: set up a match or play against the engine">Simulation</button>
+        <button class="btn btn-nav" id="btnReplay" style="font-size:11px; padding:3px 8px; background:#203030; border:1px solid rgba(0,229,255,0.3); color:#00e5ff;" title="Replay a loaded game with DCC analysis">DCC replay</button>
+        <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2); margin-left:auto;" title="Show DCC analysis">DCC analysis</button>
+        <button type="button" class="btn btn-nav" id="btnGameReview" aria-controls="gameReviewPanel" aria-expanded="false" aria-haspopup="dialog" title="Find recorded moments and navigate a loaded game">Review game</button>
         <span role="status" aria-live="polite" id="dccProgress" style="font-family:monospace; font-size:11px; color:#00e5ff; min-width:32px;"></span>
         <button class="btn btn-nav" id="btnCoach" style="display:none; font-size:11px; padding:3px 8px; background:#2a2a30; border:1px solid rgba(255,214,102,0.22); color:#ffd966;">Coach</button>
-        <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2); margin-left:auto;">DCC</button>
       </div>
 
-      <p class="mode-hint">Sim: watch a match <span>·</span> SimW / SimB: play the engine</p>
+      <p class="mode-hint">Simulation: watch a match or choose a side to play against the engine.</p>
       </div>
 
       <div class="workspace-analysis">
@@ -464,7 +464,7 @@
       </div>
 
       <div class="workspace-bottom">
-      <div id="workspacePrimaryActions" class="workspace-primary-actions"><button type="button" class="btn btn-nav" id="btnWorkspaceMore" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">More</button></div>
+      <div id="workspacePrimaryActions" class="workspace-primary-actions"><button type="button" class="btn btn-nav" id="btnWorkspaceMore" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">More <span aria-hidden="true">+</span></button></div>
       <div id="workspaceFocusBar" class="workspace-focus-bar" hidden>
         <span class="focus-caption">SIM FOCUS</span>
         <button type="button" class="btn" id="btnLabPause" title="Pause simulation at this position">Pause</button>
@@ -502,7 +502,7 @@
       <nav id="info-links" aria-label="Chess resources">
         <a href="8zc-pgn.html">PGN picks</a>
         <a href="8zc-help.html#dcc">Why DCC?</a>
-        <a href="8zc-help.html">Help &amp; shortcuts</a>
+        <a href="8zc-help.html">Help</a>
       </nav>
       <div id="credits">
         By <a href="mailto:bd@siol.net" id="authorLink" title="Email Bojan D.">Bojan D.</a>
@@ -522,13 +522,16 @@
   <dialog id="whatsNewDialog" class="whats-new-dialog" aria-labelledby="whatsNewTitle" lang="sl">
     <div class="dialog-topline"><span class="section-kicker">CHESSBEST · SEPTEMBER 2026</span><button type="button" class="dialog-close" id="btnCloseWhatsNew" aria-label="Zapri novosti">×</button></div>
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
-    <p class="dialog-intro">Potrjena različica ChessBest. Nadaljnji razvoj je na <a href="./new/">LAB</a>.</p>
+    <p class="dialog-intro">Potrjena različica ChessBest. Razvoj poteka na <a href="./new/">LAB</a>.</p>
     <ul class="upgrade-list">
+      <li><strong>Samostojni podatki CURRENT.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi CURRENT imajo prednost; prvotni podatki ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
+      <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
+      <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
       <li><strong>Sim Focus.</strong> Zaženi <b>Sim</b>: spodnja orodja se umaknejo, prostor dobijo poteze in DCC. <b>Pause</b> ostane pri roki; <b>Tools</b> odpre ista orodja brez premikanja šahovnice. V Settings izberi <b>Always expanded</b> za prejšnji prikaz.</li>
       <li><strong>Celotna skupina izenačenih potez.</strong> Balanced DCC vključi vse razpoložljive poteze znotraj 10 cp od vrha. V DCC primerjaj število pregledanih kandidatov z nastavitvijo <b>Extra inspection pool</b>.</li>
       <li><strong>Preverjanje obramb.</strong> DCC preverja tudi alternativne odgovore nasprotnika. V <b>Settings → DCC policy, defences &amp; sensors</b> primerjaj analizo z vključenim in izključenim pregledom obramb.</li>
       <li><strong>Deep analysis.</strong> Odpri lokalni motor in preglej več variant iste pozicije. Izberi globino oziroma računski proračun; analiza ostane vezana na položaj, za katerega je bila sprožena.</li>
-      <li><strong>Uravnotežen pregled kandidatov.</strong> Kandidati dobijo osnovni pregled pred nadaljnjim poglabljanjem. Sim počaka tudi na počasen CDB, brez časovnega poraza; <b>Pause</b> prekliče nadaljevanje.</li>
+      <li><strong>Uravnotežen pregled kandidatov.</strong> Kandidati dobijo osnovni pregled pred nadaljnjim poglabljanjem. Nečasovni opazovalni tek in dvoboj z igralno uro imata različne časovne pogoje; v <b>Matches &amp; tournaments</b> izberi proračun ali uro. <b>Pause</b> ustavi nadaljevanje.</li>
       <li><strong>Senzorji pod drobnogledom.</strong> V Settings vključi ali izključi posamezna merila. Struktura je privzeto opisna; eksperimentalni vpliv na rang vključi posebej in ga primerjaj v Benchmark.</li>
       <li><strong>Evidence.</strong> Preglej uporabljene odgovore, nastavitve in izvor ocene ter izvozi zapis analize. Neznana globina ali manjkajoča meritev ostaneta jasno označeni.</li>
       <li><strong>Study in ohranjene variante.</strong> Nadaljevanja pregleduj z običajnimi šahovskimi zapisi. Shrani razvejitve in komentarje; izvozi ter ponovno uvozi študijski PGN za preverjanje ohranjenih variant.</li>
@@ -548,7 +551,7 @@
   <div class="sim-modal-card">
     <div class="sim-modal-title" id="simModalTitle">Sim — 8Z DCC research</div>
     <div id="simModeHint" class="sim-inline-note" style="display:block; margin:-4px 0 12px; line-height:1.45;">Choose a source and controller independently for each side.</div>
-    <label class="sim-option-row">
+    <label class="sim-option-row" id="simSelfOption">
       <input type="radio" name="simOpponent" value="self" checked>
       <span>Local engines <span class="sim-inline-note">(CDB, CDB + DCC, SF, SF + DCC)</span></span>
     </label>
@@ -668,28 +671,32 @@
   <script src="js/chessboard-1.0.0.min.js"></script>
   <script>
 </script>
+  <script src="js/8zc-lab-storage.js?v=20260927-w0r2"></script>
   <!-- DCC-enhanced utils -->
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-time-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-eval-bar.js?v=20260927-eval-dcc1"></script>
-  <script src="js/8zc-workspace.js?v=20260926-sim2"></script>
+  <script src="js/8zc-workspace.js?v=20260927-w0r2"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
-  <script src="js/8zc-study-ui.js?v=20260926-study-cards1"></script>
+  <script src="js/8zc-study-store.js?v=20260927-w0r3"></script>
+  <script src="js/8zc-study-ui.js?v=20260927-w0r3"></script>
+  <script src="js/8zc-review-core.js?v=20260927-review1"></script>
   <script src="js/8zc-deep-engine.js?v=20260926-sim2"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
-  <script src="js/8zc-deep-ui.js?v=20260926-all-modes"></script>
-  <script src="js/8zc-evidence.js?v=20260913-lab1"></script>
+  <script src="js/8zc-deep-ui.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
   <script src="js/8zc-tournament-core.js?v=20260926-sim2"></script>
-  <script src="js/8zc-sim-store.js?v=20260926-sim2"></script>
-  <script src="js/8zc-sim-runner.js?v=20260926-sim2"></script>
-  <script src="js/8zc-tournament-ui.js?v=20260926-sim2"></script>
-  <script src="js/8zc-utils.js?v=20260927-eval-dcc1"></script>
-  <script src="js/8zc-new-ui.js?v=20260926-study-cards1"></script>
-  <script src="js/8zc-lab-layout.js?v=20260925-all1"></script>
+  <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
+  <script src="js/8zc-utils.js?v=20260928-sim2"></script>
+  <script src="js/8zc-new-ui.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-review-ui.js?v=20260927-review1"></script>
+  <script src="js/8zc-lab-layout.js?v=20260927-w0r2"></script>
 
 </body>
 </html>

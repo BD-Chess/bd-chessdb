@@ -159,12 +159,12 @@
     const dbProvider = suppliedIDB === undefined ? globalThis.indexedDB : suppliedIDB;
     let storage = suppliedStorage;
     if (storage === undefined) { try { storage = globalThis.localStorage; } catch (_) { storage = null; } }
-    const key = '8zc.evidence.v1', memory = new Map(); let mode = 'memory', dbPromise, fallbackDegraded=false, databaseFailed=false;
+    const key = 'ChessBest:CURRENT:v2:evidence-fallback', memory = new Map(); let mode = 'memory', dbPromise, fallbackDegraded=false, databaseFailed=false;
     async function db() {
       if (!dbProvider || databaseFailed) return null;
       if (!dbPromise) dbPromise = new Promise(resolve => {
         let request;
-        try { request = dbProvider.open('ChessDCC-evidence',1); } catch (_) { resolve(null); return; }
+        try { request = dbProvider.open('ChessBest:CURRENT:v2:evidence',1); } catch (_) { resolve(null); return; }
         request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('snapshots')) request.result.createObjectStore('snapshots',{ keyPath:'id' }); };
         request.onsuccess = () => { mode='indexedDB'; resolve(request.result); };
         request.onerror = request.onblocked = () => resolve(null);
