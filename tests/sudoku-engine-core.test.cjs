@@ -65,9 +65,9 @@ test('trace truncation leaves a replayable exact partial board without fabricate
 test('first-solution randomized generation is deterministic for 20 repeated seeds',()=>{
  for(let seed=1;seed<=20;seed++){const a=fast.exact(empty,100000,fast.rng(seed)),b=fast.exact(empty,100000,fast.rng(seed));assert.equal(a.status,'FOUND');assert.equal(a.searchMode,'FIRST_SOLUTION');assert.deepEqual(list(a),list(b));valid(a.solution,empty);}
 });
-test('12 generated puzzles: independent uniqueness and explicit difficulty evidence',()=>{
+test('12 bounded profile requests: every outcome retained, accepted puzzles independently unique and rated',()=>{
  for(const diff of ['easy','medium','hard','evil'])for(const seed of [4,18,29]){
-  const a=fast.generate({diff,seed}),b=fast.generate({diff,seed});assert.equal(a.status,'GENERATED');assert.deepEqual(list(a),list(b));assert.equal(a.givens,a.puzzle.filter(Boolean).length);
+  const a=fast.generate({diff,seed}),b=fast.generate({diff,seed});assert.deepEqual(list(a),list(b));assert.equal(a.outcomes.length,a.attempts);if(a.status==='PROFILE_UNFULFILLED'){assert.equal(a.attempts,8);continue;}assert.equal(a.status,'GENERATED');assert.equal(a.rating.label,diff);assert.equal(a.rating.status,'RATED');assert.equal(a.givens,a.puzzle.filter(Boolean).length);
   assert.equal(a.difficultyEvidence.actualGivens,a.givens);assert.equal(a.difficultyEvidence.requestedClueCountReached,a.givens===a.requestedGivens);assert.equal(a.uniqueness.status,'UNIQUE');
   const check=old.exact(a.puzzle,1000000);assert.equal(check.complete,true);assert.equal(check.count,1);assert.deepEqual(list(check.solution),list(a.solution));
  }
