@@ -45,18 +45,6 @@ body.light-theme #pageTitle a {
   color: #1565c0;
 }
 
-#pageSubtitle {
-  font-size: 1em;
-  color: #ccc;
-  text-align: center;
-  margin-bottom: 16px;
-  line-height: 1.4;
-  transition: color 0.3s ease;
-}
-body.light-theme #pageSubtitle {
-  color: #444;
-}
-
 /* Board & Facts Link */
 #board-container {
   text-align: center;
@@ -1143,7 +1131,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--ui-accent); outline-offset: 3px; }
 .skip-link { position: fixed; top: -80px; left: 16px; z-index: 10000; padding: 12px 18px; background: var(--ui-accent); color: var(--ui-ink); border-radius: 6px; }
 .skip-link:focus { top: 12px; }
-.app-header, #pageSubtitle, #main { width: 100%; max-width: 1160px; margin-left: auto; margin-right: auto; }
+.app-header, #main { width: 100%; max-width: 1160px; margin-left: auto; margin-right: auto; }
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .brand-line { display: flex; align-items: center; gap: 13px; }
 .brand-mark { width: 48px; height: 52px; flex: 0 0 auto; display: grid; place-items: center; background: var(--ui-accent); color: var(--ui-ink); border-radius: 9px 9px 20px 9px; font-size: 23px; font-weight: 800; letter-spacing: -2px; }
@@ -1159,9 +1147,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .header-nav { display: flex; align-items: center; gap: 24px; font-size: 13px; }
 .header-nav a { color: var(--ui-muted); text-decoration: none; min-height: 40px; display: inline-flex; align-items: center; gap: 12px; }
 .header-nav a:hover { color: var(--ui-accent); }
-#pageSubtitle { margin-top: 22px; margin-bottom: 25px; padding-top: 18px; border-top: 1px solid var(--ui-border); text-align: left; font-size: 14px; color: var(--ui-text); }
-#pageSubtitle span { color: var(--ui-muted); margin-left: 7px; }
-#main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 408px); gap: 24px; align-items: start; scroll-margin-top: 20px; }
+#main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 408px); gap: 24px; align-items: start; margin-top: 16px; scroll-margin-top: 20px; }
 #main:focus { outline: none; }
 #board-container { padding: 20px; margin: 0; min-width: 0; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); text-align: left; }
 .board-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
@@ -1285,7 +1271,7 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 }
 @media (max-width: 790px) {
   body { display: block; padding: 20px 18px 28px; }
-  .app-header, #pageSubtitle, #main { max-width: 600px; }
+  .app-header, #main { max-width: 600px; }
   .app-header { flex-direction: column; align-items: stretch; gap: 4px; }
   .header-links { align-items: flex-start; gap: 0; top: 0; }
   .header-links .bd-version-selector { justify-content: flex-start; }
@@ -1296,8 +1282,6 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
   #controls { padding: 18px; }
   .board-actions { flex-wrap: nowrap; }
   #pageTitle { font-size: 24px; }
-  #pageSubtitle { font-size: 12px; line-height: 1.7; margin-top: 18px; margin-bottom: 18px; }
-  #pageSubtitle span { margin-left: 0; display: block; }
   .board-note { display: none; }
   .new-badge { min-height: 40px; }
   #viewToggle .btn { min-height: 42px; padding: 8px 13px !important; }
@@ -1338,7 +1322,6 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 .btn:disabled, button:disabled { opacity: .5; cursor: not-allowed; }
 #simModal .sim-option-row { min-height: 40px; }
 #simModal input[type="radio"] { min-width: 17px; min-height: 17px; accent-color: var(--ui-accent); }
-body.light-theme #pageSubtitle { color: var(--ui-text); }
 .dcc-policy-note { color: var(--ui-accent); font-size: 10px; line-height: 1.5; padding: 3px 3px 9px; }
 .dcc-details-button { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 3px 7px; background: var(--ui-raised); color: var(--ui-text); border: 1px solid var(--ui-border); border-radius: 4px; cursor: pointer; font: inherit; }
 .dcc-details-button:hover { border-color: var(--ui-accent); color: var(--ui-accent); }
@@ -1548,8 +1531,7 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
    Tall desktops and the existing touch/tablet layout keep their sizing. */
 @media (min-width: 1060px) and (max-height: 1100px) and (hover: hover) and (pointer: fine) {
   body { padding-top: 16px; padding-bottom: 16px; }
-  .app-header, #pageSubtitle { max-width: min(1160px, calc(100dvh + 90px)); }
-  #pageSubtitle { margin-top: 10px; margin-bottom: 14px; padding-top: 10px; }
+  .app-header { max-width: min(1160px, calc(100dvh + 90px)); }
   #main, #main:has(#board.scaled), #main.lab-custom-width, #main.lab-custom-width:has(#board.scaled) {
     grid-template-columns: minmax(0, 1fr) minmax(340px, var(--lab-workspace-width, 408px));
     max-width: min(1160px, calc(100dvh + 90px));
