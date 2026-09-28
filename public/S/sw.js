@@ -2,14 +2,14 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "a9df5fbe1b695e32ff25797d3a42ecf498c3e00073ca6d7aa2f77a24588d595b",
+  "id": "a05440801b3ac954d92c4ab0b36575a1e68b0912ddf40fe062a4688134dfeb6e",
   "channel": "CURRENT",
   "engine": "frozen-proof-coach",
   "assets": {
     "index.html": "0af5b2293e8765f60f7bfef4066e07f853e432dc0104436659f87c9341c51357",
     "manifest.webmanifest": "9c2f843e6e1ea992d951944ca665b575494bb8ecf1dc16572dbe3723608f8efe",
     "_pwa/client.js": "14379d71aad8a0c97a5b739499e94cab83bbf19e2d880cd10adb39ef0f792ffc",
-    "_pwa/i18n.js": "610d14970f73403b4769f3bf4f47283c8666aa99a51e5a1639db0d250ae92bf4",
+    "_pwa/i18n.js": "e1ea2357fd866c2376b3ab9b423b6bf08a7783c28bb76c4407d56aa6827be5c6",
     "_pwa/shell.css": "c2c4f904e9ddd3558aad392e1a76d75efbd380e20a8e9eb270ffac85955216f9",
     "_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",

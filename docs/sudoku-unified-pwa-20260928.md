@@ -2,7 +2,7 @@
 
 BD approved this scope on 2026-09-28. Base main: `d81333434a8d0e0ccf674d4cac7b25c72957c64e`.
 
-CURRENT `/S/` and LAB `/S/new/` are independent installable channels. Their manifests, complete SHA-256 packages and worker cache namespaces are separate. The package helper consumes each channel's own source. It never promotes LAB or copies it into a separate PWA edition. PREVIOUS remains `/S/old/001/`, the oldest actual archived application found under `/S/old/`.
+CURRENT `/S/` and LAB `/S/new/` are independent installable channels. Their manifests, complete SHA-256 packages and worker cache namespaces are separate. The package helper consumes each channel's own source. It never promotes LAB or copies it into a separate PWA edition. BD subsequently supplied the authoritative original `BD_Sudoku1.html` (48,399 bytes). PREVIOUS `/S/old/index.html` now serves those exact bytes directly, without the later R6 HF3 research section. The later archive `/S/old/001/` remains preserved. The Slovenian view button is named Lab, as in English.
 
 Play/Learn center the board and move news, optional practice and one human status below it. Technical rating remains in Lab. EN/SL changes visible UI, help, tutorials and learning text, persists the choice and preserves machine values, game state and evidence. Historical research prose and technical identifiers retain their original language.
 
