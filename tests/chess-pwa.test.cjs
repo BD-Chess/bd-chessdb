@@ -77,6 +77,8 @@ test('release hashes, LAB provenance, install identity and complete static asset
   assert.match(about, /INSTALLED PWA/);
   assert.doesNotMatch(about, /DEVELOPMENT WORKSPACE|Development board/);
   assert.match(home, /Ohranjeni podatki PWA/);
+  assert.match(home, /CHESS ANALYSIS · BD × AI <span class="development-label">PWA<\/span>/);
+  assert.doesNotMatch(home, /CHESS ANALYSIS · BD × AI LAB/);
   assert.doesNotMatch(home, /Razvojni Analysis Lab|Samostojni podatki LAB/);
 });
 

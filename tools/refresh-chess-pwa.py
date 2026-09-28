@@ -154,6 +154,8 @@ def build():
                 text = text.replace('</title>', '</title>\n' + meta, 1)
                 text = text.replace('<span class="development-label">DEVELOPMENT</span>',
                     '<span class="development-label">PWA</span> <span id="chessPwaReady" role="status" hidden>· Offline ready</span> <button id="chessPwaUpdate" type="button" hidden>Update ready · reload</button>')
+                text = text.replace('CHESS ANALYSIS · BD × AI LAB <span class="development-label">PWA</span>',
+                                    'CHESS ANALYSIS · BD × AI <span class="development-label">PWA</span>')
                 text = text.replace('<a href="./" aria-current="page">LAB</a>', '<a href="../new/">LAB</a>')
                 text = text.replace('<a href="../PWA/">PWA</a>', '<a href="./" aria-current="page">PWA</a>')
                 text = replace_exact(text,
