@@ -17,7 +17,7 @@
   if(typeof DecompressionStream!=='function')throw new Error('This browser does not support gzip decompression. Please use a current Chrome, Edge, Firefox, or Safari.');
   const text=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
   if(!text.startsWith('<!DOCTYPE html>')||!text.includes('8zSudoku Proof Coach'))throw new Error('decoded game failed identity checks');
-  document.open();document.write(text);document.close();
+  document.open();document.write(text.replace('</body>', '<script src="../_pwa/current-ui.js"><\/script><script src="./pwa-bridge.js"><\/script><script src="../_pwa/i18n.js"><\/script></body>'));document.close();
  }catch(e){el.className='err';el.textContent='Unable to start the standalone preview: '+(e&&e.message?e.message:e);console.error(e);}
 })();
 </script></body></html>

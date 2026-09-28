@@ -38,7 +38,7 @@ async function boot(t,stored={},viewport){
  for(const[k,v]of Object.entries(stored))w.localStorage.setItem(k,v);
  for(const script of w.document.querySelectorAll('script')){assert.ok(!script.src,'app stays self contained');if(!script.type||/javascript/.test(script.type))vm.runInContext(script.textContent,dom.getInternalVMContext());}
  assert.ok(w.SudokuNavigator,'Navigator installed');
- t.after(async()=>{for(const timer of delayedTimers)clearTimeout(timer);for(const wk of workers)await wk.terminate();w.close();});
+ t.after(async()=>{for(const timer of delayedTimers)clearTimeout(timer);for(const wk of workers)await wk.terminate();w.SudokuI18n?.dispose();w.close();});
  return{w,errors,requests,downloads,delayKinds,resultKinds,el:id=>w.document.getElementById(id),get:expression=>plain(w.eval(expression)),store:()=>Object.fromEntries(Array.from({length:w.localStorage.length},(_,i)=>{const k=w.localStorage.key(i);return[k,w.localStorage.getItem(k)];}))};
 }
 function savedFixture(version){return{schema:'AI8_SUDOKU_NAV_SESSION_V1',version,gameId:'legacy-shape-fixture',diff:'easy',puzzle:[...fixture].map(Number),board:[...fixture].map(Number),notes:Array.from({length:81},()=>[]),time:37,lineage:{base:[...fixture].map(Number),ops:[]},rows:[],assistance:[],recentGains:[],practice:null,history:[],settings:{policy:'REAL',goal:'FLOW',target:1,deep:false}};}

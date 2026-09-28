@@ -1,45 +1,8 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#020409">
-<meta name="robots" content="noindex,nofollow">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="8zSudoku">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<title>8zSudoku — PWA | BD × AI Lab</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409}
-iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#020409}
-.version-nav{position:fixed;top:10px;right:10px;z-index:2147483647;display:flex;align-items:center;gap:3px;padding:4px;border:1px solid rgba(167,139,250,.22);border-radius:999px;background:rgba(2,4,9,.86);box-shadow:0 8px 28px rgba(0,0,0,.38);backdrop-filter:blur(10px);font:700 10px/1 system-ui,sans-serif;letter-spacing:.08em}
-.version-nav a{padding:7px 9px;border-radius:999px;color:#7f91ae;text-decoration:none;transition:.15s ease}
-.version-nav a:hover,.version-nav a:focus-visible{color:#e2e8f4;background:rgba(255,255,255,.07);outline:none}
-.version-nav a.active{color:#a78bfa;background:rgba(167,139,250,.14);box-shadow:inset 0 0 0 1px rgba(167,139,250,.25)}
-.version-nav .pwa-status{padding:7px 8px;border-left:1px solid rgba(167,139,250,.22);color:#70e1ba;white-space:nowrap}
-.version-nav .pwa-status[hidden]{display:none}
-.pwa-update{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2147483647;width:min(470px,calc(100% - 36px));box-sizing:border-box;padding:13px 15px;background:#111b30;border:1px solid #a78bfa;border-radius:12px;color:#e2e8f4;box-shadow:0 8px 30px #0008;font:14px/1.4 system-ui,sans-serif}
-.pwa-update[hidden]{display:none}.pwa-update p{margin:0 0 10px}.pwa-update button{padding:9px 13px;border:1px solid #a78bfa;border-radius:7px;background:#7c3aed;color:#fff;font:700 13px system-ui;cursor:pointer}.pwa-update button:disabled{opacity:.6}
-@media(max-width:520px){.version-nav{top:6px;right:6px;font-size:9px}.version-nav a{padding:6px 7px}}
-</style>
-</head>
-<body>
-<!-- BD web-app versioning wrapper. Actual PWA application is /S/PWA/app.html, based on LAB. -->
-<iframe id="sudokuApp" src="./app.html" title="8zSudoku PWA version" allow="fullscreen"></iframe>
-<nav class="version-nav" aria-label="Sudoku versions">
-<a href="../">CURRENT</a>
-<a href="../old/">PREVIOUS</a>
-<a href="../new/">LAB</a>
-<a class="active" href="./" aria-current="page">PWA</a>
-<span id="pwaStatus" class="pwa-status" role="status" aria-live="polite" hidden></span>
-</nav>
-<aside class="pwa-update" id="pwaUpdate" role="status" aria-live="polite" hidden>
-<p id="pwaUpdateMessage"></p>
-<button id="pwaUpdateButton" type="button">Save &amp; update</button>
-</aside>
-<script src="./pwa.js" defer></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#020409"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="8zSudoku"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="../_pwa/icon-180.png"><link rel="icon" href="../_pwa/icon-192.png"><link rel="stylesheet" href="../_pwa/shell.css"><title>8zSudoku · LEGACY</title></head>
+<body data-channel="legacy"><iframe id="sudokuGame" title="8zSudoku game" allow="fullscreen" hidden></iframe><main id="legacyLanding" class="legacy-landing"><h1>Sudoku now installs directly</h1><p><a href="../?install=1">Install CURRENT · 8zSudoku</a><br><a href="../new/?install=1">Install LAB · 8zSudoku LAB</a></p><p>This old installation is a recovery entry. Your saved data has been kept. There is no separate PWA game edition to update.</p><h2>Keep your saved game</h2><p>Open your old game below, choose <strong>More → Export</strong>, then open LAB and choose <strong>More → Import session</strong>. Check the board and Notes before removing this old installation. On phones, import the exported file inside the new installed app.</p><p>CURRENT uses the older stable game format. Transfer this legacy Navigator session to LAB.</p><button id="legacyRecover" type="button">Open saved legacy game</button></main>
+<nav class="version-nav" aria-label="Sudoku versions"><a href="../">CURRENT</a><a href="../new/">LAB</a><a href="../old/">PREVIOUS</a></nav>
+<span id="pwaStatus" class="pwa-status" role="status" aria-live="polite">PREPARING OFFLINE</span>
+<aside class="pwa-update" id="pwaUpdate" role="status" aria-live="polite" hidden><p id="pwaUpdateMessage"></p><button id="pwaUpdateButton" type="button">Save &amp; update</button></aside>
+<aside class="pwa-update pwa-install" id="pwaInstallPanel" aria-label="Install 8zSudoku" hidden><p><strong>Install 8zSudoku</strong></p><p>On iPhone or iPad, open this address in Safari, tap Share, then Add to Home Screen. On Android or desktop, use your browser’s Install app option. Wait for OFFLINE READY before going offline.</p><p>CURRENT and LAB are separate installations. Updates ask you to save first.</p><button id="pwaInstallClose" type="button">Close</button></aside>
+<script src="../_pwa/i18n.js" defer></script><script src="../_pwa/client.js" defer></script></body></html>
