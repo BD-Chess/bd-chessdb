@@ -6,6 +6,26 @@ function bytes(h){return plain(h.w.SudokuNavigator.export().session);}
 function core(){const x={module:{exports:{}}};vm.runInNewContext(fs.readFileSync('public/S/new/app.html','utf8').match(/<script id="navigator-core">([\s\S]*?)<\/script>/)[1],x);return x.module.exports;}
 const C=core(),corpus=JSON.parse(fs.readFileSync('tests/fixtures/sudoku-arena-31.json')).puzzles;
 
+test('Release: desktop Play Hint and Why show a visible checked help card without changing the board',async t=>{
+ const h=await ready(t),before=bytes(h).board;
+ await h.el('plHint').onclick();assert.equal(h.el('navModal').hidden,false);assert.equal(h.el('navModalTitle').textContent,'Hint');assert(h.el('uxHelpText').textContent.length>20);
+ await h.el('uxCardWhy').onclick();assert.equal(h.el('navModalTitle').textContent,'Why?');assert.deepEqual(bytes(h).board,before);h.el('navClose').click();
+ await h.el('plWhy').onclick();assert.equal(h.el('navModalTitle').textContent,'Why?');assert.deepEqual(bytes(h).board,before);assert.deepEqual(h.errors,[]);
+});
+test('Release: failed profile keeps the game and offers an explicit fixed checked example for every label',async t=>{
+ const h=await ready(t),w=h.w,p=w.SudokuNavigator.product,old=bytes(h);
+ h.resultKinds.generate=data=>({...data,result:{status:'PROFILE_UNFULFILLED',attempts:8}});
+ await w.SudokuNavigator.createGame('hard');assert.deepEqual(bytes(h).board,old.board);assert.match(h.el('navModalBody').textContent,/fixed example.*may repeat/s);
+ await h.el('plProfileExample').onclick();assert.equal(bytes(h).diff,'hard');assert(p.entries().some(e=>e.id===old.gameId));assert.match(h.el('plRating').textContent,/fixed catalog example/);
+ for(const label of ['easy','medium','evil']){assert(await p.openProfileExample(label));const s=bytes(h);assert.equal(s.diff,label);assert.match(s.generationEvidence.provenance,/^fixed-profile-example:/);assert.equal(s.generationEvidence.difficulty.rating.label,label);}
+ assert.deepEqual(h.errors,[]);
+});
+test('Release: a checked example cannot replace the current game when archival fails',async t=>{
+ const h=await ready(t),p=h.w.SudokuNavigator.product,before=bytes(h);
+ const proto=Object.getPrototypeOf(h.w.localStorage),set=proto.setItem;proto.setItem=function(k,v){if(k.includes('.recovery.'))throw Error('QuotaExceededError');return set.call(this,k,v);};
+ assert.equal(await p.openProfileExample('medium'),false);assert.deepEqual(bytes(h).board,before.board);assert.equal(bytes(h).gameId,before.gameId);assert.deepEqual(h.errors,[]);
+});
+
 test('CP1: three views share the board, notes, history and policy; opening views runs no worker',async t=>{
  const h=await ready(t),w=h.w,p=w.SudokuNavigator.product;w.selectCell(2);w.toggleNotes();w.placeNumber(4);const before=bytes(h),requests=h.requests.length;
  for(const v of ['learn','lab','play']){p.switchView(v);assert.equal(w.document.body.dataset.view,v);assert.deepEqual(bytes(h),before);}

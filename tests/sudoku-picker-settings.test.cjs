@@ -106,7 +106,9 @@ test('P07/P08/P18: restored difficulty governs Auto, explicit overrides survive 
   // A generation button/label is not the current puzzle difficulty.
   h.el('status').textContent='EASY';await hold(h);assert.equal(h.el('uxPicker').querySelectorAll('.conflict').length>0,diff==='easy');pointer(h,'pointercancel',point(h,40));
  }
- choice(h,'uxCandidateAssist','on');await w.SudokuNavigator.createGame('hard');w.stopTimer();assert.equal(w.SudokuNavigator.ui.preferences().assist,'on');
+ // This is a preferences transition test. Hard profile fulfillment is bounded
+ // and tested separately; Easy keeps this check independent of rejection UI.
+ choice(h,'uxCandidateAssist','on');await w.SudokuNavigator.createGame('easy');w.stopTimer();assert.equal(w.SudokuNavigator.ui.preferences().assist,'on');
  const legacy=savedFixture('0.2.0');legacy.diff='evil';await w.SudokuNavigator.restore(legacy);w.stopTimer();layout(h);await hold(h);assert.ok(h.el('uxPicker').querySelectorAll('.conflict').length);pointer(h,'pointercancel',point(h,40));
  choice(h,'uxCandidateAssist','off');w.dispatchEvent(new w.Event('pagehide'));const next=await ready(t,h.store());assert.equal(next.w.SudokuNavigator.ui.preferences().assist,'off');choice(next,'uxCandidateAssist','auto');await hold(next);assert.equal(next.el('uxPicker').querySelectorAll('.conflict').length,0);pointer(next,'pointercancel',point(next,40));
  for(const raw of ['{','null','[]','{"position":"bad","size":"huge","assist":true}']){const stored={[PREF]:raw,[NS+'.session']:JSON.stringify(savedFixture('0.2.0'))};const old=await ready(t,stored);assert.deepEqual(plain(old.w.SudokuNavigator.ui.preferences()),{position:'atCell',size:'large',assist:'auto'});assert.equal(old.w.localStorage.getItem(PREF),raw,'boot must not rewrite bytes');assert.equal(old.get('playerGrid.flat().join(\'\')'),legacy.puzzle.join(''));}
