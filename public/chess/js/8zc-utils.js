@@ -163,6 +163,27 @@ function initAllCore() {
     }
     catch (e) { console.error('Bad settings JSON', e); }
   }
+  // The LAB promotion kept CURRENT's older browser preferences. Match the
+  // owner's LAB appearance once, while retaining every CURRENT game and study.
+  // Keep the original settings so a user can restore their previous choices.
+  const appearanceKey = 'ChessBest:CURRENT:v2:lab-appearance-20260928';
+  try {
+    if (localStorage.getItem(appearanceKey) !== '1') {
+      const labSaved = localStorage.getItem('ChessBest:LAB:v2:settings');
+      const labAppearance = labSaved ? JSON.parse(labSaved) : {};
+      if (labAppearance && typeof labAppearance === 'object' && !Array.isArray(labAppearance)) {
+        const backupKey = 'ChessBest:CURRENT:v2:settings-before-lab-appearance-20260928';
+        if (saved && !localStorage.getItem(backupKey)) localStorage.setItem(backupKey, saved);
+        settings.theme = labAppearance.theme === 'light' ? 'light' : 'dark';
+        settings.bg = /^#[0-9a-f]{6}$/i.test(labAppearance.bg) ? labAppearance.bg : '#151a19';
+        settings.doubleBoard = labAppearance.doubleBoard === true;
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+        localStorage.setItem(appearanceKey, '1');
+      }
+    }
+  } catch (error) {
+    console.warn('Could not align CURRENT appearance with LAB:', error);
+  }
   if (!ENABLE_COACH) {
     settings.coachMode = 'silent';
     settings.coachOpen = false;

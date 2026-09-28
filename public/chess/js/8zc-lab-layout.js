@@ -124,7 +124,26 @@
     closing = false;
   }
   function start() {
-  try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
+    try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
+    // A saved CURRENT workspace width can make the promoted page look wider
+    // than LAB. Align only its presentation fields once; keep activity options.
+    const appearanceKey = 'ChessBest:CURRENT:v2:lab-layout-20260928';
+    try {
+      if (root.localStorage.getItem(appearanceKey) !== '1') {
+        const labRaw = root.localStorage.getItem('ChessBest:LAB:v2:layout');
+        const labPresentation = normalize(labRaw ? JSON.parse(labRaw) : null);
+        const previous = root.localStorage.getItem(STORAGE_KEY);
+        const backupKey = 'ChessBest:CURRENT:v2:layout-before-lab-appearance-20260928';
+        if (previous && !root.localStorage.getItem(backupKey)) root.localStorage.setItem(backupKey, previous);
+        const aligned = normalize({ ...preferences, workspaceWidth: labPresentation.workspaceWidth,
+          compact: labPresentation.compact });
+        root.localStorage.setItem(STORAGE_KEY, JSON.stringify(aligned));
+        root.localStorage.setItem(appearanceKey, '1');
+        preferences = aligned;
+      }
+    } catch (error) {
+      console.warn('Could not align CURRENT workspace with LAB:', error);
+    }
     if (elements || !byId('labToolsDialog')) return;
     elements = { controls: byId('controls'), main: byId('main'), bottom: document.querySelector('.workspace-bottom'),
       content: byId('workspaceToolContent'), focusBar: byId('workspaceFocusBar'), tools: byId('btnLabTools'),
