@@ -1546,6 +1546,16 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
   .workspace-timers { margin-bottom: 8px; }
   .workspace-top .mode-hint { margin-bottom: 8px; }
 }
+/* CURRENT can retain Double Size or a wide workspace from an older session.
+   At laptop/HD heights those preferences must still leave the board and its
+   actions within the same 1160px reading layout used by LAB. */
+@media (min-width: 1060px) and (max-height: 1250px) {
+  #main:has(#board.scaled), #main.lab-custom-width,
+  #main.lab-custom-width:has(#board.scaled) {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, var(--lab-workspace-width, 408px));
+    max-width: min(1160px, calc(100dvh + 90px));
+  }
+}
 /* Source control stays inside the existing workspace on narrow screens. */
 .analysis-source-row{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:5px 0 7px;font-size:12px}
 .analysis-source-row select{min-height:32px;border-radius:6px;background:#1d2c29;color:#e5f5ed;border:1px solid #527363;padding:3px 8px}
