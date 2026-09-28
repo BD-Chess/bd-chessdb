@@ -182,7 +182,7 @@ namespaces. Their first-run migration copies each channel's existing browser dat
 readback and without removing the source or overwriting a newer destination.
 The numbered archive writes to its own 005 namespace when opened at the same
 origin; archived browser data starts fresh while the legacy source records stay
-available for CURRENT's copy. PWA release `pwa-e1fd1166c8a8` caches 119 files
+available for CURRENT's copy. PWA release `pwa-123cfe8d4e02` caches 119 files
 and retains the installed manifest identity, update flow and PWA v1 source data.
 The archive manifest SHA-256 is
 `778f5d27e90657f9c77ffbc6ec5756335273adce84790bbb5aef6227e73b9294`.

@@ -1,6 +1,6 @@
 /* PWA-only, release-consistent cache. Online APIs and credentials are excluded. */
 'use strict';
-const RELEASE = "pwa-e1fd1166c8a8";
+const RELEASE = "pwa-123cfe8d4e02";
 const ASSETS = [
   "8zc-about.html",
   "8zc-help.html",
