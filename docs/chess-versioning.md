@@ -2,9 +2,9 @@
 
 | Channel | Public path | Meaning |
 |---|---|---|
-| CURRENT | `/chess/` | Primary public release |
-| PREVIOUS | `/chess/old/` | Immediately preceding stable release |
-| LAB | `/chess/new/` | Development release; publicly reachable, not promoted |
+| CURRENT | `/chess/` | Primary public release; installable offline workspace |
+| PREVIOUS | `/chess/old/` | Legacy release; retain without active changes |
+| LAB | `/chess/new/` | Development release; independently installable offline workspace |
 | Archive | `/chess/old/001/`, `/002/`, … | Chronological immutable release snapshots |
 
 The three channel entry pages contain the same self-contained selector next to
@@ -23,14 +23,15 @@ The research upgrade is confined to LAB and its separate Gemini endpoint.
    record commit, chess tree, active release manifests and existing archive IDs.
    Recheck Drive, project artifacts and OneDrive for relevant newer evidence.
 2. Run `node tools/chess-versioning.mjs --base <latest-main-sha>` and LAB tests.
-   Choose **max existing archive ID + 1**, minimum three digits. Never fill a gap,
+   Choose **max existing archive ID + 1** for a promotion, minimum three digits. Never fill a gap,
    reuse an ID or overwrite a destination. Stop on a hash conflict or overlapping
    concurrent change. The checker is read-only; it does not promote anything.
 3. Prepare all copies in a separate staging worktree, not by moving directories
-   in the active checkout. Copy the current PREVIOUS's own files into the chosen
-   archive directory, excluding its numbered archives. Retain all older archives
-   byte-for-byte. Copy CURRENT's own files to PREVIOUS, excluding `old/`, `new/`
-   and channel-level `versions.json`. Copy verified LAB's own files to CURRENT.
+   in the active checkout. Back up CURRENT's own files to the chosen numbered
+   archive directory, excluding `old/`, `new/` and channel-level `versions.json`.
+   Retain PREVIOUS and all older archives byte-for-byte. Copy verified LAB's
+   application files to CURRENT while preserving CURRENT's own identity,
+   storage namespace, manifest and service-worker scope.
 4. Before sealing the new archive, make all application assets, JS/CSS, data,
    pieces, WASM/NNUE and licenses local to that snapshot. Resolve each asset URL
    relative to its actual file. Rebase references to the release's own assets;
@@ -43,22 +44,24 @@ The research upgrade is confined to LAB and its separate Gemini endpoint.
    SHA-256 manifest of all final files excluding the manifest itself, source
    commit/tree, creation UTC, intentional URL rewrites and remaining external
    service dependencies. Never edit that archive after the sealing commit.
-6. Update CURRENT/PREVIOUS active selector markers and channel metadata. Leave
+6. Update CURRENT/LAB active selector markers and channel metadata. Leave
    `/new/` as a real, independent LAB copy for the next cycle, never a forced
    alias to CURRENT. Update `versions.json.archives` chronologically with the
-   new ID, path and manifest digest. Do not copy nested `old/` or `new/` trees.
+   new ID, path and manifest digest. Rebuild both active offline releases with
+   `python3 tools/build-chess-channel-pwas.py`, then run it with `--check`.
+   Do not copy nested `old/` or `new/` trees.
 7. Re-read `main` immediately before publishing. Build the smallest scoped tree
    on that exact parent and use a non-force, fast-forward ref update. Preserve
    unrelated concurrent files and redirects. If the parent moved, recheck the
    affected paths and rebuild; never force through the race.
-8. Let GitHub → Netlify deploy. Verify all three channels, the newly sealed
+8. Publish through the currently authorized route. Verify all three channels,
+   each installable channel's scope and offline closure, the newly sealed
    archive's asset closure, board, local interactions and mobile layout. Store
    exact package, manifests, tests and live receipts in `GPT Projects/Chess/`.
 
-Steps 3 and 6 describe the ordinary rotation when PREVIOUS is also promoted.
-If BD explicitly retains PREVIOUS as an independent legacy application, copy
-CURRENT directly into the next numbered archive and leave `/chess/old/` root
-unchanged. Document that exception in the release metadata and receipt.
+PREVIOUS is a fixed legacy application. Later promotions back up CURRENT into
+the next numbered archive; `/chess/old/` itself stays unchanged. Document the
+backup source and scope in release metadata and receipt.
 
 ## Archive boundary
 
@@ -203,3 +206,26 @@ on narrow screens. PWA release `pwa-319772b48cea` refreshes its 119-file cache f
 `571191b6ededa1d21c4bd918436b2c25efd501f3` with its installed identity
 and existing user storage unchanged. The PREVIOUS legacy app and all numbered
 archives remain untouched. GitHub Pages publication is checked separately.
+
+## 2026-09-28 CURRENT and LAB are independently installable
+
+BD retired the unused, unpublished `/chess/PWA/` application after the prior
+LAB-to-CURRENT promotion. `/chess/` and `/chess/new/` now each provide their own
+manifest identity (`./` resolved within that channel), scoped worker, update
+button, and channel-specific offline cache. The former URL keeps only an HTML
+link/redirect to LAB; no data migration from its unused PWA namespace is run.
+The earlier `/PWA/` refresh recipe above is historical and its refresh script
+is retired. Run `python3 tools/build-chess-channel-pwas.py` after any active
+runtime asset changes, then `python3 tools/build-chess-channel-pwas.py --check`.
+Do not regenerate immutable numbered archives or modify PREVIOUS.
+
+Each worker caches only exact paths on its active channel. CURRENT's worker
+scope includes nested URLs at the browser level but responds only for its own
+explicit allowlist, so LAB, PREVIOUS, numbered archives, network APIs and token
+files pass through. The channel cache prefixes are independent and updates
+wait for user action or closing old tabs. PGNs, board assets and the pinned
+Stockfish JS/WASM are packaged; secret lookup and source-only engine files are
+excluded. The two channels keep their existing independent v2 storage keys and
+share the origin's quota where the browser shares origin storage. Their
+`release.json` files record per-file hashes; `versions.json` maps the active
+installable routes while preserving the historical PWA refresh record.

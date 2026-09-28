@@ -290,7 +290,7 @@
       current = { ...current, phase: 'copying', complete: false, error: '', attempts: current.attempts + 1 };
       inFlight = migrate().catch(error => {
         const message = error?.name === 'QuotaExceededError'
-          ? 'The browser origin storage quota is full. CURRENT, LAB and PWA share that quota. Original data and completed copies were retained; free space or export data before retrying.'
+          ? 'The browser origin storage quota is full. CURRENT and LAB share that quota. Original data and completed copies were retained; free space or export data before retrying.'
           : error?.name === 'AbortError' ? 'CURRENT migration waited too long for another tab. Close that tab and retry.'
             : String(error?.message || 'CURRENT data migration could not be verified.');
         current = { ...current, phase: 'blocked', complete: false, error: message };

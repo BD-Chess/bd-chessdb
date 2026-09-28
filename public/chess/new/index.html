@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ChessBest.org — DCC Analysis Lab</title>
+  <meta name="theme-color" content="#16382b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ChessBest LAB">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- ── SEO / Social / AI-readability ── -->
   <meta name="description" content="Explore chess with ChessDB evaluations, DCC lookahead, measured line coverage, a searchable game library, and live play. An experimental analysis layer from BD × AI Lab.">
@@ -84,6 +90,14 @@
     body.light-theme .bd-version-selector a[aria-current="page"]{color:#164c2c;background:#e1f3e6;border-color:#659275}
     .bd-version-selector--legacy{justify-content:center;margin:0 0 10px}
     @media(max-width:790px){.bd-version-selector a{min-height:44px}.bd-version-selector .bd-version-dot{display:none}}
+    #chessPwaNotice{margin:0;padding:8px 16px;color:#f4eed7;background:#493714;font:600 14px/1.4 system-ui,sans-serif;text-align:center}
+    body.light-theme #chessPwaNotice{color:#513700;background:#ffecb2}
+    .chess-pwa-action{font:600 12px/1.4 system-ui,sans-serif;color:var(--ui-accent);background:transparent;border:1px solid currentColor;border-radius:6px;padding:5px 9px;cursor:pointer;min-height:34px}
+    .chess-pwa-action:hover{color:var(--ui-text)}
+    #chessPwaReady{font:600 11px/1.3 system-ui,sans-serif;color:var(--ui-muted)}
+    .chess-pwa-hint{padding:7px 11px;border:1px solid var(--ui-border);border-radius:8px;color:var(--ui-text);background:var(--ui-surface);font:12px/1.5 system-ui,sans-serif;max-width:280px}
+    .header-nav{flex-wrap:wrap}
+    @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
 </head>
@@ -105,14 +119,18 @@
         <a href="../">CURRENT</a>
         <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../old/">PREVIOUS</a>
         <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" aria-current="page">LAB</a>
-        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../PWA/">PWA</a>
       </nav>
       <nav class="header-nav" aria-label="Main navigation">
         <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
         <a href="8zc-help.html#dcc">How DCC works</a>
+        <button id="chessPwaInstall" class="chess-pwa-action" type="button" aria-controls="chessPwaHint">Install LAB</button>
+        <button id="chessPwaUpdate" class="chess-pwa-action" type="button" hidden>Update ready · reload</button>
       </nav>
+      <span id="chessPwaReady" role="status" hidden>Offline ready</span>
+      <span id="chessPwaHint" class="chess-pwa-hint" role="status" hidden></span>
     </div>
   </header>
+  <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
   <div id="pageSubtitle">Read the position. Explore the line. <span>ChessDB or local Stockfish + DCC lookahead.</span></div>
 
   <main id="main" tabindex="-1">
@@ -699,6 +717,7 @@
   <script src="js/8zc-new-ui.js?v=20260927-w0r2"></script>
   <script src="js/8zc-review-ui.js?v=20260927-review1"></script>
   <script src="js/8zc-lab-layout.js?v=20260927-w0r2"></script>
+  <script src="pwa.js"></script>
 
 </body>
 </html>

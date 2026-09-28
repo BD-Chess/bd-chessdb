@@ -10,14 +10,33 @@ test('BD archives increment monotonically and never fill historical gaps',()=>{
   assert.equal(nextArchive(['999']),'1000');
   assert.throws(()=>nextArchive(['001','0001']),/Duplicate/);
 });
-test('CURRENT/PREVIOUS/LAB/PWA each link directly to all channels with one active marker',()=>{
+test('CURRENT and LAB link to three channels; byte-preserved PREVIOUS retains its legacy PWA link',()=>{
   const result=checkVersions(fileURLToPath(new URL('../../../../',import.meta.url)));
   assert.equal(result.ok,true,result.errors.join('\n'));
+  assert.deepEqual(result.channels.map(channel => channel.name), ['CURRENT','PREVIOUS','LAB']);
+  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
+  assert.match(readFileSync(root+'old/index.html','utf8'),/href="\.\.\/PWA\/">PWA<\/a>/);
+  for(const entry of ['index.html','new/index.html']){
+    const html=readFileSync(root+entry,'utf8');
+    const selector=html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/);
+    assert.ok(selector,entry+' selector');
+    assert.doesNotMatch(selector[0],/>PWA<\/a>/,entry+' current navigation');
+  }
   assert.equal(result.promotionPerformed,false);
+});
+test('CURRENT and LAB have separate install identities and scoped workers',()=>{
+  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
+  for(const directory of ['', 'new/']){
+    const manifest=JSON.parse(readFileSync(root+directory+'manifest.webmanifest','utf8'));
+    assert.deepEqual([manifest.id,manifest.start_url,manifest.scope],['./','./','./']);
+    const html=readFileSync(root+directory+'index.html','utf8');
+    assert.match(html,/<link\b(?=[^>]*\brel=["']manifest["'])(?=[^>]*\bhref=["'](?:\.\/)?manifest\.webmanifest["'])[^>]*>/i);
+    assert.match(html,/<script\b[^>]*src=["'](?:\.\/)?pwa\.js["']/i);
+  }
 });
 test('PREVIOUS opens the brown v0.6.0 application at old/ without redirects',()=>{
   const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
-  for(const [name,href] of [['index.html','./old/'],['new/index.html','../old/'],['PWA/index.html','../old/']]){
+  for(const [name,href] of [['index.html','./old/'],['new/index.html','../old/']]){
     assert.match(readFileSync(root+name,'utf8'),new RegExp(`href="${href.replaceAll('/','\\/')}"\>PREVIOUS`));
   }
   const html=readFileSync(root+'old/index.html','utf8');

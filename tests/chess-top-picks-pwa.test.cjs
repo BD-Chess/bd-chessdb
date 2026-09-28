@@ -5,17 +5,22 @@ const path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const { IDBFactory } = require('fake-indexeddb');
 
-const base = path.resolve(__dirname, '../public/chess/PWA');
-const pgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks.pgn'), 'utf8');
-const tcecPgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks_TCEC.pgn'), 'utf8');
+const chessRoot = path.resolve(__dirname, '../public/chess');
 const anchor = '1r6/5p2/3p2p1/4p1N1/R4nPP/1P1k4/5R1K/3r4 b - - 8 44';
 const tcecAnchor = '8/5p2/4p3/kb2P3/1b6/p2p4/R5P1/1R1K4 w - - 0 49';
 
-test('installed PWA opens Top Picks at the curated position and retains the full game on next move', { timeout: 15000 }, async t => {
+for (const lane of [
+  { name: 'CURRENT', base: chessRoot, suffix: '/chess/' },
+  { name: 'LAB', base: path.join(chessRoot, 'new'), suffix: '/chess/new/' }
+]) test(`${lane.name} installed board opens curated Top Picks and retains the full game on next move`, { timeout: 15000 }, async t => {
+  const { name, base, suffix } = lane;
+  const key = `ChessBest:${name}:v2:`;
+  const pgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks.pgn'), 'utf8');
+  const tcecPgn = fs.readFileSync(path.join(base, 'Games/ChessBest_Top_Picks_TCEC.pgn'), 'utf8');
   const errors = [], virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(fs.readFileSync(path.join(base, 'index.html'), 'utf8'), {
-    url: 'https://bd-chess.github.io/bd-chessdb/chess/PWA/', runScripts: 'outside-only',
+    url: 'https://bd-chess.github.io/bd-chessdb' + suffix, runScripts: 'outside-only',
     pretendToBeVisual: true, virtualConsole
   });
   const w = dom.window;
@@ -78,18 +83,18 @@ test('installed PWA opens Top Picks at the curated position and retains the full
   await until(() => w.ChessLabHost.getContext().fen === anchor);
   assert.equal(w.ChessLabHost.getContext().fen, anchor);
   assert.match(get('gameTitle').textContent, /Gukesh.*Carlsen/);
-  assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:top-pick')).cursor, 87);
+  assert.equal(JSON.parse(w.localStorage.getItem(key + 'top-pick')).cursor, 87);
   assert.equal(w.localStorage.getItem('chessLabTopPickCursor-v1'), null);
   get('next').click();
-  assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:top-pick')).cursor, 88);
-  assert.equal(w.localStorage.getItem('ChessBest:PWA:v2:game'), pgn.trim().split(/\n\s*\n(?=\[Event)/)[0]);
+  assert.equal(JSON.parse(w.localStorage.getItem(key + 'top-pick')).cursor, 88);
+  assert.equal(w.localStorage.getItem(key + 'game'), pgn.trim().split(/\n\s*\n(?=\[Event)/)[0]);
   const tcec = [...get('popularGamesPanel').querySelectorAll('.library-result')]
     .find(result => result.textContent.includes('TCEC S27 Superfinal'));
   tcec.click();
   await until(() => w.ChessLabHost.getContext().fen === tcecAnchor);
   assert.equal(w.ChessLabHost.getContext().fen, tcecAnchor);
-  assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:top-pick')).cursor, 96);
-  assert.match(w.localStorage.getItem('ChessBest:PWA:v2:game'), /ChessBestLicense "CC BY-SA 3\.0"/);
+  assert.equal(JSON.parse(w.localStorage.getItem(key + 'top-pick')).cursor, 96);
+  assert.match(w.localStorage.getItem(key + 'game'), /ChessBestLicense "CC BY-SA 3\.0"/);
   assert.equal(w.localStorage.getItem('chessLabTopPickCursor-v1'), null);
   assert.deepEqual(errors, []);
   w.dispatchEvent(new w.Event('pagehide'));
