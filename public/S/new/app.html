@@ -368,15 +368,17 @@ body{font-family:system-ui,sans-serif;overflow-x:auto}
 /* Equal side tracks keep Play/Learn's board centered under the title. */
 body:not([data-view=lab]) .main{grid-template-columns:200px minmax(0,1fr) 200px;grid-template-areas:'left center .';max-width:1240px}
 @media(min-width:761px) and (max-width:840px){body:not([data-view=lab]) .main{grid-template-columns:160px minmax(0,1fr) 160px}}
-/* Desktop Play centers the visible toolbar + board as one stage and gives it a little more space below the tabs. */
-@media(min-width:841px){
+/* Desktop Play: move the whole visual game composition together.
+   Keep the title/tabs centered on the Sudoku board while the toolbar stays to its left. */
+@media(min-width:1000px){
+  body[data-view=play] .title-block,
+  body[data-view=play] .pl-tabs,
   body[data-view=play] .main{
-    grid-template-columns:200px auto;
-    grid-template-areas:'left center';
-    width:fit-content;
-    max-width:calc(100% - 40px);
-    flex:0 0 auto;
-    margin-top:18px;
+    position:relative;
+    left:56px;
+  }
+  body[data-view=play] .title-block{
+    margin-top:32px;
   }
 }
 body:not([data-view=lab]) .col-right,body:not([data-view=lab]) #humanTracePanel,body:not([data-view=lab]) .research-notes,body[data-view=play] #gameReviewPanel,body[data-view=play] #navigatorPanel,body:not([data-view=lab]) .nav-extra,body:not([data-view=lab]) .stats-bar{display:none!important}
