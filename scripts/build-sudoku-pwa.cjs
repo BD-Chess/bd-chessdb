@@ -21,13 +21,13 @@ for (const [channel, directory] of [['CURRENT',''],['LAB','new'],['LEGACY_RECOVE
   const dir = path.join(base, directory), prefix = directory ? '../' : '';
   const shared = ['client.js','i18n.js','shell.css','icon-180.png','icon-192.png','icon-512.png'].map(x => prefix + '_pwa/' + x);
   const assets = ['index.html','manifest.webmanifest',...shared];
-  if (channel === 'CURRENT') assets.push('_pwa/current-ui.js','current/index.html','current/pwa-bridge.js','current/hold-input.js',...Array.from({length:8},(_,i) => 'current/payload/part-' + String(i+1).padStart(2,'0') + '.txt'));
+  if (channel === 'CURRENT') assets.push('current/index.html','current/promotion.json');
   else assets.push('app.html');
   if (channel === 'LEGACY_RECOVERY') assets.push('icon-180.png','icon-192.png','icon-512.png');
   const digests = Object.fromEntries(assets.map(name => [name, hash(fs.readFileSync(path.join(dir,name)))]));
   const runtimeHash = hash(template);
   const id = hash(JSON.stringify({channel,assets:digests,worker_runtime_sha256:runtimeHash}));
-  const engine = channel === 'CURRENT' ? 'frozen-proof-coach' : '0.3.0';
+  const engine = '0.3.0';
   const generated = template.replace('const RELEASE = null;', 'const RELEASE = ' + JSON.stringify({id,channel,engine,assets:digests},null,2) + ';');
   const release = {schema:'8ZSUDOKU_CHANNEL_RELEASE_V2',channel,release_id:id,engine_revision:engine,source_policy:'SAME_CHANNEL_NO_GAME_COPY',assets_sha256:digests,worker_runtime_sha256:runtimeHash,worker_sha256:hash(generated)};
   for (const [name, text] of [['sw.js',generated],['release.json',JSON.stringify(release,null,2)+'\n']]) {

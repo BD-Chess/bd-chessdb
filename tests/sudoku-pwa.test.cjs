@@ -36,7 +36,7 @@ test('CURRENT and LAB install in place; legacy identity and source stay recovera
   assert.deepEqual([m.id,m.start_url,m.scope],['./','./','./']);assert.equal(m.name,name);assert.equal(m.display,'standalone');
   const dom=new JSDOM(fs.readFileSync(path.join(p,'index.html'),'utf8'));
   assert.deepEqual([...dom.window.document.querySelectorAll('.version-nav a')].map(x=>x.textContent),['CURRENT','LAB','PREVIOUS']);
-  assert.equal(!!dom.window.document.getElementById('pwaInstall'),dir==='');dom.window.close();
+  assert.equal(!!dom.window.document.getElementById('pwaInstall'),false);dom.window.close();
  }
  const legacy=fs.readFileSync(path.resolve(__dirname,'../public/S/PWA/app.html'));
  assert.equal(hash(legacy),'73639dde9e8e7534fd1090b5b422206820583a77a0b59e904dfdd906262a048b','legacy recovery game stays frozen');
@@ -134,21 +134,14 @@ test('LAB update persists Notes, Redo and library; quota/concurrent writer block
  second.w.localStorage.setItem(NS+'.library','{"foreignWriter":true}');assert.equal(await second.w.SudokuNavigator.flushForUpdate(),false);
 });
 
-function currentHarness(t,stored={}){
- const zlib=require('node:zlib');const p=path.resolve(__dirname,'../public/S/current');
- const compressed=Array.from({length:8},(_,i)=>fs.readFileSync(path.join(p,'payload/part-'+String(i+1).padStart(2,'0')+'.txt'),'utf8').trim()).join('');
- const html=zlib.gunzipSync(Buffer.from(compressed,'base64')).toString();
- const dom=new JSDOM(html,{url:'https://example.test/S/current/',runScripts:'outside-only',pretendToBeVisual:true});const w=dom.window;
- w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;w.alert=()=>{};w.confirm=()=>true;w.HTMLElement.prototype.scrollIntoView=function(){};
- for(const [key,value] of Object.entries(stored))w.localStorage.setItem(key,value);
- for(const script of w.document.querySelectorAll('script'))if(!script.src)vm.runInContext(script.textContent,dom.getInternalVMContext());
- w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- for(const script of ['../_pwa/current-ui.js','hold-input.js','pwa-bridge.js','../_pwa/i18n.js'])vm.runInContext(fs.readFileSync(path.join(p,script),'utf8'),dom.getInternalVMContext());
- t.after(()=>{w.SudokuI18n?.dispose();w.close();});return{w,store:()=>Object.fromEntries(Array.from({length:w.localStorage.length},(_,i)=>{const k=w.localStorage.key(i);return[k,w.localStorage.getItem(k)];}))};
+async function currentHarness(t,stored={}){
+ const {boot,until}=require('./sudoku-ui-harness.cjs');
+ const h=await boot(t,stored,{width:1440,height:900},{lane:'CURRENT'});
+ await until(()=>h.w.SudokuNavigator.product.ready(),'CURRENT ready');return h;
 }
 test('CURRENT mouse hold opens the picker; one canonical move, Notes, Undo, cancellation and update cleanup',async t=>{
- const {fixture,fixtureSolution,until,sleep}=require('./sudoku-ui-harness.cjs');
- const h=currentHarness(t),w=h.w;w.AI8SudokuTestAPI.loadPuzzle(fixture,fixtureSolution);w.stopTimer();
+ const {savedFixture,until,sleep}=require('./sudoku-ui-harness.cjs');
+ const h=await currentHarness(t),w=h.w;await w.SudokuNavigator.restore(savedFixture('0.2.0'));w.stopTimer();
  Object.defineProperty(w,'innerWidth',{value:1440,configurable:true});Object.defineProperty(w,'innerHeight',{value:900,configurable:true});
  const grid=w.document.getElementById('grid'),G=w.SudokuMobileGeometry;
  [...grid.children].forEach((el,i)=>el.getBoundingClientRect=()=>G.rect(373+i%9*73,190+Math.floor(i/9)*73,72,72));
@@ -156,25 +149,22 @@ test('CURRENT mouse hold opens the picker; one canonical move, Notes, Undo, canc
  const emit=(target,type,x,y,extra={})=>{const e=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:type==='pointerup'?0:1,...extra});for(const[k,v]of Object.entries({pointerId:1,pointerType:'mouse',isPrimary:true}))Object.defineProperty(e,k,{value:v});target.dispatchEvent(e);};
  const begin=(i=2)=>{const r=grid.children[i].getBoundingClientRect();emit(grid.children[i],'pointerdown',r.left+36,r.top+36);};
  const hold=async(i=2,id='uxPicker')=>{begin(i);await until(()=>w.document.getElementById(id),'CURRENT '+id,1000);};
- const enter=d=>{const r=w.SudokuCurrentHold.geometry(2).targets[d-1],x=r.left+r.width/2,y=r.top+r.height/2;emit(w.document,'pointermove',x,y);emit(w.document,'pointerup',x,y);grid.children[2].dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1,clientX:x,clientY:y}));};
+ const enter=d=>{const r=w.SudokuNavigator.ui.geometry(2).targets[d-1],x=r.left+r.width/2,y=r.top+r.height/2;emit(w.document,'pointermove',x,y);emit(w.document,'pointerup',x,y);grid.children[2].dispatchEvent(new w.MouseEvent('click',{bubbles:true,detail:1,clientX:x,clientY:y}));};
  begin();emit(grid.children[2],'pointerup',555,226);grid.children[2].click();assert.equal(w.eval('selectedCell'),2);await sleep(330);assert.equal(w.document.getElementById('uxPicker'),null);
  await hold();enter(4);assert.equal(w.eval('playerGrid[0][2]'),4);assert.equal(w.eval('history.length'),1);assert.equal(w.eval('selectedCell'),2);w.undoMove();assert.equal(w.eval('playerGrid[0][2]'),0);
  w.toggleNotes();await hold();enter(6);assert.equal(w.eval('notes[0][2].has(6)'),true);assert.equal(w.eval('history.length'),1);w.undoMove();assert.equal(w.eval('notes[0][2].size'),0);w.toggleNotes();
  await hold();emit(w.document,'pointerup',555,226);assert.equal(w.eval('history.length'),0,'stationary hold never enters a digit');assert.equal(w.document.getElementById('uxPicker').dataset.pinned,'true');w.document.getElementById('uxPicker').querySelector('[data-digit="4"]').click();assert.equal(w.eval('playerGrid[0][2]'),4);assert.equal(w.eval('history.length'),1);w.undoMove();
  await hold();w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(w.document.getElementById('uxPicker'),null);assert.equal(w.eval('history.length'),0);
  await hold(0,'uxLoupe');assert.equal(w.document.getElementById('uxPicker'),null);emit(w.document,'pointerup',409,226);assert.equal(w.eval('history.length'),0,'given inspection stays read-only');
- await hold();assert.equal(w.SudokuCurrentPWA.flushForUpdate(),true);assert.equal(w.document.getElementById('uxPicker'),null);assert.equal(w.eval('history.length'),0);
- assert.ok(h.store()['8zSudokuCurrent.pwaSessionV1']);
+ await hold();assert.equal(await w.SudokuNavigator.flushForUpdate(),true);assert.equal(w.document.getElementById('uxPicker'),null);assert.equal(w.eval('history.length'),0);
+ assert.ok(h.store()['ai8SudokuCurrentV030.session']);
 });
 
-test('frozen CURRENT update adapter restores board, Notes, Undo and timer without touching LAB or legacy data',t=>{
- const {fixture,fixtureSolution}=require('./sudoku-ui-harness.cjs');
- const h=currentHarness(t,{'ai8SudokuNavigatorV020.session':'lab-data','ai8SudokuNavigatorV020PWA.session':'legacy-data'});
- h.w.AI8SudokuTestAPI.loadPuzzle(fixture,fixtureSolution);h.w.AI8SudokuTestAPI.selectCell(2);h.w.AI8SudokuTestAPI.toggleNotes();h.w.AI8SudokuTestAPI.placeValue(4);h.w.stopTimer();h.w.eval('timerSeconds=123');
- assert.equal(h.w.SudokuCurrentPWA.flushForUpdate(),true);const stored=h.store();
- assert.equal(stored['ai8SudokuNavigatorV020.session'],'lab-data');assert.equal(stored['ai8SudokuNavigatorV020PWA.session'],'legacy-data');
- const restored=currentHarness(t,stored);assert.equal(restored.w.eval('timerSeconds'),123);assert.equal(restored.w.eval('notes[0][2].has(4)'),true);restored.w.AI8SudokuTestAPI.undo();assert.equal(restored.w.eval('notes[0][2].has(4)'),false);
- restored.w.localStorage.setItem('8zSudokuCurrent.pwaSessionV1','newer-tab');assert.equal(restored.w.SudokuCurrentPWA.flushForUpdate(),false);
+test('CURRENT is the explicitly promoted LAB snapshot; ordinary packaging leaves the snapshot independent',()=>{
+ const dir=path.resolve(__dirname,'../public/S/current'),meta=JSON.parse(fs.readFileSync(path.join(dir,'promotion.json'))),app=fs.readFileSync(path.join(dir,'index.html'),'utf8');
+ assert.equal(hash(app),meta.current_sha256);assert.equal(hash(app.replaceAll(meta.only_transform.with,meta.only_transform.replace_all)),meta.donor_sha256);
+ assert.equal(meta.engine_revision,'0.3.0');assert.match(app,/NS='ai8SudokuCurrentV030'/);
+ const packaged=JSON.parse(fs.readFileSync(path.resolve(dir,'../release.json')));assert.equal(packaged.engine_revision,'0.3.0');assert.ok(packaged.assets_sha256['current/index.html']);assert.ok(!Object.keys(packaged.assets_sha256).some(x=>x.includes('payload/')||x.includes('pwa-bridge')||x.includes('current-ui')),'old frozen-game loader is not shipped');
 });
 
 test('LAB EN/SL covers gameplay, settings, lessons and restoration without translating machine state',async t=>{
@@ -192,12 +182,10 @@ test('LAB EN/SL covers gameplay, settings, lessons and restoration without trans
  i18n.set('en');await nextTick();assert.equal(h.el('plNewsOpen').textContent,'What’s new');assert.equal(h.el('notesBtn').textContent,'Notes: ON');assert.equal(h.el('navPolicy').value,'REAL');
 });
 
-test('CURRENT gets centered Play/Learn, quiet title and EN/SL without replacing stable engine',async t=>{
- const {fixture,fixtureSolution}=require('./sudoku-ui-harness.cjs');const h=currentHarness(t);await nextTick();
- const w=h.w,$=id=>w.document.getElementById(id);w.SudokuI18n.set('sl');await nextTick();
- assert.equal($('currentNews').textContent,'Kaj je novega');assert.equal($('currentTutorial').parentElement.parentElement.className,'col-center');assert.equal(w.document.querySelector('[data-view-button="play"]').textContent,'Igra');
- w.document.querySelector('[data-view-button="learn"]').click();assert.equal(w.document.body.dataset.view,'learn');assert.equal($('proofCoachPanel').hidden,false);
- $('currentTutorial').click();await nextTick();$('currentPracticeCell').click();await nextTick();assert.equal($('currentPracticeStatus').textContent,'Zdaj izberi 4.');$('currentPracticeNumber').click();assert.equal($('currentPracticeCell').textContent,'4');$('currentPracticeUndo').click();assert.equal($('currentPracticeCell').textContent,'·');$('currentDialogClose').click();
- w.AI8SudokuTestAPI.loadPuzzle(fixture,fixtureSolution);w.AI8SudokuTestAPI.selectCell(2);w.AI8SudokuTestAPI.toggleNotes();w.AI8SudokuTestAPI.placeValue(4);w.stopTimer();assert.equal(w.SudokuCurrentPWA.flushForUpdate(),true);const again=currentHarness(t,h.store());await nextTick();assert.equal(again.w.SudokuI18n.get(),'sl');assert.equal(again.w.eval('notes[0][2].has(4)'),true);
- w.SudokuI18n.set('en');assert.equal($('currentNews').textContent,'What’s new');
+test('promoted CURRENT has LAB Play/Learn, EN/SL, Notes and Undo without a legacy migration',async t=>{
+ const {savedFixture,until}=require('./sudoku-ui-harness.cjs');const h=await currentHarness(t),w=h.w;
+ await w.SudokuNavigator.restore(savedFixture('0.2.0'));w.stopTimer();w.SudokuI18n.set('sl');await nextTick();
+ assert.equal(h.el('plNewsOpen').textContent,'Kaj je novega');assert.equal(w.document.querySelector('[data-pl-view="lab"]').textContent,'Lab');w.document.querySelector('[data-pl-view="learn"]').click();assert.equal(w.document.body.dataset.view,'learn');
+ w.selectCell(2);w.toggleNotes();w.placeNumber(4);assert.equal(await w.SudokuNavigator.flushForUpdate(),true);assert.ok(h.store()['ai8SudokuCurrentV030.library']);
+ const again=await currentHarness(t,h.store());await until(()=>!!again.w.SudokuNavigator.state(),'CURRENT session restored');assert.equal(again.w.SudokuI18n.get(),'sl');assert.deepEqual(again.get('[...notes[0][2]]'),[4]);again.w.undoMove();assert.deepEqual(again.get('[...notes[0][2]]'),[]);assert.deepEqual(h.errors,[]);assert.deepEqual(again.errors,[]);
 });
