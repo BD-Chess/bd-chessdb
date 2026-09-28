@@ -43,43 +43,43 @@
       "id": "004",
       "path": "/chess/old/004/",
       "manifest_sha256": "95ac0316b5ac4dfdba7991ca3b5546b3d791d1a16c19b4a968515a20f3279ff8"
+    },
+    {
+      "id": "005",
+      "path": "/chess/old/005/",
+      "source_channel": "CURRENT",
+      "source_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+      "source_tree": "64b8e4f3c42237cee805ac72ac5abfc9e36d487c",
+      "manifest_sha256": "778f5d27e90657f9c77ffbc6ec5756335273adce84790bbb5aef6227e73b9294",
+      "purpose": "Immutable prepromotion CURRENT application snapshot; PREVIOUS legacy preserved"
     }
   ],
   "promotion_requires": "explicit approval, verified LAB, fresh main, immutable archive check",
   "standard_introduced": "2026-09-13",
   "promotion_performed": true,
   "latest_promotion": {
-    "date": "2026-09-26",
+    "date": "2026-09-28",
     "source_channel": "LAB",
-    "source_base_commit": "dc58182bdd01d97f260b6d3b6d40ec58e497d144",
-    "source_repository_tree": "afca7f634f4f2e22799d11fb8f7bba76ffefffc6",
-    "backup_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+    "source_base_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+    "source_repository_tree": "8ae7e2387dee45fc5f04f800a50b6be1cdf903ca",
+    "verified_lab_tree": "f5717c330757f346c5342f046855ea78eeda5285",
+    "backup_source_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
     "backup_created": true,
-    "backup_rotation": "PREVIOUS to archive 004; CURRENT to PREVIOUS",
-    "archived_previous": "004",
-    "archive_source_channel": "PREVIOUS",
-    "previous_current_archive": null,
-    "previous_root_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
-    "authorization": "BD approved all discussed SIM and tournament features in LAB and PROD on 2026-09-25; standard version rotation applied",
+    "backup_rotation": "CURRENT to archive 005; PREVIOUS root preserved",
+    "previous_current_archive": "005",
+    "archive_source_channel": "CURRENT",
+    "previous_root_preserved": true,
     "lab_retained": true,
-    "previous_root_preserved": false,
-    "pwa_preserved": true,
+    "pwa_refreshed": true,
     "existing_archives_preserved": [
       "001",
       "002",
-      "003"
+      "003",
+      "004"
     ],
-    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01",
-    "source_validation_fixes": [
-      "Exact positive TCEC Book markers; out-of-book comments excluded",
-      "Preserve use-position action in searchable Collection",
-      "Use simulation date in active board title; precise elapsed clock caption",
-      "Zero-move custom FEN openings remain loadable and exportable",
-      "Migrate fallback history to IndexedDB without replacing newer records; retain fallback on migration failure",
-      "Checkpoint and pause on page shutdown; serialize archive close after pending work",
-      "Refresh archived running states after another tab runner lease expires"
-    ],
-    "verified_lab_tree": "56ce0d1426568e18338b819fbc16e12728bf1823"
+    "authorization": "BD requested LAB to CURRENT and PWA with a numbered CURRENT backup; PREVIOUS legacy unchanged",
+    "storage": "CURRENT and PWA v2 use separate namespaces and copy each channel’s own legacy data without deleting sources",
+    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01"
   },
   "promotion_history": [
     {
@@ -100,20 +100,55 @@
       "authorization": "BD explicit full LAB to CURRENT copy; no backup this time (2026-09-25)",
       "lab_retained": true,
       "previous_root_preserved": true
+    },
+    {
+      "date": "2026-09-26",
+      "source_channel": "LAB",
+      "source_base_commit": "dc58182bdd01d97f260b6d3b6d40ec58e497d144",
+      "source_repository_tree": "afca7f634f4f2e22799d11fb8f7bba76ffefffc6",
+      "backup_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+      "backup_created": true,
+      "backup_rotation": "PREVIOUS to archive 004; CURRENT to PREVIOUS",
+      "archived_previous": "004",
+      "archive_source_channel": "PREVIOUS",
+      "previous_current_archive": null,
+      "previous_root_source_commit": "613121cd272e78b6965c4900e692c43f0bc14715",
+      "authorization": "BD approved all discussed SIM and tournament features in LAB and PROD on 2026-09-25; standard version rotation applied",
+      "lab_retained": true,
+      "previous_root_preserved": false,
+      "pwa_preserved": true,
+      "existing_archives_preserved": [
+        "001",
+        "002",
+        "003"
+      ],
+      "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01",
+      "source_validation_fixes": [
+        "Exact positive TCEC Book markers; out-of-book comments excluded",
+        "Preserve use-position action in searchable Collection",
+        "Use simulation date in active board title; precise elapsed clock caption",
+        "Zero-move custom FEN openings remain loadable and exportable",
+        "Migrate fallback history to IndexedDB without replacing newer records; retain fallback on migration failure",
+        "Checkpoint and pause on page shutdown; serialize archive close after pending work",
+        "Refresh archived running states after another tab runner lease expires"
+      ],
+      "verified_lab_tree": "56ce0d1426568e18338b819fbc16e12728bf1823"
     }
   ],
   "latest_pwa_refresh": {
-    "date": "2026-09-26",
+    "date": "2026-09-28",
     "source_channel": "LAB",
-    "source_base_commit": "be86d9703bcc71132df3a326960343d016b29289",
-    "source_tree": "56ce0d1426568e18338b819fbc16e12728bf1823",
-    "version": "20260926-7c5db221be9a",
+    "source_base_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+    "source_tree": "f5717c330757f346c5342f046855ea78eeda5285",
+    "version": "pwa-e1fd1166c8a8",
     "path": "/chess/PWA/",
     "release_manifest": "/chess/PWA/release.json",
-    "authorization": "BD requested refresh/rebuild of PWA from the current LAB",
-    "current_previous_lab_and_archives_preserved": true,
+    "authorization": "BD requested LAB to CURRENT and PWA with CURRENT archive 005 and legacy PREVIOUS preserved",
+    "previous_root_preserved": true,
     "archive_rotation": false,
-    "storage": "Existing PWA keys retained; PWA tournament archive and runner lease isolated",
-    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01"
+    "storage": "PWA v2 copies prior PWA records only, preserves originals and installation identity; separate from LAB and CURRENT",
+    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01",
+    "current_promoted": true,
+    "lab_and_previous_preserved": true
   }
 }

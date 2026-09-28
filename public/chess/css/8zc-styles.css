@@ -1207,12 +1207,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 #viewToggle { gap: 5px !important; flex-wrap: wrap; margin: 6px 0 0 !important; }
 #viewToggle .btn { min-height: 36px; font-size: 11px !important; padding: 7px 10px !important; border-radius: 5px; }
 #btnSim { background: #353426 !important; color: #f0d48b !important; border-color: #5c5434 !important; }
-#btnSimW { background: #283b31 !important; color: #b5dfb6 !important; border-color: #44694e !important; }
-#btnSimB { background: #383340 !important; color: #d5c3ed !important; border-color: #5b4a72 !important; }
 #btnReplay, #btnViewToggle { background: var(--ui-raised) !important; color: var(--ui-text) !important; border-color: var(--ui-border) !important; }
 body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !important; border-color: #d1bd87 !important; }
-body.light-theme #btnSimW { background: #e4efdc !important; color: #315c2b !important; border-color: #b2cba5 !important; }
-body.light-theme #btnSimB { background: #eee7f4 !important; color: #684484 !important; border-color: #cbb6dd !important; }
 #dccProgress { font-size: 10px !important; color: var(--ui-accent) !important; min-width: 0 !important; }
 #dccProgress:empty { display: none; }
 .mode-hint { margin: 7px 0 12px; color: var(--ui-muted); font-size: 10px; line-height: 1.5; }
@@ -1230,10 +1226,10 @@ body.light-theme #btnSimB { background: #eee7f4 !important; color: #684484 !impo
 #settingsPanel select, #settingsPanel input[type="number"], #popularGamesPanel select, #popularGamesPanel input { min-height: 40px; width: 100%; max-width: 100%; padding: 8px 10px; border: 1px solid var(--ui-border); border-radius: 6px; color: var(--ui-text); background: var(--ui-raised); font-size: 12px; }
 .setting-note { color: var(--ui-muted); font-size: 11px; line-height: 1.6; margin-top: -4px; }
 .dcc-settings-group .dcc-settings-title, body.light-theme .dcc-settings-group .dcc-settings-title { color: var(--ui-accent); }
-#info-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 15px; margin-top: 8px; border-top: 1px solid var(--ui-border); font-size: 11px; }
-#info-links a { color: var(--ui-muted); text-decoration: none; }
-#info-links a:hover { color: var(--ui-accent); text-decoration: underline; }
-#credits, body.light-theme #credits { color: var(--ui-muted); font-size: 10px; margin-top: 10px; }
+#info-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--ui-border); }
+#info-links a { display: inline-flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 8px 5px; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-inset); color: var(--ui-accent); font-size: 12px; font-weight: 600; text-decoration: none; text-align: center; }
+#info-links a:hover { background: var(--ui-raised); border-color: var(--ui-accent); }
+#credits, body.light-theme #credits { color: var(--ui-muted); font-size: 12px; line-height: 1.5; margin-top: 12px; }
 #credits a { color: var(--ui-text); }
 #credits span { padding: 0 3px; }
 .dcc-badge-label, body.light-theme .dcc-badge-label { color: var(--ui-muted); font-family: inherit; font-size: 10px; letter-spacing: .02em; margin-top: 5px; }
@@ -1301,7 +1297,7 @@ body.light-theme #btnSimB { background: #eee7f4 !important; color: #684484 !impo
   .new-badge { min-height: 40px; }
   #viewToggle .btn { min-height: 42px; padding: 8px 13px !important; }
   .btn { min-height: 44px; font-size: 13px; }
-  #info-links a, .dcc-badge-label a, #credits a { min-height: 40px; display: inline-flex; align-items: center; }
+  .dcc-badge-label a, #credits a { min-height: 40px; display: inline-flex; align-items: center; }
   #credits { margin-top: 1px; }
   .dcc-badge-label { margin-top: -4px; }
   #popularGamesPanel input, #popularGamesPanel select, #settingsPanel select, #settingsPanel input[type="number"] { font-size: 16px; min-height: 44px; }
@@ -1347,9 +1343,9 @@ body.light-theme #pageSubtitle { color: var(--ui-text); }
 #dccInfoPanel { background: var(--ui-inset); border-color: var(--ui-border); color: var(--ui-text); }
 @media (max-width: 790px) { .dcc-details-button { min-height: 40px; } }
 
-/* Keep all five analysis mode buttons together at narrow widths. */
-#viewToggle { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px !important; }
-#viewToggle .btn { margin-left: 0 !important; width: 100%; padding-inline: 3px !important; }
+/* Match the four primary actions below, including on narrow screens. */
+#viewToggle { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px !important; }
+#viewToggle .btn { margin-left: 0 !important; min-width: 0; min-height: 44px; width: 100%; padding: 6px 3px !important; }
 #dccProgress { grid-column: 1 / -1; order: 2; text-align: right; }
 
 #simModal [hidden] { display: none !important; }

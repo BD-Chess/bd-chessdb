@@ -69,7 +69,7 @@ test('invalid and unsafe imports do not mutate existing data; quota errors are e
 test('checkpoint recovers a thinking turn after reload, respecting an active runner lease', async () => {
   const saved = storage(), store = fallback(saved);
   await store.saveRun(run());
-  saved.setItem('chessSimRunnerLease-v1', JSON.stringify({ owner: 'tab-a', expires: Date.now() + 30000 }));
+  saved.setItem('ChessBest:CURRENT:v2:sim-lease', JSON.stringify({ owner: 'tab-a', expires: Date.now() + 30000 }));
   store.checkpointSync(run('game-1', { remainingMs: 17000 }), null);
   const other = fallback(saved); await other.ready();
   assert.equal((await other.getRun('game-1')).remainingMs, undefined);
@@ -148,16 +148,16 @@ test('fallback archive migrates into IndexedDB on recovery without replacing new
   await temporary.saveEvent({ id: 'fallback-cup', games: [{ id: 'slot', runId: 'fallback-game' }] });
   await temporary.saveRun(run('fallback-game', { eventId: 'fallback-cup', trace: [{ move: 'e2e4' }] }));
   await temporary.saveRun(run('shared', { state: 'paused', result: '*' }));
-  const text = JSON.parse(saved.getItem('ChessBest-sim-v1-fallback'));
+  const text = JSON.parse(saved.getItem('ChessBest:CURRENT:v2:sim-fallback'));
   text.runs.find(item => item.id === 'shared').updatedAt = '2000-01-01T00:00:00.000Z';
-  saved.setItem('ChessBest-sim-v1-fallback', JSON.stringify(text));
+  saved.setItem('ChessBest:CURRENT:v2:sim-fallback', JSON.stringify(text));
   const restored = S.create(options); await restored.ready();
   assert.equal(restored.status().mode, 'indexedDB');
   assert.equal((await restored.listRuns()).length, 2);
   assert.equal((await restored.getRun('shared')).result, '1-0');
   assert.equal((await restored.getRun('fallback-game')).trace[0].move, 'e2e4');
   assert.equal((await restored.getEvent('fallback-cup')).games[0].runId, 'fallback-game');
-  assert.equal(saved.getItem('ChessBest-sim-v1-fallback'), null);
+  assert.equal(saved.getItem('ChessBest:CURRENT:v2:sim-fallback'), null);
   await restored.close();
   const reloaded = S.create(options);
   assert.equal((await reloaded.listRuns()).length, 2);

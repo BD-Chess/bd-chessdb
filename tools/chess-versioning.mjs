@@ -24,9 +24,7 @@ export function checkVersions(repo, base) {
     if (links.filter(link => link[2].includes('aria-current="page"')).length !== 1) errors.push(`${name}: expected one active channel`);
     for (const [label, suffix] of channels) {
       // Relative URLs also work when Pages hosts the repository below /bd-chessdb/.
-      const href = label === 'PREVIOUS' && dir !== 'old'
-        ? `${dir ? '../' : './'}old/004/`
-        : dir === suffix ? './' : `${dir ? '../' : './'}${suffix ? suffix + '/' : ''}`;
+      const href = dir === suffix ? './' : `${dir ? '../' : './'}${suffix ? suffix + '/' : ''}`;
       const link = links.find(candidate => candidate[1] === href && candidate[3] === label);
       if (!link) errors.push(`${name}: missing direct ${label} link`);
       else if (link[2].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
@@ -37,8 +35,8 @@ export function checkVersions(repo, base) {
   const archiveNames = fs.existsSync(old) ? fs.readdirSync(old,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name).filter(n=>/^\d{3,}$/.test(n)) : [];
   const next = nextArchive(archiveNames);
   const metadata = JSON.parse(fs.readFileSync(path.join(app,'versions.json'),'utf8'));
-  if (metadata.previous !== '/chess/old/004/') errors.push('PREVIOUS metadata mismatch');
-  if (!fs.readFileSync(path.join(old,'index.html'),'utf8').includes('http-equiv="refresh" content="0; url=004/"')) errors.push('PREVIOUS root does not lead to brown archive');
+  if (metadata.previous !== '/chess/old/') errors.push('PREVIOUS metadata mismatch');
+  if (/<meta\b[^>]*http-equiv=["']refresh["']/i.test(fs.readFileSync(path.join(old,'index.html'),'utf8'))) errors.push('PREVIOUS root redirects away from legacy application');
   if (metadata.pwa !== '/chess/PWA/') errors.push('PWA metadata mismatch');
   const listed = (metadata.archives || []).map(a=>a.id).sort();
   if (JSON.stringify(archiveNames.sort()) !== JSON.stringify(listed)) errors.push('Archive directory/metadata mismatch');
@@ -48,18 +46,24 @@ export function checkVersions(repo, base) {
     if (!/^[a-f0-9]{40}$/.test(base)) throw new Error('Use the full inspected main commit SHA');
     const entries = execFileSync('git',['ls-tree','-rz',base,'--','public/chess/old'],{cwd:repo,encoding:'utf8'}).split('\0').filter(Boolean);
     for (const entry of entries) {
-      const match = entry.match(/^\d+ blob ([a-f0-9]+)\t(public\/chess\/old\/\d{3,}\/.*)$/);
+      // The active PREVIOUS is the legacy application at old/, independent of
+      // immutable numbered snapshots. A direct CURRENT backup must leave both
+      // the legacy files and every pre-existing numbered snapshot unchanged.
+      const match = entry.match(/^\d+ blob ([a-f0-9]+)\t(public\/chess\/old\/.*)$/);
       if (!match) continue;
       const full = path.join(repo,match[2]);
-      if (!fs.existsSync(full)) { errors.push(`Deleted archive file: ${match[2]}`); continue; }
+      const sealed = /^public\/chess\/old\/\d{3,}\//.test(match[2]);
+      if (!fs.existsSync(full)) { errors.push(`Deleted ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`); continue; }
       const hash = execFileSync('git',['hash-object','--',full],{cwd:repo,encoding:'utf8'}).trim();
-      if (hash !== match[1]) errors.push(`Changed archive file: ${match[2]}`);
+      if (hash !== match[1]) errors.push(`Changed ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`);
     }
-    // Also reject adding files to an archive that already existed at the base.
+    // Also reject files added to a sealed archive or to the preserved legacy app.
     const oldPaths = new Set(entries.map(e=>e.split('\t')[1]));
     const oldIds = new Set([...oldPaths].map(p=>p?.match(/^public\/chess\/old\/(\d{3,})\//)?.[1]).filter(Boolean));
     function walk(dir) { for(const e of fs.readdirSync(dir,{withFileTypes:true})) { const p=path.join(dir,e.name); if(e.isDirectory())walk(p);else if(!oldPaths.has(path.relative(repo,p).split(path.sep).join('/')))errors.push(`Added file to sealed archive: ${p}`); } }
     for(const id of oldIds)if(fs.existsSync(path.join(old,id)))walk(path.join(old,id));
+    function walkPrevious(dir) { for(const e of fs.readdirSync(dir,{withFileTypes:true})) { if(dir===old && /^\d{3,}$/.test(e.name)) continue; const p=path.join(dir,e.name); if(e.isDirectory())walkPrevious(p);else if(!oldPaths.has(path.relative(repo,p).split(path.sep).join('/')))errors.push(`Added file to PREVIOUS: ${p}`); } }
+    walkPrevious(old);
   }
   return {ok:errors.length===0,errors,channels:channels.map(([name,dir])=>({name,path:`/chess/${dir?dir+'/':''}`})),archives:archiveNames,nextArchive:`/chess/old/${next}/`,promotionPerformed:false,immutableComparison:base||'not requested'};
 }

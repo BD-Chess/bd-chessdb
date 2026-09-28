@@ -52,8 +52,8 @@
     return { schema: SCHEMA, version: VERSION, runs, events };
   }
   function create(options = {}) {
-    const namespace = options.namespace || 'ChessBest-pwa-sim-v1', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
-    const leaseKey = options.leaseKey || 'chessPwaSimRunnerLease-v1';
+    const namespace = options.namespace || 'ChessBest:PWA:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
+    const leaseKey = options.leaseKey || 'ChessBest:PWA:v2:sim-lease';
     const idb = options.indexedDB === undefined ? root.indexedDB : options.indexedDB;
     let storage = options.localStorage;
     if (storage === undefined) { try { storage = root.localStorage; } catch (_) { storage = null; } }
@@ -279,6 +279,7 @@
         const text = storage.getItem(storageKey);
         if (!text) return;
         const saved = archive(JSON.parse(text), false);
+        const legacyCopy = storage.getItem('ChessBest:PWA:v2:sim-fallback-origin') === 'legacy-copy';
         await new Promise((resolve, reject) => {
           const transaction = database.transaction(['runs', 'events'], 'readwrite');
           for (const kind of ['runs', 'events']) {
@@ -291,7 +292,7 @@
                 const existingAt = existing && Date.parse(existing.updatedAt || existing.startedAt || existing.createdAt || '');
                 // A returning IndexedDB archive may already contain later play.
                 // Equal or unknown dates favor that existing durable record.
-                if (existing && (!Number.isFinite(incomingAt) || (Number.isFinite(existingAt) && existingAt >= incomingAt))) return;
+                if (existing && (legacyCopy || !Number.isFinite(incomingAt) || (Number.isFinite(existingAt) && existingAt >= incomingAt))) return;
                 const revision = existing ? Math.max(Number(existing._storeRevision) || 0, Number(incoming._storeRevision) || 0) + 1 : Number(incoming._storeRevision) || 1;
                 object.put({ ...incoming, _storeRevision: revision });
               };
@@ -302,7 +303,10 @@
         });
         // The entire two-store transaction committed. Keep any concurrent
         // fallback update for the next reload instead of deleting its data.
-        if (storage.getItem(storageKey) === text) storage.removeItem(storageKey);
+        if (storage.getItem(storageKey) === text) {
+          storage.removeItem(storageKey);
+          if (legacyCopy) storage.removeItem('ChessBest:PWA:v2:sim-fallback-origin');
+        }
       };
       try {
         if (locks?.request) await locks.request(namespace + '-archive', migrate);

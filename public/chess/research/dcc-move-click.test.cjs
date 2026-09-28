@@ -25,6 +25,16 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   const realSetTimeout = w.setTimeout.bind(w);
   w.setTimeout = (fn, ms, ...args) => realSetTimeout(fn, ms === 150 ? 1 : ms, ...args);
   w.AbortController = AbortController; w.alert = msg => { throw new Error(msg); }; w.confirm = () => true;
+  w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
+  if (channel === 'LAB') {
+    w.structuredClone = structuredClone;
+    w.indexedDB = new (require('fake-indexeddb').IDBFactory)();
+    const lockQueues = new Map();
+    Object.defineProperty(w.navigator, 'locks', { value: { request(name, settings, callback) {
+      const result = (lockQueues.get(name) || Promise.resolve()).then(callback || settings);
+      lockQueues.set(name, result.catch(() => {})); return result;
+    } } });
+  }
   let fen, boardOptions;
   w.Chessboard = (id, options) => {
     boardOptions = options; fen = options.position;
@@ -33,7 +43,8 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
     }
     return { position(value) { if (value) fen = value; return fen; }, resize() {}, orientation() {} };
   };
-  const key = channel === 'LAB' ? 'chessLabSettings-v8' : 'chessNewSettings-v7';
+  // CURRENT retains its existing shared legacy names; only LAB is isolated.
+  const key = channel === 'LAB' ? 'ChessBest:CURRENT:v2:settings' : 'chessLabSettings-v8';
   w.localStorage.setItem(key, JSON.stringify({ dccDepth: 1, dccTopCandidates: 3, dccDefenseCheck: false, badgeInitialDelay: 0, nextDot: false, simSpeed: 1000 }));
   w.fetch = async url => {
     const u = new URL(url, w.location.href); let text = '';
@@ -52,12 +63,19 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
     const file = match[1];
     if (/jquery|chessboard|8zc-new-ui|8zc-lab-layout/.test(file)) continue;
     w.eval(fs.readFileSync(path.join(base, file), 'utf8'));
+    if (file === 'js/8zc-sf-provider.js') w.ChessSFProvider.create = () => ({
+      prepare: async () => {}, destroy() {}, ledger: { rootNodes: 1, rootDepth: 1, extraNodes: 0 },
+      root: async position => ({ fen: position, provider: 'SF', complete: true,
+        moves: new w.Chess(position).moves({ verbose: true }).slice(0, 5).map((move, i) => ({
+          move: move.from + move.to + (move.promotion || ''), score: 0, scoreType: 'cp', depth: 1, rank: i + 1 })) }),
+      analyzeDCC: async () => null
+    });
   }
-  w.initAll();
+  await w.initAll();
   const el = id => w.document.getElementById(id);
   const mode = value => { el('settingDccClickAction').value = value; el('settingDccClickAction').dispatchEvent(new w.Event('change')); };
   const candidate = move => waitFor(() => el('dccAnalysisPanel').querySelector(`.dcc-candidate-button[data-move="${move}"]`), move).catch(error => { throw new Error(`${error.message}; panel=${el('dccAnalysisPanel').textContent}; errors=${errors.join(';')}`); });
-  const showDCC = () => { if (el('btnViewToggle').textContent === 'DCC') el('btnViewToggle').click(); };
+  const showDCC = () => { if (el('btnViewToggle').textContent === (channel === 'LAB' ? 'DCC analysis' : 'DCC')) el('btnViewToggle').click(); };
   const info = el('dccInfoPanel'), start = new w.Chess().fen();
   const reset = () => { el('btnNew').click(); showDCC(); };
   const loadFen = value => { w.prompt = () => value; el('btnInput').click(); showDCC(); };
@@ -66,7 +84,7 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   const expected = new w.Chess(); expected.move('d4');
   assert.equal(fen, expected.fen()); assert.equal(info.style.display, 'block'); assert.equal(info.dataset.fen, start);
   assert.match(info.textContent, /position before this move/); assert.match(el('moves').textContent, /d4/);
-  const timingKey = channel === 'LAB' ? 'chessLabTiming-v1' : 'chessNewTiming-v1';
+  const timingKey = channel === 'LAB' ? 'ChessBest:CURRENT:v2:timing' : 'chessLabTiming-v1';
   assert.equal(JSON.parse(w.localStorage.getItem(timingKey)).records[0].move, 'd2d4');
 
   reset(); mode('details'); (await candidate('d2d4')).click();
@@ -83,16 +101,31 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   assert.equal(info.style.display, 'block');
 
   // A click during automatic Sim pauses before applying one manual move; late work cannot commit.
-  reset(); el('btnSim').click(); el('simLocalSpeed').value = '1000'; el('simStartBtn').click(); showDCC();
+  reset(); el('btnSim').click();
+  const tournament = el('simTournamentDialog'), setting = name => tournament.querySelector(`[data-ui="${name}"]`);
+  assert.equal(tournament.open, true);
+  setting('white').value = 'dcc'; setting('black').value = 'raw'; setting('move-pause').value = '5000';
+  setting('start').click();
+  await waitFor(() => el('btnSim').textContent === 'Pause', 'simulation started'); showDCC();
   await candidate('d2d4'); mode('details'); (await candidate('d2d4')).click();
   assert.equal(el('btnSim').textContent, 'Pause', 'details-only remains observational');
   mode('hybrid'); (await candidate('d2d4')).click();
-  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, 'Sim');
+  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, channel === 'LAB' ? 'Simulation' : 'Sim');
   await new Promise(r => setTimeout(r, 1200)); assert.equal(fen, expected.fen(), 'queued automatic move was cancelled');
   assert.equal(info.style.display, 'block');
 
   // SimB accepts a manually chosen DCC move on the human turn, then retains its explanation.
-  reset(); el('btnSimB').click();
+  reset();
+  if (channel === 'LAB') {
+    el('btnSim').click();
+    const tournament = el('simTournamentDialog');
+    assert.equal(tournament.open, true);
+    tournament.querySelector('[data-action="human-white"]').click();
+    assert.equal(tournament.open, false);
+    assert.match(el('simModalTitle').textContent, /Play as White — Black engine/);
+    assert.equal(el('simSelfOption').hidden, true);
+    assert.equal(w.document.querySelector('input[value=dccbot]').checked, true);
+  } else el('btnSimB').click();
   const localBot = w.document.querySelector('input[value=dccbot]'); localBot.checked = true; localBot.dispatchEvent(new w.Event('change'));
   el('simStartBtn').click(); showDCC(); (await candidate('d2d4')).click();
   await waitFor(() => new w.Chess(fen).turn() === 'w', 'black engine reply');

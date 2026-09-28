@@ -2,12 +2,19 @@
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const {JSDOM,VirtualConsole}=require('jsdom');
+const {Chess}=require('../public/chess/new/js/chess.min.js');
+const Study=require('../public/chess/new/js/8zc-study-core.js');
 const base=require('node:path').resolve(__dirname,'../public/chess/PWA')+'/';
 const test=require('node:test');
 test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:20000}, async(t)=>{
  const errors=[]; const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(fs.readFileSync(base+'index.html','utf8'),{url:'https://bd-chess.github.io/bd-chessdb/chess/PWA/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  const w=dom.window;
+ let lockTail=Promise.resolve();
+ Object.defineProperty(w.navigator,'locks',{value:{request:(_name,_options,job)=>{const next=lockTail.then(job||_options);lockTail=next.catch(()=>{});return next;}}});
+ // Legacy PWA data is copied through the real boot gate; new SIM saves use the
+ // fallback in this fixture after verifying there are no legacy IDB archives.
+ w.indexedDB={databases:async()=>[],open(){throw Error('Fixture archive fallback');}};
  t.after(()=>w.close());
  Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent},set(v){this.textContent=String(v)},configurable:true});
  await new Promise(resolve=>w.addEventListener('load',resolve));
@@ -22,6 +29,8 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  // Pre-upgrade PWA state and unrelated LAB state must survive startup.
  w.localStorage.setItem('chessPwaLabSettings-v1', JSON.stringify({timerDisplayDefaults:2,showTimers:true,dccClickAction:'details'}));
  w.localStorage.setItem('chessPwaLabGame-v1', '[White "Retained White"]\n[Black "Retained Black"]\n\n1. d4 d5 *');
+ const study=Study.create(Chess,{name:'Retained PWA study'});
+ w.localStorage.setItem('chessPwaLabStudy-v1',JSON.stringify({schema:'chess-lab-studies',version:1,studies:[study],activeId:study.id}));
  w.localStorage.setItem('chessLabGame-v8', 'unrelated LAB sentinel');
  let sfPreparations=0;
  // Boot the script list and order shipped by the page. Board geometry and the
@@ -35,19 +44,18 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
    root:async position=>({fen:position,provider:'SF',complete:true,moves:new w.Chess(position).moves({verbose:true}).slice(0,5).map((move,index)=>({move:move.from+move.to+(move.promotion||''),score:0,scoreType:'cp',rank:index+1,depth:1}))}),
    analyzeDCC:async(position,result)=>({candidates:[],dcc1Move:result.moves[0]?.move,receipt:{fen:position,provider:'SF',status:'partial',calls:0}})
   });
-  if(file==='js/8zc-study-core.js') {
-   const study=w.ChessStudy.create(w.Chess,{name:'Retained PWA study'});
-   w.localStorage.setItem('chessPwaLabStudy-v1',JSON.stringify({schema:'chess-lab-studies',version:1,studies:[study],activeId:study.id}));
-  }
-  if(file==='js/8zc-utils.js')w.initAll();
+  if(file==='js/8zc-utils.js')await w.initAll();
  }
  const el=id=>w.document.getElementById(id);
  const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(w.ChessLabHost.getContext().moves.join(' '),'d2d4 d7d5','old PWA game is restored');
- assert.equal(el('boardGameTitle').textContent,'Retained White vs Retained Black');
+ assert.match(w.localStorage.getItem('ChessBest:PWA:v2:game'),/Retained White.*Retained Black/s);
+ assert.equal(w.localStorage.getItem('chessPwaLabGame-v1').includes('[Result "*"]'),false,'the previous PWA game bytes remain untouched');
  assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).dccClickAction,'details','existing PWA preference is retained');
+ assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:settings')).dccClickAction,'details','migrated PWA preference is active');
  assert.equal(w.localStorage.getItem('chessLabGame-v8'),'unrelated LAB sentinel');
  assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabStudy-v1')).studies.length,1);
+ assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:studies')).studies.length,1);
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
@@ -55,7 +63,7 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  assert.equal(el('settingsPanel').classList.contains('open'),false);
  assert.equal(el('settingSFDepth').value,'11','users without a saved depth get the new default');
  el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
- assert.equal(JSON.parse(w.localStorage.getItem('chessPwaLabSettings-v1')).sfAnalysisDepth,12);
+ assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:settings')).sfAnalysisDepth,12);
  const initialCards=el('allEvalBadges');
  await until(()=>initialCards.hidden===false && initialCards.children.length===3 &&
    [...initialCards.querySelectorAll('.all-eval-move')].every(move=>move.textContent && !['…','—'].includes(move.textContent)) &&
@@ -64,7 +72,7 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  'Auto computes CDB, SF and DCC results in the three visible cards');
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
  assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
- el('btnSimB').click();w.document.querySelector('input[value=dccbot]').checked=true;
+ el('btnSim').click();el('simTournamentDialog').querySelector('[data-action="human-white"]').click();w.document.querySelector('input[value=dccbot]').checked=true;
  w.document.querySelector('input[value=dccbot]').dispatchEvent(new w.Event('change'));
  el('simStartBtn').click();
  assert.match(el('gameTitle').textContent,/Training/);
@@ -81,7 +89,7 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- source.value='all';source.dispatchEvent(new w.Event('change'));
+ source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'All retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
  assert.equal(cards.hidden,false);assert.deepEqual([...cards.children].map(card=>card.querySelector('strong').textContent),['CDB:','SF:','DCC:']);
@@ -111,14 +119,14 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  await until(()=>el('moves').querySelector('[role=button]'),'automatic moves appear in the real history');
  assert(sfPreparations>0,'hybrid CDB simulation prepares the local fallback engine');
  const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
- move.click();assert.equal(el('btnSim').textContent,'Sim');
+ move.click();assert.equal(el('btnSim').textContent,'Simulation');
  assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
  assert.equal(boardOptions.onDrop('a1','a8'),'snapback');
  assert.equal(el('workspaceTimers').hidden,true,'an illegal review move does not show Sim clocks');
  const reviewMove=new w.Chess(fen).moves({verbose:true})[0];
  boardOptions.onDrop(reviewMove.from,reviewMove.to);
  assert.equal(el('workspaceTimers').hidden,true,'a manual variation does not restart the Sim clock display');
- const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest-pwa-sim-v1-fallback')||'null');
+ const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:sim-fallback')||'null');
  await until(()=>archive()?.events[0]?.state==='paused','pausing persists the resumable event');
  const savedRun=archive().runs[0];assert(savedRun.trace.length>0);assert.equal(savedRun.clock.running,false);
  assert.equal(savedRun.clock.mode,'countdown');assert.match(savedRun.pgn,/\[TimeControl "60\+1"\]/);
@@ -149,7 +157,7 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),undefined);
  await new Promise(r=>setTimeout(r,400));
  assert.match(el('humanReview').textContent,/White|Black|Review/);
- const timing=JSON.parse(w.localStorage.getItem('chessPwaLabTiming-v1'));
+ const timing=JSON.parse(w.localStorage.getItem('ChessBest:PWA:v2:timing'));
  assert.equal(timing.records.length,3); assert.ok(timing.records[0].clock_ms>60000);
  assert.match(timing.records[0].at_utc,/Z$/);
  toggle('settingShowTimers');assert.equal(el('workspaceTimers').hidden,true);assert.equal(el('moves').querySelectorAll('time').length,3);
@@ -177,12 +185,12 @@ test('PWA page integrates Sim, clocks, study, evidence, deep tools and grounded 
  el('btnFormat').click(); // FEN -> PGN
  w.prompt=()=> '[Event "Nested integration"]\n[White "Player A"]\n[Black "Player B"]\n\n1. e4 {keep} (1. d4 d5 (1... Nf6)) e5 2. Nf3 *';
  el('btnInput').click();
- assert.equal(host.getContext().moves.join(' '),'e2e4 e7e5 g1f3');
+ await until(()=>host.getContext().moves.join(' ')==='e2e4 e7e5 g1f3','PGN opens after its durable save');
  assert.equal(el('boardGameTitle').textContent, 'Player A vs Player B');
  assert.equal(el('boardGameTitle').hidden, false);
  assert.equal(el('workspaceTimers').hidden,true,'loaded PGN review has no clocks');
  let copied='';Object.defineProperty(w.navigator,'clipboard',{value:{writeText:async text=>{copied=text}},configurable:true});
- el('btnCopy').click();await new Promise(r=>setTimeout(r,5));
+ el('btnCopy').click();await until(()=>copied.length>0,'workspace export reaches clipboard');
  assert.match(copied,/d4/);assert.match(copied,/Nf6/);assert.match(copied,/keep/);
  const reimport=w.ChessStudy.parsePGN(w.Chess,copied);
  assert.equal(reimport.nodes.root.children.length,2,'RAV survives application PGN export');
