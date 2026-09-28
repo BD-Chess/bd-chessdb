@@ -20,9 +20,7 @@ export function checkVersions(repo, base) {
     const nav = html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/g) || [];
     if (nav.length !== 1) { errors.push(`${name}: expected one version selector`); continue; }
     const links = [...nav[0].matchAll(/<a href="([^"]+)"([^>]*)>([^<]+)<\/a>/g)];
-    // PREVIOUS is a byte-preserved legacy release. Its fourth link still points
-    // to the retired PWA route, whose entry page redirects to LAB.
-    const expectedLinks = name === 'PREVIOUS' ? channels.length + 1 : channels.length;
+    const expectedLinks = channels.length;
     if (links.length !== expectedLinks) errors.push(`${name}: expected ${expectedLinks} version links`);
     if (links.filter(link => link[2].includes('aria-current="page"')).length !== 1) errors.push(`${name}: expected one active channel`);
     for (const [label, suffix] of channels) {
@@ -32,10 +30,7 @@ export function checkVersions(repo, base) {
       if (!link) errors.push(`${name}: missing direct ${label} link`);
       else if (link[2].includes('aria-current="page"') !== (label === name)) errors.push(`${name}: wrong active channel`);
     }
-    if (name === 'PREVIOUS') {
-      const legacy = links.find(link => link[1] === '../PWA/' && link[3] === 'PWA');
-      if (!legacy || legacy[2].includes('aria-current="page"')) errors.push('PREVIOUS: legacy PWA link changed');
-    } else if (links.some(link => link[3] === 'PWA')) {
+    if (links.some(link => link[3] === 'PWA')) {
       errors.push(`${name}: retired PWA is still listed as an active channel`);
     }
     if (!html.includes('id="bd-version-style"')) errors.push(`${name}: selector CSS is not self-contained`);
@@ -81,15 +76,23 @@ export function checkVersions(repo, base) {
     const entries = execFileSync('git',['ls-tree','-rz',base,'--','public/chess/old'],{cwd:repo,encoding:'utf8'}).split('\0').filter(Boolean);
     for (const entry of entries) {
       // The active PREVIOUS is the legacy application at old/, independent of
-      // immutable numbered snapshots. A direct CURRENT backup must leave both
-      // the legacy files and every pre-existing numbered snapshot unchanged.
+      // immutable numbered snapshots. Only the approved PWA nav link deletion
+      // is permitted in its index; every other existing byte remains sealed.
       const match = entry.match(/^\d+ blob ([a-f0-9]+)\t(public\/chess\/old\/.*)$/);
       if (!match) continue;
       const full = path.join(repo,match[2]);
       const sealed = /^public\/chess\/old\/\d{3,}\//.test(match[2]);
       if (!fs.existsSync(full)) { errors.push(`Deleted ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`); continue; }
       const hash = execFileSync('git',['hash-object','--',full],{cwd:repo,encoding:'utf8'}).trim();
-      if (hash !== match[1]) errors.push(`Changed ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`);
+      if (hash !== match[1]) {
+        let approvedNavRemoval = false;
+        if (match[2] === 'public/chess/old/index.html') {
+          const original = execFileSync('git',['show',`${base}:${match[2]}`],{cwd:repo,encoding:'utf8'});
+          const line = '    <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../PWA/">PWA</a>\n';
+          approvedNavRemoval = original.includes(line) && original.replace(line,'') === fs.readFileSync(full,'utf8');
+        }
+        if (!approvedNavRemoval) errors.push(`Changed ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`);
+      }
     }
     // Also reject files added to a sealed archive or to the preserved legacy app.
     const oldPaths = new Set(entries.map(e=>e.split('\t')[1]));

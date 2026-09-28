@@ -10,13 +10,12 @@ test('BD archives increment monotonically and never fill historical gaps',()=>{
   assert.equal(nextArchive(['999']),'1000');
   assert.throws(()=>nextArchive(['001','0001']),/Duplicate/);
 });
-test('CURRENT and LAB link to three channels; byte-preserved PREVIOUS retains its legacy PWA link',()=>{
+test('CURRENT, LAB and PREVIOUS link to three channels without the retired PWA link',()=>{
   const result=checkVersions(fileURLToPath(new URL('../../../../',import.meta.url)));
   assert.equal(result.ok,true,result.errors.join('\n'));
   assert.deepEqual(result.channels.map(channel => channel.name), ['CURRENT','PREVIOUS','LAB']);
   const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
-  assert.match(readFileSync(root+'old/index.html','utf8'),/href="\.\.\/PWA\/">PWA<\/a>/);
-  for(const entry of ['index.html','new/index.html']){
+  for(const entry of ['index.html','new/index.html','old/index.html']){
     const html=readFileSync(root+entry,'utf8');
     const selector=html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/);
     assert.ok(selector,entry+' selector');
