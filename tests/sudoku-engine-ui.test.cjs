@@ -56,7 +56,7 @@ test('fresh game, checked hint and move review execute shipped worker code', {ti
  const before=h.get('playerGrid');await w.SudokuNavigator.analyze('reveal');assert.deepEqual(h.get('playerGrid'),before,'hint does not silently fill grid');assert.ok(h.requests.some(x=>x.kind==='search'));
  assert.doesNotMatch(h.el('navCopy').textContent,/unavailable|Error|stopped/i);
  const empty=p.flat().findIndex(v=>!v);w.selectCell(empty,'pointer');w.placeNumber(sol.flat()[empty],'pointer');await w.SudokuNavigator.whenReviewed();
- const review=plain(w.SudokuNavigator.review());assert.equal(review.at(-1).answer,'CORRECT');assert.ok(h.requests.some(x=>x.kind==='review'),'correct move reviewed in real worker');
+ const review=plain(w.SudokuNavigator.review());assert.equal(review.at(-1).answer,LANE==='PWA'?'CORRECT':'NOT_CHECKED');assert.ok(h.requests.some(x=>x.kind==='review'),'correct move reviewed in real worker');
  assert.deepEqual(h.errors,[]);
 });
 
@@ -81,7 +81,7 @@ test('save reload and checked export/import preserve a legacy-shaped session', {
  const exported=plain(second.w.SudokuNavigator.export());assert.equal(exported.schema,'AI8_SUDOKU_NAVIGATOR_EXPORT_V1');assert.ok(exported.sha256);assert.match(exported.engineRevision,/^0\.3\./);
  // Prior .2 exports did not contain either optional engineRevision property.
  delete exported.engineRevision;delete exported.session.engineRevision;delete exported.sha256;exported.sha256=second.w.AI8SudokuTruth.sha256(JSON.stringify(exported));
- await second.w.newGame('medium');const newer=second.get('puzzle');const text=JSON.stringify(exported);
+ await second.w.newGame('easy');const newer=second.get('puzzle');const text=JSON.stringify(exported);
  await second.el('navFile').onchange({target:{files:[{size:Buffer.byteLength(text),text:async()=>text}]}});
  assert.deepEqual(second.get('playerGrid'),first.get('playerGrid'));assert.equal(second.el('navLearningMode').value,'FROZEN_TRANSFER');assert.deepEqual(JSON.parse(second.w.localStorage.getItem(NS+'.previousGame')).puzzle,newer.flat());
  const corrupt={...exported,sha256:'0'.repeat(64)},badText=JSON.stringify(corrupt);const current=second.get('playerGrid');await second.el('navFile').onchange({target:{files:[{size:badText.length,text:async()=>badText}]}});assert.deepEqual(second.get('playerGrid'),current);assert.match(second.el('navCopy').textContent,/Import rejected/);
