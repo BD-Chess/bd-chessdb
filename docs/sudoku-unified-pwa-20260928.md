@@ -1,3 +1,19 @@
+# 8zSudoku — LAB promoted to CURRENT
+
+BD explicitly requested promotion on 2026-09-28: CURRENT must match the released LAB before further LAB upgrades. Both now run the same complete Navigator / Play / Learn / Lab game, including EN/SL and desktop click-and-hold. The only app-byte transformation is the channel storage namespace (`ai8SudokuNavigatorV020` → `ai8SudokuCurrentV030`). This avoids one channel editing another channel’s development game; there is no legacy migration requirement.
+
+`public/S/current/promotion.json` pins the exact donor commit, source hash, resulting hash and transformation. CURRENT is an independent snapshot; the normal PWA package helper never copies later LAB game changes into CURRENT. Both top menus omit Install, and both channels remain directly installable through the browser. PREVIOUS remains the exact supplied 48,399-byte BD_Sudoku1.html.
+
+During this development phase, backward compatibility and old saved games are not release requirements, per BD’s latest explicit instruction. Do not add migration or preservation work merely to maintain old development saves. APP, draft PR #26 and TestFlight still require a new explicit BD approval before a native build.
+
+Promotion validation: targeted channel/package and CURRENT interaction checks; exact live hashes and publication SHA are recorded in the final project continuity. The old compressed payload/adapters remain inactive historical files and are absent from the CURRENT dependency package.
+
+---
+
+## Historical record before BD’s explicit promotion
+
+The following stable-payload statements describe the preceding release and are superseded by the promotion above.
+
 # 8zSudoku: install CURRENT and LAB in place
 
 BD approved this scope on 2026-09-28. Base main: `d81333434a8d0e0ccf674d4cac7b25c72957c64e`.

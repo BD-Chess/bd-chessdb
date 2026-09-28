@@ -2,11 +2,11 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "10250e4c39db2e7c0bec72f9e1eaae22eff5eb0a9110f5d42db6ddd532bebd49",
+  "id": "16cea322ea94de37c1116a75fe64154a8c7a7a47957d7c79687427d1de808937",
   "channel": "CURRENT",
-  "engine": "frozen-proof-coach",
+  "engine": "0.3.0",
   "assets": {
-    "index.html": "0af5b2293e8765f60f7bfef4066e07f853e432dc0104436659f87c9341c51357",
+    "index.html": "38e200ce61227e6c17d70b124a3d5fe8e5960a4cc4d5de01f721dcf0018c5cbe",
     "manifest.webmanifest": "9c2f843e6e1ea992d951944ca665b575494bb8ecf1dc16572dbe3723608f8efe",
     "_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
     "_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
@@ -14,18 +14,8 @@ const RELEASE = {
     "_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
     "_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
-    "_pwa/current-ui.js": "0d0987025d612582cfcf2884b1751039f5e3b08486e961dcf4e48e8395ae5afd",
-    "current/index.html": "8c023a72f4f9e07c4d152bdb4cb0df6aa644935823d2ef7b1a9658a094d0574f",
-    "current/pwa-bridge.js": "4e7246a0796bed383ecc3caeb81a533d03a0057c3ad34c09726ae6b99122a187",
-    "current/hold-input.js": "6416e6f5441f167c84c8d0cb7fed01c2757cf570b831a3729f8c782bbd87fc64",
-    "current/payload/part-01.txt": "a85ab17f1200ff02557cfb0752ef59ace7abb456512ab3c52f758ed53335811f",
-    "current/payload/part-02.txt": "f64cd2f29bae51fc648c0b99d1e8a6b5cad8c31e045cde8d68cb884ee0a6057a",
-    "current/payload/part-03.txt": "c7b45837837d993ab66f4c8334ced8576be11fef5c795e1b0b2b7d3c2e3769dc",
-    "current/payload/part-04.txt": "208943c3b661de84cb299961645be525a629ee9a3ab2b9d1cd34f908bcdd29a1",
-    "current/payload/part-05.txt": "1d5c94b86daaf48d033003b797dc3390fa8eba9e06ddf5c034fb0a5c2c65df45",
-    "current/payload/part-06.txt": "e3b1d2dc0e5e7ceac2434f8b58911e8967cc2982f39f2d182b5ccadbe604e56f",
-    "current/payload/part-07.txt": "eee29e91fbc844335efd43af37939749a1f08187389c0ded096c5bfd762b9ddc",
-    "current/payload/part-08.txt": "c9aa869eb7be9109c6841813da593dff9e0e1ae7276c1a9685d0c4d11205df87"
+    "current/index.html": "e5af3f7345fd506ec3d59a811fc482ae19204334809171b595a4898618c6c3ba",
+    "current/promotion.json": "341e000adb4071e7c06476ff92045329c7ed00ec0c64af1532a6248a133f4a15"
   }
 };
 // END GENERATED RELEASE
