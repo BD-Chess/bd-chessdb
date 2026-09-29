@@ -57,7 +57,7 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('analysisSourceStatus').parentElement.id, 'appBoardControls');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
   assert.equal(byId('appTopLine').hidden, false);
-  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB/SF');
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE');
   assert.equal(byId('appTopLineMoves').textContent, 'Analyzing…');
   d.querySelector('[data-app-lang="sl"]').click();
   assert.equal(d.documentElement.lang, 'sl');
