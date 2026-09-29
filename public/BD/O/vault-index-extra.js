@@ -33,6 +33,7 @@ const sections=[
     note:'Zdravje in osebni del sta v istem BD/O vaultu.',
     cards:[
       ['💊','Tablete','Dnevni načrt tablet.','tablete.html','VAULT'],
+      ['📅','Koledar','Termini · naslovi · Google Maps.','koledar.html','VAULT'],
       ['♥','Zdravje','Glavni osebni zdravstveni pregled.','zdravje.html','VAULT'],
       ['＋','Kardiolog','Kardiološki zapiski in priprava.','kardiolog.html','VAULT'],
       ['⌚','Apple Health','Osebni Apple Health pregled.','apple-health.html','VAULT'],
