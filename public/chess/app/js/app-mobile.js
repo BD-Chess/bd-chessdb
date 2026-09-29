@@ -52,7 +52,8 @@
       const out = [];
       for (const uci of moves.slice(0, 10)) {
         if (typeof uci !== 'string' || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci)) break;
-        const move = board.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] || 'q' });
+        const spec = { from: uci.slice(0,2), to: uci.slice(2,4) }; if (uci[4]) spec.promotion = uci[4];
+        const move = board.move(spec);
         if (!move) break;
         if (turn === 'w') out.push(number + '. ' + move.san);
         else {
