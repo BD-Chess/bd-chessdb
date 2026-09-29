@@ -159,12 +159,16 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
   dom.window.close();
 });
 
-test('APP preview keeps its phone frame through narrow, HD, 4K and resized windows', () => {
+test('APP preview keeps the phone frame for desktop/tablet clients and uses native-like fullscreen for normal phone clients', () => {
   const html = read('index.html').toString();
   assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
-  assert.doesNotMatch(html, /display:\s*none/);
   for (const standalone of [false, true]) {
-    const dom = new JSDOM(html, { url: 'https://example.test/chess/app/', runScripts: 'outside-only' });
+    const dom = new JSDOM(html, {
+      url: 'https://example.test/chess/app/', runScripts: 'outside-only',
+      beforeParse(window) {
+        Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', configurable: true });
+      }
+    });
     const w = dom.window;
     w.matchMedia = () => ({ matches: standalone });
     Object.defineProperty(w.navigator, 'standalone', { value: standalone });
@@ -173,9 +177,19 @@ test('APP preview keeps its phone frame through narrow, HD, 4K and resized windo
       for (const script of w.document.querySelectorAll('script:not([src])')) w.eval(script.textContent);
       w.dispatchEvent(new w.Event('resize'));
       assert.equal(w.location.pathname, '/chess/app/');
-      assert.equal(w.getComputedStyle(w.document.querySelector('main')).display, 'flex');
+      assert.equal(w.document.documentElement.classList.contains('app-phone-browser'), false);
       assert(w.document.querySelector('.phone-frame iframe'));
     }
     dom.window.close();
   }
+  const phone = new JSDOM(html, {
+    url: 'https://example.test/chess/app/', runScripts: 'outside-only',
+    beforeParse(window) {
+      Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1', configurable: true });
+    }
+  });
+  assert.equal(phone.window.location.pathname, '/chess/app/');
+  assert(phone.window.document.documentElement.classList.contains('app-phone-browser'));
+  assert(phone.window.document.querySelector('.phone-frame iframe'));
+  phone.window.close();
 });
