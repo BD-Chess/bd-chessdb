@@ -25,6 +25,15 @@ test('APP phone layout centers 6–9, uses 3+3 Play actions and removes the end 
  assert.equal(app.includes('<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>'),false);
 });
 
+test('APP dock and spacing keep secondary actions out of the Play surface',()=>{
+ const css=read('public/S/app/app.css'),ui=read('public/S/app/app-ui.js');
+ for(const id of ['appNotes','appErase','appUndo','appAssist','appMore'])assert.ok(ui.includes(id),id);
+ assert.ok(css.includes('grid-template-columns:repeat(5,minmax(0,1fr))'));
+ assert.ok(css.includes('margin:12px 0 18px'));
+ assert.ok(css.includes('.pl-notice{display:none!important}'));
+ for(const id of ['appMoreNew','appMoreNews','appMoreTutorial'])assert.ok(ui.includes(id),id);
+});
+
 test('APP build pins exact packaged LAB donor and isolates its stored games',()=>{
  const check=spawnSync(process.execPath,['scripts/build-sudoku-app-preview.cjs','--check'],{cwd:root,encoding:'utf8'});
  assert.equal(check.status,0,check.stderr||check.stdout);
@@ -49,12 +58,13 @@ test('APP phone Play stays simple; AI Solve and Learn use the guided sheet witho
  assert.equal(w.document.body.dataset.appSurface,'true');
  assert.equal(h.el('numpad').closest('.mobile-input-panel').parentElement.className,'col-center');
  assert.equal(h.el('aiAssistPanel').hidden,true);
- assert.equal(h.el('appDock').querySelector('#appAssist').hidden,true);
+ assert.deepEqual([...h.el('appDock').querySelectorAll('button')].map(n=>n.id),['appNotes','appErase','appUndo','appAssist','appMore']);
+ assert.equal(h.el('appAssist').hidden,false);
  h.el('solveBtn').click();
  await until(()=>!h.el('aiAssistPanel').hidden&&w.document.body.dataset.appPanel==='assist','AI Solve opens guided APP sheet');
  assert.equal(h.el('uxDemoGrid'),null,'no legacy demonstration replaces the game');
  assert.deepEqual(state(h).board,before.board);
- h.el('appBoard').click();assert.equal(w.document.body.dataset.appPanel,'board');
+ h.el('appAssist').click();assert.equal(w.document.body.dataset.appPanel,'board');
  w.SudokuNavigator.product.switchView('learn');
  await until(()=>!h.el('aiAssistPanel').hidden&&!h.el('appAssist').hidden,'Learn keeps Assist available');
  h.el('appAssist').click();assert.equal(w.document.body.dataset.appPanel,'assist');

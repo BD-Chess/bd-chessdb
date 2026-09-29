@@ -24,7 +24,7 @@ body[data-app-surface] .cell .notes{color:#91d6e6}
 [data-theme=light] body[data-app-surface] .cell{color:var(--text)}
 [data-theme=light] body[data-app-surface] .cell.given{color:var(--muted)}
 [data-theme=light] body[data-app-surface] .cell .notes{color:var(--cyan)}
-body[data-app-surface] .mobile-input-panel{width:100%;max-width:100%;margin:5px 0 0;padding:7px 8px}
+body[data-app-surface] .mobile-input-panel{width:100%;max-width:100%;margin:12px 0 18px;padding:7px 8px}
 body[data-app-surface] .mobile-input-panel>.panel-title{display:none}
 body[data-app-surface] .numpad{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
 body[data-app-surface] .numpad button{grid-column:span 2;min-height:46px;font-size:1.15rem;padding:4px}
@@ -40,16 +40,15 @@ body[data-app-surface][data-view=play][data-assist=closed] #uxUndo{order:3}
 body[data-app-surface][data-view=play][data-assist=closed] #solveBtn{order:4}
 body[data-app-surface][data-view=play][data-assist=closed] #uxNew{order:5}
 body[data-app-surface][data-view=play][data-assist=closed] #uxMore{order:6}
-body[data-app-surface] #plGameStatus{margin:4px 0 0;min-height:1em;font-size:.74rem}
-body[data-app-surface] .col-center>.pl-notice{margin:7px 0 0}
-body[data-app-surface] .col-center>.pl-notice .btn{font-size:.73rem;min-height:34px}
+body[data-app-surface] #plGameStatus{margin:8px 0 10px;min-height:1em;font-size:.74rem}
+body[data-app-surface] .pl-notice{display:none!important}
 body[data-app-surface] .col-left{display:none!important}
 body[data-app-surface][data-view=lab] .col-left{display:flex!important}
 body[data-app-surface]:not([data-view=lab]) .col-right{visibility:visible}
 body[data-app-surface]:not([data-view=lab]) .col-right>.panel:not(#aiAssistPanel){display:none!important}
 body[data-app-surface] #aiAssistPanel{display:none!important}
 body[data-app-surface][data-app-panel=assist] #aiAssistPanel:not([hidden]){
-  display:block!important;position:fixed;z-index:3002;left:50%;bottom:calc(69px + env(safe-area-inset-bottom));top:auto;
+  display:block!important;position:fixed;z-index:3002;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));top:auto;
   transform:translateX(-50%);width:min(100% - 20px,450px);max-height:min(66dvh,570px);
   overflow:auto;overscroll-behavior:contain;padding:16px!important;background:var(--bg3);color:var(--text);
   border:1px solid var(--border2);box-shadow:0 18px 50px #000b;border-radius:20px
@@ -58,16 +57,21 @@ body[data-app-surface] #aiAssistPanel .assist-actions{grid-template-columns:repe
 body[data-app-surface] #aiAssistPanel .btn{min-height:44px}
 body[data-app-surface] #appAssistScrim{display:none}
 body[data-app-surface][data-app-panel=assist] #appAssistScrim{display:block;position:fixed;inset:0;z-index:3001;background:#020711a8;border:0;width:100%;cursor:pointer}
-body[data-app-surface] #appDock{display:flex;position:fixed;z-index:3003;bottom:0;left:0;right:0;justify-content:center;gap:8px;padding:8px 12px calc(9px + env(safe-area-inset-bottom));background:#0b1629f5;border-top:1px solid #00e5ff33;backdrop-filter:blur(12px)}
-body[data-app-surface] #appDock button{min-height:43px;max-width:220px;flex:1;font:700 .83rem system-ui;border:1px solid #57708c;border-radius:11px;background:#172642;color:#ebf6ff;cursor:pointer}
-body[data-app-surface] #appDock button[aria-pressed=true]{border-color:#00e5ff;color:#00e5ff;background:#103046}
+body[data-app-surface] #appDock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;z-index:3003;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,470px);gap:2px;padding:7px 8px calc(8px + env(safe-area-inset-bottom));background:#0b1629f5;border-top:1px solid #00e5ff33;backdrop-filter:blur(12px)}
+body[data-app-surface] #appDock button{min-width:0;min-height:58px;padding:5px 2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 .68rem/1 system-ui;border:0;border-radius:10px;background:transparent;color:#c5d2e4;cursor:pointer}
+body[data-app-surface] #appDock .app-dock-icon{font-size:1.18rem;line-height:1;color:#e8f1ff}
+body[data-app-surface] #appDock .app-dock-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body[data-app-surface] #appDock button[aria-pressed=true]{color:#74f4ff;background:#103046}
+body[data-app-surface] #appDock button[aria-pressed=true] .app-dock-icon{color:#74f4ff}
+body[data-app-surface] #appDock button:disabled{opacity:.38;cursor:default}
 [data-theme=light] body[data-app-surface] #appDock{background:#f7fafff5;border-top-color:var(--border2)}
-[data-theme=light] body[data-app-surface] #appDock button{background:var(--surface2);color:var(--text);border-color:var(--border2)}
-[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true]{background:var(--cyan-dim);color:var(--cyan);border-color:var(--cyan)}
-body[data-app-surface][data-view=play][data-assist=closed] #appDock,
-body[data-app-surface][data-view=lab] #appDock{display:none}
-body[data-app-surface]:not([data-view=lab]):not([data-assist=closed]) .page,
-body[data-app-surface][data-view=learn] .page{padding-bottom:calc(75px + env(safe-area-inset-bottom))}
+[data-theme=light] body[data-app-surface] #appDock button{background:transparent;color:var(--text)}
+[data-theme=light] body[data-app-surface] #appDock .app-dock-icon{color:var(--text)}
+[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true]{background:var(--cyan-dim);color:var(--cyan)}
+[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true] .app-dock-icon{color:var(--cyan)}
+body[data-app-surface][data-view=lab] #appDock{display:none!important}
+body[data-app-surface]:not([data-view=lab]) .page{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+body[data-app-surface]:not([data-view=lab]) .ux-toolbar{display:none!important}
 body[data-app-surface] .nav-modal{z-index:4000}
 body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
 @media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
