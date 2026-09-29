@@ -1,0 +1,109 @@
+name: Flip4M Violet live release verification
+on:
+  push:
+    branches: ['flip4m/violet-20260930-r1']
+    paths: ['.github/workflows/flip4m-violet-live.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 09d413bfa08cc2756fe3d43c629123743e50965f
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify deployed asset hashes and actual PWA runtime
+        shell: python
+        run: |
+          import hashlib,json,time,urllib.request,concurrent.futures,datetime
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          OUT=Path('flip4m-live-evidence');OUT.mkdir(exist_ok=True)
+          ROOT=Path('public/F4M');BASE='https://bd-chess.github.io/bd-chessdb/F4M/'
+          SHA='09d413bfa08cc2756fe3d43c629123743e50965f';checks=[];error=None
+          def check(name,ok,detail=None):
+              checks.append({'name':name,'pass':bool(ok),'detail':detail})
+              if not ok:raise AssertionError(name+': '+str(detail))
+          def fetch(path):
+              request=urllib.request.Request(BASE+path+'?release='+SHA,headers={'Cache-Control':'no-cache','User-Agent':'Flip4M-owned-release-verifier'})
+              with urllib.request.urlopen(request,timeout=12) as r:return r.read(),r.geturl(),r.status
+          def idle(page):page.wait_for_function('window.F4MLab&&!F4MLab.status().loading&&!F4MLab.status().thinking&&!F4MLab.status().animating',timeout=15000)
+          try:
+              manifest_path='_shared/violet-2.2.0/build-manifest.json';expected=(ROOT/manifest_path).read_bytes()
+              deployed=None
+              for attempt in range(12):
+                  try:
+                      body,url,status=fetch(manifest_path)
+                      if body==expected:deployed=body;break
+                  except Exception as e:print('Waiting for Pages:',type(e).__name__)
+                  time.sleep(5)
+              check('Exact release manifest published',deployed==expected,{'url':BASE+manifest_path,'commit':SHA})
+              manifest=json.loads(expected)
+              for path in ('index.html','old/index.html'):
+                  manifest[path]=hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
+              def verify_asset(item):
+                  path,digest=item;body,url,status=fetch(path)
+                  return path,status==200 and hashlib.sha256(body).hexdigest()==digest,{'url':url,'status':status,'sha256':hashlib.sha256(body).hexdigest()}
+              with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                  for path,ok,detail in pool.map(verify_asset,manifest.items()):check('Published '+path,ok,detail)
+              with sync_playwright() as p:
+                  browser=p.chromium.launch();ctx=browser.new_context(viewport={'width':1440,'height':1080},accept_downloads=True)
+                  ctx.add_init_script("localStorage.setItem('flip4m.lab.2.2.preferences',JSON.stringify({mode:'pvp',difficulty:'beginner'}));localStorage.setItem('flip4m.app.2.2.preferences',JSON.stringify({mode:'pvp',difficulty:'beginner'}));")
+                  for channel in ('new','app'):
+                      page=ctx.new_page();errors=[];workers=[]
+                      page.on('pageerror',lambda e:errors.append(str(e)));page.on('worker',lambda w:workers.append(w.url));page.on('dialog',lambda d:d.accept())
+                      page.goto(BASE+channel+'/');idle(page);page.wait_for_function("F4MPWA.state==='ready'",timeout=25000)
+                      check(channel+' live board',page.locator('.cell').count()==64,{'url':page.url})
+                      check(channel+' live PWA package',True)
+                      page.locator('.cell[data-r="0"][data-c="3"]').click();idle(page)
+                      check(channel+' live move',page.evaluate('F4MLab.status().cursor')==1)
+                      check(channel+' save readback',page.evaluate('F4MLab.saveForUpdate()') in ('indexeddb','localstorage'))
+                      page.screenshot(path=str(OUT/(channel+'-live-desktop.png')),full_page=True)
+                      page.reload();idle(page);check(channel+' restored live move',page.evaluate('F4MLab.status().cursor')==1)
+                      check(channel+' scoped SW controls',page.evaluate('!!navigator.serviceWorker.controller'))
+                      ctx.set_offline(True);page.goto(BASE+channel+'/');idle(page)
+                      check(channel+' offline cold navigation',page.evaluate('F4MLab.status().cursor')==1)
+                      page.locator('#hint').click();idle(page);page.wait_for_function("document.getElementById('statNodes').textContent!=='—'",timeout=15000)
+                      check(channel+' real offline AI Worker',bool(workers),workers)
+                      ctx.set_offline(False)
+                      if channel=='app':
+                          page.locator('#tab-board').click();page.set_viewport_size({'width':3840,'height':2160})
+                          check('Live APP fixed at 4K',page.locator('.device').is_visible() and page.url.endswith('/app/'))
+                          page.set_viewport_size({'width':1440,'height':1080})
+                          for width in ('375','390','402','430'):
+                              page.locator('#previewWidth').select_option(width)
+                              check('Live APP width '+width,abs(page.locator('.device-screen').bounding_box()['width']-int(width))<6)
+                          page.locator('#previewWidth').select_option('390')
+                          page.locator('#tab-sim').click();page.locator('#newSim').click()
+                          page.locator('#simLength').select_option('single');page.locator('#simStartAt').select_option('empty');page.locator('#simWork').select_option('2000');page.locator('#startSim').click()
+                          page.wait_for_function('F4MLab.status().inSimulation&&F4MLab.status().cursor>=2',timeout=12000)
+                          page.locator('#pause').click();idle(page);check('Live Sim started and paused',page.evaluate('F4MLab.status().paused'))
+                          page.locator('#tab-sim').click()
+                          with page.expect_download() as event:page.locator('#exportBatch').click()
+                          event.value.save_as(str(OUT/'live-sim-smoke.json'))
+                          check('Live Sim JSON export',True)
+                          page.locator('#backToPlay').click();idle(page)
+                          check('Live Sim restores prior game',not page.evaluate('F4MLab.status().inSimulation') and page.evaluate('F4MLab.status().cursor')==1)
+                      check(channel+' no JS errors',not errors,errors);page.close()
+                  browser.close()
+          except Exception as exc:
+              error=repr(exc);print(error)
+          finally:
+              report={'commit':SHA,'version':'2.2.0-violet','base_url':BASE,'time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'passed':sum(c['pass'] for c in checks),'checks':len(checks),'error':error,'physical_iPhone':'NOT_RUN','results':checks}
+              (OUT/'live-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+              print(json.dumps({k:v for k,v in report.items() if k!='results'}))
+          if error:raise SystemExit(1)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-violet-live-evidence
+          path: flip4m-live-evidence
+          retention-days: 7
