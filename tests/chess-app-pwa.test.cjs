@@ -221,4 +221,7 @@ test('APP board keeps Top Line in normal flow and board coordinates inset from c
   assert.match(mobile, /#board-container \{[\s\S]*height:\s*auto !important;[\s\S]*min-height:\s*0 !important;/);
   assert.match(mobile, /#board \.alpha-d2270 \{ right:\s*4px; bottom:\s*4px; \}/);
   assert.match(mobile, /#board \.numeric-fc462 \{ left:\s*4px; top:\s*4px; \}/);
+  assert.match(mobile, /\.app-top-line \{[\s\S]*flex-direction:\s*row;[\s\S]*align-items:\s*baseline;/);
+  assert.match(mobile, /\.app-top-line strong \{[\s\S]*text-overflow:\s*ellipsis;[\s\S]*white-space:\s*nowrap;/);
+  assert.match(mobile, /\.app-tabs button \+ button::before \{[\s\S]*width:\s*1px;[\s\S]*opacity:\s*\.42;/);
 });
