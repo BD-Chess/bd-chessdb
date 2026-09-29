@@ -145,6 +145,8 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(calls, 1);
   const byId = id => w.document.getElementById(id);
+  assert.deepEqual([...w.document.querySelectorAll('.app-channel-nav a')].map(a => a.textContent.trim()), ['CURRENT', 'PREVIOUS', 'LAB', 'APP']);
+  assert.match(w.document.getElementById('app-shell-polish').textContent, /scrollbar-width:none/);
   assert.match(byId('appPwaStatus').textContent, /Offline files ready/);
   assert.equal(byId('appPwaUpdate').hidden, false);
   assert.match(byId('appPwaUpdate').textContent, /close all ChessBest APP windows/);
@@ -162,6 +164,8 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
 test('APP preview keeps the phone frame for desktop/tablet clients and uses native-like fullscreen for normal phone clients', () => {
   const html = read('index.html').toString();
   assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
+  assert.doesNotMatch(html, /preview-note/);
+  assert.match(html, /main \{[^}]*justify-content:\s*center/s);
   for (const standalone of [false, true]) {
     const dom = new JSDOM(html, {
       url: 'https://example.test/chess/app/', runScripts: 'outside-only',

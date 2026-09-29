@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-4e63b5ab6ff2c266";
+const RELEASE = "app-4844ec617e755855";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -186,7 +186,7 @@ const INTEGRITY = {
   "img/chesspieces/wikipedia/wP.png": "sha256-m/IobFlQett6YEXCEqa5Kp3v1+mlu64w6Cu4MhbEPLE=",
   "img/chesspieces/wikipedia/wQ.png": "sha256-BctoAdAvOTY5d/bXrppA9gWyqmmGbpCGhowI4d8X+HU=",
   "img/chesspieces/wikipedia/wR.png": "sha256-F16iJSoBBSET3/hTgOgjckZEjHYq4wOuKjSNlxuggAs=",
-  "index.html": "sha256-+Qr/pBF+WrqFJYTFiRFz8CTpG4jgzvvEeVVrju+iDgk=",
+  "index.html": "sha256-irVJqJeTvnSd5c1mr1oqLLMF/ILnwt20aKCG6k6MafU=",
   "js/8zc-benchmark.js": "sha256-RFcgUgnZrE/xMd3erfvWISdr8qpcg4qGiqBFMkkkL/I=",
   "js/8zc-dcc-core.js": "sha256-Iejp8fSlGl1X+fG24X2xpgFu5kn+38WBAc6eaeekJSA=",
   "js/8zc-deep-engine.js": "sha256-M7N5qCRTfl0nU0soCukxnTO4iRjAe7yDXC7ovSgODjo=",
@@ -218,7 +218,7 @@ const INTEGRITY = {
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
   "manifest.webmanifest": "sha256-q0wnJarVjuRsL5xlkjsI2xsEApyooIWb+ya0eZaQ1qY=",
   "play.html": "sha256-Mll/hbGrlcBYB2B454REydjJKEOY5xXOc1sO5A3XU2s=",
-  "pwa.js": "sha256-ABq0EDkEwlR1B/i/297/9aKfEdyr74Wkcn8RUbLCut0=",
+  "pwa.js": "sha256-VBvHqwaINMpu62VverYp1q/3NZ8lbd0nDnhW/2HmXbQ=",
   "vendor/stockfish/stockfish-18-lite-single.js": "sha256-IngAUFfzgUkfHJuz5EyfWSCzoAvvl1njPMZYJ2mh8f4=",
   "vendor/stockfish/stockfish-18-lite-single.wasm": "sha256-qPvAXsaSC1bXSFgm3LAsX/0oJry/dRz5cwRvI3qQlvE="
 };
