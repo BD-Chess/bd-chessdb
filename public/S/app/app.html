@@ -525,10 +525,35 @@ body[data-app-surface] .cell .notes{color:#91d6e6}
 [data-theme=light] body[data-app-surface] .cell{color:var(--text)}
 [data-theme=light] body[data-app-surface] .cell.given{color:var(--muted)}
 [data-theme=light] body[data-app-surface] .cell .notes{color:var(--cyan)}
-body[data-app-surface] .mobile-input-panel{width:100%;max-width:100%;margin:12px 0 18px;padding:7px 8px}
+body[data-app-surface] .mobile-input-panel{
+ width:100%;max-width:100%;margin:12px 0 18px;padding:7px 8px;
+ background:linear-gradient(180deg,#151e2a 0%,#101721 100%);border-color:#34465a;
+ box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0003
+}
 body[data-app-surface] .mobile-input-panel>.panel-title{display:none}
 body[data-app-surface] .numpad{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
 body[data-app-surface] .numpad button{grid-column:span 2;min-height:46px;font-size:1.15rem;padding:4px}
+body[data-app-surface] .numpad button:not(.pl-armed){
+ background:#1b2735;border-color:#3c4b5e;color:#c8d0da;
+ box-shadow:inset 0 1px 0 #ffffff0b
+}
+body[data-app-surface] .numpad button:not(.pl-armed):hover,
+body[data-app-surface] .numpad button:not(.pl-armed):focus-visible{
+ background:#223243;border-color:#00cfe8;color:#dde4ec
+}
+body[data-app-surface] .numpad button:not(.pl-armed):active{
+ background:#294052;border-color:#28dff2;color:#eef3f8;transform:translateY(1px)
+}
+html[data-theme=light] body[data-app-surface] .mobile-input-panel{
+ background:linear-gradient(180deg,#e2e7ed 0%,#d8dfe7 100%);border-color:#aeb9c6;box-shadow:inset 0 1px 0 #fff
+}
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed){
+ background:#edf1f5;border-color:#b7c1cc;color:#556170;box-shadow:inset 0 1px 0 #fff
+}
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed):hover,
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed):focus-visible{
+ background:#dbe8ed;border-color:var(--cyan);color:#304253
+}
 body[data-app-surface] .numpad button:nth-child(6){grid-column:2/span 2}
 body[data-app-surface] .ux-toolbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:6px}
 body[data-app-surface] .ux-toolbar .btn{min-height:48px;font-size:.77rem;line-height:1.2}
