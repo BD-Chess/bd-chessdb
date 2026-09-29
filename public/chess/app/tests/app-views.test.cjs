@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
+const { Chess } = require('../js/chess.min.js');
 
 const app = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(app, 'play.html'), 'utf8');
