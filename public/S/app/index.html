@@ -20,6 +20,8 @@
   *,*::before,*::after{box-sizing:border-box}
   html{background:#070c16;color:#e5edfa;font:16px/1.45 system-ui,sans-serif}
   body{margin:0;min-height:100svh;background:radial-gradient(circle at 50% 30%,#15344d 0,#0b1526 42%,#070c16 90%)}
+  html[data-app-shell=preview] body{display:flex;flex-direction:column;min-height:100svh}
+  html[data-app-shell=preview] main{flex:1;justify-content:center;padding-top:18px;padding-bottom:18px}
   a{color:#b7eafe}
   .site-nav{display:flex;align-items:center;justify-content:flex-end;gap:4px;padding:14px max(16px,calc((100vw - 1160px)/2));font-size:.73rem;font-weight:800;letter-spacing:.07em}
   .site-nav a{padding:9px 11px;border-radius:12px;text-decoration:none;color:#9eb2ce}
@@ -42,13 +44,11 @@
   body.unframed .screen{border-radius:0}
   body.unframed .island,body.unframed .safe-top,body.unframed .home{display:none}
   body.unframed iframe{height:100%}
-  .note{max-width:560px;margin:0;color:#879dbb;text-align:center;font-size:.74rem}
   html[data-app-shell=phone],html[data-app-shell=phone] body{width:100%;height:100%;overflow:hidden;background:#080e1a}
   html[data-app-shell=phone] .site-nav,
   html[data-app-shell=phone] main>h1,
   html[data-app-shell=phone] .subtitle,
   html[data-app-shell=phone] .preview-tools,
-  html[data-app-shell=phone] .note,
   html[data-app-shell=phone] .island,
   html[data-app-shell=phone] .safe-top,
   html[data-app-shell=phone] .home{display:none!important}
@@ -72,17 +72,17 @@
    <button type="button" id="appPwaOpen">Install app / Offline</button>
   </div>
   <div class="device" id="device"><div class="screen"><div class="island" aria-hidden="true"></div><div class="safe-top" aria-hidden="true"></div><iframe id="game" title="8zSudoku APP game" allow="fullscreen"></iframe><div class="home" aria-hidden="true"></div></div></div>
-  <p class="note">Play and Learn use one game. APP storage is separate from LAB and CURRENT.</p>
  </main>
  <script>
  (()=>{
   const params=new URLSearchParams(location.search),allowed=['375','390','402','430'];
-  const device=document.getElementById('device'),buttons=[...document.querySelectorAll('[data-width]')],frame=document.getElementById('toggleFrame');
+  const device=document.getElementById('device'),buttons=[...document.querySelectorAll('[data-width]')],frame=document.getElementById('toggleFrame'),game=document.getElementById('game');
   let width=allowed.includes(params.get('width'))?params.get('width'):'390';
-  const draw=()=>{device.style.setProperty('--device-width',width+'px');buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.width===width)));frame.setAttribute('aria-pressed',String(document.body.classList.contains('unframed')));frame.textContent=document.body.classList.contains('unframed')?'Show iPhone frame':'Open without frame';};
+  const syncFramedPreview=()=>{try{const body=game.contentDocument?.body;if(!body)return;const framed=document.documentElement.dataset.appShell==='preview'&&!document.body.classList.contains('unframed');if(framed)body.dataset.appFramedPreview='true';else delete body.dataset.appFramedPreview;}catch(_){}};
+  const draw=()=>{device.style.setProperty('--device-width',width+'px');buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.width===width)));frame.setAttribute('aria-pressed',String(document.body.classList.contains('unframed')));frame.textContent=document.body.classList.contains('unframed')?'Show iPhone frame':'Open without frame';syncFramedPreview();};
   buttons.forEach(b=>b.addEventListener('click',()=>{width=b.dataset.width;draw();}));
   frame.addEventListener('click',()=>{document.body.classList.toggle('unframed');draw();});
-  const game=document.getElementById('game');game.src='./app.html'+location.hash;
+  game.addEventListener('load',syncFramedPreview);game.src='./app.html'+location.hash;
   window.addEventListener('hashchange',()=>{game.contentWindow?.location.replace('./app.html'+location.hash);});
   draw();
  })();
