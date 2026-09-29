@@ -159,23 +159,30 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
   dom.window.close();
 });
 
-test('APP preview keeps its phone frame through narrow, HD, 4K and resized windows', () => {
+test('APP preview stays framed on desktop/tablet/request-desktop and removes only the decorative frame on ordinary phones', () => {
   const html = read('index.html').toString();
   assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
-  assert.doesNotMatch(html, /display:\s*none/);
-  for (const standalone of [false, true]) {
-    const dom = new JSDOM(html, { url: 'https://example.test/chess/app/', runScripts: 'outside-only' });
+  assert.match(html, /app-real-phone/);
+  const run = (ua, mobileHint, width) => {
+    const dom = new JSDOM(html, { url: 'https://example.test/chess/app/', runScripts: 'outside-only', pretendToBeVisual: true });
     const w = dom.window;
-    w.matchMedia = () => ({ matches: standalone });
-    Object.defineProperty(w.navigator, 'standalone', { value: standalone });
-    for (const width of [320, 375, 790, 791, 1920, 3840, 600]) {
-      Object.defineProperty(w, 'innerWidth', { value: width, configurable: true });
-      for (const script of w.document.querySelectorAll('script:not([src])')) w.eval(script.textContent);
-      w.dispatchEvent(new w.Event('resize'));
-      assert.equal(w.location.pathname, '/chess/app/');
-      assert.equal(w.getComputedStyle(w.document.querySelector('main')).display, 'flex');
-      assert(w.document.querySelector('.phone-frame iframe'));
-    }
-    dom.window.close();
+    Object.defineProperty(w.navigator, 'userAgent', { value: ua, configurable: true });
+    Object.defineProperty(w.navigator, 'userAgentData', { value: { mobile: mobileHint }, configurable: true });
+    Object.defineProperty(w, 'innerWidth', { value: width, configurable: true });
+    for (const script of w.document.querySelectorAll('script:not([src])')) w.eval(script.textContent);
+    const result = {
+      realPhone: w.document.documentElement.classList.contains('app-real-phone'),
+      path: w.location.pathname,
+      frame: !!w.document.querySelector('.phone-frame iframe')
+    };
+    dom.window.close(); return result;
+  };
+  for (const width of [320,375,790,791,1920,3840]) {
+    const desktop = run('Mozilla/5.0 (Windows NT 10.0; Win64; x64)', false, width);
+    assert.equal(desktop.realPhone, false); assert.equal(desktop.path, '/chess/app/'); assert.equal(desktop.frame, true);
   }
+  assert.equal(run('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) Version/18 Safari/605.1.15', false, 390).realPhone, false);
+  assert.equal(run('Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X)', false, 1024).realPhone, false);
+  assert.equal(run('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1', true, 390).realPhone, true);
+  assert.equal(run('Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/154 Mobile Safari/537.36', true, 412).realPhone, true);
 });
