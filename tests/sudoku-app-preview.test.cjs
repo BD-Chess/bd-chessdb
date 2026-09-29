@@ -56,7 +56,7 @@ test('APP defaults to Coach with number pad hidden and a visible hold-tip row',(
  assert.ok(ui.includes("coach:{key:'8zSudoku.app.ui.coach'"));
  assert.ok(ui.includes("def:'easy'"));
  assert.ok(ui.includes("holdTip:{key:'8zSudoku.app.ui.holdTip'"));
- assert.ok(ui.includes("Tap & hold a cell to get the number popup."));
+ assert.ok(ui.includes("Tap & hold an empty cell to open the number picker."));
  assert.ok(ui.includes("Sudoku Coach"));
  assert.ok(css.includes('#appCoach'));
  assert.ok(css.includes('#appHoldTip'));

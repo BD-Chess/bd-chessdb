@@ -3936,49 +3936,91 @@ install();
   for(let i=0;i<81;i++)if(!board[i])for(const d of all[i]){const unit=hiddenSingle(board,all,i,d);if(unit)return{index:i,digit:d,kind:'hidden',unit};}
   return null;
  }
- let lastBoard=null,coachMoment=null,coachTimer=0;
+ // Coach derives statements only from visible entries, never the solved grid.
+ function boardIssue(board,puzzle){
+  if(!Array.isArray(board)||board.length!==81||board.some(v=>!Number.isInteger(v)||v<0||v>9))return {kind:'invalid'};
+  if(Array.isArray(puzzle)&&puzzle.length===81){for(let i=0;i<81;i++)if(puzzle[i]&&puzzle[i]!==board[i])return{kind:'given',index:i};}
+  for(let k=0;k<9;k++){
+   const units=[Array.from({length:9},(_,x)=>k*9+x),Array.from({length:9},(_,x)=>x*9+k),Array.from({length:9},(_,x)=>(Math.floor(k/3)*3+Math.floor(x/3))*9+(k%3)*3+x%3)];
+   for(let u=0;u<3;u++){const seen=new Map();for(const i of units[u]){const d=board[i];if(!d)continue;if(seen.has(d))return{kind:'duplicate',digit:d,index:i,other:seen.get(d),unit:['row','column','box'][u]};seen.set(d,i);}}
+  }
+  for(let i=0;i<81;i++)if(!board[i]&&!candidates(board,i).length)return{kind:'empty',index:i};
+  return null;
+ }
+ function coachProof(before,after,index){
+  if(!Number.isInteger(index)||index<0||index>=81||boardIssue(before)||boardIssue(after))return null;
+  if(before[index]||!after[index]||before.some((v,i)=>i!==index&&v!==after[i]))return null;
+  const all=candidateMap(before),cs=all[index],digit=after[index];
+  if(!cs.includes(digit))return null;
+  if(cs.length===1)return{index,digit,kind:'naked'};
+  const unit=hiddenSingle(before,all,index,digit);
+  return unit?{index,digit,kind:'hidden',unit}:null;
+ }
+ let lastBoard=null,lastPuzzle=null,lastSelected=null,lastLanguage=null,coachMoment=null,coachTimer=0,disclosed=null;
  const setText=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
  function setCoachText(text){setText($('appCoachCopy'),text);}
+ function resetCoachMoment(){coachMoment=null;clearTimeout(coachTimer);}
  function updateCoach(showCandidates=false){
-  const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',coachMode=readUiPref('coach'),detail=readUiPref('coachDetail');
+  const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
   holdTip.hidden=lab||readUiPref('holdTip')!=='on';
-  setText(holdTip,sl?'Tapni in drži celico za pojavni izbor številke.':'Tap & hold a cell to get the number popup.');
-  const diff=difficulty(),coachAllowed=coachMode==='always'||coachMode==='easy'&&(!diff||diff==='easy');
-  coach.hidden=lab||padOn||coachMode==='off'||!coachAllowed;
+  setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');
+  const diff=difficulty(),allowed=mode==='always'||mode==='easy'&&(!diff||diff==='easy');
+  coach.hidden=lab||padOn||mode==='off'||!allowed;
   setText(coach.querySelector('.app-coach-title'),'Sudoku Coach');
   setText($('appCoachWhy'),sl?'Zakaj?':'Why?');setText($('appCoachCandidates'),sl?'Pokaži kandidate':'Show candidates');
-  if(coach.hidden)return;
+  if(coach.hidden){lastBoard=null;disclosed=null;resetCoachMoment();return;}
   let restoreBusy=false;try{restoreBusy=typeof restoring==='number'&&restoring>0;}catch(_){}
-  if(restoreBusy){setCoachText(sl?'Obnavljam shranjeno igro …':'Restoring your saved game…');return;}
+  if(restoreBusy){lastBoard=null;resetCoachMoment();$('appCoachWhy').disabled=true;$('appCoachCandidates').disabled=true;setCoachText(sl?'Obnavljam shranjeno igro …':'Restoring your saved game…');return;}
   const state=capture(),board=state?.board;
-  if(!Array.isArray(board)||board.length!==81){lastBoard=null;setCoachText(sl?'Izberi težavnost. Pri Lahki igri te bom sproti usmerjal.':'Choose a difficulty. On Easy, I’ll guide you as you play.');$('appCoachCandidates').disabled=true;return;}
-  if(lastBoard&&lastBoard.length===81){
-   const changed=[];for(let i=0;i<81;i++)if(lastBoard[i]!==board[i])changed.push(i);
-   if(changed.length===1){const i=changed[0],before=lastBoard[i],after=board[i];if(!before&&after){
-    const priorAll=candidateMap(lastBoard),cs=priorAll[i],unit=cs.includes(after)?hiddenSingle(lastBoard,priorAll,i,after):null;
-    if(cs.length===1||unit){const unitSL={row:'vrstici',column:'stolpcu',box:'bloku'}[unit],unitEN={row:'row',column:'column',box:'3×3 box'}[unit];
-     coachMoment=cs.length===1?(sl?'Odlično — '+rc(i)+' je bil goli posameznik: možna je bila samo '+after+'.':'Nice — '+rc(i)+' was a naked single: only '+after+' could fit.'):(sl?'Dobro — '+after+' je bil skriti posameznik v '+unitSL+'.':'Good — '+after+' was a hidden single in its '+unitEN+'.');
-     clearTimeout(coachTimer);coachTimer=setTimeout(()=>{coachMoment=null;updateCoach();},5200);
-    }
-   }}
+  if(!Array.isArray(board)||board.length!==81){lastBoard=null;resetCoachMoment();$('appCoachWhy').disabled=true;$('appCoachCandidates').disabled=true;setCoachText(sl?'Izberi težavnost. Pri lahki igri te bom sproti usmerjal.':'Choose a difficulty. On Easy, I’ll guide you as you play.');return;}
+  const selected=state.selectedCell,boardKey=board.join(''),puzzleKey=JSON.stringify([state.gameId||'',state.puzzle||[]]);
+  const changed=lastBoard?board.map((v,i)=>v===lastBoard[i]?-1:i).filter(i=>i>=0):[];
+  const newContext=lastPuzzle!==puzzleKey||lastSelected!==selected||lastLanguage!==sl;
+  if(newContext||changed.length){disclosed=null;resetCoachMoment();}
+  const issue=boardIssue(board,state.puzzle);
+  if(lastBoard&&lastPuzzle===puzzleKey&&changed.length===1&&!issue){
+   const proof=coachProof(lastBoard,board,changed[0]);
+   if(proof){coachMoment=proof;coachTimer=setTimeout(()=>{coachMoment=null;updateCoach();},5200);}
   }
-  lastBoard=board.slice();
-  if(coachMoment){setCoachText(coachMoment);$('appCoachCandidates').disabled=false;return;}
-  const selected=state.selectedCell;
+  lastBoard=board.slice();lastPuzzle=puzzleKey;lastSelected=selected;lastLanguage=sl;
+  $('appCoachWhy').disabled=false;$('appCoachCandidates').disabled=true;
+  if(issue){
+   coach.dataset.state='conflict';
+   const unitSL={row:'vrstici',column:'stolpcu',box:'bloku'}[issue.unit],unitEN={row:'row',column:'column',box:'3×3 box'}[issue.unit];
+   setCoachText(issue.kind==='duplicate'?(sl?'Številka '+issue.digit+' se ponovi v isti '+unitSL+' ('+rc(issue.other)+' in '+rc(issue.index)+'). Najprej preveri vnos ali uporabi Razveljavi.':'Digit '+issue.digit+' repeats in the same '+unitEN+' ('+rc(issue.other)+' and '+rc(issue.index)+'). Check the entry or use Undo first.'):
+    issue.kind==='empty'?(sl?'Za '+rc(issue.index)+' ne ostane noben kandidat. Preveri zadnje vnose; zdaj ni varno sklepati naprej.':'No candidate remains for '+rc(issue.index)+'. Check recent entries before making another deduction.'):
+    issue.kind==='given'?(sl?'Začetna številka v '+rc(issue.index)+' ni ohranjena. Preveri obnovljeno igro.':'The given in '+rc(issue.index)+' is not preserved. Check the restored game.'):
+    (sl?'Te mreže še ne morem varno razložiti.':'This grid cannot be explained safely yet.'));
+   return;
+  }
+  coach.dataset.state='ready';
+  if(board.every(Boolean)){setCoachText(sl?'Mreža je izpolnjena: vsaka vrstica, stolpec in blok vsebuje številke 1–9 brez ponovitev.':'Grid complete: every row, column and box contains 1–9 without repeats.');$('appCoachWhy').disabled=true;return;}
+  const emptySelected=Number.isInteger(selected)&&selected>=0&&selected<81&&!board[selected];
+  $('appCoachCandidates').disabled=!emptySelected;
+  if(showCandidates&&emptySelected)disclosed=boardKey+':'+selected;
+  if(emptySelected&&disclosed===boardKey+':'+selected){
+   const cs=candidates(board,selected);
+   setCoachText((sl?'Kandidati za ':'Candidates for ')+rc(selected)+': '+cs.join(', ')+'. '+(sl?'Dovoljeni glede na sedanje vnose v vrstici, stolpcu in bloku.':'Allowed by the current row, column and box entries.'));return;
+  }
+  if(coachMoment){
+   const p=coachMoment,us={row:'vrstici',column:'stolpcu',box:'bloku'}[p.unit],ue={row:'row',column:'column',box:'3×3 box'}[p.unit];
+   setCoachText(p.kind==='naked'?(sl?'Vnos '+p.digit+' v '+rc(p.index)+' sledi golemu posamezniku: glede na prejšnje vnose je ostal en kandidat.':'The '+p.digit+' in '+rc(p.index)+' follows a naked single: the previous entries left one candidate.'):
+    (sl?'Vnos '+p.digit+' v '+rc(p.index)+' sledi skritemu posamezniku v '+us+'.':'The '+p.digit+' in '+rc(p.index)+' follows a hidden single in its '+ue+'.'));return;
+  }
   if(Number.isInteger(selected)&&selected>=0&&selected<81){
-   const cell=$('grid')?.children[selected];
-   if(board[selected]){setCoachText(cell?.classList.contains('given')?(sl?'To je začetna številka. Izberi prazno celico.':'That is a given. Choose an empty cell.'):(sl?'Celica je že izpolnjena. Izberi prazno celico.':'That cell is already filled. Choose an empty cell.'));$('appCoachCandidates').disabled=true;return;}
-   const all=candidateMap(board),cs=all[selected];$('appCoachCandidates').disabled=false;
-   if(showCandidates){setCoachText((sl?'Kandidati za ':'Candidates for ')+rc(selected)+': '+(cs.join(', ')||'—')+'.');return;}
-   if(cs.length===1){setCoachText(sl?rc(selected)+' ima samo enega kandidata: '+cs[0]+'. To je goli posameznik.':rc(selected)+' has one candidate: '+cs[0]+'. That is a naked single.');return;}
-   for(const d of cs){const unit=hiddenSingle(board,all,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?d+' je v '+rc(selected)+' edino mesto v '+us+'. To je skriti posameznik.':d+' at '+rc(selected)+' is the only place in its '+ue+'. That is a hidden single.');return;}}
-   setCoachText(detail==='detailed'?(sl?rc(selected)+' ima kandidate '+cs.join(', ')+'. Preveri vrstico, stolpec in 3×3 blok ter poišči, ali je kateri kandidat mogoč samo enkrat.':rc(selected)+' has candidates '+cs.join(', ')+'. Check the row, column and 3×3 box for a digit that appears in only one candidate set.'):(sl?rc(selected)+' še ni prisiljena. Poišči bolj omejeno celico ali preveri vrstico, stolpec in blok.':rc(selected)+' is not forced yet. Try a more constrained cell or scan its row, column and box.'));return;
+   if(board[selected]){const given=state.puzzle?.[selected]||$('grid')?.children[selected]?.classList.contains('given');setCoachText(given?(sl?'To je začetna številka. Izberi prazno celico.':'That is a given. Choose an empty cell.'):(sl?'Celica je izpolnjena. Izberi prazno celico za pregled kandidatov.':'That cell is filled. Choose an empty cell to examine candidates.'));return;}
+   const all=candidateMap(board),cs=all[selected];
+   if(cs.length===1){setCoachText(sl?rc(selected)+': v vrstici, stolpcu in bloku izloči že uporabljene številke. Ostane en kandidat — goli posameznik.'+(detail==='detailed'?' S »Pokaži kandidate« preveri, kateri.':''):
+    rc(selected)+': eliminate digits already used in its row, column and box. One candidate remains — a naked single.'+(detail==='detailed'?' Use “Show candidates” to check which one.':''));return;}
+   for(const d of cs){const unit=hiddenSingle(board,all,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?'Primerjaj kandidate v isti '+us+' kot '+rc(selected)+'. Eden je mogoč samo v tej celici — skriti posameznik.':'Compare candidates in the same '+ue+' as '+rc(selected)+'. One candidate can go only here — a hidden single.');return;}}
+   setCoachText(sl?rc(selected)+' ima po osnovnem pregledu '+cs.length+' kandidatov. '+(detail==='detailed'?'Primerjaj prazne celice v isti vrstici, stolpcu in bloku; išči številko, ki ima le eno dovoljeno mesto.':'Primerjaj še vrstico, stolpec in blok.'):
+    rc(selected)+' has '+cs.length+' candidates after basic checks. '+(detail==='detailed'?'Compare empty cells in the same row, column and box; look for a digit with only one allowed place.':'Compare its row, column and box.'));return;
   }
-  $('appCoachCandidates').disabled=true;
   const forced=forcedCell(board,candidateMap(board));
-  if(forced){setCoachText(detail==='detailed'?(sl?'Poskusi '+rc(forced.index)+'. '+(forced.kind==='naked'?'Tam ostane samo '+forced.digit+'.':'Številka '+forced.digit+' je tam edina možnost v skupini.'):( 'Try '+rc(forced.index)+'. '+(forced.kind==='naked'?'Only '+forced.digit+' can fit there.':'Digit '+forced.digit+' has only one place in that unit.'))):(sl?'Poskusi '+rc(forced.index)+' — tam je trenutno prisiljena poteza.':'Try '+rc(forced.index)+' — there is a forced move there.'));return;}
-  setCoachText(sl?'Izberi prazno celico. Coach bo razložil kandidate brez razkrivanja rešitve.':'Choose an empty cell. Coach will explain candidates without revealing the solution.');
+  if(forced){setCoachText(sl?'Poskusi '+rc(forced.index)+' — osnovni pregled tam omogoča naslednji logični korak.'+(detail==='detailed'?' Preveri ponovitve in primerjaj kandidate; številke ne vnesem namesto tebe.':''):
+   'Try '+rc(forced.index)+' — basic checks identify a logical next step there.'+(detail==='detailed'?' Check used digits and compare candidates; I won’t place the number for you.':''));return;}
+  setCoachText(sl?'Izberi prazno celico. Preglej vrstico, stolpec in blok; več kandidatov še ni dokaz za eno številko.':'Choose an empty cell. Check its row, column and box; several candidates do not justify one digit yet.');
  }
 
  const sync = () => {
