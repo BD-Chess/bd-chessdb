@@ -15,43 +15,44 @@ jobs:
     timeout-minutes: 8
     env:
       GH_TOKEN: ${{ github.token }}
-      ASSET_SHA: f7951a0f15966e7921ca034215134eab8a72cfbc92696efd4ff343b9c0b92b14
-      # Short-lived transfer of ONLY the BD-approved public illustration, not account credentials.
-      PUBLIC_ASSET_TRANSFER: 'https://sdmntprpolandcentral.oaiusercontent.com/files/00000000-ffe0-820a-b035-fa9f38d17c38/raw?se=2026-09-29T11%3A44%3A11Z&sp=r&sv=2026-02-06&sr=b&scid=43ca26ae-baf8-544d-b11d-c9787e751441&skoid=d4d17077-8f33-42a9-bd8b-aa9d5eaf5320&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-29T11%3A28%3A49Z&ske=2026-09-30T11%3A28%3A49Z&sks=b&skv=2026-02-06&sig=bbnJb9q41I90V4jIspIsKi9kAgsNLQB8cQd1tzs8SB8%3D'
+      SOURCE_SHA: ca22afd52c62642bcc8f70ce89c10d1a647bc008bf1a9017cf4aa65a8eab70f2
+      PUBLIC_ASSET_TRANSFER: 'https://oaisdmntprdenmarkeast.blob.core.windows.net/files/00000000-3c48-8210-8f02-a3d77c0081c8/raw?se=2026-09-29T11%3A53%3A40Z&sp=r&sv=2026-02-06&sr=b&scid=01a0eceb-43a1-7d64-9ee7-6406dca94bb5&skoid=b971d227-1348-4524-8797-edb0fdf15147&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-29T10%3A29%3A10Z&ske=2026-09-30T10%3A29%3A10Z&sks=b&skv=2026-02-06&sig=0pLPUBoqXhmFWW/WynMlJL421Qu89nzZfDcSWGlNBWQ%3D'
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Obtain hash-pinned public image
+      - name: Obtain hash-pinned approved public image
         shell: python
         run: |
           import hashlib, os, pathlib, urllib.request
           out=pathlib.Path(os.environ['RUNNER_TEMP'])/'ai8-evidence'
           out.mkdir()
-          data=urllib.request.urlopen(os.environ['PUBLIC_ASSET_TRANSFER'], timeout=30).read(1000000)
-          assert hashlib.sha256(data).hexdigest()==os.environ['ASSET_SHA'], 'Image transport hash mismatch'
-          (out/'verified.webp').write_bytes(data)
-          print('VERIFIED_IMAGE_BYTES',len(data),os.environ['ASSET_SHA'])
+          data=urllib.request.urlopen(os.environ['PUBLIC_ASSET_TRANSFER'], timeout=30).read(3000000)
+          assert hashlib.sha256(data).hexdigest()==os.environ['SOURCE_SHA'], 'Source image transport hash mismatch'
+          (out/'source.png').write_bytes(data)
+          print('VERIFIED_SOURCE_BYTES',len(data),os.environ['SOURCE_SHA'])
       - name: Install bounded browser test dependencies
         run: python -m pip install --quiet Pillow playwright
       - name: Preserve backup and repair only the image references
         shell: python
         run: |
-          import hashlib, io, json, os, pathlib, re, subprocess
+          import hashlib, io, json, os, pathlib, re
           from PIL import Image
           out=pathlib.Path(os.environ['RUNNER_TEMP'])/'ai8-evidence'
-          data=(out/'verified.webp').read_bytes()
-          image=Image.open(io.BytesIO(data)); image.load()
+          image=Image.open(out/'source.png').convert('RGB');image.load()
           assert image.size==(1672,941)
-          idx=pathlib.Path('public/index.html'); before=idx.read_bytes()
+          assert hashlib.sha256(image.tobytes()).hexdigest()=='53f1855a5aae039fedbe505a0e948efd1a48cb883721abc6fabdc79d14ed005a'
+          image.save(out/'verified.webp',format='WEBP',quality=90,method=6)
+          data=(out/'verified.webp').read_bytes();asset_sha=hashlib.sha256(data).hexdigest()
+          Image.open(io.BytesIO(data)).load()
+          idx=pathlib.Path('public/index.html');before=idx.read_bytes()
           blob=lambda b:hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
           assert blob(before)=='71e25a80dad936bff23426acb1827084fcb61b03', 'Concurrent landing edit: re-review required'
-          asset=pathlib.Path('public/assets/ai8-lab-growth-20260929.webp')
-          old=asset.read_bytes()
+          asset=pathlib.Path('public/assets/ai8-lab-growth-20260929.webp');old=asset.read_bytes()
           assert blob(old)=='2036de92cb55ad5ca0e7baefafebeba070e505c2', 'Concurrent asset edit: re-review required'
           try:
             bad=Image.open(io.BytesIO(old));bad.load();old_state='DECODED'
-          except Exception as exc: old_state=type(exc).__name__
+          except Exception as exc:old_state=type(exc).__name__
           used=[]
           for p in pathlib.Path('public').iterdir():
             m=re.fullmatch(r'index[.-]bck(\d+)\.html',p.name)
@@ -59,17 +60,15 @@ jobs:
           backup=pathlib.Path('public')/('index.bck'+str(max(used,default=0)+1)+'.html')
           with backup.open('xb') as f:f.write(before)
           assert backup.read_bytes()==before
-          text=before.decode('utf-8')
-          ref='./assets/ai8-lab-growth-20260929.webp'
+          text=before.decode('utf-8');ref='./assets/ai8-lab-growth-20260929.webp'
           assert text.count(ref)==3
-          text=text.replace(ref,ref+'?v=f7951a0f1596')
+          text=text.replace(ref,ref+'?v='+asset_sha[:12])
           marker='loading="lazy" decoding="async"></a></figure>'
           assert marker in text
           text=text.replace(marker,'width="1672" height="941" loading="lazy" decoding="async"></a></figure>',1)
           asset.write_bytes(data);idx.write_bytes(text.encode('utf-8'))
-          report={'backup':str(backup),'backup_sha256':hashlib.sha256(before).hexdigest(),'old_asset_bytes':len(old),'old_asset_decode':old_state,'new_asset_bytes':len(data),'new_asset_sha256':os.environ['ASSET_SHA'],'new_asset_size':image.size,'index_sha256':hashlib.sha256(idx.read_bytes()).hexdigest(),'scope':['public/index.html',str(backup),str(asset)]}
-          (out/'repair.json').write_text(json.dumps(report,indent=2))
-          (out/'index.html').write_bytes(idx.read_bytes())
+          report={'backup':str(backup),'backup_sha256':hashlib.sha256(before).hexdigest(),'source_sha256':os.environ['SOURCE_SHA'],'old_asset_bytes':len(old),'old_asset_decode':old_state,'new_asset_bytes':len(data),'new_asset_sha256':asset_sha,'new_asset_size':image.size,'index_sha256':hashlib.sha256(idx.read_bytes()).hexdigest(),'scope':['public/index.html',str(backup),str(asset)]}
+          (out/'repair.json').write_text(json.dumps(report,indent=2));(out/'index.html').write_bytes(idx.read_bytes())
           print(json.dumps(report))
       - name: Test desktop and mobile lightbox before publication
         shell: python
@@ -78,10 +77,8 @@ jobs:
           from functools import partial
           from playwright.sync_api import sync_playwright
           out=pathlib.Path(os.environ['RUNNER_TEMP'])/'ai8-evidence'
-          handler=partial(http.server.SimpleHTTPRequestHandler,directory='public')
-          server=http.server.ThreadingHTTPServer(('127.0.0.1',8765),handler)
-          threading.Thread(target=server.serve_forever,daemon=True).start()
-          results=[]
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',8765),partial(http.server.SimpleHTTPRequestHandler,directory='public'))
+          threading.Thread(target=server.serve_forever,daemon=True).start();results=[]
           with sync_playwright() as p:
             browser=p.chromium.launch(executable_path=shutil.which('google-chrome') or shutil.which('chromium'),headless=True,args=['--no-sandbox'])
             for label,w,h in [('desktop',1440,1000),('mobile',390,844)]:
@@ -98,11 +95,9 @@ jobs:
               button.click();page.locator('#ai8-vision-close').click()
               assert not page.locator('#ai8-vision-dialog').evaluate('(d)=>d.open')
               assert not overflow
-              results.append({'viewport':label,'image_decoded':True,'escape_close':True,'button_close':True,'page_horizontal_overflow':False})
-              page.close()
+              results.append({'viewport':label,'image_decoded':True,'escape_close':True,'button_close':True,'page_horizontal_overflow':False});page.close()
             browser.close()
-          server.shutdown()
-          (out/'browser.json').write_text(json.dumps(results,indent=2))
+          server.shutdown();(out/'browser.json').write_text(json.dumps(results,indent=2))
           print('BROWSER_TESTS_PASS',json.dumps(results))
       - name: Commit scoped repair without rewriting concurrent work
         shell: bash
@@ -121,15 +116,13 @@ jobs:
         run: |
           import hashlib, json, os, pathlib, shutil, time, urllib.request
           from playwright.sync_api import sync_playwright
-          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'ai8-evidence'
-          base='https://bd-chess.github.io/bd-chessdb/'
-          url=base+'assets/ai8-lab-growth-20260929.webp?v=f7951a0f1596'
+          out=pathlib.Path(os.environ['RUNNER_TEMP'])/'ai8-evidence';asset_sha=json.loads((out/'repair.json').read_text())['new_asset_sha256']
+          base='https://bd-chess.github.io/bd-chessdb/';url=base+'assets/ai8-lab-growth-20260929.webp?v='+asset_sha[:12]
           verified=False
           for attempt in range(18):
             try:
               data=urllib.request.urlopen(url,timeout=10).read(1000000)
-              if hashlib.sha256(data).hexdigest()==os.environ['ASSET_SHA']:
-                verified=True;break
+              if hashlib.sha256(data).hexdigest()==asset_sha:verified=True;break
             except Exception:pass
             time.sleep(10)
           assert verified,'Live bytes not confirmed within bounded wait'
@@ -138,17 +131,14 @@ jobs:
             browser=p.chromium.launch(executable_path=shutil.which('google-chrome') or shutil.which('chromium'),headless=True,args=['--no-sandbox'])
             for label,w,h in [('desktop',1440,1000),('mobile',390,844)]:
               page=browser.new_page(viewport={'width':w,'height':h},reduced_motion='reduce')
-              response=page.goto(base+'?lang=sl&ai8check=f7951a0f1596',wait_until='domcontentloaded')
-              assert response.status==200
+              response=page.goto(base+'?lang=sl&ai8check='+asset_sha[:12],wait_until='domcontentloaded');assert response.status==200
               page.locator('#ai8-vision-open').scroll_into_view_if_needed();page.locator('#ai8-vision-open').click()
               page.wait_for_function("document.querySelector('#ai8-vision-dialog').open && document.querySelector('#ai8-vision-dialog img').naturalWidth === 1672")
-              page.screenshot(path=str(out/('live-'+label+'.png')))
-              page.keyboard.press('Escape')
+              page.screenshot(path=str(out/('live-'+label+'.png')));page.keyboard.press('Escape')
               assert not page.locator('#ai8-vision-dialog').evaluate('(d)=>d.open')
-              results.append({'viewport':label,'url':page.url,'http':response.status,'image_decoded':True,'escape_close':True})
-              page.close()
+              results.append({'viewport':label,'url':page.url,'http':response.status,'image_decoded':True,'escape_close':True});page.close()
             browser.close()
-          (out/'live.json').write_text(json.dumps({'asset_sha256':os.environ['ASSET_SHA'],'checks':results},indent=2))
+          (out/'live.json').write_text(json.dumps({'asset_sha256':asset_sha,'checks':results},indent=2))
           print('LIVE_PASS',json.dumps(results))
       - uses: actions/upload-artifact@v4
         if: always()
