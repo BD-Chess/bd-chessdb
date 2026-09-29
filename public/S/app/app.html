@@ -495,8 +495,7 @@ body[data-quiet=true] *,body[data-quiet=true]::before,body[data-quiet=true]::aft
 <meta name="apple-mobile-web-app-title" content="8zSudoku">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-180.png">
-<style id="sudoku-app-style">
-/* Native-facing Sudoku surface. Embedded into app.html by the APP preview builder. */
+<style id="sudoku-app-style">\n/* Native-facing Sudoku surface. Embedded into app.html by the APP preview builder. */
 html{color-scheme:dark}html[data-theme=light]{color-scheme:light}
 body[data-app-surface]{background:var(--bg);overflow-x:hidden}
 body[data-app-surface]::before,body[data-app-surface]::after,body[data-app-surface] .noise{display:none}
@@ -575,7 +574,37 @@ body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
 @media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
 @media (prefers-reduced-motion:reduce){body[data-app-surface] #appAssistScrim{transition:none}}
 
-</style>
+/* iPhone polish: scalable native-facing text and richer More sheet. */
+body[data-app-surface]{--app-text-scale:1}
+body[data-app-surface][data-app-text-size=compact]{--app-text-scale:.92}
+body[data-app-surface][data-app-text-size=large]{--app-text-scale:1.13}
+body[data-app-surface] #appDock button{font-size:calc(.80rem * var(--app-text-scale));gap:5px}
+body[data-app-surface] #appDock .app-dock-icon{font-size:calc(1.24rem * var(--app-text-scale))}
+body[data-app-surface] #aiAssistPanel{font-size:calc(1rem * var(--app-text-scale));line-height:1.5}
+body[data-app-surface] #aiAssistPanel .btn,
+body[data-app-surface] #aiAssistPanel .assist-actions .btn{min-height:50px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.25}
+body[data-app-surface] #aiAssistPanel p,
+body[data-app-surface] #aiAssistPanel .assist-copy{font-size:calc(.94rem * var(--app-text-scale))}
+body[data-app-surface] #navModal.app-more-modal .nav-dialog{padding:18px 16px 16px}
+body[data-app-surface] #navModal.app-more-modal #navModalTitle{font-size:calc(1.42rem * var(--app-text-scale));margin-bottom:14px}
+body[data-app-surface] #navModal.app-more-modal .ux-menu{gap:9px}
+body[data-app-surface] #navModal.app-more-modal .btn{
+ min-height:58px;padding:9px 8px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.15;
+ display:flex;align-items:center;justify-content:flex-start;gap:9px;text-align:left
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-icon{
+ flex:0 0 1.45rem;width:1.45rem;text-align:center;font:700 calc(1.12rem * var(--app-text-scale))/1 system-ui;color:#bfefff
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-label{flex:1;min-width:0}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger{border-color:#ff6b8a66;color:#ff9aae}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger .app-menu-icon{color:#ff7d99}
+body[data-app-surface] .app-text-setting{border-top:1px solid var(--border2);padding-top:12px;margin-top:14px}
+body[data-app-surface] .app-text-setting label{font-weight:700}
+@media(max-width:390px){
+ body[data-app-surface] #appDock button{font-size:calc(.75rem * var(--app-text-scale))}
+ body[data-app-surface] #navModal.app-more-modal .btn{font-size:calc(.94rem * var(--app-text-scale))}
+}
+\n</style>
 </head>
 <body data-app-surface="true" data-app-panel="board">
 <div class="noise"></div>
@@ -3672,8 +3701,7 @@ install();
 
 </script>
 <!-- END SUDOKU PRESENTATION -->
-<script id="sudoku-app-ui">
-'use strict';
+<script id="sudoku-app-ui">\n'use strict';
 // Embedded at the end of the self-contained APP game. The LAB solver/game
 // stays the source of truth; this layer changes only its APP presentation.
 (() => {
@@ -3681,6 +3709,11 @@ install();
  const panel = $('aiAssistPanel');
  const product = window.SudokuNavigator?.product;
  if (!panel || !product) return;
+
+ const TEXT_KEY='8zSudoku.app.ui.textSize';
+ const textSizes=new Set(['compact','normal','large']);
+ const readTextSize=()=>{try{const v=localStorage.getItem(TEXT_KEY);return textSizes.has(v)?v:'normal';}catch(_){return 'normal';}};
+ const applyTextSize=v=>{const size=textSizes.has(v)?v:'normal';document.body.dataset.appTextSize=size;try{localStorage.setItem(TEXT_KEY,size);}catch(_){}};
 
  const dock = document.createElement('nav');
  dock.id = 'appDock';
@@ -3712,38 +3745,76 @@ install();
   queueMicrotask(sync);
  });
 
+ const iconMap={
+  'New game':'＋','Nova igra':'＋','What’s new':'✦','Kaj je novega':'✦',
+  'Quick tutorial · optional':'◎','Kratka vaja · neobvezno':'◎','Redo':'↻','Uveljavi znova':'↻',
+  'My games':'▦','Moje igre':'▦','Daily puzzles':'◫','Dnevne uganke':'◫',
+  'Share puzzle':'↗','Deli uganko':'↗','Check correctness':'✓','Preveri pravilnost':'✓',
+  'Review':'◎','Pregled':'◎','Settings':'⚙','Nastavitve':'⚙','Help / About':'?',
+  'Pomoč / O igri':'?','Import session':'⇩','Uvozi igro':'⇩','Export session':'⇧','Izvozi igro':'⇧',
+  'Delete all APP data':'⌫','Izbriši vse podatke APP':'⌫','App · offline & updates':'◌',
+  'Aplikacija · brez povezave in posodobitve':'◌'
+ };
+ function decorateMenuButton(button){
+  if(button.dataset.appDecorated)return;
+  const text=button.textContent.trim(),icon=iconMap[text]||'•';
+  button.dataset.appDecorated='true';
+  button.dataset.appMenuLabel=text;
+  button.innerHTML='<span class="app-menu-icon" aria-hidden="true">'+icon+'</span><span class="app-menu-label"></span>';
+  button.querySelector('.app-menu-label').textContent=text;
+  if(/Delete all APP data|Izbriši vse podatke APP/.test(text))button.classList.add('app-menu-danger');
+ }
+ function decorateMore(){
+  const modal=$('navModal'),body=$('navModalBody');
+  if(!modal||!body)return;
+  modal.classList.add('app-more-modal');
+  body.querySelectorAll('button.btn').forEach(decorateMenuButton);
+ }
  function enhanceMore(){
   const body=$('navModalBody');
-  if(!body || $('appMorePrimary'))return;
-  const sl=isSl(), group=document.createElement('div');
-  group.id='appMorePrimary';
-  group.className='ux-menu app-more-primary';
-  group.innerHTML =
-   '<button class="btn" id="appMoreNew">'+(sl?'Nova igra':'New game')+'</button>'+
-   '<button class="btn" id="appMoreNews">'+(sl?'Kaj je novega':'What’s new')+'</button>'+
-   '<button class="btn" id="appMoreTutorial">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</button>';
-  body.prepend(group);
-  $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
-  $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
-  $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  if(!body)return;
+  if(!$('appMorePrimary')){
+   const sl=isSl(), group=document.createElement('div');
+   group.id='appMorePrimary';
+   group.className='ux-menu app-more-primary';
+   group.innerHTML =
+    '<button class="btn" id="appMoreNew">'+(sl?'Nova igra':'New game')+'</button>'+
+    '<button class="btn" id="appMoreNews">'+(sl?'Kaj je novega':'What’s new')+'</button>'+
+    '<button class="btn" id="appMoreTutorial">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</button>';
+   body.prepend(group);
+   $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
+   $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
+   $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  }
+  decorateMore();
+ }
+ function enhanceSettings(){
+  const body=$('navModalBody'),anchor=$('uxSettings');
+  if(!body||!anchor||$('appTextSizeSetting'))return;
+  const sl=isSl(),current=readTextSize(),wrap=document.createElement('div');
+  wrap.id='appTextSizeSetting';wrap.className='ux-setting app-text-setting';
+  wrap.innerHTML='<label for="appTextSize">'+(sl?'Velikost besedila':'Text size')+'</label>'+
+   '<select id="appTextSize">'+
+   [['compact',sl?'Kompaktno':'Compact'],['normal',sl?'Običajno':'Normal'],['large',sl?'Veliko':'Large']]
+    .map(([v,t])=>'<option value="'+v+'"'+(v===current?' selected':'')+'>'+t+'</option>').join('')+
+   '</select>';
+  anchor.before(wrap);
+  $('appTextSize').onchange=e=>applyTextSize(e.target.value);
  }
 
  const sync = () => {
   const lab=product.view()==='lab';
   dock.hidden=lab;
   if(lab)document.body.dataset.appPanel='board';
-
   const notesOn=$('notesBtn')?.classList.contains('active')===true;
   $('appNotes').setAttribute('aria-pressed',String(notesOn));
   $('appNotes').disabled=$('notesBtn')?.disabled===true;
   $('appErase').disabled=$('uxErase')?.disabled===true;
   $('appUndo').disabled=$('uxUndo')?.disabled===true;
   $('appMore').disabled=$('uxMore')?.disabled===true;
-
   const assistActive=!lab && !panel.hidden && document.body.dataset.appPanel==='assist';
   $('appAssist').setAttribute('aria-pressed',String(assistActive));
   $('appAssist').disabled=$('solveBtn')?.disabled===true;
-
   const sl=isSl();
   label('appNotes',sl?'Zapiski':'Notes');
   label('appErase',sl?'Izbriši':'Erase');
@@ -3753,64 +3824,70 @@ install();
   setLabel(dock,sl?'Kontrole igre':'Game controls');
   setLabel(scrim,sl?'Nazaj na mrežo':'Return to board');
  };
-
  function showAssist(){
   if(product.view()==='lab')return;
-  if(!panel.hidden && document.body.dataset.appPanel==='assist'){
-   $('aiAssistClose')?.click();
-   return;
-  }
-  $('solveBtn')?.click();
-  queueMicrotask(sync);
+  if(!panel.hidden && document.body.dataset.appPanel==='assist'){$('aiAssistClose')?.click();return;}
+  $('solveBtn')?.click();queueMicrotask(sync);
  }
- function showBoard(){
-  document.body.dataset.appPanel='board';
-  sync();
- }
- proxy('appNotes','notesBtn');
- proxy('appErase','uxErase');
- proxy('appUndo','uxUndo');
+ function showBoard(){document.body.dataset.appPanel='board';sync();}
+ proxy('appNotes','notesBtn');proxy('appErase','uxErase');proxy('appUndo','uxUndo');
  $('appAssist').addEventListener('click',showAssist);
- $('appMore').addEventListener('click',()=>{
-  $('uxMore')?.click();
-  queueMicrotask(()=>{enhanceMore();sync();});
- });
+ $('appMore').addEventListener('click',()=>{$('uxMore')?.click();queueMicrotask(()=>{enhanceMore();sync();});});
  scrim.addEventListener('click',showBoard);
 
- // Route the existing APP help actions to the guided assistant.
  document.addEventListener('click', event => {
+  const settings=event.target.closest?.('#navModalBody [data-menu="Settings"],#navModalBody [data-menu="Nastavitve"]');
+  if(settings)queueMicrotask(enhanceSettings);
   if (product.view() === 'lab') return;
   const button = event.target.closest?.('#uxHint,#uxWhy,#solveBtn,#aiAssistClose');
   if (!button) return;
-  if (button.id === 'aiAssistClose') {
-   document.body.dataset.appPanel = 'board';
-   sync();
-   return;
-  }
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  if (button.id === 'aiAssistClose') {document.body.dataset.appPanel='board';sync();return;}
+  event.preventDefault();event.stopImmediatePropagation();
   ({uxHint:'plHint',uxWhy:'plWhy',solveBtn:'plDemo'})[button.id] &&
    $(({uxHint:'plHint',uxWhy:'plWhy',solveBtn:'plDemo'})[button.id])?.click();
   if (!panel.hidden) {
-   document.body.dataset.appPanel = 'assist';
-   panel.scrollTop = 0;
+   document.body.dataset.appPanel='assist';panel.scrollTop=0;
    $('aiAssistHint')?.focus({preventScroll:true});
   }
   sync();
  }, true);
 
- const watch = new MutationObserver(sync);
+ // Turn the filled-cell magnifier into a true finger-follow loupe without
+ // changing the underlying read-only gesture transaction.
+ let lastPoint=null;
+ const pointFromTouch=e=>e.touches?.[0]||e.changedTouches?.[0]||null;
+ function placeLoupe(x,y){
+  const loupe=$('uxLoupe');if(!loupe||!Number.isFinite(x)||!Number.isFinite(y))return;
+  const box=loupe.getBoundingClientRect(),vv=window.visualViewport;
+  const left0=vv?.offsetLeft||0,top0=vv?.offsetTop||0,vw=vv?.width||innerWidth,vh=vv?.height||innerHeight,pad=10,offset=62;
+  let left=x-box.width/2;
+  let top=y-box.height-offset;
+  if(top<top0+pad)top=y+42;
+  left=Math.max(left0+pad,Math.min(left,left0+vw-box.width-pad));
+  top=Math.max(top0+pad,Math.min(top,top0+vh-box.height-pad));
+  loupe.style.left=Math.round(left)+'px';loupe.style.top=Math.round(top)+'px';
+ }
+ document.addEventListener('pointerdown',e=>{lastPoint={x:e.clientX,y:e.clientY};},{capture:true,passive:true});
+ document.addEventListener('pointermove',e=>{lastPoint={x:e.clientX,y:e.clientY};placeLoupe(e.clientX,e.clientY);},{capture:true,passive:true});
+ document.addEventListener('touchstart',e=>{const p=pointFromTouch(e);if(p)lastPoint={x:p.clientX,y:p.clientY};},{capture:true,passive:true});
+ document.addEventListener('touchmove',e=>{const p=pointFromTouch(e);if(p){lastPoint={x:p.clientX,y:p.clientY};placeLoupe(p.clientX,p.clientY);}},{capture:true,passive:true});
+
+ const watch = new MutationObserver(records=>{
+  if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
+  if(lastPoint&&$('uxLoupe'))placeLoupe(lastPoint.x,lastPoint.y);
+  sync();
+ });
  watch.observe(panel,{attributes:true,attributeFilter:['hidden']});
- watch.observe(document.body,{attributes:true,attributeFilter:['data-view','data-assist']});
+ watch.observe(document.body,{attributes:true,attributeFilter:['data-view','data-assist'],childList:true,subtree:false});
  watch.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  for(const id of ['notesBtn','uxErase','uxUndo','solveBtn','uxMore']){
   const node=$(id);if(node)watch.observe(node,{attributes:true,childList:true,subtree:true});
  }
+ applyTextSize(readTextSize());
  document.body.dataset.appPanel='board';
  sync();
 })();
-
-</script>
+\n</script>
 <script id="sudoku-app-pwa">
 'use strict';
 // APP-only web installation. The native package and downloaded standalone HTML
