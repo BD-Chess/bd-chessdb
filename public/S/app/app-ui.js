@@ -11,6 +11,14 @@
  const textSizes=new Set(['compact','normal','large']);
  const readTextSize=()=>{try{const v=localStorage.getItem(TEXT_KEY);return textSizes.has(v)?v:'normal';}catch(_){return 'normal';}};
  const applyTextSize=v=>{const size=textSizes.has(v)?v:'normal';document.body.dataset.appTextSize=size;try{localStorage.setItem(TEXT_KEY,size);}catch(_){}};
+ const UI_PREFS={
+  numberPad:{key:'8zSudoku.app.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
+  coach:{key:'8zSudoku.app.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
+  coachDetail:{key:'8zSudoku.app.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
+  holdTip:{key:'8zSudoku.app.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
+ };
+ const readUiPref=name=>{const p=UI_PREFS[name];try{const v=localStorage.getItem(p.key);return p.allowed.has(v)?v:p.def;}catch(_){return p.def;}};
+ const writeUiPref=(name,value)=>{const p=UI_PREFS[name];if(!p.allowed.has(value))return false;try{localStorage.setItem(p.key,value);return true;}catch(_){return false;}};
 
  const dock = document.createElement('nav');
  dock.id = 'appDock';
@@ -28,6 +36,14 @@
  scrim.setAttribute('aria-label', 'Return to board');
  document.querySelector('.page').append(scrim);
  document.body.append(dock);
+
+ const numbersPanel=$('numpad')?.closest('.mobile-input-panel')||$('plNumbers');
+ const holdTip=document.createElement('p');
+ holdTip.id='appHoldTip';holdTip.className='app-hold-tip';holdTip.setAttribute('role','note');
+ const coach=document.createElement('section');
+ coach.id='appCoach';coach.className='app-coach-card';coach.setAttribute('aria-live','polite');
+ coach.innerHTML='<div class="app-coach-title">Sudoku Coach</div><div class="app-coach-copy" id="appCoachCopy"></div><div class="app-coach-actions"><button type="button" id="appCoachWhy">Why?</button><button type="button" id="appCoachCandidates">Show candidates</button></div>';
+ if(numbersPanel)numbersPanel.before(holdTip,coach);
 
  const isSl = () => window.SudokuI18n?.get?.() === 'sl';
  const label = (id,text) => {
@@ -88,16 +104,103 @@
  function enhanceSettings(){
   $('navModal')?.classList.remove('app-more-modal');
   const body=$('navModalBody'),anchor=$('uxSettings');
-  if(!body||!anchor||$('appTextSizeSetting'))return;
-  const sl=isSl(),current=readTextSize(),wrap=document.createElement('div');
-  wrap.id='appTextSizeSetting';wrap.className='ux-setting app-text-setting';
-  wrap.innerHTML='<label for="appTextSize">'+(sl?'Velikost besedila':'Text size')+'</label>'+
-   '<select id="appTextSize">'+
-   [['compact',sl?'Kompaktno':'Compact'],['normal',sl?'Običajno':'Normal'],['large',sl?'Veliko':'Large']]
-    .map(([v,t])=>'<option value="'+v+'"'+(v===current?' selected':'')+'>'+t+'</option>').join('')+
-   '</select>';
+  if(!body||!anchor||$('appSettingsExtras'))return;
+  const sl=isSl(),wrap=document.createElement('div');
+  wrap.id='appSettingsExtras';wrap.className='app-settings-extras';
+  const options=(items,current)=>items.map(([v,t])=>'<option value="'+v+'"'+(v===current?' selected':'')+'>'+t+'</option>').join('');
+  wrap.innerHTML=
+   '<div class="ux-setting app-text-setting" id="appTextSizeSetting"><label for="appTextSize">'+(sl?'Velikost besedila':'Text size')+'</label><select id="appTextSize">'+
+    options([['compact',sl?'Kompaktno':'Compact'],['normal',sl?'Običajno':'Normal'],['large',sl?'Veliko':'Large']],readTextSize())+'</select></div>'+
+   '<div class="ux-setting"><label for="appNumberPad">'+(sl?'Številke pod mrežo':'Number pad')+'</label><select id="appNumberPad">'+
+    options([['off',sl?'Izključeno':'Off'],['on',sl?'Vključeno':'On']],readUiPref('numberPad'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appCoachMode">'+(sl?'Sudoku Coach':'Sudoku Coach')+'</label><select id="appCoachMode">'+
+    options([['off',sl?'Izključeno':'Off'],['easy',sl?'Samo Lahka':'Easy only'],['always',sl?'Vedno':'Always']],readUiPref('coach'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appCoachDetail">'+(sl?'Podrobnost Coach-a':'Coach detail')+'</label><select id="appCoachDetail">'+
+    options([['short',sl?'Kratko':'Short'],['detailed',sl?'Podrobno':'Detailed']],readUiPref('coachDetail'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appHoldTipSetting">'+(sl?'Namig Tapni in drži':'Tap & hold tip')+'</label><select id="appHoldTipSetting">'+
+    options([['on',sl?'Vključeno':'On'],['off',sl?'Izključeno':'Off']],readUiPref('holdTip'))+'</select></div>';
   anchor.before(wrap);
-  $('appTextSize').onchange=e=>applyTextSize(e.target.value);
+  $('appTextSize').onchange=e=>{applyTextSize(e.target.value);updateCoach();};
+  $('appNumberPad').onchange=e=>{writeUiPref('numberPad',e.target.value);updateCoach();};
+  $('appCoachMode').onchange=e=>{writeUiPref('coach',e.target.value);updateCoach();};
+  $('appCoachDetail').onchange=e=>{writeUiPref('coachDetail',e.target.value);updateCoach();};
+  $('appHoldTipSetting').onchange=e=>{writeUiPref('holdTip',e.target.value);updateCoach();};
+ }
+
+ const rc=i=>'R'+(Math.floor(i/9)+1)+'C'+(i%9+1);
+ const difficulty=()=>{
+  try{if(typeof currentDiff==='string')return currentDiff.toLowerCase();}catch(_){}
+  const raw=($('plGameStatus')?.textContent||'').toLowerCase();
+  if(/lahka|easy/.test(raw))return'easy';if(/srednja|medium/.test(raw))return'medium';if(/težka|hard/.test(raw))return'hard';if(/zelo težka|evil/.test(raw))return'evil';return'';
+ };
+ const capture=()=>{try{return product.capture?.()||null;}catch(_){return null;}};
+ function candidates(board,index){
+  if(!Array.isArray(board)||board.length!==81||board[index])return[];
+  const r=Math.floor(index/9),c=index%9,used=new Set();
+  for(let x=0;x<9;x++){used.add(board[r*9+x]);used.add(board[x*9+c]);}
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let rr=br;rr<br+3;rr++)for(let cc=bc;cc<bc+3;cc++)used.add(board[rr*9+cc]);
+  return[1,2,3,4,5,6,7,8,9].filter(d=>!used.has(d));
+ }
+ function hiddenSingle(board,index,digit){
+  if(board[index])return null;
+  const all=Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i)),r=Math.floor(index/9),c=index%9;
+  const units=[
+   Array.from({length:9},(_,x)=>r*9+x),
+   Array.from({length:9},(_,x)=>x*9+c),
+   Array.from({length:9},(_,k)=>(Math.floor(r/3)*3+Math.floor(k/3))*9+Math.floor(c/3)*3+k%3)
+  ];
+  const names=['row','column','box'];
+  for(let u=0;u<units.length;u++)if(units[u].filter(i=>!board[i]&&all[i].includes(digit)).length===1)return names[u];
+  return null;
+ }
+ function forcedCell(board){
+  if(!Array.isArray(board)||board.length!==81)return null;
+  const all=Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i));
+  for(let i=0;i<81;i++)if(!board[i]&&all[i].length===1)return{index:i,digit:all[i][0],kind:'naked'};
+  for(let i=0;i<81;i++)if(!board[i])for(const d of all[i]){const unit=hiddenSingle(board,i,d);if(unit)return{index:i,digit:d,kind:'hidden',unit};}
+  return null;
+ }
+ let lastBoard=null,coachMoment=null,coachTimer=0;
+ function setCoachText(text){const node=$('appCoachCopy');if(node&&node.textContent!==text)node.textContent=text;}
+ function updateCoach(showCandidates=false){
+  const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',coachMode=readUiPref('coach'),detail=readUiPref('coachDetail');
+  if(numbersPanel)numbersPanel.hidden=lab||!padOn;
+  holdTip.hidden=lab||readUiPref('holdTip')!=='on';
+  holdTip.textContent=sl?'Tapni in drži celico za pojavni izbor številke.':'Tap & hold a cell to get the number popup.';
+  const diff=difficulty(),coachAllowed=coachMode==='always'||coachMode==='easy'&&(!diff||diff==='easy');
+  coach.hidden=lab||padOn||coachMode==='off'||!coachAllowed;
+  coach.querySelector('.app-coach-title').textContent='Sudoku Coach';
+  $('appCoachWhy').textContent=sl?'Zakaj?':'Why?';$('appCoachCandidates').textContent=sl?'Pokaži kandidate':'Show candidates';
+  if(coach.hidden)return;
+  const state=capture(),board=state?.board;
+  if(!Array.isArray(board)||board.length!==81){lastBoard=null;setCoachText(sl?'Izberi težavnost. Pri Lahki igri te bom sproti usmerjal.':'Choose a difficulty. On Easy, I’ll guide you as you play.');$('appCoachCandidates').disabled=true;return;}
+  if(lastBoard&&lastBoard.length===81){
+   const changed=[];for(let i=0;i<81;i++)if(lastBoard[i]!==board[i])changed.push(i);
+   if(changed.length===1){const i=changed[0],before=lastBoard[i],after=board[i];if(!before&&after){
+    const cs=candidates(lastBoard,i),unit=cs.includes(after)?hiddenSingle(lastBoard,i,after):null;
+    if(cs.length===1||unit){const unitSL={row:'vrstici',column:'stolpcu',box:'bloku'}[unit],unitEN={row:'row',column:'column',box:'3×3 box'}[unit];
+     coachMoment=cs.length===1?(sl?'Odlično — '+rc(i)+' je bil goli posameznik: možna je bila samo '+after+'.':'Nice — '+rc(i)+' was a naked single: only '+after+' could fit.'):(sl?'Dobro — '+after+' je bil skriti posameznik v '+unitSL+'.':'Good — '+after+' was a hidden single in its '+unitEN+'.');
+     clearTimeout(coachTimer);coachTimer=setTimeout(()=>{coachMoment=null;updateCoach();},5200);
+    }
+   }}
+  }
+  lastBoard=board.slice();
+  if(coachMoment){setCoachText(coachMoment);$('appCoachCandidates').disabled=false;return;}
+  const selected=state.selectedCell;
+  if(Number.isInteger(selected)&&selected>=0&&selected<81){
+   const cell=$('grid')?.children[selected];
+   if(board[selected]){setCoachText(cell?.classList.contains('given')?(sl?'To je začetna številka. Izberi prazno celico.':'That is a given. Choose an empty cell.'):(sl?'Celica je že izpolnjena. Izberi prazno celico.':'That cell is already filled. Choose an empty cell.'));$('appCoachCandidates').disabled=true;return;}
+   const cs=candidates(board,selected);$('appCoachCandidates').disabled=false;
+   if(showCandidates){setCoachText((sl?'Kandidati za ':'Candidates for ')+rc(selected)+': '+(cs.join(', ')||'—')+'.');return;}
+   if(cs.length===1){setCoachText(sl?rc(selected)+' ima samo enega kandidata: '+cs[0]+'. To je goli posameznik.':rc(selected)+' has one candidate: '+cs[0]+'. That is a naked single.');return;}
+   for(const d of cs){const unit=hiddenSingle(board,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?d+' je v '+rc(selected)+' edino mesto v '+us+'. To je skriti posameznik.':d+' at '+rc(selected)+' is the only place in its '+ue+'. That is a hidden single.');return;}}
+   setCoachText(detail==='detailed'?(sl?rc(selected)+' ima kandidate '+cs.join(', ')+'. Preveri vrstico, stolpec in 3×3 blok ter poišči, ali je kateri kandidat mogoč samo enkrat.':rc(selected)+' has candidates '+cs.join(', ')+'. Check the row, column and 3×3 box for a digit that appears in only one candidate set.'):(sl?rc(selected)+' še ni prisiljena. Poišči bolj omejeno celico ali preveri vrstico, stolpec in blok.':rc(selected)+' is not forced yet. Try a more constrained cell or scan its row, column and box.'));return;
+  }
+  $('appCoachCandidates').disabled=true;
+  const forced=forcedCell(board);
+  if(forced){setCoachText(detail==='detailed'?(sl?'Poskusi '+rc(forced.index)+'. '+(forced.kind==='naked'?'Tam ostane samo '+forced.digit+'.':'Številka '+forced.digit+' je tam edina možnost v skupini.'):( 'Try '+rc(forced.index)+'. '+(forced.kind==='naked'?'Only '+forced.digit+' can fit there.':'Digit '+forced.digit+' has only one place in that unit.'))):(sl?'Poskusi '+rc(forced.index)+' — tam je trenutno prisiljena poteza.':'Try '+rc(forced.index)+' — there is a forced move there.'));return;}
+  setCoachText(sl?'Izberi prazno celico. Coach bo razložil kandidate brez razkrivanja rešitve.':'Choose an empty cell. Coach will explain candidates without revealing the solution.');
  }
 
  const sync = () => {
@@ -121,6 +224,7 @@
   label('appMore',sl?'Več':'More');
   setLabel(dock,sl?'Kontrole igre':'Game controls');
   setLabel(scrim,sl?'Nazaj na mrežo':'Return to board');
+  updateCoach();
  };
  function showAssist(){
   if(product.view()==='lab')return;
@@ -128,6 +232,8 @@
   $('solveBtn')?.click();queueMicrotask(sync);
  }
  function showBoard(){document.body.dataset.appPanel='board';sync();}
+ $('appCoachWhy')?.addEventListener('click',()=>{showAssist();setTimeout(()=>$('aiAssistWhy')?.click(),0);});
+ $('appCoachCandidates')?.addEventListener('click',()=>updateCoach(true));
  proxy('appNotes','notesBtn');proxy('appErase','uxErase');proxy('appUndo','uxUndo');
  $('appAssist').addEventListener('click',showAssist);
  $('appMore').addEventListener('click',()=>{$('uxMore')?.click();queueMicrotask(()=>{enhanceMore();sync();});});
@@ -172,6 +278,8 @@
 
  const menuBody=$('navModalBody');
  if(menuBody)new MutationObserver(()=>{if($('navModal')?.classList.contains('app-more-modal'))decorateMore();}).observe(menuBody,{childList:true,subtree:true});
+ const grid=$('grid');
+ if(grid)new MutationObserver(()=>queueMicrotask(updateCoach)).observe(grid,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 
  const watch = new MutationObserver(records=>{
   if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
