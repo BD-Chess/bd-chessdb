@@ -14,7 +14,10 @@
  scrim.type = 'button';
  scrim.id = 'appAssistScrim';
  scrim.setAttribute('aria-label', 'Return to board');
- document.body.append(scrim, dock);
+ // Share the sheet's stacking context; otherwise the body-level backdrop
+ // intercepts taps intended for the Assist buttons inside .page.
+ document.querySelector('.page').append(scrim);
+ document.body.append(dock);
  const isSl = () => window.SudokuI18n?.get?.() === 'sl';
  const setText = (node,value) => {if(node.textContent!==value)node.textContent=value;};
  const setLabel = (node,value) => {if(node.getAttribute('aria-label')!==value)node.setAttribute('aria-label',value);};
