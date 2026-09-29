@@ -279,7 +279,19 @@
  const menuBody=$('navModalBody');
  if(menuBody)new MutationObserver(()=>{if($('navModal')?.classList.contains('app-more-modal'))decorateMore();}).observe(menuBody,{childList:true,subtree:true});
  const grid=$('grid');
- if(grid)new MutationObserver(()=>queueMicrotask(updateCoach)).observe(grid,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+ let coachQueued=false;
+ const scheduleCoach=()=>{
+  if(coachQueued)return;
+  coachQueued=true;
+  setTimeout(()=>{coachQueued=false;updateCoach();},0);
+ };
+ if(grid){
+  new MutationObserver(scheduleCoach).observe(grid,{childList:true,subtree:true});
+  grid.addEventListener('click',scheduleCoach);
+ }
+ for(const id of ['numpad','appErase','appUndo','aiAssistApply','uxNew']){
+  $(id)?.addEventListener('click',scheduleCoach);
+ }
 
  const watch = new MutationObserver(records=>{
   if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
