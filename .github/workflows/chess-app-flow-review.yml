@@ -1,0 +1,134 @@
+name: Chess APP browser verification
+on:
+  pull_request:
+    paths:
+      - public/chess/app/**
+      - tests/chess-app-pwa.test.cjs
+      - tools/chess-app-browser-review.py
+      - .github/workflows/chess-app-flow-review.yml
+  push:
+    branches: [main]
+    paths:
+      - public/chess/app/**
+permissions:
+  contents: read
+jobs:
+  browser-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            public/chess/app
+            public/chess/sw.js
+            public/chess/new/sw.js
+            tools/chess-app-browser-review.py
+            tests/chess-app-pwa.test.cjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated test dependencies
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+          npm install --prefix "$RUNNER_TEMP/chess-review-deps" --no-package-lock --ignore-scripts jsdom@26.1.0 fake-indexeddb@6.0.1
+          echo "NODE_PATH=$RUNNER_TEMP/chess-review-deps/node_modules" >> "$GITHUB_ENV"
+          echo "TESTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          mkdir -p review-evidence
+      - name: Local release integrity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          app=Path('public/chess/app');r=json.loads((app/'release.json').read_text())
+          for n,h in r['assets_sha256'].items():
+              assert hashlib.sha256((app/n).read_bytes()).hexdigest()==h,n
+          assert hashlib.sha256((app/'sw.js').read_bytes()).hexdigest()==r['worker_sha256']
+          print(r['version'],len(r['assets_sha256']),'assets verified')
+          PY
+      - name: Rendered APP interactions and geometry
+        id: browser
+        continue-on-error: true
+        run: timeout 120s python tools/chess-app-browser-review.py --out review-evidence/local > review-evidence/browser.log 2>&1
+      - name: APP regression tests
+        id: unit
+        continue-on-error: true
+        run: timeout 90s node --test tests/chess-app-pwa.test.cjs public/chess/app/tests/*.test.cjs > review-evidence/node-tests.log 2>&1
+      - name: Verify exact published GitHub Pages release
+        id: published
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.request import urlopen,Request
+          from urllib.parse import quote
+          from concurrent.futures import ThreadPoolExecutor
+          import json,hashlib,time,os
+          base='https://bd-chess.github.io/bd-chessdb/chess/app/'
+          expected=json.loads(Path('public/chess/app/release.json').read_text())
+          def fetch(name):
+              req=Request(base+quote(name)+'?verify='+expected['version'],headers={'Cache-Control':'no-cache'})
+              with urlopen(req,timeout=15) as response: return response.read()
+          deadline=time.monotonic()+150
+          while True:
+              try:
+                  live=json.loads(fetch('release.json'))
+                  if live==expected: break
+              except Exception as error: print(type(error).__name__)
+              if time.monotonic()>deadline: raise RuntimeError('Expected Pages release not yet published')
+              time.sleep(5)
+          def verify(item):
+              name,sha=item
+              actual=hashlib.sha256(fetch(name)).hexdigest()
+              if actual!=sha: raise RuntimeError('Published asset mismatch: '+name)
+              return name
+          assets=dict(expected['assets_sha256']);assets['sw.js']=expected['worker_sha256']
+          with ThreadPoolExecutor(max_workers=6) as pool: checked=list(pool.map(verify,assets.items()))
+          result={'url':base,'sha':os.environ['TESTED_SHA'],'release':expected['version'],'verified_files':len(checked),'status':'PASS','verified_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+          Path('review-evidence/published.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          PY
+      - name: Render actual published APP
+        id: live_browser
+        if: steps.published.outcome == 'success'
+        continue-on-error: true
+        run: timeout 120s python tools/chess-app-browser-review.py --live https://bd-chess.github.io/bd-chessdb/chess/app/ --out review-evidence/live > review-evidence/live-browser.log 2>&1
+      - name: Capture reproducible review evidence
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,zipfile,os
+          app=Path('public/chess/app');r=json.loads((app/'release.json').read_text())
+          files=[app/name for name in r['assets_sha256']]+[app/'release.json',app/'sw.js']
+          files+=list((app/'tests').glob('*.cjs'))+[Path('tools/chess-app-browser-review.py'),Path('tests/chess-app-pwa.test.cjs')]+list(Path('review-evidence').rglob('*'))
+          with zipfile.ZipFile('chess-app-reviewed.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for f in files:
+                  if f.is_file(): z.write(f,str(f))
+              z.writestr('SOURCE.json',json.dumps({'sha':os.environ.get('TESTED_SHA'),'release':r['version']},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chess-app-reviewed
+          path: chess-app-reviewed.zip
+          retention-days: 7
+      - name: Acceptance
+        if: always()
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          test '${{ steps.browser.outcome }}' = success
+          test '${{ steps.unit.outcome }}' = success
+          if [ "$EVENT" = push ]; then
+            test '${{ steps.published.outcome }}' = success
+            test '${{ steps.live_browser.outcome }}' = success
+          fi

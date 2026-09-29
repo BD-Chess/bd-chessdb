@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-59643d244084002e";
+const RELEASE = "app-7baed463bab82491";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -167,7 +167,7 @@ const INTEGRITY = {
   "css/8zc-study.css": "sha256-GIkDaM5yVUVjdk7edy2kxnQLFsZR/o2wqND2L3QhlmU=",
   "css/8zc-styles.css": "sha256-oxHv8/eAojr3Z3JS3l6z4zFZpGFFqz8hmmbn9FB8s5w=",
   "css/8zc-tournament.css": "sha256-97QQS1i+GV57xsxIm4hZKUGBvcIvQHYiSd1mge/g2Ac=",
-  "css/app-mobile.css": "sha256-WMK4vrHfaOygGbUy/suMiNmyzX01RShq9ZsXPC8Begw=",
+  "css/app-mobile.css": "sha256-oW2BirVErOv2d0snutefYT+ddcgRNkcP7zdKBt3gMlE=",
   "css/chessboard-1.0.0.min.css": "sha256-j6aLiI0iJD8tzrvLpgcIyB/+06s48RZh69aEuBwSJvs=",
   "facts.html": "sha256-T6T+6EmRcrwr+Rac6PBMFFyNVsmbqZijiZg/OYA0yyE=",
   "games-info.html": "sha256-z7gae1w+nlghgwKpelB3wJNLjEo3dtuRjX6juTNsMIY=",
@@ -186,7 +186,7 @@ const INTEGRITY = {
   "img/chesspieces/wikipedia/wP.png": "sha256-m/IobFlQett6YEXCEqa5Kp3v1+mlu64w6Cu4MhbEPLE=",
   "img/chesspieces/wikipedia/wQ.png": "sha256-BctoAdAvOTY5d/bXrppA9gWyqmmGbpCGhowI4d8X+HU=",
   "img/chesspieces/wikipedia/wR.png": "sha256-F16iJSoBBSET3/hTgOgjckZEjHYq4wOuKjSNlxuggAs=",
-  "index.html": "sha256-SrZ7ZOmBkic+Iug9VJOzBfNf5Fm/wpkkirpOFU0R2xY=",
+  "index.html": "sha256-2pH9a0D5M/RCa9jITlxM4mXpdjafZUqqVmg3sH0xOQ8=",
   "js/8zc-benchmark.js": "sha256-RFcgUgnZrE/xMd3erfvWISdr8qpcg4qGiqBFMkkkL/I=",
   "js/8zc-dcc-core.js": "sha256-Iejp8fSlGl1X+fG24X2xpgFu5kn+38WBAc6eaeekJSA=",
   "js/8zc-deep-engine.js": "sha256-M7N5qCRTfl0nU0soCukxnTO4iRjAe7yDXC7ovSgODjo=",

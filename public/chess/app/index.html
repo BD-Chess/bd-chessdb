@@ -11,8 +11,9 @@
   <script>
     (() => {
       const ua = navigator.userAgent || '';
-      const phoneBrowser = navigator.userAgentData?.mobile === true ||
-        /iPhone|iPod|Windows Phone|Android.+Mobile|Mobile.+Safari/i.test(ua);
+      const tabletBrowser = /iPad|Tablet|PlayBook|Silk/i.test(ua);
+      const phoneBrowser = !tabletBrowser && (navigator.userAgentData?.mobile === true ||
+        /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua));
       if (phoneBrowser) document.documentElement.classList.add('app-phone-browser');
     })();
   </script>

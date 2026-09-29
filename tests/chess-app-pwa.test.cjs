@@ -195,6 +195,7 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
       Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1', configurable: true });
     }
   });
+  for (const script of phone.window.document.querySelectorAll('script:not([src])')) phone.window.eval(script.textContent);
   assert.equal(phone.window.location.pathname, '/chess/app/');
   assert(phone.window.document.documentElement.classList.contains('app-phone-browser'));
   assert(phone.window.document.querySelector('.phone-frame iframe'));
