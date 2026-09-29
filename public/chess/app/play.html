@@ -100,7 +100,7 @@
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
-  <link rel="stylesheet" href="css/app-mobile.css?v=20260929-pwa1">
+  <link rel="stylesheet" href="css/app-mobile.css?v=20260929-ui1">
 </head>
 <body class="app-mobile" data-app-view="board">
   <a class="skip-link" href="#main">Skip to chess board</a>
@@ -133,9 +133,15 @@
     </div>
   </header>
   <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
-  <nav class="app-web-nav" aria-label="Application versions">
-    <a href="../">CURRENT</a><a href="../old/">PREVIOUS</a><a href="../new/">LAB</a><a href="./" aria-current="page">APP</a>
-  </nav>
+  <div class="app-web-nav app-utility-row">
+    <nav class="app-channel-nav" aria-label="Application versions">
+      <a href="../">CURRENT</a><span aria-hidden="true">·</span><a href="../old/">PREVIOUS</a><span aria-hidden="true">·</span><a href="../new/">LAB</a><span aria-hidden="true">·</span><a href="./" aria-current="page">APP</a>
+    </nav>
+    <div class="app-language" role="group" aria-label="Language">
+      <button type="button" data-app-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-app-lang="sl" aria-pressed="false">SL</button>
+    </div>
+  </div>
+  <div class="app-brand-name" aria-label="ChessBest.org">ChessBest.org</div>
   <header class="app-mobile-header">
     <button type="button" id="appGames" aria-label="Game library" title="Game library">▤</button>
     <div class="app-mobile-title"><strong id="appGameName">ChessBest</strong><small id="appPositionName">Analysis board</small></div>
@@ -159,6 +165,10 @@
         <div id="allEvalBadges" class="all-eval-badges" aria-label="CDB, SF and DCC comparison" hidden></div>
       </div>
       <div id="appBoardControls" class="app-board-controls" aria-label="Position and move controls"><button type="button" id="appSim" class="app-sim">Simulation / play</button></div>
+      <button type="button" id="appTopLine" class="app-top-line" hidden>
+        <span id="appTopLineLabel">TOP LINE · CDB</span>
+        <strong id="appTopLineMoves"></strong>
+      </button>
       <div class="board-legend" aria-label="Board badge legend">
         <span><i class="legend-dot legend-best"></i>Engine best</span>
         <span><i class="legend-dot legend-dcc"></i>DCC line data</span>
@@ -748,7 +758,7 @@
   <script src="js/8zc-review-ui.js?v=20260929-pwa1"></script>
   <script src="js/8zc-lab-layout.js?v=20260927-w0r2"></script>
   <script src="pwa.js" defer></script>
-  <script src="js/app-mobile.js?v=20260929-pwa1"></script>
+  <script src="js/app-mobile.js?v=20260929-ui1"></script>
 
 </body>
 </html>
