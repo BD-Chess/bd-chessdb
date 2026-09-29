@@ -5,6 +5,7 @@ The explicit runtime allowlist excludes private token files and source-only engi
 artifacts. Run with --check in CI to detect a stale offline release.
 """
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -15,6 +16,7 @@ TEMPLATES = REPO / 'tools/chess-pwa'
 CHANNELS = {
     'CURRENT': (PUBLIC, '/chess/', 'ChessBest', 'ChessBest'),
     'LAB': (PUBLIC / 'new', '/chess/new/', 'ChessBest LAB', 'ChessBest LAB'),
+    'APP': (PUBLIC / 'app', '/chess/app/', 'ChessBest APP', 'ChessBest APP'),
 }
 
 
@@ -74,8 +76,11 @@ def put(path, data, check):
 
 def build(channel, check):
     base, route, name, short_name = CHANNELS[channel]
-    put(base / 'manifest.webmanifest', json_bytes(manifest(name, short_name)), check)
-    put(base / 'pwa.js', (TEMPLATES / 'pwa.js').read_bytes(), check)
+    metadata = manifest(name, short_name)
+    if channel == 'APP':
+        metadata['start_url'] = './play.html'
+    put(base / 'manifest.webmanifest', json_bytes(metadata), check)
+    put(base / 'pwa.js', (TEMPLATES / ('app-pwa.js' if channel == 'APP' else 'pwa.js')).read_bytes(), check)
     assets = {}
     for path in base.rglob('*'):
         if not path.is_file() or path.is_symlink():
@@ -97,11 +102,15 @@ def build(channel, check):
               + 'const RELEASE = ' + json.dumps(version) + ';\n'
               + 'const PREFIX = ' + json.dumps(prefix) + ';\n'
               + 'const ASSETS = ' + json.dumps(list(assets), indent=2) + ';\n')
-    worker = (header + (TEMPLATES / 'sw-runtime.js').read_text()).encode()
+    if channel == 'APP':
+        integrity = {file: 'sha256-' + base64.b64encode(bytes.fromhex(sha)).decode()
+                     for file, sha in assets.items()}
+        header += 'const INTEGRITY = ' + json.dumps(integrity, indent=2) + ';\n'
+    worker = (header + (TEMPLATES / ('app-sw-runtime.js' if channel == 'APP' else 'sw-runtime.js')).read_text()).encode()
     put(base / 'sw.js', worker, check)
     release = {
         'schema': 'chessbest-channel-pwa/1', 'version': version,
-        'channel': channel, 'path': route, 'storage_namespace': f'ChessBest:{channel}:v2:',
+        'channel': channel, 'path': route, 'storage_namespace': f'ChessBest:{channel}:v{1 if channel == "APP" else 2}:',
         'assets_sha256': assets, 'worker_sha256': digest(worker),
     }
     put(base / 'release.json', json_bytes(release), check)
