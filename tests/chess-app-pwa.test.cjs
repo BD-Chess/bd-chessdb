@@ -158,3 +158,24 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
   assert.equal(calls, 1);
   dom.window.close();
 });
+
+test('APP preview keeps its phone frame through narrow, HD, 4K and resized windows', () => {
+  const html = read('index.html').toString();
+  assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
+  assert.doesNotMatch(html, /display:\s*none/);
+  for (const standalone of [false, true]) {
+    const dom = new JSDOM(html, { url: 'https://example.test/chess/app/', runScripts: 'outside-only' });
+    const w = dom.window;
+    w.matchMedia = () => ({ matches: standalone });
+    Object.defineProperty(w.navigator, 'standalone', { value: standalone });
+    for (const width of [320, 375, 790, 791, 1920, 3840, 600]) {
+      Object.defineProperty(w, 'innerWidth', { value: width, configurable: true });
+      for (const script of w.document.querySelectorAll('script:not([src])')) w.eval(script.textContent);
+      w.dispatchEvent(new w.Event('resize'));
+      assert.equal(w.location.pathname, '/chess/app/');
+      assert.equal(w.getComputedStyle(w.document.querySelector('main')).display, 'flex');
+      assert(w.document.querySelector('.phone-frame iframe'));
+    }
+    dom.window.close();
+  }
+});
