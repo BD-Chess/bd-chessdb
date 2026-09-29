@@ -524,12 +524,20 @@ body[data-app-surface] .cell .notes{color:#91d6e6}
 [data-theme=light] body[data-app-surface] .cell .notes{color:var(--cyan)}
 body[data-app-surface] .mobile-input-panel{width:100%;max-width:100%;margin:5px 0 0;padding:7px 8px}
 body[data-app-surface] .mobile-input-panel>.panel-title{display:none}
-body[data-app-surface] .numpad{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
-body[data-app-surface] .numpad button{min-height:46px;font-size:1.15rem;padding:4px}
+body[data-app-surface] .numpad{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+body[data-app-surface] .numpad button{grid-column:span 2;min-height:46px;font-size:1.15rem;padding:4px}
+body[data-app-surface] .numpad button:nth-child(6){grid-column:2/span 2}
 body[data-app-surface] .ux-toolbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:6px}
 body[data-app-surface] .ux-toolbar .btn{min-height:48px;font-size:.77rem;line-height:1.2}
 body[data-app-surface][data-view=play][data-assist=closed] #uxHint,
 body[data-app-surface][data-view=play][data-assist=closed] #uxWhy{display:none}
+body[data-app-surface][data-view=play][data-assist=closed] .ux-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}
+body[data-app-surface][data-view=play][data-assist=closed] #notesBtn{order:1}
+body[data-app-surface][data-view=play][data-assist=closed] #uxErase{order:2}
+body[data-app-surface][data-view=play][data-assist=closed] #uxUndo{order:3}
+body[data-app-surface][data-view=play][data-assist=closed] #solveBtn{order:4}
+body[data-app-surface][data-view=play][data-assist=closed] #uxNew{order:5}
+body[data-app-surface][data-view=play][data-assist=closed] #uxMore{order:6}
 body[data-app-surface] #plGameStatus{margin:4px 0 0;min-height:1em;font-size:.74rem}
 body[data-app-surface] .col-center>.pl-notice{margin:7px 0 0}
 body[data-app-surface] .col-center>.pl-notice .btn{font-size:.73rem;min-height:34px}
@@ -895,8 +903,6 @@ body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
     </div>
   </div>
 </div>
-
-<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>
 
 <div class="footer">BD × AI Lab · 8zSudoku Proof Edition Preview · 2026 · <a href="../../BD/">MDLxDCC.org/BD/</a></div>
 </div>
