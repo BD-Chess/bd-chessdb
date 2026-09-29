@@ -68,6 +68,30 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(d.documentElement.lang, 'en');
   assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Board');
   assert.equal(byId('appSim').textContent, 'Sim / Play');
+
+  analyses = {
+    CDB: { allMoves: [{ move: 'e2e4', score: 20 }], receipt: { status: 'ready', provider: 'CDB' } },
+    SF: { allMoves: [{ move: 'd2d4', pv: ['d2d4'], depth: 26 }], receipt: { status: 'ready', provider: 'SF', depth: 26 } },
+    DCC: { receipt: { provider: 'CDB' }, candidates: [{ move: 'e2e4', data: { movePath: ['e7e5','g1f3'], pvDepth: 20 } }] }
+  };
+  listener();
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB (depth 20)');
+  assert.equal(byId('appTopLineMoves').textContent, 'e4 e5 Nf3');
+  byId('next').click();
+  assert.equal(suggested, 'e2e4');
+
+  suggested = null;
+  analyses = {
+    CDB: { allMoves: [], receipt: { status: 'unavailable', provider: 'CDB' } },
+    SF: { allMoves: [{ move: 'd2d4', pv: ['d2d4','d7d5'], depth: 26 }], receipt: { status: 'ready', provider: 'SF', depth: 26 } }
+  };
+  listener();
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · SF (depth 26)');
+  assert.equal(byId('appTopLineMoves').textContent, 'd4 d5');
+  byId('next').click();
+  assert.equal(suggested, 'd2d4');
+  analyses = {};
+
   assert.equal(byId('workspaceTimers').parentElement.parentElement.id, 'appClocks');
   byId('appSim').click();
   assert.equal(sim, 1);
