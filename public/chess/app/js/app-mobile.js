@@ -20,6 +20,7 @@
     'Pause':'Premor','Stop replay':'Ustavi ponovitev','End game':'Končaj igro','Stop':'Ustavi','Simulation running':'Simulacija teče',
     'DCC replay running':'DCC ponovitev teče','Game in progress':'Igra poteka','Your next move starts here':'Tvoja naslednja poteza se začne tukaj',
     'CDB pending':'CDB čaka','Show Eval':'Pokaži oceno','Try Later':'Poskusi pozneje','More tools':'Več orodij',
+    'Best move is not ready yet.':'Najboljša poteza še ni pripravljena.','Waiting for analysis…':'Analiziram…',
     'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF','TOP LINE · CDB/SF':'GLAVNA LINIJA · CDB/SF',
     'Install APP':'Namesti APP','Open APP without frame ↗':'Odpri APP brez okvirja ↗','Install ChessBest APP on your Home Screen.':'Namesti ChessBest APP na domači zaslon.',
     'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
@@ -382,9 +383,10 @@
     doc.addEventListener('chess:activity', event => updateActivity(event.detail || {}));
     const gameTitle = byId('boardGameTitle');
     if (gameTitle && root.MutationObserver) new MutationObserver(updatePosition).observe(gameTitle, { childList: true, characterData: true, subtree: true });
-    const sourceStatus = byId('analysisSourceStatus');
-    if (sourceStatus && root.MutationObserver) new MutationObserver(() => updateTopLine(host.getContext()))
-      .observe(sourceStatus, { childList: true, characterData: true, subtree: true });
+    const refreshTopLine = () => updateTopLine(host.getContext());
+    if (root.MutationObserver) for (const watched of [byId('analysisSourceStatus'), byId('dccProgress'), byId('allEvalBadges')]) {
+      if (watched) new MutationObserver(refreshTopLine).observe(watched, { childList: true, characterData: true, subtree: true, attributes: true });
+    }
     updatePosition();
     resizeVisibleBoard();
   }
