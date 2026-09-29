@@ -64,7 +64,7 @@
       return next?.moveLabel ? 'Before ' + next.moveLabel : 'After ' + ply + ' half-moves';
     }
 
-    function navigate(ply, openStudy = false) {
+    function navigate(ply, openStudy = false, showBoard = false) {
       if (blocked()) {
         notice.textContent = 'Finish the active game or stop Replay before reviewing a position.';
         return;
@@ -82,6 +82,10 @@
         if (openStudy) {
           if (typeof host.openReviewStudy === 'function') host.openReviewStudy('compare');
           else document.getElementById('btnStudy')?.click();
+        } else if (appView && showBoard) {
+          const boardTab = document.querySelector('#appTabs [data-app-tab="board"]');
+          boardTab?.click();
+          boardTab?.focus({ preventScroll: true });
         } else if (appView) {
           refresh();
         } else if (root.matchMedia?.('(max-width: 790px)')?.matches) {
@@ -283,7 +287,7 @@
         const provenance = [moment.source, moment.basis].filter(Boolean).join(' · ');
         if (provenance) row.append(element('small', 'game-review-basis', provenance));
         const actions = element('div', 'game-review-actions');
-        actions.append(action('Show on board', () => navigate(moment.ply)),
+        actions.append(action('Show on board', () => navigate(moment.ply, false, true)),
           action('Study / A-B', () => navigate(moment.ply, true)));
         row.append(actions);
         list.append(row);
