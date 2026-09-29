@@ -16,12 +16,11 @@ test('APP preview offers the four widths, frameless view and ordered channel nav
  assert.match(html,/location\.replace\('\.\/app\.html'\+location\.hash\)/);
 });
 
-test('APP phone layout centers 6–9, uses 3+3 Play actions and removes the end slogan',()=>{
+test('APP phone layout centers 6–9 and removes the superseded Play action block and end slogan',()=>{
  const css=read('public/S/app/app.css'),app=read('public/S/app/app.html');
  assert.match(css,/\.numpad\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\)/);
  assert.match(css,/\.numpad button:nth-child\(6\)\{grid-column:2\/span 2\}/);
- assert.match(css,/data-view=play.*data-assist=closed.*\.ux-toolbar\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
- assert.match(css,/#solveBtn\{order:4\}/);assert.match(css,/#uxNew\{order:5\}/);assert.match(css,/#uxMore\{order:6\}/);
+ assert.match(css,/:not\(\[data-view=lab\]\) \.ux-toolbar\{display:none!important\}/);
  assert.equal(app.includes('<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>'),false);
 });
 
@@ -32,6 +31,32 @@ test('APP dock and spacing keep secondary actions out of the Play surface',()=>{
  assert.ok(css.includes('margin:12px 0 18px'));
  assert.ok(css.includes('.pl-notice{display:none!important}'));
  for(const id of ['appMoreNew','appMoreNews','appMoreTutorial'])assert.ok(ui.includes(id),id);
+});
+
+test('APP iPhone polish enlarges text, decorates More, persists text size and keeps secondary actions under More',async t=>{
+ const css=read('public/S/app/app.css'),ui=read('public/S/app/app-ui.js');
+ assert.match(css,/font:700 calc\(\.80rem \* var\(--app-text-scale\)\)/);
+ assert.match(css,/#aiAssistHint.*#aiAssistWhy\{font-size:calc\(1\.08rem \* var\(--app-text-scale\)\)/);
+ assert.match(css,/\.app-more-primary \.btn,[\s\S]*min-height:70px/);
+ for(const id of ['appMoreNew','appMoreNews','appMoreTutorial','appTextSize'])assert.ok(ui.includes(id),id);
+ const h=await boot(t,{}, {width:402,height:874},{lane:'APP'}),w=h.w;await w.SudokuNavigator.restore(savedFixture('0.2.0'));w.stopTimer();
+ h.el('appMore').click();await until(()=>h.el('appMorePrimary')&&h.el('appTextSize'),'APP More enhanced');
+ assert.equal(h.el('plNotice').hidden,false,'source notice may remain logically present while APP CSS hides it');
+ assert.ok(w.document.querySelectorAll('.app-more-menu .app-more-icon').length>=10,'secondary More actions gain icons');
+ const large=h.el('appTextSize').querySelector('[data-app-text-size="large"]');large.click();
+ assert.equal(w.document.body.dataset.appTextSize,'large');assert.equal(w.localStorage.getItem('ai8SudokuAppV030.appTextSize'),'large');assert.equal(large.getAttribute('aria-pressed'),'true');
+ h.el('navClose').click();h.el('appMore').click();await until(()=>h.el('appTextSize'),'More reopens');assert.equal(h.el('appTextSize').querySelector('[data-app-text-size="large"]').getAttribute('aria-pressed'),'true');
+ assert.deepEqual(h.errors,[]);
+});
+
+test('APP touch loupe follows the finger while desktop loupe semantics remain read-only',async t=>{
+ const h=await boot(t,{}, {width:402,height:874},{lane:'APP'}),w=h.w;await w.SudokuNavigator.restore(savedFixture('0.2.0'));w.stopTimer();
+ const G=w.SudokuMobileGeometry;[...h.el('grid').children].forEach((c,i)=>c.getBoundingClientRect=()=>G.rect(21+i%9*40,100+Math.floor(i/9)*40,39,39));h.el('gridWrap').getBoundingClientRect=()=>G.rect(16,95,369,369);
+ const point=i=>({x:41+i%9*40,y:120+Math.floor(i/9)*40}),target=h.el('grid').children[0];
+ const touch=(type,p)=>{const e=new w.Event(type,{bubbles:true,cancelable:true}),a={identifier:17,clientX:p.x,clientY:p.y,target};Object.defineProperties(e,{touches:{value:type==='touchend'?[]:[a]},changedTouches:{value:[a]}});target.dispatchEvent(e);return e;};
+ const before=state(h).board;touch('touchstart',point(0));await until(()=>h.el('uxLoupe'),'touch loupe opens',1200);const first=h.el('uxLoupe').getAttribute('style');
+ const moved=touch('touchmove',point(40));assert.equal(moved.defaultPrevented,true);assert.equal(h.el('uxLoupe').dataset.cell,'40');assert.notEqual(h.el('uxLoupe').getAttribute('style'),first,'touch loupe follows the finger');
+ touch('touchend',point(40));assert.equal(h.el('uxLoupe'),null);assert.deepEqual(state(h).board,before);assert.deepEqual(h.errors,[]);
 });
 
 test('APP build pins exact packaged LAB donor and isolates its stored games',()=>{
@@ -99,5 +124,6 @@ test('APP delete clears its own game and language but leaves LAB preferences int
  assert.equal(h.w.localStorage.getItem('8zSudoku.app.ui.language'),null);
  assert.equal(h.w.localStorage.getItem('8zSudoku.ui.language'),'en');
  assert.equal(h.w.localStorage.getItem('ai8SudokuAppV030.session'),null);
+ assert.equal(h.w.localStorage.getItem('ai8SudokuAppV030.appTextSize'),null);
  assert.deepEqual(h.errors,[]);
 });
