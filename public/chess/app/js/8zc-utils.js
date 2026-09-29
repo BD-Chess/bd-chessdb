@@ -179,7 +179,6 @@ function initAllCore() {
     return value == null || value === '' || !Number.isFinite(depth) ? 11 : Math.max(1, Math.min(128, Math.round(depth)));
   }
   settings.sfAnalysisDepth = normalizeSFDepth(settings.sfAnalysisDepth);
-  settings.evalMode = 'direct';
   function saveSettings() {
     invalidateDCCAnalysis();
     localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -763,7 +762,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       if (requestOptions.signal?.aborted) controller.abort();
       const timer = setTimeout(abortRequest, Math.max(1, requestOptions.timeoutMs || 15000));
       try {
-        const base = `https://www.chessdb.cn/cdb.php?action=${action}&`;
+        const base = source === 'proxy' && action === 'queryall'
+          ? '/.netlify/functions/queryall?'
+          : `https://www.chessdb.cn/cdb.php?action=${action}&`;
         const response = await fetch(`${base}board=${encodeURIComponent(fen)}&learn=${learn}&showall=1`, { signal: controller.signal });
         if (!response.ok) throw new Error(`ChessDB HTTP ${response.status}`);
         const text = (await response.text()).trim();
@@ -2462,6 +2463,7 @@ function jumpTo(i){
   }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
     pause: pauseLab, navigate: navigateStudy,
+    playSuggestedMove: uci => !!uci && playManualMove(uci.slice(0,2), uci.slice(2,4), uci[4] || 'q') !== 'snapback',
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
     getEvidence: () => labSnapshots.get(game.fen()) || null,
