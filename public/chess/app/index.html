@@ -7,7 +7,16 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="theme-color" content="#11251d">
-  <title>ChessBest APP · iPhone preview</title>
+  <title>ChessBest APP · mobile preview</title>
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const ua = navigator.userAgent || '';
+      const mobileHint = navigator.userAgentData?.mobile === true;
+      const phoneUA = /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua);
+      if (params.get('frame') !== '1' && (mobileHint || phoneUA)) document.documentElement.classList.add('app-real-phone');
+    })();
+  </script>
   <style id="bd-version-style">
     :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
@@ -27,6 +36,11 @@
     .phone-frame { width: calc(var(--phone-width, 402px) + 12px); max-width: 100%; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
     iframe { display: block; width: 100%; height: clamp(500px, calc(100dvh - 170px), 874px); border: 0; border-radius: 26px; background: #101a16; }
     .preview-note { max-width: 780px; color: #adc2b5; font-size: 12px; line-height: 1.5; text-align: center; }
+    html.app-real-phone, html.app-real-phone body { width: 100%; height: 100%; min-height: 100dvh; overflow: hidden; background: #101a16; }
+    html.app-real-phone body > header, html.app-real-phone .preview-controls, html.app-real-phone .preview-note { display: none; }
+    html.app-real-phone main { width: 100%; height: 100dvh; padding: 0; margin: 0; }
+    html.app-real-phone .phone-frame { width: 100vw; max-width: none; height: 100dvh; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+    html.app-real-phone iframe { width: 100vw; height: 100dvh; border-radius: 0; }
     @media (max-width: 480px) {
       header { padding: 12px 10px; justify-content: center; }
       main { padding: 0 8px 24px; }
@@ -53,9 +67,9 @@
       <a href="play.html">Open without frame ↗</a>
     </div>
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260929-frame1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260929-ui2" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
     </div>
-    <p class="preview-note">The frame uses the same board and mobile UI files intended for the iPhone app. Native file sharing, safe areas and touch behavior still need device testing.</p>
+    <p class="preview-note">Desktop and tablet views keep the adjustable phone preview. Ordinary phone browsing removes the decorative frame without redirecting; Request Desktop Site stays framed. Native file sharing, safe areas and touch behavior still need device testing.</p>
   </main>
   <noscript><p><a href="play.html">Open ChessBest APP preview</a></p></noscript>
   <script>

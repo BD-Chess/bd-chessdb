@@ -7,6 +7,7 @@ const { JSDOM } = require('jsdom');
 const app = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(app, 'play.html'), 'utf8');
 const script = fs.readFileSync(path.join(app, 'js/app-mobile.js'), 'utf8');
+const i18n = fs.readFileSync(path.join(app, 'js/app-i18n.js'), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
 test('phone views switch in one tap and retain the shared position', async () => {
@@ -127,5 +128,50 @@ test('Moves opens around the current move in a long game and preserves manual sc
   byId('moves').querySelector('.move').dataset.historyPly = '20';
   w.positionChanged();
   assert.equal(display.scrollTop, 472);
+  dom.window.close();
+});
+
+
+test('APP top line prefers a measured CDB continuation, falls back to SF, and EN/SL persists', async () => {
+  const dom = new JSDOM(html, { url: 'https://example.test/chess/app/play.html', runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window, d = w.document, byId = id => d.getElementById(id);
+  let context = {
+    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', history: [],
+    analysisSources: {
+      CDB: { allMoves: [{ move:'e2e4', score:1 }] },
+      DCC: { receipt:{ provider:'CDB', rawBest:'e2e4' }, candidates:[{ data:{ move:'e2e4', movePath:['e7e5','g1f3','b8c6'] } }] },
+      SF: { allMoves: [{ move:'d2d4', pv:['d2d4','d7d5'], depth:11 }] }
+    }
+  };
+  w.ChessLabReady = Promise.resolve();
+  w.ChessLabHost = { getContext: () => context, onChange: fn => { w.positionChanged = fn; } };
+  w.Chess = class {
+    constructor() { this.turn = 'w'; }
+    move(m) {
+      const map = { e2e4:'e4', e7e5:'e5', g1f3:'Nf3', b8c6:'Nc6', d2d4:'d4', d7d5:'d5' };
+      const key=m.from+m.to; if(!map[key]) return null; return { san: map[key] };
+    }
+  };
+  w.Chessboard = () => ({ resize() {}, position() {} });
+  w.eval(script); w.dispatchEvent(new w.Event('load')); await flush();
+  assert.match(byId('appTopLineLabel').textContent, /CDB/);
+  assert.match(byId('appTopLineMoves').textContent, /1\. e4 e5 2\. Nf3 Nc6/);
+  byId('appTopLine').click();
+  assert.equal(d.body.dataset.appView, 'moves');
+  assert.equal(byId('appTopLineDetail').hidden, false);
+
+  w.eval(i18n); d.dispatchEvent(new w.Event('DOMContentLoaded')); await flush();
+  d.querySelector('[data-app-lang="sl"]').click(); await flush();
+  assert.equal(d.documentElement.lang, 'sl');
+  assert.equal(d.querySelector('[data-app-tab="board"] span:last-child').textContent, 'Šahovnica');
+  assert.equal(w.localStorage.getItem('ChessBest:APP:v1:language'), 'sl');
+  byId('analysisSourceStatus').textContent = 'CDB, SF and DCC analysis…'; await flush();
+  assert.equal(byId('analysisSourceStatus').textContent, 'CDB, SF in DCC analiza…');
+  d.querySelector('[data-app-lang="en"]').click(); await flush();
+  assert.equal(d.querySelector('[data-app-tab="board"] span:last-child').textContent, 'Board');
+
+  context = { ...context, analysisSources:{ CDB:null, DCC:null, SF:{ allMoves:[{move:'d2d4',pv:['d2d4','d7d5'],depth:11}] } } };
+  w.positionChanged(); await flush();
+  assert.match(byId('appTopLineLabel').textContent, /SF/);
   dom.window.close();
 });
