@@ -35,7 +35,7 @@ test('CURRENT and LAB install in place; legacy identity and source stay recovera
   const p=path.resolve(__dirname,'../public/S',dir),m=JSON.parse(fs.readFileSync(path.join(p,'manifest.webmanifest')));
   assert.deepEqual([m.id,m.start_url,m.scope],['./','./','./']);assert.equal(m.name,name);assert.equal(m.display,'standalone');
   const dom=new JSDOM(fs.readFileSync(path.join(p,'index.html'),'utf8'));
-  assert.deepEqual([...dom.window.document.querySelectorAll('.version-nav a')].map(x=>x.textContent),['CURRENT','LAB','PREVIOUS']);
+  assert.deepEqual([...dom.window.document.querySelectorAll('.version-nav a')].map(x=>x.textContent),dir==='new'?['CURRENT','PREVIOUS','LAB','APP']:['CURRENT','LAB','PREVIOUS']);
   assert.equal(!!dom.window.document.getElementById('pwaInstall'),false);dom.window.close();
  }
  const legacy=fs.readFileSync(path.resolve(__dirname,'../public/S/PWA/app.html'));

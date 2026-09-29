@@ -1,0 +1,50 @@
+'use strict';
+// Recreate the APP phone surface from the exact packaged LAB app. The copy is
+// independent (storage, locale and presentation); no CURRENT files are read.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'..'),lab=path.join(root,'public/S/new'),app=path.join(root,'public/S/app');
+const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
+const read=file=>fs.readFileSync(file,'utf8');
+const check=process.argv.includes('--check');
+const expected=process.argv.find(arg=>arg.startsWith('--expected-lab-sha='))?.split('=')[1];
+const donor=read(path.join(lab,'app.html'));
+const labRelease=JSON.parse(read(path.join(lab,'release.json')));
+const donorSha=sha(donor);
+if(labRelease.channel!=='LAB'||labRelease.assets_sha256?.['app.html']!==donorSha)throw Error('LAB app does not match its release manifest');
+if(expected&&expected!==donorSha)throw Error(`LAB donor SHA mismatch: expected ${expected}, got ${donorSha}`);
+if(!donor.includes('<!-- BEGIN SUDOKU PRESENTATION -->')||!donor.includes('<!-- END SUDOKU PRESENTATION -->'))throw Error('LAB standalone presentation missing');
+const css=read(path.join(app,'app.css')),ui=read(path.join(app,'app-ui.js')),index=read(path.join(app,'index.html'));
+const once=(source,oldText,newText)=>{
+ const parts=source.split(oldText);
+ if(parts.length!==2)throw Error(`Expected exactly one donor anchor: ${oldText.slice(0,100)}`);
+ return parts.join(newText);
+};
+let output=donor;
+output=once(output,'<title>8zSudoku — Play & Learn LAB | BD × AI Lab</title>','<title>8zSudoku APP · Play & Learn</title>');
+output=once(output,'<body>','<body data-app-surface="true" data-app-panel="board">');
+output=once(output,"const C=SudokuNavCore, NS='ai8SudokuNavigatorV020'","const C=SudokuNavCore, NS='ai8SudokuAppV030'");
+output=output.replaceAll('ai8SudokuNavigatorV020.trace','ai8SudokuAppV030.trace').replaceAll('ai8SudokuNavigatorV020.stats','ai8SudokuAppV030.stats');
+output=once(output,"const KEY='8zSudoku.ui.language'","const KEY='8zSudoku.app.ui.language'");
+output=once(output,"const RELEASE='LAB-PLAY-LEARN-20260928-R1'","const RELEASE='APP-PLAY-LEARN-20260929-R1'");
+output=output.replaceAll('Delete ALL local LAB games','Delete ALL local APP games')
+ .replaceAll('Delete all LAB data','Delete all APP data')
+ .replaceAll('Izbriši vse podatke LAB','Izbriši vse podatke APP')
+ .replaceAll('LAB data deleted','APP data deleted');
+output=once(output,"if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}library={schema:SCHEMA","if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}localStorage.removeItem('8zSudoku.app.ui.language');library={schema:SCHEMA");
+output=once(output,'This is a product preview at <code>/S/new/</code>. The current <code>/S/</code> game remains untouched until manual review.','This is the APP web preview at <code>/S/app/</code>. The APP game and its saved data are separate from LAB and CURRENT.');
+output=once(output,'</head>',`<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
+output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n</body>`);
+if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
+const meta={
+ schema:'8ZSUDOKU_APP_PREVIEW_V1',channel:'APP',lab_release_id:labRelease.release_id,
+ lab_app_sha256:donorSha,index_sha256:sha(index),app_css_sha256:sha(css),app_ui_sha256:sha(ui),
+ builder_sha256:sha(read(__filename)),app_html_sha256:sha(output),
+ source_policy:'EXACT_LAB_DONOR_WITH_ISOLATED_APP_STORAGE'
+};
+meta.release_id=sha(JSON.stringify(meta));
+for(const[name,bytes]of [['app.html',output],['release.json',JSON.stringify(meta,null,2)+'\n']]){
+ const filename=path.join(app,name);
+ if(check){if(!fs.existsSync(filename)||read(filename)!==bytes)throw Error(`APP release stale: ${name}`);}
+ else fs.writeFileSync(filename,bytes);
+}
+console.log(`APP ${meta.release_id} ${check?'CHECK PASS':'packaged'} from LAB ${donorSha}`);
