@@ -21,7 +21,9 @@
   html{background:#070c16;color:#e5edfa;font:16px/1.45 system-ui,sans-serif}
   body{margin:0;min-height:100svh;background:radial-gradient(circle at 50% 30%,#15344d 0,#0b1526 42%,#070c16 90%)}
   html[data-app-shell=preview] body{display:flex;flex-direction:column;min-height:100svh}
-  html[data-app-shell=preview] main{flex:1;justify-content:center;padding-top:18px;padding-bottom:18px}
+  html[data-app-shell=preview] main{flex:1;width:100%;min-height:100svh;display:grid;grid-template-rows:auto 1fr;align-items:stretch;gap:0;padding:38px 16px 24px}
+  html[data-app-shell=preview] .preview-header{align-self:start}
+  html[data-app-shell=preview] .preview-stage{display:flex;align-items:center;justify-content:center;min-height:0}
   a{color:#b7eafe}
   main{display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 16px 40px}
   .preview-header{width:min(1120px,100%);display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr);align-items:center;gap:16px}
@@ -45,6 +47,7 @@
   html[data-app-shell=phone] .safe-top,
   html[data-app-shell=phone] .home{display:none!important}
   html[data-app-shell=phone] main{display:block;width:100%;height:100%;padding:0}
+  html[data-app-shell=phone] .preview-stage{width:100%;height:100%}
   html[data-app-shell=phone] .device,
   html[data-app-shell=phone] .screen{width:100%;height:100%;max-width:none;padding:0;border:0;border-radius:0;box-shadow:none}
   html[data-app-shell=phone] iframe{width:100%;height:100%;border:0}
@@ -69,7 +72,7 @@
     </select>
    </label>
   </header>
-  <div class="device" id="device"><div class="screen"><div class="island" aria-hidden="true"></div><div class="safe-top" aria-hidden="true"></div><iframe id="game" title="8zSudoku APP game" allow="fullscreen"></iframe><div class="home" aria-hidden="true"></div></div></div>
+  <div class="preview-stage"><div class="device" id="device"><div class="screen"><div class="island" aria-hidden="true"></div><div class="safe-top" aria-hidden="true"></div><iframe id="game" title="8zSudoku APP game" allow="fullscreen"></iframe><div class="home" aria-hidden="true"></div></div></div></div>
  </main>
  <script>
  (()=>{
