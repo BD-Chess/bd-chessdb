@@ -200,19 +200,21 @@
     const san = lineToSan(context.fen, pv || []);
     card.hidden = false;
     if (source && san.length) {
-      const depthText = depth ? (lang === 'sl' ? ` (globina ${depth})` : ` (depth ${depth})`) : '';
-      label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}${depthText}` : `TOP LINE · ${source}${depthText}`;
+      label.textContent = depth ? `TOP (d${depth}):` : 'TOP:';
       movesEl.textContent = san.join(' ');
+      card.dataset.topSource = source;
+      card.title = `${source} · ${lang === 'sl' ? 'Odpri Poteze za isti položaj' : 'Open Moves for the same position'}`;
     } else {
       const statusText = byId('analysisSourceStatus')?.textContent?.trim() || '';
       const cdbSettled = cdb?.receipt?.status === 'ready' || cdb?.receipt?.status === 'unavailable';
       const pending = !cdbSettled || /pending|analysis|depth|nodes|čaka|analiza|globina|vozlišč/i.test(statusText);
-      label.textContent = lang === 'sl' ? 'GLAVNA LINIJA' : 'TOP LINE';
+      label.textContent = 'TOP:';
       movesEl.textContent = pending
         ? (lang === 'sl' ? 'Analiziram…' : 'Analyzing…')
         : (lang === 'sl' ? 'Glavna linija za ta položaj ni na voljo.' : 'Top line is not available for this position.');
+      delete card.dataset.topSource;
+      card.title = lang === 'sl' ? 'Odpri Poteze za isti položaj' : 'Open Moves for the same position';
     }
-    card.title = lang === 'sl' ? 'Odpri Poteze za isti položaj' : 'Open Moves for the same position';
   }
   function updatePosition() {
     if (!host) return;
