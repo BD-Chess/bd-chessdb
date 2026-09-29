@@ -142,9 +142,10 @@
   for(let rr=br;rr<br+3;rr++)for(let cc=bc;cc<bc+3;cc++)used.add(board[rr*9+cc]);
   return[1,2,3,4,5,6,7,8,9].filter(d=>!used.has(d));
  }
- function hiddenSingle(board,index,digit){
+ const candidateMap=board=>Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i));
+ function hiddenSingle(board,all,index,digit){
   if(board[index])return null;
-  const all=Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i)),r=Math.floor(index/9),c=index%9;
+  const r=Math.floor(index/9),c=index%9;
   const units=[
    Array.from({length:9},(_,x)=>r*9+x),
    Array.from({length:9},(_,x)=>x*9+c),
@@ -154,11 +155,10 @@
   for(let u=0;u<units.length;u++)if(units[u].filter(i=>!board[i]&&all[i].includes(digit)).length===1)return names[u];
   return null;
  }
- function forcedCell(board){
+ function forcedCell(board,all=candidateMap(board)){
   if(!Array.isArray(board)||board.length!==81)return null;
-  const all=Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i));
   for(let i=0;i<81;i++)if(!board[i]&&all[i].length===1)return{index:i,digit:all[i][0],kind:'naked'};
-  for(let i=0;i<81;i++)if(!board[i])for(const d of all[i]){const unit=hiddenSingle(board,i,d);if(unit)return{index:i,digit:d,kind:'hidden',unit};}
+  for(let i=0;i<81;i++)if(!board[i])for(const d of all[i]){const unit=hiddenSingle(board,all,i,d);if(unit)return{index:i,digit:d,kind:'hidden',unit};}
   return null;
  }
  let lastBoard=null,coachMoment=null,coachTimer=0;
@@ -178,7 +178,7 @@
   if(lastBoard&&lastBoard.length===81){
    const changed=[];for(let i=0;i<81;i++)if(lastBoard[i]!==board[i])changed.push(i);
    if(changed.length===1){const i=changed[0],before=lastBoard[i],after=board[i];if(!before&&after){
-    const cs=candidates(lastBoard,i),unit=cs.includes(after)?hiddenSingle(lastBoard,i,after):null;
+    const priorAll=candidateMap(lastBoard),cs=priorAll[i],unit=cs.includes(after)?hiddenSingle(lastBoard,priorAll,i,after):null;
     if(cs.length===1||unit){const unitSL={row:'vrstici',column:'stolpcu',box:'bloku'}[unit],unitEN={row:'row',column:'column',box:'3×3 box'}[unit];
      coachMoment=cs.length===1?(sl?'Odlično — '+rc(i)+' je bil goli posameznik: možna je bila samo '+after+'.':'Nice — '+rc(i)+' was a naked single: only '+after+' could fit.'):(sl?'Dobro — '+after+' je bil skriti posameznik v '+unitSL+'.':'Good — '+after+' was a hidden single in its '+unitEN+'.');
      clearTimeout(coachTimer);coachTimer=setTimeout(()=>{coachMoment=null;updateCoach();},5200);
@@ -191,14 +191,14 @@
   if(Number.isInteger(selected)&&selected>=0&&selected<81){
    const cell=$('grid')?.children[selected];
    if(board[selected]){setCoachText(cell?.classList.contains('given')?(sl?'To je začetna številka. Izberi prazno celico.':'That is a given. Choose an empty cell.'):(sl?'Celica je že izpolnjena. Izberi prazno celico.':'That cell is already filled. Choose an empty cell.'));$('appCoachCandidates').disabled=true;return;}
-   const cs=candidates(board,selected);$('appCoachCandidates').disabled=false;
+   const all=candidateMap(board),cs=all[selected];$('appCoachCandidates').disabled=false;
    if(showCandidates){setCoachText((sl?'Kandidati za ':'Candidates for ')+rc(selected)+': '+(cs.join(', ')||'—')+'.');return;}
    if(cs.length===1){setCoachText(sl?rc(selected)+' ima samo enega kandidata: '+cs[0]+'. To je goli posameznik.':rc(selected)+' has one candidate: '+cs[0]+'. That is a naked single.');return;}
-   for(const d of cs){const unit=hiddenSingle(board,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?d+' je v '+rc(selected)+' edino mesto v '+us+'. To je skriti posameznik.':d+' at '+rc(selected)+' is the only place in its '+ue+'. That is a hidden single.');return;}}
+   for(const d of cs){const unit=hiddenSingle(board,all,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?d+' je v '+rc(selected)+' edino mesto v '+us+'. To je skriti posameznik.':d+' at '+rc(selected)+' is the only place in its '+ue+'. That is a hidden single.');return;}}
    setCoachText(detail==='detailed'?(sl?rc(selected)+' ima kandidate '+cs.join(', ')+'. Preveri vrstico, stolpec in 3×3 blok ter poišči, ali je kateri kandidat mogoč samo enkrat.':rc(selected)+' has candidates '+cs.join(', ')+'. Check the row, column and 3×3 box for a digit that appears in only one candidate set.'):(sl?rc(selected)+' še ni prisiljena. Poišči bolj omejeno celico ali preveri vrstico, stolpec in blok.':rc(selected)+' is not forced yet. Try a more constrained cell or scan its row, column and box.'));return;
   }
   $('appCoachCandidates').disabled=true;
-  const forced=forcedCell(board);
+  const forced=forcedCell(board,candidateMap(board));
   if(forced){setCoachText(detail==='detailed'?(sl?'Poskusi '+rc(forced.index)+'. '+(forced.kind==='naked'?'Tam ostane samo '+forced.digit+'.':'Številka '+forced.digit+' je tam edina možnost v skupini.'):( 'Try '+rc(forced.index)+'. '+(forced.kind==='naked'?'Only '+forced.digit+' can fit there.':'Digit '+forced.digit+' has only one place in that unit.'))):(sl?'Poskusi '+rc(forced.index)+' — tam je trenutno prisiljena poteza.':'Try '+rc(forced.index)+' — there is a forced move there.'));return;}
   setCoachText(sl?'Izberi prazno celico. Coach bo razložil kandidate brez razkrivanja rešitve.':'Choose an empty cell. Coach will explain candidates without revealing the solution.');
  }
