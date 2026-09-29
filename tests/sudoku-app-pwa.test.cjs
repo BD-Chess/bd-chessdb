@@ -27,7 +27,10 @@ test('APP has one stable install identity, direct game launch and a complete has
  assert.equal(release.worker_sha256,hash(read('sw.js')));
  for(const [name,digest] of Object.entries(release.assets_sha256)){assert.ok(!name.includes('..'),'cache stays within APP');assert.equal(hash(read(name)),digest,name);}
  for(const file of ['app.html','index.html']){const dom=new JSDOM(read(file));assert.equal(dom.window.document.querySelector('link[rel=manifest]').getAttribute('href'),'./manifest.webmanifest');assert.equal(dom.window.document.querySelector('link[rel=apple-touch-icon]').getAttribute('href'),'./icon-180.png');dom.window.close();}
- assert.match(read('index.html').toString(),/if\(narrow\|\|standalone\)/);
+ const preview=read('index.html').toString();
+ assert.doesNotMatch(preview,/window\.innerWidth\s*<=|display-mode:\s*standalone|dataset\.appRedirect/,'browser APP preview never redirects based on viewport or display mode');
+ assert.match(preview,/class="device"/,'browser APP preview keeps the phone frame');
+ assert.match(preview,/game\.src=['"]\.\/app\.html/,'game stays embedded inside the phone preview');
  assert.match(read('app.html').toString(),/viewport-fit=cover/);
 });
 
