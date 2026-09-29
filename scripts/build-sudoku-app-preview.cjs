@@ -14,6 +14,7 @@ if(labRelease.channel!=='LAB'||labRelease.assets_sha256?.['app.html']!==donorSha
 if(expected&&expected!==donorSha)throw Error(`LAB donor SHA mismatch: expected ${expected}, got ${donorSha}`);
 if(!donor.includes('<!-- BEGIN SUDOKU PRESENTATION -->')||!donor.includes('<!-- END SUDOKU PRESENTATION -->'))throw Error('LAB standalone presentation missing');
 const css=read(path.join(app,'app.css')),ui=read(path.join(app,'app-ui.js')),index=read(path.join(app,'index.html'));
+const pwa=read(path.join(app,'pwa.js')),workerTemplate=read(path.join(__dirname,'sudoku-channel-worker.js'));
 const once=(source,oldText,newText)=>{
  const parts=source.split(oldText);
  if(parts.length!==2)throw Error(`Expected exactly one donor anchor: ${oldText.slice(0,100)}`);
@@ -21,6 +22,7 @@ const once=(source,oldText,newText)=>{
 };
 let output=donor;
 output=once(output,'<title>8zSudoku — Play & Learn LAB | BD × AI Lab</title>','<title>8zSudoku APP · Play & Learn</title>');
+output=once(output,'<meta name="viewport" content="width=device-width, initial-scale=1.0">','<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">');
 output=once(output,'<body>','<body data-app-surface="true" data-app-panel="board">');
 output=once(output,"const C=SudokuNavCore, NS='ai8SudokuNavigatorV020'","const C=SudokuNavCore, NS='ai8SudokuAppV030'");
 output=output.replaceAll('ai8SudokuNavigatorV020.trace','ai8SudokuAppV030.trace').replaceAll('ai8SudokuNavigatorV020.stats','ai8SudokuAppV030.stats');
@@ -32,17 +34,20 @@ output=output.replaceAll('Delete ALL local LAB games','Delete ALL local APP game
  .replaceAll('LAB data deleted','APP data deleted');
 output=once(output,"if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}library={schema:SCHEMA","if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}localStorage.removeItem('8zSudoku.app.ui.language');library={schema:SCHEMA");
 output=once(output,'This is a product preview at <code>/S/new/</code>. The current <code>/S/</code> game remains untouched until manual review.','This is the APP web preview at <code>/S/app/</code>. The APP game and its saved data are separate from LAB and CURRENT.');
-output=once(output,'</head>',`<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
-output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n</body>`);
+output=once(output,'</head>',`<meta name="theme-color" content="#08101d">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="8zSudoku">\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="apple-touch-icon" href="./icon-180.png">\n<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
+output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n<script id="sudoku-app-pwa">\n${pwa}\n</script>\n</body>`);
 if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
+const assets=Object.fromEntries(['index.html','app.html','pwa.js','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'].map(name=>[name,sha(name==='app.html'?output:fs.readFileSync(path.join(app,name)))]));
 const meta={
- schema:'8ZSUDOKU_APP_PREVIEW_V1',channel:'APP',lab_release_id:labRelease.release_id,
+ schema:'8ZSUDOKU_APP_RELEASE_V2',channel:'APP',engine_revision:'0.3.0',lab_release_id:labRelease.release_id,
  lab_app_sha256:donorSha,index_sha256:sha(index),app_css_sha256:sha(css),app_ui_sha256:sha(ui),
  builder_sha256:sha(read(__filename)),app_html_sha256:sha(output),
- source_policy:'EXACT_LAB_DONOR_WITH_ISOLATED_APP_STORAGE'
+ source_policy:'EXACT_LAB_DONOR_WITH_ISOLATED_APP_STORAGE',assets_sha256:assets,worker_runtime_sha256:sha(workerTemplate)
 };
 meta.release_id=sha(JSON.stringify(meta));
-for(const[name,bytes]of [['app.html',output],['release.json',JSON.stringify(meta,null,2)+'\n']]){
+const worker=once(workerTemplate,'const RELEASE = null;','const RELEASE = '+JSON.stringify({id:meta.release_id,channel:'APP',engine:meta.engine_revision,assets},null,2)+';');
+meta.worker_sha256=sha(worker);
+for(const[name,bytes]of [['app.html',output],['sw.js',worker],['release.json',JSON.stringify(meta,null,2)+'\n']]){
  const filename=path.join(app,name);
  if(check){if(!fs.existsSync(filename)||read(filename)!==bytes)throw Error(`APP release stale: ${name}`);}
  else fs.writeFileSync(filename,bytes);

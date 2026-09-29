@@ -4,6 +4,10 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="theme-color" content="#08101d">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-title" content="8zSudoku">
+ <link rel="manifest" href="./manifest.webmanifest">
+ <link rel="apple-touch-icon" href="./icon-180.png">
  <title>8zSudoku APP · iPhone preview</title>
  <style>
   *,*::before,*::after{box-sizing:border-box}
@@ -45,6 +49,7 @@
   <div class="preview-tools" role="group" aria-label="iPhone display width">
    <button type="button" data-width="375">375</button><button type="button" data-width="390">390</button><button type="button" data-width="402">402</button><button type="button" data-width="430">430</button>
    <button type="button" id="toggleFrame" aria-pressed="false">Open without frame</button>
+   <button type="button" id="appPwaOpen">Install app / Offline</button>
   </div>
   <div class="device" id="device"><div class="screen"><div class="island" aria-hidden="true"></div><div class="safe-top" aria-hidden="true"></div><iframe id="game" title="8zSudoku APP game" allow="fullscreen"></iframe><div class="home" aria-hidden="true"></div></div></div>
   <p class="note">Play and Learn use one game. APP storage is separate from LAB and CURRENT.</p>
@@ -53,7 +58,8 @@
  (()=>{
   const params=new URLSearchParams(location.search),allowed=['375','390','402','430'];
   const narrow=window.innerWidth<=740;
-  if(narrow){location.replace('./app.html'+location.hash);return;}
+  const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
+  if(narrow||standalone){document.body.dataset.appRedirect='true';location.replace('./app.html'+location.hash);return;}
   const device=document.getElementById('device'),buttons=[...document.querySelectorAll('[data-width]')],frame=document.getElementById('toggleFrame');
   let width=allowed.includes(params.get('width'))?params.get('width'):'390';
   const draw=()=>{device.style.setProperty('--device-width',width+'px');buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.width===width)));frame.setAttribute('aria-pressed',String(document.body.classList.contains('unframed')));frame.textContent=document.body.classList.contains('unframed')?'Show iPhone frame':'Open without frame';};
@@ -64,5 +70,6 @@
   draw();
  })();
  </script>
+ <script src="./pwa.js"></script>
 </body>
 </html>

@@ -43,7 +43,7 @@ test('CURRENT and LAB install in place; legacy identity and source stay recovera
  assert.ok(read('app.html').toString().includes("NS='ai8SudokuNavigatorV020'"),'LAB data namespace unchanged');
 });
 
-for(const [scope,dir] of [['/S/',''],['/bd-chessdb/S/',''],['/S/new/','new'],['/bd-chessdb/S/new/','new'],['/S/PWA/','PWA']])test('complete coherent offline release and request boundary at '+scope,async()=>{
+for(const [scope,dir] of [['/S/',''],['/bd-chessdb/S/',''],['/S/new/','new'],['/bd-chessdb/S/new/','new'],['/S/PWA/','PWA'],['/S/app/','app'],['/bd-chessdb/S/app/','app']])test('complete coherent offline release and request boundary at '+scope,async()=>{
  const rootPath=path.resolve(__dirname,'../public/S',dir), read=file=>fs.readFileSync(path.join(rootPath,file));
  const h=workerHarness(scope,dir);await h.dispatch('install');assert.equal(h.state.skipped,0,'installation waits for user approval');await h.dispatch('activate');h.state.offline=true;
  const assets=['',...Object.keys(JSON.parse(read('release.json')).assets_sha256)];
@@ -53,8 +53,8 @@ for(const [scope,dir] of [['/S/',''],['/bd-chessdb/S/',''],['/S/new/','new'],['/
  const requests=h.state.requests.length;h.state.offline=false;h.state.tamperPath=new URL('index.html',h.root).pathname;const still=await h.dispatch('fetch',{request:new Request(new URL('index.html?new=1',h.root))});assert.equal(hash(Buffer.from(await still.arrayBuffer())),hash(read('index.html')));assert.equal(h.state.requests.length,requests,'installed snapshot remains coherent instead of mixing live files');
 });
 
-test('failed or mixed release install preserves old cache; only explicit activation skips waiting',async()=>{
- const h=workerHarness();const old=await h.caches.open('8zsudoku-pwa-v1');await old.put(new URL('app.html',h.root),new Response('old-game'));
+for(const dir of ['new','app'])test(dir+': failed or mixed release install preserves old cache; only explicit activation skips waiting',async()=>{
+ const h=workerHarness('/S/'+dir+'/',dir);const old=await h.caches.open('8zsudoku-pwa-v1');await old.put(new URL('app.html',h.root),new Response('old-game'));
  const foreign=await h.caches.open('8zsudoku-pwa-other-scope');await foreign.put('https://example.test/elsewhere/S/PWA/app.html',new Response('other-scope'));await h.caches.open('trip-pwa-cache');
  h.state.failPath=new URL('app.html',h.root).pathname;await assert.rejects(h.dispatch('install'));assert.equal(h.state.skipped,0);assert.equal(h.state.claimed,0);assert.equal(await (await old.match(new URL('app.html',h.root))).text(),'old-game');
  h.state.failPath=null;h.state.tamperPath=new URL('app.html',h.root).pathname;await assert.rejects(h.dispatch('install'),'asset hash mismatch cannot install a mixed release');assert.ok(h.buckets.has('8zsudoku-pwa-v1'));
