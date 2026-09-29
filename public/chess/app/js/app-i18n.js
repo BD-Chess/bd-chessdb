@@ -61,7 +61,9 @@
     "Top line appears when CDB or SF has a measured continuation.":"Top linija se prikaže, ko ima CDB ali SF izmerjeno nadaljevanje.",
     "DCC replay running":"DCC replay teče","Game in progress":"Partija poteka","Stop replay":"Ustavi replay","End game":"Končaj partijo",
     "APP storage is unavailable":"Shramba APP ni na voljo","Offline files ready · Board, saved studies, bundled games and local Stockfish are available without internet.":"Datoteke brez povezave so pripravljene · Šahovnica, shranjene študije, vključene partije in lokalni Stockfish delujejo brez interneta.",
-    "Preparing offline files… Keep APP open until ready.":"Pripravljam datoteke za delo brez povezave… APP pusti odprt, dokler niso pripravljene."
+    "Preparing offline files… Keep APP open until ready.":"Pripravljam datoteke za delo brez povezave… APP pusti odprt, dokler niso pripravljene.",
+    "CDB, SF and DCC analysis…":"CDB, SF in DCC analiza…","CDB refresh failed. Try again later.":"Osvežitev CDB ni uspela. Poskusi znova pozneje.",
+    "SF stopped · previous completed scores remain visible":"SF ustavljen · prejšnje zaključene ocene ostanejo vidne","No measured DCC source":"Ni izmerjenega vira DCC"
   };
   const textBase = new WeakMap(), attrBase = new WeakMap();
   let lang = 'en', busy = false;
@@ -70,9 +72,21 @@
     if (exact[trimmed]) return value.replace(trimmed, exact[trimmed]);
     let m = trimmed.match(/^Position after (\d+) half-moves$/);
     if (m) return value.replace(trimmed, 'Položaj po ' + m[1] + ' polpotezah');
-    m = trimmed.match(/^SF depth (\d+)(.*)$/);
-    if (m) return value.replace(trimmed, 'SF globina ' + m[1] + m[2]);
-    return value;
+    m = trimmed.match(/^SF depth (\d+) · (\d+) nodes…$/);
+    if (m) return value.replace(trimmed, 'SF globina ' + m[1] + ' · ' + m[2] + ' vozlišč…');
+    let translated = trimmed;
+    for (const pair of [
+      ['CDB evaluated candidates','CDB ocenjeni kandidati'],
+      ['CDB network/provider unavailable','CDB omrežje/ponudnik ni na voljo'],
+      ['CDB no usable database evaluation','CDB nima uporabne ocene iz baze'],
+      ['CDB unavailable','CDB ni na voljo'],
+      ['SF Deep analysis active','SF globoka analiza je aktivna'],
+      ['SF local depth','SF lokalna globina'],
+      ['incomplete MultiPV','nepopoln MultiPV'],
+      ['SF unavailable','SF ni na voljo'],
+      ['No measured DCC source','Ni izmerjenega vira DCC']
+    ]) translated = translated.split(pair[0]).join(pair[1]);
+    return translated === trimmed ? value : value.replace(trimmed, translated);
   }
   function textNode(node) {
     if (!node || node.nodeType !== 3 || !node.nodeValue.trim()) return;
