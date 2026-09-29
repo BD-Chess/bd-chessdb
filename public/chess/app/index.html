@@ -8,6 +8,14 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="theme-color" content="#11251d">
   <title>ChessBest APP · iPhone preview</title>
+  <script>
+    (() => {
+      const ua = navigator.userAgent || '';
+      const phoneBrowser = navigator.userAgentData?.mobile === true ||
+        /iPhone|iPod|Windows Phone|Android.+Mobile|Mobile.+Safari/i.test(ua);
+      if (phoneBrowser) document.documentElement.classList.add('app-phone-browser');
+    })();
+  </script>
   <style id="bd-version-style">
     :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
@@ -32,6 +40,16 @@
       main { padding: 0 8px 24px; }
       .preview-controls { flex-wrap: wrap; justify-content: center; gap: 8px; }
     }
+    .app-phone-browser body { min-height: 100dvh; background: #101a16; overflow: hidden; }
+    .app-phone-browser body > header,
+    .app-phone-browser .preview-controls,
+    .app-phone-browser .preview-note { display: none !important; }
+    .app-phone-browser main { display: block; width: 100%; height: 100dvh; padding: 0; }
+    .app-phone-browser .phone-frame {
+      width: 100vw; max-width: none; height: 100dvh; padding: 0;
+      border: 0; border-radius: 0; box-shadow: none; background: #101a16;
+    }
+    .app-phone-browser iframe { width: 100%; height: 100dvh; border-radius: 0; }
   </style>
 </head>
 <body>
@@ -53,7 +71,7 @@
       <a href="play.html">Open without frame ↗</a>
     </div>
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260929-frame1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260929-ui1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
     </div>
     <p class="preview-note">The frame uses the same board and mobile UI files intended for the iPhone app. Native file sharing, safe areas and touch behavior still need device testing.</p>
   </main>
