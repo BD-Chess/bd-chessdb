@@ -8,10 +8,10 @@ const vm=require('node:vm');
 const {Worker:Thread}=require('node:worker_threads');
 const {JSDOM,VirtualConsole}=require('jsdom');
 const LANE=process.env.SUDOKU_APP_LANE||'LAB';
-assert.ok(['LAB','PWA','CURRENT'].includes(LANE),'SUDOKU_APP_LANE must be LAB, PWA or CURRENT');
-const appSegment=LANE==='PWA'?'PWA':LANE==='CURRENT'?'current':'new';
+assert.ok(['LAB','PWA','CURRENT','APP'].includes(LANE),'SUDOKU_APP_LANE must be LAB, PWA, CURRENT or APP');
+const appSegment=LANE==='PWA'?'PWA':LANE==='CURRENT'?'current':LANE==='APP'?'app':'new';
 const appPath=path.resolve(__dirname,`../public/S/${appSegment}/${LANE==='CURRENT'?'index':'app'}.html`);
-const NS=LANE==='CURRENT'?'ai8SudokuCurrentV030':'ai8SudokuNavigatorV020'+(LANE==='PWA'?'PWA':'');
+const NS=LANE==='CURRENT'?'ai8SudokuCurrentV030':LANE==='APP'?'ai8SudokuAppV030':'ai8SudokuNavigatorV020'+(LANE==='PWA'?'PWA':'');
 const fixture='530070000600195000098000060800060003400803001700020006060000280000419005000080079';
 const fixtureSolution='534678912672195348198342567859761423426853791713924856961537284287419635345286179';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -19,7 +19,7 @@ async function until(fn,message,ms=10000){const end=Date.now()+ms;while(Date.now
 const plain=x=>JSON.parse(JSON.stringify(x));
 function valid(grid,givens){const b=grid.flat(),p=givens.flat();assert.equal(b.length,81);for(let i=0;i<81;i++)if(p[i])assert.equal(b[i],p[i],'givens retained');for(let k=0;k<9;k++){const row=b.slice(k*9,k*9+9),col=Array.from({length:9},(_,i)=>b[i*9+k]),box=Array.from({length:9},(_,i)=>b[(Math.floor(k/3)*3+Math.floor(i/3))*9+(k%3)*3+i%3]);for(const u of [row,col,box])assert.deepEqual(u.slice().sort(),[1,2,3,4,5,6,7,8,9]);}}
 async function boot(t,stored={},viewport,options={}){
- const lane=options.lane||LANE,segment=lane==='CURRENT'?'current':lane==='PWA'?'PWA':'new',file=lane==='CURRENT'?'index.html':'app.html';
+ const lane=options.lane||LANE,segment=lane==='CURRENT'?'current':lane==='PWA'?'PWA':lane==='APP'?'app':'new',file=lane==='CURRENT'?'index.html':'app.html';
  const sourcePath=path.resolve(__dirname,`../public/S/${segment}/${file}`);
  const errors=[],requests=[],workers=new Set(),urls=new Map(),downloads=[],delayKinds={},resultKinds={},delayedTimers=new Set();let nextUrl=0;
  const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));

@@ -1,0 +1,65 @@
+/* Native-facing Sudoku surface. Embedded into app.html by the APP preview builder. */
+html{color-scheme:dark}html[data-theme=light]{color-scheme:light}
+body[data-app-surface]{background:var(--bg);overflow-x:hidden}
+body[data-app-surface]::before,body[data-app-surface]::after,body[data-app-surface] .noise{display:none}
+body[data-app-surface] .page{min-height:100dvh;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+body[data-app-surface] .topbar,body[data-app-surface] .footer,body[data-app-surface] .research-notes,body[data-app-surface] .stats-bar{display:none!important}
+body[data-app-surface] .title-block{padding:0 12px}
+body[data-app-surface] .title{font-size:1.34rem}
+body[data-app-surface] .header{padding:12px 16px 0;align-items:center}
+body[data-app-surface] .logo{letter-spacing:.1em}
+body[data-app-surface] .pl-tabs{margin:4px auto 6px}
+body[data-app-surface] .pl-tabs .btn{min-width:85px}
+body[data-app-surface] .main,body[data-app-surface][data-view=play][data-assist=closed] .main{
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:'center' 'right' 'left';
+  max-width:470px;width:100%;padding:5px 10px 8px;gap:4px;left:auto;position:relative
+}
+body[data-app-surface] .col-center{min-width:0;max-width:100%}
+body[data-app-surface] .grid-wrap{padding:4px;max-width:100%}
+body[data-app-surface] .grid{max-width:100%}
+body[data-app-surface] .cell{color:#f7fbff}
+body[data-app-surface] .cell.given{color:#f0f6ff}
+body[data-app-surface] .cell .notes{color:#91d6e6}
+[data-theme=light] body[data-app-surface] .cell{color:var(--text)}
+[data-theme=light] body[data-app-surface] .cell.given{color:var(--muted)}
+[data-theme=light] body[data-app-surface] .cell .notes{color:var(--cyan)}
+body[data-app-surface] .mobile-input-panel{width:100%;max-width:100%;margin:5px 0 0;padding:7px 8px}
+body[data-app-surface] .mobile-input-panel>.panel-title{display:none}
+body[data-app-surface] .numpad{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+body[data-app-surface] .numpad button{min-height:46px;font-size:1.15rem;padding:4px}
+body[data-app-surface] .ux-toolbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:6px}
+body[data-app-surface] .ux-toolbar .btn{min-height:48px;font-size:.77rem;line-height:1.2}
+body[data-app-surface][data-view=play][data-assist=closed] #uxHint,
+body[data-app-surface][data-view=play][data-assist=closed] #uxWhy{display:none}
+body[data-app-surface] #plGameStatus{margin:4px 0 0;min-height:1em;font-size:.74rem}
+body[data-app-surface] .col-center>.pl-notice{margin:7px 0 0}
+body[data-app-surface] .col-center>.pl-notice .btn{font-size:.73rem;min-height:34px}
+body[data-app-surface] .col-left{display:none!important}
+body[data-app-surface][data-view=lab] .col-left{display:flex!important}
+body[data-app-surface]:not([data-view=lab]) .col-right{visibility:visible}
+body[data-app-surface]:not([data-view=lab]) .col-right>.panel:not(#aiAssistPanel){display:none!important}
+body[data-app-surface] #aiAssistPanel{display:none!important}
+body[data-app-surface][data-app-panel=assist] #aiAssistPanel:not([hidden]){
+  display:block!important;position:fixed;z-index:3002;left:50%;bottom:calc(69px + env(safe-area-inset-bottom));top:auto;
+  transform:translateX(-50%);width:min(100% - 20px,450px);max-height:min(66dvh,570px);
+  overflow:auto;overscroll-behavior:contain;padding:16px!important;background:var(--bg3);color:var(--text);
+  border:1px solid var(--border2);box-shadow:0 18px 50px #000b;border-radius:20px
+}
+body[data-app-surface] #aiAssistPanel .assist-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body[data-app-surface] #aiAssistPanel .btn{min-height:44px}
+body[data-app-surface] #appAssistScrim{display:none}
+body[data-app-surface][data-app-panel=assist] #appAssistScrim{display:block;position:fixed;inset:0;z-index:3001;background:#020711a8;border:0;width:100%;cursor:pointer}
+body[data-app-surface] #appDock{display:flex;position:fixed;z-index:3003;bottom:0;left:0;right:0;justify-content:center;gap:8px;padding:8px 12px calc(9px + env(safe-area-inset-bottom));background:#0b1629f5;border-top:1px solid #00e5ff33;backdrop-filter:blur(12px)}
+body[data-app-surface] #appDock button{min-height:43px;max-width:220px;flex:1;font:700 .83rem system-ui;border:1px solid #57708c;border-radius:11px;background:#172642;color:#ebf6ff;cursor:pointer}
+body[data-app-surface] #appDock button[aria-pressed=true]{border-color:#00e5ff;color:#00e5ff;background:#103046}
+[data-theme=light] body[data-app-surface] #appDock{background:#f7fafff5;border-top-color:var(--border2)}
+[data-theme=light] body[data-app-surface] #appDock button{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true]{background:var(--cyan-dim);color:var(--cyan);border-color:var(--cyan)}
+body[data-app-surface][data-view=play][data-assist=closed] #appDock,
+body[data-app-surface][data-view=lab] #appDock{display:none}
+body[data-app-surface]:not([data-view=lab]):not([data-assist=closed]) .page,
+body[data-app-surface][data-view=learn] .page{padding-bottom:calc(75px + env(safe-area-inset-bottom))}
+body[data-app-surface] .nav-modal{z-index:4000}
+body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
+@media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
+@media (prefers-reduced-motion:reduce){body[data-app-surface] #appAssistScrim{transition:none}}
