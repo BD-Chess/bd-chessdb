@@ -365,9 +365,11 @@ body{font-family:system-ui,sans-serif;overflow-x:auto}
 .pl-tabs .btn{min-width:78px;min-height:42px;font-size:15px;border-radius:8px;border-color:transparent}
 .pl-tabs [aria-pressed=true]{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
 .pl-notice{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 12px 8px}.pl-notice .btn{width:auto;font-size:14px}
-/* Equal side tracks keep Play/Learn's board centered under the title. */
-body:not([data-view=lab]) .main{grid-template-columns:200px minmax(0,1fr) 200px;grid-template-areas:'left center .';max-width:1240px}
-@media(min-width:761px) and (max-width:840px){body:not([data-view=lab]) .main{grid-template-columns:160px minmax(0,1fr) 160px}}
+/* Play and Learn keep the game centered while the teaching panel has its own column. */
+body:not([data-view=lab]) .main{grid-template-columns:200px minmax(0,1fr) 260px;grid-template-areas:'left center right';max-width:1280px}
+@media(min-width:761px) and (max-width:900px){body:not([data-view=lab]) .main{grid-template-columns:160px minmax(0,1fr) 220px}}
+body[data-view=play][data-assist=closed] .main{grid-template-columns:200px minmax(0,1fr) 200px;max-width:1240px}
+@media(min-width:761px) and (max-width:900px){body[data-view=play][data-assist=closed] .main{grid-template-columns:160px minmax(0,1fr) 160px}}
 /* Desktop Play: move the whole visual game composition together.
    Keep the title/tabs centered on the Sudoku board while the toolbar stays to its left. */
 @media(min-width:1000px){
@@ -381,8 +383,14 @@ body:not([data-view=lab]) .main{grid-template-columns:200px minmax(0,1fr) 200px;
     margin-top:32px;
   }
 }
-body:not([data-view=lab]) .col-right,body:not([data-view=lab]) #humanTracePanel,body:not([data-view=lab]) .research-notes,body[data-view=play] #gameReviewPanel,body[data-view=play] #navigatorPanel,body:not([data-view=lab]) .nav-extra,body:not([data-view=lab]) .stats-bar{display:none!important}
-body[data-view=learn] #navigatorPanel{order:3}body[data-view=learn] #plLearn{order:2}
+body:not([data-view=lab]) .col-right>.panel:not(#aiAssistPanel),body:not([data-view=lab]) #humanTracePanel,body:not([data-view=lab]) .research-notes,body[data-view=play] #gameReviewPanel,body:not([data-view=lab]) #navigatorPanel,body:not([data-view=lab]) .nav-extra,body:not([data-view=lab]) .stats-bar{display:none!important}
+body[data-view=play][data-assist=closed] .col-right{visibility:hidden}
+body[data-view=lab] #aiAssistPanel{display:none!important}
+body[data-view=learn] #plLearn{order:2}
+#aiAssistPanel{width:100%;align-self:start;padding:14px!important;position:sticky;top:12px;font-size:14px;line-height:1.45;border-color:rgba(0,229,255,.36)}
+#aiAssistPanel .panel-title{font-size:15px}#aiAssistText{margin:10px 0;min-height:4em;white-space:pre-line;overflow-wrap:anywhere}
+#aiAssistPanel .btn{min-height:38px;font-size:13px;padding:7px 5px}#aiAssistPanel .assist-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+#aiAssistPanel #aiAssistAll{margin-top:9px}#aiAssistPanel .assist-note{color:var(--muted);font-size:12px;margin:8px 0 0}
 #plLearn,#plLabAccess,#plCompletion,#plStorage{width:100%;margin:10px 0;max-width:680px;font-size:16px}
 #plLearn h2,#plLabAccess h2{font-size:18px;margin-bottom:10px}.pl-caption{font-size:14px;color:var(--muted);margin:8px;overflow-wrap:anywhere;max-width:680px}
 .pl-desktop-actions{margin-top:8px}#plRedo{margin-top:5px}#plInputStatus{font-size:14px;line-height:1.4;margin-top:6px;color:var(--cyan)}
@@ -407,7 +415,7 @@ body[data-notes-size=large]{--note-scale:.29}
 [data-theme=light] .nav-mini .nav-mini-focus{background:var(--gold-dim);color:var(--gold)}[data-theme=light] .nav-path details,[data-theme=light] .nav-extra summary{color:var(--muted)}[data-theme=light] .nav-lab{background:var(--surface2);color:var(--text)}[data-theme=light] #helpModal>div{background:var(--bg2)!important;color:var(--text)}
 body[data-quiet=true] *,body[data-quiet=true]::before,body[data-quiet=true]::after{animation:none!important;transition:none!important}
 @media(prefers-reduced-motion:reduce){*,body::before,body::after{animation:none!important;transition:none!important}}
-@media(max-width:760px){body:not([data-view=lab]) .main{grid-template-columns:1fr;grid-template-areas:'center' 'left';padding:6px 10px;max-width:100%}.pl-desktop-actions,#plRedo{display:none}.pl-tabs{margin:4px auto}.pl-tabs .btn{min-height:38px}.pl-notice .btn{font-size:12px;min-height:34px}.pl-notice{margin-bottom:2px}.nav-dialog{padding:16px;max-width:100%}.pl-game{grid-template-columns:1fr}.pl-game .nav-mini{display:none}.pl-caption{font-size:12px}.ux-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.ux-menu .btn{overflow-wrap:anywhere}.panel-title{font-size:12px}}
+@media(max-width:760px){body:not([data-view=lab]) .main{grid-template-columns:1fr;grid-template-areas:'center' 'right' 'left';padding:6px 10px;max-width:100%}body[data-view=play][data-assist=closed] .main{grid-template-columns:1fr;grid-template-areas:'center' 'left'}#aiAssistPanel{position:static}.pl-desktop-actions,#plRedo{display:none}.pl-tabs{margin:4px auto}.pl-tabs .btn{min-height:38px}.pl-notice .btn{font-size:12px;min-height:34px}.nav-dialog{padding:16px;max-width:100%}.pl-game{grid-template-columns:1fr}.pl-game .nav-mini{display:none}.pl-caption{font-size:12px}.ux-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.ux-menu .btn{overflow-wrap:anywhere}.panel-title{font-size:12px}}
 
 </style>
 <style id="navigator-style">
@@ -1619,7 +1627,7 @@ function render(){
   if(isSolved(playerGrid)){
     let ok=true;for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(playerGrid[r][c]!==solution[r][c])ok=false;
     if(ok){setStatus('Puzzle solved! 🎉','win');stopTimer();
-      if(currentDiff&&(!gameStats.bestTimes[currentDiff]||timerSeconds<gameStats.bestTimes[currentDiff])){gameStats.bestTimes[currentDiff]=timerSeconds;saveStats();renderStats()}}
+      if(currentDiff&&!window.SudokuNavigator?.product?.assistedSolveAll()&&(!gameStats.bestTimes[currentDiff]||timerSeconds<gameStats.bestTimes[currentDiff])){gameStats.bestTimes[currentDiff]=timerSeconds;saveStats();renderStats()}}
   }
   updateMetrics();
 }
@@ -3016,10 +3024,10 @@ const product=(()=>{
  function sync(){if(!ready)return;$('plInputStatus').textContent=armedDigit?`Number-first · ${armedDigit} selected · tap an empty cell · Escape exits`:pref('entryMode')==='number'?'Number-first · choose a digit':'Cell-first';$('plInputStatus').hidden=pref('entryMode')!=='number';document.querySelectorAll('#numpad button').forEach((b,i)=>{b.classList.toggle('pl-armed',armedDigit===i+1);b.setAttribute('aria-pressed',String(armedDigit===i+1));});if($('plRedo'))$('plRedo').disabled=!redos.length||mobileUX.blocked();if($('plReturn'))$('plReturn').hidden=!returnGame;const rating=generationEvidence?.difficulty?.rating;$('plRating').textContent=rating?.status==='RATED'?`${currentDiff} · evaluator P${rating.tier} · checked path · ${rating.version}`:puzzle?`${currentDiff||'Imported'} · original label; no new technique rating`:'Choose a difficulty to begin';if(generationEvidence?.provenance?.startsWith('fixed-profile-example:'))$('plRating').textContent+=' · fixed catalog example (may repeat)';$('plRating').hidden=!puzzle;
   for(const cell of $('grid').children){const i=+cell.dataset.index,v=playerGrid?.flat()[i];cell.setAttribute('role','button');cell.tabIndex=i===(selectedCell??0)?0:-1;cell.setAttribute('aria-label',`Row ${Math.floor(i/9)+1}, column ${i%9+1}, ${v||'empty'}${givenCells?.flat()[i]?', given':''}${cell.classList.contains('error')&&pref('feedback')==='conflicts'?', direct conflict':''}`);}
  }
- function switchView(next){if(!['play','learn','lab'].includes(next)||mobileUX.hasDemo())return;mobileUX.cancelGesture();disarm();resetAnalysis();cancelSolve();if(genJob){genJob.cancel();genJob=null;generationToken++;showBusy(false);}if(aiAnimating)aiPause();view=next;document.body.dataset.view=next;for(const b of document.querySelectorAll('[data-pl-view]'))b.setAttribute('aria-pressed',String(b.dataset.plView===next));$('plLearn').hidden=next!=='learn';$('plLabAccess').hidden=next!=='lab';sync();}
+ function switchView(next){if(!['play','learn','lab'].includes(next)||mobileUX.hasDemo())return;mobileUX.cancelGesture();disarm();resetAnalysis();cancelSolve();if(genJob){genJob.cancel();genJob=null;generationToken++;showBusy(false);}if(aiAnimating)aiPause();view=next;document.body.dataset.view=next;for(const b of document.querySelectorAll('[data-pl-view]'))b.setAttribute('aria-pressed',String(b.dataset.plView===next));$('plLearn').hidden=next!=='learn';$('plLabAccess').hidden=next!=='lab';aiAssist.syncView();sync();}
  function capture(){return{board:playerGrid.flat(),notes:notes.flat().map(x=>[...x]),lineage:lineage?J(lineage):null,selectedCell};}
  function stateKey(s){return JSON.stringify([s.board,s.notes,s.lineage]);}
- function finish(before,kind='entry',cell=selectedCell){const after=capture();if(stateKey(before)===stateKey(after))return false;let item=history.at(-1);if(kind==='proof'||!item){const i=cell??0;item={r:Math.floor(i/9),c:i%9,prev:before.board[i],pn:new Set(before.notes[i]),action:'erase_value'};history.push(item);}item.transaction={version:1,id:gameId+':'+(++transactionSeq),kind,before,after};if(history.length>MAX_HISTORY)history.splice(0,history.length-MAX_HISTORY);redos=[];completeOnce();scheduleSave();sync();return true;}
+ function finish(before,kind='entry',cell=selectedCell){const after=capture();if(stateKey(before)===stateKey(after))return false;let item=history.at(-1);if(kind==='proof'||kind==='assist_solve_all'||!item){const i=cell??0;item={r:Math.floor(i/9),c:i%9,prev:before.board[i],pn:new Set(before.notes[i]),action:kind==='assist_solve_all'?'assist_solve_all':'erase_value'};history.push(item);}item.transaction={version:1,id:gameId+':'+(++transactionSeq),kind,before,after};if(history.length>MAX_HISTORY)history.splice(0,history.length-MAX_HISTORY);redos=[];completeOnce();scheduleSave();sync();return true;}
  function restoreBoard(s){playerGrid=grid2(s.board);notes=grid2(s.notes).map(row=>row.map(x=>new Set(x)));selectedCell=s.selectedCell;lineage=s.lineage?J(s.lineage):null;try{navState=replayLineage(lineage,s.board);}catch(_){freshState();}correctionHighlightActive=false;resetAnalysis();cancelSolve();aiLog=[];preparedBoardKey=null;}
  function travel(redo,source='pointer'){
   if(mobileUX.blocked()||!playerGrid||aiAnimating||tracePaused||recoveryAwaitingContinue)return;
@@ -3089,28 +3097,191 @@ const product=(()=>{
  function dailyDialog(){const now=Date.now();openDialog('Daily puzzle · UTC',`<p>One shared puzzle per UTC date. The immutable ${C.DAILY_CATALOG.length}-puzzle local catalog repeats every ${C.DAILY_CATALOG.length} days. No account or streak.</p><div class="ux-menu">${Array.from({length:7},(_,i)=>utcDate(new Date(now-i*86400000))).map(date=>`<button class="btn" data-daily="${date}">${date} UTC</button>`).join('')}</div>`);$('navModalBody').querySelectorAll('[data-daily]').forEach(b=>b.onclick=async()=>{const date=b.dataset.daily;closeDialog();await startDaily(date);});}
  async function startDaily(date){const meta=dailyIdentity(date),old=library.entries.find(e=>e.session.daily?.date===date);if(old)return resume(old.id);const id=gameId,token=generationToken;try{const p=C.flat(C.DAILY_CATALOG[meta.index].givens),r=await run('rate',{board:p},9000).promise;if(id!==gameId||token!==generationToken)return false;if(r.status!=='RATED')throw Error('Daily catalog verification '+r.status);return loadPuzzle(p,r,{daily:meta});}catch(e){notify('Daily not opened: '+e.message);return false;}}
  function install(){readPrefs();document.body.dataset.view='play';document.querySelector('.title').textContent='8zSudoku';document.querySelector('.title-block').insertAdjacentHTML('afterend','<nav class="pl-tabs" aria-label="Game views"><button class="btn" data-pl-view="play" aria-pressed="true">Play</button><button class="btn" data-pl-view="learn" aria-pressed="false">Learn</button><button class="btn" data-pl-view="lab" aria-pressed="false">Lab</button></nav><div class="pl-notice" id="plNotice"><button class="btn" id="plNewsOpen">What’s new</button><button class="btn" id="plTutorialOpen">Quick tutorial · optional</button></div>');document.querySelectorAll('[data-pl-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.plView));$('plNewsOpen').onclick=news;$('plTutorialOpen').onclick=tutorialDialog;$('plNotice').hidden=prefs.notice===RELEASE;
-  const numbers=$('numpad').closest('.panel');numbers.id='plNumbers';numbers.insertAdjacentHTML('beforeend','<p id="plInputStatus" role="status" hidden></p><div class="pl-desktop-actions ux-menu"><button class="btn" id="plHint">Hint</button><button class="btn" id="plWhy">Why?</button><button class="btn" id="plDemo">AI Solve</button><button class="btn" id="plMore">More ⋯</button></div><button class="btn" id="plRedo">Redo</button>');$('plHint').onclick=()=>mobileUX.hint('nudge',true);$('plWhy').onclick=()=>mobileUX.hint('explain',true);$('plDemo').onclick=()=>mobileUX.requestDemo();$('plMore').onclick=more;$('plRedo').onclick=()=>travel(true);
+  const numbers=$('numpad').closest('.panel');numbers.id='plNumbers';numbers.insertAdjacentHTML('beforeend','<p id="plInputStatus" role="status" hidden></p><div class="pl-desktop-actions ux-menu"><button class="btn" id="plHint">Hint</button><button class="btn" id="plWhy">Why?</button><button class="btn" id="plDemo">AI Solve</button><button class="btn" id="plMore">More ⋯</button></div><button class="btn" id="plRedo">Redo</button>');$('plHint').onclick=()=>product.view()==='lab'?mobileUX.hint('nudge',true):aiAssist.hint('nudge');$('plWhy').onclick=()=>product.view()==='lab'?mobileUX.hint('explain',true):aiAssist.hint('explain');$('plDemo').onclick=()=>product.view()==='lab'?mobileUX.requestDemo():aiAssist.open();$('plMore').onclick=more;$('plRedo').onclick=()=>travel(true);
   document.querySelector('.col-center').insertAdjacentHTML('beforeend','<p class="pl-caption" id="plRating"></p><section class="panel" id="plLearn" hidden><h2>Learn one technique</h2><div class="ux-menu" id="plLessons"></div><div id="plLearnActions" class="ux-menu"></div><button class="btn" id="plReturn" hidden>Return to my game</button></section><section class="panel" id="plLabAccess" hidden><h2>Research controls</h2><p>Controller comparisons and local observations stay optional. Opening this view starts no analysis.</p></section><section class="panel" id="plCompletion" hidden><p id="plCompletionText"></p><div class="ux-menu"><button class="btn" id="plFinishReview">Review</button><button class="btn" id="plFinishPractice">Suggest practice</button></div></section><section class="panel" id="plStorage" role="status" hidden><p id="plStorageText"></p><button class="btn" id="plExportRecovery">Export current game</button><button class="btn" id="plStorageRecovery">Recovery options</button></section>');$('plLessons').innerHTML=C.LABELS.slice(0,8).map((x,t)=>`<button class="btn" data-lesson="${t}">${x}</button>`).join('');$('plLessons').querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>lesson(+b.dataset.lesson));for(const id of ['navProfile','navSuggest','navTutor'])$('plLearnActions').appendChild($(id));$('plReturn').onclick=returnPractice;$('plFinishReview').onclick=()=>rows.length?showReview(rows.at(-1).id):switchView('learn');$('plFinishPractice').onclick=()=>{switchView('learn');suggestPractice();};$('plExportRecovery').onclick=exportAll;$('plStorageRecovery').onclick=recoveryDialog;
   for(const n of document.querySelectorAll('.strat-btn,.collapse-hdr,.diff-hint span')){n.setAttribute('role','button');n.tabIndex=0;n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();n.click();}});}
   document.addEventListener('keydown',e=>{if(e.target.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal').hidden)return;if(e.key==='Escape'){disarm();return;}if((e.ctrlKey||e.metaKey)&&((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y')){e.preventDefault();e.stopImmediatePropagation();travel(true,'key');}if(e.target.closest?.('.cell')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectCell(+e.target.closest('.cell').dataset.index,'key');}},true);
   window.addEventListener('storage',e=>{if(e.key===EPOCH||e.key===KEY){mobileUX.cancelGesture();disarm();if(e.key===EPOCH){deleted=true;generationToken++;cancelSolve();genJob?.cancel();resetAnalysis();clearTimeout(saveTimer);stopTimer();humanTraceRecorder.trace=null;humanTraceRecorder.memoryStored=null;humanTraceRecorder.memoryConsent=false;}frozen=true;storageError(Error(e.key===EPOCH?'LAB data deleted in another tab':'Newer library in another tab; reload to continue'));}});window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change',()=>{if(pref('theme')==='system')applyAppearance();});ready=true;applyAppearance();sync();
  }
- return{RELEASE,SCHEMA,install,pref,writePref,feedback:()=>pref('feedback'),switchView,view:()=>view,arm,armed:()=>armedDigit,disarm,sync,capture,finish,cleanNotes,undo:s=>travel(false,s),redo:s=>travel(true,s),historyData,validateHistory,restored,mergeKnowledge,storageGuard,flush,flushSync,archive,saveSoon,bootSession,migrate,validateSessionData,libraryDialog,deleteEverything,checkCorrectness,settingsFields,more,about,lesson,lessonExample,tutorialDialog,shareCodec,decodeShare,inspectShare,dailyIdentity,startDaily,openProfileExample,returnPractice,preparePractice:id=>{returnGame=id||gameId;},adoptTrace:()=>{redos=recoveredHumanTraceState?.redo||[];gameId='trace-'+(humanTraceRecorder.trace?.initial_state.board_hash||writer).slice(0,32);extra={assistanceUnknown:true};},reset:()=>{redos=[];extra={};completion=null;daily=null;returnGame=null;disarm();if($('plCompletion'))$('plCompletion').hidden=true;},base:()=>extra,canWrite:()=>!frozen&&!deleted,ready:()=>ready,block:e=>{frozen=true;storageError(e);},whenSaved:()=>saveChain,entries:()=>J(library.entries)};
+ return{RELEASE,SCHEMA,install,pref,writePref,feedback:()=>pref('feedback'),switchView,view:()=>view,arm,armed:()=>armedDigit,disarm,sync,capture,finish,cleanNotes,undo:s=>travel(false,s),redo:s=>travel(true,s),historyData,validateHistory,restored,mergeKnowledge,storageGuard,flush,flushSync,archive,saveSoon,bootSession,migrate,validateSessionData,libraryDialog,deleteEverything,checkCorrectness,settingsFields,more,about,lesson,lessonExample,tutorialDialog,shareCodec,decodeShare,inspectShare,dailyIdentity,startDaily,openProfileExample,returnPractice,preparePractice:id=>{returnGame=id||gameId;},adoptTrace:()=>{redos=recoveredHumanTraceState?.redo||[];gameId='trace-'+(humanTraceRecorder.trace?.initial_state.board_hash||writer).slice(0,32);extra={assistanceUnknown:true};},reset:()=>{redos=[];extra={};completion=null;daily=null;returnGame=null;disarm();if($('plCompletion'))$('plCompletion').hidden=true;},base:()=>extra,assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),canWrite:()=>!frozen&&!deleted,ready:()=>ready,block:e=>{frozen=true;storageError(e);},whenSaved:()=>saveChain,entries:()=>J(library.entries)};
+})();
+
+// Guided help deliberately distinguishes a logical move from information taken
+// from the certified unique answer. The research Navigator above stays blind.
+const aiAssist=(()=>{
+ let opened=false,step=null,disclosedKey=null;
+ let message={en:'Choose Hint for a gentle suggestion, Why? for reasoning, or Next step for guided solving.',sl:'Za nežen namig izberi Namig, za razlago Zakaj?, za vodeno reševanje pa Naslednji korak.'};
+ const key=()=>playerGrid?.flat().join('')||'';
+ const loc=i=>`R${Math.floor(i/9)+1}C${i%9+1}`;
+ const sl=()=>window.SudokuI18n?.get?.()==='sl'||(!window.SudokuI18n&&document.documentElement.lang==='sl');
+ const tx=value=>window.SudokuI18n?.translate?.(value)||value;
+ const slDetail=(value,fallback)=>tx(value)===value?fallback:tx(value);
+ function refreshLanguage(){
+  const labels={aiAssistPanel:['AI Assist','Pomoč AI'],aiAssistHint:['Hint','Namig'],aiAssistWhy:['Why?','Zakaj?'],aiAssistRemove:['Remove wrong entries','Odstrani napačne vnose'],aiAssistNext:['Next step','Naslednji korak'],aiAssistReveal:['Reveal digit','Razkrij številko'],aiAssistApply:['Apply one digit','Vpiši eno številko'],aiAssistAll:['Solve all','Reši vse'],aiAssistClose:['Close','Zapri']};
+  for(const[id,pair]of Object.entries(labels)){const el=$(id);if(!el)continue;const value=pair[Number(sl())];if(id==='aiAssistPanel'){if(el.getAttribute('aria-label')!==value)el.setAttribute('aria-label',value);const title=el.querySelector('.panel-title');if(title.textContent!==value)title.textContent=value;}else if(el.textContent!==value)el.textContent=value;}
+  const note=$('aiAssistPanel')?.querySelector('.assist-note'),noteText=sl()?'Primerjave z rešitvijo se zabeležijo kot pomoč. Začetne številke ostanejo nespremenjene. Razveljavi in Uveljavi znova povrneta vsako potezo.':'Answer comparisons are recorded as assistance. Givens stay fixed. Undo and Redo restore each action.';
+  if(note&&note.textContent!==noteText)note.textContent=noteText;
+  const status=$('aiAssistText'),value=message[sl()?'sl':'en'];if(status&&status.textContent!==value)status.textContent=value;
+  if($('aiAssistConfirmAll')){
+   $('navModalTitle').textContent=sl()?'Rešim vse?':'Solve all?';
+   $('navModalBody').querySelector('p').textContent=sl()?'S preverjeno enolično rešitvijo bodo izpolnjene preostale celice in zamenjani napačni vnosi, ki jih lahko spremeniš. Pomoč z rešitvijo bo zabeležena; vse je mogoče razveljaviti z eno potezo.':'This will fill the remaining cells and replace incorrect editable entries using the certified unique solution. It is recorded as answer assistance and can be undone as one action.';
+   $('aiAssistConfirmAll').textContent=sl()?'Reši vse zdaj':'Solve all now';$('aiAssistCancelAll').textContent=sl()?'Nadaljuj igro':'Keep playing';
+  }
+ }
+ function syncView(){const panel=$('aiAssistPanel');if(!panel)return;panel.hidden=product.view()==='lab'||product.view()==='play'&&!opened;document.body.dataset.assist=panel.hidden?'closed':'open';}
+ function show(en,slText=en){message={en,sl:slText};refreshLanguage();syncView();}
+ function controls(wrong=false,planned=false){
+  $('aiAssistRemove').hidden=!wrong;
+  $('aiAssistNext').hidden=wrong;
+  $('aiAssistReveal').hidden=!planned||wrong;
+  $('aiAssistApply').hidden=!planned||wrong||!step?.revealed;
+ }
+ function disclose(type,stage){expose(type,stage);}
+ function answerComparison(){
+  if(disclosedKey===gameId+':'+key())return;
+  disclose('ai_assist_explicit_answer_comparison',4);disclosedKey=gameId+':'+key();
+ }
+ function localConflict(){
+  if(!playerGrid)return null;
+ const board=playerGrid.flat();
+  for(let i=0;i<81;i++)if(!board[i]){
+   if(!getCandidates(playerGrid,Math.floor(i/9),i%9).size)return{en:`${loc(i)} has no candidate under the current entries.`,sl:`Celica ${loc(i)} pri trenutnih vnosih nima nobenega kandidata.`};
+  }
+  for(let u=0;u<27;u++)for(let d=1;d<=9;d++){
+   if(C.U[u].some(i=>board[i]===d))continue;
+   if(!C.U[u].some(i=>!board[i]&&getCandidates(playerGrid,Math.floor(i/9),i%9).has(d))){
+    const unit=u<9?`row ${u+1}`:u<18?`column ${u-8}`:`box ${u-17}`;
+    const unitSL=u<9?`vrstici ${u+1}`:u<18?`stolpcu ${u-8}`:`kvadratu ${u-17}`;
+    return{en:`Digit ${d} has no available cell in ${unit} under the current entries.`,sl:`Števka ${d} pri trenutnih vnosih nima razpoložljive celice v ${unitSL}.`};
+   }
+  }
+  return null;
+ }
+ function diagnose(explain=false){
+  const wrong=currentWrongEntries();if(!wrong.length)return false;
+  step=null;answerComparison();correctionHighlightActive=true;
+  const primary=primaryWrongEntry(wrong),where=loc(primary.cell);
+  const wrongList=wrong.map(entry=>`${loc(entry.cell)}=${entry.current}`).join(', ');
+  selectedCell=primary.cell;render();
+  if(explain){
+   const symptom=localConflict();
+   show(`${where} contains ${primary.current}, while the certified unique solution has ${primary.expected}. ${symptom?.en||'This entry may not create an immediate duplicate or empty candidate; comparison with the certified answer identifies it.'} ${wrong.length} editable ${wrong.length===1?'entry differs':'entries differ'}. Remove highlighted wrong entries to continue. This uses answer information, not a deduction from your entries.`,
+   `V celici ${where} je ${primary.current}, v preverjeni enolični rešitvi pa ${primary.expected}. ${symptom?.sl||'Ta vnos morda ne povzroči neposrednega podvajanja ali praznega nabora kandidatov; prepoznali smo ga s primerjavo s preverjeno rešitvijo.'} Razlikuje se ${wrong.length} ${wrong.length===1?'vnos':'vnosov'}, ki jih lahko spremeniš. Za nadaljevanje odstrani označene napačne vnose. To je informacija iz rešitve in ne logičen sklep iz tvojih vnosov.`);
+   show(`${message.en}\nIncorrect editable entries: ${wrongList}.`,`${message.sl}\nNapačni vnosi, ki jih lahko spremeniš: ${wrongList}.`);
+  }else show(`${where} is one of ${wrong.length} editable ${wrong.length===1?'entry':'entries'} that differ from the certified unique solution. The wrong entries are highlighted. Hint has not changed the board. Choose Why? for an explanation, or remove the highlighted entries one at a time.`,
+  `Celica ${where} je eden od ${wrong.length} napačnih vnosov, ki jih lahko spremeniš. Napačni vnosi so označeni. Namig ni spremenil mreže. Izberi Zakaj? za razlago ali postopoma odstrani označene vnose.`);
+  if(!explain)show(`${message.en}\nIncorrect editable entries: ${wrongList}.`,`${message.sl}\nNapačni vnosi, ki jih lahko spremeniš: ${wrongList}.`);
+  controls(true,false);return true;
+ }
+ function checkedStep(){
+  const state=AI8Proof.makeState(playerGrid);
+  for(let n=0;n<120;n++){
+   const q=AI8Proof.nextStep(state);if(!q)break;
+   if(q.kind==='placement'){
+    if(!playerGrid[Math.floor(q.cell/9)][q.cell%9]&&q.value===solution[Math.floor(q.cell/9)][q.cell%9])
+     return{cell:q.cell,value:q.value,reason:q,eliminations:n,kind:'logic',board:key()};
+    break;
+   }
+   const exclusions=q.kind==='multi_elimination'?q.eliminations.map(e=>[e.cell,e.digit]):(q.eliminations||[]).map(i=>[i,q.digit]);
+   if(exclusions.some(([i,d])=>state.board[Math.floor(i/9)][i%9]===0&&solution[Math.floor(i/9)][i%9]===d))break;
+   if(!AI8Proof.apply(state,q)||AI8Proof.contradiction(state))break;
+  }
+  const i=playerGrid.flat().findIndex(v=>v===0);
+  return i<0?null:{cell:i,value:solution[Math.floor(i/9)][i%9],kind:'answer',board:key()};
+ }
+ function plan(stage='nudge'){
+  if(!puzzle||!solution){show('Choose a difficulty to start a certified puzzle.','Za začetek preverjene uganke izberi težavnost.');controls();return;}
+  if(isSolved(playerGrid)){show('Puzzle is already solved.','Uganka je že rešena.');controls();return;}
+  if(diagnose(stage==='explain'))return;
+  correctionHighlightActive=false;
+  if(!step||step.board!==key())step=checkedStep();
+  if(!step){show('No empty cell remains. Check the completed grid.','Ni več praznih celic. Preveri izpolnjeno mrežo.');controls();return;}
+  const where=loc(step.cell);selectedCell=step.cell;render();
+  if(stage==='reveal')step.revealed=true;
+  controls(false,true);
+  if(stage==='reveal'){
+   disclose(step.kind==='logic'?'ai_assist_reveal_checked_step':'ai_assist_reveal_answer',3);
+   const label=AI8Proof.TECH_LABEL[step.reason?.technique]||step.reason?.technique;
+   show(`${where} = ${step.value}. ${step.kind==='logic'?`${label}: ${step.reason.explain}`:'This digit comes from the certified unique solution; no logical deduction is claimed.'} Apply enters this one digit only.`,
+   `${where} = ${step.value}. ${step.kind==='logic'?`${tx(label)}: ${slDetail(step.reason.explain,'Preverjeni logični korak določi to številko.')}`:'Ta številka izhaja iz preverjene enolične rešitve; ne trdimo, da je bila logično izpeljana.'} Vpiši eno številko vnese samo to številko.`);
+  }else if(stage==='explain'){
+   disclose('ai_assist_explain',2);
+   show(step.kind==='logic'?`${where}: ${step.reason.explain}${step.eliminations?' Earlier candidate eliminations in this suggestion were checked against the certified solution.':''} Reveal shows just this digit.`:`${where}: no direct teaching step was found within the local technique path. A digit from the certified answer is available if you choose Reveal; this is not a logical explanation.`,
+   step.kind==='logic'?`${where}: ${slDetail(step.reason.explain,'Preverjeni logični korak določi naslednjo številko.')}${step.eliminations?' Predhodne izločitve kandidatov v tem predlogu so bile preverjene s preverjeno rešitvijo.':''} Razkrij številko pokaže samo to številko.`:`${where}: po lokalni poti tehnik nismo našli neposrednega učnega koraka. Z izbiro Razkrij številko lahko vidiš številko iz preverjene rešitve; to ni logična razlaga.`);
+  }else{
+   disclose('ai_assist_nudge',1);
+   show(step.kind==='logic'?`${where}: ${step.reason.nudge} Ask Why? for the reasoning, then Reveal and Apply one digit.`:`Look at ${where}. No checked teaching step was found within the local technique path. Reveal can show one answer-based digit, clearly labelled.`,
+   step.kind==='logic'?`${where}: ${slDetail(step.reason.nudge,'Poglej kandidate te celice v njeni vrstici, stolpcu in kvadratu.')} Izberi Zakaj? za utemeljitev, nato razkrij in vpiši eno številko.`:`Poglej celico ${where}. Po lokalni poti tehnik nismo našli preverjenega učnega koraka. Razkrij številko lahko pokaže eno jasno označeno številko iz rešitve.`);
+  }
+ }
+ function open(){opened=true;syncView();if(!puzzle){show('Choose a difficulty to start a certified puzzle.','Za začetek preverjene uganke izberi težavnost.');controls();return;}plan('nudge');}
+ function hint(stage='nudge'){opened=true;syncView();if(tracePaused){show('Human Trace is paused. Resume before requesting help.','Človeški zapis je začasno ustavljen. Pred zahtevo za pomoč ga nadaljuj.');return;}plan(stage);}
+ function removeWrong(){
+  if(mobileUX.blocked()||!product.canWrite()||blockAIWhileHumanTrace('AI correction'))return;
+  const wrong=currentWrongEntries();if(!wrong.length){plan();return;}
+  answerComparison();let removed=0;
+  for(const entry of wrong){
+   if(givenCells[entry.r][entry.c]||playerGrid[entry.r][entry.c]!==entry.current)continue;
+   if(selectedCell!==entry.cell)selectCell(entry.cell,'ai_assist');
+   eraseCell('ai_assist');if(playerGrid[entry.r][entry.c]===0)removed++;
+  }
+  if(removed){disclose('ai_assist_correction_erased',4);correctionHighlightActive=false;step=null;plan('nudge');
+   show(`${removed} incorrect editable ${removed===1?'entry was':'entries were'} removed, one reversible move at a time. ${message.en}`,
+   `Odstranjenih je ${removed} napačnih ${removed===1?'vnos':'vnosov'}, ki jih lahko spremeniš, vsakega posebej z možnostjo razveljavitve. ${message.sl}`);
+  }
+ }
+ function reveal(){opened=true;syncView();plan('reveal');}
+ function apply(){
+  if(mobileUX.blocked()||!product.canWrite()||blockAIWhileHumanTrace('AI placement'))return;
+  if(!step?.revealed||step.board!==key()||currentWrongEntries().length){step=null;plan();return;}
+  const {cell,value}=step,r=Math.floor(cell/9),c=cell%9;
+  if(givenCells[r][c]||playerGrid[r][c]!==0||solution[r][c]!==value){step=null;plan();return;}
+  disclose(step.kind==='logic'?'ai_assist_apply_checked_step':'ai_assist_apply_answer',4);
+  if(selectedCell!==cell)selectCell(cell,'ai_assist');
+  const wasNotes=notesMode;if(wasNotes)toggleNotes();
+  placeNumber(value,'ai_assist',true);
+  if(wasNotes)toggleNotes();
+  if(playerGrid[r][c]===value){step=null;if(isSolved(playerGrid)){show('Puzzle solved. Each earlier guided click entered one digit.','Uganka je rešena. Vsak predhodni vodeni klik je vnesel po eno številko.');controls();}else{plan('nudge');show(`${loc(cell)} = ${value} entered as one reversible move. ${message.en}`,`V celico ${loc(cell)} je bila kot ena razveljavljiva poteza vnesena številka ${value}. ${message.sl}`);}}
+ }
+ function solveAll(){
+  if(!puzzle||!solution||!product.canWrite()||blockAIWhileHumanTrace('Solve all'))return;
+  if(!isSolved(solution)||puzzle.flat().some((v,i)=>v&&v!==solution.flat()[i])){show('The certified solution cannot be verified. No values were changed.','Preverjene rešitve ni mogoče potrditi. Nobena številka ni bila spremenjena.');return;}
+  openDialog(sl()?'Rešim vse?':'Solve all?',sl()?`<p>S preverjeno enolično rešitvijo bodo izpolnjene preostale celice in zamenjani napačni vnosi, ki jih lahko spremeniš. Pomoč z rešitvijo bo zabeležena; vse je mogoče razveljaviti z eno potezo.</p><button class="btn gold" id="aiAssistConfirmAll">Reši vse zdaj</button><button class="btn" id="aiAssistCancelAll">Nadaljuj igro</button>`:`<p>This will fill the remaining cells and replace incorrect editable entries using the certified unique solution. It is recorded as answer assistance and can be undone as one action.</p><button class="btn gold" id="aiAssistConfirmAll">Solve all now</button><button class="btn" id="aiAssistCancelAll">Keep playing</button>`);
+  $('aiAssistCancelAll').onclick=closeDialog;
+  $('aiAssistConfirmAll').onclick=()=>{
+   closeDialog();if(mobileUX.blocked()||!product.canWrite()||blockAIWhileHumanTrace('Solve all')||!puzzle||!solution||!isSolved(solution))return;
+   const before=product.capture(),first=before.board.findIndex((v,i)=>v!==solution.flat()[i]);
+   if(first<0)return;
+   disclose('ai_assist_solve_all_answer',4);
+   playerGrid=copyGrid(solution);for(let i=0;i<81;i++)if(!givenCells[Math.floor(i/9)][i%9])notes[Math.floor(i/9)][i%9].clear();
+   correctionHighlightActive=false;step=null;resetAnalysis();cancelSolve();freshState();
+   product.finish(before,'assist_solve_all',first);render();show('Solved using the certified answer. Undo restores your previous grid and Notes in one action.','Rešeno s preverjeno rešitvijo. Razveljavi z eno potezo obnovi prejšnjo mrežo in zapiske.');controls();
+  };
+ }
+ function install(){
+  document.querySelector('.col-right').insertAdjacentHTML('afterbegin',`<section class="panel" id="aiAssistPanel" hidden aria-label="AI Assist" data-no-i18n><div class="panel-title">AI Assist</div><p id="aiAssistText" role="status" aria-live="polite">Choose Hint for a gentle suggestion, Why? for reasoning, or Next step for guided solving.</p><div class="assist-actions"><button class="btn green" id="aiAssistHint">Hint</button><button class="btn violet" id="aiAssistWhy">Why?</button><button class="btn rose" id="aiAssistRemove" hidden>Remove wrong entries</button><button class="btn" id="aiAssistNext">Next step</button><button class="btn gold" id="aiAssistReveal" hidden>Reveal digit</button><button class="btn green" id="aiAssistApply" hidden>Apply one digit</button></div><button class="btn" id="aiAssistAll">Solve all</button><button class="btn" id="aiAssistClose">Close</button><p class="assist-note">Answer comparisons are recorded as assistance. Givens stay fixed. Undo and Redo restore each action.</p></section>`);
+  $('aiAssistHint').onclick=()=>hint('nudge');$('aiAssistWhy').onclick=()=>hint('explain');$('aiAssistRemove').onclick=removeWrong;$('aiAssistNext').onclick=()=>plan('nudge');$('aiAssistReveal').onclick=reveal;$('aiAssistApply').onclick=apply;$('aiAssistAll').onclick=solveAll;
+  $('aiAssistClose').onclick=()=>{if(product.view()==='play'){opened=false;syncView();}};
+  let lastLocale=sl();new MutationObserver(()=>{const locale=sl();if(locale!==lastLocale){lastLocale=locale;refreshLanguage();}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+  refreshLanguage();
+  syncView();
+ }
+ return{install,syncView,open,hint,reveal};
 })();
 
 function install(){
  $('proofCoachPanel')?.setAttribute('hidden','');
  document.querySelector('.col-center').insertAdjacentHTML('beforeend',`<section class="panel nav-panel" id="navigatorPanel"><div class="nav-heading"><div><div class="panel-title">DCC Navigator</div><span class="nav-small">Find the next useful thought.</span></div><span class="nav-badge">ENGINE ${C.ENGINE_REVISION}</span></div><div class="nav-options"><label>Goal <select id="navGoal"><option value="FLOW">Flow · keep moving</option><option value="PRACTICE">Practice a technique</option></select></label><label>Technique <select id="navTechnique">${C.LABELS.slice(0,8).map((n,i)=>`<option value="${i}" ${i===1?'selected':''}>${n}</option>`).join('')}</select></label></div><div class="btn-row"><button class="btn green" id="navNudge">◎ Where to look</button><button class="btn violet" id="navExplain">Why?</button><button class="btn gold" id="navReveal">Reveal</button></div><p class="nav-copy" id="navCopy" aria-live="polite">Choose a puzzle. The Navigator will remain quiet until you ask.</p><div id="navDetails"></div><button class="btn gold" id="navApply" hidden>Keep this checked elimination</button><div class="nav-actions"><button class="btn" id="navCompare">Compare paths</button><button class="btn" id="navPractice">New practice</button><button class="btn" id="navReviewCount">Review 0</button><button class="btn rose" id="navCancel" hidden>Cancel analysis</button></div><div class="nav-small" id="navReceipt"></div><div class="nav-practice" id="navPracticeInput" hidden><label>Candidate to exclude <select id="navElimDigit">${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><button class="btn green" id="navCheckElim">Check selected cell</button></div><details class="nav-extra"><summary>Views, learning & laboratory</summary><div class="nav-options"><label>Digit slice <select id="navDigit"><option value="0">Normal grid</option>${[1,2,3,4,5,6,7,8,9].map(d=>'<option>'+d+'</option>').join('')}</select></label><label>Controller <select id="navPolicy"><option value="REAL">DCC · real signal</option><option value="OFF">OFF · cheap checked baseline</option><option value="ORDINARY">Ordinary adaptive</option><option value="SHAM">SHAM · matched measurements</option></select></label></div><label class="nav-small"><input type="checkbox" id="navDeep"> Allow bounded digit-path specialist when needed</label><div class="nav-options"><button class="btn" id="navLearn">Machine memory: session</button><button class="btn" id="navTutor">Enable tutor profile</button></div><label class="nav-small">Machine learning <select id="navLearningMode"><option>COLD</option><option>ONLINE_PREQUENTIAL</option><option>FROZEN_TRANSFER</option><option>CACHE_REPEAT</option></select></label><p class="nav-small" id="navMemory"></p><div class="nav-actions"><button class="btn" id="navProfile">Learning profile</button><button class="btn" id="navSuggest">Suggest practice</button><button class="btn" id="navExport">Export</button><button class="btn" id="navImport">Import</button><button class="btn rose" id="navDelete">Delete local data</button></div><input id="navFile" type="file" accept="application/json,.json" hidden><button class="btn violet" id="navControls">Compare controllers on this position</button><pre id="navLabResult" class="nav-lab">No analysis requested.</pre><p class="nav-small">Real/OFF/SHAM are experimental selectors over the same verified rules. Machine learning ≠ measured human improvement. Unknown reasoning stays unknown. Game and review auto-save on this device. Machine history and tutor outcomes persist only when enabled. No external API, no background network.</p></details></section>`);
  document.body.insertAdjacentHTML('beforeend','<div class="nav-modal" id="navModal" hidden role="dialog" aria-modal="true" aria-labelledby="navModalTitle"><div class="nav-dialog"><button class="nav-close" id="navClose" aria-label="Close">×</button><h2 id="navModalTitle"></h2><div id="navModalBody"></div></div></div>');
- const events={navNudge:()=>mobileUX.hint('nudge'),navExplain:()=>mobileUX.hint('explain'),navReveal:()=>analyze('reveal'),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{cancelSolve();navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
+ const events={navNudge:()=>product.view()==='lab'?mobileUX.hint('nudge'):aiAssist.hint('nudge'),navExplain:()=>product.view()==='lab'?mobileUX.hint('explain'):aiAssist.hint('explain'),navReveal:()=>product.view()==='lab'?analyze('reveal'):aiAssist.reveal(),navApply:applyElimination,navCompare:comparePaths,navPractice:nextPractice,navCheckElim:checkElimination,navReviewCount:()=>rows.length?showReview(rows.at(-1).id):notify('Play a move before opening Game Review.'),navLearn:consentMachine,navTutor:consentTutor,navProfile:profileDialog,navSuggest:suggestPractice,navExport:exportAll,navImport:()=>$('navFile').click(),navDelete:deleteAll,navControls:controls,navClose:closeDialog,navCancel:()=>{cancelSolve();navJob?.cancel();genJob?.cancel();navJob=null;genJob=null;generationToken++;showBusy(false);notify('Cancelled. No unverified result applied.');}};for(const[id,fn]of Object.entries(events))$(id).onclick=fn;
  $('navDigit').onchange=digitView;for(const id of ['navGoal','navTechnique','navPolicy','navDeep'])$(id).onchange=()=>{resetAnalysis();notify('Selection changed. Ask for a fresh checked suggestion.');};$('navLearningMode').onchange=()=>{learningMode=$('navLearningMode').value;if(learningMode==='COLD')machine=C.emptyModel();updateMemory();};$('navFile').onchange=e=>importAll(e.target.files[0]);$('navModal').onclick=e=>{if(e.target===$('navModal'))closeDialog();};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog();});
- $('hintBtn').onclick=()=>mobileUX.hint('nudge');$('hintBtn').textContent='◎ Navigator hint';
+ $('hintBtn').onclick=()=>product.view()==='lab'?mobileUX.hint('nudge'):aiAssist.hint('nudge');$('hintBtn').textContent='◎ Navigator hint';
  const title=document.querySelector('.title');if(title)title.innerHTML='8zSudoku <span class="accent">DCC Navigator</span>';const head=document.querySelector('.tb-center');if(head)head.textContent='8zSudoku · DCC Navigator';const version=document.querySelector('.tb-version');if(version)version.innerHTML='Engine '+C.ENGINE_REVISION+' · <a href="../../S/">Stable game ↗</a>';
  const info=$('preview-update');if(info)info.innerHTML='<summary>Engine 0.3.0 · fast solving, checked explanations</summary><p>8z Fast combines bitmask constraints, forced moves and bounded MRV search. New puzzles retain an exact uniqueness check. The Navigator uses cheap logic before deeper work, including pairs, triples and quads. DCC comparisons, consented learning and five classical strategies remain available.</p><p>Known rule library; no claim of an autonomous R7 rule forge or measured human learning. Every candidate deduction is checked. Export includes observations and scope.</p>';
  attachAdapters();const aiWrapped=aiSolve,stepWrapped=aiStep;aiSolve=()=>mobileUX.mobile()?mobileUX.requestDemo():prepareLegacySolve(aiWrapped);aiStep=()=>mobileUX.mobile()?mobileUX.requestDemo():prepareLegacySolve(stepWrapped);
  memoryConsent=load('consentMachine')===true;tutorConsent=load('consentTutor')===true;if(memoryConsent){try{machine=C.restoreModel(load('machine')||C.emptyModel());learningMode='ONLINE_PREQUENTIAL';}catch(e){storageWarning='Machine memory rejected: '+e.message;}}const t=load('tutor');if(tutorConsent&&t){try{tutor=validateTutor(t);}catch(e){storageWarning='Tutor memory rejected: '+e.message;}}
  $('navLearn').textContent=memoryConsent?'Machine memory: ON':'Machine memory: session';$('navTutor').textContent=tutorConsent?'Tutor profile: ON':'Enable tutor profile';$('navLearningMode').value=learningMode;
- window.SudokuNavigator={async flushForUpdate(){mobileUX.prepareUpdate();if(booting||genJob||restoring||aiAnimating)return false;await reviewQueue.catch(()=>{});await product.whenSaved();if(booting||genJob||restoring||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);if(!await product.flush())return false;if(booting||genJob||restoring||jobs.size||aiAnimating)return false;clearTimeout(saveTimer);return product.flushSync();},version:C.VERSION,ui:mobileUX,product,engineRevision:C.ENGINE_REVISION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};mobileUX.install();product.install();
+ window.SudokuNavigator={async flushForUpdate(){mobileUX.prepareUpdate();if(booting||genJob||restoring||aiAnimating)return false;await reviewQueue.catch(()=>{});await product.whenSaved();if(booting||genJob||restoring||jobs.size||aiAnimating)return false;cancelSolve();resetAnalysis();clearTimeout(saveTimer);if(!await product.flush())return false;if(booting||genJob||restoring||jobs.size||aiAnimating)return false;clearTimeout(saveTimer);return product.flushSync();},version:C.VERSION,ui:mobileUX,product,engineRevision:C.ENGINE_REVISION,core:C,analyze,createGame,review:()=>J(rows),state:()=>current()?J(current()):null,model:()=>J(machine),profile:()=>J(tutor),export:exportAll,cancel:events.navCancel,whenReviewed:()=>reviewQueue,restore:restoreSession,applyElimination,checkElimination,controls};mobileUX.install();product.install();aiAssist.install();
  const saved=product.bootSession();restoreStoredHumanTraceOnLoad();const traceLocked=humanTraceRecorder.isLocked(),traceMatches=traceLocked&&playerGrid&&saved&&JSON.stringify(saved.board)===JSON.stringify(playerGrid.flat())&&JSON.stringify(saved.notes?.map(a=>a.slice().sort()))===JSON.stringify(notes.flat().map(a=>[...a].sort()));const onReady=()=>{booting=false;updateMemory();product.migrate();if(location.hash)product.inspectShare(location.hash);};if(saved&&(!traceLocked||traceMatches))restoreSession(saved).then(ok=>{if(!ok)throw Error('SESSION_VERSION');}).catch(e=>{product.block(e);notify('Saved game was not restored: '+e.message);}).finally(onReady);else{if(playerGrid){freshState();product.adoptTrace();}if(saved&&traceLocked&&!traceMatches)product.block(Error('Trace and saved game differ; both recovery copies retained'));onReady();}
  window.addEventListener('pagehide',()=>{mobileUX.prepareUpdate();if(puzzle&&product.canWrite())product.flushSync();});
 

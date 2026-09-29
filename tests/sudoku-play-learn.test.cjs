@@ -6,11 +6,13 @@ function bytes(h){return plain(h.w.SudokuNavigator.export().session);}
 function core(){const x={module:{exports:{}}};vm.runInNewContext(fs.readFileSync('public/S/new/app.html','utf8').match(/<script id="navigator-core">([\s\S]*?)<\/script>/)[1],x);return x.module.exports;}
 const C=core(),corpus=JSON.parse(fs.readFileSync('tests/fixtures/sudoku-arena-31.json')).puzzles;
 
-test('Release: desktop Play Hint and Why show a visible checked help card without changing the board',async t=>{
+test('Release: desktop Play Hint and Why open the right AI Assist panel without changing the board',async t=>{
  const h=await ready(t),before=bytes(h).board;
- await h.el('plHint').onclick();assert.equal(h.el('navModal').hidden,false);assert.equal(h.el('navModalTitle').textContent,'Hint');assert(h.el('uxHelpText').textContent.length>20);
- await h.el('uxCardWhy').onclick();assert.equal(h.el('navModalTitle').textContent,'Why?');assert.deepEqual(bytes(h).board,before);h.el('navClose').click();
- await h.el('plWhy').onclick();assert.equal(h.el('navModalTitle').textContent,'Why?');assert.deepEqual(bytes(h).board,before);assert.deepEqual(h.errors,[]);
+ assert.equal(h.el('aiAssistPanel').hidden,true);
+ await h.el('plHint').onclick();assert.equal(h.el('aiAssistPanel').hidden,false);assert.match(h.el('aiAssistText').textContent,/R\dC\d|row \d/i);
+ const hint=h.el('aiAssistText').textContent;
+ await h.el('plWhy').onclick();assert.notEqual(h.el('aiAssistText').textContent,hint);assert.deepEqual(bytes(h).board,before);
+ h.el('aiAssistClose').click();assert.equal(h.el('aiAssistPanel').hidden,true);assert.deepEqual(h.errors,[]);
 });
 test('Release: failed profile keeps the game and offers an explicit fixed checked example for every label',async t=>{
  const h=await ready(t),w=h.w,p=w.SudokuNavigator.product,old=bytes(h);
