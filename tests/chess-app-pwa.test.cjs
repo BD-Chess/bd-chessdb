@@ -200,3 +200,14 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   assert(phone.window.document.querySelector('.phone-frame iframe'));
   phone.window.close();
 });
+
+
+test('APP Deep menu uses depth-only presets and APP CDB transport is not forced away from LAB semantics', () => {
+  const deep = read('js/8zc-deep-ui.js').toString();
+  const budget = deep.match(/<select data-deep="budget">([\s\S]*?)<\/select>/)?.[1] || '';
+  assert.deepEqual([...budget.matchAll(/value="depth:(\d+)"/g)].map(m => Number(m[1])), [14,18,22,26,30,34,38,42]);
+  assert.doesNotMatch(budget, /nodes:|infinite/);
+  const utils = read('js/8zc-utils.js').toString();
+  assert.doesNotMatch(utils, /settings\.evalMode\s*=\s*['"]direct['"]/);
+  assert.match(utils, /source === 'proxy' && action === 'queryall'/);
+});
