@@ -7,6 +7,20 @@
  const product = window.SudokuNavigator?.product;
  if (!panel || !product) return;
 
+ const TEXT_KEY='ai8SudokuAppV030.appTextSize';
+ const TEXT_SIZES=new Set(['compact','normal','large']);
+ const readTextSize=()=>{
+  try{const v=localStorage.getItem(TEXT_KEY);return TEXT_SIZES.has(v)?v:'normal';}
+  catch(_){return 'normal';}
+ };
+ const applyTextSize=(value,persist=false)=>{
+  const size=TEXT_SIZES.has(value)?value:'normal';
+  document.body.dataset.appTextSize=size;
+  if(persist)try{localStorage.setItem(TEXT_KEY,size);}catch(_){}
+  return size;
+ };
+ let textSize=applyTextSize(readTextSize());
+
  const dock = document.createElement('nav');
  dock.id = 'appDock';
  dock.setAttribute('aria-label', 'Game controls');
@@ -37,20 +51,78 @@
   queueMicrotask(sync);
  });
 
+ const menuIcon = button => {
+  if(button.id==='appPwaMenu')return '⬇';
+  const key=button.dataset.menu||button.textContent.trim();
+  return ({
+   'Redo':'↻','My games':'▦','Daily puzzles':'◫','Share puzzle':'↗',
+   'Check correctness':'✓','Review':'◎','Settings':'⚙','Help':'?',
+   'Import':'⇩','Export':'⇧','Delete all APP data':'⌫'
+  })[key]||'•';
+ };
+ function decorateMenuButton(button){
+  if(!button || button.dataset.appDecorated==='true')return;
+  const text=button.textContent.trim();
+  button.dataset.appDecorated='true';
+  button.innerHTML='<span class="app-more-icon" aria-hidden="true">'+menuIcon(button)+'</span><span class="app-more-label"></span>';
+  button.querySelector('.app-more-label').textContent=text;
+  if((button.dataset.menu||'').includes('Delete all APP data')){
+   button.classList.add('app-danger');
+   button.addEventListener('click',()=>queueMicrotask(()=>{
+    try{if(!localStorage.getItem(TEXT_KEY)){textSize=applyTextSize('normal');}}catch(_){}
+   }));
+  }
+ }
+ function syncTextSizeButtons(){
+  const group=$('appTextSize');
+  if(!group)return;
+  for(const b of group.querySelectorAll('[data-app-text-size]'))b.setAttribute('aria-pressed',String(b.dataset.appTextSize===textSize));
+ }
+ function setTextSize(value){
+  textSize=applyTextSize(value,true);
+  syncTextSizeButtons();
+ }
  function enhanceMore(){
   const body=$('navModalBody');
-  if(!body || $('appMorePrimary'))return;
-  const sl=isSl(), group=document.createElement('div');
-  group.id='appMorePrimary';
-  group.className='ux-menu app-more-primary';
-  group.innerHTML =
-   '<button class="btn" id="appMoreNew">'+(sl?'Nova igra':'New game')+'</button>'+
-   '<button class="btn" id="appMoreNews">'+(sl?'Kaj je novega':'What’s new')+'</button>'+
-   '<button class="btn" id="appMoreTutorial">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</button>';
-  body.prepend(group);
-  $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
-  $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
-  $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  if(!body)return;
+  let primary=$('appMorePrimary');
+  if(!primary){
+   const sl=isSl();
+   primary=document.createElement('div');
+   primary.id='appMorePrimary';
+   primary.className='ux-menu app-more-primary';
+   primary.innerHTML =
+    '<button class="btn" id="appMoreNew"><span class="app-more-icon" aria-hidden="true">＋</span><span class="app-more-label">'+(sl?'Nova igra':'New game')+'</span></button>'+
+    '<button class="btn" id="appMoreNews"><span class="app-more-icon" aria-hidden="true">✦</span><span class="app-more-label">'+(sl?'Kaj je novega':'What’s new')+'</span></button>'+
+    '<button class="btn" id="appMoreTutorial"><span class="app-more-icon" aria-hidden="true">◉</span><span class="app-more-label">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</span></button>';
+   body.prepend(primary);
+   $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
+   $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
+   $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  }
+  let textSettings=$('appTextSize');
+  if(!textSettings){
+   const sl=isSl();
+   textSettings=document.createElement('section');
+   textSettings.id='appTextSize';
+   textSettings.className='app-more-textsize';
+   textSettings.innerHTML =
+    '<div class="app-more-textsize-title">'+(sl?'Velikost besedila':'Text size')+'</div>'+
+    '<div class="app-more-textsize-buttons" role="group" aria-label="'+(sl?'Velikost besedila':'Text size')+'">'+
+     '<button type="button" class="btn" data-app-text-size="compact">'+(sl?'Kompaktno':'Compact')+'</button>'+
+     '<button type="button" class="btn" data-app-text-size="normal">'+(sl?'Običajno':'Normal')+'</button>'+
+     '<button type="button" class="btn" data-app-text-size="large">'+(sl?'Veliko':'Large')+'</button>'+
+    '</div>';
+   primary.after(textSettings);
+   for(const b of textSettings.querySelectorAll('[data-app-text-size]'))b.onclick=()=>setTextSize(b.dataset.appTextSize);
+  }
+  const menus=[...body.querySelectorAll('.ux-menu')].filter(n=>n!==primary);
+  for(const menu of menus){
+   menu.classList.add('app-more-menu');
+   for(const b of menu.querySelectorAll(':scope > .btn'))decorateMenuButton(b);
+   const danger=menu.querySelector('.app-danger');if(danger)menu.append(danger);
+  }
+  syncTextSizeButtons();
  }
 
  const sync = () => {
