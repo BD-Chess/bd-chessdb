@@ -1,0 +1,22 @@
+name: Sudoku APP Coach verify once
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sudoku-app-coach-verify-once.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests/sudoku --ignore-scripts
+      - run: node scripts/build-sudoku-app-preview.cjs --check
+      - name: APP runtime and PWA
+        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit tests/sudoku-app-preview.test.cjs tests/sudoku-app-pwa.test.cjs
+      - run: python scripts/check_secret_boundary.py
