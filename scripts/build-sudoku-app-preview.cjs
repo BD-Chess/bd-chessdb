@@ -34,6 +34,7 @@ output=output.replaceAll('Delete ALL local LAB games','Delete ALL local APP game
  .replaceAll('LAB data deleted','APP data deleted');
 output=once(output,"if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}library={schema:SCHEMA","if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}localStorage.removeItem('8zSudoku.app.ui.language');library={schema:SCHEMA");
 output=once(output,'This is a product preview at <code>/S/new/</code>. The current <code>/S/</code> game remains untouched until manual review.','This is the APP web preview at <code>/S/app/</code>. The APP game and its saved data are separate from LAB and CURRENT.');
+output=once(output,'<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>\n\n','');
 output=once(output,'</head>',`<meta name="theme-color" content="#08101d">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="8zSudoku">\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="apple-touch-icon" href="./icon-180.png">\n<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
 output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n<script id="sudoku-app-pwa">\n${pwa}\n</script>\n</body>`);
 if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
