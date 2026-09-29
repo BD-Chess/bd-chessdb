@@ -86,6 +86,7 @@
   decorateMore();
  }
  function enhanceSettings(){
+  $('navModal')?.classList.remove('app-more-modal');
   const body=$('navModalBody'),anchor=$('uxSettings');
   if(!body||!anchor||$('appTextSizeSetting'))return;
   const sl=isSl(),current=readTextSize(),wrap=document.createElement('div');
@@ -168,6 +169,9 @@
  document.addEventListener('pointermove',e=>{lastPoint={x:e.clientX,y:e.clientY};placeLoupe(e.clientX,e.clientY);},{capture:true,passive:true});
  document.addEventListener('touchstart',e=>{const p=pointFromTouch(e);if(p)lastPoint={x:p.clientX,y:p.clientY};},{capture:true,passive:true});
  document.addEventListener('touchmove',e=>{const p=pointFromTouch(e);if(p){lastPoint={x:p.clientX,y:p.clientY};placeLoupe(p.clientX,p.clientY);}},{capture:true,passive:true});
+
+ const menuBody=$('navModalBody');
+ if(menuBody)new MutationObserver(()=>{if($('navModal')?.classList.contains('app-more-modal'))decorateMore();}).observe(menuBody,{childList:true,subtree:true});
 
  const watch = new MutationObserver(records=>{
   if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
