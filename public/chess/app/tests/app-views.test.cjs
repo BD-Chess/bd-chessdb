@@ -59,7 +59,7 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('analysisSourceStatus').nextElementSibling.id, 'appTopLine');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
   assert.equal(byId('appTopLine').hidden, false);
-  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE');
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP:');
   assert.equal(byId('appTopLineMoves').textContent, 'Analyzing…');
   d.querySelector('[data-app-lang="sl"]').click();
   assert.equal(d.documentElement.lang, 'sl');
@@ -77,7 +77,8 @@ test('phone views switch in one tap and retain the shared position', async () =>
     DCC: { receipt: { provider: 'CDB' }, candidates: [{ move: 'e2e4', data: { movePath: ['e7e5','g1f3'], pvDepth: 20 } }] }
   };
   listener();
-  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB (depth 20)');
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP (d20):');
+  assert.equal(byId('appTopLine').dataset.topSource, 'CDB');
   assert.equal(byId('appTopLineMoves').textContent, 'e4 e5 Nf3');
   byId('next').click();
   assert.equal(suggested, 'e2e4');
@@ -88,7 +89,8 @@ test('phone views switch in one tap and retain the shared position', async () =>
     SF: { allMoves: [{ move: 'd2d4', pv: ['d2d4','d7d5'], depth: 26 }], receipt: { status: 'ready', provider: 'SF', depth: 26 } }
   };
   listener();
-  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · SF (depth 26)');
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP (d26):');
+  assert.equal(byId('appTopLine').dataset.topSource, 'SF');
   assert.equal(byId('appTopLineMoves').textContent, 'd4 d5');
   byId('next').click();
   assert.equal(suggested, 'd2d4');
