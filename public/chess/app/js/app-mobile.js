@@ -8,7 +8,7 @@
   const scroll = { moves: 0, dcc: 0 };
   let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
   const LANG_KEY = 'ChessBest:APP:v1:language';
-  let lang = 'en', i18nApplying = false;
+  let lang = 'en', i18nApplying = false, languageObserver = null;
   const textSources = new WeakMap(), attrSources = new WeakMap();
   const TO_SL = new Map(Object.entries({
     'Board':'Šahovnica','Moves':'Poteze','Review':'Pregled','Deep':'Globoko','Analysis board':'Analizna šahovnica',
@@ -17,9 +17,10 @@
     'Show board':'Pokaži šahovnico','Game library':'Knjižnica partij','New game':'Nova igra','More':'Več','Settings':'Nastavitve',
     'Study':'Študija','Deep analysis':'Globoka analiza','Evidence':'Dokazi','Benchmark':'Primerjava','PGN picks':'PGN izbori','Why DCC?':'Zakaj DCC?',
     'White':'Beli','Black':'Črni','Two players':'Dva igralca','Pause game':'Premor igre','End study':'Končaj študijo',
-    'Pause':'Premor','Stop replay':'Ustavi ponovitev','End game':'Končaj igro','Simulation running':'Simulacija teče',
+    'Pause':'Premor','Stop replay':'Ustavi ponovitev','End game':'Končaj igro','Stop':'Ustavi','Simulation running':'Simulacija teče',
     'DCC replay running':'DCC ponovitev teče','Game in progress':'Igra poteka','Your next move starts here':'Tvoja naslednja poteza se začne tukaj',
-    'CDB pending':'CDB čaka','TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF',
+    'CDB pending':'CDB čaka','Show Eval':'Pokaži oceno','Try Later':'Poskusi pozneje','More tools':'Več orodij',
+    'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF','TOP LINE · CDB/SF':'GLAVNA LINIJA · CDB/SF',
     'Install APP':'Namesti APP','Open APP without frame ↗':'Odpri APP brez okvirja ↗','Install ChessBest APP on your Home Screen.':'Namesti ChessBest APP na domači zaslon.',
     'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
     'Position and move controls':'Kontrole položaja in potez','Player clocks and local game controls':'Igralne ure in lokalne kontrole',
@@ -101,26 +102,11 @@
       el.setAttribute(attr, translateText(stored[attr]));
     }
   }
-  function applyLanguage(next, persist = true) {
-    lang = next === 'sl' ? 'sl' : 'en';
-    if (persist) try { root.localStorage.setItem(LANG_KEY, lang); } catch (_) {}
-    doc.documentElement.lang = lang;
-    i18nApplying = true;
-    try {
-      translateElement(doc.body);
-      for (const el of doc.body.querySelectorAll('*')) translateElement(el);
-      for (const button of doc.querySelectorAll('[data-app-lang]')) button.setAttribute('aria-pressed', String(button.dataset.appLang === lang));
-      if (host) { updatePosition(); updateActivity({}); }
-    } finally { i18nApplying = false; }
-  }
-  function initLanguage() {
-    let saved = null;
-    try { saved = root.localStorage.getItem(LANG_KEY); } catch (_) {}
-    const initial = saved === 'sl' || saved === 'en' ? saved : (/^sl(?:-|$)/i.test(root.navigator.language || '') ? 'sl' : 'en');
-    for (const button of doc.querySelectorAll('[data-app-lang]')) button.addEventListener('click', () => applyLanguage(button.dataset.appLang));
-    applyLanguage(initial, false);
-    if (root.MutationObserver) new MutationObserver(mutations => {
+  function observeLanguage() {
+    if (!root.MutationObserver) return;
+    if (!languageObserver) languageObserver = new MutationObserver(mutations => {
       if (i18nApplying) return;
+      languageObserver.disconnect();
       i18nApplying = true;
       try {
         for (const mutation of mutations) {
@@ -133,8 +119,36 @@
             }
           }
         }
-      } finally { i18nApplying = false; }
-    }).observe(doc.body, { subtree: true, childList: true, characterData: true });
+      } finally {
+        i18nApplying = false;
+        languageObserver.observe(doc.body, { subtree: true, childList: true, characterData: true });
+      }
+    });
+    languageObserver.observe(doc.body, { subtree: true, childList: true, characterData: true });
+  }
+  function applyLanguage(next, persist = true) {
+    lang = next === 'sl' ? 'sl' : 'en';
+    if (persist) try { root.localStorage.setItem(LANG_KEY, lang); } catch (_) {}
+    doc.documentElement.lang = lang;
+    languageObserver?.disconnect();
+    i18nApplying = true;
+    try {
+      translateElement(doc.body);
+      for (const el of doc.body.querySelectorAll('*')) translateElement(el);
+      for (const button of doc.querySelectorAll('[data-app-lang]')) button.setAttribute('aria-pressed', String(button.dataset.appLang === lang));
+      if (host) { updatePosition(); updateActivity({}); }
+    } finally {
+      i18nApplying = false;
+      if (languageObserver) languageObserver.observe(doc.body, { subtree: true, childList: true, characterData: true });
+    }
+  }
+  function initLanguage() {
+    let saved = null;
+    try { saved = root.localStorage.getItem(LANG_KEY); } catch (_) {}
+    const initial = saved === 'sl' || saved === 'en' ? saved : (/^sl(?:-|$)/i.test(root.navigator.language || '') ? 'sl' : 'en');
+    for (const button of doc.querySelectorAll('[data-app-lang]')) button.addEventListener('click', () => applyLanguage(button.dataset.appLang));
+    applyLanguage(initial, false);
+    observeLanguage();
   }
   function reviewPanel() { return byId('gameReviewPanel'); }
   function deepPanel() { return byId('deepAnalysisPanel'); }
@@ -171,10 +185,19 @@
       if (Array.isArray(sfBest?.pv) && sfBest.pv.length) pv = sfBest.pv;
     }
     const san = lineToSan(context.fen, pv || []);
-    card.hidden = !san.length;
-    if (!san.length) return;
-    label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}` : `TOP LINE · ${source}`;
-    movesEl.textContent = san.join(' ');
+    card.hidden = false;
+    if (san.length) {
+      label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}` : `TOP LINE · ${source}`;
+      movesEl.textContent = san.join(' ');
+    } else {
+      const statusText = byId('analysisSourceStatus')?.textContent?.trim() || '';
+      const hasAnySource = !!(sources.CDB || sources.SF || sources.DCC);
+      const pending = !hasAnySource || /pending|analysis|depth|nodes|čaka|analiza|globina|vozlišč/i.test(statusText);
+      label.textContent = lang === 'sl' ? 'GLAVNA LINIJA · CDB/SF' : 'TOP LINE · CDB/SF';
+      movesEl.textContent = pending
+        ? (lang === 'sl' ? 'Analiziram…' : 'Analyzing…')
+        : (lang === 'sl' ? 'Glavna linija za ta položaj ni na voljo.' : 'Top line is not available for this position.');
+    }
     card.title = lang === 'sl' ? 'Odpri Poteze za isti položaj' : 'Open Moves for the same position';
   }
   function updatePosition() {
@@ -323,12 +346,17 @@
     doc.addEventListener('chess:activity', event => updateActivity(event.detail || {}));
     const gameTitle = byId('boardGameTitle');
     if (gameTitle && root.MutationObserver) new MutationObserver(updatePosition).observe(gameTitle, { childList: true, characterData: true, subtree: true });
+    const sourceStatus = byId('analysisSourceStatus');
+    if (sourceStatus && root.MutationObserver) new MutationObserver(() => updateTopLine(host.getContext()))
+      .observe(sourceStatus, { childList: true, characterData: true, subtree: true });
     updatePosition();
     resizeVisibleBoard();
   }
   const boot = () => {
-    initLanguage();
-    Promise.resolve(root.ChessLabReady || root.ChessLabStorage?.ready).then(init).catch(() => {
+    Promise.resolve(root.ChessLabReady || root.ChessLabStorage?.ready).then(() => {
+      initLanguage();
+      init();
+    }).catch(() => {
       byId('appPositionName').textContent = 'APP storage is unavailable';
     });
   };

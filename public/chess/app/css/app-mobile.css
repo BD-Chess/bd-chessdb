@@ -1,6 +1,6 @@
 /* APP browser preview and native donor: one phone-sized workspace, one view at a time. */
 body.app-mobile {
-  --app-web-nav-height: 43px;
+  --app-web-nav-height: 64px;
   --app-activity-height: 0px;
   --app-clock-height: 0px;
   box-sizing: border-box;
@@ -8,7 +8,6 @@ body.app-mobile {
   margin: 0; padding: env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom));
   overflow-x: hidden;
 }
-.app-embedded body.app-mobile { --app-web-nav-height: 0px; }
 body.app-mobile:has(.app-activity:not([hidden])) { --app-activity-height: 55px; }
 body.app-mobile:has(#workspaceTimers:not([hidden])) { --app-clock-height: 80px; }
 body.app-mobile:has(#humanSession:not([hidden])) { --app-clock-height: 80px; }
@@ -85,7 +84,7 @@ body.app-mobile .all-eval-badge { min-height: 48px; }
 }
 .app-top-line[hidden] { display: none !important; }
 .app-top-line span { color: var(--ui-accent); font: 720 9.5px/1.2 system-ui, sans-serif; letter-spacing: .08em; }
-.app-top-line strong { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 650 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.app-top-line strong { width: 100%; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font: 650 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .app-board-controls .analysis-source-row select, .app-board-controls .analysis-deepen, .app-board-controls .analysis-dcc-toggle { min-height: 44px; }
 .app-board-controls .analysis-dcc-toggle { display: inline-flex; align-items: center; }
 .app-board-controls .top-buttons { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px; width: 100%; margin: 0; }
