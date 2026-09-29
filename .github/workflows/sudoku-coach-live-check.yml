@@ -1,0 +1,98 @@
+name: Sudoku Coach published surface check
+on:
+  push:
+    branches: ['work/sudoku-coach-final-20260930']
+    paths: ['.github/workflows/sudoku-coach-live-check.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f68544cd231ce862f855a68fec3fd83911c9f0fd
+          persist-credentials: false
+      - name: Verify exact published release and all offline assets
+        shell: bash
+        run: |
+          mkdir -p sudoku-live-evidence
+          python - <<'PY'
+          import pathlib,hashlib,json,urllib.request,time,concurrent.futures
+          root=pathlib.Path('public/S/app');out=pathlib.Path('sudoku-live-evidence')
+          rel=json.loads((root/'release.json').read_text());base='https://bd-chess.github.io/bd-chessdb/S/app/'
+          expected=dict(rel['assets_sha256']);expected['sw.js']=rel['worker_sha256'];expected['release.json']=hashlib.sha256((root/'release.json').read_bytes()).hexdigest()
+          deadline=time.monotonic()+240;attempts=[]
+          for attempt in range(1,7):
+              stamp=str(time.time_ns())
+              def get(item):
+                  name,digest=item;req=urllib.request.Request(base+name+'?coach-check='+stamp,headers={'Cache-Control':'no-cache','User-Agent':'8zSudoku-release-verifier'})
+                  try:
+                      with urllib.request.urlopen(req,timeout=20) as r:data=r.read();status=r.status
+                      actual=hashlib.sha256(data).hexdigest();return {'file':name,'status':status,'bytes':len(data),'sha256':actual,'match':actual==digest}
+                  except Exception as e:return{'file':name,'match':False,'error':str(e)}
+              with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:rows=list(pool.map(get,expected.items()))
+              attempts.append({'attempt':attempt,'assets':rows})
+              if all(r['match'] for r in rows):break
+              if time.monotonic()>=deadline:break
+              time.sleep(20)
+          result={'commit':'f68544cd231ce862f855a68fec3fd83911c9f0fd','release_id':rel['release_id'],'base':base,'checks':attempts,'pass':all(r['match'] for r in rows)}
+          (out/'http-readback.json').write_text(json.dumps(result,indent=2)+'\n');print('LIVE_HTTP '+json.dumps(result))
+          assert result['pass'],'Published bytes do not match the tested release'
+          PY
+      - name: Install bounded browser smoke dependency
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install chromium
+      - name: Browser smoke on desktop preview and normal phone mode
+        shell: bash
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json,pathlib
+          out=pathlib.Path('sudoku-live-evidence');reports=[]
+          board=[int(c) for c in '530070000600195000098000060800060003400803001700020006060000280000419005000080079']
+          fixture={'schema':'AI8_SUDOKU_NAV_SESSION_V1','version':'0.2.0','gameId':'coach-live-fixture','diff':'easy','puzzle':board,'board':board,'notes':[[] for _ in range(81)],'time':37,'lineage':{'base':board,'ops':[]},'rows':[],'assistance':[],'recentGains':[],'practice':None,'history':[],'settings':{'policy':'REAL','goal':'FLOW','target':1,'deep':False}}
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for name,options in [('desktop',{'viewport':{'width':1440,'height':1080}}),('phone',{'viewport':{'width':402,'height':874},'is_mobile':True,'has_touch':True,'device_scale_factor':1,'user_agent':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'})]:
+                  context=browser.new_context(service_workers='block',**options);page=context.new_page();errors=[]
+                  page.on('pageerror',lambda e:errors.append(str(e)))
+                  if name=='phone':context.add_init_script("try{Object.defineProperty(navigator,'userAgentData',{value:undefined,configurable:true});}catch(_){}")
+                  page.goto('https://bd-chess.github.io/bd-chessdb/S/app/?coach-live=f68544cd',wait_until='networkidle')
+                  frame=page.frame_locator('#game');frame.locator('#appDock').wait_for()
+                  game=page.locator('#game').element_handle().content_frame()
+                  game.evaluate('async s=>{await SudokuNavigator.restore(s);stopTimer();}',fixture)
+                  game.wait_for_function("document.getElementById('appCoach') && !document.getElementById('appCoach').hidden && !/Restoring/.test(document.getElementById('appCoachCopy').textContent)")
+                  assert not frame.locator('#plNumbers').is_visible(),'number pad must start hidden'
+                  assert frame.locator('#appHoldTip').is_visible(),'hold tip starts on'
+                  assert frame.locator('#appCoach').is_visible(),'Coach visible on Easy'
+                  assert frame.locator('#appDock').is_visible(),'five-action dock remains available'
+                  actual_shell=page.locator('html').get_attribute('data-app-shell')
+                  assert actual_shell==('phone' if name=='phone' else 'preview'),actual_shell
+                  assert page.locator('.preview-header').is_visible()==(name=='desktop')
+                  if name=='phone':
+                      chrome=page.locator('#device').evaluate("e=>({border:getComputedStyle(e).borderTopWidth,radius:getComputedStyle(e).borderTopLeftRadius})")
+                      assert chrome['border']=='0px' and chrome['radius']=='0px',chrome
+                  else:assert 30<=page.locator('.preview-header').bounding_box()['y']<=55,'header remains near top'
+                  frame.locator('#grid > *').nth(40).click()
+                  game.wait_for_function("/naked single/.test(document.getElementById('appCoachCopy').textContent)")
+                  frame.locator('#appCoachCandidates').click()
+                  assert 'Candidates for R5C5: 5.' in frame.locator('#appCoachCopy').inner_text()
+                  game.evaluate("SudokuI18n.set('sl')")
+                  game.wait_for_function("/Tapni in drži prazno/.test(document.getElementById('appHoldTip').textContent)")
+                  page.screenshot(path=str(out/(name+'.png')),full_page=True)
+                  assert not errors,errors
+                  reports.append({'surface':name,'shell':actual_shell,'numberPad':'hidden','holdTip':'visible','coach':'visible','candidateRequest':'PASS','language':'SL PASS','pageErrors':errors})
+                  context.close()
+              browser.close()
+          result={'engine':'Chromium','real_iOS_device':False,'surfaces':reports,'pass':True}
+          (out/'browser-smoke.json').write_text(json.dumps(result,indent=2)+'\n');print('BROWSER_SMOKE '+json.dumps(result))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-coach-live-evidence
+          path: sudoku-live-evidence/
+          retention-days: 14
