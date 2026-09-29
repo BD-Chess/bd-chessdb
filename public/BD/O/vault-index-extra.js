@@ -33,7 +33,7 @@ const sections=[
     note:'Zdravje in osebni del sta v istem BD/O vaultu.',
     cards:[
       ['💊','Tablete','Dnevni načrt tablet.','tablete.html','VAULT'],
-      ['📅','Koledar','Termini · naslovi · Google Maps.','koledar.html','VAULT'],
+      ['📅','Koledar','Termini · naslovi · Google Maps.','koledar.html?v=20260929-r2','VAULT'],
       ['♥','Zdravje','Glavni osebni zdravstveni pregled.','zdravje.html','VAULT'],
       ['＋','Kardiolog','Kardiološki zapiski in priprava.','kardiolog.html','VAULT'],
       ['⌚','Apple Health','Osebni Apple Health pregled.','apple-health.html','VAULT'],
@@ -148,7 +148,7 @@ function tablete(){
   const a=document.createElement('a');a.href=local('tablete.html');a.textContent='💊 Tablete · dnevni načrt';
   a.style.cssText='display:flex;align-items:center;justify-content:center;min-height:62px;padding:14px 18px;border:2px solid #58d9cf;border-radius:17px;background:linear-gradient(135deg,#12313a,#0b1d2b);color:#eafffc;text-decoration:none;font:900 20px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 12px 34px #0005;letter-spacing:.01em';
   box.appendChild(a);
-  const cal=document.createElement('a');cal.href=local('koledar.html');cal.textContent='📅 Koledar · termini in poti';cal.style.cssText='display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:8px;padding:9px 14px;border:1px solid #4d708c;border-radius:14px;background:#0c1a2a;color:#eaf5ff;text-decoration:none;font:850 16px/1.2 system-ui';box.appendChild(cal);
+  const cal=document.createElement('a');cal.href=local('koledar.html?v=20260929-r2');cal.textContent='📅 Koledar · termini in poti';cal.style.cssText='display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:8px;padding:9px 14px;border:1px solid #4d708c;border-radius:14px;background:#0c1a2a;color:#eaf5ff;text-decoration:none;font:850 16px/1.2 system-ui';box.appendChild(cal);
   const wrap=document.querySelector('.wrap'),host=document.querySelector('main,.content');
   if(wrap)wrap.prepend(box);else if(host)host.prepend(box);else document.body.prepend(box);
 }
