@@ -1,0 +1,25 @@
+name: Sudoku APP one-shot verify
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sudoku-app-one-shot-verify.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install bounded Sudoku test dependency
+        run: npm ci --prefix tests/sudoku --ignore-scripts
+      - name: Verify generated APP release is current
+        run: node scripts/build-sudoku-app-preview.cjs --check
+      - name: Run narrow APP and PWA tests
+        run: NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-app-preview.test.cjs tests/sudoku-app-pwa.test.cjs
+      - name: Secret boundary
+        run: python scripts/check_secret_boundary.py
