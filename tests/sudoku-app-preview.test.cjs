@@ -34,6 +34,19 @@ test('APP dock and spacing keep secondary actions out of the Play surface',()=>{
  for(const id of ['appMoreNew','appMoreNews','appMoreTutorial'])assert.ok(ui.includes(id),id);
 });
 
+test('APP iPhone polish scales controls, decorates More and follows touch with the loupe',()=>{
+ const css=read('public/S/app/app.css'),ui=read('public/S/app/app-ui.js');
+ assert.ok(css.includes('--app-text-scale'));
+ assert.ok(css.includes('#navModal.app-more-modal .app-menu-icon'));
+ assert.ok(css.includes('#aiAssistPanel .assist-actions .btn'));
+ assert.ok(ui.includes("8zSudoku.app.ui.textSize"));
+ assert.ok(ui.includes('appTextSizeSetting'));
+ assert.ok(ui.includes('decorateMore'));
+ assert.ok(ui.includes('placeLoupe'));
+ assert.ok(ui.includes("document.addEventListener('touchmove'"));
+ assert.ok(ui.includes("document.addEventListener('pointermove'"));
+});
+
 test('APP build pins exact packaged LAB donor and isolates its stored games',()=>{
  const check=spawnSync(process.execPath,['scripts/build-sudoku-app-preview.cjs','--check'],{cwd:root,encoding:'utf8'});
  assert.equal(check.status,0,check.stderr||check.stdout);
