@@ -65,6 +65,16 @@ def main():
             record('preview width in header',page.locator('header #previewWidth').count()==1)
             record('no without-frame action',page.get_by_text('Open without frame',exact=False).count()==0)
             record('desktop frame',not page.locator('html').evaluate("el=>el.classList.contains('app-phone-browser')"))
+            top_style=inner.evaluate("""() => {
+              const top=document.getElementById('appTopLine'),label=document.getElementById('appTopLineLabel'),moves=document.getElementById('appTopLineMoves');
+              const ts=getComputedStyle(top), ms=getComputedStyle(moves);
+              return {direction:ts.flexDirection,label:label.textContent,whiteSpace:ms.whiteSpace,overflow:ms.overflow,textOverflow:ms.textOverflow};
+            }""")
+            record('compact one-line Top',top_style['direction']=='row' and top_style['whiteSpace']=='nowrap' and top_style['overflow']=='hidden' and top_style['textOverflow']=='ellipsis',top_style)
+            separators=inner.evaluate("""() => [...document.querySelectorAll('#appTabs button')].slice(1).map(b=>{
+              const s=getComputedStyle(b,'::before'); return {content:s.content,width:s.width,opacity:s.opacity,height:s.height};
+            })""")
+            record('subtle bottom-tab separators',len(separators)==4 and all(x['content']!='none' and float(x['width'].replace('px','') or 0)>=1 and 0<float(x['opacity'])<0.7 for x in separators),separators)
             for width in [375,390,402,430]:
                 page.locator('#previewWidth').select_option(str(width));page.wait_for_timeout(200)
                 metrics(inner,'desktop-'+str(width))
