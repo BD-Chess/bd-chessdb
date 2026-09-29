@@ -57,9 +57,6 @@
  <script>
  (()=>{
   const params=new URLSearchParams(location.search),allowed=['375','390','402','430'];
-  const narrow=window.innerWidth<=740;
-  const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true;
-  if(narrow||standalone){document.body.dataset.appRedirect='true';location.replace('./app.html'+location.hash);return;}
   const device=document.getElementById('device'),buttons=[...document.querySelectorAll('[data-width]')],frame=document.getElementById('toggleFrame');
   let width=allowed.includes(params.get('width'))?params.get('width'):'390';
   const draw=()=>{device.style.setProperty('--device-width',width+'px');buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.width===width)));frame.setAttribute('aria-pressed',String(document.body.classList.contains('unframed')));frame.textContent=document.body.classList.contains('unframed')?'Show iPhone frame':'Open without frame';};
