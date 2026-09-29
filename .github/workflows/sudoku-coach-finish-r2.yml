@@ -1,0 +1,63 @@
+name: Sudoku Coach final acceptance R2
+on:
+  push:
+    branches: ['work/sudoku-coach-final-20260930']
+    paths: ['.github/workflows/sudoku-coach-finish-r2.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse the pinned candidate generator
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source=Path('.github/workflows/sudoku-coach-final-20260930.yml').read_text()
+          def script(start,end):
+              section=source.split('      - name: '+start+'\n',1)[1].split('      - '+end,1)[0]
+              block=section.split('        run: |\n',1)[1]
+              assert all(not line or line.startswith('          ') for line in block.splitlines())
+              return '\n'.join(line[10:] if line else '' for line in block.splitlines())+'\n'
+          Path('/tmp/coach-generate.sh').write_text(script('Complete read-only Coach and regenerate APP','name: Install locked test dependency'))
+          stage=script('Stage tested source bytes without moving main','uses: actions/upload-artifact@v4')
+          old="'tests/sudoku-app-coach-final-20260930.test.cjs']"
+          assert stage.count(old)==1
+          stage=stage.replace(old,"'tests/sudoku-app-coach-final-20260930.test.cjs','tests/sudoku-app-preview.test.cjs']")
+          Path('/tmp/coach-stage.sh').write_text(stage)
+          PY
+          bash -e /tmp/coach-generate.sh
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/sudoku-app-preview.test.cjs');s=p.read_text()
+          old='Tap & hold a cell to get the number popup.'
+          new='Tap & hold an empty cell to open the number picker.'
+          assert s.count(old)==1,'Unexpected hold-tip test baseline'
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Install locked test dependency
+        run: npm ci --prefix tests/sudoku --ignore-scripts
+      - name: APP Coach and PWA acceptance
+        run: NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-app-preview.test.cjs tests/sudoku-app-pwa.test.cjs tests/sudoku-app-coach-final-20260930.test.cjs
+      - name: Generated package and secret boundary
+        run: |
+          node scripts/build-sudoku-app-preview.cjs --check
+          git diff --check
+          python scripts/check_secret_boundary.py
+      - name: Stage only tested APP bytes without moving main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash -e /tmp/coach-stage.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sudoku-coach-final-evidence
+          path: sudoku-coach-evidence/
+          retention-days: 14
