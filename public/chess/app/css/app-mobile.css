@@ -70,12 +70,14 @@ body.app-mobile #board { width: 100%; min-width: 0; }
 body.app-mobile .board-actions.has-all-evals { padding: 8px 0 4px; }
 body.app-mobile .all-eval-badges { gap: 4px; }
 body.app-mobile .all-eval-badge { min-height: 48px; }
-.app-board-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 9px; }
+.app-board-controls { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.app-action-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; width: 100%; align-items: stretch; }
+.app-analysis-slot { min-width: 0; }
 .app-board-controls .analysis-source-row {
-  display: grid !important; grid-template-columns: auto minmax(0,1fr) auto; gap: 6px 8px; align-items: center; margin: 0;
+  display: grid !important; grid-template-columns: auto minmax(0,1fr) auto; gap: 4px; align-items: center; margin: 0; height: 100%;
 }
-.app-board-controls .analysis-source-row #analysisSourceStatus {
-  grid-column: 1 / -1; min-width: 0; padding: 0 2px; font-size: 10.5px; line-height: 1.35; color: var(--ui-muted);
+.app-board-controls > #analysisSourceStatus {
+  min-width: 0; padding: 0 2px; font-size: 10.5px; line-height: 1.3; color: var(--ui-muted);
 }
 .app-top-line {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
@@ -85,12 +87,14 @@ body.app-mobile .all-eval-badge { min-height: 48px; }
 .app-top-line[hidden] { display: none !important; }
 .app-top-line span { color: var(--ui-accent); font: 720 9.5px/1.2 system-ui, sans-serif; letter-spacing: .08em; }
 .app-top-line strong { width: 100%; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font: 650 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
-.app-board-controls .analysis-source-row select, .app-board-controls .analysis-deepen, .app-board-controls .analysis-dcc-toggle { min-height: 44px; }
-.app-board-controls .analysis-dcc-toggle { display: inline-flex; align-items: center; }
+.app-board-controls .analysis-source-row select, .app-board-controls .analysis-deepen, .app-board-controls .analysis-dcc-toggle { min-height: 40px; }
+.app-board-controls .analysis-source-row select { min-width: 0; width: 100%; padding-inline: 5px; }
+.app-board-controls .analysis-deepen { padding-inline: 7px; white-space: nowrap; }
+.app-board-controls .analysis-dcc-toggle { display: inline-flex; align-items: center; padding-inline: 3px; font-size: 11px; }
 .app-board-controls .top-buttons { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px; width: 100%; margin: 0; }
 .app-board-controls .top-buttons .btn { min-width: 0; min-height: 44px; padding: 4px 2px; font-size: 14px; }
 .app-board-controls #btnHideEval { font-size: 11px; }
-.app-sim { width: 100%; min-height: 44px; padding: 7px 12px; color: #f5c779; background: #392b1c; border: 1px solid #826943; border-radius: 8px; font: 650 13px system-ui; cursor: pointer; }
+.app-sim { width: 100%; min-height: 40px; padding: 6px 10px; color: #f5c779; background: #392b1c; border: 1px solid #826943; border-radius: 8px; font: 650 12.5px system-ui; cursor: pointer; }
 .app-sim:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
 #appSimMore { display: block; margin: 8px 0; }
 body.app-mobile[data-app-view="board"] #controls { display: none !important; }
