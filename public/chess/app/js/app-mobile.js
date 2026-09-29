@@ -6,7 +6,7 @@
   const byId = id => doc.getElementById(id);
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
-  let current = 'board', host = null, miniBoard = null, lastFen = '', activity = {};
+  let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
 
   function reviewPanel() { return byId('gameReviewPanel'); }
   function deepPanel() { return byId('deepAnalysisPanel'); }
@@ -34,6 +34,20 @@
         lastFen = context.fen;
       }
     }
+    if (current === 'moves' && movesPly !== ply) {
+      root.requestAnimationFrame(() => root.requestAnimationFrame(() => revealCurrentMove(ply)));
+    }
+  }
+  function revealCurrentMove(ply) {
+    if (current !== 'moves' || !Number.isInteger(ply)) return;
+    const move = byId('moves')?.querySelector(`[data-history-ply="${Math.max(0, ply - 1)}"]`);
+    const display = byId('workspaceDisplay');
+    if (!move || !display) return;
+    const visible = display.getBoundingClientRect();
+    const selected = move.getBoundingClientRect();
+    display.scrollTop += selected.top - visible.top - (visible.height - selected.height) / 2;
+    scroll.moves = display.scrollTop;
+    movesPly = ply;
   }
   function resizeVisibleBoard() {
     root.requestAnimationFrame(() => root.requestAnimationFrame(() => {

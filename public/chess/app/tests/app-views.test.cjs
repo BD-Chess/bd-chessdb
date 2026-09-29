@@ -97,3 +97,35 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('appActivity').hidden, true);
   dom.window.close();
 });
+
+test('Moves opens around the current move in a long game and preserves manual scrolling', async () => {
+  const dom = new JSDOM(html, { url: 'https://example.test/chess/app/play.html', runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window, d = w.document, byId = id => d.getElementById(id);
+  let history = Array(20).fill('e4');
+  w.ChessLabReady = Promise.resolve();
+  w.ChessLabHost = {
+    getContext: () => ({ fen: 'start', history }),
+    onChange: fn => { w.positionChanged = fn; }
+  };
+  w.Chessboard = () => ({ resize() {}, position() {} });
+  w.requestAnimationFrame = callback => callback();
+  const display = byId('workspaceDisplay');
+  display.getBoundingClientRect = () => ({ top: 100, height: 500 });
+  byId('moves').innerHTML = '<table><tr><td class="move current" data-history-ply="19">Bb6</td></tr></table>';
+  byId('moves').querySelector('.move').getBoundingClientRect = () => ({ top: 500, height: 44 });
+  w.eval(script);
+  w.dispatchEvent(new w.Event('load'));
+  await flush();
+  const tab = view => byId('appTabs').querySelector(`[data-app-tab="${view}"]`).click();
+  tab('moves');
+  assert.equal(display.scrollTop, 172);
+  display.scrollTop = 300;
+  tab('board');
+  tab('moves');
+  assert.equal(display.scrollTop, 300);
+  history = Array(21).fill('e4');
+  byId('moves').querySelector('.move').dataset.historyPly = '20';
+  w.positionChanged();
+  assert.equal(display.scrollTop, 472);
+  dom.window.close();
+});
