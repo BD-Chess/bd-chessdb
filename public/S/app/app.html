@@ -4055,18 +4055,23 @@ install();
  if(menuBody)new MutationObserver(()=>{if($('navModal')?.classList.contains('app-more-modal'))decorateMore();}).observe(menuBody,{childList:true,subtree:true});
  const grid=$('grid');
  let coachQueued=false;
- const scheduleCoach=()=>{
+ const scheduleCoach=(delay=0)=>{
   if(coachQueued)return;
   coachQueued=true;
-  setTimeout(()=>{coachQueued=false;updateCoach();},0);
+  setTimeout(()=>{coachQueued=false;updateCoach();},delay);
  };
  if(grid){
-  new MutationObserver(scheduleCoach).observe(grid,{childList:true,subtree:true});
-  grid.addEventListener('click',scheduleCoach);
+  for(const event of ['click','pointerup','touchend'])grid.addEventListener(event,()=>scheduleCoach());
  }
  for(const id of ['numpad','appErase','appUndo','aiAssistApply','uxNew']){
-  $(id)?.addEventListener('click',scheduleCoach);
+  $(id)?.addEventListener('click',()=>scheduleCoach());
  }
+ const gameStatus=$('plGameStatus');
+ if(gameStatus)new MutationObserver(()=>scheduleCoach()).observe(gameStatus,{childList:true,subtree:true,characterData:true});
+ // Bounded post-boot refreshes cover asynchronous saved-game recovery without
+ // observing 81 changing cells or competing with the solver worker.
+ setTimeout(()=>updateCoach(),600);
+ setTimeout(()=>updateCoach(),2200);
 
  const watch = new MutationObserver(records=>{
   if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
