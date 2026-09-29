@@ -12,7 +12,7 @@
   const textSources = new WeakMap(), attrSources = new WeakMap();
   const TO_SL = new Map(Object.entries({
     'Board':'Šahovnica','Moves':'Poteze','Review':'Pregled','Deep':'Globoko','Analysis board':'Analizna šahovnica',
-    'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Simulacija / igra','Simulation':'Simulacija','Analysis':'Analiza',
+    'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Sim / Play','Sim / Play':'Sim / Play','Simulation':'Sim','Analysis':'Analiza',
     'Hide Eval':'Skrij oceno','Current position':'Trenutni položaj','Starting position':'Začetni položaj','Select a move on the board':'Izberi potezo na šahovnici',
     'Show board':'Pokaži šahovnico','Game library':'Knjižnica partij','New game':'Nova igra','More':'Več','Settings':'Nastavitve',
     'Study':'Študija','Deep analysis':'Globoka analiza','Evidence':'Dokazi','Benchmark':'Primerjava','PGN picks':'PGN izbori','Why DCC?':'Zakaj DCC?',
@@ -20,8 +20,9 @@
     'Pause':'Premor','Stop replay':'Ustavi ponovitev','End game':'Končaj igro','Stop':'Ustavi','Simulation running':'Simulacija teče',
     'DCC replay running':'DCC ponovitev teče','Game in progress':'Igra poteka','Your next move starts here':'Tvoja naslednja poteza se začne tukaj',
     'CDB pending':'CDB čaka','Show Eval':'Pokaži oceno','Try Later':'Poskusi pozneje','More tools':'Več orodij',
-    'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF','TOP LINE · CDB/SF':'GLAVNA LINIJA · CDB/SF',
-    'Install APP':'Namesti APP','Open APP without frame ↗':'Odpri APP brez okvirja ↗','Install ChessBest APP on your Home Screen.':'Namesti ChessBest APP na domači zaslon.',
+    'Best move is not ready yet.':'Najboljša poteza še ni pripravljena.','Waiting for analysis…':'Analiziram…',
+    'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF',
+    'Install APP':'Namesti APP','Install ChessBest APP on your Home Screen.':'Namesti ChessBest APP na domači zaslon.',
     'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
     'Position and move controls':'Kontrole položaja in potez','Player clocks and local game controls':'Igralne ure in lokalne kontrole',
     'Chess analysis board':'Šahovska analizna plošča','Interactive chess board':'Interaktivna šahovnica','CDB, SF and DCC comparison':'Primerjava CDB, SF in DCC',
@@ -66,7 +67,8 @@
     'Deep analysis.':'Deep analysis.','Uravnotežen pregled kandidatov.':'Balanced candidate review.','Senzorji pod drobnogledom.':'Sensors under inspection.',
     'Study in ohranjene variante.':'Study and saved variations.','Pripeta primerjava A/B.':'Pinned A/B comparison.',
     'Pavza ob zanimivem dogodku.':'Pause on an interesting event.','Več udobja pri branju.':'More reading comfort.',
-    'Prvi preizkus':'First test','Odpri Help':'Open Help','Nazaj na šahovnico →':'Back to board →','Zapri novosti':'Close what\'s new'
+    'Prvi preizkus':'First test','Odpri Help':'Open Help','Nazaj na šahovnico →':'Back to board →','Zapri novosti':'Close what\'s new',
+    'Simulacija / igra':'Sim / Play','Simulacija':'Sim'
   }));
 
   function translateText(text) {
@@ -88,7 +90,11 @@
   }
   function translateNode(node, dynamic = false) {
     if (!node || node.nodeType !== 3 || !node.nodeValue?.trim()) return;
-    if (dynamic || !textSources.has(node)) textSources.set(node, node.nodeValue);
+    if (!textSources.has(node)) textSources.set(node, node.nodeValue);
+    else if (dynamic) {
+      const source = textSources.get(node);
+      if (node.nodeValue !== translateText(source)) textSources.set(node, node.nodeValue);
+    }
     node.nodeValue = translateText(textSources.get(node));
   }
   function translateElement(el, dynamic = false) {
@@ -98,7 +104,9 @@
     if (!stored) { stored = {}; attrSources.set(el, stored); }
     for (const attr of ['title', 'aria-label', 'placeholder']) {
       if (!el.hasAttribute?.(attr)) continue;
-      if (dynamic || !(attr in stored)) stored[attr] = el.getAttribute(attr);
+      const current = el.getAttribute(attr);
+      if (!(attr in stored)) stored[attr] = current;
+      else if (dynamic && current !== translateText(stored[attr])) stored[attr] = current;
       el.setAttribute(attr, translateText(stored[attr]));
     }
   }
@@ -170,30 +178,36 @@
     const card = byId('appTopLine'), label = byId('appTopLineLabel'), movesEl = byId('appTopLineMoves');
     if (!card || !context) return;
     const sources = context.analysisSources || {};
-    let source = 'CDB', pv = null;
-    const cdbBest = sources.CDB?.allMoves?.[0] || sources.CDB?.candidates?.[0];
-    if (Array.isArray(cdbBest?.pv) && cdbBest.pv.length) pv = cdbBest.pv;
-    if (!pv && sources.DCC?.receipt?.provider === 'CDB') {
-      const raw = sources.DCC.receipt.rawBest;
-      const candidate = (sources.DCC.candidates || []).find(item => item.move === raw);
+    const cdb = sources.CDB, sf = sources.SF, dcc = sources.DCC;
+    const cdbBest = cdb?.allMoves?.[0] || cdb?.candidates?.[0] || null;
+    const sfBest = sf?.allMoves?.[0] || sf?.candidates?.[0] || null;
+    let source = null, depth = null, pv = null;
+    if (cdb?.receipt?.status === 'ready' && cdbBest?.move) {
+      source = 'CDB';
+      const raw = cdbBest.move;
+      const candidate = dcc?.receipt?.provider === 'CDB'
+        ? (dcc.candidates || []).find(item => item.move === raw) : null;
       const data = candidate?.data || candidate;
-      if (Array.isArray(data?.movePath) && data.movePath.length) pv = data.movePath;
-    }
-    if (!pv) {
+      const continuation = Array.isArray(data?.movePath) ? data.movePath : [];
+      pv = [raw, ...continuation];
+      depth = Number.isFinite(data?.pvDepth) && data.pvDepth > 0 ? data.pvDepth : null;
+    } else if (cdb?.receipt?.status === 'unavailable' && sfBest?.move) {
       source = 'SF';
-      const sfBest = sources.SF?.allMoves?.[0] || sources.SF?.candidates?.[0];
-      if (Array.isArray(sfBest?.pv) && sfBest.pv.length) pv = sfBest.pv;
+      pv = Array.isArray(sfBest.pv) && sfBest.pv.length ? sfBest.pv : [sfBest.move];
+      depth = Number.isFinite(sfBest.depth) ? sfBest.depth :
+        Number.isFinite(sf?.receipt?.depth) ? sf.receipt.depth : null;
     }
     const san = lineToSan(context.fen, pv || []);
     card.hidden = false;
-    if (san.length) {
-      label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}` : `TOP LINE · ${source}`;
+    if (source && san.length) {
+      const depthText = depth ? (lang === 'sl' ? ` (globina ${depth})` : ` (depth ${depth})`) : '';
+      label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}${depthText}` : `TOP LINE · ${source}${depthText}`;
       movesEl.textContent = san.join(' ');
     } else {
       const statusText = byId('analysisSourceStatus')?.textContent?.trim() || '';
-      const hasAnySource = !!(sources.CDB || sources.SF || sources.DCC);
-      const pending = !hasAnySource || /pending|analysis|depth|nodes|čaka|analiza|globina|vozlišč/i.test(statusText);
-      label.textContent = lang === 'sl' ? 'GLAVNA LINIJA · CDB/SF' : 'TOP LINE · CDB/SF';
+      const cdbSettled = cdb?.receipt?.status === 'ready' || cdb?.receipt?.status === 'unavailable';
+      const pending = !cdbSettled || /pending|analysis|depth|nodes|čaka|analiza|globina|vozlišč/i.test(statusText);
+      label.textContent = lang === 'sl' ? 'GLAVNA LINIJA' : 'TOP LINE';
       movesEl.textContent = pending
         ? (lang === 'sl' ? 'Analiziram…' : 'Analyzing…')
         : (lang === 'sl' ? 'Glavna linija za ta položaj ni na voljo.' : 'Top line is not available for this position.');
@@ -306,7 +320,15 @@
     host = root.ChessLabHost;
     if (!host || !byId('appTabs')) return;
     // Move existing controls, keeping their IDs and event listeners intact.
-    byId('appBoardControls').append(doc.querySelector('.analysis-source-row'), doc.querySelector('.top-buttons'), byId('appSim'));
+    const controls = byId('appBoardControls');
+    const analysisRow = doc.querySelector('.analysis-source-row');
+    const navRow = doc.querySelector('.top-buttons');
+    const status = byId('analysisSourceStatus');
+    const actionRow = doc.createElement('div'); actionRow.className = 'app-action-row';
+    const analysisSlot = doc.createElement('div'); analysisSlot.className = 'app-analysis-slot';
+    analysisSlot.append(analysisRow);
+    actionRow.append(analysisSlot, byId('appSim'));
+    controls.append(navRow, actionRow, status);
     byId('appClocks').append(byId('workspaceClockSlot'), byId('humanSession'));
     host.onChange(updatePosition);
     for (const tab of byId('appTabs').querySelectorAll('[data-app-tab]')) {
@@ -327,6 +349,21 @@
     });
     byId('appReplay').addEventListener('click', () => byId('btnReplay').click());
     byId('appTopLine')?.addEventListener('click', () => setView('moves'));
+    byId('next')?.addEventListener('click', event => {
+      const review = host.getReviewGame?.();
+      if (!review || review.cursor < review.totalPly) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const context = host.getContext();
+      const cdb = context.analysisSources?.CDB, sf = context.analysisSources?.SF;
+      let best = null;
+      if (cdb?.receipt?.status === 'ready') best = cdb.allMoves?.[0] || cdb.candidates?.[0] || null;
+      else if (cdb?.receipt?.status === 'unavailable') best = sf?.allMoves?.[0] || sf?.candidates?.[0] || null;
+      if (!best?.move || !host.playSuggestedMove?.(best.move)) {
+        byId('analysisSourceStatus').textContent = lang === 'sl'
+          ? 'Najboljša poteza še ni pripravljena.' : 'Best move is not ready yet.';
+      }
+    }, true);
     byId('appPause').addEventListener('click', () => doc.dispatchEvent(new CustomEvent('chess:pause-request', { detail: { source: 'app-header' } })));
     // Drawers belong to #controls. Reveal that area before the original action runs.
     byId('labToolsDialog').addEventListener('click', event => {
@@ -346,9 +383,10 @@
     doc.addEventListener('chess:activity', event => updateActivity(event.detail || {}));
     const gameTitle = byId('boardGameTitle');
     if (gameTitle && root.MutationObserver) new MutationObserver(updatePosition).observe(gameTitle, { childList: true, characterData: true, subtree: true });
-    const sourceStatus = byId('analysisSourceStatus');
-    if (sourceStatus && root.MutationObserver) new MutationObserver(() => updateTopLine(host.getContext()))
-      .observe(sourceStatus, { childList: true, characterData: true, subtree: true });
+    const refreshTopLine = () => updateTopLine(host.getContext());
+    if (root.MutationObserver) for (const watched of [byId('analysisSourceStatus'), byId('dccProgress'), byId('allEvalBadges')]) {
+      if (watched) new MutationObserver(refreshTopLine).observe(watched, { childList: true, characterData: true, subtree: true, attributes: true });
+    }
     updatePosition();
     resizeVisibleBoard();
   }

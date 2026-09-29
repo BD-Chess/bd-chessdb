@@ -165,7 +165,10 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   const html = read('index.html').toString();
   assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
   assert.doesNotMatch(html, /preview-note/);
+  assert.doesNotMatch(html, /Open without frame/i);
   assert.match(html, /main \{[^}]*justify-content:\s*center/s);
+  assert.match(html, /<option value="390" selected>390 px<\/option>/);
+  assert.match(html, /header-tools[\s\S]*CURRENT[\s\S]*PREVIOUS[\s\S]*LAB[\s\S]*APP[\s\S]*Preview width/);
   for (const standalone of [false, true]) {
     const dom = new JSDOM(html, {
       url: 'https://example.test/chess/app/', runScripts: 'outside-only',
@@ -196,4 +199,15 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   assert(phone.window.document.documentElement.classList.contains('app-phone-browser'));
   assert(phone.window.document.querySelector('.phone-frame iframe'));
   phone.window.close();
+});
+
+
+test('APP Deep menu uses depth-only presets and APP CDB transport is not forced away from LAB semantics', () => {
+  const deep = read('js/8zc-deep-ui.js').toString();
+  const budget = deep.match(/<select data-deep="budget">([\s\S]*?)<\/select>/)?.[1] || '';
+  assert.deepEqual([...budget.matchAll(/value="depth:(\d+)"/g)].map(m => Number(m[1])), [14,18,22,26,30,34,38,42]);
+  assert.doesNotMatch(budget, /nodes:|infinite/);
+  const utils = read('js/8zc-utils.js').toString();
+  assert.doesNotMatch(utils, /settings\.evalMode\s*=\s*['"]direct['"]/);
+  assert.match(utils, /source === 'proxy' && action === 'queryall'/);
 });

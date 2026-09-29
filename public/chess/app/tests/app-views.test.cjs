@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
+const { Chess } = require('../js/chess.min.js');
 
 const app = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(app, 'play.html'), 'utf8');
@@ -13,9 +14,16 @@ test('phone views switch in one tap and retain the shared position', async () =>
   const dom = new JSDOM(html, { url: 'https://example.test/chess/app/play.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, d = w.document, byId = id => d.getElementById(id);
   let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', listener, more = 0, replay = 0, sim = 0;
+  let analyses = {}, suggested = null;
   const minis = [];
   w.ChessLabReady = Promise.resolve();
-  w.ChessLabHost = { getContext: () => ({ fen, history: [] }), onChange: fn => { listener = fn; } };
+  w.ChessLabHost = {
+    Chess,
+    getContext: () => ({ fen, history: [], analysisSources: analyses }),
+    getReviewGame: () => ({ cursor: 0, totalPly: 0 }),
+    playSuggestedMove: move => { suggested = move; return true; },
+    onChange: fn => { listener = fn; }
+  };
   w.ChessLabLayout = { openTools: () => { more++; }, closeTools: () => {} };
   w.Chessboard = (_id, options) => {
     const board = { fen: options.position, position(next) { this.fen = next; }, resize() {} };
@@ -42,19 +50,48 @@ test('phone views switch in one tap and retain the shared position', async () =>
   await flush();
 
   const tab = view => byId('appTabs').querySelector(`[data-app-tab="${view}"]`).click();
-  assert.equal(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
+  assert.equal(byId('analysisSource').closest('.app-analysis-slot')?.parentElement.className, 'app-action-row');
   assert.equal(d.querySelector('.top-buttons').parentElement.id, 'appBoardControls');
+  assert.equal(byId('appBoardControls').firstElementChild.classList.contains('top-buttons'), true);
+  assert.equal(byId('appSim').parentElement.className, 'app-action-row');
+  assert.equal(byId('analysisSourceStatus').parentElement.id, 'appBoardControls');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
   assert.equal(byId('appTopLine').hidden, false);
-  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB/SF');
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE');
   assert.equal(byId('appTopLineMoves').textContent, 'Analyzing…');
   d.querySelector('[data-app-lang="sl"]').click();
   assert.equal(d.documentElement.lang, 'sl');
   assert.equal(byId('appTopLineMoves').textContent, 'Analiziram…');
   assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Šahovnica');
+  assert.equal(byId('appSim').textContent, 'Sim / Play');
   d.querySelector('[data-app-lang="en"]').click();
   assert.equal(d.documentElement.lang, 'en');
   assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Board');
+  assert.equal(byId('appSim').textContent, 'Sim / Play');
+
+  analyses = {
+    CDB: { allMoves: [{ move: 'e2e4', score: 20 }], receipt: { status: 'ready', provider: 'CDB' } },
+    SF: { allMoves: [{ move: 'd2d4', pv: ['d2d4'], depth: 26 }], receipt: { status: 'ready', provider: 'SF', depth: 26 } },
+    DCC: { receipt: { provider: 'CDB' }, candidates: [{ move: 'e2e4', data: { movePath: ['e7e5','g1f3'], pvDepth: 20 } }] }
+  };
+  listener();
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB (depth 20)');
+  assert.equal(byId('appTopLineMoves').textContent, 'e4 e5 Nf3');
+  byId('next').click();
+  assert.equal(suggested, 'e2e4');
+
+  suggested = null;
+  analyses = {
+    CDB: { allMoves: [], receipt: { status: 'unavailable', provider: 'CDB' } },
+    SF: { allMoves: [{ move: 'd2d4', pv: ['d2d4','d7d5'], depth: 26 }], receipt: { status: 'ready', provider: 'SF', depth: 26 } }
+  };
+  listener();
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · SF (depth 26)');
+  assert.equal(byId('appTopLineMoves').textContent, 'd4 d5');
+  byId('next').click();
+  assert.equal(suggested, 'd2d4');
+  analyses = {};
+
   assert.equal(byId('workspaceTimers').parentElement.parentElement.id, 'appClocks');
   byId('appSim').click();
   assert.equal(sim, 1);
