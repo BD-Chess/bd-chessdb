@@ -34,6 +34,10 @@ jobs:
               z=zipfile.ZipFile(io.BytesIO(raw));assert set(z.namelist())==expected
               dest.mkdir(parents=True,exist_ok=True)
               for name in sorted(expected):(dest/name).write_bytes(z.read(name))
+          # Playwright evaluates a bare function value by calling it. Restore without returning it.
+          v=dest/'verify.py';s=v.read_text()
+          s=s.replace("page.evaluate('F4MStore.write=window._realWrite')", "page.evaluate('()=>{F4MStore.write=window._realWrite;}')")
+          v.write_text(s)
           print('Authored source files available:',len(list(dest.glob('*'))))
       - name: Build isolated LAB and APP
         run: python scripts/flip4m_violet/build.py --public public
