@@ -1,0 +1,92 @@
+name: Chess APP flow review
+on:
+  push:
+    branches: [fix/chess-app-status-height-20260930-r1]
+    paths: [.github/workflows/chess-app-flow-review.yml]
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/chess-app-status-height-20260930-r1
+          fetch-depth: 1
+          sparse-checkout: |
+            public/chess/app
+            tools/chess-pwa
+            tools/chess-app-flow-fix.py
+            tools/chess-app-browser-review.py
+            tests/chess-app-pwa.test.cjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated test dependencies
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+          npm install --prefix "$RUNNER_TEMP/chess-review-deps" --no-package-lock --ignore-scripts jsdom@26.1.0 fake-indexeddb@6.0.1
+          echo "NODE_PATH=$RUNNER_TEMP/chess-review-deps/node_modules" >> "$GITHUB_ENV"
+      - name: Measure old layout before repair
+        continue-on-error: true
+        run: |
+          mkdir -p review-evidence
+          TESTED_SHA=$(git rev-parse HEAD) timeout 60s python tools/chess-app-browser-review.py --layout-only --out review-evidence/before > review-evidence/before.log 2>&1
+      - name: Apply exact APP status fix and commit only reviewed runtime files
+        run: |
+          test "$GITHUB_REF_NAME" = 'fix/chess-app-status-height-20260930-r1'
+          python tools/chess-app-flow-fix.py
+          python - <<'PY'
+          import subprocess
+          allowed={'public/chess/app/css/app-mobile.css','public/chess/app/sw.js','public/chess/app/release.json'}
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed <= allowed, changed
+          PY
+          if ! git diff --quiet; then
+            git add public/chess/app/css/app-mobile.css public/chess/app/sw.js public/chess/app/release.json
+            git -c user.name='ChessBest test runner' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(chess): remove inherited 130px APP status reservation'
+            git push origin HEAD:fix/chess-app-status-height-20260930-r1
+          fi
+          echo "TESTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Review rendered APP and actual UI interactions
+        id: browser
+        continue-on-error: true
+        run: timeout 120s python tools/chess-app-browser-review.py --out review-evidence/after > review-evidence/after.log 2>&1
+      - name: APP regression tests
+        id: unit
+        continue-on-error: true
+        run: timeout 90s node --test tests/chess-app-pwa.test.cjs public/chess/app/tests/*.test.cjs > review-evidence/node-tests.log 2>&1
+      - name: Capture measured results and exact public runtime
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,zipfile,os
+          app=Path('public/chess/app');r=json.loads((app/'release.json').read_text())
+          files=[app/name for name in r['assets_sha256']]+[app/'release.json',app/'sw.js']
+          files+=list((app/'tests').glob('*.cjs'))+list(Path('tools').glob('chess-app-*.py'))+[Path('tests/chess-app-pwa.test.cjs')]
+          files+=list(Path('tools/chess-pwa').glob('*.js'))+list(Path('review-evidence').rglob('*'))
+          with zipfile.ZipFile('chess-app-reviewed.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for f in files:
+                  if f.is_file(): z.write(f,str(f))
+              z.writestr('SOURCE.json',json.dumps({'sha':os.environ.get('TESTED_SHA'),'release':r['version']},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chess-app-reviewed
+          path: chess-app-reviewed.zip
+          retention-days: 7
+      - name: Acceptance
+        if: always()
+        run: |
+          test '${{ steps.browser.outcome }}' = success
+          test '${{ steps.unit.outcome }}' = success
