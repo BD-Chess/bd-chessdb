@@ -45,9 +45,12 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
   assert.equal(d.querySelector('.top-buttons').parentElement.id, 'appBoardControls');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
-  assert.equal(byId('appTopLine').hidden, true);
+  assert.equal(byId('appTopLine').hidden, false);
+  assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE · CDB/SF');
+  assert.equal(byId('appTopLineMoves').textContent, 'Analyzing…');
   d.querySelector('[data-app-lang="sl"]').click();
   assert.equal(d.documentElement.lang, 'sl');
+  assert.equal(byId('appTopLineMoves').textContent, 'Analiziram…');
   assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Šahovnica');
   d.querySelector('[data-app-lang="en"]').click();
   assert.equal(d.documentElement.lang, 'en');
@@ -135,5 +138,29 @@ test('Moves opens around the current move in a long game and preserves manual sc
   byId('moves').querySelector('.move').dataset.historyPly = '20';
   w.positionChanged();
   assert.equal(display.scrollTop, 472);
+  dom.window.close();
+});
+
+
+test('APP language waits for chess bootstrap before touching the donor DOM', async () => {
+  const dom = new JSDOM(html, { url: 'https://example.test/chess/app/play.html', runScripts: 'outside-only', pretendToBeVisual: true });
+  const w = dom.window, d = w.document, byId = id => d.getElementById(id);
+  Object.defineProperty(w.navigator, 'language', { value: 'sl-SI', configurable: true });
+  let releaseReady;
+  w.ChessLabReady = new Promise(resolve => { releaseReady = resolve; });
+  w.ChessLabHost = {
+    getContext: () => ({ fen: 'start', history: [], analysisSources: {} }),
+    onChange: () => {}
+  };
+  w.eval(script);
+  w.dispatchEvent(new w.Event('load'));
+  await flush();
+  assert.equal(d.documentElement.lang, 'en');
+  assert.notEqual(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
+  releaseReady();
+  await flush(); await flush();
+  assert.equal(d.documentElement.lang, 'sl');
+  assert.equal(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
+  assert.equal(byId('appTopLineMoves').textContent, 'Analiziram…');
   dom.window.close();
 });
