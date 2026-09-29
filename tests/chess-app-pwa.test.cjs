@@ -165,7 +165,10 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   const html = read('index.html').toString();
   assert.doesNotMatch(html, /location\.(replace|assign)|location\s*=/);
   assert.doesNotMatch(html, /preview-note/);
+  assert.doesNotMatch(html, /Open without frame/i);
   assert.match(html, /main \{[^}]*justify-content:\s*center/s);
+  assert.match(html, /<option value="390" selected>390 px<\/option>/);
+  assert.match(html, /header-tools[\s\S]*CURRENT[\s\S]*PREVIOUS[\s\S]*LAB[\s\S]*APP[\s\S]*Preview width/);
   for (const standalone of [false, true]) {
     const dom = new JSDOM(html, {
       url: 'https://example.test/chess/app/', runScripts: 'outside-only',
