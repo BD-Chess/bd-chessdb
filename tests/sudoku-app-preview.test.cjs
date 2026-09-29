@@ -16,6 +16,15 @@ test('APP preview offers the four widths, frameless view and ordered channel nav
  assert.match(html,/location\.replace\('\.\/app\.html'\+location\.hash\)/);
 });
 
+test('APP phone layout centers 6–9, uses 3+3 Play actions and removes the end slogan',()=>{
+ const css=read('public/S/app/app.css'),app=read('public/S/app/app.html');
+ assert.match(css,/\.numpad\{grid-template-columns:repeat\(10,minmax\(0,1fr\)\)/);
+ assert.match(css,/\.numpad button:nth-child\(6\)\{grid-column:2\/span 2\}/);
+ assert.match(css,/data-view=play.*data-assist=closed.*\.ux-toolbar\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/#solveBtn\{order:4\}/);assert.match(css,/#uxNew\{order:5\}/);assert.match(css,/#uxMore\{order:6\}/);
+ assert.equal(app.includes('<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>'),false);
+});
+
 test('APP build pins exact packaged LAB donor and isolates its stored games',()=>{
  const check=spawnSync(process.execPath,['scripts/build-sudoku-app-preview.cjs','--check'],{cwd:root,encoding:'utf8'});
  assert.equal(check.status,0,check.stderr||check.stdout);
