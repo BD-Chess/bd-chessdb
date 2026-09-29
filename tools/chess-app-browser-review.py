@@ -56,7 +56,7 @@ def main():
             record(case+' full square board',m['squares']==64 and abs(m['boardWidth']-m['boardHeight'])<5,m)
             record(case+' no horizontal overflow',not m['overflowX'])
             if fit: record(case+' Top Line above tabs',m['topBottom']<=m['tabTop']-3,m)
-            frame.evaluate('window.scrollTo(0,document.documentElement.scrollHeight)');frame.wait_for_timeout(100)
+            frame.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})");frame.wait_for_timeout(100)
             record(case+' bottom content reachable',frame.evaluate("document.getElementById('appTopLine').getBoundingClientRect().bottom <= document.getElementById('appTabs').getBoundingClientRect().top-3"))
             frame.evaluate('window.scrollTo(0,0)')
         try:
