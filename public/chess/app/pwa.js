@@ -48,7 +48,7 @@
   window.addEventListener('offline', render);
   install.addEventListener('click', async () => {
     if (window.self !== window.top) {
-      hint.textContent = 'Open APP without the preview frame, then use Install APP. On iPhone: Safari → Share → Add to Home Screen.';
+      hint.textContent = 'The desktop frame is for APP preview. Install ChessBest APP from Safari on iPhone or from the browser install menu on Android/desktop.';
       return;
     }
     if (prompt) {
