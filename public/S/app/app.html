@@ -498,7 +498,9 @@ body[data-quiet=true] *,body[data-quiet=true]::before,body[data-quiet=true]::aft
 <style id="sudoku-app-style">
 /* Native-facing Sudoku surface. Embedded into app.html by the APP preview builder. */
 html{color-scheme:dark}html[data-theme=light]{color-scheme:light}
-body[data-app-surface]{background:var(--bg);overflow-x:hidden}
+body[data-app-surface]{background:var(--bg);overflow-x:hidden;--app-text-scale:1}
+body[data-app-surface][data-app-text-size=compact]{--app-text-scale:.92}
+body[data-app-surface][data-app-text-size=large]{--app-text-scale:1.15}
 body[data-app-surface]::before,body[data-app-surface]::after,body[data-app-surface] .noise{display:none}
 body[data-app-surface] .page{min-height:100dvh;padding-bottom:max(12px,env(safe-area-inset-bottom))}
 @media(display-mode:standalone){body[data-app-surface] .page{padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
@@ -552,12 +554,15 @@ body[data-app-surface][data-app-panel=assist] #aiAssistPanel:not([hidden]){
   border:1px solid var(--border2);box-shadow:0 18px 50px #000b;border-radius:20px
 }
 body[data-app-surface] #aiAssistPanel .assist-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-body[data-app-surface] #aiAssistPanel .btn{min-height:44px}
+body[data-app-surface] #aiAssistPanel .btn{min-height:48px;font-size:calc(.98rem * var(--app-text-scale))}
+body[data-app-surface] #aiAssistHint,body[data-app-surface] #aiAssistWhy{font-size:calc(1.08rem * var(--app-text-scale));font-weight:750}
+body[data-app-surface] #aiAssistText{font-size:calc(.94rem * var(--app-text-scale));line-height:1.5}
+body[data-app-surface] #aiAssistPanel .assist-note{font-size:calc(.82rem * var(--app-text-scale));line-height:1.45}
 body[data-app-surface] #appAssistScrim{display:none}
 body[data-app-surface][data-app-panel=assist] #appAssistScrim{display:block;position:fixed;inset:0;z-index:3001;background:#020711a8;border:0;width:100%;cursor:pointer}
 body[data-app-surface] #appDock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;z-index:3003;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,470px);gap:2px;padding:7px 8px calc(8px + env(safe-area-inset-bottom));background:#0b1629f5;border-top:1px solid #00e5ff33;backdrop-filter:blur(12px)}
-body[data-app-surface] #appDock button{min-width:0;min-height:58px;padding:5px 2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 .68rem/1 system-ui;border:0;border-radius:10px;background:transparent;color:#c5d2e4;cursor:pointer}
-body[data-app-surface] #appDock .app-dock-icon{font-size:1.18rem;line-height:1;color:#e8f1ff}
+body[data-app-surface] #appDock button{min-width:0;min-height:62px;padding:5px 2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font:700 calc(.80rem * var(--app-text-scale))/1 system-ui;border:0;border-radius:10px;background:transparent;color:#c5d2e4;cursor:pointer}
+body[data-app-surface] #appDock .app-dock-icon{font-size:1.22rem;line-height:1;color:#e8f1ff}
 body[data-app-surface] #appDock .app-dock-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 body[data-app-surface] #appDock button[aria-pressed=true]{color:#74f4ff;background:#103046}
 body[data-app-surface] #appDock button[aria-pressed=true] .app-dock-icon{color:#74f4ff}
@@ -570,6 +575,25 @@ body[data-app-surface] #appDock button:disabled{opacity:.38;cursor:default}
 body[data-app-surface][data-view=lab] #appDock{display:none!important}
 body[data-app-surface]:not([data-view=lab]) .page{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 body[data-app-surface]:not([data-view=lab]) .ux-toolbar{display:none!important}
+body[data-app-surface] .nav-dialog{font-size:calc(.95rem * var(--app-text-scale))}
+body[data-app-surface] .ux-card .btn{font-size:calc(1rem * var(--app-text-scale))}
+body[data-app-surface] .app-more-primary,
+body[data-app-surface] .app-more-menu{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+body[data-app-surface] .app-more-primary .btn,
+body[data-app-surface] .app-more-menu>.btn{min-height:70px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font:700 calc(1.02rem * var(--app-text-scale))/1.18 ui-monospace,monospace;white-space:normal;text-align:center}
+body[data-app-surface] .app-more-primary .app-more-icon,
+body[data-app-surface] .app-more-menu .app-more-icon{font:700 1.26rem/1 system-ui;color:#dce9fb}
+body[data-app-surface] #appMoreTutorial{grid-column:1/-1}
+body[data-app-surface] .app-more-menu .app-danger{grid-column:1/-1;border-color:#ff668044;color:#ff9aae;background:#2a1020}
+body[data-app-surface] .app-more-menu .app-danger .app-more-icon{color:#ff9aae}
+body[data-app-surface] .app-more-textsize{margin:12px 0 14px;padding:12px;border:1px solid var(--border2);border-radius:12px;background:#0d1a2c}
+body[data-app-surface] .app-more-textsize-title{margin:0 0 9px;font:700 calc(.90rem * var(--app-text-scale))/1.2 system-ui;color:#aebfd7}
+body[data-app-surface] .app-more-textsize-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+body[data-app-surface] .app-more-textsize-buttons .btn{min-height:48px;padding:7px 4px;font:700 calc(.86rem * var(--app-text-scale))/1.1 system-ui}
+body[data-app-surface] .app-more-textsize-buttons .btn[aria-pressed=true]{border-color:#00e5ff;color:#74f4ff;background:#103046}
+[data-theme=light] body[data-app-surface] .app-more-textsize{background:var(--surface2)}
+[data-theme=light] body[data-app-surface] .app-more-primary .app-more-icon,
+[data-theme=light] body[data-app-surface] .app-more-menu .app-more-icon{color:var(--text)}
 body[data-app-surface] .nav-modal{z-index:4000}
 body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
 @media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
@@ -2943,8 +2967,16 @@ const mobileUX=(()=>{
  function geometry(i,prefs=preferences()){return G.place([...$('grid').children].map(c=>c.getBoundingClientRect()),i,visibleBounds(),prefs);}
  function toast(text){let n=$('uxToast');n.textContent=text;n.hidden=false;const v=visibleBounds();if(v){n.style.left=v.left+'px';n.style.top=v.top+'px';}clearTimeout(toastTimer);toastTimer=setTimeout(()=>n.hidden=true,2400);}
  function cancelGesture(consumed=false){const g=gesture;if(!g)return;gesture=null;gestureSeq++;clearTimeout(g.timer);$('uxPicker')?.remove();$('uxLoupe')?.remove();$('grid').classList.remove('ux-holding');$('grid').children[g.index]?.classList.remove('ux-origin');if(g.active||consumed)suppress={until:Date.now()+850,x:g.x,y:g.y};if(g.capture)try{$('grid').releasePointerCapture(g.id);}catch(_){} }
+ function positionLoupe(g,p,x,y){
+  if(g.kind!=='touch')return;const v=visibleBounds();if(!v)return;
+  const width=g.loupeWidth||p.getBoundingClientRect().width,height=g.loupeHeight||p.getBoundingClientRect().height,pad=6,gap=54;
+  let left=x-width/2,top=y-height-gap;
+  if(top<v.top+pad&&y+gap+height<=v.bottom-pad)top=y+gap;
+  left=Math.max(v.left+pad,Math.min(v.right-width-pad,left));top=Math.max(v.top+pad,Math.min(v.bottom-height-pad,top));
+  p.style.left=Math.round(left)+'px';p.style.top=Math.round(top)+'px';
+ }
  function paintLoupe(g,x,y){
-  const p=$('uxLoupe');if(!p)return;const i=g.cells.findIndex(r=>x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom);
+  const p=$('uxLoupe');if(!p)return;if(g.kind==='touch')positionLoupe(g,p,x,y);const i=g.cells.findIndex(r=>x>=r.left&&x<r.right&&y>=r.top&&y<r.bottom);
   p.dataset.outside=String(i<0);if(i<0){p.querySelector('.ux-loupe-title').textContent='Slide over the grid';return;}
   if(p.dataset.cell===String(i)){p.querySelector('.ux-loupe-title').textContent=`Magnifier · R${Math.floor(i/9)+1} C${i%9+1}`;return;}
   p.dataset.cell=String(i);p.querySelector('.ux-loupe-title').textContent=`Magnifier · R${Math.floor(i/9)+1} C${i%9+1}`;
@@ -2959,7 +2991,7 @@ const mobileUX=(()=>{
    view.appendChild(n);
   }
  }
- function openLoupe(g){const v=visibleBounds();if(!v)return false;const width=Math.min(280,v.width-16,v.height-46),height=width+30;if(width<100)return false;
+ function openLoupe(g){const v=visibleBounds();if(!v)return false;const width=Math.min(280,v.width-16,v.height-46),height=width+30;if(width<100)return false;g.loupeWidth=width;g.loupeHeight=height;
   const p=document.createElement('div');p.id='uxLoupe';p.className='ux-loupe';p.setAttribute('aria-hidden','true');p.style.cssText=`left:${v.left+(v.width-width)/2}px;top:${v.top+(v.height-height)/2}px;width:${width}px;height:${height}px;--ux-loupe-cell:${(width-28)/3}px`;
   p.innerHTML='<div class="ux-loupe-title"></div><div class="ux-loupe-grid"></div>';g.cells=[...$('grid').children].map(c=>c.getBoundingClientRect());document.body.appendChild(p);paintLoupe(g,g.x,g.y);return true;
  }
@@ -3682,6 +3714,20 @@ install();
  const product = window.SudokuNavigator?.product;
  if (!panel || !product) return;
 
+ const TEXT_KEY='ai8SudokuAppV030.appTextSize';
+ const TEXT_SIZES=new Set(['compact','normal','large']);
+ const readTextSize=()=>{
+  try{const v=localStorage.getItem(TEXT_KEY);return TEXT_SIZES.has(v)?v:'normal';}
+  catch(_){return 'normal';}
+ };
+ const applyTextSize=(value,persist=false)=>{
+  const size=TEXT_SIZES.has(value)?value:'normal';
+  document.body.dataset.appTextSize=size;
+  if(persist)try{localStorage.setItem(TEXT_KEY,size);}catch(_){}
+  return size;
+ };
+ let textSize=applyTextSize(readTextSize());
+
  const dock = document.createElement('nav');
  dock.id = 'appDock';
  dock.setAttribute('aria-label', 'Game controls');
@@ -3712,20 +3758,78 @@ install();
   queueMicrotask(sync);
  });
 
+ const menuIcon = button => {
+  if(button.id==='appPwaMenu')return '⬇';
+  const key=button.dataset.menu||button.textContent.trim();
+  return ({
+   'Redo':'↻','My games':'▦','Daily puzzles':'◫','Share puzzle':'↗',
+   'Check correctness':'✓','Review':'◎','Settings':'⚙','Help':'?',
+   'Import':'⇩','Export':'⇧','Delete all APP data':'⌫'
+  })[key]||'•';
+ };
+ function decorateMenuButton(button){
+  if(!button || button.dataset.appDecorated==='true')return;
+  const text=button.textContent.trim();
+  button.dataset.appDecorated='true';
+  button.innerHTML='<span class="app-more-icon" aria-hidden="true">'+menuIcon(button)+'</span><span class="app-more-label"></span>';
+  button.querySelector('.app-more-label').textContent=text;
+  if((button.dataset.menu||'').includes('Delete all APP data')){
+   button.classList.add('app-danger');
+   button.addEventListener('click',()=>queueMicrotask(()=>{
+    try{if(!localStorage.getItem(TEXT_KEY)){textSize=applyTextSize('normal');}}catch(_){}
+   }));
+  }
+ }
+ function syncTextSizeButtons(){
+  const group=$('appTextSize');
+  if(!group)return;
+  for(const b of group.querySelectorAll('[data-app-text-size]'))b.setAttribute('aria-pressed',String(b.dataset.appTextSize===textSize));
+ }
+ function setTextSize(value){
+  textSize=applyTextSize(value,true);
+  syncTextSizeButtons();
+ }
  function enhanceMore(){
   const body=$('navModalBody');
-  if(!body || $('appMorePrimary'))return;
-  const sl=isSl(), group=document.createElement('div');
-  group.id='appMorePrimary';
-  group.className='ux-menu app-more-primary';
-  group.innerHTML =
-   '<button class="btn" id="appMoreNew">'+(sl?'Nova igra':'New game')+'</button>'+
-   '<button class="btn" id="appMoreNews">'+(sl?'Kaj je novega':'What’s new')+'</button>'+
-   '<button class="btn" id="appMoreTutorial">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</button>';
-  body.prepend(group);
-  $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
-  $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
-  $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  if(!body)return;
+  let primary=$('appMorePrimary');
+  if(!primary){
+   const sl=isSl();
+   primary=document.createElement('div');
+   primary.id='appMorePrimary';
+   primary.className='ux-menu app-more-primary';
+   primary.innerHTML =
+    '<button class="btn" id="appMoreNew"><span class="app-more-icon" aria-hidden="true">＋</span><span class="app-more-label">'+(sl?'Nova igra':'New game')+'</span></button>'+
+    '<button class="btn" id="appMoreNews"><span class="app-more-icon" aria-hidden="true">✦</span><span class="app-more-label">'+(sl?'Kaj je novega':'What’s new')+'</span></button>'+
+    '<button class="btn" id="appMoreTutorial"><span class="app-more-icon" aria-hidden="true">◉</span><span class="app-more-label">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</span></button>';
+   body.prepend(primary);
+   $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
+   $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
+   $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  }
+  let textSettings=$('appTextSize');
+  if(!textSettings){
+   const sl=isSl();
+   textSettings=document.createElement('section');
+   textSettings.id='appTextSize';
+   textSettings.className='app-more-textsize';
+   textSettings.innerHTML =
+    '<div class="app-more-textsize-title">'+(sl?'Velikost besedila':'Text size')+'</div>'+
+    '<div class="app-more-textsize-buttons" role="group" aria-label="'+(sl?'Velikost besedila':'Text size')+'">'+
+     '<button type="button" class="btn" data-app-text-size="compact">'+(sl?'Kompaktno':'Compact')+'</button>'+
+     '<button type="button" class="btn" data-app-text-size="normal">'+(sl?'Običajno':'Normal')+'</button>'+
+     '<button type="button" class="btn" data-app-text-size="large">'+(sl?'Veliko':'Large')+'</button>'+
+    '</div>';
+   primary.after(textSettings);
+   for(const b of textSettings.querySelectorAll('[data-app-text-size]'))b.onclick=()=>setTextSize(b.dataset.appTextSize);
+  }
+  const menus=[...body.querySelectorAll('.ux-menu')].filter(n=>n!==primary);
+  for(const menu of menus){
+   menu.classList.add('app-more-menu');
+   for(const b of menu.querySelectorAll(':scope > .btn'))decorateMenuButton(b);
+   const danger=menu.querySelector('.app-danger');if(danger)menu.append(danger);
+  }
+  syncTextSizeButtons();
  }
 
  const sync = () => {
