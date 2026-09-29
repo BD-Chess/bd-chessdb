@@ -49,6 +49,19 @@ test('APP numpad is visually separated from the board with gunmetal and silver c
  assert.match(css,/\.numpad button:not\(\.pl-armed\):active\{[\s\S]*border-color:#28dff2/);
 });
 
+test('APP defaults to Coach with number pad hidden and a visible hold-tip row',()=>{
+ const css=read('public/S/app/app.css'),ui=read('public/S/app/app-ui.js');
+ assert.ok(ui.includes("numberPad:{key:'8zSudoku.app.ui.numberPad'"));
+ assert.ok(ui.includes("def:'off'"));
+ assert.ok(ui.includes("coach:{key:'8zSudoku.app.ui.coach'"));
+ assert.ok(ui.includes("def:'easy'"));
+ assert.ok(ui.includes("holdTip:{key:'8zSudoku.app.ui.holdTip'"));
+ assert.ok(ui.includes("Tap & hold a cell to get the number popup."));
+ assert.ok(ui.includes("Sudoku Coach"));
+ assert.ok(css.includes('#appCoach'));
+ assert.ok(css.includes('#appHoldTip'));
+});
+
 test('APP dock and spacing keep secondary actions out of the Play surface',()=>{
  const css=read('public/S/app/app.css'),ui=read('public/S/app/app-ui.js');
  for(const id of ['appNotes','appErase','appUndo','appAssist','appMore'])assert.ok(ui.includes(id),id);
@@ -94,6 +107,10 @@ test('APP phone Play stays simple; AI Solve and Learn use the guided sheet witho
  const before=state(h);
  assert.equal(w.document.body.dataset.appSurface,'true');
  assert.equal(h.el('numpad').closest('.mobile-input-panel').parentElement.className,'col-center');
+ assert.equal(h.el('plNumbers').hidden,true,'number pad is hidden by default');
+ assert.equal(h.el('appCoach').hidden,false,'Easy opens contextual Coach by default');
+ assert.equal(h.el('appHoldTip').hidden,false,'tap-and-hold tip is visible by default');
+ assert.match(h.el('appHoldTip').textContent,/Tap & hold/);
  assert.equal(h.el('aiAssistPanel').hidden,true);
  assert.deepEqual([...h.el('appDock').querySelectorAll('button')].map(n=>n.id),['appNotes','appErase','appUndo','appAssist','appMore']);
  assert.equal(h.el('appAssist').hidden,false);
@@ -108,6 +125,16 @@ test('APP phone Play stays simple; AI Solve and Learn use the guided sheet witho
  h.el('aiAssistClose').click();assert.equal(w.document.body.dataset.appPanel,'board','Learn Close returns to grid');
  h.el('uxHint').click();await until(()=>w.document.body.dataset.appPanel==='assist','mobile Hint opens guided sheet');
  assert.deepEqual(state(h).board,before.board);
+ assert.deepEqual(h.errors,[]);
+});
+
+test('APP settings preferences can restore the classic number pad and hide the hold tip',async t=>{
+ const stored={'8zSudoku.app.ui.numberPad':'on','8zSudoku.app.ui.holdTip':'off'};
+ const h=await boot(t,stored,{width:390,height:844},{lane:'APP'}),w=h.w;
+ await w.SudokuNavigator.restore(savedFixture('0.2.0'));w.stopTimer();
+ assert.equal(h.el('plNumbers').hidden,false);
+ assert.equal(h.el('appCoach').hidden,true);
+ assert.equal(h.el('appHoldTip').hidden,true);
  assert.deepEqual(h.errors,[]);
 });
 
