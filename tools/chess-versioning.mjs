@@ -12,7 +12,7 @@ export function nextArchive(names) {
 }
 export function checkVersions(repo, base) {
   const app = path.join(repo, 'public/chess');
-  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new']];
+  const errors = [], channels = [['CURRENT',''],['PREVIOUS','old'],['LAB','new'],['APP','app']];
   for (const [name, dir] of channels) {
     const file = path.join(app, dir, 'index.html');
     if (!fs.existsSync(file)) { errors.push(`${name}: missing entry page`); continue; }
@@ -76,8 +76,8 @@ export function checkVersions(repo, base) {
     const entries = execFileSync('git',['ls-tree','-rz',base,'--','public/chess/old'],{cwd:repo,encoding:'utf8'}).split('\0').filter(Boolean);
     for (const entry of entries) {
       // The active PREVIOUS is the legacy application at old/, independent of
-      // immutable numbered snapshots. Only the approved PWA nav link deletion
-      // is permitted in its index; every other existing byte remains sealed.
+      // immutable numbered snapshots. The approved PWA link retirement and
+      // APP selector addition are the only allowed changes to its entry page.
       const match = entry.match(/^\d+ blob ([a-f0-9]+)\t(public\/chess\/old\/.*)$/);
       if (!match) continue;
       const full = path.join(repo,match[2]);
@@ -85,13 +85,16 @@ export function checkVersions(repo, base) {
       if (!fs.existsSync(full)) { errors.push(`Deleted ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`); continue; }
       const hash = execFileSync('git',['hash-object','--',full],{cwd:repo,encoding:'utf8'}).trim();
       if (hash !== match[1]) {
-        let approvedNavRemoval = false;
+        let approvedNavChange = false;
         if (match[2] === 'public/chess/old/index.html') {
           const original = execFileSync('git',['show',`${base}:${match[2]}`],{cwd:repo,encoding:'utf8'});
-          const line = '    <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../PWA/">PWA</a>\n';
-          approvedNavRemoval = original.includes(line) && original.replace(line,'') === fs.readFileSync(full,'utf8');
+          const pwaLine = '    <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../PWA/">PWA</a>\n';
+          const labLine = '    <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../new/">LAB</a>\n';
+          const appLine = '    <span class="bd-version-dot" aria-hidden="true">·</span> <a href="../app/">APP</a>\n';
+          const expected = original.replace(pwaLine, '').replace(labLine, labLine + appLine);
+          approvedNavChange = original.includes(labLine) && expected === fs.readFileSync(full,'utf8');
         }
-        if (!approvedNavRemoval) errors.push(`Changed ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`);
+        if (!approvedNavChange) errors.push(`Changed ${sealed ? 'archive' : 'PREVIOUS'} file: ${match[2]}`);
       }
     }
     // Also reject files added to a sealed archive or to the preserved legacy app.

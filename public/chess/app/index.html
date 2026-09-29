@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="theme-color" content="#11251d">
+  <title>ChessBest APP · iPhone preview</title>
+  <style id="bd-version-style">
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #101a16; color: #e7f4ec; }
+    header { max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: 18px; letter-spacing: .01em; }
+    .bd-version-selector { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 650; letter-spacing: .06em; }
+    .bd-version-selector a { display: inline-flex; align-items: center; min-height: 44px; padding: 3px 8px; color: #b5c9bb; text-decoration: none; border: 1px solid transparent; border-radius: 6px; }
+    .bd-version-selector a:hover, .bd-version-selector a:focus-visible { color: white; border-color: #69977e; }
+    .bd-version-selector a[aria-current="page"] { color: #bdf6ce; background: #16382b; border-color: #48765d; }
+    .bd-version-dot { color: #819b8b; }
+    main { display: flex; flex-direction: column; align-items: center; padding: 0 16px 32px; }
+    .preview-controls { width: min(100%, 780px); display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 2px 0 14px; color: #adc2b5; font-size: 13px; }
+    .preview-controls label { display: flex; align-items: center; gap: 8px; }
+    .preview-controls select, .preview-controls a { min-height: 44px; border: 1px solid #53725e; border-radius: 8px; color: #e7f4ec; background: #1c3428; padding: 8px; font: inherit; }
+    .preview-controls a { display: inline-flex; align-items: center; text-decoration: none; }
+    .phone-frame { width: calc(var(--phone-width, 402px) + 12px); max-width: 100%; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
+    iframe { display: block; width: 100%; height: 874px; border: 0; border-radius: 26px; background: #101a16; }
+    .preview-note { max-width: 780px; color: #adc2b5; font-size: 12px; line-height: 1.5; text-align: center; }
+    @media (max-width: 790px) { header, main { display: none; } }
+  </style>
+  <script>
+    if (window.innerWidth <= 790) window.location.replace('./play.html');
+  </script>
+</head>
+<body>
+  <header>
+    <h1>ChessBest · APP preview</h1>
+    <nav class="bd-version-selector" aria-label="Application versions">
+      <a href="../">CURRENT</a><span class="bd-version-dot" aria-hidden="true">·</span>
+      <a href="../old/">PREVIOUS</a><span class="bd-version-dot" aria-hidden="true">·</span>
+      <a href="../new/">LAB</a><span class="bd-version-dot" aria-hidden="true">·</span>
+      <a href="./" aria-current="page">APP</a>
+    </nav>
+  </header>
+  <main>
+    <div class="preview-controls">
+      <label>Preview width <select id="previewWidth" aria-label="Preview width">
+        <option value="375">375 px</option><option value="390">390 px</option>
+        <option value="402" selected>402 px</option><option value="430">430 px</option>
+      </select></label>
+      <a href="play.html">Open without frame ↗</a>
+    </div>
+    <div class="phone-frame" id="phoneFrame">
+      <iframe src="play.html?embedded=1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+    <p class="preview-note">The frame uses the same board and mobile UI files intended for the iPhone app. Native file sharing, safe areas and touch behavior still need device testing.</p>
+  </main>
+  <noscript><p><a href="play.html">Open ChessBest APP preview</a></p></noscript>
+  <script>
+    document.getElementById('previewWidth').addEventListener('change', event => {
+      document.getElementById('phoneFrame').style.setProperty('--phone-width', event.target.value + 'px');
+    });
+  </script>
+</body>
+</html>
