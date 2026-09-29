@@ -1,9 +1,12 @@
 # ChessBest APP PWA
 
 APP is installed in place at `/chess/app/`; the installed start URL is `play.html`.
-The `/chess/app/` URL always retains its adjustable phone preview at every
-viewport width and display mode. It never redirects automatically. Only an
-explicit Open without frame link or the installed start URL opens `play.html`.
+The `/chess/app/` URL never redirects automatically. Desktop browsers, tablets,
+and phone browsers using **Request Desktop Site** retain the adjustable drawn
+phone preview. A normal phone browser keeps the same `/chess/app/` URL but
+removes the decorative frame and expands the identical APP runtime to the full
+viewport, matching the intended native iOS/Android presentation. The installed
+PWA/native start URL opens `play.html` directly.
 Installation and offline readiness appear in **More**. On iPhone use Safari,
 Share, Add to Home Screen. Open the direct mobile page before installation.
 
@@ -40,3 +43,13 @@ Pages paths, each offline asset, integrity inputs, failed download rollback,
 channel isolation, and update activation boundaries. UI tests cover installation
 fallback, readiness, waiting update instructions and native bypass.
 Physical iPhone Home Screen installation remains a device verification step.
+
+## APP UI shell — 2026-09-29
+
+The APP runtime adds a compact CURRENT · PREVIOUS · LAB · APP row, EN | SL,
+centered ChessBest.org identity and a language choice stored only in
+`ChessBest:APP:v1:language`. The Board view can expose a compact Top line card:
+prefer a current CDB-derived measured line when one is present, otherwise use
+the current Stockfish PV; hide the card when neither source provides a usable
+line. The analysis status occupies its own compact row instead of squeezing the
+source controls.
