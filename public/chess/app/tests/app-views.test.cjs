@@ -14,9 +14,16 @@ test('phone views switch in one tap and retain the shared position', async () =>
   const dom = new JSDOM(html, { url: 'https://example.test/chess/app/play.html', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, d = w.document, byId = id => d.getElementById(id);
   let fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', listener, more = 0, replay = 0, sim = 0;
+  let analyses = {}, suggested = null;
   const minis = [];
   w.ChessLabReady = Promise.resolve();
-  w.ChessLabHost = { getContext: () => ({ fen, history: [] }), onChange: fn => { listener = fn; } };
+  w.ChessLabHost = {
+    Chess,
+    getContext: () => ({ fen, history: [], analysisSources: analyses }),
+    getReviewGame: () => ({ cursor: 0, totalPly: 0 }),
+    playSuggestedMove: move => { suggested = move; return true; },
+    onChange: fn => { listener = fn; }
+  };
   w.ChessLabLayout = { openTools: () => { more++; }, closeTools: () => {} };
   w.Chessboard = (_id, options) => {
     const board = { fen: options.position, position(next) { this.fen = next; }, resize() {} };
