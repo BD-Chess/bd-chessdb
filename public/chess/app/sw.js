@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-4ca691d7c132f7bb";
+const RELEASE = "app-4e63b5ab6ff2c266";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -167,7 +167,7 @@ const INTEGRITY = {
   "css/8zc-study.css": "sha256-GIkDaM5yVUVjdk7edy2kxnQLFsZR/o2wqND2L3QhlmU=",
   "css/8zc-styles.css": "sha256-oxHv8/eAojr3Z3JS3l6z4zFZpGFFqz8hmmbn9FB8s5w=",
   "css/8zc-tournament.css": "sha256-97QQS1i+GV57xsxIm4hZKUGBvcIvQHYiSd1mge/g2Ac=",
-  "css/app-mobile.css": "sha256-TJdhvIVYdmHgw+E0dKvCHOopTPnX9u7mqIsVfab/5Nc=",
+  "css/app-mobile.css": "sha256-5hJOcmreqduAaRVbRfVmMekepu14KDcJzKWffgu0NJo=",
   "css/chessboard-1.0.0.min.css": "sha256-j6aLiI0iJD8tzrvLpgcIyB/+06s48RZh69aEuBwSJvs=",
   "facts.html": "sha256-T6T+6EmRcrwr+Rac6PBMFFyNVsmbqZijiZg/OYA0yyE=",
   "games-info.html": "sha256-z7gae1w+nlghgwKpelB3wJNLjEo3dtuRjX6juTNsMIY=",
@@ -186,7 +186,7 @@ const INTEGRITY = {
   "img/chesspieces/wikipedia/wP.png": "sha256-m/IobFlQett6YEXCEqa5Kp3v1+mlu64w6Cu4MhbEPLE=",
   "img/chesspieces/wikipedia/wQ.png": "sha256-BctoAdAvOTY5d/bXrppA9gWyqmmGbpCGhowI4d8X+HU=",
   "img/chesspieces/wikipedia/wR.png": "sha256-F16iJSoBBSET3/hTgOgjckZEjHYq4wOuKjSNlxuggAs=",
-  "index.html": "sha256-c35LOFI5sRG9JL9ZVxu59thSPjThm6lfk1Or09u1kMY=",
+  "index.html": "sha256-+Qr/pBF+WrqFJYTFiRFz8CTpG4jgzvvEeVVrju+iDgk=",
   "js/8zc-benchmark.js": "sha256-RFcgUgnZrE/xMd3erfvWISdr8qpcg4qGiqBFMkkkL/I=",
   "js/8zc-dcc-core.js": "sha256-Iejp8fSlGl1X+fG24X2xpgFu5kn+38WBAc6eaeekJSA=",
   "js/8zc-deep-engine.js": "sha256-M7N5qCRTfl0nU0soCukxnTO4iRjAe7yDXC7ovSgODjo=",
@@ -212,12 +212,12 @@ const INTEGRITY = {
   "js/8zc-tournament-ui.js": "sha256-g0adG0U8tpMmZCVebFLar+NyjLjzAVr1R6e3OQW0UUo=",
   "js/8zc-utils.js": "sha256-25a5Zkw3SPEBur3ea8au16pHGh/xHY/t/lvhDpZB0UM=",
   "js/8zc-workspace.js": "sha256-THbZiWNGmyFNOfFonzCP7CA9SEUxPIEhzZmFFcKu9t4=",
-  "js/app-mobile.js": "sha256-3NHlejbF9hYuMCgpHUQpBLZgT0bnDwzikX9NPpzUxmk=",
+  "js/app-mobile.js": "sha256-jQfSYVVFpbIZKaWfKnf0tMpOYRIVo+nf5FGSTRzOdlA=",
   "js/chess.min.js": "sha256-eqQw3yuTEYSQQIUa3vMMTeSfbIzv24BkWkJi8flcRF8=",
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
   "manifest.webmanifest": "sha256-q0wnJarVjuRsL5xlkjsI2xsEApyooIWb+ya0eZaQ1qY=",
-  "play.html": "sha256-5+6HjSRsB/7xmz+PoqFV9bD+R5NAU/m09dukNZCx9tc=",
+  "play.html": "sha256-Mll/hbGrlcBYB2B454REydjJKEOY5xXOc1sO5A3XU2s=",
   "pwa.js": "sha256-ABq0EDkEwlR1B/i/297/9aKfEdyr74Wkcn8RUbLCut0=",
   "vendor/stockfish/stockfish-18-lite-single.js": "sha256-IngAUFfzgUkfHJuz5EyfWSCzoAvvl1njPMZYJ2mh8f4=",
   "vendor/stockfish/stockfish-18-lite-single.wasm": "sha256-qPvAXsaSC1bXSFgm3LAsX/0oJry/dRz5cwRvI3qQlvE="
