@@ -6,15 +6,18 @@ const root=path.resolve(__dirname,'..'),read=name=>fs.readFileSync(path.join(roo
 const sha=s=>crypto.createHash('sha256').update(s).digest('hex');
 const state=h=>plain(h.w.SudokuNavigator.export().session);
 
-test('APP preview offers the four widths, frameless view and ordered channel navigation',()=>{
+test('APP preview uses one compact desktop/tablet header and width selector',()=>{
  const html=read('public/S/app/index.html');
  const nav=[...html.matchAll(/<a href="(\.\.\/|\.\.\/old\/|\.\.\/new\/|\.\/)"[^>]*>(CURRENT|PREVIOUS|LAB|APP)<\/a>/g)].map(m=>m[2]);
  assert.deepEqual(nav,['CURRENT','PREVIOUS','LAB','APP']);
- assert.deepEqual([...html.matchAll(/data-width="(\d+)"/g)].map(m=>m[1]),['375','390','402','430']);
- assert.match(html,/Open without frame/);
+ assert.match(html,/<h1 class="preview-title">8zSudoku · APP preview<\/h1>/);
+ assert.match(html,/<select id="previewWidth"[^>]*>[\s\S]*?<option value="375">375<\/option>[\s\S]*?<option value="390" selected>390<\/option>[\s\S]*?<option value="402">402<\/option>[\s\S]*?<option value="430">430<\/option>[\s\S]*?<\/select>/);
+ assert.doesNotMatch(html,/data-width=|Open without frame|toggleFrame|Install app \/ Offline|iPhone preview — the same mobile game surface as the APP edition\./);
  assert.match(html,/game\.src='\.\/app\.html'\+location\.hash/);
  assert.match(html,/location\.replace\('\.\/app\.html'\+location\.hash\)/);
  assert.match(html,/html\[data-app-shell=preview\] main\{flex:1;justify-content:center/);
+ assert.match(html,/html\[data-app-shell=phone\] \.preview-header/);
+ assert.match(html,/document\.documentElement\.dataset\.appShell=phone\?'phone':'preview'/);
  assert.match(html,/syncFramedPreview/);
  assert.doesNotMatch(html,/Play and Learn use one game\. APP storage is separate from LAB and CURRENT\./);
 });
