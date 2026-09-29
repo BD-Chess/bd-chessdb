@@ -14,6 +14,16 @@ test('APP preview offers the four widths, frameless view and ordered channel nav
  assert.match(html,/Open without frame/);
  assert.match(html,/game\.src='\.\/app\.html'\+location\.hash/);
  assert.match(html,/location\.replace\('\.\/app\.html'\+location\.hash\)/);
+ assert.match(html,/html\[data-app-shell=preview\] main\{flex:1;justify-content:center/);
+ assert.match(html,/syncFramedPreview/);
+ assert.doesNotMatch(html,/Play and Learn use one game\. APP storage is separate from LAB and CURRENT\./);
+});
+
+test('APP framed preview lowers only the simulated phone game block',()=>{
+ const css=read('public/S/app/app.css');
+ assert.match(css,/\[data-app-framed-preview=true\] \.title-block/);
+ assert.match(css,/\[data-app-framed-preview=true\] \.pl-tabs/);
+ assert.match(css,/\[data-app-framed-preview=true\] \.main\{transform:translateY\(24px\)\}/);
 });
 
 test('APP phone layout centers 6–9, uses 3+3 Play actions and removes the end slogan',()=>{
