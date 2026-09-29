@@ -20,8 +20,14 @@ jobs:
         run: npm ci --prefix tests/sudoku --ignore-scripts
       - name: Verify generated APP release is current
         run: node scripts/build-sudoku-app-preview.cjs --check
-      - name: Run narrow APP tests
-        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit tests/sudoku-app-preview.test.cjs
+      - name: Static APP contracts
+        run: timeout 30s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit --test-name-pattern='APP preview|APP framed preview|APP phone layout|APP numpad|APP defaults|APP dock|APP iPhone polish|APP build pins' tests/sudoku-app-preview.test.cjs
+      - name: Coach default runtime
+        run: timeout 40s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit --test-name-pattern='APP phone Play stays simple' tests/sudoku-app-preview.test.cjs
+      - name: Coach preference runtime
+        run: timeout 40s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit --test-name-pattern='APP settings preferences' tests/sudoku-app-preview.test.cjs
+      - name: Remaining APP runtime
+        run: timeout 60s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit --test-name-pattern='APP assisted placement|APP delete clears' tests/sudoku-app-preview.test.cjs
       - name: Run narrow PWA tests
         run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit tests/sudoku-app-pwa.test.cjs
       - name: Secret boundary
