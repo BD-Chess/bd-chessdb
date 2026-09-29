@@ -36,6 +36,9 @@ test('AI Assist: Learn sidebar stays visible; Play opens it on demand and Hint d
  assert.match(assist(h),/R1C3|row 1,? column 3/i);
  assert.match(assist(h),/solution|answer|certified|candidate|support|row|column|box/i);
  assert.deepEqual(session(h).board,before.board);
+ w.eraseCell('pointer');
+ assert.equal(session(h).board[2],0);
+ assert.match(assist(h),/Board changed|Mreža se je spremenila/,'manual correction invalidates prior advice');
  assert.deepEqual(h.errors,[]);
 });
 
@@ -92,9 +95,20 @@ test('AI Assist: reveal and apply advance by one digit; Solve all needs its own 
  h.el('aiAssistCancelAll').click();assert.deepEqual(session(h).board,one.board,'cancellation leaves the game intact');
  h.el('aiAssistAll').click();h.el('aiAssistConfirmAll').click();
  await until(()=>session(h).board.join('')===fixtureSolution,'explicit Solve all completes the puzzle',15000);
+ assert.equal(h.el('plCompletion').hidden,false,'completion UI appears on the solved board');
  w.undoMove();assert.deepEqual(session(h).board,one.board,'one Undo restores the pre-solve grid');
+ assert.ok(session(h).completion,'completion remains in the historical record');
+ assert.equal(h.el('plCompletion').hidden,true,'completion UI follows the current unsolved board');
+ assert.doesNotMatch(assist(h),/^Solved using the certified answer/,'assistant no longer describes the undone board as solved');
  w.redoMove();assert.equal(session(h).board.join(''),fixtureSolution,'Redo restores the explicit solution');
+ assert.equal(h.el('plCompletion').hidden,false,'completion UI returns with the solved board');
+ w.undoMove();assert(await p.flush(),'undone board and completion history save together');
+ const again=await ready(t,h.store());
+ await until(()=>again.w.SudokuNavigator.state()&&session(again).board.join('')===one.board.join(''),'undone board recovered');
+ assert.ok(session(again).completion,'saved completion history remains monotone');
+ assert.equal(again.el('plCompletion').hidden,true,'reload does not present a historical completion as the current board');
  assert.deepEqual(h.errors,[]);
+ assert.deepEqual(again.errors,[]);
 });
 
 test('AI Assist: the captured Easy board identifies eleven wrong entries and reversibly clears only editable values',async t=>{
