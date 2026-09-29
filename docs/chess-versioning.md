@@ -5,13 +5,17 @@
 | CURRENT | `/chess/` | Primary public release; installable offline workspace |
 | PREVIOUS | `/chess/old/` | Legacy release; retain without active changes |
 | LAB | `/chess/new/` | Development release; independently installable offline workspace |
+| APP | `/chess/app/` | iPhone application UI preview in a desktop browser; separate from TestFlight |
 | Archive | `/chess/old/001/`, `/002/`, … | Chronological immutable release snapshots |
 
-The three channel entry pages contain the same self-contained selector next to
+The four channel entry pages contain the same self-contained selector next to
 the title, with a visible active state and `aria-current="page"`. Navigation is
 plain links, needs no JavaScript and does not invoke chess actions. Its small CSS
 block is copied with the HTML, not loaded from a mutable shared asset. Historical
 archives do not receive later selector, styling, bug or content updates.
+APP is a browser preview of the iPhone layout and is not an installable offline
+channel in the CURRENT/LAB PWA generator. Keep its saved data, worker scope and
+cache identity independent of LAB when bringing LAB functionality into APP.
 
 The 2026-09-13 standard adoption is **not a promotion**. CURRENT and PREVIOUS
 retain their existing application code. Only their entry-page selector changes.
@@ -28,7 +32,7 @@ The research upgrade is confined to LAB and its separate Gemini endpoint.
    concurrent change. The checker is read-only; it does not promote anything.
 3. Prepare all copies in a separate staging worktree, not by moving directories
    in the active checkout. Back up CURRENT's own files to the chosen numbered
-   archive directory, excluding `old/`, `new/` and channel-level `versions.json`.
+   archive directory, excluding `old/`, `new/`, `app/` and channel-level `versions.json`.
    Retain PREVIOUS and all older archives byte-for-byte. Copy verified LAB's
    application files to CURRENT while preserving CURRENT's own identity,
    storage namespace, manifest and service-worker scope.
@@ -46,20 +50,22 @@ The research upgrade is confined to LAB and its separate Gemini endpoint.
    service dependencies. Never edit that archive after the sealing commit.
 6. Update CURRENT/LAB active selector markers and channel metadata. Leave
    `/new/` as a real, independent LAB copy for the next cycle, never a forced
-   alias to CURRENT. Update `versions.json.archives` chronologically with the
+   alias to CURRENT. Keep `/app/` as the independent phone UI preview. Update
+   `versions.json.archives` chronologically with the
    new ID, path and manifest digest. Rebuild both active offline releases with
    `python3 tools/build-chess-channel-pwas.py`, then run it with `--check`.
-   Do not copy nested `old/` or `new/` trees.
+   Do not copy nested `old/`, `new/` or `app/` trees.
 7. Re-read `main` immediately before publishing. Build the smallest scoped tree
    on that exact parent and use a non-force, fast-forward ref update. Preserve
    unrelated concurrent files and redirects. If the parent moved, recheck the
    affected paths and rebuild; never force through the race.
-8. Publish through the currently authorized route. Verify all three channels,
+8. Publish through the currently authorized route. Verify all four channels,
    each installable channel's scope and offline closure, the newly sealed
    archive's asset closure, board, local interactions and mobile layout. Store
    exact package, manifests, tests and live receipts in `GPT Projects/Chess/`.
 
-PREVIOUS is a fixed legacy application. Later promotions back up CURRENT into
+PREVIOUS is a fixed legacy application apart from the approved APP selector link.
+Later promotions back up CURRENT into
 the next numbered archive; `/chess/old/` itself stays unchanged. Document the
 backup source and scope in release metadata and receipt.
 
