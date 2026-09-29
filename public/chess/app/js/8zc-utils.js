@@ -2300,7 +2300,7 @@ function jumpTo(i){
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
-          case 'settingEvalMode': settings.evalMode = 'direct'; break;
+          case 'settingEvalMode': settings.evalMode = e.target.value === 'proxy' ? 'proxy' : 'direct'; break;
 		  case 'settingTopN':
 			settings.topN = e.target.value === 'all'
 			  ? Infinity
