@@ -49,12 +49,13 @@ test('APP phone Play stays simple; AI Solve and Learn use the guided sheet witho
  assert.equal(w.document.body.dataset.appSurface,'true');
  assert.equal(h.el('numpad').closest('.mobile-input-panel').parentElement.className,'col-center');
  assert.equal(h.el('aiAssistPanel').hidden,true);
- assert.equal(h.el('appDock').querySelector('#appAssist').hidden,true);
+ assert.deepEqual([...h.el('appDock').querySelectorAll('button')].map(n=>n.id),['appNotes','appErase','appUndo','appAssist','appMore']);
+ assert.equal(h.el('appAssist').hidden,false);
  h.el('solveBtn').click();
  await until(()=>!h.el('aiAssistPanel').hidden&&w.document.body.dataset.appPanel==='assist','AI Solve opens guided APP sheet');
  assert.equal(h.el('uxDemoGrid'),null,'no legacy demonstration replaces the game');
  assert.deepEqual(state(h).board,before.board);
- h.el('appBoard').click();assert.equal(w.document.body.dataset.appPanel,'board');
+ h.el('appAssist').click();assert.equal(w.document.body.dataset.appPanel,'board');
  w.SudokuNavigator.product.switchView('learn');
  await until(()=>!h.el('aiAssistPanel').hidden&&!h.el('appAssist').hidden,'Learn keeps Assist available');
  h.el('appAssist').click();assert.equal(w.document.body.dataset.appPanel,'assist');
