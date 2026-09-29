@@ -21,7 +21,7 @@
     const pv = Array.isArray(candidate.pv) ? candidate.pv.slice() : [];
     if (pv.length) return pv[0] === candidate.move ? pv : [candidate.move].concat(pv);
     const path = Array.isArray(candidate.movePath) ? candidate.movePath.slice() : [];
-    return path.length ? path : [];
+    return path.length ? (path[0] === candidate.move ? path : [candidate.move].concat(path)) : [];
   }
   function topLineFor(context) {
     const sources = context?.analysisSources || {};
