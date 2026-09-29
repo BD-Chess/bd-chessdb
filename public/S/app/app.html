@@ -3937,17 +3937,20 @@ install();
   return null;
  }
  let lastBoard=null,coachMoment=null,coachTimer=0;
- function setCoachText(text){const node=$('appCoachCopy');if(node&&node.textContent!==text)node.textContent=text;}
+ const setText=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
+ function setCoachText(text){setText($('appCoachCopy'),text);}
  function updateCoach(showCandidates=false){
   const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',coachMode=readUiPref('coach'),detail=readUiPref('coachDetail');
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
   holdTip.hidden=lab||readUiPref('holdTip')!=='on';
-  holdTip.textContent=sl?'Tapni in drži celico za pojavni izbor številke.':'Tap & hold a cell to get the number popup.';
+  setText(holdTip,sl?'Tapni in drži celico za pojavni izbor številke.':'Tap & hold a cell to get the number popup.');
   const diff=difficulty(),coachAllowed=coachMode==='always'||coachMode==='easy'&&(!diff||diff==='easy');
   coach.hidden=lab||padOn||coachMode==='off'||!coachAllowed;
-  coach.querySelector('.app-coach-title').textContent='Sudoku Coach';
-  $('appCoachWhy').textContent=sl?'Zakaj?':'Why?';$('appCoachCandidates').textContent=sl?'Pokaži kandidate':'Show candidates';
+  setText(coach.querySelector('.app-coach-title'),'Sudoku Coach');
+  setText($('appCoachWhy'),sl?'Zakaj?':'Why?');setText($('appCoachCandidates'),sl?'Pokaži kandidate':'Show candidates');
   if(coach.hidden)return;
+  let restoreBusy=false;try{restoreBusy=typeof restoring==='number'&&restoring>0;}catch(_){}
+  if(restoreBusy){setCoachText(sl?'Obnavljam shranjeno igro …':'Restoring your saved game…');return;}
   const state=capture(),board=state?.board;
   if(!Array.isArray(board)||board.length!==81){lastBoard=null;setCoachText(sl?'Izberi težavnost. Pri Lahki igri te bom sproti usmerjal.':'Choose a difficulty. On Easy, I’ll guide you as you play.');$('appCoachCandidates').disabled=true;return;}
   if(lastBoard&&lastBoard.length===81){
