@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-7baed463bab82491";
+const RELEASE = "app-9e5ff3a19b738bfb";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -167,7 +167,7 @@ const INTEGRITY = {
   "css/8zc-study.css": "sha256-GIkDaM5yVUVjdk7edy2kxnQLFsZR/o2wqND2L3QhlmU=",
   "css/8zc-styles.css": "sha256-oxHv8/eAojr3Z3JS3l6z4zFZpGFFqz8hmmbn9FB8s5w=",
   "css/8zc-tournament.css": "sha256-97QQS1i+GV57xsxIm4hZKUGBvcIvQHYiSd1mge/g2Ac=",
-  "css/app-mobile.css": "sha256-oW2BirVErOv2d0snutefYT+ddcgRNkcP7zdKBt3gMlE=",
+  "css/app-mobile.css": "sha256-rp4ULl06NBkW/w7MszD02BauNd7L+dMTg/Lo9d/ReXM=",
   "css/chessboard-1.0.0.min.css": "sha256-j6aLiI0iJD8tzrvLpgcIyB/+06s48RZh69aEuBwSJvs=",
   "facts.html": "sha256-T6T+6EmRcrwr+Rac6PBMFFyNVsmbqZijiZg/OYA0yyE=",
   "games-info.html": "sha256-z7gae1w+nlghgwKpelB3wJNLjEo3dtuRjX6juTNsMIY=",
@@ -212,12 +212,12 @@ const INTEGRITY = {
   "js/8zc-tournament-ui.js": "sha256-g0adG0U8tpMmZCVebFLar+NyjLjzAVr1R6e3OQW0UUo=",
   "js/8zc-utils.js": "sha256-M0A350BMJt4w7+piR5NpPIdNqnuFLNLXrzF3bWjALRM=",
   "js/8zc-workspace.js": "sha256-THbZiWNGmyFNOfFonzCP7CA9SEUxPIEhzZmFFcKu9t4=",
-  "js/app-mobile.js": "sha256-4veVnsblitcvDqdatQI8dEqTa4dj/NTY8qaQpwMXij4=",
+  "js/app-mobile.js": "sha256-7kR0L4kNxS1caRsFJU0u1HtwhuaA9HeysrtGdR73wKU=",
   "js/chess.min.js": "sha256-eqQw3yuTEYSQQIUa3vMMTeSfbIzv24BkWkJi8flcRF8=",
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
   "manifest.webmanifest": "sha256-q0wnJarVjuRsL5xlkjsI2xsEApyooIWb+ya0eZaQ1qY=",
-  "play.html": "sha256-fbxPtvho5I0e/JsVvEd+YbRRu2l/0kGOG/Ezk+ii18c=",
+  "play.html": "sha256-ImM1UKnzpe1oa8uGmaLP7pEPOORySlHoRyf3crOeSyg=",
   "pwa.js": "sha256-s1xM97VC4ZOzH3G96JQ8RFXqtV/8Esu03od65uXVe4w=",
   "vendor/stockfish/stockfish-18-lite-single.js": "sha256-IngAUFfzgUkfHJuz5EyfWSCzoAvvl1njPMZYJ2mh8f4=",
   "vendor/stockfish/stockfish-18-lite-single.wasm": "sha256-qPvAXsaSC1bXSFgm3LAsX/0oJry/dRz5cwRvI3qQlvE="
