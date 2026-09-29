@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>ChessBest APP · mobile preview</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="theme-color" content="#16382b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -98,7 +100,7 @@
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
-  <link rel="stylesheet" href="css/app-mobile.css?v=20260929-r3">
+  <link rel="stylesheet" href="css/app-mobile.css?v=20260929-pwa1">
 </head>
 <body class="app-mobile" data-app-view="board">
   <a class="skip-link" href="#main">Skip to chess board</a>
@@ -557,6 +559,13 @@
     <div class="dialog-topline"><h2 id="labToolsTitle">Workspace tools</h2><button type="button" class="dialog-close" id="btnCloseLabTools" aria-label="Close workspace tools">×</button></div>
     <button type="button" id="appSimMore" class="app-sim">Simulation / play</button>
     <p class="setting-note">Simulation continues until you pause or choose an action that changes the position.</p>
+    <section id="appPwaPanel" class="app-pwa-panel" aria-label="APP installation and offline access" hidden>
+      <button type="button" id="appPwaInstall" class="app-sim">Install APP</button>
+      <a href="play.html" target="_top">Open APP without frame ↗</a>
+      <p id="appPwaHint">Install ChessBest APP on your Home Screen.</p>
+      <p id="appPwaStatus" role="status"></p>
+      <p id="appPwaUpdate" role="status" hidden>Update ready. Finish your current work and save any study edits, then close all ChessBest APP windows and reopen APP. Other channels can stay open.</p>
+    </section>
     <div id="labToolsBody"></div>
   </dialog>
 
@@ -736,9 +745,10 @@
   <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
   <script src="js/8zc-utils.js?v=20260928-sim2"></script>
   <script src="js/8zc-new-ui.js?v=20260927-w0r2"></script>
-  <script src="js/8zc-review-ui.js?v=20260929-r3"></script>
+  <script src="js/8zc-review-ui.js?v=20260929-pwa1"></script>
   <script src="js/8zc-lab-layout.js?v=20260927-w0r2"></script>
-  <script src="js/app-mobile.js?v=20260929-r3"></script>
+  <script src="pwa.js" defer></script>
+  <script src="js/app-mobile.js?v=20260929-pwa1"></script>
 
 </body>
 </html>

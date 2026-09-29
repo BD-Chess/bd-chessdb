@@ -95,9 +95,10 @@ test('APP runtime closes over local assets and has no LAB key or token-file depe
   ].map(match => match[1]);
   assert.ok(assetPaths.length > 25);
   for (const asset of assetPaths) assert.ok(fs.existsSync(path.join(app, asset)), asset);
-  assert.doesNotMatch(html, /pwa\.js|manifest\.webmanifest|serviceWorker\.register/);
+  assert.match(html, /manifest\.webmanifest/);
+  assert.match(html, /src="pwa\.js"/);
   assert.equal(fs.existsSync(path.join(app, 'Lichess-API.txt')), false);
-  assert.equal(fs.existsSync(path.join(app, 'sw.js')), false);
+  assert.equal(fs.existsSync(path.join(app, 'sw.js')), true);
   for (const filename of fs.readdirSync(path.join(app, 'js'))) {
     if (!filename.startsWith('8zc-')) continue;
     const source = fs.readFileSync(path.join(app, 'js', filename), 'utf8');

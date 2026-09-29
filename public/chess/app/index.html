@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="theme-color" content="#11251d">
   <title>ChessBest APP · iPhone preview</title>
   <style id="bd-version-style">
@@ -28,7 +30,7 @@
     @media (max-width: 790px) { header, main { display: none; } }
   </style>
   <script>
-    if (window.innerWidth <= 790) window.location.replace('./play.html');
+    if (window.innerWidth <= 790 || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) window.location.replace('./play.html');
   </script>
 </head>
 <body>
@@ -50,7 +52,7 @@
       <a href="play.html">Open without frame ↗</a>
     </div>
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260929-r3" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260929-pwa1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
     </div>
     <p class="preview-note">The frame uses the same board and mobile UI files intended for the iPhone app. Native file sharing, safe areas and touch behavior still need device testing.</p>
   </main>
