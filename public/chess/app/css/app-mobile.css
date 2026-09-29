@@ -16,15 +16,20 @@ body.app-mobile:has(#workspaceTimers:not([hidden])):has(#humanSession:not([hidde
 body.app-mobile *, body.app-mobile *::before, body.app-mobile *::after { box-sizing: border-box; }
 body.app-mobile > .app-header, body.app-mobile > #chessPwaNotice { display: none !important; }
 .app-web-nav {
-  display: flex; justify-content: center; align-items: center; gap: 3px;
-  width: min(100%, 430px); min-height: 43px; margin: 0 auto; padding: 2px 7px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  width: min(100%, 430px); min-height: 39px; margin: 0 auto; padding: 2px 8px;
   border-bottom: 1px solid var(--ui-border); font: 650 10px/1.2 system-ui, sans-serif;
   letter-spacing: .055em;
 }
-.app-web-nav a { display: inline-flex; flex: 1; justify-content: center; align-items: center; min-height: 39px; color: var(--ui-muted); text-decoration: none; border-radius: 7px; }
-.app-web-nav a[aria-current="page"] { background: var(--ui-raised); color: var(--ui-accent); }
-.app-web-nav a:focus-visible { outline: 2px solid var(--ui-accent); }
-.app-embedded .app-web-nav { display: none !important; }
+.app-channel-nav { display: flex; align-items: center; gap: 3px; min-width: 0; }
+.app-channel-nav a { display: inline-flex; align-items: center; min-height: 34px; padding: 2px 3px; color: var(--ui-muted); text-decoration: none; border-radius: 6px; }
+.app-channel-nav a[aria-current="page"] { color: var(--ui-accent); background: var(--ui-raised); }
+.app-channel-nav a:focus-visible, .app-language button:focus-visible { outline: 2px solid var(--ui-accent); }
+.app-language { display: flex; align-items: center; gap: 3px; flex: 0 0 auto; }
+.app-language button { min-height: 34px; padding: 2px 4px; border: 0; background: transparent; color: var(--ui-muted); font: inherit; cursor: pointer; }
+.app-language button[aria-pressed="true"] { color: var(--ui-accent); text-decoration: underline; text-underline-offset: 3px; }
+.app-brand-name { width: min(100%, 430px); margin: 0 auto; padding: 5px 8px 3px; text-align: center; color: var(--ui-text); font: 760 17px/1.15 system-ui, sans-serif; letter-spacing: .01em; }
+.app-embedded .app-web-nav { display: flex !important; }
 .app-mobile-header {
   position: sticky; top: 0; z-index: 500; display: flex; align-items: center; gap: 6px;
   width: min(100%, 430px); min-height: 56px; margin: 0 auto; padding: 5px 8px;
@@ -67,7 +72,20 @@ body.app-mobile .board-actions.has-all-evals { padding: 8px 0 4px; }
 body.app-mobile .all-eval-badges { gap: 4px; }
 body.app-mobile .all-eval-badge { min-height: 48px; }
 .app-board-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 9px; }
-.app-board-controls .analysis-source-row { margin: 0; }
+.app-board-controls .analysis-source-row {
+  display: grid !important; grid-template-columns: auto minmax(0,1fr) auto; gap: 6px 8px; align-items: center; margin: 0;
+}
+.app-board-controls .analysis-source-row #analysisSourceStatus {
+  grid-column: 1 / -1; min-width: 0; padding: 0 2px; font-size: 10.5px; line-height: 1.35; color: var(--ui-muted);
+}
+.app-top-line {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--ui-border);
+  border-radius: 9px; background: var(--ui-inset); color: var(--ui-text); text-align: left; cursor: pointer;
+}
+.app-top-line[hidden] { display: none !important; }
+.app-top-line span { color: var(--ui-accent); font: 720 9.5px/1.2 system-ui, sans-serif; letter-spacing: .08em; }
+.app-top-line strong { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 650 12px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .app-board-controls .analysis-source-row select, .app-board-controls .analysis-deepen, .app-board-controls .analysis-dcc-toggle { min-height: 44px; }
 .app-board-controls .analysis-dcc-toggle { display: inline-flex; align-items: center; }
 .app-board-controls .top-buttons { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px; width: 100%; margin: 0; }
@@ -132,3 +150,10 @@ body.app-mobile .workspace-drawer .btn, body.app-mobile .game-review-drawer butt
 .app-pwa-panel a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ui-accent); }
 #appPwaInstall { min-height: 44px; padding: 8px 12px; }
 #appPwaUpdate { padding: 8px; border-left: 3px solid var(--ui-accent); }
+
+@media (max-width: 360px) {
+  .app-channel-nav { gap: 1px; font-size: 9px; }
+  .app-channel-nav a { padding-inline: 2px; }
+  .app-language { font-size: 9px; }
+  .app-brand-name { font-size: 16px; }
+}
