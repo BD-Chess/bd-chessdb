@@ -1,0 +1,90 @@
+name: Flip4M Violet bounded verification
+on:
+  push:
+    branches: ['flip4m/violet-20260930-r1']
+    paths: ['scripts/flip4m_violet_input/**', 'scripts/flip4m_violet/**', '.github/workflows/flip4m-violet-verify.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: flip4m/violet-20260930-r1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Recover hash-pinned authored sources
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib, io, zipfile
+          dest=Path('scripts/flip4m_violet')
+          if not (dest/'build.py').exists():
+              parts=sorted(Path('scripts/flip4m_violet_input').glob('input.*'))
+              assert len(parts)==5
+              raw=bytearray(b''.join(p.read_bytes() for p in parts))
+              # Exact correction of one known transfer-byte typo, before ZIP validation.
+              assert raw[3*6144+714]==228
+              raw[3*6144+714]=244
+              assert hashlib.sha256(raw).hexdigest()=='5d5ec00b71e586b2ec5168392fa218b7827e7e0909ff3ed89beee7d91426caa0'
+              expected={'build.py','verify.py','violet.css','shell.js','pwa.js','worker-sw.js','migration.html','migration.js','migration-sw.js'}
+              z=zipfile.ZipFile(io.BytesIO(raw));assert set(z.namelist())==expected
+              dest.mkdir(parents=True,exist_ok=True)
+              for name in sorted(expected):(dest/name).write_bytes(z.read(name))
+          print('Authored source files available:',len(list(dest.glob('*'))))
+      - name: Build isolated LAB and APP
+        run: python scripts/flip4m_violet/build.py --public public
+      - name: Install pinned browser test dependency
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Exercise actual board, storage, workers and PWA
+        run: python scripts/flip4m_violet/verify.py --public public --out flip4m-evidence
+      - name: Save verified outputs on this test branch only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/flip4m/violet-20260930-r1'
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          manifest=json.loads(Path('public/F4M/_shared/violet-2.2.0/build-manifest.json').read_text())
+          paths=['public/F4M/'+p for p in manifest]+['public/F4M/_shared/violet-2.2.0/build-manifest.json']
+          paths += [str(p) for p in Path('scripts/flip4m_violet').glob('*') if p.is_file()]
+          assert all(p.startswith(('public/F4M/new/','public/F4M/app/','public/F4M/_shared/violet-2.2.0/','public/F4M/PWA/','scripts/flip4m_violet/')) for p in paths)
+          subprocess.run(['git','add','--',*paths],check=True)
+          staged=subprocess.check_output(['git','diff','--cached','--name-only'],text=True).splitlines()
+          assert set(staged).issubset(paths)
+          assert not subprocess.check_output(['git','diff','HEAD','--','public/F4M/index.html','public/F4M/old','public/chess','public/S'],text=True)
+          PY
+          git config user.name 'Flip4M scoped builder'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'build(flip4m): materialize verified Violet LAB and APP [skip ci]'
+            git push origin HEAD:flip4m/violet-20260930-r1
+          fi
+          git rev-parse HEAD > flip4m-evidence/verified-commit.txt
+      - name: Package evidence and reviewed code
+        if: always()
+        shell: python
+        run: |
+          from pathlib import Path
+          import zipfile,json
+          out=Path('flip4m-evidence');out.mkdir(exist_ok=True)
+          with zipfile.ZipFile(out/'Flip4M_Violet_candidate.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in Path('scripts/flip4m_violet').glob('*'):
+                  if p.is_file():z.write(p,p.as_posix())
+              manifest=Path('public/F4M/_shared/violet-2.2.0/build-manifest.json')
+              if manifest.exists():
+                  for name in list(json.loads(manifest.read_text()))+['_shared/violet-2.2.0/build-manifest.json']:
+                      p=Path('public/F4M')/name;z.write(p,p.as_posix())
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-violet-evidence
+          path: flip4m-evidence
+          retention-days: 7
