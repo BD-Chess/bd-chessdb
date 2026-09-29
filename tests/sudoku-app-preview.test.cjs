@@ -15,8 +15,12 @@ test('APP preview uses one compact desktop/tablet header and width selector',()=
  assert.doesNotMatch(html,/data-width=|Open without frame|toggleFrame|Install app \/ Offline|iPhone preview — the same mobile game surface as the APP edition\./);
  assert.match(html,/game\.src='\.\/app\.html'\+location\.hash/);
  assert.match(html,/location\.replace\('\.\/app\.html'\+location\.hash\)/);
- assert.match(html,/html\[data-app-shell=preview\] main\{flex:1;justify-content:center/);
+ assert.match(html,/html\[data-app-shell=preview\] main\{flex:1;width:100%;min-height:100svh;display:grid;grid-template-rows:auto 1fr/);
+ assert.match(html,/padding:38px 16px 24px/);
+ assert.match(html,/<div class="preview-stage"><div class="device"/);
+ assert.match(html,/html\[data-app-shell=preview\] \.preview-stage\{display:flex;align-items:center;justify-content:center/);
  assert.match(html,/html\[data-app-shell=phone\] \.preview-header/);
+ assert.match(html,/html\[data-app-shell=phone\] \.preview-stage\{width:100%;height:100%\}/);
  assert.match(html,/document\.documentElement\.dataset\.appShell=phone\?'phone':'preview'/);
  assert.match(html,/syncFramedPreview/);
  assert.doesNotMatch(html,/Play and Learn use one game\. APP storage is separate from LAB and CURRENT\./);
@@ -36,6 +40,13 @@ test('APP phone layout centers 6–9, uses 3+3 Play actions and removes the end 
  assert.match(css,/data-view=play.*data-assist=closed.*\.ux-toolbar\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
  assert.match(css,/#solveBtn\{order:4\}/);assert.match(css,/#uxNew\{order:5\}/);assert.match(css,/#uxMore\{order:6\}/);
  assert.equal(app.includes('<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>'),false);
+});
+
+test('APP numpad is visually separated from the board with gunmetal and silver controls',()=>{
+ const css=read('public/S/app/app.css');
+ assert.match(css,/\.mobile-input-panel\{[\s\S]*background:linear-gradient\(180deg,#151e2a 0%,#101721 100%\)/);
+ assert.match(css,/\.numpad button:not\(\.pl-armed\)\{[\s\S]*background:#1b2735;[\s\S]*color:#c8d0da/);
+ assert.match(css,/\.numpad button:not\(\.pl-armed\):active\{[\s\S]*border-color:#28dff2/);
 });
 
 test('APP dock and spacing keep secondary actions out of the Play surface',()=>{
