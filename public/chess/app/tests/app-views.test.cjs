@@ -139,7 +139,7 @@ test('APP top line prefers a measured CDB continuation, falls back to SF, and EN
     fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', history: [],
     analysisSources: {
       CDB: { allMoves: [{ move:'e2e4', score:1 }] },
-      DCC: { receipt:{ provider:'CDB', rawBest:'e2e4' }, candidates:[{ data:{ move:'e2e4', movePath:['e2e4','e7e5','g1f3','b8c6'] } }] },
+      DCC: { receipt:{ provider:'CDB', rawBest:'e2e4' }, candidates:[{ data:{ move:'e2e4', movePath:['e7e5','g1f3','b8c6'] } }] },
       SF: { allMoves: [{ move:'d2d4', pv:['d2d4','d7d5'], depth:11 }] }
     }
   };
@@ -165,6 +165,8 @@ test('APP top line prefers a measured CDB continuation, falls back to SF, and EN
   assert.equal(d.documentElement.lang, 'sl');
   assert.equal(d.querySelector('[data-app-tab="board"] span:last-child').textContent, 'Šahovnica');
   assert.equal(w.localStorage.getItem('ChessBest:APP:v1:language'), 'sl');
+  byId('analysisSourceStatus').textContent = 'CDB, SF and DCC analysis…'; await flush();
+  assert.equal(byId('analysisSourceStatus').textContent, 'CDB, SF in DCC analiza…');
   d.querySelector('[data-app-lang="en"]').click(); await flush();
   assert.equal(d.querySelector('[data-app-tab="board"] span:last-child').textContent, 'Board');
 
