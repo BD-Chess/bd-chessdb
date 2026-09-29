@@ -19,7 +19,7 @@
   <style id="bd-version-style">
     :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #101a16; color: #e7f4ec; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #101a16; color: #e7f4ec; }
     header { max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     h1 { margin: 0; font-size: 18px; letter-spacing: .01em; }
     .bd-version-selector { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 650; letter-spacing: .06em; }
@@ -27,14 +27,13 @@
     .bd-version-selector a:hover, .bd-version-selector a:focus-visible { color: white; border-color: #69977e; }
     .bd-version-selector a[aria-current="page"] { color: #bdf6ce; background: #16382b; border-color: #48765d; }
     .bd-version-dot { color: #819b8b; }
-    main { display: flex; flex-direction: column; align-items: center; padding: 0 16px 32px; }
+    main { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; padding: 16px 16px 32px; }
     .preview-controls { width: min(100%, 780px); display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 2px 0 14px; color: #adc2b5; font-size: 13px; }
     .preview-controls label { display: flex; align-items: center; gap: 8px; }
     .preview-controls select, .preview-controls a { min-height: 44px; border: 1px solid #53725e; border-radius: 8px; color: #e7f4ec; background: #1c3428; padding: 8px; font: inherit; }
     .preview-controls a { display: inline-flex; align-items: center; text-decoration: none; }
     .phone-frame { width: calc(var(--phone-width, 402px) + 12px); max-width: 100%; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
     iframe { display: block; width: 100%; height: clamp(500px, calc(100dvh - 170px), 874px); border: 0; border-radius: 26px; background: #101a16; }
-    .preview-note { max-width: 780px; color: #adc2b5; font-size: 12px; line-height: 1.5; text-align: center; }
     @media (max-width: 480px) {
       header { padding: 12px 10px; justify-content: center; }
       main { padding: 0 8px 24px; }
@@ -42,8 +41,7 @@
     }
     .app-phone-browser body { min-height: 100dvh; background: #101a16; overflow: hidden; }
     .app-phone-browser body > header,
-    .app-phone-browser .preview-controls,
-    .app-phone-browser .preview-note { display: none !important; }
+    .app-phone-browser .preview-controls { display: none !important; }
     .app-phone-browser main { display: block; width: 100%; height: 100dvh; padding: 0; }
     .app-phone-browser .phone-frame {
       width: 100vw; max-width: none; height: 100dvh; padding: 0;
@@ -58,8 +56,8 @@
     <nav class="bd-version-selector" aria-label="Application versions">
       <a href="../">CURRENT</a><span class="bd-version-dot" aria-hidden="true">·</span>
       <a href="../old/">PREVIOUS</a><span class="bd-version-dot" aria-hidden="true">·</span>
-      <a href="./" aria-current="page">APP</a><span class="bd-version-dot" aria-hidden="true">·</span>
-      <a href="../new/">LAB</a>
+      <a href="../new/">LAB</a><span class="bd-version-dot" aria-hidden="true">·</span>
+      <a href="./" aria-current="page">APP</a>
     </nav>
   </header>
   <main>
@@ -71,9 +69,8 @@
       <a href="play.html">Open without frame ↗</a>
     </div>
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260929-ui2" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260929-ui3" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
     </div>
-    <p class="preview-note">The frame uses the same board and mobile UI files intended for the iPhone app. Native file sharing, safe areas and touch behavior still need device testing.</p>
   </main>
   <noscript><p><a href="play.html">Open ChessBest APP preview</a></p></noscript>
   <script>

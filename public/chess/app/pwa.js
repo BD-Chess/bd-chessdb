@@ -1,6 +1,24 @@
 /* Installation and offline status belong to APP's More dialog. */
 (function () {
   'use strict';
+
+  // APP shell polish shared by browser preview, installed PWA and native donor.
+  // Keep scroll functional but hide browser scrollbar chrome inside the phone surface.
+  const shellStyle = document.createElement('style');
+  shellStyle.id = 'app-shell-polish';
+  shellStyle.textContent = 'html,body.app-mobile{scrollbar-width:none}html::-webkit-scrollbar,body.app-mobile::-webkit-scrollbar{width:0;height:0;display:none}';
+  document.head.appendChild(shellStyle);
+
+  // Canonical channel order: CURRENT · PREVIOUS · LAB · APP.
+  const channelNav = document.querySelector('.app-channel-nav');
+  if (channelNav) {
+    const links = Object.fromEntries([...channelNav.querySelectorAll('a')].map(a => [a.textContent.trim(), a]));
+    if (links.CURRENT && links.PREVIOUS && links.LAB && links.APP) {
+      const dot = () => { const span = document.createElement('span'); span.setAttribute('aria-hidden', 'true'); span.textContent = '·'; return span; };
+      channelNav.replaceChildren(links.CURRENT, dot(), links.PREVIOUS, dot(), links.LAB, dot(), links.APP);
+    }
+  }
+
   if (window.Capacitor?.isNativePlatform?.()) return;
   const panel = document.getElementById('appPwaPanel');
   if (!panel) return;
