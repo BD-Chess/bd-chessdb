@@ -4,7 +4,9 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {boot,savedFixture,fixture,fixtureSolution,sleep,until,plain,NS,LANE}=require('./sudoku-ui-harness.cjs');
-async function ready(t,stored={}){const h=await boot(t,stored,{width:402,height:874});if(!Object.keys(stored).length)await h.w.SudokuNavigator.restore(savedFixture('0.2.0'));else await until(()=>h.get('!!playerGrid'),'restored');h.w.stopTimer();return h;}
+// Legacy Navigator/demo coverage uses Research. Play/Learn controls have their
+// own guided-assistance regressions in sudoku-controls.test.cjs.
+async function ready(t,stored={}){const h=await boot(t,stored,{width:402,height:874});if(!Object.keys(stored).length)await h.w.SudokuNavigator.restore(savedFixture('0.2.0'));else await until(()=>h.get('!!playerGrid'),'restored');h.w.stopTimer();h.w.SudokuNavigator.product?.switchView('lab');return h;}
 function layout(h){const G=h.w.SudokuMobileGeometry,cells=[...h.w.document.querySelectorAll('#grid .cell')];cells.forEach((c,i)=>c.getBoundingClientRect=()=>G.rect(21+i%9*40,100+Math.floor(i/9)*40,39,39));h.el('gridWrap').getBoundingClientRect=()=>G.rect(16,95,369,369);return cells;}
 function pointer(h,target,type,x,y,extra={}){const e=new h.w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0,buttons:type==='pointerup'?0:1,...extra});for(const [k,v]of Object.entries({pointerId:1,pointerType:'mouse',isPrimary:true,...extra}))if(!['button','buttons','clientX','clientY'].includes(k))Object.defineProperty(e,k,{value:v});target.dispatchEvent(e);return e;}
 function begin(h,i){const c=h.w.document.querySelector(`[data-index="${i}"]`),r=c.getBoundingClientRect();pointer(h,c,'pointerdown',r.left+20,r.top+20);return{x:r.left+20,y:r.top+20};}
