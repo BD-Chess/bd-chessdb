@@ -211,3 +211,13 @@ test('APP Deep menu uses depth-only presets and APP CDB transport is not forced 
   assert.doesNotMatch(utils, /settings\.evalMode\s*=\s*['"]direct['"]/);
   assert.match(utils, /source === 'proxy' && action === 'queryall'/);
 });
+
+
+test('APP board keeps Top Line in normal flow and board coordinates inset from clipped edges', () => {
+  const mobile = read('css/app-mobile.css').toString();
+  const app = read('js/app-mobile.js').toString();
+  assert.match(app, /controls\.append\(navRow, actionRow, status, byId\('appTopLine'\)\)/);
+  assert.match(mobile, /#board-container \{[\s\S]*height:\s*auto !important;[\s\S]*min-height:\s*0 !important;/);
+  assert.match(mobile, /#board \.alpha-d2270 \{ right:\s*4px; bottom:\s*4px; \}/);
+  assert.match(mobile, /#board \.numeric-fc462 \{ left:\s*4px; top:\s*4px; \}/);
+});

@@ -55,6 +55,8 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('appBoardControls').firstElementChild.classList.contains('top-buttons'), true);
   assert.equal(byId('appSim').parentElement.className, 'app-action-row');
   assert.equal(byId('analysisSourceStatus').parentElement.id, 'appBoardControls');
+  assert.equal(byId('appTopLine').parentElement.id, 'appBoardControls');
+  assert.equal(byId('analysisSourceStatus').nextElementSibling.id, 'appTopLine');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
   assert.equal(byId('appTopLine').hidden, false);
   assert.equal(byId('appTopLineLabel').textContent, 'TOP LINE');
@@ -197,7 +199,7 @@ test('APP language waits for chess bootstrap before touching the donor DOM', asy
   releaseReady();
   await flush(); await flush();
   assert.equal(d.documentElement.lang, 'sl');
-  assert.equal(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
+  assert.equal(byId('analysisSource').closest('.app-analysis-slot')?.parentElement.className, 'app-action-row');
   assert.equal(byId('appTopLineMoves').textContent, 'Analiziram…');
   dom.window.close();
 });

@@ -328,7 +328,7 @@
     const analysisSlot = doc.createElement('div'); analysisSlot.className = 'app-analysis-slot';
     analysisSlot.append(analysisRow);
     actionRow.append(analysisSlot, byId('appSim'));
-    controls.append(navRow, actionRow, status);
+    controls.append(navRow, actionRow, status, byId('appTopLine'));
     byId('appClocks').append(byId('workspaceClockSlot'), byId('humanSession'));
     host.onChange(updatePosition);
     for (const tab of byId('appTabs').querySelectorAll('[data-app-tab]')) {
