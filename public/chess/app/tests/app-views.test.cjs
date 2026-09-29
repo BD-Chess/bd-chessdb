@@ -44,6 +44,14 @@ test('phone views switch in one tap and retain the shared position', async () =>
   const tab = view => byId('appTabs').querySelector(`[data-app-tab="${view}"]`).click();
   assert.equal(byId('analysisSource').parentElement.parentElement.id, 'appBoardControls');
   assert.equal(d.querySelector('.top-buttons').parentElement.id, 'appBoardControls');
+  assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
+  assert.equal(byId('appTopLine').hidden, true);
+  d.querySelector('[data-app-lang="sl"]').click();
+  assert.equal(d.documentElement.lang, 'sl');
+  assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Šahovnica');
+  d.querySelector('[data-app-lang="en"]').click();
+  assert.equal(d.documentElement.lang, 'en');
+  assert.equal(byId('appTabs').querySelector('[data-app-tab="board"] span:last-child').textContent, 'Board');
   assert.equal(byId('workspaceTimers').parentElement.parentElement.id, 'appClocks');
   byId('appSim').click();
   assert.equal(sim, 1);
