@@ -1,0 +1,47 @@
+name: Chess APP source capture
+on:
+  push:
+    branches: [fix/chess-app-status-height-20260930-r1]
+    paths: [.github/workflows/chess-app-review-capture.yml]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            public/chess/app
+            tools/chess-pwa
+            tools/build-chess-channel-pwas.py
+            tests/chess-app-pwa.test.cjs
+          sparse-checkout-cone-mode: false
+      - name: Export allowlisted public APP runtime only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, zipfile, hashlib, os
+          base=Path('public/chess/app')
+          release=json.loads((base/'release.json').read_text())
+          files=[base/name for name in release['assets_sha256']]
+          files += [base/'release.json',base/'sw.js']
+          files += list((base/'tests').glob('*.cjs'))
+          files += [Path('tests/chess-app-pwa.test.cjs'),Path('tools/build-chess-channel-pwas.py')]
+          files += list(Path('tools/chess-pwa').glob('*.js'))
+          with zipfile.ZipFile('chess-app-runtime.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for path in files:
+                  if path.is_file(): z.write(path,str(path))
+              z.writestr('SOURCE.json',json.dumps({'sha':os.environ['GITHUB_SHA'],'release':release['version']},indent=2))
+          print('Scoped runtime files:',len(files))
+          print('sha256:',hashlib.sha256(Path('chess-app-runtime.zip').read_bytes()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chess-app-review-runtime
+          path: chess-app-runtime.zip
+          retention-days: 3
+          if-no-files-found: error
