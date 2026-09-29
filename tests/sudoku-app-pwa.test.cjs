@@ -28,8 +28,10 @@ test('APP has one stable install identity, direct game launch and a complete has
  for(const [name,digest] of Object.entries(release.assets_sha256)){assert.ok(!name.includes('..'),'cache stays within APP');assert.equal(hash(read(name)),digest,name);}
  for(const file of ['app.html','index.html']){const dom=new JSDOM(read(file));assert.equal(dom.window.document.querySelector('link[rel=manifest]').getAttribute('href'),'./manifest.webmanifest');assert.equal(dom.window.document.querySelector('link[rel=apple-touch-icon]').getAttribute('href'),'./icon-180.png');dom.window.close();}
  const preview=read('index.html').toString();
- assert.doesNotMatch(preview,/window\.innerWidth\s*<=|display-mode:\s*standalone|dataset\.appRedirect/,'browser APP preview never redirects based on viewport or display mode');
- assert.match(preview,/class="device"/,'browser APP preview keeps the phone frame');
+ assert.doesNotMatch(preview,/window\.innerWidth\s*<=|display-mode:\s*standalone|dataset\.appRedirect/,'APP shell selection never depends on viewport width or display mode');
+ assert.match(preview,/navigator\.userAgentData/,'APP shell can use the browser mobile hint when available');
+ assert.match(preview,/data-app-shell=phone/,'normal phone mode removes the simulated device chrome');
+ assert.match(preview,/class="device"/,'desktop, tablet and requested-desktop modes retain the phone preview');
  assert.match(preview,/game\.src=['"]\.\/app\.html/,'game stays embedded inside the phone preview');
  assert.match(read('app.html').toString(),/viewport-fit=cover/);
 });

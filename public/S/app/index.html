@@ -9,6 +9,13 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./icon-180.png">
  <title>8zSudoku APP · iPhone preview</title>
+ <script>
+  (()=>{const ua=navigator.userAgent||'',hint=navigator.userAgentData;
+   const phone=hint&&typeof hint.mobile==='boolean'?hint.mobile:
+    ua.includes('iPhone')||ua.includes('iPod')||(ua.includes('Android')&&ua.includes('Mobile'))||ua.includes('Windows Phone');
+   document.documentElement.dataset.appShell=phone?'phone':'preview';
+  })();
+ </script>
  <style>
   *,*::before,*::after{box-sizing:border-box}
   html{background:#070c16;color:#e5edfa;font:16px/1.45 system-ui,sans-serif}
@@ -36,6 +43,19 @@
   body.unframed .island,body.unframed .safe-top,body.unframed .home{display:none}
   body.unframed iframe{height:100%}
   .note{max-width:560px;margin:0;color:#879dbb;text-align:center;font-size:.74rem}
+  html[data-app-shell=phone],html[data-app-shell=phone] body{width:100%;height:100%;overflow:hidden;background:#080e1a}
+  html[data-app-shell=phone] .site-nav,
+  html[data-app-shell=phone] main>h1,
+  html[data-app-shell=phone] .subtitle,
+  html[data-app-shell=phone] .preview-tools,
+  html[data-app-shell=phone] .note,
+  html[data-app-shell=phone] .island,
+  html[data-app-shell=phone] .safe-top,
+  html[data-app-shell=phone] .home{display:none!important}
+  html[data-app-shell=phone] main{display:block;width:100%;height:100%;padding:0}
+  html[data-app-shell=phone] .device,
+  html[data-app-shell=phone] .screen{width:100%;height:100%;max-width:none;padding:0;border:0;border-radius:0;box-shadow:none}
+  html[data-app-shell=phone] iframe{width:100%;height:100%;border:0}
   @media(max-width:480px){main{padding-inline:0}.site-nav{justify-content:center;padding-inline:2px}.site-nav a{padding:7px 6px;font-size:.62rem}.device{max-width:100vw}}
  </style>
 </head>
