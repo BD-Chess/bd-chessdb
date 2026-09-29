@@ -21,8 +21,8 @@ jobs:
       - name: Verify generated APP release is current
         run: node scripts/build-sudoku-app-preview.cjs --check
       - name: Run narrow APP tests
-        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-app-preview.test.cjs
+        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit tests/sudoku-app-preview.test.cjs
       - name: Run narrow PWA tests
-        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test tests/sudoku-app-pwa.test.cjs
+        run: timeout 90s env NODE_PATH=./tests/sudoku/node_modules node --test --test-force-exit tests/sudoku-app-pwa.test.cjs
       - name: Secret boundary
         run: python scripts/check_secret_boundary.py
