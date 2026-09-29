@@ -3024,7 +3024,7 @@ const product=(()=>{
  function sync(){if(!ready)return;$('plInputStatus').textContent=armedDigit?`Number-first · ${armedDigit} selected · tap an empty cell · Escape exits`:pref('entryMode')==='number'?'Number-first · choose a digit':'Cell-first';$('plInputStatus').hidden=pref('entryMode')!=='number';document.querySelectorAll('#numpad button').forEach((b,i)=>{b.classList.toggle('pl-armed',armedDigit===i+1);b.setAttribute('aria-pressed',String(armedDigit===i+1));});if($('plRedo'))$('plRedo').disabled=!redos.length||mobileUX.blocked();if($('plReturn'))$('plReturn').hidden=!returnGame;const rating=generationEvidence?.difficulty?.rating;$('plRating').textContent=rating?.status==='RATED'?`${currentDiff} · evaluator P${rating.tier} · checked path · ${rating.version}`:puzzle?`${currentDiff||'Imported'} · original label; no new technique rating`:'Choose a difficulty to begin';if(generationEvidence?.provenance?.startsWith('fixed-profile-example:'))$('plRating').textContent+=' · fixed catalog example (may repeat)';$('plRating').hidden=!puzzle;
   for(const cell of $('grid').children){const i=+cell.dataset.index,v=playerGrid?.flat()[i];cell.setAttribute('role','button');cell.tabIndex=i===(selectedCell??0)?0:-1;cell.setAttribute('aria-label',`Row ${Math.floor(i/9)+1}, column ${i%9+1}, ${v||'empty'}${givenCells?.flat()[i]?', given':''}${cell.classList.contains('error')&&pref('feedback')==='conflicts'?', direct conflict':''}`);}
  }
- function switchView(next){if(!['play','learn','lab'].includes(next)||mobileUX.hasDemo())return;mobileUX.cancelGesture();disarm();resetAnalysis();cancelSolve();if(genJob){genJob.cancel();genJob=null;generationToken++;showBusy(false);}if(aiAnimating)aiPause();view=next;document.body.dataset.view=next;for(const b of document.querySelectorAll('[data-pl-view]'))b.setAttribute('aria-pressed',String(b.dataset.plView===next));$('plLearn').hidden=next!=='learn';$('plLabAccess').hidden=next!=='lab';aiAssist.syncView();sync();}
+ function switchView(next){if(!['play','learn','lab'].includes(next)||mobileUX.hasDemo())return;mobileUX.cancelGesture();disarm();resetAnalysis();cancelSolve();if(genJob){genJob.cancel();genJob=null;generationToken++;showBusy(false);}if(aiAnimating)aiPause();view=next;document.body.dataset.view=next;for(const b of document.querySelectorAll('[data-pl-view]'))b.setAttribute('aria-pressed',String(b.dataset.plView===next));$('plLearn').hidden=next!=='learn';$('plLabAccess').hidden=next!=='lab';aiAssist.onViewChange(next);sync();}
  function capture(){return{board:playerGrid.flat(),notes:notes.flat().map(x=>[...x]),lineage:lineage?J(lineage):null,selectedCell};}
  function stateKey(s){return JSON.stringify([s.board,s.notes,s.lineage]);}
  function finish(before,kind='entry',cell=selectedCell){const after=capture();if(stateKey(before)===stateKey(after))return false;let item=history.at(-1);if(kind==='proof'||kind==='assist_solve_all'||!item){const i=cell??0;item={r:Math.floor(i/9),c:i%9,prev:before.board[i],pn:new Set(before.notes[i]),action:kind==='assist_solve_all'?'assist_solve_all':'erase_value'};history.push(item);}item.transaction={version:1,id:gameId+':'+(++transactionSeq),kind,before,after};if(history.length>MAX_HISTORY)history.splice(0,history.length-MAX_HISTORY);redos=[];completeOnce();scheduleSave();sync();return true;}
@@ -3129,6 +3129,7 @@ const aiAssist=(()=>{
   }
  }
  function syncView(){const panel=$('aiAssistPanel');if(!panel)return;panel.hidden=product.view()==='lab'||product.view()==='play'&&!opened;document.body.dataset.assist=panel.hidden?'closed':'open';}
+ function onViewChange(next){if(next==='play')opened=false;syncView();}
  function show(en,slText=en){message={en,sl:slText};refreshLanguage();syncView();}
  function controls(wrong=false,planned=false){
   $('aiAssistRemove').hidden=!wrong;
@@ -3266,7 +3267,7 @@ const aiAssist=(()=>{
   refreshLanguage();
   syncView();
  }
- return{install,syncView,open,hint,reveal};
+ return{install,syncView,onViewChange,open,hint,reveal};
 })();
 
 function install(){

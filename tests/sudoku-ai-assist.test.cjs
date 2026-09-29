@@ -19,8 +19,9 @@ test('AI Assist: Learn sidebar stays visible; Play opens it on demand and Hint d
  assert.equal(h.el('aiAssistPanel').hidden,true,'Play starts with a simple board');
  p.switchView('learn');
  assert.equal(h.el('aiAssistPanel').hidden,false,'Learn keeps the sidebar open');
+ h.el('aiAssistWhy').click();
  p.switchView('play');
- assert.equal(h.el('aiAssistPanel').hidden,true,'Play starts without the sidebar');
+ assert.equal(h.el('aiAssistPanel').hidden,true,'Play resets to its simple board after using Learn help');
 
  w.selectCell(2);w.placeNumber(1); // R1C3: no duplicate, but one digit has no unit support.
  const before=session(h);
