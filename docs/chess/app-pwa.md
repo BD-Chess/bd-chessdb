@@ -1,10 +1,12 @@
 # ChessBest APP PWA
 
 APP is installed in place at `/chess/app/`; the installed start URL is `play.html`.
-The `/chess/app/` URL always retains its adjustable phone preview at every
-viewport width and display mode. It never redirects automatically. Only an
-explicit Open without frame link or the installed start URL opens `play.html`.
-Installation and offline readiness appear in **More**. On iPhone use Safari,
+The `/chess/app/` URL never redirects automatically. Desktop browsers, tablets,
+and phone browsers using Request Desktop Site retain the adjustable drawn-phone
+preview. Ordinary phone browsing keeps the same URL but removes only the
+decorative frame and expands the embedded APP to the viewport, approximating the
+future native iOS/Android shell. The installed start URL remains `play.html`.
+The APP shell also exposes EN/SL with APP-local language persistence and a compact CDB-first / SF-fallback Top line. Installation and offline readiness appear in **More**. On iPhone use Safari,
 Share, Add to Home Screen. Open the direct mobile page before installation.
 
 The APP worker owns only its allowlisted files, relative to its own registration
