@@ -7,10 +7,176 @@
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
   let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
+  const LANG_KEY = 'ChessBest:APP:v1:language';
+  let lang = 'en', i18nApplying = false;
+  const textSources = new WeakMap(), attrSources = new WeakMap();
+  const TO_SL = new Map(Object.entries({
+    'Board':'Šahovnica','Moves':'Poteze','Review':'Pregled','Deep':'Globoko','Analysis board':'Analizna šahovnica',
+    'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Simulacija / igra','Simulation':'Simulacija','Analysis':'Analiza',
+    'Hide Eval':'Skrij oceno','Current position':'Trenutni položaj','Starting position':'Začetni položaj','Select a move on the board':'Izberi potezo na šahovnici',
+    'Show board':'Pokaži šahovnico','Game library':'Knjižnica partij','New game':'Nova igra','More':'Več','Settings':'Nastavitve',
+    'Study':'Študija','Deep analysis':'Globoka analiza','Evidence':'Dokazi','Benchmark':'Primerjava','PGN picks':'PGN izbori','Why DCC?':'Zakaj DCC?',
+    'White':'Beli','Black':'Črni','Two players':'Dva igralca','Pause game':'Premor igre','End study':'Končaj študijo',
+    'Pause':'Premor','Stop replay':'Ustavi ponovitev','End game':'Končaj igro','Simulation running':'Simulacija teče',
+    'DCC replay running':'DCC ponovitev teče','Game in progress':'Igra poteka','Your next move starts here':'Tvoja naslednja poteza se začne tukaj',
+    'CDB pending':'CDB čaka','TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF',
+    'Install APP':'Namesti APP','Open APP without frame ↗':'Odpri APP brez okvirja ↗','Install ChessBest APP on your Home Screen.':'Namesti ChessBest APP na domači zaslon.',
+    'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
+    'Position and move controls':'Kontrole položaja in potez','Player clocks and local game controls':'Igralne ure in lokalne kontrole',
+    'Chess analysis board':'Šahovska analizna plošča','Interactive chess board':'Interaktivna šahovnica','CDB, SF and DCC comparison':'Primerjava CDB, SF in DCC',
+    'Main analysis source':'Glavni vir analize','Board analysis source':'Vir analize šahovnice','Deeper SF analysis':'Globlje SF analiziranje',
+    'First position':'Prvi položaj','Previous move':'Prejšnja poteza','Next move':'Naslednja poteza','Last position':'Zadnji položaj',
+    'DCC replay':'DCC ponovitev','DCC analysis':'DCC analiza','Review game':'Preglej partijo',
+    'Load a game:':'Naloži partijo:','— select —':'— izberi —','Stockfish analysis':'Stockfish analiza','SF depth per position:':'SF globina na položaj:',
+    'Bottom tools during Sim:':'Spodnja orodja med simulacijo:','Focus automatically':'Samodejni fokus','Always expanded':'Vedno razširjeno',
+    'Workspace width on a wide screen:':'Širina delovnega prostora na širokem zaslonu:','Default':'Privzeto','Compact analysis spacing':'Kompaktni razmiki analize',
+    'Pause Sim at an interesting position':'Ustavi simulacijo na zanimivem položaju','Raw engine and DCC choose different moves':'Surovi engine in DCC izbereta različni potezi',
+    'Evaluation changes sharply':'Ocena se močno spremeni','Evaluation change (centipawns):':'Sprememba ocene (centipawns):',
+    'Required analysis data is missing':'Manjkajo zahtevani podatki analize','Show player timers during games and simulations':'Prikaži igralne ure med igrami in simulacijami',
+    'Show move timestamps':'Prikaži časovne oznake potez','Show top moves:':'Prikaži najboljše poteze:','Show next-move preview':'Prikaži predogled naslednje poteze',
+    'Evaluation method:':'Metoda ocenjevanja:','History height:':'Višina zgodovine:','Font size:':'Velikost pisave:','Piece size:':'Velikost figur:',
+    'Main background:':'Glavno ozadje:','Light theme':'Svetla tema','Double size board':'Dvojna velikost šahovnice',
+    'DCC Lookahead':'DCC pogled naprej','Enable DCC lookahead':'Vključi DCC pogled naprej','DCC move click:':'Klik DCC poteze:',
+    'Details only':'Samo podrobnosti','Play move only':'Samo odigraj potezo','Hybrid · play + details':'Hibrid · odigraj + podrobnosti',
+    'Lookahead depth (half-moves):':'Globina pogleda naprej (polpoteze):','Extra inspection pool:':'Dodatni nabor za pregled:',
+    'Candidate window (cp below best):':'Okno kandidatov (cp pod najboljšo):','Decision policy:':'Politika odločitve:',
+    'Balanced · include all near ties':'Uravnoteženo · vključi vse skoraj izenačene','Legacy · capped candidate pool':'Legacy · omejen nabor kandidatov',
+    'Check alternative defensive replies':'Preveri alternativne obrambne odgovore','Defensive replies per candidate:':'Obrambni odgovori na kandidata:',
+    'Defence continuation (half-moves):':'Nadaljevanje obrambe (polpoteze):','Structure signal:':'Strukturni signal:','Describe only':'Samo opiši',
+    'Allow in experimental ranking':'Dovoli v eksperimentalnem rangiranju','Active ranking sensors':'Aktivni senzorji rangiranja',
+    'Stability':'Stabilnost','Evaluation floor':'Spodnja meja ocene','Volatility':'Volatilnost','Structure':'Struktura',
+    'DCC only (hide raw ChessDB scores)':'Samo DCC (skrij surove ChessDB ocene)','Sim speed:':'Hitrost simulacije:','Reset Settings':'Ponastavi nastavitve',
+    'Tools':'Orodja','Input':'Vnos','Copy':'Kopiraj','Save PGN':'Shrani PGN','Load PGN':'Naloži PGN','Flip board':'Obrni šahovnico',
+    'Start':'Začni','Cancel':'Prekliči','Start Replay':'Začni ponovitev','DCC Replay Settings':'Nastavitve DCC ponovitve',
+    'White engine':'Engine belega','Black engine':'Engine črnega','Swap White / Black':'Zamenjaj beli / črni','8Z color':'Barva 8Z',
+    'Random':'Naključno','Time':'Čas','White name':'Ime belega','Black name':'Ime črnega','Time per player':'Čas na igralca',
+    'No limit · elapsed time':'Brez omejitve · pretečeni čas','Increment per move':'Dodatek na potezo','None':'Brez','Start from this position':'Začni iz tega položaja',
+    'Explain position':'Razloži položaj','CDB vs DCC':'CDB proti DCC','How to test':'Kako testirati','Ask Gemini about this game':'Vprašaj Gemini o tej partiji',
+    'Send ↗':'Pošlji ↗','Close workspace tools':'Zapri orodja delovnega prostora','Close settings':'Zapri nastavitve','Close game library':'Zapri knjižnico partij',
+    'Start a new game':'Začni novo igro','Download your game as PGN':'Prenesi svojo partijo kot PGN','Load a PGN file':'Naloži PGN datoteko',
+    'Flip the board orientation':'Obrni usmeritev šahovnice','Saved variations and pinned A/B comparison':'Shranjene variante in pripeta primerjava A/B',
+    'Toggle deep analysis in the workspace':'Preklopi globoko analizo v delovnem prostoru','Inspect and export the analysis evidence':'Preglej in izvozi dokaze analize',
+    'Compare DCC policies and sensors':'Primerjaj DCC politike in senzorje','Chess resources':'Šahovski viri','Email Bojan D.':'Pošlji e-pošto Bojanu D.'
+  }));
+  const TO_EN = new Map(Object.entries({
+    'Tvoja ideja.':'Your idea.','Preverjene alternative.':'Verified alternatives.','Samostojni podatki APP.':'Independent APP data.',
+    'Studies brez delnih zapisov.':'Studies without partial records.','Viri analiz ostanejo ločeni.':'Analysis sources stay separate.',
+    'Zaženi':'Run','Celotna skupina izenačenih potez.':'Complete near-tied group.','Preverjanje obramb.':'Defense checks.',
+    'Deep analysis.':'Deep analysis.','Uravnotežen pregled kandidatov.':'Balanced candidate review.','Senzorji pod drobnogledom.':'Sensors under inspection.',
+    'Study in ohranjene variante.':'Study and saved variations.','Pripeta primerjava A/B.':'Pinned A/B comparison.',
+    'Pavza ob zanimivem dogodku.':'Pause on an interesting event.','Več udobja pri branju.':'More reading comfort.',
+    'Prvi preizkus':'First test','Odpri Help':'Open Help','Nazaj na šahovnico →':'Back to board →','Zapri novosti':'Close what\'s new'
+  }));
 
+  function translateText(text) {
+    const clean = text.replace(/\s+/g, ' ').trim();
+    if (!clean) return text;
+    let translated = lang === 'sl' ? TO_SL.get(clean) : TO_EN.get(clean);
+    if (!translated && lang === 'sl') {
+      let m = clean.match(/^Position after (\d+) half-moves$/);
+      if (m) translated = `Položaj po ${m[1]} polpotezah`;
+      m = clean.match(/^SF depth (\d+) · (\d+) nodes…$/);
+      if (!translated && m) translated = `SF globina ${m[1]} · ${m[2]} vozlišč…`;
+      if (!translated && clean === 'CDB, SF and DCC analysis…') translated = 'Analiza CDB, SF in DCC…';
+      if (!translated && clean.startsWith('Offline files ready ·')) translated = clean.replace('Offline files ready ·', 'Offline datoteke pripravljene ·');
+      if (!translated && clean.startsWith('Preparing offline files…')) translated = clean.replace('Preparing offline files…', 'Pripravljam offline datoteke…');
+    }
+    if (!translated) return text;
+    const lead = text.match(/^\s*/)?.[0] || '', tail = text.match(/\s*$/)?.[0] || '';
+    return lead + translated + tail;
+  }
+  function translateNode(node, dynamic = false) {
+    if (!node || node.nodeType !== 3 || !node.nodeValue?.trim()) return;
+    if (dynamic || !textSources.has(node)) textSources.set(node, node.nodeValue);
+    node.nodeValue = translateText(textSources.get(node));
+  }
+  function translateElement(el, dynamic = false) {
+    if (!el || /^(SCRIPT|STYLE)$/i.test(el.tagName || '')) return;
+    for (const node of el.childNodes || []) if (node.nodeType === 3) translateNode(node, dynamic);
+    let stored = attrSources.get(el);
+    if (!stored) { stored = {}; attrSources.set(el, stored); }
+    for (const attr of ['title', 'aria-label', 'placeholder']) {
+      if (!el.hasAttribute?.(attr)) continue;
+      if (dynamic || !(attr in stored)) stored[attr] = el.getAttribute(attr);
+      el.setAttribute(attr, translateText(stored[attr]));
+    }
+  }
+  function applyLanguage(next, persist = true) {
+    lang = next === 'sl' ? 'sl' : 'en';
+    if (persist) try { root.localStorage.setItem(LANG_KEY, lang); } catch (_) {}
+    doc.documentElement.lang = lang;
+    i18nApplying = true;
+    try {
+      translateElement(doc.body);
+      for (const el of doc.body.querySelectorAll('*')) translateElement(el);
+      for (const button of doc.querySelectorAll('[data-app-lang]')) button.setAttribute('aria-pressed', String(button.dataset.appLang === lang));
+      if (host) { updatePosition(); updateActivity({}); }
+    } finally { i18nApplying = false; }
+  }
+  function initLanguage() {
+    let saved = null;
+    try { saved = root.localStorage.getItem(LANG_KEY); } catch (_) {}
+    const initial = saved === 'sl' || saved === 'en' ? saved : (/^sl(?:-|$)/i.test(root.navigator.language || '') ? 'sl' : 'en');
+    for (const button of doc.querySelectorAll('[data-app-lang]')) button.addEventListener('click', () => applyLanguage(button.dataset.appLang));
+    applyLanguage(initial, false);
+    if (root.MutationObserver) new MutationObserver(mutations => {
+      if (i18nApplying) return;
+      i18nApplying = true;
+      try {
+        for (const mutation of mutations) {
+          if (mutation.type === 'characterData') translateNode(mutation.target, true);
+          else for (const node of mutation.addedNodes) {
+            if (node.nodeType === 3) translateNode(node, true);
+            else if (node.nodeType === 1) {
+              translateElement(node, true);
+              for (const el of node.querySelectorAll?.('*') || []) translateElement(el, true);
+            }
+          }
+        }
+      } finally { i18nApplying = false; }
+    }).observe(doc.body, { subtree: true, childList: true, characterData: true });
+  }
   function reviewPanel() { return byId('gameReviewPanel'); }
   function deepPanel() { return byId('deepAnalysisPanel'); }
   function isDccOpen() { return byId('btnViewToggle')?.getAttribute('aria-pressed') === 'true'; }
+  function lineToSan(fen, moves) {
+    if (!host?.Chess || !Array.isArray(moves) || !moves.length) return [];
+    try {
+      const board = new host.Chess(fen), out = [];
+      for (const uci of moves.slice(0, 10)) {
+        if (typeof uci !== 'string' || !/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(uci)) break;
+        const move = board.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] || 'q' });
+        if (!move) break;
+        out.push(move.san);
+      }
+      return out;
+    } catch (_) { return []; }
+  }
+  function updateTopLine(context) {
+    const card = byId('appTopLine'), label = byId('appTopLineLabel'), movesEl = byId('appTopLineMoves');
+    if (!card || !context) return;
+    const sources = context.analysisSources || {};
+    let source = 'CDB', pv = null;
+    const cdbBest = sources.CDB?.allMoves?.[0] || sources.CDB?.candidates?.[0];
+    if (Array.isArray(cdbBest?.pv) && cdbBest.pv.length) pv = cdbBest.pv;
+    if (!pv && sources.DCC?.receipt?.provider === 'CDB') {
+      const raw = sources.DCC.receipt.rawBest;
+      const candidate = (sources.DCC.candidates || []).find(item => item.move === raw);
+      const data = candidate?.data || candidate;
+      if (Array.isArray(data?.movePath) && data.movePath.length) pv = data.movePath;
+    }
+    if (!pv) {
+      source = 'SF';
+      const sfBest = sources.SF?.allMoves?.[0] || sources.SF?.candidates?.[0];
+      if (Array.isArray(sfBest?.pv) && sfBest.pv.length) pv = sfBest.pv;
+    }
+    const san = lineToSan(context.fen, pv || []);
+    card.hidden = !san.length;
+    if (!san.length) return;
+    label.textContent = lang === 'sl' ? `GLAVNA LINIJA · ${source}` : `TOP LINE · ${source}`;
+    movesEl.textContent = san.join(' ');
+    card.title = lang === 'sl' ? 'Odpri Poteze za isti položaj' : 'Open Moves for the same position';
+  }
   function updatePosition() {
     if (!host) return;
     const context = host.getContext();
@@ -22,6 +188,7 @@
     byId('appPositionName').textContent = label;
     byId('appPreviewTitle').textContent = title;
     byId('appPreviewMove').textContent = label;
+    updateTopLine(context);
     if (current !== 'board') {
       if (!miniBoard && root.Chessboard) {
         miniBoard = root.Chessboard('appMiniBoard', {
@@ -136,6 +303,7 @@
       byId('btnSim').click();
     });
     byId('appReplay').addEventListener('click', () => byId('btnReplay').click());
+    byId('appTopLine')?.addEventListener('click', () => setView('moves'));
     byId('appPause').addEventListener('click', () => doc.dispatchEvent(new CustomEvent('chess:pause-request', { detail: { source: 'app-header' } })));
     // Drawers belong to #controls. Reveal that area before the original action runs.
     byId('labToolsDialog').addEventListener('click', event => {
@@ -159,6 +327,7 @@
     resizeVisibleBoard();
   }
   const boot = () => {
+    initLanguage();
     Promise.resolve(root.ChessLabReady || root.ChessLabStorage?.ready).then(init).catch(() => {
       byId('appPositionName').textContent = 'APP storage is unavailable';
     });
