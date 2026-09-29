@@ -76,3 +76,34 @@ body[data-app-surface] .nav-modal{z-index:4000}
 body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
 @media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
 @media (prefers-reduced-motion:reduce){body[data-app-surface] #appAssistScrim{transition:none}}
+
+/* iPhone polish: scalable native-facing text and richer More sheet. */
+body[data-app-surface]{--app-text-scale:1}
+body[data-app-surface][data-app-text-size=compact]{--app-text-scale:.92}
+body[data-app-surface][data-app-text-size=large]{--app-text-scale:1.13}
+body[data-app-surface] #appDock button{font-size:calc(.80rem * var(--app-text-scale));gap:5px}
+body[data-app-surface] #appDock .app-dock-icon{font-size:calc(1.24rem * var(--app-text-scale))}
+body[data-app-surface] #aiAssistPanel{font-size:calc(1rem * var(--app-text-scale));line-height:1.5}
+body[data-app-surface] #aiAssistPanel .btn,
+body[data-app-surface] #aiAssistPanel .assist-actions .btn{min-height:50px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.25}
+body[data-app-surface] #aiAssistPanel p,
+body[data-app-surface] #aiAssistPanel .assist-copy{font-size:calc(.94rem * var(--app-text-scale))}
+body[data-app-surface] #navModal.app-more-modal .nav-dialog{padding:18px 16px 16px}
+body[data-app-surface] #navModal.app-more-modal #navModalTitle{font-size:calc(1.42rem * var(--app-text-scale));margin-bottom:14px}
+body[data-app-surface] #navModal.app-more-modal .ux-menu{gap:9px}
+body[data-app-surface] #navModal.app-more-modal .btn{
+ min-height:58px;padding:9px 8px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.15;
+ display:flex;align-items:center;justify-content:flex-start;gap:9px;text-align:left
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-icon{
+ flex:0 0 1.45rem;width:1.45rem;text-align:center;font:700 calc(1.12rem * var(--app-text-scale))/1 system-ui;color:#bfefff
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-label{flex:1;min-width:0}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger{border-color:#ff6b8a66;color:#ff9aae}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger .app-menu-icon{color:#ff7d99}
+body[data-app-surface] .app-text-setting{border-top:1px solid var(--border2);padding-top:12px;margin-top:14px}
+body[data-app-surface] .app-text-setting label{font-weight:700}
+@media(max-width:390px){
+ body[data-app-surface] #appDock button{font-size:calc(.75rem * var(--app-text-scale))}
+ body[data-app-surface] #navModal.app-more-modal .btn{font-size:calc(.94rem * var(--app-text-scale))}
+}
