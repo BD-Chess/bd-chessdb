@@ -176,3 +176,11 @@ body[data-app-surface] #plNumbers[hidden],body[data-app-surface] .mobile-input-p
 [data-theme=light] body[data-app-surface] #appCoach .app-coach-actions button{
  background:#eef2f6;border-color:#b7c1cc;color:#455260
 }
+
+/* Hard/Evil: quiet play surface; proactive Coach/tip stay out of the way. */
+body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{
+ min-height:calc(100dvh - 300px - env(safe-area-inset-bottom));align-content:center
+}
+@media(max-height:760px){
+ body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{min-height:auto;padding-top:18px;padding-bottom:18px}
+}
