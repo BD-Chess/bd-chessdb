@@ -2442,10 +2442,12 @@ function jumpTo(i){
     // CDB and DCC may still be in flight. Keep their request alive while the
     // pinned worker takes responsibility for this position's SF result.
     deepAnalysisFen = fen;
-    const requestId = annotationRequestId;
     sfWorking = false; syncSFAnalysisControl();
     return snapshot => {
-      if (settings.analysisSource !== selected || requestId !== annotationRequestId ||
+      // Deep owns the SF lane while it is open. Normal CDB/DCC annotation
+      // refreshes may advance annotationRequestId, but must not invalidate the
+      // Deep SF publisher for this same current FEN.
+      if (settings.analysisSource !== selected ||
           generation !== analysisGeneration || epoch !== activityEpoch || game.fen() !== fen || snapshot.fen !== fen ||
           !showEval || offlineEvidence || simRunning || replayRunning || playState.assistanceLocked) return;
       const best = snapshot.lines?.find(line => (line.multipv || 1) === 1);
