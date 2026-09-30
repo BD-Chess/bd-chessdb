@@ -1,0 +1,77 @@
+name: Sudoku APP review instruments R7 verification
+on:
+  push:
+    branches: [gpt/sudoku-review-instruments-r7-20260930]
+    paths:
+      - '.github/workflows/sudoku-review-r7-verify.yml'
+      - 'public/S/app/app-solve-playback.js'
+      - 'public/S/app/app-ui.js'
+      - 'scripts/build-sudoku-app-preview.cjs'
+      - 'tests/sudoku-app-solve-playback-r5-browser.cjs'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      NODE_PATH: /tmp/sudoku-r7/node_modules
+      SUDOKU_EVIDENCE_DIR: sudoku-r7-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Build and verify exact standalone package
+        run: |
+          mkdir -p sudoku-r7-evidence
+          node scripts/build-sudoku-app-preview.cjs | tee sudoku-r7-evidence/build.log
+          node scripts/build-sudoku-app-preview.cjs --check | tee -a sudoku-r7-evidence/build.log
+      - name: Install isolated browser dependencies
+        run: |
+          npm install --prefix /tmp/sudoku-r7 --no-package-lock --ignore-scripts jsdom@26.1.0 playwright@1.55.0
+          node /tmp/sudoku-r7/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Focused APP functional regressions
+        run: node --test tests/sudoku-app-coach-final-20260930.test.cjs | tee sudoku-r7-evidence/functional.log
+      - name: Chromium and WebKit review acceptance
+        run: |
+          node tests/sudoku-app-solve-playback-r5-browser.cjs | tee sudoku-r7-evidence/review-browser.log
+          node -e "const r=require('./sudoku-r7-evidence/solve-browser.json');if(r.status!=='PASS'||r.cases.length!==20)throw Error('Incomplete review acceptance');"
+      - name: Existing APP browser regressions
+        run: |
+          node tests/sudoku-app-boot-r4-browser.cjs | tee sudoku-r7-evidence/boot-browser.log
+          node -e "const r=require('./sudoku-r7-evidence/browser.json');if(r.status!=='PASS'||r.cases.length!==32)throw Error('Incomplete APP regression');"
+      - name: Stage exact tested generated blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,pathlib,hashlib,urllib.request
+          r=json.loads(pathlib.Path('sudoku-r7-evidence/solve-browser.json').read_text());assert r['status']=='PASS' and len(r['cases'])==20
+          b=json.loads(pathlib.Path('sudoku-r7-evidence/browser.json').read_text());assert b['status']=='PASS' and len(b['cases'])==32
+          paths=['public/S/app/app-solve-playback.js','public/S/app/app-ui.js','scripts/build-sudoku-app-preview.cjs','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-solve-playback-r5-browser.cjs']
+          receipt={'source_sha':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],'status':'TESTED_STAGED_NOT_PUBLISHED','solve_review_cases':len(r['cases']),'regression_cases':len(b['cases']),'files':[]}
+          for p in paths:
+              raw=pathlib.Path(p).read_bytes();expected=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+              req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/git/blobs',data=json.dumps({'content':raw.decode(),'encoding':'utf-8'}).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+              with urllib.request.urlopen(req,timeout=45) as response:result=json.load(response)
+              assert result['sha']==expected
+              receipt['files'].append({'path':p,'sha':expected,'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)})
+          pathlib.Path('sudoku-r7-evidence/staged.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-review-r7-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          path: |
+            sudoku-r7-evidence/
+            public/S/app/app-solve-playback.js
+            public/S/app/app-ui.js
+            public/S/app/app.html
+            public/S/app/sw.js
+            public/S/app/release.json
+            scripts/build-sudoku-app-preview.cjs
+            tests/sudoku-app-solve-playback-r5-browser.cjs
