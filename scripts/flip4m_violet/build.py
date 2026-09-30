@@ -7,9 +7,10 @@ The original source hashes are verified before any output is written.
 from __future__ import annotations
 import argparse, hashlib, json, re, struct, zlib
 from pathlib import Path
+from upgrade_240 import refine_ui, refine_document
 
-VERSION = '2.3.1-petrol'
-SHARED = '_shared/petrol-2.3.1'
+VERSION = '2.4.0-petrol'
+SHARED = '_shared/petrol-2.4.0'
 SOURCE_COMMIT = 'd0ed1b4a239c123c6e4bced79648f8325c9168ee'
 SOURCE_HASHES = {
 'f4m-core.js':'d59c88e5fcf0df2f7973b8bdb2057e497a2b22da',
@@ -102,7 +103,7 @@ def build(public: Path) -> list[str]:
     # CURRENT is read-only and has the same controller plus smart time as LAB.
     original=(root/'index.html').read_text()
     ui=source['f4m-ui.js'].decode()
-    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.3.1-petrol',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
+    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.4.0-petrol',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
     ui=replace_once(ui,"else worker=new Worker('f4m-worker.js?v=2.1.1');", "else worker=new Worker(new URL('f4m-worker.js',document.querySelector('script[data-engine-ui]').src));")
     ui=replace_once(ui,"function persist(){if(loading)return;const serial=++saveSerial;Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');});}", "function persist(){if(loading)return Promise.resolve('unavailable');const serial=++saveSerial;return Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');return status;});}")
     ui=replace_once(ui,"document.title='Flip4M Lab — Classical AI × AI+DCC';", "document.title='Flip4M '+CHANNEL.toUpperCase()+' · Petrol';")
@@ -114,6 +115,7 @@ def build(public: Path) -> list[str]:
     store=replace_once(store,"const NAME='flip4m-lab-2.1'", "const NAME=document.body.dataset.channel==='app'?'flip4m-app-2.2':'flip4m-lab-2.1'")
     # If IDB opens but writes fail, read the verified fallback rather than a stale IDB checkpoint.
     store=replace_once(store,'const data=await get(db,KEY);if(!data)return null;', "const data=await get(db,KEY);let fallback=null;try{fallback=JSON.parse(localStorage.getItem(NAME)||'null');}catch(_){}if(fallback&&(!data||String(fallback.savedAt)>String(data.savedAt)))return fallback;if(!data)return null;")
+    ui=refine_ui(ui)
     outputs={}
     for name,data in source.items(): outputs[f'{SHARED}/{name}']=data
     outputs[f'{SHARED}/f4m-ui.js']=ui.encode()
@@ -123,7 +125,7 @@ def build(public: Path) -> list[str]:
     for size in (180,192,512): outputs[f'{SHARED}/icon-{size}.png']=icon(size)
     shared_names=[p.split('/')[-1] for p in outputs]
     for channel,dirname in (('lab','new'),('app','app')):
-        outputs[f'{dirname}/index.html']=document(original,channel).encode()
+        outputs[f'{dirname}/index.html']=refine_document(document(original,channel)).encode()
         manifest={'id':'./','name':'Flip4M '+channel.upper(),'short_name':'Flip4M '+channel.upper(),'start_url':'./','scope':'./','display':'standalone','background_color':'#0b1119','theme_color':'#0b1119','lang':'sl','icons':[{'src':f'../{SHARED}/icon-{s}.png','sizes':f'{s}x{s}','type':'image/png','purpose':'any maskable'} for s in (192,512)]}
         outputs[f'{dirname}/manifest.webmanifest']=(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n').encode()
         release={'schema':'flip4m.release.v1','version':VERSION,'date':'2026-09-30','role':channel.upper(),'base':'2.1.2-smart-time','source_commit':SOURCE_COMMIT,'rules_unchanged':True,'source_blobs':SOURCE_HASHES,'shared_path':SHARED,'storage':'flip4m-lab-2.1' if channel=='lab' else 'flip4m-app-2.2','native_app':False,'physical_device_acceptance':'NOT_RUN'}

@@ -130,7 +130,7 @@ def verify(public: Path,out: Path,executable=None):
         app.locator('#undo').click();wait_idle(app);check('Undo complete human+AI turn',state(app)['ply']==0)
         check('LAB untouched by APP game',state(page)==saved_state)
         # Two-channel offline cold navigation and Workers.
-        app.reload();wait_idle(app);ctx.set_offline(True)
+        app.evaluate('F4MLab.saveForUpdate()');app.reload();wait_idle(app);ctx.set_offline(True)
         page.goto(base+'new/');wait_idle(page);check('LAB offline cold load',state(page)==saved_state)
         app.goto(base+'app/');wait_idle(app);check('APP offline cold load',state(app)['ply']==0)
         app.locator('#hint').click();wait_idle(app)
@@ -140,7 +140,7 @@ def verify(public: Path,out: Path,executable=None):
         # Real update handshake. Only the test server's SW file is temporarily changed.
         page.locator('#tab-board').click();second=ctx.new_page();second.goto(base+'new/');wait_idle(second)
         navs=[];second.on('framenavigated',lambda f:navs.append(f.url) if f==second.main_frame else None)
-        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.3.1-petrol"','const BUILD="2.3.1-petrol-test"',1))
+        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.4.0-petrol"','const BUILD="2.4.0-petrol-test"',1))
         page.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
         page.wait_for_function("document.getElementById('pwaToast').hidden===false",timeout=25000)
         check('Update waits for consent',page.evaluate("navigator.serviceWorker.getRegistration().then(r=>!!r.waiting)"))

@@ -52,6 +52,8 @@ def new_game(page, mode, tools='3'):
     page.locator('#mode').select_option(mode)
     page.locator('#tools').select_option(tools)
     page.locator('#difficulty').select_option('beginner')
+    if not page.locator('#timeControl').is_visible():
+        page.locator('#setupPanel details:has(#timeControl) > summary').click()
     page.locator('#timeControl').select_option('0')
     if mode == 'demo':
         page.locator('#demoRed').select_option('classical')
@@ -125,7 +127,7 @@ def exercise(page, base, channel, desktop):
         slot=page.locator('.mag-slot[data-side="'+str(side)+'"][data-idx="3"]')
         # Click a point in the transparent hit target, not the tiny visible cap.
         rect=slot.bounding_box()
-        page.mouse.click(rect['x']+rect['width']/2+(6 if side%2 else 0),rect['y']+rect['height']/2+(0 if side%2 else 6))
+        page.mouse.click(rect['x']+rect['width']/2+(8 if side%2 else 0),rect['y']+rect['height']/2+(0 if side%2 else 8))
         idle(page)
         check(tag+' magnetic hit side '+str(side),key(page)==expected['key'])
         check(tag+' lifetime/owner side '+str(side),slot.locator('.mag-life').inner_text()==str(expected['life']) and 'owned1' in slot.get_attribute('class'))
@@ -209,9 +211,9 @@ def run(base):
         desktop.set_offline(False)
         desktop.close()
         phone=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion='reduce',user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1')
-        phone.add_init_script("for(const c of ['lab','app'])localStorage.setItem('flip4m.'+c+'.2.2.preferences',JSON.stringify({mode:'pvp',difficulty:'beginner'}));")
+        phone.add_init_script("for(const c of ['lab','app']){const k='flip4m.'+c+'.2.2.preferences';if(!localStorage.getItem(k))localStorage.setItem(k,JSON.stringify({mode:'pvp',difficulty:'beginner'}));}")
         # The phone profile must not reset saved preferences on every navigation.
-        # Seed pvp once, then use a fresh page with the normal stored preferences.
+        # Seed pvp only once; later reloads retain the tested demo preferences.
         ph=phone.new_page();exercise(ph,base,'app',False)
         check('Phone APP remains fullscreen',ph.locator('html').get_attribute('class')=='app-phone' and not ph.locator('.preview-header').is_visible())
         check('Phone no horizontal overflow',ph.evaluate('document.documentElement.scrollWidth<=innerWidth'))
