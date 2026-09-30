@@ -1,0 +1,31 @@
+name: Sudoku APP review tabs temporary verification
+on:
+  pull_request:
+    paths:
+      - 'public/S/app/**'
+      - 'tests/sudoku-app-solve-playback-r5-browser.cjs'
+      - '.github/workflows/sudoku-app-review-tabs-temp.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependency
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sudoku-app-test" --no-package-lock --ignore-scripts playwright@1.55.0
+          echo "NODE_PATH=$RUNNER_TEMP/sudoku-app-test/node_modules" >> "$GITHUB_ENV"
+          npx --prefix "$RUNNER_TEMP/sudoku-app-test" playwright install --with-deps chromium webkit
+      - name: Exact APP package check
+        run: node scripts/build-sudoku-app-preview.cjs --check
+      - name: Syntax checks
+        run: |
+          node --check public/S/app/app-solve-playback.js
+          node --check tests/sudoku-app-solve-playback-r5-browser.cjs
+      - name: Chromium and WebKit acceptance
+        run: node tests/sudoku-app-solve-playback-r5-browser.cjs
