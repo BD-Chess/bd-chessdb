@@ -1,0 +1,68 @@
+name: Flip4M APP preview center verification
+on:
+  push:
+    branches: ['flip4m/app-preview-center-20260930-r1']
+    paths: ['scripts/flip4m_violet/**', '.github/workflows/flip4m-app-preview-center.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: flip4m/app-preview-center-20260930-r1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build immutable Petrol 2.3.1 channels
+        run: python scripts/flip4m_violet/build.py --public public
+      - name: Install pinned browser test dependency
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Run bounded Flip4M verification
+        run: python scripts/flip4m_violet/verify.py --public public --out flip4m-evidence
+      - name: Save verified generated outputs and remove one-time workflow
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/flip4m/app-preview-center-20260930-r1'
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          shared='_shared/petrol-2.3.1'
+          manifest=json.loads(Path('public/F4M/'+shared+'/build-manifest.json').read_text())
+          paths=['public/F4M/'+p for p in manifest]+['public/F4M/'+shared+'/build-manifest.json']
+          assert all(p.startswith(('public/F4M/new/','public/F4M/app/','public/F4M/'+shared+'/','public/F4M/PWA/')) for p in paths)
+          subprocess.run(['git','add','--',*paths],check=True)
+          assert not subprocess.check_output(['git','diff','HEAD','--','public/F4M/index.html','public/F4M/old','public/chess','public/S'],text=True)
+          PY
+          git rm .github/workflows/flip4m-app-preview-center.yml
+          git config user.name 'Flip4M scoped builder'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(flip4m): materialize verified APP preview center 2.3.1 [skip ci]'
+          git push origin HEAD:flip4m/app-preview-center-20260930-r1
+          git rev-parse HEAD > flip4m-evidence/verified-commit.txt
+      - name: Package evidence
+        if: always()
+        shell: python
+        run: |
+          from pathlib import Path
+          import zipfile,json
+          out=Path('flip4m-evidence');out.mkdir(exist_ok=True)
+          with zipfile.ZipFile(out/'Flip4M_Petrol_2_3_1_preview_candidate.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in Path('scripts/flip4m_violet').glob('*'):
+                  if p.is_file():z.write(p,p.as_posix())
+              manifest=Path('public/F4M/_shared/petrol-2.3.1/build-manifest.json')
+              if manifest.exists():
+                  for name in list(json.loads(manifest.read_text()))+['_shared/petrol-2.3.1/build-manifest.json']:
+                      p=Path('public/F4M')/name;z.write(p,p.as_posix())
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-app-preview-center-evidence
+          path: flip4m-evidence
+          retention-days: 7
