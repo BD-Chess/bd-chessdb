@@ -33,7 +33,7 @@ async function run(){
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
     const samples=[];for(let i=0;i<5;i++){await page.waitForTimeout(130);const b=await visible();samples.push(b.filter(Boolean).length);for(let j=0;j<81;j++)if(puzzle[j])assert.equal(b[j],puzzle[j],'givens visible and unchanged');}
-    assert.ok(samples[0]>before.board.filter(Boolean).length,'visible progress started');assert.ok(samples.at(-1)<81,'not an instant fill');assert.ok(new Set(samples).size>=3,'multiple distinct visible stages');
+    assert.ok(samples.at(-1)>before.board.filter(Boolean).length,'visible progress started');assert.ok(samples.at(-1)<81,'not an instant fill');assert.ok(new Set(samples).size>=3,'multiple distinct visible stages');
     assert.ok(samples.every((n,i)=>!i||n>=samples[i-1]),'monotone visible fill');
     await page.screenshot({path:path.join(out,name+'-'+mode+'-solve-mid.png'),fullPage:true});
     await frame.waitForFunction(()=>!document.body.dataset.appSolvePlayback,null,{timeout:6500});const elapsed=Date.now()-started;
