@@ -41,12 +41,6 @@ async function run(){
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
     assert.equal(await frame.locator('.header').evaluate(n=>getComputedStyle(n).display),'none','top identity/time/language row hidden during review');assert.equal(await frame.locator('.title-block').evaluate(n=>getComputedStyle(n).display),'none','title hidden during review');assert.equal(await frame.locator('.pl-tabs').evaluate(n=>getComputedStyle(n).display),'none','Play/Learn/Lab tabs hidden during review');
     assert.equal(await frame.locator('#appSolveInstruments').evaluate(n=>n.hidden),false);assert.equal(await frame.locator('#appSolveInstruments .app-pos-sensor').count(),5,'five horizontal position sensors');
-    assert.equal(await frame.locator('#appSolveSensorsOverviewOpen').count(),1,'sensor overview tap target');
-    await frame.locator('#appSolveSensorsOverviewOpen').click();assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),false,'full sensor guide opens');
-    assert.equal(await frame.locator('#appSensorsOverviewList .app-sensors-overview-item').count(),5,'overview explains all five sensors');
-    const sensorCover=await frame.locator('#appSolveSensorsOverview').evaluate(n=>{const r=n.getBoundingClientRect();return{top:r.top,left:r.left,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight};});
-    assert.ok(Math.abs(sensorCover.top)<1&&Math.abs(sensorCover.left)<1&&Math.abs(sensorCover.width-sensorCover.vw)<1&&Math.abs(sensorCover.height-sensorCover.vh)<1,'sensor overview covers viewport');
-    assert.match(await frame.locator('#appSensorsOverviewCaveat').innerText(),phone?/ni ocena inteligence/i:/not.*intelligence/i);await frame.locator('#appSensorsOverviewClose').click();
     assert.match(await frame.locator('#appAssist .app-dock-label').innerText(),phone?/AI pregled/:/AI Review/);
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
     const reviewData=await frame.evaluate(()=>window.SudokuSolveReview.get());
@@ -60,6 +54,40 @@ async function run(){
     await page.screenshot({path:path.join(out,name+'-'+mode+'-solve-mid.png'),fullPage:true});
     await frame.waitForFunction(()=>{const r=window.SudokuSolveReview?.get?.();return r&&r.index===r.steps.length&&document.querySelector('#appSolvePlay')?.textContent==='▶';},null,{timeout:8500});const elapsed=Date.now()-started;
     assert.ok(elapsed>=2200&&elapsed<9000,'fast watchable duration '+elapsed);assert.deepEqual(await visible(),solved.board);
+    assert.equal(await frame.locator('#appSolveSensorsOverviewOpen').count(),1,'sensor overview tap target');
+    const activate=async n=>phone?n.tap():n.click();
+    await activate(frame.locator('#appSolveSensorsOverviewOpen'));assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),false,'full sensor guide opens');
+    assert.equal(await frame.locator('#appSensorsOverviewList .app-sensors-overview-item').count(),5,'overview explains all five sensors');
+    const sensorCover=await frame.locator('#appSolveSensorsOverview').evaluate(n=>{const r=n.getBoundingClientRect();return{top:r.top,left:r.left,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight};});
+    assert.ok(Math.abs(sensorCover.top)<1&&Math.abs(sensorCover.left)<1&&Math.abs(sensorCover.width-sensorCover.vw)<1&&Math.abs(sensorCover.height-sensorCover.vh)<1,'sensor overview covers viewport');
+    assert.match(await frame.locator('#appSensorsOverviewCaveat').innerText(),phone?/niso.*ocena inteligence/i:/not.*intelligence/i);
+    const assertCover=async()=>{
+     const v=await frame.evaluate(()=>{const root=document.querySelector('#appSolveSensorsOverview'),close=document.querySelector('#appSensorsOverviewClose').getBoundingClientRect(),points=[];for(const x of [4,innerWidth/2,innerWidth-5])for(const y of [4,16,innerHeight/2,innerHeight-30,innerHeight-5])points.push([x,y]);return{blocked:points.every(([x,y])=>root.contains(document.elementFromPoint(x,y))),closeVisible:close.top>=0&&close.right<=innerWidth+1&&close.bottom<=innerHeight+1,closeWidth:close.width,closeHeight:close.height};});
+     assert.equal(v.blocked,true,'overview, not underlying dock, receives viewport hits');assert.equal(v.closeVisible,true,'close remains visible');assert.ok(v.closeWidth>=44&&v.closeHeight>=44,'44px close target');
+    };
+    await assertCover();await page.waitForTimeout(200);
+    const directions=await frame.locator('.app-sensors-direction').allTextContents();assert.equal(directions.length,5);for(const text of directions){assert.match(text,phone?/Nižje:/:/Lower:/);assert.match(text,phone?/Višje:/:/Higher:/);}
+    await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-top.png'),fullPage:true});
+    await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop=n.scrollHeight);
+    await assertCover();
+    await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-bottom.png'),fullPage:true});
+    await activate(frame.locator('#appSensorsOverviewClose'));
+
+
+    const guideGame=await capture();
+    await frame.locator('#appSolveFirst').click();await frame.locator('#appSolvePlay').click();
+    await page.waitForTimeout(160);await activate(frame.locator('#appSolveSensorsOverviewOpen'));
+    const guideStep=await frame.locator('#appSolveScrub').inputValue();
+    await page.waitForTimeout(350);assert.equal(await frame.locator('#appSolveScrub').inputValue(),guideStep,'overview pauses replay on its snapshot');assert.equal(await frame.locator('#appSolvePlay').innerText(),'▶');
+    assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop),0,'new opening starts at top');
+    for(const key of ['1','Backspace','ArrowRight','Tab'])await page.keyboard.press(key);
+    assert.equal(await frame.locator('#appSolveScrub').inputValue(),guideStep,'modal keys do not navigate review');assert.deepEqual(await capture(),guideGame,'modal keys do not edit game');assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSensorsOverviewClose','Tab stays in guide');
+    await page.keyboard.press('Escape');assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSolveSensorsOverviewOpen');
+    assert.deepEqual(await capture(),guideGame,'overview does not alter game state');
+    for(const key of ['cplx','gini','powr','dens','adsr']){await activate(frame.locator('#appSolveInstruments [data-sensor="'+key+'"]'));assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false,'detail retained: '+key);await activate(frame.locator('#appSensorClose'));}
+    await frame.locator('#appSolveLast').click();
+    report.fullscreenGuideContexts=(report.fullscreenGuideContexts||0)+1;
+
     assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'compact step sensors visible');
     assert.equal(await frame.locator('#appDock>button').count(),5);assert.equal(await frame.locator('.title').innerText(),'8zSudoku');assert.equal(await frame.locator('#plNumbers').evaluate(n=>n.hidden),true);
     await frame.locator('#appSolveInstruments [data-sensor="cplx"]').click();assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false);assert.match(await frame.locator('#appSensorTitle').innerText(),/LZ/);await frame.locator('#appSensorClose').click();

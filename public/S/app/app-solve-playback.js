@@ -52,22 +52,57 @@
  function sensorWidth(key,v){return Math.max(0,Math.min(100,key==='powr'?v/5*100:v*100));}
 
  const sensorDefs={
-  cplx:{abbr:'Cplx',en:'LZ Complexity',sl:'LZ kompleksnost',dir:'low',
-   enText:'Lempel–Ziv complexity of the candidate-reduction sequence. Lower means the solve path is more repetitive and structured.',
-   slText:'Lempel–Ziv kompleksnost zaporedja zmanjševanja kandidatov. Nižje pomeni bolj ponovljiv in strukturiran tok reševanja.'},
-  gini:{abbr:'Gini',en:'Gini Cascade',sl:'Gini kaskad',dir:'high',
-   enText:'Gini coefficient of cascade depths. In this review a cascade is the number of newly forced singles opened by a step. Higher means a few moves create much deeper follow-up chains.',
-   slText:'Ginijev koeficient globin kaskad. V tem pregledu je kaskada število novih prisiljenih posameznikov, ki jih odpre poteza. Višje pomeni, da nekaj potez sproži precej globlje nadaljevanje.'},
-  powr:{abbr:'Powr',en:'Cascade Power',sl:'Moč kaskade',dir:'high',
-   enText:'Average cascade depth × candidate reduction. Higher means the moves that open follow-up chains also remove more uncertainty.',
-   slText:'Povprečna globina kaskade × zmanjšanje kandidatov. Višje pomeni, da poteze z nadaljnjimi verigami hkrati odstranijo več negotovosti.'},
-  dens:{abbr:'Dens',en:'Density Flow',sl:'Tok gostote',dir:'low',
-   enText:'Lempel–Ziv complexity of the remaining-candidate flow. Lower means candidate density drains more smoothly.',
-   slText:'Lempel–Ziv kompleksnost toka preostalih kandidatov. Nižje pomeni, da se gostota kandidatov zmanjšuje bolj gladko.'},
-  adsr:{abbr:'ADSR',en:'ADSR Bimodality',sl:'ADSR bimodalnost',dir:'context',
-   enText:'Attack–Decay–Sustain–Release context sensor: share of zero-cascade and deep-cascade (5+) steps. It describes puzzle/trajectory structure; it is not a solver-intelligence score.',
-   slText:'Kontekstni senzor Attack–Decay–Sustain–Release: delež korakov brez kaskade in z globoko kaskado (5+). Opisuje strukturo uganke/poti; ni ocena inteligence reševalca.'}
- };
+  "cplx": {
+    "abbr": "Cplx",
+    "en": "LZ Complexity",
+    "sl": "LZ kompleksnost",
+    "dir": "low",
+    "enText": "Lempel–Ziv complexity of candidate reductions, converted to a binary sequence relative to their median. It describes repetition, not puzzle difficulty.",
+    "slText": "Lempel–Ziv kompleksnost zmanjšanj števila kandidatov, pretvorjenih v binarno zaporedje glede na mediano. Opisuje ponavljanje, ne težavnosti uganke.",
+    "enDirection": "Lower: a more repetitive pattern. Higher: a less repetitive pattern. Neither is an intelligence score.",
+    "slDirection": "Nižje: bolj ponovljiv vzorec. Višje: manj ponovljiv vzorec. Nobena smer ni ocena inteligence."
+  },
+  "gini": {
+    "abbr": "Gini",
+    "en": "Gini Cascade",
+    "sl": "Gini kaskad",
+    "dir": "high",
+    "enText": "Unevenness of the forced-placement indicator across the steps so far. This is a practical cascade proxy, not the measured depth of a recursive chain.",
+    "slText": "Neenakomernost kazalnika prisiljenih postavitev med dotedanjimi koraki. To je približek kaskade, ne izmerjena globina rekurzivne verige.",
+    "enDirection": "Lower: more similar values across steps, including all zeros. Higher: the indicator is concentrated in fewer steps; it does not mean every move is stronger.",
+    "slDirection": "Nižje: bolj podobne vrednosti med koraki, lahko tudi same ničle. Višje: kazalnik je skoncentriran v manj korakih; to ne pomeni, da je vsaka poteza močnejša."
+  },
+  "powr": {
+    "abbr": "Powr",
+    "en": "Cascade Power",
+    "sl": "Moč kaskade",
+    "dir": "high",
+    "enText": "Average of each step’s forced-placement indicator multiplied by its candidate reduction. Negative reductions count as zero.",
+    "slText": "Povprečje produkta kazalnika prisiljenih postavitev in zmanjšanja kandidatov v posameznem koraku. Negativno zmanjšanje šteje kot nič.",
+    "enDirection": "Lower: fewer forced placements, smaller reductions, or both. Higher: their combined product is larger, not necessarily better solving.",
+    "slDirection": "Nižje: manj prisiljenih postavitev, manjša zmanjšanja ali oboje. Višje: njun skupni produkt je večji, ne nujno boljše reševanje."
+  },
+  "dens": {
+    "abbr": "Dens",
+    "en": "Density Flow",
+    "sl": "Tok gostote",
+    "dir": "low",
+    "enText": "Lempel–Ziv complexity of remaining-candidate counts, converted to a binary sequence relative to their median. This is a flow pattern, not the current candidate count.",
+    "slText": "Lempel–Ziv kompleksnost števila preostalih kandidatov, pretvorjenega v binarno zaporedje glede na mediano. To je vzorec toka, ne trenutno število kandidatov.",
+    "enDirection": "Lower: a more repetitive binary pattern. Higher: a less repetitive pattern, not necessarily more candidates or a harder position.",
+    "slDirection": "Nižje: bolj ponovljiv binarni vzorec. Višje: manj ponovljiv vzorec, ne nujno več kandidatov ali težji položaj."
+  },
+  "adsr": {
+    "abbr": "ADSR",
+    "en": "ADSR Bimodality",
+    "sl": "ADSR bimodalnost",
+    "dir": "context",
+    "enText": "Attack–Decay–Sustain–Release context indicator: the share of steps whose cascade indicator is zero or at least five.",
+    "slText": "Kontekstni kazalnik Attack–Decay–Sustain–Release: delež korakov, pri katerih je kaskadni kazalnik nič ali vsaj pet.",
+    "enDirection": "Lower: more steps with values 1–4. Higher: more steps with zero or 5+. Zeros alone can make it high; it does not prove bimodality or better performance.",
+    "slDirection": "Nižje: več korakov z vrednostmi 1–4. Višje: več korakov z nič ali 5+. Že same ničle lahko dajo visoko vrednost; to ne dokazuje bimodalnosti ali boljše uspešnosti."
+  }
+};
  const review=document.createElement('section');
  review.id='appSolveReview';review.hidden=true;review.setAttribute('data-no-i18n','');
  review.innerHTML=
@@ -115,8 +150,8 @@
   '.app-pos-sensor:nth-child(2) .app-pos-fill{background:#62d39d}.app-pos-sensor:nth-child(3) .app-pos-fill{background:#e7c66b}.app-pos-sensor:nth-child(4) .app-pos-fill{background:#f0a36d}.app-pos-sensor:nth-child(5) .app-pos-fill{background:#9ca7b5}',
   '.app-pos-tooltip{display:none;position:absolute;left:39px;top:-19px;z-index:4;padding:3px 6px;border:1px solid #355269;border-radius:6px;background:#0a1622;color:#d8e5f1;font:650 .58rem/1.2 system-ui;white-space:nowrap;box-shadow:0 4px 14px #0008}',
   '@media(hover:hover){.app-pos-sensor:hover .app-pos-tooltip,.app-pos-sensor:focus-visible .app-pos-tooltip{display:block}}',
-  '#appSolveSensorModal{position:fixed;inset:0;z-index:1600;background:#020812b8;display:flex;align-items:flex-end;justify-content:center;padding:14px}.app-sensor-sheet{position:relative;width:min(100%,520px);padding:18px 18px 20px;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b}.app-sensor-sheet h2{margin:0 28px 8px 0;font:800 1rem/1.2 system-ui;color:#79efff}.app-sensor-sheet p{margin:8px 0;font:600 .78rem/1.45 system-ui;color:#b8c8d8}#appSensorValue{font:800 .86rem/1.2 monospace;color:#eef7ff}#appSensorClose{position:absolute;right:10px;top:8px;border:0;background:none;color:#dbe7f4;font-size:1.5rem;cursor:pointer}',
-  '#appSolveSensorsOverview{position:fixed;inset:0;z-index:1700;background:#07111d;color:#dbe7f4;overflow:auto;overscroll-behavior:contain;padding:max(22px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.app-sensors-overview{position:relative;width:min(100%,720px);min-height:100%;margin:0 auto}.app-sensors-overview-scroll{padding:18px 0 28px}.app-sensors-overview-eyebrow{font:800 .58rem/1 monospace;letter-spacing:.16em;color:#62d8e8;margin:0 44px 9px 0}.app-sensors-overview h2{margin:0 44px 10px 0;font:850 clamp(1.35rem,5vw,2rem)/1.1 system-ui;color:#f0f7ff}.app-sensors-overview-intro{margin:0 0 12px;font:650 .88rem/1.5 system-ui;color:#c3d2e1}.app-sensors-overview-meta{margin:0 0 14px;padding:8px 10px;border:1px solid #28465b;border-radius:10px;background:#0b1927;font:700 .70rem/1.35 system-ui;color:#8fa8be}.app-sensors-overview-list{display:grid;gap:8px}.app-sensors-overview-item{padding:11px 12px;border:1px solid #203d52;border-radius:11px;background:#0a1724}.app-sensors-overview-item-head{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;gap:8px}.app-sensors-overview-item-head strong{font:850 .77rem/1 monospace;color:#75e6f3}.app-sensors-overview-item-head span{font:750 .78rem/1.2 system-ui;color:#d6e3ef}.app-sensors-overview-item-head em{font:800 .70rem/1 monospace;font-style:normal;color:#f5f8fb}.app-sensors-overview-item p{margin:7px 0 0;font:600 .76rem/1.45 system-ui;color:#aebfd0}.app-sensors-overview-item .app-sensors-direction{color:#7f98af}.app-sensors-overview-reading{margin:14px 0 10px;padding:12px;border:1px solid #31536a;border-radius:12px;background:#0c1b2a}.app-sensors-overview-reading h3{margin:0 0 6px;font:800 .82rem/1.2 system-ui;color:#79efff}.app-sensors-overview-reading p,.app-sensors-overview-caveat{margin:0;font:650 .77rem/1.5 system-ui;color:#b9cada}.app-sensors-overview-caveat{padding:10px 12px;border-radius:10px;background:#132130;color:#e4edf6}#appSensorsOverviewClose{position:fixed;z-index:2;right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:grid;place-items:center;width:38px;height:38px;border:1px solid #36576e;border-radius:50%;background:#0b1825;color:#e5f2ff;font:500 1.65rem/1 system-ui;cursor:pointer}',
+  '#appSolveSensorModal{position:fixed;inset:0;z-index:4100;background:#020812b8;display:flex;align-items:flex-end;justify-content:center;padding:14px}.app-sensor-sheet{position:relative;width:min(100%,520px);padding:18px 18px 20px;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b}.app-sensor-sheet h2{margin:0 28px 8px 0;font:800 1rem/1.2 system-ui;color:#79efff}.app-sensor-sheet p{margin:8px 0;font:600 .78rem/1.45 system-ui;color:#b8c8d8}#appSensorValue{font:800 .86rem/1.2 monospace;color:#eef7ff}#appSensorClose{position:absolute;right:10px;top:8px;border:0;background:none;color:#dbe7f4;font-size:1.5rem;cursor:pointer}',
+  '#appSolveSensorsOverview{position:fixed;inset:0;z-index:4100;background:#07111d;color:#dbe7f4;overflow:auto;overscroll-behavior:contain;padding:max(22px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.app-sensors-overview{position:relative;width:min(100%,720px);min-height:100%;margin:0 auto}.app-sensors-overview-scroll{padding:18px 0 28px}.app-sensors-overview-eyebrow{font:800 .58rem/1 monospace;letter-spacing:.16em;color:#62d8e8;margin:0 44px 9px 0}.app-sensors-overview h2{margin:0 44px 10px 0;font:850 clamp(1.35rem,5vw,2rem)/1.1 system-ui;color:#f0f7ff}.app-sensors-overview-intro{margin:0 0 12px;font:650 .88rem/1.5 system-ui;color:#c3d2e1}.app-sensors-overview-meta{margin:0 0 14px;padding:8px 10px;border:1px solid #28465b;border-radius:10px;background:#0b1927;font:700 .70rem/1.35 system-ui;color:#8fa8be}.app-sensors-overview-list{display:grid;gap:8px}.app-sensors-overview-item{padding:11px 12px;border:1px solid #203d52;border-radius:11px;background:#0a1724}.app-sensors-overview-item-head{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;gap:8px}.app-sensors-overview-item-head strong{font:850 .77rem/1 monospace;color:#75e6f3}.app-sensors-overview-item-head span{font:750 .78rem/1.2 system-ui;color:#d6e3ef}.app-sensors-overview-item-head em{font:800 .70rem/1 monospace;font-style:normal;color:#f5f8fb}.app-sensors-overview-item p{margin:7px 0 0;font:600 .76rem/1.45 system-ui;color:#aebfd0}.app-sensors-overview-item .app-sensors-direction{color:#7f98af}.app-sensors-overview-reading{margin:14px 0 10px;padding:12px;border:1px solid #31536a;border-radius:12px;background:#0c1b2a}.app-sensors-overview-reading h3{margin:0 0 6px;font:800 .82rem/1.2 system-ui;color:#79efff}.app-sensors-overview-reading p,.app-sensors-overview-caveat{margin:0;font:650 .77rem/1.5 system-ui;color:#b9cada}.app-sensors-overview-caveat{padding:10px 12px;border-radius:10px;background:#132130;color:#e4edf6}#appSensorsOverviewClose{position:fixed;z-index:2;right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:grid;place-items:center;width:44px;height:44px;border:1px solid #36576e;border-radius:50%;background:#0b1825;color:#e5f2ff;font:500 1.65rem/1 system-ui;cursor:pointer}',
   '.app-solve-sensors{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}.app-solve-sensor{display:flex;gap:4px;align-items:baseline;padding:0;border:0;background:transparent;text-align:left}.app-solve-sensor b{font:650 .50rem/1 system-ui;color:#667f97}.app-solve-sensor span{margin:0;font:750 .61rem/1.15 system-ui;color:#c9d7e5}',
 
   '.app-solve-review-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font:800 .78rem/1.2 system-ui;letter-spacing:.035em;color:#c8d7e7}',
@@ -427,18 +462,17 @@
  },{capture:true,passive:true});
  window.addEventListener('keydown',event=>{
   if(review.hidden||document.body.dataset.appSolveReview!=='true')return;
-  if(!sensorOverview.hidden){if(event.key==='Escape'){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});event.preventDefault();}return;}
-  if(!sensorModal.hidden){if(event.key==='Escape'){sensorModal.hidden=true;event.preventDefault();}return;}
+  if(!sensorOverview.hidden){event.stopImmediatePropagation();if(event.key==='Tab'){event.preventDefault();$('appSensorsOverviewClose').focus({preventScroll:true});}if(event.key==='Escape'){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});event.preventDefault();}return;}
+  if(!sensorModal.hidden){event.stopImmediatePropagation();if(event.key==='Escape'){sensorModal.hidden=true;event.preventDefault();}return;}
   if(event.target?.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal')?.hidden)return;
   const actions={ArrowLeft:goPrev,ArrowRight:goNext,ArrowUp:goFirst,ArrowDown:goLast,' ':play};
   const fn=actions[event.key];if(fn){event.preventDefault();event.stopImmediatePropagation();fn();return;}
   if(!event.ctrlKey&&!event.metaKey&&!event.altKey)closeView(false);
  },true);
- function sensorDirectionText(d){
-  return d.dir==='low'?(sl()?'Nižje praviloma pomeni bolj ponovljiv in strukturiran tok.':'Lower generally means a more repetitive, structured flow.'):d.dir==='high'?(sl()?'Višje pomeni izrazitejši oziroma močnejši kaskadni vzorec.':'Higher means a more pronounced or stronger cascade pattern.'):(sl()?'Kontekstni signal: višje ali nižje samo po sebi ni boljše.':'Context signal: higher or lower is not inherently better.');
- }
+ function sensorDirectionText(d){return sl()?d.slDirection:d.enDirection;}
  function displaySensorValue(key,row,index){if(index<2)return'—';const raw=Number(row?.dataset.value)||0;return key==='powr'?raw.toFixed(1):raw.toFixed(3);}
  function openSensorsOverview(){
+  pause();sensorModal.hidden=true;
   const timeline=activeTimeline(),index=activeIndex(),max=timeline?.steps?.length||0;
   $('appSensorsOverviewEyebrow').textContent=sl()?'AI / HUMAN REVIEW · STRUKTURNI SENZORJI':'AI / HUMAN REVIEW · STRUCTURAL SENSORS';
   $('appSensorsOverviewTitle').textContent=sl()?'Kaj pomenijo senzorji?':'What do the sensors mean?';
@@ -448,9 +482,9 @@
    return '<article class="app-sensors-overview-item"><div class="app-sensors-overview-item-head"><strong>'+d.abbr+'</strong><span>'+(sl()?d.sl:d.en)+'</span><em>'+val+'</em></div><p>'+(sl()?d.slText:d.enText)+'</p><p class="app-sensors-direction">'+sensorDirectionText(d)+'</p></article>';
   }).join('');
   $('appSensorsOverviewReadTitle').textContent=sl()?'Kako jih brati med koraki':'How to read them step by step';
-  $('appSensorsOverviewReadText').textContent=sl()?'Premikaj časovnico korak za korakom in opazuj spremembe ter vzorec, ne ene same številke. Cplx in Dens sta praviloma bolj strukturirana, ko sta nižja; Gini in Powr kažeta, kako neenakomerno in močno nastajajo kaskade; ADSR opisuje tip poteka in nima smeri “bolje/slabše”.':'Move through the timeline step by step and watch changes and patterns, not one isolated number. Cplx and Dens generally indicate more structure when lower; Gini and Powr show how unevenly and strongly cascades emerge; ADSR describes the trajectory type and has no built-in better/worse direction.';
+  $('appSensorsOverviewReadText').textContent=sl()?"Premikaj časovnico korak za korakom. Senzorji povzemajo sled od začetka do izbranega koraka, ne samo zadnje poteze. Odprtje razlage ustavi predvajanje; po zaprtju ostaneš na istem koraku. Opazuj vzorce skozi več korakov, ne ene številke. AI šteje razpoložljive prisiljene postavitve po koraku, človeški pregled pa ocenjeni porast golih posameznikov; kaskadni vrednosti zato nista neposredno primerljivi. Cplx in Dens lahko presežeta 1; dolžina vrstice je le omejen vizualni prikaz.":"Move through the timeline step by step. Sensors summarize the trace from the start to the selected step, not only the last move. Opening this guide pauses playback; closing it leaves you at the same step. Watch patterns over several steps, not one number. AI counts available forced placements after a step, while human review estimates the increase in naked singles; their cascade values are not directly comparable. Cplx and Dens can exceed 1; the bars are only a capped visual display.";
   $('appSensorsOverviewCaveat').textContent=sl()?'Pomembno: to niso IQ, zavest, “moč AI-ja” ali ocena inteligence. So pregledni, deterministično izpeljani opisi strukture trenutne poti reševanja.':'Important: these are not IQ, consciousness, “AI power,” or an intelligence score. They are transparent, deterministically derived descriptions of the current solve trajectory.';
-  sensorOverview.hidden=false;$('appSensorsOverviewClose').focus({preventScroll:true});
+  sensorOverview.hidden=false;sensorOverview.scrollTop=0;$('appSensorsOverviewClose').setAttribute('aria-label',sl()?'Zapri razlago senzorjev':'Close sensor guide');$('appSensorsOverviewClose').focus({preventScroll:true});
  }
  function closeSensorsOverview(){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});}
  function openSensor(key){const d=sensorDefs[key],row=instruments.querySelector('[data-sensor="'+key+'"]');if(!d||!row)return;
@@ -461,6 +495,7 @@
   sensorModal.hidden=false;$('appSensorClose').focus({preventScroll:true});
  }
  $('appSolveSensorsOverviewOpen').onclick=openSensorsOverview;
+ instruments.addEventListener('click',event=>{if(!event.target.closest('button'))openSensorsOverview();});
  for(const row of instruments.querySelectorAll('.app-pos-sensor'))row.onclick=()=>openSensor(row.dataset.sensor);
  $('appSensorsOverviewClose').onclick=closeSensorsOverview;
  $('appSensorClose').onclick=()=>{sensorModal.hidden=true;};
