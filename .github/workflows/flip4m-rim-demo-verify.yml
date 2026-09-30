@@ -30,6 +30,10 @@ jobs:
               s=s.replace(old,new)
           s=s.replace('(6 if side%2 else 0)', '(8 if side%2 else 0)').replace('(0 if side%2 else 6)', '(0 if side%2 else 8)')
           s=s.replace('        # Seed pvp once, then use a fresh page with the normal stored preferences.','        # Seed pvp only once; later reloads retain the tested demo preferences.')
+          if "#setupPanel details:has(#timeControl)" not in s:
+              old="    page.locator('#timeControl').select_option('0')"
+              assert s.count(old)==1
+              s=s.replace(old,"    if not page.locator('#timeControl').is_visible():\n        page.locator('#setupPanel details:has(#timeControl) > summary').click()\n"+old)
           p.write_text(s)
       - name: Build immutable LAB and APP 2.4.0
         run: python scripts/flip4m_violet/build.py --public public
