@@ -1,6 +1,6 @@
 'use strict';
 const RELEASE={
-  "id": "0e824f84aa9a15ad3d77a9c7f1f731cc1b2d950a326819529123d72917b202c7",
+  "id": "9d8c1b709617a1ec266d6ee83dfed38e7b3db25343b38043d8dad8525d1a5fbe",
   "assets": {
     "01_deep_humanity_300000_20000_bce.html": "251aa7a41a6a039a0143c3dc5fcb69a766f69ed67ef0edea53e2409b83a79244",
     "02_ice_age_transition_20000_10000_bce.html": "74e6feabfb94e66e0fa16f586133fe4e8e8338c5c3b889d218d8a473cb0ab9fb",
@@ -24,7 +24,7 @@ const RELEASE={
     "pwa.js": "48af6349b1269e0d5bb2bfd9541a09304f2726655837bc55fc4ddd0165fac502",
     "icon-180.png": "9c8747c55c8409bcdf63c880f4ac4d3db4657798431056bd6ac9df95798f8bf5",
     "icon-192.png": "c5ce9c4ff78f1085c1b923d9632c071d4d8bf31511739a233d1c939ad6b8c4a7",
-    "icon-512.png": "a99ddecee48e0cf7c61d30f7f4b35583d51bb42fb67401bb2af6ec790d17c7f2"
+    "icon-512.png": "342f83eb4bcfc0e6415a71b37f9b5c0d25bad0647d3a6b69032a4641df2d01ed"
   }
 };
 const BASE=new URL(self.registration.scope),PREFIX='humanity-history-pwa-',CACHE=PREFIX+RELEASE.id,FILES=new Map(Object.keys(RELEASE.assets).map(function(n){return[new URL(n,BASE).pathname,n]}));FILES.set(BASE.pathname,'index.html');FILES.set(new URL('index.html',BASE).pathname,'index.html');
