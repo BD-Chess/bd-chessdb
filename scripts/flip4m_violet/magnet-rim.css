@@ -1,0 +1,52 @@
+/* Flip4M 2.4.0 · compact rim, unchanged board geometry.
+   Matrix inset is 9px + the board's 1px border (7px + 1px on mobile).
+   Markers rotate with the board; only the lifetime numeral stays upright.
+   24px-deep transparent hit targets are enabled only in Magnet mode.
+*/
+.rotor{--rim-grid-inset:10px}
+.arena .mag-slot,.arena .mag-slot:disabled,.arena .mag-slot.empty:disabled{
+ min-width:0;min-height:0;padding:0;margin:0;border:0;border-radius:0;
+ background:none;box-shadow:none;opacity:1;transition:none;
+ display:flex;align-items:center;justify-content:center;pointer-events:none;
+}
+.arena .mag-slot:hover:not(:disabled){background:none;border:0;box-shadow:none}
+.arena .mag-slot[data-side="0"],.arena .mag-slot[data-side="2"]{
+ left:calc(var(--rim-grid-inset) + (100% - 2 * var(--rim-grid-inset)) * var(--lane));
+ width:calc((100% - 2 * var(--rim-grid-inset)) / 8 - 2px);height:24px;
+ transform:translateX(-50%);
+}
+.arena .mag-slot[data-side="0"]{top:-16px}
+.arena .mag-slot[data-side="2"]{bottom:-16px}
+.arena .mag-slot[data-side="1"],.arena .mag-slot[data-side="3"]{
+ top:calc(var(--rim-grid-inset) + (100% - 2 * var(--rim-grid-inset)) * var(--lane));
+ height:calc((100% - 2 * var(--rim-grid-inset)) / 8 - 2px);width:24px;
+ transform:translateY(-50%);
+}
+.arena .mag-slot[data-side="1"]{right:-16px}
+.arena .mag-slot[data-side="3"]{left:-16px}
+.arena .mag-slot .mag-marker{
+ position:relative;display:flex;align-items:center;justify-content:center;
+ flex:none;width:min(28px,78%);height:12px;border:1px solid var(--line);
+ border-radius:4px;background:var(--raised);transform:none;pointer-events:none;
+ box-shadow:none;opacity:1;transition:background .15s,border-color .15s;
+}
+.arena .mag-slot[data-side="1"] .mag-marker,.arena .mag-slot[data-side="3"] .mag-marker{
+ width:12px;height:min(28px,78%);
+}
+.arena .mag-slot .mag-life{
+ display:block;flex:none;font:800 10px/1 system-ui,sans-serif;
+ font-variant-numeric:tabular-nums;color:#111923;
+ transform:rotate(calc(-1 * var(--angle)));pointer-events:none;
+}
+.arena .mag-slot.empty .mag-marker{opacity:.18}
+.arena .mag-slot.empty .mag-life{display:none}
+.arena .mag-slot.empty .mag-marker::before{content:'';width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.arena.magnet-mode .mag-slot.empty .mag-marker{opacity:1;border-color:var(--mint)}
+.arena.magnet-mode .mag-slot:not(:disabled){pointer-events:auto;cursor:pointer}
+.arena.magnet-mode .mag-slot:hover:not(:disabled) .mag-marker{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint)}
+.arena .mag-slot.owned1 .mag-marker{background:var(--red);border-color:var(--red)}
+.arena .mag-slot.owned2 .mag-marker{background:var(--yellow);border-color:var(--yellow)}
+.arena .mag-slot.expiring .mag-marker{outline:1px solid var(--text);outline-offset:1px}
+.arena .mag-slot:focus-visible{outline:0}
+.arena .mag-slot:focus-visible .mag-marker{outline:2px solid var(--text);outline-offset:2px}
+@media(max-width:680px){.rotor{--rim-grid-inset:8px}}
