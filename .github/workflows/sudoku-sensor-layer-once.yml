@@ -17,37 +17,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          ref: 6a54cffc401e4da74c3c04bf9dfb15dd44b165ba
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Prepare narrow fullscreen repair and persistent regression
+      - name: Prepare fullscreen repair and persistent regression
         run: |
           mkdir -p sensor-layer-evidence
           python - <<'PY'
           from pathlib import Path
+          import json
           def once(s,a,b):
               assert s.count(a)==1,a
               return s.replace(a,b,1)
           p=Path('public/S/app/app-solve-playback.js');s=p.read_text()
           s=once(s,'#appSolveSensorsOverview{position:fixed;inset:0;z-index:1700;','#appSolveSensorsOverview{position:fixed;inset:0;z-index:4100;')
+          s=once(s,'#appSolveSensorModal{position:fixed;inset:0;z-index:1600;','#appSolveSensorModal{position:fixed;inset:0;z-index:4100;')
           s=once(s,'width:38px;height:38px;border:1px solid #36576e','width:44px;height:44px;border:1px solid #36576e')
-          s=once(s,' function openSensorsOverview(){',' function openSensorsOverview(){\n  pause();sensorModal.hidden=true;sensorOverview.scrollTop=0;')
+          s=once(s,' function openSensorsOverview(){',' function openSensorsOverview(){\n  pause();sensorModal.hidden=true;')
+          s=once(s,"sensorOverview.hidden=false;$('appSensorsOverviewClose').focus({preventScroll:true});", "sensorOverview.hidden=false;sensorOverview.scrollTop=0;$('appSensorsOverviewClose').setAttribute('aria-label',sl()?'Zapri razlago senzorjev':'Close sensor guide');$('appSensorsOverviewClose').focus({preventScroll:true});")
+          s=once(s,"  if(!sensorOverview.hidden){if(event.key==='Escape')", "  if(!sensorOverview.hidden){event.stopImmediatePropagation();if(event.key==='Tab'){event.preventDefault();$('appSensorsOverviewClose').focus({preventScroll:true});}if(event.key==='Escape')")
+          s=once(s,"  if(!sensorModal.hidden){if(event.key==='Escape')", "  if(!sensorModal.hidden){event.stopImmediatePropagation();if(event.key==='Escape')")
+          s=once(s," $('appSolveSensorsOverviewOpen').onclick=openSensorsOverview;", " $('appSolveSensorsOverviewOpen').onclick=openSensorsOverview;\n instruments.addEventListener('click',event=>{if(!event.target.closest('button'))openSensorsOverview();});")
+          # Explain the actual formulas without changing a metric or solver.
+          definitions={
+           'cplx':dict(abbr='Cplx',en='LZ Complexity',sl='LZ kompleksnost',dir='low',enText='Lempel–Ziv complexity of candidate reductions, converted to a binary sequence relative to their median. It describes repetition, not puzzle difficulty.',slText='Lempel–Ziv kompleksnost zmanjšanj števila kandidatov, pretvorjenih v binarno zaporedje glede na mediano. Opisuje ponavljanje, ne težavnosti uganke.',enDirection='Lower: a more repetitive pattern. Higher: a less repetitive pattern. Neither is an intelligence score.',slDirection='Nižje: bolj ponovljiv vzorec. Višje: manj ponovljiv vzorec. Nobena smer ni ocena inteligence.'),
+           'gini':dict(abbr='Gini',en='Gini Cascade',sl='Gini kaskad',dir='high',enText='Unevenness of the forced-placement indicator across the steps so far. This is a practical cascade proxy, not the measured depth of a recursive chain.',slText='Neenakomernost kazalnika prisiljenih postavitev med dotedanjimi koraki. To je približek kaskade, ne izmerjena globina rekurzivne verige.',enDirection='Lower: more similar values across steps, including all zeros. Higher: the indicator is concentrated in fewer steps; it does not mean every move is stronger.',slDirection='Nižje: bolj podobne vrednosti med koraki, lahko tudi same ničle. Višje: kazalnik je skoncentriran v manj korakih; to ne pomeni, da je vsaka poteza močnejša.'),
+           'powr':dict(abbr='Powr',en='Cascade Power',sl='Moč kaskade',dir='high',enText='Average of each step’s forced-placement indicator multiplied by its candidate reduction. Negative reductions count as zero.',slText='Povprečje produkta kazalnika prisiljenih postavitev in zmanjšanja kandidatov v posameznem koraku. Negativno zmanjšanje šteje kot nič.',enDirection='Lower: fewer forced placements, smaller reductions, or both. Higher: their combined product is larger, not necessarily better solving.',slDirection='Nižje: manj prisiljenih postavitev, manjša zmanjšanja ali oboje. Višje: njun skupni produkt je večji, ne nujno boljše reševanje.'),
+           'dens':dict(abbr='Dens',en='Density Flow',sl='Tok gostote',dir='low',enText='Lempel–Ziv complexity of remaining-candidate counts, converted to a binary sequence relative to their median. This is a flow pattern, not the current candidate count.',slText='Lempel–Ziv kompleksnost števila preostalih kandidatov, pretvorjenega v binarno zaporedje glede na mediano. To je vzorec toka, ne trenutno število kandidatov.',enDirection='Lower: a more repetitive binary pattern. Higher: a less repetitive pattern, not necessarily more candidates or a harder position.',slDirection='Nižje: bolj ponovljiv binarni vzorec. Višje: manj ponovljiv vzorec, ne nujno več kandidatov ali težji položaj.'),
+           'adsr':dict(abbr='ADSR',en='ADSR Bimodality',sl='ADSR bimodalnost',dir='context',enText='Attack–Decay–Sustain–Release context indicator: the share of steps whose cascade indicator is zero or at least five.',slText='Kontekstni kazalnik Attack–Decay–Sustain–Release: delež korakov, pri katerih je kaskadni kazalnik nič ali vsaj pet.',enDirection='Lower: more steps with values 1–4. Higher: more steps with zero or 5+. Zeros alone can make it high; it does not prove bimodality or better performance.',slDirection='Nižje: več korakov z vrednostmi 1–4. Višje: več korakov z nič ali 5+. Že same ničle lahko dajo visoko vrednost; to ne dokazuje bimodalnosti ali boljše uspešnosti.')
+          }
+          a=s.index(' const sensorDefs={');b=s.index(' const review=document.createElement',a)
+          s=s[:a]+' const sensorDefs='+json.dumps(definitions,ensure_ascii=False,indent=2)+';\n'+s[b:]
+          a=s.index(' function sensorDirectionText(d){');b=s.index(' function displaySensorValue',a)
+          s=s[:a]+" function sensorDirectionText(d){return sl()?d.slDirection:d.enDirection;}\n"+s[b:]
+          a=s.index("  $('appSensorsOverviewReadText').textContent=");b=s.index("  $('appSensorsOverviewCaveat').textContent=",a)
+          sl='Premikaj časovnico korak za korakom. Senzorji povzemajo sled od začetka do izbranega koraka, ne samo zadnje poteze. Odprtje razlage ustavi predvajanje; po zaprtju ostaneš na istem koraku. Opazuj vzorce skozi več korakov, ne ene številke. AI šteje razpoložljive prisiljene postavitve po koraku, človeški pregled pa ocenjeni porast golih posameznikov; kaskadni vrednosti zato nista neposredno primerljivi. Cplx in Dens lahko presežeta 1; dolžina vrstice je le omejen vizualni prikaz.'
+          en='Move through the timeline step by step. Sensors summarize the trace from the start to the selected step, not only the last move. Opening this guide pauses playback; closing it leaves you at the same step. Watch patterns over several steps, not one number. AI counts available forced placements after a step, while human review estimates the increase in naked singles; their cascade values are not directly comparable. Cplx and Dens can exceed 1; the bars are only a capped visual display.'
+          s=s[:a]+"  $('appSensorsOverviewReadText').textContent=sl()?"+json.dumps(sl,ensure_ascii=False)+':'+json.dumps(en)+";\n"+s[b:]
           p.write_text(s)
           p=Path('tests/sudoku-app-solve-playback-r5-browser.cjs');s=p.read_text()
           s=once(s,'phone?/ni ocena inteligence/i:/not.*intelligence/i','phone?/niso.*ocena inteligence/i:/not.*intelligence/i')
           start=s.index("    assert.equal(await frame.locator('#appSolveSensorsOverviewOpen').count(),1")
           end=s.index("    assert.match(await frame.locator('#appAssist .app-dock-label').innerText()",start)
           block=s[start:end];s=s[:start]+s[end:]
-          # Overview now pauses playback; validate it after the timed replay completes.
           block=once(block,"    await frame.locator('#appSolveSensorsOverviewOpen').click();", "    const activate=async n=>phone?n.tap():n.click();\n    await activate(frame.locator('#appSolveSensorsOverviewOpen'));")
           extra=r'''
               const assertCover=async()=>{
-               const v=await frame.evaluate(()=>{const root=document.querySelector('#appSolveSensorsOverview'),close=document.querySelector('#appSensorsOverviewClose').getBoundingClientRect();return{blocked:[[4,4],[innerWidth-5,4],[4,innerHeight-5],[innerWidth-5,innerHeight-5],[innerWidth/2,innerHeight-30]].every(([x,y])=>root.contains(document.elementFromPoint(x,y))),closeVisible:close.top>=0&&close.right<=innerWidth+1&&close.bottom<=innerHeight+1,closeWidth:close.width,closeHeight:close.height};});
-               assert.equal(v.blocked,true,'overview, not underlying dock, receives all viewport hits');assert.equal(v.closeVisible,true,'close remains visible');assert.ok(v.closeWidth>=44&&v.closeHeight>=44,'44px close target');
+               const v=await frame.evaluate(()=>{const root=document.querySelector('#appSolveSensorsOverview'),close=document.querySelector('#appSensorsOverviewClose').getBoundingClientRect(),points=[];for(const x of [4,innerWidth/2,innerWidth-5])for(const y of [4,16,innerHeight/2,innerHeight-30,innerHeight-5])points.push([x,y]);return{blocked:points.every(([x,y])=>root.contains(document.elementFromPoint(x,y))),closeVisible:close.top>=0&&close.right<=innerWidth+1&&close.bottom<=innerHeight+1,closeWidth:close.width,closeHeight:close.height};});
+               assert.equal(v.blocked,true,'overview, not underlying dock, receives viewport hits');assert.equal(v.closeVisible,true,'close remains visible');assert.ok(v.closeWidth>=44&&v.closeHeight>=44,'44px close target');
               };
-              await assertCover();
+              await assertCover();await page.waitForTimeout(200);
+              const directions=await frame.locator('.app-sensors-direction').allTextContents();assert.equal(directions.length,5);for(const text of directions){assert.match(text,phone?/Nižje:/:/Lower:/);assert.match(text,phone?/Višje:/:/Higher:/);}
               await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-top.png'),fullPage:true});
               await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop=n.scrollHeight);
               await assertCover();
@@ -61,6 +83,8 @@ jobs:
               const guideStep=await frame.locator('#appSolveScrub').inputValue();
               await page.waitForTimeout(350);assert.equal(await frame.locator('#appSolveScrub').inputValue(),guideStep,'overview pauses replay on its snapshot');assert.equal(await frame.locator('#appSolvePlay').innerText(),'▶');
               assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop),0,'new opening starts at top');
+              for(const key of ['1','Backspace','ArrowRight','Tab'])await page.keyboard.press(key);
+              assert.equal(await frame.locator('#appSolveScrub').inputValue(),guideStep,'modal keys do not navigate review');assert.deepEqual(await capture(),guideGame,'modal keys do not edit game');assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSensorsOverviewClose','Tab stays in guide');
               await page.keyboard.press('Escape');assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSolveSensorsOverviewOpen');
               assert.deepEqual(await capture(),guideGame,'overview does not alter game state');
               for(const key of ['cplx','gini','powr','dens','adsr']){await activate(frame.locator('#appSolveInstruments [data-sensor="'+key+'"]'));assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false,'detail retained: '+key);await activate(frame.locator('#appSensorClose'));}
@@ -68,8 +92,7 @@ jobs:
               report.fullscreenGuideContexts=(report.fullscreenGuideContexts||0)+1;
           '''
           anchor="    assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'compact step sensors visible');"
-          s=once(s,anchor,block+extra2+'\n'+anchor)
-          p.write_text(s)
+          s=once(s,anchor,block+extra2+'\n'+anchor);p.write_text(s)
           PY
           node --check public/S/app/app-solve-playback.js
           node --check tests/sudoku-app-solve-playback-r5-browser.cjs
@@ -90,8 +113,7 @@ jobs:
         run: |
           python - <<'PY'
           import hashlib,json,os,pathlib,subprocess,urllib.request
-          out=pathlib.Path('sensor-layer-evidence')
-          report=json.loads((out/'solve-browser.json').read_text())
+          out=pathlib.Path('sensor-layer-evidence');report=json.loads((out/'solve-browser.json').read_text())
           assert report['status']=='PASS' and len(report['cases'])==20 and report['fullscreenGuideContexts']==4,report
           def api(route,body):
               req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+route,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
@@ -101,9 +123,8 @@ jobs:
               data=pathlib.Path(name).read_bytes();sha=api('/git/blobs',{'content':data.decode(),'encoding':'utf-8'})['sha']
               assert sha==hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
               tree.append({'path':name,'mode':'100644','type':'blob','sha':sha});files.append({'path':name,'sha256':hashlib.sha256(data).hexdigest(),'blob_sha':sha})
-          bt=subprocess.check_output(['git','rev-parse',base+'^{tree}'],text=True).strip()
-          ts=api('/git/trees',{'base_tree':bt,'tree':tree})['sha']
-          cs=api('/git/commits',{'message':'fix(sudoku): keep sensor guide above dock and pause replay while reading','tree':ts,'parents':[base]})['sha']
+          bt=subprocess.check_output(['git','rev-parse',base+'^{tree}'],text=True).strip();ts=api('/git/trees',{'base_tree':bt,'tree':tree})['sha']
+          cs=api('/git/commits',{'message':'fix(sudoku): fullscreen sensor guide layering, input isolation and accurate explanations','tree':ts,'parents':[base]})['sha']
           receipt={'status':'PASS','base_sha':base,'candidate_sha':cs,'release_id':json.loads(pathlib.Path('public/S/app/release.json').read_text())['release_id'],'files':files,'browser_cases':20,'fullscreen_guide_contexts':4,'branch_updated':False}
           (out/'staged-release.json').write_text(json.dumps(receipt,indent=2));print(json.dumps(receipt))
           PY
