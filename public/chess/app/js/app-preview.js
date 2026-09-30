@@ -53,6 +53,25 @@
     stage.dataset.viewport = width + 'x' + height;
     applyInsets(); scheduleFit();
   }
+  const previewKeyTarget = {
+    ArrowLeft: 'prev',
+    ArrowRight: 'next',
+    ArrowUp: 'first',
+    ArrowDown: 'last'
+  };
+  document.addEventListener('keydown', event => {
+    const targetId = previewKeyTarget[event.key];
+    if (!targetId || event.ctrlKey || event.altKey || event.metaKey) return;
+    const target = event.target;
+    if (target?.closest?.('input, select, textarea, button, a[href], [contenteditable="true"]')) return;
+    try {
+      const page = iframe.contentDocument;
+      const button = page?.getElementById(targetId);
+      if (!page?.body?.classList.contains('app-mobile') || !button || button.disabled) return;
+      event.preventDefault();
+      button.click();
+    } catch (_) { /* Same-origin APP preview only; sibling channels are untouched. */ }
+  });
   selector.addEventListener('change', selectSize);
   iframe.addEventListener('load', () => { applyInsets(); scheduleFit(); });
   addEventListener('resize', scheduleFit);
