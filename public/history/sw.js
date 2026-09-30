@@ -1,6 +1,6 @@
 'use strict';
 const RELEASE={
-  "id": "b95d8fefc548c9d4de339fece17c096aa68d7e6ca6c6292abdbaeeb114dacca9",
+  "id": "459917e541745777be485d50e7402fc9e46f1f71f799f20085c53324e97be6de",
   "assets": {
     "01_deep_humanity_300000_20000_bce.html": "25e3969e91f4c6596fa9baf5c615c7c5bbfd62649a60cc6c0a9b0ad92385cc42",
     "02_ice_age_transition_20000_10000_bce.html": "9cfb6d83d39241face4dd0c0a52ab3056aa5265c85f6c040e84093f1f94c5750",
@@ -12,11 +12,11 @@ const RELEASE={
     "08_industrial_age_1800_1900.html": "ed4fc194d514e01818672d8f7146ef221e3b53a01715bc515ddf282b7a99deec",
     "09_machine_age_1900_2000.html": "cc48da5b3f15fe9d477890e8ce4f249cd18de9d27b5df08caeab844ccf338f0e",
     "10_digital_ai_age_2000_2026.html": "6376f22e6963314cf7fc2a21d9454946974a29179248301b62ef5cb5bb118a7d",
-    "11_one_possible_branch_2026_2036.html": "b6bc0a65d21a9cee4c077d861fc69f55dda756e10012070f8ebd6a8621c167e1",
-    "about.html": "5b4a1b7b8d55145b64b46b81cfe4ae455ea4f2d03a2462b57b38e321b67f6f51",
-    "changelog.html": "d6e0dc340835f13eded348c0f37ddf3d179957f139afbfaa6bbf2fd28b1c9b2f",
-    "glossary.html": "2a607f18ddae1b8176df042ecccdebeb6291e0bf7c1158040a5419a16458e239",
-    "index.html": "b876f916a7b68a7287529c6e5a81bf1710b4a56e0619a5421f6412b26781d54a",
+    "11_one_possible_branch_2026_2036.html": "0cbbccd3274ffdde8750f7c75c07b0c6ad46f85998ed4b99ee36ad0cfc549f0a",
+    "about.html": "a0b35fb2c935bc1cdbf080852f3d416834939d18f6a91677350a67ab71071433",
+    "changelog.html": "ace4fabfb100630bb5a7ff22a8f24427008f4c8ae666fc7f773ab397809bc97f",
+    "glossary.html": "f11f07344643334dce3c936aa97bd0fb30512b61ad9f0e7731b0f180d60e70a1",
+    "index.html": "e9f38d648fb25bf42f98fbd5e7dbf1665879c46d49dd240d39d84bf877368fe2",
     "methodology.html": "aab1605fbb731858a73c39178861e6ddcc52b766cb29645659aba320b1332c14",
     "timeline.html": "e58439c0e6f07640c9f1a27229543bc26a7a90de27f35dc2c91cdd057d569121",
     "manifest.webmanifest": "f87e184a6429d469747ef11a6bfc1e55d490abce0e07102b417e6f326bfa26cc",
