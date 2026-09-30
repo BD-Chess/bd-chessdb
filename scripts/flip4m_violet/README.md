@@ -1,10 +1,10 @@
 # Flip4M Petrol LAB / APP
 
-Version 2.4.0-petrol, 2026-09-30. Design: Bojan Dobrečevič (BD); implementation and verification: GPT. Existing engine authorship is preserved in source.
+Version 2.4.1-petrol, 2026-09-30. Design: Bojan Dobrečevič (BD); implementation and verification: GPT. Existing engine authorship is preserved in source.
 
 ## Scope
 
-Approved Petrol Night + Gold family design for `public/F4M/new/` and `public/F4M/app/`, one shared engine in `_shared/petrol-2.4.0/`, and a non-destructive legacy `PWA/` migration. CURRENT, PREVIOUS, ChessBest and Sudoku are unchanged by this release. Board size is user-selectable (Standard / Large / Max), with Max as the default; Standard preserves the 2.2 geometry. No Water/Laser, native app or TestFlight change.
+Approved Petrol Night + Gold family design for `public/F4M/new/` and `public/F4M/app/`, one shared engine in `_shared/petrol-2.4.1/`, and a non-destructive legacy `PWA/` migration. CURRENT, PREVIOUS, ChessBest and Sudoku are unchanged by this release. Board size is user-selectable (Standard / Large / Max), with Max as the default; Standard preserves the 2.2 geometry. No Water/Laser, native app or TestFlight change.
 
 ## Rebuild / bounded verification
 
@@ -34,3 +34,8 @@ Petrol 2.3.1 desktop APP preview: the phone is vertically centered in the viewpo
 ## 2.4.0 compact rim and AI vs AI
 
 Visible magnetic caps stay outside the board; larger transparent tap targets are enabled only for legal magnetic placement. Owner color and remaining lifetime stay readable after rotation. The existing demo policy now appears under New game / Opponent with separate Red/Yellow Classical or DCC choices. Uses the existing single scheduler, stop/pause, journal and save validation. Run `python scripts/flip4m_violet/verify_240.py` for targeted geometry and demo tests; it writes bounded evidence after each check.
+
+
+## 2.4.1 Smart Time v2
+
+Before this change, the complete APP 2.4.0 root snapshot was copied byte-identically to `public/F4M/app/old/001/` and merged to main separately. Smart Time v2 preserves Beginner/Casual/Challenge/Master. For Grandmaster/Champion, the first two moves of each side stay fast; from that side's third move onward the budget is based on ply, legal branching, threats, active magnets and remaining tools rather than mainly piece occupancy. Grandmaster uses a 15 s post-opening / 30 s mid-late floor up to 60 s; Champion uses 25 s / 55 s up to 120 s. Complex tactical positions are driven toward 45–60 s and 90–120 s respectively. Forced moves and proven results may finish early. Classical and AI+DCC share the same analyzer budget.
