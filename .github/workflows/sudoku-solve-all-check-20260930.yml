@@ -1,0 +1,79 @@
+name: Sudoku Solve all live check
+on:
+  push:
+    branches: [gpt/sudoku-solve-all-check-20260930]
+    paths: ['.github/workflows/sudoku-solve-all-check-20260930.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    defaults:
+      run:
+        shell: bash
+    env:
+      NODE_PATH: /tmp/sudoku-solve-check/node_modules
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install bounded browser test
+        run: |
+          npm install --prefix /tmp/sudoku-solve-check --no-package-lock --ignore-scripts playwright@1.55.0
+          node /tmp/sudoku-solve-check/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Inspect actual public click path without modifying production
+        run: |
+          mkdir -p solve-all-evidence
+          cat > /tmp/sudoku-solve-probe.cjs <<'JS'
+          'use strict';
+          const fs=require('fs'),crypto=require('crypto'),assert=require('assert/strict');
+          const {chromium,webkit}=require('playwright');
+          const out='solve-all-evidence',base='https://bd-chess.github.io/bd-chessdb/S/app/';
+          const report={sourceCommit:process.env.GITHUB_SHA,publicBase:base,cases:[],assets:[]};
+          const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+          const puzzle=[...'530070000600195000098000060800060003400803001700020006060000280000419005000080079'].map(Number);
+          const fixture={schema:'AI8_SUDOKU_NAV_SESSION_V1',version:'0.2.0',gameId:'solve-all-regression-fixture',diff:'hard',puzzle,board:puzzle,notes:Array.from({length:81},()=>[]),time:0,rows:[],assistance:[],history:[],settings:{policy:'REAL',goal:'FLOW',target:1,deep:false},lineage:{base:puzzle,ops:[]}};
+          const save=()=>fs.writeFileSync(out+'/probe.json',JSON.stringify(report,null,2)+'\n');
+          async function state(frame){return frame.evaluate(()=>{const el=id=>document.getElementById(id),modal=el('navModal'),product=window.SudokuNavigator.product;return {board:product.capture().board,canWrite:product.canWrite(),blocked:window.SudokuNavigator.ui.blocked(),traceLocked:humanTraceRecorder.isLocked(),puzzlePresent:!!puzzle,solutionPresent:!!solution,solutionValid:!!solution&&isSolved(solution),playerSolved:!!playerGrid&&isSolved(playerGrid),modal:{hidden:modal.hidden,text:modal.innerText},confirm:!!el('aiAssistConfirmAll'),assistText:el('aiAssistText').innerText,status:el('status')?.innerText,body:{...document.body.dataset}};});}
+          (async()=>{
+           const release=JSON.parse(fs.readFileSync('public/S/app/release.json','utf8'));
+           for(const name of ['release.json','app.html','index.html']){
+            const r=await fetch(base+name+'?solve-check='+process.env.GITHUB_RUN_ID,{cache:'no-store'});assert.equal(r.status,200);const b=Buffer.from(await r.arrayBuffer()),expected=sha(fs.readFileSync('public/S/app/'+name));report.assets.push({name,sha256:sha(b),matches:sha(b)===expected});assert.equal(sha(b),expected,'Live bytes differ: '+name);
+           }
+           report.releaseId=release.release_id;save();
+           for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
+            const browser=await engine.launch();try{
+             for(const mode of ['framed','phone']){
+              const phone=mode==='phone',context=await browser.newContext({viewport:phone?{width:402,height:874}:{width:1440,height:1200},isMobile:phone,hasTouch:phone,serviceWorkers:'block',...(phone?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'}:{})});
+              const page=await context.newPage(),errors=[],clicks=[];page.on('pageerror',e=>errors.push(e.message));const item={name,mode,errors};report.cases.push(item);
+              try{
+               await page.goto(base,{waitUntil:'load',timeout:30000});const f=await (await page.locator('#game').elementHandle()).contentFrame();await f.waitForURL(/app\.html/,{waitUntil:'load',timeout:15000});await f.waitForFunction(()=>window.SudokuNavigator?.product&&document.getElementById('appDock'),null,{timeout:15000});await page.waitForTimeout(700);
+               await f.evaluate(s=>window.SudokuNavigator.restore(s),fixture);await f.waitForFunction(()=>!window.SudokuNavigator.ui.blocked());await f.locator('[data-sudoku-language="sl"]').click();await page.waitForTimeout(150);
+               await f.evaluate(()=>{window.solveProbeClicks=[];document.addEventListener('click',e=>window.solveProbeClicks.push({target:e.target.id,closest:e.target.closest('button')?.id,modal:document.getElementById('navModal').hidden}),true);});
+               item.before=await state(f);
+               await f.locator('#appAssist').click({timeout:4000});await f.locator('#aiAssistAll').click({timeout:4000});await page.waitForTimeout(150);item.afterFirstClick=await state(f);save();
+               await page.screenshot({path:out+'/'+name+'-'+mode+'-confirmation.png',fullPage:true});
+               if(await f.locator('#aiAssistConfirmAll').isVisible()){
+                await f.locator('#aiAssistConfirmAll').click({timeout:4000});await page.waitForTimeout(300);item.afterConfirm=await state(f);
+               }
+               item.clicks=await f.evaluate(()=>window.solveProbeClicks);item.changed=JSON.stringify(item.before.board)!==JSON.stringify((item.afterConfirm||item.afterFirstClick).board);item.solved=(item.afterConfirm||item.afterFirstClick).playerSolved;
+               await page.screenshot({path:out+'/'+name+'-'+mode+'-after.png',fullPage:true});
+              }catch(e){item.failure=e.stack;await page.screenshot({path:out+'/'+name+'-'+mode+'-error.png',fullPage:true}).catch(()=>{});}
+              finally{save();await context.close();}
+             }
+            }finally{await browser.close();}
+           }
+           report.status='PROBE_COMPLETED';save();console.log(JSON.stringify({status:report.status,release:report.releaseId,cases:report.cases.map(c=>({engine:c.name,mode:c.mode,changed:c.changed,solved:c.solved,errors:c.errors,failure:c.failure,after:c.afterConfirm||c.afterFirstClick}))},null,2));
+          })().catch(e=>{report.status='PROBE_FAILED';report.error=e.stack;save();console.error(e);process.exitCode=1;});
+          JS
+          node /tmp/sudoku-solve-probe.cjs | tee solve-all-evidence/probe.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-solve-all-probe-${{ github.run_id }}
+          retention-days: 7
+          path: solve-all-evidence/
