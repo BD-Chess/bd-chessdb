@@ -35,7 +35,7 @@
   .width-control{justify-self:end;display:flex;align-items:center;gap:8px;color:#a5b6d0;font-size:.78rem;font-weight:700;white-space:nowrap}
   .width-control select{min-height:38px;padding:6px 28px 6px 10px;border:1px solid #4e6782;border-radius:10px;background:#122239;color:#e5edfa;font:700 .82rem system-ui;cursor:pointer}
   .width-control select:focus-visible{outline:3px solid #fbba57;outline-offset:2px}
-  .device{--device-width:390px;position:relative;flex:none;width:calc(var(--device-width) + 18px);height:862px;padding:0 9px;border:3px solid #758397;border-radius:51px;background:#030710;box-shadow:0 0 0 2px #192537,0 25px 80px #000b,0 0 60px #14d2ec20}
+  .device{--device-width:402px;position:relative;flex:none;width:calc(var(--device-width) + 18px);height:862px;padding:0 9px;border:3px solid #758397;border-radius:51px;background:#030710;box-shadow:0 0 0 2px #192537,0 25px 80px #000b,0 0 60px #14d2ec20}
   .screen{position:relative;height:100%;overflow:hidden;border-radius:39px;background:#080e1a}
   .island{position:absolute;z-index:2;top:8px;left:50%;transform:translateX(-50%);width:114px;height:28px;border-radius:18px;background:#03040a;pointer-events:none}
   .safe-top{height:43px;background:#080e1a}
@@ -68,7 +68,7 @@
    </nav>
    <label class="width-control" for="previewWidth">Preview width
     <select id="previewWidth" aria-label="Preview width">
-     <option value="375">375</option><option value="390" selected>390</option><option value="402">402</option><option value="430">430</option>
+     <option value="375">375</option><option value="390">390</option><option value="402" selected>402</option><option value="430">430</option>
     </select>
    </label>
   </header>
@@ -78,7 +78,7 @@
  (()=>{
   const params=new URLSearchParams(location.search),allowed=['375','390','402','430'];
   const device=document.getElementById('device'),widthSelect=document.getElementById('previewWidth'),game=document.getElementById('game');
-  let width=allowed.includes(params.get('width'))?params.get('width'):'390';
+  let width=allowed.includes(params.get('width'))?params.get('width'):'402';
   const syncFramedPreview=()=>{try{const body=game.contentDocument?.body;if(!body)return;const framed=document.documentElement.dataset.appShell==='preview';if(framed)body.dataset.appFramedPreview='true';else delete body.dataset.appFramedPreview;}catch(_){}};
   const draw=()=>{device.style.setProperty('--device-width',width+'px');widthSelect.value=width;syncFramedPreview();};
   widthSelect.addEventListener('change',()=>{if(allowed.includes(widthSelect.value)){width=widthSelect.value;draw();}});
