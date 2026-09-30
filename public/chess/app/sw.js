@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-acc461b4f94da6b5";
+const RELEASE = "app-11822954cf8039d5";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -211,15 +211,15 @@ const INTEGRITY = {
   "js/8zc-time-core.js": "sha256-tgp2pJS7NR9q4o23WVsfusZMq+uGMc1pQNgWw3rP6aI=",
   "js/8zc-tournament-core.js": "sha256-wZnhlaYifkNZvtqhLbrUl3jGe+mhLgUmSpapROCvOGg=",
   "js/8zc-tournament-ui.js": "sha256-g0adG0U8tpMmZCVebFLar+NyjLjzAVr1R6e3OQW0UUo=",
-  "js/8zc-utils.js": "sha256-M0A350BMJt4w7+piR5NpPIdNqnuFLNLXrzF3bWjALRM=",
+  "js/8zc-utils.js": "sha256-6YlG3eP3O4lwDOrwGIMesM6g2OIIjBBANuMvYu+PI94=",
   "js/8zc-workspace.js": "sha256-THbZiWNGmyFNOfFonzCP7CA9SEUxPIEhzZmFFcKu9t4=",
   "js/app-mobile.js": "sha256-09JBqEr4Y/UYUVOkW38pKc4OS4mAZx1N1jfe5VFXMU4=",
-  "js/app-preview.js": "sha256-uGnE1DWLxhdA97rpYBZVnx+/hgnUKC61r7LcjasBltc=",
+  "js/app-preview.js": "sha256-OGin86lRvjBghd7yq64EJ0hRjlIMmEHhMnRo/zNJtxk=",
   "js/chess.min.js": "sha256-eqQw3yuTEYSQQIUa3vMMTeSfbIzv24BkWkJi8flcRF8=",
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
   "manifest.webmanifest": "sha256-q0wnJarVjuRsL5xlkjsI2xsEApyooIWb+ya0eZaQ1qY=",
-  "play.html": "sha256-OzrRYprJT/9HL5zx5VNvnWLgAa9eqtyMnHhrZ2P1EVw=",
+  "play.html": "sha256-qDa2ry3yJQLF97f4Dkcyocj5BOQStG4FYVSvFcqCdYw=",
   "pwa.js": "sha256-s1xM97VC4ZOzH3G96JQ8RFXqtV/8Esu03od65uXVe4w=",
   "vendor/stockfish/stockfish-18-lite-single.js": "sha256-IngAUFfzgUkfHJuz5EyfWSCzoAvvl1njPMZYJ2mh8f4=",
   "vendor/stockfish/stockfish-18-lite-single.wasm": "sha256-qPvAXsaSC1bXSFgm3LAsX/0oJry/dRz5cwRvI3qQlvE="
