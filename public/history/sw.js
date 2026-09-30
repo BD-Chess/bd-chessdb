@@ -1,12 +1,12 @@
 'use strict';
 const RELEASE={
-  "id": "9d8c1b709617a1ec266d6ee83dfed38e7b3db25343b38043d8dad8525d1a5fbe",
+  "id": "892c1da017228f415dd4e480569fb81df44c23dbf5ff355191497812f94c0206",
   "assets": {
-    "01_deep_humanity_300000_20000_bce.html": "251aa7a41a6a039a0143c3dc5fcb69a766f69ed67ef0edea53e2409b83a79244",
-    "02_ice_age_transition_20000_10000_bce.html": "74e6feabfb94e66e0fa16f586133fe4e8e8338c5c3b889d218d8a473cb0ab9fb",
-    "03_agriculture_10000_3000_bce.html": "d1bdee8d193856e6bc3f410e6d6c89267e3ec226dce634d5e49a3dca42e4dbc1",
-    "04_ancient_world_3000_1000_bce.html": "93ebb8c399d087c4163ba2c9615ab04b8818c5510d7516ec467622a0dd800696",
-    "05_classical_world_1000_bce_500_ce.html": "70862a61ca47437ceb41ac597f35abe0819f184e4393b32cdce562068c5660f7",
+    "01_deep_humanity_300000_20000_bce.html": "25e3969e91f4c6596fa9baf5c615c7c5bbfd62649a60cc6c0a9b0ad92385cc42",
+    "02_ice_age_transition_20000_10000_bce.html": "9cfb6d83d39241face4dd0c0a52ab3056aa5265c85f6c040e84093f1f94c5750",
+    "03_agriculture_10000_3000_bce.html": "4d19af3873b8aac7e36bafd4c6eb72e7a5501f193c6e1c36cb333e1ee056eb64",
+    "04_ancient_world_3000_1000_bce.html": "3949723af629f2f1af0838d9f2a678f119a8fdc25b2c8de649f52760989d8a12",
+    "05_classical_world_1000_bce_500_ce.html": "e68ee86304d76c5cad83608c36d2c99c770b5e12af64834bf048d1b23e49ecdb",
     "06_medieval_world_500_1500.html": "27a3395fa19631607dec96f74756d3f99266c39c08a3230aea8dbce618b68356",
     "07_early_modern_1500_1800.html": "a383207ac9e811ab965c08714022fa7e9acd1e7844373b3173d67e0dd1ca7adc",
     "08_industrial_age_1800_1900.html": "d923641417a046a30458ac1d29c65a2d8c47e8a191d766e36b421c7d0376b045",
