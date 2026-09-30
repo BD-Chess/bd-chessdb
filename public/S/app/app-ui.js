@@ -280,14 +280,15 @@
   $('appErase').disabled=$('uxErase')?.disabled===true;
   $('appUndo').disabled=$('uxUndo')?.disabled===true;
   $('appMore').disabled=$('uxMore')?.disabled===true;
-  const assistActive=!lab && !panel.hidden && document.body.dataset.appPanel==='assist';
+  const reviewActive=!lab&&document.body.dataset.appSolveReview==='true'&&window.SudokuSolveReview?.active?.()===true;
+  const assistActive=reviewActive||!lab && !panel.hidden && document.body.dataset.appPanel==='assist';
   $('appAssist').setAttribute('aria-pressed',String(assistActive));
   $('appAssist').disabled=$('solveBtn')?.disabled===true;
   const sl=isSl();
   label('appNotes',sl?'Zapiski':'Notes');
   label('appErase',sl?'Izbriši':'Erase');
   label('appUndo',sl?'Razveljavi':'Undo');
-  label('appAssist',sl?'Pomoč AI':'AI Assist');
+  label('appAssist',reviewActive?(sl?'AI pregled':'AI Review'):(sl?'Pomoč AI':'AI Assist'));
   label('appMore',sl?'Več':'More');
   setLabel(dock,sl?'Kontrole igre':'Game controls');
   setLabel(scrim,sl?'Nazaj na mrežo':'Return to board');
@@ -295,6 +296,7 @@
  };
  function showAssist(){
   if(product.view()==='lab')return;
+  if(document.body.dataset.appSolveReview==='true'&&window.SudokuSolveReview?.active?.()){window.SudokuSolveReview.open();return;}
   if(!panel.hidden && document.body.dataset.appPanel==='assist'){$('aiAssistClose')?.click();return;}
   $('solveBtn')?.click();queueMicrotask(sync);
  }
@@ -371,7 +373,8 @@
   sync();
  });
  watch.observe(panel,{attributes:true,attributeFilter:['hidden']});
- watch.observe(document.body,{attributes:true,attributeFilter:['data-view','data-assist'],childList:true,subtree:false});
+ watch.observe(document.body,{attributes:true,attributeFilter:['data-view','data-assist','data-app-solve-review'],childList:true,subtree:false});
+ window.addEventListener('sudoku-solve-review-change',sync);
  watch.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  for(const id of ['notesBtn','uxErase','uxUndo','solveBtn','uxMore']){
   const node=$(id);if(node)watch.observe(node,{attributes:true,childList:true,subtree:true});
