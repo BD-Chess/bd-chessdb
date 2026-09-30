@@ -114,7 +114,7 @@
    '<div class="ux-setting"><label for="appNumberPad">'+(sl?'Številke pod mrežo':'Number pad')+'</label><select id="appNumberPad">'+
     options([['off',sl?'Izključeno':'Off'],['on',sl?'Vključeno':'On']],readUiPref('numberPad'))+'</select></div>'+
    '<div class="ux-setting"><label for="appCoachMode">'+(sl?'Sudoku Coach':'Sudoku Coach')+'</label><select id="appCoachMode">'+
-    options([['off',sl?'Izključeno':'Off'],['easy',sl?'Samo Lahka':'Easy only'],['always',sl?'Vedno':'Always']],readUiPref('coach'))+'</select></div>'+
+    options([['off',sl?'Izključeno':'Off'],['easy',sl?'Samo Lahka':'Easy only'],['always',sl?'Lahka + Srednja':'Easy + Medium']],readUiPref('coach'))+'</select></div>'+
    '<div class="ux-setting"><label for="appCoachDetail">'+(sl?'Podrobnost Coach-a':'Coach detail')+'</label><select id="appCoachDetail">'+
     options([['short',sl?'Kratko':'Short'],['detailed',sl?'Podrobno':'Detailed']],readUiPref('coachDetail'))+'</select></div>'+
    '<div class="ux-setting"><label for="appHoldTipSetting">'+(sl?'Namig Tapni in drži':'Tap & hold tip')+'</label><select id="appHoldTipSetting">'+
@@ -131,7 +131,7 @@
  const difficulty=()=>{
   try{if(typeof currentDiff==='string')return currentDiff.toLowerCase();}catch(_){}
   const raw=($('plGameStatus')?.textContent||'').toLowerCase();
-  if(/lahka|easy/.test(raw))return'easy';if(/srednja|medium/.test(raw))return'medium';if(/težka|hard/.test(raw))return'hard';if(/zelo težka|evil/.test(raw))return'evil';return'';
+  if(/lahka|easy/.test(raw))return'easy';if(/srednja|medium/.test(raw))return'medium';if(/zelo težka|evil/.test(raw))return'evil';if(/težka|hard/.test(raw))return'hard';return'';
  };
  const capture=()=>{try{return product.capture?.()||null;}catch(_){return null;}};
  function candidates(board,index){
@@ -187,11 +187,13 @@
  function resetCoachMoment(){coachMoment=null;clearTimeout(coachTimer);}
  function updateCoach(showCandidates=false){
   const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
+  const diff=difficulty(),hardNoHelp=diff==='hard'||diff==='evil';
+  document.body.dataset.appHardNoHelp=hardNoHelp?'true':'false';
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
-  holdTip.hidden=lab||readUiPref('holdTip')!=='on';
+  holdTip.hidden=lab||hardNoHelp||readUiPref('holdTip')!=='on';
   setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');
-  const diff=difficulty(),allowed=mode==='always'||mode==='easy'&&(!diff||diff==='easy');
-  coach.hidden=lab||padOn||mode==='off'||!allowed;
+  const allowed=mode==='always'&&!hardNoHelp||mode==='easy'&&(!diff||diff==='easy');
+  coach.hidden=lab||hardNoHelp||padOn||mode==='off'||!allowed;
   setText(coach.querySelector('.app-coach-title'),'Sudoku Coach');
   setText($('appCoachWhy'),sl?'Zakaj?':'Why?');setText($('appCoachCandidates'),sl?'Pokaži kandidate':'Show candidates');
   if(coach.hidden){lastBoard=null;disclosed=null;resetCoachMoment();return;}
