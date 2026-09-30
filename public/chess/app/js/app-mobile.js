@@ -8,6 +8,8 @@
   const scroll = { moves: 0, dcc: 0 };
   let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
   const LANG_KEY = 'ChessBest:APP:v1:language';
+  const TOP_LINE_KEY = 'ChessBest:APP:v1:showTopLine';
+  let showTopLine = false;
   let lang = 'en', i18nApplying = false, languageObserver = null;
   const textSources = new WeakMap(), attrSources = new WeakMap();
   const TO_SL = new Map(Object.entries({
@@ -35,7 +37,7 @@
     'Pause Sim at an interesting position':'Ustavi simulacijo na zanimivem položaju','Raw engine and DCC choose different moves':'Surovi engine in DCC izbereta različni potezi',
     'Evaluation changes sharply':'Ocena se močno spremeni','Evaluation change (centipawns):':'Sprememba ocene (centipawns):',
     'Required analysis data is missing':'Manjkajo zahtevani podatki analize','Show player timers during games and simulations':'Prikaži igralne ure med igrami in simulacijami',
-    'Show move timestamps':'Prikaži časovne oznake potez','Show top moves:':'Prikaži najboljše poteze:','Show next-move preview':'Prikaži predogled naslednje poteze',
+    'Show move timestamps':'Prikaži časovne oznake potez','Show Top line':'Prikaži vrstico TOP','Show top moves:':'Prikaži najboljše poteze:','Show next-move preview':'Prikaži predogled naslednje poteze',
     'Evaluation method:':'Metoda ocenjevanja:','History height:':'Višina zgodovine:','Font size:':'Velikost pisave:','Piece size:':'Velikost figur:',
     'Main background:':'Glavno ozadje:','Light theme':'Svetla tema','Double size board':'Dvojna velikost šahovnice',
     'DCC Lookahead':'DCC pogled naprej','Enable DCC lookahead':'Vključi DCC pogled naprej','DCC move click:':'Klik DCC poteze:',
@@ -174,9 +176,32 @@
       return out;
     } catch (_) { return []; }
   }
+  function setTopLineVisibility(next, persist = true) {
+    showTopLine = !!next;
+    const toggle = byId('settingAppTopLine');
+    if (toggle) toggle.checked = showTopLine;
+    if (persist) {
+      try { root.localStorage.setItem(TOP_LINE_KEY, showTopLine ? '1' : '0'); } catch (_) {}
+    }
+    if (host) updateTopLine(host.getContext());
+    else if (byId('appTopLine')) byId('appTopLine').hidden = !showTopLine;
+  }
+  function initTopLineSetting() {
+    let saved = null;
+    try { saved = root.localStorage.getItem(TOP_LINE_KEY); } catch (_) {}
+    showTopLine = saved === '1' || saved === 'true';
+    const toggle = byId('settingAppTopLine');
+    if (toggle) {
+      toggle.checked = showTopLine;
+      toggle.addEventListener('change', () => setTopLineVisibility(toggle.checked));
+    }
+    byId('btnResetSettings')?.addEventListener('click', () => setTopLineVisibility(false));
+    if (byId('appTopLine')) byId('appTopLine').hidden = !showTopLine;
+  }
   function updateTopLine(context) {
     const card = byId('appTopLine'), label = byId('appTopLineLabel'), movesEl = byId('appTopLineMoves');
     if (!card || !context) return;
+    card.hidden = !showTopLine;
     const sources = context.analysisSources || {};
     const cdb = sources.CDB, sf = sources.SF, dcc = sources.DCC;
     const cdbBest = cdb?.allMoves?.[0] || cdb?.candidates?.[0] || null;
@@ -198,7 +223,6 @@
         Number.isFinite(sf?.receipt?.depth) ? sf.receipt.depth : null;
     }
     const san = lineToSan(context.fen, pv || []);
-    card.hidden = false;
     if (source && san.length) {
       label.textContent = depth ? `TOP (d${depth}):` : 'TOP:';
       movesEl.textContent = san.join(' ');
@@ -321,6 +345,7 @@
   function init() {
     host = root.ChessLabHost;
     if (!host || !byId('appTabs')) return;
+    initTopLineSetting();
     // Move existing controls, keeping their IDs and event listeners intact.
     const controls = byId('appBoardControls');
     const analysisRow = doc.querySelector('.analysis-source-row');
