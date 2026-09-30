@@ -2,9 +2,14 @@
 """Bounded UI acceptance on disposable browser profiles, locally or on owned live pages.
 No external AI calls, no tournaments, no user checkpoints. Saves measured geometry,
 screenshots and JSON receipts. A failure aborts and preserves diagnostic output.
+
+WebKit set_offline(True) rejects even literal service-worker responses (upstream
+microsoft/playwright#42775). For WebKit use an unavailable local origin with a
+negative network control, not that emulation flag. These are different tests.
+Live offline verification uses Chromium; the WebKit origin control is local only.
 """
 from __future__ import annotations
-import argparse, functools, hashlib, http.server, json, threading, datetime
+import argparse, functools, hashlib, http.server, json, threading, datetime, socket, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -69,7 +74,7 @@ def geometry(p,label,out):
     (out/(label+'-geometry.json')).write_text(json.dumps(measurements,indent=2)+'\n')
 
 
-def game_checks(p,label,out):
+def game_checks(p,label,out,engine,network_down=None):
     drop(p,3);drop(p,4);before=state(p)
     p.locator('#magnet').click();p.locator('.mag-slot[data-side="0"][data-idx="3"]').click();idle(p)
     owner=p.evaluate("()=>{const s=F4MLab.snapshot().states[F4MLab.status().cursor];return s.mag[F4M.SIDES[0]][3];}")
@@ -107,11 +112,25 @@ def game_checks(p,label,out):
     check(label+' AI-vs-AI import preserves board and policies',snap(p)['game']==saved['game'] and state(p)==saved['states'][saved['cursor']])
     p.locator('#tab-board').click()
     p.wait_for_function("F4MPWA.state==='ready'",timeout=25000)
-    p.context.set_offline(True);p.goto(p.url);idle(p)
-    check(label+' offline cold load preserves duel',snap(p)['game']==saved['game'] and state(p)==saved['states'][saved['cursor']])
-    n=snap(p)['cursor'];p.locator('#pause').click();p.wait_for_function('n=>F4MLab.status().cursor>=n+2',arg=n,timeout=15000);p.locator('#pause').click();idle(p)
-    check(label+' both AI sides run offline',snap(p)['cursor']>=n+2)
-    p.context.set_offline(False)
+    if not p.evaluate('!!navigator.serviceWorker.controller'):p.reload();idle(p)
+    check(label+' service worker controls cold-navigation test',p.evaluate('!!navigator.serviceWorker.controller'))
+    outage='origin unavailable' if engine=='webkit' else 'offline emulation'
+    try:
+        if engine=='webkit':
+            if network_down is None:raise RuntimeError('WebKit origin-unavailability control requires the local test server; use Chromium for live offline emulation')
+            network_down.set();blocked=False
+            try:
+                with urllib.request.urlopen(p.url+'__uncached_probe__',timeout=3) as response:response.read()
+            except Exception:blocked=True
+            check(label+' negative control: local origin sends no response',blocked)
+        else:p.context.set_offline(True)
+        response=p.goto(p.url);idle(p)
+        check(label+' '+outage+' cold load preserves duel',response.from_service_worker and snap(p)['game']==saved['game'] and state(p)==saved['states'][saved['cursor']])
+        n=snap(p)['cursor'];p.locator('#pause').click();p.wait_for_function('n=>F4MLab.status().cursor>=n+2',arg=n,timeout=15000);p.locator('#pause').click();idle(p)
+        check(label+' both AI sides run with '+outage,snap(p)['cursor']>=n+2)
+    finally:
+        if engine=='webkit' and network_down is not None:network_down.clear()
+        else:p.context.set_offline(False)
     # Re-enter ordinary modes via the actual setup controls.
     p.locator('#newGame').click();p.locator('#mode').select_option('cpu')
     check(label+' human-vs-AI fields restored',not p.locator('#duelPolicies').is_visible() and p.locator('#firstField').is_visible() and p.locator('#cpuEngineField').is_visible())
@@ -124,11 +143,20 @@ def game_checks(p,label,out):
 
 def run(a):
     out=a.out;out.mkdir(parents=True,exist_ok=True)
-    server=None
-    if a.base:base=a.base.rstrip('/')+'/'
+    server=None;network_down=threading.Event()
+    if a.base:
+        if 'webkit' in a.engines.split(','):raise ValueError('Live offline verification supports Chromium; WebKit origin-unavailability control is local only (upstream #42775)')
+        base=a.base.rstrip('/')+'/'
     else:
         class Quiet(http.server.SimpleHTTPRequestHandler):
-            def log_message(self,*args): pass
+            def log_message(self,*args):pass
+            def do_GET(self):
+                if network_down.is_set():
+                    self.close_connection=True
+                    try:self.connection.shutdown(socket.SHUT_RDWR)
+                    except OSError:pass
+                    self.connection.close();return
+                super().do_GET()
         server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=str(a.public.resolve())))
         threading.Thread(target=server.serve_forever,daemon=True).start();base=f'http://127.0.0.1:{server.server_port}/F4M/'
         old=a.public/'F4M/_shared/petrol-2.3.1';new=a.public/'F4M/_shared/petrol-2.4.0'
@@ -148,7 +176,7 @@ def run(a):
             p.goto(base+channel+'/');idle(p)
             check(label+' expected build',p.evaluate('F4MLab.version')=='2.4.0-petrol')
             geometry(p,label,out)
-            if (channel=='app' and phone) or (channel=='new' and not phone):game_checks(p,label,out)
+            if (channel=='app' and phone) or (channel=='new' and not phone):game_checks(p,label,out,engine,network_down if server else None)
             else:
                 p.locator('#newGame').click();p.locator('#mode').select_option('demo');p.locator('#demoRed').select_option('classical');p.locator('#demoYellow').select_option('classical');p.locator('#start').click()
                 p.wait_for_function('F4MLab.status().cursor>=2',timeout=15000);p.locator('#pause').click();idle(p)
@@ -161,6 +189,7 @@ def run(a):
             check(label+' no JS errors',not errors,errors);ctx.close()
           browser.close()
     finally:
+        network_down.clear()
         if server:server.shutdown()
 
 if __name__=='__main__':
@@ -168,7 +197,7 @@ if __name__=='__main__':
     try:run(a)
     except Exception as exc:error=repr(exc);print(error)
     a.out.mkdir(parents=True,exist_ok=True)
-    report={'version':'2.4.0-petrol','scope':'compact rim geometry and normal AI-vs-AI lifecycle','live_base':a.base,'engines':a.engines,'passed':sum(x['pass'] for x in RESULTS),'checks':len(RESULTS),'error':error,'physical_device':'NOT_RUN','time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'results':RESULTS}
+    report={'version':'2.4.0-petrol','scope':'compact rim geometry and normal AI-vs-AI lifecycle','live_base':a.base,'engines':a.engines,'network_tests':{'chromium':'offline emulation','webkit':'local origin unavailable; offline emulation blocked by upstream #42775'},'passed':sum(x['pass'] for x in RESULTS),'checks':len(RESULTS),'error':error,'physical_device':'NOT_RUN','time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'results':RESULTS}
     (a.out/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k!='results'}))
     if error:raise SystemExit(1)
