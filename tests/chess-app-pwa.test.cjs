@@ -225,6 +225,10 @@ test('APP Deep menu uses shared Search depth presets including Until I stop and 
   assert.match(utils, /source === 'proxy' && action === 'queryall'/);
   assert.match(utils, /deepUI\?\.isOpen\?\.\(\)/);
   assert.match(utils, /deepUI\.deepenOrStop\?\.\(\)/);
+  const publisher = utils.match(/function beginDeepAnalysis\([\s\S]*?const labHost/)?.[0] || '';
+  assert.doesNotMatch(publisher, /requestId\s*!==\s*annotationRequestId/);
+  assert.match(deep, /pendingLiveScroll/);
+  assert.match(deep, /preserveViewport: true/);
   assert.match(utils, /ArrowUp/);
   assert.match(utils, /ArrowDown/);
   assert.match(utils, /e\.key==='ArrowUp' \|\| e\.key==='Home'/);
