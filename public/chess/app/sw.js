@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-13203ef7d0c4d6ba";
+const RELEASE = "app-398729c877f923f3";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -173,7 +173,7 @@ const INTEGRITY = {
   "games-info.html": "sha256-z7gae1w+nlghgwKpelB3wJNLjEo3dtuRjX6juTNsMIY=",
   "icons/apple-touch-icon.png": "sha256-p72pVt3XlgEGA0fUuyRcklC4HIcUcUO51/T+XC/I8ss=",
   "icons/icon-192.png": "sha256-qensqyYPYmB1e/qzF1AMnbwcNgFz6XjKmJjwzXkrNqU=",
-  "icons/icon-512.png": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+  "icons/icon-512.png": "sha256-lTvWlQTTUHgpSczoIY8slM4noVu5Xhlv/D0VuVU3pu4=",
   "img/chesspieces/wikipedia/bB.png": "sha256-Zw1mkQDPfP0IwnKdm+uwG1pOQtw3bmy1Aq/k8F+0pgA=",
   "img/chesspieces/wikipedia/bK.png": "sha256-w63cEBq28hZYV/zXmaWsco149oI9cATBx1SMtiuE4Fw=",
   "img/chesspieces/wikipedia/bN.png": "sha256-vX9xl2zSinvAR5tVEDHN5T7eW15FTWEiIsKhhHed/Zo=",
