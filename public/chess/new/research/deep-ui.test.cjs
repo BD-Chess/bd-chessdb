@@ -37,8 +37,8 @@ test('Deep analysis toggles in the workspace and restores DCC visibility, scroll
   trigger.click();
   assert.equal(get('deepAnalysisPanel').parentElement, workspace);
   assert.equal(w.document.querySelector('dialog'), null);
-  assert.equal(w.getComputedStyle(dcc).display, 'none');
-  assert.equal(dcc.style.display, 'block');
+  assert.equal(workspace.classList.contains('is-deep-analysis'), true);
+  assert.equal(dcc.style.display, 'block', 'Deep keeps the underlying DCC inline state untouched');
   assert.equal(trigger.getAttribute('aria-expanded'), 'true');
   el('budget').value = 'depth:22'; el('roots').value = 'e4';
   el('start').click(); x.emit(x.snapshot());
