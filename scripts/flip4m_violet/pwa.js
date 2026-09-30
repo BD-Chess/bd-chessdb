@@ -23,7 +23,7 @@
     }catch(e){$('updateText').textContent=text('updateFail');$('updateButton').disabled=false;console.warn('Flip4M update refused:',e.message);}
   };
   if(!('serviceWorker'in navigator)||!window.isSecureContext){showState('offlineUnavailable');return;}
-  navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='PAGE_BUILD')e.ports[0]?.postMessage({build:'2.2.0-violet'});});
+  navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='PAGE_BUILD')e.ports[0]?.postMessage({build:'2.3.0-petrol'});});
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(reloadRequested){location.reload();return;}
     // Another tab must never interrupt this tab's active match.
