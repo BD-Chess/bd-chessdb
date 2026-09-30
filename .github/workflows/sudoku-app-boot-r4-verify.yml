@@ -1,0 +1,96 @@
+name: Sudoku APP repaired runtime verification R4
+on:
+  push:
+    branches: [gpt/sudoku-app-boot-r4-verified-20260930]
+    paths: ['.github/workflows/sudoku-app-boot-r4-verify.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      NODE_PATH: /tmp/sudoku-r4/node_modules
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fix browser-event ordering without changing Settings semantics
+        run: |
+          mkdir -p sudoku-r4-evidence
+          node <<'JS'
+          const fs=require('fs');
+          const p='public/S/app/app-ui.js';let s=fs.readFileSync(p,'utf8');
+          const old='if(settings)queueMicrotask(enhanceSettings);';
+          if(s.split(old).length!==2)throw Error('Settings repair anchor changed');
+          s=s.replace(old,'if(settings)setTimeout(enhanceSettings,0);');fs.writeFileSync(p,s);
+          const t='tests/sudoku-app-boot-r4-browser.cjs';let b=fs.readFileSync(t,'utf8');
+          const anchor="               assert.deepEqual(errors,[],'no runtime errors');";
+          const shorter="     assert.deepEqual(errors,[],'no runtime errors');";
+          const at=b.indexOf("assert.deepEqual(errors,[],'no runtime errors');");if(at<0)throw Error('Browser test anchor drift');
+          const extra=`
+          // Real pointer hold + slide must still work with the numpad hidden.
+          const cell=await frame.locator('#grid .cell').nth(2).boundingBox();
+          await page.mouse.move(cell.x+cell.width/2,cell.y+cell.height/2);await page.mouse.down();
+          await frame.locator('#uxPicker').waitFor({state:'visible',timeout:5000});
+          const digit=await frame.locator('#uxPicker [data-digit="4"]').boundingBox();
+          await page.mouse.move(digit.x+digit.width/2,digit.y+digit.height/2,{steps:5});await page.mouse.up();
+          await frame.waitForFunction(()=>window.SudokuNavigator.export().session.board[2]===4);
+          await frame.locator('#appUndo').click();assert.equal(await frame.evaluate(()=>JSON.stringify(window.SudokuNavigator.export().session.board)),before,'picker Undo restores board');
+          // Resize without a new page, lost game, or leaving the APP shell.
+          for(const size of mode==='phone'?[{width:375,height:667},{width:402,height:874}]:[{width:3840,height:2160},{width:1024,height:900}]){
+           await page.setViewportSize(size);await page.waitForTimeout(150);
+           const geometry=await frame.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const b=r('.grid-wrap'),t=r('.pl-tabs'),d=r('#appDock');return{error:Math.abs((b.top+b.bottom-t.bottom-d.top)/2),bottom:b.bottom,dock:d.top};});
+           assert.ok(geometry.error<=12,'resize centering '+JSON.stringify({size,geometry}));assert.ok(geometry.bottom<geometry.dock);assert.match(frame.url(),/app\\.html/);
+           report.cases.push({name,mode,resize:size,...geometry});
+          }
+          `;
+          b=b.slice(0,at)+extra+b.slice(at);fs.writeFileSync(t,b);
+          JS
+          node scripts/build-sudoku-app-preview.cjs | tee sudoku-r4-evidence/build.log
+          node scripts/build-sudoku-app-preview.cjs --check | tee -a sudoku-r4-evidence/build.log
+      - name: Install isolated test dependencies
+        run: |
+          npm install --prefix /tmp/sudoku-r4 --no-package-lock --ignore-scripts jsdom@26.1.0 playwright@1.55.0
+          node /tmp/sudoku-r4/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: APP functional tests
+        run: node --test tests/sudoku-app-coach-final-20260930.test.cjs | tee sudoku-r4-evidence/app-tests.log
+      - name: Chromium and WebKit actual browser acceptance
+        run: |
+          node tests/sudoku-app-boot-r4-browser.cjs | tee sudoku-r4-evidence/browser.log
+          node -e "const r=require('./sudoku-r4-evidence/browser.json');if(r.status!=='PASS'||r.cases.length!==32)throw Error('Browser acceptance incomplete');"
+      - name: Stage only exact tested source and generated blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,pathlib,hashlib,urllib.request
+          report=json.loads(pathlib.Path('sudoku-r4-evidence/browser.json').read_text());assert report['status']=='PASS' and len(report['cases'])==32
+          paths=['scripts/build-sudoku-app-preview.cjs','public/S/app/app-ui.js','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-boot-r4-browser.cjs']
+          receipt={'source_sha':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],'status':'TESTED_STAGED_NOT_PUBLISHED','browser_cases':len(report['cases']),'files':[]}
+          for p in paths:
+              b=pathlib.Path(p).read_bytes();expected=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+              req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/git/blobs',data=json.dumps({'content':b.decode(),'encoding':'utf-8'}).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+              with urllib.request.urlopen(req,timeout=45) as response:r=json.load(response)
+              assert r['sha']==expected
+              receipt['files'].append({'path':p,'sha':expected,'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)})
+          pathlib.Path('sudoku-r4-evidence/staged.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-app-r4-verified-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            sudoku-r4-evidence/
+            scripts/build-sudoku-app-preview.cjs
+            public/S/app/
+            tests/sudoku-app-boot-r4-browser.cjs
