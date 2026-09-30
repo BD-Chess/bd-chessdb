@@ -57,6 +57,12 @@
     'No limit · elapsed time':'Brez omejitve · pretečeni čas','Increment per move':'Dodatek na potezo','None':'Brez','Start from this position':'Začni iz tega položaja',
     'Explain position':'Razloži položaj','CDB vs DCC':'CDB proti DCC','How to test':'Kako testirati','Ask Gemini about this game':'Vprašaj Gemini o tej partiji',
     'Send ↗':'Pošlji ↗','Close workspace tools':'Zapri orodja delovnega prostora','Close settings':'Zapri nastavitve','Close game library':'Zapri knjižnico partij',
+    'Find your next game':'Poišči naslednjo partijo','Players, openings, events or years':'Igralci, otvoritve, dogodki ali leta',
+    'Try Carlsen, Sicilian, 2024…':'Poskusi Carlsen, Sicilijanka, 2024…','Collection':'Zbirka','All collections':'Vse zbirke',
+    'Matching games':'Ujemajoče se partije','Games':'Partije','Simulation game':'Simulacijska partija',
+    'Loading Top Picks…':'Nalaganje Top Picks…','No games match. Try another player, year or collection.':'Ni ujemajočih partij. Poskusi drugega igralca, leto ali zbirko.',
+    'Loading game collections…':'Nalaganje zbirk partij…','No collections loaded. Use Load PGN to open a game from your device.':'Nobena zbirka ni naložena. Uporabi Naloži PGN za odprtje partije iz naprave.',
+    'Use position in Sim / tournament':'Uporabi položaj v Sim / turnirju','Use the displayed position as a paired opening':'Uporabi prikazani položaj kot otvoritev za obe barvi',
     'Start a new game':'Začni novo igro','Download your game as PGN':'Prenesi svojo partijo kot PGN','Load a PGN file':'Naloži PGN datoteko',
     'Flip the board orientation':'Obrni usmeritev šahovnice','Saved variations and pinned A/B comparison':'Shranjene variante in pripeta primerjava A/B',
     'Toggle deep analysis in the workspace':'Preklopi globoko analizo v delovnem prostoru','Inspect and export the analysis evidence':'Preglej in izvozi dokaze analize',
@@ -83,6 +89,16 @@
       m = clean.match(/^SF depth (\d+) · (\d+) nodes…$/);
       if (!translated && m) translated = `SF globina ${m[1]} · ${m[2]} vozlišč…`;
       if (!translated && clean === 'CDB, SF and DCC analysis…') translated = 'Analiza CDB, SF in DCC…';
+      m = clean.match(/^(\d[\d.,]*) games$/);
+      if (!translated && m) translated = `Partije: ${m[1]}`;
+      m = clean.match(/^(\d[\d.,]*) of (\d[\d.,]*) games$/);
+      if (!translated && m) translated = `Partije: ${m[1]} / ${m[2]}`;
+      m = clean.match(/^(\d[\d.,]*) (?:game|games) found\. Select a game to load it\.$/);
+      if (!translated && m) translated = `Najdene partije: ${m[1]}. Izberi partijo za nalaganje.`;
+      m = clean.match(/^Showing 60 of (\d[\d.,]*) matches\. Refine your search to see more\.$/);
+      if (!translated && m) translated = `Prikazujem 60 od ${m[1]} zadetkov. Zoži iskanje za več rezultatov.`;
+      if (!translated && clean.startsWith('My matches ·')) translated = clean.replace('My matches ·', 'Moji dvoboji ·');
+      if (!translated && clean.startsWith('My tournaments ·')) translated = clean.replace('My tournaments ·', 'Moji turnirji ·');
       if (!translated && clean.startsWith('Offline files ready ·')) translated = clean.replace('Offline files ready ·', 'Offline datoteke pripravljene ·');
       if (!translated && clean.startsWith('Preparing offline files…')) translated = clean.replace('Preparing offline files…', 'Pripravljam offline datoteke…');
     }
