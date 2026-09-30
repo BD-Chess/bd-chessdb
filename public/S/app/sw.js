@@ -2,12 +2,12 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "42dd936c284791b5031a9f3df23e89d3b86891ab883c362a5876ad25c6d74aad",
+  "id": "2ae792d1b3f76aa7aaa6d11b46d294ec58b8cc573ce881acda1ae01a4412d21f",
   "channel": "APP",
   "engine": "0.3.0",
   "assets": {
     "index.html": "af7b20d23f51ed66ad3d1fe1add6f77107ddfa791064de5824ad01d6da5db057",
-    "app.html": "91b3937f4df1f239ac5f1853e36434882968fae7813bbf73e934104a038444a8",
+    "app.html": "4cb1ae855fbb1259f38d8d9b18ca48df2c14cece9211ac50a453ae40120f5b62",
     "pwa.js": "d2feeb0c3bd1f84cf152c855ce65fe54c7546c14da5da11ece44fda37db33e05",
     "manifest.webmanifest": "70b2d00def17d5a622eabc4e9589c5b81105863f4523ff89d2d4fe14ee9c00fb",
     "icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",

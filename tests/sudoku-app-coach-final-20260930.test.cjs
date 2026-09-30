@@ -96,7 +96,17 @@ test('Hard and Evil suppress proactive Coach/tip help and enable centered quiet-
   await until(()=>h.w.document.body.dataset.appHardNoHelp==='true',diff+' quiet-play mode');
   assert.equal(h.el('appCoach').hidden,true,diff+' Coach hidden');
   assert.equal(h.el('appHoldTip').hidden,true,diff+' tap/hold tip hidden');
-  assert.equal(h.el('appAssist').hidden,true,diff+' AI Assist hidden');
+  assert.equal(h.el('appAssist').hidden,false,diff+' AI Assist remains available on demand');
  }
+ assert.deepEqual(h.errors,[]);
+});
+
+test('APP ordinary generation failure silently uses a checked example instead of a profile modal',async t=>{
+ const h=await ready(t),w=h.w,before=current(h),oldId=before.gameId;
+ h.resultKinds.generate=data=>({...data,result:{status:'PROFILE_UNFULFILLED',attempts:8}});
+ await w.SudokuNavigator.createGame('evil');
+ await until(()=>current(h).diff==='evil'&&current(h).gameId!==oldId,'checked evil fallback opened');
+ assert.equal(h.el('navModal').hidden,true,'no failure modal');
+ assert.doesNotMatch(h.el('navModalBody').textContent,/Profile not fulfilled/);
  assert.deepEqual(h.errors,[]);
 });

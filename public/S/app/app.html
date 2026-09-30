@@ -675,16 +675,13 @@ body[data-app-surface] #plNumbers[hidden],body[data-app-surface] .mobile-input-p
  background:#eef2f6;border-color:#b7c1cc;color:#455260
 }
 
-/* Hard/Evil: quiet play surface; proactive Coach/tip stay out of the way. */
-body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{
- min-height:calc(100dvh - 300px - env(safe-area-inset-bottom));align-content:center
+/* Hard/Evil: no proactive Coach/tip; keep on-demand AI Assist and center the board in the freed space. */
+body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
+ min-height:calc(100dvh - 250px - env(safe-area-inset-bottom));align-content:center
 }
 @media(max-height:760px){
- body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{min-height:auto;padding-top:18px;padding-bottom:18px}
+ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{min-height:auto;padding-top:24px;padding-bottom:24px}
 }
-
-body[data-app-surface][data-app-hard-nohelp=true] #appAssist{display:none!important}
-body[data-app-surface][data-app-hard-nohelp=true] #appDock{grid-template-columns:repeat(4,minmax(0,1fr))}
 
 </style>
 </head>
@@ -2941,8 +2938,7 @@ async function createGame(diff,target=null,source='pointer',retention=false){
  if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
  const job=run('generate',{diff,seed,target},15000);genJob=job;mobileUX.sync();if(mobileUX.mobile())mobileUX.toast('Generating a certified new puzzle…');
- try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){const message=`Profile not fulfilled after ${g.attempts} attempts. The current game is unchanged.`;notify(message);openDialog('Profile not fulfilled',`<p>${esc(message)}</p><p>${esc(g.reason||'No checked exercise found in the bounded attempts.')}</p>${target==null?`<p>A fixed example from the built-in catalog is available. It is rechecked and may repeat.</p><button class="btn" id="plProfileExample">Use checked ${esc(diff)} example</button>`:""}<div class="ux-menu"><button class="btn" id="plRetryProfile">Retry ${esc(diff)}</button><button class="btn" id="plOtherProfile">Choose another profile</button><button class="btn" id="plKeepGame">Keep my game</button></div>`);$('plRetryProfile').onclick=()=>{closeDialog();createGame(diff,target,source,retention);};$('plOtherProfile').onclick=()=>{closeDialog();mobileUX.requestNew();};$('plKeepGame').onclick=closeDialog;if($('plProfileExample'))$('plProfileExample').onclick=async()=>{closeDialog();await product.openProfileExample(diff);};return;}
-  const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
+ try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}\n  const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
   generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence,attempts:g.attempts,outcomes:g.outcomes||[]};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
   if(g.exercise){navState=g.exercise.state;lineage={base:g.puzzle,ops:g.exercise.prefix.map(q=>({kind:'proof',q}))};}else freshState();
@@ -3975,7 +3971,6 @@ install();
   const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
   const diff=difficulty(),hardNoHelp=diff==='hard'||diff==='evil';
   document.body.dataset.appHardNoHelp=hardNoHelp?'true':'false';
-  if($('appAssist'))$('appAssist').hidden=hardNoHelp;
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
   holdTip.hidden=lab||hardNoHelp||readUiPref('holdTip')!=='on';
   setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');
