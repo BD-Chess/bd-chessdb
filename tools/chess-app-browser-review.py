@@ -181,7 +181,7 @@ def main():
                 record('view switching keeps position',inner.evaluate('ChessLabHost.getContext().fen')==origin)
                 inner.locator('#appTabs [data-app-tab="deep"]').click()
                 depths=inner.locator('[data-deep="budget"] option').evaluate_all('(opts)=>opts.map(o=>o.value)')
-                record('Deep depth-only presets',depths==[f'depth:{d}' for d in [14,18,22,26,30,34,38,42]],depths)
+                record('Deep depth-only presets',depths==[f'depth:{d}' for d in [14,18,22,26,30,34,38,42]]+['infinite'],depths)
                 inner.locator('#appTabs [data-app-tab="board"]').click()
                 inner.wait_for_function('!!ChessLabHost.getContext().analysisSources.SF',timeout=15000)
                 sf=inner.evaluate('ChessLabHost.getContext().analysisSources.SF.receipt');record('real local SF completes',sf.get('status')=='ready',sf)
