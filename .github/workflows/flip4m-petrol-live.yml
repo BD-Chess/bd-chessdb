@@ -67,6 +67,7 @@ jobs:
                       page.locator('#more').click();page.locator('#boardSize').select_option('standard');check(channel+' Standard board selectable',.77<ratio(page)<.79,ratio(page));page.locator('#boardSize').select_option('max');page.locator('#closeMore').click()
                       check(channel+' live board',page.locator('.cell').count()==64,{'url':page.url})
                       check(channel+' live PWA package',True)
+                      if page.evaluate('F4MLab.status().paused'):page.locator('#pause').click();idle(page)
                       page.locator('.cell[data-r="0"][data-c="3"]').click();idle(page)
                       check(channel+' live move',page.evaluate('F4MLab.status().cursor')==1)
                       check(channel+' save readback',page.evaluate('F4MLab.saveForUpdate()') in ('indexeddb','localstorage'))
