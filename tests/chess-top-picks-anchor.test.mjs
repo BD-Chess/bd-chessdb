@@ -76,9 +76,9 @@ test('missing or corrupted anchor falls back to normal game load; ordinary games
   assert.equal(chessBestTopPickTitle(' \n ', 'Fallback'), 'Fallback');
 });
 
-test('all seven Top Picks load in the LAB parser from both PGNs with valid full-game anchors', () => {
-  assert.equal(catalog.cases.length, 7);
-  assert.equal(curatedCases.length, 7);
+test('all ten Top Picks load in the LAB parser from both PGNs with valid full-game anchors', () => {
+  assert.equal(catalog.cases.length, 10);
+  assert.equal(curatedCases.length, 10);
   assert.equal(curatedByFile.size, 2);
   for (const [file, parts] of curatedByFile) {
     assert.equal(fileCursors.get(file), parts.length, `catalog covers ${file}`);

@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-ed639d473f1bf1d6";
+const RELEASE = "app-acc461b4f94da6b5";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -123,7 +123,7 @@ const INTEGRITY = {
   "Games/CapablancaJ_Selected.pgn": "sha256-QhgBaYMWIsNRI803gmaOo65M+o+vqUV1Wk/yxhg/5Dk=",
   "Games/CarlsenM_Selected.pgn": "sha256-50hVYpe6GvC6orDZ+QCjdoP1XpOZ022Nmowt7XPN1l0=",
   "Games/CaruanaF_Selected.pgn": "sha256-34FI/HIqPOOCTST5IeQnygmOCJ5xvgOfHeHVwtvnfl8=",
-  "Games/ChessBest_Top_Picks.pgn": "sha256-XQh5NzfEokDZTfM+eEJpZBlLefskqwI9QWJepheceBQ=",
+  "Games/ChessBest_Top_Picks.pgn": "sha256-JxRmy0ZjZ276Q87YWczKHhQynDS1tCskzQ2k7kvrMTI=",
   "Games/ChessBest_Top_Picks_TCEC.LICENSE.md": "sha256-nCYiQZPam+bp1T34sRg2ylQtC6c0TPVYtRSGw3hNkNw=",
   "Games/ChessBest_Top_Picks_TCEC.pgn": "sha256-f6zkyR5yH5WC2lAQbDJwOK/bFu69Buf39oB2tXq4oTk=",
   "Games/Chess_Openings_Top_Lines.pgn": "sha256-JBYr89q+91KZazpjWNpUFvk63Ei1tec1MkKkdx0uQgw=",

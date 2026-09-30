@@ -71,12 +71,12 @@ for (const lane of [
   const until = async predicate => {
     const deadline = Date.now() + 4000;
     while (!predicate() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 20));
-    assert(predicate(), 'seven curated games should finish loading');
+    assert(predicate(), 'ten curated games should finish loading');
   };
   await w.ChessLabStorage.ready;
   await until(() => get('popularGamesSelect').selectedOptions.length > 0);
   assert.equal(get('popularGamesSelect').selectedOptions[0].textContent, 'ChessBest Top Picks');
-  await until(() => get('popularGamesPanel').querySelectorAll('.library-result').length === 7);
+  await until(() => get('popularGamesPanel').querySelectorAll('.library-result').length === 10);
   assert.equal(get('popularGamesPanel').querySelectorAll('.library-result')[5].textContent.includes('TCEC S27'), true);
   assert.match(get('popularGamesPanel').querySelector('.library-result').textContent, /44\.\.\.f6/);
   get('popularGamesPanel').querySelector('.library-result').click();
