@@ -163,7 +163,6 @@
     }
     async function start(options = {}) {
       const token = ++run;
-      if (!options.automatic) followActive = true;
       manualStoppedFen = null;
       try {
         if (host.pause) host.pause('deep-analysis');
@@ -171,6 +170,7 @@
         const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: rootMoves(),
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':');
+        if (!options.automatic) followActive = true;
         if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
         else if (kind === 'infinite') opts.infinite = true;
         else opts[kind] = Number(value);
