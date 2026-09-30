@@ -26,3 +26,5 @@ Prior Violet bounded Chromium CI: 97/97 checks; this Petrol revision adds target
 ## Channel safety
 
 LAB retains `flip4m-lab-2.1` data; APP uses `flip4m-app-2.2`. Preferences are isolated, with one-time read-only LAB preference migration. PWA scopes and caches are channel-specific. Updates pause and verify persistence before activation; other tabs are not forcibly reloaded. Legacy migration never overwrites an existing LAB checkpoint and leaves old data/export available.
+
+Production note: Petrol 2.3.0 was merged as `eefdcf256217798fcbd9d340b1f6c598f49744b8`; this follow-up commit intentionally triggers the normal GitHub Pages pipeline because the squash message inherited a historical `[skip ci]` token.
