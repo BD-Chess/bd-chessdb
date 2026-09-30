@@ -259,7 +259,13 @@
   return (step.eliminations.length?('−'+step.eliminations[0].digit+'@'+rc(step.eliminations[0].cell)):(sl()?'Izločitev':'Elimination'));
  }
  function humanRows(){
-  try{return product.reviewRows?.()||[];}catch(_){return[];}
+  const all=[];try{all.push(...(product.reviewRows?.()||[]));}catch(_){}
+  try{all.push(...(window.AI8SudokuProofPreview?.review?.()||[]));}catch(_){}
+  const seen=new Set(),out=[];
+  for(const row of all){if(!Array.isArray(row?.pre_board)||row.pre_board.length!==81)continue;
+   const key=[row.seq,row.cell,row.value,row.at_s,row.pre_board.join('')].join(':');if(seen.has(key))continue;seen.add(key);out.push(row);
+  }
+  return out.sort((a,b)=>(a.seq||0)-(b.seq||0)||(a.at_s||0)-(b.at_s||0));
  }
  function forcedCount(board){let n=0;for(let i=0;i<81;i++)if(!board[i]&&basicCandidates(board,i).length===1)n++;return n;}
  function humanTimeline(){
