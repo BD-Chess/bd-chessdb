@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Fix actual browser event ordering, WebKit layout and framed stacking
+      - name: Repair real-event Settings, measured layout and framed stacking
         run: |
           mkdir -p sudoku-r4-evidence
           node <<'JS'
@@ -31,15 +31,8 @@ jobs:
           const once=(s,a,b)=>{if(s.split(a).length!==2)throw Error('Repair anchor changed: '+a);return s.replace(a,b);};
           const p='public/S/app/app-ui.js';let s=fs.readFileSync(p,'utf8');
           s=once(s,'if(settings)queueMicrotask(enhanceSettings);','if(settings)setTimeout(enhanceSettings,0);');
-          s=once(s,'let layoutFrame=0,layoutActive=false,layoutExtra=0;','let layoutFrame=0,layoutTimer=0,layoutActive=false,layoutExtra=0;');
-          s=once(s,'function queueAppLayout(){if(!layoutFrame)layoutFrame=requestAnimationFrame(alignAppBoard);}',`function flushAppLayout(){
-           if(layoutFrame)cancelAnimationFrame(layoutFrame);layoutFrame=0;
-           if(layoutTimer)clearTimeout(layoutTimer);layoutTimer=0;
-           alignAppBoard();
-          }
-          // Layout is not an animation. A bounded timer also flushes it when a
-          // nested WebKit frame defers requestAnimationFrame; never start polling.
-          function queueAppLayout(){if(layoutFrame||layoutTimer)return;layoutFrame=requestAnimationFrame(flushAppLayout);layoutTimer=setTimeout(flushAppLayout,50);}`);
+          s=once(s,'function queueAppLayout(){if(!layoutFrame)layoutFrame=requestAnimationFrame(alignAppBoard);}',`// Coalesce one layout task, independent of nested-frame animation scheduling.
+          function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0);}`);
           fs.writeFileSync(p,s);
           const cp='public/S/app/app.css';let c=fs.readFileSync(cp,'utf8');
           const ca='body[data-app-surface][data-app-framed-preview=true] .pl-tabs,\nbody[data-app-surface][data-app-framed-preview=true] .main{transform:translateY(24px)}';
@@ -47,6 +40,8 @@ jobs:
           const t='tests/sudoku-app-boot-r4-browser.cjs';let b=fs.readFileSync(t,'utf8');
           const waitOld="const frame=page.frames().find(f=>/app\\.html/.test(f.url()));assert.ok(frame,'APP iframe loaded');";
           b=once(b,waitOld,"const frame=await (await page.locator('#game').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\\.html/,{waitUntil:'load',timeout:12000});");
+          b=once(b,"const report={cases:[],errors:[]};","const report={cases:[],errors:[],navigation:[]};");
+          b=once(b,"page.on('pageerror',e=>errors.push(e.message));","page.on('pageerror',e=>errors.push(e.message));page.on('framenavigated',f=>report.navigation.push({name,mode,url:f.url(),at:Date.now()}));");
           const at=b.indexOf("assert.deepEqual(errors,[],'no runtime errors');");if(at<0)throw Error('Browser test anchor drift');
           const extra=`
           // Real pointer hold + slide must still work with the numpad hidden.
@@ -101,7 +96,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sudoku-app-r4-verified-${{ github.run_id }}
+          name: sudoku-app-r4-verified-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 7
           path: |
             sudoku-r4-evidence/
