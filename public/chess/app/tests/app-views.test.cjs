@@ -58,7 +58,8 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('appTopLine').parentElement.id, 'appBoardControls');
   assert.equal(byId('analysisSourceStatus').nextElementSibling.id, 'appTopLine');
   assert.equal(d.querySelectorAll('[data-app-lang]').length, 2);
-  assert.equal(byId('appTopLine').hidden, false);
+  assert.equal(byId('settingAppTopLine').checked, false);
+  assert.equal(byId('appTopLine').hidden, true);
   assert.equal(byId('appTopLineLabel').textContent, 'TOP:');
   assert.equal(byId('appTopLineMoves').textContent, 'Analyzing…');
   d.querySelector('[data-app-lang="sl"]').click();
@@ -80,6 +81,12 @@ test('phone views switch in one tap and retain the shared position', async () =>
   assert.equal(byId('appTopLineLabel').textContent, 'TOP (d20):');
   assert.equal(byId('appTopLine').dataset.topSource, 'CDB');
   assert.equal(byId('appTopLineMoves').textContent, 'e4 e5 Nf3');
+  byId('settingAppTopLine').click();
+  assert.equal(byId('appTopLine').hidden, false);
+  assert.equal(w.localStorage.getItem('ChessBest:APP:v1:showTopLine'), '1');
+  byId('settingAppTopLine').click();
+  assert.equal(byId('appTopLine').hidden, true);
+  assert.equal(w.localStorage.getItem('ChessBest:APP:v1:showTopLine'), '0');
   byId('next').click();
   assert.equal(suggested, 'e2e4');
 
