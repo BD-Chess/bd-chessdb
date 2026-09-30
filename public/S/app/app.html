@@ -700,7 +700,7 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
   <div class="timer" id="timer">00:00</div>
 </div>
 <div class="title-block">
-  <h1 class="title">8zSudoku <span class="accent">Proof Edition</span></h1>
+  <h1 class="title" data-no-i18n>8zSudoku</h1>
   <p class="subtitle">Arena gold, distilled back into one local-first game.</p>
 </div>
 <div class="status" id="status">Select difficulty to begin</div>
@@ -2938,7 +2938,8 @@ async function createGame(diff,target=null,source='pointer',retention=false){
  if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
  const job=run('generate',{diff,seed,target},15000);genJob=job;mobileUX.sync();if(mobileUX.mobile())mobileUX.toast('Generating a certified new puzzle…');
- try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}\n  const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
+ try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}
+  const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
   generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence,attempts:g.attempts,outcomes:g.outcomes||[]};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
   if(g.exercise){navState=g.exercise.state;lineage={base:g.puzzle,ops:g.exercise.prefix.map(q=>({kind:'proof',q}))};}else freshState();
@@ -4138,9 +4139,36 @@ install();
  for(const id of ['notesBtn','uxErase','uxUndo','solveBtn','uxMore']){
   const node=$(id);if(node)watch.observe(node,{attributes:true,childList:true,subtree:true});
  }
+ // Center the board in measured space between tabs and dock, not a
+ // guessed viewport subtraction. This also handles framed APP and Safari bars.
+ const layoutMain=document.querySelector('.main'),layoutTabs=document.querySelector('.pl-tabs');
+ const layoutBoard=document.querySelector('.grid-wrap'),layoutColumn=document.querySelector('.col-center');
+ let layoutFrame=0,layoutActive=false,layoutExtra=0;
+ const layoutOriginal=layoutMain?Object.fromEntries(['minHeight','alignContent','paddingTop','paddingBottom'].map(k=>[k,layoutMain.style[k]])):{};
+ function alignAppBoard(){
+  layoutFrame=0;if(!layoutMain||!layoutTabs||!layoutBoard||!layoutColumn)return;
+  const active=document.body.dataset.appHardNoHelp==='true'&&product.view()==='play';
+  if(!active){if(layoutActive){Object.assign(layoutMain.style,layoutOriginal);layoutExtra=0;layoutActive=false;}return;}
+  if(!layoutActive){layoutMain.style.minHeight='0px';layoutMain.style.alignContent='start';layoutMain.style.paddingTop='5px';layoutMain.style.paddingBottom='8px';layoutExtra=0;layoutActive=true;}
+  const boardRect=layoutBoard.getBoundingClientRect(),tabsRect=layoutTabs.getBoundingClientRect(),dockRect=dock.getBoundingClientRect(),columnRect=layoutColumn.getBoundingClientRect();
+  if(!boardRect.height||!dockRect.height)return;
+  const below=Math.max(0,columnRect.bottom-boardRect.bottom);
+  const baseTop=boardRect.top-layoutExtra;
+  const lower=dockRect.top-8-boardRect.height-below;
+  const centered=(tabsRect.bottom+dockRect.top-boardRect.height)/2;
+  const top=Math.max(baseTop,tabsRect.bottom+8,Math.min(centered,lower));
+  const extra=Math.max(0,Math.round((top-baseTop)*100)/100);
+  if(Math.abs(extra-layoutExtra)>.25){layoutExtra=extra;layoutMain.style.paddingTop=(5+extra)+'px';}
+ }
+ function queueAppLayout(){if(!layoutFrame)layoutFrame=requestAnimationFrame(alignAppBoard);}
+ window.addEventListener('resize',queueAppLayout,{passive:true});
+ window.visualViewport?.addEventListener('resize',queueAppLayout,{passive:true});
+ new MutationObserver(queueAppLayout).observe(document.body,{attributes:true,attributeFilter:['data-view','data-app-hard-nohelp','data-app-framed-preview','data-app-text-size']});
+ if(typeof ResizeObserver==='function'){const ro=new ResizeObserver(queueAppLayout);for(const node of [layoutTabs,layoutColumn,dock])if(node)ro.observe(node);}
+ document.fonts?.ready?.then(queueAppLayout);
  applyTextSize(readTextSize());
  document.body.dataset.appPanel='board';
- sync();
+ sync();queueAppLayout();
 })();
 
 </script>

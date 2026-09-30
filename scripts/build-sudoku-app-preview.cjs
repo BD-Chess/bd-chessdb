@@ -21,6 +21,10 @@ const once=(source,oldText,newText)=>{
  return parts.join(newText);
 };
 let output=donor;
+// The APP name is exactly 8zSudoku, including before scripts initialize.
+const appHeading=/<(h[1-6])([^>]*class="title"[^>]*)>[\s\S]*?<\/\1>/g;
+if([...output.matchAll(appHeading)].length!==1)throw Error('Expected one APP heading');
+output=output.replace(appHeading,'<$1$2 data-no-i18n>8zSudoku</$1>');
 output=once(output,'<title>8zSudoku — Play & Learn LAB | BD × AI Lab</title>','<title>8zSudoku APP · Play & Learn</title>');
 output=once(output,'<meta name="viewport" content="width=device-width, initial-scale=1.0">','<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">');
 output=once(output,'<body>','<body data-app-surface="true" data-app-panel="board">');
@@ -44,6 +48,16 @@ output=once(output,'<div style="text-align:center;padding:2rem 5vw 0.5rem;font-f
 output=once(output,'</head>',`<meta name="theme-color" content="#08101d">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="8zSudoku">\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="apple-touch-icon" href="./icon-180.png">\n<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
 output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n<script id="sudoku-app-pwa">\n${pwa}\n</script>\n</body>`);
 if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
+// Parse the DELIVERED scripts, not just app-ui.js. Prevent a malformed
+// generated Navigator from silently exposing the legacy base UI.
+const vm=require('node:vm');let scriptCount=0;
+for(const match of output.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
+ const type=match[1].match(/type=["']([^"']+)["']/i)?.[1]||'';
+ if(type&&!/javascript|ecmascript/i.test(type))continue;
+ const id=match[1].match(/id=["']([^"']+)["']/i)?.[1]||'inline-'+scriptCount;
+ new vm.Script(match[2],{filename:'APP:'+id});scriptCount++;
+}
+if(scriptCount<3)throw Error('APP executable scripts missing');
 const assets=Object.fromEntries(['index.html','app.html','pwa.js','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'].map(name=>[name,sha(name==='app.html'?output:fs.readFileSync(path.join(app,name)))]));
 const meta={
  schema:'8ZSUDOKU_APP_RELEASE_V2',channel:'APP',engine_revision:'0.3.0',lab_release_id:labRelease.release_id,
