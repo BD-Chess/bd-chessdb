@@ -115,8 +115,7 @@
   '.app-solve-review-tabs{display:flex;gap:4px}.app-solve-review-tabs button,.app-solve-nav button{border:1px solid #3a5067;background:#172536;color:#d8e4f2;border-radius:8px;cursor:pointer}',
   '.app-solve-review-tabs button{padding:5px 9px;font:750 .68rem/1 system-ui}.app-solve-review-tabs button[aria-pressed=true]{border-color:#00d9f5;color:#79f2ff;background:#123447}',
   '.app-solve-step-line{display:flex;justify-content:space-between;gap:8px;margin:1px 0 7px;font:750 .78rem/1.25 system-ui;color:#f2f7ff}.app-solve-step-line #appSolveCount{color:#91a5bd}',
-  '.app-solve-sensors{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0 0 8px}',
-  '.app-solve-sensor{min-width:0;padding:5px 4px;border:1px solid #293e53;border-radius:7px;background:#101c29;text-align:center}.app-solve-sensor b{display:block;font:650 .54rem/1.1 system-ui;text-transform:uppercase;letter-spacing:.05em;color:#728aa3}.app-solve-sensor span{display:block;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:750 .65rem/1.15 system-ui;color:#dbe8f5}',
+
   '.app-solve-detail{min-height:2.6em;margin:5px 1px 7px;font:600 .72rem/1.4 system-ui;color:#aebed0}',
   '.app-solve-scrub{width:100%;accent-color:#00d9f5;margin:1px 0 7px}',
   '.app-solve-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.app-solve-nav button{min-height:38px;font:800 .84rem/1 system-ui}.app-solve-nav button:disabled{opacity:.35;cursor:default}',
@@ -131,7 +130,7 @@
   'body[data-app-solve-review=true] #grid .cell.app-review-focus{background:#0e3b49!important;box-shadow:inset 0 0 0 2px #00e5ffcc}',
   'body[data-app-solve-review=true] #grid .cell.app-review-pulse::after{animation:app-review-pop 190ms ease-out}@keyframes app-review-pop{from{transform:scale(.62);opacity:.25}to{transform:scale(1);opacity:1}}',
   'body[data-quiet=true] #grid .cell.app-review-pulse::after{animation:none}@media(prefers-reduced-motion:reduce){body[data-app-solve-review=true] #grid .cell.app-review-pulse::after{animation:none}}',
-  '@media(max-width:380px){.app-solve-sensors{grid-template-columns:repeat(3,minmax(0,1fr))}.app-solve-sensor:nth-child(4),.app-solve-sensor:nth-child(5){grid-column:span 1}}'
+  '@media(max-width:380px){.app-solve-sensors{gap:5px}.app-solve-sensor{font-size:.58rem}}'
  ].join('\n');
  document.head.append(style);
 
