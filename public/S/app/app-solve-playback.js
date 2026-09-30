@@ -3,8 +3,8 @@
 // persistent transaction owned by the existing Sudoku product. This module
 // builds a checked, read-only review timeline and never mutates game history.
 (() => {
- const nav=window.SudokuNavigator,product=nav?.product,grid=document.getElementById('grid'),C=window.SudokuNavCore;
- if(!product||!grid||!C)return;
+ const nav=window.SudokuNavigator,product=nav?.product,grid=document.getElementById('grid'),C=window.SudokuNavCore,P=window.AI8SudokuProofPreview?.engine;
+ if(!product||!grid||!C||!P)return;
  const $=id=>document.getElementById(id);
  const sl=()=>window.SudokuI18n?.get?.()==='sl';
  const rc=i=>'R'+(Math.floor(i/9)+1)+'C'+(i%9+1);
@@ -84,29 +84,47 @@
  const originalAria=new WeakMap();
  let data=null,timer=0,playing=false,tab='ai';
 
- function flowFor(st,q){
-  try{return C.consequences(st,q,3,new C.Work(260000));}catch(_){return null;}
+ function grid2flat(board){return Array.from({length:9},(_,r)=>board.slice(r*9,r*9+9));}
+ function proofCandidateTotal(st){return st.masks.reduce((n,m)=>n+m.size,0);}
+ const U=Array.from({length:27},(_,u)=>Array.from({length:9},(_,k)=>u<9?u*9+k:u<18?k*9+u-9:(Math.floor((u-18)/3)*3+Math.floor(k/3))*9+(u-18)%3*3+k%3));
+ function immediatePlacements(st){
+  const out=[],seen=new Set(),add=q=>{const k=q.cell+':'+q.value;if(!seen.has(k)){seen.add(k);out.push(q);}};
+  for(let i=0;i<81;i++)if(!st.board[Math.floor(i/9)][i%9]&&st.masks[i].size===1){
+   add({kind:'placement',technique:'naked_single',cell:i,value:[...st.masks[i]][0],sources:[i]});
+  }
+  for(let u=0;u<27;u++)for(let d=1;d<=9;d++){
+   const cells=U[u].filter(i=>!st.board[Math.floor(i/9)][i%9]&&st.masks[i].has(d));
+   if(cells.length===1)add({kind:'placement',technique:'hidden_single',cell:cells[0],value:d,sources:U[u].slice(),unit:u});
+  }
+  return out;
  }
- function chooseSmart(st,n){
-  // Human-first rule: when several forced placements exist, prefer the one
-  // that opens the most short-horizon singles, then the most path progress.
-  try{
-   const scan=C.enumerate(st,'P0',new C.Work(420000),256),forced=[];
-   for(const q of scan.out){
-    if(!C.check(st,q,new C.Work(120000)))continue;
-    const flow=flowFor(st,q),bits=C.encode(q).length*8;
-    forced.push({q,flow,bits});
-   }
-   forced.sort((a,b)=>(b.flow?.newSingles||0)-(a.flow?.newSingles||0)||
-    (b.flow?.pathGain||0)-(a.flow?.pathGain||0)||a.q.t-b.q.t||a.bits-b.bits||a.q.c-b.q.c);
-   if(forced.length)return{...forced[0],source:'human_forced',reason:'FORCED_FLOW'};
-  }catch(_){}
-  try{
-   const result=C.search(st,{policy:'REAL',goal:'FLOW',deep:false,budget:680000,eventPrefix:'app-review-'+n});
-   const best=result.candidates?.[0];
-   if(best&&C.check(st,best.q,new C.Work(160000)))return{q:best.q,flow:best.flow||flowFor(st,best.q),bits:best.bits,source:'dcc',reason:result.reason,changed:result.changed,order:result.order};
-  }catch(_){}
-  return null;
+ function humanFlow(st,q){
+  const before=proofCandidateTotal(st),next=P.cloneState(st);
+  if(!P.apply(next,q))return null;
+  return{next,newSingles:immediatePlacements(next).length,candidateDrop:before-proofCandidateTotal(next),
+   remaining:next.board.flat().filter(v=>!v).length,pathGain:q.kind==='placement'?1:0};
+ }
+ function chooseSmart(st){
+  // Human-like priority: do forced placements first. When several are
+  // available, prefer the one that opens the most other forced moves, then
+  // the one that simplifies the candidate field most. Only when no forced
+  // placement exists do we take the next conventional elimination.
+  const forced=[];
+  for(const q of immediatePlacements(st)){
+   const flow=humanFlow(st,q);if(flow)forced.push({q,flow});
+  }
+  forced.sort((a,b)=>b.flow.newSingles-a.flow.newSingles||
+   b.flow.candidateDrop-a.flow.candidateDrop||
+   Number(a.q.technique!=='naked_single')-Number(b.q.technique!=='naked_single')||
+   a.q.cell-b.q.cell);
+  if(forced.length)return{...forced[0],source:'human_forced',reason:'FORCED_FLOW'};
+  const q=P.nextStep(st);if(!q)return null;
+  const flow=humanFlow(st,q);return flow?{q,flow,source:'human_elimination',reason:'TECHNIQUE_PROGRESS'}:null;
+ }
+ function proofElims(q){
+  if(q.kind==='multi_elimination')return(q.eliminations||[]).map(e=>({cell:e.cell,digit:e.digit}));
+  if(q.kind==='elimination')return(q.eliminations||[]).map(cell=>({cell,digit:q.digit}));
+  return[];
  }
  function correctionStep(board,cell,from,to){
   const beforeCandidates=basicCandidateTotal(board),next=board.slice();next[cell]=0;
@@ -132,39 +150,39 @@
   for(let i=0;i<81;i++)if(working[i]&&working[i]!==finalBoard[i]){
    const step=correctionStep(working,i,working[i],finalBoard[i]);steps.push(step);working.splice(0,working.length,...step.board);
   }
-  let st;try{st=C.state(working);}catch(_){st=null;}
+  let st;try{st=P.makeState(grid2flat(working));}catch(_){st=null;}
   let guard=0,fallbacks=0;
-  while(st&&!st.b.every(Boolean)&&guard++<730){
-   const picked=chooseSmart(st,guard);
+  while(st&&!st.board.flat().every(Boolean)&&guard++<730){
+   const picked=chooseSmart(st);
    if(picked){
-    const q=picked.q,beforeCandidates=C.countCandidates(st);let next;
-    try{next=C.apply(st,q,new C.Work(360000));}catch(_){next=null;}
-    if(next){
-     const focus=q.c>=0?q.c:(q.es?.[0]?.[0]??q.src?.[0]??-1);
-     const entry={kind:q.c>=0?'placement':'elimination',technique:C.NAMES[q.t],cell:focus,
-      value:q.c>=0?q.v:null,board:next.b.slice(),sources:(q.src||[]).slice(),
-      eliminations:(q.es||[]).map(e=>({cell:e[0],digit:e[1]})),candidatesBefore,candidatesAfter:C.countCandidates(next),
-      newSingles:picked.flow?.newSingles??null,pathGain:picked.flow?.pathGain??null,remaining:picked.flow?.remaining??null,
-      progress:filled(next.b),checked:true,answerAssisted:false,reason:picked.reason,source:picked.source,
-      dccChanged:picked.changed===true,proofBits:picked.bits??null};
-     // A checked placement must agree with the already-certified final answer.
-     if(q.c<0||finalBoard[q.c]===q.v){steps.push(entry);st=next;continue;}
+    const q=picked.q,flow=picked.flow,next=flow.next,board=next.board.flat(),eliminations=proofElims(q);
+    const focus=q.kind==='placement'?q.cell:(eliminations[0]?.cell??q.sources?.[0]??-1);
+    if(q.kind!=='placement'||finalBoard[q.cell]===q.value){
+     steps.push({kind:q.kind==='placement'?'placement':'elimination',technique:q.technique,cell:focus,
+      value:q.kind==='placement'?q.value:null,board,sources:(q.sources||[]).slice(),eliminations,
+      candidatesBefore:proofCandidateTotal(st),candidatesAfter:proofCandidateTotal(next),
+      newSingles:flow.newSingles,pathGain:flow.pathGain,remaining:flow.remaining,progress:filled(board),
+      checked:true,answerAssisted:false,reason:picked.reason,source:picked.source});
+     st=next;continue;
     }
    }
-   const fallback=fallbackStep(st,finalBoard);if(!fallback)break;
-   fallbacks++;steps.push(fallback.entry);st=fallback.next;
-  }
-  // Last-resort bounded display completion. It is explicitly labelled answer-assisted.
-  if(st&&!st.b.every(Boolean)){
-   for(let k=0;k<81;k++)if(!st.b[k]&&finalBoard[k]){
-    const fb=fallbackStep(st,finalBoard);if(!fb)break;fallbacks++;steps.push(fb.entry);st=fb.next;
-   }
+   const current=st.board.flat(),cell=current.reduce((best,v,i)=>{
+    if(v)return best;const n=st.masks[i].size;
+    return !best||n<best.n?{i,n}:best;
+   },null)?.i??-1;
+   if(cell<0||!finalBoard[cell])break;
+   const beforeCandidates=proofCandidateTotal(st),board=current.slice();board[cell]=finalBoard[cell];
+   let next;try{next=P.makeState(grid2flat(board));}catch(_){next=null;}if(!next)break;
+   fallbacks++;steps.push({kind:'search',technique:'search_fallback',cell,value:finalBoard[cell],board:next.board.flat(),
+    sources:[cell],eliminations:[],candidatesBefore:beforeCandidates,candidatesAfter:proofCandidateTotal(next),
+    newSingles:immediatePlacements(next).length,pathGain:1,remaining:next.board.flat().filter(v=>!v).length,
+    progress:filled(next.board.flat()),checked:false,answerAssisted:true,reason:'MRV_FINAL_ANSWER',candidateSize:st.masks[cell].size});
+   st=next;
   }
   const final=steps.length?steps.at(-1).board:start;
   if(boardKey(final)!==boardKey(finalBoard))throw Error('Solve review could not reproduce the certified final board');
   return{start,final:finalBoard,steps,fallbacks,finalKey:boardKey(finalBoard),createdAt:Date.now()};
  }
-
  function sensor(label,value){return'<div class="app-solve-sensor"><b>'+label+'</b><span>'+value+'</span></div>';}
  function detailFor(step){
   if(!step)return sl()?'Začetni položaj pred ukazom Reši vse.':'Position before Solve all.';
@@ -176,7 +194,7 @@
    'The bounded P0–P3 proof scan found no next checked step here. An MRV search step is used and explicitly labelled answer-assisted.';
   if(step.kind==='placement')return sl()?
    techLabel(step.technique)+': '+rc(step.cell)+' = '+step.value+'. '+(step.source==='human_forced'?'Med prisiljenimi potezami je izbrana tista z boljšim kratkim logičnim tokom.':'Korak je neodvisno preverjen pred prikazom.'):
-   techLabel(step.technique)+': '+rc(step.cell)+' = '+step.value+'. '+(step.source==='human_forced'?'Among forced moves, the short-horizon flow ranks this one first.':'The step was independently checked before display.');
+   techLabel(step.technique)+': '+rc(step.cell)+' = '+step.value+'. '+(step.source==='human_forced'?'Among forced moves, the short-horizon flow ranks this one first.':'The rule engine checked this logical step before display.');
   const es=step.eliminations.slice(0,5).map(e=>e.digit+'@'+rc(e.cell)).join(', ');
   return sl()?techLabel(step.technique)+': izločitev '+es+(step.eliminations.length>5?' …':'')+'. Kandidatne maske se spremenijo, mreža številk pa lahko ostane ista.':
    techLabel(step.technique)+': eliminate '+es+(step.eliminations.length>5?' …':'')+'. Candidate domains change even when the digit grid does not.';
@@ -209,6 +227,7 @@
   tab=next==='human'?'human':'ai';
   $('appSolveTabAI').setAttribute('aria-pressed',String(tab==='ai'));$('appSolveTabHuman').setAttribute('aria-pressed',String(tab==='human'));
   $('appSolveReviewAI').hidden=tab!=='ai';$('appSolveReviewHuman').hidden=tab!=='human';
+  $('appSolveReviewTitle').textContent=tab==='human'?(sl()?'Pregled človeškega reševanja':'Human Solve Review'):(sl()?'Pregled AI reševanja':'AI Solve Review');
   if(tab==='human')renderHuman();
  }
  function paint(index,pulse=false){
@@ -226,7 +245,7 @@
    node.setAttribute('aria-label',rc(i)+', '+(board[i]||'empty')+', solve review');
   });
   if(pulse&&focus>=0)grid.children[focus]?.classList.add('app-review-pulse');
-  $('appSolveReviewTitle').textContent=sl()?'Pregled AI reševanja':'AI Solve Review';
+  if(tab==='ai')$('appSolveReviewTitle').textContent=sl()?'Pregled AI reševanja':'AI Solve Review';
   $('appSolveTabAI').textContent='AI';$('appSolveTabHuman').textContent=sl()?'Človek':'Human';
   $('appSolveStep').textContent=index===0?(sl()?'Začetni položaj':'Starting position'):'#'+index+' · '+techLabel(step.technique);
   $('appSolveCount').textContent=index+' / '+data.steps.length;
