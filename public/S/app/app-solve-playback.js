@@ -101,7 +101,7 @@
  style.textContent=[
   '#appSolveReview{width:100%;margin:9px 0 14px;padding:11px 12px 12px;border:1px solid #33475a;border-radius:12px;background:linear-gradient(180deg,#111b27,#0b141e);box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0004;color:#dbe6f3}',
   '#appSolveReview[hidden],#appSolveInstruments[hidden],#appSolveSensorModal[hidden]{display:none!important}',
-  'body[data-app-solve-review=true] .header,body[data-app-solve-review=true] .title-block{display:none!important}',
+  'body[data-app-solve-review=true] .header,body[data-app-solve-review=true] .title-block,body[data-app-solve-review=true] .pl-tabs{display:none!important}',
   'body[data-app-solve-review=true][data-app-framed-preview=true] .pl-tabs{transform:none!important}',
   '#appSolveInstruments{width:min(100%,760px);margin:2px auto 9px;padding:5px 8px 6px;border:1px solid #1d4054;border-radius:10px;background:#07111dcc;display:grid;gap:3px}',
   '.app-pos-sensor{position:relative;display:grid;grid-template-columns:36px 1fr 38px;align-items:center;gap:7px;width:100%;min-height:16px;padding:0;border:0;background:transparent;color:#8ea5bd;text-align:left;cursor:pointer}',
