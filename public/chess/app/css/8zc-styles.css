@@ -1451,8 +1451,19 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 #controls > .workspace-drawer .btn { background: var(--ui-raised); color: var(--ui-text); }
 #controls > #popularGamesPanel.open { display: flex; flex-direction: column; }
 #popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
-#popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
+/* One scroll surface for the whole Game library. The result list itself never
+ * becomes a nested scroller; the drawer owns scrolling from title to footer. */
+#popularGamesPanel .library-result-list { flex: 0 0 auto; min-height: 0; max-height: none; overflow: visible; overscroll-behavior: auto; }
 #popularGamesPanel .library-result { flex-shrink: 0; }
+#popularGamesPanel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-accent) var(--ui-inset);
+  scrollbar-gutter: stable;
+}
+#popularGamesPanel::-webkit-scrollbar { width: 10px; }
+#popularGamesPanel::-webkit-scrollbar-track { background: var(--ui-inset); border-radius: 999px; }
+#popularGamesPanel::-webkit-scrollbar-thumb { background: var(--ui-accent); border: 2px solid var(--ui-inset); border-radius: 999px; }
+#popularGamesPanel::-webkit-scrollbar-thumb:hover { background: var(--ui-link); }
 .drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: -14px; background: var(--ui-inset); z-index: 1; padding: 6px 0 9px; border-bottom: 1px solid var(--ui-border); }
 .drawer-heading .btn { min-width: 36px; font-size: 20px; background: var(--ui-raised); }
 
