@@ -21,16 +21,16 @@
     :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #101a16; color: #e7f4ec; }
-    header { max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: center; column-gap: 42px; row-gap: 10px; flex-wrap: wrap; }
-    h1 { margin: 0; font-size: 18px; letter-spacing: .01em; }
-    .header-tools { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .bd-version-selector { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 650; letter-spacing: .06em; }
+    header { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr); align-items: center; column-gap: 20px; }
+    h1 { justify-self: start; margin: 0; font-size: 18px; letter-spacing: .01em; }
+    .header-tools { display: contents; }
+    .bd-version-selector { justify-self: center; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 650; letter-spacing: .06em; }
     .bd-version-selector a { display: inline-flex; align-items: center; min-height: 44px; padding: 3px 8px; color: #b5c9bb; text-decoration: none; border: 1px solid transparent; border-radius: 6px; }
     .bd-version-selector a:hover, .bd-version-selector a:focus-visible { color: white; border-color: #69977e; }
     .bd-version-selector a[aria-current="page"] { color: #bdf6ce; background: #16382b; border-color: #48765d; }
     .bd-version-dot { color: #819b8b; }
     main { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; padding: 16px 16px 32px; }
-    .preview-width { display: flex; align-items: center; gap: 8px; margin-left: 8px; color: #adc2b5; font-size: 12px; white-space: nowrap; }
+    .preview-width { justify-self: end; display: flex; align-items: center; gap: 8px; margin-left: 0; color: #adc2b5; font-size: 12px; white-space: nowrap; }
     .preview-width select { min-height: 40px; border: 1px solid #53725e; border-radius: 8px; color: #e7f4ec; background: #1c3428; padding: 7px 9px; font: inherit; }
     .phone-frame { width: calc(var(--phone-width, 390px) + 12px); max-width: 100%; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
     iframe { display: block; width: 100%; height: clamp(500px, calc(100dvh - 170px), 874px); border: 0; border-radius: 26px; background: #101a16; }
@@ -68,7 +68,7 @@
   </header>
   <main>
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260930-ui6" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260930-ui8" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
     </div>
   </main>
   <script>
