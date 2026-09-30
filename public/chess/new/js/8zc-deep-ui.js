@@ -9,9 +9,9 @@
     const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
     panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
     panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p>Stockfish 18 Lite · runs on this device</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
-      <p class="deep-intro">Analyze a pinned position, compare several lines, or challenge selected moves. The local engine loads when you start. Scores below are from White’s perspective.</p>
+      <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Search budget<select data-deep="budget"><option value="depth:14">Depth 14</option><option value="depth:18">Depth 18</option><option value="nodes:250000">250,000 nodes</option><option value="nodes:1000000">1,000,000 nodes</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <div class="deep-settings"><label>Search depth<select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
       <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false"><small>Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
       <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
@@ -22,13 +22,17 @@
     const el = name => panel.querySelector('[data-deep="' + name + '"]');
     const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0;
-    let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null;
+    let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
+    let manualStoppedFen = null;
     const Chess = host.Chess || root.Chess;
+    const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), fen: pinned?.fen || null });
+    const notifyState = () => host.onStateChange?.(state());
     function setPinned(context) {
       const next = typeof context === 'string' ? { fen: context } : Object.assign({}, context);
       if (!next || !next.fen) throw new Error('No board position is available');
       if (next.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
       root.ChessDeepEngine.validateFen(next.fen, Chess); pinned = next;
+      manualStoppedFen = null; paintAt = 0;
       panel.style.minHeight = '';
       el('fen').textContent = pinned.fen; el('roots').value = ''; result = null; preview = null;
       el('lines').replaceChildren(); el('preview').hidden = true; el('export').disabled = true;
@@ -51,6 +55,7 @@
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('close').focus({ preventScroll: true });
       if (previewBoard) requestAnimationFrame(() => previewBoard.resize());
+      notifyState();
     }
     function close() {
       if (panel.hidden) return;
@@ -58,13 +63,13 @@
       ++run; engine?.stop();
       if (wasRunning) el('status').textContent = result?.lines?.length ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
       el('start').disabled = !pinned; el('stop').disabled = true;
-      deepScroll = workspace.scrollTop; panel.hidden = true;
+      deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null;
       workspace.classList.remove('is-deep-analysis');
       if (workspaceLabel === null) workspace.removeAttribute('aria-label'); else workspace.setAttribute('aria-label', workspaceLabel);
       trigger?.setAttribute('aria-expanded', 'false');
       workspace.scrollTop = workspaceScroll;
       (lastFocus?.isConnected ? lastFocus : trigger)?.focus?.({ preventScroll: true });
-      host.onClose?.();
+      notifyState(); host.onClose?.();
     }
     function toggle() { if (panel.hidden) open(); else close(); }
     function movesFor(fen, pv) {
@@ -110,17 +115,25 @@
         const depth = doc.createElement('span'); depth.textContent = 'Depth ' + (line.depth ?? '—');
         meta.append(score, depth); row.appendChild(meta);
         const variation = doc.createElement('div'); variation.className = 'deep-pv';
-        movesFor(current.fen, line.pv).forEach((move, index) => {
+        const lineMoves = movesFor(current.fen, line.pv);
+        variation.title = lineMoves.map(move => move.label).join(' ');
+        lineMoves.forEach((move, index) => {
           const button = doc.createElement('button'); button.type = 'button'; button.textContent = move.label;
           button.title = 'Preview after ' + move.san; button.onclick = () => showPreview(line, index); variation.appendChild(button);
         });
         row.appendChild(variation); fragment.appendChild(row);
       });
       el('lines').replaceChildren(fragment); el('lines').scrollTop = scroll;
+      root.requestAnimationFrame(() => {
+        for (const variation of el('lines').querySelectorAll('.deep-pv'))
+          variation.classList.toggle('is-clipped', variation.scrollHeight > variation.clientHeight + 1);
+      });
       el('export').disabled = !current.lines.length;
       const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
       const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
-      el('status').textContent = nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' + (engine?.isRunning() ? 'Analyzing pinned position…' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.');
+      el('status').textContent = nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
+        (engine?.isRunning() ? 'Analyzing current position…' : current.stopped && manualStoppedFen === current.fen
+          ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.');
     }
     function rootMoves() {
       const value = el('roots').value.trim(); if (!value) return [];
@@ -141,34 +154,61 @@
       panel.style.minHeight = Math.max(0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
       workspace.scrollTop += actions.getBoundingClientRect().top - workspace.getBoundingClientRect().top - workspace.clientTop - topPadding;
     }
-    async function start() {
+    async function start(options = {}) {
       const token = ++run;
+      manualStoppedFen = null;
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');
         const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: rootMoves(),
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':');
-        if (kind === 'infinite') opts.infinite = true; else opts[kind] = Number(value);
+        if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
+        else if (kind === 'infinite') opts.infinite = true;
+        else opts[kind] = Number(value);
         if (opts.searchMoves.length) opts.multiPV = Math.min(opts.multiPV, opts.searchMoves.length);
-        // The host binds this publisher to the current board/session, while the
-        // run token below rejects responses after close, repin or restart.
         const onUpdate = host.onSearchStart?.(opts);
         if (!engine) engine = root.ChessDeepEngine.create({ Chess });
         el('start').disabled = true; el('stop').disabled = false;
         el('status').textContent = 'Loading Stockfish 18 Lite (~7 MB on first use)…';
-        revealSearch();
+        if (options.reveal !== false) revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
-        const done = await engine.analyze(opts);
+        const pending = engine.analyze(opts); notifyState();
+        const done = await pending;
         if (token !== run) return;
         render(done, true, onUpdate);
         if (host.onResult) host.onResult(done);
       } catch (e) { if (token === run) el('status').textContent = e.name === 'AbortError' ? 'Analysis cancelled.' : e.message; }
-      finally { if (token === run) { el('start').disabled = false; el('stop').disabled = true; } }
+      finally {
+        if (token === run) { el('start').disabled = false; el('stop').disabled = true; notifyState(); }
+      }
     }
-    el('start').onclick = start; el('stop').onclick = () => { engine?.stop(); el('status').textContent = 'Stopping…'; };
+    function stopCurrent() {
+      if (!engine?.isRunning?.()) return false;
+      manualStoppedFen = pinned?.fen || null;
+      ++run; engine.stop();
+      el('start').disabled = !pinned; el('stop').disabled = true;
+      el('status').textContent = 'Stopped; the next move will analyze automatically.';
+      notifyState(); return true;
+    }
+    function deepenOrStop() {
+      if (panel.hidden || !pinned) return false;
+      if (engine?.isRunning?.()) return stopCurrent();
+      const [kind, value] = el('budget').value.split(':');
+      if (kind === 'infinite') { start({ reveal: false }); return true; }
+      const reached = Math.max(Number(value) || 14, Number(result?.linesDepth) || 0,
+        ...((result?.lines || []).map(line => Number(line.depth) || 0)));
+      start({ depthOverride: Math.min(128, reached + 2), reveal: false }); return true;
+    }
+    el('start').onclick = () => start(); el('stop').onclick = stopCurrent;
     el('close').onclick = close;
-    el('use').onclick = () => { engine?.stop(); ++run; pinned = null; try { if (host.pause) host.pause('deep-analysis'); setPinned(host.getContext?.()); } catch (e) { el('status').textContent = e.message; } el('start').disabled = !pinned; el('stop').disabled = true; };
+    el('use').onclick = () => {
+      engine?.stop(); ++run; pinned = null;
+      try { if (host.pause) host.pause('deep-analysis'); setPinned(host.getContext?.()); }
+      catch (e) { el('status').textContent = e.message; }
+      el('start').disabled = !pinned; el('stop').disabled = true;
+      if (pinned && !panel.hidden) start({ automatic: true, reveal: false });
+    };
     el('save').onclick = async () => {
       if (!preview || !host.onSaveLine || el('save').disabled) return;
       const frozen = JSON.parse(JSON.stringify(preview)); el('save').disabled = true;
@@ -183,6 +223,18 @@
       link.download = 'Chess_Stockfish_Analysis_' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
       link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
+    if (typeof host.onChange === 'function') {
+      liveUnsubscribe = host.onChange(context => {
+        if (panel.hidden || !context?.fen || context.assistanceLocked || context.fen === pinned?.fen) return;
+        ++run; engine?.stop(); manualStoppedFen = null;
+        try {
+          setPinned(context);
+          start({ automatic: true, reveal: false });
+        } catch (e) {
+          el('status').textContent = e.message; notifyState();
+        }
+      });
+    }
     // Panel keyboard actions never move the main board or reach its shortcuts.
     panel.addEventListener('keydown', event => {
       event.stopPropagation();
@@ -192,7 +244,8 @@
       trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
       trigger.addEventListener('click', toggle);
     }
-    return { open, close, stop: () => engine?.stop(), destroy() { close(); ++run; engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+    return { open, close, stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(),
+      destroy() { close(); ++run; liveUnsubscribe?.(); engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

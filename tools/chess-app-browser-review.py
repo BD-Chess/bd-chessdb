@@ -90,6 +90,20 @@ def main():
                     record('navigation not burgundy '+language+str(light),inner.locator('#appNew').evaluate("e=>getComputedStyle(e).backgroundColor")!='rgb(111, 38, 59)')
             inner.evaluate('document.body.classList.remove("light-theme")')
             inner.locator('[data-app-lang="en"]').click()
+            inner.locator('#appTabs [data-app-tab="deep"]').click()
+            inner.wait_for_function("!document.getElementById('deepAnalysisPanel').hidden")
+            deep_controls=inner.evaluate("""() => ({
+              label:document.querySelector('#deepAnalysisPanel .deep-settings label')?.childNodes[0]?.nodeValue?.trim(),
+              values:[...document.querySelector('[data-deep="budget"]').options].map(o=>o.value),
+              texts:[...document.querySelector('[data-deep="budget"]').options].map(o=>o.textContent.trim()),
+              sfDisabled:document.querySelector('#allEvalBadges [data-eval-source="SF"]')?.disabled,
+              sfTitle:document.querySelector('#allEvalBadges [data-eval-source="SF"]')?.title || ''
+            })""")
+            record('APP Deep shared Search depth',deep_controls['label']=='Search depth'
+              and deep_controls['values']==['depth:14','depth:18','depth:22','depth:26','depth:30','depth:34','depth:38','depth:42','infinite']
+              and deep_controls['texts'][-1]=='Until I stop',deep_controls)
+            record('APP SF badge stays active in Deep',deep_controls['sfDisabled'] is False and 'Deep SF' in deep_controls['sfTitle'],deep_controls)
+            inner.locator('#appTabs [data-app-tab="board"]').click();page.wait_for_timeout(80)
             inner.locator('#appGames').click()
             inner.wait_for_selector('#popularGamesPanel.open')
             inner.wait_for_function("document.querySelectorAll('#popularGamesPanel .library-result').length > 0",timeout=15000)
@@ -167,7 +181,7 @@ def main():
                 record('view switching keeps position',inner.evaluate('ChessLabHost.getContext().fen')==origin)
                 inner.locator('#appTabs [data-app-tab="deep"]').click()
                 depths=inner.locator('[data-deep="budget"] option').evaluate_all('(opts)=>opts.map(o=>o.value)')
-                record('Deep depth-only presets',depths==[f'depth:{d}' for d in [14,18,22,26,30,34,38,42]],depths)
+                record('Deep depth-only presets',depths==[f'depth:{d}' for d in [14,18,22,26,30,34,38,42]]+['infinite'],depths)
                 inner.locator('#appTabs [data-app-tab="board"]').click()
                 inner.wait_for_function('!!ChessLabHost.getContext().analysisSources.SF',timeout=15000)
                 sf=inner.evaluate('ChessLabHost.getContext().analysisSources.SF.receipt');record('real local SF completes',sf.get('status')=='ready',sf)
