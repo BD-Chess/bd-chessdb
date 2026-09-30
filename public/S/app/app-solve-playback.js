@@ -260,7 +260,7 @@
   return (step.eliminations.length?('−'+step.eliminations[0].digit+'@'+rc(step.eliminations[0].cell)):(sl()?'Izločitev':'Elimination'));
  }
  function humanRows(){
-  try{return window.AI8SudokuProofPreview?.review?.()||[];}catch(_){return[];}
+  try{return product.reviewRows?.()||[];}catch(_){return[];}
  }
  function forcedCount(board){let n=0;for(let i=0;i<81;i++)if(!board[i]&&basicCandidates(board,i).length===1)n++;return n;}
  function humanTimeline(){
@@ -433,6 +433,7 @@
  document.addEventListener('visibilitychange',()=>{if(document.hidden)closeView(false);});
  window.SudokuSolveReview={
   hasReview:validReview,
+  hasHumanReview:()=>humanRows().some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),
   active:()=>document.body.dataset.appSolveReview==='true'&&!review.hidden,
   open:()=>open('ai'),
   openHuman:()=>open('human'),
