@@ -640,13 +640,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         return { disabled: !toggle || toggle.disabled,
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
-      const deepOpen = !!deepUI?.isOpen?.(), deepWorking = deepOpen && !!deepUI?.isRunning?.();
+      const deepFollowing = !!deepUI?.isFollowing?.(), deepWorking = deepFollowing && !!deepUI?.isRunning?.();
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
       if (source === 'SF') return { disabled: !available,
         title: !available ? 'Show Eval for deeper SF analysis' :
-          deepWorking ? 'Click to stop Deep SF analysis' : deepOpen ? 'Click for deeper Deep SF analysis' :
+          deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
           sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis',
-        working: available && (deepOpen ? deepWorking : sfWorking) };
+        working: available && (deepFollowing ? deepWorking : sfWorking) };
       return { disabled: !available || cdbRefreshing,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
@@ -694,13 +694,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function syncSFAnalysisControl() {
     const button = document.getElementById('btnAnalysisDeepen');
     if (!button) return;
-    const deepOpen = !!deepUI?.isOpen?.(), deepWorking = deepOpen && !!deepUI?.isRunning?.();
+    const deepFollowing = !!deepUI?.isFollowing?.(), deepWorking = deepFollowing && !!deepUI?.isRunning?.();
     const available = !offlineEvidence && showEval &&
       !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
-    const working = deepOpen ? deepWorking : sfWorking;
+    const working = deepFollowing ? deepWorking : sfWorking;
     button.disabled = !available;
     button.title = !available ? 'Show Eval for deeper SF analysis' :
-      deepWorking ? 'Click to stop Deep SF analysis' : deepOpen ? 'Click for deeper Deep SF analysis' :
+      deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
     button.setAttribute('aria-label', working && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
     button.classList.toggle('is-working', working && available);
@@ -966,6 +966,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   }
   function pauseLab(reason) {
     if (playState.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
+    const deepPanelOnly = reason === 'deep-panel';
     if (reason === 'deep-analysis') {
       deepAnalysisFen = game.fen();
       positionEval.updateSource(deepAnalysisFen, null, 'SF', null, null);
@@ -976,9 +977,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (replayRunning) stopReplay();
     if (playState.active && playState.mode !== 'lichess') leaveActiveSession('Paused for study.');
     workspace.pause();
-    // Deep analysis owns its own worker; release the main local search first.
-    if (localController) localController.abort();
-    if (localProvider) localProvider.destroy();
+    // Opening the Deep panel alone does not take over the normal SF lane.
+    // Starting Deep analysis does: keep one local Stockfish worker at a time.
+    if (!deepPanelOnly) {
+      if (localController) localController.abort();
+      if (localProvider) localProvider.destroy();
+    }
   }
   function navigateStudy(request) {
     if (playState.active && playState.mode === 'lichess') throw new Error('End the live session before changing the study position.');
@@ -2482,14 +2486,16 @@ function jumpTo(i){
     captureEvidence: async () => { const fen = game.fen(); await analyzePosition(fen); return labSnapshots.get(fen) || null; },
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
+  function syncDeepAnalysisState(state = {}) {
+    const releasedFen = !state.following ? deepAnalysisFen : null;
+    if (!state.following) deepAnalysisFen = null;
+    syncSFAnalysisControl();
+    if (releasedFen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
+      setTimeout(fetchAnnotations, 0);
+  }
   deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis,
-    onStateChange: () => syncSFAnalysisControl(),
-    onClose: () => {
-      const fen = deepAnalysisFen; deepAnalysisFen = null;
-      syncSFAnalysisControl();
-      if (fen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
-        setTimeout(fetchAnnotations, 0);
-    } }) || null;
+    onStateChange: syncDeepAnalysisState,
+    onClose: () => syncDeepAnalysisState({ following: false }) }) || null;
   researchUI = window.ChessResearchUI?.create(labHost) || null;
   document.getElementById('btnStudy')?.addEventListener('click', () => { pauseLab(); studyUI?.open(); });
   document.getElementById('btnEvidence')?.addEventListener('click', () => { pauseLab(); researchUI?.open('evidence'); });
@@ -2575,7 +2581,7 @@ function jumpTo(i){
   document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
     syncSFAnalysisControl();
     if (document.getElementById('btnAnalysisDeepen').disabled) return;
-    if (deepUI?.isOpen?.()) {
+    if (deepUI?.isFollowing?.()) {
       deepUI.deepenOrStop?.(); syncSFAnalysisControl(); return;
     }
     if (sfWorking) {

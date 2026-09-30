@@ -19,7 +19,7 @@ test('LAB Deep/GUI parity keeps active SF control, desktop arrows and burgundy c
   assert.match(deep,/host\.onChange/);
   assert.match(deep,/start\(\{ automatic: true, reveal: false \}\)/);
   assert.match(deep,/deepenOrStop/);
-  assert.match(utils,/deepUI\?\.isOpen\?\.\(\)/);
+  assert.match(utils,/deepUI\?\.isFollowing\?\.\(\)/);
   assert.match(utils,/deepUI\.deepenOrStop\?\.\(\)/);
   const publisher=utils.match(/function beginDeepAnalysis\([\s\S]*?const labHost/)?.[0]||'';
   assert.match(publisher,/positionEval\.updateSource\(fen, best\.score, 'SF'/);
@@ -27,6 +27,12 @@ test('LAB Deep/GUI parity keeps active SF control, desktop arrows and burgundy c
     'normal CDB\/DCC refreshes must not freeze the Deep SF card publisher');
   assert.match(deep,/pendingLiveScroll/);
   assert.match(deep,/preserveViewport: true/);
+  assert.match(deep,/followActive = false/);
+  assert.match(deep,/if \(followActive\) start\(\{ automatic: true, reveal: false \}\)/);
+  assert.match(deep,/press Analyze position to resume Deep analysis/);
+  assert.match(utils,/reason === 'deep-panel'/);
+  assert.match(utils,/if \(!deepPanelOnly\)/);
+  assert.match(deep,/isFollowing: \(\) => followActive/);
   assert.match(utils,/ArrowUp/);
   assert.match(utils,/ArrowDown/);
   assert.match(utils,/e\.key==='ArrowUp' \|\| e\.key==='Home'/);

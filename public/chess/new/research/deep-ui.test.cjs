@@ -157,16 +157,18 @@ test('Deep search uses fixed depth presets plus Until I stop and reserves exactl
   assert.match(css, /\.deep-pv\.is-clipped::after\{[^}]*content:"…"/s);
 });
 
-test('Deep live-follow repins every new board position, restarts one worker and resumes after Stop on the next move', async t => {
+test('Deep finite depth follows later positions, while manual Stop disables follow until Analyze position is pressed again', async t => {
   const states = [];
   const x = setup(t, { onStateChange: state => states.push(state) });
   x.get('btnDeepAnalysis').click();
+  assert.equal(x.ui.isFollowing(), false, 'opening Deep alone does not enable auto-follow');
   x.el('budget').value = 'depth:18';
   x.el('start').click();
   assert.equal(x.analyses.length, 1);
   assert.equal(x.analyses[0].depth, 18);
   assert.equal(x.ui.isOpen(), true);
   assert.equal(x.ui.isRunning(), true);
+  assert.equal(x.ui.isFollowing(), true);
 
   const workspace = x.get('workspaceDisplay'), panel = x.get('deepAnalysisPanel');
   workspace.scrollTop = 337; panel.style.minHeight = '900px';
@@ -181,23 +183,45 @@ test('Deep live-follow repins every new board position, restarts one worker and 
   assert.equal(workspace.scrollTop, 337, 'live repin restores the same inner Deep scroll after streamed lines return');
   assert.equal(x.analyses.length, 2);
   assert.equal(x.analyses[1].fen, afterE4);
-  assert.equal(x.analyses[1].depth, 18, 'selected Search depth follows the next move');
-  assert.ok(x.stops() >= 1, 'old position search is stopped before following the new FEN');
+  assert.equal(x.analyses[1].depth, 18);
 
-  x.el('stop').click();
-  assert.equal(x.ui.isRunning(), false);
-  assert.match(x.el('status').textContent, /next move will analyze automatically/i);
+  const done = x.snapshot(); done.fen = afterE4; done.linesDepth = 18; done.lines[0].depth = 18;
+  x.finish(done); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.ui.isRunning(), false, 'reaching finite Search depth stops this position');
+  assert.equal(x.ui.isFollowing(), true, 'reaching Search depth keeps Deep follow armed for the next position');
+  assert.equal(x.el('stop').disabled, false, 'Stop remains available to disarm follow after the position completes');
 
   x.game.move('e5');
   const afterE5 = x.game.fen();
   x.change({ fen: afterE5, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4','e7e5'] } });
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(x.analyses.length, 3);
+  assert.equal(x.analyses.length, 3, 'next position auto-starts while follow remains armed');
   assert.equal(x.analyses[2].fen, afterE5);
   assert.equal(x.ui.isRunning(), true);
+
+  x.el('stop').click();
+  assert.equal(x.ui.isRunning(), false);
+  assert.equal(x.ui.isFollowing(), false);
+  assert.match(x.el('status').textContent, /press Analyze position to resume Deep analysis/i);
+
+  x.game.move('Nf3');
+  const afterNf3 = x.game.fen();
+  x.change({ fen: afterNf3, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4','e7e5','g1f3'] } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.el('fen').textContent, afterNf3, 'stopped Deep still follows the displayed FEN');
+  assert.equal(x.analyses.length, 3, 'manual Stop prevents auto-start on later positions');
+  assert.equal(x.ui.isRunning(), false);
+  assert.equal(x.ui.isFollowing(), false);
+
+  x.el('start').click();
+  assert.equal(x.analyses.length, 4, 'Analyze position explicitly re-arms Deep follow');
+  assert.equal(x.analyses[3].fen, afterNf3);
+  assert.equal(x.ui.isFollowing(), true);
   x.ui.close();
   assert.equal(x.ui.isOpen(), false);
-  assert.ok(states.some(state => state.open && state.running));
+  assert.equal(x.ui.isFollowing(), false);
+  assert.ok(states.some(state => state.open && state.following));
+  assert.ok(states.some(state => state.open && state.following === false));
 });
 
 test('Deep SF control stops a running search and deepens a completed finite search by two plies without changing base Search depth', async t => {

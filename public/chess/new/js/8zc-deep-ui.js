@@ -23,9 +23,9 @@
     const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0;
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
-    let manualStoppedFen = null, pendingLiveScroll = null;
+    let manualStoppedFen = null, pendingLiveScroll = null, followActive = false;
     const Chess = host.Chess || root.Chess;
-    const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), fen: pinned?.fen || null });
+    const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
     const notifyState = () => host.onStateChange?.(state());
     function setPinned(context, options = {}) {
       const next = typeof context === 'string' ? { fen: context } : Object.assign({}, context);
@@ -41,7 +41,7 @@
     function open(context) {
       if (!panel.hidden) return;
       try {
-        if (host.pause) host.pause('deep-analysis');
+        if (host.pause) host.pause('deep-panel');
         const next = context || host.getContext?.();
         const fen = typeof next === 'string' ? next : next?.fen;
         if (!fen || next?.assistanceLocked || pinned?.fen !== fen) { setPinned(next); deepScroll = 0; }
@@ -63,7 +63,7 @@
       ++run; engine?.stop();
       if (wasRunning) el('status').textContent = result?.lines?.length ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
       el('start').disabled = !pinned; el('stop').disabled = true;
-      deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null;
+      deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null; followActive = false;
       workspace.classList.remove('is-deep-analysis');
       if (workspaceLabel === null) workspace.removeAttribute('aria-label'); else workspace.setAttribute('aria-label', workspaceLabel);
       trigger?.setAttribute('aria-expanded', 'false');
@@ -170,6 +170,7 @@
         const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: rootMoves(),
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':');
+        if (!options.automatic) followActive = true;
         if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
         else if (kind === 'infinite') opts.infinite = true;
         else opts[kind] = Number(value);
@@ -187,19 +188,20 @@
         if (host.onResult) host.onResult(done);
       } catch (e) { if (token === run) el('status').textContent = e.name === 'AbortError' ? 'Analysis cancelled.' : e.message; }
       finally {
-        if (token === run) { el('start').disabled = false; el('stop').disabled = true; notifyState(); }
+        if (token === run) { el('start').disabled = false; el('stop').disabled = !followActive; notifyState(); }
       }
     }
     function stopCurrent() {
-      if (!engine?.isRunning?.()) return false;
+      if (!followActive && !engine?.isRunning?.()) return false;
+      followActive = false;
       manualStoppedFen = pinned?.fen || null;
-      ++run; engine.stop();
+      ++run; engine?.stop();
       el('start').disabled = !pinned; el('stop').disabled = true;
-      el('status').textContent = 'Stopped; the next move will analyze automatically.';
+      el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
       notifyState(); return true;
     }
     function deepenOrStop() {
-      if (panel.hidden || !pinned) return false;
+      if (panel.hidden || !pinned || !followActive) return false;
       if (engine?.isRunning?.()) return stopCurrent();
       const [kind, value] = el('budget').value.split(':');
       if (kind === 'infinite') { start({ reveal: false }); return true; }
@@ -207,14 +209,15 @@
         ...((result?.lines || []).map(line => Number(line.depth) || 0)));
       start({ depthOverride: Math.min(128, reached + 2), reveal: false }); return true;
     }
-    el('start').onclick = () => start(); el('stop').onclick = stopCurrent;
+    el('start').onclick = () => start({ automatic: false }); el('stop').onclick = stopCurrent;
     el('close').onclick = close;
     el('use').onclick = () => {
       engine?.stop(); ++run; pinned = null;
-      try { if (host.pause) host.pause('deep-analysis'); setPinned(host.getContext?.()); }
+      try { if (host.pause) host.pause(followActive ? 'deep-analysis' : 'deep-panel'); setPinned(host.getContext?.()); }
       catch (e) { el('status').textContent = e.message; }
-      el('start').disabled = !pinned; el('stop').disabled = true;
-      if (pinned && !panel.hidden) start({ automatic: true, reveal: false });
+      el('start').disabled = !pinned; el('stop').disabled = !followActive;
+      if (pinned && !panel.hidden && followActive) start({ automatic: true, reveal: false });
+      else if (pinned && !panel.hidden) el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
     };
     el('save').onclick = async () => {
       if (!preview || !host.onSaveLine || el('save').disabled) return;
@@ -242,7 +245,12 @@
           if (keepMinHeight) panel.style.minHeight = keepMinHeight;
           workspace.scrollTop = keepScroll;
           root.requestAnimationFrame(() => { if (pendingLiveScroll !== null && !panel.hidden) workspace.scrollTop = pendingLiveScroll; });
-          start({ automatic: true, reveal: false });
+          if (followActive) start({ automatic: true, reveal: false });
+          else {
+            el('start').disabled = !pinned; el('stop').disabled = true;
+            el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
+            notifyState();
+          }
         } catch (e) {
           el('status').textContent = e.message; notifyState();
         }
@@ -257,7 +265,7 @@
       trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
       trigger.addEventListener('click', toggle);
     }
-    return { open, close, stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(),
+    return { open, close, stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
       destroy() { close(); ++run; liveUnsubscribe?.(); engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }

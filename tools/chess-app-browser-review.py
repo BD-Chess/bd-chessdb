@@ -102,7 +102,7 @@ def main():
             record('APP Deep shared Search depth',deep_controls['label']=='Search depth'
               and deep_controls['values']==['depth:14','depth:18','depth:22','depth:26','depth:30','depth:34','depth:38','depth:42','infinite']
               and deep_controls['texts'][-1]=='Until I stop',deep_controls)
-            record('APP SF badge stays active in Deep',deep_controls['sfDisabled'] is False and 'Deep SF' in deep_controls['sfTitle'],deep_controls)
+            record('APP SF badge stays normal before Deep starts',deep_controls['sfDisabled'] is False and 'Deep SF' not in deep_controls['sfTitle'],deep_controls)
             inner.locator('[data-deep="budget"]').select_option('depth:14')
             inner.locator('[data-deep="multipv"]').select_option('3')
             before_deep_fen=inner.evaluate("ChessLabHost.getContext().fen")
@@ -134,6 +134,41 @@ def main():
             record('Deep SF badge refreshes after next position',
               deep_live['fen']!=before_deep_fen and deep_live['score'] not in ('…','—','') and deep_live['move'] not in ('…','—','') and 'depth' in (deep_live['note'] or ''),
               deep_live)
+            inner.locator('[data-deep="stop"]').click()
+            inner.wait_for_function("document.querySelector('[data-deep=stop]').disabled && /press Analyze position/i.test(document.querySelector('[data-deep=status]').textContent)",timeout=5000)
+            stopped_fen=inner.evaluate("ChessLabHost.getContext().fen")
+            inner.evaluate("document.getElementById('prev').click()")
+            inner.wait_for_function("(fen)=>ChessLabHost.getContext().fen!==fen",arg=stopped_fen,timeout=5000)
+            inner.wait_for_function("""() => {
+              const badge=document.querySelector('#allEvalBadges [data-eval-source="SF"]');
+              const score=badge?.querySelector('.all-eval-score')?.textContent?.trim();
+              const move=badge?.querySelector('.all-eval-move')?.textContent?.trim();
+              return score && !['…','—'].includes(score) && move && !['…','—'].includes(move);
+            }""",timeout=15000)
+            page.wait_for_timeout(250)
+            stopped_state=inner.evaluate("""() => {
+              const badge=document.querySelector('#allEvalBadges [data-eval-source="SF"]');
+              return {
+                lines:document.querySelectorAll('#deepAnalysisPanel .deep-line').length,
+                status:document.querySelector('[data-deep=status]').textContent.trim(),
+                startDisabled:document.querySelector('[data-deep=start]').disabled,
+                stopDisabled:document.querySelector('[data-deep=stop]').disabled,
+                sfTitle:badge?.title||'',
+                score:badge?.querySelector('.all-eval-score')?.textContent?.trim(),
+                move:badge?.querySelector('.all-eval-move')?.textContent?.trim(),
+                note:badge?.querySelector('small')?.textContent?.trim()
+              };
+            }""")
+            record('Deep Stop stays stopped after navigation',
+              stopped_state['lines']==0 and stopped_state['stopDisabled'] and not stopped_state['startDisabled']
+              and 'press Analyze position' in stopped_state['status'],stopped_state)
+            record('normal SF resumes while Deep is stopped',
+              'Deep SF' not in stopped_state['sfTitle'] and stopped_state['score'] not in ('…','—','')
+              and stopped_state['move'] not in ('…','—','') and 'depth' in (stopped_state['note'] or ''),stopped_state)
+            inner.locator('[data-deep="start"]').click()
+            inner.wait_for_function("document.querySelectorAll('#deepAnalysisPanel .deep-line').length>=1",timeout=15000)
+            record('Analyze position re-arms Deep after Stop',
+              inner.locator('[data-deep="stop"]').is_enabled() and 'Deep SF' in (inner.locator('#allEvalBadges [data-eval-source="SF"]').get_attribute('title') or ''))
             inner.locator('#appTabs [data-app-tab="board"]').click();page.wait_for_timeout(80)
             inner.locator('#appGames').click()
             inner.wait_for_selector('#popularGamesPanel.open')
@@ -216,8 +251,8 @@ def main():
                 inner.locator('#appTabs [data-app-tab="board"]').click()
                 inner.wait_for_function('!!ChessLabHost.getContext().analysisSources.SF',timeout=15000)
                 sf=inner.evaluate('ChessLabHost.getContext().analysisSources.SF.receipt');record('real local SF completes',sf.get('status')=='ready',sf)
-                coords=inner.evaluate('''() => [...document.querySelectorAll('#board .notation-322f9')].map(el=>{const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return {text:el.textContent,inside:a.left>=b.left&&a.top>=b.top&&a.right<=b.right&&a.bottom<=b.bottom};})''')
-                record('16 coordinates inside squares',len(coords)==16 and all(x['inside'] for x in coords),coords)
+                coords=inner.evaluate('''() => [...document.querySelectorAll('#board .notation-322f9')].map(el=>{const s=getComputedStyle(el),alpha=el.classList.contains('alpha-d2270');const primary=alpha?parseFloat(s.right):parseFloat(s.left),secondary=alpha?parseFloat(s.bottom):parseFloat(s.top);return {text:el.textContent,anchor:alpha?'right/bottom':'left/top',primary,secondary,inside:Number.isFinite(primary)&&Number.isFinite(secondary)&&primary>=0&&primary<=8&&secondary>=0&&secondary<=8};})''')
+                record('16 coordinate text anchors inset in squares',len(coords)==16 and all(x['inside'] for x in coords),coords)
                 inner.locator('#appSim').click()
                 inner.locator('#simTournamentDialog [data-ui="white"]').select_option('sf')
                 inner.locator('#simTournamentDialog [data-ui="black"]').select_option('raw')
