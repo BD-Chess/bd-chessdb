@@ -37,6 +37,9 @@ jobs:
           if(c.split(ca).length!==2)throw Error('Framed overlay repair anchor changed');
           c=c.replace(ca,'body[data-app-surface][data-app-framed-preview=true] .pl-tabs{transform:translateY(24px)}\n/* Relative offset preserves placement without trapping fixed overlays under the scrim. */\nbody[data-app-surface][data-app-framed-preview=true] .main{transform:none;top:24px}');fs.writeFileSync(cp,c);
           const t='tests/sudoku-app-boot-r4-browser.cjs';let b=fs.readFileSync(t,'utf8');
+          const waitOld="const frame=page.frames().find(f=>/app\\.html/.test(f.url()));assert.ok(frame,'APP iframe loaded');";
+          if(b.split(waitOld).length!==2)throw Error('Iframe test anchor drift');
+          b=b.replace(waitOld,"const frame=await (await page.locator('#game').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\\.html/,{waitUntil:'load',timeout:12000});");
           const at=b.indexOf("assert.deepEqual(errors,[],'no runtime errors');");if(at<0)throw Error('Browser test anchor drift');
           const extra=`
           // Real pointer hold + slide must still work with the numpad hidden.
