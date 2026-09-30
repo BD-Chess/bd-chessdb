@@ -1,10 +1,10 @@
-# Flip4M Violet LAB / APP
+# Flip4M Petrol LAB / APP
 
-Version 2.2.0-violet, 2026-09-30. Design: Bojan Dobrečevič (BD); implementation and verification: GPT. Existing engine authorship is preserved in source.
+Version 2.3.0-petrol, 2026-09-30. Design: Bojan Dobrečevič (BD); implementation and verification: GPT. Existing engine authorship is preserved in source.
 
 ## Scope
 
-Approved Violet family design for `public/F4M/new/` and `public/F4M/app/`, one shared engine in `_shared/violet-2.2.0/`, and a non-destructive legacy `PWA/` migration. CURRENT, PREVIOUS, ChessBest and Sudoku are unchanged by this release. No Water/Laser, native app or TestFlight change.
+Approved Petrol Night + Gold family design for `public/F4M/new/` and `public/F4M/app/`, one shared engine in `_shared/petrol-2.3.0/`, and a non-destructive legacy `PWA/` migration. CURRENT, PREVIOUS, ChessBest and Sudoku are unchanged by this release. Board size is user-selectable (Standard / Large / Max), with Max as the default; Standard preserves the 2.2 geometry. No Water/Laser, native app or TestFlight change.
 
 ## Rebuild / bounded verification
 
@@ -21,7 +21,7 @@ Build verifies donor Git blob hashes before writes. It reads CURRENT 2.1.2-smart
 
 ## Evidence
 
-Bounded Chromium CI: 97/97 checks, no page JavaScript errors. Run 36646466838, source/test commit ad017325deea055b1ba15212dc2640a7517b5bd3, generated verified commit d3a616917cf5b197981606ef9e4a366d160bcbd1. Tests cover gameplay/Undo, actual AI Worker, save/import/readback, APP widths and resize, both offline channels, failed-save update refusal, another tab not reloading, and legacy copy/refusal/export. CI uses disposable browser profiles. This is engineering evidence, not engine-strength evidence. Physical iPhone/Safari installation acceptance has not been performed.
+Prior Violet bounded Chromium CI: 97/97 checks; this Petrol revision adds targeted palette and board-scale checks, no page JavaScript errors. Run 36646466838, source/test commit ad017325deea055b1ba15212dc2640a7517b5bd3, generated verified commit d3a616917cf5b197981606ef9e4a366d160bcbd1. Tests cover gameplay/Undo, actual AI Worker, save/import/readback, APP widths and resize, both offline channels, failed-save update refusal, another tab not reloading, and legacy copy/refusal/export. CI uses disposable browser profiles. This is engineering evidence, not engine-strength evidence. Physical iPhone/Safari installation acceptance has not been performed.
 
 ## Channel safety
 
