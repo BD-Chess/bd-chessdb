@@ -26,7 +26,7 @@ async function run(){
     const initial=fixture('solve-r5-'+name+'-'+mode,phone?'hard':'evil');
     await frame.evaluate(s=>window.SudokuNavigator.restore(s),initial);await frame.waitForFunction(()=>!window.SudokuNavigator.ui.blocked());
     await frame.locator('[data-sudoku-language="'+(phone?'sl':'en')+'"]').click();
-    await frame.evaluate(()=>{document.querySelector('.cell[data-index="3"]').click();document.querySelector('#notesBtn').click();[...document.querySelectorAll('#numpad button')].find(b=>b.textContent.trim()==='6')?.click();});
+    await frame.evaluate(()=>{document.querySelector('.cell[data-index="3"]').click();const notes=document.querySelector('#notesBtn'),was=notes.classList.contains('active');if(was)notes.click();[...document.querySelectorAll('#numpad button')].find(b=>b.textContent.trim()==='6')?.click();if(was)notes.click();});
     await frame.waitForTimeout(80);
     const humanEvidence=await frame.evaluate(()=>window.SudokuNavigator.product.reviewRows());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
     const initialPosition=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
