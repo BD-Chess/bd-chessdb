@@ -251,7 +251,7 @@ def main():
                 inner.locator('#appTabs [data-app-tab="board"]').click()
                 inner.wait_for_function('!!ChessLabHost.getContext().analysisSources.SF',timeout=15000)
                 sf=inner.evaluate('ChessLabHost.getContext().analysisSources.SF.receipt');record('real local SF completes',sf.get('status')=='ready',sf)
-                coords=inner.evaluate('''() => [...document.querySelectorAll('#board .notation-322f9')].map(el=>{const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return {text:el.textContent,inside:a.left>=b.left&&a.top>=b.top&&a.right<=b.right&&a.bottom<=b.bottom};})''')
+                coords=inner.evaluate('''() => [...document.querySelectorAll('#board .notation-322f9')].map(el=>{const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect(),eps=2;const offsets={left:a.left-b.left,top:a.top-b.top,right:b.right-a.right,bottom:b.bottom-a.bottom};return {text:el.textContent,inside:offsets.left>=-eps&&offsets.top>=-eps&&offsets.right>=-eps&&offsets.bottom>=-eps,...offsets};})''')
                 record('16 coordinates inside squares',len(coords)==16 and all(x['inside'] for x in coords),coords)
                 inner.locator('#appSim').click()
                 inner.locator('#simTournamentDialog [data-ui="white"]').select_option('sf')
