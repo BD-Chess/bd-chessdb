@@ -1,0 +1,119 @@
+name: Flip4M APP Review 2.5.0 live verification
+on:
+  push:
+    branches: ['flip4m/app-review-250-20261001-r1']
+    paths: ['.github/workflows/flip4m-app-review-250-live.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fb36db6fb7912c814ac47eedeb12ad6d04278812
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify published Review release
+        shell: python
+        run: |
+          import hashlib,json,time,urllib.request,datetime
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          ROOT=Path('public/F4M');BASE='https://bd-chess.github.io/bd-chessdb/F4M/'
+          OUT=Path('flip4m-review-live');OUT.mkdir(exist_ok=True)
+          checks=[];error=None
+          def check(name,ok,detail=None):
+              checks.append({'name':name,'pass':bool(ok),'detail':detail})
+              print(('PASS ' if ok else 'FAIL ')+name,flush=True)
+              if not ok: raise AssertionError(name+': '+str(detail))
+          def fetch(path):
+              req=urllib.request.Request(BASE+path+'?release=fb36db6fb7912c814ac47eedeb12ad6d04278812',headers={'Cache-Control':'no-cache','User-Agent':'Flip4M-review-live-verifier'})
+              with urllib.request.urlopen(req,timeout=15) as r:return r.read(),r.status,r.geturl()
+          def idle(page):
+              page.wait_for_function("window.F4MLab&&!F4MLab.status().loading&&!F4MLab.status().thinking&&!F4MLab.status().animating",timeout=25000)
+          def snap(page):
+              return page.evaluate("""() => {const s=F4MLab.snapshot();return {cursor:s.cursor,states:s.states,moves:s.moves,records:s.records,game:s.game};}""")
+          def drop(page,col):
+              page.locator(f'#matrix .cell[data-c="{col}"]').last.click();idle(page)
+          try:
+              manifest_path='_shared/petrol-2.5.0/build-manifest.json'
+              expected=(ROOT/manifest_path).read_bytes();got=None
+              for _ in range(12):
+                  try:
+                      got,status,url=fetch(manifest_path)
+                      if got==expected:break
+                  except Exception:pass
+                  time.sleep(5)
+              check('Exact 2.5.0 manifest published',got==expected)
+              manifest=json.loads(expected)
+              for path,digest in manifest.items():
+                  body,status,url=fetch(path)
+                  check('Published '+path,status==200 and hashlib.sha256(body).hexdigest()==digest,{'status':status,'sha256':hashlib.sha256(body).hexdigest()})
+              for name in ('index.html','manifest.webmanifest','release.json','sw.js'):
+                  body,status,url=fetch('app/old/002/'+name)
+                  check('Published old/002 '+name,status==200 and body==(ROOT/'app/old/002'/name).read_bytes())
+              with sync_playwright() as p:
+                  browser=p.chromium.launch()
+                  ctx=browser.new_context(viewport={'width':1280,'height':1000})
+                  ctx.add_init_script("""localStorage.setItem('flip4m.app.2.2.preferences',JSON.stringify({mode:'pvp',tools:'2',difficulty:'beginner',first:'human',cpuEngine:'classical',demoRed:'classical',demoYellow:'dcc',showTimers:false,showTimestamps:false,timeControl:'0',guard:'12',sensorGs:true,sensorMr:true,sensorThrift:true,sensorPath:true}));""")
+                  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+                  page.goto(BASE+'app/?release=fb36db6fb7912c814ac47eedeb12ad6d04278812');idle(page);page.wait_for_function('window.F4MReview&&window.F4MPWA',timeout=20000)
+                  check('Live APP runtime 2.5.0',page.evaluate("F4MLab.version==='2.5.0-petrol'"))
+                  check('Live Review tab present',page.locator('#tab-review').count()==1 and page.locator('#workspaceTabs button').count()==5)
+                  page.locator('#newGame').click();page.locator('#setupPanel').wait_for(state='visible');page.locator('#mode').select_option('pvp');page.locator('#tools').select_option('2');page.locator('#start').click();idle(page)
+                  drop(page,3);drop(page,4);page.locator('#flipLeft').click();idle(page);drop(page,2)
+                  before=snap(page);n=before['cursor'];check('Live review fixture recorded',n>=4,n)
+                  page.locator('#tab-review').click();page.wait_for_function('F4MReview.active()')
+                  check('Live Review pauses game',page.evaluate('F4MLab.status().paused===true'))
+                  page.locator('#f4mReviewFirst').click();check('Live first position',page.evaluate('F4MReview.index()')==0)
+                  page.locator('#f4mReviewNext').click();check('Live next position',page.evaluate('F4MReview.index()')==1)
+                  check('Live board delta highlight',page.locator('#matrix .review-changed').count()>0)
+                  page.locator('#f4mReviewLast').click();check('Live last position',page.evaluate('F4MReview.index()')==n)
+                  page.locator('#f4mReviewPlay').click();page.wait_for_timeout(950);check('Live playback moves',page.evaluate('F4MReview.index()')<n)
+                  page.locator('#f4mReviewPlay').click()
+                  check('Live Review is read-only',snap(page)==before)
+                  page.locator('#f4mReviewClose').click();check('Back to game preserves session',snap(page)==before)
+                  check('Back to game remains paused',page.evaluate('F4MLab.status().paused===true'))
+                  # Stored AI facts on the deployed runtime.
+                  page.locator('#newGame').click();page.locator('#setupPanel').wait_for(state='visible');page.locator('#mode').select_option('demo');page.locator('#difficulty').select_option('beginner');page.locator('#demoRed').select_option('classical');page.locator('#demoYellow').select_option('dcc');page.locator('#start').click()
+                  page.wait_for_function('F4MLab.status().cursor>=3&&!F4MLab.status().thinking&&!F4MLab.status().animating',timeout=30000)
+                  if not page.evaluate('F4MLab.status().paused'):page.locator('#pause').click()
+                  ai=snap(page);page.locator('#tab-review').click();page.wait_for_function('F4MReview.active()');page.locator('#f4mReviewPrev').click()
+                  check('Live stored AI analysis shown',page.locator('#f4mReviewDetail .review-analysis').count()==1)
+                  check('Live AI fact chips shown',page.locator('#f4mReviewDetail .review-chips span').count()>=2)
+                  page.locator('#f4mReviewHistory').click();check('Live History shortcut works',not page.evaluate('F4MReview.active()') and page.locator('#historyPanel').is_visible())
+                  check('History shortcut preserves AI session',snap(page)==ai)
+                  page.locator('#tab-board').click();page.evaluate('F4MLab.saveForUpdate()');page.wait_for_function("F4MPWA.state==='ready'",timeout=30000);page.reload();idle(page);page.wait_for_timeout(300)
+                  check('Live APP service worker controls',page.evaluate('!!navigator.serviceWorker.controller'))
+                  ctx.set_offline(True);page.reload();idle(page);page.wait_for_function('window.F4MReview',timeout=15000)
+                  check('Live offline cold Review',page.locator('#tab-review').count()==1)
+                  ctx.set_offline(False);check('Live desktop no JS errors',not errors,errors)
+                  page.screenshot(path=str(OUT/'live-desktop-review.png'),full_page=True);ctx.close()
+                  phone_ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1')
+                  phone_ctx.add_init_script("""localStorage.setItem('flip4m.app.2.2.preferences',JSON.stringify({mode:'pvp',tools:'2',difficulty:'beginner'}));""")
+                  phone=phone_ctx.new_page();perrors=[];phone.on('pageerror',lambda e:perrors.append(str(e)));phone.goto(BASE+'app/?release=fb36db6fb7912c814ac47eedeb12ad6d04278812');idle(phone);phone.wait_for_function('window.F4MReview',timeout=15000)
+                  phone.locator('#newGame').click();phone.locator('#setupPanel').wait_for(state='visible');phone.locator('#mode').select_option('pvp');phone.locator('#start').click();idle(phone);drop(phone,3);drop(phone,4);phone.locator('#tab-review').click();phone.wait_for_function('F4MReview.active()')
+                  check('Live phone five Review controls',phone.locator('.review-nav button').count()==5)
+                  check('Live phone no horizontal overflow',phone.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+                  check('Live phone no JS errors',not perrors,perrors)
+                  phone.screenshot(path=str(OUT/'live-phone-review.png'),full_page=True);phone_ctx.close();browser.close()
+          except Exception as exc:
+              error=repr(exc);print(error,flush=True)
+          finally:
+              report={'commit':'fb36db6fb7912c814ac47eedeb12ad6d04278812','version':'2.5.0-petrol','time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'passed':sum(x['pass'] for x in checks),'checks':len(checks),'error':error,'physical_iPhone':'NOT_RUN','results':checks}
+              (OUT/'live-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+              print(json.dumps({k:v for k,v in report.items() if k!='results'}),flush=True)
+          if error:raise SystemExit(1)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-app-review-250-live-evidence
+          path: flip4m-review-live
+          retention-days: 7
