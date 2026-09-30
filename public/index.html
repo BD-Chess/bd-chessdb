@@ -793,7 +793,7 @@ const allowed=[location.hostname.toLowerCase(),'www.mdlxdcc.org','mdlxdcc.org'];
 let path=u.pathname;if(BASE_PATH!=='/'&&path.startsWith(BASE_PATH))path=path.slice(BASE_PATH.length);else path=path.replace(/^\//,'');
 return new URL(path+u.search+u.hash,BASE).href;
 }catch(_){return null;}}
-function key(raw){try{return new URL(raw,BASE).pathname.replace(/\.(?:html?|htm)$/i,'').replace(/\/index$/i,'').replace(/\/$/,'').toLowerCase();}catch(_){return '';}}
+function key(raw){try{const p=new URL(raw,BASE).pathname.replace(/\/index\.html$/i,'/').replace(/\/+$/,'');return p||'/';}catch(_){return '';}}
 let pages=seed.map((p,i)=>({url:new URL(p[0],BASE).href,title:p[1],aliases:p[2],description:p[3],sl:p[4],priority:320-i}));
 let indexState='idle',indexPromise=null;
 const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html','wake lab':'WL/index.html',o:'BD/O/index.html',osebno:'BD/O/index.html',bd:'BD/O/index.html',jaz:'BD/O/index.html',me:'BD/O/index.html',personal:'BD/O/index.html',sef:'BD/O/sef.html',sejf:'BD/O/sef.html',vault:'BD/O/sef.html',secret:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html','8zcontrol':'index-todo.html','8z control':'index-todo.html',control:'index-todo.html',now:'index-todo.html','ai8 state':'AI8/AI8-state.html','ai8-state':'AI8/AI8-state.html',state:'AI8/AI8-state.html'}),STORE='mdlxdcc-search-history-v1';
@@ -801,15 +801,12 @@ let history=[];try{const h=JSON.parse(read(STORE,'[]'));if(Array.isArray(h))hist
 const dialog=$('#search-dialog'),input=$('#search-input'),list=$('#search-results'),status=$('#search-status');let results=[],active=-1,returnFocus=null;
 async function loadIndex(){if(indexPromise)return indexPromise;indexState='loading';render();
 indexPromise=(async()=>{try{
-const r=await fetch(new URL('index-search.html',BASE),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw Error('Index unavailable');
-const doc=new DOMParser().parseFromString(await r.text(),'text/html'),node=doc.getElementById('site-search-index');if(!node)throw Error('No metadata index');
-const data=JSON.parse(node.textContent);if(!Array.isArray(data.items))throw Error('Invalid index');
+let data=null;
+try{const r=await fetch(new URL('site-search-index.json',BASE),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw Error('Global index unavailable');data=await r.json();if(!data||!Array.isArray(data.items))throw Error('Invalid global index');}
+catch(globalError){const r=await fetch(new URL('index-search.html',BASE),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw globalError;const doc=new DOMParser().parseFromString(await r.text(),'text/html'),node=doc.getElementById('site-search-index');if(!node)throw globalError;data=JSON.parse(node.textContent);if(!Array.isArray(data.items))throw globalError;}
 const map=new Map(pages.map(p=>[key(p.url),p]));
-for(const p of data.items){const url=localPath(p.url);if(!url||typeof p.title!=='string')continue;const k=key(url),old=map.get(k);map.set(k,old?{...old,aliases:old.aliases+' '+String(p.aliases||'')+' '+String(p.title||'')}:{url,title:p.title,description:String(p.description||''),aliases:String(p.aliases||''),priority:0});}
-pages=[...map.values()];indexState='ready';
-// Read sitemap locations only: do not crawl or index protected page bodies.
-try{const sr=await fetch(new URL('sitemap.xml',BASE),{credentials:'same-origin',cache:'no-cache'});if(sr.ok){const sm=new DOMParser().parseFromString(await sr.text(),'application/xml');if(!sm.querySelector('parsererror'))for(const n of sm.querySelectorAll('url > loc')){const url=localPath(n.textContent.trim()),k=url?key(url):'';if(!k||map.has(k))continue;const name=decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop()||'Home').replace(/\.(html?|htm)$/i,'').replace(/[_-]/g,' ');map.set(k,{url,title:name,description:'',aliases:name,priority:-20});}pages=[...map.values()];}}
-catch(_){}render();
+for(const p of data.items){const url=localPath(p.url);if(!url||typeof p.title!=='string')continue;const k=key(url),old=map.get(k);map.set(k,old?{...old,aliases:[old.aliases,String(p.aliases||''),String(p.title||''),String(p.category||'')].join(' '),description:old.description||String(p.description||'')}:{url,title:p.title,description:String(p.description||''),aliases:[String(p.aliases||''),String(p.category||'')].join(' '),priority:Number(p.priority)||0});}
+pages=[...map.values()];indexState='ready';render();
 }catch(_){indexState='fallback';indexPromise=null;render();}})();return indexPromise;
 }
 function shortlist(query){let q=norm(query);if(['mdldcc','mdlxdcc','8zmdldcc','8zmdlxdcc'].includes(q.replace(/\s+/g,'')))q='mdl dcc';const words=q.split(' ').filter(Boolean);if(!words.length)return [];
