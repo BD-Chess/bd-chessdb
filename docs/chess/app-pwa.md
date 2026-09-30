@@ -48,8 +48,14 @@ Physical iPhone Home Screen installation remains a device verification step.
 
 The APP runtime adds a compact CURRENT · PREVIOUS · LAB · APP row, EN | SL,
 centered ChessBest.org identity and a language choice stored only in
-`ChessBest:APP:v1:language`. The Board view can expose a compact Top line card:
+`ChessBest:APP:v1:language`. On the desktop preview header, the title stays to
+the left, channel navigation is centered, and Preview width stays to the right
+on the same top row.
+
+The Board view has a compact optional Top line card. Settings → Show Top line is
+OFF by default and persists only in `ChessBest:APP:v1:showTopLine`. When enabled,
 prefer a current CDB-derived measured line when one is present, otherwise use
-the current Stockfish PV; hide the card when neither source provides a usable
-line. The analysis status occupies its own compact row instead of squeezing the
-source controls.
+the current Stockfish PV. Sim / Play occupies about two-fifths of its row so the
+Analysis source selector gets more room. The iPhone Home Screen APP icon uses an
+8 + rook mark. The analysis status occupies its own compact row instead of
+squeezing the source controls.
