@@ -207,14 +207,24 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
 });
 
 
-test('APP Deep menu uses depth-only presets and APP CDB transport is not forced away from LAB semantics', () => {
+test('APP Deep menu uses shared Search depth presets including Until I stop and keeps one Deep SF control path', () => {
   const deep = read('js/8zc-deep-ui.js').toString();
+  const css = read('css/8zc-deep.css').toString();
+  const mobile = read('js/app-mobile.js').toString();
   const budget = deep.match(/<select data-deep="budget">([\s\S]*?)<\/select>/)?.[1] || '';
+  assert.match(deep, /<label>Search depth<select data-deep="budget">/);
   assert.deepEqual([...budget.matchAll(/value="depth:(\d+)"/g)].map(m => Number(m[1])), [14,18,22,26,30,34,38,42]);
-  assert.doesNotMatch(budget, /nodes:|infinite/);
+  assert.doesNotMatch(budget, /nodes:/);
+  assert.match(budget, /value="infinite">Until I stop/);
+  assert.match(css, /\.deep-pv\{[^}]*height:84px;[^}]*overflow:hidden/s);
+  assert.match(css, /\.deep-pv button\{[^}]*height:28px;[^}]*min-height:28px/s);
+  assert.match(mobile, /'Search depth':'Globina iskanja'/);
+  assert.match(mobile, /'Until I stop':'Dokler ne ustavim'/);
   const utils = read('js/8zc-utils.js').toString();
   assert.doesNotMatch(utils, /settings\.evalMode\s*=\s*['"]direct['"]/);
   assert.match(utils, /source === 'proxy' && action === 'queryall'/);
+  assert.match(utils, /deepUI\?\.isOpen\?\.\(\)/);
+  assert.match(utils, /deepUI\.deepenOrStop\?\.\(\)/);
   assert.match(utils, /ArrowUp/);
   assert.match(utils, /ArrowDown/);
   assert.match(utils, /e\.key==='ArrowUp' \|\| e\.key==='Home'/);
