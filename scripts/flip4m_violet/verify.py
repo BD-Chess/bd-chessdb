@@ -107,6 +107,13 @@ def verify(public: Path,out: Path,executable=None):
           app.set_viewport_size({'width':width,'height':height})
           check('APP fixed mode '+str(width),app.url.endswith('/app/') and app.locator('.device').is_visible() and app.locator('body').get_attribute('data-channel')=='app')
           check('APP board fills device '+str(width),app.locator('#playPanel').bounding_box()['width']>app.locator('.device-screen').bounding_box()['width']*.90)
+        app.set_viewport_size({'width':1280,'height':1280});app.locator('#previewWidth').select_option('390')
+        header_box=app.locator('.preview-header').bounding_box();device_box=app.locator('.device').bounding_box()
+        expected_center=(header_box['y']+header_box['height']+1280)/2
+        actual_center=device_box['y']+device_box['height']/2
+        check('APP phone centered in remaining desktop viewport',abs(actual_center-expected_center)<36,{'expected':expected_center,'actual':actual_center})
+        check('APP desktop body fills viewport',app.evaluate('document.body.getBoundingClientRect().height>=innerHeight'))
+        check('APP html Petrol background',app.evaluate("getComputedStyle(document.documentElement).backgroundColor in ['rgb(11, 17, 25)','rgba(11, 17, 25, 1)']"))
         app.set_viewport_size({'width':1440,'height':1080});app.locator('#previewWidth').select_option('390')
         for col in (3,4,3):drop(app,col)
         app.screenshot(path=str(out/'app-desktop.png'),full_page=True)
@@ -133,7 +140,7 @@ def verify(public: Path,out: Path,executable=None):
         # Real update handshake. Only the test server's SW file is temporarily changed.
         page.locator('#tab-board').click();second=ctx.new_page();second.goto(base+'new/');wait_idle(second)
         navs=[];second.on('framenavigated',lambda f:navs.append(f.url) if f==second.main_frame else None)
-        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.3.0-petrol"','const BUILD="2.3.0-petrol-test"',1))
+        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.3.1-petrol"','const BUILD="2.3.1-petrol-test"',1))
         page.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
         page.wait_for_function("document.getElementById('pwaToast').hidden===false",timeout=25000)
         check('Update waits for consent',page.evaluate("navigator.serviceWorker.getRegistration().then(r=>!!r.waiting)"))
