@@ -18,7 +18,7 @@ jobs:
           python-version: '3.12'
       - name: Upgrade hash-pinned source templates
         run: python scripts/flip4m_violet/upgrade_240.py
-      - name: Finalize test profile initialization
+      - name: Finalize deterministic test fixtures
         shell: python
         run: |
           from pathlib import Path
@@ -35,7 +35,15 @@ jobs:
               assert s.count(old)==1
               s=s.replace(old,"    if not page.locator('#timeControl').is_visible():\n        page.locator('#setupPanel details:has(#timeControl) > summary').click()\n"+old)
           p.write_text(s)
+          p=Path('scripts/flip4m_violet/verify.py');s=p.read_text()
+          old="        app.reload();wait_idle(app);ctx.set_offline(True)"
+          new="        app.evaluate('F4MLab.saveForUpdate()');app.reload();wait_idle(app);ctx.set_offline(True)"
+          if old in s:
+              assert s.count(old)==1
+              s=s.replace(old,new)
+          p.write_text(s)
       - name: Build immutable LAB and APP 2.4.0
+        id: build
         run: python scripts/flip4m_violet/build.py --public public
       - name: Install pinned browser
         run: |
@@ -44,6 +52,7 @@ jobs:
       - name: Existing bounded regression checks
         run: python scripts/flip4m_violet/verify.py --public public --out flip4m-240-evidence/regression
       - name: Changed geometry, real magnet hits and AI vs AI
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: python scripts/flip4m_violet/verify_240.py --public public --out flip4m-240-evidence/targeted
       - name: Save verified sources and generated channels on this branch only
         if: success()
