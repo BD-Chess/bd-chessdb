@@ -28,7 +28,7 @@ async function run(){
     await frame.locator('[data-sudoku-language="'+(phone?'sl':'en')+'"]').click();
     await frame.evaluate(()=>{document.querySelector('.cell[data-index="3"]').click();document.querySelector('#notesBtn').click();[...document.querySelectorAll('#numpad button')].find(b=>b.textContent.trim()==='6')?.click();});
     await frame.waitForTimeout(80);
-    const humanEvidence=await frame.evaluate(()=>window.AI8SudokuProofPreview.review());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
+    const humanEvidence=await frame.evaluate(()=>window.SudokuNavigator.product.reviewRows());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
     const initialPosition=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
     // Existing AI Assist selects a suggested/problem cell without changing any
     // entries. Pin the precise pre-solve position AFTER opening that panel.
