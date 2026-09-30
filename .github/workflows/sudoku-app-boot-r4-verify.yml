@@ -42,6 +42,8 @@ jobs:
           b=once(b,waitOld,"const frame=await (await page.locator('#game').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\\.html/,{waitUntil:'load',timeout:12000});");
           b=once(b,"const report={cases:[],errors:[]};","const report={cases:[],errors:[],navigation:[]};");
           b=once(b,"page.on('pageerror',e=>errors.push(e.message));","page.on('pageerror',e=>errors.push(e.message));page.on('framenavigated',f=>report.navigation.push({name,mode,url:f.url(),at:Date.now()}));");
+          b=once(b,'await frame.evaluate(l=>window.SudokuI18n.set(l),lang);await page.waitForTimeout(180);',`await frame.locator('[data-sudoku-language="'+lang+'"]').click();await frame.waitForFunction(l=>window.SudokuI18n.get()===l,lang);await page.waitForTimeout(180);
+          const retained=await frame.evaluate(()=>window.SudokuNavigator.export().session);assert.equal(retained.gameId,fixture.gameId);assert.equal(retained.diff,diff);assert.deepEqual(retained.board,fixture.board);`);
           const at=b.indexOf("assert.deepEqual(errors,[],'no runtime errors');");if(at<0)throw Error('Browser test anchor drift');
           const extra=`
           // Real pointer hold + slide must still work with the numpad hidden.
@@ -59,6 +61,7 @@ jobs:
            assert.ok(geometry.error<=12,'resize centering '+JSON.stringify({size,geometry}));assert.ok(geometry.bottom<geometry.dock);assert.match(frame.url(),/app\\.html/);
            report.cases.push({name,mode,resize:size,...geometry});
           }
+          assert.equal(report.navigation.filter(x=>x.name===name&&x.mode===mode&&/app\\.html/.test(x.url)).length,1,'APP must not reload during interaction');
           `;
           b=b.slice(0,at)+extra+b.slice(at);
           b=once(b,"}catch(e){await page.screenshot",`}catch(e){report.diagnostics={name,mode,pageErrors:errors,frames:[]};for(const f of page.frames()){try{report.diagnostics.frames.push(await f.evaluate(()=>({url:location.href,visibility:document.visibilityState,body:document.body?.dataset,main:document.querySelector('.main')?.style.cssText,welcome:document.querySelector('#welcomeOverlay')?.className})));}catch(_){}}await page.screenshot`);
