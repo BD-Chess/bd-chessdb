@@ -66,7 +66,7 @@
   'Review':'◎','Pregled':'◎','Settings':'⚙','Nastavitve':'⚙','Help / About':'?',
   'Pomoč / O igri':'?','Import session':'⇩','Uvozi igro':'⇩','Export session':'⇧','Izvozi igro':'⇧',
   'Delete all APP data':'⌫','Izbriši vse podatke APP':'⌫','App · offline & updates':'◌',
-  'Aplikacija · brez povezave in posodobitve':'◌','AI solve review':'◀▶','Pregled AI reševanja':'◀▶'
+  'Aplikacija · brez povezave in posodobitve':'◌','AI solve review':'◀▶','Pregled AI reševanja':'◀▶','Human solve review':'◎','Pregled človeškega reševanja':'◎'
  };
  function decorateMenuButton(button){
   if(button.dataset.appDecorated)return;
@@ -109,6 +109,16 @@
    }
    aiReview.hidden=false;aiReview.textContent=isSl()?'Pregled AI reševanja':'AI solve review';delete aiReview.dataset.appDecorated;
   }else if(aiReview)aiReview.hidden=true;
+  let humanReview=$('appMoreHumanReview'),humanRows=[];
+  try{humanRows=window.AI8SudokuProofPreview?.review?.()||[];}catch(_){}
+  if(humanRows.length){
+   if(!humanReview){
+    humanReview=document.createElement('button');humanReview.className='btn';humanReview.id='appMoreHumanReview';
+    primary.append(humanReview);
+    humanReview.onclick=()=>{$('navClose')?.click();queueMicrotask(()=>window.SudokuSolveReview?.openHuman?.());};
+   }
+   humanReview.hidden=false;humanReview.textContent=isSl()?'Pregled človeškega reševanja':'Human solve review';delete humanReview.dataset.appDecorated;
+  }else if(humanReview)humanReview.hidden=true;
   decorateMore();
  }
  function enhanceSettings(){
