@@ -4289,6 +4289,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  const instruments=document.createElement('section');
  instruments.id='appSolveInstruments';instruments.hidden=true;instruments.setAttribute('data-no-i18n','');
  instruments.innerHTML=
+  '<button type="button" class="app-sensors-overview-open" id="appSolveSensorsOverviewOpen" aria-haspopup="dialog"><span id="appSensorsOverviewKicker">SENSORS</span><span id="appSensorsOverviewHint">Tap for guide</span><span class="app-sensors-overview-q" aria-hidden="true">?</span></button>'+
   Object.entries(sensorDefs).map(([key,d])=>
   '<button type="button" class="app-pos-sensor" data-sensor="'+key+'"><span class="app-pos-abbr">'+d.abbr+'</span><span class="app-pos-track"><span class="app-pos-fill"></span></span><span class="app-pos-value">—</span><span class="app-pos-tooltip"></span></button>'
  ).join('');
@@ -4296,7 +4297,9 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  const sensorModal=document.createElement('div');sensorModal.id='appSolveSensorModal';sensorModal.hidden=true;sensorModal.innerHTML=
   '<div class="app-sensor-sheet" role="dialog" aria-modal="true" aria-labelledby="appSensorTitle"><button type="button" id="appSensorClose" aria-label="Close">×</button><h2 id="appSensorTitle"></h2><div id="appSensorValue"></div><p id="appSensorText"></p><p id="appSensorDirection"></p></div>';
  document.body.append(sensorModal);
-
+ const sensorOverview=document.createElement('div');sensorOverview.id='appSolveSensorsOverview';sensorOverview.hidden=true;sensorOverview.innerHTML=
+  '<section class="app-sensors-overview" role="dialog" aria-modal="true" aria-labelledby="appSensorsOverviewTitle"><button type="button" id="appSensorsOverviewClose" aria-label="Close">×</button><div class="app-sensors-overview-scroll"><div class="app-sensors-overview-eyebrow" id="appSensorsOverviewEyebrow"></div><h2 id="appSensorsOverviewTitle"></h2><p class="app-sensors-overview-intro" id="appSensorsOverviewIntro"></p><div class="app-sensors-overview-meta" id="appSensorsOverviewMeta"></div><div class="app-sensors-overview-list" id="appSensorsOverviewList"></div><section class="app-sensors-overview-reading"><h3 id="appSensorsOverviewReadTitle"></h3><p id="appSensorsOverviewReadText"></p></section><p class="app-sensors-overview-caveat" id="appSensorsOverviewCaveat"></p></div></section>';
+ document.body.append(sensorOverview);
 
  const style=document.createElement('style');style.id='app-solve-review-style';
  style.textContent=[
@@ -4305,12 +4308,14 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
   'body[data-app-solve-review=true] .header,body[data-app-solve-review=true] .title-block,body[data-app-solve-review=true] .pl-tabs{display:none!important}',
   'body[data-app-solve-review=true][data-app-framed-preview=true] .pl-tabs{transform:none!important}',
   '#appSolveInstruments{width:min(100%,760px);margin:2px auto 9px;padding:5px 8px 6px;border:1px solid #1d4054;border-radius:10px;background:#07111dcc;display:grid;gap:3px}',
+  '.app-sensors-overview-open{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;width:100%;min-height:20px;padding:0 0 4px;margin:0 0 2px;border:0;border-bottom:1px solid #183247;background:transparent;color:#7f98af;text-align:left;cursor:pointer}.app-sensors-overview-open:hover,.app-sensors-overview-open:focus-visible{color:#d8f8ff;outline:none}.app-sensors-overview-open #appSensorsOverviewKicker{font:800 .52rem/1 monospace;letter-spacing:.13em;color:#63dceb}.app-sensors-overview-open #appSensorsOverviewHint{font:650 .50rem/1 system-ui;color:#6f879d}.app-sensors-overview-q{display:grid;place-items:center;width:16px;height:16px;border:1px solid #31546a;border-radius:50%;font:800 .57rem/1 system-ui;color:#83e9f5}',
   '.app-pos-sensor{position:relative;display:grid;grid-template-columns:36px 1fr 38px;align-items:center;gap:7px;width:100%;min-height:16px;padding:0;border:0;background:transparent;color:#8ea5bd;text-align:left;cursor:pointer}',
   '.app-pos-abbr{font:700 .54rem/1 monospace;letter-spacing:.04em}.app-pos-track{height:3px;border-radius:999px;background:#1b2a38;overflow:hidden}.app-pos-fill{display:block;width:0;height:100%;border-radius:inherit;background:#38d6eb;transition:width 160ms ease}.app-pos-value{font:650 .52rem/1 monospace;text-align:right;color:#6f879d}',
-  '.app-pos-sensor:nth-of-type(2) .app-pos-fill{background:#62d39d}.app-pos-sensor:nth-of-type(3) .app-pos-fill{background:#e7c66b}.app-pos-sensor:nth-of-type(4) .app-pos-fill{background:#f0a36d}.app-pos-sensor:nth-of-type(5) .app-pos-fill{background:#9ca7b5}',
+  '.app-pos-sensor:nth-child(2) .app-pos-fill{background:#62d39d}.app-pos-sensor:nth-child(3) .app-pos-fill{background:#e7c66b}.app-pos-sensor:nth-child(4) .app-pos-fill{background:#f0a36d}.app-pos-sensor:nth-child(5) .app-pos-fill{background:#9ca7b5}',
   '.app-pos-tooltip{display:none;position:absolute;left:39px;top:-19px;z-index:4;padding:3px 6px;border:1px solid #355269;border-radius:6px;background:#0a1622;color:#d8e5f1;font:650 .58rem/1.2 system-ui;white-space:nowrap;box-shadow:0 4px 14px #0008}',
   '@media(hover:hover){.app-pos-sensor:hover .app-pos-tooltip,.app-pos-sensor:focus-visible .app-pos-tooltip{display:block}}',
   '#appSolveSensorModal{position:fixed;inset:0;z-index:1600;background:#020812b8;display:flex;align-items:flex-end;justify-content:center;padding:14px}.app-sensor-sheet{position:relative;width:min(100%,520px);padding:18px 18px 20px;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b}.app-sensor-sheet h2{margin:0 28px 8px 0;font:800 1rem/1.2 system-ui;color:#79efff}.app-sensor-sheet p{margin:8px 0;font:600 .78rem/1.45 system-ui;color:#b8c8d8}#appSensorValue{font:800 .86rem/1.2 monospace;color:#eef7ff}#appSensorClose{position:absolute;right:10px;top:8px;border:0;background:none;color:#dbe7f4;font-size:1.5rem;cursor:pointer}',
+  '#appSolveSensorsOverview{position:fixed;inset:0;z-index:1700;background:#07111d;color:#dbe7f4;overflow:auto;overscroll-behavior:contain;padding:max(22px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.app-sensors-overview{position:relative;width:min(100%,720px);min-height:100%;margin:0 auto}.app-sensors-overview-scroll{padding:18px 0 28px}.app-sensors-overview-eyebrow{font:800 .58rem/1 monospace;letter-spacing:.16em;color:#62d8e8;margin:0 44px 9px 0}.app-sensors-overview h2{margin:0 44px 10px 0;font:850 clamp(1.35rem,5vw,2rem)/1.1 system-ui;color:#f0f7ff}.app-sensors-overview-intro{margin:0 0 12px;font:650 .88rem/1.5 system-ui;color:#c3d2e1}.app-sensors-overview-meta{margin:0 0 14px;padding:8px 10px;border:1px solid #28465b;border-radius:10px;background:#0b1927;font:700 .70rem/1.35 system-ui;color:#8fa8be}.app-sensors-overview-list{display:grid;gap:8px}.app-sensors-overview-item{padding:11px 12px;border:1px solid #203d52;border-radius:11px;background:#0a1724}.app-sensors-overview-item-head{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;gap:8px}.app-sensors-overview-item-head strong{font:850 .77rem/1 monospace;color:#75e6f3}.app-sensors-overview-item-head span{font:750 .78rem/1.2 system-ui;color:#d6e3ef}.app-sensors-overview-item-head em{font:800 .70rem/1 monospace;font-style:normal;color:#f5f8fb}.app-sensors-overview-item p{margin:7px 0 0;font:600 .76rem/1.45 system-ui;color:#aebfd0}.app-sensors-overview-item .app-sensors-direction{color:#7f98af}.app-sensors-overview-reading{margin:14px 0 10px;padding:12px;border:1px solid #31536a;border-radius:12px;background:#0c1b2a}.app-sensors-overview-reading h3{margin:0 0 6px;font:800 .82rem/1.2 system-ui;color:#79efff}.app-sensors-overview-reading p,.app-sensors-overview-caveat{margin:0;font:650 .77rem/1.5 system-ui;color:#b9cada}.app-sensors-overview-caveat{padding:10px 12px;border-radius:10px;background:#132130;color:#e4edf6}#appSensorsOverviewClose{position:fixed;z-index:2;right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:grid;place-items:center;width:38px;height:38px;border:1px solid #36576e;border-radius:50%;background:#0b1825;color:#e5f2ff;font:500 1.65rem/1 system-ui;cursor:pointer}',
   '.app-solve-sensors{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}.app-solve-sensor{display:flex;gap:4px;align-items:baseline;padding:0;border:0;background:transparent;text-align:left}.app-solve-sensor b{font:650 .50rem/1 system-ui;color:#667f97}.app-solve-sensor span{margin:0;font:750 .61rem/1.15 system-ui;color:#c9d7e5}',
 
   '.app-solve-review-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font:800 .78rem/1.2 system-ui;letter-spacing:.035em;color:#c8d7e7}',
@@ -4516,6 +4521,8 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  function paintInstruments(steps,index){
   const values=reviewSensors(steps,index);
   instruments.hidden=false;
+  $('appSensorsOverviewKicker').textContent=sl()?'SENZORJI':'SENSORS';
+  $('appSensorsOverviewHint').textContent=sl()?'Tapni za razlago':'Tap for guide';
   for(const [key,d] of Object.entries(sensorDefs)){const row=instruments.querySelector('[data-sensor="'+key+'"]'),value=values[key]||0;
    row.querySelector('.app-pos-fill').style.width=sensorWidth(key,value)+'%';
    row.querySelector('.app-pos-value').textContent=index<2?'—':(key==='powr'?value.toFixed(1):value.toFixed(3));
@@ -4577,7 +4584,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
   grid.removeAttribute('aria-busy');delete document.body.dataset.appSolveReview;
  }
  function closeView(discard=false){
-  playing=false;clearTimeout(timer);timer=0;restoreRealGrid();review.hidden=true;instruments.hidden=true;sensorModal.hidden=true;
+  playing=false;clearTimeout(timer);timer=0;restoreRealGrid();review.hidden=true;instruments.hidden=true;sensorModal.hidden=true;sensorOverview.hidden=true;
   if(discard)data=null;
   window.dispatchEvent(new CustomEvent('sudoku-solve-review-change',{detail:{active:false}}));window.dispatchEvent(new Event('resize'));
  }
@@ -4619,6 +4626,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  },{capture:true,passive:true});
  window.addEventListener('keydown',event=>{
   if(review.hidden||document.body.dataset.appSolveReview!=='true')return;
+  if(!sensorOverview.hidden){if(event.key==='Escape'){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});event.preventDefault();}return;}
   if(!sensorModal.hidden){if(event.key==='Escape'){sensorModal.hidden=true;event.preventDefault();}return;}
   if(event.target?.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal')?.hidden)return;
   const actions={ArrowLeft:goPrev,ArrowRight:goNext,ArrowUp:goFirst,ArrowDown:goLast,' ':play};
@@ -4628,6 +4636,22 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  function sensorDirectionText(d){
   return d.dir==='low'?(sl()?'Nižje praviloma pomeni bolj ponovljiv in strukturiran tok.':'Lower generally means a more repetitive, structured flow.'):d.dir==='high'?(sl()?'Višje pomeni izrazitejši oziroma močnejši kaskadni vzorec.':'Higher means a more pronounced or stronger cascade pattern.'):(sl()?'Kontekstni signal: višje ali nižje samo po sebi ni boljše.':'Context signal: higher or lower is not inherently better.');
  }
+ function displaySensorValue(key,row,index){if(index<2)return'—';const raw=Number(row?.dataset.value)||0;return key==='powr'?raw.toFixed(1):raw.toFixed(3);}
+ function openSensorsOverview(){
+  const timeline=activeTimeline(),index=activeIndex(),max=timeline?.steps?.length||0;
+  $('appSensorsOverviewEyebrow').textContent=sl()?'AI / HUMAN REVIEW · STRUKTURNI SENZORJI':'AI / HUMAN REVIEW · STRUCTURAL SENSORS';
+  $('appSensorsOverviewTitle').textContent=sl()?'Kaj pomenijo senzorji?':'What do the sensors mean?';
+  $('appSensorsOverviewIntro').textContent=sl()?'Pet senzorjev opisuje strukturo poti reševanja do trenutno izbranega koraka. Ne ocenjujejo inteligence AI-ja in niso skupna ocena kakovosti reševanja.':'These five sensors describe the structure of the solve trajectory up to the currently selected step. They do not measure AI intelligence and are not an overall solver-quality score.';
+  $('appSensorsOverviewMeta').textContent=sl()?('Trenutni pogled: '+index+' / '+max+'. Vrednosti se računajo iz sledi od začetka do izbranega koraka; pri prvih korakih je podatkov premalo za stabilen signal.'):('Current view: '+index+' / '+max+'. Values are computed from the trace from the start through the selected step; the first steps do not yet contain enough data for a stable signal.');
+  $('appSensorsOverviewList').innerHTML=Object.entries(sensorDefs).map(([key,d])=>{const row=instruments.querySelector('[data-sensor="'+key+'"]'),val=displaySensorValue(key,row,index);
+   return '<article class="app-sensors-overview-item"><div class="app-sensors-overview-item-head"><strong>'+d.abbr+'</strong><span>'+(sl()?d.sl:d.en)+'</span><em>'+val+'</em></div><p>'+(sl()?d.slText:d.enText)+'</p><p class="app-sensors-direction">'+sensorDirectionText(d)+'</p></article>';
+  }).join('');
+  $('appSensorsOverviewReadTitle').textContent=sl()?'Kako jih brati med koraki':'How to read them step by step';
+  $('appSensorsOverviewReadText').textContent=sl()?'Premikaj časovnico korak za korakom in opazuj spremembe ter vzorec, ne ene same številke. Cplx in Dens sta praviloma bolj strukturirana, ko sta nižja; Gini in Powr kažeta, kako neenakomerno in močno nastajajo kaskade; ADSR opisuje tip poteka in nima smeri “bolje/slabše”.':'Move through the timeline step by step and watch changes and patterns, not one isolated number. Cplx and Dens generally indicate more structure when lower; Gini and Powr show how unevenly and strongly cascades emerge; ADSR describes the trajectory type and has no built-in better/worse direction.';
+  $('appSensorsOverviewCaveat').textContent=sl()?'Pomembno: to niso IQ, zavest, “moč AI-ja” ali ocena inteligence. So pregledni, deterministično izpeljani opisi strukture trenutne poti reševanja.':'Important: these are not IQ, consciousness, “AI power,” or an intelligence score. They are transparent, deterministically derived descriptions of the current solve trajectory.';
+  sensorOverview.hidden=false;$('appSensorsOverviewClose').focus({preventScroll:true});
+ }
+ function closeSensorsOverview(){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});}
  function openSensor(key){const d=sensorDefs[key],row=instruments.querySelector('[data-sensor="'+key+'"]');if(!d||!row)return;
   const raw=Number(row.dataset.value)||0,val=(key==='powr'?raw.toFixed(1):raw.toFixed(3));
   $('appSensorTitle').textContent=(sl()?d.sl:d.en)+' ('+d.abbr+')';$('appSensorValue').textContent=(sl()?'Trenutna vrednost: ':'Current value: ')+val;
@@ -4635,94 +4659,11 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
   $('appSensorDirection').textContent=sensorDirectionText(d);
   sensorModal.hidden=false;$('appSensorClose').focus({preventScroll:true});
  }
+ $('appSolveSensorsOverviewOpen').onclick=openSensorsOverview;
  for(const row of instruments.querySelectorAll('.app-pos-sensor'))row.onclick=()=>openSensor(row.dataset.sensor);
+ $('appSensorsOverviewClose').onclick=closeSensorsOverview;
  $('appSensorClose').onclick=()=>{sensorModal.hidden=true;};
  sensorModal.addEventListener('click',e=>{if(e.target===sensorModal)sensorModal.hidden=true;});
- // Full-screen shared instrument guide. Reuses the existing modal boundary so
- // review input guards keep the timeline and the atomic game transaction intact.
- const guideHeader=document.createElement('div');guideHeader.className='app-sensor-guide-header';
- guideHeader.innerHTML='<button type="button" id="appSolveSensorsOverviewOpen" aria-haspopup="dialog" aria-controls="appSolveSensorsOverview"><span id="appSensorGuideLabel"></span><span aria-hidden="true">ⓘ</span></button>';
- instruments.prepend(guideHeader);
- const guide=document.createElement('section');guide.id='appSolveSensorsOverview';guide.hidden=true;
- guide.setAttribute('role','dialog');guide.setAttribute('aria-modal','true');guide.setAttribute('aria-labelledby','appSensorsOverviewTitle');
- guide.innerHTML='<header class="app-guide-head"><h2 id="appSensorsOverviewTitle"></h2><button type="button" id="appSensorsOverviewClose">×</button></header><div class="app-guide-body" tabindex="0" role="region" aria-labelledby="appSensorsOverviewTitle"><p id="appSensorGuideContext" class="app-guide-context"></p><p id="appSensorGuideIntro"></p><p id="appSensorsOverviewCaveat" class="app-guide-caution"></p><div id="appSensorsOverviewList"></div><section class="app-guide-reading"><h3 id="appSensorGuideReadingTitle"></h3><p id="appSensorGuideReading"></p><p id="appSensorGuideLimits"></p></section></div>';
- sensorModal.append(guide);
- style.textContent+='\n'+[
-  '.app-sensor-guide-header{min-width:0}#appSolveSensorsOverviewOpen{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:36px;padding:5px 2px 7px;border:0;border-bottom:1px solid #20364a;border-radius:0;background:transparent;color:#bcd1e4;font:650 .68rem/1.25 system-ui;text-align:left;cursor:pointer}#appSolveSensorsOverviewOpen>span:last-child{font-size:1rem;color:#79c8da}',
-  '#appSolveSensorsOverviewOpen:focus-visible,#appSolveSensorsOverview button:focus-visible,.app-guide-body:focus-visible{outline:2px solid #79efff;outline-offset:2px}',
-  '#appSolveSensorsOverview[hidden]{display:none!important}#appSolveSensorModal[data-guide=true]{z-index:10000;padding:16px;align-items:center;overscroll-behavior:contain}#appSolveSensorModal[data-guide=true]>.app-sensor-sheet{display:none!important}',
-  '#appSolveSensorsOverview{display:flex;flex-direction:column;width:min(100%,760px);height:min(880px,calc(100dvh - 32px));max-height:100%;min-height:0;overflow:hidden;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b;font:400 .94rem/1.55 system-ui;text-align:left}',
-  '.app-guide-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #294056;background:#0c1724}.app-guide-head h2{margin:0;font:750 1.15rem/1.25 system-ui;color:#dfeef9}#appSensorsOverviewClose{flex:none;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #3a5067;border-radius:10px;background:#142435;color:#f0f7ff;font:400 1.65rem/1 system-ui;cursor:pointer}',
-  '.app-guide-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 18px 22px;scrollbar-gutter:stable}.app-guide-body p{margin:12px 0}.app-guide-context{color:#91b5cb;font-size:.82rem}.app-guide-caution{padding:12px 14px;border-left:3px solid #bca376;background:#192332;color:#ede2cc}.app-guide-card{padding:16px 0;border-bottom:1px solid #294056}.app-guide-card h3,.app-guide-reading h3{margin:0 0 6px;font:750 1rem/1.35 system-ui;color:#c7e8f3}.app-guide-card .app-guide-value{margin:6px 0;color:#a2bdce;font-size:.82rem;font-variant-numeric:tabular-nums}.app-guide-card button{min-height:44px;padding:7px 12px;border:1px solid #3a5067;border-radius:8px;background:#142435;color:#c7e8f3;font:650 .85rem/1.3 system-ui;cursor:pointer}.app-guide-reading{padding:20px 0 2px}.app-guide-reading p{color:#b8c8d8}',
-  '@media(max-width:700px),(pointer:coarse){#appSolveSensorsOverviewOpen{min-height:44px}#appSolveSensorModal[data-guide=true]{padding:0;align-items:stretch}#appSolveSensorsOverview{width:100%;height:100%;height:100dvh;max-height:100%;border:0;border-radius:0}.app-guide-head{padding-top:max(10px,env(safe-area-inset-top));padding-right:max(12px,env(safe-area-inset-right));padding-left:max(16px,env(safe-area-inset-left))}.app-guide-body{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));padding-bottom:max(24px,env(safe-area-inset-bottom))}}'
- ].join('\n');
- const guideCopy={
-  en:{label:'Sensors · What do they mean?',title:'Understanding the sensors',close:'Close sensor guide',intro:'These five instruments describe the recorded solve path: how candidate counts and forced-move opportunities change. They summarize the steps from the start up to the selected review position, not just the current grid.',caution:'These are structural descriptions, not an intelligence score, an accuracy rating or proof that one solver is better. Higher is not always better; lower is not always better.',readingTitle:'How to read them during a solve',reading:'Use the review arrows or slider to compare nearby steps, then open this guide. Opening pauses playback and freezes the values while you read. The Move, Logic, Candidates and Flow facts below the grid explain what happened at the selected step; these five sensors describe the accumulated path. Closing keeps the same position. Press Play to resume.',limits:'A dash means fewer than two recorded steps, not zero intelligence. Short traces can fluctuate strongly. LZ values can exceed 1 and Powr has no fixed maximum; a full bar is a display limit, not 100% quality. AI counts available forced placements after each step; Human uses the increase in simple naked singles. Missing cascade counts are treated as zero. Their raw values are therefore not a calibrated AI-versus-human ranking.',current:'At this step: ',missing:'— · at least two steps required',details:'Individual explanation',scope:'Recorded path · ',names:['LZ Complexity','Gini Cascade','Cascade Power','Density Flow','ADSR Bimodality'],texts:[
-   'Measures repetition in the candidate-reduction sequence, encoded above or below its median. Lower: a more repetitive encoded pattern. Higher: a more varied pattern. It does not measure Sudoku difficulty or the quality of a move.',
-   'Measures how unevenly recorded cascade counts are distributed across steps. Here “cascade” is a forced-move count, not the measured length of a complete chain. Lower: more similar counts. Higher: a few steps account for a larger share. Zero can also mean that all counts are zero.',
-   'The average of cascade count × candidate reduction, with negative reductions clamped to zero. Lower: less combined forced-move availability and candidate removal. Higher: the two occur together more strongly. It is a descriptive average, not a success rate.',
-   'Measures repetition in the sequence of remaining candidate counts, encoded above or below its median. Lower: a more repetitive encoded density pattern. Higher: a more varied pattern. It does not guarantee smooth progress or a better solve.',
-   'The share of steps with a recorded cascade count of 0 or at least 5, inspired by Attack–Decay–Sustain–Release. Lower: more steps in the middle range 1–4. Higher: more steps in either extreme. A high value can come entirely from zero-cascade steps; it does not by itself prove bimodality or stronger solving.'
-  ]},
-  sl:{label:'Senzorji · Kaj pomenijo?',title:'Kaj pomenijo senzorji?',close:'Zapri razlago senzorjev',intro:'Teh pet kazalnikov opisuje zabeleženo pot reševanja: kako se spreminjajo kandidati in možnosti za prisiljene vpise. Povzemajo korake od začetka do izbranega položaja v pregledu, ne le trenutne mreže.',caution:'To ni ocena inteligence ali pravilnosti in ni dokaz, da je en reševalec boljši. Kazalniki opisujejo strukturo. Višje ni vedno bolje; nižje ni vedno bolje.',readingTitle:'Kako jih bereš med reševanjem',reading:'S puščicami ali drsnikom primerjaj bližnje korake, nato odpri to razlago. Odpiranje ustavi predvajanje in med branjem ohrani vrednosti. Podatki Poteza, Logika, Kandidati in Tok pod mrežo razložijo izbrani korak; teh pet senzorjev opisuje dotedanjo pot. Po zaprtju ostane isti položaj. Za nadaljevanje pritisni Predvajaj.',limits:'Črtica pomeni manj kot dva zabeležena koraka, ne ničelne inteligence. Kratke sledi lahko močno nihajo. LZ vrednosti lahko presežejo 1, Powr pa nima fiksnega maksimuma; poln trak je meja prikaza, ne 100-odstotna kakovost. AI šteje razpoložljive prisiljene vpise po koraku, Človek pa porast preprostih golih posameznikov. Manjkajoče število kaskad se obravnava kot nič. Vrednosti zato niso umerjena lestvica AI proti človeku.',current:'Pri tem koraku: ',missing:'— · potrebna sta vsaj dva koraka',details:'Posamezna razlaga',scope:'Zabeležena pot · ',names:['LZ kompleksnost','Gini kaskad','Moč kaskade','Tok gostote','ADSR bimodalnost'],texts:[
-   'Meri ponavljanje v zaporedju zmanjševanja kandidatov, kodiranem nad ali pod njegovo mediano. Nižje: bolj ponovljiv kodirani vzorec. Višje: bolj raznolik vzorec. Ne meri težavnosti sudokuja ali kakovosti poteze.',
-   'Meri neenakomernost zabeleženih kaskad med koraki. »Kaskada« tu pomeni število prisiljenih vpisov, ne izmerjene dolžine celotne verige. Nižje: bolj podobna števila. Višje: nekaj korakov prispeva večji delež. Nič lahko pomeni tudi, da so vsa števila ničelna.',
-   'Povprečje produkta število kaskade × zmanjšanje kandidatov; negativno zmanjšanje se šteje kot nič. Nižje: manj skupnega učinka razpoložljivih prisiljenih vpisov in odstranjevanja kandidatov. Višje: močnejše sovpadanje obojega. To je opisno povprečje, ne odstotek uspešnosti.',
-   'Meri ponavljanje v zaporedju preostalih kandidatov, kodiranem nad ali pod njegovo mediano. Nižje: bolj ponovljiv kodirani vzorec gostote. Višje: bolj raznolik vzorec. Samo po sebi ne zagotavlja gladkega napredka ali boljšega reševanja.',
-   'Delež korakov z zabeleženo kaskado 0 ali vsaj 5, po navdihu Attack–Decay–Sustain–Release. Nižje: več korakov v srednjem območju 1–4. Višje: več korakov na enem ali drugem skrajnem delu. Visoka vrednost lahko nastane samo zaradi ničelnih kaskad; sama ne dokazuje bimodalnosti ali boljšega reševanja.'
-  ]}
- };
- Object.keys(sensorDefs).forEach((key,i)=>{sensorDefs[key].enText=guideCopy.en.texts[i];sensorDefs[key].slText=guideCopy.sl.texts[i];sensorDefs[key].dir='context';});
- let guidePreviousFocus=null,guideInert=[],guideOverflow=null;
- const guideLabel=()=>{$('appSensorGuideLabel').textContent=guideCopy[sl()?'sl':'en'].label;};
- function closeSensorGuide(restoreFocus=true){
-  if(sensorModal.dataset.guide!=='true')return;
-  sensorModal.hidden=true;guide.hidden=true;delete sensorModal.dataset.guide;
-  for(const [node,prior]of guideInert)node.inert=prior;guideInert=[];
-  if(guideOverflow){for(const [node,value,priority]of guideOverflow){if(value)node.style.setProperty('overflow',value,priority);else node.style.removeProperty('overflow');}guideOverflow=null;}
-  const target=guidePreviousFocus;guidePreviousFocus=null;
-  if(restoreFocus&&!instruments.hidden&&target?.isConnected)target.focus({preventScroll:true});
- }
- function openSensorGuide(){
-  if(instruments.hidden||sensorModal.dataset.guide==='true')return;
-  const copy=guideCopy[sl()?'sl':'en'];guideLabel();guidePreviousFocus=$('appSolveSensorsOverviewOpen');
-  pause();const timeline=activeTimeline(),index=activeIndex(),values=reviewSensors(timeline?.steps||[],index);
-  for(const [id,text]of Object.entries({appSensorsOverviewTitle:copy.title,appSensorGuideIntro:copy.intro,appSensorsOverviewCaveat:copy.caution,appSensorGuideReadingTitle:copy.readingTitle,appSensorGuideReading:copy.reading,appSensorGuideLimits:copy.limits}))$(id).textContent=text;
-  $('appSensorsOverviewClose').setAttribute('aria-label',copy.close);
-  $('appSensorGuideContext').textContent=copy.scope+(tab==='human'?(sl()?'Človek':'Human'):'AI')+' · '+index+' / '+(timeline?.steps?.length||0);
-  const cards=$('appSensorsOverviewList');cards.replaceChildren();
-  Object.entries(sensorDefs).forEach(([key,def],i)=>{
-   const card=document.createElement('section');card.className='app-guide-card app-sensors-overview-item';card.dataset.guideSensor=key;
-   const heading=document.createElement('h3');heading.textContent=def.abbr+' — '+copy.names[i];
-   const value=document.createElement('p');value.className='app-guide-value';value.textContent=copy.current+(index<2?copy.missing:Number(values[key]||0).toFixed(key==='powr'?1:3));
-   const text=document.createElement('p');text.textContent=copy.texts[i];
-   const detail=document.createElement('button');detail.type='button';detail.textContent=copy.details+' · '+def.abbr;detail.onclick=()=>{closeSensorGuide(false);openSensor(key);};
-   card.append(heading,value,text,detail);cards.append(card);
-  });
-  guideOverflow=[document.documentElement,document.body].map(node=>[node,node.style.getPropertyValue('overflow'),node.style.getPropertyPriority('overflow')]);
-  document.documentElement.style.setProperty('overflow','hidden');document.body.style.setProperty('overflow','hidden');
-  guideInert=[...document.body.children].filter(node=>node!==sensorModal&&!['SCRIPT','STYLE','LINK'].includes(node.tagName)).map(node=>[node,node.inert]);
-  for(const [node]of guideInert)node.inert=true;
-  sensorModal.dataset.guide='true';guide.hidden=false;sensorModal.hidden=false;
-  guide.querySelector('.app-guide-body').scrollTop=0;$('appSensorsOverviewClose').focus({preventScroll:true});
- }
- $('appSolveSensorsOverviewOpen').onclick=openSensorGuide;$('appSensorsOverviewClose').onclick=()=>closeSensorGuide();
- instruments.addEventListener('click',event=>{if(event.target===instruments||event.target===guideHeader)openSensorGuide();});
- window.addEventListener('keydown',event=>{
-  if(sensorModal.dataset.guide!=='true')return;
-  event.stopImmediatePropagation(); // Preserve native scrolling without background game shortcuts.
-  if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeSensorGuide();return;}
-  if(event.key==='Tab'){
-   const stops=[...guide.querySelectorAll('button:not([disabled]),[tabindex="0"]')].filter(n=>n.getClientRects().length),first=stops[0],last=stops.at(-1);
-   if(event.shiftKey&&(document.activeElement===first||!guide.contains(document.activeElement))){event.preventDefault();last?.focus();}
-   else if(!event.shiftKey&&(document.activeElement===last||!guide.contains(document.activeElement))){event.preventDefault();first?.focus();}
-  }
- },true);
- document.addEventListener('focusin',event=>{if(sensorModal.dataset.guide==='true'&&!guide.contains(event.target))$('appSensorsOverviewClose').focus({preventScroll:true});},true);
- new MutationObserver(()=>{if(sensorModal.hidden)closeSensorGuide();}).observe(sensorModal,{attributes:true,attributeFilter:['hidden']});
- window.addEventListener('sudoku-solve-review-change',event=>{guideLabel();if(event.detail?.active===false)closeSensorGuide(false);});
- guideLabel();
-
  const externalRenderObserver=new MutationObserver(()=>{if(data&&currentKey()!==data.finalKey)closeView(false);});
  externalRenderObserver.observe(grid,{childList:true,subtree:true,characterData:true});
  window.addEventListener('pagehide',()=>closeView(false));

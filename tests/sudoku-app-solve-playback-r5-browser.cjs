@@ -47,6 +47,7 @@ async function run(){
     const sensorCover=await frame.locator('#appSolveSensorsOverview').evaluate(n=>{const r=n.getBoundingClientRect();return{top:r.top,left:r.left,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight};});
     assert.ok(Math.abs(sensorCover.top)<1&&Math.abs(sensorCover.left)<1&&Math.abs(sensorCover.width-sensorCover.vw)<1&&Math.abs(sensorCover.height-sensorCover.vh)<1,'sensor overview covers viewport');
     assert.match(await frame.locator('#appSensorsOverviewCaveat').innerText(),phone?/ni ocena inteligence/i:/not.*intelligence/i);await frame.locator('#appSensorsOverviewClose').click();
+    assert.equal(await frame.locator('#appSolvePlay').innerText(),'▶','reading guide pauses playback');await frame.locator('#appSolvePlay').click();
     assert.match(await frame.locator('#appAssist .app-dock-label').innerText(),phone?/AI pregled/:/AI Review/);
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
     const reviewData=await frame.evaluate(()=>window.SudokuSolveReview.get());
