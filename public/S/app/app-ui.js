@@ -66,7 +66,7 @@
   'Review':'◎','Pregled':'◎','Settings':'⚙','Nastavitve':'⚙','Help / About':'?',
   'Pomoč / O igri':'?','Import session':'⇩','Uvozi igro':'⇩','Export session':'⇧','Izvozi igro':'⇧',
   'Delete all APP data':'⌫','Izbriši vse podatke APP':'⌫','App · offline & updates':'◌',
-  'Aplikacija · brez povezave in posodobitve':'◌'
+  'Aplikacija · brez povezave in posodobitve':'◌','AI solve review':'◀▶','Pregled AI reševanja':'◀▶'
  };
  function decorateMenuButton(button){
   if(button.dataset.appDecorated)return;
@@ -99,6 +99,16 @@
    $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
    $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
   }
+  const reviewAPI=window.SudokuSolveReview,primary=$('appMorePrimary');
+  let aiReview=$('appMoreAIReview');
+  if(reviewAPI?.hasReview?.()){
+   if(!aiReview){
+    aiReview=document.createElement('button');aiReview.className='btn';aiReview.id='appMoreAIReview';
+    primary.append(aiReview);
+    aiReview.onclick=()=>{$('navClose')?.click();queueMicrotask(()=>window.SudokuSolveReview?.open?.());};
+   }
+   aiReview.hidden=false;aiReview.textContent=isSl()?'Pregled AI reševanja':'AI solve review';delete aiReview.dataset.appDecorated;
+  }else if(aiReview)aiReview.hidden=true;
   decorateMore();
  }
  function enhanceSettings(){
