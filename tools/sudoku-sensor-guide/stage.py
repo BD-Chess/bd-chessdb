@@ -1,6 +1,6 @@
 import pathlib, hashlib, json, os, urllib.request, subprocess
-BASE='67828be99c7eb704efd037b58d4f33945581bab0'
-ROOT='9ee32bc63e1298ef0b23e8593da450b5ba2f7059'
+BASE='6a54cffc401e4da74c3c04bf9dfb15dd44b165ba'
+ROOT='3964ee79db3a05130d6613506a421c2a37bb0cdb'
 out=pathlib.Path('sudoku-guide-evidence')
 report=json.loads((out/'solve-browser.json').read_text())
 assert report['status']=='PASS' and report['sensorGuideCases']==4 and len(report['cases'])==20
@@ -15,7 +15,7 @@ def entries(ref):
   meta,name=item.split(b'\t',1);mode,kind,sha=meta.decode().split()
   result.append({'path':name.decode(),'mode':mode,'type':kind,'sha':sha})
  return result
-paths=['public/S/app/app-solve-playback.js','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-sensor-guide-browser.cjs']
+paths=['public/S/app/app-solve-playback.js','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-sensor-guide-browser.cjs','tests/sudoku-app-solve-playback-r5-browser.cjs']
 tree=[];files={}
 for name in paths:
  b=pathlib.Path(name).read_bytes();expected=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
@@ -28,6 +28,6 @@ archive='public/S/app/old/'+f'{n:03}'
 a=post('/git/trees',{'tree':[e for e in entries(BASE+':public/S/app') if e['path']!='old']})
 tree.append({'path':archive,'mode':'040000','type':'tree','sha':a['sha']})
 r=post('/git/trees',{'base_tree':ROOT,'tree':tree})
-commit=post('/git/commits',{'message':'feat(sudoku): full-screen bilingual sensor guide\n\nPause-safe overview, individual sheets retained, accessible close/focus/scroll. Generated APP and PWA rebuilt; Chromium/WebKit phone/framed checks PASS. CURRENT/LAB/native unchanged.','tree':r['sha'],'parents':[BASE]})
+commit=post('/git/commits',{'message':'fix(sudoku): reconcile fullscreen sensor guide and protect review state\n\nOne bilingual overview, pause-safe playback, accessible close/focus/scroll, no background keyboard input or visible dock. Keep individual sensor sheets and parallel overview tests. Generated APP/PWA rebuilt; Chromium/WebKit phone/framed checks PASS. CURRENT/LAB/native unchanged.','tree':r['sha'],'parents':[BASE]})
 receipt={'status':'PASS','base':BASE,'candidate':commit['sha'],'tree':r['sha'],'archive':archive,'files':files,'browser_cases':20,'guide_configurations':4,'branch_updated':False,'release_id':json.loads(pathlib.Path('public/S/app/release.json').read_text())['release_id']}
 (out/'candidate.json').write_text(json.dumps(receipt,indent=2)+'\n');print('SENSOR_GUIDE_CANDIDATE '+json.dumps(receipt))
