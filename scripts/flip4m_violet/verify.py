@@ -62,6 +62,10 @@ def verify(public: Path,out: Path,executable=None):
         check('LAB service worker controls page',page.evaluate('!!navigator.serviceWorker.controller'))
         check('LAB board has 64 cells',page.locator('.cell').count()==64)
         check('LAB 32 rim positions',page.locator('.mag-slot').count()==32)
+        check('Petrol palette active',page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()==='#0b1119'"))
+        ratio=lambda pg: pg.locator('#rotor').bounding_box()['width']/pg.locator('#arena').bounding_box()['width']
+        check('LAB default board Max',page.locator('body').get_attribute('data-board-size')=='max' and ratio(page)>.89,ratio(page))
+        page.locator('#more').click();page.locator('#boardSize').select_option('standard');check('LAB Standard restores 2.2 geometry',.77<ratio(page)<.79,ratio(page));page.locator('#boardSize').select_option('large');check('LAB Large geometry',.83<ratio(page)<.85,ratio(page));page.locator('#boardSize').select_option('max');check('LAB Max geometry',.89<ratio(page)<.91,ratio(page));page.locator('#closeMore').click()
         for col in (3,4,3): drop(page,col)
         before=state(page);page.locator('#flipLeft').click();wait_idle(page)
         check('Rotation uses one complete turn',state(page)['ply']==before['ply']+1)
@@ -76,7 +80,7 @@ def verify(public: Path,out: Path,executable=None):
         page.locator('#theme').click();page.locator('#closeMore').click()
         page.screenshot(path=str(out/'lab-desktop.png'),full_page=True)
         check('Save/readback before reload',page.evaluate('F4MLab.saveForUpdate()') in ('indexeddb','localstorage'))
-        saved_state=state(page);page.reload();wait_idle(page);check('Restored game exact',state(page)==saved_state)
+        saved_state=state(page);page.reload();wait_idle(page);check('Restored game exact',state(page)==saved_state);check('LAB board size persisted',page.locator('body').get_attribute('data-board-size')=='max')
         # Worker computation: the hint selects within the existing rules without mutating the board.
         page.locator('#hint').click();wait_idle(page)
         page.wait_for_function("F4MLab.status().job>1 && document.getElementById('statNodes').textContent!=='—'",timeout=15000)
@@ -93,6 +97,8 @@ def verify(public: Path,out: Path,executable=None):
         app.goto(base+'app/');wait_idle(app)
         app.wait_for_function("window.F4MPWA?.state==='ready'",timeout=25000)
         check('APP independent save',state(app)['ply']==0)
+        check('APP default board Max',app.locator('body').get_attribute('data-board-size')=='max' and ratio(app)>.89,ratio(app))
+        app.locator('#more').click();app.locator('#boardSize').select_option('standard');check('APP Standard geometry',.77<ratio(app)<.79,ratio(app));app.locator('#boardSize').select_option('max');app.locator('#closeMore').click()
         for width in (375,390,402,430):
           app.locator('#previewWidth').select_option(str(width))
           actual=app.locator('.device-screen').bounding_box()['width']
@@ -127,7 +133,7 @@ def verify(public: Path,out: Path,executable=None):
         # Real update handshake. Only the test server's SW file is temporarily changed.
         page.locator('#tab-board').click();second=ctx.new_page();second.goto(base+'new/');wait_idle(second)
         navs=[];second.on('framenavigated',lambda f:navs.append(f.url) if f==second.main_frame else None)
-        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.2.0-violet"','const BUILD="2.2.0-violet-test"',1))
+        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.3.0-petrol"','const BUILD="2.3.0-petrol-test"',1))
         page.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
         page.wait_for_function("document.getElementById('pwaToast').hidden===false",timeout=25000)
         check('Update waits for consent',page.evaluate("navigator.serviceWorker.getRegistration().then(r=>!!r.waiting)"))
@@ -169,6 +175,6 @@ if __name__=='__main__':
     try:verify(a.public,a.out,a.executable)
     except Exception as exc:error=repr(exc);print(error)
     a.out.mkdir(parents=True,exist_ok=True)
-    report={'scope':'Flip4M Violet LAB APP bounded browser acceptance','version':VERSION,'passed':sum(x['pass'] for x in RESULTS),'checks':len(RESULTS),'error':error,'physical_iPhone_test':'NOT_RUN','results':RESULTS}
+    report={'scope':'Flip4M Petrol LAB APP bounded browser acceptance','version':VERSION,'passed':sum(x['pass'] for x in RESULTS),'checks':len(RESULTS),'error':error,'physical_iPhone_test':'NOT_RUN','results':RESULTS}
     (a.out/'verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({k:v for k,v in report.items() if k!='results'}))
     if error:raise SystemExit(1)
