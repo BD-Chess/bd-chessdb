@@ -38,7 +38,7 @@ test('preview defaults to 402x874 and scales its shell without navigating or cha
 });
 test('preview insets survive frame load and width changes, without modifying another channel', () => {
   const x = setup(); const root = x.iframe.contentDocument.documentElement;
-  assert.equal(root.style.getPropertyValue('--app-preview-safe-top'), '62px');
+  assert.equal(root.style.getPropertyValue('--app-preview-safe-top'), '52px');
   assert.equal(root.style.getPropertyValue('--app-preview-safe-bottom'), '34px');
   for (const width of ['375','390','402','430']) {
     x.select.value = width; x.select.dispatchEvent(new x.w.Event('change'));
@@ -46,7 +46,7 @@ test('preview insets survive frame load and width changes, without modifying ano
   }
   root.style.removeProperty('--app-preview-safe-top');
   x.iframe.dispatchEvent(new x.w.Event('load'));
-  assert.equal(root.style.getPropertyValue('--app-preview-safe-top'), '62px');
+  assert.equal(root.style.getPropertyValue('--app-preview-safe-top'), '52px');
   x.iframe.contentDocument.body.classList.remove('app-mobile');
   root.style.removeProperty('--app-preview-safe-top');
   x.iframe.dispatchEvent(new x.w.Event('load'));

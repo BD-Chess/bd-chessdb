@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-4b89f5e4417fcff3";
+const RELEASE = "app-11b15d5af68fce05";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -214,7 +214,7 @@ const INTEGRITY = {
   "js/8zc-utils.js": "sha256-M0A350BMJt4w7+piR5NpPIdNqnuFLNLXrzF3bWjALRM=",
   "js/8zc-workspace.js": "sha256-THbZiWNGmyFNOfFonzCP7CA9SEUxPIEhzZmFFcKu9t4=",
   "js/app-mobile.js": "sha256-0k/m5UJj66qpBMt60hFWUVwBupu5+/azKWygSHmRMk0=",
-  "js/app-preview.js": "sha256-2e0do8pngQBv6DCSp2X938bRrSGws9Wxe3R8t5KVofY=",
+  "js/app-preview.js": "sha256-uGnE1DWLxhdA97rpYBZVnx+/hgnUKC61r7LcjasBltc=",
   "js/chess.min.js": "sha256-eqQw3yuTEYSQQIUa3vMMTeSfbIzv24BkWkJi8flcRF8=",
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
