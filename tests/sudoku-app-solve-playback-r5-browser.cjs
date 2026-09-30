@@ -28,8 +28,8 @@ async function run(){
     await frame.locator('[data-sudoku-language="'+(phone?'sl':'en')+'"]').click();
     const notesWasOn=await frame.locator('#appNotes').getAttribute('aria-pressed')==='true';if(notesWasOn)await frame.locator('#appNotes').click();
     await frame.evaluate(()=>{if(window.SudokuNavigator.product.capture().selectedCell!==3)document.querySelector('.cell[data-index="3"]').click();if(typeof window.placeNumber!=='function')throw Error('placeNumber unavailable');window.placeNumber(6,'key',true);});await frame.waitForFunction(()=>window.SudokuNavigator.product.capture().board[3]===6,null,{timeout:3000});
-    if(notesWasOn)await frame.locator('#appNotes').click();await frame.waitForFunction(()=>window.SudokuNavigator.product.reviewRows().length>0,null,{timeout:3000});
-    const humanEvidence=await frame.evaluate(()=>window.SudokuNavigator.product.reviewRows());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
+    if(notesWasOn)await frame.locator('#appNotes').click();await frame.waitForFunction(()=>window.SudokuSolveReview?.hasHumanReview?.(),null,{timeout:3000});
+    const humanEvidence=await frame.evaluate(()=>window.AI8SudokuProofPreview.review());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
     const initialPosition=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
     // Existing AI Assist selects a suggested/problem cell without changing any
     // entries. Pin the precise pre-solve position AFTER opening that panel.
