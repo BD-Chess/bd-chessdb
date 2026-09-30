@@ -103,6 +103,37 @@ def main():
               and deep_controls['values']==['depth:14','depth:18','depth:22','depth:26','depth:30','depth:34','depth:38','depth:42','infinite']
               and deep_controls['texts'][-1]=='Until I stop',deep_controls)
             record('APP SF badge stays active in Deep',deep_controls['sfDisabled'] is False and 'Deep SF' in deep_controls['sfTitle'],deep_controls)
+            inner.locator('[data-deep="budget"]').select_option('depth:14')
+            inner.locator('[data-deep="multipv"]').select_option('3')
+            before_deep_fen=inner.evaluate("ChessLabHost.getContext().fen")
+            inner.locator('[data-deep="start"]').click()
+            inner.wait_for_function("document.querySelectorAll('#deepAnalysisPanel .deep-line').length>=1",timeout=15000)
+            scroll_before=inner.evaluate("""() => {
+              const w=document.getElementById('workspaceDisplay');
+              const max=Math.max(0,w.scrollHeight-w.clientHeight),target=Math.min(260,max);
+              w.scrollTop=target; return {target,max,actual:w.scrollTop};
+            }""")
+            inner.evaluate("document.getElementById('next').click()")
+            inner.wait_for_function("(fen)=>ChessLabHost.getContext().fen!==fen",arg=before_deep_fen,timeout=5000)
+            inner.wait_for_function("""() => {
+              const badge=document.querySelector('#allEvalBadges [data-eval-source="SF"]');
+              const score=badge?.querySelector('.all-eval-score')?.textContent?.trim();
+              const move=badge?.querySelector('.all-eval-move')?.textContent?.trim();
+              return score && !['…','—'].includes(score) && move && !['…','—'].includes(move);
+            }""",timeout=15000)
+            inner.wait_for_function("document.querySelectorAll('#deepAnalysisPanel .deep-line').length>=3",timeout=15000)
+            page.wait_for_timeout(180)
+            deep_live=inner.evaluate("""() => {
+              const w=document.getElementById('workspaceDisplay'),badge=document.querySelector('#allEvalBadges [data-eval-source="SF"]');
+              return {scroll:w.scrollTop,score:badge?.querySelector('.all-eval-score')?.textContent?.trim(),
+                move:badge?.querySelector('.all-eval-move')?.textContent?.trim(),
+                note:badge?.querySelector('small')?.textContent?.trim(),fen:ChessLabHost.getContext().fen};
+            }""")
+            record('Deep live-follow preserves inner scroll',scroll_before['target']>20 and abs(deep_live['scroll']-scroll_before['target'])<=4,
+              {'before':scroll_before,'after':deep_live})
+            record('Deep SF badge refreshes after next position',
+              deep_live['fen']!=before_deep_fen and deep_live['score'] not in ('…','—','') and deep_live['move'] not in ('…','—','') and 'depth' in (deep_live['note'] or ''),
+              deep_live)
             inner.locator('#appTabs [data-app-tab="board"]').click();page.wait_for_timeout(80)
             inner.locator('#appGames').click()
             inner.wait_for_selector('#popularGamesPanel.open')

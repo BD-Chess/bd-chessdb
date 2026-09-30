@@ -168,11 +168,17 @@ test('Deep live-follow repins every new board position, restarts one worker and 
   assert.equal(x.ui.isOpen(), true);
   assert.equal(x.ui.isRunning(), true);
 
+  const workspace = x.get('workspaceDisplay'), panel = x.get('deepAnalysisPanel');
+  workspace.scrollTop = 337; panel.style.minHeight = '900px';
   x.game.move('e4');
   const afterE4 = x.game.fen();
   x.change({ fen: afterE4, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4'] } });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(x.el('fen').textContent, afterE4);
+  assert.equal(panel.style.minHeight, '900px', 'live repin keeps the established Deep viewport height');
+  x.emit(x.snapshot());
+  await new Promise(resolve => x.w.requestAnimationFrame(() => resolve()));
+  assert.equal(workspace.scrollTop, 337, 'live repin restores the same inner Deep scroll after streamed lines return');
   assert.equal(x.analyses.length, 2);
   assert.equal(x.analyses[1].fen, afterE4);
   assert.equal(x.analyses[1].depth, 18, 'selected Search depth follows the next move');
