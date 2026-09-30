@@ -18,7 +18,7 @@
     })();
   </script>
   <style id="bd-version-style">
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
+    :root { --phone-width: 402px; --phone-height: 874px; color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #101a16; color: #e7f4ec; }
     header { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr); align-items: center; column-gap: 20px; }
@@ -32,8 +32,24 @@
     main { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; padding: 16px 16px 32px; }
     .preview-width { justify-self: end; display: flex; align-items: center; gap: 8px; margin-left: 0; color: #adc2b5; font-size: 12px; white-space: nowrap; }
     .preview-width select { min-height: 40px; border: 1px solid #53725e; border-radius: 8px; color: #e7f4ec; background: #1c3428; padding: 7px 9px; font: inherit; }
-    .phone-frame { width: calc(var(--phone-width, 390px) + 12px); max-width: 100%; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
-    iframe { display: block; width: 100%; height: clamp(500px, calc(100dvh - 170px), 874px); border: 0; border-radius: 26px; background: #101a16; }
+    .preview-stage { position: relative; flex: 0 0 auto; width: 416px; height: 888px; }
+    .phone-frame { position: absolute; top: 0; left: 0; width: calc(var(--phone-width) + 14px); height: calc(var(--phone-height) + 14px); transform-origin: top left; padding: 6px; background: #010705; border: 1px solid #59735f; border-radius: 32px; box-shadow: 0 18px 60px #0008; }
+    iframe { display: block; width: 100%; height: var(--phone-height); border: 0; border-radius: 26px; background: #101a16; }
+    .preview-system-bar { position: absolute; top: 28px; left: 7px; right: 7px; display: flex; justify-content: space-between; align-items: center; padding: 0 39px; height: 22px; pointer-events: none; color: #f2f4ef; font: 600 17px/1 system-ui, sans-serif; }
+    .preview-system-status { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .preview-signal { font-size: 11px; letter-spacing: -2px; padding-right: 3px; }
+    .preview-battery { position: relative; width: 24px; height: 12px; border: 1px solid currentColor; border-radius: 3px; }
+    .preview-battery::before { content: ""; position: absolute; inset: 2px; border-radius: 1px; background: currentColor; }
+    .preview-battery::after { content: ""; position: absolute; top: 3px; right: -3px; width: 2px; height: 4px; background: currentColor; }
+    @media (max-width: 700px) {
+      header { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 6px; padding-inline: 10px; }
+      h1 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+      .bd-version-selector { gap: 2px; font-size: 9px; }
+      .bd-version-selector a { padding-inline: 2px; }
+      .preview-width { min-width: 0; max-width: 100%; }
+      .preview-width select { min-width: 0; max-width: 100%; }
+      .preview-width-label { display: none; }
+    }
     @media (max-width: 480px) {
       header { padding: 12px 10px; justify-content: center; }
       .header-tools { justify-content: center; gap: 10px 14px; }
@@ -43,8 +59,10 @@
     .app-phone-browser body { min-height: 100dvh; background: #101a16; overflow: hidden; }
     .app-phone-browser body > header { display: none !important; }
     .app-phone-browser main { display: block; width: 100%; height: 100dvh; padding: 0; }
+    .app-phone-browser .preview-stage { width: 100%; height: 100dvh; }
+    .app-phone-browser .preview-system-bar { display: none; }
     .app-phone-browser .phone-frame {
-      width: 100vw; max-width: none; height: 100dvh; padding: 0;
+      position: static; width: 100vw; max-width: none; height: 100dvh; padding: 0; transform: none;
       border: 0; border-radius: 0; box-shadow: none; background: #101a16;
     }
     .app-phone-browser iframe { width: 100%; height: 100dvh; border-radius: 0; }
@@ -60,21 +78,20 @@
         <a href="../new/">LAB</a><span class="bd-version-dot" aria-hidden="true">·</span>
         <a href="./" aria-current="page">APP</a>
       </nav>
-      <label class="preview-width">Preview width <select id="previewWidth" aria-label="Preview width">
-        <option value="375">375 px</option><option value="390" selected>390 px</option>
-        <option value="402">402 px</option><option value="430">430 px</option>
+      <label class="preview-width"><span class="preview-width-label">Preview width</span> <select id="previewWidth" aria-label="Preview width">
+        <option value="375">375 px</option><option value="390">390 px</option>
+        <option value="402" selected>402 px · iPhone 16 Pro</option><option value="430">430 px</option>
       </select></label>
     </div>
   </header>
   <main>
+    <div class="preview-stage" id="previewStage">
     <div class="phone-frame" id="phoneFrame">
-      <iframe src="play.html?embedded=1&amp;build=20260930-ui8" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <iframe src="play.html?embedded=1&amp;build=20260930-device1" title="ChessBest APP mobile interface" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+      <div class="preview-system-bar" aria-hidden="true"><span>09:41</span><span class="preview-system-status"><span class="preview-signal">▂▄▆▉</span><span>5G</span><span class="preview-battery"></span></span></div>
+    </div>
     </div>
   </main>
-  <script>
-    document.getElementById('previewWidth').addEventListener('change', event => {
-      document.getElementById('phoneFrame').style.setProperty('--phone-width', event.target.value + 'px');
-    });
-  </script>
+  <script src="js/app-preview.js"></script>
 </body>
 </html>

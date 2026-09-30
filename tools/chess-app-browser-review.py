@@ -19,7 +19,7 @@ def main():
     report={'base':base,'tested_sha':os.environ.get('TESTED_SHA'),'fixture':'synthetic legal CDB; real local Stockfish, UI and CSS','checks':[],'errors':[],'metrics':[]}
     def record(name,ok,detail=None): report['checks'].append({'name':name,'pass':bool(ok),'detail':detail})
     with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True)
+        browser=p.chromium.launch(headless=True, executable_path=os.environ.get('CHROMIUM_EXECUTABLE') or None)
         def setup(viewport,ua=None,mobile=False):
             ctx=browser.new_context(viewport=viewport,user_agent=ua,is_mobile=mobile,has_touch=mobile,locale='en-US',service_workers='block')
             ctx.on('page',lambda page:page.on('pageerror',lambda e:report['errors'].append(str(e))))
@@ -60,10 +60,38 @@ def main():
             frame.evaluate('window.scrollTo(0,0)')
         try:
             ctx=setup({'width':1920,'height':1080});page=ctx.new_page();inner=ready(page)
-            record('preview default 390',page.locator('#previewWidth').input_value()=='390')
+            record('preview default iPhone 16 Pro 402',page.locator('#previewWidth').input_value()=='402')
             record('preview width in header',page.locator('header #previewWidth').count()==1)
             record('no without-frame action',page.get_by_text('Open without frame',exact=False).count()==0)
             record('desktop frame',not page.locator('html').evaluate("el=>el.classList.contains('app-phone-browser')"))
+            # Approved iPhone 16 Pro portrait preview, independent of desktop height.
+            device=inner.evaluate("""() => ({width:innerWidth,height:innerHeight,top:getComputedStyle(document.body).paddingTop,bottom:getComputedStyle(document.getElementById('appTabs')).paddingBottom,device:document.documentElement.dataset.previewDevice})""")
+            record('iPhone 16 Pro viewport and safe areas',device['width']==402 and device['height']==874 and device['top']=='62px' and device['bottom']=='34px' and device['device']=='iphone-16-pro',device)
+            gap=inner.evaluate("document.getElementById('appTabs').getBoundingClientRect().top-document.getElementById('board-container').getBoundingClientRect().bottom")
+            record('reference bottom gap close to BD phone screenshot',10<=gap<=45,gap)
+            for w,h in [(1280,720),(3840,2160),(900,650)]:
+                page.set_viewport_size({'width':w,'height':h});page.wait_for_timeout(100)
+                geometry=inner.evaluate("[innerWidth,innerHeight]")
+                bounds=page.locator('.phone-frame').bounding_box()
+                record('fixed phone viewport '+str(w),geometry==[402,874],geometry)
+                record('whole preview fits '+str(w),bounds['x']>=-1 and bounds['y']>=0 and bounds['x']+bounds['width']<=w+1 and bounds['y']+bounds['height']<=h+1,bounds)
+            page.set_viewport_size({'width':1920,'height':1080});page.wait_for_timeout(100)
+            page.locator('.phone-frame').screenshot(path=str(out/'iphone-16-pro-402.png'))
+            # Inventory of real static and dynamically constructed close actions.
+            close_selector='.dialog-close,#btnCloseGames,#btnCloseSettings,#btnCoachClose,#geminiClose,#gameReviewPanel .game-review-heading > button,#deepAnalysisPanel [data-deep="close"],#simTournamentDialog [data-action="close"],.chess-study-close,.research-close'
+            for language in ['en','sl']:
+                inner.locator('[data-app-lang="'+language+'"]').click()
+                for light in [False,True]:
+                    inner.evaluate('(light)=>document.body.classList.toggle("light-theme",light)',light)
+                    close_styles=inner.locator(close_selector).evaluate_all("els=>els.map(e=>({id:e.id||e.getAttribute('data-deep')||e.getAttribute('data-action')||e.className,bg:getComputedStyle(e).backgroundColor,color:getComputedStyle(e).color}))")
+                    record('burgundy close controls '+language+str(light),len(close_styles)>=10 and all(x['bg']=='rgb(111, 38, 59)' and x['color']=='rgb(255, 244, 246)' for x in close_styles),close_styles)
+                    record('navigation not burgundy '+language+str(light),inner.locator('#appNew').evaluate("e=>getComputedStyle(e).backgroundColor")!='rgb(111, 38, 59)')
+            inner.evaluate('document.body.classList.remove("light-theme")')
+            inner.locator('[data-app-lang="en"]').click()
+            inner.locator('#appGames').click()
+            inner.locator('#btnCloseGames').click()
+            record('library X still closes',not inner.locator('#popularGamesPanel').evaluate('e=>e.classList.contains("open")'))
+            inner.locator('#appTabs [data-app-tab="board"]').click()
             top_default=inner.evaluate("""() => ({hidden:document.getElementById('appTopLine').hidden,checked:document.getElementById('settingAppTopLine').checked,saved:localStorage.getItem('ChessBest:APP:v1:showTopLine')})""")
             record('Top Line default off',top_default['hidden'] and not top_default['checked'] and top_default['saved'] is None,top_default)
             inner.evaluate("document.getElementById('settingAppTopLine').click()")

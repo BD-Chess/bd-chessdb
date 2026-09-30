@@ -167,7 +167,7 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   assert.doesNotMatch(html, /preview-note/);
   assert.doesNotMatch(html, /Open without frame/i);
   assert.match(html, /main \{[^}]*justify-content:\s*center/s);
-  assert.match(html, /<option value="390" selected>390 px<\/option>/);
+  assert.match(html, /<option value="402" selected>402 px · iPhone 16 Pro<\/option>/);
   assert.match(html, /header-tools[\s\S]*CURRENT[\s\S]*PREVIOUS[\s\S]*LAB[\s\S]*APP[\s\S]*Preview width/);
   assert.match(html, /header \{[^}]*display:\s*grid;[^}]*grid-template-columns:/);
   assert.match(html, /\.header-tools \{ display:\s*contents; \}/);
