@@ -17,7 +17,7 @@ function setup(phone = false) {
   w.requestAnimationFrame = f => { f(); return 1; };
   const iframe = d.querySelector('iframe');
   iframe.contentDocument.open();
-  iframe.contentDocument.write('<!doctype html><html><body class="app-mobile"></body></html>');
+  iframe.contentDocument.write('<!doctype html><html><body class="app-mobile"><button id="first"></button><button id="prev"></button><button id="next"></button><button id="last"></button></body></html>');
   iframe.contentDocument.close();
   w.eval(script);
   return { dom, w, d, iframe, stage: d.getElementById('previewStage'), frame: d.getElementById('phoneFrame'), select: d.getElementById('previewWidth') };
@@ -58,5 +58,21 @@ test('normal phone browsers bypass preview size, safe-area simulation and scalin
   assert.equal(x.frame.style.transform, '');
   assert.equal(x.stage.dataset.viewport, undefined);
   assert.equal(x.iframe.contentDocument.documentElement.style.getPropertyValue('--app-preview-safe-top'), '');
+  x.dom.window.close();
+});
+
+test('desktop preview forwards arrow keys to move navigation while preserving form controls', () => {
+  const x = setup();
+  const hits = [];
+  for (const id of ['first','prev','next','last']) x.iframe.contentDocument.getElementById(id).addEventListener('click', () => hits.push(id));
+  for (const [key,id] of [['ArrowLeft','prev'],['ArrowRight','next'],['ArrowUp','first'],['ArrowDown','last']]) {
+    const event = new x.w.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    x.d.body.dispatchEvent(event);
+    assert.equal(hits.at(-1), id);
+    assert.equal(event.defaultPrevented, true);
+  }
+  const before = hits.length;
+  x.select.dispatchEvent(new x.w.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+  assert.equal(hits.length, before);
   x.dom.window.close();
 });

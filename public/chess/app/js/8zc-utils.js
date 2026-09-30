@@ -2412,7 +2412,7 @@ function jumpTo(i){
   document.addEventListener('keydown',e=>{
     if (playState.active || replayRunning || e.target.closest('[role=dialog], dialog, [contenteditable=true]')) return;
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
     if (simRunning) pauseSimulation();
 	const btn = document.getElementById('btnHideEval');
@@ -2422,8 +2422,8 @@ function jumpTo(i){
     else if(e.key==='ArrowRight'){
       const m=fullHistory[game.history().length];
       if(m){ game.move(m.san); workspace.history(); updateBoard(false); }
-    } else if(e.key==='Home') jumpTo(-1);
-    else if(e.key==='End')  jumpTo(fullHistory.length-1);
+    } else if(e.key==='ArrowUp' || e.key==='Home') jumpTo(-1);
+    else if(e.key==='ArrowDown' || e.key==='End')  jumpTo(fullHistory.length-1);
   });
 
   /* ------------------------------------------------------------------

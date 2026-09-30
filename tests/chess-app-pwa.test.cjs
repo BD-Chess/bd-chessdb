@@ -215,6 +215,10 @@ test('APP Deep menu uses depth-only presets and APP CDB transport is not forced 
   const utils = read('js/8zc-utils.js').toString();
   assert.doesNotMatch(utils, /settings\.evalMode\s*=\s*['"]direct['"]/);
   assert.match(utils, /source === 'proxy' && action === 'queryall'/);
+  assert.match(utils, /ArrowUp/);
+  assert.match(utils, /ArrowDown/);
+  assert.match(utils, /e\.key==='ArrowUp' \|\| e\.key==='Home'/);
+  assert.match(utils, /e\.key==='ArrowDown' \|\| e\.key==='End'/);
 });
 
 
