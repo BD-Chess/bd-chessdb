@@ -26,6 +26,10 @@ async function run(){
     const initial=fixture('solve-r5-'+name+'-'+mode,phone?'hard':'evil');
     await frame.evaluate(s=>window.SudokuNavigator.restore(s),initial);await frame.waitForFunction(()=>!window.SudokuNavigator.ui.blocked());
     await frame.locator('[data-sudoku-language="'+(phone?'sl':'en')+'"]').click();
+    const notesWasOn=await frame.locator('#appNotes').getAttribute('aria-pressed')==='true';if(notesWasOn)await frame.locator('#appNotes').click();
+    await frame.evaluate(()=>{if(window.SudokuNavigator.product.capture().selectedCell!==3)document.querySelector('.cell[data-index="3"]').click();if(typeof window.placeNumber!=='function')throw Error('placeNumber unavailable');window.placeNumber(6,'key',true);});await frame.waitForFunction(()=>window.SudokuNavigator.product.capture().board[3]===6,null,{timeout:3000});
+    if(notesWasOn)await frame.locator('#appNotes').click();await frame.waitForFunction(()=>window.SudokuSolveReview?.hasHumanReview?.(),null,{timeout:3000});
+    const humanEvidence=await frame.evaluate(()=>window.SudokuNavigator.product.reviewRows());assert.ok(humanEvidence.some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),'APP human review preserves exact pre-move board');
     const initialPosition=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
     // Existing AI Assist selects a suggested/problem cell without changing any
     // entries. Pin the precise pre-solve position AFTER opening that panel.
@@ -34,6 +38,9 @@ async function run(){
     await frame.locator('#aiAssistCancelAll').click();await checkBefore(before);await frame.locator('#aiAssistClose').click();
     const started=Date.now();await begin();
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
+    assert.equal(await frame.locator('.title-block').evaluate(n=>getComputedStyle(n).display),'none','title hidden during review');assert.equal(await frame.locator('.pl-tabs').evaluate(n=>getComputedStyle(n).display),'none','Play/Learn/Lab tabs hidden during review');
+    assert.equal(await frame.locator('#appSolveInstruments').evaluate(n=>n.hidden),false);assert.equal(await frame.locator('#appSolveInstruments .app-pos-sensor').count(),5,'five horizontal position sensors');
+    assert.match(await frame.locator('#appAssist .app-dock-label').innerText(),phone?/AI pregled/:/AI Review/);
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
     const reviewData=await frame.evaluate(()=>window.SudokuSolveReview.get());
     assert.ok(reviewData&&reviewData.steps.length>3,'logical review timeline created');
@@ -46,15 +53,19 @@ async function run(){
     await page.screenshot({path:path.join(out,name+'-'+mode+'-solve-mid.png'),fullPage:true});
     await frame.waitForFunction(()=>{const r=window.SudokuSolveReview?.get?.();return r&&r.index===r.steps.length&&document.querySelector('#appSolvePlay')?.textContent==='▶';},null,{timeout:8500});const elapsed=Date.now()-started;
     assert.ok(elapsed>=2200&&elapsed<9000,'fast watchable duration '+elapsed);assert.deepEqual(await visible(),solved.board);
-    assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'position sensors visible');
+    assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'compact step sensors visible');
     assert.equal(await frame.locator('#appDock>button').count(),5);assert.equal(await frame.locator('.title').innerText(),'8zSudoku');assert.equal(await frame.locator('#plNumbers').evaluate(n=>n.hidden),true);
-    await frame.locator('#appSolveFirst').click();assert.deepEqual(await visible(),before.board,'first review position is exact pre-solve grid');
-    await frame.locator('#appSolveNext').click();assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),1,'next review step');
+    await frame.locator('#appSolveInstruments [data-sensor="cplx"]').click();assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false);assert.match(await frame.locator('#appSensorTitle').innerText(),/LZ/);await frame.locator('#appSensorClose').click();
+    await page.keyboard.press('ArrowUp');assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),0,'ArrowUp -> first');
+    await page.keyboard.press('ArrowRight');assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),1,'ArrowRight -> next');
+    await page.keyboard.press('ArrowDown');const aiMax=Number(await frame.locator('#appSolveScrub').getAttribute('max'));assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),aiMax,'ArrowDown -> last');
+    await page.keyboard.press('ArrowLeft');assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),aiMax-1,'ArrowLeft -> previous');
+    await page.keyboard.press('ArrowUp');await page.keyboard.press('Space');assert.equal(await frame.locator('#appSolvePlay').innerText(),'❚❚','Space starts playback');await page.keyboard.press('Space');assert.equal(await frame.locator('#appSolvePlay').innerText(),'▶','Space pauses playback');
     await frame.locator('#appSolveLast').click();assert.deepEqual(await visible(),solved.board,'last review position is solved grid');
-    await frame.locator('#appSolveTabHuman').click();assert.ok((await frame.locator('#appHumanReviewSummary').innerText()).length>0,'human review summary available');
+    await frame.locator('#appSolveTabHuman').click();assert.ok((await frame.locator('#appHumanReviewSummary').innerText()).length>0,'human review summary available');const humanMax=Number(await frame.locator('#appSolveScrub').getAttribute('max'));assert.ok(humanMax>=1,'human review has navigable recorded moves');await page.keyboard.press('ArrowUp');await page.keyboard.press('ArrowRight');assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),1,'human review uses same keyboard navigation');
     await frame.locator('#appSolveTabAI').click();
     add('logical-review-navigation',{elapsedMs:elapsed,samples,steps:reviewData.steps.length,fallbacks:reviewData.fallbacks,blankCells:initial.board.filter(v=>!v).length});
-    await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(250);await checkBefore(before);
+    await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(250);await checkBefore(before);assert.notEqual(await frame.locator('.title-block').evaluate(n=>getComputedStyle(n).display),'none','title restored after Undo');assert.notEqual(await frame.locator('.pl-tabs').evaluate(n=>getComputedStyle(n).display),'none','tabs restored after Undo');assert.match(await frame.locator('#appAssist .app-dock-label').innerText(),phone?/Pomoč AI/:/AI Assist/);
     await frame.evaluate(()=>window.SudokuNavigator.product.redo());assert.deepEqual(await capture(),solved);await frame.locator('#appUndo').click();await checkBefore(before);add('one-undo-and-redo');
     await begin();await page.waitForTimeout(430);assert.equal(await frame.evaluate(()=>document.body.dataset.appSolveReview==='true'),true);await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(500);await checkBefore(before);assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolveReview),false);add('undo-during-fill-no-stale-timer');
     // Learn -> Solve all must return to the unobscured Play board too.
