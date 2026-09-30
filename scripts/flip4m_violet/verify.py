@@ -113,7 +113,7 @@ def verify(public: Path,out: Path,executable=None):
         actual_center=device_box['y']+device_box['height']/2
         check('APP phone centered in remaining desktop viewport',abs(actual_center-expected_center)<36,{'expected':expected_center,'actual':actual_center})
         check('APP desktop body fills viewport',app.evaluate('document.body.getBoundingClientRect().height>=innerHeight'))
-        check('APP html Petrol background',app.evaluate("getComputedStyle(document.documentElement).backgroundColor in ['rgb(11, 17, 25)','rgba(11, 17, 25, 1)']"))
+        check('APP html Petrol background',app.evaluate("['rgb(11, 17, 25)','rgba(11, 17, 25, 1)'].includes(getComputedStyle(document.documentElement).backgroundColor)"))
         app.set_viewport_size({'width':1440,'height':1080});app.locator('#previewWidth').select_option('390')
         for col in (3,4,3):drop(app,col)
         app.screenshot(path=str(out/'app-desktop.png'),full_page=True)
