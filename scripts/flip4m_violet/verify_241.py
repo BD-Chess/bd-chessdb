@@ -30,6 +30,7 @@ def save(error=None):
 def check(name, ok, detail=None):
     RESULTS.append({'name':name,'pass':bool(ok),'detail':detail})
     save()
+    print(('PASS ' if ok else 'FAIL ')+name, flush=True)
     if not ok:
         raise AssertionError(name+': '+str(detail))
 
