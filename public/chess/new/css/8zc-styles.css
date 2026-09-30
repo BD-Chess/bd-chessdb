@@ -1581,3 +1581,29 @@ body.light-theme .analysis-source-row select{background:#fff;color:#173b2b}
 .all-eval-badges button.all-eval-badge.is-working{border-color:var(--ui-accent)}
 .all-eval-badges button.all-eval-badge.is-active{border-color:var(--ui-accent);background:var(--ui-raised)}
 @media(max-width:420px){.all-eval-badges{gap:5px}.all-eval-badge{gap:2px;padding:5px 2px;min-height:46px}.all-eval-main{gap:3px;font-size:clamp(9px,2.8vw,13px)}.all-eval-badge small{font-size:clamp(8px,2.5vw,10px)}}
+
+
+/* LAB internal close actions: match the high-visibility APP close affordance
+ * without changing ordinary navigation, delete, remove or clear controls. */
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close) {
+  background:#6f263b!important;
+  color:#fff4f6!important;
+  border-color:#b96c82!important;
+}
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close):hover {
+  background:#89354c!important;
+}
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close):focus-visible {
+  background:#89354c!important;
+  outline:2px solid #efafc0;
+  outline-offset:2px;
+}
