@@ -38,6 +38,10 @@ output=output.replaceAll('Delete ALL local LAB games','Delete ALL local APP game
  .replaceAll('Izbriši vse podatke LAB','Izbriši vse podatke APP')
  .replaceAll('LAB data deleted','APP data deleted');
 output=once(output,"const base={seq:moveReviews.length+1,cell,value,at_s:timerSeconds,assisted:!!assisted,reasoning_status:'UNKNOWN_REASONING'};","const base={seq:moveReviews.length+1,cell,value,at_s:timerSeconds,assisted:!!assisted,pre_board:preGrid.flat(),reasoning_status:'UNKNOWN_REASONING'};");
+output=once(output,
+ "assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),canWrite:()=>!frozen&&!deleted",
+ "assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),reviewRows:()=>J(rows.filter(r=>r.kind==='placement'&&r.pre?.b).map(r=>{const expected=solution?.flat?.()[r.cell],proof=(r.result?.path||[]).find(q=>q.c===r.cell&&q.v===r.value)||r.result?.path?.at?.(-1),verdict=expected&&r.value!==expected?'mistake':r.result?.found?'verified':'unknown';return{seq:r.id,cell:r.cell,value:r.value,at_s:r.at_s,assisted:!!(r.sessionAssisted||r.help?.length),pre_board:r.pre.b.slice(),verdict,technique:proof&&Number.isInteger(proof.t)?C.NAMES[proof.t]:null,label:verdict==='mistake'?'Wrong answer':verdict==='verified'?'Verified logic':'Correct · reasoning unknown'};})),canWrite:()=>!frozen&&!deleted"
+);
 output=once(output,"if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}library={schema:SCHEMA","if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}localStorage.removeItem('8zSudoku.app.ui.language');library={schema:SCHEMA");
 output=once(output,'This is a product preview at <code>/S/new/</code>. The current <code>/S/</code> game remains untouched until manual review.','This is the APP web preview at <code>/S/app/</code>. The APP game and its saved data are separate from LAB and CURRENT.');
 output=once(output,'<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>\n\n','');
