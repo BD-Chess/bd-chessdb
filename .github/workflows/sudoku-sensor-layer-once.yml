@@ -1,0 +1,118 @@
+name: Sudoku sensor fullscreen layer repair
+on:
+  push:
+    branches: [fix/sudoku-sensor-fullscreen-layer-20261001]
+    paths: ['.github/workflows/sudoku-sensor-layer-once.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    env:
+      BASE_SHA: 6a54cffc401e4da74c3c04bf9dfb15dd44b165ba
+      SUDOKU_EVIDENCE_DIR: sensor-layer-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare narrow fullscreen repair and persistent regression
+        run: |
+          mkdir -p sensor-layer-evidence
+          python - <<'PY'
+          from pathlib import Path
+          def once(s,a,b):
+              assert s.count(a)==1,a
+              return s.replace(a,b,1)
+          p=Path('public/S/app/app-solve-playback.js');s=p.read_text()
+          s=once(s,'#appSolveSensorsOverview{position:fixed;inset:0;z-index:1700;','#appSolveSensorsOverview{position:fixed;inset:0;z-index:4100;')
+          s=once(s,'width:38px;height:38px;border:1px solid #36576e','width:44px;height:44px;border:1px solid #36576e')
+          s=once(s,' function openSensorsOverview(){',' function openSensorsOverview(){\n  pause();sensorModal.hidden=true;sensorOverview.scrollTop=0;')
+          p.write_text(s)
+          p=Path('tests/sudoku-app-solve-playback-r5-browser.cjs');s=p.read_text()
+          s=once(s,'phone?/ni ocena inteligence/i:/not.*intelligence/i','phone?/niso.*ocena inteligence/i:/not.*intelligence/i')
+          start=s.index("    assert.equal(await frame.locator('#appSolveSensorsOverviewOpen').count(),1")
+          end=s.index("    assert.match(await frame.locator('#appAssist .app-dock-label').innerText()",start)
+          block=s[start:end];s=s[:start]+s[end:]
+          # Overview now pauses playback; validate it after the timed replay completes.
+          block=once(block,"    await frame.locator('#appSolveSensorsOverviewOpen').click();", "    const activate=async n=>phone?n.tap():n.click();\n    await activate(frame.locator('#appSolveSensorsOverviewOpen'));")
+          extra=r'''
+              const assertCover=async()=>{
+               const v=await frame.evaluate(()=>{const root=document.querySelector('#appSolveSensorsOverview'),close=document.querySelector('#appSensorsOverviewClose').getBoundingClientRect();return{blocked:[[4,4],[innerWidth-5,4],[4,innerHeight-5],[innerWidth-5,innerHeight-5],[innerWidth/2,innerHeight-30]].every(([x,y])=>root.contains(document.elementFromPoint(x,y))),closeVisible:close.top>=0&&close.right<=innerWidth+1&&close.bottom<=innerHeight+1,closeWidth:close.width,closeHeight:close.height};});
+               assert.equal(v.blocked,true,'overview, not underlying dock, receives all viewport hits');assert.equal(v.closeVisible,true,'close remains visible');assert.ok(v.closeWidth>=44&&v.closeHeight>=44,'44px close target');
+              };
+              await assertCover();
+              await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-top.png'),fullPage:true});
+              await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop=n.scrollHeight);
+              await assertCover();
+              await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-bottom.png'),fullPage:true});
+          '''
+          block=once(block,"await frame.locator('#appSensorsOverviewClose').click();",extra+"    await activate(frame.locator('#appSensorsOverviewClose'));\n")
+          extra2=r'''
+              const guideGame=await capture();
+              await frame.locator('#appSolveFirst').click();await frame.locator('#appSolvePlay').click();
+              await page.waitForTimeout(160);await activate(frame.locator('#appSolveSensorsOverviewOpen'));
+              const guideStep=await frame.locator('#appSolveScrub').inputValue();
+              await page.waitForTimeout(350);assert.equal(await frame.locator('#appSolveScrub').inputValue(),guideStep,'overview pauses replay on its snapshot');assert.equal(await frame.locator('#appSolvePlay').innerText(),'▶');
+              assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop),0,'new opening starts at top');
+              await page.keyboard.press('Escape');assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSolveSensorsOverviewOpen');
+              assert.deepEqual(await capture(),guideGame,'overview does not alter game state');
+              for(const key of ['cplx','gini','powr','dens','adsr']){await activate(frame.locator('#appSolveInstruments [data-sensor="'+key+'"]'));assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false,'detail retained: '+key);await activate(frame.locator('#appSensorClose'));}
+              await frame.locator('#appSolveLast').click();
+              report.fullscreenGuideContexts=(report.fullscreenGuideContexts||0)+1;
+          '''
+          anchor="    assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'compact step sensors visible');"
+          s=once(s,anchor,block+extra2+'\n'+anchor)
+          p.write_text(s)
+          PY
+          node --check public/S/app/app-solve-playback.js
+          node --check tests/sudoku-app-solve-playback-r5-browser.cjs
+          node scripts/build-sudoku-app-preview.cjs
+          node scripts/build-sudoku-app-preview.cjs --check
+          python scripts/check_secret_boundary.py
+      - name: Install browser acceptance runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0 > sensor-layer-evidence/npm-install.log 2>&1
+          npx playwright install --with-deps chromium webkit > sensor-layer-evidence/browser-install.log 2>&1
+      - name: Exact package Chromium and WebKit acceptance
+        run: |
+          set -o pipefail
+          node tests/sudoku-app-solve-playback-r5-browser.cjs 2>&1 | tee sensor-layer-evidence/browser.log
+      - name: Stage tested APP-only commit without publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,os,pathlib,subprocess,urllib.request
+          out=pathlib.Path('sensor-layer-evidence')
+          report=json.loads((out/'solve-browser.json').read_text())
+          assert report['status']=='PASS' and len(report['cases'])==20 and report['fullscreenGuideContexts']==4,report
+          def api(route,body):
+              req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+route,data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+              with urllib.request.urlopen(req,timeout=90) as r:return json.load(r)
+          base=os.environ['BASE_SHA'];tree=[];files=[]
+          for name in ['public/S/app/app-solve-playback.js','public/S/app/app.html','public/S/app/release.json','public/S/app/sw.js','tests/sudoku-app-solve-playback-r5-browser.cjs']:
+              data=pathlib.Path(name).read_bytes();sha=api('/git/blobs',{'content':data.decode(),'encoding':'utf-8'})['sha']
+              assert sha==hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+              tree.append({'path':name,'mode':'100644','type':'blob','sha':sha});files.append({'path':name,'sha256':hashlib.sha256(data).hexdigest(),'blob_sha':sha})
+          bt=subprocess.check_output(['git','rev-parse',base+'^{tree}'],text=True).strip()
+          ts=api('/git/trees',{'base_tree':bt,'tree':tree})['sha']
+          cs=api('/git/commits',{'message':'fix(sudoku): keep sensor guide above dock and pause replay while reading','tree':ts,'parents':[base]})['sha']
+          receipt={'status':'PASS','base_sha':base,'candidate_sha':cs,'release_id':json.loads(pathlib.Path('public/S/app/release.json').read_text())['release_id'],'files':files,'browser_cases':20,'fullscreen_guide_contexts':4,'branch_updated':False}
+          (out/'staged-release.json').write_text(json.dumps(receipt,indent=2));print(json.dumps(receipt))
+          PY
+      - name: Print browser result
+        if: always()
+        run: cat sensor-layer-evidence/solve-browser.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-sensor-layer-evidence
+          path: sensor-layer-evidence/
+          retention-days: 7
