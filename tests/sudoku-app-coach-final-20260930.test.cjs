@@ -96,6 +96,7 @@ test('Hard and Evil suppress proactive Coach/tip help and enable centered quiet-
   await until(()=>h.w.document.body.dataset.appHardNoHelp==='true',diff+' quiet-play mode');
   assert.equal(h.el('appCoach').hidden,true,diff+' Coach hidden');
   assert.equal(h.el('appHoldTip').hidden,true,diff+' tap/hold tip hidden');
+  assert.equal(h.el('appAssist').hidden,true,diff+' AI Assist hidden');
  }
  assert.deepEqual(h.errors,[]);
 });

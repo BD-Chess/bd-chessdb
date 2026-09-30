@@ -189,6 +189,7 @@
   const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
   const diff=difficulty(),hardNoHelp=diff==='hard'||diff==='evil';
   document.body.dataset.appHardNoHelp=hardNoHelp?'true':'false';
+  if($('appAssist'))$('appAssist').hidden=hardNoHelp;
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
   holdTip.hidden=lab||hardNoHelp||readUiPref('holdTip')!=='on';
   setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');

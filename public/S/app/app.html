@@ -683,6 +683,9 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=cl
  body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{min-height:auto;padding-top:18px;padding-bottom:18px}
 }
 
+body[data-app-surface][data-app-hard-nohelp=true] #appAssist{display:none!important}
+body[data-app-surface][data-app-hard-nohelp=true] #appDock{grid-template-columns:repeat(4,minmax(0,1fr))}
+
 </style>
 </head>
 <body data-app-surface="true" data-app-panel="board">
@@ -3972,6 +3975,7 @@ install();
   const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
   const diff=difficulty(),hardNoHelp=diff==='hard'||diff==='evil';
   document.body.dataset.appHardNoHelp=hardNoHelp?'true':'false';
+  if($('appAssist'))$('appAssist').hidden=hardNoHelp;
   if(numbersPanel)numbersPanel.hidden=lab||!padOn;
   holdTip.hidden=lab||hardNoHelp||readUiPref('holdTip')!=='on';
   setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');
