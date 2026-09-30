@@ -3,7 +3,13 @@ on:
   pull_request:
     paths:
       - public/chess/app/**
+      - public/chess/new/js/8zc-deep-ui.js
+      - public/chess/new/js/8zc-utils.js
+      - public/chess/new/css/8zc-deep.css
+      - public/chess/new/css/8zc-styles.css
+      - public/chess/new/research/deep-ui.test.cjs
       - tests/chess-app-pwa.test.cjs
+      - tests/chess-lab-deep-gui.test.cjs
       - tools/chess-app-browser-review.py
       - .github/workflows/chess-app-flow-review.yml
   push:
@@ -25,8 +31,15 @@ jobs:
             public/chess/app
             public/chess/sw.js
             public/chess/new/sw.js
+            public/chess/new/js/8zc-deep-ui.js
+            public/chess/new/js/8zc-utils.js
+            public/chess/new/js/chess.min.js
+            public/chess/new/css/8zc-deep.css
+            public/chess/new/css/8zc-styles.css
+            public/chess/new/research/deep-ui.test.cjs
             tools/chess-app-browser-review.py
             tests/chess-app-pwa.test.cjs
+            tests/chess-lab-deep-gui.test.cjs
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
@@ -60,7 +73,7 @@ jobs:
       - name: APP regression tests
         id: unit
         continue-on-error: true
-        run: timeout 90s node --test tests/chess-app-pwa.test.cjs public/chess/app/tests/*.test.cjs > review-evidence/node-tests.log 2>&1
+        run: timeout 90s node --test tests/chess-app-pwa.test.cjs tests/chess-lab-deep-gui.test.cjs public/chess/new/research/deep-ui.test.cjs public/chess/app/tests/*.test.cjs > review-evidence/node-tests.log 2>&1
       - name: Verify exact published GitHub Pages release
         id: published
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
