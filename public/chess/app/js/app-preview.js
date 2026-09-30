@@ -1,5 +1,5 @@
 /* Desktop/tablet preview only. iPhone 16 Pro portrait: 402 x 874 CSS px.
- * 62/34 safe-area simulation is calibrated to BD's 2026-09-30 Home Screen
+ * 52/34 safe-area simulation is calibrated to BD's 2026-09-30 Home Screen
  * screenshot, not a claim that every iOS/Safari presentation uses these insets.
  * A smaller desktop scales the whole frame; it never resizes the phone height.
  * Normal phone browsers and installed/native play.html keep their real insets.
@@ -13,7 +13,7 @@
   const selector = document.getElementById('previewWidth');
   const main = document.querySelector('main');
   if (!stage || !frame || !iframe || !selector || !main) return;
-  const reference = { width: 402, height: 874, top: 62, bottom: 34 };
+  const reference = { width: 402, height: 874, top: 52, bottom: 34 };
   const allowedWidths = new Set([375, 390, 402, 430]);
   let width = reference.width, height = reference.height, scheduled = false;
 
