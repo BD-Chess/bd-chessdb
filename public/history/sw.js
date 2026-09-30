@@ -1,6 +1,6 @@
 'use strict';
 const RELEASE={
-  "id": "459917e541745777be485d50e7402fc9e46f1f71f799f20085c53324e97be6de",
+  "id": "111319a2bdcfcf9b20d6128a2eaa07d836cd2e691fb53ce8ad3dde6571b1ecfb",
   "assets": {
     "01_deep_humanity_300000_20000_bce.html": "25e3969e91f4c6596fa9baf5c615c7c5bbfd62649a60cc6c0a9b0ad92385cc42",
     "02_ice_age_transition_20000_10000_bce.html": "9cfb6d83d39241face4dd0c0a52ab3056aa5265c85f6c040e84093f1f94c5750",
@@ -17,10 +17,10 @@ const RELEASE={
     "changelog.html": "ace4fabfb100630bb5a7ff22a8f24427008f4c8ae666fc7f773ab397809bc97f",
     "glossary.html": "f11f07344643334dce3c936aa97bd0fb30512b61ad9f0e7731b0f180d60e70a1",
     "index.html": "e9f38d648fb25bf42f98fbd5e7dbf1665879c46d49dd240d39d84bf877368fe2",
-    "methodology.html": "aab1605fbb731858a73c39178861e6ddcc52b766cb29645659aba320b1332c14",
-    "timeline.html": "e58439c0e6f07640c9f1a27229543bc26a7a90de27f35dc2c91cdd057d569121",
+    "methodology.html": "a8f6ddc55572232daa6d3a6ccb771d127176454ba8fbdcddafadc175f892b494",
+    "timeline.html": "aef9dfec90d2b3b44b495cfee06f75bd212637dea65f782f58918e48d82f94e0",
     "manifest.webmanifest": "f87e184a6429d469747ef11a6bfc1e55d490abce0e07102b417e6f326bfa26cc",
-    "pwa.css": "18582fea6bd9d3b27f63708f2f23e658b11b365778cdf2dda308e7ef463176ee",
+    "pwa.css": "b9cdf1c5bbf1c8058a91756421b2ed9cb3675e2866664df23d9116c5a339a751",
     "pwa.js": "48af6349b1269e0d5bb2bfd9541a09304f2726655837bc55fc4ddd0165fac502",
     "icon-180.png": "9c8747c55c8409bcdf63c880f4ac4d3db4657798431056bd6ac9df95798f8bf5",
     "icon-192.png": "c5ce9c4ff78f1085c1b923d9632c071d4d8bf31511739a233d1c939ad6b8c4a7",
