@@ -8,8 +8,8 @@ from __future__ import annotations
 import argparse, hashlib, json, re, struct, zlib
 from pathlib import Path
 
-VERSION = '2.2.0-violet'
-SHARED = '_shared/violet-2.2.0'
+VERSION = '2.3.0-petrol'
+SHARED = '_shared/petrol-2.3.0'
 SOURCE_COMMIT = 'd0ed1b4a239c123c6e4bced79648f8325c9168ee'
 SOURCE_HASHES = {
 'f4m-core.js':'d59c88e5fcf0df2f7973b8bdb2057e497a2b22da',
@@ -42,11 +42,11 @@ def icon(size: int) -> bytes:
         data.append(0)
         for x in range(size):
             xx,yy=x/size,y/size
-            color=(25,23,37)
-            if .17<xx<.83 and .17<yy<.83: color=(69,55,87)
+            color=(18,27,38)
+            if .17<xx<.83 and .17<yy<.83: color=(41,67,87)
             for i,(cx,cy) in enumerate(((.34,.34),(.66,.34),(.34,.66),(.66,.66))):
                 if (xx-cx)**2+(yy-cy)**2<.105**2:
-                    color=((243,120,128),(243,205,112),(192,164,242),(192,164,242))[i]
+                    color=((240,109,114),(243,200,79),(210,161,90),(154,169,183))[i]
             data.extend(color)
     return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',size,size,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(bytes(data),9))+chunk(b'IEND',b'')
 
@@ -87,12 +87,12 @@ def document(source: str, channel: str) -> str:
     # Original source contains no runnable scripts below these dialogs.
     if '<script' in dialogs: raise ValueError('Unexpected script in source dialog tail')
     more='''<button id="sim" class="hidden-hook" type="button" tabindex="-1">Sim</button><button id="lang" class="hidden-hook" type="button" tabindex="-1">EN</button>
-<dialog id="moreDialog"><div class="dialog-title"><h2 data-shell="moreTitle">Orodja in nastavitve</h2><button id="closeMore" data-shell="close">Zapri</button></div><div class="more-grid"><button id="openSetup" data-shell="setup"></button><button id="help" data-shell="how"></button><button id="helpDcc" data-shell="dcc"></button><button id="theme" data-shell="theme"></button><a href="../f4m/" data-shell="paper"></a><a href="release.json" data-shell="release"></a></div><h3 class="more-description" data-shell="pwaTitle"></h3><div class="more-grid"><button id="install" class="wide"><span data-shell="install">Namesti</span> CHANNEL</button></div><p id="offlineStatus" class="notice" role="status"></p><p id="installInfo" class="notice" hidden></p></dialog>
+<dialog id="moreDialog"><div class="dialog-title"><h2 data-shell="moreTitle">Orodja in nastavitve</h2><button id="closeMore" data-shell="close">Zapri</button></div><div class="more-grid"><button id="openSetup" data-shell="setup"></button><button id="help" data-shell="how"></button><button id="helpDcc" data-shell="dcc"></button><button id="theme" data-shell="theme"></button><a href="../f4m/" data-shell="paper"></a><a href="release.json" data-shell="release"></a></div><label class="board-size-setting"><span data-shell="boardSize">Velikost plošče</span><select id="boardSize"><option value="standard" data-shell="boardStandard">Standard</option><option value="large" data-shell="boardLarge">Velika</option><option value="max" data-shell="boardMax">Največja</option></select></label><h3 class="more-description" data-shell="pwaTitle"></h3><div class="more-grid"><button id="install" class="wide"><span data-shell="install">Namesti</span> CHANNEL</button></div><p id="offlineStatus" class="notice" role="status"></p><p id="installInfo" class="notice" hidden></p></dialog>
 <aside id="pwaToast" class="pwa-toast" role="status" hidden><span id="updateText"></span><button id="updateButton" data-shell="update"></button></aside>'''.replace('CHANNEL',channel.upper())
     modules=['f4m-core','f4m-search','f4m-smart-time','f4m-classical','f4m-dcc','f4m-time','f4m-sim','f4m-store','f4m-ui','shell','pwa']
     scripts='\n'.join(f'<script src="../{SHARED}/{name}.js"'+(' data-engine-ui' if name=='f4m-ui' else '')+' defer></script>' for name in modules)
     return f'''<!doctype html>
-<html lang="sl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#100f19"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="author" content="Bojan Dobrečevič"><meta name="description" content="Flip4M: connect four, turn gravity and master magnets. Local Classical / AI+DCC game and reproducible experiments."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Flip4M {channel.upper()}"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="../{SHARED}/icon-180.png"><link rel="icon" href="../{SHARED}/icon-192.png"><title>Flip4M {channel.upper()} · Violet</title><link rel="stylesheet" href="../{SHARED}/f4m.css"><link rel="stylesheet" href="../{SHARED}/violet.css">{scripts}</head><body data-channel="{channel}" class="{'is-app' if app else 'is-lab'}"><a class="skip-link" href="#main">Skip to game / Preskoči na igro</a>{shell}{dialogs}{more}</body></html>\n'''
+<html lang="sl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1119"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="author" content="Bojan Dobrečevič"><meta name="description" content="Flip4M: connect four, turn gravity and master magnets. Local Classical / AI+DCC game and reproducible experiments."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Flip4M {channel.upper()}"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="../{SHARED}/icon-180.png"><link rel="icon" href="../{SHARED}/icon-192.png"><title>Flip4M {channel.upper()} · Petrol</title><link rel="stylesheet" href="../{SHARED}/f4m.css"><link rel="stylesheet" href="../{SHARED}/violet.css">{scripts}</head><body data-channel="{channel}" class="{'is-app' if app else 'is-lab'}"><a class="skip-link" href="#main">Skip to game / Preskoči na igro</a>{shell}{dialogs}{more}</body></html>\n'''
 
 def build(public: Path) -> list[str]:
     root=public/'F4M'
@@ -102,10 +102,10 @@ def build(public: Path) -> list[str]:
     # CURRENT is read-only and has the same controller plus smart time as LAB.
     original=(root/'index.html').read_text()
     ui=source['f4m-ui.js'].decode()
-    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.2.0-violet',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
+    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.3.0-petrol',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
     ui=replace_once(ui,"else worker=new Worker('f4m-worker.js?v=2.1.1');", "else worker=new Worker(new URL('f4m-worker.js',document.querySelector('script[data-engine-ui]').src));")
     ui=replace_once(ui,"function persist(){if(loading)return;const serial=++saveSerial;Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');});}", "function persist(){if(loading)return Promise.resolve('unavailable');const serial=++saveSerial;return Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');return status;});}")
-    ui=replace_once(ui,"document.title='Flip4M Lab — Classical AI × AI+DCC';", "document.title='Flip4M '+CHANNEL.toUpperCase()+' · Violet';")
+    ui=replace_once(ui,"document.title='Flip4M Lab — Classical AI × AI+DCC';", "document.title='Flip4M '+CHANNEL.toUpperCase()+' · Petrol';")
     ui=replace_once(ui,"validateSave:validateSession,flush:()=>Store.flush()", """validateSave:validateSession,flush:()=>Store.flush(),pause:()=>pauseAll(),setLanguage:lang=>{prefs.lang=lang==='en'?'en':'sl';preferences();translate();persist();document.dispatchEvent(new Event('f4m:language'));},saveForUpdate:async()=>{if(loading)throw Error('Still loading');pauseAll();const expected=JSON.stringify(session()),status=await persist();await Store.flush();if(status==='unavailable')throw Error('Save unavailable');const saved=await Store.read();validateSession(saved);if(JSON.stringify({game:saved.game,states:saved.states,moves:saved.moves,archived:saved.archived,records:saved.records,clocks:saved.clocks,cursor:saved.cursor,timeout:saved.timeout,clock:saved.clock})!==expected)throw Error('Save readback mismatch');return status;}""")
     ui=replace_once(ui,"message(t('restored'));}})();", "message(t('restored'));}document.dispatchEvent(new Event('f4m:language'));})();")
     # Use the pre-existing LAB database; APP is isolated. Do not copy CURRENT's legacy selector patch.
@@ -124,7 +124,7 @@ def build(public: Path) -> list[str]:
     shared_names=[p.split('/')[-1] for p in outputs]
     for channel,dirname in (('lab','new'),('app','app')):
         outputs[f'{dirname}/index.html']=document(original,channel).encode()
-        manifest={'id':'./','name':'Flip4M '+channel.upper(),'short_name':'Flip4M '+channel.upper(),'start_url':'./','scope':'./','display':'standalone','background_color':'#100f19','theme_color':'#100f19','lang':'sl','icons':[{'src':f'../{SHARED}/icon-{s}.png','sizes':f'{s}x{s}','type':'image/png','purpose':'any maskable'} for s in (192,512)]}
+        manifest={'id':'./','name':'Flip4M '+channel.upper(),'short_name':'Flip4M '+channel.upper(),'start_url':'./','scope':'./','display':'standalone','background_color':'#0b1119','theme_color':'#0b1119','lang':'sl','icons':[{'src':f'../{SHARED}/icon-{s}.png','sizes':f'{s}x{s}','type':'image/png','purpose':'any maskable'} for s in (192,512)]}
         outputs[f'{dirname}/manifest.webmanifest']=(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n').encode()
         release={'schema':'flip4m.release.v1','version':VERSION,'date':'2026-09-30','role':channel.upper(),'base':'2.1.2-smart-time','source_commit':SOURCE_COMMIT,'rules_unchanged':True,'source_blobs':SOURCE_HASHES,'shared_path':SHARED,'storage':'flip4m-lab-2.1' if channel=='lab' else 'flip4m-app-2.2','native_app':False,'physical_device_acceptance':'NOT_RUN'}
         outputs[f'{dirname}/release.json']=(json.dumps(release,indent=2)+'\n').encode()

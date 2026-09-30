@@ -1,5 +1,5 @@
 /* GENERATED CONFIG above. Cache ownership never extends to another channel. */
-const BASE=new URL('./',self.location.href), PREFIX='flip4m-violet:'+BASE.pathname+':', CACHE=PREFIX+BUILD;
+const BASE=new URL('./',self.location.href), PREFIX='flip4m-petrol:'+BASE.pathname+':', CACHE=PREFIX+BUILD;
 const URLS=ASSETS.map(p=>new URL(p,BASE).href);
 const normalize=request=>{const u=new URL(request.url);u.search='';u.hash='';return u.href;};
 self.addEventListener('install',event=>event.waitUntil((async()=>{
