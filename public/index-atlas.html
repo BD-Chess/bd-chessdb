@@ -251,11 +251,14 @@ html[data-theme="light"] .flag-card{background:linear-gradient(180deg,#fff,#f5f7
 html[data-theme="light"] :is(h1 .white,.tool-card strong,.quick-card b,.chapter summary strong,.subgroup summary,.link-title,.map-panel summary,.flag-card strong,.maturity-item b,.path-card b,.stewardship-line,.stewardship-body strong){color:var(--text)}
 html[data-theme="light"] :is(.topnav a,.badge,.mind-node){background:rgba(255,255,255,.72)}
 </style>
+<style id="site-search-results-style">
+.top-search-row{position:relative;z-index:70}.site-search-results{position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:min(62vh,520px);overflow:auto;border:1px solid var(--line2);border-radius:14px;background:rgba(5,7,13,.985);box-shadow:0 22px 70px rgba(0,0,0,.55);padding:7px;z-index:90}.site-search-results[hidden]{display:none!important}.site-search-result{display:block;padding:10px 12px;border:1px solid transparent;border-radius:10px;color:var(--text);text-decoration:none!important}.site-search-result:hover,.site-search-result:focus-visible{border-color:var(--cyan);background:rgba(34,211,238,.08);outline:none}.site-search-result strong{display:block;font-size:13px;color:#fff}.site-search-result span{display:block;margin-top:2px;color:var(--muted);font:11px/1.45 var(--mono);overflow-wrap:anywhere}.site-search-empty{padding:12px;color:var(--muted);font:12px/1.5 var(--mono)}html[data-theme="light"] .site-search-results{background:rgba(255,255,252,.99);box-shadow:0 20px 60px rgba(47,64,78,.18)}html[data-theme="light"] .site-search-result strong{color:var(--text)}@media(max-width:760px){.site-search-results{max-height:52vh}}
+</style>
 </head>
 <body><nav aria-label="Four entrances / Štirje vhodi" class="entry-nav"><a class="entry-home" data-entry-link="" href="index.html">↖ <span class="entry-en" lang="en">Four entrances</span><span class="entry-sl" lang="sl">Štirje vhodi</span></a><div class="entry-choices"><a data-entry-link="" href="index-search.html">MDL×DCC</a><a aria-current="page" data-entry-link="" href="index-atlas.html">Atlas</a><a data-entry-link="" href="index-todo.html">Todo</a><a data-entry-link="" href="index-intro.html">Intro</a><a class="entry-bd" data-entry-link="" href="./BD/index.html">BD ↗</a></div></nav>
 <header class="topbar"><div class="wrap topbar-inner">
 <div class="top-title-row"><a class="brand" href="index.html">MDL×DCC.org</a></div>
-<div class="top-search-row"><input autocomplete="off" class="top-search" data-placeholder-en="Search / filter all pages…" data-placeholder-sl="Išči / filtriraj vse strani…" id="topSearch" placeholder="Search / filter all pages…" type="search"/></div>
+<div class="top-search-row"><input autocomplete="off" class="top-search" data-placeholder-en="Search / filter all pages…" data-placeholder-sl="Išči / filtriraj vse strani…" id="topSearch" placeholder="Search / filter all pages…" type="search"/><div class="site-search-results" id="siteSearchResults" role="listbox" aria-label="Site-wide page results" hidden></div></div>
 <div class="top-control-row">
 <a class="home-bd" data-entry-link="" href="./BD/index.html" title="BD × AI Lab">BD</a>
 <button aria-label="Switch language" id="langSwitch" type="button">Slo</button>
@@ -787,6 +790,8 @@ html[data-theme="light"] :is(.topnav a,.badge,.mind-node){background:rgba(255,25
  const storage={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(_){}}};
  const search = document.getElementById('topSearch');
  const status = document.getElementById('searchStatus');
+ const siteResults = document.getElementById('siteSearchResults');
+ let siteIndex=[], siteIndexPromise=null;
  const clear = document.getElementById('clearSearch');
  const expand = document.getElementById('expandAll');
  const collapse = document.getElementById('collapseAll');
@@ -812,6 +817,11 @@ html[data-theme="light"] :is(.topnav a,.badge,.mind-node){background:rgba(255,25
  }
  function itemText(el){ return ((el.innerText || '') + ' ' + (el.dataset.path || '') + ' ' + (el.querySelector('a')?.getAttribute('href') || '')).toLowerCase(); }
  function cardText(el){ return ((el.innerText || '') + ' ' + (el.getAttribute('href') || '')).toLowerCase(); }
+ function siteNorm(s){return String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+ function siteHref(raw){try{return new URL(String(raw||'').replace(/^\//,''),new URL('./',location.href)).href}catch(_){return '#'}}
+ async function loadSiteIndex(){if(siteIndexPromise)return siteIndexPromise;siteIndexPromise=(async()=>{try{const r=await fetch(new URL('site-search-index.json',new URL('./',location.href)),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw Error('site index unavailable');const d=await r.json();siteIndex=Array.isArray(d.items)?d.items:[]}catch(_){siteIndex=[]}return siteIndex})();return siteIndexPromise;}
+ function siteMatches(q){const nq=siteNorm(q),tokens=[...new Set(nq.split(' ').filter(Boolean))].slice(0,16);if(!tokens.length)return[];return siteIndex.map(p=>{const title=siteNorm(p.title),path=siteNorm(p.url),aliases=siteNorm(p.aliases),all=[title,path,aliases,siteNorm(p.description),siteNorm(p.category)].join(' ');if(!tokens.every(t=>all.includes(t)))return null;let score=Number(p.priority)||0;if(title===nq)score+=220;if(title.startsWith(nq))score+=70;if(path.includes(nq))score+=45;for(const t of tokens){if(title.includes(t))score+=30;if(path.includes(t))score+=18;if(aliases.includes(t))score+=12}return{p,score}}).filter(Boolean).sort((a,b)=>b.score-a.score||a.p.title.localeCompare(b.p.title)).slice(0,60).map(x=>x.p)}
+ function renderSiteResults(){if(!siteResults)return;const q=(search?.value||'').trim();siteResults.replaceChildren();if(!q){siteResults.hidden=true;return}const found=siteMatches(q);if(!found.length){const e=document.createElement('div');e.className='site-search-empty';e.textContent=siteIndex.length?langText('No page match in the full site index.','Ni zadetka v celotnem indeksu strani.'):langText('Loading full site index…','Nalaganje celotnega indeksa…');siteResults.appendChild(e);siteResults.hidden=false;return}for(const p of found){const a=document.createElement('a');a.className='site-search-result';a.href=siteHref(p.url);a.setAttribute('role','option');const t=document.createElement('strong'),s=document.createElement('span');t.textContent=p.title||p.url;s.textContent=p.url;a.append(t,s);siteResults.appendChild(a)}siteResults.hidden=false}
  function filterMatch(chapter){ return activeFilter === 'all' || chapter.id === activeFilter; }
  function applyFilters(){
  const q = (search?.value || '').trim().toLowerCase();
@@ -842,8 +852,11 @@ html[data-theme="light"] :is(.topnav a,.badge,.mind-node){background:rgba(255,25
  else status.textContent = langText('Search/filter is restored at the top. Language follows your preference; switch it at any time.', 'Iskanje/filter je vrnjen na vrh. Jezik sledi tvoji izbiri; kadarkoli ga lahko preklopiš.');
  }
  }
- search?.addEventListener('input', applyFilters);
- clear?.addEventListener('click', () => { if (search) search.value=''; activeFilter='all'; document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all')); applyFilters(); });
+ search?.addEventListener('input',()=>{applyFilters();renderSiteResults();if(!siteIndexPromise)loadSiteIndex().then(renderSiteResults)});
+ search?.addEventListener('focus',()=>{loadSiteIndex().then(renderSiteResults)});
+ search?.addEventListener('keydown',event=>{if(event.key==='Escape'){if(siteResults)siteResults.hidden=true;return}if(event.key==='Enter'&&!event.isComposing){const first=siteResults?.querySelector('a.site-search-result');if(first){event.preventDefault();location.assign(first.href)}}});
+ document.addEventListener('click',event=>{if(siteResults&&!event.target.closest('.top-search-row'))siteResults.hidden=true});
+ clear?.addEventListener('click', () => { if (search) search.value=''; if(siteResults)siteResults.hidden=true; activeFilter='all'; document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all')); applyFilters(); });
  expand?.addEventListener('click', () => { document.querySelectorAll('details.chapter,details.subgroup,.map-panel,.fold-section').forEach(d => d.open = true); });
  collapse?.addEventListener('click', () => { document.querySelectorAll('details.chapter,details.subgroup,.map-panel,.fold-section').forEach(d => d.open = false); });
  langSwitch?.addEventListener('click', () => setLang((doc.dataset.lang || 'en') === 'sl' ? 'en' : 'sl'));
