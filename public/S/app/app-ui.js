@@ -109,9 +109,8 @@
    }
    aiReview.hidden=false;aiReview.textContent=isSl()?'Pregled AI reševanja':'AI solve review';delete aiReview.dataset.appDecorated;
   }else if(aiReview)aiReview.hidden=true;
-  let humanReview=$('appMoreHumanReview'),humanRows=[];
-  try{humanRows=window.AI8SudokuProofPreview?.review?.()||[];}catch(_){}
-  if(humanRows.length){
+  let humanReview=$('appMoreHumanReview');
+  if(reviewAPI?.hasHumanReview?.()){
    if(!humanReview){
     humanReview=document.createElement('button');humanReview.className='btn';humanReview.id='appMoreHumanReview';
     primary.append(humanReview);
