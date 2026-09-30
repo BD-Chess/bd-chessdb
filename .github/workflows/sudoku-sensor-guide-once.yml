@@ -1,0 +1,43 @@
+name: Sudoku sensor guide bounded build
+on:
+  push:
+    branches: ['gpt/sudoku-sensor-guide-20261001']
+permissions:
+  contents: read
+concurrency:
+  group: sudoku-sensor-guide-20261001
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply guarded APP-only change and rebuild standalone PWA
+        run: python tools/sudoku-sensor-guide/patch.py
+      - name: Install pinned browser harness
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Test generated APP on Chromium and WebKit
+        env:
+          SUDOKU_EVIDENCE_DIR: sudoku-guide-evidence
+        run: node tests/sudoku-app-sensor-guide-browser.cjs
+      - name: Stage exact tested files without updating any branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/sudoku-sensor-guide/stage.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-sensor-guide-evidence
+          path: sudoku-guide-evidence/
+          retention-days: 7
