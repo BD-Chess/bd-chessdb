@@ -1,0 +1,188 @@
+name: Sudoku APP boot repair R4
+on:
+  push:
+    branches: [gpt/sudoku-app-boot-repair-r4-20260930]
+    paths: ['.github/workflows/sudoku-app-boot-repair-r4.yml']
+permissions:
+  contents: read
+concurrency:
+  group: sudoku-app-boot-repair-r4
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      NODE_PATH: /tmp/sudoku-r4/node_modules
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture exact broken release and reproduce parser failure
+        run: |
+          mkdir -p sudoku-r4-evidence/before
+          cp public/S/app/app.html public/S/app/release.json sudoku-r4-evidence/before/
+          node <<'JS' | tee sudoku-r4-evidence/before/parse.json
+          const fs=require('fs'),vm=require('vm'),crypto=require('crypto');
+          const html=fs.readFileSync('public/S/app/app.html','utf8'),errors=[];let count=0;
+          for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
+            const type=m[1].match(/type=["']([^"']+)["']/i)?.[1]||'';
+            if(type&&!/javascript|ecmascript/i.test(type))continue;
+            const id=m[1].match(/id=["']([^"']+)["']/i)?.[1]||'script-'+count++;
+            try{new vm.Script(m[2],{filename:id});}catch(e){errors.push({id,message:e.message,stack:e.stack.slice(0,1800)});}
+          }
+          console.log(JSON.stringify({sha256:crypto.createHash('sha256').update(html).digest('hex'),errors},null,2));
+          JS
+      - name: Apply bounded APP-source repair and regression guards
+        run: |
+          node <<'JS'
+          const fs=require('fs');
+          const once=(s,a,b)=>{if(s.split(a).length!==2)throw Error('Repair anchor drift: '+a.slice(0,80));return s.replace(a,b);};
+          const bp='scripts/build-sudoku-app-preview.cjs';let b=fs.readFileSync(bp,'utf8');
+          b=once(b,"let output=donor;",`let output=donor;
+          // The APP name is exactly 8zSudoku, including before scripts initialize.
+          const appHeading=/<(h[1-6])([^>]*class="title"[^>]*)>[\\s\\S]*?<\\/\\1>/g;
+          if([...output.matchAll(appHeading)].length!==1)throw Error('Expected one APP heading');
+          output=output.replace(appHeading,'<$1$2 data-no-i18n>8zSudoku</$1>');`);
+          b=once(b,"if(output.includes('<script src=')||output.includes('<link rel=\"stylesheet\"'))throw Error('APP game must be standalone');",`if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
+          // Parse the DELIVERED scripts, not just app-ui.js. Prevent a malformed
+          // generated Navigator from silently exposing the legacy base UI.
+          const vm=require('node:vm');let scriptCount=0;
+          for(const match of output.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)){
+           const type=match[1].match(/type=["']([^"']+)["']/i)?.[1]||'';
+           if(type&&!/javascript|ecmascript/i.test(type))continue;
+           const id=match[1].match(/id=["']([^"']+)["']/i)?.[1]||'inline-'+scriptCount;
+           new vm.Script(match[2],{filename:'APP:'+id});scriptCount++;
+          }
+          if(scriptCount<3)throw Error('APP executable scripts missing');`);
+          fs.writeFileSync(bp,b);
+          const up='public/S/app/app-ui.js';let u=fs.readFileSync(up,'utf8');
+          const tail=" applyTextSize(readTextSize());\n document.body.dataset.appPanel='board';\n sync();\n})();";
+          const layout=` // Center the board in measured space between tabs and dock, not a
+           // guessed viewport subtraction. This also handles framed APP and Safari bars.
+           const layoutMain=document.querySelector('.main'),layoutTabs=document.querySelector('.pl-tabs');
+           const layoutBoard=document.querySelector('.grid-wrap'),layoutColumn=document.querySelector('.col-center');
+           let layoutFrame=0,layoutActive=false,layoutExtra=0;
+           const layoutOriginal=layoutMain?Object.fromEntries(['minHeight','alignContent','paddingTop','paddingBottom'].map(k=>[k,layoutMain.style[k]])):{};
+           function alignAppBoard(){
+            layoutFrame=0;if(!layoutMain||!layoutTabs||!layoutBoard||!layoutColumn)return;
+            const active=document.body.dataset.appHardNoHelp==='true'&&product.view()==='play';
+            if(!active){if(layoutActive){Object.assign(layoutMain.style,layoutOriginal);layoutExtra=0;layoutActive=false;}return;}
+            if(!layoutActive){layoutMain.style.minHeight='0px';layoutMain.style.alignContent='start';layoutMain.style.paddingTop='5px';layoutMain.style.paddingBottom='8px';layoutExtra=0;layoutActive=true;}
+            const boardRect=layoutBoard.getBoundingClientRect(),tabsRect=layoutTabs.getBoundingClientRect(),dockRect=dock.getBoundingClientRect(),columnRect=layoutColumn.getBoundingClientRect();
+            if(!boardRect.height||!dockRect.height)return;
+            const below=Math.max(0,columnRect.bottom-boardRect.bottom);
+            const baseTop=boardRect.top-layoutExtra;
+            const lower=dockRect.top-8-boardRect.height-below;
+            const centered=(tabsRect.bottom+dockRect.top-boardRect.height)/2;
+            const top=Math.max(baseTop,tabsRect.bottom+8,Math.min(centered,lower));
+            const extra=Math.max(0,Math.round((top-baseTop)*100)/100);
+            if(Math.abs(extra-layoutExtra)>.25){layoutExtra=extra;layoutMain.style.paddingTop=(5+extra)+'px';}
+           }
+           function queueAppLayout(){if(!layoutFrame)layoutFrame=requestAnimationFrame(alignAppBoard);}
+           window.addEventListener('resize',queueAppLayout,{passive:true});
+           window.visualViewport?.addEventListener('resize',queueAppLayout,{passive:true});
+           new MutationObserver(queueAppLayout).observe(document.body,{attributes:true,attributeFilter:['data-view','data-app-hard-nohelp','data-app-framed-preview','data-app-text-size']});
+           if(typeof ResizeObserver==='function'){const ro=new ResizeObserver(queueAppLayout);for(const node of [layoutTabs,layoutColumn,dock])if(node)ro.observe(node);}
+           document.fonts?.ready?.then(queueAppLayout);
+           applyTextSize(readTextSize());
+           document.body.dataset.appPanel='board';
+           sync();queueAppLayout();
+          })();`;
+          u=once(u,tail,layout);fs.writeFileSync(up,u);
+          JS
+      - name: Regenerate exclusively through canonical builder and verify parity
+        run: |
+          node scripts/build-sudoku-app-preview.cjs | tee sudoku-r4-evidence/build.log
+          node scripts/build-sudoku-app-preview.cjs --check | tee -a sudoku-r4-evidence/build.log
+          git diff --stat | tee sudoku-r4-evidence/diff-stat.txt
+      - name: Install isolated bounded browser-test dependencies
+        run: |
+          npm install --prefix /tmp/sudoku-r4 --no-package-lock --ignore-scripts jsdom@26.1.0 playwright@1.55.0
+          node /tmp/sudoku-r4/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Run actual APP Coach, settings and fallback regression tests
+        run: |
+          set -o pipefail
+          node --test tests/sudoku-app-coach-final-20260930.test.cjs | tee sudoku-r4-evidence/app-tests.log
+      - name: Write and run browser acceptance against the generated game
+        run: |
+          cat > tests/sudoku-app-boot-r4-browser.cjs <<'JS'
+          'use strict';
+          // Run with NODE_PATH pointing to pinned playwright. Optional external URL
+          // verifies deployed bytes; default serves the exact checkout on localhost.
+          const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+          const {chromium,webkit}=require('playwright');
+          const out=process.env.SUDOKU_EVIDENCE_DIR||'sudoku-r4-evidence';fs.mkdirSync(out,{recursive:true});
+          const root=path.resolve('public');
+          const fixture={schema:'AI8_SUDOKU_NAV_SESSION_V1',version:'0.2.0',gameId:'boot-r4-fixture',diff:'easy',puzzle:[...'530070000600195000098000060800060003400803001700020006060000280000419005000080079'].map(Number),notes:Array.from({length:81},()=>[]),time:0,rows:[],assistance:[],history:[],settings:{policy:'REAL',goal:'FLOW',target:1,deep:false}};fixture.board=fixture.puzzle;fixture.lineage={base:fixture.puzzle,ops:[]};
+          const report={cases:[],errors:[]};let server;
+          async function run(){
+           let base=process.env.SUDOKU_LIVE_URL;
+           if(!base){server=http.createServer((req,res)=>{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);let p=path.resolve(root,'.'+pathname);if(!p.startsWith(root+path.sep)){res.writeHead(403).end();return;}if(pathname.endsWith('/'))p=path.join(p,'index.html');fs.readFile(p,(err,b)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',p.endsWith('.html')?'text/html':p.endsWith('.js')?'text/javascript':p.endsWith('.json')?'application/json':p.endsWith('.png')?'image/png':'text/plain');res.end(b);});});await new Promise(r=>server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+server.address().port+'/S/app/';}
+           for(const [engine,name]of [[chromium,'chromium'],[webkit,'webkit']]){
+            const browser=await engine.launch();try{
+             for(const mode of ['phone','framed']){
+              const context=await browser.newContext({viewport:mode==='phone'?{width:402,height:734}:{width:1440,height:1200},isMobile:mode==='phone',hasTouch:mode==='phone',serviceWorkers:'block',...(mode==='phone'?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'}:{})});
+              const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+              try{
+               await page.goto(base,{waitUntil:'load',timeout:30000});const frame=page.frames().find(f=>/app\.html/.test(f.url()));assert.ok(frame,'APP iframe loaded');
+               await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});
+               await page.waitForTimeout(700);
+               for(const diff of ['easy','hard','evil']){
+                await frame.evaluate(async s=>{await window.SudokuNavigator.restore(s);window.stopTimer();window.SudokuNavigator.product.switchView('play');},{...fixture,diff});
+                await frame.waitForFunction(d=>document.body.dataset.appHardNoHelp===(d==='easy'?'false':'true'),diff);
+                for(const lang of ['en','sl']){
+                 await frame.evaluate(l=>window.SudokuI18n.set(l),lang);await page.waitForTimeout(180);
+                 const state=await frame.evaluate(()=>{const vis=e=>!!e&&getComputedStyle(e).display!=='none'&&!e.hidden;const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return{top:r.top,bottom:r.bottom,height:r.height,width:r.width};};return{title:document.querySelector('.title').textContent.trim(),tabs:document.querySelectorAll('[data-pl-view]').length,buttons:[...document.querySelectorAll('#appDock>button')].filter(vis).length,pad:vis(document.querySelector('#plNumbers')),coach:vis(document.querySelector('#appCoach')),tip:vis(document.querySelector('#appHoldTip')),board:rect('.grid-wrap'),tabsRect:rect('.pl-tabs'),dock:rect('#appDock')};});
+                 assert.equal(state.title,'8zSudoku');assert.equal(state.tabs,3);assert.equal(state.buttons,5);assert.equal(state.pad,false);assert.equal(state.coach,diff==='easy');assert.equal(state.tip,diff==='easy');
+                 if(diff!=='easy'){const error=Math.abs((state.board.top+state.board.bottom)/2-(state.tabsRect.bottom+state.dock.top)/2);assert.ok(error<=12,'board centering '+mode+' '+name+' '+error);assert.ok(state.board.bottom<state.dock.top);state.centerError=error;}
+                 report.cases.push({name,mode,diff,lang,...state});
+                 if(diff==='hard'&&lang==='sl')await page.screenshot({path:path.join(out,name+'-'+mode+'-hard-sl.png'),fullPage:true});
+                }
+               }
+               const before=await frame.evaluate(()=>JSON.stringify(window.SudokuNavigator.export().session.board));
+               await frame.locator('#appAssist').click();await frame.waitForFunction(()=>!document.querySelector('#aiAssistPanel').hidden&&document.body.dataset.appPanel==='assist');
+               assert.equal(await frame.evaluate(()=>JSON.stringify(window.SudokuNavigator.export().session.board)),before,'opening AI Assist does not change board');
+               await frame.locator('#aiAssistClose').click();
+               await frame.evaluate(()=>window.SudokuI18n.set('en'));await frame.locator('#appMore').click();await frame.locator('#navModalBody [data-menu="Settings"]').click();
+               await frame.locator('#appNumberPad').selectOption('on');assert.equal(await frame.locator('#plNumbers').evaluate(e=>e.hidden),false);await frame.locator('#appNumberPad').selectOption('off');assert.equal(await frame.locator('#plNumbers').evaluate(e=>e.hidden),true);await frame.locator('#navClose').click();
+               assert.deepEqual(errors,[],'no runtime errors');
+              }catch(e){await page.screenshot({path:path.join(out,name+'-'+mode+'-FAIL.png'),fullPage:true}).catch(()=>{});throw e;}finally{await context.close();}
+             }
+            }finally{await browser.close();}
+           }
+          }
+          run().then(()=>{report.status='PASS';console.log('BROWSER_PASS '+report.cases.length+' cases');}).catch(e=>{report.status='FAIL';report.errors.push(e.stack);console.error(e);process.exitCode=1;}).finally(()=>{fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(report,null,2)+'\n');server?.close();});
+          JS
+          node tests/sudoku-app-boot-r4-browser.cjs | tee sudoku-r4-evidence/browser.log
+      - name: Stage exact tested objects without changing any branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import os,json,pathlib,hashlib,urllib.request
+          paths=['scripts/build-sudoku-app-preview.cjs','public/S/app/app-ui.js','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-boot-r4-browser.cjs']
+          receipt={'source_sha':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],'status':'TESTED_STAGED_NOT_PUBLISHED','files':[]}
+          for p in paths:
+              b=pathlib.Path(p).read_bytes();expected=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+              req=urllib.request.Request('https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/git/blobs',data=json.dumps({'content':b.decode(),'encoding':'utf-8'}).encode(),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'})
+              with urllib.request.urlopen(req,timeout=45) as response:r=json.load(response)
+              assert r['sha']==expected
+              receipt['files'].append({'path':p,'sha':expected,'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b)})
+          pathlib.Path('sudoku-r4-evidence/staged.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-app-boot-r4-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            sudoku-r4-evidence/
+            scripts/build-sudoku-app-preview.cjs
+            public/S/app/
+            tests/sudoku-app-boot-r4-browser.cjs
