@@ -56,7 +56,6 @@
       el('close').focus({ preventScroll: true });
       if (previewBoard) requestAnimationFrame(() => previewBoard.resize());
       notifyState();
-      if (pinned) root.setTimeout(() => { if (!panel.hidden && pinned) start({ automatic: true, reveal: true }); }, 0);
     }
     function close() {
       if (panel.hidden) return;
