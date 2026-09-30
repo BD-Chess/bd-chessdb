@@ -1,0 +1,66 @@
+name: Sudoku reconciled sensor guide live acceptance
+on:
+  push:
+    branches: [work/sudoku-sensor-guide-20261001]
+    paths: ['.github/workflows/sudoku-sensors-final-live.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SUDOKU_LIVE_URL: https://bd-chess.github.io/bd-chessdb/S/app/
+      SUDOKU_EVIDENCE_DIR: sensor-final-live-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: e6b697233cfab51e7fe46c07cbc72eafc274b92c
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify generated package and exact published bytes
+        run: |
+          mkdir -p sensor-final-live-evidence
+          node scripts/build-sudoku-app-preview.cjs --check
+          python scripts/check_secret_boundary.py
+          python - <<'PY'
+          import pathlib,hashlib,json,urllib.request,os
+          root=pathlib.Path('public/S/app');rows=[]
+          for name in ['index.html','app.html','app-solve-playback.js','release.json','sw.js']:
+              url=os.environ['SUDOKU_LIVE_URL']+name+'?sensor-final=e6b697233c'
+              with urllib.request.urlopen(url,timeout=45) as response: live=response.read();final=response.url
+              expected=(root/name).read_bytes()
+              row={'file':name,'url':final,'live_sha256':hashlib.sha256(live).hexdigest(),'expected_sha256':hashlib.sha256(expected).hexdigest(),'match':live==expected}
+              rows.append(row)
+          result={'commit':'e6b697233cfab51e7fe46c07cbc72eafc274b92c','release_id':json.loads((root/'release.json').read_text())['release_id'],'files':rows,'status':'PASS' if all(x['match'] for x in rows) else 'FAIL'}
+          pathlib.Path('sensor-final-live-evidence/live-hashes.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))
+          assert result['status']=='PASS',result
+          PY
+      - name: Install pinned browser runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0 > sensor-final-live-evidence/npm-install.log 2>&1
+          npx playwright install --with-deps chromium webkit > sensor-final-live-evidence/browser-install.log 2>&1
+      - name: Read-only production Chromium and WebKit acceptance
+        run: |
+          set -o pipefail
+          node tests/sudoku-app-sensor-guide-browser.cjs 2>&1 | tee sensor-final-live-evidence/browser.log
+          python - <<'PY'
+          import json,pathlib
+          report=json.loads(pathlib.Path('sensor-final-live-evidence/solve-browser.json').read_text())
+          assert report['status']=='PASS' and len(report['cases'])==20 and report['sensorGuideCases']==4,report
+          print('LIVE VERIFIED: 20 scenarios, 4 fullscreen guide contexts, no page errors.')
+          PY
+          git diff --exit-code -- public/S/app tests
+      - name: Verification receipts
+        if: always()
+        run: |
+          cat sensor-final-live-evidence/live-hashes.json || true
+          cat sensor-final-live-evidence/solve-browser.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-sensors-final-live-evidence
+          path: sensor-final-live-evidence/
+          retention-days: 7
