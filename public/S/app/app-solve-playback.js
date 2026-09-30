@@ -314,6 +314,8 @@
   if(!data||event.target?.closest?.('#appSolveReview'))return;
   closeView(false);
  },{capture:true,passive:true});
+ const externalRenderObserver=new MutationObserver(()=>{if(data&&currentKey()!==data.finalKey)closeView(false);});
+ externalRenderObserver.observe(grid,{childList:true,subtree:true,characterData:true});
  window.addEventListener('pagehide',()=>closeView(false));
  document.addEventListener('visibilitychange',()=>{if(document.hidden)closeView(false);});
  window.SudokuSolveReview={
