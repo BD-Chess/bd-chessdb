@@ -41,6 +41,12 @@ async function run(){
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
     assert.equal(await frame.locator('.header').evaluate(n=>getComputedStyle(n).display),'none','top identity/time/language row hidden during review');assert.equal(await frame.locator('.title-block').evaluate(n=>getComputedStyle(n).display),'none','title hidden during review');assert.equal(await frame.locator('.pl-tabs').evaluate(n=>getComputedStyle(n).display),'none','Play/Learn/Lab tabs hidden during review');
     assert.equal(await frame.locator('#appSolveInstruments').evaluate(n=>n.hidden),false);assert.equal(await frame.locator('#appSolveInstruments .app-pos-sensor').count(),5,'five horizontal position sensors');
+    assert.equal(await frame.locator('#appSolveSensorsOverviewOpen').count(),1,'sensor overview tap target');
+    await frame.locator('#appSolveSensorsOverviewOpen').click();assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),false,'full sensor guide opens');
+    assert.equal(await frame.locator('#appSensorsOverviewList .app-sensors-overview-item').count(),5,'overview explains all five sensors');
+    const sensorCover=await frame.locator('#appSolveSensorsOverview').evaluate(n=>{const r=n.getBoundingClientRect();return{top:r.top,left:r.left,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight};});
+    assert.ok(Math.abs(sensorCover.top)<1&&Math.abs(sensorCover.left)<1&&Math.abs(sensorCover.width-sensorCover.vw)<1&&Math.abs(sensorCover.height-sensorCover.vh)<1,'sensor overview covers viewport');
+    assert.match(await frame.locator('#appSensorsOverviewCaveat').innerText(),phone?/ni ocena inteligence/i:/not.*intelligence/i);await frame.locator('#appSensorsOverviewClose').click();
     assert.match(await frame.locator('#appAssist .app-dock-label').innerText(),phone?/AI pregled/:/AI Review/);
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
     const reviewData=await frame.evaluate(()=>window.SudokuSolveReview.get());

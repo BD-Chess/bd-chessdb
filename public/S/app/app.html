@@ -4288,27 +4288,34 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  gridWrap.after(review);
  const instruments=document.createElement('section');
  instruments.id='appSolveInstruments';instruments.hidden=true;instruments.setAttribute('data-no-i18n','');
- instruments.innerHTML=Object.entries(sensorDefs).map(([key,d])=>
+ instruments.innerHTML=
+  '<button type="button" class="app-sensors-overview-open" id="appSolveSensorsOverviewOpen" aria-haspopup="dialog"><span id="appSensorsOverviewKicker">SENSORS</span><span id="appSensorsOverviewHint">Tap for guide</span><span class="app-sensors-overview-q" aria-hidden="true">?</span></button>'+
+  Object.entries(sensorDefs).map(([key,d])=>
   '<button type="button" class="app-pos-sensor" data-sensor="'+key+'"><span class="app-pos-abbr">'+d.abbr+'</span><span class="app-pos-track"><span class="app-pos-fill"></span></span><span class="app-pos-value">—</span><span class="app-pos-tooltip"></span></button>'
  ).join('');
  document.querySelector('.header')?.after(instruments);
  const sensorModal=document.createElement('div');sensorModal.id='appSolveSensorModal';sensorModal.hidden=true;sensorModal.innerHTML=
   '<div class="app-sensor-sheet" role="dialog" aria-modal="true" aria-labelledby="appSensorTitle"><button type="button" id="appSensorClose" aria-label="Close">×</button><h2 id="appSensorTitle"></h2><div id="appSensorValue"></div><p id="appSensorText"></p><p id="appSensorDirection"></p></div>';
  document.body.append(sensorModal);
+ const sensorOverview=document.createElement('div');sensorOverview.id='appSolveSensorsOverview';sensorOverview.hidden=true;sensorOverview.innerHTML=
+  '<section class="app-sensors-overview" role="dialog" aria-modal="true" aria-labelledby="appSensorsOverviewTitle"><button type="button" id="appSensorsOverviewClose" aria-label="Close">×</button><div class="app-sensors-overview-scroll"><div class="app-sensors-overview-eyebrow" id="appSensorsOverviewEyebrow"></div><h2 id="appSensorsOverviewTitle"></h2><p class="app-sensors-overview-intro" id="appSensorsOverviewIntro"></p><div class="app-sensors-overview-meta" id="appSensorsOverviewMeta"></div><div class="app-sensors-overview-list" id="appSensorsOverviewList"></div><section class="app-sensors-overview-reading"><h3 id="appSensorsOverviewReadTitle"></h3><p id="appSensorsOverviewReadText"></p></section><p class="app-sensors-overview-caveat" id="appSensorsOverviewCaveat"></p></div></section>';
+ document.body.append(sensorOverview);
 
  const style=document.createElement('style');style.id='app-solve-review-style';
  style.textContent=[
   '#appSolveReview{width:100%;margin:9px 0 14px;padding:11px 12px 12px;border:1px solid #33475a;border-radius:12px;background:linear-gradient(180deg,#111b27,#0b141e);box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0004;color:#dbe6f3}',
-  '#appSolveReview[hidden],#appSolveInstruments[hidden],#appSolveSensorModal[hidden]{display:none!important}',
+  '#appSolveReview[hidden],#appSolveInstruments[hidden],#appSolveSensorModal[hidden],#appSolveSensorsOverview[hidden]{display:none!important}',
   'body[data-app-solve-review=true] .header,body[data-app-solve-review=true] .title-block,body[data-app-solve-review=true] .pl-tabs{display:none!important}',
   'body[data-app-solve-review=true][data-app-framed-preview=true] .pl-tabs{transform:none!important}',
   '#appSolveInstruments{width:min(100%,760px);margin:2px auto 9px;padding:5px 8px 6px;border:1px solid #1d4054;border-radius:10px;background:#07111dcc;display:grid;gap:3px}',
+  '.app-sensors-overview-open{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;width:100%;min-height:20px;padding:0 0 4px;margin:0 0 2px;border:0;border-bottom:1px solid #183247;background:transparent;color:#7f98af;text-align:left;cursor:pointer}.app-sensors-overview-open:hover,.app-sensors-overview-open:focus-visible{color:#d8f8ff;outline:none}.app-sensors-overview-open #appSensorsOverviewKicker{font:800 .52rem/1 monospace;letter-spacing:.13em;color:#63dceb}.app-sensors-overview-open #appSensorsOverviewHint{font:650 .50rem/1 system-ui;color:#6f879d}.app-sensors-overview-q{display:grid;place-items:center;width:16px;height:16px;border:1px solid #31546a;border-radius:50%;font:800 .57rem/1 system-ui;color:#83e9f5}',
   '.app-pos-sensor{position:relative;display:grid;grid-template-columns:36px 1fr 38px;align-items:center;gap:7px;width:100%;min-height:16px;padding:0;border:0;background:transparent;color:#8ea5bd;text-align:left;cursor:pointer}',
   '.app-pos-abbr{font:700 .54rem/1 monospace;letter-spacing:.04em}.app-pos-track{height:3px;border-radius:999px;background:#1b2a38;overflow:hidden}.app-pos-fill{display:block;width:0;height:100%;border-radius:inherit;background:#38d6eb;transition:width 160ms ease}.app-pos-value{font:650 .52rem/1 monospace;text-align:right;color:#6f879d}',
   '.app-pos-sensor:nth-child(2) .app-pos-fill{background:#62d39d}.app-pos-sensor:nth-child(3) .app-pos-fill{background:#e7c66b}.app-pos-sensor:nth-child(4) .app-pos-fill{background:#f0a36d}.app-pos-sensor:nth-child(5) .app-pos-fill{background:#9ca7b5}',
   '.app-pos-tooltip{display:none;position:absolute;left:39px;top:-19px;z-index:4;padding:3px 6px;border:1px solid #355269;border-radius:6px;background:#0a1622;color:#d8e5f1;font:650 .58rem/1.2 system-ui;white-space:nowrap;box-shadow:0 4px 14px #0008}',
   '@media(hover:hover){.app-pos-sensor:hover .app-pos-tooltip,.app-pos-sensor:focus-visible .app-pos-tooltip{display:block}}',
   '#appSolveSensorModal{position:fixed;inset:0;z-index:1600;background:#020812b8;display:flex;align-items:flex-end;justify-content:center;padding:14px}.app-sensor-sheet{position:relative;width:min(100%,520px);padding:18px 18px 20px;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b}.app-sensor-sheet h2{margin:0 28px 8px 0;font:800 1rem/1.2 system-ui;color:#79efff}.app-sensor-sheet p{margin:8px 0;font:600 .78rem/1.45 system-ui;color:#b8c8d8}#appSensorValue{font:800 .86rem/1.2 monospace;color:#eef7ff}#appSensorClose{position:absolute;right:10px;top:8px;border:0;background:none;color:#dbe7f4;font-size:1.5rem;cursor:pointer}',
+  '#appSolveSensorsOverview{position:fixed;inset:0;z-index:1700;background:#07111d;color:#dbe7f4;overflow:auto;overscroll-behavior:contain;padding:max(22px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}.app-sensors-overview{position:relative;width:min(100%,720px);min-height:100%;margin:0 auto}.app-sensors-overview-scroll{padding:18px 0 28px}.app-sensors-overview-eyebrow{font:800 .58rem/1 monospace;letter-spacing:.16em;color:#62d8e8;margin:0 44px 9px 0}.app-sensors-overview h2{margin:0 44px 10px 0;font:850 clamp(1.35rem,5vw,2rem)/1.1 system-ui;color:#f0f7ff}.app-sensors-overview-intro{margin:0 0 12px;font:650 .88rem/1.5 system-ui;color:#c3d2e1}.app-sensors-overview-meta{margin:0 0 14px;padding:8px 10px;border:1px solid #28465b;border-radius:10px;background:#0b1927;font:700 .70rem/1.35 system-ui;color:#8fa8be}.app-sensors-overview-list{display:grid;gap:8px}.app-sensors-overview-item{padding:11px 12px;border:1px solid #203d52;border-radius:11px;background:#0a1724}.app-sensors-overview-item-head{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;gap:8px}.app-sensors-overview-item-head strong{font:850 .77rem/1 monospace;color:#75e6f3}.app-sensors-overview-item-head span{font:750 .78rem/1.2 system-ui;color:#d6e3ef}.app-sensors-overview-item-head em{font:800 .70rem/1 monospace;font-style:normal;color:#f5f8fb}.app-sensors-overview-item p{margin:7px 0 0;font:600 .76rem/1.45 system-ui;color:#aebfd0}.app-sensors-overview-item .app-sensors-direction{color:#7f98af}.app-sensors-overview-reading{margin:14px 0 10px;padding:12px;border:1px solid #31536a;border-radius:12px;background:#0c1b2a}.app-sensors-overview-reading h3{margin:0 0 6px;font:800 .82rem/1.2 system-ui;color:#79efff}.app-sensors-overview-reading p,.app-sensors-overview-caveat{margin:0;font:650 .77rem/1.5 system-ui;color:#b9cada}.app-sensors-overview-caveat{padding:10px 12px;border-radius:10px;background:#132130;color:#e4edf6}#appSensorsOverviewClose{position:fixed;z-index:2;right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:grid;place-items:center;width:38px;height:38px;border:1px solid #36576e;border-radius:50%;background:#0b1825;color:#e5f2ff;font:500 1.65rem/1 system-ui;cursor:pointer}',
   '.app-solve-sensors{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}.app-solve-sensor{display:flex;gap:4px;align-items:baseline;padding:0;border:0;background:transparent;text-align:left}.app-solve-sensor b{font:650 .50rem/1 system-ui;color:#667f97}.app-solve-sensor span{margin:0;font:750 .61rem/1.15 system-ui;color:#c9d7e5}',
 
   '.app-solve-review-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font:800 .78rem/1.2 system-ui;letter-spacing:.035em;color:#c8d7e7}',
@@ -4514,6 +4521,8 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  function paintInstruments(steps,index){
   const values=reviewSensors(steps,index);
   instruments.hidden=false;
+  $('appSensorsOverviewKicker').textContent=sl()?'SENZORJI':'SENSORS';
+  $('appSensorsOverviewHint').textContent=sl()?'Tapni za razlago':'Tap for guide';
   for(const [key,d] of Object.entries(sensorDefs)){const row=instruments.querySelector('[data-sensor="'+key+'"]'),value=values[key]||0;
    row.querySelector('.app-pos-fill').style.width=sensorWidth(key,value)+'%';
    row.querySelector('.app-pos-value').textContent=index<2?'—':(key==='powr'?value.toFixed(1):value.toFixed(3));
@@ -4575,7 +4584,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
   grid.removeAttribute('aria-busy');delete document.body.dataset.appSolveReview;
  }
  function closeView(discard=false){
-  playing=false;clearTimeout(timer);timer=0;restoreRealGrid();review.hidden=true;instruments.hidden=true;sensorModal.hidden=true;
+  playing=false;clearTimeout(timer);timer=0;restoreRealGrid();review.hidden=true;instruments.hidden=true;sensorModal.hidden=true;sensorOverview.hidden=true;
   if(discard)data=null;
   window.dispatchEvent(new CustomEvent('sudoku-solve-review-change',{detail:{active:false}}));window.dispatchEvent(new Event('resize'));
  }
@@ -4612,24 +4621,47 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  // Any real game interaction first removes the read-only overlay. Review
  // controls are exempt. Undo therefore reaches the original atomic transaction.
  for(const type of ['pointerdown','touchstart'])window.addEventListener(type,event=>{
-  if(!data||review.hidden&&document.body.dataset.appSolveReview!=='true'||event.target?.closest?.('#appSolveReview,#appSolveInstruments,#appSolveSensorModal,#appAssist'))return;
+  if(!data||review.hidden&&document.body.dataset.appSolveReview!=='true'||event.target?.closest?.('#appSolveReview,#appSolveInstruments,#appSolveSensorModal,#appSolveSensorsOverview,#appAssist'))return;
   closeView(false);
  },{capture:true,passive:true});
  window.addEventListener('keydown',event=>{
   if(review.hidden||document.body.dataset.appSolveReview!=='true')return;
-  if(event.target?.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal')?.hidden||!sensorModal.hidden)return;
+  if(!sensorOverview.hidden){if(event.key==='Escape'){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});event.preventDefault();}return;}
+  if(!sensorModal.hidden){if(event.key==='Escape'){sensorModal.hidden=true;event.preventDefault();}return;}
+  if(event.target?.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal')?.hidden)return;
   const actions={ArrowLeft:goPrev,ArrowRight:goNext,ArrowUp:goFirst,ArrowDown:goLast,' ':play};
   const fn=actions[event.key];if(fn){event.preventDefault();event.stopImmediatePropagation();fn();return;}
   if(!event.ctrlKey&&!event.metaKey&&!event.altKey)closeView(false);
  },true);
+ function sensorDirectionText(d){
+  return d.dir==='low'?(sl()?'Nižje praviloma pomeni bolj ponovljiv in strukturiran tok.':'Lower generally means a more repetitive, structured flow.'):d.dir==='high'?(sl()?'Višje pomeni izrazitejši oziroma močnejši kaskadni vzorec.':'Higher means a more pronounced or stronger cascade pattern.'):(sl()?'Kontekstni signal: višje ali nižje samo po sebi ni boljše.':'Context signal: higher or lower is not inherently better.');
+ }
+ function displaySensorValue(key,row,index){if(index<2)return'—';const raw=Number(row?.dataset.value)||0;return key==='powr'?raw.toFixed(1):raw.toFixed(3);}
+ function openSensorsOverview(){
+  const timeline=activeTimeline(),index=activeIndex(),max=timeline?.steps?.length||0;
+  $('appSensorsOverviewEyebrow').textContent=sl()?'AI / HUMAN REVIEW · STRUKTURNI SENZORJI':'AI / HUMAN REVIEW · STRUCTURAL SENSORS';
+  $('appSensorsOverviewTitle').textContent=sl()?'Kaj pomenijo senzorji?':'What do the sensors mean?';
+  $('appSensorsOverviewIntro').textContent=sl()?'Pet senzorjev opisuje strukturo poti reševanja do trenutno izbranega koraka. Ne ocenjujejo inteligence AI-ja in niso skupna ocena kakovosti reševanja.':'These five sensors describe the structure of the solve trajectory up to the currently selected step. They do not measure AI intelligence and are not an overall solver-quality score.';
+  $('appSensorsOverviewMeta').textContent=sl()?('Trenutni pogled: '+index+' / '+max+'. Vrednosti se računajo iz sledi od začetka do izbranega koraka; pri prvih korakih je podatkov premalo za stabilen signal.'):('Current view: '+index+' / '+max+'. Values are computed from the trace from the start through the selected step; the first steps do not yet contain enough data for a stable signal.');
+  $('appSensorsOverviewList').innerHTML=Object.entries(sensorDefs).map(([key,d])=>{const row=instruments.querySelector('[data-sensor="'+key+'"]'),val=displaySensorValue(key,row,index);
+   return '<article class="app-sensors-overview-item"><div class="app-sensors-overview-item-head"><strong>'+d.abbr+'</strong><span>'+(sl()?d.sl:d.en)+'</span><em>'+val+'</em></div><p>'+(sl()?d.slText:d.enText)+'</p><p class="app-sensors-direction">'+sensorDirectionText(d)+'</p></article>';
+  }).join('');
+  $('appSensorsOverviewReadTitle').textContent=sl()?'Kako jih brati med koraki':'How to read them step by step';
+  $('appSensorsOverviewReadText').textContent=sl()?'Premikaj časovnico korak za korakom in opazuj spremembe ter vzorec, ne ene same številke. Cplx in Dens sta praviloma bolj strukturirana, ko sta nižja; Gini in Powr kažeta, kako neenakomerno in močno nastajajo kaskade; ADSR opisuje tip poteka in nima smeri “bolje/slabše”.':'Move through the timeline step by step and watch changes and patterns, not one isolated number. Cplx and Dens generally indicate more structure when lower; Gini and Powr show how unevenly and strongly cascades emerge; ADSR describes the trajectory type and has no built-in better/worse direction.';
+  $('appSensorsOverviewCaveat').textContent=sl()?'Pomembno: to niso IQ, zavest, “moč AI-ja” ali ocena inteligence. So pregledni, deterministično izpeljani opisi strukture trenutne poti reševanja.':'Important: these are not IQ, consciousness, “AI power,” or an intelligence score. They are transparent, deterministically derived descriptions of the current solve trajectory.';
+  sensorOverview.hidden=false;$('appSensorsOverviewClose').focus({preventScroll:true});
+ }
+ function closeSensorsOverview(){sensorOverview.hidden=true;$('appSolveSensorsOverviewOpen')?.focus({preventScroll:true});}
  function openSensor(key){const d=sensorDefs[key],row=instruments.querySelector('[data-sensor="'+key+'"]');if(!d||!row)return;
   const raw=Number(row.dataset.value)||0,val=(key==='powr'?raw.toFixed(1):raw.toFixed(3));
   $('appSensorTitle').textContent=(sl()?d.sl:d.en)+' ('+d.abbr+')';$('appSensorValue').textContent=(sl()?'Trenutna vrednost: ':'Current value: ')+val;
   $('appSensorText').textContent=sl()?d.slText:d.enText;
-  $('appSensorDirection').textContent=d.dir==='low'?(sl()?'Pri tem senzorju je nižje praviloma bolj strukturirano.':'For this sensor, lower generally means more structured.'):d.dir==='high'?(sl()?'Pri tem senzorju višje pomeni močnejši kaskadni vzorec.':'For this sensor, higher means a stronger cascade pattern.'):(sl()?'To je kontekstni senzor; višje ali nižje samo po sebi ni boljše.':'This is a context sensor; higher or lower is not inherently better.');
+  $('appSensorDirection').textContent=sensorDirectionText(d);
   sensorModal.hidden=false;$('appSensorClose').focus({preventScroll:true});
  }
+ $('appSolveSensorsOverviewOpen').onclick=openSensorsOverview;
  for(const row of instruments.querySelectorAll('.app-pos-sensor'))row.onclick=()=>openSensor(row.dataset.sensor);
+ $('appSensorsOverviewClose').onclick=closeSensorsOverview;
  $('appSensorClose').onclick=()=>{sensorModal.hidden=true;};
  sensorModal.addEventListener('click',e=>{if(e.target===sensorModal)sensorModal.hidden=true;});
  const externalRenderObserver=new MutationObserver(()=>{if(data&&currentKey()!==data.finalKey)closeView(false);});
