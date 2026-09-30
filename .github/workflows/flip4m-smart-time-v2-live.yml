@@ -71,7 +71,7 @@ jobs:
                   check('GM complex 45s+',b['gx']['effectiveMs']>=45000,b['gx'])
                   check('Champion complex 90s+',b['cx']['effectiveMs']>=90000,b['cx'])
                   page.locator('#newGame').click()
-                  check('Smart Time v2 explained',page.evaluate("document.body.innerText.includes('Smart Time v2')"))
+                  check('Smart Time v2 explained',page.evaluate("document.documentElement.textContent.includes('Smart Time v2')"))
                   check('AI vs AI preserved',page.locator('#mode option[value="demo"]').count()==1)
                   page.locator('#mode').select_option('demo');page.locator('#difficulty').select_option('beginner');page.locator('#demoRed').select_option('classical');page.locator('#demoYellow').select_option('dcc');page.locator('#start').click()
                   page.wait_for_function('F4MLab.status().cursor>=4',timeout=20000)
