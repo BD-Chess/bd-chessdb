@@ -66,7 +66,7 @@ def main():
             record('desktop frame',not page.locator('html').evaluate("el=>el.classList.contains('app-phone-browser')"))
             # Approved iPhone 16 Pro portrait preview, independent of desktop height.
             device=inner.evaluate("""() => ({width:innerWidth,height:innerHeight,top:getComputedStyle(document.body).paddingTop,bottom:getComputedStyle(document.getElementById('appTabs')).paddingBottom,device:document.documentElement.dataset.previewDevice})""")
-            record('iPhone 16 Pro viewport and safe areas',device['width']==402 and device['height']==874 and device['top']=='62px' and device['bottom']=='34px' and device['device']=='iphone-16-pro',device)
+            record('iPhone 16 Pro viewport and safe areas',device['width']==402 and device['height']==874 and device['top']=='52px' and device['bottom']=='34px' and device['device']=='iphone-16-pro',device)
             gap=inner.evaluate("document.getElementById('appTabs').getBoundingClientRect().top-document.getElementById('board-container').getBoundingClientRect().bottom")
             record('reference bottom gap close to BD phone screenshot',10<=gap<=45,gap)
             for w,h in [(1280,720),(3840,2160),(900,650)]:
