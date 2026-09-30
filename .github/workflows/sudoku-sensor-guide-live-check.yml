@@ -39,8 +39,48 @@ jobs:
           PY
       - name: Install browser acceptance runtime
         run: |
-          npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install --with-deps chromium webkit
+          npm install --no-save --package-lock=false playwright@1.55.0 > sensor-guide-live-evidence/npm-install.log 2>&1
+          npx playwright install --with-deps chromium webkit > sensor-guide-live-evidence/browser-install.log 2>&1
+      - name: Extend verification only, leaving published APP bytes untouched
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/sudoku-app-solve-playback-r5-browser.cjs');s=p.read_text()
+          # The published sentence is "to niso ... ali ocena inteligence".
+          # The old test accidentally requires the absent phrase "ni ocena".
+          old='phone?/ni ocena inteligence/i:/not.*intelligence/i'
+          new='phone?/niso.*ocena inteligence/i:/not.*intelligence/i'
+          assert s.count(old)==1;s=s.replace(old,new)
+          anchor="    await page.keyboard.press('ArrowUp');assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),0,'ArrowUp -> first');"
+          assert s.count(anchor)==1
+          extra=r'''
+              const guideBefore=await capture();
+              const activate=async locator=>phone?locator.tap():locator.click();
+              const guideOpen=frame.locator('#appSolveSensorsOverviewOpen');
+              await activate(guideOpen);
+              assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),false,'real touch or mouse opens overview');
+              assert.match(await frame.locator('#appSensorsOverviewTitle').innerText(),phone?/Kaj pomenijo senzorji/:/What do the sensors mean/);
+              const names=await frame.locator('.app-sensors-overview-item-head strong').allTextContents();assert.deepEqual(names,['Cplx','Gini','Powr','Dens','ADSR']);
+              assert.ok((await frame.locator('#appSensorsOverviewReadText').innerText()).length>100,'step-by-step interpretation is present');
+              const geometry=async()=>frame.evaluate(()=>{const n=document.querySelector('#appSolveSensorsOverview'),r=n.getBoundingClientRect(),c=document.querySelector('#appSensorsOverviewClose').getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,vw:innerWidth,vh:innerHeight,scroll:n.scrollHeight,client:n.clientHeight,cx:c.x,cy:c.y,cw:c.width,ch:c.height};});
+              const top=await geometry();assert.ok(Math.abs(top.x)<1&&Math.abs(top.y)<1&&Math.abs(top.w-top.vw)<1&&Math.abs(top.h-top.vh)<1,'full viewport coverage');assert.ok(top.scroll>top.client,'explanation scrolls');
+              await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-top.png'),fullPage:true});
+              await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.scrollTop=n.scrollHeight);
+              const bottom=await geometry();assert.ok(bottom.cx>=0&&bottom.cy>=0&&bottom.cx+bottom.cw<=bottom.vw+1&&bottom.cy+bottom.ch<=bottom.vh+1,'close remains accessible after scrolling');
+              await page.screenshot({path:path.join(out,name+'-'+mode+'-sensors-bottom.png'),fullPage:true});
+              await activate(frame.locator('#appSensorsOverviewClose'));
+              assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),true,'close button works');assert.equal(await frame.evaluate(()=>window.SudokuSolveReview.active()),true,'review preserved');assert.deepEqual(await capture(),guideBefore,'guide does not change game');
+              await activate(guideOpen);await page.keyboard.press('Escape');assert.equal(await frame.locator('#appSolveSensorsOverview').evaluate(n=>n.hidden),true,'Escape closes overview');assert.equal(await frame.evaluate(()=>document.activeElement.id),'appSolveSensorsOverviewOpen','focus returned');
+              for(const key of ['cplx','gini','powr','dens','adsr']){await activate(frame.locator('[data-sensor="'+key+'"]'));assert.equal(await frame.locator('#appSolveSensorModal').evaluate(n=>n.hidden),false,'individual detail preserved: '+key);await activate(frame.locator('#appSensorClose'));}
+              assert.deepEqual(await capture(),guideBefore,'individual details do not change game');
+              report.sensorOverviewVerified=(report.sensorOverviewVerified||0)+1;
+          '''
+          s=s.replace(anchor,extra+'\n'+anchor);p.write_text(s)
+          Path('sensor-guide-live-evidence/executed-browser-test.cjs').write_text(s)
+          print('Test-only correction: match existing negative SL disclaimer. Added touch, scroll, close, Escape, focus, five individual details, and state-preservation checks.')
+          PY
+          node --check tests/sudoku-app-solve-playback-r5-browser.cjs
+          git diff --exit-code -- public/S/app
       - name: Published APP Chromium and WebKit acceptance
         run: |
           set -o pipefail
