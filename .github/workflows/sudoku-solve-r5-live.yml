@@ -1,0 +1,66 @@
+name: Sudoku APP solve playback R5 live verification
+on:
+  push:
+    branches: [gpt/sudoku-solve-playback-r5-20260930]
+    paths: ['.github/workflows/sudoku-solve-r5-live.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        shell: bash
+    env:
+      NODE_PATH: /tmp/sudoku-r5-live/node_modules
+      SUDOKU_LIVE_URL: https://bd-chess.github.io/bd-chessdb/S/app/
+      SUDOKU_EVIDENCE_DIR: sudoku-r5-live-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cec5619bfecb60d27c5fc356d364cc09a771b460
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact production builder parity
+        run: |
+          mkdir -p sudoku-r5-live-evidence
+          node scripts/build-sudoku-app-preview.cjs --check | tee sudoku-r5-live-evidence/build-check.log
+      - name: Verify delivered release and every offline asset
+        run: |
+          python - <<'PY'
+          import os,json,pathlib,hashlib,urllib.request,time
+          root=pathlib.Path('public/S/app');release=json.loads((root/'release.json').read_text());base=os.environ['SUDOKU_LIVE_URL']
+          names=['release.json',*release['assets_sha256'],'sw.js'];results=[]
+          for attempt in range(1,7):
+              try:
+                  results=[]
+                  for name in names:
+                      req=urllib.request.Request(base+name+'?verify='+release['release_id'],headers={'Cache-Control':'no-cache','User-Agent':'8zSudoku-APP-release-verification'})
+                      with urllib.request.urlopen(req,timeout=30) as response: raw=response.read();status=response.status
+                      expected=hashlib.sha256((root/name).read_bytes()).hexdigest();actual=hashlib.sha256(raw).hexdigest()
+                      results.append({'file':name,'http_status':status,'sha256':actual,'expected':expected,'bytes':len(raw)})
+                      assert status==200 and actual==expected, name+' delivery differs from tested bytes'
+                  break
+              except Exception:
+                  if attempt==6:raise
+                  time.sleep(10)
+          receipt={'status':'PASS','commit':'cec5619bfecb60d27c5fc356d364cc09a771b460','release_id':release['release_id'],'base':base,'attempts':attempt,'assets':results}
+          pathlib.Path('sudoku-r5-live-evidence/delivery.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
+          PY
+      - name: Install isolated browsers
+        run: |
+          npm install --prefix /tmp/sudoku-r5-live --no-package-lock --ignore-scripts playwright@1.55.0
+          node /tmp/sudoku-r5-live/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Actual public APP solve and Undo interaction tests
+        run: |
+          node tests/sudoku-app-solve-playback-r5-browser.cjs | tee sudoku-r5-live-evidence/solve-browser.log
+          node -e "const r=require('./sudoku-r5-live-evidence/solve-browser.json');if(r.status!=='PASS'||r.cases.length!==20)throw Error('Incomplete public browser verification');"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-solve-r5-live-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          path: sudoku-r5-live-evidence/
