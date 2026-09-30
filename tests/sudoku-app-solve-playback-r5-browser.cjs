@@ -15,10 +15,10 @@ async function run(){
    const context=await browser.newContext({viewport:phone?{width:402,height:734}:{width:1440,height:1200},isMobile:phone,hasTouch:phone,serviceWorkers:'block',reducedMotion:reduced?'reduce':'no-preference',...(phone?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'}:{})});
    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
    let frame;
-   const ready=async()=>{const handle=await page.locator('#game').elementHandle();frame=await handle.contentFrame();await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:15000});await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appSolveProgress')&&!window.SudokuNavigator.ui.blocked(),null,{timeout:15000});};
+   const ready=async()=>{const handle=await page.locator('#game').elementHandle();frame=await handle.contentFrame();await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:15000});await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appSolveReview')&&!window.SudokuNavigator.ui.blocked(),null,{timeout:15000});};
    const capture=()=>frame.evaluate(()=>window.SudokuNavigator.product.capture());
-   const begin=async()=>{await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();const before=await capture();await frame.locator('#aiAssistConfirmAll').click();await frame.waitForFunction(()=>document.body.dataset.appSolvePlayback==='true',null,{timeout:3000});return before;};
-   const visible=()=>frame.locator('#grid .cell').evaluateAll(nodes=>nodes.map(n=>/^[1-9]$/.test(n.textContent.trim())?Number(n.textContent.trim()):0));
+   const begin=async()=>{await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();const before=await capture();await frame.locator('#aiAssistConfirmAll').click();await frame.waitForFunction(()=>document.body.dataset.appSolveReview==='true',null,{timeout:5000});return before;};
+   const visible=()=>frame.locator('#grid .cell').evaluateAll(nodes=>{const review=document.body.dataset.appSolveReview==='true';return nodes.map(n=>review?Number(n.dataset.reviewValue||0):(/^[1-9]$/.test(n.textContent.trim())?Number(n.textContent.trim()):0));});
    const checkBefore=async before=>{assert.deepEqual(await capture(),before);assert.equal(await frame.locator('#notesBtn').evaluate(n=>n.classList.contains('active')),true);};
    const add=(scenario,extra={})=>report.cases.push({name,mode,scenario,reducedMotion:reduced,...extra});
    try{
@@ -35,24 +35,35 @@ async function run(){
     const started=Date.now();await begin();
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
+    const reviewData=await frame.evaluate(()=>window.SudokuSolveReview.get());
+    assert.ok(reviewData&&reviewData.steps.length>3,'logical review timeline created');
+    assert.ok(reviewData.steps.some(x=>x.checked),'at least one independently checked proof step');
+    assert.equal(reviewData.steps[0].technique,'answer_correction','wrong editable entry is explicitly corrected before proof solving');
+    const logicalPlacements=reviewData.steps.filter(x=>x.checked&&x.kind==='placement').map(x=>x.cell);
+    assert.ok(logicalPlacements.length>2,'multiple checked placements available for review');
     const samples=[];for(let i=0;i<5;i++){await page.waitForTimeout(130);const b=await visible();samples.push(b.filter(Boolean).length);for(let j=0;j<81;j++)if(puzzle[j])assert.equal(b[j],puzzle[j],'givens visible and unchanged');}
-    assert.ok(samples.at(-1)>before.board.filter(Boolean).length,'visible progress started');assert.ok(samples.at(-1)<81,'not an instant fill');assert.ok(new Set(samples).size>=3,'multiple distinct visible stages');
-    assert.ok(samples.every((n,i)=>!i||n>=samples[i-1]),'monotone visible fill');
+    assert.ok(samples.at(-1)>=before.board.filter(Boolean).length-1,'visible logical progress started');assert.ok(samples.at(-1)<81,'not an instant fill');assert.ok(new Set(samples).size>=2,'multiple visible review stages');
     await page.screenshot({path:path.join(out,name+'-'+mode+'-solve-mid.png'),fullPage:true});
-    await frame.waitForFunction(()=>!document.body.dataset.appSolvePlayback,null,{timeout:6500});const elapsed=Date.now()-started;
-    assert.ok(elapsed>=2400&&elapsed<8000,'fast watchable duration '+elapsed);assert.deepEqual(await visible(),solved.board);
+    await frame.waitForFunction(()=>{const r=window.SudokuSolveReview?.get?.();return r&&r.index===r.steps.length&&document.querySelector('#appSolvePlay')?.textContent==='▶';},null,{timeout:8500});const elapsed=Date.now()-started;
+    assert.ok(elapsed>=2200&&elapsed<9000,'fast watchable duration '+elapsed);assert.deepEqual(await visible(),solved.board);
+    assert.equal(await frame.locator('#appSolveSensors .app-solve-sensor').count(),5,'position sensors visible');
     assert.equal(await frame.locator('#appDock>button').count(),5);assert.equal(await frame.locator('.title').innerText(),'8zSudoku');assert.equal(await frame.locator('#plNumbers').evaluate(n=>n.hidden),true);
-    add('visible-complete',{elapsedMs:elapsed,samples,blankCells:initial.board.filter(v=>!v).length});
+    await frame.locator('#appSolveFirst').click();assert.deepEqual(await visible(),before.board,'first review position is exact pre-solve grid');
+    await frame.locator('#appSolveNext').click();assert.equal(Number(await frame.locator('#appSolveScrub').inputValue()),1,'next review step');
+    await frame.locator('#appSolveLast').click();assert.deepEqual(await visible(),solved.board,'last review position is solved grid');
+    await frame.locator('#appSolveTabHuman').click();assert.ok((await frame.locator('#appHumanReviewSummary').innerText()).length>0,'human review summary available');
+    await frame.locator('#appSolveTabAI').click();
+    add('logical-review-navigation',{elapsedMs:elapsed,samples,steps:reviewData.steps.length,fallbacks:reviewData.fallbacks,blankCells:initial.board.filter(v=>!v).length});
     await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(250);await checkBefore(before);
     await frame.evaluate(()=>window.SudokuNavigator.product.redo());assert.deepEqual(await capture(),solved);await frame.locator('#appUndo').click();await checkBefore(before);add('one-undo-and-redo');
-    await begin();await page.waitForTimeout(430);assert.ok(await frame.locator('.app-solve-pending').count()>0);await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(500);await checkBefore(before);assert.equal(await frame.locator('.app-solve-pending').count(),0);add('undo-during-fill-no-stale-timer');
+    await begin();await page.waitForTimeout(430);assert.equal(await frame.evaluate(()=>document.body.dataset.appSolveReview==='true'),true);await frame.locator('#appUndo').click();await checkBefore(before);await page.waitForTimeout(500);await checkBefore(before);assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolveReview),false);add('undo-during-fill-no-stale-timer');
     // Learn -> Solve all must return to the unobscured Play board too.
     await frame.locator('[data-pl-view="learn"]').click();await begin();assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.view()),'play');
     const replacement=fixture('replacement-'+name+'-'+mode,'evil');replacement.board=puzzle.slice();replacement.lineage={base:replacement.board,ops:[]};
-    await frame.evaluate(s=>window.SudokuNavigator.restore(s),replacement);await page.waitForTimeout(500);assert.deepEqual((await capture()).board,replacement.board);assert.equal(await frame.locator('.app-solve-pending').count(),0);assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolvePlayback),false);add('replacement-and-learn-safe');
+    await frame.evaluate(s=>window.SudokuNavigator.restore(s),replacement);await page.waitForTimeout(500);assert.deepEqual((await capture()).board,replacement.board);assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolveReview),false);add('replacement-and-learn-safe');
     const priorReload=await begin();
     // Deliberate keyboard interaction finishes only the cosmetic presentation.
-    await page.keyboard.press('Tab');assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolvePlayback),false);
+    await page.keyboard.press('Tab');assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolveReview),false);
     assert.equal(await frame.evaluate(()=>window.SudokuNavigator.flushForUpdate()),true);
     await page.reload({waitUntil:'load'});await ready();assert.ok((await capture()).board.every(Boolean));await frame.locator('#appUndo').click();await checkBefore(priorReload);add('saved-position-undo-after-reload');
     assert.deepEqual(errors,[],'no browser page errors');
@@ -61,4 +72,4 @@ async function run(){
  }
  assert.equal(report.cases.length,20);
 }
-run().then(()=>{report.status='PASS';console.log('SOLVE_PLAYBACK_PASS '+report.cases.length+' cases');}).catch(e=>{report.status='FAIL';report.errors.push(e.stack);console.error(e);process.exitCode=1;}).finally(()=>{fs.writeFileSync(path.join(out,'solve-browser.json'),JSON.stringify(report,null,2)+'\n');server?.close();});
+run().then(()=>{report.status='PASS';console.log('SOLVE_REVIEW_PASS '+report.cases.length+' cases');}).catch(e=>{report.status='FAIL';report.errors.push(e.stack);console.error(e);process.exitCode=1;}).finally(()=>{fs.writeFileSync(path.join(out,'solve-browser.json'),JSON.stringify(report,null,2)+'\n');server?.close();});
