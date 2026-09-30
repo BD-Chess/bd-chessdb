@@ -1,0 +1,58 @@
+name: Sudoku fullscreen sensor guide candidate
+on:
+  push:
+    branches: [work/sudoku-sensor-guide-20261001]
+    paths:
+      - '.github/workflows/sudoku-sensor-guide-once.yml'
+      - 'tools/sudoku-sensor-guide/**'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare APP-only patch and persistent regression tests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/sudoku-sensor-guide/browser.fragment.cjs')
+          s=p.read_text();s=s.replace("    for(const key of ['1','Backspace','ArrowRight','Space'])", "    await frame.locator('.app-sensor-guide-body').focus();\n    for(const key of ['1','Backspace','ArrowRight','Space'])")
+          p.write_text(s)
+          p=Path('tools/sudoku-sensor-guide/guide.fragment.js')
+          s=p.read_text().replace("guide.addEventListener('close',finishSensorGuide);", "guide.addEventListener('close',()=>{if(!guide.open)finishSensorGuide();});")
+          p.write_text(s)
+          PY
+          python tools/sudoku-sensor-guide/build.py prepare
+          node --check public/S/app/app-solve-playback.js
+          node --check tests/sudoku-app-solve-playback-r5-browser.cjs
+          node scripts/build-sudoku-app-preview.cjs
+          node scripts/build-sudoku-app-preview.cjs --check
+          python scripts/check_secret_boundary.py
+      - name: Install pinned browser test runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Exact generated APP Chromium and WebKit acceptance
+        env:
+          SUDOKU_EVIDENCE_DIR: sensor-guide-evidence
+        run: node tests/sudoku-app-solve-playback-r5-browser.cjs
+      - name: Stage exact tested release as unreferenced commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/sudoku-sensor-guide/build.py stage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-sensor-guide-evidence
+          path: sensor-guide-evidence/
+          retention-days: 7
