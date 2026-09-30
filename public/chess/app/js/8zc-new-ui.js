@@ -99,7 +99,7 @@
       const searchLabel = document.createElement('label');
       searchLabel.className = 'library-field-label';
       searchLabel.htmlFor = 'gameLibrarySearch';
-      searchLabel.textContent = 'Search players, openings, events or years';
+      searchLabel.textContent = 'Players, openings, events or years';
       const search = document.createElement('input');
       search.id = 'gameLibrarySearch';
       search.type = 'search';

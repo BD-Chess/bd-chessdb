@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-11b15d5af68fce05";
+const RELEASE = "app-ed639d473f1bf1d6";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -166,7 +166,7 @@ const INTEGRITY = {
   "css/8zc-research.css": "sha256-cOfHnE45Avl5jw365LpHBbC6cSPHi2lFP6NabW0F2KA=",
   "css/8zc-review.css": "sha256-i7F6YpyKdocw+c/Njmy2zxEr3/8299rg5BTgKBsqy4g=",
   "css/8zc-study.css": "sha256-GIkDaM5yVUVjdk7edy2kxnQLFsZR/o2wqND2L3QhlmU=",
-  "css/8zc-styles.css": "sha256-oxHv8/eAojr3Z3JS3l6z4zFZpGFFqz8hmmbn9FB8s5w=",
+  "css/8zc-styles.css": "sha256-BuhNnHR4gB7kuNqsGV/qbUSsg0NSADyzcgCfhzA39Ho=",
   "css/8zc-tournament.css": "sha256-97QQS1i+GV57xsxIm4hZKUGBvcIvQHYiSd1mge/g2Ac=",
   "css/app-mobile.css": "sha256-2EQ8Wh8tidt0/izJLK/QPzdgc/OivSeZZJ8q6ijOfOM=",
   "css/chessboard-1.0.0.min.css": "sha256-j6aLiI0iJD8tzrvLpgcIyB/+06s48RZh69aEuBwSJvs=",
@@ -197,7 +197,7 @@ const INTEGRITY = {
   "js/8zc-gemini.js": "sha256-Qc0/Ht6THo3g+hRFIiNuF95sKTK0hV/xfiQAPTYBz4E=",
   "js/8zc-lab-layout.js": "sha256-rOuFh2VcrGQdYoRmbVa9cK1cyp31QOWs58V3t+yMlVk=",
   "js/8zc-lab-storage.js": "sha256-84ehL987wMXb3T3T7jNVXfnV+8jXpSvjIQ5CJHA7pHo=",
-  "js/8zc-new-ui.js": "sha256-h1oTbHmvUUVhmt94b/spN6jcLRxhzojhJbAU5CQmRrs=",
+  "js/8zc-new-ui.js": "sha256-O+BsWp6LLK8nt2x8296AL30+o9MXEyoEAgjQZeIu4WQ=",
   "js/8zc-research-ui.js": "sha256-UjSFVFJLQ4mdJSKLEQZcAuzlRL283+F15dLtVnMEC9s=",
   "js/8zc-review-core.js": "sha256-cpJ/nHvlAvdqtM+KxwHvnj+NS5jqQW4BaSP8Hx8C1Zs=",
   "js/8zc-review-ui.js": "sha256-8VRqoT7SPV/yubRAPqy2B+awRDIyIfHt6HCIn+h/PAc=",
@@ -213,7 +213,7 @@ const INTEGRITY = {
   "js/8zc-tournament-ui.js": "sha256-g0adG0U8tpMmZCVebFLar+NyjLjzAVr1R6e3OQW0UUo=",
   "js/8zc-utils.js": "sha256-M0A350BMJt4w7+piR5NpPIdNqnuFLNLXrzF3bWjALRM=",
   "js/8zc-workspace.js": "sha256-THbZiWNGmyFNOfFonzCP7CA9SEUxPIEhzZmFFcKu9t4=",
-  "js/app-mobile.js": "sha256-0k/m5UJj66qpBMt60hFWUVwBupu5+/azKWygSHmRMk0=",
+  "js/app-mobile.js": "sha256-09JBqEr4Y/UYUVOkW38pKc4OS4mAZx1N1jfe5VFXMU4=",
   "js/app-preview.js": "sha256-uGnE1DWLxhdA97rpYBZVnx+/hgnUKC61r7LcjasBltc=",
   "js/chess.min.js": "sha256-eqQw3yuTEYSQQIUa3vMMTeSfbIzv24BkWkJi8flcRF8=",
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
