@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Fix browser-event ordering without changing Settings semantics
+      - name: Fix actual browser event ordering and framed overlay stacking
         run: |
           mkdir -p sudoku-r4-evidence
           node <<'JS'
@@ -32,9 +32,11 @@ jobs:
           const old='if(settings)queueMicrotask(enhanceSettings);';
           if(s.split(old).length!==2)throw Error('Settings repair anchor changed');
           s=s.replace(old,'if(settings)setTimeout(enhanceSettings,0);');fs.writeFileSync(p,s);
+          const cp='public/S/app/app.css';let c=fs.readFileSync(cp,'utf8');
+          const ca='body[data-app-surface][data-app-framed-preview=true] .pl-tabs,\nbody[data-app-surface][data-app-framed-preview=true] .main{transform:translateY(24px)}';
+          if(c.split(ca).length!==2)throw Error('Framed overlay repair anchor changed');
+          c=c.replace(ca,'body[data-app-surface][data-app-framed-preview=true] .pl-tabs{transform:translateY(24px)}\n/* Relative offset preserves placement without trapping fixed overlays under the scrim. */\nbody[data-app-surface][data-app-framed-preview=true] .main{transform:none;top:24px}');fs.writeFileSync(cp,c);
           const t='tests/sudoku-app-boot-r4-browser.cjs';let b=fs.readFileSync(t,'utf8');
-          const anchor="               assert.deepEqual(errors,[],'no runtime errors');";
-          const shorter="     assert.deepEqual(errors,[],'no runtime errors');";
           const at=b.indexOf("assert.deepEqual(errors,[],'no runtime errors');");if(at<0)throw Error('Browser test anchor drift');
           const extra=`
           // Real pointer hold + slide must still work with the numpad hidden.
@@ -74,7 +76,7 @@ jobs:
           python - <<'PY'
           import os,json,pathlib,hashlib,urllib.request
           report=json.loads(pathlib.Path('sudoku-r4-evidence/browser.json').read_text());assert report['status']=='PASS' and len(report['cases'])==32
-          paths=['scripts/build-sudoku-app-preview.cjs','public/S/app/app-ui.js','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-boot-r4-browser.cjs']
+          paths=['scripts/build-sudoku-app-preview.cjs','public/S/app/app-ui.js','public/S/app/app.css','public/S/app/app.html','public/S/app/sw.js','public/S/app/release.json','tests/sudoku-app-boot-r4-browser.cjs']
           receipt={'source_sha':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],'status':'TESTED_STAGED_NOT_PUBLISHED','browser_cases':len(report['cases']),'files':[]}
           for p in paths:
               b=pathlib.Path(p).read_bytes();expected=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
