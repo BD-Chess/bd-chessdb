@@ -1,0 +1,58 @@
+name: Sudoku published sensor guide verification
+on:
+  push:
+    branches: [work/sudoku-sensor-guide-20261001]
+    paths: ['.github/workflows/sudoku-sensor-guide-live-check.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SUDOKU_LIVE_URL: https://bd-chess.github.io/bd-chessdb/S/app/
+      SUDOKU_EVIDENCE_DIR: sensor-guide-live-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 65248453117911d7da29b1d43585c14e12f59d5f
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact packaged APP and published file hashes
+        run: |
+          mkdir -p sensor-guide-live-evidence
+          node scripts/build-sudoku-app-preview.cjs --check
+          python - <<'PY'
+          import pathlib,hashlib,json,urllib.request,os
+          root=pathlib.Path('public/S/app'); rows=[]
+          for name in ['index.html','app.html','app-solve-playback.js','release.json','sw.js']:
+              url=os.environ['SUDOKU_LIVE_URL']+name+'?sensor-check=652484531179'
+              with urllib.request.urlopen(url,timeout=45) as response: live=response.read(); final=response.url
+              local=(root/name).read_bytes()
+              row={'file':name,'url':final,'live_sha256':hashlib.sha256(live).hexdigest(),'expected_sha256':hashlib.sha256(local).hexdigest(),'match':live==local}
+              rows.append(row); print(json.dumps(row))
+          result={'commit':'65248453117911d7da29b1d43585c14e12f59d5f','release_id':json.loads((root/'release.json').read_text())['release_id'],'files':rows,'status':'PASS' if all(x['match'] for x in rows) else 'FAIL'}
+          pathlib.Path('sensor-guide-live-evidence/live-hashes.json').write_text(json.dumps(result,indent=2))
+          assert result['status']=='PASS',result
+          PY
+      - name: Install browser acceptance runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Published APP Chromium and WebKit acceptance
+        run: |
+          set -o pipefail
+          node tests/sudoku-app-solve-playback-r5-browser.cjs 2>&1 | tee sensor-guide-live-evidence/browser.log
+      - name: Print verification receipt
+        if: always()
+        run: |
+          cat sensor-guide-live-evidence/live-hashes.json || true
+          cat sensor-guide-live-evidence/solve-browser.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-sensor-guide-live-evidence
+          path: sensor-guide-live-evidence/
+          retention-days: 7
