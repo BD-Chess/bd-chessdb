@@ -1,0 +1,96 @@
+name: Flip4M APP preview live verification
+on:
+  push:
+    branches: ['flip4m/app-preview-center-20260930-r1']
+    paths: ['.github/workflows/flip4m-app-preview-live.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 57672397c36b3998fe92eea428e7969b9a5b9000
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify published APP preview and PWA
+        shell: python
+        run: |
+          import hashlib,json,time,urllib.request,concurrent.futures,datetime
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          OUT=Path('flip4m-live-preview');OUT.mkdir(exist_ok=True)
+          ROOT=Path('public/F4M');BASE='https://bd-chess.github.io/bd-chessdb/F4M/'
+          SHA='57672397c36b3998fe92eea428e7969b9a5b9000';checks=[];error=None
+          def check(name,ok,detail=None):
+              checks.append({'name':name,'pass':bool(ok),'detail':detail})
+              if not ok:raise AssertionError(name+': '+str(detail))
+          def fetch(path):
+              req=urllib.request.Request(BASE+path+'?release='+SHA,headers={'Cache-Control':'no-cache','User-Agent':'Flip4M-owned-preview-verifier'})
+              with urllib.request.urlopen(req,timeout=12) as r:return r.read(),r.geturl(),r.status
+          def idle(page):
+              page.wait_for_function('window.F4MLab&&!F4MLab.status().loading&&!F4MLab.status().thinking&&!F4MLab.status().animating',timeout=15000)
+          try:
+              manifest_path='_shared/petrol-2.3.1/build-manifest.json'
+              expected=(ROOT/manifest_path).read_bytes();deployed=None
+              for _ in range(12):
+                  try:
+                      body,url,status=fetch(manifest_path)
+                      if body==expected:deployed=body;break
+                  except Exception: pass
+                  time.sleep(5)
+              check('Exact 2.3.1 manifest published',deployed==expected)
+              manifest=json.loads(expected)
+              def verify(item):
+                  path,digest=item;body,url,status=fetch(path)
+                  got=hashlib.sha256(body).hexdigest()
+                  return path,status==200 and got==digest,{'url':url,'sha256':got}
+              with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                  for path,ok,detail in pool.map(verify,manifest.items()):check('Published '+path,ok,detail)
+              with sync_playwright() as p:
+                  browser=p.chromium.launch()
+                  ctx=browser.new_context(viewport={'width':1280,'height':1280})
+                  ctx.add_init_script("localStorage.setItem('flip4m.app.2.2.preferences',JSON.stringify({mode:'pvp',difficulty:'beginner'}));")
+                  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+                  page.goto(BASE+'app/');idle(page);page.wait_for_function("F4MPWA.state==='ready'",timeout=25000)
+                  check('APP version 2.3.1', '2.3.1-petrol' in page.locator('.site-footer').inner_text())
+                  hb=page.locator('.preview-header').bounding_box();db=page.locator('.device').bounding_box()
+                  expected_center=(hb['y']+hb['height']+1280)/2;actual_center=db['y']+db['height']/2
+                  check('Phone centered below desktop header',abs(actual_center-expected_center)<36,{'expected':expected_center,'actual':actual_center,'top':db['y']})
+                  check('Full viewport body',page.evaluate('document.body.getBoundingClientRect().height>=innerHeight'))
+                  check('Petrol root canvas',page.evaluate("['rgb(11, 17, 25)','rgba(11, 17, 25, 1)'].includes(getComputedStyle(document.documentElement).backgroundColor)"))
+                  check('No APP redirect',page.url.endswith('/F4M/app/'))
+                  page.screenshot(path=str(OUT/'app-live-1280.png'),full_page=True)
+                  page.set_viewport_size({'width':3840,'height':2160});check('APP remains fixed preview at 4K',page.locator('.device').is_visible() and page.url.endswith('/app/'))
+                  ctx.set_offline(True);page.goto(BASE+'app/');idle(page);check('APP offline cold load',page.locator('.cell').count()==64);ctx.set_offline(False)
+                  check('Desktop no JS errors',not errors,errors);ctx.close()
+                  phone_ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1')
+                  phone=phone_ctx.new_page();perrors=[];phone.on('pageerror',lambda e:perrors.append(str(e)));phone.goto(BASE+'app/');idle(phone)
+                  check('Phone stays fullscreen APP',phone.locator('html').get_attribute('class')=='app-phone' and not phone.locator('.preview-header').is_visible())
+                  check('Phone no horizontal overflow',phone.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+                  phone.screenshot(path=str(OUT/'app-live-phone.png'),full_page=True)
+                  check('Phone no JS errors',not perrors,perrors);phone_ctx.close()
+                  lab=browser.new_page();lab.goto(BASE+'new/');idle(lab);lab.wait_for_function("F4MPWA.state==='ready'",timeout=25000)
+                  check('LAB still loads 64-cell board',lab.locator('.cell').count()==64)
+                  check('LAB version 2.3.1','2.3.1-petrol' in lab.locator('.site-footer').inner_text());lab.close()
+                  browser.close()
+          except Exception as exc:
+              error=repr(exc);print(error)
+          finally:
+              report={'commit':SHA,'version':'2.3.1-petrol','time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'passed':sum(c['pass'] for c in checks),'checks':len(checks),'error':error,'physical_iPhone':'NOT_RUN','results':checks}
+              (OUT/'live-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+              print(json.dumps({k:v for k,v in report.items() if k!='results'}))
+          if error:raise SystemExit(1)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-app-preview-live-evidence
+          path: flip4m-live-preview
+          retention-days: 7
