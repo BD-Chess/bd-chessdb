@@ -330,7 +330,7 @@
  // Any real game interaction first removes the read-only overlay. Review
  // controls are exempt. Undo therefore reaches the original atomic transaction.
  for(const type of ['pointerdown','touchstart','keydown'])window.addEventListener(type,event=>{
-  if(!data||event.target?.closest?.('#appSolveReview'))return;
+  if(!data||review.hidden&&document.body.dataset.appSolveReview!=='true'||event.target?.closest?.('#appSolveReview'))return;
   closeView(false);
  },{capture:true,passive:true});
  const externalRenderObserver=new MutationObserver(()=>{if(data&&currentKey()!==data.finalKey)closeView(false);});
