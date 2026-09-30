@@ -269,7 +269,7 @@ function makeUI(){
  $('f4mReviewFirst').onclick=()=>{pausePlay();paint(0,true);};$('f4mReviewPrev').onclick=()=>{pausePlay();paint(index-1,true);};
  $('f4mReviewPlay').onclick=play;$('f4mReviewNext').onclick=()=>{pausePlay();paint(index+1,true);};$('f4mReviewLast').onclick=()=>{pausePlay();paint(data?.states.length-1||0,true);};
  $('f4mReviewSlider').oninput=e=>{pausePlay();paint(Number(e.target.value),true);};
- $('f4mReviewClose').onclick=closeReview;
+ $('f4mReviewClose').onclick=closeReview;$('f4mReviewHistory').onclick=openHistory;
  root.addEventListener('keydown',e=>{
   if(!active||e.ctrlKey||e.altKey||e.metaKey||e.target?.closest?.('input:not(#f4mReviewSlider),select,textarea,[contenteditable=true],dialog[open]'))return;
   const map={ArrowLeft:()=>{pausePlay();paint(index-1,true);},ArrowRight:()=>{pausePlay();paint(index+1,true);},Home:()=>{pausePlay();paint(0,true);},End:()=>{pausePlay();paint(data.states.length-1,true);},' ':play,Escape:closeReview};
