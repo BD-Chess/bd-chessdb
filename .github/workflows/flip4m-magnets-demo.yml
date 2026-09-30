@@ -1,0 +1,84 @@
+name: Flip4M compact rim and AI vs AI
+on:
+  push:
+    branches: ['flip4m/magnets-aivai-20260930-r1']
+    paths: ['scripts/flip4m_violet/**', '.github/workflows/flip4m-magnets-demo.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Integrate anchored UI changes and build immutable channels
+        run: |
+          python scripts/flip4m_violet/prepare_2_4.py
+          python scripts/flip4m_violet/build.py --public public
+          python -m py_compile scripts/flip4m_violet/refine_magnets_demo.py scripts/flip4m_violet/verify_magnets_demo.py
+      - name: Install pinned browser engines
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Focused geometry and AI-vs-AI lifecycle acceptance
+        run: python scripts/flip4m_violet/verify_magnets_demo.py --public public --out magnet-demo-evidence --engines chromium,webkit
+      - name: Bounded retained gameplay and PWA regression
+        run: python scripts/flip4m_violet/verify.py --public public --out regression-evidence
+      - name: Verify reproducible output and preserve scoped generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/flip4m/magnets-aivai-20260930-r1'
+          cp public/F4M/_shared/petrol-2.4.0/build-manifest.json /tmp/f4m-manifest-before.json
+          python scripts/flip4m_violet/prepare_2_4.py
+          python scripts/flip4m_violet/build.py --public public
+          cmp /tmp/f4m-manifest-before.json public/F4M/_shared/petrol-2.4.0/build-manifest.json
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          shared='_shared/petrol-2.4.0'
+          manifest=json.loads(Path('public/F4M/'+shared+'/build-manifest.json').read_text())
+          paths=['public/F4M/'+p for p in manifest]+['public/F4M/'+shared+'/build-manifest.json']
+          paths += [str(p) for p in Path('scripts/flip4m_violet').iterdir() if p.is_file()]
+          assert all(p.startswith(('public/F4M/new/','public/F4M/app/','public/F4M/'+shared+'/','public/F4M/PWA/','scripts/flip4m_violet/')) for p in paths)
+          subprocess.run(['git','add','--',*paths],check=True)
+          unchanged=['public/F4M/index.html','public/F4M/old','public/F4M/_shared/petrol-2.3.1','public/chess','public/S']
+          assert not subprocess.check_output(['git','diff','HEAD','--',*unchanged],text=True)
+          PY
+          git rm .github/workflows/flip4m-magnets-demo.yml
+          git config user.name 'Flip4M scoped builder'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(flip4m): verified compact rim and AI-vs-AI 2.4.0 [skip ci]'
+          git push origin HEAD:flip4m/magnets-aivai-20260930-r1
+          git rev-parse HEAD > magnet-demo-evidence/verified-commit.txt
+      - name: Package code and evidence
+        if: always()
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,zipfile,hashlib
+          out=Path('magnet-demo-evidence');out.mkdir(exist_ok=True)
+          with zipfile.ZipFile(out/'Flip4M_2_4_0_candidate.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in Path('scripts/flip4m_violet').iterdir():
+                  if p.is_file():z.write(p,p.as_posix())
+              m=Path('public/F4M/_shared/petrol-2.4.0/build-manifest.json')
+              if m.exists():
+                  for name in list(json.loads(m.read_text()))+['_shared/petrol-2.4.0/build-manifest.json']:
+                      p=Path('public/F4M')/name;z.write(p,p.as_posix())
+          for folder in [out,Path('regression-evidence')]:
+              if folder.exists():
+                  for p in sorted(folder.iterdir()):
+                      if p.is_file():print(p.as_posix(),p.stat().st_size,hashlib.sha256(p.read_bytes()).hexdigest())
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-magnets-demo-evidence
+          path: |
+            magnet-demo-evidence
+            regression-evidence
+          retention-days: 14
