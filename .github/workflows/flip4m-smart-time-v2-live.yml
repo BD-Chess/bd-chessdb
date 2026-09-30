@@ -1,0 +1,96 @@
+name: Flip4M Smart Time v2 live verification
+on:
+  push:
+    branches: ['flip4m/smart-time-v2-241-20260930-r1']
+    paths: ['.github/workflows/flip4m-smart-time-v2-live.yml']
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 01a822497f99b11bcfa30d68353165788fce542c
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify deployed Smart Time v2 and archived APP
+        shell: python
+        run: |
+          import json,time,urllib.request,datetime
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+          BASE='https://bd-chess.github.io/bd-chessdb/F4M/'
+          OUT=Path('flip4m-smart-time-v2-live');OUT.mkdir(exist_ok=True)
+          checks=[];error=None
+          def check(name,ok,detail=None):
+              checks.append({'name':name,'pass':bool(ok),'detail':detail})
+              if not ok: raise AssertionError(name+': '+str(detail))
+          def fetch(path):
+              req=urllib.request.Request(BASE+path+'?release=01a822497f99b11bcfa30d68353165788fce542c',headers={'Cache-Control':'no-cache','User-Agent':'Flip4M-live-verifier'})
+              with urllib.request.urlopen(req,timeout=12) as r:return r.read()
+          try:
+              manifest=Path('public/F4M/_shared/petrol-2.4.1/build-manifest.json').read_bytes();got=None
+              for _ in range(12):
+                  try:
+                      got=fetch('_shared/petrol-2.4.1/build-manifest.json')
+                      if got==manifest: break
+                  except Exception: pass
+                  time.sleep(5)
+              check('Exact 2.4.1 manifest published',got==manifest)
+              for name in ('index.html','manifest.webmanifest','release.json','sw.js'):
+                  check('Archive old/001 '+name,fetch('app/old/001/'+name)==Path('public/F4M/app/old/001/'+name).read_bytes())
+              with sync_playwright() as p:
+                  browser=p.chromium.launch()
+                  ctx=browser.new_context(viewport={'width':1440,'height':1080})
+                  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+                  page.goto(BASE+'app/');page.wait_for_function("window.F4MLab&&!F4MLab.status().loading",timeout=20000)
+                  page.wait_for_function("window.F4MPWA?.state==='ready'",timeout=30000)
+                  check('APP runtime 2.4.1',page.evaluate("F4MLab.version==='2.4.1-petrol'"))
+                  b=page.evaluate("""() => {
+                    const B=(s,ms)=>F4MSearch.smartTimeBudget(s,ms);
+                    let s0=F4M.create(2),s1=F4M.action(s0,{type:'drop',col:3}),s2=F4M.action(s1,{type:'drop',col:4}),s3=F4M.action(s2,{type:'drop',col:2}),s4=F4M.action(s3,{type:'drop',col:5});
+                    const mid=F4M.create(2);mid.ply=10;
+                    const complex=F4M.create(3);complex.ply=20;complex.grid[7][2]=1;complex.grid[7][3]=1;complex.grid[7][4]=1;complex.grid[6][2]=2;complex.grid[6][3]=2;complex.mag.top[2]={p:1,life:5};complex.mag.left[6]={p:2,life:4};complex.mag.right[7]={p:1,life:3};
+                    return {g1:B(s0,60000),c1:B(s0,120000),g2:B(s2,60000),c2:B(s2,120000),g3:B(s4,60000),c3:B(s4,120000),gm:B(mid,60000),cm:B(mid,120000),gx:B(complex,60000),cx:B(complex,120000)};
+                  }""")
+                  check('GM move1 fast',b['g1']['effectiveMs']==1000,b['g1'])
+                  check('Champion move1 fast',b['c1']['effectiveMs']==1500,b['c1'])
+                  check('GM move2 fast',b['g2']['effectiveMs']==3000,b['g2'])
+                  check('Champion move2 fast',b['c2']['effectiveMs']==5000,b['c2'])
+                  check('GM move3 serious',15000<=b['g3']['effectiveMs']<=30000,b['g3'])
+                  check('Champion move3 serious',25000<=b['c3']['effectiveMs']<=50000,b['c3'])
+                  check('GM mid floor',b['gm']['effectiveMs']>=30000,b['gm'])
+                  check('Champion mid floor',b['cm']['effectiveMs']>=55000,b['cm'])
+                  check('GM complex 45s+',b['gx']['effectiveMs']>=45000,b['gx'])
+                  check('Champion complex 90s+',b['cx']['effectiveMs']>=90000,b['cx'])
+                  page.locator('#newGame').click()
+                  check('Smart Time v2 explained',page.evaluate("document.body.innerText.includes('Smart Time v2')"))
+                  check('AI vs AI preserved',page.locator('#mode option[value="demo"]').count()==1)
+                  page.locator('#mode').select_option('demo');page.locator('#difficulty').select_option('beginner');page.locator('#demoRed').select_option('classical');page.locator('#demoYellow').select_option('dcc');page.locator('#start').click()
+                  page.wait_for_function('F4MLab.status().cursor>=4',timeout=20000)
+                  page.locator('#pause').click()
+                  check('Live AI vs AI still runs',page.evaluate("F4MLab.snapshot().game.mode==='demo'&&F4MLab.status().cursor>=4"))
+                  check('No JS errors',not errors,errors)
+                  page.evaluate('F4MLab.saveForUpdate()');ctx.set_offline(True);page.reload();page.wait_for_function("window.F4MLab&&!F4MLab.status().loading",timeout=20000)
+                  check('APP offline cold load',page.locator('.cell').count()==64)
+                  ctx.close();browser.close()
+          except Exception as exc:
+              error=repr(exc)
+          finally:
+              report={'commit':'01a822497f99b11bcfa30d68353165788fce542c','version':'2.4.1-petrol','time_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'passed':sum(x['pass'] for x in checks),'checks':len(checks),'error':error,'physical_iPhone':'NOT_RUN','results':checks}
+              (OUT/'live-verification.json').write_text(json.dumps(report,indent=2)+'\n')
+              print(json.dumps({k:v for k,v in report.items() if k!='results'}))
+          if error: raise SystemExit(1)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-smart-time-v2-live-evidence
+          path: flip4m-smart-time-v2-live
+          retention-days: 7
