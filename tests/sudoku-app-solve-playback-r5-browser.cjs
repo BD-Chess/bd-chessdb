@@ -17,7 +17,7 @@ async function run(){
    let frame;
    const ready=async()=>{const handle=await page.locator('#game').elementHandle();frame=await handle.contentFrame();await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:15000});await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appSolveProgress')&&!window.SudokuNavigator.ui.blocked(),null,{timeout:15000});};
    const capture=()=>frame.evaluate(()=>window.SudokuNavigator.product.capture());
-   const begin=async()=>{await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();await frame.locator('#aiAssistConfirmAll').click();await frame.waitForFunction(()=>document.body.dataset.appSolvePlayback==='true',null,{timeout:3000});};
+   const begin=async()=>{await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();const before=await capture();await frame.locator('#aiAssistConfirmAll').click();await frame.waitForFunction(()=>document.body.dataset.appSolvePlayback==='true',null,{timeout:3000});return before;};
    const visible=()=>frame.locator('#grid .cell').evaluateAll(nodes=>nodes.map(n=>/^[1-9]$/.test(n.textContent.trim())?Number(n.textContent.trim()):0));
    const checkBefore=async before=>{assert.deepEqual(await capture(),before);assert.equal(await frame.locator('#notesBtn').evaluate(n=>n.classList.contains('active')),true);};
    const add=(scenario,extra={})=>report.cases.push({name,mode,scenario,reducedMotion:reduced,...extra});
@@ -26,9 +26,12 @@ async function run(){
     const initial=fixture('solve-r5-'+name+'-'+mode,phone?'hard':'evil');
     await frame.evaluate(s=>window.SudokuNavigator.restore(s),initial);await frame.waitForFunction(()=>!window.SudokuNavigator.ui.blocked());
     await frame.locator('[data-sudoku-language="'+(phone?'sl':'en')+'"]').click();
-    const before=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
-    // Cancelling confirmation must leave the entire position unchanged.
-    await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();await frame.locator('#aiAssistCancelAll').click();await checkBefore(before);await frame.locator('#aiAssistClose').click();
+    const initialPosition=await capture(),seq=await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq);
+    // Existing AI Assist selects a suggested/problem cell without changing any
+    // entries. Pin the precise pre-solve position AFTER opening that panel.
+    await frame.locator('#appAssist').click();await frame.locator('#aiAssistAll').click();const before=await capture();
+    assert.deepEqual(before.board,initialPosition.board);assert.deepEqual(before.notes,initialPosition.notes);assert.deepEqual(before.lineage,initialPosition.lineage);
+    await frame.locator('#aiAssistCancelAll').click();await checkBefore(before);await frame.locator('#aiAssistClose').click();
     const started=Date.now();await begin();
     assert.equal(await frame.locator('#aiAssistPanel').evaluate(n=>n.hidden),true);assert.equal(await frame.locator('#navModal').evaluate(n=>n.hidden),true);assert.equal(await frame.evaluate(()=>document.body.dataset.appPanel),'board');
     const solved=await capture();assert.ok(solved.board.every(Boolean));assert.equal(solved.board[2],4,'wrong editable digit corrected');assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.historyData().transactionSeq),seq+1,'one existing atomic transaction');
@@ -47,7 +50,7 @@ async function run(){
     await frame.locator('[data-pl-view="learn"]').click();await begin();assert.equal(await frame.evaluate(()=>window.SudokuNavigator.product.view()),'play');
     const replacement=fixture('replacement-'+name+'-'+mode,'evil');replacement.board=puzzle.slice();replacement.lineage={base:replacement.board,ops:[]};
     await frame.evaluate(s=>window.SudokuNavigator.restore(s),replacement);await page.waitForTimeout(500);assert.deepEqual((await capture()).board,replacement.board);assert.equal(await frame.locator('.app-solve-pending').count(),0);assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolvePlayback),false);add('replacement-and-learn-safe');
-    const priorReload=await capture();await begin();
+    const priorReload=await begin();
     // Deliberate keyboard interaction finishes only the cosmetic presentation.
     await page.keyboard.press('Tab');assert.equal(await frame.evaluate(()=>!!document.body.dataset.appSolvePlayback),false);
     assert.equal(await frame.evaluate(()=>window.SudokuNavigator.flushForUpdate()),true);
