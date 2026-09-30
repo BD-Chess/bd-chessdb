@@ -237,6 +237,10 @@ function closeReview(){
  $('feedback').textContent=tt('originalSafe');
  root.dispatchEvent(new Event('resize'));
 }
+function openHistory(){
+ closeReview();
+ $('tab-history')?.click();
+}
 function translate(){
  $('tab-review-label').textContent=tt('review');$('f4mReviewTitle').textContent=tt('title');
  $('f4mReviewClose').textContent=tt('close');$('f4mReviewHistory').textContent=tt('history');
