@@ -8,8 +8,8 @@ from __future__ import annotations
 import argparse, hashlib, json, re, struct, zlib
 from pathlib import Path
 
-VERSION = '2.3.0-petrol'
-SHARED = '_shared/petrol-2.3.0'
+VERSION = '2.3.1-petrol'
+SHARED = '_shared/petrol-2.3.1'
 SOURCE_COMMIT = 'd0ed1b4a239c123c6e4bced79648f8325c9168ee'
 SOURCE_HASHES = {
 'f4m-core.js':'d59c88e5fcf0df2f7973b8bdb2057e497a2b22da',
@@ -102,7 +102,7 @@ def build(public: Path) -> list[str]:
     # CURRENT is read-only and has the same controller plus smart time as LAB.
     original=(root/'index.html').read_text()
     ui=source['f4m-ui.js'].decode()
-    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.3.0-petrol',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
+    ui=replace_once(ui,"const VERSION='2.1.1',PREF='flip4m.lab.2.1.preferences';", "const VERSION='2.3.1-petrol',CHANNEL=document.body.dataset.channel==='app'?'app':'lab',PREF='flip4m.'+CHANNEL+'.2.2.preferences';\nif(CHANNEL==='lab'){try{if(!localStorage.getItem(PREF)){const old=localStorage.getItem('flip4m.lab.2.1.preferences');if(old)localStorage.setItem(PREF,old);}}catch(_){}}")
     ui=replace_once(ui,"else worker=new Worker('f4m-worker.js?v=2.1.1');", "else worker=new Worker(new URL('f4m-worker.js',document.querySelector('script[data-engine-ui]').src));")
     ui=replace_once(ui,"function persist(){if(loading)return;const serial=++saveSerial;Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');});}", "function persist(){if(loading)return Promise.resolve('unavailable');const serial=++saveSerial;return Store.write(envelope()).then(status=>{if(serial===saveSerial)$('saveStatus').textContent=t(status==='indexeddb'?'storeIdb':status==='localstorage'?'storeLocal':'storage');return status;});}")
     ui=replace_once(ui,"document.title='Flip4M Lab — Classical AI × AI+DCC';", "document.title='Flip4M '+CHANNEL.toUpperCase()+' · Petrol';")
