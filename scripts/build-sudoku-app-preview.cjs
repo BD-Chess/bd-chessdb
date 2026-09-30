@@ -15,6 +15,7 @@ if(expected&&expected!==donorSha)throw Error(`LAB donor SHA mismatch: expected $
 if(!donor.includes('<!-- BEGIN SUDOKU PRESENTATION -->')||!donor.includes('<!-- END SUDOKU PRESENTATION -->'))throw Error('LAB standalone presentation missing');
 const css=read(path.join(app,'app.css')),ui=read(path.join(app,'app-ui.js')),index=read(path.join(app,'index.html'));
 const pwa=read(path.join(app,'pwa.js')),workerTemplate=read(path.join(__dirname,'sudoku-channel-worker.js'));
+const playback=read(path.join(app,'app-solve-playback.js'));
 const once=(source,oldText,newText)=>{
  const parts=source.split(oldText);
  if(parts.length!==2)throw Error(`Expected exactly one donor anchor: ${oldText.slice(0,100)}`);
@@ -46,7 +47,7 @@ output=once(output,'<div style="text-align:center;padding:2rem 5vw 0.5rem;font-f
  output=output.slice(0,profileAt)+"if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}\n"+output.slice(profileAfter);
 }
 output=once(output,'</head>',`<meta name="theme-color" content="#08101d">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="8zSudoku">\n<link rel="manifest" href="./manifest.webmanifest">\n<link rel="apple-touch-icon" href="./icon-180.png">\n<style id="sudoku-app-style">\n${css}\n</style>\n</head>`);
-output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n<script id="sudoku-app-pwa">\n${pwa}\n</script>\n</body>`);
+output=once(output,'</body>',`<script id="sudoku-app-ui">\n${ui}\n</script>\n<script id="sudoku-app-solve-playback">\n${playback}\n</script>\n<script id="sudoku-app-pwa">\n${pwa}\n</script>\n</body>`);
 if(output.includes('<script src=')||output.includes('<link rel="stylesheet"'))throw Error('APP game must be standalone');
 // Parse the DELIVERED scripts, not just app-ui.js. Prevent a malformed
 // generated Navigator from silently exposing the legacy base UI.
@@ -62,7 +63,7 @@ const assets=Object.fromEntries(['index.html','app.html','pwa.js','manifest.webm
 const meta={
  schema:'8ZSUDOKU_APP_RELEASE_V2',channel:'APP',engine_revision:'0.3.0',lab_release_id:labRelease.release_id,
  lab_app_sha256:donorSha,index_sha256:sha(index),app_css_sha256:sha(css),app_ui_sha256:sha(ui),
- builder_sha256:sha(read(__filename)),app_html_sha256:sha(output),
+ builder_sha256:sha(read(__filename)),app_html_sha256:sha(output),app_solve_playback_sha256:sha(playback),
  source_policy:'EXACT_LAB_DONOR_WITH_ISOLATED_APP_STORAGE',assets_sha256:assets,worker_runtime_sha256:sha(workerTemplate)
 };
 meta.release_id=sha(JSON.stringify(meta));
