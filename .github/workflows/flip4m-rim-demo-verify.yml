@@ -1,0 +1,89 @@
+name: Flip4M compact rim and AI vs AI verification
+on:
+  push:
+    branches: ['flip4m/compact-rim-ai-v-ai-20260930-r1']
+    paths: ['scripts/flip4m_violet/**', '.github/workflows/flip4m-rim-demo-verify.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Upgrade hash-pinned source templates
+        run: python scripts/flip4m_violet/upgrade_240.py
+      - name: Finalize test profile initialization
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('scripts/flip4m_violet/verify_240.py');s=p.read_text()
+          old="for(const c of ['lab','app'])localStorage.setItem('flip4m.'+c+'.2.2.preferences',JSON.stringify({mode:'pvp',difficulty:'beginner'}));"
+          new="for(const c of ['lab','app']){const k='flip4m.'+c+'.2.2.preferences';if(!localStorage.getItem(k))localStorage.setItem(k,JSON.stringify({mode:'pvp',difficulty:'beginner'}));}"
+          if old in s:
+              assert s.count(old)==1
+              s=s.replace(old,new)
+          s=s.replace('(6 if side%2 else 0)', '(8 if side%2 else 0)').replace('(0 if side%2 else 6)', '(0 if side%2 else 8)')
+          s=s.replace('        # Seed pvp once, then use a fresh page with the normal stored preferences.','        # Seed pvp only once; later reloads retain the tested demo preferences.')
+          p.write_text(s)
+      - name: Build immutable LAB and APP 2.4.0
+        run: python scripts/flip4m_violet/build.py --public public
+      - name: Install pinned browser
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Existing bounded regression checks
+        run: python scripts/flip4m_violet/verify.py --public public --out flip4m-240-evidence/regression
+      - name: Changed geometry, real magnet hits and AI vs AI
+        run: python scripts/flip4m_violet/verify_240.py --public public --out flip4m-240-evidence/targeted
+      - name: Save verified sources and generated channels on this branch only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/flip4m/compact-rim-ai-v-ai-20260930-r1'
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          root=Path('public/F4M');shared='_shared/petrol-2.4.0'
+          manifest=json.loads((root/shared/'build-manifest.json').read_text())
+          paths=['public/F4M/'+p for p in manifest]+['public/F4M/'+shared+'/build-manifest.json']
+          paths += [str(p) for p in Path('scripts/flip4m_violet').glob('*') if p.is_file()]
+          allowed=('public/F4M/new/','public/F4M/app/','public/F4M/'+shared+'/','public/F4M/PWA/','scripts/flip4m_violet/')
+          assert all(p.startswith(allowed) for p in paths)
+          assert not subprocess.check_output(['git','diff','HEAD','--','public/F4M/index.html','public/F4M/old','public/chess','public/S','public/F4M/_shared/petrol-2.3.1'],text=True)
+          subprocess.run(['git','add','--',*paths],check=True)
+          PY
+          git rm .github/workflows/flip4m-rim-demo-verify.yml
+          git config user.name 'Flip4M scoped builder'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(flip4m): verified compact rim and AI vs AI 2.4.0 [skip ci]'
+          git push origin HEAD:flip4m/compact-rim-ai-v-ai-20260930-r1
+          git rev-parse HEAD > flip4m-240-evidence/verified-commit.txt
+      - name: Package candidate and hash evidence
+        if: always()
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json,zipfile
+          out=Path('flip4m-240-evidence');out.mkdir(exist_ok=True)
+          with zipfile.ZipFile(out/'Flip4M_Petrol_2_4_0_candidate.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in Path('scripts/flip4m_violet').glob('*'):
+                  if p.is_file():z.write(p,p.as_posix())
+              root=Path('public/F4M');m=root/'_shared/petrol-2.4.0/build-manifest.json'
+              if m.exists():
+                  for name in [*json.loads(m.read_text()),'_shared/petrol-2.4.0/build-manifest.json']:
+                      p=root/name;z.write(p,p.as_posix())
+          hashes={str(p.relative_to(out)):hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob('*') if p.is_file()}
+          (out/'evidence-sha256.json').write_text(json.dumps(hashes,indent=2)+'\n')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-compact-rim-ai-v-ai-evidence
+          path: flip4m-240-evidence
+          retention-days: 14
