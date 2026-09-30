@@ -47,7 +47,7 @@ def verify(public:Path,out:Path,executable=None):
    page.wait_for_function("window.F4MPWA",timeout=10000);page.wait_for_function("F4MPWA.state==='ready'",timeout=30000)
    check('APP runtime version',page.evaluate("F4MLab.version==='2.5.0-petrol'"))
    check('Review tab added',page.locator('#tab-review').count()==1 and page.locator('#workspaceTabs button').count()==5)
-   page.locator('#mode').select_option('pvp');page.locator('#tools').select_option('2');page.locator('#start').click();wait_idle(page)
+   page.locator('#newGame').click();page.locator('#setupPanel').wait_for(state='visible');page.locator('#mode').select_option('pvp');page.locator('#tools').select_option('2');page.locator('#start').click();wait_idle(page)
    drop(page,3);drop(page,4)
    page.locator('#flipLeft').click();wait_idle(page)
    drop(page,2)
@@ -68,7 +68,7 @@ def verify(public:Path,out:Path,executable=None):
    check('History shortcut preserves session',snap_core(page)==before)
    page.locator('#tab-board').click()
    # AI-vs-AI provides stored analysis in the same Review without new analysis requests.
-   page.locator('#mode').select_option('demo');page.locator('#difficulty').select_option('beginner');page.locator('#demoRed').select_option('classical');page.locator('#demoYellow').select_option('dcc');page.locator('#start').click()
+   page.locator('#newGame').click();page.locator('#setupPanel').wait_for(state='visible');page.locator('#mode').select_option('demo');page.locator('#difficulty').select_option('beginner');page.locator('#demoRed').select_option('classical');page.locator('#demoYellow').select_option('dcc');page.locator('#start').click()
    page.wait_for_function('F4MLab.status().cursor>=4&&!F4MLab.status().thinking&&!F4MLab.status().animating',timeout=30000);page.locator('#pause').click() if not page.evaluate('F4MLab.status().paused') else None
    ai_before=snap_core(page);page.locator('#tab-review').click();page.wait_for_function('F4MReview.active()');page.locator('#f4mReviewPrev').click()
    check('Stored AI analysis shown',page.locator('#f4mReviewDetail .review-analysis').count()==1)
@@ -87,7 +87,7 @@ def verify(public:Path,out:Path,executable=None):
    phone_ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1')
    phone_ctx.add_init_script("""localStorage.setItem('flip4m.app.2.2.preferences',JSON.stringify({mode:'pvp',tools:'2',difficulty:'beginner'}));""")
    phone=phone_ctx.new_page();perrors=[];phone.on('pageerror',lambda e:perrors.append(str(e)));phone.goto(base+'app/');wait_idle(phone);phone.wait_for_function('window.F4MReview',timeout=15000)
-   phone.locator('#mode').select_option('pvp');phone.locator('#start').click();wait_idle(phone);drop(phone,3);drop(phone,4);phone.locator('#tab-review').click();phone.wait_for_function('F4MReview.active()')
+   phone.locator('#newGame').click();phone.locator('#setupPanel').wait_for(state='visible');phone.locator('#mode').select_option('pvp');phone.locator('#start').click();wait_idle(phone);drop(phone,3);drop(phone,4);phone.locator('#tab-review').click();phone.wait_for_function('F4MReview.active()')
    check('Phone Review nav has five controls',phone.locator('.review-nav button').count()==5)
    check('Phone Review no horizontal overflow',phone.evaluate('document.documentElement.scrollWidth<=innerWidth'))
    phone.screenshot(path=str(out/'app-review-phone.png'),full_page=True);check('Phone no JS errors',not perrors,perrors);phone_ctx.close()
