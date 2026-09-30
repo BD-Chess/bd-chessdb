@@ -186,7 +186,9 @@
     function stopCurrent() {
       if (!engine?.isRunning?.()) return false;
       manualStoppedFen = pinned?.fen || null;
-      engine.stop(); el('status').textContent = 'Stopping… the next move will analyze automatically.';
+      ++run; engine.stop();
+      el('start').disabled = !pinned; el('stop').disabled = true;
+      el('status').textContent = 'Stopped; the next move will analyze automatically.';
       notifyState(); return true;
     }
     function deepenOrStop() {
