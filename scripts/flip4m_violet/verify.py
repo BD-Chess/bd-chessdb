@@ -30,7 +30,8 @@ def verify(public: Path,out: Path,executable=None):
     root=public/'F4M'; shared=root/SHARED
     for name,sha in SOURCE_HASHES.items():
         check('CURRENT source '+name,git_hash((root/name).read_bytes())==sha)
-        if name!='f4m-ui.js': check('Shared unmodified '+name,git_hash((shared/name).read_bytes())==sha)
+        if name not in ('f4m-ui.js','f4m-smart-time.js'): check('Shared unmodified '+name,git_hash((shared/name).read_bytes())==sha)
+    check('Shared Smart Time v2',(shared/'f4m-smart-time.js').read_bytes()==(HERE/'smart-time-v2.js').read_bytes())
     for f in shared.glob('*.js'):
         run=subprocess.run(['node','--check',str(f)],capture_output=True,text=True,timeout=8)
         check('Syntax '+f.name,run.returncode==0,run.stderr or None)
@@ -140,7 +141,7 @@ def verify(public: Path,out: Path,executable=None):
         # Real update handshake. Only the test server's SW file is temporarily changed.
         page.locator('#tab-board').click();second=ctx.new_page();second.goto(base+'new/');wait_idle(second)
         navs=[];second.on('framenavigated',lambda f:navs.append(f.url) if f==second.main_frame else None)
-        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.4.0-petrol"','const BUILD="2.4.0-petrol-test"',1))
+        (root/'new/sw.js').write_text(original_sw.replace('const BUILD="2.4.1-petrol"','const BUILD="2.4.1-petrol-test"',1))
         page.evaluate("navigator.serviceWorker.getRegistration().then(r=>r.update())")
         page.wait_for_function("document.getElementById('pwaToast').hidden===false",timeout=25000)
         check('Update waits for consent',page.evaluate("navigator.serviceWorker.getRegistration().then(r=>!!r.waiting)"))
