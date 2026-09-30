@@ -28,7 +28,9 @@ def main():
                 try:
                     text=route.request.frame.evaluate('''({fen,action}) => {
                       const game=new Chess(fen);
-                      if(action==='queryall')return game.moves({verbose:true}).slice(0,5).map((m,i)=>`move:${m.from}${m.to}${m.promotion||''},score:${30-i},rank:1,note:*`).join('|');
+                      const bits=fen.split(' '), ply=(Number(bits[5])-1)*2+(bits[1]==='b'?1:0);
+                      const score=(25-80*ply)*(bits[1]==='b'?-1:1);
+                      if(action==='queryall')return game.moves({verbose:true}).slice(0,5).map((m,i)=>`move:${m.from}${m.to}${m.promotion||''},score:${score-i},rank:1,note:*`).join('|');
                       if(action==='querypv'){const pv=[];for(let i=0;i<8;i++){const m=game.moves({verbose:true})[0];if(!m)break;pv.push(m.from+m.to+(m.promotion||''));game.move(m);}return 'score:30,depth:20,pv:'+pv.join('|');}
                       return 'eval:30';
                     }''',{'fen':fen,'action':action})
@@ -135,6 +137,32 @@ def main():
                 sf=inner.evaluate('ChessLabHost.getContext().analysisSources.SF.receipt');record('real local SF completes',sf.get('status')=='ready',sf)
                 coords=inner.evaluate('''() => [...document.querySelectorAll('#board .notation-322f9')].map(el=>{const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return {text:el.textContent,inside:a.left>=b.left&&a.top>=b.top&&a.right<=b.right&&a.bottom<=b.bottom};})''')
                 record('16 coordinates inside squares',len(coords)==16 and all(x['inside'] for x in coords),coords)
+                inner.locator('#appSim').click()
+                inner.locator('#simTournamentDialog [data-ui="white"]').select_option('sf')
+                inner.locator('#simTournamentDialog [data-ui="black"]').select_option('raw')
+                inner.locator('#simTournamentDialog [data-ui="depth"]').fill('5')
+                inner.locator('#simTournamentDialog [data-ui="move-pause"]').select_option('400')
+                inner.evaluate("""() => {
+                  window.simEvalSamples=[];
+                  const bar=document.getElementById('positionEval');
+                  window.simEvalObserver=new MutationObserver(()=>{
+                    if(document.getElementById('appActivity').hidden || bar.dataset.evalState!=='known' || bar.dataset.evalSource!=='CDB')return;
+                    const fen=ChessLabHost.getContext().fen;
+                    if(bar.dataset.evalFen!==fen || bar.dataset.positionFen!==fen)return;
+                    if(!simEvalSamples.some(s=>s.fen===fen))simEvalSamples.push({fen,label:document.getElementById('positionEvalLabel').textContent});
+                  });
+                  simEvalObserver.observe(bar,{subtree:true,attributes:true,childList:true,characterData:true});
+                }""")
+                inner.locator('#simTournamentDialog [data-ui="start"]').click()
+                inner.wait_for_function('simEvalSamples.length>=6',timeout=20000)
+                inner.locator('#appPause').click();page.wait_for_timeout(200)
+                samples=inner.evaluate('simEvalSamples');inner.evaluate('simEvalObserver.disconnect()')
+                def expected_sample(row):
+                    bits=row['fen'].split();ply=(int(bits[5])-1)*2+(1 if bits[1]=='b' else 0);cp=25-80*ply
+                    return row['label']==('+' if cp>0 else '')+format(cp/100,'.2f')
+                record('real SF5 vs CDB/SF spectator follows both colors',len(samples)>=6 and {s['fen'].split()[1] for s in samples}=={'w','b'} and all(expected_sample(s) for s in samples),samples)
+                record('spectator numeric evaluations change with positions',len({s['label'] for s in samples})>=6)
+                page.locator('.phone-frame').screenshot(path=str(out/'sim-evaluation.png'))
             ctx.close()
             if not args.layout_only:
                 for name,ua,mobile,vp in [
