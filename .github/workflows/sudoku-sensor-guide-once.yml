@@ -1,4 +1,4 @@
-name: Sudoku sensor guide bounded build
+name: Sudoku sensor guide live verification
 on:
   push:
     branches: ['gpt/sudoku-sensor-guide-20261001']
@@ -8,36 +8,57 @@ concurrency:
   group: sudoku-sensor-guide-20261001
   cancel-in-progress: false
 jobs:
-  verify:
+  verify-live:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    permissions:
-      contents: write
+    env:
+      EXPECTED_SHA: e6b697233cfab51e7fe46c07cbc72eafc274b92c
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: e6b697233cfab51e7fe46c07cbc72eafc274b92c
           persist-credentials: false
-          fetch-depth: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply guarded APP-only change and rebuild standalone PWA
-        run: python tools/sudoku-sensor-guide/patch.py
+      - name: Verify exact production bytes on GitHub Pages
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,time,urllib.request,os
+          base='https://bd-chess.github.io/bd-chessdb/S/app/'
+          out=pathlib.Path('sudoku-guide-live-evidence');out.mkdir(exist_ok=True)
+          files=['release.json','app.html','sw.js','index.html','pwa.js']
+          expected={name:hashlib.sha256(pathlib.Path('public/S/app',name).read_bytes()).hexdigest() for name in files}
+          receipt={'status':'FAIL','url':base,'commit':os.environ['EXPECTED_SHA'],'files':{}}
+          for attempt in range(8):
+           try:
+            for name in files:
+             req=urllib.request.Request(base+name+'?sensor-guide-check='+os.environ['EXPECTED_SHA']+'-'+str(attempt),headers={'Cache-Control':'no-cache','User-Agent':'8zSudoku-release-verification'})
+             with urllib.request.urlopen(req,timeout=30) as r:b=r.read()
+             actual=hashlib.sha256(b).hexdigest()
+             receipt['files'][name]={'expected':expected[name],'actual':actual,'bytes':len(b),'match':actual==expected[name]}
+             assert actual==expected[name], 'Deployed bytes differ: '+name
+            receipt['release_id']=json.loads(pathlib.Path('public/S/app/release.json').read_text())['release_id']
+            receipt['status']='PASS';break
+           except Exception as e:
+            receipt['last_error']=str(e)
+            if attempt<7:time.sleep(10)
+          (out/'live-bytes.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt))
+          assert receipt['status']=='PASS'
+          PY
       - name: Install pinned browser harness
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium webkit
-      - name: Test generated APP on Chromium and WebKit
+      - name: Test deployed APP on Chromium and WebKit
         env:
-          SUDOKU_EVIDENCE_DIR: sudoku-guide-evidence
+          SUDOKU_LIVE_URL: https://bd-chess.github.io/bd-chessdb/S/app/
+          SUDOKU_EVIDENCE_DIR: sudoku-guide-live-evidence
         run: node tests/sudoku-app-sensor-guide-browser.cjs
-      - name: Stage exact tested files without updating any branch
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: python tools/sudoku-sensor-guide/stage.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sudoku-sensor-guide-evidence
-          path: sudoku-guide-evidence/
-          retention-days: 7
+          name: sudoku-sensor-guide-live-evidence
+          path: sudoku-guide-live-evidence/
+          retention-days: 14
