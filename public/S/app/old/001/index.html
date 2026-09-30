@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="theme-color" content="#08101d">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-title" content="8zSudoku">
+ <link rel="manifest" href="./manifest.webmanifest">
+ <link rel="apple-touch-icon" href="./icon-180.png">
+ <title>8zSudoku · APP preview</title>
+ <script>
+  (()=>{const ua=navigator.userAgent||'',hint=navigator.userAgentData;
+   const phone=hint&&typeof hint.mobile==='boolean'?hint.mobile:
+    ua.includes('iPhone')||ua.includes('iPod')||(ua.includes('Android')&&ua.includes('Mobile'))||ua.includes('Windows Phone');
+   document.documentElement.dataset.appShell=phone?'phone':'preview';
+  })();
+ </script>
+ <style>
+  *,*::before,*::after{box-sizing:border-box}
+  html{background:#070c16;color:#e5edfa;font:16px/1.45 system-ui,sans-serif}
+  body{margin:0;min-height:100svh;background:radial-gradient(circle at 50% 30%,#15344d 0,#0b1526 42%,#070c16 90%)}
+  html[data-app-shell=preview] body{display:flex;flex-direction:column;min-height:100svh}
+  html[data-app-shell=preview] main{flex:1;width:100%;min-height:100svh;display:grid;grid-template-rows:auto 1fr;align-items:stretch;gap:0;padding:38px 16px 24px}
+  html[data-app-shell=preview] .preview-header{align-self:start}
+  html[data-app-shell=preview] .preview-stage{display:flex;align-items:center;justify-content:center;min-height:0}
+  a{color:#b7eafe}
+  main{display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 16px 40px}
+  .preview-header{width:min(1120px,100%);display:grid;grid-template-columns:minmax(180px,1fr) auto minmax(180px,1fr);align-items:center;gap:16px}
+  .preview-title{justify-self:start;font-size:1.22rem;line-height:1.15;margin:0;letter-spacing:.02em;white-space:nowrap}
+  .preview-nav{justify-self:center;display:flex;align-items:center;gap:2px;font-size:.72rem;font-weight:800;letter-spacing:.065em;white-space:nowrap}
+  .preview-nav a{padding:8px 9px;border-radius:10px;text-decoration:none;color:#9eb2ce}
+  .preview-nav a:hover,.preview-nav a:focus-visible{color:white;background:#223650;outline:none}
+  .preview-nav a[aria-current=page]{color:#67e5f5;background:#113749}
+  .width-control{justify-self:end;display:flex;align-items:center;gap:8px;color:#a5b6d0;font-size:.78rem;font-weight:700;white-space:nowrap}
+  .width-control select{min-height:38px;padding:6px 28px 6px 10px;border:1px solid #4e6782;border-radius:10px;background:#122239;color:#e5edfa;font:700 .82rem system-ui;cursor:pointer}
+  .width-control select:focus-visible{outline:3px solid #fbba57;outline-offset:2px}
+  .device{--device-width:390px;position:relative;flex:none;width:calc(var(--device-width) + 18px);height:862px;padding:0 9px;border:3px solid #758397;border-radius:51px;background:#030710;box-shadow:0 0 0 2px #192537,0 25px 80px #000b,0 0 60px #14d2ec20}
+  .screen{position:relative;height:100%;overflow:hidden;border-radius:39px;background:#080e1a}
+  .island{position:absolute;z-index:2;top:8px;left:50%;transform:translateX(-50%);width:114px;height:28px;border-radius:18px;background:#03040a;pointer-events:none}
+  .safe-top{height:43px;background:#080e1a}
+  iframe{display:block;width:100%;height:calc(100% - 68px);border:0;background:#080e1a}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:118px;height:4px;border-radius:5px;background:#d8e5f8b8;pointer-events:none}
+  html[data-app-shell=phone],html[data-app-shell=phone] body{width:100%;height:100%;overflow:hidden;background:#080e1a}
+  html[data-app-shell=phone] .preview-header,
+  html[data-app-shell=phone] .island,
+  html[data-app-shell=phone] .safe-top,
+  html[data-app-shell=phone] .home{display:none!important}
+  html[data-app-shell=phone] main{display:block;width:100%;height:100%;padding:0}
+  html[data-app-shell=phone] .preview-stage{width:100%;height:100%}
+  html[data-app-shell=phone] .device,
+  html[data-app-shell=phone] .screen{width:100%;height:100%;max-width:none;padding:0;border:0;border-radius:0;box-shadow:none}
+  html[data-app-shell=phone] iframe{width:100%;height:100%;border:0}
+  @media(max-width:760px){
+   .preview-header{grid-template-columns:minmax(150px,1fr) auto minmax(150px,1fr);gap:8px}
+   .preview-title{font-size:1.02rem}.preview-nav{font-size:.64rem}.preview-nav a{padding:7px 5px}
+   .width-control{gap:5px;font-size:.7rem}.width-control select{min-height:36px;padding-left:8px}
+  }
+  @media(max-width:480px){main{padding-inline:0}.device{max-width:100vw}}
+ </style>
+</head>
+<body>
+ <main>
+  <header class="preview-header">
+   <h1 class="preview-title">8zSudoku · APP preview</h1>
+   <nav class="preview-nav" aria-label="8zSudoku versions">
+    <a href="../">CURRENT</a><span aria-hidden="true">·</span><a href="../old/">PREVIOUS</a><span aria-hidden="true">·</span><a href="../new/">LAB</a><span aria-hidden="true">·</span><a href="./" aria-current="page">APP</a>
+   </nav>
+   <label class="width-control" for="previewWidth">Preview width
+    <select id="previewWidth" aria-label="Preview width">
+     <option value="375">375</option><option value="390" selected>390</option><option value="402">402</option><option value="430">430</option>
+    </select>
+   </label>
+  </header>
+  <div class="preview-stage"><div class="device" id="device"><div class="screen"><div class="island" aria-hidden="true"></div><div class="safe-top" aria-hidden="true"></div><iframe id="game" title="8zSudoku APP game" allow="fullscreen"></iframe><div class="home" aria-hidden="true"></div></div></div></div>
+ </main>
+ <script>
+ (()=>{
+  const params=new URLSearchParams(location.search),allowed=['375','390','402','430'];
+  const device=document.getElementById('device'),widthSelect=document.getElementById('previewWidth'),game=document.getElementById('game');
+  let width=allowed.includes(params.get('width'))?params.get('width'):'390';
+  const syncFramedPreview=()=>{try{const body=game.contentDocument?.body;if(!body)return;const framed=document.documentElement.dataset.appShell==='preview';if(framed)body.dataset.appFramedPreview='true';else delete body.dataset.appFramedPreview;}catch(_){}};
+  const draw=()=>{device.style.setProperty('--device-width',width+'px');widthSelect.value=width;syncFramedPreview();};
+  widthSelect.addEventListener('change',()=>{if(allowed.includes(widthSelect.value)){width=widthSelect.value;draw();}});
+  game.addEventListener('load',syncFramedPreview);game.src='./app.html'+location.hash;
+  window.addEventListener('hashchange',()=>{game.contentWindow?.location.replace('./app.html'+location.hash);});
+  draw();
+ })();
+ </script>
+ <script src="./pwa.js"></script>
+</body>
+</html>
