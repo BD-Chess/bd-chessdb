@@ -32,7 +32,7 @@ jobs:
       - name: Install isolated browser dependencies
         run: |
           npm install --prefix /tmp/sudoku-r7 --no-package-lock --ignore-scripts jsdom@26.1.0 playwright@1.55.0
-          node /tmp/sudoku-r7/node_modules/playwright/cli.js install chromium webkit
+          node /tmp/sudoku-r7/node_modules/playwright/cli.js install --with-deps chromium webkit
       - name: Focused APP functional regressions
         run: node --test tests/sudoku-app-coach-final-20260930.test.cjs | tee sudoku-r7-evidence/functional.log
       - name: Chromium and WebKit review acceptance
