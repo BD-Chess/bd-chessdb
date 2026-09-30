@@ -23,17 +23,17 @@
     const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0;
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
-    let manualStoppedFen = null;
+    let manualStoppedFen = null, pendingLiveScroll = null;
     const Chess = host.Chess || root.Chess;
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), fen: pinned?.fen || null });
     const notifyState = () => host.onStateChange?.(state());
-    function setPinned(context) {
+    function setPinned(context, options = {}) {
       const next = typeof context === 'string' ? { fen: context } : Object.assign({}, context);
       if (!next || !next.fen) throw new Error('No board position is available');
       if (next.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
       root.ChessDeepEngine.validateFen(next.fen, Chess); pinned = next;
       manualStoppedFen = null; paintAt = 0;
-      panel.style.minHeight = '';
+      if (!options.preserveViewport) panel.style.minHeight = '';
       el('fen').textContent = pinned.fen; el('roots').value = ''; result = null; preview = null;
       el('lines').replaceChildren(); el('preview').hidden = true; el('export').disabled = true;
       el('status').textContent = 'Position pinned. Choose your analysis settings.';
@@ -127,6 +127,13 @@
       root.requestAnimationFrame(() => {
         for (const variation of el('lines').querySelectorAll('.deep-pv'))
           variation.classList.toggle('is-clipped', variation.scrollHeight > variation.clientHeight + 1);
+        if (pendingLiveScroll !== null && !panel.hidden && current.fen === pinned?.fen) {
+          workspace.scrollTop = pendingLiveScroll;
+          if (force || current.completeMultiPV) {
+            deepScroll = pendingLiveScroll;
+            pendingLiveScroll = null;
+          }
+        }
       });
       el('export').disabled = !current.lines.length;
       const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
@@ -226,9 +233,15 @@
     if (typeof host.onChange === 'function') {
       liveUnsubscribe = host.onChange(context => {
         if (panel.hidden || !context?.fen || context.assistanceLocked || context.fen === pinned?.fen) return;
+        const keepScroll = workspace.scrollTop;
+        const keepMinHeight = panel.style.minHeight;
         ++run; engine?.stop(); manualStoppedFen = null;
         try {
-          setPinned(context);
+          pendingLiveScroll = keepScroll;
+          setPinned(context, { preserveViewport: true });
+          if (keepMinHeight) panel.style.minHeight = keepMinHeight;
+          workspace.scrollTop = keepScroll;
+          root.requestAnimationFrame(() => { if (pendingLiveScroll !== null && !panel.hidden) workspace.scrollTop = pendingLiveScroll; });
           start({ automatic: true, reveal: false });
         } catch (e) {
           el('status').textContent = e.message; notifyState();
