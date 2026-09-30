@@ -91,6 +91,42 @@ def main():
             inner.evaluate('document.body.classList.remove("light-theme")')
             inner.locator('[data-app-lang="en"]').click()
             inner.locator('#appGames').click()
+            inner.wait_for_selector('#popularGamesPanel.open')
+            inner.wait_for_function("document.querySelectorAll('#popularGamesPanel .library-result').length > 0",timeout=15000)
+            library_scroll=inner.evaluate("""() => {
+              const panel=document.getElementById('popularGamesPanel'),results=panel.querySelector('.library-result-list');
+              const ps=getComputedStyle(panel),rs=getComputedStyle(results);
+              return {panelOverflow:ps.overflowY,resultOverflow:rs.overflowY,scrollbarWidth:ps.scrollbarWidth,scrollbarColor:ps.scrollbarColor,
+                panelScrollHeight:panel.scrollHeight,panelClientHeight:panel.clientHeight,resultScrollHeight:results.scrollHeight,resultClientHeight:results.clientHeight};
+            }""")
+            record('library uses whole-drawer scroll',library_scroll['panelOverflow']=='auto' and library_scroll['resultOverflow']=='visible' and library_scroll['panelScrollHeight']>library_scroll['panelClientHeight'],library_scroll)
+            record('library green integrated scrollbar',library_scroll['scrollbarWidth']=='thin' and library_scroll['scrollbarColor'] not in ('auto',''),library_scroll)
+            record('library EN concise search label',inner.locator('label[for="gameLibrarySearch"]').inner_text()=='Players, openings, events or years')
+            inner.locator('[data-app-lang="sl"]').click();page.wait_for_timeout(120)
+            library_sl=inner.evaluate("""() => ({
+              heading:document.querySelector('#popularGamesPanel .drawer-heading strong').textContent.trim(),
+              title:document.querySelector('#popularGamesPanel .library-title').childNodes[0].nodeValue.trim(),
+              searchLabel:document.querySelector('label[for="gameLibrarySearch"]').textContent.trim(),
+              placeholder:document.getElementById('gameLibrarySearch').placeholder,
+              collection:document.querySelector('label[for="popularGamesSelect"]').textContent.trim(),
+              all:document.getElementById('popularGamesSelect').options[0].textContent.trim(),
+              aria:document.querySelector('.library-result-list').getAttribute('aria-label'),
+              status:document.querySelector('.library-status').textContent.trim(),
+              useOpening:document.getElementById('btnUseTournamentOpening')?.textContent.trim(),
+              useOpeningTitle:document.getElementById('btnUseTournamentOpening')?.title
+            })""")
+            record('library SL complete core text',
+              library_sl['heading']=='Knjižnica partij' and library_sl['title']=='Poišči naslednjo partijo'
+              and library_sl['searchLabel']=='Igralci, otvoritve, dogodki ali leta'
+              and library_sl['placeholder']=='Poskusi Carlsen, Sicilijanka, 2024…'
+              and library_sl['collection']=='Zbirka' and library_sl['all']=='Vse zbirke'
+              and library_sl['aria']=='Ujemajoče se partije'
+              and library_sl['status'].startswith(('Najdene partije:','Prikazujem 60 od'))
+              and library_sl['useOpening']=='Uporabi položaj v Sim / turnirju'
+              and library_sl['useOpeningTitle']=='Uporabi prikazani položaj kot otvoritev za obe barvi',library_sl)
+            inner.locator('[data-app-lang="en"]').click();page.wait_for_timeout(80)
+            record('library EN roundtrip',inner.locator('label[for="gameLibrarySearch"]').inner_text()=='Players, openings, events or years'
+              and inner.locator('#popularGamesPanel .library-title').inner_text().startswith('Find your next game'))
             inner.locator('#btnCloseGames').click()
             record('library X still closes',not inner.locator('#popularGamesPanel').evaluate('e=>e.classList.contains("open")'))
             inner.locator('#appTabs [data-app-tab="board"]').click()
