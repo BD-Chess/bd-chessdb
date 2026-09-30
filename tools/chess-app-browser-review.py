@@ -46,18 +46,17 @@ def main():
             return inner
         def metrics(frame,case,fit=True):
             m=frame.evaluate('''() => {
-              const status=document.getElementById('analysisSourceStatus'),top=document.getElementById('appTopLine'),tabs=document.getElementById('appTabs'),board=document.getElementById('board');
-              const range=document.createRange();range.selectNodeContents(status);
-              const sr=status.getBoundingClientRect(),tr=top.getBoundingClientRect(),br=board.getBoundingClientRect(),nr=tabs.getBoundingClientRect(),text=range.getBoundingClientRect();
-              return {statusHeight:sr.height,statusFlex:getComputedStyle(status).flex,topGap:tr.top-text.bottom,topBottom:tr.bottom,tabTop:nr.top,boardWidth:br.width,boardHeight:br.height,viewportHeight:innerHeight,scrollHeight:document.documentElement.scrollHeight,squares:document.querySelectorAll('#board .square-55d63').length,overflowX:document.documentElement.scrollWidth>innerWidth+1};
+              const status=document.getElementById('analysisSourceStatus'),top=document.getElementById('appTopLine'),tabs=document.getElementById('appTabs'),board=document.getElementById('board'),controls=document.getElementById('appBoardControls');
+              const sr=status.getBoundingClientRect(),br=board.getBoundingClientRect(),nr=tabs.getBoundingClientRect(),cr=controls.getBoundingClientRect();
+              return {statusHeight:sr.height,statusFlex:getComputedStyle(status).flex,topHidden:top.hidden,controlsBottom:cr.bottom,tabTop:nr.top,boardWidth:br.width,boardHeight:br.height,viewportHeight:innerHeight,scrollHeight:document.documentElement.scrollHeight,squares:document.querySelectorAll('#board .square-55d63').length,overflowX:document.documentElement.scrollWidth>innerWidth+1};
             }''');m['case']=case;report['metrics'].append(m)
             record(case+' content-height status',m['statusHeight']<48,m)
-            record(case+' Top Line gap',3<=m['topGap']<=24,m['topGap'])
+            record(case+' Top Line default hidden',m['topHidden'],m)
             record(case+' full square board',m['squares']==64 and abs(m['boardWidth']-m['boardHeight'])<5,m)
             record(case+' no horizontal overflow',not m['overflowX'])
-            if fit: record(case+' Top Line above tabs',m['topBottom']<=m['tabTop']-3,m)
+            if fit: record(case+' controls above tabs',m['controlsBottom']<=m['tabTop']-3,m)
             frame.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})");frame.wait_for_timeout(100)
-            record(case+' bottom content reachable',frame.evaluate("document.getElementById('appTopLine').getBoundingClientRect().bottom <= document.getElementById('appTabs').getBoundingClientRect().top-3"))
+            record(case+' bottom content reachable',frame.evaluate("document.getElementById('appBoardControls').getBoundingClientRect().bottom <= document.getElementById('appTabs').getBoundingClientRect().top-3"))
             frame.evaluate('window.scrollTo(0,0)')
         try:
             ctx=setup({'width':1920,'height':1080});page=ctx.new_page();inner=ready(page)
@@ -65,12 +64,18 @@ def main():
             record('preview width in header',page.locator('header #previewWidth').count()==1)
             record('no without-frame action',page.get_by_text('Open without frame',exact=False).count()==0)
             record('desktop frame',not page.locator('html').evaluate("el=>el.classList.contains('app-phone-browser')"))
+            top_default=inner.evaluate("""() => ({hidden:document.getElementById('appTopLine').hidden,checked:document.getElementById('settingAppTopLine').checked,saved:localStorage.getItem('ChessBest:APP:v1:showTopLine')})""")
+            record('Top Line default off',top_default['hidden'] and not top_default['checked'] and top_default['saved'] is None,top_default)
+            inner.evaluate("document.getElementById('settingAppTopLine').click()")
             top_style=inner.evaluate("""() => {
               const top=document.getElementById('appTopLine'),label=document.getElementById('appTopLineLabel'),moves=document.getElementById('appTopLineMoves');
               const ts=getComputedStyle(top), ms=getComputedStyle(moves);
               return {direction:ts.flexDirection,label:label.textContent,whiteSpace:ms.whiteSpace,overflow:ms.overflow,textOverflow:ms.textOverflow};
             }""")
             record('compact one-line Top',top_style['direction']=='row' and top_style['whiteSpace']=='nowrap' and top_style['overflow']=='hidden' and top_style['textOverflow']=='ellipsis',top_style)
+            record('Top Line preference persisted on',inner.evaluate("localStorage.getItem('ChessBest:APP:v1:showTopLine')")=='1')
+            inner.evaluate("document.getElementById('settingAppTopLine').click()")
+            record('Top Line hides again',inner.evaluate("document.getElementById('appTopLine').hidden && localStorage.getItem('ChessBest:APP:v1:showTopLine')==='0'"))
             separators=inner.evaluate("""() => [...document.querySelectorAll('#appTabs button')].slice(1).map(b=>{
               const s=getComputedStyle(b,'::before'); return {content:s.content,width:s.width,opacity:s.opacity,height:s.height};
             })""")

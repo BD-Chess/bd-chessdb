@@ -169,6 +169,10 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   assert.match(html, /main \{[^}]*justify-content:\s*center/s);
   assert.match(html, /<option value="390" selected>390 px<\/option>/);
   assert.match(html, /header-tools[\s\S]*CURRENT[\s\S]*PREVIOUS[\s\S]*LAB[\s\S]*APP[\s\S]*Preview width/);
+  assert.match(html, /header \{[^}]*display:\s*grid;[^}]*grid-template-columns:/);
+  assert.match(html, /\.header-tools \{ display:\s*contents; \}/);
+  assert.match(html, /\.bd-version-selector \{[^}]*justify-self:\s*center;/);
+  assert.match(html, /\.preview-width \{[^}]*justify-self:\s*end;/);
   for (const standalone of [false, true]) {
     const dom = new JSDOM(html, {
       url: 'https://example.test/chess/app/', runScripts: 'outside-only',
@@ -214,10 +218,15 @@ test('APP Deep menu uses depth-only presets and APP CDB transport is not forced 
 });
 
 
-test('APP board keeps Top Line in normal flow and board coordinates inset from clipped edges', () => {
+test('APP board defaults optional Top Line off, keeps compact layout and board coordinates inset from clipped edges', () => {
   const mobile = read('css/app-mobile.css').toString();
   const app = read('js/app-mobile.js').toString();
+  const play = read('play.html').toString();
   assert.match(app, /controls\.append\(navRow, actionRow, status, byId\('appTopLine'\)\)/);
+  assert.match(app, /TOP_LINE_KEY\s*=\s*'ChessBest:APP:v1:showTopLine'/);
+  assert.match(play, /id="settingAppTopLine"/);
+  assert.match(play, /id="appTopLine" class="app-top-line" hidden/);
+  assert.match(mobile, /\.app-action-row \{[^}]*grid-template-columns:\s*minmax\(0,3fr\) minmax\(0,2fr\)/);
   assert.match(mobile, /#board-container \{[\s\S]*height:\s*auto !important;[\s\S]*min-height:\s*0 !important;/);
   assert.match(mobile, /#board \.alpha-d2270 \{ right:\s*4px; bottom:\s*4px; \}/);
   assert.match(mobile, /#board \.numeric-fc462 \{ left:\s*4px; top:\s*4px; \}/);
