@@ -1,0 +1,65 @@
+name: Sudoku APP R4 live delivery verification
+on:
+  push:
+    branches: [gpt/sudoku-app-r4-live-verification-20260930]
+    paths: ['.github/workflows/sudoku-app-r4-live-verification.yml']
+permissions:
+  contents: read
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        shell: bash
+    env:
+      NODE_PATH: /tmp/sudoku-r4/node_modules
+      SUDOKU_EVIDENCE_DIR: sudoku-r4-live
+      SUDOKU_LIVE_URL: https://bd-chess.github.io/bd-chessdb/S/app/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c739573fe63e5ed756351fedcf9afe707a0edefd
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify canonical builder parity at exact production commit
+        run: |
+          mkdir -p sudoku-r4-live
+          node scripts/build-sudoku-app-preview.cjs --check | tee sudoku-r4-live/build-check.log
+      - name: Verify public release and every offline asset against tested bytes
+        run: |
+          python - <<'PY'
+          import pathlib,json,hashlib,urllib.request,time,os
+          root=pathlib.Path('public/S/app');out=pathlib.Path('sudoku-r4-live');rel=json.loads((root/'release.json').read_text())
+          names=['release.json',*rel['assets_sha256'],'sw.js'];observations=[];success=False
+          for attempt in range(1,6):
+              rows=[]
+              for name in names:
+                  expected=hashlib.sha256((root/name).read_bytes()).hexdigest()
+                  try:
+                      req=urllib.request.Request(os.environ['SUDOKU_LIVE_URL']+name+'?verify=boot-r4-'+str(attempt),headers={'Cache-Control':'no-cache','User-Agent':'8zSudoku-release-verification'})
+                      with urllib.request.urlopen(req,timeout=20) as response:data=response.read();status=response.status
+                      actual=hashlib.sha256(data).hexdigest();rows.append({'file':name,'http':status,'expected':expected,'actual':actual,'match':actual==expected,'bytes':len(data)})
+                  except Exception as e:rows.append({'file':name,'expected':expected,'match':False,'error':str(e)})
+              observations.append({'attempt':attempt,'assets':rows})
+              if all(r['match'] for r in rows):success=True;break
+              if attempt<5:time.sleep(10)
+          result={'status':'PASS' if success else 'FAIL','commit':'c739573fe63e5ed756351fedcf9afe707a0edefd','base':os.environ['SUDOKU_LIVE_URL'],'release_id':rel['release_id'],'observations':observations}
+          (out/'delivery.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2));assert success,'Live bytes do not match exact tested release'
+          PY
+      - name: Install isolated browser dependencies
+        run: |
+          npm install --prefix /tmp/sudoku-r4 --no-package-lock --ignore-scripts playwright@1.55.0
+          node /tmp/sudoku-r4/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Exercise delivered APP in Chromium and WebKit
+        run: |
+          node tests/sudoku-app-boot-r4-browser.cjs | tee sudoku-r4-live/browser.log
+          node -e "const r=require('./sudoku-r4-live/browser.json');if(r.status!=='PASS'||r.cases.length!==32)throw Error('Live browser acceptance incomplete');"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sudoku-app-r4-live-${{ github.run_id }}
+          retention-days: 7
+          path: sudoku-r4-live/
