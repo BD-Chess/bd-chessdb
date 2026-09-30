@@ -8,3 +8,13 @@ body.history-reader-controls-hidden .reader-controls{opacity:0!important;pointer
 .history-install-card button{margin-top:10px;min-height:44px;padding:9px 15px;border:1px solid rgba(105,215,255,.32);border-radius:999px;background:rgba(105,215,255,.10);color:#69d7ff;font:700 15px/1 system-ui,sans-serif}
 @media(max-width:700px){.reader-controls{left:50%!important;right:auto!important;top:calc(var(--mobile-hist-header-h,104px) + env(safe-area-inset-top,0px) + 8px)!important;bottom:auto!important;transform:translateX(-50%)!important}body.history-reader-controls-hidden .reader-controls{transform:translate(-50%,-155%)!important}}
 @media(prefers-reduced-motion:reduce){.reader-controls{transition:none!important}}@media print{.history-install-modal{display:none!important}}
+/* HISTORY HEADER LANGUAGE SWITCH v1 */
+.hist-lang-switch{display:flex;align-items:center;gap:5px;flex:none;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.08em;white-space:nowrap}
+.hist-lang-switch button{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:var(--muted,#9ca6c1);font:inherit;font-weight:650;letter-spacing:inherit;padding:5px 3px;cursor:pointer;border-radius:7px}
+.hist-lang-switch span{color:var(--dim,#68728f);opacity:.75}
+.hist-lang-switch button:hover,.hist-lang-switch button:focus-visible{color:var(--text,#e7eaf2);outline:1px solid rgba(105,215,255,.35);outline-offset:1px}
+body:not(.hist-lang-sl) .hist-lang-switch [data-hist-lang="en"],body.hist-lang-sl .hist-lang-switch [data-hist-lang="sl"]{color:var(--cyan,#69d7ff);font-weight:850}
+.topbar .hist-lang-switch{order:99;margin-left:auto}
+@media(max-width:700px){.topbar .hist-lang-switch{display:none!important}.mobile-topbar .hist-lang-switch{position:absolute;top:calc(env(safe-area-inset-top,0px) + 7px);right:12px;z-index:2}.mobile-topbar .mobile-title{padding-right:82px!important}}
+@media(min-width:701px){.mobile-topbar .hist-lang-switch{display:none!important}}
+@media print{.hist-lang-switch{display:none!important}}
