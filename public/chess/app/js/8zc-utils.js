@@ -639,9 +639,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         return { disabled: !toggle || toggle.disabled,
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
-      const available = !offlineEvidence && !deepAnalysisFen && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+      const deepOpen = !!deepUI?.isOpen?.(), deepWorking = deepOpen && !!deepUI?.isRunning?.();
+      const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
       if (source === 'SF') return { disabled: !available,
-        title: !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') : sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis', working: sfWorking && available };
+        title: !available ? 'Show Eval for deeper SF analysis' :
+          deepWorking ? 'Click to stop Deep SF analysis' : deepOpen ? 'Click for deeper Deep SF analysis' :
+          sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis',
+        working: available && (deepOpen ? deepWorking : sfWorking) };
       return { disabled: !available || cdbRefreshing,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
@@ -689,18 +693,21 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function syncSFAnalysisControl() {
     const button = document.getElementById('btnAnalysisDeepen');
     if (!button) return;
-    const available = !offlineEvidence && !deepAnalysisFen && showEval &&
+    const deepOpen = !!deepUI?.isOpen?.(), deepWorking = deepOpen && !!deepUI?.isRunning?.();
+    const available = !offlineEvidence && showEval &&
       !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+    const working = deepOpen ? deepWorking : sfWorking;
     button.disabled = !available;
-    button.title = !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') :
+    button.title = !available ? 'Show Eval for deeper SF analysis' :
+      deepWorking ? 'Click to stop Deep SF analysis' : deepOpen ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
-    button.setAttribute('aria-label', sfWorking && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
-    button.classList.toggle('is-working', sfWorking && available);
+    button.setAttribute('aria-label', working && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
+    button.classList.toggle('is-working', working && available);
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="SF"]');
     if (card) {
       card.disabled = button.disabled; card.title = button.title;
       card.setAttribute('aria-label', `SF: ${card.querySelector('.all-eval-move')?.textContent || '…'} ${card.querySelector('.all-eval-score')?.textContent || '…'}. ${button.title}`);
-      card.classList.toggle('is-working', sfWorking && available);
+      card.classList.toggle('is-working', working && available);
     }
   }
   function syncDCCBadgeControl() {
@@ -2474,6 +2481,7 @@ function jumpTo(i){
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
   deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis,
+    onStateChange: () => syncSFAnalysisControl(),
     onClose: () => {
       const fen = deepAnalysisFen; deepAnalysisFen = null;
       syncSFAnalysisControl();
@@ -2565,6 +2573,9 @@ function jumpTo(i){
   document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
     syncSFAnalysisControl();
     if (document.getElementById('btnAnalysisDeepen').disabled) return;
+    if (deepUI?.isOpen?.()) {
+      deepUI.deepenOrStop?.(); syncSFAnalysisControl(); return;
+    }
     if (sfWorking) {
       annotationRequestId++; if (localController) localController.abort();
       if (localProvider) localProvider.destroy();
