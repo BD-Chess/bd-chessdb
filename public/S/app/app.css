@@ -177,13 +177,10 @@ body[data-app-surface] #plNumbers[hidden],body[data-app-surface] .mobile-input-p
  background:#eef2f6;border-color:#b7c1cc;color:#455260
 }
 
-/* Hard/Evil: quiet play surface; proactive Coach/tip stay out of the way. */
-body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{
- min-height:calc(100dvh - 300px - env(safe-area-inset-bottom));align-content:center
+/* Hard/Evil: no proactive Coach/tip; keep on-demand AI Assist and center the board in the freed space. */
+body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
+ min-height:calc(100dvh - 250px - env(safe-area-inset-bottom));align-content:center
 }
 @media(max-height:760px){
- body[data-app-surface][data-app-hard-nohelp=true][data-view=play][data-assist=closed] .main{min-height:auto;padding-top:18px;padding-bottom:18px}
+ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{min-height:auto;padding-top:24px;padding-bottom:24px}
 }
-
-body[data-app-surface][data-app-hard-nohelp=true] #appAssist{display:none!important}
-body[data-app-surface][data-app-hard-nohelp=true] #appDock{grid-template-columns:repeat(4,minmax(0,1fr))}
