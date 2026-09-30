@@ -11,8 +11,9 @@ body[data-app-surface] .header{padding:12px 16px 0;align-items:center}
 body[data-app-surface] .logo{letter-spacing:.1em}
 body[data-app-surface] .pl-tabs{margin:4px auto 6px}
 body[data-app-surface][data-app-framed-preview=true] .title-block,
-body[data-app-surface][data-app-framed-preview=true] .pl-tabs,
-body[data-app-surface][data-app-framed-preview=true] .main{transform:translateY(24px)}
+body[data-app-surface][data-app-framed-preview=true] .pl-tabs{transform:translateY(24px)}
+/* Relative offset preserves placement without trapping fixed overlays under the scrim. */
+body[data-app-surface][data-app-framed-preview=true] .main{transform:none;top:24px}
 body[data-app-surface] .pl-tabs .btn{min-width:85px}
 body[data-app-surface] .main,body[data-app-surface][data-view=play][data-assist=closed] .main{
   display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:'center' 'right' 'left';

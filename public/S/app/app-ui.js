@@ -288,7 +288,7 @@
 
  document.addEventListener('click', event => {
   const settings=event.target.closest?.('#navModalBody [data-menu="Settings"],#navModalBody [data-menu="Nastavitve"]');
-  if(settings)queueMicrotask(enhanceSettings);
+  if(settings)setTimeout(enhanceSettings,0);
   if (product.view() === 'lab') return;
   const button = event.target.closest?.('#uxHint,#uxWhy,#solveBtn,#aiAssistClose');
   if (!button) return;
@@ -356,7 +356,35 @@
  for(const id of ['notesBtn','uxErase','uxUndo','solveBtn','uxMore']){
   const node=$(id);if(node)watch.observe(node,{attributes:true,childList:true,subtree:true});
  }
+ // Center the board in measured space between tabs and dock, not a
+ // guessed viewport subtraction. This also handles framed APP and Safari bars.
+ const layoutMain=document.querySelector('.main'),layoutTabs=document.querySelector('.pl-tabs');
+ const layoutBoard=document.querySelector('.grid-wrap'),layoutColumn=document.querySelector('.col-center');
+ let layoutFrame=0,layoutActive=false,layoutExtra=0;
+ const layoutOriginal=layoutMain?Object.fromEntries(['minHeight','alignContent','paddingTop','paddingBottom'].map(k=>[k,layoutMain.style[k]])):{};
+ function alignAppBoard(){
+  layoutFrame=0;if(!layoutMain||!layoutTabs||!layoutBoard||!layoutColumn)return;
+  const active=document.body.dataset.appHardNoHelp==='true'&&product.view()==='play';
+  if(!active){if(layoutActive){Object.assign(layoutMain.style,layoutOriginal);layoutExtra=0;layoutActive=false;}return;}
+  if(!layoutActive){layoutMain.style.minHeight='0px';layoutMain.style.alignContent='start';layoutMain.style.paddingTop='5px';layoutMain.style.paddingBottom='8px';layoutExtra=0;layoutActive=true;}
+  const boardRect=layoutBoard.getBoundingClientRect(),tabsRect=layoutTabs.getBoundingClientRect(),dockRect=dock.getBoundingClientRect(),columnRect=layoutColumn.getBoundingClientRect();
+  if(!boardRect.height||!dockRect.height)return;
+  const below=Math.max(0,columnRect.bottom-boardRect.bottom);
+  const baseTop=boardRect.top-layoutExtra;
+  const lower=dockRect.top-8-boardRect.height-below;
+  const centered=(tabsRect.bottom+dockRect.top-boardRect.height)/2;
+  const top=Math.max(baseTop,tabsRect.bottom+8,Math.min(centered,lower));
+  const extra=Math.max(0,Math.round((top-baseTop)*100)/100);
+  if(Math.abs(extra-layoutExtra)>.25){layoutExtra=extra;layoutMain.style.paddingTop=(5+extra)+'px';}
+ }
+ // Coalesce one layout task, independent of nested-frame animation scheduling.
+function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0);}
+ window.addEventListener('resize',queueAppLayout,{passive:true});
+ window.visualViewport?.addEventListener('resize',queueAppLayout,{passive:true});
+ new MutationObserver(queueAppLayout).observe(document.body,{attributes:true,attributeFilter:['data-view','data-app-hard-nohelp','data-app-framed-preview','data-app-text-size']});
+ if(typeof ResizeObserver==='function'){const ro=new ResizeObserver(queueAppLayout);for(const node of [layoutTabs,layoutColumn,dock])if(node)ro.observe(node);}
+ document.fonts?.ready?.then(queueAppLayout);
  applyTextSize(readTextSize());
  document.body.dataset.appPanel='board';
- sync();
+ sync();queueAppLayout();
 })();
