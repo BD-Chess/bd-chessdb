@@ -86,3 +86,16 @@ test('saved UI preferences survive an APP restart and Coach is off for harder ga
  assert.equal(h.w.localStorage.getItem('8zSudoku.ui.language'),'sl','LAB preference untouched');
  assert.deepEqual(h.errors,[]);
 });
+
+
+test('Hard and Evil suppress proactive Coach/tip help and enable centered quiet-play layout',async t=>{
+ const h=await ready(t,{'8zSudoku.app.ui.holdTip':'on','8zSudoku.app.ui.coach':'always'});
+ for(const diff of ['hard','evil']){
+  const game=savedFixture('0.2.0');game.diff=diff;
+  await h.w.SudokuNavigator.restore(game);h.w.stopTimer();
+  await until(()=>h.w.document.body.dataset.appHardNoHelp==='true',diff+' quiet-play mode');
+  assert.equal(h.el('appCoach').hidden,true,diff+' Coach hidden');
+  assert.equal(h.el('appHoldTip').hidden,true,diff+' tap/hold tip hidden');
+ }
+ assert.deepEqual(h.errors,[]);
+});
