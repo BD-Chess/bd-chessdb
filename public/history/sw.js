@@ -1,6 +1,6 @@
 'use strict';
 const RELEASE={
-  "id": "d31cf08f98461517b6b256480112dc442b14df588c2b82d73d6ed6b4652f0606",
+  "id": "556116db7541b703f751216c3c0eb5ae0b9c37d01d1dfe72a464c9a0eab40454",
   "assets": {
     "01_deep_humanity_300000_20000_bce.html": "25e3969e91f4c6596fa9baf5c615c7c5bbfd62649a60cc6c0a9b0ad92385cc42",
     "02_ice_age_transition_20000_10000_bce.html": "9cfb6d83d39241face4dd0c0a52ab3056aa5265c85f6c040e84093f1f94c5750",
@@ -20,11 +20,12 @@ const RELEASE={
     "methodology.html": "a8f6ddc55572232daa6d3a6ccb771d127176454ba8fbdcddafadc175f892b494",
     "timeline.html": "aef9dfec90d2b3b44b495cfee06f75bd212637dea65f782f58918e48d82f94e0",
     "manifest.webmanifest": "f87e184a6429d469747ef11a6bfc1e55d490abce0e07102b417e6f326bfa26cc",
-    "pwa.css": "5c63e0258c62bb25c8abb2e29bd6aff4f56ab6b85db0cc2cef1f9da8162cb86c",
-    "pwa.js": "48af6349b1269e0d5bb2bfd9541a09304f2726655837bc55fc4ddd0165fac502",
+    "pwa.css": "7ac0db2bc68c26ce10029ee65d3cef70fd1b37677d6cc24a33d13043f4260a42",
+    "pwa.js": "d6ccacdccbd7384a8af8045bdaffe2d3b7eca731ba4cca9f7b370adec67ab0c4",
     "icon-180.png": "9c8747c55c8409bcdf63c880f4ac4d3db4657798431056bd6ac9df95798f8bf5",
     "icon-192.png": "c5ce9c4ff78f1085c1b923d9632c071d4d8bf31511739a233d1c939ad6b8c4a7",
-    "icon-512.png": "342f83eb4bcfc0e6415a71b37f9b5c0d25bad0647d3a6b69032a4641df2d01ed"
+    "icon-512.png": "342f83eb4bcfc0e6415a71b37f9b5c0d25bad0647d3a6b69032a4641df2d01ed",
+    "sl-translations.json": "63ad5b353da4fcd589f6ab0cd22d3e7fcead0f8682bb0451de3bba26285877db"
   }
 };
 const BASE=new URL(self.registration.scope),PREFIX='humanity-history-pwa-',CACHE=PREFIX+RELEASE.id,FILES=new Map(Object.keys(RELEASE.assets).map(function(n){return[new URL(n,BASE).pathname,n]}));FILES.set(BASE.pathname,'index.html');FILES.set(new URL('index.html',BASE).pathname,'index.html');
