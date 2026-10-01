@@ -22,7 +22,7 @@
   const textSources = new WeakMap(), attrSources = new WeakMap();
   const TO_SL = new Map(Object.entries({
     'Board':'Šahovnica','Moves':'Poteze','Review':'Pregled','Deep':'Globoko','Analysis board':'Analizna šahovnica',
-    'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Sim / Play','Sim / Play':'Sim / Play','Simulation':'Sim','Analysis':'Analiza',
+    'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Sim / Play','Sim / Play':'Sim / Play','Simulation':'Sim','Analysis':'Analiza','Deeper SF':'Globlji SF',
     'Hide Eval':'Skrij oceno','Current position':'Trenutni položaj','Starting position':'Začetni položaj','Select a move on the board':'Izberi potezo na šahovnici',
     'Show board':'Pokaži šahovnico','Game library':'Knjižnica partij','New game':'Nova igra','More':'Več','Settings':'Nastavitve',
     'Study':'Študija','Deep analysis':'Globoka analiza','Search depth':'Globina iskanja','Until I stop':'Dokler ne ustavim','Lines':'Linije',

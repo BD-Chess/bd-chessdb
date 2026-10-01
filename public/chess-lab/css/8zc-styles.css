@@ -1607,3 +1607,21 @@ body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
   outline:2px solid #efafc0;
   outline-offset:2px;
 }
+
+/* Unified ChessBest desktop information architecture: views above, actions below. */
+body:not(.app-mobile) .legacy-view-controls{display:none!important}
+body.app-mobile .desktop-view-shell{display:none!important}
+.desktop-view-shell{margin:2px 0 10px;min-width:0}
+.desktop-view-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-inset)}
+.desktop-view-tabs button{min-width:0;min-height:38px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ui-muted);font:650 12px/1.2 system-ui,sans-serif;cursor:pointer}
+.desktop-view-tabs button:hover{color:var(--ui-text);background:var(--ui-raised)}
+.desktop-view-tabs button[aria-selected="true"]{color:var(--ui-ink);background:var(--ui-accent);border-color:var(--ui-accent)}
+.desktop-view-tabs button:focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+.desktop-view-context{display:flex;align-items:center;gap:8px;min-height:23px;padding:4px 2px 0}
+#btnDesktopDccReplay{min-height:30px;padding:4px 9px;font-size:11px;background:var(--ui-raised);color:var(--ui-accent);border-color:var(--ui-border)}
+#btnDesktopDccReplay[hidden]{display:none!important}
+.desktop-view-context #dccProgress{flex:1;min-width:0;text-align:right}
+body:not(.app-mobile) .workspace-top .mode-hint{display:none}
+.lab-research-tools #btnDeepAnalysis{display:none!important}
+.workspace-primary-actions #btnSim{font-weight:650}
+@media (max-width:1059px){.desktop-view-tabs button{min-height:36px;font-size:11px}.workspace-primary-actions .btn{font-size:10.5px}}

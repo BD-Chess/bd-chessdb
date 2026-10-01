@@ -31,6 +31,84 @@
   let closing = false;
   let resizeFrame = 0;
   const byId = id => document.getElementById(id);
+  const desktopViews = new Set(['moves', 'review', 'deep', 'dcc']);
+  const desktopScroll = { moves: 0, dcc: 0 };
+  let desktopView = 'moves', desktopSyncing = false;
+
+  function backingState() {
+    return {
+      dcc: byId('btnViewToggle')?.getAttribute('aria-pressed') === 'true',
+      review: byId('btnGameReview')?.getAttribute('aria-expanded') === 'true',
+      deep: byId('btnDeepAnalysis')?.getAttribute('aria-expanded') === 'true'
+    };
+  }
+  function paintDesktopView() {
+    if (document.body.classList.contains('app-mobile')) return;
+    document.body.dataset.desktopView = desktopView;
+    const tabs = byId('desktopViewTabs');
+    for (const tab of tabs?.querySelectorAll('[data-desktop-view]') || []) {
+      const active = tab.dataset.desktopView === desktopView;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    }
+    const replay = byId('btnDesktopDccReplay');
+    if (replay) replay.hidden = desktopView !== 'dcc';
+    const display = byId('workspaceDisplay');
+    if (display) display.setAttribute('aria-label', { moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis' }[desktopView]);
+  }
+  function setDesktopView(next, options = {}) {
+    if (document.body.classList.contains('app-mobile') || !desktopViews.has(next)) return;
+    const display = byId('workspaceDisplay');
+    if (display && (desktopView === 'moves' || desktopView === 'dcc')) desktopScroll[desktopView] = display.scrollTop;
+    desktopView = next;
+    paintDesktopView();
+    if (desktopSyncing) return;
+    desktopSyncing = true;
+    try {
+      const state = backingState();
+      if (next !== 'review' && state.review) byId('btnGameReview')?.click();
+      if (next !== 'dcc' && state.dcc) byId('btnViewToggle')?.click();
+      if (next === 'dcc' && !backingState().dcc) byId('btnViewToggle')?.click();
+      if (next === 'review' && !backingState().review) byId('btnGameReview')?.click();
+      if (next === 'deep' && !backingState().deep) byId('btnDeepAnalysis')?.click();
+    } finally {
+      desktopSyncing = false;
+    }
+    if (display && (next === 'moves' || next === 'dcc')) display.scrollTop = desktopScroll[next];
+    if (!options.preserveFocus) byId('desktopViewTabs')?.querySelector('[data-desktop-view="' + next + '"]')?.focus({ preventScroll: true });
+  }
+  function initDesktopViews() {
+    if (document.body.classList.contains('app-mobile')) return;
+    const tabs = byId('desktopViewTabs');
+    if (!tabs) return;
+    for (const tab of tabs.querySelectorAll('[data-desktop-view]')) tab.addEventListener('click', () => setDesktopView(tab.dataset.desktopView));
+    tabs.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const ordered = [...tabs.querySelectorAll('[data-desktop-view]')];
+      const index = Math.max(0, ordered.findIndex(tab => tab.dataset.desktopView === desktopView));
+      const target = event.key === 'Home' ? 0 : event.key === 'End' ? ordered.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + ordered.length) % ordered.length;
+      setDesktopView(ordered[target].dataset.desktopView);
+    });
+    byId('btnDesktopDccReplay')?.addEventListener('click', () => byId('btnReplay')?.click());
+    const syncReplay = () => { const facade = byId('btnDesktopDccReplay'), source = byId('btnReplay'); if (facade && source) facade.disabled = source.disabled; };
+    const replaySource = byId('btnReplay');
+    if (replaySource && root.MutationObserver) new MutationObserver(syncReplay).observe(replaySource, { attributes: true, attributeFilter: ['disabled'] });
+    syncReplay();
+    const watch = (id, attr, activeView) => {
+      const node = byId(id); if (!node || !root.MutationObserver) return;
+      new MutationObserver(() => {
+        if (desktopSyncing) return;
+        const on = node.getAttribute(attr) === 'true';
+        if (on) setDesktopView(activeView, { preserveFocus: true });
+        else if (desktopView === activeView) setDesktopView('moves', { preserveFocus: true });
+      }).observe(node, { attributes: true, attributeFilter: [attr] });
+    };
+    watch('btnViewToggle', 'aria-pressed', 'dcc');
+    watch('btnGameReview', 'aria-expanded', 'review');
+    watch('btnDeepAnalysis', 'aria-expanded', 'deep');
+    paintDesktopView();
+  }
   function getSettings() { return { ...preferences }; }
   function update(next) {
     const detail = next && typeof next === 'object' ? next : {};
@@ -130,7 +208,8 @@
       content: byId('workspaceToolContent'), focusBar: byId('workspaceFocusBar'), tools: byId('btnLabTools'),
       pause: byId('btnLabPause'), dialog: byId('labToolsDialog'), body: byId('labToolsBody') };
     const primary = byId('workspacePrimaryActions');
-    for (const id of ['btnNew', 'btnGames', 'btnDeepAnalysis']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    for (const id of ['btnNew', 'btnGames', 'btnSim']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    initDesktopViews();
     byId('btnWorkspaceMore').addEventListener('click', openTools);
     for (const [key, id] of Object.entries(fields)) {
       const field = byId(id);

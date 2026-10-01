@@ -702,7 +702,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     button.title = !available ? 'Show Eval for deeper SF analysis' :
       deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
-    button.setAttribute('aria-label', working && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
+    button.setAttribute('aria-label', working && available ? 'Deeper SF — stop SF' : 'Deeper SF — deepen analysis');
     button.classList.toggle('is-working', working && available);
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="SF"]');
     if (card) {
@@ -3033,8 +3033,8 @@ function refreshPlayUi() {
   const btnView = document.getElementById('btnViewToggle');
   const btnHide = document.getElementById('btnHideEval');
   if (btnSim) {
-    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Simulation';
-    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Simulation: games, tournaments or play against the engine');
+    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Sim / Play';
+    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Sim / Play: games, tournaments or play against the engine');
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
     btnSim.disabled = !!playState.replaying;

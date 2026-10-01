@@ -43,3 +43,8 @@
 .deep-preview p{font-size:12px;line-height:1.6}
 .deep-note{margin-bottom:0}
 body.light-theme .deep-panel{color-scheme:light}
+
+/* Desktop tabs hide Deep visually without stopping its engine/follow state. */
+body:not(.app-mobile)[data-desktop-view]:not([data-desktop-view="deep"]) #deepAnalysisPanel{display:none!important}
+body:not(.app-mobile)[data-desktop-view="moves"] .workspace-display.is-deep-analysis > #moves{display:block!important}
+body:not(.app-mobile)[data-desktop-view="dcc"] .workspace-display.is-deep-analysis > #dccAnalysisPanel{display:block!important}
