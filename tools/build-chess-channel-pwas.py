@@ -77,7 +77,8 @@ def build(channel, check):
     base, route, name, short_name = CHANNELS[channel]
     metadata = manifest(name, short_name)
     put(base / 'manifest.webmanifest', json_bytes(metadata), check)
-    put(base / 'pwa.js', (TEMPLATES / 'pwa.js').read_bytes(), check)
+    pwa_template = 'lab-pwa.js' if channel == 'LAB' else 'pwa.js'
+    put(base / 'pwa.js', (TEMPLATES / pwa_template).read_bytes(), check)
     assets = {}
     for path in base.rglob('*'):
         if not path.is_file() or path.is_symlink():
