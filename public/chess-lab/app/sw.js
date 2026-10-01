@@ -1,6 +1,6 @@
-/* Generated from tools/chess-pwa/sw-runtime.js. APP only. */
+/* Generated from tools/chess-pwa/app-sw-runtime.js. APP only. */
 'use strict';
-const RELEASE = "app-f4e5c5eae382acbc";
+const RELEASE = "app-dea5b878b1c8bd21";
 const PREFIX = "chessbest-chess-app-";
 const ASSETS = [
   "8zc-about.html",
@@ -114,8 +114,8 @@ const ASSETS = [
   "vendor/stockfish/stockfish-18-lite-single.wasm"
 ];
 const INTEGRITY = {
-  "8zc-about.html": "sha256-83eKSxujJMGt3VLQoeVlTnssBvTYLfDDDFVK/mDNUlc=",
-  "8zc-help.html": "sha256-4ISIUJ8+3HVw6RRv3FZoLgWfycNiWpkuKzUKq9G0Ls0=",
+  "8zc-about.html": "sha256-kYEoXoyLN7fO7a1/jtaOOf69jQOgYWEzAIsyHW41Ceg=",
+  "8zc-help.html": "sha256-WXE71kvAcOCjwgCwDJ3wGEolk3K5CuJ9PnLcwiSwWEw=",
   "8zc-pgn.html": "sha256-OnbGqovoI7c/EXzAylLx5rx2OXKZM+XqEEFIiQjv46c=",
   "8zc-why.html": "sha256-oZ4bkyoK8lYroxqiT0lOcdYC01sG4tE3U3gL2akX3Xc=",
   "Games/AnandV_Selected.pgn": "sha256-OmaI6wixboPFCxOKOk71X8wC1XIcJfCC7mvSLcTqdL8=",
@@ -187,10 +187,10 @@ const INTEGRITY = {
   "img/chesspieces/wikipedia/wP.png": "sha256-m/IobFlQett6YEXCEqa5Kp3v1+mlu64w6Cu4MhbEPLE=",
   "img/chesspieces/wikipedia/wQ.png": "sha256-BctoAdAvOTY5d/bXrppA9gWyqmmGbpCGhowI4d8X+HU=",
   "img/chesspieces/wikipedia/wR.png": "sha256-F16iJSoBBSET3/hTgOgjckZEjHYq4wOuKjSNlxuggAs=",
-  "index.html": "sha256-TM5dx3YHkoTFn62HGpXmXaz+valRX1uvXFFXEsPN5ao=",
+  "index.html": "sha256-9OxsC1h1MI0rRX2R6T5TvyFXavmrsZjDlTNIqeDAlL4=",
   "js/8zc-benchmark.js": "sha256-RFcgUgnZrE/xMd3erfvWISdr8qpcg4qGiqBFMkkkL/I=",
   "js/8zc-dcc-core.js": "sha256-Iejp8fSlGl1X+fG24X2xpgFu5kn+38WBAc6eaeekJSA=",
-  "js/8zc-deep-engine.js": "sha256-M7N5qCRTfl0nU0soCukxnTO4iRjAe7yDXC7ovSgODjo=",
+  "js/8zc-deep-engine.js": "sha256-xwR7/nolxzcBdpPMI1jhL5Pijzo4NQ5QOZSCfx/ouN0=",
   "js/8zc-deep-ui.js": "sha256-aQziQJ0ztlxaCiXl/kiORy+Rqpm44CHAM+t6SVxAnOM=",
   "js/8zc-eval-bar.js": "sha256-7HRnSrQFPfktX4QaD6gEd7Xt3XJLq0LywZhpKwGQOEA=",
   "js/8zc-evidence.js": "sha256-dOljpjL+9435S1xApyFL3VIs20Ds8gnzpacImNcToJI=",
@@ -202,7 +202,7 @@ const INTEGRITY = {
   "js/8zc-review-core.js": "sha256-cpJ/nHvlAvdqtM+KxwHvnj+NS5jqQW4BaSP8Hx8C1Zs=",
   "js/8zc-review-ui.js": "sha256-8VRqoT7SPV/yubRAPqy2B+awRDIyIfHt6HCIn+h/PAc=",
   "js/8zc-sf-provider.js": "sha256-1j+gFZV20k8dmux9OgHn+Y+PU0yzguE+C6yMiHnsrM4=",
-  "js/8zc-sim-core.js": "sha256-WRYT+SSKV/mNDwIosWPZEqYSFoGxVpQL1S+i3fDzpYQ=",
+  "js/8zc-sim-core.js": "sha256-T9TZSHJDevENeGXAeJoEBiqaKf8ytJB3JxuxoN9y+lg=",
   "js/8zc-sim-runner.js": "sha256-nbBzCCUVIIsZOc3Fa143+/61OKXWW2ZnEyIXXLvns/Q=",
   "js/8zc-sim-store.js": "sha256-h4y+BAzJbCa4Z37xr8cpq60aZGl8cTEltgygPptGmLQ=",
   "js/8zc-study-core.js": "sha256-HEV/kkK27NzLlk4JJkZV+s0gOqFBWDsRz4LdlE09uAE=",
@@ -219,7 +219,7 @@ const INTEGRITY = {
   "js/chessboard-1.0.0.min.js": "sha256-Q/zseeKr81eQ8w9PEgfYFX1QSTAT3KqXrWMcNAvXH9w=",
   "js/jquery-3.6.0.min.js": "sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=",
   "manifest.webmanifest": "sha256-q0wnJarVjuRsL5xlkjsI2xsEApyooIWb+ya0eZaQ1qY=",
-  "play.html": "sha256-qDa2ry3yJQLF97f4Dkcyocj5BOQStG4FYVSvFcqCdYw=",
+  "play.html": "sha256-cJQGGwQCBo3jAJaCQXu4Ejyyj4dnxljjWnPhFdezNmo=",
   "pwa.js": "sha256-s1xM97VC4ZOzH3G96JQ8RFXqtV/8Esu03od65uXVe4w=",
   "vendor/stockfish/stockfish-18-lite-single.js": "sha256-IngAUFfzgUkfHJuz5EyfWSCzoAvvl1njPMZYJ2mh8f4=",
   "vendor/stockfish/stockfish-18-lite-single.wasm": "sha256-qPvAXsaSC1bXSFgm3LAsX/0oJry/dRz5cwRvI3qQlvE="

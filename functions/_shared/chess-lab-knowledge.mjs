@@ -73,8 +73,8 @@ Lichess clocks, when shown, are based on the server. Do not provide assistance i
 assistanceLocked is true. The bot sends only a requested study snapshot, never credentials.
 Replay analyses existing moves; it does not create timestamps for historical games.
 DCC/Moves switches panels; Show/Hide Eval controls on-board suggestions; Help explains scores.
-ANALYSIS LAB AT /chess/new/
-The main /chess/ is the current release and /chess/old/ is archival. This lab is separate.
+ANALYSIS LAB AT /chess-lab/
+The main /chess/ is the current public release. PREVIOUS and APP live with this development workspace at /chess-lab/old/ and /chess-lab/app/.
 Study retains PGN variations, comments, NAGs and named lines; its SAN preview does not
 change the main game. A/B pins alternatives and analysis at the same full FEN.
 Evidence saves exact source responses with timestamps and SHA256 integrity. Offline

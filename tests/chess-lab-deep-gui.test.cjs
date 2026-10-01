@@ -2,7 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const base=path.resolve(__dirname,'../public/chess/new');
+const base=path.resolve(__dirname,'../public/chess-lab');
 const read=name=>fs.readFileSync(path.join(base,name),'utf8');
 
 test('LAB Deep/GUI parity keeps active SF control, desktop arrows and burgundy close actions',()=>{

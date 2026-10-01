@@ -2,16 +2,14 @@
 
 | Channel | Public path | Meaning |
 |---|---|---|
-| CURRENT | `/chess/` | Primary public release; installable offline workspace |
-| PREVIOUS | `/chess/old/` | Legacy release; retain without active changes |
-| LAB | `/chess/new/` | Development release; independently installable offline workspace |
-| APP | `/chess/app/` | iPhone application UI preview in a desktop browser; separate from TestFlight |
-| Archive | `/chess/old/001/`, `/002/`, … | Chronological immutable release snapshots |
+| CURRENT | `/chess/` | Primary public release; no development selector |
+| PREVIOUS | `/chess-lab/old/` | Legacy release outside the public CURRENT tree |
+| LAB | `/chess-lab/` | Development release; independently installable offline workspace |
+| APP | `/chess-lab/app/` | iPhone UI preview; development workspace |
+| Archive | `/chess-lab/old/001/`, `/002/`, … | Chronological immutable release snapshots |
 
-The four channel entry pages contain the same self-contained selector next to
-the title, with a visible active state and `aria-current="page"`. Navigation is
-plain links, needs no JavaScript and does not invoke chess actions. Its small CSS
-block is copied with the HTML, not loaded from a mutable shared asset. Historical
+Only the active LAB entry page contains the self-contained CURRENT · PREVIOUS · LAB · APP selector.
+CURRENT, PREVIOUS and APP do not expose development-channel navigation. Historical
 archives do not receive later selector, styling, bug or content updates.
 APP is a browser preview of the iPhone layout and is not an installable offline
 channel in the CURRENT/LAB PWA generator. Keep its saved data, worker scope and
@@ -239,3 +237,13 @@ excluded. The two channels keep their existing independent v2 storage keys and
 share the origin's quota where the browser shares origin storage. Their
 `release.json` files record per-file hashes; `versions.json` maps the active
 installable routes while preserving the historical PWA refresh record.
+
+
+## 2026-10-01 public/development split
+
+`public/chess/` now contains CURRENT only, plus CURRENT compatibility/PWA files.
+Active LAB moved from `/chess/new/` to `/chess-lab/`; PREVIOUS to
+`/chess-lab/old/`; APP to `/chess-lab/app/`. Existing numbered PREVIOUS,
+LAB and APP snapshots were moved as Git trees without rewriting their contents.
+Only active LAB carries the channel selector. The standalone ChessBest Netlify
+site redirects former development/history paths, including `/chess-lab/`, to CURRENT.

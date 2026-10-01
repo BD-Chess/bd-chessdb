@@ -10,7 +10,7 @@ const { IDBFactory } = require('fake-indexeddb');
 const chessRoot = path.resolve(__dirname, '../public/chess');
 const lanes = [
   { name: 'CURRENT', base: chessRoot, suffix: '/chess/', prefix: 'ChessBest:CURRENT:v2:' },
-  { name: 'LAB', base: path.join(chessRoot, 'new'), suffix: '/chess/new/', prefix: 'ChessBest:LAB:v2:' }
+  { name: 'LAB', base: path.resolve(__dirname, '../public/chess-lab'), suffix: '/chess-lab/', prefix: 'ChessBest:LAB:v2:' }
 ];
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const read = (lane, file) => fs.readFileSync(path.join(lane.base, file));

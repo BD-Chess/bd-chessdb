@@ -2,13 +2,13 @@
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const {JSDOM,VirtualConsole}=require('jsdom');
-const {Chess}=require('../public/chess/new/js/chess.min.js');
-const Study=require('../public/chess/new/js/8zc-study-core.js');
+const {Chess}=require('../public/chess-lab/js/chess.min.js');
+const Study=require('../public/chess-lab/js/8zc-study-core.js');
 const test=require('node:test');
 const chessRoot=require('node:path').resolve(__dirname,'../public/chess');
 for(const lane of [
  {name:'CURRENT',base:chessRoot,suffix:'/chess/'},
- {name:'LAB',base:chessRoot+'/new',suffix:'/chess/new/'}
+ {name:'LAB',base:path.resolve(__dirname,'../public/chess-lab'),suffix:'/chess-lab/'}
 ])test(lane.name+' installable page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:25000}, async(t)=>{
  const {name,suffix}=lane,base=lane.base+'/',prefix='ChessBest:'+name+':v2:';
  const otherPrefix='ChessBest:'+(name==='CURRENT'?'LAB':'CURRENT')+':v2:';

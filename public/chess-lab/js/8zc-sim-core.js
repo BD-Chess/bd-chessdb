@@ -91,7 +91,7 @@
     const actualSources = [...new Set(trace.map(row => row.actual_provider || row.provider).filter(Boolean))];
     const metadata = run.opening?.sourceHeaders || run.sourceHeaders || openingHeaders;
     const tags = {
-      Event: run.eventName || ((run.tournamentId || run.eventId) ? 'ChessBest APP tournament' : 'ChessBest position experiment'), Site: 'https://www.mdlxdcc.org/chess/app/',
+      Event: run.eventName || ((run.tournamentId || run.eventId) ? 'ChessBest LAB tournament' : 'ChessBest position experiment'), Site: 'https://www.mdlxdcc.org/chess-lab/',
       Date: (run.startedAt || '').slice(0, 10).replace(/-/g, '.'), Round: run.round ?? run.id,
       White: label(run.white), Black: label(run.black), Result: run.result || '*',
       Termination: run.reason || run.state, ExperimentState: run.state,

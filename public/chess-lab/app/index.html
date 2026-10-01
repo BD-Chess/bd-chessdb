@@ -21,7 +21,7 @@
     :root { --phone-width: 402px; --phone-height: 874px; color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #101a16; color: #e7f4ec; }
-    header { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(160px, 1fr); align-items: center; column-gap: 20px; }
+    header { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: grid; grid-template-columns: minmax(160px, 1fr) auto; align-items: center; column-gap: 20px; }
     h1 { justify-self: start; margin: 0; font-size: 18px; letter-spacing: .01em; }
     .header-tools { display: contents; }
     .bd-version-selector { justify-self: center; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 650; letter-spacing: .06em; }
@@ -42,7 +42,7 @@
     .preview-battery::before { content: ""; position: absolute; inset: 2px; border-radius: 1px; background: currentColor; }
     .preview-battery::after { content: ""; position: absolute; top: 3px; right: -3px; width: 2px; height: 4px; background: currentColor; }
     @media (max-width: 700px) {
-      header { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 6px; padding-inline: 10px; }
+      header { grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; padding-inline: 10px; }
       h1 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
       .bd-version-selector { gap: 2px; font-size: 9px; }
       .bd-version-selector a { padding-inline: 2px; }
@@ -72,12 +72,6 @@
   <header>
     <h1>ChessBest · APP preview</h1>
     <div class="header-tools">
-      <nav class="bd-version-selector" aria-label="Application versions">
-        <a href="../">CURRENT</a><span class="bd-version-dot" aria-hidden="true">·</span>
-        <a href="../old/">PREVIOUS</a><span class="bd-version-dot" aria-hidden="true">·</span>
-        <a href="../new/">LAB</a><span class="bd-version-dot" aria-hidden="true">·</span>
-        <a href="./" aria-current="page">APP</a>
-      </nav>
       <label class="preview-width"><span class="preview-width-label">Preview width</span> <select id="previewWidth" aria-label="Preview width">
         <option value="375">375 px</option><option value="390">390 px</option>
         <option value="402" selected>402 px · iPhone 16 Pro</option><option value="430">430 px</option>

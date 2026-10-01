@@ -11,12 +11,13 @@ import json
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-PUBLIC = REPO / 'public/chess'
+CURRENT_ROOT = REPO / 'public/chess'
+LAB_ROOT = REPO / 'public/chess-lab'
 TEMPLATES = REPO / 'tools/chess-pwa'
 CHANNELS = {
-    'CURRENT': (PUBLIC, '/chess/', 'ChessBest', 'ChessBest'),
-    'LAB': (PUBLIC / 'new', '/chess/new/', 'ChessBest LAB', 'ChessBest LAB'),
-    'APP': (PUBLIC / 'app', '/chess/app/', 'ChessBest APP', 'ChessBest APP'),
+    'CURRENT': (CURRENT_ROOT, '/chess/', 'ChessBest', 'ChessBest'),
+    'LAB': (LAB_ROOT, '/chess-lab/', 'ChessBest LAB', 'ChessBest LAB'),
+    'APP': (LAB_ROOT / 'app', '/chess-lab/app/', 'ChessBest APP', 'ChessBest APP'),
 }
 
 

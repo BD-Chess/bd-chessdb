@@ -2,14 +2,14 @@
   "schema": "bd-app-versions/1",
   "application": "chess",
   "current": "/chess/",
-  "previous": "/chess/old/",
-  "lab": "/chess/new/",
-  "archive_pattern": "/chess/old/NNN/",
+  "previous": "/chess-lab/old/",
+  "lab": "/chess-lab/",
+  "archive_pattern": "/chess-lab/old/NNN/",
   "archive_order": "monotonic integer, minimum three digits, never reuse a number",
   "archives": [
     {
       "id": "001",
-      "path": "/chess/old/001/",
+      "path": "/chess-lab/old/001/",
       "source_channel": "LAB",
       "source_commit": "a837555dc5547958925be9c0fabd61b2c9980095",
       "source_tree": "19b44d0c0fddb8151eec7018fd6ed2aa09827fa9",
@@ -18,7 +18,7 @@
     },
     {
       "id": "002",
-      "path": "/chess/old/002/",
+      "path": "/chess-lab/old/002/",
       "source_channel": "LAB",
       "source_commit": "f51489055df21399bb5c2ecb0de0610d0e68cf04",
       "source_tree": "0f22eb5c2edf9ae13a9bfb9d10679f63d69c9c60",
@@ -31,7 +31,7 @@
       "source_tree": "72f50f42030f25a7623663c8a8ed58b21cab354a",
       "purpose": "Immutable CURRENT snapshot before BD-authorized LAB promotion on 2026-09-25",
       "id": "003",
-      "path": "/chess/old/003/",
+      "path": "/chess-lab/old/003/",
       "manifest_sha256": "a80dcf913560cc9b817434c150822326ab17c46df82953d0d93098d8a1a59320"
     },
     {
@@ -40,12 +40,12 @@
       "source_tree": "49acdacc46827a4b21fea7eb984addfd6c7aaae8",
       "purpose": "Immutable PREVIOUS v0.6.0 snapshot before standard CURRENT/PREVIOUS rotation for the approved Sim tournament release",
       "id": "004",
-      "path": "/chess/old/004/",
+      "path": "/chess-lab/old/004/",
       "manifest_sha256": "95ac0316b5ac4dfdba7991ca3b5546b3d791d1a16c19b4a968515a20f3279ff8"
     },
     {
       "id": "005",
-      "path": "/chess/old/005/",
+      "path": "/chess-lab/old/005/",
       "source_channel": "CURRENT",
       "source_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
       "source_tree": "64b8e4f3c42237cee805ac72ac5abfc9e36d487c",
@@ -152,18 +152,18 @@
   },
   "installable_channels": {
     "CURRENT": "/chess/",
-    "LAB": "/chess/new/"
+    "LAB": "/chess-lab/"
   },
   "latest_installable_pwas": {
     "CURRENT": {
       "path": "/chess/",
       "release_manifest": "/chess/release.json",
-      "version": "current-bd2511cfb3ec86a8"
+      "version": "current-75f9593b0f4626ca"
     },
     "LAB": {
-      "path": "/chess/new/",
-      "release_manifest": "/chess/new/release.json",
-      "version": "lab-f3624f5ee8d60615"
+      "path": "/chess-lab/",
+      "release_manifest": "/chess-lab/release.json",
+      "version": "lab-898fa56f7f4ddfb8"
     }
   },
   "latest_layout_parity": {
@@ -175,5 +175,14 @@
     "height_rule": "Limit expanded CURRENT desktop layout at viewport heights through 1250px so the board and actions stay visible",
     "game_and_studies_preserved": true,
     "previous_root_preserved": true
+  },
+  "app": "/chess-lab/app/",
+  "active_layout": {
+    "date": "2026-10-01",
+    "public_current": "/chess/",
+    "development_root": "/chess-lab/",
+    "previous": "/chess-lab/old/",
+    "app_preview": "/chess-lab/app/",
+    "rule": "Only LAB carries the CURRENT · PREVIOUS · LAB · APP selector; standalone ChessBest redirects development/history paths to CURRENT."
   }
 }

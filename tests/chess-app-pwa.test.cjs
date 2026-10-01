@@ -5,13 +5,13 @@ const path = require('node:path');
 const vm = require('node:vm');
 const crypto = require('node:crypto');
 const { JSDOM } = require('jsdom');
-const base = path.resolve(__dirname, '../public/chess/app');
+const base = path.resolve(__dirname, '../public/chess-lab/app');
 const read = file => fs.readFileSync(path.join(base, file));
 const release = JSON.parse(read('release.json'));
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
 function harness(prefix = '/bd-chessdb') {
-  const root = new URL(`https://example.test${prefix}/chess/app/`);
+  const root = new URL(`https://example.test${prefix}/chess-lab/app/`);
   const buckets = new Map(), handlers = {};
   const state = { fail: '', offline: false, fetches: 0, skipped: 0, claimed: 0 };
   const key = input => String(input.url || input);
@@ -114,20 +114,20 @@ test('failed download retains active release; updates cannot force a running gam
 test('CURRENT and LAB workers do not intercept APP navigation', () => {
   for (const lane of ['..', '../new']) {
     const handlers = {};
-    const url = new URL(lane + '/sw.js', 'https://example.test/bd-chessdb/chess/app/');
+    const url = new URL(lane + '/sw.js', 'https://example.test/bd-chessdb/chess-lab/app/');
     vm.runInNewContext(read(lane + '/sw.js').toString(), {
       self: { location: { href: url.href }, addEventListener: (name, fn) => handlers[name] = fn }, URL, Set
     });
     for (const suffix of ['', 'play.html', 'pwa.js', 'sw.js']) {
       let intercepted = false;
-      handlers.fetch({ request: new Request('https://example.test/bd-chessdb/chess/app/' + suffix), respondWith: () => intercepted = true });
+      handlers.fetch({ request: new Request('https://example.test/bd-chessdb/chess-lab/app/' + suffix), respondWith: () => intercepted = true });
       assert.equal(intercepted, false, `${lane}: ${suffix}`);
     }
   }
 });
 
 test('PWA controls expose readiness, safe update instructions, install fallback and native bypass', async () => {
-  const dom = new JSDOM(read('play.html').toString(), { url: 'https://example.test/bd-chessdb/chess/app/play.html', runScripts: 'outside-only' });
+  const dom = new JSDOM(read('play.html').toString(), { url: 'https://example.test/bd-chessdb/chess-lab/app/play.html', runScripts: 'outside-only' });
   const w = dom.window;
   w.matchMedia = () => ({ matches: false });
   Object.defineProperty(w, 'isSecureContext', { value: true });
@@ -135,8 +135,8 @@ test('PWA controls expose readiness, safe update instructions, install fallback 
   const registration = { active: {}, waiting: {}, addEventListener() {} };
   Object.defineProperty(w.navigator, 'serviceWorker', { value: {
     register: async (url, options) => {
-      calls++; assert.equal(String(url), 'https://example.test/bd-chessdb/chess/app/sw.js');
-      assert.equal(options.scope, 'https://example.test/bd-chessdb/chess/app/');
+      calls++; assert.equal(String(url), 'https://example.test/bd-chessdb/chess-lab/app/sw.js');
+      assert.equal(options.scope, 'https://example.test/bd-chessdb/chess-lab/app/');
       assert.equal(options.updateViaCache, 'none'); return registration;
     }, ready: Promise.resolve(registration)
   } });
@@ -175,7 +175,7 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
   assert.match(html, /\.preview-width \{[^}]*justify-self:\s*end;/);
   for (const standalone of [false, true]) {
     const dom = new JSDOM(html, {
-      url: 'https://example.test/chess/app/', runScripts: 'outside-only',
+      url: 'https://example.test/chess-lab/app/', runScripts: 'outside-only',
       beforeParse(window) {
         Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', configurable: true });
       }
@@ -187,20 +187,20 @@ test('APP preview keeps the phone frame for desktop/tablet clients and uses nati
       Object.defineProperty(w, 'innerWidth', { value: width, configurable: true });
       for (const script of w.document.querySelectorAll('script:not([src])')) w.eval(script.textContent);
       w.dispatchEvent(new w.Event('resize'));
-      assert.equal(w.location.pathname, '/chess/app/');
+      assert.equal(w.location.pathname, '/chess-lab/app/');
       assert.equal(w.document.documentElement.classList.contains('app-phone-browser'), false);
       assert(w.document.querySelector('.phone-frame iframe'));
     }
     dom.window.close();
   }
   const phone = new JSDOM(html, {
-    url: 'https://example.test/chess/app/', runScripts: 'outside-only',
+    url: 'https://example.test/chess-lab/app/', runScripts: 'outside-only',
     beforeParse(window) {
       Object.defineProperty(window.navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1', configurable: true });
     }
   });
   for (const script of phone.window.document.querySelectorAll('script:not([src])')) phone.window.eval(script.textContent);
-  assert.equal(phone.window.location.pathname, '/chess/app/');
+  assert.equal(phone.window.location.pathname, '/chess-lab/app/');
   assert(phone.window.document.documentElement.classList.contains('app-phone-browser'));
   assert(phone.window.document.querySelector('.phone-frame iframe'));
   phone.window.close();

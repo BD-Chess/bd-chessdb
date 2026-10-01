@@ -84,7 +84,7 @@
     config = config || {};
     const Chess = config.Chess || root.Chess;
     const hashMB = finiteInt(config.hashMB, 16, 1, 128);
-    const workerUrl = config.workerUrl || new URL('vendor/stockfish/stockfish-18-lite-single.js', root.document ? root.document.baseURI : 'http://localhost/chess/new/').href;
+    const workerUrl = config.workerUrl || new URL('vendor/stockfish/stockfish-18-lite-single.js', root.document ? root.document.baseURI : 'http://localhost/chess-lab/').href;
     let active = null, serial = 0, destroyed = false, prepared = null, warming = null, reusePrepared = false;
     const clone = value => JSON.parse(JSON.stringify(value));
     const now = () => root.performance?.now ? root.performance.now() : Date.now();

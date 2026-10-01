@@ -15,7 +15,7 @@ def main():
     out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Quiet,directory=str(ROOT/'public')))
     threading.Thread(target=server.serve_forever,daemon=True).start()
-    base=args.live.rstrip('/')+'/' if args.live else f'http://127.0.0.1:{server.server_port}/chess/app/'
+    base=args.live.rstrip('/')+'/' if args.live else f'http://127.0.0.1:{server.server_port}/chess-lab/app/'
     report={'base':base,'tested_sha':os.environ.get('TESTED_SHA'),'fixture':'synthetic legal CDB; real local Stockfish, UI and CSS','checks':[],'errors':[],'metrics':[]}
     def record(name,ok,detail=None): report['checks'].append({'name':name,'pass':bool(ok),'detail':detail})
     with sync_playwright() as p:
