@@ -31,8 +31,15 @@ export function checkVersions(repo,base){
       else if(x[2].includes('aria-current="page"')!==(label==='LAB')) errors.push('LAB: wrong active '+label);
     }
   }
-  for(const n of ['new','app','old','lab']) if(fs.existsSync(path.join(current,n))) errors.push('CURRENT still contains '+n);
-  for(const n of ['app','lab']) if(fs.existsSync(path.join(dev,n))) errors.push('LAB still contains retired '+n);
+  const isRetirementStub = dir => {
+    if (!fs.existsSync(dir)) return false;
+    const entries=fs.readdirSync(dir,{withFileTypes:true});
+    return entries.every(e=>e.isFile()) && entries.map(e=>e.name).sort().join(',')==='index.html,play.html,sw.js';
+  };
+  for(const n of ['new','old','lab']) if(fs.existsSync(path.join(current,n))) errors.push('CURRENT still contains '+n);
+  if(fs.existsSync(path.join(current,'app')) && !isRetirementStub(path.join(current,'app'))) errors.push('CURRENT app path is not a retirement stub');
+  if(fs.existsSync(path.join(dev,'lab'))) errors.push('LAB still contains retired lab');
+  if(fs.existsSync(path.join(dev,'app')) && !isRetirementStub(path.join(dev,'app'))) errors.push('LAB app path is not a retirement stub');
   for(const n of ['app','lab']) if(!fs.existsSync(path.join(previous,n))) errors.push('missing retired archive '+n);
   const m=JSON.parse(fs.readFileSync(path.join(current,'versions.json'),'utf8'));
   if(m.current!=='/chess/'||m.lab!=='/chess-lab/'||m.previous!=='/chess-lab/old/'||Object.hasOwn(m,'app')) errors.push('channel metadata mismatch');
