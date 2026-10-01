@@ -47,6 +47,8 @@ test('phone activates five-view mobile UX inside the same LAB document and names
   const x = await setup({ phone: true });
   assert.equal(x.d.body.classList.contains('app-mobile'), true);
   assert.equal(x.d.body.dataset.appRuntime, 'phone');
+  assert.equal(x.d.body.dataset.appView, 'board', 'fresh phone launch starts on Board');
+  assert.equal(x.byId('appTabs').querySelector('[data-app-tab="board"]').getAttribute('aria-current'), 'page');
   assert.equal(x.byId('appTabs').querySelectorAll('[data-app-tab]').length, 5);
   assert.equal(x.d.querySelector('.top-buttons').parentElement.id, 'appBoardControls');
   assert.ok(x.byId('analysisSource').closest('.app-analysis-slot'));
@@ -69,5 +71,7 @@ test('Capacitor native forces the same mobile UX with a desktop-like user agent'
   const x = await setup({ native: true });
   assert.equal(x.d.body.classList.contains('app-mobile'), true);
   assert.equal(x.d.body.dataset.appRuntime, 'native');
+  assert.equal(x.d.body.dataset.appView, 'board', 'fresh native launch starts on Board');
+  assert.equal(x.byId('appTabs').querySelector('[data-app-tab="board"]').getAttribute('aria-current'), 'page');
   x.dom.window.close();
 });

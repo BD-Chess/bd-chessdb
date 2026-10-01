@@ -439,6 +439,9 @@
     if (root.MutationObserver) for (const watched of [byId('analysisSourceStatus'), byId('dccProgress'), byId('allEvalBadges')]) {
       if (watched) new MutationObserver(refreshTopLine).observe(watched, { childList: true, characterData: true, subtree: true, attributes: true });
     }
+    // Fresh phone/native launches always enter the Board view.
+    // The CSS keys off data-app-view, so the initial state must be applied explicitly.
+    setView('board');
     updatePosition();
     resizeVisibleBoard();
   }
