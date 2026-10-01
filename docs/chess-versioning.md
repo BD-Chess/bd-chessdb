@@ -3,17 +3,12 @@
 | Channel | Public path | Meaning |
 |---|---|---|
 | CURRENT | `/chess/` | Primary public release; no development selector |
-| PREVIOUS | `/chess-lab/old/` | Legacy release outside the public CURRENT tree |
-| LAB | `/chess-lab/` | Development release; independently installable offline workspace |
-| APP | `/chess-lab/app/` | iPhone UI preview; development workspace |
-| Archive | `/chess-lab/old/001/`, `/002/`, … | Chronological immutable release snapshots |
+| LAB | `/chess-lab/` | The only active development release; desktop/mobile/APP presentation belongs here |
+| PREVIOUS / archives | `/chess-lab/old/` | Legacy PREVIOUS plus numbered and retired-channel history |
 
-Only the active LAB entry page contains the self-contained CURRENT · PREVIOUS · LAB · APP selector.
-CURRENT, PREVIOUS and APP do not expose development-channel navigation. Historical
-archives do not receive later selector, styling, bug or content updates.
-APP is a browser preview of the iPhone layout and is not an installable offline
-channel in the CURRENT/LAB PWA generator. Keep its saved data, worker scope and
-cache identity independent of LAB when bringing LAB functionality into APP.
+Exactly two versions are active: CURRENT and LAB. The LAB entry page contains only CURRENT · PREVIOUS · LAB navigation. CURRENT and PREVIOUS expose no channel selector. There is no separate active APP channel. Retired APP history is stored at `/chess-lab/old/app/`; the retired LAB milestone shelf is at `/chess-lab/old/lab/`. Those paths are recovery/history only.
+
+The old `/chess/PWA/` directory is a compatibility retirement stub, not a version: it exists only so previously installed standalone PWA scopes can migrate to CURRENT. CURRENT and LAB are independently installable PWAs.
 
 The 2026-09-13 standard adoption is **not a promotion**. CURRENT and PREVIOUS
 retain their existing application code. Only their entry-page selector changes.
@@ -241,9 +236,10 @@ installable routes while preserving the historical PWA refresh record.
 
 ## 2026-10-01 public/development split
 
-`public/chess/` now contains CURRENT only, plus CURRENT compatibility/PWA files.
-Active LAB moved from `/chess/new/` to `/chess-lab/`; PREVIOUS to
-`/chess-lab/old/`; APP to `/chess-lab/app/`. Existing numbered PREVIOUS,
-LAB and APP snapshots were moved as Git trees without rewriting their contents.
-Only active LAB carries the channel selector. The standalone ChessBest Netlify
-site redirects former development/history paths, including `/chess-lab/`, to CURRENT.
+`public/chess/` contains CURRENT only, plus the retired-PWA compatibility stub.
+`public/chess-lab/` is the only active LAB. PREVIOUS and all historical material
+live below `public/chess-lab/old/`. The former active APP tree moved unchanged to
+`public/chess-lab/old/app/`; the former LAB milestone shelf moved unchanged to
+`public/chess-lab/old/lab/`. No active `/chess-lab/app/` or `/chess-lab/lab/`
+channel remains. Active LAB navigation is CURRENT · PREVIOUS · LAB only. The
+standalone ChessBest Netlify site continues to expose CURRENT only.

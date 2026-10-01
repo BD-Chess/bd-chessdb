@@ -12,12 +12,11 @@ function walk(dir){
 }
 export function checkVersions(repo,base){
   const current=path.join(repo,'public/chess'), dev=path.join(repo,'public/chess-lab');
-  const previous=path.join(dev,'old'), app=path.join(dev,'app'), errors=[];
+  const previous=path.join(dev,'old'), errors=[];
   const channels=[
     ['CURRENT',current,'/chess/',false],
     ['PREVIOUS',previous,'/chess-lab/old/',false],
     ['LAB',dev,'/chess-lab/',true],
-    ['APP',app,'/chess-lab/app/',false],
   ];
   for(const [name,dir,,needsNav] of channels){
     const f=path.join(dir,'index.html'); if(!fs.existsSync(f)){errors.push(name+': missing entry page');continue;}
@@ -25,7 +24,7 @@ export function checkVersions(repo,base){
     if(!needsNav){if(nav.length)errors.push(name+': selector must be absent');continue;}
     if(nav.length!==1){errors.push('LAB: expected one selector');continue;}
     const links=[...nav[0].matchAll(/<a href="([^"]+)"([^>]*)>([^<]+)<\/a>/g)];
-    const expected={CURRENT:'../chess/',PREVIOUS:'./old/',LAB:'./',APP:'./app/'};
+    const expected={CURRENT:'../chess/',PREVIOUS:'./old/',LAB:'./'};
     for(const [label,href] of Object.entries(expected)){
       const x=links.find(v=>v[1]===href&&v[3]===label);
       if(!x) errors.push('LAB: missing '+label);
@@ -33,8 +32,10 @@ export function checkVersions(repo,base){
     }
   }
   for(const n of ['new','app','old','lab']) if(fs.existsSync(path.join(current,n))) errors.push('CURRENT still contains '+n);
+  for(const n of ['app','lab']) if(fs.existsSync(path.join(dev,n))) errors.push('LAB still contains retired '+n);
+  for(const n of ['app','lab']) if(!fs.existsSync(path.join(previous,n))) errors.push('missing retired archive '+n);
   const m=JSON.parse(fs.readFileSync(path.join(current,'versions.json'),'utf8'));
-  if(m.current!=='/chess/'||m.lab!=='/chess-lab/'||m.previous!=='/chess-lab/old/'||m.app!=='/chess-lab/app/') errors.push('channel metadata mismatch');
+  if(m.current!=='/chess/'||m.lab!=='/chess-lab/'||m.previous!=='/chess-lab/old/'||Object.hasOwn(m,'app')) errors.push('channel metadata mismatch');
   const install={CURRENT:'/chess/',LAB:'/chess-lab/'};
   if(!m.installable_channels||Object.entries(install).some(([k,v])=>m.installable_channels[k]!==v)) errors.push('installable metadata mismatch');
   for(const [name,dir] of [['CURRENT',current],['LAB',dev]]){

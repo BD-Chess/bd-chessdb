@@ -74,7 +74,7 @@ assistanceLocked is true. The bot sends only a requested study snapshot, never c
 Replay analyses existing moves; it does not create timestamps for historical games.
 DCC/Moves switches panels; Show/Hide Eval controls on-board suggestions; Help explains scores.
 ANALYSIS LAB AT /chess-lab/
-The main /chess/ is the current public release. PREVIOUS and APP live with this development workspace at /chess-lab/old/ and /chess-lab/app/.
+The main /chess/ is the current public release. PREVIOUS and numbered/history snapshots live under /chess-lab/old/. There is no separate active APP channel; mobile/APP presentation belongs to LAB.
 Study retains PGN variations, comments, NAGs and named lines; its SAN preview does not
 change the main game. A/B pins alternatives and analysis at the same full FEN.
 Evidence saves exact source responses with timestamps and SHA256 integrity. Offline
