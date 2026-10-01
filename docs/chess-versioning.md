@@ -8,7 +8,9 @@
 
 Exactly two versions are active: CURRENT and LAB. The LAB entry page contains only CURRENT · PREVIOUS · LAB navigation. CURRENT and PREVIOUS expose no channel selector. There is no separate active APP channel. Retired APP history is stored at `/chess-lab/old/app/`; the retired LAB milestone shelf is at `/chess-lab/old/lab/`. Those paths are recovery/history only.
 
-The old `/chess/PWA/` directory is a compatibility retirement stub, not a version: it exists only so previously installed standalone PWA scopes can migrate to CURRENT. CURRENT and LAB are independently installable PWAs.
+The old `/chess/PWA/` directory is a compatibility retirement stub, not a version: it exists only so previously installed standalone PWA scopes can migrate to CURRENT. The tiny `/chess/app/` and `/chess-lab/app/` index/play/service-worker stubs likewise exist only to retire former APP PWA scopes into `/chess-lab/`; they contain no active APP. CURRENT and LAB are independently installable PWAs.
+
+LAB is now the single development source for web and native. Desktop browsers keep the full LAB presentation. Phone browsers and Capacitor iOS/Android builds activate the APP-derived Board · Moves · Review · Deep · DCC mobile presentation from the same `/chess-lab/` HTML, scripts, storage namespace and PWA release. Native store builds must pin an exact LAB Git commit and package those assets locally rather than load the live development URL.
 
 The 2026-09-13 standard adoption is **not a promotion**. CURRENT and PREVIOUS
 retain their existing application code. Only their entry-page selector changes.

@@ -8,7 +8,7 @@
     const mount = host.mount || document.body;
     let storage, draftStorage;
     try { storage = host.storage || root.localStorage; } catch (_) {}
-    try { draftStorage = host.draftStorage || root.sessionStorage; } catch (_) {}
+    try { draftStorage = host.draftStorage || root.localStorage; } catch (_) {}
     const S = root.ChessStudyStore;
     const store = S.create({ C, Chess, storage, locks: host.locks || root.navigator?.locks });
     const clone = value => JSON.parse(JSON.stringify(value));
@@ -43,7 +43,7 @@
         if (S.bytes(text) > S.MAX) throw Error('Draft too large');
         draftStorage.setItem(DRAFT_KEY, text);
         if (draftStorage.getItem(DRAFT_KEY) !== text) throw Error('Draft readback failed');
-        draftNotice = 'Pending work is retained for reload in this tab. Export it before closing the tab.';
+        draftNotice = 'Pending work is retained for reload in this LAB workspace. Export it for a separate backup.';
       } catch (_) { draftNotice = 'Pending work is in memory only. Export it before closing or reloading this tab.'; }
     }
     try {
@@ -51,7 +51,7 @@
       if (saved && S.bytes(saved) <= S.MAX) {
         const draft = JSON.parse(saved);
         if (draft && typeof draft.id === 'string' && ['append', 'import', 'record', 'recordAnnotated', 'line', 'annotatePath', 'undo'].includes(draft.type)) {
-          pending = draft; saveDraft(); loadWarning = 'Pending Study work from this tab is available in Manage Studies.';
+          pending = draft; saveDraft(); loadWarning = 'Pending Study work from this LAB workspace is available in Manage Studies.';
         }
       }
     } catch (_) { loadWarning = 'A pending draft could not be read. Existing Studies were not changed.'; }

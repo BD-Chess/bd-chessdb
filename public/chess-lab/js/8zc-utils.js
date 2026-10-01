@@ -2477,6 +2477,7 @@ function jumpTo(i){
   }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
     pause: pauseLab, navigate: navigateStudy,
+    playSuggestedMove: uci => !!uci && playManualMove(uci.slice(0,2), uci.slice(2,4), uci[4] || 'q') !== 'snapback',
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
     getEvidence: () => labSnapshots.get(game.fen()) || null,

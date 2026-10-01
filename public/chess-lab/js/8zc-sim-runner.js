@@ -22,10 +22,23 @@
     return Math.max(1, Math.min(Math.max(1, left - 80), left / 30 + config.incrementMs * 0.8));
   }
   function create({ Chess, SIM, Tournament, SF, Engine, DCC, game, workspace, store,
-    getCDB, getPV, getScore, settings, callbacks = {}, now = () => performance.now(), storage = globalThis.localStorage }) {
+    getCDB, getPV, getScore, settings, callbacks = {}, evaluation = globalThis.ChessEvalBar,
+    now = () => performance.now(), storage = globalThis.localStorage }) {
     let active = null, token = 0, controller = null, provider = null, heartbeat = null, task = null;
-    const owner = store.createId('tab'), leaseKey = 'ChessBest:LAB:v2:sim-lease';
-    const emit = (name, ...args) => callbacks[name]?.(...args);
+    const owner = store.createId('tab'), leaseKey = 'ChessBest:APP:v1:sim-lease';
+    // The spectator never drives moves, search budgets, clocks or checkpoints.
+    const spectator = evaluation?.watchSimulation?.({ Chess, game, getCDB });
+    const observe = (method, value) => {
+      try { spectator?.[method]?.(value); } catch (_) { /* A view failure cannot pause a match. */ }
+    };
+    const emit = (name, ...args) => {
+      if (['paused', 'finished', 'idle', 'error'].includes(name)) observe('stop');
+      const result = callbacks[name]?.(...args);
+      if (name === 'started') observe('start');
+      else if (name === 'move') observe('position');
+      else if (name === 'decision') observe('decision', args[0]);
+      return result;
+    };
     function acquire() {
       if (!storage) return;
       const old = JSON.parse(storage.getItem(leaseKey) || 'null');

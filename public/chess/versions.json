@@ -163,7 +163,7 @@
     "LAB": {
       "path": "/chess-lab/",
       "release_manifest": "/chess-lab/release.json",
-      "version": "lab-8bd00464b6b9569a"
+      "version": "lab-128fe628b7b4a23a"
     }
   },
   "latest_layout_parity": {
@@ -185,6 +185,14 @@
       "app": "/chess-lab/old/app/",
       "lab_snapshot": "/chess-lab/old/lab/"
     },
-    "rule": "Exactly two active versions: CURRENT and LAB. LAB selector is CURRENT · PREVIOUS · LAB; retired APP/LAB snapshots live only under old/."
+    "rule": "Exactly two active versions: CURRENT and LAB. LAB selector is CURRENT · PREVIOUS · LAB; retired APP/LAB snapshots live only under old/.",
+    "mobile_mode": "phone browser or Capacitor native => APP-derived mobile presentation inside /chess-lab/",
+    "desktop_mode": "desktop browser => standard LAB presentation",
+    "native_build": "iOS/Android packages are built from an exact pinned LAB commit; /chess-lab/ remains the single web source of truth",
+    "compatibility_stubs": [
+      "/chess/app/",
+      "/chess-lab/app/",
+      "/chess/PWA/"
+    ]
   }
 }

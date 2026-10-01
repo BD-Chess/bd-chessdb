@@ -19,8 +19,9 @@
     const panel = element('section', 'workspace-drawer game-review-drawer');
     panel.id = 'gameReviewPanel';
     panel.hidden = true;
-    panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-modal', 'true');
+    const appView = document.body.classList.contains('app-mobile');
+    panel.setAttribute('role', appView ? 'region' : 'dialog');
+    if (!appView) panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'gameReviewHeading');
     panel.tabIndex = -1;
     const header = element('div', 'drawer-heading game-review-heading');
@@ -63,7 +64,7 @@
       return next?.moveLabel ? 'Before ' + next.moveLabel : 'After ' + ply + ' half-moves';
     }
 
-    function navigate(ply, openStudy = false) {
+    function navigate(ply, openStudy = false, showBoard = false) {
       if (blocked()) {
         notice.textContent = 'Finish the active game or stop Replay before reviewing a position.';
         return;
@@ -77,10 +78,16 @@
         host.navigateReview(ply);
         const at = host.getContext();
         if (at.fen !== expected.fen || at.history?.length !== ply) throw Error('The current line changed. Reopen Review and try again.');
-        closePanel(!openStudy);
+        if (!appView || openStudy) closePanel(!openStudy);
         if (openStudy) {
           if (typeof host.openReviewStudy === 'function') host.openReviewStudy('compare');
           else document.getElementById('btnStudy')?.click();
+        } else if (appView && showBoard) {
+          const boardTab = document.querySelector('#appTabs [data-app-tab="board"]');
+          boardTab?.click();
+          boardTab?.focus({ preventScroll: true });
+        } else if (appView) {
+          refresh();
         } else if (root.matchMedia?.('(max-width: 790px)')?.matches) {
           document.getElementById('board-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -280,7 +287,7 @@
         const provenance = [moment.source, moment.basis].filter(Boolean).join(' · ');
         if (provenance) row.append(element('small', 'game-review-basis', provenance));
         const actions = element('div', 'game-review-actions');
-        actions.append(action('Show on board', () => navigate(moment.ply)),
+        actions.append(action('Show on board', () => navigate(moment.ply, false, true)),
           action('Study / A-B', () => navigate(moment.ply, true)));
         row.append(actions);
         list.append(row);
@@ -356,7 +363,7 @@
     panel.addEventListener('keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePanel(); return; }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) event.stopPropagation();
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || appView) return;
       const focusables = Array.from(panel.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href]'));
       if (!focusables.length) { event.preventDefault(); panel.focus(); return; }
       const first = focusables[0], last = focusables[focusables.length - 1];
