@@ -15,8 +15,9 @@ PAGES=[
 SKIP_CLASSES={'hist-lang-en','hist-lang-sl','hist-sl-summary','hist-lang-switch'}
 SKIP_TAGS={'script','style','noscript','template','code','pre','kbd','samp'}
 ATTRS=('aria-label','title','placeholder')
-MODEL='Helsinki-NLP/opus-mt-en-sla'
-TARGET='>>slv<< '
+MODEL='facebook/nllb-200-distilled-600M'
+SRC_LANG='eng_Latn'
+TGT_LANG='slv_Latn'
 MANUAL={
 'Humanity History':'Zgodovina človeštva','Contents':'Kazalo','About':'O projektu','Methodology':'Metodologija','Timeline':'Časovnica',
 'Glossary':'Slovar','Terms':'Izrazi','Changelog':'Dnevnik sprememb','Previous':'Prejšnje','Next':'Naslednje','Previous chapter':'Prejšnje poglavje',
@@ -72,9 +73,10 @@ for name in PAGES:
 
 print('candidate unique strings:',len(sources),'chars:',sum(map(len,sources)))
 torch.set_num_threads(max(1,min(4,os.cpu_count() or 2)))
-tokenizer=AutoTokenizer.from_pretrained(MODEL)
+tokenizer=AutoTokenizer.from_pretrained(MODEL,src_lang=SRC_LANG)
 model=AutoModelForSeq2SeqLM.from_pretrained(MODEL)
 model.eval()
+forced_bos=tokenizer.convert_tokens_to_ids(TGT_LANG)
 
 def chunks(s,limit=850):
     if len(s)<=limit:return [s]
@@ -93,6 +95,11 @@ def chunks(s,limit=850):
                 else: cur=(cur+' '+b).strip()
     if cur:out.append(cur)
     return out
+
+def deterministic_date(s):
+    if re.fullmatch(r'[0-9, .–—-]+(?:BCE|CE)(?:\\s*·.*)?',s):
+        return s.replace('BCE','pr. n. št.').replace('CE','n. št.')
+    return None
 
 piece_owner={}
 all_pieces=[]
