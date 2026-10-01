@@ -111,10 +111,13 @@
       const visible = isVisible();
       renderComparison(fen, visible);
       // Expose which position/source the number actually describes (also while waiting).
-      el.dataset.positionFen = fen;
-      el.dataset.evalFen = awaiting ? lastKnown.fen : fen;
-      el.dataset.evalSource = terminal ? 'terminal' : awaiting ? lastKnown.source : entry?.source || '';
-      el.dataset.evalState = awaiting ? 'awaiting' : view.state;
+      // Some non-browser/unit-test view adapters intentionally omit dataset.
+      if (el.dataset) {
+        el.dataset.positionFen = fen;
+        el.dataset.evalFen = awaiting ? lastKnown.fen : fen;
+        el.dataset.evalSource = terminal ? 'terminal' : awaiting ? lastKnown.source : entry?.source || '';
+        el.dataset.evalState = awaiting ? 'awaiting' : view.state;
+      }
       el.classList.toggle('is-flipped', !!settings.flipBoard);
       el.classList.toggle('is-pending', view.state === 'pending');
       el.classList.toggle('is-unknown', view.state === 'unknown');
