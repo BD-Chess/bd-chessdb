@@ -51,8 +51,12 @@
       tab.setAttribute('aria-selected', String(active));
       tab.tabIndex = active ? 0 : -1;
     }
-    const replay = byId('btnDesktopDccReplay');
-    if (replay) replay.hidden = desktopView !== 'dcc';
+    const dccAction = byId('btnDesktopDccAnalysis');
+    if (dccAction) {
+      const active = desktopView === 'dcc';
+      dccAction.setAttribute('aria-pressed', String(active));
+      dccAction.classList.toggle('is-active', active);
+    }
     const display = byId('workspaceDisplay');
     if (display) display.setAttribute('aria-label', { moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis' }[desktopView]);
   }
@@ -91,10 +95,21 @@
       setDesktopView(ordered[target].dataset.desktopView);
     });
     byId('btnDesktopDccReplay')?.addEventListener('click', () => byId('btnReplay')?.click());
+    byId('btnDesktopDccAnalysis')?.addEventListener('click', () => byId('btnViewToggle')?.click());
     const syncReplay = () => { const facade = byId('btnDesktopDccReplay'), source = byId('btnReplay'); if (facade && source) facade.disabled = source.disabled; };
+    const syncDccAction = () => {
+      const facade = byId('btnDesktopDccAnalysis'), source = byId('btnViewToggle');
+      if (!facade || !source) return;
+      facade.disabled = source.disabled;
+      const active = source.getAttribute('aria-pressed') === 'true';
+      facade.setAttribute('aria-pressed', String(active));
+      facade.classList.toggle('is-active', active);
+    };
     const replaySource = byId('btnReplay');
     if (replaySource && root.MutationObserver) new MutationObserver(syncReplay).observe(replaySource, { attributes: true, attributeFilter: ['disabled'] });
-    syncReplay();
+    const dccSource = byId('btnViewToggle');
+    if (dccSource && root.MutationObserver) new MutationObserver(syncDccAction).observe(dccSource, { attributes: true, attributeFilter: ['disabled', 'aria-pressed'] });
+    syncReplay(); syncDccAction();
     const watch = (id, attr, activeView) => {
       const node = byId(id); if (!node || !root.MutationObserver) return;
       new MutationObserver(() => {
