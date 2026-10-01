@@ -9,8 +9,9 @@ const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8');
 const script = fs.readFileSync(path.join(base, 'js/app-mobile.js'), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
-async function setup({ phone = false, native = false } = {}) {
-  const dom = new JSDOM(html, { url: 'https://example.test/chess-lab/', runScripts: 'outside-only', pretendToBeVisual: true });
+async function setup({ phone = false, native = false, appPreview = false } = {}) {
+  const url = appPreview ? 'https://example.test/chess-lab/?view=app' : 'https://example.test/chess-lab/';
+  const dom = new JSDOM(html, { url, runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, d = w.document, byId = id => d.getElementById(id);
   Object.defineProperty(w.navigator, 'userAgent', { value: phone ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', configurable: true });
   Object.defineProperty(w.navigator, 'language', { value: 'en-US', configurable: true });
@@ -74,4 +75,36 @@ test('Capacitor native forces the same mobile UX with a desktop-like user agent'
   assert.equal(x.d.body.dataset.appView, 'board', 'fresh native launch starts on Board');
   assert.equal(x.byId('appTabs').querySelector('[data-app-tab="board"]').getAttribute('aria-current'), 'page');
   x.dom.window.close();
+});
+
+
+test('desktop APP simulation uses the same mobile controller and stays forced across resize', async () => {
+  const x = await setup({ appPreview: true });
+  assert.equal(x.d.body.classList.contains('app-mobile'), true);
+  assert.equal(x.d.body.classList.contains('app-preview-desktop'), true);
+  assert.equal(x.d.body.dataset.appRuntime, 'preview');
+  assert.equal(x.d.body.dataset.appPresentation, 'app');
+  assert.equal(x.d.body.dataset.appView, 'board');
+  assert.equal(x.d.querySelector('[data-app-presentation]').getAttribute('aria-current'), 'page');
+  assert.equal(x.d.querySelector('[data-lab-presentation]').getAttribute('aria-current'), null);
+  assert.equal(x.byId('appPreviewDesktopTools').hidden, false);
+  x.w.dispatchEvent(new x.w.Event('resize'));
+  await flush();
+  assert.equal(x.d.body.classList.contains('app-preview-desktop'), true);
+  assert.equal(x.d.body.dataset.appRuntime, 'preview');
+  x.dom.window.close();
+});
+
+test('normal desktop LAB exposes APP as a presentation link without entering mobile mode', async () => {
+  const x = await setup();
+  const link = x.byId('chessAppViewLink');
+  assert.ok(link);
+  assert.equal(link.getAttribute('href'), './?view=app');
+  assert.equal(x.d.body.classList.contains('app-mobile'), false);
+  x.dom.window.close();
+});
+
+test('retirement APP paths route to the unified LAB APP presentation', () => {
+  const labStub = fs.readFileSync(path.join(base, 'app/index.html'), 'utf8');
+  assert.match(labStub, /\.\.\/\?view=app/);
 });

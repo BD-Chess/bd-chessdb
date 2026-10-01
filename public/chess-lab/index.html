@@ -99,7 +99,7 @@
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
-  <link rel="stylesheet" href="css/app-mobile.css?v=20261001-unified1">
+  <link rel="stylesheet" href="css/app-mobile.css?v=20261001-appview1">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to chess board</a>
@@ -118,7 +118,8 @@
       <nav class="bd-version-selector" aria-label="Application versions">
         <a href="../chess/">CURRENT</a>
         <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./old/">PREVIOUS</a>
-        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" id="chessPwaLabLink" aria-current="page" title="LAB · Installable; offline after the first complete download" aria-describedby="chessPwaLabHint">LAB</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./" id="chessPwaLabLink" data-lab-presentation aria-current="page" title="LAB · Installable; offline after the first complete download" aria-describedby="chessPwaLabHint">LAB</a>
+        <span class="bd-version-dot" aria-hidden="true">·</span> <a href="./?view=app" id="chessAppViewLink" data-app-presentation title="APP preview · same LAB source in mobile presentation">APP</a>
         <span id="chessPwaLabHint" class="sr-only">LAB is installable and works offline after the first complete download.</span>
       </nav>
       <nav class="header-nav" aria-label="Main navigation">
@@ -131,8 +132,9 @@
     </div>
   </header>
   <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
+  <div id="appPreviewDesktopTools" class="app-preview-desktop-tools" hidden><strong>APP preview</strong><span>same LAB source</span><a href="./">LAB desktop</a></div>
   <div class="app-web-nav app-utility-row">
-    <nav class="app-channel-nav" aria-label="Application versions"><a href="../chess/">CURRENT</a><span aria-hidden="true">·</span><a href="./old/">PREVIOUS</a><span aria-hidden="true">·</span><a href="./" aria-current="page">LAB</a></nav>
+    <nav class="app-channel-nav" aria-label="Application versions"><a href="../chess/">CURRENT</a><span aria-hidden="true">·</span><a href="./old/">PREVIOUS</a><span aria-hidden="true">·</span><a href="./" data-lab-presentation aria-current="page">LAB</a><span aria-hidden="true">·</span><a href="./?view=app" data-app-presentation>APP</a></nav>
     <div class="app-language" role="group" aria-label="Language"><button type="button" data-app-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-app-lang="sl" aria-pressed="false">SL</button></div>
   </div>
   <div class="app-brand-name" aria-label="ChessBest.org">ChessBest.org</div>
@@ -571,7 +573,7 @@
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
     <p class="dialog-intro">Razvojni Analysis Lab. Trenutna potrjena stran je še vedno na <a href="../chess/">/chess/</a>.</p>
     <ul class="upgrade-list">
-      <li><strong>En LAB za web in APP.</strong> Desktop uporablja polni LAB pogled; telefon in prihodnji Capacitor iOS/Android build uporabljata mobilni Board · Moves · Review · Deep · DCC pogled iz iste kode in iste LAB shrambe.</li>
+      <li><strong>En LAB za web in APP.</strong> Desktop uporablja polni LAB pogled ali APP preview; telefon in prihodnji Capacitor iOS/Android build uporabljata mobilni Board · Moves · Review · Deep · DCC pogled. Vsi trije načini uporabljajo isto kodo in isto LAB shrambo.</li>
       <li><strong>Samostojni podatki LAB.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi LAB imajo prednost; izvirniki CURRENT ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
       <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
       <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
@@ -746,7 +748,7 @@
   <script src="js/8zc-review-ui.js?v=20260927-review1"></script>
   <script src="js/8zc-lab-layout.js?v=20261001-ux2"></script>
   <script src="pwa.js"></script>
-  <script src="js/app-mobile.js?v=20261001-ux3"></script>
+  <script src="js/app-mobile.js?v=20261001-appview1"></script>
 
 </body>
 </html>

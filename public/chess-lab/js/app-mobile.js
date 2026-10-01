@@ -7,11 +7,28 @@
   const tablet = /iPad|Tablet|PlayBook|Silk/i.test(ua);
   const phone = !tablet && (root.navigator?.userAgentData?.mobile === true || /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua));
   const native = !!root.Capacitor?.isNativePlatform?.();
-  if (!native && !phone) return;
+  const requestedView = new URLSearchParams(root.location.search).get('view')?.toLowerCase() || '';
+  const appMode = requestedView === 'app';
+  const desktopPreview = appMode && !native && !phone;
+  if (!native && !phone && !appMode) return;
   doc.body.classList.add('app-mobile');
-  doc.body.dataset.appRuntime = native ? 'native' : 'phone';
-  doc.dispatchEvent(new CustomEvent('chess:mobile-ready', { detail: { native, phone } }));
+  if (desktopPreview) doc.body.classList.add('app-preview-desktop');
+  doc.body.dataset.appRuntime = native ? 'native' : phone ? 'phone' : 'preview';
+  doc.body.dataset.appPresentation = appMode ? 'app' : 'mobile';
   const byId = id => doc.getElementById(id);
+  const syncPresentationLinks = () => {
+    for (const link of doc.querySelectorAll('[data-lab-presentation]')) {
+      if (appMode) link.removeAttribute('aria-current'); else link.setAttribute('aria-current', 'page');
+    }
+    for (const link of doc.querySelectorAll('[data-app-presentation]')) {
+      if (appMode) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+    }
+    const previewTools = byId('appPreviewDesktopTools');
+    if (previewTools) previewTools.hidden = !desktopPreview;
+  };
+  syncPresentationLinks();
+  if (desktopPreview) doc.title = 'ChessBest APP preview · LAB';
+  doc.dispatchEvent(new CustomEvent('chess:mobile-ready', { detail: { native, phone, appMode, desktopPreview } }));
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
   let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
