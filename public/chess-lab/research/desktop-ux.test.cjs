@@ -31,7 +31,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
 });
 
 test('legacy controls remain hidden backing controls', () => {
-  assert.match(html, /id="viewToggle" class="legacy-view-controls"/);
+  assert.match(html, /id="viewToggle" class="legacy-view-controls" aria-hidden="true" hidden style="display:none !important"/);
   assert.match(styles, /body:not\(\.app-mobile\) \.legacy-view-controls\{display:none!important\}/);
   assert.match(styles, /\.lab-research-tools #btnDeepAnalysis\{display:none!important\}/);
 });
