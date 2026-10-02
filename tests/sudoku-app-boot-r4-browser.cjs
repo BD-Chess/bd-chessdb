@@ -9,18 +9,21 @@ const fixture={schema:'AI8_SUDOKU_NAV_SESSION_V1',version:'0.2.0',gameId:'boot-r
 const report={cases:[],errors:[],navigation:[]};let server;
 async function run(){
  let base=process.env.SUDOKU_LIVE_URL;
- if(!base){server=http.createServer((req,res)=>{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);let p=path.resolve(root,'.'+pathname);if(!p.startsWith(root+path.sep)){res.writeHead(403).end();return;}if(pathname.endsWith('/'))p=path.join(p,'index.html');fs.readFile(p,(err,b)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',p.endsWith('.html')?'text/html':p.endsWith('.js')?'text/javascript':p.endsWith('.json')?'application/json':p.endsWith('.png')?'image/png':'text/plain');res.end(b);});});await new Promise(r=>server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+server.address().port+'/S/app/';}
+ if(!base){server=http.createServer((req,res)=>{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);let p=path.resolve(root,'.'+pathname);if(!p.startsWith(root+path.sep)){res.writeHead(403).end();return;}if(pathname.endsWith('/'))p=path.join(p,'index.html');fs.readFile(p,(err,b)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',p.endsWith('.html')?'text/html':p.endsWith('.js')?'text/javascript':p.endsWith('.json')?'application/json':p.endsWith('.png')?'image/png':'text/plain');res.end(b);});});await new Promise(r=>server.listen(0,'127.0.0.1',r));base='http://127.0.0.1:'+server.address().port+'/S/new/?view=app';}
  for(const [engine,name]of [[chromium,'chromium'],[webkit,'webkit']]){
   const browser=await engine.launch();try{
    for(const mode of ['phone','framed']){
     const context=await browser.newContext({viewport:mode==='phone'?{width:402,height:734}:{width:1440,height:1200},isMobile:mode==='phone',hasTouch:mode==='phone',serviceWorkers:'block',...(mode==='phone'?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'}:{})});
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('framenavigated',f=>report.navigation.push({name,mode,url:f.url(),at:Date.now()}));
     try{
-     await page.goto(base,{waitUntil:'load',timeout:30000});const frame=await (await page.locator('#game').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
+     await page.goto(base,{waitUntil:'load',timeout:30000});let frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
      await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});
      await page.waitForTimeout(700);
+     const rebind=async()=>{frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe remains attached');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});};
+     const restoreFixture=async state=>{const apply=()=>frame.evaluate(async x=>{await window.SudokuNavigator.restore(x);window.stopTimer();window.SudokuNavigator.product.switchView('play');},state);try{await apply();}catch(e){if(!/Execution context was destroyed/i.test(String(e)))throw e;await rebind();await apply();}};
      for(const diff of ['easy','hard','evil']){
-      await frame.evaluate(async s=>{await window.SudokuNavigator.restore(s);window.stopTimer();window.SudokuNavigator.product.switchView('play');},{...fixture,diff});
+      await rebind();
+      await restoreFixture({...fixture,diff});
       await frame.waitForFunction(d=>document.body.dataset.appHardNoHelp===(d==='easy'?'false':'true'),diff);
       for(const lang of ['en','sl']){
        await frame.locator('[data-sudoku-language="'+lang+'"]').click();await frame.waitForFunction(l=>window.SudokuI18n.get()===l,lang);await page.waitForTimeout(180);

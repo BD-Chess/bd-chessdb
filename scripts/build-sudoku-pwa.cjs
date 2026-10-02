@@ -8,11 +8,32 @@ const check = process.argv.includes('--check');
 // Keep LAB's downloadable HTML self-contained, using the same presentation sources.
 const labPath = path.join(base, 'new/app.html');
 const originalLab = fs.readFileSync(labPath, 'utf8');
-const embedded = ['lab-ui', 'i18n'].map(name => '<script id="sudoku-' + name + '">\n' + fs.readFileSync(path.join(base, '_pwa', name + '.js'), 'utf8') + '\n</script>').join('\n');
-const block = '<!-- BEGIN SUDOKU PRESENTATION -->\n' + embedded + '\n<!-- END SUDOKU PRESENTATION -->';
-const lab = originalLab.includes('<!-- BEGIN SUDOKU PRESENTATION -->')
-  ? originalLab.replace(/<!-- BEGIN SUDOKU PRESENTATION -->[\s\S]*?<!-- END SUDOKU PRESENTATION -->/, () => block)
-  : originalLab.replace('</body>', block + '\n</body>');
+const presentationDir=path.join(base,'new','presentation');
+const sources={
+  bootstrap:fs.readFileSync(path.join(presentationDir,'bootstrap.js'),'utf8'),
+  css:fs.readFileSync(path.join(presentationDir,'app.css'),'utf8'),
+  ui:fs.readFileSync(path.join(presentationDir,'app-ui.js'),'utf8'),
+  playback:fs.readFileSync(path.join(presentationDir,'app-solve-playback.js'),'utf8'),
+  pwa:fs.readFileSync(path.join(presentationDir,'pwa.js'),'utf8'),
+  labUi:fs.readFileSync(path.join(base,'_pwa','lab-ui.js'),'utf8'),
+  i18n:fs.readFileSync(path.join(base,'_pwa','i18n.js'),'utf8').replace("let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame');}catch(_){}","let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame')&&!document.body?.hasAttribute('data-app-surface');}catch(_){}")
+};
+for(const [name,source] of Object.entries(sources))if(source.includes('</script>'))throw Error('Presentation source contains closing script tag: '+name);
+const headBlock='<!-- BEGIN SUDOKU UNIFIED HEAD -->\n<style id="sudoku-app-style">\n'+sources.css+'\n</style>\n<script id="sudoku-unified-bootstrap">\n'+sources.bootstrap+'\n</script>\n<!-- END SUDOKU UNIFIED HEAD -->';
+const bodyBlock='<!-- BEGIN SUDOKU PRESENTATION -->\n'
+ +'<script id="sudoku-lab-ui">\n'+sources.labUi+'\n</script>\n'
+ +'<script id="sudoku-i18n">\n'+sources.i18n+'\n</script>\n'
+ +'<script id="sudoku-app-ui">\n'+sources.ui+'\n</script>\n'
+ +'<script id="sudoku-app-solve-playback">\n'+sources.playback+'\n</script>\n'
+ +'<script id="sudoku-app-pwa">\n'+sources.pwa+'\n</script>\n'
+ +'<!-- END SUDOKU PRESENTATION -->';
+let lab=originalLab;
+lab=lab.includes('<!-- BEGIN SUDOKU UNIFIED HEAD -->')
+  ? lab.replace(/<!-- BEGIN SUDOKU UNIFIED HEAD -->[\s\S]*?<!-- END SUDOKU UNIFIED HEAD -->/,()=>headBlock)
+  : lab.replace('</head>',headBlock+'\n</head>');
+lab=lab.includes('<!-- BEGIN SUDOKU PRESENTATION -->')
+  ? lab.replace(/<!-- BEGIN SUDOKU PRESENTATION -->[\s\S]*?<!-- END SUDOKU PRESENTATION -->/,()=>bodyBlock)
+  : lab.replace('</body>',bodyBlock+'\n</body>');
 if (lab !== originalLab) {
   if (check) throw Error('LAB embedded presentation is stale');
   fs.writeFileSync(labPath, lab);

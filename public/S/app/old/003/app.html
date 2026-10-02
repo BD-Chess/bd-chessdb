@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>8zSudoku — Play & Learn LAB | BD × AI Lab</title>
+<title>8zSudoku APP · Play & Learn</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
 <!-- Offline/local-first release: system font fallbacks are used; no remote font request. -->
@@ -490,9 +490,13 @@ body[data-quiet=true] *,body[data-quiet=true]::before,body[data-quiet=true]::aft
 
 .ux-setting{margin:8px 0}.ux-setting label{display:block;font-size:.85rem}.ux-setting select{max-width:100%;font-size:1rem}.ux-demo-note .btn{min-height:44px}
 </style>
-<!-- BEGIN SUDOKU UNIFIED HEAD -->
+<meta name="theme-color" content="#08101d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="8zSudoku">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <style id="sudoku-app-style">
-/* Mobile/APP presentation for the canonical /S/new/ Sudoku source. */
+/* Native-facing Sudoku surface. Embedded into app.html by the APP preview builder. */
 html{color-scheme:dark}html[data-theme=light]{color-scheme:light}
 body[data-app-surface]{background:var(--bg);overflow-x:hidden}
 body[data-app-surface]::before,body[data-app-surface]::after,body[data-app-surface] .noise{display:none}
@@ -681,23 +685,8 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
 }
 
 </style>
-<script id="sudoku-unified-bootstrap">
-'use strict';
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports){module.exports=api;return;}root.SudokuUnifiedPresentation=api;api.boot(root);})(typeof window!=='undefined'?window:globalThis,function(){
- const CANON='ai8SudokuNavigatorV020',APP_OLD='ai8SudokuAppV030',PWA_OLD='ai8SudokuNavigatorV020PWA',MARKER='8zSudoku.unified.migration.v1';
- const preferencePairs=[['8zSudoku.app.ui.language','8zSudoku.ui.language'],['8zSudoku.app.ui.textSize','8zSudoku.ui.textSize'],['8zSudoku.app.ui.numberPad','8zSudoku.ui.numberPad'],['8zSudoku.app.ui.coach','8zSudoku.ui.coach'],['8zSudoku.app.ui.coachDetail','8zSudoku.ui.coachDetail'],['8zSudoku.app.ui.holdTip','8zSudoku.ui.holdTip']];
- const nonempty=v=>v!==null&&v!=='';function keys(s){const o=[];for(let i=0;i<s.length;i++){const k=s.key(i);if(k)o.push(k);}return o;}
- function migrate(storage){const r={schema:'8ZSUDOKU_STORAGE_MIGRATION_V1',canonical:CANON,copied:[],same:[],conflicts:[],errors:[],legacy:[]};if(!storage){r.errors.push('storage unavailable');return r;}let all;try{all=keys(storage);}catch(e){r.errors.push(String(e&&e.message||e));return r;}const copy=(source,target)=>{let from,to;try{from=storage.getItem(source);to=storage.getItem(target);}catch(e){r.errors.push(source+': '+String(e&&e.message||e));return;}if(!nonempty(from))return;r.legacy.push(source);if(!nonempty(to)){try{storage.setItem(target,from);r.copied.push({source,target});}catch(e){r.errors.push(target+': '+String(e&&e.message||e));}return;}if(to===from)r.same.push({source,target});else r.conflicts.push({source,target});};for(const from of [APP_OLD,PWA_OLD])for(const k of all.filter(x=>x===from||x.startsWith(from+'.')))copy(k,CANON+k.slice(from.length));for(const [s,t]of preferencePairs)copy(s,t);if(!r.errors.length){try{storage.setItem(MARKER,JSON.stringify({at:new Date().toISOString(),copied:r.copied.length,same:r.same.length,conflicts:r.conflicts.length,canonicalWins:true}));}catch(e){r.errors.push(MARKER+': '+String(e&&e.message||e));}}return r;}
- function legacySnapshot(storage){const out={schema:'8ZSUDOKU_LEGACY_STORAGE_EXPORT_V1',exported_at:new Date().toISOString(),items:{}};if(!storage)return out;for(const k of keys(storage))if(k===APP_OLD||k.startsWith(APP_OLD+'.')||k===PWA_OLD||k.startsWith(PWA_OLD+'.')||k.startsWith('8zSudoku.app.ui.'))out.items[k]=storage.getItem(k);return out;}
- function decide(win){const q=new URLSearchParams(win.location.search||''),explicit=q.get('presentation')||q.get('view'),native=win.location.protocol==='capacitor:'||win.location.protocol==='ionic:'||!!win.Capacitor?.isNativePlatform?.(),ua=win.navigator?.userAgent||'',hint=win.navigator?.userAgentData,mobileUA=hint&&typeof hint.mobile==='boolean'?hint.mobile:/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(ua),narrow=!!win.matchMedia?.('(max-width: 740px)')?.matches,coarse=!!win.matchMedia?.('(pointer: coarse)')?.matches,app=explicit==='app'||native||(explicit!=='lab'&&(mobileUA||(narrow&&coarse)));return{mode:app?'app':'lab',app,native,mobile:mobileUA||(narrow&&coarse),explicit:explicit||null};}
- function boot(win){let migration;try{migration=migrate(win.localStorage);}catch(e){migration={schema:'8ZSUDOKU_STORAGE_MIGRATION_V1',errors:[String(e&&e.message||e)],copied:[],same:[],conflicts:[],legacy:[]};}const choice=decide(win);win.__SUDOKU_PRESENTATION={...choice,migration};const apply=()=>{const b=win.document?.body;if(!b)return;b.dataset.presentation=choice.mode;if(choice.app){b.dataset.appSurface='true';b.dataset.appPanel=b.dataset.appPanel||'board';const t=win.document.querySelector('.title');if(t)t.textContent='8zSudoku';win.document.title='8zSudoku · Play & Learn';}else{delete b.dataset.appSurface;delete b.dataset.appPanel;delete b.dataset.appFramedPreview;}};if(win.document?.body)apply();else win.document?.addEventListener('DOMContentLoaded',apply,{once:true});return win.__SUDOKU_PRESENTATION;}
- return{CANON,APP_OLD,PWA_OLD,MARKER,preferencePairs,migrate,legacySnapshot,decide,boot};
-});
-
-</script>
-<!-- END SUDOKU UNIFIED HEAD -->
 </head>
-<body><script id="sudoku-presentation-body-bootstrap">if(window.__SUDOKU_PRESENTATION?.app){document.body.dataset.appSurface="true";document.body.dataset.appPanel="board";}document.body.dataset.presentation=window.__SUDOKU_PRESENTATION?.mode||"lab";</script>
+<body data-app-surface="true" data-app-panel="board">
 <div class="noise"></div>
 
 <div class="topbar">
@@ -712,7 +701,7 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
   <div class="timer" id="timer">00:00</div>
 </div>
 <div class="title-block">
-  <h1 class="title">8zSudoku <span class="accent">Proof Edition</span></h1>
+  <h1 class="title" data-no-i18n>8zSudoku</h1>
   <p class="subtitle">Arena gold, distilled back into one local-first game.</p>
 </div>
 <div class="status" id="status">Select difficulty to begin</div>
@@ -874,7 +863,7 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
     <summary>Preview: arena knowledge distilled into the browser · September 2026</summary>
     <p><strong>Proof Coach</strong> now keeps a verified candidate state separate from player notes and can expose P0–P3 deductions: naked/hidden singles, pointing/claiming, naked pairs, X-Wing and XY-Wing. Elimination hints change only the coach state; they never silently alter the player grid.</p>
     <p><strong>Game Review</strong> evaluates each entered value from the state <em>before</em> the move. A correct move is only called logically verified when a proof is actually found; otherwise it remains <code>UNKNOWN_REASONING</code>. Wrong-answer checking is kept separate and uses the certified unique puzzle solution.</p>
-    <p>This is a product preview at <code>/S/new/</code>. The current <code>/S/</code> game remains untouched until manual review.</p>
+    <p>This is the APP web preview at <code>/S/app/</code>. The APP game and its saved data are separate from LAB and CURRENT.</p>
   </details>
 
   <details class="r6-update" id="r6-arena-update">
@@ -1027,8 +1016,6 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
     </div>
   </div>
 </div>
-
-<div style="text-align:center;padding:2rem 5vw 0.5rem;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:rgba(226,232,244,0.35);letter-spacing:.03em">Less describes more.</div>
 
 <div class="footer">BD × AI Lab · 8zSudoku Proof Edition Preview · 2026 · <a href="../../BD/">MDLxDCC.org/BD/</a></div>
 </div>
@@ -1291,8 +1278,8 @@ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
   if(!Truth)throw new Error('AI8SudokuTruth is required');
   const SCHEMA='AI8_SUDOKU_HUMAN_EVENT_V1';
   const ENGINE='8Z_SUDOKU_HTML_HUMAN_TRACE_V1_3_0';
-  const STORAGE_KEY='ai8SudokuNavigatorV020.trace';
-  const CONSENT_KEY='ai8SudokuNavigatorV020.traceConsent';
+  const STORAGE_KEY='ai8SudokuAppV030.trace';
+  const CONSENT_KEY='ai8SudokuAppV030.traceConsent';
   const ALLOWED_SOURCE=new Set(['touch','pointer','key']);
   const ALLOWED_ACTION=new Set(['select_cell','place_value','erase_value','add_note','remove_note','undo','redo','request_hint','accept_hint','ignore_hint','start','pause','resume','session_resume','finish']);
   const MUTATING_ACTION=new Set(['place_value','erase_value','add_note','remove_note']);
@@ -2040,8 +2027,8 @@ function setStatus(msg,cls){const el=document.getElementById('status');el.textCo
 // ── Game stats ──
 let gameStats={gamesPlayed:0,currentHints:0,bestTimes:{easy:null,medium:null,hard:null,evil:null}};
 let currentDiff=null;
-function loadStats(){try{const s=localStorage.getItem('ai8SudokuNavigatorV020.stats');if(s)gameStats=JSON.parse(s)}catch(e){}}
-function saveStats(){if(window.SudokuNavigator?.product.ready()&&!window.SudokuNavigator.product.storageGuard())return;try{localStorage.setItem('ai8SudokuNavigatorV020.stats',JSON.stringify(gameStats))}catch(e){}}
+function loadStats(){try{const s=localStorage.getItem('ai8SudokuAppV030.stats');if(s)gameStats=JSON.parse(s)}catch(e){}}
+function saveStats(){if(window.SudokuNavigator?.product.ready()&&!window.SudokuNavigator.product.storageGuard())return;try{localStorage.setItem('ai8SudokuAppV030.stats',JSON.stringify(gameStats))}catch(e){}}
 function renderStats(){
   const bar=document.getElementById('statsBar');if(!bar)return;bar.style.display='flex';
   document.getElementById('stPlayed').textContent=gameStats.gamesPlayed;
@@ -2833,7 +2820,7 @@ window.SudokuPickerPresentation=(()=>{
 /* Browser adapter for the checked, answer-blind Navigator. No external runtime assets. */
 (function(){
 'use strict';
-const C=SudokuNavCore, NS='ai8SudokuNavigatorV020', $=id=>document.getElementById(id), J=x=>JSON.parse(JSON.stringify(x));
+const C=SudokuNavCore, NS='ai8SudokuAppV030', $=id=>document.getElementById(id), J=x=>JSON.parse(JSON.stringify(x));
 const grid2=b=>Array.from({length:9},(_,r)=>b.slice(r*9,r*9+9));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let machine=C.emptyModel(),tutor={version:C.VERSION,attempts:[]},memoryConsent=false,tutorConsent=false,learningMode='COLD';
@@ -2952,8 +2939,7 @@ async function createGame(diff,target=null,source='pointer',retention=false){
  if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
  const job=run('generate',{diff,seed,target},15000);genJob=job;mobileUX.sync();if(mobileUX.mobile())mobileUX.toast('Generating a certified new puzzle…');
- try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'&&document.body.hasAttribute('data-app-surface')){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}
-  if(g.status!=='GENERATED'){const message=`Profile not fulfilled after ${g.attempts} attempts. The current game is unchanged.`;notify(message);openDialog('Profile not fulfilled',`<p>${esc(message)}</p><p>${esc(g.reason||'No checked exercise found in the bounded attempts.')}</p>${target==null?`<p>A fixed example from the built-in catalog is available. It is rechecked and may repeat.</p><button class="btn" id="plProfileExample">Use checked ${esc(diff)} example</button>`:""}<div class="ux-menu"><button class="btn" id="plRetryProfile">Retry ${esc(diff)}</button><button class="btn" id="plOtherProfile">Choose another profile</button><button class="btn" id="plKeepGame">Keep my game</button></div>`);$('plRetryProfile').onclick=()=>{closeDialog();createGame(diff,target,source,retention);};$('plOtherProfile').onclick=()=>{closeDialog();mobileUX.requestNew();};$('plKeepGame').onclick=closeDialog;if($('plProfileExample'))$('plProfileExample').onclick=async()=>{closeDialog();await product.openProfileExample(diff);};return;}
+ try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}
   const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
   generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence,attempts:g.attempts,outcomes:g.outcomes||[]};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
@@ -3215,7 +3201,7 @@ const mobileUX=(()=>{
 /* Play/Learn/Lab: one game, one reversible board history, monotone knowledge.
    Storage V2 is a bounded, revision-checked library with recoverable generations. */
 const product=(()=>{
- const RELEASE='LAB-PLAY-LEARN-20260928-R1', SCHEMA='AI8_SUDOKU_LIBRARY_V2';
+ const RELEASE='APP-PLAY-LEARN-20260929-R1', SCHEMA='AI8_SUDOKU_LIBRARY_V2';
  const KEY=NS+'.library', BACKUP=NS+'.libraryBackup', EPOCH=NS+'.deletionEpoch';
  const MAX_GAMES=12,MAX_BYTES=2800000,MAX_HISTORY=128;
  const writer=globalThis.crypto?.randomUUID?.()||'tab-'+Date.now()+'-'+Math.random().toString(36).slice(2);
@@ -3299,10 +3285,10 @@ const product=(()=>{
  async function removeGame(id){if(!confirm('Delete this saved game, including its Notes and history? Export it first if needed. Other games stay.'))return;const current=id===gameId;if(await flush(null,l=>{l.entries=l.entries.filter(e=>e.id!==id);if(l.activeId===id)l.activeId=null;})){try{for(const k of ['session','previousGame']){const old=load(k);if(old?.gameId===id)localStorage.removeItem(NS+'.'+k);}}catch(e){storageError(e);}if(current)clearGame();libraryDialog();}}
  function clearGame(){generationToken++;if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;cancelSolve();genJob?.cancel();genJob=null;resetAnalysis();clearTimeout(saveTimer);stopTimer();puzzle=null;solution=null;playerGrid=null;givenCells=null;notes=null;history=[];redos=[];rows=[];assistance=[];gameId='';returnGame=null;daily=null;completion=null;navState=null;lineage=null;disarm();syncCompletionDisplay();$('welcomeOverlay').classList.remove('hidden');for(const c of $('grid').children){c.textContent='';c.className='cell';}sync();}
  function recoveryDialog(){const keys=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k===BACKUP||k===NS+'.session'||k===NS+'.previousGame'||k?.startsWith(NS+'.recovery.'))keys.push(k);}}catch(_){}openDialog('Recovery & storage',`<p>${esc(storageWarning||'No storage error reported.')}</p><p>Export raw recovery before replacing damaged data. Reload reads the latest library; no tab may silently overwrite a detected newer revision.</p><button class="btn" id="plRawRecovery">Export recovery copies</button><button class="btn" id="plReload">Reload latest</button>`);$('plRawRecovery').onclick=()=>{const copies=Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]));download(JSON.stringify({schema:'AI8_SUDOKU_RECOVERY_V1',copies},null,2),'8zSudoku-recovery.json','application/json');};$('plReload').onclick=()=>location.reload();}
- function deleteEverything(){if(mobileUX.hasDemo()||!confirm('Delete ALL local LAB games, Notes, history, tutor data, machine memory, trace, daily records and preferences? Other editions are untouched.'))return;try{const tombstone=writer+'-'+Date.now();localStorage.setItem(EPOCH,tombstone);if(localStorage.getItem(EPOCH)!==tombstone)throw Error('Deletion marker not saved');epoch=tombstone;deleted=true;frozen=true;clearGame();humanTraceRecorder.deleteAll();for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}library={schema:SCHEMA,revision:0,entries:[],activeId:null};seen=null;machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;prefs={};mobileUX.readPreferences();closeDialog();notify('LAB data deleted. Reload to start a new session.');storageError(Error('Data deleted; this tab cannot recreate it'));}catch(e){storageError(e);}}
+ function deleteEverything(){if(mobileUX.hasDemo()||!confirm('Delete ALL local APP games, Notes, history, tutor data, machine memory, trace, daily records and preferences? Other editions are untouched.'))return;try{const tombstone=writer+'-'+Date.now();localStorage.setItem(EPOCH,tombstone);if(localStorage.getItem(EPOCH)!==tombstone)throw Error('Deletion marker not saved');epoch=tombstone;deleted=true;frozen=true;clearGame();humanTraceRecorder.deleteAll();for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith(NS+'.')&&k!==EPOCH)localStorage.removeItem(k);}localStorage.removeItem('8zSudoku.app.ui.language');library={schema:SCHEMA,revision:0,entries:[],activeId:null};seen=null;machine=C.emptyModel();tutor={version:C.VERSION,attempts:[]};memoryConsent=false;tutorConsent=false;prefs={};mobileUX.readPreferences();closeDialog();notify('APP data deleted. Reload to start a new session.');storageError(Error('Data deleted; this tab cannot recreate it'));}catch(e){storageError(e);}}
  function checkCorrectness(){if(!puzzle||mobileUX.hasDemo())return;openDialog('Check correctness?',`<p>This compares your entries with the certified unique solution. Seeing the result is recorded as assistance. It does not enter or erase values.</p><button class="btn" id="plCheckConfirm">Show answer comparison</button><button class="btn" id="plCheckCancel">Cancel</button>`);$('plCheckCancel').onclick=closeDialog;$('plCheckConfirm').onclick=()=>{closeDialog();const wrong=currentWrongEntries();expose('explicit_answer_check',4);correctionHighlightActive=true;render();openDialog('Answer comparison',`<p>${wrong.length?`${wrong.length} entered value(s) differ from the certified unique solution.`:'No entered values differ from the certified unique solution.'}</p><p>Answer information was shown; this is separate from a logical deduction.</p>`);};}
  function settingsFields(){const fields=[['theme','Theme'],['notesSize','Notes size'],['timer','Timer'],['motion','Motion'],['feedback','Automatic entry feedback'],['entryMode','Input mode'],['cleanup','Auto-clean Notes']];const labels={dark:'Dark',light:'Light',system:'System',normal:'Normal',large:'Large',show:'Show',hide:'Hide',quiet:'Quiet',none:'None',conflicts:'Direct conflicts',cell:'Cell-first',number:'Number-first',off:'Off',on:'On'};const parent=$('uxSettings');parent.innerHTML=fields.map(([key,label])=>`<div class="ux-setting"><label for="plPref-${key}">${label}</label><select id="plPref-${key}" data-pref="${key}">${allowed[key].map(v=>`<option value="${v}" ${pref(key)===v?'selected':''}>${labels[v]}</option>`).join('')}</select></div>`).join('')+'<p>Direct conflicts use visible duplicates only. Candidate Assist is independent. Auto-clean removes the entered digit from empty peer Notes only for a nonconflicting entry, in the same reversible move. Turning it on changes no existing Notes.</p>';$('uxSettings').querySelectorAll('[data-pref]').forEach(n=>n.onchange=()=>writePref(n.dataset.pref,n.value));}
- function more(){if(mobileUX.hasDemo()||genJob)return;const actions={'Redo':()=>travel(true),'My games':async()=>{if(await flush())libraryDialog();},'Daily puzzles':dailyDialog,'Share puzzle':shareDialog,'Check correctness':checkCorrectness,'Review':()=>rows.length?showReview(rows.at(-1).id):openDialog('Game Review','<p>No moves yet.</p>'),'Settings':()=>mobileUX.openSettings(),'Help / About':about,'Import session':()=>{$('navFile').value='';$('navFile').click();},'Export session':exportAll,'Delete all LAB data':deleteEverything};if(returnGame)actions['Return to my game']=returnPractice;openDialog('More',`<div class="ux-menu">${Object.keys(actions).map((s,i)=>`<button class="btn" data-action="${i}" data-menu="${({'Help / About':'Help','Export session':'Export','Import session':'Import'})[s]||s}">${s}</button>`).join('')}</div>`);$('navModalBody').querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{closeDialog();Object.values(actions)[+b.dataset.action]();});}
+ function more(){if(mobileUX.hasDemo()||genJob)return;const actions={'Redo':()=>travel(true),'My games':async()=>{if(await flush())libraryDialog();},'Daily puzzles':dailyDialog,'Share puzzle':shareDialog,'Check correctness':checkCorrectness,'Review':()=>rows.length?showReview(rows.at(-1).id):openDialog('Game Review','<p>No moves yet.</p>'),'Settings':()=>mobileUX.openSettings(),'Help / About':about,'Import session':()=>{$('navFile').value='';$('navFile').click();},'Export session':exportAll,'Delete all APP data':deleteEverything};if(returnGame)actions['Return to my game']=returnPractice;openDialog('More',`<div class="ux-menu">${Object.keys(actions).map((s,i)=>`<button class="btn" data-action="${i}" data-menu="${({'Help / About':'Help','Export session':'Export','Import session':'Import'})[s]||s}">${s}</button>`).join('')}</div>`);$('navModalBody').querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{closeDialog();Object.values(actions)[+b.dataset.action]();});}
  function about(){openDialog('8zSudoku · Help / About',`<p><b>${RELEASE}</b> · source identity is bound in the release manifest.</p><p>Engine ${C.ENGINE_REVISION} · evaluator ${C.RATING_VERSION} · session V1 + history V2 · library V2 · ${C.CODEC}.</p><p>Tap a cell, then a digit. Notes makes pencil marks. Undo and Redo (Ctrl/Cmd+Z, Shift+Z or Ctrl+Y) restore moves, not information already seen. Number-first is optional in Settings; choose a digit and tap empty cells. Escape disarms it.</p><p>Hold an empty cell for 300 ms, then move at least 8 px to a digit and release. On desktop, release without sliding to keep the picker open, then click a number. Escape or an outside click closes it. Touch holds without sliding and releases in gaps cancel. Hold a filled cell for a read-only magnifier. At cell is the default; Settings also offers Keep context visible and three sizes.</p><p>Hint / Why? never silently enters a digit. Deductions from your entries are conditional. Check correctness explicitly reveals answer information.</p><p>Play, Learn and Lab share one live game. Practice keeps a Return to my game route. This file uses no external runtime assets; first-time URL loading requires a network. Downloaded file storage and worker support depend on your browser.</p><div class="ux-menu"><button class="btn" id="plTutorial">Try the short tutorial</button><button class="btn" id="plNews">What’s new</button></div>`);$('plTutorial').onclick=tutorialDialog;$('plNews').onclick=news;}
  function news(){openDialog('What’s new',`<p>Play / Learn / Lab, Light and System themes, optional number-first, Redo, visible-conflict feedback, checked technique profiles, saved games, UTC daily puzzles and givens-only sharing.</p><button class="btn" id="plAcknowledge">Got it</button>`);$('plAcknowledge').onclick=()=>{if(writePref('notice',RELEASE))$('plNotice').hidden=true;closeDialog();};}
  function tutorialDialog(){tutorial={value:0,note:false,history:[]};openDialog('A small practice space',`<p>This demonstration does not change your game, timer, statistics or learning profile. Tap the empty square, then 4. Try Notes and Undo. Hold the square for 300 ms, slide to 4 and release.</p><button id="plTutorialCell" class="btn pl-tutorial-cell" aria-label="Tutorial cell">·</button><div class="ux-menu"><button class="btn" id="plTutorialNumber">4</button><button class="btn" id="plTutorialNotes">Notes</button><button class="btn" id="plTutorialUndo">Undo</button><button class="btn" id="plTutorialSkip">Skip / return to game</button></div><p id="plTutorialFeedback" role="status">Select the square.</p>`);let chosen=false,held=false,timer,start=null,suppressClick=false;const paint=()=>{$('plTutorialCell').textContent=tutorial.value?(tutorial.note?'Note 4':'4'):'·';};const enter=()=>{if(!chosen)return;tutorial.history.push({value:tutorial.value,note:tutorial.note});tutorial.value=tutorial.value?0:4;paint();$('plTutorialFeedback').textContent='Good. Undo reverses this demonstration action.';};$('plTutorialCell').onclick=()=>{if(suppressClick){suppressClick=false;return;}chosen=true;$('plTutorialFeedback').textContent='Now choose 4.';};$('plTutorialNumber').onclick=enter;$('plTutorialNotes').onclick=()=>{tutorial.note=!tutorial.note;$('plTutorialFeedback').textContent='Notes '+(tutorial.note?'on':'off');};$('plTutorialUndo').onclick=()=>{const old=tutorial.history.pop();if(old){Object.assign(tutorial,old);paint();}};$('plTutorialSkip').onclick=closeDialog;
@@ -3325,7 +3311,7 @@ const product=(()=>{
   document.querySelector('.col-center').insertAdjacentHTML('beforeend','<p class="pl-caption" id="plRating"></p><section class="panel" id="plLearn" hidden><h2>Learn one technique</h2><div class="ux-menu" id="plLessons"></div><div id="plLearnActions" class="ux-menu"></div><button class="btn" id="plReturn" hidden>Return to my game</button></section><section class="panel" id="plLabAccess" hidden><h2>Research controls</h2><p>Controller comparisons and local observations stay optional. Opening this view starts no analysis.</p></section><section class="panel" id="plCompletion" hidden><p id="plCompletionText"></p><div class="ux-menu"><button class="btn" id="plFinishReview">Review</button><button class="btn" id="plFinishPractice">Suggest practice</button></div></section><section class="panel" id="plStorage" role="status" hidden><p id="plStorageText"></p><button class="btn" id="plExportRecovery">Export current game</button><button class="btn" id="plStorageRecovery">Recovery options</button></section>');$('plLessons').innerHTML=C.LABELS.slice(0,8).map((x,t)=>`<button class="btn" data-lesson="${t}">${x}</button>`).join('');$('plLessons').querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>lesson(+b.dataset.lesson));for(const id of ['navProfile','navSuggest','navTutor'])$('plLearnActions').appendChild($(id));$('plReturn').onclick=returnPractice;$('plFinishReview').onclick=()=>rows.length?showReview(rows.at(-1).id):switchView('learn');$('plFinishPractice').onclick=()=>{switchView('learn');suggestPractice();};$('plExportRecovery').onclick=exportAll;$('plStorageRecovery').onclick=recoveryDialog;
   for(const n of document.querySelectorAll('.strat-btn,.collapse-hdr,.diff-hint span')){n.setAttribute('role','button');n.tabIndex=0;n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();n.click();}});}
   document.addEventListener('keydown',e=>{if(e.target.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal').hidden)return;if(e.key==='Escape'){disarm();return;}if((e.ctrlKey||e.metaKey)&&((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y')){e.preventDefault();e.stopImmediatePropagation();travel(true,'key');}if(e.target.closest?.('.cell')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectCell(+e.target.closest('.cell').dataset.index,'key');}},true);
-  window.addEventListener('storage',e=>{if(e.key===EPOCH||e.key===KEY){mobileUX.cancelGesture();disarm();if(e.key===EPOCH){deleted=true;generationToken++;cancelSolve();genJob?.cancel();resetAnalysis();clearTimeout(saveTimer);stopTimer();humanTraceRecorder.trace=null;humanTraceRecorder.memoryStored=null;humanTraceRecorder.memoryConsent=false;}frozen=true;storageError(Error(e.key===EPOCH?'LAB data deleted in another tab':'Newer library in another tab; reload to continue'));}});window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change',()=>{if(pref('theme')==='system')applyAppearance();});ready=true;applyAppearance();sync();
+  window.addEventListener('storage',e=>{if(e.key===EPOCH||e.key===KEY){mobileUX.cancelGesture();disarm();if(e.key===EPOCH){deleted=true;generationToken++;cancelSolve();genJob?.cancel();resetAnalysis();clearTimeout(saveTimer);stopTimer();humanTraceRecorder.trace=null;humanTraceRecorder.memoryStored=null;humanTraceRecorder.memoryConsent=false;}frozen=true;storageError(Error(e.key===EPOCH?'APP data deleted in another tab':'Newer library in another tab; reload to continue'));}});window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change',()=>{if(pref('theme')==='system')applyAppearance();});ready=true;applyAppearance();sync();
  }
  return{RELEASE,SCHEMA,install,pref,writePref,feedback:()=>pref('feedback'),switchView,view:()=>view,arm,armed:()=>armedDigit,disarm,sync,syncControls,capture,finish,cleanNotes,undo:s=>travel(false,s),redo:s=>travel(true,s),historyData,validateHistory,restored,mergeKnowledge,storageGuard,flush,flushSync,archive,saveSoon,bootSession,migrate,validateSessionData,libraryDialog,deleteEverything,checkCorrectness,settingsFields,more,about,lesson,lessonExample,tutorialDialog,shareCodec,decodeShare,inspectShare,dailyIdentity,startDaily,openProfileExample,returnPractice,preparePractice:id=>{returnGame=id||gameId;},adoptTrace:()=>{redos=recoveredHumanTraceState?.redo||[];gameId='trace-'+(humanTraceRecorder.trace?.initial_state.board_hash||writer).slice(0,32);extra={assistanceUnknown:true};},reset:()=>{redos=[];extra={};completion=null;daily=null;returnGame=null;disarm();if($('plCompletion'))$('plCompletion').hidden=true;},base:()=>extra,assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),reviewRows:()=>J(rows.filter(r=>r.kind==='placement'&&(r.pre?.b||r.pre_board)).map(r=>{const expected=solution?.flat?.()[r.cell],proof=(r.result?.path||[]).find(q=>q.c===r.cell&&q.v===r.value)||r.result?.path?.at?.(-1),verdict=expected&&r.value!==expected?'mistake':r.result?.found?'verified':'unknown',preBoard=(r.pre?.b||r.pre_board);return{seq:r.id,cell:r.cell,value:r.value,at_s:r.at_s,assisted:!!(r.sessionAssisted||r.help?.length),pre_board:preBoard.slice(),verdict,technique:proof&&Number.isInteger(proof.t)?C.NAMES[proof.t]:null,label:verdict==='mistake'?'Wrong answer':verdict==='verified'?'Verified logic':'Correct · reasoning unknown'};})),canWrite:()=>!frozen&&!deleted,ready:()=>ready,block:e=>{frozen=true;storageError(e);},whenSaved:()=>saveChain,entries:()=>J(library.entries)};
 })();
@@ -3546,7 +3532,7 @@ install();
 // user-entered text are never translated. Embedded verbatim in standalone LAB.
 (() => {
  if (window.SudokuI18n) return;
- const KEY='8zSudoku.ui.language';
+ const KEY='8zSudoku.app.ui.language';
  const SL={
  'Number picker':'Izbira številke','Choose a number · Esc':'Izberi številko · Esc',
  'Play':'Igra','Learn':'Učenje','Lab':'Lab','Game views':'Pogledi igre',
@@ -3561,7 +3547,7 @@ install();
  'Close':'Zapri','Cancel':'Prekliči','Continue':'Nadaljuj','Resume':'Nadaljuj','Pause':'Premor','Stop':'Ustavi','Reset':'Ponastavi','Step':'Korak','Start':'Začni','Save':'Shrani','Delete':'Izbriši','Clear':'Počisti','Export':'Izvozi','Import':'Uvozi','Review':'Pregled','No moves yet':'Potez še ni','No moves yet.':'Potez še ni.',
  'Theme':'Tema','Dark':'Temna','Light':'Svetla','System':'Sistemska','Notes size':'Velikost zapiskov','Timer':'Časovnik','Motion':'Animacije','Automatic entry feedback':'Samodejno opozarjanje na vnose','Input mode':'Način vnosa','Auto-clean Notes':'Samodejno čiščenje zapiskov','Normal':'Običajna','Large':'Velika','Extra large':'Zelo velika','Show':'Pokaži','Hide':'Skrij','Quiet':'Mirno','None':'Brez','Direct conflicts':'Neposredna nasprotja','Cell-first':'Najprej celica','Number-first':'Najprej številka','Off':'Izključeno','On':'Vključeno','Auto':'Samodejno',
  'Number Picker Position':'Položaj izbirnika številk','Number picker position':'Položaj izbirnika številk','Picker size':'Velikost izbirnika','Number Picker Size':'Velikost izbirnika številk','Number picker size':'Velikost izbirnika številk','At cell':'Ob celici','Keep context visible':'Ohrani pogled na okolico','Candidate Assist':'Pomoč pri kandidatih','Candidate assist':'Pomoč pri kandidatih','Saved on this device.':'Shranjeno na tej napravi.','For this tab only — storage unavailable.':'Velja le v tem zavihku — shramba ni na voljo.',
- 'My games':'Moje igre','Daily puzzles':'Dnevne uganke','Share puzzle':'Deli uganko','Check correctness':'Preveri pravilnost','Game Review':'Pregled igre','Import session':'Uvozi igro','Export session':'Izvozi igro','Delete all LAB data':'Izbriši vse podatke LAB','Return to my game':'Vrni se v mojo igro','In progress':'V teku','Completed':'Končane','Favorites':'Priljubljene','★ Favorite':'★ Priljubljena','☆ Favorite':'☆ Med priljubljene','Delete game':'Izbriši igro','Recovery & storage':'Obnovitev in shramba','Recovery options':'Možnosti obnovitve','Export current game':'Izvozi trenutno igro','Export recovery copies':'Izvozi obnovitvene kopije','Reload latest':'Naloži najnovejše','No saved games in this group yet.':'V tej skupini še ni shranjenih iger.','No storage error reported.':'Ni prijavljene napake pri shranjevanju.',
+ 'My games':'Moje igre','Daily puzzles':'Dnevne uganke','Share puzzle':'Deli uganko','Check correctness':'Preveri pravilnost','Game Review':'Pregled igre','Import session':'Uvozi igro','Export session':'Izvozi igro','Delete all APP data':'Izbriši vse podatke APP','Return to my game':'Vrni se v mojo igro','In progress':'V teku','Completed':'Končane','Favorites':'Priljubljene','★ Favorite':'★ Priljubljena','☆ Favorite':'☆ Med priljubljene','Delete game':'Izbriši igro','Recovery & storage':'Obnovitev in shramba','Recovery options':'Možnosti obnovitve','Export current game':'Izvozi trenutno igro','Export recovery copies':'Izvozi obnovitvene kopije','Reload latest':'Naloži najnovejše','No saved games in this group yet.':'V tej skupini še ni shranjenih iger.','No storage error reported.':'Ni prijavljene napake pri shranjevanju.',
  'Learn one technique':'Nauči se ene tehnike','Research controls':'Raziskovalne nastavitve','Controller comparisons and local observations stay optional. Opening this view starts no analysis.':'Primerjave krmilnikov in lokalna opazovanja so neobvezni. Odpiranje tega pogleda ne zažene analize.',
  'Naked single':'Edini kandidat','Hidden single':'Skriti edini kandidat','Pointing':'Usmerjanje iz kvadrata','Claiming':'Usmerjanje v kvadrat','Naked pair':'Goli par','Naked subset':'Gola podmnožica','Hidden subset':'Skrita podmnožica','X-Wing':'X-krilo','XY-Wing':'XY-krilo','Digit-path support':'Podpora poti števke',
  'A small practice space':'Majhen prostor za vajo','Tutorial cell':'Celica za vajo','Skip / return to game':'Preskoči / vrni se v igro','Select the square.':'Izberi kvadrat.','Now choose 4.':'Zdaj izberi 4.','Slide to 4, then release.':'Premakni na 4 in spusti.','Good. Undo reverses this demonstration action.':'Dobro. Razveljavi povrne prejšnje stanje te vaje.','Note 4':'Zapisek 4','Try the short tutorial':'Preizkusi kratko vajo','Start independent exercise':'Začni samostojno vajo',
@@ -3780,7 +3766,7 @@ install();
  function install() {
   if(disposed||!document.body)return;
   // The shell owns one visible language selector. Standalone files own theirs.
-  let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame')&&!document.body?.hasAttribute('data-app-surface');}catch(_){}
+  let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame');}catch(_){}
   if(!embedded){const nav=document.createElement('div');nav.className='sudoku-language';nav.setAttribute('aria-label','Language');nav.innerHTML='<button type="button" data-sudoku-language="en" aria-label="English">EN</button><span aria-hidden="true">|</span><button type="button" data-sudoku-language="sl" aria-label="Slovenian">SL</button>';(document.querySelector('.version-nav')||document.querySelector('.header')||document.body).append(nav);nav.querySelectorAll('button').forEach(b=>b.onclick=()=>setLanguage(b.dataset.sudokuLanguage));
    const style=document.createElement('style');style.textContent='.sudoku-language{position:fixed;top:52px;right:12px;z-index:2147483647;display:flex;align-items:center;gap:3px;border:1px solid #536680;border-radius:9px;background:#0b1423;color:#e2e8f4;font:12px system-ui}.sudoku-language button{min-width:35px;min-height:32px;border:0;background:transparent;color:inherit;border-radius:8px;font:700 12px system-ui;cursor:pointer}.sudoku-language button[aria-pressed=true]{color:#00e5ff;background:#173247}.sudoku-language button:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}.version-nav .sudoku-language,.header .sudoku-language{position:static;border:0;background:transparent}.version-nav .sudoku-language{border-left:1px solid #536680;border-radius:0;padding-left:3px}.version-nav .sudoku-language button{padding:2px;min-width:28px;min-height:28px}@media(max-width:520px){.sudoku-language{top:43px;right:7px}.sudoku-language button{min-width:32px;min-height:32px}}';document.head.append(style);
   }
@@ -3794,26 +3780,26 @@ install();
 })();
 
 </script>
+<!-- END SUDOKU PRESENTATION -->
 <script id="sudoku-app-ui">
 'use strict';
 // Embedded at the end of the self-contained APP game. The LAB solver/game
 // stays the source of truth; this layer changes only its APP presentation.
 (() => {
- if(!document.body?.hasAttribute('data-app-surface'))return;
  const $ = id => document.getElementById(id);
  const panel = $('aiAssistPanel');
  const product = window.SudokuNavigator?.product;
  if (!panel || !product) return;
 
- const TEXT_KEY='8zSudoku.ui.textSize';
+ const TEXT_KEY='8zSudoku.app.ui.textSize';
  const textSizes=new Set(['compact','normal','large']);
  const readTextSize=()=>{try{const v=localStorage.getItem(TEXT_KEY);return textSizes.has(v)?v:'normal';}catch(_){return 'normal';}};
  const applyTextSize=v=>{const size=textSizes.has(v)?v:'normal';document.body.dataset.appTextSize=size;try{localStorage.setItem(TEXT_KEY,size);}catch(_){}};
  const UI_PREFS={
-  numberPad:{key:'8zSudoku.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
-  coach:{key:'8zSudoku.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
-  coachDetail:{key:'8zSudoku.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
-  holdTip:{key:'8zSudoku.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
+  numberPad:{key:'8zSudoku.app.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
+  coach:{key:'8zSudoku.app.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
+  coachDetail:{key:'8zSudoku.app.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
+  holdTip:{key:'8zSudoku.app.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
  };
  const readUiPref=name=>{const p=UI_PREFS[name];try{const v=localStorage.getItem(p.key);return p.allowed.has(v)?v:p.def;}catch(_){return p.def;}};
  const writeUiPref=(name,value)=>{const p=UI_PREFS[name];if(!p.allowed.has(value))return false;try{localStorage.setItem(p.key,value);return true;}catch(_){return false;}};
@@ -4216,7 +4202,6 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
 // persistent transaction owned by the existing Sudoku product. This module
 // builds a checked, read-only review timeline and never mutates game history.
 (() => {
- if(!document.body?.hasAttribute('data-app-surface'))return;
  const nav=window.SudokuNavigator,product=nav?.product,grid=document.getElementById('grid'),C=window.SudokuNavCore,P=window.AI8SudokuProofPreview?.engine;
  if(!product||!grid||!C||!P)return;
  const $=id=>document.getElementById(id);
@@ -4758,7 +4743,6 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
 // APP-only web installation. The native package and downloaded standalone HTML
 // do not register a worker. An embedded phone delegates to its preview shell.
 (() => {
- if(!document.body?.hasAttribute('data-app-surface'))return;
  if (!/^https?:$/.test(location.protocol) || window.Capacitor?.isNativePlatform?.()) return;
  const $ = id => document.getElementById(id);
  const appWindow = () => $('game')?.contentWindow || window;
@@ -4770,7 +4754,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
   if (!menu || $('appPwaMenu')) return;
   const b = document.createElement('button');b.type='button';b.id='appPwaMenu';b.className='btn';b.setAttribute('data-no-i18n','');
   b.textContent=text('App · offline & updates','Aplikacija · brez povezave in posodobitve');
-  b.onclick=()=>{try {$('navClose')?.click();$('uxMore')?.focus({preventScroll:true});const host=window.parent!==window?window.parent:window;host.SudokuUnifiedPWA?.open();} catch (_) {}};
+  b.onclick=()=>{try {$('navClose')?.click();$('uxMore')?.focus({preventScroll:true});const host=window.parent!==window?window.parent:window;host.SudokuAppPWA?.open();} catch (_) {}};
   menu.append(b);
  }
  document.addEventListener('click',e=>{if(e.target.closest?.('#uxMore,#plMore'))openMenuEntry();});
@@ -4819,7 +4803,7 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  function show(kind='update'){notice=kind;$('appPwaUpdate').hidden=false;$('appPwaUpdateButton').disabled=false;render();}
  function open(){returnFocus=document.activeElement;render();$('appPwaPanel').hidden=false;$('appPwaClose').focus();check();}
  function close(){$('appPwaPanel').hidden=true;returnFocus?.focus?.({preventScroll:true});}
- window.SudokuUnifiedPWA={open};
+ window.SudokuAppPWA={open};
  $('appPwaOpen')?.addEventListener('click',open);
  $('appPwaClose').onclick=close;
  $('appPwaPanel').addEventListener('click',e=>{if(e.target===$('appPwaPanel'))close();});
@@ -4893,13 +4877,12 @@ function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0
  register();
  window.addEventListener('online',()=>{render();check();});window.addEventListener('offline',render);
  window.addEventListener('focus',()=>check());
- window.addEventListener('storage',e=>{if(e.key==='8zSudoku.ui.language')render();});
+ window.addEventListener('storage',e=>{if(e.key==='8zSudoku.app.ui.language')render();});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  render();
 })();
 
 </script>
-<!-- END SUDOKU PRESENTATION -->
 </body>
 </html>

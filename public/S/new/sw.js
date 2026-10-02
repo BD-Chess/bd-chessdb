@@ -2,11 +2,11 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "10f58509114bad444d99402ea87470f7cef5f2c7b8d8ad88c37cb8d069f53e90",
+  "id": "30b20b26c11fc3e505267d5be0d1bb3c982490e175e43a0361987210803b7f6b",
   "channel": "LAB",
   "engine": "0.3.0",
   "assets": {
-    "index.html": "2a53d2ebd3d5fa19350fd144a4f11be68bd1a6c581627972ec654b4b545f84ee",
+    "index.html": "ffced20ab2867e9d3264c4268350eda28fa6f368d73cf466525cfbf4870d786a",
     "manifest.webmanifest": "d7c7f785f2e80cedf1d39e666729d0693587c282a43ce17de6d95ba004d31cfb",
     "../_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
     "../_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
@@ -14,7 +14,7 @@ const RELEASE = {
     "../_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "../_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
     "../_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
-    "app.html": "153b4396143420e073fff708c0cc3210ba16a1c5d445755dfd95b67985b1c5ef"
+    "app.html": "2488b9fe8de9af73d6b40501ca08d0dbba50705092806ebc5a070d300eeca293"
   }
 };
 // END GENERATED RELEASE

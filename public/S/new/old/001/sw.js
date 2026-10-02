@@ -2,17 +2,19 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "45b76758323b8f5595320ecd881ac08994d22387364116b68931501dd05ae04b",
-  "channel": "APP_RETIREMENT",
-  "engine": "unified-lab",
+  "id": "10f58509114bad444d99402ea87470f7cef5f2c7b8d8ad88c37cb8d069f53e90",
+  "channel": "LAB",
+  "engine": "0.3.0",
   "assets": {
-    "index.html": "1469debd2f96d449a0eaa06dedb62082a72de832a507803b6d032d900ce247e1",
-    "app.html": "1469debd2f96d449a0eaa06dedb62082a72de832a507803b6d032d900ce247e1",
-    "manifest.webmanifest": "70b2d00def17d5a622eabc4e9589c5b81105863f4523ff89d2d4fe14ee9c00fb",
-    "icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
-    "icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
-    "icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
-    "../new/presentation/bootstrap.js": "b62d9917660fdb480711efed409a5cbd481a789c63e421a6b235958bf2178318"
+    "index.html": "2a53d2ebd3d5fa19350fd144a4f11be68bd1a6c581627972ec654b4b545f84ee",
+    "manifest.webmanifest": "d7c7f785f2e80cedf1d39e666729d0693587c282a43ce17de6d95ba004d31cfb",
+    "../_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
+    "../_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
+    "../_pwa/shell.css": "c2c4f904e9ddd3558aad392e1a76d75efbd380e20a8e9eb270ffac85955216f9",
+    "../_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
+    "../_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
+    "../_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
+    "app.html": "153b4396143420e073fff708c0cc3210ba16a1c5d445755dfd95b67985b1c5ef"
   }
 };
 // END GENERATED RELEASE
