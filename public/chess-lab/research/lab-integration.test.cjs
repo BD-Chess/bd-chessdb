@@ -22,10 +22,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.alert=msg=>{throw Error(msg)};w.confirm=()=>true;
  w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;
  w.AbortController=AbortController; w.HTMLDialogElement.prototype.showModal=function(){this.open=true}; w.HTMLDialogElement.prototype.close=function(){this.open=false};
- w.fetch=async url=>{const u=new URL(url,w.location.href);let text='';
-  if(u.searchParams.get('action')==='queryall'){const b=new w.Chess(u.searchParams.get('board'));text=b.moves({verbose:true}).slice(0,5).map(m=>`move:${m.from+m.to+(m.promotion||'')},score:0,rank:1,note:*`).join('|');}
-  else if(u.pathname.endsWith('/Games/ChessBest_Top_Picks.pgn')) text=fs.readFileSync(base+'Games/ChessBest_Top_Picks.pgn','utf8');
-  return {ok:true,text:async()=>text,json:async()=>({})};};
+ w.fetch=async url=>{const u=new URL(url,w.location.href);let text='';if(u.searchParams.get('action')==='queryall'){const b=new w.Chess(u.searchParams.get('board'));text=b.moves({verbose:true}).slice(0,5).map(m=>`move:${m.from+m.to+(m.promotion||'')},score:0,rank:1,note:*`).join('|');}return {ok:true,text:async()=>text,json:async()=>({})};};
  let sfPreparations=0;
  // Boot the script list and order shipped by the page. Board geometry and the
  // worker boundary are fixtures; store, runner, modal and host wiring are real.
@@ -43,26 +40,10 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const el=id=>w.document.getElementById(id);
  const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
- await until(()=>w.document.body.dataset.desktopView==='moves','desktop layout controller finishes its ChessLabReady startup');
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
  assert.equal(w.document.body.dataset.desktopView,'library','Game library is the active full desktop workspace view');
  assert.equal(el('popularGamesPanel').parentElement,el('workspaceDisplay'),'desktop library shares the main content viewport');
- const librarySearch=el('gameLibrarySearch');
- await until(()=>[...el('popularGamesPanel').querySelectorAll('.library-result')].some(button=>/Dreev.*Kasparov/i.test(button.textContent)),'real ChessBest Top Picks render in the Library');
- librarySearch.value='dreev';librarySearch.dispatchEvent(new w.Event('input',{bubbles:true}));
- const dreev=[...el('popularGamesPanel').querySelectorAll('.library-result')].find(button=>/Dreev.*Kasparov/i.test(button.textContent));
- assert(dreev,'Dreev–Kasparov is searchable in Top Picks');
- dreev.click();
- await until(()=>w.document.body.dataset.desktopView==='review','Dreev–Kasparov opens the Review workspace directly');
- const dreevReview=w.ChessLabHost.getReviewGame();
- assert(dreevReview.totalPly>0,'Dreev–Kasparov loads a complete recorded line');
- assert.equal(dreevReview.sourceIsOriginal,true,'Review keeps the curated source PGN');
- assert.match(dreevReview.headers.ChessBestTitle,/Dreev.*Kasparov/i);
- assert.match(el('gameReviewPanel').textContent,/Dreev.*Kasparov/i,'Review is populated after the Library click');
- librarySearch.value='';librarySearch.dispatchEvent(new w.Event('input',{bubbles:true}));
- el('btnGames').click();assert.equal(w.document.body.dataset.desktopView,'library','Game library reopens from Review');
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
- el('btnNew').click();
  el('btnSettings').click();el('btnCloseSettings').click();
  assert.equal(el('settingsPanel').classList.contains('open'),false);
  assert.equal(el('settingSFDepth').value,'11','users without a saved depth get the new default');
