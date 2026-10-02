@@ -16,12 +16,11 @@
     const host = root.ChessLabHost;
     if (!button || !controls || !host || !root.ChessGameReview) return;
 
-    const panel = element('section', 'workspace-drawer game-review-drawer');
+    const appView = document.body.classList.contains('app-mobile');
+    const panel = element('section', (appView ? 'workspace-drawer ' : 'desktop-workspace-panel ') + 'game-review-drawer');
     panel.id = 'gameReviewPanel';
     panel.hidden = true;
-    const appView = document.body.classList.contains('app-mobile');
-    panel.setAttribute('role', appView ? 'region' : 'dialog');
-    if (!appView) panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('role', 'region');
     panel.setAttribute('aria-labelledby', 'gameReviewHeading');
     panel.tabIndex = -1;
     const header = element('div', 'drawer-heading game-review-heading');
@@ -36,7 +35,9 @@
     notice.setAttribute('role', 'status');
     notice.setAttribute('aria-live', 'polite');
     panel.append(header, body, notice);
-    controls.appendChild(panel);
+    const desktopDisplay = document.getElementById('workspaceDisplay');
+    (appView ? controls : desktopDisplay || controls).appendChild(panel);
+    const reviewScroller = () => appView ? panel : (desktopDisplay || panel);
 
     let review = null;
     let snapshot = null;
@@ -53,7 +54,7 @@
     }
     function closePanel(restoreFocus = true) {
       if (panel.hidden) return;
-      if (previousKey) scrollByKey.set(previousKey, panel.scrollTop);
+      if (previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
       panel.hidden = true;
       panel.classList.remove('open');
       button.setAttribute('aria-expanded', 'false');
@@ -300,7 +301,7 @@
 
     function render() {
       if (panel.hidden) return;
-      const previousScroll = panel.scrollTop;
+      const previousScroll = reviewScroller().scrollTop;
       body.replaceChildren();
       notice.textContent = '';
       if (!snapshot || !snapshot.moves?.length) {
@@ -321,7 +322,7 @@
       const foot = element('p', 'game-review-footnote',
         'Only available PGN notes and navigation checkpoints are shown. The board requests analysis for the position you open. Scores and DCC ranks must be read from their labeled sources; this view does not calculate an evaluation graph or verify every move.');
       body.append(foot);
-      panel.scrollTop = previousScroll;
+      reviewScroller().scrollTop = previousScroll;
     }
 
     function refresh() {
@@ -333,11 +334,11 @@
         const cursorChanged = next.cursor !== previousCursor || Boolean(next.blocked) !== previousBlocked;
         snapshot = next;
         if (stale) {
-          if (previousKey) scrollByKey.set(previousKey, panel.scrollTop);
+          if (previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
           review = root.ChessGameReview.build({ Chess: root.Chess, pgn: next.sourcePGN, headers: next.headers,
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
-          panel.scrollTop = scrollByKey.get(key) || 0;
+          reviewScroller().scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
         else renderSources();
@@ -352,7 +353,7 @@
     }
 
     button.addEventListener('click', () => {
-      if (!panel.hidden) { closePanel(); return; }
+      if (!panel.hidden) { closePanel(appView); return; }
       for (const [drawer, closeId] of [['popularGamesPanel', 'btnCloseGames'], ['settingsPanel', 'btnCloseSettings']]) {
         if (document.getElementById(drawer)?.classList.contains('open')) document.getElementById(closeId)?.click();
       }
@@ -360,7 +361,8 @@
       panel.classList.add('open');
       button.setAttribute('aria-expanded', 'true');
       refresh();
-      close.focus({ preventScroll: true });
+      if (appView) close.focus({ preventScroll: true });
+      else panel.focus({ preventScroll: true });
     });
     close.addEventListener('click', () => closePanel());
     panel.addEventListener('keydown', event => {

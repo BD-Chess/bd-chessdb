@@ -31,8 +31,8 @@
   let closing = false;
   let resizeFrame = 0;
   const byId = id => document.getElementById(id);
-  const desktopViews = new Set(['moves', 'review', 'deep', 'dcc']);
-  const desktopScroll = { moves: 0, dcc: 0 };
+  const desktopViews = new Set(['moves', 'review', 'deep', 'dcc', 'library']);
+  const desktopScroll = { moves: 0, review: 0, deep: 0, dcc: 0, library: 0 };
   let desktopView = 'moves', desktopSyncing = false;
 
   function backingState() {
@@ -57,19 +57,23 @@
       dccAction.setAttribute('aria-pressed', String(active));
       dccAction.classList.toggle('is-active', active);
     }
+    const libraryOpen = desktopView === 'library';
+    byId('popularGamesPanel')?.classList.toggle('open', libraryOpen);
+    byId('btnGames')?.setAttribute('aria-expanded', String(libraryOpen));
+    byId('btnGames')?.classList.toggle('is-active', libraryOpen);
     const display = byId('workspaceDisplay');
-    if (display) display.setAttribute('aria-label', { moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis' }[desktopView]);
+    if (display) display.setAttribute('aria-label', {
+      moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis', library: 'Game library'
+    }[desktopView]);
   }
   function closeDesktopDrawers() {
-    for (const [panelId, closeId] of [['popularGamesPanel', 'btnCloseGames'], ['settingsPanel', 'btnCloseSettings']]) {
-      if (byId(panelId)?.classList.contains('open')) byId(closeId)?.click();
-    }
+    if (byId('settingsPanel')?.classList.contains('open')) byId('btnCloseSettings')?.click();
   }
   function setDesktopView(next, options = {}) {
     if (document.body.classList.contains('app-mobile') || !desktopViews.has(next)) return;
     closeDesktopDrawers();
     const display = byId('workspaceDisplay');
-    if (display && (desktopView === 'moves' || desktopView === 'dcc')) desktopScroll[desktopView] = display.scrollTop;
+    if (display && desktopViews.has(desktopView)) desktopScroll[desktopView] = display.scrollTop;
     desktopView = next;
     paintDesktopView();
     if (desktopSyncing) return;
@@ -84,20 +88,35 @@
     } finally {
       desktopSyncing = false;
     }
-    if (display && (next === 'moves' || next === 'dcc')) display.scrollTop = desktopScroll[next];
-    if (!options.preserveFocus) byId('desktopViewTabs')?.querySelector('[data-desktop-view="' + next + '"]')?.focus({ preventScroll: true });
+    if (display) display.scrollTop = desktopScroll[next] || 0;
+    if (!options.preserveFocus) {
+      const target = byId('desktopViewTabs')?.querySelector('[data-desktop-view="' + next + '"]') || (next === 'library' ? byId('btnGames') : null);
+      target?.focus({ preventScroll: true });
+    }
   }
   function initDesktopViews() {
     if (document.body.classList.contains('app-mobile')) return;
     const tabs = byId('desktopViewTabs');
-    if (!tabs) return;
+    const display = byId('workspaceDisplay');
+    const library = byId('popularGamesPanel');
+    if (!tabs || !display) return;
+    if (library && library.parentElement !== display) display.appendChild(library);
+    library?.classList.add('desktop-workspace-panel');
     for (const tab of tabs.querySelectorAll('[data-desktop-view]')) tab.addEventListener('click', () => setDesktopView(tab.dataset.desktopView));
     document.addEventListener('chess:library-loaded', event => {
+      if (event.detail?.view === 'review') desktopScroll.review = 0;
       setDesktopView(event.detail?.view === 'review' ? 'review' : 'moves', { preserveFocus: true });
     });
-    byId('btnGames')?.addEventListener('click', () => {
-      if (backingState().review) byId('btnGameReview')?.click();
-    });
+    const games = byId('btnGames');
+    if (games) games.onclick = () => setDesktopView('library', { preserveFocus: true });
+    const closeGames = byId('btnCloseGames');
+    if (closeGames) closeGames.onclick = () => setDesktopView('moves');
+    library?.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setDesktopView('moves');
+    }, true);
     tabs.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();

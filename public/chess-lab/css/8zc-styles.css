@@ -1469,6 +1469,21 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
   }
 }
 #controls > #popularGamesPanel.open { display: flex; flex-direction: column; }
+@media (min-width: 791px) {
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer {
+    box-sizing: border-box; width: 100%; min-width: 0; min-height: 100%;
+    margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ui-text);
+  }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > #popularGamesPanel { display: block; }
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > .game-review-drawer { display: block; }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > :not(#popularGamesPanel),
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > :not(.game-review-drawer) { display: none !important; }
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel .drawer-heading,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer .drawer-heading { top: -8px; }
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel #btnCloseGames,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer .game-review-heading > button { display: none !important; }
+}
 #popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
 #popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
 #popularGamesPanel .library-result { flex-shrink: 0; }
@@ -1685,5 +1700,12 @@ body:not(.app-mobile) .desktop-view-tabs button:hover{border-color:var(--ui-acce
 body:not(.app-mobile) .desktop-view-tabs button[aria-selected="true"]{color:var(--ui-ink);background:var(--ui-accent);border-color:var(--ui-accent)}
 body:not(.app-mobile) .workspace-primary-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;margin:0}
 body:not(.app-mobile) .workspace-primary-actions .btn{width:100%;min-height:44px;margin:0;padding:6px 4px;font-size:10.5px}
+body:not(.app-mobile) #workspacePrimaryActions #btnNew{
+  background:var(--ui-inset);color:var(--ui-text);border-color:var(--ui-border)
+}
+body:not(.app-mobile) #workspacePrimaryActions #btnNew:hover{border-color:var(--ui-accent);color:var(--ui-accent)}
+body:not(.app-mobile) #workspacePrimaryActions #btnGames.is-active{
+  background:var(--ui-inset);color:var(--ui-accent);border-color:var(--ui-accent)
+}
 body:not(.app-mobile) .workspace-bottom{padding-top:9px}
 body.app-mobile .desktop-control-stack{display:none!important}

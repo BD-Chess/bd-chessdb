@@ -33,6 +33,9 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(styles, /workspace-drawer\.open\) > \.workspace-bottom[\s\S]*visibility: visible/);
   assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);
   assert.match(styles, /workspace-drawer\.open\) #desktopViewTabs,[\s\S]*#workspacePrimaryActions[\s\S]*pointer-events: auto/);
+  assert.match(styles, /data-desktop-view="library"[\s\S]*#workspaceDisplay > #popularGamesPanel/);
+  assert.match(styles, /data-desktop-view="review"[\s\S]*#workspaceDisplay > \.game-review-drawer/);
+  assert.match(styles, /#workspacePrimaryActions #btnNew[\s\S]*background:var\(--ui-inset\)/);
 });
 
 test('legacy controls remain hidden backing controls', () => {
@@ -138,6 +141,17 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   d.dispatchEvent(new w.CustomEvent('chess:library-loaded',{detail:{view:'review',curatedReview:true}}));
   await new Promise(resolve=>w.setTimeout(resolve,0));
   assert.equal(d.body.dataset.desktopView,'review');
+
+  byId('btnGames').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(d.body.dataset.desktopView,'library');
+  assert.equal(byId('popularGamesPanel').parentElement,byId('workspaceDisplay'));
+  assert.equal(byId('popularGamesPanel').classList.contains('open'),true);
+  assert.equal(byId('btnGames').classList.contains('is-active'),true);
+  d.querySelector('[data-desktop-view="deep"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(d.body.dataset.desktopView,'deep');
+  assert.equal(byId('popularGamesPanel').classList.contains('open'),false);
   dom.window.close();
 });
 
@@ -145,8 +159,9 @@ test('Game library routes curated reviews only after a successful load and Revie
   assert.match(utils, /CustomEvent\('chess:library-loaded'[\s\S]*curatedReview \? 'review' : 'moves'/);
   assert.doesNotMatch(utils, /document\.getElementById\('main'\)\.scrollIntoView/);
   assert.match(reviewUi, /const scrollByKey = new Map\(\)/);
-  assert.match(reviewUi, /scrollByKey\.set\(previousKey, panel\.scrollTop\)/);
-  assert.match(reviewUi, /panel\.scrollTop = scrollByKey\.get\(key\) \|\| 0/);
+  assert.match(reviewUi, /desktop-workspace-panel/);
+  assert.match(reviewUi, /reviewScroller\(\)\.scrollTop/);
+  assert.match(reviewUi, /reviewScroller\(\)\.scrollTop = scrollByKey\.get\(key\) \|\| 0/);
   const openHandler = reviewUi.slice(reviewUi.indexOf("button.addEventListener('click'"), reviewUi.indexOf("close.addEventListener('click'"));
-  assert.doesNotMatch(openHandler, /panel\.scrollTop\s*=\s*0/);
+  assert.doesNotMatch(openHandler, /reviewScroller\(\)\.scrollTop\s*=\s*0/);
 });

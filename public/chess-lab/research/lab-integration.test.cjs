@@ -41,6 +41,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
+ assert.equal(el('popularGamesPanel').parentElement,el('workspaceDisplay'),'desktop library shares the main content viewport');
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
  assert.equal(el('settingsPanel').classList.contains('open'),false);
@@ -76,7 +77,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB → SF'],['sf','SF']]);
+ assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB|SF'],['sf','SF']]);
  source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'CDB-first retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
