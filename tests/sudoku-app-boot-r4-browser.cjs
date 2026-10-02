@@ -20,6 +20,7 @@ async function run(){
      await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});
      await page.waitForTimeout(700);
      for(const diff of ['easy','hard','evil']){
+      frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe remains attached');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
       await frame.evaluate(async s=>{await window.SudokuNavigator.restore(s);window.stopTimer();window.SudokuNavigator.product.switchView('play');},{...fixture,diff});
       await frame.waitForFunction(d=>document.body.dataset.appHardNoHelp===(d==='easy'?'false':'true'),diff);
       for(const lang of ['en','sl']){
