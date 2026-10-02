@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- TS CPQ SO protected wrapper R2: DecompressionStream deadlock fix -->
 <html lang="sl" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -58,7 +59,7 @@ function b2u(b){let v=0n;for(let i=0;i<8;i++)v=(v<<8n)|BigInt(b[i]);return v}
 async function sha(d){const b=(d instanceof Uint8Array)?d:new TextEncoder().encode(d);return new Uint8Array(await crypto.subtle.digest('SHA-256',b))}
 function cat(...a){let l=0;for(const x of a)l+=x.length;const o=new Uint8Array(l);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o}
 async function dk(pp,salt){const ph=await sha(pp),sm=await sha(cat(ph,salt,new TextEncoder().encode("8Z_AUTH_V1")));const rng=new XS(b2u(sm.slice(0,8)));for(let i=0;i<1024;i++)rng.n();const sh=await sha(u2b(rng.state)),c=cat(ph,sh);const km=await crypto.subtle.importKey('raw',c,'PBKDF2',false,['deriveBits']);return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:500000,hash:'SHA-256'},km,256))}
-async function gunzip(comp){if(!('DecompressionStream' in window))throw new Error('unsupported');const ds=new DecompressionStream('gzip');const w=ds.writable.getWriter(),r=ds.readable.getReader();await w.write(comp);await w.close();const ch=[];while(true){const x=await r.read();if(x.done)break;ch.push(x.value)}let t=0;for(const c of ch)t+=c.length;const out=new Uint8Array(t);let o=0;for(const c of ch){out.set(c,o);o+=c.length}return out}
+async function gunzip(comp){if(!('DecompressionStream' in window))throw new Error('unsupported');const stream=new Blob([comp]).stream().pipeThrough(new DecompressionStream('gzip'));return new Uint8Array(await new Response(stream).arrayBuffer())}
 async function dec(b64,pp){const raw=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));const salt=raw.slice(0,32),iv=raw.slice(32,44),ct=raw.slice(44);const kb=await dk(pp,salt);const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);const comp=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,ct));return new TextDecoder().decode(await gunzip(comp))}
 async function unlock(){const inp=document.getElementById('p'),btn=document.getElementById('b'),st=document.getElementById('st'),box=document.getElementById('lock');const pp=inp.value;if(!pp)return;btn.disabled=true;st.textContent='Odklepanje…';try{const html=await dec(BLOB,pp);document.open();document.write(html);document.close()}catch(e){btn.disabled=false;st.textContent=e&&e.message==='unsupported'?'Ta brskalnik ne podpira potrebnega DecompressionStream API.':'Napačno geslo.';inp.value='';inp.focus();box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake')}}
 document.getElementById('b').addEventListener('click',unlock);
