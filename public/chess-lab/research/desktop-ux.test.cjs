@@ -30,7 +30,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
   assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
   assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper SF<\/button>/);
-  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB | SF','SF']);
+  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB | SF','SF lite']);
   assert.match(styles, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,2\.35fr\)/);
   assert.match(styles, /workspace-drawer\.open\) > \.workspace-bottom[\s\S]*visibility: visible/);
   assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);
@@ -144,6 +144,31 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   assert.equal(byId('workspaceDisplay').scrollTop,137,'Review restores the same workspace scroll position after leaving and returning');
   assert.equal(byId('btnGameReview').getAttribute('aria-expanded'),'true','Review backing panel reopens after Deep');
   assert.equal(byId('btnDeepAnalysis').getAttribute('aria-expanded'),'true','Deep stays alive in the background while Review is visible');
+
+  byId('workspaceDisplay').scrollTop = 211;
+  d.querySelector('[data-desktop-view="moves"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  byId('workspaceDisplay').scrollTop = 73;
+  d.querySelector('[data-desktop-view="dcc"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  byId('workspaceDisplay').scrollTop = 94;
+  d.querySelector('[data-desktop-view="deep"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  byId('workspaceDisplay').scrollTop = 126;
+
+  d.querySelector('[data-desktop-view="review"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  await new Promise(resolve=>w.requestAnimationFrame(()=>resolve()));
+  assert.equal(byId('workspaceDisplay').scrollTop,211,'Review keeps its own desktop scroll position');
+  d.querySelector('[data-desktop-view="moves"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(byId('workspaceDisplay').scrollTop,73,'Moves keeps its own desktop scroll position');
+  d.querySelector('[data-desktop-view="dcc"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(byId('workspaceDisplay').scrollTop,94,'DCC keeps its own desktop scroll position');
+  d.querySelector('[data-desktop-view="deep"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(byId('workspaceDisplay').scrollTop,126,'Deep keeps its own desktop scroll position');
 
   d.querySelector('[data-desktop-view="moves"]').click();
   await new Promise(resolve=>w.setTimeout(resolve,0));
