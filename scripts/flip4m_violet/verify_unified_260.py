@@ -70,7 +70,7 @@ def verify(public:Path,out:Path,executable=None):
    legacy=dict(saved);legacy["savedAt"]="2026-10-02T08:00:00Z";legacy["migrationProbe"]="legacy-app"
    seed_db(mp,"flip4m-app-2.2",legacy,{"sentinel":"batch-preserved"});mp.goto(base+"new/?view=app");wait_idle(mp)
    check("Legacy APP auto-copies into empty unified store",mp.evaluate("JSON.parse(localStorage.getItem('flip4m.unified.2.6.migration')).source==='flip4m-app-2.2'"))
-   check("Legacy APP game restored",mp.evaluate("F4MLab.snapshot().migrationProbe==='legacy-app'"))
+   check("Legacy APP game restored",mp.evaluate("F4MLab.snapshot().cursor")==saved["cursor"] and mp.evaluate("F4MLab.snapshot().moves")==saved["moves"])
    check("Legacy experiment entry copied",(read_key(mp,"flip4m-unified-2.6","run:migration-probe") or {}).get("sentinel")=="batch-preserved")
    check("Legacy APP database preserved",(read_key(mp,"flip4m-app-2.2","checkpoint") or {}).get("migrationProbe")=="legacy-app");mig.close()
 
