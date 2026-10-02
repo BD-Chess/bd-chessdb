@@ -94,6 +94,8 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   Object.defineProperty(workspace, 'clientHeight', { value: 500 });
   Object.defineProperty(workspace, 'clientTop', { value: 1 });
   workspace.getBoundingClientRect = () => ({ top: 100 });
+  const scrollCalls = [];
+  workspace.scrollTo = options => { scrollCalls.push(options); workspace.scrollTop = options.top; };
   panel.getBoundingClientRect = () => ({ top: 109 - workspace.scrollTop });
   panel.querySelector('.deep-actions').getBoundingClientRect = () => ({ top: 389 - workspace.scrollTop });
   workspace.scrollTop = 72;
@@ -102,6 +104,7 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   assert.equal(workspace.scrollTop, 0, 'invalid settings stay visible for correction');
   x.el('roots').value = ''; x.el('start').click();
   assert.equal(workspace.scrollTop, 280, 'toolbar is aligned with the workspace padding');
+  assert.deepEqual(scrollCalls.at(-1), { top: 280, behavior: 'smooth' }, 'manual Analyze position smoothly reveals the result area inside the workspace');
   assert.equal(panel.style.minHeight, '764px', 'short results still have room beneath the toolbar');
   assert.equal(x.w.scrollY, 0, 'the page itself never scrolls');
   workspace.scrollTop = 340;

@@ -38,6 +38,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(styles, /data-desktop-view="library"\] #workspaceDisplay \{ overflow: hidden; \}/);
   assert.match(styles, /#workspaceDisplay > #popularGamesPanel \{[\s\S]*display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden/);
   assert.match(styles, /\.library-result-list \{[\s\S]*overflow-y: auto;[\s\S]*pointer-events: auto/);
+  assert.match(styles, /#btnUseTournamentOpening \{[\s\S]*background: var\(--ui-raised\); color: var\(--ui-text\)/);
   assert.match(styles, /data-desktop-view="review"[\s\S]*#workspaceDisplay > \.game-review-drawer/);
   assert.match(styles, /#workspacePrimaryActions #btnNew[\s\S]*background:var\(--ui-inset\)/);
 });

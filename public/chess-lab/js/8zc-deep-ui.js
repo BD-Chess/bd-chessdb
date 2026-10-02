@@ -157,9 +157,17 @@
       const topPadding = parseFloat(style.paddingTop) || 0, bottomPadding = parseFloat(style.paddingBottom) || 0;
       const offset = actions.getBoundingClientRect().top - panel.getBoundingClientRect().top;
       // Keep room below the toolbar even while the engine is loading or has
-      // only a short PV. Scroll this workspace once, never on streamed updates.
+      // only a short PV. Reveal the result area inside the workspace, never
+      // by moving the page itself.
       panel.style.minHeight = Math.max(0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
-      workspace.scrollTop += actions.getBoundingClientRect().top - workspace.getBoundingClientRect().top - workspace.clientTop - topPadding;
+      const target = Math.max(0, workspace.scrollTop + actions.getBoundingClientRect().top -
+        workspace.getBoundingClientRect().top - workspace.clientTop - topPadding);
+      deepScroll = target;
+      if (typeof workspace.scrollTo === 'function') {
+        try { workspace.scrollTo({ top: target, behavior: 'smooth' }); return; }
+        catch (_) { /* Older embedded browsers: fall through to scrollTop. */ }
+      }
+      workspace.scrollTop = target;
     }
     async function start(options = {}) {
       const token = ++run;
