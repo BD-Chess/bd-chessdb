@@ -7,6 +7,10 @@ name: Deploy to Netlify production
 # only when its materiality, budget, safety and provenance gates pass.
 on:
   workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '.github/workflows/deploy-netlify.yml'
 
 permissions:
   contents: read
