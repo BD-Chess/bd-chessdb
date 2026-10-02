@@ -1,8 +1,8 @@
 [build]
   # Netlify Git continuous deployment is intentionally suppressed.
   # Production is published only by the dedicated 06:00 Europe/Ljubljana release coordinator via CLI --no-build.
-  # Exit 0 tells Netlify to stop every Git-triggered build before the build command runs.
-  ignore = "exit 0"
+  # TEMPORARY BD-authorized release gate: exit 1 allows this Git-triggered production build to run.
+  ignore = "exit 1"
   # One repo serves two Netlify projects: mdlxdcc keeps public/ unchanged; bd-chess overlays public/chess/ at the publish root during its build.
   command = 'python3 scripts/inject_password_manager.py public --report /tmp/password-manager-compat-report.json && if [ "$SITE_NAME" = "bd-chess" ]; then cp -a public/chess/. public/; fi'
 
