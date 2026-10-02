@@ -1449,6 +1449,25 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 #controls > .workspace-drawer, body.light-theme #controls > .workspace-drawer { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; border: 0; border-radius: inherit; overflow: auto; overscroll-behavior: contain; }
 #controls:has(> .workspace-drawer.open) > :not(.workspace-drawer) { visibility: hidden; }
 #controls > .workspace-drawer .btn { background: var(--ui-raised); color: var(--ui-text); }
+@media (min-width: 791px) {
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) > .workspace-bottom {
+    visibility: visible; position: relative; z-index: 700;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) > .workspace-bottom .desktop-control-stack {
+    visibility: visible; position: relative; z-index: 1; background: var(--ui-surface);
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #desktopNavRow {
+    visibility: hidden; pointer-events: none;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #desktopViewTabs,
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspacePrimaryActions {
+    visibility: visible; pointer-events: auto;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspaceFocusBar,
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspaceToolContent {
+    visibility: hidden; pointer-events: none;
+  }
+}
 #controls > #popularGamesPanel.open { display: flex; flex-direction: column; }
 #popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
 #popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }

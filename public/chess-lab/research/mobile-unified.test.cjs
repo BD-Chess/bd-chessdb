@@ -7,6 +7,7 @@ const { Chess } = require('../js/chess.min.js');
 const base = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8');
 const script = fs.readFileSync(path.join(base, 'js/app-mobile.js'), 'utf8');
+const mobileCss = fs.readFileSync(path.join(base, 'css/app-mobile.css'), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
 async function setup({ phone = false, native = false, appPreview = false } = {}) {
@@ -65,6 +66,10 @@ test('phone activates five-view mobile UX inside the same LAB document and names
   assert.equal(x.d.body.dataset.appView, 'moves');
   x.byId('appTabs').querySelector('[data-app-tab="board"]').click();
   assert.equal(x.d.body.dataset.appView, 'board');
+  x.d.dispatchEvent(new x.w.CustomEvent('chess:library-loaded', { detail: { view: 'review', curatedReview: true } }));
+  assert.equal(x.d.body.dataset.appView, 'review');
+  x.d.dispatchEvent(new x.w.CustomEvent('chess:library-loaded', { detail: { view: 'moves', curatedReview: false } }));
+  assert.equal(x.d.body.dataset.appView, 'moves');
   x.dom.window.close();
 });
 
@@ -88,6 +93,9 @@ test('desktop APP simulation uses the same mobile controller and stays forced ac
   assert.equal(x.d.querySelector('[data-app-presentation]').getAttribute('aria-current'), 'page');
   assert.equal(x.d.querySelector('[data-lab-presentation]').getAttribute('aria-current'), null);
   assert.equal(x.byId('appPreviewDesktopTools').hidden, false);
+  assert.match(mobileCss, /--app-preview-height:min\(874px,calc\(100dvh - 24px\)\)/);
+  assert.match(mobileCss, /top:50%;left:50%;transform:translate\(-50%,-50%\)/);
+  assert.match(mobileCss, /\.app-tabs\{[\s\S]*bottom:var\(--app-preview-inset\)/);
   x.w.dispatchEvent(new x.w.Event('resize'));
   await flush();
   assert.equal(x.d.body.classList.contains('app-preview-desktop'), true);

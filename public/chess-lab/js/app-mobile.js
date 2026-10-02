@@ -409,6 +409,9 @@
       setView('moves');
       if (!byId('popularGamesPanel').classList.contains('open')) byId('btnGames').click();
     });
+    doc.addEventListener('chess:library-loaded', event => {
+      setView(event.detail?.view === 'review' ? 'review' : 'moves');
+    });
     byId('appMore').addEventListener('click', () => root.ChessLabLayout?.openTools());
     byId('appSim').addEventListener('click', () => byId('btnSim').click());
     byId('appSimMore').addEventListener('click', () => {

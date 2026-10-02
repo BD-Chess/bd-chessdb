@@ -204,14 +204,18 @@ body.app-mobile #popularGamesPanel{overflow-y:auto;scrollbar-width:thin;scrollba
 /* Desktop APP simulation: the same LAB/mobile DOM and controller, framed for inspection. */
 .app-preview-desktop-tools{display:none}
 body.app-mobile.app-preview-desktop{
-  --app-preview-width:min(402px,calc(100vw - 30px));
+  --app-preview-width:min(402px,46dvh,calc(100vw - 30px));
+  --app-preview-height:min(874px,calc(100dvh - 24px));
+  --app-preview-inset:max(12px,calc((100dvh - 874px)/2));
   min-height:100dvh;
+  padding-top:var(--app-preview-inset);
+  padding-bottom:calc(78px + var(--app-preview-inset));
   background:radial-gradient(900px 620px at 50% 18%,rgba(75,118,93,.18),transparent 68%),#0b1511;
 }
 body.app-mobile.app-preview-desktop::before{
-  content:"";position:fixed;z-index:900;pointer-events:none;
-  top:10px;bottom:10px;left:50%;transform:translateX(-50%);
-  width:calc(var(--app-preview-width) + 14px);
+  content:"";position:fixed;z-index:900;pointer-events:none;box-sizing:border-box;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:calc(var(--app-preview-width) + 14px);height:var(--app-preview-height);
   border:6px solid #010705;border-radius:32px;
   box-shadow:0 18px 60px #0009,0 0 0 1px #59735f;
 }
@@ -223,9 +227,15 @@ body.app-mobile.app-preview-desktop #main:has(#board.scaled),
 body.app-mobile.app-preview-desktop #main.lab-custom-width{
   width:var(--app-preview-width)!important;max-width:var(--app-preview-width)!important
 }
-body.app-mobile.app-preview-desktop .app-tabs{width:var(--app-preview-width)!important;max-width:var(--app-preview-width)}
+body.app-mobile.app-preview-desktop #controls,
+body.app-mobile.app-preview-desktop.light-theme #controls{
+  height:calc(var(--app-preview-height) - 56px - 72px - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height));
+}
+body.app-mobile.app-preview-desktop .app-tabs{
+  width:var(--app-preview-width)!important;max-width:var(--app-preview-width);bottom:var(--app-preview-inset)
+}
 body.app-mobile.app-preview-desktop .app-preview-desktop-tools{
-  position:fixed;z-index:950;top:16px;left:calc(50% + 225px);
+  position:fixed;z-index:950;top:calc(var(--app-preview-inset) + 6px);left:calc(50% + 225px);
   display:flex;flex-direction:column;gap:5px;min-width:142px;padding:9px 10px;
   border:1px solid var(--ui-border);border-radius:9px;background:var(--ui-surface);
   color:var(--ui-muted);font:11px/1.25 system-ui,sans-serif;box-shadow:0 10px 30px #0005
@@ -235,5 +245,5 @@ body.app-mobile.app-preview-desktop .app-preview-desktop-tools a{color:var(--ui-
 body.app-mobile.app-preview-desktop .app-preview-desktop-tools a:hover{text-decoration:underline}
 @media(max-width:760px){
   body.app-mobile.app-preview-desktop .app-preview-desktop-tools{display:none!important}
-  body.app-mobile.app-preview-desktop::before{top:4px;bottom:4px;border-width:3px;border-radius:22px}
+  body.app-mobile.app-preview-desktop::before{border-width:3px;border-radius:22px}
 }

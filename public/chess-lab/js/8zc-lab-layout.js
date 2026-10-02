@@ -60,8 +60,14 @@
     const display = byId('workspaceDisplay');
     if (display) display.setAttribute('aria-label', { moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis' }[desktopView]);
   }
+  function closeDesktopDrawers() {
+    for (const [panelId, closeId] of [['popularGamesPanel', 'btnCloseGames'], ['settingsPanel', 'btnCloseSettings']]) {
+      if (byId(panelId)?.classList.contains('open')) byId(closeId)?.click();
+    }
+  }
   function setDesktopView(next, options = {}) {
     if (document.body.classList.contains('app-mobile') || !desktopViews.has(next)) return;
+    closeDesktopDrawers();
     const display = byId('workspaceDisplay');
     if (display && (desktopView === 'moves' || desktopView === 'dcc')) desktopScroll[desktopView] = display.scrollTop;
     desktopView = next;
@@ -86,6 +92,12 @@
     const tabs = byId('desktopViewTabs');
     if (!tabs) return;
     for (const tab of tabs.querySelectorAll('[data-desktop-view]')) tab.addEventListener('click', () => setDesktopView(tab.dataset.desktopView));
+    document.addEventListener('chess:library-loaded', event => {
+      setDesktopView(event.detail?.view === 'review' ? 'review' : 'moves', { preserveFocus: true });
+    });
+    byId('btnGames')?.addEventListener('click', () => {
+      if (backingState().review) byId('btnGameReview')?.click();
+    });
     tabs.addEventListener('keydown', event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();

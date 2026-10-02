@@ -44,6 +44,7 @@
     let previousCursor = null;
     let previousBlocked = null;
     let refreshFrame = 0;
+    const scrollByKey = new Map();
 
     const blocked = () => Boolean(snapshot?.blocked);
     function focusAfterClose() {
@@ -52,6 +53,7 @@
     }
     function closePanel(restoreFocus = true) {
       if (panel.hidden) return;
+      if (previousKey) scrollByKey.set(previousKey, panel.scrollTop);
       panel.hidden = true;
       panel.classList.remove('open');
       button.setAttribute('aria-expanded', 'false');
@@ -331,9 +333,11 @@
         const cursorChanged = next.cursor !== previousCursor || Boolean(next.blocked) !== previousBlocked;
         snapshot = next;
         if (stale) {
+          if (previousKey) scrollByKey.set(previousKey, panel.scrollTop);
           review = root.ChessGameReview.build({ Chess: root.Chess, pgn: next.sourcePGN, headers: next.headers,
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
+          panel.scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
         else renderSources();
@@ -355,7 +359,6 @@
       panel.hidden = false;
       panel.classList.add('open');
       button.setAttribute('aria-expanded', 'true');
-      panel.scrollTop = 0;
       refresh();
       close.focus({ preventScroll: true });
     });

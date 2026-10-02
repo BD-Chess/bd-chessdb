@@ -433,13 +433,21 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const selectedPGN = e.target.value;
       try {
         await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks }, () => {
+          let curatedReview = false;
           if (bucket.topPicks) {
-            const anchor = chessBestTopPickAnchor(game.header(), fullHistory, Chess);
-            if (anchor !== null) jumpTo(anchor);
+            const headers = game.header();
+            const anchor = chessBestTopPickAnchor(headers, fullHistory, Chess);
+            if (anchor !== null) {
+              jumpTo(anchor);
+              curatedReview = Boolean(headers.ChessBestTitle && headers.ChessBestTeaser);
+            }
           }
-	      panel.classList.remove('open');
-	      document.getElementById('main').scrollIntoView({ behavior: 'smooth', block: 'start' });
-	      sel.selectedIndex = 0;
+          panel.classList.remove('open');
+          document.getElementById('btnGames')?.setAttribute('aria-expanded', 'false');
+          sel.selectedIndex = 0;
+          document.dispatchEvent(new CustomEvent('chess:library-loaded', {
+            detail: { view: curatedReview ? 'review' : 'moves', curatedReview }
+          }));
         });
       }
       catch (error) { showGameLoadProblem(error); }
@@ -3957,6 +3965,8 @@ async function launchFromSimModal() {
     if (!run) throw new Error('Saved game not found.');
     await loadStudyPGN(run.pgn || SIM.toPGN(Chess, run), `${run.eventName || 'Our engines'} · ${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result}`, { archive: true });
     tournamentUI.close(); panel.classList.remove('open');
+    document.getElementById('btnGames')?.setAttribute('aria-expanded', 'false');
+    document.dispatchEvent(new CustomEvent('chess:library-loaded', { detail: { view: 'moves', curatedReview: false } }));
   }
   async function exportTournament(format, eventId) {
     const runs = (await simStore.listRuns()).filter(run => !eventId || run.eventId === eventId);

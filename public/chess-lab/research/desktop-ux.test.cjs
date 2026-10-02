@@ -8,6 +8,8 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const layout = fs.readFileSync(path.join(root, 'js/8zc-lab-layout.js'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'css/8zc-styles.css'), 'utf8');
 const deep = fs.readFileSync(path.join(root, 'css/8zc-deep.css'), 'utf8');
+const reviewUi = fs.readFileSync(path.join(root, 'js/8zc-review-ui.js'), 'utf8');
+const utils = fs.readFileSync(path.join(root, 'js/8zc-utils.js'), 'utf8');
 
 test('desktop separates top analysis controls from three aligned bottom rows', () => {
   const doc = new JSDOM(html).window.document;
@@ -28,6 +30,9 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
   assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper SF<\/button>/);
   assert.match(styles, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,2\.35fr\)/);
+  assert.match(styles, /workspace-drawer\.open\) > \.workspace-bottom[\s\S]*visibility: visible/);
+  assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);
+  assert.match(styles, /workspace-drawer\.open\) #desktopViewTabs,[\s\S]*#workspacePrimaryActions[\s\S]*pointer-events: auto/);
 });
 
 test('legacy controls remain hidden backing controls', () => {
@@ -51,6 +56,10 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
     <section id="controls">
       <div class="analysis-source-row"><button id="btnDesktopDccReplay">DCC replay</button><button id="btnDesktopDccAnalysis" aria-pressed="false">DCC analysis</button></div>
       <div class="workspace-analysis"><div id="workspaceDisplay" tabindex="0"></div></div>
+      <div id="popularGamesPanel" class="workspace-drawer"></div>
+      <div id="settingsPanel" class="workspace-drawer"></div>
+      <button id="btnCloseGames"></button>
+      <button id="btnCloseSettings"></button>
       <div id="viewToggle">
         <button id="btnSim">Sim / Play</button>
         <button id="btnReplay">DCC replay</button>
@@ -86,6 +95,8 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   byId('btnViewToggle').addEventListener('click',()=>byId('btnViewToggle').setAttribute('aria-pressed',byId('btnViewToggle').getAttribute('aria-pressed')==='true'?'false':'true'));
   byId('btnGameReview').addEventListener('click',()=>byId('btnGameReview').setAttribute('aria-expanded',byId('btnGameReview').getAttribute('aria-expanded')==='true'?'false':'true'));
   byId('btnDeepAnalysis').addEventListener('click',()=>byId('btnDeepAnalysis').setAttribute('aria-expanded',byId('btnDeepAnalysis').getAttribute('aria-expanded')==='true'?'false':'true'));
+  byId('btnCloseGames').addEventListener('click',()=>{ byId('popularGamesPanel').classList.remove('open'); byId('btnGames').setAttribute('aria-expanded','false'); });
+  byId('btnCloseSettings').addEventListener('click',()=>byId('settingsPanel').classList.remove('open'));
   w.eval(script);
   d.dispatchEvent(new w.Event('DOMContentLoaded'));
   await new Promise(resolve=>w.setTimeout(resolve,0));
@@ -114,5 +125,28 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   d.querySelector('[data-desktop-view="moves"]').click();
   await new Promise(resolve=>w.setTimeout(resolve,0));
   assert.equal(byId('btnDeepAnalysis').getAttribute('aria-expanded'),'true','Deep remains alive in background');
+
+  byId('popularGamesPanel').classList.add('open');
+  byId('btnGames').setAttribute('aria-expanded','true');
+  d.querySelector('[data-desktop-view="review"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(byId('popularGamesPanel').classList.contains('open'),false,'tab switch closes Game library without using X');
+
+  d.dispatchEvent(new w.CustomEvent('chess:library-loaded',{detail:{view:'moves',curatedReview:false}}));
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(d.body.dataset.desktopView,'moves');
+  d.dispatchEvent(new w.CustomEvent('chess:library-loaded',{detail:{view:'review',curatedReview:true}}));
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(d.body.dataset.desktopView,'review');
   dom.window.close();
+});
+
+test('Game library routes curated reviews only after a successful load and Review preserves scroll', () => {
+  assert.match(utils, /CustomEvent\('chess:library-loaded'[\s\S]*curatedReview \? 'review' : 'moves'/);
+  assert.doesNotMatch(utils, /document\.getElementById\('main'\)\.scrollIntoView/);
+  assert.match(reviewUi, /const scrollByKey = new Map\(\)/);
+  assert.match(reviewUi, /scrollByKey\.set\(previousKey, panel\.scrollTop\)/);
+  assert.match(reviewUi, /panel\.scrollTop = scrollByKey\.get\(key\) \|\| 0/);
+  const openHandler = reviewUi.slice(reviewUi.indexOf("button.addEventListener('click'"), reviewUi.indexOf("close.addEventListener('click'"));
+  assert.doesNotMatch(openHandler, /panel\.scrollTop\s*=\s*0/);
 });
