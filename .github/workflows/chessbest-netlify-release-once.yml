@@ -1,0 +1,97 @@
+name: ChessBest dual Netlify production release once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chessbest-netlify-release-once.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      MDLX_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      EXPECTED_CURRENT_RELEASE: current-4e8cc250e37901c7
+    steps:
+      - name: Checkout exact merged main
+        uses: actions/checkout@v4
+
+      - name: Require configured Netlify token
+        shell: bash
+        run: test -n "$NETLIFY_AUTH_TOKEN"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Prepare production public tree
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/js/bd-password-manager.js
+          node --check public/js/trading-password-shield.js
+          python3 tools/build-chess-channel-pwas.py --check
+          node tools/chess-versioning.mjs
+
+      - name: Deploy MDLxDCC.org production
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy             --prod             --no-build             --dir public             --functions functions             --skip-functions-cache             --site "$MDLX_SITE_ID"             --auth "$NETLIFY_AUTH_TOKEN"             --message "ChessBest dual release ${GITHUB_SHA}"             --json > "$RUNNER_TEMP/mdl-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/mdl-deploy.json"); console.log(JSON.stringify({site:"mdlxdcc",deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
+
+      - name: Prepare standalone ChessBest.org tree
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/chessbest-public"
+          cp -a public "$RUNNER_TEMP/chessbest-public"
+          cp -a public/chess/. "$RUNNER_TEMP/chessbest-public/"
+
+      - name: Deploy ChessBest.org production
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy             --prod             --no-build             --dir "$RUNNER_TEMP/chessbest-public"             --functions functions             --skip-functions-cache             --site "$CHESS_SITE_ID"             --auth "$NETLIFY_AUTH_TOKEN"             --message "ChessBest CURRENT ${GITHUB_SHA}"             --json > "$RUNNER_TEMP/chess-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chess-deploy.json"); console.log(JSON.stringify({site:"bd-chess",deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
+
+      - name: Verify both production domains
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request
+
+          expected = "current-4e8cc250e37901c7"
+          targets = [
+              ("MDLxDCC", "https://www.mdlxdcc.org/chess/", "https://www.mdlxdcc.org/chess/release.json"),
+              ("ChessBest", "https://chessbest.org/", "https://chessbest.org/release.json"),
+          ]
+          for name, page_url, release_url in targets:
+              last = None
+              for _ in range(8):
+                  try:
+                      with urllib.request.urlopen(page_url, timeout=20) as r:
+                          html = r.read().decode("utf-8")
+                      with urllib.request.urlopen(release_url, timeout=20) as r:
+                          release = json.load(r)
+                      assert 'CDB | SF' in html and 'SF lite' in html
+                      assert 'class="bd-version-selector' not in html
+                      assert 'app-channel-nav' not in html
+                      assert release["version"] == expected
+                      assert release["channel"] == "CURRENT"
+                      print(json.dumps({"site": name, "page": page_url, "release": release["version"], "verified": True}))
+                      break
+                  except Exception as exc:
+                      last = exc
+                      time.sleep(5)
+              else:
+                  raise SystemExit(f"{name} verification failed: {last}")
+          PY
