@@ -7,13 +7,31 @@
   
   // Same-origin function: credentials and the Gemini model are configured server-side.
   const PROXY_URL = '/.netlify/functions/gemini';
+  const PAGES_ONLY = location.hostname === 'bd-chess.github.io';
   
   let worker = createWorker();
   const roadPlanner = new globalThis.TripRoadMatrix();
   let jobVersion = 0;
   let activeJob = null;
   let lastResolvedStops = null;
-  const STORAGE_KEY = '8z_trip_backup_v2'; 
+  const STORAGE_KEY = '8z_trip_backup_v2';
+  const LEGACY_PWA_STORAGE_KEY = '8z_trip_pwa_backup_v1';
+  const PWA_MIGRATION_RECEIPT_KEY = '8z_trip_lab_pwa_migration_v1';
+  function migrateLegacyPwaBackup() {
+    try {
+      if (localStorage.getItem(STORAGE_KEY)) return false;
+      const legacy = localStorage.getItem(LEGACY_PWA_STORAGE_KEY);
+      if (!legacy) return false;
+      const parsed = JSON.parse(legacy);
+      if (!parsed || typeof parsed !== 'object' || typeof parsed.t !== 'string' ||
+          (parsed.m !== undefined && !['DRIVING','WALKING'].includes(parsed.m))) return false;
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.setItem(PWA_MIGRATION_RECEIPT_KEY, JSON.stringify({
+        version:1, copiedAt:Date.now(), from:LEGACY_PWA_STORAGE_KEY, to:STORAGE_KEY
+      }));
+      return true;
+    } catch (_) { return false; }
+  }
 
   // --- 2. GLOBAL STATE ---
   const $ = (id) => document.getElementById(id);
@@ -26,6 +44,7 @@
   let statusTimer;
   let optimizationPending = false;
   let lastSolvedPoints = null;
+  let lastTravelSnapshot = null;
   let lastDirectKm = null;
   let lastPlanarCost = null;
   let currentTravelMode = 'DRIVING';
@@ -270,6 +289,7 @@
         try {
             const sharedTrip = params.get('trip');
             $('input').value = sharedTrip;
+            if (PAGES_ONLY) $('chkDirect').checked = true;
             if (/^# TSP source: /m.test(sharedTrip)) { $('chkDirect').checked = true; $('chkPlanar').checked = true; }
             window.history.replaceState({}, document.title, window.location.pathname);
             setStatus('Shared trip loaded!', 'ok');
@@ -284,7 +304,7 @@
         const s = JSON.parse(sStr);
         $('input').value = s.t || ''; 
         currentTravelMode = s.m || 'DRIVING'; 
-        $('chkDirect').checked = typeof s.direct === 'boolean' ? s.direct : /^# TSP source: /m.test($('input').value);
+        $('chkDirect').checked = PAGES_ONLY || (typeof s.direct === 'boolean' ? s.direct : /^# TSP source: /m.test($('input').value));
         $('chkPlanar').checked = $('chkDirect').checked && (typeof s.planar === 'boolean' ? s.planar : /^# TSP source: /m.test($('input').value));
         if (typeof s.roundTrip === 'boolean') $('chkRoundTrip').checked = s.roundTrip;
         updateModeButtons(); 
@@ -423,6 +443,7 @@
     }
     const missing = pts.filter(p => p.lat === null || p.lon === null);
     if (!missing.length) return pts;
+    if (PAGES_ONLY) throw new Error('Enter coordinates for every stop on GitHub Pages. Address lookup needs the MDLxDCC.org server.');
     setStatus('Looking up ' + missing.length + ' addresses...', 'warn');
     for (const p of missing) {
       if (!geocoder) geocoder = new google.maps.Geocoder();
@@ -751,9 +772,47 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <button id="btnShareTrip" class="btn-share" onclick="window.shareTrip()"><span data-ui-text="🔗 Share trip">🔗 Share trip</span></button>
         <button id="btnGPX" class="btn-share" style="background:#14532d; color:white; border-color:#14532d;" onclick="window.downloadGPX()"><span data-ui-text="⛰️ Save GPX">⛰️ Save GPX</span></button>
+        <button id="btnTravel" type="button" class="btn-primary" style="grid-column:1/-1" data-ui-text="On the road →">On the road →</button>
       </div>
     `;
     el.appendChild(shareArea);
+    $('btnTravel').addEventListener('click', openTravelMode);
+  }
+
+  function openTravelMode() {
+    const snapshot = lastTravelSnapshot;
+    if (activeJob || !snapshot || snapshot.input !== $('input').value ||
+        snapshot.mode !== currentTravelMode || snapshot.roundTrip !== $('chkRoundTrip').checked ||
+        snapshot.direct !== $('chkDirect').checked || snapshot.planar !== planarSelected()) {
+      setStatus('Optimize this trip and finish the calculation before opening On the road.', 'warn');
+      return;
+    }
+    const stops = snapshot.stops;
+    if (!snapshot.direct || stops.some(p => p.lat === null)) {
+      setStatus('On the road saves Direct Line routes with coordinates entered in the editor. Switch to Direct Line and optimize again.', 'warn');
+      return;
+    }
+    if (stops.length > 250) {
+      setStatus('On the road supports up to 250 stops on a phone.', 'warn');
+      return;
+    }
+    if (stops.length < 2 || stops.some(p =>
+      !p.name || p.name.length > 500 ||
+      ((p.lat !== null || p.lon !== null) &&
+        (!Number.isFinite(p.lat) || !Number.isFinite(p.lon) ||
+         Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180)))) {
+      setStatus('This route needs at least two valid stops.', 'warn');
+      return;
+    }
+    try {
+      localStorage.setItem('8z_trip_pwa_travel_route_v1', JSON.stringify({
+        version:1, savedAt:Date.now(), mode:snapshot.mode,
+        roundTrip:snapshot.roundTrip, stops, source:'lab'
+      }));
+      location.assign('travel.html');
+    } catch (error) {
+      setStatus('Could not save this route on this device. Check browser storage and retry.', 'bad');
+    }
   }
 
   window.setNavApp = function(app) {
@@ -823,6 +882,7 @@
       UI.set(rNode.querySelector('.tree-label'), regionData.region);
       const rGroup = rNode.querySelector('.tree-group');
       regionData.categories.forEach(cat => {
+        if (PAGES_ONLY && cat.items.every(trip => trip.demoPreset)) return;
         const cNode = document.createElement('div');
         cNode.innerHTML = `<div class="tree-header"><span class="tree-arrow">›</span> <span class="tree-label"></span></div><div class="tree-group"></div>`;
         UI.set(cNode.querySelector('.tree-label'), cat.name);
@@ -840,9 +900,9 @@
             ++presetRequest; cancelWork(); clearComparison();
             $('input').value = normalizeTripEditorText(trip.data, {ensureStart:true});
             $('chkPlanar').checked = false;
-            if (trip.id.includes('GLOBAL')) { $('chkDirect').checked = true; setTravelMode('DRIVING', false); }
-            else if ((trip.mode || cat.mode) === 'WALKING' || trip.id.includes('WALKING')) { $('chkDirect').checked = false; setTravelMode('WALKING', false); }
-            else { $('chkDirect').checked = false; setTravelMode('DRIVING', false); }
+            if ((trip.mode || cat.mode) === 'WALKING' || trip.id.includes('WALKING')) setTravelMode('WALKING', false);
+            else setTravelMode('DRIVING', false);
+            $('chkDirect').checked = PAGES_ONLY || trip.id.includes('GLOBAL');
             saveState(); $('mapRouteCaption').hidden = true;
             setStatus(`Loaded: ${trip.label}`, 'ok'); renderSuggestions('bigChatHistory');
           };
@@ -902,6 +962,7 @@ async function initAI() {
   };
 
   async function handleChatSend(inputId, historyId) {
+      if (PAGES_ONLY) { setStatus('AI chat needs the MDLxDCC.org server.', 'warn'); return; }
       const i = $(inputId), t = i.value.trim(), h = $(historyId); if (!t || chatRequestPending) return;
       if (t.length > 12000) { setStatus('Please shorten your message to 12,000 characters.', 'bad'); return; }
       chatRequestPending = true;
@@ -1423,9 +1484,28 @@ Bad example:
 
   function showSolvedRoute(msg, job, preview = false) {
     lastSolvedPoints = msg.pointsSorted;
+    lastTravelSnapshot = {
+      input:$('input').value, mode:job.mode, roundTrip:job.roundTrip,
+      direct:job.direct, planar:job.planar,
+      // Only coordinates authored in the editor may be saved. Geocoded Google
+      // coordinates, the road table and map geometry remain in memory only.
+      stops:msg.pointsSorted.map(p => {
+        const authored = parseStops(p.raw || '').pts[0];
+        const ownCoords = authored?.name === p.name && validCoordinates(authored) &&
+          authored.lat === p.lat && authored.lon === p.lon;
+        return {name:String(p.name || ''), lat:ownCoords ? authored.lat : null,
+          lon:ownCoords ? authored.lon : null};
+      })
+    };
     lastDirectKm = msg.directKm;
     lastPlanarCost = job.planar ? msg.totalCost : null;
     showSavings(msg);
+    if (!map) {
+      if (job.planar) {
+        UI.set($('distanceLabel'), 'Planar TSP (EUC_2D):');
+        UI.set($('distKm'), formatValue(msg.totalCost, true));
+      } else showDistance(msg.totalKm, job.direct ? 'Air distance (great circle)' : 'Road distance table');
+    }
     renderRouteList(msg.pointsSorted);
     renderLinks(buildMapsLegLinks(msg.pointsSorted, job.roundTrip, job.mode));
     const brute = job.profile === 'brute';
@@ -1653,6 +1733,7 @@ Bad example:
     let posted = false;
     try {
     setPlanningMode(false);
+    if (PAGES_ONLY) $('chkDirect').checked = true;
     if (!$('chkDirect').checked && !(window.google && window.google.maps)) {
       setStatus('Loading Map API...', 'ok');
       try { await ensureMapsLoaded(); }
@@ -1810,9 +1891,9 @@ Bad example:
     cancelWork(); clearComparison();
     $('input').value = text;
     currentTravelMode = 'DRIVING';
-    $('chkRoundTrip').checked = true; $('chkDirect').checked = direct; $('chkBrute').checked = false; $('chkPlanar').checked = planar;
+    $('chkRoundTrip').checked = true; $('chkDirect').checked = direct || PAGES_ONLY; $('chkBrute').checked = false; $('chkPlanar').checked = planar;
     updateModeButtons();
-    lastResolvedStops = null; lastSolvedPoints = null; lastDirectKm = null; lastPlanarCost = null;
+    lastResolvedStops = null; lastSolvedPoints = null; lastTravelSnapshot = null; lastDirectKm = null; lastPlanarCost = null;
     mapMarkers.forEach(marker => marker.setMap(null)); mapMarkers = [];
     routePolylines.forEach(line => line.setMap(null)); routePolylines = [];
     if (mapPolyline) { mapPolyline.setMap(null); mapPolyline = null; }
@@ -1831,6 +1912,10 @@ Bad example:
 
   // Shared by short Demo, its article and Library; loading never starts a solver.
   window.TripDemo = {load(preset, {focus = false} = {}) {
+    if (PAGES_ONLY) {
+      setStatus('This city demo needs address lookup. On GitHub Pages, use a Library trip with coordinates or a TSP dataset.', 'warn');
+      return false;
+    }
     if (['capitals14','capitals15'].includes(preset)) {
       // Selected EU capitals, distinct from the historically measured EU14/EU15 city sets.
       const capitals = [
@@ -1899,8 +1984,17 @@ Bad example:
     });
     initDiagnostics();
     initTripTree(); initAI(); 
+    const migratedLegacyPwa = migrateLegacyPwaBackup();
     const restored = restoreState();
     refreshTspNotice();
+    if (PAGES_ONLY) {
+      $('chkDirect').checked = true;
+      $('chkDirect').disabled = true;
+      $('btnPrepare').disabled = true;
+      $('btnEnableMap').disabled = true;
+      $('btnPlanMode').disabled = true;
+      UI.set($('matrixStatus'), 'GitHub Pages: Direct Line uses coordinates you enter. Road distances, map and AI require the MDLxDCC.org server.');
+    }
     $('btnStandard').onclick = () => run('standard');
     $('btnDeep').onclick = () => run('deep');
     $('btnPrepare').onclick = () => run('prepare', true);
@@ -1914,6 +2008,7 @@ Bad example:
     window.MDLxDCCLocale.subscribe(refreshTspLabels);
     $('input').addEventListener('input', () => {
       ++presetRequest; refreshTspNotice();
+      lastTravelSnapshot = null;
       $('mapRouteCaption').hidden = true;
       cancelWork(); clearComparison(); refreshBruteInfo(); UI.set($('matrixStatus'), 'Stops changed. Road distances will be checked on the next optimization.');
       $('roadTablePanel').style.display = 'none'; showDistance(null, 'Distance'); UI.set($('savedKm'), '—'); UI.set($('savingDetails'), '');
