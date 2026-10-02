@@ -1472,10 +1472,14 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 @media (min-width: 791px) {
   body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel,
   body:not(.app-mobile) #workspaceDisplay > .game-review-drawer {
-    box-sizing: border-box; width: 100%; min-width: 0; min-height: 100%;
+    box-sizing: border-box; width: 100%; min-width: 0;
     margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ui-text);
   }
-  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > #popularGamesPanel { display: block; }
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer { min-height: 100%; }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay { overflow: hidden; }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > #popularGamesPanel {
+    display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; pointer-events: auto;
+  }
   body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > .game-review-drawer { display: block; }
   body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > :not(#popularGamesPanel),
   body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > :not(.game-review-drawer) { display: none !important; }
@@ -1485,8 +1489,8 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
   body:not(.app-mobile) #workspaceDisplay > .game-review-drawer .game-review-heading > button { display: none !important; }
 }
 #popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
-#popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
-#popularGamesPanel .library-result { flex-shrink: 0; }
+#popularGamesPanel .library-result-list { flex: 1 1 0; min-height: 0; max-height: none; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; pointer-events: auto; }
+#popularGamesPanel .library-result { flex-shrink: 0; pointer-events: auto; position: relative; }
 .drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: -14px; background: var(--ui-inset); z-index: 1; padding: 6px 0 9px; border-bottom: 1px solid var(--ui-border); }
 .drawer-heading .btn { min-width: 36px; font-size: 20px; background: var(--ui-raised); }
 

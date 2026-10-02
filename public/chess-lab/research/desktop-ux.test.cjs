@@ -10,6 +10,7 @@ const styles = fs.readFileSync(path.join(root, 'css/8zc-styles.css'), 'utf8');
 const deep = fs.readFileSync(path.join(root, 'css/8zc-deep.css'), 'utf8');
 const reviewUi = fs.readFileSync(path.join(root, 'js/8zc-review-ui.js'), 'utf8');
 const utils = fs.readFileSync(path.join(root, 'js/8zc-utils.js'), 'utf8');
+const newUi = fs.readFileSync(path.join(root, 'js/8zc-new-ui.js'), 'utf8');
 
 test('desktop separates top analysis controls from three aligned bottom rows', () => {
   const doc = new JSDOM(html).window.document;
@@ -34,6 +35,9 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);
   assert.match(styles, /workspace-drawer\.open\) #desktopViewTabs,[\s\S]*#workspacePrimaryActions[\s\S]*pointer-events: auto/);
   assert.match(styles, /data-desktop-view="library"[\s\S]*#workspaceDisplay > #popularGamesPanel/);
+  assert.match(styles, /data-desktop-view="library"\] #workspaceDisplay \{ overflow: hidden; \}/);
+  assert.match(styles, /#workspaceDisplay > #popularGamesPanel \{[\s\S]*display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden/);
+  assert.match(styles, /\.library-result-list \{[\s\S]*overflow-y: auto;[\s\S]*pointer-events: auto/);
   assert.match(styles, /data-desktop-view="review"[\s\S]*#workspaceDisplay > \.game-review-drawer/);
   assert.match(styles, /#workspacePrimaryActions #btnNew[\s\S]*background:var\(--ui-inset\)/);
 });
@@ -157,6 +161,8 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
 
 test('Game library routes curated reviews only after a successful load and Review preserves scroll', () => {
   assert.match(utils, /panelId === 'popularGamesPanel' && !document\.body\.classList\.contains\('app-mobile'\)/);
+  assert.match(utils, /sel\.chessLoadSelected = loadSelectedGame/);
+  assert.match(newUi, /typeof entry\.select\.chessLoadSelected === 'function'[\s\S]*await entry\.select\.chessLoadSelected\(\)/);
   assert.match(utils, /CustomEvent\('chess:library-loaded'[\s\S]*curatedReview \? 'review' : 'moves'/);
   assert.doesNotMatch(utils, /document\.getElementById\('main'\)\.scrollIntoView/);
   assert.match(reviewUi, /const scrollByKey = new Map\(\)/);

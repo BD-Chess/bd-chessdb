@@ -191,14 +191,21 @@
           const detail = document.createElement('span');
           detail.textContent = entry.detail;
           button.append(title, detail);
-          button.addEventListener('click', () => {
+          button.addEventListener('click', async event => {
+            event.preventDefault();
             if (entry.simulationId != null) {
               window.dispatchEvent(new CustomEvent('chess-sim-open-game', { detail: { id: entry.simulationId } }));
+              return;
+            }
+            entry.select.value = entry.option.value;
+            if (typeof entry.select.chessLoadSelected === 'function') {
+              await entry.select.chessLoadSelected();
             } else {
-              entry.select.value = entry.option.value;
               entry.select.dispatchEvent(new Event('change', { bubbles: true }));
             }
-            if (!document.querySelector('.chess-study-limit-overlay:not([hidden])')) byId('first').focus({ preventScroll: true });
+            if (!panel.classList.contains('open') && !document.querySelector('.chess-study-limit-overlay:not([hidden])')) {
+              byId('workspaceDisplay')?.focus({ preventScroll: true });
+            }
           });
           fragment.appendChild(button);
         });

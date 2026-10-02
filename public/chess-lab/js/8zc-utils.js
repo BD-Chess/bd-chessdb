@@ -425,12 +425,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     .catch(console.error);
 
 	// 3) Wire up load-on-change
-	sel.onchange = async e => {
-	  if (!e.target.value) return;
-      if (playState.active || simRunning || replayRunning) return;
+    const loadSelectedGame = async () => {
+      if (!sel.value) return false;
+      if (playState.active || simRunning || replayRunning) return false;
 
-	  const title = e.target.selectedOptions[0].text;
-      const selectedPGN = e.target.value;
+      const title = sel.selectedOptions[0]?.text || 'Selected game';
+      const selectedPGN = sel.value;
       try {
         await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks }, () => {
           let curatedReview = false;
@@ -449,9 +449,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
             detail: { view: curatedReview ? 'review' : 'moves', curatedReview }
           }));
         });
+        return true;
       }
-      catch (error) { showGameLoadProblem(error); }
-	};
+      catch (error) { showGameLoadProblem(error); return false; }
+    };
+    sel.onchange = loadSelectedGame;
+    sel.chessLoadSelected = loadSelectedGame;
   
 });
 
