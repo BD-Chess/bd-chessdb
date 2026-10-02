@@ -19,9 +19,11 @@ async function run(){
      await page.goto(base,{waitUntil:'load',timeout:30000});let frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
      await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});
      await page.waitForTimeout(700);
+     const rebind=async()=>{frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe remains attached');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});};
+     const restoreFixture=async state=>{const apply=()=>frame.evaluate(async x=>{await window.SudokuNavigator.restore(x);window.stopTimer();window.SudokuNavigator.product.switchView('play');},state);try{await apply();}catch(e){if(!/Execution context was destroyed/i.test(String(e)))throw e;await rebind();await apply();}};
      for(const diff of ['easy','hard','evil']){
-      frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe remains attached');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
-      await frame.evaluate(async s=>{await window.SudokuNavigator.restore(s);window.stopTimer();window.SudokuNavigator.product.switchView('play');},{...fixture,diff});
+      await rebind();
+      await restoreFixture({...fixture,diff});
       await frame.waitForFunction(d=>document.body.dataset.appHardNoHelp===(d==='easy'?'false':'true'),diff);
       for(const lang of ['en','sl']){
        await frame.locator('[data-sudoku-language="'+lang+'"]').click();await frame.waitForFunction(l=>window.SudokuI18n.get()===l,lang);await page.waitForTimeout(180);
