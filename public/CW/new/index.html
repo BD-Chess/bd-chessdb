@@ -2,10 +2,11 @@
 <html lang="sl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#020409">
 <title>Crossword × MDL | AIM³ Lab</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='14' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#020409;--surface:rgba(15,23,41,0.82);
@@ -107,20 +108,63 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .channel-link{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding:2px 0}
 .channel-link:hover,.channel-link.channel-active{color:var(--cyan);border-color:var(--cyan)}
 
+
+/* CW unified LAB presentation — one source, three presentations */
+:root{--phone-width:430px;--safe-bottom:env(safe-area-inset-bottom,0px)}
+body.lab-source{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body.lab-source .logo,body.lab-source .timer,body.lab-source .lang-sel,body.lab-source .panel-title,body.lab-source .btn,body.lab-source .pack-select,body.lab-source .metric-value,body.lab-source .channel-nav{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.pwa-actions{display:flex;gap:6px;align-items:center}.pwa-action{display:none;padding:4px 7px;font-size:.58rem}
+.current-clue-mobile{display:none;width:100%;max-width:560px;border:1px solid var(--border2);background:rgba(11,17,32,.78);border-radius:8px;padding:8px 10px;margin:-8px 0 10px;font-size:.9rem;line-height:1.25}
+.current-clue-mobile strong{color:var(--gold);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-right:7px}
+.mobile-clue-tabs{display:none;gap:6px;width:100%;max-width:560px;margin:0 0 8px}
+.mobile-clue-tabs button{flex:1}
+.app-frame-label{display:none}
+body.mobile-presentation .page{padding-bottom:calc(84px + var(--safe-bottom))}
+body.mobile-presentation .header{padding:8px 10px 0;gap:7px;align-items:flex-start}
+body.mobile-presentation .logo{font-size:.54rem}.channel-nav{order:3;width:100%;justify-content:center}
+body.mobile-presentation .title-block{padding:3px 10px 0}.title{font-size:1.28rem}.subtitle{display:none}
+body.mobile-presentation .status{font-size:.64rem;margin:1px 8px 4px;max-width:94vw}
+body.mobile-presentation .main{display:flex;flex-direction:column;align-items:center;gap:9px;padding:3px 8px;width:100%;max-width:100vw}
+body.mobile-presentation .col-center{order:1;width:100%;max-width:100%;align-items:center}
+body.mobile-presentation .col-left{order:2;width:100%;max-width:560px;min-width:0;display:block}
+body.mobile-presentation .col-right{order:3;width:100%;max-width:560px;min-width:0;display:block}
+body.mobile-presentation .grid-wrap{padding:6px;margin-bottom:10px;max-width:calc(100vw - 12px);overflow:hidden}
+body.mobile-presentation .current-clue-mobile,body.mobile-presentation .mobile-clue-tabs{display:flex}
+body.mobile-presentation .current-clue-mobile{display:block}
+body.mobile-presentation .col-left .panel:first-child,body.mobile-presentation .col-right .panel:first-child{display:none}
+body.mobile-presentation.clues-across .col-left .panel:first-child{display:block}
+body.mobile-presentation.clues-down .col-right .panel:first-child{display:block}
+body.mobile-presentation .col-left .panel:nth-child(2),body.mobile-presentation .col-right .panel:nth-child(2){display:none}
+body.mobile-presentation .clue-list{max-height:34vh}
+body.mobile-presentation .pack-panel{padding:10px}.pack-row{gap:4px}.pack-select{min-width:0}.pack-row .btn{padding:8px 7px}
+body.mobile-presentation .col-center>.btn-row{max-width:560px!important}
+body.mobile-presentation .btn{min-height:38px}
+body.mobile-presentation .cell{touch-action:manipulation}
+body.mobile-presentation .pwa-actions{margin-left:auto}
+@media(max-width:800px){body:not(.force-desktop-lab){--mobile-auto:1}}
+@media(min-width:801px){
+ body.force-app{padding:18px 0;background:#010205}
+ body.force-app .page{width:var(--phone-width);max-width:var(--phone-width);min-height:calc(100vh - 36px);border:1px solid rgba(0,229,255,.24);border-radius:28px;overflow:hidden;box-shadow:0 18px 80px rgba(0,0,0,.6)}
+ body.force-app .app-frame-label{display:block;position:fixed;top:5px;left:50%;transform:translateX(-50%);font:600 10px ui-monospace,monospace;color:var(--muted);letter-spacing:.12em;z-index:20}
+ body.force-app .grid-wrap{max-width:calc(var(--phone-width) - 16px)}
+}
+
 </style>
 </head>
-<body>
+<body class="lab-source">
+<div class="app-frame-label">APP · MOBILE LAB SIMULATION</div>
 <div class="noise"></div>
 <div class="page">
 <div class="header">
   <div class="logo">AIM³ <span>Lab</span> · Crossword</div>
   <nav class="channel-nav" aria-label="Crosswords channels">
-      <a class="channel-link channel-active" data-channel="current" href="/CW/">CURRENT</a><span>·</span>
+      <a class="channel-link" data-channel="current" href="/CW/">CURRENT</a><span>·</span>
       <a class="channel-link" data-channel="previous" href="/CW/old/">PREVIOUS</a><span>·</span>
       <a class="channel-link" data-channel="lab" href="/CW/new/">LAB</a><span>·</span>
       <a class="channel-link" data-channel="app" href="/CW/new/?view=app">APP</a>
     </nav>
   <div class="header-right">
+    <div class="pwa-actions"><button class="btn pwa-action" id="pwaInstallBtn" type="button">Install</button><button class="btn pwa-action" id="pwaUpdateBtn" type="button">Save &amp; update</button></div>
     <select class="lang-sel" id="langSel" onchange="switchLang(this.value)">
       <option value="sl">Slovenščina</option>
       <option value="en" selected>English</option>
@@ -147,6 +191,12 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 </div>
 <div class="col-center">
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+
+  <div class="current-clue-mobile" id="currentClueMobile" aria-live="polite"><strong>—</strong><span>Select a clue</span></div>
+  <div class="mobile-clue-tabs" aria-label="Clue direction">
+    <button class="btn" type="button" id="mobileAcross" onclick="showMobileClues('across')">Across</button>
+    <button class="btn" type="button" id="mobileDown" onclick="showMobileClues('down')">Down</button>
+  </div>
   <div class="panel pack-panel">
     <div class="panel-title" id="packTitle">Prepared Puzzles</div>
     <div class="pack-row">
@@ -177,8 +227,75 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 </div>
 </div></div>
 
-<script src="cw_puzzles_pack.js"></script>
+<script src="../cw_puzzles_pack.js"></script>
 <script>
+
+// ─── Unified LAB presentation / state / PWA ───
+const LAB_STORAGE_KEY = '8zCrosswords:LAB:v1:game';
+const LAB_SETTINGS_KEY = '8zCrosswords:LAB:v1:settings';
+let labBooting = true;
+let labPersistTimer = null;
+let mobileCluePane = 'across';
+
+function forcedAppView(){ return new URLSearchParams(location.search).get('view') === 'app'; }
+function isPhoneViewport(){ return matchMedia('(max-width: 800px)').matches || (navigator.maxTouchPoints > 0 && Math.min(screen.width||9999, screen.height||9999) <= 900); }
+function isMobilePresentation(){ return forcedAppView() || isPhoneViewport(); }
+function applyPresentation(){
+  const app = forcedAppView();
+  const mobile = app || isPhoneViewport();
+  document.body.classList.toggle('force-app', app);
+  document.body.classList.toggle('mobile-presentation', mobile);
+  document.body.classList.add('lab-source');
+  document.body.classList.toggle('clues-across', mobileCluePane === 'across');
+  document.body.classList.toggle('clues-down', mobileCluePane === 'down');
+  document.querySelectorAll('.channel-link').forEach(a => a.classList.remove('channel-active'));
+  const active = document.querySelector(`[data-channel="${app ? 'app' : 'lab'}"]`);
+  if (active) active.classList.add('channel-active');
+  if (puzzle) setCellSize(puzzle.cols);
+  updateCurrentClue();
+}
+function showMobileClues(which){
+  mobileCluePane = which === 'down' ? 'down' : 'across';
+  document.body.classList.toggle('clues-across', mobileCluePane === 'across');
+  document.body.classList.toggle('clues-down', mobileCluePane === 'down');
+  const a=document.getElementById('mobileAcross'), d=document.getElementById('mobileDown');
+  if(a) a.classList.toggle('green', mobileCluePane==='across');
+  if(d) d.classList.toggle('green', mobileCluePane==='down');
+}
+function updateCurrentClue(){
+  const el=document.getElementById('currentClueMobile'); if(!el) return;
+  if(!activeClue || !puzzle?.clueMap?.[activeClue.dir]?.[activeClue.num]){el.innerHTML='<strong>—</strong><span>Select a clue</span>';return;}
+  const cl=puzzle.clueMap[activeClue.dir][activeClue.num];
+  const label=(activeClue.dir==='across' ? (lang==='sl'?'V':'A') : (lang==='sl'?'N':'D')) + activeClue.num;
+  el.innerHTML=`<strong>${label}</strong><span>${cl.text || '…'}</span>`;
+  if(isMobilePresentation()) showMobileClues(activeClue.dir);
+}
+function labSnapshot(){
+  if(!puzzle || !playerGrid) return null;
+  return {schema:'8zCrosswords.LAB.state.v1',lang,rows:puzzle.rows,cols:puzzle.cols,mask:puzzle.mask,solution:puzzle.solution,clueMap:puzzle.clueMap,numAssigned:puzzle.numAssigned,playerGrid,seconds,errorCount,solved,selR,selC,dir,packIndex,title:puzzle.title||'',sourceLabel:puzzle.sourceLabel||'',meta:puzzle.meta||{},savedAt:Date.now()};
+}
+function persistLabState(){
+  if(labBooting) return true;
+  try{const s=labSnapshot(); if(s) localStorage.setItem(LAB_STORAGE_KEY,JSON.stringify(s)); localStorage.setItem(LAB_SETTINGS_KEY,JSON.stringify({lang,mobileCluePane})); return true;}catch(e){console.warn('LAB persistence unavailable',e);return false;}
+}
+function schedulePersistLabState(){ if(labBooting) return; clearTimeout(labPersistTimer); labPersistTimer=setTimeout(persistLabState,80); }
+function restoreLabState(){
+  let s=null, settings=null;
+  try{s=JSON.parse(localStorage.getItem(LAB_STORAGE_KEY)||'null');settings=JSON.parse(localStorage.getItem(LAB_SETTINGS_KEY)||'null');}catch(e){console.warn('LAB restore parse failed',e)}
+  if(settings?.mobileCluePane) mobileCluePane=settings.mobileCluePane;
+  if(!s || s.schema!=='8zCrosswords.LAB.state.v1' || !Array.isArray(s.mask) || !Array.isArray(s.solution)) return false;
+  try{
+    if(s.lang && I18N[s.lang]){lang=s.lang;L=I18N[lang];document.getElementById('langSel').value=lang;updateUI();}
+    loadPreparedPuzzle(s, Number.isFinite(Number(s.packIndex))?Number(s.packIndex):-1);
+    selR=Number.isInteger(s.selR)?s.selR:selR; selC=Number.isInteger(s.selC)?s.selC:selC; dir=s.dir==='down'?'down':'across';
+    if(selR>=0&&selC>=0) selectCell(selR,selC);
+    return true;
+  }catch(e){console.warn('LAB restore failed',e);return false;}
+}
+window.CW_LAB = {persistLabState,restoreLabState,applyPresentation,getState:()=>labSnapshot(),storageKey:LAB_STORAGE_KEY};
+window.addEventListener('pagehide',persistLabState);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistLabState()});
+
 // ═══════════════════════════════════════════════════════════════
 // 8z Crossword Engine — AIM³ Lab
 // Backtracking grid filler with scored word database
@@ -255,7 +372,7 @@ async function loadDict(code) {
   if (dictCache[code]) { DB = dictCache[code]; return true; }
   setStatus(L.loading, 'gen');
   try {
-    const r = await fetch('lex/cw_en.json');
+    const r = await fetch('../lex/cw_en.json');
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
     const db = {hinted: {}, all: {}};
@@ -609,11 +726,13 @@ async function generate(rows, cols, blackPct) {
 
 // ─── Cell Size ───
 function setCellSize(cols) {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const maxH = Math.floor((vh * 0.68) / cols);
-  const maxW = Math.floor((vw * 0.42) / cols);
-  let sz = Math.min(maxH, maxW, 72);
-  sz = Math.max(sz, 28);
+  const mobile = isMobilePresentation();
+  const vw = forcedAppView() && window.innerWidth > 800 ? 430 : window.innerWidth;
+  const vh = window.innerHeight;
+  const maxH = Math.floor((vh * (mobile ? 0.55 : 0.68)) / cols);
+  const maxW = Math.floor((vw * (mobile ? 0.92 : 0.42)) / cols);
+  let sz = Math.min(maxH, maxW, mobile ? 52 : 72);
+  sz = Math.max(sz, mobile ? 30 : 28);
   document.documentElement.style.setProperty('--cell-size', sz + 'px');
 }
 
@@ -710,6 +829,7 @@ function selectCell(r, c) {
     if (n2 !== null) { dir = od; activeClue = {dir: od, num: n2}; highlightClue(od, n2); }
   }
   render();
+  updateCurrentClue();
 }
 
 function highlightClue(d, n) {
@@ -840,10 +960,11 @@ function updateMetrics() {
   document.getElementById('mWords').textContent = `${ws} / ${wt}`;
   document.getElementById('barWords').style.width = wt ? (ws/wt*100)+'%' : '0';
   document.getElementById('mErrors').textContent = errorCount;
+  schedulePersistLabState();
 }
 
 // ─── Timer ───
-function startTimer() { stopTimer(); seconds = 0; document.getElementById('timer').textContent = '00:00'; timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = fmtTime(seconds); }, 1000); }
+function startTimer(initialSeconds = 0) { stopTimer(); seconds = Math.max(0, Number(initialSeconds)||0); document.getElementById('timer').textContent = fmtTime(seconds); if (solved) return; timerInterval = setInterval(() => { seconds++; document.getElementById('timer').textContent = fmtTime(seconds); if (seconds % 10 === 0) schedulePersistLabState(); }, 1000); }
 function stopTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
 function fmtTime(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
 
@@ -956,13 +1077,13 @@ function loadPreparedPuzzle(data, idx = -1) {
   };
   playerGrid = p.playerGrid;
   selR = -1; selC = -1; dir = 'across'; activeClue = null;
-  solved = false; errorCount = 0;
+  solved = !!data.solved; errorCount = Number(data.errorCount || 0);
   if (idx >= 0) packIndex = idx;
   setCellSize(p.cols);
   buildGrid();
   buildClueList('across');
   buildClueList('down');
-  startTimer();
+  startTimer(Number(data.seconds || 0));
   updateMetrics();
   updatePackUI();
   setStatus(p.title || `${p.rows}×${p.cols}`, '');
@@ -1028,7 +1149,7 @@ async function tryAutoloadPack() {
   }
   if (location.protocol !== 'file:') {
     try {
-      const r = await fetch('cw_puzzles_pack.json', {cache: 'no-store'});
+      const r = await fetch('../cw_puzzles_pack.json', {cache: 'no-store'});
       if (r.ok) {
         const data = await r.json();
         return setPack(data);
@@ -1048,6 +1169,7 @@ async function switchLang(code) {
   lang = code;
   L = I18N[lang] || I18N.en;
   updateUI();
+  schedulePersistLabState();
   const ok = await loadDict(lang);
   if (ok && !PACK && !puzzle) {
     setStatus(L.packMissingStatus, 'err');
@@ -1076,19 +1198,25 @@ function togglePanel(d) { const el = document.getElementById(d === 'across' ? 'c
 function disableButtons(v) { document.querySelectorAll('.diff-btns .btn').forEach(b => b.disabled = v); }
 
 // ─── Init ───
-window.addEventListener('resize', () => { if (puzzle) setCellSize(puzzle.cols); });
+window.addEventListener('resize', () => { applyPresentation(); if (puzzle) setCellSize(puzzle.cols); });
 
 (async function init() {
+  applyPresentation();
   updateUI();
   const autoloaded = await tryAutoloadPack();
   const ok = await loadDict(lang);
-  if (!autoloaded && ok) {
+  const restored = restoreLabState();
+  labBooting = false;
+  applyPresentation();
+  schedulePersistLabState();
+  if (!restored && !autoloaded && ok) {
     const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
     setStatus(`${hTotal} hinted words · choose size →`, '');
-  } else if (!autoloaded && !ok) {
+  } else if (!restored && !autoloaded && !ok) {
     setStatus(L.noDict, 'err');
   }
 })();
 </script>
+<script src="pwa.js"></script>
 </body>
 </html>

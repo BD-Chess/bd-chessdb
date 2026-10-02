@@ -57,7 +57,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   .main{grid-template-columns:1fr;grid-template-areas:"center" "left" "right";justify-items:center}
   .col-left,.col-right{max-width:600px;min-width:0;width:100%;justify-self:center}
 }
-.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px);margin-bottom:16px}
+.grid-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;box-shadow:0 0 60px rgba(0,229,255,0.04);backdrop-filter:blur(12px)}
 .grid{display:inline-grid;gap:0}
 .cell{width:var(--cell-size);height:var(--cell-size);background:rgba(11,17,32,0.7);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--cell-size)*0.42);font-weight:700;color:var(--text);cursor:pointer;position:relative;transition:background .12s,border-color .12s;text-transform:uppercase}
 .cell:hover{background:var(--subtle);border-color:var(--border2)}
@@ -92,16 +92,6 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 .bar-wrap{height:3px;background:rgba(11,17,32,0.5);border-radius:2px;margin-top:3px;overflow:hidden}
 .bar{height:100%;border-radius:2px;transition:width .4s ease}.bar.green{background:var(--green)}.bar.gold{background:var(--gold)}
 #loadFile{display:none}
-.pack-panel{margin-top:0;max-width:560px;width:100%}
-.pack-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.pack-select{
-  flex:1;min-width:170px;
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;
-  background:rgba(11,17,32,0.6);border:1px solid var(--border);color:var(--text);
-  padding:8px 10px;border-radius:4px;cursor:pointer
-}
-.pack-meta{margin-top:8px;font-size:.74rem;color:var(--muted);line-height:1.45}
-.pack-meta strong{color:var(--text)}
 
 .channel-nav{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.08em;color:var(--muted)}
 .channel-link{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;padding:2px 0}
@@ -115,8 +105,8 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 <div class="header">
   <div class="logo">AIM³ <span>Lab</span> · Crossword</div>
   <nav class="channel-nav" aria-label="Crosswords channels">
-      <a class="channel-link channel-active" data-channel="current" href="/CW/">CURRENT</a><span>·</span>
-      <a class="channel-link" data-channel="previous" href="/CW/old/">PREVIOUS</a><span>·</span>
+      <a class="channel-link" data-channel="current" href="/CW/">CURRENT</a><span>·</span>
+      <a class="channel-link channel-active" data-channel="previous" href="/CW/old/">PREVIOUS</a><span>·</span>
       <a class="channel-link" data-channel="lab" href="/CW/new/">LAB</a><span>·</span>
       <a class="channel-link" data-channel="app" href="/CW/new/?view=app">APP</a>
     </nav>
@@ -132,7 +122,7 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
   <div class="title" id="titleText">Križanka <span class="accent">× MDL</span></div>
   <div class="subtitle" id="subtitleText">Kompresija misli v mrežo</div>
 </div>
-<div class="status" id="status">Loading prepared puzzles…</div>
+<div class="status" id="status">Nalaganje slovarja…</div>
 <div class="main">
 <div class="col-left">
   <div class="panel"><div class="panel-title" onclick="togglePanel('across')" id="acrossTitle">▶ Across</div><div class="clue-list" id="cluesAcross"></div></div>
@@ -147,16 +137,13 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 </div>
 <div class="col-center">
   <div class="grid-wrap"><div class="grid" id="grid"></div></div>
-  <div class="panel pack-panel">
-    <div class="panel-title" id="packTitle">Prepared Puzzles</div>
-    <div class="pack-row">
-      <button class="btn" onclick="prevPackPuzzle()" id="btnPrevPack">◀ Prev</button>
-      <select class="pack-select" id="packSelect" onchange="loadPackSelection()">
-        <option value="">Autoload pack…</option>
-      </select>
-      <button class="btn" onclick="nextPackPuzzle()" id="btnNextPack">Next ▶</button>
+  <div style="margin-top:10px">
+    <div class="diff-btns" id="diffBtns">
+      <button class="btn" onclick="generate(9,9,0.28)">9×9</button>
+      <button class="btn" onclick="generate(11,11,0.26)">11×11</button>
+      <button class="btn gold" onclick="generate(13,13,0.24)">13×13</button>
+      <button class="btn rose" onclick="generate(15,15,0.22)">15×15</button>
     </div>
-    <div class="pack-meta" id="packMeta">Looking for <strong>cw_puzzles_pack.js</strong> or <strong>cw_puzzles_pack.json</strong> in the same folder.</div>
   </div>
   <div class="btn-row" style="margin-top:6px;max-width:480px;width:100%">
     <button class="btn green" onclick="checkAll()" id="btnCheck">✓</button>
@@ -177,7 +164,6 @@ body::after{width:38vw;height:38vw;right:-10vw;bottom:-18vh;background:radial-gr
 </div>
 </div></div>
 
-<script src="cw_puzzles_pack.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // 8z Crossword Engine — AIM³ Lab
@@ -192,9 +178,7 @@ const I18N = {
     stats: 'Statistika', progress: 'Napredek', words: 'Besede', errors: 'Napake',
     help: 'Navodila',
     helpHtml: 'Klikni celico, vpiši črko.<br><span style="color:var(--cyan)">Tab/Space</span> preklopi smer · <span style="color:var(--cyan)">Puščice</span> premikanje<br><span style="color:var(--cyan)">Backspace</span> izbriši · <span style="color:var(--cyan)">Enter</span> naslednja beseda',
-    loading: 'Nalaganje pripravljenih križank…',
-    packLoading: 'Nalaganje pripravljenih križank…',
-    packMissingStatus: 'Pack pripravljenih križank ni najden — uporabi Load ali dodaj cw_puzzles_pack.js v isto mapo.',
+    loading: 'Nalaganje slovarja…',
     generating: 'Generiram križanko…',
     generated: ' križanka pripravljena',
     failed: 'Generiranje ni uspelo — poskusi znova',
@@ -203,13 +187,6 @@ const I18N = {
     winMsg: s => `✦ REŠENO v ${s}! ✦`,
     noDict: 'Slovar ni na voljo',
     reveal: 'Razkrij', solution: 'Rešitev',
-    packTitle: 'Pripravljene križanke',
-    packWaiting: 'Iščem <strong>cw_puzzles_pack.js</strong> ali <strong>cw_puzzles_pack.json</strong> v isti mapi.',
-    packLoaded: (i, n) => `Naložen pack · križanka ${i + 1} / ${n}`,
-    packMissingLocal: 'Lokalni file mode blokira JSON autoload. Dodaj <strong>cw_puzzles_pack.js</strong> za offline autoload.',
-    packMissing: 'Pack ni najden v isti mapi.',
-    packMeta: p => `<strong>${p.title || (p.rows + '×' + p.cols)}</strong>${p.sourceLabel ? ' · ' + p.sourceLabel : ''}${p.meta?.quality != null ? ' · Q ' + Number(p.meta.quality).toFixed(4) : ''}`,
-    loaded: ' naložena',
   },
   en: {
     title: 'Crossword <span class="accent">× MDL</span>',
@@ -218,9 +195,7 @@ const I18N = {
     stats: 'Statistics', progress: 'Progress', words: 'Words', errors: 'Errors',
     help: 'Instructions',
     helpHtml: 'Click a cell, type a letter.<br><span style="color:var(--cyan)">Tab/Space</span> toggle direction · <span style="color:var(--cyan)">Arrows</span> navigate<br><span style="color:var(--cyan)">Backspace</span> delete · <span style="color:var(--cyan)">Enter</span> next word',
-    loading: 'Loading prepared puzzles…',
-    packLoading: 'Loading prepared puzzles…',
-    packMissingStatus: 'Prepared puzzle pack not found — use Load or add cw_puzzles_pack.js to the same folder.',
+    loading: 'Loading dictionary…',
     generating: 'Generating crossword…',
     generated: ' crossword ready',
     failed: 'Generation failed — try again',
@@ -229,24 +204,16 @@ const I18N = {
     winMsg: s => `✦ SOLVED in ${s}! ✦`,
     noDict: 'Dictionary not available',
     reveal: 'Reveal', solution: 'Solution',
-    packTitle: 'Prepared Puzzles',
-    packWaiting: 'Looking for <strong>cw_puzzles_pack.js</strong> or <strong>cw_puzzles_pack.json</strong> in the same folder.',
-    packLoaded: (i, n) => `Loaded pack · puzzle ${i + 1} / ${n}`,
-    packMissingLocal: 'Local file mode blocks JSON autoload. Add <strong>cw_puzzles_pack.js</strong> for offline autoload.',
-    packMissing: 'Pack not found in the same folder.',
-    packMeta: p => `<strong>${p.title || (p.rows + '×' + p.cols)}</strong>${p.sourceLabel ? ' · ' + p.sourceLabel : ''}${p.meta?.quality != null ? ' · Q ' + Number(p.meta.quality).toFixed(4) : ''}`,
-    loaded: ' loaded',
   }
 };
 
 // ─── State ───
 let lang = 'en', L = I18N.en;
 let DB = null; // {hinted: {3:[{w,h,s},...], ...}, all: {...}}
-let puzzle = null; // {rows, cols, mask, solution, clueMap, numAssigned}
+let puzzle = null; // {rows, cols, mask, solution, slots, clueMap}
 let playerGrid = null;
 let selR = -1, selC = -1, dir = 'across', activeClue = null;
 let timerInterval = null, seconds = 0, errorCount = 0, solved = false;
-let PACK = null, packIndex = -1;
 
 // ─── Dictionary ───
 const dictCache = {};
@@ -599,7 +566,8 @@ async function generate(rows, cols, blackPct) {
   buildClueList('down');
   startTimer();
   updateMetrics();
-  setStatus(`${rows}×${cols}${L.generated}`, '');
+  const engLabel = engine === 'ac3' ? 'AC-3' : 'Simple';
+  setStatus(`${rows}×${cols}${L.generated} [${engLabel}]`, '');
 
   // Select first white cell
   for (let r = 0; r < rows; r++)
@@ -870,177 +838,23 @@ function loadPuzzle(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.lang) {
-        lang = data.lang;
-        L = I18N[lang] || I18N.en;
-        document.getElementById('langSel').value = lang;
-        updateUI();
-      }
-      if (Array.isArray(data.puzzles)) {
-        setPack(data);
-      } else {
-        loadPreparedPuzzle(data, -1);
-      }
-    } catch(err) {
-      setStatus('Load error: ' + err.message, 'err');
-    }
+      if (data.lang) { lang = data.lang; L = I18N[lang] || I18N.en; document.getElementById('langSel').value = lang; updateUI(); }
+      puzzle = {rows: data.rows, cols: data.cols, mask: data.mask, solution: data.solution, clueMap: data.clueMap, numAssigned: data.numAssigned};
+      playerGrid = data.playerGrid || Array.from({length: data.rows}, () => Array(data.cols).fill(''));
+      seconds = data.seconds || 0; errorCount = data.errorCount || 0; solved = false;
+      selR = -1; selC = -1; dir = 'across'; activeClue = null;
+      setCellSize(data.cols);
+      buildGrid(); buildClueList('across'); buildClueList('down');
+      startTimer(); if (data.seconds) seconds = data.seconds;
+      updateMetrics();
+      setStatus(`${data.rows}×${data.cols} loaded`, '');
+      for (let r = 0; r < data.rows; r++)
+        for (let c = 0; c < data.cols; c++)
+          if (data.mask[r][c]) { selectCell(r, c); return; }
+    } catch(err) { setStatus('Load error: ' + err.message, 'err'); }
   };
   reader.readAsText(file);
   event.target.value = '';
-}
-
-
-// ─── Prepared Pack Support ───
-function normalizePreparedPuzzle(data) {
-  const rows = Number(data.rows);
-  const cols = Number(data.cols);
-  const mask = (data.mask || []).map(row => row.map(v => v ? 1 : 0));
-  const solution = (data.solution || []).map((row, r) =>
-    row.map((ch, c) => (mask[r] && mask[r][c]) ? String(ch || '').toUpperCase() : '')
-  );
-  const clueMap = {across: {}, down: {}};
-  for (const d of ['across', 'down']) {
-    const src = (data.clueMap && data.clueMap[d]) ? data.clueMap[d] : {};
-    for (const [num, cl] of Object.entries(src)) {
-      const cells = Array.isArray(cl.cells) ? cl.cells : [];
-      const first = cells[0] || [0, 0];
-      clueMap[d][num] = {
-        num: cl.num != null ? cl.num : Number(num),
-        r: cl.r != null ? cl.r : first[0],
-        c: cl.c != null ? cl.c : first[1],
-        len: cl.len != null ? cl.len : cells.length,
-        text: cl.text || cl.clue || '…',
-        word: String(cl.word || cl.answer || '').toUpperCase(),
-        cells,
-        score: cl.score
-      };
-    }
-  }
-  const numAssigned = data.numAssigned || {};
-  if (!Object.keys(numAssigned).length) {
-    for (const d of ['across', 'down']) {
-      for (const [num, cl] of Object.entries(clueMap[d])) {
-        if (cl.cells && cl.cells.length) {
-          const [r, c] = cl.cells[0];
-          numAssigned[`${r},${c}`] = Number(num);
-        }
-      }
-    }
-  }
-  const player = Array.isArray(data.playerGrid)
-    ? data.playerGrid.map((row, r) => row.map((ch, c) => (mask[r] && mask[r][c]) ? String(ch || '').toUpperCase() : ''))
-    : Array.from({length: rows}, () => Array(cols).fill(''));
-
-  return {
-    id: data.id || '',
-    title: data.title || `${rows}×${cols}`,
-    rows, cols, mask, solution, clueMap, numAssigned,
-    playerGrid: player,
-    sourceLabel: data.sourceLabel || '',
-    meta: data.meta || {}
-  };
-}
-
-function loadPreparedPuzzle(data, idx = -1) {
-  const p = normalizePreparedPuzzle(data);
-  puzzle = {
-    rows: p.rows,
-    cols: p.cols,
-    mask: p.mask,
-    solution: p.solution,
-    clueMap: p.clueMap,
-    numAssigned: p.numAssigned,
-    title: p.title,
-    sourceLabel: p.sourceLabel,
-    meta: p.meta
-  };
-  playerGrid = p.playerGrid;
-  selR = -1; selC = -1; dir = 'across'; activeClue = null;
-  solved = false; errorCount = 0;
-  if (idx >= 0) packIndex = idx;
-  setCellSize(p.cols);
-  buildGrid();
-  buildClueList('across');
-  buildClueList('down');
-  startTimer();
-  updateMetrics();
-  updatePackUI();
-  setStatus(p.title || `${p.rows}×${p.cols}`, '');
-  for (let r = 0; r < p.rows; r++) {
-    for (let c = 0; c < p.cols; c++) {
-      if (p.mask[r][c]) { selectCell(r, c); return; }
-    }
-  }
-}
-
-function setPack(packObj) {
-  if (!packObj || !Array.isArray(packObj.puzzles) || !packObj.puzzles.length) return false;
-  PACK = packObj;
-  if (packIndex < 0 || packIndex >= PACK.puzzles.length) packIndex = 0;
-  const sel = document.getElementById('packSelect');
-  sel.innerHTML = '';
-  PACK.puzzles.forEach((p, i) => {
-    const opt = document.createElement('option');
-    opt.value = String(i);
-    opt.textContent = `${i + 1}. ${p.title || (p.rows + '×' + p.cols)}`;
-    sel.appendChild(opt);
-  });
-  sel.value = String(packIndex);
-  loadPreparedPuzzle(PACK.puzzles[packIndex], packIndex);
-  return true;
-}
-
-function updatePackUI() {
-  document.getElementById('packTitle').textContent = L.packTitle;
-  const metaEl = document.getElementById('packMeta');
-  if (PACK && packIndex >= 0 && PACK.puzzles[packIndex]) {
-    metaEl.innerHTML = L.packMeta(PACK.puzzles[packIndex]);
-    document.getElementById('packSelect').value = String(packIndex);
-  } else {
-    metaEl.innerHTML = L.packWaiting;
-  }
-  document.getElementById('btnPrevPack').disabled = !(PACK && PACK.puzzles && PACK.puzzles.length > 1);
-  document.getElementById('btnNextPack').disabled = !(PACK && PACK.puzzles && PACK.puzzles.length > 1);
-}
-
-function loadPackSelection() {
-  if (!PACK) return;
-  const idx = Number(document.getElementById('packSelect').value || 0);
-  if (Number.isFinite(idx) && PACK.puzzles[idx]) loadPreparedPuzzle(PACK.puzzles[idx], idx);
-}
-
-function prevPackPuzzle() {
-  if (!PACK || !PACK.puzzles?.length) return;
-  const idx = (packIndex - 1 + PACK.puzzles.length) % PACK.puzzles.length;
-  loadPreparedPuzzle(PACK.puzzles[idx], idx);
-}
-
-function nextPackPuzzle() {
-  if (!PACK || !PACK.puzzles?.length) return;
-  const idx = (packIndex + 1) % PACK.puzzles.length;
-  loadPreparedPuzzle(PACK.puzzles[idx], idx);
-}
-
-async function tryAutoloadPack() {
-  setStatus(L.packLoading || L.loading, 'gen');
-  if (window.CW_PUZZLES_PACK && Array.isArray(window.CW_PUZZLES_PACK.puzzles) && window.CW_PUZZLES_PACK.puzzles.length) {
-    return setPack(window.CW_PUZZLES_PACK);
-  }
-  if (location.protocol !== 'file:') {
-    try {
-      const r = await fetch('cw_puzzles_pack.json', {cache: 'no-store'});
-      if (r.ok) {
-        const data = await r.json();
-        return setPack(data);
-      }
-    } catch (e) {
-      console.warn('JSON autoload failed:', e);
-    }
-    document.getElementById('packMeta').innerHTML = L.packMissing;
-    return false;
-  }
-  document.getElementById('packMeta').innerHTML = L.packMissingLocal;
-  return false;
 }
 
 // ─── Language ───
@@ -1049,9 +863,7 @@ async function switchLang(code) {
   L = I18N[lang] || I18N.en;
   updateUI();
   const ok = await loadDict(lang);
-  if (ok && !PACK && !puzzle) {
-    setStatus(L.packMissingStatus, 'err');
-  }
+  if (ok) setStatus(`${DB.hinted[Object.keys(DB.hinted)[0]]?.length || 0}+ words ready`, '');
 }
 
 function updateUI() {
@@ -1067,7 +879,6 @@ function updateUI() {
   document.getElementById('helpText').innerHTML = L.helpHtml;
   document.getElementById('btnReveal').textContent = L.reveal;
   document.getElementById('btnSolution').textContent = L.solution;
-  updatePackUI();
 }
 
 // ─── Utility ───
@@ -1080,13 +891,10 @@ window.addEventListener('resize', () => { if (puzzle) setCellSize(puzzle.cols); 
 
 (async function init() {
   updateUI();
-  const autoloaded = await tryAutoloadPack();
   const ok = await loadDict(lang);
-  if (!autoloaded && ok) {
+  if (ok) {
     const hTotal = Object.values(DB.hinted).reduce((s, arr) => s + arr.length, 0);
     setStatus(`${hTotal} hinted words · choose size →`, '');
-  } else if (!autoloaded && !ok) {
-    setStatus(L.noDict, 'err');
   }
 })();
 </script>
