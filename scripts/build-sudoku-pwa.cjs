@@ -16,7 +16,7 @@ const sources={
   playback:fs.readFileSync(path.join(presentationDir,'app-solve-playback.js'),'utf8'),
   pwa:fs.readFileSync(path.join(presentationDir,'pwa.js'),'utf8'),
   labUi:fs.readFileSync(path.join(base,'_pwa','lab-ui.js'),'utf8'),
-  i18n:fs.readFileSync(path.join(base,'_pwa','i18n.js'),'utf8')
+  i18n:fs.readFileSync(path.join(base,'_pwa','i18n.js'),'utf8').replace("let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame');}catch(_){}","let embedded=false;try{embedded=parent!==window&&!!parent.document.getElementById('sudokuGame')&&!document.body?.hasAttribute('data-app-surface');}catch(_){}")
 };
 for(const [name,source] of Object.entries(sources))if(source.includes('</script>'))throw Error('Presentation source contains closing script tag: '+name);
 const headBlock='<!-- BEGIN SUDOKU UNIFIED HEAD -->\n<style id="sudoku-app-style">\n'+sources.css+'\n</style>\n<script id="sudoku-unified-bootstrap">\n'+sources.bootstrap+'\n</script>\n<!-- END SUDOKU UNIFIED HEAD -->';

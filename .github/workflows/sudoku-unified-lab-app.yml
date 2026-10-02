@@ -41,10 +41,12 @@ jobs:
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium webkit
       - name: Unified presentation browser acceptance
+        shell: bash
         env:
           NODE_PATH: /tmp/sudoku-pw/node_modules
           SUDOKU_EVIDENCE_DIR: ${{ runner.temp }}/sudoku-unified-evidence
         run: |
+          set -o pipefail
           mkdir -p ${{ runner.temp }}/sudoku-unified-evidence
           node tests/sudoku-unified-lab-browser.cjs | tee ${{ runner.temp }}/sudoku-unified-evidence/unified-browser.log
           node tests/sudoku-app-boot-r4-browser.cjs | tee ${{ runner.temp }}/sudoku-unified-evidence/app-boot.log
