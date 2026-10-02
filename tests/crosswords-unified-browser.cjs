@@ -1,0 +1,42 @@
+'use strict';
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const BASE=process.env.CW_BASE_URL||'http://127.0.0.1:8765/CW';
+const evidence=process.env.CW_EVIDENCE_DIR||'';
+const results={};
+function attachErrors(page){const errs=[];page.on('pageerror',e=>errs.push(String(e)));return errs;}
+async function main(){
+ const browser=await chromium.launch({headless:true});
+ const ctx=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
+ let page=await ctx.newPage();let errs=attachErrors(page);
+ await page.goto(BASE+'/',{waitUntil:'domcontentloaded'});await page.waitForSelector('#grid .cell');
+ assert.equal((await page.locator('.channel-link.channel-active').innerText()).trim(),'CURRENT');
+ assert.ok(await page.locator('#packSelect option').count()>1);assert.deepEqual(errs,[]);results.current_v4_playable='PASS';
+ const prev=await ctx.newPage();const perrs=attachErrors(prev);await prev.goto(BASE+'/old/',{waitUntil:'domcontentloaded'});
+ assert.equal((await prev.locator('.channel-link.channel-active').innerText()).trim(),'PREVIOUS');
+ const pack=JSON.parse(fs.readFileSync('public/CW/cw_puzzles_pack.json','utf8'));const p0=pack.puzzles[0];
+ await prev.setInputFiles('#loadFile',{name:'puzzle.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(p0))});
+ await prev.waitForSelector('#grid .cell');const pw=prev.locator('#grid .cell:not(.black)').first();await pw.click();await prev.keyboard.type('A');
+ assert.ok(await prev.evaluate('playerGrid.flat().some(Boolean)'));assert.deepEqual(perrs,[]);results.previous_v3_playable='PASS';
+ const lab=await ctx.newPage();const lerrs=attachErrors(lab);await lab.goto(BASE+'/new/',{waitUntil:'domcontentloaded'});await lab.waitForSelector('#grid .cell');
+ assert.equal(await lab.evaluate("document.body.classList.contains('force-app')"),false);assert.equal(await lab.evaluate("document.body.classList.contains('mobile-presentation')"),false);
+ assert.equal((await lab.locator('.channel-link.channel-active').innerText()).trim(),'LAB');assert.ok(await lab.locator('#packSelect option').count()>1);results.lab_desktop='PASS';
+ const i0=await lab.evaluate('packIndex');await lab.click('#btnNextPack');await lab.waitForTimeout(50);assert.notEqual(await lab.evaluate('packIndex'),i0);await lab.click('#btnPrevPack');await lab.waitForTimeout(50);assert.equal(await lab.evaluate('packIndex'),i0);results.pack_navigation='PASS';
+ await lab.locator('#grid .cell:not(.black)').first().click();await lab.keyboard.type('A');assert.ok(await lab.evaluate('playerGrid.flat().some(Boolean)'));assert.ok(await lab.evaluate('!!activeClue'));
+ await lab.evaluate('checkAll()');await lab.evaluate('revealWord()');await lab.evaluate('revealAll()');assert.ok(await lab.evaluate('playerGrid.flat().filter(Boolean).length>0'));results.game_controls='PASS';
+ await lab.selectOption('#langSel','sl');await lab.waitForTimeout(100);assert.equal(await lab.evaluate('lang'),'sl');await lab.selectOption('#langSel','en');await lab.waitForTimeout(100);results.language_selector='PASS';
+ await lab.evaluate('loadPreparedPuzzle(PACK.puzzles[0],0)');await lab.locator('#grid .cell:not(.black)').first().click();await lab.keyboard.type('B');const before=await lab.evaluate('JSON.stringify(playerGrid)');
+ const [dl]=await Promise.all([lab.waitForEvent('download'),lab.evaluate('savePuzzle()')]);const path=await dl.path();await lab.evaluate('revealAll()');await lab.setInputFiles('#loadFile',path);await lab.waitForTimeout(100);assert.equal(await lab.evaluate('JSON.stringify(playerGrid)'),before);results.json_roundtrip='PASS';
+ await lab.evaluate('seconds=37; window.CW_LAB.persistLabState()');await lab.goto(BASE+'/new/?view=app',{waitUntil:'domcontentloaded'});await lab.waitForSelector('#grid .cell');
+ assert.ok(await lab.evaluate("document.body.classList.contains('force-app')"));assert.ok(await lab.evaluate("document.body.classList.contains('mobile-presentation')"));assert.equal((await lab.locator('.channel-link.channel-active').innerText()).trim(),'APP');assert.ok(await lab.evaluate('seconds>=37'));
+ await lab.setViewportSize({width:1920,height:1080});await lab.waitForTimeout(50);assert.ok(await lab.evaluate("document.body.classList.contains('force-app')"));await lab.reload({waitUntil:'domcontentloaded'});await lab.waitForSelector('#grid .cell');assert.ok(await lab.evaluate("document.body.classList.contains('force-app')"));const bb=await lab.locator('.page').boundingBox();assert.ok(bb.width<=432);results.app_persistent_same_source='PASS';
+ const phone=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const mp=await phone.newPage();const merrs=attachErrors(mp);await mp.goto(BASE+'/new/',{waitUntil:'domcontentloaded'});await mp.waitForSelector('#grid .cell');
+ assert.ok(await mp.evaluate("document.body.classList.contains('mobile-presentation')"));assert.equal(await mp.evaluate("document.body.classList.contains('force-app')"),false);assert.ok((await mp.evaluate('document.documentElement.scrollWidth-window.innerWidth'))<=1);assert.ok(await mp.locator('#currentClueMobile').isVisible());await mp.locator('#grid .cell:not(.black)').first().tap();await mp.keyboard.type('C');assert.ok(await mp.evaluate('playerGrid.flat().some(Boolean)'));assert.deepEqual(merrs,[]);await phone.close();results.mobile_same_source='PASS';
+ const pwa=await ctx.newPage();await pwa.goto(BASE+'/new/',{waitUntil:'domcontentloaded'});await pwa.waitForFunction('navigator.serviceWorker && navigator.serviceWorker.ready');await pwa.waitForTimeout(700);const keys=await pwa.evaluate('caches.keys()');assert.ok(keys.some(k=>k.startsWith('8zCrosswords:LAB:')));await pwa.close();await ctx.setOffline(true);const off=await ctx.newPage();const oerrs=attachErrors(off);await off.goto(BASE+'/new/',{waitUntil:'domcontentloaded',timeout:10000});await off.waitForSelector('#grid .cell',{timeout:10000});assert.ok(await off.locator('#packSelect option').count()>1);assert.deepEqual(oerrs,[]);await ctx.setOffline(false);results.pwa_offline_cold_load='PASS';
+ const viewer=await ctx.newPage();const verrs=attachErrors(viewer);await viewer.goto(BASE+'/8z_CW_viewer.html',{waitUntil:'domcontentloaded'});assert.equal(await viewer.locator('body').count(),1);assert.deepEqual(verrs,[]);results.viewer='PASS';
+ assert.deepEqual(lerrs,[]);
+ if(evidence){fs.mkdirSync(evidence,{recursive:true});fs.writeFileSync(evidence+'/browser-results.json',JSON.stringify({status:'PASS',results},null,2));await lab.screenshot({path:evidence+'/app-desktop.png',fullPage:true});}
+ await browser.close();console.log(JSON.stringify({status:'PASS',results},null,2));
+}
+main().catch(e=>{console.error(e);process.exit(1)});
