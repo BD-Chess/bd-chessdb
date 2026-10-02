@@ -1,4 +1,4 @@
-const CACHE='ts-cpq-so-protected-r2';
+const CACHE='ts-cpq-so-protected-r3';
 const APP_SHELL=[
   './index.html',
   './manifest.webmanifest',
