@@ -2213,6 +2213,7 @@ function jumpTo(i){
   const workspaceDrawers = [['popularGamesPanel', 'btnGames', 'btnCloseGames'], ['settingsPanel', 'btnSettings', 'btnCloseSettings']];
   workspaceDrawers.forEach(([panelId, buttonId, closeId]) => {
     const panel = document.getElementById(panelId), button = document.getElementById(buttonId);
+    if (panelId === 'popularGamesPanel' && !document.body.classList.contains('app-mobile')) return;
     const close = () => { panel.classList.remove('open'); button.setAttribute('aria-expanded', 'false'); button.focus({ preventScroll: true }); };
     button.onclick = () => {
       const open = !panel.classList.contains('open');

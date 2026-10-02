@@ -156,6 +156,7 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
 });
 
 test('Game library routes curated reviews only after a successful load and Review preserves scroll', () => {
+  assert.match(utils, /panelId === 'popularGamesPanel' && !document\.body\.classList\.contains\('app-mobile'\)/);
   assert.match(utils, /CustomEvent\('chess:library-loaded'[\s\S]*curatedReview \? 'review' : 'moves'/);
   assert.doesNotMatch(utils, /document\.getElementById\('main'\)\.scrollIntoView/);
   assert.match(reviewUi, /const scrollByKey = new Map\(\)/);

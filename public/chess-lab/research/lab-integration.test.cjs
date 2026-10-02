@@ -41,6 +41,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
+ assert.equal(w.document.body.dataset.desktopView,'library','Game library is the active full desktop workspace view');
  assert.equal(el('popularGamesPanel').parentElement,el('workspaceDisplay'),'desktop library shares the main content viewport');
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
