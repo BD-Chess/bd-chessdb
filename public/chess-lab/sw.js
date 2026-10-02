@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. LAB only. */
 'use strict';
-const RELEASE = "lab-ff6d7c3089c826e0";
+const RELEASE = "lab-7c459811c3a961c2";
 const PREFIX = "chessbest-chess-lab-";
 const ASSETS = [
   "8zc-about.html",
@@ -66,15 +66,15 @@ const ASSETS = [
   "img/chesspieces/wikipedia/bB.png",
   "img/chesspieces/wikipedia/bK.png",
   "img/chesspieces/wikipedia/bN.png",
-  "img/chesspieces/wikipedia/bP.png",
+  "img/chessspieces/wikipedia/bP.png",
   "img/chesspieces/wikipedia/bQ.png",
   "img/chesspieces/wikipedia/bR.png",
   "img/chesspieces/wikipedia/wB.png",
   "img/chesspieces/wikipedia/wK.png",
   "img/chesspieces/wikipedia/wN.png",
   "img/chesspieces/wikipedia/wP.png",
-  "img/chesspieces/wikipedia/wQ.png",
-  "img/chesspieces/wikipedia/wR.png",
+  "img/chessspieces/wikipedia/wQ.png",
+  "img/chessspieces/wikipedia/wR.png",
   "index.html",
   "js/8zc-benchmark.js",
   "js/8zc-dcc-core.js",
