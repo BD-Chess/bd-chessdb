@@ -74,6 +74,7 @@
     closeDesktopDrawers();
     const display = byId('workspaceDisplay');
     if (display && desktopViews.has(desktopView)) desktopScroll[desktopView] = display.scrollTop;
+    const restoreScroll = desktopScroll[next] || 0;
     desktopView = next;
     paintDesktopView();
     if (desktopSyncing) return;
@@ -88,7 +89,14 @@
     } finally {
       desktopSyncing = false;
     }
-    if (display) display.scrollTop = desktopScroll[next] || 0;
+    const restoreViewScroll = () => {
+      if (display && desktopView === next) display.scrollTop = restoreScroll;
+    };
+    restoreViewScroll();
+    // Review is reopened by a backing-control click, which can render content
+    // after the view switched. Re-apply once on the next frame so layout/CSS
+    // changes cannot snap the shared workspace back to the top.
+    if (next === 'review' && root.requestAnimationFrame) root.requestAnimationFrame(restoreViewScroll);
     if (!options.preserveFocus) {
       const target = byId('desktopViewTabs')?.querySelector('[data-desktop-view="' + next + '"]') || (next === 'library' ? byId('btnGames') : null);
       target?.focus({ preventScroll: true });

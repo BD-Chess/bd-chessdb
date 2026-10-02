@@ -54,7 +54,9 @@
     }
     function closePanel(restoreFocus = true) {
       if (panel.hidden) return;
-      if (previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
+      // Mobile owns its drawer scroll per game. Desktop scroll belongs to the
+      // shared workspace view controller, which restores it after tab changes.
+      if (appView && previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
       panel.hidden = true;
       panel.classList.remove('open');
       button.setAttribute('aria-expanded', 'false');
@@ -334,11 +336,11 @@
         const cursorChanged = next.cursor !== previousCursor || Boolean(next.blocked) !== previousBlocked;
         snapshot = next;
         if (stale) {
-          if (previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
+          if (appView && previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
           review = root.ChessGameReview.build({ Chess: root.Chess, pgn: next.sourcePGN, headers: next.headers,
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
-          reviewScroller().scrollTop = scrollByKey.get(key) || 0;
+          if (appView) reviewScroller().scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
         else renderSources();

@@ -78,7 +78,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB|SF'],['sf','SF']]);
+ assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB | SF'],['sf','SF']]);
  source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'CDB-first retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
