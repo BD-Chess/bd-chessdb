@@ -16,7 +16,7 @@ async function run(){
     const context=await browser.newContext({viewport:mode==='phone'?{width:402,height:734}:{width:1440,height:1200},isMobile:mode==='phone',hasTouch:mode==='phone',serviceWorkers:'block',...(mode==='phone'?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'}:{})});
     const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('framenavigated',f=>report.navigation.push({name,mode,url:f.url(),at:Date.now()}));
     try{
-     await page.goto(base,{waitUntil:'load',timeout:30000});const frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
+     await page.goto(base,{waitUntil:'load',timeout:30000});let frame=await (await page.locator('#sudokuGame').elementHandle()).contentFrame();assert.ok(frame,'APP iframe exists');await frame.waitForURL(/app\.html/,{waitUntil:'load',timeout:12000});
      await frame.waitForFunction(()=>window.SudokuNavigator?.product&&document.querySelector('#appDock'),null,{timeout:12000});
      await page.waitForTimeout(700);
      for(const diff of ['easy','hard','evil']){
