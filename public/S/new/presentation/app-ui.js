@@ -2,20 +2,21 @@
 // Embedded at the end of the self-contained APP game. The LAB solver/game
 // stays the source of truth; this layer changes only its APP presentation.
 (() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
  const $ = id => document.getElementById(id);
  const panel = $('aiAssistPanel');
  const product = window.SudokuNavigator?.product;
  if (!panel || !product) return;
 
- const TEXT_KEY='8zSudoku.app.ui.textSize';
+ const TEXT_KEY='8zSudoku.ui.textSize';
  const textSizes=new Set(['compact','normal','large']);
  const readTextSize=()=>{try{const v=localStorage.getItem(TEXT_KEY);return textSizes.has(v)?v:'normal';}catch(_){return 'normal';}};
  const applyTextSize=v=>{const size=textSizes.has(v)?v:'normal';document.body.dataset.appTextSize=size;try{localStorage.setItem(TEXT_KEY,size);}catch(_){}};
  const UI_PREFS={
-  numberPad:{key:'8zSudoku.app.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
-  coach:{key:'8zSudoku.app.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
-  coachDetail:{key:'8zSudoku.app.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
-  holdTip:{key:'8zSudoku.app.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
+  numberPad:{key:'8zSudoku.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
+  coach:{key:'8zSudoku.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
+  coachDetail:{key:'8zSudoku.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
+  holdTip:{key:'8zSudoku.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
  };
  const readUiPref=name=>{const p=UI_PREFS[name];try{const v=localStorage.getItem(p.key);return p.allowed.has(v)?v:p.def;}catch(_){return p.def;}};
  const writeUiPref=(name,value)=>{const p=UI_PREFS[name];if(!p.allowed.has(value))return false;try{localStorage.setItem(p.key,value);return true;}catch(_){return false;}};

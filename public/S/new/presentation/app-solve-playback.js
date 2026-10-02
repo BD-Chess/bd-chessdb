@@ -3,6 +3,7 @@
 // persistent transaction owned by the existing Sudoku product. This module
 // builds a checked, read-only review timeline and never mutates game history.
 (() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
  const nav=window.SudokuNavigator,product=nav?.product,grid=document.getElementById('grid'),C=window.SudokuNavCore,P=window.AI8SudokuProofPreview?.engine;
  if(!product||!grid||!C||!P)return;
  const $=id=>document.getElementById(id);

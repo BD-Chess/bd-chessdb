@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>8zSudoku — Play & Learn LAB | BD × AI Lab</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23020409'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='16' font-weight='700' fill='%2300e5ff' text-anchor='middle'%3E9%3C/text%3E%3C/svg%3E">
@@ -490,8 +490,214 @@ body[data-quiet=true] *,body[data-quiet=true]::before,body[data-quiet=true]::aft
 
 .ux-setting{margin:8px 0}.ux-setting label{display:block;font-size:.85rem}.ux-setting select{max-width:100%;font-size:1rem}.ux-demo-note .btn{min-height:44px}
 </style>
+<!-- BEGIN SUDOKU UNIFIED HEAD -->
+<style id="sudoku-app-style">
+/* Mobile/APP presentation for the canonical /S/new/ Sudoku source. */
+html{color-scheme:dark}html[data-theme=light]{color-scheme:light}
+body[data-app-surface]{background:var(--bg);overflow-x:hidden}
+body[data-app-surface]::before,body[data-app-surface]::after,body[data-app-surface] .noise{display:none}
+body[data-app-surface] .page{min-height:100dvh;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+@media(display-mode:standalone){body[data-app-surface] .page{padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}
+body[data-app-surface] .topbar,body[data-app-surface] .footer,body[data-app-surface] .research-notes,body[data-app-surface] .stats-bar{display:none!important}
+body[data-app-surface] .title-block{padding:0 12px}
+body[data-app-surface] .title{font-size:1.34rem}
+body[data-app-surface] .header{padding:12px 16px 0;align-items:center}
+body[data-app-surface] .logo{letter-spacing:.1em}
+body[data-app-surface] .pl-tabs{margin:4px auto 6px}
+body[data-app-surface][data-app-framed-preview=true] .title-block,
+body[data-app-surface][data-app-framed-preview=true] .pl-tabs{transform:translateY(24px)}
+/* Relative offset preserves placement without trapping fixed overlays under the scrim. */
+body[data-app-surface][data-app-framed-preview=true] .main{transform:none;top:24px}
+body[data-app-surface] .pl-tabs .btn{min-width:85px}
+body[data-app-surface] .main,body[data-app-surface][data-view=play][data-assist=closed] .main{
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:'center' 'right' 'left';
+  max-width:470px;width:100%;padding:5px 10px 8px;gap:4px;left:auto;position:relative
+}
+body[data-app-surface] .col-center{min-width:0;max-width:100%}
+body[data-app-surface] .grid-wrap{padding:4px;max-width:100%}
+body[data-app-surface] .grid{max-width:100%}
+body[data-app-surface] .cell{color:#f7fbff}
+body[data-app-surface] .cell.given{color:#f0f6ff}
+body[data-app-surface] .cell .notes{color:#91d6e6}
+[data-theme=light] body[data-app-surface] .cell{color:var(--text)}
+[data-theme=light] body[data-app-surface] .cell.given{color:var(--muted)}
+[data-theme=light] body[data-app-surface] .cell .notes{color:var(--cyan)}
+body[data-app-surface] .mobile-input-panel{
+ width:100%;max-width:100%;margin:12px 0 18px;padding:7px 8px;
+ background:linear-gradient(180deg,#151e2a 0%,#101721 100%);border-color:#34465a;
+ box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0003
+}
+body[data-app-surface] .mobile-input-panel>.panel-title{display:none}
+body[data-app-surface] .numpad{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+body[data-app-surface] .numpad button{grid-column:span 2;min-height:46px;font-size:1.15rem;padding:4px}
+body[data-app-surface] .numpad button:not(.pl-armed){
+ background:#1b2735;border-color:#3c4b5e;color:#c8d0da;
+ box-shadow:inset 0 1px 0 #ffffff0b
+}
+body[data-app-surface] .numpad button:not(.pl-armed):hover,
+body[data-app-surface] .numpad button:not(.pl-armed):focus-visible{
+ background:#223243;border-color:#00cfe8;color:#dde4ec
+}
+body[data-app-surface] .numpad button:not(.pl-armed):active{
+ background:#294052;border-color:#28dff2;color:#eef3f8;transform:translateY(1px)
+}
+html[data-theme=light] body[data-app-surface] .mobile-input-panel{
+ background:linear-gradient(180deg,#e2e7ed 0%,#d8dfe7 100%);border-color:#aeb9c6;box-shadow:inset 0 1px 0 #fff
+}
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed){
+ background:#edf1f5;border-color:#b7c1cc;color:#556170;box-shadow:inset 0 1px 0 #fff
+}
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed):hover,
+html[data-theme=light] body[data-app-surface] .numpad button:not(.pl-armed):focus-visible{
+ background:#dbe8ed;border-color:var(--cyan);color:#304253
+}
+body[data-app-surface] .numpad button:nth-child(6){grid-column:2/span 2}
+body[data-app-surface] .ux-toolbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:6px}
+body[data-app-surface] .ux-toolbar .btn{min-height:48px;font-size:.77rem;line-height:1.2}
+body[data-app-surface][data-view=play][data-assist=closed] #uxHint,
+body[data-app-surface][data-view=play][data-assist=closed] #uxWhy{display:none}
+body[data-app-surface][data-view=play][data-assist=closed] .ux-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}
+body[data-app-surface][data-view=play][data-assist=closed] #notesBtn{order:1}
+body[data-app-surface][data-view=play][data-assist=closed] #uxErase{order:2}
+body[data-app-surface][data-view=play][data-assist=closed] #uxUndo{order:3}
+body[data-app-surface][data-view=play][data-assist=closed] #solveBtn{order:4}
+body[data-app-surface][data-view=play][data-assist=closed] #uxNew{order:5}
+body[data-app-surface][data-view=play][data-assist=closed] #uxMore{order:6}
+body[data-app-surface] #plGameStatus{margin:8px 0 10px;min-height:1em;font-size:.74rem}
+body[data-app-surface] .pl-notice{display:none!important}
+body[data-app-surface] .col-left{display:none!important}
+body[data-app-surface][data-view=lab] .col-left{display:flex!important}
+body[data-app-surface]:not([data-view=lab]) .col-right{visibility:visible}
+body[data-app-surface]:not([data-view=lab]) .col-right>.panel:not(#aiAssistPanel){display:none!important}
+body[data-app-surface] #aiAssistPanel{display:none!important}
+body[data-app-surface][data-app-panel=assist] #aiAssistPanel:not([hidden]){
+  display:block!important;position:fixed;z-index:3002;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));top:auto;
+  transform:translateX(-50%);width:min(100% - 20px,450px);max-height:min(66dvh,570px);
+  overflow:auto;overscroll-behavior:contain;padding:16px!important;background:var(--bg3);color:var(--text);
+  border:1px solid var(--border2);box-shadow:0 18px 50px #000b;border-radius:20px
+}
+body[data-app-surface] #aiAssistPanel .assist-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+body[data-app-surface] #aiAssistPanel .btn{min-height:44px}
+body[data-app-surface] #appAssistScrim{display:none}
+body[data-app-surface][data-app-panel=assist] #appAssistScrim{display:block;position:fixed;inset:0;z-index:3001;background:#020711a8;border:0;width:100%;cursor:pointer}
+body[data-app-surface] #appDock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;z-index:3003;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,470px);gap:2px;padding:7px 8px calc(8px + env(safe-area-inset-bottom));background:#0b1629f5;border-top:1px solid #00e5ff33;backdrop-filter:blur(12px)}
+body[data-app-surface] #appDock button{min-width:0;min-height:58px;padding:5px 2px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 .68rem/1 system-ui;border:0;border-radius:10px;background:transparent;color:#c5d2e4;cursor:pointer}
+body[data-app-surface] #appDock .app-dock-icon{font-size:1.18rem;line-height:1;color:#e8f1ff}
+body[data-app-surface] #appDock .app-dock-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body[data-app-surface] #appDock button[aria-pressed=true]{color:#74f4ff;background:#103046}
+body[data-app-surface] #appDock button[aria-pressed=true] .app-dock-icon{color:#74f4ff}
+body[data-app-surface] #appDock button:disabled{opacity:.38;cursor:default}
+[data-theme=light] body[data-app-surface] #appDock{background:#f7fafff5;border-top-color:var(--border2)}
+[data-theme=light] body[data-app-surface] #appDock button{background:transparent;color:var(--text)}
+[data-theme=light] body[data-app-surface] #appDock .app-dock-icon{color:var(--text)}
+[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true]{background:var(--cyan-dim);color:var(--cyan)}
+[data-theme=light] body[data-app-surface] #appDock button[aria-pressed=true] .app-dock-icon{color:var(--cyan)}
+body[data-app-surface][data-view=lab] #appDock{display:none!important}
+body[data-app-surface]:not([data-view=lab]) .page{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+body[data-app-surface]:not([data-view=lab]) .ux-toolbar{display:none!important}
+body[data-app-surface] .nav-modal{z-index:4000}
+body[data-app-surface] .nav-dialog{max-height:calc(100dvh - 24px)}
+@media (max-width:370px){body[data-app-surface] .main{padding-inline:5px}body[data-app-surface] .numpad button{min-height:44px}}
+@media (prefers-reduced-motion:reduce){body[data-app-surface] #appAssistScrim{transition:none}}
+
+/* iPhone polish: scalable native-facing text and richer More sheet. */
+body[data-app-surface]{--app-text-scale:1}
+body[data-app-surface][data-app-text-size=compact]{--app-text-scale:.92}
+body[data-app-surface][data-app-text-size=large]{--app-text-scale:1.13}
+body[data-app-surface] #appDock button{font-size:calc(.80rem * var(--app-text-scale));gap:5px}
+body[data-app-surface] #appDock .app-dock-icon{font-size:calc(1.24rem * var(--app-text-scale))}
+body[data-app-surface] #aiAssistPanel{font-size:calc(1rem * var(--app-text-scale));line-height:1.5}
+body[data-app-surface] .nav-dialog{font-size:calc(.96rem * var(--app-text-scale))}
+body[data-app-surface] .nav-dialog .btn{font-size:calc(.88rem * var(--app-text-scale))}
+body[data-app-surface] #aiAssistPanel .btn,
+body[data-app-surface] #aiAssistPanel .assist-actions .btn{min-height:50px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.25}
+body[data-app-surface] #aiAssistPanel p,
+body[data-app-surface] #aiAssistPanel .assist-copy{font-size:calc(.94rem * var(--app-text-scale))}
+body[data-app-surface] #navModal.app-more-modal .nav-dialog{padding:18px 16px 16px}
+body[data-app-surface] #navModal.app-more-modal #navModalTitle{font-size:calc(1.42rem * var(--app-text-scale));margin-bottom:14px}
+body[data-app-surface] #navModal.app-more-modal .ux-menu{gap:9px}
+body[data-app-surface] #navModal.app-more-modal .btn{
+ min-height:58px;padding:9px 8px;font-size:calc(.98rem * var(--app-text-scale));line-height:1.15;
+ display:flex;align-items:center;justify-content:flex-start;gap:9px;text-align:left
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-icon{
+ flex:0 0 1.45rem;width:1.45rem;text-align:center;font:700 calc(1.12rem * var(--app-text-scale))/1 system-ui;color:#bfefff
+}
+body[data-app-surface] #navModal.app-more-modal .app-menu-label{flex:1;min-width:0}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger{border-color:#ff6b8a66;color:#ff9aae}
+body[data-app-surface] #navModal.app-more-modal .app-menu-danger .app-menu-icon{color:#ff7d99}
+body[data-app-surface] .app-text-setting{border-top:1px solid var(--border2);padding-top:12px;margin-top:14px}
+body[data-app-surface] .app-text-setting label{font-weight:700}
+@media(max-width:390px){
+ body[data-app-surface] #appDock button{font-size:calc(.75rem * var(--app-text-scale))}
+ body[data-app-surface] #navModal.app-more-modal .btn{font-size:calc(.94rem * var(--app-text-scale))}
+}
+
+/* APP coach / optional number pad */
+body[data-app-surface] #appHoldTip{
+ width:100%;margin:8px 0 4px;padding:0 8px;text-align:center;
+ font-size:calc(.78rem * var(--app-text-scale));line-height:1.35;color:#9eacc0
+}
+body[data-app-surface] #appCoach{
+ width:100%;margin:10px 0 18px;padding:13px 14px 12px;border:1px solid #33475a;border-radius:10px;
+ background:linear-gradient(180deg,#121c28 0%,#0d151f 100%);box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0003
+}
+body[data-app-surface] #appCoach .app-coach-title{
+ font:800 calc(.78rem * var(--app-text-scale))/1.2 system-ui;letter-spacing:.045em;color:#b8c7d8;margin-bottom:7px
+}
+body[data-app-surface] #appCoach .app-coach-copy{
+ min-height:2.75em;font:600 calc(.86rem * var(--app-text-scale))/1.45 system-ui;color:#d4dbe4
+}
+body[data-app-surface] #appCoach .app-coach-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px
+}
+body[data-app-surface] #appCoach .app-coach-actions button{
+ min-height:40px;padding:7px 8px;border:1px solid #42566d;border-radius:8px;
+ background:#172331;color:#c8d0da;font:700 calc(.76rem * var(--app-text-scale))/1.15 system-ui;cursor:pointer
+}
+body[data-app-surface] #appCoach .app-coach-actions button:hover,
+body[data-app-surface] #appCoach .app-coach-actions button:focus-visible{
+ border-color:#00cfe8;color:#e7f7fa;background:#1b3040
+}
+body[data-app-surface] #appCoach .app-coach-actions button:disabled{opacity:.42;cursor:default}
+body[data-app-surface] #appCoach[hidden],body[data-app-surface] #appHoldTip[hidden],
+body[data-app-surface] #plNumbers[hidden],body[data-app-surface] .mobile-input-panel[hidden]{display:none!important}
+[data-theme=light] body[data-app-surface] #appHoldTip{color:#5c6c80}
+[data-theme=light] body[data-app-surface] #appCoach{
+ background:linear-gradient(180deg,#f3f6f9 0%,#e8edf2 100%);border-color:#aeb9c6;box-shadow:inset 0 1px 0 #fff
+}
+[data-theme=light] body[data-app-surface] #appCoach .app-coach-title{color:#4c5b6b}
+[data-theme=light] body[data-app-surface] #appCoach .app-coach-copy{color:#2d3947}
+[data-theme=light] body[data-app-surface] #appCoach .app-coach-actions button{
+ background:#eef2f6;border-color:#b7c1cc;color:#455260
+}
+
+/* Hard/Evil: no proactive Coach/tip; keep on-demand AI Assist and center the board in the freed space. */
+body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{
+ min-height:calc(100dvh - 250px - env(safe-area-inset-bottom));align-content:center
+}
+@media(max-height:760px){
+ body[data-app-surface][data-app-hard-nohelp=true][data-view=play] .main{min-height:auto;padding-top:24px;padding-bottom:24px}
+}
+
+</style>
+<script id="sudoku-unified-bootstrap">
+'use strict';
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports){module.exports=api;return;}root.SudokuUnifiedPresentation=api;api.boot(root);})(typeof window!=='undefined'?window:globalThis,function(){
+ const CANON='ai8SudokuNavigatorV020',APP_OLD='ai8SudokuAppV030',PWA_OLD='ai8SudokuNavigatorV020PWA',MARKER='8zSudoku.unified.migration.v1';
+ const preferencePairs=[['8zSudoku.app.ui.language','8zSudoku.ui.language'],['8zSudoku.app.ui.textSize','8zSudoku.ui.textSize'],['8zSudoku.app.ui.numberPad','8zSudoku.ui.numberPad'],['8zSudoku.app.ui.coach','8zSudoku.ui.coach'],['8zSudoku.app.ui.coachDetail','8zSudoku.ui.coachDetail'],['8zSudoku.app.ui.holdTip','8zSudoku.ui.holdTip']];
+ const nonempty=v=>v!==null&&v!=='';function keys(s){const o=[];for(let i=0;i<s.length;i++){const k=s.key(i);if(k)o.push(k);}return o;}
+ function migrate(storage){const r={schema:'8ZSUDOKU_STORAGE_MIGRATION_V1',canonical:CANON,copied:[],same:[],conflicts:[],errors:[],legacy:[]};if(!storage){r.errors.push('storage unavailable');return r;}let all;try{all=keys(storage);}catch(e){r.errors.push(String(e&&e.message||e));return r;}const copy=(source,target)=>{let from,to;try{from=storage.getItem(source);to=storage.getItem(target);}catch(e){r.errors.push(source+': '+String(e&&e.message||e));return;}if(!nonempty(from))return;r.legacy.push(source);if(!nonempty(to)){try{storage.setItem(target,from);r.copied.push({source,target});}catch(e){r.errors.push(target+': '+String(e&&e.message||e));}return;}if(to===from)r.same.push({source,target});else r.conflicts.push({source,target});};for(const from of [APP_OLD,PWA_OLD])for(const k of all.filter(x=>x===from||x.startsWith(from+'.')))copy(k,CANON+k.slice(from.length));for(const [s,t]of preferencePairs)copy(s,t);if(!r.errors.length){try{storage.setItem(MARKER,JSON.stringify({at:new Date().toISOString(),copied:r.copied.length,same:r.same.length,conflicts:r.conflicts.length,canonicalWins:true}));}catch(e){r.errors.push(MARKER+': '+String(e&&e.message||e));}}return r;}
+ function legacySnapshot(storage){const out={schema:'8ZSUDOKU_LEGACY_STORAGE_EXPORT_V1',exported_at:new Date().toISOString(),items:{}};if(!storage)return out;for(const k of keys(storage))if(k===APP_OLD||k.startsWith(APP_OLD+'.')||k===PWA_OLD||k.startsWith(PWA_OLD+'.')||k.startsWith('8zSudoku.app.ui.'))out.items[k]=storage.getItem(k);return out;}
+ function decide(win){const q=new URLSearchParams(win.location.search||''),explicit=q.get('presentation')||q.get('view'),native=win.location.protocol==='capacitor:'||win.location.protocol==='ionic:'||!!win.Capacitor?.isNativePlatform?.(),ua=win.navigator?.userAgent||'',hint=win.navigator?.userAgentData,mobileUA=hint&&typeof hint.mobile==='boolean'?hint.mobile:/iPhone|iPod|Windows Phone|Android.*Mobile/i.test(ua),narrow=!!win.matchMedia?.('(max-width: 740px)')?.matches,coarse=!!win.matchMedia?.('(pointer: coarse)')?.matches,app=explicit==='app'||native||(explicit!=='lab'&&(mobileUA||(narrow&&coarse)));return{mode:app?'app':'lab',app,native,mobile:mobileUA||(narrow&&coarse),explicit:explicit||null};}
+ function boot(win){let migration;try{migration=migrate(win.localStorage);}catch(e){migration={schema:'8ZSUDOKU_STORAGE_MIGRATION_V1',errors:[String(e&&e.message||e)],copied:[],same:[],conflicts:[],legacy:[]};}const choice=decide(win);win.__SUDOKU_PRESENTATION={...choice,migration};const apply=()=>{const b=win.document?.body;if(!b)return;b.dataset.presentation=choice.mode;if(choice.app){b.dataset.appSurface='true';b.dataset.appPanel=b.dataset.appPanel||'board';const t=win.document.querySelector('.title');if(t)t.textContent='8zSudoku';win.document.title='8zSudoku · Play & Learn';}else{delete b.dataset.appSurface;delete b.dataset.appPanel;delete b.dataset.appFramedPreview;}};if(win.document?.body)apply();else win.document?.addEventListener('DOMContentLoaded',apply,{once:true});return win.__SUDOKU_PRESENTATION;}
+ return{CANON,APP_OLD,PWA_OLD,MARKER,preferencePairs,migrate,legacySnapshot,decide,boot};
+});
+
+</script>
+<!-- END SUDOKU UNIFIED HEAD -->
 </head>
-<body>
+<body><script id="sudoku-presentation-body-bootstrap">if(window.__SUDOKU_PRESENTATION?.app){document.body.dataset.appSurface="true";document.body.dataset.appPanel="board";}document.body.dataset.presentation=window.__SUDOKU_PRESENTATION?.mode||"lab";</script>
 <div class="noise"></div>
 
 <div class="topbar">
@@ -2158,7 +2364,7 @@ function proofCoachHint(mode='explain',source='pointer'){
 
 function reviewPlayerPlacement(preGrid,cell,value,assisted){
   const r=Math.floor(cell/9),c=cell%9,expected=solution?.[r]?.[c];
-  const base={seq:moveReviews.length+1,cell,value,at_s:timerSeconds,assisted:!!assisted,reasoning_status:'UNKNOWN_REASONING'};
+  const base={seq:moveReviews.length+1,cell,value,at_s:timerSeconds,assisted:!!assisted,pre_board:preGrid.flat(),reasoning_status:'UNKNOWN_REASONING'};
   if(expected&&value!==expected)return{...base,answer:'WRONG',proof:'NOT_APPLICABLE',verdict:'mistake',label:'Wrong answer',technique:null,detail:`Expected ${expected} in the certified unique solution.`};
   const p=AI8Proof.reasonForMove(preGrid,cell,value);
   if(p.found)return{...base,answer:'CORRECT',proof:'FOUND',verdict:'verified',label:'Verified logic',technique:p.technique,proof_depth:p.depth,proof_path:p.path,detail:`${AI8Proof.TECH_LABEL[p.technique]||p.technique}; proof found from the pre-move state.`};
@@ -2720,7 +2926,7 @@ function attachAdapters(){
   const help=assistance.filter(a=>a.index>(rows.at(-1)?.assistanceEnd||0)),isConditional=conditional();placeBase(n,source);
   if(JSON.stringify([before.board,before.notes])===JSON.stringify([playerGrid.flat(),notes.flat().map(x=>[...x])]))return;
   resetAnalysis();cancelSolve();if(pre&&before.board.join('')!==playerGrid.flat().join(''))alignAfter(pre);else if(!pre)freshState();
-  if(!inNotes&&playerGrid.flat()[cell]===n&&old!==n){const row={id:(rows.at(-1)?.id||0)+1,kind:'placement',cell,value:n,pre,at_s:timerSeconds,help:J(help),assistanceEnd:assistance.at(-1)?.index||0,sessionAssisted:assistance.length>0,conditional:isConditional,answer:'NOT_CHECKED',reasoning_status:'UNKNOWN_REASONING',result:{status:'PENDING',found:false}};rows.push(row);
+  if(!inNotes&&playerGrid.flat()[cell]===n&&old!==n){const row={id:(rows.at(-1)?.id||0)+1,kind:'placement',cell,value:n,pre,pre_board:before.board.slice(),at_s:timerSeconds,help:J(help),assistanceEnd:assistance.at(-1)?.index||0,sessionAssisted:assistance.length>0,conditional:isConditional,answer:'NOT_CHECKED',reasoning_status:'UNKNOWN_REASONING',result:{status:'PENDING',found:false}};rows.push(row);
    if(pre){const taskGame=gameId;reviewQueue=reviewQueue.catch(()=>{}).then(async()=>{if(gameId!==taskGame)return;try{const result=await run('review',{state:pre,cell,value:n,options:{budget:150000}},8000).promise;if(gameId===taskGame&&rows.includes(row))row.result=result;}catch(e){if(gameId===taskGame)row.result={status:e.message.includes('LIMIT')?'LIMIT':'ERROR',found:false};}if(gameId===taskGame){renderReviews();scheduleSave();}});}
    if(practice&&pre)placementPractice(cell,n,pre);if(pre&&navState)recentGains.push(Math.max(0,C.countCandidates(pre)-C.countCandidates(navState)));
   }else if(!inNotes)rows.push({id:(rows.at(-1)?.id||0)+1,kind:'erase',cell,pre,help:J(help),assistanceEnd:assistance.at(-1)?.index||0,sessionAssisted:assistance.length>0});
@@ -2746,7 +2952,7 @@ async function createGame(diff,target=null,source='pointer',retention=false){
  if(genJob)genJob.cancel();cancelSolve();if(aiAnimating)aiPause();resetAnalysis();const token=++generationToken;const seed=(globalThis.crypto?.getRandomValues?crypto.getRandomValues(new Uint32Array(1))[0]:Date.now())>>>0;
  showBusy(true);notify(target==null?'Generating a unique puzzle in a worker…':`Generating and verifying a new ${C.LABELS[target]} practice checkpoint…`);
  const job=run('generate',{diff,seed,target},15000);genJob=job;mobileUX.sync();if(mobileUX.mobile())mobileUX.toast('Generating a certified new puzzle…');
- try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){const message=`Profile not fulfilled after ${g.attempts} attempts. The current game is unchanged.`;notify(message);openDialog('Profile not fulfilled',`<p>${esc(message)}</p><p>${esc(g.reason||'No checked exercise found in the bounded attempts.')}</p>${target==null?`<p>A fixed example from the built-in catalog is available. It is rechecked and may repeat.</p><button class="btn" id="plProfileExample">Use checked ${esc(diff)} example</button>`:""}<div class="ux-menu"><button class="btn" id="plRetryProfile">Retry ${esc(diff)}</button><button class="btn" id="plOtherProfile">Choose another profile</button><button class="btn" id="plKeepGame">Keep my game</button></div>`);$('plRetryProfile').onclick=()=>{closeDialog();createGame(diff,target,source,retention);};$('plOtherProfile').onclick=()=>{closeDialog();mobileUX.requestNew();};$('plKeepGame').onclick=closeDialog;if($('plProfileExample'))$('plProfileExample').onclick=async()=>{closeDialog();await product.openProfileExample(diff);};return;}
+ try{const g=await job.promise;if(token!==generationToken)return;if(g.status!=='GENERATED'){if(target==null){const opened=await product.openProfileExample(diff);if(!opened)notify('New puzzle unavailable. Current game kept.');}else notify('Practice checkpoint unavailable. Current game kept.');return;}
   const priorGame=gameId;if(!await product.archive())throw Error('Current game could not be archived');if(token!==generationToken)return;product.reset();if(target!=null&&priorGame)product.preparePractice(priorGame);if(aiTimeout)clearTimeout(aiTimeout);aiAnimating=false;stopTimer();currentDiff=diff;puzzle=grid2(g.exercise?g.exercise.state.b:g.puzzle);solution=grid2(g.solution);playerGrid=copyGrid(puzzle);givenCells=puzzle.map(row=>row.map(Boolean));notes=Array.from({length:9},()=>Array.from({length:9},()=>new Set()));history=[];traceHistoryFloor=0;selectedCell=null;correctionHighlightActive=false;activeHumanHint=null;notesMode=false;$('notesBtn').textContent='Notes: OFF';$('notesBtn').classList.remove('active');
   generationEvidence={engine:C.ENGINE_REVISION,seed,uniqueness:g.uniqueness,difficulty:g.difficultyEvidence,attempts:g.attempts,outcomes:g.outcomes||[]};
   gameId='g'+seed.toString(16)+'-'+Date.now().toString(36);rows=[];assistance=[];undoNav=[];recentGains=[];practice=target==null?null:{target,seed,tries:0,assisted:false,finished:false,retention};
@@ -3120,7 +3326,7 @@ const product=(()=>{
   document.addEventListener('keydown',e=>{if(e.target.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal').hidden)return;if(e.key==='Escape'){disarm();return;}if((e.ctrlKey||e.metaKey)&&((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y')){e.preventDefault();e.stopImmediatePropagation();travel(true,'key');}if(e.target.closest?.('.cell')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectCell(+e.target.closest('.cell').dataset.index,'key');}},true);
   window.addEventListener('storage',e=>{if(e.key===EPOCH||e.key===KEY){mobileUX.cancelGesture();disarm();if(e.key===EPOCH){deleted=true;generationToken++;cancelSolve();genJob?.cancel();resetAnalysis();clearTimeout(saveTimer);stopTimer();humanTraceRecorder.trace=null;humanTraceRecorder.memoryStored=null;humanTraceRecorder.memoryConsent=false;}frozen=true;storageError(Error(e.key===EPOCH?'LAB data deleted in another tab':'Newer library in another tab; reload to continue'));}});window.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change',()=>{if(pref('theme')==='system')applyAppearance();});ready=true;applyAppearance();sync();
  }
- return{RELEASE,SCHEMA,install,pref,writePref,feedback:()=>pref('feedback'),switchView,view:()=>view,arm,armed:()=>armedDigit,disarm,sync,syncControls,capture,finish,cleanNotes,undo:s=>travel(false,s),redo:s=>travel(true,s),historyData,validateHistory,restored,mergeKnowledge,storageGuard,flush,flushSync,archive,saveSoon,bootSession,migrate,validateSessionData,libraryDialog,deleteEverything,checkCorrectness,settingsFields,more,about,lesson,lessonExample,tutorialDialog,shareCodec,decodeShare,inspectShare,dailyIdentity,startDaily,openProfileExample,returnPractice,preparePractice:id=>{returnGame=id||gameId;},adoptTrace:()=>{redos=recoveredHumanTraceState?.redo||[];gameId='trace-'+(humanTraceRecorder.trace?.initial_state.board_hash||writer).slice(0,32);extra={assistanceUnknown:true};},reset:()=>{redos=[];extra={};completion=null;daily=null;returnGame=null;disarm();if($('plCompletion'))$('plCompletion').hidden=true;},base:()=>extra,assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),canWrite:()=>!frozen&&!deleted,ready:()=>ready,block:e=>{frozen=true;storageError(e);},whenSaved:()=>saveChain,entries:()=>J(library.entries)};
+ return{RELEASE,SCHEMA,install,pref,writePref,feedback:()=>pref('feedback'),switchView,view:()=>view,arm,armed:()=>armedDigit,disarm,sync,syncControls,capture,finish,cleanNotes,undo:s=>travel(false,s),redo:s=>travel(true,s),historyData,validateHistory,restored,mergeKnowledge,storageGuard,flush,flushSync,archive,saveSoon,bootSession,migrate,validateSessionData,libraryDialog,deleteEverything,checkCorrectness,settingsFields,more,about,lesson,lessonExample,tutorialDialog,shareCodec,decodeShare,inspectShare,dailyIdentity,startDaily,openProfileExample,returnPractice,preparePractice:id=>{returnGame=id||gameId;},adoptTrace:()=>{redos=recoveredHumanTraceState?.redo||[];gameId='trace-'+(humanTraceRecorder.trace?.initial_state.board_hash||writer).slice(0,32);extra={assistanceUnknown:true};},reset:()=>{redos=[];extra={};completion=null;daily=null;returnGame=null;disarm();if($('plCompletion'))$('plCompletion').hidden=true;},base:()=>extra,assistedSolveAll:()=>assistance.some(a=>a.type==='ai_assist_solve_all_answer'),reviewRows:()=>J(rows.filter(r=>r.kind==='placement'&&(r.pre?.b||r.pre_board)).map(r=>{const expected=solution?.flat?.()[r.cell],proof=(r.result?.path||[]).find(q=>q.c===r.cell&&q.v===r.value)||r.result?.path?.at?.(-1),verdict=expected&&r.value!==expected?'mistake':r.result?.found?'verified':'unknown',preBoard=(r.pre?.b||r.pre_board);return{seq:r.id,cell:r.cell,value:r.value,at_s:r.at_s,assisted:!!(r.sessionAssisted||r.help?.length),pre_board:preBoard.slice(),verdict,technique:proof&&Number.isInteger(proof.t)?C.NAMES[proof.t]:null,label:verdict==='mistake'?'Wrong answer':verdict==='verified'?'Verified logic':'Correct · reasoning unknown'};})),canWrite:()=>!frozen&&!deleted,ready:()=>ready,block:e=>{frozen=true;storageError(e);},whenSaved:()=>saveChain,entries:()=>J(library.entries)};
 })();
 
 // Guided help deliberately distinguishes a logical move from information taken
@@ -3584,6 +3790,1112 @@ install();
  }
  window.SudokuI18n={dispose,set:setLanguage,get:()=>language,translate,refresh,original:el=>[...el.childNodes].map(n=>n.nodeType===3?source(n):n.textContent).join('')};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+
+</script>
+<script id="sudoku-app-ui">
+'use strict';
+// Embedded at the end of the self-contained APP game. The LAB solver/game
+// stays the source of truth; this layer changes only its APP presentation.
+(() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
+ const $ = id => document.getElementById(id);
+ const panel = $('aiAssistPanel');
+ const product = window.SudokuNavigator?.product;
+ if (!panel || !product) return;
+
+ const TEXT_KEY='8zSudoku.ui.textSize';
+ const textSizes=new Set(['compact','normal','large']);
+ const readTextSize=()=>{try{const v=localStorage.getItem(TEXT_KEY);return textSizes.has(v)?v:'normal';}catch(_){return 'normal';}};
+ const applyTextSize=v=>{const size=textSizes.has(v)?v:'normal';document.body.dataset.appTextSize=size;try{localStorage.setItem(TEXT_KEY,size);}catch(_){}};
+ const UI_PREFS={
+  numberPad:{key:'8zSudoku.ui.numberPad',allowed:new Set(['off','on']),def:'off'},
+  coach:{key:'8zSudoku.ui.coach',allowed:new Set(['off','easy','always']),def:'easy'},
+  coachDetail:{key:'8zSudoku.ui.coachDetail',allowed:new Set(['short','detailed']),def:'short'},
+  holdTip:{key:'8zSudoku.ui.holdTip',allowed:new Set(['off','on']),def:'on'}
+ };
+ const readUiPref=name=>{const p=UI_PREFS[name];try{const v=localStorage.getItem(p.key);return p.allowed.has(v)?v:p.def;}catch(_){return p.def;}};
+ const writeUiPref=(name,value)=>{const p=UI_PREFS[name];if(!p.allowed.has(value))return false;try{localStorage.setItem(p.key,value);return true;}catch(_){return false;}};
+
+ const dock = document.createElement('nav');
+ dock.id = 'appDock';
+ dock.setAttribute('aria-label', 'Game controls');
+ dock.innerHTML =
+  '<button type="button" id="appNotes" aria-pressed="false"><span class="app-dock-icon" aria-hidden="true">✎</span><span class="app-dock-label">Notes</span></button>'+
+  '<button type="button" id="appErase"><span class="app-dock-icon" aria-hidden="true">⌫</span><span class="app-dock-label">Erase</span></button>'+
+  '<button type="button" id="appUndo"><span class="app-dock-icon" aria-hidden="true">↶</span><span class="app-dock-label">Undo</span></button>'+
+  '<button type="button" id="appAssist" aria-pressed="false"><span class="app-dock-icon" aria-hidden="true">✦</span><span class="app-dock-label">AI Assist</span></button>'+
+  '<button type="button" id="appMore"><span class="app-dock-icon" aria-hidden="true">⋯</span><span class="app-dock-label">More</span></button>';
+
+ const scrim = document.createElement('button');
+ scrim.type = 'button';
+ scrim.id = 'appAssistScrim';
+ scrim.setAttribute('aria-label', 'Return to board');
+ document.querySelector('.page').append(scrim);
+ document.body.append(dock);
+
+ const numbersPanel=$('numpad')?.closest('.mobile-input-panel')||$('plNumbers');
+ const holdTip=document.createElement('p');
+ holdTip.id='appHoldTip';holdTip.className='app-hold-tip';holdTip.setAttribute('role','note');
+ const coach=document.createElement('section');
+ coach.id='appCoach';coach.className='app-coach-card';coach.setAttribute('aria-live','polite');
+ coach.innerHTML='<div class="app-coach-title">Sudoku Coach</div><div class="app-coach-copy" id="appCoachCopy"></div><div class="app-coach-actions"><button type="button" id="appCoachWhy">Why?</button><button type="button" id="appCoachCandidates">Show candidates</button></div>';
+ if(numbersPanel)numbersPanel.before(holdTip,coach);
+
+ const isSl = () => window.SudokuI18n?.get?.() === 'sl';
+ const label = (id,text) => {
+  const node=$(id)?.querySelector('.app-dock-label');
+  if(node && node.textContent!==text)node.textContent=text;
+ };
+ const setLabel = (node,value) => {
+  if(node && node.getAttribute('aria-label')!==value)node.setAttribute('aria-label',value);
+ };
+ const proxy = (source,target) => $(source)?.addEventListener('click',()=>{
+  $(target)?.click();
+  queueMicrotask(sync);
+ });
+
+ const iconMap={
+  'New game':'＋','Nova igra':'＋','What’s new':'✦','Kaj je novega':'✦',
+  'Quick tutorial · optional':'◎','Kratka vaja · neobvezno':'◎','Redo':'↻','Uveljavi znova':'↻',
+  'My games':'▦','Moje igre':'▦','Daily puzzles':'◫','Dnevne uganke':'◫',
+  'Share puzzle':'↗','Deli uganko':'↗','Check correctness':'✓','Preveri pravilnost':'✓',
+  'Review':'◎','Pregled':'◎','Settings':'⚙','Nastavitve':'⚙','Help / About':'?',
+  'Pomoč / O igri':'?','Import session':'⇩','Uvozi igro':'⇩','Export session':'⇧','Izvozi igro':'⇧',
+  'Delete all APP data':'⌫','Izbriši vse podatke APP':'⌫','App · offline & updates':'◌',
+  'Aplikacija · brez povezave in posodobitve':'◌','AI solve review':'◀▶','Pregled AI reševanja':'◀▶','Human solve review':'◎','Pregled človeškega reševanja':'◎'
+ };
+ function decorateMenuButton(button){
+  if(button.dataset.appDecorated)return;
+  const text=button.textContent.trim(),icon=iconMap[text]||'•';
+  button.dataset.appDecorated='true';
+  button.dataset.appMenuLabel=text;
+  button.innerHTML='<span class="app-menu-icon" aria-hidden="true">'+icon+'</span><span class="app-menu-label"></span>';
+  button.querySelector('.app-menu-label').textContent=text;
+  if(/Delete all APP data|Izbriši vse podatke APP/.test(text))button.classList.add('app-menu-danger');
+ }
+ function decorateMore(){
+  const modal=$('navModal'),body=$('navModalBody');
+  if(!modal||!body)return;
+  modal.classList.add('app-more-modal');
+  body.querySelectorAll('button.btn').forEach(decorateMenuButton);
+ }
+ function enhanceMore(){
+  const body=$('navModalBody');
+  if(!body)return;
+  if(!$('appMorePrimary')){
+   const sl=isSl(), group=document.createElement('div');
+   group.id='appMorePrimary';
+   group.className='ux-menu app-more-primary';
+   group.innerHTML =
+    '<button class="btn" id="appMoreNew">'+(sl?'Nova igra':'New game')+'</button>'+
+    '<button class="btn" id="appMoreNews">'+(sl?'Kaj je novega':'What’s new')+'</button>'+
+    '<button class="btn" id="appMoreTutorial">'+(sl?'Kratka vaja · neobvezno':'Quick tutorial · optional')+'</button>';
+   body.prepend(group);
+   $('appMoreNew').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('uxNew')?.click());};
+   $('appMoreNews').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plNewsOpen')?.click());};
+   $('appMoreTutorial').onclick=()=>{$('navClose')?.click();queueMicrotask(()=>$('plTutorialOpen')?.click());};
+  }
+  const reviewAPI=window.SudokuSolveReview,primary=$('appMorePrimary');
+  let aiReview=$('appMoreAIReview');
+  if(reviewAPI?.hasReview?.()){
+   if(!aiReview){
+    aiReview=document.createElement('button');aiReview.className='btn';aiReview.id='appMoreAIReview';
+    primary.append(aiReview);
+    aiReview.onclick=()=>{$('navClose')?.click();queueMicrotask(()=>window.SudokuSolveReview?.open?.());};
+   }
+   aiReview.hidden=false;aiReview.textContent=isSl()?'Pregled AI reševanja':'AI solve review';delete aiReview.dataset.appDecorated;
+  }else if(aiReview)aiReview.hidden=true;
+  let humanReview=$('appMoreHumanReview');
+  if(reviewAPI?.hasHumanReview?.()){
+   if(!humanReview){
+    humanReview=document.createElement('button');humanReview.className='btn';humanReview.id='appMoreHumanReview';
+    primary.append(humanReview);
+    humanReview.onclick=()=>{$('navClose')?.click();queueMicrotask(()=>window.SudokuSolveReview?.openHuman?.());};
+   }
+   humanReview.hidden=false;humanReview.textContent=isSl()?'Pregled človeškega reševanja':'Human solve review';delete humanReview.dataset.appDecorated;
+  }else if(humanReview)humanReview.hidden=true;
+  decorateMore();
+ }
+ function enhanceSettings(){
+  $('navModal')?.classList.remove('app-more-modal');
+  const body=$('navModalBody'),anchor=$('uxSettings');
+  if(!body||!anchor||$('appSettingsExtras'))return;
+  const sl=isSl(),wrap=document.createElement('div');
+  wrap.id='appSettingsExtras';wrap.className='app-settings-extras';
+  const options=(items,current)=>items.map(([v,t])=>'<option value="'+v+'"'+(v===current?' selected':'')+'>'+t+'</option>').join('');
+  wrap.innerHTML=
+   '<div class="ux-setting app-text-setting" id="appTextSizeSetting"><label for="appTextSize">'+(sl?'Velikost besedila':'Text size')+'</label><select id="appTextSize">'+
+    options([['compact',sl?'Kompaktno':'Compact'],['normal',sl?'Običajno':'Normal'],['large',sl?'Veliko':'Large']],readTextSize())+'</select></div>'+
+   '<div class="ux-setting"><label for="appNumberPad">'+(sl?'Številke pod mrežo':'Number pad')+'</label><select id="appNumberPad">'+
+    options([['off',sl?'Izključeno':'Off'],['on',sl?'Vključeno':'On']],readUiPref('numberPad'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appCoachMode">'+(sl?'Sudoku Coach':'Sudoku Coach')+'</label><select id="appCoachMode">'+
+    options([['off',sl?'Izključeno':'Off'],['easy',sl?'Samo Lahka':'Easy only'],['always',sl?'Lahka + Srednja':'Easy + Medium']],readUiPref('coach'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appCoachDetail">'+(sl?'Podrobnost Coach-a':'Coach detail')+'</label><select id="appCoachDetail">'+
+    options([['short',sl?'Kratko':'Short'],['detailed',sl?'Podrobno':'Detailed']],readUiPref('coachDetail'))+'</select></div>'+
+   '<div class="ux-setting"><label for="appHoldTipSetting">'+(sl?'Namig Tapni in drži':'Tap & hold tip')+'</label><select id="appHoldTipSetting">'+
+    options([['on',sl?'Vključeno':'On'],['off',sl?'Izključeno':'Off']],readUiPref('holdTip'))+'</select></div>';
+  anchor.before(wrap);
+  $('appTextSize').onchange=e=>{applyTextSize(e.target.value);updateCoach();};
+  $('appNumberPad').onchange=e=>{writeUiPref('numberPad',e.target.value);updateCoach();};
+  $('appCoachMode').onchange=e=>{writeUiPref('coach',e.target.value);updateCoach();};
+  $('appCoachDetail').onchange=e=>{writeUiPref('coachDetail',e.target.value);updateCoach();};
+  $('appHoldTipSetting').onchange=e=>{writeUiPref('holdTip',e.target.value);updateCoach();};
+ }
+
+ const rc=i=>'R'+(Math.floor(i/9)+1)+'C'+(i%9+1);
+ const difficulty=()=>{
+  try{if(typeof currentDiff==='string')return currentDiff.toLowerCase();}catch(_){}
+  const raw=($('plGameStatus')?.textContent||'').toLowerCase();
+  if(/lahka|easy/.test(raw))return'easy';if(/srednja|medium/.test(raw))return'medium';if(/zelo težka|evil/.test(raw))return'evil';if(/težka|hard/.test(raw))return'hard';return'';
+ };
+ const capture=()=>{try{return product.capture?.()||null;}catch(_){return null;}};
+ function candidates(board,index){
+  if(!Array.isArray(board)||board.length!==81||board[index])return[];
+  const r=Math.floor(index/9),c=index%9,used=new Set();
+  for(let x=0;x<9;x++){used.add(board[r*9+x]);used.add(board[x*9+c]);}
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let rr=br;rr<br+3;rr++)for(let cc=bc;cc<bc+3;cc++)used.add(board[rr*9+cc]);
+  return[1,2,3,4,5,6,7,8,9].filter(d=>!used.has(d));
+ }
+ const candidateMap=board=>Array.from({length:81},(_,i)=>board[i]?[]:candidates(board,i));
+ function hiddenSingle(board,all,index,digit){
+  if(board[index])return null;
+  const r=Math.floor(index/9),c=index%9;
+  const units=[
+   Array.from({length:9},(_,x)=>r*9+x),
+   Array.from({length:9},(_,x)=>x*9+c),
+   Array.from({length:9},(_,k)=>(Math.floor(r/3)*3+Math.floor(k/3))*9+Math.floor(c/3)*3+k%3)
+  ];
+  const names=['row','column','box'];
+  for(let u=0;u<units.length;u++)if(units[u].filter(i=>!board[i]&&all[i].includes(digit)).length===1)return names[u];
+  return null;
+ }
+ function forcedCell(board,all=candidateMap(board)){
+  if(!Array.isArray(board)||board.length!==81)return null;
+  for(let i=0;i<81;i++)if(!board[i]&&all[i].length===1)return{index:i,digit:all[i][0],kind:'naked'};
+  for(let i=0;i<81;i++)if(!board[i])for(const d of all[i]){const unit=hiddenSingle(board,all,i,d);if(unit)return{index:i,digit:d,kind:'hidden',unit};}
+  return null;
+ }
+ // Coach derives statements only from visible entries, never the solved grid.
+ function boardIssue(board,puzzle){
+  if(!Array.isArray(board)||board.length!==81||board.some(v=>!Number.isInteger(v)||v<0||v>9))return {kind:'invalid'};
+  if(Array.isArray(puzzle)&&puzzle.length===81){for(let i=0;i<81;i++)if(puzzle[i]&&puzzle[i]!==board[i])return{kind:'given',index:i};}
+  for(let k=0;k<9;k++){
+   const units=[Array.from({length:9},(_,x)=>k*9+x),Array.from({length:9},(_,x)=>x*9+k),Array.from({length:9},(_,x)=>(Math.floor(k/3)*3+Math.floor(x/3))*9+(k%3)*3+x%3)];
+   for(let u=0;u<3;u++){const seen=new Map();for(const i of units[u]){const d=board[i];if(!d)continue;if(seen.has(d))return{kind:'duplicate',digit:d,index:i,other:seen.get(d),unit:['row','column','box'][u]};seen.set(d,i);}}
+  }
+  for(let i=0;i<81;i++)if(!board[i]&&!candidates(board,i).length)return{kind:'empty',index:i};
+  return null;
+ }
+ function coachProof(before,after,index){
+  if(!Number.isInteger(index)||index<0||index>=81||boardIssue(before)||boardIssue(after))return null;
+  if(before[index]||!after[index]||before.some((v,i)=>i!==index&&v!==after[i]))return null;
+  const all=candidateMap(before),cs=all[index],digit=after[index];
+  if(!cs.includes(digit))return null;
+  if(cs.length===1)return{index,digit,kind:'naked'};
+  const unit=hiddenSingle(before,all,index,digit);
+  return unit?{index,digit,kind:'hidden',unit}:null;
+ }
+ let lastBoard=null,lastPuzzle=null,lastSelected=null,lastLanguage=null,coachMoment=null,coachTimer=0,disclosed=null;
+ const setText=(node,value)=>{if(node&&node.textContent!==value)node.textContent=value;};
+ function setCoachText(text){setText($('appCoachCopy'),text);}
+ function resetCoachMoment(){coachMoment=null;clearTimeout(coachTimer);}
+ function updateCoach(showCandidates=false){
+  const lab=product.view()==='lab',sl=isSl(),padOn=readUiPref('numberPad')==='on',mode=readUiPref('coach'),detail=readUiPref('coachDetail');
+  const diff=difficulty(),hardNoHelp=diff==='hard'||diff==='evil';
+  document.body.dataset.appHardNoHelp=hardNoHelp?'true':'false';
+  if(numbersPanel)numbersPanel.hidden=lab||!padOn;
+  holdTip.hidden=lab||hardNoHelp||readUiPref('holdTip')!=='on';
+  setText(holdTip,sl?'Tapni in drži prazno celico za pojavni izbor številke.':'Tap & hold an empty cell to open the number picker.');
+  const allowed=mode==='always'&&!hardNoHelp||mode==='easy'&&(!diff||diff==='easy');
+  coach.hidden=lab||hardNoHelp||padOn||mode==='off'||!allowed;
+  setText(coach.querySelector('.app-coach-title'),'Sudoku Coach');
+  setText($('appCoachWhy'),sl?'Zakaj?':'Why?');setText($('appCoachCandidates'),sl?'Pokaži kandidate':'Show candidates');
+  if(coach.hidden){lastBoard=null;disclosed=null;resetCoachMoment();return;}
+  let restoreBusy=false;try{restoreBusy=typeof restoring==='number'&&restoring>0;}catch(_){}
+  if(restoreBusy){lastBoard=null;resetCoachMoment();$('appCoachWhy').disabled=true;$('appCoachCandidates').disabled=true;setCoachText(sl?'Obnavljam shranjeno igro …':'Restoring your saved game…');return;}
+  const state=capture(),board=state?.board;
+  if(!Array.isArray(board)||board.length!==81){lastBoard=null;resetCoachMoment();$('appCoachWhy').disabled=true;$('appCoachCandidates').disabled=true;setCoachText(sl?'Izberi težavnost. Pri lahki igri te bom sproti usmerjal.':'Choose a difficulty. On Easy, I’ll guide you as you play.');return;}
+  const selected=state.selectedCell,boardKey=board.join(''),puzzleKey=JSON.stringify([state.gameId||'',state.puzzle||[]]);
+  const changed=lastBoard?board.map((v,i)=>v===lastBoard[i]?-1:i).filter(i=>i>=0):[];
+  const newContext=lastPuzzle!==puzzleKey||lastSelected!==selected||lastLanguage!==sl;
+  if(newContext||changed.length){disclosed=null;resetCoachMoment();}
+  const issue=boardIssue(board,state.puzzle);
+  if(lastBoard&&lastPuzzle===puzzleKey&&changed.length===1&&!issue){
+   const proof=coachProof(lastBoard,board,changed[0]);
+   if(proof){coachMoment=proof;coachTimer=setTimeout(()=>{coachMoment=null;updateCoach();},5200);}
+  }
+  lastBoard=board.slice();lastPuzzle=puzzleKey;lastSelected=selected;lastLanguage=sl;
+  $('appCoachWhy').disabled=false;$('appCoachCandidates').disabled=true;
+  if(issue){
+   coach.dataset.state='conflict';
+   const unitSL={row:'vrstici',column:'stolpcu',box:'bloku'}[issue.unit],unitEN={row:'row',column:'column',box:'3×3 box'}[issue.unit];
+   setCoachText(issue.kind==='duplicate'?(sl?'Številka '+issue.digit+' se ponovi v isti '+unitSL+' ('+rc(issue.other)+' in '+rc(issue.index)+'). Najprej preveri vnos ali uporabi Razveljavi.':'Digit '+issue.digit+' repeats in the same '+unitEN+' ('+rc(issue.other)+' and '+rc(issue.index)+'). Check the entry or use Undo first.'):
+    issue.kind==='empty'?(sl?'Za '+rc(issue.index)+' ne ostane noben kandidat. Preveri zadnje vnose; zdaj ni varno sklepati naprej.':'No candidate remains for '+rc(issue.index)+'. Check recent entries before making another deduction.'):
+    issue.kind==='given'?(sl?'Začetna številka v '+rc(issue.index)+' ni ohranjena. Preveri obnovljeno igro.':'The given in '+rc(issue.index)+' is not preserved. Check the restored game.'):
+    (sl?'Te mreže še ne morem varno razložiti.':'This grid cannot be explained safely yet.'));
+   return;
+  }
+  coach.dataset.state='ready';
+  if(board.every(Boolean)){setCoachText(sl?'Mreža je izpolnjena: vsaka vrstica, stolpec in blok vsebuje številke 1–9 brez ponovitev.':'Grid complete: every row, column and box contains 1–9 without repeats.');$('appCoachWhy').disabled=true;return;}
+  const emptySelected=Number.isInteger(selected)&&selected>=0&&selected<81&&!board[selected];
+  $('appCoachCandidates').disabled=!emptySelected;
+  if(showCandidates&&emptySelected)disclosed=boardKey+':'+selected;
+  if(emptySelected&&disclosed===boardKey+':'+selected){
+   const cs=candidates(board,selected);
+   setCoachText((sl?'Kandidati za ':'Candidates for ')+rc(selected)+': '+cs.join(', ')+'. '+(sl?'Dovoljeni glede na sedanje vnose v vrstici, stolpcu in bloku.':'Allowed by the current row, column and box entries.'));return;
+  }
+  if(coachMoment){
+   const p=coachMoment,us={row:'vrstici',column:'stolpcu',box:'bloku'}[p.unit],ue={row:'row',column:'column',box:'3×3 box'}[p.unit];
+   setCoachText(p.kind==='naked'?(sl?'Vnos '+p.digit+' v '+rc(p.index)+' sledi golemu posamezniku: glede na prejšnje vnose je ostal en kandidat.':'The '+p.digit+' in '+rc(p.index)+' follows a naked single: the previous entries left one candidate.'):
+    (sl?'Vnos '+p.digit+' v '+rc(p.index)+' sledi skritemu posamezniku v '+us+'.':'The '+p.digit+' in '+rc(p.index)+' follows a hidden single in its '+ue+'.'));return;
+  }
+  if(Number.isInteger(selected)&&selected>=0&&selected<81){
+   if(board[selected]){const given=state.puzzle?.[selected]||$('grid')?.children[selected]?.classList.contains('given');setCoachText(given?(sl?'To je začetna številka. Izberi prazno celico.':'That is a given. Choose an empty cell.'):(sl?'Celica je izpolnjena. Izberi prazno celico za pregled kandidatov.':'That cell is filled. Choose an empty cell to examine candidates.'));return;}
+   const all=candidateMap(board),cs=all[selected];
+   if(cs.length===1){setCoachText(sl?rc(selected)+': v vrstici, stolpcu in bloku izloči že uporabljene številke. Ostane en kandidat — goli posameznik.'+(detail==='detailed'?' S »Pokaži kandidate« preveri, kateri.':''):
+    rc(selected)+': eliminate digits already used in its row, column and box. One candidate remains — a naked single.'+(detail==='detailed'?' Use “Show candidates” to check which one.':''));return;}
+   for(const d of cs){const unit=hiddenSingle(board,all,selected,d);if(unit){const us={row:'vrstici',column:'stolpcu',box:'3×3 bloku'}[unit],ue={row:'row',column:'column',box:'3×3 box'}[unit];setCoachText(sl?'Primerjaj kandidate v isti '+us+' kot '+rc(selected)+'. Eden je mogoč samo v tej celici — skriti posameznik.':'Compare candidates in the same '+ue+' as '+rc(selected)+'. One candidate can go only here — a hidden single.');return;}}
+   setCoachText(sl?rc(selected)+' ima po osnovnem pregledu '+cs.length+' kandidatov. '+(detail==='detailed'?'Primerjaj prazne celice v isti vrstici, stolpcu in bloku; išči številko, ki ima le eno dovoljeno mesto.':'Primerjaj še vrstico, stolpec in blok.'):
+    rc(selected)+' has '+cs.length+' candidates after basic checks. '+(detail==='detailed'?'Compare empty cells in the same row, column and box; look for a digit with only one allowed place.':'Compare its row, column and box.'));return;
+  }
+  const forced=forcedCell(board,candidateMap(board));
+  if(forced){setCoachText(sl?'Poskusi '+rc(forced.index)+' — osnovni pregled tam omogoča naslednji logični korak.'+(detail==='detailed'?' Preveri ponovitve in primerjaj kandidate; številke ne vnesem namesto tebe.':''):
+   'Try '+rc(forced.index)+' — basic checks identify a logical next step there.'+(detail==='detailed'?' Check used digits and compare candidates; I won’t place the number for you.':''));return;}
+  setCoachText(sl?'Izberi prazno celico. Preglej vrstico, stolpec in blok; več kandidatov še ni dokaz za eno številko.':'Choose an empty cell. Check its row, column and box; several candidates do not justify one digit yet.');
+ }
+
+ const sync = () => {
+  const lab=product.view()==='lab';
+  dock.hidden=lab;
+  if(lab)document.body.dataset.appPanel='board';
+  const notesOn=$('notesBtn')?.classList.contains('active')===true;
+  $('appNotes').setAttribute('aria-pressed',String(notesOn));
+  $('appNotes').disabled=$('notesBtn')?.disabled===true;
+  $('appErase').disabled=$('uxErase')?.disabled===true;
+  $('appUndo').disabled=$('uxUndo')?.disabled===true;
+  $('appMore').disabled=$('uxMore')?.disabled===true;
+  const reviewActive=!lab&&document.body.dataset.appSolveReview==='true'&&window.SudokuSolveReview?.active?.()===true;
+  const assistActive=reviewActive||!lab && !panel.hidden && document.body.dataset.appPanel==='assist';
+  $('appAssist').setAttribute('aria-pressed',String(assistActive));
+  $('appAssist').disabled=$('solveBtn')?.disabled===true;
+  const sl=isSl();
+  label('appNotes',sl?'Zapiski':'Notes');
+  label('appErase',sl?'Izbriši':'Erase');
+  label('appUndo',sl?'Razveljavi':'Undo');
+  label('appAssist',reviewActive?(sl?'AI pregled':'AI Review'):(sl?'Pomoč AI':'AI Assist'));
+  label('appMore',sl?'Več':'More');
+  setLabel(dock,sl?'Kontrole igre':'Game controls');
+  setLabel(scrim,sl?'Nazaj na mrežo':'Return to board');
+  updateCoach();
+ };
+ function showAssist(){
+  if(product.view()==='lab')return;
+  if(document.body.dataset.appSolveReview==='true'&&window.SudokuSolveReview?.active?.()){window.SudokuSolveReview.open();return;}
+  if(!panel.hidden && document.body.dataset.appPanel==='assist'){$('aiAssistClose')?.click();return;}
+  $('solveBtn')?.click();queueMicrotask(sync);
+ }
+ function showBoard(){document.body.dataset.appPanel='board';sync();}
+ $('appCoachWhy')?.addEventListener('click',()=>{showAssist();setTimeout(()=>$('aiAssistWhy')?.click(),0);});
+ $('appCoachCandidates')?.addEventListener('click',()=>updateCoach(true));
+ proxy('appNotes','notesBtn');proxy('appErase','uxErase');proxy('appUndo','uxUndo');
+ $('appAssist').addEventListener('click',showAssist);
+ $('appMore').addEventListener('click',()=>{$('uxMore')?.click();queueMicrotask(()=>{enhanceMore();sync();});});
+ scrim.addEventListener('click',showBoard);
+
+ document.addEventListener('click', event => {
+  const settings=event.target.closest?.('#navModalBody [data-menu="Settings"],#navModalBody [data-menu="Nastavitve"]');
+  if(settings)setTimeout(enhanceSettings,0);
+  if (product.view() === 'lab') return;
+  const button = event.target.closest?.('#uxHint,#uxWhy,#solveBtn,#aiAssistClose');
+  if (!button) return;
+  if (button.id === 'aiAssistClose') {document.body.dataset.appPanel='board';sync();return;}
+  event.preventDefault();event.stopImmediatePropagation();
+  ({uxHint:'plHint',uxWhy:'plWhy',solveBtn:'plDemo'})[button.id] &&
+   $(({uxHint:'plHint',uxWhy:'plWhy',solveBtn:'plDemo'})[button.id])?.click();
+  if (!panel.hidden) {
+   document.body.dataset.appPanel='assist';panel.scrollTop=0;
+   $('aiAssistHint')?.focus({preventScroll:true});
+  }
+  sync();
+ }, true);
+
+ // Turn the filled-cell magnifier into a true finger-follow loupe without
+ // changing the underlying read-only gesture transaction.
+ let lastPoint=null;
+ const pointFromTouch=e=>e.touches?.[0]||e.changedTouches?.[0]||null;
+ function placeLoupe(x,y){
+  const loupe=$('uxLoupe');if(!loupe||!Number.isFinite(x)||!Number.isFinite(y))return;
+  const box=loupe.getBoundingClientRect(),vv=window.visualViewport;
+  const left0=vv?.offsetLeft||0,top0=vv?.offsetTop||0,vw=vv?.width||innerWidth,vh=vv?.height||innerHeight,pad=10,offset=62;
+  let left=x-box.width/2;
+  let top=y-box.height-offset;
+  if(top<top0+pad)top=y+42;
+  left=Math.max(left0+pad,Math.min(left,left0+vw-box.width-pad));
+  top=Math.max(top0+pad,Math.min(top,top0+vh-box.height-pad));
+  loupe.style.left=Math.round(left)+'px';loupe.style.top=Math.round(top)+'px';
+ }
+ document.addEventListener('pointerdown',e=>{lastPoint={x:e.clientX,y:e.clientY};},{capture:true,passive:true});
+ document.addEventListener('pointermove',e=>{lastPoint={x:e.clientX,y:e.clientY};placeLoupe(e.clientX,e.clientY);},{capture:true,passive:true});
+ document.addEventListener('touchstart',e=>{const p=pointFromTouch(e);if(p)lastPoint={x:p.clientX,y:p.clientY};},{capture:true,passive:true});
+ document.addEventListener('touchmove',e=>{const p=pointFromTouch(e);if(p){lastPoint={x:p.clientX,y:p.clientY};placeLoupe(p.clientX,p.clientY);}},{capture:true,passive:true});
+
+ const menuBody=$('navModalBody');
+ if(menuBody)new MutationObserver(()=>{if($('navModal')?.classList.contains('app-more-modal'))decorateMore();}).observe(menuBody,{childList:true,subtree:true});
+ const grid=$('grid');
+ let coachQueued=false;
+ const scheduleCoach=(delay=0)=>{
+  if(coachQueued)return;
+  coachQueued=true;
+  setTimeout(()=>{coachQueued=false;updateCoach();},delay);
+ };
+ if(grid){
+  for(const event of ['click','pointerup','touchend'])grid.addEventListener(event,()=>scheduleCoach());
+ }
+ for(const id of ['numpad','appErase','appUndo','aiAssistApply','uxNew']){
+  $(id)?.addEventListener('click',()=>scheduleCoach());
+ }
+ const gameStatus=$('plGameStatus');
+ if(gameStatus)new MutationObserver(()=>scheduleCoach()).observe(gameStatus,{childList:true,subtree:true,characterData:true});
+ // Bounded post-boot refreshes cover asynchronous saved-game recovery without
+ // observing 81 changing cells or competing with the solver worker.
+ setTimeout(()=>updateCoach(),600);
+ setTimeout(()=>updateCoach(),2200);
+
+ const watch = new MutationObserver(records=>{
+  if($('navModal')?.hidden)$('navModal')?.classList.remove('app-more-modal');
+  if(lastPoint&&$('uxLoupe'))placeLoupe(lastPoint.x,lastPoint.y);
+  sync();
+ });
+ watch.observe(panel,{attributes:true,attributeFilter:['hidden']});
+ watch.observe(document.body,{attributes:true,attributeFilter:['data-view','data-assist','data-app-solve-review'],childList:true,subtree:false});
+ window.addEventListener('sudoku-solve-review-change',sync);
+ watch.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ for(const id of ['notesBtn','uxErase','uxUndo','solveBtn','uxMore']){
+  const node=$(id);if(node)watch.observe(node,{attributes:true,childList:true,subtree:true});
+ }
+ // Center the board in measured space between tabs and dock, not a
+ // guessed viewport subtraction. This also handles framed APP and Safari bars.
+ const layoutMain=document.querySelector('.main'),layoutTabs=document.querySelector('.pl-tabs');
+ const layoutBoard=document.querySelector('.grid-wrap'),layoutColumn=document.querySelector('.col-center');
+ let layoutFrame=0,layoutActive=false,layoutExtra=0;
+ const layoutOriginal=layoutMain?Object.fromEntries(['minHeight','alignContent','paddingTop','paddingBottom'].map(k=>[k,layoutMain.style[k]])):{};
+ function alignAppBoard(){
+  layoutFrame=0;if(!layoutMain||!layoutTabs||!layoutBoard||!layoutColumn)return;
+  const active=document.body.dataset.appHardNoHelp==='true'&&product.view()==='play';
+  if(!active){if(layoutActive){Object.assign(layoutMain.style,layoutOriginal);layoutExtra=0;layoutActive=false;}return;}
+  if(!layoutActive){layoutMain.style.minHeight='0px';layoutMain.style.alignContent='start';layoutMain.style.paddingTop='5px';layoutMain.style.paddingBottom='8px';layoutExtra=0;layoutActive=true;}
+  const boardRect=layoutBoard.getBoundingClientRect(),tabsRect=layoutTabs.getBoundingClientRect(),dockRect=dock.getBoundingClientRect(),columnRect=layoutColumn.getBoundingClientRect();
+  if(!boardRect.height||!dockRect.height)return;
+  const below=Math.max(0,columnRect.bottom-boardRect.bottom);
+  const baseTop=boardRect.top-layoutExtra;
+  const lower=dockRect.top-8-boardRect.height-below;
+  const centered=(tabsRect.bottom+dockRect.top-boardRect.height)/2;
+  const top=Math.max(baseTop,tabsRect.bottom+8,Math.min(centered,lower));
+  const extra=Math.max(0,Math.round((top-baseTop)*100)/100);
+  if(Math.abs(extra-layoutExtra)>.25){layoutExtra=extra;layoutMain.style.paddingTop=(5+extra)+'px';}
+ }
+ // Coalesce one layout task, independent of nested-frame animation scheduling.
+function queueAppLayout(){if(!layoutFrame)layoutFrame=setTimeout(alignAppBoard,0);}
+ window.addEventListener('resize',queueAppLayout,{passive:true});
+ window.visualViewport?.addEventListener('resize',queueAppLayout,{passive:true});
+ new MutationObserver(queueAppLayout).observe(document.body,{attributes:true,attributeFilter:['data-view','data-app-hard-nohelp','data-app-framed-preview','data-app-text-size']});
+ if(typeof ResizeObserver==='function'){const ro=new ResizeObserver(queueAppLayout);for(const node of [layoutTabs,layoutColumn,dock])if(node)ro.observe(node);}
+ document.fonts?.ready?.then(queueAppLayout);
+ applyTextSize(readTextSize());
+ document.body.dataset.appPanel='board';
+ sync();queueAppLayout();
+})();
+
+</script>
+<script id="sudoku-app-solve-playback">
+'use strict';
+// APP-only AI Solve Review. The underlying Solve all remains one atomic,
+// persistent transaction owned by the existing Sudoku product. This module
+// builds a checked, read-only review timeline and never mutates game history.
+(() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
+ const nav=window.SudokuNavigator,product=nav?.product,grid=document.getElementById('grid'),C=window.SudokuNavCore,P=window.AI8SudokuProofPreview?.engine;
+ if(!product||!grid||!C||!P)return;
+ const $=id=>document.getElementById(id);
+ const sl=()=>window.SudokuI18n?.get?.()==='sl';
+ const rc=i=>'R'+(Math.floor(i/9)+1)+'C'+(i%9+1);
+ const boardKey=b=>Array.isArray(b)?b.join(''):'';
+ const currentKey=()=>{try{return boardKey(product.capture().board);}catch(_){return'';}};
+ const techSL={
+  naked_single:'Goli posameznik',hidden_single:'Skriti posameznik',pointing:'Kazanje',
+  claiming:'Zaklep vrstica–blok',naked_subset:'Goli podnabor',hidden_subset:'Skriti podnabor',
+  x_wing:'X-Wing',xy_wing:'XY-Wing',digit_path:'Pot števke',
+  answer_correction:'Popravek vnosa',search_fallback:'MRV iskanje',wrong_answer:'Napačen odgovor',unknown_reasoning:'Neznan razlog'
+ };
+ const techLabel=name=>sl()?(techSL[name]||name):(name==='answer_correction'?'Answer correction':name==='search_fallback'?'MRV search':(C.LABELS?.[C.NAMES?.indexOf(name)]||name));
+ const pop=m=>C.pop?C.pop(m):m.toString(2).replace(/0/g,'').length;
+ const filled=b=>b.filter(Boolean).length;
+ function basicCandidates(board,index){
+  if(board[index])return[];
+  const r=Math.floor(index/9),c=index%9,used=new Set();
+  for(let x=0;x<9;x++){used.add(board[r*9+x]);used.add(board[x*9+c]);}
+  const br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;
+  for(let rr=br;rr<br+3;rr++)for(let cc=bc;cc<bc+3;cc++)used.add(board[rr*9+cc]);
+  return[1,2,3,4,5,6,7,8,9].filter(d=>!used.has(d));
+ }
+ function basicCandidateTotal(board){
+  let n=0;for(let i=0;i<81;i++)if(!board[i])n+=basicCandidates(board,i).length;return n;
+ }
+ function lz76(bits){
+  const n=bits.length;if(n<=1)return n;let c=1,l=1,i=0,k=1,km=1;
+  while(true){if(bits[i+k-1]===bits[l+k-1]){k++;if(l+k>n){c++;break}}else{if(k>km)km=k;i++;if(i===l){c++;l+=km;if(l>=n)break;i=0;k=1;km=1}else k=1}}return c;
+ }
+ function lz76norm(bits){const n=bits.length;if(n<=1)return 0;return lz76(bits)/(n/Math.max(Math.log2(n),1));}
+ function binaryLZ(values){
+  if(values.length<2)return 0;const sorted=values.slice().sort((a,b)=>a-b),med=sorted[Math.floor(sorted.length/2)];
+  return lz76norm(values.map(v=>v>med?'1':'0').join(''));
+ }
+ function reviewSensors(steps,index){
+  const log=steps.slice(0,index);if(log.length<2)return{cplx:0,gini:0,powr:0,dens:0,adsr:0};
+  const deltas=log.map(x=>Math.max(0,(x.candidatesBefore||0)-(x.candidatesAfter||0))),cascades=log.map(x=>Math.max(0,x.newSingles||0));
+  const sorted=cascades.slice().sort((a,b)=>a-b),total=sorted.reduce((a,b)=>a+b,0),n=sorted.length;
+  let gini=0;if(total>0){let cum=0;for(let i=0;i<n;i++)cum+=(2*i-n+1)*sorted[i];gini=Math.abs(cum/(n*total));}
+  const powr=log.reduce((sum,x,i)=>sum+cascades[i]*deltas[i],0)/log.length;
+  const density=binaryLZ(log.map(x=>Math.max(0,x.candidatesAfter||0)));
+  const adsr=(cascades.filter(x=>x===0).length+cascades.filter(x=>x>=5).length)/cascades.length;
+  return{cplx:binaryLZ(deltas),gini,powr,dens:density,adsr};
+ }
+ function sensorWidth(key,v){return Math.max(0,Math.min(100,key==='powr'?v/5*100:v*100));}
+
+ const sensorDefs={
+  cplx:{abbr:'Cplx',en:'LZ Complexity',sl:'LZ kompleksnost',dir:'low',
+   enText:'Lempel–Ziv complexity of the candidate-reduction sequence. Lower means the solve path is more repetitive and structured.',
+   slText:'Lempel–Ziv kompleksnost zaporedja zmanjševanja kandidatov. Nižje pomeni bolj ponovljiv in strukturiran tok reševanja.'},
+  gini:{abbr:'Gini',en:'Gini Cascade',sl:'Gini kaskad',dir:'high',
+   enText:'Gini coefficient of cascade depths. In this review a cascade is the number of newly forced singles opened by a step. Higher means a few moves create much deeper follow-up chains.',
+   slText:'Ginijev koeficient globin kaskad. V tem pregledu je kaskada število novih prisiljenih posameznikov, ki jih odpre poteza. Višje pomeni, da nekaj potez sproži precej globlje nadaljevanje.'},
+  powr:{abbr:'Powr',en:'Cascade Power',sl:'Moč kaskade',dir:'high',
+   enText:'Average cascade depth × candidate reduction. Higher means the moves that open follow-up chains also remove more uncertainty.',
+   slText:'Povprečna globina kaskade × zmanjšanje kandidatov. Višje pomeni, da poteze z nadaljnjimi verigami hkrati odstranijo več negotovosti.'},
+  dens:{abbr:'Dens',en:'Density Flow',sl:'Tok gostote',dir:'low',
+   enText:'Lempel–Ziv complexity of the remaining-candidate flow. Lower means candidate density drains more smoothly.',
+   slText:'Lempel–Ziv kompleksnost toka preostalih kandidatov. Nižje pomeni, da se gostota kandidatov zmanjšuje bolj gladko.'},
+  adsr:{abbr:'ADSR',en:'ADSR Bimodality',sl:'ADSR bimodalnost',dir:'context',
+   enText:'Attack–Decay–Sustain–Release context sensor: share of zero-cascade and deep-cascade (5+) steps. It describes puzzle/trajectory structure; it is not a solver-intelligence score.',
+   slText:'Kontekstni senzor Attack–Decay–Sustain–Release: delež korakov brez kaskade in z globoko kaskado (5+). Opisuje strukturo uganke/poti; ni ocena inteligence reševalca.'}
+ };
+ const review=document.createElement('section');
+ review.id='appSolveReview';review.hidden=true;review.setAttribute('data-no-i18n','');
+ review.innerHTML=
+  '<div class="app-solve-review-head"><strong id="appSolveReviewTitle">AI Solve Review</strong>'+
+   '<div class="app-solve-review-tabs"><button type="button" id="appSolveTabAI" aria-pressed="true">AI</button><button type="button" id="appSolveTabHuman" aria-pressed="false">Human</button></div></div>'+
+  '<div class="app-solve-step-line"><span id="appSolveStep">Start</span><span id="appSolveCount">0 / 0</span></div>'+
+  '<div class="app-solve-sensors" id="appSolveSensors"></div>'+
+  '<p class="app-solve-detail" id="appSolveDetail"></p>'+
+  '<div id="appSolveReviewHuman" hidden><div id="appHumanReviewSummary" class="app-human-summary"></div><div id="appHumanReviewList" class="app-human-list"></div><p id="appHumanReviewNote" class="app-solve-detail"></p></div>'+
+  '<input id="appSolveScrub" class="app-solve-scrub" type="range" min="0" max="0" value="0" aria-label="Solve review step">'+
+  '<div class="app-solve-nav" aria-label="Solve review navigation">'+
+   '<button type="button" id="appSolveFirst" aria-label="First position">|◀</button>'+
+   '<button type="button" id="appSolvePrev" aria-label="Previous step">◀</button>'+
+   '<button type="button" id="appSolvePlay" aria-label="Play review">▶</button>'+
+   '<button type="button" id="appSolveNext" aria-label="Next step">▶</button>'+
+   '<button type="button" id="appSolveLast" aria-label="Last position">▶|</button>'+
+  '</div>';
+ const gridWrap=document.getElementById('gridWrap')||grid.parentElement;
+ gridWrap.after(review);
+ const instruments=document.createElement('section');
+ instruments.id='appSolveInstruments';instruments.hidden=true;instruments.setAttribute('data-no-i18n','');
+ instruments.innerHTML=
+  Object.entries(sensorDefs).map(([key,d])=>
+  '<button type="button" class="app-pos-sensor" data-sensor="'+key+'"><span class="app-pos-abbr">'+d.abbr+'</span><span class="app-pos-track"><span class="app-pos-fill"></span></span><span class="app-pos-value">—</span><span class="app-pos-tooltip"></span></button>'
+ ).join('');
+ document.querySelector('.header')?.after(instruments);
+ const sensorModal=document.createElement('div');sensorModal.id='appSolveSensorModal';sensorModal.hidden=true;sensorModal.innerHTML=
+  '<div class="app-sensor-sheet" role="dialog" aria-modal="true" aria-labelledby="appSensorTitle"><button type="button" id="appSensorClose" aria-label="Close">×</button><h2 id="appSensorTitle"></h2><div id="appSensorValue"></div><p id="appSensorText"></p><p id="appSensorDirection"></p></div>';
+ document.body.append(sensorModal);
+
+
+ const style=document.createElement('style');style.id='app-solve-review-style';
+ style.textContent=[
+  '#appSolveReview{width:100%;margin:9px 0 14px;padding:11px 12px 12px;border:1px solid #33475a;border-radius:12px;background:linear-gradient(180deg,#111b27,#0b141e);box-shadow:inset 0 1px 0 #ffffff08,0 8px 22px #0004;color:#dbe6f3}',
+  '#appSolveReview[hidden],#appSolveInstruments[hidden],#appSolveSensorModal[hidden],#appSolveSensorsOverview[hidden]{display:none!important}',
+  'body[data-app-solve-review=true] .header,body[data-app-solve-review=true] .title-block,body[data-app-solve-review=true] .pl-tabs{display:none!important}',
+  'body[data-app-solve-review=true][data-app-framed-preview=true] .pl-tabs{transform:none!important}',
+  '#appSolveInstruments{width:min(100%,760px);margin:2px auto 9px;padding:5px 8px 6px;border:1px solid #1d4054;border-radius:10px;background:#07111dcc;display:grid;gap:3px}',
+  '.app-pos-sensor{position:relative;display:grid;grid-template-columns:36px 1fr 38px;align-items:center;gap:7px;width:100%;min-height:16px;padding:0;border:0;background:transparent;color:#8ea5bd;text-align:left;cursor:pointer}',
+  '.app-pos-abbr{font:700 .54rem/1 monospace;letter-spacing:.04em}.app-pos-track{height:3px;border-radius:999px;background:#1b2a38;overflow:hidden}.app-pos-fill{display:block;width:0;height:100%;border-radius:inherit;background:#38d6eb;transition:width 160ms ease}.app-pos-value{font:650 .52rem/1 monospace;text-align:right;color:#6f879d}',
+  '.app-pos-sensor:nth-of-type(2) .app-pos-fill{background:#62d39d}.app-pos-sensor:nth-of-type(3) .app-pos-fill{background:#e7c66b}.app-pos-sensor:nth-of-type(4) .app-pos-fill{background:#f0a36d}.app-pos-sensor:nth-of-type(5) .app-pos-fill{background:#9ca7b5}',
+  '.app-pos-tooltip{display:none;position:absolute;left:39px;top:-19px;z-index:4;padding:3px 6px;border:1px solid #355269;border-radius:6px;background:#0a1622;color:#d8e5f1;font:650 .58rem/1.2 system-ui;white-space:nowrap;box-shadow:0 4px 14px #0008}',
+  '@media(hover:hover){.app-pos-sensor:hover .app-pos-tooltip,.app-pos-sensor:focus-visible .app-pos-tooltip{display:block}}',
+  '#appSolveSensorModal{position:fixed;inset:0;z-index:1600;background:#020812b8;display:flex;align-items:flex-end;justify-content:center;padding:14px}.app-sensor-sheet{position:relative;width:min(100%,520px);padding:18px 18px 20px;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b}.app-sensor-sheet h2{margin:0 28px 8px 0;font:800 1rem/1.2 system-ui;color:#79efff}.app-sensor-sheet p{margin:8px 0;font:600 .78rem/1.45 system-ui;color:#b8c8d8}#appSensorValue{font:800 .86rem/1.2 monospace;color:#eef7ff}#appSensorClose{position:absolute;right:10px;top:8px;border:0;background:none;color:#dbe7f4;font-size:1.5rem;cursor:pointer}',
+  '.app-solve-sensors{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}.app-solve-sensor{display:flex;gap:4px;align-items:baseline;padding:0;border:0;background:transparent;text-align:left}.app-solve-sensor b{font:650 .50rem/1 system-ui;color:#667f97}.app-solve-sensor span{margin:0;font:750 .61rem/1.15 system-ui;color:#c9d7e5}',
+
+  '.app-solve-review-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font:800 .78rem/1.2 system-ui;letter-spacing:.035em;color:#c8d7e7}',
+  '.app-solve-review-tabs{display:flex;gap:4px}.app-solve-review-tabs button,.app-solve-nav button{border:1px solid #3a5067;background:#172536;color:#d8e4f2;border-radius:8px;cursor:pointer}',
+  '.app-solve-review-tabs button{padding:5px 9px;font:750 .68rem/1 system-ui}.app-solve-review-tabs button[aria-pressed=true]{border-color:#00d9f5;color:#79f2ff;background:#123447}',
+  '.app-solve-step-line{display:flex;justify-content:space-between;gap:8px;margin:1px 0 7px;font:750 .78rem/1.25 system-ui;color:#f2f7ff}.app-solve-step-line #appSolveCount{color:#91a5bd}',
+
+  '.app-solve-detail{min-height:2.6em;margin:5px 1px 7px;font:600 .72rem/1.4 system-ui;color:#aebed0}',
+  '.app-solve-scrub{width:100%;accent-color:#00d9f5;margin:1px 0 7px}',
+  '.app-solve-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.app-solve-nav button{min-height:38px;font:800 .84rem/1 system-ui}.app-solve-nav button:disabled{opacity:.35;cursor:default}',
+  '.app-human-summary{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 8px}.app-human-chip{padding:5px 7px;border:1px solid #31465c;border-radius:999px;background:#101c29;font:700 .66rem/1 system-ui}.app-human-chip.good{color:#6ee7b7}.app-human-chip.warn{color:#fbbf24}.app-human-chip.bad{color:#fb7185}',
+  '.app-human-list{display:grid;gap:4px}.app-human-row{padding:6px 7px;border-radius:7px;background:#0e1925;font:600 .69rem/1.3 system-ui;color:#c3d0df}',
+  'body[data-app-solve-review=true] #grid .cell{position:relative}',
+  'body[data-app-solve-review=true] #grid .cell:not(.given){color:transparent!important}',
+  'body[data-app-solve-review=true] #grid .cell:not(.given)>*{visibility:hidden!important}',
+  'body[data-app-solve-review=true] #grid .cell:not(.given)::after{content:attr(data-review-value);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#f7fbff;font:inherit;font-weight:700;pointer-events:none}',
+  'body[data-app-solve-review=true] #grid .cell.app-review-source{box-shadow:inset 0 0 0 2px #f59e0b99}',
+  'body[data-app-solve-review=true] #grid .cell.app-review-elim{box-shadow:inset 0 0 0 2px #a78bfa99}',
+  'body[data-app-solve-review=true] #grid .cell.app-review-focus{background:#0e3b49!important;box-shadow:inset 0 0 0 2px #00e5ffcc}',
+  'body[data-app-solve-review=true] #grid .cell.app-review-pulse::after{animation:app-review-pop 190ms ease-out}@keyframes app-review-pop{from{transform:scale(.62);opacity:.25}to{transform:scale(1);opacity:1}}',
+  'body[data-quiet=true] #grid .cell.app-review-pulse::after{animation:none}@media(prefers-reduced-motion:reduce){body[data-app-solve-review=true] #grid .cell.app-review-pulse::after{animation:none}}',
+  '@media(max-width:380px){.app-solve-sensors{gap:5px}.app-solve-sensor{font-size:.58rem}}'
+ ].join('\n');
+ document.head.append(style);
+
+ const originalAria=new WeakMap();
+ let data=null,timer=0,playing=false,tab='ai';
+
+ function grid2flat(board){return Array.from({length:9},(_,r)=>board.slice(r*9,r*9+9));}
+ function proofCandidateTotal(st){return st.masks.reduce((n,m)=>n+m.size,0);}
+ const U=Array.from({length:27},(_,u)=>Array.from({length:9},(_,k)=>u<9?u*9+k:u<18?k*9+u-9:(Math.floor((u-18)/3)*3+Math.floor(k/3))*9+(u-18)%3*3+k%3));
+ function immediatePlacements(st){
+  const out=[],seen=new Set(),add=q=>{const k=q.cell+':'+q.value;if(!seen.has(k)){seen.add(k);out.push(q);}};
+  for(let i=0;i<81;i++)if(!st.board[Math.floor(i/9)][i%9]&&st.masks[i].size===1){
+   add({kind:'placement',technique:'naked_single',cell:i,value:[...st.masks[i]][0],sources:[i]});
+  }
+  for(let u=0;u<27;u++)for(let d=1;d<=9;d++){
+   const cells=U[u].filter(i=>!st.board[Math.floor(i/9)][i%9]&&st.masks[i].has(d));
+   if(cells.length===1)add({kind:'placement',technique:'hidden_single',cell:cells[0],value:d,sources:U[u].slice(),unit:u});
+  }
+  return out;
+ }
+ function humanFlow(st,q){
+  const before=proofCandidateTotal(st),next=P.cloneState(st);
+  if(!P.apply(next,q))return null;
+  return{next,newSingles:immediatePlacements(next).length,candidateDrop:before-proofCandidateTotal(next),
+   remaining:next.board.flat().filter(v=>!v).length,pathGain:q.kind==='placement'?1:0};
+ }
+ function chooseSmart(st){
+  // Human-like priority: do forced placements first. When several are
+  // available, prefer the one that opens the most other forced moves, then
+  // the one that simplifies the candidate field most. Only when no forced
+  // placement exists do we take the next conventional elimination.
+  const forced=[];
+  for(const q of immediatePlacements(st)){
+   const flow=humanFlow(st,q);if(flow)forced.push({q,flow});
+  }
+  forced.sort((a,b)=>b.flow.newSingles-a.flow.newSingles||
+   b.flow.candidateDrop-a.flow.candidateDrop||
+   Number(a.q.technique!=='naked_single')-Number(b.q.technique!=='naked_single')||
+   a.q.cell-b.q.cell);
+  if(forced.length)return{...forced[0],source:'human_forced',reason:'FORCED_FLOW'};
+  const q=P.nextStep(st);if(!q)return null;
+  const flow=humanFlow(st,q);return flow?{q,flow,source:'human_elimination',reason:'TECHNIQUE_PROGRESS'}:null;
+ }
+ function proofElims(q){
+  if(q.kind==='multi_elimination')return(q.eliminations||[]).map(e=>({cell:e.cell,digit:e.digit}));
+  if(q.kind==='elimination')return(q.eliminations||[]).map(cell=>({cell,digit:q.digit}));
+  return[];
+ }
+ function correctionStep(board,cell,from,to){
+  const beforeCandidates=basicCandidateTotal(board),next=board.slice();next[cell]=0;
+  return{kind:'correction',technique:'answer_correction',cell,value:to,previous:from,board:next,
+   sources:[cell],eliminations:[],candidatesBefore:beforeCandidates,candidatesAfter:basicCandidateTotal(next),
+   newSingles:null,pathGain:null,progress:filled(next),checked:false,answerAssisted:true,reason:'ANSWER_CHECK'};
+ }
+ function fallbackStep(st,finalBoard){
+  let cell=-1,size=10;
+  for(let i=0;i<81;i++)if(!st.b[i]){
+   const n=pop(st.m[i]);if(n&&n<size){cell=i;size=n;}
+  }
+  if(cell<0)return null;
+  const value=finalBoard[cell];if(!value)return null;
+  const before=C.countCandidates(st),board=st.b.slice();board[cell]=value;
+  let next;try{next=C.state(board);}catch(_){return null;}
+  return{next,entry:{kind:'search',technique:'search_fallback',cell,value,board:next.b.slice(),sources:[cell],eliminations:[],
+   candidatesBefore:before,candidatesAfter:C.countCandidates(next),newSingles:null,pathGain:null,progress:filled(next.b),
+   checked:false,answerAssisted:true,reason:'MRV_FINAL_ANSWER',candidateSize:size}};
+ }
+ function buildReview(before,after){
+  const start=before.board.slice(),finalBoard=after.board.slice(),steps=[],working=start.slice();
+  for(let i=0;i<81;i++)if(working[i]&&working[i]!==finalBoard[i]){
+   const step=correctionStep(working,i,working[i],finalBoard[i]);steps.push(step);working.splice(0,working.length,...step.board);
+  }
+  let st;try{st=P.makeState(grid2flat(working));}catch(_){st=null;}
+  let guard=0,fallbacks=0;
+  while(st&&!st.board.flat().every(Boolean)&&guard++<730){
+   const picked=chooseSmart(st);
+   if(picked){
+    const q=picked.q,flow=picked.flow,next=flow.next,board=next.board.flat(),eliminations=proofElims(q);
+    const focus=q.kind==='placement'?q.cell:(eliminations[0]?.cell??q.sources?.[0]??-1);
+    if(q.kind!=='placement'||finalBoard[q.cell]===q.value){
+     steps.push({kind:q.kind==='placement'?'placement':'elimination',technique:q.technique,cell:focus,
+      value:q.kind==='placement'?q.value:null,board,sources:(q.sources||[]).slice(),eliminations,
+      candidatesBefore:proofCandidateTotal(st),candidatesAfter:proofCandidateTotal(next),
+      newSingles:flow.newSingles,pathGain:flow.pathGain,remaining:flow.remaining,progress:filled(board),
+      checked:true,answerAssisted:false,reason:picked.reason,source:picked.source});
+     st=next;continue;
+    }
+   }
+   const current=st.board.flat(),cell=current.reduce((best,v,i)=>{
+    if(v)return best;const n=st.masks[i].size;
+    return !best||n<best.n?{i,n}:best;
+   },null)?.i??-1;
+   if(cell<0||!finalBoard[cell])break;
+   const beforeCandidates=proofCandidateTotal(st),board=current.slice();board[cell]=finalBoard[cell];
+   let next;try{next=P.makeState(grid2flat(board));}catch(_){next=null;}if(!next)break;
+   fallbacks++;steps.push({kind:'search',technique:'search_fallback',cell,value:finalBoard[cell],board:next.board.flat(),
+    sources:[cell],eliminations:[],candidatesBefore:beforeCandidates,candidatesAfter:proofCandidateTotal(next),
+    newSingles:immediatePlacements(next).length,pathGain:1,remaining:next.board.flat().filter(v=>!v).length,
+    progress:filled(next.board.flat()),checked:false,answerAssisted:true,reason:'MRV_FINAL_ANSWER',candidateSize:st.masks[cell].size});
+   st=next;
+  }
+  const final=steps.length?steps.at(-1).board:start;
+  if(boardKey(final)!==boardKey(finalBoard))throw Error('Solve review could not reproduce the certified final board');
+  return{start,final:finalBoard,steps,fallbacks,finalKey:boardKey(finalBoard),createdAt:Date.now()};
+ }
+ function sensor(label,value){return'<div class="app-solve-sensor"><b>'+label+'</b><span>'+value+'</span></div>';}
+ function detailFor(step){
+  if(!step)return sl()?'Začetni položaj pred ukazom Reši vse.':'Position before Solve all.';
+  if(step.technique==='answer_correction')return sl()?
+   rc(step.cell)+' je vseboval '+step.previous+'. Ker je Reši vse izrecno odgovor-podprt ukaz, se napačen vnos najprej odstrani; to ni logični dokaz.':
+   rc(step.cell)+' contained '+step.previous+'. Because Solve all is explicitly answer-assisted, the wrong entry is removed first; this is not a logical proof.';
+  if(step.technique==='search_fallback')return sl()?
+   'Logični P0–P3 pregled tu ni našel naslednjega dokazanega koraka. Uporabljen je MRV iskalni korak, jasno označen kot odgovor-podprt.':
+   'The bounded P0–P3 proof scan found no next checked step here. An MRV search step is used and explicitly labelled answer-assisted.';
+  if(step.kind==='placement')return sl()?
+   techLabel(step.technique)+': '+rc(step.cell)+' = '+step.value+'. '+(step.source==='human_forced'?'Med prisiljenimi potezami je izbrana tista z boljšim kratkim logičnim tokom.':'Korak je neodvisno preverjen pred prikazom.'):
+   techLabel(step.technique)+': '+rc(step.cell)+' = '+step.value+'. '+(step.source==='human_forced'?'Among forced moves, the short-horizon flow ranks this one first.':'The rule engine checked this logical step before display.');
+  const es=step.eliminations.slice(0,5).map(e=>e.digit+'@'+rc(e.cell)).join(', ');
+  return sl()?techLabel(step.technique)+': izločitev '+es+(step.eliminations.length>5?' …':'')+'. Kandidatne maske se spremenijo, mreža številk pa lahko ostane ista.':
+   techLabel(step.technique)+': eliminate '+es+(step.eliminations.length>5?' …':'')+'. Candidate domains change even when the digit grid does not.';
+ }
+ function moveFor(step){
+  if(!step)return sl()?'Začetek':'Start';
+  if(step.technique==='answer_correction')return rc(step.cell)+' −'+step.previous;
+  if(step.kind==='placement'||step.technique==='search_fallback')return rc(step.cell)+'='+step.value;
+  return (step.eliminations.length?('−'+step.eliminations[0].digit+'@'+rc(step.eliminations[0].cell)):(sl()?'Izločitev':'Elimination'));
+ }
+ function humanRows(){
+  const all=[];try{all.push(...(product.reviewRows?.()||[]));}catch(_){}
+  try{all.push(...(window.AI8SudokuProofPreview?.review?.()||[]));}catch(_){}
+  const seen=new Set(),out=[];
+  for(const row of all){if(!Array.isArray(row?.pre_board)||row.pre_board.length!==81)continue;
+   const key=[row.seq,row.cell,row.value,row.at_s,row.pre_board.join('')].join(':');if(seen.has(key))continue;seen.add(key);out.push(row);
+  }
+  return out.sort((a,b)=>(a.seq||0)-(b.seq||0)||(a.at_s||0)-(b.at_s||0));
+ }
+ function forcedCount(board){let n=0;for(let i=0;i<81;i++)if(!board[i]&&basicCandidates(board,i).length===1)n++;return n;}
+ function humanTimeline(){
+  const rows=humanRows().filter(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81&&Number.isInteger(x.cell)&&x.cell>=0&&x.cell<81&&Number.isInteger(x.value)&&x.value>=1&&x.value<=9);
+  if(!rows.length)return{start:data?.start?.slice()||product.capture().board.slice(),steps:[]};
+  const steps=rows.map(x=>{const before=x.pre_board.slice(),board=before.slice();board[x.cell]=x.value;const fb=forcedCount(before),fa=forcedCount(board);
+   return{kind:'placement',technique:x.technique||(x.verdict==='mistake'?'wrong_answer':'unknown_reasoning'),cell:x.cell,value:x.value,board,
+    sources:[x.cell],eliminations:[],candidatesBefore:basicCandidateTotal(before),candidatesAfter:basicCandidateTotal(board),
+    newSingles:Math.max(0,fa-fb),progress:filled(board),checked:x.verdict==='verified',answerAssisted:x.assisted===true,
+    verdict:x.verdict,label:x.label,seq:x.seq,at_s:x.at_s};
+  });
+  return{start:rows[0].pre_board.slice(),steps};
+ }
+ function renderHuman(){
+  const rows=humanRows(),good=rows.filter(x=>x.verdict==='verified').length,unknown=rows.filter(x=>x.verdict==='unknown').length,bad=rows.filter(x=>x.verdict==='mistake').length;
+  $('appHumanReviewSummary').innerHTML=
+   '<span class="app-human-chip good">'+(sl()?'Preverjeno ':'Verified ')+good+'</span>'+
+   '<span class="app-human-chip warn">'+(sl()?'Neznano ':'Unknown ')+unknown+'</span>'+
+   '<span class="app-human-chip bad">'+(sl()?'Napačno ':'Wrong ')+bad+'</span>';
+  $('appHumanReviewList').innerHTML=rows.length?rows.slice(-8).reverse().map(x=>{
+   const v=x.value==null?'':('='+x.value),t=x.technique?' · '+techLabel(x.technique):'';
+   const verdict=x.verdict==='verified'?(sl()?'preverjena logika':'verified logic'):x.verdict==='mistake'?(sl()?'napačen odgovor':'wrong answer'):(sl()?'razlog neznan':'reason unknown');
+   return'<div class="app-human-row">#'+x.seq+' · '+rc(x.cell)+v+' · '+verdict+t+'</div>';
+  }).join(''):'<div class="app-human-row">'+(sl()?'V tej seji še ni zabeleženih človeških vnosov za pregled.':'No human placements are recorded for review in this session.')+'</div>';
+  $('appHumanReviewNote').textContent=sl()?
+   'Pregled ne bere misli: pravilna poteza je “preverjena logika” samo, če je iz stanja pred potezo najden omejeni dokaz; sicer ostane razlog neznan.':
+   'The review does not read the player’s mind: a correct move is “verified logic” only when a bounded proof is found from the pre-move state; otherwise the reason stays unknown.';
+ }
+ let humanIndex=0;
+ function setTab(next){
+  tab=next==='human'?'human':'ai';
+  $('appSolveTabAI').setAttribute('aria-pressed',String(tab==='ai'));$('appSolveTabHuman').setAttribute('aria-pressed',String(tab==='human'));
+  $('appSolveReviewHuman').hidden=tab!=='human';
+  $('appSolveReviewTitle').textContent=tab==='human'?(sl()?'Pregled človeškega reševanja':'Human Solve Review'):(sl()?'Pregled AI reševanja':'AI Solve Review');
+  if(tab==='human'){renderHuman();humanIndex=humanTimeline().steps.length;}
+  paint(tab==='human'?humanIndex:(data?.index||0));
+ }
+ function activeTimeline(){return tab==='human'?humanTimeline():data;}
+ function stepDetail(step){
+  if(tab==='ai')return detailFor(step);
+  if(!step)return sl()?'Začetek zabeleženega človeškega reševanja.':'Start of the recorded human solve.';
+  if(step.verdict==='verified')return sl()?rc(step.cell)+'='+step.value+' · poteza je pravilna in omejeni dokaz iz stanja pred potezo je našel '+techLabel(step.technique)+'.':rc(step.cell)+'='+step.value+' · correct, with a bounded pre-move proof: '+techLabel(step.technique)+'.';
+  if(step.verdict==='mistake')return sl()?rc(step.cell)+'='+step.value+' · napačen odgovor glede na preverjeno enolično rešitev.':rc(step.cell)+'='+step.value+' · wrong against the certified unique solution.';
+  return sl()?rc(step.cell)+'='+step.value+' · odgovor je lahko pravilen, vendar razlog ostaja neznan; pregled ne bere misli.':rc(step.cell)+'='+step.value+' · the answer may be correct, but the reasoning remains unknown; the review does not read the player’s mind.';
+ }
+ function paintInstruments(steps,index){
+  const values=reviewSensors(steps,index);
+  instruments.hidden=false;
+  for(const [key,d] of Object.entries(sensorDefs)){const row=instruments.querySelector('[data-sensor="'+key+'"]'),value=values[key]||0;
+   row.querySelector('.app-pos-fill').style.width=sensorWidth(key,value)+'%';
+   row.querySelector('.app-pos-value').textContent=index<2?'—':(key==='powr'?value.toFixed(1):value.toFixed(3));
+   row.querySelector('.app-pos-tooltip').textContent=(sl()?d.sl:d.en)+' · '+(index<2?'—':(key==='powr'?value.toFixed(1):value.toFixed(3)));
+   row.dataset.value=String(value);
+  }
+ }
+ function paint(index,pulse=false){
+  const timeline=activeTimeline();if(!timeline)return;index=Math.max(0,Math.min(timeline.steps.length,Number(index)||0));
+  if(tab==='human')humanIndex=index;else data.index=index;
+  const step=index?timeline.steps[index-1]:null,board=index?step.board:timeline.start;
+  document.body.dataset.appSolveReview='true';review.hidden=false;paintInstruments(timeline.steps,index);
+  const sources=new Set(step?.sources||[]),elims=new Set((step?.eliminations||[]).map(e=>e.cell)),focus=step?.cell??-1;
+  [...grid.children].forEach((node,i)=>{
+   if(!originalAria.has(node))originalAria.set(node,node.getAttribute('aria-label'));
+   node.dataset.reviewValue=board[i]||'';
+   node.classList.toggle('app-review-source',sources.has(i));node.classList.toggle('app-review-elim',elims.has(i));
+   node.classList.toggle('app-review-focus',i===focus);node.classList.remove('app-review-pulse');
+   node.setAttribute('aria-label',rc(i)+', '+(board[i]||'empty')+', solve review');
+  });
+  if(pulse&&focus>=0)grid.children[focus]?.classList.add('app-review-pulse');
+  $('appSolveReviewTitle').textContent=tab==='human'?(sl()?'Pregled človeškega reševanja':'Human Solve Review'):(sl()?'Pregled AI reševanja':'AI Solve Review');
+  $('appSolveTabAI').textContent='AI';$('appSolveTabHuman').textContent=sl()?'Človek':'Human';
+  $('appSolveStep').textContent=index===0?(sl()?'Začetni položaj':'Starting position'):'#'+index+' · '+(step?techLabel(step.technique):(sl()?'Začetek':'Start'));
+  $('appSolveCount').textContent=index+' / '+timeline.steps.length;
+  const cand=step&&Number.isFinite(step.candidatesBefore)?step.candidatesBefore+'→'+step.candidatesAfter:'—';
+  const flow=step?.newSingles!=null?('+'+step.newSingles+' '+(sl()?'singlov':'singles')):(step?.checked?(sl()?'preverjeno':'checked'):(step?.answerAssisted?(sl()?'pomoč':'assist'):'—'));
+  $('appSolveSensors').innerHTML=
+   sensor(sl()?'Poteza':'Move',moveFor(step))+sensor(sl()?'Logika':'Logic',step?techLabel(step.technique):(sl()?'Začetek':'Start'))+
+   sensor(sl()?'Kandidati':'Candidates',cand)+sensor(sl()?'Tok':'Flow',flow)+sensor(sl()?'Napredek':'Progress',filled(board)+'/81');
+  $('appSolveDetail').textContent=stepDetail(step);
+  $('appSolveScrub').max=String(timeline.steps.length);$('appSolveScrub').value=String(index);
+  $('appSolveFirst').disabled=index===0;$('appSolvePrev').disabled=index===0;
+  $('appSolveNext').disabled=index>=timeline.steps.length;$('appSolveLast').disabled=index>=timeline.steps.length;
+  $('appSolvePlay').textContent=playing?'❚❚':'▶';$('appSolvePlay').setAttribute('aria-label',playing?(sl()?'Ustavi predvajanje':'Pause review'):(sl()?'Predvajaj pregled':'Play review'));
+  grid.setAttribute('aria-busy',String(playing));
+  window.dispatchEvent(new CustomEvent('sudoku-solve-review-change',{detail:{active:true,tab,index,max:timeline.steps.length}}));
+  window.dispatchEvent(new Event('resize'));
+ }
+ function activeIndex(){return tab==='human'?humanIndex:(data?.index||0);}
+ function pause(){playing=false;clearTimeout(timer);timer=0;if(data)paint(activeIndex());}
+ function delay(){const n=activeTimeline()?.steps?.length||0;if(!n)return 90;return Math.max(45,Math.min(135,Math.floor(3900/n)));}
+ function tick(){
+  const timeline=activeTimeline();if(!playing||!timeline)return;
+  if(tab==='ai'&&currentKey()!==data.finalKey){closeView(false);return;}
+  const i=activeIndex();if(i>=timeline.steps.length){pause();return;}
+  paint(i+1,true);timer=setTimeout(tick,activeIndex()===timeline.steps.length?220:delay());
+ }
+ function play(){
+  const timeline=activeTimeline();if(!timeline?.steps?.length)return;if(playing){pause();return;}
+  if(activeIndex()>=timeline.steps.length)paint(0);playing=true;paint(activeIndex());timer=setTimeout(tick,activeIndex()===0?180:delay());
+ }
+ function restoreRealGrid(){
+  for(const node of grid.children){
+   node.classList.remove('app-review-source','app-review-elim','app-review-focus','app-review-pulse');
+   delete node.dataset.reviewValue;
+   const old=originalAria.get(node);if(old===null||old===undefined)node.removeAttribute('aria-label');else node.setAttribute('aria-label',old);
+  }
+  grid.removeAttribute('aria-busy');delete document.body.dataset.appSolveReview;
+ }
+ function closeView(discard=false){
+  playing=false;clearTimeout(timer);timer=0;restoreRealGrid();review.hidden=true;instruments.hidden=true;sensorModal.hidden=true;
+  if(discard)data=null;
+  window.dispatchEvent(new CustomEvent('sudoku-solve-review-change',{detail:{active:false}}));window.dispatchEvent(new Event('resize'));
+ }
+ function validReview(){return !!data&&currentKey()===data.finalKey;}
+ function open(which='ai'){
+  if(which==='ai'&&!validReview())return false;if(which==='human'&&!humanRows().some(x=>Array.isArray(x.pre_board)))return false;
+  setTab(which);paint(which==='human'?humanTimeline().steps.length:(data.index??data.steps.length));review.scrollIntoView({block:'nearest',behavior:'smooth'});return true;
+ }
+
+ function confirmAndReview(button,event){
+  const commit=button.onclick;if(typeof commit!=='function')return;
+  event.preventDefault();event.stopImmediatePropagation();closeView(false);
+  const before=product.capture(),seq=product.historyData().transactionSeq;
+  commit.call(button,event);
+  if(product.historyData().transactionSeq===seq)return;
+  const after=product.capture();
+  if(!after.board?.every(Boolean))return;
+  let built;try{built=buildReview(before,after);}catch(_){built=null;}
+  if(!built)return;
+  data={...built,index:0,humanAtSolve:humanRows()};
+  product.switchView('play');document.body.dataset.appPanel='board';setTab('ai');paint(0);
+  playing=true;paint(0);timer=setTimeout(tick,180);
+ }
+
+ const goFirst=()=>{pause();paint(0);},goPrev=()=>{pause();paint(activeIndex()-1);},goNext=()=>{pause();paint(activeIndex()+1);},goLast=()=>{pause();paint(activeTimeline()?.steps?.length||0);};
+ $('appSolveFirst').onclick=goFirst;$('appSolvePrev').onclick=goPrev;$('appSolvePlay').onclick=play;$('appSolveNext').onclick=goNext;$('appSolveLast').onclick=goLast;
+ $('appSolveScrub').oninput=e=>{pause();paint(Number(e.target.value));};
+ $('appSolveTabAI').onclick=()=>setTab('ai');$('appSolveTabHuman').onclick=()=>setTab('human');
+
+ document.addEventListener('click',event=>{
+  const button=event.target.closest?.('#aiAssistConfirmAll');
+  if(button&&product.view()!=='lab')confirmAndReview(button,event);
+ },true);
+ // Any real game interaction first removes the read-only overlay. Review
+ // controls are exempt. Undo therefore reaches the original atomic transaction.
+ for(const type of ['pointerdown','touchstart'])window.addEventListener(type,event=>{
+  if(!data||review.hidden&&document.body.dataset.appSolveReview!=='true'||event.target?.closest?.('#appSolveReview,#appSolveInstruments,#appSolveSensorModal,#appSolveSensorsOverview,#appAssist'))return;
+  closeView(false);
+ },{capture:true,passive:true});
+ window.addEventListener('keydown',event=>{
+  if(review.hidden||document.body.dataset.appSolveReview!=='true')return;
+  if(!sensorModal.hidden){if(event.key==='Escape'){sensorModal.hidden=true;event.preventDefault();}return;}
+  if(event.target?.closest?.('input,select,textarea,[contenteditable=true]')||!$('navModal')?.hidden)return;
+  const actions={ArrowLeft:goPrev,ArrowRight:goNext,ArrowUp:goFirst,ArrowDown:goLast,' ':play};
+  const fn=actions[event.key];if(fn){event.preventDefault();event.stopImmediatePropagation();fn();return;}
+  if(!event.ctrlKey&&!event.metaKey&&!event.altKey)closeView(false);
+ },true);
+ function sensorDirectionText(d){
+  return d.dir==='low'?(sl()?'Nižje praviloma pomeni bolj ponovljiv in strukturiran tok.':'Lower generally means a more repetitive, structured flow.'):d.dir==='high'?(sl()?'Višje pomeni izrazitejši oziroma močnejši kaskadni vzorec.':'Higher means a more pronounced or stronger cascade pattern.'):(sl()?'Kontekstni signal: višje ali nižje samo po sebi ni boljše.':'Context signal: higher or lower is not inherently better.');
+ }
+ function openSensor(key){const d=sensorDefs[key],row=instruments.querySelector('[data-sensor="'+key+'"]');if(!d||!row)return;
+  const raw=Number(row.dataset.value)||0,val=(key==='powr'?raw.toFixed(1):raw.toFixed(3));
+  $('appSensorTitle').textContent=(sl()?d.sl:d.en)+' ('+d.abbr+')';$('appSensorValue').textContent=(sl()?'Trenutna vrednost: ':'Current value: ')+val;
+  $('appSensorText').textContent=sl()?d.slText:d.enText;
+  $('appSensorDirection').textContent=sensorDirectionText(d);
+  sensorModal.hidden=false;$('appSensorClose').focus({preventScroll:true});
+ }
+ for(const row of instruments.querySelectorAll('.app-pos-sensor'))row.onclick=()=>openSensor(row.dataset.sensor);
+ $('appSensorClose').onclick=()=>{sensorModal.hidden=true;};
+ sensorModal.addEventListener('click',e=>{if(e.target===sensorModal)sensorModal.hidden=true;});
+ // Full-screen shared instrument guide. Reuses the existing modal boundary so
+ // review input guards keep the timeline and the atomic game transaction intact.
+ const guideHeader=document.createElement('div');guideHeader.className='app-sensor-guide-header';
+ guideHeader.innerHTML='<button type="button" id="appSolveSensorsOverviewOpen" aria-haspopup="dialog" aria-controls="appSolveSensorsOverview"><span id="appSensorGuideLabel"></span><span aria-hidden="true">ⓘ</span></button>';
+ instruments.prepend(guideHeader);
+ const guide=document.createElement('section');guide.id='appSolveSensorsOverview';guide.hidden=true;
+ guide.setAttribute('role','dialog');guide.setAttribute('aria-modal','true');guide.setAttribute('aria-labelledby','appSensorsOverviewTitle');
+ guide.innerHTML='<header class="app-guide-head"><h2 id="appSensorsOverviewTitle"></h2><button type="button" id="appSensorsOverviewClose">×</button></header><div class="app-guide-body" tabindex="0" role="region" aria-labelledby="appSensorsOverviewTitle"><p id="appSensorGuideContext" class="app-guide-context"></p><p id="appSensorGuideIntro"></p><p id="appSensorsOverviewCaveat" class="app-guide-caution"></p><div id="appSensorsOverviewList"></div><section class="app-guide-reading"><h3 id="appSensorGuideReadingTitle"></h3><p id="appSensorGuideReading"></p><p id="appSensorGuideLimits"></p></section></div>';
+ sensorModal.append(guide);
+ style.textContent+='\n'+[
+  '.app-sensor-guide-header{min-width:0}#appSolveSensorsOverviewOpen{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:36px;padding:5px 2px 7px;border:0;border-bottom:1px solid #20364a;border-radius:0;background:transparent;color:#bcd1e4;font:650 .68rem/1.25 system-ui;text-align:left;cursor:pointer}#appSolveSensorsOverviewOpen>span:last-child{font-size:1rem;color:#79c8da}',
+  '#appSolveSensorsOverviewOpen:focus-visible,#appSolveSensorsOverview button:focus-visible,.app-guide-body:focus-visible{outline:2px solid #79efff;outline-offset:2px}',
+  '#appSolveSensorsOverview[hidden]{display:none!important}#appSolveSensorModal[data-guide=true]{z-index:10000;padding:16px;align-items:center;overscroll-behavior:contain}#appSolveSensorModal[data-guide=true]>.app-sensor-sheet{display:none!important}',
+  '#appSolveSensorsOverview{display:flex;flex-direction:column;width:min(100%,760px);height:min(880px,calc(100dvh - 32px));max-height:100%;min-height:0;overflow:hidden;border:1px solid #355269;border-radius:16px;background:#0c1724;color:#dbe7f4;box-shadow:0 18px 60px #000b;font:400 .94rem/1.55 system-ui;text-align:left}',
+  '.app-guide-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #294056;background:#0c1724}.app-guide-head h2{margin:0;font:750 1.15rem/1.25 system-ui;color:#dfeef9}#appSensorsOverviewClose{flex:none;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #3a5067;border-radius:10px;background:#142435;color:#f0f7ff;font:400 1.65rem/1 system-ui;cursor:pointer}',
+  '.app-guide-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 18px 22px;scrollbar-gutter:stable}.app-guide-body p{margin:12px 0}.app-guide-context{color:#91b5cb;font-size:.82rem}.app-guide-caution{padding:12px 14px;border-left:3px solid #bca376;background:#192332;color:#ede2cc}.app-guide-card{padding:16px 0;border-bottom:1px solid #294056}.app-guide-card h3,.app-guide-reading h3{margin:0 0 6px;font:750 1rem/1.35 system-ui;color:#c7e8f3}.app-guide-card .app-guide-value{margin:6px 0;color:#a2bdce;font-size:.82rem;font-variant-numeric:tabular-nums}.app-guide-card button{min-height:44px;padding:7px 12px;border:1px solid #3a5067;border-radius:8px;background:#142435;color:#c7e8f3;font:650 .85rem/1.3 system-ui;cursor:pointer}.app-guide-reading{padding:20px 0 2px}.app-guide-reading p{color:#b8c8d8}',
+  '@media(max-width:700px),(pointer:coarse){#appSolveSensorsOverviewOpen{min-height:44px}#appSolveSensorModal[data-guide=true]{padding:0;align-items:stretch}#appSolveSensorsOverview{width:100%;height:100%;height:100dvh;max-height:100%;border:0;border-radius:0}.app-guide-head{padding-top:max(10px,env(safe-area-inset-top));padding-right:max(12px,env(safe-area-inset-right));padding-left:max(16px,env(safe-area-inset-left))}.app-guide-body{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));padding-bottom:max(24px,env(safe-area-inset-bottom))}}'
+ ].join('\n');
+ const guideCopy={
+  en:{label:'Sensors · What do they mean?',title:'Understanding the sensors',close:'Close sensor guide',intro:'These five instruments describe the recorded solve path: how candidate counts and forced-move opportunities change. They summarize the steps from the start up to the selected review position, not just the current grid.',caution:'These are structural descriptions, not an intelligence score, an accuracy rating or proof that one solver is better. Higher is not always better; lower is not always better.',readingTitle:'How to read them during a solve',reading:'Use the review arrows or slider to compare nearby steps, then open this guide. Opening pauses playback and freezes the values while you read. The Move, Logic, Candidates and Flow facts below the grid explain what happened at the selected step; these five sensors describe the accumulated path. Closing keeps the same position. Press Play to resume.',limits:'A dash means fewer than two recorded steps, not zero intelligence. Short traces can fluctuate strongly. LZ values can exceed 1 and Powr has no fixed maximum; a full bar is a display limit, not 100% quality. AI counts available forced placements after each step; Human uses the increase in simple naked singles. Missing cascade counts are treated as zero. Their raw values are therefore not a calibrated AI-versus-human ranking.',current:'At this step: ',missing:'— · at least two steps required',details:'Individual explanation',scope:'Recorded path · ',names:['LZ Complexity','Gini Cascade','Cascade Power','Density Flow','ADSR Bimodality'],texts:[
+   'Measures repetition in the candidate-reduction sequence, encoded above or below its median. Lower: a more repetitive encoded pattern. Higher: a more varied pattern. It does not measure Sudoku difficulty or the quality of a move.',
+   'Measures how unevenly recorded cascade counts are distributed across steps. Here “cascade” is a forced-move count, not the measured length of a complete chain. Lower: more similar counts. Higher: a few steps account for a larger share. Zero can also mean that all counts are zero.',
+   'The average of cascade count × candidate reduction, with negative reductions clamped to zero. Lower: less combined forced-move availability and candidate removal. Higher: the two occur together more strongly. It is a descriptive average, not a success rate.',
+   'Measures repetition in the sequence of remaining candidate counts, encoded above or below its median. Lower: a more repetitive encoded density pattern. Higher: a more varied pattern. It does not guarantee smooth progress or a better solve.',
+   'The share of steps with a recorded cascade count of 0 or at least 5, inspired by Attack–Decay–Sustain–Release. Lower: more steps in the middle range 1–4. Higher: more steps in either extreme. A high value can come entirely from zero-cascade steps; it does not by itself prove bimodality or stronger solving.'
+  ]},
+  sl:{label:'Senzorji · Kaj pomenijo?',title:'Kaj pomenijo senzorji?',close:'Zapri razlago senzorjev',intro:'Teh pet kazalnikov opisuje zabeleženo pot reševanja: kako se spreminjajo kandidati in možnosti za prisiljene vpise. Povzemajo korake od začetka do izbranega položaja v pregledu, ne le trenutne mreže.',caution:'To ni ocena inteligence ali pravilnosti in ni dokaz, da je en reševalec boljši. Kazalniki opisujejo strukturo. Višje ni vedno bolje; nižje ni vedno bolje.',readingTitle:'Kako jih bereš med reševanjem',reading:'S puščicami ali drsnikom primerjaj bližnje korake, nato odpri to razlago. Odpiranje ustavi predvajanje in med branjem ohrani vrednosti. Podatki Poteza, Logika, Kandidati in Tok pod mrežo razložijo izbrani korak; teh pet senzorjev opisuje dotedanjo pot. Po zaprtju ostane isti položaj. Za nadaljevanje pritisni Predvajaj.',limits:'Črtica pomeni manj kot dva zabeležena koraka, ne ničelne inteligence. Kratke sledi lahko močno nihajo. LZ vrednosti lahko presežejo 1, Powr pa nima fiksnega maksimuma; poln trak je meja prikaza, ne 100-odstotna kakovost. AI šteje razpoložljive prisiljene vpise po koraku, Človek pa porast preprostih golih posameznikov. Manjkajoče število kaskad se obravnava kot nič. Vrednosti zato niso umerjena lestvica AI proti človeku.',current:'Pri tem koraku: ',missing:'— · potrebna sta vsaj dva koraka',details:'Posamezna razlaga',scope:'Zabeležena pot · ',names:['LZ kompleksnost','Gini kaskad','Moč kaskade','Tok gostote','ADSR bimodalnost'],texts:[
+   'Meri ponavljanje v zaporedju zmanjševanja kandidatov, kodiranem nad ali pod njegovo mediano. Nižje: bolj ponovljiv kodirani vzorec. Višje: bolj raznolik vzorec. Ne meri težavnosti sudokuja ali kakovosti poteze.',
+   'Meri neenakomernost zabeleženih kaskad med koraki. »Kaskada« tu pomeni število prisiljenih vpisov, ne izmerjene dolžine celotne verige. Nižje: bolj podobna števila. Višje: nekaj korakov prispeva večji delež. Nič lahko pomeni tudi, da so vsa števila ničelna.',
+   'Povprečje produkta število kaskade × zmanjšanje kandidatov; negativno zmanjšanje se šteje kot nič. Nižje: manj skupnega učinka razpoložljivih prisiljenih vpisov in odstranjevanja kandidatov. Višje: močnejše sovpadanje obojega. To je opisno povprečje, ne odstotek uspešnosti.',
+   'Meri ponavljanje v zaporedju preostalih kandidatov, kodiranem nad ali pod njegovo mediano. Nižje: bolj ponovljiv kodirani vzorec gostote. Višje: bolj raznolik vzorec. Samo po sebi ne zagotavlja gladkega napredka ali boljšega reševanja.',
+   'Delež korakov z zabeleženo kaskado 0 ali vsaj 5, po navdihu Attack–Decay–Sustain–Release. Nižje: več korakov v srednjem območju 1–4. Višje: več korakov na enem ali drugem skrajnem delu. Visoka vrednost lahko nastane samo zaradi ničelnih kaskad; sama ne dokazuje bimodalnosti ali boljšega reševanja.'
+  ]}
+ };
+ Object.keys(sensorDefs).forEach((key,i)=>{sensorDefs[key].enText=guideCopy.en.texts[i];sensorDefs[key].slText=guideCopy.sl.texts[i];sensorDefs[key].dir='context';});
+ let guidePreviousFocus=null,guideInert=[],guideOverflow=null;
+ const guideLabel=()=>{$('appSensorGuideLabel').textContent=guideCopy[sl()?'sl':'en'].label;};
+ function closeSensorGuide(restoreFocus=true){
+  if(sensorModal.dataset.guide!=='true')return;
+  sensorModal.hidden=true;guide.hidden=true;delete sensorModal.dataset.guide;
+  for(const [node,prior]of guideInert)node.inert=prior;guideInert=[];
+  if(guideOverflow){for(const [node,value,priority]of guideOverflow){if(value)node.style.setProperty('overflow',value,priority);else node.style.removeProperty('overflow');}guideOverflow=null;}
+  const target=guidePreviousFocus;guidePreviousFocus=null;
+  if(restoreFocus&&!instruments.hidden&&target?.isConnected)target.focus({preventScroll:true});
+ }
+ function openSensorGuide(){
+  if(instruments.hidden||sensorModal.dataset.guide==='true')return;
+  const copy=guideCopy[sl()?'sl':'en'];guideLabel();guidePreviousFocus=$('appSolveSensorsOverviewOpen');
+  pause();const timeline=activeTimeline(),index=activeIndex(),values=reviewSensors(timeline?.steps||[],index);
+  for(const [id,text]of Object.entries({appSensorsOverviewTitle:copy.title,appSensorGuideIntro:copy.intro,appSensorsOverviewCaveat:copy.caution,appSensorGuideReadingTitle:copy.readingTitle,appSensorGuideReading:copy.reading,appSensorGuideLimits:copy.limits}))$(id).textContent=text;
+  $('appSensorsOverviewClose').setAttribute('aria-label',copy.close);
+  $('appSensorGuideContext').textContent=copy.scope+(tab==='human'?(sl()?'Človek':'Human'):'AI')+' · '+index+' / '+(timeline?.steps?.length||0);
+  const cards=$('appSensorsOverviewList');cards.replaceChildren();
+  Object.entries(sensorDefs).forEach(([key,def],i)=>{
+   const card=document.createElement('section');card.className='app-guide-card app-sensors-overview-item';card.dataset.guideSensor=key;
+   const heading=document.createElement('h3');heading.textContent=def.abbr+' — '+copy.names[i];
+   const value=document.createElement('p');value.className='app-guide-value';value.textContent=copy.current+(index<2?copy.missing:Number(values[key]||0).toFixed(key==='powr'?1:3));
+   const text=document.createElement('p');text.textContent=copy.texts[i];
+   const detail=document.createElement('button');detail.type='button';detail.textContent=copy.details+' · '+def.abbr;detail.onclick=()=>{closeSensorGuide(false);openSensor(key);};
+   card.append(heading,value,text,detail);cards.append(card);
+  });
+  guideOverflow=[document.documentElement,document.body].map(node=>[node,node.style.getPropertyValue('overflow'),node.style.getPropertyPriority('overflow')]);
+  document.documentElement.style.setProperty('overflow','hidden');document.body.style.setProperty('overflow','hidden');
+  guideInert=[...document.body.children].filter(node=>node!==sensorModal&&!['SCRIPT','STYLE','LINK'].includes(node.tagName)).map(node=>[node,node.inert]);
+  for(const [node]of guideInert)node.inert=true;
+  sensorModal.dataset.guide='true';guide.hidden=false;sensorModal.hidden=false;
+  guide.querySelector('.app-guide-body').scrollTop=0;$('appSensorsOverviewClose').focus({preventScroll:true});
+ }
+ $('appSolveSensorsOverviewOpen').onclick=openSensorGuide;$('appSensorsOverviewClose').onclick=()=>closeSensorGuide();
+ instruments.addEventListener('click',event=>{if(event.target===instruments||event.target===guideHeader)openSensorGuide();});
+ window.addEventListener('keydown',event=>{
+  if(sensorModal.dataset.guide!=='true')return;
+  event.stopImmediatePropagation(); // Preserve native scrolling without background game shortcuts.
+  if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeSensorGuide();return;}
+  if(event.key==='Tab'){
+   const stops=[...guide.querySelectorAll('button:not([disabled]),[tabindex="0"]')].filter(n=>n.getClientRects().length),first=stops[0],last=stops.at(-1);
+   if(event.shiftKey&&(document.activeElement===first||!guide.contains(document.activeElement))){event.preventDefault();last?.focus();}
+   else if(!event.shiftKey&&(document.activeElement===last||!guide.contains(document.activeElement))){event.preventDefault();first?.focus();}
+  }
+ },true);
+ document.addEventListener('focusin',event=>{if(sensorModal.dataset.guide==='true'&&!guide.contains(event.target))$('appSensorsOverviewClose').focus({preventScroll:true});},true);
+ new MutationObserver(()=>{if(sensorModal.hidden)closeSensorGuide();}).observe(sensorModal,{attributes:true,attributeFilter:['hidden']});
+ window.addEventListener('sudoku-solve-review-change',event=>{guideLabel();if(event.detail?.active===false)closeSensorGuide(false);});
+ guideLabel();
+
+ const externalRenderObserver=new MutationObserver(()=>{if(data&&currentKey()!==data.finalKey)closeView(false);});
+ externalRenderObserver.observe(grid,{childList:true,subtree:true,characterData:true});
+ window.addEventListener('pagehide',()=>closeView(false));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)closeView(false);});
+ window.SudokuSolveReview={
+  hasReview:validReview,
+  hasHumanReview:()=>humanRows().some(x=>Array.isArray(x.pre_board)&&x.pre_board.length===81),
+  active:()=>document.body.dataset.appSolveReview==='true'&&!review.hidden,
+  open:()=>open('ai'),
+  openHuman:()=>open('human'),
+  close:()=>closeView(false),
+  get:()=>data?JSON.parse(JSON.stringify({start:data.start,final:data.final,steps:data.steps,index:data.index,fallbacks:data.fallbacks,sensors:reviewSensors(data.steps,data.index||0)})):null
+ };
+})();
+</script>
+<script id="sudoku-app-pwa">
+'use strict';
+// APP-only web installation. The native package and downloaded standalone HTML
+// do not register a worker. An embedded phone delegates to its preview shell.
+(() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
+ if (!/^https?:$/.test(location.protocol) || window.Capacitor?.isNativePlatform?.()) return;
+ const $ = id => document.getElementById(id);
+ const appWindow = () => $('game')?.contentWindow || window;
+ const sl = () => {try {return appWindow().SudokuI18n?.get?.() === 'sl';} catch (_) {return false;}};
+ const text = (en,si) => sl() ? si : en;
+ const set = (id,value) => {if ($(id)?.textContent !== value) $(id).textContent = value;};
+ function openMenuEntry() {
+  const menu = $('navModalBody')?.querySelector('.ux-menu');
+  if (!menu || $('appPwaMenu')) return;
+  const b = document.createElement('button');b.type='button';b.id='appPwaMenu';b.className='btn';b.setAttribute('data-no-i18n','');
+  b.textContent=text('App · offline & updates','Aplikacija · brez povezave in posodobitve');
+  b.onclick=()=>{try {$('navClose')?.click();$('uxMore')?.focus({preventScroll:true});const host=window.parent!==window?window.parent:window;host.SudokuUnifiedPWA?.open();} catch (_) {}};
+  menu.append(b);
+ }
+ document.addEventListener('click',e=>{if(e.target.closest?.('#uxMore,#plMore'))openMenuEntry();});
+ if (window.parent !== window || document.body.dataset.appRedirect === 'true') return;
+ let registration, installPrompt, ready=false, failed=false, replaced=false, reloadRequested=false, checking=false, registering=false, lastCheck=0, notice='update', hadController=false, returnFocus;
+ const scriptURL = new URL('./sw.js',location.href).href;
+ const scope = new URL('./',location.href).href;
+ const ownController = () => navigator.serviceWorker?.controller?.scriptURL === scriptURL;
+ const installed = () => window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
+ const style=document.createElement('style');
+ style.textContent=`
+ #appPwaPanel[hidden],#appPwaUpdate[hidden],#appPwaInstallHelp[hidden]{display:none!important}
+ #appPwaPanel{position:fixed;inset:0;z-index:6000;background:#020711ce;display:flex;align-items:center;justify-content:center;padding:16px;font:16px/1.5 system-ui;color:#edf4ff}
+ #appPwaCard{width:min(100%,460px);max-height:calc(100dvh - 32px);overflow:auto;background:#102039;border:1px solid #54718f;border-radius:18px;padding:20px;box-shadow:0 20px 70px #0008}
+ #appPwaCard h2{font-size:1.25rem;margin:0 0 12px}#appPwaCard p{margin:12px 0}
+ #appPwaPanel button,#appPwaUpdate button{min-height:44px;padding:9px 13px;font:600 15px/1.3 system-ui;white-space:normal;color:#edf4ff;border:1px solid #6787a6;border-radius:9px;background:#1c3c5b;cursor:pointer}
+ #appPwaPanel button:focus-visible,#appPwaUpdate button:focus-visible{outline:3px solid #8aeef8;outline-offset:2px}
+ #appPwaPanel button:disabled,#appPwaUpdate button:disabled{opacity:.6;cursor:wait}
+ #appPwaClose{float:right;margin-left:10px}#appPwaStatus{clear:both;color:#a3e6eb}
+ #appPwaUpdate{position:fixed;z-index:5500;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(94%,510px);padding:12px;box-sizing:border-box;display:flex;gap:10px;align-items:center;background:#102039;color:#edf4ff;border:1px solid #61d7e4;border-radius:12px;box-shadow:0 8px 30px #0009;font:14px/1.4 system-ui}
+ #appPwaUpdateMessage{flex:1}#appPwaUpdateButton{flex:0 0 120px}
+ `;
+ document.head.append(style);
+ document.body.insertAdjacentHTML('beforeend','<section id="appPwaPanel" hidden role="dialog" aria-modal="true" aria-labelledby="appPwaTitle" data-no-i18n><div id="appPwaCard"><button type="button" id="appPwaClose">Close</button><h2 id="appPwaTitle">8zSudoku</h2><p id="appPwaStatus" role="status"></p><p id="appPwaInfo"></p><button type="button" id="appPwaInstall">Install 8zSudoku</button><p id="appPwaInstallHelp" hidden></p><p><button type="button" id="appPwaCheck">Check for updates</button></p><p id="appPwaContainerNote"></p></div></section><aside id="appPwaUpdate" hidden data-no-i18n><span id="appPwaUpdateMessage" role="status"></span><button type="button" id="appPwaUpdateButton">Save & update</button></aside>');
+ function render() {
+  set('appPwaClose',text('Close','Zapri'));set('appPwaTitle',text('8zSudoku · App','8zSudoku · Aplikacija'));
+  set('appPwaStatus',ready?text(navigator.onLine?'Ready for offline play':'Offline · ready to play',navigator.onLine?'Pripravljeno za igro brez povezave':'Brez povezave · pripravljeno za igro'):failed?text('Offline setup failed. Reconnect and check again.','Priprava za delo brez povezave ni uspela. Poveži se in preveri znova.'):text('Preparing offline play…','Pripravljam igro brez povezave…'));
+  set('appPwaInfo',text('Play, learning help and saved games work offline after setup. Updates need an internet connection.','Po pripravi igra, učna pomoč in shranjene igre delujejo brez povezave. Za posodobitve potrebuješ internet.'));
+  set('appPwaInstall',installed()?text('Installed','Nameščeno'):text('Install 8zSudoku','Namesti 8zSudoku'));
+  $('appPwaInstall').disabled=installed();
+  set('appPwaCheck',checking?text('Checking…','Preverjam…'):text('Check for updates','Preveri posodobitve'));
+  $('appPwaCheck').disabled=checking||registering||!navigator.onLine||!navigator.serviceWorker;
+  set('appPwaInstallHelp',text('iPhone/iPad: open this page in Safari, choose Share → Add to Home Screen → Add. On other browsers use Install app in the browser menu if available.','iPhone/iPad: odpri stran v Safariju, izberi Deli → Dodaj na začetni zaslon → Dodaj. V drugih brskalnikih uporabi Namesti aplikacijo v meniju brskalnika, če je na voljo.'));
+  set('appPwaContainerNote',text('A Home Screen installation may have separate saved games. Use More → Export / Import session to transfer a game. LAB and CURRENT stay separate.','Namestitev na začetnem zaslonu ima lahko ločene shranjene igre. Za prenos uporabi Več → Izvozi / Uvozi sejo. LAB in CURRENT ostaneta ločena.'));
+  const copy={
+   update:['A new APP version is ready. Save and update when convenient.','Nova različica APP je pripravljena. Shrani igro in posodobi, ko ti ustreza.'],
+   saving:['Game saved. Updating…','Igra je shranjena. Posodabljam…'],
+   blocked:['The game could not be saved. Finish the current action or export the game, then retry.','Igre ni bilo mogoče shraniti. Končaj trenutno dejanje ali izvozi igro in poskusi znova.'],
+   replaced:['An update is active. Save and reload to use it here.','Posodobitev je aktivna. Shrani in osveži, da jo uporabiš tudi tukaj.'],
+   retry:['Update check failed. Reconnect and try again.','Preverjanje posodobitve ni uspelo. Poveži se in poskusi znova.']
+  };
+  set('appPwaUpdateMessage',copy[notice][Number(sl())]);
+  set('appPwaUpdateButton',notice==='retry'?text('Retry','Poskusi znova'):replaced?text('Save & reload','Shrani in osveži'):text('Save & update','Shrani in posodobi'));
+  if ($('appPwaOpen')) set('appPwaOpen',text('Install app / Offline','Namesti aplikacijo / Brez povezave'));
+ }
+ function show(kind='update'){notice=kind;$('appPwaUpdate').hidden=false;$('appPwaUpdateButton').disabled=false;render();}
+ function open(){returnFocus=document.activeElement;render();$('appPwaPanel').hidden=false;$('appPwaClose').focus();check();}
+ function close(){$('appPwaPanel').hidden=true;returnFocus?.focus?.({preventScroll:true});}
+ window.SudokuUnifiedPWA={open};
+ $('appPwaOpen')?.addEventListener('click',open);
+ $('appPwaClose').onclick=close;
+ $('appPwaPanel').addEventListener('click',e=>{if(e.target===$('appPwaPanel'))close();});
+ window.addEventListener('keydown',e=>{
+  if($('appPwaPanel').hidden)return;
+  e.stopImmediatePropagation();
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}
+  if(e.key==='Tab'){const nodes=[...$('appPwaPanel').querySelectorAll('button:not(:disabled)')],first=nodes[0],last=nodes.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+ },true);
+ window.addEventListener('click',e=>{if(e.target.closest?.('#appPwaUpdateButton')&&!$('navModal')?.hidden)$('navClose')?.click();},true);
+ $('game')?.addEventListener('load',render);
+ async function flush(){
+  try{const app=appWindow().SudokuNavigator;return typeof app?.flushForUpdate==='function'&&await app.flushForUpdate()===true;}catch(_){return false;}
+ }
+ async function check(force=false){
+  if(!navigator.onLine||checking||registering)return;
+  if(!registration){if(navigator.serviceWorker)await register();return;}
+  if(!force&&Date.now()-lastCheck<30000)return;
+  checking=true;lastCheck=Date.now();render();
+  try{await registration.update();if(registration.waiting)show();else if(notice==='retry')$('appPwaUpdate').hidden=true;}
+  catch(_){if(force)show('retry');}
+  finally{checking=false;render();}
+ }
+ function watch(worker){
+  if(!worker)return;
+  worker.addEventListener('statechange',()=>{
+   if(worker.state==='installed'&&registration?.active)show();
+   if(worker.state==='activated'){ready=true;failed=false;render();}
+   if(worker.state==='redundant'&&!ready&&!registration?.active){failed=true;render();}
+  });
+ }
+ $('appPwaUpdateButton').onclick=async()=>{
+  if(notice==='retry'){await check(true);return;}
+  $('appPwaUpdateButton').disabled=true;
+  if(!await flush()){show('blocked');return;}
+  if(replaced||!registration?.waiting){location.reload();return;}
+  reloadRequested=true;notice='saving';render();
+  registration.waiting.postMessage({type:'ACTIVATE_UPDATE'});
+ };
+ $('appPwaCheck').onclick=()=>check(true);
+ $('appPwaInstall').onclick=async()=>{
+  if(installPrompt){const prompt=installPrompt;installPrompt=null;try{await prompt.prompt();await prompt.userChoice;}catch(_){$('appPwaInstallHelp').hidden=false;}}
+  else $('appPwaInstallHelp').hidden=false;
+ };
+ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;});
+ window.addEventListener('appinstalled',()=>{installPrompt=null;$('appPwaInstallHelp').hidden=true;render();});
+ const sw=navigator.serviceWorker;
+ if(!sw){failed=true;render();return;}
+ hadController=ownController();
+ sw.addEventListener('controllerchange',async()=>{
+  if(!ownController())return;
+  ready=true;failed=false;render();
+  if(reloadRequested){
+   reloadRequested=false;
+   if(await flush()){location.reload();return;}
+   replaced=true;show('blocked');
+  }else if(hadController){replaced=true;show('replaced');}
+  hadController=true;
+ });
+ async function register(){
+  registering=true;render();
+  try{
+   const reg=await sw.register('./sw.js',{scope:'./',updateViaCache:'none'});
+   if(reg.scope!==scope)throw Error('Unexpected APP scope');
+   registration=reg;ready=reg.active?.state==='activated';failed=false;watch(reg.installing);watch(reg.active);
+   reg.addEventListener('updatefound',()=>watch(reg.installing));if(reg.waiting)show();
+  }catch(_){failed=true;}
+  finally{registering=false;render();}
+  if(registration)check();
+ }
+ register();
+ window.addEventListener('online',()=>{render();check();});window.addEventListener('offline',render);
+ window.addEventListener('focus',()=>check());
+ window.addEventListener('storage',e=>{if(e.key==='8zSudoku.ui.language')render();});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
+ new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ render();
 })();
 
 </script>

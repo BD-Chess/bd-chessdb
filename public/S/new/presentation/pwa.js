@@ -2,6 +2,7 @@
 // APP-only web installation. The native package and downloaded standalone HTML
 // do not register a worker. An embedded phone delegates to its preview shell.
 (() => {
+ if(!document.body?.hasAttribute('data-app-surface'))return;
  if (!/^https?:$/.test(location.protocol) || window.Capacitor?.isNativePlatform?.()) return;
  const $ = id => document.getElementById(id);
  const appWindow = () => $('game')?.contentWindow || window;
@@ -13,7 +14,7 @@
   if (!menu || $('appPwaMenu')) return;
   const b = document.createElement('button');b.type='button';b.id='appPwaMenu';b.className='btn';b.setAttribute('data-no-i18n','');
   b.textContent=text('App · offline & updates','Aplikacija · brez povezave in posodobitve');
-  b.onclick=()=>{try {$('navClose')?.click();$('uxMore')?.focus({preventScroll:true});const host=window.parent!==window?window.parent:window;host.SudokuAppPWA?.open();} catch (_) {}};
+  b.onclick=()=>{try {$('navClose')?.click();$('uxMore')?.focus({preventScroll:true});const host=window.parent!==window?window.parent:window;host.SudokuUnifiedPWA?.open();} catch (_) {}};
   menu.append(b);
  }
  document.addEventListener('click',e=>{if(e.target.closest?.('#uxMore,#plMore'))openMenuEntry();});
@@ -62,7 +63,7 @@
  function show(kind='update'){notice=kind;$('appPwaUpdate').hidden=false;$('appPwaUpdateButton').disabled=false;render();}
  function open(){returnFocus=document.activeElement;render();$('appPwaPanel').hidden=false;$('appPwaClose').focus();check();}
  function close(){$('appPwaPanel').hidden=true;returnFocus?.focus?.({preventScroll:true});}
- window.SudokuAppPWA={open};
+ window.SudokuUnifiedPWA={open};
  $('appPwaOpen')?.addEventListener('click',open);
  $('appPwaClose').onclick=close;
  $('appPwaPanel').addEventListener('click',e=>{if(e.target===$('appPwaPanel'))close();});
@@ -136,7 +137,7 @@
  register();
  window.addEventListener('online',()=>{render();check();});window.addEventListener('offline',render);
  window.addEventListener('focus',()=>check());
- window.addEventListener('storage',e=>{if(e.key==='8zSudoku.app.ui.language')render();});
+ window.addEventListener('storage',e=>{if(e.key==='8zSudoku.ui.language')render();});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  render();

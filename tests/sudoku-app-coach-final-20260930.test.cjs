@@ -2,7 +2,7 @@
 // APP-specific learning affordances; actual game/worker stays the packaged donor.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {boot,savedFixture,fixture,fixtureSolution,plain,until}=require('./sudoku-ui-harness.cjs');
-const ui=fs.readFileSync('public/S/app/app-ui.js','utf8');
+const ui=fs.readFileSync('public/S/new/presentation/app-ui.js','utf8');
 const start=ui.indexOf(' function candidates('),end=ui.indexOf(' let lastBoard=');
 assert.ok(start>=0&&end>start,'bounded read-only Coach helpers');
 const helpers=vm.runInNewContext(ui.slice(start,end)+'\n({candidates,boardIssue,coachProof})');
@@ -54,9 +54,9 @@ test('actual Settings toggles number pad, Coach and independent hold tip without
  set(h,'appCoachMode','always');set(h,'appCoachDetail','detailed');assert.equal(h.el('appCoach').hidden,false);
  set(h,'appHoldTipSetting','off');
  for(const key of ['board','puzzle','notes','history','assistance'])assert.deepEqual(current(h)[key],before[key],key+' unchanged');
- assert.equal(h.w.localStorage.getItem('8zSudoku.app.ui.holdTip'),'off');
- assert.equal(h.w.localStorage.getItem('8zSudoku.app.ui.coach'),'always');
- assert.equal(h.w.localStorage.getItem('8zSudoku.app.ui.coachDetail'),'detailed');
+ assert.equal(h.w.localStorage.getItem('8zSudoku.ui.holdTip'),'off');
+ assert.equal(h.w.localStorage.getItem('8zSudoku.ui.coach'),'always');
+ assert.equal(h.w.localStorage.getItem('8zSudoku.ui.coachDetail'),'detailed');
  h.el('navClose').click();h.w.SudokuI18n.set('sl');
  await until(()=>/Tapni in drži prazno/.test(h.el('appHoldTip').textContent),'SL tip stays localized while hidden');
  assert.deepEqual(h.errors,[]);
@@ -76,7 +76,7 @@ test('Coach follows the selected cell, discloses candidates only on request and 
  assert.deepEqual(h.errors,[]);
 });
 test('saved UI preferences survive an APP restart and Coach is off for harder games in Easy-only mode',async t=>{
- const saved={'8zSudoku.app.ui.numberPad':'on','8zSudoku.app.ui.holdTip':'off','8zSudoku.app.ui.coach':'easy','8zSudoku.app.ui.coachDetail':'detailed','8zSudoku.ui.language':'sl'};
+ const saved={'8zSudoku.ui.numberPad':'on','8zSudoku.ui.holdTip':'off','8zSudoku.ui.coach':'easy','8zSudoku.ui.coachDetail':'detailed','8zSudoku.ui.language':'sl'};
  const h=await ready(t,saved);
  assert.equal(h.el('plNumbers').hidden,false);assert.equal(h.el('appHoldTip').hidden,true);
  await settings(h);set(h,'appNumberPad','off');h.el('navClose').click();
@@ -89,7 +89,7 @@ test('saved UI preferences survive an APP restart and Coach is off for harder ga
 
 
 test('Hard and Evil suppress proactive Coach/tip help and enable centered quiet-play layout',async t=>{
- const h=await ready(t,{'8zSudoku.app.ui.holdTip':'on','8zSudoku.app.ui.coach':'always'});
+ const h=await ready(t,{'8zSudoku.ui.holdTip':'on','8zSudoku.ui.coach':'always'});
  for(const diff of ['hard','evil']){
   const game=savedFixture('0.2.0');game.diff=diff;
   await h.w.SudokuNavigator.restore(game);h.w.stopTimer();
