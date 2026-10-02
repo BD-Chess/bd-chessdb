@@ -1,0 +1,53 @@
+name: Flip4M live Pages verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/F4M/**'
+      - '.github/workflows/f4m-live-verify.yml'
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for exact Pages publication and verify live bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://bd-chess.github.io/bd-chessdb/F4M"
+          tmp="$(mktemp -d)"
+          matched=0
+          for i in $(seq 1 36); do
+            if curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/release.json?probe=$i" -o "$tmp/new-release.json" && cmp -s "$tmp/new-release.json" public/F4M/new/release.json; then
+              matched=1
+              break
+            fi
+            sleep 5
+          done
+          test "$matched" = 1
+          verify () {
+            local live="$1" localfile="$2" out="$3"
+            curl -fsSL --retry 3 --retry-delay 1 "$live" -o "$tmp/$out"
+            cmp "$tmp/$out" "$localfile"
+            sha256sum "$tmp/$out"
+          }
+          verify "$BASE/new/" public/F4M/new/index.html new-index.html
+          verify "$BASE/new/?view=app" public/F4M/new/index.html new-app-index.html
+          verify "$BASE/new/manifest.webmanifest" public/F4M/new/manifest.webmanifest new-manifest.json
+          verify "$BASE/new/sw.js" public/F4M/new/sw.js new-sw.js
+          verify "$BASE/app/" public/F4M/app/index.html app-index.html
+          verify "$BASE/app/release.json" public/F4M/app/release.json app-release.json
+          verify "$BASE/app/retirement.js" public/F4M/app/retirement.js retirement.js
+          verify "$BASE/versioning.json" public/F4M/versioning.json versioning.json
+          verify "$BASE/release.json" public/F4M/release.json current-release.json
+          verify "$BASE/old/release.json" public/F4M/old/release.json previous-release.json
+          for f in f4m-core.js f4m-search.js f4m-smart-time.js f4m-store.js f4m-ui.js f4m-review.js presentation.js shell.js pwa.js unified.css build-manifest.json; do
+            verify "$BASE/_shared/petrol-2.6.0/$f" "public/F4M/_shared/petrol-2.6.0/$f" "shared-$f"
+          done
+          grep -q '"version": "2.6.0-petrol"' "$tmp/new-release.json"
+          grep -q '"role": "APP_MIGRATION_RECOVERY"' "$tmp/app-release.json"
+          grep -q '"topology": "ONE_ACTIVE_LAB_SOURCE_THREE_PRESENTATIONS"' "$tmp/versioning.json"
+          echo "LIVE_F4M_2_6_EXACT_BYTES_PASS"
