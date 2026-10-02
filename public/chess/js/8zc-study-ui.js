@@ -8,7 +8,7 @@
     const mount = host.mount || document.body;
     let storage, draftStorage;
     try { storage = host.storage || root.localStorage; } catch (_) {}
-    try { draftStorage = host.draftStorage || root.sessionStorage; } catch (_) {}
+    try { draftStorage = host.draftStorage || root.localStorage; } catch (_) {}
     const S = root.ChessStudyStore;
     const store = S.create({ C, Chess, storage, locks: host.locks || root.navigator?.locks });
     const clone = value => JSON.parse(JSON.stringify(value));
@@ -43,7 +43,7 @@
         if (S.bytes(text) > S.MAX) throw Error('Draft too large');
         draftStorage.setItem(DRAFT_KEY, text);
         if (draftStorage.getItem(DRAFT_KEY) !== text) throw Error('Draft readback failed');
-        draftNotice = 'Pending work is retained for reload in this tab. Export it before closing the tab.';
+        draftNotice = 'Pending work is retained for reload in this LAB workspace. Export it for a separate backup.';
       } catch (_) { draftNotice = 'Pending work is in memory only. Export it before closing or reloading this tab.'; }
     }
     try {
@@ -51,7 +51,7 @@
       if (saved && S.bytes(saved) <= S.MAX) {
         const draft = JSON.parse(saved);
         if (draft && typeof draft.id === 'string' && ['append', 'import', 'record', 'recordAnnotated', 'line', 'annotatePath', 'undo'].includes(draft.type)) {
-          pending = draft; saveDraft(); loadWarning = 'Pending Study work from this tab is available in Manage Studies.';
+          pending = draft; saveDraft(); loadWarning = 'Pending Study work from this LAB workspace is available in Manage Studies.';
         }
       }
     } catch (_) { loadWarning = 'A pending draft could not be read. Existing Studies were not changed.'; }
@@ -141,14 +141,14 @@
       const count = state.studies.length, needed = pendingSlots();
       heading.textContent = count >= S.LIMIT ? 'Studies full — ' + count + ' / ' + S.LIMIT : 'Manage Studies — ' + count + ' / ' + S.LIMIT;
       tabs.hidden = true;
-      body.append(el('p', '', 'Export keeps a copy; it does not remove Studies or free slots. Removal affects only CURRENT Studies. Pinned A/B, the workspace game, SIM, Evidence, Library and settings are retained.'));
+      body.append(el('p', '', 'Export keeps a copy; it does not remove Studies or free slots. Removal affects only LAB Studies. Pinned A/B, the workspace game, SIM, Evidence, Library and settings are retained.'));
       if (pending) body.append(el('p', 'chess-study-hint', 'Pending action: ' + pending.type + ' · needs ' + needed + ' free slot(s). ' + draftNotice));
       if (deferredNotice) body.append(el('p', 'chess-study-hint', deferredNotice));
       const actions = el('div', 'chess-study-toolbar');
-      actions.append(button('Export original stored bytes', () => download(store.original(), 'chess-current-original.json', 'application/json')));
-      actions.append(button('Export studies', () => { refresh(); download(exportJSON(), 'chess-current-studies.json', 'application/json'); message('Download requested. Studies were not removed; saving the file to disk is not verified.'); }));
-      if (pending) actions.append(button('Export pending work', () => download(JSON.stringify({ schema: 'chess-current-pending', version: 1, operation: pending }, null, 2), 'chess-current-pending.json', 'application/json')));
-      actions.append(button('Undo last removal', undoLastRemoval), button('Export recovery', () => { const text = store.recovery(); if (!text) throw Error('No recovery snapshot.'); download(text, 'chess-current-recovery.json', 'application/json'); }));
+      actions.append(button('Export original stored bytes', () => download(store.original(), 'chess-lab-original.json', 'application/json')));
+      actions.append(button('Export studies', () => { refresh(); download(exportJSON(), 'chess-lab-studies.json', 'application/json'); message('Download requested. Studies were not removed; saving the file to disk is not verified.'); }));
+      if (pending) actions.append(button('Export pending work', () => download(JSON.stringify({ schema: 'chess-lab-pending', version: 1, operation: pending }, null, 2), 'chess-lab-pending.json', 'application/json')));
+      actions.append(button('Undo last removal', undoLastRemoval), button('Export recovery', () => { const text = store.recovery(); if (!text) throw Error('No recovery snapshot.'); download(text, 'chess-lab-recovery.json', 'application/json'); }));
       body.append(actions);
       const label = el('label', 'chess-study-label', 'Remove particular study'), search = el('input'); search.type = 'search'; search.placeholder = 'Find title or stable ID'; label.append(search); body.append(label);
       const list = el('div', 'chess-capacity-list'), selected = new Set(); list.setAttribute('role', 'group'); list.setAttribute('aria-label', 'Select Studies to remove');
@@ -164,7 +164,7 @@
       const removals = el('div', 'chess-study-toolbar'); removals.append(remove, all); body.append(removals);
       if (confirmation) {
         const c = confirmation, box = el('section', 'chess-capacity-confirm'); box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Confirm Study removal');
-        box.append(el('p', '', 'Remove exactly ' + c.ids.length + ' selected CURRENT Study record(s)? ' + (c.noRecovery ? 'No recovery copy could be verified. Export first. A download alone does not prove you saved a backup.' : 'A verified local undo snapshot will be required. It replaces the previous removal snapshot.')));
+        box.append(el('p', '', 'Remove exactly ' + c.ids.length + ' selected LAB Study record(s)? ' + (c.noRecovery ? 'No recovery copy could be verified. Export first. A download alone does not prove you saved a backup.' : 'A verified local undo snapshot will be required. It replaces the previous removal snapshot.')));
         box.append(button('Cancel removal', () => { confirmation = null; render(); }), button(c.noRecovery ? 'Remove without recovery' : 'Confirm removal', () => removeStudies(c.ids, c.revision, !!c.noRecovery), 'chess-study-danger')); body.append(box);
       }
       const footer = el('div', 'chess-study-toolbar'), resume = button('Continue pending action', resumePending, 'chess-study-primary');
@@ -222,7 +222,7 @@
     function importJSON(text) {
       if (typeof text !== 'string' || S.bytes(text) > S.MAX) throw Error('Oversized JSON import');
       const parsed = JSON.parse(text);
-      if (parsed.schema === 'chess-current-pending' && parsed.version === 1 && parsed.operation) {
+      if (parsed.schema === 'chess-lab-pending' && parsed.version === 1 && parsed.operation) {
         if (pending) throw Error('Finish or cancel the existing pending action first.');
         const op = parsed.operation;
         if (!['append', 'import', 'record', 'recordAnnotated', 'line', 'annotatePath', 'undo'].includes(op.type)) throw Error('Unsupported pending operation');
@@ -230,7 +230,7 @@
         if (typeof op.id !== 'string' || !op.id || !Number.isSafeInteger(op.baseRevision) || op.baseRevision < 0) throw Error('Pending work lacks its original safe-retry identity. Review and import its content as a new Study only after checking saved data.');
         pending = clone(op); saveDraft(); showManager(); return { ok: false, code: 'PENDING_RESTORED' };
       }
-      if (parsed.schema === 'chess-current-study') return perform({ type: 'append', study: C.validate(Chess, parsed) });
+      if (parsed.schema === 'chess-lab-study') return perform({ type: 'append', study: C.validate(Chess, parsed) });
       return perform({ type: 'import', collection: S.validate(C, Chess, parsed) });
     }
     function annotatePath({ moves, comments, studyId }) {
@@ -335,7 +335,7 @@
       detail.append(button('Open position in workspace', () => navigateStudy(study, selected.id), 'chess-study-primary'));
       if (selected.parentId) detail.append(button('Make this the main variation', () => editStudy({ nodeId: selected.id, main: true })));
       columns.append(tree, detail); body.append(columns);
-      const exports = el('div', 'chess-study-toolbar'); exports.append(button('Export PGN + variations', () => download(exportPGN(), filename(study, 'pgn'), 'application/x-chess-pgn')), button('Export all studies + A/B JSON', () => download(exportJSON(), 'chess-current-studies.json', 'application/json')));
+      const exports = el('div', 'chess-study-toolbar'); exports.append(button('Export PGN + variations', () => download(exportPGN(), filename(study, 'pgn'), 'application/x-chess-pgn')), button('Export all studies + A/B JSON', () => download(exportJSON(), 'chess-lab-studies.json', 'application/json')));
       body.append(exports); renderImport(body);
       body.append(button('Remove this saved study…', () => { showManager(); confirmation = { ids: [study.id], revision: state.revision }; render(); }));
     }
@@ -408,7 +408,7 @@
         columns.append(panel);
       }
       body.append(columns);
-      body.append(button('Export A/B evidence JSON', () => download(JSON.stringify({ schema: 'chess-current-studies', version: 1, studies: [], activeId: null, comparison: state.comparison }, null, 2), 'chess-ab-comparison.json', 'application/json')));
+      body.append(button('Export A/B evidence JSON', () => download(JSON.stringify({ schema: 'chess-lab-studies', version: 1, studies: [], activeId: null, comparison: state.comparison }, null, 2), 'chess-ab-comparison.json', 'application/json')));
       body.append(button('Start a new comparison', async () => { state.comparison = { question: '', originFen: null, A: null, B: null }; await persist(); render(); }));
     }
     function open(which, capture = true) {

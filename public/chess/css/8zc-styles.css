@@ -1449,10 +1449,69 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 #controls > .workspace-drawer, body.light-theme #controls > .workspace-drawer { position: absolute; z-index: 600; inset: 0; margin: 0; max-height: none; border: 0; border-radius: inherit; overflow: auto; overscroll-behavior: contain; }
 #controls:has(> .workspace-drawer.open) > :not(.workspace-drawer) { visibility: hidden; }
 #controls > .workspace-drawer .btn { background: var(--ui-raised); color: var(--ui-text); }
+@media (min-width: 791px) {
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) > .workspace-bottom {
+    visibility: visible; position: relative; z-index: 700;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) > .workspace-bottom .desktop-control-stack {
+    visibility: visible; position: relative; z-index: 1; background: var(--ui-surface);
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #desktopNavRow {
+    visibility: hidden; pointer-events: none;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #desktopViewTabs,
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspacePrimaryActions {
+    visibility: visible; pointer-events: auto;
+  }
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspaceFocusBar,
+  body:not(.app-mobile) #controls:has(> .workspace-drawer.open) #workspaceToolContent {
+    visibility: hidden; pointer-events: none;
+  }
+}
 #controls > #popularGamesPanel.open { display: flex; flex-direction: column; }
+@media (min-width: 791px) {
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer {
+    box-sizing: border-box; width: 100%; min-width: 0;
+    margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ui-text);
+  }
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer { min-height: 100%; }
+  /* Review and Library are reading views: give them the whole workspace height
+     above the persistent view/action rows on short desktop screens. */
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) .workspace-top,
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) #desktopNavRow {
+    display: none !important;
+  }
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) .workspace-analysis {
+    flex: 1 1 auto; min-height: 0;
+  }
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay {
+    overflow-y: auto; overflow-x: hidden;
+  }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay { overflow: hidden; }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > #popularGamesPanel {
+    display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; pointer-events: auto;
+  }
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > .game-review-drawer {
+    display: block; min-height: 0;
+  }
+  body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > :not(#popularGamesPanel),
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > :not(.game-review-drawer) { display: none !important; }
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel .drawer-heading,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer .drawer-heading { top: -8px; }
+  body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel #btnCloseGames,
+  body:not(.app-mobile) #workspaceDisplay > .game-review-drawer .game-review-heading > button { display: none !important; }
+}
 #popularGamesPanel > :not(.library-result-list) { flex: 0 0 auto; }
-#popularGamesPanel .library-result-list { flex: 1 1 auto; min-height: 0; max-height: none; overscroll-behavior: contain; }
-#popularGamesPanel .library-result { flex-shrink: 0; }
+#popularGamesPanel .library-result-list { flex: 1 1 0; min-height: 0; max-height: none; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; pointer-events: auto; }
+#popularGamesPanel .library-result { flex-shrink: 0; pointer-events: auto; position: relative; }
+body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel #btnUseTournamentOpening {
+  width: 100%; align-self: stretch; margin: 8px 0 0; min-height: 40px;
+  background: var(--ui-raised); color: var(--ui-text); border-color: var(--ui-border);
+}
+body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel #btnUseTournamentOpening:hover {
+  border-color: var(--ui-accent); color: var(--ui-accent); filter: none;
+}
 .drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: -14px; background: var(--ui-inset); z-index: 1; padding: 6px 0 9px; border-bottom: 1px solid var(--ui-border); }
 .drawer-heading .btn { min-width: 36px; font-size: 20px; background: var(--ui-raised); }
 
@@ -1546,16 +1605,6 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
   .workspace-timers { margin-bottom: 8px; }
   .workspace-top .mode-hint { margin-bottom: 8px; }
 }
-/* CURRENT can retain Double Size or a wide workspace from an older session.
-   At laptop/HD heights those preferences must still leave the board and its
-   actions within the same 1160px reading layout used by LAB. */
-@media (min-width: 1060px) and (max-height: 1250px) {
-  #main:has(#board.scaled), #main.lab-custom-width,
-  #main.lab-custom-width:has(#board.scaled) {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, var(--lab-workspace-width, 408px));
-    max-width: min(1160px, calc(100dvh + 90px));
-  }
-}
 /* Source control stays inside the existing workspace on narrow screens. */
 .analysis-source-row{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:5px 0 7px;font-size:12px}
 .analysis-source-row select{min-height:32px;border-radius:6px;background:#1d2c29;color:#e5f5ed;border:1px solid #527363;padding:3px 8px}
@@ -1591,3 +1640,97 @@ body.light-theme .analysis-source-row select{background:#fff;color:#173b2b}
 .all-eval-badges button.all-eval-badge.is-working{border-color:var(--ui-accent)}
 .all-eval-badges button.all-eval-badge.is-active{border-color:var(--ui-accent);background:var(--ui-raised)}
 @media(max-width:420px){.all-eval-badges{gap:5px}.all-eval-badge{gap:2px;padding:5px 2px;min-height:46px}.all-eval-main{gap:3px;font-size:clamp(9px,2.8vw,13px)}.all-eval-badge small{font-size:clamp(8px,2.5vw,10px)}}
+
+
+/* LAB internal close actions: match the high-visibility APP close affordance
+ * without changing ordinary navigation, delete, remove or clear controls. */
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close) {
+  background:#6f263b!important;
+  color:#fff4f6!important;
+  border-color:#b96c82!important;
+}
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close):hover {
+  background:#89354c!important;
+}
+body :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
+  #btnCoachClose, #geminiClose, #gameReviewPanel .game-review-heading > button,
+  #deepAnalysisPanel [data-deep="close"], #simTournamentDialog [data-action="close"],
+  .chess-study-close, .research-close):focus-visible {
+  background:#89354c!important;
+  outline:2px solid #efafc0;
+  outline-offset:2px;
+}
+
+/* Unified ChessBest desktop information architecture: views above, actions below. */
+body:not(.app-mobile) .legacy-view-controls{display:none!important}
+body.app-mobile .desktop-view-shell{display:none!important}
+.desktop-view-shell{margin:2px 0 10px;min-width:0}
+.desktop-view-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-inset)}
+.desktop-view-tabs button{min-width:0;min-height:38px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ui-muted);font:650 12px/1.2 system-ui,sans-serif;cursor:pointer}
+.desktop-view-tabs button:hover{color:var(--ui-text);background:var(--ui-raised)}
+.desktop-view-tabs button[aria-selected="true"]{color:var(--ui-ink);background:var(--ui-accent);border-color:var(--ui-accent)}
+.desktop-view-tabs button:focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+.desktop-view-context{display:flex;align-items:center;gap:8px;min-height:23px;padding:4px 2px 0}
+#btnDesktopDccReplay{min-height:30px;padding:4px 9px;font-size:11px;background:var(--ui-raised);color:var(--ui-accent);border-color:var(--ui-border)}
+#btnDesktopDccReplay[hidden]{display:none!important}
+.desktop-view-context #dccProgress{flex:1;min-width:0;text-align:right}
+body:not(.app-mobile) .workspace-top .mode-hint{display:none}
+.lab-research-tools #btnDeepAnalysis{display:none!important}
+.workspace-primary-actions #btnSim{font-weight:650}
+@media (max-width:1059px){.desktop-view-tabs button{min-height:36px;font-size:11px}.workspace-primary-actions .btn{font-size:10.5px}}
+
+/* UX2: analysis controls on top; navigation, views and actions form one aligned bottom stack. */
+body:not(.app-mobile) .analysis-source-row{
+  display:grid;grid-template-columns:auto minmax(82px,1fr) auto auto auto;
+  align-items:center;gap:5px;margin:5px 0 3px;min-width:0
+}
+body:not(.app-mobile) .analysis-source-row select{width:100%;min-width:0;height:34px;min-height:34px;padding:3px 7px}
+body:not(.app-mobile) .analysis-source-row .analysis-dcc-toggle{min-height:34px;justify-content:center;font-size:11px}
+body:not(.app-mobile) .analysis-source-row .btn{min-width:0;min-height:34px;height:34px;padding:4px 7px;font-size:10.5px;line-height:1.1;white-space:nowrap}
+body:not(.app-mobile) .analysis-deepen{
+  border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-raised);
+  color:var(--ui-accent);text-decoration:none;font-weight:650
+}
+body:not(.app-mobile) .analysis-deepen:hover:not(:disabled){border-color:var(--ui-accent);color:var(--ui-text)}
+body:not(.app-mobile) .desktop-analysis-action{background:var(--ui-raised);color:var(--ui-text);border-color:var(--ui-border)}
+body:not(.app-mobile) #btnDesktopDccAnalysis[aria-pressed="true"]{color:var(--ui-ink);background:var(--ui-accent);border-color:var(--ui-accent)}
+.analysis-status-row{display:grid;grid-template-columns:minmax(0,1fr);gap:1px;min-height:30px;margin:0 0 7px;padding:0 1px}
+.analysis-status-row #analysisSourceStatus{display:block;min-width:0;color:#9ddbc4;font-size:10.5px;line-height:1.35;overflow-wrap:anywhere}
+.analysis-status-row #dccProgress{display:block;min-width:0;height:auto;min-height:0;color:var(--ui-accent)!important;font-size:10px!important;line-height:1.3;white-space:normal;overflow-wrap:anywhere}
+.analysis-status-row #dccProgress:empty{display:none}
+body.app-mobile .desktop-analysis-action{display:none!important}
+body.app-mobile .analysis-status-row{display:none!important}
+
+body:not(.app-mobile) .desktop-control-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;width:100%;min-width:0}
+body:not(.app-mobile) .desktop-nav-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2.35fr) minmax(0,1fr) minmax(0,1fr);
+  gap:6px;width:100%;margin:0!important
+}
+body:not(.app-mobile) .desktop-nav-row .btn{width:100%;min-width:0;height:44px;min-height:44px;margin:0;padding:6px 3px}
+body:not(.app-mobile) .desktop-view-tabs{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;margin:0;padding:0;
+  border:0;border-radius:0;background:transparent
+}
+body:not(.app-mobile) .desktop-view-tabs button{
+  width:100%;min-width:0;min-height:44px;padding:6px 4px;border:1px solid var(--ui-border);
+  border-radius:7px;background:var(--ui-raised);color:var(--ui-text);font:650 11px/1.2 system-ui,sans-serif
+}
+body:not(.app-mobile) .desktop-view-tabs button:hover{border-color:var(--ui-accent);color:var(--ui-accent)}
+body:not(.app-mobile) .desktop-view-tabs button[aria-selected="true"]{color:var(--ui-ink);background:var(--ui-accent);border-color:var(--ui-accent)}
+body:not(.app-mobile) .workspace-primary-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;margin:0}
+body:not(.app-mobile) .workspace-primary-actions .btn{width:100%;min-height:44px;margin:0;padding:6px 4px;font-size:10.5px}
+body:not(.app-mobile) #workspacePrimaryActions #btnNew{
+  background:var(--ui-inset);color:var(--ui-text);border-color:var(--ui-border)
+}
+body:not(.app-mobile) #workspacePrimaryActions #btnNew:hover{border-color:var(--ui-accent);color:var(--ui-accent)}
+body:not(.app-mobile) #workspacePrimaryActions #btnGames.is-active{
+  background:var(--ui-inset);color:var(--ui-accent);border-color:var(--ui-accent)
+}
+body:not(.app-mobile) .workspace-bottom{padding-top:9px}
+body.app-mobile .desktop-control-stack{display:none!important}

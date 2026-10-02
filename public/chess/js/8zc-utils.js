@@ -36,7 +36,7 @@ function chessBestTopPickResumeCursor(meta, pgn, headers, history, ChessCtor) {
 function initAll() {
   if (window.ChessLabReady) return window.ChessLabReady;
   window.ChessLabReady = (async () => {
-    if (!window.ChessLabStorage) throw new Error('LAB storage migration could not be loaded. Reload to retry.');
+    if (!window.ChessLabStorage) throw new Error('CURRENT storage migration could not be loaded. Reload to retry.');
     await window.ChessLabStorage.ready;
     initAllCore();
   })();
@@ -162,27 +162,6 @@ function initAllCore() {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
     }
     catch (e) { console.error('Bad settings JSON', e); }
-  }
-  // The LAB promotion kept CURRENT's older browser preferences. Match the
-  // owner's LAB appearance once, while retaining every CURRENT game and study.
-  // Keep the original settings so a user can restore their previous choices.
-  const appearanceKey = 'ChessBest:CURRENT:v2:lab-appearance-20260928';
-  try {
-    if (localStorage.getItem(appearanceKey) !== '1') {
-      const labSaved = localStorage.getItem('ChessBest:LAB:v2:settings');
-      const labAppearance = labSaved ? JSON.parse(labSaved) : {};
-      if (labAppearance && typeof labAppearance === 'object' && !Array.isArray(labAppearance)) {
-        const backupKey = 'ChessBest:CURRENT:v2:settings-before-lab-appearance-20260928';
-        if (saved && !localStorage.getItem(backupKey)) localStorage.setItem(backupKey, saved);
-        settings.theme = labAppearance.theme === 'light' ? 'light' : 'dark';
-        settings.bg = /^#[0-9a-f]{6}$/i.test(labAppearance.bg) ? labAppearance.bg : '#151a19';
-        settings.doubleBoard = labAppearance.doubleBoard === true;
-        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
-        localStorage.setItem(appearanceKey, '1');
-      }
-    }
-  } catch (error) {
-    console.warn('Could not align CURRENT appearance with LAB:', error);
   }
   if (!ENABLE_COACH) {
     settings.coachMode = 'silent';
@@ -446,25 +425,43 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     .catch(console.error);
 
 	// 3) Wire up load-on-change
-	sel.onchange = async e => {
-	  if (!e.target.value) return;
-      if (playState.active || simRunning || replayRunning) return;
-
-	  const title = e.target.selectedOptions[0].text;
-      const selectedPGN = e.target.value;
-      try {
-        await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks }, () => {
-          if (bucket.topPicks) {
-            const anchor = chessBestTopPickAnchor(game.header(), fullHistory, Chess);
-            if (anchor !== null) jumpTo(anchor);
-          }
-	      panel.classList.remove('open');
-	      document.getElementById('main').scrollIntoView({ behavior: 'smooth', block: 'start' });
-	      sel.selectedIndex = 0;
-        });
+    const loadSelectedGame = async () => {
+      if (!sel.value) return false;
+      if (playState.active || simRunning || replayRunning) {
+        showGameLoadProblem(new Error('Pause the current game, simulation or Replay before opening a Library game.'));
+        return false;
       }
-      catch (error) { showGameLoadProblem(error); }
-	};
+
+      const title = sel.selectedOptions[0]?.text || 'Selected game';
+      const selectedPGN = sel.value;
+      try {
+        const loaded = await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks, library: true }, () => {
+          let curatedReview = false;
+          if (bucket.topPicks) {
+            const headers = game.header();
+            const anchor = chessBestTopPickAnchor(headers, fullHistory, Chess);
+            if (anchor !== null) {
+              jumpTo(anchor);
+              curatedReview = Boolean(headers.ChessBestTitle && headers.ChessBestTeaser);
+            }
+          }
+          panel.classList.remove('open');
+          document.getElementById('btnGames')?.setAttribute('aria-expanded', 'false');
+          sel.selectedIndex = 0;
+          document.dispatchEvent(new CustomEvent('chess:library-loaded', {
+            detail: { view: curatedReview ? 'review' : 'moves', curatedReview }
+          }));
+        });
+        if (!loaded) {
+          showGameLoadProblem(new Error('The selected Library game was not opened. Your current board was kept.'));
+          return false;
+        }
+        return true;
+      }
+      catch (error) { showGameLoadProblem(error); return false; }
+    };
+    sel.onchange = loadSelectedGame;
+    sel.chessLoadSelected = loadSelectedGame;
   
 });
 
@@ -661,9 +658,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         return { disabled: !toggle || toggle.disabled,
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
-      const available = !offlineEvidence && !deepAnalysisFen && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+      const deepFollowing = !!deepUI?.isFollowing?.(), deepWorking = deepFollowing && !!deepUI?.isRunning?.();
+      const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
       if (source === 'SF') return { disabled: !available,
-        title: !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') : sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis', working: sfWorking && available };
+        title: !available ? 'Show Eval for deeper SF analysis' :
+          deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
+          sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis',
+        working: available && (deepFollowing ? deepWorking : sfWorking) };
       return { disabled: !available || cdbRefreshing,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
@@ -711,18 +712,21 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function syncSFAnalysisControl() {
     const button = document.getElementById('btnAnalysisDeepen');
     if (!button) return;
-    const available = !offlineEvidence && !deepAnalysisFen && showEval &&
+    const deepFollowing = !!deepUI?.isFollowing?.(), deepWorking = deepFollowing && !!deepUI?.isRunning?.();
+    const available = !offlineEvidence && showEval &&
       !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
+    const working = deepFollowing ? deepWorking : sfWorking;
     button.disabled = !available;
-    button.title = !available ? (deepAnalysisFen ? 'Deep analysis is open' : 'Show Eval for deeper SF analysis') :
+    button.title = !available ? 'Show Eval for deeper SF analysis' :
+      deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
-    button.setAttribute('aria-label', sfWorking && available ? 'Analysis — stop SF' : 'Analysis — deeper SF analysis');
-    button.classList.toggle('is-working', sfWorking && available);
+    button.setAttribute('aria-label', working && available ? 'Deeper SF — stop SF' : 'Deeper SF — deepen analysis');
+    button.classList.toggle('is-working', working && available);
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="SF"]');
     if (card) {
       card.disabled = button.disabled; card.title = button.title;
       card.setAttribute('aria-label', `SF: ${card.querySelector('.all-eval-move')?.textContent || '…'} ${card.querySelector('.all-eval-score')?.textContent || '…'}. ${button.title}`);
-      card.classList.toggle('is-working', sfWorking && available);
+      card.classList.toggle('is-working', working && available);
     }
   }
   function syncDCCBadgeControl() {
@@ -980,6 +984,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   }
   function pauseLab(reason) {
     if (playState.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
+    const deepPanelOnly = reason === 'deep-panel';
     if (reason === 'deep-analysis') {
       deepAnalysisFen = game.fen();
       positionEval.updateSource(deepAnalysisFen, null, 'SF', null, null);
@@ -990,9 +995,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (replayRunning) stopReplay();
     if (playState.active && playState.mode !== 'lichess') leaveActiveSession('Paused for study.');
     workspace.pause();
-    // Deep analysis owns its own worker; release the main local search first.
-    if (localController) localController.abort();
-    if (localProvider) localProvider.destroy();
+    // Opening the Deep panel alone does not take over the normal SF lane.
+    // Starting Deep analysis does: keep one local Stockfish worker at a time.
+    if (!deepPanelOnly) {
+      if (localController) localController.abort();
+      if (localProvider) localProvider.destroy();
+    }
   }
   function navigateStudy(request) {
     if (playState.active && playState.mode === 'lichess') throw new Error('End the live session before changing the study position.');
@@ -1053,7 +1061,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       lastMoveIndex = game.history().length - 1;
       onLoaded?.(); loaded = true;
     };
-    if (options.archive) openCommitted();
+    // Built-in Library games and archived simulations are already durable
+    // source records. Opening them must not be blocked by mutable Study
+    // capacity or an unrelated pending Study draft.
+    if (options.archive || options.library) openCommitted();
     else {
       if (!studyUI) throw new Error('Study storage is unavailable. The current game was kept.');
       await studyUI.importPGN(text, { onCommitted: openCommitted });
@@ -2215,6 +2226,7 @@ function jumpTo(i){
   const workspaceDrawers = [['popularGamesPanel', 'btnGames', 'btnCloseGames'], ['settingsPanel', 'btnSettings', 'btnCloseSettings']];
   workspaceDrawers.forEach(([panelId, buttonId, closeId]) => {
     const panel = document.getElementById(panelId), button = document.getElementById(buttonId);
+    if (panelId === 'popularGamesPanel' && !document.body.classList.contains('app-mobile')) return;
     const close = () => { panel.classList.remove('open'); button.setAttribute('aria-expanded', 'false'); button.focus({ preventScroll: true }); };
     button.onclick = () => {
       const open = !panel.classList.contains('open');
@@ -2434,7 +2446,7 @@ function jumpTo(i){
   document.addEventListener('keydown',e=>{
     if (playState.active || replayRunning || e.target.closest('[role=dialog], dialog, [contenteditable=true]')) return;
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
     if (simRunning) pauseSimulation();
 	const btn = document.getElementById('btnHideEval');
@@ -2444,8 +2456,8 @@ function jumpTo(i){
     else if(e.key==='ArrowRight'){
       const m=fullHistory[game.history().length];
       if(m){ game.move(m.san); workspace.history(); updateBoard(false); }
-    } else if(e.key==='Home') jumpTo(-1);
-    else if(e.key==='End')  jumpTo(fullHistory.length-1);
+    } else if(e.key==='ArrowUp' || e.key==='Home') jumpTo(-1);
+    else if(e.key==='ArrowDown' || e.key==='End')  jumpTo(fullHistory.length-1);
   });
 
   /* ------------------------------------------------------------------
@@ -2456,10 +2468,12 @@ function jumpTo(i){
     // CDB and DCC may still be in flight. Keep their request alive while the
     // pinned worker takes responsibility for this position's SF result.
     deepAnalysisFen = fen;
-    const requestId = annotationRequestId;
     sfWorking = false; syncSFAnalysisControl();
     return snapshot => {
-      if (settings.analysisSource !== selected || requestId !== annotationRequestId ||
+      // Deep owns the SF lane while it is open. Normal CDB/DCC annotation
+      // refreshes may advance annotationRequestId, but must not invalidate the
+      // Deep SF publisher for this same current FEN.
+      if (settings.analysisSource !== selected ||
           generation !== analysisGeneration || epoch !== activityEpoch || game.fen() !== fen || snapshot.fen !== fen ||
           !showEval || offlineEvidence || simRunning || replayRunning || playState.assistanceLocked) return;
       const best = snapshot.lines?.find(line => (line.multipv || 1) === 1);
@@ -2485,6 +2499,7 @@ function jumpTo(i){
   }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
     pause: pauseLab, navigate: navigateStudy,
+    playSuggestedMove: uci => !!uci && playManualMove(uci.slice(0,2), uci.slice(2,4), uci[4] || 'q') !== 'snapback',
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
     getEvidence: () => labSnapshots.get(game.fen()) || null,
@@ -2494,13 +2509,16 @@ function jumpTo(i){
     captureEvidence: async () => { const fen = game.fen(); await analyzePosition(fen); return labSnapshots.get(fen) || null; },
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
+  function syncDeepAnalysisState(state = {}) {
+    const releasedFen = !state.following ? deepAnalysisFen : null;
+    if (!state.following) deepAnalysisFen = null;
+    syncSFAnalysisControl();
+    if (releasedFen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
+      setTimeout(fetchAnnotations, 0);
+  }
   deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis,
-    onClose: () => {
-      const fen = deepAnalysisFen; deepAnalysisFen = null;
-      syncSFAnalysisControl();
-      if (fen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
-        setTimeout(fetchAnnotations, 0);
-    } }) || null;
+    onStateChange: syncDeepAnalysisState,
+    onClose: () => syncDeepAnalysisState({ following: false }) }) || null;
   researchUI = window.ChessResearchUI?.create(labHost) || null;
   document.getElementById('btnStudy')?.addEventListener('click', () => { pauseLab(); studyUI?.open(); });
   document.getElementById('btnEvidence')?.addEventListener('click', () => { pauseLab(); researchUI?.open('evidence'); });
@@ -2586,6 +2604,9 @@ function jumpTo(i){
   document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
     syncSFAnalysisControl();
     if (document.getElementById('btnAnalysisDeepen').disabled) return;
+    if (deepUI?.isFollowing?.()) {
+      deepUI.deepenOrStop?.(); syncSFAnalysisControl(); return;
+    }
     if (sfWorking) {
       annotationRequestId++; if (localController) localController.abort();
       if (localProvider) localProvider.destroy();
@@ -3034,8 +3055,8 @@ function refreshPlayUi() {
   const btnView = document.getElementById('btnViewToggle');
   const btnHide = document.getElementById('btnHideEval');
   if (btnSim) {
-    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Simulation';
-    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Simulation: games, tournaments or play against the engine');
+    btnSim.textContent = simRunning ? 'Pause' : playState.active ? 'Stop' : 'Sim / Play';
+    btnSim.setAttribute('aria-label', simRunning ? 'Pause simulation and configure' : playState.active ? 'Stop active game' : 'Sim / Play: games, tournaments or play against the engine');
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
     btnSim.disabled = !!playState.replaying;
@@ -3958,6 +3979,8 @@ async function launchFromSimModal() {
     if (!run) throw new Error('Saved game not found.');
     await loadStudyPGN(run.pgn || SIM.toPGN(Chess, run), `${run.eventName || 'Our engines'} · ${SIM.label(run.white)} vs ${SIM.label(run.black)} · ${run.result}`, { archive: true });
     tournamentUI.close(); panel.classList.remove('open');
+    document.getElementById('btnGames')?.setAttribute('aria-expanded', 'false');
+    document.dispatchEvent(new CustomEvent('chess:library-loaded', { detail: { view: 'moves', curatedReview: false } }));
   }
   async function exportTournament(format, eventId) {
     const runs = (await simStore.listRuns()).filter(run => !eventId || run.eventId === eventId);

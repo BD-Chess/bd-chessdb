@@ -191,14 +191,33 @@
           const detail = document.createElement('span');
           detail.textContent = entry.detail;
           button.append(title, detail);
-          button.addEventListener('click', () => {
+          button.addEventListener('click', async event => {
+            event.preventDefault();
             if (entry.simulationId != null) {
               window.dispatchEvent(new CustomEvent('chess-sim-open-game', { detail: { id: entry.simulationId } }));
-            } else {
-              entry.select.value = entry.option.value;
-              entry.select.dispatchEvent(new Event('change', { bubbles: true }));
+              return;
             }
-            if (!document.querySelector('.chess-study-limit-overlay:not([hidden])')) byId('first').focus({ preventScroll: true });
+            entry.select.value = entry.option.value;
+            button.disabled = true;
+            status.textContent = `Loading ${entry.title}…`;
+            let loaded;
+            try {
+              if (typeof entry.select.chessLoadSelected === 'function') {
+                loaded = await entry.select.chessLoadSelected();
+              } else {
+                entry.select.dispatchEvent(new Event('change', { bubbles: true }));
+                loaded = true;
+              }
+            } finally {
+              button.disabled = false;
+            }
+            if (loaded === false) {
+              status.textContent = 'That game could not be opened. Your current board was kept.';
+              return;
+            }
+            if (!panel.classList.contains('open') && !document.querySelector('.chess-study-limit-overlay:not([hidden])')) {
+              byId('workspaceDisplay')?.focus({ preventScroll: true });
+            }
           });
           fragment.appendChild(button);
         });

@@ -4,6 +4,7 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
+  const instances = new WeakMap();
   function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
     if (terminal === 'mate') return { label: '#', white: side === 'b' ? 100 : 0,
@@ -100,7 +101,7 @@
       // Keep the last displayed height and number while an asynchronous request
       // for another position is pending. Do not present them as this FEN's score.
       let awaiting = false;
-      if (view.state === 'known') lastKnown = { fen, view };
+      if (view.state === 'known') lastKnown = { fen, view, source: entry?.source || 'terminal' };
       else if (entry?.settled) lastKnown = null;
       else if (lastKnown) {
         awaiting = true;
@@ -109,6 +110,14 @@
       }
       const visible = isVisible();
       renderComparison(fen, visible);
+      // Expose which position/source the number actually describes (also while waiting).
+      // Some non-browser/unit-test view adapters intentionally omit dataset.
+      if (el.dataset) {
+        el.dataset.positionFen = fen;
+        el.dataset.evalFen = awaiting ? lastKnown.fen : fen;
+        el.dataset.evalSource = terminal ? 'terminal' : awaiting ? lastKnown.source : entry?.source || '';
+        el.dataset.evalState = awaiting ? 'awaiting' : view.state;
+      }
       el.classList.toggle('is-flipped', !!settings.flipBoard);
       el.classList.toggle('is-pending', view.state === 'pending');
       el.classList.toggle('is-unknown', view.state === 'unknown');
@@ -150,7 +159,8 @@
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    function markComparisonPending(fen) {
+    function markComparisonPending(fen, holdPrevious = true) {
+      if (!holdPrevious) lastKnown = null;
       // A new request for the same position must not expose another mode's old
       // root move, depth or DCC decision while the three sources recalculate.
       const deep = sourceScores.get(`${fen}:SF`);
@@ -163,7 +173,89 @@
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    return { render, update, updateSource, updateDCC, markComparisonPending };
+    const api = { render, update, updateSource, updateDCC, markComparisonPending };
+    instances.set(game, api);
+    return api;
   }
-  return { measure, create };
+  // Read-only spectator: independent of which engine is playing this turn.
+  // One bounded CDB lookup at a time; fast moves coalesce to the displayed FEN.
+  // Never await this observer from the runner or create another SF search.
+  function watchSimulation({ Chess, game, getCDB, view = instances.get(game) }) {
+    if (!view || typeof getCDB !== 'function') return null;
+    let active = false, current = null, queued = null, inFlight = false;
+    const live = item => active && item === current && item.fen === game.fen();
+    function san(fen, move) {
+      try {
+        if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move || '')) return null;
+        return new Chess(fen).move({ from: move.slice(0, 2), to: move.slice(2, 4), promotion: move[4] })?.san || null;
+      } catch (_) { return null; }
+    }
+    function paint(item, score, source, move, depth) {
+      if (!live(item)) return;
+      view.updateSource(item.fen, score, source, depth, san(item.fen, move), false, 'simulation');
+      view.update(item.fen, score, source, true);
+    }
+    function unavailable(item) {
+      if (!live(item) || item.cdbKnown) return;
+      item.cdbSettled = true;
+      view.updateSource(item.fen, null, 'CDB');
+      if (item.sf) paint(item, item.sf.score, 'SF', item.sf.move, item.sf.depth);
+      else view.update(item.fen, null, 'CDB', true);
+    }
+    async function pump() {
+      if (inFlight || !queued || !active) return;
+      const item = queued; queued = null; inFlight = true;
+      try {
+        // No actor AbortSignal: cachedFetchChessDB uses a separate pending key
+        // for signalled player requests, so spectator lifetime cannot abort a turn.
+        const result = await getCDB(item.fen, { timeoutMs: 3500 });
+        if (!live(item) || item.cdbKnown) return;
+        const best = result?.fen && result.fen !== item.fen ? null :
+          result?.moves?.find(row => Number.isFinite(row.score) && san(item.fen, row.move));
+        if (best) {
+          item.cdbKnown = true; item.cdbSettled = true;
+          paint(item, best.score, 'CDB', best.move, best.depth);
+        } else unavailable(item);
+      } catch (_) {
+        // A failed spectator lookup is not a failed game and never means 0.00.
+        unavailable(item);
+      } finally {
+        inFlight = false;
+        // A stale request must not paint a later position or a resumed same-FEN run.
+        void pump();
+      }
+    }
+    function position() {
+      if (!active || current?.fen === game.fen()) return;
+      current = { fen: game.fen(), cdbKnown: false, cdbSettled: false, sf: null };
+      queued = null;
+      view.markComparisonPending(current.fen, false);
+      if (game.game_over()) { view.render(); return; }
+      queued = current;
+      void pump();
+    }
+    function start() { stop(); active = true; position(); }
+    function stop() { active = false; current = null; queued = null; }
+    function decision(value) {
+      const item = current, pick = value?.pick;
+      if (!item || !live(item) || value.fen !== item.fen || !pick || !san(item.fen, pick.raw_best)) return;
+      const source = pick.actual_provider || pick.provider;
+      if (source === 'CDB' && Number.isFinite(pick.raw_best_score)) {
+        item.cdbKnown = true; item.cdbSettled = true;
+        paint(item, pick.raw_best_score, 'CDB', pick.raw_best);
+      } else if (source === 'SF') {
+        const score = pick.score_type === 'mate'
+          ? (Number.isFinite(pick.raw_best_mate_in) ? { type: 'mate', white: pick.raw_best_mate_in * (item.fen.split(' ')[1] === 'b' ? -1 : 1) } : null)
+          : pick.raw_best_score;
+        if (score == null || (!Number.isFinite(score) && !Number.isFinite(score.white))) return;
+        item.sf = { score, move: pick.raw_best, depth: pick.root_depth };
+        view.updateSource(item.fen, score, 'SF', pick.root_depth, san(item.fen, pick.raw_best), false, 'simulation');
+        // Reuse the current player's result while CDB is pending/unavailable;
+        // never replace a current CDB score with a shallow SF score.
+        if (!item.cdbKnown) paint(item, score, 'SF', pick.raw_best, pick.root_depth);
+      }
+    }
+    return { start, position, decision, stop };
+  }
+  return { measure, create, watchSimulation };
 });
