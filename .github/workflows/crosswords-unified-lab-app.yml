@@ -6,12 +6,14 @@ on:
       - 'public/CW/**'
       - 'scripts/build-crosswords-unified.py.gz.b64'
       - 'tests/crosswords-unified-browser.cjs'
+      - 'scripts/patch-crosswords-pages-prefix.py'
       - '.github/workflows/crosswords-unified-lab-app.yml'
   pull_request:
     paths:
       - 'public/CW/**'
       - 'scripts/build-crosswords-unified.py.gz.b64'
       - 'tests/crosswords-unified-browser.cjs'
+      - 'scripts/patch-crosswords-pages-prefix.py'
       - '.github/workflows/crosswords-unified-lab-app.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +35,8 @@ jobs:
           python -m py_compile scripts/build-crosswords-unified.py
           python scripts/build-crosswords-unified.py
           python scripts/build-crosswords-unified.py --check
+          python scripts/patch-crosswords-pages-prefix.py
+          python scripts/patch-crosswords-pages-prefix.py --check
           node --check public/CW/new/pwa.js
           node --check public/CW/new/sw.js
           git diff --check
