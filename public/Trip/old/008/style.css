@@ -58,23 +58,6 @@ header {
 .brand { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
 .brand span { color: var(--primary); font-weight: 300; }
 
-.offline-notice {
-  margin: 0; padding: 10px 14px; border: 1px solid #d97706;
-  border-radius: 8px; background: #3b250d; color: #ffdf9b;
-  font-size: .86rem; line-height: 1.4;
-}
-.offline-notice[hidden] { display: none; }
-
-/* Pages omits the hosted services; the local private Worker remains available. */
-.pwa-pages-mode { padding-bottom: env(safe-area-inset-bottom); }
-.pwa-pages-mode #chatPanel,
-.pwa-pages-mode #bigChatContainer,
-.pwa-pages-mode #mapContainer,
-.pwa-pages-mode #btnPlanMode,
-.pwa-pages-mode #btnMapMode,
-.pwa-pages-mode #btnPrepare { display: none !important; }
-.pwa-pages-mode #btnCancelWork { grid-column: 1 / -1; }
-
 .nav-btn { 
   background: none; border: none; color: var(--text-dim); 
   font-size: 0.9rem; cursor: pointer; padding: 5px 8px; transition: color 0.2s;
@@ -558,50 +541,3 @@ html[lang="sl"] #chatPanel.open .chat-state-text::after { content:'(zapri)' }
 .diagnostics-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:10px;margin:12px 0}
 .diagnostics-metrics div{min-width:0}.diagnostics-metrics dt{font-size:11px;color:var(--text-dim);line-height:1.4}.diagnostics-metrics dd{margin:3px 0 0;font-size:13px;overflow-wrap:anywhere}
 .diagnostics-id{font-family:monospace}.diagnostics-actions{display:flex;flex-wrap:wrap;gap:8px}.diagnostics-actions button{width:auto;min-height:44px;white-space:normal;flex:1 1 180px}
-
-/* Unified LAB presentations · 2026-10-02.
-   APP is a desktop simulation of the same mobile DOM/code, never a separate source. */
-@media (min-width:1024px) {
-  html[data-trip-presentation="app"] body {
-    overflow:auto; padding:24px 0 84px;
-    background:#05070b;
-  }
-  html[data-trip-presentation="app"] .app-wrapper {
-    width:min(430px,calc(100vw - 32px)); max-width:430px; height:auto; min-height:calc(100vh - 48px);
-    margin:0 auto; padding:10px; display:flex; flex-direction:column; gap:12px;
-    background:var(--bg-app); border:1px solid #263448; border-radius:28px; overflow:hidden;
-    box-shadow:0 30px 90px rgba(0,0,0,.68);
-  }
-  html[data-trip-presentation="app"] header {
-    grid-column:auto; grid-row:auto; margin-bottom:0; padding:6px 8px;
-  }
-  html[data-trip-presentation="app"] .panel:nth-of-type(1),
-  html[data-trip-presentation="app"] .panel:nth-of-type(2) {
-    grid-column:auto; grid-row:auto; height:auto; overflow:visible; display:block;
-  }
-  html[data-trip-presentation="app"] .library-box { max-height:180px; }
-  html[data-trip-presentation="app"] #mapContainer {
-    width:100%; height:clamp(280px,48vh,520px); min-height:0; margin-bottom:12px;
-  }
-  html[data-trip-presentation="app"] #routeList {
-    max-height:150px; overflow-y:auto; border-top:1px solid var(--border); margin-top:0;
-  }
-  html[data-trip-presentation="app"] #chatPanel {
-    position:fixed; left:50%; right:auto; bottom:0; transform:translateX(-50%);
-    width:min(430px,calc(100vw - 32px)); grid-column:auto; grid-row:auto;
-    border:1px solid var(--primary); border-bottom:0; border-radius:12px 12px 0 0;
-    z-index:2000; box-shadow:0 -10px 40px rgba(0,0,0,.8);
-    height:60px; max-height:65vh; transition:height .3s cubic-bezier(.4,0,.2,1);
-  }
-  html[data-trip-presentation="app"] #chatPanel.open { height:70vh; }
-  html[data-trip-presentation="app"] #chatHistory { display:none; }
-  html[data-trip-presentation="app"] #chatPanel.open #chatHistory { display:block; }
-  html[data-trip-presentation="app"] .chat-head { cursor:pointer; }
-  html[data-trip-presentation="app"] .chat-head small { display:inline; }
-  html[data-trip-presentation="app"] #input { min-height:180px; font-size:16px; }
-  html[data-trip-presentation="app"] .demo-gallery,
-  html[data-trip-presentation="app"] .demo-cards { grid-template-columns:1fr; }
-}
-@media (max-width:1023px) {
-  html[data-trip-presentation="mobile"] .app-wrapper { border:0; border-radius:0; box-shadow:none; }
-}

@@ -2,15 +2,6 @@
 (() => {
   'use strict';
   const words={
-    "Enter coordinates for every stop on GitHub Pages. Address lookup needs the MDLxDCC.org server.":"Na GitHub Pages vnesi koordinate za vsako postajo. Iskanje naslovov potrebuje strežnik MDLxDCC.org.",
-    "AI chat needs the MDLxDCC.org server.":"Pogovor z AI potrebuje strežnik MDLxDCC.org.",
-    "GitHub Pages: Direct Line uses coordinates you enter. Road distances, map and AI require the MDLxDCC.org server.":"GitHub Pages: Direct Line uporablja vnesene koordinate. Cestne razdalje, zemljevid in AI potrebujejo strežnik MDLxDCC.org.",
-    "On the road →":"Na poti →",
-    "Optimize this trip and finish the calculation before opening On the road.":"Optimiziraj to pot in počakaj, da se izračun konča, preden odpreš pogled Na poti.",
-    "On the road saves Direct Line routes with coordinates entered in the editor. Switch to Direct Line and optimize again.":"Na poti shrani pot v načinu Direct Line s koordinatami, vnesenimi v urejevalnik. Izberi Direct Line in znova optimiziraj.",
-    "On the road supports up to 250 stops on a phone.":"Pogled Na poti podpira do 250 postaj na telefonu.",
-    "This route needs at least two valid stops.":"Ta pot potrebuje vsaj dve veljavni postaji.",
-    "Could not save this route on this device. Check browser storage and retry.":"Poti ni bilo mogoče shraniti na tej napravi. Preveri shrambo brskalnika in poskusi znova.",
     "Paused after hiding tab · best found":"Premor po skritju zavihka · najboljša najdena pot",
     "Diagnostics":"Diagnostika",
     "Record local diagnostics":"Beleži lokalno diagnostiko",
