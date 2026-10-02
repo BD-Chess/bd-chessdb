@@ -1,0 +1,47 @@
+name: Flip4M unified LAB APP verification
+on:
+  pull_request:
+    paths:
+      - 'public/F4M/new/**'
+      - 'public/F4M/app/**'
+      - 'public/F4M/_shared/petrol-2.6.0/**'
+      - 'public/F4M/versioning.json'
+      - 'scripts/flip4m_violet/verify_unified_260.py'
+      - '.github/workflows/f4m-unified.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/F4M/new/**'
+      - 'public/F4M/app/**'
+      - 'public/F4M/_shared/petrol-2.6.0/**'
+      - 'public/F4M/versioning.json'
+      - 'scripts/flip4m_violet/verify_unified_260.py'
+      - '.github/workflows/f4m-unified.yml'
+permissions:
+  contents: read
+jobs:
+  unified:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium verifier
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Smart Time v2 deterministic gate
+        run: node scripts/flip4m_violet/verify-smart-time-v2.cjs
+      - name: Unified LAB APP bounded acceptance
+        run: python scripts/flip4m_violet/verify_unified_260.py --out "$RUNNER_TEMP/f4m-unified-evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flip4m-unified-evidence
+          path: ${{ runner.temp }}/f4m-unified-evidence
+          if-no-files-found: ignore
