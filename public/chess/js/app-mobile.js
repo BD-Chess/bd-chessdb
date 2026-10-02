@@ -8,7 +8,7 @@
   const phone = !tablet && (root.navigator?.userAgentData?.mobile === true || /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua));
   const native = !!root.Capacitor?.isNativePlatform?.();
   const requestedView = new URLSearchParams(root.location.search).get('view')?.toLowerCase() || '';
-  const appMode = requestedView === 'app';
+  const appMode = false; // Desktop APP preview is LAB-only; CURRENT keeps phone/mobile presentation only.
   const desktopPreview = appMode && !native && !phone;
   if (!native && !phone && !appMode) return;
   doc.body.classList.add('app-mobile');
