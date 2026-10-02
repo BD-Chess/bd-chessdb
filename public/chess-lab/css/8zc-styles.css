@@ -1476,11 +1476,25 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
     margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ui-text);
   }
   body:not(.app-mobile) #workspaceDisplay > .game-review-drawer { min-height: 100%; }
+  /* Review and Library are reading views: give them the whole workspace height
+     above the persistent view/action rows on short desktop screens. */
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) .workspace-top,
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) #desktopNavRow {
+    display: none !important;
+  }
+  body:not(.app-mobile):is([data-desktop-view="review"], [data-desktop-view="library"]) .workspace-analysis {
+    flex: 1 1 auto; min-height: 0;
+  }
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay {
+    overflow-y: auto; overflow-x: hidden;
+  }
   body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay { overflow: hidden; }
   body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > #popularGamesPanel {
     display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; pointer-events: auto;
   }
-  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > .game-review-drawer { display: block; }
+  body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > .game-review-drawer {
+    display: block; min-height: 0;
+  }
   body:not(.app-mobile)[data-desktop-view="library"] #workspaceDisplay > :not(#popularGamesPanel),
   body:not(.app-mobile)[data-desktop-view="review"] #workspaceDisplay > :not(.game-review-drawer) { display: none !important; }
   body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel .drawer-heading,

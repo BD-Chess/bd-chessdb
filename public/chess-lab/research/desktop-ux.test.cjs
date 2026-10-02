@@ -40,6 +40,11 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(styles, /\.library-result-list \{[\s\S]*overflow-y: auto;[\s\S]*pointer-events: auto/);
   assert.match(styles, /#btnUseTournamentOpening \{[\s\S]*background: var\(--ui-raised\); color: var\(--ui-text\)/);
   assert.match(styles, /data-desktop-view="review"[\s\S]*#workspaceDisplay > \.game-review-drawer/);
+  assert.match(styles, /data-desktop-view="review"[\s\S]*data-desktop-view="library"[\s\S]*\.workspace-top[\s\S]*display: none !important/);
+  assert.match(styles, /data-desktop-view="review"[\s\S]*data-desktop-view="library"[\s\S]*#desktopNavRow[\s\S]*display: none !important/);
+  assert.match(styles, /data-desktop-view="review"\] #workspaceDisplay \{[\s\S]*overflow-y: auto/);
+  assert.match(deep, /data-desktop-view="review"[^\n]+game-review-drawer\{display:block!important\}/);
+  assert.match(deep, /data-desktop-view="library"[^\n]+#popularGamesPanel\{display:flex!important\}/);
   assert.match(styles, /#workspacePrimaryActions #btnNew[\s\S]*background:var\(--ui-inset\)/);
 });
 
@@ -129,6 +134,12 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   await new Promise(resolve=>w.setTimeout(resolve,0));
   assert.equal(byId('btnGameReview').getAttribute('aria-expanded'),'false');
   assert.equal(byId('btnDeepAnalysis').getAttribute('aria-expanded'),'true');
+
+  d.querySelector('[data-desktop-view="review"]').click();
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(d.body.dataset.desktopView,'review','Review becomes the visible desktop view after Deep');
+  assert.equal(byId('btnGameReview').getAttribute('aria-expanded'),'true','Review backing panel reopens after Deep');
+  assert.equal(byId('btnDeepAnalysis').getAttribute('aria-expanded'),'true','Deep stays alive in the background while Review is visible');
 
   d.querySelector('[data-desktop-view="moves"]').click();
   await new Promise(resolve=>w.setTimeout(resolve,0));
