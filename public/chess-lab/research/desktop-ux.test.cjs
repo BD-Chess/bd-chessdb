@@ -163,7 +163,9 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
 test('Game library routes curated reviews only after a successful load and Review preserves scroll', () => {
   assert.match(utils, /panelId === 'popularGamesPanel' && !document\.body\.classList\.contains\('app-mobile'\)/);
   assert.match(utils, /sel\.chessLoadSelected = loadSelectedGame/);
-  assert.match(newUi, /typeof entry\.select\.chessLoadSelected === 'function'[\s\S]*await entry\.select\.chessLoadSelected\(\)/);
+  assert.match(utils, /\{ topPick: bucket\.topPicks, library: true \}/);
+  assert.match(utils, /if \(options\.archive \|\| options\.library\) openCommitted\(\)/);
+  assert.match(newUi, /typeof entry\.select\.chessLoadSelected === 'function'[\s\S]*loaded = await entry\.select\.chessLoadSelected\(\)/);
   assert.match(utils, /CustomEvent\('chess:library-loaded'[\s\S]*curatedReview \? 'review' : 'moves'/);
   assert.doesNotMatch(utils, /document\.getElementById\('main'\)\.scrollIntoView/);
   assert.match(reviewUi, /const scrollByKey = new Map\(\)/);

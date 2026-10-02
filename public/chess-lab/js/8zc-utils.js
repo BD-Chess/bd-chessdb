@@ -427,12 +427,15 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	// 3) Wire up load-on-change
     const loadSelectedGame = async () => {
       if (!sel.value) return false;
-      if (playState.active || simRunning || replayRunning) return false;
+      if (playState.active || simRunning || replayRunning) {
+        showGameLoadProblem(new Error('Pause the current game, simulation or Replay before opening a Library game.'));
+        return false;
+      }
 
       const title = sel.selectedOptions[0]?.text || 'Selected game';
       const selectedPGN = sel.value;
       try {
-        await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks }, () => {
+        const loaded = await loadStudyPGN(selectedPGN, title, { topPick: bucket.topPicks, library: true }, () => {
           let curatedReview = false;
           if (bucket.topPicks) {
             const headers = game.header();
@@ -449,6 +452,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
             detail: { view: curatedReview ? 'review' : 'moves', curatedReview }
           }));
         });
+        if (!loaded) {
+          showGameLoadProblem(new Error('The selected Library game was not opened. Your current board was kept.'));
+          return false;
+        }
         return true;
       }
       catch (error) { showGameLoadProblem(error); return false; }
@@ -1054,7 +1061,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       lastMoveIndex = game.history().length - 1;
       onLoaded?.(); loaded = true;
     };
-    if (options.archive) openCommitted();
+    // Built-in Library games and archived simulations are already durable
+    // source records. Opening them must not be blocked by mutable Study
+    // capacity or an unrelated pending Study draft.
+    if (options.archive || options.library) openCommitted();
     else {
       if (!studyUI) throw new Error('Study storage is unavailable. The current game was kept.');
       await studyUI.importPGN(text, { onCommitted: openCommitted });
