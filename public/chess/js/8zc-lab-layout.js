@@ -31,6 +31,138 @@
   let closing = false;
   let resizeFrame = 0;
   const byId = id => document.getElementById(id);
+  const desktopViews = new Set(['moves', 'review', 'deep', 'dcc', 'library']);
+  const desktopScroll = { moves: 0, review: 0, deep: 0, dcc: 0, library: 0 };
+  let desktopView = 'moves', desktopSyncing = false;
+
+  function backingState() {
+    return {
+      dcc: byId('btnViewToggle')?.getAttribute('aria-pressed') === 'true',
+      review: byId('btnGameReview')?.getAttribute('aria-expanded') === 'true',
+      deep: byId('btnDeepAnalysis')?.getAttribute('aria-expanded') === 'true'
+    };
+  }
+  function paintDesktopView() {
+    if (document.body.classList.contains('app-mobile')) return;
+    document.body.dataset.desktopView = desktopView;
+    const tabs = byId('desktopViewTabs');
+    for (const tab of tabs?.querySelectorAll('[data-desktop-view]') || []) {
+      const active = tab.dataset.desktopView === desktopView;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    }
+    const dccAction = byId('btnDesktopDccAnalysis');
+    if (dccAction) {
+      const active = desktopView === 'dcc';
+      dccAction.setAttribute('aria-pressed', String(active));
+      dccAction.classList.toggle('is-active', active);
+    }
+    const libraryOpen = desktopView === 'library';
+    byId('popularGamesPanel')?.classList.toggle('open', libraryOpen);
+    byId('btnGames')?.setAttribute('aria-expanded', String(libraryOpen));
+    byId('btnGames')?.classList.toggle('is-active', libraryOpen);
+    const display = byId('workspaceDisplay');
+    if (display) display.setAttribute('aria-label', {
+      moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis', library: 'Game library'
+    }[desktopView]);
+  }
+  function closeDesktopDrawers() {
+    if (byId('settingsPanel')?.classList.contains('open')) byId('btnCloseSettings')?.click();
+  }
+  function setDesktopView(next, options = {}) {
+    if (document.body.classList.contains('app-mobile') || !desktopViews.has(next)) return;
+    closeDesktopDrawers();
+    const display = byId('workspaceDisplay');
+    if (display && desktopViews.has(desktopView)) desktopScroll[desktopView] = display.scrollTop;
+    const restoreScroll = desktopScroll[next] || 0;
+    desktopView = next;
+    paintDesktopView();
+    if (desktopSyncing) return;
+    desktopSyncing = true;
+    try {
+      const state = backingState();
+      if (next !== 'review' && state.review) byId('btnGameReview')?.click();
+      if (next !== 'dcc' && state.dcc) byId('btnViewToggle')?.click();
+      if (next === 'dcc' && !backingState().dcc) byId('btnViewToggle')?.click();
+      if (next === 'review' && !backingState().review) byId('btnGameReview')?.click();
+      if (next === 'deep' && !backingState().deep) byId('btnDeepAnalysis')?.click();
+    } finally {
+      desktopSyncing = false;
+    }
+    const restoreViewScroll = () => {
+      if (display && desktopView === next) display.scrollTop = restoreScroll;
+    };
+    restoreViewScroll();
+    // Review is reopened by a backing-control click, which can render content
+    // after the view switched. Re-apply once on the next frame so layout/CSS
+    // changes cannot snap the shared workspace back to the top.
+    if (next === 'review' && root.requestAnimationFrame) root.requestAnimationFrame(restoreViewScroll);
+    if (!options.preserveFocus) {
+      const target = byId('desktopViewTabs')?.querySelector('[data-desktop-view="' + next + '"]') || (next === 'library' ? byId('btnGames') : null);
+      target?.focus({ preventScroll: true });
+    }
+  }
+  function initDesktopViews() {
+    if (document.body.classList.contains('app-mobile')) return;
+    const tabs = byId('desktopViewTabs');
+    const display = byId('workspaceDisplay');
+    const library = byId('popularGamesPanel');
+    if (!tabs || !display) return;
+    if (library && library.parentElement !== display) display.appendChild(library);
+    library?.classList.add('desktop-workspace-panel');
+    for (const tab of tabs.querySelectorAll('[data-desktop-view]')) tab.addEventListener('click', () => setDesktopView(tab.dataset.desktopView));
+    document.addEventListener('chess:library-loaded', event => {
+      if (event.detail?.view === 'review') desktopScroll.review = 0;
+      setDesktopView(event.detail?.view === 'review' ? 'review' : 'moves', { preserveFocus: true });
+    });
+    const games = byId('btnGames');
+    if (games) games.onclick = () => setDesktopView('library', { preserveFocus: true });
+    const closeGames = byId('btnCloseGames');
+    if (closeGames) closeGames.onclick = () => setDesktopView('moves');
+    library?.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setDesktopView('moves');
+    }, true);
+    tabs.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const ordered = [...tabs.querySelectorAll('[data-desktop-view]')];
+      const index = Math.max(0, ordered.findIndex(tab => tab.dataset.desktopView === desktopView));
+      const target = event.key === 'Home' ? 0 : event.key === 'End' ? ordered.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + ordered.length) % ordered.length;
+      setDesktopView(ordered[target].dataset.desktopView);
+    });
+    byId('btnDesktopDccReplay')?.addEventListener('click', () => byId('btnReplay')?.click());
+    byId('btnDesktopDccAnalysis')?.addEventListener('click', () => byId('btnViewToggle')?.click());
+    const syncReplay = () => { const facade = byId('btnDesktopDccReplay'), source = byId('btnReplay'); if (facade && source) facade.disabled = source.disabled; };
+    const syncDccAction = () => {
+      const facade = byId('btnDesktopDccAnalysis'), source = byId('btnViewToggle');
+      if (!facade || !source) return;
+      facade.disabled = source.disabled;
+      const active = source.getAttribute('aria-pressed') === 'true';
+      facade.setAttribute('aria-pressed', String(active));
+      facade.classList.toggle('is-active', active);
+    };
+    const replaySource = byId('btnReplay');
+    if (replaySource && root.MutationObserver) new MutationObserver(syncReplay).observe(replaySource, { attributes: true, attributeFilter: ['disabled'] });
+    const dccSource = byId('btnViewToggle');
+    if (dccSource && root.MutationObserver) new MutationObserver(syncDccAction).observe(dccSource, { attributes: true, attributeFilter: ['disabled', 'aria-pressed'] });
+    syncReplay(); syncDccAction();
+    const watch = (id, attr, activeView) => {
+      const node = byId(id); if (!node || !root.MutationObserver) return;
+      new MutationObserver(() => {
+        if (desktopSyncing) return;
+        const on = node.getAttribute(attr) === 'true';
+        if (on) setDesktopView(activeView, { preserveFocus: true });
+        else if (desktopView === activeView) setDesktopView('moves', { preserveFocus: true });
+      }).observe(node, { attributes: true, attributeFilter: [attr] });
+    };
+    watch('btnViewToggle', 'aria-pressed', 'dcc');
+    watch('btnGameReview', 'aria-expanded', 'review');
+    watch('btnDeepAnalysis', 'aria-expanded', 'deep');
+    paintDesktopView();
+  }
   function getSettings() { return { ...preferences }; }
   function update(next) {
     const detail = next && typeof next === 'object' ? next : {};
@@ -124,32 +256,14 @@
     closing = false;
   }
   function start() {
-    try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
-    // A saved CURRENT workspace width can make the promoted page look wider
-    // than LAB. Align only its presentation fields once; keep activity options.
-    const appearanceKey = 'ChessBest:CURRENT:v2:lab-layout-20260928';
-    try {
-      if (root.localStorage.getItem(appearanceKey) !== '1') {
-        const labRaw = root.localStorage.getItem('ChessBest:LAB:v2:layout');
-        const labPresentation = normalize(labRaw ? JSON.parse(labRaw) : null);
-        const previous = root.localStorage.getItem(STORAGE_KEY);
-        const backupKey = 'ChessBest:CURRENT:v2:layout-before-lab-appearance-20260928';
-        if (previous && !root.localStorage.getItem(backupKey)) root.localStorage.setItem(backupKey, previous);
-        const aligned = normalize({ ...preferences, workspaceWidth: labPresentation.workspaceWidth,
-          compact: labPresentation.compact });
-        root.localStorage.setItem(STORAGE_KEY, JSON.stringify(aligned));
-        root.localStorage.setItem(appearanceKey, '1');
-        preferences = aligned;
-      }
-    } catch (error) {
-      console.warn('Could not align CURRENT workspace with LAB:', error);
-    }
+  try { preferences = normalize(JSON.parse(root.localStorage.getItem(STORAGE_KEY))); } catch (_) { /* Private browsing can disable storage. */ }
     if (elements || !byId('labToolsDialog')) return;
     elements = { controls: byId('controls'), main: byId('main'), bottom: document.querySelector('.workspace-bottom'),
       content: byId('workspaceToolContent'), focusBar: byId('workspaceFocusBar'), tools: byId('btnLabTools'),
       pause: byId('btnLabPause'), dialog: byId('labToolsDialog'), body: byId('labToolsBody') };
     const primary = byId('workspacePrimaryActions');
-    for (const id of ['btnNew', 'btnGames', 'btnDeepAnalysis']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    for (const id of ['btnNew', 'btnGames', 'btnSim']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    initDesktopViews();
     byId('btnWorkspaceMore').addEventListener('click', openTools);
     for (const [key, id] of Object.entries(fields)) {
       const field = byId(id);

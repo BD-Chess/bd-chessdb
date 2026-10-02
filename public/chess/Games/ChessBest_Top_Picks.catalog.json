@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "collection": "ChessBest Top Picks",
-  "description": "Seven curated complete games: five elite human games and two TCEC engine games. Each has a verified mainline and review-position FEN. Score differences are dated, configuration-specific observations; historical ChessDB cache leads are not current ChessDB results.",
+  "description": "Ten curated complete games: eight elite human games and two TCEC engine games. Each has a verified mainline and review-position FEN. Score differences are dated, configuration-specific observations; historical ChessDB cache leads are not current ChessDB results.",
   "score_convention": "Signed centipawn fields marked mover or advantage_cp use the side choosing the reviewed move. Fields explicitly marked opponent use the other side. Compare scores only at the same position and under stated search settings; historical CDB entries are leads, not current measurements.",
   "cases": [
     {
@@ -450,6 +450,187 @@
         },
         "candidate_receipt_path": "docs/chessbest-evidence/carlsen-firouzja-2024-37-nf8-candidate-20260926.json",
         "candidate_receipt_sha256": "9f3fa5fe95c870a9cf45b2642e75e5397261cb3395587ccfec456f23590b7a4c"
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "dreev-kasparov-moscow-1996-19-bxa4",
+      "status": "verified-game-and-final-arena-snapshot",
+      "source": {
+        "path": "Games/KasparovG_Selected.pgn",
+        "sha256": "96138934231a82c237e3ea4ad0fdbbb5235e059fd96fcdbc90d727262de94286",
+        "game_index_1based": 16,
+        "mainline_uci_sha256": "aeb4b932828c6c4a1ae70c9abc60650bbd8673e96d1d9126ed713159655cb2b2"
+      },
+      "game": {
+        "white": "Dreev, Alexey",
+        "black": "Kasparov, Gary",
+        "date": "1996.??.??",
+        "event": "Moscow PCA-GP  blitz",
+        "result": "0-1",
+        "round": "2.3"
+      },
+      "anchor": {
+        "ply_after": 37,
+        "move_to_review": "19...Bxa4",
+        "fen_before_move": "r3r1k1/1p1b1pb1/p2p1q1p/P1pPn1p1/N3Pn2/2N1BP2/1P1QB1PP/R4RK1 b - - 4 19",
+        "played_uci": "d7a4",
+        "cdb_raw_first_uci": "a8d8",
+        "dcc_pick_uci": "d7a4"
+      },
+      "reason": "CDB initially scores 19...Bxa4 and 19...Rad8 equally at -0.10 from Black's perspective. Along the saved ten-half-move CDB trajectories, Bxa4 stays steadier and DCC selects the move Kasparov played. Endpoint, mean and floor baselines on the same saved trajectories also select Bxa4, so this illustrates CDB-assisted DCC rather than proving a unique DCC strength advantage.",
+      "evidence": {
+        "top_picks_arena": {
+          "snapshot_utc": "2026-09-29T20:37:25Z",
+          "final_zip_drive_id": "1SzYJgVn-WQc5cS1SLgIkJMmFUlCvglo5",
+          "final_zip_sha256": "d026c44a19fcd33abc4b78c22bfecc410232fe355e35e5d0175b00e07103c8e9",
+          "review_drive_id": "17U_Dqvej7bocFVHyK6L3Mt_Tf6_0hUC2",
+          "caveat": "Arena observations are dated. Cross-node change is not same-root move regret; DCC use is descriptive unless separately validated."
+        },
+        "dcc": {
+          "provider": "CDB",
+          "horizon_half_moves": 10,
+          "receipt_status": "complete",
+          "raw_first_uci": "a8d8",
+          "dcc_pick_uci": "d7a4",
+          "raw_cp_black": {
+            "d7a4": -10,
+            "a8d8": -10,
+            "f4e2": -12
+          },
+          "dcc_adjusted": {
+            "d7a4": -3.018357487922704,
+            "a8d8": -5.629314420803783,
+            "f4e2": -7.177243018419489
+          },
+          "sampled_cp_black": {
+            "d7a4": [
+              -11,
+              -11,
+              -13,
+              -12,
+              -12,
+              -12,
+              -13,
+              -13,
+              -13,
+              -13
+            ],
+            "a8d8": [
+              -12,
+              -12,
+              -14,
+              -14,
+              -16,
+              -16,
+              -18,
+              -18,
+              -20,
+              -20
+            ],
+            "f4e2": [
+              -13,
+              -13,
+              -14,
+              -14,
+              -16,
+              -16,
+              -18,
+              -18,
+              -20,
+              -20
+            ]
+          },
+          "caveat": "Only three of 47 legal moves had evaluated root scores. DCC sampled one provider PV per candidate; this is not an exhaustive minimax tree."
+        }
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "gukesh-ding-wch-2024-28-qc8",
+      "status": "verified-game-and-final-arena-snapshot",
+      "source": {
+        "path": "Games/GukeshD_Selected.pgn",
+        "sha256": "ef04652610f75ca7a5baf721fe22431a79b7eb59b0c5cd2533ade8262bc88781",
+        "game_index_1based": 6,
+        "mainline_uci_sha256": "7ed97aea5a02df8304873a16b2e9d8266a6d5a4edf7ce20bdc10f19fc6889b8b"
+      },
+      "game": {
+        "white": "Gukesh,D",
+        "black": "Ding Liren",
+        "date": "2024.12.08",
+        "event": "WCh 2024",
+        "result": "1-0",
+        "round": "11.1"
+      },
+      "anchor": {
+        "ply_after": 55,
+        "move_to_review": "28...Qc8",
+        "fen_before_move": "1r4k1/1pq1rp2/2n1p1pb/pRN4p/P1PpQ3/3P2PP/5PB1/1R4K1 b - - 3 28",
+        "played_uci": "c7c8",
+        "cdb_best_uci": "c6b4"
+      },
+      "reason": "The recorded game ends with 28.Rdb1 Qc8 29.Qxc6. If Black accepts with ...bxc6, the b-file geometry lets White use both rooks; this is a strong tactical teaching moment. The arena observed a White-POV cross-node change from +0.58 to +4.95, but that is not a same-root move-regret measurement.",
+      "evidence": {
+        "top_picks_arena": {
+          "snapshot_utc": "2026-09-29T20:37:25Z",
+          "final_zip_drive_id": "1SzYJgVn-WQc5cS1SLgIkJMmFUlCvglo5",
+          "final_zip_sha256": "d026c44a19fcd33abc4b78c22bfecc410232fe355e35e5d0175b00e07103c8e9",
+          "review_drive_id": "17U_Dqvej7bocFVHyK6L3Mt_Tf6_0hUC2",
+          "caveat": "Arena observations are dated. Cross-node change is not same-root move regret; DCC use is descriptive unless separately validated."
+        },
+        "turning_point": {
+          "before_white_cp": 58,
+          "after_white_cp": 495,
+          "cross_node_loss_cp": 437,
+          "best_known_alternative_uci": "c6b4",
+          "dcc_receipt_status": "complete",
+          "caveat": "Cross-node parent/child observations; played move was not directly scored in the same root candidate list."
+        }
+      },
+      "curated_file": "Games/ChessBest_Top_Picks.pgn"
+    },
+    {
+      "id": "capablanca-lasker-havana-1921-45-kf8",
+      "status": "verified-game-and-final-arena-snapshot",
+      "source": {
+        "path": "Games/CapablancaJ_Selected.pgn",
+        "sha256": "42180169831622c35123cd3782668ea3ae4cfa8fafa945755a4ff2c6183fe439",
+        "game_index_1based": 2,
+        "mainline_uci_sha256": "0afd928d6738eb90eea932071ffaca354fbb7a3d34d94d7cdb1cee1dea386f8d"
+      },
+      "game": {
+        "white": "Capablanca, Jose Raul",
+        "black": "Lasker, Emanuel",
+        "date": "1921.??.??",
+        "event": "World Championship 12th",
+        "result": "1-0",
+        "round": "5"
+      },
+      "anchor": {
+        "ply_after": 89,
+        "move_to_review": "45...Kf8",
+        "fen_before_move": "8/pQ2kp2/1p6/7R/3q4/1P2n3/P7/6K1 b - - 5 45",
+        "played_uci": "e7f8",
+        "cdb_best_uci": "e7d6"
+      },
+      "reason": "The recorded line ends 44.Qa8+ Ke7 45.Qb7+ Kf8 46.Qb8+. The arena observed a White-POV cross-node change from 0.00 to +6.80 and the best known CDB alternative was 45...Kd6. This is a counterintuitive endgame teaching candidate; DCC coverage for this position was partial.",
+      "evidence": {
+        "top_picks_arena": {
+          "snapshot_utc": "2026-09-29T20:37:25Z",
+          "final_zip_drive_id": "1SzYJgVn-WQc5cS1SLgIkJMmFUlCvglo5",
+          "final_zip_sha256": "d026c44a19fcd33abc4b78c22bfecc410232fe355e35e5d0175b00e07103c8e9",
+          "review_drive_id": "17U_Dqvej7bocFVHyK6L3Mt_Tf6_0hUC2",
+          "caveat": "Arena observations are dated. Cross-node change is not same-root move regret; DCC use is descriptive unless separately validated."
+        },
+        "turning_point": {
+          "before_white_cp": 0,
+          "after_white_cp": 680,
+          "cross_node_loss_cp": 680,
+          "best_known_alternative_uci": "e7d6",
+          "dcc_receipt_status": "partial",
+          "caveat": "Cross-node parent/child observations; not same-root regret and not independently Stockfish-verified in the final review."
+        }
       },
       "curated_file": "Games/ChessBest_Top_Picks.pgn"
     },

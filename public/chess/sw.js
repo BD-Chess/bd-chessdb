@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. CURRENT only. */
 'use strict';
-const RELEASE = "current-f0e4e187ceb183a9";
+const RELEASE = "current-0a6a40ff408cde67";
 const PREFIX = "chessbest-chess-current-";
 const ASSETS = [
   "8zc-about.html",
@@ -56,6 +56,7 @@ const ASSETS = [
   "css/8zc-study.css",
   "css/8zc-styles.css",
   "css/8zc-tournament.css",
+  "css/app-mobile.css",
   "css/chessboard-1.0.0.min.css",
   "facts.html",
   "games-info.html",
@@ -100,6 +101,7 @@ const ASSETS = [
   "js/8zc-tournament-ui.js",
   "js/8zc-utils.js",
   "js/8zc-workspace.js",
+  "js/app-mobile.js",
   "js/boardManager.js",
   "js/chess.min.js",
   "js/chessboard-1.0.0.min.js",

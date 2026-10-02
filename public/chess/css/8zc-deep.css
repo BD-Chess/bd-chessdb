@@ -33,8 +33,9 @@
 .deep-line-meta{display:flex;flex-direction:column;gap:5px;font-variant-numeric:tabular-nums}
 .deep-line-meta strong{font-size:17px}
 .deep-line-meta span{font-size:11px;color:var(--ui-muted,#aebdd2)}
-.deep-pv{line-height:1.7;overflow-wrap:anywhere}
-.deep-pv button{display:inline;padding:2px 4px;background:transparent;border:0;border-radius:3px;min-height:28px;font-size:12px}
+.deep-pv{position:relative;line-height:28px;height:84px;overflow:hidden;overflow-wrap:anywhere}
+.deep-pv button{display:inline;height:28px;min-height:28px;line-height:20px;vertical-align:top;padding:4px;background:transparent;border:0;border-radius:3px;font-size:12px}
+.deep-pv.is-clipped::after{content:"…";position:absolute;right:0;bottom:0;min-width:22px;height:28px;line-height:28px;text-align:right;padding-left:8px;background:linear-gradient(90deg,transparent,var(--ui-inset,#172238) 42%);color:var(--ui-muted,#aebdd2);pointer-events:none}
 .deep-preview{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;border-top:1px solid var(--ui-border,#3e4c64);margin-top:12px;padding-top:12px}
 .deep-preview[hidden]{display:none}
 .deep-preview>div:first-child{width:min(260px,100%);margin:auto}
@@ -42,3 +43,10 @@
 .deep-preview p{font-size:12px;line-height:1.6}
 .deep-note{margin-bottom:0}
 body.light-theme .deep-panel{color-scheme:light}
+
+/* Desktop tabs hide Deep visually without stopping its engine/follow state. */
+body:not(.app-mobile)[data-desktop-view]:not([data-desktop-view="deep"]) #deepAnalysisPanel{display:none!important}
+body:not(.app-mobile)[data-desktop-view="moves"] .workspace-display.is-deep-analysis > #moves{display:block!important}
+body:not(.app-mobile)[data-desktop-view="dcc"] .workspace-display.is-deep-analysis > #dccAnalysisPanel{display:block!important}
+body:not(.app-mobile)[data-desktop-view="review"] .workspace-display.is-deep-analysis > .game-review-drawer{display:block!important}
+body:not(.app-mobile)[data-desktop-view="library"] .workspace-display.is-deep-analysis > #popularGamesPanel{display:flex!important}

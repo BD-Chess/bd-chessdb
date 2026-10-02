@@ -69,34 +69,37 @@
       "source_tree": "12fa67f178ba8202c23f403a19d529ad84e31f48",
       "manifest_sha256": "1f467b0bfd9e175d41894457d1c65fec33c8f3a6a319227da088c2a9e519658a",
       "purpose": "Immutable unified LAB snapshot before restoring desktop APP simulation presentation; active LAB unchanged"
+    },
+    {
+      "id": "010",
+      "path": "/chess-lab/old/010/",
+      "source_channel": "CURRENT",
+      "source_commit": "89c5c868ebdbe975ce5529d1ddeba9a5f8aa9ee0",
+      "source_tree": "6c9c299718ee1923db181623064c38d0569116a2",
+      "manifest_sha256": "19f557587ee93a8a672e2def0f7e73a0e347a57ce5dd6f2ec66b68162b296d97",
+      "purpose": "Exact prepromotion CURRENT recovery snapshot; physical archives 008/009 remain preserved"
     }
   ],
   "promotion_requires": "explicit approval, verified LAB, fresh main, immutable archive check",
   "standard_introduced": "2026-09-13",
   "promotion_performed": true,
   "latest_promotion": {
-    "date": "2026-09-28",
+    "date": "2026-10-03",
     "source_channel": "LAB",
-    "source_base_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
-    "source_repository_tree": "8ae7e2387dee45fc5f04f800a50b6be1cdf903ca",
-    "verified_lab_tree": "f5717c330757f346c5342f046855ea78eeda5285",
-    "backup_source_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+    "source_base_commit": "89c5c868ebdbe975ce5529d1ddeba9a5f8aa9ee0",
+    "verified_lab_tree": "64b207c77c849e77e0b9c268697292e3f704ab2d",
+    "backup_source_commit": "89c5c868ebdbe975ce5529d1ddeba9a5f8aa9ee0",
     "backup_created": true,
-    "backup_rotation": "CURRENT to archive 005; PREVIOUS root preserved",
-    "previous_current_archive": "005",
+    "backup_rotation": "CURRENT to recovery archive 010; PREVIOUS root preserved",
+    "previous_current_archive": "010",
     "archive_source_channel": "CURRENT",
     "previous_root_preserved": true,
     "lab_retained": true,
-    "pwa_refreshed": true,
-    "existing_archives_preserved": [
-      "001",
-      "002",
-      "003",
-      "004"
-    ],
-    "authorization": "BD requested LAB to CURRENT and PWA with a numbered CURRENT backup; PREVIOUS legacy unchanged",
-    "storage": "CURRENT and PWA v2 use separate namespaces and copy each channel’s own legacy data without deleting sources",
-    "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01"
+    "current_selector_removed": true,
+    "current_mobile_presentation": true,
+    "authorization": "BD explicitly requested the working LAB promoted to /chess/, no CURRENT/PREVIOUS/LAB/APP selector on CURRENT, and production deployment to MDLxDCC.org plus ChessBest.org.",
+    "storage": "CURRENT keeps ChessBest:CURRENT:v2:; LAB remains independent ChessBest:LAB:v2:.",
+    "publication_route": "GitHub Pages plus explicit Netlify production deploys for mdlxdcc and bd-chess"
   },
   "promotion_history": [
     {
@@ -150,6 +153,30 @@
         "Refresh archived running states after another tab runner lease expires"
       ],
       "verified_lab_tree": "56ce0d1426568e18338b819fbc16e12728bf1823"
+    },
+    {
+      "date": "2026-09-28",
+      "source_channel": "LAB",
+      "source_base_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+      "source_repository_tree": "8ae7e2387dee45fc5f04f800a50b6be1cdf903ca",
+      "verified_lab_tree": "f5717c330757f346c5342f046855ea78eeda5285",
+      "backup_source_commit": "2152f5bd15745287f39d531c76e2ebf8d985d204",
+      "backup_created": true,
+      "backup_rotation": "CURRENT to archive 005; PREVIOUS root preserved",
+      "previous_current_archive": "005",
+      "archive_source_channel": "CURRENT",
+      "previous_root_preserved": true,
+      "lab_retained": true,
+      "pwa_refreshed": true,
+      "existing_archives_preserved": [
+        "001",
+        "002",
+        "003",
+        "004"
+      ],
+      "authorization": "BD requested LAB to CURRENT and PWA with a numbered CURRENT backup; PREVIOUS legacy unchanged",
+      "storage": "CURRENT and PWA v2 use separate namespaces and copy each channel’s own legacy data without deleting sources",
+      "publication_route": "GitHub Pages; Netlify deferred until 2026-10-01"
     }
   ],
   "latest_pwa_refresh": {
@@ -176,12 +203,12 @@
     "CURRENT": {
       "path": "/chess/",
       "release_manifest": "/chess/release.json",
-      "version": "current-f0e4e187ceb183a9"
+      "version": "current-0a6a40ff408cde67"
     },
     "LAB": {
       "path": "/chess-lab/",
       "release_manifest": "/chess-lab/release.json",
-      "version": "lab-7ade7fe833aa8c99"
+      "version": "lab-b3d54f48693dd838"
     }
   },
   "latest_layout_parity": {
@@ -195,18 +222,14 @@
     "previous_root_preserved": true
   },
   "active_layout": {
-    "date": "2026-10-01",
+    "date": "2026-10-03",
     "public_current": "/chess/",
     "development_root": "/chess-lab/",
     "previous": "/chess-lab/old/",
-    "retired_archives": {
-      "app": "/chess-lab/old/app/",
-      "lab_snapshot": "/chess-lab/old/lab/"
-    },
-    "rule": "Exactly two active versions: CURRENT and LAB. LAB selector is CURRENT · PREVIOUS · LAB; retired APP/LAB snapshots live only under old/.",
-    "mobile_mode": "phone browser or Capacitor native => APP-derived mobile presentation inside /chess-lab/",
-    "desktop_mode": "desktop browser => standard LAB presentation",
-    "native_build": "iOS/Android packages are built from an exact pinned LAB commit; /chess-lab/ remains the single web source of truth",
+    "rule": "CURRENT exposes no development selector. LAB alone exposes CURRENT · PREVIOUS · LAB · APP, with APP as a presentation mode of the same LAB source.",
+    "current_mobile_mode": "phone browser uses APP-derived Board · Moves · Review · Deep · DCC presentation from CURRENT source; no channel selector",
+    "lab_mobile_mode": "phone/native use APP-derived presentation inside /chess-lab/",
+    "native_build": "native packages continue to pin an exact LAB commit",
     "compatibility_stubs": [
       "/chess/app/",
       "/chess-lab/app/",

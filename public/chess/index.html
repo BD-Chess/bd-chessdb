@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChessBest.org — DCC Analysis Lab</title>
+  <title>ChessBest.org — DCC Analysis</title>
   <meta name="theme-color" content="#16382b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -34,10 +34,10 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20260928-lab-look">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20261002-ux7">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20260927-review1">
-  <link rel="stylesheet" href="css/8zc-deep.css?v=20260925-review1">
+  <link rel="stylesheet" href="css/8zc-deep.css?v=20261002-reviewfix1">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
 
@@ -99,6 +99,7 @@
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
+  <link rel="stylesheet" href="css/app-mobile.css?v=20261002-appview2">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to chess board</a>
@@ -124,6 +125,13 @@
     </div>
   </header>
   <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
+  <div class="app-web-nav app-utility-row">
+    <div class="app-language" role="group" aria-label="Language"><button type="button" data-app-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-app-lang="sl" aria-pressed="false">SL</button></div>
+  </div>
+  <div class="app-brand-name" aria-label="ChessBest.org">ChessBest.org</div>
+  <header class="app-mobile-header"><button type="button" id="appGames" aria-label="Game library" title="Game library">▤</button><div class="app-mobile-title"><strong id="appGameName">ChessBest</strong><small id="appPositionName">Analysis board</small></div><button type="button" id="appNew" aria-label="New game" title="New game">＋</button><button type="button" id="appMore" aria-label="More tools" title="More tools">⋯</button></header>
+  <div id="appActivity" class="app-activity" hidden><span id="appActivityText">Simulation running</span><button type="button" id="appPause">Pause</button></div>
+  <div id="appClocks" class="app-clocks" aria-label="Player clocks and local game controls"></div>
   <main id="main" tabindex="-1">
     <!-- --------------- BOARD --------------- -->
     <section id="board-container" aria-label="Chess analysis board">
@@ -138,6 +146,8 @@
       <div class="board-actions">
         <div id="allEvalBadges" class="all-eval-badges" aria-label="CDB, SF and DCC comparison" hidden></div>
       </div>
+      <div id="appBoardControls" class="app-board-controls" aria-label="Position and move controls"><button type="button" id="appSim" class="app-sim">Sim / Play</button></div>
+      <button type="button" id="appTopLine" class="app-top-line" hidden aria-live="polite"><span id="appTopLineLabel">TOP:</span><strong id="appTopLineMoves">Waiting for analysis…</strong></button>
       <div class="board-legend" aria-label="Board badge legend">
         <span><i class="legend-dot legend-best"></i>Engine best</span>
         <span><i class="legend-dot legend-dcc"></i>DCC line data</span>
@@ -148,6 +158,7 @@
 
     <!-- --------------- CONTROLS --------------- -->
     <section id="controls" aria-label="Game and analysis controls">
+      <div id="appPositionPreview" class="app-position-preview" hidden><div id="appMiniBoard" aria-hidden="true"></div><div class="app-preview-text"><strong id="appPreviewTitle">Current position</strong><small id="appPreviewMove">Select a move on the board</small><div class="app-preview-actions"><button type="button" id="appExpandBoard">Show board</button><button type="button" id="appReplay" hidden>DCC replay</button></div></div></div>
       <div class="workspace-top">
       <div class="section-kicker workspace-heading">YOUR WORKSPACE <button type="button" id="btnGemini" class="gemini-toggle" title="Ask Gemini about this position" aria-label="Open Gemini chess assistant" aria-expanded="false" aria-controls="geminiPanel">✦</button></div>
       <div id="workspaceClockSlot">
@@ -163,35 +174,28 @@
 
       <!-- Opening name -->
       <div id="openingName"></div>
-      <!-- Move/DCC/Sim toggle -->
+      <!-- Position-analysis controls: engine/source actions stay separate from workspace views. -->
       <div class="analysis-source-row" aria-label="Main analysis source">
-        <button type="button" class="analysis-deepen" id="btnAnalysisDeepen" title="Deeper SF analysis">Analysis</button>
-        <select id="analysisSource" aria-label="Board analysis source"><option value="auto">CDB → SF</option><option value="sf">SF</option></select>
+        <button type="button" class="btn btn-nav analysis-deepen" id="btnAnalysisDeepen" title="Deeper SF analysis">Deeper SF</button>
+        <select id="analysisSource" aria-label="Board analysis source"><option value="auto">CDB | SF</option><option value="sf">SF lite</option></select>
         <label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox"> DCC</label>
+        <button type="button" class="btn btn-nav desktop-analysis-action" id="btnDesktopDccReplay" title="Replay a loaded game with DCC analysis">DCC replay</button>
+        <button type="button" class="btn btn-nav desktop-analysis-action" id="btnDesktopDccAnalysis" aria-pressed="false" title="Show DCC analysis">DCC analysis</button>
+      </div>
+      <div class="analysis-status-row" aria-label="Analysis status">
         <span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span>
+        <span role="status" aria-live="polite" id="dccProgress"></span>
       </div>
-      <div id="viewToggle" style="display:flex; align-items:center; gap:4px; margin: 2px 0;">
-        <button class="btn btn-nav" id="btnSim" style="font-size:11px; padding:3px 8px; background:#2a2520; border:1px solid rgba(245,158,11,0.25); color:#f59e0b;" title="Set up a simulation or play against the engine" aria-label="Simulation: set up a match or play against the engine">Simulation</button>
-        <button class="btn btn-nav" id="btnReplay" style="font-size:11px; padding:3px 8px; background:#203030; border:1px solid rgba(0,229,255,0.3); color:#00e5ff;" title="Replay a loaded game with DCC analysis">DCC replay</button>
-        <button class="btn btn-nav" id="btnViewToggle" style="font-size:11px; padding:3px 8px; background:#2a3540; border:1px solid rgba(0,229,255,0.2); margin-left:auto;" title="Show DCC analysis">DCC analysis</button>
-        <button type="button" class="btn btn-nav" id="btnGameReview" aria-controls="gameReviewPanel" aria-expanded="false" aria-haspopup="dialog" title="Find recorded moments and navigate a loaded game">Review game</button>
-        <span role="status" aria-live="polite" id="dccProgress" style="font-family:monospace; font-size:11px; color:#00e5ff; min-width:32px;"></span>
-        <button class="btn btn-nav" id="btnCoach" style="display:none; font-size:11px; padding:3px 8px; background:#2a2a30; border:1px solid rgba(255,214,102,0.22); color:#ffd966;">Coach</button>
+      <div id="viewToggle" class="legacy-view-controls" aria-hidden="true" hidden style="display:none !important">
+        <button class="btn btn-nav" id="btnSim" title="Set up a simulation or play against the engine" aria-label="Sim / Play: games, tournaments or play against the engine">Sim / Play</button>
+        <button class="btn btn-nav" id="btnReplay" title="Replay a loaded game with DCC analysis">DCC replay</button>
+        <button class="btn btn-nav" id="btnViewToggle" title="Show DCC analysis">DCC analysis</button>
+        <button type="button" class="btn btn-nav" id="btnGameReview" aria-controls="gameReviewPanel" aria-expanded="false" title="Find recorded moments and navigate a loaded game">Review game</button>
+        <button class="btn btn-nav" id="btnCoach" style="display:none;">Coach</button>
       </div>
-
-      <p class="mode-hint">Simulation: watch a match or choose a side to play against the engine.</p>
       </div>
 
       <div class="workspace-analysis">
-      <!-- Navigation row -->
-      <div class="btn-group top-buttons">
-        <button class="btn btn-nav" id="first" aria-label="First position" title="First position (Home)">|&lt;</button>
-        <button class="btn btn-nav" id="prev" aria-label="Previous move" title="Previous move (Left arrow)">←</button>
-        <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
-        <button class="btn btn-nav" id="next" aria-label="Next move" title="Next move (Right arrow)">→</button>
-        <button class="btn btn-nav" id="last" aria-label="Last position" title="Last position (End)">&gt;|</button>
-      </div>
-
       <div id="workspaceDisplay" class="workspace-display" tabindex="0" aria-label="Moves and DCC analysis">
       <div id="humanSession" class="human-session" hidden>
         <div class="human-session-actions"><strong id="humanSessionState">Two players</strong><button class="btn" id="btnHumanPause">Pause game</button><button class="btn" id="btnHumanFinish">End study</button></div>
@@ -293,6 +297,7 @@
           <p class="setting-note">Timers appear during games and running simulations; reviewing a position leaves more room for analysis. Timestamps are off by default. Sim counts elapsed time without a time limit. Move timestamps use your local timezone.</p>
           <button type="button" class="btn" id="btnTwoPlayers">Two players · same board</button>
         </div>
+        <label class="app-mobile-setting"><input type="checkbox" id="settingAppTopLine"> Show Top line on mobile</label>
         <label for="settingTopN">Show top moves:</label>
         <select id="settingTopN">
           <option value="3">3</option>
@@ -475,7 +480,22 @@
       </div>
 
       <div class="workspace-bottom">
-      <div id="workspacePrimaryActions" class="workspace-primary-actions"><button type="button" class="btn btn-nav" id="btnWorkspaceMore" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">More <span aria-hidden="true">+</span></button></div>
+      <div class="desktop-control-stack" aria-label="Workspace navigation and actions">
+        <div id="desktopNavRow" class="btn-group top-buttons desktop-nav-row" aria-label="Game navigation">
+          <button class="btn btn-nav" id="first" aria-label="First position" title="First position (Home)">|&lt;</button>
+          <button class="btn btn-nav" id="prev" aria-label="Previous move" title="Previous move (Left arrow)">←</button>
+          <button class="btn btn-nav" id="btnHideEval">Hide Eval</button>
+          <button class="btn btn-nav" id="next" aria-label="Next move" title="Next move (Right arrow)">→</button>
+          <button class="btn btn-nav" id="last" aria-label="Last position" title="Last position (End)">&gt;|</button>
+        </div>
+        <nav id="desktopViewTabs" class="desktop-view-tabs" aria-label="Analysis views" role="tablist">
+          <button type="button" role="tab" data-desktop-view="moves" aria-selected="true" tabindex="0">Moves</button>
+          <button type="button" role="tab" data-desktop-view="review" aria-selected="false" tabindex="-1">Review</button>
+          <button type="button" role="tab" data-desktop-view="deep" aria-selected="false" tabindex="-1">Deep</button>
+          <button type="button" role="tab" data-desktop-view="dcc" aria-selected="false" tabindex="-1">DCC</button>
+        </nav>
+        <div id="workspacePrimaryActions" class="workspace-primary-actions"><button type="button" class="btn btn-nav" id="btnWorkspaceMore" aria-haspopup="dialog" aria-controls="labToolsDialog" aria-expanded="false">More <span aria-hidden="true">+</span></button></div>
+      </div>
       <div id="workspaceFocusBar" class="workspace-focus-bar" hidden>
         <span class="focus-caption">SIM FOCUS</span>
         <button type="button" class="btn" id="btnLabPause" title="Pause simulation at this position">Pause</button>
@@ -523,10 +543,19 @@
       </div>
     </section>
   </main>
+  <nav id="appTabs" class="app-tabs" aria-label="ChessBest views">
+    <button type="button" data-app-tab="board" aria-current="page"><span aria-hidden="true">♟</span><span>Board</span></button>
+    <button type="button" data-app-tab="moves"><span aria-hidden="true">☷</span><span>Moves</span></button>
+    <button type="button" data-app-tab="review"><span aria-hidden="true">◎</span><span>Review</span></button>
+    <button type="button" data-app-tab="deep"><span aria-hidden="true">◇</span><span>Deep</span></button>
+    <button type="button" data-app-tab="dcc"><span aria-hidden="true">◈</span><span>DCC</span></button>
+  </nav>
 
   <dialog id="labToolsDialog" class="lab-tools-dialog" aria-labelledby="labToolsTitle">
     <div class="dialog-topline"><h2 id="labToolsTitle">Workspace tools</h2><button type="button" class="dialog-close" id="btnCloseLabTools" aria-label="Close workspace tools">×</button></div>
+    <button type="button" id="appSimMore" class="app-sim">Simulation / play</button>
     <p class="setting-note">Simulation continues until you pause or choose an action that changes the position.</p>
+    <section id="appPwaPanel" class="app-pwa-panel" aria-label="ChessBest installation and offline access" hidden><button type="button" id="appPwaInstall" class="app-sim">Install</button><p id="appPwaHint">Install ChessBest on your Home Screen.</p><p id="appPwaStatus" role="status"></p><button type="button" id="appPwaUpdate" class="app-sim" hidden>Update ready · reload</button></section>
     <div id="labToolsBody"></div>
   </dialog>
 
@@ -535,6 +564,7 @@
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
     <p class="dialog-intro">Potrjena različica ChessBest.</p>
     <ul class="upgrade-list">
+      <li><strong>En ChessBest za desktop in telefon.</strong> Desktop uporablja polni CURRENT pogled; telefon uporablja isti mobilni Board · Moves · Review · Deep · DCC pogled. Analiza, Review, Deep, DCC in Simulation uporabljajo isto CURRENT kodo in shrambo.</li>
       <li><strong>Samostojni podatki CURRENT.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi CURRENT imajo prednost; prvotni podatki ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
       <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
       <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
@@ -696,7 +726,7 @@
   <script src="js/8zc-review-core.js?v=20260927-review1"></script>
   <script src="js/8zc-deep-engine.js?v=20260926-sim2"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
-  <script src="js/8zc-deep-ui.js?v=20260927-w0r2"></script>
+  <script src="js/8zc-deep-ui.js?v=20261002-scroll1"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
@@ -704,11 +734,12 @@
   <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
   <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
   <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
-  <script src="js/8zc-utils.js?v=20260928-lab-look"></script>
-  <script src="js/8zc-new-ui.js?v=20260927-w0r2"></script>
-  <script src="js/8zc-review-ui.js?v=20260927-review1"></script>
-  <script src="js/8zc-lab-layout.js?v=20260928-lab-look"></script>
+  <script src="js/8zc-utils.js?v=20261002-library4"></script>
+  <script src="js/8zc-new-ui.js?v=20261002-library3"></script>
+  <script src="js/8zc-review-ui.js?v=20261003-review4"></script>
+  <script src="js/8zc-lab-layout.js?v=20261003-ux5"></script>
   <script src="pwa.js"></script>
+  <script src="js/app-mobile.js?v=20261002-appview2"></script>
 
 </body>
 </html>

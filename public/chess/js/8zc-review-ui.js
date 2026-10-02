@@ -16,11 +16,11 @@
     const host = root.ChessLabHost;
     if (!button || !controls || !host || !root.ChessGameReview) return;
 
-    const panel = element('section', 'workspace-drawer game-review-drawer');
+    const appView = document.body.classList.contains('app-mobile');
+    const panel = element('section', (appView ? 'workspace-drawer ' : 'desktop-workspace-panel ') + 'game-review-drawer');
     panel.id = 'gameReviewPanel';
     panel.hidden = true;
-    panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('role', 'region');
     panel.setAttribute('aria-labelledby', 'gameReviewHeading');
     panel.tabIndex = -1;
     const header = element('div', 'drawer-heading game-review-heading');
@@ -35,7 +35,9 @@
     notice.setAttribute('role', 'status');
     notice.setAttribute('aria-live', 'polite');
     panel.append(header, body, notice);
-    controls.appendChild(panel);
+    const desktopDisplay = document.getElementById('workspaceDisplay');
+    (appView ? controls : desktopDisplay || controls).appendChild(panel);
+    const reviewScroller = () => appView ? panel : (desktopDisplay || panel);
 
     let review = null;
     let snapshot = null;
@@ -43,6 +45,7 @@
     let previousCursor = null;
     let previousBlocked = null;
     let refreshFrame = 0;
+    const scrollByKey = new Map();
 
     const blocked = () => Boolean(snapshot?.blocked);
     function focusAfterClose() {
@@ -51,6 +54,9 @@
     }
     function closePanel(restoreFocus = true) {
       if (panel.hidden) return;
+      // Mobile owns its drawer scroll per game. Desktop scroll belongs to the
+      // shared workspace view controller, which restores it after tab changes.
+      if (appView && previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
       panel.hidden = true;
       panel.classList.remove('open');
       button.setAttribute('aria-expanded', 'false');
@@ -63,7 +69,7 @@
       return next?.moveLabel ? 'Before ' + next.moveLabel : 'After ' + ply + ' half-moves';
     }
 
-    function navigate(ply, openStudy = false) {
+    function navigate(ply, openStudy = false, showBoard = false) {
       if (blocked()) {
         notice.textContent = 'Finish the active game or stop Replay before reviewing a position.';
         return;
@@ -77,10 +83,16 @@
         host.navigateReview(ply);
         const at = host.getContext();
         if (at.fen !== expected.fen || at.history?.length !== ply) throw Error('The current line changed. Reopen Review and try again.');
-        closePanel(!openStudy);
+        if (!appView || openStudy) closePanel(!openStudy);
         if (openStudy) {
           if (typeof host.openReviewStudy === 'function') host.openReviewStudy('compare');
           else document.getElementById('btnStudy')?.click();
+        } else if (appView && showBoard) {
+          const boardTab = document.querySelector('#appTabs [data-app-tab="board"]');
+          boardTab?.click();
+          boardTab?.focus({ preventScroll: true });
+        } else if (appView) {
+          refresh();
         } else if (root.matchMedia?.('(max-width: 790px)')?.matches) {
           document.getElementById('board-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -280,7 +292,7 @@
         const provenance = [moment.source, moment.basis].filter(Boolean).join(' · ');
         if (provenance) row.append(element('small', 'game-review-basis', provenance));
         const actions = element('div', 'game-review-actions');
-        actions.append(action('Show on board', () => navigate(moment.ply)),
+        actions.append(action('Show on board', () => navigate(moment.ply, false, true)),
           action('Study / A-B', () => navigate(moment.ply, true)));
         row.append(actions);
         list.append(row);
@@ -291,7 +303,7 @@
 
     function render() {
       if (panel.hidden) return;
-      const previousScroll = panel.scrollTop;
+      const previousScroll = reviewScroller().scrollTop;
       body.replaceChildren();
       notice.textContent = '';
       if (!snapshot || !snapshot.moves?.length) {
@@ -312,7 +324,7 @@
       const foot = element('p', 'game-review-footnote',
         'Only available PGN notes and navigation checkpoints are shown. The board requests analysis for the position you open. Scores and DCC ranks must be read from their labeled sources; this view does not calculate an evaluation graph or verify every move.');
       body.append(foot);
-      panel.scrollTop = previousScroll;
+      reviewScroller().scrollTop = previousScroll;
     }
 
     function refresh() {
@@ -324,9 +336,11 @@
         const cursorChanged = next.cursor !== previousCursor || Boolean(next.blocked) !== previousBlocked;
         snapshot = next;
         if (stale) {
+          if (appView && previousKey) scrollByKey.set(previousKey, reviewScroller().scrollTop);
           review = root.ChessGameReview.build({ Chess: root.Chess, pgn: next.sourcePGN, headers: next.headers,
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
+          if (appView) reviewScroller().scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
         else renderSources();
@@ -341,22 +355,22 @@
     }
 
     button.addEventListener('click', () => {
-      if (!panel.hidden) { closePanel(); return; }
+      if (!panel.hidden) { closePanel(appView); return; }
       for (const [drawer, closeId] of [['popularGamesPanel', 'btnCloseGames'], ['settingsPanel', 'btnCloseSettings']]) {
         if (document.getElementById(drawer)?.classList.contains('open')) document.getElementById(closeId)?.click();
       }
       panel.hidden = false;
       panel.classList.add('open');
       button.setAttribute('aria-expanded', 'true');
-      panel.scrollTop = 0;
       refresh();
-      close.focus({ preventScroll: true });
+      if (appView) close.focus({ preventScroll: true });
+      else panel.focus({ preventScroll: true });
     });
     close.addEventListener('click', () => closePanel());
     panel.addEventListener('keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePanel(); return; }
       if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) event.stopPropagation();
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || appView) return;
       const focusables = Array.from(panel.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href]'));
       if (!focusables.length) { event.preventDefault(); panel.focus(); return; }
       const first = focusables[0], last = focusables[focusables.length - 1];

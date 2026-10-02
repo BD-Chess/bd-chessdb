@@ -266,9 +266,7 @@
               // Retain a legacy fallback separately when CURRENT already has a
               // deliberately empty archive; do not reactivate deleted records.
               const destination = spec && journal.emptyArchives?.[spec.name] && storage.getItem(target) === null ? spec.retainedFallback : target;
-              // The older CURRENT ES module used chessBest* before 8zc-utils
-              // used chessLab*. Preserve the first available source, never
-              // delete either original and never override an existing target.
+              // Preserve the older CURRENT chessBest* fallback when chessLab* was never written.
               const earlier = target === KEYS.settings ? 'chessBestSettings'
                 : target === KEYS.game ? 'chessBestGame' : null;
               const chosen = earlier && storage.getItem(source) === null
@@ -307,8 +305,8 @@
         panel.style.cssText = 'position:fixed;inset:1rem;z-index:2147483647;max-width:44rem;max-height:80vh;margin:auto;padding:1.5rem;overflow:auto;background:#172033;color:#f7f9ff;border:2px solid #e9b949;border-radius:1rem;font:16px/1.5 system-ui;box-shadow:0 0 0 100vmax #080d18ed;';
         const title = root.document.createElement('h2'); title.textContent = 'CURRENT data copy needs attention'; panel.appendChild(title);
         const message = root.document.createElement('p'); message.className = 'lab-storage-error'; panel.appendChild(message);
-        const help = root.document.createElement('p'); help.textContent = 'The application has not started writing data. Existing data and completed copies are retained. Close other chess tabs or resolve browser storage access, then retry. Stable Original data remains available for export after resolving the issue.'; panel.appendChild(help);
-        const link = root.document.createElement('a'); link.href = './old/005/'; link.textContent = 'Open archived release'; link.style.color = '#a5d8ff'; panel.appendChild(link);
+        const help = root.document.createElement('p'); help.textContent = 'The application has not started writing data. Existing data and completed copies are retained. Close other chess tabs or resolve browser storage access, then retry. Original data remains available for export after resolving the issue.'; panel.appendChild(help);
+        const link = root.document.createElement('a'); link.href = '../chess-lab/old/010/'; link.textContent = 'Open archived release'; link.style.color = '#a5d8ff'; panel.appendChild(link);
         const button = root.document.createElement('button'); button.type = 'button'; button.textContent = 'Retry copy'; button.style.cssText = 'margin-left:1rem;padding:.6rem 1rem;background:#1e4070;color:white;border:1px solid #92b8e7;border-radius:.4rem';
         button.onclick = async () => { button.disabled = true; try { await attempt(); root.location?.reload(); } catch (_) { showFailure(); button.disabled = current.attempts >= 3; } }; panel.appendChild(button);
         root.document.body.appendChild(panel);
