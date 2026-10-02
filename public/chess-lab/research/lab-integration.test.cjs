@@ -59,6 +59,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  assert.equal(dreevReview.sourceIsOriginal,true,'Review keeps the curated source PGN');
  assert.match(dreevReview.headers.ChessBestTitle,/Dreev.*Kasparov/i);
  assert.match(el('gameReviewPanel').textContent,/Dreev.*Kasparov/i,'Review is populated after the Library click');
+ librarySearch.value='';librarySearch.dispatchEvent(new w.Event('input',{bubbles:true}));
  el('btnGames').click();assert.equal(w.document.body.dataset.desktopView,'library','Game library reopens from Review');
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnNew').click();
