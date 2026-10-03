@@ -17,7 +17,7 @@ async function setup({ phone = false, native = false, appPreview = false } = {})
   Object.defineProperty(w.navigator, 'userAgent', { value: phone ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', configurable: true });
   Object.defineProperty(w.navigator, 'language', { value: 'en-US', configurable: true });
   if (native) w.Capacitor = { isNativePlatform: () => true };
-  let listener, suggested = null;
+  let listener, suggested = null, gameTitleClicks = 0;
   let fen = new Chess().fen();
   let analyses = { CDB: { allMoves: [{ move: 'e2e4', score: 20 }], receipt: { status: 'ready', provider: 'CDB' } } };
   w.ChessLabReady = Promise.resolve();
@@ -32,10 +32,11 @@ async function setup({ phone = false, native = false, appPreview = false } = {})
   w.Chessboard = () => ({ position(next) { if (next) fen = next; return fen; }, resize() {} });
   byId('btnViewToggle').setAttribute('aria-pressed', 'false');
   byId('btnViewToggle').addEventListener('click', () => byId('btnViewToggle').setAttribute('aria-pressed', byId('btnViewToggle').getAttribute('aria-pressed') === 'true' ? 'false' : 'true'));
+  byId('gameTitle').addEventListener('click', () => { gameTitleClicks += 1; });
   w.eval(script);
   w.dispatchEvent(new w.Event('load'));
   await flush(); await flush();
-  return { dom, w, d, byId, suggested: () => suggested, notify: () => listener?.() };
+  return { dom, w, d, byId, suggested: () => suggested, notify: () => listener?.(), gameTitleClicks: () => gameTitleClicks };
 }
 
 test('desktop keeps normal LAB presentation', async () => {
@@ -60,6 +61,8 @@ test('phone activates five-view mobile UX inside the same LAB document and names
   assert.equal(x.d.documentElement.lang, 'en');
   x.byId('settingAppTopLine').click();
   assert.equal(x.w.localStorage.getItem('ChessBest:LAB:v2:showTopLine'), '1');
+  x.byId('appGameName').click();
+  assert.equal(x.gameTitleClicks(), 1, 'mobile game title delegates to the loaded-game return action');
   x.byId('next').click();
   assert.equal(x.suggested(), 'e2e4');
   x.byId('appTabs').querySelector('[data-app-tab="moves"]').click();
