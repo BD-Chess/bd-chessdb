@@ -404,6 +404,7 @@
       tab.addEventListener('click', () => setView(tab.dataset.appTab));
     }
     byId('appExpandBoard').addEventListener('click', () => setView('board'));
+    byId('appGameName')?.addEventListener('click', () => byId('gameTitle')?.click());
     byId('appNew').addEventListener('click', () => { byId('btnNew').click(); setView('board'); });
     byId('appGames').addEventListener('click', () => {
       setView('moves');
