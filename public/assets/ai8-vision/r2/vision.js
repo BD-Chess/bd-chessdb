@@ -8,7 +8,9 @@ if(!d||!open||!close||!img)return;
 const base=new URL('.',document.currentScript.src),mq=matchMedia('(max-width:760px)');
 let generation=0,requested='',loaded='',returnFocus=null;
 function choice(){const lang=root.dataset.lang==='sl'?'sl':'en',theme=root.dataset.theme==='light'?'light':'dark';return {lang,theme,key:lang+'-'+(mq.matches?'mobile':'desktop')+'-'+theme};}
-function labels(c){const t=words[c.lang];close.setAttribute('aria-label',t.close);document.getElementById('ai8-vision-view-label').textContent=mq.matches?t.mobile:t.desktop;document.getElementById('ai8-vision-theme-toggle').textContent=c.theme==='dark'?'◐ '+t.dark:'◐ '+t.light;document.querySelectorAll('[data-vision-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.visionLang===c.lang)));img.alt=t.alt;}
+function fontScale(){let v=1;try{v=Number(localStorage.getItem('mdlxdcc-font')||1)}catch(_){}if(!Number.isFinite(v))v=1;return Math.max(.8,Math.min(1.5,v))}
+function syncFont(){const v=fontScale(),value=document.getElementById('ai8-vision-font-value'),down=document.getElementById('ai8-vision-font-down'),up=document.getElementById('ai8-vision-font-up');if(value)value.textContent=Math.round(v*100)+'%';if(down)down.disabled=v<=.8;if(up)up.disabled=v>=1.5}
+function labels(c){const t=words[c.lang];close.setAttribute('aria-label',t.close);document.getElementById('ai8-vision-view-label').textContent=mq.matches?t.mobile:t.desktop;const theme=document.getElementById('ai8-vision-theme-toggle');theme.textContent='◐';theme.setAttribute('aria-label',c.theme==='dark'?(c.lang==='sl'?'Preklopi na svetlo temo':'Switch to light theme'):(c.lang==='sl'?'Preklopi na temno temo':'Switch to dark theme'));theme.title=theme.getAttribute('aria-label');document.querySelectorAll('[data-vision-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.visionLang===c.lang)));img.alt=t.alt;syncFont();}
 async function refresh(){const c=choice();labels(c);if(!d.open)return;if(requested===c.key)return;requested=c.key;const turn=++generation,asset=ASSETS[c.key],url=new URL(asset.file+'?v='+asset.sha256.slice(0,12),base).href;status.textContent=words[c.lang].loading;d.dataset.state='loading';img.hidden=true;scroll.scrollTop=0;
  try{const probe=new Image();probe.decoding='async';probe.src=url;await probe.decode();if(turn!==generation||!d.open)return;img.width=asset.width;img.height=asset.height;img.src=url;await img.decode();if(turn!==generation||!d.open)return;document.getElementById('ai8-vision-image-link').href=url;document.getElementById('ai8-vision-full-link').href=url;img.hidden=false;status.textContent='';loaded=c.key;d.dataset.variant=c.key;d.dataset.state='ready';}
  catch(_){if(turn!==generation||!d.open)return;requested='';d.dataset.state='error';status.textContent=words[c.lang].error;img.hidden=true;}
@@ -19,6 +21,9 @@ function hide(){if(d.open)d.close();}
 open.addEventListener('click',show);close.addEventListener('click',hide);d.addEventListener('close',finish);d.addEventListener('cancel',e=>{e.preventDefault();hide();});
 d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)hide();});
 d.querySelectorAll('[data-vision-lang]').forEach(b=>b.addEventListener('click',()=>{if(window.MDLxDCCLocale)window.MDLxDCCLocale.choose(b.dataset.visionLang);}));
+document.getElementById('ai8-vision-font-down').addEventListener('click',()=>{document.getElementById('font-down')?.click();syncFont();});
+document.getElementById('ai8-vision-font-value').addEventListener('click',()=>{document.getElementById('font-value')?.click();syncFont();});
+document.getElementById('ai8-vision-font-up').addEventListener('click',()=>{document.getElementById('font-up')?.click();syncFont();});
 document.getElementById('ai8-vision-theme-toggle').addEventListener('click',()=>document.getElementById('theme').click());
 new MutationObserver(refresh).observe(root,{attributes:true,attributeFilter:['data-lang','data-theme']});
 if(mq.addEventListener)mq.addEventListener('change',refresh);else mq.addListener(refresh);
