@@ -2,7 +2,7 @@
    Progressive enhancement for MDLxDCC landing:
    - A− / live % / A+ with % reset on landing and Human in the Middle dialog
    - third VELIKOST | MASA | DNA graphic mode
-   Source for DNA facts: CLOVEK_NA_SREDINI_v3_CONTENT.md (Drive 1feHJzCWJQl9tdkAoQQWVJlXORkHmTVdO)
+   Source for DNA facts: approved CLOVEK_NA_SREDINI_v3_CONTENT.md
 */
 (()=>{
 'use strict';
