@@ -126,7 +126,7 @@ function renderDna(){
  const key=lang(),d=DNA[key];
  mirrors.classList.add('hm2-dna');
  if(mirrors.dataset.hm2DnaRendered!==key){
-   mirrors.innerHTML='<div class="hm2-grid">'+d.cards.map(cardHtml).join('');
+   mirrors.innerHTML='<div class="hm2-grid">'+d.cards.map(cardHtml).join('')+'</div>';
    mirrors.dataset.hm2DnaRendered=key;
  }
  qa('[data-hm-mode]',seg).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.hmMode==='dna')));
