@@ -14,7 +14,7 @@ async function install(){
  if(/iphone|ipad|ipod/i.test(navigator.userAgent||''))alert(w.title+'\n\n'+w.ios);
  else alert(w.title+'\n\nUse your browser menu and choose Install app or Add to Home Screen.');
 }
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;sync();});
+addEventListener('beforeinstallprompt',e=>{if(!button())return;e.preventDefault();deferred=e;sync();});
 addEventListener('appinstalled',()=>{deferred=null;sync();});
 document.addEventListener('DOMContentLoaded',()=>{const b=button();if(b)b.addEventListener('click',install);sync();});
 if('serviceWorker'in navigator&&isSecureContext){
