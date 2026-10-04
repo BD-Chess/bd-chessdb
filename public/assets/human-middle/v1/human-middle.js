@@ -32,7 +32,7 @@ const dialog=$('#human-middle-dialog'), openBtn=$('#human-middle-open');
 if(!dialog||!openBtn)return;
 const T={
  sl:{
-  title:'Človek na sredini',top:'BD × AI LAB · SCALE',eyebrow:'PET ZRCAL · LOGARITEMSKA LESTVICA',sub:'Bolj ko gledaš navznoter, bližje je zrcalo navzven.',human:'ČLOVEK',size:'VELIKOST',mass:'MASA',view:'Pogled',noMass:'Za ta par ni smiselne masne primerjave.',
+  title:'Človek na sredini',top:'BD × AI LAB · SCALE',eyebrow:'PET ZRCAL · LOGARITEMSKA LESTVICA',sub:'Bolj ko gledaš navznoter, bližje je zrcalo navzven.',human:'ČLOVEK',size:'VELIKOST',mass:'MASA',dna:'DNA',view:'Pogled',dnaHint:'DNA skozi merila: celica → človek → kri → gen → človeštvo',noMass:'Za ta par ni smiselne masne primerjave.',
   dnaCell:'DNA ene celice, raztegnjena',dnaHuman:'Vsa DNA enega človeka',dnaHumanV:'do Plutona · ~1.3 ha · ~20 g',
   row:[
    ['Planckova dolžina','1.6×10⁻³⁵ m','masa: —','vidno vesolje','~8.8×10²⁶ m (premer)','masa: —'],
@@ -69,7 +69,7 @@ const T={
   footer:'BD × AI Lab · koncept in vsebina: BD + Claude · spletna izvedba: GPT · oktober 2026',close:'Zapri'
  },
  en:{
-  title:'Human in the Middle',top:'BD × AI LAB · SCALE',eyebrow:'FIVE MIRRORS · LOGARITHMIC SCALE',sub:'The further inward you look, the nearer the outward mirror.',human:'HUMAN',size:'SIZE',mass:'MASS',view:'View',noMass:'There is no meaningful mass pair for this mirror.',
+  title:'Human in the Middle',top:'BD × AI LAB · SCALE',eyebrow:'FIVE MIRRORS · LOGARITHMIC SCALE',sub:'The further inward you look, the nearer the outward mirror.',human:'HUMAN',size:'SIZE',mass:'MASS',dna:'DNA',view:'View',dnaHint:'DNA across scales: cell → human → blood → gene → humanity',noMass:'There is no meaningful mass pair for this mirror.',
   dnaCell:'DNA from one cell, stretched out',dnaHuman:'All DNA in one human',dnaHumanV:'to Pluto · ~1.3 ha · ~20 g',
   row:[
    ['Planck length','1.6×10⁻³⁵ m','mass: —','observable universe','~8.8×10²⁶ m (diameter)','mass: —'],
@@ -106,11 +106,28 @@ const T={
   footer:'BD × AI Lab · concept and content: BD + Claude · web implementation: GPT · October 2026',close:'Close'
  }
 };
+const DNA={
+ sl:[
+  {core:'ČLOVEŠTVO',tag:'OCENA',leftTitle:'DNA človeštva',leftText:'8.2×10⁹ ljudi × DNA na človeka',rightTitle:'DO ANDROMEDE IN NAZAJ',rightText:'≈ 5.7×10⁶ svetlobnih let'},
+  {core:'EN ČLOVEK',tag:'OCENA',leftTitle:'Vsa DNA enega človeka',leftText:'≈ 6.5×10¹² m · ≈ 44 AU',rightTitle:'SONCE–PLUTON',rightText:'~1.3 ha kot 2 nm trak · ~20 g'},
+  {core:'ENA CELICA + KRI',tag:'OCENA',leftTitle:'DNA ene celice',leftText:'~2.2 m · ~4×10¹¹ atomov',rightTitle:'~1 dl krvi',rightText:'DNA belih krvničk ≈ premer Sonca'},
+  {core:'GEN ↔ BELJAKOVINA',tag:'IZRAČUN',leftTitle:'1 zavoj DNA',leftText:'~3.4 nm · ~690 atomov · zapis za 50 kDa beljakovino ~0.46 µm (~90×)',rightTitle:'GEN + KRI',rightText:'cel gen z introni ~8 µm ≈ velikost celice · ~1 mL krvi ≈ premer Zemlje'},
+  {core:'CELICE + PREBIVALSTVO',tag:'VIR / OCENA',leftTitle:'Celice z jedrom',leftText:'skoraj isti zapis DNA · ~84 % celic (rdeče krvničke) nima DNA',rightTitle:'KAPLJICA → GALAKSIJA',rightText:'50 µL krvi ≈ 2–5 × Slovenija · prebivalci ~100 Slovenij ≈ premer Rimske ceste'}
+ ],
+ en:[
+  {core:'HUMANITY',tag:'ESTIMATE',leftTitle:'Humanity’s DNA',leftText:'8.2×10⁹ people × DNA per human',rightTitle:'TO ANDROMEDA AND BACK',rightText:'≈ 5.7×10⁶ light-years'},
+  {core:'ONE HUMAN',tag:'ESTIMATE',leftTitle:'All DNA in one human',leftText:'≈ 6.5×10¹² m · ≈ 44 AU',rightTitle:'SUN–PLUTO',rightText:'~1.3 ha as a 2 nm ribbon · ~20 g'},
+  {core:'ONE CELL + BLOOD',tag:'ESTIMATE',leftTitle:'DNA in one cell',leftText:'~2.2 m · ~4×10¹¹ atoms',rightTitle:'~1 dL blood',rightText:'white-cell DNA ≈ Sun diameter'},
+  {core:'GENE ↔ PROTEIN',tag:'CALC',leftTitle:'1 DNA turn',leftText:'~3.4 nm · ~690 atoms · record for a 50 kDa protein ~0.46 µm (~90×)',rightTitle:'GENE + BLOOD',rightText:'whole gene with introns ~8 µm ≈ cell size · ~1 mL blood ≈ Earth diameter'},
+  {core:'CELLS + POPULATION',tag:'SOURCE / ESTIMATE',leftTitle:'Nucleated cells',leftText:'almost the same DNA record · ~84% of cells (red blood cells) contain no DNA',rightTitle:'DROP → GALAXY',rightText:'50 µL blood ≈ 2–5 × Slovenia · population of ~100 Slovenias ≈ Milky Way diameter'}
+ ]
+};
 const positions={size:[57,54,53,55,50],mass:[null,50,50,51,49]};
 let mode='size';
 function lang(){return root.dataset.lang==='sl'?'sl':'en'}
 function tagClass(s){const x=s.toLowerCase();return x.includes('ocena')||x.includes('estimate')?'estimate':x.includes('vir')||x.includes('source')?'source':''}
 function factCards(items){return items.map(([tag,body])=>`<article class="hm-fact"><span class="hm-tag ${tagClass(tag)}">${tag}</span><p>${body}</p></article>`).join('')}
+function dnaRows(l){return '<div class="hm-dna-grid">'+DNA[l].map((d,i)=>'<article class="hm-dna-row"><div class="hm-dna-side left"><span class="hm-rowno">0'+(i+1)+' · DNA</span><strong>'+d.leftTitle+'</strong><small>'+d.leftText+'</small><span class="hm-dna-tags"><span class="hm-dna-tag">'+d.tag+'</span></span></div><div class="hm-dna-core"><span>DNA · '+d.core+'</span></div><div class="hm-dna-side right"><strong>'+d.rightTitle+'</strong><small>'+d.rightText+'</small></div></article>').join('')+'</div>'}
 function shell(l){const t=T[l];return `<div class="hm-shell">
  <div class="hm-top"><div class="hm-top-title"><span class="human-middle-kicker">${t.top}</span><h2 id="human-middle-title">${t.title}</h2></div><div class="hm-top-actions"><button class="hm-control" type="button" data-hm-lang="sl" aria-pressed="${l==='sl'}">SL</button><button class="hm-control" type="button" data-hm-lang="en" aria-pressed="${l==='en'}">EN</button><button class="hm-control" id="hm-theme" type="button" aria-label="Theme">◐</button><button class="hm-close" id="human-middle-close" type="button" aria-label="${t.close}">×</button></div></div>
  <div class="hm-scroll" id="human-middle-scroll">
