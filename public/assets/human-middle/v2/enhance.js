@@ -12,6 +12,26 @@ const qa=(s,p=document)=>Array.from(p.querySelectorAll(s));
 const dialog=q('#human-middle-dialog');
 if(!dialog)return;
 
+const IOS_WEBKIT=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let iosBackdrop=null;
+function installIosDialogFallback(){
+  if(!IOS_WEBKIT)return;
+  root.classList.add('hm2-ios-dialog');
+  iosBackdrop=document.createElement('div');
+  iosBackdrop.className='hm2-ios-backdrop';
+  iosBackdrop.hidden=true;
+  document.body.appendChild(iosBackdrop);
+  iosBackdrop.addEventListener('click',()=>q('#human-middle-close',dialog)?.click());
+  dialog.addEventListener('close',()=>{if(iosBackdrop)iosBackdrop.hidden=true;root.classList.remove('hm2-ios-open')});
+  dialog.showModal=function(){
+    dialog.setAttribute('open','');
+    dialog.dataset.hmIosFallback='1';
+    if(iosBackdrop)iosBackdrop.hidden=false;
+    root.classList.add('hm2-ios-open');
+    requestAnimationFrame(()=>q('#human-middle-close',dialog)?.focus());
+  };
+}
+
 const MIN=.8,MAX=1.5,STEP=.05;
 let dnaActive=false;
 
@@ -146,7 +166,14 @@ function enhanceModes(){
  });
  if(dnaActive)renderDna();
 }
-function enhancePopup(){if(!q('.hm-shell',dialog))return;enhancePopupFont();enhanceModes();labels();syncScaleControls()}
+function enhancePopup(){
+  if(!q('.hm-shell',dialog))return;
+  enhancePopupFont();enhanceModes();labels();syncScaleControls();
+  if(IOS_WEBKIT&&dialog.open){
+    if(iosBackdrop)iosBackdrop.hidden=false;
+    root.classList.add('hm2-ios-open');
+  }
+}
 
 const css=document.createElement('style');
 css.id='human-middle-r2-style';
@@ -176,10 +203,33 @@ css.textContent=`
 .hm2-ratios{display:grid;gap:9px}.hm2-ratio{display:grid;grid-template-columns:110px 1fr 82px;align-items:center;gap:10px}.hm2-ratio span{font-size:.65rem;color:var(--muted)}.hm2-ratio>i{height:9px;border-radius:999px;background:var(--bg);border:1px solid var(--line);position:relative}.hm2-ratio em{display:block;position:absolute;top:50%;width:9px;height:9px;transform:translate(-50%,-50%);border-radius:50%;background:var(--accent2);box-shadow:0 0 0 2px var(--surface)}.hm2-ratio b{text-align:right;font:600 .58rem/1 Consolas,monospace}
 .hm2-dual{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 @media(max-width:900px){.hm2-grid{grid-template-columns:1fr}.hm2-card.wide{grid-column:auto}.hm2-dual{grid-template-columns:1fr}}
-@media(max-width:620px){.hm-top-title{flex:1 0 100%}.hm-top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}.hm-font-controls .hm-control{min-width:31px}.hm-font-controls .hm-font-value{min-width:46px}.hm2-card{padding:13px}.hm2-bridge{grid-template-columns:1fr}.hm2-wire{height:42px}.hm2-lane{grid-template-columns:84px 1fr 96px}.hm2-ratio{grid-template-columns:88px 1fr 74px}}
+@media(max-width:700px){
+  .font-buttons .utility{min-width:28px;padding-inline:3px}
+  .font-buttons .font-value{min-width:43px;font-size:.62rem}
+  .utilities{gap:0}
+}
+@media(max-width:620px){
+  .hm-top{flex-wrap:wrap}
+  .hm-top-title{flex:1 0 100%}
+  .hm-top-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}
+  .hm-font-controls .hm-control{min-width:31px}.hm-font-controls .hm-font-value{min-width:46px}
+  .hm2-card{padding:13px}.hm2-bridge{grid-template-columns:1fr}.hm2-wire{height:42px}.hm2-lane{grid-template-columns:84px 1fr 96px}.hm2-ratio{grid-template-columns:88px 1fr 74px}
+}
+@media(max-width:380px){
+  .topbar{flex-wrap:wrap}
+  .utilities{width:100%;justify-content:flex-end;margin-top:2px}
+}
+.hm2-ios-backdrop{position:fixed;inset:0;z-index:2147483000;background:rgba(4,10,12,.72);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.hm2-ios-dialog dialog.human-middle-dialog[data-hm-ios-fallback="1"][open]{
+  position:fixed!important;inset:7px!important;z-index:2147483001!important;
+  width:calc(100% - 14px)!important;height:calc(100dvh - 14px)!important;max-height:calc(100dvh - 14px)!important;
+  margin:auto!important;display:block!important;overflow:hidden!important;
+}
+.hm2-ios-dialog.hm2-ios-open{overflow:hidden}
 `;
 document.head.appendChild(css);
 
+installIosDialogFallback();
 enhanceLandingFont();
 setScale(readScale());
 
