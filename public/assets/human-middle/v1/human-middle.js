@@ -1,0 +1,145 @@
+/* HUMAN_MIDDLE_20261004_R1 · BD × AI Lab · source: CLOVEK_NA_SREDINI_v3_CONTENT.md */
+(()=>{
+'use strict';
+const style=document.createElement('style');style.id='human-middle-style';style.textContent=`/* HUMAN_MIDDLE_20261004_R1 · interactive scale popup for MDLxDCC landing */
+.human-middle{border-top:1px solid var(--line);padding:18px 0 20px}
+.human-middle-card{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;text-align:left;border:1px solid var(--line);border-radius:15px;background:linear-gradient(120deg,color-mix(in srgb,var(--surface) 92%,var(--accent2) 8%),var(--surface));padding:15px 17px;min-height:82px;transition:border-color .2s,transform .2s,background .2s}
+.human-middle-card:hover{border-color:var(--accent2);transform:translateY(-1px);background:linear-gradient(120deg,color-mix(in srgb,var(--surface) 86%,var(--accent2) 14%),var(--surface))}
+.human-middle-icon{width:48px;height:48px;border:1px solid var(--line);border-radius:13px;display:grid;place-items:center;background:var(--bg);position:relative;color:var(--accent2)}
+.human-middle-icon:before{content:'';position:absolute;left:9px;right:9px;top:23px;height:1px;background:currentColor;opacity:.72}
+.human-middle-icon:after{content:'';width:8px;height:8px;border:2px solid currentColor;border-radius:50%;background:var(--bg);z-index:1}
+.human-middle-icon i,.human-middle-icon i:before,.human-middle-icon i:after{position:absolute;width:5px;height:5px;border-radius:50%;background:currentColor;content:''}
+.human-middle-icon i{left:8px;top:21px}.human-middle-icon i:before{left:27px;top:0}.human-middle-icon i:after{left:13px;top:0;width:3px;height:3px;opacity:.55}
+.human-middle-copy{min-width:0;display:block}.human-middle-kicker{display:block;color:var(--accent2);font:500 .59rem/1.4 Consolas,monospace;letter-spacing:.12em;margin-bottom:3px;text-transform:uppercase}
+.human-middle-copy strong{display:block;font-size:.91rem;font-weight:560;letter-spacing:-.015em}.human-middle-copy small{display:block;color:var(--muted);font-size:.72rem;line-height:1.5;margin-top:2px}.human-middle-arrow{color:var(--accent);font-size:1.35rem;transition:transform .2s}.human-middle-card:hover .human-middle-arrow{transform:translate(2px,-2px)}
+html.hm-open{overflow:hidden}
+dialog.human-middle-dialog{width:min(1500px,calc(100% - 24px));max-width:none;height:min(94dvh,980px);max-height:94dvh;padding:0;border:1px solid var(--line);border-radius:20px;background:var(--bg);color:var(--ink);box-shadow:var(--shadow);overflow:hidden}
+dialog.human-middle-dialog::backdrop{background:rgba(4,10,12,.72);backdrop-filter:blur(7px)}
+.hm-shell{height:100%;display:flex;flex-direction:column;min-height:0}.hm-top{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 14px 12px 20px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 94%,transparent);flex:none}.hm-top-title{min-width:0}.hm-top-title .human-middle-kicker{margin:0 0 2px}.hm-top h2{font-size:1rem;line-height:1.2;font-weight:570;letter-spacing:-.025em;margin:0}.hm-top-actions{display:flex;align-items:center;gap:6px;flex:none}.hm-control,.hm-close{min-height:39px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--muted);padding:6px 10px;font:500 .66rem/1 Consolas,monospace;letter-spacing:.04em}.hm-control:hover,.hm-control[aria-pressed=true]{color:var(--ink);border-color:var(--accent2)}.hm-close{width:42px;padding:0;font-size:1.35rem;color:var(--ink)}
+.hm-scroll{overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;min-height:0}.hm-hero{padding:28px 26px 18px;text-align:center;position:relative;overflow:hidden}.hm-hero:before{content:'';position:absolute;inset:-45% 12% auto;height:360px;background:radial-gradient(circle,color-mix(in srgb,var(--accent2) 12%,transparent),transparent 68%);pointer-events:none}.hm-eyebrow{font:500 .62rem/1.5 Consolas,monospace;letter-spacing:.17em;text-transform:uppercase;color:var(--accent2);position:relative}.hm-hero h3{font-size:clamp(2.1rem,5vw,4.5rem);font-weight:470;letter-spacing:-.06em;line-height:1.02;margin:10px auto 12px;position:relative}.hm-subtitle{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:clamp(1rem,1.8vw,1.35rem);color:var(--muted);margin:0 auto;max-width:820px;position:relative}.hm-human-data{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:17px 0 0;position:relative}.hm-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:7px 11px;font-size:.69rem;color:var(--muted)}.hm-pill b{color:var(--ink);font-weight:600}.hm-pill.primary{border-color:color-mix(in srgb,var(--accent2) 55%,var(--line));color:var(--accent2)}
+.hm-viewbar{display:flex;justify-content:center;align-items:center;gap:7px;padding:0 20px 21px}.hm-segment{display:inline-flex;border:1px solid var(--line);padding:3px;border-radius:999px;background:var(--surface)}.hm-segment button{min-height:35px;border:0;border-radius:999px;background:transparent;color:var(--muted);padding:6px 15px;font-size:.69rem}.hm-segment button[aria-pressed=true]{background:var(--bg);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}.hm-viewhint{font:400 .62rem/1.4 Consolas,monospace;color:var(--muted)}
+.hm-mirrors{padding:0 24px 18px;display:grid;gap:10px}.hm-row{display:grid;grid-template-columns:minmax(155px,.82fr) minmax(330px,1.65fr) minmax(155px,.82fr);align-items:stretch;border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--surface) 91%,var(--bg));overflow:hidden;min-height:104px}.hm-object{padding:17px 16px;display:flex;flex-direction:column;justify-content:center;min-width:0}.hm-object.left{border-right:1px solid var(--line);text-align:right}.hm-object.right{border-left:1px solid var(--line);text-align:left}.hm-object-name{font-size:.84rem;font-weight:620;line-height:1.25}.hm-object-value{font:400 .62rem/1.45 Consolas,monospace;color:var(--muted);margin-top:5px}.hm-rowno{font:500 .54rem/1 Consolas,monospace;color:var(--accent2);letter-spacing:.1em;margin-bottom:7px}.hm-scale{position:relative;min-width:0;padding:17px 22px 14px;display:flex;align-items:center}.hm-track{position:relative;width:100%;height:68px}.hm-track-line{position:absolute;left:0;right:0;top:34px;height:1px;background:var(--line)}.hm-track-line:before,.hm-track-line:after{content:'';position:absolute;top:-3px;width:7px;height:7px;border-radius:50%;background:var(--muted);opacity:.55}.hm-track-line:before{left:-1px}.hm-track-line:after{right:-1px}.hm-midline{position:absolute;left:50%;top:5px;bottom:5px;width:1px;background:color-mix(in srgb,var(--accent) 45%,var(--line));opacity:.75}.hm-midline:after{content:'50%';position:absolute;top:-5px;left:5px;font:400 .52rem Consolas,monospace;color:var(--muted)}.hm-person{position:absolute;left:50%;top:7px;transform:translateX(-50%);transition:left .65s cubic-bezier(.2,.75,.2,1),opacity .25s;display:flex;flex-direction:column;align-items:center;z-index:2}.hm-person-head{width:9px;height:9px;border-radius:50%;background:var(--accent2);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent2) 16%,transparent)}.hm-person-body{width:2px;height:23px;background:var(--accent2);margin-top:2px;position:relative}.hm-person-body:before{content:'';position:absolute;left:-5px;top:7px;width:12px;height:1px;background:var(--accent2)}.hm-person-label{margin-top:5px;font:600 .54rem/1 Consolas,monospace;letter-spacing:.08em;color:var(--accent2);white-space:nowrap}.hm-pct{position:absolute;top:48px;transform:translateX(-50%);font:600 .65rem/1 Consolas,monospace;color:var(--ink);transition:left .65s cubic-bezier(.2,.75,.2,1),opacity .25s;white-space:nowrap}.hm-unavailable{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--muted);font-size:.67rem;line-height:1.45;padding:12px}.hm-track.is-unavailable .hm-person,.hm-track.is-unavailable .hm-pct{opacity:0}.hm-track.is-unavailable .hm-unavailable{display:grid}.hm-axis-label{position:absolute;bottom:0;font:400 .51rem Consolas,monospace;color:var(--muted);opacity:.78}.hm-axis-label.a{left:0}.hm-axis-label.b{right:0}
+.hm-thread{height:1px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:.35;margin:2px 12% 18px}.hm-callout{margin:0 24px 18px;border:1px solid color-mix(in srgb,var(--accent2) 35%,var(--line));border-radius:15px;padding:15px 17px;background:linear-gradient(120deg,color-mix(in srgb,var(--surface) 88%,var(--accent2) 12%),var(--surface));display:flex;gap:14px;align-items:flex-start}.hm-callout-mark{font:600 .7rem Consolas,monospace;color:var(--accent2);border:1px solid color-mix(in srgb,var(--accent2) 45%,var(--line));border-radius:7px;padding:5px 7px;flex:none}.hm-callout p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.65}.hm-callout strong{color:var(--ink)}
+.hm-details{padding:0 24px 28px;display:grid;gap:8px}.hm-details details{border:1px solid var(--line);border-radius:13px;background:var(--surface);overflow:hidden}.hm-details summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 16px;min-height:50px;font-size:.78rem;font-weight:580}.hm-details summary::-webkit-details-marker{display:none}.hm-details summary:after{content:'+';font:400 1.1rem Consolas,monospace;color:var(--accent2)}.hm-details details[open] summary:after{content:'−'}.hm-detail-body{border-top:1px solid var(--line);padding:15px 16px 17px;color:var(--muted);font-size:.75rem;line-height:1.72}.hm-detail-body p{margin:0 0 11px}.hm-detail-body p:last-child{margin-bottom:0}.hm-fact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.hm-fact{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:11px 12px}.hm-fact p{margin:5px 0 0}.hm-tag{display:inline-flex;border:1px solid var(--line);border-radius:5px;padding:3px 6px;font:600 .52rem/1.3 Consolas,monospace;letter-spacing:.06em;color:var(--accent2)}.hm-tag.estimate{color:var(--warm,#efc78d)}.hm-tag.source{color:var(--accent)}.hm-mono{font-family:Consolas,monospace;color:var(--ink)}.hm-provenance{font:400 .6rem/1.7 Consolas,monospace;overflow-wrap:anywhere}.hm-footer{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:12px 24px 20px;color:var(--muted);font-size:.63rem}.hm-footer strong{color:var(--ink);font-weight:580}
+@media(max-width:900px){dialog.human-middle-dialog{width:min(100% - 14px,900px);height:96dvh;max-height:96dvh}.hm-mirrors{padding-inline:14px}.hm-row{grid-template-columns:1fr;min-height:0}.hm-object.left,.hm-object.right{border:0;text-align:left;padding:13px 14px}.hm-object.left{border-bottom:1px solid var(--line)}.hm-object.right{border-top:1px solid var(--line)}.hm-scale{padding:13px 18px}.hm-track{height:66px}.hm-callout,.hm-details{margin-inline:14px}.hm-details{padding:0 0 22px}.hm-hero{padding:24px 17px 16px}.hm-fact-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.human-middle{padding:14px 0 17px}.human-middle-card{gap:11px;padding:12px;min-height:74px}.human-middle-icon{width:42px;height:42px;border-radius:11px}.human-middle-copy small{font-size:.66rem}.hm-top{padding:10px 9px 9px 13px;gap:8px}.hm-top-title .human-middle-kicker{font-size:.5rem}.hm-top h2{font-size:.86rem}.hm-control{padding:6px 7px;min-height:36px}.hm-close{width:38px;min-height:38px}.hm-top-actions{gap:4px}.hm-hero h3{font-size:clamp(2rem,12vw,3.2rem)}.hm-viewbar{flex-direction:column;gap:6px;padding-bottom:16px}.hm-mirrors{padding-inline:8px}.hm-row{border-radius:12px}.hm-callout{margin-inline:8px}.hm-details{margin-inline:8px}.hm-detail-body{padding-inline:13px}.hm-footer{padding-inline:12px}}
+@media(prefers-reduced-motion:reduce){.human-middle-card,.human-middle-arrow,.hm-person,.hm-pct{transition:none}}
+`;document.head.appendChild(style);
+const root=document.documentElement;
+const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>Array.from(p.querySelectorAll(s));
+const dialog=$('#human-middle-dialog'), openBtn=$('#human-middle-open');
+if(!dialog||!openBtn)return;
+const T={
+ sl:{
+  title:'Človek na sredini',top:'BD × AI LAB · SCALE',eyebrow:'PET ZRCAL · LOGARITEMSKA LESTVICA',sub:'Bolj ko gledaš navznoter, bližje je zrcalo navzven.',human:'ČLOVEK',size:'VELIKOST',mass:'MASA',view:'Pogled',noMass:'Za ta par ni smiselne masne primerjave.',
+  dnaCell:'DNA ene celice, raztegnjena',dnaHuman:'Vsa DNA enega človeka',dnaHumanV:'do Plutona · ~1.3 ha · ~20 g',
+  row:[
+   ['Planckova dolžina','1.6×10⁻³⁵ m','masa: —','vidno vesolje','~8.8×10²⁶ m (premer)','masa: —'],
+   ['proton','~1.7×10⁻¹⁵ m','1.67×10⁻²⁷ kg','osončje','~1.18×10¹³ m (Plutonova orbita)','1.99×10³⁰ kg'],
+   ['atom (vodik)','0.1 nm','1.7×10⁻²⁷ kg','Sonce','1.39×10⁹ m','1.99×10³⁰ kg'],
+   ['beljakovina','~5 nm','~8.3×10⁻²³ kg (50 kDa)','Zemlja','1.27×10⁷ m','5.97×10²⁴ kg'],
+   ['celica','~10 µm','~10⁻¹² kg (1 ng)','Slovenija','248 km (vzhod–zahod)','~3.0×10¹⁶ kg*']
+  ],
+  dnaTitle:'DNA nit',dnaSummary:'Dodatne primerjave ostanejo zložene, dokler jih ne želiš pogledati.',
+  dnaFacts:[
+   ['OCENA','DNA človeštva ≈ do Andromede in nazaj.'],
+   ['VIR / IZRAČUN','Masa skoraj vsa v središču: atom 99.95 % v jedru, osončje 99.86 % v Soncu. To ni planetarni model atoma.'],
+   ['OCENA','DNA vseh celic enega človeka ≈ razdalja Sonce–Pluton.'],
+   ['IZRAČUN','DNA ene celice: ~4×10¹¹ atomov.'],
+   ['OCENA','DNA belih krvničk v ~1 dl krvi ≈ premer Sonca.'],
+   ['IZRAČUN','1 zavoj DNA vijačnice: ~3.4 nm, ~690 atomov.'],
+   ['IZRAČUN','Zapis DNA za 50 kDa beljakovino: ~0.46 µm (~90× daljši); cel gen z introni: ~8 µm ≈ velikost celice.'],
+   ['OCENA','DNA belih krvničk v ~1 mL krvi ≈ premer Zemlje.'],
+   ['VIR','Vsaka celica z jedrom nosi skoraj isti zapis DNA; ~84 % celic (rdeče krvničke) nima DNA.'],
+   ['OCENA','DNA v kapljici krvi ≈ 2–5 × dolžina Slovenije; DNA prebivalcev ~100 Slovenij ≈ premer Rimske ceste.']
+  ],
+  cosmicTitle:'Ko 57 % postane 50 %',cosmic:'Vesolje se širi. Da bo človek (1.7 m) natanko na sredini med Planckovo dolžino in premerom vidnega vesolja, mora vesolje zrasti ~2×10⁸-krat — po standardnem modelu (ΛCDM) čez ~330 milijard let.',cosmicNote:'Izračun v modelu: ~326 Gyr za 1.7 m; predpostavka je konstantna temna energija.',
+  lessTitle:'Less describes more.',less1:'Lokalno slogan NE velja: zapis za beljakovino je fizično ~90×, z introni ~1600× daljši od izdelka.',less2:'Globalno velja: en zapis (~4×10¹¹ atomov) se ponovno uporabi v ~3×10¹² celicah in z alternativnim izrezovanjem en gen da več beljakovin.',less3:'Opis je relativen glede na dekoder (jajčna celica + celični stroji + fizika): K(človek | dekoder), ne K(človek). Opis se splača, ko se ponovno uporablja.',
+  methodTitle:'Metode, predpostavke in viri',methodIntro:'Logaritemska lestvica. % = položaj človeka med levim in desnim objektom. Planckova dolžina je meja fizike, ne objekt; za maso ni smiselnega para. Oznake: IZRAČUN = deterministično iz navedenih vhodov · OCENA = red velikosti · VIR = zunanji podatek. Vrednosti DNA so ocene reda velikosti.',methods:[
+   ['IZRAČUN','Položaj: pct = (log x − log a)/(log b − log a); človek = 1.7 m / 70 kg.'],
+   ['IZRAČUN','Masa Slovenije = površina × povprečna nadmorska višina 557 m × 2700 kg/m³; dogovor: kamnina nad morsko gladino.'],
+   ['OCENA','DNA na celico: diploidni genom ~6.4×10⁹ bp × 0.34 nm ≈ 2.2 m; DNA enega človeka ≈ 6.5×10¹² m ≈ 44 AU, ~1.3 ha kot 2 nm trak, ~20 g.'],
+   ['OCENA','Kri: levkociti 4.5–11×10⁶/mL; premer Sonca → 58–142 mL, Zemlje → 0.53–1.3 mL, kapljica 50 µL → 2.0–4.8 × 248 km.'],
+   ['VIR','Sender, Fuchs & Milo (2016), PLoS Biol 14(8):e1002533; BioNumbers 112985, 113005.'],
+   ['VIR','CSHL Guide to the Human Genome: mediana človeškega gena 23 329 bp; Casanova et al. (2019), PMC7029956.'],
+   ['IZRAČUN','ΛCDM: H₀ 67.7, Ωm 0.31, ΩΛ 0.69; premer vidnega vesolja danes 8.75×10²⁶ m; ~326 Gyr do 50 % pri 1.7 m.']
+  ],
+  provenance:'Vir resnice: CLOVEK_NA_SREDINI_v3_CONTENT.md · SHA-256 45b509967c363636ec8773a60188f830a2cf7d211af17ba80216861b07aae5be · izračun: facts_calc.py · paket SHA-256 deb4d4ff863c9c89b429570fc4704eda13d006bead37c279ada2ce951745838b.',
+  footer:'BD × AI Lab · koncept in vsebina: BD + Claude · spletna izvedba: GPT · oktober 2026',close:'Zapri'
+ },
+ en:{
+  title:'Human in the Middle',top:'BD × AI LAB · SCALE',eyebrow:'FIVE MIRRORS · LOGARITHMIC SCALE',sub:'The further inward you look, the nearer the outward mirror.',human:'HUMAN',size:'SIZE',mass:'MASS',view:'View',noMass:'There is no meaningful mass pair for this mirror.',
+  dnaCell:'DNA from one cell, stretched out',dnaHuman:'All DNA in one human',dnaHumanV:'to Pluto · ~1.3 ha · ~20 g',
+  row:[
+   ['Planck length','1.6×10⁻³⁵ m','mass: —','observable universe','~8.8×10²⁶ m (diameter)','mass: —'],
+   ['proton','~1.7×10⁻¹⁵ m','1.67×10⁻²⁷ kg','Solar System','~1.18×10¹³ m (Pluto orbit)','1.99×10³⁰ kg'],
+   ['atom (hydrogen)','0.1 nm','1.7×10⁻²⁷ kg','Sun','1.39×10⁹ m','1.99×10³⁰ kg'],
+   ['protein','~5 nm','~8.3×10⁻²³ kg (50 kDa)','Earth','1.27×10⁷ m','5.97×10²⁴ kg'],
+   ['cell','~10 µm','~10⁻¹² kg (1 ng)','Slovenia','248 km (east–west)','~3.0×10¹⁶ kg*']
+  ],
+  dnaTitle:'The DNA thread',dnaSummary:'The extra comparisons stay folded until you want to inspect them.',
+  dnaFacts:[
+   ['ESTIMATE','Humanity’s DNA ≈ to Andromeda and back.'],
+   ['SOURCE / CALC','Almost all mass is central: 99.95% of a hydrogen atom’s mass is in the nucleus; the Sun holds 99.86% of Solar-System mass. This is not a planetary model of the atom.'],
+   ['ESTIMATE','All DNA in one human ≈ the Sun–Pluto distance.'],
+   ['CALC','DNA in one cell: ~4×10¹¹ atoms.'],
+   ['ESTIMATE','DNA in white blood cells from ~1 dL of blood ≈ the Sun’s diameter.'],
+   ['CALC','One DNA helix turn: ~3.4 nm, ~690 atoms.'],
+   ['CALC','DNA coding for a 50 kDa protein: ~0.46 µm (~90× longer); a whole gene with introns: ~8 µm ≈ cell size.'],
+   ['ESTIMATE','DNA in white blood cells from ~1 mL of blood ≈ Earth’s diameter.'],
+   ['SOURCE','Each nucleated cell carries almost the same DNA record; ~84% of cells (red blood cells) contain no DNA.'],
+   ['ESTIMATE','DNA in a drop of blood ≈ 2–5 × Slovenia’s length; DNA from the population of ~100 Slovenias ≈ the Milky Way’s diameter.']
+  ],
+  cosmicTitle:'When 57% becomes 50%',cosmic:'The universe expands. For a human (1.7 m) to sit exactly halfway between the Planck length and the diameter of the observable universe, the universe must grow by ~2×10⁸ — in the standard ΛCDM model, in ~330 billion years.',cosmicNote:'Model calculation: ~326 Gyr for 1.7 m; assumes constant dark energy.',
+  lessTitle:'Less describes more.',less1:'Locally, the slogan does NOT hold: the DNA record for a protein is physically ~90× longer than the folded product, and with introns ~1600× longer.',less2:'Globally it does: one record (~4×10¹¹ atoms) is reused across ~3×10¹² cells, and alternative splicing lets one gene yield multiple proteins.',less3:'Description is relative to a decoder (egg cell + cellular machinery + physics): K(human | decoder), not K(human). A description pays when it is reused.',
+  methodTitle:'Methods, assumptions & sources',methodIntro:'Logarithmic scale. % = the human position between the left and right objects. The Planck length is a boundary of physics, not an object; it has no meaningful mass pair. Labels: CALC = deterministic from stated inputs · ESTIMATE = order of magnitude · SOURCE = external datum. DNA values are order-of-magnitude estimates.',methods:[
+   ['CALC','Position: pct = (log x − log a)/(log b − log a); human = 1.7 m / 70 kg.'],
+   ['CALC','Slovenia mass = area × mean elevation 557 m × 2700 kg/m³; convention: rock above sea level.'],
+   ['ESTIMATE','DNA per nucleated cell: diploid genome ~6.4×10⁹ bp × 0.34 nm ≈ 2.2 m; one human ≈ 6.5×10¹² m ≈ 44 AU, ~1.3 ha as a 2 nm ribbon, ~20 g.'],
+   ['ESTIMATE','Blood: white cells 4.5–11×10⁶/mL; Sun diameter → 58–142 mL, Earth → 0.53–1.3 mL, 50 µL drop → 2.0–4.8 × 248 km.'],
+   ['SOURCE','Sender, Fuchs & Milo (2016), PLoS Biol 14(8):e1002533; BioNumbers 112985, 113005.'],
+   ['SOURCE','CSHL Guide to the Human Genome: median human gene 23,329 bp; Casanova et al. (2019), PMC7029956.'],
+   ['CALC','ΛCDM: H₀ 67.7, Ωm 0.31, ΩΛ 0.69; observable-universe diameter today 8.75×10²⁶ m; ~326 Gyr to 50% at 1.7 m.']
+  ],
+  provenance:'Source of truth: CLOVEK_NA_SREDINI_v3_CONTENT.md · SHA-256 45b509967c363636ec8773a60188f830a2cf7d211af17ba80216861b07aae5be · calculation: facts_calc.py · package SHA-256 deb4d4ff863c9c89b429570fc4704eda13d006bead37c279ada2ce951745838b.',
+  footer:'BD × AI Lab · concept and content: BD + Claude · web implementation: GPT · October 2026',close:'Close'
+ }
+};
+const positions={size:[57,54,53,55,50],mass:[null,50,50,51,49]};
+let mode='size';
+function lang(){return root.dataset.lang==='sl'?'sl':'en'}
+function tagClass(s){const x=s.toLowerCase();return x.includes('ocena')||x.includes('estimate')?'estimate':x.includes('vir')||x.includes('source')?'source':''}
+function factCards(items){return items.map(([tag,body])=>`<article class="hm-fact"><span class="hm-tag ${tagClass(tag)}">${tag}</span><p>${body}</p></article>`).join('')}
+function shell(l){const t=T[l];return `<div class="hm-shell">
+ <div class="hm-top"><div class="hm-top-title"><span class="human-middle-kicker">${t.top}</span><h2 id="human-middle-title">${t.title}</h2></div><div class="hm-top-actions"><button class="hm-control" type="button" data-hm-lang="sl" aria-pressed="${l==='sl'}">SL</button><button class="hm-control" type="button" data-hm-lang="en" aria-pressed="${l==='en'}">EN</button><button class="hm-control" id="hm-theme" type="button" aria-label="Theme">◐</button><button class="hm-close" id="human-middle-close" type="button" aria-label="${t.close}">×</button></div></div>
+ <div class="hm-scroll" id="human-middle-scroll">
+  <section class="hm-hero"><div class="hm-eyebrow">${t.eyebrow}</div><h3>${t.title}</h3><p class="hm-subtitle">${t.sub}</p><div class="hm-human-data"><span class="hm-pill primary"><b>${t.human}</b> 1.7 m · 70 kg</span><span class="hm-pill"><b>${t.dnaCell}:</b> ~2.2 m</span><span class="hm-pill"><b>${t.dnaHuman}:</b> ${t.dnaHumanV}</span></div></section>
+  <div class="hm-viewbar"><div class="hm-segment" role="group" aria-label="${t.view}"><button type="button" data-hm-mode="size" aria-pressed="${mode==='size'}">${t.size}</button><button type="button" data-hm-mode="mass" aria-pressed="${mode==='mass'}">${t.mass}</button></div><span class="hm-viewhint">0% ← ${t.human} → 100%</span></div>
+  <section class="hm-mirrors" aria-label="${t.title}">${t.row.map((r,i)=>rowHtml(t,r,i)).join('')}</section>
+  <div class="hm-thread" aria-hidden="true"></div>
+  <aside class="hm-callout"><span class="hm-callout-mark">DNA</span><p><strong>${t.dnaTitle}.</strong> ${t.dnaSummary}</p></aside>
+  <section class="hm-details">
+   <details><summary>${t.dnaTitle}</summary><div class="hm-detail-body"><div class="hm-fact-grid">${factCards(t.dnaFacts)}</div></div></details>
+   <details><summary>${t.cosmicTitle}</summary><div class="hm-detail-body"><p>${t.cosmic}</p><p><span class="hm-tag">${l==='sl'?'IZRAČUN':'CALC'}</span> ${t.cosmicNote}</p></div></details>
+   <details><summary>${t.lessTitle}</summary><div class="hm-detail-body"><p>${t.less1}</p><p>${t.less2}</p><p>${t.less3}</p></div></details>
+   <details><summary>${t.methodTitle}</summary><div class="hm-detail-body"><p>${t.methodIntro}</p><div class="hm-fact-grid">${factCards(t.methods)}</div><p class="hm-provenance">${t.provenance}</p></div></details>
+  </section>
+  <footer class="hm-footer"><span><strong>Less describes more.</strong></span><span>${t.footer}</span></footer>
+ </div></div>`}
+function rowHtml(t,r,i){const p=positions[mode][i],unavailable=p==null;return `<article class="hm-row" data-hm-row="${i}"><div class="hm-object left"><span class="hm-rowno">0${i+1} · ${mode==='size'?t.size:t.mass}</span><span class="hm-object-name">${r[0]}</span><span class="hm-object-value">${mode==='size'?r[1]:r[2]}</span></div><div class="hm-scale"><div class="hm-track${unavailable?' is-unavailable':''}" style="--hm-pos:${p==null?50:p}"><span class="hm-track-line"></span><span class="hm-midline"></span><span class="hm-person" style="left:${p==null?50:p}%"><span class="hm-person-head"></span><span class="hm-person-body"></span><span class="hm-person-label">${t.human}</span></span><span class="hm-pct" style="left:${p==null?50:p}%">${p==null?'—':p+' %'+(mode==='mass'&&i===4?'*':'')}</span><span class="hm-axis-label a">${r[0]}</span><span class="hm-axis-label b">${r[3]}</span><span class="hm-unavailable">${t.noMass}</span></div></div><div class="hm-object right"><span class="hm-rowno">${mode==='size'?t.size:t.mass} · ${unavailable?'—':p+' %'+(mode==='mass'&&i===4?'*':'')}</span><span class="hm-object-name">${r[3]}</span><span class="hm-object-value">${mode==='size'?r[4]:r[5]}</span></div></article>`}
+function render(){const sc=$('#human-middle-scroll',dialog),y=sc?sc.scrollTop:0;dialog.innerHTML=shell(lang());bind();const next=$('#human-middle-scroll',dialog);if(next)next.scrollTop=y;}
+function bind(){
+ $$('#human-middle-dialog [data-hm-lang]').forEach(b=>b.addEventListener('click',()=>{const l=b.dataset.hmLang;if(window.MDLxDCCLocale?.choose)window.MDLxDCCLocale.choose(l);else{root.dataset.lang=l;root.lang=l;render();}}));
+ $$('#human-middle-dialog [data-hm-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.hmMode;render();}));
+ $('#human-middle-close',dialog)?.addEventListener('click',close);
+ $('#hm-theme',dialog)?.addEventListener('click',()=>{const globalTheme=$('#theme');if(globalTheme){globalTheme.click();return;}const next=root.dataset.theme==='light'?'dark':'light';root.dataset.theme=next;try{localStorage.setItem('mdlxdcc-theme',next)}catch(_){}});
+}
+function open(push=true){if(!dialog.open){render();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');root.classList.add('hm-open');}if(push&&location.hash!=='#clovek-na-sredini')history.pushState(null,'','#clovek-na-sredini');}
+function close(fromHash=false){if(dialog.open&&typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');root.classList.remove('hm-open');if(!fromHash&&location.hash==='#clovek-na-sredini')history.pushState(null,'',location.pathname+location.search);}
+openBtn.addEventListener('click',()=>open(true));
+dialog.addEventListener('cancel',e=>{e.preventDefault();close(false)});
+dialog.addEventListener('click',e=>{if(e.target===dialog)close(false)});
+window.addEventListener('hashchange',()=>{if(location.hash==='#clovek-na-sredini')open(false);else if(dialog.open)close(true)});
+window.addEventListener('mdlxdcc:language',()=>{if(dialog.open)render()});
+if(location.hash==='#clovek-na-sredini')requestAnimationFrame(()=>open(false));
+})();
