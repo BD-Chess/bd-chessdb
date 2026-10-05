@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. CURRENT only. */
 'use strict';
-const RELEASE = "current-0f11d4821d213c4b";
+const RELEASE = "current-b0c704da153695f1";
 const PREFIX = "chessbest-chess-current-";
 const ASSETS = [
   "8zc-about.html",
