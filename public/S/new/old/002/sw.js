@@ -2,11 +2,11 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "e6be1c00bf23956c56f9e5addec9083da41c71ce82b28a6db0d44743b03b1712",
+  "id": "30b20b26c11fc3e505267d5be0d1bb3c982490e175e43a0361987210803b7f6b",
   "channel": "LAB",
   "engine": "0.3.0",
   "assets": {
-    "index.html": "bd2d9835184d9f0649b384da87058df1718939c0dc7ba5f5723e505e6728fbd0",
+    "index.html": "ffced20ab2867e9d3264c4268350eda28fa6f368d73cf466525cfbf4870d786a",
     "manifest.webmanifest": "d7c7f785f2e80cedf1d39e666729d0693587c282a43ce17de6d95ba004d31cfb",
     "../_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
     "../_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
