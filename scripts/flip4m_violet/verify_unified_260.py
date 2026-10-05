@@ -54,7 +54,7 @@ def verify(public:Path,out:Path,executable=None):
    if executable: launch["executable_path"]=executable
    browser=p.chromium.launch(**launch)
    ctx=browser.new_context(viewport={"width":1280,"height":1000},accept_downloads=True);page=ctx.new_page();errors=[];page.on("pageerror",lambda e:errors.append(str(e)));page.on("dialog",lambda d:d.accept())
-   page.goto(base+"new/");wait_idle(page);page.wait_for_function("window.F4MReview&&window.F4MPresentation")
+   page.goto(base+"new/");wait_idle(page);page.wait_for_function("window.F4MReview&&window.F4MPresentation");check("Fresh PWA install has no false update toast",page.locator("#pwaToast").is_hidden())
    check("Desktop default is LAB",page.evaluate("document.body.dataset.presentation==='lab'&&!document.body.classList.contains('is-app')"))
    check("LAB wrapper flattened",page.evaluate("getComputedStyle(document.querySelector('.device')).borderTopWidth==='0px'"))
    check("LAB has Game Review",page.locator("#tab-review").count()==1 and page.locator("#workspaceTabs button").count()==5)
