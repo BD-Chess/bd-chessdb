@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id), text=k=>window.F4MShell.text(k);
-  let registration=null,deferredInstall=null,reloadRequested=false,changedElsewhere=false;
+  let registration=null,deferredInstall=null,reloadRequested=false,changedElsewhere=false,hadController=!!navigator.serviceWorker?.controller;
   const state={state:'preparing'};window.F4MPWA=state;
   const showState=key=>{state.state=key;if($('offlineStatus'))$('offlineStatus').textContent=text(key);};
   const showUpdate=(other=false)=>{changedElsewhere=other;$('pwaToast').hidden=false;$('updateText').textContent=text(other?'otherUpdate':'updateReady');$('updateButton').textContent=text('update');};
@@ -26,8 +26,11 @@
   navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='PAGE_BUILD')e.ports[0]?.postMessage({build:'2.6.2-petrol'});});
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
     if(reloadRequested){location.reload();return;}
-    // Another tab must never interrupt this tab's active match.
-    if(navigator.serviceWorker.controller)showUpdate(true);
+    const nowControlled=!!navigator.serviceWorker.controller;
+    // First install may claim this page; that is not an "update ready" condition.
+    if(hadController&&nowControlled)showUpdate(true);
+    else if(nowControlled)checkReady();
+    hadController=nowControlled;
   });
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(async reg=>{
     registration=reg;
