@@ -17,7 +17,7 @@ function logRecord(date='2026-10-05'){
 function temp(t){const root=fs.mkdtempSync(path.join(os.tmpdir(),'nara-test-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));initialize(root,'2026-10');return root}
 
 test('dates reject invalid calendar days and traversal',()=>{for(const d of ['2026-02-30','2026-13-01','../2026-01-01','2026-1-01'])assert.equal(validDate(d),false);assert.equal(validDate('2028-02-29'),true)});
-test('authors alternate across month and year boundaries',()=>{assert.equal(authorForDate('2026-10-05'),'CLAUDE');assert.equal(authorForDate('2026-10-06'),'GPT');assert.notEqual(authorForDate('2026-10-31'),authorForDate('2026-11-01'));assert.notEqual(authorForDate('2026-12-31'),authorForDate('2027-01-01'))});
+test('authors alternate across month and year boundaries',()=>{assert.equal(authorForDate('2026-10-05'),'GPT');assert.equal(authorForDate('2026-10-06'),'CLAUDE');assert.notEqual(authorForDate('2026-10-31'),authorForDate('2026-11-01'));assert.notEqual(authorForDate('2026-12-31'),authorForDate('2027-01-01'))});
 test('22:00 stays local across autumn and spring DST',()=>{assert.equal(localParts('2026-10-24T20:00:00Z').hour,'22');assert.equal(localParts('2026-10-25T21:00:00Z').hour,'22');assert.equal(localParts('2027-03-27T21:00:00Z').hour,'22');assert.equal(localParts('2027-03-28T20:00:00Z').hour,'22')});
 test('record and prose hash validate',()=>{assert.equal(validateRecord(record()).id,'NARA-D-2026-10-05');const r=record();r.scenes[0].paragraphs[0]='changed';assert.throws(()=>validateRecord(r),/hash mismatch/)});
 test('private fields never enter public story records',()=>{const r=record();r.drive_id='PRIVATE';assert.throws(()=>validateRecord(r),/unexpected\/private/)});
