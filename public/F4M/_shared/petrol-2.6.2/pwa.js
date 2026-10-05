@@ -31,6 +31,7 @@
   });
   navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(async reg=>{
     registration=reg;
+    try{await reg.update();}catch(_){} // Explicit online freshness check; offline readiness must not depend on it.
     if(reg.waiting)showUpdate();
     reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',()=>{
       if(worker.state==='installed'&&reg.waiting&&navigator.serviceWorker.controller)showUpdate();
