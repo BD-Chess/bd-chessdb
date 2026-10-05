@@ -5,6 +5,7 @@ test('one active LAB source exposes desktop LAB and APP presentation selector',(
  const index=read('public/S/new/index.html'),app=read('public/S/new/app.html');
  assert.match(index,/href="\.\/\?view=app"/);assert.doesNotMatch(index,/href="\.\.\/app\//);
  assert.match(index,/id="sudokuGame"/);assert.match(index,/data-sudoku-shell/);
+ assert.match(index,/border:6px solid #010705/);assert.match(index,/border-radius:32px/);assert.match(index,/box-shadow:0 18px 60px #0009,0 0 0 1px #59735f/);
  assert.match(app,/id="sudoku-unified-bootstrap"/);assert.match(app,/id="sudoku-app-ui"/);assert.match(app,/id="sudoku-app-solve-playback"/);
  assert.match(app,/ai8SudokuNavigatorV020/);
 });
