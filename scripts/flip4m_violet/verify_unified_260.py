@@ -39,7 +39,7 @@ def verify(public:Path,out:Path,executable=None):
  router=(shared/"presentation.js").read_text();check("LAB/APP links use native navigation","preventDefault" not in router);check("Standalone does not force APP","const app=forced||phone||native" in router)
  check("Routing metadata documents desktop default",rel.get("presentation_routing",{}).get("desktop_default")=="LAB")
  manifest=json.loads((lab/"manifest.webmanifest").read_text());check("LAB is installable standalone PWA",manifest.get("name")=="Flip4M LAB" and manifest.get("start_url")=="./" and manifest.get("scope")=="./" and manifest.get("display")=="standalone")
- swtext=(lab/"sw.js").read_text();pwajs=(shared/"pwa.js").read_text();check("PWA update auto-activates complete package","self.skipWaiting()" in swtext and "self.clients.claim()" in swtext);check("PWA page reports current build","build:'2.6.2-petrol'" in pwajs)
+ swtext=(lab/"sw.js").read_text();pwajs=(shared/"pwa.js").read_text();check("PWA update auto-activates complete package","self.skipWaiting()" in swtext and "self.clients.claim()" in swtext);check("PWA page reports current build","build:'2.6.2-petrol'" in pwajs);check("PWA requests explicit update check","await reg.update()" in pwajs)
  check("Release documents PWA semantics",rel.get("pwa",{}).get("installable") is True and rel.get("pwa",{}).get("desktop_start")=="LAB" and rel.get("pwa",{}).get("phone_start")=="APP")
  active=(labhtml+(shared/"f4m-ui.js").read_text()+(shared/"f4m-core.js").read_text()).lower()
  check("Water/Laser not implemented",all(x not in active for x in ("water","laser","flood","beam")))
