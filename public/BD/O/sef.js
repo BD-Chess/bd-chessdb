@@ -23,6 +23,30 @@ async function openSef(raw){
  if(await sha256hex(out)!==sefCfg.plaintext_sha256)throw new Error('Preverjanje celovitosti Sefa ni uspelo.');
  const obj=JSON.parse(TD.decode(out));
  if(obj.format!=='BD-O-SEF-PAYLOAD-1'||typeof obj.html!=='string')throw new Error('Neveljavna vsebina Sefa.');
+ const extra=await openExtra(raw);if(extra)obj.html+=extra.html;
+ return obj;
+}
+async function openExtra(raw){
+ let cfg;
+ try{
+  const r=await fetch(ROOT+'sef-extra.json',{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
+  if(r.status===404)return null;
+  if(!r.ok)throw new Error('Prenos dodatka Sefa ni uspel.');
+  cfg=await r.json();
+ }catch(err){if(err&&err.message==='Prenos dodatka Sefa ni uspel.')throw err;return null;}
+ if(cfg.format!=='BD-O-SEF-EXTRA-CONFIG-1'||cfg.vault!==portalCfg.vault)return null;
+ const r=await fetch(ROOT+cfg.data.path,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
+ if(!r.ok)throw new Error('Prenos dodatka Sefa ni uspel.');
+ const encoded=await r.text();
+ if(await sha256hex(TE.encode(encoded))!==cfg.data.sha256)throw new Error('Preverjanje celovitosti dodatka Sefa ni uspelo.');
+ const key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);
+ let out;
+ try{out=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:from64(cfg.cipher.iv),additionalData:TE.encode(cfg.cipher.aad)},key,from64(encoded)));}
+ catch(_){throw new Error('BD/O seja ne more odpreti dodatka Sefa.');}
+ if(cfg.compression==='gzip'){const stream=new Blob([out]).stream().pipeThrough(new DecompressionStream('gzip'));out=new Uint8Array(await new Response(stream).arrayBuffer());}
+ if(await sha256hex(out)!==cfg.plaintext_sha256)throw new Error('Preverjanje celovitosti dodatka Sefa ni uspelo.');
+ const obj=JSON.parse(TD.decode(out));
+ if(obj.format!=='BD-O-SEF-EXTRA-1'||typeof obj.html!=='string')throw new Error('Neveljaven dodatek Sefa.');
  return obj;
 }
 function installSecretControls(){
