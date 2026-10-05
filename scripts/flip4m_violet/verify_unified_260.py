@@ -17,18 +17,20 @@ def seed_db(page,name,checkpoint,probe=None):
 def read_key(page,name,key):
  return page.evaluate("""async ([name,key])=>await new Promise((resolve,reject)=>{const r=indexedDB.open(name,1);r.onsuccess=()=>{const db=r.result;if(!db.objectStoreNames.contains('state')){db.close();resolve(null);return;}const q=db.transaction('state').objectStore('state').get(key);q.onsuccess=()=>{db.close();resolve(q.result||null);};q.onerror=()=>reject(q.error);};r.onerror=()=>reject(r.error);})""",[name,key])
 def verify(public:Path,out:Path,executable=None):
- root=public/"F4M";shared=root/"_shared/petrol-2.6.1";lab=root/"new";app=root/"app"
+ root=public/"F4M";shared=root/"_shared/petrol-2.6.2";lab=root/"new";app=root/"app"
  lab_old={"f4m-classical.js":"548c2a9e4d6e4f516be2ecc41c51d2d24e403c0c","f4m-core.js":"d59c88e5fcf0df2f7973b8bdb2057e497a2b22da","f4m-dcc.js":"49fbeadb3ec0b3a612ef1ab6ebf39d6cfe069d8f","f4m-search.js":"e0dc98845c7b12d799f173a2c3ee785c458b2f61","f4m-sim.js":"78b9b1540ddef597976088dbbdfd930b7b4fff06","f4m-smart-time.js":"18f93866fd1a7d8eccb913eaac75966fd4a199fb","f4m-store.js":"dc9dc02a475a7a607156bd0938259899601adc78","f4m-time.js":"c3624d88e8ee08954d333a905c82fe11ac7c81f6","f4m-ui.js":"e2e8de46f7f60e0b5435245a0f22937fedf27453","f4m-worker.js":"059bdd140189c71856902b25d9784d2d0cefb535","f4m.css":"e9462c49607a0250dfd70c65e8a9cf1b2a8dcf85","index.html":"9461aae73a53f24911b30afc455139f1a820f512","manifest.webmanifest":"1bf6b92a1634d408d667656cb437e2c4ac56addc","release.json":"c39ceb7f602603919f7dc6cc019bfd993265ac01","sw.js":"b870d9b6ae7371eba5dbab9d9f96d2aaf521981d"}
  app_old={"index.html":"28f5c3f6655e8e6a293cf4e80ff385d526bfd539","manifest.webmanifest":"c02bd547104b013f503938ffb49f6d92ac30f65a","release.json":"461ced9053df72a7deb537278ace0217cdd5c80e","sw.js":"422ca041a70e27e61d7a97b5fbbaa90496f16052"}
  for name,sha in lab_old.items(): check("LAB old/001 exact "+name,git_hash((lab/"old/001"/name).read_bytes())==sha)
  lab_002={"index.html":"3c7a7b38accda5e24acc6c8b24aeb64cf85ab542","manifest.webmanifest":"f5bc63af12db08645bb11a8b0c4498242c28dd80","release.json":"8eafc52071725d11433fad2e0e6e25cb99f407ed","sw.js":"0e4fc012393ec34cb330be8be114e9a49b8e1741"}
  for name,sha in lab_002.items(): check("LAB old/002 exact "+name,git_hash((lab/"old/002"/name).read_bytes())==sha)
+ lab_003={"index.html":"ee6333ad2c6ec49ad66eb1a825a2cc89fbf4b6ed","manifest.webmanifest":"f5bc63af12db08645bb11a8b0c4498242c28dd80","release.json":"b6ac191f31189822321fff7c4f9f2e4353401432","sw.js":"fbfa41f2e23024a321da5c2e334ff9ae60f916d1"}
+ for name,sha in lab_003.items(): check("LAB old/003 exact "+name,git_hash((lab/"old/003"/name).read_bytes())==sha)
  for name,sha in app_old.items(): check("APP old/003 exact "+name,git_hash((app/"old/003"/name).read_bytes())==sha)
  check("CURRENT index untouched",git_hash((root/"index.html").read_bytes())=="f089c9cc960f9a1f4a256f07c64717e6b841c8c3")
  check("CURRENT release untouched",git_hash((root/"release.json").read_bytes())=="3a2c5fcc7fd34b29c53007d86bb736568a4d58c2")
  check("PREVIOUS index untouched",git_hash((root/"old/index.html").read_bytes())=="2e1d111caf52803eeb95dd2d42fd8e6bcccb36b3")
  check("PREVIOUS release untouched",git_hash((root/"old/release.json").read_bytes())=="8206eb1f2d5587d886c84c05215fd28825a407d9")
- rel=json.loads((lab/"release.json").read_text());check("Unified release metadata",rel["version"]=="2.6.1-petrol" and rel["role"]=="UNIFIED_LAB" and rel["storage"]=="flip4m-unified-2.6" and rel["review"]["mode"]=="read-only")
+ rel=json.loads((lab/"release.json").read_text());check("Unified release metadata",rel["version"]=="2.6.2-petrol" and rel["role"]=="UNIFIED_LAB" and rel["storage"]=="flip4m-unified-2.6" and rel["review"]["mode"]=="read-only")
  v=json.loads((root/"versioning.json").read_text());check("One-source topology metadata",v["topology"]=="ONE_ACTIVE_LAB_SOURCE_THREE_PRESENTATIONS" and v["app_presentation"]=="/f4m/new/?view=app" and v["legacy_app"]=="/f4m/app/")
  apprel=json.loads((app/"release.json").read_text());check("APP root retired",apprel["role"]=="APP_MIGRATION_RECOVERY" and apprel["gameplay_runtime"] is False)
  apphtml=(app/"index.html").read_text();check("Retired APP has no game engine", "f4m-core.js" not in apphtml and 'id="arena"' not in apphtml and "retirement.js" in apphtml)
@@ -36,6 +38,9 @@ def verify(public:Path,out:Path,executable=None):
  check("Review present in unified source","f4m-review.js" in labhtml and (shared/"f4m-review.js").exists())
  router=(shared/"presentation.js").read_text();check("LAB/APP links use native navigation","preventDefault" not in router);check("Standalone does not force APP","const app=forced||phone||native" in router)
  check("Routing metadata documents desktop default",rel.get("presentation_routing",{}).get("desktop_default")=="LAB")
+ manifest=json.loads((lab/"manifest.webmanifest").read_text());check("LAB is installable standalone PWA",manifest.get("name")=="Flip4M LAB" and manifest.get("start_url")=="./" and manifest.get("scope")=="./" and manifest.get("display")=="standalone")
+ swtext=(lab/"sw.js").read_text();pwajs=(shared/"pwa.js").read_text();check("PWA update auto-activates complete package","self.skipWaiting()" in swtext and "self.clients.claim()" in swtext);check("PWA page reports current build","build:'2.6.2-petrol'" in pwajs)
+ check("Release documents PWA semantics",rel.get("pwa",{}).get("installable") is True and rel.get("pwa",{}).get("desktop_start")=="LAB" and rel.get("pwa",{}).get("phone_start")=="APP")
  active=(labhtml+(shared/"f4m-ui.js").read_text()+(shared/"f4m-core.js").read_text()).lower()
  check("Water/Laser not implemented",all(x not in active for x in ("water","laser","flood","beam")))
  for f in ["presentation.js","f4m-store.js","f4m-ui.js","shell.js","pwa.js","f4m-review.js"]:
@@ -96,5 +101,5 @@ if __name__=="__main__":
  ap=argparse.ArgumentParser();ap.add_argument("--public",type=Path,default=Path("public"));ap.add_argument("--out",type=Path,default=Path("flip4m-unified-evidence"));ap.add_argument("--executable");a=ap.parse_args();err=None
  try: verify(a.public,a.out,a.executable)
  except Exception as exc: err=repr(exc);print(err)
- a.out.mkdir(parents=True,exist_ok=True);report={"scope":"Flip4M unified LAB/APP 2.6.1 bounded acceptance","passed":sum(x["pass"] for x in R),"checks":len(R),"error":err,"physical_iPhone":"NOT_RUN","results":R};(a.out/"verification.json").write_text(json.dumps(report,indent=2)+"\n");print(json.dumps({k:v for k,v in report.items() if k!="results"}))
+ a.out.mkdir(parents=True,exist_ok=True);report={"scope":"Flip4M unified LAB/APP 2.6.2 bounded acceptance","passed":sum(x["pass"] for x in R),"checks":len(R),"error":err,"physical_iPhone":"NOT_RUN","results":R};(a.out/"verification.json").write_text(json.dumps(report,indent=2)+"\n");print(json.dumps({k:v for k,v in report.items() if k!="results"}))
  if err: raise SystemExit(1)

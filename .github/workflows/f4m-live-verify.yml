@@ -45,9 +45,9 @@ jobs:
           verify "$BASE/release.json" public/F4M/release.json current-release.json
           verify "$BASE/old/release.json" public/F4M/old/release.json previous-release.json
           for f in f4m-core.js f4m-search.js f4m-smart-time.js f4m-store.js f4m-ui.js f4m-review.js presentation.js shell.js pwa.js unified.css build-manifest.json; do
-            verify "$BASE/_shared/petrol-2.6.1/$f" "public/F4M/_shared/petrol-2.6.1/$f" "shared-$f"
+            verify "$BASE/_shared/petrol-2.6.2/$f" "public/F4M/_shared/petrol-2.6.2/$f" "shared-$f"
           done
-          grep -q '"version": "2.6.1-petrol"' "$tmp/new-release.json"
+          grep -q '"version": "2.6.2-petrol"' "$tmp/new-release.json"
           grep -q '"role": "APP_MIGRATION_RECOVERY"' "$tmp/app-release.json"
           grep -q '"topology": "ONE_ACTIVE_LAB_SOURCE_THREE_PRESENTATIONS"' "$tmp/versioning.json"
-          echo "LIVE_F4M_2_6_1_EXACT_BYTES_PASS"
+          echo "LIVE_F4M_2_6_2_EXACT_BYTES_PASS"

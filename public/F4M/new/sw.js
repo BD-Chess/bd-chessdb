@@ -1,5 +1,5 @@
-const BUILD="2.6.1-petrol";
-const ASSETS=["","index.html","manifest.webmanifest","release.json","../_shared/petrol-2.6.1/f4m-classical.js","../_shared/petrol-2.6.1/f4m-core.js","../_shared/petrol-2.6.1/f4m-dcc.js","../_shared/petrol-2.6.1/f4m-review.css","../_shared/petrol-2.6.1/f4m-review.js","../_shared/petrol-2.6.1/f4m-search.js","../_shared/petrol-2.6.1/f4m-sim.js","../_shared/petrol-2.6.1/f4m-smart-time.js","../_shared/petrol-2.6.1/f4m-store.js","../_shared/petrol-2.6.1/f4m-time.js","../_shared/petrol-2.6.1/f4m-ui.js","../_shared/petrol-2.6.1/f4m-worker.js","../_shared/petrol-2.6.1/f4m.css","../_shared/petrol-2.6.1/icon-180.png","../_shared/petrol-2.6.1/icon-192.png","../_shared/petrol-2.6.1/icon-512.png","../_shared/petrol-2.6.1/presentation.js","../_shared/petrol-2.6.1/pwa.js","../_shared/petrol-2.6.1/shell.js","../_shared/petrol-2.6.1/unified.css","../_shared/petrol-2.6.1/violet.css"];
+const BUILD="2.6.2-petrol";
+const ASSETS=["","index.html","manifest.webmanifest","release.json","../_shared/petrol-2.6.2/f4m-classical.js","../_shared/petrol-2.6.2/f4m-core.js","../_shared/petrol-2.6.2/f4m-dcc.js","../_shared/petrol-2.6.2/f4m-review.css","../_shared/petrol-2.6.2/f4m-review.js","../_shared/petrol-2.6.2/f4m-search.js","../_shared/petrol-2.6.2/f4m-sim.js","../_shared/petrol-2.6.2/f4m-smart-time.js","../_shared/petrol-2.6.2/f4m-store.js","../_shared/petrol-2.6.2/f4m-time.js","../_shared/petrol-2.6.2/f4m-ui.js","../_shared/petrol-2.6.2/f4m-worker.js","../_shared/petrol-2.6.2/f4m.css","../_shared/petrol-2.6.2/icon-180.png","../_shared/petrol-2.6.2/icon-192.png","../_shared/petrol-2.6.2/icon-512.png","../_shared/petrol-2.6.2/presentation.js","../_shared/petrol-2.6.2/pwa.js","../_shared/petrol-2.6.2/shell.js","../_shared/petrol-2.6.2/unified.css","../_shared/petrol-2.6.2/violet.css"];
 /* GENERATED CONFIG above. Cache ownership never extends to another channel. */
 const BASE=new URL('./',self.location.href), PREFIX='flip4m-petrol:'+BASE.pathname+':', CACHE=PREFIX+BUILD;
 const URLS=ASSETS.map(p=>new URL(p,BASE).href);
@@ -8,7 +8,9 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
  try{for(const url of URLS){const response=await fetch(url,{cache:'reload'});if(!response.ok||response.type==='opaque')throw Error('Incomplete offline package: '+url);await cache.put(url,response);}}
  catch(error){await caches.delete(CACHE);throw error;}
- // No skipWaiting: installing an update cannot interrupt an active game.
+ // The package is complete before activation. Taking over the scope does not reload an active game;
+ // versioned asset URLs plus retained prior caches keep already-open tabs safe.
+ await self.skipWaiting();
 })()));
 async function collectUnused(){
  const clients=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(c=>new URL(c.url).pathname.startsWith(BASE.pathname));
@@ -17,6 +19,7 @@ async function collectUnused(){
  const keep=new Set([CACHE,...builds.map(b=>PREFIX+b)]);
  await Promise.all((await caches.keys()).filter(k=>k.startsWith(PREFIX)&&!keep.has(k)).map(k=>caches.delete(k)));
 }
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('message',event=>{
  if(event.data?.type==='ACTIVATE_SAVED')event.waitUntil(self.skipWaiting());
  if(event.data?.type==='VERIFY_PACKAGE')event.waitUntil((async()=>{const cache=await caches.open(CACHE);let ready=true;for(const url of URLS)if(!await cache.match(url)){ready=false;break;}event.ports[0]?.postMessage({ready,build:BUILD,scope:BASE.pathname});if(ready)await collectUnused();})());
