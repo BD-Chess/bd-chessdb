@@ -21,7 +21,9 @@ jobs:
           tmp="$(mktemp -d)"
           matched=0
           for i in $(seq 1 36); do
-            if curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/release.json?probe=$i" -o "$tmp/new-release.json" && cmp -s "$tmp/new-release.json" public/F4M/new/release.json; then
+            if curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/release.json?probe=$i" -o "$tmp/new-release.json" && cmp -s "$tmp/new-release.json" public/F4M/new/release.json &&
+               curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/?probe=$i" -o "$tmp/new-index-probe.html" && cmp -s "$tmp/new-index-probe.html" public/F4M/new/index.html &&
+               curl -fsSL --retry 2 --retry-delay 1 "$BASE/_shared/petrol-2.6.2/build-manifest.json?probe=$i" -o "$tmp/build-manifest-probe.json" && cmp -s "$tmp/build-manifest-probe.json" public/F4M/_shared/petrol-2.6.2/build-manifest.json; then
               matched=1
               break
             fi
@@ -44,7 +46,7 @@ jobs:
           verify "$BASE/versioning.json" public/F4M/versioning.json versioning.json
           verify "$BASE/release.json" public/F4M/release.json current-release.json
           verify "$BASE/old/release.json" public/F4M/old/release.json previous-release.json
-          for f in f4m-core.js f4m-search.js f4m-smart-time.js f4m-store.js f4m-ui.js f4m-review.js presentation.js shell.js pwa.js unified.css build-manifest.json; do
+          for f in f4m-core.js f4m-search.js f4m-smart-time.js f4m-store.js f4m-ui.js f4m-review.js presentation.js shell.js pwa.js unified.css violet.css build-manifest.json; do
             verify "$BASE/_shared/petrol-2.6.2/$f" "public/F4M/_shared/petrol-2.6.2/$f" "shared-$f"
           done
           grep -q '"version": "2.6.2-petrol"' "$tmp/new-release.json"
