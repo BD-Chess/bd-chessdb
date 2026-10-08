@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium,webkit}=require('playwright');
 const out=path.resolve(process.env.MULTIAPP_EVIDENCE_DIR||'multiapp-evidence');fs.mkdirSync(out,{recursive:true});
-const root=path.resolve('public'),report={cases:[],externalProviders:'BLOCKED',physicalIPhone:'NOT_RUN'};
+const root=path.resolve('public'),report={cases:[],externalProviders:'BLOCKED: local unavailable (503) fixtures; no outbound provider request',physicalIPhone:'NOT_RUN'};
 const specs=[
  {name:'flip4m',route:'/F4M/new/',screen:'.device-screen',device:'.device',toolbar:'.preview-header',select:'#previewWidth'},
  {name:'sudoku',route:'/S/new/',screen:'.screen',device:'.device',toolbar:'.preview-header',select:'#previewWidth'},
@@ -32,7 +32,7 @@ async function interactions(page,s,f){
   const before=await page.evaluate(()=>F4MLab.snapshot().cursor);await page.locator('[data-view-tab="history"]').click();await page.locator('[data-view-tab="board"]').click();assert.equal(await page.evaluate(()=>F4MLab.snapshot().cursor),before);
  }
  if(s.name==='sudoku'){
-  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.document.querySelector('#welcomeOverlay.hidden')&&document.querySelector('#grid .cell.given'));
+  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>document.querySelector('#welcomeOverlay.hidden')&&document.querySelector('#grid .cell.given'));
   await f.evaluate(()=>window.stopTimer());
   const state=await f.evaluate(()=>window.SudokuNavigator.export().session);
   const i=state.board.findIndex(x=>!x);await f.locator('#grid .cell').nth(i).click();
@@ -57,8 +57,8 @@ async function interactions(page,s,f){
 }
 async function desktop(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
- await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
- const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>{if(browser.browserType().name()==='webkit'&&/due to access control checks\.$/.test(e.message)&&/(www\.chessdb\.cn\/cdb\.php|stockfish-18-lite-single\.js)/.test(e.message)){(report.blockedOrNavigationProviderErrors||=[]).push({app:s.name,error:e.message});}else errors.push(e.message);});
+ await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.fulfill({status:503,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:'{"offline":true}'}));
+ const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>{if(browser.browserType().name()==='webkit'&&/due to access control checks\.$/.test(e.message)&&/(www\.chessdb\.cn\/cdb\.php|stockfish-18-lite-single\.js)/.test(e.message)){(report.blockedOrNavigationProviderErrors||=[]).push({app:s.name,error:e.message});}else errors.push(e.stack||e.message);});
  await page.goto(base+s.route+'?view=app',{waitUntil:'load'});let f=await ready(page,s);
  assert.equal(await page.locator(s.select).inputValue(),'402',s.name+' fresh default');
  await interactions(page,s,f);
@@ -78,7 +78,14 @@ async function desktop(browser,base,s){
  await page.setViewportSize({width:1152,height:720});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1152x720-125percent-zoom-equivalent',...await geometry(page,s)});
  await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});
  await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'800x600-small-desktop',...await geometry(page,s)});
- await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'Trip width/reload keeps draft');
+ await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');if(s.name==='trip'){
+  assert.equal(await page.locator('#input').inputValue(),retained,'Trip width/reload keeps draft');
+  await page.locator('#chkDirect').check();await page.locator('#btnStandard').click();
+  await page.waitForFunction(()=>document.querySelectorAll('#routeList li').length>=3);
+  await page.locator('#routeList').scrollIntoViewIfNeeded();const g=await contained(page,s);
+  inside(await page.locator('#routeList').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,'Trip local route list');
+  await page.screenshot({path:path.join(out,'trip-route-'+browser.browserType().name()+'.png'),fullPage:true});
+ }
  await page.goto(base+s.route+'?view=app&width=375',{waitUntil:'load'});await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'375','URL priority');
  const nav=page.locator(s.toolbar+' nav');assert.equal(await nav.locator('a[aria-current="page"]').innerText(),'APP');assert.equal(await nav.locator('a').count(),4);
  await nav.getByRole('link',{name:'LAB',exact:true}).click();await page.waitForLoadState('load');assert.equal(await page.locator(s.toolbar).isVisible(),false,'LAB restores wide mode');
@@ -87,7 +94,7 @@ async function desktop(browser,base,s){
 }
 async function phone(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:402,height:874},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
- await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
+ await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.fulfill({status:503,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:'{"offline":true}'}));
  const page=await ctx.newPage();activePage=page;activeSpec=s;await page.goto(base+s.route,{waitUntil:'load'});await ready(page,s);
  assert.equal(await page.locator(s.toolbar).isVisible(),false,'phone toolbar absent');
  assert.equal(await page.locator(s.device).count(),s.name==='chess'||s.name==='trip'?0:1,'no artificial phone wrapper');
