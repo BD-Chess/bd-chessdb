@@ -19,6 +19,7 @@ async function ready(page,s){
  if(s.name==='trip')await page.locator('#input').waitFor({state:'visible'});
 }
 async function geometry(page,s){return page.evaluate(s=>{const rect=selector=>{const e=document.querySelector(selector),r=e?.getBoundingClientRect();return r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:getComputedStyle(e).display}:null;};return {screen:rect(s.screen),device:rect(s.device),toolbar:rect(s.toolbar),viewport:{width:innerWidth,height:innerHeight},scrollHeight:document.documentElement.scrollHeight};},s);}
+async function tripScrollGeometry(page,label){const value=await page.evaluate(()=>{const chain=e=>{const a=[];for(;e;e=e.parentElement){const c=getComputedStyle(e),r=e.getBoundingClientRect();a.push({node:e.tagName,id:e.id,className:e.className,position:c.position,top:c.top,bottom:c.bottom,height:c.height,overflowX:c.overflowX,overflowY:c.overflowY,transform:c.transform,scrollTop:e.scrollTop,scrollHeight:e.scrollHeight,clientHeight:e.clientHeight,rect:{top:r.top,bottom:r.bottom,height:r.height},offsetTop:e.offsetTop,offsetParent:e.offsetParent?.className||e.offsetParent?.tagName,style:e.getAttribute('style')});}return a;};return {mode:document.documentElement.dataset.tripPresentation,chat:chain(document.querySelector('#chatPanel')),route:chain(document.querySelector('#routeList'))};});(report.tripScrollDiagnostics||=[]).push({engine:page.context().browser().browserType().name(),label,...value});console.log('TRIP_SCROLL',label,JSON.stringify(value));}
 function inside(child,parent,label){assert.ok(child&&parent&&child.left>=parent.left-.6&&child.right<=parent.right+.6&&child.top>=parent.top-.6&&child.bottom<=parent.bottom+.6,label+' '+JSON.stringify({child,parent}));}
 async function contained(page,s){
  if(s.name==='chess'&&await page.locator('#board').isVisible())await page.waitForFunction(()=>{const b=document.querySelector('#board .board-b72b1')?.getBoundingClientRect(),p=document.querySelector('#board').getBoundingClientRect();return b&&b.width<=p.width+.6;});
@@ -82,7 +83,8 @@ async function desktop(browser,base,s){
   assert.equal(await page.locator('#input').inputValue(),retained,'Trip width/reload keeps draft');
   await page.locator('#chkDirect').check();await page.locator('#btnStandard').click();
   await page.waitForFunction(()=>document.querySelectorAll('#routeList li').length>=3);
-  await page.locator('#routeList').scrollIntoViewIfNeeded();const g=await contained(page,s);
+  await tripScrollGeometry(page,'before-route-scroll');
+  await page.locator('#routeList').scrollIntoViewIfNeeded();await tripScrollGeometry(page,'after-route-scroll');const g=await contained(page,s);
   inside(await page.locator('#routeList').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,'Trip local route list');
   await page.screenshot({path:path.join(out,'trip-route-'+browser.browserType().name()+'.png'),fullPage:true});
  }
