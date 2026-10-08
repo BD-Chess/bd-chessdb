@@ -5,7 +5,7 @@
  * Peer authenticity and editorial review MUST be verified by the publishing worker.
  */
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {fileURLToPath} from 'node:url';
-export const VERSION='illuminara-daily-r9-preserved-revisions';
+export const VERSION='illuminara-daily-r11-sa1-public';
 export const BASE='https://bd-chess.github.io/bd-chessdb/Nara/';
 export const hash=s=>crypto.createHash('sha256').update(s,'utf8').digest('hex');
 export const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
