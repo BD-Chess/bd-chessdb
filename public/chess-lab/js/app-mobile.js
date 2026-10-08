@@ -31,7 +31,7 @@
     const requested=new URLSearchParams(root.location.search).get('width');
     select.value=choices.includes(requested)?requested:choices.includes(saved)?saved:'402';
     const geometry=()=>{const r=screen.getBoundingClientRect();for(const edge of ['left','top','right','bottom'])doc.body.style.setProperty('--app-screen-'+edge,r[edge]+'px');};
-    const draw=()=>{doc.body.style.setProperty('--app-preview-width',select.value+'px');geometry();root.requestAnimationFrame?.(()=>{geometry();root.dispatchEvent(new Event('resize'));});};
+    const draw=()=>{doc.body.style.setProperty('--app-preview-width',select.value+'px');geometry();root.requestAnimationFrame?.(()=>{geometry();root.dispatchEvent(new Event('resize'));root.dispatchEvent(new Event('8zc:resize'));});};
     select.addEventListener('change',()=>{if(!choices.includes(select.value))return;try{root.localStorage.setItem(key,select.value);}catch(_){}const u=new URL(root.location.href);u.searchParams.set('width',select.value);root.history.replaceState(null,'',u);draw();});
     root.addEventListener('resize',geometry,{passive:true});root.addEventListener('scroll',geometry,{passive:true});
     if(root.ResizeObserver)new root.ResizeObserver(geometry).observe(screen);

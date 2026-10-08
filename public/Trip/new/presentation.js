@@ -6,6 +6,16 @@
   const deviceMobile=Boolean(navigator.userAgentData?.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||Boolean(globalThis.Capacitor?.isNativePlatform?.());
   function read(key){try{return localStorage.getItem(key);}catch(_){return null;}}
   function write(key,value){try{localStorage.setItem(key,value);}catch(_){}}
+  // A presentation navigation must keep an edited draft in the canonical backup.
+  // Merge only editor text; retain options, chat and any future schema fields.
+  function preserveEditor(){
+    const input=document.getElementById('input');if(!input)return;
+    try{const raw=localStorage.getItem('8z_trip_backup_v2'),saved=raw?JSON.parse(raw):{};
+      if(!saved||typeof saved!=='object'||Array.isArray(saved)||saved.t===input.value)return;
+      localStorage.setItem('8z_trip_backup_v2',JSON.stringify({...saved,t:input.value,ts:Date.now()}));
+    }catch(_){}
+  }
+
   if(!deviceMobile&&!standalone&&['app','lab'].includes(requested))write(KEY,requested);
   function mode(){if(deviceMobile||standalone)return 'mobile';if(requested==='app'||(requested!=='lab'&&read(KEY)==='app'))return 'app';return matchMedia('(max-width:900px)').matches?'mobile':'lab';}
   let screen;
@@ -23,7 +33,7 @@
     const select=document.getElementById('tripPreviewWidth'),q=query.get('width'),saved=read(WIDTH_KEY);
     select.value=choices.includes(q)?q:choices.includes(saved)?saved:'402';
     const draw=()=>{document.body.style.setProperty('--trip-preview-width',select.value+'px');geometry();requestAnimationFrame(()=>{geometry();dispatchEvent(new Event('resize'));});};
-    select.addEventListener('change',()=>{if(!choices.includes(select.value))return;write(WIDTH_KEY,select.value);const u=new URL(location.href);u.searchParams.set('view','app');u.searchParams.set('width',select.value);history.replaceState(null,'',u);draw();});
+    select.addEventListener('change',()=>{if(!choices.includes(select.value))return;preserveEditor();write(WIDTH_KEY,select.value);const u=new URL(location.href);u.searchParams.set('view','app');u.searchParams.set('width',select.value);history.replaceState(null,'',u);draw();});
     if(globalThis.ResizeObserver)new ResizeObserver(geometry).observe(screen);
     new MutationObserver(geometry).observe(document.body,{attributes:true,attributeFilter:['style']});
     draw();
@@ -35,5 +45,6 @@
     for(const link of document.querySelectorAll('[data-presentation-link]')){const active=link.dataset.presentationLink===(value==='app'?'app':'lab');if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
     if(value==='app')makeDevice();
   }
+  document.addEventListener('click',event=>{if(event.target.closest?.('[data-presentation-link],.trip-preview-nav a'))preserveEditor();},true);
   apply();addEventListener('resize',apply,{passive:true});addEventListener('scroll',geometry,{passive:true});addEventListener('DOMContentLoaded',apply,{once:true});
 })();

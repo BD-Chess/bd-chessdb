@@ -21,8 +21,9 @@ async function ready(page,s){
 async function geometry(page,s){return page.evaluate(s=>{const rect=selector=>{const e=document.querySelector(selector),r=e?.getBoundingClientRect();return r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:getComputedStyle(e).display}:null;};return {screen:rect(s.screen),device:rect(s.device),toolbar:rect(s.toolbar),viewport:{width:innerWidth,height:innerHeight},scrollHeight:document.documentElement.scrollHeight};},s);}
 function inside(child,parent,label){assert.ok(child&&parent&&child.left>=parent.left-.6&&child.right<=parent.right+.6&&child.top>=parent.top-.6&&child.bottom<=parent.bottom+.6,label+' '+JSON.stringify({child,parent}));}
 async function contained(page,s){
+ if(s.name==='chess'&&await page.locator('#board').isVisible())await page.waitForFunction(()=>{const b=document.querySelector('#board .board-b72b1')?.getBoundingClientRect(),p=document.querySelector('#board').getBoundingClientRect();return b&&b.width<=p.width+.6;});
  const g=await geometry(page,s);inside(g.screen,g.device,s.name+' screen');assert.ok(g.toolbar.bottom<=g.device.top+.6,s.name+' toolbar outside phone');assert.ok(Math.abs((g.device.left+g.device.right)/2-g.viewport.width/2)<=10,s.name+' centered');
- const selectors={flip4m:['#main','.workspace-tabs'],sudoku:['#sudokuGame'],chess:['#main','.app-tabs'],trip:['#chatPanel']};
+ const selectors={flip4m:['#main','.workspace-tabs'],sudoku:['#sudokuGame'],chess:['#main','#board .board-b72b1','.app-tabs'],trip:['#chatPanel']};
  for(const selector of selectors[s.name]){const e=page.locator(selector);if(await e.isVisible())inside(await e.boundingBox().then(r=>r&&({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,s.name+' '+selector);}
  return g;
 }
@@ -31,7 +32,7 @@ async function interactions(page,s,f){
   const before=await page.evaluate(()=>F4MLab.snapshot().cursor);await page.locator('[data-view-tab="history"]').click();await page.locator('[data-view-tab="board"]').click();assert.equal(await page.evaluate(()=>F4MLab.snapshot().cursor),before);
  }
  if(s.name==='sudoku'){
-  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.export().session?.puzzle?.some(x=>x));
+  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.document.querySelector('#welcomeOverlay.hidden')&&document.querySelector('#grid .cell.given'));
   await f.evaluate(()=>window.stopTimer());
   const state=await f.evaluate(()=>window.SudokuNavigator.export().session);
   const i=state.board.findIndex(x=>!x);await f.locator('#grid .cell').nth(i).click();
@@ -50,14 +51,14 @@ async function interactions(page,s,f){
   const before=await page.locator('#input').inputValue();
   await page.locator('[data-language="sl"]').click();await page.locator('[data-language="en"]').click();assert.equal(await page.locator('#input').inputValue(),before);
   await page.locator('#btnHelp').click();const g=await geometry(page,s);inside(await page.locator('#helpOverlay').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,'Trip help dialog');await page.screenshot({path:path.join(out,'trip-help-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#btnCloseHelp').click();
-  await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),true);await contained(page,s);await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
+  await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),true);await contained(page,s);await page.screenshot({path:path.join(out,'trip-chat-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
   await page.locator('#btnMapMode').click();await page.locator('#mapContainer').scrollIntoViewIfNeeded();const mapRect=await page.locator('#mapContainer').boundingBox();assert.ok(mapRect.width<=402,'Trip map fits mobile column');await page.locator('#btnPlanMode').click();
  }
 }
 async function desktop(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
  await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
- const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>errors.push(e.message));
+ const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>{if(browser.browserType().name()==='webkit'&&/due to access control checks\.$/.test(e.message)&&/(www\.chessdb\.cn\/cdb\.php|stockfish-18-lite-single\.js)/.test(e.message)){(report.blockedOrNavigationProviderErrors||=[]).push({app:s.name,error:e.message});}else errors.push(e.message);});
  await page.goto(base+s.route+'?view=app',{waitUntil:'load'});let f=await ready(page,s);
  assert.equal(await page.locator(s.select).inputValue(),'402',s.name+' fresh default');
  await interactions(page,s,f);
@@ -73,11 +74,11 @@ async function desktop(browser,base,s){
   if(s.name==='chess')assert.equal(await page.evaluate(()=>ChessLabHost.getContext().fen),retained,'width keeps chess study');
   if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'width keeps plan');
  }
- await page.locator(s.select).selectOption('402');await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png'),fullPage:true});
+ await page.locator(s.select).selectOption('402');await contained(page,s);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png'),fullPage:true});
  await page.setViewportSize({width:1152,height:720});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1152x720-125percent-zoom-equivalent',...await geometry(page,s)});
  await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});
  await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'800x600-small-desktop',...await geometry(page,s)});
- await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');
+ await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'Trip width/reload keeps draft');
  await page.goto(base+s.route+'?view=app&width=375',{waitUntil:'load'});await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'375','URL priority');
  const nav=page.locator(s.toolbar+' nav');assert.equal(await nav.locator('a[aria-current="page"]').innerText(),'APP');assert.equal(await nav.locator('a').count(),4);
  await nav.getByRole('link',{name:'LAB',exact:true}).click();await page.waitForLoadState('load');assert.equal(await page.locator(s.toolbar).isVisible(),false,'LAB restores wide mode');
