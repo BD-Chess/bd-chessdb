@@ -1,0 +1,47 @@
+name: Multiapp APP preview
+on:
+  pull_request:
+    paths:
+      - 'public/F4M/_shared/petrol-2.6.2/**'
+      - 'public/F4M/new/index.html'
+      - 'public/S/new/index.html'
+      - 'public/chess-lab/css/app-mobile.css'
+      - 'public/chess-lab/js/app-mobile.js'
+      - 'public/chess-lab/index.html'
+      - 'public/Trip/new/presentation.js'
+      - 'public/Trip/new/style.css'
+      - 'public/Trip/new/index.html'
+      - 'tests/multiapp-preview-browser.cjs'
+      - '.github/workflows/multiapp-preview.yml'
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused dependencies
+        run: |
+          npm ci --prefix tests/sudoku
+          npm install --prefix "$RUNNER_TEMP/preview-deps" --no-package-lock --ignore-scripts playwright@1.55.0
+          echo "NODE_PATH=$GITHUB_WORKSPACE/tests/sudoku/node_modules:$RUNNER_TEMP/preview-deps/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/preview-deps/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Existing focused regressions and exact packages
+        run: |
+          node --test tests/sudoku-app-preview.test.cjs tests/sudoku-unified-lab-app.test.cjs tests/trip-mobile-ui.test.mjs public/chess-lab/research/mobile-unified.test.cjs
+          node scripts/build-sudoku-pwa.cjs --check
+          python tools/build-chess-channel-pwas.py --check
+          git diff --check
+      - name: Real browser phone containment and interactions
+        env:
+          MULTIAPP_EVIDENCE_DIR: ${{ runner.temp }}/multiapp-evidence
+        run: node tests/multiapp-preview-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multiapp-preview-evidence
+          path: ${{ runner.temp }}/multiapp-evidence

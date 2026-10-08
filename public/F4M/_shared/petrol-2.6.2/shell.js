@@ -68,9 +68,10 @@
     document.documentElement.classList.toggle('app-phone',phone);
     if(document.documentElement.classList.contains('app-phone')){const nav=document.querySelector('.brand-header .version-nav');if(nav)document.querySelector('.brand-header').prepend(nav);}
     const choices=['375','390','402','430'];const q=new URLSearchParams(location.search).get('width');
-    if(choices.includes(q))$('previewWidth').value=q;
+    const widthKey='flip4m.preview-width';let saved;try{saved=localStorage.getItem(widthKey);}catch(_){}
+    $('previewWidth').value=choices.includes(q)?q:choices.includes(saved)?saved:'402';
     const draw=()=>document.querySelector('.device').style.setProperty('--device-width',$('previewWidth').value+'px');
-    $('previewWidth').onchange=draw;draw();
+    $('previewWidth').onchange=()=>{const value=$('previewWidth').value;if(!choices.includes(value))return;try{localStorage.setItem(widthKey,value);}catch(_){}const url=new URL(location.href);url.searchParams.set('width',value);history.replaceState(null,'',url);draw();};draw();
   }
   document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}));
   window.F4MShell=Object.freeze({setView,translate,text,setBoardSize,getBoardSize:()=>document.body.dataset.boardSize,getView:()=>view});

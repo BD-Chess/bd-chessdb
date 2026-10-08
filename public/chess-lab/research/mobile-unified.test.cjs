@@ -96,9 +96,11 @@ test('desktop APP simulation uses the same mobile controller and stays forced ac
   assert.equal(x.d.querySelector('[data-app-presentation]').getAttribute('aria-current'), 'page');
   assert.equal(x.d.querySelector('[data-lab-presentation]').getAttribute('aria-current'), null);
   assert.equal(x.byId('appPreviewDesktopTools').hidden, false);
-  assert.match(mobileCss, /--app-preview-height:min\(874px,calc\(100dvh - 24px\)\)/);
-  assert.match(mobileCss, /top:50%;left:50%;transform:translate\(-50%,-50%\)/);
-  assert.match(mobileCss, /\.app-tabs\{[\s\S]*bottom:var\(--app-preview-inset\)/);
+  assert.equal(x.d.querySelector('.app-preview-screen').contains(x.byId('appTabs')),true);
+  assert.equal(x.d.querySelector('.app-preview-content').contains(x.byId('main')),true);
+  assert.equal(x.byId('appPreviewWidth').value,'402');
+  assert.match(mobileCss, /height:886px/);
+  assert.match(mobileCss, /\.app-tabs\{[\s\S]*bottom:25px/);
   x.w.dispatchEvent(new x.w.Event('resize'));
   await flush();
   assert.equal(x.d.body.classList.contains('app-preview-desktop'), true);
