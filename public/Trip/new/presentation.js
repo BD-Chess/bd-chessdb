@@ -51,5 +51,18 @@
     if(value==='app')makeDevice();
   }
   document.addEventListener('click',event=>{if(event.target.closest?.('[data-presentation-link],.trip-preview-nav a'))preserveEditor();},true);
+  // Safari can leave the bottom of a newly focused Plan field clipped by the
+  // nested scrollport. Correct only the phone content after its focus scroll.
+  document.addEventListener('focusin',event=>{
+    const target=event.target,content=screen?.querySelector('.trip-preview-content');
+    if(document.documentElement.dataset.tripPresentation!=='app'||!content?.contains(target))return;
+    requestAnimationFrame(()=>{
+      if(!target.isConnected||document.activeElement!==target)return;
+      const field=target.getBoundingClientRect(),port=content.getBoundingClientRect();
+      if(field.height>port.height)return;
+      if(field.bottom>port.bottom)content.scrollTop+=field.bottom-port.bottom+12;
+      else if(field.top<port.top)content.scrollTop-=port.top-field.top+12;
+    });
+  });
   apply();addEventListener('resize',apply,{passive:true});addEventListener('scroll',geometry,{passive:true});addEventListener('DOMContentLoaded',apply,{once:true});
 })();

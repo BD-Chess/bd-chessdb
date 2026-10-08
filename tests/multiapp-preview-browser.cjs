@@ -58,6 +58,7 @@ async function interactions(page,s,f){
   await page.screenshot({path:path.join(out,'trip-chat-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
   await page.locator('#btnMapMode').click();await page.locator('#mapContainer').scrollIntoViewIfNeeded();const mapRect=await page.locator('#mapContainer').boundingBox();assert.ok(mapRect.width<=402,'Trip map fits mobile column');await page.locator('#btnPlanMode').click();
   await page.waitForFunction(()=>document.activeElement===document.querySelector('#bigChatInput'));
+  await page.waitForFunction(()=>{const field=document.querySelector('#bigChatInput').getBoundingClientRect(),port=document.querySelector('.trip-preview-content').getBoundingClientRect();return field.top>=port.top-.6&&field.bottom<=port.bottom+.6;});
   const planGeometry=await contained(page,s);inside(await page.locator('#bigChatInput').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),await page.locator('.trip-preview-content').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})), 'Trip Plan input visible inside scroll area');
   await page.screenshot({path:path.join(out,'trip-plan-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#btnMapMode').click();
  }
