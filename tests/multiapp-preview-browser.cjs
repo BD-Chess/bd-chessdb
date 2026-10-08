@@ -31,7 +31,7 @@ async function interactions(page,s,f){
   const before=await page.evaluate(()=>F4MLab.snapshot().cursor);await page.locator('[data-view-tab="history"]').click();await page.locator('[data-view-tab="board"]').click();assert.equal(await page.evaluate(()=>F4MLab.snapshot().cursor),before);
  }
  if(s.name==='sudoku'){
-  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.export().session.puzzle.some(x=>x));
+  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.export().session?.puzzle?.some(x=>x));
   await f.evaluate(()=>window.stopTimer());
   const state=await f.evaluate(()=>window.SudokuNavigator.export().session);
   const i=state.board.findIndex(x=>!x);await f.locator('#grid .cell').nth(i).click();
@@ -74,8 +74,9 @@ async function desktop(browser,base,s){
   if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'width keeps plan');
  }
  await page.locator(s.select).selectOption('402');await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png'),fullPage:true});
+ await page.setViewportSize({width:1152,height:720});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1152x720-125percent-zoom-equivalent',...await geometry(page,s)});
  await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});
- await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);
+ await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'800x600-small-desktop',...await geometry(page,s)});
  await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');
  await page.goto(base+s.route+'?view=app&width=375',{waitUntil:'load'});await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'375','URL priority');
  const nav=page.locator(s.toolbar+' nav');assert.equal(await nav.locator('a[aria-current="page"]').innerText(),'APP');assert.equal(await nav.locator('a').count(),4);
@@ -92,4 +93,15 @@ async function phone(browser,base,s){
  const widths=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(widths.scroll<=widths.client,s.name+' phone overflow '+JSON.stringify(widths));
  await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-phone.png')});report.cases.push({engine:browser.browserType().name(),app:s.name,size:'402x874-touch',frameless:true});await ctx.close();
 }
-(async()=>{const base=await serve();for(const engine of [chromium,webkit]){const browser=await engine.launch();try{for(const spec of specs){await desktop(browser,base,spec);await phone(browser,base,spec);console.log('PASS',browser.browserType().name(),spec.name);}}finally{await browser.close();}}fs.writeFileSync(path.join(out,'geometry.json'),JSON.stringify(report,null,2));console.log('MULTIAPP_BROWSER_PASS',report.cases.length);})().catch(async e=>{if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:path.join(out,activeSpec.name+'-FAIL.png'),fullPage:true}).catch(()=>{});report.failureGeometry=await geometry(activePage,activeSpec).catch(()=>null);}fs.writeFileSync(path.join(out,'partial-geometry.json'),JSON.stringify(report,null,2));fs.writeFileSync(path.join(out,'failure.txt'),e.stack||String(e));console.error(e);process.exitCode=1;}).finally(()=>server?.close());
+(async()=>{const base=await serve();report.failures=[];
+ for(const engine of [chromium,webkit]){const browser=await engine.launch();try{
+  for(const spec of specs){try{await desktop(browser,base,spec);await phone(browser,base,spec);console.log('PASS',browser.browserType().name(),spec.name);}
+   catch(e){report.failures.push({engine:browser.browserType().name(),app:spec.name,error:e.stack||String(e)});console.error('FAIL',browser.browserType().name(),spec.name,e.message);
+    if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:path.join(out,spec.name+'-'+browser.browserType().name()+'-FAIL.png'),fullPage:true}).catch(()=>{});report.failures.at(-1).geometry=await geometry(activePage,spec).catch(()=>null);await activePage.context().close();}
+   }
+  }
+ }finally{await browser.close();}}
+ fs.writeFileSync(path.join(out,'geometry.json'),JSON.stringify(report,null,2));
+ if(report.failures.length)throw Error('Browser acceptance failures: '+report.failures.map(x=>x.engine+'/'+x.app+': '+x.error.split('\n')[0]).join(' | '));
+ console.log('MULTIAPP_BROWSER_PASS',report.cases.length);
+})().catch(e=>{fs.writeFileSync(path.join(out,'failure.txt'),e.stack||String(e));console.error(e);process.exitCode=1;}).finally(()=>server?.close());
