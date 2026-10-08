@@ -58,7 +58,7 @@ async function interactions(page,s,f){
   await page.screenshot({path:path.join(out,'trip-chat-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
   await page.locator('#btnMapMode').click();await page.locator('#mapContainer').scrollIntoViewIfNeeded();const mapRect=await page.locator('#mapContainer').boundingBox();assert.ok(mapRect.width<=402,'Trip map fits mobile column');await page.locator('#btnPlanMode').click();
   await page.waitForFunction(()=>document.activeElement===document.querySelector('#bigChatInput'));
-  const planGeometry=await contained(page,s);inside(await page.locator('#bigChatInput').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),planGeometry.screen,'Trip Plan input');
+  const planGeometry=await contained(page,s);inside(await page.locator('#bigChatInput').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),await page.locator('.trip-preview-content').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})), 'Trip Plan input visible inside scroll area');
   await page.screenshot({path:path.join(out,'trip-plan-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#btnMapMode').click();
  }
 }
@@ -68,6 +68,7 @@ async function desktop(browser,base,s){
  const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>{if(browser.browserType().name()==='webkit'&&/due to access control checks\.$/.test(e.message)&&/(www\.chessdb\.cn\/cdb\.php|stockfish-18-lite-single\.js)/.test(e.message)){(report.blockedOrNavigationProviderErrors||=[]).push({app:s.name,error:e.message});}else errors.push(e.stack||e.message);});
  await page.goto(base+s.route+'?view=app',{waitUntil:'load'});let f=await ready(page,s);
  assert.equal(await page.locator(s.select).inputValue(),'402',s.name+' fresh default');
+ assert.match(await page.locator(s.select).evaluate(e=>getComputedStyle(e).colorScheme),/dark/,s.name+' native select contrast');
  await interactions(page,s,f);
  let retained;
  if(s.name==='sudoku')retained=await f.evaluate(()=>JSON.stringify(SudokuNavigator.export().session.board));
@@ -81,7 +82,10 @@ async function desktop(browser,base,s){
   if(s.name==='chess')assert.equal(await page.evaluate(()=>ChessLabHost.getContext().fen),retained,'width keeps chess study');
   if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'width keeps plan');
  }
- await page.locator(s.select).selectOption('402');await contained(page,s);await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png'),fullPage:true});
+ await page.locator(s.select).selectOption('402');await contained(page,s);
+ await page.setViewportSize({width:1440,height:1200});await page.evaluate(()=>scrollTo(0,0));await page.waitForFunction(()=>scrollY===0);await contained(page,s);
+ (report.screenshotViewports||=[]).push({engine:browser.browserType().name(),app:s.name,width:1440,height:1200,screenWidth:402});
+ await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png')});await page.setViewportSize({width:1440,height:900});
  await page.setViewportSize({width:1152,height:720});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1152x720-125percent-zoom-equivalent',...await geometry(page,s)});
  await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});
  await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'800x600-small-desktop',...await geometry(page,s)});
