@@ -10,7 +10,7 @@ const specs=[
  {name:'chess',route:'/chess-lab/',screen:'.app-preview-screen',device:'.app-preview-device',toolbar:'#appPreviewDesktopTools',select:'#appPreviewWidth'},
  {name:'trip',route:'/Trip/new/',screen:'.trip-preview-screen',device:'.trip-preview-device',toolbar:'.trip-preview-toolbar',select:'#tripPreviewWidth'}
 ];
-let server;
+let server,activePage,activeSpec;
 async function serve(){server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost');let p=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!p.startsWith(root+path.sep))return res.writeHead(403).end();if(u.pathname.endsWith('/'))p=path.join(p,'index.html');fs.readFile(p,(e,b)=>{if(e)return res.writeHead(404).end();const ext=path.extname(p);res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.wasm':'application/wasm','.png':'image/png','.svg':'image/svg+xml'})[ext]||'application/octet-stream');res.end(b);});});await new Promise(r=>server.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+server.address().port;}
 async function ready(page,s){
  if(s.name==='flip4m')await page.waitForFunction(()=>window.F4MLab?.snapshot&&document.querySelectorAll('.cell').length>0);
@@ -31,7 +31,7 @@ async function interactions(page,s,f){
   const before=await page.evaluate(()=>F4MLab.snapshot().cursor);await page.locator('[data-view-tab="history"]').click();await page.locator('[data-view-tab="board"]').click();assert.equal(await page.evaluate(()=>F4MLab.snapshot().cursor),before);
  }
  if(s.name==='sudoku'){
-  await f.getByRole('button',{name:'Easy',exact:true}).click();await f.waitForFunction(()=>window.SudokuNavigator.export().session.givens.some(x=>x));
+  await f.getByRole('button',{name:/^(Easy|Lahka)$/}).click();await f.waitForFunction(()=>window.SudokuNavigator.export().session.puzzle.some(x=>x));
   await f.evaluate(()=>window.stopTimer());
   const state=await f.evaluate(()=>window.SudokuNavigator.export().session);
   const i=state.board.findIndex(x=>!x);await f.locator('#grid .cell').nth(i).click();
@@ -57,7 +57,7 @@ async function interactions(page,s,f){
 async function desktop(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});
  await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
- const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await ctx.newPage(),errors=[];activePage=page;activeSpec=s;page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base+s.route+'?view=app',{waitUntil:'load'});let f=await ready(page,s);
  assert.equal(await page.locator(s.select).inputValue(),'402',s.name+' fresh default');
  await interactions(page,s,f);
@@ -86,10 +86,10 @@ async function desktop(browser,base,s){
 async function phone(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:402,height:874},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
  await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.abort());
- const page=await ctx.newPage();await page.goto(base+s.route,{waitUntil:'load'});await ready(page,s);
+ const page=await ctx.newPage();activePage=page;activeSpec=s;await page.goto(base+s.route,{waitUntil:'load'});await ready(page,s);
  assert.equal(await page.locator(s.toolbar).isVisible(),false,'phone toolbar absent');
  assert.equal(await page.locator(s.device).count(),s.name==='chess'||s.name==='trip'?0:1,'no artificial phone wrapper');
  const widths=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(widths.scroll<=widths.client,s.name+' phone overflow '+JSON.stringify(widths));
  await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-phone.png')});report.cases.push({engine:browser.browserType().name(),app:s.name,size:'402x874-touch',frameless:true});await ctx.close();
 }
-(async()=>{const base=await serve();for(const engine of [chromium,webkit]){const browser=await engine.launch();try{for(const spec of specs){await desktop(browser,base,spec);await phone(browser,base,spec);console.log('PASS',browser.browserType().name(),spec.name);}}finally{await browser.close();}}fs.writeFileSync(path.join(out,'geometry.json'),JSON.stringify(report,null,2));console.log('MULTIAPP_BROWSER_PASS',report.cases.length);})().catch(e=>{fs.writeFileSync(path.join(out,'failure.txt'),e.stack||String(e));console.error(e);process.exitCode=1;}).finally(()=>server?.close());
+(async()=>{const base=await serve();for(const engine of [chromium,webkit]){const browser=await engine.launch();try{for(const spec of specs){await desktop(browser,base,spec);await phone(browser,base,spec);console.log('PASS',browser.browserType().name(),spec.name);}}finally{await browser.close();}}fs.writeFileSync(path.join(out,'geometry.json'),JSON.stringify(report,null,2));console.log('MULTIAPP_BROWSER_PASS',report.cases.length);})().catch(async e=>{if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:path.join(out,activeSpec.name+'-FAIL.png'),fullPage:true}).catch(()=>{});report.failureGeometry=await geometry(activePage,activeSpec).catch(()=>null);}fs.writeFileSync(path.join(out,'partial-geometry.json'),JSON.stringify(report,null,2));fs.writeFileSync(path.join(out,'failure.txt'),e.stack||String(e));console.error(e);process.exitCode=1;}).finally(()=>server?.close());
