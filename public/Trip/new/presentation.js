@@ -28,8 +28,11 @@
     const stage=document.createElement('div');stage.className='trip-preview-stage';
     stage.innerHTML='<div class="trip-preview-device"><div class="trip-preview-screen"><div class="trip-preview-island" aria-hidden="true"></div><div class="trip-preview-content"></div><div class="trip-preview-home" aria-hidden="true"></div></div></div>';
     screen=stage.querySelector('.trip-preview-screen');
+    // Capture before detaching the wrapper: document.getElementById cannot
+    // find its chat while the runtime is inside a detached preview stage.
+    const chat=wrapper.querySelector('#chatPanel');
     stage.querySelector('.trip-preview-content').append(wrapper);
-    const chat=document.getElementById('chatPanel');if(chat)screen.append(chat);
+    if(chat)screen.append(chat);
     for(const dialog of document.querySelectorAll('body>dialog'))screen.append(dialog);
     document.body.append(stage);
     const select=document.getElementById('tripPreviewWidth'),q=query.get('width'),saved=read(WIDTH_KEY);
