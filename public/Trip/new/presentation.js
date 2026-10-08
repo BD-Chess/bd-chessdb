@@ -21,7 +21,9 @@
   let screen;
   function geometry(){if(!screen)return;const r=screen.getBoundingClientRect();for(const edge of ['left','top','right','bottom']){const key='--trip-screen-'+edge,value=r[edge]+'px';if(document.body.style.getPropertyValue(key)!==value)document.body.style.setProperty(key,value);}}
   function makeDevice(){
-    if(screen)return;
+    // Resize may fire while the parser is still building the wrapper. Move the
+    // complete runtime only after chat and dialogs exist, including on reload.
+    if(screen||document.readyState==='loading')return;
     const wrapper=document.querySelector('.app-wrapper');if(!wrapper)return;
     const stage=document.createElement('div');stage.className='trip-preview-stage';
     stage.innerHTML='<div class="trip-preview-device"><div class="trip-preview-screen"><div class="trip-preview-island" aria-hidden="true"></div><div class="trip-preview-content"></div><div class="trip-preview-home" aria-hidden="true"></div></div></div>';

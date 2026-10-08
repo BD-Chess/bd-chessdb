@@ -19,7 +19,7 @@ async function ready(page,s){
  if(s.name==='trip')await page.locator('#input').waitFor({state:'visible'});
 }
 async function geometry(page,s){return page.evaluate(s=>{const rect=selector=>{const e=document.querySelector(selector),r=e?.getBoundingClientRect();return r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:getComputedStyle(e).display}:null;};return {screen:rect(s.screen),device:rect(s.device),toolbar:rect(s.toolbar),viewport:{width:innerWidth,height:innerHeight},scrollHeight:document.documentElement.scrollHeight};},s);}
-async function tripScrollGeometry(page,label){const value=await page.evaluate(()=>{const chain=e=>{const a=[];for(;e;e=e.parentElement){const c=getComputedStyle(e),r=e.getBoundingClientRect();a.push({node:e.tagName,id:e.id,className:e.className,position:c.position,top:c.top,bottom:c.bottom,height:c.height,overflowX:c.overflowX,overflowY:c.overflowY,transform:c.transform,scrollTop:e.scrollTop,scrollHeight:e.scrollHeight,clientHeight:e.clientHeight,rect:{top:r.top,bottom:r.bottom,height:r.height},offsetTop:e.offsetTop,offsetParent:e.offsetParent?.className||e.offsetParent?.tagName,style:e.getAttribute('style')});}return a;};return {mode:document.documentElement.dataset.tripPresentation,chat:chain(document.querySelector('#chatPanel')),route:chain(document.querySelector('#routeList'))};});(report.tripScrollDiagnostics||=[]).push({engine:page.context().browser().browserType().name(),label,...value});console.log('TRIP_SCROLL',label,JSON.stringify(value));}
+async function tripScrollGeometry(page,label){const value=await page.evaluate(()=>{const chat=document.querySelector('#chatPanel'),content=document.querySelector('.trip-preview-content'),r=chat.getBoundingClientRect();return {mode:document.documentElement.dataset.tripPresentation,chatParent:chat.parentElement.className,chatPosition:getComputedStyle(chat).position,chatRect:{top:r.top,bottom:r.bottom,height:r.height},contentScrollTop:content.scrollTop,screenScrollTop:document.querySelector('.trip-preview-screen').scrollTop};});(report.tripScrollDiagnostics||=[]).push({engine:page.context().browser().browserType().name(),label,...value});assert.equal(value.chatParent,'trip-preview-screen','Trip chat is outside scrolling content');return value;}
 function inside(child,parent,label){assert.ok(child&&parent&&child.left>=parent.left-.6&&child.right<=parent.right+.6&&child.top>=parent.top-.6&&child.bottom<=parent.bottom+.6,label+' '+JSON.stringify({child,parent}));}
 async function contained(page,s){
  if(s.name==='chess'&&await page.locator('#board').isVisible())await page.waitForFunction(()=>{const b=document.querySelector('#board .board-b72b1')?.getBoundingClientRect(),p=document.querySelector('#board').getBoundingClientRect();return b&&b.width<=p.width+.6;});
@@ -52,8 +52,14 @@ async function interactions(page,s,f){
   const before=await page.locator('#input').inputValue();
   await page.locator('[data-language="sl"]').click();await page.locator('[data-language="en"]').click();assert.equal(await page.locator('#input').inputValue(),before);
   await page.locator('#btnHelp').click();const g=await geometry(page,s);inside(await page.locator('#helpOverlay').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,'Trip help dialog');await page.screenshot({path:path.join(out,'trip-help-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#btnCloseHelp').click();
-  await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),true);await contained(page,s);await page.screenshot({path:path.join(out,'trip-chat-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
+  await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),true);
+  await page.waitForFunction(()=>Math.abs(document.querySelector('#chatPanel').getBoundingClientRect().height-874*.7)<1);
+  const chatGeometry=await contained(page,s);inside(await page.locator('#chatPanel .chat-input').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),chatGeometry.screen,'Trip chat input');
+  await page.screenshot({path:path.join(out,'trip-chat-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#chatPanel .chat-head').click();assert.equal(await page.locator('#chatPanel').evaluate(e=>e.classList.contains('open')),false);
   await page.locator('#btnMapMode').click();await page.locator('#mapContainer').scrollIntoViewIfNeeded();const mapRect=await page.locator('#mapContainer').boundingBox();assert.ok(mapRect.width<=402,'Trip map fits mobile column');await page.locator('#btnPlanMode').click();
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('#bigChatInput'));
+  const planGeometry=await contained(page,s);inside(await page.locator('#bigChatInput').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),planGeometry.screen,'Trip Plan input');
+  await page.screenshot({path:path.join(out,'trip-plan-'+page.context().browser().browserType().name()+'.png'),fullPage:true});await page.locator('#btnMapMode').click();
  }
 }
 async function desktop(browser,base,s){
@@ -84,7 +90,7 @@ async function desktop(browser,base,s){
   await page.locator('#chkDirect').check();await page.locator('#btnStandard').click();
   await page.waitForFunction(()=>document.querySelectorAll('#routeList li').length>=3);
   await tripScrollGeometry(page,'before-route-scroll');
-  await page.locator('#routeList').scrollIntoViewIfNeeded();await tripScrollGeometry(page,'after-route-scroll');const g=await contained(page,s);
+  await page.locator('#routeList').scrollIntoViewIfNeeded();const after=await tripScrollGeometry(page,'after-route-scroll');assert.ok(after.contentScrollTop>0,'Trip results scroll inside phone');assert.equal(after.screenScrollTop,0,'Trip hardware screen does not scroll');const g=await contained(page,s);
   inside(await page.locator('#routeList').boundingBox().then(r=>({left:r.x,right:r.x+r.width,top:r.y,bottom:r.y+r.height})),g.screen,'Trip local route list');
   await page.screenshot({path:path.join(out,'trip-route-'+browser.browserType().name()+'.png'),fullPage:true});
  }
