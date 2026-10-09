@@ -1,0 +1,71 @@
+name: One-shot read-only Netlify four-CURRENT live audit
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-four-current-live-audit.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    if: "${{ startsWith(github.event.head_commit.message, 'ops: live netlify audit 20261009') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 33a4e359a00e15e8043df94544a1ec3800dacf69
+      - name: Compare live static source artifacts and HTML version markers, no API calls
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib, urllib.request, urllib.error, time
+          root=pathlib.Path('public')
+          checks=[
+              ('MDLX Flip4M release','https://www.mdlxdcc.org/F4M/release.json', 'F4M/release.json'),
+              ('MDLX Flip4M current JS','https://www.mdlxdcc.org/F4M/current-store.js', 'F4M/current-store.js'),
+              ('MDLX Sudoku release','https://www.mdlxdcc.org/S/release.json', 'S/release.json'),
+              ('MDLX Sudoku CURRENT PWA','https://www.mdlxdcc.org/S/sw.js', 'S/sw.js'),
+              ('MDLX Chess release','https://www.mdlxdcc.org/chess/release.json', 'chess/release.json'),
+              ('MDLX Chess current JS','https://www.mdlxdcc.org/chess/js/app-mobile.js', 'chess/js/app-mobile.js'),
+              ('MDLX Trip current presentation','https://www.mdlxdcc.org/Trip/presentation.js', 'Trip/presentation.js'),
+              ('MDLX Trip current UI','https://www.mdlxdcc.org/Trip/app.js', 'Trip/app.js'),
+              ('CHESSBEST root release','https://chessbest.org/release.json', 'chess/release.json'),
+              ('CHESSBEST current JS','https://chessbest.org/js/app-mobile.js', 'chess/js/app-mobile.js'),
+          ]
+          pages=[
+              ('MDLX Flip4M','https://www.mdlxdcc.org/F4M/','data-channel="current"'),
+              ('MDLX Sudoku','https://www.mdlxdcc.org/S/','data-channel="current"'),
+              ('MDLX Chess','https://www.mdlxdcc.org/chess/','data-channel="current"'),
+              ('MDLX Trip','https://www.mdlxdcc.org/Trip/','presentation.js?v=20261009-current1'),
+              ('CHESSBEST root','https://chessbest.org/','data-channel="current"'),
+          ]
+          def fetch(url):
+              req=urllib.request.Request(url+'?bd-audit=20261009',headers={'Cache-Control':'no-cache','User-Agent':'BD-AI8-public-release-audit/1'})
+              with urllib.request.urlopen(req,timeout=20) as res:
+                  return res.read(),res.geturl(),res.status
+          count=0;fail=0
+          for name,url,local in checks:
+              try:
+                  b,final,status=fetch(url)
+                  expected=(root/local).read_bytes()
+                  same=b==expected
+                  print(('PASS' if same else 'MISMATCH'),name,'http',status,'bytes',len(b),'expected',len(expected),'live_sha256',hashlib.sha256(b).hexdigest(),'ref_sha256',hashlib.sha256(expected).hexdigest(),'final_url',final,flush=True)
+                  fail+=0 if same else 1
+              except Exception as e:
+                  print('UNAVAILABLE',name,type(e).__name__,str(e)[:120],flush=True);fail+=1
+              count+=1
+          for name,url,marker in pages:
+              try:
+                  b,final,status=fetch(url)
+                  html=b.decode('utf-8',errors='replace')
+                  found=marker in html
+                  versions=[v for v in ('data-channel="current"','presentation.js?v=20261009-current1','app-mobile.js') if v in html]
+                  print(('PASS' if found else 'MISMATCH'),name,'http',status,'marker',found,'found',versions,'bytes',len(b),'final_url',final,flush=True)
+                  fail+=0 if found else 1
+              except Exception as e:
+                  print('UNAVAILABLE',name,type(e).__name__,str(e)[:120],flush=True);fail+=1
+              count+=1
+          print('NETLIFY_STATIC_AUDIT',count,'checks',count-fail,'pass',fail,'not_pass',flush=True)
+          if fail:raise SystemExit(1)
+          PY
