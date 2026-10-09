@@ -266,7 +266,12 @@
               // Retain a legacy fallback separately when LAB already has a
               // deliberately empty archive; do not reactivate deleted records.
               const destination = spec && journal.emptyArchives?.[spec.name] && storage.getItem(target) === null ? spec.retainedFallback : target;
-              // Keep the old CURRENT game/settings as a read-only fallback, alongside LAB.\n              const earlier = target === KEYS.settings ? 'chessBestSettings'\n                : target === KEYS.game ? 'chessBestGame' : null;\n              const chosen = earlier && storage.getItem(source) === null\n                && storage.getItem(earlier) !== null ? earlier : source;\n              copyLocal(journal, chosen, destination);
+              // Keep the old CURRENT game/settings as a read-only fallback, alongside LAB.
+              const earlier = target === KEYS.settings ? 'chessBestSettings'
+                : target === KEYS.game ? 'chessBestGame' : null;
+              const chosen = earlier && storage.getItem(source) === null
+                && storage.getItem(earlier) !== null ? earlier : source;
+              copyLocal(journal, chosen, destination);
             }
             for (const spec of SPECS) await copyDatabase(journal, spec);
             await checkpoint(journal);
