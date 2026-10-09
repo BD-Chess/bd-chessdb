@@ -307,7 +307,58 @@ function installGallery(){
  function show(i){if(!HM_GALLERY.length)return;galleryIndex=(i+HM_GALLERY.length)%HM_GALLERY.length;const x=HM_GALLERY[galleryIndex],l=galleryLang();resetZoom(stage,$('[data-hm-gallery-zoom]',pane));source.srcset=x.portrait;img.src=x.src;img.alt=galleryText('Human in the Middle — ','Človek na sredini — ')+x.title[l];count.textContent=(galleryIndex+1)+' / '+HM_GALLERY.length;title.textContent=x.title[l];hotspots.replaceChildren();links.replaceChildren();x.regions.forEach(([j,start,end])=>{const d=HM_DETAILS[j],label=galleryText('Explore: ','Razišči: ')+d.title[l];const b=document.createElement('button');b.type='button';b.className='hm-hotspot';b.style.top=start+'%';b.style.height=(end-start)+'%';b.setAttribute('aria-label',label);b.dataset.hmDetail=String(j);const span=document.createElement('span');span.textContent=d.title[l]+' ↗';b.appendChild(span);b.addEventListener('click',()=>openDetail(j,b));hotspots.appendChild(b);const c=document.createElement('button');c.type='button';c.className='hm-overview-link';c.textContent=d.title[l];c.dataset.hmDetail=String(j);c.addEventListener('click',()=>openDetail(j,c));links.appendChild(c);});syncOverview()}
  function buildGrid(){if(gridBuilt)return;gridBuilt=true;buildFutureGrid()}
 
- function buildFutureGrid(){const l=galleryLang(),intro=document.createElement('header');intro.className='hm-future-intro';intro.innerHTML='<div><h3>'+html(spec.title[l])+'</h3><p>'+html(spec.summary[l])+'</p><p>'+(HM_DETAILS.length===spec.items.length?galleryText('Open a scene to explore the full image.','Odpri prizor za ogled celotne slike.'):galleryText('Working topics for the forthcoming images.','Delovne teme za prihajajoče slike.'))+'</p></div><span class="hm-future-status">'+(HM_DETAILS.length?HM_DETAILS.length+' / '+spec.items.length+' · '+galleryText('Published','Objavljeno'):spec.items.length+' · '+galleryText('In preparation','V pripravi'))+'</span>';grid.appendChild(intro);const cards=document.createElement('div');cards.className='hm-future-grid';spec.items.forEach((d,n)=>{const ready=isSpace||readyImage(d),card=document.createElement(ready?'button':'article');card.className='hm-future-card';card.dataset.hmItem=d.id||'space-'+String(n+1).padStart(2,'0');if(ready){card.type='button';card.setAttribute('aria-label',galleryText('Open: ','Odpri: ')+d.title[l]);const im=document.createElement('img');im.loading='lazy';im.decoding='async';im.width=d.width||941;im.height=d.height||1672;im.src=HM_ASSETS+d.src;im.alt=d.title[l];card.appendChild(im);card.addEventListener('click',()=>openDetail(HM_DETAILS.indexOf(d),card))}else{const placeholder=document.createElement('div');placeholder.className='hm-future-placeholder';placeholder.innerHTML='<span class="hm-future-number">'+String(n+1).padStart(2,'0')+'</span><small>'+galleryText('Image in preparation','Slika v pripravi')+'</small>';card.appendChild(placeholder)}const copy=document.createElement('div');copy.className='hm-future-copy';const title=document.createElement('strong');title.textContent=d.title[l];const text=document.createElement('p');text.textContent=d.summary?.[l]||'';copy.append(title);if(d.summary?.[l])copy.append(text);card.appendChild(copy);cards.appendChild(card)});grid.appendChild(cards)}
+
+ function buildFutureGrid(){
+  const l=galleryLang(),intro=document.createElement('header');
+  intro.className='hm-future-intro';
+  intro.innerHTML='<div><h3>'+html(spec.title[l])+'</h3><p>'+html(spec.summary[l])+'</p><p>'+
+    (HM_DETAILS.length===spec.items.length?galleryText('Open an image for a closer view; tap its title for an explanation.','Odpri sliko za podroben ogled, za pojasnilo pa klikni njen naslov.'):
+    galleryText('Working topics for the forthcoming images.','Delovne teme za prihajajoče slike.'))+
+    '</p></div><span class="hm-future-status">'+
+    (HM_DETAILS.length?HM_DETAILS.length+' / '+spec.items.length+' · '+galleryText('Published','Objavljeno'):
+    spec.items.length+' · '+galleryText('In preparation','V pripravi'))+'</span>';
+  grid.appendChild(intro);
+  const cards=document.createElement('div');cards.className='hm-future-grid';
+  spec.items.forEach((d,n)=>{
+    const id=d.id||'space-'+String(n+1).padStart(2,'0');
+    const captions=window.MDLxDCCHumanMiddleExplanations?.[id]||{};
+    const shortText=captions.short?.[l]||d.summary?.[l]||'';
+    const longText=captions.long?.[l]||'';
+    const ready=isSpace||readyImage(d);
+    const card=document.createElement('article');
+    card.className='hm-future-card';card.dataset.hmItem=id;
+    if(ready){
+      const media=document.createElement('button');media.type='button';media.className='hm-future-media';
+      media.setAttribute('aria-label',galleryText('Open full image: ','Odpri celotno sliko: ')+d.title[l]);
+      const im=document.createElement('img');
+      im.loading='lazy';im.decoding='async';im.width=d.width||941;im.height=d.height||1672;
+      im.src=HM_ASSETS+d.src;im.alt=d.title[l];
+      media.appendChild(im);
+      media.addEventListener('click',()=>openDetail(HM_DETAILS.indexOf(d),media));
+      card.appendChild(media);
+    }else{
+      const placeholder=document.createElement('div');
+      placeholder.className='hm-future-placeholder';
+      placeholder.innerHTML='<span class="hm-future-number">'+String(n+1).padStart(2,'0')+'</span><small>'+galleryText('Image in preparation','Slika v pripravi')+'</small>';
+      card.appendChild(placeholder);
+    }
+    const copy=document.createElement('div');copy.className='hm-future-copy';
+    if(ready){
+      const disclosure=document.createElement('details');disclosure.className='hm-future-expander';
+      const summary=document.createElement('summary');
+      const title=document.createElement('strong');title.textContent=d.title[l];
+      const short=document.createElement('p');short.className='hm-future-short';short.textContent=shortText;
+      summary.append(title,short);disclosure.appendChild(summary);
+      if(longText){const full=document.createElement('p');full.className='hm-future-long';full.textContent=longText;disclosure.appendChild(full);}
+      copy.appendChild(disclosure);
+    }else{
+      const title=document.createElement('strong');title.textContent=d.title[l];copy.appendChild(title);
+      const short=document.createElement('p');short.textContent=shortText;copy.appendChild(short);
+    }
+    card.appendChild(copy);cards.appendChild(card);
+  });
+  grid.appendChild(cards);
+}
 
  function switchView(v,focus=true){galleryView=['data','gallery'].includes(v)?v:'gallery';pane.hidden=galleryView!=='visuals';data.hidden=galleryView!=='data';grid.hidden=galleryView!=='gallery';if(galleryView==='gallery')buildGrid();tabs.querySelectorAll('[data-hm-gallery-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.hmGalleryView===galleryView)));if(focus&&galleryView==='visuals')stage.focus({preventScroll:true})}
  function showDetail(i){if(!HM_DETAILS.length)return;detailIndex=(i+HM_DETAILS.length)%HM_DETAILS.length;const d=HM_DETAILS[detailIndex];resetZoom(detailStage,$('[data-hm-detail-zoom]',viewer));detailImg.src=HM_ASSETS+d.src;detailImg.alt=d.title[galleryLang()];caption.textContent=(detailIndex+1)+' / '+HM_DETAILS.length+' · '+d.title[galleryLang()];caption.title=d.title[galleryLang()]}
