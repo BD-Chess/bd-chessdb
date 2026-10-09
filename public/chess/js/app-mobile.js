@@ -1,4 +1,4 @@
-/* Unified CURRENT mobile view controller. Desktop keeps the normal CURRENT layout;
+/* Unified LAB mobile/native view controller. Desktop keeps the normal LAB layout;
  * phone browsers and Capacitor native builds use one focused view at a time. */
 (function (root) {
   'use strict';
@@ -8,7 +8,7 @@
   const phone = !tablet && (root.navigator?.userAgentData?.mobile === true || /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua));
   const native = !!root.Capacitor?.isNativePlatform?.();
   const requestedView = new URLSearchParams(root.location.search).get('view')?.toLowerCase() || '';
-  const appMode = false; // Desktop APP preview is LAB-only; CURRENT keeps phone/mobile presentation only.
+  const appMode = false; // CURRENT never wraps desktop in a simulated phone.
   const desktopPreview = appMode && !native && !phone;
   if (!native && !phone && !appMode) return;
   doc.body.classList.add('app-mobile');
@@ -16,6 +16,27 @@
   doc.body.dataset.appRuntime = native ? 'native' : phone ? 'phone' : 'preview';
   doc.body.dataset.appPresentation = appMode ? 'app' : 'mobile';
   const byId = id => doc.getElementById(id);
+
+  if (desktopPreview) {
+    const stage=doc.createElement('div');stage.className='app-preview-stage';
+    stage.innerHTML='<div class="app-preview-device"><div class="app-preview-screen"><div class="app-preview-island" aria-hidden="true"></div><div class="app-preview-content"></div><div class="app-preview-home" aria-hidden="true"></div></div></div>';
+    const screen=stage.querySelector('.app-preview-screen'),content=stage.querySelector('.app-preview-content');
+    for(const node of [...doc.body.children]){
+      if(node.id==='appPreviewDesktopTools'||node.tagName==='SCRIPT')continue;
+      (node.id==='appTabs'||node.tagName==='DIALOG'?screen:content).append(node);
+    }
+    doc.body.append(stage);
+    const choices=['375','390','402','430'],select=byId('appPreviewWidth'),key='ChessBest:CURRENT:v2:preview-width';
+    let saved;try{saved=root.localStorage.getItem(key);}catch(_){}
+    const requested=new URLSearchParams(root.location.search).get('width');
+    select.value=choices.includes(requested)?requested:choices.includes(saved)?saved:'402';
+    const geometry=()=>{const r=screen.getBoundingClientRect();for(const edge of ['left','top','right','bottom'])doc.body.style.setProperty('--app-screen-'+edge,r[edge]+'px');};
+    const draw=()=>{doc.body.style.setProperty('--app-preview-width',select.value+'px');geometry();root.requestAnimationFrame?.(()=>{geometry();root.dispatchEvent(new Event('resize'));root.dispatchEvent(new Event('8zc:resize'));});};
+    select.addEventListener('change',()=>{if(!choices.includes(select.value))return;try{root.localStorage.setItem(key,select.value);}catch(_){}const u=new URL(root.location.href);u.searchParams.set('width',select.value);root.history.replaceState(null,'',u);draw();});
+    root.addEventListener('resize',geometry,{passive:true});root.addEventListener('scroll',geometry,{passive:true});
+    if(root.ResizeObserver)new root.ResizeObserver(geometry).observe(screen);
+    draw();
+  }
   const syncPresentationLinks = () => {
     for (const link of doc.querySelectorAll('[data-lab-presentation]')) {
       if (appMode) link.removeAttribute('aria-current'); else link.setAttribute('aria-current', 'page');
@@ -27,7 +48,7 @@
     if (previewTools) previewTools.hidden = !desktopPreview;
   };
   syncPresentationLinks();
-  if (desktopPreview) doc.title = 'ChessBest APP preview';
+  if (desktopPreview) doc.title = 'ChessBest APP preview · LAB';
   doc.dispatchEvent(new CustomEvent('chess:mobile-ready', { detail: { native, phone, appMode, desktopPreview } }));
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
@@ -50,7 +71,7 @@
     'CDB pending':'CDB čaka','Show Eval':'Pokaži oceno','Try Later':'Poskusi pozneje','More tools':'Več orodij',
     'Best move is not ready yet.':'Najboljša poteza še ni pripravljena.','Waiting for analysis…':'Analiziram…',
     'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF',
-    'Install':'Namesti','Install ChessBest on your Home Screen.':'Namesti ChessBest na domači zaslon.',
+    'Install LAB':'Namesti LAB','Install ChessBest LAB on your Home Screen.':'Namesti ChessBest LAB na domači zaslon.',
     'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
     'Position and move controls':'Kontrole položaja in potez','Player clocks and local game controls':'Igralne ure in lokalne kontrole',
     'Chess analysis board':'Šahovska analizna plošča','Interactive chess board':'Interaktivna šahovnica','CDB, SF and DCC comparison':'Primerjava CDB, SF in DCC',
@@ -471,7 +492,7 @@
       initLanguage();
       init();
     }).catch(() => {
-      byId('appPositionName').textContent = 'Storage is unavailable';
+      byId('appPositionName').textContent = 'CURRENT storage is unavailable';
     });
   };
   if (doc.readyState === 'complete') boot();

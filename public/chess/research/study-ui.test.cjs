@@ -6,10 +6,10 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); } catch (_) { /* Run with NODE_PATH pointing to the existing QA jsdom install. */ }
 const options = { skip: !JSDOM && 'jsdom is needed for browser interaction tests' };
 function setup(saved) {
-  const dom = new JSDOM('<!doctype html><body><button id="trigger">Study</button></body>', { url: 'https://example.test/chess/', runScripts: 'outside-only', pretendToBeVisual: true });
+  const dom = new JSDOM('<!doctype html><body><button id="trigger">Study</button></body>', { url: 'https://example.test/chess/new/', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window, base = path.join(__dirname, '../js');
   for (const file of ['chess.min.js', '8zc-study-core.js', '8zc-study-store.js', '8zc-study-ui.js']) w.eval(fs.readFileSync(path.join(base, file), 'utf8'));
-  if (saved) w.localStorage.setItem('ChessBest:CURRENT:v2:studies', saved);
+  if (saved) w.localStorage.setItem('ChessBest:LAB:v2:studies', saved);
   const main = new w.Chess(), actions = [], ctx = () => ({ fen: main.fen(), startFen: main.header().FEN || w.ChessStudy.START_FEN, history: main.history({ verbose: true }), pgn: main.pgn(), analysis: { receipt: { fen: main.fen(), version: 'test' }, candidates: [{ move: main.moves({ verbose: true })[0]?.from + main.moves({ verbose: true })[0]?.to, raw: 0, dccScore: 2, complete: true }] } });
   const ui = w.ChessStudyUI.create({ locks: { request: (name, options, fn) => Promise.resolve().then(fn) }, mount: w.document.body, getContext: ctx, pause: () => actions.push('pause'), navigate: value => actions.push(value) });
   return { dom, w, main, ui, actions, ctx };
@@ -23,7 +23,7 @@ test('saved branch editing and preview never navigate the playing board without 
   click(w, '1… e5'); assert.equal(main.fen(), fen); assert.equal(actions.filter(x => typeof x === 'object').length, 0);
   click(w, 'Open position in workspace'); await new Promise(r=>setTimeout(r,0));
   const navigate = actions.find(x => typeof x === 'object'); assert.deepEqual(Array.from(navigate.moves), ['e2e4', 'e7e5']);
-  const saved = w.localStorage.getItem('ChessBest:CURRENT:v2:studies'); ui.destroy(); dom.window.close();
+  const saved = w.localStorage.getItem('ChessBest:LAB:v2:studies'); ui.destroy(); dom.window.close();
   const restored = setup(saved); assert.match(restored.ui.exportPGN(), /c5/); assert.match(restored.ui.exportPGN(), /e5/); restored.dom.window.close();
 });
 test('malicious imported annotations render as text, and failed import preserves saved studies', options, async () => {
@@ -53,6 +53,6 @@ test('deep continuation attaches to existing origin, keeps alternatives, and new
 test('corrupt local storage is retained without overwriting it', options, async () => {
   const { dom, w, ui } = setup('{broken');
   await assert.rejects(ui.captureContext()); ui.open('study', false);
-  assert.equal(w.localStorage.getItem('ChessBest:CURRENT:v2:studies'), '{broken');
+  assert.equal(w.localStorage.getItem('ChessBest:LAB:v2:studies'), '{broken');
   assert.equal(JSON.parse(ui.exportJSON()).studies.length, 0); dom.window.close();
 });

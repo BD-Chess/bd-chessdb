@@ -36,7 +36,7 @@ function chessBestTopPickResumeCursor(meta, pgn, headers, history, ChessCtor) {
 function initAll() {
   if (window.ChessLabReady) return window.ChessLabReady;
   window.ChessLabReady = (async () => {
-    if (!window.ChessLabStorage) throw new Error('CURRENT storage migration could not be loaded. Reload to retry.');
+    if (!window.ChessLabStorage) throw new Error('LAB storage migration could not be loaded. Reload to retry.');
     await window.ChessLabStorage.ready;
     initAllCore();
   })();

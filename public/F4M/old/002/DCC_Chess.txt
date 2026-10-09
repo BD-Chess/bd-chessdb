@@ -1,0 +1,265 @@
+8Z-DCC Chess: A Deterministic “Policy Layer” for Near-Equal Moves
+and a Digital-Claustrum Controller for Search, Learning, and Play
+Version: v0.1 (concept paper; not a strength claim)
+Date: 2026-01-03
+
+Author(s): Bojan Dobrečevič + LLM collaborators (GPT/Claude/Gemini)
+Status: Draft — intended to accompany chessbest.org development and experiments.
+
+================================================================================
+0) Executive summary
+================================================================================
+
+Modern chess engines frequently return clusters of moves with near-identical evaluation (especially in sound openings and many “quiet” middlegames). For humans, this creates a decision problem: if moves are “equal,” which is preferable for learning, planning, and practical play?
+
+This paper proposes a deterministic, auditable tie-breaker layer built around a “Digital Claustrum Controller” (DCC):
+- Primary signal remains engine evaluation (we do NOT claim to replace it).
+- DCC re-ranks near-equal candidate moves using secondary criteria such as:
+  (a) stability (PV/eval churn),
+  (b) robustness (worst-case reply sensitivity),
+  (c) practicality (opponent error surface),
+  (d) optional plan simplicity (symbolic MDL proxy),
+  under a strict “strength guardrail” (never accept large eval regression).
+
+In addition to the policy-layer use case, we outline a separate research direction:
+using DCC as a general controller for a self-contained chess agent (search and/or learning),
+not intended to beat top engines, but to demonstrate how broadly the DCC concept transfers.
+
+================================================================================
+1) Problem statement: “equal eval” is not equal for humans
+================================================================================
+
+Engines often show multiple moves within a small eval window (e.g., ±10–20 centipawns).
+Those moves can differ drastically in:
+- tactical volatility (one is sharp, one is quiet),
+- robustness (one has a single precise defense),
+- plan coherence (one keeps the position simple; another is messy),
+- pedagogical value (one teaches a clear idea; another is a detour).
+
+When a platform like chessbest.org displays move-evals on the board, these clusters appear everywhere.
+A “policy layer” that is explicit, deterministic, and explainable can turn “equal” into “preferred,”
+without pretending to discover new chess truth.
+
+================================================================================
+2) Design goals and non-goals
+================================================================================
+
+Goals
+- Deterministic: same input position + same parameters => identical ranking.
+- Auditable: every decision has a reproducible trail of computed signals.
+- Safe: re-ranking never selects a move outside a strict eval-regression guardrail.
+- Useful: surface preference reasons in human language (tags, not long proofs).
+- Pluggable: works on top of existing evaluation providers (local engine, DB, cloud).
+
+Non-goals
+- Not a claim of being stronger than Stockfish-class engines.
+- Not a replacement for deep search.
+- Not a proof system for optimal play.
+
+================================================================================
+3) System overview
+================================================================================
+
+Input: position (FEN)
+
+Step A — Candidate set
+- Obtain top-K candidate moves and their baseline eval/PV from an engine/DB.
+- Define a near-equal window Δ (e.g., within 0.10 pawns of the best move).
+
+Step B — Micro-tournament (fixed budget)
+For each candidate move m in the window:
+- Analyze the resulting position under a fixed compute budget (time or nodes).
+- Collect a time series: eval(t), PV(t), and a small set of alternative replies.
+
+Step C — DCC signals + re-ranking
+Compute secondary metrics:
+- Stability: PV churn, eval volatility across slices.
+- Robustness: worst-case sensitivity over top replies.
+- Practicality: breadth of near-best opponent replies (error surface proxy).
+- Optional plan simplicity: symbolic MDL proxy on PV changes / move “edit script.”
+
+Output
+- Re-ranked list of candidate moves with reason tags.
+- Audit log (hashes + settings + measured signals).
+
+================================================================================
+4) The “strength guardrail” (mandatory)
+================================================================================
+
+The policy layer is only allowed to break ties within a safe region.
+
+Guardrail rule (example)
+- Let best_eval be the best baseline eval among candidates.
+- Disqualify any move where:
+    eval(move) < best_eval - E_cap
+  where E_cap is a small cap (e.g., 15–25 centipawns), configurable.
+
+Interpretation
+- If the discriminator prefers a “stable/robust” move but it is meaningfully weaker,
+  it must not be selected unless the user explicitly opts into a “practicality” profile.
+
+================================================================================
+5) Digital Claustrum Controller (DCC) for chess search dynamics
+================================================================================
+
+5.1 Seizure vs noise in chess analysis
+- Seizure: the analysis locks into a PV too early; repeated fail-high/fail-low loops; re-search storms; no new tactical discoveries.
+- Noise: PV thrashes constantly; eval oscillates wildly; node budget spent without convergence.
+
+5.2 DCC as a band-controller
+DCC monitors a compact symbol stream describing “what the analyzer is doing,” not the board geometry.
+
+Example per-slice symbolization (illustrative)
+- pv_change_bit: PV changed since last slice?
+- bestmove_change_bit: best move changed?
+- eval_bucket: quantized eval delta (e.g., 4 buckets)
+- volatility_bucket: quantized short-term variance (e.g., 4 buckets)
+- tactical_event: mate threat discovered? (bit) or “tactic found” flag
+
+Compute complexity on a short history buffer (e.g., LZC/entropy).
+Update coupling u ∈ [0,1] to keep complexity in a target band:
+- low complexity => “seizure” => increase exploration (wider search, diversify)
+- high complexity => “noise”   => increase exploitation (narrow, deepen, stabilize)
+
+5.3 Knobs DCC can control (engine-agnostic conceptually)
+- aspiration window width / re-search policy
+- MultiPV breadth vs depth
+- selective extension aggressiveness
+- reduction aggressiveness
+- diversification vs focus in move ordering (deterministic tie breaks)
+
+Note: exact controls depend on the underlying engine API.
+When engine knobs are not accessible, DCC can still operate as a scheduler over “analysis phases”
+(e.g., shallow-wide, then deep-narrow, then tactical probe) — always deterministic.
+
+================================================================================
+6) DCC “Discriminator” metrics (secondary objectives)
+================================================================================
+
+6.1 Stability
+- PV churn: number of PV changes over T slices.
+- Best-move churn: number of best-move changes over T slices.
+- Eval volatility: variance or mean absolute delta of eval over T slices.
+
+6.2 Robustness
+- For each candidate move, sample a small set of strong opponent replies (e.g., top-R replies).
+- Measure worst-case reply sensitivity:
+    robust_score = min_r eval_after_reply(r)
+
+6.3 Practicality (opponent error surface proxy)
+- Count how many opponent replies are “near-best” (within δ of best reply).
+
+6.4 Optional MDL-style plan simplicity (symbolic proxy)
+Do NOT rasterize board images for compression.
+Instead, compress a symbolic representation:
+- “edit scripts” between PVs across slices (e.g., how PV changed),
+- or a compact encoding of the chosen plan (key moves + motifs).
+
+This provides a deterministic “describability” proxy that can help pick lines humans can follow.
+
+================================================================================
+7) Integration into chessbest.org
+================================================================================
+
+chessbest.org already makes evaluation legible by placing eval signals directly on the chessboard.
+The DCC layer can become a distinctive feature:
+
+UI concept
+- Show near-equal cluster (moves within Δ).
+- Highlight DCC-preferred move.
+- Provide tags:
+  “Stable PV”, “Robust”, “Practical pressure”, “Low volatility”, “Simple plan”
+- Allow profiles (deterministic):
+  • “Strict strength” (minimal tie breaks)
+  • “Stable learning”
+  • “Practical play” (still capped by guardrail)
+
+Audit concept
+- Every recommendation is exportable:
+  FEN, candidates, baseline evals, DCC metrics, chosen move, seed, version.
+
+================================================================================
+8) Benchmarks and evaluation plan
+================================================================================
+
+We evaluate the DCC layer as a policy, not as a new engine.
+
+Core tests
+1) Determinism: same FEN + same settings => identical ranking (100%).
+2) Regret under cap: chosen move never violates eval regression cap.
+3) Stability uplift: DCC reduces PV/best-move churn in near-equal clusters.
+4) Robustness uplift: chosen move improves worst-case reply sensitivity.
+5) Human utility proxies:
+   - explanation clarity (tags map to observable signals),
+   - reduced “move jitter” across repeated analysis runs.
+
+Optional: centaur-mode A/B
+- Human+engine with DCC vs Human+engine without DCC
+- Measure blunder rate and time-to-decision in equal-eval positions.
+
+================================================================================
+9) Special section: DCC as a self-contained chess agent (learning and play)
+================================================================================
+
+A separate research track (“DCC-Chess”): a standalone agent regulated by DCC.
+Not intended to beat top engines; intended to demonstrate DCC as a general controller.
+
+9.1 Search-only agent (no neural net)
+- Core: deterministic iterative deepening alpha-beta or MCTS-like rollout search.
+- DCC controls exploration vs exploitation schedule:
+  • widen/narrow move set,
+  • adjust rollout temperature,
+  • adjust restart/diversification cadence.
+- Evaluation can be simple (material + mobility + king safety heuristics) at first.
+
+Goal: show that DCC can produce coherent play and avoid classic failure modes:
+early PV lock (seizure) vs chaotic move switching (noise).
+
+9.2 Hybrid learning (lightweight)
+- Use self-play to collect trajectories.
+- DCC regulates:
+  • curriculum difficulty (which positions to train on),
+  • exploration rate,
+  • replay mix (novel vs consolidated positions),
+  • stability targets (avoid collapsing to one opening line).
+
+Success criteria (conceptual)
+- Convergence stability: learning does not collapse to brittle policies.
+- Interpretability: decision traces remain explainable (auditable).
+- Reproducibility: training runs are deterministic given seeds and data snapshots.
+
+9.3 Why this matters even if it’s not “best”
+If DCC helps a simple agent become “surprisingly decent,” that supports the thesis:
+DCC is a general controller for complex search/learning dynamics, not a chess trick.
+
+================================================================================
+10) Risks and failure modes
+================================================================================
+
+- Over-regularization: choosing “stable” moves that are subtly inferior (guardrail mitigates).
+- Metric gaming: if the secondary metrics are poorly designed, they can be optimized without improving play.
+- Data leakage: using DB outputs without careful separation can create misleading “success.”
+- Engine dependence: if the baseline evaluator is weak, the tie-breaker can’t rescue it.
+
+================================================================================
+11) Roadmap
+================================================================================
+
+Phase 0 (prototype)
+- Implement candidate-set querying and deterministic re-ranking.
+- Compute and display stability/robustness metrics + guardrail.
+
+Phase 1 (chessbest integration)
+- UI tags, profiles, exportable audit logs.
+
+Phase 2 (calibration)
+- Use large corpora of positions to tune weights and thresholds.
+- Build “golden sets” of near-equal clusters for regression testing.
+
+Phase 3 (standalone DCC-Chess experiments)
+- Search-only agent with DCC scheduling.
+- Hybrid lightweight learning track.
+
+================================================================================
+End
+================================================================================

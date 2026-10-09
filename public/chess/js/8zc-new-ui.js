@@ -1,4 +1,4 @@
-/* Presentation and accessibility helpers for /chess/new/. Chess state stays in 8zc-utils. */
+/* Presentation and accessibility helpers for /chess/. Chess state stays in 8zc-utils. */
 (function () {
   'use strict';
   // Keep archive updates sent before window.load, as well as completed games

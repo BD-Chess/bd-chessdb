@@ -10,21 +10,24 @@ function setup(t, host = {}) {
   const w = dom.window; t.after(() => w.close());
   const style = w.document.createElement('style'); style.textContent = fs.readFileSync(path.join(base, 'css/8zc-deep.css'), 'utf8'); w.document.head.append(style);
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
-  const game = new w.Chess(); let options, finish, running = false, stops = 0;
+  const game = new w.Chess(); let options, finish, running = false, stops = 0, hostListener = null;
+  const analyses = [];
   w.ChessDeepEngine = {
     validateFen(fen) { if (!new w.Chess().validate_fen(fen).valid) throw Error('Invalid FEN'); },
     create() { return {
       isRunning: () => running,
-      analyze(opts) { running = true; options = opts; return new Promise(resolve => { finish = result => { running = false; resolve(result); }; }); },
+      analyze(opts) { running = true; options = opts; analyses.push(opts); return new Promise(resolve => { finish = result => { running = false; resolve(result); }; }); },
       stop() { stops++; running = false; }, destroy() { running = false; }
     }; }
   };
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-deep-ui.js'), 'utf8'));
-  const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen() }), pause() {}, ...host });
+  const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen() }),
+    onChange: listener => { hostListener = listener; return () => { hostListener = null; }; }, pause() {}, ...host });
   const el = name => w.document.querySelector('[data-deep="' + name + '"]');
   const get = id => w.document.getElementById(id);
   const snapshot = () => ({ fen: game.fen(), lines: [{ depth: 12, score: { type: 'cp', white: 25 }, pv: ['e2e4', 'e7e5'] }], nodes: 50000, elapsedMs: 1000, completeMultiPV: true, linesDepth: 12 });
-  return { w, ui, game, el, get, snapshot, emit: value => options.onInfo(null, value), finish: value => finish(value), stops: () => stops };
+  return { w, ui, game, el, get, snapshot, emit: value => options.onInfo(null, value), finish: value => finish(value),
+    stops: () => stops, analyses, change: context => hostListener?.(context) };
 }
 
 test('Deep analysis toggles in the workspace and restores DCC visibility, scroll, focus and retained analysis', t => {
@@ -34,10 +37,10 @@ test('Deep analysis toggles in the workspace and restores DCC visibility, scroll
   trigger.click();
   assert.equal(get('deepAnalysisPanel').parentElement, workspace);
   assert.equal(w.document.querySelector('dialog'), null);
-  assert.equal(w.getComputedStyle(dcc).display, 'none');
-  assert.equal(dcc.style.display, 'block');
+  assert.equal(workspace.classList.contains('is-deep-analysis'), true);
+  assert.equal(dcc.style.display, 'block', 'Deep keeps the underlying DCC inline state untouched');
   assert.equal(trigger.getAttribute('aria-expanded'), 'true');
-  el('budget').value = 'nodes:250000'; el('roots').value = 'e4';
+  el('budget').value = 'depth:22'; el('roots').value = 'e4';
   el('start').click(); x.emit(x.snapshot());
   el('lines').querySelector('button').click();
   assert.equal(game.fen(), fen, 'variation preview leaves the main board pinned');
@@ -53,7 +56,7 @@ test('Deep analysis toggles in the workspace and restores DCC visibility, scroll
   assert.equal(x.stops(), 1);
   trigger.click();
   assert.equal(workspace.scrollTop, 124);
-  assert.equal(el('budget').value, 'nodes:250000');
+  assert.equal(el('budget').value, 'depth:22');
   assert.equal(el('roots').value, 'e4');
   assert.match(el('lines').textContent, /\+0.25/);
   assert.equal(el('preview').hidden, false);
@@ -91,6 +94,8 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   Object.defineProperty(workspace, 'clientHeight', { value: 500 });
   Object.defineProperty(workspace, 'clientTop', { value: 1 });
   workspace.getBoundingClientRect = () => ({ top: 100 });
+  const scrollCalls = [];
+  workspace.scrollTo = options => { scrollCalls.push(options); workspace.scrollTop = options.top; };
   panel.getBoundingClientRect = () => ({ top: 109 - workspace.scrollTop });
   panel.querySelector('.deep-actions').getBoundingClientRect = () => ({ top: 389 - workspace.scrollTop });
   workspace.scrollTop = 72;
@@ -99,6 +104,7 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   assert.equal(workspace.scrollTop, 0, 'invalid settings stay visible for correction');
   x.el('roots').value = ''; x.el('start').click();
   assert.equal(workspace.scrollTop, 280, 'toolbar is aligned with the workspace padding');
+  assert.deepEqual(scrollCalls.at(-1), { top: 280, behavior: 'smooth' }, 'manual Analyze position smoothly reveals the result area inside the workspace');
   assert.equal(panel.style.minHeight, '764px', 'short results still have room beneath the toolbar');
   assert.equal(x.w.scrollY, 0, 'the page itself never scrolls');
   workspace.scrollTop = 340;
@@ -139,4 +145,101 @@ test('W0 Deep save awaits durable outcome, freezes its line and reports pending 
   resolve({ ok: false, code: 'CAPACITY' }); await new Promise(r => setImmediate(r));
   assert.match(x.el('status').textContent, /Save pending/); assert.doesNotMatch(x.el('status').textContent, /Continuation saved/);
   assert.equal(x.el('save').disabled, false);
+});
+
+
+test('Deep search uses fixed depth presets plus Until I stop and reserves exactly three PV rows', t => {
+  const x = setup(t);
+  const label = x.el('budget').closest('label');
+  assert.match(label.textContent, /Search depth/);
+  assert.deepEqual([...x.el('budget').options].map(option => option.value),
+    ['depth:14','depth:18','depth:22','depth:26','depth:30','depth:34','depth:38','depth:42','infinite']);
+  const css = x.w.document.querySelector('style').textContent;
+  assert.match(css, /\.deep-pv\{[^}]*height:84px;[^}]*overflow:hidden/s);
+  assert.match(css, /\.deep-pv button\{[^}]*height:28px;[^}]*min-height:28px/s);
+  assert.match(css, /\.deep-pv\.is-clipped::after\{[^}]*content:"…"/s);
+});
+
+test('Deep finite depth follows later positions, while manual Stop disables follow until Analyze position is pressed again', async t => {
+  const states = [];
+  const x = setup(t, { onStateChange: state => states.push(state) });
+  x.get('btnDeepAnalysis').click();
+  assert.equal(x.ui.isFollowing(), false, 'opening Deep alone does not enable auto-follow');
+  x.el('budget').value = 'depth:18';
+  x.el('start').click();
+  assert.equal(x.analyses.length, 1);
+  assert.equal(x.analyses[0].depth, 18);
+  assert.equal(x.ui.isOpen(), true);
+  assert.equal(x.ui.isRunning(), true);
+  assert.equal(x.ui.isFollowing(), true);
+
+  const workspace = x.get('workspaceDisplay'), panel = x.get('deepAnalysisPanel');
+  workspace.scrollTop = 337; panel.style.minHeight = '900px';
+  x.game.move('e4');
+  const afterE4 = x.game.fen();
+  x.change({ fen: afterE4, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4'] } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.el('fen').textContent, afterE4);
+  assert.equal(panel.style.minHeight, '900px', 'live repin keeps the established Deep viewport height');
+  x.emit(x.snapshot());
+  await new Promise(resolve => x.w.requestAnimationFrame(() => resolve()));
+  assert.equal(workspace.scrollTop, 337, 'live repin restores the same inner Deep scroll after streamed lines return');
+  assert.equal(x.analyses.length, 2);
+  assert.equal(x.analyses[1].fen, afterE4);
+  assert.equal(x.analyses[1].depth, 18);
+
+  const done = x.snapshot(); done.fen = afterE4; done.linesDepth = 18; done.lines[0].depth = 18;
+  x.finish(done); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.ui.isRunning(), false, 'reaching finite Search depth stops this position');
+  assert.equal(x.ui.isFollowing(), true, 'reaching Search depth keeps Deep follow armed for the next position');
+  assert.equal(x.el('stop').disabled, false, 'Stop remains available to disarm follow after the position completes');
+
+  x.game.move('e5');
+  const afterE5 = x.game.fen();
+  x.change({ fen: afterE5, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4','e7e5'] } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.analyses.length, 3, 'next position auto-starts while follow remains armed');
+  assert.equal(x.analyses[2].fen, afterE5);
+  assert.equal(x.ui.isRunning(), true);
+
+  x.el('stop').click();
+  assert.equal(x.ui.isRunning(), false);
+  assert.equal(x.ui.isFollowing(), false);
+  assert.match(x.el('status').textContent, /press Analyze position to resume Deep analysis/i);
+
+  x.game.move('Nf3');
+  const afterNf3 = x.game.fen();
+  x.change({ fen: afterNf3, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4','e7e5','g1f3'] } });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.el('fen').textContent, afterNf3, 'stopped Deep still follows the displayed FEN');
+  assert.equal(x.analyses.length, 3, 'manual Stop prevents auto-start on later positions');
+  assert.equal(x.ui.isRunning(), false);
+  assert.equal(x.ui.isFollowing(), false);
+
+  x.el('start').click();
+  assert.equal(x.analyses.length, 4, 'Analyze position explicitly re-arms Deep follow');
+  assert.equal(x.analyses[3].fen, afterNf3);
+  assert.equal(x.ui.isFollowing(), true);
+  x.ui.close();
+  assert.equal(x.ui.isOpen(), false);
+  assert.equal(x.ui.isFollowing(), false);
+  assert.ok(states.some(state => state.open && state.following));
+  assert.ok(states.some(state => state.open && state.following === false));
+});
+
+test('Deep SF control stops a running search and deepens a completed finite search by two plies without changing base Search depth', async t => {
+  const x = setup(t);
+  x.get('btnDeepAnalysis').click();
+  x.el('budget').value = 'depth:18';
+  x.el('start').click();
+  assert.equal(x.ui.deepenOrStop(), true);
+  assert.equal(x.ui.isRunning(), false, 'first click stops the running Deep worker');
+  // Start again and complete at depth 18.
+  x.el('start').click();
+  const done = x.snapshot(); done.linesDepth = 18; done.lines[0].depth = 18;
+  x.finish(done); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(x.ui.isRunning(), false);
+  assert.equal(x.ui.deepenOrStop(), true);
+  assert.equal(x.analyses.at(-1).depth, 20);
+  assert.equal(x.el('budget').value, 'depth:18', 'one-shot deepen does not alter the base Search depth');
 });

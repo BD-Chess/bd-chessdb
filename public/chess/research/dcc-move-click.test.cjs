@@ -44,7 +44,7 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
     return { position(value) { if (value) fen = value; return fen; }, resize() {}, orientation() {} };
   };
   // CURRENT retains its existing shared legacy names; only LAB is isolated.
-  const key = channel === 'LAB' ? 'ChessBest:CURRENT:v2:settings' : 'chessLabSettings-v8';
+  const key = channel === 'LAB' ? 'ChessBest:LAB:v2:settings' : 'chessLabSettings-v8';
   w.localStorage.setItem(key, JSON.stringify({ dccDepth: 1, dccTopCandidates: 3, dccDefenseCheck: false, badgeInitialDelay: 0, nextDot: false, simSpeed: 1000 }));
   w.fetch = async url => {
     const u = new URL(url, w.location.href); let text = '';
@@ -84,7 +84,7 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   const expected = new w.Chess(); expected.move('d4');
   assert.equal(fen, expected.fen()); assert.equal(info.style.display, 'block'); assert.equal(info.dataset.fen, start);
   assert.match(info.textContent, /position before this move/); assert.match(el('moves').textContent, /d4/);
-  const timingKey = channel === 'LAB' ? 'ChessBest:CURRENT:v2:timing' : 'chessLabTiming-v1';
+  const timingKey = channel === 'LAB' ? 'ChessBest:LAB:v2:timing' : 'chessLabTiming-v1';
   assert.equal(JSON.parse(w.localStorage.getItem(timingKey)).records[0].move, 'd2d4');
 
   reset(); mode('details'); (await candidate('d2d4')).click();

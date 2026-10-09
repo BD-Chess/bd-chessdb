@@ -99,9 +99,9 @@
     @media(max-width:790px){.chess-pwa-action{min-height:44px}.chess-pwa-hint{max-width:100%}}
   </style>
   <link rel="stylesheet" href="css/8zc-tournament.css?v=20260926-sim2">
-  <link rel="stylesheet" href="css/app-mobile.css?v=20261002-appview2">
+  <link rel="stylesheet" href="css/app-mobile.css?v=20261008-preview1">
 </head>
-<body>
+<body data-channel="current">
   <a class="skip-link" href="#main">Skip to chess board</a>
   <header class="app-header">
     <div class="brand-line">
@@ -111,10 +111,11 @@
           <span class="brand-title">ChessBest.org</span>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
         </h1>
-        <div class="brand-kicker">CHESS ANALYSIS · BD × AI</div>
+        <div class="brand-kicker">CHESS ANALYSIS · BD × AI LAB <span class="development-label">DEVELOPMENT</span></div>
       </div>
     </div>
     <div class="header-links">
+      
       <nav class="header-nav" aria-label="Main navigation">
         <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
         <a href="8zc-help.html#dcc">How DCC works</a>
@@ -125,7 +126,13 @@
     </div>
   </header>
   <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
+  <header id="appPreviewDesktopTools" class="app-preview-toolbar app-preview-desktop-tools" hidden aria-label="Desktop APP preview">
+  <h2 class="app-preview-title">ChessBest · <span>APP preview</span></h2>
+  
+  <label class="app-preview-width">Preview width <select id="appPreviewWidth"><option>375</option><option>390</option><option selected>402</option><option>430</option></select></label>
+</header>
   <div class="app-web-nav app-utility-row">
+    
     <div class="app-language" role="group" aria-label="Language"><button type="button" data-app-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-app-lang="sl" aria-pressed="false">SL</button></div>
   </div>
   <div class="app-brand-name" aria-label="ChessBest.org">ChessBest.org</div>
@@ -555,17 +562,17 @@
     <div class="dialog-topline"><h2 id="labToolsTitle">Workspace tools</h2><button type="button" class="dialog-close" id="btnCloseLabTools" aria-label="Close workspace tools">×</button></div>
     <button type="button" id="appSimMore" class="app-sim">Simulation / play</button>
     <p class="setting-note">Simulation continues until you pause or choose an action that changes the position.</p>
-    <section id="appPwaPanel" class="app-pwa-panel" aria-label="ChessBest installation and offline access" hidden><button type="button" id="appPwaInstall" class="app-sim">Install</button><p id="appPwaHint">Install ChessBest on your Home Screen.</p><p id="appPwaStatus" role="status"></p><button type="button" id="appPwaUpdate" class="app-sim" hidden>Update ready · reload</button></section>
+    <section id="appPwaPanel" class="app-pwa-panel" aria-label="LAB installation and offline access" hidden><button type="button" id="appPwaInstall" class="app-sim">Install</button><p id="appPwaHint">Install this same LAB on your Home Screen.</p><p id="appPwaStatus" role="status"></p><button type="button" id="appPwaUpdate" class="app-sim" hidden>Update ready · reload</button></section>
     <div id="labToolsBody"></div>
   </dialog>
 
   <dialog id="whatsNewDialog" class="whats-new-dialog" aria-labelledby="whatsNewTitle" lang="sl">
     <div class="dialog-topline"><span class="section-kicker">CHESSBEST · SEPTEMBER 2026</span><button type="button" class="dialog-close" id="btnCloseWhatsNew" aria-label="Zapri novosti">×</button></div>
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
-    <p class="dialog-intro">Potrjena različica ChessBest.</p>
+    <p class="dialog-intro">Razvojni Analysis Lab. Trenutna potrjena stran je še vedno na <a href="../chess/">/chess/</a>.</p>
     <ul class="upgrade-list">
-      <li><strong>En ChessBest za desktop in telefon.</strong> Desktop uporablja polni CURRENT pogled; telefon uporablja isti mobilni Board · Moves · Review · Deep · DCC pogled. Analiza, Review, Deep, DCC in Simulation uporabljajo isto CURRENT kodo in shrambo.</li>
-      <li><strong>Samostojni podatki CURRENT.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi CURRENT imajo prednost; prvotni podatki ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
+      <li><strong>En LAB za web in APP.</strong> Desktop uporablja polni LAB pogled ali APP preview; telefon in prihodnji Capacitor iOS/Android build uporabljata mobilni Board · Moves · Review · Deep · DCC pogled. Vsi trije načini uporabljajo isto kodo in isto LAB shrambo.</li>
+      <li><strong>Samostojni podatki LAB.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi LAB imajo prednost; izvirniki CURRENT ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
       <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
       <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
       <li><strong>Sim Focus.</strong> Zaženi <b>Sim</b>: spodnja orodja se umaknejo, prostor dobijo poteze in DCC. <b>Pause</b> ostane pri roki; <b>Tools</b> odpre ista orodja brez premikanja šahovnice. V Settings izberi <b>Always expanded</b> za prejšnji prikaz.</li>
@@ -739,7 +746,7 @@
   <script src="js/8zc-review-ui.js?v=20261003-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261003-ux5"></script>
   <script src="pwa.js"></script>
-  <script src="js/app-mobile.js?v=20261002-appview2"></script>
+  <script src="js/app-mobile.js?v=20261008-preview1"></script>
 
 </body>
 </html>

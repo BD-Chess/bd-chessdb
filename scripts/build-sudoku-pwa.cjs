@@ -42,7 +42,7 @@ for (const [channel, directory] of [['CURRENT',''],['LAB','new'],['LEGACY_RECOVE
   const dir = path.join(base, directory), prefix = directory ? '../' : '';
   const shared = ['client.js','i18n.js','shell.css','icon-180.png','icon-192.png','icon-512.png'].map(x => prefix + '_pwa/' + x);
   const assets = ['index.html','manifest.webmanifest',...shared];
-  if (channel === 'CURRENT') assets.push('current/index.html','current/promotion.json');
+  if (channel === 'CURRENT') assets.push('current/index.html','current/promotion.json','app.html');
   else assets.push('app.html');
   if (channel === 'LEGACY_RECOVERY') assets.push('icon-180.png','icon-192.png','icon-512.png');
   const digests = Object.fromEntries(assets.map(name => [name, hash(fs.readFileSync(path.join(dir,name)))]));
