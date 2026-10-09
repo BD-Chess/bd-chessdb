@@ -1,0 +1,97 @@
+name: One-shot BD-approved four-CURRENT Netlify release
+# Only the one specifically marked four-CURRENT promotion merge qualifies.
+# The existing manual Netlify workflow and 'ignore = exit 0' are unchanged.
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  dual-site:
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.run_attempt == 1 &&
+          startsWith(github.event.workflow_run.head_commit.message, 'release: four-current 20261009') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      MDLX_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout exact GitHub Pages release SHA, never the moving main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Ensure exact approved merge and no automatic Netlify build
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          git log -1 --format=%s | grep -Fx 'release: four-current 20261009'
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "NETLIFY_AUTH_TOKEN_MISSING: no deployment attempted"; exit 1; }
+          python3 tools/build-chess-channel-pwas.py --check
+          node scripts/build-sudoku-pwa.cjs --check
+          node tests/mdlxdcc-root-pwa.test.cjs
+          python3 scripts/check_secret_boundary.py
+      - name: Prepare protected pages and exact ChessBest root overlay
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+          node --check public/js/bd-password-manager.js
+          mkdir -p "$RUNNER_TEMP/netlify-chess-site"
+          cp -a public/. "$RUNNER_TEMP/netlify-chess-site/"
+          cp -a public/chess/. "$RUNNER_TEMP/netlify-chess-site/"
+          cmp public/chess/index.html "$RUNNER_TEMP/netlify-chess-site/index.html"
+          test -f "$RUNNER_TEMP/netlify-chess-site/Trip/index.html"
+          test -f "$RUNNER_TEMP/netlify-chess-site/S/index.html"
+      - name: Set up Netlify CLI runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing pinned JS dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy MDLxDCC.org once, with existing functions and guards
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$MDLX_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "Four CURRENT main $RELEASE_SHA" --json > "$RUNNER_TEMP/mdlxdcc-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/mdlxdcc-deploy.json"); const id=d.deploy_id||d.deployId||d.id; if(!id)process.exit(1); console.log("MDLX_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify MDLxDCC current pages before second site
+        shell: bash
+        run: |
+          for app in F4M S chess Trip; do
+            localfile="public/$app/index.html"
+            url="https://www.mdlxdcc.org/$app/index.html"
+            ok=false
+            for n in 1 2 3 4 5; do
+              if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "$url" -o "$RUNNER_TEMP/check-current.html" && cmp -s "$localfile" "$RUNNER_TEMP/check-current.html"; then ok=true; break; fi
+              sleep 5
+            done
+            if [ "$ok" != true ]; then echo "MDLX_EXACT_BYTES_FAILED $app"; exit 1; fi
+            echo "MDLX_LIVE_CURRENT_EXACT_BYTES_PASS $app"
+          done
+      - name: Deploy ChessBest.org once, with correct Chess root overlay
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/netlify-chess-site" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "ChessBest CURRENT main $RELEASE_SHA" --json > "$RUNNER_TEMP/chess-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chess-deploy.json"); const id=d.deploy_id||d.deployId||d.id; if(!id)process.exit(1); console.log("CHESS_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify ChessBest.org root equals promoted Chess CURRENT
+        shell: bash
+        run: |
+          ok=false
+          for n in 1 2 3 4 5; do
+            if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' https://chessbest.org/ -o "$RUNNER_TEMP/chess-root-live.html" && cmp -s public/chess/index.html "$RUNNER_TEMP/chess-root-live.html"; then ok=true; break; fi
+            sleep 5
+          done
+          if [ "$ok" != true ]; then echo "CHESSBEST_LIVE_EXACT_BYTES_FAILED"; exit 1; fi
+          echo "CHESSBEST_LIVE_CURRENT_EXACT_BYTES_PASS $RELEASE_SHA"
