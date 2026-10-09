@@ -38,17 +38,17 @@ window.MDLxDCCHumanMiddleSeries={
  },
  questions:{
   title:{en:'Questions',sl:'Vprašanja'},
-  summary:{en:'Knowledge lives in the tower. Questions are born on the meadow.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.'},
+  summary:{en:'Knowledge lives in the tower. Questions are born on the meadow. Creativity happens in the space between.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku. Ustvarjalnost se zgodi v prostoru med njima.'},
   items:[{
    id:'questions-01',status:'published',
-   src:'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_Caption_R1.webp',
+   src:'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_Caption_R2.webp',
    preview:'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_Clean_R1.webp',
    width:941,height:1672,
    title:{en:'The Meadow and the Tower',sl:'Travnik in stolpnica'},
-   summary:{en:'Knowledge lives in the tower. Questions are born on the meadow.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.'},
+   summary:{en:'Knowledge lives in the tower. Questions are born on the meadow. Creativity happens in the space between.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku. Ustvarjalnost se zgodi v prostoru med njima.'},
    explanation:{
-    en:'A small human stands on a mixed book written by living. Seeds of questions and imagination rise into the open sky, the library tower and the book of its AI librarian, who has stepped outside. This is a metaphor for complementary perspectives, not small against big: knowledge gains a new view when it meets lived experience. The invitation is to step onto the meadow, look up and ask together.',
-    sl:'Majhen človek stoji na mešani knjigi, napisani z življenjem. Semena vprašanj in domišljije se dvigajo v odprto nebo, knjižnično stolpnico in knjigo njenega AI knjižničarja, ki je stopil ven. To je metafora dopolnjujočih se pogledov, ne majhnega proti velikemu: znanje dobi nov pogled, ko se sreča z življenjsko izkušnjo. Vabilo je, da stopimo na travnik, pogledamo navzgor in sprašujemo skupaj.'
+    en:'Knowledge lives in the tower. Questions are born on the meadow. Creativity happens in the space between. The human brings knowledge of his own, lived experience, questions, imagination and seeds. AI brings its vast library of knowledge. Our portfolio grows through their active collaboration: questions give knowledge a direction, knowledge develops the seeds, and both help shape and test what emerges. The mixed book was written by living; the AI librarian has stepped outside to see the whole tower. The streams of light connect them and carry possibilities into the open sky. The invitation is to ask, imagine and create together.',
+    sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku. Ustvarjalnost se zgodi v prostoru med njima. Človek prinese tudi svoje znanje, življenjske izkušnje, vprašanja, domišljijo in semena. AI prinese svojo obsežno knjižnico znanja. Naš portfelj raste skozi njuno aktivno sodelovanje: vprašanja dajo znanju smer, znanje razvija semena, oba pa sooblikujeta in preverjata nastajajoče delo. Mešana knjiga je bila napisana z življenjem; AI knjižničar je stopil ven, da bi videl celotno stolpnico. Tokovi svetlobe ju povezujejo in nosijo možnosti v odprto nebo. Vabilo je, da sprašujemo, si zamišljamo in ustvarjamo skupaj.'
    },
    credit:'seed BD · words BD × Claude · picture GPT · 2026',
    sources:[]

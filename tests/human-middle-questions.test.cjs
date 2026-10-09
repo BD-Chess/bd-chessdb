@@ -53,8 +53,8 @@ for(const p of [item.src,item.preview])assert.ok(fs.existsSync(path.join(pub,p))
 assert.equal(item.width,941);assert.equal(item.height,1672);
 assert.equal(item.credit,'seed BD · words BD × Claude · picture GPT · 2026');
 assert.equal(item.title.en,'The Meadow and the Tower');
-assert.equal(item.summary.en,'Knowledge lives in the tower. Questions are born on the meadow.');
-assert.equal(item.summary.sl,'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.');
+assert.equal(item.summary.en,'Knowledge lives in the tower. Questions are born on the meadow. Creativity happens in the space between.');
+assert.equal(item.summary.sl,'Znanje živi v stolpnici. Vprašanja se rodijo na travniku. Ustvarjalnost se zgodi v prostoru med njima.');
 assert.equal(item.sources.length,0,'Art metaphor has no invented scientific sources');
 for(const lang of ['en','sl']){
  root.dataset.lang=lang;
