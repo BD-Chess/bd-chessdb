@@ -1,0 +1,58 @@
+name: One-shot read-only BD home link Netlify route audit
+on:
+  push:
+    branches: [qa/20261009-bd-home-live-route-diagnostic]
+    paths:
+      - '.github/workflows/qa-bd-home-route-audit.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aa2439a8fc6c1aaf60701bef18154306aeffe963
+      - name: Diagnose live URL rewrites and branding without API/provider calls
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, hashlib, pathlib, re
+          d='https://6ac918e6f7fe4fec98f373cd--mdlxdcc.netlify.app'
+          paths=[
+            ('F4M/index.html','F4M/index.html'),
+            ('F4M/','F4M/index.html'),
+            ('f4m/','F4M/index.html'),
+            ('f4m/index.html','F4M/index.html'),
+            ('S/app.html','S/app.html'),
+            ('S/new/app.html','S/new/app.html'),
+            ('chess/index.html','chess/index.html'),
+            ('chess-lab/index.html','chess-lab/index.html'),
+            ('Trip/index.html','Trip/index.html'),
+            ('Trip/new/index.html','Trip/new/index.html'),
+          ]
+          hosts=['https://www.mdlxdcc.org',d]
+          failures=0
+          for host in hosts:
+            for route,src in paths:
+              url=f'{host}/{route}?audit={str(37960681738)}'
+              expected=pathlib.Path('public')/src
+              blob=expected.read_bytes()
+              try:
+                req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'BD-Live-Route-Diagnostic/1'})
+                with urllib.request.urlopen(req,timeout=18) as res:
+                  result=res.read()
+                  effective=res.geturl()
+                  status=res.status
+                  contenttype=res.headers.get('content-type','')
+                text=result.decode('utf-8',errors='replace')
+                a=re.search(r'<a[^>]*bd-lab-home[^>]*>.{0,90}',text,re.I|re.S)
+                print('ROUTE',host,route,'status',status,'final',effective,'type',contenttype,'expectedBytes',len(blob),'servedBytes',len(result),
+                 'shaEqual',result==blob,'labelCount',text.count('bd-lab-home'),'targetCount',text.count('www.mdlxdcc.org/index.html'),
+                 'brandSnippet',repr(a.group(0)[:200] if a else ''),flush=True)
+                if text.count('www.mdlxdcc.org/index.html')==0:failures+=1
+              except Exception as e:
+                print('UNAVAILABLE',url,type(e).__name__,str(e)[:160],flush=True);failures+=1
+          print('BD_HOME_LIVE_DIAG_NON_MATCHES',failures,flush=True)
+          PY
