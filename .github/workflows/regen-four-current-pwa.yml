@@ -1,0 +1,43 @@
+name: Regenerate Chess CURRENT exact offline release (branch only)
+on:
+  push:
+    branches:
+      - release/20261009-promote-four-labs-to-current
+    paths:
+      - '.github/workflows/regen-four-current-pwa.yml'
+      - 'public/chess/**'
+      - 'public/chess-lab/old/012/**'
+permissions:
+  contents: write
+concurrency:
+  group: four-current-pwa-branch
+  cancel-in-progress: false
+jobs:
+  regenerate:
+    if: github.ref == 'refs/heads/release/20261009-promote-four-labs-to-current' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Rebuild official ChessBest current and lab offline digests
+        run: |
+          python3 tools/build-chess-channel-pwas.py
+          python3 tools/build-chess-channel-pwas.py --check
+          node scripts/build-sudoku-pwa.cjs --check
+      - name: Persist only generated exact ChessBest hashes
+        run: |
+          if git diff --quiet -- public/chess/sw.js public/chess/release.json; then
+            echo "EXACT_CHANNEL_PWA_ALREADY_VALID"
+            exit 0
+          fi
+          if ! git diff --quiet -- public/chess-lab/; then
+            echo "ERROR: LAB must remain unchanged"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/chess/sw.js public/chess/release.json
+          git commit -m "chore: regenerate exact ChessBest CURRENT PWA metadata"
+          git push origin HEAD:refs/heads/release/20261009-promote-four-labs-to-current
