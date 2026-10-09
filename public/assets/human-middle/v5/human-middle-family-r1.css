@@ -18,8 +18,18 @@
 .hm-future-status{flex:none;border:1px solid var(--line);border-radius:999px;padding:7px 11px;font:500 .6rem/1.4 Consolas,monospace;color:var(--muted)}
 .hm-future-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .hm-future-card{margin:0;display:flex;flex-direction:column;text-align:left;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:13px;color:var(--ink);padding:0}
-button.hm-future-card{cursor:pointer}
-button.hm-future-card:hover{border-color:var(--accent2)}
+.hm-future-card:hover{border-color:color-mix(in srgb,var(--accent2) 65%,var(--line))}
+.hm-future-media{display:block;width:100%;margin:0;padding:0;border:0;border-radius:0;cursor:zoom-in;background:var(--bg);color:inherit}
+.hm-future-media:focus-visible,.hm-future-expander summary:focus-visible{outline:2px solid var(--accent2);outline-offset:-2px}
+.hm-future-expander{display:block;min-width:0}
+.hm-future-expander summary{display:block;position:relative;list-style:none;cursor:pointer;padding-right:26px;min-height:34px}
+.hm-future-expander summary::-webkit-details-marker{display:none}
+.hm-future-expander summary::marker{content:""}
+.hm-future-expander summary::after{content:"+";position:absolute;top:0;right:0;display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--line);border-radius:7px;font-size:1rem;font-weight:400;line-height:1;color:var(--accent2);background:var(--surface)}
+.hm-future-expander[open] summary::after{content:"−"}
+.hm-future-expander summary:hover strong{text-decoration:underline;text-decoration-color:var(--accent2);text-underline-offset:3px}
+.hm-future-expander .hm-future-short{margin:0;color:var(--muted);font-size:.73rem;line-height:1.7}
+.hm-future-expander .hm-future-long{margin:13px 0 0;padding-top:13px;border-top:1px solid var(--line);color:var(--ink);font-size:.78rem;line-height:1.8}
 .hm-future-card img{display:block;width:100%;height:auto;aspect-ratio:941/1672;object-fit:contain;background:var(--bg)}
 .hm-future-placeholder{display:flex;align-items:center;justify-content:space-between;min-height:70px;padding:15px 17px;background:linear-gradient(115deg,color-mix(in srgb,var(--surface) 94%,var(--accent2)),var(--surface));border-bottom:1px solid var(--line)}
 .hm-future-number{font:400 1.8rem/1 Consolas,monospace;color:var(--accent2);opacity:.7}
