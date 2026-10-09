@@ -1,7 +1,7 @@
 'use strict';
 // MDLxDCC root PWA v2. Scope is the site root (or its GitHub Pages project prefix).
 // Only the homepage and its public assets are cached; APIs and other apps are untouched.
-const VERSION='root-20261009-r2';
+const VERSION='root-20261009-r3';
 const FAMILY='mdlxdcc-root-pwa:';
 const BASE=new URL('./',self.registration.scope);
 const CACHE=FAMILY+BASE.pathname+':'+VERSION;
@@ -87,3 +87,4 @@ self.addEventListener('message',event=>{
   event.source?.postMessage({type:'MDLX_ROOT_PWA_VERSION',version:VERSION});
  if(event.data?.type==='MDLX_ROOT_PWA_ACTIVATE')self.skipWaiting();
 });
+

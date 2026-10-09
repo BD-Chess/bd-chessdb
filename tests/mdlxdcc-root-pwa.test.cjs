@@ -21,15 +21,18 @@ assert.equal(manifest.id,'./');
 assert.equal(oldManifest.start_url,'../');
 assert.equal(oldManifest.scope,'../');
 assert.equal(oldManifest.id,'../');
-assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261009-r2"/);
-assert.match(html,/manifest\.webmanifest\?v=root-20261009-r2/);
-assert.match(html,/pwa\.js\?v=root-20261009-r2/);
+assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261009-r3"/);
+assert.match(html,/manifest\.webmanifest\?v=root-20261009-r3/);
+assert.match(html,/pwa\.js\?v=root-20261009-r3/);
 assert.match(bootstrap,/updateViaCache:'none'/);
 assert.match(bootstrap,/controllerchange/);
 assert.match(bootstrap,/pageshow/);
 assert.match(bootstrap,/visibilitychange/);
 assert.match(bootstrap,/cache:'no-store'/);
-assert.equal(release.release_id,'root-20261009-r2');
+assert.equal(release.release_id,'root-20261009-r3');
+assert.match(workerSource,/const VERSION='root-20261009-r3'/);
+assert.match(bootstrap,/const RELEASE='root-20261009-r3'/);
+for(const variant of ['Clean','Caption'])assert.ok(fs.existsSync(path.join(pub,'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_'+variant+'_R1.webp')),'Questions '+variant);
 assert.match(legacy,/location\.replace/);
 assert.doesNotMatch(legacy,/class="human-middle-card"/);
 assert.match(legacyWorker,/registration\.unregister\(\)/);
@@ -49,6 +52,8 @@ assert.ok(scriptUrls.some(x=>x.includes('explanations')),'Bilingual explanations
 new vm.Script(workerSource,{filename:'public/sw.js'});
 new vm.Script(bootstrap,{filename:'public/pwa.js'});
 new vm.Script(legacyWorker,{filename:'public/PWA/sw.js'});
+// The existing Pages release gate also checks the four-axis public gallery.
+require('./human-middle-questions.test.cjs');
 
 function mockCacheStorage(){
  const collections=new Map();
