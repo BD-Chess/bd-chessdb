@@ -2,7 +2,7 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "e15a2cf544b5d6e7f0f155e25e145ab05c8c6f54c5b315b551aaef42c799e922",
+  "id": "bdff59fdb7c945c57499465f43556149fb77e013e56b3715f311604d8711bcb0",
   "channel": "LAB",
   "engine": "0.3.0",
   "assets": {
@@ -14,7 +14,7 @@ const RELEASE = {
     "../_pwa/icon-180.png": "7b37fd37188cdabb964280c0894731403609d361fe84ee86e23d4a9132e5b2aa",
     "../_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
     "../_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
-    "app.html": "2488b9fe8de9af73d6b40501ca08d0dbba50705092806ebc5a070d300eeca293"
+    "app.html": "a004da88bccc50afc80a7c0bbdc55db528b90b2cdb34c82ad5a675ef2c2834d4"
   }
 };
 // END GENERATED RELEASE

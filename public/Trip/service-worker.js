@@ -1,6 +1,6 @@
 /* Offline shell for the public Trip PWA only. Bump CACHE with every PWA asset change.
    No API, road response, or encrypted payload is persisted. */
-const CACHE = '8z-trip-current-public-20261009-promotion1';
+const CACHE = '8z-trip-current-public-20261009-bdhome1';
 const ROOT = new URL('./', self.location.href);
 const SHELL = [
   'index.html', 'travel.html', 'travel.css', 'travel.js',

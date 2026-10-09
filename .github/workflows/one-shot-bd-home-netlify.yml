@@ -1,0 +1,108 @@
+name: One-shot BD AI Lab home link Netlify release
+# Owner-authorized single release; continuous Git-driven Netlify builds remain disabled.
+# Only successful first-attempt GitHub Pages release with the exact merge subject activates it.
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  two-sites:
+    if: "${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.run_attempt == 1 && startsWith(github.event.workflow_run.head_commit.message, 'release: bd-ai-lab-home 20261009') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      MDLX_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout exact source of verified GitHub Pages deploy
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: One-shot release guards and exact generated channel packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git log -1 --format=%s)" = 'release: bd-ai-lab-home 20261009'
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "MISSING_NETLIFY_AUTH_TOKEN: no deploy started"; exit 1; }
+          node scripts/build-sudoku-pwa.cjs --check
+          python3 tools/build-chess-channel-pwas.py --check
+          node tests/mdlxdcc-root-pwa.test.cjs
+          python3 scripts/check_secret_boundary.py
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+      - name: Prepare unchanged protected pages and standalone ChessBest overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          mkdir -p "$RUNNER_TEMP/chess-publish"
+          cp -a public/. "$RUNNER_TEMP/chess-publish/"
+          cp -a public/chess/. "$RUNNER_TEMP/chess-publish/"
+          cmp public/chess/index.html "$RUNNER_TEMP/chess-publish/index.html"
+          test -f "$RUNNER_TEMP/chess-publish/chess-lab/index.html"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing locked JS dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy MDLxDCC.org once, retaining Netlify functions and existing guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$MDLX_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD AI Lab home links main $RELEASE_SHA" --json > "$RUNNER_TEMP/mdlxdcc-home-link.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/mdlxdcc-home-link.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("BD_HOME_MDLX_DEPLOY_ID",id)'
+      - name: Verify all eight live CURRENT and LAB branding links on MDLxDCC.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://www.mdlxdcc.org/index.html"
+          for p in F4M/index.html F4M/new/index.html S/app.html S/new/app.html chess/index.html chess-lab/index.html Trip/index.html Trip/new/index.html; do
+            ok=false
+            for i in 1 2 3 4 5; do
+              if curl -fsSL --max-time 22 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/$p?bd-home=$GITHUB_RUN_ID-$i" -o "$RUNNER_TEMP/home-page.html" &&
+                 grep -Fq 'bd-lab-home' "$RUNNER_TEMP/home-page.html" &&
+                 grep -Fq "$URL" "$RUNNER_TEMP/home-page.html"; then ok=true; break; fi
+              sleep 4
+            done
+            if [ "$ok" != true ]; then echo "BD_HOME_MDLX_LIVE_FAILED $p"; exit 1; fi
+            echo "BD_HOME_MDLX_LIVE_PASS $p"
+          done
+          for p in S/sw.js chess/sw.js; do
+            curl -fsSL --max-time 20 "https://www.mdlxdcc.org/$p?bd-home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/live-worker.js"
+            cmp "public/$p" "$RUNNER_TEMP/live-worker.js"
+            echo "BD_HOME_MDLX_WORKER_EXACT_PASS $p"
+          done
+      - name: Deploy ChessBest.org exactly once with its root overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/chess-publish" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD AI Lab ChessBest CURRENT/LAB links main $RELEASE_SHA" --json > "$RUNNER_TEMP/chessbest-home-link.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chessbest-home-link.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("BD_HOME_CHESSBEST_DEPLOY_ID",id)'
+      - name: Verify ChessBest.org CURRENT root and LAB plus exact release
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in '' chess-lab/index.html; do
+            ok=false
+            for i in 1 2 3 4 5; do
+              if curl -fsSL --max-time 22 -H 'Cache-Control: no-cache' "https://chessbest.org/$p?bd-home=$GITHUB_RUN_ID-$i" -o "$RUNNER_TEMP/chess-live.html" &&
+                 grep -Fq 'bd-lab-home' "$RUNNER_TEMP/chess-live.html" &&
+                 grep -Fq 'https://www.mdlxdcc.org/index.html' "$RUNNER_TEMP/chess-live.html"; then ok=true; break; fi
+              sleep 4
+            done
+            if [ "$ok" != true ]; then echo "BD_HOME_CHESS_LIVE_FAILED $p"; exit 1; fi
+            echo "BD_HOME_CHESS_LIVE_PASS $p"
+          done
+          curl -fsSL --max-time 20 "https://chessbest.org/release.json?bd-home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/chess-release-live.json"
+          cmp public/chess/release.json "$RUNNER_TEMP/chess-release-live.json"
+          echo "BD_HOME_CHESS_RELEASE_EXACT_PASS $RELEASE_SHA"

@@ -1,0 +1,59 @@
+name: BD AI Lab home links — eight CURRENT and LAB variants
+on:
+  pull_request:
+    paths:
+      - 'public/F4M/index.html'
+      - 'public/F4M/new/index.html'
+      - 'public/F4M/sw.js'
+      - 'public/F4M/new/sw.js'
+      - 'public/S/app.html'
+      - 'public/S/new/app.html'
+      - 'public/S/release.json'
+      - 'public/S/new/release.json'
+      - 'public/chess/index.html'
+      - 'public/chess-lab/index.html'
+      - 'public/Trip/index.html'
+      - 'public/Trip/new/index.html'
+      - 'tests/bd-home-links-browser.cjs'
+      - '.github/workflows/bd-home-links.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/F4M/**'
+      - 'public/S/**'
+      - 'public/chess/**'
+      - 'public/chess-lab/index.html'
+      - 'public/Trip/**'
+      - 'tests/bd-home-links-browser.cjs'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify offline manifests and source syntax
+        run: |
+          node scripts/build-sudoku-pwa.cjs --check
+          python3 tools/build-chess-channel-pwas.py --check
+          node --check tests/bd-home-links-browser.cjs
+          git diff --check
+      - name: Install isolated Chromium and WebKit
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bd-home-pw" --no-package-lock --ignore-scripts playwright@1.55.0
+          echo "NODE_PATH=$RUNNER_TEMP/bd-home-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/bd-home-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Click actual brand across eight routes and both device views
+        env:
+          BD_HOME_TEST_EVIDENCE: ${{ runner.temp }}/bd-home-evidence
+        run: node tests/bd-home-links-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bd-home-eight-channels-browser-evidence
+          path: ${{ runner.temp }}/bd-home-evidence
+          if-no-files-found: ignore

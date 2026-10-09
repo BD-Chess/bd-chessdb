@@ -2,7 +2,7 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "59f475c1d935ca3d3b315b62e336aa5aca9486e34d8b5460c173125f21140ec3",
+  "id": "4fc9ff58fab93a81449a6d772a527e2fc7fe5632243aab8639b57c0e4e77e405",
   "channel": "CURRENT",
   "engine": "0.3.0",
   "assets": {
@@ -16,7 +16,7 @@ const RELEASE = {
     "_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
     "current/index.html": "e5af3f7345fd506ec3d59a811fc482ae19204334809171b595a4898618c6c3ba",
     "current/promotion.json": "341e000adb4071e7c06476ff92045329c7ed00ec0c64af1532a6248a133f4a15",
-    "app.html": "2488b9fe8de9af73d6b40501ca08d0dbba50705092806ebc5a070d300eeca293"
+    "app.html": "a004da88bccc50afc80a7c0bbdc55db528b90b2cdb34c82ad5a675ef2c2834d4"
   }
 };
 // END GENERATED RELEASE
