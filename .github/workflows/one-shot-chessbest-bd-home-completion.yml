@@ -1,0 +1,119 @@
+name: One-shot ChessBest.org BD AI Lab home links completion
+# Continues BD-approved two-site release after MDLxDCC deployment succeeded.
+# No MDLxDCC redeployment and no continuous Netlify builds.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-chessbest-bd-home-completion.yml'
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  chess-only:
+    if: "${{ startsWith(github.event.head_commit.message, 'ops: chessbest bd-home completion 20261009') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      SOURCE_SHA: aa2439a8fc6c1aaf60701bef18154306aeffe963
+      MDLX_DEPLOY_ID: 6ac918e6f7fe4fec98f373cd
+    steps:
+      - name: Checkout exact approved source (not moving main)
+        uses: actions/checkout@v4
+        with:
+          ref: aa2439a8fc6c1aaf60701bef18154306aeffe963
+      - name: Verify product source, existing PWA releases and security
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'MISSING_NETLIFY_TOKEN; deploy not attempted'; exit 1; }
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          node scripts/build-sudoku-pwa.cjs --check
+          python3 tools/build-chess-channel-pwas.py --check
+          python3 scripts/check_secret_boundary.py
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          mkdir -p "$RUNNER_TEMP/chess-public"
+          cp -a public/. "$RUNNER_TEMP/chess-public/"
+          cp -a public/chess/. "$RUNNER_TEMP/chess-public/"
+          cmp public/chess/index.html "$RUNNER_TEMP/chess-public/index.html"
+          test -f "$RUNNER_TEMP/chess-public/chess-lab/index.html"
+      - name: Verify all eight released MDLxDCC links via HTML semantics (read-only)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from urllib.request import Request,urlopen
+          routes=[
+            ('F4M/index.html',2),('F4M/new/index.html',2),
+            ('S/app.html',2),('S/new/app.html',2),
+            ('chess/index.html',2),('chess-lab/index.html',2),
+            ('Trip/index.html',1),('Trip/new/index.html',1),
+          ]
+          landing={'https://www.mdlxdcc.org/','https://www.mdlxdcc.org/index.html'}
+          class Anchors(HTMLParser):
+            def __init__(self): super().__init__();self.found=[]
+            def handle_starttag(self,tag,attrs):
+              if tag!='a':return
+              d=dict(attrs)
+              if 'bd-lab-home' in (d.get('class') or '').split():self.found.append(d)
+          def fetch(u):
+            with urlopen(Request(u,headers={'Cache-Control':'no-cache'}),timeout=25) as r:
+              return r.read().decode('utf-8',errors='replace'),r.geturl(),r.status
+          for route,minimum in routes:
+            text,final,status=fetch('https://www.mdlxdcc.org/'+route+'?bd-check=20261009')
+            p=Anchors();p.feed(text)
+            good=[a for a in p.found if a.get('href') in landing and a.get('target')=='_top']
+            print('MDLX_HOME_CANONICAL_PASS',route,'expected',minimum,'actual',len(good),'normalizedUrl',final,flush=True)
+            if status!=200 or len(good)<minimum:raise SystemExit('MDLX_ANCHOR_FAILED '+route)
+          text,final,status=fetch('https://www.mdlxdcc.org/index.html')
+          if status!=200 or 'MDL' not in text:raise SystemExit('MDLX_LANDING_UNAVAILABLE')
+          print('MDLX_CANONICAL_LANDING_PASS',final)
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing runtime dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy ChessBest.org once — no MDLxDCC retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/chess-public" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD AI Lab CURRENT LAB links from $SOURCE_SHA" --json > "$RUNNER_TEMP/chess-home-netlify.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chess-home-netlify.json"),id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("BD_HOME_CHESS_DEPLOY_ID",id)'
+      - name: Verify ChessBest.org live CURRENT and LAB canonical links and release JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from urllib.request import Request,urlopen
+          class A(HTMLParser):
+            def __init__(self):super().__init__();self.a=[]
+            def handle_starttag(self,tag,attrs):
+              if tag!='a':return
+              d=dict(attrs)
+              if 'bd-lab-home' in (d.get('class') or '').split():self.a.append(d)
+          allowed={'https://www.mdlxdcc.org/','https://www.mdlxdcc.org/index.html'}
+          for route in ['','chess-lab/index.html']:
+            ok=False
+            for i in range(5):
+              try:
+                u='https://chessbest.org/'+route+'?bd-check=20261009-'+str(i)
+                with urlopen(Request(u,headers={'Cache-Control':'no-cache'}),timeout=20) as r:
+                  text=r.read().decode('utf-8',errors='replace');final=r.geturl()
+                p=A();p.feed(text)
+                ok=len([a for a in p.a if a.get('href') in allowed and a.get('target')=='_top'])>=2
+                if ok:break
+              except Exception: pass
+            print('CHESSBEST_HOME_LIVE',route,'PASS' if ok else 'FAIL',final if ok else 'none',flush=True)
+            if not ok:raise SystemExit(1)
+          PY
+          curl -fsSL --max-time 20 "https://chessbest.org/release.json?bd-check=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/chess-release.json"
+          cmp public/chess/release.json "$RUNNER_TEMP/chess-release.json"
+          echo "CHESSBEST_HOME_RELEASE_EXACT_PASS $SOURCE_SHA"
