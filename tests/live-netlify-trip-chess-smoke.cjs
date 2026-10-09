@@ -9,7 +9,7 @@ const site={
  chess:{url:'https://chessbest.org/',host:'chessbest.org'},
  chessMdl:{url:'https://www.mdlxdcc.org/chess/',host:'www.mdlxdcc.org'}
 };
-const results={schema:'bd-live-trip-chess-smoke-20261009-v3',sourceCommit:'33a4e359a00e15e8043df94544a1ec3800dacf69',realDevice:'NOT_RUN',providerBackedRoutes:'NOT_RUN: provider requests blocked',cases:[]};
+const results={schema:'bd-live-trip-chess-smoke-20261009-v4',sourceCommit:'33a4e359a00e15e8043df94544a1ec3800dacf69',realDevice:'NOT_RUN',providerBackedRoutes:'NOT_RUN: provider requests blocked',cases:[]};
 const blocked=[],errors=[];
 const staticExt=/\.(?:html?|js|css|webmanifest|png|svg|ico|webp|jpe?g|woff2?|wasm|pgn|tsp|json)$/i;
 function permitted(pathname,resource){
@@ -96,6 +96,15 @@ async function caseRun(engine,kind,mobile){
     await page.locator('#desktopViewTabs [data-desktop-view="moves"]:visible').first().click({timeout:12000});
    }
    assert.equal(await page.evaluate(()=>ChessLabHost.getContext().fen),fen,'Chess UI interaction preserves board position');
+   // Visual acceptance must wait for chessboard.js piece images after tab/resize animation.
+   // A valid FEN alone can coexist with a temporarily empty board.
+   await page.waitForFunction(()=>{
+    const imgs=[...document.querySelectorAll('#board img')];
+    return imgs.length>=32&&imgs.every(x=>x.complete&&x.naturalWidth>0);
+   },null,{timeout:10000}).catch(async()=>{
+    const state=await page.evaluate(()=>({images:document.querySelectorAll('#board img').length,loaded:[...document.querySelectorAll('#board img')].filter(x=>x.complete&&x.naturalWidth>0).length}));
+    throw Error('Chess visual board does not have 32 loaded starting pieces: '+JSON.stringify(state));
+   });
   }
   await page.screenshot({path:path.join(out,name+'.png'),fullPage:false});
   results.cases.push({case:name,status:'PASS',loaded:page.url(),pageTitle:v.title,viewport:v.width,blockedProviders:blocked.filter(x=>x.host!==site[kind].host).length});
