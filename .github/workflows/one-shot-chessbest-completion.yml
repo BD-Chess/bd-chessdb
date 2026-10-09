@@ -1,0 +1,86 @@
+name: BD-approved ChessBest Netlify completion (single first deploy)
+# Only the exact owner-approved one-shot main merge can start this.
+# No MDLxDCC redeployment, no recurring Netlify Git builds.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-chessbest-completion.yml'
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: startsWith(github.event.head_commit.message, 'ops: chessbest netlify first release 20261009')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      SOURCE_SHA: 33a4e359a00e15e8043df94544a1ec3800dacf69
+    steps:
+      - name: Checkout exactly the verified four-CURRENT release, not moving main
+        uses: actions/checkout@v4
+        with:
+          ref: 33a4e359a00e15e8043df94544a1ec3800dacf69
+      - name: Verify release source, security and ChessBest offline package
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'Missing existing Netlify release secret; no deployment'; exit 1; }
+          python3 tools/build-chess-channel-pwas.py --check
+          node scripts/build-sudoku-pwa.cjs --check
+          python3 scripts/check_secret_boundary.py
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          mkdir -p "$RUNNER_TEMP/chess-public"
+          cp -a public/. "$RUNNER_TEMP/chess-public/"
+          cp -a public/chess/. "$RUNNER_TEMP/chess-public/"
+          cmp public/chess/index.html "$RUNNER_TEMP/chess-public/index.html"
+      - name: Diagnose MDLxDCC.org prior live Chess route without redeploy
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          b=Path('public/chess/index.html').read_bytes()
+          print('SOURCE_CHESS_INDEX_SHA256',hashlib.sha256(b).hexdigest(),'bytes',len(b))
+          PY
+          for url in "https://www.mdlxdcc.org/chess/index.html" "https://6ac8fcfa6b3127b932893101--mdlxdcc.netlify.app/chess/index.html" "https://www.mdlxdcc.org/Trip/index.html"; do
+            name="probe-$RANDOM.html"
+            echo "DIAGNOSTIC_URL $url"
+            if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' -w 'LIVE_HTTP %{http_code} %{url_effective} %{content_type}\n' "$url?probe=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/$name"; then
+              sha256sum "$RUNNER_TEMP/$name"
+              case "$url" in
+                *chess/index.html) if cmp -s public/chess/index.html "$RUNNER_TEMP/$name"; then echo 'MDLX_CHESS_EXACT_SOURCE_PASS'; else echo 'MDLX_CHESS_BYTES_DIFFER'; fi ;;
+                *Trip/index.html) if cmp -s public/Trip/index.html "$RUNNER_TEMP/$name"; then echo 'MDLX_TRIP_EXACT_SOURCE_PASS'; else echo 'MDLX_TRIP_BYTES_DIFFER'; fi ;;
+              esac
+            else echo 'DIAGNOSTIC_HTTP_UNAVAILABLE'; fi
+          done
+      - name: Set up Node runtime and dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing runtime dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy ChessBest.org once using the same root overlay as its Netlify project
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/chess-public" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "ChessBest promoted CURRENT from $SOURCE_SHA" --json > "$RUNNER_TEMP/chess-first-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chess-first-deploy.json"),id=d.deploy_id||d.deployId||d.id; if(!id)process.exit(1); console.log("CHESSBEST_NETLIFY_FIRST_DEPLOY_ID",id)'
+      - name: Verify live ChessBest.org root after first deploy
+        shell: bash
+        run: |
+          ok=false
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "https://chessbest.org/?probe=$GITHUB_RUN_ID-$i" -o "$RUNNER_TEMP/chess-live.html" && cmp -s "$RUNNER_TEMP/chess-public/index.html" "$RUNNER_TEMP/chess-live.html"; then ok=true; break; fi
+            sleep 5
+          done
+          if [ "$ok" != true ]; then
+            echo 'CHESSBEST_LIVE_BYTE_CHECK_FAILED'
+            sha256sum "$RUNNER_TEMP/chess-public/index.html" "$RUNNER_TEMP/chess-live.html" || true
+            exit 1
+          fi
+          echo "CHESSBEST_NETLIFY_LIVE_EXACT_BYTES_PASS $SOURCE_SHA"
