@@ -105,6 +105,8 @@ jobs:
             exit 1
           fi
           while IFS= read -r f; do node --check "$f"; done < <(grep -R -l -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip --include='*.js')
+      - name: Verify root PWA refresh and legacy migration
+        run: node tests/mdlxdcc-root-pwa.test.cjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

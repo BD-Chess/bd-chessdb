@@ -1,8 +1,89 @@
 'use strict';
-const RELEASE='67f0407af5a7759a87f3f8dcbb293e02d0ddae16',PREFIX='mdlxdcc-root-pwa:',BASE=new URL('./',self.registration.scope),CACHE=PREFIX+BASE.pathname+':'+RELEASE;
-const FILES=["index.html","manifest.webmanifest","pwa.js","PWA/icon-192.png","PWA/icon-512.png","PWA/apple-touch-icon.png","assets/ai8-lab-growth-20260929.webp","assets/ai8-vision/r2/vision-r4.css","assets/ai8-vision/r2/vision-r4.js","assets/ai8-vision/r2/ai8-lab-growth-en-desktop-dark.webp","assets/ai8-vision/r2/ai8-lab-growth-en-desktop-light.webp","assets/ai8-vision/r2/ai8-lab-growth-en-mobile-dark.webp","assets/ai8-vision/r2/ai8-lab-growth-en-mobile-light.webp","assets/ai8-vision/r2/ai8-lab-growth-sl-desktop-dark.webp","assets/ai8-vision/r2/ai8-lab-growth-sl-desktop-light.webp","assets/ai8-vision/r2/ai8-lab-growth-sl-mobile-dark.webp","assets/ai8-vision/r2/ai8-lab-growth-sl-mobile-light.webp","assets/human-middle/v3/Human_in_the_Middle1_HD.webp","assets/human-middle/v3/Human_in_the_Middle2_HD.webp","assets/human-middle/v3/Human_in_the_Middle3_HD.webp","site-search-index.json","assets/human-middle/v4/Human_in_the_Middle1_HD_P.webp","assets/human-middle/v4/Human_in_the_Middle2_HD_P.webp","assets/human-middle/v4/Human_in_the_Middle3_HD_P.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP1.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP2.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP3.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP4.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP5.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP6.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP7.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP8.webp","assets/human-middle/v4/Human_in_the_Middle_HD_MP9.webp","pwa-release.json","assets/human-middle/v5/human-middle-r13-family.js","assets/human-middle/v5/human-middle-series-r1.js","assets/human-middle/v5/human-middle-family-r1.css"],URLS=FILES.map(p=>new URL(p,BASE).href),PATHS=new Set(URLS.map(x=>new URL(x).pathname)),INDEX=new URL('index.html',BASE).href;
-function ownRootNavigation(r){const u=new URL(r.url);return r.mode==='navigate'&&(u.pathname===BASE.pathname||u.pathname===new URL('index.html',BASE).pathname)}
-self.addEventListener('install',e=>e.waitUntil((async()=>{const had=(await caches.keys()).includes(CACHE),c=await caches.open(CACHE);try{await c.addAll(URLS.map(u=>new Request(u,{cache:'reload'})))}catch(err){if(!had)await caches.delete(CACHE);throw err}if(!self.registration.active)await self.skipWaiting()})()));
-self.addEventListener('activate',e=>e.waitUntil((async()=>{const ns=await caches.keys();await Promise.all(ns.filter(n=>n.startsWith(PREFIX)&&n!==CACHE).map(n=>caches.delete(n)));await self.clients.claim()})()));
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==BASE.origin)return;if(ownRootNavigation(r)){e.respondWith((async()=>{try{const n=await fetch(r);if(n.ok){e.waitUntil(caches.open(CACHE).then(c=>c.put(INDEX,n.clone())));return n}throw Error()}catch(_){return(await caches.open(CACHE)).match(INDEX)}})());return}if(!PATHS.has(u.pathname))return;e.respondWith((async()=>{const c=await caches.open(CACHE),h=await c.match(r,{ignoreSearch:true});if(h)return h;const n=await fetch(r);if(n.ok)e.waitUntil(c.put(r,n.clone()));return n})())});
-
+// MDLxDCC root PWA v2. Scope is the site root (or its GitHub Pages project prefix).
+// Only the homepage and its public assets are cached; APIs and other apps are untouched.
+const VERSION='root-20261009-r2';
+const FAMILY='mdlxdcc-root-pwa:';
+const BASE=new URL('./',self.registration.scope);
+const CACHE=FAMILY+BASE.pathname+':'+VERSION;
+const HOME=new URL('index.html',BASE);
+const SHELL=[
+ 'index.html','manifest.webmanifest','pwa.js','pwa-release.json',
+ 'PWA/icon-192.png','PWA/icon-512.png','PWA/apple-touch-icon.png',
+ 'assets/ai8-vision/r2/vision-r4.css',
+ 'assets/ai8-vision/r2/vision-r4.js',
+ 'assets/human-middle/v5/human-middle-family-r1.css',
+ 'assets/human-middle/v5/human-middle-series-r1.js',
+ 'assets/human-middle/v5/human-middle-explanations-r1.js',
+ 'assets/human-middle/v5/human-middle-r13-family.js'
+];
+const SHELL_PATHS=new Set(SHELL.map(p=>new URL(p,BASE).pathname));
+const MEDIA_PREFIXES=['assets/human-middle/','assets/ai8-vision/r2/'].map(p=>new URL(p,BASE).pathname);
+const AI8_HERO=new URL('assets/ai8-lab-growth-20260929.webp',BASE).pathname;
+const MEDIA_LIMIT=24;
+function isMedia(path){
+ return (path===AI8_HERO||MEDIA_PREFIXES.some(p=>path.startsWith(p)))&&/\.(?:webp|png|jpe?g)$/i.test(path);
+}
+function keyFor(url){return new Request(url.origin+url.pathname)}
+async function remember(key,response,media){
+ try{
+  const cache=await caches.open(CACHE);
+  await cache.put(key,response);
+  if(media){
+   const keys=await cache.keys();
+   const images=keys.filter(k=>isMedia(new URL(k.url).pathname));
+   await Promise.all(images.slice(0,Math.max(0,images.length-MEDIA_LIMIT)).map(k=>cache.delete(k)));
+  }
+ }catch(_){/* Storage quota is best-effort; do not break an online response. */}
+}
+async function fromNetwork(event,key,media){
+ try{
+  // Bypass HTTP cache for both Netlify and GitHub Pages. A cached response is
+  // a fallback only after an actual network failure, never the online default.
+  const response=await fetch(event.request,{cache:'no-store'});
+  if(response.ok)event.waitUntil(remember(key,response.clone(),media));
+  return response;
+ }catch(_){
+  const cache=await caches.open(CACHE);
+  return await cache.match(key,{ignoreSearch:true})||Response.error();
+ }
+}
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+ const cache=await caches.open(CACHE);
+ try{
+  await Promise.all(SHELL.map(async path=>{
+   const url=new URL(path,BASE);
+   const response=await fetch(new Request(url,{cache:'no-store'}));
+   if(!response.ok)throw new Error('PWA shell unavailable: '+path+' ('+response.status+')');
+   await cache.put(new Request(url),response);
+  }));
+ }catch(error){
+  await caches.delete(CACHE);
+  throw error; // Preserve the previous working worker on incomplete deployments.
+ }
+ await self.skipWaiting();
+})()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{
+ const names=await caches.keys();
+ await Promise.all(names.filter(n=>n.startsWith(FAMILY)&&n!==CACHE).map(n=>caches.delete(n)));
+ await self.clients.claim();
+})()));
+self.addEventListener('fetch',event=>{
+ const r=event.request;
+ if(r.method!=='GET')return;
+ const u=new URL(r.url);
+ if(u.origin!==BASE.origin)return;
+ if(r.mode==='navigate'){
+  if(u.pathname===BASE.pathname||u.pathname===HOME.pathname){
+   event.respondWith(fromNetwork(event,new Request(HOME),false));
+  }
+  return; // Do not take over other websites/apps under this origin.
+ }
+ const media=isMedia(u.pathname);
+ if(!media&&!SHELL_PATHS.has(u.pathname))return;
+ event.respondWith(fromNetwork(event,keyFor(u),media));
+});
+self.addEventListener('message',event=>{
+ if(event.data?.type==='MDLX_ROOT_PWA_VERSION')
+  event.source?.postMessage({type:'MDLX_ROOT_PWA_VERSION',version:VERSION});
+ if(event.data?.type==='MDLX_ROOT_PWA_ACTIVATE')self.skipWaiting();
+});
