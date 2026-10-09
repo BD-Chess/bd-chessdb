@@ -2,11 +2,11 @@
 
 // BEGIN GENERATED RELEASE
 const RELEASE = {
-  "id": "59f475c1d935ca3d3b315b62e336aa5aca9486e34d8b5460c173125f21140ec3",
+  "id": "16cea322ea94de37c1116a75fe64154a8c7a7a47957d7c79687427d1de808937",
   "channel": "CURRENT",
   "engine": "0.3.0",
   "assets": {
-    "index.html": "e0589f0b88e6a6391f2ac79b3b92e7917055c482e51e522f6d7a79d0620bfe4c",
+    "index.html": "38e200ce61227e6c17d70b124a3d5fe8e5960a4cc4d5de01f721dcf0018c5cbe",
     "manifest.webmanifest": "9c2f843e6e1ea992d951944ca665b575494bb8ecf1dc16572dbe3723608f8efe",
     "_pwa/client.js": "8d8213622b67fd5b8d8f0819466df6c397036e803ed5414ba6b8555e9065672d",
     "_pwa/i18n.js": "a72594e73f198bd46b7b3d347ebcff57506436c7e63fab29244b0fcea87c31cb",
@@ -15,8 +15,7 @@ const RELEASE = {
     "_pwa/icon-192.png": "3b1c7cbba4868a6dcbf32fb0d50475185445950a1cafa11ab2d556aa894d2cfb",
     "_pwa/icon-512.png": "85649c7a4201e274818dbc808530794ffacb3828195b04d01e69b6686769fdbc",
     "current/index.html": "e5af3f7345fd506ec3d59a811fc482ae19204334809171b595a4898618c6c3ba",
-    "current/promotion.json": "341e000adb4071e7c06476ff92045329c7ed00ec0c64af1532a6248a133f4a15",
-    "app.html": "2488b9fe8de9af73d6b40501ca08d0dbba50705092806ebc5a070d300eeca293"
+    "current/promotion.json": "341e000adb4071e7c06476ff92045329c7ed00ec0c64af1532a6248a133f4a15"
   }
 };
 // END GENERATED RELEASE
