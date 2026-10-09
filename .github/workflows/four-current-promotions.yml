@@ -1,0 +1,53 @@
+name: Four CURRENT promotions focused verification
+on:
+  pull_request:
+    paths:
+      - 'public/F4M/**'
+      - 'public/S/**'
+      - 'public/chess/**'
+      - 'public/chess-lab/old/**'
+      - 'public/Trip/**'
+      - 'scripts/build-sudoku-pwa.cjs'
+      - 'tests/four-current-browser.cjs'
+      - '.github/workflows/four-current-promotions.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Browser dependencies
+        run: |
+          npm ci --prefix tests/sudoku
+          npm install --prefix "$RUNNER_TEMP/promotion-pw" --no-package-lock --ignore-scripts playwright@1.55.0
+          echo "NODE_PATH=$GITHUB_WORKSPACE/tests/sudoku/node_modules:$RUNNER_TEMP/promotion-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/promotion-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Exact channels and JS syntax
+        run: |
+          node scripts/build-sudoku-pwa.cjs --check
+          python3 tools/build-chess-channel-pwas.py --check
+          node --check public/F4M/current-presentation.js
+          node --check public/F4M/current-store.js
+          node --check public/F4M/current-shell.js
+          node --check public/F4M/current-pwa.js
+          node --check public/Trip/presentation.js
+          node --check tests/four-current-browser.cjs
+          git diff --check
+      - name: Focused existing regression gates
+        run: |
+          node --test tests/sudoku-app-preview.test.cjs tests/sudoku-unified-lab-app.test.cjs tests/trip-mobile-ui.test.mjs public/chess-lab/research/mobile-unified.test.cjs
+      - name: Real desktop and phone Chromium WebKit
+        env:
+          CURRENT_PROMOTION_EVIDENCE: ${{ runner.temp }}/four-current-evidence
+        run: node tests/four-current-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-current-promotion-evidence
+          path: ${{ runner.temp }}/four-current-evidence
+          if-no-files-found: ignore
