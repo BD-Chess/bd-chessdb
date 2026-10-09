@@ -129,9 +129,9 @@
     for(const [date,v] of Object.entries(sa1Scores)){
       const id='NARA-D-'+date,scoreId='score-'+id;
       document.querySelectorAll('[data-score-open="'+scoreId+'"]').forEach(button=>{
-        const en='Final '+fSA1(v.final);
-        const sl='Končna '+nSA1(v.final);
-        button.innerHTML=pairSA1(en,sl);
+        const en=fSA1(v.final);
+        const sl=nSA1(v.final);
+        button.textContent=en;
         button.setAttribute('data-aria-en','SA1 score: '+en);
         button.setAttribute('data-aria-sl','Ocena SA1: '+sl);
         button.setAttribute('aria-label',language==='sl'?'Ocena SA1: '+sl:'SA1 score: '+en);
