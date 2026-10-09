@@ -9,7 +9,7 @@ const site={
  chess:{url:'https://chessbest.org/',host:'chessbest.org'},
  chessMdl:{url:'https://www.mdlxdcc.org/chess/',host:'www.mdlxdcc.org'}
 };
-const results={schema:'bd-live-trip-chess-smoke-20261009-v1',sourceCommit:'33a4e359a00e15e8043df94544a1ec3800dacf69',realDevice:'NOT_RUN',providerBackedRoutes:'NOT_RUN: provider requests blocked',cases:[]};
+const results={schema:'bd-live-trip-chess-smoke-20261009-v2',sourceCommit:'33a4e359a00e15e8043df94544a1ec3800dacf69',realDevice:'NOT_RUN',providerBackedRoutes:'NOT_RUN: provider requests blocked',cases:[]};
 const blocked=[],errors=[];
 const staticExt=/\.(?:html?|js|css|webmanifest|png|svg|ico|webp|jpe?g|woff2?|wasm|pgn|tsp|json)$/i;
 function permitted(pathname,resource){
@@ -17,6 +17,9 @@ function permitted(pathname,resource){
  if(/(?:maps-config|maps_key|road[_-]?matrix[_-]?api|gemini[_-]?api|mdl[_-]?unlock)/i.test(pathname))return false;
  if(resource==='fetch'||resource==='xhr'){
   // Only static, known-public chess/game library and Trip TSP fixtures.
+  // WebKit importScripts and local Stockfish WASM often use fetch/other. They are static;
+  // blocking them breaks offline solvers despite no paid provider involvement.
+  if(/\.(?:js|wasm)$/i.test(pathname))return true;
   return /\/(?:Games\/.*\.pgn|config\/(?:bots|coach)\.json|Trip\/tsp\/[^/]+\.(?:json|tsp)|chess\/research\/benchmark-fixtures\.json)$/i.test(pathname);
  }
  if(resource==='document')return true;
@@ -86,7 +89,11 @@ async function caseRun(engine,kind,mobile){
    }else{
     assert.equal(await page.locator('#btnGames').count(),1,'Chess game library control');
     assert.equal(await page.locator('#btnDeepAnalysis').count(),1,'Chess Deep analysis control');
-    await page.locator('#btnFlip').click({timeout:12000});
+    // The legacy Flip board button is intentionally hidden in CURRENT desktop.
+    // Test visible workspace navigation instead of forcing a hidden control.
+    await page.locator('[data-desktop-view="review"]').click({timeout:12000});
+    assert.equal(await page.locator('[data-desktop-view="review"]').getAttribute('aria-selected'),'true','Visible desktop Review view');
+    await page.locator('[data-desktop-view="moves"]').click({timeout:12000});
    }
    assert.equal(await page.evaluate(()=>ChessLabHost.getContext().fen),fen,'Chess UI interaction preserves board position');
   }
