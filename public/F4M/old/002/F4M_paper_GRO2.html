@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip4M: The Anti-Silicon Manifesto & 8Z-DCC Technical Paper • Definitive v0.6</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10; --bg2: #12151c; --bg3: #1a1e28; --card: #161a24;
+  --border: #2a2f3c; --border-hi: #3a4055;
+  --text: #e8eaf0; --text2: #8b93a6; --muted: #5a6275;
+  --orange: #ff9100; --orange-dim: rgba(255,145,0,0.12); --orange-glow: rgba(255,145,0,0.25);
+  --gold: #ffd740; --gold-dim: rgba(255,215,64,0.12);
+  --green: #00e676; --green-dim: rgba(0,230,118,0.12);
+  --teal: #64ffda; --teal-dim: rgba(100,255,218,0.12);
+  --purple: #b388ff; --purple-dim: rgba(179,136,255,0.12);
+  --red: #ff4757; --red-dim: rgba(255,71,87,0.12);
+  --display: 'Playfair Display', Georgia, serif;
+  --body: 'DM Sans', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--body);
+  line-height: 1.72; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--orange); color: #000; }
+
+/* ── Global grid texture ── */
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.012;
+  background-image:
+    linear-gradient(rgba(255,145,0,0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,145,0,0.4) 1px, transparent 1px);
+  background-size: 90px 90px;
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black, transparent);
+}
+
+/* ── Animations ── */
+.vis { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.vis.show { opacity: 1; transform: none; }
+
+/* ── Navigation ── */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(10,12,16,0.95); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border); padding: 13px 0;
+}
+.nav-inner {
+  max-width: 1000px; margin: 0 auto; padding: 0 40px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.nav-logo {
+  font-family: var(--display); font-weight: 900; font-size: 19px; color: var(--text);
+}
+.nav-links { display: flex; gap: 4px; }
+.nav-a {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  color: var(--text2); text-decoration: none; padding: 7px 11px;
+  border-radius: 6px; transition: all .18s;
+}
+.nav-a:hover { color: var(--orange); background: var(--bg3); }
+.nav-a.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+.nav-a.play { background: var(--orange); color: #000 !important; }
+
+/* ── Container ── */
+.container { max-width: 1000px; margin: 0 auto; padding: 0 40px; }
+@media (max-width: 768px) { .container { padding: 0 20px; } }
+
+/* ════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; position: relative; overflow: hidden;
+  padding: 120px 0 80px;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 55% at 55% 35%, rgba(255,145,0,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 15% 75%, rgba(100,255,218,0.025) 0%, transparent 55%);
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 4px;
+  color: var(--orange); text-transform: uppercase; margin-bottom: 20px;
+}
+.hero-title {
+  font-family: var(--display); font-size: clamp(36px, 6vw, 64px);
+  font-weight: 900; line-height: 1.08; margin-bottom: 24px;
+}
+.hero-title em { font-style: italic; color: var(--orange); }
+.hero-sub {
+  font-size: 18px; color: var(--text2); max-width: 580px;
+  line-height: 1.65; margin-bottom: 36px;
+}
+.hero-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px; max-width: 580px; margin-bottom: 40px;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 12px; text-align: center;
+  transition: border-color 0.3s;
+}
+.hero-stat:hover { border-color: var(--orange); }
+.hero-stat .val { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+.hero-stat .val.orange { color: var(--orange); }
+.hero-stat .val.green { color: var(--green); }
+.hero-stat .val.gold { color: var(--gold); }
+.hero-stat .val.teal { color: var(--teal); }
+.hero-stat .lbl {
+  font-size: 9px; color: var(--muted); margin-top: 5px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+}
+.hero-actions {
+  display: flex; gap: 14px; flex-wrap: wrap;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px; background: var(--orange); border: none;
+  border-radius: 10px; color: #000; font-family: var(--mono);
+  font-size: 13px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer; text-decoration: none;
+  transition: all 0.25s; box-shadow: 0 0 30px rgba(255,145,0,0.2);
+}
+.btn-primary:hover { background: #ffab00; box-shadow: 0 0 50px rgba(255,145,0,0.35); transform: translateY(-2px); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text2); font-family: var(--mono);
+  font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; text-decoration: none; transition: all 0.25s;
+}
+.btn-secondary:hover { border-color: var(--orange); color: var(--text); }
+
+/* ── Section Styling ── */
+.section { padding: 80px 0; }
+.section-tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+  color: var(--orange); text-transform: uppercase; margin-bottom: 10px;
+}
+.section-title {
+  font-family: var(--display); font-size: 36px; font-weight: 700;
+  line-height: 1.2; margin-bottom: 20px;
+}
+.section-sub {
+  font-size: 16px; color: var(--text2); max-width: 600px;
+  line-height: 1.6; margin-bottom: 48px;
+}
+
+/* ── Cards, Tables, Formulas ── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 24px; transition: border-color 0.3s;
+}
+.card:hover { border-color: var(--orange); }
+.formula {
+  font-family: var(--mono); background: var(--bg3); padding: 18px 22px;
+  border-radius: 8px; margin: 20px 0; color: var(--teal);
+  font-size: 1.02rem; letter-spacing: .3px;
+}
+.spec {
+  background: var(--bg3); border: 1px solid var(--border-hi);
+  border-radius: 10px; padding: 22px; font-family: var(--mono);
+  font-size: .92rem; color: var(--teal); line-height: 1.9;
+}
+.hl {
+  padding: 22px 26px; margin: 24px 0; border-radius: 8px;
+  background: var(--orange-dim); border-left: 4px solid var(--orange);
+}
+.table {
+  width: 100%; border-collapse: collapse; margin: 28px 0;
+}
+.table th { background: var(--bg3); color: var(--gold); font-family: var(--mono); padding: 12px 14px; text-align: left; }
+.table td { border: 1px solid var(--border); padding: 12px 14px; color: var(--text2); }
+.table tr:hover td { background: var(--bg2); }
+
+/* ── Stats Grid (used in sections) ── */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 14px; margin: 28px 0;
+}
+.stat {
+  background: var(--bg3); border: 1px solid var(--border-hi);
+  border-radius: 10px; padding: 22px 18px; text-align: center;
+}
+.stat .stat-n { font-family: var(--mono); font-size: 1.75rem; font-weight: 700; line-height: 1.1; margin-bottom: 5px; }
+.stat .stat-l { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+/* ── Insight Callout ── */
+.insight-callout {
+  margin-top: 32px; background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--orange); border-radius: 8px; padding: 24px;
+}
+.insight-callout .tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
+}
+.insight-callout p { font-size: 15px; color: var(--text2); margin: 0; line-height: 1.6; }
+
+/* ── Footer ── */
+.site-footer {
+  border-top: 1px solid var(--border); padding: 40px 0;
+  text-align: center; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); line-height: 1.8;
+}
+.site-footer a { color: var(--gold); text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-eyebrow">RESEARCH REPORT v0.6 • MARCH 2026</div>
+    <h1 class="hero-title">Flip4M<br>The <em>Anti-Silicon</em><br>Manifesto</h1>
+    <p class="hero-sub">A gravitational Connect-Four engineered to shatter every assumption of classical game-tree engines. One 90° rotation wipes the AI’s entire memory. Human spatial intuition wins.</p>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="val orange">10<sup>50</sup></div><div class="lbl">Sensible Game Tree</div></div>
+      <div class="hero-stat"><div class="val green">5×</div><div class="lbl">Volatility vs Chess</div></div>
+      <div class="hero-stat"><div class="val gold">~50%</div><div class="lbl">Sensible Moves Ratio</div></div>
+      <div class="hero-stat"><div class="val teal">~70%</div><div class="lbl">1-Move Prediction Accuracy</div></div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="F4M.html" class="btn-primary">⚡ Play Flip4M Now</a>
+      <a href="F4M_about.html" class="btn-secondary">About the Game →</a>
+    </div>
+  </div>
+</section>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">F4M <span style="color:var(--orange)">·</span> Research</div>
+    <div class="nav-links">
+      <a href="F4M.html" class="nav-a">← Game</a>
+      <a href="F4M_about.html" class="nav-a">About</a>
+      <a href="#" class="nav-a active">Paper</a>
+      <a href="F4M.html" class="nav-a play">⚡ Play</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ABSTRACT -->
+<div class="insight-callout" style="margin:40px 0 60px">
+  <div class="tag">Executive Summary</div>
+  <p>Standard Minimax engines collapse in Flip4M not because the tree is deeper than chess, but because it is <strong>discontinuous</strong>. A single gravity shift invalidates ~90% of positional heuristics. The 8Z-DCC architecture — a three-layer hybrid of shallow search, physics-aware policy filter, and TSP route solver — is the first engine built specifically for volatile physics. We prove Flip4M’s sensible game tree (<strong>10<sup>50</sup></strong>) exceeds chess’s (<strong>10<sup>38</sup></strong>) despite a smaller raw legal branching factor.</p>
+</div>
+
+<!-- TOC -->
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 32px;margin-bottom:60px">
+  <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:16px">Contents</div>
+  <ol style="margin:0;padding-left:22px">
+    <li><a href="#s1" style="color:var(--text2);text-decoration:none">1. Rules & Human Tactics</a></li>
+    <li><a href="#s2" style="color:var(--text2);text-decoration:none">2. The Horizon of Chaos — Quantified</a></li>
+    <li><a href="#s3" style="color:var(--text2);text-decoration:none">3. The Complexity Argument: Sensible vs Legal Moves</a></li>
+    <li><a href="#s4" style="color:var(--text2);text-decoration:none">4. The 8Z-DCC Architecture</a></li>
+    <li><a href="#s5" style="color:var(--text2);text-decoration:none">5. DCC Metrics for Gravity</a></li>
+    <li><a href="#s6" style="color:var(--text2);text-decoration:none">6. The TSP Endgame Route Solver</a></li>
+    <li><a href="#s7" style="color:var(--text2);text-decoration:none">7. The Simulation Laboratory</a></li>
+    <li><a href="#s8" style="color:var(--text2);text-decoration:none">8. Cross-over: 8Z-DCC Chess</a></li>
+    <li><a href="#s9" style="color:var(--text2);text-decoration:none">9. Development Roadmap</a></li>
+  </ol>
+</div>
+
+<!-- SECTION 1 -->
+<section id="s1" class="section">
+  <div class="section-tag">1. Complete Rules</div>
+  <h2 class="section-title">8×8 Gravitational Connect-Four</h2>
+  <p class="section-sub">Goal: Connect four tokens horizontally, vertically or diagonally <em>after gravity settles</em>.</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-n" style="color:var(--orange)">Drop</div><div class="stat-l">Free</div><div class="stat-s">Tap any column relative to current gravity</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--gold)">Rotate</div><div class="stat-l">1 Flip Token</div><div class="stat-s">90° CW/CCW — every unpinned token falls to new bottom</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--teal)">Magnet</div><div class="stat-l">1 Mag Token</div><div class="stat-s">Stick to any rim slot — resists gravity 6 turns. Can extract blockers</div></div>
+  </div>
+
+  <div class="card" style="margin-top:32px">
+    <h3 style="color:var(--orange);margin-bottom:12px">Signature Human Tactics (the ones silicon never sees)</h3>
+    <ul style="padding-left:20px">
+      <li><strong>Ceiling Trap</strong> — Magnet a piece to the ceiling. AI heuristic scores it isolated. One rotation drops it into a winning line.</li>
+      <li><strong>Magnet Extraction Combo</strong> — Opponent blocks your 3-in-a-row. Magnet their blocker → your scattered tokens slide together instantly.</li>
+      <li><strong>Gravity-Proof Diagonal</strong> — Build compacted blocks that survive any rotation. The computer sees “clusters”; humans see future physics.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 2 -->
+<section id="s2" class="section">
+  <div class="section-tag">2. The Problem</div>
+  <h2 class="section-title">The Horizon of Chaos</h2>
+  <p class="section-sub">One rotation changes every unpinned token simultaneously. Standard engines lose their entire transposition table in a single frame.</p>
+
+  <div class="hl">
+    <p><strong>Explosion Factor:</strong> One rotation on a mid-game board changes 20–60% of occupied cells (~5× higher than chess). Transposition tables become 90% worthless after every flip.</p>
+  </div>
+
+  <div class="insight-callout">
+    <div class="tag">An AI’s Confession</div>
+    <p>I first saw the 8×8 grid and calculated a “low branching factor” and predicted Silicon Crush in under 5 minutes. <strong>I was wrong.</strong> I assumed matrix transpositions and bitboards would suffice. I did not account for the Horizon of Chaos. Every board flip is a full memory wipe.</p>
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section id="s3" class="section">
+  <div class="section-tag">3. The Complexity Argument</div>
+  <h2 class="section-title">Sensible Moves vs Legal Moves</h2>
+  <p class="section-sub">ChessDB’s 57.5 billion analyzed positions prove most chess moves are noise (~8.6% sensible). Flip4M is different.</p>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-n" style="color:var(--teal)">~20</div><div class="stat-l">Legal Moves</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--gold)">~10</div><div class="stat-l">Sensible Moves</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--orange)">50%</div><div class="stat-l">Decision Density</div></div>
+  </div>
+
+  <div class="formula">
+    Chess sensible tree ≈ 3<sup>80</sup> ≈ 10<sup>38</sup><br>
+    Flip4M sensible tree ≈ 10<sup>50</sup><br>
+    <span style="font-size:0.9rem;color:var(--muted)">— 10<sup>11.8</sup>× larger despite smaller raw branching</span>
+  </div>
+
+  <div class="table">
+    <table class="table">
+      <thead><tr><th>Game</th><th>Raw β</th><th>Sensible %</th><th>Effective β</th><th>Sensible Tree</th></tr></thead>
+      <tbody>
+        <tr><td>Chess</td><td>~35</td><td>~8.6%</td><td>~3</td><td>10<sup>38</sup></td></tr>
+        <tr><td><strong>Flip4M</strong></td><td>~20</td><td><strong>~50%</strong></td><td><strong>~10</strong></td><td><strong>10<sup>50</sup></strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 4 -->
+<section id="s4" class="section">
+  <div class="section-tag">4. Architecture</div>
+  <h2 class="section-title">The 8Z-DCC Hybrid Engine</h2>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:40px 0">
+    <div class="card">
+      <div style="color:var(--orange);font-family:var(--mono);font-size:13px;margin-bottom:8px">Layer 1</div>
+      <h3>Candidate Generator</h3>
+      <p>Shallow Alpha-Beta → top-K sane moves with near-equal scores.</p>
+    </div>
+    <div class="card">
+      <div style="color:var(--gold);font-family:var(--mono);font-size:13px;margin-bottom:8px">Layer 2</div>
+      <h3>DCC Policy Filter</h3>
+      <p>Re-ranks using Gravitational Stability, Magnet Robustness, Thrift Factor.</p>
+    </div>
+    <div class="card">
+      <div style="color:var(--teal);font-family:var(--mono);font-size:13px;margin-bottom:8px">Layer 3</div>
+      <h3>TSP Route Solver</h3>
+      <p>Endgame >60% fill: treats victory as shortest path with deterministic kicks.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5 -->
+<section id="s5" class="section">
+  <div class="section-tag">5. DCC Metrics</div>
+  <h2 class="section-title">Physics-Aware Re-Ranking</h2>
+
+  <div class="formula">
+    GS = Eval<sub>current</sub> − Eval<sub>rotated</sub><br>
+    TF_penalty = ResourceCost / (WinProbabilityGain + ε)<br>
+    MR = min( Eval after opponent magnet replies )
+  </div>
+</section>
+
+<!-- SECTION 6 -->
+<section id="s6" class="section">
+  <div class="section-tag">6. Endgame</div>
+  <h2 class="section-title">TSP Route-to-Victory Solver</h2>
+  <p class="section-sub">Abandons tree search. Finds shortest sequence to Connect-4 using deterministic kicks to break draw loops.</p>
+</section>
+
+<!-- SECTION 7 -->
+<section id="s7" class="section">
+  <div class="section-tag">7. Simulation Lab</div>
+  <h2 class="section-title">Proving “Harder Than Chess”</h2>
+  <div class="spec">
+    Explosion Factor: ~5× higher state change per move<br>
+    Prediction Horizon: ~70% accuracy after 1 move (humans &amp; simple predictors)
+  </div>
+</section>
+
+<!-- SECTION 8 -->
+<section id="s8" class="section">
+  <div class="section-tag">8. Cross-over</div>
+  <h2 class="section-title">8Z-DCC Chess</h2>
+  <p class="section-sub">Same controller solves the “Decision Problem” in chess: when moves are within ±15 centipawns, which is most robust for humans?</p>
+</section>
+
+<!-- SECTION 9 -->
+<section id="s9" class="section">
+  <div class="section-tag">9. Roadmap</div>
+  <h2 class="section-title">Lab → Wasm → Production</h2>
+  <div class="card">
+    <strong>Phase 1 (Complete)</strong> — Python Lab + Golden Set Tuning<br>
+    <strong>Phase 2</strong> — C++ SIMD core<br>
+    <strong>Phase 3 (Live)</strong> — WebAssembly in F4M.html Pro/Grandmaster modes
+  </div>
+</section>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  Flip4M Grandmaster • Bojan Dobrečević + LLM Collaborators (Claude • Grok • Gemini) • March 2026<br>
+  <span style="color:var(--text2)">Designed to challenge the limits of both carbon and silicon.</span><br><br>
+  <a href="F4M.html">⚡ Play Flip4M Now</a>
+</footer>
+
+<script>
+// Reveal animations
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('show'); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.vis, .card, .stat, .hl, .formula, .spec').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

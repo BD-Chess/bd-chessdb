@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip4M: The Anti-Silicon Manifesto & 8Z-DCC Technical Paper</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07090d;--bg2:#0d1018;--bg3:#13171f;--card:#0f1319;
+  --border:#1c2130;--border-hi:#283044;
+  --text:#dde2ee;--text2:#7a8399;--muted:#454f66;
+  --orange:#ff8c00;--orange-dim:rgba(255,140,0,0.09);
+  --gold:#f5c518;--gold-dim:rgba(245,197,24,0.09);
+  --teal:#00d4e8;--teal-dim:rgba(0,212,232,0.08);
+  --red:#ff4444;--red-dim:rgba(255,68,68,0.08);
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'Playfair Display',serif;
+}
+*{box-sizing:border-box;scroll-behavior:smooth}html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.65}
+nav{position:sticky;top:0;z-index:200;background:rgba(7,9,13,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:13px 0}
+.nav-inner{max-width:960px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
+.nav-logo{font-family:var(--serif);font-weight:900;font-size:17px;color:var(--text)}
+.nav-links{display:flex;gap:4px}
+.nav-a{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text2);text-decoration:none;padding:7px 11px;border-radius:6px;transition:all .18s}
+.nav-a:hover{color:var(--orange);background:var(--bg3)}.nav-a.active{color:var(--gold);border-bottom:2px solid var(--gold);border-radius:0}.nav-a.play{background:var(--orange);color:#000!important;border-radius:6px}
+.container{max-width:960px;margin:0 auto;padding:72px 24px 120px}
+.paper-head{padding-bottom:56px;border-bottom:1px solid var(--border);margin-bottom:48px}
+.badge{display:inline-block;padding:4px 12px;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,140,0,.28);margin-bottom:18px}
+.badge.b-teal{background:var(--teal-dim);color:var(--teal);border-color:rgba(0,212,232,.28)}.badge.b-gold{background:var(--gold-dim);color:var(--gold);border-color:rgba(245,197,24,.28)}
+h1{font-family:var(--serif);font-size:clamp(2.8rem,5.5vw,4.5rem);letter-spacing:-2.5px;line-height:1.04;margin:0 0 16px;font-weight:900}
+.lead{font-size:1.2rem;color:var(--text);max-width:740px;line-height:1.5;margin-bottom:32px;font-weight:400}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:28px}.meta span{color:var(--text2)}
+h2{font-family:var(--serif);font-size:1.95rem;font-weight:700;color:var(--gold);border-bottom:1px solid var(--border);padding-bottom:11px;margin:72px 0 26px}
+h2.teal{color:var(--teal)}
+h3{font-family:var(--mono);font-size:1.05rem;font-weight:700;color:var(--teal);margin:36px 0 14px;padding-left:14px;border-left:3px solid var(--teal)}
+h3.orange{color:var(--orange);border-color:var(--orange)}
+h4{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:1px;margin:0 0 10px}
+p{font-size:1.08rem;color:var(--text2);margin-bottom:1.3rem}strong{color:var(--text)}em{color:var(--text);font-style:italic}
+ul{padding-left:20px}li{color:var(--text2);font-size:1.05rem;margin-bottom:9px;line-height:1.55}li::marker{color:var(--orange)}
+a{color:var(--teal)}code{font-family:var(--mono);color:var(--orange);background:rgba(255,140,0,.1);padding:2px 7px;border-radius:4px;font-size:.88em}
+.toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:28px 32px;margin:0 0 56px}
+.toc-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:16px}
+.toc ol{margin:0;padding-left:22px}.toc li{margin-bottom:6px;color:var(--text2)}.toc a{color:var(--text2);text-decoration:none;transition:color .18s}.toc a:hover{color:var(--orange)}
+.abstract{border-left:3px solid var(--orange);background:var(--bg2);padding:28px 32px;border-radius:0 10px 10px 0;font-style:italic;font-size:1.12rem;color:var(--text);margin:0 0 56px}
+.card{background:var(--card);border:1px solid var(--border);padding:26px 30px;border-radius:10px;margin:20px 0}
+.card-o{border-color:rgba(255,140,0,.2);background:linear-gradient(135deg,var(--card),rgba(255,140,0,.03))}
+.card-t{border-color:rgba(0,212,232,.18);background:linear-gradient(135deg,var(--card),rgba(0,212,232,.02))}
+.card-g{border-color:rgba(245,197,24,.18)}
+.card-r{border-left:3px solid var(--red);background:var(--red-dim);border-radius:0 10px 10px 0;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px;margin:28px 0}
+.stat{background:var(--bg3);border:1px solid var(--border-hi);border-radius:10px;padding:22px 18px;text-align:center;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat.o::after{background:var(--orange)}.stat.t::after{background:var(--teal)}.stat.g::after{background:var(--gold)}.stat.r::after{background:var(--red)}
+.stat-n{font-family:var(--mono);font-size:1.75rem;font-weight:700;line-height:1.1;margin-bottom:5px}
+.stat.o .stat-n{color:var(--orange)}.stat.t .stat-n{color:var(--teal)}.stat.g .stat-n{color:var(--gold)}.stat.r .stat-n{color:var(--red)}
+.stat-l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}.stat-s{font-size:.78rem;color:var(--text2);margin-top:5px;line-height:1.4}
+.dt{width:100%;border-collapse:collapse;margin:26px 0;font-size:1rem}
+.dt th{background:var(--bg3);color:var(--gold);font-family:var(--mono);font-size:.82rem;text-transform:uppercase;letter-spacing:.5px;padding:11px 14px;text-align:left;border:1px solid var(--border)}
+.dt td{border:1px solid var(--border);padding:12px 14px;color:var(--text2);vertical-align:top}.dt tr:hover td{background:var(--bg2)}
+.dt .win{color:var(--teal)!important;font-family:var(--mono);font-weight:700}.dt .lose{color:var(--red)!important;font-family:var(--mono)}.dt .neu{color:var(--gold)!important;font-family:var(--mono)}
+.bar-wrap{margin:8px 0}.bar-head{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:5px;display:flex;justify-content:space-between}
+.bar-track{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden}.bar-fill{height:100%;border-radius:4px}
+.formula{font-family:var(--mono);font-size:1.05rem;background:var(--bg3);border:1px solid var(--border-hi);padding:15px 20px;border-radius:8px;margin:16px 0;text-align:center;letter-spacing:.3px;color:var(--text)}
+.fv{color:var(--teal)}.fn{color:var(--orange)}.fe{color:var(--gold)}
+.spec{background:var(--bg2);border:1px solid var(--border-hi);border-radius:8px;padding:22px 26px;font-family:var(--mono);font-size:.92rem;color:var(--teal);line-height:1.9;margin:22px 0}
+.spec .cm{color:var(--muted)}.spec .ky{color:var(--orange)}.spec .vl{color:var(--text)}
+.hl{padding:22px 26px;margin:24px 0;border-radius:8px}.hl p{margin-bottom:0}
+.hl-o{background:var(--orange-dim);border-left:4px solid var(--orange)}.hl-t{background:var(--teal-dim);border-left:4px solid var(--teal)}
+.hl-g{background:var(--gold-dim);border-left:4px solid var(--gold)}.hl-r{background:var(--red-dim);border-left:4px solid var(--red)}
+.callout{display:flex;gap:15px;align-items:flex-start;background:var(--bg3);border:1px solid var(--border-hi);border-radius:8px;padding:18px 22px;margin:22px 0}
+.callout-icon{font-size:1.35rem;flex-shrink:0;margin-top:1px}.callout p{font-size:1rem;margin-bottom:0}
+.phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+.phase{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:20px}
+.phase-num{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.phase-title{font-family:var(--mono);font-weight:700;color:var(--orange);font-size:.95rem;margin-bottom:8px}.phase-body{font-size:.88rem;color:var(--text2);line-height:1.5}
+hr{border:none;border-top:1px solid var(--border);margin:70px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+footer{border-top:1px solid var(--border);background:var(--bg2);padding:50px 0;text-align:center}
+footer p{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:6px}footer a{color:var(--teal);text-decoration:none}
+@media(max-width:680px){.stat-grid{grid-template-columns:1fr 1fr}.phase-grid{grid-template-columns:1fr}.two-col{grid-template-columns:1fr}.meta{gap:14px}}
+</style>
+</head>
+<body>
+<nav><div class="nav-inner">
+  <div class="nav-logo">F4M <span style="color:var(--orange)">·</span> Research</div>
+  <div class="nav-links">
+    <a href="F4M.html" class="nav-a">← Game</a>
+    <a href="F4M_about.html" class="nav-a">About</a>
+    <a href="#" class="nav-a active">Paper</a>
+    <a href="F4M.html" class="nav-a play">⚡ Play</a>
+  </div>
+</div></nav>
+
+<div class="container">
+
+<div class="paper-head">
+  <div class="badge">Research Report v0.4 · Jan 2026</div>
+  <h1>The <span style="color:var(--orange)">Anti-Silicon</span><br>Strategy</h1>
+  <p class="lead">Flip4M is a masterclass in computational disruption — designed to return the advantage to human spatial intuition over brittle AI calculation. This paper formalises the physics, quantifies the complexity, and presents the 8Z-DCC architecture built to survive it.</p>
+  <div class="meta">
+    <div>AUTHORS <span>Bojan Dobrečević + LLM Collaborators</span></div>
+    <div>VERSION <span>v0.4 Draft</span></div>
+    <div>SCOPE <span>Flip4M · 8Z-DCC · Chess Cross-over</span></div>
+  </div>
+</div>
+
+<div class="abstract">
+  Standard Minimax engines struggle with Flip4M not because the game tree is deep, but because it is <strong>volatile</strong>. A single gravity shift invalidates ~90% of positional heuristics, creating a "Horizon of Chaos" where predictive calculation fails. We propose the <strong>8Z-DCC hybrid architecture</strong> — a three-layer engine prioritising structural integrity over raw depth. We further present quantitative evidence, using the ChessDB corpus of 57.5 billion positions, that Flip4M's <em>sensible</em> decision space (<strong>10<sup>50</sup></strong>) significantly exceeds that of Chess (<strong>10<sup>38</sup></strong>), despite a smaller raw legal move count.
+</div>
+
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <ol>
+    <li><a href="#s1">The Problem: The Horizon of Chaos</a></li>
+    <li><a href="#s2">The Complexity Argument: Sensible Moves vs. Legal Moves</a></li>
+    <li><a href="#s3">The 8Z-DCC Architecture</a></li>
+    <li><a href="#s4">DCC Metrics for Gravity</a></li>
+    <li><a href="#s5">The TSP Endgame Route Solver</a></li>
+    <li><a href="#s6">The Simulation Laboratory</a></li>
+    <li><a href="#s7">Cross-over: 8Z-DCC Chess</a></li>
+    <li><a href="#s8">Development Roadmap</a></li>
+  </ol>
+</div>
+
+<!-- S1 -->
+<section id="s1">
+<h2>1. The Problem: The Horizon of Chaos</h2>
+<p>Standard strategy engines struggle with Flip4M not because the game tree is too deep, but because it is too <strong>volatile</strong>. In static games like Chess, moving a piece only affects local squares. In Flip4M, a single 90° rotation changes the position of every unpinned token on the board simultaneously — a global event with no Chess equivalent.</p>
+
+<div class="card card-o">
+  <h4>Global Cache Invalidation</h4>
+  <p style="margin-bottom:0">One rotation redefines the entire board reality in a single frame. This forces any AI to discard its complete "memory" — the <code>Transposition Table</code> — and restart calculation from scratch. In Chess, an engine reuses millions of previously computed positions across a game. In Flip4M, almost every rotation starts the engine cold. The harder the engine works to build positional knowledge, the more it loses per rotation.</p>
+</div>
+
+<p>Three distinct failure modes emerge when standard engines are applied naively to Flip4M:</p>
+
+<div class="two-col">
+  <div class="card">
+    <h4>Volatility Blindness</h4>
+    <p style="margin-bottom:0">A "strong" 3-in-a-row vertical line becomes a useless scattered pile after a 90° gravity shift. All positional memory earned on the previous turn is worthless. The engine cannot distinguish between durable structures and liquid ones.</p>
+  </div>
+  <div class="card">
+    <h4>Resource Blindness</h4>
+    <p style="margin-bottom:0">Standard Minimax treats a costly Magnet and a free Drop as equal if they produce the same immediate score — leading to "seizure" behaviour where the AI burns rare Magnets on Turn 1 for marginal gains, defenceless in the endgame.</p>
+  </div>
+</div>
+
+<div class="card card-r" style="margin-top:0">
+  <h4>Structural Collapse</h4>
+  <p style="margin-bottom:0">Complexity does not come from search depth. The truth may be only 4 moves away — but the <em>board rules change mid-game</em>. A depth-4 search is worthless if it ignores gravity settling. The engine calculates a winning line with confidence and the board physically reshapes into a loss.</p>
+</div>
+
+<table class="dt" style="margin-top:30px">
+  <thead><tr><th>Metric</th><th>Chess (Static)</th><th>Flip4M (Dynamic)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Board Geometry</strong></td><td>Frozen — a move touches 2 squares max</td><td class="win">Volatile — one rotation displaces every unpinned token</td></tr>
+    <tr><td><strong>Complexity Source</strong></td><td>Horizon Effect — truth 20 moves deep</td><td class="win">Structural Collapse — board rules change mid-game</td></tr>
+    <tr><td><strong>Transposition Table</strong></td><td class="win">Highly effective — positions recur often</td><td class="lose">Near-useless — invalidated by every rotation</td></tr>
+    <tr><td><strong>Visuospatial Stability</strong></td><td class="win">High — positions are recognisable</td><td class="lose">Near zero — 15+ tokens move simultaneously</td></tr>
+    <tr><td><strong>Heuristic Function</strong></td><td class="win">Stable across the whole game</td><td class="lose">Must be rebuilt from scratch after every flip</td></tr>
+  </tbody>
+</table>
+</section>
+
+<hr>
+
+<!-- S2 -->
+<section id="s2">
+<h2>2. The Complexity Argument: Sensible Moves vs. Legal Moves</h2>
+<p>A natural intuition is that Chess must be more complex than Flip4M because it has a larger raw branching factor — ~35 legal moves per position versus ~20 in Flip4M. The Shannon Number (10<sup>120</sup>) looms large in chess mythology. This intuition is <strong>wrong</strong>, and empirical data from the largest chess database in existence proves why.</p>
+
+<h3>The ChessDB Evidence</h3>
+<p>The <a href="https://www.chessdb.cn/queryc_en/" target="_blank">Chess Cloud Database</a> currently indexes over <strong>57.5 billion analyzed positions</strong> — years of continuous deep-engine computation at scale. Across this massive corpus, the typical position surfaces only about <strong>~3 top-tier moves</strong> worth serious consideration. The other ~32 legal moves are noise: they lose material, hand away tempo, ruin structure, or leave the position strategically unchanged. Only <strong>~8.6% of legal chess moves</strong> are genuinely competitive at any given position.</p>
+
+<div class="hl hl-g">
+  <p><strong>ChessDB key insight:</strong> 57,527,238,454 positions deeply analysed. Average top-quality candidates per position: ~3. This empirically collapses the legendary 10<sup>123</sup> legal game tree to a <em>sensible</em> tree of roughly <strong>10<sup>38</sup></strong> — a reduction of 10<sup>85</sup> orders of magnitude. The Shannon Number is a mirage for practical engine design.</p>
+</div>
+
+<p>Flip4M's move structure is categorically different. Every move type carries strategic weight that cannot be dismissed with a quick glance:</p>
+
+<div class="stat-grid">
+  <div class="stat o"><div class="stat-n">~6</div><div class="stat-l">Drop Moves</div><div class="stat-s">Each column has a distinct gravity outcome after settling. Rarely are two drops equivalent — column position interacts with gravity direction and board fill.</div></div>
+  <div class="stat t"><div class="stat-n">~2–3</div><div class="stat-l">Flip / Rotate</div><div class="stat-s">CW / CCW / 180° — each radically reshapes the global board. Every flip is a game-state earthquake with no local equivalent in Chess.</div></div>
+  <div class="stat g"><div class="stat-n">~12</div><div class="stat-l">Magnet Moves</div><div class="stat-s">Pins tokens to surfaces — each placement has unique physics consequences that cascade across every future rotation.</div></div>
+  <div class="stat r"><div class="stat-n">~20</div><div class="stat-l">Total Legal</div><div class="stat-s">Smaller than Chess — but proportionally far more demand genuine analysis before dismissal.</div></div>
+</div>
+
+<h3>The Sensible Move Ratio</h3>
+<p>Because gravity gives every column a distinct character, Flip moves have global consequences, and Magnets are a depleting resource, a far higher proportion of Flip4M moves demand real analysis. We conservatively estimate <strong>~50% of Flip4M moves are "sensible"</strong> — roughly <strong>6× higher decision density</strong> than Chess per position.</p>
+
+<div class="card" style="padding:28px 30px">
+  <div class="bar-wrap" style="margin-bottom:20px">
+    <div class="bar-head"><span>♟ Chess — sensible move ratio</span><span style="color:var(--red);font-family:var(--mono)">~8.6% (3 of 35)</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:8.6%;background:var(--red)"></div></div>
+  </div>
+  <div class="bar-wrap">
+    <div class="bar-head"><span>⊕ Flip4M — sensible move ratio</span><span style="color:var(--teal);font-family:var(--mono)">~50% (10 of 20)</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--teal)"></div></div>
+  </div>
+  <p style="margin-top:18px;margin-bottom:0;font-size:.88rem;color:var(--muted)">Chess ratio: ChessDB empirical (57.5B positions, ~3 sensible of ~35 legal). Flip4M: conservative theoretical estimate based on move-type analysis.</p>
+</div>
+
+<h3>The Game Tree Calculation</h3>
+<p>When we compute the game tree using only <em>sensible</em> moves — the ones requiring actual decisions — the result is striking. Chess games average ~80 half-moves; Flip4M games average ~50 (8×8 board fills faster than expected given multiple move types):</p>
+
+<div class="formula">
+  <span class="fv">T<sub>sensible</sub></span> <span class="fe">=</span> <span class="fv">b<sub>sensible</sub></span><sup><span class="fv">d</span></sup>
+  &nbsp;&nbsp;
+  <span class="fv">Chess:</span> <span class="fn">3</span><sup><span class="fn">80</span></sup> <span class="fe">≈ 10<sup>38.2</sup></span>
+  &nbsp;&nbsp;vs&nbsp;&nbsp;
+  <span class="fv">Flip4M:</span> <span class="fn">10</span><sup><span class="fn">50</span></sup> <span class="fe">= 10<sup>50.0</sup></span>
+</div>
+
+<table class="dt">
+  <thead><tr><th>Parameter</th><th>Chess</th><th>Flip4M</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Legal branching factor</strong></td><td>~35</td><td>~20</td></tr>
+    <tr><td><strong>Sensible moves / position</strong></td><td class="lose">~3 (ChessDB empirical)</td><td class="win">~10 (estimated)</td></tr>
+    <tr><td><strong>Avg. game length (half-moves)</strong></td><td>~80</td><td>~50</td></tr>
+    <tr><td><strong>Total legal game tree</strong></td><td>10<sup>123.5</sup> (Shannon)</td><td>10<sup>65.1</sup></td></tr>
+    <tr><td><strong>Sensible game tree</strong></td><td class="lose">10<sup>38.2</sup></td><td class="win">10<sup>50.0</sup></td></tr>
+    <tr><td><strong>Sensible / legal ratio</strong></td><td class="lose">8.6%</td><td class="win">~50%</td></tr>
+    <tr><td><strong>Decision density (per move)</strong></td><td class="lose">Baseline (1×)</td><td class="win">~6× higher</td></tr>
+  </tbody>
+</table>
+
+<div class="hl hl-t">
+  <p><strong>Key finding:</strong> Despite a smaller total legal game tree, Flip4M's <em>sensible</em> game tree (<strong>10<sup>50</sup></strong>) is approximately <strong>10<sup>11.8</sup> times larger</strong> than Chess's sensible game tree (<strong>10<sup>38</sup></strong>). In Chess, 9 of 10 legal moves are instant discards. In Flip4M, every move demands real thought. The per-move cognitive load is structurally and measurably higher — and the engine design must reflect this reality.</p>
+</div>
+
+<h3>State Space Comparison</h3>
+<p>Looking at position counts confirms the picture. Each of Flip4M's 64 cells can be empty, Player 1, Player 2, or magnetised — roughly 5 states per cell. With 4 gravity orientations:</p>
+
+<div class="spec">
+  <span class="cm"># Raw upper bound</span><br>
+  <span class="ky">flip4m_raw_states</span> <span class="fe">=</span> <span class="vl">5<sup>64</sup> × 4</span> ≈ <strong>10<sup>45.3</sup></strong><br>
+  <span class="ky">chess_legal_positions</span> <span class="fe">=</span> <span class="vl">~10<sup>44</sup></span> <span class="cm">(well-established estimate)</span><br><br>
+  <span class="cm"># Same order of magnitude in raw state count.</span><br>
+  <span class="cm"># But: Flip4M positions exist in 4 physically distinct gravity variants.</span><br>
+  <span class="cm"># Chess engine: "Have I seen this position before?" → often YES</span><br>
+  <span class="cm"># Flip4M engine: "Have I seen this position before?" → almost NEVER</span>
+</div>
+
+<div class="callout">
+  <div class="callout-icon">⚡</div>
+  <div><p>The raw state space of Flip4M (~10<sup>45</sup>) is comparable to Chess (~10<sup>44</sup>), but the same token arrangement can exist under 4 physically distinct gravity orientations — each demanding completely fresh analysis. The transposition table advantage that makes Chess computationally tractable essentially vanishes in Flip4M.</p></div>
+</div>
+</section>
+
+<hr>
+
+<!-- S3 -->
+<section id="s3">
+<h2>3. The 8Z-DCC Architecture</h2>
+<p>To survive this volatile physics environment, we propose the <strong>Digital Claustrum Controller (DCC)</strong> — a three-layer hybrid architecture. The goal is "human-expert" style play: principled, resource-conscious, structurally durable. Not a brittle calculator that seizes on shallow tactics, but a robust agent that builds stable structures and conserves resources.</p>
+
+<div class="card card-t" style="margin-bottom:14px">
+  <h4>Layer 1 — Candidate Generator (Shallow Search)</h4>
+  <p style="margin-bottom:0">Uses standard Alpha-Beta pruning to find the top-K "sane" moves, producing a cluster with near-equal evaluation scores. Deliberately shallow — it eliminates obvious blunders, not picks the best move. Its quality sets the ceiling for Layers 2 and 3.</p>
+</div>
+
+<div class="card card-o" style="margin-bottom:14px">
+  <h4>Layer 2 — The DCC Policy Filter (The "Personality")</h4>
+  <p>The Digital Claustrum Controller re-ranks the candidate cluster using physics-aware secondary metrics. Three questions Chess engines never need to ask:</p>
+  <ul style="margin-bottom:0">
+    <li><code>Gravitational Stability (GS)</code> — Simulate the board after a 90° rotation. Boost "gravity-proof" structures: diagonals, compacted blocks, corner anchors. Penalise clusters that look strong but scatter on the next flip.</li>
+    <li><code>Magnet Robustness (MR)</code> — Worst-case sensitivity. If the opponent places a magnet next turn, does the structure crumble? Prefer moves that remain strong even against a free disruption.</li>
+    <li><code>Thrift Factor (TF)</code> — Explicit penalty for spending Flips or Magnets for anything except a decisive win or critical block. Never waste rare assets for marginal positional gain.</li>
+  </ul>
+</div>
+
+<div class="formula">
+  <span class="fv">Score</span> <span class="fe">=</span> <span class="fv">BaseEval</span> <span class="fe">−</span> <span class="fn">(</span><span class="fv">ResourceCost</span> / <span class="fv">Volatility</span><span class="fn">)</span> <span class="fe">+</span> λ · <span class="fv">GS</span> <span class="fe">+</span> μ · <span class="fv">MR</span>
+</div>
+
+<div class="card card-g">
+  <h4>Layer 3 — 8Z-RP Endgame Route Solver (The "Sniper")</h4>
+  <p>Activates when Board Fill &gt; 60%. The engine abandons tree search and models the game as a <strong>directed graph</strong> — finding the shortest path from current state to a Connect-4 victory state.</p>
+  <p style="margin-bottom:0">Adapted from 8Z-RP Travelling Salesman logic: each "city" is a game state, each "distance" is the move cost to reach a winning alignment. When stuck in a draw loop, a <strong>Deterministic Kick</strong> — a forced non-optimal rotation — breaks the cycle. This discovers sequences like <em>Rotate → Magnet → Drop → Win</em> that pure tree search prunes, because intermediate states look weak. The route solver evaluates only the <em>terminal win state</em>.</p>
+</div>
+</section>
+
+<hr>
+
+<!-- S4 -->
+<section id="s4">
+<h2>4. DCC Metrics for Gravity</h2>
+<p>The Policy Filter runs four core signals. Each corresponds to a measurable physics event that can be cheaply simulated before committing to a move.</p>
+
+<h3>Gravitational Stability (GS)</h3>
+<p>The primary survival metric. Simulate the board after each candidate move, then virtually apply a 90° rotation. The delta between current and post-rotation evaluation is the stability score.</p>
+<div class="formula"><span class="fv">GS</span> <span class="fe">=</span> <span class="fv">Eval<sub>current</sub></span> <span class="fe">−</span> <span class="fv">Eval<sub>after_rotation</sub></span></div>
+<ul>
+  <li><strong>Low GS ("Liquid"):</strong> Position looks strong now but collapses badly after rotation. Vertical stacks are the canonical liquid structure.</li>
+  <li><strong>High GS ("Solid"):</strong> Position remains strong under gravity shifts. Diagonal chains and compacted corner blocks are inherently high-GS shapes — their geometry is already distributed across axes.</li>
+</ul>
+
+<h3>Magnet Robustness (MR)</h3>
+<p>Worst-case reply sensitivity check for the game's most disruptive resource.</p>
+<div class="formula"><span class="fv">MR</span> <span class="fe">=</span> min<sub>r ∈ opponent_magnets</sub>( <span class="fv">Eval<sub>after_reply(r)</sub></span> )</div>
+<p>For each candidate move, sample the top opponent magnet responses. If a single opponent magnet wins the game regardless of your response — the candidate is fragile, regardless of how strong it looks in isolation.</p>
+
+<h3>Thrift Factor (TF)</h3>
+<p>An explicit economic penalty for wasting limited resources.</p>
+<div class="formula"><span class="fv">TF_penalty</span> <span class="fe">=</span> <span class="fv">ResourceCost</span> <span class="fe">×</span> ( <span class="fn">1</span> <span class="fe">−</span> <span class="fv">WinProbabilityGain</span> )</div>
+<ul>
+  <li>Spending a Flip for +0.05 marginal gain with only 2 Flips remaining: <strong>Heavy penalty.</strong></li>
+  <li>Using a Magnet to create an immediate forced win: <strong>Zero penalty — full approval.</strong></li>
+  <li>Using a Flip defensively to prevent a loss: <strong>Low penalty — acceptable.</strong></li>
+</ul>
+<p>This single metric eliminates the "seizure" behaviour where naive engines exhaust all resources in the first 10 moves.</p>
+
+<h3>Practicality (P)</h3>
+<p>A measure of how tolerant the position is of opponent errors — the inverse of "sharpness."</p>
+<div class="formula"><span class="fv">P</span> <span class="fe">=</span> | { <span class="fv">r</span> : opponent reply <span class="fv">r</span> does <strong>not</strong> win for opponent } |</div>
+<p>A practical move forces the opponent to find <em>multiple</em> precise defences to hold. A sharp move may be theoretically stronger but requires only one specific counter-magnet to neutralise. At non-computer play levels, practical positions win far more games.</p>
+</section>
+
+<hr>
+
+<!-- S5 -->
+<section id="s5">
+<h2>5. The TSP Endgame Route Solver</h2>
+<p>When the board is more than 60% full, the game enters a qualitatively different phase. Branching factor narrows, physics becomes more predictable, and the path to victory can often be seen — but draw loops trap naive engines indefinitely.</p>
+<p>The 8Z-RP Route Solver treats victory as a <strong>combinatorial shortest-path problem</strong>: minimise the number of moves to reach a Connect-4 terminal winning state.</p>
+
+<table class="dt">
+  <thead><tr><th>TSP Concept</th><th>Flip4M Equivalent</th></tr></thead>
+  <tbody>
+    <tr><td><strong>City</strong></td><td>A game state (board configuration + current gravity direction)</td></tr>
+    <tr><td><strong>Distance between cities</strong></td><td>Number of moves required to reach a Connect-4 alignment</td></tr>
+    <tr><td><strong>Optimal tour</strong></td><td>Shortest move sequence from current state to a win</td></tr>
+    <tr><td><strong>Local optimum trap</strong></td><td>A draw loop — engine keeps the position equal but cannot convert</td></tr>
+    <tr><td><strong>Double-Bridge Kick</strong></td><td>A forced non-optimal rotation to break the draw cycle</td></tr>
+  </tbody>
+</table>
+
+<h3>The Algorithm</h3>
+<div class="spec">
+  <span class="cm">// Step 1: Greedy Path (Nearest Neighbour)</span><br>
+  <span class="ky">greedy_path</span> <span class="fe">=</span> calculate_forced_sequence(Win_or_Block)<br><br>
+  <span class="cm">// Step 2: Optimise (2-Opt equivalent)</span><br>
+  <span class="ky">for</span> each pair (M<sub>i</sub>, M<sub>j</sub>) in greedy_path:<br>
+  &nbsp;&nbsp;test: swap order ("Rotate then Drop" vs "Drop then Rotate")<br>
+  &nbsp;&nbsp;keep swap <span class="ky">if</span> it reduces distance to Win<br><br>
+  <span class="cm">// Step 3: Perturbation — the Deterministic Kick</span><br>
+  <span class="ky">if</span> stuck_in_draw_loop:<br>
+  &nbsp;&nbsp;inject forced_rotation(non_obvious_direction)<br>
+  &nbsp;&nbsp;re-run optimisation from new state<br><br>
+  <span class="cm">// Discovers: Rotate → Magnet → Drop → Win</span><br>
+  <span class="cm">// Tree search prunes this because intermediate states look weak.</span><br>
+  <span class="cm">// Route solver ignores intermediate states — only terminal Win counts.</span>
+</div>
+
+<div class="callout">
+  <div class="callout-icon">🎯</div>
+  <div><p><strong>Why this finds "magic" sequences:</strong> Tree search prunes branches where evaluation drops. But a Rotate that scatters your tokens may be the prerequisite for a Magnet that re-pins them into a winning line two moves later. The route solver evaluates only the <em>terminal win state</em>. Apparent weakness mid-sequence is irrelevant.</p></div>
+</div>
+</section>
+
+<hr>
+
+<!-- S6 -->
+<section id="s6">
+<h2>6. The Simulation Laboratory</h2>
+<p>Before building the full engine, we must quantify the physics volatility with data, not intuition. The Simulation Laboratory uses a headless Python environment (<code>flip4m_sim.py</code>) to generate the "Volatility Baseline" for DCC parameter tuning and to validate the "More Decisions Than Chess" thesis empirically.</p>
+
+<h3>Metric A — The Explosion Factor (Volatility)</h3>
+<p>Execute 1 rotation on 1,000 randomly generated mid-game boards. Count total cell-state changes (token moved to new cell, or cleared old cell).</p>
+<div class="spec">
+  <span class="cm"># Hypothesis</span><br>
+  <span class="ky">chess_avg_state_change</span> <span class="fe">=</span> <span class="vl">~2 cells</span> <span class="cm">(from, to — or capture)</span><br>
+  <span class="ky">flip4m_avg_state_change</span> <span class="fe">=</span> <span class="vl">~10–15 cells</span> <span class="cm">(all unpinned tokens settle)</span><br>
+  <span class="ky">explosion_factor</span> <span class="fe">=</span> <span class="vl">flip4m / chess</span> ≈ <strong>5–7×</strong><br><br>
+  <span class="cm"># Directly measures the Transposition Table kill rate.</span><br>
+  <span class="cm"># 5–7× more cells change per move = 5–7× more wasted cached evaluations.</span>
+</div>
+
+<h3>Metric B — The Prediction Horizon</h3>
+<p>Train a simple linear predictor — simulating human intuition — to guess board state after exactly 1 move. Measure accuracy across 10,000 simulated positions.</p>
+<div class="spec">
+  <span class="cm"># Hypothesis</span><br>
+  <span class="ky">chess_1move_accuracy</span> <span class="fe">=</span> <span class="vl">~98%</span> <span class="cm">(deterministic local change, trivial to predict)</span><br>
+  <span class="ky">flip4m_1move_accuracy</span> <span class="fe">=</span> <span class="vl">~70%</span> <span class="cm">(gravity settling is chaotic for linear predictors)</span><br><br>
+  <span class="cm"># Even a 1-move horizon is cognitively demanding in Flip4M.</span><br>
+  <span class="cm"># A 30% error rate after 1 move compounds catastrophically over 3+ moves.</span>
+</div>
+
+<h3>Implementation Notes</h3>
+<ul>
+  <li>Port <code>F4M.html</code> game rules to a pure Python class <code>FlipFourBoard</code> — no UI or rendering dependencies.</li>
+  <li>No Minimax or strategy: only physics, gravity settling, and random move generators.</li>
+  <li>Use <code>multiprocessing</code> to achieve 10,000+ simulations per second.</li>
+  <li>Output: CSV of per-configuration volatility measurements for GS threshold and TF weight fitting.</li>
+  <li>Validate gravity logic correctness against known manual cases before any AI training begins.</li>
+</ul>
+</section>
+
+<hr>
+
+<!-- S7 -->
+<section id="s7">
+<h2 class="teal">7. Cross-over: 8Z-DCC Chess</h2>
+<div class="badge b-teal" style="margin-bottom:20px">Concept Extension</div>
+
+<p>The DCC architecture was born from Flip4M's volatility problem, but its core insight — <em>secondary quality metrics matter when primary scores are equal</em> — transfers directly to Chess. Here the problem is not physics volatility but the <strong>Decision Problem</strong>: when Stockfish returns five moves within ±10 centipawns, how does a human or a learning platform choose?</p>
+
+<div class="card card-t">
+  <h4>The Chess Decision Problem</h4>
+  <p>Modern engines frequently surface clusters of near-equal moves in sound openings and quiet middlegames. These moves can differ dramatically in tactical volatility (one is sharp; one is self-playing), robustness (one has a single precise defence; one works against many replies), plan coherence (one maintains themes for 10 more moves; one creates chaos), and pedagogical value (one teaches a repeatable idea; one is a one-time detour).</p>
+  <p style="margin-bottom:0">The Chess DCC acts as a <strong>deterministic, auditable tie-breaker</strong>. It makes no claim to finding new chess truth — the primary engine provides that. Its role: select the <em>preferred plan</em> from within the cluster of objectively equal-quality moves.</p>
+</div>
+
+<h3 class="orange">DCC Signals for Chess</h3>
+
+<div class="two-col">
+  <div class="card">
+    <h4>Stability</h4>
+    <p style="margin-bottom:0">Measures PV churn and evaluation volatility across depth slices. A stable move converges quickly — the best line stops changing as depth increases. Unstable moves oscillate, signalling that small misevaluations have large positional consequences.</p>
+  </div>
+  <div class="card">
+    <h4>Robustness</h4>
+    <p style="margin-bottom:0">Worst-case reply sensitivity. Sample top-R opponent responses. Score = minimum evaluation after any single response. A robust move remains acceptable even against the opponent's best reply — does not require the opponent to blunder.</p>
+  </div>
+</div>
+<div class="two-col">
+  <div class="card">
+    <h4>Practicality</h4>
+    <p style="margin-bottom:0">Count opponent replies within δ of the optimal defence. A practical move forces multiple precise defences. A sharp move may be theoretically stronger but requires only one resource to neutralise.</p>
+  </div>
+  <div class="card">
+    <h4>Plan Simplicity (MDL proxy)</h4>
+    <p style="margin-bottom:0">A symbolic description-length measure on the PV's "edit distance" across slices. A move with a stable, compressible plan is preferred for human learning. Computed from symbolic PV changes, never from board image rasterization.</p>
+  </div>
+</div>
+
+<h3>The Strength Guardrail</h3>
+<p>The Chess DCC may <em>never</em> select a move outside a small eval-regression cap below the best candidate. It is a tie-breaker, not an override.</p>
+<div class="spec">
+  <span class="cm"># Guardrail rule (mandatory)</span><br>
+  <span class="ky">best_eval</span> <span class="fe">=</span> max(baseline_evals)<br>
+  <span class="ky">disqualify</span> any move where <span class="vl">eval &lt; best_eval − E_cap</span><br>
+  <span class="ky">E_cap</span> <span class="fe">=</span> <span class="vl">15–25 centipawns</span> <span class="cm">(configurable per profile)</span><br><br>
+  <span class="cm"># The engine provides the Truth.</span><br>
+  <span class="cm"># The DCC provides the Preferred Plan.</span><br>
+  <span class="cm"># Both visible. Neither pretends to be the other.</span>
+</div>
+
+<h3>Integration: chessbest.org</h3>
+<ul>
+  <li>Display the near-equal candidate cluster (moves within the Δ window) directly on the board.</li>
+  <li>Highlight the DCC-preferred move with a distinct visual marker — different from the engine's raw best move.</li>
+  <li>Surface human-readable reason tags: <code>Stable PV</code> · <code>Robust</code> · <code>Practical pressure</code> · <code>Low volatility</code> · <code>Simple plan</code>.</li>
+  <li>Mode profiles: <strong>Strict Strength</strong> / <strong>Stable Learning</strong> / <strong>Practical Play</strong>.</li>
+  <li>Every recommendation fully exportable: FEN + candidates + DCC metrics + chosen move + seed + version. Completely reproducible.</li>
+</ul>
+
+<div class="hl hl-g">
+  <p><strong>The distinction that matters:</strong> In Chess, two moves can be objectively equal at depth 40. They are emphatically <em>not</em> equal for a human learning the game, preparing against a specific opponent, or playing in time trouble. The DCC makes that difference explicit, auditable, and configurable.</p>
+</div>
+</section>
+
+<hr>
+
+<!-- S8 -->
+<section id="s8">
+<h2>8. Development Roadmap</h2>
+<p>The implementation follows a "Lab-to-Wasm" pipeline: each layer is validated independently at lower fidelity before the next builds on it. No expensive C++ rewriting until the Python prototype proves the algorithm correct against a Golden Set.</p>
+
+<div class="phase-grid">
+  <div class="phase">
+    <div class="phase-num">Phase 1</div>
+    <div class="phase-title">Python Lab</div>
+    <div class="phase-body">Headless simulation: physics validation, volatility measurement, DCC parameter tuning. Genetic evolution of Thrift Factor and GS threshold weights against the Golden Set. Target: &gt;90% win-rate vs. Baseline random mover.</div>
+  </div>
+  <div class="phase">
+    <div class="phase-num">Phase 2</div>
+    <div class="phase-title">C++ Core</div>
+    <div class="phase-body">Once logic is proven, rewrite <code>evaluate()</code> and <code>route_solver()</code> in C++ for SIMD vectorization. Target throughput: 10,000+ positions/second for real-time in-browser responsiveness.</div>
+  </div>
+  <div class="phase">
+    <div class="phase-num">Phase 3</div>
+    <div class="phase-title">WebAssembly</div>
+    <div class="phase-body">Compile C++ engine to Wasm. The <code>F4M.html</code> UI calls the Wasm module for Pro / Grandmaster difficulty, treating the engine as a black-box oracle returning a single best move per state.</div>
+  </div>
+</div>
+
+<h3>Benchmarks</h3>
+<ul>
+  <li><strong>Determinism:</strong> Same board state + same parameters → identical move ranking. Zero non-reproducible behaviour.</li>
+  <li><strong>Regret under cap:</strong> DCC-chosen move never violates the eval regression guardrail.</li>
+  <li><strong>Stability uplift:</strong> DCC reduces PV churn and best-move oscillation vs. raw Alpha-Beta in the candidate cluster.</li>
+  <li><strong>Resource conservation:</strong> Magnet expenditure rate lower vs. Baseline without reducing win-rate — the defining validation of the Thrift Factor.</li>
+  <li><strong>Robustness:</strong> Chosen moves improve worst-case reply sensitivity across the Golden Set positions.</li>
+</ul>
+
+<h3>Known Risks</h3>
+<div class="card card-r" style="margin-bottom:14px">
+  <h4>Over-regularisation</h4>
+  <p style="margin-bottom:0">Choosing "stable" moves that are subtly inferior in edge cases. The eval-regression guardrail is the primary mitigation. If the GS threshold is calibrated too aggressively, the DCC may avoid sharp but correct winning moves in complex endgames.</p>
+</div>
+<div class="card card-r" style="margin-bottom:14px">
+  <h4>Metric Gaming</h4>
+  <p style="margin-bottom:0">If secondary metrics are poorly designed, the engine can optimise signals without improving actual play — generating "high-GS" structures that are strategically useless. The Python Lab catches this via win-rate measurement, not just signal quality.</p>
+</div>
+<div class="card card-r">
+  <h4>Engine Dependence</h4>
+  <p style="margin-bottom:0">If the Layer 1 Alpha-Beta candidate generator is weak, the DCC cannot rescue it. The top-K cluster must contain at least one genuinely good move for the policy filter to surface it. Layer 1 quality is the ceiling, not the floor.</p>
+</div>
+</section>
+
+</div>
+
+<footer>
+  <p>Flip4M Research &bull; Bojan Dobrečević + LLM Collaborators &bull; 2026</p>
+  <p>Architecture designed for high-volatility visuospatial agents.</p>
+  <p style="margin-top:20px"><a href="F4M.html">⚡ Play Flip4M</a> &nbsp;·&nbsp; <a href="8Z-DCC_Flip4M.html">Full Technical Paper</a> &nbsp;·&nbsp; <a href="F4M_about.html">About</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>Flip4M Pro</title>
+<style>
+:root{
+  --bg:#0b0f17;
+  --panel:#1e2535;
+  --text:#e9eefc;
+  --muted:#8fa1b8;
+  --accent:#3c78ff;
+  --red:#e53935;
+  --yel:#fdd835;
+  --green:#4caf50;
+  --btn:#26314a;
+  --btnBorder:rgba(255,255,255,0.1);
+  --gold:#ffd700;
+  --purple:#9c27b0;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;}
+#app{display:flex;flex-direction:column;height:100%;width:100%}
+#hud{flex-shrink:0;z-index:10;background:var(--panel);border-bottom:1px solid var(--btnBorder);padding:max(10px,env(safe-area-inset-top)) 12px 10px;display:flex;flex-direction:column;gap:5px;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.row{display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:18px;font-weight:900;letter-spacing:0.5px}
+.meta{font-size:11px;color:var(--muted);margin-top:-2px;margin-bottom:5px;opacity:0.8}
+.status{font-size:13px;color:var(--muted);font-family:monospace}
+#tokens{display:flex;gap:16px;font-size:12px;font-weight:700;background:rgba(0,0,0,0.3);padding:6px 10px;border-radius:8px}
+.t-grp{display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.r{background:var(--red);box-shadow:0 0 4px var(--red)}
+.dot.y{background:var(--yel);box-shadow:0 0 4px var(--yel)}
+#game-stage{flex-grow:1;position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;justify-content:flex-start;align-items:center}
+canvas{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:1}
+#aiThinking{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);padding:12px 24px;border-radius:12px;font-size:14px;color:var(--gold);z-index:40;opacity:0;transition:opacity 0.3s;pointer-events:none}
+#aiThinking.visible{opacity:1}
+#winnerCard{position:absolute;top:0;left:0;right:0;z-index:50;background:rgba(30,37,53,0.98);backdrop-filter:blur(10px);border-bottom:1px solid var(--btnBorder);padding:15px 20px;box-shadow:0 10px 40px rgba(0,0,0,0.8);transform:translateY(-110%);transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:15px;pointer-events:auto}
+#winnerCard.visible{transform:translateY(0)}
+.win-content{text-align:left;display:flex;flex-direction:column;gap:4px}
+.trophy{font-size:24px}
+.win-title{font-size:20px;font-weight:900;color:var(--gold);margin:0;line-height:1}
+.win-sub{font-size:12px;color:var(--muted);margin:0}
+.win-btns{display:flex;gap:8px}
+.win-btns button{padding:8px 16px;font-size:12px;border-radius:8px;height:auto}
+#controls,#review-controls{flex-shrink:0;z-index:10;background:var(--panel);border-top:1px solid var(--btnBorder);padding:10px 12px max(20px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:500px;margin:0 auto;box-sizing:border-box}
+.ctrl-hidden{display:none!important}
+button{background:var(--btn);border:1px solid var(--btnBorder);color:var(--text);padding:14px 0;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;touch-action:manipulation;transition:transform 0.1s,background 0.2s;display:flex;align-items:center;justify-content:center;white-space:nowrap;position:relative}
+button:active{transform:scale(0.96)}
+button:disabled{opacity:0.4;pointer-events:none}
+.btn-act{background:rgba(60,120,255,0.15);border-color:rgba(60,120,255,0.4)}
+.btn-tac{background:rgba(255,204,102,0.15);border-color:rgba(255,204,102,0.4);color:#ffd54f}
+.btn-dang{background:rgba(229,57,53,0.15);border-color:rgba(229,57,53,0.4);color:#ff8a80}
+.btn-dev{background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.2);font-size:12px}
+.btn-util{background:rgba(76,175,80,0.15);border-color:rgba(76,175,80,0.4);color:#81c784}
+.big-icon{font-size:1.6em;line-height:1;margin-left:6px;display:inline-block;margin-top:-2px}
+#overlay{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center}
+.card{background:var(--panel);border:1px solid var(--btnBorder);padding:24px;border-radius:16px;text-align:center;width:min(500px,90vw);box-shadow:0 20px 40px rgba(0,0,0,0.6);max-height:80vh;overflow-y:auto}
+.card h2{margin:0 0 8px;font-size:24px}
+.card p{color:var(--muted);margin:0 0 10px;line-height:1.5;font-size:14px}
+.card-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.card-btns button{flex:1;min-width:140px}
+.hidden{display:none!important}
+.help-rule{text-align:left;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:8px;margin-bottom:8px}
+.help-rule b{color:#fff}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px;border-top:1px solid rgba(255,255,255,0.1);padding-top:15px}
+.first-move-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin:15px 0 5px;padding:10px;background:rgba(0,0,0,0.2);border-radius:10px}
+.first-move-toggle span{font-size:13px;color:var(--muted)}
+.first-move-toggle .active{color:var(--text);font-weight:700}
+.toggle-switch{position:relative;width:50px;height:26px;background:var(--red);border-radius:13px;cursor:pointer;transition:background 0.3s}
+.toggle-switch.cpu-first{background:var(--yel)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:transform 0.3s}
+.toggle-switch.cpu-first::after{transform:translateX(24px)}
+.difficulty-row{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.difficulty-btn{padding:8px 14px;font-size:11px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid var(--btnBorder);color:var(--muted);cursor:pointer;transition:all 0.2s}
+.difficulty-btn.active{background:rgba(60,120,255,0.3);border-color:var(--accent);color:var(--text)}
+.difficulty-btn:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="hud">
+<div class="row">
+<div>
+<h1>Flip4M <span style="font-size:12px;opacity:0.7;font-weight:400;color:#ffd700">Pro</span></h1>
+<div class="meta">Author: Bojan Dobrečevič | Jan 2026</div>
+</div>
+<div class="status" id="turnInfo">Red's Turn</div>
+</div>
+<div class="row">
+<div id="tokens">
+<div class="t-grp"><span class="dot r"></span><span id="rStats">F:2 M:2</span></div>
+<div class="t-grp"><span class="dot y"></span><span id="yStats">F:2 M:2</span></div>
+</div>
+<div class="status" id="gravInfo">Grav: ↓</div>
+</div>
+</div>
+<div id="game-stage">
+<div id="aiThinking">🧠 Thinking...</div>
+<div id="winnerCard">
+<div style="display:flex;align-items:center;gap:12px">
+<div class="trophy">🏆</div>
+<div class="win-content">
+<div class="win-title" id="winTitle">Red Wins!</div>
+<div class="win-sub" id="winSub">Connect Four</div>
+</div>
+</div>
+<div class="win-btns">
+<button id="winBtnMain" class="btn-act">Menu</button>
+<button id="winBtnSec" class="btn-dev">Undo</button>
+</div>
+</div>
+<canvas id="c"></canvas>
+<div id="overlay">
+<div class="card" id="menuCard">
+<h2>Flip4M</h2>
+<p>Gravity-defying strategy. <b>Pro</b>.</p>
+<div class="first-move-toggle">
+<span id="labelHuman" class="active">You First</span>
+<div class="toggle-switch" id="firstMoveToggle" onclick="toggleFirstMove()"></div>
+<span id="labelCPU">CPU First</span>
+</div>
+<div class="difficulty-row">
+<button class="difficulty-btn" id="diffDefensive" onclick="selectDifficulty('defensive')">🛡️ Defensive</button>
+<button class="difficulty-btn active" id="diffBalanced" onclick="selectDifficulty('balanced')">⚖️ Balanced</button>
+<button class="difficulty-btn" id="diffAggressive" onclick="selectDifficulty('aggressive')">⚔️ Aggressive</button>
+</div>
+<div class="card-btns" style="flex-direction:column;gap:8px;margin-top:10px">
+<button class="btn-act" onclick="startGame(1,2)">Standard (Classical)</button>
+<button class="btn-act" onclick="startGame(1,3)">Expert (2× Tools)</button>
+<button class="btn-dang" onclick="startGame(1,4)" style="border-color:#ffd700;color:#ffd700">Pro (3× Tools)</button>
+</div>
+<div class="feature-grid">
+<button class="btn-util" onclick="saveGame()">💾 Save</button>
+<button class="btn-util" onclick="loadGameTrigger()">📂 Load</button>
+<button class="btn-util" style="grid-column:span 2" onclick="startReview()">⏯️ Review Game</button>
+</div>
+</div>
+<div class="card hidden" id="hintCard">
+<h2 id="hintTitle">Hint</h2>
+<p id="hintMsg">Thinking...</p>
+<div class="card-btns"><button id="hintBtnResume" class="btn-act">Resume</button></div>
+</div>
+<div class="card hidden" id="helpCard">
+<h2>How to Play</h2>
+<div class="help-rule"><b>Goal:</b> Connect 4 tokens in a line.</div>
+<div class="help-rule"><b>Gravity:</b> Tokens always fall <b>DOWN</b>. (The board rotates!)</div>
+<div class="help-rule"><b>Drop:</b> Tap a cell.</div>
+<div class="help-rule"><b>Rotate:</b> Use <span style="color:#ffd54f">⟲ ⟳</span> (Cost: 1 Flip).</div>
+<div class="help-rule"><b>Magnet:</b> Tap the rim (Cost: 1 Mag).</div>
+<div class="card-btns" style="margin-top:20px">
+<button id="helpBtnBack" class="btn-act">Back</button>
+</div>
+<div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.1);padding-top:10px">
+<button id="btnAdd" class="btn-dev" style="width:100%">DEV: Add +2 Tokens</button>
+</div>
+</div>
+</div>
+</div>
+<div id="controls">
+<button id="btnCCW" class="btn-tac">Turn <span class="big-icon">⟲</span></button>
+<button id="btnUndo" class="btn-dev">Undo</button>
+<button id="btnCW" class="btn-tac">Turn <span class="big-icon">⟳</span></button>
+<button id="btnHint" class="btn-act">Hint</button>
+<button id="btnHelp" class="btn-dev">Help</button>
+<button id="btnMenu" class="btn-dang">Menu</button>
+</div>
+<div id="review-controls" class="ctrl-hidden">
+<button onclick="reviewStep(-1)" class="btn-dev">⏪ Prev</button>
+<button onclick="endReview()" class="btn-dang">⏹ Stop</button>
+<button onclick="reviewStep(1)" class="btn-act">Next ⏩</button>
+</div>
+</div>
+<input type="file" id="file-input" style="display:none" onchange="loadGameFile(this)" accept=".json">
+<script>
+(()=>{
+"use strict";
+
+// =============================================================================
+// CONSTANTS & STATE
+// =============================================================================
+const ROWS=8,COLS=8;
+const P_EMPTY=0,P_RED=1,P_YEL=2;
+const MAGNET_LIFE=6;
+const CW_MAP={0:3,1:0,2:1,3:2};
+const CCW_MAP={0:1,1:2,2:3,3:0};
+
+let grid=[];
+let mag={top:[],bottom:[],left:[],right:[]};
+let gravityDir=0;
+let boardAngle=0;
+let targetAngle=0;
+let curPlayer=P_RED;
+let tokens={};
+let history=[];
+let gameOver=false;
+let gameInProgress=false;
+let gameMode=2;
+let aiLevel=2;
+let animating=false;
+let anims=[];
+let hiddenCells=[];
+let pendingSettle=false;
+let aiTimer=null;
+let isReviewing=false;
+let reviewIndex=0;
+
+// Player assignment
+let humanPlayer=P_RED;
+let cpuPlayer=P_YEL;
+let cpuFirst=false;
+
+// AI Personality (from DeepSeek)
+let aiDifficulty='balanced';
+const aiPersonality={
+  balanced:{riskTolerance:0.5,toolConservation:0.7,depthBias:1.0},
+  aggressive:{riskTolerance:0.8,toolConservation:0.3,depthBias:0.9},
+  defensive:{riskTolerance:0.2,toolConservation:0.9,depthBias:1.1}
+};
+
+// AI Engine State (from GPT + DeepSeek)
+const _nowMs=()=>performance.now?performance.now():Date.now();
+let AI_DEADLINE=0;
+let AI_ABORT=false;
+let AI_NODES=0;
+const AI_CHECK_EVERY=256;
+let AI_TT=new Map();
+const AI_TT_MAX=100000;
+const AI_NODE_CAP=800000;
+
+// Pattern Cache (from DeepSeek)
+let patternCache=new Map();
+
+// DOM refs
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d",{alpha:false});
+const hudTurn=document.getElementById("turnInfo");
+const hudGrav=document.getElementById("gravInfo");
+const hudR=document.getElementById("rStats");
+const hudY=document.getElementById("yStats");
+const elOverlay=document.getElementById("overlay");
+const menuCard=document.getElementById("menuCard");
+const hintCard=document.getElementById("hintCard");
+const helpCard=document.getElementById("helpCard");
+const winnerCard=document.getElementById("winnerCard");
+const controlBar=document.getElementById("controls");
+const reviewBar=document.getElementById("review-controls");
+const aiThinking=document.getElementById("aiThinking");
+
+// =============================================================================
+// UI CONTROLS
+// =============================================================================
+window.toggleFirstMove=function(){
+  cpuFirst=!cpuFirst;
+  const toggle=document.getElementById("firstMoveToggle");
+  const lH=document.getElementById("labelHuman");
+  const lC=document.getElementById("labelCPU");
+  if(cpuFirst){toggle.classList.add("cpu-first");lH.classList.remove("active");lC.classList.add("active")}
+  else{toggle.classList.remove("cpu-first");lH.classList.add("active");lC.classList.remove("active")}
+};
+
+window.selectDifficulty=function(d){
+  aiDifficulty=d;
+  document.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('diff'+d.charAt(0).toUpperCase()+d.slice(1)).classList.add('active');
+};
+
+window.startGame=function(mode,level){
+  gameMode=mode;aiLevel=level;gameInProgress=true;
+  if(cpuFirst){humanPlayer=P_YEL;cpuPlayer=P_RED}else{humanPlayer=P_RED;cpuPlayer=P_YEL}
+  menuCard.classList.add('hidden');hintCard.classList.add('hidden');helpCard.classList.add('hidden');
+  elOverlay.style.display="none";initGame();
+};
+
+window.toggleMenu=function(){
+  if(elOverlay.style.display==="flex"){
+    if(menuCard.classList.contains('hidden')&&!helpCard.classList.contains('hidden')){elOverlay.style.display="none";helpCard.classList.add('hidden')}
+    else{if(gameInProgress){elOverlay.style.display="none";menuCard.classList.add('hidden')}}
+  }else showMainMenu();
+};
+
+function showMainMenu(){elOverlay.style.display="flex";menuCard.classList.remove('hidden');hintCard.classList.add('hidden');helpCard.classList.add('hidden');winnerCard.classList.remove('visible')}
+function showHelp(){elOverlay.style.display="flex";helpCard.classList.remove('hidden');menuCard.classList.add('hidden');hintCard.classList.add('hidden')}
+
+function initGame(){
+  grid=Array.from({length:ROWS},()=>Array(COLS).fill(P_EMPTY));
+  mag={top:Array(COLS).fill(null),bottom:Array(COLS).fill(null),left:Array(ROWS).fill(null),right:Array(ROWS).fill(null)};
+  gravityDir=0;boardAngle=0;targetAngle=0;curPlayer=P_RED;
+  if(aiLevel===2)tokens={[P_RED]:{flip:0,mag:0},[P_YEL]:{flip:0,mag:0}};
+  else if(aiLevel===3)tokens={[P_RED]:{flip:2,mag:2},[P_YEL]:{flip:2,mag:2}};
+  else tokens={[P_RED]:{flip:3,mag:3},[P_YEL]:{flip:3,mag:3}};
+  history=[];gameOver=false;animating=false;anims=[];hiddenCells=[];pendingSettle=false;
+  winnerCard.classList.remove('visible');
+  AI_TT.clear();patternCache.clear();
+  pushHistory();syncUI();lastTime=0;requestAnimationFrame(initLoop);checkAI();
+}
+
+// =============================================================================
+// SAVE / LOAD / REVIEW
+// =============================================================================
+window.saveGame=function(){
+  if(history.length===0&&!gameOver)return alert("Game hasn't started!");
+  const fullLog=[...history,cloneState()];
+  const dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(fullLog,null,2));
+  const a=document.createElement('a');a.setAttribute("href",dataStr);
+  a.setAttribute("download","flip4m_replay_"+Date.now()+".json");
+  document.body.appendChild(a);a.click();a.remove();
+};
+window.loadGameTrigger=function(){document.getElementById('file-input').click()};
+window.loadGameFile=function(input){
+  const file=input.files[0];const reader=new FileReader();
+  reader.onload=function(e){
+    try{const h=JSON.parse(e.target.result);
+      if(Array.isArray(h)&&h.length>0){const cur=h.pop();history=h;restoreState(cur);menuCard.classList.add('hidden');elOverlay.style.display='none';alert("Game Loaded!")}
+      else alert("Invalid Save");
+    }catch(err){alert("Error Loading File")}
+  };reader.readAsText(file);input.value='';
+};
+window.startReview=function(){
+  if(history.length===0)return alert("No history!");
+  isReviewing=true;reviewIndex=0;menuCard.classList.add('hidden');elOverlay.style.display='none';
+  controlBar.classList.add('ctrl-hidden');reviewBar.classList.remove('ctrl-hidden');restoreState(history[0]);
+};
+window.endReview=function(){
+  isReviewing=false;if(history.length>0)restoreState(history[history.length-1]);
+  controlBar.classList.remove('ctrl-hidden');reviewBar.classList.add('ctrl-hidden');syncUI();
+};
+window.reviewStep=function(dir){let n=reviewIndex+dir;if(n>=0&&n<history.length){reviewIndex=n;restoreState(history[reviewIndex])}};
+
+// =============================================================================
+// CORE UTILITIES
+// =============================================================================
+function getMag(mState,side,idx){
+  if(side===0)return mState.top[idx];if(side===1)return mState.right[idx];
+  if(side===2)return mState.bottom[idx];return mState.left[idx];
+}
+function cloneMag(arr){return arr.map(m=>m?{...m}:null)}
+function cloneMagState(ms){return{top:cloneMag(ms.top),bottom:cloneMag(ms.bottom),left:cloneMag(ms.left),right:cloneMag(ms.right)}}
+function cloneState(){return{grid:grid.map(r=>[...r]),mag:cloneMagState(mag),gravityDir,boardAngle,targetAngle,curPlayer,tokens:JSON.parse(JSON.stringify(tokens)),gameOver,gameInProgress,humanPlayer,cpuPlayer}}
+function restoreState(s){
+  grid=s.grid.map(r=>[...r]);mag=cloneMagState(s.mag);gravityDir=s.gravityDir;boardAngle=s.boardAngle;targetAngle=s.targetAngle;
+  curPlayer=s.curPlayer;tokens=JSON.parse(JSON.stringify(s.tokens));gameOver=s.gameOver;gameInProgress=s.gameInProgress;
+  if(s.humanPlayer)humanPlayer=s.humanPlayer;if(s.cpuPlayer)cpuPlayer=s.cpuPlayer;
+  animating=false;anims=[];hiddenCells=[];pendingSettle=false;isReviewing=false;winnerCard.classList.remove('visible');syncUI();
+}
+function pushHistory(){history.push(cloneState());if(history.length>50)history.shift()}
+
+function decayMagnets(mState){
+  let n=cloneMagState(mState);
+  const decay=arr=>arr.forEach((m,i)=>{if(m){m.life--;if(m.life<=0)arr[i]=null}});
+  decay(n.top);decay(n.bottom);decay(n.left);decay(n.right);return n;
+}
+
+function simulateFuture(g,gDir,mState,turns){
+  let fg=g.map(r=>[...r]),fm=cloneMagState(mState);
+  for(let t=0;t<turns;t++){fm=decayMagnets(fm);fg=settleGridComplete(fg,gDir,fm)}
+  return{grid:fg,mag:fm};
+}
+
+function getAllLines(){
+  let lines=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r,c:c+1},{r,c:c+2},{r,c:c+3}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS;c++)lines.push([{r,c},{r:r+1,c},{r:r+2,c},{r:r+3,c}]);
+  for(let r=0;r<ROWS-3;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r:r+1,c:c+1},{r:r+2,c:c+2},{r:r+3,c:c+3}]);
+  for(let r=3;r<ROWS;r++)for(let c=0;c<COLS-3;c++)lines.push([{r,c},{r:r-1,c:c+1},{r:r-2,c:c+2},{r:r-3,c:c+3}]);
+  return lines;
+}
+
+function countThreats(g,player){
+  let threats=0;const lines=getAllLines();
+  for(let line of lines){let cnt=0,emp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===player)cnt++;else if(v===P_EMPTY)emp++}
+    if(cnt===3&&emp===1)threats++;
+  }return threats;
+}
+
+function analyzeLines(g,p){
+  let score=0;const lines=getAllLines();
+  for(let line of lines){let cnt=0,emp=0,opp=0;
+    for(let pos of line){let v=g[pos.r][pos.c];if(v===p)cnt++;else if(v===P_EMPTY)emp++;else opp++}
+    if(opp>0){if(cnt===3&&opp===1)score+=60;continue}
+    if(cnt===4)score+=10000;else if(cnt===3&&emp===1)score+=200;else if(cnt===2&&emp===2)score+=15;else if(cnt===1&&emp===3)score+=2;
+  }return score;
+}
+
+// =============================================================================
+// THREAT DETECTION (Combined from QWen + DeepSeek + Claude)
+// =============================================================================
+function canWinByRotating(g,gDir,mState,player){
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState);
+    if(checkWin(rotated)===player)return{delta,newDir,grid:rotated};
+  }return null;
+}
+
+function canWinByRotateThenDrop(g,gDir,mState,player){
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState);
+    let drops=getDropMoves(rotated,newDir,player,mState);
+    for(let drop of drops)if(checkWin(drop.grid)===player)return{delta,newDir,rotated,winningDrop:drop};
+  }return null;
+}
+
+function canWinByRotateThenMagnet(g,gDir,mState,player,playerToks){
+  if(playerToks.flip<=0||playerToks.mag<=0)return null;
+  const opponent=player===P_RED?P_YEL:P_RED;
+  for(let delta of[1,-1]){
+    let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let rotated=settleGridComplete(g,newDir,mState);
+    let lines=getAllLines();
+    for(let line of lines){
+      let pCnt=0,oCnt=0,blocker=null;
+      for(let pos of line){let v=rotated[pos.r][pos.c];if(v===player)pCnt++;else if(v===opponent){oCnt++;blocker=pos}}
+      if(pCnt===3&&oCnt===1&&blocker){
+        let{r,c}=blocker,extractMag=null;
+        if(r===0)extractMag={side:0,idx:c};else if(r===ROWS-1)extractMag={side:2,idx:c};
+        else if(c===0)extractMag={side:3,idx:r};else if(c===COLS-1)extractMag={side:1,idx:r};
+        if(extractMag){
+          let testM=cloneMagState(mState);
+          let arr=['top','right','bottom','left'][extractMag.side];
+          testM[arr][extractMag.idx]={p:player,life:MAGNET_LIFE};
+          let afterMag=settleGridComplete(rotated,newDir,testM);
+          if(checkWin(afterMag)===player)return{type:'rotate_magnet',delta,newDir,rotated,extractMag,afterMag};
+        }
+      }
+    }
+  }return null;
+}
+
+function findExtractionWin(g,gDir,toks,player,mState){
+  if(toks.flip<=0||toks.mag<=0)return null;
+  const opponent=player===P_RED?P_YEL:P_RED;
+  for(let rotDelta of[1,-1]){
+    let newDir=rotDelta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+    let decayed=decayMagnets(mState);
+    let rotated=settleGridComplete(g,newDir,decayed);
+    let lines=getAllLines();
+    for(let line of lines){
+      let pc=0,oc=0,blocker=null;
+      for(let pos of line){let v=rotated[pos.r][pos.c];if(v===player)pc++;else if(v===opponent){oc++;blocker=pos}}
+      if(pc===3&&oc===1&&blocker&&(blocker.r===0||blocker.r===ROWS-1||blocker.c===0||blocker.c===COLS-1)){
+        let{r,c}=blocker,mags=[];
+        if(r===0)mags.push({s:0,i:c});if(r===ROWS-1)mags.push({s:2,i:c});
+        if(c===0)mags.push({s:3,i:r});if(c===COLS-1)mags.push({s:1,i:r});
+        for(let mg of mags){
+          let magState=cloneMagState(decayed);
+          let arr=['top','right','bottom','left'][mg.s];
+          magState[arr][mg.i]={p:player,life:MAGNET_LIFE};
+          let finalG=settleGridComplete(rotated,newDir,magState);
+          if(finalG[r][c]!==opponent&&checkWin(finalG)===player)
+            return{firstMove:{type:'flip',delta:rotDelta,grid:rotated,gDir:newDir,magState:decayed}};
+        }
+      }
+    }
+  }return null;
+}
+
+function findRotationDisruption(g,gDir,mState,aiToks,aiPlayer,oppPlayer){
+  let moves=getDropMoves(g,gDir,aiPlayer,mState);
+  if(aiToks.flip>0)moves.push(...getToolMoves(g,gDir,aiToks,aiPlayer,mState));
+  for(let m of moves)if(!canWinByRotating(m.grid,m.gDir||gDir,m.magState||mState,oppPlayer))return m;
+  return moves.length>0?moves[0]:null;
+}
+
+function findRotateMagnetDisruption(g,gDir,mState,aiToks,aiPlayer,oppPlayer,oppToks){
+  let moves=getDropMoves(g,gDir,aiPlayer,mState);
+  if(aiToks.flip>0||aiToks.mag>0)moves.push(...getToolMoves(g,gDir,aiToks,aiPlayer,mState));
+  for(let m of moves)if(!canWinByRotateThenMagnet(m.grid,m.gDir||gDir,m.magState||mState,oppPlayer,oppToks))return m;
+  return moves.length>0?moves[0]:null;
+}
+
+// =============================================================================
+// MOVE GENERATORS
+// =============================================================================
+function getDropMoves(g,gDir,player,mState){
+  let moves=[];
+  for(let i=0;i<COLS;i++){
+    let t=getDropTarget(g,gDir,i);
+    if(t){let nextG=g.map(r=>[...r]);nextG[t.r][t.c]=player;let dec=decayMagnets(mState);nextG=settleGridComplete(nextG,gDir,dec);
+      moves.push({type:'drop',col:i,grid:nextG,gDir,magState:dec})}
+  }return moves;
+}
+
+function getToolMoves(g,gDir,toks,player,mState){
+  let moves=[];const opponent=player===P_RED?P_YEL:P_RED;
+  if(toks.flip>0){
+    for(let delta of[1,-1]){
+      let newDir=delta===1?CCW_MAP[gDir]:CW_MAP[gDir];
+      let dec=decayMagnets(mState);let newGrid=settleGridComplete(g,newDir,dec);
+      moves.push({type:'flip',delta,grid:newGrid,gDir:newDir,magState:dec});
+    }
+  }
+  if(toks.mag>0){
+    for(let side=0;side<4;side++){
+      for(let idx=0;idx<COLS;idx++){
+        let curM=getMag(mState,side,idx);if(curM&&curM.p===player)continue;
+        let nextM=cloneMagState(mState);
+        let opp=(side+2)%4;let oppVal=getMag(nextM,opp,idx);
+        let arrName=['top','right','bottom','left'][side];
+        let oppName=['top','right','bottom','left'][opp];
+        if(oppVal&&oppVal.p===opponent)nextM[oppName][idx]=null;
+        else nextM[arrName][idx]={p:player,life:MAGNET_LIFE};
+        let dec=decayMagnets(nextM);let nextG=settleGridComplete(g,gDir,dec);
+        moves.push({type:'magnet',side,idx,grid:nextG,gDir,magState:dec});
+      }
+    }
+  }return moves;
+}
+
+// =============================================================================
+// GATEKEEPER (from Claude + QWen)
+// =============================================================================
+function shouldConsiderTools(g,gDir,mState,aiToks,oppToks,player){
+  const opponent=player===P_RED?P_YEL:P_RED;
+  // 1. Win with tool
+  if(aiToks.flip>0||aiToks.mag>0){
+    let tm=getToolMoves(g,gDir,aiToks,player,mState);
+    for(let m of tm)if(checkWin(m.grid)===player)return{allowed:true,reason:"WIN"};
+  }
+  // 2. Opponent extraction threat
+  if(oppToks.flip>0&&oppToks.mag>0)
+    if(canWinByRotateThenMagnet(g,gDir,mState,opponent,oppToks))return{allowed:true,reason:"BLOCK_ROTMAG"};
+  // 3. Opponent rotation win
+  if(oppToks.flip>0)if(canWinByRotating(g,gDir,mState,opponent))return{allowed:true,reason:"BLOCK_ROT"};
+  // 4. Desperate defense
+  let oppDrops=getDropMoves(g,gDir,opponent,mState);
+  let oppWin=oppDrops.find(m=>checkWin(m.grid)===opponent);
+  if(oppWin){
+    let myDrops=getDropMoves(g,gDir,player,mState);
+    let canBlock=myDrops.some(d=>!getDropMoves(d.grid,gDir,opponent,mState).some(om=>checkWin(om.grid)===opponent));
+    if(!canBlock)return{allowed:true,reason:"DESPERATE"};
+  }
+  // 5. Our extraction win
+  if(aiToks.flip>0&&aiToks.mag>0)if(findExtractionWin(g,gDir,aiToks,player,mState))return{allowed:true,reason:"EXTRACT_WIN"};
+  return{allowed:false,reason:"PRUNE"};
+}
+
+// =============================================================================
+// EVALUATION (Combined best features)
+// =============================================================================
+function evaluate(g,gDir,mState){
+  let score=0;
+  // Major threats
+  if(canWinByRotating(g,gDir,mState,humanPlayer))score-=50000;
+  if(canWinByRotateThenDrop(g,gDir,mState,humanPlayer))score-=8000;
+  if(canWinByRotateThenMagnet(g,gDir,mState,humanPlayer,tokens[humanPlayer]||{flip:3,mag:3}))score-=40000;
+  if(canWinByRotating(g,gDir,mState,cpuPlayer))score+=45000;
+  if(canWinByRotateThenMagnet(g,gDir,mState,cpuPlayer,tokens[cpuPlayer]||{flip:3,mag:3}))score+=38000;
+  // Line analysis
+  score+=analyzeLines(g,cpuPlayer);
+  score-=analyzeLines(g,humanPlayer)*1.2;
+  // Center control (weighted from DeepSeek)
+  for(let r=2;r<6;r++)for(let c=2;c<6;c++){
+    let w=(r===3||r===4)&&(c===3||c===4)?4:2;
+    if(g[r][c]===cpuPlayer)score+=w;else if(g[r][c]===humanPlayer)score-=w;
+  }
+  // Rotation fragility
+  for(let newDir of[CW_MAP[gDir],CCW_MAP[gDir]]){
+    let rotated=settleGridComplete(g,newDir,mState);
+    score-=countThreats(rotated,humanPlayer)*120;
+    score+=countThreats(rotated,cpuPlayer)*60;
+  }
+  // Temporal stability
+  let future=simulateFuture(g,gDir,mState,2);
+  score+=(analyzeLines(future.grid,cpuPlayer)-analyzeLines(future.grid,humanPlayer)*1.2)*0.15;
+  return score;
+}
+
+// =============================================================================
+// SEARCH ENGINE (Negamax + TT + Iterative Deepening from GPT/QWen)
+// =============================================================================
+function aiStateKey(g,gDir,mState,player){
+  let s='';for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)s+=g[r][c];
+  s+='|'+gDir+'|'+player;return s;
+}
+function aiMoveId(m){
+  if(m.type==='drop')return'd'+m.col;
+  if(m.type==='flip')return'f'+(m.delta>0?'L':'R');
+  if(m.type==='magnet')return'm'+m.side+'_'+m.idx;return'x';
+}
+
+function negamax(g,gDir,mState,depth,alpha,beta,player){
+  AI_NODES++;
+  if((AI_NODES&(AI_CHECK_EVERY-1))===0){
+    if(_nowMs()>AI_DEADLINE)AI_ABORT=true;
+    if(AI_NODES>AI_NODE_CAP)AI_ABORT=true;
+    if(AI_TT.size>AI_TT_MAX)AI_TT.clear();
+  }
+  if(AI_ABORT)return evaluate(g,gDir,mState);
+  let winner=checkWin(g);
+  if(winner===cpuPlayer)return 100000+depth*100;
+  if(winner===humanPlayer)return-100000-depth*100;
+  if(depth<=0)return evaluate(g,gDir,mState);
+  const opponent=player===P_RED?P_YEL:P_RED;
+  const alphaOrig=alpha;
+  const key=aiStateKey(g,gDir,mState,player);
+  const hit=AI_TT.get(key);
+  if(hit&&hit.depth>=depth){
+    if(hit.flag===0)return hit.value;
+    if(hit.flag===1)alpha=Math.max(alpha,hit.value);
+    else if(hit.flag===2)beta=Math.min(beta,hit.value);
+    if(alpha>=beta)return hit.value;
+  }
+  let moves=getDropMoves(g,gDir,player,mState);
+  if(depth>2)moves.push(...getToolMoves(g,gDir,{flip:1,mag:0},player,mState));
+  if(moves.length===0)return 0;
+  // PV move ordering
+  if(hit&&hit.bestId){let bi=moves.findIndex(m=>aiMoveId(m)===hit.bestId);if(bi>0){let bm=moves[bi];moves.splice(bi,1);moves.unshift(bm)}}
+  // Heuristic sort
+  const center=(COLS-1)/2;
+  moves.sort((a,b)=>{
+    const aw=checkWin(a.grid)===player?1:0,bw=checkWin(b.grid)===player?1:0;
+    if(aw!==bw)return bw-aw;
+    const at=a.type==='drop'?0:1,bt=b.type==='drop'?0:1;
+    if(at!==bt)return at-bt;
+    if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);
+    return 0;
+  });
+  let bestVal=-Infinity,bestId=aiMoveId(moves[0]);
+  for(let mv of moves){
+    if(AI_ABORT)break;
+    let val=-negamax(mv.grid,mv.gDir,mv.magState,depth-1,-beta,-alpha,opponent);
+    if(val>bestVal){bestVal=val;bestId=aiMoveId(mv)}
+    alpha=Math.max(alpha,val);
+    if(alpha>=beta)break;
+  }
+  let flag=0;if(bestVal<=alphaOrig)flag=2;else if(bestVal>=beta)flag=1;
+  AI_TT.set(key,{depth,value:bestVal,flag,bestId});
+  return bestVal;
+}
+
+// =============================================================================
+// MAIN AI LOGIC
+// =============================================================================
+function checkAI(){
+  if(aiTimer)clearTimeout(aiTimer);
+  if(gameMode===1&&curPlayer===cpuPlayer&&!gameOver&&!animating&&!isReviewing){
+    aiThinking.classList.add('visible');document.body.style.cursor="wait";
+    aiTimer=setTimeout(()=>{makeAIMove();aiThinking.classList.remove('visible');document.body.style.cursor="default"},80);
+  }
+}
+
+function makeAIMove(){
+  if(gameOver||animating||isReviewing)return;
+  const aiToks={flip:tokens[cpuPlayer].flip,mag:tokens[cpuPlayer].mag};
+  const oppToks={flip:tokens[humanPlayer].flip,mag:tokens[humanPlayer].mag};
+  const personality=aiPersonality[aiDifficulty];
+  
+  // Adaptive time budget (from DeepSeek)
+  let budgetMs=(aiLevel===2)?1800:(aiLevel===3)?2800:4000;
+  budgetMs*=personality.depthBias;
+  AI_DEADLINE=_nowMs()+budgetMs;
+  AI_ABORT=false;AI_NODES=0;AI_TT.clear();
+  
+  console.log(`Pro (${aiDifficulty}): Starting search...`);
+
+  // 1. Instant win
+  let allMoves=getDropMoves(grid,gravityDir,cpuPlayer,mag);
+  if(aiToks.flip>0||aiToks.mag>0)allMoves.push(...getToolMoves(grid,gravityDir,aiToks,cpuPlayer,mag));
+  for(let m of allMoves)if(checkWin(m.grid)===cpuPlayer){console.log("Pro: Instant win");executeMove(m);return}
+
+  // 2. Block opponent drop win
+  let oppDrops=getDropMoves(grid,gravityDir,humanPlayer,mag);
+  let oppWin=oppDrops.find(m=>checkWin(m.grid)===humanPlayer);
+  if(oppWin){let block=allMoves.find(m=>m.type==='drop'&&m.col===oppWin.col);if(block){console.log("Pro: Blocking drop");executeMove(block);return}}
+
+  // 3. Block rotation wins
+  if(oppToks.flip>0){
+    let rotWin=canWinByRotating(grid,gravityDir,mag,humanPlayer);
+    if(rotWin){let d=findRotationDisruption(grid,gravityDir,mag,aiToks,cpuPlayer,humanPlayer);if(d){console.log("Pro: Blocking rotation");executeMove(d);return}}
+  }
+
+  // 4. Block rotate+magnet wins (THE KEY FIX!)
+  if(oppToks.flip>0&&oppToks.mag>0){
+    let rotMag=canWinByRotateThenMagnet(grid,gravityDir,mag,humanPlayer,oppToks);
+    if(rotMag){let d=findRotateMagnetDisruption(grid,gravityDir,mag,aiToks,cpuPlayer,humanPlayer,oppToks);if(d){console.log("Pro: Blocking rotate+magnet combo!");executeMove(d);return}}
+  }
+
+  // 5. Execute our extraction win
+  let gate=shouldConsiderTools(grid,gravityDir,mag,aiToks,oppToks,cpuPlayer);
+  if(gate.allowed&&gate.reason==="EXTRACT_WIN"){
+    let ext=findExtractionWin(grid,gravityDir,aiToks,cpuPlayer,mag);
+    if(ext){console.log("Pro: Executing extraction combo");executeMove(ext.firstMove);return}
+  }
+
+  // 6. Build move list with gatekeeper
+  let moves=getDropMoves(grid,gravityDir,cpuPlayer,mag);
+  if(gate.allowed)moves.push(...getToolMoves(grid,gravityDir,aiToks,cpuPlayer,mag));
+  let center=(COLS-1)/2;
+  moves.sort((a,b)=>{if(a.type==='drop'&&b.type==='drop')return Math.abs(a.col-center)-Math.abs(b.col-center);if(a.type==='drop')return-1;if(b.type==='drop')return 1;return 0});
+
+  // 7. Iterative deepening with personality-adjusted depth
+  let maxDepth=Math.floor(((aiLevel===2)?8:(aiLevel===3)?7:6)*personality.depthBias);
+  let best=null,bestScore=-Infinity;
+  for(let depth=1;depth<=maxDepth;depth++){
+    if(_nowMs()>AI_DEADLINE){AI_ABORT=true;break}
+    let localBest=null,localBestScore=-Infinity;
+    let alpha=-Infinity,beta=Infinity;
+    for(let m of moves){
+      if(AI_ABORT)break;
+      let d=(m.type==='drop')?depth-1:Math.max(1,depth-2);
+      let score=-negamax(m.grid,m.gDir,m.magState,d,-beta,-alpha,humanPlayer);
+      // Tool thrift with personality
+      if(m.type!=='drop'&&score<5000){
+        let penalty=(m.type==='flip')?150:250;
+        penalty*=personality.toolConservation;
+        score-=penalty;
+      }
+      // Aggressive bonus for creating threats
+      if(personality.riskTolerance>0.5&&countThreats(m.grid,cpuPlayer)>countThreats(grid,cpuPlayer)){
+        score+=100*(personality.riskTolerance-0.5)*2;
+      }
+      if(score>localBestScore){localBestScore=score;localBest=m}
+      alpha=Math.max(alpha,localBestScore);
+      if(alpha>=beta)break;
+    }
+    if(localBest){best=localBest;bestScore=localBestScore}
+    if(AI_ABORT)break;
+  }
+  
+  console.log(`Pro: Selected ${best?.type||'none'} (score: ${Math.round(bestScore)}, nodes: ${AI_NODES})`);
+  if(best)executeMove(best);else if(moves.length>0)executeMove(moves[0]);
+}
+
+function executeMove(m){
+  if(m.type==='drop')doDrop(0,m.col);
+  else if(m.type==='flip')doFlip(m.delta);
+  else if(m.type==='magnet')doMagnet(m.side,m.idx);
+}
+
+// =============================================================================
+// PHYSICS ENGINE
+// =============================================================================
+function isPinned(r,c,mState){
+  if(r===0&&mState.top[c])return true;if(r===ROWS-1&&mState.bottom[c])return true;
+  if(c===0&&mState.left[r])return true;if(c===COLS-1&&mState.right[r])return true;return false;
+}
+
+function physicsStep(g,dir,mState){
+  let nextG=g.map(r=>[...r]),changed=false;
+  for(let c=0;c<COLS;c++){if(mState.top[c]&&nextG[0][c]===P_EMPTY)for(let r=1;r<ROWS;r++)if(nextG[r][c]){nextG[0][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
+  for(let c=0;c<COLS;c++){if(mState.bottom[c]&&nextG[ROWS-1][c]===P_EMPTY)for(let r=ROWS-2;r>=0;r--)if(nextG[r][c]){nextG[ROWS-1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
+  for(let r=0;r<ROWS;r++){if(mState.left[r]&&nextG[r][0]===P_EMPTY)for(let c=1;c<COLS;c++)if(nextG[r][c]){nextG[r][0]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
+  for(let r=0;r<ROWS;r++){if(mState.right[r]&&nextG[r][COLS-1]===P_EMPTY)for(let c=COLS-2;c>=0;c--)if(nextG[r][c]){nextG[r][COLS-1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true;break}}
+  if(dir===0){for(let c=0;c<COLS;c++)for(let r=ROWS-2;r>=0;r--)if(nextG[r][c]&&!nextG[r+1][c]&&!isPinned(r,c,mState)){nextG[r+1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  else if(dir===1){for(let r=0;r<ROWS;r++)for(let c=1;c<COLS;c++)if(nextG[r][c]&&!nextG[r][c-1]&&!isPinned(r,c,mState)){nextG[r][c-1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  else if(dir===2){for(let c=0;c<COLS;c++)for(let r=1;r<ROWS;r++)if(nextG[r][c]&&!nextG[r-1][c]&&!isPinned(r,c,mState)){nextG[r-1][c]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  else{for(let r=0;r<ROWS;r++)for(let c=COLS-2;c>=0;c--)if(nextG[r][c]&&!nextG[r][c+1]&&!isPinned(r,c,mState)){nextG[r][c+1]=nextG[r][c];nextG[r][c]=P_EMPTY;changed=true}}
+  return{nextG,changed};
+}
+
+function settleGridComplete(startGrid,dir,mState){
+  let g=startGrid.map(r=>[...r]),safety=0;
+  while(safety++<60){let step=physicsStep(g,dir,mState);if(!step.changed)break;g=step.nextG}
+  return g;
+}
+
+function getDropTarget(g,dir,idx){
+  let rEnt,cEnt;
+  if(dir===0){rEnt=0;cEnt=idx}else if(dir===1){rEnt=idx;cEnt=COLS-1}
+  else if(dir===2){rEnt=ROWS-1;cEnt=idx}else{rEnt=idx;cEnt=0}
+  let rT=rEnt,cT=cEnt,found=false;
+  for(let i=0;i<ROWS;i++){
+    let rCheck=rEnt,cCheck=cEnt;
+    if(dir===0)rCheck+=i;else if(dir===1)cCheck-=i;else if(dir===2)rCheck-=i;else cCheck+=i;
+    if(g[rCheck][cCheck]===P_EMPTY){rT=rCheck;cT=cCheck;found=true;break}
+  }return found?{r:rT,c:cT}:null;
+}
+
+function checkWin(g){
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    let p=g[r][c];if(!p)continue;
+    if(c<=COLS-4&&g[r][c+1]===p&&g[r][c+2]===p&&g[r][c+3]===p)return p;
+    if(r<=ROWS-4&&g[r+1][c]===p&&g[r+2][c]===p&&g[r+3][c]===p)return p;
+    if(r<=ROWS-4&&c<=COLS-4&&g[r+1][c+1]===p&&g[r+2][c+2]===p&&g[r+3][c+3]===p)return p;
+    if(r<=ROWS-4&&c>=3&&g[r+1][c-1]===p&&g[r+2][c-2]===p&&g[r+3][c-3]===p)return p;
+  }return 0;
+}
+
+// =============================================================================
+// GAME ACTIONS
+// =============================================================================
+function spawnTransitions(oldG,newG,type){
+  let isVert=gravityDir===0||gravityDir===2;let speed=type==='drop'?320:280;
+  const getToks=(g,isRow,idx)=>{let arr=[];if(isRow){for(let c=0;c<COLS;c++)if(g[idx][c])arr.push({p:g[idx][c],r:idx,c})}else{for(let r=0;r<ROWS;r++)if(g[r][idx])arr.push({p:g[r][idx],r,c:idx})}return arr};
+  if(isVert){for(let c=0;c<COLS;c++){let oldT=getToks(oldG,false,c),newT=getToks(newG,false,c);if(gravityDir===0){oldT.reverse();newT.reverse()}let usedN=Array(newT.length).fill(false);oldT.forEach(o=>{let found=-1;for(let i=0;i<newT.length;i++)if(!usedN[i]&&newT[i].p===o.p){found=i;break}if(found!==-1){usedN[found]=true;let n=newT[found];if(o.r!==n.r||o.c!==n.c){anims.push({type:'slide',p:o.p,r:o.r,c:o.c,destR:n.r,destC:n.c,t:0,dur:speed});hiddenCells.push({r:n.r,c:n.c})}}});for(let i=0;i<newT.length;i++)if(!usedN[i]){let n=newT[i];let sr=gravityDir===0?-2:ROWS+1;anims.push({type:'drop',p:n.p,r:sr,c:n.c,destR:n.r,destC:n.c,t:0,dur:speed});hiddenCells.push({r:n.r,c:n.c})}}}
+  else{for(let r=0;r<ROWS;r++){let oldT=getToks(oldG,true,r),newT=getToks(newG,true,r);if(gravityDir===3){oldT.reverse();newT.reverse()}let usedN=Array(newT.length).fill(false);oldT.forEach(o=>{let found=-1;for(let i=0;i<newT.length;i++)if(!usedN[i]&&newT[i].p===o.p){found=i;break}if(found!==-1){usedN[found]=true;let n=newT[found];if(o.r!==n.r||o.c!==n.c){anims.push({type:'slide',p:o.p,r:o.r,c:o.c,destR:n.r,destC:n.c,t:0,dur:speed});hiddenCells.push({r:n.r,c:n.c})}}});for(let i=0;i<newT.length;i++)if(!usedN[i]){let n=newT[i];let sc=gravityDir===1?COLS+1:-2;anims.push({type:'drop',p:n.p,r:n.r,c:sc,destR:n.r,destC:n.c,t:0,dur:speed});hiddenCells.push({r:n.r,c:n.c})}}}
+}
+
+function applyActionAndAnimate(actionFn){
+  if(animating||gameOver||isReviewing)return;
+  let oldG=grid.map(r=>[...r]);pushHistory();actionFn();
+  let finalG=settleGridComplete(grid,gravityDir,mag);
+  spawnTransitions(oldG,finalG,'drop');grid=finalG;
+  if(anims.length>0)animating=true;else endTurn();
+}
+
+function doDrop(row,col){
+  let rEnt,cEnt;
+  if(gravityDir===0){rEnt=0;cEnt=col}else if(gravityDir===1){rEnt=row;cEnt=COLS-1}
+  else if(gravityDir===2){rEnt=ROWS-1;cEnt=col}else{rEnt=row;cEnt=0}
+  let rT=rEnt,cT=cEnt,found=false;
+  for(let i=0;i<ROWS;i++){
+    let rCheck=rEnt,cCheck=cEnt;
+    if(gravityDir===0)rCheck+=i;else if(gravityDir===1)cCheck-=i;else if(gravityDir===2)rCheck-=i;else cCheck+=i;
+    if(grid[rCheck][cCheck]===P_EMPTY){rT=rCheck;cT=cCheck;found=true;break}
+  }if(!found)return;
+  applyActionAndAnimate(()=>{grid[rT][cT]=curPlayer});
+}
+
+function doMagnet(side,idx){
+  if(tokens[curPlayer].mag<=0)return;
+  let opp=(side+2)%4;let oppVal=getMag(mag,opp,idx);
+  const opponent=curPlayer===P_RED?P_YEL:P_RED;
+  applyActionAndAnimate(()=>{
+    tokens[curPlayer].mag--;
+    if(oppVal&&oppVal.p===opponent){if(opp===0)mag.top[idx]=null;else if(opp===1)mag.right[idx]=null;else if(opp===2)mag.bottom[idx]=null;else mag.left[idx]=null}
+    else{let m={p:curPlayer,life:MAGNET_LIFE};if(side===0)mag.top[idx]=m;else if(side===1)mag.right[idx]=m;else if(side===2)mag.bottom[idx]=m;else mag.left[idx]=m}
+  });
+}
+
+function doFlip(dirDelta){
+  if(tokens[curPlayer].flip<=0||animating||gameOver||isReviewing)return;
+  pushHistory();tokens[curPlayer].flip--;
+  let oldA=boardAngle;targetAngle=oldA+(dirDelta===1?-Math.PI/2:Math.PI/2);
+  if(dirDelta===-1)gravityDir=CW_MAP[gravityDir];else gravityDir=CCW_MAP[gravityDir];
+  anims.push({type:'rotate',startA:oldA,endA:targetAngle,t:0,dur:500});pendingSettle=true;animating=true;
+}
+
+function triggerSettleAfterRotate(){
+  let oldG=grid.map(r=>[...r]);let finalG=settleGridComplete(grid,gravityDir,mag);
+  spawnTransitions(oldG,finalG,'slide');grid=finalG;
+}
+
+function endTurn(){
+  const w=checkWin(grid);
+  if(w){
+    gameOver=true;let msg=w===P_RED?"Red Wins!":"Yellow Wins!";
+    if(gameMode===1)msg=w===humanPlayer?"You Win!":"CPU Wins!";
+    document.getElementById("winTitle").textContent=msg;
+    document.getElementById("winSub").textContent="Connect Four!";
+    document.getElementById("winBtnMain").onclick=()=>showMainMenu();
+    document.getElementById("winBtnSec").onclick=()=>undo();
+    winnerCard.classList.add('visible');syncUI();
+  }else{
+    if(!grid.some(r=>r.includes(P_EMPTY))){
+      gameOver=true;document.getElementById("winTitle").textContent="Draw!";
+      document.getElementById("winSub").textContent="Board Full";
+      document.getElementById("winBtnMain").onclick=()=>showMainMenu();
+      document.getElementById("winBtnSec").onclick=()=>undo();
+      winnerCard.classList.add('visible');syncUI();
+    }else{
+      const decay=arr=>arr.forEach((m,i)=>{if(m){m.life--;if(m.life<=0)arr[i]=null}});
+      decay(mag.top);decay(mag.bottom);decay(mag.left);decay(mag.right);
+      curPlayer=curPlayer===P_RED?P_YEL:P_RED;syncUI();checkAI();
+    }
+  }
+}
+
+function undo(){
+  if(animating||history.length===0||isReviewing)return;
+  if(aiTimer)clearTimeout(aiTimer);restoreState(history.pop());
+  if(gameMode===1&&history.length>0)restoreState(history.pop());
+}
+
+// =============================================================================
+// HINT SYSTEM
+// =============================================================================
+function runHintSimulation(){
+  let pToks=tokens[curPlayer];
+  let moves=getDropMoves(grid,gravityDir,curPlayer,mag);
+  if(pToks.flip>0||pToks.mag>0)moves.push(...getToolMoves(grid,gravityDir,pToks,curPlayer,mag));
+  if(moves.length===0)return"No moves available!";
+  for(let m of moves)if(checkWin(m.grid)===curPlayer)return formatMove(m)+" (Wins!)";
+  if(pToks.flip>0&&pToks.mag>0){let ext=findExtractionWin(grid,gravityDir,pToks,curPlayer,mag);if(ext)return"Rotate "+(ext.firstMove.delta===1?"CCW":"CW")+" then magnet (2-move win!)";}
+  let opponent=curPlayer===P_RED?P_YEL:P_RED;
+  let oppDrops=getDropMoves(grid,gravityDir,opponent,mag);
+  let oppWin=oppDrops.find(m=>checkWin(m.grid)===opponent);
+  if(oppWin){let block=moves.find(m=>m.type==='drop'&&m.col===oppWin.col);if(block)return formatMove(block)+" (Block!)";}
+  let best=null,bestScore=-Infinity;
+  for(let m of moves){let score=evaluate(m.grid,m.gDir,m.magState);if(curPlayer===humanPlayer)score=-score;if(score>bestScore){bestScore=score;best=m}}
+  return best?formatMove(best):"Try center drops.";
+}
+function formatMove(m){
+  if(m.type==='drop')return`Drop at Column ${String.fromCharCode(65+m.col)}`;
+  if(m.type==='flip')return`Rotate ${m.delta===1?'CCW ⟲':'CW ⟳'}`;
+  if(m.type==='magnet')return`Magnet: ${["Top","Right","Bottom","Left"][m.side]}`;return"Unknown";
+}
+
+// =============================================================================
+// RENDERING
+// =============================================================================
+let lastTime=0;
+function initLoop(now){lastTime=now;requestAnimationFrame(loop)}
+function loop(now){let dt=now-lastTime;lastTime=now;if(dt>50)dt=50;updateAnims(dt);render();requestAnimationFrame(loop)}
+
+function updateAnims(dt){
+  if(!animating)return;let stillAnim=false;
+  let rot=anims.find(a=>a.type==='rotate');
+  if(rot){rot.t+=dt/rot.dur;if(rot.t>=1){rot.t=1;boardAngle=rot.endA;anims=anims.filter(a=>a!==rot);if(pendingSettle){pendingSettle=false;triggerSettleAfterRotate();stillAnim=true}}else{let p=rot.t<.5?2*rot.t*rot.t:-1+(4-2*rot.t)*rot.t;boardAngle=rot.startA+(rot.endA-rot.startA)*p;stillAnim=true}}
+  anims.forEach(a=>{if(a.type==='rotate')return;a.t+=dt/a.dur;if(a.t<1)stillAnim=true;else a.t=1});
+  if(!stillAnim&&!rot){anims=anims.filter(a=>a.t<1);if(anims.length===0){animating=false;hiddenCells=[];endTurn()}}
+}
+
+function render(){
+  if(canvas.width!==canvas.offsetWidth||canvas.height!==canvas.offsetHeight){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight}
+  const W=canvas.width,H=canvas.height;const cx=W/2,cy=H/2;
+  const size=Math.min(W,H)*0.96;const cell=size/(Math.max(ROWS,COLS)+2);const boardW=COLS*cell;
+  ctx.fillStyle="#0b0f17";ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(boardAngle);
+  ctx.fillStyle="#1e2535";ctx.beginPath();ctx.roundRect(-boardW/2-cell*0.2,-boardW/2-cell*0.2,boardW+cell*0.4,boardW+cell*0.4,12);ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="#8fa1b8";ctx.font="bold 15px monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+  for(let c=0;c<COLS;c++){let x=-boardW/2+c*cell+cell/2;let ch=String.fromCharCode(65+c);ctx.fillText(ch,x,-boardW/2-cell*0.4);ctx.fillText(ch,x,boardW/2+cell*0.4)}
+  for(let r=0;r<ROWS;r++){let y=-boardW/2+r*cell+cell/2;let num=(r+1).toString();ctx.fillText(num,-boardW/2-cell*0.4,y);ctx.fillText(num,boardW/2+cell*0.4,y)}
+  ctx.translate(-boardW/2,-boardW/2);
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const x=c*cell+cell/2;const y=r*cell+cell/2;ctx.fillStyle="rgba(0,0,0,0.5)";ctx.beginPath();ctx.arc(x,y,cell*0.4,0,Math.PI*2);ctx.fill();if(hiddenCells.some(h=>h.r===r&&h.c===c&&animating))continue;const val=grid[r][c];if(val)drawToken(ctx,x,y,cell*0.4,val)}
+  for(let a of anims){if(a.type==='rotate')continue;let p=a.t*a.t*(3-2*a.t);if(a.type==='drop'){if(a.t<0.7)p=(a.t/0.7)*(a.t/0.7);else{let t2=(a.t-0.7)/0.3;p=1-Math.sin(t2*Math.PI)*0.05}}let curR=a.r+(a.destR-a.r)*p;let curC=a.c+(a.destC-a.c)*p;drawToken(ctx,curC*cell+cell/2,curR*cell+cell/2,cell*0.4,a.p)}
+  mag.top.forEach((m,i)=>drawMag(ctx,i*cell+cell/2,-cell*0.6,cell,0,m));
+  mag.bottom.forEach((m,i)=>drawMag(ctx,i*cell+cell/2,boardW+cell*0.6,cell,2,m));
+  mag.left.forEach((m,i)=>drawMag(ctx,-cell*0.6,i*cell+cell/2,cell,3,m));
+  mag.right.forEach((m,i)=>drawMag(ctx,boardW+cell*0.6,i*cell+cell/2,cell,1,m));
+  ctx.restore();
+}
+
+function drawToken(ctx,x,y,r,p){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=p===P_RED?"#e53935":"#fdd835";ctx.fill();ctx.beginPath();ctx.arc(x-r*0.3,y-r*0.3,r*0.2,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.3)";ctx.fill()}
+
+function drawMag(ctx,x,y,size,dir,m){
+  if(!m)return;ctx.save();ctx.translate(x,y);ctx.rotate(dir*Math.PI/2);
+  ctx.globalAlpha=0.3+(0.7*(m.life/MAGNET_LIFE));ctx.beginPath();const r=size*0.35;
+  ctx.arc(0,0,r,0,Math.PI,true);ctx.lineTo(-r,r);ctx.lineTo(r,r);ctx.closePath();
+  ctx.fillStyle=m.p===P_RED?"#e53935":"#fdd835";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1;
+  for(let i=0;i<Math.ceil(m.life/2);i++){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(-r+4+i*6,r-4,1.5,0,Math.PI*2);ctx.fill()}
+  ctx.restore();
+}
+
+function getBoardPos(evt){
+  const rect=canvas.getBoundingClientRect();let x=evt.clientX-rect.left,y=evt.clientY-rect.top;
+  const cx=canvas.width/2,cy=canvas.height/2;const dx=x-cx,dy=y-cy;
+  const cos=Math.cos(-boardAngle),sin=Math.sin(-boardAngle);const rx=dx*cos-dy*sin,ry=dx*sin+dy*cos;
+  const size=Math.min(canvas.width,canvas.height)*0.96;const cell=size/(Math.max(ROWS,COLS)+2);const boardSize=COLS*cell;const halfB=boardSize/2;
+  const gridX=rx+halfB,gridY=ry+halfB;const col=Math.floor(gridX/cell);const row=Math.floor(gridY/cell);
+  if(col>=0&&col<COLS&&row>=0&&row<ROWS)return{type:'CELL',r:row,c:col};
+  const rimThick=cell*1.2;
+  if(rx>-halfB-rimThick&&rx<halfB+rimThick&&ry>-halfB-rimThick&&ry<halfB+rimThick){
+    if(Math.abs(rx)>Math.abs(ry))return{type:'RIM',side:rx<0?3:1,idx:row};
+    else return{type:'RIM',side:ry<0?0:2,idx:col};
+  }return{type:'NONE'};
+}
+
+function handleInput(e){
+  if(gameOver||animating||isReviewing)return;
+  if(gameMode===1&&curPlayer===cpuPlayer)return;
+  if(e.type==='touchstart')e.preventDefault();
+  const act=getBoardPos(e.type.includes('touch')?e.changedTouches[0]:e);
+  if(act.type==='CELL')doDrop(act.r,act.c);
+  else if(act.type==='RIM'&&act.idx>=0&&act.idx<COLS)doMagnet(act.side,act.idx);
+}
+
+canvas.addEventListener('mousedown',handleInput);
+canvas.addEventListener('touchstart',handleInput,{passive:false});
+
+function syncUI(){
+  let pName=curPlayer===P_RED?"Red's Turn":"Yellow's Turn";
+  if(gameMode===1&&curPlayer===cpuPlayer)pName="CPU Thinking...";
+  hudTurn.textContent=gameOver?"Game Over":pName;
+  hudTurn.style.color=curPlayer===P_RED?"var(--red)":"var(--yel)";
+  hudR.textContent=`F:${tokens[P_RED].flip} M:${tokens[P_RED].mag}`;
+  hudY.textContent=`F:${tokens[P_YEL].flip} M:${tokens[P_YEL].mag}`;
+  hudGrav.textContent=`Grav: ${["↓","←","↑","→"][gravityDir]}`;
+  let dis=tokens[curPlayer].flip<=0||gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
+  document.getElementById("btnCCW").disabled=dis;document.getElementById("btnCW").disabled=dis;
+  document.getElementById("btnUndo").disabled=history.length===0||gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
+  document.getElementById("btnHint").disabled=gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
+  document.getElementById("btnHelp").disabled=gameOver||(gameMode===1&&curPlayer===cpuPlayer)||isReviewing;
+  document.getElementById("btnMenu").disabled=isReviewing;
+}
+
+document.getElementById("btnHint").onclick=()=>{
+  if(gameMode===1&&curPlayer===cpuPlayer)return;
+  elOverlay.style.display="flex";menuCard.classList.add('hidden');helpCard.classList.add('hidden');hintCard.classList.remove('hidden');
+  document.getElementById("hintMsg").textContent="Analyzing board...";
+  setTimeout(()=>{document.getElementById("hintMsg").textContent=runHintSimulation()},100);
+  document.getElementById("hintBtnResume").onclick=()=>{elOverlay.style.display="none";hintCard.classList.add('hidden')};
+};
+document.getElementById("btnHelp").onclick=showHelp;
+document.getElementById("helpBtnBack").onclick=()=>{elOverlay.style.display="none";helpCard.classList.add('hidden')};
+document.getElementById("btnMenu").onclick=()=>toggleMenu();
+document.getElementById("btnCCW").onclick=()=>{if(!(gameMode===1&&curPlayer===cpuPlayer))doFlip(1)};
+document.getElementById("btnCW").onclick=()=>{if(!(gameMode===1&&curPlayer===cpuPlayer))doFlip(-1)};
+document.getElementById("btnUndo").onclick=undo;
+document.getElementById("btnAdd").onclick=()=>{tokens[P_RED].flip+=2;tokens[P_RED].mag+=2;tokens[P_YEL].flip+=2;tokens[P_YEL].mag+=2;syncUI()};
+
+window.addEventListener('resize',render);
+showMainMenu();
+})();
+</script>
+</body>
+</html>
