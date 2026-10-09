@@ -1,4 +1,4 @@
-const BUILD="2.6.2-petrol-current-20261009";
+const BUILD="2.6.2-petrol-current-20261009-bdhome1";
 const ASSETS=["","index.html","manifest.webmanifest","release.json","./_shared/petrol-2.6.2/f4m-classical.js","./_shared/petrol-2.6.2/f4m-core.js","./_shared/petrol-2.6.2/f4m-dcc.js","./_shared/petrol-2.6.2/f4m-review.css","./_shared/petrol-2.6.2/f4m-review.js","./_shared/petrol-2.6.2/f4m-search.js","./_shared/petrol-2.6.2/f4m-sim.js","./_shared/petrol-2.6.2/f4m-smart-time.js","current-store.js","./_shared/petrol-2.6.2/f4m-time.js","./_shared/petrol-2.6.2/f4m-ui.js","./_shared/petrol-2.6.2/f4m-worker.js","./_shared/petrol-2.6.2/f4m.css","./_shared/petrol-2.6.2/icon-180.png","./_shared/petrol-2.6.2/icon-192.png","./_shared/petrol-2.6.2/icon-512.png","current-presentation.js","current-pwa.js","current-shell.js","./_shared/petrol-2.6.2/unified.css","./_shared/petrol-2.6.2/violet.css"];
 /* GENERATED CONFIG above. Cache ownership never extends to another channel. */
 const BASE=new URL('./',self.location.href), PREFIX='flip4m-petrol:'+BASE.pathname+':', CACHE=PREFIX+BUILD;
