@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const base = path.resolve(__dirname, '..');
-const KEY = 'ChessBest:CURRENT:v2:studies';
+const KEY = 'ChessBest:LAB:v2:studies';
 function lockManager() {
   let queue = Promise.resolve();
   return { request(name, options, fn) { const task = queue.then(fn || options); queue = task.catch(() => {}); return task; } };
@@ -63,7 +63,7 @@ test('export in capacity popup produces complete bytes, A/B and branches; no del
 });
 test('selected stable ID deletion, cancel, all-delete scope, A/B retention and undo', async t => {
   const h = setup(); t.after(h.close); await fill(h, 3); await h.ui.pin('A');
-  const untouched = ['chessLabStudy-v1', 'ChessBest-sim-v1-fallback', '8zc.evidence.v1', 'chessLabSettings-v8', 'ChessBest:CURRENT:v2:sim-fallback', 'ChessBest:CURRENT:v2:evidence'];
+  const untouched = ['chessLabStudy-v1', 'ChessBest-sim-v1-fallback', '8zc.evidence.v1', 'chessLabSettings-v8', 'ChessBest:LAB:v2:sim-fallback', 'ChessBest:LAB:v2:evidence'];
   untouched.forEach(k => h.storage.setItem(k, 'sentinel:' + k)); const comparison = h.state().comparison;
   h.ui.manage(); button(h, 'Remove all studies (3)').click(); button(h, 'Cancel removal').click(); assert.equal(h.state().studies.length, 3);
   const before = h.state().studies, id = before[1].id;

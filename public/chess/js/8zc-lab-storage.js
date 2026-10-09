@@ -1,4 +1,4 @@
-/* CURRENT first-run COPY migration. Stable keys/databases are strictly read-only.
+/* LAB first-run COPY migration. Stable keys/databases are strictly read-only.
  * The boot gate stays closed on incomplete migration; retries resume receipts.
  * Namespaces isolate data, not the browser origin's shared storage quota. */
 (function (root, factory) {
@@ -37,7 +37,7 @@
     const status = () => ({ ...current, warnings: [...current.warnings] });
     function fail(message) { throw Error(message); }
     function readJournal() {
-      if (!storage) fail('Browser localStorage is unavailable. No CURRENT writes were enabled.');
+      if (!storage) fail('Browser localStorage is unavailable. No LAB writes were enabled.');
       const text = storage.getItem(KEYS.migration);
       if (text === null) return { version: 1, complete: false, local: {}, databases: {}, checkpoint: false, warnings: [] };
       let value;
@@ -60,7 +60,7 @@
         result = value === null ? 'absent' : 'copied';
         if (value !== null) {
           // Persist intent first. A crash after the copy but before its receipt
-          // must not misclassify this copied fallback as pre-existing CURRENT data.
+          // must not misclassify this copied fallback as pre-existing LAB data.
           journal.local[target] = 'copying'; writeJournal(journal);
           if (target === KEYS.simFallback) {
             storage.setItem(KEYS.simFallbackOrigin, 'legacy-copy');
@@ -68,7 +68,7 @@
           }
           // No await between check and write; the outer Web Lock serializes tabs.
           storage.setItem(target, value);
-          if (storage.getItem(target) !== value) fail('CURRENT data copy readback failed.');
+          if (storage.getItem(target) !== value) fail('LAB data copy readback failed.');
         }
       }
       // Receipts contain names and outcomes only, never token values or hashes.
@@ -76,7 +76,7 @@
       writeJournal(journal);
     }
     async function names() {
-      if (!idb) fail('IndexedDB is unavailable, so existing archives cannot be verified. No CURRENT writes were enabled.');
+      if (!idb) fail('IndexedDB is unavailable, so existing archives cannot be verified. No LAB writes were enabled.');
       if (typeof idb.databases !== 'function') return null;
       const list = await idb.databases();
       return new Set(list.map(item => item.name));
@@ -118,7 +118,7 @@
       return new Promise((resolve, reject) => {
         let settled = false;
         const request = idb.open(spec.name, 1);
-        const timer = setTimeout(() => finish(Error('CURRENT archive creation timed out.')), timeoutMs);
+        const timer = setTimeout(() => finish(Error('LAB archive creation timed out.')), timeoutMs);
         function finish(error, db) {
           if (settled) { db?.close(); return; }
           settled = true; clearTimeout(timer); error ? reject(error) : resolve(db);
@@ -128,8 +128,8 @@
           for (const name of spec.stores) if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name, { keyPath: 'id' });
         };
         request.onsuccess = () => finish(null, request.result);
-        request.onerror = () => finish(request.error || Error('Could not create CURRENT archive.'));
-        request.onblocked = () => finish(Error('CURRENT archive creation is blocked by another tab.'));
+        request.onerror = () => finish(request.error || Error('Could not create LAB archive.'));
+        request.onblocked = () => finish(Error('LAB archive creation is blocked by another tab.'));
       });
     }
     function addMissing(db, stores, records) {
@@ -146,7 +146,7 @@
           }
         }
         tx.oncomplete = () => resolve(expected);
-        tx.onerror = tx.onabort = () => reject(tx.error || Error('CURRENT archive copy did not commit.'));
+        tx.onerror = tx.onabort = () => reject(tx.error || Error('LAB archive copy did not commit.'));
       });
     }
     async function copyDatabase(journal, spec) {
@@ -167,7 +167,7 @@
             for (const item of fallback[name]) {
               const previous = combined.get(item?.id);
               // Reconcile the two LEGACY representations before copying them.
-              // Existing CURRENT IDs still win unconditionally in addMissing().
+              // Existing LAB IDs still win unconditionally in addMissing().
               const incomingAt = Date.parse(item?.updatedAt || item?.startedAt || item?.createdAt || '');
               const previousAt = Date.parse(previous?.updatedAt || previous?.startedAt || previous?.createdAt || '');
               if (!previous || (spec.name === DATABASES.sim && Number.isFinite(incomingAt) && (!Number.isFinite(previousAt) || incomingAt > previousAt))) combined.set(item?.id, item);
@@ -180,20 +180,20 @@
         target = await openExisting(spec.name);
         if (target) {
           const currentRecords = await all(target, spec.stores);
-          // A pre-existing, intentionally empty CURRENT database is valid state.
+          // A pre-existing, intentionally empty LAB database is valid state.
           // Never refill it from CURRENT. Successful receipts also prevent
           // deleted records returning after any subsequent reload.
           if (spec.stores.every(name => currentRecords[name].length === 0) && !journal.startedDatabases?.[spec.name]) {
             journal.databases[spec.name] = { state: 'preserved-empty', copied: 0 }; writeJournal(journal); return;
           }
         } else {
-          // A prior CURRENT that used localStorage fallback already owns its IDs
+          // A prior LAB that used localStorage fallback already owns its IDs
           // (and a deliberately empty archive), even without an IndexedDB DB.
           if (existingLabFallback) {
             let value;
-            try { value = JSON.parse(storage.getItem(spec.fallback)); } catch (_) { fail('Existing CURRENT archive fallback is unreadable. It was preserved.'); }
+            try { value = JSON.parse(storage.getItem(spec.fallback)); } catch (_) { fail('Existing LAB archive fallback is unreadable. It was preserved.'); }
             const saved = spec.name === DATABASES.evidence ? { snapshots: value } : value;
-            if (!saved || spec.stores.some(name => !Array.isArray(saved[name]))) fail('Existing CURRENT archive fallback is unsupported. It was preserved.');
+            if (!saved || spec.stores.some(name => !Array.isArray(saved[name]))) fail('Existing LAB archive fallback is unsupported. It was preserved.');
             if (spec.stores.every(name => saved[name].length === 0)) {
               journal.databases[spec.name] = { state: 'preserved-empty-fallback', copied: 0 }; writeJournal(journal); return;
             }
@@ -210,7 +210,7 @@
         const actual = await all(target, spec.stores);
         for (const name of spec.stores) {
           const byId = new Map(actual[name].map(value => [value.id, value]));
-          for (const value of expected[name]) if (JSON.stringify(byId.get(value.id)) !== JSON.stringify(value)) fail('CURRENT archive readback failed.');
+          for (const value of expected[name]) if (JSON.stringify(byId.get(value.id)) !== JSON.stringify(value)) fail('LAB archive readback failed.');
         }
         journal.databases[spec.name] = { state: 'copied', copied: spec.stores.reduce((n, name) => n + expected[name].length, 0) };
         writeJournal(journal);
@@ -231,15 +231,15 @@
         if (valid && !active && journal.freshSimulation && storage.getItem(KEYS.simCheckpoint) === null) {
           storage.setItem(KEYS.simCheckpoint, source);
           if (storage.getItem(KEYS.simCheckpoint) !== source) fail('Simulation checkpoint copy readback failed.');
-        } else if (active) journal.warnings.push('A legacy simulation is still running. Its checkpoint copy is retained for review; CURRENT will not take over that runner.');
-        else if (valid && !journal.freshSimulation) journal.warnings.push('Existing CURRENT simulation data was preserved; the legacy checkpoint is retained separately for review.');
+        } else if (active) journal.warnings.push('A legacy simulation is still running. Its checkpoint copy is retained for review; LAB will not take over that runner.');
+        else if (valid && !journal.freshSimulation) journal.warnings.push('Existing LAB simulation data was preserved; the legacy checkpoint is retained separately for review.');
       }
       journal.checkpoint = true; writeJournal(journal);
     }
     async function migrate() {
       const quick = readJournal();
       if (quick.complete) { current = { ...current, complete: true, phase: 'ready', stage: '', warnings: quick.warnings, error: '' }; return status(); }
-      if (!locks?.request) fail('Web Locks are unavailable. Use a browser with Web Locks to safely copy CURRENT data across tabs. Existing data is unchanged.');
+      if (!locks?.request) fail('Web Locks are unavailable. Use a browser with Web Locks to safely copy LAB data across tabs. Existing data is unchanged.');
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -263,15 +263,10 @@
             }
             for (const [source, target] of LOCAL) {
               const spec = SPECS.find(item => item.fallback === target);
-              // Retain a legacy fallback separately when CURRENT already has a
+              // Retain a legacy fallback separately when LAB already has a
               // deliberately empty archive; do not reactivate deleted records.
               const destination = spec && journal.emptyArchives?.[spec.name] && storage.getItem(target) === null ? spec.retainedFallback : target;
-              // Preserve the older CURRENT chessBest* fallback when chessLab* was never written.
-              const earlier = target === KEYS.settings ? 'chessBestSettings'
-                : target === KEYS.game ? 'chessBestGame' : null;
-              const chosen = earlier && storage.getItem(source) === null
-                && storage.getItem(earlier) !== null ? earlier : source;
-              copyLocal(journal, chosen, destination);
+              // Keep the old CURRENT game/settings as a read-only fallback, alongside LAB.\n              const earlier = target === KEYS.settings ? 'chessBestSettings'\n                : target === KEYS.game ? 'chessBestGame' : null;\n              const chosen = earlier && storage.getItem(source) === null\n                && storage.getItem(earlier) !== null ? earlier : source;\n              copyLocal(journal, chosen, destination);
             }
             for (const spec of SPECS) await copyDatabase(journal, spec);
             await checkpoint(journal);
@@ -288,7 +283,7 @@
       current = { ...current, phase: 'copying', complete: false, error: '', attempts: current.attempts + 1 };
       inFlight = migrate().catch(error => {
         const message = error?.name === 'QuotaExceededError'
-          ? 'The browser origin storage quota is full. CURRENT and LAB share that quota. Original data and completed copies were retained; free space or export data before retrying.'
+          ? 'The browser origin storage quota is full. LAB and CURRENT share that quota. Original data and completed copies were retained; free space or export data before retrying.'
           : error?.name === 'AbortError' ? 'CURRENT migration waited too long for another tab. Close that tab and retry.'
             : String(error?.message || 'CURRENT data migration could not be verified.');
         current = { ...current, phase: 'blocked', complete: false, error: message };
@@ -305,8 +300,8 @@
         panel.style.cssText = 'position:fixed;inset:1rem;z-index:2147483647;max-width:44rem;max-height:80vh;margin:auto;padding:1.5rem;overflow:auto;background:#172033;color:#f7f9ff;border:2px solid #e9b949;border-radius:1rem;font:16px/1.5 system-ui;box-shadow:0 0 0 100vmax #080d18ed;';
         const title = root.document.createElement('h2'); title.textContent = 'CURRENT data copy needs attention'; panel.appendChild(title);
         const message = root.document.createElement('p'); message.className = 'lab-storage-error'; panel.appendChild(message);
-        const help = root.document.createElement('p'); help.textContent = 'The application has not started writing data. Existing data and completed copies are retained. Close other chess tabs or resolve browser storage access, then retry. Original data remains available for export after resolving the issue.'; panel.appendChild(help);
-        const link = root.document.createElement('a'); link.href = '../chess-lab/old/010/'; link.textContent = 'Open archived release'; link.style.color = '#a5d8ff'; panel.appendChild(link);
+        const help = root.document.createElement('p'); help.textContent = 'The application has not started writing data. Existing data and completed copies are retained. Close other chess tabs or resolve browser storage access, then retry. Stable CURRENT remains available for exporting your original data.'; panel.appendChild(help);
+        const link = root.document.createElement('a'); link.href = '../'; link.textContent = 'Open CURRENT'; link.style.color = '#a5d8ff'; panel.appendChild(link);
         const button = root.document.createElement('button'); button.type = 'button'; button.textContent = 'Retry copy'; button.style.cssText = 'margin-left:1rem;padding:.6rem 1rem;background:#1e4070;color:white;border:1px solid #92b8e7;border-radius:.4rem';
         button.onclick = async () => { button.disabled = true; try { await attempt(); root.location?.reload(); } catch (_) { showFailure(); button.disabled = current.attempts >= 3; } }; panel.appendChild(button);
         root.document.body.appendChild(panel);

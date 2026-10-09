@@ -5,7 +5,7 @@ const base=require('node:path').resolve(__dirname,'..')+'/';
 const test=require('node:test');
 test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grounded chat', {timeout:20000}, async(t)=>{
  const errors=[]; const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
- const dom=new JSDOM(fs.readFileSync(base+'index.html','utf8'),{url:'https://www.mdlxdcc.org/chess/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ const dom=new JSDOM(fs.readFileSync(base+'index.html','utf8'),{url:'https://www.mdlxdcc.org/chess/new/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  const w=dom.window;
  let lockTail=Promise.resolve();
  Object.defineProperty(w.navigator,'locks',{value:{request:(_name,_options,job)=>{const next=lockTail.then(job || _options);lockTail=next.catch(()=>{});return next;}}});
@@ -41,17 +41,19 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const until=async(predicate,message)=>{const deadline=Date.now()+4000;while(!predicate()&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));assert(predicate(),message);};
  assert.equal(el('workspaceTimers').hidden,true,'idle review has no clocks'); assert.equal(el('settingShowTimers').checked,true); assert.equal(el('settingShowTimestamps').checked,false);
  el('btnGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),true);
+ assert.equal(w.document.body.dataset.desktopView,'library','Game library is the active full desktop workspace view');
+ assert.equal(el('popularGamesPanel').parentElement,el('workspaceDisplay'),'desktop library shares the main content viewport');
  el('btnCloseGames').click();assert.equal(el('popularGamesPanel').classList.contains('open'),false);
  el('btnSettings').click();el('btnCloseSettings').click();
  assert.equal(el('settingsPanel').classList.contains('open'),false);
  assert.equal(el('settingSFDepth').value,'11','users without a saved depth get the new default');
  el('settingSFDepth').value='12';el('settingSFDepth').dispatchEvent(new w.Event('change'));
- assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:CURRENT:v2:settings')).sfAnalysisDepth,12);
+ assert.equal(JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:settings')).sfAnalysisDepth,12);
  const toggle=id=>{el(id).checked=!el(id).checked;el(id).dispatchEvent(new w.Event('change'));};
  assert.equal(el('authorLink').getAttribute('href'),'mailto:bd@siol.net');
- const topButtons=[...el('viewToggle').querySelectorAll('button:not(#btnCoach)')];
- assert.deepEqual(topButtons.map(button=>button.textContent),['Simulation','DCC replay','DCC analysis','Review game']);
- assert.equal(el('btnWorkspaceMore').textContent.replace(/\s+/g,' ').trim(),'More +');
+ const desktopTabs=[...el('desktopViewTabs').querySelectorAll('[data-desktop-view]')];
+ assert.deepEqual(desktopTabs.map(button=>button.textContent),['Moves','Review','Deep','DCC']);
+ assert.deepEqual([...el('workspacePrimaryActions').querySelectorAll('button')].map(button=>button.textContent.replace(/\s+/g,' ').trim()),['New game','Game library','Sim / Play','More +']);
  assert.equal(el('btnSimW'),null);assert.equal(el('btnSimB'),null);
  el('btnSim').click();
  const humanChoices=el('simTournamentDialog');
@@ -76,7 +78,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  w.document.querySelector('.brand-title').click();el('main').click();
  assert.equal(fen,reviewFen,'brand and background cannot play a suggested move');shortcut.remove();
  const source=el('analysisSource'),cards=el('allEvalBadges'),stage=el('board').parentElement;
- assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB → SF'],['sf','SF']]);
+ assert.deepEqual([...source.options].map(option=>[option.value,option.textContent]),[['auto','CDB | SF'],['sf','SF']]);
  source.value='auto';source.dispatchEvent(new w.Event('change'));
  assert.equal(stage.contains(el('positionEval')),true,'CDB-first retains the ordinary score bar beside the board');
  assert.equal(stage.contains(cards),false);assert.equal(cards.parentElement.classList.contains('board-actions'),true,'comparison is below the board');
@@ -140,14 +142,14 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  await until(()=>el('moves').querySelector('[role=button]'),'automatic moves appear in the real history');
  assert(sfPreparations>0,'hybrid CDB simulation prepares the local fallback engine');
  const move=el('moves').querySelector('[role=button]');assert.ok(move,'automatic moves appear in the real history');
- move.click();assert.equal(el('btnSim').textContent,'Simulation');
+ move.click();assert.equal(el('btnSim').textContent,'Sim / Play');
  assert.equal(el('workspaceTimers').hidden,true,'pausing Sim to review a move hides clocks');
  assert.equal(boardOptions.onDrop('a1','a8'),'snapback');
  assert.equal(el('workspaceTimers').hidden,true,'an illegal review move does not show Sim clocks');
  const reviewMove=new w.Chess(fen).moves({verbose:true})[0];
  boardOptions.onDrop(reviewMove.from,reviewMove.to);
  assert.equal(el('workspaceTimers').hidden,true,'a manual variation does not restart the Sim clock display');
- const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest:CURRENT:v2:sim-fallback')||'null');
+ const archive=()=>JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:sim-fallback')||'null');
  await until(()=>archive()?.events[0]?.state==='paused','pausing persists the resumable event');
  const savedRun=archive().runs[0];assert(savedRun.trace.length>0);assert.equal(savedRun.clock.running,false);
  assert.equal(savedRun.clock.mode,'countdown');assert.match(savedRun.pgn,/\[TimeControl "60\+1"\]/);
@@ -184,7 +186,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  el('btnHumanPause').click();assert.equal(boardOptions.onDrop('g1','f3'),undefined);
  await new Promise(r=>setTimeout(r,400));
  assert.match(el('humanReview').textContent,/White|Black|Review/);
- const timing=JSON.parse(w.localStorage.getItem('ChessBest:CURRENT:v2:timing'));
+ const timing=JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:timing'));
  assert.equal(timing.records.length,3); assert.ok(timing.records[0].clock_ms>60000);
  assert.match(timing.records[0].at_utc,/Z$/);
  toggle('settingShowTimers');assert.equal(el('workspaceTimers').hidden,true);assert.equal(el('moves').querySelectorAll('time').length,3);
@@ -235,10 +237,10 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
 
  // Import at the cap through the real Game library, then confirm bulk removal.
  el('btnStudy').click();
- const countStudies=()=>JSON.parse(w.localStorage.getItem('ChessBest:CURRENT:v2:studies')).studies.length;
+ const countStudies=()=>JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:studies')).studies.length;
  while(countStudies()<20){const beforeCount=countStudies();const newStudy=[...w.document.querySelectorAll('.chess-study-dialog button')].find(button=>button.textContent==='New study from workspace');assert(newStudy);newStudy.click();await until(()=>countStudies()>beforeCount,'new study commits before next request');}
  w.document.querySelector('.chess-study-close').click();
- const beforeLoad=host.getContext().fen, savedAtCap=w.localStorage.getItem('ChessBest:CURRENT:v2:studies');
+ const beforeLoad=host.getContext().fen, savedAtCap=w.localStorage.getItem('ChessBest:LAB:v2:studies');
  const pick='[Event "Capacity example"]\n[White "Test A"]\n[Black "Test B"]\n\n1. e4 e5 *';
  const topSelect=el('popularGamesPanel').querySelector('.library-native-selects select');topSelect.add(new w.Option('Capacity example',pick));
  el('btnGames').click();
@@ -246,7 +248,7 @@ test('full LAB page integrates Sim, clocks, study, evidence, deep tools and grou
  const notice=w.document.querySelector('.chess-study-overlay');
  await until(()=>!notice.hidden && notice.textContent.includes('Pending action:'),'Game library opens the capacity manager');
  assert.equal(host.getContext().fen,beforeLoad,'loading at cap keeps current board');
- assert.equal(w.localStorage.getItem('ChessBest:CURRENT:v2:studies'),savedAtCap,'loading at cap keeps studies');
+ assert.equal(w.localStorage.getItem('ChessBest:LAB:v2:studies'),savedAtCap,'loading at cap keeps studies');
  [...notice.querySelectorAll('button')].find(b=>b.textContent==='Remove all studies (20)').click();
  [...notice.querySelectorAll('button')].find(b=>b.textContent==='Confirm removal').click();
  await until(()=>countStudies()===0,'confirmed removal commits');

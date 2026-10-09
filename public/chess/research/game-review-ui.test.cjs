@@ -18,7 +18,7 @@ test('Review opens a loaded Top Pick at its full recorded line and hands a momen
   await h.until(() => h.w.ChessLabHost.getReviewGame().cursor === anchor, 'curated position loaded');
   await h.ready();
   const before = h.w.ChessLabHost.getReviewGame();
-  const originalStudies = JSON.parse(h.w.localStorage.getItem('ChessBest:CURRENT:v2:studies')).studies.length;
+  const originalStudies = JSON.parse(h.w.localStorage.getItem('ChessBest:LAB:v2:studies')).studies.length;
   const expected = h.w.ChessGameReview.build({ Chess: h.w.Chess, pgn, moves: before.moves, startFen: before.startFen });
   const button = h.el('btnGameReview');
   button.click();
@@ -39,7 +39,7 @@ test('Review opens a loaded Top Pick at its full recorded line and hands a momen
   assert.equal(h.el('gameReviewPanel').hidden, true);
   const tabs = [...h.w.document.querySelectorAll('.chess-study-tabs button')];
   assert.equal(tabs.find(b => b.textContent === 'A / B comparison')?.getAttribute('aria-pressed'), 'true');
-  assert.equal(JSON.parse(h.w.localStorage.getItem('ChessBest:CURRENT:v2:studies')).studies.length, originalStudies, 'Review does not write another Study');
+  assert.equal(JSON.parse(h.w.localStorage.getItem('ChessBest:LAB:v2:studies')).studies.length, originalStudies, 'Review does not write another Study');
   assert.equal(h.errors.length, 0, h.errors.join('\n'));
 });
 

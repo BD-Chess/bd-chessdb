@@ -6,7 +6,7 @@ const { boot } = require('./source-context-integration.test.cjs');
 const { Chess } = require('../js/chess.min.js');
 const C = require('../js/8zc-study-core.js');
 const S = require('../js/8zc-study-store.js');
-const KEY = 'ChessBest:CURRENT:v2:studies';
+const KEY = 'ChessBest:LAB:v2:studies';
 const topPicks = fs.readFileSync(path.resolve(__dirname, '../Games/ChessBest_Top_Picks.pgn'), 'utf8');
 const tcecPicks = fs.readFileSync(path.resolve(__dirname, '../Games/ChessBest_Top_Picks_TCEC.pgn'), 'utf8');
 
@@ -40,9 +40,9 @@ async function anchored(h, expected) {
   assert.equal(context.headers.White, expected.headers.White);
   assert.equal(context.headers.Black, expected.headers.Black);
   assert.match(h.el('boardGameTitle').textContent, /Gukesh/);
-  const marker = JSON.parse(h.w.localStorage.getItem('ChessBest:CURRENT:v2:top-pick'));
+  const marker = JSON.parse(h.w.localStorage.getItem('ChessBest:LAB:v2:top-pick'));
   assert.equal(marker.cursor, expected.ply);
-  assert.equal(h.w.localStorage.getItem('ChessBest:CURRENT:v2:game'), expected.pgn, 'whole curated PGN is retained alongside cursor');
+  assert.equal(h.w.localStorage.getItem('ChessBest:LAB:v2:game'), expected.pgn, 'whole curated PGN is retained alongside cursor');
   assert.equal(h.el('popularGamesPanel').classList.contains('open'), false);
 }
 
@@ -131,14 +131,14 @@ test('Top Pick at 20 Studies keeps the board until explicit removal and resumes 
 test('failed Top Pick persistence retains the original board, game and selected game identity', { timeout: 10000 }, async t => {
   const h = await boot(t, { libraryPGN: topPicks });
   const before = h.w.ChessLabHost.getContext(), originalStudies = h.w.localStorage.getItem(KEY);
-  const title = h.el('boardGameTitle').textContent, game = h.w.localStorage.getItem('ChessBest:CURRENT:v2:game');
+  const title = h.el('boardGameTitle').textContent, game = h.w.localStorage.getItem('ChessBest:LAB:v2:game');
   h.failStudyWrites(true);
   await pick(h);
   await h.until(() => /QUOTA/.test(h.w.document.querySelector('.chess-study-status')?.textContent || ''), 'quota failure is shown');
   assert.equal(h.w.ChessLabHost.getContext().fen, before.fen);
   assert.equal(h.el('boardGameTitle').textContent, title);
-  assert.equal(h.w.localStorage.getItem('ChessBest:CURRENT:v2:game'), game);
+  assert.equal(h.w.localStorage.getItem('ChessBest:LAB:v2:game'), game);
   assert.equal(h.w.localStorage.getItem(KEY), originalStudies);
-  assert.equal(h.w.localStorage.getItem('ChessBest:CURRENT:v2:top-pick'), null);
+  assert.equal(h.w.localStorage.getItem('ChessBest:LAB:v2:top-pick'), null);
   assert.equal(h.errors.length, 0, h.errors.join('\n'));
 });

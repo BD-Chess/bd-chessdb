@@ -8,7 +8,7 @@ const source = fs.readFileSync(path.resolve(__dirname, '../js/8zc-tournament-ui.
 
 function setup(host) {
   const dom = new JSDOM('<!doctype html><html><body><button id="launcher">Sim</button></body></html>', {
-    url: 'https://www.mdlxdcc.org/chess/', runScripts: 'outside-only', pretendToBeVisual: true
+    url: 'https://www.mdlxdcc.org/chess/new/', runScripts: 'outside-only', pretendToBeVisual: true
   });
   const { window } = dom;
   window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };

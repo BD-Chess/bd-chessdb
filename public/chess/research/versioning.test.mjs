@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nextArchive, checkVersions } from '../../../tools/chess-versioning.mjs';
+import { nextArchive, checkVersions } from '../../../../tools/chess-versioning.mjs';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -10,13 +10,31 @@ test('BD archives increment monotonically and never fill historical gaps',()=>{
   assert.equal(nextArchive(['999']),'1000');
   assert.throws(()=>nextArchive(['001','0001']),/Duplicate/);
 });
-test('CURRENT and LAB are installable; PREVIOUS links to the three active channels',()=>{
-  const result=checkVersions(fileURLToPath(new URL('../../../',import.meta.url)));
+test('CURRENT, PREVIOUS, LAB and APP link to four channels without the retired PWA link',()=>{
+  const result=checkVersions(fileURLToPath(new URL('../../../../',import.meta.url)));
   assert.equal(result.ok,true,result.errors.join('\n'));
+  assert.deepEqual(result.channels.map(channel => channel.name), ['CURRENT','PREVIOUS','LAB','APP']);
+  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
+  for(const entry of ['index.html','new/index.html','old/index.html','app/index.html']){
+    const html=readFileSync(root+entry,'utf8');
+    const selector=html.match(/<nav\b[^>]*class="bd-version-selector[^"<>]*"[^>]*>[\s\S]*?<\/nav>/);
+    assert.ok(selector,entry+' selector');
+    assert.doesNotMatch(selector[0],/>PWA<\/a>/,entry+' current navigation');
+  }
   assert.equal(result.promotionPerformed,false);
 });
+test('CURRENT and LAB have separate install identities and scoped workers',()=>{
+  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
+  for(const directory of ['', 'new/']){
+    const manifest=JSON.parse(readFileSync(root+directory+'manifest.webmanifest','utf8'));
+    assert.deepEqual([manifest.id,manifest.start_url,manifest.scope],['./','./','./']);
+    const html=readFileSync(root+directory+'index.html','utf8');
+    assert.match(html,/<link\b(?=[^>]*\brel=["']manifest["'])(?=[^>]*\bhref=["'](?:\.\/)?manifest\.webmanifest["'])[^>]*>/i);
+    assert.match(html,/<script\b[^>]*src=["'](?:\.\/)?pwa\.js["']/i);
+  }
+});
 test('PREVIOUS opens the brown v0.6.0 application at old/ without redirects',()=>{
-  const root=fileURLToPath(new URL('../../../public/chess/',import.meta.url));
+  const root=fileURLToPath(new URL('../../../../public/chess/',import.meta.url));
   for(const [name,href] of [['index.html','./old/'],['new/index.html','../old/']]){
     assert.match(readFileSync(root+name,'utf8'),new RegExp(`href="${href.replaceAll('/','\\/')}"\>PREVIOUS`));
   }
@@ -29,7 +47,7 @@ test('PREVIOUS opens the brown v0.6.0 application at old/ without redirects',()=
   assert.match(css,/#f0d9b5/);assert.match(css,/#b58863/);
 });
 test('PREVIOUS root contains the copied legacy app, and numbered snapshots remain sealed',()=>{
-  const root=fileURLToPath(new URL('../../../public/chess/old/',import.meta.url));
+  const root=fileURLToPath(new URL('../../../../public/chess/old/',import.meta.url));
   const archive=JSON.parse(readFileSync(root+'004/ARCHIVE_MANIFEST.json','utf8'));
   const names=[];
   function walk(folder,prefix=''){

@@ -15,7 +15,7 @@ async function boot(t, options = {}) {
   const errors = [], vc = new VirtualConsole();
   vc.on('jsdomError', error => errors.push(error.message));
   const dom = new JSDOM(readSource('index.html'), {
-    url: 'https://www.mdlxdcc.org/chess/', runScripts: 'outside-only',
+    url: 'https://www.mdlxdcc.org/chess/new/', runScripts: 'outside-only',
     pretendToBeVisual: true, virtualConsole: vc
   });
   const w = dom.window;
@@ -41,7 +41,7 @@ async function boot(t, options = {}) {
     const result = (lockQueues.get(name) || Promise.resolve()).then(callback || settings);
     lockQueues.set(name, result.catch(() => {})); return result;
   } }, configurable: true });
-  if (options.initialStudies) w.localStorage.setItem('ChessBest:CURRENT:v2:studies', options.initialStudies);
+  if (options.initialStudies) w.localStorage.setItem('ChessBest:LAB:v2:studies', options.initialStudies);
   w.alert = text => { throw Error(text); }; w.confirm = () => true;
   w.URL.createObjectURL = () => 'blob:fixture'; w.URL.revokeObjectURL = () => {};
   const timeout = w.setTimeout.bind(w);
@@ -49,7 +49,7 @@ async function boot(t, options = {}) {
   let boardOptions, sent, failStudyWrites = false;
   const realStore = w.Storage.prototype.setItem;
   w.Storage.prototype.setItem = function (key, value) {
-    if (failStudyWrites && key === 'ChessBest:CURRENT:v2:studies') throw new w.DOMException('Fixture full storage', 'QuotaExceededError');
+    if (failStudyWrites && key === 'ChessBest:LAB:v2:studies') throw new w.DOMException('Fixture full storage', 'QuotaExceededError');
     return realStore.call(this, key, value);
   };
   w.Chessboard = (id, options) => {
@@ -130,7 +130,7 @@ test('SF board retains CDB DCC analysis and evidence in real Study host context'
   };
   studyButton('A / B comparison').click();
   studyButton('Pin workspace analysis as A').click();
-  const savedA = () => JSON.parse(h.w.localStorage.getItem('ChessBest:CURRENT:v2:studies') || 'null')?.comparison?.A;
+  const savedA = () => JSON.parse(h.w.localStorage.getItem('ChessBest:LAB:v2:studies') || 'null')?.comparison?.A;
   await h.until(() => savedA()?.analysis?.receipt?.provider === 'CDB', 'actual Study pin retains CDB DCC with SF board selected');
   assert.equal(h.el('analysisSource').value, 'sf');
   assert.equal(savedA().fen, context.fen);
