@@ -22,7 +22,7 @@ window.MDLxDCCHumanMiddleSeries={
   ]
  },
  information:{
-  title:{en:'Generators and data',sl:'Generatorji in podatki'},
+  title:{en:'Information',sl:'Informacija'},
   summary:{en:'How small seeds create rich patterns, and shorter descriptions preserve data.',sl:'Kako majhna semena ustvarijo bogate vzorce in krajši opisi ohranijo podatke.'},
   items:[
    artwork('information-01','The Living Seed of a Creator','Živo seme ustvarjalca','DNA, cellular machinery and the conditions in which living forms develop.','DNA, celični stroji in pogoji, v katerih nastajajo žive oblike.'),
