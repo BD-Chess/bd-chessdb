@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. LAB only. */
 'use strict';
-const RELEASE = "lab-3486692d5c9a3786";
+const RELEASE = "lab-de3d2395a7e3e20d";
 const PREFIX = "chessbest-chess-lab-";
 const ASSETS = [
   "8zc-about.html",
