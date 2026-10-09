@@ -88,7 +88,7 @@ async function desktop(browser,base,s){
  (report.screenshotViewports||=[]).push({engine:browser.browserType().name(),app:s.name,width:1440,height:1200,screenWidth:402});
  await page.screenshot({path:path.join(out,s.name+'-'+browser.browserType().name()+'-402.png')});await page.setViewportSize({width:1440,height:900});
  await page.setViewportSize({width:1152,height:720});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1152x720-125percent-zoom-equivalent',...await geometry(page,s)});
- await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});
+ await page.setViewportSize({width:1024,height:768});await contained(page,s);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'1024x768',...await geometry(page,s)});if(s.name==='sudoku'){await page.setViewportSize({width:960,height:1150});await contained(page,s);const h=await page.evaluate(()=>{const el=document.documentElement,rect=x=>document.querySelector(x).getBoundingClientRect();return {scroll:el.scrollWidth,client:el.clientWidth,title:rect('.preview-title'),nav:rect('.preview-nav'),width:rect('.width-control')};});assert.ok(h.scroll<=h.client+1,'Sudoku half-HD horizontal scrollbar: '+JSON.stringify(h));assert.ok(h.title.right+4<=h.nav.left&&h.nav.right+4<=h.width.left,'Sudoku toolbar items overlap: '+JSON.stringify(h));await page.screenshot({path:path.join(out,'sudoku-half-hd-'+browser.browserType().name()+'.png')});report.cases.push({engine:browser.browserType().name(),app:'sudoku',size:'960x1150-half-hd',noHorizontalOverflow:true});}
  await page.setViewportSize({width:800,height:600});await contained(page,s);assert.equal(await page.locator(s.toolbar).isVisible(),true);report.cases.push({engine:browser.browserType().name(),app:s.name,size:'800x600-small-desktop',...await geometry(page,s)});
  await page.setViewportSize({width:1440,height:900});await page.reload({waitUntil:'load'});f=await ready(page,s);assert.equal(await page.locator(s.select).inputValue(),'402','width reload');if(s.name==='trip'){
   assert.equal(await page.locator('#input').inputValue(),retained,'Trip width/reload keeps draft');
@@ -105,6 +105,39 @@ async function desktop(browser,base,s){
  if(s.name==='trip')assert.equal(await page.locator('#input').inputValue(),retained,'LAB/APP keeps plan');
  assert.deepEqual(errors,[],s.name+' runtime errors');await ctx.close();
 }
+
+async function tripDesktopInstalledPwa(browser,base){
+ // Reproduce desktop Edge 'installed as app': standalone display mode with desktop UA.
+ // A standalone window is NOT necessarily a phone.
+ const ctx=await browser.newContext({viewport:{width:960,height:1150},serviceWorkers:'block'});
+ await ctx.addInitScript(()=>{
+  const native=window.matchMedia.bind(window);
+  window.matchMedia=(q)=>q==='(display-mode: standalone)'?
+   {media:q,matches:true,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}}:native(q);
+ });
+ await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.fulfill({status:503,contentType:'application/json',body:'{"offline":true}'}));
+ const page=await ctx.newPage();activePage=page;
+ await page.goto(base+'/Trip/new/?view=lab',{waitUntil:'load'});
+ await page.locator('#input').waitFor({state:'visible'});
+ assert.equal(await page.evaluate(()=>document.documentElement.dataset.tripPresentation),'lab','desktop installed PWA must honor LAB');
+ assert.equal(await page.locator('.trip-preview-device').count(),0,'no phone frame in LAB');
+ const draft='Ljubljana | 46.0569, 14.5058 START\nKoper | 45.5481, 13.7302';
+ await page.locator('#input').fill(draft);
+ await page.locator('.bd-versions [data-presentation-link="app"]').click();
+ await page.locator('.trip-preview-device').waitFor({state:'visible'});
+ assert.equal(new URL(page.url()).searchParams.get('view'),'app','APP click sets URL');
+ assert.equal(await page.evaluate(()=>document.documentElement.dataset.tripPresentation),'app','desktop standalone uses APP, not mobile');
+ assert.equal(await page.locator('.trip-preview-toolbar').isVisible(),true,'external APP toolbar is visible');
+ assert.equal(await page.locator('#input').inputValue(),draft,'LAB to APP keeps editor');
+ assert.equal(await page.locator('#tripPreviewWidth').inputValue(),'402','desktop installed APP default width');
+ await page.screenshot({path:path.join(out,'trip-installed-pwa-'+browser.browserType().name()+'.png')});
+ await page.locator('.trip-preview-nav [data-presentation-link="lab"]').click();
+ await page.waitForLoadState('load');
+ assert.equal(await page.evaluate(()=>document.documentElement.dataset.tripPresentation),'lab','desktop standalone APP to LAB');
+ assert.equal(await page.locator('#input').inputValue(),draft,'APP to LAB keeps editor');
+ report.cases.push({engine:browser.browserType().name(),app:'trip-installed-desktop-pwa',size:'960x1150',transition:'LAB > APP > LAB',draftRetained:true});
+ await ctx.close();
+}
 async function phone(browser,base,s){
  const ctx=await browser.newContext({viewport:{width:402,height:874},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
  await ctx.route('**/*',r=>new URL(r.request().url()).origin===base?r.continue():r.fulfill({status:503,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:'{"offline":true}'}));
@@ -116,7 +149,7 @@ async function phone(browser,base,s){
 }
 (async()=>{const base=await serve();report.failures=[];
  for(const engine of [chromium,webkit]){const browser=await engine.launch();try{
-  for(const spec of specs){try{await desktop(browser,base,spec);await phone(browser,base,spec);console.log('PASS',browser.browserType().name(),spec.name);}
+  for(const spec of specs){try{await desktop(browser,base,spec);await phone(browser,base,spec);if(spec.name==='trip')await tripDesktopInstalledPwa(browser,base);console.log('PASS',browser.browserType().name(),spec.name);}
    catch(e){report.failures.push({engine:browser.browserType().name(),app:spec.name,error:e.stack||String(e)});console.error('FAIL',browser.browserType().name(),spec.name,e.message);
     if(activePage&&!activePage.isClosed()){await activePage.screenshot({path:path.join(out,spec.name+'-'+browser.browserType().name()+'-FAIL.png'),fullPage:true}).catch(()=>{});report.failures.at(-1).geometry=await geometry(activePage,spec).catch(()=>null);await activePage.context().close();}
    }

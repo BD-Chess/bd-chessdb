@@ -2,8 +2,10 @@
   'use strict';
   const KEY='8z_trip_lab_desktop_view_v1',WIDTH_KEY='8z_trip_lab_preview_width_v1';
   const choices=['375','390','402','430'],query=new URLSearchParams(location.search),requested=query.get('view');
-  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-  const deviceMobile=Boolean(navigator.userAgentData?.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||Boolean(globalThis.Capacitor?.isNativePlatform?.());
+  // Desktop Edge installed PWAs also report display-mode: standalone. That is
+  // not evidence of a phone: explicit LAB/APP must still work in their windows.
+  const ipadDesktopUA=navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
+  const deviceMobile=Boolean(navigator.userAgentData?.mobile)||/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||ipadDesktopUA||Boolean(globalThis.Capacitor?.isNativePlatform?.());
   function read(key){try{return localStorage.getItem(key);}catch(_){return null;}}
   function write(key,value){try{localStorage.setItem(key,value);}catch(_){}}
   // A presentation navigation must keep an edited draft in the canonical backup.
@@ -16,8 +18,8 @@
     }catch(_){}
   }
 
-  if(!deviceMobile&&!standalone&&['app','lab'].includes(requested))write(KEY,requested);
-  function mode(){if(deviceMobile||standalone)return 'mobile';if(requested==='app'||(requested!=='lab'&&read(KEY)==='app'))return 'app';return matchMedia('(max-width:900px)').matches?'mobile':'lab';}
+  if(!deviceMobile&&['app','lab'].includes(requested))write(KEY,requested);
+  function mode(){if(deviceMobile)return 'mobile';if(requested==='app'||(requested!=='lab'&&read(KEY)==='app'))return 'app';return matchMedia('(max-width:900px)').matches?'mobile':'lab';}
   let screen;
   function geometry(){if(!screen)return;const r=screen.getBoundingClientRect();for(const edge of ['left','top','right','bottom']){const key='--trip-screen-'+edge,value=r[edge]+'px';if(document.body.style.getPropertyValue(key)!==value)document.body.style.setProperty(key,value);}}
   function makeDevice(){
@@ -45,6 +47,7 @@
   }
   function apply(){
     const value=mode();document.documentElement.dataset.tripPresentation=value;
+    if(value!=='mobile')document.title='8Z Trip Optimizer · '+(value==='app'?'APP preview':'LAB');
     if(!document.body)return;
     for(const name of ['app','mobile','lab'])document.body.classList.toggle('trip-presentation-'+name,value===name);
     for(const link of document.querySelectorAll('[data-presentation-link]')){const active=link.dataset.presentationLink===(value==='app'?'app':'lab');if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
