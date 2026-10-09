@@ -41,7 +41,7 @@ const status=Object.fromEntries(['space','time','information','questions'].map(i
 const root={dataset:{lang:'en'}};
 const context={window,root,currentSeries:'questions',SERIES_IDS:['space','time','information','questions'],SPACE_DETAILS:Array(9).fill({}),$:(selector)=>status[selector.match(/data-hm-series-status="([^"]+)"/)?.[1]]};
 vm.createContext(context);
-for(const name of ['galleryLang','galleryText','html','readyImage','seriesSpec','publishedCount','familySources','familyAbout','updateFamilyBanners']){
+for(const name of ['galleryLang','galleryText','html','paragraphs','readyImage','seriesSpec','publishedCount','familySources','familyAbout','updateFamilyBanners']){
  const line=script.split('\n').find(x=>x.startsWith('function '+name+'('));
  assert.ok(line,name+' declaration');vm.runInContext(line,context);
 }
@@ -53,13 +53,13 @@ for(const p of [item.src,item.preview])assert.ok(fs.existsSync(path.join(pub,p))
 assert.equal(item.width,941);assert.equal(item.height,1672);
 assert.equal(item.credit,'seed BD · words BD × Claude · picture GPT · 2026');
 assert.equal(item.title.en,'The Meadow and the Tower');
-assert.equal(item.summary.en,'Knowledge lives in the tower. Questions are born on the meadow.');
-assert.equal(item.summary.sl,'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.');
+assert.equal(item.summary.en,'Knowledge lives in the tower. Questions are born on the meadow. Creation happens in the space between.');
+assert.equal(item.summary.sl,'Znanje živi v stolpnici. Vprašanja se rodijo na travniku. Ustvarjanje se zgodi v prostoru med njima.');
 assert.equal(item.sources.length,0,'Art metaphor has no invented scientific sources');
 for(const lang of ['en','sl']){
  root.dataset.lang=lang;
  const about=context.familyAbout(series.questions);
- assert.ok(about.includes(item.title[lang]));assert.ok(about.includes(item.explanation[lang]));assert.ok(about.includes(item.credit));
+ assert.ok(about.includes(item.storyTitle[lang]));for(const p of context.paragraphs(item.explanation[lang]))assert.ok(about.includes(context.html(p)));assert.ok(about.includes(item.storyCredit[lang]));
  assert.ok(about.includes(item.src));assert.ok(about.includes(item.preview));
  assert.doesNotMatch(about,/all nine images|vseh devet slik|in preparation|v pripravi/);
 }
