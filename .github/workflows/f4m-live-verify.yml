@@ -24,8 +24,8 @@ jobs:
             if curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/release.json?probe=$i" -o "$tmp/new-release.json" && cmp -s "$tmp/new-release.json" public/F4M/new/release.json &&
                curl -fsSL --retry 2 --retry-delay 1 "$BASE/new/?probe=$i" -o "$tmp/new-index-probe.html" && cmp -s "$tmp/new-index-probe.html" public/F4M/new/index.html &&
                curl -fsSL --retry 2 --retry-delay 1 "$BASE/_shared/petrol-2.6.2/build-manifest.json?probe=$i" -o "$tmp/build-manifest-probe.json" && cmp -s "$tmp/build-manifest-probe.json" public/F4M/_shared/petrol-2.6.2/build-manifest.json &&
-     curl -fsSL --retry 2 --retry-delay 1 "$BASE/release.json?probe=$i" -o "$tmp/current-release-probe.json" && cmp -s "$tmp/current-release-probe.json" public/F4M/release.json &&
-     curl -fsSL --retry 2 --retry-delay 1 "$BASE/?probe=$i" -o "$tmp/current-index-probe.html" && cmp -s "$tmp/current-index-probe.html" public/F4M/index.html; then
+               curl -fsSL --retry 2 --retry-delay 1 "$BASE/release.json?probe=$i" -o "$tmp/current-release-probe.json" && cmp -s "$tmp/current-release-probe.json" public/F4M/release.json &&
+               curl -fsSL --retry 2 --retry-delay 1 "$BASE/?probe=$i" -o "$tmp/current-index-probe.html" && cmp -s "$tmp/current-index-probe.html" public/F4M/index.html; then
               matched=1
               break
             fi
