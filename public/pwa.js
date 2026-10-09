@@ -1,6 +1,6 @@
 (()=>{'use strict';
 // One installable app: the site's primary index.html, never a /PWA/ clone.
-const RELEASE='root-20261009-r2';
+const RELEASE='root-20261009-r3';
 const ROOT=new URL('./',document.currentScript?.src||document.baseURI);
 const SW=new URL('sw.js',ROOT);
 const RELOAD_KEY='mdlxdcc-root-pwa-reload-v2';

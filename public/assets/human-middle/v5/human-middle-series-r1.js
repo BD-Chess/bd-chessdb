@@ -1,4 +1,4 @@
-/* Human in the Middle / BD x AI Lab. Two published portrait series.
+/* Human in the Middle / BD x AI Lab. Time, Information and Questions.
  * Ordered public-relative WebP paths; source images are not modified.
  * Additional external references require separate source verification.
  */
@@ -35,6 +35,25 @@ window.MDLxDCCHumanMiddleSeries={
    artwork('information-08','Apparent Randomness, Unknown Start','Navidezno naključje, neznan začetek','A coin toss and the initial conditions we do not know.','Met kovanca in začetni pogoji, ki jih ne poznamo.'),
    artwork('information-09','Description and experience','Opis in doživljanje','Exploring the relationship between a description and lived experience.','Raziskovanje odnosa med opisom in doživljanjem.')
   ]
+ },
+ questions:{
+  title:{en:'Questions',sl:'Vprašanja'},
+  summary:{en:'Knowledge lives in the tower. Questions are born on the meadow.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.'},
+  items:[{
+   id:'questions-01',status:'published',
+   src:'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_Caption_R1.webp',
+   preview:'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_Clean_R1.webp',
+   width:941,height:1672,
+   title:{en:'The Meadow and the Tower',sl:'Travnik in stolpnica'},
+   summary:{en:'Knowledge lives in the tower. Questions are born on the meadow.',sl:'Znanje živi v stolpnici. Vprašanja se rodijo na travniku.'},
+   explanation:{
+    en:'A small human stands on a mixed book written by living. Seeds of questions and imagination rise into the open sky, the library tower and the book of its AI librarian, who has stepped outside. This is a metaphor for complementary perspectives, not small against big: knowledge gains a new view when it meets lived experience. The invitation is to step onto the meadow, look up and ask together.',
+    sl:'Majhen človek stoji na mešani knjigi, napisani z življenjem. Semena vprašanj in domišljije se dvigajo v odprto nebo, knjižnično stolpnico in knjigo njenega AI knjižničarja, ki je stopil ven. To je metafora dopolnjujočih se pogledov, ne majhnega proti velikemu: znanje dobi nov pogled, ko se sreča z življenjsko izkušnjo. Vabilo je, da stopimo na travnik, pogledamo navzgor in sprašujemo skupaj.'
+   },
+   credit:'seed BD · words BD × Claude · picture GPT · 2026',
+   sources:[]
+  }]
  }
 };
 })();
+
