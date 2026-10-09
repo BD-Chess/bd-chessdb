@@ -1,0 +1,46 @@
+name: One-shot live Netlify TripOpti and ChessBest browser smoke
+on:
+  push:
+    branches: [qa/20261009-netlify-trip-chess-live-smoke-r1]
+    paths:
+      - 'tests/live-netlify-trip-chess-smoke.cjs'
+      - '.github/workflows/qa-live-netlify-trip-chess.yml'
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 33a4e359a00e15e8043df94544a1ec3800dacf69
+      - name: Read only live QA runner and source from QA branch
+        uses: actions/checkout@v4
+        with:
+          ref: qa/20261009-netlify-trip-chess-live-smoke-r1
+          path: qa
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/live-smoke" --no-package-lock --ignore-scripts playwright@1.55.0
+          echo "NODE_PATH=$RUNNER_TEMP/live-smoke/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/live-smoke/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Verify one-shot test syntax and pinned app source
+        run: |
+          test "$(git rev-parse HEAD)" = "33a4e359a00e15e8043df94544a1ec3800dacf69"
+          node --check qa/tests/live-netlify-trip-chess-smoke.cjs
+          python3 tools/build-chess-channel-pwas.py --check
+          node scripts/build-sudoku-pwa.cjs --check
+      - name: Real Netlify domains, browser UI only, APIs blocked
+        env:
+          LIVE_SMOKE_EVIDENCE: ${{ runner.temp }}/live-netlify-smoke
+        run: node qa/tests/live-netlify-trip-chess-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-netlify-trip-chess-readonly-evidence
+          path: ${{ runner.temp }}/live-netlify-smoke
+          if-no-files-found: ignore
