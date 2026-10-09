@@ -16,6 +16,7 @@ import {
   archivePage,
   logPage,
 } from './nara-daily.mjs';
+import {storyScoreTrend} from './nara-version-history.mjs';
 
 export const VERSION='illuminara-daily-r10-three-story-batch';
 const assert=(x,m)=>{if(!x)throw Error(m)};
@@ -135,27 +136,27 @@ function dayManifest(batch,items,featured,files){
   };
 }
 
-function instanceStoryHtml(item){
+function instanceStoryHtml(item,root=null){
   const r=item.record,t=r.translation_sl;
   const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>`<section><h3>${String(i+1).padStart(2,'0')} · ${esc(s.title)}</h3>${s.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('\n')}</section>`).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
-  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
+  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
 }
 
 function insertBeforeMainClose(html,fragment){const needle='</main>';const i=html.lastIndexOf(needle);assert(i>=0,'main close missing');return html.slice(0,i)+fragment+html.slice(i)}
-function patchLatest(html,batch,items,featured){
+function patchLatest(html,batch,items,featured,root){
   const day=`NARA-D-${batch.date}`;
   html=html.replace(`class="archive-item daily-item" id="${day}"`,`class="archive-item daily-item" id="${day}" open`);
   const others=items.filter(x=>x.instance!==featured);
   if(!others.length)return html;
-  const cards=`<section class="notice batch-other-stories"><h2>Other stories of the day</h2><p>The featured story above had the highest combined blind score. The other eligible stories remain in the monthly archive.</p><ul>${others.map(x=>`<li><a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}"><strong>${esc(x.record.instance)} · ${esc(x.record.title)}</strong></a> · ${x.record.literary_score.display}/100</li>`).join('')}</ul></section>`;
+  const cards=`<section class="notice batch-other-stories"><h2>Other stories of the day</h2><p>The featured story above had the highest combined blind score. The other eligible stories remain in the monthly archive.</p><ul>${others.map(x=>`<li><a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}"><strong>${esc(x.record.instance)} · ${esc(x.record.title)}</strong></a> · <span class="score-trend--${storyScoreTrend(root,x.record.id)}">${x.record.literary_score.display}/100</span></li>`).join('')}</ul></section>`;
   return insertBeforeMainClose(html,cards);
 }
-function patchMonthly(html,batch,items,featured){
+function patchMonthly(html,batch,items,featured,root){
   const others=items.filter(x=>x.instance!==featured);
   if(!others.length)return html;
-  const block=`<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(batch.date)}</div><h2>${esc(batch.date)} · complete eligible archive</h2><p class="lede">These stories completed the same editorial gates but were not the featured Daily story.</p></header>${others.map(instanceStoryHtml).join('\n')}</section>`;
+  const block=`<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(batch.date)}</div><h2>${esc(batch.date)} · complete eligible archive</h2><p class="lede">These stories completed the same editorial gates but were not the featured Daily story.</p></header>${others.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`;
   return insertBeforeMainClose(html,block);
 }
 function patchArchive(html,batch,items,featured){
@@ -224,9 +225,9 @@ export function publishBatch(root,input,now=new Date()){
   const translations={};for(const r of next){const p=path.join(n,'daily/translations/sl',r.date+'.json');if(fs.existsSync(p))translations[r.id]=JSON.parse(fs.readFileSync(p,'utf8'))}
   const logs=entries.filter(e=>e.log_file).map(e=>validateLog(JSON.parse(fs.readFileSync(path.join(n,e.log_file),'utf8'))));
   const pageOutputs={
-    'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations),batch,batch.instances,featured),
-    [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations),batch,batch.instances,featured),
-    'Nara-AI-archive.html':patchArchive(archivePage(entries,month),batch,batch.instances,featured),
+    'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations,root),batch,batch.instances,featured,root),
+    [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),batch,batch.instances,featured,root),
+    'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured),
     'Nara-AI-log.html':patchLog(logPage(logs),batch,batch.instances,featured),
   };
   for(const [rel,data] of Object.entries(pageOutputs))write(path.join(n,rel),data);

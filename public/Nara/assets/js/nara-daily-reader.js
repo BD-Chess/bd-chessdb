@@ -108,46 +108,9 @@
     if(e.target.matches?.('dialog.score-dialog'))e.target.close?.();
   });
 
-  // SA1_RESCORING_READER_R2_FINAL_ONLY: current reader-facing scores; the historical
-  // publishing ledger is deliberately not presented as a competing rating.
-  // This static projection survives daily HTML regeneration by the R8 builder.
-  const sa1Scores={
-    '2026-10-05':{g:88,c:82.5,final:85.25},
-    '2026-10-06':{g:86.5,c:82.5,final:84.5},
-    '2026-10-07':{g:86,c:84.5,final:85.25},
-    '2026-10-08':{g:87,c:81.5,final:84.25}
-  };
-  const fSA1=v=>Number(v).toFixed(2);
-  const nSA1=v=>fSA1(v).replace('.',',');
-  const pairSA1=(en,sl)=>'<span data-language-content="en" lang="en">'+en+'</span><span data-language-content="sl" lang="sl" hidden>'+sl+'</span>';
-  const applySA1=()=>{
-    const isUnratedOriginal=/-original(?:-log)?\.html$/.test(location.pathname);
-    if(isUnratedOriginal){
-      document.querySelectorAll('.score-set, .score-dialog, details.score-audit').forEach(el=>el.remove());
-      return;
-    }
-    for(const [date,v] of Object.entries(sa1Scores)){
-      const id='NARA-D-'+date,scoreId='score-'+id;
-      document.querySelectorAll('[data-score-open="'+scoreId+'"]').forEach(button=>{
-        const en=fSA1(v.final);
-        const sl=nSA1(v.final);
-        button.textContent=en;
-        button.setAttribute('data-aria-en','SA1 score: '+en);
-        button.setAttribute('data-aria-sl','Ocena SA1: '+sl);
-        button.setAttribute('aria-label',language==='sl'?'Ocena SA1: '+sl:'SA1 score: '+en);
-      });
-      const dialog=document.getElementById(scoreId);
-      if(dialog){
-        dialog.innerHTML='<div class="score-dialog-card"><form method="dialog" class="score-close-row"><button class="score-close" aria-label="Close">×</button></form><div class="eyebrow">SA1 · '+pairSA1('Updated joint literary score','Nova skupna književna ocena')+'</div><h2 id="'+scoreId+'-title">'+pairSA1(fSA1(v.final)+' / 100',nSA1(v.final)+' / 100')+'</h2><h3>'+pairSA1('Final version','Končna verzija')+'</h3><p>'+pairSA1('GPT: '+fSA1(v.g)+' · Claude: '+fSA1(v.c)+' · Combined: '+fSA1(v.final),'GPT: '+nSA1(v.g)+' · Claude: '+nSA1(v.c)+' · Skupaj: '+nSA1(v.final))+'</p><p class="muted">'+pairSA1('SA1 shared quality anchors. Each model scored each available version twice in fresh contexts; the model averages have equal weight. Rating applies to the English original.','SA1 – skupna opredelitev kakovosti. Vsak model je vsako ocenjeno verzijo presodil dvakrat v ločenih kontekstih; povprečji obeh modelov imata enaki uteži. Ocena velja za angleški izvirnik.')+'</p></div>';
-      }
-      const log=document.getElementById(id+'-LOG');
-      const logScore=log?.querySelector('details.score-audit');
-      if(logScore){
-        logScore.innerHTML='<summary>SA1 · '+pairSA1('final '+fSA1(v.final),'končna '+nSA1(v.final))+'</summary><div class="inside"><p>'+pairSA1('Final GPT: '+fSA1(v.g)+' / 100 · Claude: '+fSA1(v.c)+' / 100','Končna GPT: '+nSA1(v.g)+' / 100 · Claude: '+nSA1(v.c)+' / 100')+'</p>'+'<p>'+pairSA1('Combined final: '+fSA1(v.final),'Skupna končna: '+nSA1(v.final))+'</p><p class="muted">SA1 · 2 × GPT, 2 × Claude · 50/50</p></div>';
-      }
-    }
-  };
-  applySA1();
+  // R14: final grade, history trend and method are rendered from the source-bound, validated static records.
+  // No client-side numerical overlay, alternative score mapping or colour guessing.
+
 
   applyScale();applyLanguage();openHash();
 })();
