@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="BD Start: novice, bližnjice, trgi, vreme, osebni koledar in beležnica na enem mestu.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="bd-start-release" content="20261010-r1">
+<title>BD Start — Tvoj svet. Na enem mestu.</title>
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<script>try{const p=JSON.parse(localStorage.getItem('bd-start-v1')||'null');if(p&&p.version===1&&p.preferences&&['light','dark'].includes(p.preferences.theme))document.documentElement.dataset.theme=p.preferences.theme;}catch(_){}</script>
+<link rel="stylesheet" href="./start.css?v=20261010-r1">
+<script defer src="./icons.js?v=20261010-r1"></script>
+<script defer src="./state.js?v=20261010-r1"></script>
+<script defer src="./app.js?v=20261010-r1"></script>
+</head><body>
+<noscript><p style="padding:20px;font:16px sans-serif">Za uporabo BD Start omogoči JavaScript. / Enable JavaScript to use BD Start.</p></noscript>
+<div id="bd-start-proposal" data-mode="overview">
+  <header class="bs-top">
+    <div class="bs-brand"><div class="bs-monogram">BD</div><div><div class="bs-brand-name">BD <span>Start</span></div><div class="bs-brand-byline">BD × AI LAB</div></div></div>
+    <div class="bs-toolbar" aria-label="Appearance">
+      <div class="bs-control-group"><button type="button" class="cursor-interaction" data-lang="en" aria-pressed="false">EN</button><button type="button" class="cursor-interaction" data-lang="sl" aria-pressed="true">SL</button></div>
+      <div class="bs-control-group"><button type="button" id="bs-scale-down" class="cursor-interaction" aria-label="Smaller text">A−</button><button type="button" id="bs-scale-reset" class="cursor-interaction" aria-label="Reset text size">100%</button><button type="button" id="bs-scale-up" class="cursor-interaction" aria-label="Larger text">A+</button></div>
+      <div class="bs-control-group"><button type="button" class="cursor-interaction" data-theme="dark" aria-pressed="false"><i data-lucide="moon" aria-hidden="true"></i>Dark</button><button type="button" class="cursor-interaction" data-theme="light" aria-pressed="false"><i data-lucide="sun" aria-hidden="true"></i>Light</button></div>
+    </div>
+  </header><div id="bs-storage-alert" class="bs-storage-alert" role="alert" hidden><span id="bs-storage-message"></span><button id="bs-reload-data" type="button" data-i18n="reloadData">Naloži shranjene podatke</button></div>
+  <div class="bs-hero">
+    <div><div class="bs-eyebrow" id="bs-date">10. oktober 2026</div><h1 data-i18n="welcome">Dobrodošel doma, BD.</h1><div class="bs-subtitle" data-i18n="tagline">Tvoj svet. Na enem mestu.</div></div>
+    <div class="bs-clock"><strong id="bs-clock">01:12</strong><span>Europe / Ljubljana</span></div>
+  </div>
+  <div class="bs-search-row">
+    <form class="bs-search" id="bs-search-form" role="search"><i data-lucide="search" aria-hidden="true"></i><input id="bs-search-input" type="search" aria-label="Search shortcuts and news" placeholder="Poišči povezavo ali novico …" autocomplete="off"><button type="button" class="cursor-interaction" id="bs-clear-search" aria-label="Clear search"><i data-lucide="x" aria-hidden="true"></i></button></form>
+    <nav class="bs-modes" aria-label="View"><button type="button" class="cursor-interaction" data-mode="overview" aria-pressed="true"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span data-i18n="overview">Pregled</span></button><button type="button" class="cursor-interaction" data-mode="focus" aria-pressed="false"><i data-lucide="focus" aria-hidden="true"></i><span data-i18n="focus">Fokus</span></button><button type="button" class="cursor-interaction" data-mode="all" aria-pressed="false"><i data-lucide="rows-3" aria-hidden="true"></i><span data-i18n="all">Vse</span></button></nav>
+  </div>
+  <div class="bs-filter-status" id="bs-filter-status" aria-live="polite" hidden></div>
+  <section class="bs-market-strip" data-area="markets" aria-label="Sample market watchlist">
+    <button type="button" class="cursor-interaction" data-asset="SPX" aria-expanded="false"><span class="bs-ticker-title"><strong>SPX</strong><span>pts</span></span><span class="bs-ticker-value">6.314,20</span><span class="bs-ticker-change">↗ +0,42%</span></button>
+    <button type="button" class="cursor-interaction" data-asset="BTC" aria-expanded="false"><span class="bs-ticker-title"><strong>BTC</strong><span>USD</span></span><span class="bs-ticker-value">103.284</span><span class="bs-ticker-change">↗ +1,28%</span></button>
+    <button type="button" class="cursor-interaction" data-asset="GOLD" aria-expanded="false"><span class="bs-ticker-title"><strong data-i18n="gold">Zlato</strong><span>USD/oz</span></span><span class="bs-ticker-value">3.286,40</span><span class="bs-ticker-change">↗ +0,61%</span></button>
+    <button type="button" class="cursor-interaction" data-asset="OIL" aria-expanded="false"><span class="bs-ticker-title"><strong>Brent</strong><span>USD/bbl</span></span><span class="bs-ticker-value">67,18</span><span class="bs-ticker-change bs-negative">↘ −0,34%</span></button>
+    <button type="button" class="cursor-interaction" data-asset="EURUSD" aria-expanded="false"><span class="bs-ticker-title"><strong>EUR/USD</strong><span>FX</span></span><span class="bs-ticker-value">1,1602</span><span class="bs-ticker-change">↗ +0,12%</span></button>
+  </section>
+  <section class="bs-chart-panel" id="bs-chart-panel" data-area="markets" hidden>
+    <div class="bs-chart-top"><strong id="bs-chart-title">SPX</strong><button type="button" id="bs-chart-close" class="cursor-interaction" aria-label="Close chart"><i data-lucide="x" aria-hidden="true"></i></button></div>
+    <svg class="bs-market-chart" id="bs-market-chart" role="img" aria-label="Illustrative percentage change over 24 hours"></svg>
+    <div class="bs-chart-caption"><span data-i18n="chartUnit">Sprememba (%) · zadnjih 24 ur</span><span class="bs-sample-tag"><i data-lucide="flask-conical" aria-hidden="true"></i><span data-i18n="sampleValues">Vzorčne vrednosti</span></span></div>
+  </section>
+  <main class="bs-grid">
+    <details open class="bs-panel bs-wide" data-area="shortcuts" id="bs-links-panel">
+      <summary class="cursor-interaction"><i data-lucide="compass" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="shortcuts">Na dosegu klika</span><span class="bs-summary-preview" id="bs-links-summary">8 bližnjic</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body">
+        <div class="bs-section-tools"><div class="bs-tabs"><button type="button" class="cursor-interaction" data-link-group="daily" aria-pressed="true" data-i18n="daily">Vsak dan</button><button type="button" class="cursor-interaction" data-link-group="lab" aria-pressed="false">BD × AI</button><button type="button" class="cursor-interaction" data-link-group="markets" aria-pressed="false">Trading</button></div><div class="bs-link-actions"><button type="button" id="bs-manage-links" aria-pressed="false" data-i18n="editLinks">Uredi</button><button type="button" id="bs-add-link-toggle" class="cursor-interaction bs-small-action" aria-expanded="false"><i data-lucide="plus" aria-hidden="true"></i><span data-i18n="addLink">Dodaj</span></button></div></div>
+        <div class="bs-shortcuts" id="bs-shortcuts"></div>
+        <form id="bs-add-link" class="bs-add-form" hidden><label><span data-i18n="linkName">Ime povezave</span><input id="bs-link-name" maxlength="80" required placeholder="Moja povezava"></label><label><span>URL</span><input id="bs-link-url" type="url" maxlength="2048" required placeholder="https://"></label><div class="bs-form-actions"><button id="bs-link-submit" class="bs-primary cursor-interaction" type="submit" data-i18n="saveLink">Shrani povezavo</button><button id="bs-link-cancel" type="button" data-i18n="cancel">Prekliči</button></div><div class="bs-alert" id="bs-link-error" role="alert" hidden></div></form>
+      </div>
+    </details>
+    <details open class="bs-panel bs-narrow" data-area="agenda" id="bs-agenda-panel">
+      <summary class="cursor-interaction"><i data-lucide="calendar-days" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="calendar">Moj koledar</span><span class="bs-summary-preview" id="bs-agenda-summary" data-i18n="noEventsShort">Brez dogodkov</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body">
+        <div class="bs-calendar-top"><button type="button" id="bs-prev-month" class="cursor-interaction" aria-label="Previous month"><i data-lucide="chevron-left" aria-hidden="true"></i></button><strong id="bs-month-title">oktober 2026</strong><button type="button" id="bs-next-month" class="cursor-interaction" aria-label="Next month"><i data-lucide="chevron-right" aria-hidden="true"></i></button></div>
+        <div class="bs-calendar-grid" id="bs-calendar"></div>
+        <div class="bs-agenda-list" id="bs-agenda-list"></div>
+        <button type="button" id="bs-add-event-toggle" class="cursor-interaction bs-small-action" aria-expanded="false"><i data-lucide="plus" aria-hidden="true"></i><span data-i18n="addEvent">Dodaj dogodek</span></button>
+        <form id="bs-add-event" class="bs-add-form" hidden><label><span data-i18n="eventTitle">Dogodek</span><input id="bs-event-title" maxlength="100" required></label><div class="bs-form-row"><label><span data-i18n="date">Datum</span><input id="bs-event-date" type="date" min="1900-01-01" max="2100-12-31" required></label><label><span data-i18n="time">Ura</span><input id="bs-event-time" type="time" value="09:00" required></label></div><div class="bs-form-actions"><button type="submit" class="bs-primary cursor-interaction" data-i18n="addEvent">Dodaj dogodek</button><button id="bs-event-cancel" type="button" data-i18n="cancel">Prekliči</button></div><div id="bs-event-error" role="alert" class="bs-alert" hidden></div></form>
+      </div>
+    </details>
+    <details open class="bs-panel bs-wide" data-area="news" id="bs-news-panel">
+      <summary class="cursor-interaction"><i data-lucide="newspaper" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="news">Okno v svet</span><span class="bs-summary-preview" id="bs-news-summary">3 izbrane zgodbe</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body">
+        <div class="bs-section-tools"><div class="bs-tabs"><button type="button" class="cursor-interaction" data-news-group="world" aria-pressed="true" data-i18n="world">Svet</button><button type="button" class="cursor-interaction" data-news-group="local" aria-pressed="false" data-i18n="local">Slovenija</button><button type="button" class="cursor-interaction" data-news-group="science" aria-pressed="false" data-i18n="science">Znanost & AI</button></div><span class="bs-sample-tag"><i data-lucide="flask-conical" aria-hidden="true"></i><span data-i18n="sampleHeadlines">Vzorčni naslovi</span></span></div>
+        <div id="bs-news"></div>
+        <div class="bs-source-list"><span id="bs-sources">Predlagani viri: Reuters · BBC · AP</span><button type="button" class="cursor-interaction" id="bs-news-more"><span data-i18n="moreStories">Več zgodb</span><i data-lucide="arrow-down" aria-hidden="true"></i></button></div>
+      </div>
+    </details>
+    <details open class="bs-panel bs-narrow" data-area="weather" id="bs-weather-panel">
+      <summary class="cursor-interaction"><i data-lucide="cloud-sun" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="weather">Zunaj mojega okna</span><span class="bs-summary-preview" id="bs-weather-summary">12° · Ljubljana</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body">
+        <select id="bs-city" class="bs-city-select" aria-label="Example weather location"><option>Ljubljana</option><option>Maribor</option><option>Koper</option><option>Celje</option></select>
+        <div class="bs-weather-main"><div><div class="bs-weather-city" id="bs-weather-city">Ljubljana</div><div class="bs-weather-state" data-i18n="partlyCloudy">Delno oblačno</div><div class="bs-weather-temp" id="bs-weather-temp">12°</div></div><div class="bs-weather-icon"><i data-lucide="cloud-sun" aria-hidden="true"></i></div></div>
+        <div class="bs-weather-metrics"><span><i data-lucide="droplet" aria-hidden="true"></i>10%</span><span><i data-lucide="wind" aria-hidden="true"></i>8 km/h</span><span>↑ 18° ↓ 8°</span></div>
+        <div class="bs-forecast"><div><span data-i18n="today">Danes</span><strong>18° / 8°</strong></div><div><span data-i18n="tomorrow">Jutri</span><strong>17° / 9°</strong></div><div><span data-i18n="dayAfter">Pojutrišnjem</span><strong>19° / 10°</strong></div></div>
+        <div class="bs-weather-footer"><span data-i18n="weatherSource">Predlog vira: ARSO / Open-Meteo</span><span data-i18n="sampleValues">Vzorčne vrednosti</span></div>
+      </div>
+    </details>
+    <details open class="bs-panel bs-wide bs-note" data-area="notes" id="bs-note-panel">
+      <summary class="cursor-interaction"><i data-lucide="notebook-pen" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="notes">Prostor za misel</span><span class="bs-summary-preview" id="bs-note-summary" data-i18n="blankPage">Prazen list</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body"><textarea maxlength="100000" id="bs-note" aria-label="Try the notepad" placeholder="Zapiši misel, preden pobegne …"></textarea><div class="bs-note-bottom"><span><i data-lucide="lock-keyhole" aria-hidden="true"></i> <span id="bs-note-save-status" data-i18n="browserOnly">Shranjeno v tem brskalniku</span></span><span id="bs-note-count">0 znakov</span></div></div>
+    </details>
+    <details class="bs-panel bs-narrow" data-area="reading" id="bs-reading-panel">
+      <summary class="cursor-interaction"><i data-lucide="bookmark" aria-hidden="true"></i><span class="bs-panel-title" data-i18n="reading">Za pozneje</span><span class="bs-summary-preview" id="bs-reading-summary">0</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-panel-body" id="bs-reading-list"><span class="bs-empty" data-i18n="saveHint">Shrani zanimivo zgodbo z zaznamkom.</span></div>
+    </details>
+    <details class="bs-more" data-area="extras" id="bs-more-panel">
+      <summary class="cursor-interaction"><span data-i18n="moreWorld">Še več tvojega sveta</span><span class="bs-summary-preview" data-i18n="extraSummary">Raziskave · uporabna orodja · oddih</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+      <div class="bs-more-content">
+        <div><h3 data-i18n="research">Raziskave & ideje</h3><a class="cursor-interaction" href="https://arxiv.org/" target="_blank" rel="noopener noreferrer">arXiv <span>↗</span></a><a class="cursor-interaction" href="https://huggingface.co/papers" target="_blank" rel="noopener noreferrer">Hugging Face Papers <span>↗</span></a><a class="cursor-interaction" href="https://www.mdlxdcc.org/" target="_blank" rel="noopener noreferrer">MDL×DCC · BD × AI Lab <span>↗</span></a></div>
+        <div><h3 data-i18n="tools">Uporabna orodja</h3><a class="cursor-interaction" href="https://www.mdlxdcc.org/Trip/" target="_blank" rel="noopener noreferrer">TripOpti <span>↗</span></a><a class="cursor-interaction" href="https://meteo.arso.gov.si/" target="_blank" rel="noopener noreferrer">ARSO <span>↗</span></a><a class="cursor-interaction" href="https://www.promet.si/" target="_blank" rel="noopener noreferrer">Promet.si <span>↗</span></a></div>
+        <div><h3 data-i18n="break">Pet minut zase</h3><a class="cursor-interaction" href="https://www.mdlxdcc.org/chess/" target="_blank" rel="noopener noreferrer">ChessBest <span>↗</span></a><a class="cursor-interaction" href="https://www.mdlxdcc.org/S/" target="_blank" rel="noopener noreferrer">8zSudoku <span>↗</span></a><a class="cursor-interaction" href="https://www.mdlxdcc.org/F4M/" target="_blank" rel="noopener noreferrer">Flip4M <span>↗</span></a></div>
+      </div>
+    </details>
+  </main>
+  <details class="bs-more bs-data" id="bs-data-panel">
+  <summary><span data-i18n="dataTitle">Podatki & nastavitve</span><span class="bs-summary-preview" data-i18n="localOnly">Samo v tem brskalniku</span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+  <div class="bs-data-body">
+    <p data-i18n="dataHelp">Nastavitve, bližnjice, koledar in beležke se shranjujejo na tej napravi. Za prenos v drug brskalnik izvozi datoteko in jo tam uvozi.</p>
+    <div class="bs-form-actions"><button id="bs-export" type="button" class="bs-primary"><i data-lucide="download" aria-hidden="true"></i><span data-i18n="exportData">Izvozi podatke</span></button><button id="bs-import" type="button"><i data-lucide="upload" aria-hidden="true"></i><span data-i18n="importData">Uvozi podatke</span></button><input type="file" id="bs-import-file" accept="application/json,.json" hidden></div>
+    <div id="bs-import-review" class="bs-import-review" hidden><p id="bs-import-summary"></p><p data-i18n="importReplace">Uvoz zamenja obstoječe podatke tega brskalnika. Pred tem jih lahko izvoziš.</p><div class="bs-form-actions"><button type="button" id="bs-import-confirm" class="bs-primary" data-i18n="replaceData">Zamenjaj podatke</button><button type="button" id="bs-import-cancel" data-i18n="cancel">Prekliči</button></div></div>
+    <p id="bs-data-status" role="status" class="bs-data-status"></p>
+  </div>
+</details>
+<footer class="bs-footer"><span data-i18n="prototype">Oblikovni predogled · novice, trgi in vreme so vzorčni</span><span data-i18n="footerLine">Manj hrupa. Več tvojega sveta.</span></footer><div class="bs-persistence"><span id="bs-save-status" role="status">Samo v tem brskalniku</span><a href="../index.html">BD × AI Lab ↗</a></div>
+</div>
+</body></html>

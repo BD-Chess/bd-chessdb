@@ -1,0 +1,136 @@
+name: BD Start verify and owner-authorized production release
+
+on:
+  pull_request:
+    paths:
+      - 'public/Start/**'
+      - 'tests/start-app-browser.cjs'
+      - '.github/workflows/start-app.yml'
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source syntax and whitespace
+        run: |
+          node --check public/Start/app.js
+          node --check public/Start/state.js
+          node --check public/Start/icons.js
+          node --check tests/start-app-browser.cjs
+          git diff --check
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --prefix "$RUNNER_TEMP/start-pw" --no-package-lock --ignore-scripts playwright@1.58.2
+          echo "NODE_PATH=$RUNNER_TEMP/start-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/start-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Verify functional UI, persistence and mobile layout
+        env:
+          START_QA_EVIDENCE: ${{ runner.temp }}/start-qa
+        run: node tests/start-app-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bd-start-browser-evidence
+          path: ${{ runner.temp }}/start-qa
+          if-no-files-found: ignore
+
+  production:
+    # Single explicit BD production request on 2026-10-10. Ordinary pushes do not activate this job.
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.run_attempt == 1 &&
+      startsWith(github.event.workflow_run.head_commit.message, 'release: bd-start 20261010')
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    concurrency:
+      group: netlify-production
+      cancel-in-progress: false
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout the exact successful Pages release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify authorized scope and release guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git log -1 --format=%s)" = 'release: bd-start 20261010'
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'Missing Netlify token; no deploy started'; exit 1; }
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          node tests/mdlxdcc-root-pwa.test.cjs
+          python3 scripts/check_secret_boundary.py
+          node --check public/Start/app.js
+          node --check public/Start/state.js
+      - name: Preserve existing protected-page deployment preparation
+        run: python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+      - name: Install existing site dependencies and isolated browser runtime
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/start-pw" --no-package-lock --ignore-scripts playwright@1.58.2
+          echo "NODE_PATH=$RUNNER_TEMP/start-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/start-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Verify the actual publish directory before production
+        env:
+          START_QA_EVIDENCE: ${{ runner.temp }}/start-before-prod
+        run: node tests/start-app-browser.cjs
+      - name: Recheck main and existing production before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')"
+          test "$current" = "$RELEASE_SHA" || { echo 'Main advanced; release held to preserve concurrent changes'; exit 1; }
+          npx --yes netlify-cli@latest api getSite --data '{"site_id":"17b4124d-c197-4c0a-a711-8b2c08d91088"}' > "$RUNNER_TEMP/start-site-before.json"
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/start-site-before.json");if(s.id!==process.env.NETLIFY_SITE_ID||s.published_deploy?.title!=="GitHub main 7dadff4c86a97949f0e9a7605915021457585e1b")throw Error("Production moved; release held")'
+      - name: Publish MDLxDCC production once, retaining existing functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD Start main $RELEASE_SHA" --json > "$RUNNER_TEMP/start-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/start-deploy.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("BD_START_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify exact public Start assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in index.html start.css app.js state.js icons.js icon.svg; do
+            curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/$p?start=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-live-file"
+            cmp "public/Start/$p" "$RUNNER_TEMP/start-live-file"
+            echo "BD_START_LIVE_EXACT_PASS $p"
+          done
+      - name: Verify production in fresh isolated browsers
+        env:
+          START_QA_URL: https://www.mdlxdcc.org/Start/index.html
+          START_QA_EVIDENCE: ${{ runner.temp }}/start-live-qa
+        run: node tests/start-app-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bd-start-production-evidence
+          path: |
+            ${{ runner.temp }}/start-before-prod
+            ${{ runner.temp }}/start-live-qa
+          if-no-files-found: ignore
