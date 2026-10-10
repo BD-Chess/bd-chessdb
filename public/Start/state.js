@@ -13,7 +13,7 @@
   function url(value) {
     if (typeof value !== 'string' || value.length > 2048) fail();
     let u; try { u = new URL(value); } catch (_) { fail(); }
-    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password) fail();
+    if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password || u.href.length > 2048) fail();
     return u.href;
   }
   function string(value, max, empty) {
@@ -60,7 +60,7 @@
     if (input.updatedAt !== undefined) result.updatedAt = string(input.updatedAt, 40, false);
     return result;
   }
-  function parse(text) { if (typeof text !== 'string' || text.length > 2000000) fail(); return normalize(JSON.parse(text)); }
+  function parse(text) { if (typeof text !== 'string' || text.length > 8000000) fail(); return normalize(JSON.parse(text)); }
   const api = Object.freeze({ KEY, panels, date, url, normalize, parse });
   if (typeof module === 'object' && module.exports) module.exports = api;
   else scope.BDStartState = api;
