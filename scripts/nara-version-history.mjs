@@ -41,6 +41,7 @@ export function deriveVersionTrend(s){
   return 'green';
 }
 export function storyScoreTrend(root,storyId){
+  if(!root)return 'neutral';
   const series=listVersionSeries(root),found=series.find(s=>s.story_id===storyId);
   if(found)return deriveVersionTrend(found);
   const day=/^NARA-D-(\d{4}-\d{2}-\d{2})$/.exec(storyId||'');
@@ -54,7 +55,7 @@ const formatScore=x=>String(Math.round(x*100)/100).replace(/\.0+$/,'');
 function gradeView(v){
   const g=v.grade;
   if(!realGrade(g)){
-    let msg=v.coverage==='CLAUDE_SEALED_GPT_PENDING'?'Claude SA1 sealed; GPT SA1 pending':v.coverage==='PENDING_BOTH'?'Both SA1 scores pending':'No comparable paired SA1 grade yet';
+    let msg=v.coverage==='CLAUDE_SEALED_GPT_PENDING'?'Claude SA1 sealed; GPT SA1 pending':v.coverage==='PENDING_BOTH'?'Both SA1 scores pending — No comparable paired SA1 grade yet':v.coverage==='INVALID_CLAUDE_SCORE_OUT_OF_RANGE'?'INVALID: Claude score exceeds rubric maximum; no comparable paired SA1 grade yet':v.coverage==='GPT_BASELINE_PENDING'?'GPT first-draft SA1 pending; no comparable paired SA1 grade yet':'No comparable paired SA1 grade yet';
     return '<p class="muted version-grade-pending">'+esc(msg)+' / Claudova ocena zapečatena oziroma ocenjevanje še poteka.</p>';
   }
   return '<p class="version-grade"><strong>GPT</strong> '+formatScore(g.gpt)+' / 100 · <strong>Claude</strong> '+formatScore(g.claude)+' / 100 · <strong>50/50</strong> '+formatScore(g.combined)+' / 100 <small>SA1</small></p>';
