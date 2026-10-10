@@ -24,12 +24,13 @@ async function openSef(raw){
  const obj=JSON.parse(TD.decode(out));
  if(obj.format!=='BD-O-SEF-PAYLOAD-1'||typeof obj.html!=='string')throw new Error('Neveljavna vsebina Sefa.');
  const extra=await openExtra(raw);if(extra)obj.html+=extra.html;
+ const startme=await openExtra(raw,'sef-startme.json');if(startme)obj.html+=startme.html;
  return obj;
 }
-async function openExtra(raw){
+async function openExtra(raw,configFile='sef-extra.json'){
  let cfg;
  try{
-  const r=await fetch(ROOT+'sef-extra.json',{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
+  const r=await fetch(ROOT+configFile,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
   if(r.status===404)return null;
   if(!r.ok)throw new Error('Prenos dodatka Sefa ni uspel.');
   cfg=await r.json();
@@ -95,10 +96,11 @@ function installSearch(){
   if(/\b(družina|family|otrok|šola|šolsko)\b/.test(t))return 'family';
   return 'other';
  };
- const nodes=[...document.querySelectorAll('#register table tbody tr,#register li,#register p,#all213 table tbody tr,#all213 li')]
+ const nodes=[...document.querySelectorAll('#register table tbody tr,#register li,#register p,#all213 table tbody tr,#all213 li,#startme-import table tbody tr')]
   .filter(el=>!(el.tagName==='P'&&el.closest('li')));
  const entries=nodes.map(el=>{const text=safeText(el);return {el,text,category:classify(el,text),inArchive:!!el.closest('#all213')};});
  const archive=$('all213'),initialArchiveOpen=!!(archive&&archive.open);
+ const importedGroups=[...document.querySelectorAll('#startme-import details.sef-import-group')].map(el=>({el,initialOpen:el.open}));
  const counts=new Map(labels.map(([k])=>[k,0]));
  entries.forEach(item=>counts.set(item.category,(counts.get(item.category)||0)+1));
  const panel=document.createElement('div');panel.className='sef-filters';
@@ -139,6 +141,11 @@ function installSearch(){
    else if(selected!=='archive'||!parts.length)archive.open=initialArchiveOpen;
   }
   const active=parts.length||selected!=='all';
+  for(const g of importedGroups){
+   const hasHit=[...g.el.querySelectorAll('tbody tr')].some(el=>!el.classList.contains('search-hidden'));
+   g.el.hidden=!!active&&!hasHit;
+   g.el.open=active?hasHit:g.initialOpen;
+  }
   status.textContent=active?visible+' zadetkov · '+(selected==='all'?'Vse kategorije':labels.find(x=>x[0]===selected)[1]):'Išči po delih besedila; več besed pomeni, da se morajo ujemati vse. Gesla niso vključena v iskanje.';
   no.hidden=!active||visible>0;
  };
