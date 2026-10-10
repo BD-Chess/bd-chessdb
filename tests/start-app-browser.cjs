@@ -156,6 +156,13 @@ async function storageFailures(browser, engine, url) {
   await page.locator('#bs-storage-alert').waitFor({ state: 'visible' });
   await page.locator('#bs-note').fill('recoverable note');
   assert.equal(await page.evaluate(k => localStorage.getItem(k), key), '{corrupt', 'corrupt storage is preserved');
+  await open(page, '#bs-data-panel');
+  await page.locator('#bs-import-file').setInputFiles(path.join(evidence, engine + '-desktop-export.json'));
+  await page.locator('#bs-import-review').waitFor({ state: 'visible' });
+  await page.locator('#bs-import-confirm').click();
+  await sleep(150);
+  assert.match((await state(page)).notes, /QA thought/);
+  assert.equal(await page.locator('#bs-storage-alert').isVisible(), false, 'explicit valid import recovers corrupt storage');
   await context.close();
   const blocked = await browser.newContext();
   await blocked.addInitScript(() => Object.defineProperty(Storage.prototype, 'setItem', { value() { throw new DOMException('Quota exceeded', 'QuotaExceededError'); } }));
@@ -166,7 +173,7 @@ async function storageFailures(browser, engine, url) {
   assert.equal(await p.locator('#bs-note').inputValue(), 'still usable without storage');
   assert.equal(await p.locator('#bs-note-save-status').textContent(), 'Samo v tem brskalniku');
   await blocked.close();
-  results.push({ name: engine + '-storage-failures', status: 'PASS', checks: ['corrupt data preserved', 'storage failure visible', 'editable note retained'] });
+  results.push({ name: engine + '-storage-failures', status: 'PASS', checks: ['corrupt data preserved', 'explicit import recovers corrupt storage', 'storage failure visible', 'editable note retained'] });
 }
 (async () => {
   let server;
