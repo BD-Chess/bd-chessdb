@@ -1,0 +1,81 @@
+name: One-shot BD Sef encrypted Start.me Netlify release
+# BD explicitly authorized this production Sef migration on 2026-10-10.
+# Keep normal Netlify auto-builds disabled. Release only exact named commit.
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages"]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  one-shot-sef:
+    if: "${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.run_attempt == 1 && startsWith(github.event.workflow_run.head_commit.message, 'release: bdo-sef-startme 20261010') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout exact owner-approved source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify release boundary and encrypted import
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          git log -1 --format=%s | grep -Fx 'release: bdo-sef-startme 20261010'
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "NETLIFY_TOKEN_MISSING"; exit 1; }
+          node --check public/BD/O/sef.js
+          node --check public/BD/O/vault.js
+          python3 scripts/check_secret_boundary.py
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          base=Path("public/BD/O")
+          cfg=json.loads((base/"sef-startme.json").read_text())
+          assert cfg["format"]=="BD-O-SEF-EXTRA-CONFIG-1"
+          assert cfg["vault"]=="c5742f25317b45caa82047baf7803b78"
+          data=(base/cfg["data"]["path"]).read_bytes()
+          assert hashlib.sha256(data).hexdigest()==cfg["data"]["sha256"]
+          assert len(data)>1000
+          print("SEF_ENCRYPTED_IMPORT_HASH_PASS")
+          PY
+      - name: Prepare protected pages without changing vaults
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned existing runtime dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy exact GitHub main to MDLxDCC Netlify production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "BD Sef encrypted Start.me $RELEASE_SHA" --json > "$RUNNER_TEMP/bdo-sef-netlify-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/bdo-sef-netlify-deploy.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("BD_SEF_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify exact live Sef assets after deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          for asset in sef.js sef-startme.json sef-startme-20261010-r1.enc.txt; do
+            ok=false
+            for n in 1 2 3 4 5 6; do
+              if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/BD/O/$asset?bdo-release=$GITHUB_RUN_ID-$n" -o "$RUNNER_TEMP/sef-asset-live" &&
+                 cmp -s "public/BD/O/$asset" "$RUNNER_TEMP/sef-asset-live"; then
+                ok=true; break
+              fi
+              sleep 5
+            done
+            if [ "$ok" != true ]; then echo "BD_SEF_LIVE_EXACT_FAILED $asset"; exit 1; fi
+            echo "BD_SEF_LIVE_EXACT_PASS $asset"
+          done
