@@ -99,7 +99,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.head_commit.message == 'verify: start-home-link 20261010'
+      startsWith(github.event.workflow_run.head_commit.message, 'verify: start-home-link 20261010')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -114,6 +114,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git log -1 --format=%s)" = 'verify: start-home-link 20261010'
           test -z "$(git diff --name-only a20a6550c019a304d65f18e43743186c455e8645 HEAD -- public functions netlify.toml package.json package-lock.json scripts/inject_password_manager.py)"
           git diff --check
           echo 'START_HOME_VERIFY_ONLY_PASS'
