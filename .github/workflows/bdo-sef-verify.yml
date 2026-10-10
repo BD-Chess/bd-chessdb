@@ -28,7 +28,9 @@ jobs:
       - name: Prepare checkout to match Netlify deploy-time source
         run: python scripts/inject_password_manager.py public --report "$RUNNER_TEMP/bdo-sef-pm-compat-report.json"
       - name: Verify local UI and live public resources with isolated synthetic session
-        run: python scripts/bdo_sef_verify.py --live
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          python3 scripts/bdo_sef_verify.py --live
       - name: Preserve sanitized verification receipt
         if: always()
         uses: actions/upload-artifact@v4
