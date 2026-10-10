@@ -56,7 +56,22 @@ def fixture():
     sef = {'format': 'BD-O-SEF-2', 'vault': vault, 'compression': 'gzip', 'plaintext_sha256': h(plain),
            'cipher': {'iv': b64(sef_iv), 'aad': aad},
            'data': {'sha256': h(sef_part), 'parts': [{'path': 'fixture-sef.enc.txt', 'sha256': h(sef_part)}]}}
+    # Synthetic encrypted Start.me extension: validates the new extra-data path without real secrets.
+    startme_iv = os.urandom(12)
+    startme_html = ('<section id="fixtureStartme"><div id="startme-import">'
+                    '<details class="sef-import-group" open><summary>Fixture import</summary>'
+                    '<table><tbody><tr data-sef-category="exchange"><td>Synthetic provider</td>'
+                    '<td><code class="secret-value" tabindex="0">NOT-REAL-SECRET</code></td>'
+                    '</tr></tbody></table></details></div></section>')
+    startme_plain = compact({'format': 'BD-O-SEF-EXTRA-1', 'html': startme_html})
+    startme_aad = 'BD/O:sef:startme:synthetic:' + vault
+    startme_part = b64(AESGCM(key).encrypt(startme_iv, gzip.compress(startme_plain), startme_aad.encode())).encode()
+    startme = {'format': 'BD-O-SEF-EXTRA-CONFIG-1', 'vault': vault, 'compression': 'gzip',
+               'plaintext_sha256': h(startme_plain),
+               'cipher': {'iv': b64(startme_iv), 'aad': startme_aad},
+               'data': {'path': 'fixture-startme.enc.txt', 'sha256': h(startme_part)}}
     return password, {'vault.json': compact(portal), 'sef-config.json': compact(sef),
+                      'sef-startme.json': compact(startme), 'fixture-startme.enc.txt': startme_part,
                       'fixture-portal.enc.txt': part, 'fixture-sef.enc.txt': sef_part}
 
 def local_dom(browser):
@@ -122,6 +137,9 @@ def live_browser(browser):
         page.wait_for_selector('#fixturePortal', timeout=20000)
         page.locator('#bdoSefLink').click()
         page.wait_for_selector('#fixtureSef', timeout=20000)
+        assert page.locator('#fixtureStartme').count() == 1, 'Encrypted Start.me fixture was not rendered'
+        assert page.locator('#startme-import tr').count() == 1
+        record('live_synthetic_startme_aes_gcm_import', viewport=[width, height], passed=True)
         state = page.evaluate("()=>({display:getComputedStyle(document.getElementById('loading')).display,top:document.getElementById('content').getBoundingClientRect().top,sessionPresent:!!sessionStorage.getItem('bd-o-v2-session')})")
         assert state['display'] == 'none' and state['top'] < height and state['sessionPresent'], state
         record('live_portal_to_sef_synthetic_session', viewport=[width, height], passed=True, **state)
