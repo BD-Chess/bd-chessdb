@@ -13,7 +13,7 @@ async function ready(page, url) {
   const response = await page.goto(url, { waitUntil: 'networkidle' });
   assert(response && response.ok(), 'Start document is reachable');
   await page.waitForSelector('#bd-start-proposal[data-ready="true"]');
-  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261010-r1');
+  assert.equal(await page.locator('meta[name="bd-start-release"]').getAttribute('content'), '20261010-r2');
 }
 async function state(page) { return page.evaluate(k => JSON.parse(localStorage.getItem(k)), key); }
 async function open(page, id) { if (!await page.locator(id).evaluate(el => el.open)) await page.locator(id + ' > summary').click(); }

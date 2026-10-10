@@ -114,7 +114,7 @@ jobs:
           current="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')"
           test "$current" = "$RELEASE_SHA" || { echo 'Main advanced; release held to preserve concurrent changes'; exit 1; }
           npx --yes netlify-cli@latest api getSite --data '{"site_id":"17b4124d-c197-4c0a-a711-8b2c08d91088"}' > "$RUNNER_TEMP/start-site-before.json"
-          node -e 'const s=require(process.env.RUNNER_TEMP+"/start-site-before.json");if(s.id!==process.env.NETLIFY_SITE_ID||s.published_deploy?.title!=="GitHub main 7dadff4c86a97949f0e9a7605915021457585e1b")throw Error("Production moved; release held")'
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/start-site-before.json");if(s.id!==process.env.NETLIFY_SITE_ID||s.published_deploy?.id!=="6ac98727c15e4ac737655688")throw Error("Production moved; release held")'
       - name: Publish MDLxDCC production once, retaining existing functions
         shell: bash
         run: |
