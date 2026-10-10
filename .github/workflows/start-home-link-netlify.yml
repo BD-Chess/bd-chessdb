@@ -1,0 +1,83 @@
+name: Start home link owner-approved production release
+
+on:
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keep this one-shot release out of old skipped workflows' pending queue.
+  group: mdlxdcc-start-home-link-20261010
+  cancel-in-progress: false
+
+jobs:
+  production:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.run_attempt == 1 &&
+      startsWith(github.event.workflow_run.head_commit.message, 'release: start-home-link 20261010')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify the owner-approved single-page change
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git log -1 --format=%s)" = 'release: start-home-link 20261010'
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'Missing Netlify token; no deploy started'; exit 1; }
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          changed="$(git diff --name-only 514d3113c1aa2ffddc54c8ef63c80c09461d0edb "$RELEASE_SHA" -- public functions netlify.toml package.json package-lock.json scripts/inject_password_manager.py)"
+          test "$changed" = 'public/Start/index.html' || { echo 'Other runtime changes found; release held'; exit 1; }
+          git diff --check
+          node --check public/Start/app.js
+          node --check public/Start/state.js
+          python3 scripts/check_secret_boundary.py
+          echo 'START_HOME_EXACT_SCOPE_PASS'
+      - name: Preserve existing deployment preparation and dependencies
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          npm ci --ignore-scripts
+      - name: Fresh main and production lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')"
+          test "$current" = "$RELEASE_SHA" || { echo 'Main advanced; release held'; exit 1; }
+          npx --yes netlify-cli@latest api getSite --data '{"site_id":"17b4124d-c197-4c0a-a711-8b2c08d91088"}' > "$RUNNER_TEMP/start-home-site-before.json"
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/start-home-site-before.json");if(s.id!==process.env.NETLIFY_SITE_ID||s.published_deploy?.id!=="6ac9e74dc15e4a1e296555af")throw Error("Production moved; release held");console.log("START_HOME_PRODUCTION_LEASE_PASS")'
+      - name: Publish the requested Start title link
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "Start home link $RELEASE_SHA" --json > "$RUNNER_TEMP/start-home-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/start-home-deploy.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("START_HOME_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify the effective live link and unchanged Start assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/index.html?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live.html"
+          node -e 'const fs=require("node:fs"),s=fs.readFileSync(process.env.RUNNER_TEMP+"/start-home-live.html","utf8");const tag=s.match(/<a\b[^>]*\bid="bs-home-link"[^>]*>/);if(!tag)throw Error("Home link absent");const href=tag[0].match(/\bhref="([^"]+)"/)?.[1];const target=new URL(href,"https://www.mdlxdcc.org/Start/index.html");if(target.origin!=="https://www.mdlxdcc.org"||!["/","/index.html"].includes(target.pathname)||/\btarget=/.test(tag[0]))throw Error("Wrong home destination");console.log("START_HOME_LIVE_LINK_PASS",target.pathname)'
+          for p in start.css app.js state.js icons.js icon.svg; do
+            curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/$p?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live-asset"
+            cmp "public/Start/$p" "$RUNNER_TEMP/start-home-live-asset"
+          done
+          echo 'START_HOME_LIVE_ASSETS_PASS'
