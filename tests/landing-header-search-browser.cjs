@@ -61,7 +61,9 @@ async function run(name,engine,url){
   if(await page.locator('html').getAttribute('data-theme')!=='dark')await page.locator('#theme').click();
   if(evidence)await page.screenshot({path:path.join(evidence,name+'-mobile-402.png')});
   await page.locator('#search-open').click();
-  await page.waitForFunction(()=>!document.querySelector('#search-status').textContent.includes('loading'));
+  // This global-only page proves that S actually loads the full index.
+  await page.locator('#search-input').fill('8Z_project_files_manager');
+  await page.locator('#search-results a[href*="8Z_project_files_manager"]').waitFor({state:'visible'});
   const queries=[['LAB',null],['šah lab','/chess-lab/'],['chess lab','/chess-lab/'],['lab chess','/chess-lab/'],['sudoku lab','/s/new/'],['trip lab','/trip/new/'],['flip4m lab','/f4m/new/'],['križanke lab','/cw/new/'],['crosswords lab','/cw/new/'],['Start','/start/'],['/Start/','/start/'],['začetna','/start/'],['chess','/chess/']];
   const key=url=>new URL(url).pathname.replace(/\/index\.html$/i,'/').toLowerCase();
   for(const [query,target] of queries){

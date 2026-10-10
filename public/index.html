@@ -747,11 +747,11 @@ const b=document.getElementById('search-open'),d=document.getElementById('search
 if(!b||!d||!f||!i)return;
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const direct={toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html'};
-function open(){if(d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}
+function open(){if(b.dataset.searchReady==='true'||d.open)return;if(typeof d.showModal==='function'){d.showModal();document.documentElement.classList.add('search-open');b.setAttribute('aria-expanded','true');i.focus();}else{location.href='index-search.html';}}
 b.addEventListener('click',open);
 if(c)c.addEventListener('click',()=>{if(d.open)d.close();});
 d.addEventListener('close',()=>{document.documentElement.classList.remove('search-open');b.setAttribute('aria-expanded','false');});
-f.addEventListener('submit',e=>{const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);
+f.addEventListener('submit',e=>{if(b.dataset.searchReady==='true')return;const q=norm(i.value),path=direct[q];if(!path)return;e.preventDefault();e.stopImmediatePropagation();location.assign(new URL(path,document.baseURI).href);},true);
 })();</script>
 <!-- LANDING_SEARCH_REPAIR_20260917_R3 -->
 <script id="landing-runtime">(function(){
@@ -880,7 +880,7 @@ const suffix=indexState==='loading'?text(' · loading full index…',' · nalaga
 status.textContent=(input.value.trim()?results.length?text(results.length+' results',results.length+' zadetkov'):text('No matching page. Try another word.','Ni ustrezne strani. Poskusi drugo besedo.'):text('Search tools, papers, stories and more.','Poišči orodja, članke, zgodbe in drugo.'))+suffix;
 }
 function openSearch(){if(typeof dialog.showModal!=='function'){location.href=new URL('index-search.html',BASE).href;return;}if(dialog.open)return;returnFocus=document.activeElement;dialog.showModal();root.classList.add('search-open');$('#search-open').setAttribute('aria-expanded','true');historyView();render();input.focus();loadIndex();}
-$('#search-open').addEventListener('click',openSearch);$('#search-close').addEventListener('click',()=>dialog.close());
+$('#search-open').dataset.searchReady='true';$('#search-open').addEventListener('click',openSearch);$('#search-close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('close',()=>{root.classList.remove('search-open');$('#search-open').setAttribute('aria-expanded','false');if(returnFocus&&returnFocus.isConnected)returnFocus.focus();});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
 input.addEventListener('input',render);input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(results.length)select((active+(e.key==='ArrowDown'?1:results.length-1)+results.length)%results.length);}});
