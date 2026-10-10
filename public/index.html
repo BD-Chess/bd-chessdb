@@ -565,10 +565,28 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"MDL×DCC — Less describes more.","url":"https://www.mdlxdcc.org/","description":"Tools, research and imagination by BD × AI Lab.","inLanguage":["en","sl"],"dateModified":"2026-09-17","author":{"@type":"Person","name":"Bojan Dobrečevič","alternateName":"BD"}}</script>
 <link rel="stylesheet" href="./assets/ai8-vision/r2/vision-r4.css?v=20261004-r4">
 <link rel="stylesheet" href="./assets/human-middle/v5/human-middle-family-r1.css?v=20261009-r17">
+<style id="landing-compact-header">
+/* One row, including at 150% page text; toolbar hit areas stay at least 24 × 40 px. */
+@media(max-width:700px){
+.topbar{flex-wrap:nowrap;gap:8px}.brand{flex:none;white-space:nowrap;min-height:44px}.brand-mark{font-size:19px}
+.utilities{width:auto;flex:none;flex-wrap:nowrap;justify-content:flex-end;margin-left:auto;gap:1px}
+.utility{min-width:35px;min-height:40px;padding:5px 6px;font-size:14px}.font-buttons .font-value{min-width:46px;font-size:13px}
+.languages{padding-left:4px;margin-left:2px}.languages .utility{min-width:31px;font-size:13px}
+}
+@media(max-width:430px){
+.topbar{gap:4px}.brand-mark{font-size:18px}.utility{min-width:30px;padding-inline:4px;font-size:13px}
+.font-buttons .utility{min-width:27px;padding-inline:2px}.font-buttons .font-value{min-width:40px;font-size:12px}
+.languages{padding-left:3px;margin-left:1px}.languages .utility{min-width:28px;font-size:12px}
+}
+@media(max-width:365px){
+.brand-mark{font-size:16px}.utility{min-width:28px;padding-inline:2px;font-size:12px}
+.font-buttons .utility{min-width:24px}.font-buttons .font-value{min-width:36px;font-size:11px}.languages .utility{min-width:26px;font-size:11px}
+}
+</style>
 </head>
 <body>
 <a class="skip" href="#main"><span class="en" lang="en">Skip to content</span><span class="sl" lang="sl">Preskoči na vsebino</span></a>
-<header class="topbar wrap"><a class="brand" href="./" aria-label="MDL×DCC home"><span class="brand-mark">MDL<em>×</em>DCC<span class="sr-only">.org</span></span><span class="brand-sub">BD × AI LAB</span></a>
+<header class="topbar wrap"><a class="brand" href="./Start/index.html" aria-label="MDL×DCC — Start"><span class="brand-mark">MDL<em>×</em>DCC<span class="sr-only">.org</span></span><span class="brand-sub">BD × AI LAB</span></a>
 <div class="utilities"><button class="utility" id="search-open" type="button" aria-label="Search the site" title="Search · S / Ctrl+K" aria-haspopup="dialog" aria-expanded="false">S</button><div class="font-buttons" role="group" aria-label="Text size"><button class="utility" id="font-down" type="button" aria-label="Smaller text">A−</button><button class="utility font-value" id="font-value" type="button" aria-label="Reset text size to 100%" title="Reset to 100%">100%</button><button class="utility" id="font-up" type="button" aria-label="Larger text">A+</button></div><button class="utility" id="theme" type="button" aria-label="Switch color theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17Z" fill="currentColor" stroke="none"/></svg></button><div class="languages" role="group" aria-label="Language"><button class="utility" type="button" data-lang="en" aria-pressed="true" aria-label="English">EN</button><button class="utility" type="button" data-lang="sl" aria-pressed="false" aria-label="Slovenščina">SL</button></div></div></header>
 <main class="wrap" id="main">
 <section class="hero" aria-labelledby="slogan"><div class="hero-copy"><p class="eyebrow"><span class="en" lang="en"><a class="visual-meaning-link visual-meaning-link-top" href="index-demo.html" data-visual-hint="See MDL×DCC, made visual." aria-label="Independent minds. Shared curiosity. See MDL×DCC, made visual.">Independent minds. Shared curiosity.</a></span><span class="sl" lang="sl"><a class="visual-meaning-link visual-meaning-link-top" href="index-demo.html" data-visual-hint="Poglej MDL×DCC v vizualni obliki." aria-label="Samostojne misli. Skupna radovednost. Poglej MDL×DCC v vizualni obliki.">Samostojne misli. Skupna radovednost.</a></span></p>
@@ -790,6 +808,12 @@ $('#original').addEventListener('toggle',()=>{if($('#original').open)originalCar
 const BASE=new URL('./',document.baseURI),BASE_PATH=BASE.pathname;
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const seed=[
+['Start/index.html','BD Start','start home homepage dashboard personal start page news markets weather calendar notes zacetna začetna domaca domača novice trgi vreme koledar belezke beležke','Your personal start page: shortcuts, news, markets, weather, calendar and notes.','Tvoja začetna stran: bližnjice, novice, trgi, vreme, koledar in beležke.'],
+['chess-lab/','ChessBest — LAB','chess chessbest chessdcc chessdb sah šah game igra analysis analiza lab development razvojna laboratorij','ChessBest development channel — the current Chess LAB, not its archive.','Razvojna različica ChessBest — aktualni LAB šaha, ne arhiv.','lab'],
+['S/new/','8z Sudoku — LAB','sudoku 8z puzzle uganka solver resevalnik reševalnik lab development razvojna laboratorij','Sudoku development channel: game, reasoning and experiments.','Razvojna različica Sudoku: igra, sklepanje in poskusi.','lab'],
+['Trip/new/','8Z TripOpti — LAB','trip tripopti trip optimizer route routes tsp travel pot poti potovanje optimizator lab development razvojna laboratorij','TripOpti development channel for trip and route optimization.','Razvojna različica TripOpti za načrtovanje in optimizacijo poti.','lab'],
+['F4M/new/','Flip4M — LAB','flip flip4m flip 4m f4m connect four magnets gravity igra stirivvrsto štirivvrsto lab development razvojna laboratorij','Flip4M development channel: connect four, gravity and magnets.','Razvojna različica Flip4M: štiri v vrsto, gravitacija in magneti.','lab'],
+['CW/new/','Crosswords — LAB','cw crossword crosswords words puzzle krizanke križanke krizanka križanka mdl lab development razvojna laboratorij','Crosswords development channel — Crossword × MDL.','Razvojna različica križank — Crossword × MDL.','lab'],
 ['Trip/','8Z TripOpti — Trip Optimization','trip tripopti 8z trip optimization trip optimizer route routes travel planner optimizer tsp pot poti potovanje zemljevid','Interactive 8Z TripOpti trip and route optimizer.','Interaktivni 8Z TripOpti za načrtovanje in optimiziranje poti.'],
 ['chess/','ChessDCC','chess chessdb dcc board analysis game sah igra','ChessDB + DCC analysis application.','Šahovska analiza ChessDB + DCC.'],
 ['S/','8z Sudoku','sudoku puzzle proof proofatlas solver uganka','Sudoku game and reasoning.','Sudoku in raziskovanje sklepanja.'],
@@ -827,9 +851,9 @@ let path=u.pathname;if(BASE_PATH!=='/'&&path.startsWith(BASE_PATH))path=path.sli
 return new URL(path+u.search+u.hash,BASE).href;
 }catch(_){return null;}}
 function key(raw){try{const p=new URL(raw,BASE).pathname.replace(/\/index\.html$/i,'/').replace(/\/+$/,'');return p||'/';}catch(_){return '';}}
-let pages=seed.map((p,i)=>({url:new URL(p[0],BASE).href,title:p[1],aliases:p[2],description:p[3],sl:p[4],priority:320-i}));
+let pages=seed.map((p,i)=>({url:new URL(p[0],BASE).href,title:p[1],aliases:p[2],description:p[3],sl:p[4],channel:p[5]||'',priority:320-i}));
 let indexState='idle',indexPromise=null;
-const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html','wake lab':'WL/index.html',o:'BD/O/index.html',osebno:'BD/O/index.html',bd:'BD/O/index.html',jaz:'BD/O/index.html',me:'BD/O/index.html',personal:'BD/O/index.html',sef:'BD/O/sef.html',sejf:'BD/O/sef.html',vault:'BD/O/sef.html',secret:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html','8zcontrol':'index-todo.html','8z control':'index-todo.html',control:'index-todo.html',now:'index-todo.html','ai8 state':'AI8/AI8-state.html','ai8-state':'AI8/AI8-state.html',state:'AI8/AI8-state.html'}),STORE='mdlxdcc-search-history-v1';
+const PRIVATE=Object.freeze({bbsh:'BD/BBSH.html',wl:'WL/index.html','wake lab':'WL/index.html',o:'BD/O/index.html',osebno:'BD/O/index.html',bd:'BD/O/index.html',jaz:'BD/O/index.html',me:'BD/O/index.html',personal:'BD/O/index.html',sef:'BD/O/sef.html',sejf:'BD/O/sef.html',vault:'BD/O/sef.html',secret:'BD/O/sef.html'}),PUBLIC_DIRECT=Object.freeze({start:'Start/index.html','bd start':'Start/index.html',zacetna:'Start/index.html','zacetna stran':'Start/index.html','domaca stran':'Start/index.html',toe:'crp/ToE.html','8z os':'OS/index.html',os:'OS/index.html','8zos':'OS/index.html','8zcontrol':'index-todo.html','8z control':'index-todo.html',control:'index-todo.html',now:'index-todo.html','ai8 state':'AI8/AI8-state.html','ai8-state':'AI8/AI8-state.html',state:'AI8/AI8-state.html'}),STORE='mdlxdcc-search-history-v1';
 let history=[];try{const h=JSON.parse(read(STORE,'[]'));if(Array.isArray(h))history=h.filter(x=>typeof x==='string'&&x.trim()&&x.length<=120&&!PRIVATE[norm(x)]).slice(0,12);}catch(_){}
 const dialog=$('#search-dialog'),input=$('#search-input'),list=$('#search-results'),status=$('#search-status');let results=[],active=-1,returnFocus=null;
 async function loadIndex(){if(indexPromise)return indexPromise;indexState='loading';render();
@@ -838,12 +862,12 @@ let data=null;
 try{const r=await fetch(new URL('site-search-index.json',BASE),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw Error('Global index unavailable');data=await r.json();if(!data||!Array.isArray(data.items))throw Error('Invalid global index');}
 catch(globalError){const r=await fetch(new URL('index-search.html',BASE),{credentials:'same-origin',cache:'no-cache'});if(!r.ok)throw globalError;const doc=new DOMParser().parseFromString(await r.text(),'text/html'),node=doc.getElementById('site-search-index');if(!node)throw globalError;data=JSON.parse(node.textContent);if(!Array.isArray(data.items))throw globalError;}
 const map=new Map(pages.map(p=>[key(p.url),p]));
-for(const p of data.items){const url=localPath(p.url);if(!url||typeof p.title!=='string')continue;const k=key(url),old=map.get(k);map.set(k,old?{...old,aliases:[old.aliases,String(p.aliases||''),String(p.title||''),String(p.category||'')].join(' '),description:old.description||String(p.description||'')}:{url,title:p.title,description:String(p.description||''),aliases:[String(p.aliases||''),String(p.category||'')].join(' '),priority:Number(p.priority)||0});}
+for(const p of data.items){const url=localPath(p.url);if(!url||typeof p.title!=='string')continue;const k=key(url),old=map.get(k);map.set(k,old?{...old,aliases:[old.aliases,String(p.aliases||''),String(p.title||''),String(p.category||'')].join(' '),description:old.description||String(p.description||'')}:{url,title:p.title,description:String(p.description||''),aliases:[String(p.aliases||''),String(p.category||'')].join(' '),sl:String(p.sl||''),channel:p.channel==='lab'?'lab':'',priority:Number(p.priority)||0});}
 pages=[...map.values()];indexState='ready';render();
 }catch(_){indexState='fallback';indexPromise=null;render();}})();return indexPromise;
 }
-function shortlist(query){let q=norm(query);if(['mdldcc','mdlxdcc','8zmdldcc','8zmdlxdcc'].includes(q.replace(/\s+/g,'')))q='mdl dcc';const words=q.split(' ').filter(Boolean);if(!words.length)return [];
-return pages.map(p=>{const title=norm(p.title),aliases=norm(p.aliases),path=norm(p.url),all=title+' '+aliases+' '+path+' '+norm(p.description)+' '+norm(p.sl);if(!words.every(w=>w.length===1?all.split(' ').includes(w):all.includes(w)))return null;let score=p.priority||0;if(title===q)score+=200;if(title.startsWith(q))score+=60;for(const w of words){if(title.includes(w))score+=30;if(aliases.includes(w))score+=15;}return {p,score};}).filter(Boolean).sort((a,b)=>b.score-a.score||a.p.title.localeCompare(b.p.title)).slice(0,45).map(x=>x.p);
+function shortlist(query){let q=norm(query);if(['mdldcc','mdlxdcc','8zmdldcc','8zmdlxdcc'].includes(q.replace(/\s+/g,'')))q='mdl dcc';const words=q.split(' ').filter(Boolean);if(!words.length)return [];const lab=words.includes('lab'),terms=lab?words.filter(w=>w!=='lab'):words,preferred=PUBLIC_DIRECT[q]?key(new URL(PUBLIC_DIRECT[q],BASE)):'';
+return pages.map(p=>{if(lab&&p.channel!=='lab')return null;const title=norm(p.title),aliases=norm(p.aliases),path=norm(p.url),all=title+' '+aliases+' '+path+' '+norm(p.description)+' '+norm(p.sl);if(!terms.every(w=>w.length===1?all.split(' ').includes(w):all.includes(w)))return null;let score=p.priority||0;if(preferred&&key(p.url)===preferred)score+=10000;if(!lab&&p.channel==='lab')score-=80;if(title===q)score+=200;if(title.startsWith(q))score+=60;for(const w of terms){if(title.includes(w))score+=30;if(aliases.includes(w))score+=15;}return {p,score};}).filter(Boolean).sort((a,b)=>b.score-a.score||a.p.title.localeCompare(b.p.title)).slice(0,45).map(x=>x.p);
 }
 function historyView(){const h=$('#search-history');h.replaceChildren();$('#clear-history').hidden=!history.length;for(const q of history.length?history:['Trip','MDL×DCC','stories','devices']){const b=document.createElement('button');b.type='button';b.textContent=q;b.addEventListener('click',()=>{input.value=q;render();input.focus();});h.appendChild(b);}}
 function remember(q){q=q.trim().slice(0,120);if(!q||PRIVATE[norm(q)])return;history=[q,...history.filter(h=>norm(h)!==norm(q))].slice(0,12);save(STORE,JSON.stringify(history));historyView();}
@@ -1283,5 +1307,6 @@ setHero(0,false);startHeroAuto();
 
 <script src="./pwa.js?v=root-20261009-r4" defer></script>
 </body></html>
+
 
 

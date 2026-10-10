@@ -1,0 +1,135 @@
+name: Landing header and LAB search verification
+
+on:
+  pull_request:
+    paths:
+      - 'public/index.html'
+      - 'public/site-search-index.json'
+      - 'tests/landing-header-search*.cjs'
+      - '.github/workflows/landing-header-search.yml'
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Narrow source and PWA regressions
+        run: |
+          git diff --check
+          node tests/landing-header-search.test.cjs
+          node tests/mdlxdcc-root-pwa.test.cjs
+          node --check tests/landing-header-search-browser.cjs
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --prefix "$RUNNER_TEMP/landing-pw" --no-package-lock --ignore-scripts playwright@1.58.2
+          echo "NODE_PATH=$RUNNER_TEMP/landing-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/landing-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Test actual mobile toolbar, search and navigation
+        env:
+          LANDING_QA_EVIDENCE: ${{ runner.temp }}/landing-qa
+        run: node tests/landing-header-search-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: landing-header-search-evidence
+          path: ${{ runner.temp }}/landing-qa
+          if-no-files-found: ignore
+
+  production:
+    # BD explicitly authorized only this header/search production patch on 2026-10-10.
+    # An ordinary push, rerun, or unrelated release cannot publish through this job.
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.run_attempt == 1 &&
+      startsWith(github.event.workflow_run.head_commit.message, 'release: landing-header-search 20261010')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: netlify-production
+      cancel-in-progress: false
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify source, protected-content boundary and exact publish scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(git log -1 --format=%s)" = 'release: landing-header-search 20261010'
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'Missing Netlify token; no deploy started'; exit 1; }
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          node tests/landing-header-search.test.cjs
+          node tests/mdlxdcc-root-pwa.test.cjs
+          python3 scripts/check_secret_boundary.py
+          # Current published production was the exact d268057 Sef release.
+          # Preserve every other public asset, function and build input.
+          git diff --name-only d268057aeb07d21cd380718396727749e6c5eba4 "$RELEASE_SHA" -- public functions netlify.toml package.json package-lock.json scripts/inject_password_manager.py > "$RUNNER_TEMP/landing-publish-changes.txt"
+          node -e 'const fs=require("node:fs");const changed=fs.readFileSync(process.env.RUNNER_TEMP+"/landing-publish-changes.txt","utf8").trim().split("\n");const expected=["public/index.html","public/site-search-index.json"];if(changed.length!==2||changed.some(x=>!expected.includes(x)))throw Error("Unrelated runtime changes: "+changed.join(","));console.log("LANDING_EXACT_PUBLISH_SCOPE_PASS")'
+      - name: Retain existing protected-page preparation
+        run: python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+      - name: Install existing site dependencies and isolated browser runtime
+        run: |
+          npm ci --ignore-scripts
+          npm install --prefix "$RUNNER_TEMP/landing-pw" --no-package-lock --ignore-scripts playwright@1.58.2
+          echo "NODE_PATH=$RUNNER_TEMP/landing-pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/landing-pw/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Fresh main and production lease before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')"
+          test "$current" = "$RELEASE_SHA" || { echo 'Main advanced; release held to preserve concurrent changes'; exit 1; }
+          npx --yes netlify-cli@latest api getSite --data '{"site_id":"17b4124d-c197-4c0a-a711-8b2c08d91088"}' > "$RUNNER_TEMP/landing-site-before.json"
+          node -e 'const s=require(process.env.RUNNER_TEMP+"/landing-site-before.json");if(s.id!==process.env.NETLIFY_SITE_ID||s.published_deploy?.id!=="6ac98e75a505d682b09d31cd")throw Error("Production moved; release held");console.log("LANDING_PRODUCTION_LEASE_PASS")'
+      - name: Publish the owner-approved MDLxDCC patch once
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "Landing header and LAB search $RELEASE_SHA" --json > "$RUNNER_TEMP/landing-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/landing-deploy.json");const id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("LANDING_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify exact public search index and effective homepage revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/site-search-index.json?landing=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/landing-index-live"
+          cmp public/site-search-index.json "$RUNNER_TEMP/landing-index-live"
+          curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/?landing=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/landing-html-live"
+          grep -F 'id="landing-compact-header"' "$RUNNER_TEMP/landing-html-live"
+          grep -F 'channel:p[5]' "$RUNNER_TEMP/landing-html-live"
+          echo 'LANDING_LIVE_REVISION_PASS'
+      - name: Verify production in fresh mobile and desktop browsers
+        env:
+          LANDING_QA_URL: https://www.mdlxdcc.org/
+          LANDING_QA_EVIDENCE: ${{ runner.temp }}/landing-live-qa
+        run: node tests/landing-header-search-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: landing-header-search-production-evidence
+          path: ${{ runner.temp }}/landing-live-qa
+          if-no-files-found: ignore
