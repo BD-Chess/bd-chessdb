@@ -75,7 +75,66 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/index.html?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live.html"
-          node -e 'const fs=require("node:fs"),s=fs.readFileSync(process.env.RUNNER_TEMP+"/start-home-live.html","utf8");const tag=s.match(/<a\b[^>]*\bid="bs-home-link"[^>]*>/);if(!tag)throw Error("Home link absent");const href=tag[0].match(/\bhref="([^"]+)"/)?.[1];const target=new URL(href,"https://www.mdlxdcc.org/Start/index.html");if(target.origin!=="https://www.mdlxdcc.org"||!["/","/index.html"].includes(target.pathname)||/\btarget=/.test(tag[0]))throw Error("Wrong home destination");console.log("START_HOME_LIVE_LINK_PASS",target.pathname)'
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync(process.env.RUNNER_TEMP + '/start-home-live.html', 'utf8');
+          function attributes(tag) {
+            return Object.fromEntries([...tag.matchAll(/([^\s=<>/]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s<>]+))/g)].map(([, name, a, b, c]) => [name.toLowerCase(), a ?? b ?? c]));
+          }
+          const anchor = [...html.matchAll(/<a\b[^>]*>/gi)].map(([tag]) => ({ tag, attrs: attributes(tag) })).find(x => x.attrs.id === 'bs-home-link');
+          if (!anchor || !anchor.attrs.href) throw Error('Home link absent');
+          const target = new URL(anchor.attrs.href, 'https://www.mdlxdcc.org/Start/index.html');
+          if (target.origin !== 'https://www.mdlxdcc.org' || !['/', '/index.html'].includes(target.pathname) || 'target' in anchor.attrs) throw Error('Wrong home destination');
+          console.log('START_HOME_LIVE_LINK_PASS', target.pathname);
+          console.log('START_HOME_LIVE_ANCHOR', anchor.tag);
+          NODE
+          for p in start.css app.js state.js icons.js icon.svg; do
+            curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/$p?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live-asset"
+            cmp "public/Start/$p" "$RUNNER_TEMP/start-home-live-asset"
+          done
+          echo 'START_HOME_LIVE_ASSETS_PASS'
+
+  verify-live:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_commit.message == 'verify: start-home-link 20261010'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify this follow-up changes only release verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only a20a6550c019a304d65f18e43743186c455e8645 HEAD -- public functions netlify.toml package.json package-lock.json scripts/inject_password_manager.py)"
+          git diff --check
+          echo 'START_HOME_VERIFY_ONLY_PASS'
+      - name: Verify the effective live link and unchanged Start assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/index.html?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live.html"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync(process.env.RUNNER_TEMP + '/start-home-live.html', 'utf8');
+          function attributes(tag) {
+            return Object.fromEntries([...tag.matchAll(/([^\s=<>/]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s<>]+))/g)].map(([, name, a, b, c]) => [name.toLowerCase(), a ?? b ?? c]));
+          }
+          const anchor = [...html.matchAll(/<a\b[^>]*>/gi)].map(([tag]) => ({ tag, attrs: attributes(tag) })).find(x => x.attrs.id === 'bs-home-link');
+          if (!anchor || !anchor.attrs.href) throw Error('Home link absent');
+          const target = new URL(anchor.attrs.href, 'https://www.mdlxdcc.org/Start/index.html');
+          if (target.origin !== 'https://www.mdlxdcc.org' || !['/', '/index.html'].includes(target.pathname) || 'target' in anchor.attrs) throw Error('Wrong home destination');
+          console.log('START_HOME_LIVE_LINK_PASS', target.pathname);
+          console.log('START_HOME_LIVE_ANCHOR', anchor.tag);
+          NODE
           for p in start.css app.js state.js icons.js icon.svg; do
             curl -fsSL --retry 3 --retry-delay 3 --max-time 30 -H 'Cache-Control: no-cache' "https://www.mdlxdcc.org/Start/$p?home=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/start-home-live-asset"
             cmp "public/Start/$p" "$RUNNER_TEMP/start-home-live-asset"
