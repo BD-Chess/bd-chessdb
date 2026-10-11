@@ -1,0 +1,39 @@
+name: Nara Daily artwork and renderer integrity
+
+on:
+  push:
+    branches: [main, nara-daily-images-20261011]
+    paths:
+      - 'scripts/nara-daily.mjs'
+      - 'scripts/nara-daily-batch.mjs'
+      - 'scripts/nara-version-history.mjs'
+      - 'tests/nara-daily*.test.mjs'
+      - 'tests/nara-version-history.test.mjs'
+      - 'public/Nara/daily/illustrations/**'
+      - 'public/Nara/assets/img/daily/**'
+      - 'public/Nara/assets/css/nara-daily.css'
+      - 'public/Nara/Nara-AI-daily.html'
+      - 'public/Nara/Nara-AI-2026-10.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check parser
+        run: |
+          node --check scripts/nara-daily.mjs
+          node --check scripts/nara-daily-batch.mjs
+          node --check scripts/nara-version-history.mjs
+          node --check tests/nara-daily.test.mjs
+          node --check tests/nara-daily-illustrations.test.mjs
+      - name: Run Daily tests and image integrity checks
+        run: node --test tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs

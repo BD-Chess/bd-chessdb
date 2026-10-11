@@ -82,3 +82,37 @@ test('next nightly publication retains an earlier SL translation and marks untra
   assert.equal(fs.readFileSync(englishPath,'utf8'),englishBefore);
   assert.equal(Object.keys(loadTranslations(root,[older,newer])).length,1);
 });
+
+test('approved R3 illustrations render once per scene in EN and SL on both daily routes, and are hash-bound',t=>{
+  const root=temp(t),r=record();
+  r.revision={date:'2026-10-06',edition:'R3',original_url:'Nara-AI-2026-10-05-original.html',original_log_url:'Nara-AI-2026-10-05-original-log.html'};
+  r.scenes=Array.from({length:6},(_,i)=>({title:'Scene '+(i+1),paragraphs:['Paragraph '+(i+1),'Last sentence '+(i+1)]}));
+  r.content_sha256=hash(JSON.stringify({title:r.title,deck:r.deck,shape:r.shape,scenes:r.scenes}));
+  const tr=translation(r);
+  tr.scenes=r.scenes.map((s,i)=>({title:'Prizor '+(i+1),paragraphs:['Odstavek '+(i+1),'Zadnji stavek '+(i+1)]}));
+  tr.content_sha256=hash(JSON.stringify({title:tr.title,deck:tr.deck,shape:tr.shape,scenes:tr.scenes}));
+  validateRecord(r);validateTranslation(tr,r);
+  const base=path.join(root,'public/Nara'),imagesDir=path.join(base,'assets/img/daily/2026-10-05');
+  fs.mkdirSync(imagesDir,{recursive:true});
+  const items=Array.from({length:5},(_,i)=>{const raw='fixture-image-'+i,filename='fixture-'+i+'.png';fs.writeFileSync(path.join(imagesDir,filename),raw);return {scene:i+1,src:'assets/img/daily/2026-10-05/'+filename,width:1672,height:941,alt_en:'English scene '+(i+1),alt_sl:'Slovenska scena '+(i+1),sha256:hash(raw)}});
+  const m={schema:'nara.daily.illustrations.v1',story_id:r.id,date:r.date,edition:'R3',en_content_sha256:r.content_sha256,sl_content_sha256:tr.content_sha256,images:items};
+  const manifestPath=path.join(base,'daily/illustrations/2026-10-05.json');fs.mkdirSync(path.dirname(manifestPath),{recursive:true});fs.writeFileSync(manifestPath,JSON.stringify(m));
+  const original=JSON.stringify(r),originalTr=JSON.stringify(tr),translations={[r.id]:tr};
+  const pages=[latestPage([r],'2026-10',translations,root),monthlyPage('2026-10',[r],translations,root)];
+  for(const html of pages){
+    assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,10);
+    for(const lang of ['en','sl']){
+      const a=html.match(new RegExp('<article class="story" lang="'+lang+'"[^>]*>[\\s\\S]*?<\\/article>'))?.[0];
+      assert.ok(a);assert.equal((a.match(/<figure class="daily-scene-figure">/g)||[]).length,5);
+      assert.equal((a.match(/loading="lazy" decoding="async"/g)||[]).length,5);
+      assert.ok(!a.split('<h2>06 ·')[1].includes('<figure'));
+      for(let i=0;i<5;i++)assert.ok(a.includes(lang==='en'?items[i].alt_en:items[i].alt_sl));
+    }
+  }
+  assert.equal(JSON.stringify(r),original);assert.equal(JSON.stringify(tr),originalTr);
+  assert.equal(latestPage([r],'2026-10',translations,root),pages[0]);
+  const wrongHash={...m,en_content_sha256:'0'.repeat(64)};fs.writeFileSync(manifestPath,JSON.stringify(wrongHash));
+  assert.throws(()=>latestPage([r],'2026-10',translations,root),/language content binding/);
+  fs.writeFileSync(manifestPath,JSON.stringify(m));fs.writeFileSync(path.join(imagesDir,'fixture-0.png'),'corrupted');
+  assert.throws(()=>monthlyPage('2026-10',[r],translations,root),/source hash mismatch/);
+});
