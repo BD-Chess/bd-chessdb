@@ -12,14 +12,14 @@ function picks(filename) {
 
 test('every curated Top Pick opens at its verified decision without inventing an evaluation', () => {
   const all = [...picks('ChessBest_Top_Picks.pgn'), ...picks('ChessBest_Top_Picks_TCEC.pgn')];
-  assert.equal(all.length, 7);
+  assert.equal(all.length, 10);
   for (const pgn of all) {
     const review = Review.build({ Chess, pgn });
     const anchor = Number(review.headers.ChessBestAnchorPly);
     const moment = review.moments.find(item => item.ply === anchor);
     assert.ok(moment, review.headers.ChessBestTitle);
     assert.equal(moment.fen, review.headers.ChessBestAnchorFEN);
-    assert.equal(moment.basis, 'PGN annotation');
+    assert.ok(['PGN annotation', 'Curated PGN position'].includes(moment.basis));
     assert.equal(review.positions[anchor + 1].moveLabel, moment.moveLabel);
     assert.equal(review.analysis.status, 'not-computed');
     assert.equal(review.analysis.evaluations, null);
@@ -85,4 +85,33 @@ test('wrong curated FEN cannot establish a critical moment in an otherwise unann
   const pgn = '[Event "Test"]\n[ChessBestAnchorPly "2"]\n[ChessBestAnchorFEN "impossible"]\n[ChessBestTitle "Unverified claim"]\n[Result "*"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 *';
   const review = Review.build({ Chess, pgn });
   assert.ok(review.moments.every(moment => moment.basis === 'Navigation'));
+});
+
+
+test('Dreev Review V3 keeps its 99-ply line, 12 evidence markers, and encoded mate typed separately from cp', () => {
+  const pgn = picks('ChessBest_Top_Picks.pgn').find(item => item.includes('[ChessBestReviewVersion "3"]'));
+  assert.ok(pgn, 'Review V3 PGN is present');
+  const review = Review.build({ Chess, pgn });
+  assert.equal(review.sourceStatus, 'PGN main line verified');
+  assert.equal(review.totalPly, 99);
+  const annotated = review.moments.filter(moment => moment.basis === 'PGN annotation');
+  assert.equal(annotated.length, 12);
+  const mate = annotated.find(moment => moment.detail.includes('CDB encoded mate score'));
+  assert.ok(mate, 'the 45...fxg2 decision is navigable');
+  assert.match(mate.detail, /30000 − 29973 = 27 plies, about M14 with Black to move/);
+  assert.match(mate.detail, /CDB encoded mate score, not 29,973 cp/);
+  assert.doesNotMatch(mate.detail, /29973 cp/);
+  assert.match(annotated.find(moment => moment.moveLabel.includes('20... Rac8')).detail, /22...Rb8 is a different position/);
+  assert.match(annotated.find(moment => moment.moveLabel.includes('34... b5')).detail, /already been revealed by GPT/);
+  assert.match(annotated.find(moment => moment.moveLabel.includes('37... Ra8')).detail, /not a blind-find test/);
+  assert.equal(review.analysis.status, 'not-computed');
+  assert.equal(review.analysis.evaluations, null);
+  const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../Games/ChessBest_Top_Picks.catalog.json'), 'utf8'));
+  const entry = catalog.cases.find(item => item.id === 'dreev-kasparov-moscow-1996-19-bxa4');
+  assert.equal(entry.evidence.review_v3.source_report, 'docs/chessbest-evidence/dreev-kasparov-review-v3-20261011.md');
+  assert.equal(entry.evidence.review_v3.mate_score.cdb_raw, 29973);
+  assert.equal(entry.evidence.review_v3.mate_score.distance_plies, 27);
+  assert.equal(entry.evidence.review_v3.mate_score.formal_proof, false);
+  assert.equal(entry.evidence.review_v3.r4_frozen.historical_played_root_cp.final, 56);
+  assert.equal(entry.evidence.review_v3.r4_frozen.complete_typed_score_counts_published, false);
 });
