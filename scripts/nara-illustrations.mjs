@@ -45,11 +45,20 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
       assert(image.width===1672&&image.height===941,'illustration image dimensions');
       assert(text(image.alt_en,300)&&text(image.alt_sl,300),'illustration alt text');
       const prefix=`assets/img/daily/${record.date}/${v2?instance+'/':''}`;
-      assert(typeof image.src==='string'&&image.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.png$/.test(image.src.slice(prefix.length)),'illustration unsafe source path');
+      assert(typeof image.src==='string'&&image.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.(?:png|webp)$/.test(image.src.slice(prefix.length)),'illustration unsafe source path');
       const asset=path.join(base,image.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'illustration missing static file');
       const bytes=fs.readFileSync(asset);assert(/^[a-f0-9]{64}$/.test(image.sha256)&&sha(bytes)===image.sha256,'illustration source hash mismatch');
+      if(image.src.endsWith('.webp')){
+        assert(bytes.length>=30&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP','illustration WebP header');
+        const kind=bytes.toString('ascii',12,16);let w,h;
+        if(kind==='VP8 '){assert(bytes.subarray(23,26).toString('hex')==='9d012a','illustration WebP VP8 marker');w=bytes.readUInt16LE(26)&0x3fff;h=bytes.readUInt16LE(28)&0x3fff}
+        else if(kind==='VP8X'){w=bytes.readUIntLE(24,3)+1;h=bytes.readUIntLE(27,3)+1}
+        else if(kind==='VP8L'){assert(bytes[20]===0x2f,'illustration WebP VP8L marker');w=1+(((bytes[22]&0x3f)<<8)|bytes[21]);h=1+(((bytes[24]&0x0f)<<10)|(bytes[23]<<2)|((bytes[22]&0xc0)>>6))}
+        else throw Error('illustration unsupported WebP encoding');
+        assert(w===image.width&&h===image.height,'illustration WebP dimensions');
+      }
       if(v2){
-        assert(bytes.length>=24&&bytes.subarray(0,8).toString('hex')==='89504e470d0a1a0a'&&bytes.subarray(12,16).toString()==='IHDR'&&bytes.readUInt32BE(16)===image.width&&bytes.readUInt32BE(20)===image.height,'illustration PNG dimensions');
+        if(image.src.endsWith('.png'))assert(bytes.length>=24&&bytes.subarray(0,8).toString('hex')==='89504e470d0a1a0a'&&bytes.subarray(12,16).toString()==='IHDR'&&bytes.readUInt32BE(16)===image.width&&bytes.readUInt32BE(20)===image.height,'illustration PNG dimensions');
         for(const k of ['generation_prompt_sha256','review_reply_sha256'])if(image[k]!==undefined)assert(/^[a-f0-9]{64}$/.test(image[k]),'illustration provenance hash');
         if(image.model_reported!==undefined)assert(text(image.model_reported,120),'illustration model label');
         if(image.claude_review!==undefined)assert(['PASS','MISSING','FIX_LIMIT_REACHED'].includes(image.claude_review),'illustration review verdict');

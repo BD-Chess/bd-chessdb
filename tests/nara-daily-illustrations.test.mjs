@@ -33,10 +33,13 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
   for(const i of m.images){
     const b=fs.readFileSync(path.join(n,i.src));
     assert.equal(h(b),i.sha256);
-    assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-    assert.equal(b.readUInt32BE(16),1672);assert.equal(b.readUInt32BE(20),941);
+    assert.equal(b.toString('ascii',0,4),'RIFF');assert.equal(b.toString('ascii',8,12),'WEBP');
+    assert.equal(b.toString('ascii',12,16),'VP8 ');
+    assert.equal(b.subarray(23,26).toString('hex'),'9d012a');
+    assert.equal(b.readUInt16LE(26)&0x3fff,1672);assert.equal(b.readUInt16LE(28)&0x3fff,941);
     assert.ok(i.alt_en&&i.alt_sl);
   }
+  assert.equal(fs.readdirSync(path.join(n,'assets/img/daily/2026-10-05')).filter(f=>f.endsWith('.png')).length,0,'superseded PNG assets must not ship');
 });
 
 test('committed Daily and monthly R3 have five scene figures in each language, nowhere else',()=>{
