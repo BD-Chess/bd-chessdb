@@ -4,6 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import {loadIllustrations,renderIllustration} from './nara-illustrations.mjs';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const realGrade=g=>g&&g.instrument==='SA1'&&Number.isFinite(g.gpt)&&Number.isFinite(g.claude)&&Number.isFinite(g.combined)&&Math.abs(g.combined-(g.gpt+g.claude)/2)<1e-8;
@@ -77,19 +78,20 @@ function gradeView(v){
   }
   return '<p class="version-grade"><strong>GPT</strong> '+formatScore(g.gpt)+' / 100 · <strong>Claude</strong> '+formatScore(g.claude)+' / 100 · <strong>50/50</strong> '+formatScore(g.combined)+' / 100 <small>SA1</small></p>';
 }
-function versionView(v,id,index,branch=''){
+function versionView(v,id,index,branch='',images=[],translation=null){
   const safeId=String(id+'-'+branch+'-'+v.version).replace(/[^A-Za-z0-9_-]/g,'-');
   const readable=v.story||{},scenes=Array.isArray(readable.scenes)?readable.scenes:[];
   const stage=v.stage||'STORED_FULL_TEXT';
   const side=v.branch?' · '+esc(v.branch):'';
-  const full=scenes.map((scene,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(scene.title)+'</h5>'+(scene.paragraphs||[]).map(p=>'<p>'+esc(p)+'</p>').join('')+'</section>').join('');
+  const full=scenes.map((scene,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(scene.title)+'</h5>'+(scene.paragraphs||[]).map(p=>'<p>'+esc(p)+'</p>').join('')+(images.find(x=>x.scene===j+1)?renderIllustration(images.find(x=>x.scene===j+1),'en'):'')+'</section>').join('');
+  const sl=translation&&images.length?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(s.title)+'</h5>'+s.paragraphs.map(p=>'<p>'+esc(p)+'</p>').join('')+(images.find(x=>x.scene===j+1)?renderIllustration(images.find(x=>x.scene===j+1),'sl'):'')+'</section>').join('')+'</article>':'';
   const notes=v.note?'<p class="muted">'+esc(v.note)+'</p>':'';
   const duplicate=v.same_text_events?.length>1?'<p class="muted">Identical text also recorded at '+esc(v.same_text_events.join(', '))+'</p>':'';
   const rating=realGrade(v.grade)?' · '+formatScore(v.grade.combined)+'/100':' · PENDING';
-  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article></div></details>';
+  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"'+(images.length?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
 }
-function branchView(name,entries,id){
-  return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name)).join('')+'</section>';
+function branchView(name,entries,id,finalVersion=null,images=[],translation=null){
+  return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name,v.version===finalVersion?images:[],v.version===finalVersion?translation:null)).join('')+'</section>';
 }
 export function renderVersionArchive(root){
   const series=listVersionSeries(root);
@@ -99,10 +101,20 @@ export function renderVersionArchive(root){
   const items=series.map(s=>{
     const sid='versions-'+s.story_id.replace(/[^a-z0-9]/gi,'-'),final=s.accepted_lineage.find(v=>v.version===s.final_version),grade=final?.grade,trend=deriveVersionTrend(s);
     const label=realGrade(grade)?formatScore(grade.combined)+'/100':'PENDING';
-    const main=branchView('Published story lineage / objavljena veja',s.accepted_lineage,s.story_id);
+    let images=[],translation=null;
+    if(final&&/:S[123]$/.test(s.story_id)){
+      const instance=s.story_id.slice(-2),fp=path.join(root,'public/Nara/daily/translations/sl',s.date,instance+'.json');
+      if(fs.existsSync(fp)){
+        translation=JSON.parse(fs.readFileSync(fp,'utf8'));
+        const record={...final.story,id:s.story_id,date:s.date,instance,content_sha256:final.source_content_sha256};
+        images=loadIllustrations(root,record,translation,{nonBlocking:true});
+      }
+    }
+    const main=branchView('Published story lineage / objavljena veja',s.accepted_lineage,s.story_id,s.final_version,images,translation);
     const alt=(s.parallel_branches||[]).map((b,i)=>Array.isArray(b)?branchView('Parallel branch '+(i+1),b,s.story_id):branchView(b.name||'Parallel branch',b.versions||[],s.story_id)).join('');
     return '<details class="archive-item version-story" id="'+esc(sid)+'"><summary><time datetime="'+esc(s.date)+'">'+esc(s.date)+'</time><span class="story-summary-title"><strong>'+esc(s.story_id.includes(':')?s.story_id.slice(-2)+' · '+s.published_title:s.published_title)+'</strong><span class="score-chip score-trend--'+trend+'">'+esc(label)+'</span></span></summary><div class="inside">'+main+alt+'</div></details>';
   }).join('\n');
   return intro+items+'</section>';
 }
+
 

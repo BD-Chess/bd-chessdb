@@ -4,6 +4,7 @@
  * CLI: node scripts/nara-daily-batch.mjs publish <repoRoot> <public-batch.json>
  */
 import fs from 'node:fs';
+import {loadIllustrations,renderIllustration} from './nara-illustrations.mjs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {
@@ -16,9 +17,9 @@ import {
   archivePage,
   logPage,
 } from './nara-daily.mjs';
-import {storyScoreTrend} from './nara-version-history.mjs';
+import {storyScoreTrend,renderVersionArchive} from './nara-version-history.mjs';
 
-export const VERSION='illuminara-daily-r10-three-story-batch';
+export const VERSION='illuminara-daily-r11-instance-illustrations';
 const assert=(x,m)=>{if(!x)throw Error(m)};
 const text=(s,n)=>typeof s==='string'&&s.trim().length>0&&s.length<=n;
 const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
@@ -136,9 +137,9 @@ function dayManifest(batch,items,featured,files){
   };
 }
 
-function instanceStoryHtml(item,root=null){
-  const r=item.record,t=r.translation_sl;
-  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>`<section><h3>${String(i+1).padStart(2,'0')} · ${esc(s.title)}</h3>${s.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('\n')}</section>`).join('\n')}</article>`;
+export function instanceStoryHtml(item,root=null){
+  const r=item.record,t=r.translation_sl,images=loadIllustrations(root,r,t,{nonBlocking:true});
+  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>`<section><h3>${String(i+1).padStart(2,'0')} · ${esc(s.title)}</h3>${s.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('\n')}${images.find(x=>x.scene===i+1)?renderIllustration(images.find(x=>x.scene===i+1),lang):''}</section>`).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
   return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
@@ -234,10 +235,56 @@ export function publishBatch(root,input,now=new Date()){
   return {status:'LOCAL_BATCH_CANDIDATE_READY',featured,changed:[...Object.keys(staged),...Object.keys(pageOutputs)].sort(),day_manifest_sha256:hash(manifestBytes)};
 }
 
+// Refresh only presentation after adding images; published text, grades and day selection remain immutable.
+export function refreshIllustratedPages(root,month){
+  assert(/^\d{4}-\d{2}$/.test(month),'refresh month');
+  const {n,records}=loadRecords(root),translations={},days=[];
+  for(const r of records){
+    const tp=path.join(n,'daily/translations/sl',r.date+'.json');
+    if(fs.existsSync(tp))translations[r.id]=JSON.parse(fs.readFileSync(tp,'utf8'));
+    if(!r.date.startsWith(month))continue;
+    const dp=path.join(n,dayManifestPath(r.date));if(!fs.existsSync(dp))continue;
+    const day=JSON.parse(fs.readFileSync(dp,'utf8'));
+    assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&day.id===r.id&&instances.includes(day.featured_instance),'refresh day identity');
+    const items=day.instances.map(entry=>{
+      assert(instances.includes(entry.instance)&&entry.record_file===instanceRecordPath(day.date,entry.instance)&&entry.translation_file===instanceTranslationPath(day.date,entry.instance),'refresh instance paths');
+      const rb=fs.readFileSync(path.join(n,entry.record_file),'utf8'),tb=fs.readFileSync(path.join(n,entry.translation_file),'utf8');
+      assert(hash(rb)===entry.record_sha256&&hash(tb)===entry.translation_sha256,'refresh frozen instance byte binding');
+      const record=JSON.parse(rb),translation=JSON.parse(tb);
+      assert(record.id===instanceId(day.date,entry.instance)&&record.instance===entry.instance,'refresh record identity');
+      validateTranslation(translation,record,day.date,entry.instance);
+      return {instance:entry.instance,record:{...record,translation_sl:translation}};
+    });
+    assert(items.some(x=>x.instance===day.featured_instance),'refresh featured missing');
+    days.push({day,items});
+  }
+  let monthly=monthlyPage(month,records.filter(r=>r.date.startsWith(month)),translations,root);
+  for(const {day,items} of days)monthly=patchMonthly(monthly,day,items,day.featured_instance,root);
+  const outputs={[`Nara-AI-${month}.html`]:monthly};
+  if(records[0]?.date.startsWith(month)){
+    let latest=latestPage(records,month,translations,root);
+    const d=days.find(x=>x.day.date===records[0].date);
+    if(d)latest=patchLatest(latest,d.day,d.items,d.day.featured_instance,root);
+    outputs['Nara-AI-daily.html']=latest;
+  }
+  const archiveFile=path.join(n,'Nara-AI-archive.html');
+  if(fs.existsSync(archiveFile)){
+    const before=fs.readFileSync(archiveFile,'utf8'),start=before.indexOf('<section class="version-history" id="version-history">');
+    if(start>=0){
+      const tags=/<\/?section\b[^>]*>/g;tags.lastIndex=start;let depth=0,end=-1,tag;
+      while((tag=tags.exec(before))){depth+=tag[0].startsWith('</')?-1:1;if(depth===0){end=tags.lastIndex;break}}
+      assert(end>start,'refresh archive boundary');outputs['Nara-AI-archive.html']=before.slice(0,start)+renderVersionArchive(root)+before.slice(end);
+    }
+  }
+  const changed=[];for(const [rel,data] of Object.entries(outputs))if(write(path.join(n,rel),data))changed.push(rel);
+  return {status:'LOCAL_ILLUSTRATED_PAGES_READY',changed:changed.sort()};
+}
+
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   try{
     const [cmd,root,arg]=process.argv.slice(2);assert(root,'repoRoot required');
     if(cmd==='publish'){assert(arg,'batch file required');console.log(JSON.stringify(publishBatch(root,JSON.parse(fs.readFileSync(arg,'utf8')))))}
-    else throw Error('use publish');
+    else if(cmd==='refresh-images')console.log(JSON.stringify(refreshIllustratedPages(root,arg)));
+    else throw Error('use publish or refresh-images');
   }catch(e){console.error(e.message);process.exitCode=1}
 }

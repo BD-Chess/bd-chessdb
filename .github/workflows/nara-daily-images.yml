@@ -4,6 +4,8 @@ on:
   push:
     branches: [main, nara-daily-images-20261011]
     paths:
+      - 'scripts/nara-illustrations.mjs'
+      - 'tests/nara-instance-illustrations.test.mjs'
       - 'scripts/nara-daily.mjs'
       - 'scripts/nara-daily-batch.mjs'
       - 'scripts/nara-version-history.mjs'
@@ -30,10 +32,12 @@ jobs:
           node-version: '22'
       - name: Check parser
         run: |
+          node --check scripts/nara-illustrations.mjs
           node --check scripts/nara-daily.mjs
           node --check scripts/nara-daily-batch.mjs
           node --check scripts/nara-version-history.mjs
           node --check tests/nara-daily.test.mjs
           node --check tests/nara-daily-illustrations.test.mjs
       - name: Run Daily tests and image integrity checks
-        run: node --test tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs
+        run: node --test tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs
+

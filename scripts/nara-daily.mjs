@@ -6,7 +6,8 @@
  */
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {fileURLToPath} from 'node:url';
 import {storyScoreTrend,renderVersionArchive} from './nara-version-history.mjs';
-export const VERSION='illuminara-daily-r16-score-colours';
+import {loadIllustrations,renderIllustration} from './nara-illustrations.mjs';
+export const VERSION='illuminara-daily-r17-instance-illustrations';
 export const BASE='https://bd-chess.github.io/bd-chessdb/Nara/';
 export const hash=s=>crypto.createHash('sha256').update(s,'utf8').digest('hex');
 export const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -72,33 +73,7 @@ function shell(title,file,body,active='daily',localized=false){
 }
 // Optional per-story illustrations are separate from immutable public story/translation records.
 // The manifest binds exactly to an approved edition and both language content hashes.
-export function loadIllustrations(root,record,translation=null){
-  if(!root)return [];
-  const file=path.join(root,'public','Nara','daily','illustrations',record.date+'.json');
-  if(!fs.existsSync(file))return [];
-  const m=JSON.parse(fs.readFileSync(file,'utf8'));
-  const keys=['schema','story_id','date','edition','en_content_sha256','sl_content_sha256','images'];
-  assert(m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===keys.length&&Object.keys(m).every(k=>keys.includes(k)),'illustration manifest fields');
-  assert(m.schema==='nara.daily.illustrations.v1'&&m.story_id===record.id&&m.date===record.date&&m.edition===record.revision?.edition,'illustration edition binding');
-  assert(m.en_content_sha256===record.content_sha256&&translation&&m.sl_content_sha256===translation.content_sha256,'illustration language content binding');
-  assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length,'illustration scene count');
-  let prior=0;
-  for(const image of m.images){
-    const fields=['scene','src','width','height','alt_en','alt_sl','sha256'];
-    assert(image&&typeof image==='object'&&!Array.isArray(image)&&Object.keys(image).length===fields.length&&Object.keys(image).every(k=>fields.includes(k)),'illustration image fields');
-    assert(Number.isInteger(image.scene)&&image.scene>prior&&image.scene<=record.scenes.length,'illustration scene order');
-    prior=image.scene;
-    assert(image.width===1672&&image.height===941,'illustration image dimensions');
-    assert(text(image.alt_en,300)&&text(image.alt_sl,300),'illustration alt text');
-    const prefix=`assets/img/daily/${record.date}/`;
-    assert(typeof image.src==='string'&&image.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.png$/.test(image.src.slice(prefix.length)),'illustration unsafe source path');
-    const asset=path.join(root,'public','Nara',image.src);
-    assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'illustration missing static file');
-    assert(/^[a-f0-9]{64}$/.test(image.sha256)&&crypto.createHash('sha256').update(fs.readFileSync(asset)).digest('hex')===image.sha256,'illustration source hash mismatch');
-  }
-  return m.images;
-}
-const renderIllustration=(image,lang)=>'<figure class="daily-scene-figure"><img src="'+esc(image.src)+'" alt="'+esc(lang==='sl'?image.alt_sl:image.alt_en)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>';
+export {loadIllustrations} from './nara-illustrations.mjs';
 const prose=(r,lang='en',images=[])=>'<article class="story" lang="'+lang+'" data-story-id="'+r.id+'" data-content-sha256="'+r.content_sha256+'" aria-label="'+(lang==='sl'?'Zgodba':'Story')+'">'+r.scenes.map((s,i)=>'<section><h2>'+String(i+1).padStart(2,'0')+' · '+esc(s.title)+'</h2>'+s.paragraphs.map(p=>'<p>'+esc(p)+'</p>').join('\n')+(images.find(x=>x.scene===i+1)?renderIllustration(images.find(x=>x.scene===i+1),lang):'')+'</section>').join('\n')+'</article>';
 const notes=(r,lang='en')=>'<aside class="notes" lang="'+lang+'" aria-label="'+(lang==='sl'?'Uredniški opombi':'Editorial notes')+'"><details><summary>'+(lang==='sl'?'Kaj po mnenju kritika še ne deluje':"What the critic still says doesn't work")+'</summary><div class="inside"><p>'+esc(r.critic_line)+'</p></div></details><details><summary>'+(lang==='sl'?'Zasnova te zgodbe':"Tonight's shape")+'</summary><div class="inside"><p>'+esc(r.shape)+'</p></div></details></aside>';
 const localizedText=(en,sl)=>sl?bi(en,sl):'<span lang="en">'+esc(en)+'</span>';
@@ -122,7 +97,7 @@ function revisionLabel(v){return v?'<small class="muted revision-label">'+bi('re
 function revisionNotice(v){return v?'<p class="notice revision-note"><strong>'+bi('revised '+v.date+' · '+v.edition,'prenovljeno '+v.date+' · '+v.edition)+'</strong> · <a href="'+esc(v.original_url)+'">'+bi('Read the preserved original','Preberi ohranjeni izvirnik')+'</a> · <a href="'+esc(v.original_log_url)+'">'+bi('Original editorial log','Izvirni uredniški dnevnik')+'</a></p>':''}
 function storyEntry(r,translations,daily,root=null){
   const t=translations[r.id]??r.translation_sl,href=daily?'Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id:'#'+r.id;
-  const images=loadIllustrations(root,r,t);
+  const images=loadIllustrations(root,r,t,{nonBlocking:true});
   return '<details class="archive-item'+(daily?' daily-item':'')+'" id="'+r.id+'"><summary><time datetime="'+r.date+'">'+r.date+'</time><span class="story-summary-title"><strong>'+localizedText(r.title,t?.title)+'</strong>'+revisionLabel(r.revision)+scoreChip(r,root)+'</span></summary><div class="inside">'+revisionNotice(r.revision)+'<p class="lede">'+localizedText(r.deck,t?.deck)+'</p><p class="meta">'+bi('Published','Objavljeno')+' '+esc(r.published_at)+' · <a href="'+href+'">'+(daily?bi('Permanent archive link','Trajna povezava v arhiv'):bi('Permanent link','Trajna povezava'))+'</a></p>'+storyContent(r,t,images)+'</div></details>'+scoreDialog(r,t);
 }
 export function latestPage(input,month,translations={},root=null){
@@ -151,4 +126,5 @@ export function loadRecords(root){const n=path.join(root,'public/Nara');const c=
 export function initialize(root,month){assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'invalid month');const n=path.join(root,'public/Nara');const cp=path.join(n,'daily/catalog.json');if(!fs.existsSync(cp))write(cp,stringify({schema:'nara.daily.catalog.v1',records:[]}));const {c,records}=loadRecords(root);assert(records.length===0,'init refuses existing stories');write(path.join(n,'Nara-AI-daily.html'),latestPage(null,month,{},root));write(path.join(n,`Nara-AI-${month}.html`),monthlyPage(month,[],{},root));write(path.join(n,'Nara-AI-archive.html'),archivePage(c.records,month,root));write(path.join(n,'Nara-AI-log.html'),logPage([]));return 'INITIALIZED_EMPTY_NOT_STORY_PUBLISHED'}
 export function publish(root,record,logRecord,now=new Date()){const r=validateRecord(record),l=validateLog(logRecord);assert(l.date===r.date&&l.story_id===r.id&&l.title===r.title,'story/log mismatch');assert(l.final_critic_line===r.critic_line,'critic line mismatch');assert(new Date(r.published_at).getTime()<=now.getTime(),'future publication time');const p=localParts(now.toISOString());assert(`${p.year}-${p.month}-${p.day}`===r.date,'not current local publication date');const {n,c,records}=loadRecords(root);const bytes=stringify(r),logBytes=stringify(l);const existing=c.records.find(e=>e.date===r.date);if(existing){assert(existing.record_sha256===hash(bytes),'duplicate date with different contents');assert(existing.log_sha256===hash(logBytes),'duplicate date with different log');assert(hash(fs.readFileSync(path.join(n,existing.log_file),'utf8'))===existing.log_sha256,'duplicate date with different log');return 'ALREADY_PUBLISHED'}assert(!records.some(x=>x.date>r.date),'backfill prohibited');const file=`daily/records/${r.date}.json`,logFile=`daily/log/${r.date}.json`;for(const [fp,data,label] of [[path.join(n,file),bytes,'orphan conflict'],[path.join(n,logFile),logBytes,'orphan log conflict']])if(fs.existsSync(fp))assert(fs.readFileSync(fp,'utf8')===data,label);const next=[r,...records].sort((a,b)=>b.date.localeCompare(a.date));const entries=[...c.records,{id:r.id,date:r.date,title:r.title,file,record_sha256:hash(bytes),log_file:logFile,log_sha256:hash(logBytes)}].sort((a,b)=>b.date.localeCompare(a.date));const allLogs=entries.filter(e=>e.log_file).map(e=>{const b=e.date===l.date?logBytes:fs.readFileSync(path.join(n,e.log_file),'utf8');assert(hash(b)===e.log_sha256,'log byte hash mismatch');return validateLog(JSON.parse(b))});const month=r.date.slice(0,7);const translations=loadTranslations(root,next);const outputs={[file]:bytes,[logFile]:logBytes,'Nara-AI-daily.html':latestPage(next,month,translations,root),[`Nara-AI-${month}.html`]:monthlyPage(month,next.filter(x=>x.date.startsWith(month)),translations,root),'Nara-AI-archive.html':archivePage(entries,month,root),'Nara-AI-log.html':logPage(allLogs),'daily/catalog.json':stringify({schema:'nara.daily.catalog.v1',records:entries})};for(const [rel,data]of Object.entries(outputs))write(path.join(n,rel),data);return 'LOCAL_CANDIDATE_READY_COMMIT_ALL_SEVEN_FILES_ATOMICALLY'}
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){try{const [cmd,root,arg,arg2]=process.argv.slice(2);assert(root,'repoRoot required');if(cmd==='init')console.log(initialize(root,arg));else if(cmd==='publish'){assert(arg&&arg2,'story and log record files required');console.log(publish(root,JSON.parse(fs.readFileSync(arg,'utf8')),JSON.parse(fs.readFileSync(arg2,'utf8'))))}else if(cmd==='check'){const {records}=loadRecords(root);console.log(JSON.stringify({schema:'nara.daily.validation.v2',records:records.length,logs:records.filter(r=>r.log_file).length,result:'STATIC_VALID',peer_authenticity:'NOT_CHECKED_BY_RENDERER'}))}else throw Error('use init, publish or check')}catch(e){console.error(e.message);process.exitCode=1}}
+
 
