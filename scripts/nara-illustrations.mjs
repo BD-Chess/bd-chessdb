@@ -51,8 +51,8 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
     assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length&&(!v2||m.images.length<=3),'illustration scene count');
     let prior=0,priorParagraph=0;
     for(const image of m.images){
-      const fields=['scene','src','width','height','alt_en','alt_sl','sha256',...(v3?['after_paragraph','src_4k','width_4k','height_4k','sha256_4k']:[])];
-      const optional=v2?['generation_prompt_sha256','model_reported','claude_review','review_reply_sha256']:[];
+      const fields=['scene','src','width','height','alt_en','alt_sl','sha256',...(v3?['after_paragraph']:[])];
+      const optional=[...(v2?['generation_prompt_sha256','model_reported','claude_review','review_reply_sha256']:[]),...(v3?['src_4k','width_4k','height_4k','sha256_4k']:[])];
       assert(image&&typeof image==='object'&&!Array.isArray(image)&&fields.every(k=>Object.hasOwn(image,k))&&Object.keys(image).every(k=>fields.includes(k)||optional.includes(k)),'illustration image fields');
       assert(Number.isInteger(image.scene)&&image.scene>=1&&image.scene<=record.scenes.length&&(v3?image.scene>=prior:image.scene>prior),'illustration scene order');
       if(v3){
