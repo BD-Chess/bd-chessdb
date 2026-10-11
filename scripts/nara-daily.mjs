@@ -6,8 +6,8 @@
  */
 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {fileURLToPath} from 'node:url';
 import {storyScoreTrend,renderVersionArchive} from './nara-version-history.mjs';
-import {loadIllustrations,renderIllustration} from './nara-illustrations.mjs';
-export const VERSION='illuminara-daily-r17-instance-illustrations';
+import {loadIllustrations,renderIllustration,renderSceneParagraphs} from './nara-illustrations.mjs';
+export const VERSION='illuminara-daily-r18-paragraph-webp';
 export const BASE='https://bd-chess.github.io/bd-chessdb/Nara/';
 export const hash=s=>crypto.createHash('sha256').update(s,'utf8').digest('hex');
 export const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -74,7 +74,7 @@ function shell(title,file,body,active='daily',localized=false){
 // Optional per-story illustrations are separate from immutable public story/translation records.
 // The manifest binds exactly to an approved edition and both language content hashes.
 export {loadIllustrations} from './nara-illustrations.mjs';
-const prose=(r,lang='en',images=[])=>'<article class="story" lang="'+lang+'" data-story-id="'+r.id+'" data-content-sha256="'+r.content_sha256+'" aria-label="'+(lang==='sl'?'Zgodba':'Story')+'">'+r.scenes.map((s,i)=>'<section><h2>'+String(i+1).padStart(2,'0')+' · '+esc(s.title)+'</h2>'+s.paragraphs.map(p=>'<p>'+esc(p)+'</p>').join('\n')+(images.find(x=>x.scene===i+1)?renderIllustration(images.find(x=>x.scene===i+1),lang):'')+'</section>').join('\n')+'</article>';
+const prose=(r,lang='en',images=[])=>'<article class="story" lang="'+lang+'" data-story-id="'+r.id+'" data-content-sha256="'+r.content_sha256+'" aria-label="'+(lang==='sl'?'Zgodba':'Story')+'">'+r.scenes.map((s,i)=>'<section><h2>'+String(i+1).padStart(2,'0')+' · '+esc(s.title)+'</h2>'+renderSceneParagraphs(s,i+1,images,lang)+'</section>').join('\n')+'</article>';
 const notes=(r,lang='en')=>'<aside class="notes" lang="'+lang+'" aria-label="'+(lang==='sl'?'Uredniški opombi':'Editorial notes')+'"><details><summary>'+(lang==='sl'?'Kaj po mnenju kritika še ne deluje':"What the critic still says doesn't work")+'</summary><div class="inside"><p>'+esc(r.critic_line)+'</p></div></details><details><summary>'+(lang==='sl'?'Zasnova te zgodbe':"Tonight's shape")+'</summary><div class="inside"><p>'+esc(r.shape)+'</p></div></details></aside>';
 const localizedText=(en,sl)=>sl?bi(en,sl):'<span lang="en">'+esc(en)+'</span>';
 function storyContent(r,t,images=[]){

@@ -24,10 +24,13 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
   const file=path.join(base,'daily','illustrations',record.date+suffix+'.json');
   if(!fs.existsSync(file))return [];
   try {
-    const m=JSON.parse(fs.readFileSync(file,'utf8')),v2=m.schema==='nara.daily.illustrations.v2';
+    const m=JSON.parse(fs.readFileSync(file,'utf8')),v3=m.schema==='nara.daily.illustrations.v3',v2=m.schema==='nara.daily.illustrations.v2'||v3;
     const keys=['schema','story_id','date','edition','en_content_sha256','sl_content_sha256','images',...(v2?['instance']:[])];
     assert(m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===keys.length&&Object.keys(m).every(k=>keys.includes(k)),'illustration manifest fields');
-    if(v2){
+    if(v3&&!instance){
+      assert(m.instance===null&&m.story_id===record.id&&m.date===record.date&&m.edition===record.revision?.edition,'illustration edition binding');
+      assert(bodyHash(record)===record.content_sha256&&translation&&bodyHash(translation)===translation.content_sha256,'illustration body binding');
+    } else if(v2){
       assert(/^S[123]$/.test(instance)&&m.instance===instance&&m.story_id===`NARA-D-${record.date}:${instance}`,'illustration instance binding');
       assert(m.edition===(record.revision?.edition??null)&&m.date===record.date,'illustration edition binding');
       assert(bodyHash(record)===record.content_sha256,'illustration English body binding');
@@ -36,15 +39,24 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
     } else assert(m.schema==='nara.daily.illustrations.v1'&&m.story_id===record.id&&m.date===record.date&&m.edition===record.revision?.edition,'illustration edition binding');
     assert(m.en_content_sha256===record.content_sha256&&translation&&m.sl_content_sha256===translation.content_sha256,'illustration language content binding');
     assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length&&(!v2||m.images.length<=3),'illustration scene count');
-    let prior=0;
+    let prior=0,priorParagraph=0;
     for(const image of m.images){
-      const fields=['scene','src','width','height','alt_en','alt_sl','sha256'];
+      const fields=['scene','src','width','height','alt_en','alt_sl','sha256',...(v3?['after_paragraph']:[])];
       const optional=v2?['generation_prompt_sha256','model_reported','claude_review','review_reply_sha256']:[];
       assert(image&&typeof image==='object'&&!Array.isArray(image)&&fields.every(k=>Object.hasOwn(image,k))&&Object.keys(image).every(k=>fields.includes(k)||optional.includes(k)),'illustration image fields');
-      assert(Number.isInteger(image.scene)&&image.scene>prior&&image.scene<=record.scenes.length,'illustration scene order');prior=image.scene;
+      assert(Number.isInteger(image.scene)&&image.scene>=1&&image.scene<=record.scenes.length&&(v3?image.scene>=prior:image.scene>prior),'illustration scene order');
+      if(v3){
+        const en=record.scenes[image.scene-1].paragraphs,sl=translation.scenes[image.scene-1].paragraphs;
+        assert(en.length===sl.length,'illustration translated paragraph structure');
+        assert(Number.isInteger(image.after_paragraph)&&image.after_paragraph>=1&&image.after_paragraph<=en.length,'illustration paragraph anchor');
+        assert(image.scene>prior||image.after_paragraph>priorParagraph,'illustration paragraph order');
+        priorParagraph=image.after_paragraph;
+      }
+      prior=image.scene;
       assert(image.width===1672&&image.height===941,'illustration image dimensions');
       assert(text(image.alt_en,300)&&text(image.alt_sl,300),'illustration alt text');
-      const prefix=`assets/img/daily/${record.date}/${v2?instance+'/':''}`;
+      const prefix=`assets/img/daily/${record.date}/${instance&&v2?instance+'/':''}`;
+      if(v3)assert(image.src?.endsWith('.webp'),'illustration v3 WebP delivery');
       assert(typeof image.src==='string'&&image.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.(?:png|webp)$/.test(image.src.slice(prefix.length)),'illustration unsafe source path');
       const asset=path.join(base,image.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'illustration missing static file');
       const bytes=fs.readFileSync(asset);assert(/^[a-f0-9]{64}$/.test(image.sha256)&&sha(bytes)===image.sha256,'illustration source hash mismatch');
@@ -72,3 +84,8 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
   }
 }
 export const renderIllustration=(image,lang='en')=>'<figure class="daily-scene-figure"><img src="'+esc(image.src)+'" alt="'+esc(lang==='sl'?image.alt_sl:image.alt_en)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>';
+
+/** One-based anchors; legacy manifests remain at scene end. EN/SL share structural indices. */
+export function renderSceneParagraphs(scene,sceneNumber,images=[],lang='en'){
+  return scene.paragraphs.map((p,j)=>'<p>'+esc(p)+'</p>'+images.filter(x=>x.scene===sceneNumber&&(x.after_paragraph??scene.paragraphs.length)===j+1).map(x=>renderIllustration(x,lang)).join('')).join('\n');
+}

@@ -4,7 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import {loadIllustrations,renderIllustration} from './nara-illustrations.mjs';
+import {loadIllustrations,renderIllustration,renderSceneParagraphs} from './nara-illustrations.mjs';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const realGrade=g=>g&&g.instrument==='SA1'&&Number.isFinite(g.gpt)&&Number.isFinite(g.claude)&&Number.isFinite(g.combined)&&Math.abs(g.combined-(g.gpt+g.claude)/2)<1e-8;
@@ -83,8 +83,8 @@ function versionView(v,id,index,branch='',images=[],translation=null){
   const readable=v.story||{},scenes=Array.isArray(readable.scenes)?readable.scenes:[];
   const stage=v.stage||'STORED_FULL_TEXT';
   const side=v.branch?' · '+esc(v.branch):'';
-  const full=scenes.map((scene,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(scene.title)+'</h5>'+(scene.paragraphs||[]).map(p=>'<p>'+esc(p)+'</p>').join('')+(images.find(x=>x.scene===j+1)?renderIllustration(images.find(x=>x.scene===j+1),'en'):'')+'</section>').join('');
-  const sl=translation&&images.length?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(s.title)+'</h5>'+s.paragraphs.map(p=>'<p>'+esc(p)+'</p>').join('')+(images.find(x=>x.scene===j+1)?renderIllustration(images.find(x=>x.scene===j+1),'sl'):'')+'</section>').join('')+'</article>':'';
+  const full=scenes.map((scene,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(scene.title)+'</h5>'+renderSceneParagraphs(scene,j+1,images,'en')+'</section>').join('');
+  const sl=translation&&images.length?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(s.title)+'</h5>'+renderSceneParagraphs(s,j+1,images,'sl')+'</section>').join('')+'</article>':'';
   const notes=v.note?'<p class="muted">'+esc(v.note)+'</p>':'';
   const duplicate=v.same_text_events?.length>1?'<p class="muted">Identical text also recorded at '+esc(v.same_text_events.join(', '))+'</p>':'';
   const rating=realGrade(v.grade)?' · '+formatScore(v.grade.combined)+'/100':' · PENDING';

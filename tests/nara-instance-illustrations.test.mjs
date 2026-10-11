@@ -24,6 +24,30 @@ function fixture(t){
   return {root,r,sl,projection,pt,write,m,manifest,images};
 }
 const count=s=>(s.match(/<figure class="daily-scene-figure">/g)||[]).length;
+test('v3 places WebP figures after their exact EN/SL paragraph, with invalid anchors safely rejected',t=>{
+  const f=fixture(t);
+  f.r.scenes[0].paragraphs=['Opening one.','Opening two.','Opening three.'];
+  f.sl.scenes[0].paragraphs=['Začetek ena.','Začetek dve.','Začetek tri.'];
+  const bodyHash=x=>hash(JSON.stringify({title:x.title,deck:x.deck,shape:x.shape,scenes:x.scenes}));
+  f.r.content_sha256=bodyHash(f.r);f.sl.content_sha256=bodyHash(f.sl);f.sl.source_content_sha256=f.r.content_sha256;
+  // Bounded WebP container-header fixture: decoder-level validation belongs to the publisher.
+  const webp=Buffer.alloc(30);webp.write('RIFF');webp.writeUInt32LE(22,4);webp.write('WEBP',8);webp.write('VP8X',12);webp.writeUInt32LE(10,16);webp.writeUIntLE(1671,24,3);webp.writeUIntLE(940,27,3);
+  const images=f.images.map((x,i)=>({...x,after_paragraph:i?1:2,src:x.src.replace('.png','.webp'),sha256:hash(webp)}));
+  images.forEach(x=>f.write(x.src,webp));
+  const m={...f.m,schema:'nara.daily.illustrations.v3',en_content_sha256:f.r.content_sha256,sl_content_sha256:f.sl.content_sha256,images};
+  f.write(f.manifest,m);assert.equal(loadIllustrations(f.root,f.r,f.sl).length,3);
+  const html=instanceStoryHtml({record:f.r},f.root);
+  assert.match(html,/<p>Opening two\.<\/p><figure[\s\S]*?<\/figure>\s*<p>Opening three\.<\/p>/);
+  assert.match(html,/<p>Začetek dve\.<\/p><figure[\s\S]*?<\/figure>\s*<p>Začetek tri\.<\/p>/);
+  for(const bad of [0,4,1.5]){
+    f.write(f.manifest,{...m,images:images.map((x,i)=>i?x:{...x,after_paragraph:bad})});
+    assert.throws(()=>loadIllustrations(f.root,f.r,f.sl),/paragraph anchor/);assert.equal(count(instanceStoryHtml({record:f.r},f.root)),0);
+  }
+  f.write(f.manifest,{...m,images:images.map((x,i)=>i?x:{...x,src:f.images[0].src})});
+  assert.throws(()=>loadIllustrations(f.root,f.r,f.sl),/WebP delivery/);
+  f.write(f.manifest,m);const badSl={...f.sl,scenes:f.sl.scenes.map((s,i)=>i?s:{...s,paragraphs:['Different structure.']})};badSl.content_sha256=bodyHash(badSl);
+  f.write(f.manifest,{...m,sl_content_sha256:badSl.content_sha256});assert.throws(()=>loadIllustrations(f.root,f.r,badSl),/paragraph structure/);
+});
 test('instance images survive featured projection and bilingual non-featured monthly rendering',t=>{
   const f=fixture(t),before=JSON.stringify(f.r);
   assert.deepEqual(loadIllustrations(f.root,f.r,f.sl).map(x=>x.scene),[1,3,6]);

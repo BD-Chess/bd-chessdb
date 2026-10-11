@@ -28,8 +28,12 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
   assert.equal(t.content_sha256,'769cfa24e0b66042c19789284521c19897d5ac4bc57e1567e99856c7febce7c8');
   assert.equal(m.en_content_sha256,r.content_sha256);assert.equal(m.sl_content_sha256,t.content_sha256);
   assert.equal(r.scenes.length,8);assert.equal(t.scenes.length,8);
-  assert.deepEqual(m.images.map(i=>i.scene),[1,2,3,4,5]);
-  assert.equal(loadIllustrations(root,r,t).length,5);
+  assert.equal(m.schema,'nara.daily.illustrations.v3');assert.equal(m.instance,null);
+  assert.deepEqual(m.images.map(i=>i.scene),m.images.length===3?[1,3,7]:[1,3]);
+  assert.ok(m.images.length===2||m.images.length===3,'only retained pair while new03 review is pending, or final three');
+  for(const i of m.images)assert.ok(Number.isInteger(i.after_paragraph)&&i.after_paragraph>=1&&i.after_paragraph<=r.scenes[i.scene-1].paragraphs.length);
+  if(m.images.length===3)assert.equal(m.images[2].after_paragraph,25);
+  assert.equal(loadIllustrations(root,r,t).length,m.images.length);
   for(const i of m.images){
     const b=fs.readFileSync(path.join(n,i.src));
     assert.equal(h(b),i.sha256);
@@ -42,34 +46,34 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
   assert.equal(fs.readdirSync(path.join(n,'assets/img/daily/2026-10-05')).filter(f=>f.endsWith('.png')).length,0,'superseded PNG assets must not ship');
 });
 
-test('committed Daily and monthly R3 have five scene figures in each language, nowhere else',()=>{
+test('committed Daily and monthly R3 contain the retained or final R3 figures in each language, nowhere else',()=>{
   const m=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json')));
   for(const file of ['Nara-AI-daily.html','Nara-AI-2026-10.html']){
     const html=fs.readFileSync(path.join(n,file),'utf8');
-    assert.equal(imagesFrom(html),10,file);
+    assert.equal(imagesFrom(html),m.images.length*2,file);
     assert.ok(html.includes('data-language-content="sl" lang="sl" hidden'));
     for(const lang of ['en','sl']){
       const a=article(html,lang),sections=a.match(/<section><h2>0[1-8] · [^<]+<\/h2>[\s\S]*?<\/section>/g);
       assert.equal(sections?.length,8,file+' '+lang);
-      assert.equal(imagesFrom(a),5,file+' '+lang);
+      assert.equal(imagesFrom(a),m.images.length,file+' '+lang);
       sections.forEach((s,j)=>{
-        const i=j+1,number=imagesFrom(s);assert.equal(number,i<=5?1:0,'scene '+i+' '+lang);
-        if(i<=5){assert.ok(s.includes('src="'+m.images[j].src+'"'));assert.ok(s.includes('alt="'+(lang==='en'?m.images[j].alt_en:m.images[j].alt_sl)+'"'));assert.ok(s.includes('width="1672" height="941" loading="lazy" decoding="async"'));}
+        const i=j+1,image=m.images.find(x=>x.scene===i),number=imagesFrom(s);assert.equal(number,image?1:0,'scene '+i+' '+lang);
+        if(image){assert.ok(s.includes('src="'+image.src+'"'));assert.ok(s.includes('alt="'+(lang==='en'?image.alt_en:image.alt_sl)+'"'));assert.ok(s.includes('width="1672" height="941" loading="lazy" decoding="async"'));}
       });
     }
   }
   const archive=fs.readFileSync(path.join(n,'Nara-AI-archive.html'),'utf8');
-  assert.equal(imagesFrom(archive),0,'older versions are not re-illustrated');
+  assert.equal(imagesFrom(archive),0,'this legacy archive has no exact matching final record; older versions remain image-free');
   assert.ok(archive.includes('Nara-AI-2026-10.html'));
 });
 
-test('normal renderer reconstruction preserves the five figures without touching stored record text',()=>{
-  const {records}=loadRecords(root),translations=loadTranslations(root,records);
+test('normal renderer reconstruction preserves the current figures without touching stored record text',()=>{
+  const {records}=loadRecords(root),translations=loadTranslations(root,records),m=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json')));
   const before=fs.readFileSync(path.join(n,'daily/records/2026-10-05.json'));
   const slBefore=fs.readFileSync(path.join(n,'daily/translations/sl/2026-10-05.json'));
   for(const page of [latestPage(records,'2026-10',translations,root),monthlyPage('2026-10',records.filter(r=>r.date.startsWith('2026-10')),translations,root)]){
-    assert.equal(imagesFrom(page),10);
-    assert.equal(imagesFrom(article(page,'en')),5);assert.equal(imagesFrom(article(page,'sl')),5);
+    assert.equal(imagesFrom(page),m.images.length*2);
+    assert.equal(imagesFrom(article(page,'en')),m.images.length);assert.equal(imagesFrom(article(page,'sl')),m.images.length);
   }
   assert.equal(h(fs.readFileSync(path.join(n,'daily/records/2026-10-05.json'))),h(before));
   assert.equal(h(fs.readFileSync(path.join(n,'daily/translations/sl/2026-10-05.json'))),h(slBefore));
