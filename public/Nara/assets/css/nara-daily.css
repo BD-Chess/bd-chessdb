@@ -50,3 +50,41 @@
 .daily-scene-figure img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;border-radius:.55rem;box-shadow:0 .5rem 1.5rem rgba(0,0,0,.23)}
 @media(max-width:540px){.daily-scene-figure{margin:1.3em 0 1.8em}.daily-scene-figure img{border-radius:.35rem}}
 
+
+/* Daily images: true fullscreen where supported; an edge-to-edge modal on iOS Safari.
+ * CSS dynamic viewport units reflow automatically on portrait/landscape rotation. */
+.daily-scene-figure img{cursor:zoom-in;touch-action:manipulation}
+.daily-scene-figure img:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+html.nara-lightbox-open{overflow:hidden}
+.nara-daily-lightbox{
+  position:fixed;inset:0;margin:0;padding:0;border:0;border-radius:0;
+  width:100vw;height:100vh;max-width:none;max-height:none;
+  width:100dvw;height:100dvh;background:#070b12;color:white;overflow:hidden;
+  overscroll-behavior:contain;
+}
+.nara-daily-lightbox[open]{display:block}
+.nara-daily-lightbox:fullscreen{width:100%;height:100%;max-width:none;max-height:none}
+.nara-daily-lightbox::backdrop{background:rgba(0,0,0,.96)}
+.nara-daily-lightbox .nara-daily-lightbox-surface{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  border:0;border-radius:0;background:transparent;cursor:zoom-out;
+  touch-action:manipulation;min-width:0;min-height:0;
+}
+.nara-daily-lightbox .nara-daily-lightbox-surface img{
+  width:100%;height:100%;max-width:100%;max-height:100%;
+  display:block;object-fit:contain;border:0;border-radius:0;box-shadow:none;
+  pointer-events:none;
+}
+.nara-daily-lightbox .nara-daily-lightbox-close{
+  position:absolute;z-index:2;top:max(.7rem,env(safe-area-inset-top));
+  right:max(.7rem,env(safe-area-inset-right));width:44px;height:44px;
+  min-width:44px;min-height:44px;padding:0;border-radius:50%;
+  background:rgba(18,24,35,.76);border:1px solid rgba(255,255,255,.48);
+  color:white;font:normal 32px/1 system-ui,sans-serif;cursor:pointer;
+  touch-action:manipulation;
+}
+.nara-daily-lightbox .nara-daily-lightbox-close:focus-visible{
+  outline:3px solid white;outline-offset:3px;
+}
