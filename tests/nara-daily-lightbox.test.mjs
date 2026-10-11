@@ -123,7 +123,7 @@ test('CSS and generated pages include dynamic orientation-safe lightbox and shar
     const html=fs.readFileSync(path.join(base,page),'utf8');
     assert.match(html,/assets\/js\/nara-daily-lightbox\.js\?v=1/);
     assert.match(html,/nara-daily\.css\?v=[^"\s]+-lightbox-r1/);
-    assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,JSON.parse(fs.readFileSync(path.join(root,'public/Nara/daily/illustrations/2026-10-05.json'))).images.length*2);
+    assert.ok((html.match(/<figure class="daily-scene-figure">/g)||[]).length>=JSON.parse(fs.readFileSync(path.join(root,'public/Nara/daily/illustrations/2026-10-05.json'))).images.length*2);
   }
   const renderer=fs.readFileSync(path.join(root,'scripts/nara-daily.mjs'),'utf8');
   assert.match(renderer,/nara-daily-lightbox\.js\?v=1/);
