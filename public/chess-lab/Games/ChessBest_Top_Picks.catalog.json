@@ -478,7 +478,7 @@
         "cdb_raw_first_uci": "a8d8",
         "dcc_pick_uci": "d7a4"
       },
-      "reason": "CDB initially scores 19...Bxa4 and 19...Rad8 equally at -0.10 from Black's perspective. Along the saved ten-half-move CDB trajectories, Bxa4 stays steadier and DCC selects the move Kasparov played. Endpoint, mean and floor baselines on the same saved trajectories also select Bxa4, so this illustrates CDB-assisted DCC rather than proving a unique DCC strength advantage.",
+      "reason": "Review V3 separates the 2026-10-10 frozen R4 learn=0 snapshot from the independent 2026-10-01 Stockfish review, preserves BD's blind/revealed choice history, and corrects 45...fxg2: CDB raw 29973 is an encoded mate in 27 plies (about M14), not centipawns. R4's 56/99 played-root figure is cp-only; the report does not publish a complete typed-score breakdown. No DCC+ strength claim is made.",
       "evidence": {
         "top_picks_arena": {
           "snapshot_utc": "2026-09-29T20:37:25Z",
@@ -542,6 +542,44 @@
             ]
           },
           "caveat": "Only three of 47 legal moves had evaluated root scores. DCC sampled one provider PV per candidate; this is not an exhaustive minimax tree."
+        },
+        "review_v3": {
+          "version": 3,
+          "published_utc": "2026-10-11",
+          "r4_frozen": {
+            "snapshot": "refreshed_02",
+            "cut_sequence": 27381,
+            "cut_utc": "2026-10-10T13:26:57Z",
+            "read_mode": "learn=0",
+            "historical_played_root_cp": {
+              "baseline": 59,
+              "final": 56,
+              "total": 99,
+              "metric": "direct ordinary centipawn scores only"
+            },
+            "complete_typed_score_counts_published": false,
+            "local_stockfish_jobs": 0,
+            "final_db_zip_sha256": "669f11e67749770ec7092116f729d01c4394a29166d910f37476eefafd318c55"
+          },
+          "mate_score": {
+            "move": "45...fxg2",
+            "cdb_raw": 29973,
+            "score_type": "encoded_mate",
+            "encoding_base": 30000,
+            "distance_plies": 27,
+            "convention": "about M14 when Black is to move",
+            "formal_proof": false,
+            "independent_stockfish": "separate older depth-34 analysis reports M14 and stores a legal PV ending 58...Qh2#"
+          },
+          "stockfish_comparisons_are_from": "separate 2026-10-01 local analysis; not R4 and not attributed to R4",
+          "protocol_caveats": [
+            "R4 root scores use mover perspective and are time-stamped snapshots.",
+            "A missing played-move score in a root response is not an implied loss.",
+            "Queued or waiting provider work is not a confirmed server score.",
+            "No DCC+ quality or match-performance claim."
+          ],
+          "review_card_count": 12,
+          "mainline_halfmoves": 99
         }
       },
       "curated_file": "Games/ChessBest_Top_Picks.pgn"

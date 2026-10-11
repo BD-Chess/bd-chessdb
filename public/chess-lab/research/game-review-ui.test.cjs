@@ -76,3 +76,34 @@ test('recorded move gap uses one current source only and leaves missing SF playe
   assert.match(content, /DCC:.*heuristic ranking or raw fallback, no cp gap/);
   assert.equal(h.errors.length, 0, h.errors.join('\n'));
 });
+
+
+test('Dreev Review V3 opens the full line and displays the corrected CDB mate annotation', { timeout: 12000 }, async t => {
+  const h = await boot(t, { libraryPGN: picks });
+  const select = h.el('popularGamesPanel').querySelector('.library-native-selects select');
+  await h.until(() => select.options.length > 1, 'Top Pick available');
+  const option = [...select.options].find(item => item.value.includes('[ChessBestReviewVersion "3"]'));
+  assert.ok(option, 'Dreev Review V3 appears in the existing library');
+  const pgn = option.value;
+  const anchor = Number(pgn.match(/^\[ChessBestAnchorPly "(\d+)"\]$/m)?.[1]);
+  assert.equal(anchor, 37);
+  select.value = pgn;
+  select.dispatchEvent(new h.w.Event('change'));
+  const host = h.w.ChessLabHost;
+  await h.until(() => host.getReviewGame().cursor === anchor, 'Dreev anchor loaded');
+  await h.ready();
+  const expected = h.w.ChessGameReview.build({ Chess: h.w.Chess, pgn,
+    moves: host.getReviewGame().moves, startFen: host.getReviewGame().startFen });
+  h.el('btnGameReview').click();
+  await h.until(() => h.el('gameReviewPanel')?.classList.contains('open'), 'Review drawer open');
+  assert.equal(h.el('gameReviewScrub').max, '99');
+  const markers = expected.moments.filter(item => item.basis === 'PGN annotation');
+  assert.equal(markers.length, 12);
+  const mate = markers.find(item => item.detail.includes('CDB encoded mate score'));
+  const row = h.el('gameReviewPanel').querySelector(`.game-review-moment[data-ply="${mate.ply}"]`);
+  assert.ok(row, 'corrected mate note remains a navigable marker');
+  assert.match(row.textContent, /30000 − 29973 = 27 plies/);
+  assert.match(row.textContent, /not 29,973 cp/);
+  assert.equal(h.el('gameReviewPanel').querySelectorAll('.game-review-moment').length, expected.moments.length);
+  assert.equal(h.errors.length, 0, h.errors.join('\\n'));
+});
