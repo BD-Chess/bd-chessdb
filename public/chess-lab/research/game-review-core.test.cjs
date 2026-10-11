@@ -108,6 +108,7 @@ test('Dreev Review V3 keeps its 99-ply line, 12 evidence markers, and encoded ma
   assert.equal(review.analysis.evaluations, null);
   const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../Games/ChessBest_Top_Picks.catalog.json'), 'utf8'));
   const entry = catalog.cases.find(item => item.id === 'dreev-kasparov-moscow-1996-19-bxa4');
+  assert.equal(entry.evidence.review_v3.source_report, 'docs/chessbest-evidence/dreev-kasparov-review-v3-20261011.md');
   assert.equal(entry.evidence.review_v3.mate_score.cdb_raw, 29973);
   assert.equal(entry.evidence.review_v3.mate_score.distance_plies, 27);
   assert.equal(entry.evidence.review_v3.mate_score.formal_proof, false);
