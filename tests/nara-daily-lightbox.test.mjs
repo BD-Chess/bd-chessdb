@@ -32,7 +32,10 @@ function fixture({fullscreen=true}={}){
     focus(){focused=this;}
     showModal(){this.open=true;}
     close(){this.open=false;}
-    requestFullscreen(){
+    requestFullscreen(options){
+      if(this.tag==='dialog')return Promise.reject(new TypeError('Dialog elements are invalid'));
+      assert.equal(this.tag,'div','fullscreen must target non-dialog stage');
+      assert.equal(options?.navigationUI,'hide');
       if(!fullscreen)return Promise.reject(new Error('Fullscreen unavailable'));
       document.fullscreenElement=this;
       dispatch(listeners,'fullscreenchange');
@@ -69,10 +72,11 @@ test('desktop click opens full-screen, second click closes without losing scroll
   assert.equal(f.one.tabIndex,0);
   f.one.fire('click');
   assert.equal(f.viewer.open,true);
-  assert.equal(f.document.fullscreenElement,f.viewer);
-  assert.equal(f.viewer.children[0].children[0].src,'scene1.webp');
+  assert.equal(f.document.fullscreenElement,f.viewer.children[0]);
+  assert.equal(f.document.fullscreenElement.tag,'div');
+  assert.equal(f.viewer.children[0].children[0].children[0].src,'scene1.webp');
   assert.equal(f.locked,true);
-  f.viewer.children[0].fire('click');
+  f.viewer.children[0].children[0].fire('click');
   assert.equal(f.viewer.open,false);
   assert.equal(f.document.fullscreenElement,null);
   assert.equal(f.locked,false);
@@ -94,7 +98,7 @@ test('mobile Safari without Fullscreen API retains a viewport-covering modal wit
   f.one.fire('click');
   assert.equal(f.viewer.open,true);
   assert.equal(f.document.fullscreenElement,null);
-  f.viewer.children[0].fire('click');
+  f.viewer.children[0].children[0].fire('click');
   assert.equal(f.viewer.open,false);
   assert.deepEqual(f.position,{x:19,y:720});
 });
@@ -109,7 +113,7 @@ test('browser exiting fullscreen also closes viewer; Enter/Space keyboard contro
   assert.equal(f.viewer.open,false);
   f.two.fire('keydown',{key:' ',preventDefault(){}});
   assert.equal(f.viewer.open,true);
-  f.viewer.children[1].fire('click');
+  f.viewer.children[0].children[1].fire('click');
   assert.equal(f.viewer.open,false);
 });
 
@@ -118,13 +122,14 @@ test('CSS and generated pages include dynamic orientation-safe lightbox and shar
   const css=fs.readFileSync(path.join(base,'assets/css/nara-daily.css'),'utf8');
   assert.match(css,/\.nara-daily-lightbox\[open\]/);
   assert.match(css,/height:100dvh/);
+  assert.match(css,/\.nara-daily-lightbox-stage:fullscreen/);
   assert.match(css,/object-fit:contain/);
   for(const page of ['Nara-AI-daily.html','Nara-AI-2026-10.html']){
     const html=fs.readFileSync(path.join(base,page),'utf8');
-    assert.match(html,/assets\/js\/nara-daily-lightbox\.js\?v=1/);
-    assert.match(html,/nara-daily\.css\?v=[^"\s]+-lightbox-r1/);
+    assert.match(html,/assets\/js\/nara-daily-lightbox\.js\?v=2/);
+    assert.match(html,/nara-daily\.css\?v=[^"\s]+-lightbox-r2/);
     assert.ok((html.match(/<figure class="daily-scene-figure">/g)||[]).length>=JSON.parse(fs.readFileSync(path.join(root,'public/Nara/daily/illustrations/2026-10-05.json'))).images.length*2);
   }
   const renderer=fs.readFileSync(path.join(root,'scripts/nara-daily.mjs'),'utf8');
-  assert.match(renderer,/nara-daily-lightbox\.js\?v=1/);
+  assert.match(renderer,/nara-daily-lightbox\.js\?v=2/);
 });

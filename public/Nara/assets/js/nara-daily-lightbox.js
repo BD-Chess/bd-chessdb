@@ -10,6 +10,8 @@
   const viewer=document.createElement('dialog');
   viewer.className='nara-daily-lightbox';
   viewer.setAttribute('aria-label','Full-screen illustration');
+  const stage=document.createElement('div');
+  stage.className='nara-daily-lightbox-stage';
   const surface=document.createElement('button');
   surface.type='button';
   surface.className='nara-daily-lightbox-surface';
@@ -23,7 +25,8 @@
   close.className='nara-daily-lightbox-close';
   close.textContent='×';
   close.setAttribute('aria-label','Close full-screen illustration');
-  viewer.append(surface,close);
+  stage.append(surface,close);
+  viewer.append(stage);
   document.body.append(viewer);
 
   let source=null;
@@ -33,7 +36,7 @@
     if(!viewer.open)return;
     viewer.close();
     document.documentElement.classList.remove('nara-lightbox-open');
-    if(document.fullscreenElement===viewer){
+    if(document.fullscreenElement===stage){
       try{document.exitFullscreen?.()?.catch(()=>{});}catch{}
     }
     const restore=source,position=at;
@@ -57,7 +60,9 @@
     close.focus({preventScroll:true});
     // Desktop and supporting Android browsers hide browser chrome. iOS Safari
     // without element Fullscreen API retains the viewport-filling dialog fallback.
-    try{viewer.requestFullscreen?.()?.catch(()=>{});}catch{}
+    // A <dialog> cannot enter native fullscreen; its nested DIV can.
+    // Keep the modal alone as the fallback when fullscreen is unavailable.
+    try{stage.requestFullscreen?.({navigationUI:'hide'})?.catch(()=>{});}catch{}
   };
 
   for(const img of images){
@@ -89,7 +94,7 @@
     }
   });
   document.addEventListener('fullscreenchange',()=>{
-    if(document.fullscreenElement===viewer)hadFullscreen=true;
+    if(document.fullscreenElement===stage)hadFullscreen=true;
     else if(hadFullscreen){
       hadFullscreen=false;
       closeViewer();
