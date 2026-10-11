@@ -8,6 +8,17 @@ import path from 'node:path';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const realGrade=g=>g&&g.instrument==='SA1'&&Number.isFinite(g.gpt)&&Number.isFinite(g.claude)&&Number.isFinite(g.combined)&&Math.abs(g.combined-(g.gpt+g.claude)/2)<1e-8;
 const dateFile=/^\d{4}-\d{2}-\d{2}(?:-S[123])?\.json$/;
+export const SCORE_COLOUR_GAP = 2;
+
+function opposingPairwise(s,end,prior){
+  const checks=Array.isArray(s.pairwise_checks)?s.pairwise_checks:[];
+  return typeof end.source_content_sha256==='string'&&end.source_content_sha256.length>0&&
+    typeof prior.source_content_sha256==='string'&&prior.source_content_sha256.length>0&&
+    checks.some(p=>p.instrument==='BLIND_AB_BA'&&
+    p.order_consistent===true&&p.verdict==='FINAL_PREFERRED'&&
+    p.final_content_sha256===end.source_content_sha256&&
+    p.earlier_content_sha256===prior.source_content_sha256);
+}
 export function listVersionSeries(root){
   if(!root)return [];
   const dir=path.join(root,'public','Nara','daily','versions');
@@ -36,9 +47,15 @@ export function deriveVersionTrend(s){
   const seen=new Set(),unique=[];
   for(const v of prior){const hash=v.source_content_sha256||JSON.stringify(v.story);if(seen.has(hash)||hash===end.source_content_sha256)continue;seen.add(hash);unique.push(v)}
   if(!unique.length)return 'neutral';
-  if(unique.some(v=>realGrade(v.grade)&&v.grade.combined>end.grade.combined+1e-9))return 'orange';
+  const scored=unique.filter(v=>realGrade(v.grade));
+  const worse=scored.filter(v=>v.grade.combined-end.grade.combined>=SCORE_COLOUR_GAP);
+  if(worse.length){
+    if(worse.some(v=>opposingPairwise(s,end,v)))return 'neutral';
+    return 'orange';
+  }
   if(unique.some(v=>!realGrade(v.grade)))return 'neutral';
-  return 'green';
+  const gap=Math.max(...scored.map(v=>v.grade.combined))-end.grade.combined;
+  return gap>1e-9?'blue':'green';
 }
 export function storyScoreTrend(root,storyId){
   if(!root)return 'neutral';
@@ -88,3 +105,4 @@ export function renderVersionArchive(root){
   }).join('\n');
   return intro+items+'</section>';
 }
+
