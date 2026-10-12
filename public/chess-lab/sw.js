@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. LAB only. */
 'use strict';
-const RELEASE = "lab-1aae333f0c6c34fd";
+const RELEASE = "lab-470be3dec4f56474";
 const PREFIX = "chessbest-chess-lab-";
 const ASSETS = [
   "8zc-about.html",
@@ -50,6 +50,7 @@ const ASSETS = [
   "Games/Various_Games.pgn",
   "config/bots.json",
   "config/coach.json",
+  "config/dreev-kasparov-review.json",
   "css/8zc-deep.css",
   "css/8zc-research.css",
   "css/8zc-review.css",
@@ -88,6 +89,7 @@ const ASSETS = [
   "js/8zc-new-ui.js",
   "js/8zc-research-ui.js",
   "js/8zc-review-core.js",
+  "js/8zc-review-presentation.js",
   "js/8zc-review-ui.js",
   "js/8zc-sf-provider.js",
   "js/8zc-sim-core.js",
