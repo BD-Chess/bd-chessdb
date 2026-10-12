@@ -4,7 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import {loadIllustrations,renderIllustration,renderSceneParagraphs} from './nara-illustrations.mjs';
+import {loadIllustrations,renderIllustration,renderStoryScene} from './nara-illustrations.mjs';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const realGrade=g=>g&&g.instrument==='SA1'&&Number.isFinite(g.gpt)&&Number.isFinite(g.claude)&&Number.isFinite(g.combined)&&Math.abs(g.combined-(g.gpt+g.claude)/2)<1e-8;
@@ -83,12 +83,12 @@ function versionView(v,id,index,branch='',images=[],translation=null){
   const readable=v.story||{},scenes=Array.isArray(readable.scenes)?readable.scenes:[];
   const stage=v.stage||'STORED_FULL_TEXT';
   const side=v.branch?' · '+esc(v.branch):'';
-  const full=scenes.map((scene,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(scene.title)+'</h5>'+renderSceneParagraphs(scene,j+1,images,'en')+'</section>').join('');
-  const sl=translation&&images.length?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>'<section><h5>'+String(j+1).padStart(2,'0')+' · '+esc(s.title)+'</h5>'+renderSceneParagraphs(s,j+1,images,'sl')+'</section>').join('')+'</article>':'';
+  const full=scenes.map((scene,j)=>renderStoryScene(scene,j+1,images,'en',5)).join('');
+  const sl=translation?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>renderStoryScene(s,j+1,images,'sl',5)).join('')+'</article>':'';
   const notes=v.note?'<p class="muted">'+esc(v.note)+'</p>':'';
   const duplicate=v.same_text_events?.length>1?'<p class="muted">Identical text also recorded at '+esc(v.same_text_events.join(', '))+'</p>':'';
   const rating=realGrade(v.grade)?' · '+formatScore(v.grade.combined)+'/100':' · PENDING';
-  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"'+(images.length?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
+  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"'+(translation?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
 }
 function branchView(name,entries,id,finalVersion=null,images=[],translation=null){
   return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name,v.version===finalVersion?images:[],v.version===finalVersion?translation:null)).join('')+'</section>';

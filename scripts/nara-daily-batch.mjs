@@ -4,10 +4,11 @@
  * CLI: node scripts/nara-daily-batch.mjs publish <repoRoot> <public-batch.json>
  */
 import fs from 'node:fs';
-import {loadIllustrations,renderIllustration,renderSceneParagraphs} from './nara-illustrations.mjs';
+import {loadIllustrations,renderIllustration,renderStoryScene} from './nara-illustrations.mjs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {
+  VERSION as DAILY_VERSION,
   hash,
   validateRecord,
   validateLog,
@@ -19,7 +20,7 @@ import {
 } from './nara-daily.mjs';
 import {storyScoreTrend,renderVersionArchive} from './nara-version-history.mjs';
 
-export const VERSION='illuminara-daily-r12-paragraph-webp';
+export const VERSION='illuminara-daily-r13-dialogue';
 const assert=(x,m)=>{if(!x)throw Error(m)};
 const text=(s,n)=>typeof s==='string'&&s.trim().length>0&&s.length<=n;
 const validDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
@@ -139,7 +140,7 @@ function dayManifest(batch,items,featured,files){
 
 export function instanceStoryHtml(item,root=null){
   const r=item.record,t=r.translation_sl,images=loadIllustrations(root,r,t,{nonBlocking:true});
-  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>`<section><h3>${String(i+1).padStart(2,'0')} · ${esc(s.title)}</h3>${renderSceneParagraphs(s,i+1,images,lang)}</section>`).join('\n')}</article>`;
+  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3)).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
   return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
@@ -269,7 +270,7 @@ export function refreshIllustratedPages(root,month){
   }
   const archiveFile=path.join(n,'Nara-AI-archive.html');
   if(fs.existsSync(archiveFile)){
-    const before=fs.readFileSync(archiveFile,'utf8'),start=before.indexOf('<section class="version-history" id="version-history">');
+    const before=fs.readFileSync(archiveFile,'utf8').replace(/assets\/css\/nara-daily\.css\?v=[^"\s]+/,'assets/css/nara-daily.css?v='+DAILY_VERSION+'-lightbox-r2'),start=before.indexOf('<section class="version-history" id="version-history">');
     if(start>=0){
       const tags=/<\/?section\b[^>]*>/g;tags.lastIndex=start;let depth=0,end=-1,tag;
       while((tag=tags.exec(before))){depth+=tag[0].startsWith('</')?-1:1;if(depth===0){end=tags.lastIndex;break}}

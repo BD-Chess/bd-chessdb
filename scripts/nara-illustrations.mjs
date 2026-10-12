@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {dialogueScene,renderDialogueParagraph,sceneActIndices} from './nara-dialogue.mjs';
 const assert=(ok,message)=>{if(!ok)throw Error(message)};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
@@ -105,5 +106,15 @@ export const renderIllustration=(image,lang='en')=>'<figure class="daily-scene-f
 
 /** One-based anchors; legacy manifests remain at scene end. EN/SL share structural indices. */
 export function renderSceneParagraphs(scene,sceneNumber,images=[],lang='en'){
-  return scene.paragraphs.map((p,j)=>'<p>'+esc(p)+'</p>'+images.filter(x=>x.scene===sceneNumber&&(x.after_paragraph??scene.paragraphs.length)===j+1).map(x=>renderIllustration(x,lang)).join('')).join('\n');
+  return scene.paragraphs.map((p,j)=>renderDialogueParagraph(scene,j)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
+}
+
+const paragraphImages=(scene,sceneNumber,index,images,lang)=>images.filter(x=>x.scene===sceneNumber&&(x.after_paragraph??scene.paragraphs.length)===index+1).map(x=>renderIllustration(x,lang)).join('');
+
+/** Acts are presented before scene headings; anchors keep their source indices. */
+export function renderStoryScene(scene,sceneNumber,images=[],lang='en',heading=2){
+  const acts=sceneActIndices(scene);
+  const opening=acts.map(j=>renderDialogueParagraph(scene,j,heading)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
+  const paragraphs=scene.paragraphs.map((p,j)=>acts.includes(j)?null:renderDialogueParagraph(scene,j,heading)+paragraphImages(scene,sceneNumber,j,images,lang)).filter(p=>p!==null).join('\n');
+  return '<section>'+opening+'<h'+heading+(dialogueScene(scene)?' class="scene"':'')+'>'+String(sceneNumber).padStart(2,'0')+' · '+esc(scene.title)+'</h'+heading+'>'+paragraphs+'</section>';
 }
