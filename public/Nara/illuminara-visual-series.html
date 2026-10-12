@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#03060d">
+<title>Illuminara — Visual Series 01 | 30-image gallery</title>
+<meta name="description" content="Explore Illuminara Visual Series 01: thirty original cinematic images, available in HD and optional full 4K WebP.">
+<meta name="author" content="Bojan Dobrečevič">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://www.mdlxdcc.org/nara/illuminara-visual-series.html">
+<link href="assets/nara-mark.svg" rel="icon" type="image/svg+xml">
+<link href="assets/css/nara-cinematic.css" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Illuminara — Visual Series 01">
+<meta property="og:description" content="Thirty glimpses of Illuminara. Open in HD, explore the original 4K on demand.">
+<meta property="og:image" content="https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp">
+<meta property="og:url" content="https://www.mdlxdcc.org/nara/illuminara-visual-series.html">
+<style>
+.vs-wrap{width:min(1320px,calc(100% - 36px));margin-inline:auto}
+.vs-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.85fr);gap:clamp(22px,3vw,44px);align-items:center;padding:clamp(34px,6vw,74px) 0 38px}
+.vs-intro{min-width:0}.vs-intro .vs-eyebrow{font-size:.83rem;text-transform:uppercase;letter-spacing:.19em;font-weight:800;color:var(--gold)}
+.vs-intro h1{font-size:clamp(2.35rem,6.2vw,5.2rem);line-height:1.07;letter-spacing:-.045em;margin:.35em 0}
+.vs-intro p{max-width:55ch;color:var(--muted);line-height:1.65}
+.vs-intro .vs-lead{font-size:clamp(1.08rem,2vw,1.38rem);color:var(--ink)}
+.vs-hero-photo{min-width:0;background:radial-gradient(circle at 40% 30%,rgba(246,198,111,.09),transparent 65%),rgba(12,21,36,.9);border:1px solid rgba(246,198,111,.23);border-radius:24px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.42)}
+.vs-hero-photo img{width:100%;max-height:530px;object-fit:contain;border-radius:15px}
+.vs-hero-photo figcaption{text-align:center;font-size:.86rem;color:var(--soft);padding:10px 4px 2px}
+.vs-action-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.vs-action-row a{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:10px 18px;border:1px solid rgba(246,198,111,.5);color:var(--ink);background:rgba(246,198,111,.1);text-decoration:none;font-size:.95rem;font-weight:700}
+.vs-action-row a:first-child{background:var(--gold);color:#151008}
+.vs-note{padding:20px 0 22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:center;color:var(--muted);font-size:.93rem}
+.vs-note strong{color:var(--ink)}
+.vs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:30px auto 68px}
+.vs-card{min-width:0;border:1px solid var(--line);background:linear-gradient(155deg,rgba(15,28,46,.94),rgba(6,12,23,.97));border-radius:20px;overflow:hidden;box-shadow:0 18px 45px rgba(0,0,0,.24)}
+.vs-preview{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:4/4.1;min-width:0;background:radial-gradient(circle at 45% 35%,rgba(86,110,150,.18),transparent 70%),#080e17;padding:12px;border:0;cursor:zoom-in}
+.vs-preview img{display:block;max-width:100%;width:100%;height:100%;object-fit:contain;transition:transform .24s ease}
+.vs-preview:hover img{transform:scale(1.018)}
+.vs-zoom{position:absolute;right:16px;bottom:16px;font-size:.76rem;color:#fdf5e8;background:rgba(3,6,13,.82);border:1px solid rgba(255,255,255,.2);padding:5px 10px;border-radius:999px}
+.vs-info{padding:16px 19px 20px}.vs-num{font:800 .79rem/1.2 var(--mono);color:var(--gold);letter-spacing:.08em}
+.vs-info h2{font-size:1.12rem;line-height:1.32;margin:8px 0 5px;color:var(--ink)}
+.vs-info p{font-size:.89rem;color:var(--muted);margin:0 0 13px;line-height:1.5}
+.vs-links{display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px}
+.vs-links a{font-size:.86rem;font-weight:700;text-underline-offset:3px}
+.vs-viewer{position:fixed;inset:0;margin:auto;width:min(97vw,1520px);max-width:none;height:min(96dvh,1200px);max-height:none;padding:0;border-radius:18px;border:1px solid rgba(246,198,111,.36);background:#03060c;color:#fff;overflow:hidden;box-shadow:0 40px 110px #000}
+.vs-viewer::backdrop{background:rgba(0,0,0,.91);backdrop-filter:blur(8px)}
+.vs-viewer[open]{display:block}
+.vs-viewer-inner{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.vs-viewer-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:#0b1522;border-bottom:1px solid rgba(255,255,255,.13)}
+.vs-viewer-bar strong{font-size:.92rem;font-weight:700}
+.vs-viewer-bar button,.vs-stage button,.vs-viewer-actions button{font:inherit;cursor:pointer;color:#fff;background:#152235;border:1px solid rgba(255,255,255,.21);border-radius:9px;padding:8px 13px}
+.vs-stage{min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:12px 62px}
+.vs-stage img{display:block;max-width:100%;max-height:100%;height:100%;width:auto;object-fit:contain}
+.vs-stage button{position:absolute;top:50%;transform:translateY(-50%);font-size:1.6rem;z-index:2;line-height:1;padding:11px}
+#vs-prev{left:8px}#vs-next{right:8px}
+.vs-viewer-details{border-top:1px solid rgba(255,255,255,.13);padding:10px 16px 15px;background:#0b1522}
+.vs-viewer-details h2{font-size:1.03rem;line-height:1.25;margin:0;color:#fff}
+.vs-viewer-details p{font-size:.85rem;line-height:1.35;color:#b9c9d9;margin:4px 0 10px}
+.vs-viewer-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.vs-viewer-actions button,.vs-viewer-actions a{font-size:.85rem;font-weight:700;padding:7px 13px}
+.vs-viewer-actions a{border:1px solid rgba(246,198,111,.42);border-radius:9px;text-decoration:none}
+#vs-quality-state{margin-left:auto;color:#cdd6e0;font-size:.78rem}
+@media(max-width:980px){.vs-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:740px){.vs-hero{grid-template-columns:1fr}.vs-hero-photo{max-width:570px;width:100%;justify-self:center}.vs-note{display:block}.vs-note span{display:block;margin-top:4px}}
+@media(max-width:490px){.vs-grid{grid-template-columns:1fr;gap:18px}.vs-preview{aspect-ratio:4/3.8}.vs-hero{padding-top:25px}.vs-wrap{width:calc(100% - 24px)}.vs-stage{padding:8px 37px}.vs-stage button{font-size:1.2rem;padding:8px 9px}.vs-viewer{width:100vw;height:100dvh;border:0;border-radius:0}.vs-viewer-bar{padding:8px 11px}.vs-viewer-details{padding:10px 12px}.vs-viewer-actions{gap:7px}#vs-quality-state{width:100%;margin:0}}
+@media(prefers-reduced-motion:reduce){.vs-preview img{transition:none}.vs-preview:hover img{transform:none}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ImageGallery","name":"Illuminara — Visual Series 01","author":{"@type":"Person","name":"Bojan Dobrečevič"},"url":"https://www.mdlxdcc.org/nara/illuminara-visual-series.html","numberOfItems":30,"image":[{"@type":"ImageObject","name":"Summer Adriatic","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp"},{"@type":"ImageObject","name":"Winter Alpine Aurora","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_02_Winter_Alpine_Aurora_HD.webp"},{"@type":"ImageObject","name":"Renaissance Observatory","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_03_Renaissance_Observatory_HD.webp"},{"@type":"ImageObject","name":"Orbital Garden","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_04_Orbital_Garden_HD.webp"},{"@type":"ImageObject","name":"Summer Picnic","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_05_Summer_Picnic_HD.webp"},{"@type":"ImageObject","name":"Winter Train 1925","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_06_Winter_Train_1925_HD.webp"},{"@type":"ImageObject","name":"Evening Piano","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_07_Evening_Piano_HD.webp"},{"@type":"ImageObject","name":"Rainy Future City CORRECTED","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_08_Rainy_Future_City_CORRECTED_HD.webp"},{"@type":"ImageObject","name":"Summer Sailing","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_09_Summer_Sailing_HD.webp"},{"@type":"ImageObject","name":"Winter Market 1900","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_10_Winter_Market_1900_HD.webp"},{"@type":"ImageObject","name":"Nocturnal Guardian","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_11_Nocturnal_Guardian_HD.webp"},{"@type":"ImageObject","name":"Captain Aegis","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_12_Captain_Aegis_HD.webp"},{"@type":"ImageObject","name":"Weaver Terrace","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_13B_Weaver_Terrace_R3_HD.webp"},{"@type":"ImageObject","name":"Ferrum Hangar","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_14B_Ferrum_Hangar_R3_HD.webp"},{"@type":"ImageObject","name":"Titan Quarry","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_15B_Titan_Quarry_R2_HD.webp"},{"@type":"ImageObject","name":"Tonar Storm Causeway","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_16B_Tonar_Storm_Causeway_R2_HD.webp"},{"@type":"ImageObject","name":"Helion Train Rescue","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_17B_Helion_Train_Rescue_R2_HD.webp"},{"@type":"ImageObject","name":"Arcanor Observatory","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_18B_Arcanor_Observatory_HD.webp"},{"@type":"ImageObject","name":"Argent Planetary Rings","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_19B_Argent_Planetary_Rings_HD.webp"},{"@type":"ImageObject","name":"Nexus Living Seed","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_20B_Nexus_Living_Seed_R3_HD.webp"},{"@type":"ImageObject","name":"Obsidar Citadel","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_21B_Obsidar_Citadel_R2_HD.webp"},{"@type":"ImageObject","name":"Valora Courtyard","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_22B_Valora_Courtyard_R2_HD.webp"},{"@type":"ImageObject","name":"Velox Intersection","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_23B_Velox_Intersection_R2_HD.webp"},{"@type":"ImageObject","name":"Solvar Harbor Rescue","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_24C_Solvar_Harbor_Rescue_R1_HD.webp"},{"@type":"ImageObject","name":"Pyralis Quiet Contact","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_25A_Pyralis_Quiet_Contact_R1_HD.webp"},{"@type":"ImageObject","name":"Galakthar World","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_26B_Galakthar_World_R2_HD.webp"},{"@type":"ImageObject","name":"Aeternor Attention","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_27B_Aeternor_Attention_R2_HD.webp"},{"@type":"ImageObject","name":"Trivor Defense","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_28B_Trivor_Defense_R2_HD.webp"},{"@type":"ImageObject","name":"Veyondar Rescue","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_29B_Veyondar_Rescue_R2_HD.webp"},{"@type":"ImageObject","name":"Nara Between The Everpresence and The One Beyond","contentUrl":"https://www.mdlxdcc.org/nara/assets/img/illuminara-visual-series/hd/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_HD.webp"}]}</script>
+</head>
+<body>
+<a class="skip" href="#vs-gallery">Skip to gallery</a>
+<header class="topbar"><div class="wrap topbar-inner">
+<a class="brand" href="index.html"><span aria-hidden="true" class="brand-mark"></span><span>NARA</span></a>
+<nav aria-label="Primary navigation" class="nav"><a href="index.html">Home</a><a href="nara.html">Nara</a><a href="illuminara.html">Illuminara</a><a href="illuminara-episode-01-let-me-leave-angry.html">Illuminara 01</a><a aria-current="page" href="illuminara-visual-series.html">Visual Series</a><a href="../">MDLxDCC.org</a></nav>
+<div aria-label="Reader text size controls" class="reader-tools" role="group"><button aria-label="Decrease text size" class="tool" data-reader-scale="-0.08" type="button">A−</button><span aria-live="polite" class="scale-label" data-reader-scale-label="">100%</span><button aria-label="Increase text size" class="tool" data-reader-scale="0.08" type="button">A+</button><button aria-label="Reset text size" class="tool" data-reader-scale="reset" type="button">A</button></div>
+</div><div aria-hidden="true" class="reading-progress"></div></header>
+<main id="main">
+<section class="vs-wrap vs-hero" aria-labelledby="vs-title">
+<div class="vs-intro"><div class="vs-eyebrow">Illuminara · Art collection / 01</div><h1 id="vs-title">Thirty windows into the impossible.</h1>
+<p class="vs-lead">Illuminara — Visual Series 01</p>
+<p>Thirty cinematic portraits, worlds and encounters. An independent visual collection from Illuminara’s universe, separate from the illustrations within individual episodes and from Grounded Nara.</p>
+<p>Explore every work in HD. Open a picture to see it larger, then choose <strong>Load 4K original</strong> when you want the full-resolution image.</p>
+<div class="vs-action-row"><a href="#vs-gallery">Explore all 30 images ↓</a><a href="illuminara.html">About Illuminara ↗</a></div></div>
+<figure class="vs-hero-photo"><img src="assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp" width="1080" height="1920" alt="Illuminara on the summer Adriatic, the first of thirty visual series images" decoding="async"><figcaption>01 / 30 — Summer Adriatic · HD preview</figcaption></figure>
+</section>
+<section class="vs-wrap vs-note" aria-label="Viewing options"><div><strong>30 artworks · 30 HD + 30 original 4K WebP files</strong><span> · Portrait and landscape images keep their full frame.</span></div><span>HD loads by default. 4K only when you choose it.</span></section>
+<section class="vs-wrap" id="vs-gallery" aria-label="Thirty Illuminara artworks">
+<div class="vs-grid">
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_01_Summer_Adriatic_4K.webp" data-title="Summer Adriatic" data-caption="Summer light along the Adriatic coast.">
+  <button class="vs-preview" type="button" data-open="0" aria-label="Enlarge image 01: Summer Adriatic">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp" width="1080" height="1920" loading="eager" fetchpriority="high" decoding="async" alt="Illuminara visual series 01, Summer light along the Adriatic coast.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">01 / 30</span><h2>Summer Adriatic</h2><p>Summer light along the Adriatic coast.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_01_Summer_Adriatic_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_01_Summer_Adriatic_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_02_Winter_Alpine_Aurora_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_02_Winter_Alpine_Aurora_4K.webp" data-title="Winter Alpine Aurora" data-caption="Winter mountains beneath an alpine aurora.">
+  <button class="vs-preview" type="button" data-open="1" aria-label="Enlarge image 02: Winter Alpine Aurora">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_02_Winter_Alpine_Aurora_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 02, Winter mountains beneath an alpine aurora.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">02 / 30</span><h2>Winter Alpine Aurora</h2><p>Winter mountains beneath an alpine aurora.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_02_Winter_Alpine_Aurora_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_02_Winter_Alpine_Aurora_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_03_Renaissance_Observatory_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_03_Renaissance_Observatory_4K.webp" data-title="Renaissance Observatory" data-caption="A Renaissance observatory seen through a new lens.">
+  <button class="vs-preview" type="button" data-open="2" aria-label="Enlarge image 03: Renaissance Observatory">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_03_Renaissance_Observatory_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 03, A Renaissance observatory seen through a new lens.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">03 / 30</span><h2>Renaissance Observatory</h2><p>A Renaissance observatory seen through a new lens.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_03_Renaissance_Observatory_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_03_Renaissance_Observatory_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_04_Orbital_Garden_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_04_Orbital_Garden_4K.webp" data-title="Orbital Garden" data-caption="An orbital garden high above the Earth.">
+  <button class="vs-preview" type="button" data-open="3" aria-label="Enlarge image 04: Orbital Garden">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_04_Orbital_Garden_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 04, An orbital garden high above the Earth.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">04 / 30</span><h2>Orbital Garden</h2><p>An orbital garden high above the Earth.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_04_Orbital_Garden_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_04_Orbital_Garden_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_05_Summer_Picnic_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_05_Summer_Picnic_4K.webp" data-title="Summer Picnic" data-caption="A quiet summer picnic.">
+  <button class="vs-preview" type="button" data-open="4" aria-label="Enlarge image 05: Summer Picnic">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_05_Summer_Picnic_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 05, A quiet summer picnic.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">05 / 30</span><h2>Summer Picnic</h2><p>A quiet summer picnic.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_05_Summer_Picnic_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_05_Summer_Picnic_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_06_Winter_Train_1925_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_06_Winter_Train_1925_4K.webp" data-title="Winter Train 1925" data-caption="A winter train journey in 1925.">
+  <button class="vs-preview" type="button" data-open="5" aria-label="Enlarge image 06: Winter Train 1925">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_06_Winter_Train_1925_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 06, A winter train journey in 1925.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">06 / 30</span><h2>Winter Train 1925</h2><p>A winter train journey in 1925.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_06_Winter_Train_1925_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_06_Winter_Train_1925_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_07_Evening_Piano_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_07_Evening_Piano_4K.webp" data-title="Evening Piano" data-caption="An evening at the piano.">
+  <button class="vs-preview" type="button" data-open="6" aria-label="Enlarge image 07: Evening Piano">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_07_Evening_Piano_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 07, An evening at the piano.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">07 / 30</span><h2>Evening Piano</h2><p>An evening at the piano.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_07_Evening_Piano_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_07_Evening_Piano_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_08_Rainy_Future_City_CORRECTED_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_08_Rainy_Future_City_CORRECTED_4K.webp" data-title="Rainy Future City CORRECTED" data-caption="A future city under heavy rain.">
+  <button class="vs-preview" type="button" data-open="7" aria-label="Enlarge image 08: Rainy Future City CORRECTED">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_08_Rainy_Future_City_CORRECTED_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 08, A future city under heavy rain.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">08 / 30</span><h2>Rainy Future City CORRECTED</h2><p>A future city under heavy rain.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_08_Rainy_Future_City_CORRECTED_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_08_Rainy_Future_City_CORRECTED_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_09_Summer_Sailing_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_09_Summer_Sailing_4K.webp" data-title="Summer Sailing" data-caption="A summer voyage under sail.">
+  <button class="vs-preview" type="button" data-open="8" aria-label="Enlarge image 09: Summer Sailing">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_09_Summer_Sailing_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 09, A summer voyage under sail.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">09 / 30</span><h2>Summer Sailing</h2><p>A summer voyage under sail.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_09_Summer_Sailing_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_09_Summer_Sailing_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_10_Winter_Market_1900_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_10_Winter_Market_1900_4K.webp" data-title="Winter Market 1900" data-caption="A winter market around the year 1900.">
+  <button class="vs-preview" type="button" data-open="9" aria-label="Enlarge image 10: Winter Market 1900">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_10_Winter_Market_1900_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 10, A winter market around the year 1900.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">10 / 30</span><h2>Winter Market 1900</h2><p>A winter market around the year 1900.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_10_Winter_Market_1900_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_10_Winter_Market_1900_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_11_Nocturnal_Guardian_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_11_Nocturnal_Guardian_4K.webp" data-title="Nocturnal Guardian" data-caption="A nocturnal guardian.">
+  <button class="vs-preview" type="button" data-open="10" aria-label="Enlarge image 11: Nocturnal Guardian">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_11_Nocturnal_Guardian_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 11, A nocturnal guardian.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">11 / 30</span><h2>Nocturnal Guardian</h2><p>A nocturnal guardian.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_11_Nocturnal_Guardian_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_11_Nocturnal_Guardian_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_12_Captain_Aegis_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_12_Captain_Aegis_4K.webp" data-title="Captain Aegis" data-caption="An encounter with Captain Aegis.">
+  <button class="vs-preview" type="button" data-open="11" aria-label="Enlarge image 12: Captain Aegis">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_12_Captain_Aegis_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 12, An encounter with Captain Aegis.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">12 / 30</span><h2>Captain Aegis</h2><p>An encounter with Captain Aegis.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_12_Captain_Aegis_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_12_Captain_Aegis_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_13B_Weaver_Terrace_R3_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_13B_Weaver_Terrace_R3_4K.webp" data-title="Weaver Terrace" data-caption="The Weaver Terrace.">
+  <button class="vs-preview" type="button" data-open="12" aria-label="Enlarge image 13: Weaver Terrace">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_13B_Weaver_Terrace_R3_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 13, The Weaver Terrace.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">13 / 30</span><h2>Weaver Terrace</h2><p>The Weaver Terrace.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_13B_Weaver_Terrace_R3_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_13B_Weaver_Terrace_R3_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_14B_Ferrum_Hangar_R3_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_14B_Ferrum_Hangar_R3_4K.webp" data-title="Ferrum Hangar" data-caption="The Ferrum Hangar.">
+  <button class="vs-preview" type="button" data-open="13" aria-label="Enlarge image 14: Ferrum Hangar">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_14B_Ferrum_Hangar_R3_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 14, The Ferrum Hangar.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">14 / 30</span><h2>Ferrum Hangar</h2><p>The Ferrum Hangar.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_14B_Ferrum_Hangar_R3_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_14B_Ferrum_Hangar_R3_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_15B_Titan_Quarry_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_15B_Titan_Quarry_R2_4K.webp" data-title="Titan Quarry" data-caption="The Titan Quarry.">
+  <button class="vs-preview" type="button" data-open="14" aria-label="Enlarge image 15: Titan Quarry">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_15B_Titan_Quarry_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 15, The Titan Quarry.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">15 / 30</span><h2>Titan Quarry</h2><p>The Titan Quarry.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_15B_Titan_Quarry_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_15B_Titan_Quarry_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_16B_Tonar_Storm_Causeway_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_16B_Tonar_Storm_Causeway_R2_4K.webp" data-title="Tonar Storm Causeway" data-caption="The Tonar storm causeway.">
+  <button class="vs-preview" type="button" data-open="15" aria-label="Enlarge image 16: Tonar Storm Causeway">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_16B_Tonar_Storm_Causeway_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 16, The Tonar storm causeway.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">16 / 30</span><h2>Tonar Storm Causeway</h2><p>The Tonar storm causeway.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_16B_Tonar_Storm_Causeway_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_16B_Tonar_Storm_Causeway_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_17B_Helion_Train_Rescue_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_17B_Helion_Train_Rescue_R2_4K.webp" data-title="Helion Train Rescue" data-caption="The Helion train rescue.">
+  <button class="vs-preview" type="button" data-open="16" aria-label="Enlarge image 17: Helion Train Rescue">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_17B_Helion_Train_Rescue_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 17, The Helion train rescue.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">17 / 30</span><h2>Helion Train Rescue</h2><p>The Helion train rescue.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_17B_Helion_Train_Rescue_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_17B_Helion_Train_Rescue_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_18B_Arcanor_Observatory_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_18B_Arcanor_Observatory_4K.webp" data-title="Arcanor Observatory" data-caption="The Arcanor observatory.">
+  <button class="vs-preview" type="button" data-open="17" aria-label="Enlarge image 18: Arcanor Observatory">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_18B_Arcanor_Observatory_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 18, The Arcanor observatory.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">18 / 30</span><h2>Arcanor Observatory</h2><p>The Arcanor observatory.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_18B_Arcanor_Observatory_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_18B_Arcanor_Observatory_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_19B_Argent_Planetary_Rings_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_19B_Argent_Planetary_Rings_4K.webp" data-title="Argent Planetary Rings" data-caption="Planetary rings around Argent.">
+  <button class="vs-preview" type="button" data-open="18" aria-label="Enlarge image 19: Argent Planetary Rings">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_19B_Argent_Planetary_Rings_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 19, Planetary rings around Argent.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">19 / 30</span><h2>Argent Planetary Rings</h2><p>Planetary rings around Argent.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_19B_Argent_Planetary_Rings_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_19B_Argent_Planetary_Rings_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_20B_Nexus_Living_Seed_R3_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_20B_Nexus_Living_Seed_R3_4K.webp" data-title="Nexus Living Seed" data-caption="Nexus and the living seed.">
+  <button class="vs-preview" type="button" data-open="19" aria-label="Enlarge image 20: Nexus Living Seed">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_20B_Nexus_Living_Seed_R3_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 20, Nexus and the living seed.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">20 / 30</span><h2>Nexus Living Seed</h2><p>Nexus and the living seed.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_20B_Nexus_Living_Seed_R3_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_20B_Nexus_Living_Seed_R3_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_21B_Obsidar_Citadel_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_21B_Obsidar_Citadel_R2_4K.webp" data-title="Obsidar Citadel" data-caption="Obsidar's citadel.">
+  <button class="vs-preview" type="button" data-open="20" aria-label="Enlarge image 21: Obsidar Citadel">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_21B_Obsidar_Citadel_R2_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 21, Obsidar's citadel.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">21 / 30</span><h2>Obsidar Citadel</h2><p>Obsidar's citadel.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_21B_Obsidar_Citadel_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_21B_Obsidar_Citadel_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_22B_Valora_Courtyard_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_22B_Valora_Courtyard_R2_4K.webp" data-title="Valora Courtyard" data-caption="A courtyard in Valora.">
+  <button class="vs-preview" type="button" data-open="21" aria-label="Enlarge image 22: Valora Courtyard">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_22B_Valora_Courtyard_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 22, A courtyard in Valora.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">22 / 30</span><h2>Valora Courtyard</h2><p>A courtyard in Valora.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_22B_Valora_Courtyard_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_22B_Valora_Courtyard_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_23B_Velox_Intersection_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_23B_Velox_Intersection_R2_4K.webp" data-title="Velox Intersection" data-caption="The Velox intersection.">
+  <button class="vs-preview" type="button" data-open="22" aria-label="Enlarge image 23: Velox Intersection">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_23B_Velox_Intersection_R2_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 23, The Velox intersection.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">23 / 30</span><h2>Velox Intersection</h2><p>The Velox intersection.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_23B_Velox_Intersection_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_23B_Velox_Intersection_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_24C_Solvar_Harbor_Rescue_R1_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_24C_Solvar_Harbor_Rescue_R1_4K.webp" data-title="Solvar Harbor Rescue" data-caption="A rescue at Solvar Harbor.">
+  <button class="vs-preview" type="button" data-open="23" aria-label="Enlarge image 24: Solvar Harbor Rescue">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_24C_Solvar_Harbor_Rescue_R1_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 24, A rescue at Solvar Harbor.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">24 / 30</span><h2>Solvar Harbor Rescue</h2><p>A rescue at Solvar Harbor.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_24C_Solvar_Harbor_Rescue_R1_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_24C_Solvar_Harbor_Rescue_R1_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_25A_Pyralis_Quiet_Contact_R1_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_25A_Pyralis_Quiet_Contact_R1_4K.webp" data-title="Pyralis Quiet Contact" data-caption="A quiet contact with Pyralis.">
+  <button class="vs-preview" type="button" data-open="24" aria-label="Enlarge image 25: Pyralis Quiet Contact">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_25A_Pyralis_Quiet_Contact_R1_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 25, A quiet contact with Pyralis.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">25 / 30</span><h2>Pyralis Quiet Contact</h2><p>A quiet contact with Pyralis.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_25A_Pyralis_Quiet_Contact_R1_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_25A_Pyralis_Quiet_Contact_R1_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_26B_Galakthar_World_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_26B_Galakthar_World_R2_4K.webp" data-title="Galakthar World" data-caption="Galakthar's world.">
+  <button class="vs-preview" type="button" data-open="25" aria-label="Enlarge image 26: Galakthar World">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_26B_Galakthar_World_R2_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 26, Galakthar's world.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">26 / 30</span><h2>Galakthar World</h2><p>Galakthar's world.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_26B_Galakthar_World_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_26B_Galakthar_World_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_27B_Aeternor_Attention_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_27B_Aeternor_Attention_R2_4K.webp" data-title="Aeternor Attention" data-caption="An encounter with Aeternor.">
+  <button class="vs-preview" type="button" data-open="26" aria-label="Enlarge image 27: Aeternor Attention">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_27B_Aeternor_Attention_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 27, An encounter with Aeternor.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">27 / 30</span><h2>Aeternor Attention</h2><p>An encounter with Aeternor.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_27B_Aeternor_Attention_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_27B_Aeternor_Attention_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_28B_Trivor_Defense_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_28B_Trivor_Defense_R2_4K.webp" data-title="Trivor Defense" data-caption="The defense at Trivor.">
+  <button class="vs-preview" type="button" data-open="27" aria-label="Enlarge image 28: Trivor Defense">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_28B_Trivor_Defense_R2_HD.webp" width="1080" height="1920" loading="lazy" decoding="async" alt="Illuminara visual series 28, The defense at Trivor.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">28 / 30</span><h2>Trivor Defense</h2><p>The defense at Trivor.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_28B_Trivor_Defense_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_28B_Trivor_Defense_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_29B_Veyondar_Rescue_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_29B_Veyondar_Rescue_R2_4K.webp" data-title="Veyondar Rescue" data-caption="The Veyondar rescue.">
+  <button class="vs-preview" type="button" data-open="28" aria-label="Enlarge image 29: Veyondar Rescue">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_29B_Veyondar_Rescue_R2_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 29, The Veyondar rescue.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">29 / 30</span><h2>Veyondar Rescue</h2><p>The Veyondar rescue.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_29B_Veyondar_Rescue_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_29B_Veyondar_Rescue_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+<figure class="vs-card" data-hd="assets/img/illuminara-visual-series/hd/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_HD.webp" data-4k="assets/img/illuminara-visual-series/4k/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_4K.webp" data-title="Nara Between The Everpresence and The One Beyond" data-caption="Nara between the Everpresence and the One Beyond.">
+  <button class="vs-preview" type="button" data-open="29" aria-label="Enlarge image 30: Nara Between The Everpresence and The One Beyond">
+    <img src="assets/img/illuminara-visual-series/hd/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_HD.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="Illuminara visual series 30, Nara between the Everpresence and the One Beyond.">
+    <span class="vs-zoom" aria-hidden="true">↗ Enlarge</span>
+  </button>
+  <figcaption class="vs-info"><span class="vs-num">30 / 30</span><h2>Nara Between The Everpresence and The One Beyond</h2><p>Nara between the Everpresence and the One Beyond.</p>
+    <div class="vs-links"><a href="assets/img/illuminara-visual-series/hd/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_HD.webp" download>Save HD</a><a href="assets/img/illuminara-visual-series/4k/Illuminara_30B_Nara_Between_The_Everpresence_and_The_One_Beyond_R2_4K.webp" download>Save 4K</a></div>
+  </figcaption>
+</figure>
+</div>
+</section>
+</main>
+<dialog class="vs-viewer" id="vs-viewer" aria-label="Enlarged Illuminara artwork">
+<div class="vs-viewer-inner"><div class="vs-viewer-bar"><strong id="vs-counter" aria-live="polite">01 / 30</strong><button id="vs-close" type="button" aria-label="Close enlarged view">Close ✕</button></div>
+<div class="vs-stage"><button id="vs-prev" type="button" aria-label="Previous image">‹</button><img id="vs-viewer-image" alt=""><button id="vs-next" type="button" aria-label="Next image">›</button></div>
+<div class="vs-viewer-details"><h2 id="vs-viewer-title"></h2><p id="vs-viewer-caption"></p><div class="vs-viewer-actions"><button id="vs-quality" type="button">Load 4K original</button><a id="vs-download" href="#" download>Save HD</a><span id="vs-quality-state" aria-live="polite">HD preview</span></div></div>
+</div>
+</dialog>
+<footer class="footer"><div class="wrap footer-inner"><div>© 2026 Bojan Dobrečevič · Original Illuminara visual series</div><div><a href="index.html">Nara home</a> · <a href="illuminara.html">Illuminara profile</a></div></div></footer>
+<script defer src="assets/js/nara-reader.js"></script>
+<script defer src="assets/js/illuminara-visual-series.js"></script>
+</body>
+</html>
