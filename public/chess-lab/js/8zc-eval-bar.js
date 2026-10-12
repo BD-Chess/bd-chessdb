@@ -36,7 +36,7 @@
     const sourceScores = new Map();
     const dccChoices = new Map();
     const sources = ['CDB','SF','DCC','RLE','LC0','BER'];
-    const names={CDB:'ChessDB',SF:'Stockfish',DCC:'DCC',RLE:'Reckless',LC0:'Leela Chess Zero',BER:'Berserk'};
+    const names={CDB:'ChessDB.cn',SF:'Stockfish',DCC:'DCC',RLE:'Reckless',LC0:'Leela Chess Zero',BER:'Berserk'};
     let lastKnown = null;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;

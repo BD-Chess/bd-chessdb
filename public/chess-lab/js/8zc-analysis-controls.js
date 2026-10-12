@@ -53,6 +53,8 @@
     const caps = session?.capabilities?.(mode) || {};
     const deepCaps = session?.capabilities?.(deepMode) || {};
     if (topMode) topMode.value = mode;
+    const cdbOption=topMode?.querySelector('option[value="cdb"]');
+    if(cdbOption)cdbOption.textContent=document.body.classList.contains('app-mobile')?'CDB':'ChessDB.cn';
     if (modeControl()) modeControl().value = deepMode;
     reflectThreads(topThreads,mode,settings,caps);
     reflectThreads(threadControl(),deepMode,settings,deepCaps);

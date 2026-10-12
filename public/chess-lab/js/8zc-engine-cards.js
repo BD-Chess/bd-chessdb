@@ -10,11 +10,33 @@
     const session=host.session||root.ChessAnalysisSession;
     const results=new Map(),jobs=new Map(),queue=[];
     let serial=0,batch=null,destroyed=false,draining=false;
+    let following=false,followedPosition=null,followTimer=null,followSerial=0;
     const context=()=>host.getContext();
     const mobile=()=>session.capabilities('sf-full').mobile;
     const capacity=()=>mobile()?1:Math.max(1,Math.min(2,(session.capabilities('sf-full').hardwareConcurrency||2)-1));
     const key=(fen,mode)=>fen+'|'+mode;
     const changed=()=>host.onState?.();
+    const positionKey=ctx=>JSON.stringify([ctx.fen,ctx.positionHistory||null]);
+    function cancelFollow(){++followSerial;clearTimeout(followTimer);followTimer=null;}
+    function scheduleFollow(){
+      cancelFollow();
+      const ctx=context(),signature=positionKey(ctx);
+      if(!following||destroyed||!ctx.canAnalyze||signature===followedPosition)return;
+      const token=followSerial;
+      // One current-position run after rapid navigation; late positions never publish.
+      followTimer=setTimeout(()=>{
+        followTimer=null;const current=context();
+        if(token!==followSerial||!following||destroyed||!current.canAnalyze||positionKey(current)!==signature)return;
+        followedPosition=signature;
+        void analyzeAll({automatic:true});
+      },100);
+    }
+    function setFollowing(value){
+      following=!!value;cancelFollow();followedPosition=null;
+      if(following)scheduleFollow();
+      else if(batch?.automatic)stopAll();
+      changed();
+    }
     const live=job=>!job.cancelled&&!destroyed&&context().fen===job.fen&&JSON.stringify(context().positionHistory||null)===JSON.stringify(job.options.history||null)&&jobs.get(job.mode)===job;
     function get(mode,fen=context().fen){
       const value=results.get(key(fen,mode)),ctx=context();
@@ -39,7 +61,7 @@
       if(job.snapshot){const value={...job.snapshot,mode,stopped:true,status:'stopped'};results.set(key(job.fen,mode),value);host.onResult?.(value,job.options);}
       job.resolve(null);finishBatch();changed();pump();
     }
-    function stopAll(){draining=true;batch=null;for(const mode of [...jobs.keys()])stop(mode);draining=false;changed();}
+    function stopAll(){cancelFollow();draining=true;batch=null;for(const mode of [...jobs.keys()])stop(mode);draining=false;changed();}
     function finishBatch(){
       if(batch&&!batch.modes.some(mode=>jobs.has(mode))){batch=null;changed();}
     }
@@ -98,11 +120,12 @@
         maxSearchMs:mobile()?(all?3000:5000):(all?6000:30000)};
       job.promise=new Promise(resolve=>{job.resolve=resolve;});jobs.set(mode,job);queue.push(job);changed();pump();return job.promise;
     }
-    function analyzeAll(){
-      if(batch){stopAll();return Promise.resolve([]);}
+    function analyzeAll({automatic=false}={}){
+      if(!automatic){cancelFollow();if(following)followedPosition=positionKey(context());}
+      if(batch){if(automatic){batch.automatic=true;return Promise.resolve([]);}stopAll();return Promise.resolve([]);}
       const ctx=context();if(!ctx.canAnalyze)return Promise.resolve([]);
       const modes=[ctx.settings?.sfCardMode||'sf-lite','berserk'];
-      batch={modes};changed();
+      batch={modes,automatic};changed();
       return Promise.all(modes.map(mode=>{
         const job=jobs.get(mode);if(!job)return analyze(mode,{all:true});
         job.maxSearchMs=mobile()?3000:6000;
@@ -117,12 +140,12 @@
           positionHistory:child.limits?.history||(typeof snapshot.positionHistory==='object'?snapshot.positionHistory:null),requestedDepth:child.limits?.depth||snapshot.requestedBudget?.depth||null});
       }
     }
-    function positionChanged(){for(const [mode,job]of [...jobs])if(!live(job))stop(mode);changed();}
-    const hidden=()=>{if(root.document?.hidden)stopAll();};
+    function positionChanged(){for(const [mode,job]of [...jobs])if(!live(job))stop(mode);scheduleFollow();changed();}
+    const hidden=()=>{if(root.document?.hidden)stopAll();else{followedPosition=null;scheduleFollow();}};
     root.document?.addEventListener('visibilitychange',hidden);root.addEventListener?.('pagehide',stopAll);
     let cpu=session.getSettings?.().sfFullThreadsRequested;
     const unsubscribe=session.subscribeSettings?.(settings=>{if(settings.sfFullThreadsRequested!==cpu){cpu=settings.sfFullThreadsRequested;stopAll();}});
-    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopAll,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
+    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopAll,setFollowing,isFollowing:()=>following,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
       destroy(){destroyed=true;stopAll();unsubscribe?.();root.document?.removeEventListener('visibilitychange',hidden);root.removeEventListener?.('pagehide',stopAll);}};
   }
   return {create};

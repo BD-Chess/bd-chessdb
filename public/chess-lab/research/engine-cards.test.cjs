@@ -2,10 +2,10 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const Cards=require('../js/8zc-engine-cards.js');
 function setup(t,mobile=false){
-  let fen='position-a',positionHistory=null;const calls=[],engines=[],published=[];
+  let fen='position-a',positionHistory=null,canAnalyze=true;const calls=[],engines=[],published=[];
   const settings={sfAnalysisDepth:11,sfCardMode:'sf-lite',topN:3};
   const session={capabilities:()=>({mobile,hardwareConcurrency:8}),getSettings:()=>({sfFullThreadsRequested:1})};
-  const cards=Cards.create({session,getContext:()=>({fen,positionHistory,canAnalyze:true,settings}),
+  const cards=Cards.create({session,getContext:()=>({fen,positionHistory,canAnalyze,settings}),
     backendFor:mode=>({create(){
       const engine={prepare:async()=>{},analyze(options){calls.push({mode,options});engine.options=options;return new Promise(r=>engine.resolve=r);},
         stop(){engine.resolve?.({fen,lines:[],stopped:true});},destroy(){engine.destroyed=true;}};
@@ -14,7 +14,7 @@ function setup(t,mobile=false){
   t.after(()=>cards.destroy());
   const tick=()=>new Promise(r=>setImmediate(r));
   const complete=(index,depth=11)=>engines[index].resolve({fen,lines:[{depth,pv:['e2e4'],score:{type:'cp',white:27}}],stopped:false});
-  return {cards,calls,engines,published,settings,tick,complete,changeFen(value){fen=value;cards.positionChanged();},changeHistory(value){positionHistory=value;cards.positionChanged();}};
+  return {cards,calls,engines,published,settings,tick,complete,changeFen(value){fen=value;cards.positionChanged();},changeHistory(value){positionHistory=value;cards.positionChanged();},setAvailable(value){canAnalyze=value;cards.positionChanged();}};
 }
 test('each card owns its budget and result, and a completed repeat deepens its target',async t=>{
   const x=setup(t),first=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[0].options.depth,11);
@@ -22,6 +22,38 @@ test('each card owns its budget and result, and a completed repeat deepens its t
   const second=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[1].options.depth,13);
   x.complete(1,13);await second;assert.equal(x.cards.get('sf-lite').requestedDepth,13);
   assert.equal(x.cards.get('berserk'),null);
+});
+
+test('per-move analysis is opt-in, uses the card variant, and cancels stale positions and pending follow work',async t=>{
+  const x=setup(t),wait=()=>new Promise(r=>setTimeout(r,130));
+  x.changeFen('position-b');await wait();assert.equal(x.calls.length,0);assert.equal(x.cards.isFollowing(),false);
+  x.settings.sfCardMode='sf-full';x.cards.setFollowing(true);await wait();
+  assert.deepEqual(x.calls.map(x=>x.mode),['sf-full','berserk']);
+  const oldCallback=x.calls[0].options.onInfo;
+  x.changeFen('position-c');x.changeFen('position-d');await wait();
+  assert.equal(x.engines[0].destroyed,true);assert.equal(x.engines[1].destroyed,true);
+  assert.deepEqual(x.calls.slice(2).map(x=>x.options.fen),['position-d','position-d']);
+  oldCallback(null,{fen:'position-b',lines:[{depth:99,pv:['e2e4']}]});assert.equal(x.published.length,0);
+  x.complete(2);x.complete(3);await x.tick();x.cards.positionChanged();await wait();assert.equal(x.calls.length,4,'same-position repaint does not reanalyze');
+  x.changeFen('position-e');x.cards.setFollowing(false);await wait();assert.equal(x.calls.length,4,'off cancels pending automatic work');
+  assert.equal(x.cards.isFollowing(),false);
+});
+
+test('mobile automatic analysis stays sequential and respects unavailable/locked contexts',async t=>{
+  const x=setup(t,true),wait=()=>new Promise(r=>setTimeout(r,130));
+  x.setAvailable(false);x.cards.setFollowing(true);await wait();assert.equal(x.calls.length,0);
+  x.setAvailable(true);await wait();assert.equal(x.calls.length,1);assert.match(x.cards.state('BER').note,/Queued/);
+  x.complete(0);await x.tick();assert.equal(x.calls.length,2);
+  x.cards.setFollowing(false);await wait();assert.equal(x.cards.isRunning(),false);
+  assert.equal(x.engines[1].destroyed,true);
+});
+
+test('enabling per-move mode during a manual All run retains the current workers',async t=>{
+  const x=setup(t),run=x.cards.analyzeAll();await x.tick();x.cards.setFollowing(true);
+  await new Promise(r=>setTimeout(r,130));assert.equal(x.calls.length,2);assert.equal(x.cards.isAllRunning(),true);
+  assert.equal(x.engines.some(x=>x.destroyed),false);
+  x.complete(0);x.complete(1);await run;x.cards.stopAll();x.cards.positionChanged();
+  await new Promise(r=>setTimeout(r,130));assert.equal(x.calls.length,2,'Stop and a repaint do not restart the stopped position');
 });
 test('desktop Analyze all runs actual engines concurrently and retains separate scores',async t=>{
   const x=setup(t),run=x.cards.analyzeAll();await x.tick();assert.deepEqual(x.calls.map(x=>x.mode),['sf-lite','berserk']);

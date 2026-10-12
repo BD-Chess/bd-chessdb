@@ -1506,6 +1506,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if(['sf-lite','sf-full','berserk'].includes(selected)){
       const cached=engineCards?.get(selected,fen);
       if(cached?.lines?.length){publishEngineSnapshot(cached,{depth:cached.requestedDepth});status.textContent=(cached.engine?.name||selected)+' · cached analysis';}
+      else if(engineCards?.isFollowing())status.textContent='Awaiting '+(selected==='berserk'?'Berserk':selected==='sf-full'?'SF Full':'SF Lite')+' analysis';
       else{status.textContent=selected==='berserk'?'Berserk · starting analysis':'Stockfish · starting analysis';
         void engineCards?.analyze(selected,{reuse:true}).then(value=>{if(current()&&value)status.textContent=(value.engine?.name||selected)+' · '+(value.error?'Error: '+value.error:value.limited?'time limit · partial analysis':value.stopped?'stopped':'analysis complete');});}
     }else status.textContent=selected==='cdb'?(cdb.moves.length?'ChessDB · position data':cdb.reason||'ChessDB unavailable'):
@@ -2486,6 +2487,8 @@ function jumpTo(i){
     onResult:publishEngineSnapshot,
     onState:()=>{
       positionEval.render();
+      const follow=document.getElementById('analysisAllMoves');
+      if(follow)follow.checked=!!engineCards?.isFollowing();
       const button=document.getElementById('btnAnalyzeAll');
       if(button){const running=engineCards?.isAllRunning();button.classList.toggle('is-working',!!running);
         button.querySelector('.all-desktop-label').textContent=running?'Stop all':'Analyze all 4';
@@ -2649,6 +2652,7 @@ function jumpTo(i){
     else engineCards?.analyze(settings.analysisSource);
   });
   document.getElementById('btnAnalyzeAll').addEventListener('click',()=>engineCards?.analyzeAll());
+  document.getElementById('analysisAllMoves').addEventListener('change',event=>engineCards?.setFollowing(event.target.checked));
   if (restoreTopPickCursor !== null) {
     lastLoadedPGN = activeTopPickPGN;
     bookFlags = extractBookFlags(activeTopPickPGN);

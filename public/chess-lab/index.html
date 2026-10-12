@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="css/8zc-styles.css?v=20261002-ux7">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20261012-review4">
-  <link rel="stylesheet" href="css/8zc-deep.css?v=20261012-ux4">
+  <link rel="stylesheet" href="css/8zc-deep.css?v=20261013-ux5">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
 
@@ -166,7 +166,7 @@
         <span><i class="legend-dot legend-best"></i>Engine best</span>
         <span><i class="legend-dot legend-next"></i>Game continuation</span>
         <span><i class="legend-dot legend-dcc"></i>DCC line <button id="btnDccScoreHelp" type="button" class="dcc-score-help" aria-label="Explain DCC scores" aria-haspopup="dialog" aria-controls="dccScoreHelp">⚡</button></span>
-        <div class="board-analysis-actions"><label class="sf-full-toggle"><input type="checkbox" id="analysisSFFull"> SF Full</label><button type="button" id="btnAnalyzeAll" class="analyze-all" title="Analyze with Stockfish, Reckless, LCZero and Berserk. Unavailable engines are marked on their cards."><span class="all-desktop-label">Analyze all 4</span><span class="all-mobile-label">All 4</span></button></div>
+        <div class="board-analysis-actions"><label class="sf-full-toggle"><input type="checkbox" id="analysisSFFull"> SF Full</label><button type="button" id="btnAnalyzeAll" class="analyze-all" title="Analyze with Stockfish, Reckless, LCZero and Berserk. Unavailable engines are marked on their cards."><span class="all-desktop-label">Analyze all 4</span><span class="all-mobile-label">All 4</span></button><label class="analysis-follow-toggle" title="When enabled, analyzes every new position with all available engines. When off, Analyze all 4 runs once."><input type="checkbox" id="analysisAllMoves" aria-label="Analyze every move with all available engines"></label></div>
       </div>
       <dialog id="dccScoreHelp" class="dcc-score-dialog" aria-labelledby="dccScoreHelpTitle"><button type="button" data-close-dcc-help aria-label="Close DCC explanation">×</button><h2 id="dccScoreHelpTitle">A second view of the same position.</h2><p>DCC reads the shape of an evaluation path. Its rank is a heuristic; raw engine scores remain visible.</p><a href="8zc-help.html#scores">Read the scores →</a></dialog>
     </section>
@@ -193,9 +193,9 @@
       <div class="analysis-source-row" aria-label="Main analysis source">
         <div class="analysis-primary-row">
           <button type="button" class="btn btn-nav analysis-deepen" id="btnAnalysisDeepen" title="Refresh ChessDB evaluations">Refresh evals</button>
-          <div class="analysis-selects"><select id="analysisSource" aria-label="Engine source for board scores"><option value="cdb" selected>CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="reckless">Reckless</option><option value="lc0">LCZero</option><option value="berserk">Berserk</option></select><select id="analysisCpuThreads" aria-label="Local search CPU threads"><option value="none" selected>CPU —</option></select></div>
+          <div class="analysis-selects"><select id="analysisSource" aria-label="Engine source for board scores"><option value="cdb" selected>ChessDB.cn</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="reckless">Reckless</option><option value="lc0">LCZero</option><option value="berserk">Berserk</option></select><select id="analysisCpuThreads" aria-label="Local search CPU threads"><option value="none" selected>CPU —</option></select></div>
         </div>
-        <div class="analysis-options-row"><div class="analysis-dcc-actions"><button type="button" class="btn btn-nav" id="btnDesktopDccReplay" title="Replay a loaded game with DCC analysis">DCC replay</button><button type="button" class="btn btn-nav" id="btnDesktopDccAnalysis" aria-pressed="false" title="Show DCC analysis">DCC analysis</button><label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox" checked> DCC</label></div><label class="analysis-cdb-toggle"><input id="analysisCDB" type="checkbox" checked> CDB</label></div>
+        <div class="analysis-options-row"><div class="analysis-dcc-actions"><button type="button" class="btn btn-nav" id="btnDesktopDccReplay" title="Replay a loaded game with DCC analysis">DCC replay</button><button type="button" class="btn btn-nav" id="btnDesktopDccAnalysis" aria-pressed="false" title="Show DCC analysis">DCC analysis</button></div><div class="analysis-checks"><label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox" checked> DCC</label><label class="analysis-cdb-toggle"><input id="analysisCDB" type="checkbox" checked> <span class="cdb-desktop-label">ChessDB.cn</span><span class="cdb-mobile-label">CDB</span></label></div></div>
       </div>
       <div class="analysis-status-row" aria-label="Analysis status"><small id="analysisCpuStatus" hidden></small><small id="analysisHostNote" class="analysis-host-note" hidden></small><small data-berserk-status role="status" aria-live="polite" hidden></small><small id="analysisDccModeNote" hidden></small><span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span><span role="status" aria-live="polite" id="dccProgress"></span></div>
       <div id="viewToggle" class="legacy-view-controls" aria-hidden="true" hidden style="display:none !important">
@@ -731,7 +731,7 @@
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-time-core.js?v=20260926-sim2"></script>
-  <script src="js/8zc-eval-bar.js?v=20261012-ui3"></script>
+  <script src="js/8zc-eval-bar.js?v=20261013-ux5"></script>
   <script src="js/8zc-workspace.js?v=20260927-w0r2"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
@@ -743,8 +743,8 @@
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
   <script src="js/8zc-analysis-session.js?v=20261012-ux4"></script>
   <script src="js/8zc-deep-ui.js?v=20261012-ux4"></script>
-  <script src="js/8zc-engine-cards.js?v=20261012-ux4"></script>
-  <script src="js/8zc-analysis-controls.js?v=20261012-ux4"></script>
+  <script src="js/8zc-engine-cards.js?v=20261013-ux5"></script>
+  <script src="js/8zc-analysis-controls.js?v=20261013-ux5"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
@@ -752,7 +752,7 @@
   <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
   <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
   <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
-  <script src="js/8zc-utils.js?v=20261012-ux4"></script>
+  <script src="js/8zc-utils.js?v=20261013-ux5"></script>
   <script src="js/8zc-new-ui.js?v=20261002-library3"></script>
   <script src="js/8zc-review-ui.js?v=20261012-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261003-ux5"></script>
