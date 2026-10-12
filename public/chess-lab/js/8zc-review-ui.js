@@ -46,6 +46,8 @@
     let previousBlocked = null;
     let refreshFrame = 0;
     const scrollByKey = new Map();
+    let evidenceState = '';
+    const presentationContext = () => ({ review, snapshot, body, navigate, blocked, evidenceState, repaint: render });
 
     const blocked = () => Boolean(snapshot?.blocked);
     function focusAfterClose() {
@@ -69,7 +71,7 @@
       return next?.moveLabel ? 'Before ' + next.moveLabel : 'After ' + ply + ' half-moves';
     }
 
-    function navigate(ply, openStudy = false, showBoard = false) {
+    function navigate(ply, openStudy = false, showBoard = false, keepReview = false) {
       if (blocked()) {
         notice.textContent = 'Finish the active game or stop Replay before reviewing a position.';
         return;
@@ -83,7 +85,7 @@
         host.navigateReview(ply);
         const at = host.getContext();
         if (at.fen !== expected.fen || at.history?.length !== ply) throw Error('The current line changed. Reopen Review and try again.');
-        if (!appView || openStudy) closePanel(!openStudy);
+        if ((!appView && !keepReview) || openStudy) closePanel(!openStudy);
         if (openStudy) {
           if (typeof host.openReviewStudy === 'function') host.openReviewStudy('compare');
           else document.getElementById('btnStudy')?.click();
@@ -92,6 +94,8 @@
           boardTab?.click();
           boardTab?.focus({ preventScroll: true });
         } else if (appView) {
+          refresh();
+        } else if (keepReview) {
           refresh();
         } else if (root.matchMedia?.('(max-width: 790px)')?.matches) {
           document.getElementById('board-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -157,10 +161,11 @@
       slider.disabled = blocked() || !review.totalPly;
       slider.setAttribute('aria-label', 'Select a position in the recorded game');
       slider.addEventListener('input', () => { sliderLabel.textContent = positionLabel(Number(slider.value)); });
-      slider.addEventListener('change', () => navigate(Number(slider.value)));
+      slider.addEventListener('change', () => navigate(Number(slider.value), false, false, true));
       section.append(sliderLabel, slider);
       const controls = element('div', 'game-review-actions');
-      controls.append(action('First position', () => navigate(0)), action('Final position', () => navigate(review.totalPly)));
+      controls.append(action('First position', () => navigate(0, false, false, true)),
+        action('Final position', () => navigate(review.totalPly, false, false, true)));
       section.append(controls);
       body.append(section);
     }
@@ -181,6 +186,8 @@
         return `${mate < 0 ? '−' : ''}#${Math.abs(mate)}`;
       }
       if (!Number.isFinite(move.score)) return 'score unknown';
+      if (Math.abs(move.score) >= 29000 && Math.abs(move.score) <= 30000)
+        return root.ChessGameReview.scoreText(root.ChessGameReview.decodeCdb(move.score), fen, 'white');
       const value = move.score * whiteSign;
       if (Math.abs(value) >= 10000) return `${value < 0 ? 'B' : 'W'} decisive / mate (distance unknown)`;
       const direction = move.bound === 'lower' || move.bound === 'upper'
@@ -272,7 +279,7 @@
 
     function renderMoments() {
       const section = element('section', 'game-review-moments');
-      section.append(element('h3', '', 'Places to investigate'));
+      section.append(element('h3', '', review.evidence ? 'Key decisions' : 'Places to investigate'));
       const moments = review.moments || [];
       if (!moments.length) {
         section.append(element('p', 'game-review-empty', 'No recorded highlights in this line. Use the slider or move history to inspect any position.'));
@@ -287,8 +294,10 @@
         row.dataset.ply = String(moment.ply);
         if (moment.ply === snapshot.cursor) row.classList.add('is-current');
         row.append(element('span', 'game-review-move', positionLabel(moment.ply)));
-        row.append(element('strong', '', moment.title || 'Recorded moment'));
-        if (moment.detail) row.append(element('p', 'game-review-detail', moment.detail));
+        if (!root.ChessReviewPresentation?.decisionCard(presentationContext(), row, moment)) {
+          row.append(element('strong', '', moment.title || 'Recorded moment'));
+          if (moment.detail) row.append(element('p', 'game-review-detail', moment.detail));
+        }
         const provenance = [moment.source, moment.basis].filter(Boolean).join(' · ');
         if (provenance) row.append(element('small', 'game-review-basis', provenance));
         const actions = element('div', 'game-review-actions');
@@ -304,6 +313,7 @@
     function render() {
       if (panel.hidden) return;
       const previousScroll = reviewScroller().scrollTop;
+      const focusId = body.contains(document.activeElement) ? document.activeElement.id : '';
       body.replaceChildren();
       notice.textContent = '';
       if (!snapshot || !snapshot.moves?.length) {
@@ -317,14 +327,21 @@
       renderSummary();
       if (blocked()) body.append(element('p', 'game-review-line-note', 'Finish the active game or stop Replay before navigating with Review.'));
       renderTimeline();
+      root.ChessReviewPresentation?.overview(presentationContext());
+      const current = element('details', 'game-review-live');
+      current.append(element('summary', '', 'Current board analysis'));
       const sourceSection = element('section', 'game-review-sources');
-      body.append(sourceSection);
+      current.append(sourceSection); body.append(current);
       renderSources();
       renderMoments();
+      root.ChessReviewPresentation?.ledger(presentationContext());
       const foot = element('p', 'game-review-footnote',
-        'Only available PGN notes and navigation checkpoints are shown. The board requests analysis for the position you open. Scores and DCC ranks must be read from their labeled sources; this view does not calculate an evaluation graph or verify every move.');
+        review.evidence ?
+        'Saved CDB and Stockfish results keep their original dates and search budgets. An engine mate result predicts forced mate; a legal PV ending in mate verifies that line. It is not a formal proof over every defence.' :
+        'PGN notes, saved eval annotations and navigation checkpoints describe the recorded line. Current board analysis belongs to the position you open.');
       body.append(foot);
       reviewScroller().scrollTop = previousScroll;
+      if (focusId) document.getElementById(focusId)?.focus?.({ preventScroll: true });
     }
 
     function refresh() {
@@ -340,6 +357,22 @@
           review = root.ChessGameReview.build({ Chess: root.Chess, pgn: next.sourcePGN, headers: next.headers,
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
+          evidenceState = '';
+          const pending = !next.lineChanged && next.sourceIsOriginal !== false && root.ChessReviewPresentation?.load(review);
+          if (pending) {
+            evidenceState = 'loading';
+            const expectedReview = review;
+            pending.then(data => {
+              if (previousKey !== key || review !== expectedReview) return;
+              review = root.ChessGameReview.attachEvidence(review, data, root.Chess);
+              evidenceState = 'ready';
+              if (!panel.hidden) render();
+            }).catch(() => {
+              if (previousKey !== key || review !== expectedReview) return;
+              evidenceState = 'failed';
+              if (!panel.hidden) render();
+            });
+          }
           if (appView) reviewScroller().scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
@@ -376,7 +409,7 @@
       const first = focusables[0], last = focusables[focusables.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    }, true);
+    });
     host.onChange(() => {
       if (!panel.hidden && !refreshFrame) refreshFrame = root.requestAnimationFrame(() => { refreshFrame = 0; refresh(); });
     });
@@ -390,3 +423,4 @@
   if (document.readyState === 'complete') ready();
   else root.addEventListener('load', ready, { once: true });
 })(window);
+

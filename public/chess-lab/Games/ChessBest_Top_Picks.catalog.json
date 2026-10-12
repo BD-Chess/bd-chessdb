@@ -478,7 +478,7 @@
         "cdb_raw_first_uci": "a8d8",
         "dcc_pick_uci": "d7a4"
       },
-      "reason": "Review V3 separates the 2026-10-10 frozen R4 learn=0 snapshot from the independent 2026-10-01 Stockfish review, preserves BD's blind/revealed choice history, and corrects 45...fxg2: CDB raw 29973 is an encoded mate in 27 plies (about M14), not centipawns. R4's 56/99 played-root figure is cp-only; the report does not publish a complete typed-score breakdown. No DCC+ strength claim is made.",
+      "reason": "Review V4 adds the 99-half-move trajectory, 12 candidate comparisons and saved legal PV playback while preserving V3 notes and BD's blind/revealed choice history. The 2026-10-10 frozen R4 learn=0 data directly score 58/99 played moves: 56 cp, 2 mate, 41 unknown. The separate Stockfish baseline covers all 100 positions. CDB raw 29973 at 45...fxg2 is mate in 27 plies (about M14), not centipawns; no DCC+ strength claim is made.",
       "evidence": {
         "top_picks_arena": {
           "snapshot_utc": "2026-09-29T20:37:25Z",
@@ -581,6 +581,20 @@
           "review_card_count": 12,
           "mainline_halfmoves": 99,
           "source_report": "docs/chessbest-evidence/dreev-kasparov-review-v3-20261011.md"
+        },
+        "review_v4": {
+          "version": 4,
+          "evidence_file": "config/dreev-kasparov-review.json",
+          "evidence_sha256": "31cf4d3f88ceb5713ec87f2d35013014ccbdb9392f6643d83779cf15df5ad1a8",
+          "r4_snapshot": "refreshed_02",
+          "cut_sequence": 27381,
+          "played_move_types": { "cp": 56, "mate": 2, "unknown": 41 },
+          "direct_played_scores": 58,
+          "mainline_halfmoves": 99,
+          "stockfish_baseline_positions": 100,
+          "stockfish_same_root_comparisons": 43,
+          "review_cards": 12,
+          "source_report": "docs/chessbest-evidence/dreev-kasparov-review-v4-20261012.md"
         }
       },
       "curated_file": "Games/ChessBest_Top_Picks.pgn"
