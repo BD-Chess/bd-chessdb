@@ -1,0 +1,61 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import crypto from 'node:crypto';
+import {loadFormatEditions,editionPaths,editionBodyHash,pairedAssessment,renderEditionPage,formatDayLinks,renderFormatArchive,refreshFormatArchiveSection,generateFormatEditions} from '../scripts/nara-format-editions.mjs';
+import {latestPage,monthlyPage,publish,hash} from '../scripts/nara-daily.mjs';
+import {refreshIllustratedPages} from '../scripts/nara-daily-batch.mjs';
+import {renderStoryScene} from '../scripts/nara-illustrations.mjs';
+const root=path.resolve(import.meta.dirname,'..'),n=path.join(root,'public/Nara');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const stable=(r)=>Object.fromEntries(['daily/catalog.json',...fs.readdirSync(path.join(r,'public/Nara/daily/records')).filter(x=>x.endsWith('.json')).map(x=>'daily/records/'+x)].map(rel=>[rel,sha(fs.readFileSync(path.join(r,'public/Nara',rel)))]));
+function fixture(t,{art=false}={}){const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-format-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));fs.mkdirSync(path.join(r,'public/Nara'),{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(r,'public/Nara/daily'),{recursive:true});for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'))fs.copyFileSync(path.join(n,f),path.join(r,'public/Nara',f));if(art)fs.cpSync(path.join(n,'assets/img/daily/2026-10-05'),path.join(r,'public/Nara/assets/img/daily/2026-10-05'),{recursive:true});return r}
+
+test('all 13 source-bound EN/SL editions have complete anchors and genuine pending status',()=>{
+ const items=loadFormatEditions(root);assert.equal(items.length,13);assert.equal(items.filter(x=>x.paths.date==='2026-10-11').length,3);
+ assert.equal(items.some(x=>x.paths.date==='2026-10-12'),false);
+ for(const x of items){assert.equal(x.combined,null);assert.equal(x.binding.assessment.status,'PENDING');assert.equal(editionBodyHash(x.en),x.en.content_sha256);assert.equal(editionBodyHash(x.sl),x.sl.content_sha256);for(let i=0;i<x.en.scenes.length;i++)assert.equal(x.en.scenes[i].paragraphs.length,x.sl.scenes[i].paragraphs.length)}
+});
+test('untrusted manifest dates, paths and modified source bytes are rejected',t=>{
+ const r=fixture(t),mp=path.join(r,'public/Nara/daily/format-editions/manifest.json'),original=fs.readFileSync(mp,'utf8'),m=JSON.parse(original);
+ assert.throws(()=>editionPaths('../2026-10-05'),/unsafe/);assert.throws(()=>editionPaths('2026-10-12'),/instance/);assert.throws(()=>editionPaths('2026-10-13-S1'),/unsafe/);
+ m.authorized_dates=['2026-10-04'];fs.writeFileSync(mp,JSON.stringify(m));assert.throws(()=>loadFormatEditions(r),/allowlist/);fs.writeFileSync(mp,original);
+ fs.appendFileSync(path.join(r,'public/Nara/daily/records/2026-10-05.json'),' ');assert.throws(()=>loadFormatEditions(r),/binding/);
+});
+test('rendering applies R10 only to the edition and escapes hostile prose and speaker labels',()=>{
+ const item=structuredClone(loadFormatEditions(root)[0]);item.en.title='<img src=x onerror=alert(1)>';item.en.scenes[0].paragraphs[1]='**<svg onload=alert(1)>**  \n<script>alert(1)</script>';item.en.content_sha256=editionBodyHash(item.en);
+ const html=renderEditionPage(root,item);assert.doesNotMatch(html,/<(?:svg|script>alert|img src=x)/);assert.match(html,/&lt;svg/);assert.match(html,/&lt;script&gt;/);assert.match(html,/class="subtitle"/);assert.match(html,/class="speaker"/);
+ const legacy=renderStoryScene({title:'Legacy',paragraphs:['*Here · now*','**Name**  \nWords']},1,[],'en',2,'2026-10-12');assert.doesNotMatch(legacy,/class="subtitle"|class="speaker"/);
+});
+test('scores are withheld until both sealed instruments bind the exact new English body',()=>{
+ const h='a'.repeat(64),d={premise:13,character:13,structure:13,prose:13,world:8,moral_intellectual_depth:13,ending:13},g={score:86,dimensions:d,rubric_id:'GPT_LITERARY_7_100_V1',anchor_revision:'SHARED_ANCHOR_V1',sealed:true,en_content_sha256:h,output_sha256:'b'.repeat(64)},c={score:90,rubric_id:'PEC-6_V2',sealed:true,en_content_sha256:h,output_sha256:'c'.repeat(64),prompt_sha256:'d'.repeat(64)},a={status:'PAIRED',en_content_sha256:h,gpt:g,claude:c,combined:88};
+ assert.equal(pairedAssessment({status:'PENDING'},h),null);assert.throws(()=>pairedAssessment({status:'PENDING',combined:88},h),/inherited/);assert.equal(pairedAssessment(a,h),88);assert.throws(()=>pairedAssessment(a,'e'.repeat(64)),/binding/);assert.throws(()=>pairedAssessment({...a,combined:90},h),/mean/);assert.throws(()=>pairedAssessment({...a,claude:{...c,sealed:false}},h),/unsealed/);assert.throws(()=>pairedAssessment({...a,gpt:{...g,score:87}},h),/arithmetic/);
+});
+test('manual Oct5 images retain verified HD/4K variants and land after the same source moment in both languages',()=>{
+ const item=loadFormatEditions(root)[0],old=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json'),'utf8')),html=renderEditionPage(root,item);
+ assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);
+ for(const im of old.images){assert.ok(html.includes(im.src));assert.ok(html.includes(im.src_4k));const anchor=item.binding.anchors.en[im.scene-1][im.after_paragraph-1];assert.equal(anchor.after_anchor,item.binding.anchors.sl[im.scene-1][im.after_paragraph-1].after_anchor);const sceneHtml=renderStoryScene(item.en.scenes[im.scene-1],im.scene,[{...im,after_paragraph:anchor.after_anchor}],'en',2,'2026-10-13');assert.ok(sceneHtml.indexOf('<figure')>sceneHtml.indexOf(item.en.scenes[im.scene-1].paragraphs[anchor.after_anchor-1].replace(/^\*\*[^*]+\*\*  \n/,'')));}
+});
+test('missing artwork never blocks either language and HD-only editions never request 4K',t=>{
+ const r=fixture(t),items=loadFormatEditions(r);for(const item of items){const html=renderEditionPage(r,item);assert.match(html,/lang="sl"/);assert.match(html,/class="story"/);assert.doesNotMatch(html,/data-nara-image-4k/)}
+});
+test('regeneration is idempotent and daily/monthly refresh retains all links without changing originals or Oct12',t=>{
+ const r=fixture(t,{art:true}),before=stable(r),originalPages=Object.fromEntries(fs.readdirSync(path.join(r,'public/Nara')).filter(x=>x.endsWith('-pre-format-R1.html')).map(x=>[x,sha(fs.readFileSync(path.join(r,'public/Nara',x)))]));
+ assert.equal(generateFormatEditions(r).edition_count,13);assert.deepEqual(generateFormatEditions(r).changed,[]);
+ refreshIllustratedPages(r,'2026-10');const daily=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-daily.html'),'utf8'),monthly=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-2026-10.html'),'utf8'),archive=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-archive.html'),'utf8');
+ for(const item of loadFormatEditions(r)){assert.ok(daily.includes(item.paths.page));assert.ok(monthly.includes(item.paths.page));assert.ok(archive.includes(item.paths.page));assert.ok(archive.includes(item.paths.original_page))}
+ assert.match(daily,/NARA-D-2026-10-12/);assert.deepEqual(stable(r),before);for(const [f,h]of Object.entries(originalPages))assert.equal(sha(fs.readFileSync(path.join(r,'public/Nara',f))),h);
+ const a=refreshFormatArchiveSection(archive,r);assert.equal(refreshFormatArchiveSection(a,r),a);assert.equal((a.match(/id="format-editions"/g)||[]).length,1);
+});
+test('day links cover non-featured instances and archive regeneration uses separate original links',()=>{
+ const links=formatDayLinks(root,'2026-10-11');for(const s of ['S1','S2','S3'])assert.ok(links.includes('2026-10-11-'+s+'-format-R1.html'));
+ assert.equal(formatDayLinks(root,'2026-10-12'),'');assert.equal((formatDayLinks(root,'2026-10-11','NARA-D-2026-10-11:S2').match(/format-R1\.html/g)||[]).length,2);assert.equal((renderFormatArchive(root).match(/-pre-format-R1\.html/g)||[]).length,13);
+});
+test('ordinary next-day publication preserves historical editions and refuses old-date backfill',t=>{
+ const r=fixture(t,{art:true}),nr=path.join(r,'public/Nara'),record=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-12.json'),'utf8')),log=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-12.json'),'utf8'));
+ const original=stable(r),editionBytes=Object.fromEntries(loadFormatEditions(r).map(x=>[x.paths.en,sha(fs.readFileSync(path.join(nr,x.paths.en)))]));
+ record.date='2026-10-13';record.id='NARA-D-2026-10-13';record.published_at='2026-10-13T20:00:00Z';log.date=record.date;log.id=record.id+'-LOG';log.story_id=record.id;
+ assert.match(publish(r,record,log,new Date('2026-10-13T20:01:00Z')),/LOCAL_CANDIDATE_READY/);
+ for(const [f,h]of Object.entries(original))if(f!=='daily/catalog.json')assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
+ for(const [f,h]of Object.entries(editionBytes))assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
+ assert.equal(loadFormatEditions(r).length,13);assert.match(fs.readFileSync(path.join(nr,'Nara-AI-archive.html'),'utf8'),/id="format-editions"/);
+ const old=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-05.json'),'utf8')),oldLog=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-05.json'),'utf8'));
+ assert.throws(()=>publish(r,old,oldLog,new Date('2026-10-13T20:01:00Z')),/not current local publication date/);
+});

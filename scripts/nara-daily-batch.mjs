@@ -19,6 +19,7 @@ import {
   logPage,
 } from './nara-daily.mjs';
 import {storyScoreTrend,renderVersionArchive} from './nara-version-history.mjs';
+import {formatDayLinks,generateFormatEditions,refreshFormatArchiveSection} from './nara-format-editions.mjs';
 
 export const VERSION='illuminara-daily-r13-dialogue';
 const assert=(x,m)=>{if(!x)throw Error(m)};
@@ -143,7 +144,7 @@ export function instanceStoryHtml(item,root=null){
   const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3,r.date)).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
-  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
+  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${formatDayLinks(root,r.date,r.id)}${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
 }
 
 function insertBeforeMainClose(html,fragment){const needle='</main>';const i=html.lastIndexOf(needle);assert(i>=0,'main close missing');return html.slice(0,i)+fragment+html.slice(i)}
@@ -233,6 +234,7 @@ export function publishBatch(root,input,now=new Date()){
     'Nara-AI-log.html':patchLog(logPage(logs),batch,batch.instances,featured),
   };
   for(const [rel,data] of Object.entries(pageOutputs))write(path.join(n,rel),data);
+  generateFormatEditions(root);
   return {status:'LOCAL_BATCH_CANDIDATE_READY',featured,changed:[...Object.keys(staged),...Object.keys(pageOutputs)].sort(),day_manifest_sha256:hash(manifestBytes)};
 }
 
@@ -274,10 +276,11 @@ export function refreshIllustratedPages(root,month){
     if(start>=0){
       const tags=/<\/?section\b[^>]*>/g;tags.lastIndex=start;let depth=0,end=-1,tag;
       while((tag=tags.exec(before))){depth+=tag[0].startsWith('</')?-1:1;if(depth===0){end=tags.lastIndex;break}}
-      assert(end>start,'refresh archive boundary');outputs['Nara-AI-archive.html']=before.slice(0,start)+renderVersionArchive(root)+before.slice(end);
+      assert(end>start,'refresh archive boundary');outputs['Nara-AI-archive.html']=refreshFormatArchiveSection(before.slice(0,start)+renderVersionArchive(root)+before.slice(end),root);
     }
   }
   const changed=[];for(const [rel,data] of Object.entries(outputs))if(write(path.join(n,rel),data))changed.push(rel);
+  changed.push(...generateFormatEditions(root).changed);
   return {status:'LOCAL_ILLUSTRATED_PAGES_READY',changed:changed.sort()};
 }
 
