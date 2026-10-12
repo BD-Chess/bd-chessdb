@@ -7,7 +7,7 @@ const { JSDOM } = require('jsdom');
 const base = path.resolve(__dirname, '..');
 function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {}) {
   const dom = new JSDOM(`<!doctype html>
-    <select id="analysisSource"><option value="auto">CDB | SF Lite</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select>
+    <select id="analysisSource"><option value="cdb">CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero</option></select>
     <select id="analysisCpuThreads"><option>auto</option><option>1</option><option>2</option><option>4</option><option>6</option><option>8</option></select>
     <small id="analysisCpuStatus"></small><small id="analysisDccModeNote" hidden></small>
     <button id="btnAnalysisDeepen">Deeper SF</button><button id="btnDeepAnalysis">Deep analysis</button>
@@ -16,7 +16,7 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
   t.after(() => dom.window.close());
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
   w.ChessDeepEngine = { validateFen(fen) { if (!new w.Chess().validate_fen(fen).valid) throw Error('Invalid FEN'); } };
-  let settings = { analysisMode: 'auto', sfFullThreadsRequested: 'auto' };
+  let settings = { boardSource:'cdb', analysisMode: 'cdb', sfFullThreadsRequested: 1 };
   let options, running = false, analyses = 0, stops = 0;
   const saved = [];
   const subscribers = new Set();
@@ -41,32 +41,34 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
     analyses: () => analyses, stops: () => stops };
 }
 
-test('five modes and CPU requests synchronize without loading engines; dual PVs retain child provenance', t => {
+test('board source and independent analysis mode stay separate; CPU requests synchronize and dual PVs retain child provenance', t => {
   const x = setup(t, w => ({ fen: new w.Chess().fen() }));
   const { w, el, change } = x;
   const topMode = w.document.getElementById('analysisSource');
   const topThreads = w.document.getElementById('analysisCpuThreads');
   const seen = [];
   topMode.addEventListener('change', event => seen.push({ mode: topMode.value, handled: !!event.chessAnalysisHandled }));
-  assert.equal(topMode.value, 'auto');
-  assert.equal(el('mode').value, 'auto');
+  assert.equal(topMode.value, 'cdb');
+  assert.equal(el('mode').value, 'cdb');
   assert.equal(el('threads').disabled, true);
-  for (const mode of ['sf-lite', 'sf-full', 'berserk', 'sf-berserk', 'auto']) {
+  for (const mode of ['sf-lite', 'sf-full', 'berserk', 'sf-berserk', 'cdb']) {
     el('mode').value = mode; change(el('mode'));
-    assert.equal(topMode.value, mode);
+    assert.equal(topMode.value, 'cdb');
     assert.equal(x.getSettings().analysisMode, mode);
-    assert.equal(seen.at(-1).handled, true, 'Deep changes notify board cancellation as an already configured change');
+    assert.equal(seen.length,0,'Deep changes do not change or invalidate board source');
   }
   assert.equal(x.analyses(), 0, 'selection stays idle');
-  topMode.value = 'sf-berserk'; change(topMode);
+  el('mode').value='sf-berserk';change(el('mode'));
+  topMode.value='sf-full';change(topMode);
+  assert.equal(x.getSettings().boardSource,'sf-full');
   assert.equal(el('mode').value, 'sf-berserk');
   assert.equal(el('threads').disabled, false);
-  assert.match(w.document.getElementById('btnAnalysisDeepen').textContent, /SF & Berserk/);
-  assert.equal(w.document.getElementById('analysisDccModeNote').hidden, false);
+  assert.equal(w.document.getElementById('btnAnalysisDeepen').textContent, 'Deeper search');
+  assert.equal(w.document.getElementById('analysisDccModeNote').hidden, true);
   el('threads').value = '4'; change(el('threads'));
   assert.equal(topThreads.value, '4');
   assert.equal(x.getSettings().sfFullThreadsRequested, 4);
-  assert.match(w.document.getElementById('analysisCpuStatus').textContent, /SF 4 \+ Berserk 1 · 5 threads/);
+  assert.match(w.document.getElementById('analysisCpuStatus').textContent, /SF Full · 4 search threads/);
   assert.equal(el('budget').disabled, true);
   assert.equal(el('budget').hidden, true);
   assert.equal(el('dual-time').textContent, '6 s each');

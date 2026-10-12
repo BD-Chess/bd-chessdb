@@ -83,3 +83,46 @@ body:not(.app-mobile)[data-desktop-view="library"] .workspace-display.is-deep-an
 .analysis-network-control{grid-column:1/-1;display:grid;gap:5px;font-size:11px;min-width:0;padding:7px 0}.analysis-network-control[hidden]{display:none!important}.analysis-network-control input{max-width:100%;min-width:0;font-size:11px}.analysis-network-control small{color:var(--ui-muted);line-height:1.45;overflow-wrap:anywhere}
 
 .analysis-network-control label{display:grid;gap:5px;min-width:0}.analysis-network-control button{justify-self:start;font-size:11px;padding:5px 8px}.analysis-network-control button[hidden]{display:none!important}.analysis-host-note{grid-column:1/-1;color:var(--ui-muted);font-size:11px;line-height:1.4;overflow-wrap:anywhere}.analysis-host-note[hidden]{display:none!important}
+
+/* LAB controls: the source and CPU selects share an exact right-hand column. */
+body:not(.app-mobile) .analysis-source-row,.analysis-source-row{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.analysis-primary-row,.analysis-options-row{display:grid;grid-template-columns:minmax(0,1fr) 146px;align-items:center;gap:8px;min-width:0}
+.analysis-main-actions{display:flex;gap:5px;flex-wrap:wrap;min-width:0}
+.analysis-primary-row #analysisSource{width:100%;min-width:0;justify-self:end}
+.analysis-checks{display:flex;gap:15px;align-items:center;padding-left:1px}
+.analysis-checks label{display:flex;gap:5px;align-items:center;color:var(--ui-text);font-size:12px}
+.analysis-options-row .analysis-cpu-control{display:grid;grid-template-columns:auto 56px;align-items:center;gap:7px;justify-content:end;min-width:0}
+.analysis-options-row #analysisCpuThreads{width:56px;min-width:0}
+.analysis-status-row{font-size:10.5px;line-height:1.4;min-height:0;margin:3px 0 6px}
+.analysis-network-advanced{grid-column:1/-1;max-width:100%;padding:8px 0;color:var(--ui-muted);font-size:12px}
+[data-berserk-status][hidden]{display:none!important}
+.dcc-score-help{display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--ui-accent);padding:2px 4px;cursor:pointer;border-radius:4px;font-size:14px}
+.dcc-score-help:focus-visible{outline:2px solid var(--ui-accent)}
+.dcc-score-dialog{max-width:min(440px,calc(100vw - 36px));padding:22px;background:var(--ui-raised);color:var(--ui-text);border:1px solid var(--ui-border);border-radius:12px;font-size:14px;line-height:1.6}
+.dcc-score-dialog::backdrop{background:rgba(0,0,0,.55)}
+.dcc-score-dialog h2{font-size:17px;padding-right:18px;margin-top:0}
+.dcc-score-dialog [data-close-dcc-help]{float:right;background:transparent;color:var(--ui-text);border:0;font-size:22px;cursor:pointer}
+.all-eval-main{display:grid;grid-template-columns:auto auto;gap:3px 5px;align-items:center}
+.all-eval-main strong{grid-column:1/-1;font-size:11px;line-height:1.2;white-space:nowrap}
+.all-eval-badge{min-height:62px}
+body.app-mobile .analysis-primary-row,body.app-mobile .analysis-options-row{grid-template-columns:minmax(0,1fr) 136px}
+body.app-mobile .board-legend{display:flex!important;justify-content:space-between;gap:4px;font-size:9px;padding-top:4px}
+body.app-mobile .all-eval-main strong{font-size:11px}
+body.app-mobile .all-eval-badge{min-height:51px}
+
+body:not(.app-mobile) .analysis-source-row .analysis-options-row .analysis-cpu-control{grid-column:2;grid-template-columns:auto 56px;justify-self:end;justify-content:end}
+.analysis-extra-actions{display:flex;gap:8px;align-items:center;margin-top:2px}
+.analysis-extra-actions .desktop-analysis-action{min-height:24px;height:24px;padding:2px 7px;font-size:10px;width:auto}
+
+/* Independent engine actions and compact source legend. */
+.board-legend{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.board-legend>span{display:inline-flex;align-items:center;gap:3px}
+.board-legend .analyze-all{margin-left:auto;border:1px solid var(--ui-border,#45526c);border-radius:6px;padding:4px 7px;font:inherit;background:var(--ui-raised,#202d45);color:var(--ui-text,#d9e7f3);cursor:pointer;white-space:nowrap}
+.all-mobile-label{display:none}
+body.app-mobile .all-desktop-label{display:none}
+body.app-mobile .all-mobile-label{display:inline}
+body.app-mobile .board-legend{flex-wrap:wrap!important;justify-content:flex-start!important;min-width:0}
+body.app-mobile .board-legend .analyze-all{padding:3px 5px;min-height:24px}
+.all-eval-badge.is-working small{color:var(--ui-accent,#8ec5ff)}
+
+.deep-settings label[hidden],.deep-root-moves[hidden]{display:none!important}

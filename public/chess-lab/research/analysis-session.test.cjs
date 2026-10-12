@@ -18,12 +18,12 @@ function deferred() {
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
-function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, stored = null, indexedDB, crypto } = {}) {
+function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, stored = null, indexedDB, crypto, fetch } = {}) {
   const events = new Map(), documentEvents = new Map(), values = new Map();
   let clock = 0;
-  if (stored) values.set('ChessBest:LAB:v2:analysis-engine-r2', JSON.stringify(stored));
+  if (stored) values.set('ChessBest:LAB:v2:analysis-engine-r3', JSON.stringify(stored));
   const root = {
-    indexedDB, crypto,
+    indexedDB, crypto, fetch,
     navigator: { hardwareConcurrency }, crossOriginIsolated: isolated,
     SharedArrayBuffer: isolated ? SharedArrayBuffer : undefined,
     matchMedia: () => ({ matches: mobile }), innerWidth: mobile ? 390 : 1200,
@@ -35,7 +35,7 @@ function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, sto
   };
   const module = { exports: {} };
   vm.runInNewContext(source, { window: root, module, require: () => Deep,
-    URL, Date, Promise, setTimeout, clearTimeout }, { filename: '8zc-analysis-session.js' });
+    URL, Date, Promise, AbortController, setTimeout, clearTimeout }, { filename: '8zc-analysis-session.js' });
   return { Session: module.exports, root, events, documentEvents, values };
 }
 function adapters() {
@@ -76,11 +76,12 @@ function result(fen, move, { depth = 8, score = 22, engine = null } = {}) {
 test('default is CDB-first, settings do not launch workers, and Full/Berserk remain lazy until analysis', async () => {
   const { Session, values } = fixture();
   const fake = adapters();
-  assert.equal(Session.getSettings().analysisMode, 'auto');
+  assert.equal(Session.getSettings().analysisMode, 'cdb');
+  assert.equal(Session.getSettings().sfFullThreadsRequested, 1);
   const session = Session.create({ Chess, adapterFactory: fake.factory });
   Session.configure({ analysisMode: 'sf-full', sfFullThreadsRequested: 4 });
   assert.equal(fake.calls.length, 0);
-  assert.equal(JSON.parse(values.get('ChessBest:LAB:v2:analysis-engine-r2')).analysisMode, 'sf-full');
+  assert.equal(JSON.parse(values.get('ChessBest:LAB:v2:analysis-engine-r3')).analysisMode, 'sf-full');
   const run = session.analyze({ fen: START, movetime: 100 });
   assert.deepEqual(fake.calls.map(c => c.id), ['sf-full']);
   fake.calls[0].complete(result(START, 'e2e4'));
@@ -213,7 +214,7 @@ test('one failed or blocked loader leaves the other searching, then Stop termina
 });
 
 test('one child terminal result resolves a single session; switch invalidates late events for every subscriber', async () => {
-  const { Session } = fixture();
+  const { Session } = fixture();Session.configure({analysisMode:'sf-lite'});
   const fake = adapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const observed = [];
   const first = session.analyze({ fen: START, depth: 8, onInfo: (_, value) => observed.push(value) });
@@ -361,4 +362,24 @@ test('wrong NNUE is rejected; unavailable storage still allows the verified netw
   await good.Session.loadBerserkNetwork({size:good.Session.BERSERK_NET.bytes,arrayBuffer:async()=>new ArrayBuffer(good.Session.BERSERK_NET.bytes)});
   assert.equal(good.Session.getSettings().berserkNetworkReady,true);
   assert.equal(good.Session.getSettings().berserkNetworkPersistent,false);
+});
+
+
+test('automatic original NNUE is lazy, verified and reused from the local cache', async () => {
+  const {IDBFactory}=require('fake-indexeddb');const indexedDB=new IDBFactory();let fetched=0,digests=0;
+  const crypto={subtle:{digest:async()=>{digests++;return Buffer.from('9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084','hex');}}};
+  const first=fixture({indexedDB,crypto,fetch:async(url,opts)=>{fetched++;assert.match(url,/v14-5b8d6c93\/berserk-9b84c340af7e\.part[012]\.nn$/);assert.equal(opts.cache,'force-cache');return {ok:true,arrayBuffer:async()=>new ArrayBuffer(url.includes('part2')?4230404:10485760)};}});
+  first.Session.configure({analysisMode:'berserk'});assert.equal(fetched,0);
+  await first.Session.ensureBerserkNetwork(new AbortController().signal);assert.equal(fetched,3);assert.equal(first.Session.getSettings().berserkNetworkPersistent,true);
+  const second=fixture({indexedDB,crypto,fetch:async()=>{throw new Error('Cached bytes must avoid a download');}});
+  await second.Session.ensureBerserkNetwork(new AbortController().signal);assert.equal(fetched,3);assert.equal(digests,2);
+});
+
+test('automatic NNUE rejects incorrect bytes and a stopped download never becomes ready', async () => {
+  const wrong=fixture({crypto:{subtle:{digest:async()=>new Uint8Array(32)}},fetch:async url=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(url.includes('part2')?4230404:10485760)})});
+  await assert.rejects(wrong.Session.ensureBerserkNetwork(),/does not match/);assert.equal(wrong.Session.getSettings().berserkNetworkReady,false);
+  const pending=deferred(),controller=new AbortController();
+  const aborted=fixture({fetch:async(_u,opts)=>new Promise((_yes,no)=>{pending.resolve();opts.signal.addEventListener('abort',()=>no(Object.assign(new Error('Cancelled'),{name:'AbortError'})),{once:true});})});
+  const run=aborted.Session.ensureBerserkNetwork(controller.signal);await pending.promise;controller.abort();
+  await assert.rejects(run,{name:'AbortError'});assert.equal(aborted.Session.getSettings().berserkNetworkReady,false);
 });

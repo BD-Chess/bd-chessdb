@@ -8,13 +8,13 @@
     if (!workspace) throw new Error('Deep analysis requires the analysis workspace');
     const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
     panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
-    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">CDB | SF Lite uses SF Lite for a Deep local search.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
+    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">ChessDB position data · selected source.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="auto">CDB | SF Lite</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU threads<select data-deep="threads" aria-label="Stockfish Full CPU threads"><option value="auto">Auto</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="cdb" selected>CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU threads<select data-deep="threads" aria-label="Stockfish Full CPU threads"><option value="1" selected>1</option><option value="auto">Auto</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
       <p class="deep-budget-note" data-deep="budget-note" hidden></p>
       <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
-      <div class="analysis-network-control" hidden><a href="https://github.com/jhonnold/berserk-networks/releases/download/networks/berserk-9b84c340af7e.nn" target="_blank" rel="noopener noreferrer">1. Get NNUE from its author (24 MB)</a><label><span data-berserk-note>2. Choose NNUE once · Berserk 14</span><input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Choose Berserk NNUE once; saved on this device"></label><button type="button" data-berserk-remove hidden>Remove saved NNUE</button><small data-berserk-status role="status" aria-live="polite"></small></div>
+      <small data-berserk-status role="status" hidden></small>
       <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false"><small>Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
       <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
@@ -29,8 +29,8 @@
     let manualStoppedFen = null, pendingLiveScroll = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
     const Chess = host.Chess || root.Chess;
     const session = root.ChessAnalysisSession;
-    const configuredMode = () => session?.getSettings?.()?.analysisMode || 'auto';
-    const modeLabels = { auto: 'SF Lite', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', 'sf-berserk': 'SF & Berserk' };
+    const configuredMode = () => session?.getSettings?.()?.analysisMode || 'cdb';
+    const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', 'sf-berserk': 'SF & Berserk' };
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
     const notifyState = () => host.onStateChange?.(state());
@@ -91,6 +91,7 @@
     }
     function scoreLabel(score) {
       if (!score) return '—';
+      if(score.type==='decisive')return score.label||'—';
       const prefix = score.whiteBound === 'lower' ? '≥' : score.whiteBound === 'upper' ? '≤' : '';
       if (score.type === 'mate') return prefix + (score.white < 0 ? '−' : '') + '#' + Math.abs(score.white);
       return prefix + (score.white > 0 ? '+' : '') + (score.white / 100).toFixed(2);
@@ -143,7 +144,7 @@
         const row = doc.createElement('article'); row.className = 'deep-line';
         const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
         const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score);
-        const depth = doc.createElement('span'); depth.textContent = 'Depth ' + (line.depth ?? '—');
+        const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':'Depth ' + (line.depth ?? '—');
         meta.append(score, depth); row.appendChild(meta);
         const variation = doc.createElement('div'); variation.className = 'deep-pv';
         const lineMoves = movesFor(current.fen, line.pv);
@@ -227,6 +228,13 @@
     async function start(options = {}) {
       const token = ++run;
       manualStoppedFen = null;
+      if(configuredMode()==='cdb'){
+        try{el('status').textContent='Refreshing ChessDB…';el('start').disabled=true;
+          const done=await host.onCDBSearch?.();if(token===run&&done)render(done,true);}
+        catch(error){if(token===run)el('status').textContent=error.message;}
+        finally{if(token===run){el('start').disabled=false;el('stop').disabled=true;notifyState();}}
+        return;
+      }
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');

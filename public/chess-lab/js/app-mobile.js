@@ -413,12 +413,14 @@
     const controls = byId('appBoardControls');
     const analysisRow = doc.querySelector('.analysis-source-row');
     const navRow = doc.querySelector('.top-buttons');
-    const status = byId('analysisSourceStatus');
+    const status = doc.querySelector('.analysis-status-row') || byId('analysisSourceStatus');
     const actionRow = doc.createElement('div'); actionRow.className = 'app-action-row';
     const analysisSlot = doc.createElement('div'); analysisSlot.className = 'app-analysis-slot';
     analysisSlot.append(analysisRow);
-    actionRow.append(analysisSlot, byId('appSim'));
-    controls.append(navRow, actionRow, status, byId('appTopLine'));
+    actionRow.append(analysisSlot);
+    const statusRow=doc.createElement('div');statusRow.className='app-analysis-status';
+    statusRow.append(status,byId('appSim'));
+    controls.append(navRow, actionRow, statusRow, byId('appTopLine'));
     byId('appClocks').append(byId('workspaceClockSlot'), byId('humanSession'));
     host.onChange(updatePosition);
     for (const tab of byId('appTabs').querySelectorAll('[data-app-tab]')) {

@@ -16,9 +16,10 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   const doc = new JSDOM(html).window.document;
   const source = doc.querySelector('.analysis-source-row');
   assert.ok(source);
-  assert.deepEqual([...source.children].map(node => node.id || node.querySelector?.('#analysisCpuThreads, #analysisDCC')?.id || (node.matches('.analysis-network-control') ? 'localNNUE' : '')), [
-    'btnAnalysisDeepen', 'analysisSource', 'analysisCpuThreads', 'localNNUE', 'analysisDCC', 'analysisDccModeNote', 'btnDesktopDccReplay', 'btnDesktopDccAnalysis'
-  ]);
+  assert.equal(source.children.length,2);
+  assert.ok(source.querySelector('.analysis-primary-row #analysisSource'));
+  assert.deepEqual([...source.querySelectorAll('.analysis-checks input')].map(x=>x.id),['analysisCDB','analysisDCC']);
+  assert.ok(source.querySelector('.analysis-options-row #analysisCpuThreads'));
   assert.equal(source.querySelector('#analysisSourceStatus'), null);
   assert.ok(doc.querySelector('.analysis-status-row #analysisSourceStatus'));
   assert.ok(doc.querySelector('.analysis-status-row #dccProgress'));
@@ -29,11 +30,18 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.deepEqual([...stack.children].map(node => node.id), ['desktopNavRow', 'desktopViewTabs', 'workspacePrimaryActions']);
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
   assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
-  assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper SF<\/button>/);
-  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB | SF Lite','SF Lite','SF Full','Berserk','SF & Berserk']);
-  assert.equal(doc.querySelector('#analysisSource').value, 'auto');
-  assert.equal(doc.querySelector('#analysisCpuThreads').value, 'auto');
-  assert.equal(source.querySelector('.analysis-network-control').hidden, true);
+  assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper search<\/button>/);
+  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB','SF Lite','SF Full','Reckless','LCZero','Berserk']);
+  assert.equal(doc.querySelector('#analysisSource').value, 'cdb');
+  assert.equal(doc.querySelector('#analysisCpuThreads').value, '1');
+  assert.equal(source.querySelector('[data-berserk-network]'), null);
+  assert.ok(doc.querySelector('#settingsPanel .analysis-network-advanced [data-berserk-network]'));
+  assert.equal(doc.querySelector('.board-note'),null);
+  assert.ok(doc.querySelector('.board-legend #btnDccScoreHelp'));
+  assert.ok(doc.querySelector('.board-legend #btnAnalyzeAll'));
+  assert.ok(doc.querySelector('#settingSFEngine'));
+  assert.equal(doc.querySelector('#analysisSource option[value="sf-berserk"]'),null);
+  assert.ok(doc.querySelector('dialog#dccScoreHelp a[href="8zc-help.html#scores"]'));
   assert.match(styles, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,2\.35fr\)/);
   assert.match(styles, /workspace-drawer\.open\) > \.workspace-bottom[\s\S]*visibility: visible/);
   assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);

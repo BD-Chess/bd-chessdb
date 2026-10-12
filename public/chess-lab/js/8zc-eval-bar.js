@@ -35,7 +35,8 @@
     const comparison = document.getElementById('allEvalBadges');
     const sourceScores = new Map();
     const dccChoices = new Map();
-    const sources = ['CDB', 'SF', 'DCC'];
+    const sources = ['CDB','SF','DCC','RLE','LC0','BER'];
+    const names={CDB:'ChessDB',SF:'Stockfish',DCC:'DCC',RLE:'Reckless',LC0:'Leela Chess Zero',BER:'Berserk'};
     let lastKnown = null;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
@@ -46,12 +47,16 @@
       comparison.replaceChildren();
       for (const source of sources) {
         const actionable = typeof onBadgeAction === 'function';
+        const placeholder=source==='RLE'||source==='LC0';
+        const mode=settings.analysisSource;
+        const enabled=source==='CDB'?settings.cdbEnabled!==false:!placeholder;
+        const control=getBadgeControl?.(source);
         const badge = document.createElement(actionable ? 'button' : 'div'); badge.className = 'all-eval-badge';
         if (actionable) {
           badge.type = 'button'; badge.dataset.evalSource = source;
           badge.addEventListener('click', () => onBadgeAction(source));
-          const control = getBadgeControl?.(source);
-          badge.disabled = !!control?.disabled;
+
+          badge.disabled = placeholder || !!control?.disabled;
           badge.title = control?.title || '';
           badge.setAttribute('aria-label', `${source}: ${badge.title || 'analysis'}`);
           badge.classList.toggle('is-working', !!control?.working);
@@ -61,7 +66,8 @@
           }
         }
         const main = document.createElement('div'); main.className = 'all-eval-main';
-        const title = document.createElement('strong'); title.textContent = `${source}:`;
+        const title = document.createElement('strong'); title.textContent = document.body?.classList?.contains?.('app-mobile') ? source : names[source];
+        badge.dataset.evalSource=source;
         const move = document.createElement('span'); move.className = 'all-eval-move';
         const score = document.createElement('span'); score.className = 'all-eval-score';
         const note = document.createElement('small');
@@ -74,14 +80,16 @@
           if (actionable) badge.setAttribute('aria-label', `DCC: ${move.textContent}. ${badge.title}`);
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
-          const fresh = entry && Date.now() - entry.at < 300000;
+          const fresh = enabled && entry && Date.now() - entry.at < 300000;
           const result = measure(fen, fresh ? entry.score : null, null, source);
-          move.textContent = fresh ? entry.bestMove || '—' : '…';
+          move.textContent = placeholder || !enabled ? '—' : fresh ? entry.bestMove || '—' : '…';
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
-          score.textContent = fresh ? result.label : '…';
+          score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
           main.append(score);
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
-          note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
+          note.textContent = placeholder ? 'Not implemented yet' : !enabled ? 'Disabled' : control?.note ||
+            (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?'Online data':'Ready');
+          if(source==='SF')note.textContent=(entry?.variant||control?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
@@ -132,12 +140,12 @@
       const deep = source === 'SF' ? sourceScores.get(`${fen}:SF`) : null;
       const preserved = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
       scores.set(fen, { score: preserved ? deep.score : score, source, settled, at: Date.now() });
-      if (source === 'CDB' || source === 'SF') updateSource(fen, score, source);
+      if (source === 'CDB' || source === 'SF' || source === 'BER') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined, origin = 'regular') {
+    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined, origin = 'regular', metadata = {}) {
       const key = `${fen}:${source}`, previous = sourceScores.get(key);
       // A shallower normal search must not replace the user's pinned Deep
       // analysis, even if the main worker ignores a late abort.
@@ -147,7 +155,7 @@
       // unavailable scores also clear omitted metadata rather than retain an old move.
       const known = Number.isFinite(score) || (['cp', 'mate'].includes(score?.type) && Number.isFinite(score.white));
       sourceScores.set(key, { score, at: Date.now(),
-        origin,
+        origin, variant:metadata.variant||previous?.variant, engineName:metadata.engineName||previous?.engineName,
         depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
         bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove,
         restricted: restricted === undefined ? (depth === undefined && known ? previous?.restricted : false) : restricted });
@@ -167,13 +175,17 @@
       const keepDeep = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
       if (keepDeep && settings.analysisSource === 'sf') scores.set(fen, { score: deep.score, source: 'SF', at: Date.now() });
       else scores.delete(fen);
-      sourceScores.delete(`${fen}:CDB`);
-      if (!keepDeep) sourceScores.delete(`${fen}:SF`);
+      // Independent card results stay available when only the board source changes.
       dccChoices.set(fen, { move: null, provider: null, status: 'pending' });
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    const api = { render, update, updateSource, updateDCC, markComparisonPending };
+    function clearLocalSources(fen) {
+      sourceScores.delete(`${fen}:SF`);sourceScores.delete(`${fen}:BER`);
+      if(['SF','BER'].includes(scores.get(fen)?.source))scores.delete(fen);
+      lastKnown=null;if(game.fen()===fen)render();
+    }
+    const api = { render, update, updateSource, updateDCC, markComparisonPending, clearLocalSources, clearBoard(fen){scores.delete(fen);lastKnown=null;if(game.fen()===fen)render();} };
     instances.set(game, api);
     return api;
   }
