@@ -16,8 +16,8 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   const doc = new JSDOM(html).window.document;
   const source = doc.querySelector('.analysis-source-row');
   assert.ok(source);
-  assert.deepEqual([...source.children].map(node => node.id || node.querySelector?.('#analysisDCC')?.id || ''), [
-    'btnAnalysisDeepen', 'analysisSource', 'analysisDCC', 'btnDesktopDccReplay', 'btnDesktopDccAnalysis'
+  assert.deepEqual([...source.children].map(node => node.id || node.querySelector?.('#analysisCpuThreads, #analysisDCC')?.id || (node.matches('.analysis-network-control') ? 'localNNUE' : '')), [
+    'btnAnalysisDeepen', 'analysisSource', 'analysisCpuThreads', 'localNNUE', 'analysisDCC', 'analysisDccModeNote', 'btnDesktopDccReplay', 'btnDesktopDccAnalysis'
   ]);
   assert.equal(source.querySelector('#analysisSourceStatus'), null);
   assert.ok(doc.querySelector('.analysis-status-row #analysisSourceStatus'));
@@ -30,7 +30,10 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
   assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
   assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper SF<\/button>/);
-  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB | SF','SF lite']);
+  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB | SF Lite','SF Lite','SF Full','Berserk','SF & Berserk']);
+  assert.equal(doc.querySelector('#analysisSource').value, 'auto');
+  assert.equal(doc.querySelector('#analysisCpuThreads').value, 'auto');
+  assert.equal(source.querySelector('.analysis-network-control').hidden, true);
   assert.match(styles, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,2\.35fr\)/);
   assert.match(styles, /workspace-drawer\.open\) > \.workspace-bottom[\s\S]*visibility: visible/);
   assert.match(styles, /workspace-drawer\.open\) #desktopNavRow[\s\S]*visibility: hidden/);
