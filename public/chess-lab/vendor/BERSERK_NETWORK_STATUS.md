@@ -1,0 +1,13 @@
+# Berserk 14 NNUE publication status — 2026-10-12
+
+Engine code: GPL-3.0, pinned upstream tag 14 commit 8ae895a6151695be4a50d4fb65b0c131659c513a, scalar Emscripten donor 5b8d6c930168cd645dd34d646055f303fae2b5b1. Its JS/WASM, GPL license and code-only corresponding source are published.
+
+The separate jhonnold/berserk-networks repository has no LICENSE; its release description provides download instructions but no explicit network redistribution terms. The donor's GPL interpretation was not treated as upstream confirmation. No NNUE .nn/.data or network-containing source archive is published by ChessBest.
+
+Berserk and SF & Berserk accept the exact pinned 25,201,924-byte NNUE from a file chosen by the user. The browser checks full SHA-256 9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084 before handing a copied ArrayBuffer to a dedicated Worker. It stores verified bytes in the separate origin-local IndexedDB `ChessBest:LAB:engine-networks:v1` when storage succeeds, and restores and re-verifies them next time. Storage failure uses session RAM with a visible warning. Browser eviction, private-mode closing or clearing site data can remove best-effort storage. Remove saved NNUE deletes only this network. The file is never sent to a server, saved in Studies/localStorage, or precached by the service worker. A device-local Blob URL supplies bytes with the original asynchronous preload order; remote .data fetching is disabled. A user-initiated source download link and a Choose NNUE once input appear in both board and Deep controls.
+
+Fresh pre-publication checks found no upstream license file, redistribution grant in the network release description, or upstream confirmation. The current 0x88 NOTICE still treats GPL coverage as an inference and says upstream confirmation was requested. Scarlet II also requires external Berserk-compatible weights and distributes none. No separately licensed, compatible substitute was verified. Stockfish CC0 networks and unrelated-engine weights cannot be assumed compatible with the fixed Berserk 14 feature/layer layout; arbitrary NNUE files are rejected.
+
+Without that file, Berserk reports the requirement and dual output is explicitly partial; SF Full can still compute independently. With the verified file, the actual independent engines search concurrently under the shared timed budget. No result is called dual-complete if a child is missing or failed.
+
+To enable a bundled automatic network later, obtain an explicit applicable upstream license and record the exact file/hash/license as a new release. This release changes no hosting settings, domains or Netlify configuration.

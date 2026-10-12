@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="css/8zc-styles.css?v=20261002-ux7">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20261012-review4">
-  <link rel="stylesheet" href="css/8zc-deep.css?v=20261002-reviewfix1">
+  <link rel="stylesheet" href="css/8zc-deep.css?v=20261012-dual-r2">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
 
@@ -191,12 +191,16 @@
       <!-- Position-analysis controls: engine/source actions stay separate from workspace views. -->
       <div class="analysis-source-row" aria-label="Main analysis source">
         <button type="button" class="btn btn-nav analysis-deepen" id="btnAnalysisDeepen" title="Deeper SF analysis">Deeper SF</button>
-        <select id="analysisSource" aria-label="Board analysis source"><option value="auto">CDB | SF</option><option value="sf">SF lite</option></select>
+        <select id="analysisSource" aria-label="Board analysis mode"><option value="auto">CDB | SF Lite</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select>
+        <label class="analysis-cpu-control"><span>CPU threads</span><select id="analysisCpuThreads" aria-label="Stockfish Full CPU threads"><option value="auto">Auto</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select><small id="analysisCpuStatus" role="status" aria-live="polite"></small></label>
+        <div class="analysis-network-control" hidden><a href="https://github.com/jhonnold/berserk-networks/releases/download/networks/berserk-9b84c340af7e.nn" target="_blank" rel="noopener noreferrer">1. Get NNUE from its author (24 MB)</a><label><span data-berserk-note>2. Choose NNUE once · Berserk 14</span><input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Choose Berserk NNUE once; saved on this device"></label><button type="button" data-berserk-remove hidden>Remove saved NNUE</button><small data-berserk-status role="status" aria-live="polite"></small></div>
         <label class="analysis-dcc-toggle"><input id="analysisDCC" type="checkbox"> DCC</label>
+        <small id="analysisDccModeNote" class="analysis-dcc-mode-note" hidden>DCC not applied to this engine</small>
         <button type="button" class="btn btn-nav desktop-analysis-action" id="btnDesktopDccReplay" title="Replay a loaded game with DCC analysis">DCC replay</button>
         <button type="button" class="btn btn-nav desktop-analysis-action" id="btnDesktopDccAnalysis" aria-pressed="false" title="Show DCC analysis">DCC analysis</button>
       </div>
       <div class="analysis-status-row" aria-label="Analysis status">
+        <small id="analysisHostNote" class="analysis-host-note" hidden></small>
         <span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span>
         <span role="status" aria-live="polite" id="dccProgress"></span>
       </div>
@@ -741,7 +745,9 @@
   <script src="js/8zc-review-presentation.js?v=20261012-review4"></script>
   <script src="js/8zc-deep-engine.js?v=20260926-sim2"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
-  <script src="js/8zc-deep-ui.js?v=20261002-scroll1"></script>
+  <script src="js/8zc-analysis-session.js?v=20261012-dual-r2"></script>
+  <script src="js/8zc-deep-ui.js?v=20261012-dual-r2"></script>
+  <script src="js/8zc-analysis-controls.js?v=20261012-dual-r2"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>

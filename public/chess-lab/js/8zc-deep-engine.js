@@ -83,6 +83,8 @@
   function create(config) {
     config = config || {};
     const Chess = config.Chess || root.Chess;
+    const descriptor = Object.freeze(Object.assign({}, config.engine || ENGINE));
+    const threads = finiteInt(config.threads, 1, 1, descriptor.maxThreads || 1);
     const hashMB = finiteInt(config.hashMB, 16, 1, 128);
     const workerUrl = config.workerUrl || new URL('vendor/stockfish/stockfish-18-lite-single.js', root.document ? root.document.baseURI : 'http://localhost/chess-lab/').href;
     let active = null, serial = 0, destroyed = false, prepared = null, warming = null, reusePrepared = false;
@@ -119,7 +121,7 @@
               if (line.startsWith('id name ')) state.reportedName = line.slice(8);
               if (line === 'uciok' && state.phase === 'uci') {
                 state.phase = 'ready';
-                ['setoption name Threads value 1', 'setoption name Hash value ' + hashMB,
+                ['setoption name Threads value ' + threads, 'setoption name Hash value ' + hashMB,
                   'setoption name UCI_ShowWDL value true', 'isready'].forEach(command => state.worker.postMessage(command));
               } else if (line === 'readyok' && state.phase === 'ready') done();
             }
@@ -150,7 +152,7 @@
       const partial = [...unique.values()].sort((a, b) => a.multipv - b.multipv);
       // A partial new iteration can reorder roots. Never combine ranks across depths as one exact comparison.
       const selected = job.completeLines || partial;
-      return clone({ fen: job.limits.fen, engine: Object.assign({}, ENGINE, { hashMB, reportedName: job.reportedName || null }),
+      return clone({ fen: job.limits.fen, engine: Object.assign({}, descriptor, { hashMB, threads, threadsEffective: threads, reportedName: job.reportedName || null }),
         limits: job.limits, lines: selected, completeMultiPV: !!job.completeLines,
         linesDepth: job.completeDepth ?? null, expectedLines: job.expectedLines,
         partialLines: job.completeLines && partial.some(line => line.depth > job.completeDepth) ? partial : [],
@@ -165,6 +167,7 @@
       const job = active;
       if (!job) return;
       job.stopped = true;
+      if (config.forceTerminateOnStop) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, null, true); return; }
       if (job.phase !== 'search') { finish(job, null, true); return; }
       if (job.stopTimer) return;
       // A stop watchdog never limits a running search; it acts only AFTER a user's stop.
@@ -206,7 +209,7 @@
               if (line.startsWith('id name ')) job.reportedName = line.slice(8);
               if (line === 'uciok' && job.phase === 'uci') {
                 job.phase = 'ready';
-                ['setoption name Threads value 1', 'setoption name Hash value ' + hashMB,
+                ['setoption name Threads value ' + threads, 'setoption name Hash value ' + hashMB,
                   'setoption name MultiPV value ' + limits.multiPV, 'setoption name UCI_ShowWDL value true',
                   'ucinewgame', 'isready'].forEach(command => job.worker.postMessage(command));
               } else if (line === 'readyok' && job.phase === 'ready') {
@@ -231,6 +234,11 @@
               } else if (job.phase === 'search') {
                 const info = parseInfo(line, limits.fen);
                 if (!info) continue;
+                if (Chess && info.pv?.length) {
+                  const replay = new Chess(limits.fen), legalPV = [];
+                  for (const uci of info.pv) { if (!replay.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] })) break; legalPV.push(uci); }
+                  info.pv = legalPV;
+                }
                 if (Number.isFinite(info.nodes)) job.nodes = Math.max(job.nodes || 0, info.nodes);
                 if (Number.isFinite(info.depth)) job.depth = Math.max(job.depth || 0, info.depth);
                 if (info.score && info.pv && info.pv.length) {
@@ -262,11 +270,11 @@
       });
     }
     return { analyze, prepare, stop, destroy() {
-      destroyed = true; if (active) finish(active, abortError('Engine closed'));
+      destroyed = true; if (active) { try { active.worker?.postMessage('stop'); } catch (_) {} finish(active, abortError('Engine closed')); }
       if (warming) warming.cancel();
       if (prepared) { detach(prepared.worker); prepared.worker.terminate(); prepared = null; }
     },
-      isRunning: () => !!active, engine: ENGINE };
+      isRunning: () => !!active, engine: descriptor };
   }
   return { create, parseInfo, limitsFor, validateFen, ENGINE };
 });

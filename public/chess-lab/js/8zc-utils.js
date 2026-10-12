@@ -170,7 +170,7 @@ function initAllCore() {
   // Older board modes now use the CDB-first board. Keep an explicitly saved
   // DCC board preference when migrating the former DCC/All selections.
   if (settings.analysisSource === 'dcc' || settings.analysisSource === 'all') settings.dccEnabled = true;
-  if (settings.analysisSource !== 'sf') settings.analysisSource = 'auto';
+  settings.analysisSource = window.ChessAnalysisSession?.getSettings?.().analysisMode || (['sf','sf-lite'].includes(settings.analysisSource) ? 'sf-lite' : 'auto');
   for (const key of ['allCDBSeconds', 'allSFSeconds', 'allDCCSeconds'])
     settings[key] = Math.max(1, Math.min(30, Number(settings[key]) || 4));
   if (![12000, 24000, 48000].includes(Number(settings.sfRootNodes))) settings.sfRootNodes = 24000;
@@ -681,9 +681,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     analyze: async (fen, cancelled) => {
       const selected = settings.analysisSource, generation = analysisGeneration;
       const stale = () => cancelled() || generation !== analysisGeneration || selected !== settings.analysisSource;
-      const cdb = selected === 'sf' ? null : await cachedFetchChessDB(fen);
+      const cdb = selected === 'sf-lite' ? null : await cachedFetchChessDB(fen);
       if (stale()) return null;
-      if (selected === 'sf' || (['auto', 'dcc', 'all'].includes(selected) && !cdb.moves.length)) {
+      if (selected === 'sf-lite' || (['auto', 'dcc', 'all'].includes(selected) && !cdb.moves.length)) {
         const local = await runLocalSF(fen, { dcc: true, cancelled: stale });
         return stale() ? null : local.analysis;
       }
@@ -721,6 +721,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
     button.setAttribute('aria-label', working && available ? 'Deeper SF — stop SF' : 'Deeper SF — deepen analysis');
+    window.ChessAnalysisControls?.refresh?.();
+    if (['sf-full','berserk','sf-berserk'].includes(settings.analysisSource) && deepWorking) {
+      button.textContent = settings.analysisSource === 'sf-berserk' ? 'Stop both' : 'Stop engine';
+      button.title = 'Stop selected local analysis'; button.setAttribute('aria-label', button.textContent);
+    }
     button.classList.toggle('is-working', working && available);
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="SF"]');
     if (card) {
@@ -839,7 +844,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (localController) localController.abort();
     if (localProvider) localProvider.destroy();
     const controller = new AbortController();
-    const provider = SF.create({ Chess, Engine: window.ChessDeepEngine, DCC });
+    const provider = SF.create({ Chess, Engine: window.ChessAnalysisSession ? { create: config => window.ChessAnalysisSession.create({ ...config, analysisMode: 'sf-lite' }) } : window.ChessDeepEngine, DCC });
     localController = controller; localProvider = provider;
     try {
       if (cancelled()) controller.abort();
@@ -988,7 +993,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (reason === 'deep-analysis') {
       deepAnalysisFen = game.fen();
       positionEval.updateSource(deepAnalysisFen, null, 'SF', null, null);
-      if (settings.analysisSource === 'sf') positionEval.update(deepAnalysisFen, null, 'SF');
+      if (settings.analysisSource === 'sf-lite') positionEval.update(deepAnalysisFen, null, 'SF');
       syncSFAnalysisControl();
     }
     if (simRunning) pauseSimulation('Paused for analysis. Open Sim to choose engines and continue.');
@@ -1475,6 +1480,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const baseFen = game.fen(), generation = analysisGeneration, epoch = activityEpoch, selected = settings.analysisSource, requestId = ++annotationRequestId;
     const current = () => requestId === annotationRequestId && generation === analysisGeneration && epoch === activityEpoch && game.fen() === baseFen && settings.analysisSource === selected && showEval && !simRunning && !replayRunning;
     const status = document.getElementById('analysisSourceStatus');
+    if (['sf-full', 'berserk', 'sf-berserk'].includes(selected)) {
+      sfWorking = false; syncSFAnalysisControl();
+      status.textContent = 'Optional local engine selected · press Deep analysis to start. DCC is separate.';
+      return;
+    }
     activeLookaheadId++; // invalidate an earlier DCC request, even for the same FEN
     positionEval.markComparisonPending?.(baseFen);
     document.querySelectorAll('.overlay').forEach(el => el.remove());
@@ -1512,7 +1522,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     positionEval.updateSource(baseFen, cdb.moves[0]?.score, 'CDB', null,
       cdb.moves[0] ? uciToSan(baseFen, cdb.moves[0].move) : null);
     // Show the chosen CDB board as soon as it arrives; SF may take longer.
-    if (selected !== 'sf' && (cdb.moves.length || selected === 'cdb')) presentMain(cdb, 'CDB');
+    if (selected !== 'sf-lite' && (cdb.moves.length || selected === 'cdb')) presentMain(cdb, 'CDB');
     // CDB-based DCC probes use no local SF worker, so the two independent
     // computations can proceed together without delaying either card.
     const cdbDCC = cdb.moves.length ? runDCCLookahead(cdb.moves, baseFen) : null;
@@ -1540,13 +1550,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       positionEval.updateSource(baseFen, sf?.root.moves[0]?.score, 'SF', sf?.ledger.rootDepth ?? null,
         sf?.root.moves[0] ? uciToSan(baseFen, sf.root.moves[0].move) : null);
     }
-    if (selected === 'sf' && !sfHandledByDeep) presentMain(sf?.root || { moves: [] }, 'SF', sf?.analysis || null);
-    else if (selected === 'sf') { activeAnalysisProvider = 'SF'; activeAnalysisFen = baseFen; }
+    if (selected === 'sf-lite' && !sfHandledByDeep) presentMain(sf?.root || { moves: [] }, 'SF', sf?.analysis || null);
+    else if (selected === 'sf-lite') { activeAnalysisProvider = 'SF'; activeAnalysisFen = baseFen; }
     else if (!mainShown && sf?.root.moves.length && selected !== 'cdb') presentMain(sf.root, 'SF', sf.analysis || null);
     else if (!mainShown) presentMain(cdb, 'CDB');
     // A completed SF-derived fallback may precede the SF badges; CDB-based
     // DCC remains in the card/panel and never changes SF badge provenance.
-    if (selected === 'sf' && settings.dccEnabled && latestDCCReceipt?.provider === 'SF')
+    if (selected === 'sf-lite' && settings.dccEnabled && latestDCCReceipt?.provider === 'SF')
       latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
     status.textContent = [cdb.reason || (cdbError ? `CDB unavailable: ${cdbError.message}` : 'CDB unavailable'),
       sfHandledByDeep ? 'SF Deep analysis active' : sf ? `SF local depth ${sf.ledger.rootDepth ?? '—'}${sf.root.complete ? '' : ' · incomplete MultiPV'}` :
@@ -2476,6 +2486,7 @@ function jumpTo(i){
       if (settings.analysisSource !== selected ||
           generation !== analysisGeneration || epoch !== activityEpoch || game.fen() !== fen || snapshot.fen !== fen ||
           !showEval || offlineEvidence || simRunning || replayRunning || playState.assistanceLocked) return;
+      if (snapshot.mode && !['auto','sf-lite'].includes(snapshot.mode)) return;
       const best = snapshot.lines?.find(line => (line.multipv || 1) === 1);
       if (!best?.pv?.length || !['cp', 'mate'].includes(best.score?.type) || !Number.isFinite(best.score.white)) return;
       const move = uciToSan(fen, best.pv[0]);
@@ -2494,7 +2505,7 @@ function jumpTo(i){
         restricted: !!snapshot.limits?.searchMoves?.length,
         providerPositionContext: search.history ? 'move-history' : 'fen-only' });
       positionEval.updateSource(fen, best.score, 'SF', best.depth, move, !!snapshot.limits?.searchMoves?.length, 'deep');
-      if (selected === 'sf') positionEval.update(fen, best.score, 'SF');
+      if (selected === 'sf-lite') positionEval.update(fen, best.score, 'SF');
     };
   }
   const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
@@ -2505,7 +2516,7 @@ function jumpTo(i){
     getEvidence: () => labSnapshots.get(game.fen()) || null,
     onPreview: request => studyUI?.preview(request),
     onSaveLine: request => studyUI?.saveLine({ fen: request.fen, pv: request.pv,
-      title: `Stockfish ${request.depth || ''}`, comment: `${request.source || 'Stockfish18'} · depth ${request.depth || 'unknown'} · ${JSON.stringify(request.evaluation || {})}` }),
+      title: `${request.source || 'Stockfish'} ${request.depth || ''}`, comment: `${request.source || 'Stockfish18'} · depth ${request.depth || 'unknown'} · ${JSON.stringify({ evaluation:request.evaluation || {}, engine:request.engine || null, jobId:request.jobId || null, threadsEffective:request.threadsEffective || 1, analysisMode:request.analysisMode || 'sf-lite' })}` }),
     captureEvidence: async () => { const fen = game.fen(); await analyzePosition(fen); return labSnapshots.get(fen) || null; },
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
@@ -2559,7 +2570,7 @@ function jumpTo(i){
   sourceSelect.value = settings.analysisSource;
   function syncDCCSelector() {
     dccSelect.checked = !!settings.dccEnabled;
-    dccSelect.disabled = false;
+    dccSelect.disabled = ['sf-full','berserk','sf-berserk'].includes(settings.analysisSource);
     dccSelect.title = 'Show DCC details on the board; its card is always calculated';
   }
   syncDCCSelector();
@@ -2574,8 +2585,9 @@ function jumpTo(i){
     annotationRequestId++;
     fetchAnnotations();
   });
-  sourceSelect.addEventListener('change', () => {
-    settings.analysisSource = sourceSelect.value;
+  sourceSelect.addEventListener('change', event => {
+    if (!event.chessAnalysisHandled) window.ChessAnalysisSession?.configure?.({ analysisMode: sourceSelect.value });
+    settings.analysisSource = window.ChessAnalysisSession?.getSettings?.().analysisMode || sourceSelect.value;
     syncDCCSelector();
     sfAnalysisDepth = null;
     invalidateDCCAnalysis(); annotationRequestId++;
@@ -2587,7 +2599,7 @@ function jumpTo(i){
     lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
     renderDCCView();
     positionEval.updateDCC(game.fen(), null, null, 'pending');
-    positionEval.update(game.fen(), null, settings.analysisSource === 'sf' ? 'SF' : 'CDB');
+    positionEval.update(game.fen(), null, settings.analysisSource === 'sf-lite' ? 'SF' : 'CDB');
     saveSettings(); fetchAnnotations();
   });
   dccSelect.addEventListener('change', () => { settings.dccEnabled = dccSelect.checked; saveSettings(); fetchAnnotations(); });
@@ -2604,6 +2616,11 @@ function jumpTo(i){
   document.getElementById('btnAnalysisDeepen').addEventListener('click', () => {
     syncSFAnalysisControl();
     if (document.getElementById('btnAnalysisDeepen').disabled) return;
+    if (['sf-full','berserk','sf-berserk'].includes(settings.analysisSource)) {
+      if (deepUI?.isRunning?.()) deepUI?.stop?.();
+      else deepUI?.start?.();
+      syncSFAnalysisControl(); return;
+    }
     if (deepUI?.isFollowing?.()) {
       deepUI.deepenOrStop?.(); syncSFAnalysisControl(); return;
     }

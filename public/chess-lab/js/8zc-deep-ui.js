@@ -8,23 +8,30 @@
     if (!workspace) throw new Error('Deep analysis requires the analysis workspace');
     const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
     panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
-    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p>Stockfish 18 Lite · runs on this device</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
+    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">CDB | SF Lite uses SF Lite for a Deep local search.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Search depth<select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="auto">CDB | SF Lite</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU threads<select data-deep="threads" aria-label="Stockfish Full CPU threads"><option value="auto">Auto</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <p class="deep-budget-note" data-deep="budget-note" hidden></p>
+      <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
+      <div class="analysis-network-control" hidden><a href="https://github.com/jhonnold/berserk-networks/releases/download/networks/berserk-9b84c340af7e.nn" target="_blank" rel="noopener noreferrer">1. Get NNUE from its author (24 MB)</a><label><span data-berserk-note>2. Choose NNUE once · Berserk 14</span><input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Choose Berserk NNUE once; saved on this device"></label><button type="button" data-berserk-remove hidden>Remove saved NNUE</button><small data-berserk-status role="status" aria-live="polite"></small></div>
       <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false"><small>Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
       <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
-      <div class="deep-lines" data-deep="lines" aria-label="Stockfish principal variations"></div>
+      <div class="deep-lines" data-deep="lines" aria-label="Engine principal variations"></div>
       <section class="deep-preview" data-deep="preview" hidden><div data-deep="preview-board"></div><div><h3>Variation preview</h3><p data-deep="preview-text"></p><button type="button" data-deep="save">Save line to study</button><p class="deep-note">The main board stays at your original position.</p></div></section>
-      <p class="deep-note">Lite is a compact build for desktop and mobile, with one CPU thread. This is a separate engine evaluation, not a DCC score. <a href="vendor/stockfish/README.md" target="_blank" rel="noopener">Build, source &amp; license</a></p>`;
+      <p class="deep-note">SF Lite and Berserk each use one search thread. SF Full uses the effective thread count shown above. These local evaluations are separate from DCC. <a href="vendor/ENGINE_NOTICES.md" target="_blank" rel="noopener">Build, source &amp; license</a></p>`;
     workspace.appendChild(panel);
     const el = name => panel.querySelector('[data-deep="' + name + '"]');
     const trigger = doc.getElementById('btnDeepAnalysis');
-    let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0;
+    let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
-    let manualStoppedFen = null, pendingLiveScroll = null, followActive = false;
+    let manualStoppedFen = null, pendingLiveScroll = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
     const Chess = host.Chess || root.Chess;
+    const session = root.ChessAnalysisSession;
+    const configuredMode = () => session?.getSettings?.()?.analysisMode || 'auto';
+    const modeLabels = { auto: 'SF Lite', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', 'sf-berserk': 'SF & Berserk' };
+    const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
     const notifyState = () => host.onStateChange?.(state());
     function setPinned(context, options = {}) {
@@ -32,7 +39,7 @@
       if (!next || !next.fen) throw new Error('No board position is available');
       if (next.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
       root.ChessDeepEngine.validateFen(next.fen, Chess); pinned = next;
-      manualStoppedFen = null; paintAt = 0;
+      manualStoppedFen = null; paintAt = 0; paintStatus = '';
       if (!options.preserveViewport) panel.style.minHeight = '';
       el('fen').textContent = pinned.fen; el('roots').value = ''; result = null; preview = null;
       el('lines').replaceChildren(); el('preview').hidden = true; el('export').disabled = true;
@@ -61,7 +68,7 @@
       if (panel.hidden) return;
       const wasRunning = engine?.isRunning();
       ++run; engine?.stop();
-      if (wasRunning) el('status').textContent = result?.lines?.length ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
+      if (wasRunning) el('status').textContent = hasLines(result) ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
       el('start').disabled = !pinned; el('stop').disabled = true;
       deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null; followActive = false;
       workspace.classList.remove('is-deep-analysis');
@@ -88,10 +95,24 @@
       if (score.type === 'mate') return prefix + (score.white < 0 ? '−' : '') + '#' + Math.abs(score.white);
       return prefix + (score.white > 0 ? '+' : '') + (score.white / 100).toFixed(2);
     }
-    function showPreview(line, index) {
+    function sourceName(key, snapshot) {
+      const engine = snapshot?.engine || {};
+      const provided = engine.name || engine.reportedName;
+      if (provided) return provided;
+      if (key === 'sf-full') return 'Stockfish Full' + (engine.version ? ' ' + engine.version : '');
+      if (key === 'berserk') return 'Berserk' + (engine.version ? ' ' + engine.version : '');
+      return 'Stockfish 18 Lite';
+    }
+    function showPreview(line, index, key, snapshot) {
       const moves = movesFor(pinned.fen, line.pv);
       const chosen = moves[index]; if (!chosen) return;
-      preview = { fen: pinned.fen, pv: line.pv.slice(), index, source: 'Stockfish 18 Lite', evaluation: line.score, depth: line.depth };
+      preview = { fen: pinned.fen, pv: line.pv.slice(), index, source: sourceName(key, snapshot),
+        evaluation: line.score, depth: line.depth, engine: snapshot?.engine || null,
+        jobId: snapshot?.jobId || null, threadsEffective: snapshot?.threadsEffective ?? snapshot?.engine?.threadsEffective ?? null,
+        analysisMode: configuredMode(), child: key, limits: snapshot?.limits || null,
+        positionHistory: pinned.positionHistory || snapshot?.positionHistory || null,
+        elapsedMs: snapshot?.elapsedMs ?? null, completeMultiPV: !!snapshot?.completeMultiPV,
+        startedAt: snapshot?.startedAt || null };
       el('preview').hidden = false;
       el('preview-text').textContent = moves.slice(0, index + 1).map(m => m.label).join(' ');
       el('save').hidden = typeof host.onSaveLine !== 'function';
@@ -104,11 +125,21 @@
     }
     function render(current, force, onUpdate) {
       result = current;
-      const now = Date.now(); if (!force && now - paintAt < 100) return; paintAt = now;
+      const signature = Object.entries(current.children || {}).map(([key, child]) => key + ':' + child.status).join('|');
+      const now = Date.now();
+      if (!force && now - paintAt < 100 && signature === paintStatus) return;
+      paintAt = now; paintStatus = signature;
       onUpdate?.(current);
       const scroll = el('lines').scrollTop;
       const fragment = doc.createDocumentFragment();
-      current.lines.forEach(line => {
+      const children = current.children && Object.keys(current.children).length ? Object.entries(current.children) : null;
+      const mode = current.mode || configuredMode();
+      const entries = children || [[mode === 'auto' ? 'sf-lite' : mode, current]];
+      const showCards = !!children && mode !== 'sf-lite' && mode !== 'auto';
+      let displayedLines = 0;
+      function appendLines(target, child, key) {
+      for (const line of child.lines || []) {
+        displayedLines++;
         const row = doc.createElement('article'); row.className = 'deep-line';
         const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
         const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score);
@@ -119,10 +150,29 @@
         variation.title = lineMoves.map(move => move.label).join(' ');
         lineMoves.forEach((move, index) => {
           const button = doc.createElement('button'); button.type = 'button'; button.textContent = move.label;
-          button.title = 'Preview after ' + move.san; button.onclick = () => showPreview(line, index); variation.appendChild(button);
+          button.title = 'Preview ' + sourceName(key, child) + ' after ' + move.san;
+          button.onclick = () => showPreview(line, index, key, child); variation.appendChild(button);
         });
-        row.appendChild(variation); fragment.appendChild(row);
-      });
+        row.appendChild(variation); target.appendChild(row);
+      }
+      }
+      if (showCards) {
+        for (const [key, child] of entries) {
+          const card = doc.createElement('section'); card.className = 'deep-engine-card';
+          card.setAttribute('aria-label', sourceName(key, child) + ' analysis');
+          const heading = doc.createElement('h3'); heading.textContent = sourceName(key, child);
+          const progress = doc.createElement('p'); progress.className = 'deep-engine-progress';
+          const nodes = Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
+          const seconds = Number.isFinite(child.elapsedMs) ? (child.elapsedMs / 1000).toFixed(1) + ' s' : 'time pending';
+          const threads = Number(child.threadsEffective) || Number(child.engine?.threads) || 1;
+          const nps = Number.isFinite(child.nps) ? ' · ' + child.nps.toLocaleString() + ' nps' : '';
+          const coverage = child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
+          progress.textContent = (child.status || 'loading') + ' · depth ' + (child.depth ?? child.linesDepth ?? '—') +
+            ' · ' + nodes + nps + ' · ' + seconds + ' · ' + threads + ' search thread' + (threads === 1 ? '' : 's') +
+            coverage + (child.error ? ' · ' + (child.error.message || child.error) : '');
+          card.append(heading, progress); appendLines(card, child, key); fragment.appendChild(card);
+        }
+      } else appendLines(fragment, entries[0][1], entries[0][0]);
       el('lines').replaceChildren(fragment); el('lines').scrollTop = scroll;
       root.requestAnimationFrame(() => {
         for (const variation of el('lines').querySelectorAll('.deep-pv'))
@@ -135,7 +185,12 @@
           }
         }
       });
-      el('export').disabled = !current.lines.length;
+      el('export').disabled = !displayedLines;
+      if (showCards) {
+        const statuses = entries.map(([key, child]) => `${sourceName(key, child)}: ${child.status || 'loading'}`);
+        el('status').textContent = statuses.join(' · ') + (mode === 'sf-berserk' ? ' · Independent evaluations; no combined score.' : '');
+        return;
+      }
       const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
       const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
       el('status').textContent = nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
@@ -179,14 +234,17 @@
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':');
         if (!options.automatic) followActive = true;
-        if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
+        if (configuredMode() === 'sf-berserk') opts.movetime = session?.capabilities?.()?.mobile ? 3000 : 6000;
+        else if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
         else if (kind === 'infinite') opts.infinite = true;
         else opts[kind] = Number(value);
         if (opts.searchMoves.length) opts.multiPV = Math.min(opts.multiPV, opts.searchMoves.length);
         const onUpdate = host.onSearchStart?.(opts);
-        if (!engine) engine = root.ChessDeepEngine.create({ Chess });
+        if (!engine) engine = (session || root.ChessDeepEngine).create({ Chess });
         el('start').disabled = true; el('stop').disabled = false;
-        el('status').textContent = 'Loading Stockfish 18 Lite (~7 MB on first use)…';
+        el('status').textContent = configuredMode() === 'sf-berserk' ? 'Loading SF Full and Berserk on demand…' :
+          configuredMode() === 'sf-full' ? 'Loading SF Full on demand…' :
+          configuredMode() === 'berserk' ? 'Loading Berserk on demand…' : 'Loading Stockfish 18 Lite (~7 MB on first use)…';
         if (options.reveal !== false) revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
         const pending = engine.analyze(opts); notifyState();
@@ -212,9 +270,11 @@
       if (panel.hidden || !pinned || !followActive) return false;
       if (engine?.isRunning?.()) return stopCurrent();
       const [kind, value] = el('budget').value.split(':');
+      if (configuredMode() === 'sf-berserk') { start({ reveal: false }); return true; }
       if (kind === 'infinite') { start({ reveal: false }); return true; }
-      const reached = Math.max(Number(value) || 14, Number(result?.linesDepth) || 0,
-        ...((result?.lines || []).map(line => Number(line.depth) || 0)));
+      const snapshots = result?.children ? Object.values(result.children) : [result];
+      const reached = Math.max(Number(value) || 14, ...snapshots.flatMap(snapshot =>
+        [Number(snapshot?.linesDepth) || 0, ...(snapshot?.lines || []).map(line => Number(line.depth) || 0)]));
       start({ depthOverride: Math.min(128, reached + 2), reveal: false }); return true;
     }
     el('start').onclick = () => start({ automatic: false }); el('stop').onclick = stopCurrent;
@@ -238,7 +298,8 @@
       if (!result) return;
       const blob = new Blob([JSON.stringify(result, null, 2) + '\n'], { type: 'application/json' });
       const url = URL.createObjectURL(blob), link = doc.createElement('a'); link.href = url;
-      link.download = 'Chess_Stockfish_Analysis_' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+      link.download = 'Chess_' + (modeLabels[result.mode || configuredMode()] || 'Engine').replace(/[^a-z0-9]+/gi, '_') +
+        '_Analysis_' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
       link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
     if (typeof host.onChange === 'function') {
@@ -264,6 +325,18 @@
         }
       });
     }
+    unregisterControls = root.ChessAnalysisControls?.registerDeep?.(panel) || null;
+    let analysisSettingsKey=JSON.stringify([session?.getSettings?.()?.analysisMode,session?.getSettings?.()?.sfFullThreadsRequested,session?.getSettings?.()?.hashMB]);
+    unsubscribeSettings = session?.subscribeSettings?.(settings => {
+      const nextKey=JSON.stringify([settings.analysisMode,settings.sfFullThreadsRequested,settings.hashMB]);
+      if(nextKey===analysisSettingsKey)return;
+      analysisSettingsKey=nextKey;
+      ++run; engine?.stop(); followActive = false; manualStoppedFen = pinned?.fen || null;
+      result = null; preview = null; el('lines').replaceChildren(); el('preview').hidden = true;
+      el('export').disabled = true; el('start').disabled = !pinned; el('stop').disabled = true;
+      el('status').textContent = 'Analysis settings changed. Press Analyze position to start the selected engine.';
+      notifyState();
+    }) || null;
     // Panel keyboard actions never move the main board or reach its shortcuts.
     panel.addEventListener('keydown', event => {
       event.stopPropagation();
@@ -273,8 +346,9 @@
       trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
       trigger.addEventListener('click', toggle);
     }
-    return { open, close, stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
-      destroy() { close(); ++run; liveUnsubscribe?.(); engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+    return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
+      stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
+      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };
