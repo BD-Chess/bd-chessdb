@@ -73,6 +73,8 @@ test('real Dreev-Kasparov Top Pick loads from Game library and opens populated R
   assert.match(review.headers.ChessBestTitle,/Dreev.*Kasparov.*whole-game review \(V4\)/i);
   assert.equal(review.headers.ChessBestReviewVersion,'4');
   await until(()=>!!el('gameReviewGraph'),'saved V4 data is loaded and its graph renders');
+  const graphBox=el('gameReviewGraph').getAttribute('viewBox').split(' ').map(Number);
+  assert(graphBox[2]<=400 && graphBox[3]>=150,'graph uses a readable phone/sidebar scale');
   assert.equal(el('gameReviewPanel').querySelectorAll('.game-review-decision').length,12);
   assert.match(el('gameReviewPanel').textContent,/58\/99 scored/);
   assert.match(el('gameReviewPanel').textContent,/56 cp · 2 mate · 41 unknown/);

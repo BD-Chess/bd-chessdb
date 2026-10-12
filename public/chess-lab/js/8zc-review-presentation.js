@@ -78,7 +78,9 @@
       label.append(input, el('span', '', labels[provider])); legend.append(label);
     }
     section.append(legend);
-    const width = 700, height = 184, left = 36, right = 10, top = 14, bottom = 24;
+    // Review lives in a ~320px sidebar/phone drawer, not a full-width canvas.
+    // Keep the SVG's native scale close to that width so axis text stays legible.
+    const width = 360, height = 168, left = 32, right = 8, top = 14, bottom = 24;
     const plotWidth = width - left - right, plotHeight = height - top - bottom;
     const x = ply => left + ply / review.totalPly * plotWidth;
     const y = point => top + (8 - (point.mateSign ? point.mateSign * 8 :
