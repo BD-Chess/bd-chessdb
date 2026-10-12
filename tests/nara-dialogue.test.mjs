@@ -18,7 +18,7 @@ function record(){
 const translation=r=>{const t={title:'Preskus oblike',deck:'Lokalni preskus.',shape:'Preskus',scenes:[structuredClone(slScene)],critic_line:'Samo preskus.'};t.content_sha256=bodyHash(t);return t};
 
 test('speaker labels, subtitles and interior thoughts render safely without changing source or hash',()=>{
-  const r=record(),before=JSON.stringify(r),html=renderStoryScene(r.scenes[0],1);
+  const r=record(),before=JSON.stringify(r),html=renderStoryScene(r.scenes[0],1,[],'en',2,r.date);
   assert.match(html,/<h2 class="scene">01 · At the gate<\/h2><p class="subtitle"><em>Sogeri · morning<\/em><\/p>/);
   assert.match(html,/<p class="dialogue"><strong class="speaker">Ruth<\/strong>He gave them too many wheels\.<\/p>/);
   assert.match(html,/Ruth lifted the box\. <em>Too soon,<\/em> she thought\./);
@@ -26,24 +26,30 @@ test('speaker labels, subtitles and interior thoughts render safely without chan
 });
 test('only specified formatting executes; raw HTML and unsupported Markdown remain escaped',()=>{
   const hostile={title:'<script>x()</script>',paragraphs:['*<img src=x> · noon*','**<svg onload=x()>**  \n<script>x()</script> *<img src=y>*','[unsafe](javascript:x()) **unsupported**']};
-  const html=renderStoryScene(hostile,2);
+  const html=renderStoryScene(hostile,2,[],'en',2,'2026-10-13');
   assert.doesNotMatch(html,/<(?:script|img|svg|a)\b/);assert.match(html,/&lt;script&gt;/);assert.match(html,/<em>&lt;img src=y&gt;<\/em>/);assert.match(html,/\*\*unsupported\*\*/);
 });
 test('legacy paragraphs and headings remain byte-identical, including literal asterisks',()=>{
   const legacy={title:'An old scene',paragraphs:['She said, “Wait.”','*Literal text*','**Name**  \nStill plain.']};
   assert.equal(renderStoryScene(legacy,1),'<section><h2>01 · An old scene</h2><p>She said, “Wait.”</p>\n<p>*Literal text*</p>\n<p>**Name**  \nStill plain.</p></section>');
 });
+test('the story-date gate keeps structurally matching 12 October source in the old format',()=>{
+  const html=renderStoryScene(scene,1,[],'en',2,'2026-10-12');
+  assert.match(html,/<p>\*Sogeri · morning\*<\/p>/);
+  assert.match(html,/<p>\*\*Ruth\*\*  \nHe gave them too many wheels\.<\/p>/);
+  assert.doesNotMatch(html,/class="(?:scene|subtitle|dialogue)"/);
+});
 test('images keep exact source indices across subtitles and multiline dialogue; HD has no 4K source',()=>{
   const img={scene:1,after_paragraph:3,src:'assets/img/hd.webp',width:1672,height:941,alt_en:'Box',alt_sl:'Škatla'};
   for(const [s,lang] of [[scene,'en'],[slScene,'sl']]){
-    const html=renderSceneParagraphs(s,1,[img],lang);
+    const html=renderSceneParagraphs(s,1,[img],lang,'2026-10-13');
     assert.match(html,/<\/strong>[^<]+<\/p><figure class="daily-scene-figure">/);
     assert.equal((html.match(/<figure /g)||[]).length,1);assert.doesNotMatch(html,/4k|4K|srcset/);
   }
 });
 test('optional act opener renders before scene heading while retaining source paragraphs and anchors',()=>{
   const s={title:'Arrival',paragraphs:['*Ridge · dawn*','ACT I · THE RETURN','*The ridge remembered.*','**Ruth**  \nHere.']},before=JSON.stringify(s);
-  const html=renderStoryScene(s,1,[{scene:1,after_paragraph:4,src:'assets/img/a.webp',width:1672,height:941,alt_en:'Arrival',alt_sl:'Prihod'}]);
+  const html=renderStoryScene(s,1,[{scene:1,after_paragraph:4,src:'assets/img/a.webp',width:1672,height:941,alt_en:'Arrival',alt_sl:'Prihod'}],'en',2,'2026-10-13');
   assert.ok(html.indexOf('class="act"')<html.indexOf('class="scene"'));
   assert.match(html,/<h2 class="scene">01 · Arrival<\/h2><p class="subtitle"><em>Ridge · dawn<\/em><\/p>/);
   assert.match(html,/<\/strong>Here\.<\/p><figure /);assert.equal(JSON.stringify(s),before);

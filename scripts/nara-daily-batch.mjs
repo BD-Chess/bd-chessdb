@@ -140,7 +140,7 @@ function dayManifest(batch,items,featured,files){
 
 export function instanceStoryHtml(item,root=null){
   const r=item.record,t=r.translation_sl,images=loadIllustrations(root,r,t,{nonBlocking:true});
-  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3)).join('\n')}</article>`;
+  const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3,r.date)).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
   return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;

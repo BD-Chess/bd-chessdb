@@ -74,7 +74,7 @@ function shell(title,file,body,active='daily',localized=false){
 // Optional per-story illustrations are separate from immutable public story/translation records.
 // The manifest binds exactly to an approved edition and both language content hashes.
 export {loadIllustrations} from './nara-illustrations.mjs';
-const prose=(r,lang='en',images=[])=>'<article class="story" lang="'+lang+'" data-story-id="'+r.id+'" data-content-sha256="'+r.content_sha256+'" aria-label="'+(lang==='sl'?'Zgodba':'Story')+'">'+r.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,2)).join('\n')+'</article>';
+const prose=(r,lang='en',images=[])=>'<article class="story" lang="'+lang+'" data-story-id="'+r.id+'" data-content-sha256="'+r.content_sha256+'" aria-label="'+(lang==='sl'?'Zgodba':'Story')+'">'+r.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,2,r.date)).join('\n')+'</article>';
 const notes=(r,lang='en')=>'<aside class="notes" lang="'+lang+'" aria-label="'+(lang==='sl'?'Uredniški opombi':'Editorial notes')+'"><details><summary>'+(lang==='sl'?'Kaj po mnenju kritika še ne deluje':"What the critic still says doesn't work")+'</summary><div class="inside"><p>'+esc(r.critic_line)+'</p></div></details><details><summary>'+(lang==='sl'?'Zasnova te zgodbe':"Tonight's shape")+'</summary><div class="inside"><p>'+esc(r.shape)+'</p></div></details></aside>';
 const localizedText=(en,sl)=>sl?bi(en,sl):'<span lang="en">'+esc(en)+'</span>';
 function storyContent(r,t,images=[]){

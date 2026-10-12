@@ -2,8 +2,10 @@
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const italicLine=s=>/^\*([^*\r\n]+)\*$/.exec(s);
 const actLine=s=>/^ACT [IVX]+ · [^\r\n]+$/.test(s);
+export const DIALOGUE_EFFECTIVE_DATE='2026-10-13';
 
-export function dialogueScene(scene){
+export function dialogueScene(scene,storyDate){
+  if(typeof storyDate!=='string'||storyDate<DIALOGUE_EFFECTIVE_DATE)return false;
   const subtitle=italicLine(scene.paragraphs[0]);
   return Boolean(subtitle&&subtitle[1].includes(' · '));
 }
@@ -19,15 +21,15 @@ export function renderThoughts(s){
   return html+esc(s.slice(start));
 }
 
-export function sceneActIndices(scene){
-  return dialogueScene(scene)&&actLine(scene.paragraphs[1]||'')&&italicLine(scene.paragraphs[2]||'')?[1,2]:[];
+export function sceneActIndices(scene,storyDate){
+  return dialogueScene(scene,storyDate)&&actLine(scene.paragraphs[1]||'')&&italicLine(scene.paragraphs[2]||'')?[1,2]:[];
 }
 
-export function renderDialogueParagraph(scene,index,heading=2){
+export function renderDialogueParagraph(scene,index,heading=2,storyDate){
   const p=scene.paragraphs[index];
-  if(!dialogueScene(scene))return '<p>'+esc(p)+'</p>';
+  if(!dialogueScene(scene,storyDate))return '<p>'+esc(p)+'</p>';
   if(index===0)return '<p class="subtitle"><em>'+esc(italicLine(p)[1])+'</em></p>';
-  const acts=sceneActIndices(scene);
+  const acts=sceneActIndices(scene,storyDate);
   if(acts.includes(index))return index===1
     ?'<h'+heading+' class="act">'+esc(p)+'</h'+heading+'>'
     :'<p class="subtitle act-line"><em>'+esc(italicLine(p)[1])+'</em></p>';

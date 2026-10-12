@@ -78,20 +78,20 @@ function gradeView(v){
   }
   return '<p class="version-grade"><strong>GPT</strong> '+formatScore(g.gpt)+' / 100 · <strong>Claude</strong> '+formatScore(g.claude)+' / 100 · <strong>50/50</strong> '+formatScore(g.combined)+' / 100 <small>SA1</small></p>';
 }
-function versionView(v,id,index,branch='',images=[],translation=null){
+function versionView(v,id,index,branch='',images=[],translation=null,storyDate){
   const safeId=String(id+'-'+branch+'-'+v.version).replace(/[^A-Za-z0-9_-]/g,'-');
   const readable=v.story||{},scenes=Array.isArray(readable.scenes)?readable.scenes:[];
   const stage=v.stage||'STORED_FULL_TEXT';
   const side=v.branch?' · '+esc(v.branch):'';
-  const full=scenes.map((scene,j)=>renderStoryScene(scene,j+1,images,'en',5)).join('');
-  const sl=translation?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>renderStoryScene(s,j+1,images,'sl',5)).join('')+'</article>':'';
+  const full=scenes.map((scene,j)=>renderStoryScene(scene,j+1,images,'en',5,storyDate)).join('');
+  const sl=translation?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>renderStoryScene(s,j+1,images,'sl',5,storyDate)).join('')+'</article>':'';
   const notes=v.note?'<p class="muted">'+esc(v.note)+'</p>':'';
   const duplicate=v.same_text_events?.length>1?'<p class="muted">Identical text also recorded at '+esc(v.same_text_events.join(', '))+'</p>':'';
   const rating=realGrade(v.grade)?' · '+formatScore(v.grade.combined)+'/100':' · PENDING';
   return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"'+(translation?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
 }
-function branchView(name,entries,id,finalVersion=null,images=[],translation=null){
-  return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name,v.version===finalVersion?images:[],v.version===finalVersion?translation:null)).join('')+'</section>';
+function branchView(name,entries,id,finalVersion=null,images=[],translation=null,storyDate){
+  return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name,v.version===finalVersion?images:[],v.version===finalVersion?translation:null,storyDate)).join('')+'</section>';
 }
 export function renderVersionArchive(root){
   const series=listVersionSeries(root);
@@ -110,8 +110,8 @@ export function renderVersionArchive(root){
         images=loadIllustrations(root,record,translation,{nonBlocking:true});
       }
     }
-    const main=branchView('Published story lineage / objavljena veja',s.accepted_lineage,s.story_id,s.final_version,images,translation);
-    const alt=(s.parallel_branches||[]).map((b,i)=>Array.isArray(b)?branchView('Parallel branch '+(i+1),b,s.story_id):branchView(b.name||'Parallel branch',b.versions||[],s.story_id)).join('');
+    const main=branchView('Published story lineage / objavljena veja',s.accepted_lineage,s.story_id,s.final_version,images,translation,s.date);
+    const alt=(s.parallel_branches||[]).map((b,i)=>Array.isArray(b)?branchView('Parallel branch '+(i+1),b,s.story_id,null,[],null,s.date):branchView(b.name||'Parallel branch',b.versions||[],s.story_id,null,[],null,s.date)).join('');
     return '<details class="archive-item version-story" id="'+esc(sid)+'"><summary><time datetime="'+esc(s.date)+'">'+esc(s.date)+'</time><span class="story-summary-title"><strong>'+esc(s.story_id.includes(':')?s.story_id.slice(-2)+' · '+s.published_title:s.published_title)+'</strong><span class="score-chip score-trend--'+trend+'">'+esc(label)+'</span></span></summary><div class="inside">'+main+alt+'</div></details>';
   }).join('\n');
   return intro+items+'</section>';

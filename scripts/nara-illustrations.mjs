@@ -105,16 +105,16 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
 export const renderIllustration=(image,lang='en')=>'<figure class="daily-scene-figure"><img src="'+esc(image.src)+'"'+(image.src_4k?' data-nara-image-hd="'+esc(image.src)+'" data-nara-image-4k="'+esc(image.src_4k)+'"':'')+' alt="'+esc(lang==='sl'?image.alt_sl:image.alt_en)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>';
 
 /** One-based anchors; legacy manifests remain at scene end. EN/SL share structural indices. */
-export function renderSceneParagraphs(scene,sceneNumber,images=[],lang='en'){
-  return scene.paragraphs.map((p,j)=>renderDialogueParagraph(scene,j)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
+export function renderSceneParagraphs(scene,sceneNumber,images=[],lang='en',storyDate){
+  return scene.paragraphs.map((p,j)=>renderDialogueParagraph(scene,j,2,storyDate)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
 }
 
 const paragraphImages=(scene,sceneNumber,index,images,lang)=>images.filter(x=>x.scene===sceneNumber&&(x.after_paragraph??scene.paragraphs.length)===index+1).map(x=>renderIllustration(x,lang)).join('');
 
 /** Acts are presented before scene headings; anchors keep their source indices. */
-export function renderStoryScene(scene,sceneNumber,images=[],lang='en',heading=2){
-  const acts=sceneActIndices(scene);
-  const opening=acts.map(j=>renderDialogueParagraph(scene,j,heading)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
-  const paragraphs=scene.paragraphs.map((p,j)=>acts.includes(j)?null:renderDialogueParagraph(scene,j,heading)+paragraphImages(scene,sceneNumber,j,images,lang)).filter(p=>p!==null).join('\n');
-  return '<section>'+opening+'<h'+heading+(dialogueScene(scene)?' class="scene"':'')+'>'+String(sceneNumber).padStart(2,'0')+' · '+esc(scene.title)+'</h'+heading+'>'+paragraphs+'</section>';
+export function renderStoryScene(scene,sceneNumber,images=[],lang='en',heading=2,storyDate){
+  const acts=sceneActIndices(scene,storyDate);
+  const opening=acts.map(j=>renderDialogueParagraph(scene,j,heading,storyDate)+paragraphImages(scene,sceneNumber,j,images,lang)).join('\n');
+  const paragraphs=scene.paragraphs.map((p,j)=>acts.includes(j)?null:renderDialogueParagraph(scene,j,heading,storyDate)+paragraphImages(scene,sceneNumber,j,images,lang)).filter(p=>p!==null).join('\n');
+  return '<section>'+opening+'<h'+heading+(dialogueScene(scene,storyDate)?' class="scene"':'')+'>'+String(sceneNumber).padStart(2,'0')+' · '+esc(scene.title)+'</h'+heading+'>'+paragraphs+'</section>';
 }
