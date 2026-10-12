@@ -18,8 +18,9 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.ok(source);
   assert.equal(source.children.length,2);
   assert.ok(source.querySelector('.analysis-primary-row #analysisSource'));
-  assert.deepEqual([...source.querySelectorAll('.analysis-checks input')].map(x=>x.id),['analysisCDB','analysisDCC']);
-  assert.ok(source.querySelector('.analysis-options-row #analysisCpuThreads'));
+  assert.deepEqual([...source.querySelectorAll('.analysis-options-row input')].map(x=>x.id),['analysisDCC','analysisCDB']);
+  assert.deepEqual([...source.querySelectorAll('.analysis-dcc-actions > *')].map(x=>x.id||x.querySelector('input')?.id),['btnDesktopDccReplay','btnDesktopDccAnalysis','analysisDCC']);
+  assert.ok(source.querySelector('.analysis-primary-row #analysisCpuThreads'));
   assert.equal(source.querySelector('#analysisSourceStatus'), null);
   assert.ok(doc.querySelector('.analysis-status-row #analysisSourceStatus'));
   assert.ok(doc.querySelector('.analysis-status-row #dccProgress'));
@@ -30,10 +31,13 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.deepEqual([...stack.children].map(node => node.id), ['desktopNavRow', 'desktopViewTabs', 'workspacePrimaryActions']);
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
   assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
-  assert.match(html, /id="btnAnalysisDeepen"[^>]*>Deeper search<\/button>/);
+  assert.match(html, /id="btnAnalysisDeepen"[^>]*>Refresh evals<\/button>/);
   assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['CDB','SF Lite','SF Full','Reckless','LCZero','Berserk']);
   assert.equal(doc.querySelector('#analysisSource').value, 'cdb');
-  assert.equal(doc.querySelector('#analysisCpuThreads').value, '1');
+  assert.equal(doc.querySelector('#analysisCpuThreads').value, 'none');
+  assert.equal(doc.querySelector('#analysisCpuThreads').textContent,'CPU —');
+  assert.equal(doc.querySelector('#analysisSFFull').checked,false);
+  assert.ok(doc.querySelector('.board-analysis-actions .sf-full-toggle + #btnAnalyzeAll'));
   assert.equal(source.querySelector('[data-berserk-network]'), null);
   assert.ok(doc.querySelector('#settingsPanel .analysis-network-advanced [data-berserk-network]'));
   assert.equal(doc.querySelector('.board-note'),null);

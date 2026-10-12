@@ -24,7 +24,7 @@
     }
     function state(role){
       const job=[...jobs.values()].find(x=>roleFor(x.mode)===role);
-      const mode=role==='BER'?'berserk':context().settings?.sfCardMode||'sf-lite';
+      const mode=job?.mode||(role==='BER'?'berserk':context().settings?.sfCardMode||'sf-lite');
       const result=get(mode),variant=mode==='sf-full'?'Full':'Lite';
       return {working:!!job,disabled:!context().canAnalyze,
         title:job?'Stop '+(role==='BER'?'Berserk':'Stockfish '+variant):'Analyze '+(role==='BER'?'Berserk':'Stockfish '+variant)+'; click again to deepen',

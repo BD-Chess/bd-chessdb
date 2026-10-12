@@ -8,13 +8,14 @@
     if (!workspace) throw new Error('Deep analysis requires the analysis workspace');
     const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
     panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
-    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">ChessDB position data · selected source.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
+    panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">SF Lite · runs on this device.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="cdb" selected>CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU threads<select data-deep="threads" aria-label="Stockfish Full CPU threads"><option value="1" selected>1</option><option value="auto">Auto</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
       <p class="deep-budget-note" data-deep="budget-note" hidden></p>
       <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
       <small data-berserk-status role="status" hidden></small>
+      <details class="deep-additional"><summary>Additional data · CDB / DCC</summary><p data-deep="additional-status"></p><button type="button" data-deep="cdb-refresh">Refresh CDB data</button></details>
       <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false"><small>Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
       <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
@@ -29,11 +30,18 @@
     let manualStoppedFen = null, pendingLiveScroll = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
     const Chess = host.Chess || root.Chess;
     const session = root.ChessAnalysisSession;
-    const configuredMode = () => session?.getSettings?.()?.analysisMode || 'cdb';
+    const configuredMode = () => session?.getSettings?.()?.analysisMode || 'sf-lite';
     const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', 'sf-berserk': 'SF & Berserk' };
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
-    const notifyState = () => host.onStateChange?.(state());
+    const notifyState = extra => host.onStateChange?.({...state(),...extra});
+    function reflectAdditional() {
+      const data=host.getAdditionalAnalysis?.()||{};
+      const receipt=data.dcc;
+      el('additional-status').textContent=(data.cdbEnabled===false?'CDB disabled':'CDB · '+(data.cdb?.allMoves?.length?'position data available':'no current data'))+' · '+
+        (data.dccEnabled===false?'DCC hidden':'DCC · '+(receipt?.provider||receipt?.engineName||receipt?.status||'pending'));
+      el('cdb-refresh').disabled=data.cdbEnabled===false||typeof host.onCDBSearch!=='function';
+    }
     function setPinned(context, options = {}) {
       const next = typeof context === 'string' ? { fen: context } : Object.assign({}, context);
       if (!next || !next.fen) throw new Error('No board position is available');
@@ -58,6 +66,7 @@
       workspace.classList.add('is-deep-analysis');
       workspace.setAttribute('aria-label', 'Deep analysis');
       panel.hidden = false; trigger?.setAttribute('aria-expanded', 'true');
+      reflectAdditional();
       workspace.scrollTop = deepScroll;
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('close').focus({ preventScroll: true });
@@ -110,7 +119,7 @@
       preview = { fen: pinned.fen, pv: line.pv.slice(), index, source: sourceName(key, snapshot),
         evaluation: line.score, depth: line.depth, engine: snapshot?.engine || null,
         jobId: snapshot?.jobId || null, threadsEffective: snapshot?.threadsEffective ?? snapshot?.engine?.threadsEffective ?? null,
-        analysisMode: configuredMode(), child: key, limits: snapshot?.limits || null,
+        analysisMode: result?.mode || snapshot?.mode || key, child: key, limits: snapshot?.limits || null,
         positionHistory: pinned.positionHistory || snapshot?.positionHistory || null,
         elapsedMs: snapshot?.elapsedMs ?? null, completeMultiPV: !!snapshot?.completeMultiPV,
         startedAt: snapshot?.startedAt || null };
@@ -228,13 +237,6 @@
     async function start(options = {}) {
       const token = ++run;
       manualStoppedFen = null;
-      if(configuredMode()==='cdb'){
-        try{el('status').textContent='Refreshing ChessDB…';el('start').disabled=true;
-          const done=await host.onCDBSearch?.();if(token===run&&done)render(done,true);}
-        catch(error){if(token===run)el('status').textContent=error.message;}
-        finally{if(token===run){el('start').disabled=false;el('stop').disabled=true;notifyState();}}
-        return;
-      }
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');
@@ -286,6 +288,12 @@
       start({ depthOverride: Math.min(128, reached + 2), reveal: false }); return true;
     }
     el('start').onclick = () => start({ automatic: false }); el('stop').onclick = stopCurrent;
+    el('cdb-refresh').onclick=async()=>{
+      el('cdb-refresh').disabled=true;el('additional-status').textContent='Refreshing ChessDB…';
+      try{await host.onCDBSearch?.();reflectAdditional();}
+      catch(error){el('additional-status').textContent=error.message;}
+      finally{el('cdb-refresh').disabled=host.getAdditionalAnalysis?.().cdbEnabled===false;}
+    };
     el('close').onclick = close;
     el('use').onclick = () => {
       engine?.stop(); ++run; pinned = null;
@@ -340,10 +348,9 @@
       if(nextKey===analysisSettingsKey)return;
       analysisSettingsKey=nextKey;
       ++run; engine?.stop(); followActive = false; manualStoppedFen = pinned?.fen || null;
-      result = null; preview = null; el('lines').replaceChildren(); el('preview').hidden = true;
-      el('export').disabled = true; el('start').disabled = !pinned; el('stop').disabled = true;
-      el('status').textContent = 'Analysis settings changed. Press Analyze position to start the selected engine.';
-      notifyState();
+      el('start').disabled = !pinned; el('stop').disabled = true;
+      el('status').textContent = 'Selected '+modeLabels[settings.analysisMode]+'. '+(hasLines(result)?'Previous '+(modeLabels[result.mode]||'engine')+' results retained. ':'')+'Press Analyze position to start.';
+      notifyState({passive:true});
     }) || null;
     // Panel keyboard actions never move the main board or reach its shortcuts.
     panel.addEventListener('keydown', event => {

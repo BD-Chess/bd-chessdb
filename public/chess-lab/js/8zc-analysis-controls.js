@@ -8,9 +8,12 @@
   const topThreads = document.getElementById('analysisCpuThreads');
   let deepPanel = null;
   let networkLoadError = '';
-  const requested = () => session?.getSettings?.() || { analysisMode: 'cdb', sfFullThreadsRequested: 1 };
+  const requested = () => session?.getSettings?.() || { boardSource:'cdb', analysisMode:'sf-lite', sfCardMode:'sf-lite', sfFullThreadsRequested:1 };
   const normalizeMode = mode => mode === 'sf' ? 'sf-lite' : mode === 'auto' ? 'cdb' : choices.includes(mode) ? mode : 'cdb';
-  const normalizeThreads = value => value === 'auto' ? 'auto' : [1, 2, 4, 6, 8].includes(Number(value)) ? Number(value) : 1;
+  const normalizeThreads = value => Number.isInteger(Number(value)) && Number(value)>=1 && Number(value)<=8 ? Number(value) : 1;
+  const isSF = mode => mode === 'sf-lite' || mode === 'sf-full';
+  const sfToggle = document.getElementById('analysisSFFull');
+  const sfSetting = document.getElementById('settingSFEngine');
   const modeControl = () => deepPanel?.querySelector('[data-deep="mode"]');
   const threadControl = () => deepPanel?.querySelector('[data-deep="threads"]');
 
@@ -23,29 +26,43 @@
     if (mode === 'sf-berserk') return `SF Full · ${sf} + Berserk · 1 = ${Number(caps.totalThreads) || sf + 1} search threads`;
     return `SF Full · ${sf} search thread${sf === 1 ? '' : 's'}`;
   }
+  function reflectThreads(select, mode, settings, caps) {
+    if (!select) return;
+    const unavailable = ['cdb','reckless','lc0'].includes(mode);
+    const max = unavailable ? 0 : mode==='sf-full'||mode==='sf-berserk' ? Number(caps.maxSFThreads)||1 : 1;
+    const signature = String(max);
+    if (select.dataset.cpuOptions !== signature) {
+      select.replaceChildren();
+      for (let n=unavailable?0:1; n<=max; n++) {
+        const option=document.createElement('option');option.value=n?String(n):'none';
+        option.textContent=n?'CPU '+n:'CPU —';select.appendChild(option);
+      }
+      select.dataset.cpuOptions=signature;
+    }
+    select.value = unavailable ? 'none' : String(Math.min(max,normalizeThreads(settings.sfFullThreadsRequested)));
+    select.disabled = max<=1;
+    select.title = mode==='cdb' ? 'CDB has no configurable local search threads. Your local CPU setting is retained.' :
+      unavailable ? 'This engine is not implemented yet.' : max===1 ?
+      (mode==='sf-full'||mode==='sf-berserk' ? caps.message || 'This browser supports one search thread.' : 'This engine supports one search thread.') :
+      'Local search threads supported by this engine and browser.';
+  }
   function reflect(settings) {
     settings = settings || requested();
     const mode = normalizeMode(settings.boardSource);
-    const deepMode = settings.analysisMode || 'cdb';
+    const deepMode = settings.analysisMode || 'sf-lite';
     const caps = session?.capabilities?.(mode) || {};
     const deepCaps = session?.capabilities?.(deepMode) || {};
-    const value = String(normalizeThreads(settings.sfFullThreadsRequested));
-    const locked = mode !== 'sf-full' && mode !== 'sf-berserk';
     if (topMode) topMode.value = mode;
     if (modeControl()) modeControl().value = deepMode;
-    for (const select of [topThreads, threadControl()]) if (select) {
-      select.value = value;
-      select.disabled = select===topThreads ? false : deepMode!=='sf-full'&&deepMode!=='sf-berserk';
-      select.title = locked ? 'Only SF Full has configurable search threads.' :
-        'Requested Stockfish Full search threads; the browser may limit the effective count.';
-    }
+    reflectThreads(topThreads,mode,settings,caps);
+    reflectThreads(threadControl(),deepMode,settings,deepCaps);
+    if(sfToggle)sfToggle.checked=settings.sfCardMode==='sf-full';
+    if(sfSetting)sfSetting.value=settings.sfCardMode==='sf-full'?'sf-full':'sf-lite';
     const text = allocationText(mode, caps);
     const note = caps.message ? ' · ' + caps.message : '';
     const topStatus = document.getElementById('analysisCpuStatus');
     if (topStatus) {
-      topStatus.textContent = mode === 'sf-berserk' ?
-        `SF ${Number(caps.effectiveSFThreads) || 1} + Berserk 1 · ${Number(caps.totalThreads) || (Number(caps.effectiveSFThreads) || 1) + 1} threads` :
-        mode === 'cdb' ? 'ChessDB · selected source' : text;
+      topStatus.hidden=true;topStatus.textContent='';
       topStatus.title = text + note;
     }
     const deepStatus = deepPanel?.querySelector('[data-deep="allocation"]');
@@ -53,9 +70,10 @@
     const networkText = networkLoadError || (settings.berserkNetworkState === 'downloading' ? 'Downloading NNUE…' :
       settings.berserkNetworkState === 'checking' ? 'Checking cached NNUE…' :
       settings.berserkNetworkState === 'error' ? 'Error: ' + (settings.berserkNetworkError || 'NNUE unavailable') :
-      settings.berserkNetworkReady ? 'Ready · NNUE verified' : 'Ready · original NNUE loads automatically on Start');
+      settings.berserkNetworkReady ? 'Ready' : 'Ready');
     for (const status of document.querySelectorAll('[data-berserk-status]')) {
-      status.hidden = !status.closest('.analysis-network-control') && mode !== 'berserk' && deepMode !== 'berserk' && deepMode !== 'sf-berserk' && settings.berserkNetworkState!=='downloading' && settings.berserkNetworkState!=='error';
+      const contextMode=status.closest('.deep-panel')?deepMode:mode;
+      status.hidden = !status.closest('.analysis-network-control') && contextMode!=='berserk' && contextMode!=='sf-berserk' && settings.berserkNetworkState!=='downloading' && settings.berserkNetworkState!=='error';
       if(!status.dataset.busy)status.textContent=networkText;
     }
     for(const control of document.querySelectorAll('.analysis-network-control')) {
@@ -67,15 +85,15 @@
     }
     const budget = deepPanel?.querySelector('[data-deep="budget"]');
     if (budget) {
-      budget.disabled = deepMode === 'sf-berserk' || deepMode === 'cdb';
-      budget.closest('label').hidden=deepMode==='cdb';
+      budget.disabled = deepMode === 'sf-berserk';
+      budget.closest('label').hidden=false;
       budget.hidden = deepMode === 'sf-berserk';
       budget.title = deepMode === 'sf-berserk' ? 'Dual analysis uses equal timed searches instead of a depth target.' : '';
     }
     const lineCount=deepPanel?.querySelector('[data-deep="multipv"]');
-    if(lineCount)lineCount.closest('label').hidden=deepMode==='cdb';
-    const rootMoves=deepPanel?.querySelector('.deep-root-moves');if(rootMoves)rootMoves.hidden=deepMode==='cdb';
-    const start=deepPanel?.querySelector('[data-deep="start"]');if(start)start.textContent=deepMode==='cdb'?'Refresh CDB':'Analyze position';
+    if(lineCount)lineCount.closest('label').hidden=false;
+    const rootMoves=deepPanel?.querySelector('.deep-root-moves');if(rootMoves)rootMoves.hidden=false;
+    const start=deepPanel?.querySelector('[data-deep="start"]');if(start)start.textContent='Analyze position';
     const dualTime = deepPanel?.querySelector('[data-deep="dual-time"]');
     if (dualTime) {
       dualTime.hidden = deepMode !== 'sf-berserk';
@@ -93,14 +111,14 @@
     const deepDcc = deepPanel?.querySelector('[data-deep="dcc-note"]');
     if (deepDcc) deepDcc.hidden = true;
     const intro = deepPanel?.querySelector('[data-deep="engine-intro"]');
-    if (intro) intro.textContent = deepMode === 'cdb' ? 'ChessDB position data · refresh the selected position.' : `${labels[deepMode]} · runs on this device`;
+    if (intro) intro.textContent = `${labels[deepMode]} · runs on this device`;
     const hostNote=document.getElementById('analysisHostNote');
-    if(hostNote){hostNote.hidden=!(mode==='sf-full'||mode==='sf-berserk')||caps.isolated;hostNote.textContent=caps.message||'';}
+    if(hostNote){hostNote.hidden=true;hostNote.textContent='';hostNote.title=caps.message||'';}
     const action = document.getElementById('btnAnalysisDeepen');
     if (action) {
-      action.textContent = 'Deeper search';
+      action.textContent = mode==='cdb'?'Refresh evals':'Deeper search';
       if (!action.disabled) {
-        action.title = `Analyze with ${labels[mode]}`;
+        action.title = mode==='cdb'?'Refresh ChessDB evaluations for the current position':`Analyze with ${labels[mode]}`;
         action.setAttribute('aria-label', action.textContent);
       }
     }
@@ -120,26 +138,45 @@
     for(const input of document.querySelectorAll('[data-berserk-network]'))input.value='';
     reflect();notifyBoard();
   }
-  function notifyBoard() {
+  function notifyBoard(passive=false) {
     if (!topMode) return;
     const event = new Event('change', { bubbles: true });
     event.chessAnalysisHandled = true;
+    event.chessAnalysisPassive = passive;
     topMode.dispatchEvent(event);
   }
   function changeMode(event) {
     if (event.chessAnalysisHandled) return;
     const next = normalizeMode(event.target.value);
-    session?.configure?.(event.target===topMode ? {boardSource:next} : {analysisMode:event.target.value});
+    const old=requested(),top=event.target===topMode;
+    const patch=top?{boardSource:next}:{analysisMode:event.target.value};
+    if(isSF(next)) {
+      patch.sfCardMode=next;
+      if(top&&isSF(old.analysisMode))patch.analysisMode=next;
+    } else if(!top&&event.target.value==='sf-berserk')patch.sfCardMode='sf-full';
+    if(top) {event.chessAnalysisHandled=true;event.chessAnalysisPassive=isSF(old.boardSource)&&isSF(next);}
+    session?.configure?.(patch);
     reflect();
     // The analysis panel does not change the board source.
   }
   function changeThreads(event) {
+    if(event.target.value==='none')return;
     session?.configure?.({ sfFullThreadsRequested: normalizeThreads(event.target.value) });
     reflect();
-    notifyBoard();
   }
+  function setSFVariant(mode) {
+    mode=mode==='sf-full'?'sf-full':'sf-lite';
+    const old=requested(),patch={sfCardMode:mode};
+    if(isSF(old.analysisMode))patch.analysisMode=mode;
+    if(isSF(old.boardSource))patch.boardSource=mode;
+    session?.configure?.(patch);reflect();
+    if(patch.boardSource&&patch.boardSource!==old.boardSource)notifyBoard(true);
+  }
+  function changeSFVariant(event){setSFVariant(event.target===sfToggle?(sfToggle.checked?'sf-full':'sf-lite'):event.target.value);}
   topMode?.addEventListener('change', changeMode);
   topThreads?.addEventListener('change', changeThreads);
+  sfToggle?.addEventListener('change',changeSFVariant);
+  sfSetting?.addEventListener('change',changeSFVariant);
   const unsubscribe = session?.subscribeSettings?.(reflect);
   function registerDeep(panel) {
     deepPanel = panel;
@@ -156,8 +193,9 @@
   helpButton?.addEventListener('click',()=>helpDialog?.showModal());
   helpDialog?.querySelector('[data-close-dcc-help]')?.addEventListener('click',()=>helpDialog.close());
   reflect();
-  root.ChessAnalysisControls = { registerDeep, refresh: reflect, labels, destroy() {
+  root.ChessAnalysisControls = { registerDeep, refresh: reflect, setSFVariant, labels, destroy() {
     unsubscribe?.(); topMode?.removeEventListener('change', changeMode);
     topThreads?.removeEventListener('change', changeThreads);
+    sfToggle?.removeEventListener('change',changeSFVariant);sfSetting?.removeEventListener('change',changeSFVariant);
   } };
 })(window);

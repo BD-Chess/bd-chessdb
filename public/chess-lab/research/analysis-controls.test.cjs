@@ -9,6 +9,7 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
   const dom = new JSDOM(`<!doctype html>
     <select id="analysisSource"><option value="cdb">CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero</option></select>
     <select id="analysisCpuThreads"><option>auto</option><option>1</option><option>2</option><option>4</option><option>6</option><option>8</option></select>
+    <input type="checkbox" id="analysisSFFull"><select id="settingSFEngine"><option value="sf-lite">Lite</option><option value="sf-full">Full</option></select>
     <small id="analysisCpuStatus"></small><small id="analysisDccModeNote" hidden></small>
     <button id="btnAnalysisDeepen">Deeper SF</button><button id="btnDeepAnalysis">Deep analysis</button>
     <div id="workspaceDisplay"></div>`, { runScripts: 'outside-only', pretendToBeVisual: true });
@@ -16,13 +17,13 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
   t.after(() => dom.window.close());
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
   w.ChessDeepEngine = { validateFen(fen) { if (!new w.Chess().validate_fen(fen).valid) throw Error('Invalid FEN'); } };
-  let settings = { boardSource:'cdb', analysisMode: 'cdb', sfFullThreadsRequested: 1 };
+  let settings = { boardSource:'cdb', analysisMode:'sf-lite', sfCardMode:'sf-lite', sfFullThreadsRequested:1 };
   let options, running = false, analyses = 0, stops = 0;
   const saved = [];
   const subscribers = new Set();
   w.ChessAnalysisSession = {
     getSettings: () => ({ ...settings }),
-    capabilities: () => ({ mobile: w.innerWidth < 700,
+    capabilities: () => ({ mobile: w.innerWidth < 700, isolated:true, maxSFThreads:w.innerWidth<700?2:8,
       effectiveSFThreads: settings.sfFullThreadsRequested === 'auto' ? 2 : settings.sfFullThreadsRequested,
       totalThreads: settings.sfFullThreadsRequested === 'auto' ? 3 : Number(settings.sfFullThreadsRequested) + 1 }),
     configure(next) { settings = { ...settings, ...next }; for (const fn of subscribers) fn({ ...settings }); },
@@ -49,9 +50,11 @@ test('board source and independent analysis mode stay separate; CPU requests syn
   const seen = [];
   topMode.addEventListener('change', event => seen.push({ mode: topMode.value, handled: !!event.chessAnalysisHandled }));
   assert.equal(topMode.value, 'cdb');
-  assert.equal(el('mode').value, 'cdb');
+  assert.equal(el('mode').value, 'sf-lite');
+  assert.equal(topThreads.value,'none');
+  assert.equal(w.document.getElementById('btnAnalysisDeepen').textContent,'Refresh evals');
   assert.equal(el('threads').disabled, true);
-  for (const mode of ['sf-lite', 'sf-full', 'berserk', 'sf-berserk', 'cdb']) {
+  for (const mode of ['sf-lite', 'sf-full', 'berserk', 'sf-berserk']) {
     el('mode').value = mode; change(el('mode'));
     assert.equal(topMode.value, 'cdb');
     assert.equal(x.getSettings().analysisMode, mode);
@@ -68,12 +71,12 @@ test('board source and independent analysis mode stay separate; CPU requests syn
   el('threads').value = '4'; change(el('threads'));
   assert.equal(topThreads.value, '4');
   assert.equal(x.getSettings().sfFullThreadsRequested, 4);
-  assert.match(w.document.getElementById('analysisCpuStatus').textContent, /SF Full · 4 search threads/);
+  assert.equal(topThreads.selectedOptions[0].textContent,'CPU 4');
   assert.equal(el('budget').disabled, true);
   assert.equal(el('budget').hidden, true);
   assert.equal(el('dual-time').textContent, '6 s each');
   assert.match(el('budget-note').textContent, /each receive up to 6 seconds.*depths can differ/i);
-  assert.equal(seen.at(-1).handled, true, 'CPU changes invalidate old board work');
+  assert.equal(seen.length,1,'CPU selection stays idle and does not change board source');
   x.ui.start();
   assert.equal(x.getOptions().movetime, 6000);
   assert.equal(x.getOptions().depth, undefined, 'dual search requests timed budgets, not hidden depth 14');
@@ -102,12 +105,55 @@ test('board source and independent analysis mode stay separate; CPU requests syn
   assert.equal(x.ui.getResult().children['sf-full'].jobId, 'sf-job');
   el('threads').value = '2'; change(el('threads'));
   assert.ok(x.stops() > 0);
-  assert.equal(el('lines').children.length, 0, 'settings switch invalidates displayed engine results');
+  assert.equal(el('lines').children.length,2,'settings switch retains actual engine results');
+  assert.equal(x.ui.getResult().children['sf-full'].jobId,'sf-job');
   Object.defineProperty(w, 'innerWidth', { configurable: true, value: 390 });
   w.ChessAnalysisControls.refresh();
   assert.equal(el('dual-time').textContent, '3 s each');
   x.ui.start();
   assert.equal(x.getOptions().movetime, 3000);
+});
+
+test('SF checkbox is bidirectional only within the board SF family, and all selection stays idle',t=>{
+  const x=setup(t),{w,el,change}=x;
+  const board=w.document.getElementById('analysisSource'),toggle=w.document.getElementById('analysisSFFull');
+  const events=[];board.addEventListener('change',e=>events.push(!!e.chessAnalysisPassive));
+  toggle.checked=true;change(toggle);
+  assert.equal(board.value,'cdb');assert.equal(x.getSettings().sfCardMode,'sf-full');
+  assert.equal(el('mode').value,'sf-full');assert.equal(events.length,0);
+  board.value='sf-lite';change(board);assert.equal(toggle.checked,false);
+  toggle.checked=true;change(toggle);
+  assert.equal(board.value,'sf-full');assert.equal(events.at(-1),true);
+  board.value='berserk';change(board);toggle.checked=false;change(toggle);
+  assert.equal(board.value,'berserk');assert.equal(x.getSettings().sfCardMode,'sf-lite');
+  board.value='sf-lite';change(board);el('mode').value='sf-full';change(el('mode'));
+  assert.equal(board.value,'sf-lite','Deep SF selection cannot change Board source');assert.equal(toggle.checked,true);
+  assert.equal(x.analyses(),0);assert.equal(el('mode').querySelector('option[value="cdb"]'),null);
+});
+
+test('CDB preserves the CPU request, and a non-isolated Full browser offers only CPU 1',t=>{
+  const x=setup(t),{w,el,change}=x;
+  const board=w.document.getElementById('analysisSource'),cpu=w.document.getElementById('analysisCpuThreads');
+  el('mode').value='sf-full';change(el('mode'));el('threads').value='4';change(el('threads'));
+  assert.equal(cpu.value,'none');assert.equal(x.getSettings().sfFullThreadsRequested,4);
+  board.value='sf-full';change(board);assert.equal(cpu.value,'4');
+  board.value='cdb';change(board);assert.equal(cpu.selectedOptions[0].textContent,'CPU —');
+  assert.equal(x.getSettings().sfFullThreadsRequested,4);
+  w.ChessAnalysisSession.capabilities=()=>({isolated:false,maxSFThreads:1,effectiveSFThreads:1,mobile:false,message:'GitHub Pages · single-thread fallback'});
+  board.value='sf-full';change(board);
+  assert.deepEqual([...cpu.options].map(o=>o.textContent),['CPU 1']);assert.equal(cpu.disabled,true);
+  assert.equal(x.getSettings().sfFullThreadsRequested,4,'effective cap does not overwrite saved request');
+  assert.equal(el('threads').querySelector('option[value="auto"]'),null);
+});
+
+test('a retained Lite PV saves its original provenance after Full selection',t=>{
+  const x=setup(t),{el,change}=x;x.ui.start();
+  const fen=new x.w.Chess().fen();
+  x.getOptions().onInfo(null,{mode:'sf-lite',fen,engine:{name:'Stockfish 18 Lite'},elapsedMs:20,lines:[{multipv:1,depth:3,score:{type:'cp',white:27},pv:['e2e4']}]});
+  el('mode').value='sf-full';change(el('mode'));
+  el('lines').querySelector('.deep-pv button').click();el('save').click();
+  assert.equal(x.saved[0].analysisMode,'sf-lite');assert.equal(x.saved[0].source,'Stockfish 18 Lite');
+  assert.equal(el('export').disabled,false);assert.equal(x.analyses(),1);
 });
 
 test('live-game assistance lock prevents a selected heavy engine from starting', t => {

@@ -5,7 +5,7 @@
 })(typeof window === 'object' ? window : globalThis, function(root, Deep) {
   'use strict';
   const abortError=()=>Object.assign(new Error('Cancelled'),{name:'AbortError'});
-  const MODES = ['cdb','sf-lite','sf-full','berserk','sf-berserk'];
+  const MODES = ['sf-lite','sf-full','berserk','sf-berserk'];
   const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
   // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
   const STORAGE = 'ChessBest:LAB:v2:analysis-engine-r3';
@@ -15,14 +15,17 @@
   const NETWORK_DB = 'ChessBest:LAB:engine-networks:v1';
   let networkState = 'unchecked', networkPersistent = false, networkError = '', networkRevision = 0, restorePending = null, networkLoadSerial = 0;
   let networkWrites = Promise.resolve();
-  let settings = { analysisMode:'cdb', boardSource:'cdb', sfFullThreadsRequested:1, hashMB:16 };
-  try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || 'null'); if (old) settings = sanitize(old); } catch (_) {}
+  let savedCardMode='sf-lite';
+  try{const key=root.ChessLabStorage?.KEYS?.settings||'ChessBest:LAB:v2:settings';savedCardMode=JSON.parse(root.localStorage?.getItem(key)||'null')?.sfCardMode==='sf-full'?'sf-full':'sf-lite';}catch(_){}
+  let settings = { analysisMode:'sf-lite', boardSource:'cdb', sfCardMode:savedCardMode, sfFullThreadsRequested:1, hashMB:16 };
+  try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || root.localStorage?.getItem('ChessBest:LAB:v2:analysis-engine') || 'null'); if (old) settings = sanitize(old); } catch (_) {}
   function sanitize(value) {
-    const mode = value.analysisMode==='auto'?'cdb':value.analysisMode==='sf'?'sf-lite':value.analysisMode;
+    const mode = ['auto','cdb','sf','cdb-sf-lite','CDB | SF Lite'].includes(value.analysisMode)?'sf-lite':value.analysisMode;
     const requested = value.sfFullThreadsRequested;
-    return { analysisMode:MODES.includes(mode) ? mode : 'cdb',
+    return { analysisMode:MODES.includes(mode) ? mode : 'sf-lite',
+      sfCardMode:value.sfCardMode==='sf-full'?'sf-full':value.sfCardMode==='sf-lite'?'sf-lite':savedCardMode,
       boardSource:BOARD_SOURCES.includes(value.boardSource) ? value.boardSource : 'cdb',
-      sfFullThreadsRequested:requested === 'auto' ? 'auto' : [1,2,4,6,8].includes(Number(requested)) ? Number(requested) : 1,
+      sfFullThreadsRequested:Number.isInteger(Number(requested))&&Number(requested)>=1&&Number(requested)<=8?Number(requested):1,
       hashMB:Math.min(64, Math.max(8, Number(value.hashMB) || 16)) };
   }
   function capabilities(mode = settings.analysisMode, environment = root) {

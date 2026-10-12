@@ -18,10 +18,10 @@ function deferred() {
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
-function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, stored = null, indexedDB, crypto, fetch } = {}) {
+function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, stored = null, legacy=false, indexedDB, crypto, fetch } = {}) {
   const events = new Map(), documentEvents = new Map(), values = new Map();
   let clock = 0;
-  if (stored) values.set('ChessBest:LAB:v2:analysis-engine-r3', JSON.stringify(stored));
+  if (stored) values.set(legacy?'ChessBest:LAB:v2:analysis-engine':'ChessBest:LAB:v2:analysis-engine-r3', JSON.stringify(stored));
   const root = {
     indexedDB, crypto, fetch,
     navigator: { hardwareConcurrency }, crossOriginIsolated: isolated,
@@ -76,7 +76,8 @@ function result(fen, move, { depth = 8, score = 22, engine = null } = {}) {
 test('default is CDB-first, settings do not launch workers, and Full/Berserk remain lazy until analysis', async () => {
   const { Session, values } = fixture();
   const fake = adapters();
-  assert.equal(Session.getSettings().analysisMode, 'cdb');
+  assert.equal(Session.getSettings().analysisMode, 'sf-lite');
+  assert.equal(Session.getSettings().boardSource,'cdb');
   assert.equal(Session.getSettings().sfFullThreadsRequested, 1);
   const session = Session.create({ Chess, adapterFactory: fake.factory });
   Session.configure({ analysisMode: 'sf-full', sfFullThreadsRequested: 4 });
@@ -90,6 +91,15 @@ test('default is CDB-first, settings do not launch workers, and Full/Berserk rem
   const restored = fixture({ stored: { analysisMode: 'sf-berserk', sfFullThreadsRequested: 8 } });
   assert.equal(restored.Session.getSettings().analysisMode, 'sf-berserk');
   assert.equal(fake.calls.length, 1, 'restoring settings starts no analysis');
+});
+
+test('legacy CDB/auto Deep selections migrate to Lite while the original preference record remains intact',()=>{
+  for(const analysisMode of ['auto','cdb','CDB | SF Lite']){
+    const stored={analysisMode,sfFullThreadsRequested:'auto',hashMB:32},x=fixture({stored,legacy:true});
+    assert.equal(x.Session.getSettings().analysisMode,'sf-lite');assert.equal(x.Session.getSettings().boardSource,'cdb');
+    assert.equal(x.Session.getSettings().sfFullThreadsRequested,1);assert.equal(x.Session.getSettings().hashMB,32);
+    assert.equal(x.values.get('ChessBest:LAB:v2:analysis-engine'),JSON.stringify(stored));
+  }
 });
 
 test('dual children start synchronously on identical pinned FEN/history and equal timed budgets', async () => {

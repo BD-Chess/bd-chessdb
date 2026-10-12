@@ -651,7 +651,13 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const requestPending = new Map();
   const simRequests = new Set();
   let engineCards = null;
-  settings.sfCardMode = settings.sfCardMode === 'sf-full' ? 'sf-full' : 'sf-lite';
+  settings.sfCardMode = window.ChessAnalysisSession?.getSettings?.().sfCardMode || (settings.sfCardMode === 'sf-full' ? 'sf-full' : 'sf-lite');
+  window.ChessAnalysisSession?.subscribeSettings?.(next=>{
+    if(settings.sfCardMode===next.sfCardMode)return;
+    settings.sfCardMode=next.sfCardMode;
+    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+    positionEval.render();
+  });
   const positionEval = window.ChessEvalBar.create({ game, settings,
     isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
     getBadgeControl: source => {
@@ -719,15 +725,16 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const available = !offlineEvidence && showEval &&
       !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
     const working = deepFollowing ? deepWorking : sfWorking;
-    button.disabled = !available || ['reckless','lc0'].includes(settings.analysisSource);
+    button.disabled = !available || ['reckless','lc0'].includes(settings.analysisSource) || (settings.analysisSource==='cdb'&&(settings.cdbEnabled===false||cdbRefreshing));
     button.title = !available ? 'Show Eval for deeper SF analysis' :
       deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
     button.setAttribute('aria-label', working && available ? 'Deeper SF — stop SF' : 'Deeper SF — deepen analysis');
     window.ChessAnalysisControls?.refresh?.();
-    button.textContent = 'Deeper search';
-    if(deepWorking){button.title='Stop selected analysis';button.setAttribute('aria-label','Stop selected analysis');}
-    button.classList.toggle('is-working', working && available);
+    button.textContent = settings.analysisSource==='cdb'?'Refresh evals':'Deeper search';
+    if(settings.analysisSource==='cdb')button.title='Refresh ChessDB evaluations for the current position';
+    button.setAttribute('aria-label',button.textContent);
+    button.classList.toggle('is-working',settings.analysisSource==='cdb'?cdbRefreshing:!!engineCards?.state(settings.analysisSource==='berserk'?'BER':'SF')?.working);
 
   }
   function syncDCCBadgeControl() {
@@ -2445,6 +2452,8 @@ function jumpTo(i){
         moves.slice(0,Math.min(settings.topN||5,10)).forEach((move,i)=>annotateMove(move.move,move.score,i===0,name,move));
         showAnalysisCandidates(moves,role,{receipt:{engineName:name}});
       }
+      // Displaying a retained result after a variant toggle must not start DCC probes.
+      if(search.displayOnly)continue;
       const fallbackDCC=!sourceAnalyses.CDB?.snapshot?.allMoves?.length;
       if(selectedSource!==mode&&!fallbackDCC)continue;
       const done=child.status==='complete'||['complete','partial','stopped'].includes(snapshot.status);
@@ -2487,7 +2496,7 @@ function jumpTo(i){
   const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
     pause: pauseLab, navigate: navigateStudy,
     onCDBSearch: async () => {
-      const fen=game.fen();await fetchAnnotations({refreshCDB:true});
+      const fen=game.fen();await refreshCDBCurrentPosition();
       if(game.fen()!==fen)throw new Error('Position changed while refreshing ChessDB');
       const response=sourceAnalyses.CDB?.snapshot;const side=fen.split(' ')[1]==='w'?1:-1;
       const lines=(response?.allMoves||[]).map((move,i)=>({multipv:i+1,depth:null,pv:[move.move],score:
@@ -2495,6 +2504,8 @@ function jumpTo(i){
         {type:'decisive',label:move.score*side>0?'W':move.score*side<0?'B':'—'}}));
       return {mode:'cdb',fen,lines,engine:{name:'ChessDB',id:'cdb'},status:'complete',completeMultiPV:false,bestMove:lines[0]?.pv[0]||null};
     },
+    getAdditionalAnalysis:()=>({cdbEnabled:settings.cdbEnabled!==false,dccEnabled:!!settings.dccEnabled,
+      cdb:sourceAnalyses.CDB?.snapshot||null,dcc:latestDCCReceipt}),
     playSuggestedMove: uci => !!uci && playManualMove(uci.slice(0,2), uci.slice(2,4), uci[4] || 'q') !== 'snapback',
     onChange: listener => { labListeners.add(listener); return () => labListeners.delete(listener); },
     analyze: (fen, options) => analyzePosition(fen, undefined, options || {}),
@@ -2511,7 +2522,7 @@ function jumpTo(i){
     const releasedFen = !state.following ? deepAnalysisFen : null;
     if (!state.following) {deepAnalysisFen = null;if(releasedFen){localController?.abort();localProvider?.destroy();localProvider=null;}}
     syncSFAnalysisControl();
-    if (releasedFen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
+    if (!state.passive && releasedFen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
       setTimeout(fetchAnnotations, 0);
   }
   deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis,
@@ -2578,6 +2589,19 @@ function jumpTo(i){
     if (!event.chessAnalysisHandled) window.ChessAnalysisSession?.configure?.({ boardSource: sourceSelect.value });
     settings.analysisSource = window.ChessAnalysisSession?.getSettings?.().boardSource || sourceSelect.value;
     syncDCCSelector();
+    if(event.chessAnalysisPassive){
+      annotationRequestId++;activeLookaheadId++;
+      localController?.abort();localProvider?.destroy();localController=null;localProvider=null;
+      clearInterval(evalRetryTimer);evalRetryTimer=null;
+      document.querySelectorAll('.overlay').forEach(el=>el.remove());
+      const candidates=document.getElementById('analysisCandidates');candidates.replaceChildren();candidates.style.display='none';
+      positionEval.clearBoard?.(game.fen());activeAnalysisProvider=null;activeAnalysisFen=null;
+      localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+      const cached=engineCards?.get(settings.analysisSource,game.fen());
+      if(cached?.lines?.length)publishEngineSnapshot(cached,{displayOnly:true});
+      document.getElementById('analysisSourceStatus').textContent=cached?.lines?.length?'Retained '+(cached.engine?.name||settings.analysisSource)+' analysis':'Ready · press Deeper search';
+      syncSFAnalysisControl();return;
+    }
     sfAnalysisDepth = null;
     positionEval.clearBoard?.(game.fen());
     invalidateDCCAnalysis(); annotationRequestId++;
@@ -2597,18 +2621,29 @@ function jumpTo(i){
   async function refreshCDBCurrentPosition() {
     const card = document.getElementById('allEvalBadges')?.querySelector('[data-eval-source="CDB"]');
     if (!card || card.disabled || cdbRefreshing) return;
-    cdbRefreshing = true; positionEval.render();
-    try { await fetchAnnotations({ refreshCDB: true }); }
+    const fen=game.fen(),epoch=activityEpoch;
+    cdbRefreshing = true; positionEval.render();syncSFAnalysisControl();
+    try {
+      const response=await cachedFetchChessDB(fen,{force:true});
+      if(game.fen()!==fen||epoch!==activityEpoch||settings.cdbEnabled===false)return;
+      recordSourceMoves('CDB',fen,response,{providerPositionContext:'fen-only'});
+      positionEval.updateSource(fen,response.moves[0]?.score,'CDB',null,response.moves[0]?uciToSan(fen,response.moves[0].move):null);
+      if(settings.analysisSource==='cdb'){
+        activeAnalysisProvider='CDB';activeAnalysisFen=fen;
+        positionEval.update(fen,response.moves[0]?.score,'CDB',true);
+        document.querySelectorAll('.overlay').forEach(el=>el.remove());
+        response.moves.slice(0,settings.topN||5).forEach((move,i)=>annotateMove(move.move,move.score,i===0,'CDB',move));
+        showAnalysisCandidates(response.moves,'CDB');
+        document.getElementById('analysisSourceStatus').textContent=response.moves.length?'ChessDB · refreshed':response.reason||'ChessDB unavailable';
+      }
+      if(response.moves.length)void runDCCLookahead(response.moves,fen);
+      return response;
+    }
     catch (error) {
       console.warn('CDB refresh unavailable:', error);
       document.getElementById('analysisSourceStatus').textContent = 'CDB refresh failed. Try again later.';
-    } finally { cdbRefreshing = false; positionEval.render(); }
+    } finally { cdbRefreshing = false; positionEval.render();syncSFAnalysisControl(); }
   }
-  document.getElementById('settingSFEngine').addEventListener('change',event=>{
-    engineCards?.stop('sf-lite');engineCards?.stop('sf-full');
-    settings.sfCardMode=event.target.value==='sf-full'?'sf-full':'sf-lite';
-    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));positionEval.render();
-  });
   document.getElementById('btnAnalysisDeepen').addEventListener('click',()=>{
     if(settings.analysisSource==='cdb')refreshCDBCurrentPosition();
     else engineCards?.analyze(settings.analysisSource);
