@@ -132,7 +132,7 @@
           if(combined&&combined.hex()!==p.combined.sha256)throw error('IntegrityError','Combined WASM SHA-256 mismatch');
           if(p.network){if(!network)throw error('StorageUnavailableError','Berserk network storage unavailable');
             const had=await network.check(true);
-            if(!had){await network.ensure(signal,value=>{onProgress?.({...value,total:p.bytes,loaded:loaded+value.loaded});});downloadedBytes=null;
+            if(!had){await network.ensure(signal,value=>{progress(value.phase,{asset:'NNUE',loaded:loaded+value.loaded});});downloadedBytes=null;
               if(!await network.check(true))throw error('StorageUnavailableError','Berserk NNUE was not saved');}
             loaded+=p.network.bytes;if(had)localBytes+=p.network.bytes;}
           abort(signal);

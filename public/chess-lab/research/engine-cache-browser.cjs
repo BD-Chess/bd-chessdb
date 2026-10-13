@@ -18,7 +18,7 @@ async function serve(){
  await new Promise(r=>server.listen(0,'127.0.0.1',r));return 'http://127.0.0.1:'+server.address().port+'/chess-lab/';
 }
 async function boot(url){
- const page=await context.newPage();page.on('pageerror',e=>report.pageErrors.push({phase,error:e.message}));
+ const page=await context.newPage();page.on('pageerror',e=>report.pageErrors.push({phase,error:e.message}));page.on('console',m=>{if(['error','warning'].includes(m.type()))(report.consoleDiagnostics||=[]).push({phase,type:m.type(),message:m.text()});});
  await page.goto(url,{waitUntil:'load',timeout:90000});
  await page.waitForFunction(()=>!!window.ChessLabHost&&!!window.ChessEngineAssetStore&&navigator.serviceWorker.controller?.scriptURL.endsWith('/engine-sw.js'),null,{timeout:90000});
  return page;
@@ -48,14 +48,16 @@ async function stopCase(page,mode){
 (async()=>{
  fs.mkdirSync(output,{recursive:true});const url=opt('url')||await serve();report.url=url;report.public=!!opt('url');
  let proxy;if(opt('url')&&process.env.HTTPS_PROXY){const u=new URL(process.env.HTTPS_PROXY);proxy={server:u.protocol+'//'+u.host};if(u.username)proxy.username=decodeURIComponent(u.username);if(u.password)proxy.password=decodeURIComponent(u.password);}
- if(kind==='chromium'){const imported=require('@sparticuz/chromium'),c=imported.default||imported;browser=await playwright.chromium.launch({headless:true,executablePath:await c.executablePath(),args:c.args.filter(a=>a!=='--single-process'),proxy});}
+ if(kind==='chromium'){const imported=require('@sparticuz/chromium'),c=imported.default||imported;browser=await playwright.chromium.launch({headless:true,executablePath:await c.executablePath(),args:[...c.args.filter(a=>a!=='--single-process'),...(proxy?['--ignore-certificate-errors']:[])],proxy});}
  else browser=await playwright.webkit.launch({headless:true,proxy});
  report.version=browser.version();context=await browser.newContext({serviceWorkers:'allow',ignoreHTTPSErrors:!!proxy,viewport:{width:393,height:920},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'});
  context.on('request',r=>{if(optional(r.url()))report.requests.push({phase,url:r.url(),serviceWorker:!!r.serviceWorker(),save:r.headers()['x-chessbest-engine-save']==='1'});});
  context.on('response',r=>{if(optional(r.url()))report.responses.push({phase,url:r.url(),status:r.status(),fromServiceWorker:r.fromServiceWorker(),source:r.headers()['x-chessbest-asset-source']||null});});
  // Actual worker creation/termination counters; engines are never replaced.
  await context.addInitScript(()=>{const Native=Worker;window.__cacheWorkers=[];window.Worker=new Proxy(Native,{construct(Target,args){const w=new Target(...args),entry={url:String(args[0]),terminated:false};__cacheWorkers.push(entry);const close=w.terminate.bind(w),post=w.postMessage.bind(w);w.terminate=()=>{entry.terminated=true;return close();};w.postMessage=(value,...rest)=>{if(window.__forceBerserkHang&&/berserk-host/.test(entry.url)&&typeof value==='string'&&/^go movetime/.test(value)){entry.fault='go infinite';value='go infinite';}return post(value,...rest);};return w;}});});
- p=await boot(url);const baselineRequests=report.requests.length;
+ p=await boot(url);report.release=await p.evaluate(async()=>await(await fetch('release.json',{cache:'no-store'})).json());if(opt('release'))check('public browser runs the exact expected final release',report.release.version===opt('release'));
+ report.tlsBoundary=proxy?'Isolated test browser accepts the execution egress proxy certificate. Independent public SHA readback uses normal TLS verification.':'Normal local browser transport';
+ const baselineRequests=report.requests.length;
  await p.locator('#appMore').click();await p.locator('#btnSettings').click();await p.locator('#engineStorage summary').click();await p.waitForTimeout(200);
  await p.locator('#analysisSource').selectOption('lc0',{force:true});await p.waitForTimeout(150);
  check('opening Settings and changing display source do not download optional engine files',report.requests.length===baselineRequests);

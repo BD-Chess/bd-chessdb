@@ -14,6 +14,7 @@
     const candidates=allowed.get(u.pathname);if(!candidates)return;
     event.respondWith((async()=>{
       for(const {p,f,url} of candidates){
+        try {
         const cache=await caches.open(manifest.prefix+p.identity),marker=new URL('__engine-cache__/'+p.identity+'/ready.json',root);
         let receipt;try{receipt=await (await cache.match(marker))?.json();}catch(_){}
         if(receipt?.identity!==p.identity||receipt.bytes!==p.bytes)continue;
@@ -27,6 +28,10 @@
         }
         const headers=new Headers(response.headers);headers.set('X-ChessBest-Asset-Source','verified-local');
         return new Response(bytes,{headers});
+        } catch (_) {
+          // CacheStorage can be blocked in private/restricted browsing. Preserve
+          // the original online Worker path instead of making optional storage mandatory.
+        }
       }
       // A missing/evicted package uses the existing online path; offline fails honestly.
       return fetch(request);

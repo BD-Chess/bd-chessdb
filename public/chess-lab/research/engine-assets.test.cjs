@@ -72,7 +72,16 @@ test('unsupported SF threaded variant and cross-origin/path manifests are reject
 });
 test('Berserk receipt depends on existing IDB network; network is never put in CacheStorage',async()=>{
   const f=fixture();f.p.mode='berserk';f.p.network={bytes:25,sha256:'a'.repeat(64),storage:'IndexedDB'};f.p.bytes+=25;let saved=false;
-  f.store.setNetworkProvider({check:async()=>saved,ensure:async()=>{saved=true;},remove:async()=>{saved=false;}});
+  let networkProgress=false;f.store.subscribe(state=>{if(state.asset==='NNUE'&&state.loaded===f.p.bytes)networkProgress=true;});
+  f.store.setNetworkProvider({check:async()=>saved,ensure:async(_signal,onProgress)=>{onProgress({phase:'downloading',loaded:25});saved=true;},remove:async()=>{saved=false;}});
   await f.store.install('berserk');assert.equal((await f.store.inspect('berserk')).status,'ready');const cache=await f.env.caches.open(f.store.cacheName(f.p));assert.equal((await cache.keys()).length,4);
+  assert.equal(networkProgress,true);
   saved=false;assert.equal((await f.store.inspect('berserk')).status,'incomplete');await f.store.remove('berserk');assert.equal(saved,false);
+});
+test('offline route falls back to original online fetch when CacheStorage is blocked',async()=>{
+  const vm=require('node:vm'),fs=require('node:fs'),f=fixture(),handlers={},attempts=[];
+  const self={location:{href:'https://site.test/chess-lab/engine-sw.js'},ChessEngineAssetManifest:{prefix:f.store.PREFIX,packages:[f.p]},addEventListener:(n,fn)=>{handlers[n]=fn;}};
+  vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../js/8zc-engine-assets-sw.js'),'utf8'),{self,URL,Headers,Response,crypto:webcrypto,caches:{open:async()=>{throw new DOMException('Blocked','SecurityError');}},fetch:async request=>{attempts.push(request.url);return new Response('original online bytes');}});
+  let response;handlers.fetch({request:new Request('https://site.test/chess-lab/'+f.files[0].path),respondWith:p=>{response=p;}});
+  assert.equal(await (await response).text(),'original online bytes');assert.equal(attempts.length,1);
 });
