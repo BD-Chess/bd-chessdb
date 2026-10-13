@@ -77,11 +77,12 @@ async function stopCase(page,mode){
  check('warm page reopen performs no engine-save requests',report.requests.slice(warmStart).every(r=>!r.save));
  check('warm engine runtime responses come from verified local SW',report.responses.filter(r=>r.phase===phase&&r.status===200).every(r=>r.source==='verified-local'));
  phase='warm-offline';await p.close();await context.setOffline(true);networkAllowed=false;p=await boot(url);await position(p,['g1f3','d7d5']);
- const offlineServer=report.serverRequests.length,offlineResponse=report.responses.length;
+ const offlineServer=report.serverRequests.length,offlineResponse=report.responses.length,offlineRequest=report.requests.length;
  for(const mode of families){report.results[phase+':'+mode]=await run(p,mode);}
  check('fresh offline document and new FEN search all real saved families',families.every(m=>report.results[phase+':'+m]?.status==='complete'));
  check('offline has zero successful outgoing engine asset requests',report.responses.slice(offlineResponse).filter(r=>r.status===200).every(r=>r.source==='verified-local'));
- check('offline has zero engine bytes from the HTTP server',report.serverRequests.slice(offlineServer).every(r=>!/^engines\/|^vendor\/(?:stockfish-full|berserk)\//.test(r.name)));
+ if(server)check('offline has zero engine bytes from the HTTP server',report.serverRequests.slice(offlineServer).every(r=>!/^engines\/|^vendor\/(?:stockfish-full|berserk)\//.test(r.name)));
+ else check('public offline has no outgoing SW engine requests or Save requests',report.requests.slice(offlineRequest).every(r=>!r.serviceWorker&&!r.save));
  const keep=await p.evaluate(()=>({studies:localStorage.getItem('ChessBest:LAB:v2:studies'),sentinel:localStorage.getItem('R12-unrelated-app-sentinel')}));
  check('offline preserves saved Study nodes/annotation and unrelated storage',keep.studies.includes('R12 cache data-loss guard')&&keep.sentinel==='retained');
  phase='offline-stop-all';await stopCase(p,'berserk');await stopCase(p,'reckless');await stopCase(p,'lc0');
