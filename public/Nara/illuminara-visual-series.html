@@ -60,7 +60,7 @@
 .vs-lang-switch button[aria-pressed="true"]{color:#031019;background:var(--gold)}
 html.vs-lightbox-open{overflow:hidden}
 /* Nara Daily: viewport-filling modal, native browser fullscreen when supported,
-   iOS Safari dialog fallback and tap directly on the large image to return. */
+   iOS Safari dialog fallback, and phone double-tap immersive mode. */
 .vs-viewer{position:fixed;inset:0;margin:0;padding:0;border:0;border-radius:0;width:100vw;height:100vh;max-width:none;max-height:none;width:100dvw;height:100dvh;background:#050910;color:#fff;overflow:hidden;overscroll-behavior:contain}
 .vs-viewer::backdrop{background:rgba(0,0,0,.96)}
 .vs-viewer[open]{display:block}
@@ -87,6 +87,13 @@ border:0;border-radius:0;background:transparent;cursor:zoom-out;touch-action:man
 .vs-viewer-actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid rgba(246,198,111,.58);border-radius:12px;padding:10px 13px;font:700 .86rem/1.2 var(--sans);background:rgba(10,20,35,.88);color:var(--gold)}
 .vs-quality-state{font-size:.76rem;color:#fff;background:rgba(5,10,18,.72);border-radius:999px;padding:5px 9px}
 .vs-viewer :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+/* Phone double-tap mode: the artwork alone fills the browser's full viewport. */
+#vs-viewer.vs-immersive,#vs-viewer.vs-immersive #vs-stage{background:#000}
+#vs-viewer.vs-immersive::backdrop{background:#000}
+#vs-viewer.vs-immersive #vs-surface{padding:0;cursor:default}
+#vs-viewer.vs-immersive #vs-surface img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain}
+#vs-viewer.vs-immersive .vs-viewer-top,#vs-viewer.vs-immersive .vs-viewer-foot,
+#vs-viewer.vs-immersive #vs-prev,#vs-viewer.vs-immersive #vs-next{display:none!important}
 @media(max-width:780px){.vs-header-tools{order:2;margin-left:auto}.vs-header-tools .reader-tools{width:auto}}
 @media(max-width:490px){
 .vs-viewer-foot{gap:7px;padding:16px 12px max(10px,env(safe-area-inset-bottom))}
@@ -407,6 +414,6 @@ border:0;border-radius:0;background:transparent;cursor:zoom-out;touch-action:man
 <footer class="footer"><div class="wrap footer-inner"><div><span data-language-content="en" lang="en">© 2026 Bojan Dobrečevič · Original Illuminara visual series</span><span data-language-content="sl" lang="sl" hidden>© 2026 Bojan Dobrečevič · Izvirna vizualna serija Illuminare</span></div>
 <div><a href="index.html"><span data-language-content="en" lang="en">Nara home</span><span data-language-content="sl" lang="sl" hidden>Domov na Naro</span></a> · <a href="illuminara.html"><span data-language-content="en" lang="en">Illuminara profile</span><span data-language-content="sl" lang="sl" hidden>Illuminarin profil</span></a></div></div></footer>
 <script defer src="assets/js/nara-reader.js"></script>
-<script defer src="assets/js/illuminara-visual-series.js?v=2-tap-fullscreen-sl"></script>
+<script defer src="assets/js/illuminara-visual-series.js?v=3-immersive-double-tap"></script>
 </body>
 </html>

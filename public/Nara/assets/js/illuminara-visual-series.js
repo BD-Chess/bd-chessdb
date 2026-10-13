@@ -21,6 +21,8 @@
   const words = {
     en: {
       full: 'Full-screen Illuminara artwork', tap: 'Tap image to return to gallery',
+      immersiveTap: 'Double-tap for a clean full-screen image; double-tap again to restore the gallery controls',
+      immersiveReturn: 'Double-tap to restore the gallery controls',
       image: 'Illuminara visual series image', hd: 'HD', fourK: '4K',
       autoHd: 'AUTO · HD', autoFourK: 'AUTO · 4K',
       toHd: 'Use HD', toFourK: 'Use 4K', toAuto: 'Use AUTO',
@@ -29,6 +31,8 @@
     },
     sl: {
       full: 'Celozaslonska slika Illuminare', tap: 'Dotakni se slike za vrnitev v galerijo',
+      immersiveTap: 'Dvakrat tapni za celozaslonsko sliko brez kontrol; z naslednjim dvojnim tapom jih znova prikažeš',
+      immersiveReturn: 'Dvakrat tapni za ponovni prikaz kontrol galerije',
       image: 'Slika iz Illuminarine vizualne serije', hd: 'HD', fourK: '4K',
       autoHd: 'SAMODEJNO · HD', autoFourK: 'SAMODEJNO · 4K',
       toHd: 'Uporabi HD', toFourK: 'Uporabi 4K', toAuto: 'Uporabi samodejno',
@@ -47,6 +51,8 @@
   let orientation = resolveOrientation();
   let active = 0, qualityMode = 'auto', quality = 'hd';
   let origin = null, position = null, lastSwipe = 0, refreshPending = false;
+  let immersive = false, pendingSurfaceTap = null, pendingSurfaceDismiss = null;
+  let suppressSurfaceClickUntil = 0;
 
   function resolveOrientation() {
     if (!phone) return 'landscape';
@@ -155,7 +161,9 @@
     download.download = src.split('/').pop();
     download.textContent = quality === '4k' ? w.saveFourK : w.saveHd;
     viewer.setAttribute('aria-label', w.full);
-    surface.setAttribute('aria-label', w.tap);
+    surface.setAttribute('aria-label', phone
+      ? immersive ? w.immersiveReturn : w.immersiveTap
+      : w.tap);
   }
 
   function setLanguage(nextLanguage, changeURL) {
@@ -209,6 +217,11 @@
 
   function dismiss() {
     if (!viewer.open) return;
+    clearPendingSurfaceDismiss();
+    pendingSurfaceTap = null;
+    suppressSurfaceClickUntil = 0;
+    immersive = false;
+    viewer.classList.remove('vs-immersive');
     viewer.close();
     if (document.fullscreenElement === stage) {
       try { document.exitFullscreen?.()?.catch(() => {}); } catch {}
@@ -217,6 +230,11 @@
 
   function open(button) {
     if (viewer.open) return;
+    clearPendingSurfaceDismiss();
+    pendingSurfaceTap = null;
+    suppressSurfaceClickUntil = 0;
+    immersive = false;
+    viewer.classList.remove('vs-immersive');
     const index = Number(button.dataset.open);
     if (!Number.isInteger(index) || index < 0 || index >= cards.length) return;
     origin = button;
@@ -244,6 +262,17 @@
     button.addEventListener('click', () => open(button));
   });
   surface.addEventListener('click', () => {
+    if (Date.now() < suppressSurfaceClickUntil || immersive) return;
+    if (phone) {
+      if (Date.now() - lastSwipe <= 550) return;
+      clearPendingSurfaceDismiss();
+      pendingSurfaceDismiss = setTimeout(() => {
+        pendingSurfaceDismiss = null;
+        pendingSurfaceTap = null;
+        if (viewer.open && !immersive) dismiss();
+      }, 380);
+      return;
+    }
     if (Date.now() - lastSwipe > 550) dismiss();
   });
   close.addEventListener('click', dismiss);
@@ -258,6 +287,10 @@
   });
   viewer.addEventListener('cancel', event => { event.preventDefault(); dismiss(); });
   viewer.addEventListener('close', () => {
+    clearPendingSurfaceDismiss();
+    pendingSurfaceTap = null;
+    immersive = false;
+    viewer.classList.remove('vs-immersive');
     root.classList.remove('vs-lightbox-open');
     photo.removeAttribute('src');
     const trigger = origin, scroll = position;
@@ -270,7 +303,11 @@
     if (!viewer.open || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'ArrowLeft') { event.preventDefault(); go(active - 1); }
     if (event.key === 'ArrowRight') { event.preventDefault(); go(active + 1); }
-    if (event.key === 'Escape') { event.preventDefault(); dismiss(); }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (phone && immersive) setImmersive(false);
+      else dismiss();
+    }
   });
 
   function refresh() {
@@ -295,20 +332,61 @@
   window.matchMedia?.('(orientation: portrait)').addEventListener?.('change', scheduleRefresh);
   document.addEventListener('fullscreenchange', scheduleRefresh);
 
+  function clearPendingSurfaceDismiss() {
+    if (pendingSurfaceDismiss !== null) clearTimeout(pendingSurfaceDismiss);
+    pendingSurfaceDismiss = null;
+  }
+
+  function setImmersive(enabled) {
+    if (!phone || !viewer.open) return;
+    immersive = enabled;
+    viewer.classList.toggle('vs-immersive', immersive);
+    surface.setAttribute('aria-label', immersive ? words[language].immersiveReturn : words[language].immersiveTap);
+    if (immersive && !document.fullscreenElement) {
+      try { stage.requestFullscreen?.({ navigationUI: 'hide' })?.catch(() => {}); } catch {}
+    }
+  }
+
   let touchStart = null;
+  viewer.addEventListener('touchstart', event => {
+    if (!surface.contains(event.target)) pendingSurfaceTap = null;
+  }, { capture: true, passive: true });
   surface.addEventListener('touchstart', event => {
     if (event.touches.length === 1) touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    else touchStart = null;
   }, { passive: true });
   surface.addEventListener('touchend', event => {
     if (!touchStart || !event.changedTouches.length) return;
     const dx = event.changedTouches[0].clientX - touchStart.x;
     const dy = event.changedTouches[0].clientY - touchStart.y;
+    const x = event.changedTouches[0].clientX;
+    const y = event.changedTouches[0].clientY;
     touchStart = null;
     if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
       lastSwipe = Date.now();
+      pendingSurfaceTap = null;
+      clearPendingSurfaceDismiss();
       event.preventDefault();
       go(active + (dx < 0 ? 1 : -1));
+      return;
+    }
+    if (phone && Math.abs(dx) <= 28 && Math.abs(dy) <= 28 && viewer.open) {
+      const now = Date.now();
+      const previous = pendingSurfaceTap;
+      const isDoubleTap = previous && now - previous.time <= 340 &&
+        Math.abs(x - previous.x) <= 44 && Math.abs(y - previous.y) <= 44;
+      if (isDoubleTap) {
+        pendingSurfaceTap = null;
+        clearPendingSurfaceDismiss();
+        suppressSurfaceClickUntil = now + 500;
+        event.preventDefault();
+        setImmersive(!immersive);
+      } else {
+        pendingSurfaceTap = { time: now, x, y };
+      }
+    } else {
+      pendingSurfaceTap = null;
     }
   }, { passive: false });
-  surface.addEventListener('touchcancel', () => { touchStart = null; });
+  surface.addEventListener('touchcancel', () => { touchStart = null; pendingSurfaceTap = null; });
 })();
