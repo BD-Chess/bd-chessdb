@@ -20,7 +20,7 @@ test('untrusted manifest dates, paths and modified source bytes are rejected',t=
  fs.appendFileSync(path.join(r,'public/Nara/daily/records/2026-10-05.json'),' ');assert.throws(()=>loadFormatEditions(r),/binding/);
 });
 test('rendering applies R10 only to the edition and escapes hostile prose and speaker labels',()=>{
- const item=structuredClone(loadFormatEditions(root)[0]);item.en.title='<img src=x onerror=alert(1)>';item.en.scenes[0].paragraphs[1]='**<svg onload=alert(1)>**  \n<script>alert(1)</script>';item.en.content_sha256=editionBodyHash(item.en);
+ const item=structuredClone(loadFormatEditions(root)[0]);item.paths.date='2026-10-06';item.paths.artwork='daily/format-editions/2026-10-06/art-R1.json';item.en.title='<img src=x onerror=alert(1)>';item.en.scenes[0].paragraphs[1]='**<svg onload=alert(1)>**  \n<script>alert(1)</script>';item.en.content_sha256=editionBodyHash(item.en);
  const html=renderEditionPage(root,item);assert.doesNotMatch(html,/<(?:svg|script>alert|img src=x)/);assert.match(html,/&lt;svg/);assert.match(html,/&lt;script&gt;/);assert.match(html,/class="subtitle"/);assert.match(html,/class="speaker"/);
  const legacy=renderStoryScene({title:'Legacy',paragraphs:['*Here · now*','**Name**  \nWords']},1,[],'en',2,'2026-10-12');assert.doesNotMatch(legacy,/class="subtitle"|class="speaker"/);
 });
