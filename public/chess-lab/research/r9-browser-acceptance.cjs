@@ -50,7 +50,7 @@ async function run(){
  const launch={headless:true,proxy};if(kind==='chromium'){const m=require('@sparticuz/chromium'),c=m.default||m;launch.executablePath=await c.executablePath();launch.args=c.args.filter(a=>a!=='--single-process');}
  browser=await playwright[kind].launch(launch);report.version=browser.version();
  const options={serviceWorkers:'block',ignoreHTTPSErrors:!!proxy};const desktop=await browser.newContext({...options,viewport:{width:1440,height:1000}}),p=await boot(desktop,url);
- check('All four engines is idle label',/All four engines/.test(await p.locator('#btnAnalyzeAll').innerText()));check('follow remains default OFF',!await p.locator('#analysisAllMoves').isChecked());
+ check('All engines is idle label',/All engines/.test(await p.locator('#btnAnalyzeAll').innerText()));check('follow remains default OFF',!await p.locator('#analysisAllMoves').isChecked());
  await layout(p,false);if(process.argv.includes('--cdb-fixture')){await p.locator('#allEvalBadges [data-eval-source="CDB"]').click();await p.waitForFunction(()=>ChessLabHost.getAdditionalAnalysis().cdb?.allMoves?.length>0&&!document.querySelector('#allEvalBadges [data-eval-source="CDB"]').disabled);check('CDB position data is shown in its card',/Position data/.test(await p.locator('#allEvalBadges [data-eval-source="CDB"] small').innerText()));}await setBudget(p,budget);
  for(const mode of ['sf-lite','sf-full','berserk']){const first=await analyze(p,mode);await valid(p,first,'desktop '+mode);report.results[mode]=first;report.results[mode+'-context']=await p.evaluate(()=>ChessLabHost.getAdditionalAnalysis());
   const workerCount=await p.evaluate(()=>__r9Workers.length),requests=report.assetRequests.length;const repeat=await analyze(p,mode);await valid(p,repeat,'repeat '+mode);
@@ -65,7 +65,7 @@ async function run(){
  const previous=await phone.evaluate(()=>Object.fromEntries(['sf-lite','reckless','lc0','berserk'].map(m=>[m,ChessLabHost.getEngineCardResult(m)?.jobId])));
  await phone.locator('#analysisSFFull').uncheck();await phone.locator('#btnAnalyzeAll').click();check('running All label becomes Stop all',/Stop all/.test(await phone.locator('#btnAnalyzeAll').innerText()));
  for(const mode of ['sf-lite','reckless','lc0','berserk']){const r=await settled(phone,mode,previous[mode]);await valid(phone,r,'mobile All '+mode);check('All '+mode+' uses saved base time',r.requestedTimeMs===budget);report.results['all-'+mode]=r;}
- check('All settles to idle',/All four engines/.test(await phone.locator('#btnAnalyzeAll').innerText()));
+ check('All settles to idle',/All engines/.test(await phone.locator('#btnAnalyzeAll').innerText()));
  await setBudget(phone,3000);await phone.locator('[data-eval-source="BER"]').click();await phone.waitForFunction(()=>/Analyzing/.test(ChessLabHost.getEngineCardState('BER').note));await phone.locator('[data-eval-source="BER"]').click();
  check('Berserk Stop settles immediately',!await phone.evaluate(()=>ChessLabHost.getEngineCardState('BER').working));
  await setBudget(phone,budget);const restart=await analyze(phone,'berserk');await valid(phone,restart,'Berserk after Stop');

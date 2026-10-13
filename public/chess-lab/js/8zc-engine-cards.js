@@ -75,7 +75,7 @@
       const searched=seconds(result?.actualSearchMs??result?.searchElapsedMs),requested=seconds(result?.requestedTimeMs??result?.limits?.movetime);
       const reached=mode==='lc0'?(result?.visits??result?.nodes):result?.depth??result?.linesDepth??result?.lines?.[0]?.depth;
       const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),result.stopReason].filter(Boolean).join(' · '):null;
-      return {working:!!job,disabled:!context().canAnalyze||!available().includes(mode),
+      return {mode,working:!!job,disabled:!job&&(!context().canAnalyze||!available().includes(mode)),
         title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':
           job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):
@@ -85,7 +85,7 @@
     }
     function stop(mode,reason='user-stop'){
       const job=jobs.get(mode);if(!job)return;
-      job.cancelled=true;job.stopReason=reason;clearTimeout(job.guard);job.controller.abort();dispose(job.engine);
+      job.cancelled=true;job.stopReason=reason;clearTimeout(job.guard);clearTimeout(job.paintTimer);job.controller.abort();dispose(job.engine);
       if(reason.includes('watchdog')){attempts.set(key(job.fen,mode),reason);if(attempts.size>150)attempts.delete(attempts.keys().next().value);}
       jobs.delete(mode);const i=queue.indexOf(job);if(i>=0)queue.splice(i,1);
       if(job.snapshot){const value={...job.snapshot,stopped:true,status:'stopped',stopReason:reason,forcedStop:reason.includes('watchdog'),partial:true,actualSearchMs:Math.max(job.snapshot.actualSearchMs||0,now()-(job.searchStarted??now()))};results.set(key(job.fen,mode),value);
@@ -94,13 +94,18 @@
     }
     function stopAll(reason='user-stop'){cancelFollow();releasePrepared();draining=true;batch=null;for(const mode of [...jobs.keys()])stop(mode,reason);draining=false;changed();}
     function finishBatch(){
-      if(batch&&!batch.modes.some(mode=>jobs.has(mode))){batch=null;changed();}
+      if(batch&&!batch.scheduling&&!batch.modes.some(mode=>jobs.has(mode))){batch=null;changed();}
     }
     function remember(value,options){
       if(!available().includes(value.mode))return;
       results.set(key(value.fen,value.mode),value);
       if(results.size>150)results.delete(results.keys().next().value);
       host.onResult?.(value,options);changed();
+    }
+    function paint(job){
+      clearTimeout(job.paintTimer);job.paintTimer=null;
+      if(!live(job)||!job.snapshot)return;
+      job.lastPaint=now();host.onResult?.(job.snapshot,job.options);changed();
     }
     async function run(job){
       job.phase='loading';job.loadingStarted=now();changed();
@@ -125,14 +130,17 @@
           if(!live(job))return;
           if(job.phase!=='searching'){job.phase='searching';job.searchStarted=now();clearTimeout(job.guard);job.guard=setTimeout(()=>stop(job.mode,'time-watchdog'),job.options.movetime+(host.timeGraceMs??2500));}
           job.snapshot=timedValue(job,value,'running');
-          host.onResult?.(job.snapshot,job.options);changed();
+          // Coalesce expensive board/card paints; retain every latest valid result
+          // independently so Stop/final completion never loses a newer snapshot.
+          const delay=(host.paintIntervalMs??100)-(now()-(job.lastPaint??-Infinity));
+          if(delay<=0)paint(job);else if(!job.paintTimer)job.paintTimer=setTimeout(()=>paint(job),delay);
         }});
         if(!live(job))return;
         remember(timedValue(job,value,value.stopped?'stopped':'complete'),job.options);
       }catch(error){
         if(live(job)&&error.name!=='AbortError')remember(timedValue(job,{fen:job.fen,lines:[],error:error.message,stopReason:'error'},'failed'),job.options);
       }finally{
-        clearTimeout(job.guard);
+        clearTimeout(job.guard);clearTimeout(job.paintTimer);
         if(live(job)&&reusable(job.mode)&&host.canRetainPrepared?.()!==false&&get(job.mode,job.fen)?.status==='complete'&&!get(job.mode,job.fen)?.forcedStop){
           releasePrepared();preparedSlot={mode:job.mode,engine:job.engine};
         }else dispose(job.engine);
@@ -151,10 +159,17 @@
     }
     function analyze(mode,{reuse=false,all=false,automatic=false,timeOverride}={}){
       const ctx=context();
+      const current=[...jobs.values()].find(job=>roleFor(job.mode)===roleFor(mode));
+      if(current){
+        if(reuse)return current.mode===mode?current.promise:Promise.resolve(get(mode,ctx.fen));
+        if(!all||current.mode===mode){stop(current.mode);return Promise.resolve(null);}
+        // All explicitly requests its selected variant; replace a different
+        // running Stockfish variant instead of omitting that family from All.
+        stop(current.mode,'batch-variant-change');
+      }
       if(!ctx.canAnalyze||!available().includes(mode))return Promise.resolve(null);
       const previous=get(mode,ctx.fen);
       if(reuse&&previous?.lines?.length)return Promise.resolve(previous);
-      const current=jobs.get(mode);if(current)return reuse?current.promise:(stop(mode),Promise.resolve(null));
       attempts.delete(key(ctx.fen,mode));
       host.beforeStart?.();
       // Lite and Full share one Stockfish card, and cannot occupy it simultaneously.
@@ -175,11 +190,14 @@
       const modes=registry?.participants?.(variant)||[variant,'berserk'];
       const base=baseTime(ctx);
       for(const mode of modes){const job=jobs.get(mode);if(job&&job.options.movetime!==base)stop(mode,'batch-base-time');}
-      batch={modes,automatic};changed();
-      return Promise.all(modes.map(mode=>{
+      batch={modes,automatic,scheduling:true};changed();
+      const pending=modes.map(mode=>{
         const job=jobs.get(mode);if(!job)return analyze(mode,{all:true,automatic});
         return job.promise;
-      })).finally(()=>{finishBatch();changed();});
+      });
+      if(batch)batch.scheduling=false;
+      finishBatch();changed();
+      return Promise.all(pending).finally(()=>{finishBatch();changed();});
     }
     function ingest(snapshot){
       for(const [mode,child]of Object.entries(snapshot.children||{[snapshot.mode]:snapshot})){
@@ -194,7 +212,7 @@
     root.document?.addEventListener('visibilitychange',hidden);const pagehide=()=>stopAll('page-hidden');root.addEventListener?.('pagehide',pagehide);
     let computePolicy=JSON.stringify([session.getSettings?.().sfFullThreadsRequested,session.getSettings?.().hashMB]);
     const unsubscribe=session.subscribeSettings?.(settings=>{const next=JSON.stringify([settings.sfFullThreadsRequested,settings.hashMB]);if(next!==computePolicy){computePolicy=next;stopAll();}});
-    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopAll,setFollowing,isFollowing:()=>following,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
+    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopRole(role,reason='user-stop'){const job=[...jobs.values()].find(x=>roleFor(x.mode)===role);if(job)stop(job.mode,reason);return !!job;},stopAll,setFollowing,isFollowing:()=>following,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
       destroy(){destroyed=true;stopAll();clearTimeout(pumpTimer);unsubscribe?.();root.document?.removeEventListener('visibilitychange',hidden);root.removeEventListener?.('pagehide',pagehide);}};
   }
   return {create};

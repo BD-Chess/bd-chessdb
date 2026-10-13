@@ -59,7 +59,7 @@ function initAllCore() {
     retryInterval: 6000,
     tryLaterDuration: 3000,
 	evalMode: 'direct',
-    analysisSource: 'cdb', cdbEnabled: true, // CDB availability is independent of local engine selection
+    analysisSource: 'cdb', cdbEnabled: true, analysisLink: false, // Independent card controls by default
     sfRootNodes: 24000,
     sfAnalysisDepth: 11,
     allCDBSeconds: 4, allSFSeconds: 4, allDCCSeconds: 4,
@@ -650,7 +650,19 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const analysisPending = new Map();
   const requestPending = new Map();
   const simRequests = new Set();
-  let engineCards = null, evalHistoryFingerprint=null;
+  let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
+  const cardMode = source => source==='BER'?'berserk':source==='RLE'?'reckless':source==='LC0'?'lc0':source==='CDB'?'cdb':settings.sfCardMode;
+  function selectLinkedCard(source) {
+    if (!settings.analysisLink) return;
+    const provider=source==='DCC'?latestDCCReceipt?.provider:null;
+    const dccMode=provider==='SF'&&['sf-lite','sf-full'].includes(latestDCCReceipt?.engineId)?latestDCCReceipt.engineId:settings.sfCardMode;
+    const mode=source==='DCC'?(provider==='SF'?dccMode:provider==='BER'?'berserk':'cdb'):cardMode(source);
+    linkedCard=source;
+    window.ChessAnalysisSession?.configure?.({boardSource:mode});
+    const select=document.getElementById('analysisSource');
+    if(select){select.value=mode;const event=new Event('change',{bubbles:true});event.chessAnalysisHandled=true;event.chessAnalysisPassive=true;event.chessLinkedCard=true;select.dispatchEvent(event);}
+    positionEval.render();
+  }
   settings.sfCardMode = window.ChessAnalysisSession?.getSettings?.().sfCardMode || (settings.sfCardMode === 'sf-full' ? 'sf-full' : 'sf-lite');
   window.ChessAnalysisSession?.subscribeSettings?.(next=>{
     if(settings.sfCardMode===next.sfCardMode)return;
@@ -663,18 +675,23 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     getBadgeControl: source => {
       if (source === 'DCC') {
         const toggle = document.getElementById('btnViewToggle');
-        return { disabled: !toggle || toggle.disabled,
+        return { disabled: !toggle || toggle.disabled, selected:settings.analysisLink&&linkedCard==='DCC',
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
-      if(['SF','BER','RLE','LC0'].includes(source))return engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'};
-      return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false,
+      if(['SF','BER','RLE','LC0'].includes(source))return {...(engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'}),selected:settings.analysisLink&&linkedCard===source};
+      return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false, selected:settings.analysisLink&&linkedCard==='CDB',
         note:cdbRefreshing?'Fetching position data':null,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
-    onBadgeAction: source => {
+    onBadgeAction: (source, intent = {}) => {
+      const stopped=engineCards?.stopRole(source);
+      selectLinkedCard(source);
+      // A budget may finish while the finger is held down. That Stop press
+      // must not start a new, larger-budget search on pointer-up.
+      if(stopped||intent.stopOnly)return;
       if (['SF','BER','RLE','LC0'].includes(source)) {
-        engineCards?.analyze(source==='BER'?'berserk':source==='RLE'?'reckless':source==='LC0'?'lc0':settings.sfCardMode);
+        engineCards?.analyze(cardMode(source));
       }
       else if (source === 'CDB') refreshCDBCurrentPosition();
       else if (source === 'DCC') {
@@ -741,7 +758,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="DCC"]');
     if (!card) return;
     card.title = dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis';
-    card.setAttribute('aria-label', `DCC: ${card.querySelector('.all-eval-move')?.textContent || '—'}. ${card.title}`);
+    card.setAttribute('aria-label', `ChessDCC: ${card.querySelector('.all-eval-move')?.textContent || '—'}. ${card.querySelector('small')?.title || ''}. ${card.title}`);
     card.setAttribute('aria-pressed', String(dccViewActive));
     card.classList.toggle('is-active', dccViewActive);
   }
@@ -1098,27 +1115,31 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     invalidateDCCAnalysis(); updateBoard(false);
     updateSimStatus('Live ChessDB source enabled.');
   }
-  function updateDCCProgress(done, total) {
+  function updateDCCProgress(done, total, unit = 'source probes') {
     const el = document.getElementById('dccProgress');
     if (!el) return;
     el.dataset.fen=game.fen();
-    el.textContent = total > 0 ? `${done}/${total} measured` : 'No measured evidence';
+    el.textContent = total > 0 ? `${done}/${total}` : 'No data';
+    el.title = total > 0 ? `${done}/${total} ${unit}` : 'No measured evidence available';
     el.style.color = '#8cddff';
   }
   async function runDCCLookahead(moveList, baseFen, precomputed = null) {
     const id = ++activeLookaheadId;
-    const source = settings.analysisSource;
-    latestDCCResults = [];
-    latestDCCReceipt = { status: 'pending' };
-    positionEval.updateDCC(baseFen, null, null, 'pending');
-    renderDCCView();
+    const cached = !precomputed && analysisMemo.get(dccMemoKey(baseFen, moveList, settings));
+    const retained = cached && Date.now()-cached.time<120000 ? cached.result : null;
+    if(!precomputed&&!retained){
+      latestDCCReceipt = { ...latestDCCReceipt, status: 'pending', fen:baseFen };
+      positionEval.updateDCC(baseFen, null, null, 'pending');
+      renderDCCView();
+    }
     let result;
-    try { result = precomputed || await analyzePosition(baseFen, moveList); }
+    try { result = precomputed || retained || await analyzePosition(baseFen, moveList); }
     catch (error) {
       if (error.name !== 'AbortError') console.warn('DCC lookahead unavailable:', error);
       result = null;
     }
-    if (id !== activeLookaheadId || settings.analysisSource !== source || game.fen() !== baseFen || !showEval) return;
+    if (id !== activeLookaheadId || game.fen() !== baseFen || !showEval) return;
+    const source = settings.analysisSource;
     if (!result) {
       latestDCCReceipt = { status: 'unknown', reason: 'DCC analysis unavailable' };
       positionEval.updateDCC(baseFen, null, null, 'unavailable');
@@ -1139,7 +1160,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
     dccMoveAnnotations[baseFen] = latestDCCResults.slice();
     const progress = document.getElementById('dccProgress');
-    if (progress) {progress.dataset.fen=baseFen;progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;}
+    if (progress) {progress.dataset.fen=baseFen;updateDCCProgress(result.receipt.completed || 0,result.receipt.total || 0,'measured candidates');}
     renderDCCView();
     if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, result.receipt.provider === 'SF' ? 'sf' : 'raw', result.allMoves, result), baseFen);
     if (settings.dccOnly && canDecorate && (settings.dccEnabled || source === 'dcc' || source === 'all')) applyDCCOnlyBadges();
@@ -1484,8 +1505,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   async function fetchAnnotations({ refreshCDB = false } = {}) {
     syncSFAnalysisControl();
     if (!showEval || simRunning || replayRunning || (playState.active && playState.assistanceLocked)) return;
-    const fen=game.fen(),generation=analysisGeneration,epoch=activityEpoch,selected=settings.analysisSource,requestId=++annotationRequestId;
-    const current=()=>requestId===annotationRequestId&&generation===analysisGeneration&&epoch===activityEpoch&&game.fen()===fen&&settings.analysisSource===selected&&showEval&&!simRunning&&!replayRunning;
+    const fen=game.fen(),generation=analysisGeneration,epoch=activityEpoch,requestId=++annotationRequestId;
+    const current=()=>requestId===annotationRequestId&&generation===analysisGeneration&&epoch===activityEpoch&&game.fen()===fen&&showEval&&!simRunning&&!replayRunning;
     const status=document.getElementById('analysisSourceStatus');
     activeLookaheadId++;positionEval.markComparisonPending?.(fen);
     document.querySelectorAll('.overlay').forEach(el=>el.remove());
@@ -1494,6 +1515,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     try{cdb=settings.cdbEnabled===false?{moves:[],reason:'CDB disabled'}:await cachedFetchChessDB(fen,{force:refreshCDB});}
     catch(error){if(!current())return;cdb={moves:[],reason:'CDB unavailable: '+error.message};}
     if(!current())return;
+    const selected=settings.analysisSource;
     recordSourceMoves('CDB',fen,cdb,{providerPositionContext:'fen-only'});
     positionEval.updateSource(fen,cdb.moves[0]?.score,'CDB',null,cdb.moves[0]?uciToSan(fen,cdb.moves[0].move):null);
     if(selected==='cdb'){
@@ -1711,17 +1733,18 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	  }
 
 	  const evalContext=JSON.stringify([game.fen(),game.header().FEN||new Chess().fen(),game.history({verbose:true}).map(normalizeUci)]);
-      if(evalContext!==evalHistoryFingerprint){positionEval.clearLocalSources?.(game.fen());evalHistoryFingerprint=evalContext;}
+      const positionChanged=evalContext!==evalHistoryFingerprint;
+      if(positionChanged){positionEval.clearLocalSources?.(game.fen());positionEval.clearDCC?.(game.fen());evalHistoryFingerprint=evalContext;}
 	  engineCards?.positionChanged();
 	  board.position(game.fen());
 	  positionEval.render();
 	  document.querySelectorAll('.overlay,.next-dot').forEach(el => el.remove());
 	  const candidatesPanel = document.getElementById('analysisCandidates');
 	  if (candidatesPanel) { candidatesPanel.replaceChildren(); candidatesPanel.style.display = 'none'; }
-	  // Cancel any running DCC lookahead
-	  invalidateDCCAnalysis();
+	  // Only a changed position/history invalidates measured DCC evidence.
+	  if(positionChanged)invalidateDCCAnalysis();
 	  renderDCCView();
-	  updateDCCProgress(0, 0); // clear progress indicator
+	  if(positionChanged)updateDCCProgress(0, 0);
 	  // Hide DCC info panel on board change
 	  const dccPanel = document.getElementById('dccInfoPanel');
       if (lastAction === 'history' || (reset && !playState.active)) pinnedDCCDetails = null;
@@ -2459,7 +2482,8 @@ function jumpTo(i){
       // Displaying a retained result after a variant toggle must not start DCC probes.
       if(search.displayOnly||['reckless','lc0'].includes(mode))continue;
       const fallbackDCC=!sourceAnalyses.CDB?.snapshot?.allMoves?.length;
-      if(selectedSource!==mode&&!fallbackDCC)continue;
+      // Reuse a valid CDB decision instead of launching local DCC probes.
+      if(!fallbackDCC)continue;
       const done=child.status==='complete'||['complete','partial','stopped'].includes(snapshot.status);
       const jobKey=fen+'|'+mode+'|'+analysisGeneration+'|'+(child.jobId||snapshot.sessionId||child.startedAt||snapshot.startedAt||search.depth);
       if(!done||snapshot.stopped||child.stopped||dccEngineJobs.has(jobKey))continue;
@@ -2498,9 +2522,8 @@ function jumpTo(i){
       if(follow)follow.checked=!!engineCards?.isFollowing();
       const button=document.getElementById('btnAnalyzeAll');
       if(button){const running=engineCards?.isAllRunning();button.classList.toggle('is-working',!!running);
-        const familyCount=window.ChessEngineRegistry?.count(settings.sfCardMode)||2;
-        button.querySelector('.all-desktop-label').textContent=running?'Stop all':familyCount===4?'All four engines':'All '+familyCount+'/4 engines';
-        button.querySelector('.all-mobile-label').textContent=running?'Stop all':familyCount===4?'All four engines':'All '+familyCount+'/4 engines';
+        button.querySelector('.all-desktop-label').textContent=running?'Stop all':'All engines';
+        button.querySelector('.all-mobile-label').textContent=running?'Stop all':'All engines';
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
@@ -2606,9 +2629,9 @@ function jumpTo(i){
   sourceSelect.addEventListener('change', event => {
     if (!event.chessAnalysisHandled) window.ChessAnalysisSession?.configure?.({ boardSource: sourceSelect.value });
     settings.analysisSource = window.ChessAnalysisSession?.getSettings?.().boardSource || sourceSelect.value;
+    if(settings.analysisLink&&!event.chessLinkedCard)linkedCard=settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.roleFor(settings.analysisSource);
     syncDCCSelector();
     if(event.chessAnalysisPassive){
-      annotationRequestId++;activeLookaheadId++;
       clearInterval(evalRetryTimer);evalRetryTimer=null;
       document.querySelectorAll('.overlay').forEach(el=>el.remove());
       const candidates=document.getElementById('analysisCandidates');candidates.replaceChildren();candidates.style.display='none';
@@ -2628,7 +2651,7 @@ function jumpTo(i){
         if(cached?.lines?.length)publishEngineSnapshot(cached,{displayOnly:true});
         document.getElementById('analysisSourceStatus').textContent=cached?.lines?.length?'Retained '+(cached.engine?.name||settings.analysisSource)+' analysis':'Ready · press Deeper search';
       }
-      syncSFAnalysisControl();return;
+      syncSFAnalysisControl();positionEval.render();return;
     }
     sfAnalysisDepth = null;
     positionEval.clearBoard?.(game.fen());
@@ -2678,6 +2701,14 @@ function jumpTo(i){
   });
   document.getElementById('btnAnalyzeAll').addEventListener('click',()=>engineCards?.analyzeAll());
   document.getElementById('analysisAllMoves').addEventListener('change',event=>engineCards?.setFollowing(event.target.checked));
+  const linkToggle=document.getElementById('analysisLink');
+  linkToggle.checked=!!settings.analysisLink;
+  if(settings.analysisLink)linkedCard=settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.roleFor(settings.analysisSource);
+  linkToggle.addEventListener('change',()=>{
+    settings.analysisLink=linkToggle.checked;
+    linkedCard=settings.analysisLink?(settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.roleFor(settings.analysisSource)):null;
+    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));positionEval.render();
+  });
   if (restoreTopPickCursor !== null) {
     lastLoadedPGN = activeTopPickPGN;
     bookFlags = extractBookFlags(activeTopPickPGN);
@@ -4153,6 +4184,10 @@ async function launchFromSimModal() {
   // ═══════════════════════════════════════════════════════════════════
 
   // Analyze a single position: return DCC data for all candidates + identify DCC #1
+  function dccMemoKey(fen, moves, snapshot) {
+    const identity=window.ChessEvidence?.candidateDigest(moves)||JSON.stringify(moves);
+    return `${fen}|${JSON.stringify(DCC.config(snapshot))}|${identity}`;
+  }
   async function analyzePosition(fen, suppliedMoves, options = {}) {
     const generation = analysisGeneration;
     const snapshot = { ...settings, ...(options.settings || {}) };
@@ -4172,8 +4207,7 @@ async function launchFromSimModal() {
         metadata: { engineVersion: null } });
     }
     // A refreshed candidate score or provider ordering must not reuse an old DCC decision.
-    const identity = window.ChessEvidence?.candidateDigest(rootMoves) || JSON.stringify(rootMoves);
-    const key = `${fen}|${signature}|${identity}`;
+    const key = dccMemoKey(fen, rootMoves, snapshot);
     const cached = analysisMemo.get(key);
     if (cached && Date.now() - cached.time < 120000) {
       cached.result.receipt.provider = 'CDB';

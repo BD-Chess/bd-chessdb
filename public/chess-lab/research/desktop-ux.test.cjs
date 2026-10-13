@@ -41,6 +41,10 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.equal(doc.querySelector('#analysisSFFull').checked,false);
   assert.ok(doc.querySelector('.board-analysis-actions .sf-full-toggle + #btnAnalyzeAll'));
   assert.equal(doc.querySelector('#analysisAllMoves').checked,false);
+  assert.equal(doc.querySelector('#analysisLink').checked,false);
+  assert.ok(doc.querySelector('.analysis-follow-toggle + .analysis-link-toggle #analysisLink'));
+  assert.equal(doc.querySelector('.analysis-link-toggle span').textContent,'Link');
+  assert.equal(doc.querySelector('.all-desktop-label').textContent,'All engines');
   assert.equal(doc.querySelector('#analysisAllMoves').disabled,false);
   assert.ok(doc.querySelector('#btnAnalyzeAll + .analysis-follow-toggle #analysisAllMoves'));
   assert.equal(source.querySelector('[data-berserk-network]'), null);

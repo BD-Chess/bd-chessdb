@@ -110,3 +110,35 @@ test('mobile keeps one prepared engine and yields after tearing it down before t
   await new Promise(r=>setTimeout(r,40));assert.equal(x.calls.length,3);x.complete(2);await next;
   x.cards.stopAll();assert.equal(x.engines[1].destroyed,true);
 });
+
+test('an active Stockfish card stops its actual variant after the preference changes, even when new analysis is unavailable',async t=>{
+  const x=setup(t),run=x.cards.analyze('sf-lite');await x.tick();
+  x.settings.sfCardMode='sf-full';x.setAvailable(false);
+  assert.equal(x.cards.state('SF').mode,'sf-lite');assert.equal(x.cards.state('SF').disabled,false);
+  await x.cards.analyze('sf-full');await run;
+  assert.equal(x.engines[0].destroyed,true);assert.equal(x.calls.length,1);assert.equal(x.cards.isRunning(),false);
+});
+test('coalesced paints retain the latest snapshot on Stop and cancel a pending stale paint',async t=>{
+  const x=setup(t,false,{paintIntervalMs:100}),run=x.cards.analyze('sf-lite');await x.tick();
+  const info=x.calls[0].options.onInfo;
+  for(let i=1;i<=30;i++)info(null,{fen:'position-a',lines:[{depth:i,pv:['e2e4'],score:{type:'cp',white:i}}]});
+  assert.equal(x.published.length,1,'native bursts do not repaint the entire board thirty times');
+  x.cards.stopRole('SF');await run;
+  assert.equal(x.cards.get('sf-lite').lines[0].depth,30);assert.equal(x.published.at(-1).lines[0].depth,30);
+  const count=x.published.length;x.changeFen('position-b');await new Promise(r=>setTimeout(r,120));
+  assert.equal(x.published.length,count,'cancelled paint cannot publish into the next position');
+});
+
+test('All requests Full after a preference change while Lite is running, instead of silently skipping Stockfish',async t=>{
+  const x=setup(t),first=x.cards.analyze('sf-lite');await x.tick();x.settings.sfCardMode='sf-full';
+  const all=x.cards.analyzeAll();await x.tick();await first;
+  assert.equal(x.engines[0].destroyed,true);assert.deepEqual(x.calls.map(c=>c.mode),['sf-lite','sf-full','berserk']);
+  assert.equal(x.cards.isAllRunning(),true,'replacing the first variant keeps Stop all active');
+  assert.equal(x.calls[1].options.movetime,15000);x.complete(1);x.complete(2);await all;
+  assert.equal(x.cards.get('sf-full').status,'complete');assert.equal(x.cards.isAllRunning(),false);
+});
+test('reuse never returns a running Lite result as Full after a variant change',async t=>{
+  const x=setup(t),first=x.cards.analyze('sf-lite');await x.tick();
+  assert.equal(await x.cards.analyze('sf-full',{reuse:true}),null);assert.equal(x.cards.state('SF').working,true);
+  x.complete(0);await first;
+});
