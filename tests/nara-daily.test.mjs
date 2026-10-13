@@ -29,8 +29,24 @@ test('publication gate rejects missing peer closing line',()=>{const r=record();
 test('record accepts first-ready publication time but rejects wrong local date and missing timezone',()=>{assert.equal(validateRecord(record('2026-10-05','2026-10-05T18:15:00Z')).date,'2026-10-05');assert.throws(()=>validateRecord(record('2026-10-05','2026-10-04T18:15:00Z')),/wrong local date/);assert.throws(()=>validateRecord(record('2026-10-05','2026-10-05T22:00:00')),/timezone/)});
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
-test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record();r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
-test('Daily page keeps all supplied stories collapsed and newest first',()=>{const older=record('2026-10-05','2026-10-05T20:00:00Z'),newer=record('2026-10-06','2026-10-06T20:00:00Z');const p=latestPage([older,newer],'2026-10');assert.ok(p.includes('id="NARA-D-2026-10-05"'));assert.ok(p.includes('id="NARA-D-2026-10-06"'));assert.ok(p.indexOf('NARA-D-2026-10-06')<p.indexOf('NARA-D-2026-10-05'));assert.equal((p.match(/<details class="archive-item daily-item"/g)||[]).length,2);assert.ok(!/<details class="archive-item daily-item"[^>]*\sopen(?:\s|>)/.test(p))});
+test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-06','2026-10-06T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
+test('Daily page links 5 October to its standalone edition and keeps other stories collapsed',()=>{
+  const older=record('2026-10-05','2026-10-05T20:00:00Z'),newer=record('2026-10-06','2026-10-06T20:00:00Z');
+  older.deck='OCT05_INLINE_BODY_MUST_NOT_RENDER';
+  const p=latestPage([older,newer],'2026-10');
+  assert.ok(p.includes('<article class="notice daily-index-item" id="NARA-D-2026-10-05" data-content-sha256="'+older.content_sha256+'">'));
+  assert.ok(!p.includes('<details class="archive-item daily-item" id="NARA-D-2026-10-05"'));
+  assert.ok(p.includes('href="Nara-AI-2026-10-05-format-R1.html"'));
+  assert.ok(p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-05"'));
+  assert.ok(!p.includes(older.deck));
+  assert.ok(p.indexOf('NARA-D-2026-10-06')<p.indexOf('NARA-D-2026-10-05'));
+  assert.equal((p.match(/<details class="archive-item daily-item"/g)||[]).length,1);
+  assert.ok(p.includes('id="NARA-D-2026-10-06"'));
+  assert.ok(!/<details class="archive-item daily-item"[^>]*\sopen(?:\s|>)/.test(p));
+  const month=monthlyPage('2026-10',[older]);
+  assert.ok(month.includes('<details class="archive-item" id="NARA-D-2026-10-05">'));
+  assert.ok(month.includes(older.deck));
+});
 test('log page escapes summaries and exposes no operational fields',()=>{const l=logRecord();l.rounds[1].summary='<script>private()</script>';const p=logPage([l]);assert.ok(p.includes('&lt;script&gt;private()&lt;/script&gt;'));assert.ok(!p.includes('<script>private()'));assert.ok(!p.includes('drive_id'));assert.ok(p.includes('Illuminara Daily · Log'))});
 test('empty initialization creates Daily, Archive and Log without inventing a story',t=>{const root=temp(t);const {records,n}=loadRecords(root);assert.equal(records.length,0);assert.ok(fs.readFileSync(path.join(n,'Nara-AI-daily.html'),'utf8').includes('not published yet'));assert.ok(fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8').includes('not published yet'));assert.throws(()=>initialize(root,'2026-99'),/invalid month/)});
 test('publish requires story and log to agree',t=>{const root=temp(t),r=record(),l=logRecord();l.title='Wrong';assert.throws(()=>publish(root,r,l,new Date(r.published_at)),/story\/log mismatch/);l.title=r.title;l.final_critic_line='Wrong';assert.throws(()=>publish(root,r,l,new Date(r.published_at)),/critic line mismatch/)});
@@ -57,7 +73,7 @@ test('SL edition is complete, source-bound and leaves the English record unchang
   assert.throws(()=>validateTranslation(incomplete,r),/paragraph count/);
 });
 test('Daily and monthly editions expose both languages and escape translated prose',()=>{
-  const r=record(),t=translation(r),translations={[r.id]:t};
+  const r=record('2026-10-06','2026-10-06T20:00:00Z'),t=translation(r),translations={[r.id]:t};
   for(const html of [latestPage(r,'2026-10',translations),monthlyPage('2026-10',[r],translations)]){
     assert.ok(html.includes('data-language="en"')&&html.includes('data-language="sl"'));
     assert.ok(html.includes(t.title));
@@ -83,7 +99,7 @@ test('next nightly publication retains an earlier SL translation and marks untra
   assert.equal(Object.keys(loadTranslations(root,[older,newer])).length,1);
 });
 
-test('approved R3 illustrations render once per scene in EN and SL on both daily routes, and are hash-bound',t=>{
+test('approved R3 illustrations stay in the monthly story while Daily links to the standalone edition',t=>{
   const root=temp(t),r=record();
   r.revision={date:'2026-10-06',edition:'R3',original_url:'Nara-AI-2026-10-05-original.html',original_log_url:'Nara-AI-2026-10-05-original-log.html'};
   r.scenes=Array.from({length:6},(_,i)=>({title:'Scene '+(i+1),paragraphs:['Paragraph '+(i+1),'Last sentence '+(i+1)]}));
@@ -98,21 +114,23 @@ test('approved R3 illustrations render once per scene in EN and SL on both daily
   const m={schema:'nara.daily.illustrations.v1',story_id:r.id,date:r.date,edition:'R3',en_content_sha256:r.content_sha256,sl_content_sha256:tr.content_sha256,images:items};
   const manifestPath=path.join(base,'daily/illustrations/2026-10-05.json');fs.mkdirSync(path.dirname(manifestPath),{recursive:true});fs.writeFileSync(manifestPath,JSON.stringify(m));
   const original=JSON.stringify(r),originalTr=JSON.stringify(tr),translations={[r.id]:tr};
-  const pages=[latestPage([r],'2026-10',translations,root),monthlyPage('2026-10',[r],translations,root)];
-  for(const html of pages){
-    assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,10);
-    for(const lang of ['en','sl']){
-      const a=html.match(new RegExp('<article class="story" lang="'+lang+'"[^>]*>[\\s\\S]*?<\\/article>'))?.[0];
-      assert.ok(a);assert.equal((a.match(/<figure class="daily-scene-figure">/g)||[]).length,5);
-      assert.equal((a.match(/loading="lazy" decoding="async"/g)||[]).length,5);
-      assert.ok(!a.split('<h2>06 ·')[1].includes('<figure'));
-      for(let i=0;i<5;i++)assert.ok(a.includes(lang==='en'?items[i].alt_en:items[i].alt_sl));
-    }
+  const daily=latestPage([r],'2026-10',translations,root);
+  const monthly=monthlyPage('2026-10',[r],translations,root);
+  assert.ok(daily.includes('Nara-AI-2026-10-05-format-R1.html'));
+  assert.ok(!daily.includes('<figure class="daily-scene-figure">'));
+  assert.equal((monthly.match(/<figure class="daily-scene-figure">/g)||[]).length,10);
+  for(const lang of ['en','sl']){
+    const a=monthly.match(new RegExp('<article class="story" lang="'+lang+'"[^>]*>[\\s\\S]*?<\\/article>'))?.[0];
+    assert.ok(a);assert.equal((a.match(/<figure class="daily-scene-figure">/g)||[]).length,5);
+    assert.equal((a.match(/loading="lazy" decoding="async"/g)||[]).length,5);
+    assert.ok(!a.split('<h2>06 ·')[1].includes('<figure'));
+    for(let i=0;i<5;i++)assert.ok(a.includes(lang==='en'?items[i].alt_en:items[i].alt_sl));
   }
   assert.equal(JSON.stringify(r),original);assert.equal(JSON.stringify(tr),originalTr);
-  assert.equal(latestPage([r],'2026-10',translations,root),pages[0]);
+  assert.equal(latestPage([r],'2026-10',translations,root),daily);
   const wrongHash={...m,en_content_sha256:'0'.repeat(64)};fs.writeFileSync(manifestPath,JSON.stringify(wrongHash));
-  assert.throws(()=>latestPage([r],'2026-10',translations,root),/language content binding/);
+  assert.doesNotThrow(()=>latestPage([r],'2026-10',translations,root));
+  assert.throws(()=>monthlyPage('2026-10',[r],translations,root),/language content binding/);
   fs.writeFileSync(manifestPath,JSON.stringify(m));fs.writeFileSync(path.join(imagesDir,'fixture-0.png'),'corrupted');
   assert.throws(()=>monthlyPage('2026-10',[r],translations,root),/source hash mismatch/);
 });
