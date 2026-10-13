@@ -263,6 +263,11 @@
       pause: byId('btnLabPause'), dialog: byId('labToolsDialog'), body: byId('labToolsBody') };
     const primary = byId('workspacePrimaryActions');
     for (const id of ['btnNew', 'btnGames']) primary.insertBefore(byId(id), byId('btnWorkspaceMore'));
+    // Reuse the existing Settings action on desktop; phones keep it in More.
+    const settingsAction = byId('btnSettings');
+    if (settingsAction && !document.body.classList.contains('app-mobile')) {
+      primary.insertBefore(settingsAction, byId('btnWorkspaceMore'));
+    }
     initDesktopViews();
     byId('btnWorkspaceMore').addEventListener('click', openTools);
     for (const [key, id] of Object.entries(fields)) {
