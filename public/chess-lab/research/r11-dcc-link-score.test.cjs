@@ -93,7 +93,7 @@ test('verified terminal samples show Checkmate/Draw instead of cp or inferred di
 
 async function guiFixture(t, cdb = false) {
   const { JSDOM, VirtualConsole } = require('jsdom'), base = path.resolve(__dirname, '..');
-  const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8'), errors = [], cache = new Map(), calls = { network:0, engine:0, probes:0 };
+  const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8'), errors = [], cache = new Map(), calls = { network:0, engine:0, probes:0, annotations:0 };
   const vc = new VirtualConsole(); vc.on('jsdomError', e => errors.push(e.message));
   const dom = new JSDOM(html, { url:'https://bd-chess.github.io/bd-chessdb/chess-lab/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc });
   const w = dom.window; t.after(()=>w.close()); await new Promise(resolve=>w.addEventListener('load',resolve));
@@ -103,6 +103,7 @@ async function guiFixture(t, cdb = false) {
   w.URL.createObjectURL=()=> 'blob:fixture'; w.URL.revokeObjectURL=()=>{};
   w.AbortController=AbortController; w.structuredClone=structuredClone; w.TextEncoder=TextEncoder; w.TextDecoder=TextDecoder;
   w.indexedDB=new(require('fake-indexeddb').IDBFactory)(); w.alert=msg=>{throw Error(msg);}; w.confirm=()=>true;
+  w.__dccCountAnnotation=()=>calls.annotations++;
   const queues=new Map(); Object.defineProperty(w.navigator,'locks',{value:{request(name,settings,callback){const r=(queues.get(name)||Promise.resolve()).then(callback||settings);queues.set(name,r.catch(()=>{}));return r;}}});
   w.localStorage.setItem('ChessBest:LAB:v2:settings',JSON.stringify({cdbEnabled:cdb,dccDepth:1,dccTopCandidates:3,dccDefenseCheck:false,dccClickAction:'details',badgeInitialDelay:0,nextDot:false}));
   w.Chessboard=(id,options)=>{
@@ -120,7 +121,8 @@ async function guiFixture(t, cdb = false) {
   let cardOptions;
   for(const match of html.matchAll(/<script src="(js\/[^?\"]+)/g)){
     const file=match[1];if(/jquery|chessboard|8zc-new-ui|8zc-lab-layout/.test(file))continue;
-    w.eval(file==='js/8zc-utils.js' ? utils : fs.readFileSync(path.join(base,file),'utf8'));
+    w.eval(file==='js/8zc-utils.js' ? utils.replace('async function fetchAnnotations({ refreshCDB = false } = {}) {',
+      'async function fetchAnnotations({ refreshCDB = false } = {}) { window.__dccCountAnnotation();') : fs.readFileSync(path.join(base,file),'utf8'));
     if(file==='js/8zc-engine-cards.js')w.ChessEngineCards.create=options=>{cardOptions=options;return {
       get(mode){return cache.get(mode);},state(){return {disabled:false,working:false,title:'fixture retained engine'};},
       stopRole(){return false;},stopAll(){},positionChanged(){},ingest(r){cache.set(r.mode,r);},
@@ -171,4 +173,16 @@ test('complete GUI CDB mate Raw/End/samples/details are typed without fabricated
   x.el('dccAnalysisPanel').querySelector('.dcc-candidate-button').click();
   const detail=x.el('dccInfoPanel').textContent;assert.match(detail,/M14 · 27 plies/);assert.doesNotMatch(detail,/29973 cp/);
   assert.match(detail,/mixed score units/);assert.deepEqual(x.errors,[]);
+});
+
+test('complete GUI DCC display with Link OFF and missing data/identity starts no annotation, probe or download', {timeout:15000}, async t=>{
+  const x=await guiFixture(t);
+  assert.equal(x.el('analysisLink').checked,false);
+  assert.equal(x.w.ChessLabHost.getContext().analysisSources.DCC,null);
+  const before={...x.calls};x.el('allEvalBadges').querySelector('[data-eval-source="DCC"]').click();
+  await new Promise(resolve=>setTimeout(resolve,20));
+  assert.deepEqual(x.calls,before);
+  assert.equal(x.el('dccAnalysisPanel').style.display,'block');
+  assert.match(x.el('dccAnalysisPanel').textContent,/No evaluated candidates/);
+  assert.deepEqual(x.errors,[]);
 });

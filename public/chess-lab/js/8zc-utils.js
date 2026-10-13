@@ -709,7 +709,6 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       }
       else if (source === 'CDB') refreshCDBCurrentPosition();
       else if (source === 'DCC') {
-        if(!settings.analysisLink&&(!latestDCCReceipt||latestDCCReceipt.status==='unknown'))fetchAnnotations();
         document.getElementById('btnViewToggle')?.click();
       }
     } });
