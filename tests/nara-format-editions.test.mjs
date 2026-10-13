@@ -28,13 +28,31 @@ test('scores are withheld until both sealed instruments bind the exact new Engli
  const h='a'.repeat(64),d={premise:13,character:13,structure:13,prose:13,world:8,moral_intellectual_depth:13,ending:13},g={score:86,dimensions:d,rubric_id:'GPT_LITERARY_7_100_V1',anchor_revision:'SHARED_ANCHOR_V1',sealed:true,en_content_sha256:h,output_sha256:'b'.repeat(64)},c={score:90,rubric_id:'PEC-6_V2',sealed:true,en_content_sha256:h,output_sha256:'c'.repeat(64),prompt_sha256:'d'.repeat(64)},a={status:'PAIRED',en_content_sha256:h,gpt:g,claude:c,combined:88};
  assert.equal(pairedAssessment({status:'PENDING'},h),null);assert.throws(()=>pairedAssessment({status:'PENDING',combined:88},h),/inherited/);assert.equal(pairedAssessment(a,h),88);assert.throws(()=>pairedAssessment(a,'e'.repeat(64)),/binding/);assert.throws(()=>pairedAssessment({...a,combined:90},h),/mean/);assert.throws(()=>pairedAssessment({...a,claude:{...c,sealed:false}},h),/unsealed/);assert.throws(()=>pairedAssessment({...a,gpt:{...g,score:87}},h),/arithmetic/);
 });
-test('manual Oct5 images retain verified HD/4K variants and land after the same source moment in both languages',()=>{
- const item=loadFormatEditions(root)[0],old=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json'),'utf8')),html=renderEditionPage(root,item);
- assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);
- for(const im of old.images){assert.ok(html.includes(im.src));assert.ok(html.includes(im.src_4k));const anchor=item.binding.anchors.en[im.scene-1][im.after_paragraph-1];assert.equal(anchor.after_anchor,item.binding.anchors.sl[im.scene-1][im.after_paragraph-1].after_anchor);const sceneHtml=renderStoryScene(item.en.scenes[im.scene-1],im.scene,[{...im,after_paragraph:anchor.after_anchor}],'en',2,'2026-10-13');assert.ok(sceneHtml.indexOf('<figure')>sceneHtml.indexOf(item.en.scenes[im.scene-1].paragraphs[anchor.after_anchor-1].replace(/^\*\*[^*]+\*\*  \n/,'')));}
+test('manual Oct5 artwork is bound to the final EN/SL edition and preserves verified HD/4K variants',()=>{
+ const item=loadFormatEditions(root)[0],old=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json'),'utf8')),art=JSON.parse(fs.readFileSync(path.join(n,item.paths.artwork),'utf8')),html=renderEditionPage(root,item);
+ assert.equal(art.edition_id,item.binding.edition_id);assert.equal(art.en_content_sha256,item.en.content_sha256);assert.equal(art.sl_content_sha256,item.sl.content_sha256);
+ assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(art),/prompt|drive_id/i);
+ for(const im of art.images){
+  const source=old.images.find(x=>x.scene===im.scene&&x.after_paragraph===im.source_after_paragraph);assert.ok(source);
+  for(const field of ['src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'])assert.equal(im[field],source[field]);
+  assert.ok(html.includes(im.src));assert.ok(html.includes(im.src_4k));
+  const enPara=item.en.scenes[im.scene-1].paragraphs[im.after_paragraph_en-1],slPara=item.sl.scenes[im.scene-1].paragraphs[im.after_paragraph_sl-1];
+  assert.equal(sha(enPara),im.paragraph_sha256_en);assert.equal(sha(slPara),im.paragraph_sha256_sl);assert.equal(im.after_paragraph_en,im.after_paragraph_sl);
+  for(const [lang,para] of [['en',enPara],['sl',slPara]]){
+   const data=lang==='en'?item.en:item.sl,sceneHtml=renderStoryScene(data.scenes[im.scene-1],im.scene,[{...im,after_paragraph:im['after_paragraph_'+lang]}],lang,2,'2026-10-13');
+   assert.ok(sceneHtml.indexOf('<figure')>sceneHtml.indexOf(para.replace(/^\*\*[^*]+\*\*  \n/,'')));
+  }
+ }
 });
-test('missing artwork never blocks either language and HD-only editions never request 4K',t=>{
- const r=fixture(t),items=loadFormatEditions(r);for(const item of items){const html=renderEditionPage(r,item);assert.match(html,/lang="sl"/);assert.match(html,/class="story"/);assert.doesNotMatch(html,/data-nara-image-4k/)}
+test('edition artwork rejects stale edition, paragraph, anchor and asset bindings',t=>{
+ const r=fixture(t,{art:true}),item=loadFormatEditions(r)[0],file=path.join(r,'public/Nara',item.paths.artwork),saved=fs.readFileSync(file,'utf8');
+ const stale=JSON.parse(saved);stale.en_content_sha256='0'.repeat(64);fs.writeFileSync(file,JSON.stringify(stale));assert.throws(()=>renderEditionPage(r,item),/edition artwork language binding/);
+ const paragraph=JSON.parse(saved);paragraph.images[0].paragraph_sha256_en='0'.repeat(64);fs.writeFileSync(file,JSON.stringify(paragraph));assert.throws(()=>renderEditionPage(r,item),/edition artwork paragraph binding/);
+ const anchor=JSON.parse(saved);anchor.images[1].after_paragraph_sl+=1;fs.writeFileSync(file,JSON.stringify(anchor));assert.throws(()=>renderEditionPage(r,item),/edition artwork bilingual anchor binding/);
+ const asset=JSON.parse(saved);asset.images[2].src='../private.webp';fs.writeFileSync(file,JSON.stringify(asset));assert.throws(()=>renderEditionPage(r,item),/edition artwork asset binding src/);
+});
+test('missing optional artwork leaves legacy text editions renderable and required Oct5 artwork fails closed',t=>{
+ const r=fixture(t),items=loadFormatEditions(r);for(const item of items){if(item.paths.date==='2026-10-05'){assert.throws(()=>renderEditionPage(r,item),/illustration missing static file/);continue}const html=renderEditionPage(r,item);assert.match(html,/lang="sl"/);assert.match(html,/class="story"/);assert.doesNotMatch(html,/data-nara-image-4k/)}
 });
 test('regeneration is idempotent and daily/monthly refresh retains all links without changing originals',t=>{
  const r=fixture(t,{art:true}),before=stable(r),originalPages=Object.fromEntries(fs.readdirSync(path.join(r,'public/Nara')).filter(x=>x.endsWith('-pre-format-R1.html')).map(x=>[x,sha(fs.readFileSync(path.join(r,'public/Nara',x)))]));

@@ -27,7 +27,7 @@ export function editionPaths(key){
  const date=key.slice(0,10),instance=key.length>10?key.slice(11):null;
  assert((date<'2026-10-09')===!instance,'format instance/date mismatch');
  const prefix='daily/format-editions/'+key+'/';
- return {date,instance,en:prefix+'en-R1.json',sl:prefix+'sl-R1.json',binding:prefix+'binding-R1.json',page:'Nara-AI-'+key+'-format-R1.html',original_page:'Nara-AI-'+key+'-pre-format-R1.html',source_en:'daily/records/'+date+(instance?'/'+instance:'')+'.json',source_sl:'daily/translations/sl/'+date+(instance?'/'+instance:'')+'.json',story_id:'NARA-D-'+date+(instance?':'+instance:'')};
+ return {date,instance,en:prefix+'en-R1.json',sl:prefix+'sl-R1.json',binding:prefix+'binding-R1.json',artwork:prefix+'art-R1.json',page:'Nara-AI-'+key+'-format-R1.html',original_page:'Nara-AI-'+key+'-pre-format-R1.html',source_en:'daily/records/'+date+(instance?'/'+instance:'')+'.json',source_sl:'daily/translations/sl/'+date+(instance?'/'+instance:'')+'.json',story_id:'NARA-D-'+date+(instance?':'+instance:'')};
 }
 function validateBody(d){
  assert(keys(d,['title','deck','shape','scenes','content_sha256'])&&Object.keys(d).length===5,'edition body fields');
@@ -119,7 +119,38 @@ export function refreshFormatArchiveSection(html,root){
  if(pattern.test(html))return html.replace(pattern,fragment);
  return fragment?html.replace('</main>',fragment+'</main>'):html;
 }
+function editionArtworkImages(root,item){
+ const file=path.join(naraRoot(root),item.paths.artwork);
+ assert(fs.existsSync(file),'edition artwork manifest missing');
+ const manifest=JSON.parse(fs.readFileSync(file,'utf8'));
+ const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
+ assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'edition artwork manifest fields');
+ assert(manifest.schema==='nara.format.edition.artwork.v1'&&manifest.edition_id===item.binding.edition_id&&manifest.story_id===item.paths.story_id&&manifest.date===item.paths.date&&manifest.format_revision==='R1','edition artwork identity binding');
+ assert(manifest.en_content_sha256===item.en.content_sha256&&manifest.sl_content_sha256===item.sl.content_sha256,'edition artwork language binding');
+ const sourceImages=loadIllustrations(root,item.originalEn,item.originalSl);
+ assert(Array.isArray(manifest.images)&&manifest.images.length===3&&sourceImages.length===3,'edition artwork requires three validated images');
+ const imageFields=['scene','source_after_paragraph','after_paragraph_en','after_paragraph_sl','paragraph_sha256_en','paragraph_sha256_sl','src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'];
+ let priorScene=0,priorSourceParagraph=0;
+ return manifest.images.map(entry=>{
+  assert(keys(entry,imageFields)&&Object.keys(entry).length===imageFields.length,'edition artwork image fields');
+  assert(Number.isInteger(entry.scene)&&entry.scene>=1&&entry.scene<=item.en.scenes.length&&Number.isInteger(entry.source_after_paragraph)&&entry.source_after_paragraph>=1&&entry.source_after_paragraph<=item.originalEn.scenes[entry.scene-1].paragraphs.length,'edition artwork source anchor');
+  assert(Number.isInteger(entry.after_paragraph_en)&&entry.after_paragraph_en>=1&&entry.after_paragraph_en<=item.en.scenes[entry.scene-1].paragraphs.length&&Number.isInteger(entry.after_paragraph_sl)&&entry.after_paragraph_sl>=1&&entry.after_paragraph_sl<=item.sl.scenes[entry.scene-1].paragraphs.length,'edition artwork language anchors');
+  assert(entry.scene>priorScene||(entry.scene===priorScene&&entry.source_after_paragraph>priorSourceParagraph),'edition artwork order');
+  priorScene=entry.scene;priorSourceParagraph=entry.source_after_paragraph;
+  assert(hex(entry.paragraph_sha256_en)&&hex(entry.paragraph_sha256_sl)&&text(entry.alt_en,300)&&text(entry.alt_sl,300),'edition artwork paragraph hashes/alt text');
+  const original=sourceImages.find(image=>image.scene===entry.scene&&image.after_paragraph===entry.source_after_paragraph);
+  assert(original,'edition artwork source image mapping');
+  for(const field of ['src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'])assert(entry[field]===original[field],'edition artwork asset binding '+field);
+  const en=item.binding.anchors.en[entry.scene-1][entry.source_after_paragraph-1],sl=item.binding.anchors.sl[entry.scene-1][entry.source_after_paragraph-1];
+  assert(en&&sl&&entry.after_paragraph_en===en.after_anchor&&entry.after_paragraph_sl===sl.after_anchor&&en.after_anchor===sl.after_anchor,'edition artwork bilingual anchor binding');
+  const enParagraph=item.en.scenes[entry.scene-1].paragraphs[entry.after_paragraph_en-1],slParagraph=item.sl.scenes[entry.scene-1].paragraphs[entry.after_paragraph_sl-1];
+  assert(sha(enParagraph)===entry.paragraph_sha256_en&&sha(slParagraph)===entry.paragraph_sha256_sl,'edition artwork paragraph binding');
+  return {...original,after_paragraph:entry.after_paragraph_en};
+ });
+}
 function optionalEditionImages(root,item){
+ const file=path.join(naraRoot(root),item.paths.artwork);
+ if(item.paths.date==='2026-10-05'||fs.existsSync(file))return editionArtworkImages(root,item);
  try{
   const images=loadIllustrations(root,item.originalEn,item.originalSl,{nonBlocking:true});
   return images.map(image=>{
@@ -128,7 +159,7 @@ function optionalEditionImages(root,item){
    assert(en&&sl&&en.after_anchor===sl.after_anchor,'image bilingual anchor mapping');
    return {...image,after_paragraph:en.after_anchor};
   });
- }catch{return []} // Optional artwork never blocks text, including manual art.
+ }catch{return []} // Legacy artwork never blocks its text edition.
 }
 function formatShell(title,slTitle,file,body){
  const controls='<div class="tools"><button type="button" data-scale="-0.1">A−</button><output data-scale-label>100%</output><button type="button" data-scale="0.1">A+</button><button type="button" data-scale="reset">'+bi('Reset','Ponastavi')+'</button><button type="button" data-theme-toggle>'+bi('Day mode','Dnevni način')+'</button></div>';
