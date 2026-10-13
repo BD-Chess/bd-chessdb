@@ -8,9 +8,9 @@ const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const stable=(r)=>Object.fromEntries(['daily/catalog.json',...fs.readdirSync(path.join(r,'public/Nara/daily/records')).filter(x=>x.endsWith('.json')).map(x=>'daily/records/'+x)].map(rel=>[rel,sha(fs.readFileSync(path.join(r,'public/Nara',rel)))]));
 function fixture(t,{art=false}={}){const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-format-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));fs.mkdirSync(path.join(r,'public/Nara'),{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(r,'public/Nara/daily'),{recursive:true});for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'))fs.copyFileSync(path.join(n,f),path.join(r,'public/Nara',f));if(art)fs.cpSync(path.join(n,'assets/img/daily/2026-10-05'),path.join(r,'public/Nara/assets/img/daily/2026-10-05'),{recursive:true});return r}
 
-test('all 13 source-bound EN/SL editions have complete anchors and genuine pending status',()=>{
- const items=loadFormatEditions(root);assert.equal(items.length,13);assert.equal(items.filter(x=>x.paths.date==='2026-10-11').length,3);
- assert.equal(items.some(x=>x.paths.date==='2026-10-12'),false);
+test('all 16 source-bound EN/SL editions have complete anchors and genuine pending status',()=>{
+ const items=loadFormatEditions(root);assert.equal(items.length,16);assert.equal(items.filter(x=>x.paths.date==='2026-10-11').length,3);
+ assert.equal(items.filter(x=>x.paths.date==='2026-10-12').length,3);
  for(const x of items){assert.equal(x.combined,null);assert.equal(x.binding.assessment.status,'PENDING');assert.equal(editionBodyHash(x.en),x.en.content_sha256);assert.equal(editionBodyHash(x.sl),x.sl.content_sha256);for(let i=0;i<x.en.scenes.length;i++)assert.equal(x.en.scenes[i].paragraphs.length,x.sl.scenes[i].paragraphs.length)}
 });
 test('untrusted manifest dates, paths and modified source bytes are rejected',t=>{
@@ -36,9 +36,9 @@ test('manual Oct5 images retain verified HD/4K variants and land after the same 
 test('missing artwork never blocks either language and HD-only editions never request 4K',t=>{
  const r=fixture(t),items=loadFormatEditions(r);for(const item of items){const html=renderEditionPage(r,item);assert.match(html,/lang="sl"/);assert.match(html,/class="story"/);assert.doesNotMatch(html,/data-nara-image-4k/)}
 });
-test('regeneration is idempotent and daily/monthly refresh retains all links without changing originals or Oct12',t=>{
+test('regeneration is idempotent and daily/monthly refresh retains all links without changing originals',t=>{
  const r=fixture(t,{art:true}),before=stable(r),originalPages=Object.fromEntries(fs.readdirSync(path.join(r,'public/Nara')).filter(x=>x.endsWith('-pre-format-R1.html')).map(x=>[x,sha(fs.readFileSync(path.join(r,'public/Nara',x)))]));
- assert.equal(generateFormatEditions(r).edition_count,13);assert.deepEqual(generateFormatEditions(r).changed,[]);
+ assert.equal(generateFormatEditions(r).edition_count,16);assert.deepEqual(generateFormatEditions(r).changed,[]);
  refreshIllustratedPages(r,'2026-10');const daily=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-daily.html'),'utf8'),monthly=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-2026-10.html'),'utf8'),archive=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-archive.html'),'utf8');
  for(const item of loadFormatEditions(r)){assert.ok(daily.includes(item.paths.page));assert.ok(monthly.includes(item.paths.page));assert.ok(archive.includes(item.paths.page));assert.ok(archive.includes(item.paths.original_page))}
  assert.match(daily,/NARA-D-2026-10-12/);assert.deepEqual(stable(r),before);for(const [f,h]of Object.entries(originalPages))assert.equal(sha(fs.readFileSync(path.join(r,'public/Nara',f))),h);
@@ -46,7 +46,8 @@ test('regeneration is idempotent and daily/monthly refresh retains all links wit
 });
 test('day links cover non-featured instances and archive regeneration uses separate original links',()=>{
  const links=formatDayLinks(root,'2026-10-11');for(const s of ['S1','S2','S3'])assert.ok(links.includes('2026-10-11-'+s+'-format-R1.html'));
- assert.equal(formatDayLinks(root,'2026-10-12'),'');assert.equal((formatDayLinks(root,'2026-10-11','NARA-D-2026-10-11:S2').match(/format-R1\.html/g)||[]).length,2);assert.equal((renderFormatArchive(root).match(/-pre-format-R1\.html/g)||[]).length,13);
+ const day12=formatDayLinks(root,'2026-10-12');for(const s of ['S1','S2','S3'])assert.ok(day12.includes('2026-10-12-'+s+'-format-R1.html'));
+ assert.equal((formatDayLinks(root,'2026-10-11','NARA-D-2026-10-11:S2').match(/format-R1\.html/g)||[]).length,2);assert.equal((renderFormatArchive(root).match(/-pre-format-R1\.html/g)||[]).length,16);
 });
 test('ordinary next-day publication preserves historical editions and refuses old-date backfill',t=>{
  const r=fixture(t,{art:true}),nr=path.join(r,'public/Nara'),record=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-12.json'),'utf8')),log=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-12.json'),'utf8'));
@@ -55,7 +56,7 @@ test('ordinary next-day publication preserves historical editions and refuses ol
  assert.match(publish(r,record,log,new Date('2026-10-13T20:01:00Z')),/LOCAL_CANDIDATE_READY/);
  for(const [f,h]of Object.entries(original))if(f!=='daily/catalog.json')assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
  for(const [f,h]of Object.entries(editionBytes))assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
- assert.equal(loadFormatEditions(r).length,13);assert.match(fs.readFileSync(path.join(nr,'Nara-AI-archive.html'),'utf8'),/id="format-editions"/);
+ assert.equal(loadFormatEditions(r).length,16);assert.match(fs.readFileSync(path.join(nr,'Nara-AI-archive.html'),'utf8'),/id="format-editions"/);
  const old=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-05.json'),'utf8')),oldLog=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-05.json'),'utf8'));
  assert.throws(()=>publish(r,old,oldLog,new Date('2026-10-13T20:01:00Z')),/not current local publication date/);
 });
