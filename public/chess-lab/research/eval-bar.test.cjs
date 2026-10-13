@@ -12,6 +12,25 @@ test('evaluation bar normalizes mover centipawns into White perspective', () => 
   assert.ok(E.measure(black, 135).white < 50);
   assert.equal(E.measure(black, 0).label, '0.00');
 });
+test('LC Zero display conversion preserves native evidence and never invents mate or unknown scores', () => {
+  const score = Object.freeze({ type: 'q', root: 0.3, white: -0.3, wdl: Object.freeze([0.5, 0.3, 0.2]) });
+  assert.equal(E.qToCp(0.3), 57);
+  assert.equal(E.qToCp(-0.3), -57);
+  assert.equal(E.measure(black, score, null, 'LC0').label, '-0.57', 'typed White score is not flipped twice');
+  assert.match(E.measure(black, score, null, 'LC0').description, /approximately -57 cp.*native neural Q -0.300/);
+  assert.equal(score.type, 'q'); assert.equal(score.root, 0.3); assert.deepEqual(score.wdl, [0.5, 0.3, 0.2]);
+  for (const q of [null, undefined, '0.3', NaN, Infinity, -Infinity, 1.01, -1.01]) {
+    assert.equal(E.qToCp(q), null);
+    assert.equal(E.measure(white, { type:'q', white:q }).state, 'unknown');
+  }
+  let previous = -Infinity;
+  for (const q of [-1,-0.9,-0.5,-0.003,0,0.003,0.5,0.9,1]) {
+    const cp = E.qToCp(q); assert.ok(Number.isSafeInteger(cp) && cp >= previous); previous = cp;
+    assert.equal(cp, -E.qToCp(-q) || 0, 'rounding remains symmetric');
+    const view = E.measure(white,{type:'q',white:q}); assert.equal(view.state,'known');
+    assert.doesNotMatch(view.label, /[#WB]/, 'neural endpoints do not prove a mating distance or tablebase');
+  }
+});
 test('missing evaluations and decisive CDB scores never become invented pawn or mate counts', () => {
   for (const score of [null, undefined, NaN, '0']) assert.equal(E.measure(white, score).state, 'unknown');
   assert.equal(E.measure(white, 29999).label, 'W');

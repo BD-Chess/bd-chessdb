@@ -125,7 +125,7 @@
     function scoreLabel(score) {
       if (!score) return '—';
       if(score.type==='decisive')return score.label||'—';
-      if(score.type==='q')return 'Q '+(score.white>0?'+':'')+Number(score.white).toFixed(3);
+      if(score.type==='q')return root.ChessEvalBar?.measure(current.fen,score,null,'LC Zero').label || '—';
       const prefix = score.whiteBound === 'lower' ? '≥' : score.whiteBound === 'upper' ? '≤' : '';
       if (score.type === 'mate') return prefix + (score.white < 0 ? '−' : '') + '#' + Math.abs(score.white);
       return prefix + (score.white > 0 ? '+' : '') + (score.white / 100).toFixed(2);
@@ -181,6 +181,7 @@
         const row = doc.createElement('article'); row.className = 'deep-line';
         const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
         const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score);
+        if (line.score?.type === 'q') score.title = root.ChessEvalBar?.measure(current.fen,line.score,null,'LC Zero').description || 'Native neural Q unavailable';
         const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':key==='lc0'?'Visits ' + (line.visits ?? child.visits ?? child.nodes ?? '—'):'Depth ' + (line.depth ?? '—');
         meta.append(score, depth); row.appendChild(meta);
         const variation = doc.createElement('div'); variation.className = 'deep-pv';

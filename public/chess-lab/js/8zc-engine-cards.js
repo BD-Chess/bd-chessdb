@@ -75,7 +75,7 @@
       const searched=seconds(result?.actualSearchMs??result?.searchElapsedMs),requested=seconds(result?.requestedTimeMs??result?.limits?.movetime);
       const reached=mode==='lc0'?(result?.visits??result?.nodes):result?.depth??result?.linesDepth??result?.lines?.[0]?.depth;
       const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),result.stopReason].filter(Boolean).join(' · '):null;
-      return {mode,working:!!job,disabled:!job&&(!context().canAnalyze||!available().includes(mode)),
+      return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!context().canAnalyze||!available().includes(mode)),
         title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':
           job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):

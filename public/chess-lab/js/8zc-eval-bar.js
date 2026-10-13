@@ -5,6 +5,12 @@
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
   const instances = new WeakMap();
+  // Display-only historical Lc0 cp scale; native Q/WDL remain engine evidence.
+  // https://lczero.org/dev/wiki/technical-explanation-of-leela-chess-zero/
+  function qToCp(q) {
+    if (!Number.isFinite(q) || Math.abs(q) > 1) return null;
+    return Math.sign(q) * Math.round(Math.abs(111.714640912 * Math.tan(1.5620688421 * q))) || 0;
+  }
   function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
     if (terminal === 'mate') return { label: '#', white: side === 'b' ? 100 : 0,
@@ -19,7 +25,13 @@
       return { label, white: mate ? (cp < 0 ? 0 : 100) : Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
         description: `${source} ${label} · White perspective`, state: 'known' };
     }
-    if(score?.type==='q'&&Number.isFinite(score.white)){const q=Math.max(-1,Math.min(1,score.white));return {label:'Q '+(q>0?'+':'')+q.toFixed(3),white:50+50*q,description:`${source} native neural Q ${q.toFixed(3)} · White perspective`,state:'known'};}
+    if (score?.type === 'q') {
+      const cp = qToCp(score.white);
+      if (cp === null) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const label = (cp > 0 ? '+' : '') + (cp / 100).toFixed(2);
+      return { label, white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
+        description: `${source} approximately ${cp} cp, converted from native neural Q ${score.white.toFixed(3)} · White perspective`, state: 'known' };
+    }
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
     // CDB decisive/tablebase sentinels are not ordinary centipawns. Do not invent mate distance.
@@ -82,7 +94,9 @@
           badge.title = control?.title || '';
           badge.setAttribute('aria-label', `${source}: ${badge.title || 'analysis'}`);
           badge.classList.toggle('is-working', !!control?.working);
-          badge.classList.toggle('is-linked', !!control?.selected);
+          badge.classList.toggle('is-batch-running', !!control?.allRunning);
+          badge.classList.toggle('is-batch-participant', !!control?.batchParticipant);
+          badge.classList.toggle('is-linked', !!control?.selected && !control?.allRunning);
           badge.setAttribute('aria-current', control?.selected ? 'true' : 'false');
           if (source === 'DCC') {
             badge.setAttribute('aria-pressed', String(!!control?.pressed));
@@ -107,6 +121,7 @@
           move.textContent = placeholder || !enabled ? '—' : fresh ? entry.bestMove || '—' : '…';
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
           score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
+          score.title = fresh && entry.score?.type === 'q' ? result.description : '';
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
           note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
             (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
@@ -116,7 +131,7 @@
         }
         if (source !== 'DCC') note.title = note.textContent;
         if (actionable) {
-          badge.title = [control?.title, note.title].filter(Boolean).join('. ');
+          badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
           badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);
         }
         badge.classList.toggle('is-unknown', move.textContent === '—' || score.textContent === '—');
@@ -301,5 +316,5 @@
     }
     return { start, position, decision, stop };
   }
-  return { measure, create, watchSimulation };
+  return { measure, qToCp, create, watchSimulation };
 });

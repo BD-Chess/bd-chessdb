@@ -652,13 +652,26 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const simRequests = new Set();
   let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
   const cardMode = source => source==='BER'?'berserk':source==='RLE'?'reckless':source==='LC0'?'lc0':source==='CDB'?'cdb':settings.sfCardMode;
+  function linkedDCCMode(receipt) {
+    if (!receipt || receipt.fen && receipt.fen !== game.fen()) return null;
+    if (receipt.provider === 'CDB') return 'cdb';
+    const role = receipt.provider, registry = window.ChessEngineRegistry;
+    const identityMode = (registry?.modes?.() || ['sf-lite','sf-full','berserk']).find(mode =>
+      receipt.engineId && (receipt.engineId === mode || receipt.engineId ===
+        (mode === 'sf-lite' ? window.ChessDeepEngine?.ENGINE?.id : window.ChessAnalysisSession?.descriptors?.[mode]?.id)));
+    const recorded = receipt.engineMode || identityMode || (role === 'BER' && !receipt.engineId ? 'berserk' : null);
+    if (!recorded || identityMode && identityMode !== recorded || registry?.roleFor(recorded) !== role) return null;
+    return recorded;
+  }
   function selectLinkedCard(source) {
     if (!settings.analysisLink) return;
-    const provider=source==='DCC'?latestDCCReceipt?.provider:null;
-    const dccMode=provider==='SF'&&['sf-lite','sf-full'].includes(latestDCCReceipt?.engineId)?latestDCCReceipt.engineId:settings.sfCardMode;
-    const mode=source==='DCC'?(provider==='SF'?dccMode:provider==='BER'?'berserk':'cdb'):cardMode(source);
+    // A retained DCC decision belongs to its measured engine, independently
+    // of today's Stockfish checkbox. Missing identity is never guessed.
+    const mode=source==='DCC'?linkedDCCMode(latestDCCReceipt):cardMode(source);
+    if(!mode)return;
     linkedCard=source;
-    window.ChessAnalysisSession?.configure?.({boardSource:mode});
+    window.ChessAnalysisSession?.configure?.({boardSource:mode,
+      ...(source==='DCC'&&['sf-lite','sf-full'].includes(mode)?{sfCardMode:mode}:{})});
     const select=document.getElementById('analysisSource');
     if(select){select.value=mode;const event=new Event('change',{bubbles:true});event.chessAnalysisHandled=true;event.chessAnalysisPassive=true;event.chessLinkedCard=true;select.dispatchEvent(event);}
     positionEval.render();
@@ -673,14 +686,15 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const positionEval = window.ChessEvalBar.create({ game, settings,
     isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
     getBadgeControl: source => {
+      const allRunning = !!engineCards?.isAllRunning();
       if (source === 'DCC') {
         const toggle = document.getElementById('btnViewToggle');
-        return { disabled: !toggle || toggle.disabled, selected:settings.analysisLink&&linkedCard==='DCC',
+        return { disabled: !toggle || toggle.disabled, selected:settings.analysisLink&&linkedCard==='DCC', allRunning,
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
-      if(['SF','BER','RLE','LC0'].includes(source))return {...(engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'}),selected:settings.analysisLink&&linkedCard===source};
-      return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false, selected:settings.analysisLink&&linkedCard==='CDB',
+      if(['SF','BER','RLE','LC0'].includes(source))return {...(engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'}),selected:settings.analysisLink&&linkedCard===source,allRunning};
+      return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false, selected:settings.analysisLink&&linkedCard==='CDB', allRunning,
         note:cdbRefreshing?'Fetching position data':null,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
@@ -695,7 +709,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       }
       else if (source === 'CDB') refreshCDBCurrentPosition();
       else if (source === 'DCC') {
-        if(!latestDCCReceipt||latestDCCReceipt.status==='unknown')fetchAnnotations();
+        if(!settings.analysisLink&&(!latestDCCReceipt||latestDCCReceipt.status==='unknown'))fetchAnnotations();
         document.getElementById('btnViewToggle')?.click();
       }
     } });
@@ -871,6 +885,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const root = await provider.root(fen, { nodes, depth, signal: controller.signal, onInfo });
       if (cancelled()) controller.abort();
       const analysis = dcc && root.moves.length ? await provider.analyzeDCC(fen, root, settings, controller.signal) : null;
+      if (analysis) Object.assign(analysis.receipt, { engineMode: 'sf-lite',
+        engineId: root.result?.engine?.id || root.result?.children?.['sf-lite']?.engine?.id || window.ChessDeepEngine?.ENGINE?.id,
+        engineName: root.result?.engine?.name || window.ChessDeepEngine?.ENGINE?.name });
       if (cancelled()) controller.abort();
       if (controller.signal.aborted) { const e = new Error('Stale SF analysis'); e.name = 'AbortError'; throw e; }
       return { root, analysis, ledger: { ...provider.ledger } };
@@ -1149,6 +1166,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     latestDCCResults = result.candidates.map(c => c.data);
     latestDCCReceipt = result.receipt;
     result.receipt.provider ||= 'CDB';
+    decorateDCCPresentation(result);
     recordSourceAnalysis('DCC', baseFen, result);
     positionEval.updateDCC(baseFen, result.dcc1Move ? uciToSan(baseFen, result.dcc1Move) : null, result.receipt.engineName || result.receipt.provider, hasMeasuredDCCChoice(result) ? 'ready' : 'raw-safety');
     if (source === 'cdb' && result.receipt.provider==='CDB' || source==='berserk'&&result.receipt.provider==='BER' || ['sf-lite','sf-full'].includes(source)&&result.receipt.provider==='SF') showAnalysisCandidates(moveList, result.receipt.provider, result);
@@ -1186,13 +1204,73 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       star.title = 'Shared DCC policy choice (see DCC panel for reason)'; ov.appendChild(star);
     }
     if (Number.isFinite(data.stability)) ov.classList.add(data.stability > 0.6 ? 'dcc-stable' : 'dcc-unstable');
-    ov.title = `${latestDCCReceipt?.engineName||latestDCCReceipt?.provider||'DCC'} · ${move}: raw ${Math.abs(data.raw ?? data.score) >= 10000 ? 'decisive/mate' : (data.raw ?? data.score) + ' cp'}; ${data.status || 'partial'} DCC; mover perspective`;
+    ov.title = `${latestDCCReceipt?.engineName||latestDCCReceipt?.provider||'DCC'} · ${move}: raw ${formatDCCScore(data.raw ?? data.score, data.rawScore)}; ${data.status || 'partial'} DCC; mover perspective`;
   }
   function showDCCInfoPanel(ov) {
     const data = latestDCCResults.find(r => r.move === (ov.dataset.dccMove || ov.dataset.move));
     if (data) showDCCDetails(data);
   }
-  function formatDCCScore(value) { return Number.isFinite(value) ? `${value > 0 ? '+' : ''}${Math.round(value)}` : '—'; }
+  function dccScoreType(value, detail = {}, receipt = latestDCCReceipt || {}) {
+    const bound = ['lower','upper','unknown'].includes(detail.bound) ? detail.bound : null;
+    const type = detail.scoreType || detail.type;
+    if (type === 'unknown' || type === 'q') return { type:'unknown' };
+    if (type === 'mate') {
+      const moves = Number.isSafeInteger(detail.mateIn) ? Math.abs(detail.mateIn) :
+        Number.isSafeInteger(detail.moves) && detail.moves >= 0 ? detail.moves : null;
+      const plies = Number.isSafeInteger(detail.plies) && detail.plies >= 0 ? detail.plies : null;
+      const sign = Number.isFinite(detail.mateIn) ? Math.sign(detail.mateIn) || 1 : detail.sign;
+      return [1,-1].includes(sign) && (moves !== null || plies !== null) ?
+        { type:'mate', sign, moves, plies, bound, raw:detail.raw, encoding:detail.encoding } : { type:'unknown' };
+    }
+    if (type === 'terminal' || type === 'draw' || type === 'special') return { ...detail, type };
+    if (detail.terminal && detail.fen) {
+      try {
+        const board = new Chess(detail.fen);
+        if (board.in_checkmate()) return { type:'terminal', state:'checkmate' };
+        if (board.in_draw() || board.in_stalemate()) return { type:'draw' };
+      } catch (_) {}
+    }
+    const cp = type === 'cp' && Number.isFinite(detail.cp) ? detail.cp : value;
+    if (!Number.isFinite(cp)) return { type:'unknown' };
+    if (type === 'cp') return { type:'cp', cp, bound };
+    // This exact convention is already verified by Review V4's mate fixtures.
+    // It applies only to CDB, never to an arbitrary large native score.
+    if (receipt.provider === 'CDB') return { ...(window.ChessGameReview?.decodeCdb(cp) ||
+      (Math.abs(cp)<10000 ? {type:'cp',cp} : {type:'special',raw:cp})), bound };
+    return Math.abs(cp)<10000 ? { type:'cp', cp, bound } : { type:'special', raw:cp, bound };
+  }
+  function formatDCCScore(value, detail = {}, receipt = latestDCCReceipt || {}) {
+    const score = dccScoreType(value, detail || {}, receipt);
+    const bound = score.bound === 'lower' ? '≥' : score.bound === 'upper' ? '≤' : score.bound === 'unknown' ? '?' : '';
+    if (score.type === 'cp') return bound + (score.cp>0?'+':score.cp<0?'−':'') + Math.abs(Math.round(score.cp)) + ' cp';
+    if (score.type === 'mate') return bound + (score.sign<0?'−':'') + 'M' + (score.moves ?? Math.ceil(score.plies/2)) +
+      (score.plies !== null ? ' · '+score.plies+' plies' : '');
+    if (score.type === 'terminal') return 'Checkmate';
+    if (score.type === 'draw') return 'Draw';
+    if (score.type === 'special') return bound + 'Decisive / tablebase · raw ' + score.raw;
+    return 'Unknown';
+  }
+  function decorateDCCPresentation(result) {
+    const receipt = result.receipt || {}, rawMoves = result.allMoves || [];
+    const decorateLine = line => {
+      for (const sample of line.samples || []) sample.typedScore = dccScoreType(sample.score, sample, receipt);
+      const last = line.samples?.at(-1);
+      line.endScore = dccScoreType(line.endEval, last?.typedScore || {}, receipt);
+    };
+    for (const candidate of result.candidates || []) {
+      const data = candidate.data || candidate;
+      data.rawScore = dccScoreType(data.raw, rawMoves.find(move=>move.move===data.move) || {}, receipt);
+      decorateLine(data);
+      const floor = (data.samples || []).find(sample=>Number.isFinite(sample.score)&&sample.score===data.floor);
+      data.floorScore = dccScoreType(data.floor, floor?.typedScore || {}, receipt);
+      data.metricsAreCp = !!data.samples?.length && data.samples.filter(sample=>Number.isFinite(sample.score)).every(sample=>sample.typedScore.type==='cp');
+      for (const branch of data.defense?.branches || []) decorateLine(branch);
+    }
+  }
+  function formatDCCMetric(value, data) {
+    if (!Number.isFinite(value)) return 'Unknown';
+    return (value>0?'+':value<0?'−':'') + Math.abs(Math.round(value)) + (data.metricsAreCp ? ' cp' : ' mixed score units');
+  }
   function labElement(tag, text, className) {
     const node = document.createElement(tag); if (text !== undefined) node.textContent = text;
     if (className) node.className = className; return node;
@@ -1205,7 +1283,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const path = labElement('div', undefined, 'dcc-info-path'), cursor = new Chess(fen);
     for (const sample of r.samples || []) {
       const played = DCC.play(cursor, sample.move);
-      const button = labElement('button', `${played?.san || sample.move} · ${formatDCCScore(sample.score)} cp`, 'dcc-path-move dcc-details-button');
+      const button = labElement('button', `${played?.san || sample.move} · ${formatDCCScore(sample.score, sample.typedScore || sample)}`, 'dcc-path-move dcc-details-button');
       button.type = 'button';
       const moves = (r.samples || []).filter(s => s.ply <= sample.ply).map(s => s.move);
       button.onclick = () => { pauseLab(); studyUI?.preview({ fen, moves, title: 'Sampled DCC line', analysis: lastAnalysisResult?.receipt?.fen === fen ? lastAnalysisResult : null }); };
@@ -1213,7 +1291,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     }
     if (!path.childNodes.length) path.textContent = 'No measured line available.';
     panel.appendChild(path);
-    panel.appendChild(labElement('div', `Mover POV · floor ${formatDCCScore(r.floor)} cp · variation ${formatDCCScore(r.volatility)} cp · recovery ${formatDCCScore(r.recovery)} cp. Observed ${r.observedPlies}/${r.targetPlies} plies; requested ${r.requestedPlies}; source PV depth ${r.pvDepth || 'unknown'}.`, 'dcc-info-summary'));
+    panel.appendChild(labElement('div', `Mover POV · floor ${formatDCCScore(r.floor, r.floorScore)} · variation ${formatDCCMetric(r.volatility, r)} · recovery ${formatDCCMetric(r.recovery, r)}. Observed ${r.observedPlies}/${r.targetPlies} plies; requested ${r.requestedPlies}; source PV depth ${r.pvDepth || 'unknown'}.`, 'dcc-info-summary'));
     if (r.gaps?.length) panel.appendChild(labElement('p', `Missing samples: ${r.gaps.join(', ')}. No transition is inferred across them.`));
     const contributions = labElement('details');
     contributions.appendChild(labElement('summary', 'What contributes to the DCC rank?'));
@@ -1226,7 +1304,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       defense.appendChild(labElement('p', 'These are sampled replies, not an exhaustive proof or forced-mate claim.'));
       for (const branch of r.defense.branches || []) {
         const b = new Chess(fen), names = (branch.moves || []).map(uci => DCC.play(b, uci)?.san || uci);
-        const button = labElement('button', `${names.join(' ')} · ${formatDCCScore(branch.endEval)} cp · ${branch.complete ? 'measured' : 'partial'}`, 'btn');
+        const button = labElement('button', `${names.join(' ')} · ${formatDCCScore(branch.endEval, branch.endScore)} · ${branch.complete ? 'measured' : 'partial'}`, 'btn');
         button.type = 'button'; button.onclick = () => { pauseLab(); studyUI?.preview({ fen, moves: branch.moves, title: 'Tested opponent reply' }); };
         defense.appendChild(button);
       }
@@ -1276,7 +1354,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       return;
     }
     const fen = latestDCCReceipt?.fen || game.fen(), receipt = latestDCCReceipt || {};
-    panel.appendChild(labElement('div', `★ DCC · ${receipt.engineName || receipt.provider || 'pending source'} · Raw / End: centipawns, mover POV. Move click: ${dccClickAction()} · change in Settings.`, 'dcc-policy-note'));
+    panel.appendChild(labElement('div', `★ DCC · ${receipt.engineName || receipt.provider || 'pending source'} · Raw / End: typed source scores, mover POV. Move click: ${dccClickAction()} · change in Settings.`, 'dcc-policy-note'));
     const table = labElement('table', undefined, 'dcc-analysis-table'), head = labElement('thead'), header = labElement('tr');
     for (const label of ['Pick','Move','Raw','End','Stable','Plies']) header.appendChild(labElement('th', label));
     head.appendChild(header); table.appendChild(head); const body = labElement('tbody');
@@ -1287,7 +1365,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       button.type = 'button'; button.dataset.move = r.move;
       button.setAttribute('aria-label', dccClickLabel(button.textContent)); button.title = dccClickLabel(button.textContent);
       button.onclick = () => handleDCCCandidateClick(r, fen); cell.appendChild(button); row.appendChild(cell);
-      for (const value of [formatDCCScore(r.raw), formatDCCScore(r.endEval), Number.isFinite(r.stability) ? Math.round(r.stability * 100) + '%' : '—', `${r.observedPlies}/${r.targetPlies}${r.complete ? '' : ' · ?'}`]) row.appendChild(labElement('td', value));
+      for (const value of [formatDCCScore(r.raw, r.rawScore, receipt), formatDCCScore(r.endEval, r.endScore, receipt), Number.isFinite(r.stability) ? Math.round(r.stability * 100) + '%' : '—', `${r.observedPlies}/${r.targetPlies}${r.complete ? '' : ' · ?'}`]) row.appendChild(labElement('td', value));
       body.appendChild(row);
     });
     table.appendChild(body); panel.appendChild(table);
@@ -1491,7 +1569,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     panel.appendChild(title);
     for (const move of moves.slice(0, Math.min(settings.topN || 5, 8))) {
       const row = document.createElement('div');
-      const score = move.scoreType==='q'?'Q '+Number(move.nativeQ).toFixed(3):move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
+      const displayCp = move.scoreType === 'q' ? window.ChessEvalBar.qToCp(move.nativeQ) : null;
+      const score = move.scoreType === 'q' ? displayCp === null ? '—' : `${displayCp > 0 ? '+' : ''}${displayCp} cp` : move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
+      if (move.scoreType === 'q') row.title = `LC Zero approximate cp converted from native Q ${move.nativeQ}; original Q/WDL retained`;
       const pv = move.pv?.slice(0, 5).join(' ') || '';
       row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${move.depth ? ` · depth ${move.depth}` : ''}${pv ? ' · PV ' + pv : ''}`;
       panel.appendChild(row);
@@ -1551,11 +1631,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 
 	// Raw #1 wins when two legal moves reach the same square. Compare stored
 	// numeric scores for other badges; visible mate/dot labels are not numbers.
-	const newScore = Number(score);
+	const nativeQ = detail?.scoreType === 'q' ? detail.nativeQ : null;
+	const newScore = detail?.scoreType === 'q' ? (Number.isFinite(nativeQ) && Math.abs(nativeQ) <= 1 ? nativeQ : NaN) : Number(score);
 	const existingOv = cell.querySelector('.overlay');
 	if (existingOv) {
 	  if (existingOv.dataset.rawBest === 'true' && !best) return;
-	  const oldScore = Number(existingOv.dataset.rawScore);
+	  const oldScore = existingOv.dataset.rawScore === '' ? NaN : Number(existingOv.dataset.rawScore);
 	  if (!best && Number.isFinite(oldScore) && (!Number.isFinite(newScore) || oldScore >= newScore)) return;
 	  existingOv.remove();              // remove the old, keep going to draw new
 	}
@@ -1565,11 +1646,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	ov.dataset.move = move;
 	ov.dataset.rawScore = Number.isFinite(newScore) ? String(newScore) : '';
 	ov.dataset.rawBest = String(!!best);
-	const num = parseInt(score, 10);
-	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType==='q'?'Q '+Number(detail.nativeQ).toFixed(3):detail?.scoreType === 'mate' ? `#${detail.mateIn}` : (detail?.bound==='lower'?'≥':detail?.bound==='upper'?'≤':'')+(num>0?`+${num}`:String(num));
-	ov.title = `${source} ${detail?.scoreType==='q'?'native neural Q '+detail.nativeQ:detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
+	const num = detail?.scoreType === 'q' ? window.ChessEvalBar.qToCp(nativeQ) : parseInt(score, 10);
+	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType==='q' ? (num === null ? '—' : (num > 0 ? '+' : '') + num) : detail?.scoreType === 'mate' ? `#${detail.mateIn}` : (detail?.bound==='lower'?'≥':detail?.bound==='upper'?'≤':'')+(num>0?`+${num}`:String(num));
+	ov.title = `${source} ${detail?.scoreType==='q' ? (num === null ? 'evaluation unavailable' : 'approximately '+num+' cp, converted from native neural Q '+nativeQ) : detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
 
-	const badgeClass = detail?.scoreType==='q'?(Math.abs(detail.nativeQ)<0.05?'zero':detail.nativeQ>0?'positive':'negative'):Math.abs(num) <= 20 ? 'zero'
+	const badgeClass = detail?.scoreType==='q' ? (num === null || Math.abs(num) <= 20 ? 'zero' : num > 0 ? 'positive' : 'negative') : Math.abs(num) <= 20 ? 'zero'
 					: num > 0 ? 'positive'
 					: 'negative';
 
@@ -2028,7 +2109,7 @@ function jumpTo(i){
       const fen = replay.fen(), uci = normalizeUci(move);
       const data = dccMoveAnnotations[fen]?.find(r => r.move === uci);
       const parts = [];
-      if (data) parts.push(`CDB ${formatDCCScore(data.raw)} cp; DCC rank ${Number(data.dccScore).toFixed(2)}; ${data.status}; mover POV`);
+      if (data) parts.push(`Source ${formatDCCScore(data.raw, data.rawScore)}; DCC rank ${Number(data.dccScore).toFixed(2)}; ${data.status}; mover POV`);
       const decision = simExperiments.flatMap(run => run.trace).find(row => row.fen === fen && row.move === uci);
       if (decision) parts.push(`Sim ${decision.policy || decision.engine || 'recorded'}; CDB ${decision.raw_best}; DCC ${decision.dcc_choice}; coverage ${decision.coverage}`);
       const timing = workspace.pgnTime(index, move, fen); if (timing) parts.push(timing);
@@ -2466,7 +2547,7 @@ function jumpTo(i){
       const role=window.ChessEngineRegistry?.roleFor(mode)||(mode==='berserk'?'BER':'SF'),name=child.engine?.name||window.ChessEngineRegistry?.label(mode)||mode;
       positionEval.updateSource(fen,best.score,role,best.depth,uciToSan(fen,moves[0].move),!!child.limits?.searchMoves?.length,'deep',
         {variant:mode==='sf-full'?'Full':mode==='sf-lite'?'Lite':child.engine?.variant||mode,engineName:name});
-      recordSourceMoves(role,fen,{moves,source:name},{engineName:name,engineId:child.engine?.id||mode,
+      recordSourceMoves(role,fen,{moves,source:name},{engineName:name,engineId:child.engine?.id||mode,engineMode:mode,
         depth:child.linesDepth??child.depth??null,nodes:child.nodes??null,visits:child.visits??null,
         schema:'chessbest-engine-evidence/1',sessionId:snapshot.sessionId||null,jobId:child.jobId||snapshot.jobId||null,generation:snapshot.generation??analysisGeneration,engine:child.engine,requestedBudget:child.requestedBudget||child.limits,actualSearchMs:child.actualSearchMs??child.searchElapsedMs??null,queueWaitMs:child.queueWaitMs,initializationMs:child.initializationMs,stopReason:child.stopReason||null,
         restricted:!!child.limits?.searchMoves?.length,providerPositionContext:(child.limits?.history||(child.positionHistory&&Array.isArray(child.positionHistory.moves))||(snapshot.positionHistory&&Array.isArray(snapshot.positionHistory.moves))||search.history)?'move-history':'fen-only'});
@@ -2498,7 +2579,7 @@ function jumpTo(i){
         unboundedTie:moves.length<new Chess(fen).moves().length&&moves[0].score-moves.at(-1).score<=10};
       provider.analyzeDCC(fen,root,{...settings},controller.signal,{deadline:performance.now()+2000,probeMovetime:100}).then(analysis=>{
         if(!current()||controller.signal.aborted)return;
-        Object.assign(analysis.receipt,{provider:role,engineName:name,engineId:child.engine?.id||mode,rootNodes:child.nodes||0});
+        Object.assign(analysis.receipt,{provider:role,engineName:name,engineId:child.engine?.id||mode,engineMode:mode,rootNodes:child.nodes||0});
         return runDCCLookahead(moves,fen,analysis);
       }).catch(error=>{if(error.name!=='AbortError'&&current())positionEval.updateDCC(fen,null,name,'unavailable');})
         .finally(()=>{provider.destroy();if(localProvider===provider)localProvider=null;if(localController===controller)localController=null;});
@@ -4111,6 +4192,7 @@ async function launchFromSimModal() {
           setBoardThinking(false); renderSimDecision(decision.pick, decision.fen);
           if (decision.analysis) {
             latestDCCResults = decision.analysis.candidates.map(c => c.data); latestDCCReceipt = decision.analysis.receipt;
+            decorateDCCPresentation(decision.analysis);
             dccMoveAnnotations[decision.fen] = latestDCCResults.slice(); renderDCCView();
           }
           updateSimStatus(`${SIM.label(decision.pick.policy)} · ${decision.pick.provider}${decision.pick.fallback_reason ? ' fallback' : ''} · ${uciToSan(decision.fen, decision.pick.move)}`);
@@ -4339,6 +4421,7 @@ async function launchFromSimModal() {
           positionEval.update(fen, analysis.allMoves[0]?.score);
           latestDCCResults = analysis.candidates.map(candidate => candidate.data).filter(Boolean);
           latestDCCReceipt = analysis.receipt;
+          decorateDCCPresentation(analysis);
           renderDCCView();
           if (snapshot.simSpeed > 0) {
             analysis.allMoves.slice(0, snapshot.topN || 5).forEach((m, idx) => annotateMove(m.move, m.score, idx === 0));
