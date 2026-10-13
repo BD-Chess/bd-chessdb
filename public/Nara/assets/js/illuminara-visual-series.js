@@ -54,6 +54,7 @@
   let language = valid(query) ? query : valid(stored) ? stored : 'en';
   const phone = Boolean(navigator.userAgentData?.mobile) ||
     /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent || '');
+  const iPhone = /iPhone/i.test(navigator.userAgent || '');
   const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const reducedMotion = () => Boolean(motion?.matches);
@@ -63,7 +64,8 @@
   let origin = null, position = null, refreshPending = false, immersive = false;
   let tour = false, playing = false, tourEnded = false, tourTimer = null, hideTimer = null;
   let outgoingTimer = null, lastSwipe = 0, pendingTap = null, pendingDismiss = null, suppressClickUntil = 0;
-  let touchStart = null, preload = null, preloadKey = '';
+  let touchStart = null, backgroundLoad = null, cachePlan = [];
+  const imageCache = new Map();
   const TOUR_MS = 8000;
   let outgoing = null, message = null, messageText = null, retry = null;
   let savedFocus = null;
@@ -93,6 +95,8 @@
       (typeof connection?.downlink === 'number' && connection.downlink > 0 && connection.downlink < 1.5);
   }
   function chooseQuality(o) {
+    // The iPhone viewer always uses the original 4K composition, including its controls view.
+    if (iPhone) return '4k';
     if (qualityMode !== 'auto') return qualityMode;
     if (constrainedNetwork()) return 'hd';
     const size = dimensions(cards[active], 'hd', o);
@@ -136,6 +140,8 @@
     stage.dataset.quality = displayed?.quality || '';
     stage.dataset.tour = tour ? (playing ? 'playing' : tourEnded ? 'ended' : 'paused') : 'off';
     stage.dataset.loading = String(Boolean(pendingLoad));
+    stage.dataset.cacheRetained = String([...imageCache.values()].filter(entry => entry.quality === '4k').length);
+    stage.dataset.cacheReady = String([...imageCache.values()].filter(entry => entry.quality === '4k' && entry.state === 'ready').length);
   }
   function setOverlayHidden(hidden) {
     const overlays = viewer.querySelectorAll('.vs-viewer-top,.vs-viewer-foot,#vs-prev,#vs-next');
@@ -173,6 +179,8 @@
       button.title = w[mode === 'auto' ? 'auto' : mode];
     });
     const nextMode = qualityMode === 'auto' ? 'hd' : qualityMode === 'hd' ? '4k' : 'auto';
+    qualityButton.hidden = iPhone;
+    qualityButton.closest('.vs-control-field').hidden = iPhone;
     qualityButton.textContent = nextMode === 'hd' ? w.toHd : nextMode === '4k' ? w.toFourK : w.toAuto;
     qualityButton.setAttribute('aria-pressed', String(qualityMode !== 'auto'));
     qualityButton.setAttribute('aria-label', w.quality + ': ' + qualityMode.toUpperCase() + '. ' + qualityButton.textContent);
@@ -226,17 +234,28 @@
   }
   function clearTourTimer() { clearTimeout(tourTimer); tourTimer = null; }
   function cancelLoad() { pendingLoad?.cancel(); pendingLoad = null; }
-  function loadImage(src) {
-    return new Promise(resolve => {
-      const image = new Image(); image.decoding = 'async';
-      let done = false, timer = null;
+  function releaseEntry(entry) {
+    if (!entry) return;
+    if (backgroundLoad === entry) backgroundLoad = null;
+    if (imageCache.get(entry.src) === entry) imageCache.delete(entry.src);
+    entry.cancel();
+  }
+  function createEntry(src, quality, priority) {
+    const image = new Image(); image.decoding = 'async'; image.fetchPriority = priority;
+    const entry = { src, quality, image, state: 'pending', promise: null, cancel: null };
+    entry.promise = new Promise(resolve => {
+      let done = false, decoding = false, timer = null;
       const settle = ok => {
         if (done) return; done = true; clearTimeout(timer);
         image.onload = null; image.onerror = null;
+        entry.state = ok ? 'ready' : 'failed';
+        if (!ok) image.removeAttribute('src');
+        updateState();
         resolve(ok ? image : null);
       };
-      pendingLoad = { image, cancel: () => { settle(false); image.removeAttribute('src'); } };
+      entry.cancel = () => { settle(false); image.removeAttribute('src'); };
       image.onload = async () => {
+        if (done || decoding) return; decoding = true;
         try { if (image.decode) await image.decode(); } catch { settle(false); return; }
         settle(image.naturalWidth > 0);
       };
@@ -244,6 +263,59 @@
       timer = setTimeout(() => settle(false), 18000);
       image.src = src;
       if (image.complete && image.naturalWidth > 0) image.onload();
+    });
+    imageCache.set(src, entry);
+    return entry;
+  }
+  function loadImage(src, quality, force = false) {
+    let entry = imageCache.get(src);
+    if (force || entry?.state === 'failed') { releaseEntry(entry); entry = null; }
+    const alreadyReady = entry?.state === 'ready';
+    if (!entry) entry = createEntry(src, quality, 'high');
+    // Promote an in-flight prefetch rather than starting the same download again.
+    if (backgroundLoad === entry) backgroundLoad = null;
+    entry.image.fetchPriority = 'high';
+    pendingLoad = { image: entry.image, cancel: () => { if (entry.state === 'pending') releaseEntry(entry); } };
+    return entry.promise.then(async image => {
+      if (!image) return null;
+      // Safari may evict decoded pixels; decode again before presenting a retained image.
+      try { if (alreadyReady && image.decode) await image.decode(); } catch { releaseEntry(entry); return null; }
+      return image;
+    });
+  }
+  function stopPrefetch() { releaseEntry(backgroundLoad); }
+  function clearCache() {
+    backgroundLoad = null; cachePlan = [];
+    for (const entry of [...imageCache.values()]) releaseEntry(entry);
+    updateState();
+  }
+  function prepareCacheWindow(foregroundSrc = '') {
+    const o = selectedOrientation(), other = o === 'portrait' ? 'landscape' : 'portrait';
+    const neighbor = delta => {
+      const index = active + delta;
+      return tour ? (index >= 0 && index < cards.length ? index : null) : (index + cards.length) % cards.length;
+    };
+    const forward = neighbor(1), backward = neighbor(-1);
+    const variants = [[active, o], [active, other], [forward, o], [backward, o], [forward, other], [backward, other]];
+    const seen = new Set();
+    cachePlan = variants.filter(([index]) => index !== null).map(([index, orientation]) =>
+      sourceFor(cards[index], '4k', orientation)).filter(src => src && !seen.has(src) && seen.add(src));
+    // Only these six 4K assets and the current non-iPhone HD request retain Image references.
+    const keep = new Set(cachePlan);
+    if (foregroundSrc) keep.add(foregroundSrc);
+    for (const entry of [...imageCache.values()]) if (!keep.has(entry.src)) releaseEntry(entry);
+    updateState();
+  }
+  function prefetchWindow() {
+    if (!viewer.open || document.hidden || pendingLoad || !displayed || displayed.index !== active || backgroundLoad) return;
+    const src = cachePlan.find(path => !imageCache.has(path));
+    if (!src) return;
+    const entry = createEntry(src, '4k', 'low'); backgroundLoad = entry;
+    updateState();
+    entry.promise.then(() => {
+      if (backgroundLoad !== entry) return;
+      backgroundLoad = null;
+      prefetchWindow();
     });
   }
   function scheduleTour() {
@@ -256,20 +328,6 @@
       go(active + 1);
     }, TOUR_MS);
   }
-  function cancelPreload() {
-    if (preload) { preload.onload = null; preload.onerror = null; preload.removeAttribute('src'); }
-    preload = null; preloadKey = '';
-  }
-  function prefetchNext() {
-    if (!viewer.open || document.hidden || constrainedNetwork() || !displayed || displayed.index === cards.length - 1) {
-      cancelPreload(); return;
-    }
-    const card = cards[displayed.index + 1], src = sourceFor(card, 'hd', selectedOrientation());
-    if (!src || src === preloadKey) return;
-    cancelPreload();
-    preloadKey = src; preload = new Image(); preload.decoding = 'async';
-    preload.src = src;
-  }
   async function updateViewer(force = false) {
     if (!viewer.open || !cards.length || document.hidden) return;
     const o = selectedOrientation(), desired = chooseQuality(o);
@@ -281,6 +339,8 @@
     requestedKey = key;
     const token = ++loadToken, index = active;
     cancelLoad(); clearTourTimer();
+    if (backgroundLoad?.src !== src) stopPrefetch();
+    prepareCacheWindow(src);
     stage.classList.add('vs-loading'); stage.classList.remove('vs-image-error');
     surface.setAttribute('aria-busy', 'true');
     message.hidden = true;
@@ -290,13 +350,13 @@
     // renderControls preserves the old artwork's true metadata; mark it busy until the new frame commits.
     status.textContent = words[language].loading;
     let actual = desired, fallback = false, finalSrc = src;
-    const load = loadImage(src);
+    const load = loadImage(src, desired, force);
     updateState();
     let image = await load;
     if (token !== loadToken || !viewer.open) return;
-    if (!image && desired === '4k') {
+    if (!image && desired === '4k' && !iPhone) {
       actual = 'hd'; fallback = true; finalSrc = sourceFor(cards[index], 'hd', o);
-      image = await loadImage(finalSrc);
+      image = await loadImage(finalSrc, 'hd', force);
     }
     if (token !== loadToken || !viewer.open) return;
     pendingLoad = null;
@@ -329,7 +389,7 @@
       outgoingTimer = setTimeout(() => { outgoing.hidden = true; outgoing.removeAttribute('src'); }, 650);
     } else photo.classList.add('vs-photo-ready');
     renderControls(); updateState();
-    prefetchNext(); scheduleTour();
+    prepareCacheWindow(finalSrc); prefetchWindow(); scheduleTour();
   }
   function setLanguage(value, changeURL) {
     if (!valid(value)) return;
@@ -389,7 +449,7 @@
     if (!viewer.open || document.hidden) return;
     tour = true; tourEnded = false; viewer.classList.add('vs-tour'); playing = true;
     renderControls(); surface.focus({ preventScroll: true }); showControls();
-    if (displayed?.index === active && !pendingLoad) scheduleTour();
+    if (displayed?.index === active && !pendingLoad) { prepareCacheWindow(displayed.src); prefetchWindow(); scheduleTour(); }
     else updateViewer();
   }
   function open(button, isTour = false) {
@@ -397,7 +457,7 @@
     const index = isTour ? 0 : Number(button.dataset.open);
     if (!Number.isInteger(index) || index < 0 || index >= cards.length) return;
     origin = button; position = { x: window.scrollX, y: window.scrollY };
-    active = index; qualityMode = 'auto'; orientationMode = button.dataset.heroComposition || 'auto';
+    active = index; qualityMode = iPhone ? '4k' : 'auto'; orientationMode = button.dataset.heroComposition || 'auto';
     galleryOrientation = resolveAutomaticOrientation();
     tour = isTour; playing = isTour && !reducedMotion(); tourEnded = false;
     immersive = false; displayed = null; requestedKey = ''; savedFocus = null;
@@ -405,7 +465,7 @@
     viewer.classList.toggle('vs-tour', tour);
     photo.hidden = false;
     clearPendingTap(); suppressClickUntil = 0;
-    if (!viewer.showModal) { location.href = sourceFor(cards[index], 'hd', selectedOrientation()); return; }
+    if (!viewer.showModal) { location.href = sourceFor(cards[index], iPhone ? '4k' : 'hd', selectedOrientation()); return; }
     try { viewer.showModal(); } catch { origin = null; position = null; return; }
     root.classList.add('vs-lightbox-open'); syncOverlays();
     title.textContent = ''; caption.textContent = '';
@@ -427,7 +487,7 @@
     if (document.fullscreenElement === stage) { try { document.exitFullscreen?.()?.catch(() => {}); } catch {} }
   }
   function cleanup() {
-    ++loadToken; requestedKey = ''; cancelLoad(); cancelPreload();
+    ++loadToken; requestedKey = ''; cancelLoad(); clearCache();
     clearTourTimer(); clearPendingTap(); clearTimeout(hideTimer); clearTimeout(outgoingTimer);
     hideTimer = null; outgoingTimer = null; suppressClickUntil = 0; immersive = false; tour = false; playing = false;
     viewer.classList.remove('vs-immersive', 'vs-tour', 'vs-tour-controls-hidden');
@@ -452,6 +512,7 @@
     });
   });
   qualityButton.addEventListener('click', () => {
+    if (iPhone) return;
     qualityMode = qualityMode === 'auto' ? 'hd' : qualityMode === 'hd' ? '4k' : 'auto';
     showControls(); updateViewer();
   });
@@ -521,12 +582,12 @@
   document.addEventListener('visibilitychange', () => {
     if (!viewer.open) return;
     if (document.hidden) {
-      pauseTour(); cancelPreload();
+      pauseTour(); stopPrefetch();
       if (pendingLoad) { ++loadToken; cancelLoad(); requestedKey = ''; stage.classList.remove('vs-loading'); surface.setAttribute('aria-busy', 'false'); }
       renderControls(); updateState();
-    } else { updateViewer(); prefetchNext(); }
+    } else { updateViewer(); prefetchWindow(); }
   });
-  connection?.addEventListener?.('change', () => { if (constrainedNetwork()) cancelPreload(); if (viewer.open) updateViewer(); });
+  connection?.addEventListener?.('change', () => { if (viewer.open) updateViewer(); });
   motion?.addEventListener?.('change', () => {
     if (reducedMotion()) { if (tour) pauseTour(); outgoing.hidden = true; photo.classList.add('vs-photo-ready'); }
   });
