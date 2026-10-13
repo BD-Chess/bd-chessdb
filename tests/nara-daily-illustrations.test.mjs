@@ -51,7 +51,7 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
   assert.equal(fs.readdirSync(path.join(n,'assets/img/daily/2026-10-05')).filter(f=>f.endsWith('.webp')||f.endsWith('.png')).length,0,'old flat Oct5 assets must be removed');
 });
 
-test('committed Daily and monthly R3 contain the retained or final R3 figures in each language, nowhere else',()=>{
+test('Daily links Oct 5 directly while monthly retains its R3 image figures in each language',()=>{
   const m=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json')));
   const en=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-05.json')));
   const sl=JSON.parse(fs.readFileSync(path.join(n,'daily/translations/sl/2026-10-05.json')));
@@ -61,6 +61,12 @@ test('committed Daily and monthly R3 contain the retained or final R3 figures in
     assert.ok(imagesFrom(html)>=6,file);
     assert.ok(html.includes('data-language-content="sl" lang="sl" hidden'));
     assert.ok(html.includes('assets/js/nara-daily-resolution.js?v=1'));
+    if(file==='Nara-AI-daily.html'){
+      assert.ok(html.includes('Nara-AI-2026-10-05-format-R1.html'),'Daily links directly to the standalone Oct 5 edition');
+      assert.ok(html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'),'Daily links to the Oct 5 archive lineage');
+      for(const lang of ['en','sl'])assert.equal(html.includes('<article class="story" lang="'+lang+'" data-story-id="'+storyId+'"'),false,'Oct 5 must not be embedded as a collapsed story in Daily '+lang);
+      continue;
+    }
     for(const lang of ['en','sl']){
       const a=article(html,lang),sections=a.match(/<section><h2>0[1-8] · [^<]+<\/h2>[\s\S]*?<\/section>/g);
       assert.equal(sections?.length,8,file+' '+lang);
@@ -80,9 +86,19 @@ test('normal renderer reconstruction preserves the current figures without touch
   const {records}=loadRecords(root),translations=loadTranslations(root,records),m=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json')));
   const before=fs.readFileSync(path.join(n,'daily/records/2026-10-05.json'));
   const slBefore=fs.readFileSync(path.join(n,'daily/translations/sl/2026-10-05.json'));
-  for(const page of [latestPage(records,'2026-10',translations,root),monthlyPage('2026-10',records.filter(r=>r.date.startsWith('2026-10')),translations,root)]){
-    assert.ok(imagesFrom(page)>=m.images.length*2);
-    assert.equal(imagesFrom(article(page,'en')),m.images.length);assert.equal(imagesFrom(article(page,'sl')),m.images.length);
+  const pages=[
+    {daily:true,html:latestPage(records,'2026-10',translations,root)},
+    {daily:false,html:monthlyPage('2026-10',records.filter(r=>r.date.startsWith('2026-10')),translations,root)}
+  ];
+  for(const page of pages){
+    assert.ok(imagesFrom(page.html)>=m.images.length*2);
+    if(page.daily){
+      assert.ok(page.html.includes('Nara-AI-2026-10-05-format-R1.html'));
+      assert.ok(page.html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'));
+      for(const lang of ['en','sl'])assert.equal(page.html.includes('<article class="story" lang="'+lang+'" data-story-id="'+storyId+'"'),false,'Oct 5 is a direct edition link in Daily '+lang);
+      continue;
+    }
+    assert.equal(imagesFrom(article(page.html,'en')),m.images.length);assert.equal(imagesFrom(article(page.html,'sl')),m.images.length);
   }
   assert.equal(h(fs.readFileSync(path.join(n,'daily/records/2026-10-05.json'))),h(before));
   assert.equal(h(fs.readFileSync(path.join(n,'daily/translations/sl/2026-10-05.json'))),h(slBefore));
