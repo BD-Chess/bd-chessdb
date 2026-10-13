@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20261012-review4">
   <link rel="stylesheet" href="css/8zc-deep.css?v=20261013-r11">
+  <link rel="stylesheet" href="css/engine-storage.css?v=20261013-r12">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
 
@@ -272,6 +273,12 @@
         <div class="analysis-status-row" aria-label="Analysis status"><small id="analysisCpuStatus" hidden></small><small id="analysisHostNote" class="analysis-host-note" hidden></small><small data-berserk-status role="status" aria-live="polite" hidden></small><small id="analysisDccModeNote" hidden></small><span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span><span role="status" aria-live="polite" id="dccProgress"></span></div>
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
         <div class="dcc-settings-group">
+          <details id="engineStorage" class="engine-storage"><summary>Engine storage</summary>
+            <p class="setting-note">Save optional engines once for offline use. Saved files and a prepared engine in memory are separate. Reopening can still take time to prepare WASM or the neural model.</p>
+            <div data-engine-rows></div><small data-engine-usage></small>
+            <p class="setting-note">The quota estimate is shared with other apps on this origin. Browsers may evict local files; Repair restores missing files without clearing games or Studies.</p>
+            <button type="button" class="btn" data-engine-persist>Request persistent storage</button><p class="setting-note" data-engine-notice role="status" aria-live="polite"></p>
+          </details>
           <details class="analysis-network-advanced"><summary>Advanced · engine networks</summary><p>Berserk uses the original author's network automatically. A local override is available for advanced use.</p><div class="analysis-network-control"><label>Local Berserk 14 network override<input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Advanced local Berserk network override"></label><button type="button" data-berserk-remove hidden>Clear cached NNUE</button><small data-berserk-status role="status"></small></div><a href="engines/PUBLIC_FREE_OPERATIONS.md" target="_blank" rel="noopener">Public engine downloads, source and licenses</a></details>
           <div class="dcc-settings-title">Local engine cards</div>
           <label for="settingSFEngine">Stockfish card:</label><select id="settingSFEngine"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option></select>
@@ -744,11 +751,14 @@
   <script src="js/8zc-review-core.js?v=20261012-review4"></script>
   <script src="js/8zc-review-presentation.js?v=20261012-review4"></script>
   <script src="js/8zc-deep-engine.js?v=20261013-r9"></script>
+  <script src="js/8zc-sha256.js?v=20261013-r12"></script>
+  <script src="js/8zc-engine-assets-manifest.js?v=20261013-r12"></script>
+  <script src="js/8zc-engine-assets.js?v=20261013-r12"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
   <script src="js/8zc-engine-registry.js?v=20261013-r8"></script>
-  <script src="js/8zc-analysis-session.js?v=20261013-r9"></script>
+  <script src="js/8zc-analysis-session.js?v=20261013-r12"></script>
   <script src="js/8zc-deep-ui.js?v=20261013-r11"></script>
-  <script src="js/8zc-engine-cards.js?v=20261013-r11"></script>
+  <script src="js/8zc-engine-cards.js?v=20261013-r12"></script>
   <script src="js/8zc-analysis-controls.js?v=20261013-r8"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
@@ -762,6 +772,7 @@
   <script src="js/8zc-review-ui.js?v=20261012-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261013-settings-r1"></script>
   <script src="pwa.js"></script>
+  <script src="js/8zc-engine-storage-ui.js?v=20261013-r12"></script>
   <script src="js/app-mobile.js?v=20261013-r9"></script>
 
 </body>

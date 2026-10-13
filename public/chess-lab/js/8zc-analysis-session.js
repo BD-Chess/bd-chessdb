@@ -184,7 +184,7 @@
   };
   // Reusable single-engine adapter for matched DCC continuation probes.
   // It uses the same pinned engine/network and actual thread policy as Deep.
-  function backendFor(mode, Chess) {
+  function rawBackendFor(mode, Chess) {
     if(['reckless','lc0'].includes(mode))return browserBackend(mode,Chess);
     if(!['sf-full','berserk'].includes(mode))return Deep;
     return {create(){
@@ -200,6 +200,41 @@
         analyze:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.analyze(opts);},
         stop:()=>engine.stop(),destroy:()=>engine.destroy()};
     }};
+  }
+  // Persistent bytes and one prepared worker are separate lifetimes. All entry
+  // points (cards, Deep and explicit local probes) use this same storage owner.
+  function cachedEngine(mode,engine){
+    const store=root.document&&root.ChessEngineAssetStore;if(!store)return engine;
+    let preparation=null,metrics=null,release=null,closed=false,searches=0;
+    const controller=new AbortController();
+    async function prepare(opts={}){
+      if(closed||opts.signal?.aborted)throw abortError();
+      const cancel=()=>controller.abort();opts.signal?.addEventListener('abort',cancel,{once:true});
+      try{
+        if(!preparation)preparation=(async()=>{
+          release=await store.acquireUsage(mode,controller.signal);
+          metrics=await store.prepare(mode,{signal:controller.signal,onProgress:opts.onProgress});
+          if(closed){release();throw abortError();}
+          // Storage phases have completed; the original adapter now initializes WASM/NN.
+          opts.onProgress?.({phase:'preparing',loaded:0});
+          return engine.prepare?.({...opts,signal:controller.signal,onProgress:value=>opts.onProgress?.({...value,phase:metrics?.assetCacheHit?'local':value.phase})});
+        })().catch(e=>{release?.();release=null;preparation=null;throw e;});
+        return await preparation;
+      }finally{opts.signal?.removeEventListener('abort',cancel);}
+    }
+    function destroy(){if(closed)return;closed=true;controller.abort();engine.destroy();release?.();release=null;}
+    return {prepare,async analyze(opts={}){
+      await prepare(opts);if(closed||opts.signal?.aborted)throw abortError();
+      const reused=searches++>0,result=await engine.analyze(opts);
+      const actualMetrics={...metrics,assetSource:reused?'prepared-memory':metrics?.assetCacheHit?'verified-local':'online-files',
+        ...(reused?{assetLoadMs:0,integrityMs:0,downloadedBytes:0,downloadWaitMs:0,localReadMs:0,localBytes:0}:{})};
+      return {...result,workerReused:result.workerReused??reused,assetCacheHit:!reused&&!!metrics?.assetCacheHit,engineAssetStorage:actualMetrics,
+        assetLoadMs:actualMetrics.assetLoadMs??0,integrityMs:actualMetrics.integrityMs??0};
+    },stop(){controller.abort();engine.stop();},destroy};
+  }
+  function backendFor(mode,Chess){
+    const backend=rawBackendFor(mode,Chess);
+    return {create(config){return cachedEngine(mode,backend.create(config));}};
   }
   // Small lazy bridge. Models, WASM and optional modules load only on analysis.
   function browserBackend(mode,Chess){
@@ -312,7 +347,7 @@
                 return worker;
               };
             }
-            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig);
+            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : cachedEngine(child.id,browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig));
             const childOptions = Object.assign({},limits,{signal:undefined,onInfo:(_info,value) => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.snapshot=value; child.status='searching';
@@ -366,5 +401,16 @@
   }
   root.addEventListener?.('pagehide',()=>{++generation;for(const x of instances)x.stop();});
   root.document?.addEventListener('visibilitychange',()=>{if(root.document.hidden){++generation;for(const x of instances)x.stop();}});
+  root.ChessEngineAssetStore?.setNetworkProvider({async ensure(signal,onProgress){
+      await ensureBerserkNetwork(signal,onProgress);
+      // Browser eviction can remove IDB after RAM was prepared. Re-save the verified
+      // original buffer without downloading/copying it into a second asset store.
+      if(berserkNetwork){await queueNetworkWrite('put',{id:BERSERK_NET.sha256,buffer:berserkNetwork.buffer,name:BERSERK_NET.name});networkPersistent=true;}
+    },remove:clearBerserkNetwork,
+    async check(verify){
+      // Re-read actual IDB bytes; a RAM-ready flag cannot prove persistent storage.
+      try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;
+        if(verify)await verifyNetwork(record.buffer);return true;}catch(_){return false;}
+    }});
   return {create,configure,getSettings,capabilities,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
 });

@@ -11,7 +11,7 @@
   const mobileHint = document.getElementById('appPwaHint');
   const mobileStatus = document.getElementById('appPwaStatus');
   const mobileUpdate = document.getElementById('appPwaUpdate');
-  const workerURL = new URL('sw.js', document.baseURI).href;
+  const workerURL = new URL('engine-sw.js', document.baseURI).href;
   const native = !!window.Capacitor?.isNativePlatform?.();
   let registration, installPrompt, reloadRequested = false, reloading = false;
   const standalone = () => window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -77,7 +77,7 @@
   });
   window.addEventListener('load', async () => {
     try {
-      registration = await navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' });
+      registration = await navigator.serviceWorker.register('engine-sw.js', { scope: './', updateViaCache: 'none' });
       const watch = worker => worker?.addEventListener('statechange', render);
       watch(registration.installing);
       registration.addEventListener('updatefound', () => watch(registration.installing));

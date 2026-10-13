@@ -15,7 +15,8 @@
     const now=()=>root.performance?.now?.()??Date.now();
     const results=new Map(),jobs=new Map(),queue=[],attempts=new Map();
     let serial=0,batch=null,destroyed=false,draining=false,preparedSlot=null;
-    const reusable=mode=>['sf-lite','sf-full','berserk'].includes(mode);
+    // Every retained adapter resets its actual search state; one slot caps mobile RAM.
+    const reusable=mode=>['sf-lite','sf-full','berserk','reckless','lc0'].includes(mode);
     let cooldownUntil=0,pumpTimer=null,lastPosition=null;
     const retired=new WeakSet();
     function dispose(engine){if(!engine||retired.has(engine))return;retired.add(engine);engine.destroy();if(mobile())cooldownUntil=now()+(host.teardownGraceMs??350);}
@@ -38,6 +39,7 @@
         requestedDepth:null,requestedTimeMs:job.options.movetime,requestedBudget:{movetime:job.options.movetime,depth:null,nodes:null},
         queueWaitMs:Math.max(0,(job.loadingStarted??now())-job.queuedAt),
         initializationMs:Math.max(0,(job.analyzeStarted??now())-(job.loadingStarted??now()))+(Number(value.initializationMs)||0),
+        workerInitializationMs:Math.max(0,(job.analyzeStarted??now())-(job.loadingStarted??now())-(Number(value.assetLoadMs)||0))+(Number(value.initializationMs)||0),
         actualSearchMs,stopReason:value.stopReason||(status==='stopped'?job.stopReason||'user-stop':status==='complete'?'time-budget':null)};
     }
     function cancelFollow(){++followSerial;clearTimeout(followTimer);followTimer=null;}
@@ -78,7 +80,7 @@
       return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!context().canAnalyze||!available().includes(mode)),
         title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':
-          job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):
+          job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='local'?'Loading locally':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):
           attempt?'Stopped · '+attempt+(result?.lines?.length?' · retained result':' · no result'):
           result?.error?'Error: '+result.error:result?.stopped?'Stopped · '+(metrics||'partial'):metrics||null,
         variant:role==='SF'?variant:null};
