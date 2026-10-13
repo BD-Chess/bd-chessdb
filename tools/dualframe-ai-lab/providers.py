@@ -46,12 +46,12 @@ def validate_remote_url(url, allowed_hosts, resolve=True):
 def parse_response(status, payload):
     if status == 429:
         raise ProviderError('PROVIDER_RATE_LIMIT')
+    if not isinstance(payload, dict):
+        raise ProviderError('PROVIDER_INVALID_RESPONSE')
     if status in (420, 423):
         return {'state': 'pending', 'request_id': payload.get('request_id'), 'status_url': payload.get('status_url')}
     if status not in (200, 202):
         raise ProviderError('PROVIDER_HTTP_ERROR')
-    if not isinstance(payload, dict):
-        raise ProviderError('PROVIDER_INVALID_RESPONSE')
     result = payload.get('result') or {}
     if not isinstance(result, dict):
         raise ProviderError('PROVIDER_INVALID_RESPONSE')

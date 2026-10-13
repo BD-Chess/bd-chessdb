@@ -43,6 +43,15 @@ test('wrong originals, unknown provenance, geometry, review scale and demo never
 test('blind assignment is reproducible and reverses over a bounded set of persisted seeds',async()=>{
   const orders=new Set();for(let i=0;i<12;i++){const one=await blindOrder(pair.pair_id,String(i),['x','y']);assert.deepEqual(one,await blindOrder(pair.pair_id,String(i),['x','y']));orders.add(one.join(','));}assert.equal(orders.size,2);assert.equal(await sha256('abc'),'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
 });
+test('either demo candidate, synthetic originals, malformed hashes and non-finite dimensions are excluded',()=>{
+  const out={sha256:hash,width:1080,height:1920,source_sha256:hash,lineage_status:'SOURCE_VERIFIED',direction:'portrait',target_ratio:'9:16',review_scale_policy:'equal-canvas-v1',provider:'bria'};
+  for(const patch of [{origin:'demo'},{provider:'demo'},{resolution_origin:'simulation'},{width:undefined},{height:NaN},{width:0},{height:-1},{width:'1080'},{sha256:undefined},{sha256:'bad'}]){
+    assert.equal(comparisonEligibility(pair,out,{...out,...patch}).eligible,false,JSON.stringify(patch));
+    assert.equal(comparisonEligibility(pair,{...out,...patch},out).eligible,false);
+  }
+  assert.equal(comparisonEligibility({...pair,original:{...pair.original,demo_fixture:true}},out,out).eligible,false);
+  assert.equal(comparisonEligibility(pair,out,out).eligible,true);
+});
 test('magic-byte geometry rejects corruption and massive PNG before decoding',()=>{
   const bytes=new Uint8Array(24);bytes.set([137,80,78,71,13,10,26,10]);new DataView(bytes.buffer).setUint32(16,960);new DataView(bytes.buffer).setUint32(20,540);assert.equal(sniff(bytes),'image/png');assert.deepEqual(headerSize(bytes),{width:960,height:540,mime:'image/png'});new DataView(bytes.buffer).setUint32(16,MAX_PIXELS);assert.throws(()=>headerSize(bytes),/IMAGE_PIXEL_LIMIT/);assert.throws(()=>sniff(new Uint8Array(20)),/UNSUPPORTED_OR_CORRUPT/);
 });

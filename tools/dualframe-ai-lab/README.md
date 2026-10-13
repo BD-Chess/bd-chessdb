@@ -1,6 +1,8 @@
-# DualFrame AI — LAB v1.0
+# DualFrame AI — LAB v1.0 · verified continuation R2
 
 Concept and product originator: **Bojan Dobrečevič (BD)**. Implementation: GPT Work, 2026-10-13. Nara/Illuminara is a read-only design reference. The existing gallery and Daily release system are outside this change.
+
+R2 continues the existing PR #185 instead of rebuilding. Controlled comparisons now reject demo candidates on either side, synthetic originals, malformed output hashes and invalid/non-finite dimensions. Existing saved scores are reclassified on load without changing their ratings. A new comparison starts with fresh ratings/notes; reopened locked comparisons retain their recorded values. The deterministic mock copies normalized RGBA pixels without blending transparent originals into its background. Malformed pending provider responses fail with a bounded provider error. The optional empty Bria prompt was reproduced successfully and is covered explicitly; it was not a defect.
 
 ## Runnable product
 
