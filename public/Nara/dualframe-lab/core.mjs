@@ -78,7 +78,7 @@ export function selectAsset(pair, target, quality = 'hd', dpr = 1) {
   const branch = pair.variants[target];
   const wanted = quality === 'auto' ? (dpr > 1.5 && verifiedFourK(branch?.fourK) ? '4k' : 'hd') : quality;
   if (wanted === '4k' && verifiedFourK(branch?.fourK)) return { asset: branch.fourK, orientation: target, quality: '4k', missing: false, upscaled:branch.fourK.resolution_origin==='upscaled' };
-  if (branch?.hd) return { asset: branch.hd, orientation: target, quality: branch.hd.origin === 'original' ? 'original' : 'hd', missing: wanted === '4k' };
+  if (branch?.hd) return { asset: branch.hd, orientation: target, quality: branch.hd.origin === 'original' ? 'original' : branch.hd.origin === 'imported' ? 'imported' : 'hd', missing: wanted === '4k' };
   // A 4K-first result remains usable before a separate HD composition exists.
   // Keep its actual quality label; never relabel the 4K file as native HD.
   if (verifiedFourK(branch?.fourK)) return {asset:branch.fourK,orientation:target,quality:'4k',missing:wanted!=='4k',upscaled:branch.fourK.resolution_origin==='upscaled'};

@@ -1,4 +1,4 @@
-import { taskGeometry, canonicalMode, sha256, RATIOS, verifyProtectedPixels } from './core.mjs?v=2.0-r4';
+import { taskGeometry, canonicalMode, sha256, RATIOS, verifyProtectedPixels } from './core.mjs?v=2.0-r4.1';
 export const toBlob = canvas => new Promise((resolve,reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(Error('ENCODE_FAILED')),'image/png'));
 function context(canvas){const c=canvas.getContext('2d',{willReadFrequently:true});if(!c)throw Error('CANVAS_UNAVAILABLE');return c;}
 export async function decodedRGBA(blob){

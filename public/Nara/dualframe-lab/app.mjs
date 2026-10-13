@@ -1,9 +1,9 @@
-import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=2.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore } from './store.mjs?v=2.0-r4';
-import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=2.0-r4';
-import { MODELS, modelFor, supportsMode } from './models.mjs?v=2.0-r4';
-import { loadReferenceGallery, verifyReferenceAsset } from './showcase.mjs?v=2.0-r4';
-import { jobIdempotencyKey, gatewayStateAction, liveModelAvailable } from './jobs.mjs?v=2.0-r4';
+import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=2.0-r4.1';
+import { getPairs, putPair, removePair, getScores, addScore } from './store.mjs?v=2.0-r4.1';
+import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=2.0-r4.1';
+import { MODELS, modelFor, supportsMode } from './models.mjs?v=2.0-r4.1';
+import { loadReferenceGallery, verifyReferenceAsset } from './showcase.mjs?v=2.0-r4.1';
+import { jobIdempotencyKey, gatewayStateAction, liveModelAvailable } from './jobs.mjs?v=2.0-r4.1';
 
 const $ = id => document.getElementById(id);
 const dictionary = {

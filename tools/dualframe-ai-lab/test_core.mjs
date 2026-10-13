@@ -122,6 +122,13 @@ test('originals retain their real quality label even in the source orientation b
   assert.equal(selectAsset(p,'portrait','hd').quality,'hd');
 });
 
+test('imported counterparts never acquire an HD or verified 4K label from their slot',()=>{
+ const p=structuredClone(pair);p.variants.portrait.hd={sha256:hash,width:108,height:192,path:'imported.png',origin:'imported',resolution_origin:'imported-unverified',resolution_verified:false};
+ for(const request of ['hd','auto','4k'])assert.equal(selectAsset(p,'portrait',request).quality,'imported');
+ assert.equal(selectAsset(p,'portrait','4k').missing,true);
+ assert.equal(verifiedFourK({...p.variants.portrait.hd,width:2160,height:3840}),false);
+});
+
 test('regeneration creates a distinct attempt while retries retain the exact idempotency key',async()=>{
   const request={input_sha256:hash,target:'portrait',mode:'faithful',seed:42,model:'fal-bria',quality:'hd',upload_consent:{external:true,at:'first-consent'}};
   const first=await jobIdempotencyKey(request);
