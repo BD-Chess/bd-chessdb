@@ -8,3 +8,4 @@ USER dualframe
 ENV DUALFRAME_LIVE_ENABLED=0
 EXPOSE 8765
 CMD ["python", "tools/dualframe-ai-lab/server.py", "--bind", "0.0.0.0", "--port", "8765"]
+

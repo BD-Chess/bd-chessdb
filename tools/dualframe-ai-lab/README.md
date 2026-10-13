@@ -2,13 +2,19 @@
 
 Concept and product originator: **Bojan Dobrečevič (BD)**. Implementation: GPT Work, 2026-10-13. Nara/Illuminara is a read-only design reference. The existing gallery and Daily release system are outside this change.
 
-R2 continues the existing PR #185 instead of rebuilding. Controlled comparisons now reject demo candidates on either side, synthetic originals, malformed output hashes and invalid/non-finite dimensions. Existing saved scores are reclassified on load without changing their ratings. A new comparison starts with fresh ratings/notes; reopened locked comparisons retain their recorded values. The deterministic mock copies normalized RGBA pixels without blending transparent originals into its background. Malformed pending provider responses fail with a bounded provider error. The optional empty Bria prompt was reproduced successfully and is covered explicitly; it was not a defect.
+The LAB continues the existing product with three task modes, a five-entry model register, output proof, authenticated provider receipts, and provider-specific live gates. Local gallery/comparison remains usable without provider credentials. All real-provider generation remains **HELD** because account-specific free entitlement and private asset handling have not been verified. No paid call or real-provider image is claimed.
 
-## Runnable product
+## Runnable product and model adapter status
 
-Frontend: `public/Nara/dualframe-lab/`. Static HTML + ES modules, no bundler, external fonts, tracking, keys or private images. Upload, EXIF-aware display, immutable original SHA-256, local IndexedDB persistence, deterministic opposite-orientation demo, accept/reject/cancel/regenerate, gallery, fullscreen, rotation, EN/SL, downloads, source-area overlay, backup/restore, imported outputs, blind scoring and CSV/JSON export are browser-local. The page makes no provider requests until the user selects Bria, connects an invite-only gateway and explicitly consents.
+| Key | Provider / exact API contract | Modes | Verified now |
+| --- | --- | --- | --- |
+| `demo` | deterministic browser/Pillow simulation | Faithful, Smart, Infographic | Local functionality; no AI-quality claim |
+| `bria-direct` | `https://engine.prod.bria-api.com/v2/image/edit/expand` | Faithful, Smart | Offline transport and response tests |
+| `fal-bria` | `fal-ai/bria/expand` | Faithful, Smart | Offline payload/queue/private-download tests |
+| `fal-sunburst` | `openai/gpt-image-2.5/sunburst/edit` | All three | Offline payload/queue/private-download tests |
+| `fal-nano` | `google/nano-banana-2.1/edit` | All three | Offline payload/queue/private-download tests |
 
-**LIVE_PROVIDER_HELD.** Bria v2 adapter contract is implemented and tested with transport doubles. There is no claim of a real AI image generation. No ChatGPT image-generation session is used. Demo output is a synthetic canvas simulation, clearly disclosed. Provider-native 4K and verified upscale are absent: requesting 4K visibly falls back to HD, without stretching or generating.
+Frontend: `public/Nara/dualframe-lab/`. Static modules preserve local import, EXIF-aware display, original hash, IndexedDB persistence, gallery, fullscreen, L/P selection, EN/SL, downloads, comparison, backup/restore and deletion. Demo is explicitly disclosed as a synthetic canvas simulation. The UI can select a model/mode, and authenticated `/api/capabilities` states each gateway model's actual gate. GitHub Pages itself cannot execute the private Python gateway.
 
 ## Start locally
 
@@ -41,9 +47,10 @@ An HTTPS public page cannot reliably use an HTTP local gateway. Use the local ru
 | `GET /api/health` | Public minimal service status; no secrets |
 | `GET /api/capabilities` | Authenticated gate status |
 | `POST /api/uploads` | Raw JPEG/PNG/WebP bytes, strict Content-Type + magic + Pillow validation |
-| `POST /api/expand` | Frozen job, explicit consent for Bria, persisted idempotency key |
+| `POST /api/expand` | Frozen job, provider/model/mode/quality/whitelisted parameters, explicit external consent, persisted idempotency key |
 | `GET /api/jobs/:id` | Owner-only, no signed status URL |
 | `POST /api/jobs/:id/cancel` | Terminal local cancellation; upstream credit may already be consumed |
+| `POST /api/jobs/:id/resume` | Reconcile an existing request ID only; never resubmit generation |
 | `POST /api/jobs/:id/accept` | Accept into the private server pair manifest |
 | `GET /api/pairs`, `GET /api/pairs/:id` | Owner-only manifests |
 | `GET /api/assets/:id` | Bearer-authenticated bytes; never a token in a URL |
@@ -54,17 +61,47 @@ Default data root is outside the public checkout, mode 0700; originals and datab
 
 Storage expiration: 24 hours by default, capped at 24 hours; purge runs at startup and while servicing requests (30-second housekeeping interval). An inactive stopped process does not purge until restart. Disk unlink is not forensic secure erase, and filesystem/host backups follow their own policy. Browser IndexedDB has no automatic purge; the uploader controls it and can export/delete local data. Deleting a server pair does not promise deletion of provider copies. Backend outage does not affect the static production gallery or already accepted browser pairs.
 
-## Faithful versus cinematic
+## Task semantics, proof and quality
 
-Faithful chooses an explicit no-crop canvas and original rectangle. Bria's `aspect_ratio` parameter is omitted because the current API documents possible crop/resize; `canvas_size`, `original_image_size`, `original_image_location` are used instead. The server rejects unexpected output dimensions. It overwrites the source rectangle with normalized original RGBA pixels and losslessly encodes PNG, verifying byte equality of that **decoded normalized region**. This does not mean the original JPEG compressed bytes or arbitrary ICC pipeline are equivalent to a PNG. Surrounding seam quality is unmeasured without real outputs/human review.
+**Faithful Expand** restores the original rectangle from a normalized, EXIF-corrected, sRGB RGBA image at scale 1, without alpha blending. The final delivery PNG is reopened, its protected rectangle decoded, and every channel compared with the normalized original. `pixel_proof` reports zero difference, normalized/source/output hashes, and the exact checked scope. This verifies normalized decoded pixels; it does not assert equivalence between original compressed JPEG bytes and PNG bytes. Visible seam quality still needs real outputs and human review.
 
-Cinematic uses the explicit requested placement and scene direction with provider reconstruction allowed; no pixel preservation is claimed for it. Demo cinematic is still only a deterministic simulation. Source-size improvement and aesthetic quality require real-provider review.
+**Smart Reframe** and **Infographic/Text** permit creative reconstruction, explicitly mark that the entire image may change, and never claim pixel protection. The frontend can add deterministic editable text after an infographic background; those modified bytes carry their own output hash and local-overlay provenance. Legacy `cinematic` requests map to `smart`. Bria is not offered for Infographic/Text because its expansion contract does not establish text layout capability.
 
-## Safe real-provider activation
+Requested quality is `hd` or `4k`. Faithful canvas sizing never shrinks the protected original. Creative modes use exactly 1920×1080 / 1080×1920 for HD and 3840×2160 / 2160×3840 for 4K, with disclosed source resampling permitted. The server decodes provider output dimensions rather than trusting model metadata. Unexpected canvas size is explicitly reported as a LANCZOS transformation of the generated background, followed by protected-source restoration in Faithful. Such an output cannot be called native 4K. A 4K variant is accepted only when provider dimensions already match the requested canvas, no interpolation happened, and long/short edges are at least 3840/2160. Demo canvases never have verified native resolution; demo 4K cannot populate the 4K slot. Pixel equality and aesthetic quality are distinct tests.
 
-Budget in this mandate: **€0 new paid spend**. All live gates default to off. Before the one narrow real smoke, verify the actual Bria account's available free expansion entitlement, applicable data/retention terms and exact output hostname. Merely seeing an advertised free trial is insufficient. The operator must provide an invite, managed Bria secret, exact output hosts, and explicitly set `DUALFRAME_LIVE_ENABLED=1`, `DUALFRAME_FREE_ENTITLEMENT_VERIFIED=1`, `DUALFRAME_RETENTION_REVIEWED=1`, `DUALFRAME_VERIFIED_FREE_REQUESTS=1`. The persistent global ledger reserves at most **one** request, including uncertain/failed submissions, with no automatic generation retry. Client `cost`, `admin` and unknown fields are rejected. Resetting the ledger to evade the budget is outside scope.
+Jobs/outputs retain model key, exact endpoint/API contract, effective provider parameters, original hash, output hash, geometry, request ID, completion time, latency and actual cost only when independently returned. `provider_cost=null` means unknown, not free. Model webpage price is not actual charged cost. `task_parameters_hash` includes source/target/mode/position/prompt/quality/seed/whitelisted options and excludes model/provider so the same task can be compared across models without merging different task scores. Gateway provenance establishes this gateway's authenticated record; it is not independent model-vendor attestation or proof of historical imported sidecars.
 
-Input is private inline base64 to Bria, not a publicly hosted photograph. Moderation is enabled. Output is downloaded by the gateway without sending the Bria token to the asset host, checked and stored privately. On submission, request ID/status URL are persisted; browser gets request ID, not URL. Polling is bounded. Restart holds uncertain in-flight jobs rather than re-submitting. A pending timeout or crash requires operator reconciliation against the stored request ID before any new generation. No final charge/model-weight identifier is invented if the response doesn't expose it.
+## Live gate and private provider assets
+
+Budget remains **€0 new paid spend**. Every live gate defaults to off. One global durable ledger reserves at most one real submission across both providers and all models; failed/ambiguous submissions retain that reservation. The older Bria ledger is migrated into the global ledger. One process owns the data directory through a filesystem lock, SQLite uses full synchronous commits, files are written with fsync/atomic replacement and hash readback. Restart resumes only deterministic local jobs automatically. External jobs with a known receipt can use authenticated `/resume`; unknown ambiguous submissions are held for reconciliation and are never submitted again.
+
+Env booleans alone cannot open the gate. A private hash-bound review JSON must independently establish this particular account's remaining free entitlement, retention handling, private input transport and private asset access. `DUALFRAME_PROVIDER_EVIDENCE_FILE` must lie outside the entire repository `public/` publish tree; `DUALFRAME_PROVIDER_EVIDENCE_SHA256` must match its complete bytes. Example record shape (placeholders are not verification):
+
+```json
+{
+  "fal": {
+    "reviewer": "INDEPENDENT_REVIEWER",
+    "submitter": "ACCOUNT_OPERATOR",
+    "account_free_requests": 1,
+    "allowed_endpoint_ids": ["fal-ai/bria/expand"],
+    "qualities": ["hd"],
+    "entitlement_evidence_sha256": "SHA256_OF_REVIEWED_ACCOUNT_EVIDENCE",
+    "retention_reviewed": true,
+    "input_private_transport_verified": true,
+    "asset_private_access_verified": true,
+    "privacy_evidence_sha256": "SHA256_OF_REVIEWED_PRIVACY_EVIDENCE",
+    "review_expires_at": 0
+  }
+}
+```
+
+Use `bria` for the direct account record. Expired/unreviewed/malformed records, missing secrets, missing invite or disabled flags keep the gate closed. An advertised trial and a free website tool do not establish free API entitlement. Each live request must match an explicitly reviewed endpoint ID and quality; provider-wide free flags do not authorize other models or 4K. Records are operator-supplied evidence references, not a mechanism that independently contacts/attests the billing account. Review and activation remain operational requirements, and resetting the ledger to evade budget is outside scope.
+
+Bria inputs are inline normalized base64. Explicit canvas geometry replaces crop-prone `aspect_ratio`. Moderation stays enabled. Output host allowlisting, HTTPS and no redirects apply. A short-lived signed asset with an explicit signature and expiry is required; unsigned/long-lived public assets remain HELD. Separate account privacy evidence is still required.
+
+Fal inputs are inline PNG data URIs; SDK public upload is not used. Submit sets `X-Fal-Store-IO:0`, `X-Fal-No-Retry:1`, `x-app-fal-disable-fallback:true`, and a one-hour deny-public lifecycle ACL. Returned queue URLs are persisted and constrained to HTTPS `queue.fal.run` and the known request path, never accepted from user input. Reconciliation only polls those URLs and retrieves the existing response. Public/old CDN output remains HELD. For supported `v3b.fal.media` output, the gateway verifies a deny-default/no-rule ACL through `rest.fal.ai/storage/files/acl`, obtains a short-lived server-only storage bearer token through `/storage/auth/token`, then privately downloads via bearer authentication. FAL_KEY is never sent to CDN, the browser, sidecars or logs. If ACL/authentication cannot be proved, the output is held. Queue IO deletion is distinct from generated-file lifecycle and vendor retention.
+
+Whitelisted model options: Bria `negative_prompt`; Sunburst `quality`/`background`; Nano `thinking_level`. Output count is fixed at one, PNG, safety on; Nano web search is off and generation limit on. All arbitrary endpoint/URL/key/cost/admin/retry/fallback request fields are rejected. Billing response is not exposed by the model contract. Optional `DUALFRAME_FAL_BILLING_READ_ENABLED=1` can read actual billing events with a reviewed BILLING/FULL-scope key, sum only exact request-ID/endpoint matches, and preserve null for missing events, permission failures or paginated/incomplete receipts. No estimate is presented as an actual cost.
 
 ## Ready for BD originals
 
@@ -95,3 +132,8 @@ Versioned schema is at `public/Nara/dualframe-lab/pair.schema.json`; frontend `c
 ## Rollback
 
 Revert only the DualFrame feature commit/PR, or remove only `public/Nara/dualframe-lab/` and `tools/dualframe-ai-lab/` after preserving private data. Never revert an older whole-repository baseline over concurrent Visual Series/ChessBest changes. No production gallery/navigation/global deployment file belongs to this patch.
+
+
+## R4 product continuation
+
+The public LAB adds the existing 30-artwork read-only responsive reference gallery, immersive double tap, a guarded five-entry model selector, and local import of an already prepared opposite composition. Imported pairs preserve their original and mark source linkage as uploader-declared, without native 4K or provider verification claims. Imported dimensions are shown explicitly. Previous compositions remain retained among candidates. No credentials, paid provider call or gateway hosting is implied.

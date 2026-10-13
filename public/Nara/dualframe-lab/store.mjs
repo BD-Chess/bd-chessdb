@@ -27,3 +27,4 @@ export const getPairs = () => operation('pairs','readonly',s=>s.getAll());
 export const getScores = () => operation('scores','readonly',s=>s.getAll());
 // add(), not put(): an existing blind score cannot be edited by resubmission.
 export const addScore = s => operation('scores','readwrite',o=>o.add(s));
+

@@ -1,28 +1,447 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "bd.dualframe.pair.v1",
-  "title": "DualFrame private paired asset",
+  "title": "DualFrame private paired asset with task and pixel provenance",
   "type": "object",
-  "required": ["schema", "pair_id", "original", "variants", "jobs", "references"],
+  "required": [
+    "schema",
+    "pair_id",
+    "original",
+    "variants",
+    "jobs",
+    "references"
+  ],
   "properties": {
-    "schema": {"const": "bd.dualframe.pair.v1"},
-    "pair_id": {"type": "string", "pattern": "^[a-zA-Z0-9_-]{8,100}$"},
+    "schema": {
+      "const": "bd.dualframe.pair.v1"
+    },
+    "pair_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{8,100}$"
+    },
     "original": {
-      "type": "object", "required": ["sha256", "filename", "mime", "width", "height", "source_orientation", "visibility"],
+      "type": "object",
+      "required": [
+        "sha256",
+        "filename",
+        "mime",
+        "width",
+        "height",
+        "source_orientation",
+        "visibility"
+      ],
       "properties": {
-        "sha256": {"$ref": "#/$defs/hash"}, "filename": {"type": "string", "maxLength": 100},
-        "mime": {"enum": ["image/png", "image/jpeg", "image/webp"]},
-        "width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1},
-        "source_orientation": {"enum": ["portrait", "landscape"]}, "visibility": {"const": "private"}
+        "sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "filename": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "mime": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_orientation": {
+          "enum": [
+            "portrait",
+            "landscape"
+          ]
+        },
+        "visibility": {
+          "const": "private"
+        }
       }
     },
-    "variants": {"type": "object", "required": ["portrait", "landscape"], "properties": {"portrait": {"$ref": "#/$defs/variants"}, "landscape": {"$ref": "#/$defs/variants"}}},
-    "jobs": {"type": "array", "items": {"type": "object", "required": ["job_id", "status", "input_sha256", "target", "mode", "provider", "model_or_version", "prompt", "seed", "created_at"], "properties": {"job_id": {"type": "string"}, "input_sha256": {"$ref": "#/$defs/hash"}, "target": {"enum": ["portrait", "landscape"]}, "mode": {"enum": ["faithful", "cinematic"]}, "status": {"enum": ["PENDING", "RUNNING", "READY", "FAILED", "CANCELLED", "HELD", "ACCEPTED", "REJECTED"]}}}},
-    "references": {"type": "array"}
+    "variants": {
+      "type": "object",
+      "required": [
+        "portrait",
+        "landscape"
+      ],
+      "properties": {
+        "portrait": {
+          "$ref": "#/$defs/variants"
+        },
+        "landscape": {
+          "$ref": "#/$defs/variants"
+        }
+      }
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "input_sha256",
+          "target",
+          "mode",
+          "provider",
+          "model_or_version",
+          "prompt",
+          "seed",
+          "created_at"
+        ],
+        "properties": {
+          "job_id": {
+            "type": "string"
+          },
+          "input_sha256": {
+            "$ref": "#/$defs/hash"
+          },
+          "target": {
+            "enum": [
+              "portrait",
+              "landscape"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "faithful",
+              "smart",
+              "infographic",
+              "cinematic"
+            ]
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "READY",
+              "FAILED",
+              "CANCELLED",
+              "HELD",
+              "ACCEPTED",
+              "REJECTED"
+            ]
+          },
+          "provider": {
+            "enum": [
+              "demo",
+              "bria",
+              "fal"
+            ]
+          },
+          "model_key": {
+            "enum": [
+              "demo",
+              "bria-direct",
+              "fal-bria",
+              "fal-sunburst",
+              "fal-nano"
+            ]
+          },
+          "quality": {
+            "enum": [
+              "hd",
+              "4k"
+            ]
+          },
+          "task_parameters_hash": {
+            "$ref": "#/$defs/hash"
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array"
+    }
   },
   "$defs": {
-    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-    "asset": {"type": "object", "required": ["path", "sha256", "width", "height", "origin"], "properties": {"path": {"type": "string"}, "sha256": {"$ref": "#/$defs/hash"}, "width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1}, "origin": {"enum": ["original", "demo", "generated", "imported"]}, "resolution_origin": {"type": "string"}, "resolution_verified": {"type": "boolean"}}},
-    "variants": {"type": "object", "properties": {"hd": {"$ref": "#/$defs/asset"}, "fourK": {"allOf": [{"$ref": "#/$defs/asset"}, {"required": ["resolution_verified", "resolution_origin"], "properties": {"resolution_verified": {"const": true}, "resolution_origin": {"enum": ["native", "upscaled"]}}, "anyOf": [{"properties": {"width": {"minimum": 3840}, "height": {"minimum": 2160}}}, {"properties": {"width": {"minimum": 2160}, "height": {"minimum": 3840}}}]}]}}, "additionalProperties": false}
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "asset": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "width",
+        "height",
+        "origin"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "origin": {
+          "enum": [
+            "original",
+            "demo",
+            "generated",
+            "imported",
+            "reference"
+          ]
+        },
+        "resolution_origin": {
+          "type": "string"
+        },
+        "resolution_verified": {
+          "type": "boolean"
+        },
+        "mode": {
+          "enum": [
+            "faithful",
+            "smart",
+            "infographic",
+            "cinematic"
+          ]
+        },
+        "model_key": {
+          "enum": [
+            "demo",
+            "bria-direct",
+            "fal-bria",
+            "fal-sunburst",
+            "fal-nano"
+          ]
+        },
+        "provider_model_id": {
+          "type": "string"
+        },
+        "task_parameters_hash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pixel_proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/pixelProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance_verified": {
+          "type": "boolean"
+        },
+        "provenance_basis": {
+          "type": "string"
+        },
+        "provenance_evidence": {
+          "type": "object",
+          "properties": {
+            "source_sha256": {
+              "$ref": "#/$defs/hash"
+            },
+            "output_sha256": {
+              "$ref": "#/$defs/hash"
+            }
+          }
+        },
+        "provider_cost": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cost_currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "latency_ms": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "export_resolution_verified": {
+          "type": "boolean"
+        },
+        "source_pixel_protection": {
+          "type": "string"
+        },
+        "modification_disclosure": {
+          "type": "string"
+        },
+        "native_4k": {
+          "type": "boolean"
+        }
+      }
+    },
+    "variants": {
+      "type": "object",
+      "properties": {
+        "hd": {
+          "$ref": "#/$defs/asset"
+        },
+        "fourK": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/asset"
+            },
+            {
+              "required": [
+                "resolution_verified",
+                "resolution_origin"
+              ],
+              "properties": {
+                "resolution_verified": {
+                  "const": true
+                },
+                "resolution_origin": {
+                  "enum": [
+                    "native",
+                    "upscaled",
+                    "reference-provided",
+                    "provider-native",
+                    "provider-native-composite"
+                  ]
+                }
+              },
+              "anyOf": [
+                {
+                  "properties": {
+                    "width": {
+                      "minimum": 3840
+                    },
+                    "height": {
+                      "minimum": 2160
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "width": {
+                      "minimum": 2160
+                    },
+                    "height": {
+                      "minimum": 3840
+                    }
+                  }
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "resolution_origin": {
+                        "const": "reference-provided"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "reference_only"
+                    ],
+                    "properties": {
+                      "origin": {
+                        "const": "reference"
+                      },
+                      "reference_only": {
+                        "const": true
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "resolution_origin": {
+                        "enum": [
+                          "provider-native",
+                          "provider-native-composite"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "native_4k"
+                    ],
+                    "properties": {
+                      "native_4k": {
+                        "const": true
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "pixelProof": {
+      "type": "object",
+      "required": [
+        "verified",
+        "checked_scope"
+      ],
+      "properties": {
+        "schema": {
+          "const": "bd.dualframe.pixel-proof.v1"
+        },
+        "verified": {
+          "type": "boolean"
+        },
+        "checked_scope": {
+          "enum": [
+            "normalized-rgba-values",
+            "decoded-saved-output-normalized-rgba",
+            "server-decoded-saved-output-normalized-rgba"
+          ]
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "output_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "channel_difference_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "pixel_difference_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_channel_difference": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    }
   }
 }
