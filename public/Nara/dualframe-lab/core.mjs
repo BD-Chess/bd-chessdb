@@ -91,11 +91,14 @@ export function comparisonEligibility(pair, web, reference, review = 'equal-canv
   const reasons = [];
   for (const output of [web,reference]) {
     if (!output) { reasons.push('MISSING_OUTPUT'); continue; }
+    if (!/^[a-f0-9]{64}$/.test(output.sha256 || '')) reasons.push('INVALID_OUTPUT_HASH');
+    const validDimensions = Number.isInteger(output.width) && Number.isInteger(output.height) && output.width > 0 && output.height > 0 && output.width * output.height <= MAX_PIXELS;
     if (output.source_sha256 !== pair.original.sha256 || output.lineage_status !== 'SOURCE_VERIFIED') reasons.push('SOURCE_UNVERIFIED');
-    if (output.direction !== target || output.target_ratio !== ratio || Math.abs(output.width / output.height - (target === 'landscape' ? 16/9 : 9/16)) > .003) reasons.push('GEOMETRY_MISMATCH');
+    if (!validDimensions || output.direction !== target || output.target_ratio !== ratio || Math.abs(output.width / output.height - (target === 'landscape' ? 16/9 : 9/16)) > .003) reasons.push('GEOMETRY_MISMATCH');
     if (output.review_scale_policy !== review) reasons.push('SCALE_POLICY_MISMATCH');
+    if (output.provider === 'demo' || output.origin === 'demo' || output.resolution_origin === 'simulation') reasons.push('DEMO_ONLY');
   }
-  if (web?.provider === 'demo' || web?.origin === 'demo') reasons.push('DEMO_ONLY');
+  if (pair.original.demo_fixture) reasons.push('DEMO_ONLY');
   return { eligible: reasons.length === 0, classification: reasons.length ? 'ILLUSTRATIVE_ONLY' : 'SOURCE_VERIFIED', reasons: [...new Set(reasons)] };
 }
 export async function blindOrder(pairId, seed, outputHashes) {

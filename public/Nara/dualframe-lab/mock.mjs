@@ -35,7 +35,10 @@ export async function mockExpand(pair,job,signal) {
   for(let i=-p.height;i<p.width;i+=48){c.beginPath();c.moveTo(i,0);c.lineTo(i+p.height,p.height);c.stroke();}
   c.globalAlpha=1;
   const source=await createImageBitmap(pair.original.normalized);
-  c.drawImage(source,p.x,p.y); source.close();
+  const sourceCanvas=document.createElement('canvas');sourceCanvas.width=source.width;sourceCanvas.height=source.height;
+  const sourceContext=sourceCanvas.getContext('2d');sourceContext.drawImage(source,0,0);source.close();
+  // Copy RGBA pixels; source-over drawing would replace translucent pixels with the demo background.
+  c.putImageData(sourceContext.getImageData(0,0,sourceCanvas.width,sourceCanvas.height),p.x,p.y);
   const blob=await toBlob(canvas), hash=await sha256(blob);
   return { blob,sha256:hash,width:p.width,height:p.height,path:`variants/${job.target}/${hash}.png`,origin:'demo',provider:'demo',model_or_version:'deterministic-canvas-v1',source_sha256:pair.original.sha256,direction:job.target,target_ratio:RATIOS[job.target],review_scale_policy:'equal-canvas-v1',lineage_status:'SOURCE_VERIFIED',source_placement:p,source_pixel_protection:'normalized-sRGB-RGBA-overwrite',provider_cost:0,cost_currency:'EUR',resolution_origin:'simulation',resolution_verified:false };
 }

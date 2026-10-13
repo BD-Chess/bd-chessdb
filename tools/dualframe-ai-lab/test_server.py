@@ -118,6 +118,15 @@ class EngineTests(unittest.TestCase):
 
 
 class ProviderTests(unittest.TestCase):
+    def test_optional_empty_prompt_and_malformed_pending_response(self):
+        for job in [{'seed':42}, {'seed':42,'prompt':''}]:
+            self.assertNotIn('prompt', bria_payload(b'png',job,geometry(96,54,'portrait')))
+        for status in (200,202,420,423):
+            for payload in (None,[], 'not-an-object'):
+                with self.assertRaises(ProviderError) as error:
+                    parse_response(status,payload)
+                self.assertEqual(error.exception.code,'PROVIDER_INVALID_RESPONSE')
+
     def test_explicit_geometry_payload_never_uses_crop_prone_aspect_ratio(self):
         p=geometry(96,54,'portrait');body=bria_payload(b'png',{'seed':42,'prompt':'Continue scenery'},p);self.assertNotIn('aspect_ratio',body);self.assertEqual(body['canvas_size'],[1080,1920]);self.assertEqual(body['original_image_size'],[96,54]);self.assertTrue(body['visual_input_content_moderation']);
         with self.assertRaises(ProviderError):
