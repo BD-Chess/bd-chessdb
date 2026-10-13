@@ -16,10 +16,11 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   const doc = new JSDOM(html).window.document;
   const source = doc.querySelector('.analysis-source-row');
   assert.ok(source);
-  assert.equal(source.children.length,2);
+  assert.equal(source.children.length,3);
+  assert.ok(source.firstElementChild.classList.contains('board-engine-row'));
   assert.ok(source.querySelector('.analysis-primary-row #analysisSource'));
   assert.deepEqual([...source.querySelectorAll('.analysis-options-row input')].map(x=>x.id),['analysisDCC','analysisCDB']);
-  assert.deepEqual([...source.querySelectorAll('.analysis-dcc-actions > *')].map(x=>x.id),['btnDesktopDccReplay','btnDesktopDccAnalysis']);
+  assert.deepEqual([...source.querySelectorAll('.analysis-dcc-actions > *')].map(x=>x.id),['btnDesktopDccReplay','btnDesktopDccAnalysis','appSim','btnSim']);
   assert.deepEqual([...source.querySelectorAll('.analysis-checks input')].map(x=>x.id),['analysisDCC','analysisCDB']);
   assert.ok(source.querySelector('.analysis-primary-row #analysisCpuThreads'));
   assert.equal(source.querySelector('#analysisSourceStatus'), null);
@@ -31,7 +32,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.ok(stack);
   assert.deepEqual([...stack.children].map(node => node.id), ['desktopNavRow', 'desktopViewTabs', 'workspacePrimaryActions']);
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
-  assert.match(layout, /\['btnNew', 'btnGames', 'btnSim'\]/);
+  assert.match(layout, /\['btnNew', 'btnGames'\]/);
   assert.match(html, /id="btnAnalysisDeepen"[^>]*>Refresh evals<\/button>/);
   assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['ChessDB.cn','SF Lite','SF Full','Reckless','LCZero','Berserk']);
   assert.equal(doc.querySelector('#analysisSource').value, 'cdb');
@@ -46,7 +47,8 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.ok(doc.querySelector('#settingsPanel .analysis-network-advanced [data-berserk-network]'));
   assert.equal(doc.querySelector('.board-note'),null);
   assert.ok(doc.querySelector('.board-legend #btnDccScoreHelp'));
-  assert.ok(doc.querySelector('.board-legend #btnAnalyzeAll'));
+  assert.ok(doc.querySelector('.board-engine-row #btnAnalyzeAll'));
+  assert.ok(doc.querySelector('.board-key .board-legend'));
   assert.ok(doc.querySelector('#settingSFEngine'));
   assert.equal(doc.querySelector('#analysisSource option[value="sf-berserk"]'),null);
   assert.ok(doc.querySelector('dialog#dccScoreHelp a[href="8zc-help.html#scores"]'));
@@ -134,7 +136,7 @@ test('desktop tabs and top DCC actions share the same backing state without dupl
   d.dispatchEvent(new w.Event('DOMContentLoaded'));
   await new Promise(resolve=>w.setTimeout(resolve,0));
 
-  assert.deepEqual([...byId('workspacePrimaryActions').querySelectorAll('button')].map(x=>x.id),['btnNew','btnGames','btnSim','btnWorkspaceMore']);
+  assert.deepEqual([...byId('workspacePrimaryActions').querySelectorAll('button')].map(x=>x.id),['btnNew','btnGames','btnWorkspaceMore']);
   byId('btnDesktopDccReplay').click();
   assert.equal(replayClicks,1);
 

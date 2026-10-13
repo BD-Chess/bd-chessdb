@@ -1,5 +1,5 @@
 /* ChessBest LAB transport: stream the exact pinned WASM from two same-origin parts. */
-if(typeof importScripts==='function')importScripts('wasm-chunks.js');
+if(typeof importScripts==='function')importScripts('wasm-chunks.js?v=20261013-r9');
 /*!
  * Stockfish.js 19 (c) 2026, Chess.com, LLC
  * https://github.com/nmrugg/stockfish.js

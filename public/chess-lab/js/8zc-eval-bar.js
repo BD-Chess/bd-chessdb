@@ -34,6 +34,7 @@
     const label = document.getElementById('positionEvalLabel');
     const scores = new Map();
     const comparison = document.getElementById('allEvalBadges');
+    const dccProgress = document.getElementById('dccProgress');
     const sourceScores = new Map();
     const dccChoices = new Map();
     const sources = ['CDB','SF','DCC','RLE','LC0','BER'];
@@ -76,8 +77,13 @@
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
           move.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
-          note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) :
-            choice?.status === 'unavailable' ? 'unavailable' : 'heuristic choice';
+          const progress = dccProgress;
+          if(progress){
+            if(progress.dataset.fen!==fen){progress.textContent='';progress.dataset.fen=fen;}
+            if(!progress.textContent)progress.textContent=choice?.status==='pending'?'Analyzing':'No measured evidence';
+            note.append(progress);
+            if(choice?.provider)note.append(document.createTextNode(choice.status==='raw-safety'?` · ${choice.provider} raw retained`:` · ${choice.provider}`));
+          }else note.textContent=choice?.provider?(choice.status==='raw-safety'?`${choice.provider} · raw retained`:`${choice.provider} lines · choice`):'No measured evidence';
           if (actionable) badge.setAttribute('aria-label', `DCC: ${move.textContent}. ${badge.title}`);
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
@@ -89,7 +95,7 @@
           main.append(score);
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
           note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
-            (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?'Online data':'Ready');
+            (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
           if(source==='SF')note.textContent=(entry?.variant||control?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
@@ -165,6 +171,10 @@
     }
     function updateDCC(fen, move, provider, status = 'ready') {
       dccChoices.set(fen, { move, provider, status });
+      if(dccProgress&&game.fen()===fen){dccProgress.dataset.fen=fen;
+        if(status==='pending')dccProgress.textContent='Analyzing';
+        else if(status==='unavailable'||status==='unknown')dccProgress.textContent='No measured evidence · unavailable';
+      }
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }

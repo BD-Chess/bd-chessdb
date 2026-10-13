@@ -117,7 +117,7 @@
   }
   // Only an actual analysis calls this function. Idle selection restores local
   // bytes at most; no optional engine/network request is made at page startup.
-  async function ensureBerserkNetwork(signal) {
+  async function ensureBerserkNetwork(signal, onProgress) {
     const abort = () => { if (signal?.aborted) throw abortError(); };
     abort();
     if (!berserkNetwork) await restoreBerserkNetwork();
@@ -138,6 +138,9 @@
         const expected=part<2?10485760:4230404;
         if(chunk.byteLength!==expected)throw new Error('Incomplete original NNUE download.');
         bytes.set(chunk,offset);offset+=chunk.byteLength;
+        const timing=root.performance?.getEntriesByName?.(url)?.slice(-1)[0];
+        const phase=timing?.transferSize>0&&timing.transferSize>=(timing.encodedBodySize||0)?'downloading':timing?.decodedBodySize>0?'preparing':'loading';
+        onProgress?.({phase,loaded:offset,total:BERSERK_NET.bytes,asset:'NNUE'});
       }
       const verified=await verifyNetwork(bytes.buffer);abort();
       if(revision!==networkRevision||serial!==networkLoadSerial)throw abortError();
@@ -187,13 +190,13 @@
     return {create(){
       const base=root.document?.baseURI||'http://localhost/chess-lab/';
       const caps=capabilities(mode),single=!caps.isolated;
-      const workerUrl=new URL(mode==='berserk'?'vendor/berserk/v14-5b8d6c93/berserk-host.js':
-        'vendor/stockfish-full/v19.0.1/stockfish-19'+(single?'-single':'')+'.js',base).href;
+      const workerUrl=new URL(mode==='berserk'?'vendor/berserk/v14-5b8d6c93/berserk-host.js?v=20261013-r9':
+        'vendor/stockfish-full/v19.0.1/stockfish-19'+(single?'-single':'')+'.js?v=20261013-r9',base).href;
       const config={Chess,workerUrl,engine:Object.assign({},descriptors[mode],{variant:mode==='berserk'?'scalar':single?'single':'threaded',wasmSHA256:mode==='berserk'?'0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372':single?'991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740':'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667'}),threads:mode==='sf-full'?caps.effectiveSFThreads:1,
         hashMB:Math.min(settings.hashMB,caps.mobile?16:64),readyTimeoutMs:20000,forceTerminateOnStop:true};
       if(mode==='berserk')config.workerFactory=url=>{const w=new root.Worker(url),buffer=berserkNetwork.buffer.slice(0);w.postMessage({type:'init-network',buffer},[buffer]);return w;};
       const engine=Deep.create(config);
-      return {prepare:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.prepare(opts);},
+      return {prepare:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal,opts?.onProgress);return engine.prepare(opts);},
         analyze:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.analyze(opts);},
         stop:()=>engine.stop(),destroy:()=>engine.destroy()};
     }};
@@ -291,8 +294,8 @@
             const base = root.document?.baseURI || 'http://localhost/chess-lab/';
             const variant = caps.isolated ? 'threaded' : 'single';
             const workerUrl = child.id === 'sf-lite' ? new URL('vendor/stockfish/stockfish-18-lite-single.js',base).href :
-              child.id === 'berserk' ? new URL('vendor/berserk/v14-5b8d6c93/berserk-host.js',base).href :
-                new URL('vendor/stockfish-full/v19.0.1/stockfish-19'+(variant==='single'?'-single':'')+'.js',base).href;
+              child.id === 'berserk' ? new URL('vendor/berserk/v14-5b8d6c93/berserk-host.js?v=20261013-r9',base).href :
+                new URL('vendor/stockfish-full/v19.0.1/stockfish-19'+(variant==='single'?'-single':'')+'.js?v=20261013-r9',base).href;
             const engineConfig = {Chess:config.Chess || root.Chess,workerUrl,engine:Object.assign({},meta,{variant:child.id==='sf-full'?variant:child.id==='berserk'?'scalar':'lite-single',
                 wasmSHA256:child.id==='sf-full' ? variant==='threaded' ? 'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667' : '991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740' : child.id==='berserk' ? '0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372' : Deep.ENGINE.wasmSHA256,
                 network:child.id==='sf-full'?'nn-1a298aa575a0.nnue':child.id==='berserk'?'berserk-9b84c340af7e.nn':undefined,

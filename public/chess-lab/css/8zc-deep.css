@@ -163,3 +163,33 @@ body:not(.app-mobile) .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopD
 .analysis-follow-toggle input{margin:0;cursor:pointer}
 @container(max-width:359px){body:not(.app-mobile) .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopDccAnalysis){font-size:10.5px;padding:4px;height:32px;min-height:32px}body:not(.app-mobile) .analysis-source-row #btnAnalysisDeepen{font-size:11px;padding:5px 6px}}
 @container(max-width:279px){body:not(.app-mobile) .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopDccAnalysis){font-size:9px;padding:3px 2px}.analysis-options-row .analysis-checks{gap:5px}body:not(.app-mobile) .analysis-source-row .analysis-options-row label{font-size:9px}}
+
+/* R9: engine actions precede Refresh; evidence stays with its card. */
+.board-engine-row{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
+.board-engine-row .board-analysis-actions{flex:1;flex-wrap:wrap;gap:6px;margin:0}
+.board-engine-row :is(.sf-full-toggle,.analysis-follow-toggle,.analyze-all){min-height:36px;box-sizing:border-box;font:600 12px/1.2 system-ui,sans-serif}
+.board-engine-row .sf-full-toggle{padding:4px 6px}
+.board-engine-row .analyze-all{border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-raised);color:var(--ui-text);padding:6px 10px;cursor:pointer;white-space:nowrap}
+.board-engine-row .analysis-follow-toggle{min-width:36px;padding:6px}
+.board-key{position:relative;flex:none;align-self:flex-start;z-index:8}
+.board-key summary{display:flex;align-items:center;justify-content:center;width:36px;min-height:36px;box-sizing:border-box;border:1px solid var(--ui-border);border-radius:6px;list-style:none;cursor:pointer;color:var(--ui-muted);font-size:18px}
+.board-key summary::-webkit-details-marker{display:none}
+.board-key:not([open])>.board-legend{display:none!important}
+.board-key[open]>.board-legend{display:flex!important;position:absolute;right:0;top:100%;width:260px;max-width:calc(100vw - 32px);padding:12px;box-sizing:border-box;gap:10px;flex-wrap:wrap!important;justify-content:flex-start!important;background:var(--ui-panel,#172237);border:1px solid var(--ui-border);border-radius:8px;box-shadow:0 6px 20px #0005;font-size:11px!important}
+body .analysis-options-row{flex-wrap:wrap;gap:6px}
+.analysis-dcc-actions{flex-wrap:wrap;gap:6px}
+body .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopDccAnalysis,#btnSim,#appSim){height:auto;min-height:36px;font:600 12px/1.2 system-ui,sans-serif;padding:6px 8px;box-sizing:border-box;margin:0;white-space:nowrap}
+.analysis-dcc-actions #appSim{display:none}
+body.app-mobile .analysis-dcc-actions #btnSim{display:none!important}
+body.app-mobile .analysis-dcc-actions #appSim{display:block;width:auto;min-width:48px;flex:none}
+body .analysis-source-row .analysis-options-row .analysis-checks label{min-height:36px;padding:3px;box-sizing:border-box;font-size:11px}
+body.app-mobile .board-engine-row :is(.sf-full-toggle,.analysis-follow-toggle,.analyze-all),body.app-mobile .board-key summary{min-height:44px}
+body.app-mobile .board-engine-row .analysis-follow-toggle,body.app-mobile .board-key summary{min-width:44px}
+body.app-mobile .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopDccAnalysis,#appSim,#btnAnalysisDeepen){height:auto;min-height:44px;font-size:12px;padding:7px 8px}
+body.app-mobile .analysis-source-row .analysis-options-row .analysis-checks label{min-height:44px;font-size:12px}
+body.app-mobile .analysis-selects select{min-height:44px;height:44px;font-size:12px}
+body.app-mobile .board-engine-row .all-desktop-label{display:none}
+body:not(.app-mobile) .board-engine-row .all-mobile-label{display:none}
+.all-eval-badge #dccProgress{display:inline;color:inherit!important;white-space:normal}
+#settingsPanel .analysis-status-row{margin:8px 0;overflow-wrap:anywhere}
+@container(max-width:300px){body .analysis-primary-row{display:flex;flex-wrap:wrap}body .analysis-selects{flex:1 1 190px}body .analysis-source-row #btnAnalysisDeepen{flex:0 0 auto}body .analysis-dcc-actions{gap:4px}body .analysis-source-row :is(#btnDesktopDccReplay,#btnDesktopDccAnalysis,#appSim,#btnSim){font-size:11px;padding-inline:6px}}

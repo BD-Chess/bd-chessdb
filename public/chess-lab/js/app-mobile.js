@@ -418,9 +418,7 @@
     const analysisSlot = doc.createElement('div'); analysisSlot.className = 'app-analysis-slot';
     analysisSlot.append(analysisRow);
     actionRow.append(analysisSlot);
-    const statusRow=doc.createElement('div');statusRow.className='app-analysis-status';
-    statusRow.append(status,byId('appSim'));
-    controls.append(navRow, actionRow, statusRow, byId('appTopLine'));
+    controls.append(navRow, actionRow, byId('appTopLine'));
     byId('appClocks').append(byId('workspaceClockSlot'), byId('humanSession'));
     host.onChange(updatePosition);
     for (const tab of byId('appTabs').querySelectorAll('[data-app-tab]')) {

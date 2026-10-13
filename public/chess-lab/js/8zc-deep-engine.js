@@ -93,7 +93,7 @@
     const clone = value => JSON.parse(JSON.stringify(value));
     const now = () => root.performance?.now ? root.performance.now() : Date.now();
     function detach(worker) { worker.onmessage = null; worker.onerror = null; worker.onmessageerror = null; }
-    function prepare({ signal } = {}) {
+    function prepare({ signal, onProgress, onStatus } = {}) {
       if (destroyed) return Promise.reject(new Error('Engine has been destroyed'));
       if (signal?.aborted) return Promise.reject(abortError());
       if (active) return Promise.reject(new Error('Cannot prepare during an active search'));
@@ -103,13 +103,14 @@
       const state = { worker: null, timer: null, phase: 'uci', reportedName: null };
       warming = state;
       state.promise = new Promise((resolve, reject) => {
+        onStatus?.({ phase: 'preparing' });
         const done = error => {
           if (warming !== state) return;
           warming = null; clearTimeout(state.timer);
           signal?.removeEventListener('abort', state.cancel);
           if (state.worker) detach(state.worker);
           if (error) { state.worker?.terminate(); reject(error); }
-          else { prepared = { worker: state.worker, reportedName: state.reportedName }; resolve(); }
+          else { prepared = { worker: state.worker, reportedName: state.reportedName, searches:0 }; resolve(); }
         };
         state.cancel = () => done(abortError());
         signal?.addEventListener('abort', state.cancel, { once: true });
@@ -118,6 +119,7 @@
           state.worker.onerror = event => { event.preventDefault?.(); done(new Error(event.message || 'Stockfish could not load')); };
           state.worker.onmessageerror = () => done(new Error('Stockfish worker message failed'));
           state.worker.onmessage = event => {
+            if (event.data?.type === 'chessbest-engine-progress') { onProgress?.(event.data); return; }
             for (const line of String(event.data).split(/\r?\n/)) {
               if (warming !== state) break;
               if (line.startsWith('id name ')) state.reportedName = line.slice(8);
@@ -137,11 +139,11 @@
     function finish(job, error, forced) {
       if (active !== job) return;
       active = null;
-      clearTimeout(job.initTimer); clearTimeout(job.stopTimer);
+      clearTimeout(job.initTimer); clearTimeout(job.stopTimer); clearTimeout(job.searchTimer);
       if (job.signal) job.signal.removeEventListener('abort', job.onAbort);
       if (job.worker) {
         detach(job.worker);
-        if (reusePrepared && !error && !forced && !job.stopped) prepared = { worker: job.worker, reportedName: job.reportedName };
+        if (reusePrepared && !error && !forced && !job.stopped) prepared = { worker: job.worker, reportedName: job.reportedName, searches:job.workerSearches+1 };
         else job.worker.terminate();
       }
       if (error) job.reject(error);
@@ -164,7 +166,8 @@
         actualSearchMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
         initializationMs: (job.searchStarted ?? now()) - job.started,
         positionHistory: job.limits.history ? 'Validated history supplied from startFen' : 'FEN only; repetition history before this position is unavailable',
-        coldHash: true, perspective: 'root scores are for the side to move; white scores are for White' });
+        coldHash: true, workerReused: job.workerReused, watchdog: job.watchdog || null,
+        perspective: 'root scores are for the side to move; white scores are for White' });
     }
     function stop(reason = 'user-stop') {
       const job = active;
@@ -195,18 +198,19 @@
         const readyWorker = prepared; prepared = null;
         const job = { id: ++serial, limits, resolve, reject, signal: options.signal, started: now(),
           startedAt: new Date().toISOString(), lines: new Map(), iterations: new Map(), nodes: null, depth: null, stopped: false, phase: 'uci',
-          reportedName: readyWorker?.reportedName || null, searchStarted: null,
+          reportedName: readyWorker?.reportedName || null, searchStarted: null, workerReused: (readyWorker?.searches||0)>0,workerSearches:readyWorker?.searches||0,
           expectedLines: Math.min(limits.multiPV, limits.searchMoves.length || (Chess ? new Chess(limits.fen).moves().length : limits.multiPV)) };
         active = job;
         job.onAbort = () => { if (active === job) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, abortError()); } };
         if (job.signal) job.signal.addEventListener('abort', job.onAbort, { once: true });
         try {
-          // Manual analysis uses a fresh worker. Prepared Sim workers reset hash before every search.
+          // A retained ready worker avoids loading again; ucinewgame resets each search.
           job.worker = readyWorker?.worker || (config.workerFactory ? config.workerFactory(workerUrl) : new root.Worker(workerUrl));
           job.worker.onerror = event => { if (event.preventDefault) event.preventDefault(); finish(job, new Error(event.message || 'Stockfish could not load. Check browser WebAssembly support and retry.')); };
           job.worker.onmessageerror = () => finish(job, new Error('Stockfish worker message failed'));
           job.worker.onmessage = event => {
             if (active !== job) return;
+            if (event.data?.type === 'chessbest-engine-progress') { options.onProgress?.(event.data); return; }
             for (const line of String(event.data).split(/\r?\n/)) {
               if (active !== job) break;
               if (line.startsWith('id name ')) job.reportedName = line.slice(8);
@@ -229,6 +233,18 @@
                 if (limits.infinite) command += ' infinite';
                 if (limits.searchMoves.length) command += ' searchmoves ' + limits.searchMoves.join(' ');
                 job.actualMovetime = limits.movetime == null ? null : remaining == null ? limits.movetime : Math.min(limits.movetime, remaining);
+                // Start after setup. A native UCI time check may overrun or never
+                // return bestmove; a synchronous host cannot receive queued stop.
+                if (job.actualMovetime != null) {
+                  const grace = config.timeGraceMs ?? Math.max(1000, Math.min(2000, job.actualMovetime * .15));
+                  job.searchTimer = setTimeout(() => {
+                    if (active !== job) return;
+                    job.stopped = true; job.stopReason = 'time-watchdog';
+                    job.watchdog = { requestedMs: job.actualMovetime, graceMs: grace, expired: true };
+                    job.bestMove = job.completeLines?.[0]?.pv?.[0] || job.lines.get(1)?.pv?.[0] || null;
+                    finish(job, null, true);
+                  }, job.actualMovetime + grace);
+                }
                 try { options.onSearchStarted?.({ timestamp: job.searchStarted, initializationMs: job.searchStarted - job.started }); } catch (_) {}
                 job.worker.postMessage(command);
               } else if (job.phase === 'search' && line.startsWith('bestmove ')) {

@@ -320,8 +320,8 @@ test('real Deep adapters dispatch simultaneous distinct UCI workers and preserve
   assert.deepEqual(workers.map(w => w.id), ['sf-full', 'berserk']);
   assert(workers.every(w => w.commands.includes('position fen ' + START + ' moves e2e4')));
   assert(workers.every(w => w.commands.includes('go movetime 100')));
-  assert.match(workers[0].url, /stockfish-19-single\.js$/);
-  assert.match(workers[1].url, /berserk-host\.js$/);
+  assert.match(workers[0].url, /stockfish-19-single\.js(?:\?v=20261013-r9)?$/);
+  assert.match(workers[1].url, /berserk-host\.js(?:\?v=20261013-r9)?$/);
   assert(workers.every(w => w.commands.includes('setoption name Threads value 1')));
   workers[0].emit('info depth 10 multipv 1 score mate -3 upperbound nodes 200 pv e7e5 g1f3 g8f6');
   workers[0].emit('info depth 10 multipv 2 score cp 25 nodes 210 pv c7c5 e2e5');

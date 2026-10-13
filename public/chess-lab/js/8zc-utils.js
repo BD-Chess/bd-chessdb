@@ -669,6 +669,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
       if(['SF','BER','RLE','LC0'].includes(source))return engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'};
       return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false,
+        note:cdbRefreshing?'Fetching position data':null,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
     onBadgeAction: source => {
@@ -1100,7 +1101,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function updateDCCProgress(done, total) {
     const el = document.getElementById('dccProgress');
     if (!el) return;
-    el.textContent = total > 0 ? `DCC ${done}/${total}` : '';
+    el.dataset.fen=game.fen();
+    el.textContent = total > 0 ? `${done}/${total} measured` : 'No measured evidence';
     el.style.color = '#8cddff';
   }
   async function runDCCLookahead(moveList, baseFen, precomputed = null) {
@@ -1137,7 +1139,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       latestDCCResults.forEach(data => updateDCCBadge(data.move, data, 'done'));
     dccMoveAnnotations[baseFen] = latestDCCResults.slice();
     const progress = document.getElementById('dccProgress');
-    if (progress) progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;
+    if (progress) {progress.dataset.fen=baseFen;progress.textContent = `${result.receipt.completed || 0}/${result.receipt.total || 0} measured`;}
     renderDCCView();
     if (simSession && !simRunning) renderSimDecision(SIM.decision(Chess, baseFen, result.receipt.provider === 'SF' ? 'sf' : 'raw', result.allMoves, result), baseFen);
     if (settings.dccOnly && canDecorate && (settings.dccEnabled || source === 'dcc' || source === 'all')) applyDCCOnlyBadges();
@@ -2485,6 +2487,10 @@ function jumpTo(i){
   engineCards=window.ChessEngineCards.create({Chess,
     getContext:()=>({...getLabContext(),canAnalyze:!document.hidden&&!offlineEvidence&&showEval&&!simRunning&&!replayRunning&&!playState.assistanceLocked}),
     beforeStart:()=>{deepUI?.stop?.();localController?.abort();localProvider?.destroy();sfWorking=false;},
+    // Queued mobile cards start later than beforeStart. Retire any intervening
+    // local DCC probe before allocating their heavy worker; keep DCC policy intact.
+    beforeRun:()=>{localController?.abort();localProvider?.destroy();localController=null;localProvider=null;},
+    canRetainPrepared:()=>!localProvider&&!localController,
     onResult:publishEngineSnapshot,
     onState:()=>{
       positionEval.render();
@@ -2493,8 +2499,8 @@ function jumpTo(i){
       const button=document.getElementById('btnAnalyzeAll');
       if(button){const running=engineCards?.isAllRunning();button.classList.toggle('is-working',!!running);
         const familyCount=window.ChessEngineRegistry?.count(settings.sfCardMode)||2;
-        button.querySelector('.all-desktop-label').textContent=running?'Stop all':familyCount===4?'Analyze all 4':'Analyze all '+familyCount+'/4';
-        button.querySelector('.all-mobile-label').textContent=running?'Stop':familyCount===4?'All 4':'All '+familyCount+'/4';
+        button.querySelector('.all-desktop-label').textContent=running?'Stop all':familyCount===4?'All four engines':'All '+familyCount+'/4 engines';
+        button.querySelector('.all-mobile-label').textContent=running?'Stop all':familyCount===4?'All four engines':'All '+familyCount+'/4 engines';
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
@@ -2584,7 +2590,7 @@ function jumpTo(i){
     const preferred=window.ChessAnalysisSession?.getSettings?.().analysisTimeMs||settings.analysisTimeMs||(window.ChessAnalysisSession?.capabilities?.().mobile?5000:15000);
     if(!Array.from(cardTimeSelect.options).some(option=>Number(option.value)===preferred)){const option=document.createElement('option');option.value=String(preferred);option.textContent=preferred/1000+' s';cardTimeSelect.appendChild(option);}
     cardTimeSelect.value=String(preferred);
-    cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs});saveSettings();});
+    cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs});localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));});
   }
   document.getElementById('settingSFDepth').addEventListener('change', event => {
     settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
@@ -3112,6 +3118,8 @@ function refreshPlayUi() {
     btnSim.style.background = playState.active ? '#ff4c4c' : '#2a2520';
     btnSim.style.color = playState.active ? '#fff' : '#f59e0b';
     btnSim.disabled = !!playState.replaying;
+    const mobileSim=document.getElementById('appSim');
+    if(mobileSim){mobileSim.textContent=simRunning?'Pause':playState.active?'Stop':'SIM';mobileSim.disabled=btnSim.disabled;mobileSim.setAttribute('aria-label',btnSim.getAttribute('aria-label'));}
   }
   if (btnReplay) btnReplay.disabled = playState.active || simRunning;
   if (btnView) btnView.disabled = false;

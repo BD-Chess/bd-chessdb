@@ -13,7 +13,7 @@ function cardFixture(t, mobile, savedTime) {
   const calls = [], settings = { sfCardMode:'sf-lite', topN:3, analysisTimeMs:savedTime };
   const registry = { modes:()=>modes, supported:mode=>modes.includes(mode), participants:()=>modes,
     roleFor:mode=>({'sf-lite':'SF',reckless:'RLE',lc0:'LC0',berserk:'BER'}[mode]), label:mode=>mode };
-  const cards = Cards.create({ registry, session:{capabilities:()=>({mobile,hardwareConcurrency:8}),getSettings:()=>settings},
+  const cards = Cards.create({ registry, teardownGraceMs:0, session:{capabilities:()=>({mobile,hardwareConcurrency:8}),getSettings:()=>settings},
     getContext:()=>({fen,positionHistory:history,canAnalyze:true,settings}), backendFor:mode=>({create(){
       const engine = { prepare:async()=>{}, analyze(options){ const call = {mode,options};calls.push(call);return new Promise(resolve=>{call.finish=resolve;}); },
         stop(){},destroy(){} };return engine;

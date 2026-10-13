@@ -21,6 +21,30 @@ function fixture(options) {
   return { engine, workers };
 }
 const ready = () => new Promise(resolve => setImmediate(resolve));
+test('timed search watchdog terminates a silent worker and preserves the last complete legal MultiPV', async () => {
+  const {engine,workers}=fixture({timeGraceMs:5});
+  await engine.prepare();
+  const done=engine.analyze({fen:START,movetime:20,multiPV:2});await ready();
+  workers[0].emit('info depth 8 multipv 1 score cp 27 nodes 80 pv e2e4 e7e5');
+  workers[0].emit('info depth 8 multipv 2 score cp 21 nodes 100 pv d2d4 d7d5');
+  workers[0].emit('info depth 9 multipv 1 score cp 31 nodes 120 pv g1f3 d7d5');
+  const result=await done;
+  assert.equal(workers[0].terminated,true);assert.equal(result.stopReason,'time-watchdog');assert.equal(result.forcedStop,true);
+  assert.equal(result.stopped,true);assert.equal(result.linesDepth,8);assert.deepEqual(result.lines.map(x=>x.pv[0]),['e2e4','d2d4']);
+  assert.equal(result.watchdog.requestedMs,20);assert.equal(result.bestMove,'e2e4');
+  await engine.prepare();assert.equal(workers.length,2,'forced teardown requires a fresh worker');
+  const next=engine.analyze({fen:BLACK,movetime:20});await ready();
+  workers[0].emit('bestmove e2e4');workers[1].emit('bestmove e7e5');
+  assert.equal((await next).fen,BLACK);engine.destroy();
+});
+test('normal bestmove clears the timed watchdog and retains a prepared worker', async () => {
+  const {engine,workers}=fixture({timeGraceMs:5});await engine.prepare();
+  const done=engine.analyze({fen:START,movetime:10});await ready();workers[0].emit('bestmove e2e4');
+  assert.equal((await done).forcedStop,false);
+  await new Promise(r=>setTimeout(r,25));assert.equal(workers[0].terminated,false);
+  const repeat=engine.analyze({fen:START,movetime:20});await ready();workers[0].emit('bestmove e2e4');
+  assert.equal((await repeat).workerReused,true);assert.equal(workers.length,1);engine.destroy();
+});
 test('UCI preserves zero, centipawn/mate type, White perspective and bounds', () => {
   const info = Deep.parseInfo('info depth 18 multipv 2 score cp 0 nodes 125000 time 30 pv e7e5 g1f3', BLACK);
   assert.equal(info.score.white, 0); assert.equal(info.multipv, 2); assert.equal(info.nodes, 125000);

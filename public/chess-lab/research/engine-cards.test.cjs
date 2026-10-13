@@ -1,19 +1,19 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const Cards=require('../js/8zc-engine-cards.js');
-function setup(t,mobile=false){
+function setup(t,mobile=false,extra={}){
   let fen='position-a',positionHistory=null,canAnalyze=true;const calls=[],engines=[],published=[];
   const settings={sfAnalysisDepth:11,sfCardMode:'sf-lite',topN:3};
   const session={capabilities:()=>({mobile,hardwareConcurrency:8}),getSettings:()=>({sfFullThreadsRequested:1})};
-  const cards=Cards.create({session,getContext:()=>({fen,positionHistory,canAnalyze,settings}),
+  const cards=Cards.create({session,teardownGraceMs:0,...extra,getContext:()=>({fen,positionHistory,canAnalyze,settings}),
     backendFor:mode=>({create(){
-      const engine={prepare:async()=>{},analyze(options){calls.push({mode,options});engine.options=options;return new Promise(r=>engine.resolve=r);},
+      const engine={prepare:async()=>{},analyze(options){const call={mode,options};calls.push(call);engine.options=options;return new Promise(r=>{call.resolve=r;engine.resolve=r;});},
         stop(){engine.resolve?.({fen,lines:[],stopped:true});},destroy(){engine.destroyed=true;}};
       engines.push(engine);return engine;
     }}),onResult:x=>published.push(x)});
   t.after(()=>cards.destroy());
   const tick=()=>new Promise(r=>setImmediate(r));
-  const complete=(index,depth=11)=>engines[index].resolve({fen,lines:[{depth,pv:['e2e4'],score:{type:'cp',white:27}}],stopped:false});
+  const complete=(index,depth=11)=>calls[index].resolve({fen,lines:[{depth,pv:['e2e4'],score:{type:'cp',white:27}}],stopped:false});
   return {cards,calls,engines,published,settings,tick,complete,changeFen(value){fen=value;cards.positionChanged();},changeHistory(value){positionHistory=value;cards.positionChanged();},setAvailable(value){canAnalyze=value;cards.positionChanged();}};
 }
 test('each card owns its timed budget and result, and a completed repeat adds search time',async t=>{
@@ -21,6 +21,7 @@ test('each card owns its timed budget and result, and a completed repeat adds se
   x.complete(0);await first;
   const second=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[1].options.movetime,30000);assert.equal(x.calls[1].options.depth,undefined);
   x.complete(1,13);await second;assert.equal(x.cards.get('sf-lite').requestedTimeMs,30000);assert.equal(x.cards.get('sf-lite').requestedDepth,null);
+  assert.equal(x.engines.length,1,'a completed repeat keeps the prepared worker');
   assert.equal(x.cards.get('berserk'),null);
 });
 
@@ -81,4 +82,31 @@ test('the same FEN with different repetition history cannot reuse an earlier res
   assert.equal(x.cards.get('sf-lite'),null);
   const next=x.cards.analyze('sf-lite',{reuse:true});await x.tick();assert.equal(x.calls.length,2);
   assert.deepEqual(x.calls[1].options.history,{startFen:'root',moves:['g1f3','g8f6']});x.complete(1);await next;
+});
+test('a card watchdog settles a non-responsive adapter, keeps valid lines and allows a new search',async t=>{
+  const x=setup(t,false,{timeGraceMs:5});x.settings.analysisTimeMs=15;
+  const run=x.cards.analyze('berserk');await x.tick();const stale=x.calls[0].options.onInfo;
+  x.calls[0].options.onSearchStarted();stale(null,{fen:'position-a',lines:[{depth:8,pv:['e2e4'],score:{type:'cp',white:27}}]});
+  await run;assert.equal(x.cards.isRunning(),false);assert.equal(x.engines[0].destroyed,true);
+  assert.match(x.cards.state('BER').note,/time-watchdog.*retained result/);assert.equal(x.cards.get('berserk').lines[0].depth,8);
+  const again=x.cards.analyze('berserk');await x.tick();assert.equal(x.engines.length,2);assert.equal(x.calls[1].options.movetime,30);
+  stale(null,{fen:'position-a',lines:[{depth:99,pv:['d2d4']}]});assert.equal(x.cards.get('berserk').lines[0].depth,8);
+  x.complete(1);await again;assert.doesNotMatch(x.cards.state('BER').note,/watchdog/);
+});
+test('preparation watchdog settles silent loading without claiming an analysis result',async t=>{
+  const mode='berserk';
+  // Hold preparation through the adapter, then verify forced teardown of the loader.
+  const originalCreate=Cards.create;
+  let engine;
+  const cards=originalCreate({session:{capabilities:()=>({mobile:true}),getSettings:()=>({})},teardownGraceMs:0,preparationTimeoutMs:10,
+    getContext:()=>({fen:'position-a',canAnalyze:true,settings:{}}),backendFor:()=>({create:()=>engine={prepare:()=>new Promise(()=>{}),destroy(){this.destroyed=true;}}})});
+  t.after(()=>cards.destroy());await cards.analyze(mode);
+  assert.equal(engine.destroyed,true);assert.equal(cards.isRunning(),false);assert.equal(cards.get(mode),null);assert.match(cards.state('BER').note,/preparation-watchdog.*no result/);
+});
+test('mobile keeps one prepared engine and yields after tearing it down before the next engine',async t=>{
+  const x=setup(t,true,{teardownGraceMs:30});const first=x.cards.analyze('sf-full');await x.tick();x.complete(0);await first;
+  x.cards.positionChanged();const repeat=x.cards.analyze('sf-full');await x.tick();assert.equal(x.engines.length,1);x.complete(1);await repeat;
+  const next=x.cards.analyze('berserk');await x.tick();assert.equal(x.engines[0].destroyed,true);assert.equal(x.calls.length,2);
+  await new Promise(r=>setTimeout(r,40));assert.equal(x.calls.length,3);x.complete(2);await next;
+  x.cards.stopAll();assert.equal(x.engines[1].destroyed,true);
 });

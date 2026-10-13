@@ -1,6 +1,22 @@
-/* GPL-3.0 Berserk 14 scalar UCI host. The NNUE is supplied locally, never downloaded from this site.
+/* GPL-3.0 Berserk 14 scalar UCI host. Verified NNUE is supplied by the session loader.
  * The compiled command() is synchronous. Stop terminates the host Worker; later searches recreate it.
  * The user buffer is verified by the session manager before this worker is created. */
+const originalFetch=self.fetch.bind(self);
+self.fetch=async function(input,options){
+  const response=await originalFetch(input,options);
+  const url=String(typeof input==='string'?input:input.url||input);
+  if(!url.endsWith('.wasm')||!response.body)return response;
+  const reader=response.body.getReader();let loaded=0;
+  return new Response(new ReadableStream({async pull(controller){
+    try{const chunk=await reader.read();
+      if(chunk.done){
+        const timing=self.performance?.getEntriesByName?.(url)?.slice(-1)[0];
+        self.postMessage({type:'chessbest-engine-progress',phase:timing?.transferSize>0&&timing.transferSize>=(timing.encodedBodySize||0)?'downloading':timing?.decodedBodySize>0?'preparing':'loading',loaded});
+        reader.releaseLock();controller.close();
+      }else{loaded+=chunk.value.byteLength;controller.enqueue(chunk.value);}
+    }catch(error){controller.error(error);}
+  },cancel(reason){return reader.cancel(reason);}}),{status:response.status,headers:response.headers});
+};
 importScripts('berserk-emscripten.js');
 const base = new URL('./',self.location.href);
 let startModule;

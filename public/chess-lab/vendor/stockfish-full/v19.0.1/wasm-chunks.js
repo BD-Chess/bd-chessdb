@@ -8,19 +8,27 @@
     const url=new URL(typeof input==='string'?input:input.url||String(input),base);
     const name=url.pathname.slice(base.pathname.length);
     if(url.origin!==base.origin||!url.pathname.startsWith(base.pathname)||!parts[name])return original(input,options);
-    let index=0,reader=null;
+    let index=0,reader=null,loaded=0,partURL=null;
+    // Report transport evidence only from the single-thread root UCI worker.
+    // Network/cache is classified by ResourceTiming, never by a CDN HIT header.
+    const report=phase=>{if(self.location.pathname.endsWith('-single.js'))self.postMessage({type:'chessbest-engine-progress',phase,loaded});};
     const stream=new ReadableStream({
       async pull(controller){
         try{
           while(index<parts[name].length){
             if(!reader){
-              const response=await original(new URL(parts[name][index],base).href,options);
+              partURL=new URL(parts[name][index],base).href;
+              const response=await original(partURL,options);
               if(!response.ok)throw new Error('SF Full part download failed: HTTP '+response.status);
               reader=response.body.getReader();
             }
             const chunk=await reader.read();
-            if(chunk.done){reader.releaseLock();reader=null;index++;continue;}
-            controller.enqueue(chunk.value);return;
+            if(chunk.done){
+              const timing=self.performance?.getEntriesByName?.(partURL)?.slice(-1)[0];
+              report(timing?.transferSize>0&&timing.transferSize>=(timing.encodedBodySize||0)?'downloading':timing?.decodedBodySize>0?'preparing':'loading');
+              reader.releaseLock();reader=null;index++;continue;
+            }
+            loaded+=chunk.value.byteLength;controller.enqueue(chunk.value);return;
           }
           controller.close();
         }catch(error){controller.error(error);}

@@ -85,14 +85,14 @@ test('source cards keep provider top moves and depths, clear stale FENs and iden
     view.updateSource(b.fen(), -30, 'SF', 18, 'Nf3');
     view.updateDCC(b.fen(), 'Nf3', 'CDB');
     assert.deepEqual(badges.children.map(row => row.children[0].children[0].textContent), ['ChessDB.cn','Stockfish','DCC','Reckless','Leela Chess Zero','Berserk']);
-    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Online data']);
+    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Position data']);
     assert.deepEqual(cells('SF'), ['Stockfish', 'Nf3', '-0.30', 'Lite · depth 18']);
     assert.deepEqual(cells('DCC'), ['DCC', 'Nf3', 'CDB lines · choice']);
     for (const selected of ['auto', 'sf', 'dcc', 'all']) {
       settings.analysisSource = selected; view.render();
       assert.equal(badges.hidden, false, `${selected} shows the three computed results`);
       assert.deepEqual(badges.children.map(row => row.children[0].children[0].textContent), ['ChessDB.cn','Stockfish','DCC','Reckless','Leela Chess Zero','Berserk']);
-      assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Online data']);
+      assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Position data']);
       assert.deepEqual(cells('SF'), ['Stockfish', 'Nf3', '-0.30', 'Lite · depth 18']);
       assert.deepEqual(cells('DCC'), ['DCC', 'Nf3', 'CDB lines · choice']);
     }
@@ -100,17 +100,17 @@ test('source cards keep provider top moves and depths, clear stale FENs and iden
     assert.deepEqual(cells('SF'), ['Stockfish', 'Nf3', '-0.30', 'Lite · depth 18'], 'generic score update preserves root move and depth');
     view.updateSource(b.fen(), 42, 'SF', 22, 'd4');
     assert.deepEqual(cells('SF'), ['Stockfish', 'd4', '+0.42', 'Lite · depth 22']);
-    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Online data'], 'SF refresh does not overwrite CDB');
+    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e4', '+1.00', 'Position data'], 'SF refresh does not overwrite CDB');
     view.updateDCC(b.fen(), 'e4', 'CDB', 'raw-safety');
     assert.deepEqual(cells('DCC'), ['DCC', 'e4', 'CDB · raw retained']);
     b.move('e4'); view.render();
-    assert.deepEqual(cells('CDB'), ['ChessDB.cn', '…', '…', 'Online data']);
+    assert.deepEqual(cells('CDB'), ['ChessDB.cn', '…', '…', 'No position data']);
     assert.deepEqual(cells('SF'), ['Stockfish', '…', '…', 'Lite · Ready']);
     assert.equal(cells('DCC')[1], '—');
     view.updateSource(b.fen(), 20, 'CDB', null, 'e5');
     view.updateSource(white, 900, 'CDB', null, 'a4');
     view.updateSource(white, 800, 'SF', 40, 'h4');
-    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e5', '-0.20', 'Online data'], 'late other-FEN result cannot paint current move');
+    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'e5', '-0.20', 'Position data'], 'late other-FEN result cannot paint current move');
     assert.deepEqual(cells('SF'), ['Stockfish', '…', '…', 'Lite · Ready']);
     view.updateSource(b.fen(), 5, 'SF', 10, 'c5');
     now += 300001; view.render();
@@ -123,7 +123,7 @@ test('source cards keep provider top moves and depths, clear stale FENs and iden
     view.updateDCC(b.fen(), 'Nc6', 'CDB');
     view.update(b.fen(), 13, 'CDB');
     view.markComparisonPending(b.fen());
-    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'Nc6', '-0.13', 'Online data']);
+    assert.deepEqual(cells('CDB'), ['ChessDB.cn', 'Nc6', '-0.13', 'Position data']);
     assert.deepEqual(cells('SF'), ['Stockfish', 'd5', '-0.24', 'Lite · depth 19'], 'same-FEN refresh preserves independent card results');
     assert.equal(cells('DCC')[1], '…', 'same-FEN refresh discards prior DCC choice');
     assert.equal(label.textContent, '-0.13', 'left bar retains its last score while awaiting the new source');
@@ -177,4 +177,21 @@ test('every analysis mode shows six source cards; Hide Eval hides the row; Hide 
   visible=true; settings.analysisSource='auto'; view.render();
   assert.equal(row.hidden,false); assert.equal(row.parentElement.hidden,false);
   assert.equal(row.parentElement.classList.contains('has-all-evals'),true);
+});
+
+test('DCC progress moves into its card, survives redraws and rejects stale-position status', () => {
+  const {JSDOM}=require('jsdom');
+  const dom=new JSDOM('<body><div id="positionEval"></div><span id="positionEvalLabel"></span><div><div id="allEvalBadges"></div></div><aside id="settings"><span id="dccProgress"></span></aside></body>');
+  const previous=global.document;global.document=dom.window.document;
+  try{
+    const g=new Chess(),fen=g.fen(),view=E.create({game:g,settings:{analysisSource:'cdb'},isVisible:()=>true});
+    const progress=document.getElementById('dccProgress');
+    view.updateDCC(fen,null,null,'pending');
+    assert.equal(progress.closest('.all-eval-badge').querySelector('strong').textContent,'DCC');
+    assert.equal(document.querySelector('#settings #dccProgress'),null);assert.equal(progress.textContent,'Analyzing');
+    progress.textContent='2/3 measured';view.render();assert.equal(progress.textContent,'2/3 measured');
+    view.updateDCC(fen,'e4','CDB','ready');assert.match(progress.parentElement.textContent,/2\/3 measured.*CDB/);
+    g.move('e4');view.render();assert.equal(progress.textContent,'No measured evidence');
+    view.updateDCC(fen,'d4','CDB','pending');assert.equal(progress.textContent,'No measured evidence');
+  }finally{global.document=previous;dom.window.close();}
 });

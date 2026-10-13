@@ -237,7 +237,7 @@ async function run() {
   check('phone search time defaults to five seconds', await phone.locator('#settingAnalysisTime').inputValue() === '5000');
   report.mobileAllControls = await phone.locator('#btnAnalyzeAll').evaluate(node => ({
     buttonDisplay: getComputedStyle(node).display, parentDisplay: getComputedStyle(node.parentElement).display,
-    legendDisplay: getComputedStyle(node.closest('.board-legend')).display,
+    actionRowDisplay: getComputedStyle(node.closest('.board-engine-row')).display,
     bounds: node.getBoundingClientRect().toJSON(), hidden: node.hidden
   }));
   check('phone retains All analysis controls', await phone.locator('#btnAnalyzeAll').isVisible());
