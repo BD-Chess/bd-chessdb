@@ -1,8 +1,9 @@
 # ChessBest LAB R8 — public free operations
 
-Candidate status: implementation and local browser verification complete; R8
-publication is pending. The existing public URL still serves the prior LAB.
-The hosting and engine details below describe the prepared R8 candidate.
+Release status: R8 is published and anonymously verified in Chromium.
+The public four-family test passes 33 checks; repeated time budgets, source-only
+changes and Stop pass 24 additional real-engine checks. Physical iPhone/Safari
+and installed-PWA updates remain outside the verified device scope.
 
 Public application: https://bd-chess.github.io/bd-chessdb/chess-lab/
 
@@ -70,7 +71,7 @@ A cold Lite-based All session is roughly 115 MB; a Full-based session roughly
 sessions, before other site traffic. These are planning estimates, not quotas
 per user or promises of unlimited free traffic. Monitor transfers and the full
 published payload. After the separately completed archive migration, main has
-588,572,132 B in its public tree. This R8 candidate has approximately 725,070,882 B
+588,941,892 B in its public tree. This R8 candidate has approximately 725,445,739 B
 before deploy-time transformations, below the documented 1 GB envelope. Actual
 Pages acceptance and transfer capacity are verified separately. A sustained bandwidth or size
 problem needs a new free static distribution plan, with owner approval for any
