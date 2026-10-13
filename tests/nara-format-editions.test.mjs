@@ -52,11 +52,11 @@ test('day links cover non-featured instances and archive regeneration uses separ
 test('ordinary next-day publication preserves historical editions and refuses old-date backfill',t=>{
  const r=fixture(t,{art:true}),nr=path.join(r,'public/Nara'),record=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-12.json'),'utf8')),log=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-12.json'),'utf8'));
  const original=stable(r),editionBytes=Object.fromEntries(loadFormatEditions(r).map(x=>[x.paths.en,sha(fs.readFileSync(path.join(nr,x.paths.en)))]));
- record.date='2026-10-13';record.id='NARA-D-2026-10-13';record.published_at='2026-10-13T20:00:00Z';log.date=record.date;log.id=record.id+'-LOG';log.story_id=record.id;
- assert.match(publish(r,record,log,new Date('2026-10-13T20:01:00Z')),/LOCAL_CANDIDATE_READY/);
+ record.date='2026-10-14';record.id='NARA-D-2026-10-14';record.published_at='2026-10-14T20:00:00Z';log.date=record.date;log.id=record.id+'-LOG';log.story_id=record.id;
+ assert.match(publish(r,record,log,new Date('2026-10-14T20:01:00Z')),/LOCAL_CANDIDATE_READY/);
  for(const [f,h]of Object.entries(original))if(f!=='daily/catalog.json')assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
  for(const [f,h]of Object.entries(editionBytes))assert.equal(sha(fs.readFileSync(path.join(nr,f))),h);
  assert.equal(loadFormatEditions(r).length,16);assert.match(fs.readFileSync(path.join(nr,'Nara-AI-archive.html'),'utf8'),/id="format-editions"/);
  const old=JSON.parse(fs.readFileSync(path.join(nr,'daily/records/2026-10-05.json'),'utf8')),oldLog=JSON.parse(fs.readFileSync(path.join(nr,'daily/log/2026-10-05.json'),'utf8'));
- assert.throws(()=>publish(r,old,oldLog,new Date('2026-10-13T20:01:00Z')),/not current local publication date/);
+ assert.throws(()=>publish(r,old,oldLog,new Date('2026-10-14T20:01:00Z')),/not current local publication date/);
 });
