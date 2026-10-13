@@ -645,12 +645,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   let deepAnalysisFen = null;
   let activeLookaheadId = 0;
   let latestDCCReceipt = null;
-  let sourceAnalyses = { CDB: null, SF: null, DCC: null };
+  let sourceAnalyses = { CDB: null, SF: null, RLE:null, LC0:null, BER:null, DCC: null };
   const analysisMemo = new Map();
   const analysisPending = new Map();
   const requestPending = new Map();
   const simRequests = new Set();
-  let engineCards = null;
+  let engineCards = null, evalHistoryFingerprint=null;
   settings.sfCardMode = window.ChessAnalysisSession?.getSettings?.().sfCardMode || (settings.sfCardMode === 'sf-full' ? 'sf-full' : 'sf-lite');
   window.ChessAnalysisSession?.subscribeSettings?.(next=>{
     if(settings.sfCardMode===next.sfCardMode)return;
@@ -661,20 +661,19 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const positionEval = window.ChessEvalBar.create({ game, settings,
     isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
     getBadgeControl: source => {
-      if (source === 'RLE' || source === 'LC0') return {disabled:true,title:'Engine coming later',status:'Coming later'};
       if (source === 'DCC') {
         const toggle = document.getElementById('btnViewToggle');
         return { disabled: !toggle || toggle.disabled,
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
-      if(source==='SF'||source==='BER')return engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'};
+      if(['SF','BER','RLE','LC0'].includes(source))return engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'};
       return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
     onBadgeAction: source => {
-      if (source === 'SF' || source === 'BER') {
-        engineCards?.analyze(source==='BER'?'berserk':settings.sfCardMode);
+      if (['SF','BER','RLE','LC0'].includes(source)) {
+        engineCards?.analyze(source==='BER'?'berserk':source==='RLE'?'reckless':source==='LC0'?'lc0':settings.sfCardMode);
       }
       else if (source === 'CDB') refreshCDBCurrentPosition();
       else if (source === 'DCC') {
@@ -725,7 +724,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const available = !offlineEvidence && showEval &&
       !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
     const working = deepFollowing ? deepWorking : sfWorking;
-    button.disabled = !available || ['reckless','lc0'].includes(settings.analysisSource) || (settings.analysisSource==='cdb'&&(settings.cdbEnabled===false||cdbRefreshing));
+    button.disabled = !available || (settings.analysisSource!=='cdb'&&!window.ChessEngineRegistry?.supported(settings.analysisSource)) || (settings.analysisSource==='cdb'&&(settings.cdbEnabled===false||cdbRefreshing));
     button.title = !available ? 'Show Eval for deeper SF analysis' :
       deepWorking ? 'Click to stop Deep SF analysis' : deepFollowing ? 'Click for deeper Deep SF analysis' :
       sfWorking ? 'Click to stop SF analysis' : 'Click for deeper analysis';
@@ -734,7 +733,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     button.textContent = settings.analysisSource==='cdb'?'Refresh evals':'Deeper search';
     if(settings.analysisSource==='cdb')button.title='Refresh ChessDB evaluations for the current position';
     button.setAttribute('aria-label',button.textContent);
-    button.classList.toggle('is-working',settings.analysisSource==='cdb'?cdbRefreshing:!!engineCards?.state(settings.analysisSource==='berserk'?'BER':'SF')?.working);
+    button.classList.toggle('is-working',settings.analysisSource==='cdb'?cdbRefreshing:!!engineCards?.state(window.ChessEngineRegistry?.roleFor(settings.analysisSource)||'SF')?.working);
 
   }
   function syncDCCBadgeControl() {
@@ -749,7 +748,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     analysisGeneration++;
     activeLookaheadId++;
     lastAnalysisResult = null; activeAnalysisProvider = null; activeAnalysisFen = null;
-    sourceAnalyses = { CDB: null, SF: null, DCC: null };
+    sourceAnalyses = { CDB: null, SF: null, RLE:null, LC0:null, BER:null, DCC: null };
     if (localController) localController.abort();
     if (localProvider) localProvider.destroy();
     localController = null; localProvider = null;
@@ -898,7 +897,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const positionHistory = { startFen: game.header().FEN || new Chess().fen(),
       moves: game.history({ verbose: true }).map(normalizeUci) };
     const provider = role === 'DCC' ? analysis.receipt?.provider : role;
-    if (!['CDB', 'SF', 'BER'].includes(provider)) return;
+    if (!['CDB', 'SF', 'BER','RLE','LC0'].includes(provider)) return;
     const receipt = { ...analysis.receipt, ...details, fen, provider, role,
       scorePOV: 'root player to move', positionHistory,
       // Attached workspace history is not a claim that a FEN-only provider
@@ -918,7 +917,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function currentSourceAnalyses() {
     const fen = game.fen(), history = { startFen: game.header().FEN || new Chess().fen(),
       moves: game.history({ verbose: true }).map(normalizeUci) };
-    return Object.fromEntries(['CDB', 'SF', 'BER', 'DCC'].map(role => {
+    return Object.fromEntries(['CDB', 'SF', 'BER','RLE','LC0', 'DCC'].map(role => {
       const entry = sourceAnalyses[role], snapshot = entry?.snapshot;
       const current = entry?.generation === analysisGeneration && snapshot?.receipt.fen === fen &&
         JSON.stringify(snapshot.receipt.positionHistory) === JSON.stringify(history);
@@ -1469,7 +1468,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     panel.appendChild(title);
     for (const move of moves.slice(0, Math.min(settings.topN || 5, 8))) {
       const row = document.createElement('div');
-      const score = move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
+      const score = move.scoreType==='q'?'Q '+Number(move.nativeQ).toFixed(3):move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
       const pv = move.pv?.slice(0, 5).join(' ') || '';
       row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${move.depth ? ` · depth ${move.depth}` : ''}${pv ? ' · PV ' + pv : ''}`;
       panel.appendChild(row);
@@ -1503,14 +1502,12 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     }
     // CDB and its DCC card remain useful even while a local source is selected.
     const dcc=cdb.moves.length?runDCCLookahead(cdb.moves,fen):null;
-    if(['sf-lite','sf-full','berserk'].includes(selected)){
+    if(window.ChessEngineRegistry?.supported(selected)){
       const cached=engineCards?.get(selected,fen);
       if(cached?.lines?.length){publishEngineSnapshot(cached,{depth:cached.requestedDepth});status.textContent=(cached.engine?.name||selected)+' · cached analysis';}
-      else if(engineCards?.isFollowing())status.textContent='Awaiting '+(selected==='berserk'?'Berserk':selected==='sf-full'?'SF Full':'SF Lite')+' analysis';
-      else{status.textContent=selected==='berserk'?'Berserk · starting analysis':'Stockfish · starting analysis';
-        void engineCards?.analyze(selected,{reuse:true}).then(value=>{if(current()&&value)status.textContent=(value.engine?.name||selected)+' · '+(value.error?'Error: '+value.error:value.limited?'time limit · partial analysis':value.stopped?'stopped':'analysis complete');});}
+      else status.textContent=(window.ChessEngineRegistry?.label(selected)||selected)+' · ready, press Deeper search';
     }else status.textContent=selected==='cdb'?(cdb.moves.length?'ChessDB · position data':cdb.reason||'ChessDB unavailable'):
-      (selected==='reckless'?'Reckless':'LCZero')+' · not implemented yet';
+      (selected==='reckless'?'Reckless':'LCZero')+' · unavailable in this release';
     if(dcc)await dcc;
     else if(selected==='cdb'||['reckless','lc0'].includes(selected)){
       const fallback=engineCards?.get(settings.sfCardMode,fen)||engineCards?.get('berserk',fen);
@@ -1545,10 +1542,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	ov.dataset.rawScore = Number.isFinite(newScore) ? String(newScore) : '';
 	ov.dataset.rawBest = String(!!best);
 	const num = parseInt(score, 10);
-	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType === 'mate' ? `#${detail.mateIn}` : (detail?.bound==='lower'?'≥':detail?.bound==='upper'?'≤':'')+(num>0?`+${num}`:String(num));
-	ov.title = `${source} ${detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
+	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType==='q'?'Q '+Number(detail.nativeQ).toFixed(3):detail?.scoreType === 'mate' ? `#${detail.mateIn}` : (detail?.bound==='lower'?'≥':detail?.bound==='upper'?'≤':'')+(num>0?`+${num}`:String(num));
+	ov.title = `${source} ${detail?.scoreType==='q'?'native neural Q '+detail.nativeQ:detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
 
-	const badgeClass = Math.abs(num) <= 20 ? 'zero'
+	const badgeClass = detail?.scoreType==='q'?(Math.abs(detail.nativeQ)<0.05?'zero':detail.nativeQ>0?'positive':'negative'):Math.abs(num) <= 20 ? 'zero'
 					: num > 0 ? 'positive'
 					: 'negative';
 
@@ -1711,6 +1708,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 		}
 	  }
 
+	  const evalContext=JSON.stringify([game.fen(),game.header().FEN||new Chess().fen(),game.history({verbose:true}).map(normalizeUci)]);
+      if(evalContext!==evalHistoryFingerprint){positionEval.clearLocalSources?.(game.fen());evalHistoryFingerprint=evalContext;}
 	  engineCards?.positionChanged();
 	  board.position(game.fen());
 	  positionEval.render();
@@ -2426,9 +2425,10 @@ function jumpTo(i){
   const dccEngineJobs = new Set();
   function localMoves(fen,child) {
     const side=fen.split(' ')[1]==='w'?1:-1;
-    return (child.lines||[]).filter(line=>line.pv?.length&&['cp','mate'].includes(line.score?.type)&&Number.isFinite(line.score.white))
+    return (child.lines||[]).filter(line=>line.pv?.length&&['cp','mate','q'].includes(line.score?.type)&&Number.isFinite(line.score.white))
       .map(line=>({move:line.pv[0],pv:line.pv.slice(),rank:line.multipv||1,scoreType:line.score.type,
         score:line.score.type==='cp'?(Number.isFinite(line.score.root)?line.score.root:line.score.white*side):null,
+        nativeQ:line.score.type==='q'?line.score.root:null,wdl:line.score.wdl||null,visits:line.visits??null,
         mateIn:line.score.type==='mate'?(Number.isFinite(line.score.root)?line.score.root:line.score.white*side):null,
         bound:line.score.bound||'unknown',depth:line.depth??null})).sort((a,b)=>a.rank-b.rank);
   }
@@ -2438,12 +2438,13 @@ function jumpTo(i){
     for(const [mode,child]of Object.entries(snapshot.children||{[snapshot.mode]:snapshot})){
       const moves=localMoves(fen,child),best=child.lines?.find(line=>(line.multipv||1)===1);
       if(!moves.length||!best)continue;
-      const role=mode==='berserk'?'BER':'SF',name=child.engine?.name||(role==='BER'?'Berserk 14':'Stockfish 18 Lite');
+      const role=window.ChessEngineRegistry?.roleFor(mode)||(mode==='berserk'?'BER':'SF'),name=child.engine?.name||window.ChessEngineRegistry?.label(mode)||mode;
       positionEval.updateSource(fen,best.score,role,best.depth,uciToSan(fen,moves[0].move),!!child.limits?.searchMoves?.length,'deep',
-        {variant:mode==='sf-full'?'Full':'Lite',engineName:name});
+        {variant:mode==='sf-full'?'Full':mode==='sf-lite'?'Lite':child.engine?.variant||mode,engineName:name});
       recordSourceMoves(role,fen,{moves,source:name},{engineName:name,engineId:child.engine?.id||mode,
-        depth:child.linesDepth??child.depth??null,nodes:child.nodes??null,
-        restricted:!!child.limits?.searchMoves?.length,providerPositionContext:search.history?'move-history':'fen-only'});
+        depth:child.linesDepth??child.depth??null,nodes:child.nodes??null,visits:child.visits??null,
+        schema:'chessbest-engine-evidence/1',sessionId:snapshot.sessionId||null,jobId:child.jobId||snapshot.jobId||null,generation:snapshot.generation??analysisGeneration,engine:child.engine,requestedBudget:child.requestedBudget||child.limits,actualSearchMs:child.actualSearchMs??child.searchElapsedMs??null,queueWaitMs:child.queueWaitMs,initializationMs:child.initializationMs,stopReason:child.stopReason||null,
+        restricted:!!child.limits?.searchMoves?.length,providerPositionContext:(child.limits?.history||(child.positionHistory&&Array.isArray(child.positionHistory.moves))||(snapshot.positionHistory&&Array.isArray(snapshot.positionHistory.moves))||search.history)?'move-history':'fen-only'});
       // Only the selected single source is allowed to paint the board.
       if(!showEval)continue;
       const selectedSource=settings.analysisSource;
@@ -2454,7 +2455,7 @@ function jumpTo(i){
         showAnalysisCandidates(moves,role,{receipt:{engineName:name}});
       }
       // Displaying a retained result after a variant toggle must not start DCC probes.
-      if(search.displayOnly)continue;
+      if(search.displayOnly||['reckless','lc0'].includes(mode))continue;
       const fallbackDCC=!sourceAnalyses.CDB?.snapshot?.allMoves?.length;
       if(selectedSource!==mode&&!fallbackDCC)continue;
       const done=child.status==='complete'||['complete','partial','stopped'].includes(snapshot.status);
@@ -2491,8 +2492,9 @@ function jumpTo(i){
       if(follow)follow.checked=!!engineCards?.isFollowing();
       const button=document.getElementById('btnAnalyzeAll');
       if(button){const running=engineCards?.isAllRunning();button.classList.toggle('is-working',!!running);
-        button.querySelector('.all-desktop-label').textContent=running?'Stop all':'Analyze all 4';
-        button.querySelector('.all-mobile-label').textContent=running?'Stop':'All 4';
+        const familyCount=window.ChessEngineRegistry?.count(settings.sfCardMode)||2;
+        button.querySelector('.all-desktop-label').textContent=running?'Stop all':familyCount===4?'Analyze all 4':'Analyze all '+familyCount+'/4';
+        button.querySelector('.all-mobile-label').textContent=running?'Stop':familyCount===4?'All 4':'All '+familyCount+'/4';
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
@@ -2545,7 +2547,7 @@ function jumpTo(i){
     const dcc = analysisSources.DCC, data = (dcc?.candidates || []).map(candidate => candidate.data || candidate);
     const provider = memo?.receipt.provider || null;
     const candidatesFor = record => (record?.allMoves || []).slice(0, 10).map(m => ({ move: m.move, san: uciToSan(fen, m.move),
-      scoreType: m.scoreType === 'mate' ? 'mate' : 'cp', score: m.scoreType === 'mate' ? null : m.score,
+      scoreType:['cp','mate','q'].includes(m.scoreType)?m.scoreType:'cp',score:m.scoreType==='q'||m.scoreType==='mate'?null:m.score,nativeQ:m.nativeQ??null,wdl:m.wdl||null,visits:m.visits??null,
       mateIn: m.scoreType === 'mate' ? m.mateIn : null }));
     const candidates = candidatesFor(memo);
     return { capturedAt: new Date().toISOString(), fen, sideToMove: game.turn(),
@@ -2553,10 +2555,10 @@ function jumpTo(i){
       mode: simRunning ? 'sim' : workspace.isHuman() ? 'two local humans' : playState.active ? playState.mode : 'analysis',
       historySAN: game.history().slice(-100), headers: game.header(),
       legalMoves: game.moves({ verbose: true }).map(m => ({ san: m.san, uci: normalizeUci(m) })),
-      scorePOV: 'root player to move; candidate scores are typed as cp or mate', analysisProvider: provider, dccConfig: config,
+      scorePOV: 'root player to move; candidate scores are typed as cp, mate or native neural Q', analysisProvider: provider, dccConfig: config,
       analysisCandidates: candidates, cdbCandidates: candidatesFor(analysisSources.CDB),
-      sfCandidates: candidatesFor(analysisSources.SF),
-      sourceReceipts: Object.fromEntries(['CDB', 'SF', 'BER', 'DCC'].map(role => [role, analysisSources[role]?.receipt || null])),
+      sfCandidates:candidatesFor(analysisSources.SF),recklessCandidates:candidatesFor(analysisSources.RLE),lc0Candidates:candidatesFor(analysisSources.LC0),berserkCandidates:candidatesFor(analysisSources.BER),
+      sourceReceipts: Object.fromEntries(['CDB', 'SF', 'BER','RLE','LC0', 'DCC'].map(role => [role, analysisSources[role]?.receipt || null])),
       dccReceipt: dcc?.receipt || { status: 'unknown', reason: 'Current-position DCC analysis is not ready.' },
       dccCandidates: data.slice(0, 10).map(r => ({ move: r.move, san: uciToSan(fen, r.move), rawCp: r.raw,
         dccRankScore: r.dccScore, endCp: r.endEval, stability: r.stability, shape: r.adsr?.shape,
@@ -2577,6 +2579,13 @@ function jumpTo(i){
     dccSelect.title = 'Show DCC details on the board; its card is always calculated';
   }
   syncDCCSelector();
+  const cardTimeSelect=document.getElementById('settingAnalysisTime');
+  if(cardTimeSelect){
+    const preferred=window.ChessAnalysisSession?.getSettings?.().analysisTimeMs||settings.analysisTimeMs||(window.ChessAnalysisSession?.capabilities?.().mobile?5000:15000);
+    if(!Array.from(cardTimeSelect.options).some(option=>Number(option.value)===preferred)){const option=document.createElement('option');option.value=String(preferred);option.textContent=preferred/1000+' s';cardTimeSelect.appendChild(option);}
+    cardTimeSelect.value=String(preferred);
+    cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs});saveSettings();});
+  }
   document.getElementById('settingSFDepth').addEventListener('change', event => {
     settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
     event.target.value = String(settings.sfAnalysisDepth);
@@ -2594,15 +2603,25 @@ function jumpTo(i){
     syncDCCSelector();
     if(event.chessAnalysisPassive){
       annotationRequestId++;activeLookaheadId++;
-      localController?.abort();localProvider?.destroy();localController=null;localProvider=null;
       clearInterval(evalRetryTimer);evalRetryTimer=null;
       document.querySelectorAll('.overlay').forEach(el=>el.remove());
       const candidates=document.getElementById('analysisCandidates');candidates.replaceChildren();candidates.style.display='none';
       positionEval.clearBoard?.(game.fen());activeAnalysisProvider=null;activeAnalysisFen=null;
       localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
-      const cached=engineCards?.get(settings.analysisSource,game.fen());
-      if(cached?.lines?.length)publishEngineSnapshot(cached,{displayOnly:true});
-      document.getElementById('analysisSourceStatus').textContent=cached?.lines?.length?'Retained '+(cached.engine?.name||settings.analysisSource)+' analysis':'Ready · press Deeper search';
+      const fen=game.fen();
+      if(settings.analysisSource==='cdb'){
+        const retained=settings.cdbEnabled===false?null:currentSourceAnalyses().CDB;
+        const moves=retained?.allMoves||[];
+        activeAnalysisProvider='CDB';activeAnalysisFen=fen;
+        positionEval.update(fen,moves[0]?.score,'CDB',true);
+        moves.slice(0,settings.topN||5).forEach((move,i)=>annotateMove(move.move,move.score,i===0,'CDB',move));
+        showAnalysisCandidates(moves,'CDB');
+        document.getElementById('analysisSourceStatus').textContent=settings.cdbEnabled===false?'CDB disabled':moves.length?'Retained ChessDB position data':'Ready · press Refresh evals';
+      }else{
+        const cached=engineCards?.get(settings.analysisSource,fen);
+        if(cached?.lines?.length)publishEngineSnapshot(cached,{displayOnly:true});
+        document.getElementById('analysisSourceStatus').textContent=cached?.lines?.length?'Retained '+(cached.engine?.name||settings.analysisSource)+' analysis':'Ready · press Deeper search';
+      }
       syncSFAnalysisControl();return;
     }
     sfAnalysisDepth = null;

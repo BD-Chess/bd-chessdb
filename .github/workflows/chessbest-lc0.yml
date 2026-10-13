@@ -1,0 +1,83 @@
+name: ChessBest LCZero public asset rebuild
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Standard public Linux runners are the only allowed route for this recipe.
+    # A private fork is skipped so this workflow cannot consume paid minutes.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Read exact ChessBest revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Read pinned official LCZero converter and submodule
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: LeelaChessZero/lc0
+          ref: fd71a2d921b689c5f479d3227c3806c8e272d9c5
+          path: lc0-upstream
+          submodules: true
+          persist-credentials: false
+      - name: Use Node for pinned public runtime package
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Verify source/model pins and build CPU converter
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C lc0-upstream rev-parse HEAD)" = fd71a2d921b689c5f479d3227c3806c8e272d9c5
+          test "$(git -C lc0-upstream/libs/lczero-common rev-parse HEAD)" = b326b154221a6eb91977bdccf11d6f89e8547875
+          python3 -m venv "$RUNNER_TEMP/lc0-buildtools"
+          "$RUNNER_TEMP/lc0-buildtools/bin/pip" install meson==1.12.1 ninja==1.13.2
+          export PATH="$RUNNER_TEMP/lc0-buildtools/bin:$PATH"
+          cd lc0-upstream
+          meson setup build/release --buildtype release -Dplain_cuda=false -Dopenblas=false -Dgtest=false -Dispc=false -Donnx=false
+          meson compile -C build/release -j 2
+      - name: Export real model and rebuild public runtime candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          raw = Path('public/chess-lab/engines/lc0/v0.32.1-maia1900-r8/source/maia-1900.pb.gz')
+          assert hashlib.sha256(raw.read_bytes()).hexdigest() == 'e2f565f42d7cd9f122557e6dc4eb84e5bbaedceda1d404dc485d3611c7c97a12'
+          PY
+          cp -a public/chess-lab/engines/lc0 lc0-candidate
+          lc0-upstream/build/release/lc0 leela2onnx --input=lc0-candidate/source/maia-1900.pb.gz --output=lc0-candidate/maia-1900.onnx --onnx-data-type=f32 --onnx-batch-size=1
+          mkdir -p "$RUNNER_TEMP/lc0-runtime-package"
+          npm pack onnxruntime-web@1.24.1 --pack-destination "$RUNNER_TEMP/lc0-runtime-package" --silent
+          tar -xzf "$RUNNER_TEMP/lc0-runtime-package/onnxruntime-web-1.24.1.tgz" -C "$RUNNER_TEMP/lc0-runtime-package"
+          for lc0_runtime_file in ort.wasm.min.mjs ort-wasm-simd-threaded.mjs ort-wasm-simd-threaded.wasm; do
+            cp "$RUNNER_TEMP/lc0-runtime-package/package/dist/$lc0_runtime_file" "lc0-candidate/runtime/$lc0_runtime_file"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          base = Path('lc0-candidate')
+          manifest = json.loads((base/'manifest.json').read_text())
+          for asset in manifest['files']:
+              path = base/asset['path']
+              assert path.stat().st_size == asset['bytes'], str(path)+' size differs'
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == asset['sha256'], str(path)+' SHA-256 differs'
+          assert manifest['verification']['status'] == 'PASS'
+          receipt = {'kind':'reproducible-LCZero-public-assets', 'modelSha256':manifest['model']['onnxSha256'], 'runtimeSha256':manifest['runtime']['wasmSha256'], 'nativeConverter':'fd71a2d921b689c5f479d3227c3806c8e272d9c5', 'allManifestAssetsVerified':True, 'publication':'candidate artifact only; live Pages assets remain in repository'}
+          Path('lc0-candidate-build-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          PY
+          tar -czf chessbest-lc0-public-assets.tar.gz lc0-candidate lc0-candidate-build-receipt.json
+      - name: Publish verified build candidate artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: chessbest-lc0-public-assets
+          path: |
+            chessbest-lc0-public-assets.tar.gz
+            lc0-candidate-build-receipt.json
+          retention-days: 7
+          if-no-files-found: error

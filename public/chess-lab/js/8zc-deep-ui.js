@@ -11,8 +11,8 @@
     panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">SF Lite · runs on this device.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
-      <p class="deep-budget-note" data-deep="budget-note" hidden></p>
+      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero NN / browser PUCT</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Time<select data-deep="time" aria-label="Deep analysis search time"><option value="off" selected>Off</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">1m</option><option value="300000">5m</option><option value="900000">15m</option><option value="1800000">30m</option><option value="3600000">1h</option><option value="14400000">4h</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <p class="deep-budget-note" data-deep="budget-note" hidden></p><p class="deep-budget-note" data-deep="time-note" hidden></p>
       <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
       <small data-berserk-status role="status" hidden></small>
       <details class="deep-additional"><summary>Additional data · CDB / DCC</summary><p data-deep="additional-status"></p><button type="button" data-deep="cdb-refresh">Refresh CDB data</button></details>
@@ -31,7 +31,31 @@
     const Chess = host.Chess || root.Chess;
     const session = root.ChessAnalysisSession;
     const configuredMode = () => session?.getSettings?.()?.analysisMode || 'sf-lite';
-    const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', 'sf-berserk': 'SF & Berserk' };
+    const positionKey = context => JSON.stringify([typeof context === 'string' ? context : context?.fen,
+      typeof context === 'string' ? null : context?.positionHistory || null]);
+    const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', reckless:'Reckless',lc0:'LCZero NN / browser PUCT', 'sf-berserk': 'SF & Berserk' };
+    let depthWithTime = false;
+    function reflectTime(settings = session?.getSettings?.() || {}) {
+      if (settings.deepTimeMs != null) {
+        const value = settings.deepTimeMs === -1 || settings.deepTimeMs === 'infinite' ? 'infinite' : Number(settings.deepTimeMs) > 0 ? String(settings.deepTimeMs) : 'off';
+        if ([...el('time').options].some(option => option.value === value)) el('time').value = value;
+      }
+      const choice = el('time').value, timed = choice !== 'off';
+      el('time-note').hidden = !timed;
+      el('time-note').textContent = choice === 'infinite' ? 'Search continues until Stop. Search depth is not a limit.' :
+        depthWithTime ? 'Time and the explicitly selected Search depth both apply; the first limit reached ends the search.' :
+        'Time is the search budget. Search depth is not a limit unless you select it again.';
+    }
+    el('time').addEventListener('change', () => {
+      depthWithTime = false;
+      session?.configure?.({deepTimeMs:el('time').value === 'off' ? 0 : el('time').value === 'infinite' ? -1 : Number(el('time').value)});
+      reflectTime();
+    });
+    el('budget').addEventListener('change', () => {
+      depthWithTime = el('time').value !== 'off' && el('time').value !== 'infinite' && el('budget').value.startsWith('depth:');
+      reflectTime();
+    });
+    reflectTime();
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
     const notifyState = extra => host.onStateChange?.({...state(),...extra});
@@ -59,7 +83,7 @@
         if (host.pause) host.pause('deep-panel');
         const next = context || host.getContext?.();
         const fen = typeof next === 'string' ? next : next?.fen;
-        if (!fen || next?.assistanceLocked || pinned?.fen !== fen) { setPinned(next); deepScroll = 0; }
+        if (!fen || next?.assistanceLocked || positionKey(pinned) !== positionKey(next)) { setPinned(next); deepScroll = 0; }
       } catch (e) { pinned = null; el('status').textContent = e.message; }
       lastFocus = doc.activeElement; workspaceScroll = workspace.scrollTop;
       workspaceLabel = workspace.getAttribute('aria-label');
@@ -101,6 +125,7 @@
     function scoreLabel(score) {
       if (!score) return '—';
       if(score.type==='decisive')return score.label||'—';
+      if(score.type==='q')return 'Q '+(score.white>0?'+':'')+Number(score.white).toFixed(3);
       const prefix = score.whiteBound === 'lower' ? '≥' : score.whiteBound === 'upper' ? '≤' : '';
       if (score.type === 'mate') return prefix + (score.white < 0 ? '−' : '') + '#' + Math.abs(score.white);
       return prefix + (score.white > 0 ? '+' : '') + (score.white / 100).toFixed(2);
@@ -110,7 +135,10 @@
       const provided = engine.name || engine.reportedName;
       if (provided) return provided;
       if (key === 'sf-full') return 'Stockfish Full' + (engine.version ? ' ' + engine.version : '');
+      if(key==='lc0'||key==='reckless')return root.ChessEngineRegistry?.label(key)||key;
       if (key === 'berserk') return 'Berserk' + (engine.version ? ' ' + engine.version : '');
+      if (key === 'reckless') return 'Reckless' + (engine.version ? ' ' + engine.version : '');
+      if (key === 'lc0') return 'LCZero NN / browser PUCT';
       return 'Stockfish 18 Lite';
     }
     function showPreview(line, index, key, snapshot) {
@@ -153,7 +181,7 @@
         const row = doc.createElement('article'); row.className = 'deep-line';
         const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
         const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score);
-        const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':'Depth ' + (line.depth ?? '—');
+        const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':key==='lc0'?'Visits ' + (line.visits ?? child.visits ?? child.nodes ?? '—'):'Depth ' + (line.depth ?? '—');
         meta.append(score, depth); row.appendChild(meta);
         const variation = doc.createElement('div'); variation.className = 'deep-pv';
         const lineMoves = movesFor(current.fen, line.pv);
@@ -172,14 +200,14 @@
           card.setAttribute('aria-label', sourceName(key, child) + ' analysis');
           const heading = doc.createElement('h3'); heading.textContent = sourceName(key, child);
           const progress = doc.createElement('p'); progress.className = 'deep-engine-progress';
-          const nodes = Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
+          const nodes = key === 'lc0' ? ((child.visits ?? child.nodes ?? 0).toLocaleString() + ' visits') : Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
           const seconds = Number.isFinite(child.elapsedMs) ? (child.elapsedMs / 1000).toFixed(1) + ' s' : 'time pending';
           const threads = Number(child.threadsEffective) || Number(child.engine?.threads) || 1;
           const nps = Number.isFinite(child.nps) ? ' · ' + child.nps.toLocaleString() + ' nps' : '';
-          const coverage = child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
-          progress.textContent = (child.status || 'loading') + ' · depth ' + (child.depth ?? child.linesDepth ?? '—') +
+          const coverage = key === 'lc0' ? ' · visited root candidates' : child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
+          progress.textContent = (child.status || 'loading') + (key==='lc0'?' · visits ' + (child.visits ?? child.nodes ?? '—'):' · depth ' + (child.depth ?? child.linesDepth ?? '—')) +
             ' · ' + nodes + nps + ' · ' + seconds + ' · ' + threads + ' search thread' + (threads === 1 ? '' : 's') +
-            coverage + (child.error ? ' · ' + (child.error.message || child.error) : '');
+            coverage + (child.downloadProgress?.loaded?' · downloaded '+(child.downloadProgress.loaded/1048576).toFixed(1)+' MiB':'') + (child.error ? ' · ' + (child.error.message || child.error) : '');
           card.append(heading, progress); appendLines(card, child, key); fragment.appendChild(card);
         }
       } else appendLines(fragment, entries[0][1], entries[0][0]);
@@ -240,12 +268,18 @@
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');
-        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: rootMoves(),
+        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: configuredMode() === 'lc0' ? [] : rootMoves(),
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
-        const [kind, value] = el('budget').value.split(':');
+        const [kind, value] = el('budget').value.split(':'), time = el('time').value;
         if (!options.automatic) followActive = true;
-        if (configuredMode() === 'sf-berserk') opts.movetime = session?.capabilities?.()?.mobile ? 3000 : 6000;
-        else if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
+        if (time === 'infinite') opts.infinite = true;
+        else if (time !== 'off') {
+          opts.movetime = Number.isFinite(options.timeOverride) ? options.timeOverride : Number(time);
+          if (depthWithTime && kind === 'depth' && configuredMode() !== 'lc0') opts.depth = Number(value);
+        } else if (configuredMode() === 'lc0') {
+          const saved = Number(session?.getSettings?.()?.analysisTimeMs);
+          opts.movetime = Number.isSafeInteger(saved) && saved > 0 ? saved : session?.capabilities?.()?.mobile ? 5000 : 15000;
+        } else if (Number.isFinite(options.depthOverride)) opts.depth = Math.max(1, Math.min(128, Math.round(options.depthOverride)));
         else if (kind === 'infinite') opts.infinite = true;
         else opts[kind] = Number(value);
         if (opts.searchMoves.length) opts.multiPV = Math.min(opts.multiPV, opts.searchMoves.length);
@@ -254,7 +288,9 @@
         el('start').disabled = true; el('stop').disabled = false;
         el('status').textContent = configuredMode() === 'sf-berserk' ? 'Loading SF Full and Berserk on demand…' :
           configuredMode() === 'sf-full' ? 'Loading SF Full on demand…' :
-          configuredMode() === 'berserk' ? 'Loading Berserk on demand…' : 'Loading Stockfish 18 Lite (~7 MB on first use)…';
+          configuredMode() === 'berserk' ? 'Loading Berserk on demand…' :
+          configuredMode() === 'reckless' ? 'Loading Reckless on demand…' :
+          configuredMode() === 'lc0' ? 'Loading LCZero network on demand…' : 'Loading Stockfish 18 Lite (~7 MB on first use)…';
         if (options.reveal !== false) revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
         const pending = engine.analyze(opts); notifyState();
@@ -279,8 +315,12 @@
     function deepenOrStop() {
       if (panel.hidden || !pinned || !followActive) return false;
       if (engine?.isRunning?.()) return stopCurrent();
-      const [kind, value] = el('budget').value.split(':');
-      if (configuredMode() === 'sf-berserk') { start({ reveal: false }); return true; }
+      const [kind, value] = el('budget').value.split(':'), time = el('time').value;
+      if (time !== 'off') {
+        const prior = Number(result?.requestedBudget?.movetime ?? result?.limits?.movetime) || Number(time);
+        start({ ...(time === 'infinite' ? {} : {timeOverride:Math.min(14400000,Math.max(Number(time),prior)*2)}), reveal: false }); return true;
+      }
+      if (configuredMode() === 'sf-berserk' || configuredMode() === 'lc0') { start({ reveal: false }); return true; }
       if (kind === 'infinite') { start({ reveal: false }); return true; }
       const snapshots = result?.children ? Object.values(result.children) : [result];
       const reached = Math.max(Number(value) || 14, ...snapshots.flatMap(snapshot =>
@@ -320,7 +360,7 @@
     };
     if (typeof host.onChange === 'function') {
       liveUnsubscribe = host.onChange(context => {
-        if (panel.hidden || !context?.fen || context.assistanceLocked || context.fen === pinned?.fen) return;
+        if (panel.hidden || !context?.fen || context.assistanceLocked || positionKey(context) === positionKey(pinned)) return;
         const keepScroll = workspace.scrollTop;
         const keepMinHeight = panel.style.minHeight;
         ++run; engine?.stop(); manualStoppedFen = null;
@@ -344,6 +384,7 @@
     unregisterControls = root.ChessAnalysisControls?.registerDeep?.(panel) || null;
     let analysisSettingsKey=JSON.stringify([session?.getSettings?.()?.analysisMode,session?.getSettings?.()?.sfFullThreadsRequested,session?.getSettings?.()?.hashMB]);
     unsubscribeSettings = session?.subscribeSettings?.(settings => {
+      reflectTime(settings);
       const nextKey=JSON.stringify([settings.analysisMode,settings.sfFullThreadsRequested,settings.hashMB]);
       if(nextKey===analysisSettingsKey)return;
       analysisSettingsKey=nextKey;

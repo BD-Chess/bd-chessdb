@@ -26,3 +26,7 @@ The machine-readable `engine-assets.json` records exact byte sizes and SHA-256 f
 The live GitHub Pages origin cannot run SF pthread WASM unless its actual response headers provide COOP/COEP. A committed `_headers` file by itself does not establish that hosting behavior. The feature candidate may honestly use Full single there while a separate authorized isolation hosting change is assessed.
 
 Public release: see BERSERK_NETWORK_STATUS.md. The original NNUE is served lazily from `berserk/v14-5b8d6c93/berserk-9b84c340af7e.manifest.json` and its three exact-byte parts, alongside GPL notices and the exact code/build archive. It is excluded from PWA startup precaching.
+
+## R8 public engine additions
+
+Reckless and LCZero NN / Maia1900 / browser PUCT are separately versioned browser components. Their exact binaries, model, source and license notices are available in [Public free operations](../engines/PUBLIC_FREE_OPERATIONS.md), with [Reckless source offer](../engines/reckless/v0.10.0-a6fa482c-r8/SOURCE.md) and [LCZero model/source/build notices](../engines/lc0/v0.32.1-maia1900-r8/README.md). Searches remain on the visitor device; no runtime CDN, paid API or BD host is required.

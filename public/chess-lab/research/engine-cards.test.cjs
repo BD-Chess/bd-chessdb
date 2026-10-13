@@ -16,11 +16,11 @@ function setup(t,mobile=false){
   const complete=(index,depth=11)=>engines[index].resolve({fen,lines:[{depth,pv:['e2e4'],score:{type:'cp',white:27}}],stopped:false});
   return {cards,calls,engines,published,settings,tick,complete,changeFen(value){fen=value;cards.positionChanged();},changeHistory(value){positionHistory=value;cards.positionChanged();},setAvailable(value){canAnalyze=value;cards.positionChanged();}};
 }
-test('each card owns its budget and result, and a completed repeat deepens its target',async t=>{
-  const x=setup(t),first=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[0].options.depth,11);
+test('each card owns its timed budget and result, and a completed repeat adds search time',async t=>{
+  const x=setup(t),first=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[0].options.movetime,15000);assert.equal(x.calls[0].options.depth,undefined);
   x.complete(0);await first;
-  const second=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[1].options.depth,13);
-  x.complete(1,13);await second;assert.equal(x.cards.get('sf-lite').requestedDepth,13);
+  const second=x.cards.analyze('sf-lite');await x.tick();assert.equal(x.calls[1].options.movetime,30000);assert.equal(x.calls[1].options.depth,undefined);
+  x.complete(1,13);await second;assert.equal(x.cards.get('sf-lite').requestedTimeMs,30000);assert.equal(x.cards.get('sf-lite').requestedDepth,null);
   assert.equal(x.cards.get('berserk'),null);
 });
 

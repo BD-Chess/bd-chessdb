@@ -270,12 +270,14 @@
       <div id="settingsPanel" class="panel workspace-drawer" aria-label="Workspace settings">
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
         <div class="dcc-settings-group">
-          <details class="analysis-network-advanced"><summary>Advanced · engine networks</summary><p>Berserk uses the original author's network automatically. A local override is available for advanced use.</p><div class="analysis-network-control"><label>Local Berserk 14 network override<input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Advanced local Berserk network override"></label><button type="button" data-berserk-remove hidden>Clear cached NNUE</button><small data-berserk-status role="status"></small></div><a href="vendor/ENGINE_NOTICES.md" target="_blank" rel="noopener">Author, source and license</a></details>
+          <details class="analysis-network-advanced"><summary>Advanced · engine networks</summary><p>Berserk uses the original author's network automatically. A local override is available for advanced use.</p><div class="analysis-network-control"><label>Local Berserk 14 network override<input type="file" data-berserk-network accept=".nn,.nnue,.data" aria-label="Advanced local Berserk network override"></label><button type="button" data-berserk-remove hidden>Clear cached NNUE</button><small data-berserk-status role="status"></small></div><a href="engines/PUBLIC_FREE_OPERATIONS.md" target="_blank" rel="noopener">Public engine downloads, source and licenses</a></details>
           <div class="dcc-settings-title">Local engine cards</div>
           <label for="settingSFEngine">Stockfish card:</label><select id="settingSFEngine"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option></select>
-          <label for="settingSFDepth">Default engine depth:</label>
+          <label for="settingAnalysisTime">Card search time:</label><select id="settingAnalysisTime" aria-describedby="settingAnalysisTimeHelp"><option value="5000">5s</option><option value="15000" selected>15s</option><option value="30000">30s</option><option value="60000">1m</option><option value="300000">5m</option><option value="900000">15m</option><option value="1800000">30m</option><option value="3600000">1h</option><option value="14400000">4h</option></select>
+          <p class="setting-note" id="settingAnalysisTimeHelp">Engine cards and Analyze all use this search time for each engine. Default: desktop 15s, mobile 5s. A completed card click gives that position more time; new positions use the saved base time. Loading and waiting in the queue are separate.</p>
+          <label for="settingSFDepth">Legacy / simulation depth:</label>
           <input type="number" id="settingSFDepth" min="1" max="128" step="1" inputmode="numeric" value="11" aria-describedby="settingSFDepthHelp">
-          <p class="setting-note" id="settingSFDepthHelp">Default 11 for local engine cards. Click a completed card again for a deeper target. Mobile searches have a time limit; All 4 runs available engines sequentially on mobile. CDB refreshes online data and DCC measures structure; neither has an engine search depth. Deep analysis and tournament Sim keep their own budgets.</p>
+          <p class="setting-note" id="settingSFDepthHelp">Default 11 for existing Stockfish simulation and probe workflows. Engine cards use the search time above; Deep keeps its own Search depth and Time controls. ChessDB provides online data and DCC measures structure.</p>
         </div>
         <details class="lab-settings-group" open>
           <summary>Workspace &amp; simulation</summary>
@@ -731,7 +733,7 @@
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-time-core.js?v=20260926-sim2"></script>
-  <script src="js/8zc-eval-bar.js?v=20261013-ux5"></script>
+  <script src="js/8zc-eval-bar.js?v=20261013-r8"></script>
   <script src="js/8zc-workspace.js?v=20260927-w0r2"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
@@ -739,12 +741,13 @@
   <script src="js/8zc-study-ui.js?v=20260927-w0r3"></script>
   <script src="js/8zc-review-core.js?v=20261012-review4"></script>
   <script src="js/8zc-review-presentation.js?v=20261012-review4"></script>
-  <script src="js/8zc-deep-engine.js?v=20260926-sim2"></script>
+  <script src="js/8zc-deep-engine.js?v=20261013-r8"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
-  <script src="js/8zc-analysis-session.js?v=20261012-ux4"></script>
-  <script src="js/8zc-deep-ui.js?v=20261012-ux4"></script>
-  <script src="js/8zc-engine-cards.js?v=20261013-ux5"></script>
-  <script src="js/8zc-analysis-controls.js?v=20261013-ux5"></script>
+  <script src="js/8zc-engine-registry.js?v=20261013-r8"></script>
+  <script src="js/8zc-analysis-session.js?v=20261013-r8"></script>
+  <script src="js/8zc-deep-ui.js?v=20261013-r8"></script>
+  <script src="js/8zc-engine-cards.js?v=20261013-r8"></script>
+  <script src="js/8zc-analysis-controls.js?v=20261013-r8"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
   <script src="js/8zc-research-ui.js?v=20260913-lab1"></script>
@@ -752,7 +755,7 @@
   <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
   <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
   <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
-  <script src="js/8zc-utils.js?v=20261013-ux5"></script>
+  <script src="js/8zc-utils.js?v=20261013-r8"></script>
   <script src="js/8zc-new-ui.js?v=20261002-library3"></script>
   <script src="js/8zc-review-ui.js?v=20261012-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261003-ux5"></script>

@@ -41,10 +41,10 @@ test('Node and infinite budgets do not inherit a hidden depth cap', () => {
   assert.equal(Deep.limitsFor({ fen: START }, Chess).depth, 14);
   assert.throws(() => Deep.limitsFor({ fen: START, depth: 12, infinite: true }, Chess));
 });
-test('Search budgets are exclusive and movetime requires a positive integer', () => {
+test('Search budgets reject unintended mixtures and movetime requires a positive integer', () => {
   const limits = Deep.limitsFor({ fen: START, movetime: 125 }, Chess);
   assert.equal(limits.movetime, 125); assert.equal(limits.depth, null); assert.equal(limits.nodes, null);
-  for (const budget of [{ depth: 8, nodes: 1000 }, { depth: 8, movetime: 125 },
+  for (const budget of [{ depth: 8, nodes: 1000 },
     { nodes: 1000, movetime: 125 }, { infinite: true, movetime: 125 }]) {
     assert.throws(() => Deep.limitsFor({ fen: START, ...budget }, Chess));
   }

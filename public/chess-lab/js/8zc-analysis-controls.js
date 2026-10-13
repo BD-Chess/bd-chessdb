@@ -21,14 +21,15 @@
     if (mode === 'cdb') return 'ChessDB · online position data';
     if (mode === 'sf-lite') return 'SF Lite · 1 thread';
     if (mode === 'berserk') return 'Berserk · 1 thread';
-    if (mode === 'reckless' || mode === 'lc0') return labels[mode]+' · not implemented yet';
+    if(mode==='reckless')return 'Reckless · 1 search thread';
+    if(mode==='lc0')return 'LCZero NN / browser PUCT · local neural inference';
     const sf = Number(caps.effectiveSFThreads) || 1;
     if (mode === 'sf-berserk') return `SF Full · ${sf} + Berserk · 1 = ${Number(caps.totalThreads) || sf + 1} search threads`;
     return `SF Full · ${sf} search thread${sf === 1 ? '' : 's'}`;
   }
   function reflectThreads(select, mode, settings, caps) {
     if (!select) return;
-    const unavailable = ['cdb','reckless','lc0'].includes(mode);
+    const unavailable = mode==='cdb'||mode==='lc0'||(mode!=='sf-berserk'&&root.ChessEngineRegistry&&!root.ChessEngineRegistry.supported(mode));
     const max = unavailable ? 0 : mode==='sf-full'||mode==='sf-berserk' ? Number(caps.maxSFThreads)||1 : 1;
     const signature = String(max);
     if (select.dataset.cpuOptions !== signature) {
@@ -42,7 +43,7 @@
     select.value = unavailable ? 'none' : String(Math.min(max,normalizeThreads(settings.sfFullThreadsRequested)));
     select.disabled = max<=1;
     select.title = mode==='cdb' ? 'CDB has no configurable local search threads. Your local CPU setting is retained.' :
-      unavailable ? 'This engine is not implemented yet.' : max===1 ?
+      unavailable ? 'This mode has no configurable CPU search threads.' : max===1 ?
       (mode==='sf-full'||mode==='sf-berserk' ? caps.message || 'This browser supports one search thread.' : 'This engine supports one search thread.') :
       'Local search threads supported by this engine and browser.';
   }
@@ -86,27 +87,17 @@
         if(!remove.dataset.bound){remove.dataset.bound='1';remove.addEventListener('click',removeNetwork);}}
     }
     const budget = deepPanel?.querySelector('[data-deep="budget"]');
-    if (budget) {
-      budget.disabled = deepMode === 'sf-berserk';
-      budget.closest('label').hidden=false;
-      budget.hidden = deepMode === 'sf-berserk';
-      budget.title = deepMode === 'sf-berserk' ? 'Dual analysis uses equal timed searches instead of a depth target.' : '';
-    }
+    if(budget){budget.closest('label').hidden=false;budget.hidden=false;budget.disabled=deepMode==='lc0';budget.title=deepMode==='lc0'?'Neural PUCT is measured in visits and time.':'';}
     const lineCount=deepPanel?.querySelector('[data-deep="multipv"]');
-    if(lineCount)lineCount.closest('label').hidden=false;
-    const rootMoves=deepPanel?.querySelector('.deep-root-moves');if(rootMoves)rootMoves.hidden=false;
+    if(lineCount){lineCount.closest('label').hidden=false;lineCount.title=deepMode==='lc0'?'Visited root candidates, not equal-depth MultiPV':'';}
+    const rootMoves=deepPanel?.querySelector('.deep-root-moves');if(rootMoves)rootMoves.hidden=deepMode==='lc0';
     const start=deepPanel?.querySelector('[data-deep="start"]');if(start)start.textContent='Analyze position';
-    const dualTime = deepPanel?.querySelector('[data-deep="dual-time"]');
-    if (dualTime) {
-      dualTime.hidden = deepMode !== 'sf-berserk';
-      if (deepMode === 'sf-berserk') dualTime.textContent = `${deepCaps.mobile ? 3 : 6} s each`;
-    }
-    const budgetLabel = deepPanel?.querySelector('[data-deep="budget-label"]');
-    if (budgetLabel) budgetLabel.textContent = deepMode === 'sf-berserk' ? 'Shared search time' : 'Search depth';
-    const budgetNote = deepPanel?.querySelector('[data-deep="budget-note"]');
-    if (budgetNote) {
-      budgetNote.hidden = deepMode !== 'sf-berserk';
-      if (deepMode === 'sf-berserk') budgetNote.textContent = `SF Full and Berserk each receive up to ${deepCaps.mobile ? 3 : 6} seconds of search time on this device. Their depths can differ.`;
+    const dualTime=deepPanel?.querySelector('[data-deep="dual-time"]');if(dualTime)dualTime.hidden=true;
+    const budgetLabel=deepPanel?.querySelector('[data-deep="budget-label"]');if(budgetLabel)budgetLabel.textContent='Search depth';
+    const budgetNote=deepPanel?.querySelector('[data-deep="budget-note"]');
+    if(budgetNote){budgetNote.hidden=deepMode!=='sf-berserk';budgetNote.textContent='Each engine receives the selected time and depth limits. Their achieved depths can differ.';}
+    for(const select of [topMode,modeControl()])for(const option of select?.options||[]){
+      if(['reckless','lc0'].includes(option.value))option.disabled=!root.ChessEngineRegistry?.supported(option.value);
     }
     const dcc = document.getElementById('analysisDccModeNote');
     if (dcc) dcc.hidden = true;
@@ -150,13 +141,12 @@
   function changeMode(event) {
     if (event.chessAnalysisHandled) return;
     const next = normalizeMode(event.target.value);
-    const old=requested(),top=event.target===topMode;
+    const top=event.target===topMode;
     const patch=top?{boardSource:next}:{analysisMode:event.target.value};
     if(isSF(next)) {
       patch.sfCardMode=next;
-      if(top&&isSF(old.analysisMode))patch.analysisMode=next;
     } else if(!top&&event.target.value==='sf-berserk')patch.sfCardMode='sf-full';
-    if(top) {event.chessAnalysisHandled=true;event.chessAnalysisPassive=isSF(old.boardSource)&&isSF(next);}
+    if(top) {event.chessAnalysisHandled=true;event.chessAnalysisPassive=true;}
     session?.configure?.(patch);
     reflect();
     // The analysis panel does not change the board source.

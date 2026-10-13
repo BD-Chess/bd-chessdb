@@ -5,7 +5,7 @@
 })(typeof window === 'object' ? window : globalThis, function(root, Deep) {
   'use strict';
   const abortError=()=>Object.assign(new Error('Cancelled'),{name:'AbortError'});
-  const MODES = ['sf-lite','sf-full','berserk','sf-berserk'];
+  const MODES = ['sf-lite','sf-full','berserk','sf-berserk','reckless','lc0'];
   const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
   // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
   const STORAGE = 'ChessBest:LAB:v2:analysis-engine-r3';
@@ -26,7 +26,9 @@
       sfCardMode:value.sfCardMode==='sf-full'?'sf-full':value.sfCardMode==='sf-lite'?'sf-lite':savedCardMode,
       boardSource:BOARD_SOURCES.includes(value.boardSource) ? value.boardSource : 'cdb',
       sfFullThreadsRequested:Number.isInteger(Number(requested))&&Number(requested)>=1&&Number(requested)<=8?Number(requested):1,
-      hashMB:Math.min(64, Math.max(8, Number(value.hashMB) || 16)) };
+      hashMB:Math.min(64, Math.max(8, Number(value.hashMB) || 16)),
+      ...(Number(value.analysisTimeMs)>0?{analysisTimeMs:Math.min(14400000,Number(value.analysisTimeMs))}:{}),
+      ...(Number.isFinite(Number(value.deepTimeMs))&&value.deepTimeMs!=null?{deepTimeMs:Math.max(-1,Math.min(14400000,Number(value.deepTimeMs)))}:{}) };
   }
   function capabilities(mode = settings.analysisMode, environment = root) {
     const hc = Math.max(1, Number(environment.navigator?.hardwareConcurrency) || 2);
@@ -39,7 +41,7 @@
     const auto = mobile ? 1 : hc >= 4 ? 2 : 1;
     const effectiveSFThreads = full ? Math.min(maxSFThreads, requested === 'auto' ? auto : requested) : 1;
     const totalThreads = dual ? effectiveSFThreads + 1 : mode === 'berserk' ? 1 : effectiveSFThreads;
-    const label = dual ? `SF Full · ${effectiveSFThreads} + Berserk · 1` : mode === 'berserk' ? 'Berserk · 1' : full ? `SF Full · ${effectiveSFThreads}` : 'SF Lite · 1';
+    const label = mode==='reckless'?'Reckless · 1':mode==='lc0'?'LCZero NN / browser PUCT · local inference':dual ? `SF Full · ${effectiveSFThreads} + Berserk · 1` : mode === 'berserk' ? 'Berserk · 1' : full ? `SF Full · ${effectiveSFThreads}` : 'SF Lite · 1';
     const message = full && !isolated ? environment.location?.hostname?.endsWith('github.io') ? 'This GitHub Pages session is not cross-origin isolated; SF Full uses the full single-thread fallback. Multiple SF threads require an isolated host.' : 'Full single-thread fallback · host isolation is required for multiple SF threads.' : full && requested !== 'auto' && requested > maxSFThreads ? `SF threads clamped to ${maxSFThreads}; CPU resources are shared.` : 'CPU resources are shared; hardwareConcurrency is only a hint.';
     return { isolated, hardwareConcurrency:hc, mobile, maxSFThreads, effectiveSFThreads, berserkThreads:1, totalThreads,
       allocation:label, message, threadsLocked:!full || maxSFThreads === 1 };
@@ -180,6 +182,7 @@
   // Reusable single-engine adapter for matched DCC continuation probes.
   // It uses the same pinned engine/network and actual thread policy as Deep.
   function backendFor(mode, Chess) {
+    if(['reckless','lc0'].includes(mode))return browserBackend(mode,Chess);
     if(!['sf-full','berserk'].includes(mode))return Deep;
     return {create(){
       const base=root.document?.baseURI||'http://localhost/chess-lab/';
@@ -193,6 +196,26 @@
       return {prepare:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.prepare(opts);},
         analyze:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.analyze(opts);},
         stop:()=>engine.stop(),destroy:()=>engine.destroy()};
+    }};
+  }
+  // Small lazy bridge. Models, WASM and optional modules load only on analysis.
+  function browserBackend(mode,Chess){
+    return {create(){
+      let adapter=null, pending=null, cancelled=false;
+      const controller=new AbortController();
+      async function ensure(opts={}){
+        if(cancelled||opts.signal?.aborted)throw abortError();
+        if(!pending)pending=import(new URL('engines/'+(mode==='lc0'?'lc0':'reckless')+'/adapter.mjs',root.document?.baseURI||'http://localhost/chess-lab/').href)
+          .then(module=>{if(cancelled)throw abortError();return adapter=module.create({Chess,hashMB:settings.hashMB});});
+        const engine=await pending;
+        if(cancelled||opts.signal?.aborted)throw abortError();
+        return engine;
+      }
+      function stop(){cancelled=true;controller.abort();adapter?.stop();}
+      return {async prepare(opts={}){const engine=await ensure(opts);return engine.prepare({...opts,signal:controller.signal});},
+        async analyze(opts={}){const engine=await ensure(opts);const abort=()=>stop();opts.signal?.addEventListener('abort',abort,{once:true});
+          try{return await engine.analyze({...opts,signal:controller.signal});}finally{opts.signal?.removeEventListener('abort',abort);}},
+        stop,destroy(){stop();adapter?.destroy();}};
     }};
   }
   const clone = v => JSON.parse(JSON.stringify(v));
@@ -242,14 +265,11 @@
       stop(); if (owner && owner !== api) owner.stop(); owner = api;
       const mode = config.analysisMode || settings.analysisMode, localMode = mode === 'auto' ? 'sf-lite' : mode;
       if(localMode==='cdb'){owner=null;return Promise.reject(new Error('ChessDB uses the connected source service, not a local UCI worker.'));}
-      const caps = capabilities(localMode), heavy = ['sf-full','berserk','sf-berserk'].includes(localMode);
+      const caps = capabilities(localMode), heavy = ['sf-full','berserk','sf-berserk','reckless','lc0'].includes(localMode);
       const ids = localMode === 'sf-berserk' ? ['sf-full','berserk'] : [localMode];
       const requestedBudget = {depth:validated.depth,nodes:validated.nodes,movetime:validated.movetime,infinite:validated.infinite};
-      // Dual comparisons use equal explicit wall-clock search budgets, rather than incomparable depth limits.
+      // Respect the user's explicit time/depth constraints for each participant.
       const limits = Object.assign({},validated);
-      if (ids.length === 2 && limits.movetime == null && limits.nodes == null) {
-        limits.depth = null; limits.infinite = false; limits.movetime = caps.mobile ? 3000 : 6000;
-      }
       return new Promise((resolve,reject) => {
         const job = {id:'analysis-'+Date.now()+'-'+(++sessionSerial)+'-'+(++serial),generation,mode:localMode,caps,requested:settings.sfFullThreadsRequested,
           children:ids.map(id=>({id,status:'loading',jobId:id+'-'+Date.now()+'-'+serial})),
@@ -257,15 +277,16 @@
           started:now(),startedAt:new Date().toISOString(),lastEmit:-Infinity,resolve,reject,stopped:false,requestedBudget,
           networkController:new AbortController(),
           effectiveBudget:{depth:limits.depth,nodes:limits.nodes,movetime:limits.movetime,infinite:limits.infinite,
-            maxSessionMs:heavy ? caps.mobile ? 30000 : 120000 : null}};
+            maxSessionMs:null}};
         active = job;
         job.abort = stop; job.signal?.addEventListener('abort',job.abort,{once:true});
-        if (heavy) job.timer = setTimeout(stop,job.effectiveBudget.maxSessionMs);
+        if(Number.isFinite(job.effectiveBudget.maxSessionMs)&&job.effectiveBudget.maxSessionMs>0)job.timer=setTimeout(stop,job.effectiveBudget.maxSessionMs);
         // No serial await: each child has its own loader, deadline, worker tree and completion.
         const preparations = [];
         for (const child of job.children) {
           try {
-            const meta = child.id === 'sf-lite' ? Deep.ENGINE : descriptors[child.id];
+            const browserMode=['reckless','lc0'].includes(child.id);
+            const meta = browserMode?{id:child.id,name:child.id==='lc0'?'LCZero NN / browser PUCT':'Reckless'}:child.id === 'sf-lite' ? Deep.ENGINE : descriptors[child.id];
             if (!meta) throw new Error('Unsupported engine mode');
             const base = root.document?.baseURI || 'http://localhost/chess-lab/';
             const variant = caps.isolated ? 'threaded' : 'single';
@@ -288,7 +309,7 @@
                 return worker;
               };
             }
-            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : Deep.create(engineConfig);
+            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig);
             const childOptions = Object.assign({},limits,{signal:undefined,onInfo:(_info,value) => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.snapshot=value; child.status='searching';
@@ -310,7 +331,7 @@
                 if(active!==job||job.generation!==generation||job.stopped)return;
                 if(!berserkNetwork)throw new Error('Berserk NNUE could not be loaded.');
               }
-              return child.engine.prepare?.();
+              return child.engine.prepare?.({signal:job.networkController.signal,onProgress:progress=>{if(active===job&&!job.stopped){child.snapshot={fen:job.fen,lines:[],downloadProgress:progress};emit(job,true);}}});
             }).then(() => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.status='ready'; emit(job,true);
@@ -342,5 +363,5 @@
   }
   root.addEventListener?.('pagehide',()=>{++generation;for(const x of instances)x.stop();});
   root.document?.addEventListener('visibilitychange',()=>{if(root.document.hidden){++generation;for(const x of instances)x.stop();}});
-  return {create,configure,getSettings,capabilities,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+  return {create,configure,getSettings,capabilities,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
 });

@@ -106,7 +106,7 @@ test('dual children start synchronously on identical pinned FEN/history and equa
   const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
   const fake = adapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const snapshots = [];
-  const run = session.analyze({ fen: BLACK, history: HISTORY, depth: 20, multiPV: 2,
+  const run = session.analyze({ fen: BLACK, history: HISTORY, movetime: 100, multiPV: 2,
     onInfo: (_, snapshot) => snapshots.push(snapshot) });
   assert.deepEqual(fake.calls.map(c => c.id), ['sf-full', 'berserk'], 'both loaders entered before either settled');
   await tick();
@@ -117,8 +117,8 @@ test('dual children start synchronously on identical pinned FEN/history and equa
   assert.deepEqual(plain(fake.calls[1].options.history), HISTORY);
   assert.equal(fake.calls[0].options.multiPV, 2);
   assert.equal(fake.calls[1].options.multiPV, 2);
-  assert.equal(fake.calls[0].options.movetime, 6000);
-  assert.equal(fake.calls[1].options.movetime, 6000);
+  assert.equal(fake.calls[0].options.movetime, 100);
+  assert.equal(fake.calls[1].options.movetime, 100);
   assert.equal(fake.calls[0].options.depth, null);
   fake.calls[0].info(result(BLACK, 'e7e5'));
   fake.calls[1].info(result(BLACK, 'c7c5'));
@@ -140,7 +140,7 @@ test('dual children start synchronously on identical pinned FEN/history and equa
 test('cold dual load prepares both at once and waits for both before issuing either timed search', async () => {
   const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
   const fake = preparingAdapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
-  const run = session.analyze({ fen: BLACK, history: HISTORY, depth: 16 });
+  const run = session.analyze({ fen: BLACK, history: HISTORY, movetime: 100 });
   assert.deepEqual(fake.calls.map(c => c.id), ['sf-full', 'berserk']);
   await tick();
   assert(fake.calls.every(c => c.prepareCalled && c.config.readyTimeoutMs === 20000));
@@ -149,7 +149,7 @@ test('cold dual load prepares both at once and waits for both before issuing eit
   assert(fake.calls.every(c => c.options === null), 'fast engine waits at barrier rather than consuming its search budget');
   fake.calls[1].ready.resolve(); await tick();
   assert(fake.calls.every(c => c.options !== null), 'both searches were issued after readiness');
-  assert(fake.calls.every(c => c.options.movetime === 6000));
+  assert(fake.calls.every(c => c.options.movetime === 100));
   assert(fake.calls.every(c => c.options.fen === BLACK));
   fake.calls[0].complete(result(BLACK, 'e7e5'));
   fake.calls[1].complete(result(BLACK, 'c7c5'));

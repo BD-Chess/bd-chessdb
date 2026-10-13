@@ -19,6 +19,7 @@
       return { label, white: mate ? (cp < 0 ? 0 : 100) : Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
         description: `${source} ${label} · White perspective`, state: 'known' };
     }
+    if(score?.type==='q'&&Number.isFinite(score.white)){const q=Math.max(-1,Math.min(1,score.white));return {label:'Q '+(q>0?'+':'')+q.toFixed(3),white:50+50*q,description:`${source} native neural Q ${q.toFixed(3)} · White perspective`,state:'known'};}
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
     // CDB decisive/tablebase sentinels are not ordinary centipawns. Do not invent mate distance.
@@ -47,7 +48,7 @@
       comparison.replaceChildren();
       for (const source of sources) {
         const actionable = typeof onBadgeAction === 'function';
-        const placeholder=source==='RLE'||source==='LC0';
+        const placeholder=source==='RLE'?!globalThis.ChessEngineRegistry?.supported('reckless'):source==='LC0'?!globalThis.ChessEngineRegistry?.supported('lc0'):false;
         const mode=settings.analysisSource;
         const enabled=source==='CDB'?settings.cdbEnabled!==false:!placeholder;
         const control=getBadgeControl?.(source);
@@ -87,7 +88,7 @@
           score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
           main.append(score);
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
-          note.textContent = placeholder ? 'Not implemented yet' : !enabled ? 'Disabled' : control?.note ||
+          note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
             (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?'Online data':'Ready');
           if(source==='SF')note.textContent=(entry?.variant||control?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
@@ -140,7 +141,7 @@
       const deep = source === 'SF' ? sourceScores.get(`${fen}:SF`) : null;
       const preserved = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
       scores.set(fen, { score: preserved ? deep.score : score, source, settled, at: Date.now() });
-      if (source === 'CDB' || source === 'SF' || source === 'BER') updateSource(fen, score, source);
+      if (source === 'CDB' || source === 'SF' || source === 'BER' || source === 'RLE' || source === 'LC0') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
@@ -153,7 +154,7 @@
           Date.now() - previous.at < 300000 && (!Number.isFinite(depth) || depth < previous.depth)) return;
       // Score-only refreshes must not erase root metadata. Explicit null clears it;
       // unavailable scores also clear omitted metadata rather than retain an old move.
-      const known = Number.isFinite(score) || (['cp', 'mate'].includes(score?.type) && Number.isFinite(score.white));
+      const known = Number.isFinite(score) || (['cp', 'mate','q'].includes(score?.type) && Number.isFinite(score.white));
       sourceScores.set(key, { score, at: Date.now(),
         origin, variant:metadata.variant||previous?.variant, engineName:metadata.engineName||previous?.engineName,
         depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
@@ -181,8 +182,8 @@
       if (game.fen() === fen) render();
     }
     function clearLocalSources(fen) {
-      sourceScores.delete(`${fen}:SF`);sourceScores.delete(`${fen}:BER`);
-      if(['SF','BER'].includes(scores.get(fen)?.source))scores.delete(fen);
+      for(const role of ['SF','BER','RLE','LC0'])sourceScores.delete(`${fen}:${role}`);
+      if(['SF','BER','RLE','LC0'].includes(scores.get(fen)?.source))scores.delete(fen);
       lastKnown=null;if(game.fen()===fen)render();
     }
     const api = { render, update, updateSource, updateDCC, markComparisonPending, clearLocalSources, clearBoard(fen){scores.delete(fen);lastKnown=null;if(game.fen()===fen)render();} };

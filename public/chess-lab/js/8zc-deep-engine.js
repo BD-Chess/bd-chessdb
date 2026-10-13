@@ -59,8 +59,10 @@
     const nodes = finiteInt(options.nodes, null, 1, Number.MAX_SAFE_INTEGER);
     const movetime = finiteInt(options.movetime, null, 1, Number.MAX_SAFE_INTEGER);
     const depth = finiteInt(options.depth, options.infinite || nodes != null || movetime != null ? null : 14, 1, 128);
-    if ([nodes, depth, movetime].filter(value => value != null).length + Number(!!options.infinite) !== 1)
-      throw new Error('Choose exactly one engine limit: depth, nodes, movetime or infinite');
+    const finiteCount = [nodes, depth, movetime].filter(value => value != null).length;
+    const depthAndTime = depth != null && movetime != null && nodes == null && !options.infinite;
+    if (!depthAndTime && finiteCount + Number(!!options.infinite) !== 1)
+      throw new Error('Choose depth, nodes, movetime or infinite; explicit depth and time may be combined');
     const deadline = options.deadline == null ? null : Number(options.deadline);
     if (deadline != null && (!Number.isFinite(deadline) || movetime == null)) throw new Error('A search deadline requires a timed limit');
     let searchMoves = options.searchMoves == null ? [] : options.searchMoves;
@@ -157,16 +159,17 @@
         linesDepth: job.completeDepth ?? null, expectedLines: job.expectedLines,
         partialLines: job.completeLines && partial.some(line => line.depth > job.completeDepth) ? partial : [],
         bestMove: job.bestMove || null, ponder: job.ponder || null, nodes: job.nodes, depth: job.depth,
-        stopped: job.stopped, elapsedMs: now() - job.started, startedAt: job.startedAt,
+        stopped: job.stopped, stopReason: job.stopReason || null, elapsedMs: now() - job.started, startedAt: job.startedAt,
         searchElapsedMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
+        actualSearchMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
         initializationMs: (job.searchStarted ?? now()) - job.started,
         positionHistory: job.limits.history ? 'Validated history supplied from startFen' : 'FEN only; repetition history before this position is unavailable',
         coldHash: true, perspective: 'root scores are for the side to move; white scores are for White' });
     }
-    function stop() {
+    function stop(reason = 'user-stop') {
       const job = active;
       if (!job) return;
-      job.stopped = true;
+      job.stopped = true; job.stopReason = reason;
       if (config.forceTerminateOnStop) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, null, true); return; }
       if (job.phase !== 'search') { finish(job, null, true); return; }
       if (job.stopTimer) return;
@@ -225,11 +228,15 @@
                 if (limits.movetime != null) command += ' movetime ' + (remaining == null ? limits.movetime : Math.min(limits.movetime, remaining));
                 if (limits.infinite) command += ' infinite';
                 if (limits.searchMoves.length) command += ' searchmoves ' + limits.searchMoves.join(' ');
+                job.actualMovetime = limits.movetime == null ? null : remaining == null ? limits.movetime : Math.min(limits.movetime, remaining);
+                try { options.onSearchStarted?.({ timestamp: job.searchStarted, initializationMs: job.searchStarted - job.started }); } catch (_) {}
                 job.worker.postMessage(command);
               } else if (job.phase === 'search' && line.startsWith('bestmove ')) {
                 const tokens = line.split(/\s+/);
                 job.bestMove = MOVE.test(tokens[1]) ? tokens[1] : null;
                 job.ponder = tokens[2] === 'ponder' && MOVE.test(tokens[3]) ? tokens[3] : null;
+                if (!job.stopReason) job.stopReason = limits.depth != null && job.depth >= limits.depth ? 'depth-limit' :
+                  job.actualMovetime != null && now() - job.searchStarted >= job.actualMovetime * 0.97 ? 'time-budget' : 'bestmove';
                 finish(job);
               } else if (job.phase === 'search') {
                 const info = parseInfo(line, limits.fen);
