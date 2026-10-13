@@ -45,12 +45,16 @@
 .deep-line-meta{display:flex;flex-direction:column;gap:5px;font-variant-numeric:tabular-nums}
 .deep-line-meta strong{font-size:17px}
 .deep-line-meta span{font-size:11px;color:var(--ui-muted,#aebdd2)}
-.deep-pv{position:relative;line-height:28px;height:84px;overflow:hidden;overflow-wrap:anywhere}
+.deep-pv{position:relative;line-height:28px;height:56px;overflow:hidden;overflow-wrap:anywhere}
 .deep-pv button{display:inline;height:28px;min-height:28px;line-height:20px;vertical-align:top;padding:4px;background:transparent;border:0;border-radius:3px;font-size:12px}
 .deep-pv.is-clipped::after{content:"…";position:absolute;right:0;bottom:0;min-width:22px;height:28px;line-height:28px;text-align:right;padding-left:8px;background:linear-gradient(90deg,transparent,var(--ui-inset,#172238) 42%);color:var(--ui-muted,#aebdd2);pointer-events:none}
 .deep-preview{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;border-top:1px solid var(--ui-border,#3e4c64);margin-top:12px;padding-top:12px}
 .deep-preview[hidden]{display:none}
-.deep-preview>div:first-child{width:min(260px,100%);margin:auto}
+.deep-preview>div:first-child{width:min(220px,100%);max-width:100%;margin:0 auto}
+.deep-preview.is-side-by-side{grid-template-columns:auto minmax(0,1fr);align-items:start}
+.deep-preview .board-b72b1{box-sizing:content-box;border:0;overflow:hidden}
+.deep-preview [data-deep="preview-text"]{overflow-wrap:anywhere}
+.deep-preview .piece-417db{max-width:100%;max-height:100%;width:100%!important;height:100%!important}
 .deep-preview h3{font-size:14px;margin:0}
 .deep-preview p{font-size:12px;line-height:1.6}
 .deep-note{margin-bottom:0}
@@ -206,3 +210,9 @@ body.app-mobile .analysis-link-toggle{min-height:44px}
 body.app-mobile .all-eval-badge[data-eval-source="DCC"] small{font-size:10px;white-space:nowrap;line-height:1.2}
 /* Changing score text must not become WebKit's pointer-down target. */
 .all-eval-badge > *{pointer-events:none}
+
+/* R13: compact desktop controls, full touch targets on phones. */
+body .analysis-options-row{column-gap:6px}
+body .analysis-options-row .analysis-checks{gap:5px}
+body:not(.app-mobile) .analysis-source-row .analysis-options-row .analysis-checks label{font-size:10.5px;padding-inline:0}
+@container(min-width:350px){body .analysis-options-row{flex-wrap:nowrap}body .analysis-dcc-actions{flex-wrap:nowrap}}

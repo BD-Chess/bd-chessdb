@@ -148,14 +148,14 @@ test('W0 Deep save awaits durable outcome, freezes its line and reports pending 
 });
 
 
-test('Deep search uses fixed depth presets plus Until I stop and reserves exactly three PV rows', t => {
+test('Deep search uses fixed depth presets plus Until I stop and reserves exactly two PV rows', t => {
   const x = setup(t);
   const label = x.el('budget').closest('label');
   assert.match(label.textContent, /Search depth/);
   assert.deepEqual([...x.el('budget').options].map(option => option.value),
     ['depth:14','depth:18','depth:22','depth:26','depth:30','depth:34','depth:38','depth:42','infinite']);
   const css = x.w.document.querySelector('style').textContent;
-  assert.match(css, /\.deep-pv\{[^}]*height:84px;[^}]*overflow:hidden/s);
+  assert.match(css, /\.deep-pv\{[^}]*height:56px;[^}]*overflow:hidden/s);
   assert.match(css, /\.deep-pv button\{[^}]*height:28px;[^}]*min-height:28px/s);
   assert.match(css, /\.deep-pv\.is-clipped::after\{[^}]*content:"…"/s);
 });

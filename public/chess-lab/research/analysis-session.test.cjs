@@ -73,6 +73,37 @@ function result(fen, move, { depth = 8, score = 22, engine = null } = {}) {
     depth, nodes: 3000, elapsedMs: 50, bestMove: move };
 }
 
+test('phone comparison prepares, searches and destroys one child at a time with equal per-engine limits',async()=>{
+  for(const mode of ['sf-lc0','sf-reckless','sf-berserk','all']){
+    const {Session}=fixture({mobile:true,isolated:false});Session.configure({analysisMode:mode,sfCardMode:'sf-lite'});
+    const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
+    const run=session.analyze({fen:BLACK,history:HISTORY,movetime:100,multiPV:2});await tick();
+    assert.equal(Session.capabilities().totalThreads,1);
+    for(let i=0;i<fake.calls.length;i++){
+      const call=fake.calls[i];assert.equal(call.prepareCalled,true);
+      assert(fake.calls.slice(i+1).every(c=>!c.prepareCalled&&!c.options),'queued engines allocate no worker');
+      call.ready.resolve();await tick();
+      assert.equal(call.options.movetime,100);assert.equal(call.options.depth,null);
+      assert.equal(call.options.fen,BLACK);assert.deepEqual(plain(call.options.history),HISTORY);
+      call.complete(result(BLACK,'e7e5'));await tick();assert.equal(call.destroyed,true);
+    }
+    const done=await run;assert.equal(done.status,'complete');assert.equal(done.groupComplete,true);
+    assert.deepEqual(Object.keys(done.children),plain(Session.participants(mode)));session.destroy();
+  }
+});
+
+test('phone queued failure advances; Stop and setting changes prevent late loaders from starting peers',async()=>{
+  const {Session}=fixture({mobile:true});Session.configure({analysisMode:'all',sfCardMode:'sf-full'});
+  const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
+  const run=session.analyze({fen:START,movetime:100});await tick();fake.calls[0].ready.reject(new Error('Unavailable'));await tick();
+  assert.equal(fake.calls[1].prepareCalled,true);assert.equal(fake.calls[2].prepareCalled,false);
+  session.stop();const done=await run;assert.equal(done.status,'stopped');
+  fake.calls[1].ready.resolve();await tick();assert(fake.calls.every(c=>!c.options));assert(fake.calls.every(c=>c.destroyed));
+  await assert.rejects(session.analyze({fen:START,infinite:true}),/finite Time/);
+  Session.configure({analysisMode:'sf-berserk'});const next=session.analyze({fen:START,depth:14});await tick();
+  Session.configure({sfCardMode:'sf-lite'});assert.equal((await next).status,'stopped');session.destroy();
+});
+
 test('default is CDB-first, settings do not launch workers, and Full/Berserk remain lazy until analysis', async () => {
   const { Session, values } = fixture();
   const fake = adapters();
@@ -88,7 +119,7 @@ test('default is CDB-first, settings do not launch workers, and Full/Berserk rem
   fake.calls[0].complete(result(START, 'e2e4'));
   assert.equal((await run).status, 'complete');
   session.destroy();
-  const restored = fixture({ stored: { analysisMode: 'sf-berserk', sfFullThreadsRequested: 8 } });
+  const restored = fixture({ stored: { analysisMode: 'sf-berserk', sfCardMode:'sf-full', sfFullThreadsRequested: 8 } });
   assert.equal(restored.Session.getSettings().analysisMode, 'sf-berserk');
   assert.equal(fake.calls.length, 1, 'restoring settings starts no analysis');
 });
@@ -103,7 +134,7 @@ test('legacy CDB/auto Deep selections migrate to Lite while the original prefere
 });
 
 test('dual children start synchronously on identical pinned FEN/history and equal timed budgets', async () => {
-  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
+  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = adapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const snapshots = [];
   const run = session.analyze({ fen: BLACK, history: HISTORY, movetime: 100, multiPV: 2,
@@ -138,7 +169,7 @@ test('dual children start synchronously on identical pinned FEN/history and equa
 });
 
 test('cold dual load prepares both at once and waits for both before issuing either timed search', async () => {
-  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
+  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = preparingAdapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const run = session.analyze({ fen: BLACK, history: HISTORY, movetime: 100 });
   assert.deepEqual(fake.calls.map(c => c.id), ['sf-full', 'berserk']);
@@ -158,7 +189,7 @@ test('cold dual load prepares both at once and waits for both before issuing eit
 });
 
 test('a failed preparation is partial, and a prepared peer still searches after the barrier', async () => {
-  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
+  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = preparingAdapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const seen = [];
   const run = session.analyze({ fen: START, movetime: 100, onInfo: (_, snapshot) => seen.push(snapshot) });
@@ -177,7 +208,7 @@ test('a failed preparation is partial, and a prepared peer still searches after 
 });
 
 test('switch while loaders are pending destroys both and prevents a late prepare from starting a search', async () => {
-  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
+  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = preparingAdapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const old = session.analyze({ fen: START, movetime: 100 });
   Session.configure({ analysisMode: 'sf-lite' });
@@ -194,7 +225,7 @@ test('switch while loaders are pending destroys both and prevents a late prepare
 });
 
 test('one failed or blocked loader leaves the other searching, then Stop terminates both', async () => {
-  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk' });
+  const { Session } = fixture(); Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = adapters(), session = Session.create({ Chess, adapterFactory: fake.factory });
   const observed = [];
   const run = session.analyze({ fen: START, nodes: 1000, onInfo: (_, snapshot) => observed.push(snapshot) });
@@ -234,7 +265,7 @@ test('one child terminal result resolves a single session; switch invalidates la
   const single = await first;
   assert.equal(single.status, 'complete'); assert.equal(single.dualComplete, false);
   assert.equal(Object.keys(single.children).length, 1);
-  Session.configure({ analysisMode: 'sf-berserk' });
+  Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const old = session.analyze({ fen: START, infinite: true, onInfo: (_, value) => observed.push(value) });
   await tick();
   const oldInfo = fake.calls[1].options.onInfo;
@@ -257,25 +288,26 @@ test('one child terminal result resolves a single session; switch invalidates la
 
 test('CPU accounting distinguishes isolated Full threads, non-isolated fallback and mobile dual cap', () => {
   const isolated = fixture({ hardwareConcurrency: 8, isolated: true });
-  isolated.Session.configure({ analysisMode: 'sf-berserk', sfFullThreadsRequested: 6 });
+  isolated.Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full', sfFullThreadsRequested: 6 });
   const dual = isolated.Session.capabilities();
   assert.equal(dual.effectiveSFThreads, 6); assert.equal(dual.berserkThreads, 1);
   assert.equal(dual.totalThreads, 7); assert.equal(dual.allocation, 'SF Full · 6 + Berserk · 1');
   const fallback = fixture({ hardwareConcurrency: 8, isolated: false });
-  fallback.Session.configure({ analysisMode: 'sf-berserk', sfFullThreadsRequested: 6 });
+  fallback.Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full', sfFullThreadsRequested: 6 });
   const single = fallback.Session.capabilities();
   assert.equal(single.effectiveSFThreads, 1); assert.equal(single.totalThreads, 2);
   assert.match(single.message, /single-thread fallback/);
   const mobile = fixture({ hardwareConcurrency: 4, isolated: true, mobile: true });
-  mobile.Session.configure({ analysisMode: 'sf-berserk', sfFullThreadsRequested: 'auto' });
-  assert.equal(mobile.Session.capabilities().totalThreads, 2);
+  mobile.Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full', sfFullThreadsRequested: 'auto' });
+  assert.equal(mobile.Session.capabilities().totalThreads, 1);
+  assert.equal(mobile.Session.capabilities().sequential,true);
   mobile.Session.configure({ analysisMode: 'sf-lite', sfFullThreadsRequested: 8 });
   assert.equal(mobile.Session.capabilities().totalThreads, 1);
 });
 
 test('visibility change and pagehide stop all session-owned children; late callbacks stay invisible', async () => {
   const { Session, root, events, documentEvents } = fixture();
-  Session.configure({ analysisMode: 'sf-berserk' });
+  Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full' });
   const fake = adapters();
   const left = Session.create({ Chess, adapterFactory: fake.factory });
   const right = Session.create({ Chess, adapterFactory: fake.factory });
@@ -310,7 +342,7 @@ class UciWorker {
 test('real Deep adapters dispatch simultaneous distinct UCI workers and preserve legal PV, bounds and partial MultiPV', async () => {
   const { Session } = fixture({ isolated: false, crypto: {subtle:{digest:async()=>Buffer.from('9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084','hex')}} });
   await Session.loadBerserkNetwork({size:Session.BERSERK_NET.bytes,arrayBuffer:async()=>new ArrayBuffer(Session.BERSERK_NET.bytes)});
-  Session.configure({ analysisMode: 'sf-berserk', sfFullThreadsRequested: 4 });
+  Session.configure({ analysisMode: 'sf-berserk', sfCardMode:'sf-full', sfFullThreadsRequested: 4 });
   const workers = [];
   const session = Session.create({ Chess, workerFactory: (url, id) => {
     const worker = new UciWorker(id); worker.url = url; workers.push(worker); return worker;
@@ -352,7 +384,7 @@ test('local NNUE survives a new session, is reverified, and removal preserves St
   await first.Session.loadBerserkNetwork({size:first.Session.BERSERK_NET.bytes,arrayBuffer:async()=>new ArrayBuffer(first.Session.BERSERK_NET.bytes)});
   assert.equal(first.Session.getSettings().berserkNetworkPersistent,true);
   const next=fixture({indexedDB,crypto});next.values.set('ChessBest:LAB:v2:studies','untouched');
-  next.Session.configure({analysisMode:'sf-berserk',sfFullThreadsRequested:4});
+  next.Session.configure({analysisMode:'sf-berserk',sfCardMode:'sf-full',sfFullThreadsRequested:4});
   await next.Session.restoreBerserkNetwork();
   assert.equal(next.Session.getSettings().berserkNetworkReady,true);
   assert.equal(digests,2,'restored bytes must be verified again');
