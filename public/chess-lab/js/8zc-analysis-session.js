@@ -5,7 +5,10 @@
 })(typeof window === 'object' ? window : globalThis, function(root, Deep) {
   'use strict';
   const abortError=()=>Object.assign(new Error('Cancelled'),{name:'AbortError'});
-  const MODES = ['sf-lite','sf-full','berserk','sf-berserk','reckless','lc0'];
+  const GROUPS = {'sf-lc0':['lc0'], 'sf-reckless':['reckless'], 'sf-berserk':['berserk'], all:['lc0','reckless','berserk']};
+  const MODES = ['sf-lite','sf-full','berserk','reckless','lc0',...Object.keys(GROUPS)];
+  const isGroup = mode => Object.hasOwn(GROUPS,mode);
+  const participants = (mode,variant=settings.sfCardMode) => isGroup(mode) ? [variant,...GROUPS[mode]] : [mode];
   const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
   // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
   const STORAGE = 'ChessBest:LAB:v2:analysis-engine-r3';
@@ -34,17 +37,20 @@
     const hc = Math.max(1, Number(environment.navigator?.hardwareConcurrency) || 2);
     const mobile = !!environment.matchMedia?.('(pointer: coarse)').matches || (environment.innerWidth > 0 && environment.innerWidth < 700);
     const isolated = environment.crossOriginIsolated === true && typeof environment.SharedArrayBuffer === 'function';
-    const dual = mode === 'sf-berserk', full = mode === 'sf-full' || dual;
+    const ids=participants(mode),dual=isGroup(mode),full=ids.includes('sf-full');
+    const sequential=ids.length>1&&(mobile||ids.length>2);
     const cap = Math.max(1, Math.min(mobile ? 2 : 8, hc - (dual ? 2 : 1)));
     const maxSFThreads = isolated ? cap : 1;
     const requested = settings.sfFullThreadsRequested;
     const auto = mobile ? 1 : hc >= 4 ? 2 : 1;
     const effectiveSFThreads = full ? Math.min(maxSFThreads, requested === 'auto' ? auto : requested) : 1;
-    const totalThreads = dual ? effectiveSFThreads + 1 : mode === 'berserk' ? 1 : effectiveSFThreads;
-    const label = mode==='reckless'?'Reckless · 1':mode==='lc0'?'LCZero NN / browser PUCT · local inference':dual ? `SF Full · ${effectiveSFThreads} + Berserk · 1` : mode === 'berserk' ? 'Berserk · 1' : full ? `SF Full · ${effectiveSFThreads}` : 'SF Lite · 1';
+    const threadCounts=ids.map(id=>id==='sf-full'?effectiveSFThreads:1);
+    const totalThreads=sequential?Math.max(...threadCounts):threadCounts.reduce((a,b)=>a+b,0);
+    const names={'sf-lite':'SF Lite','sf-full':'SF Full',lc0:'LCZero NN',reckless:'Reckless',berserk:'Berserk'};
+    const label=ids.map((id,i)=>names[id]+' · '+threadCounts[i]).join(sequential?' → ':' + ');
     const message = full && !isolated ? environment.location?.hostname?.endsWith('github.io') ? 'This GitHub Pages session is not cross-origin isolated; SF Full uses the full single-thread fallback. Multiple SF threads require an isolated host.' : 'Full single-thread fallback · host isolation is required for multiple SF threads.' : full && requested !== 'auto' && requested > maxSFThreads ? `SF threads clamped to ${maxSFThreads}; CPU resources are shared.` : 'CPU resources are shared; hardwareConcurrency is only a hint.';
     return { isolated, hardwareConcurrency:hc, mobile, maxSFThreads, effectiveSFThreads, berserkThreads:1, totalThreads,
-      allocation:label, message, threadsLocked:!full || maxSFThreads === 1 };
+      allocation:label, message, sequential, participants:ids, threadsLocked:!full || maxSFThreads === 1 };
   }
   function getSettings() { return Object.assign({}, settings, {sfFullThreadsEffective:capabilities().effectiveSFThreads,
     berserkNetworkReady:!!berserkNetwork,berserkNetworkState:networkState,berserkNetworkPersistent:networkPersistent,berserkNetworkError:networkError}); }
@@ -171,7 +177,8 @@
     const next = sanitize(Object.assign({}, settings, value));
     if (JSON.stringify(next) === JSON.stringify(settings)) return getSettings();
     // Changing the board's display source does not cancel independent analysis.
-    const computeChanged = ['analysisMode','sfFullThreadsRequested','hashMB'].some(key=>next[key]!==settings[key]);
+    const computeChanged = ['analysisMode','sfFullThreadsRequested','hashMB'].some(key=>next[key]!==settings[key]) ||
+      isGroup(next.analysisMode)&&next.sfCardMode!==settings.sfCardMode;
     if(computeChanged){++generation; for (const instance of instances) instance.stop();}
     settings = next;
     try { root.localStorage?.setItem(STORAGE, JSON.stringify(settings)); } catch (_) {}
@@ -266,6 +273,7 @@
       const children = {};
       for (const child of job.children) children[child.id] = Object.assign({}, child.snapshot || {fen:job.fen,lines:[]}, {
         status:child.status, error:child.error || null, jobId:child.jobId, searchStartedMs:child.searchStartedMs ?? null,
+        requestedBudget:job.requestedBudget,limits:child.snapshot?.limits||job.options,
         finishedMs:child.finishedMs ?? null, threadsRequested:child.id === 'sf-full' ? job.requested : 1,
         threadsEffective:child.id === 'sf-full' ? job.caps.effectiveSFThreads : 1});
       const complete = job.children.every(c => c.status === 'complete');
@@ -273,7 +281,7 @@
       const base = job.children.length === 1 ? clone(Object.values(children)[0]) : {fen:job.fen,lines:[],limits:job.options};
       return Object.assign(base, {mode:job.mode,children,sessionId:job.id,generation:job.generation,
         stopped:job.stopped, status:job.stopped ? 'stopped' : complete ? 'complete' : anyFailed ? 'partial' : 'running',
-        dualComplete:job.children.length === 2 && complete, partial:!complete,
+        dualComplete:job.children.length === 2 && complete, groupComplete:complete, partial:!complete,
         requestedBudget:job.requestedBudget, effectiveBudget:job.effectiveBudget,
         allocation:job.caps,elapsedMs:now()-job.started,startedAt:job.startedAt,
         positionHistory:job.history, comparison:job.children.length === 2 ? comparison(children) : null});
@@ -291,7 +299,7 @@
     function stop() {
       const job = active; if (!job) return;
       active = null; if (owner === api) owner = null; job.stopped = true;
-      if (root.document && ['sf-full','berserk','sf-berserk'].includes(job.mode))
+      if (root.document && job.children.some(child=>['sf-full','berserk'].includes(child.id)))
         cleanupUntil = Math.max(cleanupUntil, now() + (config.teardownGraceMs ?? 3500));
       clearTimeout(job.timer); job.networkController?.abort();job.signal?.removeEventListener('abort',job.abort);
       for (const child of job.children) { if (!['complete','failed'].includes(child.status)) child.status='stopped'; child.engine?.destroy(); }
@@ -305,14 +313,16 @@
       stop(); if (owner && owner !== api) owner.stop(); owner = api;
       const mode = config.analysisMode || settings.analysisMode, localMode = mode === 'auto' ? 'sf-lite' : mode;
       if(localMode==='cdb'){owner=null;return Promise.reject(new Error('ChessDB uses the connected source service, not a local UCI worker.'));}
-      const caps = capabilities(localMode), heavy = ['sf-full','berserk','sf-berserk','reckless','lc0'].includes(localMode);
-      const ids = localMode === 'sf-berserk' ? ['sf-full','berserk'] : [localMode];
+      const caps = capabilities(localMode), ids=participants(localMode);
+      if(caps.sequential&&ids.includes('lc0')&&validated.movetime==null){owner=null;
+        return Promise.reject(new Error('Choose a finite Time for this sequential neural comparison so every engine gets a turn.'));
+      }
       const requestedBudget = {depth:validated.depth,nodes:validated.nodes,movetime:validated.movetime,infinite:validated.infinite};
       // Respect the user's explicit time/depth constraints for each participant.
       const limits = Object.assign({},validated);
       return new Promise((resolve,reject) => {
         const job = {id:'analysis-'+Date.now()+'-'+(++sessionSerial)+'-'+(++serial),generation,mode:localMode,caps,requested:settings.sfFullThreadsRequested,
-          children:ids.map(id=>({id,status:'loading',jobId:id+'-'+Date.now()+'-'+serial})),
+          children:ids.map((id,i)=>({id,status:caps.sequential&&i?'queued':'loading',jobId:id+'-'+Date.now()+'-'+serial})),
           fen:limits.fen,history:limits.history,options:limits,onInfo:options.onInfo,signal:options.signal,
           started:now(),startedAt:new Date().toISOString(),lastEmit:-Infinity,resolve,reject,stopped:false,requestedBudget,
           networkController:new AbortController(),
@@ -321,7 +331,7 @@
         active = job;
         job.abort = stop; job.signal?.addEventListener('abort',job.abort,{once:true});
         if(Number.isFinite(job.effectiveBudget.maxSessionMs)&&job.effectiveBudget.maxSessionMs>0)job.timer=setTimeout(stop,job.effectiveBudget.maxSessionMs);
-        // No serial await: each child has its own loader, deadline, worker tree and completion.
+        // Phone comparisons (and All) prepare/search/release one engine at a time.
         const preparations = [];
         for (const child of job.children) {
           try {
@@ -362,7 +372,8 @@
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.status='failed'; child.error=error.message;child.finishedMs=now();child.engine.destroy();settle(job);
             });
-            preparations.push(Promise.resolve().then(async () => {
+            const prepareChild=()=>Promise.resolve().then(async () => {
+              child.status='loading';emit(job,true);
               const drain = Math.max(0, cleanupUntil - now());
               if (drain) await new Promise(resolve => setTimeout(resolve, drain));
               if (active !== job || job.generation !== generation || job.stopped) return;
@@ -378,10 +389,26 @@
             },error => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.status='failed'; child.error=error.message; child.finishedMs=now(); child.engine.destroy(); emit(job,true);
-            }));
+            });
+            preparations.push({child,prepare:prepareChild});
           } catch(error) { child.engine?.destroy(); child.status='failed'; child.error=error.message; }
         }
-        Promise.allSettled(preparations).then(() => {
+        if(caps.sequential){
+          (async()=>{
+            for(const {child,prepare} of preparations){
+              if(active!==job||job.generation!==generation||job.stopped)return;
+              await prepare();
+              if(active!==job||job.generation!==generation||job.stopped)return;
+              if(child.status==='ready'){
+                child.searchStartedMs=now();child.status='searching';
+                try{await child.launch();}catch(error){child.engine.destroy();child.status='failed';child.error=error.message;}
+              }
+              if(active===job&&!job.stopped&&caps.mobile&&!config.adapterFactory)
+                await new Promise(resolve=>setTimeout(resolve,350));
+            }
+            if(active===job)settle(job);
+          })().catch(error=>{if(active===job){stop();reject(error);}});
+        }else Promise.allSettled(preparations.map(item=>item.prepare())).then(() => {
           if (active !== job || job.generation !== generation || job.stopped) return;
           for (const child of job.children) if (child.status === 'ready') {
             child.searchStartedMs=now(); child.status='searching';
@@ -414,5 +441,5 @@
       try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;
         if(verify)await verifyNetwork(record.buffer);return true;}catch(_){return false;}
     }});
-  return {create,configure,getSettings,capabilities,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+  return {create,configure,getSettings,capabilities,participants,isGroup,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
 });

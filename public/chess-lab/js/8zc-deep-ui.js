@@ -11,7 +11,7 @@
     panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">SF Lite · runs on this device.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
       <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
-      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero NN / browser PUCT</option><option value="sf-berserk">SF &amp; Berserk</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Time<select data-deep="time" aria-label="Deep analysis search time"><option value="off" selected>Off</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">1m</option><option value="300000">5m</option><option value="900000">15m</option><option value="1800000">30m</option><option value="3600000">1h</option><option value="14400000">4h</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
+      <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero NN</option><option value="sf-lc0">SF &amp; LC Zero</option><option value="sf-reckless">SF &amp; Reckless</option><option value="sf-berserk">SF &amp; Berserk</option><option value="all">All Engines</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Time<select data-deep="time" aria-label="Deep analysis search time"><option value="off" selected>Off</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">1m</option><option value="300000">5m</option><option value="900000">15m</option><option value="1800000">30m</option><option value="3600000">1h</option><option value="14400000">4h</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
       <p class="deep-budget-note" data-deep="budget-note" hidden></p><p class="deep-budget-note" data-deep="time-note" hidden></p>
       <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
       <small data-berserk-status role="status" hidden></small>
@@ -33,8 +33,7 @@
     const configuredMode = () => session?.getSettings?.()?.analysisMode || 'sf-lite';
     const positionKey = context => JSON.stringify([typeof context === 'string' ? context : context?.fen,
       typeof context === 'string' ? null : context?.positionHistory || null]);
-    const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', reckless:'Reckless',lc0:'LCZero NN / browser PUCT', 'sf-berserk': 'SF & Berserk' };
-    let depthWithTime = false;
+    const modeLabels = { cdb: 'ChessDB', 'sf-lite': 'SF Lite', 'sf-full': 'SF Full', berserk: 'Berserk', reckless:'Reckless',lc0:'LCZero NN', 'sf-lc0':'SF & LC Zero', 'sf-reckless':'SF & Reckless', 'sf-berserk':'SF & Berserk', all:'All Engines' };
     function reflectTime(settings = session?.getSettings?.() || {}) {
       if (settings.deepTimeMs != null) {
         const value = settings.deepTimeMs === -1 || settings.deepTimeMs === 'infinite' ? 'infinite' : Number(settings.deepTimeMs) > 0 ? String(settings.deepTimeMs) : 'off';
@@ -43,16 +42,16 @@
       const choice = el('time').value, timed = choice !== 'off';
       el('time-note').hidden = !timed;
       el('time-note').textContent = choice === 'infinite' ? 'Search continues until Stop. Search depth is not a limit.' :
-        depthWithTime ? 'Time and the explicitly selected Search depth both apply; the first limit reached ends the search.' :
-        'Time is the search budget. Search depth is not a limit unless you select it again.';
+        'Time is the search budget for each engine. Search depth is inactive until Time Off.';
+      el('budget').disabled=timed||configuredMode()==='lc0';
     }
     el('time').addEventListener('change', () => {
-      depthWithTime = false;
-      session?.configure?.({deepTimeMs:el('time').value === 'off' ? 0 : el('time').value === 'infinite' ? -1 : Number(el('time').value)});
+      const time=el('time').value;
+      session?.configure?.({deepTimeMs:time==='off'?0:time==='infinite'?-1:Number(time),
+        ...(doc.getElementById('analysisLink')?.checked&&Number(time)>0?{analysisTimeMs:Number(time)}:{})});
       reflectTime();
     });
     el('budget').addEventListener('change', () => {
-      depthWithTime = el('time').value !== 'off' && el('time').value !== 'infinite' && el('budget').value.startsWith('depth:');
       reflectTime();
     });
     reflectTime();
@@ -90,11 +89,12 @@
       workspace.classList.add('is-deep-analysis');
       workspace.setAttribute('aria-label', 'Deep analysis');
       panel.hidden = false; trigger?.setAttribute('aria-expanded', 'true');
+      root.ChessAnalysisControls?.syncLinkedDeep?.();
       reflectAdditional();
       workspace.scrollTop = deepScroll;
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('close').focus({ preventScroll: true });
-      if (previewBoard) requestAnimationFrame(() => previewBoard.resize());
+      if (previewBoard) requestAnimationFrame(resizePreview);
       notifyState();
     }
     function close() {
@@ -122,10 +122,10 @@
       }
       return list;
     }
-    function scoreLabel(score) {
+    function scoreLabel(score, fen) {
       if (!score) return '—';
       if(score.type==='decisive')return score.label||'—';
-      if(score.type==='q')return root.ChessEvalBar?.measure(current.fen,score,null,'LC Zero').label || '—';
+      if(score.type==='q')return root.ChessEvalBar?.measure(fen,score,null,'LC Zero').label || '—';
       const prefix = score.whiteBound === 'lower' ? '≥' : score.whiteBound === 'upper' ? '≤' : '';
       if (score.type === 'mate') return prefix + (score.white < 0 ? '−' : '') + '#' + Math.abs(score.white);
       return prefix + (score.white > 0 ? '+' : '') + (score.white / 100).toFixed(2);
@@ -141,6 +141,23 @@
       if (key === 'lc0') return 'LCZero NN / browser PUCT';
       return 'Stockfish 18 Lite';
     }
+    function resizePreview() {
+      if(el('preview').hidden||panel.hidden)return;
+      const width=panel.clientWidth||260,height=workspace.clientHeight||400;
+      const sideBySide=width>=320;
+      el('preview').classList.toggle('is-side-by-side',sideBySide);
+      const size=Math.max(80,Math.min(220,sideBySide?width*.46:width-12,height-(sideBySide?40:145)));
+      el('preview-board').style.width=Math.floor(size)+'px';
+      previewBoard?.resize();
+    }
+    function revealPreview() {
+      const area=el('preview'),padding=parseFloat(root.getComputedStyle(workspace).paddingTop)||0;
+      workspace.scrollTop=Math.max(0,workspace.scrollTop+area.getBoundingClientRect().top-workspace.getBoundingClientRect().top-workspace.clientTop-padding);
+      deepScroll=workspace.scrollTop;
+    }
+    const previewObserver=typeof root.ResizeObserver==='function'?new root.ResizeObserver(()=>requestAnimationFrame(resizePreview)):null;
+    previewObserver?.observe(workspace);
+    previewObserver?.observe(panel);
     function showPreview(line, index, key, snapshot) {
       const moves = movesFor(pinned.fen, line.pv);
       const chosen = moves[index]; if (!chosen) return;
@@ -152,13 +169,14 @@
         elapsedMs: snapshot?.elapsedMs ?? null, completeMultiPV: !!snapshot?.completeMultiPV,
         startedAt: snapshot?.startedAt || null };
       el('preview').hidden = false;
+      resizePreview();
       el('preview-text').textContent = moves.slice(0, index + 1).map(m => m.label).join(' ');
       el('save').hidden = typeof host.onSaveLine !== 'function';
       if (root.Chessboard) {
         if (!previewBoard) previewBoard = root.Chessboard(el('preview-board'), { position: chosen.fen, draggable: false,
           pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
         else previewBoard.position(chosen.fen, false);
-        requestAnimationFrame(() => previewBoard.resize());
+        requestAnimationFrame(() => { resizePreview(); revealPreview(); });
       } else el('preview-board').textContent = chosen.fen;
     }
     function render(current, force, onUpdate) {
@@ -180,7 +198,7 @@
         displayedLines++;
         const row = doc.createElement('article'); row.className = 'deep-line';
         const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
-        const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score);
+        const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score,current.fen);
         if (line.score?.type === 'q') score.title = root.ChessEvalBar?.measure(current.fen,line.score,null,'LC Zero').description || 'Native neural Q unavailable';
         const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':key==='lc0'?'Visits ' + (line.visits ?? child.visits ?? child.nodes ?? '—'):'Depth ' + (line.depth ?? '—');
         meta.append(score, depth); row.appendChild(meta);
@@ -227,7 +245,7 @@
       el('export').disabled = !displayedLines;
       if (showCards) {
         const statuses = entries.map(([key, child]) => `${sourceName(key, child)}: ${child.status || 'loading'}`);
-        el('status').textContent = statuses.join(' · ') + (mode === 'sf-berserk' ? ' · Independent evaluations; no combined score.' : '');
+        el('status').textContent = statuses.join(' · ') + (entries.length>1 ? ' · Independent evaluations; no combined score.' : '');
         return;
       }
       const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
@@ -269,14 +287,13 @@
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');
-        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: configuredMode() === 'lc0' ? [] : rootMoves(),
+        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: configuredMode() === 'lc0'||session?.participants?.(configuredMode())?.includes('lc0') ? [] : rootMoves(),
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':'), time = el('time').value;
         if (!options.automatic) followActive = true;
         if (time === 'infinite') opts.infinite = true;
         else if (time !== 'off') {
           opts.movetime = Number.isFinite(options.timeOverride) ? options.timeOverride : Number(time);
-          if (depthWithTime && kind === 'depth' && configuredMode() !== 'lc0') opts.depth = Number(value);
         } else if (configuredMode() === 'lc0') {
           const saved = Number(session?.getSettings?.()?.analysisTimeMs);
           opts.movetime = Number.isSafeInteger(saved) && saved > 0 ? saved : session?.capabilities?.()?.mobile ? 5000 : 15000;
@@ -284,10 +301,11 @@
         else if (kind === 'infinite') opts.infinite = true;
         else opts[kind] = Number(value);
         if (opts.searchMoves.length) opts.multiPV = Math.min(opts.multiPV, opts.searchMoves.length);
+        root.ChessAnalysisControls?.syncLinkedDeep?.();
         const onUpdate = host.onSearchStart?.(opts);
         if (!engine) engine = (session || root.ChessDeepEngine).create({ Chess });
         el('start').disabled = true; el('stop').disabled = false;
-        el('status').textContent = configuredMode() === 'sf-berserk' ? 'Loading SF Full and Berserk on demand…' :
+        el('status').textContent = session?.isGroup?.(configuredMode()) ? 'Preparing '+modeLabels[configuredMode()]+' on demand…' :
           configuredMode() === 'sf-full' ? 'Loading SF Full on demand…' :
           configuredMode() === 'berserk' ? 'Loading Berserk on demand…' :
           configuredMode() === 'reckless' ? 'Loading Reckless on demand…' :
@@ -383,10 +401,13 @@
       });
     }
     unregisterControls = root.ChessAnalysisControls?.registerDeep?.(panel) || null;
-    let analysisSettingsKey=JSON.stringify([session?.getSettings?.()?.analysisMode,session?.getSettings?.()?.sfFullThreadsRequested,session?.getSettings?.()?.hashMB]);
+    const settingsKey=settings=>JSON.stringify([settings?.analysisMode,
+      ['sf-lc0','sf-reckless','sf-berserk','all'].includes(settings?.analysisMode)?settings?.sfCardMode:null,
+      settings?.sfFullThreadsRequested,settings?.hashMB,settings?.deepTimeMs]);
+    let analysisSettingsKey=settingsKey(session?.getSettings?.());
     unsubscribeSettings = session?.subscribeSettings?.(settings => {
       reflectTime(settings);
-      const nextKey=JSON.stringify([settings.analysisMode,settings.sfFullThreadsRequested,settings.hashMB]);
+      const nextKey=settingsKey(settings);
       if(nextKey===analysisSettingsKey)return;
       analysisSettingsKey=nextKey;
       ++run; engine?.stop(); followActive = false; manualStoppedFen = pinned?.fen || null;
@@ -405,7 +426,7 @@
     }
     return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
       stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
-      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

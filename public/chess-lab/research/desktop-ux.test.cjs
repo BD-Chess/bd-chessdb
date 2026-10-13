@@ -34,7 +34,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.deepEqual([...doc.querySelectorAll('#desktopViewTabs [data-desktop-view]')].map(node => node.textContent), ['Moves','Review','Deep','DCC']);
   assert.match(layout, /\['btnNew', 'btnGames'\]/);
   assert.match(html, /id="btnAnalysisDeepen"[^>]*>Refresh evals<\/button>/);
-  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['ChessDB.cn','SF Lite','SF Full','Reckless','LCZero','Berserk']);
+  assert.deepEqual([...doc.querySelector('#analysisSource').options].map(option => option.textContent), ['ChessDB.cn (CDB)','SF Lite','SF Full','Reckless','LCZero','Berserk']);
   assert.equal(doc.querySelector('#analysisSource').value, 'cdb');
   assert.equal(doc.querySelector('#analysisCpuThreads').value, 'none');
   assert.equal(doc.querySelector('#analysisCpuThreads').textContent,'CPU —');
@@ -71,7 +71,7 @@ test('desktop separates top analysis controls from three aligned bottom rows', (
   assert.match(styles, /data-desktop-view="review"\] #workspaceDisplay \{[\s\S]*overflow-y: auto/);
   assert.match(deep, /data-desktop-view="review"[^\n]+game-review-drawer\{display:block!important\}/);
   assert.match(deep, /data-desktop-view="library"[^\n]+#popularGamesPanel\{display:flex!important\}/);
-  assert.match(styles, /#workspacePrimaryActions #btnNew[\s\S]*background:var\(--ui-inset\)/);
+  assert.match(styles, /#workspacePrimaryActions :is\(#btnNew,#btnWorkspaceMore\)[\s\S]*background:var\(--ui-inset\)/);
 });
 
 test('legacy controls remain hidden backing controls', () => {

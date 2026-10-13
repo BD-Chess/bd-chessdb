@@ -9,7 +9,7 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
   const dom = new JSDOM(`<!doctype html>
     <select id="analysisSource"><option value="cdb">CDB</option><option value="sf-lite">SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero</option></select>
     <select id="analysisCpuThreads"><option>auto</option><option>1</option><option>2</option><option>4</option><option>6</option><option>8</option></select>
-    <input type="checkbox" id="analysisSFFull"><select id="settingSFEngine"><option value="sf-lite">Lite</option><option value="sf-full">Full</option></select>
+    <input type="checkbox" id="analysisLink"><input type="checkbox" id="analysisSFFull"><select id="settingSFEngine"><option value="sf-lite">Lite</option><option value="sf-full">Full</option></select>
     <small id="analysisCpuStatus"></small><small id="analysisDccModeNote" hidden></small>
     <button id="btnAnalysisDeepen">Deeper SF</button><button id="btnDeepAnalysis">Deep analysis</button>
     <div id="workspaceDisplay"></div>`, { runScripts: 'outside-only', pretendToBeVisual: true });
@@ -42,6 +42,55 @@ function setup(t, context = w => ({ fen: new w.Chess().fen() }), pause = () => {
   return { w, ui, el, change, saved, getOptions: () => options, getSettings: () => settings,
     analyses: () => analyses, stops: () => stops };
 }
+
+test('Link synchronizes Deep modes, SF variant, CPU and finite time without launching a search', t=>{
+  const x=setup(t),{w,el,change}=x,board=w.document.getElementById('analysisSource');
+  w.document.getElementById('analysisLink').checked=true;
+  for(const mode of ['berserk','reckless','lc0','sf-full','sf-lite']){
+    el('mode').value=mode;change(el('mode'));
+    assert.equal(board.value,mode);assert.equal(x.getSettings().boardSource,mode);
+  }
+  el('mode').value='sf-full';change(el('mode'));assert.equal(w.document.getElementById('analysisSFFull').checked,true);
+  el('threads').value='4';change(el('threads'));assert.equal(w.document.getElementById('analysisCpuThreads').value,'4');
+  el('time').value='30000';change(el('time'));assert.equal(x.getSettings().analysisTimeMs,30000);
+  assert.equal(el('budget').disabled,true);
+  board.value='berserk';change(board);assert.equal(el('mode').value,'berserk');
+  w.document.getElementById('analysisLink').checked=false;
+  el('mode').value='reckless';change(el('mode'));assert.equal(board.value,'berserk');
+  assert.equal(x.analyses(),0);
+});
+
+test('comparison choices follow SF Lite/Full and use a participating source without a fabricated combined score', t=>{
+  const x=setup(t),{w,el,change}=x,board=w.document.getElementById('analysisSource');
+  assert.deepEqual([...el('mode').options].slice(-4).map(o=>o.textContent),['SF & LC Zero','SF & Reckless','SF & Berserk','All Engines']);
+  assert.equal(el('mode').querySelector('[value="lc0"]').textContent,'LCZero NN');
+  w.document.getElementById('analysisLink').checked=true;
+  for(const mode of ['sf-lc0','sf-reckless','sf-berserk','all']){
+    board.value='cdb';change(board);el('mode').value=mode;change(el('mode'));
+    assert.equal(board.value,'sf-lite');assert.equal(x.getSettings().sfCardMode,'sf-lite');
+    assert.equal(el('mode').value,mode);
+  }
+  const toggle=w.document.getElementById('analysisSFFull');toggle.checked=true;change(toggle);
+  assert.equal(el('mode').value,'all');assert.equal(board.value,'sf-full');
+  assert.equal(x.analyses(),0);
+});
+
+test('Time always overrides depth; Time Off restores depth and Until I stop ignores depth', t=>{
+  const x=setup(t);x.el('time').value='10000';x.change(x.el('time'));
+  x.el('budget').value='depth:14';x.change(x.el('budget'));x.ui.start();
+  assert.equal(x.getOptions().movetime,10000);assert.equal(x.getOptions().depth,undefined);
+  x.el('time').value='off';x.change(x.el('time'));x.ui.start();
+  assert.equal(x.el('budget').disabled,false);assert.equal(x.getOptions().depth,14);assert.equal(x.getOptions().movetime,undefined);
+  x.el('time').value='infinite';x.change(x.el('time'));x.ui.start();assert.equal(x.getOptions().infinite,true);assert.equal(x.getOptions().depth,undefined);
+});
+
+test('LCZero Deep renders native Q with the pinned FEN and saves the neural provenance',t=>{
+  const x=setup(t);x.w.ChessEvalBar={measure(fen,score){assert.equal(fen,new x.w.Chess().fen());assert.equal(score.type,'q');return {label:'Q +0.12',description:'Native neural evaluation'};}};
+  x.el('mode').value='lc0';x.change(x.el('mode'));x.ui.start();
+  const fen=new x.w.Chess().fen();x.getOptions().onInfo(null,{mode:'lc0',fen,elapsedMs:100,visits:4,engine:{name:'LCZero Maia1900'},lines:[{multipv:1,pv:['e2e4'],score:{type:'q',white:.12,root:.12}}]});
+  assert.equal(x.el('lines').querySelector('strong').textContent,'Q +0.12');
+  x.el('lines').querySelector('button').click();x.el('save').click();assert.equal(x.saved[0].analysisMode,'lc0');
+});
 
 test('board source and independent analysis mode stay separate; CPU requests synchronize and dual PVs retain child provenance', t => {
   const x = setup(t, w => ({ fen: new w.Chess().fen() }));
@@ -78,7 +127,7 @@ test('board source and independent analysis mode stay separate; CPU requests syn
   assert.equal(el('budget').disabled, false);
   assert.equal(el('budget').hidden, false);
   assert.equal(el('dual-time').hidden, true);
-  assert.match(el('budget-note').textContent, /each engine.*selected time and depth.*depths can differ/i);
+  assert.match(el('budget-note').textContent, /each engine.*selected time or depth.*depths can differ/i);
   el('time').value = '30000'; change(el('time'));
   assert.equal(seen.length,1,'CPU selection stays idle and does not change board source');
   x.ui.start();
@@ -117,7 +166,8 @@ test('board source and independent analysis mode stay separate; CPU requests syn
   el('budget').value = 'depth:22'; change(el('budget'));
   x.ui.start();
   assert.equal(x.getOptions().movetime, 30000, 'mobile respects the explicit saved Deep time');
-  assert.equal(x.getOptions().depth, 22, 'an explicit later depth applies alongside the selected time');
+  assert.equal(x.getOptions().depth, undefined, 'Time takes priority even over a later depth selection');
+  assert.equal(el('budget').disabled,true);
 });
 
 test('SF checkbox is bidirectional only within the board SF family, and all selection stays idle',t=>{

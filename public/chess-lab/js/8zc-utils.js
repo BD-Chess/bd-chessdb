@@ -671,6 +671,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if(!mode)return;
     linkedCard=source;
     window.ChessAnalysisSession?.configure?.({boardSource:mode,
+      ...(mode!=='cdb'?{analysisMode:mode}:{}),
       ...(source==='DCC'&&['sf-lite','sf-full'].includes(mode)?{sfCardMode:mode}:{})});
     const select=document.getElementById('analysisSource');
     if(select){select.value=mode;const event=new Event('change',{bubbles:true});event.chessAnalysisHandled=true;event.chessAnalysisPassive=true;event.chessLinkedCard=true;select.dispatchEvent(event);}
@@ -2560,7 +2561,8 @@ function jumpTo(i){
         showAnalysisCandidates(moves,role,{receipt:{engineName:name}});
       }
       // Displaying a retained result after a variant toggle must not start DCC probes.
-      if(search.displayOnly||['reckless','lc0'].includes(mode))continue;
+      if(search.displayOnly||['reckless','lc0'].includes(mode)||search.streaming&&Object.keys(snapshot.children||{}).length>1)continue;
+      if(Object.keys(snapshot.children||{}).length>1&&selectedSource!==mode)continue;
       const fallbackDCC=!sourceAnalyses.CDB?.snapshot?.allMoves?.length;
       // Reuse a valid CDB decision instead of launching local DCC probes.
       if(!fallbackDCC)continue;
@@ -2586,7 +2588,7 @@ function jumpTo(i){
   }
   function beginDeepAnalysis(search = {}) {
     deepAnalysisFen=game.fen();sfWorking=false;syncSFAnalysisControl();
-    return snapshot=>{engineCards?.ingest(snapshot);publishEngineSnapshot(snapshot,search);};
+    return snapshot=>{engineCards?.ingest(snapshot);publishEngineSnapshot(snapshot,{...search,streaming:true});};
   }
   engineCards=window.ChessEngineCards.create({Chess,
     getContext:()=>({...getLabContext(),canAnalyze:!document.hidden&&!offlineEvidence&&showEval&&!simRunning&&!replayRunning&&!playState.assistanceLocked}),
@@ -2693,7 +2695,8 @@ function jumpTo(i){
     const preferred=window.ChessAnalysisSession?.getSettings?.().analysisTimeMs||settings.analysisTimeMs||(window.ChessAnalysisSession?.capabilities?.().mobile?5000:15000);
     if(!Array.from(cardTimeSelect.options).some(option=>Number(option.value)===preferred)){const option=document.createElement('option');option.value=String(preferred);option.textContent=preferred/1000+' s';cardTimeSelect.appendChild(option);}
     cardTimeSelect.value=String(preferred);
-    cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs});localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));});
+    cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs,
+      ...(settings.analysisLink?{deepTimeMs:settings.analysisTimeMs}:{})});localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));});
   }
   document.getElementById('settingSFDepth').addEventListener('change', event => {
     settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
@@ -2787,7 +2790,8 @@ function jumpTo(i){
   linkToggle.addEventListener('change',()=>{
     settings.analysisLink=linkToggle.checked;
     linkedCard=settings.analysisLink?(settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.roleFor(settings.analysisSource)):null;
-    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));positionEval.render();
+    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+    window.ChessAnalysisControls?.syncLinkedDeep?.();positionEval.render();
   });
   if (restoreTopPickCursor !== null) {
     lastLoadedPGN = activeTopPickPGN;

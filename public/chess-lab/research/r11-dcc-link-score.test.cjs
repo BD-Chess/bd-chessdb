@@ -25,7 +25,7 @@ function linkFixture(receipt, preference = 'sf-lite', enabled = true) {
 for (const [actual, preference, expected] of [[fullId, 'sf-lite', 'sf-full'], [liteId, 'sf-full', 'sf-lite']])
   test(`DCC Link uses retained concrete ${actual}, ignoring opposing checkbox`, t => {
     const x = linkFixture({ provider: 'SF', engineId: actual }, preference); t.after(x.close);
-    assert.equal(x.selected.value, expected); assert.deepEqual(x.calls[0], { boardSource: expected, sfCardMode: expected });
+    assert.equal(x.selected.value, expected); assert.deepEqual(x.calls[0], { boardSource: expected, analysisMode:expected, sfCardMode: expected });
     assert.equal(x.calls[1].passive, true); assert.equal(x.calls[1].linked, true);
   });
 
@@ -38,7 +38,7 @@ test('DCC Link preserves canonical engineMode and leaves concrete identity uncha
 for (const [provider, expected] of [['CDB', 'cdb'], ['BER', 'berserk']])
   test(`DCC Link preserves ${provider} provenance`, t => {
     const x = linkFixture({ provider }, 'sf-full'); t.after(x.close);
-    assert.equal(x.selected.value, expected); assert.deepEqual(x.calls[0], { boardSource: expected });
+    assert.equal(x.selected.value, expected); assert.deepEqual(x.calls[0], { boardSource: expected, ...(expected!=='cdb'?{analysisMode:expected}:{}) });
   });
 
 test('Link OFF does not configure a source or dispatch display changes', t => {
@@ -96,7 +96,11 @@ async function guiFixture(t, cdb = false) {
   const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8'), errors = [], cache = new Map(), calls = { network:0, engine:0, probes:0, annotations:0 };
   const vc = new VirtualConsole(); vc.on('jsdomError', e => errors.push(e.message));
   const dom = new JSDOM(html, { url:'https://bd-chess.github.io/bd-chessdb/chess-lab/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc });
-  const w = dom.window; t.after(()=>w.close()); await new Promise(resolve=>w.addEventListener('load',resolve));
+  const w = dom.window; t.after(async()=>{
+    w.document.dispatchEvent(new w.Event('chess:pause-request'));w.dispatchEvent(new w.Event('pagehide'));
+    // Drain original IDB/annotation callbacks before discarding the emulated document.
+    await new Promise(resolve=>setTimeout(resolve,150));w.ChessAnalysisControls?.destroy();w.close();
+  }); await new Promise(resolve=>w.addEventListener('load',resolve));
   Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent;},set(v){this.textContent=String(v);},configurable:true});
   w.HTMLElement.prototype.scrollIntoView = w.HTMLElement.prototype.scrollTo = function(){};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;}; w.HTMLDialogElement.prototype.close=function(){this.open=false;};
