@@ -12,6 +12,16 @@ const BLACK = (() => { const game = new Chess(); game.move('e4'); return game.fe
 const HISTORY = { startFen: START, moves: ['e2e4'] };
 const source = fs.readFileSync(path.join(__dirname, '../js/8zc-analysis-session.js'), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
+test('RAM policy defaults to one and the explicit All preference restores equally on desktop and mobile',()=>{
+  for(const mobile of [false,true]){
+    assert.equal(fixture({mobile}).Session.getSettings().engineMemoryPolicy,'one');
+    const active=fixture({mobile});active.Session.configure({engineMemoryPolicy:'all'});
+    const stored=JSON.parse(active.values.get('ChessBest:LAB:v2:analysis-engine-r3'));
+    assert.equal(stored.engineMemoryPolicy,'all');
+    assert.equal(fixture({mobile,stored}).Session.getSettings().engineMemoryPolicy,'all');
+    assert.equal(fixture({mobile,stored:{engineMemoryPolicy:'unknown'}}).Session.getSettings().engineMemoryPolicy,'one');
+  }
+});
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function deferred() {
   let resolve, reject;

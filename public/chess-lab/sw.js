@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. LAB only. */
 'use strict';
-const RELEASE = "lab-8950c84653c8d0ef";
+const RELEASE = "lab-c86d9f0ca846cfc6";
 const PREFIX = "chessbest-chess-lab-";
 const ASSETS = [
   "8zc-about.html",
@@ -88,6 +88,7 @@ const ASSETS = [
   "js/8zc-engine-assets-sw.js",
   "js/8zc-engine-assets.js",
   "js/8zc-engine-cards.js",
+  "js/8zc-engine-memory.js",
   "js/8zc-engine-registry.js",
   "js/8zc-engine-storage-ui.js",
   "js/8zc-eval-bar.js",

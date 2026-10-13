@@ -20,7 +20,7 @@
   let networkWrites = Promise.resolve();
   let savedCardMode='sf-lite';
   try{const key=root.ChessLabStorage?.KEYS?.settings||'ChessBest:LAB:v2:settings';savedCardMode=JSON.parse(root.localStorage?.getItem(key)||'null')?.sfCardMode==='sf-full'?'sf-full':'sf-lite';}catch(_){}
-  let settings = { analysisMode:'sf-lite', boardSource:'cdb', sfCardMode:savedCardMode, sfFullThreadsRequested:1, hashMB:16 };
+  let settings = { analysisMode:'sf-lite', boardSource:'cdb', sfCardMode:savedCardMode, sfFullThreadsRequested:1, hashMB:16, engineMemoryPolicy:'one' };
   try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || root.localStorage?.getItem('ChessBest:LAB:v2:analysis-engine') || 'null'); if (old) settings = sanitize(old); } catch (_) {}
   function sanitize(value) {
     const mode = ['auto','cdb','sf','cdb-sf-lite','CDB | SF Lite'].includes(value.analysisMode)?'sf-lite':value.analysisMode;
@@ -30,6 +30,7 @@
       boardSource:BOARD_SOURCES.includes(value.boardSource) ? value.boardSource : 'cdb',
       sfFullThreadsRequested:Number.isInteger(Number(requested))&&Number(requested)>=1&&Number(requested)<=8?Number(requested):1,
       hashMB:Math.min(64, Math.max(8, Number(value.hashMB) || 16)),
+      engineMemoryPolicy:value.engineMemoryPolicy==='all'?'all':'one',
       ...(Number(value.analysisTimeMs)>0?{analysisTimeMs:Math.min(14400000,Number(value.analysisTimeMs))}:{}),
       ...(Number.isFinite(Number(value.deepTimeMs))&&value.deepTimeMs!=null?{deepTimeMs:Math.max(-1,Math.min(14400000,Number(value.deepTimeMs)))}:{}) };
   }
@@ -174,6 +175,7 @@
     notifySettings();return getSettings();
   }
   function configure(value) {
+    const previousSettings=settings;
     const next = sanitize(Object.assign({}, settings, value));
     if (JSON.stringify(next) === JSON.stringify(settings)) return getSettings();
     // Changing the board's display source does not cancel independent analysis.
@@ -181,6 +183,11 @@
       isGroup(next.analysisMode)&&next.sfCardMode!==settings.sfCardMode;
     if(computeChanged){++generation; for (const instance of instances) instance.stop();}
     settings = next;
+    if(memory){
+      if(['sfFullThreadsRequested','hashMB'].some(key=>next[key]!==previousSettings[key]))memory.clear();
+      memory.setPolicy(next.engineMemoryPolicy);
+      if(next.engineMemoryPolicy==='all')void memory.warmAll();
+    }
     try { root.localStorage?.setItem(STORAGE, JSON.stringify(settings)); } catch (_) {}
     for (const listener of listeners) listener(getSettings());
     return getSettings();
@@ -195,13 +202,16 @@
   // It uses the same pinned engine/network and actual thread policy as Deep.
   function rawBackendFor(mode, Chess) {
     if(['reckless','lc0'].includes(mode))return browserBackend(mode,Chess);
+    if(mode==='sf-lite')return {create:config=>Deep.create({Chess,threads:1,hashMB:Math.min(settings.hashMB,capabilities(mode).mobile?16:64),...config})};
     if(!['sf-full','berserk'].includes(mode))return Deep;
     return {create(){
       const base=root.document?.baseURI||'http://localhost/chess-lab/';
       const caps=capabilities(mode),single=!caps.isolated;
       const workerUrl=new URL(mode==='berserk'?'vendor/berserk/v14-5b8d6c93/berserk-host.js?v=20261013-r9':
         'vendor/stockfish-full/v19.0.1/stockfish-19'+(single?'-single':'')+'.js?v=20261013-r9',base).href;
-      const config={Chess,workerUrl,engine:Object.assign({},descriptors[mode],{variant:mode==='berserk'?'scalar':single?'single':'threaded',wasmSHA256:mode==='berserk'?'0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372':single?'991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740':'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667'}),threads:mode==='sf-full'?caps.effectiveSFThreads:1,
+      const config={Chess,workerUrl,engine:Object.assign({},descriptors[mode],{variant:mode==='berserk'?'scalar':single?'single':'threaded',wasmSHA256:mode==='berserk'?'0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372':single?'991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740':'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667',
+        network:mode==='sf-full'?'nn-1a298aa575a0.nnue':BERSERK_NET.name,
+        networkSHA256:mode==='sf-full'?'1a298aa575a085434d29027978dc36867fe9c5bcea9376654b7a8eba1e52dfc2':BERSERK_NET.sha256}),threads:mode==='sf-full'?caps.effectiveSFThreads:1,
         hashMB:Math.min(settings.hashMB,caps.mobile?16:64),readyTimeoutMs:20000,forceTerminateOnStop:true};
       if(mode==='berserk')config.workerFactory=url=>{const w=new root.Worker(url),buffer=berserkNetwork.buffer.slice(0);w.postMessage({type:'init-network',buffer},[buffer]);return w;};
       const engine=Deep.create(config);
@@ -231,7 +241,7 @@
         return await preparation;
       }finally{opts.signal?.removeEventListener('abort',cancel);}
     }
-    function destroy(){if(closed)return;closed=true;controller.abort();engine.destroy();release?.();release=null;}
+    function destroy(){if(closed)return;closed=true;controller.abort();engine.destroy();const disposed=release?.();release=null;return disposed;}
     return {prepare,async analyze(opts={}){
       await prepare(opts);if(closed||opts.signal?.aborted)throw abortError();
       const reused=searches++>0,result=await engine.analyze(opts);
@@ -243,7 +253,7 @@
   }
   function backendFor(mode,Chess){
     const backend=rawBackendFor(mode,Chess);
-    return {create(config){return cachedEngine(mode,backend.create(config));}};
+    return {create(config){const factory=()=>cachedEngine(mode,backend.create(config));return memory?memory.handle(mode,factory):factory();}};
   }
   // Small lazy bridge. Models, WASM and optional modules load only on analysis.
   function browserBackend(mode,Chess){
@@ -265,6 +275,13 @@
         stop,destroy(){stop();adapter?.destroy();}};
     }};
   }
+  const memory=root.document&&root.ChessEngineMemory?.create({
+    modes:['sf-lite','sf-full','berserk','reckless','lc0'],policy:settings.engineMemoryPolicy,
+    canWarm:()=>!root.document.hidden,
+    keyFor:mode=>{const caps=capabilities(mode);return [mode,caps.isolated?'isolated':'single',mode==='sf-full'?caps.effectiveSFThreads:1,Math.min(settings.hashMB,caps.mobile?16:64)].join(':');},
+    createEngine:mode=>cachedEngine(mode,rawBackendFor(mode,root.Chess).create({Chess:root.Chess}))
+  });
+  root.addEventListener?.('pagehide',()=>memory?.clear());
   const clone = v => JSON.parse(JSON.stringify(v));
   function create(config = {}) {
     let active = null, destroyed = false, serial = 0;
@@ -359,7 +376,8 @@
                 return worker;
               };
             }
-            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : cachedEngine(child.id,browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig));
+            const factory=()=>cachedEngine(child.id,browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig));
+            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : memory&&!config.workerFactory?memory.handle(child.id,factory):factory();
             const childOptions = Object.assign({},limits,{signal:undefined,onInfo:(_info,value) => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.snapshot=value; child.status='searching';
@@ -441,5 +459,5 @@
       try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;
         if(verify)await verifyNetwork(record.buffer);return true;}catch(_){return false;}
     }});
-  return {create,configure,getSettings,capabilities,participants,isGroup,backendFor,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+  return {create,configure,getSettings,capabilities,participants,isGroup,backendFor,engineMemory:memory,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
 });

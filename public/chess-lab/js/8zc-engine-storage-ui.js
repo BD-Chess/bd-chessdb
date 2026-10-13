@@ -4,6 +4,31 @@
   const store=window.ChessEngineAssetStore,section=document.getElementById('engineStorage');if(!store||!section)return;
   const modes=['sf-lite','sf-full','berserk','reckless','lc0'],names={'sf-lite':'SF Lite','sf-full':'SF Full',berserk:'Berserk',reckless:'Reckless',lc0:'LC Zero'};
   const rows=new Map();let saving=null,refreshing=false;
+  const session=window.ChessAnalysisSession,memory=session?.engineMemory;
+  const allRAM=section.querySelector('[data-engine-memory-all]'),memoryStatus=section.querySelector('[data-engine-memory-status]');
+  const prepareRAM=section.querySelector('[data-engine-memory-prepare]');
+  function showMemory(){
+    if(!memory||!allRAM)return;
+    const state=memory.getState(),ready=state.engines.filter(engine=>['ready','searching'].includes(engine.status));
+    const preparing=state.engines.filter(engine=>engine.status==='preparing'),failed=state.engines.filter(engine=>engine.status==='error');
+    allRAM.checked=state.policy==='all';prepareRAM.hidden=state.policy!=='all';prepareRAM.disabled=state.warming;
+    memoryStatus.textContent='Ready in RAM: '+ready.length+(state.policy==='all'?' / '+state.engines.length:'')+
+      (ready.length?' · '+ready.map(engine=>names[engine.mode]).join(', '):'')+
+      (preparing.length?' · Preparing '+preparing.map(engine=>names[engine.mode]).join(', '):'')+
+      (failed.length?' · '+failed.map(engine=>names[engine.mode]+': '+engine.error).join('; '):'');
+  }
+  if(memory){
+    memory.subscribe(showMemory);showMemory();
+    allRAM.addEventListener('change',()=>{session.configure({engineMemoryPolicy:allRAM.checked?'all':'one'});showMemory();});
+    prepareRAM.addEventListener('click',()=>void memory.warmAll());
+    section.querySelector('[data-engine-memory-release]').addEventListener('click',async()=>{
+      try{await memory.releaseIdle();notice.textContent='Idle engines released from RAM. Saved local files are kept.';}catch(error){notice.textContent=error.message;}
+    });
+    const resume=()=>{if(session.getSettings().engineMemoryPolicy==='all')void memory.warmAll();};
+    if(document.readyState==='complete')resume();else window.addEventListener('load',resume,{once:true});
+    window.addEventListener('pageshow',event=>{if(event.persisted)resume();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)resume();});
+  }
   const size=n=>(Number(n||0)/1048576).toFixed(1)+' MiB';
   const usage=section.querySelector('[data-engine-usage]'),notice=section.querySelector('[data-engine-notice]');
   function show(state){
@@ -46,7 +71,7 @@
     });
     remove.addEventListener('click',async()=>{
       if(!window.confirm('Remove only '+names[mode]+' local engine files?'+(mode==='berserk'?' This also removes the original cached Berserk NNUE.':'')+' Saved games and Studies are kept.'))return;
-      try{await store.remove(mode);notice.textContent=names[mode]+' local files removed.';}catch(e){notice.textContent=e.message;}
+      try{await memory?.releaseIdle(mode);await store.remove(mode);notice.textContent=names[mode]+' local files removed.';}catch(e){notice.textContent=e.message;}
       await refresh();
     });
   }

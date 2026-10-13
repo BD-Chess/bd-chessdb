@@ -143,7 +143,7 @@
         if(live(job)&&error.name!=='AbortError')remember(timedValue(job,{fen:job.fen,lines:[],error:error.message,stopReason:'error'},'failed'),job.options);
       }finally{
         clearTimeout(job.guard);clearTimeout(job.paintTimer);
-        if(live(job)&&reusable(job.mode)&&host.canRetainPrepared?.()!==false&&get(job.mode,job.fen)?.status==='complete'&&!get(job.mode,job.fen)?.forcedStop){
+        if(live(job)&&!job.engine?.memoryManaged&&reusable(job.mode)&&host.canRetainPrepared?.()!==false&&get(job.mode,job.fen)?.status==='complete'&&!get(job.mode,job.fen)?.forcedStop){
           releasePrepared();preparedSlot={mode:job.mode,engine:job.engine};
         }else dispose(job.engine);
         if(jobs.get(job.mode)===job)jobs.delete(job.mode);

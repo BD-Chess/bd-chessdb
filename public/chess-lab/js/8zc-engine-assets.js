@@ -67,7 +67,7 @@
       try{return await locked(p,signal,async()=>{
         const owner=env.crypto.randomUUID?.()||Date.now()+'-'+Math.random(),id='use:'+p.identity+':'+owner;
         await lease(id,owner);const timer=setInterval(()=>{lease(id,owner).catch(()=>{});},5000);let released=false;
-        return ()=>{if(released)return;released=true;clearInterval(timer);void lease(id,owner,true).catch(()=>{});};
+        return ()=>{if(released)return;released=true;clearInterval(timer);return lease(id,owner,true).catch(()=>{});};
       });}catch(e){if(e.name==='AbortError')throw e;return ()=>{};}
     }
     async function verify(response,f,signal){

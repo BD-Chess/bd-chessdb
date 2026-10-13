@@ -274,6 +274,10 @@
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
         <div class="dcc-settings-group">
           <details id="engineStorage" class="engine-storage"><summary>Engine storage</summary>
+            <label class="engine-memory-choice"><input type="checkbox" data-engine-memory-all> Keep all engines in RAM</label>
+            <p class="setting-note">Default: keep the selected engine ready between positions and views. All keeps SF Lite, SF Full, Berserk, Reckless and LCZero ready on desktop or mobile; it may download their files. Idle engines do not analyze.</p>
+            <small data-engine-memory-status role="status" aria-live="polite"></small>
+            <div class="engine-storage-actions"><button type="button" class="btn" data-engine-memory-prepare hidden>Prepare all engines</button><button type="button" class="btn" data-engine-memory-release>Release idle engines from RAM</button></div>
             <p class="setting-note">Save optional engines once for offline use. Saved files and a prepared engine in memory are separate. Reopening can still take time to prepare WASM or the neural model.</p>
             <div data-engine-rows></div><small data-engine-usage></small>
             <p class="setting-note">The quota estimate is shared with other apps on this origin. Browsers may evict local files; Repair restores missing files without clearing games or Studies.</p>
@@ -753,12 +757,13 @@
   <script src="js/8zc-deep-engine.js?v=20261013-r9"></script>
   <script src="js/8zc-sha256.js?v=20261013-r12"></script>
   <script src="js/8zc-engine-assets-manifest.js?v=20261013-r12"></script>
-  <script src="js/8zc-engine-assets.js?v=20261013-r12"></script>
+  <script src="js/8zc-engine-assets.js?v=20261013-r14"></script>
   <script src="js/8zc-sf-provider.js?v=20260926-sim2"></script>
   <script src="js/8zc-engine-registry.js?v=20261013-r8"></script>
-  <script src="js/8zc-analysis-session.js?v=20261013-r13"></script>
+  <script src="js/8zc-engine-memory.js?v=20261013-r14"></script>
+  <script src="js/8zc-analysis-session.js?v=20261013-r14"></script>
   <script src="js/8zc-deep-ui.js?v=20261013-r13"></script>
-  <script src="js/8zc-engine-cards.js?v=20261013-r12"></script>
+  <script src="js/8zc-engine-cards.js?v=20261013-r14"></script>
   <script src="js/8zc-analysis-controls.js?v=20261013-r13"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
@@ -772,7 +777,7 @@
   <script src="js/8zc-review-ui.js?v=20261012-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261013-settings-r1"></script>
   <script src="pwa.js"></script>
-  <script src="js/8zc-engine-storage-ui.js?v=20261013-r12"></script>
+  <script src="js/8zc-engine-storage-ui.js?v=20261013-r14"></script>
   <script src="js/app-mobile.js?v=20261013-r9"></script>
 
 </body>
