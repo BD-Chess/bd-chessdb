@@ -18,16 +18,17 @@ def read_key(page,name,key):
  return page.evaluate("""async ([name,key])=>await new Promise((resolve,reject)=>{const r=indexedDB.open(name,1);r.onsuccess=()=>{const db=r.result;if(!db.objectStoreNames.contains('state')){db.close();resolve(null);return;}const q=db.transaction('state').objectStore('state').get(key);q.onsuccess=()=>{db.close();resolve(q.result||null);};q.onerror=()=>reject(q.error);};r.onerror=()=>reject(r.error);})""",[name,key])
 def verify(public:Path,out:Path,executable=None):
  root=public/"F4M";shared=root/"_shared/petrol-2.6.2";lab=root/"new";app=root/"app"
- lab_old={"f4m-classical.js":"548c2a9e4d6e4f516be2ecc41c51d2d24e403c0c","f4m-core.js":"d59c88e5fcf0df2f7973b8bdb2057e497a2b22da","f4m-dcc.js":"49fbeadb3ec0b3a612ef1ab6ebf39d6cfe069d8f","f4m-search.js":"e0dc98845c7b12d799f173a2c3ee785c458b2f61","f4m-sim.js":"78b9b1540ddef597976088dbbdfd930b7b4fff06","f4m-smart-time.js":"18f93866fd1a7d8eccb913eaac75966fd4a199fb","f4m-store.js":"dc9dc02a475a7a607156bd0938259899601adc78","f4m-time.js":"c3624d88e8ee08954d333a905c82fe11ac7c81f6","f4m-ui.js":"e2e8de46f7f60e0b5435245a0f22937fedf27453","f4m-worker.js":"059bdd140189c71856902b25d9784d2d0cefb535","f4m.css":"e9462c49607a0250dfd70c65e8a9cf1b2a8dcf85","index.html":"9461aae73a53f24911b30afc455139f1a820f512","manifest.webmanifest":"1bf6b92a1634d408d667656cb437e2c4ac56addc","release.json":"c39ceb7f602603919f7dc6cc019bfd993265ac01","sw.js":"b870d9b6ae7371eba5dbab9d9f96d2aaf521981d"}
- app_old={"index.html":"28f5c3f6655e8e6a293cf4e80ff385d526bfd539","manifest.webmanifest":"c02bd547104b013f503938ffb49f6d92ac30f65a","release.json":"461ced9053df72a7deb537278ace0217cdd5c80e","sw.js":"422ca041a70e27e61d7a97b5fbbaa90496f16052"}
- for name,sha in lab_old.items(): check("LAB old/001 exact "+name,git_hash((lab/"old/001"/name).read_bytes())==sha)
- lab_002={"index.html":"3c7a7b38accda5e24acc6c8b24aeb64cf85ab542","manifest.webmanifest":"f5bc63af12db08645bb11a8b0c4498242c28dd80","release.json":"8eafc52071725d11433fad2e0e6e25cb99f407ed","sw.js":"0e4fc012393ec34cb330be8be114e9a49b8e1741"}
- for name,sha in lab_002.items(): check("LAB old/002 exact "+name,git_hash((lab/"old/002"/name).read_bytes())==sha)
- lab_003={"index.html":"ee6333ad2c6ec49ad66eb1a825a2cc89fbf4b6ed","manifest.webmanifest":"f5bc63af12db08645bb11a8b0c4498242c28dd80","release.json":"b6ac191f31189822321fff7c4f9f2e4353401432","sw.js":"fbfa41f2e23024a321da5c2e334ff9ae60f916d1"}
- for name,sha in lab_003.items(): check("LAB old/003 exact "+name,git_hash((lab/"old/003"/name).read_bytes())==sha)
- for name,sha in app_old.items(): check("APP old/003 exact "+name,git_hash((app/"old/003"/name).read_bytes())==sha)
- check("Prepromotion CURRENT index archived",git_hash((root/"old/002/index.html").read_bytes())=="f089c9cc960f9a1f4a256f07c64717e6b841c8c3")
- check("Prepromotion CURRENT release archived",git_hash((root/"old/002/release.json").read_bytes())=="3a2c5fcc7fd34b29c53007d86bb736568a4d58c2")
+ drive_archive="https://drive.google.com/drive/folders/1yWJtX-9Lra6rUpWP5nmaLsCU5I_LkZlL"
+ archived_snapshots=[
+  ("LAB old/001",lab/"old/001/index.html"),
+  ("LAB old/002",lab/"old/002/index.html"),
+  ("LAB old/003",lab/"old/003/index.html"),
+  ("APP old/003",app/"old/003/index.html"),
+  ("Prepromotion CURRENT old/002",root/"old/002/index.html"),
+ ]
+ for label,path in archived_snapshots:
+  notice=path.read_text()
+  check(label+" moved to Drive", "Arhiv je preseljen" in notice and drive_archive in notice)
  currentrel=json.loads((root/"release.json").read_text())
  currenthtml=(root/"index.html").read_text()
  check("CURRENT promoted from accepted LAB",currentrel.get("version")=="2.6.2-petrol" and currentrel.get("role")=="CURRENT" and currentrel.get("storage")=="flip4m-current-2.6")
