@@ -12,6 +12,8 @@
   const switcher = document.querySelector('[data-language-switch]');
   const words = {
     en: {
+      gestureDesktop: '← → Browse · Space Play / pause · F Clean view',
+      gesturePhone: 'Swipe to browse · Double-tap for a clean image',
       full: 'Full-screen Illuminara artwork', tap: 'Click the image to return to the gallery',
       touch: 'Double-tap for a clean image; double-tap again to restore controls',
       cleanReturn: 'Double-tap or press Escape to restore controls',
@@ -27,6 +29,8 @@
       controls: 'Show controls', of: 'of'
     },
     sl: {
+      gestureDesktop: '← → Listaj · Preslednica: predvajaj / ustavi · F Čisti pogled',
+      gesturePhone: 'Podrsaj za listanje · Dvakrat tapni za čisti pogled',
       full: 'Celozaslonska slika Illuminare', tap: 'Klikni sliko za vrnitev v galerijo',
       touch: 'Dvakrat tapni za čisto sliko; z naslednjim dvojnim tapom znova prikažeš kontrole',
       cleanReturn: 'Dvakrat tapni ali pritisni Escape za ponovni prikaz kontrol',
@@ -186,6 +190,8 @@
       cleanToggle.setAttribute('aria-pressed', String(immersive));
       cleanToggle.setAttribute('aria-label', immersive ? w.controls : w.clean);
     }
+    const gesture = viewer.querySelector('.vs-gesture-note');
+    if (gesture) gesture.textContent = phone ? w.gesturePhone : w.gestureDesktop;
     viewer.setAttribute('aria-label', w.full);
     surface.setAttribute('aria-label', immersive ? w.cleanReturn : tour ? w.tourTouch : phone ? w.touch : w.tap);
     if (messageText) messageText.textContent = w.failed;
