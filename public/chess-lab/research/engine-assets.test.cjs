@@ -85,3 +85,8 @@ test('offline route falls back to original online fetch when CacheStorage is blo
   let response;handlers.fetch({request:new Request('https://site.test/chess-lab/'+f.files[0].path),respondWith:p=>{response=p;}});
   assert.equal(await (await response).text(),'original online bytes');assert.equal(attempts.length,1);
 });
+test('Berserk Remove cannot cancel a separate active Deep session through the original NNUE clear API',async()=>{
+  const f=fixture();f.p.mode='berserk';f.p.network={bytes:25,sha256:'a'.repeat(64)};f.p.bytes+=25;let cleared=false;
+  f.store.setNetworkProvider({check:async()=>true,ensure:async()=>{},busy:()=>true,remove:async()=>{cleared=true;}});
+  await f.store.install('berserk');await assert.rejects(f.store.remove('berserk'),{name:'InUseError'});assert.equal(cleared,false);
+});

@@ -82,8 +82,8 @@
     if(sha!==BERSERK_NET.sha256)throw new Error('This NNUE does not match berserk-9b84c340af7e.nn (25,201,924 bytes).');
     return {buffer,sha256:sha};
   }
-  function restoreBerserkNetwork() {
-    if(berserkNetwork||networkState==='missing'||networkState==='error')return Promise.resolve(getSettings());
+  function restoreBerserkNetwork({force=false}={}) {
+    if(berserkNetwork||!force&&(networkState==='missing'||networkState==='error'))return Promise.resolve(getSettings());
     if(restorePending)return restorePending;
     const revision=networkRevision;networkState='checking';notifySettings();
     restorePending=(async()=>{
@@ -120,7 +120,9 @@
   async function ensureBerserkNetwork(signal, onProgress) {
     const abort = () => { if (signal?.aborted) throw abortError(); };
     abort();
-    if (!berserkNetwork) await restoreBerserkNetwork();
+    // Another tab may have completed a save after this tab previously saw
+    // missing/cancelled bytes. Recheck before downloading the original NNUE.
+    if (!berserkNetwork) await restoreBerserkNetwork({force:true});
     abort();
     if (berserkNetwork) return getSettings();
     const revision=networkRevision, serial=++networkLoadSerial;
@@ -406,7 +408,7 @@
       // Browser eviction can remove IDB after RAM was prepared. Re-save the verified
       // original buffer without downloading/copying it into a second asset store.
       if(berserkNetwork){await queueNetworkWrite('put',{id:BERSERK_NET.sha256,buffer:berserkNetwork.buffer,name:BERSERK_NET.name});networkPersistent=true;}
-    },remove:clearBerserkNetwork,
+    },remove:clearBerserkNetwork,busy:()=>[...instances].some(instance=>instance.isRunning()),
     async check(verify){
       // Re-read actual IDB bytes; a RAM-ready flag cannot prove persistent storage.
       try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;

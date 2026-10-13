@@ -158,7 +158,7 @@
     }
     async function remove(mode){
       const p=select(mode);if(!p)return false;
-      return locked(p,null,async()=>{if(await useCount(p))throw error('InUseError','Engine is prepared or running in a tab. Use Stop all first.');
+      return locked(p,null,async()=>{if(await useCount(p)||p.network&&network?.busy?.())throw error('InUseError','Engine is prepared or running. Stop analysis, then change position or reopen LAB before removing its files.');
         if(p.network)await network?.remove();await env.caches.delete(cacheName(p));receipts.delete(p.identity);emit(p,{status:'online',message:'Online only',savedBytes:0,loaded:0,receipt:null});return true;});
     }
     return {select,cacheName,marker,inspect,install,prepare,remove,acquireUsage,setNetworkProvider:provider=>{network=provider;},
