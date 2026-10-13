@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bd.dualframe.pair.v1",
+  "title": "DualFrame private paired asset",
+  "type": "object",
+  "required": ["schema", "pair_id", "original", "variants", "jobs", "references"],
+  "properties": {
+    "schema": {"const": "bd.dualframe.pair.v1"},
+    "pair_id": {"type": "string", "pattern": "^[a-zA-Z0-9_-]{8,100}$"},
+    "original": {
+      "type": "object", "required": ["sha256", "filename", "mime", "width", "height", "source_orientation", "visibility"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/hash"}, "filename": {"type": "string", "maxLength": 100},
+        "mime": {"enum": ["image/png", "image/jpeg", "image/webp"]},
+        "width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1},
+        "source_orientation": {"enum": ["portrait", "landscape"]}, "visibility": {"const": "private"}
+      }
+    },
+    "variants": {"type": "object", "required": ["portrait", "landscape"], "properties": {"portrait": {"$ref": "#/$defs/variants"}, "landscape": {"$ref": "#/$defs/variants"}}},
+    "jobs": {"type": "array", "items": {"type": "object", "required": ["job_id", "status", "input_sha256", "target", "mode", "provider", "model_or_version", "prompt", "seed", "created_at"], "properties": {"job_id": {"type": "string"}, "input_sha256": {"$ref": "#/$defs/hash"}, "target": {"enum": ["portrait", "landscape"]}, "mode": {"enum": ["faithful", "cinematic"]}, "status": {"enum": ["PENDING", "RUNNING", "READY", "FAILED", "CANCELLED", "HELD", "ACCEPTED", "REJECTED"]}}}},
+    "references": {"type": "array"}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "asset": {"type": "object", "required": ["path", "sha256", "width", "height", "origin"], "properties": {"path": {"type": "string"}, "sha256": {"$ref": "#/$defs/hash"}, "width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1}, "origin": {"enum": ["original", "demo", "generated", "imported"]}, "resolution_origin": {"type": "string"}, "resolution_verified": {"type": "boolean"}}},
+    "variants": {"type": "object", "properties": {"hd": {"$ref": "#/$defs/asset"}, "fourK": {"allOf": [{"$ref": "#/$defs/asset"}, {"required": ["resolution_verified", "resolution_origin"], "properties": {"resolution_verified": {"const": true}, "resolution_origin": {"enum": ["native", "upscaled"]}}, "anyOf": [{"properties": {"width": {"minimum": 3840}, "height": {"minimum": 2160}}}, {"properties": {"width": {"minimum": 2160}, "height": {"minimum": 3840}}}]}]}}, "additionalProperties": false}
+  }
+}
