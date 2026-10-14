@@ -30,7 +30,7 @@ test('Daily keeps only one winning story; S2/S3 never leak into the landing',t=>
  assert.equal((html.match(/class="notice daily-index-item"/g)||[]).length,2);
  assert.match(html,/Eleven Minutes Of Peace/);
  assert.match(html,/Nara-AI-2026-10-09-S1-format-R1.html/);
- assert.match(html,/class="score-chip[^"]*">90<\/span>/);
+ assert.match(html,/class="score-chip[^"]*"[^>]*>90<\/span>/);
  assert.ok(!html.includes(source.scenes[0].paragraphs[0]));
  for(const instance of ['S2','S3'])assert.ok(!html.includes('id="NARA-D-2026-10-09:'+instance+'"'));
  assert.doesNotMatch(html,/class="archive-item daily-item"|batch-other-stories/);

@@ -44,7 +44,9 @@ test('both pages and generator load selector before reader and lightbox',()=>{
     const reader=html.indexOf('assets/js/nara-daily-reader.js');
     const lightbox=html.indexOf('assets/js/nara-daily-lightbox.js');
     assert.ok(selector>=0&&reader>selector&&lightbox>reader,name);
-    assert.ok((html.match(/<figure class="daily-scene-figure">/g)||[]).length>=6);
+    const figures=(html.match(/<figure class="daily-scene-figure">/g)||[]).length;
+    if(name==='Nara-AI-daily.html')assert.equal(figures,0,'Daily titles only');
+    else assert.ok(figures>=6,'archive preserves the artwork');
   }
   const generator=fs.readFileSync(path.join(root,'scripts/nara-daily.mjs'),'utf8');
   assert.ok(generator.indexOf('nara-daily-resolution.js?v=1')>=0);

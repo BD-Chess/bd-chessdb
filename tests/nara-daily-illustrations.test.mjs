@@ -58,7 +58,8 @@ test('Daily links Oct 5 directly while monthly retains its R3 image figures in e
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   for(const file of ['Nara-AI-daily.html','Nara-AI-2026-10.html']){
     const html=fs.readFileSync(path.join(n,file),'utf8');
-    assert.ok(imagesFrom(html)>=6,file);
+    if(file==='Nara-AI-daily.html')assert.equal(imagesFrom(html),0,'Daily is now a compact index');
+    else assert.ok(imagesFrom(html)>=6,file);
     assert.ok(html.includes('data-language-content="sl" lang="sl" hidden'));
     assert.ok(html.includes('assets/js/nara-daily-resolution.js?v=1'));
     if(file==='Nara-AI-daily.html'){
@@ -91,7 +92,8 @@ test('normal renderer reconstruction preserves the current figures without touch
     {daily:false,html:monthlyPage('2026-10',records.filter(r=>r.date.startsWith('2026-10')),translations,root)}
   ];
   for(const page of pages){
-    assert.ok(imagesFrom(page.html)>=m.images.length*2);
+    if(page.daily)assert.equal(imagesFrom(page.html),0,'Daily must not embed story illustrations');
+    else assert.ok(imagesFrom(page.html)>=m.images.length*2);
     if(page.daily){
       assert.ok(page.html.includes('Nara-AI-2026-10-05-format-R1.html'));
       assert.ok(!page.html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'));
