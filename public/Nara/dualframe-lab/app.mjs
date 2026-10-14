@@ -35,7 +35,7 @@ Object.assign(dictionary.en,{
  profile:'Quick recipe',profilePhoto:'Faithful photo',profileArt:'Creative composition',profileText:'Infographic / text',applyProfile:'Apply to defaults',
  checkApiFree:'Check API access · no generation',apiTestNote:'Checks gateway, account session and configured keys only. No generation, provider spend or assertion of model availability.',
  defaultCollection:'Starting collection',defaultViewerQuality:'Fullscreen quality',delayLabel:'Delay',delayOff:'Off',
- delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 1–5 seconds before switching. Off changes immediately.',
+ delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 0.5–5 seconds before switching. Off (0s) changes immediately.',
  metadataAuto:'On launch, sync image names and cloud catalog only, never image bytes.',storageSafeHelp:'Sync lists cloud images first. Load individual photos on demand. Local-only originals are never evicted.',
  storageCheck:'Check local storage',clearMemory:'Clear image memory cache',preloadAdjacent:'Prefetch one previous and next image',
  estimateUnavailable:'Browser storage estimate unavailable (not proof of free or full device storage).',
@@ -57,7 +57,7 @@ Object.assign(dictionary.sl,{
  profile:'Hiter recept',profilePhoto:'Fotografija · ohrani',profileArt:'Umetniška kompozicija',profileText:'Infografika / besedilo',applyProfile:'Uporabi kot privzeto',
  checkApiFree:'Preveri API · brez generiranja',apiTestNote:'Preveri strežnik, sejo in prisotnost ključev. Brez ustvarjanja slik, stroškov ali neutemeljenih trditev o delovanju modela.',
  defaultCollection:'Začetna zbirka',defaultViewerQuality:'Kakovost celozaslonskega ogleda',delayLabel:'Delay',delayOff:'Izključeno',
- delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 1–5 sekund. Izključeno preklopi takoj.',
+ delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 0,5–5 sekund. Izključeno (0 s) preklopi takoj.',
  metadataAuto:'Ob zagonu uskladi samo katalog in imena, nikoli bajtov slik.',storageSafeHelp:'Sync najprej prikaže oblačne slike. Posamezno fotografijo naložiš po izbiri. Izvirnikov, ki so samo lokalni, nikoli ne brišemo samodejno.',
  storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',preloadAdjacent:'Prednaloži eno prejšnjo in eno naslednjo sliko',
  estimateUnavailable:'Brskalnik ne razkriva ocene svoje shrambe (to ni dokaz prostega/zasedenega prostora naprave).',
@@ -406,7 +406,7 @@ function updateModelControls(){
  if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||prefs.enabledModels[0];
  const model=modelFor($('pipeline').value);$('output-quality').options[1].disabled=model.provider==='demo';if(model.provider==='demo'&&$('output-quality').value==='4k')$('output-quality').value='hd';
  const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('configured'):t('missingKey')):t('apiChecking');
- $('model-status').textContent=`${model.label} · ${status}${model.max_edge&&model.max_edge<3840&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
+ $('model-status').textContent=`${model.label} · ${status}${(model.max_edge&&model.max_edge<3840||!newImage&&model.edit_max_edge&&model.edit_max_edge<3840)&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
  $('model-status').classList.toggle('held',known?.available===false);$('generate').disabled=!selectedPair()&&!newImage;updateAuthLabel();renderBenchModels();
 }
 
