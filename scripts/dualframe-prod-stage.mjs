@@ -26,9 +26,10 @@ if(mode==='--guard'){
  if(pwa.some(r=>!r.ok))throw Error('LIVE_PWA_ASSETS_UNAVAILABLE');
  const [pwaManifest,pwaRelease,pwaWorker]=await Promise.all([pwa[0].json(),pwa[1].json(),pwa[2].text()]);
  const pwaList=pwaWorker.match(/const ASSETS=(\[[\s\S]*?\]);/);if(!pwaList||pwaManifest.id!=='./'||pwaManifest.scope!=='./'||pwaRelease.pwa?.scope!=='./'||!html.includes('rel="manifest"')||!html.includes('id="pwa-install"'))throw Error('LIVE_PWA_CONTRACT_INVALID');
- const pwaAssets=JSON.parse(pwaList[1]),pwaHash=createHash('sha256');
- for(const asset of pwaAssets){const name=asset.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const r=await fetch(new URL(asset,pwaRoot),{cache:'no-store'});if(!r.ok)throw Error('LIVE_PWA_PACKAGE_ASSET_MISSING');const data=Buffer.from(await r.arrayBuffer());pwaHash.update(asset).update('\0').update(createHash('sha256').update(data).digest('hex')).update('\n');}
- const livePwaHash=pwaHash.digest('hex');if(livePwaHash!==pwaRelease.pwa.offline_package_sha256||!pwaWorker.includes("const PACKAGE_SHA='"+livePwaHash+"'"))throw Error('LIVE_PWA_PACKAGE_HASH_MISMATCH');
+ const pwaAssets=JSON.parse(pwaList[1]),pwaHash=createHash('sha256'),pwaEvidence=[];
+ for(const asset of pwaAssets){const name=asset.replace(/^\.\/,'').split('?')[0];if(name==='release.json')continue;const requestedUrl=new URL(asset,pwaRoot),r=await fetch(requestedUrl,{cache:'no-store'});if(!r.ok)throw Error('LIVE_PWA_PACKAGE_ASSET_MISSING');const data=Buffer.from(await r.arrayBuffer()),assetSha=createHash('sha256').update(data).digest('hex');pwaHash.update(asset).update('\0').update(assetSha).update('\n');pwaEvidence.push({asset,requested_url:requestedUrl.href,final_url:r.url,bytes:data.length,sha256:assetSha});}
+ const livePwaHash=pwaHash.digest('hex'),workerPackageSha=pwaWorker.match(/const PACKAGE_SHA='([^']+)'/)?.[1]||null;
+ if(livePwaHash!==pwaRelease.pwa.offline_package_sha256||workerPackageSha!==livePwaHash){console.log(JSON.stringify({pwa_integrity_mismatch:{expected:pwaRelease.pwa.offline_package_sha256,actual:livePwaHash,worker:workerPackageSha,assets:pwaEvidence}}));throw Error('LIVE_PWA_PACKAGE_HASH_MISMATCH');}
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
  const names=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY'];
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));
