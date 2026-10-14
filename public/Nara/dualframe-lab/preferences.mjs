@@ -2,7 +2,7 @@
 export const SETTINGS_KEY='bd-dualframe-settings-v1';
 export const DEFAULT_MODELS=Object.freeze(['wan-image-pro','grok-imagine','openai-flare','openai-sunburst']);
 const MODES=new Set(['faithful','smart','infographic']),QUALITIES=new Set(['hd','4k']),POSITIONS=new Set(['center','left','right','top','bottom']);
-export const SETTINGS_DEFAULTS=Object.freeze({mode:'smart',model:'openai-sunburst',quality:'hd',position:'center',enabledModels:[...DEFAULT_MODELS],rememberLast:false,galleryCollection:'all',delaySeconds:0,metadataSyncOnStart:true,maxCloudDownloadMB:96});
+export const SETTINGS_DEFAULTS=Object.freeze({mode:'smart',model:'openai-sunburst',quality:'hd',position:'center',enabledModels:[...DEFAULT_MODELS],rememberLast:false,galleryCollection:'all',delaySeconds:2,metadataSyncOnStart:true,maxCloudDownloadMB:96});
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
 export function validateSettings(input,validModels=DEFAULT_MODELS){
  const data=input&&typeof input==='object'&&!Array.isArray(input)?input:{},allowed=new Set(validModels),defaults=SETTINGS_DEFAULTS;
