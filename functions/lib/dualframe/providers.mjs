@@ -32,8 +32,8 @@ export function providerRequest(job,source,env){
   return {...base,url:'https://api.openai.com/v1/images/generations',headers:jsonHeaders(key),body:JSON.stringify({...fields,n:1})};
  }
  if(m.provider==='gemini'){
-  const input=edit?[{type:'image',data:Buffer.from(source).toString('base64'),mime_type:'image/png'},{type:'text',text:prompt}]:prompt;
-  return {...base,url:'https://generativelanguage.googleapis.com/v1beta/interactions',headers:{'x-goog-api-key':key,'content-type':'application/json'},body:JSON.stringify({model:m.model,input,response_format:{type:'image',aspect_ratio:size.aspect,image_size:job.quality==='4k'?'4K':'2K'}})};
+  const input=edit?[{type:'text',text:prompt},{type:'image',data:Buffer.from(source).toString('base64'),mime_type:'image/png'}]:prompt;
+  return {...base,url:'https://generativelanguage.googleapis.com/v1beta/interactions',headers:{'x-goog-api-key':key,'content-type':'application/json'},body:JSON.stringify({model:m.model,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:size.aspect,image_size:job.quality==='4k'?'4K':'2K'}})};
  }
  if(m.provider==='xai')return {...base,url:`https://api.x.ai/v1/images/${edit?'edits':'generations'}`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt,n:1,aspect_ratio:size.aspect,resolution:'2k',quality:'medium',response_format:'b64_json',...(edit?{image:{type:'image_url',url:dataURI(source)}}:{})})};
  if(m.provider==='minimax')return {...base,url:'https://api.minimax.io/v1/image_generation',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt:prompt.slice(0,1500),width:size.width,height:size.height,n:1,response_format:'base64',...(Number.isInteger(job.seed)?{seed:job.seed}:{}),...(edit?{subject_reference:[{type:'character',image_file:dataURI(source)}]}:{})})};
