@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {adjacentImageIndices,syncImageCache} from '../public/Nara/dualframe-lab/image-cache.mjs?v=3.0-r1';
 import {validateSettings,readSettings,saveSettings,storageBudget,delayTransition,SETTINGS_DEFAULTS,DEFAULT_MODELS} from '../public/Nara/dualframe-lab/preferences.mjs';
 import {storageError} from '../public/Nara/dualframe-lab/store.mjs';
@@ -31,7 +33,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.4');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.5');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -147,3 +149,5 @@ test('Settings API access test is read-only and hidden models are absent from Cr
  assert.match(app,/function visibleModels\(\)\{return MODELS\.filter\(m=>m\.direct&&settings\.enabledModels\.includes\(m\.key\)\)/);
  assert.match(app,/for\(const model of visibleModels\(\)\.filter\(x=>x\.edit!==false\)\)/);
 });
+
+test('production entry points and preferences module parse as JavaScript',()=>{for(const file of ['app.mjs','preferences.mjs','store.mjs'])assert.doesNotThrow(()=>execFileSync(process.execPath,['--check',fileURLToPath(new URL(file,root))],{timeout:10000,stdio:'pipe'}));});
