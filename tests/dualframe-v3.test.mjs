@@ -180,8 +180,8 @@ test('Gemini 2.1 adapter uses documented Interactions REST and reads the image r
   const request=providerRequest(job,source,env),body=JSON.parse(request.body);
   assert.equal(request.url,'https://generativelanguage.googleapis.com/v1beta/interactions');
   assert.equal(body.model,'gemini-nano-banana-2.1');
-  assert.deepEqual(body.response_format,{type:'image',aspect_ratio:'9:16',image_size:'4K'});
-  if(source){assert.equal(body.input[0].type,'image');assert.equal(body.input[0].mime_type,'image/png');}
+  assert.deepEqual(body.response_format,{type:'image',mime_type:'image/png',aspect_ratio:'9:16',image_size:'4K'});
+  if(source){assert.equal(body.input[0].type,'text');assert.equal(body.input[1].type,'image');assert.equal(body.input[1].mime_type,'image/png');}
   else assert.equal(typeof body.input,'string');
   const networkCalls=[];
   const fetcher=async(url,opts)=>{networkCalls.push({url,method:opts.method});return Response.json({steps:[{type:'model_output',content:[{type:'text',text:'done'},{type:'image',data:png.toString('base64'),mime_type:'image/png'}]}]});};
