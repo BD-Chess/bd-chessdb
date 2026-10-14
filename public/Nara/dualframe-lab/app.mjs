@@ -1,7 +1,7 @@
 import * as API from './api-client.mjs?v=3.0-r4';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
 import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate } from './store.mjs?v=3.0-r4.3';
-import { readSettings, writeSettings, DEFAULT_SETTINGS, DEFAULT_ENABLED_MODELS, orientationTransition, estimateHydrationSafety, readModelHealth, recordModelHealth } from './settings.mjs?v=3.0-r1';
+import { readSettings, writeSettings, DEFAULT_SETTINGS, DEFAULT_ENABLED_MODELS, orientationTransition, estimateHydrationSafety, readModelHealth, recordModelHealth, remoteTransferBytes } from './settings.mjs?v=3.0-r2';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
 import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=3.0-r4';
 import { MODELS, modelFor, supportsMode } from './models.mjs?v=3.0-r4';
@@ -594,9 +594,7 @@ async function loadRemotePair(remote){
   const fromRemote=remoteJobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status)&&j.output?.asset_id);
   const declared=[remote.original,remote.normalized,...fromRemote.map(j=>j.output)];
   // Server records actual byte_size; missing sizes must never be treated as zero.
-  const sizes=declared.map(a=>Number(a?.byte_size??a?.size??a?.bytes));
-  if(sizes.some(value=>!Number.isFinite(value)||value<=0))throw Error('STORAGE_REMOTE_SIZE_UNKNOWN');
-  const expected=sizes.reduce((sum,value)=>sum+value,0);
+  const expected=remoteTransferBytes(declared);
   if(expected>192*1048576)throw Error('STORAGE_TRANSFER_TOO_LARGE');
   const budget=estimateHydrationSafety(await storageEstimate(),expected);
   if(!budget.safe)throw Error('STORAGE_ESTIMATED_LOW');
