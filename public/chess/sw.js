@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. CURRENT only. */
 'use strict';
-const RELEASE = "current-13246453dc54be5f";
+const RELEASE = "current-4510d50405cdffd9";
 const PREFIX = "chessbest-chess-current-";
 const ASSETS = [
   "8zc-about.html",
@@ -59,6 +59,7 @@ const ASSETS = [
   "css/8zc-tournament.css",
   "css/app-mobile.css",
   "css/chessboard-1.0.0.min.css",
+  "css/engine-storage.css",
   "facts.html",
   "games-info.html",
   "icons/apple-touch-icon.png",
@@ -77,10 +78,19 @@ const ASSETS = [
   "img/chesspieces/wikipedia/wQ.png",
   "img/chesspieces/wikipedia/wR.png",
   "index.html",
+  "js/8zc-analysis-controls.js",
+  "js/8zc-analysis-session.js",
   "js/8zc-benchmark.js",
   "js/8zc-dcc-core.js",
   "js/8zc-deep-engine.js",
   "js/8zc-deep-ui.js",
+  "js/8zc-engine-assets-manifest.js",
+  "js/8zc-engine-assets-sw.js",
+  "js/8zc-engine-assets.js",
+  "js/8zc-engine-cards.js",
+  "js/8zc-engine-memory.js",
+  "js/8zc-engine-registry.js",
+  "js/8zc-engine-storage-ui.js",
   "js/8zc-eval-bar.js",
   "js/8zc-evidence.js",
   "js/8zc-gemini.js",
@@ -92,6 +102,7 @@ const ASSETS = [
   "js/8zc-review-presentation.js",
   "js/8zc-review-ui.js",
   "js/8zc-sf-provider.js",
+  "js/8zc-sha256.js",
   "js/8zc-sim-core.js",
   "js/8zc-sim-runner.js",
   "js/8zc-sim-store.js",

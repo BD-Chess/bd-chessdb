@@ -1,0 +1,47 @@
+diff --git a/src/neural/backends/blas/network_blas.cc b/src/neural/backends/blas/network_blas.cc
+index 992085e..ef34e66 100644
+--- a/src/neural/backends/blas/network_blas.cc
++++ b/src/neural/backends/blas/network_blas.cc
+@@ -20,6 +20,9 @@
+ #include <cassert>
+ #include <cmath>
+ #include <iostream>
++#include <fstream>
++#include <iomanip>
++#include <cstdlib>
+ 
+ #include "neural/backends/blas/blas.h"
+ #include "neural/backends/blas/convolution1.h"
+@@ -94,6 +97,24 @@ class BlasComputation : public NetworkComputation {
+   }
+ 
+   float GetDVal(int sample) const override {
++    // Verification-only instrumentation: expose untouched raw backend output,
++    // before native search compresses WDL and edge prior storage.
++    if (const char* path = std::getenv("LC0_PARITY_DUMP")) {
++      if (std::find(parity_dumped_.begin(), parity_dumped_.end(), sample) == parity_dumped_.end()) {
++        parity_dumped_.push_back(sample);
++        std::ofstream out(path, std::ios::app);
++        out << std::setprecision(10) << "{\"q\":" << GetQVal(sample) << ",\"wdl\":[";
++        for (int j = 0; j < 3; ++j) { if(j) out << ','; out << q_values_[3*sample+j]; }
++        out << "],\"policy\":[";
++        for (int j = 0; j < 1858; ++j) { if(j) out << ','; out << GetPVal(sample,j); }
++        out << "],\"masks\":[";
++        for (size_t j = 0; j < planes_[sample].size(); ++j) { if(j) out << ','; out << '\"' << planes_[sample][j].mask << '\"'; }
++        out << "],\"values\":[";
++        for (size_t j = 0; j < planes_[sample].size(); ++j) { if(j) out << ','; out << planes_[sample][j].value; }
++        out << "]}\n";
++      }
++    }
++
+     if (wdl_) {
+       auto d = q_values_[3 * sample + 1];
+       return d;
+@@ -135,6 +156,7 @@ class BlasComputation : public NetworkComputation {
+   const MultiHeadWeights& weights_;
+   size_t max_batch_size_;
+   std::vector<InputPlanes> planes_;
++  mutable std::vector<int> parity_dumped_;
+   std::vector<std::vector<float>> policies_;
+   std::vector<float> q_values_;
+   std::vector<float> m_values_;

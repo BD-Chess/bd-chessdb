@@ -6,7 +6,7 @@
   else root.ChessSim = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '1.3.0-lab';
+  const VERSION = '1.3.0-current';
   const policy = value => ['raw', 'dcc', 'sf', 'sf-dcc'].includes(value) ? value : 'raw';
   const label = value => ({ raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC' })[policy(value)];
   const provider = value => policy(value).startsWith('sf') ? 'SF' : 'CDB';
@@ -91,7 +91,7 @@
     const actualSources = [...new Set(trace.map(row => row.actual_provider || row.provider).filter(Boolean))];
     const metadata = run.opening?.sourceHeaders || run.sourceHeaders || openingHeaders;
     const tags = {
-      Event: run.eventName || ((run.tournamentId || run.eventId) ? 'ChessBest LAB tournament' : 'ChessBest position experiment'), Site: 'https://www.mdlxdcc.org/chess/',
+      Event: run.eventName || ((run.tournamentId || run.eventId) ? 'ChessBest CURRENT tournament' : 'ChessBest position experiment'), Site: 'https://chessbest.org/',
       Date: (run.startedAt || '').slice(0, 10).replace(/-/g, '.'), Round: run.round ?? run.id,
       White: label(run.white), Black: label(run.black), Result: run.result || '*',
       Termination: run.reason || run.state, ExperimentState: run.state,

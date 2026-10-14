@@ -37,7 +37,7 @@
     const status = () => ({ ...current, warnings: [...current.warnings] });
     function fail(message) { throw Error(message); }
     function readJournal() {
-      if (!storage) fail('Browser localStorage is unavailable. No LAB writes were enabled.');
+      if (!storage) fail('Browser localStorage is unavailable. No CURRENT writes were enabled.');
       const text = storage.getItem(KEYS.migration);
       if (text === null) return { version: 1, complete: false, local: {}, databases: {}, checkpoint: false, warnings: [] };
       let value;
@@ -60,7 +60,7 @@
         result = value === null ? 'absent' : 'copied';
         if (value !== null) {
           // Persist intent first. A crash after the copy but before its receipt
-          // must not misclassify this copied fallback as pre-existing LAB data.
+          // must not misclassify this copied fallback as pre-existing CURRENT data.
           journal.local[target] = 'copying'; writeJournal(journal);
           if (target === KEYS.simFallback) {
             storage.setItem(KEYS.simFallbackOrigin, 'legacy-copy');
@@ -68,7 +68,7 @@
           }
           // No await between check and write; the outer Web Lock serializes tabs.
           storage.setItem(target, value);
-          if (storage.getItem(target) !== value) fail('LAB data copy readback failed.');
+          if (storage.getItem(target) !== value) fail('CURRENT data copy readback failed.');
         }
       }
       // Receipts contain names and outcomes only, never token values or hashes.
@@ -76,7 +76,7 @@
       writeJournal(journal);
     }
     async function names() {
-      if (!idb) fail('IndexedDB is unavailable, so existing archives cannot be verified. No LAB writes were enabled.');
+      if (!idb) fail('IndexedDB is unavailable, so existing archives cannot be verified. No CURRENT writes were enabled.');
       if (typeof idb.databases !== 'function') return null;
       const list = await idb.databases();
       return new Set(list.map(item => item.name));
@@ -118,7 +118,7 @@
       return new Promise((resolve, reject) => {
         let settled = false;
         const request = idb.open(spec.name, 1);
-        const timer = setTimeout(() => finish(Error('LAB archive creation timed out.')), timeoutMs);
+        const timer = setTimeout(() => finish(Error('CURRENT archive creation timed out.')), timeoutMs);
         function finish(error, db) {
           if (settled) { db?.close(); return; }
           settled = true; clearTimeout(timer); error ? reject(error) : resolve(db);
@@ -128,8 +128,8 @@
           for (const name of spec.stores) if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name, { keyPath: 'id' });
         };
         request.onsuccess = () => finish(null, request.result);
-        request.onerror = () => finish(request.error || Error('Could not create LAB archive.'));
-        request.onblocked = () => finish(Error('LAB archive creation is blocked by another tab.'));
+        request.onerror = () => finish(request.error || Error('Could not create CURRENT archive.'));
+        request.onblocked = () => finish(Error('CURRENT archive creation is blocked by another tab.'));
       });
     }
     function addMissing(db, stores, records) {
@@ -146,7 +146,7 @@
           }
         }
         tx.oncomplete = () => resolve(expected);
-        tx.onerror = tx.onabort = () => reject(tx.error || Error('LAB archive copy did not commit.'));
+        tx.onerror = tx.onabort = () => reject(tx.error || Error('CURRENT archive copy did not commit.'));
       });
     }
     async function copyDatabase(journal, spec) {
@@ -180,7 +180,7 @@
         target = await openExisting(spec.name);
         if (target) {
           const currentRecords = await all(target, spec.stores);
-          // A pre-existing, intentionally empty LAB database is valid state.
+          // A pre-existing, intentionally empty CURRENT database is valid state.
           // Never refill it from CURRENT. Successful receipts also prevent
           // deleted records returning after any subsequent reload.
           if (spec.stores.every(name => currentRecords[name].length === 0) && !journal.startedDatabases?.[spec.name]) {
@@ -191,9 +191,9 @@
           // (and a deliberately empty archive), even without an IndexedDB DB.
           if (existingLabFallback) {
             let value;
-            try { value = JSON.parse(storage.getItem(spec.fallback)); } catch (_) { fail('Existing LAB archive fallback is unreadable. It was preserved.'); }
+            try { value = JSON.parse(storage.getItem(spec.fallback)); } catch (_) { fail('Existing CURRENT archive fallback is unreadable. It was preserved.'); }
             const saved = spec.name === DATABASES.evidence ? { snapshots: value } : value;
-            if (!saved || spec.stores.some(name => !Array.isArray(saved[name]))) fail('Existing LAB archive fallback is unsupported. It was preserved.');
+            if (!saved || spec.stores.some(name => !Array.isArray(saved[name]))) fail('Existing CURRENT archive fallback is unsupported. It was preserved.');
             if (spec.stores.every(name => saved[name].length === 0)) {
               journal.databases[spec.name] = { state: 'preserved-empty-fallback', copied: 0 }; writeJournal(journal); return;
             }
@@ -210,7 +210,7 @@
         const actual = await all(target, spec.stores);
         for (const name of spec.stores) {
           const byId = new Map(actual[name].map(value => [value.id, value]));
-          for (const value of expected[name]) if (JSON.stringify(byId.get(value.id)) !== JSON.stringify(value)) fail('LAB archive readback failed.');
+          for (const value of expected[name]) if (JSON.stringify(byId.get(value.id)) !== JSON.stringify(value)) fail('CURRENT archive readback failed.');
         }
         journal.databases[spec.name] = { state: 'copied', copied: spec.stores.reduce((n, name) => n + expected[name].length, 0) };
         writeJournal(journal);
@@ -231,7 +231,7 @@
         if (valid && !active && journal.freshSimulation && storage.getItem(KEYS.simCheckpoint) === null) {
           storage.setItem(KEYS.simCheckpoint, source);
           if (storage.getItem(KEYS.simCheckpoint) !== source) fail('Simulation checkpoint copy readback failed.');
-        } else if (active) journal.warnings.push('A legacy simulation is still running. Its checkpoint copy is retained for review; LAB will not take over that runner.');
+        } else if (active) journal.warnings.push('A legacy simulation is still running. Its checkpoint copy is retained for review; CURRENT will not take over that runner.');
         else if (valid && !journal.freshSimulation) journal.warnings.push('Existing LAB simulation data was preserved; the legacy checkpoint is retained separately for review.');
       }
       journal.checkpoint = true; writeJournal(journal);
@@ -239,7 +239,7 @@
     async function migrate() {
       const quick = readJournal();
       if (quick.complete) { current = { ...current, complete: true, phase: 'ready', stage: '', warnings: quick.warnings, error: '' }; return status(); }
-      if (!locks?.request) fail('Web Locks are unavailable. Use a browser with Web Locks to safely copy LAB data across tabs. Existing data is unchanged.');
+      if (!locks?.request) fail('Web Locks are unavailable. Use a browser with Web Locks to safely copy CURRENT data across tabs. Existing data is unchanged.');
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -266,12 +266,7 @@
               // Retain a legacy fallback separately when LAB already has a
               // deliberately empty archive; do not reactivate deleted records.
               const destination = spec && journal.emptyArchives?.[spec.name] && storage.getItem(target) === null ? spec.retainedFallback : target;
-              // Keep the old CURRENT game/settings as a read-only fallback, alongside LAB.
-              const earlier = target === KEYS.settings ? 'chessBestSettings'
-                : target === KEYS.game ? 'chessBestGame' : null;
-              const chosen = earlier && storage.getItem(source) === null
-                && storage.getItem(earlier) !== null ? earlier : source;
-              copyLocal(journal, chosen, destination);
+              copyLocal(journal, source, destination);
             }
             for (const spec of SPECS) await copyDatabase(journal, spec);
             await checkpoint(journal);

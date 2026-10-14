@@ -1,0 +1,202 @@
+{
+  "schema": "ChessBest-LCZero-assets-v1",
+  "engine": {
+    "id": "lc0",
+    "name": "LCZero NN / Maia 1900 / browser PUCT",
+    "nativeUciBinary": false,
+    "runtime": "ONNX Runtime Web 1.24.1 / WASM SIMD / 1thread",
+    "sourceLicense": "GPL-3.0-or-later"
+  },
+  "model": {
+    "source": "https://github.com/CSSLab/maia-chess/tree/749204cf5979ce7f8b0412e804a4ee7c83c49ff8",
+    "sourcePath": "maia_weights/maia-1900.pb.gz",
+    "sourceLicense": "GPL-3.0",
+    "originalSha256": "e2f565f42d7cd9f122557e6dc4eb84e5bbaedceda1d404dc485d3611c7c97a12",
+    "onnxSha256": "f919daccde64b19645e143cbd3718d3d650516a16b1f458293e20bc77aff4b11",
+    "input": "INPUT_CLASSICAL_112_PLANE",
+    "architecture": "64x6-SE",
+    "policy": "CONVOLUTION /1858",
+    "value": "WDL"
+  },
+  "converter": {
+    "source": "https://github.com/LeelaChessZero/lc0/tree/fd71a2d921b689c5f479d3227c3806c8e272d9c5",
+    "version": "0.32.1",
+    "submoduleLczeroCommon": "b326b154221a6eb91977bdccf11d6f89e8547875",
+    "command": "lc0 leela2onnx --input=maia-1900.pb.gz --output=maia-1900.onnx --onnx-data-type=f32 --onnx-batch-size=1"
+  },
+  "encoderSource": {
+    "repo": "manthedan/0x88",
+    "commit": "5b8d6c930168cd645dd34d646055f303fae2b5b1",
+    "license": "GPL-3.0-or-later",
+    "modifications": [
+      "Fill missing explicit history from oldest unknown-start board",
+      "Normalize irrelevant en-passant repetition keys"
+    ]
+  },
+  "runtime": {
+    "package": "onnxruntime-web@1.24.1",
+    "npmSha1": "246093d8344e5fbe2983cd2d0e576400bd42ec7e",
+    "license": "MIT",
+    "wasmSha256": "fd078a39438a65660fc6c9df8d42fc886b5bf2931d6dbdd8dc51a17b1221499f"
+  },
+  "verification": {
+    "status": "PASS",
+    "cases": 30,
+    "evidence": "evidence/verification.json",
+    "inputs": "bit-exact native input masks/values",
+    "rawLegalLogitsTolerance": 0.0002,
+    "wdlQTolerance": 1e-05,
+    "priorTolerance": 1e-05,
+    "searchParityWithNative": false,
+    "reference": "Pinned native Lc0 BLAS-Eigen with verification-only raw dump patch",
+    "checkedAt": "2026-10-13T00:14:03.000Z"
+  },
+  "files": [
+    {
+      "path": "CHESS-LICENSE.txt",
+      "bytes": 1315,
+      "sha256": "0b3a3c2b4432a26bb18f9d06f5bba4de015bcc980306b7db28b06025495e2186"
+    },
+    {
+      "path": "GPL-3.0.txt",
+      "bytes": 35148,
+      "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b"
+    },
+    {
+      "path": "MAIA-LICENSE.txt",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6683,
+      "sha256": "16b0c6aaf0c3960b1a5370c8b4a1c4652f4b98e9dc64c282408dd59f03faf061"
+    },
+    {
+      "path": "adapter.mjs",
+      "bytes": 2572,
+      "sha256": "da1e273cf3b9b9a3ff608930bd7a1dc57b629acfc58df116fb34dec27ab90ad8"
+    },
+    {
+      "path": "chess.mjs",
+      "bytes": 107052,
+      "sha256": "76c7c34f0e2e9ab076521a5d6fe786a9cce537bb1b6f29d32a9c9970b5b232d2"
+    },
+    {
+      "path": "encoder.mjs",
+      "bytes": 94383,
+      "sha256": "8e68bcad42f1fbcb5dfcceaee4db4f61fed13246ce03a1dd8abba4ad3843fc4d"
+    },
+    {
+      "path": "evidence/corpus.json",
+      "bytes": 7033,
+      "sha256": "f527d76ce4d6b9bfd12331fc65c314f50c1f30983ef061b9aee247e4e626d935"
+    },
+    {
+      "path": "evidence/native-raw.jsonl",
+      "bytes": 768785,
+      "sha256": "75783a905c1e27828d2c5d322941cb22ce28a56a39ea7508f78340a7876b0fc1"
+    },
+    {
+      "path": "evidence/native-reference.jsonl",
+      "bytes": 31778,
+      "sha256": "a1db369aa1cad4983c848028df462cfd0629d8dd4765155f82ad242723c7e608"
+    },
+    {
+      "path": "evidence/probe.html",
+      "bytes": 6538,
+      "sha256": "741e2ee61011d87ac32d9c0651694d7c25f9678f3b82aa94133b0c347c0a95a6"
+    },
+    {
+      "path": "evidence/verification.json",
+      "bytes": 42780,
+      "sha256": "79830cab8c5c7ddf21a69913ad6c2bc1411ac21559233ea96cecdfa36647df8d"
+    },
+    {
+      "path": "maia-1900.onnx",
+      "bytes": 3483857,
+      "sha256": "f919daccde64b19645e143cbd3718d3d650516a16b1f458293e20bc77aff4b11"
+    },
+    {
+      "path": "neural.mjs",
+      "bytes": 2519,
+      "sha256": "b51794b1f11381a54fe8993f1330b199b428d7e82b7592990d7a7cce7003a317"
+    },
+    {
+      "path": "policy-map.mjs",
+      "bytes": 18843,
+      "sha256": "ca612446b2d8c852289ac7cf1bc498cc7d53492ee97277a716e375a4919978c6"
+    },
+    {
+      "path": "runtime/ORT-LICENSE.txt",
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+    },
+    {
+      "path": "runtime/ort-wasm-simd-threaded.mjs",
+      "bytes": 24274,
+      "sha256": "3101568d9c131ea89d4c693fbff3e0d0c3dcbcf1baa09fd871b86662a071bd1a"
+    },
+    {
+      "path": "runtime/ort-wasm-simd-threaded.wasm",
+      "bytes": 12297086,
+      "sha256": "fd078a39438a65660fc6c9df8d42fc886b5bf2931d6dbdd8dc51a17b1221499f"
+    },
+    {
+      "path": "runtime/ort.wasm.min.mjs",
+      "bytes": 49972,
+      "sha256": "c3d0b1a2618cbf1ec9033071de54d6d99d214a384c001de4d065fa4310f87386"
+    },
+    {
+      "path": "search.mjs",
+      "bytes": 5695,
+      "sha256": "fc3d0b960251386747c769f286ec4bf32f313c86ef1c3876f113da6c6bb190cb"
+    },
+    {
+      "path": "source/0x88/chess/board.ts",
+      "bytes": 3861,
+      "sha256": "a5548ed0552f91f41234a09fcf4c52b8d2b41282321b7c6afe27671ca664f9fa"
+    },
+    {
+      "path": "source/0x88/chess/drawRules.ts",
+      "bytes": 2443,
+      "sha256": "a505887c25c3a6bef7db5e0f67b5b43e5e83d0cbd3db4c451ea45d6c3dfb8322"
+    },
+    {
+      "path": "source/0x88/lc0/encoder112.ts",
+      "bytes": 7417,
+      "sha256": "6bc05c52a96e22c6a7901bb017979fb1e8c0a4789e2e53c6113dffe6662cf2ab"
+    },
+    {
+      "path": "source/0x88/lc0/generatedPolicyMap.ts",
+      "bytes": 18979,
+      "sha256": "5ef218967ec0e91144978ae4bb70e78641cf2948463578b9316a8f425b877299"
+    },
+    {
+      "path": "source/maia-1900.pb.gz",
+      "bytes": 1262607,
+      "sha256": "e2f565f42d7cd9f122557e6dc4eb84e5bbaedceda1d404dc485d3611c7c97a12"
+    },
+    {
+      "path": "source/native-raw-output.patch",
+      "bytes": 2036,
+      "sha256": "77ae78af6f616fa3da62491810cde111e35802a2a8bc4141f10de0dd5bbd156c"
+    },
+    {
+      "path": "source/native-reference.py",
+      "bytes": 4790,
+      "sha256": "07a4a3cbfbbd0892801003d10f6d6fefb08e41f2c77618495c06ef0b7bc30dec"
+    },
+    {
+      "path": "source/verify.mjs",
+      "bytes": 1384,
+      "sha256": "266faabd2bf0b376b9aa5aa5759ded3cb610b93db69fb8f55a526032b116e846"
+    },
+    {
+      "path": "worker.mjs",
+      "bytes": 5233,
+      "sha256": "30f55f06d53ebf70f09e644aa792e88c2095bee464c93b00c339859a96800ff7"
+    }
+  ],
+  "rebuildWorkflow": ".github/workflows/chessbest-lc0.yml"
+}

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Help — ChessBest DCC Analysis</title>
+  <title>Help — ChessBest DCC Analysis Lab</title>
   <meta name="description" content="Study variations, compare CDB and DCC, test defences, run local Stockfish, and preserve the evidence behind each analysis.">
   <meta name="robots" content="noindex, nofollow, noarchive">
-  <link rel="canonical" href="https://www.mdlxdcc.org/chess/8zc-help.html">
+  <link rel="canonical" href="https://chessbest.org/8zc-help.html">
   <link rel="stylesheet" href="css/8zc-styles.css?v=20260928-sim1">
   <style>
     .help-shell { max-width: 1000px; margin: 0 auto; }
@@ -144,11 +144,13 @@
           <p><strong>DCC half-moves and engine search depth are different.</strong> Five DCC half-moves means sampling five moves by alternating players, including the candidate. A source PV may report its own search depth. Other source replies do not report depth or nodes, so those fields remain unknown. Scores obtained at different times or depths can vary for reasons unrelated to the position’s practical stability.</p>
         </section>
         <section id="deep-analysis">
-          <h2>Challenge the position with local Stockfish.</h2>
-          <p><strong>Deep analysis</strong> runs <strong>Stockfish 18 Lite</strong> on your device with an explicit search budget. The same local engine also supplies the SF comparison card during ordinary analysis, so its resources may already be loaded. No local installation or engine API key is needed.</p>
-          <ol><li>Open Deep analysis to pin the current position.</li><li>Choose <strong>Search budget</strong>: depth 14 or 18, 250,000 or 1,000,000 nodes, or <strong>Until I stop</strong>. Choose 1, 3, 5 or 10 lines.</li><li>Optionally enter <strong>Only these first moves</strong>, for example <code>e4, d4, Nf3</code>. Leave it empty to search all legal moves.</li><li>Click a SAN move to preview its variation. Use <strong>Save line to study</strong> to retain a line, or <strong>Export analysis</strong> to save the measurements.</li></ol>
-          <p>The engine stays with its pinned position even if the main board changes. <strong>Use current board position</strong> explicitly updates it. <strong>Stop</strong> retains partial results; an unfinished search is not shown as a finished one.</p>
-          <p>Lite uses one CPU thread and a compact network suitable for browsers. Actual speed depends on the device; a phone can use the same tools with smaller budgets. Its evaluation is separate from the ChessDB score and DCC rank. <a href="vendor/stockfish/README.md">Build, corresponding source and license</a>.</p>
+          <h2>Challenge the position with local engines.</h2>
+          <p><strong>Deep</strong> offers SF Lite/Full, LCZero NN, Reckless and Berserk, plus <strong>SF &amp; LC Zero</strong>, <strong>SF &amp; Reckless</strong>, <strong>SF &amp; Berserk</strong> and <strong>All Engines</strong>. Comparisons use the SF Lite/Full checkbox. Each engine keeps its own score and provenance; there is no blended evaluation.</p>
+          <ol><li>Open Deep to analyze the current position.</li><li>Select <strong>Time</strong> for a timed search per engine. Time always takes priority over Search depth. <strong>Time Off</strong> restores the depth limit; <strong>Until I stop</strong> searches until Stop.</li><li>Phones run comparisons sequentially with one engine in memory. All Engines also runs sequentially on desktop. Comparisons containing LCZero require a finite Time when sequential, so every engine gets a turn. LCZero uses visits and native Q/WDL, rather than classical depth.</li><li>Choose 1, 3, 5 or 10 lines. Each displayed variation has two rows; click a SAN move to see a complete board preview. <strong>Save line to study</strong> and <strong>Export analysis</strong> preserve the full line.</li></ol>
+          <p>With <strong>Link</strong> checked, changing Deep's engine updates the board source, SF variant and shared CPU settings; finite time selections are shared too. For a comparison, the board shows a participating engine's actual score. With Link unchecked, Deep and board sources remain independent.</p>
+          <p>Once started, Deep follows new board positions until <strong>Stop</strong>. Stop cancels active and queued engines and retains available results. <strong>Only these first moves</strong> can restrict classical searches; it is unavailable for neural comparisons. Saved engine packages remain available offline in <strong>Settings → Engine storage</strong>. <a href="vendor/ENGINE_NOTICES.md">Build, corresponding sources and licenses</a>.</p>
+          <p>By default, one prepared engine stays in RAM between board positions and views, shared by Deep, engine cards and board evaluation. Each position starts a fresh search. In <strong>Settings → Engine storage</strong>, <strong>Keep all engines in RAM</strong> prepares SF Lite, SF Full, Berserk, Reckless and LCZero on both desktop and mobile. Preparation may download missing files; idle engines do not analyze. The ready count confirms actual preparation, and errors identify engines that could not load.</p>
+          <p><strong>Release idle engines from RAM</strong> frees prepared instances while keeping locally saved files; <strong>Prepare all engines</strong> prepares them again. Closing or reloading the app loses RAM instances; the saved preference restores All on reopening. Stop retires an interrupted worker, and All prepares its replacement without resuming the stopped search. Browsers and the operating system can close an app under memory pressure.</p>
         </section>
         <section id="evidence">
           <h2>Keep what the decision was based on.</h2>

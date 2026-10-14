@@ -59,8 +59,10 @@
     const nodes = finiteInt(options.nodes, null, 1, Number.MAX_SAFE_INTEGER);
     const movetime = finiteInt(options.movetime, null, 1, Number.MAX_SAFE_INTEGER);
     const depth = finiteInt(options.depth, options.infinite || nodes != null || movetime != null ? null : 14, 1, 128);
-    if ([nodes, depth, movetime].filter(value => value != null).length + Number(!!options.infinite) !== 1)
-      throw new Error('Choose exactly one engine limit: depth, nodes, movetime or infinite');
+    const finiteCount = [nodes, depth, movetime].filter(value => value != null).length;
+    const depthAndTime = depth != null && movetime != null && nodes == null && !options.infinite;
+    if (!depthAndTime && finiteCount + Number(!!options.infinite) !== 1)
+      throw new Error('Choose depth, nodes, movetime or infinite; explicit depth and time may be combined');
     const deadline = options.deadline == null ? null : Number(options.deadline);
     if (deadline != null && (!Number.isFinite(deadline) || movetime == null)) throw new Error('A search deadline requires a timed limit');
     let searchMoves = options.searchMoves == null ? [] : options.searchMoves;
@@ -83,13 +85,15 @@
   function create(config) {
     config = config || {};
     const Chess = config.Chess || root.Chess;
+    const descriptor = Object.freeze(Object.assign({}, config.engine || ENGINE));
+    const threads = finiteInt(config.threads, 1, 1, descriptor.maxThreads || 1);
     const hashMB = finiteInt(config.hashMB, 16, 1, 128);
     const workerUrl = config.workerUrl || new URL('vendor/stockfish/stockfish-18-lite-single.js', root.document ? root.document.baseURI : 'http://localhost/chess/').href;
     let active = null, serial = 0, destroyed = false, prepared = null, warming = null, reusePrepared = false;
     const clone = value => JSON.parse(JSON.stringify(value));
     const now = () => root.performance?.now ? root.performance.now() : Date.now();
     function detach(worker) { worker.onmessage = null; worker.onerror = null; worker.onmessageerror = null; }
-    function prepare({ signal } = {}) {
+    function prepare({ signal, onProgress, onStatus } = {}) {
       if (destroyed) return Promise.reject(new Error('Engine has been destroyed'));
       if (signal?.aborted) return Promise.reject(abortError());
       if (active) return Promise.reject(new Error('Cannot prepare during an active search'));
@@ -99,13 +103,14 @@
       const state = { worker: null, timer: null, phase: 'uci', reportedName: null };
       warming = state;
       state.promise = new Promise((resolve, reject) => {
+        onStatus?.({ phase: 'preparing' });
         const done = error => {
           if (warming !== state) return;
           warming = null; clearTimeout(state.timer);
           signal?.removeEventListener('abort', state.cancel);
           if (state.worker) detach(state.worker);
           if (error) { state.worker?.terminate(); reject(error); }
-          else { prepared = { worker: state.worker, reportedName: state.reportedName }; resolve(); }
+          else { prepared = { worker: state.worker, reportedName: state.reportedName, searches:0 }; resolve(); }
         };
         state.cancel = () => done(abortError());
         signal?.addEventListener('abort', state.cancel, { once: true });
@@ -114,12 +119,13 @@
           state.worker.onerror = event => { event.preventDefault?.(); done(new Error(event.message || 'Stockfish could not load')); };
           state.worker.onmessageerror = () => done(new Error('Stockfish worker message failed'));
           state.worker.onmessage = event => {
+            if (event.data?.type === 'chessbest-engine-progress') { onProgress?.(event.data); return; }
             for (const line of String(event.data).split(/\r?\n/)) {
               if (warming !== state) break;
               if (line.startsWith('id name ')) state.reportedName = line.slice(8);
               if (line === 'uciok' && state.phase === 'uci') {
                 state.phase = 'ready';
-                ['setoption name Threads value 1', 'setoption name Hash value ' + hashMB,
+                ['setoption name Threads value ' + threads, 'setoption name Hash value ' + hashMB,
                   'setoption name UCI_ShowWDL value true', 'isready'].forEach(command => state.worker.postMessage(command));
               } else if (line === 'readyok' && state.phase === 'ready') done();
             }
@@ -133,11 +139,11 @@
     function finish(job, error, forced) {
       if (active !== job) return;
       active = null;
-      clearTimeout(job.initTimer); clearTimeout(job.stopTimer);
+      clearTimeout(job.initTimer); clearTimeout(job.stopTimer); clearTimeout(job.searchTimer);
       if (job.signal) job.signal.removeEventListener('abort', job.onAbort);
       if (job.worker) {
         detach(job.worker);
-        if (reusePrepared && !error && !forced && !job.stopped) prepared = { worker: job.worker, reportedName: job.reportedName };
+        if (reusePrepared && !error && !forced && !job.stopped) prepared = { worker: job.worker, reportedName: job.reportedName, searches:job.workerSearches+1 };
         else job.worker.terminate();
       }
       if (error) job.reject(error);
@@ -150,21 +156,24 @@
       const partial = [...unique.values()].sort((a, b) => a.multipv - b.multipv);
       // A partial new iteration can reorder roots. Never combine ranks across depths as one exact comparison.
       const selected = job.completeLines || partial;
-      return clone({ fen: job.limits.fen, engine: Object.assign({}, ENGINE, { hashMB, reportedName: job.reportedName || null }),
+      return clone({ fen: job.limits.fen, engine: Object.assign({}, descriptor, { hashMB, threads, threadsEffective: threads, reportedName: job.reportedName || null }),
         limits: job.limits, lines: selected, completeMultiPV: !!job.completeLines,
         linesDepth: job.completeDepth ?? null, expectedLines: job.expectedLines,
         partialLines: job.completeLines && partial.some(line => line.depth > job.completeDepth) ? partial : [],
         bestMove: job.bestMove || null, ponder: job.ponder || null, nodes: job.nodes, depth: job.depth,
-        stopped: job.stopped, elapsedMs: now() - job.started, startedAt: job.startedAt,
+        stopped: job.stopped, stopReason: job.stopReason || null, elapsedMs: now() - job.started, startedAt: job.startedAt,
         searchElapsedMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
+        actualSearchMs: job.searchStarted == null ? 0 : now() - job.searchStarted,
         initializationMs: (job.searchStarted ?? now()) - job.started,
         positionHistory: job.limits.history ? 'Validated history supplied from startFen' : 'FEN only; repetition history before this position is unavailable',
-        coldHash: true, perspective: 'root scores are for the side to move; white scores are for White' });
+        coldHash: true, workerReused: job.workerReused, watchdog: job.watchdog || null,
+        perspective: 'root scores are for the side to move; white scores are for White' });
     }
-    function stop() {
+    function stop(reason = 'user-stop') {
       const job = active;
       if (!job) return;
-      job.stopped = true;
+      job.stopped = true; job.stopReason = reason;
+      if (config.forceTerminateOnStop) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, null, true); return; }
       if (job.phase !== 'search') { finish(job, null, true); return; }
       if (job.stopTimer) return;
       // A stop watchdog never limits a running search; it acts only AFTER a user's stop.
@@ -189,24 +198,25 @@
         const readyWorker = prepared; prepared = null;
         const job = { id: ++serial, limits, resolve, reject, signal: options.signal, started: now(),
           startedAt: new Date().toISOString(), lines: new Map(), iterations: new Map(), nodes: null, depth: null, stopped: false, phase: 'uci',
-          reportedName: readyWorker?.reportedName || null, searchStarted: null,
+          reportedName: readyWorker?.reportedName || null, searchStarted: null, workerReused: (readyWorker?.searches||0)>0,workerSearches:readyWorker?.searches||0,
           expectedLines: Math.min(limits.multiPV, limits.searchMoves.length || (Chess ? new Chess(limits.fen).moves().length : limits.multiPV)) };
         active = job;
         job.onAbort = () => { if (active === job) { try { job.worker?.postMessage('stop'); } catch (_) {} finish(job, abortError()); } };
         if (job.signal) job.signal.addEventListener('abort', job.onAbort, { once: true });
         try {
-          // Manual analysis uses a fresh worker. Prepared Sim workers reset hash before every search.
+          // A retained ready worker avoids loading again; ucinewgame resets each search.
           job.worker = readyWorker?.worker || (config.workerFactory ? config.workerFactory(workerUrl) : new root.Worker(workerUrl));
           job.worker.onerror = event => { if (event.preventDefault) event.preventDefault(); finish(job, new Error(event.message || 'Stockfish could not load. Check browser WebAssembly support and retry.')); };
           job.worker.onmessageerror = () => finish(job, new Error('Stockfish worker message failed'));
           job.worker.onmessage = event => {
             if (active !== job) return;
+            if (event.data?.type === 'chessbest-engine-progress') { options.onProgress?.(event.data); return; }
             for (const line of String(event.data).split(/\r?\n/)) {
               if (active !== job) break;
               if (line.startsWith('id name ')) job.reportedName = line.slice(8);
               if (line === 'uciok' && job.phase === 'uci') {
                 job.phase = 'ready';
-                ['setoption name Threads value 1', 'setoption name Hash value ' + hashMB,
+                ['setoption name Threads value ' + threads, 'setoption name Hash value ' + hashMB,
                   'setoption name MultiPV value ' + limits.multiPV, 'setoption name UCI_ShowWDL value true',
                   'ucinewgame', 'isready'].forEach(command => job.worker.postMessage(command));
               } else if (line === 'readyok' && job.phase === 'ready') {
@@ -222,15 +232,36 @@
                 if (limits.movetime != null) command += ' movetime ' + (remaining == null ? limits.movetime : Math.min(limits.movetime, remaining));
                 if (limits.infinite) command += ' infinite';
                 if (limits.searchMoves.length) command += ' searchmoves ' + limits.searchMoves.join(' ');
+                job.actualMovetime = limits.movetime == null ? null : remaining == null ? limits.movetime : Math.min(limits.movetime, remaining);
+                // Start after setup. A native UCI time check may overrun or never
+                // return bestmove; a synchronous host cannot receive queued stop.
+                if (job.actualMovetime != null) {
+                  const grace = config.timeGraceMs ?? Math.max(1000, Math.min(2000, job.actualMovetime * .15));
+                  job.searchTimer = setTimeout(() => {
+                    if (active !== job) return;
+                    job.stopped = true; job.stopReason = 'time-watchdog';
+                    job.watchdog = { requestedMs: job.actualMovetime, graceMs: grace, expired: true };
+                    job.bestMove = job.completeLines?.[0]?.pv?.[0] || job.lines.get(1)?.pv?.[0] || null;
+                    finish(job, null, true);
+                  }, job.actualMovetime + grace);
+                }
+                try { options.onSearchStarted?.({ timestamp: job.searchStarted, initializationMs: job.searchStarted - job.started }); } catch (_) {}
                 job.worker.postMessage(command);
               } else if (job.phase === 'search' && line.startsWith('bestmove ')) {
                 const tokens = line.split(/\s+/);
                 job.bestMove = MOVE.test(tokens[1]) ? tokens[1] : null;
                 job.ponder = tokens[2] === 'ponder' && MOVE.test(tokens[3]) ? tokens[3] : null;
+                if (!job.stopReason) job.stopReason = limits.depth != null && job.depth >= limits.depth ? 'depth-limit' :
+                  job.actualMovetime != null && now() - job.searchStarted >= job.actualMovetime * 0.97 ? 'time-budget' : 'bestmove';
                 finish(job);
               } else if (job.phase === 'search') {
                 const info = parseInfo(line, limits.fen);
                 if (!info) continue;
+                if (Chess && info.pv?.length) {
+                  const replay = new Chess(limits.fen), legalPV = [];
+                  for (const uci of info.pv) { if (!replay.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] })) break; legalPV.push(uci); }
+                  info.pv = legalPV;
+                }
                 if (Number.isFinite(info.nodes)) job.nodes = Math.max(job.nodes || 0, info.nodes);
                 if (Number.isFinite(info.depth)) job.depth = Math.max(job.depth || 0, info.depth);
                 if (info.score && info.pv && info.pv.length) {
@@ -262,11 +293,11 @@
       });
     }
     return { analyze, prepare, stop, destroy() {
-      destroyed = true; if (active) finish(active, abortError('Engine closed'));
+      destroyed = true; if (active) { try { active.worker?.postMessage('stop'); } catch (_) {} finish(active, abortError('Engine closed')); }
       if (warming) warming.cancel();
       if (prepared) { detach(prepared.worker); prepared.worker.terminate(); prepared = null; }
     },
-      isRunning: () => !!active, engine: ENGINE };
+      isRunning: () => !!active, engine: descriptor };
   }
   return { create, parseInfo, limitsFor, validateFen, ENGINE };
 });

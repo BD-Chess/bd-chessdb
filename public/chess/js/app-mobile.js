@@ -8,7 +8,7 @@
   const phone = !tablet && (root.navigator?.userAgentData?.mobile === true || /iPhone|iPod|Windows Phone|Android.+Mobile/i.test(ua));
   const native = !!root.Capacitor?.isNativePlatform?.();
   const requestedView = new URLSearchParams(root.location.search).get('view')?.toLowerCase() || '';
-  const appMode = false; // CURRENT never wraps desktop in a simulated phone.
+  const appMode = requestedView === 'app';
   const desktopPreview = appMode && !native && !phone;
   if (!native && !phone && !appMode) return;
   doc.body.classList.add('app-mobile');
@@ -48,7 +48,7 @@
     if (previewTools) previewTools.hidden = !desktopPreview;
   };
   syncPresentationLinks();
-  if (desktopPreview) doc.title = 'ChessBest APP preview · LAB';
+  if (desktopPreview) doc.title = 'ChessBest APP preview · CURRENT';
   doc.dispatchEvent(new CustomEvent('chess:mobile-ready', { detail: { native, phone, appMode, desktopPreview } }));
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
@@ -71,7 +71,7 @@
     'CDB pending':'CDB čaka','Show Eval':'Pokaži oceno','Try Later':'Poskusi pozneje','More tools':'Več orodij',
     'Best move is not ready yet.':'Najboljša poteza še ni pripravljena.','Waiting for analysis…':'Analiziram…',
     'TOP LINE · CDB':'GLAVNA LINIJA · CDB','TOP LINE · SF':'GLAVNA LINIJA · SF',
-    'Install LAB':'Namesti LAB','Install ChessBest LAB on your Home Screen.':'Namesti ChessBest LAB na domači zaslon.',
+    'Install CURRENT':'Namesti CURRENT','Install ChessBest CURRENT on your Home Screen.':'Namesti ChessBest LAB na domači zaslon.',
     'Application versions':'Različice aplikacije','Language':'Jezik','ChessBest views':'Pogledi ChessBest','Workspace tools':'Orodja delovnega prostora',
     'Position and move controls':'Kontrole položaja in potez','Player clocks and local game controls':'Igralne ure in lokalne kontrole',
     'Chess analysis board':'Šahovska analizna plošča','Interactive chess board':'Interaktivna šahovnica','CDB, SF and DCC comparison':'Primerjava CDB, SF in DCC',
@@ -413,12 +413,12 @@
     const controls = byId('appBoardControls');
     const analysisRow = doc.querySelector('.analysis-source-row');
     const navRow = doc.querySelector('.top-buttons');
-    const status = byId('analysisSourceStatus');
+    const status = doc.querySelector('.analysis-status-row') || byId('analysisSourceStatus');
     const actionRow = doc.createElement('div'); actionRow.className = 'app-action-row';
     const analysisSlot = doc.createElement('div'); analysisSlot.className = 'app-analysis-slot';
     analysisSlot.append(analysisRow);
-    actionRow.append(analysisSlot, byId('appSim'));
-    controls.append(navRow, actionRow, status, byId('appTopLine'));
+    actionRow.append(analysisSlot);
+    controls.append(navRow, actionRow, byId('appTopLine'));
     byId('appClocks').append(byId('workspaceClockSlot'), byId('humanSession'));
     host.onChange(updatePosition);
     for (const tab of byId('appTabs').querySelectorAll('[data-app-tab]')) {

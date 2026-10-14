@@ -1,0 +1,332 @@
+[
+  {
+    "id": "startpos",
+    "description": "Standard start position for first root-prior smoke checks.",
+    "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "expectedLegalMoves": [
+      "d2d4",
+      "g1f3",
+      "e2e4",
+      "c2c4",
+      "g2g3"
+    ]
+  },
+  {
+    "id": "black-to-move-after-e4",
+    "description": "Black-to-move perspective fixture after 1. e4.",
+    "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+    "expectedLegalMoves": [
+      "d7d5",
+      "g8f6",
+      "e7e5"
+    ]
+  },
+  {
+    "id": "castling-rights",
+    "description": "Both sides retain standard castling rights with open files, white to move.",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+    "expectedLegalMoves": [
+      "e1g1",
+      "e1c1"
+    ]
+  },
+  {
+    "id": "black-castling-rights",
+    "description": "Black-to-move castling fixture for side-relative castling policy slots.",
+    "fen": "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1",
+    "expectedLegalMoves": [
+      "e8g8",
+      "e8c8"
+    ]
+  },
+  {
+    "id": "en-passant-available",
+    "description": "White can capture en passant on d6.",
+    "fen": "rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3",
+    "expectedLegalMoves": [
+      "e5d6"
+    ]
+  },
+  {
+    "id": "black-en-passant-available",
+    "description": "Black can capture en passant on e3 from a minimal legal board.",
+    "fen": "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1",
+    "expectedLegalMoves": [
+      "d4e3"
+    ]
+  },
+  {
+    "id": "promotion-near",
+    "description": "White has promotion choices, including LC0's implicit knight-promotion slot.",
+    "fen": "4k3/P6p/8/8/8/8/7P/4K3 w - - 0 1",
+    "expectedLegalMoves": [
+      "a7a8q",
+      "a7a8r",
+      "a7a8b",
+      "a7a8n"
+    ]
+  },
+  {
+    "id": "black-promotion-near",
+    "description": "Black has promotion choices from the second rank, exercising side-relative promotion mapping.",
+    "fen": "4k3/8/8/8/8/8/p6p/4K3 b - - 0 1",
+    "expectedLegalMoves": [
+      "a2a1q",
+      "a2a1r",
+      "a2a1b",
+      "a2a1n"
+    ]
+  },
+  {
+    "id": "in-check-king-evasion",
+    "description": "White is in rook check and must choose a legal king evasion.",
+    "fen": "k3r3/8/8/8/8/8/4K3/8 w - - 0 1",
+    "expectedLegalMoves": [
+      "e2d1",
+      "e2f1",
+      "e2d2"
+    ]
+  },
+  {
+    "id": "rule50-nonzero",
+    "description": "Nonzero halfmove clock for rule50 plane calibration.",
+    "fen": "4k3/8/8/8/8/8/8/4K2R w - - 37 20",
+    "expectedLegalMoves": [
+      "h1h8",
+      "e1e2"
+    ]
+  },
+  {
+    "id": "game-fen-1",
+    "fen": "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1"
+  },
+  {
+    "id": "game-fen-2",
+    "fen": "rnbqkbnr/ppppp1pp/8/5p2/P7/8/1PPPPPPP/RNBQKBNR w KQkq f6 0 2"
+  },
+  {
+    "id": "game-history-3",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5"
+    ],
+    "fen": "rnbqkbnr/ppppp1pp/8/P4p2/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 2"
+  },
+  {
+    "id": "game-history-4",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5"
+    ],
+    "fen": "rnbqkbnr/p1ppp1pp/8/Pp3p2/8/8/1PPPPPPP/RNBQKBNR w KQkq b6 0 3"
+  },
+  {
+    "id": "game-fen-5",
+    "fen": "rnbqkbnr/p1ppp1pp/1P6/5p2/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 3"
+  },
+  {
+    "id": "game-fen-8",
+    "fen": "rnbqk1nr/p1ppp2p/1P4pb/5p2/8/5P2/1PPPP1PP/RNBQKBNR w KQkq - 1 5"
+  },
+  {
+    "id": "game-history-9",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4"
+    ],
+    "fen": "rnbqk1nr/p1ppp2p/1P4pb/5p2/5P2/8/1PPPP1PP/RNBQKBNR b KQkq - 0 5"
+  },
+  {
+    "id": "game-history-10",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4",
+      "d7d5"
+    ],
+    "fen": "rnbqk1nr/p1p1p2p/1P4pb/3p1p2/5P2/8/1PPPP1PP/RNBQKBNR w KQkq d6 0 6"
+  },
+  {
+    "id": "game-fen-13",
+    "fen": "rnbqk1nr/p1p1p2p/1P5b/3p1pp1/5P2/1P4P1/2PPP2P/RNBQKBNR b KQkq - 0 7"
+  },
+  {
+    "id": "game-history-17",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4",
+      "d7d5",
+      "b2b3",
+      "g6g5",
+      "g2g3",
+      "e8f8",
+      "e2e4",
+      "g5g4",
+      "c1a3"
+    ],
+    "fen": "rnbq1knr/p1p1p2p/1P5b/3p1p2/4PPp1/BP4P1/2PP3P/RN1QKBNR b KQ - 1 9"
+  },
+  {
+    "id": "game-fen-18",
+    "fen": "rnbq1knr/2p1p2p/1p5b/3p1p2/4PPp1/BP4P1/2PP3P/RN1QKBNR w KQ - 0 10"
+  },
+  {
+    "id": "game-history-18",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4",
+      "d7d5",
+      "b2b3",
+      "g6g5",
+      "g2g3",
+      "e8f8",
+      "e2e4",
+      "g5g4",
+      "c1a3",
+      "a7b6"
+    ],
+    "fen": "rnbq1knr/2p1p2p/1p5b/3p1p2/4PPp1/BP4P1/2PP3P/RN1QKBNR w KQ - 0 10"
+  },
+  {
+    "id": "game-fen-24",
+    "fen": "rnb1qk1r/2p4p/1p3n1b/3ppp2/3PPPp1/1P4P1/1BP3BP/RN1QK1NR w KQ - 1 13"
+  },
+  {
+    "id": "game-history-25",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4",
+      "d7d5",
+      "b2b3",
+      "g6g5",
+      "g2g3",
+      "e8f8",
+      "e2e4",
+      "g5g4",
+      "c1a3",
+      "a7b6",
+      "a3b2",
+      "g8f6",
+      "f1g2",
+      "e7e5",
+      "d2d4",
+      "d8e8",
+      "d1d3"
+    ],
+    "fen": "rnb1qk1r/2p4p/1p3n1b/3ppp2/3PPPp1/1P1Q2P1/1BP3BP/RN2K1NR b KQ - 2 13"
+  },
+  {
+    "id": "game-history-26",
+    "startFen": "startpos",
+    "moves": [
+      "a2a4",
+      "f7f5",
+      "a4a5",
+      "b7b5",
+      "a5b6",
+      "g7g6",
+      "f2f3",
+      "f8h6",
+      "f3f4",
+      "d7d5",
+      "b2b3",
+      "g6g5",
+      "g2g3",
+      "e8f8",
+      "e2e4",
+      "g5g4",
+      "c1a3",
+      "a7b6",
+      "a3b2",
+      "g8f6",
+      "f1g2",
+      "e7e5",
+      "d2d4",
+      "d8e8",
+      "d1d3",
+      "e5d4"
+    ],
+    "fen": "rnb1qk1r/2p4p/1p3n1b/3p1p2/3pPPp1/1P1Q2P1/1BP3BP/RN2K1NR w KQ - 0 14"
+  },
+  {
+    "id": "game-fen-31",
+    "fen": "rnb2k1r/7p/Rpp2n1b/3p1p1q/3pPPp1/1P3BP1/1BPQ3P/1N2K1NR b K - 1 16"
+  },
+  {
+    "id": "game-fen-42",
+    "fen": "1nb1k2r/7p/1p3n1b/3p1p1q/2p1PPB1/1PQp2P1/r1PNN2P/B3K2R w K - 0 22"
+  },
+  {
+    "id": "game-fen-60",
+    "fen": "2b4r/3k3p/1pn4q/4Pp1n/1P3b2/3p2P1/r1P4P/1N2K1NR w K - 0 31"
+  },
+  {
+    "id": "repetition-black-no-legal-ep",
+    "startFen": "startpos",
+    "moves": [
+      "e2e4",
+      "g8f6",
+      "g1f3",
+      "f6g8",
+      "f3g1"
+    ],
+    "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 4 3"
+  },
+  {
+    "id": "repetition-white-no-legal-ep",
+    "startFen": "startpos",
+    "moves": [
+      "e2e4",
+      "e7e5",
+      "g1f3",
+      "g8f6",
+      "f3g1",
+      "f6g8"
+    ],
+    "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 4 4"
+  }
+]
