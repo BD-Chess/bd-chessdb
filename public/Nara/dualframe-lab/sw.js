@@ -1,6 +1,6 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
 const BUILD_LABEL='2026-10-14-r4.2';
-const PACKAGE_SHA='8f2149b87ae6715f15b48aa9c83b942076f3667c7a9f7024606cf96ed1ce3b42';
+const PACKAGE_SHA='0b07a0198541479b473dce51f881e4e579df6208adbae8ca67a4d2f861c3fad1';
 const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r5.1","./app.mjs?v=3.0-r4.2","./api-client.mjs?v=3.0-r4","./core.mjs?v=3.0-r4","./store.mjs?v=3.0-r4.2","./mock.mjs?v=3.0-r4","./models.mjs?v=3.0-r4","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4","./zip-store.mjs?v=3.0-r4.1","./pair.schema.json","./release.json"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';

@@ -57,12 +57,20 @@ async function pwaSaveAndUpdate(){
  try{
   if(!pwaRegistration)throw Error('PWA_WORKER_NOT_READY');
   let waiting=pwaRegistration.waiting;
-  if(!waiting&&pwaUpdateKey==='pwaOtherUpdate'){await prepareForUpdate();await Promise.all([getPairs(),getScores()]);location.reload();return;}
   if(!waiting){await pwaRegistration.update();waiting=pwaRegistration.waiting;}
-  if(!waiting){pwaShowUpdate('pwaNoUpdate');return;}
   const deadline=Date.now()+12000;
   while(controllers.size&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,200));
   if(controllers.size){pwaShowUpdate('pwaUpdateBusy');return;}
+  if(!waiting){
+   if(pwaUpdateKey==='pwaOtherUpdate'){
+    await prepareForUpdate();
+    await Promise.all([getPairs(),getScores()]);
+    pwaReloadRequested=true;
+    location.reload();
+    return;
+   }
+   $('pwa-update').hidden=true;pwaUpdateKey=null;pwaSetStatus('pwaNoUpdate');return;
+  }
   await prepareForUpdate();
   if(controllers.size)throw Error('PWA_ACTIVE_JOB');
   await Promise.all([getPairs(),getScores()]);
