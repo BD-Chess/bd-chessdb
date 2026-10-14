@@ -61,6 +61,24 @@ export function pairedAssessment(a,enHash){
  assert(a.combined===(a.gpt.score+a.claude.score)/2,'edition equal-weight mean');
  return a.combined;
 }
+// Optional source-bound public paired-score ledger. The immutable FORMAT-R1
+// bindings remain unchanged; a later authenticated pair is applied only to its
+// exact English content hash, never to an unrelated revision or original score.
+function publishedPairedScore(root,key,enHash){
+ const file=path.join(naraRoot(root),'daily/format-editions/paired-scores-20261013.json');
+ if(!fs.existsSync(file))return null;
+ const d=JSON.parse(fs.readFileSync(file,'utf8'));
+ assert(d.schema==='nara.daily.public.paired-edition-score.v1'&&Array.isArray(d.scores)&&d.scores.length===13,'paired publication ledger schema');
+ const seen=new Set();
+ for(const s of d.scores){
+  assert(!seen.has(s.key)&&hex(s.en_content_sha256)&&hex(s.gpt_output_sha256)&&hex(s.claude_output_sha256),'invalid paired publication provenance');seen.add(s.key);
+  assert(Number.isInteger(s.gpt)&&Number.isInteger(s.claude)&&s.gpt>=0&&s.gpt<=100&&s.claude>=0&&s.claude<=100&&s.combined===(s.gpt+s.claude)/2,'invalid published pair arithmetic');
+ }
+ const score=d.scores.find(s=>s.key===key);
+ if(!score)return null;
+ assert(score.en_content_sha256===enHash,'public paired score / edition content mismatch');
+ return score.combined;
+}
 export function loadFormatEditions(root){
  if(!root)return [];
  const n=naraRoot(root),file=path.join(n,'daily/format-editions/manifest.json');
@@ -100,7 +118,10 @@ export function loadFormatEditions(root){
     assert(next===current.scenes[i].paragraphs.length+1,'complete paragraph mapping');
    });
   }
-  const combined=pairedAssessment(b.assessment,en.content_sha256);
+  const privateBound=pairedAssessment(b.assessment,en.content_sha256);
+  const publicBound=publishedPairedScore(root,e.key,en.content_sha256);
+  assert(privateBound===null||publicBound===null||privateBound===publicBound,'paired sources disagree');
+  const combined=privateBound??publicBound;
   const snapshot=path.join(n,p.original_page);assert(fs.existsSync(snapshot)&&hex(e.original_page_sha256)&&sha(fs.readFileSync(snapshot))===e.original_page_sha256,'immutable original page');
   return {entry:e,paths:p,binding:b,en,sl,originalEn,originalSl,combined};
  });
@@ -108,12 +129,12 @@ export function loadFormatEditions(root){
 export function formatDayLinks(root,date,storyId=null){
  const items=loadFormatEditions(root).filter(x=>x.paths.date===date&&(!storyId||x.paths.story_id===storyId));
  if(!items.length)return '';
- return '<nav class="format-edition-links" aria-label="Format editions"><strong>'+bi('Dialogue format editions','Izdaje v dialognem formatu')+'</strong><ul>'+items.map(x=>'<li>'+esc(x.paths.instance??'')+(x.paths.instance?' · ':'')+'<a href="'+esc(x.paths.page)+'">'+bi('Read format R1','Preberi format R1')+'</a> · <a href="'+esc(x.paths.original_page)+'">'+bi('Original publication','Izvirna objava')+'</a> · <span class="format-assessment">'+(x.combined===null?'PENDING':esc(x.combined+' / 100'))+'</span></li>').join('')+'</ul></nav>';
+ return '<nav class="format-edition-links" aria-label="Format editions"><strong>'+bi('Dialogue format editions','Izdaje v dialognem formatu')+'</strong><ul>'+items.map(x=>'<li>'+esc(x.paths.instance??'')+(x.paths.instance?' · ':'')+'<a href="'+esc(x.paths.page)+'">'+bi('Read format R1','Preberi format R1')+'</a> · <a href="'+esc(x.paths.original_page)+'">'+bi('Original publication','Izvirna objava')+'</a> · <span class="format-assessment">'+(x.combined===null?bi('No paired score yet','Skupna ocena še ni na voljo'):esc(x.combined+' / 100'))+'</span></li>').join('')+'</ul></nav>';
 }
 export function renderFormatArchive(root){
  const items=loadFormatEditions(root).sort((a,b)=>b.paths.date.localeCompare(a.paths.date)||a.entry.key.localeCompare(b.entry.key));
  if(!items.length)return '';
- return '<section class="notice format-edition-archive" id="format-editions"><h2>Dialogue format editions · Izdaje v dialognem formatu</h2><p>Preserved plots and narration, with scene subtitles and named dialogue. Each edition receives a new independent assessment; PENDING means the paired assessment is incomplete.</p><ul>'+items.map(x=>'<li><time datetime="'+x.paths.date+'">'+x.paths.date+'</time> · '+esc(x.paths.instance??'')+' <a href="'+x.paths.page+'"><strong>'+esc(x.en.title)+'</strong></a> · <a href="'+x.paths.original_page+'">original / izvirnik</a> · <span class="format-assessment">'+(x.combined===null?'PENDING':esc(x.combined+' / 100'))+'</span></li>').join('')+'</ul></section>';
+ return '<section class="notice format-edition-archive" id="format-editions"><h2>Dialogue format editions · Izdaje v dialognem formatu</h2><p>Preserved plots and narration, with scene subtitles and named dialogue. Each edition receives a new independent assessment; Only authenticated paired scores are shown for exact R1 English editions; an unpaired edition is clearly marked.</p><ul>'+items.map(x=>'<li><time datetime="'+x.paths.date+'">'+x.paths.date+'</time> · '+esc(x.paths.instance??'')+' <a href="'+x.paths.page+'"><strong>'+esc(x.en.title)+'</strong></a> · <a href="'+x.paths.original_page+'">original / izvirnik</a> · <span class="format-assessment">'+(x.combined===null?bi('No paired score yet','Skupna ocena še ni na voljo'):esc(x.combined+' / 100'))+'</span></li>').join('')+'</ul></section>';
 }
 export function refreshFormatArchiveSection(html,root){
  const fragment=renderFormatArchive(root),pattern=/<section class="notice format-edition-archive" id="format-editions">[\s\S]*?<\/section>/;
@@ -204,7 +225,7 @@ export function renderEditionPage(root,item){
  const reading=(d,lang)=>'<div data-language-content="'+lang+'" lang="'+lang+'"'+(lang==='sl'?' hidden':'')+'><p class="lede">'+esc(d.deck)+'</p><article class="story" data-content-sha256="'+d.content_sha256+'">'+d.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,2,DIALOGUE_EFFECTIVE_DATE)).join('\n')+'</article></div>';
  // Explicit format-edition presentation uses R10; the original story date and
  // original publication timestamp stay intact and are never forged as today.
- const header='<header class="masthead"><div class="eyebrow">'+bi('Dialogue format edition · R1','Izdaja v dialognem formatu · R1')+'</div><h1>'+bi(item.en.title,item.sl.title)+'</h1><p class="meta">'+item.paths.date+(item.paths.instance?' · '+item.paths.instance:'')+' · <a href="'+item.paths.original_page+'">'+bi('Read the preserved original publication','Preberi ohranjeno izvirno objavo')+'</a></p><p class="format-assessment">'+bi('New paired literary assessment:','Nova skupna književna ocena:')+' '+(item.combined===null?'PENDING':esc(item.combined+' / 100'))+'</p><p class="muted">'+bi('The original scores remain in the editorial log. Assessment applies to the English edition.','Izvirne ocene ostajajo v uredniškem dnevniku. Ocenjena je angleška izdaja.')+'</p></header>';
+ const header='<header class="masthead"><div class="eyebrow">'+bi('Dialogue format edition · R1','Izdaja v dialognem formatu · R1')+'</div><h1>'+bi(item.en.title,item.sl.title)+'</h1><p class="meta">'+item.paths.date+(item.paths.instance?' · '+item.paths.instance:'')+' · <a href="'+item.paths.original_page+'">'+bi('Read the preserved original publication','Preberi ohranjeno izvirno objavo')+'</a></p><p class="format-assessment">'+bi('New paired literary assessment:','Nova skupna književna ocena:')+' '+(item.combined===null?bi('No paired score yet','Skupna ocena še ni na voljo'):esc(item.combined+' / 100'))+'</p><p class="muted">'+bi('The original scores remain in the editorial log. Assessment applies to the English edition.','Izvirne ocene ostajajo v uredniškem dnevniku. Ocenjena je angleška izdaja.')+'</p></header>';
  return formatShell(item.en.title,item.sl.title,item.paths.page,header+reading(item.en,'en')+reading(item.sl,'sl'),images.some(image=>image.responsive));
 }
 export function renderOriginalSnapshot(root,{paths:p,en,sl}){
