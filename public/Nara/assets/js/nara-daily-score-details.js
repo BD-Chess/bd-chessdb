@@ -62,6 +62,7 @@ function inner(row){
  s+='<h3>'+label('Assessment history','Zgodovina ocen')+'</h3><table><thead><tr><th>'+label('Version','Različica')+'</th><th>GPT</th><th>Claude</th><th>'+label('Mean','Skupaj')+'</th></tr></thead><tbody><tr><td>'+label('Original published final','Prvotna objavljena')+'</td><td>'+dec(old[0])+'</td><td>'+dec(old[1])+'</td><td>'+dec(old[2])+'</td></tr>';
  if(row.gpt!==null)s+='<tr><td>Format R1</td><td>'+dec(row.gpt)+'</td><td>'+dec(row.claude)+'</td><td>'+dec(row.combined)+'</td></tr>';
  s+='</tbody></table><p class="muted">'+label('Only verified scored versions appear; no unscored editorial stage receives a fictional rating.','Prikazane so samo potrjene ocenjene različice. Neocenjenim uredniškim vmesnim korakom ne pripisujemo številk.')+'</p>';
+ s+='<div class="nara-grade-timeline" data-nara-versions="'+esc(row.key)+'"></div>';
  }
  s+='<h3>'+label('The other daily stories','Preostali dnevni zgodbi')+'</h3><div class="nara-grade-compare" data-date="'+d+'"><p class="muted">…</p></div>';
  s+='<p class="muted">'+label('Scores refer to English texts; see','Ocene veljajo za angleška besedila; glej')+' <a href="Nara-AI-log.html#NARA-D-'+d+'-LOG">'+label('editorial log','uredniški dnevnik')+'</a>.</p>';
@@ -123,6 +124,55 @@ function archive(){
  section.querySelectorAll('.nara-grade-compare').forEach(b=>compare(b,b.dataset.date));
  });
 }
+const winnerAlias={
+ '2026-10-09':'2026-10-09-S1',
+ '2026-10-10':'2026-10-10-S2',
+ '2026-10-11':'2026-10-11-S1',
+ '2026-10-12':'2026-10-12-S3',
+ '2026-10-13':'2026-10-13-S2',
+ '2026-10-14':'2026-10-14-S1'
+};
+async function loadVersions(box){
+ if(!box||box.dataset.loaded)return;
+ const originalKey=box.dataset.naraVersions,key=winnerAlias[originalKey]||originalKey;
+ if(!/^2026-10-\d\d(?:-S[123])?$/.test(key))return;
+ box.dataset.loaded='yes';
+ let doc;
+ try{
+  const res=await fetch('daily/versions/'+key+'.json',{cache:'force-cache'});
+  if(!res.ok)throw Error('version source not found');
+  doc=await res.json();
+  const storyId='NARA-D-'+key.slice(0,10)+(key.length>10?':'+key.slice(11):'');
+  if(doc?.story_id!==storyId||!Array.isArray(doc.accepted_lineage))throw Error('version identity mismatch');
+ }catch{
+  box.innerHTML='<p class="muted">'+label('Additional version history is unavailable; the verified final grade remains above.','Podrobnejša zgodovina različic trenutno ni dosegljiva; potrjena končna ocena ostane zgoraj.')+'</p>';
+  refreshLanguage(box);return;
+ }
+ const items=doc.accepted_lineage.filter(x=>x&&typeof x.version==='string'&&/^[A-Z]\d{2}$/.test(x.version));
+ if(!items.length)return;
+ let total=0;
+ let output='<h3>'+label('First draft → final: version-by-version','Od prvega osnutka do konca: ocene po različicah')+'</h3>';
+ output+='<table><thead><tr><th>'+label('Version / stage','Različica / faza')+'</th><th>GPT</th><th>Claude</th><th>'+label('Mean','Skupaj')+'</th></tr></thead><tbody>';
+ for(const entry of items){
+  const g=entry.grade;
+  const valid=g&&Number.isFinite(g.gpt)&&Number.isFinite(g.claude)&&Number.isFinite(g.combined)&&Math.abs(g.combined-(g.gpt+g.claude)/2)<1e-6;
+  if(valid)total++;
+  output+='<tr><td>'+esc(entry.version+' · '+String(entry.stage||entry.role||'').replaceAll('_',' ').toLowerCase())+'</td><td>'+dec(valid?g.gpt:null)+'</td><td>'+dec(valid?g.claude:null)+'</td><td>'+dec(valid?g.combined:null)+'</td></tr>';
+ }
+ const formatted=scored[key];
+ if(formatted){
+  const exact=formatted[2];
+  if(/^[a-f0-9]{64}$/.test(exact)){
+   output+='<tr><td><strong>Format R1</strong></td><td>'+formatted[0]+'</td><td>'+formatted[1]+'</td><td><strong>'+dec((formatted[0]+formatted[1])/2)+'</strong></td></tr>';
+  }
+ }
+ output+='</tbody></table><p class="muted">'+label('— means no authenticated numerical assessment for that stage, not a zero. This series follows accepted editions; abandoned branches are retained in the version archive.','— pomeni, da za to stopnjo ni preverjene številčne ocene, ne ničle. Prikazana je sprejeta razvojna veja; opuščene alternative ostajajo v arhivu.')+' '+total+'/'+items.length+' '+label('scored stages','ocenjenih stopenj')+'.</p>';
+ box.innerHTML=output;refreshLanguage(box);
+}
 page();index();archive();refreshLanguage();
-document.addEventListener('click',e=>{if(e.target.closest?.('[data-language],[data-story-lang]'))queueMicrotask(()=>refreshLanguage());});
+document.addEventListener('click',e=>{
+ if(e.target.closest?.('[data-language],[data-story-lang]'))queueMicrotask(()=>refreshLanguage());
+ const b=e.target.closest?.('[data-score-open]');
+ if(b)queueMicrotask(()=>{const dlg=document.getElementById(b.dataset.scoreOpen);loadVersions(dlg?.querySelector('.nara-grade-timeline'));});
+});
 })();
