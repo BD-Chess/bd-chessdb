@@ -1,6 +1,7 @@
 import * as API from './api-client.mjs?v=3.0-r4';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation } from './store.mjs?v=3.0-r4.2';
+import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate } from './store.mjs?v=3.0-r4.3';
+import { readSettings, writeSettings, DEFAULT_SETTINGS, DEFAULT_ENABLED_MODELS, orientationTransition, estimateHydrationSafety, readModelHealth, recordModelHealth } from './settings.mjs?v=3.0-r1';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
 import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=3.0-r4';
 import { MODELS, modelFor, supportsMode } from './models.mjs?v=3.0-r4';
@@ -27,13 +28,60 @@ Object.assign(dictionary.sl,{
 
 Object.assign(dictionary.en,{importCounterpart:'Import the other frame',counterpartNote:'Already have its portrait or landscape version? Pair it locally. Imported pixels are not a verified AI generation.',counterpartImported:'Other composition imported privately. Its declared relationship is not independently verified.',importedFrame:'Imported composition · relationship declared',SELECT_ORIGINAL:'Choose your original first.',WRONG_ORIENTATION:'Choose an image in the opposite orientation.',immersiveExit:'Double-tap to return'});
 Object.assign(dictionary.sl,{importCounterpart:'Uvozi drugo kompozicijo',counterpartNote:'Že imaš pokončno ali ležečo različico? Poveži jo lokalno. Uvoženi piksli niso dokaz preverjenega AI ustvarjanja.',counterpartImported:'Druga kompozicija je uvožena zasebno. Povezava z izvirnikom ni neodvisno preverjena.',importedFrame:'Uvožena kompozicija · povezava je navedena',SELECT_ORIGINAL:'Najprej izberi izvirnik.',WRONG_ORIENTATION:'Izberi sliko v nasprotni orientaciji.',immersiveExit:'Dvojni dotik za vrnitev'});
+
+Object.assign(dictionary.en,{
+ settingsTitle:'⚙ Settings',settingsCreate:'Create defaults',settingsDefaultNote:'Choose how new tasks begin. Saved images and jobs never change.',settingsModels:'Image models & API',
+ settingsGallery:'Gallery & viewer',settingsStorage:'Storage & Sync',settingsSave:'Save settings',settingsRememberLast:'Remember the last Create choices',modelsNote:'Enable models shown in Create and Compare. A configured key is not proof the model works.',
+ profile:'Quick recipe',profilePhoto:'Faithful photo',profileArt:'Creative composition',profileText:'Infographic / text',applyProfile:'Apply to defaults',
+ checkApiFree:'Check API access · no generation',apiTestNote:'Checks gateway, account session and configured keys only. No generation, provider spend or assertion of model availability.',
+ defaultCollection:'Starting collection',defaultViewerQuality:'Fullscreen quality',delayLabel:'Delay',delayOff:'Off',
+ delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 1–5 seconds before switching. Off changes immediately.',
+ metadataAuto:'On launch, sync image names and cloud catalog only, never image bytes.',storageSafeHelp:'Sync lists cloud images first. Load individual photos on demand. Local-only originals are never evicted.',
+ storageCheck:'Check local storage',clearMemory:'Clear image memory cache',preloadAdjacent:'Prefetch one previous and next image',
+ estimateUnavailable:'Browser storage estimate unavailable (not proof of free or full device storage).',
+ storageEstimate:'Approximate browser storage',storagePending:'Cloud-only images',storageLocal:'Local images',settingsAtLeastOne:'Keep at least one model enabled.',
+ configured:'Key configured; model generation not tested',missingKey:'Key not configured',apiAuthNeeded:'Unlock API to check your session.',apiSessionValid:'Account session valid · model generation not tested',apiSessionFailed:'Account session check failed.',
+ storageEstimatedLow:'Estimated browser space too low for this download. Originals were not deleted.',
+ STORAGE_ESTIMATED_LOW:'Estimated browser quota is too low for this photo. No originals were deleted.',
+ cloudCatalog:'Cloud catalog synchronized. Photos load only when chosen.',
+ loadCloudVariants:'Load cloud variants',cloudLoadOne:'Load on this device',cloudOnly:'Cloud-only · not downloaded',cloudLoading:'Downloading selected photo…',cloudDownloaded:'Selected photo downloaded.',remoteUnavailable:'Cloud download failed; existing images retained.',
+ STORAGE_QUOTA_EXCEEDED:'Browser storage quota exceeded. Your device may still have free disk space.',STORAGE_TRANSACTION_ABORTED:'Browser database transaction was aborted. Retry without deleting originals.',
+ STORAGE_ACCESS_DENIED:'Browser blocked private storage. Check browser/private-mode permissions.',STORAGE_CONNECTION_CLOSED:'Browser database connection closed. Reload and try again.',
+ STORAGE_RECORD_CONFLICT:'Browser database record conflict.',STORAGE_SCHEMA_ERROR:'Local image database schema error. Back up available images.',
+ STORAGE_IO_FAILURE:'Browser database I/O failed, not necessarily full.',STORAGE_OPERATION_FAILED:'Browser database operation failed; not confirmed as a quota issue.',
+ STORAGE_DB_BLOCKED:'Another tab is blocking the image database. Close other tabs and retry.'
+});
+Object.assign(dictionary.sl,{
+ settingsTitle:'⚙ Nastavitve',settingsCreate:'Privzeto ustvarjanje',settingsDefaultNote:'Izberi privzeto za nova opravila. Shranjene slike in opravila se ne spremenijo.',settingsModels:'Slikovni modeli in API',
+ settingsGallery:'Galerija in ogled',settingsStorage:'Shramba in Sync',settingsSave:'Shrani nastavitve',settingsRememberLast:'Zapomni si zadnje izbire v Create',modelsNote:'V Create in Compare prikaži samo vključene modele. Nastavljen ključ še ne dokazuje delovanja.',
+ profile:'Hiter recept',profilePhoto:'Fotografija · ohrani',profileArt:'Umetniška kompozicija',profileText:'Infografika / besedilo',applyProfile:'Uporabi kot privzeto',
+ checkApiFree:'Preveri API · brez generiranja',apiTestNote:'Preveri strežnik, sejo in prisotnost ključev. Brez ustvarjanja slik, stroškov ali neutemeljenih trditev o delovanju modela.',
+ defaultCollection:'Začetna zbirka',defaultViewerQuality:'Kakovost celozaslonskega ogleda',delayLabel:'Delay',delayOff:'Izključeno',
+ delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 1–5 sekund. Izključeno preklopi takoj.',
+ metadataAuto:'Ob zagonu uskladi samo katalog in imena, nikoli bajtov slik.',storageSafeHelp:'Sync najprej prikaže oblačne slike. Posamezno fotografijo naložiš po izbiri. Izvirnikov, ki so samo lokalni, nikoli ne brišemo samodejno.',
+ storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',preloadAdjacent:'Prednaloži eno prejšnjo in eno naslednjo sliko',
+ estimateUnavailable:'Brskalnik ne razkriva ocene svoje shrambe (to ni dokaz prostega/zasedenega prostora naprave).',
+ storageEstimate:'Ocenjena shramba brskalnika',storagePending:'Slike samo v oblaku',storageLocal:'Lokalne slike',settingsAtLeastOne:'Vsaj en model mora ostati vključen.',
+ configured:'Ključ nastavljen; generiranje ni preverjeno',missingKey:'Ključ ni nastavljen',apiAuthNeeded:'Za preverjanje seje najprej odkleni API.',apiSessionValid:'Seja velja · ustvarjanje z modelom ni preverjeno',apiSessionFailed:'Preverjanje seje ni uspelo.',
+ storageEstimatedLow:'Ocena preostalega prostora brskalnika je prenizka. Izvirniki niso bili izbrisani.',
+ STORAGE_ESTIMATED_LOW:'Ocenjena preostala kvota brskalnika je prenizka. Izvirniki niso bili izbrisani.',
+ cloudCatalog:'Katalog v oblaku usklajen. Slike se prenesejo šele po izbiri.',
+ loadCloudVariants:'Prenesi oblačne različice',cloudLoadOne:'Prenesi na napravo',cloudOnly:'Samo v oblaku · še ni preneseno',cloudLoading:'Prenašam izbrano fotografijo …',cloudDownloaded:'Izbrana fotografija je prenesena.',remoteUnavailable:'Prenos iz oblaka ni uspel; shranjene slike so ohranjene.',
+ STORAGE_QUOTA_EXCEEDED:'Kvota brskalnikove shrambe je presežena. Na napravi je lahko še prost prostor.',STORAGE_TRANSACTION_ABORTED:'Zapis v brskalnikovo bazo je bil prekinjen. Poskusi ponovno brez brisanja izvirnikov.',
+ STORAGE_ACCESS_DENIED:'Brskalnik je blokiral zasebno shrambo. Preveri dovoljenja in zasebni način.',STORAGE_CONNECTION_CLOSED:'Povezava s shrambo se je zaprla. Osveži stran.',
+ STORAGE_RECORD_CONFLICT:'Konflikt zapisa v lokalni bazi.',STORAGE_SCHEMA_ERROR:'Napaka sheme lokalne baze. Izvozi dosegljive slike.',
+ STORAGE_IO_FAILURE:'Napaka vhoda/izhoda lokalne baze; ni nujno pomanjkanje prostora.',STORAGE_OPERATION_FAILED:'Napaka shranjevanja; ni potrjeno, da gre za kvoto.',
+ STORAGE_DB_BLOCKED:'Drug zavihek blokira shrambo. Zapri druge zavihke in ponovi.'
+});
 let language = new URLSearchParams(location.search).get('lang') === 'sl' ? 'sl' : 'en';
 let pwaRegistration=null,pwaInstallEvent=null,pwaBuildId=null,pwaReloadRequested=false,pwaStatusKey='pwaPreparing',pwaUpdateKey=null;
 try { if (!new URLSearchParams(location.search).has('lang') && localStorage.getItem('dualframe-language') === 'sl') language='sl'; } catch {}
 const t = key => dictionary[language][key] || key;
 let pairs=[],scores=[],selected=null,viewerPair=null,reviewState=null,originFocus=null,originScroll=0;
 let gateway=null,capabilities=null,referencePairs=[],referenceLoaded=false,viewerLoad=0,activeView='showcase';
-const controllers=new Map(),urlCache=new WeakMap(),urls=new Set();
+const modelKeys=MODELS.filter(m=>m.direct).map(m=>m.key);
+let prefs=readSettings(globalThis.localStorage,modelKeys),remotePairs=[],remoteJobs=[],galleryDisplayedFrame=null,galleryFrameTimer=null,viewerShownTarget=null,viewerShownPair=null,viewerFrameTimer=null;
+const controllers=new Map(),urls=new Set();let urlCache=new WeakMap();
 const selectedPair = () => pairs.find(p=>p.pair_id===selected);
 const comparePair = () => pairs.find(p=>p.pair_id===$('compare-pair').value);
 const safeName = name => name.replace(/[^a-zA-Z0-9_.-]/g,'_').slice(0,100) || 'image';
@@ -119,7 +167,18 @@ async function initPWA(){
 
 function currentDevice(){const ua=navigator.userAgent;return /iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)||(/Android/.test(ua)&&!/Mobile/.test(ua))?'tablet':navigator.userAgentData?.mobile||/iPhone|iPod|Android.*Mobile/.test(ua)?'phone':'desktop';}
 function targetFrame(override='auto'){return deviceOrientation({device:currentDevice(),width:window.innerWidth,height:window.innerHeight,override,simulation:$('device').value});}
-function galleryFrame(){return deviceOrientation({device:currentDevice(),width:window.innerWidth,height:window.innerHeight,simulation:$('reference-device').value});}
+function galleryFrame(){const target=deviceOrientation({device:currentDevice(),width:window.innerWidth,height:window.innerHeight,simulation:$('reference-device').value});return galleryDisplayedFrame||target;}
+function actualGalleryFrame(){return deviceOrientation({device:currentDevice(),width:window.innerWidth,height:window.innerHeight,simulation:$('reference-device').value});}
+function repaintGallery(){if(referenceLoaded)renderReference();else renderOwnGallery();}
+function scheduleGalleryOrientation(){
+ const target=actualGalleryFrame(),shown=galleryDisplayedFrame||target;
+ clearTimeout(galleryFrameTimer);galleryFrameTimer=null;
+ if(orientationTransition(shown,target,prefs.delaySeconds)==='delay'){
+  // Preserve raster L/P while the browser naturally changes the shape of the screen.
+  galleryFrameTimer=setTimeout(()=>{galleryFrameTimer=null;galleryDisplayedFrame=actualGalleryFrame();repaintGallery();},prefs.delaySeconds*1000);
+ }else galleryDisplayedFrame=target;
+ repaintGallery();
+}
 async function persist(pair){checkPair(pair);await putPair(pair);render();}
 
 async function syncPendingTitle(pair){
@@ -216,13 +275,104 @@ function renderJobs(){const list=$('jobs');list.replaceChildren();const jobs=pai
  if(j.status==='HELD'&&j.gateway_job_id)actions.append(button(t('resume'),()=>runGateway(p,j)));if(['FAILED','REJECTED','CANCELLED','HELD','ACCEPTED'].includes(j.status))actions.append(button(t('regenerate'),()=>generate(p,{...j,job_id:undefined,created_at:undefined,gateway_job_id:undefined,generation_attempt_id:crypto.randomUUID()})));
  if(j.result_receipt||j.candidate)actions.append(button(t('receiptDownload'),()=>jsonDownload(publicManifest({job:j,result:j.candidate||j.result_receipt}),`${j.job_id}.receipt.json`),'text-button'));if(actions.children.length)el.append(actions);list.append(el);}
 }
+
+function refreshCreateModels(preserve=true){
+ const select=$('pipeline'),previous=preserve?select.value:null;
+ select.replaceChildren();
+ for(const m of MODELS.filter(m=>m.direct&&prefs.enabledModels.includes(m.key))){const option=node('option',m.label);option.value=m.key;select.append(option);}
+ select.value=[previous,prefs.model,prefs.enabledModels[0]].find(key=>key&&[...select.options].some(o=>o.value===key))||prefs.enabledModels[0];
+}
+function persistPrefs(){
+ prefs=writeSettings(prefs,globalThis.localStorage,modelKeys);
+ $('delay-quick').value=String(prefs.delaySeconds);
+}
+function rememberCreateChoice(){
+ if(!prefs.rememberLast)return;
+ prefs={...prefs,mode:$('mode').value,model:$('pipeline').value,quality:$('output-quality').value,position:$('position').value};
+ try{persistPrefs();}catch{notify('STORAGE_OPERATION_FAILED',true);}
+}
+function settingsModelSelect(){
+ const select=$('settings-model'),prior=select.value||prefs.model,enabled=[...$('settings-enabled-models').querySelectorAll('input:checked')].map(x=>x.value);
+ select.replaceChildren();
+ for(const key of enabled){const m=modelFor(key);if(!m)continue;const option=node('option',m.label);option.value=key;select.append(option);}
+ if(select.options.length)select.value=enabled.includes(prior)?prior:enabled.includes(prefs.model)?prefs.model:enabled[0];
+}
+function renderSettingsUI(){
+ $('settings-mode').value=prefs.mode;$('settings-quality').value=prefs.quality;$('settings-position').value=prefs.position;
+ $('settings-remember-last').checked=prefs.rememberLast;$('settings-collection').value=prefs.galleryCollection;
+ $('settings-viewer-quality').value=prefs.viewerQuality;$('settings-delay').value=String(prefs.delaySeconds);
+ $('settings-auto-metadata').checked=prefs.autoSyncMetadata;$('settings-preload-adjacent').checked=prefs.preloadAdjacent;
+ const holder=$('settings-enabled-models');holder.replaceChildren();
+ const health=readModelHealth();
+ for(const model of MODELS.filter(m=>m.direct)){
+  const label=node('label',undefined,'model-toggle'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=prefs.enabledModels.includes(model.key);
+  const content=node('span'),head=node('strong',model.label),recent=health[model.key],detail=node('small',recent?recent.lastStatus+' · '+recent.lastTask+' · '+new Date(recent.lastAt).toLocaleDateString(language):t('apiChecking'));
+  content.append(head,detail);label.append(input,content);holder.append(label);
+  input.addEventListener('change',settingsModelSelect);
+ }
+ settingsModelSelect();
+ $('settings-error').textContent='';$('settings-api-status').textContent='';
+}
+function applySettings(){
+ $('mode').value=prefs.mode;$('position').value=prefs.position;$('output-quality').value=prefs.quality;
+ refreshCreateModels(false);$('pipeline').value=prefs.model;
+ $('collection-filter').value=prefs.galleryCollection;$('delay-quick').value=String(prefs.delaySeconds);
+ updateModelControls();renderOwnGallery();if(referenceLoaded)renderReference();
+}
+function saveSettingsFromDialog(event){
+ event.preventDefault();const enabled=[...$('settings-enabled-models').querySelectorAll('input:checked')].map(x=>x.value);
+ if(!enabled.length){$('settings-error').textContent=t('settingsAtLeastOne');return;}
+ try{
+  prefs=writeSettings({...prefs,enabledModels:enabled,mode:$('settings-mode').value,model:$('settings-model').value,
+   quality:$('settings-quality').value,position:$('settings-position').value,rememberLast:$('settings-remember-last').checked,
+   galleryCollection:$('settings-collection').value,viewerQuality:$('settings-viewer-quality').value,
+   delaySeconds:Number($('settings-delay').value),autoSyncMetadata:$('settings-auto-metadata').checked,preloadAdjacent:$('settings-preload-adjacent').checked},globalThis.localStorage,modelKeys);
+  applySettings();$('settings-dialog').close();scheduleGalleryOrientation();if(viewerPair)updateViewer();
+ }catch{ $('settings-error').textContent=t('STORAGE_OPERATION_FAILED');}
+}
+async function diagnoseStorage(){
+ const estimate=await storageEstimate(),count=pairs.length,cloud=remotePairs.filter(r=>!pairs.some(p=>p.original.sha256===r.original.sha256)).length;
+ const human=n=>n===null?'—':(n/1048576).toFixed(1)+' MiB';
+ $('settings-storage-status').textContent=(estimate.supported?`${t('storageEstimate')}: ${human(estimate.usage)} / ${human(estimate.quota)} (≈${Math.round(100*estimate.usage/estimate.quota)}%)`:t('estimateUnavailable'))
+  +` · ${t('storageLocal')}: ${count} · ${t('storagePending')}: ${cloud}`;
+}
+async function checkApiAccess(){
+ const status=$('settings-api-status');status.textContent=t('apiChecking');
+ try{
+  capabilities=await API.capabilities();
+  let auth=t('apiAuthNeeded');
+  if(API.apiUnlocked()){try{const data=await API.request('/session');auth=data?.ok?t('apiSessionValid'):t('apiSessionFailed');}catch{auth=t('apiSessionFailed');}}
+  const lines=(capabilities.models||[]).map(m=>m.label+': '+t(m.key_configured?'configured':'missingKey'));
+  status.textContent=auth+' · '+lines.join(' · ');
+  updateModelControls();
+ }catch{status.textContent=t('apiSessionFailed');}
+}
+function initSettingsUI(){
+ $('delay-quick').value=String(prefs.delaySeconds);$('delay-quick').addEventListener('change',()=>{
+  try{prefs.delaySeconds=Number($('delay-quick').value);persistPrefs();scheduleGalleryOrientation();if(viewerPair)updateViewer();}catch{notify('STORAGE_OPERATION_FAILED',true);}
+ });
+ $('settings-open').addEventListener('click',()=>{renderSettingsUI();$('settings-dialog').showModal();diagnoseStorage().catch(()=>{});});
+ $('settings-close').addEventListener('click',()=>$('settings-dialog').close());
+ $('settings-form').addEventListener('submit',saveSettingsFromDialog);
+ $('settings-profile-apply').addEventListener('click',()=>{
+  const profile=$('settings-profile').value,mode=profile==='photo'?'faithful':profile==='text'?'infographic':'smart';
+  $('settings-mode').value=mode;$('settings-quality').value='hd';$('settings-position').value='center';
+ });
+ $('settings-api-check').addEventListener('click',checkApiAccess);
+ $('settings-storage-check').addEventListener('click',()=>diagnoseStorage());
+ $('settings-clear-memory').addEventListener('click',()=>{
+  syncImageCache(warmImages,[]);for(const url of urls)URL.revokeObjectURL(url);urls.clear();urlCache=new WeakMap();
+  render();if(referenceLoaded)renderReference();if(viewerPair)updateViewer();diagnoseStorage();
+ });
+ for(const id of ['mode','pipeline','position','output-quality'])$(id).addEventListener('change',rememberCreateChoice);
+}
 function updateModelControls(){
  const mode=canonicalMode($('mode').value)||'smart',newImage=$('create-kind').value==='generate';
  $('text-generation-options').hidden=!newImage;$('mode-note').textContent=t(mode+'Note');$('text-fields').hidden=mode!=='infographic';$('gateway-fields').hidden=true;
  for(const option of $('pipeline').options){const m=modelFor(option.value);option.disabled=!supportsMode(option.value,mode)||(!newImage&&m?.edit===false)||(newImage&&m?.provider==='demo');}
- if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||'openai-sunburst';
+ if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||prefs.enabledModels[0];
  const model=modelFor($('pipeline').value);$('output-quality').options[1].disabled=model.provider==='demo';if(model.provider==='demo'&&$('output-quality').value==='4k')$('output-quality').value='hd';
- const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('manualReady'):t('keyMissing')):t('apiChecking');
+ const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('configured'):t('missingKey')):t('apiChecking');
  $('model-status').textContent=`${model.label} · ${status}${model.max_edge&&model.max_edge<3840&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
  $('model-status').classList.toggle('held',known?.available===false);$('generate').disabled=!selectedPair()&&!newImage;updateAuthLabel();renderBenchModels();
 }
@@ -258,12 +408,12 @@ async function runGateway(pair,job){
    job.status='READY';job.provider_request_id=state.provider_request_id;job.provider_cost=state.provider_cost;job.cost_currency=state.cost_currency;job.provider_parameters=state.provider_parameters;job.latency_ms=state.latency_ms;rememberResult(pair,job.candidate,job.job_id);
   }else{job.status=state.status;job.error=state.error||state.status;job.detail=state.detail||'';job.provider_status=state.provider_status;}
   await persist(pair);
- }catch(e){if(job.status!=='CANCELLED'){job.status=e.message==='CANCELLED'?'CANCELLED':job.gateway_job_id?'HELD':'FAILED';job.error=e.message;await persist(pair);notify(e.message,true);}}finally{controllers.delete(job.job_id);}
+ }catch(e){if(job.status!=='CANCELLED'){job.status=e.message==='CANCELLED'?'CANCELLED':job.gateway_job_id?'HELD':'FAILED';job.error=e.message;await persist(pair);notify(e.message,true);}}finally{controllers.delete(job.job_id);if(job.gateway_job_id&&['READY','ACCEPTED','FAILED'].includes(job.status))recordModelHealth(job.model,'expand',job.status);}
 }
 
 const viewerPairData=()=>[...pairs,...referencePairs].find(p=>p.pair_id===viewerPair);
-function openViewer(id){viewerPair=id;originFocus=document.activeElement;originScroll=window.scrollY;$('viewer-orientation').value='auto';$('quality').value='auto';$('viewer').showModal();document.body.classList.add('viewer-open');$('viewer-close').focus();updateViewer();}
-function closeViewer(){stopTour();setImmersive(false);if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});syncImageCache(warmImages,[]);$('viewer').close();}
+function openViewer(id){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownPair=null;viewerShownTarget=null;viewerPair=id;originFocus=document.activeElement;originScroll=window.scrollY;$('viewer-orientation').value='auto';$('quality').value=prefs.viewerQuality;$('viewer').showModal();document.body.classList.add('viewer-open');$('viewer-close').focus();updateViewer();}
+function closeViewer(){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownTarget=null;viewerShownPair=null;stopTour();setImmersive(false);if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});syncImageCache(warmImages,[]);$('viewer').close();}
 function setImmersive(on){document.querySelector('.viewer-shell').classList.toggle('immersive',on);document.body.classList.toggle('immersion-open',on);$('viewer-stage').setAttribute('aria-label',on?t('immersiveExit'):t('immersiveHint'));if(!on&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});requestAnimationFrame(()=>{if(viewerPair)updateViewer();});}
 async function updateViewer(){const pair=viewerPairData();if(!pair)return;const token=++viewerLoad,simulation=activeView==='showcase'||pair.reference_only?$('reference-device').value:$('device').value;const target=deviceOrientation({device:currentDevice(),width:innerWidth,height:innerHeight,override:$('viewer-orientation').value,simulation});
  if(pair.reference_only){const wanted=$('quality').value==='4k'||($('quality').value==='auto'&&devicePixelRatio>1.5)?'fourK':'hd';const asset=pair.variants[target==='original'?pair.original.source_orientation:target]?.[wanted];if(asset){try{await verifyReferenceAsset(asset);}catch(e){if(token===viewerLoad)notify(e.message,true);}if(token!==viewerLoad)return;}}
@@ -327,14 +477,14 @@ $('generate').addEventListener('click',guard(()=>$('create-kind').value==='gener
 $('device').addEventListener('change',()=>{render();if(viewerPair)updateViewer();});for(const id of ['viewer-orientation','quality'])$(id).addEventListener('change',()=>{updateViewer();if(id==='quality'&&$('quality').value==='4k'&&!viewerPairData()?.reference_only&&!verifiedFourK(viewerPairData()?.variants[targetFrame($('viewer-orientation').value)]?.fourK))notify('unavailable4k');});$('mask').addEventListener('click',()=>{$('mask').setAttribute('aria-pressed',String($('mask').getAttribute('aria-pressed')!=='true'));updateViewer();});$('viewer-close').addEventListener('click',closeViewer);$('viewer').addEventListener('cancel',e=>{e.preventDefault();closeViewer();});$('viewer').addEventListener('close',()=>{stopTour();setImmersive(false);viewerPair=null;document.body.classList.remove('viewer-open');$('viewer-image').removeAttribute('src');originFocus?.focus({preventScroll:true});requestAnimationFrame(()=>window.scrollTo(0,originScroll));});$('viewer').addEventListener('click',e=>{if(e.target===$('viewer'))closeViewer();});$('next').addEventListener('click',()=>moveViewer(1));$('previous').addEventListener('click',()=>moveViewer(-1));$('fullscreen').addEventListener('click',guard(async()=>{if(document.fullscreenElement)await document.exitFullscreen();else {setImmersive(true);await $('viewer-stage').requestFullscreen?.().catch(()=>{});}}));
 let swipe=null;$('viewer-stage').addEventListener('touchstart',e=>{if(e.touches.length===1)swipe={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});$('viewer-stage').addEventListener('touchend',e=>{if(!swipe||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-swipe.x,dy=e.changedTouches[0].clientY-swipe.y;swipe=null;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.4)moveViewer(dx<0?1:-1);},{passive:true});$('viewer-stage').addEventListener('touchcancel',()=>swipe=null);
 document.addEventListener('keydown',e=>{if(!viewerPair||e.target.matches('input,select,textarea'))return;if(e.key==='ArrowRight'){e.preventDefault();moveViewer(1);}if(e.key==='ArrowLeft'){e.preventDefault();moveViewer(-1);}});
-let resizeTimer;const resize=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(viewerPair)updateViewer();else render();renderReference();renderOwnGallery();},100);};window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);window.visualViewport?.addEventListener('resize',resize);document.addEventListener('fullscreenchange',resize);$('viewer-image').addEventListener('load',()=>{if(viewerPair)updateBoundaryOnly();});function updateBoundaryOnly(){const p=viewerPairData();if(p)drawBoundary(selectAsset(p,targetFrame($('viewer-orientation').value),$('quality').value,devicePixelRatio));}
+let resizeTimer;const resize=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{scheduleGalleryOrientation();if(viewerPair)updateViewer();else render();},100);};window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);window.visualViewport?.addEventListener('resize',resize);document.addEventListener('fullscreenchange',resize);$('viewer-image').addEventListener('load',()=>{if(viewerPair)updateBoundaryOnly();});function updateBoundaryOnly(){const p=viewerPairData();if(p)drawBoundary(selectAsset(p,$('viewer-image').dataset.orientation||p.original.source_orientation,$('quality').value,devicePixelRatio));}
 $('download-original').addEventListener('click',()=>{const p=viewerPairData();if(p&&!p.reference_only)download(p.original.blob,p.original.filename);});$('download-landscape').addEventListener('click',guard(()=>downloadAllVariants('landscape')));$('download-portrait').addEventListener('click',guard(()=>downloadAllVariants('portrait')));$('download-sidecar').addEventListener('click',()=>{const p=viewerPairData();if(p)jsonDownload(publicManifest(p),`${p.pair_id}.manifest.json`);});
 $('manifest-export').addEventListener('click',()=>jsonDownload({schema:'bd.dualframe.collection.v1',pairs:pairs.map(publicManifest)},'DualFrame-manifests.json'));$('bundle-export').addEventListener('click',guard(exportBackup));$('backup-import').addEventListener('change',guard(e=>restoreBackup(e.target.files[0])));
 $('tab-create').addEventListener('click',()=>switchTab('create'));$('tab-compare').addEventListener('click',()=>switchTab('compare'));$('compare-pair').addEventListener('change',()=>{reviewState=null;$('review').hidden=true;$('compare-empty').hidden=false;association();});for(const [id,kind] of [['import-web','web'],['import-reference','reference']])$(id).addEventListener('change',guard(async e=>{if(e.target.files[0])await importOutput(e.target.files[0],kind);e.target.value='';}));$('import-sidecar').addEventListener('change',guard(async e=>{if(e.target.files[0])await importSidecar(e.target.files[0]);e.target.value='';}));$('start-comparison').addEventListener('click',guard(beginReview));$('review-view').addEventListener('change',renderReview);$('review-zoom').addEventListener('input',renderReview);$('baseline-mode').addEventListener('change',guard(updateBaseline));$('score-form').addEventListener('submit',guard(submitScore));
 $('scores-json').addEventListener('click',()=>{const controlled=scores.filter(x=>x.eligible&&canonicalMode(x.mode));const grouped=Object.fromEntries(['faithful','smart','infographic'].map(mode=>[mode,controlled.filter(x=>canonicalMode(x.mode)===mode)]));const byMethod={};for(const item of controlled){const key=item.method_group||'UNKNOWN_METHOD';(byMethod[key]||=[]).push(item);}jsonDownload({schema:'bd.dualframe.comparison-export.v2',scores,controlled_by_task:grouped,controlled_by_method:byMethod,combined_score:null,winner:null},'DualFrame-blind-reviews.json');});$('scores-csv').addEventListener('click',()=>download(new Blob([csv(scores.map(s=>({...s,outputs:JSON.stringify(s.outputs)})))],{type:'text/csv;charset=utf-8'}),'DualFrame-blind-reviews.csv'));
 window.addEventListener('beforeunload',()=>{for(const url of urls)URL.revokeObjectURL(url);});
 
-$('showcase').addEventListener('click',()=>{switchTab('showcase');$('reference-gallery').scrollIntoView({behavior:'smooth'});});$('tab-showcase').addEventListener('click',()=>switchTab('showcase'));$('reference-device').addEventListener('change',()=>{if(referenceLoaded)renderReference();else renderOwnGallery();if(viewerPair)updateViewer();});
+$('showcase').addEventListener('click',()=>{switchTab('showcase');$('reference-gallery').scrollIntoView({behavior:'smooth'});});$('tab-showcase').addEventListener('click',()=>switchTab('showcase'));$('reference-device').addEventListener('change',()=>{scheduleGalleryOrientation();if(viewerPair)updateViewer();});
 $('compare-task').addEventListener('change',()=>{reviewState=null;$('review').hidden=true;$('compare-empty').hidden=false;association();});for(const id of ['candidate-a','candidate-b'])$(id).addEventListener('change',()=>{reviewState=null;$('review').hidden=true;});
 let lastTouchToggle=-Infinity;$('viewer-stage').addEventListener('dblclick',e=>{e.preventDefault();if(performance.now()-lastTouchToggle<700)return;setImmersive(!document.querySelector('.viewer-shell').classList.contains('immersive'));});let lastTap=null;$('viewer-stage').addEventListener('touchend',e=>{if(!e.changedTouches.length)return;const touch=e.changedTouches[0],now=performance.now();if(lastTap&&now-lastTap.at<300&&Math.hypot(touch.clientX-lastTap.x,touch.clientY-lastTap.y)<25){e.preventDefault();lastTouchToggle=now;setImmersive(!document.querySelector('.viewer-shell').classList.contains('immersive'));lastTap=null;}else lastTap={at:now,x:touch.clientX,y:touch.clientY};},{passive:false});document.addEventListener('keydown',e=>{if(e.key==='Escape')setImmersive(false);});
 let dragReview=null;for(const id of ['review-a','review-b']){const img=$(id),frame=img.parentElement;frame.addEventListener('pointerdown',e=>{if(Number($('review-zoom').value)<=100)return;dragReview={x:e.clientX,y:e.clientY,startX:Number(frame.dataset.panX||0),startY:Number(frame.dataset.panY||0)};frame.setPointerCapture(e.pointerId);});frame.addEventListener('pointermove',e=>{if(!dragReview)return;const x=Math.max(-frame.clientWidth,Math.min(frame.clientWidth,dragReview.startX+e.clientX-dragReview.x)),y=Math.max(-frame.clientHeight,Math.min(frame.clientHeight,dragReview.startY+e.clientY-dragReview.y));for(const a of ['review-a','review-b']){const f=$(a).parentElement;f.dataset.panX=x;f.dataset.panY=y;$(a).style.transform=`translate(${x}px,${y}px) scale(${Number($('review-zoom').value)/100})`;}});for(const type of ['pointerup','pointercancel','lostpointercapture'])frame.addEventListener(type,()=>dragReview=null);}
@@ -347,14 +497,15 @@ let favorites=new Set(),tourTimer=null,benchBusy=false,cloudBusy=false;
 try{favorites=new Set(JSON.parse(localStorage.getItem('bd-df-favorites')||'[]'));}catch{}
 function updateAuthLabel(){$('api-toggle').textContent=t(API.apiUnlocked()?'lockAPI':'unlockAPI');$('api-toggle').setAttribute('aria-pressed',String(API.apiUnlocked()));}
 function favorite(id){if(favorites.has(id))favorites.delete(id);else favorites.add(id);try{localStorage.setItem('bd-df-favorites',JSON.stringify([...favorites]));}catch{}renderOwnGallery();renderReference();$('viewer-favorite').textContent=favorites.has(viewerPair)?'♥':'♡';}
-function galleryCard(pair,reference=false){const target=galleryFrame(),state=selectAsset(pair,target,'hd'),card=node('article',undefined,'card gallery-artwork'),photo=button('',()=>openViewer(pair.pair_id),'card-image'),img=node('img');img.src=assetUrl(state.asset);img.alt=displayTitle(pair);img.loading='lazy';img.decoding='async';photo.append(img);photo.setAttribute('aria-label',`${t('viewPair')}: ${img.alt}`);const body=node('div',undefined,'card-content');body.append(node('p',img.alt,'card-title'),node('p',reference?(language==='sl'?pair.captionSl:pair.caption):pair.description||'', 'reference-caption'));if(!reference&&state.missing&&state.orientation!==target)body.append(node('p',t('frameMissing'),'gallery-missing'));const row=node('div',undefined,'card-controls');row.append(button(favorites.has(pair.pair_id)?'♥':'♡',()=>favorite(pair.pair_id),'favorite-button'),button(t('viewPair'),()=>openViewer(pair.pair_id),'text-button'));if(!reference){row.append(button(t('useSource'),()=>{selected=pair.pair_id;switchTab('create');render();},'text-button'),button(t('rename'),()=>openRename(pair),'text-button'),button(t('delete'),()=>deleteGalleryPair(pair),'text-button'));}body.append(row);card.classList.toggle('portrait',target==='portrait');card.append(photo,body);return card;}
-function renderOwnGallery(){const filter=$('collection-filter')?.value||'all',box=$('own-gallery');if(!box)return;box.replaceChildren();box.hidden=filter==='reference';box.classList.toggle('portrait',galleryFrame()==='portrait');for(const p of pairs){if(filter==='favorites'&&!favorites.has(p.pair_id))continue;box.append(galleryCard(p));}$('reference-cards').hidden=filter==='own';}
+function galleryCard(pair,reference=false){const target=galleryFrame(),state=selectAsset(pair,target,'hd'),card=node('article',undefined,'card gallery-artwork'),photo=button('',()=>openViewer(pair.pair_id),'card-image'),img=node('img');img.src=assetUrl(state.asset);img.alt=displayTitle(pair);img.loading='lazy';img.decoding='async';photo.append(img);photo.setAttribute('aria-label',`${t('viewPair')}: ${img.alt}`);const body=node('div',undefined,'card-content');body.append(node('p',img.alt,'card-title'),node('p',reference?(language==='sl'?pair.captionSl:pair.caption):pair.description||'', 'reference-caption'));if(!reference&&state.missing&&state.orientation!==target)body.append(node('p',t('frameMissing'),'gallery-missing'));const row=node('div',undefined,'card-controls');row.append(button(favorites.has(pair.pair_id)?'♥':'♡',()=>favorite(pair.pair_id),'favorite-button'),button(t('viewPair'),()=>openViewer(pair.pair_id),'text-button'));if(!reference){row.append(button(t('useSource'),()=>{selected=pair.pair_id;switchTab('create');render();},'text-button'),button(t('rename'),()=>openRename(pair),'text-button'),button(t('delete'),()=>deleteGalleryPair(pair),'text-button'));const remote=remotePairs.find(x=>x.original?.sha256===pair.original.sha256);if(remote&&remoteJobs.some(j=>j.pair_id===remote.pair_id&&j.output?.asset_id&&['READY','ACCEPTED'].includes(j.status)&&!(pair.candidates||[]).some(a=>a.sha256===j.output.sha256||a.parent_output_sha256===j.output.sha256)))row.append(button(t('loadCloudVariants'),()=>loadRemotePair(remote),'text-button'));}body.append(row);card.classList.toggle('portrait',actualGalleryFrame()==='portrait');card.append(photo,body);return card;}
+function renderOwnGallery(){const filter=$('collection-filter')?.value||'all',box=$('own-gallery');if(!box)return;box.replaceChildren();box.hidden=filter==='reference';box.classList.toggle('portrait',actualGalleryFrame()==='portrait');for(const p of pairs){if(filter==='favorites'&&!favorites.has(p.pair_id))continue;box.append(galleryCard(p));}for(const remote of remotePairs){if(pairs.some(p=>p.original.sha256===remote.original?.sha256))continue;if(filter==='favorites'&&!favorites.has(remote.pair_id))continue;box.append(remoteCard(remote));}for(const job of remoteJobs.filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status)&&j.output?.sha256&&!pairs.some(p=>p.original.sha256===j.output.sha256))){if(filter==='favorites'&&!favorites.has(job.job_id))continue;box.append(remoteCard(job,true));}$('reference-cards').hidden=filter==='own';}
 const originalRenderReference=renderReference;
-renderReference=function(){if(!referenceLoaded)return;originalRenderReference();const filter=$('collection-filter').value;if(filter==='favorites'){const wanted=referencePairs.filter(p=>favorites.has(p.pair_id));$('reference-cards').replaceChildren(...wanted.map(p=>galleryCard(p,true)));}else if(filter!=='own'){$('reference-cards').replaceChildren(...referencePairs.map(p=>galleryCard(p,true)));}renderOwnGallery();};
+renderReference=function(){if(!referenceLoaded)return;originalRenderReference();$('reference-cards').classList.toggle('portrait',actualGalleryFrame()==='portrait');const filter=$('collection-filter').value;if(filter==='favorites'){const wanted=referencePairs.filter(p=>favorites.has(p.pair_id));$('reference-cards').replaceChildren(...wanted.map(p=>galleryCard(p,true)));}else if(filter!=='own'){$('reference-cards').replaceChildren(...referencePairs.map(p=>galleryCard(p,true)));}renderOwnGallery();};
 function stopTour(){if(tourTimer)clearInterval(tourTimer);tourTimer=null;$('viewer-play').textContent=t('playTour');}
 function startTour(){if(tourTimer){stopTour();return;}tourTimer=setInterval(()=>moveViewer(1),6500);$('viewer-play').textContent=t('pauseTour');}
 const warmImages=new Map();
 function warmViewer(){
+ if(!prefs.preloadAdjacent){syncImageCache(warmImages,[]);return;}
  const p=viewerPairData();
  if(!p){syncImageCache(warmImages,[]);return;}
  const list=p.reference_only?referencePairs:pairs,index=list.findIndex(x=>x.pair_id===p.pair_id);
@@ -365,9 +516,25 @@ function warmViewer(){
  $('viewer-favorite').textContent=favorites.has(p.pair_id)?'♥':'♡';
 }
 const priorUpdateViewer=updateViewer;
-updateViewer=async function(){await priorUpdateViewer();warmViewer();};
+updateViewer=async function(){
+ const pair=viewerPairData();if(!pair)return;
+ const simulation=activeView==='showcase'||pair.reference_only?$('reference-device').value:$('device').value;
+ const target=deviceOrientation({device:currentDevice(),width:innerWidth,height:innerHeight,override:$('viewer-orientation').value,simulation});
+ if(viewerShownPair!==pair.pair_id){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownPair=pair.pair_id;viewerShownTarget=target;}
+ else if(target!==viewerShownTarget){
+  clearTimeout(viewerFrameTimer);viewerFrameTimer=null;
+  if(prefs.delaySeconds>0 && viewerShownTarget!==null){
+   ++viewerLoad; // Discard a superseded asynchronous reference decode.
+   const id=pair.pair_id,token=target;
+   viewerFrameTimer=setTimeout(()=>{if(viewerPair!==id)return;viewerFrameTimer=null;viewerShownTarget=token;updateViewer();},prefs.delaySeconds*1000);
+   return;
+  }
+  viewerShownTarget=target;
+ }else if(viewerFrameTimer){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;}
+ await priorUpdateViewer();warmViewer();
+};
 function renderBenchModels(){const holder=$('bench-models');if(!holder)return;const checked=new Set([...holder.querySelectorAll('input:checked')].map(x=>x.value)),first=!holder.children.length;holder.replaceChildren();const mode=$('compare-task').value;
- for(const model of MODELS.filter(x=>x.direct&&x.edit!==false)){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&['openai-sunburst','gemini-nano'].includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
+ for(const model of MODELS.filter(x=>x.direct&&x.edit!==false&&prefs.enabledModels.includes(x.key))){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&prefs.enabledModels.includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
 }
 function renderBenchResults(){const holder=$('bench-results');if(!holder)return;const p=comparePair()||selectedPair();holder.replaceChildren();if(!p)return;
  for(const job of p.jobs.slice().reverse().filter(j=>j.provider!=='demo').slice(0,18)){const card=node('article',undefined,'bench-result');card.append(node('strong',modelFor(job.model)?.label||job.model),node('span',`${t(job.status)} · ${job.quality}`,'small'));const image=job.candidate||(p.candidates||[]).find(x=>x.candidate_id===job.job_id);if(image){const img=node('img');img.src=assetUrl(image);img.alt=modelFor(job.model)?.label||job.model;img.loading='lazy';card.append(img,button(t('useAsA'),()=>{$('candidate-a').value=image.sha256;association();},'text-button'),button(t('useAsB'),()=>{$('candidate-b').value=image.sha256;association();},'text-button'));}if(job.error)card.append(node('p',t(job.error),'small'));holder.append(card);}
@@ -380,26 +547,102 @@ async function runBench(){if(benchBusy)return;const p=comparePair()||selectedPai
 Object.assign(dictionary.en,{useAsA:'Use as A',useAsB:'Use as B',NO_MODELS_SELECTED:'Choose at least one model.'});Object.assign(dictionary.sl,{useAsA:'Izberi kot A',useAsB:'Izberi kot B',NO_MODELS_SELECTED:'Izberi vsaj en model.'});
 async function generateFromPrompt(){const prompt=$('prompt').value.trim();if(!prompt)throw Error('PROMPT_REQUIRED');await connectGateway();const model=modelFor($('pipeline').value),target=$('text-target').value,quality=$('output-quality').value,seed=Number($('seed').value),mode=canonicalMode($('mode').value),parameters={model:model.key,target,quality,seed,mode,prompt,position:$('position').value,text_layout:mode==='infographic'?{headline:$('headline-text').value,body:$('body-text').value}:null,generation_attempt_id:crypto.randomUUID()};const idempotency_key=await sha256(JSON.stringify(parameters));$('generate').disabled=true;notify('RUNNING');
  try{const receipt=await API.request('/generate',{method:'POST',body:{...parameters,idempotency_key}}),state=await API.awaitJob(receipt.job_id);if(!['READY','ACCEPTED'].includes(state.status))throw Error(state.error||state.status);const blob=await API.asset(state.output.asset_id);if(await sha256(blob)!==state.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const file=new File([blob],`${safeName(prompt.slice(0,70))}.png`,{type:'image/png'}),p=await addOriginal(file);p.original.creation_receipt={...state,output:state.output};p.original.origin='generated';p.description=prompt;p.generated_from_prompt=true;
-  const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
+  const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);recordModelHealth(model.key,'generate','READY');selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
  }finally{$('generate').disabled=false;}
 }
-async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!ask)return;cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem…':'Syncing…';
- try{if(ask)await connectGateway();for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);const data=await API.request('/library');let restored=0;
-  for(const p of pairs){const cloudName=data.titles?.[p.original.sha256];if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}}
-  for(const remote of data.pairs){let p=pairs.find(x=>x.original.sha256===remote.original.sha256);
-   if(!p){const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');const n=await normalizedImage(normalized);p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,display_name:data.titles?.[remote.original.sha256]||remote.title,upload_id:remote.pair_id,gateway_version:'v3'};p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};pairs.push(p);restored++;}else if(!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';}
-   for(const remoteJob of data.jobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status))){if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;const blob=await API.asset(remoteJob.output.asset_id);if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);rememberResult(p,a,remoteJob.job_id);if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});}
-   await putPair(p);
+
+let cloudDownloadBusy=false;
+async function syncCloud(ask=true){
+ if(cloudBusy)return;
+ if(!API.apiUnlocked()&&!ask)return;
+ cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem katalog…':'Syncing catalog…';
+ try{
+  if(ask)await connectGateway();
+  for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);
+  const data=await API.request('/library');
+  remotePairs=Array.isArray(data.pairs)?data.pairs.map(p=>({...p,display_name:data.titles?.[p.original.sha256]||p.title})):[];
+  remoteJobs=Array.isArray(data.jobs)?data.jobs:[];
+  for(const p of pairs){
+   const cloudName=data.titles?.[p.original.sha256];
+   if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}
+   const remote=remotePairs.find(x=>x.original?.sha256===p.original.sha256);
+   if(remote&&!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';await putPair(p);}
   }
-  for(const j of data.jobs.filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status))){if(pairs.some(p=>p.original.sha256===j.output.sha256))continue;const blob=await API.asset(j.output.asset_id);if(await sha256(blob)!==j.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const p=await addOriginal(new File([blob],safeName(j.prompt.slice(0,70))+'.png',{type:'image/png'}));p.generated_from_prompt=true;p.description=j.prompt;p.original.creation_receipt={job_id:j.job_id,model:j.model,provider:j.provider};p.display_name=data.titles?.[j.output.sha256]||displayTitle(p);const candidate=await localTextOverlay({...j.output,blob,origin:'generated',provider:j.provider,model_key:j.model,direction:j.target,target_ratio:RATIOS[j.target],mode:j.mode},j.mode==='infographic'?j.text_layout:null);p.variants[j.target][j.quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,j.job_id);await putPair(p);restored++;}
-  if(!selected)selected=pairs[0]?.pair_id||null;render();$('cloud-status').textContent=`${t('cloudSaved')} · ${restored}`;
- }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
+  // Metadata-only: never bulk-download 4K photos on iPhone startup or Sync.
+  if(!selected)selected=pairs[0]?.pair_id||null;
+  render();repaintGallery();
+  const pending=remotePairs.filter(x=>!pairs.some(p=>p.original.sha256===x.original?.sha256)).length;
+  $('cloud-status').textContent=t('cloudCatalog')+' · '+pending;
+ }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}
+ finally{cloudBusy=false;}
+}
+async function loadRemotePair(remote){
+ if(cloudDownloadBusy)return;
+ cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
+ try{
+  if(!API.apiUnlocked())await connectGateway();
+  const fromRemote=remoteJobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status)&&j.output?.asset_id);
+  const expected=[remote.original,remote.normalized,...fromRemote.map(j=>j.output)].reduce((sum,a)=>sum+(Number(a?.size)||Number(a?.bytes)||0),0);
+  const budget=estimateHydrationSafety(await storageEstimate(),expected);
+  if(!budget.safe)throw Error('STORAGE_ESTIMATED_LOW');
+  const old=pairs.find(x=>x.original.sha256===remote.original.sha256);
+  let p=old?{...old,variants:{landscape:{...old.variants.landscape},portrait:{...old.variants.portrait}},jobs:[...old.jobs],candidates:[...(old.candidates||[])]}:null;
+  if(!p){
+   const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);
+   if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');
+   const n=await normalizedImage(normalized);
+   p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,upload_id:remote.pair_id,gateway_version:'v3'};
+   p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};
+  }
+  p.upload_id=remote.pair_id;p.gateway_version='v3';
+  if(!p.title_sync_pending&&remote.display_name)p.display_name=remote.display_name;
+  for(const remoteJob of fromRemote){
+   if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;
+   const blob=await API.asset(remoteJob.output.asset_id);
+   if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
+   const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);
+   rememberResult(p,a,remoteJob.job_id);
+   if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;
+   if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});
+  }
+  checkPair(p);await putPair(p); // Persist atomically; no partial local pair on a failed transfer.
+  if(!old)pairs.push(p);else pairs[pairs.indexOf(old)]=p;
+  selected=p.pair_id;render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
+ }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
+ finally{cloudDownloadBusy=false;diagnoseStorage().catch(()=>{});}
+}
+async function loadRemoteGenerated(job){
+ if(cloudDownloadBusy)return;
+ cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
+ try{
+  if(!API.apiUnlocked())await connectGateway();
+  const output=job.output,expected=Number(output?.size)||Number(output?.bytes)||0;
+  if(!estimateHydrationSafety(await storageEstimate(),expected).safe)throw Error('STORAGE_ESTIMATED_LOW');
+  const blob=await API.asset(output.asset_id);
+  if(await sha256(blob)!==output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
+  const p=await addOriginal(new File([blob],safeName(job.prompt?.slice(0,70)||'Generated')+'.png',{type:blob.type||'image/png'}));
+  p.generated_from_prompt=true;p.description=job.prompt;
+  p.original.creation_receipt={job_id:job.job_id,model:job.model,provider:job.provider};
+  const candidate=await localTextOverlay({...output,blob,origin:'generated',provider:job.provider,model_key:job.model,direction:job.target,target_ratio:RATIOS[job.target],mode:job.mode},job.mode==='infographic'?job.text_layout:null);
+  p.variants[job.target][job.quality==='4k'?'fourK':'hd']=candidate;
+  rememberResult(p,candidate,job.job_id);await putPair(p);render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
+ }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
+ finally{cloudDownloadBusy=false;}
+}
+function remoteCard(remote,generated=false){
+ const card=node('article',undefined,'card gallery-artwork'),photo=node('div',undefined,'cloud-placeholder'),target=actualGalleryFrame();
+ card.classList.toggle('portrait',target==='portrait');
+ photo.append(node('strong','☁'),node('span',t('cloudOnly')));
+ const body=node('div',undefined,'card-content'),title=generated?(remote.prompt?.slice(0,90)||'Generated image'):(remote.display_name||remote.title);
+ body.append(node('p',title,'card-title'));
+ const actions=node('div',undefined,'card-controls'),buttonLoad=button(t('cloudLoadOne'),()=>generated?loadRemoteGenerated(remote):loadRemotePair(remote),'text-button');
+ actions.append(buttonLoad);body.append(actions);card.append(photo,body);return card;
 }
 async function initR5(){
- $('pipeline').replaceChildren();for(const model of MODELS.filter(m=>m.direct||m.provider==='demo')){const option=node('option',model.label);option.value=model.key;$('pipeline').append(option);}$('pipeline').value='openai-sunburst';$('consent').checked=true;
+ initSettingsUI();refreshCreateModels(false);galleryDisplayedFrame=actualGalleryFrame();applySettings();$('consent').checked=true;
  await init();switchTab('showcase');updateModelControls();
  API.capabilities().then(value=>{capabilities=value;updateModelControls();}).catch(()=>{$('model-status').textContent=t('apiChecking');});
- if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
+ if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};if(prefs.autoSyncMetadata)syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
 }
 $('api-auth-cancel').addEventListener('click',()=>$('api-auth').close());
 $('rename-form').addEventListener('submit',saveRename);

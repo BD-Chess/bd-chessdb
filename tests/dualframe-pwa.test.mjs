@@ -29,7 +29,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.4');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.5');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -69,7 +69,7 @@ test('Gallery Preview controls personal and Nara cards without changing Create c
  assert.match(galleryCard,/const target=galleryFrame\(\),state=selectAsset\(pair,target,'hd'\)/);
  assert.doesNotMatch(galleryCard,/targetFrame\(/);
  assert.match(app,/function galleryFrame\(\).*?simulation:\$\('reference-device'\)\.value/);
- assert.match(app,/\$\('reference-device'\)\.addEventListener\('change',\(\)=>\{if\(referenceLoaded\)renderReference\(\);else renderOwnGallery\(\);/);
+ assert.match(app,/\$\('reference-device'\)\.addEventListener\('change',\(\)=>\{scheduleGalleryOrientation\(\);if\(viewerPair\)updateViewer\(\);/);
  assert.match(app,/activeView==='showcase'\|\|pair.reference_only\?\$\('reference-device'\)\.value:\$\('device'\)\.value/);
  assert.match(galleryCard,/state.missing&&state.orientation!==target/);
 });
@@ -83,4 +83,23 @@ test('name editing is localized, stored separately from original filename and qu
  assert.match(app,/const cloudName=data.titles\?\.\[p.original.sha256\]/);
  assert.match(app,/Object.assign\(dictionary.sl,\{rename:'Preimenuj'/);
  assert.match(app,/const displayTitle = pair => pair.display_name \|\| pair.title \|\| pair.original\?\.filename/);
+});
+
+test('Settings have quick Delay, real model filters and safely bounded cloud Sync',()=>{
+ for(const id of ['delay-quick','settings-open','settings-dialog','settings-model','settings-mode','settings-delay','settings-storage-check','settings-api-check'])assert.ok(html.includes('id="'+id+'"'),'missing Settings control: '+id);
+ assert.match(app,/const modelKeys=MODELS\.filter\(m=>m\.direct\)/);
+ assert.match(app,/prefs\.enabledModels\.includes\(m\.key\)/);
+ assert.match(app,/prefs\.enabledModels\.includes\(x\.key\)/);
+ assert.match(app,/function scheduleGalleryOrientation\(\)/);
+ assert.match(app,/viewerFrameTimer=setTimeout/);
+ assert.match(app,/galleryFrameTimer=setTimeout/);
+ assert.match(app,/function actualGalleryFrame\(\)/);
+ assert.match(app,/API\.request\('\/session'\)/);
+ const syncStart=app.indexOf('async function syncCloud(ask=true)'),syncEnd=app.indexOf('async function loadRemotePair(remote)',syncStart);
+ assert.ok(syncStart>0&&syncEnd>syncStart);
+ const sync=app.slice(syncStart,syncEnd);
+ assert.doesNotMatch(sync,/API\.asset\(/,'Sync must not implicitly fetch full image bytes');
+ assert.match(sync,/remotePairs=Array\.isArray\(data\.pairs\)/);
+ assert.match(app,/const budget=estimateHydrationSafety\(await storageEstimate\(\),expected\)/);
+ assert.match(app,/if\(prefs\.autoSyncMetadata\)syncCloud\(false\)/);
 });
