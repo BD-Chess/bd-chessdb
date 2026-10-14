@@ -103,3 +103,27 @@ test('Settings have quick Delay, real model filters and safely bounded cloud Syn
  assert.match(app,/const budget=estimateHydrationSafety\(await storageEstimate\(\),expected\)/);
  assert.match(app,/if\(prefs\.autoSyncMetadata\)syncCloud\(false\)/);
 });
+
+
+test('one-click portrait/landscape viewer swap is before fullscreen and bypasses automatic delay',()=>{
+ const viewerIndex=html.indexOf('id="viewer-swap"'),fullscreenIndex=html.indexOf('id="fullscreen"');
+ assert.ok(viewerIndex>=0&&viewerIndex<fullscreenIndex);
+ assert.match(html,/id="viewer-swap"[^>]+aria-label="Switch landscape and portrait compositions"/);
+ assert.match(app,/function swapViewerFrame\(\)/);
+ assert.match(app,/\$\('viewer-orientation'\)\.value=next/);
+ assert.match(app,/clearTimeout\(viewerFrameTimer\);viewerFrameTimer=null;viewerShownPair=pair.pair_id;viewerShownTarget=next/);
+ assert.match(app,/\$\('viewer-swap'\)\.addEventListener\('click',swapViewerFrame\)/);
+ assert.match(app,/if\(state.missing\)notify\('frameNotSaved'\)/);
+});
+test('API access shows only selected model tests and does not invoke generation',()=>{
+ assert.match(html,/id="settings-api-table"/);
+ const a=app.indexOf('async function checkApiAccess()'),b=app.indexOf('function initSettingsUI()',a);
+ assert.ok(a>=0&&b>a);
+ const body=app.slice(a,b);
+ assert.match(body,/querySelectorAll\('input:checked'\)/);
+ assert.match(body,/API.request\('\/model-probe',\{method:'POST',body:\{models:active\}\}\)/);
+ assert.match(body,/response.schema!=='bd.dualframe.provider-probes.v1'/);
+ assert.match(body,/node\('table',undefined,'api-check-table'\)/);
+ assert.doesNotMatch(body,/API.request\('\/(?:generate|expand)'/);
+ assert.doesNotMatch(body,/lines.join\(' · '\)/);
+});
