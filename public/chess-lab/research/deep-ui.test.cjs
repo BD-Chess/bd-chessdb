@@ -104,7 +104,7 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   assert.equal(workspace.scrollTop, 0, 'invalid settings stay visible for correction');
   x.el('roots').value = ''; x.el('start').click();
   assert.equal(workspace.scrollTop, 280, 'toolbar is aligned with the workspace padding');
-  assert.deepEqual(JSON.parse(JSON.stringify(scrollCalls.at(-1))), { top: 280, behavior: 'smooth' }, 'manual Analyze position smoothly reveals the result area inside the workspace');
+  assert.deepEqual(JSON.parse(JSON.stringify(scrollCalls.at(-1))), { top: 280, behavior: 'instant' }, 'manual Analyze position reveals once without an animation fighting streamed updates');
   assert.equal(panel.style.minHeight, '764px', 'short results still have room beneath the toolbar');
   assert.equal(x.w.scrollY, 0, 'the page itself never scrolls');
   workspace.scrollTop = 340;
@@ -242,4 +242,88 @@ test('Deep SF control stops a running search and deepens a completed finite sear
   assert.equal(x.ui.deepenOrStop(), true);
   assert.equal(x.analyses.at(-1).depth, 20);
   assert.equal(x.el('budget').value, 'depth:18', 'one-shot deepen does not alter the base Search depth');
+});
+
+
+test('streaming telemetry reuses cards and PV buttons, keeps focus and previews the latest score', async t => {
+  const x = setup(t);
+  let clock = 1000; x.w.Date.now = () => clock;
+  x.get('btnDeepAnalysis').click(); x.el('start').click();
+  const snapshot = () => ({ ...x.snapshot(), mode: 'all', children: {
+    'sf-lite': { ...x.snapshot(), status: 'searching', engine: { name: 'SF Lite' } },
+    berserk: { ...x.snapshot(), status: 'searching', engine: { name: 'Berserk' } }
+  }});
+  const first = snapshot(); x.emit(first);
+  const card = x.el('lines').firstElementChild, row = card.querySelector('.deep-line');
+  const button = row.querySelector('button'); button.focus();
+  const workspace = x.get('workspaceDisplay'); workspace.scrollTop = 750;
+  for (let i = 0; i < 10; i++) {
+    clock += 101;
+    const next = snapshot(); next.children['sf-lite'].lines[0].score.white = 80 + i;
+    next.children['sf-lite'].nodes += i; x.emit(next);
+  }
+  assert.equal(x.el('lines').firstElementChild, card);
+  assert.equal(card.querySelector('.deep-line'), row);
+  assert.equal(row.querySelector('button'), button, 'unchanged PV buttons remain attached during telemetry');
+  assert.equal(x.w.document.activeElement, button, 'keyboard focus survives updates');
+  assert.equal(workspace.scrollTop, 750);
+  assert.equal(row.querySelector('strong').textContent, '+0.89');
+  button.click(); assert.equal(x.el('preview').hidden, false);
+  x.ui.close();
+});
+
+test('live repin reserves existing height and never replays an old scroll after the reader moves', async t => {
+  const x = setup(t), workspace = x.get('workspaceDisplay'), panel = x.get('deepAnalysisPanel');
+  let clock = 1000; x.w.Date.now = () => clock;
+  x.get('btnDeepAnalysis').click(); x.el('start').click(); x.emit(x.snapshot());
+  Object.defineProperty(panel, 'offsetHeight', { value: 1800 });
+  workspace.scrollTop = 1200;
+  x.game.move('e4'); x.change({ fen: x.game.fen() });
+  assert.equal(panel.style.minHeight, '1800px', 'clearing old PVs must not collapse the scroll range');
+  assert.equal(workspace.scrollTop, 1200);
+  const partial = x.snapshot(); partial.completeMultiPV = false;
+  clock += 101; x.emit(partial);
+  workspace.scrollTop = 950;
+  await new Promise(resolve => x.w.requestAnimationFrame(resolve));
+  assert.equal(workspace.scrollTop, 950, 'a queued paint must not undo new user scrolling');
+  clock += 101; x.emit(partial);
+  assert.equal(workspace.scrollTop, 950, 'incomplete group updates must not pin the reader to the old offset');
+  x.ui.close();
+});
+
+test('updated PVs preserve other engines and use the new variation on click', t => {
+  const x = setup(t); let clock = 1000; x.w.Date.now = () => clock;
+  x.get('btnDeepAnalysis').click(); x.el('start').click();
+  const snapshot = { ...x.snapshot(), mode: 'all', children: {
+    'sf-lite': { ...x.snapshot(), status: 'searching' }, berserk: { ...x.snapshot(), status: 'searching' }
+  }};
+  x.emit(snapshot);
+  const other = x.el('lines').lastElementChild.querySelector('button');
+  const first = x.el('lines').firstElementChild.querySelector('button');
+  clock += 101; const updated = JSON.parse(JSON.stringify(snapshot));
+  updated.children['sf-lite'].lines[0].pv = ['d2d4', 'd7d5']; x.emit(updated);
+  assert.equal(x.el('lines').lastElementChild.querySelector('button'), other);
+  assert.equal(x.el('lines').firstElementChild.querySelector('button'), first);
+  assert.equal(first.textContent, '1. d4'); first.click();
+  assert.equal(x.el('preview-text').textContent, '1. d4');
+  x.ui.close();
+});
+
+
+test('a queued variation reveal cannot scroll the workspace after Deep closes or changes position', async t => {
+  const x = setup(t), workspace = x.get('workspaceDisplay');
+  x.w.Chessboard = () => ({ resize() {}, position() {}, destroy() {} });
+  workspace.scrollTop = 75;
+  x.get('btnDeepAnalysis').click(); x.el('start').click(); x.emit(x.snapshot());
+  x.el('preview').getBoundingClientRect = () => ({ top: 900 });
+  workspace.getBoundingClientRect = () => ({ top: 100 });
+  x.el('lines').querySelector('button').click(); x.ui.close();
+  await new Promise(resolve => x.w.requestAnimationFrame(resolve));
+  assert.equal(workspace.scrollTop, 75, 'late preview must not scroll the restored Moves/DCC view');
+  x.get('btnDeepAnalysis').click(); x.el('start').click(); x.emit(x.snapshot());
+  x.el('lines').querySelector('button').click();
+  workspace.scrollTop = 420; x.game.move('e4'); x.change({ fen: x.game.fen() });
+  await new Promise(resolve => x.w.requestAnimationFrame(resolve));
+  assert.equal(workspace.scrollTop, 420, 'late preview must not scroll a new pinned position');
+  x.ui.close();
 });

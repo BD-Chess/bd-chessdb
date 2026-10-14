@@ -74,7 +74,7 @@
       badge.append(main, note); comparison.append(badge);
       const nodes = { badge, main, title, move, score, note }; cards.set(source, nodes); return nodes;
     }
-    let lastKnown = null;
+    let lastKnown = null, batchDepth = 0, paintPending = false;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
       comparison.hidden = !visible;
@@ -138,6 +138,7 @@
       }
     }
     function render() {
+      if (batchDepth) { paintPending = true; return; }
       if (!el) return;
       const fen = game.fen();
       let entry = scores.get(fen);
@@ -230,7 +231,15 @@
       if(['SF','BER','RLE','LC0'].includes(scores.get(fen)?.source))scores.delete(fen);
       lastKnown=null;if(game.fen()===fen)render();
     }
-    const api = { render, update, updateSource, updateDCC, markComparisonPending, clearLocalSources,
+    function batch(update) {
+      batchDepth++;
+      try { return update(); }
+      finally {
+        batchDepth--;
+        if (!batchDepth && paintPending) { paintPending = false; render(); }
+      }
+    }
+    const api = { render, batch, update, updateSource, updateDCC, markComparisonPending, clearLocalSources,
       clearDCC(fen){dccChoices.delete(fen);if(dccProgress&&game.fen()===fen){dccProgress.textContent='';dccProgress.title='No measured evidence available';}if(game.fen()===fen)render();},
       clearBoard(fen){scores.delete(fen);lastKnown=null;if(game.fen()===fen)render();} };
     instances.set(game, api);

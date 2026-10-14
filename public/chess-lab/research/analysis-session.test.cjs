@@ -72,7 +72,7 @@ function preparingAdapters() {
       const call = { id, config, ready, search, options: null, prepareCalled: false, destroyed: false,
         complete(value) { search.resolve(value); } };
       calls.push(call);
-      return { prepare() { call.prepareCalled = true; return ready.promise; },
+      return { prepare(options) { call.prepareCalled = true; call.prepareSignal=options?.signal; return ready.promise; },
         analyze(options) { call.options = options; return search.promise; },
         destroy() { call.destroyed = true; destroyed.push(id); } };
     }
@@ -182,6 +182,110 @@ test('All Engines preparation failure leaves the other three concurrent searches
   for(const call of fake.calls.filter((_,i)=>i!==1))call.complete(result(START,'e2e4'));
   const done=await run;assert.equal(done.status,'partial');assert.equal(done.children.lc0.status,'failed');
   assert.equal(done.children.berserk.status,'complete');session.destroy();
+});
+
+test('a silent preparation times out without blocking healthy All Engines peers or accepting late readiness',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'all'});
+  const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory,preparationTimeoutMs:15});
+  t.after(()=>session.destroy());
+  const run=session.analyze({fen:START,movetime:100,multiPV:1});await tick();
+  for(const call of fake.calls.filter(c=>c.id!=='lc0'))call.ready.resolve();
+  await new Promise(resolve=>setTimeout(resolve,30));
+  const silent=fake.calls.find(c=>c.id==='lc0');
+  assert.equal(silent.destroyed,true,'the unresponsive loader is terminated');
+  assert.equal(silent.prepareSignal.aborted,true,'only the timed-out preparation is cancelled');
+  const healthy=fake.calls.filter(c=>c.id!=='lc0');
+  assert(healthy.every(c=>!c.prepareSignal.aborted));
+  assert(healthy.every(c=>c.options),'ready peers start after the failed preparation settles');
+  silent.ready.resolve();await tick();assert.equal(silent.options,null,'late readiness cannot launch a timed-out child');
+  for(const call of healthy)call.complete(result(START,'e2e4'));
+  const done=await run;assert.equal(done.status,'partial');assert.equal(done.children.lc0.status,'failed');
+  assert.match(done.children.lc0.error,/preparation.*timed out/i);assert.equal(session.isRunning(),false);
+});
+
+test('a timed child watchdog keeps its latest result, settles the group and permits a clean restart',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'all'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,timeGraceMs:5,teardownGraceMs:0});
+  t.after(()=>session.destroy());
+  const seen=[],run=session.analyze({fen:START,movetime:15,multiPV:1,onInfo:(_,value)=>seen.push(value)});
+  await tick();
+  const silent=fake.calls.find(c=>c.id==='reckless');
+  silent.options.onSearchStarted?.({});silent.info(result(START,'e2e4',{depth:9}));
+  for(const call of fake.calls.filter(c=>c!==silent))call.complete(result(START,'d2d4'));
+  await new Promise(resolve=>setTimeout(resolve,35));
+  assert.equal(session.isRunning(),false,'a silent timed worker cannot leave Deep running forever');
+  const done=await run;assert.equal(done.status,'partial');assert.equal(done.children.reckless.status,'stopped');
+  assert.equal(done.children.reckless.stopReason,'time-watchdog');assert.equal(done.children.reckless.forcedStop,true);
+  assert.equal(done.children.reckless.lines[0].depth,9);assert.equal(done.children.reckless.bestMove,'e2e4');
+  assert.equal(done.children.reckless.watchdog.requestedMs,15);
+  const next=session.analyze({fen:BLACK,movetime:100});await tick();const count=seen.length;
+  silent.info(result(START,'d2d4'));silent.complete(result(START,'d2d4'));await tick();assert.equal(seen.length,count);
+  for(const call of fake.calls.slice(4))call.complete(result(BLACK,'e7e5'));
+  assert.equal((await next).status,'complete');assert.equal(session.isRunning(),false);
+});
+
+test('the timed child watchdog begins at actual search start, not while the adapter initializes',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'reckless'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,timeGraceMs:5,preparationTimeoutMs:100});
+  t.after(()=>session.destroy());
+  const run=session.analyze({fen:START,movetime:10});await tick();
+  await new Promise(resolve=>setTimeout(resolve,25));assert.equal(session.isRunning(),true);
+  fake.calls[0].options.onSearchStarted?.({});
+  await new Promise(resolve=>setTimeout(resolve,25));assert.equal(session.isRunning(),false);
+  const done=await run;assert.equal(done.children.reckless.stopReason,'time-watchdog');
+  assert.deepEqual(plain(done.children.reckless.lines),[],'no PV is invented for a silent worker');
+});
+
+test('silent search initialization settles as a preparation failure without inventing a result',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'lc0'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,preparationTimeoutMs:15});
+  t.after(()=>session.destroy());
+  const run=session.analyze({fen:START,movetime:100});await tick();
+  await new Promise(resolve=>setTimeout(resolve,30));assert.equal(session.isRunning(),false);
+  const done=await run;assert.equal(done.children.lc0.status,'failed');
+  assert.match(done.children.lc0.error,/preparation.*timed out/i);assert.deepEqual(plain(done.children.lc0.lines),[]);
+  assert.equal(fake.calls[0].options.signal.aborted,true);
+});
+
+test('watchdogs clear after completion and leave an explicitly infinite search running',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'reckless'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,timeGraceMs:5,preparationTimeoutMs:15});
+  t.after(()=>session.destroy());
+  const run=session.analyze({fen:START,movetime:10});await tick();
+  fake.calls[0].options.onSearchStarted({});fake.calls[0].complete(result(START,'e2e4'));await run;
+  await new Promise(resolve=>setTimeout(resolve,30));assert.deepEqual(fake.destroyed,['reckless']);
+  const infinite=session.analyze({fen:START,infinite:true});await tick();fake.calls[1].options.onSearchStarted({});
+  await new Promise(resolve=>setTimeout(resolve,30));assert.equal(session.isRunning(),true);
+  session.stop();assert.equal((await infinite).status,'stopped');assert.equal(fake.calls[1].options.signal.aborted,true);
+});
+
+test('Time Off groups give only LCZero an explicit timed fallback while preserving every other depth limit',async t=>{
+  for(const mobile of [false,true])for(const mode of ['all','sf-lc0'])for(const saved of [undefined,30000,30.5]){
+    const {Session}=fixture({mobile});Session.configure({analysisMode:mode,...(saved?{analysisTimeMs:saved}:{})});
+    const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory});t.after(()=>session.destroy());
+    const run=session.analyze({fen:BLACK,history:HISTORY,depth:22,multiPV:1});await tick();
+    if(Session.capabilities().sequential){fake.calls[0].complete(result(BLACK,'e7e5'));await tick();}
+    const expected=Number.isSafeInteger(saved)?saved:mobile?5000:15000,neural=fake.calls.find(c=>c.id==='lc0');
+    assert.equal(neural.options.movetime,expected);assert.equal(neural.options.depth,null);assert.equal(neural.options.nodes,null);
+    assert.deepEqual(plain(neural.options.history),HISTORY);
+    for(const call of fake.calls.filter(c=>c.id!=='lc0')){assert.equal(call.options.depth,22);assert.equal(call.options.movetime,null);}
+    for(const call of fake.calls)call.complete(result(BLACK,'e7e5'));
+    const done=await run;assert.equal(done.status,'complete');assert.equal(done.requestedBudget.depth,22);
+    assert.equal(done.children.lc0.requestedBudget.movetime,null);assert.equal(done.children.lc0.effectiveBudget.movetime,expected);
+    assert.equal(done.children.lc0.limits.depth,null);assert.equal(done.children.lc0.limits.movetime,expected);
+    assert.match(done.children.lc0.budgetNote,new RegExp('LCZero uses '+expected/1000+' s'));
+    assert.equal(done.children['sf-lite'].effectiveBudget.depth,22);assert.equal(done.children['sf-lite'].budgetNote,null);
+  }
+});
+
+test('LCZero fallback watchdog uses its own timed budget inside a depth-limited group',async t=>{
+  const {Session}=fixture();Session.configure({analysisMode:'all',analysisTimeMs:15});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,timeGraceMs:5});t.after(()=>session.destroy());
+  const run=session.analyze({fen:START,depth:22});await tick();
+  const neural=fake.calls.find(c=>c.id==='lc0');neural.options.onSearchStarted({});
+  for(const call of fake.calls.filter(c=>c!==neural))call.complete(result(START,'e2e4'));
+  await new Promise(resolve=>setTimeout(resolve,35));assert.equal(session.isRunning(),false);
+  const done=await run;assert.equal(done.children.lc0.watchdog.requestedMs,15);assert.equal(done.children.lc0.stopReason,'time-watchdog');
 });
 
 test('default is CDB-first, settings do not launch workers, and Full/Berserk remain lazy until analysis', async () => {

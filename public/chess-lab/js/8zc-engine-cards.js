@@ -62,22 +62,29 @@
       else if(batch?.automatic)stopAll();
       changed();
     }
-    const live=job=>!job.cancelled&&!destroyed&&context().fen===job.fen&&JSON.stringify(context().positionHistory||null)===JSON.stringify(job.options.history||null)&&jobs.get(job.mode)===job;
-    function get(mode,fen=context().fen){
-      const value=results.get(key(fen,mode)),ctx=context();
+    const live=job=>{
+      if(job.cancelled||destroyed||jobs.get(job.mode)!==job)return false;
+      const ctx=context();
+      return ctx.fen===job.fen&&JSON.stringify(ctx.positionHistory||null)===JSON.stringify(job.options.history||null);
+    };
+    function get(mode,fen,current){
+      const ctx=current||context();if(fen==null)fen=ctx.fen;
+      const value=results.get(key(fen,mode));
       if(!value)return null;
       if(ctx.fen===fen&&JSON.stringify(value.positionHistory||null)!==JSON.stringify(ctx.positionHistory||null))return null;
       return value;
     }
     function state(role){
+      // One coherent context for this paint; obtaining history can be costly.
+      const ctx=context();
       const job=[...jobs.values()].find(x=>roleFor(x.mode)===role);
-      const mode=job?.mode||(role==='SF'?context().settings?.sfCardMode||'sf-lite':available().find(mode=>roleFor(mode)===role));
-      const result=get(mode),attempt=attempts.get(key(context().fen,mode)),variant=mode==='sf-full'?'Full':'Lite';
+      const mode=job?.mode||(role==='SF'?ctx.settings?.sfCardMode||'sf-lite':available().find(mode=>roleFor(mode)===role));
+      const result=get(mode,ctx.fen,ctx),attempt=attempts.get(key(ctx.fen,mode)),variant=mode==='sf-full'?'Full':'Lite';
       const seconds=value=>Number.isFinite(Number(value))?(Number(value)/1000).toFixed(1)+'s':null;
       const searched=seconds(result?.actualSearchMs??result?.searchElapsedMs),requested=seconds(result?.requestedTimeMs??result?.limits?.movetime);
       const reached=mode==='lc0'?(result?.visits??result?.nodes):result?.depth??result?.linesDepth??result?.lines?.[0]?.depth;
       const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),result.stopReason].filter(Boolean).join(' · '):null;
-      return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!context().canAnalyze||!available().includes(mode)),
+      return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!ctx.canAnalyze||!available().includes(mode)),
         title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':
           job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='local'?'Loading locally':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):
@@ -91,7 +98,7 @@
       if(reason.includes('watchdog')){attempts.set(key(job.fen,mode),reason);if(attempts.size>150)attempts.delete(attempts.keys().next().value);}
       jobs.delete(mode);const i=queue.indexOf(job);if(i>=0)queue.splice(i,1);
       if(job.snapshot){const value={...job.snapshot,stopped:true,status:'stopped',stopReason:reason,forcedStop:reason.includes('watchdog'),partial:true,actualSearchMs:Math.max(job.snapshot.actualSearchMs||0,now()-(job.searchStarted??now()))};results.set(key(job.fen,mode),value);
-        if(context().fen===job.fen&&JSON.stringify(context().positionHistory||null)===JSON.stringify(job.options.history||null))host.onResult?.(value,job.options);}
+        const ctx=context();if(ctx.fen===job.fen&&JSON.stringify(ctx.positionHistory||null)===JSON.stringify(job.options.history||null))host.onResult?.(value,job.options);}
       job.resolve(null);finishBatch();changed();pump();
     }
     function stopAll(reason='user-stop'){cancelFollow();releasePrepared();draining=true;batch=null;for(const mode of [...jobs.keys()])stop(mode,reason);draining=false;changed();}

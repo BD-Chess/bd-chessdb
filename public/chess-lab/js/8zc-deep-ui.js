@@ -27,7 +27,9 @@
     const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
-    let manualStoppedFen = null, pendingLiveScroll = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
+    let manualStoppedFen = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
+    const lineViews = new Map();
+    let renderKey = null, clippingFrame = 0;
     const Chess = host.Chess || root.Chess;
     const session = root.ChessAnalysisSession;
     const configuredMode = () => session?.getSettings?.()?.analysisMode || 'sf-lite';
@@ -53,6 +55,7 @@
     });
     el('budget').addEventListener('change', () => {
       reflectTime();
+      root.ChessAnalysisControls?.refresh?.();
     });
     reflectTime();
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
@@ -71,8 +74,10 @@
       if (next.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
       root.ChessDeepEngine.validateFen(next.fen, Chess); pinned = next;
       manualStoppedFen = null; paintAt = 0; paintStatus = '';
-      if (!options.preserveViewport) panel.style.minHeight = '';
+      if (options.preserveViewport) retainViewportHeight();
+      else panel.style.minHeight = '';
       el('fen').textContent = pinned.fen; el('roots').value = ''; result = null; preview = null;
+      lineViews.clear(); renderKey = null;
       el('lines').replaceChildren(); el('preview').hidden = true; el('export').disabled = true;
       el('status').textContent = 'Position pinned. Choose your analysis settings.';
     }
@@ -155,7 +160,7 @@
       workspace.scrollTop=Math.max(0,workspace.scrollTop+area.getBoundingClientRect().top-workspace.getBoundingClientRect().top-workspace.clientTop-padding);
       deepScroll=workspace.scrollTop;
     }
-    const previewObserver=typeof root.ResizeObserver==='function'?new root.ResizeObserver(()=>requestAnimationFrame(resizePreview)):null;
+    const previewObserver=typeof root.ResizeObserver==='function'?new root.ResizeObserver(()=>{ requestAnimationFrame(resizePreview); checkClipping(); }):null;
     previewObserver?.observe(workspace);
     previewObserver?.observe(panel);
     function showPreview(line, index, key, snapshot) {
@@ -176,8 +181,25 @@
         if (!previewBoard) previewBoard = root.Chessboard(el('preview-board'), { position: chosen.fen, draggable: false,
           pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
         else previewBoard.position(chosen.fen, false);
-        requestAnimationFrame(() => { resizePreview(); revealPreview(); });
+        const shownPreview = preview;
+        requestAnimationFrame(() => {
+          if (panel.hidden || el('preview').hidden || preview !== shownPreview || root.getComputedStyle(panel).display === 'none') return;
+          resizePreview(); revealPreview();
+        });
       } else el('preview-board').textContent = chosen.fen;
+    }
+    const setText = (node, value) => { if (node.textContent !== value) node.textContent = value; };
+    function retainViewportHeight() {
+      // Clearing old results must not clamp a reader's scroll before new PVs arrive.
+      panel.style.minHeight = Math.max(panel.offsetHeight, parseFloat(panel.style.minHeight) || 0) + 'px';
+    }
+    function checkClipping() {
+      if (clippingFrame) return;
+      clippingFrame = root.requestAnimationFrame(() => {
+        clippingFrame = 0;
+        for (const variation of el('lines').querySelectorAll('.deep-pv'))
+          variation.classList.toggle('is-clipped', variation.scrollHeight > variation.clientHeight + 1);
+      });
     }
     function render(current, force, onUpdate) {
       result = current;
@@ -185,74 +207,91 @@
       const now = Date.now();
       if (!force && now - paintAt < 100 && signature === paintStatus) return;
       paintAt = now; paintStatus = signature;
+      const scroll = workspace.scrollTop;
       onUpdate?.(current);
-      const scroll = el('lines').scrollTop;
-      const fragment = doc.createDocumentFragment();
       const children = current.children && Object.keys(current.children).length ? Object.entries(current.children) : null;
       const mode = current.mode || configuredMode();
       const entries = children || [[mode === 'auto' ? 'sf-lite' : mode, current]];
       const showCards = !!children && mode !== 'sf-lite' && mode !== 'auto';
+      const nextKey = JSON.stringify([current.fen, showCards, entries.map(([key]) => key)]);
+      if (nextKey !== renderKey) {
+        lineViews.clear(); el('lines').replaceChildren(); renderKey = nextKey;
+      }
       let displayedLines = 0;
-      function appendLines(target, child, key) {
-      for (const line of child.lines || []) {
-        displayedLines++;
-        const row = doc.createElement('article'); row.className = 'deep-line';
-        const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
-        const score = doc.createElement('strong'); score.textContent = scoreLabel(line.score,current.fen);
-        if (line.score?.type === 'q') score.title = root.ChessEvalBar?.measure(current.fen,line.score,null,'LC Zero').description || 'Native neural Q unavailable';
-        const depth = doc.createElement('span'); depth.textContent = key==='cdb'?'Online data':key==='lc0'?'Visits ' + (line.visits ?? child.visits ?? child.nodes ?? '—'):'Depth ' + (line.depth ?? '—');
-        meta.append(score, depth); row.appendChild(meta);
-        const variation = doc.createElement('div'); variation.className = 'deep-pv';
-        const lineMoves = movesFor(current.fen, line.pv);
-        variation.title = lineMoves.map(move => move.label).join(' ');
-        lineMoves.forEach((move, index) => {
-          const button = doc.createElement('button'); button.type = 'button'; button.textContent = move.label;
-          button.title = 'Preview ' + sourceName(key, child) + ' after ' + move.san;
-          button.onclick = () => showPreview(line, index, key, child); variation.appendChild(button);
-        });
-        row.appendChild(variation); target.appendChild(row);
-      }
-      }
-      if (showCards) {
-        for (const [key, child] of entries) {
-          const card = doc.createElement('section'); card.className = 'deep-engine-card';
-          card.setAttribute('aria-label', sourceName(key, child) + ' analysis');
-          const heading = doc.createElement('h3'); heading.textContent = sourceName(key, child);
-          const progress = doc.createElement('p'); progress.className = 'deep-engine-progress';
+      for (const [key, child] of entries) {
+        let view = lineViews.get(key);
+        const name = sourceName(key, child);
+        if (!view) {
+          const target = showCards ? doc.createElement('section') : el('lines');
+          view = { target, rows: [] }; lineViews.set(key, view);
+          if (showCards) {
+            target.className = 'deep-engine-card';
+            view.heading = doc.createElement('h3');
+            view.progress = doc.createElement('p'); view.progress.className = 'deep-engine-progress';
+            target.append(view.heading, view.progress); el('lines').appendChild(target);
+          }
+        }
+        if (showCards) {
+          view.target.setAttribute('aria-label', name + ' analysis'); setText(view.heading, name);
           const nodes = key === 'lc0' ? ((child.visits ?? child.nodes ?? 0).toLocaleString() + ' visits') : Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
-          const seconds = Number.isFinite(child.elapsedMs) ? (child.elapsedMs / 1000).toFixed(1) + ' s' : 'time pending';
+          const elapsed = child.actualSearchMs ?? child.searchElapsedMs ?? child.elapsedMs;
+          const seconds = Number.isFinite(elapsed) ? (elapsed / 1000).toFixed(1) + ' s' : 'time pending';
           const threads = Number(child.threadsEffective) || Number(child.engine?.threads) || 1;
           const nps = Number.isFinite(child.nps) ? ' · ' + child.nps.toLocaleString() + ' nps' : '';
           const coverage = key === 'lc0' ? ' · visited root candidates' : child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
-          progress.textContent = (child.status || 'loading') + (key==='lc0'?' · visits ' + (child.visits ?? child.nodes ?? '—'):' · depth ' + (child.depth ?? child.linesDepth ?? '—')) +
+          setText(view.progress, (child.status || 'loading') + (key==='lc0'?' · visits ' + (child.visits ?? child.nodes ?? '—'):' · depth ' + (child.depth ?? child.linesDepth ?? '—')) +
             ' · ' + nodes + nps + ' · ' + seconds + ' · ' + threads + ' search thread' + (threads === 1 ? '' : 's') +
-            coverage + (child.downloadProgress?.loaded?' · downloaded '+(child.downloadProgress.loaded/1048576).toFixed(1)+' MiB':'') + (child.error ? ' · ' + (child.error.message || child.error) : '');
-          card.append(heading, progress); appendLines(card, child, key); fragment.appendChild(card);
+            coverage + (child.downloadProgress?.loaded?' · downloaded '+(child.downloadProgress.loaded/1048576).toFixed(1)+' MiB':'') + (child.error ? ' · ' + (child.error.message || child.error) : ''));
         }
-      } else appendLines(fragment, entries[0][1], entries[0][0]);
-      el('lines').replaceChildren(fragment); el('lines').scrollTop = scroll;
-      root.requestAnimationFrame(() => {
-        for (const variation of el('lines').querySelectorAll('.deep-pv'))
-          variation.classList.toggle('is-clipped', variation.scrollHeight > variation.clientHeight + 1);
-        if (pendingLiveScroll !== null && !panel.hidden && current.fen === pinned?.fen) {
-          workspace.scrollTop = pendingLiveScroll;
-          if (force || current.completeMultiPV) {
-            deepScroll = pendingLiveScroll;
-            pendingLiveScroll = null;
+        const lines = child.lines || [];
+        while (view.rows.length > lines.length) view.rows.pop().row.remove();
+        lines.forEach((line, rank) => {
+          displayedLines++;
+          let item = view.rows[rank];
+          if (!item) {
+            const row = doc.createElement('article'); row.className = 'deep-line';
+            const meta = doc.createElement('div'); meta.className = 'deep-line-meta';
+            const score = doc.createElement('strong'), depth = doc.createElement('span');
+            const variation = doc.createElement('div'); variation.className = 'deep-pv';
+            meta.append(score, depth); row.append(meta, variation); view.target.appendChild(row);
+            item = { row, score, depth, variation, buttons: [] }; view.rows.push(item);
           }
-        }
-      });
+          item.line = line; item.child = child;
+          setText(item.score, scoreLabel(line.score, current.fen));
+          item.score.title = line.score?.type === 'q' ? root.ChessEvalBar?.measure(current.fen,line.score,null,'LC Zero').description || 'Native neural Q unavailable' : '';
+          setText(item.depth, key==='cdb'?'Online data':key==='lc0'?'Visits ' + (line.visits ?? child.visits ?? child.nodes ?? '—'):'Depth ' + (line.depth ?? '—'));
+          const pvKey = JSON.stringify([current.fen, line.pv, name]);
+          if (item.pvKey !== pvKey) {
+            item.pvKey = pvKey;
+            const moves = movesFor(current.fen, line.pv);
+            item.variation.title = moves.map(move => move.label).join(' ');
+            while (item.buttons.length > moves.length) item.buttons.pop().remove();
+            moves.forEach((move, index) => {
+              let button = item.buttons[index];
+              if (!button) {
+                button = doc.createElement('button'); button.type = 'button';
+                button.onclick = () => showPreview(item.line, index, key, item.child);
+                item.buttons.push(button); item.variation.appendChild(button);
+              }
+              setText(button, move.label); button.title = 'Preview ' + name + ' after ' + move.san;
+            });
+            checkClipping();
+          }
+        });
+      }
       el('export').disabled = !displayedLines;
       if (showCards) {
         const statuses = entries.map(([key, child]) => `${sourceName(key, child)}: ${child.status || 'loading'}`);
-        el('status').textContent = statuses.join(' · ') + (entries.length>1 ? ' · Independent evaluations; no combined score.' : '');
-        return;
+        setText(el('status'), statuses.join(' · ') + (entries.length>1 ? ' · Independent evaluations; no combined score.' : ''));
+      } else {
+        const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
+        const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
+        setText(el('status'), nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
+          (engine?.isRunning() ? 'Analyzing current position…' : current.stopped && manualStoppedFen === current.fen
+            ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.'));
       }
-      const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
-      const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
-      el('status').textContent = nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
-        (engine?.isRunning() ? 'Analyzing current position…' : current.stopped && manualStoppedFen === current.fen
-          ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.');
+      // The workspace is the scroller. The lines container itself never scrolls.
+      if (workspace.scrollTop !== scroll) workspace.scrollTop = scroll;
     }
     function rootMoves() {
       const value = el('roots').value.trim(); if (!value) return [];
@@ -271,12 +310,12 @@
       // Keep room below the toolbar even while the engine is loading or has
       // only a short PV. Reveal the result area inside the workspace, never
       // by moving the page itself.
-      panel.style.minHeight = Math.max(0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
+      panel.style.minHeight = Math.max(parseFloat(panel.style.minHeight) || 0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
       const target = Math.max(0, workspace.scrollTop + actions.getBoundingClientRect().top -
         workspace.getBoundingClientRect().top - workspace.clientTop - topPadding);
       deepScroll = target;
       if (typeof workspace.scrollTo === 'function') {
-        try { workspace.scrollTo({ top: target, behavior: 'smooth' }); return; }
+        try { workspace.scrollTo({ top: target, behavior: 'instant' }); return; }
         catch (_) { /* Older embedded browsers: fall through to scrollTop. */ }
       }
       workspace.scrollTop = target;
@@ -310,6 +349,7 @@
           configuredMode() === 'berserk' ? 'Loading Berserk on demand…' :
           configuredMode() === 'reckless' ? 'Loading Reckless on demand…' :
           configuredMode() === 'lc0' ? 'Loading LCZero network on demand…' : 'Loading Stockfish 18 Lite (~7 MB on first use)…';
+        retainViewportHeight();
         if (options.reveal !== false) revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
         const pending = engine.analyze(opts); notifyState();
@@ -381,14 +421,10 @@
       liveUnsubscribe = host.onChange(context => {
         if (panel.hidden || !context?.fen || context.assistanceLocked || positionKey(context) === positionKey(pinned)) return;
         const keepScroll = workspace.scrollTop;
-        const keepMinHeight = panel.style.minHeight;
         ++run; engine?.stop(); manualStoppedFen = null;
         try {
-          pendingLiveScroll = keepScroll;
           setPinned(context, { preserveViewport: true });
-          if (keepMinHeight) panel.style.minHeight = keepMinHeight;
           workspace.scrollTop = keepScroll;
-          root.requestAnimationFrame(() => { if (pendingLiveScroll !== null && !panel.hidden) workspace.scrollTop = pendingLiveScroll; });
           if (followActive) start({ automatic: true, reveal: false });
           else {
             el('start').disabled = !pinned; el('stop').disabled = true;
@@ -426,7 +462,7 @@
     }
     return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
       stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
-      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();root.cancelAnimationFrame(clippingFrame);previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

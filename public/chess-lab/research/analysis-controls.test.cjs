@@ -84,6 +84,26 @@ test('Time always overrides depth; Time Off restores depth and Until I stop igno
   x.el('time').value='infinite';x.change(x.el('time'));x.ui.start();assert.equal(x.getOptions().infinite,true);assert.equal(x.getOptions().depth,undefined);
 });
 
+test('neural groups explain the LCZero Time Off fallback before starting and preserve the depth selection',t=>{
+  const x=setup(t),{w,el,change}=x;
+  el('budget').value='depth:22';change(el('budget'));
+  for(const mode of ['all','sf-lc0']){
+    el('mode').value=mode;change(el('mode'));
+    assert.match(el('budget-note').textContent,/LCZero uses 15 s; the selected depth applies to the other engines/);
+    assert.equal(el('budget').value,'depth:22');assert.equal(el('budget').disabled,false);
+  }
+  Object.defineProperty(w,'innerWidth',{configurable:true,value:390});w.ChessAnalysisControls.refresh();
+  assert.match(el('budget-note').textContent,/LCZero uses 5 s/);
+  w.ChessAnalysisSession.configure({analysisTimeMs:30.5});assert.match(el('budget-note').textContent,/LCZero uses 5 s/);
+  w.ChessAnalysisSession.configure({analysisTimeMs:30000});assert.match(el('budget-note').textContent,/LCZero uses 30 s/);
+  el('time').value='10000';change(el('time'));assert.doesNotMatch(el('budget-note').textContent,/LCZero uses/);
+  el('time').value='infinite';change(el('time'));assert.doesNotMatch(el('budget-note').textContent,/LCZero uses/);
+  el('time').value='off';change(el('time'));el('budget').value='infinite';change(el('budget'));
+  assert.doesNotMatch(el('budget-note').textContent,/LCZero uses/);
+  el('budget').value='depth:22';change(el('budget'));assert.match(el('budget-note').textContent,/LCZero uses 30 s/);
+  assert.equal(x.analyses(),0);
+});
+
 test('LCZero Deep renders native Q with the pinned FEN and saves the neural provenance',t=>{
   const x=setup(t);x.w.ChessEvalBar={measure(fen,score){assert.equal(fen,new x.w.Chess().fen());assert.equal(score.type,'q');return {label:'Q +0.12',description:'Native neural evaluation'};}};
   x.el('mode').value='lc0';x.change(x.el('mode'));x.ui.start();

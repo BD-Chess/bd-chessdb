@@ -232,3 +232,30 @@ test('native info paints keep the card and inner touch target connected, with on
     selected=false;view.render();assert.equal(card.classList.contains('is-linked'),false);
   }finally{global.document=previous;dom.window.close();}
 });
+
+test('a grouped update paints every independent source once, including nested batches and thrown callbacks',()=>{
+  const {JSDOM}=require('jsdom'),dom=new JSDOM('<body><div id="positionEval"></div><span id="positionEvalLabel"></span><div><div id="allEvalBadges"></div></div></body>');
+  const previous=global.document,previousRegistry=global.ChessEngineRegistry;
+  global.document=dom.window.document;global.ChessEngineRegistry=require('../js/8zc-engine-registry.js');
+  try{
+    const g=new Chess(),fen=g.fen();let controlReads=0;
+    const view=E.create({game:g,settings:{analysisSource:'sf-lite'},isVisible:()=>true,getBadgeControl:()=>{controlReads++;return {};}});
+    view.batch(()=>{
+      view.updateSource(fen,{type:'cp',white:25},'SF',14,'e4',false,'deep');
+      view.batch(()=>{
+        view.updateSource(fen,{type:'cp',white:35},'BER',15,'d4');
+        view.updateSource(fen,{type:'cp',white:15},'RLE',16,'Nf3');
+        view.updateSource(fen,{type:'q',white:0.2},'LC0',null,'c4');
+      });
+      view.update(fen,{type:'cp',white:25},'SF');
+      assert.equal(controlReads,0,'intermediate source changes do not repaint all badges');
+    });
+    assert.equal(controlReads,6,'one final comparison render reads six independent badge controls');
+    for(const [role,move]of [['SF','e4'],['BER','d4'],['RLE','Nf3'],['LC0','c4']])
+      assert.equal(document.querySelector(`[data-eval-source="${role}"] .all-eval-move`).textContent,move);
+    assert.equal(document.getElementById('positionEvalLabel').textContent,'+0.25');
+    assert.throws(()=>view.batch(()=>{view.updateSource(fen,40,'BER',17,'d4');throw Error('consumer failed');}),/consumer failed/);
+    assert.equal(controlReads,12,'accepted updates still flush after a callback fails');
+    view.updateSource(fen,45,'BER',18,'d4');assert.equal(controlReads,18,'later unbatched updates remain immediate');
+  }finally{global.document=previous;global.ChessEngineRegistry=previousRegistry;dom.window.close();}
+});

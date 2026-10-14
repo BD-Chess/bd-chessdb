@@ -21,6 +21,74 @@ function fixture(options) {
   return { engine, workers };
 }
 const ready = () => new Promise(resolve => setImmediate(resolve));
+function countedChess() {
+  let moves = 0;
+  function CountingChess(fen) {
+    const game = new Chess(fen), move = game.move;
+    game.move = (...args) => { moves++; return move.apply(game, args); };
+    return game;
+  }
+  return { Chess: CountingChess, moves: () => moves };
+}
+test('repeated long PV telemetry validates once while retaining fresh counters and isolated callbacks', async () => {
+  const count = countedChess(), { engine, workers } = fixture({ Chess: count.Chess });
+  const pv = Array.from({ length: 10 }, () => ['g1f3', 'g8f6', 'f3g1', 'f6g8']).flat();
+  const seen = [];
+  const done = engine.analyze({ fen: START, infinite: true, multiPV: 1, onInfo(info, result) {
+    seen.push([info.pv.slice(), result.lines[0].pv.slice()]);
+    // Consumers must not be able to change the cached legal sequence.
+    info.pv[0] = 'a1a8'; result.lines[0].pv.length = 0;
+  } });
+  await ready();
+  for (let i = 1; i <= 400; i++) workers[0].emit(`info depth 20 nodes ${i} score cp ${i} pv ${pv.join(' ')}`);
+  workers[0].emit('bestmove g1f3 ponder g8f6');
+  const result = await done;
+  assert.equal(count.moves(), pv.length, 'unchanged PV does not replay on every telemetry update');
+  assert.equal(seen.length, 400);
+  for (const pair of seen) for (const actual of pair) assert.deepEqual(actual, pv);
+  assert.equal(result.nodes, 400); assert.equal(result.lines[0].score.root, 400);
+  assert.deepEqual(result.lines[0].pv, pv); assert.equal(result.bestMove, 'g1f3'); assert.equal(result.ponder, 'g8f6');
+});
+test('PV cache retains legal prefixes, distinguishes changed suffixes and is isolated per search FEN', async () => {
+  const count = countedChess(), { engine, workers } = fixture({ Chess: count.Chess });
+  await engine.prepare();
+  const seen = [], done = engine.analyze({ fen: START, infinite: true, multiPV: 1, onInfo: info => seen.push(info.pv) });
+  await ready(); const w = workers[0];
+  const emit = pv => w.emit('info depth 8 score cp 15 pv ' + pv);
+  emit('e2e4 e7e5 e4e6'); emit('e2e4 e7e5 e4e6');
+  assert.equal(count.moves(), 3, 'an illegal suffix is cached with its exact original sequence');
+  emit('e2e4 e7e5 g1f3');
+  assert.equal(count.moves(), 6, 'a changed suffix receives its own legality validation');
+  emit('e2e5 e7e5'); emit('e2e5 e7e5');
+  assert.equal(count.moves(), 7, 'an empty legal prefix is also cached');
+  assert.deepEqual(seen, [['e2e4', 'e7e5'], ['e2e4', 'e7e5'], ['e2e4', 'e7e5', 'g1f3'], [], []]);
+  w.emit('bestmove e2e4'); assert.deepEqual((await done).lines[0].pv, ['e2e4', 'e7e5', 'g1f3']);
+  const nextSeen = [], next = engine.analyze({ fen: BLACK, infinite: true, multiPV: 1, onInfo: info => nextSeen.push(info.pv) });
+  await ready(); emit('e2e4 e7e5 g1f3'); emit('e7e5 g1f3'); w.emit('bestmove e7e5');
+  const result = await next;
+  assert.deepEqual(nextSeen, [[], ['e7e5', 'g1f3']]); assert.equal(count.moves(), 10);
+  assert.equal(result.fen, BLACK); assert.equal(result.workerReused, true); assert.equal(workers.length, 1);
+  engine.destroy();
+});
+test('PV validation cache evicts old sequences during a long search', async () => {
+  const count = countedChess(), { engine, workers } = fixture({ Chess: count.Chess });
+  const positions = [], game = new Chess();
+  const uci = move => move.from + move.to + (move.promotion || '');
+  for (const first of game.moves({ verbose: true })) {
+    game.move(first);
+    for (const second of game.moves({ verbose: true })) positions.push([uci(first), uci(second)]);
+    game.undo();
+  }
+  const done = engine.analyze({ fen: START, infinite: true, multiPV: 1 }); await ready();
+  const emit = pv => workers[0].emit('info depth 2 score cp 10 pv ' + pv.join(' '));
+  for (const pv of positions) emit(pv);
+  const priorMoves = count.moves(); emit(positions.at(-1));
+  assert.equal(count.moves(), priorMoves, 'recently validated sequences stay reusable');
+  emit(positions[0]);
+  assert.equal(count.moves(), priorMoves + 2, 'old sequences are evicted instead of accumulating indefinitely');
+  workers[0].emit('bestmove ' + positions[0][0]);
+  assert.deepEqual((await done).lines[0].pv, positions[0]);
+});
 test('timed search watchdog terminates a silent worker and preserves the last complete legal MultiPV', async () => {
   const {engine,workers}=fixture({timeGraceMs:5});
   await engine.prepare();

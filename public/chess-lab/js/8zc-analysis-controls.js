@@ -107,7 +107,17 @@
     const dualTime=deepPanel?.querySelector('[data-deep="dual-time"]');if(dualTime)dualTime.hidden=true;
     const budgetLabel=deepPanel?.querySelector('[data-deep="budget-label"]');if(budgetLabel)budgetLabel.textContent='Search depth';
     const budgetNote=deepPanel?.querySelector('[data-deep="budget-note"]');
-    if(budgetNote){budgetNote.hidden=!group(deepMode);budgetNote.textContent='Each engine receives the selected time or depth limit. Achieved depths can differ; scores remain independent.'+(deepCaps.sequential?' Engines run in sequence, so total time is longer.':'')+(deepCaps.sequential&&members(deepMode).includes('lc0')?' Choose a finite Time so every engine gets a turn.':'');}
+    if(budgetNote){
+      const time=deepPanel?.querySelector('[data-deep="time"]')?.value||'off';
+      const neural=group(deepMode)&&members(deepMode).includes('lc0');
+      const neuralFallback=neural&&time==='off'&&budget?.value!=='infinite';
+      const saved=Number(settings.analysisTimeMs),neuralTime=Number.isSafeInteger(saved)&&saved>0?saved:deepCaps.mobile?5000:15000;
+      budgetNote.hidden=!group(deepMode);
+      budgetNote.textContent=(neuralFallback?'LCZero uses '+neuralTime/1000+' s; the selected depth applies to the other engines. Scores remain independent.':
+        'Each engine receives the selected time or depth limit. Achieved depths can differ; scores remain independent.')+
+        (deepCaps.sequential?' Engines run in sequence, so total time is longer.':'')+
+        (deepCaps.sequential&&neural&&(time==='infinite'||time==='off'&&budget?.value==='infinite')?' Choose a finite Time so every engine gets a turn.':'');
+    }
     for(const select of [topMode,modeControl()])for(const option of select?.options||[]){
       if(['reckless','lc0'].includes(option.value))option.disabled=!root.ChessEngineRegistry?.supported(option.value);
     }
