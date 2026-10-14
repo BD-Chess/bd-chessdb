@@ -2541,6 +2541,8 @@ function jumpTo(i){
   function publishEngineSnapshot(snapshot,search={}) {
     const fen=snapshot.fen;
     if(game.fen()!==fen||offlineEvidence||simRunning||replayRunning||playState.assistanceLocked)return;
+    // Publish the independent scores together, then repaint the six badges once.
+    positionEval.batch(() => {
     for(const [mode,child]of Object.entries(snapshot.children||{[snapshot.mode]:snapshot})){
       const moves=localMoves(fen,child),best=child.lines?.find(line=>(line.multipv||1)===1);
       if(!moves.length||!best)continue;
@@ -2585,13 +2587,18 @@ function jumpTo(i){
       }).catch(error=>{if(error.name!=='AbortError'&&current())positionEval.updateDCC(fen,null,name,'unavailable');})
         .finally(()=>{provider.destroy();if(localProvider===provider)localProvider=null;if(localController===controller)localController=null;});
     }
+    });
   }
   function beginDeepAnalysis(search = {}) {
     deepAnalysisFen=game.fen();sfWorking=false;syncSFAnalysisControl();
     return snapshot=>{engineCards?.ingest(snapshot);publishEngineSnapshot(snapshot,{...search,streaming:true});};
   }
   engineCards=window.ChessEngineCards.create({Chess,
-    getContext:()=>({...getLabContext(),canAnalyze:!document.hidden&&!offlineEvidence&&showEval&&!simRunning&&!replayRunning&&!playState.assistanceLocked}),
+    // Card status needs the current root/history, not a rebuilt PGN and cloned
+    // evidence for every badge. Read fresh history so repetition stays isolated.
+    getContext:()=>({fen:game.fen(),positionHistory:{startFen:game.header().FEN||new Chess().fen(),
+      moves:game.history({verbose:true}).map(normalizeUci)},settings,
+      canAnalyze:!document.hidden&&!offlineEvidence&&showEval&&!simRunning&&!replayRunning&&!playState.assistanceLocked}),
     beforeStart:()=>{deepUI?.stop?.();localController?.abort();localProvider?.destroy();sfWorking=false;},
     // Queued mobile cards start later than beforeStart. Retire any intervening
     // local DCC probe before allocating their heavy worker; keep DCC policy intact.

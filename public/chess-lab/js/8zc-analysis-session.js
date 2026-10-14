@@ -292,14 +292,16 @@
       const children = {};
       for (const child of job.children) children[child.id] = Object.assign({}, child.snapshot || {fen:job.fen,lines:[]}, {
         status:child.status, error:child.error || null, jobId:child.jobId, searchStartedMs:child.searchStartedMs ?? null,
-        requestedBudget:job.requestedBudget,limits:child.snapshot?.limits||job.options,
+        requestedBudget:job.requestedBudget,effectiveBudget:child.effectiveBudget||job.requestedBudget,
+        budgetNote:child.budgetNote||null,limits:child.snapshot?.limits||child.limits||job.options,
         finishedMs:child.finishedMs ?? null, threadsRequested:child.id === 'sf-full' ? job.requested : 1,
         threadsEffective:child.id === 'sf-full' ? job.caps.effectiveSFThreads : 1});
       const complete = job.children.every(c => c.status === 'complete');
       const anyFailed = job.children.some(c => c.status === 'failed');
+      const anyStopped = job.children.some(c => c.status === 'stopped');
       const base = job.children.length === 1 ? clone(Object.values(children)[0]) : {fen:job.fen,lines:[],limits:job.options};
       return Object.assign(base, {mode:job.mode,children,sessionId:job.id,generation:job.generation,
-        stopped:job.stopped, status:job.stopped ? 'stopped' : complete ? 'complete' : anyFailed ? 'partial' : 'running',
+        stopped:job.stopped, status:job.stopped ? 'stopped' : complete ? 'complete' : anyFailed || anyStopped ? 'partial' : 'running',
         dualComplete:job.children.length === 2 && complete, groupComplete:complete, partial:!complete,
         requestedBudget:job.requestedBudget, effectiveBudget:job.effectiveBudget,
         allocation:job.caps,elapsedMs:now()-job.started,startedAt:job.startedAt,
@@ -314,6 +316,49 @@
       if (active !== job || job.generation !== generation || job.stopped) return;
       if (!force && now()-job.lastEmit < 100) return;
       job.lastEmit = now(); try { job.onInfo?.({},snapshot(job)); } catch (_) {}
+    }
+    function watchChild(job,child,phase,work) {
+      // Optional adapters can be silent while loading or searching. A failed
+      // child must settle the readiness barrier without cancelling its peers.
+      return new Promise((resolve,reject)=>{
+        let timer,finished=false,searchStarted=false;
+        const signal=job.networkController.signal;
+        const controller=new AbortController();
+        const finish=(complete,value)=>{
+          if(finished)return;finished=true;clearTimeout(timer);
+          signal.removeEventListener('abort',cancel);
+          child.watchPhase=null;child.beginSearch=null;
+          complete(value);
+        };
+        const cancel=()=>{finish(reject,abortError());controller.abort();};
+        const expire=()=>{
+          if(searchStarted){
+            const elapsed=Math.max(0,now()-(child.searchStartedMs??now()));
+            const latest=child.snapshot||{fen:job.fen,lines:[]};
+            finish(resolve,{...latest,stopped:true,forcedStop:true,partial:true,stopReason:'time-watchdog',
+              bestMove:latest.bestMove||latest.lines?.[0]?.pv?.[0]||null,actualSearchMs:elapsed,searchElapsedMs:elapsed,
+              watchdog:{requestedMs:child.limits.movetime,graceMs:config.timeGraceMs??2500,expired:true}});
+          }else{
+            const error=new Error(child.id+' preparation timed out. Retry analysis.');error.name='PreparationTimeoutError';
+            finish(reject,error);
+          }
+          controller.abort();child.engine?.destroy();
+        };
+        child.watchPhase=phase;
+        child.beginSearch=phase==='search'?()=>{
+          if(finished)return false;
+          if(!searchStarted){
+            searchStarted=true;child.searchStartedMs=now();clearTimeout(timer);
+            if(child.limits.movetime!=null)timer=setTimeout(expire,child.limits.movetime+(config.timeGraceMs??2500));
+          }
+          return true;
+        }:null;
+        if(signal.aborted){cancel();return;}
+        signal.addEventListener('abort',cancel,{once:true});
+        timer=setTimeout(expire,config.preparationTimeoutMs??120000);
+        Promise.resolve().then(()=>{if(finished)throw abortError();return work(controller.signal);})
+          .then(value=>finish(resolve,value),error=>finish(reject,error));
+      });
     }
     function stop() {
       const job = active; if (!job) return;
@@ -333,7 +378,7 @@
       const mode = config.analysisMode || settings.analysisMode, localMode = mode === 'auto' ? 'sf-lite' : mode;
       if(localMode==='cdb'){owner=null;return Promise.reject(new Error('ChessDB uses the connected source service, not a local UCI worker.'));}
       const caps = capabilities(localMode), ids=participants(localMode);
-      if(caps.sequential&&ids.includes('lc0')&&validated.movetime==null){owner=null;
+      if(caps.sequential&&ids.includes('lc0')&&validated.infinite){owner=null;
         return Promise.reject(new Error('Choose a finite Time for this sequential neural comparison so every engine gets a turn.'));
       }
       const requestedBudget = {depth:validated.depth,nodes:validated.nodes,movetime:validated.movetime,infinite:validated.infinite};
@@ -354,6 +399,16 @@
         const preparations = [];
         for (const child of job.children) {
           try {
+            child.limits={...limits};
+            if(isGroup(localMode)&&child.id==='lc0'&&limits.movetime==null&&!limits.infinite){
+              // LCZero has no depth/node limiter. Match its single-engine
+              // timed default and expose the difference without changing peers.
+              const saved=Number(settings.analysisTimeMs);
+              const movetime=Number.isSafeInteger(saved)&&saved>0?saved:caps.mobile?5000:15000;
+              Object.assign(child.limits,{depth:null,nodes:null,movetime,deadline:null});
+              child.budgetNote='LCZero uses '+movetime/1000+' s; the selected '+(limits.depth!=null?'depth':'node limit')+' applies to the other engines.';
+            }
+            child.effectiveBudget={depth:child.limits.depth,nodes:child.limits.nodes,movetime:child.limits.movetime,infinite:child.limits.infinite};
             const browserMode=['reckless','lc0'].includes(child.id);
             const meta = browserMode?{id:child.id,name:child.id==='lc0'?'LCZero NN / browser PUCT':'Reckless'}:child.id === 'sf-lite' ? Deep.ENGINE : descriptors[child.id];
             if (!meta) throw new Error('Unsupported engine mode');
@@ -380,29 +435,29 @@
             }
             const factory=()=>cachedEngine(child.id,browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig));
             child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : memory&&!config.workerFactory?memory.handle(child.id,factory):factory();
-            const childOptions = Object.assign({},limits,{signal:undefined,onInfo:(_info,value) => {
-              if (active !== job || job.generation !== generation || job.stopped) return;
+            const childOptions = Object.assign({},child.limits,{signal:undefined,onSearchStarted:()=>child.beginSearch?.(),onInfo:(_info,value) => {
+              if (active !== job || job.generation !== generation || job.stopped || !child.beginSearch?.()) return;
               child.snapshot=value; child.status='searching';
-              if (child.searchStartedMs == null) child.searchStartedMs=now(); emit(job);
+              emit(job);
             }});
-            child.launch = () => child.engine.analyze(childOptions).then(value => {
+            child.launch = () => watchChild(job,child,'search',signal=>child.engine.analyze({...childOptions,signal})).then(value => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.snapshot=value; child.status=value.stopped?'stopped':'complete'; child.finishedMs=now(); child.engine.destroy(); settle(job);
             },error=>{
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.status='failed'; child.error=error.message;child.finishedMs=now();child.engine.destroy();settle(job);
             });
-            const prepareChild=()=>Promise.resolve().then(async () => {
+            const prepareChild=()=>watchChild(job,child,'prepare',async signal => {
               child.status='loading';emit(job,true);
               const drain = Math.max(0, cleanupUntil - now());
               if (drain) await new Promise(resolve => setTimeout(resolve, drain));
-              if (active !== job || job.generation !== generation || job.stopped) return;
+              if (active !== job || job.generation !== generation || job.stopped || child.watchPhase!=='prepare') return;
               if(child.id==='berserk'&&!config.adapterFactory){
-                if(!berserkNetwork)await ensureBerserkNetwork(job.networkController.signal);
-                if(active!==job||job.generation!==generation||job.stopped)return;
+                if(!berserkNetwork)await ensureBerserkNetwork(signal);
+                if(active!==job||job.generation!==generation||job.stopped||child.watchPhase!=='prepare')return;
                 if(!berserkNetwork)throw new Error('Berserk NNUE could not be loaded.');
               }
-              return child.engine.prepare?.({signal:job.networkController.signal,onProgress:progress=>{if(active===job&&!job.stopped){child.snapshot={fen:job.fen,lines:[],downloadProgress:progress};emit(job,true);}}});
+              return child.engine.prepare?.({signal,onProgress:progress=>{if(active===job&&!job.stopped&&child.watchPhase==='prepare'){child.snapshot={fen:job.fen,lines:[],downloadProgress:progress};emit(job,true);}}});
             }).then(() => {
               if (active !== job || job.generation !== generation || job.stopped) return;
               child.status='ready'; emit(job,true);
