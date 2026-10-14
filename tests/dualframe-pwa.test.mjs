@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {adjacentImageIndices,syncImageCache} from '../public/Nara/dualframe-lab/image-cache.mjs?v=3.0-r1';
 import {createHash} from 'node:crypto';
 const root=new URL('../public/Nara/dualframe-lab/',import.meta.url);
 const text=async path=>readFile(new URL(path,root),'utf8');
@@ -46,4 +47,17 @@ test('gateway secret fields are excluded from password-manager rewriting',()=>{
  const fields=[...html.matchAll(/<input[^>]*type="password"[^>]*>/gi)].map(match=>match[0]);
  assert.equal(fields.length,2);assert.ok(fields.every(field=>field.includes('data-bd-pm-skip="1"')));
  assert.match(passwordManager,/data-bd-pm-skip/);
+});
+
+test('the image window preloads exactly one previous and one next item',()=>{
+ assert.deepEqual(adjacentImageIndices(5,0),[4,1]);assert.deepEqual(adjacentImageIndices(5,2),[1,3]);
+ assert.deepEqual(adjacentImageIndices(2,0),[1]);assert.deepEqual(adjacentImageIndices(1,0),[]);
+ assert.deepEqual(adjacentImageIndices(0,0),[]);assert.deepEqual(adjacentImageIndices(3,-1),[]);
+});
+test('the decoded image cache retains overlap and releases images outside the two-item window',()=>{
+ class FakeImage{constructor(){this.src='';this.removed=false;}removeAttribute(name){if(name==='src'){this.src='';this.removed=true;}}decode(){return Promise.resolve();}}
+ const cache=new Map();syncImageCache(cache,['previous','next'],FakeImage);const previous=cache.get('previous'),next=cache.get('next');
+ syncImageCache(cache,['next','following'],FakeImage);
+ assert.equal(cache.size,2);assert.equal(cache.get('next'),next);assert.equal(cache.has('previous'),false);assert.equal(previous.removed,true);assert.ok(cache.has('following'));
+ syncImageCache(cache,[],FakeImage);assert.equal(cache.size,0);assert.equal(next.removed,true);
 });
