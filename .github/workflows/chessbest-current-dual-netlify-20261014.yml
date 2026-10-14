@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
-          git log -1 --format=%s | grep -Fx 'release: chessbest lab-current dual-netlify 20261014'
+          git log -1 --format=%s | grep -E '^release: chessbest lab-current dual-netlify 20261014($| )'
           grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
           test -n "$NETLIFY_AUTH_TOKEN" || { echo "NETLIFY_AUTH_TOKEN_MISSING: no deployment attempted"; exit 1; }
           python3 tools/build-chess-channel-pwas.py --check
