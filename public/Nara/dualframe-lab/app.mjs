@@ -1,6 +1,7 @@
 import * as API from './api-client.mjs?v=3.0-r4';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation } from './store.mjs?v=3.0-r4.2';
+import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate } from './store.mjs?v=3.0-r4.3';
+import { readSettings, writeSettings, DEFAULT_SETTINGS, DEFAULT_ENABLED_MODELS, orientationTransition, estimateHydrationSafety, readModelHealth, recordModelHealth } from './settings.mjs?v=3.0-r1';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
 import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=3.0-r4';
 import { MODELS, modelFor, supportsMode } from './models.mjs?v=3.0-r4';
@@ -27,13 +28,56 @@ Object.assign(dictionary.sl,{
 
 Object.assign(dictionary.en,{importCounterpart:'Import the other frame',counterpartNote:'Already have its portrait or landscape version? Pair it locally. Imported pixels are not a verified AI generation.',counterpartImported:'Other composition imported privately. Its declared relationship is not independently verified.',importedFrame:'Imported composition · relationship declared',SELECT_ORIGINAL:'Choose your original first.',WRONG_ORIENTATION:'Choose an image in the opposite orientation.',immersiveExit:'Double-tap to return'});
 Object.assign(dictionary.sl,{importCounterpart:'Uvozi drugo kompozicijo',counterpartNote:'Že imaš pokončno ali ležečo različico? Poveži jo lokalno. Uvoženi piksli niso dokaz preverjenega AI ustvarjanja.',counterpartImported:'Druga kompozicija je uvožena zasebno. Povezava z izvirnikom ni neodvisno preverjena.',importedFrame:'Uvožena kompozicija · povezava je navedena',SELECT_ORIGINAL:'Najprej izberi izvirnik.',WRONG_ORIENTATION:'Izberi sliko v nasprotni orientaciji.',immersiveExit:'Dvojni dotik za vrnitev'});
+
+Object.assign(dictionary.en,{
+ settingsTitle:'⚙ Settings',settingsCreate:'Create defaults',settingsDefaultNote:'Choose how new tasks begin. Saved images and jobs never change.',settingsModels:'Image models & API',
+ settingsGallery:'Gallery & viewer',settingsStorage:'Storage & Sync',settingsSave:'Save settings',settingsRememberLast:'Remember the last Create choices',modelsNote:'Enable models shown in Create and Compare. A configured key is not proof the model works.',
+ profile:'Quick recipe',profilePhoto:'Faithful photo',profileArt:'Creative composition',profileText:'Infographic / text',applyProfile:'Apply to defaults',
+ checkApiFree:'Check API access · no generation',apiTestNote:'Checks gateway, account session and configured keys only. No generation, provider spend or assertion of model availability.',
+ defaultCollection:'Starting collection',defaultViewerQuality:'Fullscreen quality',delayLabel:'Delay',delayOff:'Off',
+ delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 1–5 seconds before switching. Off changes immediately.',
+ metadataAuto:'On launch, sync image names and cloud catalog only, never image bytes.',storageSafeHelp:'Sync lists cloud images first. Load individual photos on demand. Local-only originals are never evicted.',
+ storageCheck:'Check local storage',clearMemory:'Clear image memory cache',
+ estimateUnavailable:'Browser storage estimate unavailable (not proof of free or full device storage).',
+ storageEstimate:'Approximate browser storage',storagePending:'Cloud-only images',storageLocal:'Local images',settingsAtLeastOne:'Keep at least one model enabled.',
+ configured:'Key configured; model generation not tested',missingKey:'Key not configured',apiAuthNeeded:'Unlock API to check your session.',apiSessionValid:'Account session valid · model generation not tested',apiSessionFailed:'Account session check failed.',
+ storageEstimatedLow:'Estimated browser space too low for this download. Originals were not deleted.',
+ cloudCatalog:'Cloud catalog synchronized. Photos load only when chosen.',cloudLoadOne:'Load on this device',cloudOnly:'Cloud-only · not downloaded',cloudLoading:'Downloading selected photo…',cloudDownloaded:'Selected photo downloaded.',remoteUnavailable:'Cloud download failed; existing images retained.',
+ STORAGE_QUOTA_EXCEEDED:'Browser storage quota exceeded. Your device may still have free disk space.',STORAGE_TRANSACTION_ABORTED:'Browser database transaction was aborted. Retry without deleting originals.',
+ STORAGE_ACCESS_DENIED:'Browser blocked private storage. Check browser/private-mode permissions.',STORAGE_CONNECTION_CLOSED:'Browser database connection closed. Reload and try again.',
+ STORAGE_RECORD_CONFLICT:'Browser database record conflict.',STORAGE_SCHEMA_ERROR:'Local image database schema error. Back up available images.',
+ STORAGE_IO_FAILURE:'Browser database I/O failed, not necessarily full.',STORAGE_OPERATION_FAILED:'Browser database operation failed; not confirmed as a quota issue.',
+ STORAGE_DB_BLOCKED:'Another tab is blocking the image database. Close other tabs and retry.'
+});
+Object.assign(dictionary.sl,{
+ settingsTitle:'⚙ Nastavitve',settingsCreate:'Privzeto ustvarjanje',settingsDefaultNote:'Izberi privzeto za nova opravila. Shranjene slike in opravila se ne spremenijo.',settingsModels:'Slikovni modeli in API',
+ settingsGallery:'Galerija in ogled',settingsStorage:'Shramba in Sync',settingsSave:'Shrani nastavitve',settingsRememberLast:'Zapomni si zadnje izbire v Create',modelsNote:'V Create in Compare prikaži samo vključene modele. Nastavljen ključ še ne dokazuje delovanja.',
+ profile:'Hiter recept',profilePhoto:'Fotografija · ohrani',profileArt:'Umetniška kompozicija',profileText:'Infografika / besedilo',applyProfile:'Uporabi kot privzeto',
+ checkApiFree:'Preveri API · brez generiranja',apiTestNote:'Preveri strežnik, sejo in prisotnost ključev. Brez ustvarjanja slik, stroškov ali neutemeljenih trditev o delovanju modela.',
+ defaultCollection:'Začetna zbirka',defaultViewerQuality:'Kakovost celozaslonskega ogleda',delayLabel:'Delay',delayOff:'Izključeno',
+ delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 1–5 sekund. Izključeno preklopi takoj.',
+ metadataAuto:'Ob zagonu uskladi samo katalog in imena, nikoli bajtov slik.',storageSafeHelp:'Sync najprej prikaže oblačne slike. Posamezno fotografijo naložiš po izbiri. Izvirnikov, ki so samo lokalni, nikoli ne brišemo samodejno.',
+ storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',
+ estimateUnavailable:'Brskalnik ne razkriva ocene svoje shrambe (to ni dokaz prostega/zasedenega prostora naprave).',
+ storageEstimate:'Ocenjena shramba brskalnika',storagePending:'Slike samo v oblaku',storageLocal:'Lokalne slike',settingsAtLeastOne:'Vsaj en model mora ostati vključen.',
+ configured:'Ključ nastavljen; generiranje ni preverjeno',missingKey:'Ključ ni nastavljen',apiAuthNeeded:'Za preverjanje seje najprej odkleni API.',apiSessionValid:'Seja velja · ustvarjanje z modelom ni preverjeno',apiSessionFailed:'Preverjanje seje ni uspelo.',
+ storageEstimatedLow:'Ocena preostalega prostora brskalnika je prenizka. Izvirniki niso bili izbrisani.',
+ cloudCatalog:'Katalog v oblaku usklajen. Slike se prenesejo šele po izbiri.',cloudLoadOne:'Prenesi na napravo',cloudOnly:'Samo v oblaku · še ni preneseno',cloudLoading:'Prenašam izbrano fotografijo …',cloudDownloaded:'Izbrana fotografija je prenesena.',remoteUnavailable:'Prenos iz oblaka ni uspel; shranjene slike so ohranjene.',
+ STORAGE_QUOTA_EXCEEDED:'Kvota brskalnikove shrambe je presežena. Na napravi je lahko še prost prostor.',STORAGE_TRANSACTION_ABORTED:'Zapis v brskalnikovo bazo je bil prekinjen. Poskusi ponovno brez brisanja izvirnikov.',
+ STORAGE_ACCESS_DENIED:'Brskalnik je blokiral zasebno shrambo. Preveri dovoljenja in zasebni način.',STORAGE_CONNECTION_CLOSED:'Povezava s shrambo se je zaprla. Osveži stran.',
+ STORAGE_RECORD_CONFLICT:'Konflikt zapisa v lokalni bazi.',STORAGE_SCHEMA_ERROR:'Napaka sheme lokalne baze. Izvozi dosegljive slike.',
+ STORAGE_IO_FAILURE:'Napaka vhoda/izhoda lokalne baze; ni nujno pomanjkanje prostora.',STORAGE_OPERATION_FAILED:'Napaka shranjevanja; ni potrjeno, da gre za kvoto.',
+ STORAGE_DB_BLOCKED:'Drug zavihek blokira shrambo. Zapri druge zavihke in ponovi.'
+});
 let language = new URLSearchParams(location.search).get('lang') === 'sl' ? 'sl' : 'en';
 let pwaRegistration=null,pwaInstallEvent=null,pwaBuildId=null,pwaReloadRequested=false,pwaStatusKey='pwaPreparing',pwaUpdateKey=null;
 try { if (!new URLSearchParams(location.search).has('lang') && localStorage.getItem('dualframe-language') === 'sl') language='sl'; } catch {}
 const t = key => dictionary[language][key] || key;
 let pairs=[],scores=[],selected=null,viewerPair=null,reviewState=null,originFocus=null,originScroll=0;
 let gateway=null,capabilities=null,referencePairs=[],referenceLoaded=false,viewerLoad=0,activeView='showcase';
-const controllers=new Map(),urlCache=new WeakMap(),urls=new Set();
+const modelKeys=MODELS.filter(m=>m.direct).map(m=>m.key);
+let prefs=readSettings(globalThis.localStorage,modelKeys),remotePairs=[],remoteJobs=[],galleryDisplayedFrame=null,galleryFrameTimer=null,viewerShownTarget=null,viewerShownPair=null,viewerFrameTimer=null;
+const controllers=new Map(),urls=new Set();let urlCache=new WeakMap();
 const selectedPair = () => pairs.find(p=>p.pair_id===selected);
 const comparePair = () => pairs.find(p=>p.pair_id===$('compare-pair').value);
 const safeName = name => name.replace(/[^a-zA-Z0-9_.-]/g,'_').slice(0,100) || 'image';
