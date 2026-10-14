@@ -60,14 +60,14 @@ test('scores are withheld until both sealed instruments bind the exact new Engli
  const h='a'.repeat(64),d={premise:13,character:13,structure:13,prose:13,world:8,moral_intellectual_depth:13,ending:13},g={score:86,dimensions:d,rubric_id:'GPT_LITERARY_7_100_V1',anchor_revision:'SHARED_ANCHOR_V1',sealed:true,en_content_sha256:h,output_sha256:'b'.repeat(64)},c={score:90,rubric_id:'PEC-6_V2',sealed:true,en_content_sha256:h,output_sha256:'c'.repeat(64),prompt_sha256:'d'.repeat(64)},a={status:'PAIRED',en_content_sha256:h,gpt:g,claude:c,combined:88};
  assert.equal(pairedAssessment({status:'PENDING'},h),null);assert.throws(()=>pairedAssessment({status:'PENDING',combined:88},h),/inherited/);assert.equal(pairedAssessment(a,h),88);assert.throws(()=>pairedAssessment(a,'e'.repeat(64)),/binding/);assert.throws(()=>pairedAssessment({...a,combined:90},h),/mean/);assert.throws(()=>pairedAssessment({...a,claude:{...c,sealed:false}},h),/unsealed/);assert.throws(()=>pairedAssessment({...a,gpt:{...g,score:87}},h),/arithmetic/);
 });
-test('manual Oct5 artwork is bound to the final EN/SL edition and preserves verified HD/4K variants',()=>{
+test('manual Oct5 artwork is bound to the final EN/SL edition and preserves verified landscape/portrait HD variants',()=>{
  const item=loadFormatEditions(root)[0],old=JSON.parse(fs.readFileSync(path.join(n,'daily/illustrations/2026-10-05.json'),'utf8')),art=JSON.parse(fs.readFileSync(path.join(n,item.paths.artwork),'utf8')),html=renderEditionPage(root,item);
  assert.equal(art.edition_id,item.binding.edition_id);assert.equal(art.en_content_sha256,item.en.content_sha256);assert.equal(art.sl_content_sha256,item.sl.content_sha256);
- assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(art),/prompt|drive_id/i);
+ assert.doesNotMatch(html,/data-nara-image-4k=/);assert.doesNotMatch(JSON.stringify(art),/prompt|drive_id/i);
  for(const im of art.images){
   const source=old.images.find(x=>x.scene===im.scene&&x.after_paragraph===im.source_after_paragraph);assert.ok(source);
-  for(const field of ['src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'])assert.equal(im[field],source[field]);
-  assert.ok(html.includes(im.src));assert.ok(html.includes(im.src_4k));
+  for(const field of ['src','width','height','sha256','alt_en','alt_sl'])assert.equal(im[field],source[field]);
+  assert.ok(html.includes(im.src));assert.ok(html.includes(im.variants.P_HD.src));
   const enPara=item.en.scenes[im.scene-1].paragraphs[im.after_paragraph_en-1],slPara=item.sl.scenes[im.scene-1].paragraphs[im.after_paragraph_sl-1];
   assert.equal(sha(enPara),im.paragraph_sha256_en);assert.equal(sha(slPara),im.paragraph_sha256_sl);assert.equal(im.after_paragraph_en,im.after_paragraph_sl);
   for(const [lang,para] of [['en',enPara],['sl',slPara]]){

@@ -52,7 +52,7 @@ export function responsiveFixture({portrait=true,auto=true,fullscreen=true,faile
   const image=new Node('img'),picture=new Node('picture'),figure=new Node('figure'),fallback=new Node('source'),error=new Node('span'),languageNode=new Node('div');
   languageNode.setAttribute('lang',lang);error.className='nara-inline-error';error.hidden=true;picture.append(fallback,image);figure.append(picture,error);
   image.languageNode=languageNode;image.picture=picture;image.figure=figure;image.alt=lang+' moment '+index;image.src='L'+index+'-HD.webp';image.currentSrc=image.src;image.height=1080;
-  image.dataset={naraStory:'story-one',naraMoment:'moment-0'+index,naraVariants:JSON.stringify(Object.fromEntries(['L_HD','P_HD','L_4K','P_4K'].map(slot=>[slot,{src:slot[0]+index+'-'+(slot.endsWith('4K')?'4K':'HD')+'.webp',width:slot[0]==='P'?1080:1920,height:slot[0]==='P'?1920:1080}])))};
+  image.dataset={naraStory:'story-one',naraMoment:'moment-0'+index,naraVariants:JSON.stringify(Object.fromEntries(['L_HD','P_HD'].map(slot=>[slot,{src:slot[0]+index+'-HD.webp',width:slot[0]==='P'?1080:1920,height:slot[0]==='P'?1920:1080}])))};
   images.push(image);
  }
  if(otherStory){const image=new Node('img');image.languageNode=images[0].languageNode;image.dataset={...images[0].dataset,naraStory:'story-two',naraVariants:images[0].dataset.naraVariants.replaceAll('1-','other-')};image.alt='other';images.push(image);}

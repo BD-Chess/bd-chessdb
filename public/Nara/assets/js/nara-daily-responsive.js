@@ -1,9 +1,9 @@
-/* Source-bound L/P artwork; only opted-in figures participate. Inline HD, viewer always 4K. */
+/* Source-bound L/P artwork; only opted-in figures participate. Inline and viewer both use HD. */
 (()=>{
  'use strict';
  const images=[...document.querySelectorAll('img[data-nara-responsive]')];
  if(!images.length)return;
- const slots=['L_HD','P_HD','L_4K','P_4K'],models=new Map(),inlineTokens=new WeakMap(),inlineLoads=new WeakMap();
+ const slots=['L_HD','P_HD'],models=new Map(),inlineTokens=new WeakMap(),inlineLoads=new WeakMap();
  for(const image of images){
   try{
    const variants=JSON.parse(image.dataset.naraVariants);
@@ -19,9 +19,9 @@
   window.screen.orientation.type.startsWith('portrait')?'P':'L':window.innerHeight>=window.innerWidth?'P':'L';
  const words=()=>document.documentElement.lang==='sl'?{
   open:'Odpri sliko',close:'Zapri sliko',previous:'Prejšnja slika',next:'Naslednja slika',clean:'Čist ogled',controls:'Prikaži gumbe',
-  loading:'Nalaganje slike 4K …',failed:'Slike 4K ni mogoče naložiti.',retry:'Poskusi znova',download:'Shrani prikazano sliko 4K',inline:'Slike ni mogoče naložiti.'
+  loading:'Nalaganje slike HD …',failed:'Slike HD ni mogoče naložiti.',retry:'Poskusi znova',download:'Shrani prikazano sliko HD',inline:'Slike ni mogoče naložiti.'
  }:{open:'Open illustration',close:'Close illustration',previous:'Previous image',next:'Next image',clean:'Immersive view',controls:'Show controls',
-  loading:'Loading 4K image …',failed:'The 4K image could not be loaded.',retry:'Retry',download:'Save displayed 4K image',inline:'The illustration could not be loaded.'};
+  loading:'Loading HD image …',failed:'The HD image could not be loaded.',retry:'Retry',download:'Save displayed HD image',inline:'The illustration could not be loaded.'};
  const visible=image=>!image.closest('[hidden]');
  const readingAnchor=()=>{
   if(viewer.open)return null;
@@ -99,7 +99,7 @@
  }
  function prepareWindow(){
   cacheEpoch++;
-  plan=[active,active-1,active+1].filter(i=>i>=0&&i<group.length).flatMap(i=>['L','P'].map(o=>group[i].variants[o+'_4K'].src));
+  plan=[active,active-1,active+1].filter(i=>i>=0&&i<group.length).flatMap(i=>['L','P'].map(o=>group[i].variants[o+'_HD'].src));
   const keep=new Set(plan);for(const src of cache.keys())if(!keep.has(src))release(src);cacheState();
  }
  async function prefetch(epoch){
@@ -127,7 +127,7 @@
  }
  async function showCurrent(force=false){
   if(!viewer.open||!group[active])return;
-  const model=group[active],o=orientation(),v=model.variants[o+'_4K'],key=model.moment+':'+o;
+  const model=group[active],o=orientation(),v=model.variants[o+'_HD'],key=model.moment+':'+o;
   if(!force&&viewer.dataset.requested===key)return;
   viewer.dataset.requested=key;const request=++token;prepareWindow();
   if(force)release(v.src);
@@ -140,7 +140,7 @@
   }
   large.replaceWith(image);large=image;large.alt=model.image.alt||'';large.width=v.width;large.height=v.height;large.hidden=false;
   viewer.setAttribute('aria-label',large.alt||words().open);message.hidden=true;
-  viewer.dataset.moment=model.moment;viewer.dataset.orientation=o;viewer.dataset.resolution='4k';viewer.dataset.loadState='ready';
+  viewer.dataset.moment=model.moment;viewer.dataset.orientation=o;viewer.dataset.resolution='hd';viewer.dataset.loadState='ready';
   download.href=v.src;download.download=v.src.split('/').pop();download.hidden=false;labels();
   void prefetch(cacheEpoch);
  }

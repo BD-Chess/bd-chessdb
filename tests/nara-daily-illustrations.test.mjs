@@ -33,7 +33,7 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
   assert.equal(m.images.length,3);
   assert.deepEqual(m.images.map(i=>i.after_paragraph),[16,9,20]);
   for(const i of m.images)assert.ok(Number.isInteger(i.after_paragraph)&&i.after_paragraph>=1&&i.after_paragraph<=r.scenes[i.scene-1].paragraphs.length);
-  assert.ok(m.images.every(i=>i.width===1919&&i.height===1080&&i.width_4k===3838&&i.height_4k===2160));
+  assert.ok(m.images.every(i=>i.width===1919&&i.height===1080&&!Object.hasOwn(i,'src_4k')));
   assert.equal(loadIllustrations(root,r,t).length,m.images.length);
   for(const i of m.images){
     const b=fs.readFileSync(path.join(n,i.src));
@@ -42,10 +42,6 @@ test('real 2026-10-05 R3 image sources and bilingual manifest are pinned',()=>{
     assert.equal(b.toString('ascii',12,16),'VP8 ');
     assert.equal(b.subarray(23,26).toString('hex'),'9d012a');
     assert.equal(b.readUInt16LE(26)&0x3fff,1919);assert.equal(b.readUInt16LE(28)&0x3fff,1080);
-    const b4=fs.readFileSync(path.join(n,i.src_4k));
-    assert.equal(h(b4),i.sha256_4k);
-    assert.equal(b4.toString('ascii',0,4),'RIFF');assert.equal(b4.toString('ascii',8,12),'WEBP');
-    assert.equal(b4.readUInt16LE(26)&0x3fff,3838);assert.equal(b4.readUInt16LE(28)&0x3fff,2160);
     assert.ok(i.alt_en&&i.alt_sl);
   }
   assert.equal(fs.readdirSync(path.join(n,'assets/img/daily/2026-10-05')).filter(f=>f.endsWith('.webp')||f.endsWith('.png')).length,0,'old flat Oct5 assets must be removed');
@@ -61,7 +57,7 @@ test('Daily links Oct 5 directly while monthly retains its R3 image figures in e
     if(file==='Nara-AI-daily.html')assert.equal(imagesFrom(html),0,'Daily is now a compact index');
     else assert.ok(imagesFrom(html)>=6,file);
     assert.ok(html.includes('data-language-content="sl" lang="sl" hidden'));
-    assert.ok(html.includes('assets/js/nara-daily-resolution.js?v=1'));
+    assert.ok(!html.includes('assets/js/nara-daily-resolution.js'));
     if(file==='Nara-AI-daily.html'){
       assert.ok(html.includes('Nara-AI-2026-10-05-format-R1.html'),'Daily links directly to the standalone Oct 5 edition');
       assert.ok(!html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'),'Daily keeps original-version links in the archive only');
@@ -74,7 +70,7 @@ test('Daily links Oct 5 directly while monthly retains its R3 image figures in e
       assert.equal(imagesFrom(a),m.images.length,file+' '+lang);
       sections.forEach((s,j)=>{
         const i=j+1,image=m.images.find(x=>x.scene===i),number=imagesFrom(s);assert.equal(number,image?1:0,'scene '+i+' '+lang);
-        if(image){assert.ok(s.includes('src="'+image.src+'"'));assert.ok(s.includes('alt="'+(lang==='en'?image.alt_en:image.alt_sl)+'"'));assert.ok(s.includes('width="1919" height="1080" loading="lazy" decoding="async"'));assert.ok(s.includes('data-nara-image-4k="'+image.src_4k+'"'));const p=(lang==='en'?en:sl).scenes[i-1].paragraphs[image.after_paragraph-1];assert.ok(s.includes('<p>'+esc(p)+'</p><figure class="daily-scene-figure">'),'exact post-paragraph anchor '+file+' '+lang+' '+i);}
+        if(image){assert.ok(s.includes('src="'+image.src+'"'));assert.ok(s.includes('alt="'+(lang==='en'?image.alt_en:image.alt_sl)+'"'));assert.ok(s.includes('width="1919" height="1080" loading="lazy" decoding="async"'));assert.ok(!s.includes('data-nara-image-4k='));const p=(lang==='en'?en:sl).scenes[i-1].paragraphs[image.after_paragraph-1];assert.ok(s.includes('<p>'+esc(p)+'</p><figure class="daily-scene-figure">'),'exact post-paragraph anchor '+file+' '+lang+' '+i);}
       });
     }
   }

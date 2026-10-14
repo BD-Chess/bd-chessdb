@@ -152,7 +152,7 @@ function editionArtworkImages(root,item){
  const file=path.join(naraRoot(root),item.paths.artwork);
  assert(fs.existsSync(file),'edition artwork manifest missing');
  const manifest=JSON.parse(fs.readFileSync(file,'utf8'));
- if(manifest?.schema==='nara.format.edition.artwork.v4')return responsiveEditionArtwork(root,item,manifest,validateWebp,manifest.images?.some(image=>Object.hasOwn(image,'source_after_paragraph'))?loadIllustrations(root,item.originalEn,item.originalSl):[],approved=>directEditionArtworkImages(root,item,approved));
+ if(manifest?.schema==='nara.format.edition.artwork.v5')return responsiveEditionArtwork(root,item,manifest,validateWebp,manifest.images?.some(image=>Object.hasOwn(image,'source_after_paragraph'))?loadIllustrations(root,item.originalEn,item.originalSl):[],approved=>directEditionArtworkImages(root,item,approved));
  if(['nara.format.edition.artwork.v2','nara.format.edition.artwork.v3'].includes(manifest?.schema))return directEditionArtworkImages(root,item,manifest);
  const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
  assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'edition artwork manifest fields');
@@ -160,7 +160,7 @@ function editionArtworkImages(root,item){
  assert(manifest.en_content_sha256===item.en.content_sha256&&manifest.sl_content_sha256===item.sl.content_sha256,'edition artwork language binding');
  const sourceImages=loadIllustrations(root,item.originalEn,item.originalSl);
  assert(Array.isArray(manifest.images)&&manifest.images.length===3&&sourceImages.length===3,'edition artwork requires three validated images');
- const imageFields=['scene','source_after_paragraph','after_paragraph_en','after_paragraph_sl','paragraph_sha256_en','paragraph_sha256_sl','src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'];
+ const imageFields=['scene','source_after_paragraph','after_paragraph_en','after_paragraph_sl','paragraph_sha256_en','paragraph_sha256_sl','src','width','height','sha256','alt_en','alt_sl'];
  let priorScene=0,priorSourceParagraph=0;
  return manifest.images.map(entry=>{
   assert(keys(entry,imageFields)&&Object.keys(entry).length===imageFields.length,'edition artwork image fields');
@@ -171,7 +171,7 @@ function editionArtworkImages(root,item){
   assert(hex(entry.paragraph_sha256_en)&&hex(entry.paragraph_sha256_sl)&&text(entry.alt_en,300)&&text(entry.alt_sl,300),'edition artwork paragraph hashes/alt text');
   const original=sourceImages.find(image=>image.scene===entry.scene&&image.after_paragraph===entry.source_after_paragraph);
   assert(original,'edition artwork source image mapping');
-  for(const field of ['src','width','height','sha256','src_4k','width_4k','height_4k','sha256_4k','alt_en','alt_sl'])assert(entry[field]===original[field],'edition artwork asset binding '+field);
+  for(const field of ['src','width','height','sha256','alt_en','alt_sl'])assert(entry[field]===original[field],'edition artwork asset binding '+field);
   const en=item.binding.anchors.en[entry.scene-1][entry.source_after_paragraph-1],sl=item.binding.anchors.sl[entry.scene-1][entry.source_after_paragraph-1];
   assert(en&&sl&&entry.after_paragraph_en===en.after_anchor&&entry.after_paragraph_sl===sl.after_anchor&&en.after_anchor===sl.after_anchor,'edition artwork bilingual anchor binding');
   const enParagraph=item.en.scenes[entry.scene-1].paragraphs[entry.after_paragraph_en-1],slParagraph=item.sl.scenes[entry.scene-1].paragraphs[entry.after_paragraph_sl-1];
@@ -195,7 +195,7 @@ function optionalEditionImages(root,item){
 function formatShell(title,slTitle,file,body,responsive=false){
  const controls='<div class="tools"><button type="button" data-scale="-0.1">A−</button><output data-scale-label>100%</output><button type="button" data-scale="0.1">A+</button><button type="button" data-scale="reset">'+bi('Reset','Ponastavi')+'</button><button type="button" data-theme-toggle>'+bi('Day mode','Dnevni način')+'</button></div>';
  const artworkAssets=responsive?'<link rel="stylesheet" href="assets/css/nara-daily-responsive.css?v='+RESPONSIVE_VERSION+'">':'';
- const selector=responsive?'':'<script defer src="assets/js/nara-daily-resolution.js?v=1"></script>';
+ const selector='';
  const viewer=responsive?'<script defer src="assets/js/nara-daily-responsive.js?v='+RESPONSIVE_VERSION+'"></script>':'<script defer src="assets/js/nara-daily-lightbox.js?v=2"></script>';
  return '<!doctype html>\n<html lang="en" data-theme="dark" data-title-en="'+esc(title+' — Illuminara Daily')+'" data-title-sl="'+esc(slTitle+' — Illuminara Daily')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark light"><title>'+esc(title)+' — Illuminara Daily</title><link rel="canonical" href="'+BASE+file+'"><link rel="stylesheet" href="assets/css/nara-daily.css?v='+FORMAT_VERSION+'">'+artworkAssets+selector+'<script defer src="assets/js/nara-daily-reader.js?v='+FORMAT_VERSION+'"></script>'+viewer+'</head><body><a class="skip" href="#main">'+bi('Skip to content','Preskoči na vsebino')+'</a><header class="bar"><div class="bar-inner"><a class="brand" href="Nara-AI-daily.html">ILLUMINARA / DAILY</a><nav class="nav"><a href="Nara-AI-daily.html">Daily</a><a href="Nara-AI-archive.html#format-editions">'+bi('Archive','Arhiv')+'</a></nav><div class="language-switch" data-language-switch role="group" aria-label="Language / Jezik" hidden><button type="button" data-language="en" lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-language="sl" lang="sl" aria-pressed="false">SL</button></div></div></header><main class="wrap" id="main" tabindex="-1">'+controls+body+'</main><footer class="footer wrap"><p>'+bi('Original world: Bojan Dobrečevič. Prose: the GPT × Claude Daily creative line. A format edition does not confer canon status.','Izvirni svet: Bojan Dobrečevič. Proza: ustvarjalno sodelovanje GPT × Claude v dnevni zbirki. Formatna izdaja ne pomeni kanoničnega statusa.')+'</p></footer></body></html>\n';
 }
