@@ -287,8 +287,10 @@
         const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
         const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
         setText(el('status'), nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
-          (engine?.isRunning() ? 'Analyzing current position…' : current.stopped && manualStoppedFen === current.fen
-            ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.'));
+          (engine?.isRunning() ? 'Analyzing current position…' : current.error ? 'Analysis failed: ' + current.error :
+            current.forcedStop ? 'Stopped after the engine exceeded its time limit; latest results retained.' :
+            current.status === 'partial' ? 'Analysis incomplete; partial results retained.' : current.stopped && manualStoppedFen === current.fen
+              ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.'));
       }
       // The workspace is the scroller. The lines container itself never scrolls.
       if (workspace.scrollTop !== scroll) workspace.scrollTop = scroll;

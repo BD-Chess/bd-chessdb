@@ -327,3 +327,18 @@ test('a queued variation reveal cannot scroll the workspace after Deep closes or
   assert.equal(workspace.scrollTop, 420, 'late preview must not scroll a new pinned position');
   x.ui.close();
 });
+
+
+test('single Lite watchdog and preparation failures never claim successful completion', async t => {
+  const x = setup(t); x.get('btnDeepAnalysis').click();
+  for (const failure of [
+    { status: 'partial', stopped: false, forcedStop: true, stopReason: 'time-watchdog' },
+    { status: 'partial', stopped: false, error: 'sf-lite preparation timed out. Retry analysis.', lines: [] }
+  ]) {
+    x.el('start').click(); x.finish({ ...x.snapshot(), mode: 'sf-lite', ...failure });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.doesNotMatch(x.el('status').textContent, /Analysis complete\./);
+    assert.match(x.el('status').textContent, failure.error ? /Analysis failed: sf-lite preparation timed out/ : /Stopped after the engine exceeded its time limit/);
+  }
+  x.ui.close();
+});
