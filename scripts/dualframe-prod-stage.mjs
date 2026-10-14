@@ -18,6 +18,12 @@ if(mode==='--guard'){
  const base=current.ssl_url||current.url;
  let capabilities=null;for(let i=0;i<40;i++){const cap=await fetch(base+'/api/df/capabilities',{cache:'no-store'});if(cap.ok){capabilities=await cap.json();if(capabilities.auth_configured&&capabilities.models.every(m=>m.key_configured))break;}await new Promise(r=>setTimeout(r,4000));}if(!capabilities)throw Error('LIVE_API_UNAVAILABLE');console.log(JSON.stringify({auth_configured:capabilities.auth_configured,available_models:capabilities.models?.filter(m=>m.available).map(m=>m.key)}));if(capabilities.version!=='3.0-r4')throw Error('LIVE_API_VERSION_MISMATCH');
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
+ const corsOrigin='https://bd-chess.github.io';
+ const corsUrl=base+'/api/df/pairs/dualframe_readonly_preflight_probe';
+ const cors=await fetch(corsUrl,{method:'OPTIONS',headers:{origin:corsOrigin,'access-control-request-method':'DELETE','access-control-request-headers':'authorization'},cache:'no-store'});
+ if(cors.status!==200||cors.headers.get('access-control-allow-origin')!==corsOrigin||!cors.headers.get('access-control-allow-methods')?.split(',').includes('DELETE'))throw Error('LIVE_GALLERY_DELETE_CORS_MISSING');
+ const blocked=await fetch(corsUrl,{method:'OPTIONS',headers:{origin:'https://untrusted.example','access-control-request-method':'DELETE'},cache:'no-store'});
+ if(blocked.status!==403||blocked.headers.get('access-control-allow-origin'))throw Error('LIVE_GALLERY_DELETE_CORS_TOO_BROAD');
  const page=await fetch(base+'/Nara/dualframe-lab/',{cache:'no-store'});const html=await page.text();if(!page.ok||!html.includes('api-auth-form')||!html.includes('3.0-r4'))throw Error('LIVE_PAGE_VERSION_MISMATCH');
  const appResponse=await fetch(base+'/Nara/dualframe-lab/app.mjs?v=3.0-r4.2',{cache:'no-store'}),appText=await appResponse.text();
  const zipResponse=await fetch(base+'/Nara/dualframe-lab/zip-store.mjs?v=3.0-r4.1',{cache:'no-store'}),zipText=await zipResponse.text();
