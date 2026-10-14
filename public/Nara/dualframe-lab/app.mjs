@@ -475,7 +475,9 @@ function renderCloudInventory(){
  }
 }
 async function guardCloudBudget(items){
- const size=items.reduce((sum,asset)=>sum+(Number.isFinite(asset?.size)&&asset.size>0?asset.size:16*1024*1024),0);
+ const sizes=items.map(asset=>Number(asset?.byte_size??asset?.size));
+ if(sizes.some(size=>!Number.isFinite(size)||size<=0))throw Error('STORAGE_UNKNOWN_SIZE');
+ const size=sizes.reduce((sum,value)=>sum+value,0);
  const budget=storageBudget(await storageEstimate(),size,settings.maxCloudDownloadMB);
  if(!budget.allowed)throw Error(budget.reason);
 }
