@@ -136,3 +136,28 @@
   for = "/f4m/f4m/*"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate"
+
+
+# DualFrame AI R&D: public page, authenticated API only.
+[functions."dualframe-*"]
+  node_bundler = "esbuild"
+  external_node_modules = ["sharp"]
+
+[[redirects]]
+  from = "/api/df/auth"
+  to = "/.netlify/functions/dualframe-auth"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/df/*"
+  to = "/.netlify/functions/dualframe-api/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/Nara/dualframe-lab/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Referrer-Policy = "no-referrer"
+# END DualFrame AI R&D

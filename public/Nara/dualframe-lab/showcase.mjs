@@ -1,10 +1,10 @@
 // Read-only reference assets. Never enter creation or controlled comparisons.
-const ROOT = new URL('../', import.meta.url);
+const ROOT = new URL('https://bd-chess.github.io/bd-chessdb/Nara/');
 const PREFIX = 'assets/img/illuminara-visual-series/';
 export function referenceURL(path) {
   if (typeof path !== 'string' || !path.startsWith(PREFIX) || !/^[A-Za-z0-9_./-]+\.webp$/.test(path) || path.includes('..')) throw Error('INVALID_REFERENCE_ASSET');
   const url = new URL(path, ROOT);
-  if (url.origin !== location.origin || !url.pathname.startsWith(ROOT.pathname + PREFIX)) throw Error('INVALID_REFERENCE_ASSET');
+  if (url.origin !== ROOT.origin || !url.pathname.startsWith(ROOT.pathname + PREFIX)) throw Error('INVALID_REFERENCE_ASSET');
   return url.href;
 }
 export async function loadReferenceGallery() {
@@ -19,7 +19,7 @@ export async function loadReferenceGallery() {
       if (!asset || !Number.isInteger(asset.width) || !Number.isInteger(asset.height) || asset.width*asset.height > 24000000) continue;
       variants[direction][quality] = {...asset,remote_url:referenceURL(asset.path),origin:'reference',reference_only:true,resolution_origin:'reference-provided',resolution_verified:false,verification_pending:true};
     }
-    return {pair_id:'nara_reference_'+item.number,reference_only:true,title:item.title,caption:item.caption,captionSl:item.captionSl,original:{filename:item.title,source_orientation:item.orientation,visibility:'public-reference',...variants[item.orientation].hd},variants,jobs:[]};
+    return {pair_id:'nara_reference_'+item.number,reference_only:true,number:item.number,title:item.title,caption:item.caption,captionSl:item.captionSl,original:{filename:item.title,source_orientation:item.orientation,visibility:'public-reference',...variants[item.orientation].hd},variants,jobs:[]};
   });
 }
 export async function verifyReferenceAsset(asset) {

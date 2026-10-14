@@ -1,4 +1,4 @@
-import { sha256 } from './core.mjs?v=2.0-r4.1';
+import { sha256 } from './core.mjs?v=3.0-r1';
 
 // Network retries and reloads reuse the persisted key. Only an explicit
 // Regenerate action supplies a fresh attempt ID; the server still enforces caps.

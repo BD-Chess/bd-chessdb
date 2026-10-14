@@ -62,6 +62,10 @@ jobs:
         if: steps.netlify.outputs.ready == 'true'
         run: npm ci --ignore-scripts
 
+      - name: Install isolated image-function dependencies
+        if: steps.netlify.outputs.ready == 'true' && hashFiles('functions/package.json') != ''
+        run: npm install --prefix functions --no-audit --no-fund
+
       - name: Deploy public site and functions to existing Netlify project
         if: steps.netlify.outputs.ready == 'true'
         shell: bash
@@ -77,3 +81,4 @@ jobs:
             --message "GitHub main ${GITHUB_SHA}" \
             --json > netlify-deploy.json
           node -e 'const d=require("./netlify-deploy.json"); console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
+

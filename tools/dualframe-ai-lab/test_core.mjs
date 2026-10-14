@@ -73,9 +73,9 @@ test('canonical modes preserve legacy records and return disjoint task rubrics',
   assert(comparisonRubric('faithful').includes('seams'));assert(!comparisonRubric('smart').includes('seams'));assert.deepEqual(comparisonRubric('missing'),[]);
 });
 test('model registry uses exact endpoint identities and gates tasks',()=>{
-  assert.equal(MODELS.length,5);assert.equal(modelFor('bria').key,'bria-direct');assert.equal(modelFor('fal-bria').endpoint,'fal-ai/bria/expand');
+  assert.equal(MODELS.filter(m=>m.direct).length,11);assert.equal(MODELS.filter(m=>!m.direct).length,5);assert.equal(modelFor('bria').key,'bria-direct');assert.equal(modelFor('fal-bria').endpoint,'fal-ai/bria/expand');
   assert.equal(modelFor('fal-sunburst').endpoint,'openai/gpt-image-2.5/sunburst/edit');assert.equal(modelFor('fal-nano').endpoint,'google/nano-banana-2.1/edit');
-  assert.equal(modelFor('demo').is_ai,false);assert.equal(supportsMode('demo','cinematic'),true);assert.equal(supportsMode('fal-bria','infographic'),false);assert.equal(supportsMode('made-up','smart'),false);assert.equal(modelsForMode('infographic').length,3);
+  assert.equal(modelFor('demo').is_ai,false);assert.equal(supportsMode('demo','cinematic'),true);assert.equal(supportsMode('fal-bria','infographic'),false);assert.equal(supportsMode('made-up','smart'),false);assert.equal(modelsForMode('infographic').filter(m=>!m.direct).length,3);
 });
 test('Smart and text geometry are actual HD/4K, faithful never rescales even large sources',()=>{
   for(const mode of ['smart','infographic','cinematic'])for(const [target,w,h] of [['landscape',1920,1080],['portrait',1080,1920]]){
@@ -155,3 +155,4 @@ test('model readiness respects the selected output quality and never promotes he
   assert.equal(liveModelAvailable({models:[{key:'fal-bria',live_enabled:false,available:false,quality_gates:{hd:true}}]},'fal-bria','hd'),false);
   assert.equal(liveModelAvailable(null,'fal-bria','hd'),false);
 });
+

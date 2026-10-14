@@ -1,0 +1,62 @@
+name: DualFrame AI production
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dualframe-prod.yml'
+      - 'public/Nara/dualframe-lab/release.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'DualFrame AI 3.0:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require the existing production deployment credential
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'NETLIFY_AUTH_TOKEN is missing; production was not deployed.'; exit 1; }
+      - name: Install the isolated image-function dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Verify contracts, authentication, saved sessions and pixels without provider calls
+        run: node --test tools/dualframe-ai-lab/test_core.mjs tests/dualframe-v3.test.mjs tests/dualframe-session.test.mjs
+      - name: Preserve the currently deployed site and overlay only DualFrame
+        run: node scripts/dualframe-prod-stage.mjs
+      - name: Install preserved root dependencies and image dependencies
+        working-directory: .dualframe-prod
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm install --prefix functions --no-audit --no-fund
+      - name: Prepare existing protected pages
+        working-directory: .dualframe-prod
+        run: python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/dualframe-password-manager-report.json"
+      - name: Guard against a competing production deployment
+        run: node scripts/dualframe-prod-stage.mjs --guard
+      - name: Deploy the reviewed isolated overlay to production
+        working-directory: .dualframe-prod
+        run: |
+          npx --yes netlify-cli@26.2.0 deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "DualFrame AI 3.0 ${GITHUB_SHA} baseline=$(cat ../.dualframe-baseline)" --json > ../dualframe-deploy.json
+      - name: Verify the live API, password boundary and public page
+        run: node scripts/dualframe-prod-stage.mjs --verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dualframe-production-receipt
+          path: |
+            dualframe-deploy.json
+            dualframe-live-check.json
+            dualframe-test-results.txt
+          if-no-files-found: ignore
