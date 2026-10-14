@@ -100,6 +100,10 @@ const STANDALONE_DAILY_EDITIONS=Object.freeze({
   'NARA-D-2026-10-05':Object.freeze({
     edition:'Nara-AI-2026-10-05-format-R1.html',
     archive:'Nara-AI-archive.html#versions-NARA-D-2026-10-05'
+  }),
+  'NARA-D-2026-10-06':Object.freeze({
+    edition:'Nara-AI-2026-10-06-format-R1.html',
+    archive:'Nara-AI-archive.html#versions-NARA-D-2026-10-06'
   })
 });
 function storyEntry(r,translations,daily,root=null){
@@ -111,7 +115,7 @@ function storyEntry(r,translations,daily,root=null){
 }
 export function latestPage(input,month,translations={},root=null){
   const records=(Array.isArray(input)?[...input]:(input?[input]:[])).sort((a,b)=>b.date.localeCompare(a.date));
-  const header='<header class="masthead"><div class="eyebrow">'+bi('Nightly Illuminara fiction · one story each published day','Večerne Illuminarine zgodbe · po ena zgodba vsak dan z objavo')+'</div><h1>'+bi('Illuminara Daily','Illuminara · dnevne zgodbe')+'</h1><p class="lede">'+bi('The illustrated story from 5 October has its own page. Other stories remain below until their standalone editions are ready.','Ilustrirana zgodba z dne 5. oktobra ima svojo stran. Druge zgodbe ostanejo spodaj, dokler ne pripravimo njihovih samostojnih izdaj.')+'</p>'+tools+'</header>';
+  const header='<header class="masthead"><div class="eyebrow">'+bi('Nightly Illuminara fiction · one story each published day','Večerne Illuminarine zgodbe · po ena zgodba vsak dan z objavo')+'</div><h1>'+bi('Illuminara Daily','Illuminara · dnevne zgodbe')+'</h1><p class="lede">'+bi('The illustrated stories from 5 and 6 October have their own pages. Other stories remain below until their standalone editions are ready.','Ilustrirani zgodbi z dne 5. in 6. oktobra imata svoji strani. Druge zgodbe ostanejo spodaj, dokler ne pripravimo njihovih samostojnih izdaj.')+'</p>'+tools+'</header>';
   const empty='<section class="notice"><h2>'+bi('The first story is not published yet.','Prva zgodba še ni objavljena.')+'</h2><p>'+bi('This reading lane is ready for the first completed GPT ↔ Claude cycle. Stories are released only after selection, editorial work and a reviewed final close.','Ta bralna zbirka je pripravljena na prvi zaključeni cikel GPT ↔ Claude. Zgodbe objavimo šele po izboru, uredniškem delu in pregledu končne različice.')+'</p></section><nav class="end-nav"><a href="Nara-AI-'+month+'.html">'+bi("This month's archive",'Arhiv tega meseca')+'</a><a href="Nara-AI-log.html">'+bi('Follow the editorial log','Spremljaj uredniški dnevnik')+'</a><a href="index.html">'+bi('Read the illustrated collection','Preberi ilustrirano zbirko')+'</a></nav>';
   return shell('Daily stories','Nara-AI-daily.html',header+(records.length?records.map(r=>storyEntry(r,translations,true,root)).join('\n'):empty),'daily',true);
 }

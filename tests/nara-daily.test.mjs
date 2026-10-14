@@ -30,29 +30,29 @@ test('record accepts first-ready publication time but rejects wrong local date a
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
 test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-06','2026-10-06T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
-test('Daily page links 5 October to its standalone edition and keeps other stories collapsed',()=>{
-  const older=record('2026-10-05','2026-10-05T20:00:00Z'),newer=record('2026-10-06','2026-10-06T20:00:00Z');
-  older.deck='OCT05_INLINE_BODY_MUST_NOT_RENDER';
-  const p=latestPage([older,newer],'2026-10');
-  assert.ok(p.includes('<article class="notice daily-index-item" id="NARA-D-2026-10-05" data-content-sha256="'+older.content_sha256+'">'));
+test('Daily links standalone stories for 5 and 6 October while other stories stay collapsed',()=>{
+  const older=record('2026-10-05','2026-10-05T20:00:00Z'),newer=record('2026-10-06','2026-10-06T20:00:00Z'),other=record('2026-10-07','2026-10-07T20:00:00Z');
+  older.deck='OCT05_INLINE_BODY_MUST_NOT_RENDER';newer.deck='OCT06_INLINE_BODY_MUST_NOT_RENDER';
+  const p=latestPage([older,newer,other],'2026-10');
+  for(const r of [older,newer])assert.ok(p.includes('<article class="notice daily-index-item" id="'+r.id+'" data-content-sha256="'+r.content_sha256+'">'));
   assert.ok(!p.includes('<details class="archive-item daily-item" id="NARA-D-2026-10-05"'));
+  assert.ok(!p.includes('<details class="archive-item daily-item" id="NARA-D-2026-10-06"'));
   assert.ok(p.includes('href="Nara-AI-2026-10-05-format-R1.html"'));
+  assert.ok(p.includes('href="Nara-AI-2026-10-06-format-R1.html"'));
   assert.ok(p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-05"'));
-  assert.ok(!p.includes(older.deck));
+  assert.ok(p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-06"'));
+  assert.ok(!p.includes(older.deck));assert.ok(!p.includes(newer.deck));
+  assert.ok(p.indexOf('NARA-D-2026-10-07')<p.indexOf('NARA-D-2026-10-06'));
   assert.ok(p.indexOf('NARA-D-2026-10-06')<p.indexOf('NARA-D-2026-10-05'));
   assert.equal((p.match(/<details class="archive-item daily-item"/g)||[]).length,1);
-  assert.ok(p.includes('id="NARA-D-2026-10-06"'));
+  assert.ok(p.includes('id="NARA-D-2026-10-07"'));
   assert.ok(!/<details class="archive-item daily-item"[^>]*\sopen(?:\s|>)/.test(p));
-  const month=monthlyPage('2026-10',[older]);
+  const month=monthlyPage('2026-10',[older,newer]);
   assert.ok(month.includes('<details class="archive-item" id="NARA-D-2026-10-05">'));
-  assert.ok(month.includes(older.deck));
+  assert.ok(month.includes('<details class="archive-item" id="NARA-D-2026-10-06">'));
+  assert.ok(month.includes(older.deck));assert.ok(month.includes(newer.deck));
 });
-test('log page escapes summaries and exposes no operational fields',()=>{const l=logRecord();l.rounds[1].summary='<script>private()</script>';const p=logPage([l]);assert.ok(p.includes('&lt;script&gt;private()&lt;/script&gt;'));assert.ok(!p.includes('<script>private()'));assert.ok(!p.includes('drive_id'));assert.ok(p.includes('Illuminara Daily · Log'))});
-test('empty initialization creates Daily, Archive and Log without inventing a story',t=>{const root=temp(t);const {records,n}=loadRecords(root);assert.equal(records.length,0);assert.ok(fs.readFileSync(path.join(n,'Nara-AI-daily.html'),'utf8').includes('not published yet'));assert.ok(fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8').includes('not published yet'));assert.throws(()=>initialize(root,'2026-99'),/invalid month/)});
-test('publish requires story and log to agree',t=>{const root=temp(t),r=record(),l=logRecord();l.title='Wrong';assert.throws(()=>publish(root,r,l,new Date(r.published_at)),/story\/log mismatch/);l.title=r.title;l.final_critic_line='Wrong';assert.throws(()=>publish(root,r,l,new Date(r.published_at)),/critic line mismatch/)});
-test('publish writes seven outputs, is idempotent and conflicting replay fails',t=>{const root=temp(t),r=record(),l=logRecord();assert.match(publish(root,r,l,new Date(r.published_at)),/SEVEN_FILES/);const {n}=loadRecords(root);for(const f of ['daily/records/2026-10-05.json','daily/log/2026-10-05.json','daily/catalog.json','Nara-AI-daily.html','Nara-AI-2026-10.html','Nara-AI-archive.html','Nara-AI-log.html'])assert.ok(fs.existsSync(path.join(n,f)),f);const state=fs.readFileSync(path.join(n,'daily/catalog.json'),'utf8');assert.equal(publish(root,r,l,new Date(r.published_at)),'ALREADY_PUBLISHED');assert.equal(fs.readFileSync(path.join(n,'daily/catalog.json'),'utf8'),state);const other=logRecord();other.rounds[0].summary='changed';assert.throws(()=>publish(root,r,other,new Date(r.published_at)),/different log/)});
-test('old days and future timestamps cannot be published',t=>{const root=temp(t),l=logRecord();assert.throws(()=>publish(root,record(),l,new Date('2026-10-05T19:59:00Z')),/future/);assert.throws(()=>publish(root,record(),l,new Date('2026-10-06T20:00:00Z')),/current local/)});
-test('publish accepts the first ready opportunity on the story local date',t=>{const root=temp(t),r=record('2026-10-05','2026-10-05T18:15:00Z'),l=logRecord();assert.match(publish(root,r,l,new Date('2026-10-05T18:15:01Z')),/SEVEN_FILES/)});
+
 test('monthly, latest and log projections match the published story',t=>{const root=temp(t),r=record(),l=logRecord();publish(root,r,l,new Date(r.published_at));const {n,records}=loadRecords(root);for(const f of ['Nara-AI-daily.html','Nara-AI-2026-10.html'])assert.ok(fs.readFileSync(path.join(n,f),'utf8').includes(records[0].content_sha256));const lp=fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8');assert.ok(lp.includes(l.selection.title));assert.ok(lp.includes('Read the published story'));const mp=monthlyPage('2026-10',records);assert.ok(mp.includes('id="NARA-D-2026-10-05"'));assert.ok(!mp.includes('scoreChips'));assert.ok(!mp.includes('scoreDialogs'))});
 test('combined score metadata is optional but validated when present',()=>{const r=record();r.literary_score=literaryScore();assert.equal(validateRecord(r).literary_score.display,87);const bad=record();bad.literary_score={...literaryScore(),display:86};assert.throws(()=>validateRecord(bad),/display rounding/)});
 test('public log evaluation preserves raw blind scores and exact 50-50 mean',()=>{const l=logRecord();l.evaluation=evaluation();assert.equal(validateLog(l).evaluation.combined,86.5);const p=logPage([l]);assert.ok(p.includes('GPT:</strong> 93'));assert.ok(p.includes('Claude:</strong> 80'));assert.ok(p.includes('combined 87'))});

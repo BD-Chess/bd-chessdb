@@ -8,7 +8,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const bodyHash=r=>sha(JSON.stringify({title:r.title,deck:r.deck,shape:r.shape,scenes:r.scenes}));
 const text=(s,n)=>typeof s==='string'&&s.trim().length>0&&s.length<=n;
-const validateWebp=(bytes,width,height)=>{
+export const validateWebp=(bytes,width,height)=>{
 
         assert(bytes.length>=30&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP','illustration WebP header');
         const kind=bytes.toString('ascii',12,16);let w,h;

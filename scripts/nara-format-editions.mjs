@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {loadIllustrations,renderStoryScene} from './nara-illustrations.mjs';
+import {loadIllustrations,renderStoryScene,validateWebp} from './nara-illustrations.mjs';
 import {DIALOGUE_EFFECTIVE_DATE} from './nara-dialogue.mjs';
 
 export const FORMAT_VERSION='nara-format-editions-r1';
@@ -119,10 +119,37 @@ export function refreshFormatArchiveSection(html,root){
  if(pattern.test(html))return html.replace(pattern,fragment);
  return fragment?html.replace('</main>',fragment+'</main>'):html;
 }
+function directEditionArtworkImages(root,item,manifest){
+ const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
+ assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'direct edition artwork manifest fields');
+ assert(manifest.schema==='nara.format.edition.artwork.v2'&&manifest.edition_id===item.binding.edition_id&&manifest.story_id===item.paths.story_id&&manifest.date===item.paths.date&&manifest.format_revision==='R1','direct edition artwork identity binding');
+ assert(manifest.en_content_sha256===item.en.content_sha256&&manifest.sl_content_sha256===item.sl.content_sha256,'direct edition artwork language binding');
+ const imageFields=['scene','after_paragraph_en','after_paragraph_sl','paragraph_sha256_en','paragraph_sha256_sl','src','width','height','sha256','alt_en','alt_sl','generation_prompt_sha256','model_reported','claude_review'];
+ assert(Array.isArray(manifest.images)&&manifest.images.length===3,'direct edition artwork requires three images');
+ let priorScene=0,priorParagraph=0;
+ return manifest.images.map(entry=>{
+  assert(keys(entry,imageFields)&&Object.keys(entry).length===imageFields.length,'direct edition artwork image fields');
+  assert(Number.isInteger(entry.scene)&&entry.scene>=1&&entry.scene<=item.en.scenes.length,'direct edition artwork scene');
+  assert(Number.isInteger(entry.after_paragraph_en)&&entry.after_paragraph_en>=1&&entry.after_paragraph_en<=item.en.scenes[entry.scene-1].paragraphs.length&&Number.isInteger(entry.after_paragraph_sl)&&entry.after_paragraph_sl>=1&&entry.after_paragraph_sl<=item.sl.scenes[entry.scene-1].paragraphs.length,'direct edition artwork paragraph anchor');
+  assert(entry.scene>priorScene||(entry.scene===priorScene&&entry.after_paragraph_en>priorParagraph),'direct edition artwork order');
+  assert(entry.after_paragraph_en===entry.after_paragraph_sl,'direct edition artwork bilingual anchor');
+  priorScene=entry.scene;priorParagraph=entry.after_paragraph_en;
+  assert(hex(entry.paragraph_sha256_en)&&hex(entry.paragraph_sha256_sl)&&text(entry.alt_en,300)&&text(entry.alt_sl,300)&&hex(entry.generation_prompt_sha256)&&text(entry.model_reported,120)&&['PASS','MISSING','FIX_LIMIT_REACHED'].includes(entry.claude_review),'direct edition artwork metadata');
+  const enParagraph=item.en.scenes[entry.scene-1].paragraphs[entry.after_paragraph_en-1],slParagraph=item.sl.scenes[entry.scene-1].paragraphs[entry.after_paragraph_sl-1];
+  assert(sha(enParagraph)===entry.paragraph_sha256_en&&sha(slParagraph)===entry.paragraph_sha256_sl,'direct edition artwork paragraph binding');
+  const prefix='assets/img/daily/'+item.paths.date+'/R1/';
+  assert(typeof entry.src==='string'&&entry.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.webp$/.test(entry.src.slice(prefix.length)),'unsafe direct edition artwork source');
+  assert(entry.width===1672&&entry.height===941&&hex(entry.sha256),'direct edition artwork asset metadata');
+  const asset=path.join(naraRoot(root),entry.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'direct edition artwork asset missing');
+  const bytes=fs.readFileSync(asset);assert(sha(bytes)===entry.sha256,'direct edition artwork asset hash mismatch');validateWebp(bytes,entry.width,entry.height);
+  return {...entry,after_paragraph:entry.after_paragraph_en};
+ });
+}
 function editionArtworkImages(root,item){
  const file=path.join(naraRoot(root),item.paths.artwork);
  assert(fs.existsSync(file),'edition artwork manifest missing');
  const manifest=JSON.parse(fs.readFileSync(file,'utf8'));
+ if(manifest?.schema==='nara.format.edition.artwork.v2')return directEditionArtworkImages(root,item,manifest);
  const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
  assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'edition artwork manifest fields');
  assert(manifest.schema==='nara.format.edition.artwork.v1'&&manifest.edition_id===item.binding.edition_id&&manifest.story_id===item.paths.story_id&&manifest.date===item.paths.date&&manifest.format_revision==='R1','edition artwork identity binding');

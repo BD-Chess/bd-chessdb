@@ -20,9 +20,27 @@ test('untrusted manifest dates, paths and modified source bytes are rejected',t=
  fs.appendFileSync(path.join(r,'public/Nara/daily/records/2026-10-05.json'),' ');assert.throws(()=>loadFormatEditions(r),/binding/);
 });
 test('rendering applies R10 only to the edition and escapes hostile prose and speaker labels',()=>{
- const item=structuredClone(loadFormatEditions(root)[0]);item.paths.date='2026-10-06';item.paths.artwork='daily/format-editions/2026-10-06/art-R1.json';item.en.title='<img src=x onerror=alert(1)>';item.en.scenes[0].paragraphs[1]='**<svg onload=alert(1)>**  \n<script>alert(1)</script>';item.en.content_sha256=editionBodyHash(item.en);
+ const item=structuredClone(loadFormatEditions(root)[0]);item.paths.date='2026-10-06';item.paths.artwork='daily/format-editions/2026-10-06/fixture-no-art-R1.json';item.en.title='<img src=x onerror=alert(1)>';item.en.scenes[0].paragraphs[1]='**<svg onload=alert(1)>**  \n<script>alert(1)</script>';item.en.content_sha256=editionBodyHash(item.en);
  const html=renderEditionPage(root,item);assert.doesNotMatch(html,/<(?:svg|script>alert|img src=x)/);assert.match(html,/&lt;svg/);assert.match(html,/&lt;script&gt;/);assert.match(html,/class="subtitle"/);assert.match(html,/class="speaker"/);
  const legacy=renderStoryScene({title:'Legacy',paragraphs:['*Here · now*','**Name**  \nWords']},1,[],'en',2,'2026-10-12');assert.doesNotMatch(legacy,/class="subtitle"|class="speaker"/);
+});
+test('edition-bound artwork uses exact bilingual R1 paragraph anchors without changing story text',t=>{
+ const r=fixture(t),item=loadFormatEditions(r).find(x=>x.paths.date==='2026-10-06');assert.ok(item);
+ const base=path.join(r,'public/Nara'),assetSource=path.join(n,'assets/img/daily/2026-10-13/S2/moment-1.webp'),bytes=fs.readFileSync(assetSource);
+ const specs=[{scene:1,after_paragraph_en:13,after_paragraph_sl:13},{scene:3,after_paragraph_en:7,after_paragraph_sl:7},{scene:5,after_paragraph_en:12,after_paragraph_sl:12}];
+ const images=specs.map((spec,i)=>{
+  const src='assets/img/daily/2026-10-06/R1/moment-'+(i+1)+'.webp',file=path.join(base,src);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,bytes);
+  const enParagraph=item.en.scenes[spec.scene-1].paragraphs[spec.after_paragraph_en-1],slParagraph=item.sl.scenes[spec.scene-1].paragraphs[spec.after_paragraph_sl-1];
+  return {...spec,paragraph_sha256_en:sha(enParagraph),paragraph_sha256_sl:sha(slParagraph),src,width:1672,height:941,sha256:sha(bytes),alt_en:'English anchor '+(i+1),alt_sl:'Slovenski sidrni odstavek '+(i+1),generation_prompt_sha256:String(i+1).repeat(64),model_reported:'UNKNOWN',claude_review:'MISSING'};
+ });
+ const manifest={schema:'nara.format.edition.artwork.v2',edition_id:item.binding.edition_id,story_id:item.paths.story_id,date:item.paths.date,format_revision:'R1',en_content_sha256:item.en.content_sha256,sl_content_sha256:item.sl.content_sha256,images};
+ const artFile=path.join(base,item.paths.artwork);fs.mkdirSync(path.dirname(artFile),{recursive:true});fs.writeFileSync(artFile,JSON.stringify(manifest));
+ const html=renderEditionPage(r,item),enBlock=html.slice(html.indexOf('<div data-language-content="en"'),html.indexOf('<div data-language-content="sl"')),slBlock=html.slice(html.indexOf('<div data-language-content="sl"'));
+ assert.equal((enBlock.match(/<figure class="daily-scene-figure">/g)||[]).length,3);assert.equal((slBlock.match(/<figure class="daily-scene-figure">/g)||[]).length,3);
+ assert.ok(enBlock.indexOf('I would like to know what you think.')<enBlock.indexOf('moment-1.webp'));assert.ok(enBlock.indexOf('moment-1.webp')<enBlock.indexOf('Wren put down her cup.'));
+ assert.ok(enBlock.indexOf('Illuminara put the chart on the rail')<enBlock.indexOf('moment-2.webp'));assert.ok(enBlock.indexOf('moment-2.webp')<enBlock.indexOf('You coupled the ring as a ring'));
+ assert.ok(slBlock.indexOf('Rada bi vedela, kaj misliš.')<slBlock.indexOf('moment-1.webp'));assert.ok(slBlock.includes('Slovenski sidrni odstavek 3'));
+ const bad={...manifest,images:manifest.images.map((x,i)=>i?x:{...x,paragraph_sha256_en:'0'.repeat(64)})};fs.writeFileSync(artFile,JSON.stringify(bad));assert.throws(()=>renderEditionPage(r,item),/direct edition artwork paragraph binding/);
 });
 test('scores are withheld until both sealed instruments bind the exact new English body',()=>{
  const h='a'.repeat(64),d={premise:13,character:13,structure:13,prose:13,world:8,moral_intellectual_depth:13,ending:13},g={score:86,dimensions:d,rubric_id:'GPT_LITERARY_7_100_V1',anchor_revision:'SHARED_ANCHOR_V1',sealed:true,en_content_sha256:h,output_sha256:'b'.repeat(64)},c={score:90,rubric_id:'PEC-6_V2',sealed:true,en_content_sha256:h,output_sha256:'c'.repeat(64),prompt_sha256:'d'.repeat(64)},a={status:'PAIRED',en_content_sha256:h,gpt:g,claude:c,combined:88};
