@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {adjacentImageIndices,syncImageCache} from '../public/Nara/dualframe-lab/image-cache.mjs?v=3.0-r1';
+import {validateSettings,readSettings,saveSettings,storageBudget,delayTransition,SETTINGS_DEFAULTS,DEFAULT_MODELS} from '../public/Nara/dualframe-lab/preferences.mjs';
+import {storageError} from '../public/Nara/dualframe-lab/store.mjs';
 import {createHash} from 'node:crypto';
 const root=new URL('../public/Nara/dualframe-lab/',import.meta.url);
 const text=async path=>readFile(new URL(path,root),'utf8');
@@ -68,8 +70,8 @@ test('Gallery Preview controls personal and Nara cards without changing Create c
  const galleryCard=app.slice(start,end);
  assert.match(galleryCard,/const target=galleryFrame\(\),state=selectAsset\(pair,target,'hd'\)/);
  assert.doesNotMatch(galleryCard,/targetFrame\(/);
- assert.match(app,/function galleryFrame\(\).*?simulation:\$\('reference-device'\)\.value/);
- assert.match(app,/\$\('reference-device'\)\.addEventListener\('change',\(\)=>\{if\(referenceLoaded\)renderReference\(\);else renderOwnGallery\(\);/);
+ assert.match(app,/function desiredGalleryFrame\(\).*?simulation:\$\('reference-device'\)\.value/);
+ assert.match(app,/\$\('reference-device'\)\.addEventListener\('change',scheduleGalleryFrame\)/);
  assert.match(app,/activeView==='showcase'\|\|pair.reference_only\?\$\('reference-device'\)\.value:\$\('device'\)\.value/);
  assert.match(galleryCard,/state.missing&&state.orientation!==target/);
 });
@@ -83,4 +85,65 @@ test('name editing is localized, stored separately from original filename and qu
  assert.match(app,/const cloudName=data.titles\?\.\[p.original.sha256\]/);
  assert.match(app,/Object.assign\(dictionary.sl,\{rename:'Preimenuj'/);
  assert.match(app,/const displayTitle = pair => pair.display_name \|\| pair.title \|\| pair.original\?\.filename/);
+});
+
+
+test('Settings default to four BD-tested models and safely validate persisted preferences',()=>{
+ assert.deepEqual(DEFAULT_MODELS,['wan-image-pro','grok-imagine','openai-flare','openai-sunburst']);
+ assert.deepEqual(SETTINGS_DEFAULTS.enabledModels,DEFAULT_MODELS);
+ const store=new Map();const storage={getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)};
+ const models=['wan-image-pro','grok-imagine','openai-flare','openai-sunburst','gemini-nano'];
+ let settings=readSettings(storage,models);
+ assert.equal(settings.delaySeconds,2);assert.equal(settings.model,'openai-sunburst');assert.equal(settings.metadataSyncOnStart,true);
+ settings=saveSettings({...settings,enabledModels:['wan-image-pro','gemini-nano'],model:'gemini-nano',mode:'faithful',delaySeconds:5},storage,models);
+ assert.equal(readSettings(storage,models).model,'gemini-nano');assert.equal(settings.mode,'faithful');
+ assert.deepEqual(validateSettings({enabledModels:['untrusted'],model:'untrusted',delaySeconds:999},models).enabledModels,['openai-sunburst']);
+ assert.equal(validateSettings({quality:'invalid',mode:'unknown',delaySeconds:-1},models).delaySeconds,2);
+});
+test('Delay preserves the old frame for 1–5s and cancels immediately when disabled or unchanged',()=>{
+ for(let seconds=1;seconds<=5;seconds++)assert.deepEqual(delayTransition('landscape','portrait',seconds),{show:'landscape',waitMs:seconds*1000});
+ assert.deepEqual(delayTransition('landscape','portrait',0),{show:'portrait',waitMs:0});
+ assert.deepEqual(delayTransition('portrait','portrait',5),{show:'portrait',waitMs:0});
+ assert.match(app,/galleryDelayTimer=setTimeout/);assert.match(app,/galleryShownFrame=desired/);
+ assert.match(app,/const target=galleryFrame\(\);list.classList.toggle\('portrait',desiredGalleryFrame\(\)==='portrait'\)/);
+ assert.match(app,/const target=galleryFrame\(\),state=selectAsset\(pair,target,'hd'\)/);
+});
+test('IndexedDB separates quota from aborted transactions, denial and database failures',()=>{
+ for(const [name,expected] of [['QuotaExceededError','STORAGE_QUOTA_EXCEEDED'],['AbortError','STORAGE_TRANSACTION_ABORTED'],['SecurityError','STORAGE_ACCESS_DENIED'],['InvalidStateError','STORAGE_DATABASE_ERROR'],['ConstraintError','STORAGE_WRITE_FAILURE']]){
+  assert.equal(storageError({name},true).message,expected);
+ }
+ assert.doesNotMatch(await text('store.mjs'),/STORAGE_QUOTA_OR_FAILURE/);
+});
+test('Sync only reads metadata until a per-image quota-checked Load action',()=>{
+ const a=app.indexOf('async function syncCloud(ask=true)'),b=app.indexOf('function updateSettingsDefaultModelChoices()',a);
+ assert.ok(a>0&&b>a);const sync=app.slice(a,b);
+ assert.doesNotMatch(sync,/API\.asset\(/);
+ assert.match(sync,/API\.request\('\/library'\)/);
+ assert.match(app,/async function loadCloudPair\(remote\)/);
+ assert.match(app,/await guardCloudBudget\(\[remote.original,remote.normalized/);
+ assert.match(app,/await putPair\(p\);pairs.push\(p\)/);
+ assert.deepEqual(storageBudget({usage:80*2**20,quota:100*2**20},10*2**20,96).allowed,false);
+ assert.deepEqual(storageBudget({usage:1*2**20,quota:400*2**20},20*2**20,96).allowed,true);
+ assert.equal(storageBudget(null,300*2**20,96).reason,'STORAGE_TRANSFER_LIMIT');
+ assert.match(html,/id="cloud-inventory"/);
+});
+test('Phone has an independent visible exit button after pinch zoom and returning from immersive',async()=>{
+ assert.match(html,/id="viewer-floating-close"/);
+ assert.match(app,/\$\('viewer-floating-close'\)\.addEventListener\('click',closeViewer\)/);
+ assert.match(app,/visualViewport\?\.addEventListener\('scroll',syncMobileClose\)/);
+ assert.match(app,/visibleLeft\+visibleWidth/);
+ const style=await text('styles.css');
+ assert.match(style,/#viewer-floating-close\{display:flex;position:fixed/);
+ assert.match(style,/\.immersion-open #viewer-floating-close\{display:none\}/);
+ assert.match(style,/#viewer .viewer-toolbar #viewer-close\{display:none\}/);
+});
+test('Settings API access test is read-only and hidden models are absent from Create and Compare',()=>{
+ for(const id of ['settings-open','settings-dialog','settings-mode','settings-model-list','settings-api-check','settings-diagnostics','gallery-delay'])assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(app,/async function runFreeApiCheck\(\)/);
+ const start=app.indexOf('async function runFreeApiCheck()'),end=app.indexOf('async function initR5()',start);
+ const access=app.slice(start,end);
+ assert.doesNotMatch(access,/API\.request\('\/(generate|expand)'/);
+ assert.match(access,/API\.capabilities\(\)/);
+ assert.match(app,/function visibleModels\(\)\{return MODELS\.filter\(m=>m\.direct&&settings\.enabledModels\.includes\(m\.key\)\)/);
+ assert.match(app,/for\(const model of visibleModels\(\)\.filter\(x=>x\.edit!==false\)\)/);
 });
