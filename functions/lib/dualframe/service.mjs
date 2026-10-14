@@ -13,7 +13,7 @@ const cleanName=s=>String(s||'Untitled').replace(/[\u0000-\u001f]/g,'').slice(0,
 const readJSON=async req=>{const t=await req.text();if(t.length>16000)fail('REQUEST_TOO_LARGE',413);try{return JSON.parse(t);}catch{fail('INVALID_JSON');}};
 export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null}){
  const get=key=>store.get(key,{type:'json',consistency:'strong'}),bytes=key=>store.get(key,{type:'arrayBuffer',consistency:'strong'}).then(v=>v===null?null:Buffer.from(v));
- const put=(key,value)=>store.setJSON(key,value,{onlyIfNew:true});
+ const put=async(key,value)=>{const result=await store.setJSON(key,value,{onlyIfNew:true});if(typeof result?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);if(result.modified&&JSON.stringify(await get(key))!==JSON.stringify(value))fail('STORAGE_WRITE_UNCONFIRMED',503);return result;};
  const session=req=>verifyToken(bearer(req),env('DF_SESSION_SECRET'),'session',now());
  function json(req,data,status=200){const origin=req.headers.get('origin');const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','vary':'Origin'};if(origin&&origins.has(origin)){headers['access-control-allow-origin']=origin;headers['access-control-allow-headers']='authorization,content-type,range';headers['access-control-expose-headers']='content-range,content-length';headers['access-control-allow-methods']='GET,POST,PUT,OPTIONS';}return Response.json(data,{status,headers});}
  async function ownedAsset(owner,id){if(!ID.test(id))fail('ASSET_UNKNOWN',404);const meta=await get(`asset-meta/${owner}/${id}`);if(!meta)fail('ASSET_UNKNOWN',404);return meta;}
@@ -92,7 +92,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
     if(existing){if(existing.request_fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT',409);return json(req,{job_id:id,status:(await state(existing)).status,reused:true});}
     const ratio=b.target==='portrait'?'9:16':'16:9',instruction=operation==='generate'?`Create one image in ${ratio}. `:b.mode==='faithful'?`Extend this scene naturally to ${ratio}. Preserve the subject, identity, original scene and lighting; create the missing surroundings. `:b.mode==='infographic'?`Create a ${ratio} visual background based on the reference, with space for a text overlay. Do not draw text. `:`Recompose this reference as ${ratio}. Preserve the subject identity and scene; intelligently reveal a wider environment rather than crop. `;
     const job={...effective,job_id:id,owner,idempotency_key:b.idempotency_key,request_fingerprint:fingerprint,provider_prompt:instruction+b.prompt,created_at:new Date(now()).toISOString(),created_ms:now(),status:'PENDING',provider_cost:null,cost_currency:null};
-    const created=await put(root,job);if(created.modified)await schedule(req,job);return json(req,{job_id:id,status:'PENDING',reused:!created.modified},202);
+    const created=await put(root,job);if(!created.modified&&(await get(root))?.request_fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT',409);if(created.modified)await schedule(req,job);return json(req,{job_id:id,status:'PENDING',reused:!created.modified},202);
    }
    const jobRoute=path.match(/^\/jobs\/([-a-zA-Z0-9_]+)(?:\/(accept|reject|cancel|resume))?$/);
    if(jobRoute){const j=await getJob(owner,jobRoute[1]);if(req.method==='GET'&&!jobRoute[2])return json(req,await state(j));
@@ -128,7 +128,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
   const j=await getJob(claim.owner,payload.job_id),root=`job-events/${j.owner}/${j.job_id}`;
   if(await get(`${root}/ready`)||await get(`${root}/failed`)||await get(`${root}/cancelled`))return;
   // Immutable reservation: platform retries/repeated dispatches never repeat a paid call.
-  const locked=await put(`${root}/submitted`,{at:now(),owner:j.owner,job_id:j.job_id});if(!locked.modified)return;
+  const locked=await put(`${root}/submitted`,{at:now(),owner:j.owner,job_id:j.job_id,reservation_id:randomUUID()});if(!locked.modified)return;
   const started=now();
   try{
    const source=j.normalized_asset_id?await bytes(`assets/${j.owner}/${j.normalized_asset_id}`):null;

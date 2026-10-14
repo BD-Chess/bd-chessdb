@@ -1,5 +1,5 @@
 import {readFile,writeFile,mkdir,cp} from 'node:fs/promises';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const site=process.env.NETLIFY_SITE_ID,token=process.env.NETLIFY_AUTH_TOKEN;
 if(!site||!token)throw Error('PRODUCTION_CREDENTIAL_MISSING');
@@ -30,7 +30,11 @@ if(mode==='--guard'){
  execFileSync('git',['cat-file','-e',baseline+'^{commit}']);
  await writeFile('.dualframe-baseline',baseline+'\n');await writeFile('.dualframe-deploy-before',deploy.id+'\n');
  await mkdir('.dualframe-prod',{recursive:true});
- const archive=execFileSync('git',['archive',baseline],{maxBuffer:1024*1024*1024});execFileSync('tar',['-x','-C','.dualframe-prod'],{input:archive});
+ await new Promise((resolve,reject)=>{
+  const archive=spawn('git',['archive',baseline],{stdio:['ignore','pipe','inherit']}),extract=spawn('tar',['-x','-C','.dualframe-prod'],{stdio:['pipe','inherit','inherit']});
+  let completed=0;const end=code=>{if(code!==0)reject(Error('BASELINE_ARCHIVE_FAILED'));else if(++completed===2)resolve();};
+  archive.on('error',reject);extract.on('error',reject);archive.stdout.on('error',reject);extract.stdin.on('error',reject);archive.stdout.pipe(extract.stdin);archive.on('close',end);extract.on('close',end);
+ });
  const paths=['public/Nara/dualframe-lab','functions/lib/dualframe','functions/dualframe-api.mjs','functions/dualframe-auth.mjs','functions/dualframe-work-background.mjs','functions/package.json'];
  for(const path of paths)await cp(path,'.dualframe-prod/'+path,{recursive:true,force:true});
  const config=await readFile('.dualframe-prod/netlify.toml','utf8'),fragment=await readFile('netlify-dualframe.fragment.toml','utf8');await writeFile('.dualframe-prod/netlify.toml',config.includes('# DualFrame AI R&D')?config.replace(/\n# DualFrame AI R&D[\s\S]*?# END DualFrame AI R&D\n/,fragment):config+fragment);

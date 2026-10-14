@@ -32,7 +32,9 @@ jobs:
       - name: Install the isolated image-function dependencies
         run: npm install --prefix functions --no-audit --no-fund
       - name: Verify contracts, authentication, saved sessions and pixels without provider calls
-        run: node --test tools/dualframe-ai-lab/test_core.mjs tests/dualframe-v3.test.mjs tests/dualframe-session.test.mjs
+        run: |
+          set -o pipefail
+          node --test tools/dualframe-ai-lab/test_core.mjs tests/dualframe-v3.test.mjs tests/dualframe-session.test.mjs | tee dualframe-test-results.txt
       - name: Preserve the currently deployed site and overlay only DualFrame
         run: node scripts/dualframe-prod-stage.mjs
       - name: Install preserved root dependencies and image dependencies
