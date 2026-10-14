@@ -5,7 +5,7 @@ export const DEFAULT_ENABLED_MODELS=Object.freeze(['wan-image-pro','grok-imagine
 export const DEFAULT_SETTINGS=Object.freeze({
  mode:'smart',model:'openai-sunburst',quality:'hd',position:'center',rememberLast:false,
  enabledModels:[...DEFAULT_ENABLED_MODELS],galleryCollection:'all',viewerQuality:'auto',
- delaySeconds:2,autoSyncMetadata:true
+ delaySeconds:2,autoSyncMetadata:true,preloadAdjacent:true
 });
 export function normalizeSettings(source={},keys=null){
  const item=source&&typeof source==='object'?source:{};
@@ -24,7 +24,7 @@ export function normalizeSettings(source={},keys=null){
  enabledModels:enabled,galleryCollection:one(item.galleryCollection,['all','own','reference','favorites'],DEFAULT_SETTINGS.galleryCollection),
  viewerQuality:one(item.viewerQuality,['auto','hd','4k'],DEFAULT_SETTINGS.viewerQuality),
  delaySeconds:Number.isInteger(delay)&&delay>=0&&delay<=5?delay:DEFAULT_SETTINGS.delaySeconds,
- autoSyncMetadata:item.autoSyncMetadata!==false
+ autoSyncMetadata:item.autoSyncMetadata!==false,preloadAdjacent:item.preloadAdjacent!==false
  };
 }
 export function readSettings(storage=globalThis.localStorage,keys=null){
