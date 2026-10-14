@@ -140,7 +140,7 @@ function directEditionArtworkImages(root,item,manifest){
   if(legacyProvenance)assert(hex(entry.generation_prompt_sha256)&&text(entry.model_reported,120)&&['PASS','MISSING','FIX_LIMIT_REACHED'].includes(entry.claude_review),'direct edition artwork legacy provenance');
   const enParagraph=item.en.scenes[entry.scene-1].paragraphs[entry.after_paragraph_en-1],slParagraph=item.sl.scenes[entry.scene-1].paragraphs[entry.after_paragraph_sl-1];
   assert(sha(enParagraph)===entry.paragraph_sha256_en&&sha(slParagraph)===entry.paragraph_sha256_sl,'direct edition artwork paragraph binding');
-  const prefix='assets/img/daily/'+item.paths.date+'/R1/';
+  const prefix='assets/img/daily/'+item.paths.date+'/'+(item.paths.instance?item.paths.instance+'/':'')+'R1/';
   assert(typeof entry.src==='string'&&entry.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.webp$/.test(entry.src.slice(prefix.length)),'unsafe direct edition artwork source');
   assert(entry.width===1672&&entry.height===941&&hex(entry.sha256),'direct edition artwork asset metadata');
   const asset=path.join(naraRoot(root),entry.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'direct edition artwork asset missing');

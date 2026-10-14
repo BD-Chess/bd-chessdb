@@ -106,14 +106,44 @@ const STANDALONE_DAILY_EDITIONS=Object.freeze({
     archive:'Nara-AI-archive.html#versions-NARA-D-2026-10-06'
   }),
   'NARA-D-2026-10-07':Object.freeze({edition:'Nara-AI-2026-10-07-format-R1.html'}),
-  'NARA-D-2026-10-08':Object.freeze({edition:'Nara-AI-2026-10-08-format-R1.html'})
+  'NARA-D-2026-10-08':Object.freeze({edition:'Nara-AI-2026-10-08-format-R1.html'}),
+  'NARA-D-2026-10-09':Object.freeze({edition:'Nara-AI-2026-10-09-S1-format-R1.html',instance:'S1'})
 });
+function companionDailyEntries(root,record,standalone){
+  if(!root||!standalone.instance||record.id.includes(':'))return '';
+  const n=path.join(root,'public/Nara'),file=path.join(n,'daily/days/'+record.date+'.json');
+  if(!fs.existsSync(file))return '';
+  const day=JSON.parse(fs.readFileSync(file,'utf8'));
+  assert(day.schema==='nara.daily.day.v1'&&day.id===record.id&&day.date===record.date&&day.featured_instance===standalone.instance&&Array.isArray(day.instances),'standalone Daily day binding');
+  return day.instances.filter(entry=>entry.instance!==standalone.instance).map(entry=>{
+    assert(['S1','S2','S3'].includes(entry.instance)&&entry.id===record.id+':'+entry.instance,'companion Daily identity');
+    const expected='daily/records/'+record.date+'/'+entry.instance+'.json';
+    assert(entry.record_file===expected,'unsafe companion Daily record path');
+    const bytes=fs.readFileSync(path.join(n,expected),'utf8');
+    assert(hash(bytes)===entry.record_sha256,'companion Daily record hash mismatch');
+    const r=JSON.parse(bytes);
+    assert(r.id===entry.id&&r.date===record.date&&r.instance===entry.instance&&r.title===entry.title,'companion Daily record binding');
+    assert(hash(JSON.stringify({title:r.title,deck:r.deck,shape:r.shape,scenes:r.scenes}))===r.content_sha256,'companion Daily body hash mismatch');
+    let translation;
+    if(entry.translation_file){
+      const expectedSl='daily/translations/sl/'+record.date+'/'+entry.instance+'.json';
+      assert(entry.translation_file===expectedSl,'unsafe companion Daily translation path');
+      const slBytes=fs.readFileSync(path.join(n,expectedSl),'utf8');
+      assert(hash(slBytes)===entry.translation_sha256,'companion Daily translation hash mismatch');
+      translation=JSON.parse(slBytes);
+      assert(translation.story_id===r.id&&translation.source_content_sha256===r.content_sha256,'companion Daily translation binding');
+      assert(hash(JSON.stringify({title:translation.title,deck:translation.deck,shape:translation.shape,scenes:translation.scenes}))===translation.content_sha256,'companion Daily translation body hash mismatch');
+      assert(translation.scenes.length===r.scenes.length&&translation.scenes.every((scene,i)=>scene.paragraphs.length===r.scenes[i].paragraphs.length),'companion Daily language topology');
+    }
+    return storyEntry(r,translation?{[r.id]:translation}:{},true,root);
+  }).join('\n');
+}
 function storyEntry(r,translations,daily,root=null){
   const t=translations[r.id]??r.translation_sl,href=daily?'Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id:'#'+r.id;
   const standalone=daily?STANDALONE_DAILY_EDITIONS[r.id]:null;
-  if(standalone)return '<article class="notice daily-index-item" id="'+esc(r.id)+'" data-content-sha256="'+esc(r.content_sha256)+'"><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><h2 class="daily-index-title"><a href="'+esc(standalone.edition)+'">'+localizedText(r.title,t?.title)+'</a></h2></article>';
+  if(standalone)return '<article class="notice daily-index-item" id="'+esc(r.id)+'" data-content-sha256="'+esc(r.content_sha256)+'"><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><h2 class="daily-index-title"><a href="'+esc(standalone.edition)+'">'+localizedText(r.title,t?.title)+'</a></h2></article>'+companionDailyEntries(root,r,standalone);
   const images=loadIllustrations(root,r,t,{nonBlocking:true});
-  return '<details class="archive-item'+(daily?' daily-item':'')+'" id="'+r.id+'"><summary><time datetime="'+r.date+'">'+r.date+'</time><span class="story-summary-title"><strong>'+localizedText(r.title,t?.title)+'</strong>'+revisionLabel(r.revision)+scoreChip(r,root)+'</span></summary><div class="inside">'+revisionNotice(r.revision)+formatDayLinks(root,r.date)+'<p class="lede">'+localizedText(r.deck,t?.deck)+'</p><p class="meta">'+bi('Published','Objavljeno')+' '+esc(r.published_at)+' · <a href="'+href+'">'+(daily?bi('Permanent archive link','Trajna povezava v arhiv'):bi('Permanent link','Trajna povezava'))+'</a></p>'+storyContent(r,t,images)+'</div></details>'+scoreDialog(r,t);
+  return '<details class="archive-item'+(daily?' daily-item':'')+'" id="'+r.id+'"><summary><time datetime="'+r.date+'">'+r.date+'</time><span class="story-summary-title"><strong>'+localizedText(r.title,t?.title)+'</strong>'+revisionLabel(r.revision)+scoreChip(r,root)+'</span></summary><div class="inside">'+revisionNotice(r.revision)+(daily?'':formatDayLinks(root,r.date))+'<p class="lede">'+localizedText(r.deck,t?.deck)+'</p><p class="meta">'+bi('Published','Objavljeno')+' '+esc(r.published_at)+' · <a href="'+href+'">'+(daily?bi('Permanent archive link','Trajna povezava v arhiv'):bi('Permanent link','Trajna povezava'))+'</a></p>'+storyContent(r,t,images)+'</div></details>'+scoreDialog(r,t);
 }
 export function latestPage(input,month,translations={},root=null){
   const records=(Array.isArray(input)?[...input]:(input?[input]:[])).sort((a,b)=>b.date.localeCompare(a.date));

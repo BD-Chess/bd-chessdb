@@ -22,13 +22,31 @@ function logRecord(date='2026-10-05'){
 function temp(t){const root=fs.mkdtempSync(path.join(os.tmpdir(),'nara-test-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));initialize(root,'2026-10');return root}
 
 const editionRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-function illustratedOct8(){
- const paths=editionPaths('2026-10-08'),read=f=>JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',f),'utf8'));
+test('completed S1 keeps its two original companion stories on Daily across refreshes',t=>{
+ const root=temp(t),n=path.join(root,'public/Nara'),files=['daily/days/2026-10-09.json',...['S1','S2','S3'].flatMap(instance=>['daily/records/2026-10-09/'+instance+'.json','daily/translations/sl/2026-10-09/'+instance+'.json'])];
+ for(const file of files){fs.mkdirSync(path.dirname(path.join(n,file)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',file),path.join(n,file));}
+ const source=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-09/S1.json'),'utf8')),featured={...source,schema:'nara.daily.record.v1',id:'NARA-D-2026-10-09'};
+ const bodyBefore=JSON.stringify(source),render=()=>latestPage([record('2026-10-20','2026-10-20T20:00:00Z'),featured],'2026-10',{},root),html=render();
+ assert.ok(html.includes('<article class="notice daily-index-item" id="NARA-D-2026-10-09"'));
+ assert.ok(html.includes('href="Nara-AI-2026-10-09-S1-format-R1.html"'));
+ assert.ok(!html.includes(source.scenes[0].paragraphs[0]));
+ for(const instance of ['S2','S3']){
+  const r=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-09/'+instance+'.json'),'utf8'));
+  assert.ok(html.includes('<details class="archive-item daily-item" id="'+r.id+'">'));
+  assert.ok(html.includes(r.title));assert.ok(html.includes(r.translation_sl.title));
+ }
+ assert.ok(!html.includes('pre-format-R1.html'));
+ assert.equal(render(),html);assert.equal(JSON.stringify(source),bodyBefore);
+ fs.appendFileSync(path.join(n,'daily/records/2026-10-09/S2.json'),' ');
+ assert.throws(render,/companion Daily record hash mismatch/);
+});
+function illustratedOct9S1(){
+ const paths=editionPaths('2026-10-09-S1'),read=f=>JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',f),'utf8'));
  const en=read(paths.en),sl=read(paths.sl),binding=read(paths.binding);
  return {paths,en,sl,binding,originalEn:read(paths.source_en),originalSl:read(paths.source_sl),combined:pairedAssessment(binding.assessment,en.content_sha256)};
 }
 test('public edition artwork v3 keeps private provenance out and binds all three bilingual anchors',()=>{
- const item=illustratedOct8(),art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
+ const item=illustratedOct9S1(),art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
  assert.equal(art.schema,'nara.format.edition.artwork.v3');
  assert.doesNotMatch(JSON.stringify(art),/drive_id|full_prompt|claude_review|model_reported|generation_prompt/);
  const before=JSON.stringify([item.en,item.sl]),html=renderEditionPage(editionRoot,item);
@@ -44,7 +62,7 @@ test('public edition artwork v3 keeps private provenance out and binds all three
  assert.equal(renderEditionPage(editionRoot,item),html);
 });
 test('direct artwork rejects private fields, stale bindings and corrupted assets while retaining v2 compatibility',t=>{
- const root=temp(t),item=illustratedOct8(),n=path.join(root,'public/Nara'),manifestPath=path.join(n,item.paths.artwork);
+ const root=temp(t),item=illustratedOct9S1(),n=path.join(root,'public/Nara'),manifestPath=path.join(n,item.paths.artwork);
  const art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
  fs.mkdirSync(path.dirname(manifestPath),{recursive:true});
  for(const im of art.images){fs.mkdirSync(path.dirname(path.join(n,im.src)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',im.src),path.join(n,im.src));}
@@ -54,6 +72,7 @@ test('direct artwork rejects private fields, stale bindings and corrupted assets
  const stale=structuredClone(art);stale.en_content_sha256='0'.repeat(64);write(stale);assert.throws(()=>renderEditionPage(root,item),/language binding/);
  const para=structuredClone(art);para.images[0].paragraph_sha256_en='0'.repeat(64);write(para);assert.throws(()=>renderEditionPage(root,item),/paragraph binding/);
  const unsafe=structuredClone(art);unsafe.images[0].src='../secret.webp';write(unsafe);assert.throws(()=>renderEditionPage(root,item),/unsafe direct edition artwork source/);
+ const otherInstance=structuredClone(art);otherInstance.images[0].src=otherInstance.images[0].src.replace('/S1/','/S2/');write(otherInstance);assert.throws(()=>renderEditionPage(root,item),/unsafe direct edition artwork source/);
  const legacy=structuredClone(art);legacy.schema='nara.format.edition.artwork.v2';for(const im of legacy.images){im.generation_prompt_sha256='0'.repeat(64);im.model_reported='TEST_FIXTURE';im.claude_review='MISSING';}
  write(legacy);assert.doesNotThrow(()=>renderEditionPage(root,item));
  write(art);fs.appendFileSync(path.join(n,art.images[0].src),'corrupt');assert.throws(()=>renderEditionPage(root,item),/asset hash mismatch/);
@@ -73,7 +92,7 @@ test('log requires paired author and critic roles plus final close',()=>{const l
 test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-20','2026-10-20T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
 test('Daily links illustrated stories for 5 through 8 October with date and title only',()=>{
   const linked=['2026-10-05','2026-10-06','2026-10-07','2026-10-08'].map(d=>record(d,d+'T20:00:00Z'));
-  const other=record('2026-10-09','2026-10-09T20:00:00Z');
+  const other=record('2026-10-10','2026-10-10T20:00:00Z');
   linked.forEach((r,i)=>r.deck='INLINE_BODY_MUST_NOT_RENDER_'+i);
   const p=latestPage([...linked,other],'2026-10');
   for(const r of linked){
