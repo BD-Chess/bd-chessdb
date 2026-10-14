@@ -1,0 +1,24 @@
+name: DualFrame PWA validation
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check PWA JavaScript
+        run: |
+          node --check public/Nara/dualframe-lab/app.mjs
+          node --check public/Nara/dualframe-lab/sw.js
+          node --check scripts/dualframe-prod-stage.mjs
+          node --check tests/dualframe-pwa-live-smoke.mjs
+      - name: Verify offline package and update safety
+        run: node --test tests/dualframe-pwa.test.mjs

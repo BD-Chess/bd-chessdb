@@ -3,20 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1518">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DualFrame AI">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="description" content="One image. Two compositions. Create orientation pairs and compare image expansion with source-aware blind reviews.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://bd-chess.github.io; connect-src 'self' https: http://localhost:8765 http://127.0.0.1:8765; object-src 'none'; base-uri 'self'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <title>DualFrame AI — Gallery · Create · Compare</title>
-  <link rel="stylesheet" href="./styles.css?v=3.0-r5">
-  <script type="module" src="./app.mjs?v=3.0-r4.1"></script>
+  <link rel="stylesheet" href="./styles.css?v=3.0-r5.1">
+  <script type="module" src="./app.mjs?v=3.0-r4.2"></script>
 </head>
 <body>
   <a class="skip" href="#workspace" data-i18n="skip">Skip to workspace</a>
   <header class="topbar">
     <a class="brand" href="./" aria-label="DualFrame AI home"><span class="brand-icon"><i></i><i></i></span>DualFrame<span class="brand-ai">AI</span><span class="badge">LAB</span></a>
-    <div class="header-actions"><span class="privacy-chip" data-i18n="localOnly">Private · on this device</span><button id="api-toggle" class="text-button" type="button">API</button><button id="language" class="text-button" aria-label="Change language">SL</button></div>
+    <div class="header-actions"><span class="privacy-chip" data-i18n="localOnly">Private · on this device</span><button id="pwa-install" class="text-button pwa-install" type="button" data-i18n="installApp">Install</button><button id="api-toggle" class="text-button" type="button">API</button><button id="language" class="text-button" aria-label="Change language">SL</button></div>
   </header>
+  <div id="pwa-update" class="pwa-update" role="status" aria-live="polite" hidden><span id="pwa-update-text"></span><button id="pwa-update-button" class="secondary" type="button" data-i18n="pwaUpdateAction">Save &amp; update</button></div>
   <main>
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy"><p class="eyebrow" data-i18n="eyebrow">ONE ORIGINAL. ROOM FOR BOTH WORLDS.</p>
@@ -68,6 +75,7 @@
   </main>
   <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
   <dialog id="viewer" aria-label="Paired image viewer"><div class="viewer-shell"><div class="viewer-toolbar"><strong id="viewer-title"></strong><button id="viewer-play" class="text-button" type="button" data-i18n="playTour">Play tour</button><button id="viewer-favorite" class="text-button" type="button" aria-label="Favorite">♡</button><div class="button-row"><select id="viewer-orientation" aria-label="Composition override"><option value="auto" data-i18n="autoFrame">Auto frame</option><option value="original" data-i18n="original">Original</option><option value="landscape">L · 16:9</option><option value="portrait">P · 9:16</option></select><select id="quality" aria-label="Image quality"><option value="hd">HD</option><option value="4k">4K</option><option value="auto" data-i18n="autoQuality">Auto · DPR</option></select><button id="mask" class="secondary" aria-pressed="false" data-i18n="showRegions">Show added regions</button><button id="fullscreen" class="secondary" aria-label="Enter fullscreen">⛶</button><button id="viewer-close" class="secondary" aria-label="Close viewer">✕</button></div></div><div id="viewer-stage"><img id="viewer-image" alt="Selected composition"><div id="source-boundary" hidden></div></div><div class="viewer-footer"><button id="previous" class="secondary" aria-label="Previous image">←</button><span id="viewer-status" aria-live="polite"></span><button id="next" class="secondary" aria-label="Next image">→</button></div><details class="viewer-receipt"><summary data-i18n="resultDetails">Result details & provenance</summary><pre id="result-details"></pre></details><div class="viewer-downloads"><button id="download-original" class="text-button" data-i18n="downloadOriginal">↓ Original</button><button id="download-landscape" class="text-button" data-i18n="downloadL">↓ Landscape (all)</button><button id="download-portrait" class="text-button" data-i18n="downloadP">↓ Portrait (all)</button><button id="download-sidecar" class="text-button" data-i18n="downloadSidecar">↓ Sidecar</button></div></div></dialog>
+  <dialog id="pwa-help" class="auth-dialog pwa-dialog" aria-labelledby="pwa-title"><p class="eyebrow">DUALFRAME AI · PWA</p><h2 id="pwa-title" data-i18n="pwaTitle">Install DualFrame AI</h2><p data-i18n="pwaDescription">Your original images and pairs stay in this browser. The app shell, local gallery and demo work offline after first load. Image generation, cloud Sync and the remote Nara reference gallery need internet.</p><p id="pwa-status" class="small" role="status">Preparing the offline app shell…</p><p class="small muted" data-i18n="pwaInstallHelp">On iPhone or iPad, open this page in Safari and choose Share → Add to Home Screen. On Android or desktop, use Install or your browser menu.</p><button id="pwa-close" class="secondary" type="button" data-i18n="pwaClose">Close</button></dialog>
   <noscript>This LAB needs JavaScript for local image processing. No images are uploaded automatically.</noscript>
 <dialog id="api-auth" class="auth-dialog" aria-labelledby="api-auth-title"><form id="api-auth-form"><p class="eyebrow">DUALFRAME AI · API</p><h2 id="api-auth-title" data-i18n="authTitle">Unlock image creation</h2><p data-i18n="authNote">Sign in once on this device. Your saved session lets you create and compare images without entering the password again.</p><label class="field"><span data-i18n="passwordLabel">Password</span><input id="api-password" type="password" autocomplete="current-password" required maxlength="200"></label><p id="api-auth-error" class="error" role="alert"></p><div class="button-row"><button type="submit" class="primary" data-i18n="unlockAPI">Unlock API</button><button type="button" class="secondary" id="api-auth-cancel" data-i18n="cancel">Cancel</button></div><p class="small muted" data-i18n="authStorage">A session token is stored on this device. Use Lock API to remove it.</p></form></dialog>
 </body>

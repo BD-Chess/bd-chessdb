@@ -53,3 +53,13 @@ body{background:radial-gradient(ellipse at 75% 0%,#192130 0,transparent 48%),#03
 #viewer .viewer-shell.immersive{height:100dvh;max-height:100dvh;width:100vw;padding:0;gap:0}
 #viewer .viewer-shell.immersive #viewer-stage{height:100dvh;max-height:100dvh;width:100vw}
 #viewer .viewer-shell.immersive .viewer-toolbar,#viewer .viewer-shell.immersive .viewer-footer,#viewer .viewer-shell.immersive .viewer-downloads,#viewer .viewer-shell.immersive .viewer-receipt{display:none}
+
+/* Install and offline shell controls stay within this app path. */
+.pwa-install{padding:8px 10px;border:1px solid var(--border);border-radius:7px}
+.pwa-update{position:sticky;top:0;z-index:9;display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 20px;background:#17272a;border-bottom:1px solid var(--teal);color:var(--ink);font-size:13px}
+.pwa-update[hidden]{display:none}
+.pwa-update button{min-height:40px}
+.pwa-dialog{max-height:calc(100dvh - 32px);overflow:auto}
+.pwa-dialog .secondary{margin-top:10px}
+@media(max-width:760px){.topbar{padding-left:16px;padding-right:16px}.header-actions{gap:10px}.privacy-chip{display:none}.pwa-update{align-items:flex-start;flex-wrap:wrap;gap:8px;padding:12px 16px}.pwa-update button{width:100%}}
+@media(max-width:430px){.brand{gap:6px;font-size:19px}.header-actions{gap:7px}.pwa-install{padding:7px 8px;font-size:11px}}
