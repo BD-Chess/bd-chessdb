@@ -19,6 +19,9 @@ if(mode==='--guard'){
  let capabilities=null;for(let i=0;i<40;i++){const cap=await fetch(base+'/api/df/capabilities',{cache:'no-store'});if(cap.ok){capabilities=await cap.json();if(capabilities.auth_configured&&capabilities.models.every(m=>m.key_configured))break;}await new Promise(r=>setTimeout(r,4000));}if(!capabilities)throw Error('LIVE_API_UNAVAILABLE');console.log(JSON.stringify({auth_configured:capabilities.auth_configured,available_models:capabilities.models?.filter(m=>m.available).map(m=>m.key)}));if(capabilities.version!=='3.0-r4')throw Error('LIVE_API_VERSION_MISMATCH');
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
  const page=await fetch(base+'/Nara/dualframe-lab/',{cache:'no-store'});const html=await page.text();if(!page.ok||!html.includes('api-auth-form')||!html.includes('3.0-r4'))throw Error('LIVE_PAGE_VERSION_MISMATCH');
+ const appResponse=await fetch(base+'/Nara/dualframe-lab/app.mjs?v=3.0-r4.1',{cache:'no-store'}),appText=await appResponse.text();
+ const zipResponse=await fetch(base+'/Nara/dualframe-lab/zip-store.mjs?v=3.0-r4.1',{cache:'no-store'}),zipText=await zipResponse.text();
+ if(!appResponse.ok||!appText.includes('downloadAllVariants')||!appText.includes('Landscape (all)')||!appText.includes('Portrait (all)')||!zipResponse.ok||!zipText.includes('collectOrientationAssets')||!zipText.includes('0x04034b50'))throw Error('LIVE_VARIANT_EXPORT_UNAVAILABLE');
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
  const names=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY'];
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));

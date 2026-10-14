@@ -9,6 +9,7 @@ import {providerRequest,callProvider,safeImageURL} from '../functions/lib/dualfr
 import {finishImage,hash} from '../functions/lib/dualframe/images.mjs';
 import {createService} from '../functions/lib/dualframe/service.mjs';
 import {MODELS as frontendModels} from '../public/Nara/dualframe-lab/models.mjs';
+import {collectOrientationAssets,zipStore} from '../public/Nara/dualframe-lab/zip-store.mjs';
 
 const secret=randomBytes(32).toString('base64url'),password=randomBytes(12).toString('hex'),verifier=passwordVerifier(password);
 const fakeKey=randomBytes(32).toString('hex');
@@ -46,4 +47,46 @@ test('complete authenticated upload -> job -> saved image -> restore, with one p
  assert.equal((await api(`/jobs/${id}/accept`,'POST',{})).status,200);const library=await(await api('/library')).json();assert.equal(library.pairs.length,1);assert.equal(library.jobs[0].status,'ACCEPTED');
  await api(`/jobs/${id}/resume`,'POST',{});assert.equal(scheduled.length,1);assert.equal(calls,1);
  const conflict=await api('/expand','POST',{...body,prompt:'A different request with the same key'});assert.equal(conflict.status,409);
+});
+
+
+function readStoredZip(buffer) {
+ const end=buffer.lastIndexOf(Buffer.from([0x50,0x4b,0x05,0x06]));
+ assert.ok(end>=0,'ZIP end record exists');
+ const count=buffer.readUInt16LE(end+10),centralOffset=buffer.readUInt32LE(end+16),files=[];
+ let cursor=centralOffset;
+ for(let i=0;i<count;i++){
+  assert.equal(buffer.readUInt32LE(cursor),0x02014b50,'central directory signature');
+  const crc=buffer.readUInt32LE(cursor+16),size=buffer.readUInt32LE(cursor+24),nameLength=buffer.readUInt16LE(cursor+28),extraLength=buffer.readUInt16LE(cursor+30),commentLength=buffer.readUInt16LE(cursor+32),localOffset=buffer.readUInt32LE(cursor+42);
+  const name=buffer.subarray(cursor+46,cursor+46+nameLength).toString('utf8');
+  assert.equal(buffer.readUInt32LE(localOffset),0x04034b50,'local file signature');
+  const localNameLength=buffer.readUInt16LE(localOffset+26),localExtraLength=buffer.readUInt16LE(localOffset+28),dataStart=localOffset+30+localNameLength+localExtraLength,data=buffer.subarray(dataStart,dataStart+size);
+  let actual=0xffffffff;for(const byte of data){actual^=byte;for(let bit=0;bit<8;bit++)actual=actual&1?0xedb88320^(actual>>>1):actual>>>1;}actual=(actual^0xffffffff)>>>0;
+  assert.equal(actual,crc,'CRC-32 verifies image bytes');
+  files.push({name,data});
+  cursor+=46+nameLength+extraLength+commentLength;
+ }
+ return files;
+}
+
+test('gallery ZIP collection includes distinct saved outputs for one orientation only',()=>{
+ const a=new Blob(['same image']),b=new Blob(['portrait image']),c=new Blob(['another landscape']),d=new Blob(['provider B same bytes']);
+ const pair={variants:{landscape:{hd:{blob:a,origin:'generated',direction:'landscape',sha256:'aa01',model_key:'model-a'}},portrait:{hd:{blob:b,origin:'generated',direction:'portrait',sha256:'bb01',model_key:'model-p'}}},candidates:[{blob:a,origin:'generated',direction:'landscape',sha256:'aa01',model_key:'model-a',candidate_id:'job-a'},{blob:c,origin:'generated',direction:'landscape',sha256:'cc01',model_key:'model-c',candidate_id:'job-c'},{blob:d,origin:'generated',direction:'landscape',sha256:'aa01',model_key:'model-b',candidate_id:'job-b'}],jobs:[{job_id:'job-c',target:'landscape',quality:'hd',candidate:{blob:c,origin:'generated',sha256:'cc01',model_key:'model-c'}},{job_id:'job-p',target:'portrait',quality:'hd',candidate:{blob:b,origin:'generated',direction:'portrait',sha256:'bb02',model_key:'model-p'}}],web_output:{blob:new Blob(['web output']),origin:'imported',direction:'landscape',sha256:'dd01',provider:'web-import'}};
+ const items=collectOrientationAssets(pair,'landscape');
+ assert.deepEqual(items.map(x=>x.asset.sha256),['aa01','cc01','aa01','dd01']);
+ assert.equal(items[1].quality,'hd','job quality is retained for the model variant');
+ assert.equal(collectOrientationAssets(pair,'portrait').length,2);
+ assert.equal(collectOrientationAssets({variants:{landscape:{hd:{blob:a,origin:'original',direction:'landscape'}}}},'landscape').length,0);
+});
+
+test('ZIP_STORE contains exactly its selected images with valid names, sizes and CRC-32',async()=>{
+ const one=Buffer.from([0,1,2,255]),two=Buffer.from('second image');
+ const archive=await zipStore([{name:'images/portrait-žena.png',blob:new Blob([one])},{name:'images/model-b.webp',blob:new Blob([two])}]);
+ assert.equal(archive.type,'application/zip');
+ const files=readStoredZip(Buffer.from(await archive.arrayBuffer()));
+ assert.deepEqual(files.map(x=>x.name),['images/portrait-žena.png','images/model-b.webp']);
+ assert.deepEqual(files.map(x=>x.data),[one,two]);
+ const single=await zipStore([{name:'only.png',blob:new Blob([one])}]);
+ assert.equal(readStoredZip(Buffer.from(await single.arrayBuffer())).length,1);
+ await assert.rejects(zipStore([{name:'../outside.png',blob:new Blob([one])}]),/ZIP_INVALID_NAME/);
 });
