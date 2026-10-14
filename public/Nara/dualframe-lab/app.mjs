@@ -57,7 +57,7 @@ Object.assign(dictionary.sl,{
  profile:'Hiter recept',profilePhoto:'Fotografija · ohrani',profileArt:'Umetniška kompozicija',profileText:'Infografika / besedilo',applyProfile:'Uporabi kot privzeto',
  checkApiFree:'Preveri API · brez generiranja',apiTestNote:'Preveri strežnik, sejo in prisotnost ključev. Brez ustvarjanja slik, stroškov ali neutemeljenih trditev o delovanju modela.',
  defaultCollection:'Začetna zbirka',defaultViewerQuality:'Kakovost celozaslonskega ogleda',delayLabel:'Delay',delayOff:'Izključeno',
- delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 1–5 sekund. Izključeno preklopi takoj.',
+ delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 0,5–5 sekund. Izključeno (0 s) preklopi takoj.',
  metadataAuto:'Ob zagonu uskladi samo katalog in imena, nikoli bajtov slik.',storageSafeHelp:'Sync najprej prikaže oblačne slike. Posamezno fotografijo naložiš po izbiri. Izvirnikov, ki so samo lokalni, nikoli ne brišemo samodejno.',
  storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',preloadAdjacent:'Prednaloži eno prejšnjo in eno naslednjo sliko',
  estimateUnavailable:'Brskalnik ne razkriva ocene svoje shrambe (to ni dokaz prostega/zasedenega prostora naprave).',
