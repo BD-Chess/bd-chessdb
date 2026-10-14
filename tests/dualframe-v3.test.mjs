@@ -140,3 +140,27 @@ test('gallery image title persists in private cloud without changing the origina
  assert.ok(await store.get('titles/'+owner+'/'+sha),'new title is durable');
  assert.equal((await s.handle(new Request(base+'/library'))).status,401);
 });
+
+
+test('read-only provider access probe requires session and never performs billable requests',async()=>{
+ const store=new Store(),origin='https://bd-chess.github.io',url='https://www.mdlxdcc.org/api/df/model-probe',called=[];
+ const fetcher=async(url,options)=>{
+  called.push({url,method:options.method});
+  if(url.includes('/image-generation-models/'))return Response.json({id:'grok-imagine-image-2.0'});
+  return Response.json({id:'gpt-image-2.5-flare'});
+ };
+ const api=createService({store,env,fetcher});
+ const unauthorized=await api.handle(new Request(url,{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({models:['openai-flare']})}));
+ assert.equal(unauthorized.status,401);assert.equal(called.length,0);
+ const token=signToken({owner:'bd-research-owner',scope:'session'},secret);
+ const submit=models=>api.handle(new Request(url,{method:'POST',headers:{origin,'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({models})}));
+ const invalid=await submit(['unknown-model']);assert.equal(invalid.status,400);
+ assert.equal((await invalid.json()).error,'INVALID_PROBE_MODELS');assert.equal(called.length,0);
+ const allowed=await submit(['openai-flare','grok-imagine']);
+ assert.equal(allowed.status,200);const data=await allowed.json();
+ assert.deepEqual(data.models.map(x=>x.status),['MODEL_ACCESSIBLE','MODEL_ACCESSIBLE']);
+ assert.equal(data.billable_requests,0);
+ assert.equal(called.length,2);assert.ok(called.every(x=>x.method==='GET'));
+ assert.equal(JSON.stringify(data).includes(fakeKey),false);
+ assert.equal(allowed.headers.get('access-control-allow-origin'),origin);
+});
