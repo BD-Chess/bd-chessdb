@@ -83,8 +83,8 @@ function result(fen, move, { depth = 8, score = 22, engine = null } = {}) {
     depth, nodes: 3000, elapsedMs: 50, bestMove: move };
 }
 
-test('phone comparison prepares, searches and destroys one child at a time with equal per-engine limits',async()=>{
-  for(const mode of ['sf-lc0','sf-reckless','sf-berserk','all']){
+test('two-engine phone comparison prepares, searches and destroys one child at a time with equal per-engine limits',async()=>{
+  for(const mode of ['sf-lc0','sf-reckless','sf-berserk']){
     const {Session}=fixture({mobile:true,isolated:false});Session.configure({analysisMode:mode,sfCardMode:'sf-lite'});
     const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
     const run=session.analyze({fen:BLACK,history:HISTORY,movetime:100,multiPV:2});await tick();
@@ -103,15 +103,85 @@ test('phone comparison prepares, searches and destroys one child at a time with 
 });
 
 test('phone queued failure advances; Stop and setting changes prevent late loaders from starting peers',async()=>{
-  const {Session}=fixture({mobile:true});Session.configure({analysisMode:'all',sfCardMode:'sf-full'});
+  const {Session}=fixture({mobile:true});Session.configure({analysisMode:'sf-lc0',sfCardMode:'sf-full'});
   const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
   const run=session.analyze({fen:START,movetime:100});await tick();fake.calls[0].ready.reject(new Error('Unavailable'));await tick();
-  assert.equal(fake.calls[1].prepareCalled,true);assert.equal(fake.calls[2].prepareCalled,false);
+  assert.equal(fake.calls[1].prepareCalled,true);
   session.stop();const done=await run;assert.equal(done.status,'stopped');
   fake.calls[1].ready.resolve();await tick();assert(fake.calls.every(c=>!c.options));assert(fake.calls.every(c=>c.destroyed));
   await assert.rejects(session.analyze({fen:START,infinite:true}),/finite Time/);
   Session.configure({analysisMode:'sf-berserk'});const next=session.analyze({fen:START,depth:14});await tick();
   Session.configure({sfCardMode:'sf-lite'});assert.equal((await next).status,'stopped');session.destroy();
+});
+
+test('All Engines starts four CPU-1 searches together with a full hour each on desktop and phone',async()=>{
+  for(const mobile of [false,true])for(const isolated of [false,true])for(const sfCardMode of ['sf-lite','sf-full']){
+    const {Session}=fixture({mobile,isolated});
+    Session.configure({analysisMode:'all',sfCardMode,sfFullThreadsRequested:1});
+    const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
+    const snapshots=[],run=session.analyze({fen:BLACK,history:HISTORY,movetime:3600000,multiPV:1,
+      onInfo:(_,snapshot)=>snapshots.push(snapshot)});
+    await tick();
+    assert.equal(Session.capabilities().sequential,false);
+    assert.equal(Session.capabilities().totalThreads,4);
+    assert.deepEqual(fake.calls.map(c=>c.id),[sfCardMode,'lc0','reckless','berserk']);
+    assert(fake.calls.every(c=>c.prepareCalled&&!c.options),'all four prepare before timed searches');
+    for(const call of fake.calls.slice(0,3))call.ready.resolve();await tick();
+    assert(fake.calls.every(c=>!c.options),'loading time consumes none of the one-hour search budgets');
+    fake.calls[3].ready.resolve();await tick();
+    assert(fake.calls.every(c=>c.options&&!c.destroyed),'four searches overlap before any completes');
+    for(const call of fake.calls){
+      assert.equal(call.config.threads,1);assert.equal(call.options.movetime,3600000);
+      assert.equal(call.options.multiPV,1);assert.equal(call.options.depth,null);
+      assert.equal(call.options.fen,BLACK);assert.deepEqual(plain(call.options.history),HISTORY);
+    }
+    fake.calls[0].complete(result(BLACK,'e7e5'));await tick();
+    assert.equal(session.isRunning(),true);assert.equal(snapshots.at(-1).children[sfCardMode].status,'complete');
+    assert(fake.calls.slice(1).every(c=>c.options&&!c.destroyed),'SF completion does not stop its peers');
+    for(const call of fake.calls.slice(1))call.complete(result(BLACK,'c7c5'));
+    const done=await run;assert.equal(done.status,'complete');assert.equal(done.groupComplete,true);
+    assert.equal(done.children[sfCardMode].lines[0].pv[0],'e7e5');
+    assert.equal(done.children.lc0.lines[0].pv[0],'c7c5');
+    assert(fake.calls.every(c=>c.destroyed));session.destroy();
+  }
+});
+
+test('All Engines Stop cancels four active searches and rejects their late results',async()=>{
+  const {Session}=fixture();Session.configure({analysisMode:'all'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory}),snapshots=[];
+  const run=session.analyze({fen:START,movetime:3600000,multiPV:1,onInfo:(_,s)=>snapshots.push(s)});
+  await tick();assert(fake.calls.every(c=>c.options));session.stop();
+  const stopped=await run;assert.equal(stopped.status,'stopped');
+  assert.equal(Object.keys(stopped.children).length,4);assert.equal(fake.destroyed.length,4);
+  const count=snapshots.length;
+  for(const call of fake.calls){call.info(result(START,'e2e4'));call.complete(result(START,'e2e4'));}
+  await tick();assert.equal(snapshots.length,count);assert.equal(session.isRunning(),false);session.destroy();
+});
+
+test('All Engines new position cancels all old peers and only publishes the new FEN',async()=>{
+  const {Session}=fixture({mobile:true});Session.configure({analysisMode:'all'});
+  const fake=adapters(),session=Session.create({Chess,adapterFactory:fake.factory,teardownGraceMs:0}),snapshots=[];
+  const first=session.analyze({fen:START,movetime:3600000,onInfo:(_,s)=>snapshots.push(s)});await tick();
+  const next=session.analyze({fen:BLACK,history:HISTORY,movetime:3600000,onInfo:(_,s)=>snapshots.push(s)});await tick();
+  assert.equal((await first).status,'stopped');assert.equal(fake.calls.length,8);
+  assert(fake.calls.slice(4).every(c=>c.options.fen===BLACK));const count=snapshots.length;
+  for(const call of fake.calls.slice(0,4)){call.info(result(START,'e2e4'));call.complete(result(START,'e2e4'));}
+  await tick();assert.equal(snapshots.length,count);
+  for(const call of fake.calls.slice(4))call.complete(result(BLACK,'e7e5'));
+  const done=await next;assert.equal(done.fen,BLACK);assert.equal(done.groupComplete,true);session.destroy();
+});
+
+test('All Engines preparation failure leaves the other three concurrent searches usable',async()=>{
+  const {Session}=fixture();Session.configure({analysisMode:'all'});
+  const fake=preparingAdapters(),session=Session.create({Chess,adapterFactory:fake.factory});
+  const run=session.analyze({fen:START,movetime:3600000,multiPV:1});await tick();
+  fake.calls[1].ready.reject(new Error('LCZero unavailable'));
+  for(const call of fake.calls.filter((_,i)=>i!==1))call.ready.resolve();await tick();
+  assert.equal(fake.calls[1].options,null);
+  assert(fake.calls.filter((_,i)=>i!==1).every(c=>c.options),'healthy peers do not wait for a search completion');
+  for(const call of fake.calls.filter((_,i)=>i!==1))call.complete(result(START,'e2e4'));
+  const done=await run;assert.equal(done.status,'partial');assert.equal(done.children.lc0.status,'failed');
+  assert.equal(done.children.berserk.status,'complete');session.destroy();
 });
 
 test('default is CDB-first, settings do not launch workers, and Full/Berserk remain lazy until analysis', async () => {

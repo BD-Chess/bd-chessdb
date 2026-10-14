@@ -39,7 +39,9 @@
     const mobile = !!environment.matchMedia?.('(pointer: coarse)').matches || (environment.innerWidth > 0 && environment.innerWidth < 700);
     const isolated = environment.crossOriginIsolated === true && typeof environment.SharedArrayBuffer === 'function';
     const ids=participants(mode),dual=isGroup(mode),full=ids.includes('sf-full');
-    const sequential=ids.length>1&&(mobile||ids.length>2);
+    // All Engines searches concurrently on every device; CPU is per engine.
+    // Retain the existing sequential policy only for two-engine phone modes.
+    const sequential=ids.length===2&&mobile;
     const cap = Math.max(1, Math.min(mobile ? 2 : 8, hc - (dual ? 2 : 1)));
     const maxSFThreads = isolated ? cap : 1;
     const requested = settings.sfFullThreadsRequested;
@@ -348,7 +350,7 @@
         active = job;
         job.abort = stop; job.signal?.addEventListener('abort',job.abort,{once:true});
         if(Number.isFinite(job.effectiveBudget.maxSessionMs)&&job.effectiveBudget.maxSessionMs>0)job.timer=setTimeout(stop,job.effectiveBudget.maxSessionMs);
-        // Phone comparisons (and All) prepare/search/release one engine at a time.
+        // Two-engine phone modes use the sequential path; All uses the barrier below.
         const preparations = [];
         for (const child of job.children) {
           try {

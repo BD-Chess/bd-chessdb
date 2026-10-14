@@ -35,6 +35,13 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/chess-lab-deps" --no-package-lock --ignore-scripts jsdom@26.1.0 fake-indexeddb@6.0.1
           echo "NODE_PATH=$RUNNER_TEMP/chess-lab-deps/node_modules" >> "$GITHUB_ENV"
+      - name: All-engine concurrency, cancellation and memory gates
+        run: |
+          node --test \
+            public/chess-lab/research/analysis-session.test.cjs \
+            public/chess-lab/research/analysis-controls.test.cjs \
+            public/chess-lab/research/deep-ui.test.cjs \
+            public/chess-lab/research/engine-memory.test.cjs
       - name: Unified desktop/mobile/native and simulation gates
         run: |
           node --test \
