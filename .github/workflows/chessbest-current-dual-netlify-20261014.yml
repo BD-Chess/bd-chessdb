@@ -49,7 +49,7 @@ jobs:
           h=(cur/'index.html').read_text()
           assert '<body data-channel="current">' in h and 'Keep all engines in RAM' in h
           assert not any(tag in h for tag in ['<nav class="bd-version-selector"','<nav class="app-preview-nav"','<nav class="app-channel-nav"','id="chessAppViewLink"'])
-          assert (cur/'old').is_dir() and (cur/'engine-sw.js').is_file()
+          assert (lab/'old').is_dir() and (cur/'engine-sw.js').is_file()
           for name in ['js/8zc-engine-memory.js','js/8zc-engine-assets.js','js/8zc-engine-assets-manifest.js','js/8zc-engine-assets-sw.js','engines/lc0/adapter.mjs','engines/reckless/adapter.mjs']:
               assert (cur/name).is_file(),name
           assert b['assets_sha256']['js/8zc-engine-memory.js']==a['assets_sha256']['js/8zc-engine-memory.js']
