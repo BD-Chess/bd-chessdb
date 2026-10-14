@@ -42,6 +42,7 @@ Object.assign(dictionary.en,{
  storageEstimate:'Approximate browser storage',storagePending:'Cloud-only images',storageLocal:'Local images',settingsAtLeastOne:'Keep at least one model enabled.',
  configured:'Key configured; model generation not tested',missingKey:'Key not configured',apiAuthNeeded:'Unlock API to check your session.',apiSessionValid:'Account session valid · model generation not tested',apiSessionFailed:'Account session check failed.',
  storageEstimatedLow:'Estimated browser space too low for this download. Originals were not deleted.',
+ STORAGE_ESTIMATED_LOW:'Estimated browser quota is too low for this photo. No originals were deleted.',
  cloudCatalog:'Cloud catalog synchronized. Photos load only when chosen.',cloudLoadOne:'Load on this device',cloudOnly:'Cloud-only · not downloaded',cloudLoading:'Downloading selected photo…',cloudDownloaded:'Selected photo downloaded.',remoteUnavailable:'Cloud download failed; existing images retained.',
  STORAGE_QUOTA_EXCEEDED:'Browser storage quota exceeded. Your device may still have free disk space.',STORAGE_TRANSACTION_ABORTED:'Browser database transaction was aborted. Retry without deleting originals.',
  STORAGE_ACCESS_DENIED:'Browser blocked private storage. Check browser/private-mode permissions.',STORAGE_CONNECTION_CLOSED:'Browser database connection closed. Reload and try again.',
@@ -62,6 +63,7 @@ Object.assign(dictionary.sl,{
  storageEstimate:'Ocenjena shramba brskalnika',storagePending:'Slike samo v oblaku',storageLocal:'Lokalne slike',settingsAtLeastOne:'Vsaj en model mora ostati vključen.',
  configured:'Ključ nastavljen; generiranje ni preverjeno',missingKey:'Ključ ni nastavljen',apiAuthNeeded:'Za preverjanje seje najprej odkleni API.',apiSessionValid:'Seja velja · ustvarjanje z modelom ni preverjeno',apiSessionFailed:'Preverjanje seje ni uspelo.',
  storageEstimatedLow:'Ocena preostalega prostora brskalnika je prenizka. Izvirniki niso bili izbrisani.',
+ STORAGE_ESTIMATED_LOW:'Ocenjena preostala kvota brskalnika je prenizka. Izvirniki niso bili izbrisani.',
  cloudCatalog:'Katalog v oblaku usklajen. Slike se prenesejo šele po izbiri.',cloudLoadOne:'Prenesi na napravo',cloudOnly:'Samo v oblaku · še ni preneseno',cloudLoading:'Prenašam izbrano fotografijo …',cloudDownloaded:'Izbrana fotografija je prenesena.',remoteUnavailable:'Prenos iz oblaka ni uspel; shranjene slike so ohranjene.',
  STORAGE_QUOTA_EXCEEDED:'Kvota brskalnikove shrambe je presežena. Na napravi je lahko še prost prostor.',STORAGE_TRANSACTION_ABORTED:'Zapis v brskalnikovo bazo je bil prekinjen. Poskusi ponovno brez brisanja izvirnikov.',
  STORAGE_ACCESS_DENIED:'Brskalnik je blokiral zasebno shrambo. Preveri dovoljenja in zasebni način.',STORAGE_CONNECTION_CLOSED:'Povezava s shrambo se je zaprla. Osveži stran.',
@@ -555,7 +557,7 @@ async function syncCloud(ask=true){
   if(ask)await connectGateway();
   for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);
   const data=await API.request('/library');
-  remotePairs=Array.isArray(data.pairs)?data.pairs:[];
+  remotePairs=Array.isArray(data.pairs)?data.pairs.map(p=>({...p,display_name:data.titles?.[p.original.sha256]||p.title})):[];
   remoteJobs=Array.isArray(data.jobs)?data.jobs:[];
   for(const p of pairs){
    const cloudName=data.titles?.[p.original.sha256];
@@ -615,7 +617,7 @@ async function loadRemoteGenerated(job){
   if(!estimateHydrationSafety(await storageEstimate(),expected).safe)throw Error('STORAGE_ESTIMATED_LOW');
   const blob=await API.asset(output.asset_id);
   if(await sha256(blob)!==output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
-  const p=await addOriginal(new File([blob,safeName(job.prompt?.slice(0,70)||'Generated')+'.png'],safeName(job.prompt?.slice(0,70)||'Generated')+'.png',{type:'image/png'}));
+  const p=await addOriginal(new File([blob],safeName(job.prompt?.slice(0,70)||'Generated')+'.png',{type:blob.type||'image/png'}));
   p.generated_from_prompt=true;p.description=job.prompt;
   p.original.creation_receipt={job_id:job.job_id,model:job.model,provider:job.provider};
   const candidate=await localTextOverlay({...output,blob,origin:'generated',provider:job.provider,model_key:job.model,direction:job.target,target_ratio:RATIOS[job.target],mode:job.mode},job.mode==='infographic'?job.text_layout:null);
