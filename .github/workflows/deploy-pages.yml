@@ -105,7 +105,7 @@ jobs:
           fi
           while IFS= read -r f; do node --check "$f"; done < <(grep -R -l -F "https://mdlxdcc-trip-auth.iemcccc.workers.dev/" public/Trip --include='*.js')
       - name: Verify root PWA refresh and legacy migration
-        run: node tests/mdlxdcc-root-pwa.test.cjs
+        run: node tests/mdlxdcc-root-pwa.test.cjs && node --test tests/dualframe-pwa.test.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
@@ -123,3 +123,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify the published DualFrame PWA package
+        env:
+          PWA_BASE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node tests/dualframe-pwa-live-smoke.mjs
