@@ -35,7 +35,7 @@ Object.assign(dictionary.en,{
  profile:'Quick recipe',profilePhoto:'Faithful photo',profileArt:'Creative composition',profileText:'Infographic / text',applyProfile:'Apply to defaults',
  checkApiFree:'Check API access · no generation',apiTestNote:'Checks gateway, account session and configured keys only. No generation, provider spend or assertion of model availability.',
  defaultCollection:'Starting collection',defaultViewerQuality:'Fullscreen quality',delayLabel:'Delay',delayOff:'Off',
- delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 1–5 seconds before switching. Off changes immediately.',
+ delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 0.5–5 seconds before switching. Off (0s) changes immediately.',
  metadataAuto:'On launch, sync image names and cloud catalog only, never image bytes.',storageSafeHelp:'Sync lists cloud images first. Load individual photos on demand. Local-only originals are never evicted.',
  storageCheck:'Check local storage',clearMemory:'Clear image memory cache',preloadAdjacent:'Prefetch one previous and next image',
  estimateUnavailable:'Browser storage estimate unavailable (not proof of free or full device storage).',
