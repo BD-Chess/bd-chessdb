@@ -406,7 +406,7 @@ function updateModelControls(){
  if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||prefs.enabledModels[0];
  const model=modelFor($('pipeline').value);$('output-quality').options[1].disabled=model.provider==='demo';if(model.provider==='demo'&&$('output-quality').value==='4k')$('output-quality').value='hd';
  const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('configured'):t('missingKey')):t('apiChecking');
- $('model-status').textContent=`${model.label} · ${status}${model.max_edge&&model.max_edge<3840&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
+ $('model-status').textContent=`${model.label} · ${status}${(model.max_edge&&model.max_edge<3840||!newImage&&model.edit_max_edge&&model.edit_max_edge<3840)&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
  $('model-status').classList.toggle('held',known?.available===false);$('generate').disabled=!selectedPair()&&!newImage;updateAuthLabel();renderBenchModels();
 }
 
