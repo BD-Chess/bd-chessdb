@@ -73,6 +73,25 @@ Object.assign(dictionary.sl,{
  STORAGE_IO_FAILURE:'Napaka vhoda/izhoda lokalne baze; ni nujno pomanjkanje prostora.',STORAGE_OPERATION_FAILED:'Napaka shranjevanja; ni potrjeno, da gre za kvoto.',STORAGE_REMOTE_SIZE_UNKNOWN:'Oblak ne navaja velikosti slik; prenosa nisem začel.',STORAGE_TRANSFER_TOO_LARGE:'Komplet presega omejitev prenosa 192 MiB. Obstoječe slike ostanejo nedotaknjene.',
  STORAGE_DB_BLOCKED:'Drug zavihek blokira shrambo. Zapri druge zavihke in ponovi.'
 });
+
+Object.assign(dictionary.en,{
+ apiCheckRunning:'Checking enabled models with read-only provider requests…',
+ apiCheckTitle:'Provider API access check',apiCheckModel:'Image model',apiCheckStatus:'Verification',apiCheckProbe:'Read-only test',
+ apiModelAccessible:'Model listed for this API key',apiProviderReachable:'Provider API responds · model not confirmed',apiKeyMissing:'Key not configured',
+ apiAuthFailed:'Provider authentication rejected',apiPermissionDenied:'Provider access forbidden',apiModelNotFound:'Model not found / not accessible via this endpoint',
+ apiRateLimited:'Provider rate limited',apiProviderError:'Provider server error',apiNetworkError:'Network / timeout',apiProbeUnsupported:'Read-only test unavailable',apiCatalogUnavailable:'Provider catalog endpoint unavailable',
+ apiConfigError:'Provider probe host invalid',apiCheckCount:'models listed',apiTestNote:'Checks enabled image models through provider read-only catalog APIs where available. Listed ≠ successful image creation/editing. Zero image generation calls.',
+ switchPortrait:'Show portrait composition',switchLandscape:'Show landscape composition',frameNotSaved:'No saved counterpart for this orientation; showing the available original.'
+});
+Object.assign(dictionary.sl,{
+ apiCheckRunning:'Preverjam vključene modele z bralnimi zahtevki pri ponudnikih…',
+ apiCheckTitle:'Preverjanje dostopa pri ponudnikih',apiCheckModel:'Slikovni model',apiCheckStatus:'Preverjanje',apiCheckProbe:'Bralni test',
+ apiModelAccessible:'Model je naveden za ta API ključ',apiProviderReachable:'API ponudnika se odziva · model ni potrjen',apiKeyMissing:'Ključ ni nastavljen',
+ apiAuthFailed:'Ponudnik je zavrnil prijavo',apiPermissionDenied:'Ponudnik je zavrnil dovoljenje',apiModelNotFound:'Model ni najden oziroma dostopen prek tega endpointa',
+ apiRateLimited:'Ponudnik omejuje zahtevke',apiProviderError:'Napaka strežnika ponudnika',apiNetworkError:'Omrežje / časovna omejitev',apiProbeUnsupported:'Bralni test ni na voljo',apiCatalogUnavailable:'Kataloga ponudnika ni mogoče prebrati',
+ apiConfigError:'Neveljaven naslov preverjanja',apiCheckCount:'modelov je potrjenih',apiTestNote:'Vključene slikovne modele preveri z bralnimi zahtevki pri ponudnikih, kjer je to podprto. Najden model še ne potrjuje uspešnega ustvarjanja/urejanja. Brez generacij.',
+ switchPortrait:'Pokaži pokončno kompozicijo',switchLandscape:'Pokaži ležečo kompozicijo',frameNotSaved:'Druga kompozicija ni shranjena; prikazan je razpoložljivi izvirnik.'
+});
 let language = new URLSearchParams(location.search).get('lang') === 'sl' ? 'sl' : 'en';
 let pwaRegistration=null,pwaInstallEvent=null,pwaBuildId=null,pwaReloadRequested=false,pwaStatusKey='pwaPreparing',pwaUpdateKey=null;
 try { if (!new URLSearchParams(location.search).has('lang') && localStorage.getItem('dualframe-language') === 'sl') language='sl'; } catch {}
@@ -337,15 +356,29 @@ async function diagnoseStorage(){
   +` · ${t('storageLocal')}: ${count} · ${t('storagePending')}: ${cloud}`;
 }
 async function checkApiAccess(){
- const status=$('settings-api-status');status.textContent=t('apiChecking');
+ const status=$('settings-api-status'),holder=$('settings-api-table'),check=$('settings-api-check');
+ const active=[...$('settings-enabled-models').querySelectorAll('input:checked')].map(x=>x.value).filter(k=>modelKeys.includes(k));
+ holder.hidden=true;holder.replaceChildren();
+ if(!active.length){status.textContent=t('settingsNeedModel');return;}
+ if(!API.apiUnlocked()){status.textContent=t('apiAuthNeeded');return;}
+ check.disabled=true;status.textContent=t('apiCheckRunning');
  try{
-  capabilities=await API.capabilities();
-  let auth=t('apiAuthNeeded');
-  if(API.apiUnlocked()){try{const data=await API.request('/session');auth=data?.ok?t('apiSessionValid'):t('apiSessionFailed');}catch{auth=t('apiSessionFailed');}}
-  const lines=(capabilities.models||[]).map(m=>m.label+': '+t(m.key_configured?'configured':'missingKey'));
-  status.textContent=auth+' · '+lines.join(' · ');
-  updateModelControls();
- }catch{status.textContent=t('apiSessionFailed');}
+  await API.request('/session'); // Actual authenticated session verification, not a stored-token assumption.
+  const response=await API.request('/model-probe',{method:'POST',body:{models:active}});
+  if(response.schema!=='bd.dualframe.provider-probes.v1'||!Array.isArray(response.models))throw Error('API_PROBE_RESPONSE_INVALID');
+  const table=node('table',undefined,'api-check-table'),head=node('thead'),heading=node('tr'),tbody=node('tbody');
+  for(const key of ['apiCheckModel','apiCheckStatus','apiCheckProbe'])heading.append(node('th',t(key)));
+  head.append(heading);
+  const words={MODEL_ACCESSIBLE:'apiModelAccessible',PROVIDER_REACHABLE:'apiProviderReachable',KEY_MISSING:'apiKeyMissing',AUTH_FAILED:'apiAuthFailed',PERMISSION_DENIED:'apiPermissionDenied',MODEL_NOT_FOUND:'apiModelNotFound',RATE_LIMITED:'apiRateLimited',PROVIDER_ERROR:'apiProviderError',NETWORK_ERROR:'apiNetworkError',PROBE_UNAVAILABLE:'apiProbeUnsupported',CATALOG_NOT_AVAILABLE:'apiCatalogUnavailable',PROBE_CONFIG_ERROR:'apiConfigError'};
+  for(const item of response.models){
+   const tr=node('tr'),label=modelFor(item.key)?.label||item.key,kind=item.probe==='read_only_model_get'?'GET · model':item.probe==='read_only_model_catalog'?'GET · catalog':'—';
+   tr.append(node('td',label),node('td',t(words[item.status]||'apiProbeUnsupported')),node('td',kind));tbody.append(tr);
+  }
+  table.append(head,tbody);holder.append(table);holder.hidden=false;
+  const verified=response.models.filter(x=>x.status==='MODEL_ACCESSIBLE').length;
+  status.textContent=t('apiSessionValid')+' · '+verified+'/'+response.models.length+' '+t('apiCheckCount')+' · '+(language==='sl'?'Samo bralni klici, brez generacij.':'Read-only calls; no generation.');
+ }catch(e){status.textContent=t(e.message==='UNAUTHORIZED'?'apiSessionFailed':'apiNetworkError');holder.hidden=true;}
+ finally{check.disabled=false;}
 }
 function initSettingsUI(){
  $('delay-quick').value=String(prefs.delaySeconds);$('delay-quick').addEventListener('change',()=>{
@@ -412,6 +445,18 @@ async function runGateway(pair,job){
 }
 
 const viewerPairData=()=>[...pairs,...referencePairs].find(p=>p.pair_id===viewerPair);
+function swapViewerFrame(){
+ const pair=viewerPairData();if(!pair)return;
+ const chosen=$('viewer-orientation').value,shown=chosen==='portrait'||chosen==='landscape'?chosen:($('viewer-image').dataset.orientation||pair.original.source_orientation);
+ const next=shown==='portrait'?'landscape':'portrait';
+ // This is an explicit comparison: do not apply the automatic rotation delay.
+ $('viewer-orientation').value=next;
+ clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownPair=pair.pair_id;viewerShownTarget=next;
+ const state=selectAsset(pair,next,$('quality').value,devicePixelRatio);
+ if(state.missing)notify('frameNotSaved');
+ updateViewer();
+}
+
 function openViewer(id){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownPair=null;viewerShownTarget=null;viewerPair=id;originFocus=document.activeElement;originScroll=window.scrollY;$('viewer-orientation').value='auto';$('quality').value=prefs.viewerQuality;$('viewer').showModal();document.body.classList.add('viewer-open');$('viewer-floating-close').focus();positionMobileClose();updateViewer();}
 function closeViewer(){if(!$('viewer').open)return;clearTimeout(viewerFrameTimer);viewerFrameTimer=null;viewerShownTarget=null;viewerShownPair=null;stopTour();setImmersive(false);if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});syncImageCache(warmImages,[]);$('viewer').close();}
 function setImmersive(on){document.querySelector('.viewer-shell').classList.toggle('immersive',on);document.body.classList.toggle('immersion-open',on);$('viewer-stage').setAttribute('aria-label',on?t('immersiveExit'):t('immersiveHint'));if(!on&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});positionMobileClose();requestAnimationFrame(()=>{if(viewerPair)updateViewer();});}
@@ -428,6 +473,7 @@ function positionMobileClose(){
 async function updateViewer(){const pair=viewerPairData();if(!pair)return;const token=++viewerLoad,simulation=activeView==='showcase'||pair.reference_only?$('reference-device').value:$('device').value;const target=deviceOrientation({device:currentDevice(),width:innerWidth,height:innerHeight,override:$('viewer-orientation').value,simulation});
  if(pair.reference_only){const wanted=$('quality').value==='4k'||($('quality').value==='auto'&&devicePixelRatio>1.5)?'fourK':'hd';const asset=pair.variants[target==='original'?pair.original.source_orientation:target]?.[wanted];if(asset){try{await verifyReferenceAsset(asset);}catch(e){if(token===viewerLoad)notify(e.message,true);}if(token!==viewerLoad)return;}}
  const state=selectAsset(pair,target,$('quality').value,devicePixelRatio),img=$('viewer-image');img.src=assetUrl(state.asset);img.alt=`${displayTitle(pair)} · ${state.orientation}`;img.dataset.pairId=pair.pair_id;img.dataset.orientation=state.orientation;img.dataset.quality=state.quality;$('viewer-title').textContent=displayTitle(pair);
+ const swapTitle=target==='portrait'?t('switchLandscape'):t('switchPortrait');$('viewer-swap').setAttribute('aria-label',swapTitle);$('viewer-swap').title=swapTitle;
  const label=pair.reference_only?t('referenceProvided'):state.asset.origin==='demo'?t('demo'):state.asset.origin==='original'?t('original'):state.asset.origin==='imported'?t('importedFrame'):state.upscaled?t('upscaled'):state.asset.native_4k?t('native'):t('creativeChanged');$('viewer-status').textContent=`${state.orientation==='portrait'?'P':'L'} · ${state.asset.width} × ${state.asset.height} · ${state.quality.toUpperCase()} · ${label}${state.missing?' · '+t('missing'):''}`;
  $('download-original').disabled=Boolean(pair.reference_only);$('download-landscape').disabled=!collectOrientationAssets(pair,'landscape').length;$('download-portrait').disabled=!collectOrientationAssets(pair,'portrait').length;$('mask').disabled=!state.asset.source_placement||canonicalMode(state.asset.mode)!=='faithful';$('result-details').textContent=JSON.stringify(publicManifest({task:state.asset.mode||null,model:state.asset.provider_model_id||state.asset.model_or_version||null,size:[state.asset.width,state.asset.height],resolution_origin:state.asset.resolution_origin,sha256:state.asset.sha256||null,pixel_proof:state.asset.pixel_proof||null,changed_region:state.asset.changed_region||null,parameters:state.asset.parameters||null,provider_cost:state.asset.provider_cost??null,reference_only:Boolean(pair.reference_only),text_overlay:state.asset.local_text_overlay||null}),null,2);drawBoundary(state);
 }
@@ -484,7 +530,7 @@ $('start').addEventListener('click',()=>{switchTab('create');$('upload').click()
 for(const event of ['dragenter','dragover'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();$('drop-zone').classList.add('dragging');});for(const event of ['dragleave','drop'])$('drop-zone').addEventListener(event,e=>{e.preventDefault();$('drop-zone').classList.remove('dragging');});$('drop-zone').addEventListener('drop',guard(e=>uploadMany(e.dataTransfer.files)));
 $('demo').addEventListener('click',guard(async()=>{const a=await addOriginal(await demoFixture('landscape'),true),b=await addOriginal(await demoFixture('portrait'),true);await generate(a,{provider:'demo',mode:'faithful',position:'center',seed:42,prompt:''});await generate(b,{provider:'demo',mode:'faithful',position:'center',seed:42,prompt:''});selected=a.pair_id;render();$('workspace').scrollIntoView({behavior:'smooth'});}));
 $('generate').addEventListener('click',guard(()=>$('create-kind').value==='generate'?generateFromPrompt():generate()));$('mode').addEventListener('change',updateModelControls);$('pipeline').addEventListener('change',updateModelControls);$('output-quality').addEventListener('change',updateModelControls);$('connect').addEventListener('click',guard(connectGateway));$('copy-hash').addEventListener('click',guard(async()=>{await navigator.clipboard.writeText(selectedPair().original.sha256);notify('copied');}));
-$('device').addEventListener('change',()=>{render();if(viewerPair)updateViewer();});for(const id of ['viewer-orientation','quality'])$(id).addEventListener('change',()=>{updateViewer();if(id==='quality'&&$('quality').value==='4k'&&!viewerPairData()?.reference_only&&!verifiedFourK(viewerPairData()?.variants[targetFrame($('viewer-orientation').value)]?.fourK))notify('unavailable4k');});$('mask').addEventListener('click',()=>{$('mask').setAttribute('aria-pressed',String($('mask').getAttribute('aria-pressed')!=='true'));updateViewer();});$('viewer-close').addEventListener('click',closeViewer);$('viewer-floating-close').addEventListener('click',closeViewer);$('viewer').addEventListener('cancel',e=>{e.preventDefault();closeViewer();});$('viewer').addEventListener('close',()=>{stopTour();setImmersive(false);viewerPair=null;document.body.classList.remove('viewer-open');$('viewer-image').removeAttribute('src');originFocus?.focus({preventScroll:true});requestAnimationFrame(()=>window.scrollTo(0,originScroll));});$('viewer').addEventListener('click',e=>{if(e.target===$('viewer'))closeViewer();});$('next').addEventListener('click',()=>moveViewer(1));$('previous').addEventListener('click',()=>moveViewer(-1));$('fullscreen').addEventListener('click',guard(async()=>{if(document.fullscreenElement)await document.exitFullscreen();else {setImmersive(true);await $('viewer-stage').requestFullscreen?.().catch(()=>{});}}));
+$('device').addEventListener('change',()=>{render();if(viewerPair)updateViewer();});for(const id of ['viewer-orientation','quality'])$(id).addEventListener('change',()=>{updateViewer();if(id==='quality'&&$('quality').value==='4k'&&!viewerPairData()?.reference_only&&!verifiedFourK(viewerPairData()?.variants[targetFrame($('viewer-orientation').value)]?.fourK))notify('unavailable4k');});$('mask').addEventListener('click',()=>{$('mask').setAttribute('aria-pressed',String($('mask').getAttribute('aria-pressed')!=='true'));updateViewer();});$('viewer-swap').addEventListener('click',swapViewerFrame);$('viewer-close').addEventListener('click',closeViewer);$('viewer-floating-close').addEventListener('click',closeViewer);$('viewer').addEventListener('cancel',e=>{e.preventDefault();closeViewer();});$('viewer').addEventListener('close',()=>{stopTour();setImmersive(false);viewerPair=null;document.body.classList.remove('viewer-open');$('viewer-image').removeAttribute('src');originFocus?.focus({preventScroll:true});requestAnimationFrame(()=>window.scrollTo(0,originScroll));});$('viewer').addEventListener('click',e=>{if(e.target===$('viewer'))closeViewer();});$('next').addEventListener('click',()=>moveViewer(1));$('previous').addEventListener('click',()=>moveViewer(-1));$('fullscreen').addEventListener('click',guard(async()=>{if(document.fullscreenElement)await document.exitFullscreen();else {setImmersive(true);await $('viewer-stage').requestFullscreen?.().catch(()=>{});}}));
 let swipe=null;$('viewer-stage').addEventListener('touchstart',e=>{if(e.touches.length===1)swipe={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});$('viewer-stage').addEventListener('touchend',e=>{if(!swipe||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-swipe.x,dy=e.changedTouches[0].clientY-swipe.y;swipe=null;if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.4)moveViewer(dx<0?1:-1);},{passive:true});$('viewer-stage').addEventListener('touchcancel',()=>swipe=null);
 document.addEventListener('keydown',e=>{if(!viewerPair||e.target.matches('input,select,textarea'))return;if(e.key==='ArrowRight'){e.preventDefault();moveViewer(1);}if(e.key==='ArrowLeft'){e.preventDefault();moveViewer(-1);}});
 let resizeTimer;const resize=()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{scheduleGalleryOrientation();if(viewerPair)updateViewer();else render();},100);};window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);window.visualViewport?.addEventListener('resize',positionMobileClose);window.visualViewport?.addEventListener('scroll',positionMobileClose);document.addEventListener('fullscreenchange',resize);$('viewer-image').addEventListener('load',()=>{if(viewerPair)updateBoundaryOnly();});function updateBoundaryOnly(){const p=viewerPairData();if(p)drawBoundary(selectAsset(p,$('viewer-image').dataset.orientation||p.original.source_orientation,$('quality').value,devicePixelRatio));}
