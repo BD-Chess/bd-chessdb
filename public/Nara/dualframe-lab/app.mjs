@@ -454,7 +454,7 @@ async function runBench(){if(benchBusy)return;const p=comparePair()||selectedPai
 Object.assign(dictionary.en,{useAsA:'Use as A',useAsB:'Use as B',NO_MODELS_SELECTED:'Choose at least one model.'});Object.assign(dictionary.sl,{useAsA:'Izberi kot A',useAsB:'Izberi kot B',NO_MODELS_SELECTED:'Izberi vsaj en model.'});
 async function generateFromPrompt(){const prompt=$('prompt').value.trim();if(!prompt)throw Error('PROMPT_REQUIRED');await connectGateway();const model=modelFor($('pipeline').value),target=$('text-target').value,quality=$('output-quality').value,seed=Number($('seed').value),mode=canonicalMode($('mode').value),parameters={model:model.key,target,quality,seed,mode,prompt,position:$('position').value,text_layout:mode==='infographic'?{headline:$('headline-text').value,body:$('body-text').value}:null,generation_attempt_id:crypto.randomUUID()};const idempotency_key=await sha256(JSON.stringify(parameters));$('generate').disabled=true;notify('RUNNING');
  try{const receipt=await API.request('/generate',{method:'POST',body:{...parameters,idempotency_key}}),state=await API.awaitJob(receipt.job_id);if(!['READY','ACCEPTED'].includes(state.status))throw Error(state.error||state.status);const blob=await API.asset(state.output.asset_id);if(await sha256(blob)!==state.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const file=new File([blob],`${safeName(prompt.slice(0,70))}.png`,{type:'image/png'}),p=await addOriginal(file);p.original.creation_receipt={...state,output:state.output};p.original.origin='generated';p.description=prompt;p.generated_from_prompt=true;
-  const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
+  const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);markModelOutcome(model.key,'generate',true);selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
  }finally{$('generate').disabled=false;}
 }
 async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!ask)return;cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem…':'Syncing…';
@@ -469,6 +469,77 @@ async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!a
   if(!selected)selected=pairs[0]?.pair_id||null;render();$('cloud-status').textContent=`${t('cloudSaved')} · ${restored}`;
  }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
 }
+
+function updateSettingsDefaultModelChoices(){
+ const enabled=[...$('settings-model-list').querySelectorAll('input:checked')].map(x=>x.value),select=$('settings-default-model'),preferred=select.value||settings.model;
+ select.replaceChildren();
+ for(const m of MODELS.filter(x=>enabled.includes(x.key))){const opt=node('option',m.label);opt.value=m.key;select.append(opt);}
+ if(enabled.includes(preferred))select.value=preferred;
+ else if(select.options.length)select.value=select.options[0].value;
+ $('settings-error').textContent=enabled.length?'':t('settingsAtLeastOne');
+}
+function modelHealthText(model){
+ const known=capabilities?.models?.find(x=>x.key===model.key),history=modelOutcomes[model.key];
+ const keyText=known?(known.key_configured?(language==='sl'?'ključ nastavljen':'key configured'):(language==='sl'?'ključ manjka':'key missing')):(language==='sl'?'ključ ni preverjen':'key not checked');
+ if(!history)return keyText+' · '+(language==='sl'?'izvedba ni preverjena':'generation untested');
+ const outcome=history.success?(language==='sl'?'uspešno ustvarjeno':'generated successfully'):(language==='sl'?'zadnji poskus ni uspel':'last attempt failed');
+ return keyText+' · '+outcome+' · '+history.when.slice(0,10)+' ('+history.operation+')';
+}
+function renderSettingsModels(){
+ const list=$('settings-model-list');list.replaceChildren();
+ for(const model of MODELS.filter(m=>m.direct)){
+  const label=node('label'),checkbox=node('input');checkbox.type='checkbox';checkbox.value=model.key;checkbox.checked=settings.enabledModels.includes(model.key);
+  const caption=node('span');caption.append(node('span',model.label));caption.append(node('small',modelHealthText(model)));
+  label.append(checkbox,caption);checkbox.addEventListener('change',updateSettingsDefaultModelChoices);list.append(label);
+ }
+ updateSettingsDefaultModelChoices();
+}
+function openSettings(){
+ $('settings-mode').value=settings.mode;
+ $('settings-quality').value=settings.quality;
+ $('settings-position').value=settings.position;
+ $('settings-last-used').checked=settings.rememberLast;
+ $('settings-collection').value=settings.galleryCollection;
+ $('settings-delay').value=String(settings.delaySeconds);
+ $('settings-metadata-sync').checked=settings.metadataSyncOnStart;
+ $('settings-cloud-limit').value=String(settings.maxCloudDownloadMB);
+ $('settings-error').textContent='';$('settings-storage-output').textContent='';$('settings-api-output').textContent='';
+ renderSettingsModels();$('settings-default-model').value=settings.model;
+ $('settings-dialog').showModal();
+}
+function commitSettings(event){
+ event.preventDefault();
+ const selectedModels=[...$('settings-model-list').querySelectorAll('input:checked')].map(x=>x.value);
+ if(!selectedModels.length){$('settings-error').textContent=t('settingsAtLeastOne');return;}
+ const newSettings=saveSettings({...settings,mode:$('settings-mode').value,model:$('settings-default-model').value,quality:$('settings-quality').value,position:$('settings-position').value,enabledModels:selectedModels,rememberLast:$('settings-last-used').checked,galleryCollection:$('settings-collection').value,delaySeconds:Number($('settings-delay').value),metadataSyncOnStart:$('settings-metadata-sync').checked,maxCloudDownloadMB:Number($('settings-cloud-limit').value)},undefined,configurableModels);
+ settings=newSettings;
+ $('gallery-delay').value=String(settings.delaySeconds);
+ $('collection-filter').value=settings.galleryCollection;
+ applyCreationDefaults();render();scheduleGalleryFrame();
+ $('settings-dialog').close();notify('settingsSaved');
+}
+async function runStorageDiagnostics(){
+ const button=$('settings-diagnostics');button.disabled=true;
+ try{
+  const out=await storageEstimate();
+  const format=value=>value==null?'?':(value/(1024*1024)).toFixed(1)+' MB';
+  let dbStatus=t('storageDatabaseOK');
+  try{await getPairs();}catch(e){dbStatus=t('storageDatabaseError')+' ('+e.message+')';}
+  $('settings-storage-output').textContent=(out.supported?t('storageNumbers')+': '+format(out.usage)+' / '+format(out.quota):t('storageNoEstimate'))+' · '+dbStatus+' · '+t('storageNote');
+ }finally{button.disabled=false;}
+}
+async function runFreeApiCheck(){
+ const button=$('settings-api-check');button.disabled=true;
+ try{
+  capabilities=await API.capabilities();
+  let sessionStatus=language==='sl'?'API zaklenjen':'API locked';
+  if(API.apiUnlocked()){try{await API.request('/session');sessionStatus=language==='sl'?'Prijava preverjena':'Session verified';}catch(e){sessionStatus=t(e.message);}}
+  const active=visibleModels(),configured=active.filter(m=>capabilities.models?.find(x=>x.key===m.key)?.key_configured).length;
+  $('settings-api-output').textContent=sessionStatus+' · '+configured+'/'+active.length+' '+(language==='sl'?'vključenih modelov ima nastavljen ključ; brez ustvarjanja slik.':'enabled models have configured keys; no images created.');
+  renderSettingsModels();
+ }catch(e){$('settings-api-output').textContent=t(e.message);$('settings-error').textContent=language==='sl'?'Preverjanje dostopa ni uspelo.':'Access check failed.';}finally{button.disabled=false;}
+}
+
 async function initR5(){
  applyCreationDefaults();$('consent').checked=true;$('gallery-delay').value=String(settings.delaySeconds);$('reference-device').value='auto';galleryShownFrame=desiredGalleryFrame();$('collection-filter').value=settings.galleryCollection;
  await init();switchTab('showcase');updateModelControls();
@@ -479,6 +550,11 @@ $('api-auth-cancel').addEventListener('click',()=>$('api-auth').close());
 $('rename-form').addEventListener('submit',saveRename);
 $('rename-cancel').addEventListener('click',()=>$('rename-dialog').close());
 $('rename-dialog').addEventListener('close',()=>{renamingPairId=null;});
+$('settings-open').addEventListener('click',openSettings);
+$('settings-cancel').addEventListener('click',()=>$('settings-dialog').close());
+$('settings-form').addEventListener('submit',commitSettings);
+$('settings-diagnostics').addEventListener('click',guard(runStorageDiagnostics));
+$('settings-api-check').addEventListener('click',guard(runFreeApiCheck));
 $('api-toggle').addEventListener('click',guard(async()=>{if(API.apiUnlocked()){API.lockAPI();gateway=null;notify('apiLocked');}else{await connectGateway();if(settings.metadataSyncOnStart)await syncCloud(false);}updateAuthLabel();}));
 document.addEventListener('df-auth-change',updateAuthLabel);
 $('create-kind').addEventListener('change',()=>{updateModelControls();render();});for(const id of ['mode','pipeline','output-quality','position'])$(id).addEventListener('change',captureLastCreateChoice);
