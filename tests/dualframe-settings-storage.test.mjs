@@ -9,7 +9,7 @@ test('default image models are the four BD-confirmed image models, others remain
  const config=normalizeSettings({},allModels);
  assert.deepEqual(config.enabledModels,DEFAULT_ENABLED_MODELS);
  assert.equal(config.model,'openai-sunburst');
- assert.equal(config.delaySeconds,2);
+ assert.equal(config.delaySeconds,1);
  assert.equal(config.quality,'hd');
  assert.equal(config.autoSyncMetadata,true);
 });
@@ -20,10 +20,13 @@ test('settings survive save/reload with validation, Unicode-safe local content a
  const loaded=readSettings(memory,allModels);assert.deepEqual(loaded,config);
  assert.equal(memory.getItem('bd-dualframe-settings-v1').includes('do-not-store'),false);
  const invalid=normalizeSettings({delaySeconds:200,mode:'malicious',enabledModels:['unregistered'],model:'unregistered',quality:'INVALID'},allModels);
- assert.equal(invalid.delaySeconds,2);assert.equal(invalid.mode,'smart');assert.ok(invalid.enabledModels.length>0);
+ assert.equal(invalid.delaySeconds,1);assert.equal(invalid.mode,'smart');assert.ok(invalid.enabledModels.length>0);
  assert.equal(invalid.quality,'hd');assert.ok(allModels.includes(invalid.model));
 });
 test('rotation delay is off/immediate or a bounded hold; no delay on initial image',()=>{
+ assert.equal(normalizeSettings({delaySeconds:0.5},allModels).delaySeconds,0.5);
+ assert.equal(normalizeSettings({delaySeconds:0},allModels).delaySeconds,0);
+ assert.equal(orientationTransition('landscape','portrait',0.5),'delay');
  assert.equal(orientationTransition(null,'portrait',2),'unchanged');
  assert.equal(orientationTransition('portrait','portrait',5),'unchanged');
  assert.equal(orientationTransition('landscape','portrait',0),'immediate');

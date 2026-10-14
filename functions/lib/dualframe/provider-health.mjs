@@ -33,7 +33,7 @@ export function classifyResponse(code,{direct=false,modelId=null,data=null}={}){
  if(code===429)return 'RATE_LIMITED';
  if(code>=500)return 'PROVIDER_ERROR';
  if(code!==200)return 'PROBE_UNAVAILABLE';
- if(direct)return data?.id===modelId||data?.name==='models/'+modelId?'MODEL_ACCESSIBLE':'PROVIDER_REACHABLE';
+ if(direct)return data?.id===modelId||data?.name==='models/'+modelId||Array.isArray(data?.aliases)&&data.aliases.includes(modelId)?'MODEL_ACCESSIBLE':'PROVIDER_REACHABLE';
  const models=idsFrom(data);
  return models.includes(modelId)?'MODEL_ACCESSIBLE':'PROVIDER_REACHABLE';
 }

@@ -32,7 +32,7 @@ export function providerRequest(job,source,env){
   return {...base,url:'https://api.openai.com/v1/images/generations',headers:jsonHeaders(key),body:JSON.stringify({...fields,n:1})};
  }
  if(m.provider==='gemini'){
-  const input=edit?[{type:'image',data:Buffer.from(source).toString('base64'),mime_type:'image/png'},{type:'text',text:prompt}]:prompt;
+  const input=edit?[{type:'text',text:prompt},{type:'image',data:Buffer.from(source).toString('base64'),mime_type:'image/png'}]:prompt;
   return {...base,url:'https://generativelanguage.googleapis.com/v1beta/interactions',headers:{'x-goog-api-key':key,'content-type':'application/json'},body:JSON.stringify({model:m.model,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:size.aspect,image_size:job.quality==='4k'?'4K':'2K'}})};
  }
  if(m.provider==='xai')return {...base,url:`https://api.x.ai/v1/images/${edit?'edits':'generations'}`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt,n:1,aspect_ratio:size.aspect,resolution:'2k',quality:'medium',response_format:'b64_json',...(edit?{image:{type:'image_url',url:dataURI(source)}}:{})})};
@@ -50,9 +50,18 @@ export function providerRequest(job,source,env){
  if(m.provider==='mistral')return {...base,url:'https://api.mistral.ai/v1/agents',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,name:'DualFrame Image R&D',instructions:'Generate exactly one image requested by the user. Use the image_generation tool once.',tools:[{type:'image_generation'}]})};
  throw new ProviderError('PROVIDER_UNKNOWN',400);
 }
-function findImage(data){
+export function findImage(data){
+ // Gemini Interactions responds with steps[].content[]; return the most recent completed
+ // model image, not a text block. Legacy SDKs also surface output_image.data.
+ if(Array.isArray(data?.steps)){
+  const modelSteps=data.steps.filter(s=>s?.type==='model_output').reverse();
+  for(const step of modelSteps)for(const content of [...(step.content||[])].reverse()){
+   if(content?.type==='image'&&typeof content.data==='string'&&content.data.length>0)
+    return {base64:content.data,mime:content.mime_type||'image/jpeg'};
+  }
+ }
  if(data?.output?.results?.[0]?.url)return {url:data.output.results[0].url};
- if(data?.output_image?.data)return {base64:data.output_image.data,mime:data.output_image.mime_type||'image/png'};
+ if(data?.output_image?.data)return {base64:data.output_image.data,mime:data.output_image.mime_type||'image/jpeg'};
  if(data?.data?.[0]?.b64_json)return {base64:data.data[0].b64_json,mime:'image/png'};
  if(data?.data?.[0]?.url)return {url:data.data[0].url};
  if(data?.data?.image_base64?.[0])return {base64:data.data.image_base64[0],mime:'image/png'};
@@ -63,7 +72,7 @@ function findImage(data){
   if(typeof obj.image==='string')return obj.image.startsWith('data:')?{base64:obj.image.split(',')[1],mime:'image/png'}:{url:obj.image};
   if(obj.file_id&&obj.type==='tool_file')return {file:obj.file_id};
   if(typeof obj.url==='string'&&['image_url','image'].includes(obj.type))return {url:obj.url};
-  for(const [k,v] of Object.entries(obj)){if(['choices','outputs','output','content','message','candidates','results','data'].includes(k)){const y=walk(v,depth+1);if(y)return y;}}return null;};
+  for(const [k,v] of Object.entries(obj)){if(['steps','choices','outputs','output','content','message','candidates','results','data'].includes(k)){const y=walk(v,depth+1);if(y)return y;}}return null;};
  return walk(data);
 }
 export async function callProvider(job,source,env,{fetcher=fetch,delay=ms=>new Promise(r=>setTimeout(r,ms))}={}){
