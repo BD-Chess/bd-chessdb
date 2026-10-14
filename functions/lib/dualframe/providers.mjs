@@ -44,7 +44,12 @@ export function providerRequest(job,source,env){
  if(m.provider==='qwen'){
   const host=(env('DF_QWEN_API_HOST')||'https://ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com').replace(/\/$/,'');
   const u=new URL(host);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||!(u.hostname.endsWith('.maas.aliyuncs.com')||['dashscope-intl.aliyuncs.com','dashscope.aliyuncs.com'].includes(u.hostname)))throw new ProviderError('QWEN_HOST_INVALID',503);
-  if(m.key==='qwen-zimage')return {...base,url:`${host}/api/v1/services/aigc/text2image/image-synthesis`,headers:{...jsonHeaders(key),'X-DashScope-Async':'enable'},body:JSON.stringify({model:m.model,input:{prompt},parameters:{size:`${size.width}*${size.height}`,n:1,prompt_extend:false}})};
+  if(m.key==='qwen-zimage'){
+   // Z-Image Turbo now uses Model Studio synchronous multimodal generation; the old
+   // text2image/image-synthesis async protocol is for legacy model families.
+   const outputSize=job.target==='portrait'?(job.quality==='4k'?'1152*2048':'864*1536'):(job.quality==='4k'?'2048*1152':'1536*864');
+   return {...base,url:`${host}/api/v1/services/aigc/multimodal-generation/generation`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,input:{messages:[{role:'user',content:[{text:prompt.slice(0,800)}]}]},parameters:{size:outputSize,prompt_extend:false,...(Number.isInteger(job.seed)?{seed:job.seed}:{})}})};
+  }
   return {...base,url:`${host}/api/v1/services/aigc/multimodal-generation/generation`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,input:{messages:[{role:'user',content:[...(edit?[{image:dataURI(source)}]:[]),{text:prompt}]}]},parameters:{size:`${size.width}*${size.height}`,n:1,prompt_extend:false,watermark:false}})};
  }
  if(m.provider==='mistral')return {...base,url:'https://api.mistral.ai/v1/agents',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,name:'DualFrame Image R&D',instructions:'Generate exactly one image requested by the user. Use the image_generation tool once.',tools:[{type:'image_generation'}]})};
