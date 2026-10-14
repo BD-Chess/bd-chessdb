@@ -22,6 +22,7 @@ const sections=[
     note:'Najpogostejši vhodi v tvoj sistem.',
     cards:[
       ['⚙️','8Z Control','Kaj teče, kaj čaka in naslednji koraki.','/index-todo.html','PUBLIC'],
+      ['✦','IMPULZ 2026','Moja agenda, ocene in potencialni sogovorniki.','impulz-2026.html','PUBLIC'],
       ['◎','AI8 State','Izpeljano trenutno stanje AI8.','/AI8/AI8-state.html','PROTECTED'],
       ['↻','Wake Lab','Nadzor raziskovalnih linij in continuity toka.','/WL/','PROTECTED'],
       ['↗','BBSH','BB Surfing Hedge · delovni priročnik.','/BD/BBSH.html','PROTECTED'],
