@@ -113,3 +113,30 @@ test('authenticated gallery deletion passes browser CORS preflight and keeps oth
  assert.ok(await store.get('pairs/'+owner+'/'+id),'deletion is a library tombstone, not proof of byte erasure');
  assert.ok(await store.get('deleted-pairs/'+owner+'/'+id),'deletion marker persists for cloud Sync');
 });
+
+test('gallery image title persists in private cloud without changing the original identity',async()=>{
+ const owner='bd-research-owner',store=new Store(),s=createService({store,env});
+ const sha=hash(Buffer.from('unchanged source bytes')),id='f'.repeat(40),origin='https://bd-chess.github.io';
+ await store.setJSON('pairs/'+owner+'/'+id,{pair_id:id,title:'Original.jpg',owner,original:{sha256:sha},created_at:'2026-10-14T18:00:00.000Z'});
+ const target='/titles/'+sha,base='https://www.mdlxdcc.org/api/df';
+ const opts={origin,'content-type':'application/json'};
+ const anon=await s.handle(new Request(base+target,{method:'PUT',headers:opts,body:JSON.stringify({title:'Nova slika'})}));
+ assert.equal(anon.status,401,'unauthenticated rename is forbidden');
+ const token=signToken({owner,scope:'session'},secret);
+ const call=(path,method='GET',body)=>s.handle(new Request(base+path,{method,headers:{...opts,authorization:'Bearer '+token},...(body!==undefined?{body:JSON.stringify(body)}:{})}));
+ for(const invalid of ['', ' '.repeat(8), 'x'.repeat(121),'New\nline','ABC\u202Etxt']){
+  const rejected=await call(target,'PUT',{title:invalid});
+  assert.equal(rejected.status,400,'invalid or control-char title is rejected');
+  assert.equal((await rejected.json()).error,'TITLE_INVALID');
+ }
+ const a=await call(target,'PUT',{title:'  Poletno morje  '});assert.equal(a.status,200);
+ assert.equal((await a.json()).title,'Poletno morje');
+ const b=await call(target,'PUT',{title:'Jutro nad reko.jpg'});assert.equal(b.status,200);
+ const library=await(await call('/library')).json();
+ assert.equal(library.titles[sha],'Jutro nad reko.jpg');
+ assert.equal(library.pairs.length,1);
+ assert.equal(library.pairs[0].title,'Original.jpg','immutable original upload title survives rename');
+ assert.equal(library.pairs[0].original.sha256,sha,'source identity is preserved');
+ assert.ok(await store.get('titles/'+owner+'/'+sha),'new title is durable');
+ assert.equal((await s.handle(new Request(base+'/library'))).status,401);
+});
