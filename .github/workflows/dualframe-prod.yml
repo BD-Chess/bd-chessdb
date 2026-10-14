@@ -45,6 +45,11 @@ jobs:
       - name: Prepare existing protected pages
         working-directory: .dualframe-prod
         run: python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/dualframe-password-manager-report.json"
+      - name: Restore exact DualFrame release files after sitewide password-manager processing
+        run: |
+          rm -rf .dualframe-prod/public/Nara/dualframe-lab
+          mkdir -p .dualframe-prod/public/Nara
+          cp -a public/Nara/dualframe-lab .dualframe-prod/public/Nara/dualframe-lab
       - name: Guard against a competing production deployment
         run: node scripts/dualframe-prod-stage.mjs --guard
       - name: Deploy the reviewed isolated overlay to production
