@@ -23,3 +23,7 @@ jobs:
           node --check tests/dualframe-pwa-live-smoke.mjs
       - name: Verify offline package and update safety
         run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs
+      - name: Verify authenticated provider probing without vendor calls
+        run: |
+          npm install --prefix functions --no-audit --no-fund
+          node --test tests/dualframe-v3.test.mjs
