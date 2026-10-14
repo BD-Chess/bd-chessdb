@@ -14,7 +14,7 @@ test('first edition has three moments, all 12 validated variants and bilingual s
  assert.match(html,/nara-daily-responsive\.js/);assert.doesNotMatch(html,/nara-daily-lightbox\.js|nara-daily-resolution\.js/);
  assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(m),/drive|prompt|credential/i);
  for(const image of images){assert.equal(Object.keys(image.variants).length,4);assert.equal(image.after_paragraph,image.after_paragraph_en);for(const v of Object.values(image.variants))assert.ok(html.includes(v.src));}
- const legacy=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-07');assert.doesNotMatch(renderEditionPage(root,legacy),/nara-daily-responsive/);
+ const legacy=fs.readFileSync(path.join(n,i.paths.original_page),'utf8');assert.doesNotMatch(legacy,/nara-daily-responsive/);
 });
 test('responsive schema rejects incomplete slots, unsafe paths, changed bytes, dimensions and binding',()=>{
  for(const [change,error]of [
@@ -53,6 +53,11 @@ test('approved HD reuse fails closed for unsafe references, hash, stale source, 
  const stale=JSON.parse(sourceBytes);stale.en_content_sha256='0'.repeat(64);const bytes=JSON.stringify(stale);fs.writeFileSync(sourceFile,bytes);
  // Even a matching byte pin cannot bypass the existing v3 body/paragraph validator.
  const m=JSON.parse(JSON.stringify(original));m.landscape_hd_source.sha256=crypto.createHash('sha256').update(bytes).digest('hex');fs.writeFileSync(file,JSON.stringify(m));assert.throws(()=>renderEditionPage(r,i),/direct edition artwork language binding/);
+});
+test('Oct7 binds its three approved HD moments to all twelve variants without changing EN/SL anchors',()=>{
+ const i=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-07'),m=JSON.parse(fs.readFileSync(path.join(n,i.paths.artwork))),source=JSON.parse(fs.readFileSync(path.join(n,m.landscape_hd_source.src))),html=renderEditionPage(root,i);
+ assert.equal(m.schema,'nara.format.edition.artwork.v4');assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(m),/prompt|drive|credential/i);
+ for(let index=0;index<3;index++){const x=m.images[index],old=source.images[index];assert.equal(x.scene,old.scene);assert.equal(x.after_paragraph_en,old.after_paragraph_en);assert.equal(x.after_paragraph_sl,old.after_paragraph_sl);assert.equal(x.paragraph_sha256_en,old.paragraph_sha256_en);assert.equal(x.paragraph_sha256_sl,old.paragraph_sha256_sl);assert.deepEqual(x.variants.L_HD,{src:old.src,width:1672,height:941,sha256:old.sha256});assert.equal(Object.keys(x.variants).length,4);for(const variant of Object.values(x.variants))assert.ok(html.includes(variant.src));}
 });
 test('inline loads only visible-language HD; viewport resize selects P/L without a page reload',async()=>{
  const f=responsiveFixture();await flush();assert.equal(f.requests.length,3);assert.ok(f.requests.every(r=>/P[123]-HD/.test(r.src)));
