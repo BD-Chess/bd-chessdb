@@ -5,6 +5,12 @@
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
   const instances = new WeakMap();
+  // Display-only historical Lc0 cp scale; native Q/WDL remain engine evidence.
+  // https://lczero.org/dev/wiki/technical-explanation-of-leela-chess-zero/
+  function qToCp(q) {
+    if (!Number.isFinite(q) || Math.abs(q) > 1) return null;
+    return Math.sign(q) * Math.round(Math.abs(111.714640912 * Math.tan(1.5620688421 * q))) || 0;
+  }
   function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
     if (terminal === 'mate') return { label: '#', white: side === 'b' ? 100 : 0,
@@ -18,6 +24,13 @@
       const label = bound + (mate ? (cp < 0 ? '−' : '') + '#' + Math.abs(cp) : (cp > 0 ? '+' : '') + (cp / 100).toFixed(2));
       return { label, white: mate ? (cp < 0 ? 0 : 100) : Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
         description: `${source} ${label} · White perspective`, state: 'known' };
+    }
+    if (score?.type === 'q') {
+      const cp = qToCp(score.white);
+      if (cp === null) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const label = (cp > 0 ? '+' : '') + (cp / 100).toFixed(2);
+      return { label, white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
+        description: `${source} approximately ${cp} cp, converted from native neural Q ${score.white.toFixed(3)} · White perspective`, state: 'known' };
     }
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
@@ -33,9 +46,34 @@
     const label = document.getElementById('positionEvalLabel');
     const scores = new Map();
     const comparison = document.getElementById('allEvalBadges');
+    const dccProgress = document.getElementById('dccProgress');
     const sourceScores = new Map();
     const dccChoices = new Map();
-    const sources = ['CDB', 'SF', 'DCC'];
+    const sources = ['CDB','SF','DCC','RLE','LC0','BER'];
+    const names={CDB:'ChessDB',SF:'Stockfish',DCC:'ChessDCC',RLE:'Reckless',LC0:'LC Zero',BER:'Berserk'};
+    const cards = new Map();
+    function cardNodes(source) {
+      if (cards.has(source)) return cards.get(source);
+      const actionable = typeof onBadgeAction === 'function';
+      const badge = document.createElement(actionable ? 'button' : 'div');
+      badge.className = 'all-eval-badge'; badge.dataset.evalSource = source;
+      if (actionable) {
+        let stopOnly = false;
+        badge.type = 'button';
+        badge.addEventListener('pointerdown', () => { stopOnly = !!getBadgeControl?.(source)?.working; });
+        badge.addEventListener('pointercancel', () => { stopOnly = false; });
+        badge.addEventListener('click', () => { const intent = stopOnly; stopOnly = false; onBadgeAction(source, { stopOnly: intent }); });
+      }
+      const main = document.createElement('div'); main.className = 'all-eval-main';
+      const title = document.createElement('strong'); title.textContent = names[source];
+      const move = document.createElement('span'); move.className = 'all-eval-move';
+      const score = document.createElement('span'); score.className = 'all-eval-score';
+      const note = document.createElement('small');
+      main.append(title, move); if (source !== 'DCC') main.append(score);
+      if (source === 'DCC' && dccProgress) note.append(dccProgress);
+      badge.append(main, note); comparison.append(badge);
+      const nodes = { badge, main, title, move, score, note }; cards.set(source, nodes); return nodes;
+    }
     let lastKnown = null;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
@@ -43,51 +81,60 @@
       comparison.parentElement.classList.toggle('has-all-evals', true);
       comparison.parentElement.hidden = !visible;
       if (!visible) return;
-      comparison.replaceChildren();
+      // Keep buttons (and their children) alive across native engine info events.
+      // Replacing a touch target between pointer-down and pointer-up can lose Stop.
       for (const source of sources) {
         const actionable = typeof onBadgeAction === 'function';
-        const badge = document.createElement(actionable ? 'button' : 'div'); badge.className = 'all-eval-badge';
+        const placeholder=source==='RLE'?!globalThis.ChessEngineRegistry?.supported('reckless'):source==='LC0'?!globalThis.ChessEngineRegistry?.supported('lc0'):false;
+        const enabled=source==='CDB'?settings.cdbEnabled!==false:!placeholder;
+        const control=getBadgeControl?.(source);
+        const { badge, move, score, note } = cardNodes(source);
         if (actionable) {
-          badge.type = 'button'; badge.dataset.evalSource = source;
-          badge.addEventListener('click', () => onBadgeAction(source));
-          const control = getBadgeControl?.(source);
-          badge.disabled = !!control?.disabled;
+          badge.disabled = placeholder || !!control?.disabled;
           badge.title = control?.title || '';
           badge.setAttribute('aria-label', `${source}: ${badge.title || 'analysis'}`);
           badge.classList.toggle('is-working', !!control?.working);
+          badge.classList.toggle('is-batch-running', !!control?.allRunning);
+          badge.classList.toggle('is-batch-participant', !!control?.batchParticipant);
+          badge.classList.toggle('is-linked', !!control?.selected && !control?.allRunning);
+          badge.setAttribute('aria-current', control?.selected ? 'true' : 'false');
           if (source === 'DCC') {
             badge.setAttribute('aria-pressed', String(!!control?.pressed));
             badge.classList.toggle('is-active', !!control?.pressed);
           }
         }
-        const main = document.createElement('div'); main.className = 'all-eval-main';
-        const title = document.createElement('strong'); title.textContent = `${source}:`;
-        const move = document.createElement('span'); move.className = 'all-eval-move';
-        const score = document.createElement('span'); score.className = 'all-eval-score';
-        const note = document.createElement('small');
-        main.append(title, move);
         if (source === 'DCC') {
           const choice = dccChoices.get(fen);
           move.textContent = choice?.move || (choice?.status === 'pending' ? '…' : '—');
-          note.textContent = choice?.provider ? (choice.status === 'raw-safety' ? `${choice.provider} · raw retained` : `${choice.provider} lines · choice`) :
-            choice?.status === 'unavailable' ? 'unavailable' : 'heuristic choice';
-          if (actionable) badge.setAttribute('aria-label', `DCC: ${move.textContent}. ${badge.title}`);
+          const progress = dccProgress;
+          if(progress){
+            if(progress.dataset.fen!==fen){progress.textContent='';progress.title='No measured evidence available';progress.dataset.fen=fen;}
+            if(!progress.textContent)progress.textContent=choice?.status==='pending'?'Analyzing':'No data';
+          }else note.textContent=choice?.status==='pending'?'Analyzing':choice?.status==='raw-safety'?'Raw choice':choice?.provider?'Measured':'No data';
+          note.title = `${dccProgress?.title || note.textContent}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
+          if (actionable) badge.setAttribute('aria-label', `ChessDCC: ${move.textContent}. ${note.title}. ${badge.title}`);
         } else {
           const entry = sourceScores.get(`${fen}:${source}`);
-          const fresh = entry && Date.now() - entry.at < 300000;
+          const fresh = enabled && entry && Date.now() - entry.at < 300000 &&
+            (source !== 'SF' || !control?.variant || !entry.variant || control.variant === entry.variant);
           const result = measure(fen, fresh ? entry.score : null, null, source);
-          move.textContent = fresh ? entry.bestMove || '—' : '…';
+          move.textContent = placeholder || !enabled ? '—' : fresh ? entry.bestMove || '—' : '…';
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
-          score.textContent = fresh ? result.label : '…';
-          main.append(score);
+          score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
+          score.title = fresh && entry.score?.type === 'q' ? result.description : '';
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
-          note.textContent = source === 'SF' && fresh && entry.depth ? `depth ${entry.depth}` : 'White POV';
+          note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
+            (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
+          if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
-        note.title = note.textContent;
+        if (source !== 'DCC') note.title = note.textContent;
+        if (actionable) {
+          badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
+          badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);
+        }
         badge.classList.toggle('is-unknown', move.textContent === '—' || score.textContent === '—');
-        badge.append(main, note); comparison.append(badge);
       }
     }
     function render() {
@@ -132,12 +179,12 @@
       const deep = source === 'SF' ? sourceScores.get(`${fen}:SF`) : null;
       const preserved = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
       scores.set(fen, { score: preserved ? deep.score : score, source, settled, at: Date.now() });
-      if (source === 'CDB' || source === 'SF') updateSource(fen, score, source);
+      if (source === 'CDB' || source === 'SF' || source === 'BER' || source === 'RLE' || source === 'LC0') updateSource(fen, score, source);
       if (scores.size > 250) scores.delete(scores.keys().next().value);
       // A late response may be cached, but never painted onto a different position.
       if (game.fen() === fen) render();
     }
-    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined, origin = 'regular') {
+    function updateSource(fen, score, source, depth = undefined, bestMove = undefined, restricted = undefined, origin = 'regular', metadata = {}) {
       const key = `${fen}:${source}`, previous = sourceScores.get(key);
       // A shallower normal search must not replace the user's pinned Deep
       // analysis, even if the main worker ignores a late abort.
@@ -145,9 +192,9 @@
           Date.now() - previous.at < 300000 && (!Number.isFinite(depth) || depth < previous.depth)) return;
       // Score-only refreshes must not erase root metadata. Explicit null clears it;
       // unavailable scores also clear omitted metadata rather than retain an old move.
-      const known = Number.isFinite(score) || (['cp', 'mate'].includes(score?.type) && Number.isFinite(score.white));
+      const known = Number.isFinite(score) || (['cp', 'mate','q'].includes(score?.type) && Number.isFinite(score.white));
       sourceScores.set(key, { score, at: Date.now(),
-        origin,
+        origin, variant:metadata.variant||previous?.variant, engineName:metadata.engineName||previous?.engineName,
         depth: depth === undefined ? (known ? previous?.depth ?? null : null) : depth,
         bestMove: bestMove === undefined ? (known ? previous?.bestMove ?? null : null) : bestMove,
         restricted: restricted === undefined ? (depth === undefined && known ? previous?.restricted : false) : restricted });
@@ -155,7 +202,13 @@
       if (game.fen() === fen) render();
     }
     function updateDCC(fen, move, provider, status = 'ready') {
+      const previous = dccChoices.get(fen);
+      if (status === 'pending' && previous?.move) { move = previous.move; provider = previous.provider; }
       dccChoices.set(fen, { move, provider, status });
+      if(dccProgress&&game.fen()===fen){dccProgress.dataset.fen=fen;
+        if(status==='pending'){dccProgress.textContent='Analyzing';dccProgress.title='Analyzing measured DCC candidates';}
+        else if(status==='unavailable'||status==='unknown'){dccProgress.textContent='No data';dccProgress.title='No measured evidence available';}
+      }
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
@@ -167,13 +220,19 @@
       const keepDeep = deep?.origin === 'deep' && Date.now() - deep.at < 300000;
       if (keepDeep && settings.analysisSource === 'sf') scores.set(fen, { score: deep.score, source: 'SF', at: Date.now() });
       else scores.delete(fen);
-      sourceScores.delete(`${fen}:CDB`);
-      if (!keepDeep) sourceScores.delete(`${fen}:SF`);
-      dccChoices.set(fen, { move: null, provider: null, status: 'pending' });
+      // Independent card results stay available when only the board source changes.
+      if (!dccChoices.has(fen)) dccChoices.set(fen, { move: null, provider: null, status: 'pending' });
       if (dccChoices.size > 250) dccChoices.delete(dccChoices.keys().next().value);
       if (game.fen() === fen) render();
     }
-    const api = { render, update, updateSource, updateDCC, markComparisonPending };
+    function clearLocalSources(fen) {
+      for(const role of ['SF','BER','RLE','LC0'])sourceScores.delete(`${fen}:${role}`);
+      if(['SF','BER','RLE','LC0'].includes(scores.get(fen)?.source))scores.delete(fen);
+      lastKnown=null;if(game.fen()===fen)render();
+    }
+    const api = { render, update, updateSource, updateDCC, markComparisonPending, clearLocalSources,
+      clearDCC(fen){dccChoices.delete(fen);if(dccProgress&&game.fen()===fen){dccProgress.textContent='';dccProgress.title='No measured evidence available';}if(game.fen()===fen)render();},
+      clearBoard(fen){scores.delete(fen);lastKnown=null;if(game.fen()===fen)render();} };
     instances.set(game, api);
     return api;
   }
@@ -257,5 +316,5 @@
     }
     return { start, position, decision, stop };
   }
-  return { measure, create, watchSimulation };
+  return { measure, qToCp, create, watchSimulation };
 });

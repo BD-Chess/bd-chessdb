@@ -110,7 +110,7 @@ for (const channel of ['CURRENT', 'LAB']) test(`${channel}: DCC click modes pres
   await candidate('d2d4'); mode('details'); (await candidate('d2d4')).click();
   assert.equal(el('btnSim').textContent, 'Pause', 'details-only remains observational');
   mode('hybrid'); (await candidate('d2d4')).click();
-  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, channel === 'LAB' ? 'Simulation' : 'Sim');
+  assert.equal(fen, expected.fen()); assert.equal(el('btnSim').textContent, channel === 'LAB' ? 'Sim / Play' : 'Sim');
   await new Promise(r => setTimeout(r, 1200)); assert.equal(fen, expected.fen(), 'queued automatic move was cancelled');
   assert.equal(info.style.display, 'block');
 

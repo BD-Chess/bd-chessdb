@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex"><title>ChessBest LCZero verification</title>
+<body><p>LCZero verification harness. Results are returned to the automated verifier.</p><script type="module">
+import { Chess } from '../chess.mjs';
+import { create } from '../adapter.mjs';
+import { encodeLc0Classical112 } from '../encoder.mjs';
+window.runVerification=async()=>{
+  const fixtures=await (await fetch('./corpus.json')).json();
+  const refs=(await (await fetch('./native-reference.jsonl')).text()).trim().split('\n').map(JSON.parse);
+  const raws=(await (await fetch('./native-raw.jsonl')).text()).trim().split('\n').map(JSON.parse);
+  const worker=new Worker(new URL('../worker.mjs',import.meta.url),{type:'module'});
+  let serial=0;const pending=new Map();
+  worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p||['progress','started','info'].includes(data.type))return;pending.delete(data.id);data.type==='error'?p.reject(new Error(data.error)):p.resolve(data);};
+  worker.onerror=e=>{for(const p of pending.values())p.reject(new Error(e.message));};
+  const ask=data=>new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});worker.postMessage({id,...data});});
+  const ready=await ask({type:'prepare'});const rows=[];
+  for(let i=0;i<fixtures.length;i++){
+    const f=fixtures[i],ref=refs[i],raw=raws[i];let history=[];
+    if(f.moves){const c=new Chess(f.startFen==='startpos'?undefined:f.startFen);history=[c.fen({forceEnpassantSquare:true})];for(const uci of f.moves){c.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]});history.push(c.fen({forceEnpassantSquare:true}));}history[history.length-1]=f.fen;}
+    const got=(await ask({type:'evaluate',fen:f.fen,history})).evaluation;
+    const priors=new Map(got.priors.map(p=>[p.index,p]));
+    const scaled=got.priors.map(p=>raw.policy[p.index]/1.359),max=Math.max(...scaled),exp=scaled.map(x=>Math.exp(x-max)),sum=exp.reduce((a,b)=>a+b,0);
+    const maxPriorDelta=Math.max(...got.priors.map((p,j)=>Math.abs(p.prior-exp[j]/sum)));
+    const maxLogitDelta=Math.max(...got.priors.map(p=>Math.abs(p.logit-raw.policy[p.index])));
+    const qDelta=Math.abs(got.q-raw.q),drawDelta=Math.abs(got.wdl[1]-raw.wdl[1]);
+    const maxWdlDelta=Math.max(...got.wdl.map((v,j)=>Math.abs(v-raw.wdl[j])));
+    const encoded=encodeLc0Classical112(history.length?{positions:history}:f.fen);
+    const inputExact=encoded.masks.every((v,j)=>String(v)===raw.masks[j])&&encoded.values.every((v,j)=>v===raw.values[j]);
+    const top=got.priors.slice().sort((a,b)=>b.prior-a.prior)[0];
+    const legal=new Set(new Chess(f.fen).moves({verbose:true}).map(m=>m.from+m.to+(m.promotion||'')));
+    const allLegal=got.priors.every(p=>legal.has(p.uci))&&got.priors.length===legal.size;
+    const topIndexMatch=top.index===ref.topPriors[0].index;
+    const pass=allLegal&&topIndexMatch&&inputExact&&maxPriorDelta<=0.00001&&maxLogitDelta<=0.0002&&maxWdlDelta<=0.00001&&qDelta<=0.00001;
+    rows.push({id:f.id,pass,topIndexMatch,allLegal,inputExact,maxPriorDelta,maxLogitDelta,maxWdlDelta,qDelta,drawDelta,q:got.q,wdl:got.wdl,topmove:top.uci});
+  }
+  const compaction=(await ask({type:'analyze',fen:fixtures[0].fen,movetime:600,multiPV:3,retainedNodeLimit:256})).snapshot;
+  worker.terminate();
+  const adapter=create();const progress=[];const proof=await adapter.prepare({onProgress:p=>progress.push({loaded:p.loaded,total:p.total,phase:p.phase})});
+  const start=fixtures[0].fen;
+  const timed=await adapter.analyze({fen:start,movetime:1000,multiPV:3});
+  const longer=await adapter.analyze({fen:start,movetime:2000,multiPV:3});
+  const abort=new AbortController();let updates=0;
+  const cancel=adapter.analyze({fen:start,movetime:10000,signal:abort.signal,onInfo(){updates++;}}).then(()=>false,e=>e.name==='AbortError');
+  setTimeout(()=>abort.abort(),180);const cancelled=await cancel;
+  const after=await adapter.analyze({fen:fixtures[1].fen,movetime:1000,multiPV:2});
+  const explicit=fixtures.find(f=>f.moves);
+  let started=false;
+  const historyResult=await adapter.analyze({fen:explicit.fen,history:{startFen:explicit.startFen,moves:explicit.moves},movetime:500,onSearchStarted(){started=true;}});
+  const infinityAbort=new AbortController();
+  const infiniteResult=adapter.analyze({fen:start,infinite:true,signal:infinityAbort.signal}).then(()=>false,e=>e.name==='AbortError');
+  setTimeout(()=>infinityAbort.abort(),170);const infiniteCancelled=await infiniteResult;
+  const repMoves=['e2e4','g8f6','g1f3','f6g8','f3g1','g8f6','g1f3','f6g8','f3g1'];const repBoard=new Chess();
+  for(const u of repMoves)repBoard.move({from:u.slice(0,2),to:u.slice(2,4)});
+  const repetition=await adapter.analyze({fen:repBoard.fen(),history:{startFen:'startpos',moves:repMoves},movetime:1000});
+  const malformedHistoryRejected=await adapter.analyze({fen:start,history:{startFen:'startpos',moves:['e2e4']},movetime:1000}).then(()=>false,e=>e.message.includes('history'));
+  const mate=await adapter.analyze({fen:'7k/6Q1/6K1/8/8/8/8/8 b - - 0 1',movetime:1000});
+  const stalemate=await adapter.analyze({fen:'7k/5K2/6Q1/8/8/8/8/8 b - - 0 1',movetime:1000});
+  const checkPVs=r=>r.lines.every(l=>{const c=new Chess(r.fen);return l.pv.every(u=>{try{return !!c.move({from:u.slice(0,2),to:u.slice(2,4),promotion:u[4]});}catch{return false;}});});
+  adapter.destroy();
+  const searchPass=timed.nodes>1&&longer.nodes>timed.nodes&&timed.actualSearchMs>=990&&timed.actualSearchMs<1250&&longer.actualSearchMs>=1990&&longer.actualSearchMs<2250&&cancelled&&after.fen===fixtures[1].fen&&checkPVs(timed)&&checkPVs(after)&&mate.score.root===-1&&stalemate.score.root===0&&started&&historyResult.historyMode==='verified-explicit-history'&&infiniteCancelled&&repetition.stopReason==='terminal'&&repetition.score.root===0&&malformedHistoryRejected&&progress.length>0&&progress.at(-1).loaded===progress.at(-1).total&&compaction.memory.compactions>0&&compaction.memory.retainedNodes<=256&&compaction.evaluations===compaction.nodes&&checkPVs(compaction);
+  return {pass:rows.every(r=>r.pass)&&searchPass,model:ready.proof,reference:'Lc0 v0.32.1 / BLAS-Eigen / exact same Maia1900 raw weights / nodes1 / raw instrumentation before compressed UCI stats',tolerances:{prior:0.00001,rawLogit:0.0002,q:0.00001,wdl:0.00001,input:'bit-exact'},rows,search:{pass:searchPass,timed,longer,cancelled,updates,after,mate,stalemate,started,historyResult,infiniteCancelled,repetition,malformedHistoryRejected,progress,compaction},proof};
+};
+</script></body></html>

@@ -1,0 +1,19 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-only -->
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reckless corresponding source</title>
+<style>body{max-width:48rem;margin:3rem auto;padding:1rem;font:1rem/1.6 system-ui;background:#16382b;color:#fff}a{color:#a9e2c5}button{font:inherit;padding:.7rem 1rem}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<h1>Reckless corresponding source</h1><p>Complete source, build inputs and original NNUE for this ChessBest browser engine. AGPL-3.0-only. The compiled WASM is available separately as four runtime chunks.</p>
+<p><a href="SOURCE.md">Authors, license and build recipe</a> · <a href="manifest.json">Exact hashes and parts</a></p>
+<button id="download">Download verified source archive (53.5 MB)</button><p id="status" role="status" aria-live="polite">Source downloads only after you press the button.</p>
+<p>You can also download the three parts below and concatenate them in order. This yields the same .tar.gz archive.</p><ul><li><a href="reckless-corresponding-source.tar.gz.part00">reckless-corresponding-source.tar.gz.part00</a> (20,971,520 bytes)</li><li><a href="reckless-corresponding-source.tar.gz.part01">reckless-corresponding-source.tar.gz.part01</a> (20,971,520 bytes)</li><li><a href="reckless-corresponding-source.tar.gz.part02">reckless-corresponding-source.tar.gz.part02</a> (11,601,606 bytes)</li></ul>
+<pre>cat reckless-corresponding-source.tar.gz.part00 reckless-corresponding-source.tar.gz.part01 reckless-corresponding-source.tar.gz.part02 &gt; reckless-corresponding-source.tar.gz</pre>
+<script type="module">
+const button=document.getElementById('download'),status=document.getElementById('status');
+button.addEventListener('click',async()=>{button.disabled=true;try{
+ const response=await fetch('manifest.json');if(!response.ok)throw new Error('Manifest HTTP '+response.status);const archive=(await response.json()).source_archive;const parts=[];let total=0;
+ for(const [index,name] of archive.parts.entries()){status.textContent='Downloading source part '+(index+1)+' / '+archive.parts.length;const response=await fetch(name);if(!response.ok)throw new Error(name+' HTTP '+response.status);const bytes=new Uint8Array(await response.arrayBuffer());total+=bytes.length;parts.push(bytes);}
+ if(total!==archive.bytes)throw new Error('Source byte length mismatch');const joined=new Uint8Array(total);let offset=0;for(const part of parts){joined.set(part,offset);offset+=part.length;}
+ status.textContent='Verifying complete source archive';const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',joined)),b=>b.toString(16).padStart(2,'0')).join('');if(digest!==archive.sha256)throw new Error('Source SHA-256 mismatch');
+ const url=URL.createObjectURL(new Blob([joined],{type:'application/gzip'})),link=document.createElement('a');link.href=url;link.download=archive.name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='Complete source verified; download ready.';
+ }catch(error){status.textContent='Download failed: '+error.message+'; you can retry or use the three direct links.';}finally{button.disabled=false;}});
+</script></html>

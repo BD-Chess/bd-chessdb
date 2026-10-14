@@ -1,0 +1,463 @@
+/* One analysis owner; optional full engines are instantiated only by analyze(). */
+(function(root, factory) {
+  const api = factory(root, typeof module === 'object' && module.exports ? require('./8zc-deep-engine.js') : root.ChessDeepEngine);
+  if (typeof module === 'object' && module.exports) module.exports = api; else root.ChessAnalysisSession = api;
+})(typeof window === 'object' ? window : globalThis, function(root, Deep) {
+  'use strict';
+  const abortError=()=>Object.assign(new Error('Cancelled'),{name:'AbortError'});
+  const GROUPS = {'sf-lc0':['lc0'], 'sf-reckless':['reckless'], 'sf-berserk':['berserk'], all:['lc0','reckless','berserk']};
+  const MODES = ['sf-lite','sf-full','berserk','reckless','lc0',...Object.keys(GROUPS)];
+  const isGroup = mode => Object.hasOwn(GROUPS,mode);
+  const participants = (mode,variant=settings.sfCardMode) => isGroup(mode) ? [variant,...GROUPS[mode]] : [mode];
+  const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
+  // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
+  const STORAGE = 'ChessBest:CURRENT:v2:analysis-engine-r3';
+  const listeners = new Set(), instances = new Set();
+  let owner = null, generation = 0, cleanupUntil = 0, sessionSerial = 0, berserkNetwork = null;
+  const BERSERK_NET = Object.freeze({bytes:25201924,sha256:"9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084",name:"berserk-9b84c340af7e.nn"});
+  const NETWORK_DB = 'ChessBest:CURRENT:engine-networks:v1';
+  let networkState = 'unchecked', networkPersistent = false, networkError = '', networkRevision = 0, restorePending = null, networkLoadSerial = 0;
+  let networkWrites = Promise.resolve();
+  let savedCardMode='sf-lite';
+  try{const key=root.ChessLabStorage?.KEYS?.settings||'ChessBest:CURRENT:v2:settings';savedCardMode=JSON.parse(root.localStorage?.getItem(key)||'null')?.sfCardMode==='sf-full'?'sf-full':'sf-lite';}catch(_){}
+  let settings = { analysisMode:'sf-lite', boardSource:'cdb', sfCardMode:savedCardMode, sfFullThreadsRequested:1, hashMB:16, engineMemoryPolicy:'one' };
+  try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || root.localStorage?.getItem('ChessBest:CURRENT:v2:analysis-engine') || 'null'); if (old) settings = sanitize(old); } catch (_) {}
+  function sanitize(value) {
+    const mode = ['auto','cdb','sf','cdb-sf-lite','CDB | SF Lite'].includes(value.analysisMode)?'sf-lite':value.analysisMode;
+    const requested = value.sfFullThreadsRequested;
+    return { analysisMode:MODES.includes(mode) ? mode : 'sf-lite',
+      sfCardMode:value.sfCardMode==='sf-full'?'sf-full':value.sfCardMode==='sf-lite'?'sf-lite':savedCardMode,
+      boardSource:BOARD_SOURCES.includes(value.boardSource) ? value.boardSource : 'cdb',
+      sfFullThreadsRequested:Number.isInteger(Number(requested))&&Number(requested)>=1&&Number(requested)<=8?Number(requested):1,
+      hashMB:Math.min(64, Math.max(8, Number(value.hashMB) || 16)),
+      engineMemoryPolicy:value.engineMemoryPolicy==='all'?'all':'one',
+      ...(Number(value.analysisTimeMs)>0?{analysisTimeMs:Math.min(14400000,Number(value.analysisTimeMs))}:{}),
+      ...(Number.isFinite(Number(value.deepTimeMs))&&value.deepTimeMs!=null?{deepTimeMs:Math.max(-1,Math.min(14400000,Number(value.deepTimeMs)))}:{}) };
+  }
+  function capabilities(mode = settings.analysisMode, environment = root) {
+    const hc = Math.max(1, Number(environment.navigator?.hardwareConcurrency) || 2);
+    const mobile = !!environment.matchMedia?.('(pointer: coarse)').matches || (environment.innerWidth > 0 && environment.innerWidth < 700);
+    const isolated = environment.crossOriginIsolated === true && typeof environment.SharedArrayBuffer === 'function';
+    const ids=participants(mode),dual=isGroup(mode),full=ids.includes('sf-full');
+    const sequential=ids.length>1&&(mobile||ids.length>2);
+    const cap = Math.max(1, Math.min(mobile ? 2 : 8, hc - (dual ? 2 : 1)));
+    const maxSFThreads = isolated ? cap : 1;
+    const requested = settings.sfFullThreadsRequested;
+    const auto = mobile ? 1 : hc >= 4 ? 2 : 1;
+    const effectiveSFThreads = full ? Math.min(maxSFThreads, requested === 'auto' ? auto : requested) : 1;
+    const threadCounts=ids.map(id=>id==='sf-full'?effectiveSFThreads:1);
+    const totalThreads=sequential?Math.max(...threadCounts):threadCounts.reduce((a,b)=>a+b,0);
+    const names={'sf-lite':'SF Lite','sf-full':'SF Full',lc0:'LCZero NN',reckless:'Reckless',berserk:'Berserk'};
+    const label=ids.map((id,i)=>names[id]+' · '+threadCounts[i]).join(sequential?' → ':' + ');
+    const message = full && !isolated ? environment.location?.hostname?.endsWith('github.io') ? 'This GitHub Pages session is not cross-origin isolated; SF Full uses the full single-thread fallback. Multiple SF threads require an isolated host.' : 'Full single-thread fallback · host isolation is required for multiple SF threads.' : full && requested !== 'auto' && requested > maxSFThreads ? `SF threads clamped to ${maxSFThreads}; CPU resources are shared.` : 'CPU resources are shared; hardwareConcurrency is only a hint.';
+    return { isolated, hardwareConcurrency:hc, mobile, maxSFThreads, effectiveSFThreads, berserkThreads:1, totalThreads,
+      allocation:label, message, sequential, participants:ids, threadsLocked:!full || maxSFThreads === 1 };
+  }
+  function getSettings() { return Object.assign({}, settings, {sfFullThreadsEffective:capabilities().effectiveSFThreads,
+    berserkNetworkReady:!!berserkNetwork,berserkNetworkState:networkState,berserkNetworkPersistent:networkPersistent,berserkNetworkError:networkError}); }
+  function notifySettings() { for (const listener of listeners) listener(getSettings()); }
+  function networkStore(operation, record) {
+    return new Promise((resolve,reject) => {
+      if (!root.indexedDB) return reject(new Error('Browser storage is unavailable'));
+      let db, settled = false;
+      const finish = (error,value) => { if (settled) return; settled=true;clearTimeout(timer);db?.close();error?reject(error):resolve(value); };
+      const timer=setTimeout(()=>finish(new Error('Browser storage timed out')),4000);
+      let open; try { open=root.indexedDB.open(NETWORK_DB,1); } catch(error) {finish(error);return;}
+      open.onupgradeneeded=()=>{if(!open.result.objectStoreNames.contains('networks'))open.result.createObjectStore('networks',{keyPath:'id'});};
+      open.onerror=()=>finish(open.error||new Error('Cannot open browser storage'));
+      open.onblocked=()=>finish(new Error('Browser storage is blocked by another tab'));
+      open.onsuccess=()=>{
+        db=open.result;if(settled){db.close();return;}
+        let tx,request;
+        try {
+          tx=db.transaction('networks',operation==='get'?'readonly':'readwrite');const store=tx.objectStore('networks');
+          request=operation==='get'?store.get(BERSERK_NET.sha256):operation==='put'?store.put(record):store.delete(BERSERK_NET.sha256);
+        } catch(error){finish(error);return;}
+        tx.oncomplete=()=>finish(null,request.result);
+        tx.onabort=tx.onerror=()=>finish(tx.error||new Error('Cannot save local NNUE'));
+      };
+    });
+  }
+  function queueNetworkWrite(operation,record) {
+    const write=networkWrites.catch(()=>{}).then(()=>networkStore(operation,record));
+    networkWrites=write;return write;
+  }
+  async function verifyNetwork(buffer) {
+    if (!buffer || buffer.byteLength !== BERSERK_NET.bytes || !root.crypto?.subtle) throw new Error('NNUE verification requires the original Berserk 14 file and a secure browser.');
+    const digest=await root.crypto.subtle.digest('SHA-256',buffer);
+    const sha=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');
+    if(sha!==BERSERK_NET.sha256)throw new Error('This NNUE does not match berserk-9b84c340af7e.nn (25,201,924 bytes).');
+    return {buffer,sha256:sha};
+  }
+  function restoreBerserkNetwork({force=false}={}) {
+    if(berserkNetwork||!force&&(networkState==='missing'||networkState==='error'))return Promise.resolve(getSettings());
+    if(restorePending)return restorePending;
+    const revision=networkRevision;networkState='checking';notifySettings();
+    restorePending=(async()=>{
+      try {
+        await networkWrites.catch(()=>{});
+        const stored=await networkStore('get');
+        const verified=stored?await verifyNetwork(stored.buffer):null;
+        if(revision!==networkRevision)return;
+        berserkNetwork=verified;networkPersistent=!!verified;networkState=verified?'ready':'missing';networkError='';
+      }catch(error){if(revision===networkRevision){networkState='error';networkPersistent=false;networkError=error.message;}}
+      finally{restorePending=null;notifySettings();}
+      return getSettings();
+    })();
+    return restorePending;
+  }
+  async function loadBerserkNetwork(file) {
+    if (!file || file.size !== BERSERK_NET.bytes || typeof file.arrayBuffer !== 'function') throw new Error('Choose berserk-9b84c340af7e.nn (25,201,924 bytes).');
+    const revision=++networkRevision;
+    let verified;
+    try{verified=await verifyNetwork(await file.arrayBuffer());}
+    catch(error){if(revision===networkRevision){networkState=berserkNetwork?'ready':'missing';notifySettings();}throw error;}
+    if(revision!==networkRevision)return getSettings();
+    ++generation; for (const instance of instances) instance.stop();
+    berserkNetwork=verified;networkPersistent=false;networkState='storing';networkError='';notifySettings();
+    try {
+      await queueNetworkWrite('put',{id:BERSERK_NET.sha256,buffer:verified.buffer,name:BERSERK_NET.name});
+      if(revision===networkRevision)networkPersistent=true;
+    }catch(error){if(revision===networkRevision)networkError=error.message;}
+    if(revision===networkRevision)networkState='ready';notifySettings();
+    return getSettings();
+  }
+  // Only an actual analysis calls this function. Idle selection restores local
+  // bytes at most; no optional engine/network request is made at page startup.
+  async function ensureBerserkNetwork(signal, onProgress) {
+    const abort = () => { if (signal?.aborted) throw abortError(); };
+    abort();
+    // Another tab may have completed a save after this tab previously saw
+    // missing/cancelled bytes. Recheck before downloading the original NNUE.
+    if (!berserkNetwork) await restoreBerserkNetwork({force:true});
+    abort();
+    if (berserkNetwork) return getSettings();
+    const revision=networkRevision, serial=++networkLoadSerial;
+    networkState='downloading';networkError='';notifySettings();
+    try {
+      const base=root.document?.baseURI || 'http://localhost/chess/';
+      const directory='vendor/berserk/v14-5b8d6c93/';
+      const bytes=new Uint8Array(BERSERK_NET.bytes);let offset=0;
+      // Part boundaries are packaging only: verification covers the original full file.
+      for(let part=0;part<3;part++){
+        abort();const url=new URL(directory+'berserk-9b84c340af7e.part'+part+'.nn',base).href;
+        const response=await root.fetch(url,{signal,cache:'force-cache'});
+        if(!response.ok)throw new Error('NNUE download failed (HTTP '+response.status+').');
+        const chunk=new Uint8Array(await response.arrayBuffer());
+        const expected=part<2?10485760:4230404;
+        if(chunk.byteLength!==expected)throw new Error('Incomplete original NNUE download.');
+        bytes.set(chunk,offset);offset+=chunk.byteLength;
+        const timing=root.performance?.getEntriesByName?.(url)?.slice(-1)[0];
+        const phase=timing?.transferSize>0&&timing.transferSize>=(timing.encodedBodySize||0)?'downloading':timing?.decodedBodySize>0?'preparing':'loading';
+        onProgress?.({phase,loaded:offset,total:BERSERK_NET.bytes,asset:'NNUE'});
+      }
+      const verified=await verifyNetwork(bytes.buffer);abort();
+      if(revision!==networkRevision||serial!==networkLoadSerial)throw abortError();
+      berserkNetwork=verified;networkPersistent=false;networkState='ready';notifySettings();
+      try {
+        await queueNetworkWrite('put',{id:BERSERK_NET.sha256,buffer:verified.buffer,name:BERSERK_NET.name});
+        if(revision===networkRevision&&serial===networkLoadSerial)networkPersistent=true;
+      } catch(error) { if(revision===networkRevision&&serial===networkLoadSerial)networkError=error.message; }
+      abort();return getSettings();
+    } catch(error) {
+      if(revision===networkRevision&&serial===networkLoadSerial){
+        networkState=berserkNetwork?'ready':error.name==='AbortError'?'missing':'error';
+        networkError=error.name==='AbortError'?'':error.message;
+      }
+      throw error;
+    } finally {notifySettings();}
+  }
+  async function clearBerserkNetwork() {
+    const revision=++networkRevision;++generation;for(const instance of instances)instance.stop();
+    berserkNetwork=null;networkPersistent=false;networkState='removing';networkError='';notifySettings();
+    try {await queueNetworkWrite('delete');if(revision===networkRevision)networkState='missing';}
+    catch(error){if(revision===networkRevision){networkState='error';networkError='Could not remove the saved NNUE: '+error.message;}}
+    notifySettings();return getSettings();
+  }
+  function configure(value) {
+    const previousSettings=settings;
+    const next = sanitize(Object.assign({}, settings, value));
+    if (JSON.stringify(next) === JSON.stringify(settings)) return getSettings();
+    // Changing the board's display source does not cancel independent analysis.
+    const computeChanged = ['analysisMode','sfFullThreadsRequested','hashMB'].some(key=>next[key]!==settings[key]) ||
+      isGroup(next.analysisMode)&&next.sfCardMode!==settings.sfCardMode;
+    if(computeChanged){++generation; for (const instance of instances) instance.stop();}
+    settings = next;
+    if(memory){
+      if(['sfFullThreadsRequested','hashMB'].some(key=>next[key]!==previousSettings[key]))memory.clear();
+      memory.setPolicy(next.engineMemoryPolicy);
+      if(next.engineMemoryPolicy==='all')void memory.warmAll();
+    }
+    try { root.localStorage?.setItem(STORAGE, JSON.stringify(settings)); } catch (_) {}
+    for (const listener of listeners) listener(getSettings());
+    return getSettings();
+  }
+  const descriptors = {
+    'sf-full': {id:'stockfish-js-19.0.1-full',name:'Stockfish 19 Full',version:'19.0.1',backend:'wasm',maxThreads:8,
+      source:'https://github.com/nmrugg/stockfish.js/releases/tag/v19.0.1'},
+    berserk:{id:'berserk-14-wasm-scalar',name:'Berserk 14',version:'14',backend:'wasm-scalar',maxThreads:1,
+      network:'berserk-9b84c340af7e.nn',source:'https://github.com/manthedan/0x88/tree/5b8d6c930168cd645dd34d646055f303fae2b5b1/engines/berserk'}
+  };
+  // Reusable single-engine adapter for matched DCC continuation probes.
+  // It uses the same pinned engine/network and actual thread policy as Deep.
+  function rawBackendFor(mode, Chess) {
+    if(['reckless','lc0'].includes(mode))return browserBackend(mode,Chess);
+    if(mode==='sf-lite')return {create:config=>Deep.create({Chess,threads:1,hashMB:Math.min(settings.hashMB,capabilities(mode).mobile?16:64),...config})};
+    if(!['sf-full','berserk'].includes(mode))return Deep;
+    return {create(){
+      const base=root.document?.baseURI||'http://localhost/chess/';
+      const caps=capabilities(mode),single=!caps.isolated;
+      const workerUrl=new URL(mode==='berserk'?'vendor/berserk/v14-5b8d6c93/berserk-host.js?v=20261013-r9':
+        'vendor/stockfish-full/v19.0.1/stockfish-19'+(single?'-single':'')+'.js?v=20261013-r9',base).href;
+      const config={Chess,workerUrl,engine:Object.assign({},descriptors[mode],{variant:mode==='berserk'?'scalar':single?'single':'threaded',wasmSHA256:mode==='berserk'?'0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372':single?'991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740':'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667',
+        network:mode==='sf-full'?'nn-1a298aa575a0.nnue':BERSERK_NET.name,
+        networkSHA256:mode==='sf-full'?'1a298aa575a085434d29027978dc36867fe9c5bcea9376654b7a8eba1e52dfc2':BERSERK_NET.sha256}),threads:mode==='sf-full'?caps.effectiveSFThreads:1,
+        hashMB:Math.min(settings.hashMB,caps.mobile?16:64),readyTimeoutMs:20000,forceTerminateOnStop:true};
+      if(mode==='berserk')config.workerFactory=url=>{const w=new root.Worker(url),buffer=berserkNetwork.buffer.slice(0);w.postMessage({type:'init-network',buffer},[buffer]);return w;};
+      const engine=Deep.create(config);
+      return {prepare:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal,opts?.onProgress);return engine.prepare(opts);},
+        analyze:async opts=>{if(mode==='berserk')await ensureBerserkNetwork(opts?.signal);return engine.analyze(opts);},
+        stop:()=>engine.stop(),destroy:()=>engine.destroy()};
+    }};
+  }
+  // Persistent bytes and one prepared worker are separate lifetimes. All entry
+  // points (cards, Deep and explicit local probes) use this same storage owner.
+  function cachedEngine(mode,engine){
+    const store=root.document&&root.ChessEngineAssetStore;if(!store)return engine;
+    let preparation=null,metrics=null,release=null,closed=false,searches=0;
+    const controller=new AbortController();
+    async function prepare(opts={}){
+      if(closed||opts.signal?.aborted)throw abortError();
+      const cancel=()=>controller.abort();opts.signal?.addEventListener('abort',cancel,{once:true});
+      try{
+        if(!preparation)preparation=(async()=>{
+          release=await store.acquireUsage(mode,controller.signal);
+          metrics=await store.prepare(mode,{signal:controller.signal,onProgress:opts.onProgress});
+          if(closed){release();throw abortError();}
+          // Storage phases have completed; the original adapter now initializes WASM/NN.
+          opts.onProgress?.({phase:'preparing',loaded:0});
+          return engine.prepare?.({...opts,signal:controller.signal,onProgress:value=>opts.onProgress?.({...value,phase:metrics?.assetCacheHit?'local':value.phase})});
+        })().catch(e=>{release?.();release=null;preparation=null;throw e;});
+        return await preparation;
+      }finally{opts.signal?.removeEventListener('abort',cancel);}
+    }
+    function destroy(){if(closed)return;closed=true;controller.abort();engine.destroy();const disposed=release?.();release=null;return disposed;}
+    return {prepare,async analyze(opts={}){
+      await prepare(opts);if(closed||opts.signal?.aborted)throw abortError();
+      const reused=searches++>0,result=await engine.analyze(opts);
+      const actualMetrics={...metrics,assetSource:reused?'prepared-memory':metrics?.assetCacheHit?'verified-local':'online-files',
+        ...(reused?{assetLoadMs:0,integrityMs:0,downloadedBytes:0,downloadWaitMs:0,localReadMs:0,localBytes:0}:{})};
+      return {...result,workerReused:result.workerReused??reused,assetCacheHit:!reused&&!!metrics?.assetCacheHit,engineAssetStorage:actualMetrics,
+        assetLoadMs:actualMetrics.assetLoadMs??0,integrityMs:actualMetrics.integrityMs??0};
+    },stop(){controller.abort();engine.stop();},destroy};
+  }
+  function backendFor(mode,Chess){
+    const backend=rawBackendFor(mode,Chess);
+    return {create(config){const factory=()=>cachedEngine(mode,backend.create(config));return memory?memory.handle(mode,factory):factory();}};
+  }
+  // Small lazy bridge. Models, WASM and optional modules load only on analysis.
+  function browserBackend(mode,Chess){
+    return {create(){
+      let adapter=null, pending=null, cancelled=false;
+      const controller=new AbortController();
+      async function ensure(opts={}){
+        if(cancelled||opts.signal?.aborted)throw abortError();
+        if(!pending)pending=import(new URL('engines/'+(mode==='lc0'?'lc0':'reckless')+'/adapter.mjs',root.document?.baseURI||'http://localhost/chess/').href)
+          .then(module=>{if(cancelled)throw abortError();return adapter=module.create({Chess,hashMB:settings.hashMB});});
+        const engine=await pending;
+        if(cancelled||opts.signal?.aborted)throw abortError();
+        return engine;
+      }
+      function stop(){cancelled=true;controller.abort();adapter?.stop();}
+      return {async prepare(opts={}){const engine=await ensure(opts);return engine.prepare({...opts,signal:controller.signal});},
+        async analyze(opts={}){const engine=await ensure(opts);const abort=()=>stop();opts.signal?.addEventListener('abort',abort,{once:true});
+          try{return await engine.analyze({...opts,signal:controller.signal});}finally{opts.signal?.removeEventListener('abort',abort);}},
+        stop,destroy(){stop();adapter?.destroy();}};
+    }};
+  }
+  const memory=root.document&&root.ChessEngineMemory?.create({
+    modes:['sf-lite','sf-full','berserk','reckless','lc0'],policy:settings.engineMemoryPolicy,
+    canWarm:()=>!root.document.hidden,
+    keyFor:mode=>{const caps=capabilities(mode);return [mode,caps.isolated?'isolated':'single',mode==='sf-full'?caps.effectiveSFThreads:1,Math.min(settings.hashMB,caps.mobile?16:64)].join(':');},
+    createEngine:mode=>cachedEngine(mode,rawBackendFor(mode,root.Chess).create({Chess:root.Chess}))
+  });
+  root.addEventListener?.('pagehide',()=>memory?.clear());
+  const clone = v => JSON.parse(JSON.stringify(v));
+  function create(config = {}) {
+    let active = null, destroyed = false, serial = 0;
+    const now = () => root.performance?.now?.() ?? Date.now();
+    function snapshot(job) {
+      const children = {};
+      for (const child of job.children) children[child.id] = Object.assign({}, child.snapshot || {fen:job.fen,lines:[]}, {
+        status:child.status, error:child.error || null, jobId:child.jobId, searchStartedMs:child.searchStartedMs ?? null,
+        requestedBudget:job.requestedBudget,limits:child.snapshot?.limits||job.options,
+        finishedMs:child.finishedMs ?? null, threadsRequested:child.id === 'sf-full' ? job.requested : 1,
+        threadsEffective:child.id === 'sf-full' ? job.caps.effectiveSFThreads : 1});
+      const complete = job.children.every(c => c.status === 'complete');
+      const anyFailed = job.children.some(c => c.status === 'failed');
+      const base = job.children.length === 1 ? clone(Object.values(children)[0]) : {fen:job.fen,lines:[],limits:job.options};
+      return Object.assign(base, {mode:job.mode,children,sessionId:job.id,generation:job.generation,
+        stopped:job.stopped, status:job.stopped ? 'stopped' : complete ? 'complete' : anyFailed ? 'partial' : 'running',
+        dualComplete:job.children.length === 2 && complete, groupComplete:complete, partial:!complete,
+        requestedBudget:job.requestedBudget, effectiveBudget:job.effectiveBudget,
+        allocation:job.caps,elapsedMs:now()-job.started,startedAt:job.startedAt,
+        positionHistory:job.history, comparison:job.children.length === 2 ? comparison(children) : null});
+    }
+    function comparison(children) {
+      const moves = Object.values(children).map(c => c.lines?.find(l => (l.multipv || 1) === 1)?.pv?.[0]);
+      if (moves.some(m => !m)) return 'Awaiting both first moves';
+      return moves[0] === moves[1] ? 'Same first move (factual comparison)' : 'Different first moves (factual comparison)';
+    }
+    function emit(job, force = false) {
+      if (active !== job || job.generation !== generation || job.stopped) return;
+      if (!force && now()-job.lastEmit < 100) return;
+      job.lastEmit = now(); try { job.onInfo?.({},snapshot(job)); } catch (_) {}
+    }
+    function stop() {
+      const job = active; if (!job) return;
+      active = null; if (owner === api) owner = null; job.stopped = true;
+      if (root.document && job.children.some(child=>['sf-full','berserk'].includes(child.id)))
+        cleanupUntil = Math.max(cleanupUntil, now() + (config.teardownGraceMs ?? 3500));
+      clearTimeout(job.timer); job.networkController?.abort();job.signal?.removeEventListener('abort',job.abort);
+      for (const child of job.children) { if (!['complete','failed'].includes(child.status)) child.status='stopped'; child.engine?.destroy(); }
+      job.resolve(snapshot(job));
+    }
+    function analyze(options = {}) {
+      if (destroyed) return Promise.reject(new Error('Analysis session destroyed'));
+      if (root.document?.hidden === true) return Promise.reject(new Error('Analysis is paused while the page is hidden'));
+      let validated; try { validated = Deep.limitsFor(options, config.Chess || root.Chess); } catch (e) { return Promise.reject(e); }
+      if (options.signal?.aborted) return Promise.reject(Deep.abortError ? abortError() : Object.assign(new Error('Cancelled'),{name:'AbortError'}));
+      stop(); if (owner && owner !== api) owner.stop(); owner = api;
+      const mode = config.analysisMode || settings.analysisMode, localMode = mode === 'auto' ? 'sf-lite' : mode;
+      if(localMode==='cdb'){owner=null;return Promise.reject(new Error('ChessDB uses the connected source service, not a local UCI worker.'));}
+      const caps = capabilities(localMode), ids=participants(localMode);
+      if(caps.sequential&&ids.includes('lc0')&&validated.movetime==null){owner=null;
+        return Promise.reject(new Error('Choose a finite Time for this sequential neural comparison so every engine gets a turn.'));
+      }
+      const requestedBudget = {depth:validated.depth,nodes:validated.nodes,movetime:validated.movetime,infinite:validated.infinite};
+      // Respect the user's explicit time/depth constraints for each participant.
+      const limits = Object.assign({},validated);
+      return new Promise((resolve,reject) => {
+        const job = {id:'analysis-'+Date.now()+'-'+(++sessionSerial)+'-'+(++serial),generation,mode:localMode,caps,requested:settings.sfFullThreadsRequested,
+          children:ids.map((id,i)=>({id,status:caps.sequential&&i?'queued':'loading',jobId:id+'-'+Date.now()+'-'+serial})),
+          fen:limits.fen,history:limits.history,options:limits,onInfo:options.onInfo,signal:options.signal,
+          started:now(),startedAt:new Date().toISOString(),lastEmit:-Infinity,resolve,reject,stopped:false,requestedBudget,
+          networkController:new AbortController(),
+          effectiveBudget:{depth:limits.depth,nodes:limits.nodes,movetime:limits.movetime,infinite:limits.infinite,
+            maxSessionMs:null}};
+        active = job;
+        job.abort = stop; job.signal?.addEventListener('abort',job.abort,{once:true});
+        if(Number.isFinite(job.effectiveBudget.maxSessionMs)&&job.effectiveBudget.maxSessionMs>0)job.timer=setTimeout(stop,job.effectiveBudget.maxSessionMs);
+        // Phone comparisons (and All) prepare/search/release one engine at a time.
+        const preparations = [];
+        for (const child of job.children) {
+          try {
+            const browserMode=['reckless','lc0'].includes(child.id);
+            const meta = browserMode?{id:child.id,name:child.id==='lc0'?'LCZero NN / browser PUCT':'Reckless'}:child.id === 'sf-lite' ? Deep.ENGINE : descriptors[child.id];
+            if (!meta) throw new Error('Unsupported engine mode');
+            const base = root.document?.baseURI || 'http://localhost/chess/';
+            const variant = caps.isolated ? 'threaded' : 'single';
+            const workerUrl = child.id === 'sf-lite' ? new URL('vendor/stockfish/stockfish-18-lite-single.js',base).href :
+              child.id === 'berserk' ? new URL('vendor/berserk/v14-5b8d6c93/berserk-host.js?v=20261013-r9',base).href :
+                new URL('vendor/stockfish-full/v19.0.1/stockfish-19'+(variant==='single'?'-single':'')+'.js?v=20261013-r9',base).href;
+            const engineConfig = {Chess:config.Chess || root.Chess,workerUrl,engine:Object.assign({},meta,{variant:child.id==='sf-full'?variant:child.id==='berserk'?'scalar':'lite-single',
+                wasmSHA256:child.id==='sf-full' ? variant==='threaded' ? 'a599d78d72e0722d8895be84aca8b492d12e8bba3cdfcbcbc4a64017888c6667' : '991bede2f253ebb08ff01fcc48270f4b9c8e66b12d5bd5f8d6f52eb3e3b3a740' : child.id==='berserk' ? '0cffe539d41787c8cc2963911e24fe0bdf5319bae1fe03fae243642e8cda9372' : Deep.ENGINE.wasmSHA256,
+                network:child.id==='sf-full'?'nn-1a298aa575a0.nnue':child.id==='berserk'?'berserk-9b84c340af7e.nn':undefined,
+                networkSHA256:child.id==='sf-full'?'1a298aa575a085434d29027978dc36867fe9c5bcea9376654b7a8eba1e52dfc2':child.id==='berserk'?'9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084':undefined}),
+              threads:child.id==='sf-full'?caps.effectiveSFThreads:1,hashMB:Math.min(settings.hashMB,caps.mobile?16:64),
+              readyTimeoutMs:20000,forceTerminateOnStop:true};
+            if (config.workerFactory) engineConfig.workerFactory = url => config.workerFactory(url,child.id);
+            if (child.id === 'berserk' && !config.adapterFactory) {
+              const factory = engineConfig.workerFactory || (url=>new root.Worker(url));
+              engineConfig.workerFactory = url => {
+                if(!berserkNetwork)throw new Error('Berserk NNUE is not ready.');
+                const worker = factory(url), copy = berserkNetwork.buffer.slice(0);
+                worker.postMessage({type:'init-network',buffer:copy},[copy]);
+                return worker;
+              };
+            }
+            const factory=()=>cachedEngine(child.id,browserMode?browserBackend(child.id,config.Chess||root.Chess).create():Deep.create(engineConfig));
+            child.engine = config.adapterFactory ? config.adapterFactory(child.id,engineConfig) : memory&&!config.workerFactory?memory.handle(child.id,factory):factory();
+            const childOptions = Object.assign({},limits,{signal:undefined,onInfo:(_info,value) => {
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              child.snapshot=value; child.status='searching';
+              if (child.searchStartedMs == null) child.searchStartedMs=now(); emit(job);
+            }});
+            child.launch = () => child.engine.analyze(childOptions).then(value => {
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              child.snapshot=value; child.status=value.stopped?'stopped':'complete'; child.finishedMs=now(); child.engine.destroy(); settle(job);
+            },error=>{
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              child.status='failed'; child.error=error.message;child.finishedMs=now();child.engine.destroy();settle(job);
+            });
+            const prepareChild=()=>Promise.resolve().then(async () => {
+              child.status='loading';emit(job,true);
+              const drain = Math.max(0, cleanupUntil - now());
+              if (drain) await new Promise(resolve => setTimeout(resolve, drain));
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              if(child.id==='berserk'&&!config.adapterFactory){
+                if(!berserkNetwork)await ensureBerserkNetwork(job.networkController.signal);
+                if(active!==job||job.generation!==generation||job.stopped)return;
+                if(!berserkNetwork)throw new Error('Berserk NNUE could not be loaded.');
+              }
+              return child.engine.prepare?.({signal:job.networkController.signal,onProgress:progress=>{if(active===job&&!job.stopped){child.snapshot={fen:job.fen,lines:[],downloadProgress:progress};emit(job,true);}}});
+            }).then(() => {
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              child.status='ready'; emit(job,true);
+            },error => {
+              if (active !== job || job.generation !== generation || job.stopped) return;
+              child.status='failed'; child.error=error.message; child.finishedMs=now(); child.engine.destroy(); emit(job,true);
+            });
+            preparations.push({child,prepare:prepareChild});
+          } catch(error) { child.engine?.destroy(); child.status='failed'; child.error=error.message; }
+        }
+        if(caps.sequential){
+          (async()=>{
+            for(const {child,prepare} of preparations){
+              if(active!==job||job.generation!==generation||job.stopped)return;
+              await prepare();
+              if(active!==job||job.generation!==generation||job.stopped)return;
+              if(child.status==='ready'){
+                child.searchStartedMs=now();child.status='searching';
+                try{await child.launch();}catch(error){child.engine.destroy();child.status='failed';child.error=error.message;}
+              }
+              if(active===job&&!job.stopped&&caps.mobile&&!config.adapterFactory)
+                await new Promise(resolve=>setTimeout(resolve,350));
+            }
+            if(active===job)settle(job);
+          })().catch(error=>{if(active===job){stop();reject(error);}});
+        }else Promise.allSettled(preparations.map(item=>item.prepare())).then(() => {
+          if (active !== job || job.generation !== generation || job.stopped) return;
+          for (const child of job.children) if (child.status === 'ready') {
+            child.searchStartedMs=now(); child.status='searching';
+            try { child.launch(); } catch(error) { child.engine.destroy(); child.status='failed'; child.error=error.message; }
+          }
+          settle(job);
+        });
+        emit(job,true);
+      });
+    }
+    function settle(job) {
+      if (job.children.every(c=>['complete','failed','stopped'].includes(c.status))) {
+        emit(job,true); clearTimeout(job.timer);job.signal?.removeEventListener('abort',job.abort);
+        active=null;if(owner===api)owner=null;job.resolve(snapshot(job));
+      } else emit(job,true);
+    }
+    const api = {analyze,stop,isRunning:()=>!!active,destroy(){stop();destroyed=true;instances.delete(api);},engine:Deep.ENGINE};
+    instances.add(api);return api;
+  }
+  root.addEventListener?.('pagehide',()=>{++generation;for(const x of instances)x.stop();});
+  root.document?.addEventListener('visibilitychange',()=>{if(root.document.hidden){++generation;for(const x of instances)x.stop();}});
+  root.ChessEngineAssetStore?.setNetworkProvider({async ensure(signal,onProgress){
+      await ensureBerserkNetwork(signal,onProgress);
+      // Browser eviction can remove IDB after RAM was prepared. Re-save the verified
+      // original buffer without downloading/copying it into a second asset store.
+      if(berserkNetwork){await queueNetworkWrite('put',{id:BERSERK_NET.sha256,buffer:berserkNetwork.buffer,name:BERSERK_NET.name});networkPersistent=true;}
+    },remove:clearBerserkNetwork,busy:()=>[...instances].some(instance=>instance.isRunning()),
+    async check(verify){
+      // Re-read actual IDB bytes; a RAM-ready flag cannot prove persistent storage.
+      try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;
+        if(verify)await verifyNetwork(record.buffer);return true;}catch(_){return false;}
+    }});
+  return {create,configure,getSettings,capabilities,participants,isGroup,backendFor,engineMemory:memory,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+});

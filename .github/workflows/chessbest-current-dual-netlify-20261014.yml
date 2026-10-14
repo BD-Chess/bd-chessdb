@@ -1,0 +1,121 @@
+name: ChessBest R14 CURRENT — dual Netlify release 2026-10-14
+# One-shot BD-authorized ChessBest LAB R14 to CURRENT dual-site deployment.
+# No recurring Netlify Git builds; retains existing ignore = exit 0.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chessbest-current-dual-netlify-20261014.yml'
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  dual-site:
+    if: "${{ startsWith(github.event.head_commit.message, 'release: chessbest lab-current dual-netlify 20261014') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      MDLX_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      RELEASE_SHA: ${{ github.sha }}
+      EXPECTED_CURRENT: current-4510d50405cdffd9
+      EXPECTED_LAB: lab-c86d9f0ca846cfc6
+    steps:
+      - name: Checkout exact GitHub Pages release SHA, never the moving main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Ensure exact approved merge and no automatic Netlify build
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          git log -1 --format=%s | grep -Fx 'release: chessbest lab-current dual-netlify 20261014'
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo "NETLIFY_AUTH_TOKEN_MISSING: no deployment attempted"; exit 1; }
+          python3 tools/build-chess-channel-pwas.py --check
+          node scripts/build-sudoku-pwa.cjs --check
+          node tests/mdlxdcc-root-pwa.test.cjs
+          python3 scripts/check_secret_boundary.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          cur=Path('public/chess'); lab=Path('public/chess-lab')
+          a=json.loads((cur/'release.json').read_text()); b=json.loads((lab/'release.json').read_text())
+          assert (a['version'],a['channel'],a['storage_namespace'])==('current-4510d50405cdffd9','CURRENT','ChessBest:CURRENT:v2:')
+          assert (b['version'],b['channel'])==('lab-c86d9f0ca846cfc6','LAB')
+          h=(cur/'index.html').read_text()
+          assert '<body data-channel="current">' in h and 'Keep all engines in RAM' in h
+          assert not any(tag in h for tag in ['<nav class="bd-version-selector"','<nav class="app-preview-nav"','<nav class="app-channel-nav"','id="chessAppViewLink"'])
+          assert (cur/'old').is_dir() and (cur/'engine-sw.js').is_file()
+          for name in ['js/8zc-engine-memory.js','js/8zc-engine-assets.js','js/8zc-engine-assets-manifest.js','js/8zc-engine-assets-sw.js','engines/lc0/adapter.mjs','engines/reckless/adapter.mjs']:
+              assert (cur/name).is_file(),name
+          assert b['assets_sha256']['js/8zc-engine-memory.js']==a['assets_sha256']['js/8zc-engine-memory.js']
+          assert 'ChessBest:LAB:v2:' not in (cur/'js/8zc-analysis-session.js').read_text()
+          assert 'engine-sw.js' in (cur/'pwa.js').read_text()
+          print('CHESS_CURRENT_R14_SOURCE_GATES_PASS',a['version'],len(a['assets_sha256']))
+          PY
+          node --test public/chess/research/engine-memory.test.cjs
+          node --check public/chess/js/8zc-analysis-session.js
+          node --check public/chess/js/8zc-engine-assets.js
+          node --check public/chess/pwa.js
+      - name: Prepare protected pages and exact ChessBest root overlay
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+          node --check public/js/bd-password-manager.js
+          mkdir -p "$RUNNER_TEMP/netlify-chess-site"
+          cp -a public/. "$RUNNER_TEMP/netlify-chess-site/"
+          cp -a public/chess/. "$RUNNER_TEMP/netlify-chess-site/"
+          cmp public/chess/index.html "$RUNNER_TEMP/netlify-chess-site/index.html"
+          test -f "$RUNNER_TEMP/netlify-chess-site/Trip/index.html"
+          test -f "$RUNNER_TEMP/netlify-chess-site/S/index.html"
+      - name: Set up Netlify CLI runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing pinned JS dependencies
+        run: npm ci --ignore-scripts
+      - name: Deploy MDLxDCC.org once, with existing functions and guards
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$MDLX_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "ChessBest R14 CURRENT $EXPECTED_CURRENT main $RELEASE_SHA" --json > "$RUNNER_TEMP/mdlxdcc-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/mdlxdcc-deploy.json"); const id=d.deploy_id||d.deployId||d.id; if(!id)process.exit(1); console.log("MDLX_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify MDLxDCC current pages before second site
+        shell: bash
+        run: |
+          for app in F4M S chess Trip; do
+            localfile="public/$app/index.html"
+            url="https://www.mdlxdcc.org/$app/index.html"
+            ok=false
+            for n in 1 2 3 4 5; do
+              if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "$url" -o "$RUNNER_TEMP/check-current.html" && cmp -s "$localfile" "$RUNNER_TEMP/check-current.html"; then ok=true; break; fi
+              sleep 5
+            done
+            if [ "$ok" != true ]; then echo "MDLX_EXACT_BYTES_FAILED $app"; exit 1; fi
+            echo "MDLX_LIVE_CURRENT_EXACT_BYTES_PASS $app"
+          done
+      - name: Deploy ChessBest.org once, with correct Chess root overlay
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/netlify-chess-site" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "ChessBest CURRENT main $RELEASE_SHA" --json > "$RUNNER_TEMP/chess-deploy.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chess-deploy.json"); const id=d.deploy_id||d.deployId||d.id; if(!id)process.exit(1); console.log("CHESS_NETLIFY_DEPLOY_ID",id)'
+      - name: Verify ChessBest.org root equals promoted Chess CURRENT
+        shell: bash
+        run: |
+          ok=false
+          for n in 1 2 3 4 5; do
+            if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' https://chessbest.org/ -o "$RUNNER_TEMP/chess-root-live.html" && cmp -s public/chess/index.html "$RUNNER_TEMP/chess-root-live.html"; then ok=true; break; fi
+            sleep 5
+          done
+          if [ "$ok" != true ]; then echo "CHESSBEST_LIVE_EXACT_BYTES_FAILED"; exit 1; fi
+          for path in release.json js/8zc-engine-memory.js engine-sw.js; do
+            curl -fsSL --max-time 22 -H "Cache-Control: no-cache" "https://chessbest.org/$path?release=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/chess-extra-check"
+            cmp "public/chess/$path" "$RUNNER_TEMP/chess-extra-check"
+          done
+          echo "CHESSBEST_LIVE_CURRENT_EXACT_BYTES_PASS $EXPECTED_CURRENT $RELEASE_SHA"
