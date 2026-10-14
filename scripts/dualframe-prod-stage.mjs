@@ -13,9 +13,11 @@ if(mode==='--guard'){
 }else if(mode==='--verify'){
  const receipt=JSON.parse(await readFile('dualframe-deploy.json','utf8')),id=receipt.deploy_id||receipt.deployId;
  if(!id||deploy.id!==id||deploy.state!=='ready')throw Error('PRODUCTION_DEPLOY_NOT_READY');
+ const envMetadata=await api('accounts/'+current.account_id+'/env?site_id='+site);
+ console.log(JSON.stringify({credential_presence:envMetadata.filter(v=>v.key.startsWith('DF_')).map(v=>({key:v.key,is_secret:v.is_secret,scopes:v.scopes}))}));
  const base=current.ssl_url||current.url;
  const cap=await fetch(base+'/api/df/capabilities',{cache:'no-store'});if(!cap.ok)throw Error('LIVE_API_'+cap.status);
- const capabilities=await cap.json();if(capabilities.version!=='3.0-r1')throw Error('LIVE_API_VERSION_MISMATCH');
+ const capabilities=await cap.json();console.log(JSON.stringify({auth_configured:capabilities.auth_configured,available_models:capabilities.models?.filter(m=>m.available).map(m=>m.key)}));if(capabilities.version!=='3.0-r1')throw Error('LIVE_API_VERSION_MISMATCH');
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
  const page=await fetch(base+'/Nara/dualframe-lab/',{cache:'no-store'});const html=await page.text();if(!page.ok||!html.includes('api-auth-form')||!html.includes('3.0-r1'))throw Error('LIVE_PAGE_VERSION_MISMATCH');
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
