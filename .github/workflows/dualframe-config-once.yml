@@ -1,0 +1,32 @@
+name: DualFrame secure configuration
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/dualframe-config-once.yml']
+permissions:
+  contents: write
+concurrency:
+  group: dualframe-secret-transfer
+  cancel-in-progress: false
+jobs:
+  configure:
+    if: startsWith(github.event.head_commit.message, 'DualFrame secure configuration:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Receive a scoped encrypted envelope and configure Functions secrets
+        run: node scripts/dualframe-config-once.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dualframe-configuration-receipt
+          path: dualframe-config-receipt.json
+          if-no-files-found: ignore
