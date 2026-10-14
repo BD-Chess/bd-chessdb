@@ -29,7 +29,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.5');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.6');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -102,4 +102,28 @@ test('Settings have quick Delay, real model filters and safely bounded cloud Syn
  assert.match(sync,/remotePairs=Array\.isArray\(data\.pairs\)/);
  assert.match(app,/const budget=estimateHydrationSafety\(await storageEstimate\(\),expected\)/);
  assert.match(app,/if\(prefs\.autoSyncMetadata\)syncCloud\(false\)/);
+});
+
+
+test('one-click portrait/landscape viewer swap is before fullscreen and bypasses automatic delay',()=>{
+ const viewerIndex=html.indexOf('id="viewer-swap"'),fullscreenIndex=html.indexOf('id="fullscreen"');
+ assert.ok(viewerIndex>=0&&viewerIndex<fullscreenIndex);
+ assert.match(html,/id="viewer-swap"[^>]+aria-label="Switch landscape and portrait compositions"/);
+ assert.match(app,/function swapViewerFrame\(\)/);
+ assert.match(app,/\$\('viewer-orientation'\)\.value=next/);
+ assert.match(app,/clearTimeout\(viewerFrameTimer\);viewerFrameTimer=null;viewerShownPair=pair.pair_id;viewerShownTarget=next/);
+ assert.match(app,/\$\('viewer-swap'\)\.addEventListener\('click',swapViewerFrame\)/);
+ assert.match(app,/if\(state.missing\)notify\('frameNotSaved'\)/);
+});
+test('API access shows only selected model tests and does not invoke generation',()=>{
+ assert.match(html,/id="settings-api-table"/);
+ const a=app.indexOf('async function checkApiAccess()'),b=app.indexOf('function initSettingsUI()',a);
+ assert.ok(a>=0&&b>a);
+ const body=app.slice(a,b);
+ assert.match(body,/querySelectorAll\('input:checked'\)/);
+ assert.match(body,/API.request\('\/model-probe',\{method:'POST',body:\{models:active\}\}\)/);
+ assert.match(body,/response.schema!=='bd.dualframe.provider-probes.v1'/);
+ assert.match(body,/node\('table',undefined,'api-check-table'\)/);
+ assert.doesNotMatch(body,/API.request\('\/(?:generate|expand)'/);
+ assert.doesNotMatch(body,/lines.join\(' · '\)/);
 });

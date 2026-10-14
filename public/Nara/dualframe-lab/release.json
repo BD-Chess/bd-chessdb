@@ -30,15 +30,15 @@
   "provider_account_validation": "manual-user-tests-pending",
   "reference_gallery": "existing-Nara-assets; excluded-from-controlled-benchmark",
   "status": "R_AND_D_READY_FOR_MANUAL_PROVIDER_TESTS",
-  "release_revision": 13,
+  "release_revision": 14,
   "blobs_sdk": "11.1.4",
   "api_configuration_verified": true,
   "pwa": {
-    "build_label": "2026-10-14-r4.5",
+    "build_label": "2026-10-14-r4.6",
     "manifest": "manifest.webmanifest",
     "service_worker": "sw.js",
     "scope": "./",
-    "offline_package_sha256": "77a1ea06da8f1d9fab5136106737121ce09ca5978fba62b12595338ea0990adf",
+    "offline_package_sha256": "506a330546556292973cfdaa11fdd70252d537236542a4b7490f53b75af62f63",
     "offline_scope": "app-shell-and-browser-local-library",
     "network_required": [
       "AI image generation",
@@ -53,12 +53,32 @@
   },
   "gallery_fixes": {
     "preview": "one gallery Preview controls both Nara reference and personal images; missing orientations show original in frame",
-    "rename": "editable localized display title, original hash preserved, IndexedDB persistence plus authenticated cloud label sync"
+    "rename": "editable localized display title, original hash preserved, IndexedDB persistence plus authenticated cloud label sync",
+    "quick_orientation_toggle": "viewer two-arrow L/P composition swap before fullscreen (no bitmap rotation, bypass auto delay)",
+    "mobile_viewer": "visualViewport safe-area floating close remains reachable after pinch zoom",
+    "storage_guard": "validate actual server byte_size before optional cloud image download"
   },
   "preferences_and_storage_fix": {
     "settings": "four enabled models by default, expansion/quality/position presets, free configuration/session API check, model outcome history",
     "delay": "0–5 second orientation reveal on Gallery and viewer, 2s default",
     "storage": "metadata-only automatic and manual Sync; on-demand per-image download; IndexedDB error classes; estimated quota and bounded prefetch",
     "no_paid_generation": true
+  },
+  "provider_access_probe": {
+    "version": 1,
+    "route": "POST /api/df/model-probe",
+    "authentication": "signed owner session only",
+    "providers_with_read_only_metadata": [
+      "openai",
+      "xai",
+      "gemini",
+      "qwen",
+      "mistral"
+    ],
+    "provider_methods": [
+      "GET"
+    ],
+    "paid_generation_calls": 0,
+    "scope": "enabled models selected in Settings; model-listed versus provider-reachable versus unavailable classified separately"
   }
 }

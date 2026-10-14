@@ -52,3 +52,16 @@ export function recordModelHealth(key,task,status,storage=globalThis.localStorag
  try{const data=readModelHealth(storage),prior=data[key]||{},item={lastTask:task==='generate'?'generate':'expand',lastStatus:status,lastAt:new Date().toISOString(),successful:(prior.successful||0)+(['READY','ACCEPTED'].includes(status)?1:0),failed:(prior.failed||0)+(status==='FAILED'?1:0)};
  data[key]=item;storage.setItem(HEALTH_KEY,JSON.stringify(data));}catch{}
 }
+
+/** True transfer size, not the historical size/bytes guess. The API emits byte_size. */
+export function remoteTransferBytes(assets){
+ if(!Array.isArray(assets)||!assets.length)throw Error('STORAGE_REMOTE_SIZE_UNKNOWN');
+ let total=0;
+ for(const asset of assets){
+  const n=Number(asset?.byte_size??asset?.size??asset?.bytes);
+  if(!Number.isSafeInteger(n)||n<=0)throw Error('STORAGE_REMOTE_SIZE_UNKNOWN');
+  total+=n;
+  if(!Number.isSafeInteger(total))throw Error('STORAGE_REMOTE_SIZE_UNKNOWN');
+ }
+ return total;
+}

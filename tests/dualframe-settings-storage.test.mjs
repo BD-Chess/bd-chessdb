@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_ENABLED_MODELS,normalizeSettings,readSettings,writeSettings,orientationTransition,estimateHydrationSafety,readModelHealth,recordModelHealth} from '../public/Nara/dualframe-lab/settings.mjs';
+import {readFile} from 'node:fs/promises';
+import {DEFAULT_ENABLED_MODELS,normalizeSettings,readSettings,writeSettings,orientationTransition,estimateHydrationSafety,readModelHealth,recordModelHealth,remoteTransferBytes} from '../public/Nara/dualframe-lab/settings.mjs';
 import {storageErrorCode} from '../public/Nara/dualframe-lab/store.mjs';
 const allModels=['wan-image-pro','grok-imagine','openai-flare','openai-sunburst','gemini-nano','minimax-image'];
 const storage=()=>{const data=new Map();return{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};};
@@ -49,4 +50,25 @@ test('model history records only actual job outcomes and never configured-key ch
  recordModelHealth('wan-image-pro','expand','KEY_CONFIGURED',memory);
  const row=readModelHealth(memory)['wan-image-pro'];
  assert.equal(row.successful,1);assert.equal(row.failed,1);assert.equal(row.lastTask,'generate');assert.equal(row.lastStatus,'FAILED');
+});
+
+test('Cloud transfer size is real asset byte_size and unknown lengths never count as zero',()=>{
+ const original={asset_id:'original-id',byte_size:1200000},normalized={asset_id:'normal-id',byte_size:800000},output={asset_id:'image-id',byte_size:2400000};
+ assert.equal(remoteTransferBytes([original,normalized,output]),4400000);
+ assert.equal(remoteTransferBytes([{byte_size:7},{size:3}]),10);
+ for(const invalid of [[{asset_id:'missing-size'}],[{byte_size:0}],[{byte_size:-10}],[{byte_size:0.5}],[]]){
+  assert.throws(()=>remoteTransferBytes(invalid),/STORAGE_REMOTE_SIZE_UNKNOWN/);
+ }
+});
+test('Phone zoom-safe viewer exit is independent of toolbar and tracks visible viewport',async()=>{
+ const root=new URL('../public/Nara/dualframe-lab/',import.meta.url);
+ const [html,css,app]=await Promise.all(['index.html','styles.css','app.mjs'].map(p=>readFile(new URL(p,root),'utf8')));
+ assert.match(html,/id="viewer-floating-close"/);
+ assert.match(css,/#viewer-floating-close\{display:flex;position:fixed/);
+ assert.match(css,/safe-area-inset-top/);
+ assert.match(css,/\.immersion-open #viewer-floating-close\{display:none\}/);
+ assert.match(app,/visualViewport\?\.addEventListener\('scroll',positionMobileClose\)/);
+ assert.match(app,/button\.style\.transform='scale\('/);
+ assert.match(app,/\$\('viewer-floating-close'\)\.addEventListener\('click',closeViewer\)/);
+ assert.match(app,/const expected=remoteTransferBytes\(declared\)/);
 });

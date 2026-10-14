@@ -18,6 +18,10 @@ if(mode==='--guard'){
  const base=current.ssl_url||current.url;
  let capabilities=null;for(let i=0;i<40;i++){const cap=await fetch(base+'/api/df/capabilities',{cache:'no-store'});if(cap.ok){capabilities=await cap.json();if(capabilities.auth_configured&&capabilities.models.every(m=>m.key_configured))break;}await new Promise(r=>setTimeout(r,4000));}if(!capabilities)throw Error('LIVE_API_UNAVAILABLE');console.log(JSON.stringify({auth_configured:capabilities.auth_configured,available_models:capabilities.models?.filter(m=>m.available).map(m=>m.key)}));if(capabilities.version!=='3.0-r4')throw Error('LIVE_API_VERSION_MISMATCH');
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
+ const probeAnon=await fetch(base+'/api/df/model-probe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({models:['openai-flare']}),cache:'no-store'});
+ if(probeAnon.status!==401)throw Error('LIVE_MODEL_PROBE_NOT_PROTECTED');
+ const probeCors=await fetch(base+'/api/df/model-probe',{method:'OPTIONS',headers:{origin:'https://bd-chess.github.io','access-control-request-method':'POST','access-control-request-headers':'authorization,content-type'}});
+ if(!probeCors.ok||probeCors.headers.get('access-control-allow-origin')!=='https://bd-chess.github.io'||!probeCors.headers.get('access-control-allow-methods')?.includes('POST'))throw Error('LIVE_MODEL_PROBE_CORS_MISSING');
  const corsOrigin='https://bd-chess.github.io';
  const corsUrl=base+'/api/df/pairs/dualframe_readonly_preflight_probe';
  const cors=await fetch(corsUrl,{method:'OPTIONS',headers:{origin:corsOrigin,'access-control-request-method':'DELETE','access-control-request-headers':'authorization'},cache:'no-store'});
