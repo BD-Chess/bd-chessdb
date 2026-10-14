@@ -1,6 +1,6 @@
-import { mockExpand, toBlob, decodedRGBA, normalizedImage } from './mock.mjs?v=3.0-r1';
-import { sha256, canonicalMode, comparisonRubric, verifyProtectedPixels, verifiedFourK, taskGeometry } from './core.mjs?v=3.0-r1';
-import { MODELS, supportsMode } from './models.mjs?v=3.0-r1';
+import { mockExpand, toBlob, decodedRGBA, normalizedImage } from './mock.mjs?v=3.0-r4';
+import { sha256, canonicalMode, comparisonRubric, verifyProtectedPixels, verifiedFourK, taskGeometry } from './core.mjs?v=3.0-r4';
+import { MODELS, supportsMode } from './models.mjs?v=3.0-r4';
 const preview=document.getElementById('preview'),output=document.getElementById('dimensions');
 function resize(width,height){preview.width=String(width);preview.height=String(height);output.value=`${width} × ${height}`;}
 document.getElementById('narrow').addEventListener('click',()=>resize(390,844));

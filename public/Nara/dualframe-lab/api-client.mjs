@@ -1,4 +1,4 @@
-import {sha256} from './core.mjs?v=3.0-r1';
+import {sha256} from './core.mjs?v=3.0-r4';
 export const API_BASE=/^(www\.)?mdlxdcc\.org$/.test(location.hostname)||/netlify\.app$/.test(location.hostname)||['localhost','127.0.0.1'].includes(location.hostname)?location.origin:'https://www.mdlxdcc.org';
 const STORAGE='bd-dualframe-api-session-v3';
 let session=null,authPromise=null,validated=false;

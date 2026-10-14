@@ -1,5 +1,6 @@
 import {generateKeyPairSync,privateDecrypt,createDecipheriv,randomUUID,constants} from 'node:crypto';
 import {writeFile} from 'node:fs/promises';
+import {signToken} from '../functions/lib/dualframe/auth.mjs';
 const site=process.env.NETLIFY_SITE_ID,netlify=process.env.NETLIFY_AUTH_TOKEN,github=process.env.GITHUB_TOKEN,repo=process.env.GITHUB_REPOSITORY;
 if(site!=='17b4124d-c197-4c0a-a711-8b2c08d91088'||repo!=='BD-Chess/bd-chessdb'||!netlify||!github)throw Error('TRANSFER_SCOPE_INVALID');
 const allowed=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY','DF_QWEN_API_HOST'];
@@ -26,14 +27,21 @@ privateKey=null;
 if(!payload)throw Error('SEALED_ENVELOPE_NOT_RECEIVED');
 if(payload.request_id!==request.request_id||payload.site_id!==site||Object.keys(payload.values).sort().join('|')!==allowed.slice().sort().join('|'))throw Error('SECRET_PAYLOAD_SCOPE_INVALID');
 for(const [name,value]of Object.entries(payload.values))if(typeof value!=='string'||value.length<8||value.length>2048)throw Error('SECRET_PAYLOAD_FORMAT_INVALID');
-const info=await api('sites/'+site),path='accounts/'+info.account_id+'/env',existing=await api(path+'?site_id='+site),newVars=[];
-for(const key of allowed){const variable={key,is_secret:key!=='DF_QWEN_API_HOST',scopes:['functions'],values:[{context:'all',value:payload.values[key]}]};
- if(existing.some(v=>v.key===key))await api(path+'/'+encodeURIComponent(key)+'?site_id='+site,'PUT',variable);else newVars.push(variable);
+const info=await api('sites/'+site),base=info.ssl_url||info.url;
+if(!/^[a-f0-9]{64}$/.test(payload.bootstrap_token||''))throw Error('BOOTSTRAP_TOKEN_INVALID');
+let installed=false;
+for(let i=0;i<25;i++){
+ const r=await fetch(base+'/.netlify/functions/dualframe-bootstrap',{method:'POST',headers:{authorization:'Bearer '+payload.bootstrap_token,'content-type':'application/json'},body:JSON.stringify(payload.values)});
+ if(r.ok){const response=await r.json();if(response.installed){installed=true;break;}}
+ if(![404,503,429].includes(r.status))throw Error('BOOTSTRAP_HTTP_'+r.status);
+ await new Promise(resolve=>setTimeout(resolve,8000));
 }
-if(newVars.length)await api(path+'?site_id='+site,'POST',newVars);
+if(!installed)throw Error('PRIVATE_CONFIGURATION_NOT_INSTALLED');
+const shortSession=signToken({owner:'bd-research-owner',scope:'session'},payload.values.DF_SESSION_SECRET,120),headers={authorization:'Bearer '+shortSession};
+const session=await fetch(base+'/api/df/session',{headers}),library=await fetch(base+'/api/df/library',{headers});if(session.status!==200||library.status!==200)throw Error('LIVE_AUTHENTICATED_STORAGE_FAILED');
+const negative=await fetch(base+'/api/df/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:randomUUID()})});if(negative.status!==401)throw Error('PASSWORD_BOUNDARY_FAILED');
+const caps=await (await fetch(base+'/api/df/capabilities')).json();if(!caps.auth_configured||caps.models.some(m=>!m.key_configured))throw Error('LIVE_IMAGE_KEYS_NOT_VISIBLE');
+const receipt={schema:request.schema,status:'PRIVATE_FUNCTIONS_CONFIGURATION_VERIFIED',request_id:request.request_id,site_id:site,storage:'private-encrypted-netlify-vault',session_status:session.status,library_status:library.status,wrong_password_status:negative.status,configured_image_models:caps.models.map(m=>m.key),real_provider_calls:0};
 payload=null;
-const vars=await api(path+'?site_id='+site),metadata=allowed.map(key=>{const v=vars.find(x=>x.key===key);return {key,present:!!v,secret:v?.is_secret===true,functions_scope:v?.scopes.includes('functions')===true};});
-const ok=metadata.every(v=>v.present&&v.functions_scope&&(v.key==='DF_QWEN_API_HOST'||v.secret));
-const receipt={schema:request.schema,status:ok?'FUNCTIONS_SECRETS_VERIFIED':'CONFIGURATION_INCOMPLETE',request_id:request.request_id,site_id:site,credential_metadata:metadata,real_provider_calls:0};
 await writeFile('dualframe-config-receipt.json',JSON.stringify(receipt,null,2)+'\n');await publish({...receipt,expires_at:request.expires_at});console.log(JSON.stringify(receipt));
-if(!ok)throw Error('CONFIGURATION_NOT_VERIFIED');
+

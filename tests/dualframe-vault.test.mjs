@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import {encryptConfiguration,decryptConfiguration} from '../functions/lib/dualframe/config-crypto.mjs';
+test('private vault persists only authenticated ciphertext and rejects a different root or altered ciphertext',()=>{const root=randomBytes(32).toString('hex'),values={DF_SESSION_SECRET:randomBytes(32).toString('hex'),DF_OPENAI_API_KEY:randomBytes(32).toString('hex')};const a=encryptConfiguration(values,root),b=encryptConfiguration(values,root);assert.notEqual(a.ciphertext,b.ciphertext);assert.deepEqual(decryptConfiguration(a,root),values);assert.ok(!JSON.stringify(a).includes(values.DF_OPENAI_API_KEY));assert.throws(()=>decryptConfiguration(a,randomBytes(32).toString('hex')));const data=Buffer.from(a.ciphertext,'base64');data[0]^=1;assert.throws(()=>decryptConfiguration({...a,ciphertext:data.toString('base64')},root));assert.throws(()=>decryptConfiguration({...a,schema:'another site'},root));});
