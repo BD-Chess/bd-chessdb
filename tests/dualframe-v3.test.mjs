@@ -90,3 +90,26 @@ test('ZIP_STORE contains exactly its selected images with valid names, sizes and
  assert.equal(readStoredZip(Buffer.from(await single.arrayBuffer())).length,1);
  await assert.rejects(zipStore([{name:'../outside.png',blob:new Blob([one])}]),/ZIP_INVALID_NAME/);
 });
+
+test('authenticated gallery deletion passes browser CORS preflight and keeps other pairs',async()=>{
+ const owner='bd-research-owner',origin='https://bd-chess.github.io',id='a'.repeat(40),otherId='b'.repeat(40);
+ const store=new Store();
+ for(const pair_id of [id,otherId])await store.setJSON('pairs/'+owner+'/'+pair_id,{pair_id,owner,title:pair_id===id?'Delete fixture':'Keep fixture',created_at:'2026-10-14T10:00:00.000Z'});
+ const s=createService({store,env});
+ const url=path=>'https://www.mdlxdcc.org/api/df'+path;
+ const preflight=await s.handle(new Request(url('/pairs/'+id),{method:'OPTIONS',headers:{origin,'access-control-request-method':'DELETE','access-control-request-headers':'authorization'}}));
+ assert.equal(preflight.status,200);
+ assert.equal(preflight.headers.get('access-control-allow-origin'),origin);
+ assert.ok(preflight.headers.get('access-control-allow-methods')?.split(',').includes('DELETE'));
+ const foreign=await s.handle(new Request(url('/pairs/'+id),{method:'OPTIONS',headers:{origin:'https://untrusted.example','access-control-request-method':'DELETE'}}));
+ assert.equal(foreign.status,403);assert.equal(foreign.headers.get('access-control-allow-origin'),null);
+ const denied=await s.handle(new Request(url('/pairs/'+id),{method:'DELETE',headers:{origin}}));assert.equal(denied.status,401);
+ const token=signToken({owner,scope:'session'},secret);
+ const api=(path,method='GET')=>s.handle(new Request(url(path),{method,headers:{origin,authorization:'Bearer '+token}}));
+ const deleted=await api('/pairs/'+id,'DELETE');assert.equal(deleted.status,200);assert.deepEqual(await deleted.json(),{deleted:true});
+ const repeated=await api('/pairs/'+id,'DELETE');assert.equal(repeated.status,200);
+ const list=await api('/library');assert.equal(list.status,200);
+ const library=await list.json();assert.deepEqual(library.pairs.map(p=>p.pair_id),[otherId]);
+ assert.ok(await store.get('pairs/'+owner+'/'+id),'deletion is a library tombstone, not proof of byte erasure');
+ assert.ok(await store.get('deleted-pairs/'+owner+'/'+id),'deletion marker persists for cloud Sync');
+});
