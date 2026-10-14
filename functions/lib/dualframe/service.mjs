@@ -2,6 +2,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {bearer,checkPassword,signToken,verifyToken} from './auth.mjs';
 import {modelFor,keyFor,publicCapabilities} from './contracts.mjs';
 import {callProvider,ProviderError} from './providers.mjs';
+import {probeModelKeys} from './provider-health.mjs';
 import {inspectImage,finishImage,hash,normalizationProof,prepareEditInput} from './images.mjs';
 import {taskGeometry} from '../../../public/Nara/dualframe-lab/core.mjs';
 
@@ -46,6 +47,11 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    }
    const claim=session(req),owner=claim.owner;
    if(path==='/session'&&req.method==='GET')return json(req,{ok:true,expires_at:new Date(claim.exp*1000).toISOString(),owner});
+   if(path==='/model-probe'&&req.method==='POST'){
+    const body=await readJSON(req);
+    const result=await probeModelKeys(body?.models,env,{fetcher,now});
+    return json(req,result);
+   }
    if(path==='/uploads/init'&&req.method==='POST'){
     const b=await readJSON(req);if(!HASH.test(b.sha256||'')||!Number.isInteger(b.size)||b.size<24||b.size>MAX_FILE||!['original','normalized'].includes(b.kind))fail('UPLOAD_INVALID');
     if(b.kind==='original'&&b.size>12*1024*1024)fail('UPLOAD_TOO_LARGE',413);
