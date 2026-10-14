@@ -37,6 +37,7 @@ const originals={
 '2026-10-13':[89,87,88],
 '2026-10-14':[96,87,91.5]
 };
+const originalInstances={"2026-10-09-S1":[94,86,90],"2026-10-09-S2":[83,81,82],"2026-10-09-S3":[92,86,89],"2026-10-10-S1":[91,86,88.5],"2026-10-10-S2":[93,87,90],"2026-10-10-S3":[92,86,89],"2026-10-11-S1":[97,87,92],"2026-10-11-S2":[91,82,86.5],"2026-10-11-S3":[91,89,90],"2026-10-12-S1":[86,87,86.5],"2026-10-12-S2":[88,81,84.5],"2026-10-12-S3":[93,86,89.5],"2026-10-13-S1":[89,86,87.5],"2026-10-13-S2":[89,87,88],"2026-10-13-S3":[87,85,86],"2026-10-14-S1":[96,87,91.5],"2026-10-14-S2":[93,87,90],"2026-10-14-S3":[85,87,86]};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sl=()=>document.documentElement.lang==='sl';
 const words=(en,si)=>sl()?si:en;
@@ -49,7 +50,7 @@ const style=document.createElement('style');
 style.textContent='.nara-grade-detail{border-top:1px solid var(--line);margin:1rem 0;padding-top:.75rem}.nara-grade-detail h3{font-size:1.08rem;margin:.9rem 0 .4rem}.nara-grade-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem}.nara-grade-kpis>div{border:1px solid var(--line);border-radius:.5rem;padding:.55rem;background:color-mix(in srgb,var(--accent) 8%,var(--panel));font-size:.82rem}.nara-grade-kpis strong{display:block;font-size:1.3rem}.nara-grade-detail table{width:100%;border-collapse:collapse;font-size:.81rem}.nara-grade-detail th,.nara-grade-detail td{text-align:left;padding:.48rem .22rem;border-bottom:1px solid var(--line);vertical-align:top}.nara-grade-detail th:last-child,.nara-grade-detail td:last-child{text-align:right}.nara-grade-detail a{text-decoration:underline;color:var(--accent)}.nara-grade-detail .muted{color:var(--muted)}.daily-index-rating .score-chip{cursor:pointer}.nara-grade-detail p{line-height:1.55}@media(max-width:540px){.nara-grade-kpis>div{padding:.35rem}.nara-grade-kpis strong{font-size:1.1rem}.nara-grade-detail table{font-size:.75rem}}';
 document.head.appendChild(style);
 function inner(row){
- const d=date(row.key),old=originals[d];
+ const d=date(row.key),old=originalInstances[row.key]||originals[d];
  let s='';
  if(row.gpt!==null){
  s+='<div class="nara-grade-kpis"><div>GPT<strong>'+dec(row.gpt)+'</strong><small>7D SA1</small></div><div>Claude<strong>'+dec(row.claude)+'</strong><small>PEC-6</small></div><div>'+label('Combined','Skupaj')+'<strong>'+dec(row.combined)+'</strong><small>50 / 50</small></div></div>';
@@ -97,7 +98,7 @@ function page(){
  const key=m[1],row=evalRow(key),p=document.querySelector('p.format-assessment');if(!p)return;
  const body=document.querySelector('article.story[data-content-sha256]');if(row.paired&&body?.dataset.contentSha256!==scored[key][2])return;
  const title=document.querySelector('h1')?.textContent.trim()||key,id=dialogFor(key,title);
- p.replaceChildren(document.createTextNode(words('New literary assessment: ','Nova književna ocena: ')),button(row.paired?dec(row.combined)+'/100':'GPT '+dec(row.gpt)+' / Claude —',id),document.createTextNode(' · '+words('original ','prvotno ')+dec(originals[date(key)]?.[2])));
+ p.replaceChildren(document.createTextNode(words('New literary assessment: ','Nova književna ocena: ')),button(row.paired?dec(row.combined)+'/100':'GPT '+dec(row.gpt)+' / Claude —',id),document.createTextNode(' · '+words('original ','prvotno ')+dec((originalInstances[key]||originals[date(key)])?.[2])));
 }
 function index(){
  document.querySelectorAll('.daily-index-item').forEach(item=>{
