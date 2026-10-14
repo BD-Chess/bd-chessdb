@@ -1,0 +1,99 @@
+name: ChessBest R14 CURRENT 2026-10-14 ChessBest-only Netlify completion
+# BD authorized both sites; MDLxDCC.org already deployed as 6acec85e83b245ae2a72c447.
+# Complete only ChessBest.org. No second deployment to MDLxDCC.org.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/chessbest-r14-chessonly-netlify-20261014.yml'
+permissions:
+  contents: read
+concurrency:
+  group: netlify-chessbest-r14-chessonly-20261014
+  cancel-in-progress: false
+jobs:
+  chessbest-only:
+    if: "${{ startsWith(github.event.head_commit.message, 'release: chessbest-r14-chessonly 20261014') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      CHESS_SITE_ID: deb1dab6-dfad-436e-ae92-4477d873c987
+      EXPECTED_CURRENT: current-4510d50405cdffd9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Verify exact ChessBest CURRENT candidate and no version-selector navigation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git log -1 --format=%s | grep -Fx 'release: chessbest-r14-chessonly 20261014'
+          grep -Eq 'ignore[[:space:]]*=[[:space:]]*"exit 0"' netlify.toml
+          python3 tools/build-chess-channel-pwas.py --check
+          python3 scripts/check_secret_boundary.py
+          node --check public/chess/js/8zc-review-core.js
+          node --check public/chess/js/8zc-review-presentation.js
+          node --check public/chess/js/8zc-review-ui.js
+          python3 - <<'PY'
+          import json, pathlib
+          cur=pathlib.Path("public/chess")
+          lab=pathlib.Path("public/chess-lab")
+          c=json.loads((cur/"release.json").read_text())
+          l=json.loads((lab/"release.json").read_text())
+          assert c["version"]=="current-4510d50405cdffd9" and c["channel"]=="CURRENT"
+          assert l["version"]=="lab-c86d9f0ca846cfc6"
+          assert 'Keep all engines in RAM' in (cur/'index.html').read_text()
+          assert 'engine-sw.js' in (cur/'pwa.js').read_text()
+          assert (cur/'js/8zc-engine-memory.js').exists()
+          assert c["storage_namespace"]=="ChessBest:CURRENT:v2:"
+          assert l["channel"]=="LAB" and l["storage_namespace"]=="ChessBest:LAB:v2:"
+          h=(cur/"index.html").read_text()
+          assert '<body data-channel="current">' in h and "8zc-review-presentation.js" in h
+          assert '<nav class="bd-version-selector"' not in h
+          assert '<nav class="app-preview-nav"' not in h
+          assert '<nav class="app-channel-nav"' not in h
+          assert 'id="chessAppViewLink"' not in h
+          assert "Review V4" in (cur/"8zc-help.html").read_text()
+          assert (cur/"config/dreev-kasparov-review.json").exists()
+          print("CHESS_CURRENT_PROMOTION_CHANNEL_AND_REVIEW_PASS",c["version"])
+          PY
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'No existing release token: no paid deployment'; exit 1; }
+      - name: Prepare ChessBest-only root overlay with no MDLxDCC.org deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          mkdir -p "$RUNNER_TEMP/chess-site"
+          cp -a public/. "$RUNNER_TEMP/chess-site/"
+          cp -a public/chess/. "$RUNNER_TEMP/chess-site/"
+          cmp public/chess/release.json "$RUNNER_TEMP/chess-site/release.json"
+          cmp public/chess/index.html "$RUNNER_TEMP/chess-site/index.html"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing Netlify CLI prerequisites
+        run: npm ci --ignore-scripts
+      - name: Publish exactly once to ChessBest.org (bd-chess site only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir "$RUNNER_TEMP/chess-site" --functions functions --skip-functions-cache --site "$CHESS_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "ChessBest R14 CURRENT current-4510d50405cdffd9 from $GITHUB_SHA" --json > "$RUNNER_TEMP/chessbest-release.json"
+          node -e 'const d=require(process.env.RUNNER_TEMP+"/chessbest-release.json"),id=d.deploy_id||d.deployId||d.id;if(!id)process.exit(1);console.log("CHESSBEST_DEPLOY_ID",id)'
+      - name: Verify ChessBest.org release and Review V4 static evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=false
+          for i in 1 2 3 4; do
+            if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "https://chessbest.org/release.json?release=$GITHUB_RUN_ID-$i" -o "$RUNNER_TEMP/live-current-release.json" && cmp -s public/chess/release.json "$RUNNER_TEMP/live-current-release.json"; then ok=true; break; fi
+            sleep 4
+          done
+          test "$ok" = true || { echo 'CHESSBEST_RELEASE_READBACK_FAILED'; exit 1; }
+          curl -fsSL --max-time 18 "https://chessbest.org/js/8zc-review-presentation.js?release=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/review-v4.js"
+          cmp public/chess/js/8zc-review-presentation.js "$RUNNER_TEMP/review-v4.js"
+          curl -fsSL --max-time 18 "https://chessbest.org/config/dreev-kasparov-review.json?release=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/review-v4.json"
+          cmp public/chess/config/dreev-kasparov-review.json "$RUNNER_TEMP/review-v4.json"
+          echo "CHESSBEST_RELEASE_REVIEWV4_LIVE_PASS $EXPECTED_CURRENT"
