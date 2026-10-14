@@ -6,7 +6,21 @@ import {renderStoryScene} from '../scripts/nara-illustrations.mjs';
 const root=path.resolve(import.meta.dirname,'..'),n=path.join(root,'public/Nara');
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 const stable=(r)=>Object.fromEntries(['daily/catalog.json',...fs.readdirSync(path.join(r,'public/Nara/daily/records')).filter(x=>x.endsWith('.json')).map(x=>'daily/records/'+x)].map(rel=>[rel,sha(fs.readFileSync(path.join(r,'public/Nara',rel)))]));
-function fixture(t,{art=false}={}){const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-format-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));fs.mkdirSync(path.join(r,'public/Nara'),{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(r,'public/Nara/daily'),{recursive:true});for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'))fs.copyFileSync(path.join(n,f),path.join(r,'public/Nara',f));if(art)fs.cpSync(path.join(n,'assets/img/daily/2026-10-05'),path.join(r,'public/Nara/assets/img/daily/2026-10-05'),{recursive:true});return r}
+function fixture(t,{art=false}={}){
+ const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-format-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));
+ const base=path.join(r,'public/Nara');fs.mkdirSync(base,{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(base,'daily'),{recursive:true});
+ for(const f of fs.readdirSync(n).filter(x=>x.endsWith('-pre-format-R1.html')||x==='Nara-AI-archive.html'||x.endsWith('-format-R1.html')))fs.copyFileSync(path.join(n,f),path.join(base,f));
+ // A missing-art fixture omits optional manifests. A complete fixture copies
+ // every declared asset, including editions added since the original tests.
+ for(const item of loadFormatEditions(root)){
+  const file=path.join(n,item.paths.artwork);if(!fs.existsSync(file))continue;
+  if(!art){if(item.paths.date!=='2026-10-05')fs.rmSync(path.join(base,item.paths.artwork));continue;}
+  const manifest=JSON.parse(fs.readFileSync(file));
+  const assets=new Set(manifest.images.flatMap(image=>[image.src,image.src_4k,...Object.values(image.variants||{}).map(v=>v.src)]).filter(Boolean));
+  for(const rel of assets){const target=path.join(base,rel);fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(path.join(n,rel),target);}
+ }
+ return r;
+}
 
 test('all 16 source-bound EN/SL editions have complete anchors and genuine pending status',()=>{
  const items=loadFormatEditions(root);assert.equal(items.length,16);assert.equal(items.filter(x=>x.paths.date==='2026-10-11').length,3);

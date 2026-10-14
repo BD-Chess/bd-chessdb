@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {dialogueScene,renderDialogueParagraph,sceneActIndices} from './nara-dialogue.mjs';
+import {renderResponsiveIllustration} from './nara-responsive-artwork.mjs';
 const assert=(ok,message)=>{if(!ok)throw Error(message)};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
@@ -102,7 +103,7 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
     throw error;
   }
 }
-export const renderIllustration=(image,lang='en')=>'<figure class="daily-scene-figure"><img src="'+esc(image.src)+'"'+(image.src_4k?' data-nara-image-hd="'+esc(image.src)+'" data-nara-image-4k="'+esc(image.src_4k)+'"':'')+' alt="'+esc(lang==='sl'?image.alt_sl:image.alt_en)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>';
+export const renderIllustration=(image,lang='en')=>image.responsive?renderResponsiveIllustration(image,lang):'<figure class="daily-scene-figure"><img src="'+esc(image.src)+'"'+(image.src_4k?' data-nara-image-hd="'+esc(image.src)+'" data-nara-image-4k="'+esc(image.src_4k)+'"':'')+' alt="'+esc(lang==='sl'?image.alt_sl:image.alt_en)+'" width="'+image.width+'" height="'+image.height+'" loading="lazy" decoding="async"></figure>';
 
 /** One-based anchors; legacy manifests remain at scene end. EN/SL share structural indices. */
 export function renderSceneParagraphs(scene,sceneNumber,images=[],lang='en',storyDate){

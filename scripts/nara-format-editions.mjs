@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {loadIllustrations,renderStoryScene,validateWebp} from './nara-illustrations.mjs';
 import {DIALOGUE_EFFECTIVE_DATE} from './nara-dialogue.mjs';
+import {responsiveEditionArtwork,RESPONSIVE_VERSION} from './nara-responsive-artwork.mjs';
 
 export const FORMAT_VERSION='nara-format-editions-r1';
 const BASE='https://bd-chess.github.io/bd-chessdb/Nara/';
@@ -151,6 +152,7 @@ function editionArtworkImages(root,item){
  const file=path.join(naraRoot(root),item.paths.artwork);
  assert(fs.existsSync(file),'edition artwork manifest missing');
  const manifest=JSON.parse(fs.readFileSync(file,'utf8'));
+ if(manifest?.schema==='nara.format.edition.artwork.v4')return responsiveEditionArtwork(root,item,manifest,validateWebp,manifest.images?.some(image=>Object.hasOwn(image,'source_after_paragraph'))?loadIllustrations(root,item.originalEn,item.originalSl):[]);
  if(['nara.format.edition.artwork.v2','nara.format.edition.artwork.v3'].includes(manifest?.schema))return directEditionArtworkImages(root,item,manifest);
  const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
  assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'edition artwork manifest fields');
@@ -190,9 +192,12 @@ function optionalEditionImages(root,item){
   });
  }catch{return []} // Legacy artwork never blocks its text edition.
 }
-function formatShell(title,slTitle,file,body){
+function formatShell(title,slTitle,file,body,responsive=false){
  const controls='<div class="tools"><button type="button" data-scale="-0.1">A−</button><output data-scale-label>100%</output><button type="button" data-scale="0.1">A+</button><button type="button" data-scale="reset">'+bi('Reset','Ponastavi')+'</button><button type="button" data-theme-toggle>'+bi('Day mode','Dnevni način')+'</button></div>';
- return '<!doctype html>\n<html lang="en" data-theme="dark" data-title-en="'+esc(title+' — Illuminara Daily')+'" data-title-sl="'+esc(slTitle+' — Illuminara Daily')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark light"><title>'+esc(title)+' — Illuminara Daily</title><link rel="canonical" href="'+BASE+file+'"><link rel="stylesheet" href="assets/css/nara-daily.css?v='+FORMAT_VERSION+'"><script defer src="assets/js/nara-daily-resolution.js?v=1"></script><script defer src="assets/js/nara-daily-reader.js?v='+FORMAT_VERSION+'"></script><script defer src="assets/js/nara-daily-lightbox.js?v=2"></script></head><body><a class="skip" href="#main">'+bi('Skip to content','Preskoči na vsebino')+'</a><header class="bar"><div class="bar-inner"><a class="brand" href="Nara-AI-daily.html">ILLUMINARA / DAILY</a><nav class="nav"><a href="Nara-AI-daily.html">Daily</a><a href="Nara-AI-archive.html#format-editions">'+bi('Archive','Arhiv')+'</a></nav><div class="language-switch" data-language-switch role="group" aria-label="Language / Jezik" hidden><button type="button" data-language="en" lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-language="sl" lang="sl" aria-pressed="false">SL</button></div></div></header><main class="wrap" id="main" tabindex="-1">'+controls+body+'</main><footer class="footer wrap"><p>'+bi('Original world: Bojan Dobrečevič. Prose: the GPT × Claude Daily creative line. A format edition does not confer canon status.','Izvirni svet: Bojan Dobrečevič. Proza: ustvarjalno sodelovanje GPT × Claude v dnevni zbirki. Formatna izdaja ne pomeni kanoničnega statusa.')+'</p></footer></body></html>\n';
+ const artworkAssets=responsive?'<link rel="stylesheet" href="assets/css/nara-daily-responsive.css?v='+RESPONSIVE_VERSION+'">':'';
+ const selector=responsive?'':'<script defer src="assets/js/nara-daily-resolution.js?v=1"></script>';
+ const viewer=responsive?'<script defer src="assets/js/nara-daily-responsive.js?v='+RESPONSIVE_VERSION+'"></script>':'<script defer src="assets/js/nara-daily-lightbox.js?v=2"></script>';
+ return '<!doctype html>\n<html lang="en" data-theme="dark" data-title-en="'+esc(title+' — Illuminara Daily')+'" data-title-sl="'+esc(slTitle+' — Illuminara Daily')+'"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark light"><title>'+esc(title)+' — Illuminara Daily</title><link rel="canonical" href="'+BASE+file+'"><link rel="stylesheet" href="assets/css/nara-daily.css?v='+FORMAT_VERSION+'">'+artworkAssets+selector+'<script defer src="assets/js/nara-daily-reader.js?v='+FORMAT_VERSION+'"></script>'+viewer+'</head><body><a class="skip" href="#main">'+bi('Skip to content','Preskoči na vsebino')+'</a><header class="bar"><div class="bar-inner"><a class="brand" href="Nara-AI-daily.html">ILLUMINARA / DAILY</a><nav class="nav"><a href="Nara-AI-daily.html">Daily</a><a href="Nara-AI-archive.html#format-editions">'+bi('Archive','Arhiv')+'</a></nav><div class="language-switch" data-language-switch role="group" aria-label="Language / Jezik" hidden><button type="button" data-language="en" lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-language="sl" lang="sl" aria-pressed="false">SL</button></div></div></header><main class="wrap" id="main" tabindex="-1">'+controls+body+'</main><footer class="footer wrap"><p>'+bi('Original world: Bojan Dobrečevič. Prose: the GPT × Claude Daily creative line. A format edition does not confer canon status.','Izvirni svet: Bojan Dobrečevič. Proza: ustvarjalno sodelovanje GPT × Claude v dnevni zbirki. Formatna izdaja ne pomeni kanoničnega statusa.')+'</p></footer></body></html>\n';
 }
 export function renderEditionPage(root,item){
  const images=optionalEditionImages(root,item);
@@ -200,7 +205,7 @@ export function renderEditionPage(root,item){
  // Explicit format-edition presentation uses R10; the original story date and
  // original publication timestamp stay intact and are never forged as today.
  const header='<header class="masthead"><div class="eyebrow">'+bi('Dialogue format edition · R1','Izdaja v dialognem formatu · R1')+'</div><h1>'+bi(item.en.title,item.sl.title)+'</h1><p class="meta">'+item.paths.date+(item.paths.instance?' · '+item.paths.instance:'')+' · <a href="'+item.paths.original_page+'">'+bi('Read the preserved original publication','Preberi ohranjeno izvirno objavo')+'</a></p><p class="format-assessment">'+bi('New paired literary assessment:','Nova skupna književna ocena:')+' '+(item.combined===null?'PENDING':esc(item.combined+' / 100'))+'</p><p class="muted">'+bi('The original scores remain in the editorial log. Assessment applies to the English edition.','Izvirne ocene ostajajo v uredniškem dnevniku. Ocenjena je angleška izdaja.')+'</p></header>';
- return formatShell(item.en.title,item.sl.title,item.paths.page,header+reading(item.en,'en')+reading(item.sl,'sl'));
+ return formatShell(item.en.title,item.sl.title,item.paths.page,header+reading(item.en,'en')+reading(item.sl,'sl'),images.some(image=>image.responsive));
 }
 export function renderOriginalSnapshot(root,{paths:p,en,sl}){
  const images=(()=>{try{return loadIllustrations(root,en,sl,{nonBlocking:true})}catch{return []}})();
