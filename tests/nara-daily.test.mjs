@@ -22,13 +22,13 @@ function logRecord(date='2026-10-05'){
 function temp(t){const root=fs.mkdtempSync(path.join(os.tmpdir(),'nara-test-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));initialize(root,'2026-10');return root}
 
 const editionRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-function illustratedOct7(){
- const paths=editionPaths('2026-10-07'),read=f=>JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',f),'utf8'));
+function illustratedOct8(){
+ const paths=editionPaths('2026-10-08'),read=f=>JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',f),'utf8'));
  const en=read(paths.en),sl=read(paths.sl),binding=read(paths.binding);
  return {paths,en,sl,binding,originalEn:read(paths.source_en),originalSl:read(paths.source_sl),combined:pairedAssessment(binding.assessment,en.content_sha256)};
 }
 test('public edition artwork v3 keeps private provenance out and binds all three bilingual anchors',()=>{
- const item=illustratedOct7(),art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
+ const item=illustratedOct8(),art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
  assert.equal(art.schema,'nara.format.edition.artwork.v3');
  assert.doesNotMatch(JSON.stringify(art),/drive_id|full_prompt|claude_review|model_reported|generation_prompt/);
  const before=JSON.stringify([item.en,item.sl]),html=renderEditionPage(editionRoot,item);
@@ -44,7 +44,7 @@ test('public edition artwork v3 keeps private provenance out and binds all three
  assert.equal(renderEditionPage(editionRoot,item),html);
 });
 test('direct artwork rejects private fields, stale bindings and corrupted assets while retaining v2 compatibility',t=>{
- const root=temp(t),item=illustratedOct7(),n=path.join(root,'public/Nara'),manifestPath=path.join(n,item.paths.artwork);
+ const root=temp(t),item=illustratedOct8(),n=path.join(root,'public/Nara'),manifestPath=path.join(n,item.paths.artwork);
  const art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
  fs.mkdirSync(path.dirname(manifestPath),{recursive:true});
  for(const im of art.images){fs.mkdirSync(path.dirname(path.join(n,im.src)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',im.src),path.join(n,im.src));}
@@ -71,9 +71,9 @@ test('record accepts first-ready publication time but rejects wrong local date a
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
 test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-20','2026-10-20T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
-test('Daily links illustrated stories for 5 through 7 October with date and title only',()=>{
-  const linked=['2026-10-05','2026-10-06','2026-10-07'].map(d=>record(d,d+'T20:00:00Z'));
-  const other=record('2026-10-08','2026-10-08T20:00:00Z');
+test('Daily links illustrated stories for 5 through 8 October with date and title only',()=>{
+  const linked=['2026-10-05','2026-10-06','2026-10-07','2026-10-08'].map(d=>record(d,d+'T20:00:00Z'));
+  const other=record('2026-10-09','2026-10-09T20:00:00Z');
   linked.forEach((r,i)=>r.deck='INLINE_BODY_MUST_NOT_RENDER_'+i);
   const p=latestPage([...linked,other],'2026-10');
   for(const r of linked){
@@ -90,6 +90,8 @@ test('Daily links illustrated stories for 5 through 7 October with date and titl
   }
   assert.equal((p.match(/<details class="archive-item daily-item"/g)||[]).length,1);
   assert.ok(p.includes('id="'+other.id+'"'));
+  assert.ok(p.indexOf(other.id)<p.indexOf(linked[3].id));
+  assert.ok(p.indexOf(linked[3].id)<p.indexOf(linked[2].id));
   assert.ok(p.indexOf(other.id)<p.indexOf(linked[2].id));
   assert.ok(p.indexOf(linked[2].id)<p.indexOf(linked[1].id));
   assert.ok(p.indexOf(linked[1].id)<p.indexOf(linked[0].id));
