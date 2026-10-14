@@ -1,7 +1,8 @@
 import * as API from './api-client.mjs?v=3.0-r4';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation } from './store.mjs?v=3.0-r4.2';
+import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate } from './store.mjs?v=3.0-r4.3';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
+import {readSettings, saveSettings, storageBudget, delayTransition} from './preferences.mjs?v=3.0-r1';
 import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=3.0-r4';
 import { MODELS, modelFor, supportsMode } from './models.mjs?v=3.0-r4';
 import { loadReferenceGallery, verifyReferenceAsset } from './showcase.mjs?v=3.0-r4';
@@ -33,6 +34,35 @@ try { if (!new URLSearchParams(location.search).has('lang') && localStorage.getI
 const t = key => dictionary[language][key] || key;
 let pairs=[],scores=[],selected=null,viewerPair=null,reviewState=null,originFocus=null,originScroll=0;
 let gateway=null,capabilities=null,referencePairs=[],referenceLoaded=false,viewerLoad=0,activeView='showcase';
+const configurableModels=MODELS.filter(m=>m.direct).map(m=>m.key);
+let settings=readSettings(undefined,configurableModels),cloudInventory={pairs:[],jobs:[],titles:{}};
+let galleryShownFrame=null,galleryPendingFrame=null,galleryDelayTimer=null;
+const MODEL_OUTCOME_KEY='bd-dualframe-model-outcomes-v1';
+let modelOutcomes={};try{modelOutcomes=JSON.parse(localStorage.getItem(MODEL_OUTCOME_KEY)||'{}')||{};}catch{}
+function markModelOutcome(model,operation,success,error){if(!model||model==='demo')return;modelOutcomes[model]={when:new Date().toISOString(),operation,success,error:success?null:String(error||'UNKNOWN').slice(0,80)};try{localStorage.setItem(MODEL_OUTCOME_KEY,JSON.stringify(modelOutcomes));}catch{}}
+function visibleModels(){return MODELS.filter(m=>m.direct&&settings.enabledModels.includes(m.key));}
+function refreshImageModels(){
+ const picker=$('pipeline'),previous=picker.value;
+ picker.replaceChildren();
+ for(const model of visibleModels()){const option=node('option',model.label);option.value=model.key;picker.append(option);}
+ if(!picker.options.length)throw Error('NO_MODELS_SELECTED');
+ picker.value=[previous,settings.model,visibleModels()[0]?.key].find(key=>key&&settings.enabledModels.includes(key))||visibleModels()[0].key;
+}
+function captureLastCreateChoice(){
+ if(!settings.rememberLast)return;
+ try{localStorage.setItem('bd-df-last-create-v1',JSON.stringify({mode:$('mode').value,model:$('pipeline').value,quality:$('output-quality').value,position:$('position').value}));}catch{}
+}
+function applyCreationDefaults(){
+ let last={};if(settings.rememberLast)try{last=JSON.parse(localStorage.getItem('bd-df-last-create-v1')||'{}')||{};}catch{}
+ $('mode').value=last.mode||settings.mode;
+ $('output-quality').value=last.quality||settings.quality;
+ $('position').value=last.position||settings.position;
+ refreshImageModels();
+ const pick=last.model||settings.model;
+ if(settings.enabledModels.includes(pick))$('pipeline').value=pick;
+ updateModelControls();
+}
+
 const controllers=new Map(),urlCache=new WeakMap(),urls=new Set();
 const selectedPair = () => pairs.find(p=>p.pair_id===selected);
 const comparePair = () => pairs.find(p=>p.pair_id===$('compare-pair').value);
@@ -255,8 +285,8 @@ async function runGateway(pair,job){
    if(n.width!==state.output.width||n.height!==state.output.height)throw Error('OUTPUT_DIMENSION_MISMATCH');
    if(job.mode==='faithful'){const proof=await verifySavedProtectedPixels(pair.original.normalized,blob,state.output.source_placement,pair.original.sha256);if(!proof.verified)throw Error('PROTECTED_PIXELS_CHANGED');state.output.pixel_proof=proof;}
    job.candidate=await localTextOverlay({...state.output,blob,path:`variants/${job.target}/${hash}.png`,source_sha256:pair.original.sha256,direction:job.target,target_ratio:job.target_ratio,review_scale_policy:'equal-canvas-v1',lineage_status:state.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provider:job.provider,mode:job.mode,model_key:job.model,task_parameters_hash:job.task_parameters_hash,provenance_verified:state.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:pair.original.sha256,output_sha256:hash},origin:'generated'},job.mode==='infographic'?job.text_layout:null);
-   job.status='READY';job.provider_request_id=state.provider_request_id;job.provider_cost=state.provider_cost;job.cost_currency=state.cost_currency;job.provider_parameters=state.provider_parameters;job.latency_ms=state.latency_ms;rememberResult(pair,job.candidate,job.job_id);
-  }else{job.status=state.status;job.error=state.error||state.status;job.detail=state.detail||'';job.provider_status=state.provider_status;}
+   job.status='READY';markModelOutcome(job.model,'expand',true);job.provider_request_id=state.provider_request_id;job.provider_cost=state.provider_cost;job.cost_currency=state.cost_currency;job.provider_parameters=state.provider_parameters;job.latency_ms=state.latency_ms;rememberResult(pair,job.candidate,job.job_id);
+  }else{job.status=state.status;if(state.status==='FAILED')markModelOutcome(job.model,'expand',false,state.error||state.status);job.error=state.error||state.status;job.detail=state.detail||'';job.provider_status=state.provider_status;}
   await persist(pair);
  }catch(e){if(job.status!=='CANCELLED'){job.status=e.message==='CANCELLED'?'CANCELLED':job.gateway_job_id?'HELD':'FAILED';job.error=e.message;await persist(pair);notify(e.message,true);}}finally{controllers.delete(job.job_id);}
 }
@@ -343,6 +373,19 @@ Object.assign(dictionary.sl,{creationGallery:'Ustvari',comparisonLab:'Primerjaj'
 
 Object.assign(dictionary.en,{rename:'Rename',renameTitle:'Rename image',renameLabel:'Image name',renameHelp:'The original file and SHA-256 stay unchanged. Your title is saved on this device and synchronized when the private API is available.',renameSave:'Save name',renameInvalid:'Enter a name of at most 120 characters without control characters.',renameFailed:'Could not save the name to this device.',renameSaved:'Name saved and cloud-synced.',renameLocalPending:'Name saved here. Use Sync to update your other devices.',frameMissing:'No portrait/landscape counterpart saved · showing the original in this frame.'});
 Object.assign(dictionary.sl,{rename:'Preimenuj',renameTitle:'Preimenuj sliko',renameLabel:'Ime slike',renameHelp:'Izvirna datoteka in SHA-256 ostaneta nespremenjena. Ime se shrani na napravi, v oblak pa se uskladi ob povezavi.',renameSave:'Shrani ime',renameInvalid:'Vnesi ime do 120 znakov, brez krmilnih znakov.',renameFailed:'Imena ni bilo mogoče shraniti na napravo.',renameSaved:'Ime shranjeno in sinhronizirano z oblakom.',renameLocalPending:'Ime shranjeno na napravi. Za prenos na druge naprave uporabi Sync.',frameMissing:'Druga kompozicija še ni shranjena · prikazan je cel izvirnik v izbranem okvirju.'});
+
+Object.assign(dictionary.en,{
+ settingsOpen:'⚙ Settings',settingsTitle:'Settings',settingsCreation:'Creation defaults',settingsDefaultModel:'Default image model',settingsLast:'Resume last-used settings',settingsModels:'Visible image models',settingsModelsHelp:'Only enabled models appear in Create and Compare. Existing results are not hidden.',settingsGallery:'Gallery',delay:'Delay',delayOff:'Off',settingsDelayHelp:'After a rotation, keep the previous composition in the newly rotated frame for this many seconds, then reveal the matching image.',settingsStorage:'Storage & Sync',settingsMetadata:'Check cloud metadata at startup (no automatic image downloads)',settingsDownloadLimit:'Maximum download for one selected image',settingsDiagnostics:'Check device storage',settingsAPI:'API health',settingsAPIHelp:'The free access check verifies our session and configured keys, not a successful model generation. No image is created.',settingsCheckAPI:'Check access (no image generation)',settingsSave:'Save settings',
+ settingsSaved:'Settings saved.',settingsAtLeastOne:'Enable at least one image model.',storageNoEstimate:'Storage estimate is unavailable in this browser.',storageNumbers:'Estimated origin storage',storageDatabaseOK:'IndexedDB reachable',storageDatabaseError:'IndexedDB access failed',storageNote:'These are browser-origin estimates, not available device disk space.',
+ cloudInventoryTitle:'Available in cloud · not on this device',cloudInventoryHelp:'Sync loads the catalog first. Select Load for a single saved image; no automatic re-download of your full collection.',cloudLoadSingle:'Load image',cloudNotLocal:'Not downloaded',cloudLoadSuccess:'Image saved on this device.',cloudSyncCatalog:'Cloud catalog synchronized',cloudDownloadHint:'Cloud transfer needs free browser storage; your local-only originals are never deleted automatically.',delayPending:'Waiting to show the other composition',
+ STORAGE_QUOTA_EXCEEDED:'Browser image storage quota reached. Images remain in the cloud where backed up.',STORAGE_TRANSACTION_ABORTED:'Image database transaction was aborted. Retry; no disk shortage has been confirmed.',STORAGE_DATABASE_ERROR:'Browser image database error. Device storage may still be free.',STORAGE_ACCESS_DENIED:'Browser storage access denied. Check privacy settings.',STORAGE_READ_FAILURE:'Could not read the browser image database.',STORAGE_WRITE_FAILURE:'Could not save to the browser image database.',STORAGE_DATABASE_BLOCKED:'An older app tab is blocking the database. Close other tabs and retry.',STORAGE_LOW_SPACE:'Not enough browser storage for this download; local originals were not removed.',STORAGE_TRANSFER_LIMIT:'This image exceeds your per-download limit. Increase the limit in Settings.',STORAGE_UNKNOWN_SIZE:'Cloud image size is unknown; download was not started.'
+});
+Object.assign(dictionary.sl,{
+ settingsOpen:'⚙ Nastavitve',settingsTitle:'Nastavitve',settingsCreation:'Privzeto ustvarjanje',settingsDefaultModel:'Privzeti slikovni model',settingsLast:'Nadaljuj z zadnjimi uporabljenimi nastavitvami',settingsModels:'Prikazani slikovni modeli',settingsModelsHelp:'Samo vključeni modeli se pojavijo v Create in Compare. Obstoječi rezultati ostanejo vidni.',settingsGallery:'Galerija',delay:'Zamik',delayOff:'Brez',settingsDelayHelp:'Ob obratu zaslona obdrži prejšnjo kompozicijo v novem okvirju za izbrani čas, nato pokaži ustrezno sliko.',settingsStorage:'Shramba in Sync',settingsMetadata:'Ob zagonu preveri katalog v oblaku (brez prenosa slik)',settingsDownloadLimit:'Največji prenos ene izbrane slike',settingsDiagnostics:'Preveri shrambo naprave',settingsAPI:'Stanje API',settingsAPIHelp:'Brezplačni preizkus potrdi prijavo in prisotnost ključev, ne pa uspešnega ustvarjanja slike. Nobena slika se ne ustvari.',settingsCheckAPI:'Preveri dostop (brez generiranja)',settingsSave:'Shrani nastavitve',
+ settingsSaved:'Nastavitve shranjene.',settingsAtLeastOne:'Vključi vsaj en slikovni model.',storageNoEstimate:'Brskalnik ne omogoča ocene shrambe.',storageNumbers:'Ocenjena shramba tega izvora',storageDatabaseOK:'IndexedDB je dosegljiv',storageDatabaseError:'Dostop do IndexedDB ni uspel',storageNote:'Gre za ocene brskalnika, ne za prosti prostor naprave.',
+ cloudInventoryTitle:'V oblaku · še ni na tej napravi',cloudInventoryHelp:'Sync najprej pridobi katalog. Posamezno sliko preneseš z gumbom Naloži; celotna zbirka se ne prenese samodejno.',cloudLoadSingle:'Naloži sliko',cloudNotLocal:'Ni prenesena',cloudLoadSuccess:'Slika je shranjena na tej napravi.',cloudSyncCatalog:'Katalog v oblaku je usklajen',cloudDownloadHint:'Za prenos je potreben prostor v brskalniku; lokalni izvirniki se ne brišejo samodejno.',delayPending:'Čakam pred prikazom druge kompozicije',
+ STORAGE_QUOTA_EXCEEDED:'Kvota spletne shrambe je presežena. Slike, ki so že shranjene v oblaku, ostanejo tam.',STORAGE_TRANSACTION_ABORTED:'Zapis v podatkovno zbirko je bil prekinjen; pomanjkanje prostora ni dokazano.',STORAGE_DATABASE_ERROR:'Napaka podatkovne zbirke. Prostor na telefonu morda ni poln.',STORAGE_ACCESS_DENIED:'Dostop do shrambe je zavrnjen. Preveri nastavitve zasebnosti.',STORAGE_READ_FAILURE:'Branje lokalnih slik ni uspelo.',STORAGE_WRITE_FAILURE:'Shranjevanje lokalnih slik ni uspelo.',STORAGE_DATABASE_BLOCKED:'Drug zavihek blokira podatkovno zbirko. Zapri ga in poskusi znova.',STORAGE_LOW_SPACE:'Za prenos ni dovolj kvote brskalnika; lokalni izvirniki niso odstranjeni.',STORAGE_TRANSFER_LIMIT:'Slika presega omejitev prenosa. Povečaj jo v Nastavitvah.',STORAGE_UNKNOWN_SIZE:'Velikost slike v oblaku ni znana; prenos ni začet.'
+});
 let favorites=new Set(),tourTimer=null,benchBusy=false,cloudBusy=false;
 try{favorites=new Set(JSON.parse(localStorage.getItem('bd-df-favorites')||'[]'));}catch{}
 function updateAuthLabel(){$('api-toggle').textContent=t(API.apiUnlocked()?'lockAPI':'unlockAPI');$('api-toggle').setAttribute('aria-pressed',String(API.apiUnlocked()));}
@@ -367,7 +410,7 @@ function warmViewer(){
 const priorUpdateViewer=updateViewer;
 updateViewer=async function(){await priorUpdateViewer();warmViewer();};
 function renderBenchModels(){const holder=$('bench-models');if(!holder)return;const checked=new Set([...holder.querySelectorAll('input:checked')].map(x=>x.value)),first=!holder.children.length;holder.replaceChildren();const mode=$('compare-task').value;
- for(const model of MODELS.filter(x=>x.direct&&x.edit!==false)){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&['openai-sunburst','gemini-nano'].includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
+ for(const model of visibleModels().filter(x=>x.edit!==false)){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&model.key===settings.model);input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
 }
 function renderBenchResults(){const holder=$('bench-results');if(!holder)return;const p=comparePair()||selectedPair();holder.replaceChildren();if(!p)return;
  for(const job of p.jobs.slice().reverse().filter(j=>j.provider!=='demo').slice(0,18)){const card=node('article',undefined,'bench-result');card.append(node('strong',modelFor(job.model)?.label||job.model),node('span',`${t(job.status)} · ${job.quality}`,'small'));const image=job.candidate||(p.candidates||[]).find(x=>x.candidate_id===job.job_id);if(image){const img=node('img');img.src=assetUrl(image);img.alt=modelFor(job.model)?.label||job.model;img.loading='lazy';card.append(img,button(t('useAsA'),()=>{$('candidate-a').value=image.sha256;association();},'text-button'),button(t('useAsB'),()=>{$('candidate-b').value=image.sha256;association();},'text-button'));}if(job.error)card.append(node('p',t(job.error),'small'));holder.append(card);}
@@ -396,19 +439,19 @@ async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!a
  }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
 }
 async function initR5(){
- $('pipeline').replaceChildren();for(const model of MODELS.filter(m=>m.direct||m.provider==='demo')){const option=node('option',model.label);option.value=model.key;$('pipeline').append(option);}$('pipeline').value='openai-sunburst';$('consent').checked=true;
+ applyCreationDefaults();$('consent').checked=true;$('gallery-delay').value=String(settings.delaySeconds);$('reference-device').value='auto';galleryShownFrame=desiredGalleryFrame();$('collection-filter').value=settings.galleryCollection;
  await init();switchTab('showcase');updateModelControls();
  API.capabilities().then(value=>{capabilities=value;updateModelControls();}).catch(()=>{$('model-status').textContent=t('apiChecking');});
- if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
+ if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};if(settings.metadataSyncOnStart)syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
 }
 $('api-auth-cancel').addEventListener('click',()=>$('api-auth').close());
 $('rename-form').addEventListener('submit',saveRename);
 $('rename-cancel').addEventListener('click',()=>$('rename-dialog').close());
 $('rename-dialog').addEventListener('close',()=>{renamingPairId=null;});
-$('api-toggle').addEventListener('click',guard(async()=>{if(API.apiUnlocked()){API.lockAPI();gateway=null;notify('apiLocked');}else{await connectGateway();await syncCloud(false);}updateAuthLabel();}));
+$('api-toggle').addEventListener('click',guard(async()=>{if(API.apiUnlocked()){API.lockAPI();gateway=null;notify('apiLocked');}else{await connectGateway();if(settings.metadataSyncOnStart)await syncCloud(false);}updateAuthLabel();}));
 document.addEventListener('df-auth-change',updateAuthLabel);
-$('create-kind').addEventListener('change',()=>{updateModelControls();render();});
-$('collection-filter').addEventListener('change',()=>{renderReference();renderOwnGallery();});
+$('create-kind').addEventListener('change',()=>{updateModelControls();render();});for(const id of ['mode','pipeline','output-quality','position'])$(id).addEventListener('change',captureLastCreateChoice);
+$('collection-filter').addEventListener('change',()=>{settings=saveSettings({...settings,galleryCollection:$('collection-filter').value},undefined,configurableModels);renderReference();renderOwnGallery();});
 $('cloud-load').addEventListener('click',guard(()=>syncCloud(true)));
 $('bench-generate').addEventListener('click',guard(runBench));
 $('compare-pair').addEventListener('change',renderBenchResults);
