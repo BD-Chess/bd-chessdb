@@ -76,7 +76,7 @@ HELPER_JS = r'''/*
 
 def attr(tag,name):
     m=re.search(r'\b'+re.escape(name)+r'\s*=\s*(["\'])(.*?)\1',tag,re.I|re.S);return m.group(2) if m else ''
-def is_api(tag): return bool(API_RE.search(tag))
+def is_api(tag): return 'data-bd-pm-skip' in tag.lower() or bool(API_RE.search(tag))
 def group_for(rel,tag):
     p='/'+rel.lower();i=attr(tag,'id').lower()
     if p=='/bd/o/index.html' or p.startswith('/bd/o/'):return 'bd-o'

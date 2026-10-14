@@ -7,6 +7,7 @@ const text=async path=>readFile(new URL(path,root),'utf8');
 const bytes=async path=>readFile(new URL(path,root));
 const [html,app,sw,releaseText,manifestText]=await Promise.all([text('index.html'),text('app.mjs'),text('sw.js'),text('release.json'),text('manifest.webmanifest')]);
 const release=JSON.parse(releaseText),manifest=JSON.parse(manifestText);
+const passwordManager=await readFile(new URL('../scripts/inject_password_manager.py',import.meta.url),'utf8');
 const match=sw.match(/const ASSETS=(\[[\s\S]*?\]);/);
 assert.ok(match,'service worker must declare an explicit offline asset package');
 const assets=JSON.parse(match[1]),paths=new Set(assets.map(path=>path.replace(/^\.\//,'').split('?')[0]));
@@ -27,7 +28,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.2');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-14-r4.3');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -39,4 +40,10 @@ test('worker bypasses auth, cloud API and non-app origins and only activates aft
 test('offline reference failure leaves the private local gallery available',()=>{
  assert.ok(app.includes("t('referenceOffline')"));assert.ok(app.includes('renderOwnGallery();return;}throw error;'));
  assert.ok(html.includes('pwaInstallHelp'));assert.ok(release.pwa.network_required.includes('cloud Sync'));
+});
+
+test('gateway secret fields are excluded from password-manager rewriting',()=>{
+ const fields=[...html.matchAll(/<input[^>]*type="password"[^>]*>/gi)].map(match=>match[0]);
+ assert.equal(fields.length,2);assert.ok(fields.every(field=>field.includes('data-bd-pm-skip="1"')));
+ assert.match(passwordManager,/data-bd-pm-skip/);
 });
