@@ -78,6 +78,16 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
     const id=hash(Buffer.from(owner+':'+original.sha256)).slice(0,40),pair={pair_id:id,owner,title:cleanName(b.title),original,normalized,created_at:new Date(now()).toISOString()};
     await put(`pairs/${owner}/${id}`,pair);return json(req,{pair_id:id,original:{sha256:original.sha256,width:normalized.width,height:normalized.height}});
    }
+   // A display title is metadata keyed to the immutable source hash: no image bytes or lineage change.
+   const titlePath=path.match(/^\/titles\/([a-f0-9]{64})$/);
+   if(titlePath&&req.method==='PUT'){
+    const b=await readJSON(req),title=b?.title;
+    if(typeof title!=='string'||!title.trim()||title.trim().length>120||/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u.test(title))fail('TITLE_INVALID');
+    const saved={title:title.trim(),updated_at:new Date(now()).toISOString()},key=`titles/${owner}/${titlePath[1]}`;
+    const write=await store.setJSON(key,saved);
+    if(write?.modified!==true||JSON.stringify(await get(key))!==JSON.stringify(saved))fail('TITLE_WRITE_UNCONFIRMED',503);
+    return json(req,{source_sha256:titlePath[1],...saved});
+   }
    const deletePair=path.match(/^\/pairs\/([-a-zA-Z0-9_]+)$/);
    if(deletePair&&req.method==='DELETE'){if(!ID.test(deletePair[1]))fail('PAIR_INVALID');await put(`deleted-pairs/${owner}/${deletePair[1]}`,{at:now()});return json(req,{deleted:true});}
    if((path==='/expand'||path==='/generate')&&req.method==='POST'){
@@ -118,7 +128,9 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(path==='/library'&&req.method==='GET'){
     const listing=await store.list({prefix:`jobs/${owner}/`}),jobs=[];for(const entry of listing.blobs.slice(-200)){const j=await get(entry.key);if(j&&!(j.pair_id&&await get(`deleted-pairs/${owner}/${j.pair_id}`))){const s=await state(j);if(s.status!=='REJECTED')jobs.push(s);}}
     const pairList=await store.list({prefix:`pairs/${owner}/`}),pairs=[];for(const entry of pairList.blobs.slice(-200)){const p=await get(entry.key);if(p&&!await get(`deleted-pairs/${owner}/${p.pair_id}`))pairs.push(p);}
-    return json(req,{pairs,jobs:jobs.sort((a,b)=>b.created_at.localeCompare(a.created_at)),truncated:listing.blobs.length>200||pairList.blobs.length>200});
+    const titleList=await store.list({prefix:`titles/${owner}/`}),titles={};
+    for(const entry of titleList.blobs.slice(-200)){const sha=entry.key.split('/').pop();if(HASH.test(sha)){const record=await get(entry.key);if(typeof record?.title==='string'&&record.title)titles[sha]=record.title;}}
+    return json(req,{pairs,jobs:jobs.sort((a,b)=>b.created_at.localeCompare(a.created_at)),titles,truncated:listing.blobs.length>200||pairList.blobs.length>200||titleList.blobs.length>200});
    }
    return json(req,{error:'NOT_FOUND'},404);
   }catch(e){const code=e.message==='UNAUTHORIZED'?'UNAUTHORIZED':/^[A-Z0-9_]+$/.test(e.message)?e.message:'REQUEST_FAILED';return json(req,{error:code},e.status||(code==='UNAUTHORIZED'?401:code==='REQUEST_FAILED'?500:400));}
