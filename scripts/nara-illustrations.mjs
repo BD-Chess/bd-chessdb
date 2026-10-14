@@ -65,11 +65,11 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
         priorParagraph=image.after_paragraph;
       }
       prior=image.scene;
-      assert(image.width===(record.date==='2026-10-05'&&!instance?1919:1672)&&image.height===(record.date==='2026-10-05'&&!instance?1080:941),'illustration image dimensions');
+      assert(image.width===(v3&&record.date==='2026-10-05'&&!instance?1919:1672)&&image.height===(v3&&record.date==='2026-10-05'&&!instance?1080:941),'illustration image dimensions');
       assert(text(image.alt_en,300)&&text(image.alt_sl,300),'illustration alt text');
       const prefix=`assets/img/daily/${record.date}/${instance&&v2?instance+'/':''}`;
       if(v3)assert(image.src?.endsWith('.webp'),'illustration v3 WebP delivery');
-      const hdPrefix=record.date==='2026-10-05'&&!instance?prefix+'HD/':prefix;
+      const hdPrefix=v3&&record.date==='2026-10-05'&&!instance?prefix+'HD/':prefix;
       assert(typeof image.src==='string'&&image.src.startsWith(hdPrefix)&&/^[A-Za-z0-9_.-]+\.(?:png|webp)$/.test(image.src.slice(hdPrefix.length)),'illustration unsafe source path');
       const asset=path.join(base,image.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'illustration missing static file');
       const bytes=fs.readFileSync(asset);assert(/^[a-f0-9]{64}$/.test(image.sha256)&&sha(bytes)===image.sha256,'illustration source hash mismatch');
