@@ -30,7 +30,7 @@
   "provider_account_validation": "manual-user-tests-pending",
   "reference_gallery": "existing-Nara-assets; excluded-from-controlled-benchmark",
   "status": "R_AND_D_READY_FOR_MANUAL_PROVIDER_TESTS",
-  "release_revision": 15,
+  "release_revision": 16,
   "blobs_sdk": "11.1.4",
   "api_configuration_verified": true,
   "pwa": {
@@ -100,5 +100,23 @@
   "model_adapter_verification": {
     "scope": "eleven registered model ids and provider host paths statically checked; account-specific generate/edit results remain unverified",
     "paid_calls": 0
+  },
+  "provider_adapter_updates": {
+    "z_image_turbo_sync": {
+      "provider": "Alibaba Cloud Model Studio",
+      "model_id": "z-image-turbo",
+      "previous_protocol": "old async text2image/image-synthesis",
+      "new_protocol": "synchronous multimodal-generation/generation",
+      "output_sizes_hd": {
+        "landscape": "1536*864",
+        "portrait": "864*1536"
+      },
+      "output_sizes_4k_requested": {
+        "landscape": "2048*1152",
+        "portrait": "1152*2048"
+      },
+      "verification": "mocked provider response and safe asset download; user API/billing acceptance pending",
+      "paid_calls": 0
+    }
   }
 }

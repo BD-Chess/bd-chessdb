@@ -28,7 +28,7 @@ test('provider rejection removes the credential from the diagnostic',async()=>{a
 test('uncertain paid submission is marked uncertain and is never retried',async()=>{let count=0;await assert.rejects(callProvider(job('openai-sunburst'),null,env,{fetcher:async()=>{count++;throw Error('timeout');}}),e=>e.ambiguous===true);assert.equal(count,1);});
 test('actual bytes are decoded from each supported provider response',async()=>{const b64=png.toString('base64');const samples=[['openai-sunburst',{data:[{b64_json:b64}]}],['gemini-nano',{output_image:{data:b64,mime_type:'image/png'}}],['grok-imagine',{data:[{b64_json:b64}]}],['minimax-image',{data:{image_base64:[b64]},base_resp:{status_code:0}}],['qwen-image-pro',{output:{choices:[{message:{content:[{image:'data:image/png;base64,'+b64}]}}]}}]];for(const [key,data] of samples){let count=0;const r=await callProvider(job(key),null,env,{fetcher:async()=>{count++;return Response.json(data);}});assert.deepEqual(r.bytes,png);assert.equal(count,1);}});
 test('Mistral runs the image agent then downloads its returned file',async()=>{const urls=[];const r=await callProvider(job('mistral-image'),null,env,{fetcher:async(url)=>{urls.push(String(url));if(url.endsWith('/agents'))return Response.json({id:'agent_12345'});if(url.endsWith('/conversations'))return Response.json({outputs:[{content:[{type:'tool_file',file_id:'file_12345'}]}]});return new Response(png,{headers:{'content-type':'image/png'}});}});assert.deepEqual(r.bytes,png);assert.equal(urls.length,3);assert.ok(urls[2].endsWith('/files/file_12345/content'));});
-test('Qwen async polling recovers the first submission without another POST',async()=>{const calls=[];const r=await callProvider(job('qwen-zimage'),null,env,{delay:async()=>{},fetcher:async(url,o)=>{calls.push(o?.method||'GET');if(String(url).includes('image-synthesis'))return Response.json({output:{task_id:'task_12345'}});if(String(url).includes('/tasks/'))return Response.json({output:{task_status:'SUCCEEDED',results:[{url:'https://cdn.example.com/result.png'}]}});return new Response(png);}});assert.deepEqual(r.bytes,png);assert.deepEqual(calls,['POST','GET','GET']);});
+test('Z-Image synchronous response completes with one submission and no task polling',async()=>{const calls=[];const r=await callProvider(job('qwen-zimage'),null,env,{fetcher:async(url,o)=>{calls.push(o?.method||'GET');if(String(url).includes('/multimodal-generation/generation'))return Response.json({output:{choices:[{message:{content:[{image:'https://cdn.example.com/result.png'}]}}]}});if(String(url)==='https://cdn.example.com/result.png')return new Response(png);throw Error('UNEXPECTED_REQUEST');}});assert.deepEqual(r.bytes,png);assert.deepEqual(calls,['POST','GET']);});
 test('image download URLs reject credentials, private literal hosts and unsupported ports',()=>{for(const u of ['http://cdn.example.com/a.png','https://127.0.0.1/a','https://[::1]/a','https://localhost/a','https://metadata.google.internal/a','https://user:pass@example.com/a','https://cdn.example.com:444/a'])assert.throws(()=>safeImageURL(u));assert.equal(safeImageURL('https://cdn.example.com/a.png'),'https://cdn.example.com/a.png');});
 test('Faithful checks saved RGBA including transparency, and labels enlarged output',async()=>{const data=Buffer.alloc(32*20*4);for(let n=0;n<data.length;n+=4){data[n]=n%255;data[n+1]=91;data[n+2]=153;data[n+3]=(n/4)%3?255:128;}const source=await sharp(data,{raw:{width:32,height:20,channels:4}}).png().toBuffer();const r=await finishImage(png,source,{...job('openai-sunburst'),operation:'expand',mode:'faithful',input_sha256:hash(source)});assert.equal(r.output.pixel_proof.verified,true);assert.equal(r.output.pixel_proof.channel_difference_count,0);assert.equal(r.output.resolution_origin,'upscaled');assert.equal(r.output.native_4k,false);assert.equal(r.output.sha256,hash(r.bytes));});
 test('unauthenticated direct calls cannot upload, submit or read private files',async()=>{let calls=0;const s=createService({store:new Store(),env,runProvider:async()=>{calls++;return {bytes:png};}});for(const [path,method] of [['/expand','POST'],['/uploads/init','POST'],['/library','GET'],['/assets/abcdefgh','GET']]){const r=await s.handle(new Request('https://www.mdlxdcc.org/api/df'+path,{method,...(method==='POST'?{body:'{}'}:{})}));assert.equal(r.status,401);}assert.equal(calls,0);});
@@ -200,7 +200,7 @@ test('all eleven provider adapters retain exact model IDs and approved host rout
   ['qwen-image-pro','qwen','qwen-image-3.0-pro','/api/v1/services/aigc/multimodal-generation/generation'],
   ['qwen-image','qwen','qwen-image-3.0','/api/v1/services/aigc/multimodal-generation/generation'],
   ['wan-image-pro','qwen','wan2.7-image-pro','/api/v1/services/aigc/multimodal-generation/generation'],
-  ['qwen-zimage','qwen','z-image-turbo','/api/v1/services/aigc/text2image/image-synthesis'],
+  ['qwen-zimage','qwen','z-image-turbo','/api/v1/services/aigc/multimodal-generation/generation'],
   ['minimax-image','minimax','image-01','/v1/image_generation'],
   ['glm-image','zai','glm-image','/api/paas/v4/images/generations'],
   ['mistral-image','mistral','mistral-medium-latest','/v1/agents']
@@ -213,3 +213,34 @@ test('all eleven provider adapters retain exact model IDs and approved host rout
  }
 });
 function jobFor(model){return {model,prompt:'One safe illustrative scene',target:'landscape',quality:'hd',mode:'smart',operation:'generate',position:'center',seed:42};}
+
+
+test('Z-Image Turbo uses current synchronous Alibaba multimodal API with documented L/P image sizes',()=>{
+ for(const [target,quality,size] of [['landscape','hd','1536*864'],['portrait','hd','864*1536'],['landscape','4k','2048*1152'],['portrait','4k','1152*2048']]){
+  const request=providerRequest({...jobFor('qwen-zimage'),target,quality},null,env);
+  assert.equal(new URL(request.url).pathname,'/api/v1/services/aigc/multimodal-generation/generation');
+  assert.equal(request.headers['X-DashScope-Async'],undefined);
+  const data=JSON.parse(request.body);
+  assert.equal(data.model,'z-image-turbo');
+  assert.deepEqual(data.input,{messages:[{role:'user',content:[{text:'One safe illustrative scene'}]}]});
+  assert.equal(data.parameters.size,size);
+  assert.equal(data.parameters.prompt_extend,false);
+  assert.equal(data.parameters.seed,42);
+ }
+});
+test('Z-Image Turbo provider image URL from synchronous output is downloaded only from vetted HTTPS host',async()=>{
+ const imageURL='https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/image-fixture.png?Expires=123456';
+ const calls=[];
+ const fetcher=async(url,opts)=>{
+  calls.push({url,method:opts.method||'GET'});
+  if(url.includes('/api/v1/services/aigc/multimodal-generation/generation')){
+   return Response.json({output:{choices:[{finish_reason:'stop',message:{role:'assistant',content:[{image:imageURL},{text:'Generated'}]}}]},request_id:'mock-request-id'});
+  }
+  if(url===imageURL)return new Response(png,{status:200,headers:{'content-type':'image/png','content-length':String(png.length)}});
+  throw Error('UNEXPECTED_REQUEST');
+ };
+ const result=await callProvider(jobFor('qwen-zimage'),null,env,{fetcher});
+ assert.equal(result.model,'z-image-turbo');
+ assert.deepEqual(result.bytes,png);
+ assert.deepEqual(calls,[{url:'https://ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',method:'POST'},{url:imageURL,method:'GET'}]);
+});
