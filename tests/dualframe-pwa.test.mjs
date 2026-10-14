@@ -61,3 +61,26 @@ test('the decoded image cache retains overlap and releases images outside the tw
  assert.equal(cache.size,2);assert.equal(cache.get('next'),next);assert.equal(cache.has('previous'),false);assert.equal(previous.removed,true);assert.ok(cache.has('following'));
  syncImageCache(cache,[],FakeImage);assert.equal(cache.size,0);assert.equal(next.removed,true);
 });
+
+test('Gallery Preview controls personal and Nara cards without changing Create controls',()=>{
+ const start=app.indexOf('function galleryCard('),end=app.indexOf('function renderOwnGallery(');
+ assert.ok(start>0&&end>start);
+ const galleryCard=app.slice(start,end);
+ assert.match(galleryCard,/const target=galleryFrame\(\),state=selectAsset\(pair,target,'hd'\)/);
+ assert.doesNotMatch(galleryCard,/targetFrame\(/);
+ assert.match(app,/function galleryFrame\(\).*?simulation:\$\('reference-device'\)\.value/);
+ assert.match(app,/\$\('reference-device'\)\.addEventListener\('change',\(\)=>\{if\(referenceLoaded\)renderReference\(\);else renderOwnGallery\(\);/);
+ assert.match(app,/activeView==='showcase'\|\|pair.reference_only\?\$\('reference-device'\)\.value:\$\('device'\)\.value/);
+ assert.match(galleryCard,/state.missing&&state.orientation!==target/);
+});
+test('name editing is localized, stored separately from original filename and queued for cloud Sync',()=>{
+ for(const id of ['rename-dialog','rename-input','rename-save','rename-cancel'])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(app,/function openRename\(pair\)/);
+ assert.match(app,/async function saveRename\(event\)/);
+ assert.match(app,/pair.display_name=name;pair.title_sync_pending=true;/);
+ assert.match(app,/API.request\('\/titles\/'\+pair.original.sha256,\{method:'PUT',body:\{title\}\}\)/);
+ assert.match(app,/for\(const p of pairs\)if\(p.title_sync_pending\)await syncPendingTitle\(p\)/);
+ assert.match(app,/const cloudName=data.titles\?\.\[p.original.sha256\]/);
+ assert.match(app,/Object.assign\(dictionary.sl,\{rename:'Preimenuj'/);
+ assert.match(app,/const displayTitle = pair => pair.display_name \|\| pair.title \|\| pair.original\?\.filename/);
+});
