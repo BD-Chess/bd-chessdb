@@ -37,7 +37,7 @@ Object.assign(dictionary.en,{
  defaultCollection:'Starting collection',defaultViewerQuality:'Fullscreen quality',delayLabel:'Delay',delayOff:'Off',
  delayHelp:'After turning the screen or changing Gallery Preview, keep the previous image composition visible for 1–5 seconds before switching. Off changes immediately.',
  metadataAuto:'On launch, sync image names and cloud catalog only, never image bytes.',storageSafeHelp:'Sync lists cloud images first. Load individual photos on demand. Local-only originals are never evicted.',
- storageCheck:'Check local storage',clearMemory:'Clear image memory cache',
+ storageCheck:'Check local storage',clearMemory:'Clear image memory cache',preloadAdjacent:'Prefetch one previous and next image',
  estimateUnavailable:'Browser storage estimate unavailable (not proof of free or full device storage).',
  storageEstimate:'Approximate browser storage',storagePending:'Cloud-only images',storageLocal:'Local images',settingsAtLeastOne:'Keep at least one model enabled.',
  configured:'Key configured; model generation not tested',missingKey:'Key not configured',apiAuthNeeded:'Unlock API to check your session.',apiSessionValid:'Account session valid · model generation not tested',apiSessionFailed:'Account session check failed.',
@@ -59,7 +59,7 @@ Object.assign(dictionary.sl,{
  defaultCollection:'Začetna zbirka',defaultViewerQuality:'Kakovost celozaslonskega ogleda',delayLabel:'Delay',delayOff:'Izključeno',
  delayHelp:'Ko obrneš zaslon ali spremeniš Preview, stara kompozicija ostane vidna še 1–5 sekund. Izključeno preklopi takoj.',
  metadataAuto:'Ob zagonu uskladi samo katalog in imena, nikoli bajtov slik.',storageSafeHelp:'Sync najprej prikaže oblačne slike. Posamezno fotografijo naložiš po izbiri. Izvirnikov, ki so samo lokalni, nikoli ne brišemo samodejno.',
- storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',
+ storageCheck:'Preveri shrambo',clearMemory:'Izprazni slikovni predpomnilnik v RAM-u',preloadAdjacent:'Prednaloži eno prejšnjo in eno naslednjo sliko',
  estimateUnavailable:'Brskalnik ne razkriva ocene svoje shrambe (to ni dokaz prostega/zasedenega prostora naprave).',
  storageEstimate:'Ocenjena shramba brskalnika',storagePending:'Slike samo v oblaku',storageLocal:'Lokalne slike',settingsAtLeastOne:'Vsaj en model mora ostati vključen.',
  configured:'Ključ nastavljen; generiranje ni preverjeno',missingKey:'Ključ ni nastavljen',apiAuthNeeded:'Za preverjanje seje najprej odkleni API.',apiSessionValid:'Seja velja · ustvarjanje z modelom ni preverjeno',apiSessionFailed:'Preverjanje seje ni uspelo.',
@@ -301,7 +301,7 @@ function renderSettingsUI(){
  $('settings-mode').value=prefs.mode;$('settings-quality').value=prefs.quality;$('settings-position').value=prefs.position;
  $('settings-remember-last').checked=prefs.rememberLast;$('settings-collection').value=prefs.galleryCollection;
  $('settings-viewer-quality').value=prefs.viewerQuality;$('settings-delay').value=String(prefs.delaySeconds);
- $('settings-auto-metadata').checked=prefs.autoSyncMetadata;
+ $('settings-auto-metadata').checked=prefs.autoSyncMetadata;$('settings-preload-adjacent').checked=prefs.preloadAdjacent;
  const holder=$('settings-enabled-models');holder.replaceChildren();
  const health=readModelHealth();
  for(const model of MODELS.filter(m=>m.direct)){
@@ -326,7 +326,7 @@ function saveSettingsFromDialog(event){
   prefs=writeSettings({...prefs,enabledModels:enabled,mode:$('settings-mode').value,model:$('settings-model').value,
    quality:$('settings-quality').value,position:$('settings-position').value,rememberLast:$('settings-remember-last').checked,
    galleryCollection:$('settings-collection').value,viewerQuality:$('settings-viewer-quality').value,
-   delaySeconds:Number($('settings-delay').value),autoSyncMetadata:$('settings-auto-metadata').checked},globalThis.localStorage,modelKeys);
+   delaySeconds:Number($('settings-delay').value),autoSyncMetadata:$('settings-auto-metadata').checked,preloadAdjacent:$('settings-preload-adjacent').checked},globalThis.localStorage,modelKeys);
   applySettings();$('settings-dialog').close();scheduleGalleryOrientation();if(viewerPair)updateViewer();
  }catch{ $('settings-error').textContent=t('STORAGE_OPERATION_FAILED');}
 }
@@ -505,6 +505,7 @@ function stopTour(){if(tourTimer)clearInterval(tourTimer);tourTimer=null;$('view
 function startTour(){if(tourTimer){stopTour();return;}tourTimer=setInterval(()=>moveViewer(1),6500);$('viewer-play').textContent=t('pauseTour');}
 const warmImages=new Map();
 function warmViewer(){
+ if(!prefs.preloadAdjacent){syncImageCache(warmImages,[]);return;}
  const p=viewerPairData();
  if(!p){syncImageCache(warmImages,[]);return;}
  const list=p.reference_only?referencePairs:pairs,index=list.findIndex(x=>x.pair_id===p.pair_id);
