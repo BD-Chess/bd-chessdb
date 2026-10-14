@@ -36,6 +36,7 @@ test('provider response classes preserve auth, entitlement, listing, throttle, e
   assert.equal(classifyResponse(code,{direct:true,modelId:'expected',data:{id:'not-expected'}}),status);
  assert.equal(classifyResponse(404,{direct:false,modelId:'expected'}),'CATALOG_NOT_AVAILABLE');
  assert.equal(classifyResponse(200,{direct:true,modelId:'expected',data:{id:'expected'}}),'MODEL_ACCESSIBLE');
+ assert.equal(classifyResponse(200,{direct:true,modelId:'alias',data:{id:'canonical',aliases:['alias']}}),'MODEL_ACCESSIBLE');
 });
 test('network failures never echo raw provider secrets',async()=>{
  const result=await probeModelKeys(['openai-flare'],envir,{fetcher:async()=>{throw Error(fakeKey+' request failed');}});
