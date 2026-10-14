@@ -260,13 +260,104 @@ function renderJobs(){const list=$('jobs');list.replaceChildren();const jobs=pai
  if(j.status==='HELD'&&j.gateway_job_id)actions.append(button(t('resume'),()=>runGateway(p,j)));if(['FAILED','REJECTED','CANCELLED','HELD','ACCEPTED'].includes(j.status))actions.append(button(t('regenerate'),()=>generate(p,{...j,job_id:undefined,created_at:undefined,gateway_job_id:undefined,generation_attempt_id:crypto.randomUUID()})));
  if(j.result_receipt||j.candidate)actions.append(button(t('receiptDownload'),()=>jsonDownload(publicManifest({job:j,result:j.candidate||j.result_receipt}),`${j.job_id}.receipt.json`),'text-button'));if(actions.children.length)el.append(actions);list.append(el);}
 }
+
+function refreshCreateModels(preserve=true){
+ const select=$('pipeline'),previous=preserve?select.value:null;
+ select.replaceChildren();
+ for(const m of MODELS.filter(m=>m.direct&&prefs.enabledModels.includes(m.key))){const option=node('option',m.label);option.value=m.key;select.append(option);}
+ select.value=[previous,prefs.model,prefs.enabledModels[0]].find(key=>key&&[...select.options].some(o=>o.value===key))||prefs.enabledModels[0];
+}
+function persistPrefs(){
+ prefs=writeSettings(prefs,globalThis.localStorage,modelKeys);
+ $('delay-quick').value=String(prefs.delaySeconds);
+}
+function rememberCreateChoice(){
+ if(!prefs.rememberLast)return;
+ prefs={...prefs,mode:$('mode').value,model:$('pipeline').value,quality:$('output-quality').value,position:$('position').value};
+ try{persistPrefs();}catch{notify('STORAGE_OPERATION_FAILED',true);}
+}
+function settingsModelSelect(){
+ const select=$('settings-model'),prior=select.value||prefs.model,enabled=[...$('settings-enabled-models').querySelectorAll('input:checked')].map(x=>x.value);
+ select.replaceChildren();
+ for(const key of enabled){const m=modelFor(key);if(!m)continue;const option=node('option',m.label);option.value=key;select.append(option);}
+ if(select.options.length)select.value=enabled.includes(prior)?prior:enabled.includes(prefs.model)?prefs.model:enabled[0];
+}
+function renderSettingsUI(){
+ $('settings-mode').value=prefs.mode;$('settings-quality').value=prefs.quality;$('settings-position').value=prefs.position;
+ $('settings-remember-last').checked=prefs.rememberLast;$('settings-collection').value=prefs.galleryCollection;
+ $('settings-viewer-quality').value=prefs.viewerQuality;$('settings-delay').value=String(prefs.delaySeconds);
+ $('settings-auto-metadata').checked=prefs.autoSyncMetadata;
+ const holder=$('settings-enabled-models');holder.replaceChildren();
+ const health=readModelHealth();
+ for(const model of MODELS.filter(m=>m.direct)){
+  const label=node('label',undefined,'model-toggle'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=prefs.enabledModels.includes(model.key);
+  const content=node('span'),head=node('strong',model.label),recent=health[model.key],detail=node('small',recent?recent.lastStatus+' · '+recent.lastTask+' · '+new Date(recent.lastAt).toLocaleDateString(language):t('apiChecking'));
+  content.append(head,detail);label.append(input,content);holder.append(label);
+  input.addEventListener('change',settingsModelSelect);
+ }
+ settingsModelSelect();
+ $('settings-error').textContent='';$('settings-api-status').textContent='';
+}
+function applySettings(){
+ $('mode').value=prefs.mode;$('position').value=prefs.position;$('output-quality').value=prefs.quality;
+ refreshCreateModels(false);$('pipeline').value=prefs.model;
+ $('collection-filter').value=prefs.galleryCollection;$('delay-quick').value=String(prefs.delaySeconds);
+ updateModelControls();renderOwnGallery();if(referenceLoaded)renderReference();
+}
+function saveSettingsFromDialog(event){
+ event.preventDefault();const enabled=[...$('settings-enabled-models').querySelectorAll('input:checked')].map(x=>x.value);
+ if(!enabled.length){$('settings-error').textContent=t('settingsAtLeastOne');return;}
+ try{
+  prefs=writeSettings({...prefs,enabledModels:enabled,mode:$('settings-mode').value,model:$('settings-model').value,
+   quality:$('settings-quality').value,position:$('settings-position').value,rememberLast:$('settings-remember-last').checked,
+   galleryCollection:$('settings-collection').value,viewerQuality:$('settings-viewer-quality').value,
+   delaySeconds:Number($('settings-delay').value),autoSyncMetadata:$('settings-auto-metadata').checked},globalThis.localStorage,modelKeys);
+  applySettings();$('settings-dialog').close();scheduleGalleryOrientation();if(viewerPair)updateViewer();
+ }catch{ $('settings-error').textContent=t('STORAGE_OPERATION_FAILED');}
+}
+async function diagnoseStorage(){
+ const estimate=await storageEstimate(),count=pairs.length,cloud=remotePairs.filter(r=>!pairs.some(p=>p.original.sha256===r.original.sha256)).length;
+ const human=n=>n===null?'—':(n/1048576).toFixed(1)+' MiB';
+ $('settings-storage-status').textContent=(estimate.supported?`${t('storageEstimate')}: ${human(estimate.usage)} / ${human(estimate.quota)} (≈${Math.round(100*estimate.usage/estimate.quota)}%)`:t('estimateUnavailable'))
+  +` · ${t('storageLocal')}: ${count} · ${t('storagePending')}: ${cloud}`;
+}
+async function checkApiAccess(){
+ const status=$('settings-api-status');status.textContent=t('apiChecking');
+ try{
+  capabilities=await API.capabilities();
+  let auth=t('apiAuthNeeded');
+  if(API.apiUnlocked()){try{const data=await API.request('/session');auth=data?.ok?t('apiSessionValid'):t('apiSessionFailed');}catch{auth=t('apiSessionFailed');}}
+  const lines=(capabilities.models||[]).filter(m=>prefs.enabledModels.includes(m.key)).map(m=>m.label+': '+t(m.key_configured?'configured':'missingKey'));
+  status.textContent=auth+' · '+lines.join(' · ');
+  updateModelControls();
+ }catch{status.textContent=t('apiSessionFailed');}
+}
+function initSettingsUI(){
+ $('delay-quick').value=String(prefs.delaySeconds);$('delay-quick').addEventListener('change',()=>{
+  try{prefs.delaySeconds=Number($('delay-quick').value);persistPrefs();scheduleGalleryOrientation();if(viewerPair)updateViewer();}catch{notify('STORAGE_OPERATION_FAILED',true);}
+ });
+ $('settings-open').addEventListener('click',()=>{renderSettingsUI();$('settings-dialog').showModal();diagnoseStorage().catch(()=>{});});
+ $('settings-close').addEventListener('click',()=>$('settings-dialog').close());
+ $('settings-form').addEventListener('submit',saveSettingsFromDialog);
+ $('settings-profile-apply').addEventListener('click',()=>{
+  const profile=$('settings-profile').value,mode=profile==='photo'?'faithful':profile==='text'?'infographic':'smart';
+  $('settings-mode').value=mode;$('settings-quality').value='hd';$('settings-position').value='center';
+ });
+ $('settings-api-check').addEventListener('click',checkApiAccess);
+ $('settings-storage-check').addEventListener('click',()=>diagnoseStorage());
+ $('settings-clear-memory').addEventListener('click',()=>{
+  syncImageCache(warmImages,[]);for(const url of urls)URL.revokeObjectURL(url);urls.clear();urlCache=new WeakMap();
+  render();if(referenceLoaded)renderReference();if(viewerPair)updateViewer();diagnoseStorage();
+ });
+ for(const id of ['mode','pipeline','position','output-quality'])$(id).addEventListener('change',rememberCreateChoice);
+}
 function updateModelControls(){
  const mode=canonicalMode($('mode').value)||'smart',newImage=$('create-kind').value==='generate';
  $('text-generation-options').hidden=!newImage;$('mode-note').textContent=t(mode+'Note');$('text-fields').hidden=mode!=='infographic';$('gateway-fields').hidden=true;
  for(const option of $('pipeline').options){const m=modelFor(option.value);option.disabled=!supportsMode(option.value,mode)||(!newImage&&m?.edit===false)||(newImage&&m?.provider==='demo');}
- if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||'openai-sunburst';
+ if($('pipeline').selectedOptions[0]?.disabled)$('pipeline').value=[...$('pipeline').options].find(o=>!o.disabled)?.value||prefs.enabledModels[0];
  const model=modelFor($('pipeline').value);$('output-quality').options[1].disabled=model.provider==='demo';if(model.provider==='demo'&&$('output-quality').value==='4k')$('output-quality').value='hd';
- const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('manualReady'):t('keyMissing')):t('apiChecking');
+ const known=capabilities?.models?.find(x=>x.key===model.key),status=model.provider==='demo'?t('localSimulation'):known?(known.available?t('configured'):t('missingKey')):t('apiChecking');
  $('model-status').textContent=`${model.label} · ${status}${model.max_edge&&model.max_edge<3840&&$('output-quality').value==='4k'?' · '+t('scaled4K'):''}${model.reference_type?' · '+t('characterReference'):''}`;
  $('model-status').classList.toggle('held',known?.available===false);$('generate').disabled=!selectedPair()&&!newImage;updateAuthLabel();renderBenchModels();
 }
@@ -306,7 +397,7 @@ async function runGateway(pair,job){
 }
 
 const viewerPairData=()=>[...pairs,...referencePairs].find(p=>p.pair_id===viewerPair);
-function openViewer(id){viewerPair=id;originFocus=document.activeElement;originScroll=window.scrollY;$('viewer-orientation').value='auto';$('quality').value='auto';$('viewer').showModal();document.body.classList.add('viewer-open');$('viewer-close').focus();updateViewer();}
+function openViewer(id){viewerPair=id;originFocus=document.activeElement;originScroll=window.scrollY;$('viewer-orientation').value='auto';$('quality').value=prefs.viewerQuality;$('viewer').showModal();document.body.classList.add('viewer-open');$('viewer-close').focus();updateViewer();}
 function closeViewer(){stopTour();setImmersive(false);if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});syncImageCache(warmImages,[]);$('viewer').close();}
 function setImmersive(on){document.querySelector('.viewer-shell').classList.toggle('immersive',on);document.body.classList.toggle('immersion-open',on);$('viewer-stage').setAttribute('aria-label',on?t('immersiveExit'):t('immersiveHint'));if(!on&&document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});requestAnimationFrame(()=>{if(viewerPair)updateViewer();});}
 async function updateViewer(){const pair=viewerPairData();if(!pair)return;const token=++viewerLoad,simulation=activeView==='showcase'||pair.reference_only?$('reference-device').value:$('device').value;const target=deviceOrientation({device:currentDevice(),width:innerWidth,height:innerHeight,override:$('viewer-orientation').value,simulation});
@@ -411,7 +502,7 @@ function warmViewer(){
 const priorUpdateViewer=updateViewer;
 updateViewer=async function(){await priorUpdateViewer();warmViewer();};
 function renderBenchModels(){const holder=$('bench-models');if(!holder)return;const checked=new Set([...holder.querySelectorAll('input:checked')].map(x=>x.value)),first=!holder.children.length;holder.replaceChildren();const mode=$('compare-task').value;
- for(const model of MODELS.filter(x=>x.direct&&x.edit!==false)){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&['openai-sunburst','gemini-nano'].includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
+ for(const model of MODELS.filter(x=>x.direct&&x.edit!==false&&prefs.enabledModels.includes(x.key))){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&prefs.enabledModels.includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
 }
 function renderBenchResults(){const holder=$('bench-results');if(!holder)return;const p=comparePair()||selectedPair();holder.replaceChildren();if(!p)return;
  for(const job of p.jobs.slice().reverse().filter(j=>j.provider!=='demo').slice(0,18)){const card=node('article',undefined,'bench-result');card.append(node('strong',modelFor(job.model)?.label||job.model),node('span',`${t(job.status)} · ${job.quality}`,'small'));const image=job.candidate||(p.candidates||[]).find(x=>x.candidate_id===job.job_id);if(image){const img=node('img');img.src=assetUrl(image);img.alt=modelFor(job.model)?.label||job.model;img.loading='lazy';card.append(img,button(t('useAsA'),()=>{$('candidate-a').value=image.sha256;association();},'text-button'),button(t('useAsB'),()=>{$('candidate-b').value=image.sha256;association();},'text-button'));}if(job.error)card.append(node('p',t(job.error),'small'));holder.append(card);}
@@ -440,7 +531,7 @@ async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!a
  }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
 }
 async function initR5(){
- $('pipeline').replaceChildren();for(const model of MODELS.filter(m=>m.direct||m.provider==='demo')){const option=node('option',model.label);option.value=model.key;$('pipeline').append(option);}$('pipeline').value='openai-sunburst';$('consent').checked=true;
+ initSettingsUI();refreshCreateModels(false);applySettings();$('consent').checked=true;
  await init();switchTab('showcase');updateModelControls();
  API.capabilities().then(value=>{capabilities=value;updateModelControls();}).catch(()=>{$('model-status').textContent=t('apiChecking');});
  if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
