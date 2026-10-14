@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {hash,validDate,authorForDate,localParts,validateRecord,validateCatalog,validateLog,validateTranslation,loadTranslations,latestPage,monthlyPage,logPage,initialize,publish,loadRecords,dailyDisplayTitle} from '../scripts/nara-daily.mjs';
+import {hash,validDate,authorForDate,localParts,validateRecord,validateCatalog,validateLog,validateTranslation,loadTranslations,latestPage,monthlyPage,logPage,initialize,publish,loadRecords,dailyDisplayTitle,featuredStoryFilename,renderFeaturedStoryPage,featuredStoryPageOutputs} from '../scripts/nara-daily.mjs';
 
 function record(date='2026-10-05',published_at='2026-10-05T20:00:00Z'){
   const r={schema:'nara.daily.record.v1',id:'NARA-D-'+date,date,published_at,title:'Fixture only — not a real story',deck:'A local renderer test.',shape:'Test fixture',scenes:[{title:'A safe string',paragraphs:['<script>alert(1)</script>','A choice & its cost.']}],critic_line:'This is a test, not a peer review.'};
@@ -88,6 +88,37 @@ test('publication gate rejects missing peer closing line',()=>{const r=record();
 test('record accepts first-ready publication time but rejects wrong local date and missing timezone',()=>{assert.equal(validateRecord(record('2026-10-05','2026-10-05T18:15:00Z')).date,'2026-10-05');assert.throws(()=>validateRecord(record('2026-10-05','2026-10-04T18:15:00Z')),/wrong local date/);assert.throws(()=>validateRecord(record('2026-10-05','2026-10-05T22:00:00')),/timezone/)});
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
+
+test('13 and 14 October selected stories have full source-bound standalone readers',()=>{
+ const {records}=loadRecords(editionRoot),translations=loadTranslations(editionRoot,records);
+ const result=featuredStoryPageOutputs(editionRoot,records,translations);
+ const expected=[['2026-10-13','S2',88],['2026-10-14','S1',92]];
+ for(const [date,instance,grade] of expected){
+   const r=records.find(x=>x.date===date),t=translations[r.id],file='Nara-AI-'+date+'-'+instance+'-story.html';
+   assert.equal(featuredStoryFilename(editionRoot,r),file);
+   const html=result[file]??renderFeaturedStoryPage(editionRoot,r,t);
+   assert.ok(html.includes(r.content_sha256)&&html.includes(t.content_sha256));
+   assert.ok(html.includes('>'+grade+'</button>')&&html.includes('score-dialog'));
+   assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,6);
+   assert.ok(html.includes('data-language-content="en"')&&html.includes('data-language-content="sl"'));
+   assert.ok(html.includes('<article class="story"')&&!html.includes('class="archive-item'));
+   assert.ok(html.includes('href="Nara-AI-daily.html"'));
+   assert.ok(html.includes('data-story-id="'+r.id+'"'));
+   assert.ok(fs.existsSync(path.join(editionRoot,'public/Nara',file)),'published reader missing '+file);
+   const current=fs.readFileSync(path.join(editionRoot,'public/Nara',file),'utf8');
+   assert.ok(current.includes(r.content_sha256)&&current.includes(t.content_sha256));
+ }
+ const daily=fs.readFileSync(path.join(editionRoot,'public/Nara/Nara-AI-daily.html'),'utf8');
+ assert.equal((daily.match(/class="notice daily-index-item"/g)||[]).length,records.length);
+ const links=[...daily.matchAll(/<h2 class="daily-index-title"><a href="([^"]+)"/g)].map(x=>x[1]);
+ assert.equal(links.length,records.length);
+ for(const href of links){
+   assert.ok(!href.includes('#'),'Daily must never deep-link to a collapsed archive section');
+   assert.ok(fs.existsSync(path.join(editionRoot,'public/Nara',href)),'missing linked reading page '+href);
+ }
+ for(const [date,instance] of expected)assert.ok(daily.includes('href="Nara-AI-'+date+'-'+instance+'-story.html"'));
+});
+
 test('Daily is a bilingual score-aware index without inline prose',()=>{
  const r=record('2026-10-20','2026-10-20T20:00:00Z');
  r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);

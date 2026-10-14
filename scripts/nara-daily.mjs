@@ -65,9 +65,9 @@ function footer(localized){
 }
 const tools='<div class="tools" role="group"'+aria('Reading controls','Nastavitve branja')+'><button type="button" data-scale="-0.1"'+aria('Smaller story text','Manjša pisava zgodbe')+'>A−</button><output data-scale-label aria-live="polite">100%</output><button type="button" data-scale="0.1"'+aria('Larger story text','Večja pisava zgodbe')+'>A+</button><button type="button" data-scale="reset"'+aria('Reset story text size','Ponastavi velikost pisave')+'>'+bi('Reset','Ponastavi')+'</button><button type="button" data-theme-toggle>'+bi('Day mode','Dnevni način')+'</button></div>';
 const languageSwitch='<div class="language-switch" data-language-switch role="group"'+aria('Language','Jezik')+' hidden><button type="button" data-language="en" lang="en" aria-label="English" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-language="sl" lang="sl" aria-label="Slovenščina" aria-pressed="false">SL</button></div>';
-function shell(title,file,body,active='daily',localized=false){
+function shell(title,file,body,active='daily',localized=false,slTitleOverride=null){
   const b=localized?bi:(en)=>esc(en);
-  const slTitle=active==='daily'?'Dnevne zgodbe':'Arhiv '+title.replace(' archive','');
+  const slTitle=slTitleOverride??(active==='daily'?'Dnevne zgodbe':'Arhiv '+title.replace(' archive',''));
   const description='Text-first Illuminara stories from GPT and Claude; select Daily stories include illustrations. Separate from the curated illustrated canon.';
   const slDescription='Illuminarine zgodbe iz sodelovanja GPT in Clauda; izbrane dnevne zgodbe so ilustrirane. Ločene od izbranega ilustriranega kanona.';
   return '<!doctype html>\n<html lang="en" data-theme="dark"'+(localized?' data-title-en="'+esc(title+' — Illuminara Daily')+'" data-title-sl="'+esc(slTitle+' — Illuminara Daily')+'"':'')+'><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark light"><meta name="theme-color" content="#080d15"><title>'+esc(title)+' — Illuminara Daily</title><meta name="description" content="'+description+'"'+(localized?' data-description-en="'+description+'" data-description-sl="'+slDescription+'"':'')+'><link rel="canonical" href="'+BASE+file+'"><link rel="stylesheet" href="assets/css/nara-daily.css?v='+VERSION+'-lightbox-r2"><script defer src="assets/js/nara-daily-reader.js?v='+VERSION+'"></script><script defer src="assets/js/nara-daily-lightbox.js?v=2"></script><!-- '+VERSION+'; generated, text-first --></head><body><a class="skip" href="#main">'+b('Skip to content','Preskoči na vsebino')+'</a><header class="bar"><div class="bar-inner"><a class="brand" href="Nara-AI-daily.html">'+b('ILLUMINARA / DAILY','ILLUMINARA / DNEVNO')+'</a><nav class="nav"'+aria('Primary','Glavna navigacija')+'><a href="index.html">'+b('Main collection','Glavna zbirka')+'</a><a href="illuminara.html">Illuminara</a><a href="Nara-AI-daily.html"'+(active==='daily'?' aria-current="page"':'')+'>'+b('Daily','Dnevno')+'</a><a href="Nara-AI-archive.html"'+(active==='archive'?' aria-current="page"':'')+'>'+b('Archive','Arhiv')+'</a><a href="Nara-AI-log.html"'+(active==='log'?' aria-current="page"':'')+'>'+b('Log','Dnevnik')+'</a></nav>'+(localized?languageSwitch:'')+'</div></header><main class="wrap" id="main" tabindex="-1">'+body+'</main>'+footer(localized)+'</body></html>\n';
@@ -127,22 +127,58 @@ export function dailyDisplayTitle(value,lang){
   throw Error('invalid Daily title language');
 }
 /** Verify the publisher-selected winner in the day manifest. Companions are archive-only. */
+function dailyFeaturedKey(root,r){
+  let key=r.date;
+  if(!root)return key;
+  const dayFile=path.join(root,'public/Nara/daily/days',r.date+'.json');
+  if(!fs.existsSync(dayFile))return key;
+  const day=JSON.parse(fs.readFileSync(dayFile,'utf8'));
+  assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&day.id===r.id&&Array.isArray(day.instances)&&/^S[123]$/.test(day.featured_instance),'Daily featured manifest identity');
+  const selected=day.instances.find(x=>x.instance===day.featured_instance);
+  assert(selected&&selected.title===r.title&&selected.combined===r.literary_score?.combined&&selected.display===r.literary_score?.display,'Daily featured title/grade mismatch');
+  assert(day.instances.every(x=>Number.isFinite(x.combined)&&x.combined<=selected.combined),'Daily not highest combined score');
+  return key+'-'+day.featured_instance;
+}
+export function featuredStoryFilename(root,r){
+  assert(root&&validDate(r?.date)&&r.id==='NARA-D-'+r.date,'featured standalone story identity');
+  return 'Nara-AI-'+dailyFeaturedKey(root,r)+'-story.html';
+}
 function dailyStoryHref(root,r){
   const archive='Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id;
   const fallback=STANDALONE_DAILY_EDITIONS[r.id]?.edition??archive;
   if(!root)return fallback;
-  const n=path.join(root,'public/Nara'),dayFile=path.join(n,'daily/days',r.date+'.json');
-  let key=r.date;
-  if(fs.existsSync(dayFile)){
-    const day=JSON.parse(fs.readFileSync(dayFile,'utf8'));
-    assert(day.schema==='nara.daily.day.v1'&&day.date===r.date&&day.id===r.id&&Array.isArray(day.instances)&&/^S[123]$/.test(day.featured_instance),'Daily featured manifest identity');
-    const selected=day.instances.find(x=>x.instance===day.featured_instance);
-    assert(selected&&selected.title===r.title&&selected.combined===r.literary_score?.combined&&selected.display===r.literary_score?.display,'Daily featured title/grade mismatch');
-    assert(day.instances.every(x=>Number.isFinite(x.combined)&&x.combined<=selected.combined),'Daily not highest combined score');
-    key+='-'+day.featured_instance;
-  }
+  const n=path.join(root,'public/Nara'),key=dailyFeaturedKey(root,r);
   const edition='Nara-AI-'+key+'-format-R1.html';
-  return fs.existsSync(path.join(n,edition))?edition:fallback;
+  if(fs.existsSync(path.join(n,edition)))return edition;
+  const reader=featuredStoryFilename(root,r);
+  if(fs.existsSync(path.join(n,reader)))return reader;
+  return fallback;
+}
+/** Source-bound, full-page reader; distinct from a not-yet-approved format-R1 edition. */
+export function renderFeaturedStoryPage(root,r,translation=null){
+  validateRecord(r);
+  assert(root,'standalone reader requires source root');
+  const t=translation??r.translation_sl??null;
+  if(t&&t.source_content_sha256!==undefined)assert(t.source_content_sha256===r.content_sha256,'reader translation source mismatch');
+  const file=featuredStoryFilename(root,r),enTitle=dailyDisplayTitle(r.title,'en'),slTitle=t?.title?dailyDisplayTitle(t.title,'sl'):null;
+  const title=localizedText(enTitle,slTitle);
+  const images=loadIllustrations(root,r,t,{nonBlocking:true});
+  const score=r.literary_score?'<p class="meta reader-original-score">'+bi('Original published literary score:','Izvirna objavljena književna ocena:')+' '+scoreChip(r,root)+' <span class="muted">/100 · GPT × Claude (50/50)</span></p>':'';
+  const header='<header class="masthead"><div class="eyebrow">'+bi('Complete published story · original text','Celotna objavljena zgodba · izvirno besedilo')+'</div><h1>'+title+'</h1><p class="meta"><time datetime="'+esc(r.date)+'">'+esc(r.date)+'</time></p><p class="lede">'+localizedText(r.deck,t?.deck)+'</p>'+score+'</header>';
+  const navigation='<nav class="end-nav"><a href="Nara-AI-daily.html">'+bi('Return to Daily','Nazaj na dnevne zgodbe')+'</a><a href="Nara-AI-'+r.date.slice(0,7)+'.html#'+r.id+'">'+bi('Monthly archive','Mesečni arhiv')+'</a></nav>';
+  return shell(enTitle,file,header+tools+storyContent(r,t,images)+scoreDialog(r,t)+navigation,'daily',true,slTitle);
+}
+/** Pure projection: call after day/record/translation files have been staged. */
+export function featuredStoryPageOutputs(root,records,translations={}){
+  const outputs={};
+  for(const r of records){
+    if(r.date<'2026-10-13')continue; // earlier approved format R1 pages already exist
+    const key=dailyFeaturedKey(root,r),edition='Nara-AI-'+key+'-format-R1.html';
+    if(fs.existsSync(path.join(root,'public/Nara',edition)))continue;
+    const file=featuredStoryFilename(root,r);
+    outputs[file]=renderFeaturedStoryPage(root,r,translations[r.id]??r.translation_sl??null);
+  }
+  return outputs;
 }
 function dailyCard(r,t,root){
   const href=dailyStoryHref(root,r),value=r.literary_score;
@@ -181,5 +217,5 @@ function write(p,s){fs.mkdirSync(path.dirname(p),{recursive:true});if(fs.existsS
 const stringify=x=>JSON.stringify(x,null,2)+'\n';
 export function loadRecords(root){const n=path.join(root,'public/Nara');const c=validateCatalog(JSON.parse(fs.readFileSync(path.join(n,'daily/catalog.json'),'utf8')));return {n,c,records:c.records.map(e=>{const bytes=fs.readFileSync(path.join(n,e.file),'utf8');assert(hash(bytes)===e.record_sha256,'record byte hash mismatch');const r=validateRecord(JSON.parse(bytes));assert(r.id===e.id&&r.date===e.date&&r.title===e.title,'catalog record mismatch');return r}).sort((a,b)=>b.date.localeCompare(a.date))}}
 export function initialize(root,month){assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'invalid month');const n=path.join(root,'public/Nara');const cp=path.join(n,'daily/catalog.json');if(!fs.existsSync(cp))write(cp,stringify({schema:'nara.daily.catalog.v1',records:[]}));const {c,records}=loadRecords(root);assert(records.length===0,'init refuses existing stories');write(path.join(n,'Nara-AI-daily.html'),latestPage(null,month,{},root));write(path.join(n,`Nara-AI-${month}.html`),monthlyPage(month,[],{},root));write(path.join(n,'Nara-AI-archive.html'),archivePage(c.records,month,root));write(path.join(n,'Nara-AI-log.html'),logPage([]));return 'INITIALIZED_EMPTY_NOT_STORY_PUBLISHED'}
-export function publish(root,record,logRecord,now=new Date()){const r=validateRecord(record),l=validateLog(logRecord);assert(l.date===r.date&&l.story_id===r.id&&l.title===r.title,'story/log mismatch');assert(l.final_critic_line===r.critic_line,'critic line mismatch');assert(new Date(r.published_at).getTime()<=now.getTime(),'future publication time');const p=localParts(now.toISOString());assert(`${p.year}-${p.month}-${p.day}`===r.date,'not current local publication date');const {n,c,records}=loadRecords(root);const bytes=stringify(r),logBytes=stringify(l);const existing=c.records.find(e=>e.date===r.date);if(existing){assert(existing.record_sha256===hash(bytes),'duplicate date with different contents');assert(existing.log_sha256===hash(logBytes),'duplicate date with different log');assert(hash(fs.readFileSync(path.join(n,existing.log_file),'utf8'))===existing.log_sha256,'duplicate date with different log');return 'ALREADY_PUBLISHED'}assert(!records.some(x=>x.date>r.date),'backfill prohibited');const file=`daily/records/${r.date}.json`,logFile=`daily/log/${r.date}.json`;for(const [fp,data,label] of [[path.join(n,file),bytes,'orphan conflict'],[path.join(n,logFile),logBytes,'orphan log conflict']])if(fs.existsSync(fp))assert(fs.readFileSync(fp,'utf8')===data,label);const next=[r,...records].sort((a,b)=>b.date.localeCompare(a.date));const entries=[...c.records,{id:r.id,date:r.date,title:r.title,file,record_sha256:hash(bytes),log_file:logFile,log_sha256:hash(logBytes)}].sort((a,b)=>b.date.localeCompare(a.date));const allLogs=entries.filter(e=>e.log_file).map(e=>{const b=e.date===l.date?logBytes:fs.readFileSync(path.join(n,e.log_file),'utf8');assert(hash(b)===e.log_sha256,'log byte hash mismatch');return validateLog(JSON.parse(b))});const month=r.date.slice(0,7);const translations=loadTranslations(root,next);const outputs={[file]:bytes,[logFile]:logBytes,'Nara-AI-daily.html':latestPage(next,month,translations,root),[`Nara-AI-${month}.html`]:monthlyPage(month,next.filter(x=>x.date.startsWith(month)),translations,root),'Nara-AI-archive.html':archivePage(entries,month,root),'Nara-AI-log.html':logPage(allLogs),'daily/catalog.json':stringify({schema:'nara.daily.catalog.v1',records:entries})};for(const [rel,data]of Object.entries(outputs))write(path.join(n,rel),data);generateFormatEditions(root);return 'LOCAL_CANDIDATE_READY_COMMIT_ALL_SEVEN_FILES_ATOMICALLY'}
+export function publish(root,record,logRecord,now=new Date()){const r=validateRecord(record),l=validateLog(logRecord);assert(l.date===r.date&&l.story_id===r.id&&l.title===r.title,'story/log mismatch');assert(l.final_critic_line===r.critic_line,'critic line mismatch');assert(new Date(r.published_at).getTime()<=now.getTime(),'future publication time');const p=localParts(now.toISOString());assert(`${p.year}-${p.month}-${p.day}`===r.date,'not current local publication date');const {n,c,records}=loadRecords(root);const bytes=stringify(r),logBytes=stringify(l);const existing=c.records.find(e=>e.date===r.date);if(existing){assert(existing.record_sha256===hash(bytes),'duplicate date with different contents');assert(existing.log_sha256===hash(logBytes),'duplicate date with different log');assert(hash(fs.readFileSync(path.join(n,existing.log_file),'utf8'))===existing.log_sha256,'duplicate date with different log');return 'ALREADY_PUBLISHED'}assert(!records.some(x=>x.date>r.date),'backfill prohibited');const file=`daily/records/${r.date}.json`,logFile=`daily/log/${r.date}.json`;for(const [fp,data,label] of [[path.join(n,file),bytes,'orphan conflict'],[path.join(n,logFile),logBytes,'orphan log conflict']])if(fs.existsSync(fp))assert(fs.readFileSync(fp,'utf8')===data,label);const next=[r,...records].sort((a,b)=>b.date.localeCompare(a.date));const entries=[...c.records,{id:r.id,date:r.date,title:r.title,file,record_sha256:hash(bytes),log_file:logFile,log_sha256:hash(logBytes)}].sort((a,b)=>b.date.localeCompare(a.date));const allLogs=entries.filter(e=>e.log_file).map(e=>{const b=e.date===l.date?logBytes:fs.readFileSync(path.join(n,e.log_file),'utf8');assert(hash(b)===e.log_sha256,'log byte hash mismatch');return validateLog(JSON.parse(b))});const month=r.date.slice(0,7);const translations=loadTranslations(root,next);const featuredPages=featuredStoryPageOutputs(root,[r],translations);for(const [rel,html]of Object.entries(featuredPages))write(path.join(n,rel),html);const outputs={[file]:bytes,[logFile]:logBytes,'Nara-AI-daily.html':latestPage(next,month,translations,root),[`Nara-AI-${month}.html`]:monthlyPage(month,next.filter(x=>x.date.startsWith(month)),translations,root),'Nara-AI-archive.html':archivePage(entries,month,root),'Nara-AI-log.html':logPage(allLogs),'daily/catalog.json':stringify({schema:'nara.daily.catalog.v1',records:entries}),...featuredPages};for(const [rel,data]of Object.entries(outputs))write(path.join(n,rel),data);generateFormatEditions(root);return 'LOCAL_CANDIDATE_READY_COMMIT_ALL_FILES_ATOMICALLY'}
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){try{const [cmd,root,arg,arg2]=process.argv.slice(2);assert(root,'repoRoot required');if(cmd==='init')console.log(initialize(root,arg));else if(cmd==='publish'){assert(arg&&arg2,'story and log record files required');console.log(publish(root,JSON.parse(fs.readFileSync(arg,'utf8')),JSON.parse(fs.readFileSync(arg2,'utf8'))))}else if(cmd==='check'){const {records}=loadRecords(root);console.log(JSON.stringify({schema:'nara.daily.validation.v2',records:records.length,logs:records.filter(r=>r.log_file).length,result:'STATIC_VALID',peer_authenticity:'NOT_CHECKED_BY_RENDERER'}))}else throw Error('use init, publish or check')}catch(e){console.error(e.message);process.exitCode=1}}

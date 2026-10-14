@@ -14,6 +14,7 @@ import {
   validateLog,
   loadRecords,
   latestPage,
+  featuredStoryPageOutputs,
   monthlyPage,
   archivePage,
   logPage,
@@ -226,7 +227,10 @@ export function publishBatch(root,input,now=new Date()){
   const loaded=loadRecords(root);const next=loaded.records;const month=batch.date.slice(0,7);
   const translations={};for(const r of next){const p=path.join(n,'daily/translations/sl',r.date+'.json');if(fs.existsSync(p))translations[r.id]=JSON.parse(fs.readFileSync(p,'utf8'))}
   const logs=entries.filter(e=>e.log_file).map(e=>validateLog(JSON.parse(fs.readFileSync(path.join(n,e.log_file),'utf8'))));
+  const featuredPages=featuredStoryPageOutputs(root,[featuredRecord],translations);
+  for(const [rel,html] of Object.entries(featuredPages))write(path.join(n,rel),html);
   const pageOutputs={
+    ...featuredPages,
     'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations,root),batch,batch.instances,featured,root),
     [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),batch,batch.instances,featured,root),
     'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured),
@@ -262,6 +266,9 @@ export function refreshIllustratedPages(root,month){
   }
   let monthly=monthlyPage(month,records.filter(r=>r.date.startsWith(month)),translations,root);
   for(const {day,items} of days)monthly=patchMonthly(monthly,day,items,day.featured_instance,root);
+  const featuredPages=featuredStoryPageOutputs(root,records.filter(r=>r.date.startsWith(month)),translations);
+  const featuredChanges=[];
+  for(const [rel,html] of Object.entries(featuredPages))if(write(path.join(n,rel),html))featuredChanges.push(rel);
   const outputs={[`Nara-AI-${month}.html`]:monthly};
   if(records[0]?.date.startsWith(month)){
     let latest=latestPage(records,month,translations,root);
@@ -278,7 +285,7 @@ export function refreshIllustratedPages(root,month){
       assert(end>start,'refresh archive boundary');outputs['Nara-AI-archive.html']=refreshFormatArchiveSection(before.slice(0,start)+renderVersionArchive(root)+before.slice(end),root);
     }
   }
-  const changed=[];for(const [rel,data] of Object.entries(outputs))if(write(path.join(n,rel),data))changed.push(rel);
+  const changed=[...featuredChanges];for(const [rel,data] of Object.entries(outputs))if(write(path.join(n,rel),data))changed.push(rel);
   changed.push(...generateFormatEditions(root).changed);
   return {status:'LOCAL_ILLUSTRATED_PAGES_READY',changed:changed.sort()};
 }
