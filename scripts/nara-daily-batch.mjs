@@ -148,13 +148,12 @@ export function instanceStoryHtml(item,root=null){
 }
 
 function insertBeforeMainClose(html,fragment){const needle='</main>';const i=html.lastIndexOf(needle);assert(i>=0,'main close missing');return html.slice(0,i)+fragment+html.slice(i)}
-function patchLatest(html,batch,items,featured,root){
-  const day=`NARA-D-${batch.date}`;
-  html=html.replace(`class="archive-item daily-item" id="${day}"`,`class="archive-item daily-item" id="${day}" open`);
-  const others=items.filter(x=>x.instance!==featured);
-  if(!others.length)return html;
-  const cards=`<section class="notice batch-other-stories"><h2>Other stories of the day</h2><p>The featured story above had the highest combined blind score. The other eligible stories remain in the monthly archive.</p><ul>${others.map(x=>`<li><a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}"><strong>${esc(x.record.instance)} · ${esc(x.record.title)}</strong></a> · <span class="score-trend--${storyScoreTrend(root,x.record.id)}">${x.record.literary_score.display}/100</span></li>`).join('')}</ul></section>`;
-  return insertBeforeMainClose(html,cards);
+function patchLatest(html,batch,items,featured){
+  const day='NARA-D-'+batch.date;
+  assert(items.some(item=>item.instance===featured),'featured Daily instance missing');
+  assert(html.includes('class="notice daily-index-item" id="'+day+'"'),'featured Daily card missing');
+  assert(!html.includes('id="'+day+':'),'non-featured stories leaked into Daily');
+  return html;
 }
 function patchMonthly(html,batch,items,featured,root){
   const others=items.filter(x=>x.instance!==featured);

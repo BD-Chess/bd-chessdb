@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {hash,validDate,authorForDate,localParts,validateRecord,validateCatalog,validateLog,validateTranslation,loadTranslations,latestPage,monthlyPage,logPage,initialize,publish,loadRecords} from '../scripts/nara-daily.mjs';
+import {hash,validDate,authorForDate,localParts,validateRecord,validateCatalog,validateLog,validateTranslation,loadTranslations,latestPage,monthlyPage,logPage,initialize,publish,loadRecords,dailyDisplayTitle} from '../scripts/nara-daily.mjs';
 
 function record(date='2026-10-05',published_at='2026-10-05T20:00:00Z'){
   const r={schema:'nara.daily.record.v1',id:'NARA-D-'+date,date,published_at,title:'Fixture only — not a real story',deck:'A local renderer test.',shape:'Test fixture',scenes:[{title:'A safe string',paragraphs:['<script>alert(1)</script>','A choice & its cost.']}],critic_line:'This is a test, not a peer review.'};
@@ -22,24 +22,23 @@ function logRecord(date='2026-10-05'){
 function temp(t){const root=fs.mkdtempSync(path.join(os.tmpdir(),'nara-test-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));initialize(root,'2026-10');return root}
 
 const editionRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-test('completed S1 keeps its two original companion stories on Daily across refreshes',t=>{
+test('Daily keeps only one winning story; S2/S3 never leak into the landing',t=>{
  const root=temp(t),n=path.join(root,'public/Nara'),files=['daily/days/2026-10-09.json',...['S1','S2','S3'].flatMap(instance=>['daily/records/2026-10-09/'+instance+'.json','daily/translations/sl/2026-10-09/'+instance+'.json'])];
  for(const file of files){fs.mkdirSync(path.dirname(path.join(n,file)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',file),path.join(n,file));}
  const source=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-09/S1.json'),'utf8')),featured={...source,schema:'nara.daily.record.v1',id:'NARA-D-2026-10-09'};
- const bodyBefore=JSON.stringify(source),render=()=>latestPage([record('2026-10-20','2026-10-20T20:00:00Z'),featured],'2026-10',{},root),html=render();
- assert.ok(html.includes('<article class="notice daily-index-item" id="NARA-D-2026-10-09"'));
- assert.ok(html.includes('href="Nara-AI-2026-10-09-S1-format-R1.html"'));
+ const frozen=JSON.stringify(source),render=()=>latestPage([record('2026-10-20','2026-10-20T20:00:00Z'),featured],'2026-10',{},root),html=render();
+ assert.equal((html.match(/class="notice daily-index-item"/g)||[]).length,2);
+ assert.match(html,/Eleven Minutes Of Peace/);
+ assert.match(html,/Nara-AI-2026-10-09-S1-format-R1.html/);
+ assert.match(html,/class="score-chip[^"]*">90<\/span>/);
  assert.ok(!html.includes(source.scenes[0].paragraphs[0]));
- for(const instance of ['S2','S3']){
-  const r=JSON.parse(fs.readFileSync(path.join(n,'daily/records/2026-10-09/'+instance+'.json'),'utf8'));
-  assert.ok(html.includes('<details class="archive-item daily-item" id="'+r.id+'">'));
-  assert.ok(html.includes(r.title));assert.ok(html.includes(r.translation_sl.title));
- }
- assert.ok(!html.includes('pre-format-R1.html'));
- assert.equal(render(),html);assert.equal(JSON.stringify(source),bodyBefore);
+ for(const instance of ['S2','S3'])assert.ok(!html.includes('id="NARA-D-2026-10-09:'+instance+'"'));
+ assert.doesNotMatch(html,/class="archive-item daily-item"|batch-other-stories/);
+ assert.equal(render(),html);assert.equal(JSON.stringify(source),frozen);
  fs.appendFileSync(path.join(n,'daily/records/2026-10-09/S2.json'),' ');
- assert.throws(render,/companion Daily record hash mismatch/);
+ assert.equal(render(),html);
 });
+
 function illustratedOct9S1(){
  const paths=editionPaths('2026-10-09-S1'),read=f=>JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',f),'utf8'));
  const en=read(paths.en),sl=read(paths.sl),binding=read(paths.binding);
@@ -89,34 +88,52 @@ test('publication gate rejects missing peer closing line',()=>{const r=record();
 test('record accepts first-ready publication time but rejects wrong local date and missing timezone',()=>{assert.equal(validateRecord(record('2026-10-05','2026-10-05T18:15:00Z')).date,'2026-10-05');assert.throws(()=>validateRecord(record('2026-10-05','2026-10-04T18:15:00Z')),/wrong local date/);assert.throws(()=>validateRecord(record('2026-10-05','2026-10-05T22:00:00')),/timezone/)});
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
-test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-20','2026-10-20T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
-test('Daily links illustrated stories for 5 through 8 October with date and title only',()=>{
-  const linked=['2026-10-05','2026-10-06','2026-10-07','2026-10-08'].map(d=>record(d,d+'T20:00:00Z'));
-  const other=record('2026-10-10','2026-10-10T20:00:00Z');
-  linked.forEach((r,i)=>r.deck='INLINE_BODY_MUST_NOT_RENDER_'+i);
-  const p=latestPage([...linked,other],'2026-10');
-  for(const r of linked){
-    const start=p.indexOf('<article class="notice daily-index-item" id="'+r.id+'"');
-    assert.ok(start>=0);
-    const card=p.slice(start,p.indexOf('</article>',start)+10);
-    assert.equal((card.match(/<a\b/g)||[]).length,1);
-    assert.ok(card.includes('<time datetime="'+r.date+'">'+r.date+'</time>'));
-    assert.ok(card.includes('href="Nara-AI-'+r.date+'-format-R1.html"'));
-    assert.ok(!/class="(?:lede|daily-index-actions|daily-edition-link)"/.test(card));
-    assert.ok(!card.includes('Nara-AI-archive.html'));
-    assert.ok(!p.includes(r.deck));
-    assert.ok(!p.includes('<details class="archive-item daily-item" id="'+r.id+'"'));
-  }
-  assert.equal((p.match(/<details class="archive-item daily-item"/g)||[]).length,1);
-  assert.ok(p.includes('id="'+other.id+'"'));
-  assert.ok(p.indexOf(other.id)<p.indexOf(linked[3].id));
-  assert.ok(p.indexOf(linked[3].id)<p.indexOf(linked[2].id));
-  assert.ok(p.indexOf(other.id)<p.indexOf(linked[2].id));
-  assert.ok(p.indexOf(linked[2].id)<p.indexOf(linked[1].id));
-  assert.ok(p.indexOf(linked[1].id)<p.indexOf(linked[0].id));
-  const month=monthlyPage('2026-10',linked);
-  for(const r of linked){assert.ok(month.includes('<details class="archive-item" id="'+r.id+'">'));assert.ok(month.includes(r.deck));}
+test('Daily is a bilingual score-aware index without inline prose',()=>{
+ const r=record('2026-10-20','2026-10-20T20:00:00Z');
+ r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);
+ const p=latestPage(r,'2026-10');
+ assert.ok(!p.includes('&lt;script&gt;alert(1)&lt;/script&gt;')&&!p.includes('<script>alert(1)'));
+ assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(!p.includes(r.critic_line));
+ assert.ok(!p.includes('<details class="archive-item'));
+ assert.ok(p.includes('Fixture Only — Not A Real Story')&&p.includes('Preskusna zgodba'));
+ assert.ok(p.includes('ILLUMINARA / DAILY')&&p.includes('Nara-AI-log.html'));
+ assert.ok(p.includes('Nara-AI-2026-10.html#NARA-D-2026-10-20'));
+ assert.ok(p.includes('class="score-chip score-trend--neutral"')&&p.includes('>87</span>'));
+ assert.ok(p.includes('data-language="sl"')&&p.includes('lang="sl"'));
 });
+test('Daily EN title case and SL sentence case are display-only',()=>{
+ assert.equal(dailyDisplayTitle('THE SMALL GOD IN THE LOST-AND-FOUND','en'),'The Small God In The Lost-And-Found');
+ assert.equal(dailyDisplayTitle("WHAT THE OLD WOMAN'S TERRACES KNEW",'en'),"What The Old Woman's Terraces Knew");
+ assert.equal(dailyDisplayTitle('KAJ SO VEDELE STARKINE TERASE','sl'),'Kaj so vedele starkine terase');
+ assert.equal(dailyDisplayTitle('MALI BOG V URADU ZA NAJDENE PREDMETE','sl'),'Mali bog v uradu za najdene predmete');
+ assert.equal(dailyDisplayTitle('NARA IN ILLUMINARA TER GPT','sl'),'Nara in Illuminara ter GPT');
+});
+
+test('Daily renders one linked graded title per date, with archive fallback for pending editions',()=>{
+ const linked=['2026-10-05','2026-10-06','2026-10-07','2026-10-08'].map(d=>record(d,d+'T20:00:00Z'));
+ const other=record('2026-10-10','2026-10-10T20:00:00Z');
+ linked.forEach((r,i)=>{r.deck='INLINE_BODY_MUST_NOT_RENDER_'+i;r.literary_score=literaryScore()});
+ other.literary_score=literaryScore();
+ const p=latestPage([...linked,other],'2026-10');
+ assert.equal((p.match(/class="notice daily-index-item"/g)||[]).length,5);
+ for(const r of linked){
+   const start=p.indexOf('<article class="notice daily-index-item" id="'+r.id+'"');
+   assert.ok(start>=0);
+   const card=p.slice(start,p.indexOf('</article>',start)+10);
+   assert.equal((card.match(/<a\b/g)||[]).length,1);
+   assert.ok(card.includes('<time datetime="'+r.date+'">'+r.date+'</time>'));
+   assert.ok(card.includes('href="Nara-AI-'+r.date+'-format-R1.html"'));
+   assert.ok(!card.includes('Nara-AI-archive.html'));
+   assert.ok(!p.includes(r.deck));
+ }
+ assert.ok(p.includes('href="Nara-AI-2026-10.html#NARA-D-2026-10-10"'));
+ assert.doesNotMatch(p,/class="archive-item daily-item"|batch-other-stories/);
+ assert.ok(p.indexOf(other.id)<p.indexOf(linked[3].id));
+ assert.ok(p.indexOf(linked[3].id)<p.indexOf(linked[2].id));
+ const month=monthlyPage('2026-10',linked);
+ for(const r of linked)assert.ok(month.includes('<details class="archive-item" id="'+r.id+'">'));
+});
+
 test('monthly, latest and log projections match the published story',t=>{const root=temp(t),r=record(),l=logRecord();publish(root,r,l,new Date(r.published_at));const {n,records}=loadRecords(root);for(const f of ['Nara-AI-daily.html','Nara-AI-2026-10.html'])assert.ok(fs.readFileSync(path.join(n,f),'utf8').includes(records[0].content_sha256));const lp=fs.readFileSync(path.join(n,'Nara-AI-log.html'),'utf8');assert.ok(lp.includes(l.selection.title));assert.ok(lp.includes('Read the published story'));const mp=monthlyPage('2026-10',records);assert.ok(mp.includes('id="NARA-D-2026-10-05"'));assert.ok(!mp.includes('scoreChips'));assert.ok(!mp.includes('scoreDialogs'))});
 test('combined score metadata is optional but validated when present',()=>{const r=record();r.literary_score=literaryScore();assert.equal(validateRecord(r).literary_score.display,87);const bad=record();bad.literary_score={...literaryScore(),display:86};assert.throws(()=>validateRecord(bad),/display rounding/)});
 test('public log evaluation preserves raw blind scores and exact 50-50 mean',()=>{const l=logRecord();l.evaluation=evaluation();assert.equal(validateLog(l).evaluation.combined,86.5);const p=logPage([l]);assert.ok(p.includes('GPT:</strong> 93'));assert.ok(p.includes('Claude:</strong> 80'));assert.ok(p.includes('combined 87'))});
@@ -136,16 +153,18 @@ test('SL edition is complete, source-bound and leaves the English record unchang
   const incomplete=structuredClone(t);incomplete.scenes[0].paragraphs.pop();
   assert.throws(()=>validateTranslation(incomplete,r),/paragraph count/);
 });
-test('Daily and monthly editions expose both languages and escape translated prose',()=>{
-  const r=record('2026-10-20','2026-10-20T20:00:00Z'),t=translation(r),translations={[r.id]:t};
-  for(const html of [latestPage(r,'2026-10',translations),monthlyPage('2026-10',[r],translations)]){
-    assert.ok(html.includes('data-language="en"')&&html.includes('data-language="sl"'));
-    assert.ok(html.includes(t.title));
-    assert.ok(html.includes('&lt;script&gt;prevod()&lt;/script&gt;'));
-    assert.ok(!html.includes('<script>prevod()'));
-    assert.ok(html.includes('lang="sl"')&&html.includes(r.content_sha256));
-  }
+test('Daily displays bilingual titles; monthly archive retains fully escaped story text',()=>{
+ const r=record('2026-10-20','2026-10-20T20:00:00Z'),t=translation(r),translations={[r.id]:t};
+ const daily=latestPage(r,'2026-10',translations),monthly=monthlyPage('2026-10',[r],translations);
+ for(const html of [daily,monthly]){
+   assert.ok(html.includes('data-language="en"')&&html.includes('data-language="sl"'));
+   assert.ok(html.includes(t.title)&&html.includes('lang="sl"')&&html.includes(r.content_sha256));
+   assert.ok(!html.includes('<script>prevod()'));
+ }
+ assert.ok(!daily.includes('&lt;script&gt;prevod()&lt;/script&gt;'));
+ assert.ok(monthly.includes('&lt;script&gt;prevod()&lt;/script&gt;'));
 });
+
 test('next nightly publication retains an earlier SL translation and marks untranslated stories honestly',t=>{
   const root=temp(t),older=record('2026-10-20','2026-10-20T20:00:00Z'),oldLog=logRecord('2026-10-20');
   publish(root,older,oldLog,new Date(older.published_at));
@@ -157,7 +176,8 @@ test('next nightly publication retains an earlier SL translation and marks untra
   for(const file of ['Nara-AI-daily.html','Nara-AI-2026-10.html']){
     const html=fs.readFileSync(path.join(root,'public/Nara',file),'utf8');
     assert.ok(html.includes('Slovenska zgodba'));
-    assert.ok(html.includes('Ta zgodba je trenutno na voljo v angleščini.'));
+    if(file==='Nara-AI-2026-10.html')assert.ok(html.includes('Ta zgodba je trenutno na voljo v angleščini.'));
+    else assert.ok(!html.includes('Ta zgodba je trenutno na voljo v angleščini.'));
   }
   assert.equal(fs.readFileSync(englishPath,'utf8'),englishBefore);
   assert.equal(Object.keys(loadTranslations(root,[older,newer])).length,1);

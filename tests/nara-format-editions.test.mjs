@@ -90,7 +90,16 @@ test('regeneration is idempotent and daily/monthly refresh retains all links wit
  const r=fixture(t,{art:true}),before=stable(r),originalPages=Object.fromEntries(fs.readdirSync(path.join(r,'public/Nara')).filter(x=>x.endsWith('-pre-format-R1.html')).map(x=>[x,sha(fs.readFileSync(path.join(r,'public/Nara',x)))]));
  assert.equal(generateFormatEditions(r).edition_count,16);assert.deepEqual(generateFormatEditions(r).changed,[]);
  refreshIllustratedPages(r,'2026-10');const daily=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-daily.html'),'utf8'),monthly=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-2026-10.html'),'utf8'),archive=fs.readFileSync(path.join(r,'public/Nara/Nara-AI-archive.html'),'utf8');
- for(const item of loadFormatEditions(r)){assert.ok(daily.includes(item.paths.page));assert.ok(monthly.includes(item.paths.page));assert.ok(archive.includes(item.paths.page));assert.ok(archive.includes(item.paths.original_page))}
+ for(const item of loadFormatEditions(r)){
+   const dayPath=path.join(r,'public/Nara/daily/days',item.paths.date+'.json');
+   const day=fs.existsSync(dayPath)?JSON.parse(fs.readFileSync(dayPath,'utf8')):null;
+   const onDaily=!day||item.paths.instance===day.featured_instance;
+   assert.equal(daily.includes('href="'+item.paths.page+'"'),onDaily,'Daily selection '+item.entry.key);
+   assert.ok(monthly.includes(item.paths.page));assert.ok(archive.includes(item.paths.page));assert.ok(archive.includes(item.paths.original_page));
+ }
+ const dayCount=JSON.parse(fs.readFileSync(path.join(r,'public/Nara/daily/catalog.json'),'utf8')).records.length;
+ assert.equal((daily.match(/class="notice daily-index-item"/g)||[]).length,dayCount);
+ assert.doesNotMatch(daily,/batch-other-stories|class="archive-item daily-item"/);
  assert.match(daily,/NARA-D-2026-10-12/);assert.deepEqual(stable(r),before);for(const [f,h]of Object.entries(originalPages))assert.equal(sha(fs.readFileSync(path.join(r,'public/Nara',f))),h);
  const a=refreshFormatArchiveSection(archive,r);assert.equal(refreshFormatArchiveSection(a,r),a);assert.equal((a.match(/id="format-editions"/g)||[]).length,1);
 });
