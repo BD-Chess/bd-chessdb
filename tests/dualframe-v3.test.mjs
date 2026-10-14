@@ -200,7 +200,7 @@ test('all eleven provider adapters retain exact model IDs and approved host rout
   ['qwen-image-pro','qwen','qwen-image-3.0-pro','/api/v1/services/aigc/multimodal-generation/generation'],
   ['qwen-image','qwen','qwen-image-3.0','/api/v1/services/aigc/multimodal-generation/generation'],
   ['wan-image-pro','qwen','wan2.7-image-pro','/api/v1/services/aigc/multimodal-generation/generation'],
-  ['qwen-zimage','qwen','z-image-turbo','/api/v1/services/aigc/text2image/image-synthesis'],
+  ['qwen-zimage','qwen','z-image-turbo','/api/v1/services/aigc/multimodal-generation/generation'],
   ['minimax-image','minimax','image-01','/v1/image_generation'],
   ['glm-image','zai','glm-image','/api/paas/v4/images/generations'],
   ['mistral-image','mistral','mistral-medium-latest','/v1/agents']
@@ -213,3 +213,34 @@ test('all eleven provider adapters retain exact model IDs and approved host rout
  }
 });
 function jobFor(model){return {model,prompt:'One safe illustrative scene',target:'landscape',quality:'hd',mode:'smart',operation:'generate',position:'center',seed:42};}
+
+
+test('Z-Image Turbo uses current synchronous Alibaba multimodal API with documented L/P image sizes',()=>{
+ for(const [target,quality,size] of [['landscape','hd','1536*864'],['portrait','hd','864*1536'],['landscape','4k','2048*1152'],['portrait','4k','1152*2048']]){
+  const request=providerRequest({...jobFor('qwen-zimage'),target,quality},null,env);
+  assert.equal(new URL(request.url).pathname,'/api/v1/services/aigc/multimodal-generation/generation');
+  assert.equal(request.headers['X-DashScope-Async'],undefined);
+  const data=JSON.parse(request.body);
+  assert.equal(data.model,'z-image-turbo');
+  assert.deepEqual(data.input,{messages:[{role:'user',content:[{text:'One safe illustrative scene'}]}]});
+  assert.equal(data.parameters.size,size);
+  assert.equal(data.parameters.prompt_extend,false);
+  assert.equal(data.parameters.seed,42);
+ }
+});
+test('Z-Image Turbo provider image URL from synchronous output is downloaded only from vetted HTTPS host',async()=>{
+ const imageURL='https://dashscope-result-bj.oss-cn-beijing.aliyuncs.com/image-fixture.png?Expires=123456';
+ const calls=[];
+ const fetcher=async(url,opts)=>{
+  calls.push({url,method:opts.method||'GET'});
+  if(url.includes('/api/v1/services/aigc/multimodal-generation/generation')){
+   return Response.json({output:{choices:[{finish_reason:'stop',message:{role:'assistant',content:[{image:imageURL},{text:'Generated'}]}}]},request_id:'mock-request-id'});
+  }
+  if(url===imageURL)return new Response(png,{status:200,headers:{'content-type':'image/png','content-length':String(png.length)}});
+  throw Error('UNEXPECTED_REQUEST');
+ };
+ const result=await callProvider(jobFor('qwen-zimage'),null,env,{fetcher});
+ assert.equal(result.model,'z-image-turbo');
+ assert.deepEqual(result.bytes,png);
+ assert.deepEqual(calls,[{url:'https://ws-w0wh18jpdbeyf7d7.ap-southeast-1.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',method:'POST'},{url:imageURL,method:'GET'}]);
+});
