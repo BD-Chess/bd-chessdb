@@ -152,7 +152,7 @@ function editionArtworkImages(root,item){
  const file=path.join(naraRoot(root),item.paths.artwork);
  assert(fs.existsSync(file),'edition artwork manifest missing');
  const manifest=JSON.parse(fs.readFileSync(file,'utf8'));
- if(manifest?.schema==='nara.format.edition.artwork.v4')return responsiveEditionArtwork(root,item,manifest,validateWebp,manifest.images?.some(image=>Object.hasOwn(image,'source_after_paragraph'))?loadIllustrations(root,item.originalEn,item.originalSl):[]);
+ if(manifest?.schema==='nara.format.edition.artwork.v4')return responsiveEditionArtwork(root,item,manifest,validateWebp,manifest.images?.some(image=>Object.hasOwn(image,'source_after_paragraph'))?loadIllustrations(root,item.originalEn,item.originalSl):[],approved=>directEditionArtworkImages(root,item,approved));
  if(['nara.format.edition.artwork.v2','nara.format.edition.artwork.v3'].includes(manifest?.schema))return directEditionArtworkImages(root,item,manifest);
  const manifestFields=['schema','edition_id','story_id','date','format_revision','en_content_sha256','sl_content_sha256','images'];
  assert(keys(manifest,manifestFields)&&Object.keys(manifest).length===manifestFields.length,'edition artwork manifest fields');

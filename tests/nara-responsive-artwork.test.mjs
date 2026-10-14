@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import os from 'node:os';
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import crypto from 'node:crypto';
 import {loadFormatEditions,renderEditionPage,generateFormatEditions} from '../scripts/nara-format-editions.mjs';
 import {responsiveEditionArtwork} from '../scripts/nara-responsive-artwork.mjs';
 import {validateWebp,loadIllustrations} from '../scripts/nara-illustrations.mjs';
@@ -14,7 +14,7 @@ test('first edition has three moments, all 12 validated variants and bilingual s
  assert.match(html,/nara-daily-responsive\.js/);assert.doesNotMatch(html,/nara-daily-lightbox\.js|nara-daily-resolution\.js/);
  assert.equal((html.match(/data-nara-image-4k=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(m),/drive|prompt|credential/i);
  for(const image of images){assert.equal(Object.keys(image.variants).length,4);assert.equal(image.after_paragraph,image.after_paragraph_en);for(const v of Object.values(image.variants))assert.ok(html.includes(v.src));}
- const legacy=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-06');assert.doesNotMatch(renderEditionPage(root,legacy),/nara-daily-responsive/);
+ const legacy=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-07');assert.doesNotMatch(renderEditionPage(root,legacy),/nara-daily-responsive/);
 });
 test('responsive schema rejects incomplete slots, unsafe paths, changed bytes, dimensions and binding',()=>{
  for(const [change,error]of [
@@ -26,6 +26,33 @@ test('responsive schema rejects incomplete slots, unsafe paths, changed bytes, d
   [m=>m.images[0].variants.private_prompt='secret',/four variant/],
   [m=>m.images[1].moment_id=m.images[0].moment_id,/moment identity/]
  ]){const m=artwork();change(m);assert.throws(()=>validate(m),error);}
+});
+test('Oct6 reuses all approved 1672x941 landscape HD bytes with a pinned, independently validated source',()=>{
+ const i=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-06'),m=JSON.parse(fs.readFileSync(path.join(n,i.paths.artwork)));
+ assert.equal(m.schema,'nara.format.edition.artwork.v4');assert.equal(m.landscape_hd_source.src,'daily/format-editions/2026-10-06/art-approved-L-HD-R1.json');
+ const approved=JSON.parse(fs.readFileSync(path.join(n,m.landscape_hd_source.src))),html=renderEditionPage(root,i);
+ assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);assert.doesNotMatch(JSON.stringify(m),/drive|prompt|credential/i);
+ for(let index=0;index<3;index++){const im=m.images[index],old=approved.images[index];assert.deepEqual(im.variants.L_HD,{src:old.src,width:1672,height:941,sha256:old.sha256});assert.equal(im.after_paragraph_en,old.after_paragraph_en);assert.equal(im.after_paragraph_sl,old.after_paragraph_sl);assert.equal(im.variants.L_4K.width,3840);assert.equal(im.variants.L_4K.height,2160);}
+ assert.equal(approved.schema,'nara.format.edition.artwork.v3');
+ assert.throws(()=>responsiveEditionArtwork(root,i,m,validateWebp),/source validator required/);
+});
+test('approved HD reuse fails closed for unsafe references, hash, stale source, dimensions or changed anchors',t=>{
+ const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-approved-hd-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));const target=path.join(r,'public/Nara');fs.mkdirSync(target,{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(target,'daily'),{recursive:true});
+ for(const file of fs.readdirSync(n).filter(file=>file.endsWith('-pre-format-R1.html')))fs.copyFileSync(path.join(n,file),path.join(target,file));
+ const srcDir='assets/img/daily/2026-10-06';fs.mkdirSync(path.dirname(path.join(target,srcDir)),{recursive:true});fs.cpSync(path.join(n,srcDir),path.join(target,srcDir),{recursive:true});
+ const i=loadFormatEditions(r).find(x=>x.entry.key==='2026-10-06'),file=path.join(target,i.paths.artwork),original=JSON.parse(fs.readFileSync(file)),sourceFile=path.join(target,original.landscape_hd_source.src),sourceBytes=fs.readFileSync(sourceFile);
+ for(const [change,error]of [
+  [m=>m.landscape_hd_source.src='../private.json',/unsafe approved/],
+  [m=>m.landscape_hd_source.sha256='0'.repeat(64),/source hash mismatch/],
+  [m=>m.images[0].width=1920,/approved landscape HD binding/],
+  [m=>m.images[0].variants.L_HD.src='assets/img/daily/2026-10-05/R1/moment-1.webp',/unsafe responsive/],
+  [m=>m.images[0].after_paragraph_en++,/bilingual anchor binding/],
+  [m=>m.images[0].src=m.images[1].src,/approved landscape HD binding/]
+ ]){const m=JSON.parse(JSON.stringify(original));change(m);fs.writeFileSync(file,JSON.stringify(m));assert.throws(()=>renderEditionPage(r,i),error);}
+ fs.writeFileSync(file,JSON.stringify(original));fs.unlinkSync(sourceFile);assert.throws(()=>renderEditionPage(r,i),/source missing/);fs.writeFileSync(sourceFile,sourceBytes);
+ const stale=JSON.parse(sourceBytes);stale.en_content_sha256='0'.repeat(64);const bytes=JSON.stringify(stale);fs.writeFileSync(sourceFile,bytes);
+ // Even a matching byte pin cannot bypass the existing v3 body/paragraph validator.
+ const m=JSON.parse(JSON.stringify(original));m.landscape_hd_source.sha256=crypto.createHash('sha256').update(bytes).digest('hex');fs.writeFileSync(file,JSON.stringify(m));assert.throws(()=>renderEditionPage(r,i),/direct edition artwork language binding/);
 });
 test('inline loads only visible-language HD; viewport resize selects P/L without a page reload',async()=>{
  const f=responsiveFixture();await flush();assert.equal(f.requests.length,3);assert.ok(f.requests.every(r=>/P[123]-HD/.test(r.src)));
