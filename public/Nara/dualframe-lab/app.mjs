@@ -558,14 +558,14 @@ function modelHealthText(model){
  const outcome=history.success?(language==='sl'?'uspešno ustvarjeno':'generated successfully'):(language==='sl'?'zadnji poskus ni uspel':'last attempt failed');
  return keyText+' · '+outcome+' · '+history.when.slice(0,10)+' ('+history.operation+')';
 }
-function renderSettingsModels(){
- const list=$('settings-model-list');list.replaceChildren();
+function renderSettingsModels(preserveDraft=false){
+ const list=$('settings-model-list'),draft=preserveDraft?new Set([...list.querySelectorAll('input:checked')].map(x=>x.value)):new Set(settings.enabledModels),selectedBefore=$('settings-default-model').value;list.replaceChildren();
  for(const model of MODELS.filter(m=>m.direct)){
-  const label=node('label'),checkbox=node('input');checkbox.type='checkbox';checkbox.value=model.key;checkbox.checked=settings.enabledModels.includes(model.key);
+  const label=node('label'),checkbox=node('input');checkbox.type='checkbox';checkbox.value=model.key;checkbox.checked=draft.has(model.key);
   const caption=node('span');caption.append(node('span',model.label));caption.append(node('small',modelHealthText(model)));
   label.append(checkbox,caption);checkbox.addEventListener('change',updateSettingsDefaultModelChoices);list.append(label);
  }
- updateSettingsDefaultModelChoices();
+ updateSettingsDefaultModelChoices();if(draft.has(selectedBefore))$('settings-default-model').value=selectedBefore;
 }
 function openSettings(){
  $('settings-mode').value=settings.mode;
@@ -609,7 +609,7 @@ async function runFreeApiCheck(){
   if(API.apiUnlocked()){try{await API.request('/session');sessionStatus=language==='sl'?'Prijava preverjena':'Session verified';}catch(e){sessionStatus=t(e.message);}}
   const active=visibleModels(),configured=active.filter(m=>capabilities.models?.find(x=>x.key===m.key)?.key_configured).length;
   $('settings-api-output').textContent=sessionStatus+' · '+configured+'/'+active.length+' '+(language==='sl'?'vključenih modelov ima nastavljen ključ; brez ustvarjanja slik.':'enabled models have configured keys; no images created.');
-  renderSettingsModels();
+  renderSettingsModels(true);
  }catch(e){$('settings-api-output').textContent=t(e.message);$('settings-error').textContent=language==='sl'?'Preverjanje dostopa ni uspelo.':'Access check failed.';}finally{button.disabled=false;}
 }
 
