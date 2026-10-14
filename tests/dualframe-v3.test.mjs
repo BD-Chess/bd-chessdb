@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 const sharp=createRequire(new URL('../functions/package.json',import.meta.url))('sharp');
 import {passwordVerifier,checkPassword,signToken,verifyToken} from '../functions/lib/dualframe/auth.mjs';
 import {MODELS,modelFor,publicCapabilities} from '../functions/lib/dualframe/contracts.mjs';
-import {providerRequest,callProvider,safeImageURL} from '../functions/lib/dualframe/providers.mjs';
+import {providerRequest,callProvider,safeImageURL,findImage} from '../functions/lib/dualframe/providers.mjs';
 import {finishImage,hash} from '../functions/lib/dualframe/images.mjs';
 import {createService} from '../functions/lib/dualframe/service.mjs';
 import {MODELS as frontendModels} from '../public/Nara/dualframe-lab/models.mjs';
@@ -164,3 +164,52 @@ test('read-only provider access probe requires session and never performs billab
  assert.equal(JSON.stringify(data).includes(fakeKey),false);
  assert.equal(allowed.headers.get('access-control-allow-origin'),origin);
 });
+
+
+test('Gemini 2.1 Interactions response parses the most recent model_output image, not tool or thought text',()=>{
+ const blob=png.toString('base64');
+ const response={steps:[{type:'model_input',content:[{type:'image',data:'THIS_MUST_NOT_BE_IMAGE'}]},{type:'model_output',content:[{type:'text',text:'working'},{type:'image',mime_type:'image/jpeg',data:blob}]},{type:'model_output',content:[{type:'text',text:'done'},{type:'image',mime_type:'image/png',data:blob}]}]};
+ assert.deepEqual(findImage(response),{base64:blob,mime:'image/png'});
+ assert.equal(findImage({steps:[{type:'model_output',content:[{type:'text',text:'No image'}]}]}),null);
+ assert.deepEqual(findImage({output_image:{data:blob,mime_type:'image/jpeg'}}),{base64:blob,mime:'image/jpeg'});
+});
+test('Gemini 2.1 adapter uses documented Interactions REST and reads the image result without paid network calls',async()=>{
+ for(const operation of ['generate','expand']){
+  const job={...jobFor('gemini-nano'),operation,target:'portrait',quality:'4k'};
+  const source=operation==='expand'?png:null;
+  const request=providerRequest(job,source,env),body=JSON.parse(request.body);
+  assert.equal(request.url,'https://generativelanguage.googleapis.com/v1beta/interactions');
+  assert.equal(body.model,'gemini-nano-banana-2.1');
+  assert.deepEqual(body.response_format,{type:'image',aspect_ratio:'9:16',image_size:'4K'});
+  if(source){assert.equal(body.input[0].type,'image');assert.equal(body.input[0].mime_type,'image/png');}
+  else assert.equal(typeof body.input,'string');
+  const networkCalls=[];
+  const fetcher=async(url,opts)=>{networkCalls.push({url,method:opts.method});return Response.json({steps:[{type:'model_output',content:[{type:'text',text:'done'},{type:'image',data:png.toString('base64'),mime_type:'image/png'}]}]});};
+  const result=await callProvider(job,source,env,{fetcher});
+  assert.deepEqual(result.bytes,png);
+  assert.equal(result.provider,'gemini');
+  assert.deepEqual(networkCalls,[{url:'https://generativelanguage.googleapis.com/v1beta/interactions',method:'POST'}]);
+ }
+});
+test('all eleven provider adapters retain exact model IDs and approved host routes one at a time',()=>{
+ const pairs=[
+  ['openai-sunburst','openai','gpt-image-2.5-sunburst','/v1/images/generations'],
+  ['openai-flare','openai','gpt-image-2.5-flare','/v1/images/generations'],
+  ['gemini-nano','gemini','gemini-nano-banana-2.1','/v1beta/interactions'],
+  ['grok-imagine','xai','grok-imagine-image-2.0','/v1/images/generations'],
+  ['qwen-image-pro','qwen','qwen-image-3.0-pro','/api/v1/services/aigc/multimodal-generation/generation'],
+  ['qwen-image','qwen','qwen-image-3.0','/api/v1/services/aigc/multimodal-generation/generation'],
+  ['wan-image-pro','qwen','wan2.7-image-pro','/api/v1/services/aigc/multimodal-generation/generation'],
+  ['qwen-zimage','qwen','z-image-turbo','/api/v1/services/aigc/text2image/image-synthesis'],
+  ['minimax-image','minimax','image-01','/v1/image_generation'],
+  ['glm-image','zai','glm-image','/api/paas/v4/images/generations'],
+  ['mistral-image','mistral','mistral-medium-latest','/v1/agents']
+ ];
+ for(const [key,provider,modelId,path] of pairs){
+  const req=providerRequest(jobFor(key),null,env);
+  assert.equal(req.provider,provider,key);
+  assert.equal(req.model.model,modelId,key);
+  assert.ok(new URL(req.url).pathname.endsWith(path),key+' '+req.url);
+ }
+});
+function jobFor(model){return {model,prompt:'One safe illustrative scene',target:'landscape',quality:'hd',mode:'smart',operation:'generate',position:'center',seed:42};}
