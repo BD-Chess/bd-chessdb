@@ -29,7 +29,7 @@ test('publication gate rejects missing peer closing line',()=>{const r=record();
 test('record accepts first-ready publication time but rejects wrong local date and missing timezone',()=>{assert.equal(validateRecord(record('2026-10-05','2026-10-05T18:15:00Z')).date,'2026-10-05');assert.throws(()=>validateRecord(record('2026-10-05','2026-10-04T18:15:00Z')),/wrong local date/);assert.throws(()=>validateRecord(record('2026-10-05','2026-10-05T22:00:00')),/timezone/)});
 test('editorial log validates ten candidates and rejects private fields',()=>{assert.equal(validateLog(logRecord()).candidates.length,10);const short=logRecord();short.candidates.pop();assert.throws(()=>validateLog(short),/candidates/);const priv=logRecord();priv.task_id='PRIVATE';assert.throws(()=>validateLog(priv),/unexpected\/private/)});
 test('log requires paired author and critic roles plus final close',()=>{const l=logRecord();l.selector='GPT';assert.throws(()=>validateLog(l),/pairing/);const missing=logRecord();missing.rounds=missing.rounds.filter(r=>r.stage!=='CRITIC_CLOSE');assert.throws(()=>validateLog(missing),/final\/close/)});
-test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-06','2026-10-06T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
+test('rendered peer text is inert, image-free, score-aware and bilingual',()=>{const r=record('2026-10-07','2026-10-07T20:00:00Z');r.literary_score=literaryScore();r.translation_sl=translationSl(r);validateRecord(r);const p=latestPage(r,'2026-10');assert.ok(p.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!p.includes('<script>alert(1)'));assert.ok(!/<img\b|<iframe\b|<svg\b/i.test(p));assert.ok(p.includes(r.critic_line));assert.ok(p.includes('ILLUMINARA / DAILY'));assert.ok(p.includes('Nara-AI-log.html'));assert.ok(p.includes('<details class="archive-item daily-item"'));assert.ok(!p.includes('<details class="archive-item daily-item" open'));assert.ok(p.includes('>87</button>'));assert.ok(p.includes('data-score-open'));assert.ok(p.includes('Combined blind literary score'));assert.ok(p.includes('data-language="sl"'));assert.ok(p.includes('Preskusna zgodba'));assert.ok(p.includes('lang="sl"'))});
 test('Daily links standalone stories for 5 and 6 October while other stories stay collapsed',()=>{
   const older=record('2026-10-05','2026-10-05T20:00:00Z'),newer=record('2026-10-06','2026-10-06T20:00:00Z'),other=record('2026-10-07','2026-10-07T20:00:00Z');
   older.deck='OCT05_INLINE_BODY_MUST_NOT_RENDER';newer.deck='OCT06_INLINE_BODY_MUST_NOT_RENDER';
@@ -73,7 +73,7 @@ test('SL edition is complete, source-bound and leaves the English record unchang
   assert.throws(()=>validateTranslation(incomplete,r),/paragraph count/);
 });
 test('Daily and monthly editions expose both languages and escape translated prose',()=>{
-  const r=record('2026-10-06','2026-10-06T20:00:00Z'),t=translation(r),translations={[r.id]:t};
+  const r=record('2026-10-07','2026-10-07T20:00:00Z'),t=translation(r),translations={[r.id]:t};
   for(const html of [latestPage(r,'2026-10',translations),monthlyPage('2026-10',[r],translations)]){
     assert.ok(html.includes('data-language="en"')&&html.includes('data-language="sl"'));
     assert.ok(html.includes(t.title));
@@ -83,12 +83,12 @@ test('Daily and monthly editions expose both languages and escape translated pro
   }
 });
 test('next nightly publication retains an earlier SL translation and marks untranslated stories honestly',t=>{
-  const root=temp(t),older=record(),oldLog=logRecord();
+  const root=temp(t),older=record('2026-10-07','2026-10-07T20:00:00Z'),oldLog=logRecord('2026-10-07');
   publish(root,older,oldLog,new Date(older.published_at));
   const dir=path.join(root,'public/Nara/daily/translations/sl');fs.mkdirSync(dir,{recursive:true});
   fs.writeFileSync(path.join(dir,older.date+'.json'),JSON.stringify(translation(older)));
   const englishPath=path.join(root,'public/Nara/daily/records',older.date+'.json'),englishBefore=fs.readFileSync(englishPath,'utf8');
-  const newer=record('2026-10-06','2026-10-06T20:00:00Z'),newLog=logRecord('2026-10-06');
+  const newer=record('2026-10-08','2026-10-08T20:00:00Z'),newLog=logRecord('2026-10-08');
   publish(root,newer,newLog,new Date(newer.published_at));
   for(const file of ['Nara-AI-daily.html','Nara-AI-2026-10.html']){
     const html=fs.readFileSync(path.join(root,'public/Nara',file),'utf8');
