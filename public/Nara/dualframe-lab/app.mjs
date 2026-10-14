@@ -1,6 +1,6 @@
 import * as API from './api-client.mjs?v=3.0-r4';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate } from './store.mjs?v=3.0-r4.3';
+import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate, openStore } from './store.mjs?v=3.0-r4.3';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
 import {readSettings, saveSettings, storageBudget, delayTransition} from './preferences.mjs?v=3.0-r1';
 import { normalizedImage, demoFixture, mockExpand, baseline, toBlob, verifySavedProtectedPixels } from './mock.mjs?v=3.0-r4';
@@ -597,7 +597,7 @@ async function runStorageDiagnostics(){
   const out=await storageEstimate();
   const format=value=>value==null?'?':(value/(1024*1024)).toFixed(1)+' MB';
   let dbStatus=t('storageDatabaseOK');
-  try{await getPairs();}catch(e){dbStatus=t('storageDatabaseError')+' ('+e.message+')';}
+  try{await openStore();}catch(e){dbStatus=t('storageDatabaseError')+' ('+e.message+')';}
   $('settings-storage-output').textContent=(out.supported?t('storageNumbers')+': '+format(out.usage)+' / '+format(out.quota):t('storageNoEstimate'))+' · '+dbStatus+' · '+t('storageNote');
  }finally{button.disabled=false;}
 }
