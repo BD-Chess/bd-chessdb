@@ -39,8 +39,15 @@ test('Daily links standalone stories for 5 and 6 October while other stories sta
   assert.ok(!p.includes('<details class="archive-item daily-item" id="NARA-D-2026-10-06"'));
   assert.ok(p.includes('href="Nara-AI-2026-10-05-format-R1.html"'));
   assert.ok(p.includes('href="Nara-AI-2026-10-06-format-R1.html"'));
-  assert.ok(p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-05"'));
-  assert.ok(p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-06"'));
+  assert.ok(!p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-05"'));
+  assert.ok(!p.includes('href="Nara-AI-archive.html#versions-NARA-D-2026-10-06"'));
+  for(const r of [older,newer]){
+    const start=p.indexOf('<article class="notice daily-index-item" id="'+r.id+'"');
+    const card=p.slice(start,p.indexOf('</article>',start)+10);
+    assert.equal((card.match(/<a\b/g)||[]).length,1);
+    assert.ok(card.includes('<time datetime="'+r.date+'">'+r.date+'</time>'));
+    assert.ok(!/class="(?:lede|daily-index-actions|daily-edition-link)"/.test(card));
+  }
   assert.ok(!p.includes(older.deck));assert.ok(!p.includes(newer.deck));
   assert.ok(p.indexOf('NARA-D-2026-10-07')<p.indexOf('NARA-D-2026-10-06'));
   assert.ok(p.indexOf('NARA-D-2026-10-06')<p.indexOf('NARA-D-2026-10-05'));
