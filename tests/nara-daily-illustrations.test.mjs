@@ -63,7 +63,7 @@ test('Daily links Oct 5 directly while monthly retains its R3 image figures in e
     assert.ok(html.includes('assets/js/nara-daily-resolution.js?v=1'));
     if(file==='Nara-AI-daily.html'){
       assert.ok(html.includes('Nara-AI-2026-10-05-format-R1.html'),'Daily links directly to the standalone Oct 5 edition');
-      assert.ok(html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'),'Daily links to the Oct 5 archive lineage');
+      assert.ok(!html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'),'Daily keeps original-version links in the archive only');
       for(const lang of ['en','sl'])assert.equal(html.includes('<article class="story" lang="'+lang+'" data-story-id="'+storyId+'"'),false,'Oct 5 must not be embedded as a collapsed story in Daily '+lang);
       continue;
     }
@@ -79,7 +79,7 @@ test('Daily links Oct 5 directly while monthly retains its R3 image figures in e
   }
   const archive=fs.readFileSync(path.join(n,'Nara-AI-archive.html'),'utf8');
   assert.ok(archive.includes('Nara-AI-2026-10.html'),'archive remains navigable');
-  assert.ok(archive.includes('Nara-AI-2026-10.html'));
+  assert.ok(archive.includes('id="versions-NARA-D-2026-10-05"'),'original version lineage stays available in the archive');
 });
 
 test('normal renderer reconstruction preserves the current figures without touching stored record text',()=>{
@@ -94,7 +94,7 @@ test('normal renderer reconstruction preserves the current figures without touch
     assert.ok(imagesFrom(page.html)>=m.images.length*2);
     if(page.daily){
       assert.ok(page.html.includes('Nara-AI-2026-10-05-format-R1.html'));
-      assert.ok(page.html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'));
+      assert.ok(!page.html.includes('Nara-AI-archive.html#versions-NARA-D-2026-10-05'));
       for(const lang of ['en','sl'])assert.equal(page.html.includes('<article class="story" lang="'+lang+'" data-story-id="'+storyId+'"'),false,'Oct 5 is a direct edition link in Daily '+lang);
       continue;
     }
