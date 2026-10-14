@@ -494,7 +494,7 @@ try{favorites=new Set(JSON.parse(localStorage.getItem('bd-df-favorites')||'[]'))
 function updateAuthLabel(){$('api-toggle').textContent=t(API.apiUnlocked()?'lockAPI':'unlockAPI');$('api-toggle').setAttribute('aria-pressed',String(API.apiUnlocked()));}
 function favorite(id){if(favorites.has(id))favorites.delete(id);else favorites.add(id);try{localStorage.setItem('bd-df-favorites',JSON.stringify([...favorites]));}catch{}renderOwnGallery();renderReference();$('viewer-favorite').textContent=favorites.has(viewerPair)?'♥':'♡';}
 function galleryCard(pair,reference=false){const target=galleryFrame(),state=selectAsset(pair,target,'hd'),card=node('article',undefined,'card gallery-artwork'),photo=button('',()=>openViewer(pair.pair_id),'card-image'),img=node('img');img.src=assetUrl(state.asset);img.alt=displayTitle(pair);img.loading='lazy';img.decoding='async';photo.append(img);photo.setAttribute('aria-label',`${t('viewPair')}: ${img.alt}`);const body=node('div',undefined,'card-content');body.append(node('p',img.alt,'card-title'),node('p',reference?(language==='sl'?pair.captionSl:pair.caption):pair.description||'', 'reference-caption'));if(!reference&&state.missing&&state.orientation!==target)body.append(node('p',t('frameMissing'),'gallery-missing'));const row=node('div',undefined,'card-controls');row.append(button(favorites.has(pair.pair_id)?'♥':'♡',()=>favorite(pair.pair_id),'favorite-button'),button(t('viewPair'),()=>openViewer(pair.pair_id),'text-button'));if(!reference){row.append(button(t('useSource'),()=>{selected=pair.pair_id;switchTab('create');render();},'text-button'),button(t('rename'),()=>openRename(pair),'text-button'),button(t('delete'),()=>deleteGalleryPair(pair),'text-button'));}body.append(row);card.classList.toggle('portrait',actualGalleryFrame()==='portrait');card.append(photo,body);return card;}
-function renderOwnGallery(){const filter=$('collection-filter')?.value||'all',box=$('own-gallery');if(!box)return;box.replaceChildren();box.hidden=filter==='reference';box.classList.toggle('portrait',actualGalleryFrame()==='portrait');for(const p of pairs){if(filter==='favorites'&&!favorites.has(p.pair_id))continue;box.append(galleryCard(p));}$('reference-cards').hidden=filter==='own';}
+function renderOwnGallery(){const filter=$('collection-filter')?.value||'all',box=$('own-gallery');if(!box)return;box.replaceChildren();box.hidden=filter==='reference';box.classList.toggle('portrait',actualGalleryFrame()==='portrait');for(const p of pairs){if(filter==='favorites'&&!favorites.has(p.pair_id))continue;box.append(galleryCard(p));}for(const remote of remotePairs){if(pairs.some(p=>p.original.sha256===remote.original?.sha256))continue;if(filter==='favorites'&&!favorites.has(remote.pair_id))continue;box.append(remoteCard(remote));}for(const job of remoteJobs.filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status)&&j.output?.sha256&&!pairs.some(p=>p.original.sha256===j.output.sha256))){if(filter==='favorites'&&!favorites.has(job.job_id))continue;box.append(remoteCard(job,true));}$('reference-cards').hidden=filter==='own';}
 const originalRenderReference=renderReference;
 renderReference=function(){if(!referenceLoaded)return;originalRenderReference();$('reference-cards').classList.toggle('portrait',actualGalleryFrame()==='portrait');const filter=$('collection-filter').value;if(filter==='favorites'){const wanted=referencePairs.filter(p=>favorites.has(p.pair_id));$('reference-cards').replaceChildren(...wanted.map(p=>galleryCard(p,true)));}else if(filter!=='own'){$('reference-cards').replaceChildren(...referencePairs.map(p=>galleryCard(p,true)));}renderOwnGallery();};
 function stopTour(){if(tourTimer)clearInterval(tourTimer);tourTimer=null;$('viewer-play').textContent=t('playTour');}
@@ -545,23 +545,99 @@ async function generateFromPrompt(){const prompt=$('prompt').value.trim();if(!pr
   const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
  }finally{$('generate').disabled=false;}
 }
-async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!ask)return;cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem…':'Syncing…';
- try{if(ask)await connectGateway();for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);const data=await API.request('/library');let restored=0;
-  for(const p of pairs){const cloudName=data.titles?.[p.original.sha256];if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}}
-  for(const remote of data.pairs){let p=pairs.find(x=>x.original.sha256===remote.original.sha256);
-   if(!p){const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');const n=await normalizedImage(normalized);p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,display_name:data.titles?.[remote.original.sha256]||remote.title,upload_id:remote.pair_id,gateway_version:'v3'};p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};pairs.push(p);restored++;}else if(!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';}
-   for(const remoteJob of data.jobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status))){if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;const blob=await API.asset(remoteJob.output.asset_id);if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);rememberResult(p,a,remoteJob.job_id);if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});}
-   await putPair(p);
+
+let cloudDownloadBusy=false;
+async function syncCloud(ask=true){
+ if(cloudBusy)return;
+ if(!API.apiUnlocked()&&!ask)return;
+ cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem katalog…':'Syncing catalog…';
+ try{
+  if(ask)await connectGateway();
+  for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);
+  const data=await API.request('/library');
+  remotePairs=Array.isArray(data.pairs)?data.pairs:[];
+  remoteJobs=Array.isArray(data.jobs)?data.jobs:[];
+  for(const p of pairs){
+   const cloudName=data.titles?.[p.original.sha256];
+   if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}
+   const remote=remotePairs.find(x=>x.original?.sha256===p.original.sha256);
+   if(remote&&!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';await putPair(p);}
   }
-  for(const j of data.jobs.filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status))){if(pairs.some(p=>p.original.sha256===j.output.sha256))continue;const blob=await API.asset(j.output.asset_id);if(await sha256(blob)!==j.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const p=await addOriginal(new File([blob],safeName(j.prompt.slice(0,70))+'.png',{type:'image/png'}));p.generated_from_prompt=true;p.description=j.prompt;p.original.creation_receipt={job_id:j.job_id,model:j.model,provider:j.provider};p.display_name=data.titles?.[j.output.sha256]||displayTitle(p);const candidate=await localTextOverlay({...j.output,blob,origin:'generated',provider:j.provider,model_key:j.model,direction:j.target,target_ratio:RATIOS[j.target],mode:j.mode},j.mode==='infographic'?j.text_layout:null);p.variants[j.target][j.quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,j.job_id);await putPair(p);restored++;}
-  if(!selected)selected=pairs[0]?.pair_id||null;render();$('cloud-status').textContent=`${t('cloudSaved')} · ${restored}`;
- }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
+  // Metadata-only: never bulk-download 4K photos on iPhone startup or Sync.
+  if(!selected)selected=pairs[0]?.pair_id||null;
+  render();repaintGallery();
+  const pending=remotePairs.filter(x=>!pairs.some(p=>p.original.sha256===x.original?.sha256)).length;
+  $('cloud-status').textContent=t('cloudCatalog')+' · '+pending;
+ }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}
+ finally{cloudBusy=false;}
+}
+async function loadRemotePair(remote){
+ if(cloudDownloadBusy)return;
+ cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
+ try{
+  if(!API.apiUnlocked())await connectGateway();
+  const fromRemote=remoteJobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status)&&j.output?.asset_id);
+  const expected=[remote.original,remote.normalized,...fromRemote.map(j=>j.output)].reduce((sum,a)=>sum+(Number(a?.size)||Number(a?.bytes)||0),0);
+  const budget=estimateHydrationSafety(await storageEstimate(),expected);
+  if(!budget.safe)throw Error('STORAGE_ESTIMATED_LOW');
+  const old=pairs.find(x=>x.original.sha256===remote.original.sha256);
+  let p=old?{...old,variants:{landscape:{...old.variants.landscape},portrait:{...old.variants.portrait}},jobs:[...old.jobs],candidates:[...(old.candidates||[])]}:null;
+  if(!p){
+   const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);
+   if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');
+   const n=await normalizedImage(normalized);
+   p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,upload_id:remote.pair_id,gateway_version:'v3'};
+   p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};
+  }
+  p.upload_id=remote.pair_id;p.gateway_version='v3';
+  if(!p.title_sync_pending&&remote.display_name)p.display_name=remote.display_name;
+  for(const remoteJob of fromRemote){
+   if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;
+   const blob=await API.asset(remoteJob.output.asset_id);
+   if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
+   const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);
+   rememberResult(p,a,remoteJob.job_id);
+   if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;
+   if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});
+  }
+  checkPair(p);await putPair(p); // Persist atomically; no partial local pair on a failed transfer.
+  if(!old)pairs.push(p);else pairs[pairs.indexOf(old)]=p;
+  selected=p.pair_id;render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
+ }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
+ finally{cloudDownloadBusy=false;diagnoseStorage().catch(()=>{});}
+}
+async function loadRemoteGenerated(job){
+ if(cloudDownloadBusy)return;
+ cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
+ try{
+  if(!API.apiUnlocked())await connectGateway();
+  const output=job.output,expected=Number(output?.size)||Number(output?.bytes)||0;
+  if(!estimateHydrationSafety(await storageEstimate(),expected).safe)throw Error('STORAGE_ESTIMATED_LOW');
+  const blob=await API.asset(output.asset_id);
+  if(await sha256(blob)!==output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
+  const p=await addOriginal(new File([blob,safeName(job.prompt?.slice(0,70)||'Generated')+'.png'],safeName(job.prompt?.slice(0,70)||'Generated')+'.png',{type:'image/png'}));
+  p.generated_from_prompt=true;p.description=job.prompt;
+  p.original.creation_receipt={job_id:job.job_id,model:job.model,provider:job.provider};
+  const candidate=await localTextOverlay({...output,blob,origin:'generated',provider:job.provider,model_key:job.model,direction:job.target,target_ratio:RATIOS[job.target],mode:job.mode},job.mode==='infographic'?job.text_layout:null);
+  p.variants[job.target][job.quality==='4k'?'fourK':'hd']=candidate;
+  rememberResult(p,candidate,job.job_id);await putPair(p);render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
+ }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
+ finally{cloudDownloadBusy=false;}
+}
+function remoteCard(remote,generated=false){
+ const card=node('article',undefined,'card gallery-artwork'),photo=node('div',undefined,'cloud-placeholder'),target=actualGalleryFrame();
+ card.classList.toggle('portrait',target==='portrait');
+ photo.append(node('strong','☁'),node('span',t('cloudOnly')));
+ const body=node('div',undefined,'card-content'),title=generated?(remote.prompt?.slice(0,90)||'Generated image'):(remote.display_name||remote.title);
+ body.append(node('p',title,'card-title'));
+ const actions=node('div',undefined,'card-controls'),buttonLoad=button(t('cloudLoadOne'),()=>generated?loadRemoteGenerated(remote):loadRemotePair(remote),'text-button');
+ actions.append(buttonLoad);body.append(actions);card.append(photo,body);return card;
 }
 async function initR5(){
  initSettingsUI();refreshCreateModels(false);galleryDisplayedFrame=actualGalleryFrame();applySettings();$('consent').checked=true;
  await init();switchTab('showcase');updateModelControls();
  API.capabilities().then(value=>{capabilities=value;updateModelControls();}).catch(()=>{$('model-status').textContent=t('apiChecking');});
- if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
+ if(API.apiUnlocked()){gateway={url:API.API_BASE,version:'v3'};if(prefs.autoSyncMetadata)syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
 }
 $('api-auth-cancel').addEventListener('click',()=>$('api-auth').close());
 $('rename-form').addEventListener('submit',saveRename);
