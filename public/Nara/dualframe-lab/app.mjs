@@ -457,19 +457,92 @@ async function generateFromPrompt(){const prompt=$('prompt').value.trim();if(!pr
   const candidate=await localTextOverlay({...state.output,blob,path:`variants/${target}/${state.output.sha256}.png`,origin:'generated',provider:model.provider,model_key:model.key,direction:target,target_ratio:RATIOS[target],mode,provider_cost:state.provider_cost,cost_currency:state.cost_currency},parameters.text_layout);p.variants[target][quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,receipt.job_id);await API.request(`/jobs/${receipt.job_id}/accept`,{method:'POST',body:{}});await persist(p);markModelOutcome(model.key,'generate',true);selected=p.pair_id;switchTab('showcase');openViewer(p.pair_id);
  }finally{$('generate').disabled=false;}
 }
-async function syncCloud(ask=true){if(cloudBusy)return;if(!API.apiUnlocked()&&!ask)return;cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem…':'Syncing…';
- try{if(ask)await connectGateway();for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);const data=await API.request('/library');let restored=0;
-  for(const p of pairs){const cloudName=data.titles?.[p.original.sha256];if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}}
-  for(const remote of data.pairs){let p=pairs.find(x=>x.original.sha256===remote.original.sha256);
-   if(!p){const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');const n=await normalizedImage(normalized);p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,display_name:data.titles?.[remote.original.sha256]||remote.title,upload_id:remote.pair_id,gateway_version:'v3'};p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};pairs.push(p);restored++;}else if(!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';}
-   for(const remoteJob of data.jobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status))){if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;const blob=await API.asset(remoteJob.output.asset_id);if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);rememberResult(p,a,remoteJob.job_id);if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});}
-   await putPair(p);
+
+function cloudItems(){
+ const local=new Set(pairs.map(p=>p.original.sha256));
+ const pairItems=(cloudInventory.pairs||[]).filter(p=>p.original?.sha256&&!local.has(p.original.sha256)).map(p=>({kind:'pair',entry:p,sha:p.original.sha256,title:cloudInventory.titles?.[p.original.sha256]||p.title||'Image'}));
+ const generated=(cloudInventory.jobs||[]).filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status)&&j.output?.sha256&&!local.has(j.output.sha256)).map(j=>({kind:'generated',entry:j,sha:j.output.sha256,title:cloudInventory.titles?.[j.output.sha256]||j.prompt?.slice(0,80)||'Generated image'}));
+ return [...pairItems,...generated].filter((item,index,all)=>all.findIndex(x=>x.sha===item.sha)===index);
+}
+function renderCloudInventory(){
+ const container=$('cloud-inventory'),list=$('cloud-remote-list');if(!container||!list)return;
+ const pending=cloudItems();container.hidden=!pending.length;list.replaceChildren();
+ for(const item of pending){
+  const card=node('div',undefined,'cloud-item');
+  card.append(node('strong',item.title),node('span',t('cloudNotLocal'),'small'));
+  card.append(button(t('cloudLoadSingle'),()=>item.kind==='pair'?loadCloudPair(item.entry):loadCloudGeneration(item.entry),'secondary'));
+  list.append(card);
+ }
+}
+async function guardCloudBudget(items){
+ const size=items.reduce((sum,asset)=>sum+(Number.isFinite(asset?.size)&&asset.size>0?asset.size:16*1024*1024),0);
+ const budget=storageBudget(await storageEstimate(),size,settings.maxCloudDownloadMB);
+ if(!budget.allowed)throw Error(budget.reason);
+}
+const cloudLoading=new Set();
+async function loadCloudPair(remote){
+ const key=remote.original?.sha256;
+ if(!key||cloudLoading.has(key))return;
+ if(pairs.some(p=>p.original.sha256===key)){renderCloudInventory();return;}
+ if(pairs.length>=20)throw Error('PAIR_LIMIT');
+ const jobs=(cloudInventory.jobs||[]).filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status)&&j.output?.asset_id);
+ await guardCloudBudget([remote.original,remote.normalized,...jobs.map(j=>j.output)]);
+ cloudLoading.add(key);
+ try{
+  await API.ensureAuth(language);
+  const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);
+  if(await sha256(blob)!==key)throw Error('INPUT_HASH_MISMATCH');
+  const n=await normalizedImage(normalized);
+  const p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:key,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,display_name:cloudInventory.titles?.[key]||remote.title,upload_id:remote.pair_id,gateway_version:'v3'};
+  p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+key};
+  for(const remoteJob of jobs){
+   const outputBlob=await API.asset(remoteJob.output.asset_id);
+   if(await sha256(outputBlob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
+   const a=await localTextOverlay({...remoteJob.output,blob:outputBlob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);
+   rememberResult(p,a,remoteJob.job_id);if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;
+   p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});
   }
-  for(const j of data.jobs.filter(j=>j.operation==='generate'&&['READY','ACCEPTED'].includes(j.status))){if(pairs.some(p=>p.original.sha256===j.output.sha256))continue;const blob=await API.asset(j.output.asset_id);if(await sha256(blob)!==j.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');const p=await addOriginal(new File([blob],safeName(j.prompt.slice(0,70))+'.png',{type:'image/png'}));p.generated_from_prompt=true;p.description=j.prompt;p.original.creation_receipt={job_id:j.job_id,model:j.model,provider:j.provider};p.display_name=data.titles?.[j.output.sha256]||displayTitle(p);const candidate=await localTextOverlay({...j.output,blob,origin:'generated',provider:j.provider,model_key:j.model,direction:j.target,target_ratio:RATIOS[j.target],mode:j.mode},j.mode==='infographic'?j.text_layout:null);p.variants[j.target][j.quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,j.job_id);await putPair(p);restored++;}
-  if(!selected)selected=pairs[0]?.pair_id||null;render();$('cloud-status').textContent=`${t('cloudSaved')} · ${restored}`;
+  // A failed IndexedDB write cannot advertise a successfully downloaded pair.
+  await putPair(p);pairs.push(p);if(!selected)selected=p.pair_id;
+  render();renderCloudInventory();notify('cloudLoadSuccess');
+ }finally{cloudLoading.delete(key);}
+}
+async function loadCloudGeneration(j){
+ const key=j.output?.sha256;
+ if(!key||cloudLoading.has(key)||pairs.some(p=>p.original.sha256===key))return;
+ await guardCloudBudget([j.output]);
+ cloudLoading.add(key);
+ try{
+  await API.ensureAuth(language);
+  const blob=await API.asset(j.output.asset_id);
+  if(await sha256(blob)!==key)throw Error('OUTPUT_HASH_MISMATCH');
+  const name=safeName(j.prompt?.slice(0,70)||'Generated')+'.png';
+  const p=await addOriginal(new File([blob],name,{type:blob.type||'image/png'}));
+  p.generated_from_prompt=true;p.description=j.prompt;p.original.creation_receipt={job_id:j.job_id,model:j.model,provider:j.provider};p.display_name=cloudInventory.titles?.[key]||displayTitle(p);
+  const candidate=await localTextOverlay({...j.output,blob,path:`variants/${j.target}/${j.output.sha256}.png`,origin:'generated',provider:j.provider,model_key:j.model,direction:j.target,target_ratio:RATIOS[j.target],mode:j.mode},j.mode==='infographic'?j.text_layout:null);
+  p.variants[j.target][j.quality==='4k'?'fourK':'hd']=candidate;rememberResult(p,candidate,j.job_id);
+  await putPair(p);render();renderCloudInventory();notify('cloudLoadSuccess');
+ }finally{cloudLoading.delete(key);}
+}
+async function syncCloud(ask=true){
+ if(cloudBusy)return;
+ if(!API.apiUnlocked()&&!ask)return;
+ cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Preverjam katalog…':'Checking cloud catalog…';
+ try{
+  if(ask)await connectGateway();
+  // Pending metadata changes may be written, but no raster files are downloaded during Sync.
+  for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);
+  const data=await API.request('/library');
+  cloudInventory={pairs:data.pairs||[],jobs:data.jobs||[],titles:data.titles||{}};
+  for(const p of pairs){
+   const cloudName=data.titles?.[p.original.sha256],remote=data.pairs?.find(x=>x.original?.sha256===p.original.sha256);
+   if(!p.title_sync_pending&&cloudName&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}
+   if(remote&&!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';await putPair(p);}
+  }
+  render();renderCloudInventory();
+  $('cloud-status').textContent=t('cloudSyncCatalog')+' · '+cloudItems().length+' '+t('cloudNotLocal');
  }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}finally{cloudBusy=false;}
 }
-
 function updateSettingsDefaultModelChoices(){
  const enabled=[...$('settings-model-list').querySelectorAll('input:checked')].map(x=>x.value),select=$('settings-default-model'),preferred=select.value||settings.model;
  select.replaceChildren();
