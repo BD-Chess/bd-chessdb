@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
-function setup(t, host = {}) {
+function setup(t, host = {}, sessionSettings = null) {
   const base = path.resolve(__dirname, '..');
   const dom = new JSDOM('<!doctype html><button id="btnDeepAnalysis">Deep analysis</button><div id="workspaceDisplay" class="workspace-display" aria-label="Moves and DCC analysis"><div id="moves" style="display:none">1. e4</div><div id="dccAnalysisPanel" style="display:block"><button>DCC detail</button></div></div>', { runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window; t.after(() => w.close());
@@ -20,6 +20,12 @@ function setup(t, host = {}) {
       stop() { stops++; running = false; }, destroy() { running = false; }
     }; }
   };
+  if(sessionSettings){
+    const settings={...sessionSettings},listeners=new Set();
+    w.ChessAnalysisSession={create:w.ChessDeepEngine.create,getSettings:()=>({...settings}),
+      subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);},
+      configure(patch){Object.assign(settings,patch);for(const fn of listeners)fn({...settings});}};
+  }
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-deep-ui.js'), 'utf8'));
   const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen() }),
     onChange: listener => { hostListener = listener; return () => { hostListener = null; }; }, pause() {}, ...host });
@@ -114,8 +120,10 @@ test('starting analysis reveals its toolbar once within the workspace and keeps 
   assert.equal(workspace.scrollTop, 72, 'the underlying Moves/DCC position is restored');
   x.get('btnDeepAnalysis').click();
   assert.equal(workspace.scrollTop, 340, 'returning to this analysis retains its scroll');
+  panel.style.minHeight='1300px';
   x.el('start').click();
   assert.equal(workspace.scrollTop, 280, 'a new search reveals the toolbar again');
+  assert.equal(panel.style.minHeight,'764px','an explicit shorter search releases the old tall result viewport');
   x.ui.close(); x.game.move('e4'); x.get('btnDeepAnalysis').click();
   assert.equal(panel.style.minHeight, '', 'a newly pinned position returns to the settings layout');
 });
@@ -133,6 +141,38 @@ test('closing Deep analysis cancels its worker and ignores late results without 
   assert.equal(el('stop').disabled, true);
   assert.equal(el('start').disabled, false);
   ui.destroy();
+});
+
+test('Stop, close and settings cancellation immediately mark active cards stopped and retain completed results',async t=>{
+  for(const action of ['stop','close','settings'])for(const pendingStatus of ['loading','ready','queued']){
+    const updates=[],finals=[];
+    const x=setup(t,{onSearchStart:()=>value=>updates.push(value),onResult:value=>finals.push(value)},{analysisMode:'all'});
+    x.ui.start();
+    const current={mode:'all',fen:x.game.fen(),status:'running',children:{
+      'sf-lite':{...x.snapshot(),status:'searching'},lc0:{fen:x.game.fen(),lines:[],status:pendingStatus},
+      reckless:{...x.snapshot(),status:'complete'},berserk:{...x.snapshot(),status:'failed',error:'Unavailable'}}};
+    x.emit(current);
+    const latest=JSON.parse(JSON.stringify(current));latest.children['sf-lite'].nodes=76543;latest.children['sf-lite'].lines[0].score.white=37;
+    x.emit(latest);const published=updates.length,original=JSON.stringify(latest);
+    if(action==='stop')x.ui.stop();else if(action==='close')x.ui.close();else x.w.ChessAnalysisSession.configure({analysisMode:'sf-lite'});
+    const retained=x.ui.getResult();
+    assert.equal(retained.status,'stopped');assert.equal(retained.stopped,true);assert.equal(retained.groupComplete,false);
+    assert.equal(retained.children['sf-lite'].status,'stopped');assert.equal(retained.children.lc0.status,'stopped');
+    assert.equal(retained.children.reckless.status,'complete');assert.equal(retained.children.berserk.status,'failed');
+    assert.equal(retained.children['sf-lite'].nodes,76543);assert.equal(retained.children['sf-lite'].lines[0].score.white,37);
+    assert.equal(JSON.stringify(latest),original,'rendered cancellation never mutates a source snapshot');
+    const progress=[...x.el('lines').querySelectorAll('.deep-engine-progress')].map(el=>el.textContent);
+    assert.match(progress[0],/^stopped/);assert.match(progress[1],/^stopped/);assert.match(progress[2],/^complete/);assert.match(progress[3],/^failed/);
+    assert.equal(updates.length,published,'local stop status is not published as engine evidence');assert.equal(finals.length,0);
+    x.emit(current);x.finish(current);await Promise.resolve();assert.equal(x.ui.getResult(),retained,'late results cannot revive stopped cards');
+    if(action==='close'){x.ui.open();assert.match(x.el('lines').querySelector('.deep-engine-progress').textContent,/^stopped/);}
+    x.ui.destroy();
+  }
+});
+
+test('stopping a fresh run before its first info leaves an earlier completed snapshot intact',async t=>{
+  const x=setup(t),completed=x.ui.start();const done=x.snapshot();x.finish(done);await completed;
+  x.ui.start();x.ui.stop();assert.equal(x.ui.getResult(),done);assert.equal(done.stopped,undefined);
 });
 
 test('W0 Deep save awaits durable outcome, freezes its line and reports pending honestly', async t => {

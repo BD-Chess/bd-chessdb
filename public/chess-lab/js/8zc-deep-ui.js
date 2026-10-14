@@ -25,7 +25,7 @@
     workspace.appendChild(panel);
     const el = name => panel.querySelector('[data-deep="' + name + '"]');
     const trigger = doc.getElementById('btnDeepAnalysis');
-    let engine = null, pinned = null, result = null, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
+    let engine = null, pinned = null, result = null, resultRun = 0, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
     let manualStoppedFen = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
     const lineViews = new Map();
@@ -104,8 +104,7 @@
     }
     function close() {
       if (panel.hidden) return;
-      const wasRunning = engine?.isRunning();
-      ++run; engine?.stop();
+      const wasRunning = stopAnalysis('panel-close');
       if (wasRunning) el('status').textContent = hasLines(result) ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
       el('start').disabled = !pinned; el('stop').disabled = true;
       deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null; followActive = false;
@@ -202,7 +201,7 @@
       });
     }
     function render(current, force, onUpdate) {
-      result = current;
+      result = current; resultRun = run;
       const signature = Object.entries(current.children || {}).map(([key, child]) => key + ':' + child.status).join('|');
       const now = Date.now();
       if (!force && now - paintAt < 100 && signature === paintStatus) return;
@@ -312,7 +311,7 @@
       // Keep room below the toolbar even while the engine is loading or has
       // only a short PV. Reveal the result area inside the workspace, never
       // by moving the page itself.
-      panel.style.minHeight = Math.max(parseFloat(panel.style.minHeight) || 0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
+      panel.style.minHeight = Math.max(0, offset + workspace.clientHeight - topPadding - bottomPadding) + 'px';
       const target = Math.max(0, workspace.scrollTop + actions.getBoundingClientRect().top -
         workspace.getBoundingClientRect().top - workspace.clientTop - topPadding);
       deepScroll = target;
@@ -351,8 +350,8 @@
           configuredMode() === 'berserk' ? 'Loading Berserk on demand…' :
           configuredMode() === 'reckless' ? 'Loading Reckless on demand…' :
           configuredMode() === 'lc0' ? 'Loading LCZero network on demand…' : 'Loading Stockfish 18 Lite (~7 MB on first use)…';
-        retainViewportHeight();
-        if (options.reveal !== false) revealSearch();
+        if (options.reveal === false) retainViewportHeight();
+        else revealSearch();
         opts.onInfo = (_, snapshot) => { if (token === run) render(snapshot, false, onUpdate); };
         const pending = engine.analyze(opts); notifyState();
         const done = await pending;
@@ -364,11 +363,27 @@
         if (token === run) { el('start').disabled = false; el('stop').disabled = !followActive; notifyState(); }
       }
     }
+    function stopAnalysis(reason) {
+      const wasRunning=!!engine?.isRunning?.(),ownsResult=result&&resultRun===run;
+      ++run;engine?.stop();
+      if(ownsResult){
+        const active=status=>['loading','preparing','ready','queued','searching','running'].includes(status);
+        let changed=wasRunning||active(result.status);
+        const children=result.children&&Object.fromEntries(Object.entries(result.children).map(([key,child])=>{
+          if(!active(child.status))return [key,child];
+          changed=true;
+          return [key,{...child,status:'stopped',stopped:true,partial:true,stopReason:reason}];
+        }));
+        if(changed)render({...result,status:'stopped',stopped:true,partial:true,stopReason:reason,
+          ...(children?{children,groupComplete:false,dualComplete:false}:{})},true);
+      }
+      return wasRunning;
+    }
     function stopCurrent() {
       if (!followActive && !engine?.isRunning?.()) return false;
       followActive = false;
       manualStoppedFen = pinned?.fen || null;
-      ++run; engine?.stop();
+      stopAnalysis('user-stop');
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
       notifyState(); return true;
@@ -448,7 +463,7 @@
       const nextKey=settingsKey(settings);
       if(nextKey===analysisSettingsKey)return;
       analysisSettingsKey=nextKey;
-      ++run; engine?.stop(); followActive = false; manualStoppedFen = pinned?.fen || null;
+      stopAnalysis('settings-change'); followActive = false; manualStoppedFen = pinned?.fen || null;
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('status').textContent = 'Selected '+modeLabels[settings.analysisMode]+'. '+(hasLines(result)?'Previous '+(modeLabels[result.mode]||'engine')+' results retained. ':'')+'Press Analyze position to start.';
       notifyState({passive:true});
