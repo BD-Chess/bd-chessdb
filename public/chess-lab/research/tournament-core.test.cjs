@@ -7,7 +7,8 @@ test('each opening gets every round-robin pair in both colors', () => {
   const openings = ['a', 'b'].map(id => ({ id, startFen: new Chess().fen(), startPgn: '' }));
   const games = T.createSchedule({ format: 'round-robin', rounds: 2 }, openings);
   assert.equal(games.length, 48);
-  for (const opening of openings) for (const white of T.ENGINES) for (const black of T.ENGINES) {
+  const legacy = ['raw', 'dcc', 'sf', 'sf-dcc'];
+  for (const opening of openings) for (const white of legacy) for (const black of legacy) {
     if (white === black) continue;
     assert.equal(games.filter(game => game.openingId === opening.id && game.white === white && game.black === black).length, 2);
   }

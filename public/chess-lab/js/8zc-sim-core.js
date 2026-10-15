@@ -6,16 +6,57 @@
   else root.ChessSim = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const VERSION = '1.3.0-lab';
-  const policy = value => ['raw', 'dcc', 'sf', 'sf-dcc'].includes(value) ? value : 'raw';
-  const label = value => ({ raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC' })[policy(value)];
-  const provider = value => policy(value).startsWith('sf') ? 'SF' : 'CDB';
+  const VERSION = '1.4.0-lab';
+  const LABELS = Object.freeze({ raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC', lc0: 'LCZero', reckless: 'Reckless', berserk: 'Berserk' });
+  const ENGINES = Object.freeze(Object.keys(LABELS));
+  const policy = value => ENGINES.includes(value) ? value : 'raw';
+  const label = value => LABELS[policy(value)];
+  const localMode = value => ['lc0', 'reckless', 'berserk'].includes(value) ? value : null;
+  const provider = value => ({lc0:'LC0', reckless:'RLE', berserk:'BER'})[value] || (policy(value).startsWith('sf') ? 'SF' : 'CDB');
   const escapeTag = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n]+/g, ' ');
   const legal = (Chess, fen, move) => {
     if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move || '')) return false;
     try { return !!new Chess(fen).move({ from: move.slice(0, 2), to: move.slice(2, 4), promotion: move[4] }); }
     catch (_) { return false; }
   };
+  // A real local engine's selected move and typed evidence; neural Q is never cp.
+  function engineDecision(Chess, fen, engine, snapshot, search = {}) {
+    if (!localMode(engine) || snapshot?.fen !== fen) return null;
+    const move = snapshot.nativeBestMove || snapshot.bestMove || snapshot.lines?.[0]?.pv?.[0];
+    if (!legal(Chess, fen, move)) return null;
+    const lines = [...(snapshot.nativeLines || [])].reverse().concat(snapshot.partialLines || [], snapshot.lines || []);
+    const line = lines.find(row => {
+      if (row.pv?.[0] !== move) return false;
+      try { const board = new Chess(fen); return row.pv.every(m => typeof m === 'string' && /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(m) && board.move({from:m.slice(0,2),to:m.slice(2,4),promotion:m[4]})); }
+      catch (_) { return false; }
+    });
+    const side = new Chess(fen).turn(), sign = side === 'b' ? -1 : 1;
+    const raw = line?.score || (snapshot.lines?.[0]?.pv?.[0] === move ? snapshot.score : null);
+    const root = Number.isFinite(raw?.root) ? raw.root : Number.isFinite(raw?.white) ? raw.white * sign : null;
+    const type = ['cp','mate','q'].includes(raw?.type) && root !== null && (raw.type !== 'q' || Math.abs(root) <= 1) ? raw.type : 'unknown';
+    const score = type === 'unknown' ? null : { ...raw, type, root, white:root * sign };
+    const source = provider(engine), cp = type === 'cp' || type === 'mate' ? root : null;
+    return { move, side, policy:engine, provider:source, actual_provider:source, requested_provider:source,
+      raw_best:move, raw_best_score:cp, raw_best_mate_in:type === 'mate' ? root : null, raw_score:cp,
+      native_score:score, native_q:type === 'q' ? root : null, native_wdl:type === 'q' ? raw.wdl || null : null,
+      score_type:type, score_bound:raw?.bound || null, engine_id:snapshot.engine?.id || (typeof snapshot.engine === 'string' ? snapshot.engine : null),
+      engine_name:snapshot.engine?.name || label(engine), model_id:snapshot.model || snapshot.engine?.model || snapshot.engine?.modelId || null,
+      dcc_requested:false, dcc_choice:null, dcc_score:null, dcc_raw_gap:null, raw_gap:type === 'cp' ? 0 : null,
+      exact_ties:null, near_ties:null, changed:false, probes:0, fallback:false, fallback_reason:null,
+      coverage:'not requested', coverage_reason:null, picked_by:source.toLowerCase() + '-native',
+      engine_coverage:snapshot.coverage || null, native_best_move:snapshot.nativeBestMove || null,
+      root_nodes:snapshot.nodes ?? null, root_visits:snapshot.visits ?? null, root_depth:line?.depth ?? snapshot.depth ?? null,
+      root_elapsed_ms:snapshot.searchElapsedMs ?? snapshot.actualSearchMs ?? null,
+      root_budget_nodes:search.budgetNodes ?? null, root_budget_depth:search.budgetDepth ?? null, root_budget_ms:search.budgetMs ?? null,
+      elapsed_ms:search.elapsedMs ?? null, charged_ms:search.chargedMs ?? null,
+      clock_before_ms:search.clockBeforeMs ?? null, clock_after_ms:search.clockAfterMs ?? null,
+      increment_ms:search.incrementMs ?? null, compute_match:'Independent local engine; native score retained' };
+  }
+  function scoreText(pick) {
+    if (pick.score_type === 'q') return Number.isFinite(pick.native_q) ? 'Q ' + pick.native_q.toFixed(3) : 'unknown';
+    if (pick.score_type === 'mate') return Number.isFinite(pick.raw_best_mate_in) ? '#' + pick.raw_best_mate_in : 'unknown';
+    return Number.isFinite(pick.raw_best_score) ? (pick.score_bound === 'lower' ? '≥' : pick.score_bound === 'upper' ? '≤' : '') + (pick.raw_best_score > 0 ? '+' : '') + pick.raw_best_score + ' cp' : 'unknown';
+  }
   function decision(Chess, fen, engine, moves, analysis, search = {}) {
     const evaluated = (moves || []).filter(m => Number.isFinite(m.score) && legal(Chess, fen, m.move));
     const raw = evaluated[0];
@@ -89,6 +130,7 @@
     board = new Chess(initialFen);
     const cfg = run.config || {}, trace = run.trace || [];
     const actualSources = [...new Set(trace.map(row => row.actual_provider || row.provider).filter(Boolean))];
+    const sfPossible = !localMode(run.white) || !localMode(run.black);
     const metadata = run.opening?.sourceHeaders || run.sourceHeaders || openingHeaders;
     const tags = {
       Event: run.eventName || ((run.tournamentId || run.eventId) ? 'ChessBest LAB tournament' : 'ChessBest position experiment'), Site: 'https://www.mdlxdcc.org/chess-lab/',
@@ -99,10 +141,11 @@
       ActualSources: actualSources.join(', ') || 'none',
       CDBSource: actualSources.includes('CDB') ? cfg.source || 'remote' : 'not used',
       SearchLimitMode: run.limits?.limitMode || 'legacy',
-      SFRootBudgetNodes: run.limits ? run.limits.limitMode === 'nodes' ? run.limits.nodes : '-' : run.sfRootNodes ?? '-',
-      SFRootBudgetDepth: run.limits?.limitMode === 'depth' ? run.limits.depth : '-',
-      SFRootBudgetMs: run.limits?.limitMode === 'move-time' ? run.limits.moveTimeMs : run.limits?.limitMode === 'game-time' ? 'per-move allocation' : '-',
-      SFProbeBudgetNodes: run.sfProbeNodes ?? '-',
+      SFRootBudgetNodes: sfPossible ? (run.limits ? run.limits.limitMode === 'nodes' ? run.limits.nodes : '-' : run.sfRootNodes ?? '-') : '-',
+      SFRootBudgetDepth: sfPossible && run.limits?.limitMode === 'depth' ? run.limits.depth : '-',
+      SFRootBudgetMs: sfPossible ? (run.limits?.limitMode === 'move-time' ? run.limits.moveTimeMs : run.limits?.limitMode === 'game-time' ? 'per-move allocation' : '-') : '-',
+      SFProbeBudgetNodes: sfPossible ? run.sfProbeNodes ?? '-' : '-',
+      EngineRootBudget: run.limits?.limitMode === 'depth' ? run.limits.depth + ' depth' : run.limits?.limitMode === 'nodes' ? run.limits.nodes + ' nodes' : run.limits?.limitMode === 'move-time' ? run.limits.moveTimeMs + ' ms' : 'per-move allocation',
       ComputeMatch: 'Actual source, root and DCC work recorded per move',
       DCCDepth: cfg.depth, DCCCandidates: cfg.candidates, DCCWindowCp: cfg.window, DCCGuardCp: cfg.guard,
       TimeControl: timeControl(run), DCCDeadline: timeControl(run) !== '-' || run.limits?.limitMode === 'move-time' ? 'per-move budget' : cfg.noDeadline ? 'none' : '20s', UTCStart: run.startedAt,
@@ -134,10 +177,10 @@
       // A comment before Black's first move does not replace its move-number prefix.
       if (!opening.length && trace[0] === row && board.turn() === 'b') moves.push(board.fen().split(' ')[5] + '...');
       const fields = [`controller=${row.policy}`, `source=${row.actual_provider || row.provider}`, `policy=${row.picked_by}`,
-        row.score_type === 'mate' ? 'raw_mate_in=' + row.raw_best_mate_in : 'raw_cp=' + row.raw_best_score,
+        row.score_type === 'q' ? 'raw_q=' + row.native_q : row.score_type === 'mate' ? 'raw_mate_in=' + row.raw_best_mate_in : 'raw_cp=' + (row.raw_best_score ?? 'unknown'),
         'POV=mover', `engine1=${row.raw_best}`, `DCC=${row.dcc_choice || '?'}`, `changed=${row.changed}`,
-        `gap_cp=${row.score_type === 'mate' ? 'n/a' : row.raw_gap}`, `coverage=${row.coverage}`];
-      for (const key of ['fallback_reason', 'coverage_reason', 'root_budget_nodes', 'root_budget_ms', 'root_budget_depth', 'root_nodes', 'root_depth', 'root_elapsed_ms',
+        `gap_cp=${['mate','q','unknown'].includes(row.score_type) ? 'n/a' : row.raw_gap}`, `coverage=${row.coverage}`];
+      for (const key of ['engine_id', 'engine_name', 'model_id', 'native_q', 'native_wdl', 'score_bound', 'root_visits', 'fallback_reason', 'coverage_reason', 'root_budget_nodes', 'root_budget_ms', 'root_budget_depth', 'root_nodes', 'root_depth', 'root_elapsed_ms',
         'dcc_budget_ms', 'dcc_budget_depth', 'dcc_extra_nodes', 'dcc_extra_ms', 'charged_ms', 'overhead_ms', 'increment_ms', 'probes', 'compute_match'])
         if (row[key] !== undefined && row[key] !== null) fields.push(`${key}=${commentText(row[key])}`);
       if (row.elapsed_ms !== undefined && row.elapsed_ms !== null) fields.push('analysis_ms=' + row.elapsed_ms);
@@ -157,7 +200,8 @@
       'coverage', 'coverage_reason', 'dcc_score', 'stability', 'probes', 'elapsed_ms',
       'provider', 'actual_provider', 'requested_provider', 'fallback', 'fallback_reason', 'dcc_requested', 'score_type', 'raw_best_mate_in', 'root_budget_nodes', 'root_nodes', 'root_depth', 'root_elapsed_ms', 'dcc_extra_nodes', 'dcc_extra_ms', 'compute_match',
       'dcc_version', 'source', 'depth', 'candidates', 'window_cp', 'guard_cp',
-      'at_utc', 'turn_ms', 'pause_ms', 'white_elapsed_ms', 'black_elapsed_ms', 'root_budget_ms', 'root_budget_depth', 'dcc_budget_ms', 'dcc_budget_depth', 'clock_before_ms', 'clock_after_ms', 'white_clock_ms', 'black_clock_ms', 'charged_ms', 'overhead_ms', 'increment_ms'];
+      'at_utc', 'turn_ms', 'pause_ms', 'white_elapsed_ms', 'black_elapsed_ms', 'root_budget_ms', 'root_budget_depth', 'dcc_budget_ms', 'dcc_budget_depth', 'clock_before_ms', 'clock_after_ms', 'white_clock_ms', 'black_clock_ms', 'charged_ms', 'overhead_ms', 'increment_ms',
+      'engine_id', 'engine_name', 'model_id', 'native_q', 'native_wdl', 'score_bound', 'root_visits'];
     const quote = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const rows = [keys.join(',')];
     for (const run of runs) for (const row of run.trace) {
@@ -171,5 +215,5 @@
     }
     return rows.join('\n') + '\n';
   }
-  return { VERSION, policy, label, provider, decision, outcome, timeControl, clockText, toPGN, toCSV };
+  return { VERSION, ENGINES, LABELS, localMode, policy, label, provider, decision, engineDecision, scoreText, outcome, timeControl, clockText, toPGN, toCSV };
 });
