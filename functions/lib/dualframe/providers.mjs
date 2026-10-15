@@ -1,5 +1,6 @@
 import {isIP} from 'node:net';
 import {modelFor,keyFor} from './contracts.mjs';
+import {masterGeometry} from './enhancement.mjs';
 
 const jsonHeaders=key=>({'authorization':`Bearer ${key}`,'content-type':'application/json'});
 const dataURI=bytes=>`data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
@@ -12,7 +13,12 @@ export function safeImageURL(value){
  return u.href;
 }
 function cleanError(data,key){const s=String(data?.error?.message||data?.message||data?.base_resp?.status_msg||data?.code||'').slice(0,700);return s.split(key).join('[redacted]').replace(/(?:sk-|AIza)[A-Za-z0-9_-]{16,}/g,'[redacted]').replace(/https:\/\/\S+/g,'[provider URL]').slice(0,500);}
-export function requestSize(model,target,quality,source=false){
+export function requestSize(model,target,quality,source=false,sourceDimensions=null){
+ if(sourceDimensions){
+  if(model.provider!=='openai'||!model.edit)throw new ProviderError('ENHANCEMENT_MODEL_UNSUPPORTED',400);
+  const geometry=masterGeometry(sourceDimensions.source_width||sourceDimensions.width,sourceDimensions.source_height||sourceDimensions.height,{maxEdge:Math.min(quality==='4k'?3840:1920,model.editMaxEdge||model.maxEdge||3840),multiple:16});
+  return {...geometry,aspect:geometry.source_aspect_ratio};
+ }
  let [w,h]=target==='portrait'?(quality==='4k'?[2160,3840]:[1080,1920]):(quality==='4k'?[3840,2160]:[1920,1080]);
  const edge=source?(model.editMaxEdge||model.maxEdge):model.maxEdge;
  if(edge&&Math.max(w,h)>edge){const f=edge/Math.max(w,h);w=Math.floor(w*f);h=Math.floor(h*f);}
@@ -24,11 +30,19 @@ export function providerRequest(job,source,env){
  const m=modelFor(job.model),key=m&&keyFor(m,env);if(!m)throw new ProviderError('MODEL_UNKNOWN',400);if(!key)throw new ProviderError('KEY_NOT_CONFIGURED',503);
  const edit=job.operation!=='generate'&&!!source;
  if(edit&&!m.edit)throw new ProviderError('MODEL_GENERATION_ONLY',400);
- const size=requestSize(m,job.target,job.quality,edit),prompt=job.provider_prompt||job.prompt;
+ if(job.operation==='enhance'&&(!edit||m.provider!=='openai'))throw new ProviderError('ENHANCEMENT_MODEL_UNSUPPORTED',400);
+ const sourceDimensions=job.operation==='enhance'?(job._master_geometry||job.master_geometry):null;
+ if(job.operation==='enhance'&&!sourceDimensions)throw new ProviderError('ENHANCEMENT_GEOMETRY_REQUIRED',400);
+ const size=requestSize(m,job.target,job.quality,edit,sourceDimensions),prompt=job.provider_prompt||job.prompt;
+ if(typeof prompt!=='string'||!prompt.trim())throw new ProviderError('PROVIDER_PROMPT_REQUIRED',400);
+ // Provider limits are rejection boundaries. Silent truncation changes the
+ // user's task and can remove its identity/preservation instructions.
+ const promptLimit=m.provider==='minimax'?1500:m.key==='qwen-zimage'?800:12000;
+ if(prompt.length>promptLimit)throw new ProviderError('PROVIDER_PROMPT_TOO_LONG',400);
  const base={model:m,key,edit,size,prompt,provider:m.provider};
  if(m.provider==='openai'){
   const fields={model:m.model,prompt,quality:job.provider_quality||'high',size:`${size.width}x${size.height}`,n:'1',output_format:'png'};
-  if(edit){const body=new FormData();for(const [k,v] of Object.entries(fields))body.append(k,v);body.append('image[]',new Blob([source],{type:'image/png'}),'source.png');if(job._mask)body.append('mask',new Blob([job._mask],{type:'image/png'}),'mask.png');return {...base,url:'https://api.openai.com/v1/images/edits',headers:{authorization:`Bearer ${key}`},body};}
+  if(edit){const body=new FormData();for(const [k,v] of Object.entries(fields))body.append(k,v);body.append('image[]',new Blob([source],{type:'image/png'}),'source.png');if(job.operation==='expand'&&(job.master_hash||job.master_sha256)&&job._original_reference)body.append('image[]',new Blob([job._original_reference],{type:'image/png'}),'original-reference.png');if(job._mask)body.append('mask',new Blob([job._mask],{type:'image/png'}),'mask.png');return {...base,url:'https://api.openai.com/v1/images/edits',headers:{authorization:`Bearer ${key}`},body};}
   return {...base,url:'https://api.openai.com/v1/images/generations',headers:jsonHeaders(key),body:JSON.stringify({...fields,n:1})};
  }
  if(m.provider==='gemini'){
@@ -36,7 +50,7 @@ export function providerRequest(job,source,env){
   return {...base,url:'https://generativelanguage.googleapis.com/v1beta/interactions',headers:{'x-goog-api-key':key,'content-type':'application/json'},body:JSON.stringify({model:m.model,input,response_format:{type:'image',mime_type:'image/png',aspect_ratio:size.aspect,image_size:job.quality==='4k'?'4K':'2K'}})};
  }
  if(m.provider==='xai')return {...base,url:`https://api.x.ai/v1/images/${edit?'edits':'generations'}`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt,n:1,aspect_ratio:size.aspect,resolution:'2k',quality:'medium',response_format:'b64_json',...(edit?{image:{type:'image_url',url:dataURI(source)}}:{})})};
- if(m.provider==='minimax')return {...base,url:'https://api.minimax.io/v1/image_generation',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt:prompt.slice(0,1500),width:size.width,height:size.height,n:1,response_format:'base64',...(Number.isInteger(job.seed)?{seed:job.seed}:{}),...(edit?{subject_reference:[{type:'character',image_file:dataURI(source)}]}:{})})};
+ if(m.provider==='minimax')return {...base,url:'https://api.minimax.io/v1/image_generation',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt,width:size.width,height:size.height,n:1,response_format:'base64',...(Number.isInteger(job.seed)?{seed:job.seed}:{}),...(edit?{subject_reference:[{type:'character',image_file:dataURI(source)}]}:{})})};
  if(m.provider==='zai'){
   const preset=job.target==='portrait'?'1056x1568':'1568x1056';
   return {...base,url:'https://api.z.ai/api/paas/v4/images/generations',headers:jsonHeaders(key),body:JSON.stringify({model:m.model,prompt,size:preset,quality:'hd'})};
@@ -48,7 +62,7 @@ export function providerRequest(job,source,env){
    // Z-Image Turbo now uses Model Studio synchronous multimodal generation; the old
    // text2image/image-synthesis async protocol is for legacy model families.
    const outputSize=job.target==='portrait'?(job.quality==='4k'?'1152*2048':'864*1536'):(job.quality==='4k'?'2048*1152':'1536*864');
-   return {...base,url:`${host}/api/v1/services/aigc/multimodal-generation/generation`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,input:{messages:[{role:'user',content:[{text:prompt.slice(0,800)}]}]},parameters:{size:outputSize,prompt_extend:false,...(Number.isInteger(job.seed)?{seed:job.seed}:{})}})};
+   return {...base,url:`${host}/api/v1/services/aigc/multimodal-generation/generation`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,input:{messages:[{role:'user',content:[{text:prompt}]}]},parameters:{size:outputSize,prompt_extend:false,...(Number.isInteger(job.seed)?{seed:job.seed}:{})}})};
   }
   return {...base,url:`${host}/api/v1/services/aigc/multimodal-generation/generation`,headers:jsonHeaders(key),body:JSON.stringify({model:m.model,input:{messages:[{role:'user',content:[...(edit?[{image:dataURI(source)}]:[]),{text:prompt}]}]},parameters:{size:`${size.width}*${size.height}`,n:1,prompt_extend:false,watermark:false}})};
  }

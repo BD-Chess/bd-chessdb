@@ -1,5 +1,5 @@
 // Provider contracts are capabilities, not evidence that live access is enabled.
-import { canonicalMode } from './core.mjs?v=3.0-r4';
+import { canonicalMode } from './core.mjs?v=3.0-r4.11';
 const model=(key,provider,label,endpoint,modes,extras={})=>Object.freeze({key,provider,label,endpoint,provider_model_id:endpoint,modes:Object.freeze(modes),live:provider!=='demo',...extras});
 export const MODEL_REGISTRY=Object.freeze({
   'openai-sunburst':model('openai-sunburst','openai','GPT Image 2.5 Sunburst','gpt-image-2.5-sunburst',['faithful','smart','infographic'],{direct:true,edit:true,max_edge:3840}),

@@ -1,4 +1,4 @@
-import * as disk from './store.mjs?v=3.0-r4.10';
+import * as disk from './store.mjs?v=3.0-r4.11';
 
 const HASH=/^[a-f0-9]{64}$/;
 const remoteRef=value=>value?.__df_remote_asset===1;
@@ -24,6 +24,16 @@ function metaClone(value){
 function limiter(max){let running=0;const waiting=[];function next(){while(running<max&&waiting.length){const {task,resolve,reject}=waiting.shift();running++;Promise.resolve().then(task).then(resolve,reject).finally(()=>{running--;next();});}}return task=>new Promise((resolve,reject)=>{waiting.push({task,resolve,reject});next();});}
 const identity=item=>item?.candidate_id||item?.gateway_job_id||item?.job_id||item?.asset_id||item?.sha256||JSON.stringify(item);
 function union(a=[],b=[]){const values=new Map(a.map(x=>[identity(x),x]));for(const item of b){const id=identity(item);values.set(id,values.has(id)?{...values.get(id),...item}:item);}return [...values.values()];}
+function mergeEnhancementFamilies(local=[],incoming=[]){
+ const merged=[...local],order=['PLANNING','PLANNED','MASTER_SUBMITTING','MASTER_PENDING','MASTER_READY','MASTER_ACCEPTED','FRAMES_PENDING','COMPLETE'];
+ for(const family of incoming){
+  const index=merged.findIndex(value=>['plan_id','attempt_id','family_id'].some(key=>value[key]&&value[key]===family[key]));if(index<0){merged.push(family);continue;}
+  const old=merged[index],master=old.master&&family.master?{...family.master,...old.master,...(family.master.blob?{blob:family.master.blob}:{})}:old.master||family.master;
+  const status=old.status==='REJECTED'||family.status==='REJECTED'?'REJECTED':order.indexOf(family.status)>order.indexOf(old.status)?family.status:old.status||family.status;
+  merged[index]={...family,...old,status,...(master?{master}:{}),frame_jobs:union(old.frame_jobs,family.frame_jobs)};
+ }
+ return merged;
+}
 export function mergeSyncedPair(local,incoming){
  if(!local)return incoming;
  const merged={...incoming,...local,original:{...incoming.original,...local.original},variants:{portrait:{...incoming.variants?.portrait,...local.variants?.portrait},landscape:{...incoming.variants?.landscape,...local.variants?.landscape}},jobs:union(local.jobs,incoming.jobs),candidates:union(local.candidates,incoming.candidates)};
@@ -38,6 +48,7 @@ export function mergeSyncedPair(local,incoming){
  for(const [key,value] of Object.entries(incoming.original||{}))if(local.original?.[key]===undefined)merged.original[key]=value;
  // These are preserved alternative family/master records, never replacements.
  for(const key of ['families','masters','accepted_variants'])if(Array.isArray(incoming[key])||Array.isArray(local[key]))merged[key]=union(local[key],incoming[key]);
+ if(Array.isArray(incoming.enhancement_families)||Array.isArray(local.enhancement_families))merged.enhancement_families=mergeEnhancementFamilies(local.enhancement_families,incoming.enhancement_families);
  if(incoming.sync_missing_assets?.length)merged.sync_missing_assets=incoming.sync_missing_assets;else delete merged.sync_missing_assets;
  return merged;
 }
@@ -92,7 +103,7 @@ export function createSyncEngine({api,store=disk,onProgress=()=>{},owner='bd-res
    }
    return null;
   }
-  function indexAssets(snapshot){const assets=new Map(snapshot.assets.map(a=>[a.asset_id,a]));for(const pair of snapshot.pairs)for(const a of [pair.original,pair.normalized])if(a?.asset_id)assets.set(a.asset_id,{...assets.get(a.asset_id),...a});for(const job of snapshot.jobs)if(job.output?.asset_id)assets.set(job.output.asset_id,{...assets.get(job.output.asset_id),...job.output});return assets;}
+  function indexAssets(snapshot){const assets=new Map(snapshot.assets.map(a=>[a.asset_id,a]));for(const pair of snapshot.pairs)for(const a of [pair.original,pair.normalized])if(a?.asset_id)assets.set(a.asset_id,{...assets.get(a.asset_id),...a});for(const job of snapshot.jobs)for(const asset of [job.output,job.hd_copy])if(asset?.asset_id)assets.set(asset.asset_id,{...assets.get(asset.asset_id),...asset});return assets;}
   async function uploadPairs(snapshot){
    const remoteAssets=indexAssets(snapshot),uploading=new Map();
    const tombstones=snapshot.tombstones;
@@ -114,7 +125,7 @@ export function createSyncEngine({api,store=disk,onProgress=()=>{},owner='bd-res
        let remote=[...remoteAssets.values()].find(a=>a.bytes_present!==false&&a.sha256===hash&&(!a.source_sha256||a.source_sha256===source)&&(!['original','normalized'].includes(kind)||a.kind===kind)),checkpoint=await store.getSyncState(key('upload:'+roleKey));
        if(!remote&&checkpoint?.asset?.sha256===hash&&remoteAssets.get(checkpoint.asset.asset_id)?.bytes_present!==false)remote=checkpoint.asset;
        if(remote&&sizeOf(remote)!==blob.size)throw Error('SYNC_SIZE_MISMATCH');
-       if(!remote){remote=await api.uploadAsset(blob,{kind,source_sha256:source,pair_id:remotePairId,family_id:pair.family_id||pair.pair_id,parent_asset_ids:[],lineage:{operation:pair.generated_from_prompt?'generate':'sync',source_sha256:source,role:kind},checkpoint:checkpoint?.transport,onCheckpoint:transport=>store.putSyncState(key('upload:'+roleKey),{sha256:hash,transport})});
+       if(!remote){remote=await api.uploadAsset(blob,{signal,kind,source_sha256:source,pair_id:remotePairId,family_id:pair.family_id||pair.pair_id,parent_asset_ids:[],lineage:{operation:pair.generated_from_prompt?'generate':'sync',source_sha256:source,role:kind},checkpoint:checkpoint?.transport,onCheckpoint:transport=>store.putSyncState(key('upload:'+roleKey),{sha256:hash,transport})});
         if(remote?.sha256!==hash||sizeOf(remote)!==blob.size)throw Error('SYNC_UPLOAD_VERIFICATION_FAILED');progress.upload_bytes+=blob.size;
         await store.putSyncState(key('upload:'+roleKey),{asset:remote,sha256:hash,verified:true});remoteAssets.set(remote.asset_id,remote);
        }return remote;
@@ -161,10 +172,18 @@ export function createSyncEngine({api,store=disk,onProgress=()=>{},owner='bd-res
      const record={schema:'bd.dualframe.pair.v1',pair_id:job.job_id,generated_from_prompt:true,description:job.prompt,created_at:job.created_at,original:{name:(job.prompt||'Generated image').slice(0,100)+'.png',filename:(job.prompt||'Generated image').slice(0,100)+'.png',sha256:o.sha256,blob:marker(o),normalized:marker(o),width:o.width,height:o.height,bytes:sizeOf(o),mime:o.mime,source_orientation:d,visibility:'private',origin:'generated',creation_receipt:{...job}},variants:{landscape:{},portrait:{}},jobs:[],candidates:[]};records.push(record);matches=[record];
     }
     for(const record of matches){
+    if(job.operation==='enhance'){
+     const master={...job.output,blob:marker(job.output),master_id:job.job_id,job_id:job.job_id,family_id:job.family_id||job.output.family_id,recipe:job.recipe||job.output.recipe,status:job.status,acceptance:job.status,role:job.output.role||((job.recipe?.kind||'natural')+'-master')};
+     record.masters=union(record.masters,[master]);record.jobs=union(record.jobs,[{...job,gateway_job_id:job.job_id,...(job.status==='READY'?{candidate:master}:{})}]);continue;
+    }
     const proof=job.output.normalization_proof;
     const candidate={...job.output,blob:marker(job.output),candidate_id:job.job_id,source_sha256:record.original.sha256,direction:job.target,path:`variants/${job.target}/${job.output.sha256}.png`,provider:job.provider,model_key:job.model,origin:'generated',mode:job.mode,...(proof?{lineage_status:proof.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:proof.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:record.original.sha256,output_sha256:job.output.sha256}}:{})};
     record.candidates=union(record.candidates,[candidate]);record.jobs=union(record.jobs,[{...job,job_id:job.job_id,gateway_job_id:job.job_id,...(job.status==='READY'?{candidate}:{})}]);
     if(job.status==='ACCEPTED'){record.variants[job.target]||={};const quality=job.quality==='4k'?'fourK':'hd';if(!record.variants[job.target][quality])record.variants[job.target][quality]=candidate;else if(record.variants[job.target][quality].sha256!==candidate.sha256)record.accepted_variants=union(record.accepted_variants,[candidate]);}
+    if(job.status==='ACCEPTED'&&job.hd_copy?.asset_id){
+     const hd={...job.hd_copy,blob:marker(job.hd_copy),candidate_id:job.job_id+'_hd',direction:job.target,path:`variants/${job.target}/${job.hd_copy.sha256}.png`,acceptance_state:'ACCEPTED',role:'hd-derivative'};
+     record.candidates=union(record.candidates,[hd]);record.variants[job.target]||={};if(!record.variants[job.target].hd)record.variants[job.target].hd=hd;else if(record.variants[job.target].hd.sha256!==hd.sha256)record.accepted_variants=union(record.accepted_variants,[hd]);
+    }
     }
    }
    return records;
@@ -210,7 +229,7 @@ export function createSyncEngine({api,store=disk,onProgress=()=>{},owner='bd-res
     if(await localAsset(meta,meta.pair_id))return;
     const same=localVerified.get(meta.sha256);let blob;
     if(same&&same.size===sizeOf(meta))blob=await store.getStoredBlob(same.value);
-    else{const receipt=await store.getSyncState(key('download:'+meta.asset_id));blob=await api.downloadAsset(meta,{checkpoint:receipt?.transport,onCheckpoint:transport=>store.putSyncState(key('download:'+meta.asset_id),{transport})});if(!(blob instanceof Blob))throw Error('SYNC_ASSET_MISSING');if(blob.size!==sizeOf(meta))throw Error('SYNC_SIZE_MISMATCH');if(await digest(blob)!==meta.sha256)throw Error('SYNC_HASH_MISMATCH');progress.download_bytes+=blob.size;}
+    else{const receipt=await store.getSyncState(key('download:'+meta.asset_id));blob=await api.downloadAsset(meta,{signal,checkpoint:receipt?.transport,onCheckpoint:transport=>store.putSyncState(key('download:'+meta.asset_id),{transport})});if(!(blob instanceof Blob))throw Error('SYNC_ASSET_MISSING');if(blob.size!==sizeOf(meta))throw Error('SYNC_SIZE_MISMATCH');if(await digest(blob)!==meta.sha256)throw Error('SYNC_HASH_MISMATCH');progress.download_bytes+=blob.size;}
     const saved=await store.putSyncAsset(key('asset:'+meta.asset_id),meta.pair_id,blob,{asset_id:meta.asset_id,sha256:meta.sha256,byte_size:blob.size,verified:true});available.set(meta.asset_id,saved.blob);await store.putSyncState(key('download:'+meta.asset_id),{complete:true,asset_id:meta.asset_id,sha256:meta.sha256});await commit(meta.asset_id);
    },{asset_id:meta.asset_id,pair_id:meta.pair_id})));
    await imports;await importRecords(snapshot);
