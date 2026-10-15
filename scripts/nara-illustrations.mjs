@@ -48,7 +48,7 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
   const file=path.join(base,'daily','illustrations',record.date+suffix+'.json');
   if(!fs.existsSync(file))return [];
   try {
-    const m=JSON.parse(fs.readFileSync(file,'utf8')),v3=m.schema==='nara.daily.illustrations.v3',v2=m.schema==='nara.daily.illustrations.v2'||v3;
+    const m=JSON.parse(fs.readFileSync(file,'utf8')),v4=m.schema==='nara.daily.illustrations.v4',v3=m.schema==='nara.daily.illustrations.v3'||v4,v2=m.schema==='nara.daily.illustrations.v2'||v3;
     const keys=['schema','story_id','date','edition','en_content_sha256','sl_content_sha256','images',...(v2?['instance']:[])];
     assert(m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===keys.length&&Object.keys(m).every(k=>keys.includes(k)),'illustration manifest fields');
     if(v3&&!instance){
@@ -62,10 +62,10 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
       if(translation.source_content_sha256!==undefined)assert(translation.source_content_sha256===record.content_sha256,'illustration translation source binding');
     } else assert(m.schema==='nara.daily.illustrations.v1'&&m.story_id===record.id&&m.date===record.date&&m.edition===record.revision?.edition,'illustration edition binding');
     assert(m.en_content_sha256===record.content_sha256&&translation&&m.sl_content_sha256===translation.content_sha256,'illustration language content binding');
-    assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length&&(!v2||m.images.length<=3),'illustration scene count');
+    assert(Array.isArray(m.images)&&m.images.length>0&&m.images.length<=record.scenes.length&&(!v2||m.images.length<=3)&&(!v4||m.images.length===3),'illustration scene count');
     let prior=0,priorParagraph=0;
-    for(const image of m.images){
-      const fields=['scene','src','width','height','alt_en','alt_sl','sha256',...(v3?['after_paragraph']:[])];
+    for(const [momentIndex,image] of m.images.entries()){
+      const fields=['scene','src','width','height','alt_en','alt_sl','sha256',...(v3?['after_paragraph']:[]),...(v4?['moment_id','variants','en_paragraph_sha256','sl_paragraph_sha256']:[])];
       const optional=[...(v2?['generation_prompt_sha256','model_reported','claude_review','review_reply_sha256']:[]),];
       assert(image&&typeof image==='object'&&!Array.isArray(image)&&fields.every(k=>Object.hasOwn(image,k))&&Object.keys(image).every(k=>fields.includes(k)||optional.includes(k)),'illustration image fields');
       assert(Number.isInteger(image.scene)&&image.scene>=1&&image.scene<=record.scenes.length&&(v3?image.scene>=prior:image.scene>prior),'illustration scene order');
@@ -74,6 +74,10 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
         assert(en.length===sl.length,'illustration translated paragraph structure');
         assert(Number.isInteger(image.after_paragraph)&&image.after_paragraph>=1&&image.after_paragraph<=en.length,'illustration paragraph anchor');
         assert(image.scene>prior||image.after_paragraph>priorParagraph,'illustration paragraph order');
+        if(v4){
+          assert(image.moment_id===`moment-0${momentIndex+1}`,'responsive moment identity');
+          assert(image.en_paragraph_sha256===sha(Buffer.from(en[image.after_paragraph-1],'utf8'))&&image.sl_paragraph_sha256===sha(Buffer.from(sl[image.after_paragraph-1],'utf8')),'responsive source paragraph hash');
+        }
         priorParagraph=image.after_paragraph;
       }
       prior=image.scene;
@@ -86,6 +90,25 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
       const asset=path.join(base,image.src);assert(fs.existsSync(asset)&&fs.statSync(asset).isFile(),'illustration missing static file');
       const bytes=fs.readFileSync(asset);assert(/^[a-f0-9]{64}$/.test(image.sha256)&&sha(bytes)===image.sha256,'illustration source hash mismatch');
       if(image.src.endsWith('.webp'))validateWebp(bytes,image.width,image.height);
+      if(v4){
+        const variants=image.variants;
+        assert(variants&&typeof variants==='object'&&!Array.isArray(variants)&&Object.keys(variants).length===2&&Object.hasOwn(variants,'L_HD')&&Object.hasOwn(variants,'P_HD'),'responsive two HD variant slots');
+        const rootAssets=fs.realpathSync(path.join(base,'assets/img/daily'));
+        for(const [slot,dimensions] of [['L_HD',[1672,941]],['P_HD',[1080,1920]]]){
+          const variant=variants[slot];
+          assert(variant&&typeof variant==='object'&&!Array.isArray(variant)&&Object.keys(variant).length===4&&['src','width','height','sha256'].every(k=>Object.hasOwn(variant,k)),'responsive variant fields');
+          assert(variant.width===dimensions[0]&&variant.height===dimensions[1],'responsive variant dimensions');
+          assert(typeof variant.src==='string'&&variant.src.startsWith(prefix)&&/^[A-Za-z0-9_.-]+\.webp$/.test(variant.src.slice(prefix.length)),'responsive unsafe variant path');
+          assert(/^[a-f0-9]{64}$/.test(variant.sha256),'responsive variant hash format');
+          const vf=path.join(base,variant.src);
+          assert(fs.existsSync(vf)&&fs.statSync(vf).isFile(),'responsive variant missing file');
+          assert(fs.realpathSync(vf).startsWith(rootAssets+path.sep),'responsive variant outside artwork root');
+          const vb=fs.readFileSync(vf);
+          assert(sha(vb)===variant.sha256,'responsive variant hash mismatch');
+          validateWebp(vb,variant.width,variant.height);
+        }
+        for(const key of ['src','width','height','sha256'])assert(image[key]===variants.L_HD[key],'responsive landscape fallback binding');
+      }
       if(v2){
         if(image.src.endsWith('.png'))assert(bytes.length>=24&&bytes.subarray(0,8).toString('hex')==='89504e470d0a1a0a'&&bytes.subarray(12,16).toString()==='IHDR'&&bytes.readUInt32BE(16)===image.width&&bytes.readUInt32BE(20)===image.height,'illustration PNG dimensions');
         for(const k of ['generation_prompt_sha256','review_reply_sha256'])if(image[k]!==undefined)assert(/^[a-f0-9]{64}$/.test(image[k]),'illustration provenance hash');
@@ -93,7 +116,7 @@ export function loadIllustrations(root,record,translation=null,{nonBlocking=fals
         if(image.claude_review!==undefined)assert(['PASS','MISSING','FIX_LIMIT_REACHED'].includes(image.claude_review),'illustration review verdict');
       }
     }
-    return m.images;
+    return v4?m.images.map(image=>({...image,responsive:true,story_id:m.story_id})):m.images;
   } catch(error){
     // Automatic instance images are optional; invalid assets cannot hold a text release.
     if(instance&&nonBlocking)return [];

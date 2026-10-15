@@ -4,7 +4,7 @@
  */
 (()=>{
   'use strict';
-  const images=[...document.querySelectorAll('.daily-scene-figure img')];
+  const images=[...document.querySelectorAll('.daily-scene-figure img:not([data-nara-responsive])')];
   if(!images.length)return;
 
   const viewer=document.createElement('dialog');

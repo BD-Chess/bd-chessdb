@@ -95,3 +95,41 @@ test('archive illustrates only the exact final EN/SL and leaves earlier author v
   f.write('daily/versions/2026-10-12-S1.json',{schema:'nara.daily.version_series.v1',story_id:f.r.id,date:f.r.date,published_title:f.r.title,final_version:'T03',accepted_lineage:[{version:'T01',story:earlier,source_content_sha256:hash(JSON.stringify(earlier))},{version:'T03',story:body(f.r),source_content_sha256:f.r.content_sha256}],parallel_branches:[]});
   const html=renderVersionArchive(f.root);assert.equal(count(html),6);assert.equal(count(html.slice(0,html.indexOf('T03</strong>'))),0);assert.ok(html.includes('data-language-content="en"'));assert.ok(html.includes('lang="sl" data-language-content="sl" hidden'));assert.ok(!html.includes('generation_prompt_sha256'));
 });
+
+
+test('v4 six HD variants render only for the selected winner; hashes, geometry, anchors and sibling isolation are strict',t=>{
+  const f=fixture(t),bytes=(w,h)=>{const b=Buffer.alloc(30);b.write('RIFF');b.writeUInt32LE(22,4);b.write('WEBP',8);b.write('VP8X',12);b.writeUInt32LE(10,16);b.writeUIntLE(w-1,24,3);b.writeUIntLE(h-1,27,3);return b;};
+  const landscape=bytes(1672,941),portrait=bytes(1080,1920);
+  const images=f.images.map((old,i)=>{
+    const moment_id='moment-0'+(i+1),folder=`assets/img/daily/${f.r.date}/${f.r.instance}/`;
+    const L={src:folder+moment_id+'-L-HD.webp',width:1672,height:941,sha256:hash(landscape)};
+    const P={src:folder+moment_id+'-P-HD.webp',width:1080,height:1920,sha256:hash(portrait)};
+    f.write(L.src,landscape);f.write(P.src,portrait);
+    return {scene:old.scene,after_paragraph:1,moment_id,src:L.src,width:L.width,height:L.height,sha256:L.sha256,alt_en:old.alt_en,alt_sl:old.alt_sl,
+      en_paragraph_sha256:hash(f.r.scenes[old.scene-1].paragraphs[0]),sl_paragraph_sha256:hash(f.sl.scenes[old.scene-1].paragraphs[0]),
+      variants:{L_HD:L,P_HD:P}};
+  });
+  const m={...f.m,schema:'nara.daily.illustrations.v4',images};f.write(f.manifest,m);
+  const loaded=loadIllustrations(f.root,f.r,f.sl);
+  assert.equal(loaded.length,3);assert.ok(loaded.every(x=>x.responsive===true&&x.story_id===f.r.id));
+  const html=instanceStoryHtml({record:f.r},f.root);
+  assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);
+  assert.equal((html.match(/<source media="\\(orientation: portrait\\)"/g)||[]).length,6);
+  assert.ok(html.includes('moment-01-P-HD.webp'));assert.ok(html.includes('moment-03-L-HD.webp'));
+  const sibling={...f.r,id:f.r.id.replace(':S1',':S2'),instance:'S2'};
+  assert.deepEqual(loadIllustrations(f.root,sibling,f.sl),[],'nonselected instance has no images');
+  for(const [change,error] of [
+    [v=>delete v.images[0].variants.P_HD,/two HD variant slots/],
+    [v=>v.images[0].variants.P_HD.sha256='0'.repeat(64),/variant hash mismatch/],
+    [v=>v.images[0].variants.P_HD.width=941,/variant dimensions/],
+    [v=>v.images[0].en_paragraph_sha256='f'.repeat(64),/source paragraph hash/],
+    [v=>v.images[0].moment_id='moment-03',/moment identity/],
+    [v=>v.images[0].variants.P_HD.src='../escape.webp',/unsafe variant path/]
+  ]){
+    const v=structuredClone(m);change(v);f.write(f.manifest,v);
+    assert.throws(()=>loadIllustrations(f.root,f.r,f.sl),error);
+    assert.equal(count(instanceStoryHtml({record:f.r},f.root)),0,'bad optional images never suppress text');
+  }
+  f.write(f.manifest,m);f.write('daily/days/'+f.r.date+'.json',{schema:'nara.daily.day.v1',id:'NARA-D-'+f.r.date,date:f.r.date,featured_instance:'S2'});
+  assert.deepEqual(loadIllustrations(f.root,f.r,f.sl),[],'switched winner cannot inherit old artwork');
+});
