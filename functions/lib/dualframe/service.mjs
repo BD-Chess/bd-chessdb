@@ -7,16 +7,18 @@ import {inspectImage,finishImage,hash,normalizationProof,prepareEditInput} from 
 import {taskGeometry} from '../../../public/Nara/dualframe-lab/core.mjs';
 import {syncState} from './sync-state.mjs';
 import {createEnhancementService} from './enhancement-service.mjs';
+import {createAccountUsageControls} from './account-usage.mjs';
 
 const OWNER='bd-research-owner',CHUNK=1024*1024,MAX_FILE=64*1024*1024;
 const ID=/^[a-zA-Z0-9_-]{8,100}$/,HASH=/^[a-f0-9]{64}$/;
 const origins=new Set(['https://bd-chess.github.io','https://www.mdlxdcc.org','https://mdlxdcc.org']);
 function fail(code,status=400){throw Object.assign(Error(code),{status});}
 const cleanName=s=>String(s||'Untitled').replace(/[\u0000-\u001f]/g,'').slice(0,120);
-const readJSON=async(req,max=16000)=>{const t=await req.text();if(t.length>max)fail('REQUEST_TOO_LARGE',413);try{return JSON.parse(t);}catch{fail('INVALID_JSON');}};
-export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null,enhancementPolicy=null,accountIdentity=null,operatorPolicy=null,freeAuthorization=null}){
+export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null,enhancementPolicy=null,accountIdentity=null,operatorPolicy=null,freeAuthorization=null,accountUsage=null}){
+ const usage=createAccountUsageControls({accountUsage}),readJSON=usage.readJSON;
  const get=key=>store.get(key,{type:'json',consistency:'strong'}),bytes=key=>store.get(key,{type:'arrayBuffer',consistency:'strong'}).then(v=>v===null?null:Buffer.from(v));
- const put=async(key,value)=>{const result=await store.setJSON(key,value,{onlyIfNew:true});if(typeof result?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);if(result.modified&&JSON.stringify(await get(key))!==JSON.stringify(value))fail('STORAGE_WRITE_UNCONFIRMED',503);return result;};
+ async function metadataPlan(key,value,owner){if(key.startsWith('jobs/'))return value.enhancement_plan_id||null;const jobId=key.startsWith('job-events/')?key.split('/')[2]:key.startsWith('asset-meta/')?value.job_id:null;if(jobId)return (await get(`jobs/${owner}/${jobId}`))?.enhancement_plan_id||null;if(key.startsWith('enhancement-plan-events/'))return key.split('/')[2];return null;}
+ const put=async(key,value)=>{const [namespace,owner]=key.split('/');if(owner&&owner!==OWNER&&['uploads','asset-meta','pairs','titles','title-versions','deleted-sources','deleted-pairs','sync-records','sync-snapshots','enhancement-plans','enhancement-plan-events','jobs','job-events'].includes(namespace))await usage.reserveStorage({owner,resource_id:key,byte_count:usage.jsonBytes(value),kind:'metadata',plan_id:await metadataPlan(key,value,owner)});const result=await store.setJSON(key,value,{onlyIfNew:true});if(typeof result?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);if(result.modified&&JSON.stringify(await get(key))!==JSON.stringify(value))fail('STORAGE_WRITE_UNCONFIRMED',503);return result;};
  const session=req=>verifyToken(bearer(req),env('DF_SESSION_SECRET'),'session',now());
  function json(req,data,status=200){const origin=req.headers.get('origin');const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','vary':'Origin'};if(origin&&origins.has(origin)){headers['access-control-allow-origin']=origin;headers['access-control-allow-headers']='authorization,content-type,range';headers['access-control-expose-headers']='content-range,content-length';headers['access-control-allow-methods']='GET,POST,PUT,DELETE,OPTIONS';}return Response.json(data,{status,headers});}
  async function ownedAsset(owner,id){if(!ID.test(id))fail('ASSET_UNKNOWN',404);const meta=await get(`asset-meta/${owner}/${id}`);if(!meta)fail('ASSET_UNKNOWN',404);return meta;}
@@ -37,15 +39,15 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
   const r=await fetcher(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({job_id:j.job_id,token}),signal:AbortSignal.timeout(15000),redirect:'error'});
   if(r.status!==202)fail('WORKER_DISPATCH_FAILED',503);
  }
- const enhancement=createEnhancementService({store,get,put,bytes,state,getJob,ownedAsset,env,now,schedule,runProvider,fetcher,policy:enhancementPolicy,freeAuthorization});
- async function handle(req){
+ const enhancement=createEnhancementService({store,get,put,bytes,state,getJob,ownedAsset,env,now,schedule,runProvider,fetcher,policy:enhancementPolicy,freeAuthorization,accountUsage:usage});
+ async function routeHandle(req){
   try{
    const u=new URL(req.url),path=u.pathname.replace(/^\/api\/df/,'').replace(/^\/\.netlify\/functions\/dualframe-api/,'').replace(/^\/\.netlify\/functions\/dualframe-auth$/,'/auth');
    if(req.method==='OPTIONS'){const origin=req.headers.get('origin');if(!origin||!origins.has(origin))return json(req,{error:'ORIGIN_NOT_ALLOWED'},403);return json(req,{ok:true});}
    if(path==='/capabilities'&&req.method==='GET'){
     const callbacks=['inspect','reserve','authorizeCall'].every(key=>typeof enhancementPolicy?.[key]==='function'),policyConfigured=callbacks&&enhancementPolicy?.configurationStatus?.configured!==false;
     const freeCredentials=/^[a-f0-9]{32}$/i.test(env('DF_CLOUDFLARE_ACCOUNT_ID')||'')&&typeof env('DF_CLOUDFLARE_API_TOKEN')==='string'&&env('DF_CLOUDFLARE_API_TOKEN').length>=20,freeInterface=freeCredentials&&typeof freeAuthorization==='function';
-    return json(req,{...publicCapabilities(env),account_identity:typeof accountIdentity?.status==='function'?await accountIdentity.status():{configured:false,status:'PUBLIC_ENABLEMENT_HELD',public_enabled:false},enhancement_policy:{configured:policyConfigured,status:policyConfigured?'ENHANCE_POLICY_INTERFACE_CONFIGURED_UNVERIFIED':'ENHANCE_POLICY_NOT_CONFIGURED',policy_values_verified:false},free_provider:{configured:freeInterface&&policyConfigured,status:!freeInterface?'FREE_PROVIDER_NOT_CONFIGURED':!policyConfigured?'ENHANCE_POLICY_NOT_CONFIGURED':'FREE_AUTHORIZATION_CONFIGURED_UNVERIFIED',model:'@cf/black-forest-labs/flux-2-klein-4b',zero_spend_route_verified:false,real_quality_verified:false,paid_fallback:false}});
+    return json(req,{...publicCapabilities(env),account_identity:typeof accountIdentity?.status==='function'?await accountIdentity.status():{configured:false,status:'PUBLIC_ENABLEMENT_HELD',public_enabled:false},enhancement_policy:{configured:policyConfigured,status:policyConfigured?'ENHANCE_POLICY_INTERFACE_CONFIGURED_UNVERIFIED':'ENHANCE_POLICY_NOT_CONFIGURED',policy_values_verified:false},free_provider:{configured:freeInterface&&policyConfigured,status:!freeInterface?'FREE_PROVIDER_NOT_CONFIGURED':!policyConfigured?'ENHANCE_POLICY_NOT_CONFIGURED':'FREE_AUTHORIZATION_CONFIGURED_UNVERIFIED',model:'@cf/black-forest-labs/flux-2-klein-4b',zero_spend_route_verified:false,real_quality_verified:false,paid_fallback:false},account_usage:{configured:usage.configured(),status:usage.configured()?'BYTE_USAGE_INTERFACE_CONFIGURED_UNVERIFIED':'BYTE_USAGE_POLICY_NOT_CONFIGURED',storage_transfer_quotas_verified:false,automatic_retention_cleanup:false}});
    }
    if(path==='/auth/account'&&req.method==='POST'){
     if(typeof accountIdentity!=='function')fail('PUBLIC_ENABLEMENT_HELD',503);
@@ -60,6 +62,9 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
     return json(req,{token,expires_at:new Date(now()+30*86400000).toISOString(),owner:OWNER});
    }
    const claim=session(req),owner=claim.owner,principal={owner,auth_method:claim.auth_method||'legacy-password',admin:false,...(claim.auth_method==='verified-account'?{issuer:claim.issuer,subject:claim.subject}:{})};
+   usage.markOwner(req,owner);
+   // Endpoints without a JSON payload still consume a bounded incoming body.
+   if(owner!==OWNER&&req.body&&((req.method==='DELETE')||/^\/uploads\/[^/]+\/finish$/.test(path)||/^\/jobs\/[^/]+\/(accept|reject|cancel|resume)$/.test(path)))await readJSON(req);
    if(path==='/session'&&req.method==='GET')return json(req,{ok:true,expires_at:new Date(claim.exp*1000).toISOString(),owner,auth_method:principal.auth_method,admin:false,paid_entitlement:0});
    if(path==='/admin/policy'&&['GET','PUT'].includes(req.method)){
     if(principal.auth_method!=='verified-account')fail('ADMIN_IDENTITY_REQUIRED',403);
@@ -80,7 +85,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(path==='/uploads/init'&&req.method==='POST'){
     const b=await readJSON(req);if(!HASH.test(b.sha256||'')||!Number.isInteger(b.size)||b.size<24||b.size>MAX_FILE||!['original','normalized','derived','master','candidate','generated','natural-master','artistic-master','hd-derivative'].includes(b.kind))fail('UPLOAD_INVALID');
     if(b.kind==='original'&&b.size>12*1024*1024)fail('UPLOAD_TOO_LARGE',413);
-    const lineage=await sync.uploadLineage(owner,b),id=randomUUID(),n=Math.ceil(b.size/CHUNK);await put(`uploads/${owner}/${id}`,{id,owner,sha256:b.sha256,size:b.size,kind:b.kind,...lineage,chunks:n,created_at:now()});return json(req,{upload_id:id,chunk_size:CHUNK,chunks:n});
+    const lineage=await sync.uploadLineage(owner,b),id=randomUUID(),n=Math.ceil(b.size/CHUNK),storage=await usage.reserveStorage({owner,resource_id:`upload:${id}`,byte_count:2*b.size,kind:'upload-chunks-and-final'});await put(`uploads/${owner}/${id}`,{id,owner,...(storage?{storage_reservation_id:storage.reservation_id}:{}),sha256:b.sha256,size:b.size,kind:b.kind,...lineage,chunks:n,created_at:now()});return json(req,{upload_id:id,chunk_size:CHUNK,chunks:n});
    }
    const uploadStatus=path.match(/^\/uploads\/([-a-zA-Z0-9_]+)$/);
    if(uploadStatus&&req.method==='GET'){const info=await get(`uploads/${owner}/${uploadStatus[1]}`);if(!info)fail('UPLOAD_UNKNOWN',404);const committed=await get(`asset-meta/${owner}/${info.id}`);if(committed)return json(req,{upload_id:info.id,complete:true,asset:committed});if(now()-info.created_at>86400000)fail('UPLOAD_EXPIRED',410);const present=new Set(await sync.keys(`chunks/${owner}/${info.id}/`));return json(req,{upload_id:info.id,complete:false,chunk_size:CHUNK,chunks:info.chunks,received:Array.from({length:info.chunks},(_,i)=>i).filter(i=>present.has(`chunks/${owner}/${info.id}/${i}`))});}
@@ -88,7 +93,8 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(chunk&&req.method==='PUT'){
     const info=await get(`uploads/${owner}/${chunk[1]}`),index=Number(chunk[2]);if(!info||!Number.isInteger(index)||index<0||index>=info.chunks)fail('UPLOAD_UNKNOWN',404);
     if(now()-info.created_at>86400000)fail('UPLOAD_EXPIRED',410);
-    const data=Buffer.from(await req.arrayBuffer()),expected=Math.min(CHUNK,info.size-index*CHUNK);if(data.length!==expected)fail('CHUNK_SIZE_INVALID');
+    const expected=Math.min(CHUNK,info.size-index*CHUNK),data=await usage.readBody(req,expected);if(data.length!==expected)fail('CHUNK_SIZE_INVALID');
+    await usage.authorizeReservedStorage({owner,reservation_id:info.storage_reservation_id,resource_id:`chunk:${index}`,byte_count:data.length});
     const key=`chunks/${owner}/${info.id}/${index}`;const written=await store.set(key,data,{onlyIfNew:true});
     if(!written.modified){const old=await bytes(key);if(!old||hash(old)!==hash(data))fail('CHUNK_CONFLICT',409);}
     return json(req,{ok:true,index});
@@ -102,10 +108,11 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
     const list=[];for(let i=0;i<info.chunks;i++){const part=await bytes(`chunks/${owner}/${info.id}/${i}`);if(!part)fail('UPLOAD_INCOMPLETE',409);list.push(part);}
     const data=Buffer.concat(list);if(data.length!==info.size||hash(data)!==info.sha256)fail('UPLOAD_HASH_MISMATCH',409);
     const dimensions=await inspectImage(data);if(info.kind==='normalized'&&dimensions.format!=='png')fail('NORMALIZED_PNG_REQUIRED');
-    const {id:uploadId,size:uploadSize,chunks:uploadChunks,created_at:uploadCreated,...identity}=info;
+    const {id:uploadId,size:uploadSize,chunks:uploadChunks,created_at:uploadCreated,storage_reservation_id,...identity}=info;
     const meta={...identity,asset_id:info.id,sha256:info.sha256,byte_size:info.size,...dimensions,kind:info.kind,mime:dimensions.format==='jpeg'?'image/jpeg':`image/${dimensions.format}`,owner,created_at:new Date(now()).toISOString()};
+    await usage.authorizeReservedStorage({owner,reservation_id:info.storage_reservation_id,resource_id:'final',byte_count:data.length});
     const saved=await store.set(`assets/${owner}/${info.id}`,data,{onlyIfNew:true});if(typeof saved?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);const verified=await bytes(`assets/${owner}/${info.id}`);if(!verified||verified.length!==data.length||hash(verified)!==info.sha256)fail('ASSET_WRITE_UNCONFIRMED',503);await put(`asset-meta/${owner}/${info.id}`,meta);
-    await sync.repairMissingAliases(owner,meta,data);
+    await sync.repairMissingAliases(owner,meta,data,async(aliasId)=>{await usage.reserveStorage({owner,resource_id:`assets/${owner}/${aliasId}`,byte_count:data.length,kind:'repaired-asset'});});
     for(let i=0;i<info.chunks;i++)await store.delete(`chunks/${owner}/${info.id}/${i}`);
     return json(req,meta);
    }
@@ -118,7 +125,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    // A display title is metadata keyed to the immutable source hash: no image bytes or lineage change.
    const titlePath=path.match(/^\/titles\/([a-f0-9]{64})$/);
    if(titlePath&&req.method==='PUT'){
-    const b=await readJSON(req),title=b?.title;
+    const b=await readJSON(req),title=b?.title;if(owner!==OWNER&&!Object.hasOwn(b,'base_revision'))fail('SYNC_UPDATE_REQUIRED',409);
     if(typeof title!=='string'||!title.trim()||title.trim().length>120||/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u.test(title))fail('TITLE_INVALID');
     if(await sync.tombstoned(owner,null,titlePath[1]))fail('PAIR_DELETED',409);
     const saved=await sync.writeTitle(owner,titlePath[1],b);
@@ -156,8 +163,8 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    const asset=path.match(/^\/assets\/([-a-zA-Z0-9_]+)$/);
    if(asset&&req.method==='GET'){
     const meta=await ownedAsset(owner,asset[1]),data=await bytes(`assets/${owner}/${asset[1]}`);if(!data)fail('ASSET_UNKNOWN',404);
-    const match=req.headers.get('range')?.match(/^bytes=(\d+)-(\d+)$/);let start=0,end=data.length-1,status=200;
-    if(match){start=Number(match[1]);end=Math.min(Number(match[2]),data.length-1);if(start<0||end<start||start>=data.length||end-start+1>3*1024*1024)fail('RANGE_INVALID',416);status=206;}
+    const range=req.headers.get('range'),match=range?.match(/^bytes=(\d+)-(\d+)$/);if(range&&!match)fail('RANGE_INVALID',416);let start=0,end=data.length-1,status=200;
+    if(match){start=Number(match[1]);const requestedEnd=Number(match[2]);if(!Number.isSafeInteger(start)||!Number.isSafeInteger(requestedEnd))fail('RANGE_INVALID',416);end=Math.min(requestedEnd,data.length-1);if(start<0||end<start||start>=data.length||end-start+1>3*1024*1024)fail('RANGE_INVALID',416);status=206;}
     else if(data.length>3*1024*1024){start=0;end=3*1024*1024-1;status=206;}
     const headers=new Headers(json(req,{}).headers);headers.set('content-type',meta.mime);headers.set('content-length',String(end-start+1));headers.set('accept-ranges','bytes');if(status===206)headers.set('content-range',`bytes ${start}-${end}/${data.length}`);
     return new Response(data.subarray(start,end+1),{status,headers});
@@ -172,10 +179,11 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    return json(req,{error:'NOT_FOUND'},404);
   }catch(e){const code=e.message==='UNAUTHORIZED'?'UNAUTHORIZED':/^[A-Z0-9_]+$/.test(e.message)?e.message:'REQUEST_FAILED';return json(req,{error:code},e.status||(code==='UNAUTHORIZED'?401:code==='REQUEST_FAILED'?500:400));}
  }
+ async function handle(req){const response=await routeHandle(req);try{return await usage.meterResponse(req,response);}catch(error){return json(req,{error:/^[A-Z0-9_]+$/.test(error.message)?error.message:'BYTE_USAGE_UNAVAILABLE'},error.status||503);}}
  async function work(payload){
   const claim=verifyToken(payload?.token,env('DF_SESSION_SECRET'),'worker',now());if(claim.job_id!==payload.job_id)fail('UNAUTHORIZED',401);
   const j=await getJob(claim.owner,payload.job_id),root=`job-events/${j.owner}/${j.job_id}`;
-  if(j.enhancement_plan_id)return enhancement.work(j);
+  if(j.enhancement_plan_id)return enhancement.work(j);if(j.owner!==OWNER)fail('PUBLIC_JOB_PLAN_REQUIRED',403);
   if(await get(`${root}/ready`)||await get(`${root}/failed`)||await get(`${root}/cancelled`))return;
   // Immutable reservation: platform retries/repeated dispatches never repeat a paid call.
   const locked=await put(`${root}/submitted`,{at:now(),owner:j.owner,job_id:j.job_id,reservation_id:randomUUID()});if(!locked.modified)return;

@@ -1,3 +1,4 @@
+import {fixtureAccountUsage} from './fixtures/account-usage.mjs';
 // One bounded Chrome smoke: synthetic data and two disposable persistent profiles.
 // Run in CI with playwright-core and CHROME_PATH=/usr/bin/google-chrome.
 import assert from 'node:assert/strict';
@@ -31,7 +32,7 @@ const token=signToken({owner,scope:'session'},secret,3600);
 const fixtureAccounts=Object.fromEntries(['browser_app_account_A','browser_app_account_B'].map(owner=>[owner,{owner,token:signToken({owner,scope:'session',auth_method:'verified-account',issuer:'https://www.mdlxdcc.org/.netlify/identity',subject:'synthetic-'+owner},secret,3600),expires_at:new Date(Date.now()+3600000).toISOString(),auth_method:'verified-account',admin:false,paid_entitlement:0,account_access:'restricted'}]));
 let popupSession=null;
 let providerCalls=0,forbiddenCalls=0;
-const service=createService({store,env:key=>key==='DF_SESSION_SECRET'?secret:null,
+const service=createService({accountUsage:fixtureAccountUsage(Object.keys(fixtureAccounts)),store,env:key=>key==='DF_SESSION_SECRET'?secret:null,
  runProvider:async()=>{providerCalls++;throw Error('BROWSER_SMOKE_PROVIDER_FORBIDDEN');},
  fetcher:async()=>{forbiddenCalls++;throw Error('BROWSER_SMOKE_EXTERNAL_FORBIDDEN');},
  dispatch:async()=>{forbiddenCalls++;throw Error('BROWSER_SMOKE_DISPATCH_FORBIDDEN');}});
@@ -164,11 +165,23 @@ try{
  for(const [label,page] of [['desktop',a.page],['390px',b.page]]){
   activePage=page;await page.locator('#language').click();assert.equal(await page.locator('html').getAttribute('lang'),'sl');await syncClick(page);assert.match(await page.locator('#cloud-status').textContent(),/^Usklajeno/);
   const beforeControls={jobs:metrics.jobWrites,plans:metrics.planPosts,submits:metrics.enhancePosts};
+  const benchKeys=()=>page.locator('#bench-models input[type="checkbox"]').evaluateAll(inputs=>inputs.map(input=>input.value).sort());
+  const legacyBenchKeys=await benchKeys();assert.ok(legacyBenchKeys.includes('wan-image-pro'));assert.ok(legacyBenchKeys.includes('grok-imagine'));
   await page.locator('#settings-open').click();assert.equal(await page.locator('#settings-dialog').evaluate(el=>el.open),true);await page.locator('#settings-delay').selectOption('0');
   assert.equal(await page.locator('#settings-enhance-tier').evaluate(el=>el.tagName),'SELECT');assert.deepEqual(await page.locator('#settings-enhance-tier option').evaluateAll(nodes=>nodes.map(n=>n.value)),['free','premium']);
   // isDisabled() follows the wrapping label to the select in Playwright 1.64.1; inspect this option's actual disabled property.
   await page.locator('#settings-enhance-tier').selectOption('premium');assert.equal(await page.locator('#settings-enhance-model option[value="cloudflare-flux-free"]').evaluate(option=>option.disabled),true);await page.locator('#settings-save').click();
-  await page.locator('#settings-open').click();assert.equal(await page.locator('#settings-enhance-tier').inputValue(),'premium');await page.locator('#settings-enhance-tier').selectOption('free');assert.equal(await page.locator('#settings-enhance-model').inputValue(),'cloudflare-flux-free');await page.locator('#settings-save').click();
+  await page.locator('#tab-compare').click();await page.locator('#compare-task').selectOption('smart');assert.deepEqual(await benchKeys(),['openai-flare','openai-sunburst']);assert.equal(await page.locator('#bench-models input:checked:not(:disabled)').count(),2,'Premium enhancement never preselects unsupported Wan/Grok');
+  await page.locator('#settings-open').click();assert.equal(await page.locator('#settings-enhance-tier').inputValue(),'premium');await page.locator('#settings-enhance-tier').selectOption('free');assert.equal(await page.locator('#settings-enhance-model').inputValue(),'cloudflare-flux-free');assert.deepEqual(await benchKeys(),['cloudflare-flux-free'],'draft tier change refreshes operation choices');await page.locator('#settings-save').click();
+  assert.deepEqual(await benchKeys(),['cloudflare-flux-free']);assert.equal(await page.locator('#bench-models input:checked:not(:disabled)').count(),1);assert.match(await page.locator('#bench-models').textContent(),/FREE_PROVIDER_NOT_CONFIGURED/);
+  await page.locator('#settings-open').click();await page.locator('#settings-enhance-tier').selectOption('premium');assert.deepEqual(await benchKeys(),['openai-flare','openai-sunburst']);await page.locator('#settings-close').click();assert.deepEqual(await benchKeys(),['cloudflare-flux-free'],'closing unsaved Settings restores the committed Free tier');
+  await page.locator('#tab-create').click();await page.locator('#enhance-natural').uncheck();await page.locator('#tab-compare').click();assert.deepEqual(await benchKeys(),legacyBenchKeys,'disabling enhancement restores legacy Smart models');
+  await page.locator('#tab-create').click();await page.locator('#enhance-natural').check();await page.locator('#tab-compare').click();assert.deepEqual(await benchKeys(),['cloudflare-flux-free']);
+  await page.locator('#compare-task').selectOption('faithful');await page.locator('#bench-models input[value="openai-flare"]').uncheck();
+  for(const mode of ['infographic','faithful']){await page.locator('#compare-task').selectOption(mode);assert.deepEqual(await benchKeys(),legacyBenchKeys,'legacy '+mode+' model choices remain intact');assert.equal(await page.locator('#bench-models input[value="openai-flare"]').isChecked(),false,'legacy model exclusions survive task changes');}
+  await page.locator('#bench-models input[value="openai-flare"]').check();
+  await page.locator('#compare-task').selectOption('smart');assert.deepEqual(await benchKeys(),['cloudflare-flux-free']);await page.locator('#compare-task').selectOption('faithful');await page.locator('#tab-showcase').click();
+  receipt.checks[label+'_compare_operation_compatible_Free_Premium_legacy_models']='PASS';
   assert.deepEqual({jobs:metrics.jobWrites,plans:metrics.planPosts,submits:metrics.enhancePosts},beforeControls,'changing preferences does not submit a plan or call a model');
   await page.locator('#own-gallery .card-image').first().click();await page.waitForFunction(()=>document.querySelector('#viewer-image').naturalWidth>0);
   const frame=await page.locator('#viewer-image').getAttribute('data-orientation');await page.locator('#viewer-swap').click();await page.waitForFunction(prior=>document.querySelector('#viewer-image').dataset.orientation!==prior&&document.querySelector('#viewer-image').naturalWidth>0,frame);

@@ -616,8 +616,20 @@ updateViewer=async function(){
  }else if(viewerFrameTimer){clearTimeout(viewerFrameTimer);viewerFrameTimer=null;}
  await priorUpdateViewer();if(viewerPair&&$('viewer-image').dataset.pairId===viewerPair)await warmViewer();
 };
-function renderBenchModels(){const holder=$('bench-models');if(!holder)return;const checked=new Set([...holder.querySelectorAll('input:checked')].map(x=>x.value)),first=!holder.children.length;holder.replaceChildren();const mode=$('compare-task').value;
- for(const model of MODELS.filter(x=>x.direct&&x.edit!==false&&prefs.enabledModels.includes(x.key))){const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=checked.has(model.key)||(first&&prefs.enabledModels.includes(model.key));input.disabled=!supportsMode(model.key,mode);label.append(input,node('span',model.label));holder.append(label);}
+const benchSelectionMemory=new Map();
+function renderBenchModels(tierOverride){
+ const holder=$('bench-models');if(!holder)return;
+ const mode=canonicalMode($('compare-task').value),enhancing=mode==='smart'&&(enhancePrefs.natural||enhancePrefs.artistic),tier=['free','premium'].includes(tierOverride)?tierOverride:enhancePrefs.tier;
+ const context=`${scopeOwner||'local'}:${enhancing?'enhance:'+tier:'legacy'}`,previous=holder.dataset.context,checked=new Set([...holder.querySelectorAll('input:checked')].map(input=>input.value));
+ if(previous)benchSelectionMemory.set(previous,checked);const remembered=benchSelectionMemory.get(context);
+ const models=enhancing&&tier==='free'?[{key:'cloudflare-flux-free',label:'Cloudflare · FLUX.2 klein 4B'}]:MODELS.filter(model=>model.direct&&model.edit!==false&&prefs.enabledModels.includes(model.key)&&(!enhancing||['openai-sunburst','openai-flare'].includes(model.key)));
+ holder.replaceChildren();holder.dataset.context=context;
+ for(const model of models){
+  const label=node('label',undefined,'bench-model'),input=node('input');input.type='checkbox';input.value=model.key;input.checked=remembered?remembered.has(model.key):true;input.disabled=!(enhancing&&tier==='free')&&!supportsMode(model.key,mode);
+  label.append(input,node('span',model.label+(enhancing&&tier==='free'?' · '+enhancementStatus('free'):'')));holder.append(label);
+ }
+ if(!models.length)holder.append(node('p',language==='sl'?'Noben vključen model ne podpira te obdelave.':'No enabled model supports this operation.','small muted'));
+ $('bench-generate').disabled=benchBusy||!models.length;
 }
 function renderBenchResults(){const holder=$('bench-results');if(!holder)return;const p=comparePair()||selectedPair();holder.replaceChildren();if(!p)return;
  for(const job of p.jobs.slice().reverse().filter(j=>j.provider!=='demo').slice(0,18)){const card=node('article',undefined,'bench-result');card.append(node('strong',modelFor(job.model)?.label||job.model),node('span',`${t(job.status)} · ${job.quality}`,'small'));const image=job.candidate||(p.candidates||[]).find(x=>x.candidate_id===job.job_id);if(image){const img=node('img');bindImage(img,image);img.alt=modelFor(job.model)?.label||job.model;img.loading='lazy';card.append(img,button(t('useAsA'),()=>{$('candidate-a').value=image.sha256;association();},'text-button'),button(t('useAsB'),()=>{$('candidate-b').value=image.sha256;association();},'text-button'));}if(job.error)card.append(node('p',t(job.error),'small'));holder.append(card);}
@@ -768,7 +780,7 @@ function enhancementActive(){return $('create-kind').value==='expand'&&canonical
 function applyEnhancementControls(){
  $('enhance-natural').checked=enhancePrefs.artistic?false:enhancePrefs.natural;$('enhance-natural').disabled=enhancePrefs.artistic;
  $('enhance-artistic').checked=enhancePrefs.artistic;$('enhance-background').value=enhancePrefs.artistic?'ai':enhancePrefs.background;$('enhance-background').disabled=enhancePrefs.artistic;
- $('enhance-strength').value=enhancePrefs.strength;$('enhance-review').checked=enhancePrefs.reviewMaster;$('enhance-hd-copy').checked=enhancePrefs.includeHD;updateEnhancementControls();
+ $('enhance-strength').value=enhancePrefs.strength;$('enhance-review').checked=enhancePrefs.reviewMaster;$('enhance-hd-copy').checked=enhancePrefs.includeHD;updateEnhancementControls();renderBenchModels();
 }
 function updateEnhancementControls(){
  const photo=$('create-kind').value==='expand'&&canonicalMode($('mode').value)==='smart';$('enhancement-controls').hidden=!photo;
@@ -830,7 +842,8 @@ function initEnhancementUI(){
  for(const id of ['enhance-natural','enhance-artistic','enhance-background','enhance-strength','enhance-review','enhance-hd-copy'])$(id).addEventListener('change',()=>{
   enhancePrefs=writeEnhancementSettings({...enhancePrefs,natural:$('enhance-natural').disabled?enhancePrefs.natural:$('enhance-natural').checked,artistic:$('enhance-artistic').checked,background:$('enhance-background').value==='ai'?enhancePrefs.background:$('enhance-background').value,strength:$('enhance-strength').value,reviewMaster:$('enhance-review').checked,includeHD:$('enhance-hd-copy').checked},preferenceStorage);applyEnhancementControls();
  });
- $('settings-enhance-tier').addEventListener('change',()=>{const free=$('settings-enhance-tier').value==='free';for(const option of $('settings-enhance-model').options){option.hidden=free?option.value!=='cloudflare-flux-free':option.value==='cloudflare-flux-free';option.disabled=option.hidden;}$('settings-enhance-model').value=free?'cloudflare-flux-free':enhancePrefs.model;$('settings-enhance-status').textContent=enhancementStatus(free?'free':'premium');});
+ $('settings-enhance-tier').addEventListener('change',()=>{const free=$('settings-enhance-tier').value==='free';for(const option of $('settings-enhance-model').options){option.hidden=free?option.value!=='cloudflare-flux-free':option.value==='cloudflare-flux-free';option.disabled=option.hidden;}$('settings-enhance-model').value=free?'cloudflare-flux-free':enhancePrefs.model;$('settings-enhance-status').textContent=enhancementStatus(free?'free':'premium');renderBenchModels(free?'free':'premium');});
+ $('settings-dialog').addEventListener('close',()=>renderBenchModels());
  $('enhance-only').addEventListener('click',guard(()=>planEnhancement(true)));
  $('enhancement-plan-close').addEventListener('click',()=>$('enhancement-plan-dialog').close());
  $('enhancement-plan-start').addEventListener('click',guard(async()=>{

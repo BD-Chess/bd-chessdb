@@ -65,10 +65,11 @@ export function syncState({store,get,put,state,now}){
   if(lineage!==null&&(typeof lineage!=='object'||Array.isArray(lineage)||JSON.stringify(lineage).length>8000))fail('LINEAGE_INVALID');
   return {pair_id:pair?.pair_id||null,source_sha256:b.source_sha256||null,parent_asset_ids:[...new Set(parentIds)],parents,family_id:ID.test(b.family_id||'')?b.family_id:pair?.pair_id||null,role,acceptance:b.acceptance||'PRESERVED',lineage,lineage_verification:'client-asserted; ownership and referenced hashes server-verified',...(b.operation?{operation:b.operation}:{}),...(b.orientation&&['portrait','landscape'].includes(b.orientation)?{orientation:b.orientation}:{}),...(b.quality&&['hd','4k'].includes(b.quality)?{quality:b.quality}:{})};
  }
- async function repairMissingAliases(owner,meta,data){
+ async function repairMissingAliases(owner,meta,data,authorizeRepair=null){
   const present=new Set(await keys(`assets/${owner}/`));
   for(const key of await keys(`asset-meta/${owner}/`)){
    const id=key.split('/').pop();if(id===meta.asset_id||present.has(`assets/${owner}/${id}`))continue;const old=await get(key);if(!old||old.sha256!==meta.sha256||old.byte_size!==meta.byte_size||old.mime!==meta.mime||old.width!==meta.width||old.height!==meta.height)continue;
+   if(authorizeRepair)await authorizeRepair(old.asset_id);
    const written=await store.set(`assets/${owner}/${old.asset_id}`,data,{onlyIfNew:true});if(typeof written?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);
    const verified=await store.get(`assets/${owner}/${old.asset_id}`,{type:'arrayBuffer',consistency:'strong'});if(!verified||createHash('sha256').update(Buffer.from(verified)).digest('hex')!==old.sha256)fail('ASSET_REPAIR_UNCONFIRMED',503);
   }

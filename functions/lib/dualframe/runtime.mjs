@@ -44,7 +44,7 @@ export function parseOperatorAdminBindings(raw,{now=Date.now()}={}){
   return Object.freeze({issuer,subject:value.subject,verified_at:value.verified_at,verification_receipt:value.verification_receipt});
  }));
 }
-function heldPolicies(status){return {enhancementPolicy:null,operatorPolicy:null,configurationStatus:Object.freeze({configured:false,status,database_verified:false,schema_verified:false})};}
+function heldPolicies(status){return {enhancementPolicy:null,operatorPolicy:null,accountUsage:null,configurationStatus:Object.freeze({configured:false,status,database_verified:false,schema_verified:false})};}
 /** Configuration only. Pool construction is lazy: no connect, SQL, migrations,
  * policy seeding, account enrollment or provider request occurs here. */
 export async function runtimeOperatorPolicies(env,{loadPg=loadDefaultPg,now=()=>Date.now()}={}){
@@ -84,7 +84,7 @@ export async function runtimeOperatorPolicies(env,{loadPg=loadDefaultPg,now=()=>
  const enhancementPolicy=createEnhancementPolicy({backend}),operatorPolicy=createOperatorPolicyService({backend,authorizeAdmin,now});
  enhancementPolicy.configurationStatus=Object.freeze({...enhancementPolicy.configurationStatus,...configurationStatus});
  operatorPolicy.configurationStatus=configurationStatus;
- return {enhancementPolicy,operatorPolicy,configurationStatus};
+ return {enhancementPolicy,operatorPolicy,accountUsage:backend,configurationStatus};
 }
 export async function runtimeService(){
  const store=configurationStore(),pack=await store.get(VAULT_KEY,{type:'json',consistency:'strong'});
@@ -92,5 +92,5 @@ export async function runtimeService(){
  if(pack)values=decryptConfiguration(pack,Netlify.env.get('GEMINI_API_KEY'));
  const env=key=>Netlify.env.get(key)||values[key];
  const policies=await runtimeOperatorPolicies(env);
- return createService({store,env,accountIdentity:await runtimeAccountIdentity(env),enhancementPolicy:policies.enhancementPolicy,operatorPolicy:policies.operatorPolicy});
+ return createService({store,env,accountIdentity:await runtimeAccountIdentity(env),enhancementPolicy:policies.enhancementPolicy,operatorPolicy:policies.operatorPolicy,accountUsage:policies.accountUsage});
 }
