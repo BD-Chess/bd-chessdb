@@ -779,6 +779,7 @@ function accountPreferences(owner){
 let scopeOwner,scopedStore,enhancementClient,scopeController=new AbortController(),accountTransition=Promise.resolve(),appInitialized=false,offlineSessionFallback=false,enhancementBusy=false,creationBusy=false,activeEnhancementPlan=null;
 async function activateSessionScope(force=false){
  const owner=API.sessionOwner()||(offlineSessionFallback?API.cachedSessionOwner():null);if(!force&&scopeOwner===owner&&scopedStore)return;
+ document.documentElement.dataset.libraryState='switching';$('api-toggle').setAttribute('aria-busy','true');
  const previousSelection=selected;const localClaim=scopeOwner===null&&owner==='bd-research-owner'&&API.sessionOwner()===owner?await snapshotUnassigned():null;
  scopeController.abort();activeSyncController?.abort();syncPaused=false;$('sync-pause').hidden=true;$('sync-pause').textContent=t('syncPause');for(const controller of controllers.values())controller.abort();controllers.clear();
  closeViewer();imageLoader.clear();clearWarmImages();for(const url of urls)URL.revokeObjectURL(url);urls.clear();urlCache=new WeakMap();
@@ -790,6 +791,7 @@ async function activateSessionScope(force=false){
  try{favorites=new Set(JSON.parse(preferenceStorage.getItem('bd-df-favorites')||'[]'));}catch{favorites=new Set();}
  const client=API.captureAPI();syncEngine=newSyncEngine();enhancementClient=createEnhancementClient({api:client,store:scopedStore,signal:scopeController.signal,onChange:async()=>{if(scopeController.signal.aborted)return;pairs=await scopedStore.getPairs();render();renderEnhancementFamilies();}});
  if(appInitialized){pairs=await scopedStore.getPairs();scores=await scopedStore.getScores();selected=pairs.some(p=>p.pair_id===previousSelection)?previousSelection:pairs[0]?.pair_id||null;applySettings();applyEnhancementControls();render();repaintGallery();}
+ document.documentElement.dataset.libraryOwner=owner||'local';document.documentElement.dataset.libraryState='ready';$('api-toggle').removeAttribute('aria-busy');
 }
 function enhancementActive(){return $('create-kind').value==='expand'&&canonicalMode($('mode').value)==='smart'&&(enhancePrefs.natural||enhancePrefs.artistic);}
 function applyEnhancementControls(){
@@ -820,7 +822,7 @@ function renderPlan(plan){
  text('enhanceCalls',String(plan.maximum_api_calls));text('enhanceOperations',(plan.calls||[]).map(call=>`${call.operation} ${call.target||'master'} (${call.model_calls||0})`).join(' → '));
  const size=g=>g?.width&&g?.height?`${g.width} × ${g.height}`:'—';text('enhanceGeometry',`${t('enhanceMaster')}: ${size(plan.geometry?.master_export||plan.geometry?.master)} · ${t('enhanceRequest')}: ${size(plan.geometry?.master_request)} · ${(plan.calls||[]).filter(call=>call.target!=='master').map(call=>`${call.target}: ${size(call.geometry)}`).join(' / ')}`);text('enhanceCost',plan.cost?.maximum!==undefined?`${plan.cost.maximum} ${plan.cost.currency||''}`:t('unknownCost'));
  box.append(node('p',t('enhanceProcessing'),'small muted'));if(plan.recipe?.kind==='artistic')box.append(node('p',t('artisticDisclosure'),'small'));
- $('enhancement-plan-status').textContent=plan.available?t('enhanceReady'):plan.blocked_reason||'ENHANCE_POLICY_NOT_CONFIGURED';
+ $('enhancement-plan-status').textContent=plan.available?t('enhanceReady'):t(plan.blocked_reason||'ENHANCE_POLICY_NOT_CONFIGURED');
  $('enhancement-plan-status').classList.toggle('error',!plan.available);
 }
 function frozenEnhancementOptions(enhanceOnly,model=$('pipeline').value){
