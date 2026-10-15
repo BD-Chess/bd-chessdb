@@ -186,14 +186,16 @@
         title.textContent = event.name || event.config?.name || 'Simulation'; state.textContent = `${event.state || 'saved'} · ${complete}/${games.length} complete`; summary.append(title, state);
         const runIds = new Set(games.map(game => game.runId).filter(Boolean));
         const decisions = runs.filter(run => run.eventId === event.id || runIds.has(run.id)).flatMap(run => run.trace || []);
-        const counts = { CDB: 0, SF: 0, unknown: 0, changed: 0 };
+        const counts = { CDB: 0, SF: 0, LC0: 0, RLE: 0, BER: 0, unknown: 0, changed: 0 };
         for (const decision of decisions) {
           const source = decision.actual_provider || decision.provider;
-          if (source === 'CDB' || source === 'SF') counts[source]++; else counts.unknown++;
+          if (['CDB', 'SF', 'LC0', 'RLE', 'BER'].includes(source)) counts[source]++; else counts.unknown++;
           if (decision.changed && (decision.dcc_requested || ['dcc', 'sf-dcc'].includes(decision.policy))) counts.changed++;
         }
         const statistics = doc.createElement('span'); statistics.className = 'tournament-event-stats';
-        statistics.textContent = `Actual decisions · CDB ${counts.CDB} · SF ${counts.SF} · DCC changes ${counts.changed}${counts.unknown ? ' · unknown source ' + counts.unknown : ''}`;
+        const nativeCounts = [['LC0', 'LC0'], ['RLE', 'Reckless'], ['BER', 'Berserk']]
+          .filter(([source]) => counts[source]).map(([source, name]) => ` · ${name} ${counts[source]}`).join('');
+        statistics.textContent = `Actual decisions · CDB ${counts.CDB} · SF ${counts.SF}${nativeCounts} · DCC changes ${counts.changed}${counts.unknown ? ' · unknown source ' + counts.unknown : ''}`;
         summary.appendChild(statistics); card.appendChild(summary);
         const content = doc.createElement('div'); content.className = 'tournament-event-body';
         const description = doc.createElement('p'); description.className = 'tournament-note';
