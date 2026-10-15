@@ -151,7 +151,43 @@ function initAllCore() {
   /* ------------------------------------------------------------------
      2. LOAD SAVED SETTINGS
   ------------------------------------------------------------------*/
-  const saved = localStorage.getItem(STORAGE_KEY_SETTINGS);
+  const defaultSettings = JSON.parse(JSON.stringify(settings));
+  const unsavedKeys = new Set();
+  function storageFailure(error) {
+    return ['QuotaExceededError', 'SecurityError', 'InvalidStateError', 'NS_ERROR_DOM_QUOTA_REACHED'].includes(error?.name) || error?.code === 22 || error?.code === 1014;
+  }
+  function persistenceStatus() {
+    let notice = document.getElementById('chessPersistenceStatus');
+    if (!notice && unsavedKeys.size) {
+      notice = document.createElement('p'); notice.id = 'chessPersistenceStatus';
+      notice.setAttribute('role', 'status'); notice.setAttribute('aria-live', 'polite');
+      notice.style.cssText = 'margin:.4rem auto;padding:.5rem .75rem;max-width:70rem;border:1px solid #be973d;border-radius:.4rem;color:#f4d58a;background:#302815;font:13px/1.4 system-ui';
+      (document.getElementById('main') || document.body).before(notice);
+    }
+    if (notice) {
+      notice.hidden = !unsavedKeys.size;
+      const text = 'Changes not saved in this browser. Keep this tab open; PGN and Study export are still available. Storage will be retried on the next save.';
+      if (unsavedKeys.size && notice.textContent !== text) notice.textContent = text;
+    }
+  }
+  function readLocal(key) {
+    try { return localStorage.getItem(key); }
+    catch (error) { if (!storageFailure(error)) throw error; unsavedKeys.add(key); persistenceStatus(); return null; }
+  }
+  function writeLocal(key, value) {
+    try {
+      // Do not overwrite an unreadable durable value with a session default.
+      localStorage.getItem(key);
+      if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
+      if (localStorage.getItem(key) !== value) { unsavedKeys.add(key); persistenceStatus(); return false; }
+      unsavedKeys.delete(key); persistenceStatus(); return true;
+    } catch (error) {
+      if (!storageFailure(error)) throw error;
+      unsavedKeys.add(key); persistenceStatus(); return false;
+    }
+  }
+  function persistSettings() { return writeLocal(STORAGE_KEY_SETTINGS, JSON.stringify(settings)); }
+  const saved = readLocal(STORAGE_KEY_SETTINGS);
   if (saved) {
     try {
       const prior = JSON.parse(saved);
@@ -159,7 +195,7 @@ function initAllCore() {
       // Adopt the requested new default once, then retain the user's later choice.
       if (prior.timerDisplayDefaults !== 2) settings.showTimers = true;
       settings.timerDisplayDefaults = 2;
-      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      persistSettings();
     }
     catch (e) { console.error('Bad settings JSON', e); }
   }
@@ -181,7 +217,7 @@ function initAllCore() {
   settings.sfAnalysisDepth = normalizeSFDepth(settings.sfAnalysisDepth);
   function saveSettings() {
     invalidateDCCAnalysis();
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    return persistSettings();
   }
   const LICHESS_TOKEN_KEY   = LAB_KEYS.lichessToken;
   const LICHESS_PUBLIC_TOKEN_URL = 'Lichess-API.txt';
@@ -485,26 +521,37 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     return stripRAV(String(pgn || '')).replace(/\{[^}]*\}/g, '');
   }
 
-  const savedGame = localStorage.getItem(STORAGE_KEY_GAME);
+  // One atomic record owns PGN + curated cursor. Legacy plain-PGN games
+  // and the separate legacy marker remain readable; new saves never update
+  // that pair partially. The old marker is ignored for an envelope, even null.
+  const savedGameRecord = readLocal(STORAGE_KEY_GAME);
+  let savedGame = savedGameRecord, savedTopPick = null, gameEnvelope = false, gameRecordCorrupt = false;
+  if (savedGameRecord?.trimStart().startsWith('{')) {
+    try {
+      const record = JSON.parse(savedGameRecord);
+      if (record.schema !== 'chessbest-game/1' || typeof record.pgn !== 'string') throw Error('Unsupported saved game');
+      savedGame = record.pgn; savedTopPick = record.topPick; gameEnvelope = true;
+    } catch (error) { console.warn('Invalid saved game record; original bytes retained', error); savedGame = null; gameRecordCorrupt = true; }
+  }
   if (savedGame) {
-    const storedTopPick = localStorage.getItem(STORAGE_KEY_TOP_PICK);
-    if (storedTopPick) {
+    if (!gameEnvelope) {
+      const marker = readLocal(STORAGE_KEY_TOP_PICK);
+      try { savedTopPick = marker ? JSON.parse(marker) : null; }
+      catch (error) { console.warn('Invalid Top Pick resume marker', error); }
+    }
+    if (savedTopPick) {
       try {
-        const meta = JSON.parse(storedTopPick);
         if (game.load_pgn(validateStudyPGN(savedGame).pgn())) {
           restoreTopPickCursor = chessBestTopPickResumeCursor(
-            meta, savedGame, game.header(), game.history({ verbose: true }), Chess);
+            savedTopPick, savedGame, game.header(), game.history({ verbose: true }), Chess);
           if (restoreTopPickCursor !== null) activeTopPickPGN = savedGame;
         }
       } catch (error) { console.warn('Invalid Top Pick resume marker', error); }
     }
     if (restoreTopPickCursor === null) {
-      localStorage.removeItem(STORAGE_KEY_TOP_PICK);
       try { game.load_pgn(savedGame); }
       catch (e) { console.error('Bad saved PGN', e); }
     }
-  } else {
-    localStorage.removeItem(STORAGE_KEY_TOP_PICK);
   }
 
   /* ------------------------------------------------------------------
@@ -585,24 +632,19 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 
 
   function persistGame() {
+    if (gameRecordCorrupt) { unsavedKeys.add(STORAGE_KEY_GAME); persistenceStatus(); return false; }
     const moves = game.history();
+    let pgn = game.pgn(), topPick = null;
     if (activeTopPickPGN && lastLoadedPGN === activeTopPickPGN && moves.length <= fullHistory.length &&
         moves.every((move, i) => move === fullHistory[i].san)) {
-      // Keep the whole curated PGN and its cursor, including after back/forward
-      // navigation. A changed line leaves this narrow resume mode immediately.
-      localStorage.setItem(STORAGE_KEY_GAME, activeTopPickPGN);
-      localStorage.setItem(STORAGE_KEY_TOP_PICK, JSON.stringify({
-        cursor: moves.length, totalPlies: fullHistory.length, pgnLength: activeTopPickPGN.length,
-        source: game.header().ChessBestSource || ''
-      }));
-      return;
-    }
-    activeTopPickPGN = null;
-    localStorage.removeItem(STORAGE_KEY_TOP_PICK);
-    if (game.history().length || game.fen() !== new Chess().fen())
-      localStorage.setItem(STORAGE_KEY_GAME, game.pgn());
-    else
-      localStorage.removeItem(STORAGE_KEY_GAME);
+      pgn = activeTopPickPGN;
+      topPick = { cursor: moves.length, totalPlies: fullHistory.length, pgnLength: pgn.length,
+        source: game.header().ChessBestSource || '' };
+    } else activeTopPickPGN = null;
+    // setItem is atomic: refusal leaves the last complete PGN/cursor intact.
+    const saved = writeLocal(STORAGE_KEY_GAME, JSON.stringify({ schema: 'chessbest-game/1', pgn, topPick }));
+    if (saved) { unsavedKeys.delete(STORAGE_KEY_TOP_PICK); persistenceStatus(); }
+    return saved;
   }
 
 
@@ -681,7 +723,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   window.ChessAnalysisSession?.subscribeSettings?.(next=>{
     if(settings.sfCardMode===next.sfCardMode)return;
     settings.sfCardMode=next.sfCardMode;
-    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+    persistSettings();
     positionEval.render();
   });
   const positionEval = window.ChessEvalBar.create({ game, settings,
@@ -715,7 +757,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     } });
   const workspace = window.ChessWorkspace.create({ Chess, game, settings,
     onDisplaySettings: () => {
-      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+      persistSettings();
       renderHistory(); renderLichessClocks();
     },
     analyze: async (fen, cancelled) => {
@@ -2317,8 +2359,10 @@ function jumpTo(i){
 
   // Reset all settings back to defaults
   document.getElementById('btnResetSettings').onclick = () => {
-    localStorage.removeItem(STORAGE_KEY_SETTINGS);
-    location.reload();
+    for (const key of Object.keys(settings)) delete settings[key];
+    Object.assign(settings, JSON.parse(JSON.stringify(defaultSettings)));
+    writeLocal(STORAGE_KEY_SETTINGS, null);
+    applySettings(); updateBoard(false);
   };
 
 	  
@@ -2511,7 +2555,7 @@ function jumpTo(i){
     });
   }
   document.addEventListener('keydown',e=>{
-    if (playState.active || replayRunning || e.target.closest('[role=dialog], dialog, [contenteditable=true]')) return;
+    if (e.defaultPrevented || playState.active || replayRunning || e.target.closest('[role=dialog], dialog, [contenteditable], [role=tablist], [role=tab]')) return;
     if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName) || e.ctrlKey || e.altKey || e.metaKey) return;
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
@@ -2618,7 +2662,13 @@ function jumpTo(i){
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
-  const labHost = { Chess, mount: document.body, getContext: getLabContext, getReviewGame, navigateReview, openReviewStudy,
+  const labHost = { Chess, mount: document.body, getContext: getLabContext,
+    saveBeforeUpdate: () => {
+      const gameSaved = persistGame(), settingsSaved = persistSettings();
+      for (const [key, pending] of [['study', studyUI?.getPending()], ['evidence', researchUI?.store.status().unsaved]])
+        if (pending) unsavedKeys.add(key); else unsavedKeys.delete(key);
+      persistenceStatus(); return gameSaved && settingsSaved && !unsavedKeys.size;
+    }, getReviewGame, navigateReview, openReviewStudy,
     pause: pauseLab, navigate: navigateStudy,
     onCDBSearch: async () => {
       const fen=game.fen();await refreshCDBCurrentPosition();
@@ -2705,13 +2755,13 @@ function jumpTo(i){
     if(!Array.from(cardTimeSelect.options).some(option=>Number(option.value)===preferred)){const option=document.createElement('option');option.value=String(preferred);option.textContent=preferred/1000+' s';cardTimeSelect.appendChild(option);}
     cardTimeSelect.value=String(preferred);
     cardTimeSelect.addEventListener('change',()=>{settings.analysisTimeMs=Number(cardTimeSelect.value);window.ChessAnalysisSession?.configure?.({analysisTimeMs:settings.analysisTimeMs,
-      ...(settings.analysisLink?{deepTimeMs:settings.analysisTimeMs}:{})});localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));});
+      ...(settings.analysisLink?{deepTimeMs:settings.analysisTimeMs}:{})});persistSettings();});
   }
   document.getElementById('settingSFDepth').addEventListener('change', event => {
     settings.sfAnalysisDepth = normalizeSFDepth(event.target.value);
     event.target.value = String(settings.sfAnalysisDepth);
     sfAnalysisDepth = null;
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    persistSettings();
     // The review limit does not interrupt a Sim or change its node budget.
     if (simRunning || replayRunning || offlineEvidence || (playState.active && playState.assistanceLocked)) return;
     invalidateDCCAnalysis();
@@ -2728,7 +2778,7 @@ function jumpTo(i){
       document.querySelectorAll('.overlay').forEach(el=>el.remove());
       const candidates=document.getElementById('analysisCandidates');candidates.replaceChildren();candidates.style.display='none';
       positionEval.clearBoard?.(game.fen());activeAnalysisProvider=null;activeAnalysisFen=null;
-      localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+      persistSettings();
       const fen=game.fen();
       if(settings.analysisSource==='cdb'){
         const retained=settings.cdbEnabled===false?null:currentSourceAnalyses().CDB;
@@ -2799,7 +2849,7 @@ function jumpTo(i){
   linkToggle.addEventListener('change',()=>{
     settings.analysisLink=linkToggle.checked;
     linkedCard=settings.analysisLink?(settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.roleFor(settings.analysisSource)):null;
-    localStorage.setItem(STORAGE_KEY_SETTINGS,JSON.stringify(settings));
+    persistSettings();
     window.ChessAnalysisControls?.syncLinkedDeep?.();positionEval.render();
   });
   if (restoreTopPickCursor !== null) {
@@ -4595,7 +4645,7 @@ async function launchFromSimModal() {
   document.getElementById('settingDccClickAction').onchange = event => {
     settings.dccClickAction = event.target.value;
     settings.dccClickAction = dccClickAction();
-    localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+    persistSettings();
     renderDCCView();
   };
 

@@ -126,8 +126,10 @@
       setDesktopView('moves');
     }, true);
     tabs.addEventListener('keydown', event => {
+      if (event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
+      event.stopPropagation();
       const ordered = [...tabs.querySelectorAll('[data-desktop-view]')];
       const index = Math.max(0, ordered.findIndex(tab => tab.dataset.desktopView === desktopView));
       const target = event.key === 'Home' ? 0 : event.key === 'End' ? ordered.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + ordered.length) % ordered.length;

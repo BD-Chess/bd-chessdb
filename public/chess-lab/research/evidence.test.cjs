@@ -54,7 +54,8 @@ test('collector bounds retained replies and does not infer unknown source metada
 });
 test('bounded persistent fallback survives reopening and evicts oldest snapshots',async()=>{
   const data=new Map(),storage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
-  const store=E.createStore({indexedDB:null,localStorage:storage,maxItems:2});
+  const locks={request:(_name,_options,fn)=>Promise.resolve().then(fn)};
+  const store=E.createStore({indexedDB:null,localStorage:storage,locks,maxItems:2});
   const a=snapshot({at:'2026-09-11T00:00:00Z'}),b=snapshot({at:'2026-09-12T00:00:00Z'}),c=snapshot({at:'2026-09-13T00:00:00Z'});
   await store.put(a);await store.put(b);assert.equal((await store.put(c)).persistent,true);
   const reopened=E.createStore({indexedDB:null,localStorage:storage});
