@@ -1,6 +1,6 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
 const BUILD_LABEL='2026-10-15-r4.13';
-const PACKAGE_SHA='9804fa57fab27d43c5313e4473b53e33371683f1f24248bb06a69b6b9b2f2868';
+const PACKAGE_SHA='8ffac53e46b8f03548bee2bbe2bd62c34106ee89946782dc5c7c4667d4ae89e5';
 const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.11","./app.mjs?v=3.0-r4.13","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.9","./api-client.mjs?v=3.0-r4.11","./core.mjs?v=3.0-r4.11","./store.mjs?v=3.0-r4.11","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4.11","./models.mjs?v=3.0-r4.11","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4.11","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.11","./pair.schema.json","./release.json","./enhancement-client.mjs?v=3.0-r4.11","./enhancement-settings.mjs?v=3.0-r4.11","./enhancement-backup.mjs?v=3.0-r4.11","./account-login.html","./account-login.mjs","./vendor/netlify-identity-2.0.0.mjs"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';

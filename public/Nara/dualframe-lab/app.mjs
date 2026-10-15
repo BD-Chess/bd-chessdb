@@ -399,7 +399,7 @@ function initSettingsUI(){
   try{prefs.delaySeconds=Number($('delay-quick').value);persistPrefs();scheduleGalleryOrientation();if(viewerPair)updateViewer();}catch{notify('STORAGE_OPERATION_FAILED',true);}
  });
  $('settings-open').addEventListener('click',()=>{renderSettingsUI();$('settings-dialog').showModal();diagnoseStorage().catch(()=>{});});
- $('settings-close').addEventListener('click',()=>$('settings-dialog').close());
+ $('settings-close').addEventListener('click',()=>{renderBenchModels();$('settings-dialog').close();});
  $('settings-form').addEventListener('submit',saveSettingsFromDialog);
  $('settings-profile-apply').addEventListener('click',()=>{
   const profile=$('settings-profile').value,mode=profile==='photo'?'faithful':profile==='text'?'infographic':'smart';
@@ -828,7 +828,7 @@ function renderEnhancementFamilies(){
   const master=family.master||(pair.masters||[]).find(m=>m.family_id===family.family_id);
   if(master&&selected===pair.pair_id&&((pair.enhancement_families||[]).at(-1)===family||family.status==='MASTER_READY')){const compare=node('div',undefined,'master-compare');for(const [asset,label,normalized] of [[pair.original,t('original'),true],[master,t('enhanceMaster'),false]]){const figure=node('figure'),img=node('img');img.alt=label;bindImage(img,asset,normalized);figure.append(img,node('figcaption',label));compare.append(figure);}el.append(compare,node('p',`${master.width} × ${master.height} · ${master.resolution_origin||'export'} · ${master.native_4k?'native 4K':t('exportNotNative')}`,'small'));
    const actions=node('div',undefined,'button-row');
-   if(master.acceptance==='READY'||family.status==='MASTER_READY'){
+   if(family.plan_id&&family.status!=='RESTORED'&&(master.acceptance==='READY'||family.status==='MASTER_READY')){
     actions.append(button(t('accept'),guard(()=>runEnhancementAction(()=>enhancementClient.acceptMaster(pair.pair_id,family.plan_id)))),button(t('reject'),guard(()=>runEnhancementAction(()=>enhancementClient.rejectMaster(pair.pair_id,family.plan_id)))));
    }
    el.append(actions);
@@ -844,6 +844,7 @@ function initEnhancementUI(){
  });
  $('settings-enhance-tier').addEventListener('change',()=>{const free=$('settings-enhance-tier').value==='free';for(const option of $('settings-enhance-model').options){option.hidden=free?option.value!=='cloudflare-flux-free':option.value==='cloudflare-flux-free';option.disabled=option.hidden;}$('settings-enhance-model').value=free?'cloudflare-flux-free':enhancePrefs.model;$('settings-enhance-status').textContent=enhancementStatus(free?'free':'premium');renderBenchModels(free?'free':'premium');});
  $('settings-dialog').addEventListener('close',()=>renderBenchModels());
+ $('settings-dialog').addEventListener('cancel',()=>renderBenchModels());
  $('enhance-only').addEventListener('click',guard(()=>planEnhancement(true)));
  $('enhancement-plan-close').addEventListener('click',()=>$('enhancement-plan-dialog').close());
  $('enhancement-plan-start').addEventListener('click',guard(async()=>{

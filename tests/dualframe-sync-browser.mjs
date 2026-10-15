@@ -32,7 +32,10 @@ const token=signToken({owner,scope:'session'},secret,3600);
 const fixtureAccounts=Object.fromEntries(['browser_app_account_A','browser_app_account_B'].map(owner=>[owner,{owner,token:signToken({owner,scope:'session',auth_method:'verified-account',issuer:'https://www.mdlxdcc.org/.netlify/identity',subject:'synthetic-'+owner},secret,3600),expires_at:new Date(Date.now()+3600000).toISOString(),auth_method:'verified-account',admin:false,paid_entitlement:0,account_access:'restricted'}]));
 let popupSession=null;
 let providerCalls=0,forbiddenCalls=0;
-const service=createService({accountUsage:fixtureAccountUsage(Object.keys(fixtureAccounts)),store,env:key=>key==='DF_SESSION_SECRET'?secret:null,
+// Synthetic trusted policy prices exercise UI addition only. Missing provider
+// keys keep every Premium plan held. These are not published market prices.
+const fixturePolicy={inspect:async({proposal})=>proposal.tier==='premium'?{allowed:true,policy_version:'synthetic-browser-price-v1',model:proposal.model,tier:proposal.tier,maximum_api_calls:proposal.maximum_api_calls,cost:{maximum:proposal.model==='openai-flare'?1.25:2.5,currency:'USD'}}:{allowed:false,reason:'FREE_PROVIDER_NOT_CONFIGURED'},reserve:async()=>{forbiddenCalls++;throw Error('SYNTHETIC_RESERVATION_FORBIDDEN');},authorizeCall:async()=>{forbiddenCalls++;throw Error('SYNTHETIC_AUTHORIZATION_FORBIDDEN');}};
+const service=createService({accountUsage:fixtureAccountUsage(Object.keys(fixtureAccounts)),enhancementPolicy:fixturePolicy,store,env:key=>key==='DF_SESSION_SECRET'?secret:null,
  runProvider:async()=>{providerCalls++;throw Error('BROWSER_SMOKE_PROVIDER_FORBIDDEN');},
  fetcher:async()=>{forbiddenCalls++;throw Error('BROWSER_SMOKE_EXTERNAL_FORBIDDEN');},
  dispatch:async()=>{forbiddenCalls++;throw Error('BROWSER_SMOKE_DISPATCH_FORBIDDEN');}});
@@ -71,7 +74,7 @@ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`,app=origin+'/public/Nara/dualframe-lab/';
 const contexts=new Set(),pageErrors=[],externalRequests=[];
 const makeContext=async(label,mobile=false)=>{
- const context=await chromium.launchPersistentContext(path.join(profiles,label),{executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,serviceWorkers:'block',viewport:mobile?{width:390,height:844}:{width:1280,height:900},deviceScaleFactor:mobile?3:1,hasTouch:mobile,args:['--disable-background-networking']});
+ const context=await chromium.launchPersistentContext(path.join(profiles,label),{executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome',headless:true,acceptDownloads:true,serviceWorkers:'block',viewport:mobile?{width:390,height:844}:{width:1280,height:900},deviceScaleFactor:mobile?3:1,hasTouch:mobile,args:['--disable-background-networking']});
  contexts.add(context);context.setDefaultTimeout(15000);
  await context.route('**/*',route=>{
   const url=new URL(route.request().url());
@@ -105,6 +108,16 @@ const snapshot=page=>page.evaluate(async()=>{
  for(const pair of pairs){const assets=[];async function visit(value,path=[],parent=null){if(disk.isBlobReference(value)||value instanceof Blob){const blob=await disk.getStoredBlob(value),sha256=await digest(blob);if(path.at(-1)==='blob'&&parent.sha256&&parent.sha256!==sha256)throw Error('FIXTURE_DECLARED_HASH_MISMATCH');assets.push({path:path.join('.'),sha256,size:blob.size});return;}if(Array.isArray(value))for(let i=0;i<value.length;i++)await visit(value[i],[...path,i],value);else if(value&&typeof value==='object')for(const [key,item] of Object.entries(value))await visit(item,[...path,key],value);}
   await visit(pair);result.push({source:pair.original.sha256,assets:assets.sort((a,b)=>a.path.localeCompare(b.path)),jobs:pair.jobs.map(j=>({status:j.status,job_id:j.job_id})),variantHashes:Object.fromEntries(Object.entries(pair.variants).map(([d,q])=>[d,Object.fromEntries(Object.entries(q).map(([quality,asset])=>[quality,asset.sha256]))]))});}
  return {version:(await disk.openStore()).version,metadataOnly:pairs.every(p=>!(p.original.blob instanceof Blob)),pairs:result.sort((a,b)=>a.source.localeCompare(b.source))};
+});
+// Restore deliberately strips active cloud authority and READY legacy jobs.
+// Compare unique asset identities, not the changed history-object graph paths.
+const inventory=page=>page.evaluate(async()=>{
+ const disk=await import('./store.mjs?v=3.0-r4.11'),rows=await disk.getPairs(),items=new Map(),digest=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await b.arrayBuffer()))].map(x=>x.toString(16).padStart(2,'0')).join('');
+ for(const pair of rows){async function visit(value,path=[],parent={}){
+  if(disk.isBlobReference(value)||value instanceof Blob){const blob=await disk.getStoredBlob(value),role=parent.role||(path.join('.')==='original.blob'?'original':path.at(-1)==='normalized'?'normalized':parent.origin==='original'?'original-display':parent.candidate_id?'candidate':'output');const item={source:pair.original.sha256,role,sha256:await digest(blob),width:parent.width??null,height:parent.height??null,mime:blob.type,bytes:blob.size,...(parent.acceptance?{acceptance:parent.acceptance}:{})};items.set(JSON.stringify(item),item);return;}
+  if(Array.isArray(value))for(let i=0;i<value.length;i++)await visit(value[i],[...path,i],value);else if(value&&typeof value==='object')for(const [key,item] of Object.entries(value))await visit(item,[...path,key],value);
+ }await visit(pair);}
+ return [...items.values()].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
 });
 async function poll(check){const deadline=Date.now()+20000;while(Date.now()<deadline){if(await check())return;await new Promise(r=>setTimeout(r,30));}throw Error('BROWSER_PERSISTENCE_POLL_TIMEOUT');}
 async function syncClick(page){
@@ -161,6 +174,22 @@ try{
  receipt.checks.interrupt_reload_resume='PASS';receipt.checks.hashes_and_saved_states='PASS';receipt.checks.natural_artistic_masters_families_HD_derivative_sync='PASS';
  const beforeNoop={gets:metrics.assetGets,chunks:metrics.uploadChunks,bytes:metrics.assetBytes+metrics.uploadBytes};await syncClick(b.page);
  assert.deepEqual({gets:metrics.assetGets,chunks:metrics.uploadChunks,bytes:metrics.assetBytes+metrics.uploadBytes},beforeNoop,'repeat Sync transfers no redundant image bytes');receipt.checks.repeat_noop='PASS';
+ for(const [label,page] of [['desktop',a.page],['390px',b.page]]){
+  activePage=page;const before=await inventory(page),transfers={gets:metrics.assetGets,chunks:metrics.uploadChunks,jobs:metrics.jobWrites,enhance:metrics.enhancePosts};
+  await page.locator('#tab-create').click();if(!await page.locator('details.technical').evaluate(el=>el.open))await page.locator('details.technical > summary').click();
+  const event=page.waitForEvent('download');await page.locator('#bundle-export').click();const download=await event;assert.equal(download.suggestedFilename(),'DualFrame-private-backup.json');const backupPath=path.join(profiles,label+'-backup.json');await download.saveAs(backupPath);
+  const backupBytes=await readFile(backupPath),backup=JSON.parse(backupBytes);assert.equal(backup.schema,'bd.dualframe.backup.v1');assert.equal(backup.pairs.length,3);
+  // Delete only this disposable fixture's three pairs. Restoring over existing
+  // duplicates would skip import and would not demonstrate byte recovery.
+  await page.evaluate(async hashes=>{const disk=await import('./store.mjs?v=3.0-r4.11'),rows=await disk.getPairs();if(rows.length!==3||rows.some(p=>!hashes.includes(p.original.sha256)))throw Error('BACKUP_FIXTURE_SCOPE_CHANGED');for(const p of rows)await disk.removePair(p.pair_id);},originals.map(x=>hash(x.buffer)));
+  await page.reload({waitUntil:'networkidle'});await page.waitForFunction(()=>document.querySelector('#pair-count').textContent.startsWith('0 '));await page.locator('#tab-create').click();
+  await page.locator('#backup-import').setInputFiles(backupPath);await page.waitForFunction(()=>document.querySelector('#pair-count').textContent.startsWith('3 '));assert.deepEqual(await inventory(page),before,'export/restore retains every unique original, HD/4K, natural/artistic master and HD derivative hash/dimension');
+  const restoredState=await page.evaluate(async()=>{const disk=await import('./store.mjs?v=3.0-r4.11'),rows=await disk.getPairs(),families=rows.flatMap(p=>p.enhancement_families||[]);return {count:families.length,restored:families.every(f=>f.status==='RESTORED'&&!f.plan_id&&!f.plan&&!f.submit_intent&&f.automatic_paid_retry===false),history:families.every(f=>f.restored_plan&&f.restored_status),masterStates:families.map(f=>f.master?.acceptance).sort()};});
+  assert.equal(restoredState.count,2);assert.equal(restoredState.restored,true);assert.equal(restoredState.history,true);assert.deepEqual(restoredState.masterStates,['ACCEPTED','READY']);
+  const buttons=await page.locator('#enhancement-families button').allTextContents();assert.equal(buttons.some(text=>/^(Accept|Reject|Resume|Sprejmi|Zavrni|Nadaljuj)$/.test(text.trim())),false,'restored history exposes no cloud acceptance or resume controls');
+  assert.deepEqual({gets:metrics.assetGets,chunks:metrics.uploadChunks,jobs:metrics.jobWrites,enhance:metrics.enhancePosts},transfers,'backup export/restore invokes no asset transfer or provider work');receipt.checks[label+'_actual_export_restore_hashes_and_inactive_history']='PASS';
+  await page.locator('#tab-showcase').click();
+ }
 
  for(const [label,page] of [['desktop',a.page],['390px',b.page]]){
   activePage=page;await page.locator('#language').click();assert.equal(await page.locator('html').getAttribute('lang'),'sl');await syncClick(page);assert.match(await page.locator('#cloud-status').textContent(),/^Usklajeno/);
@@ -204,6 +233,14 @@ try{
   await page.locator('#language').click();assert.equal(await page.locator('html').getAttribute('lang'),'en');
   receipt.checks[label+'_EN_SL_settings_LP_viewer_bounded_memory']='PASS';receipt.checks[label+'_enhancement_controls_held_plan_no_generation']='PASS';
  }
+ // Show aggregation from two actual held plans. USD figures come only from
+ // fixturePolicy; no real price, allowance, reservation or provider is used.
+ activePage=a.page;await a.page.locator('#settings-open').click();await a.page.locator('#settings-enhance-tier').selectOption('premium');await a.page.locator('#settings-save').click();await a.page.locator('#tab-compare').click();await a.page.locator('#compare-task').selectOption('smart');
+ const models=await a.page.locator('#bench-models input').evaluateAll(nodes=>nodes.map(n=>n.value));assert.deepEqual(models.sort(),['openai-flare','openai-sunburst']);for(const key of models)await a.page.locator('#bench-models input[value="'+key+'"]').check();
+ const existingPlans=new Set([...store.map.keys()].filter(key=>key.startsWith('enhancement-plans/'))),planCount=metrics.planPosts;await a.page.locator('#bench-generate').click();await a.page.waitForFunction(()=>document.querySelector('#enhancement-plan-dialog').open);
+ const plans=[...store.map.entries()].filter(([key])=>key.startsWith('enhancement-plans/')&&!existingPlans.has(key)).map(([,value])=>value);assert.equal(plans.length,2);assert.equal(metrics.planPosts,planCount+2);assert.ok(plans.every(p=>p.available===false&&p.blocked_reason==='KEY_NOT_CONFIGURED'));
+ const totalCalls=plans.reduce((n,p)=>n+p.maximum_api_calls,0),totalCost=plans.reduce((n,p)=>n+p.cost.maximum,0),disclosure=await a.page.locator('#enhancement-plan-content').textContent();assert.ok(totalCalls>2);assert.equal(totalCost,3.75);assert.match(disclosure,new RegExp('Maximum AI API calls: '+totalCalls+'(?:\\D|$)'));assert.match(disclosure,/3\.75 USD/);for(const key of models)assert.ok(disclosure.includes(key));assert.equal(await a.page.locator('#enhancement-plan-start').isDisabled(),true);await a.page.screenshot({path:path.join(evidence,'compare-aggregate-held.png')});await a.page.locator('#enhancement-plan-close').click();
+ await a.page.locator('#settings-open').click();await a.page.locator('#settings-enhance-tier').selectOption('free');await a.page.locator('#settings-save').click();await a.page.locator('#tab-showcase').click();receipt.checks.two_model_compare_held_aggregate_calls_cost='PASS';receipt.compare_pricing='SYNTHETIC_TRUSTED_POLICY_USD_3.75_NOT_MARKET_PRICE';
  // This fixture exercises real browser IndexedDB account namespaces, without
  // pretending that a live Identity account or login has been provisioned.
  const accountStorage=await a.page.evaluate(async()=>{
