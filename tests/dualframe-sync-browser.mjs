@@ -124,7 +124,7 @@ try{
  const b0=await makeContext('profile-b',true);activePage=b0.page;
  assert.equal((await snapshot(b0.page)).pairs.length,0,'profile B starts without profile A data');
  await b0.page.locator('#cloud-load').click();
- await b0.page.waitForFunction(async()=>{const disk=await import('./store.mjs?v=3.0-r4.10'),db=await disk.openStore();return new Promise(resolve=>{const r=db.transaction('sync').objectStore('sync').getAll();r.onsuccess=()=>resolve(r.result.filter(v=>v?.verified===true).length>=2);});});
+ await b0.page.waitForFunction(async()=>{const disk=await import('./store.mjs?v=3.0-r4.10'),db=await disk.openStore();return new Promise(resolve=>{const r=db.transaction('sync').objectStore('sync').getAll();r.onsuccess=()=>resolve(new Set(r.result.filter(v=>v?.verified===true).map(v=>v.asset_id).filter(Boolean)).size>=2);});});
  const beforeResume=metrics.assetGets;assert.ok(beforeResume>=2);await close(b0.context);
  gateDownloads=false;for(const res of held)res.destroy();held.clear();
  const b=await makeContext('profile-b',true);activePage=b.page;await syncClick(b.page);
