@@ -1,7 +1,7 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
-const BUILD_LABEL='2026-10-15-r4.9';
-const PACKAGE_SHA='d9398207d5f2a6719cbd0956af1f5d8ea0ec0bcee3fca0bf186298825c99a6d0';
-const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.9","./app.mjs?v=3.0-r4.9","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.9","./api-client.mjs?v=3.0-r4","./core.mjs?v=3.0-r4","./store.mjs?v=3.0-r4.9","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4","./models.mjs?v=3.0-r4","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4","./zip-store.mjs?v=3.0-r4.1","./pair.schema.json","./release.json"];
+const BUILD_LABEL='2026-10-15-r4.10';
+const PACKAGE_SHA='1a7090b83a442b232729dd2f81f04d7441ec104b76a42f99424f464a46924246';
+const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.9","./app.mjs?v=3.0-r4.10","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.9","./api-client.mjs?v=3.0-r4.10","./core.mjs?v=3.0-r4","./store.mjs?v=3.0-r4.10","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4","./models.mjs?v=3.0-r4","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.10","./pair.schema.json","./release.json"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';
 const CACHE=PREFIX+BUILD_LABEL+':'+PACKAGE_SHA;

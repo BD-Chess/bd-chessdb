@@ -26,8 +26,19 @@ jobs:
       - name: Install the isolated IndexedDB regression fixture
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
       - name: Verify offline package and update safety
-        run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs
+        run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs
       - name: Verify authenticated provider probing without vendor calls
         run: |
           npm install --prefix functions --no-audit --no-fund
-          node --test tests/dualframe-v3.test.mjs
+          node --test tests/dualframe-v3.test.mjs tests/dualframe-sync-server.test.mjs
+      - name: Verify full Sync with two persistent browser profiles and synthetic images
+        timeout-minutes: 4
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          node tests/dualframe-sync-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dualframe-sync-browser-evidence
+          path: browser-evidence/
+          if-no-files-found: ignore

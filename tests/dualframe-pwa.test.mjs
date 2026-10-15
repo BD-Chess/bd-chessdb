@@ -29,7 +29,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-15-r4.9');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-15-r4.10');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -78,8 +78,8 @@ test('name editing is localized, stored separately from original filename and qu
  assert.match(app,/function openRename\(pair\)/);
  assert.match(app,/async function saveRename\(event\)/);
  assert.match(app,/pair.display_name=name;pair.title_sync_pending=true;/);
- assert.match(app,/API.request\('\/titles\/'\+pair.original.sha256,\{method:'PUT',body:\{title\}\}\)/);
- assert.match(app,/for\(const p of pairs\)if\(p.title_sync_pending\)await syncPendingTitle\(p\)/);
+ assert.match(app,/base_revision:pair.title_revision\|\|0/);
+ assert.match(app,/pair.title_sync_pending=true/);
  assert.match(app,/const cloudName=data.titles\?\.\[p.original.sha256\]/);
  assert.match(app,/Object.assign\(dictionary.sl,\{rename:'Preimenuj'/);
  assert.match(app,/const displayTitle = pair => pair.display_name \|\| pair.title \|\| pair.original\?\.filename/);
@@ -98,9 +98,9 @@ test('Settings have quick Delay, real model filters and safely bounded cloud Syn
  const syncStart=app.indexOf('async function syncCloud(ask=true)'),syncEnd=app.indexOf('async function loadRemotePair(remote)',syncStart);
  assert.ok(syncStart>0&&syncEnd>syncStart);
  const sync=app.slice(syncStart,syncEnd);
- assert.doesNotMatch(sync,/API\.asset\(/,'Sync must not implicitly fetch full image bytes');
- assert.match(sync,/remotePairs=Array\.isArray\(data\.pairs\)/);
- assert.match(app,/const budget=estimateHydrationSafety\(await storageEstimate\(\),expected\)/);
+ assert.match(sync,/if\(ask\)\{/);assert.match(sync,/syncEngine\.sync\(\)/,'manual Sync must reconcile byte assets');
+ assert.match(sync,/syncEngine.catalog\(\)/);
+ assert.match(app,/createSyncEngine\(\{api:API.syncTransport/);
  assert.match(app,/if\(prefs\.autoSyncMetadata\)syncCloud\(false\)/);
 });
 

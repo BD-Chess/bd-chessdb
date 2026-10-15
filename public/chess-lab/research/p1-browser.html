@@ -65,6 +65,9 @@ if(args.has('worker')){
       }
       await Promise.all(frames.map(frame=>call(frame,backend,'cleanup')));await cleanup(prefix);
     }
+    const probe='ChessBest:P1-QA:'+crypto.randomUUID()+':aborted-probe';
+    await new Promise((resolve,reject)=>{const req=indexedDB.open(probe);req.onupgradeneeded=()=>req.transaction.abort();req.onerror=()=>resolve();req.onsuccess=()=>{req.result.close();reject(Error('Missing-DB probe unexpectedly committed'));};});
+    check(!(await indexedDB.databases()).some(db=>db.name===probe),'native IndexedDB: aborted missing-database probe creates no durable database');
     out.textContent=JSON.stringify({status:'PASS',checks:logs.length,results:logs,context:'two same-origin disposable windows; real IndexedDB/localStorage/Web Locks'},null,2);
   }catch(error){out.textContent=logs.join('\n')+'\nFAIL '+error.message;}
   finally{removeEventListener('message',listener);frames.forEach(f=>f.remove());button.disabled=false;}

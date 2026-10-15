@@ -88,7 +88,10 @@ test('missing legacy databases are never created, including no-databases() brows
     const env = setup(); const enumerate = env.indexedDB.databases.bind(env.indexedDB);
     if (!listing) env.indexedDB.databases = undefined;
     await Migration.create(env).ready;
-    assert.deepEqual(await enumerate(), []);
+    // fake-indexeddb 6.0.1 retains rolled-back, schema-free version-0
+    // placeholders in databases(). An independent aborted open reproduces
+    // this even without Migration. No committed database may be created.
+    assert.deepEqual((await enumerate()).filter(entry => entry.version > 0), []);
   }
 });
 

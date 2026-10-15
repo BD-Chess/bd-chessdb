@@ -5,13 +5,14 @@ import {callProvider,ProviderError} from './providers.mjs';
 import {probeModelKeys} from './provider-health.mjs';
 import {inspectImage,finishImage,hash,normalizationProof,prepareEditInput} from './images.mjs';
 import {taskGeometry} from '../../../public/Nara/dualframe-lab/core.mjs';
+import {syncState} from './sync-state.mjs';
 
 const OWNER='bd-research-owner',CHUNK=1024*1024,MAX_FILE=64*1024*1024;
 const ID=/^[a-zA-Z0-9_-]{8,100}$/,HASH=/^[a-f0-9]{64}$/;
 const origins=new Set(['https://bd-chess.github.io','https://www.mdlxdcc.org','https://mdlxdcc.org']);
 function fail(code,status=400){throw Object.assign(Error(code),{status});}
 const cleanName=s=>String(s||'Untitled').replace(/[\u0000-\u001f]/g,'').slice(0,120);
-const readJSON=async req=>{const t=await req.text();if(t.length>16000)fail('REQUEST_TOO_LARGE',413);try{return JSON.parse(t);}catch{fail('INVALID_JSON');}};
+const readJSON=async(req,max=16000)=>{const t=await req.text();if(t.length>max)fail('REQUEST_TOO_LARGE',413);try{return JSON.parse(t);}catch{fail('INVALID_JSON');}};
 export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null}){
  const get=key=>store.get(key,{type:'json',consistency:'strong'}),bytes=key=>store.get(key,{type:'arrayBuffer',consistency:'strong'}).then(v=>v===null?null:Buffer.from(v));
  const put=async(key,value)=>{const result=await store.setJSON(key,value,{onlyIfNew:true});if(typeof result?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);if(result.modified&&JSON.stringify(await get(key))!==JSON.stringify(value))fail('STORAGE_WRITE_UNCONFIRMED',503);return result;};
@@ -27,6 +28,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
   const claim=await get(`${root}/submitted`);if(claim)return {...j,status:now()-claim.at>15*60000?'HELD':'RUNNING',...(now()-claim.at>15*60000?{error:'PROVIDER_STATE_UNKNOWN',detail:'Submission was recorded; no automatic paid retry.'}:{})};
   return {...j,status:await get(`${root}/cancelled`)?'CANCELLED':'PENDING'};
  }
+ const sync=syncState({store,get,put,state,now});
  async function schedule(req,j){
   const token=signToken({owner:j.owner,scope:'worker',job_id:j.job_id},env('DF_SESSION_SECRET'),20*60,now());
   if(dispatch)return dispatch({job_id:j.job_id,token});
@@ -52,11 +54,17 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
     const result=await probeModelKeys(body?.models,env,{fetcher,now});
     return json(req,result);
    }
+   if(path==='/sync/manifest'&&req.method==='GET')return json(req,await sync.manifest(owner,u));
+   if(path==='/sync/records'&&req.method==='POST')return json(req,await sync.saveRecord(owner,await readJSON(req,512*1024)));
+   const deleteSource=path.match(/^\/sync\/records\/([a-f0-9]{64})$/);
+   if(deleteSource&&req.method==='DELETE'){const source=deleteSource[1];await put(`deleted-sources/${owner}/${source}`,{source_sha256:source,pair_id:null,at:now()});return json(req,{deleted:true});}
    if(path==='/uploads/init'&&req.method==='POST'){
-    const b=await readJSON(req);if(!HASH.test(b.sha256||'')||!Number.isInteger(b.size)||b.size<24||b.size>MAX_FILE||!['original','normalized'].includes(b.kind))fail('UPLOAD_INVALID');
+    const b=await readJSON(req);if(!HASH.test(b.sha256||'')||!Number.isInteger(b.size)||b.size<24||b.size>MAX_FILE||!['original','normalized','derived','master','candidate','generated','natural-master','artistic-master','hd-derivative'].includes(b.kind))fail('UPLOAD_INVALID');
     if(b.kind==='original'&&b.size>12*1024*1024)fail('UPLOAD_TOO_LARGE',413);
-    const id=randomUUID(),n=Math.ceil(b.size/CHUNK);await put(`uploads/${owner}/${id}`,{id,owner,sha256:b.sha256,size:b.size,kind:b.kind,chunks:n,created_at:now()});return json(req,{upload_id:id,chunk_size:CHUNK,chunks:n});
+    const lineage=await sync.uploadLineage(owner,b),id=randomUUID(),n=Math.ceil(b.size/CHUNK);await put(`uploads/${owner}/${id}`,{id,owner,sha256:b.sha256,size:b.size,kind:b.kind,...lineage,chunks:n,created_at:now()});return json(req,{upload_id:id,chunk_size:CHUNK,chunks:n});
    }
+   const uploadStatus=path.match(/^\/uploads\/([-a-zA-Z0-9_]+)$/);
+   if(uploadStatus&&req.method==='GET'){const info=await get(`uploads/${owner}/${uploadStatus[1]}`);if(!info)fail('UPLOAD_UNKNOWN',404);const committed=await get(`asset-meta/${owner}/${info.id}`);if(committed)return json(req,{upload_id:info.id,complete:true,asset:committed});if(now()-info.created_at>86400000)fail('UPLOAD_EXPIRED',410);const present=new Set(await sync.keys(`chunks/${owner}/${info.id}/`));return json(req,{upload_id:info.id,complete:false,chunk_size:CHUNK,chunks:info.chunks,received:Array.from({length:info.chunks},(_,i)=>i).filter(i=>present.has(`chunks/${owner}/${info.id}/${i}`))});}
    const chunk=path.match(/^\/uploads\/([-a-zA-Z0-9_]+)\/(\d+)$/);
    if(chunk&&req.method==='PUT'){
     const info=await get(`uploads/${owner}/${chunk[1]}`),index=Number(chunk[2]);if(!info||!Number.isInteger(index)||index<0||index>=info.chunks)fail('UPLOAD_UNKNOWN',404);
@@ -70,18 +78,22 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(finish&&req.method==='POST'){
     const info=await get(`uploads/${owner}/${finish[1]}`);if(!info)fail('UPLOAD_UNKNOWN',404);
     const existing=await get(`asset-meta/${owner}/${info.id}`);if(existing)return json(req,existing);
+    if(now()-info.created_at>86400000)fail('UPLOAD_EXPIRED',410);
+    if(await sync.tombstoned(owner,info.pair_id,info.source_sha256))fail('PAIR_DELETED',409);
     const list=[];for(let i=0;i<info.chunks;i++){const part=await bytes(`chunks/${owner}/${info.id}/${i}`);if(!part)fail('UPLOAD_INCOMPLETE',409);list.push(part);}
     const data=Buffer.concat(list);if(data.length!==info.size||hash(data)!==info.sha256)fail('UPLOAD_HASH_MISMATCH',409);
     const dimensions=await inspectImage(data);if(info.kind==='normalized'&&dimensions.format!=='png')fail('NORMALIZED_PNG_REQUIRED');
-    const meta={asset_id:info.id,sha256:info.sha256,byte_size:info.size,...dimensions,kind:info.kind,mime:dimensions.format==='jpeg'?'image/jpeg':`image/${dimensions.format}`,owner};
-    await store.set(`assets/${owner}/${info.id}`,data,{onlyIfNew:true});await put(`asset-meta/${owner}/${info.id}`,meta);
+    const {id:uploadId,size:uploadSize,chunks:uploadChunks,created_at:uploadCreated,...identity}=info;
+    const meta={...identity,asset_id:info.id,sha256:info.sha256,byte_size:info.size,...dimensions,kind:info.kind,mime:dimensions.format==='jpeg'?'image/jpeg':`image/${dimensions.format}`,owner,created_at:new Date(now()).toISOString()};
+    const saved=await store.set(`assets/${owner}/${info.id}`,data,{onlyIfNew:true});if(typeof saved?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);const verified=await bytes(`assets/${owner}/${info.id}`);if(!verified||verified.length!==data.length||hash(verified)!==info.sha256)fail('ASSET_WRITE_UNCONFIRMED',503);await put(`asset-meta/${owner}/${info.id}`,meta);
+    await sync.repairMissingAliases(owner,meta,data);
     for(let i=0;i<info.chunks;i++)await store.delete(`chunks/${owner}/${info.id}/${i}`);
     return json(req,meta);
    }
    if(path==='/pairs'&&req.method==='POST'){
     const b=await readJSON(req),original=await ownedAsset(owner,b.original_asset_id),normalized=await ownedAsset(owner,b.normalized_asset_id);
     if(original.kind!=='original'||normalized.kind!=='normalized'||original.sha256!==b.original_sha256)fail('PAIR_INVALID');
-    const id=hash(Buffer.from(owner+':'+original.sha256)).slice(0,40),pair={pair_id:id,owner,title:cleanName(b.title),original,normalized,created_at:new Date(now()).toISOString()};
+    const id=hash(Buffer.from(owner+':'+original.sha256)).slice(0,40);if(await sync.tombstoned(owner,id,original.sha256))fail('PAIR_DELETED',409);const pair={pair_id:id,owner,title:cleanName(b.title),original,normalized,created_at:new Date(now()).toISOString()};
     await put(`pairs/${owner}/${id}`,pair);return json(req,{pair_id:id,original:{sha256:original.sha256,width:normalized.width,height:normalized.height}});
    }
    // A display title is metadata keyed to the immutable source hash: no image bytes or lineage change.
@@ -89,18 +101,17 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(titlePath&&req.method==='PUT'){
     const b=await readJSON(req),title=b?.title;
     if(typeof title!=='string'||!title.trim()||title.trim().length>120||/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u.test(title))fail('TITLE_INVALID');
-    const saved={title:title.trim(),updated_at:new Date(now()).toISOString()},key=`titles/${owner}/${titlePath[1]}`;
-    const write=await store.setJSON(key,saved);
-    if(write?.modified!==true||JSON.stringify(await get(key))!==JSON.stringify(saved))fail('TITLE_WRITE_UNCONFIRMED',503);
+    if(await sync.tombstoned(owner,null,titlePath[1]))fail('PAIR_DELETED',409);
+    const saved=await sync.writeTitle(owner,titlePath[1],b);
     return json(req,{source_sha256:titlePath[1],...saved});
    }
    const deletePair=path.match(/^\/pairs\/([-a-zA-Z0-9_]+)$/);
-   if(deletePair&&req.method==='DELETE'){if(!ID.test(deletePair[1]))fail('PAIR_INVALID');await put(`deleted-pairs/${owner}/${deletePair[1]}`,{at:now()});return json(req,{deleted:true});}
+   if(deletePair&&req.method==='DELETE'){if(!ID.test(deletePair[1]))fail('PAIR_INVALID');const pair=await get(`pairs/${owner}/${deletePair[1]}`),source=pair?.original?.sha256||null,tombstone={at:now(),pair_id:deletePair[1],source_sha256:source};await put(`deleted-pairs/${owner}/${deletePair[1]}`,tombstone);if(source)await put(`deleted-sources/${owner}/${source}`,tombstone);return json(req,{deleted:true});}
    if((path==='/expand'||path==='/generate')&&req.method==='POST'){
     const b=await readJSON(req),operation=path==='/generate'?'generate':'expand',m=modelFor(b.model);
     if(!m)fail('MODEL_UNKNOWN');if(!keyFor(m,env))fail('KEY_NOT_CONFIGURED',503);if(operation==='expand'&&!m.edit)fail('MODEL_GENERATION_ONLY');
     if(!HASH.test(b.idempotency_key||'')||!['portrait','landscape'].includes(b.target)||!['faithful','smart','infographic'].includes(b.mode)||!['hd','4k'].includes(b.quality)||typeof b.prompt!=='string'||b.prompt.length>3000||!['center','left','right','top','bottom'].includes(b.position||'center')||!Number.isInteger(b.seed)||b.seed<0||b.seed>2147483647)fail('JOB_INVALID');
-    let pair=null;if(operation==='expand'){if(!ID.test(b.pair_id||''))fail('PAIR_UNKNOWN',404);pair=await get(`pairs/${owner}/${b.pair_id}`);if(!pair||pair.original.sha256!==b.input_sha256)fail('INPUT_HASH_MISMATCH',409);taskGeometry(pair.normalized.width,pair.normalized.height,b.target,b.position,b.mode,b.quality);}
+    let pair=null;if(operation==='expand'){if(!ID.test(b.pair_id||''))fail('PAIR_UNKNOWN',404);pair=await get(`pairs/${owner}/${b.pair_id}`);if(await sync.tombstoned(owner,b.pair_id,pair?.original?.sha256))fail('PAIR_DELETED',409);if(!pair||pair.original.sha256!==b.input_sha256)fail('INPUT_HASH_MISMATCH',409);taskGeometry(pair.normalized.width,pair.normalized.height,b.target,b.position,b.mode,b.quality);}
     if(!b.prompt.trim()&&operation==='generate')fail('PROMPT_REQUIRED');
     const id=hash(Buffer.from(owner+':'+b.idempotency_key)),root=`jobs/${owner}/${id}`;
     const effective={operation,model:b.model,provider:m.provider,pair_id:pair?.pair_id||null,input_sha256:pair?.original.sha256||null,normalized_asset_id:pair?.normalized.asset_id||null,target:b.target,quality:b.quality,mode:b.mode,position:b.position||'center',prompt:b.prompt,seed:b.seed,task_parameters_hash:HASH.test(b.task_parameters_hash||'')?b.task_parameters_hash:null,text_layout:b.text_layout||null};
@@ -114,7 +125,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(jobRoute){const j=await getJob(owner,jobRoute[1]);if(req.method==='GET'&&!jobRoute[2])return json(req,await state(j));
     if(req.method==='POST'&&jobRoute[2]){
      const action=jobRoute[2],s=await state(j),root=`job-events/${owner}/${j.job_id}`;
-     if(action==='accept'){if(!['READY','ACCEPTED'].includes(s.status))fail('OUTPUT_NOT_READY',409);await put(`${root}/accepted`,{at:now()});}
+     if(action==='accept'){if(await sync.tombstoned(owner,j.pair_id,j.input_sha256))fail('PAIR_DELETED',409);if(!['READY','ACCEPTED'].includes(s.status))fail('OUTPUT_NOT_READY',409);await put(`${root}/accepted`,{at:now()});}
      if(action==='reject')await put(`${root}/rejected`,{at:now()});
      if(action==='cancel')await put(`${root}/cancelled`,{at:now()});
      // Resume is receipt/status recovery. It cannot make another paid submission.
@@ -134,8 +145,8 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(path==='/library'&&req.method==='GET'){
     const listing=await store.list({prefix:`jobs/${owner}/`}),jobs=[];for(const entry of listing.blobs.slice(-200)){const j=await get(entry.key);if(j&&!(j.pair_id&&await get(`deleted-pairs/${owner}/${j.pair_id}`))){const s=await state(j);if(s.status!=='REJECTED')jobs.push(s);}}
     const pairList=await store.list({prefix:`pairs/${owner}/`}),pairs=[];for(const entry of pairList.blobs.slice(-200)){const p=await get(entry.key);if(p&&!await get(`deleted-pairs/${owner}/${p.pair_id}`))pairs.push(p);}
-    const titleList=await store.list({prefix:`titles/${owner}/`}),titles={};
-    for(const entry of titleList.blobs.slice(-200)){const sha=entry.key.split('/').pop();if(HASH.test(sha)){const record=await get(entry.key);if(typeof record?.title==='string'&&record.title)titles[sha]=record.title;}}
+    const titleKeys=new Set();for(const key of await sync.keys(`titles/${owner}/`))titleKeys.add(key.split('/').pop());for(const key of await sync.keys(`title-versions/${owner}/`))titleKeys.add(key.split('/').at(-2));const titleList={blobs:[...titleKeys].map(key=>({key}))},titles={};
+    for(const entry of titleList.blobs.slice(-200)){const sha=entry.key;if(HASH.test(sha)){const record=await sync.title(owner,sha);if(typeof record?.title==='string'&&record.title)titles[sha]=record.title;}}
     return json(req,{pairs,jobs:jobs.sort((a,b)=>b.created_at.localeCompare(a.created_at)),titles,truncated:listing.blobs.length>200||pairList.blobs.length>200||titleList.blobs.length>200});
    }
    return json(req,{error:'NOT_FOUND'},404);
@@ -153,7 +164,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(j.operation==='expand'&&!source)fail('SOURCE_ASSET_MISSING',409);
    const edit=await prepareEditInput(source,j),result=await runProvider(edit.job,edit.source,env,{fetcher}),finished=await finishImage(result.bytes,source,j),asset_id=randomUUID();
    if(j.pair_id){const pair=await get(`pairs/${j.owner}/${j.pair_id}`);finished.output.normalization_proof=await normalizationProof(await bytes(`assets/${j.owner}/${pair.original.asset_id}`),source);}
-   await store.set(`assets/${j.owner}/${asset_id}`,finished.bytes,{onlyIfNew:true});await put(`asset-meta/${j.owner}/${asset_id}`,{...finished.output,asset_id,owner:j.owner,kind:'generated'});
+   await store.set(`assets/${j.owner}/${asset_id}`,finished.bytes,{onlyIfNew:true});await put(`asset-meta/${j.owner}/${asset_id}`,{...finished.output,asset_id,owner:j.owner,kind:'generated',pair_id:j.pair_id,family_id:j.pair_id||j.job_id,job_id:j.job_id,parent_asset_ids:j.normalized_asset_id?[j.normalized_asset_id]:[],role:j.target+'-output'});
    await put(`${root}/ready`,{status:'READY',output:{...finished.output,asset_id,provider:j.provider,model_key:j.model,model_or_version:result.model,task_parameters_hash:j.task_parameters_hash},provider_request_id:result.request_id,provider_cost:result.actual_cost??null,cost_currency:result.cost_currency??null,provider_parameters:result.parameters,source_placement:finished.output.source_placement,latency_ms:now()-started,completed_at:new Date(now()).toISOString()});
   }catch(e){await put(`${root}/failed`,{status:e.ambiguous?'HELD':'FAILED',error:e.code||(/^[A-Z0-9_]+$/.test(e.message)?e.message:'GENERATION_FAILED'),provider_status:e.status||null,provider_request_id:e.requestId||null,detail:e.detail||'',automatic_paid_retry:false,latency_ms:now()-started});}
  }

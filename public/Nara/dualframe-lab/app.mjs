@@ -1,6 +1,7 @@
-import * as API from './api-client.mjs?v=3.0-r4';
+import * as API from './api-client.mjs?v=3.0-r4.10';
+import {createSyncEngine} from './sync.mjs?v=3.0-r4.10';
 import { SCHEMA, MAX_BYTES, MAX_PIXELS, RATIOS, sha256, opposite, orientation, geometry, deviceOrientation, selectAsset, sniff, headerSize, transition, publicManifest, checkPair, comparisonEligibility, blindOrder, csv, canonicalMode, comparisonRubric, taskGeometry, verifiedFourK } from './core.mjs?v=3.0-r4';
-import { getPairs, putPair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate, getStoredBlob, hydratePair, hasStoredBlobs } from './store.mjs?v=3.0-r4.9';
+import { getPairs, putPair, updatePair, removePair, getScores, addScore, prepareForUpdate, cancelUpdatePreparation, storageEstimate, getStoredBlob, hydratePair, hasStoredBlobs } from './store.mjs?v=3.0-r4.10';
 import { createImageLoader } from './image-loader.mjs?v=3.0-r4.9';
 import { readSettings, writeSettings, DEFAULT_SETTINGS, DEFAULT_ENABLED_MODELS, orientationTransition, estimateHydrationSafety, readModelHealth, recordModelHealth, remoteTransferBytes } from './settings.mjs?v=3.0-r3';
 import { adjacentImageIndices, syncImageCache } from './image-cache.mjs?v=3.0-r1';
@@ -135,7 +136,7 @@ async function pwaSaveAndUpdate(){
   if(!waiting){await pwaRegistration.update();waiting=pwaRegistration.waiting;}
   const deadline=Date.now()+12000;
   while(controllers.size&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,200));
-  if(controllers.size){pwaShowUpdate('pwaUpdateBusy');return;}
+  if(controllers.size||cloudBusy){pwaShowUpdate('pwaUpdateBusy');return;}
   if(!waiting){
    if(pwaUpdateKey==='pwaOtherUpdate'){
     await prepareForUpdate();
@@ -209,9 +210,9 @@ async function persist(pair){checkPair(pair);await putPair(pair);render();}
 async function syncPendingTitle(pair){
   if(!pair.title_sync_pending || !pair.display_name)return;
   const title=pair.display_name;
-  const receipt=await API.request('/titles/'+pair.original.sha256,{method:'PUT',body:{title}});
+  const receipt=await API.request('/titles/'+pair.original.sha256,{method:'PUT',body:{title,base_revision:pair.title_revision||0}});
   if(receipt.source_sha256!==pair.original.sha256||receipt.title!==title)throw Error('TITLE_SYNC_MISMATCH');
-  if(pair.display_name===title){pair.title_sync_pending=false;await putPair(pair);}
+  if(pair.display_name===title){const saved=await updatePair(pair.pair_id,current=>current?.display_name===title?{...current,title_sync_pending:false,title_revision:receipt.revision}:current);if(saved)Object.assign(pair,saved);}
 }
 let renamingPairId=null;
 function openRename(pair){
@@ -232,7 +233,7 @@ async function saveRename(event){
   const oldName=pair.display_name,oldPending=pair.title_sync_pending;
   try{
     pair.display_name=name;pair.title_sync_pending=true;
-    try{await putPair(pair);}catch(e){pair.display_name=oldName;pair.title_sync_pending=oldPending;throw e;}
+    try{const saved=await updatePair(pair.pair_id,current=>({...current,display_name:name,title_sync_pending:true}));Object.assign(pair,saved);}catch(e){pair.display_name=oldName;pair.title_sync_pending=oldPending;throw e;}
     let synced=false;
     if(API.apiUnlocked())try{await syncPendingTitle(pair);synced=true;}catch{ /* Keep a durable pending local rename for the next Sync. */ }
     $('rename-dialog').close();renamingPairId=null;
@@ -250,9 +251,10 @@ async function deleteGalleryPair(pair){
     controllers.get(job.job_id)?.abort();
     if(job.gateway_job_id&&gateway)await api(`/api/jobs/${job.gateway_job_id}/cancel`,{method:'POST',body:{}}).catch(()=>{});
   }
-  if(pair.upload_id){
+  if(pair.upload_id||pair.cloud_source_saved){
     if(!gateway)await connectGateway();
-    await api(`/api/pairs/${pair.upload_id}`,{method:'DELETE'});
+    if(pair.upload_id)await api(`/api/pairs/${pair.upload_id}`,{method:'DELETE'});
+    else await API.request('/sync/records/'+pair.original.sha256,{method:'DELETE'});
   }
   await removePair(pair.pair_id);
   pairs=pairs.filter(item=>item.pair_id!==pair.pair_id);
@@ -624,86 +626,82 @@ async function generateFromPrompt(){const prompt=$('prompt').value.trim();if(!pr
  }finally{$('generate').disabled=false;}
 }
 
-let cloudDownloadBusy=false;
+// Manual Sync reconciles bytes. Automatic startup only refreshes metadata.
+let syncRequests=0;
+const syncEngine=createSyncEngine({api:API.syncTransport,onProgress:progress=>{
+ const sl=language==='sl',state=progress.synced?(sl?'Usklajeno':'Synced'):(sl?'Usklajujem':'Syncing');
+ const amount=n=>Number.isFinite(n)?(n/1048576).toFixed(1)+' MB':'?';
+ $('cloud-status').textContent=`${state} · ${progress.photos||0} ${sl?'fotografij':'photos'} · ${progress.completed||0}/${progress.files||0} ${sl?'datotek':'files'} · ↑ ${amount(progress.upload_bytes||0)} ↓ ${amount(progress.download_bytes||0)} · ${sl?'čaka':'queued'} ${progress.queued||0} / ${sl?'teče':'running'} ${progress.running||0} / ${sl?'napake':'failed'} ${progress.failed||0}${progress.unknown_bytes?' · '+(sl?'neznana velikost':'unknown size'):''}`;
+}});
+function applyCloudCatalog(data){
+ const deleted=(pairId,source)=>(data.tombstones||[]).some(t=>(pairId&&t.pair_id===pairId)||(source&&t.source_sha256===source));
+ remotePairs=Array.isArray(data.pairs)?data.pairs.filter(p=>!deleted(p.pair_id,p.original?.sha256)).map(p=>({...p,display_name:data.titles?.[p.original.sha256]||p.title})):[];
+ remoteJobs=Array.isArray(data.jobs)?data.jobs.filter(j=>j.status!=='REJECTED'&&!deleted(j.pair_id,j.input_sha256||(j.operation==='generate'?j.output?.sha256:null))):[];
+}
+function showSyncConflicts(result){
+ const box=$('sync-conflicts');box.replaceChildren();
+ for(const conflict of result.conflicts||[]){
+  const pair=pairs.find(p=>p.pair_id===conflict.pair_id||p.sync_conflicts?.some(x=>JSON.stringify(x)===JSON.stringify(conflict)));
+  if(!pair)continue;
+  const row=node('div',displayTitle(pair)+' · '+(conflict.kind==='title'?(language==='sl'?'Ime spremenjeno na drugi napravi.':'Name changed on another device.'):conflict.kind==='tombstone'?(language==='sl'?'Izbrisano v oblaku; lokalni izvirnik je ohranjen.':'Deleted in cloud; local original retained.'):(language==='sl'?'Ohranjeni sta obe izbrani različici.':'Both selected variants were retained.')));
+  const refresh=async()=>{pairs=await getPairs();render();repaintGallery();await syncCloud(true);};
+  if(conflict.kind==='title')for(const local of [true,false])row.append(button(language==='sl'?(local?'Obdrži to ime':'Uporabi ime iz oblaka'):(local?'Keep this name':'Use cloud name'),guard(async()=>{
+   const catalog=await syncEngine.catalog(),remote=catalog.title_records.find(x=>x.source_sha256===pair.original.sha256);
+   if(!remote)throw Error('TITLE_CONFLICT');
+   if(local){const saved=await API.syncTransport.putTitle(pair.original.sha256,{title:pair.display_name,base_revision:remote.revision||0});await updatePair(pair.pair_id,current=>({...current,title_sync_pending:false,title_revision:saved.revision}));}
+   else await updatePair(pair.pair_id,current=>({...current,display_name:remote.title,title_sync_pending:false,title_revision:remote.revision||0}));
+   await refresh();
+  }),'text-button'));
+  else if(conflict.kind==='selection')row.append(button(language==='sl'?'Potrdi trenutno izbiro':'Confirm current selection',guard(async()=>{
+   const slot=conflict.direction+'.'+conflict.quality;
+   await updatePair(pair.pair_id,current=>({...current,sync_selection_resolutions:{...current.sync_selection_resolutions,[slot]:current.variants[conflict.direction][conflict.quality].sha256}}));await refresh();
+  }),'text-button'));
+  else if(conflict.kind==='tombstone')row.append(button(language==='sl'?'Odstrani tudi lokalno kopijo':'Remove retained local copy',guard(async()=>{
+   if(!confirm(t('deleteConfirm')))return;await removePair(pair.pair_id);await refresh();
+  }),'text-button'));
+  box.append(row);
+ }
+}
 async function syncCloud(ask=true){
- if(cloudBusy)return;
  if(!API.apiUnlocked()&&!ask)return;
- cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Usklajujem katalog…':'Syncing catalog…';
+ syncRequests++;cloudBusy=true;$('cloud-status').textContent=language==='sl'?'Sync je v čakalni vrsti…':'Sync queued…';
  try{
   if(ask)await connectGateway();
-  for(const p of pairs)if(p.title_sync_pending)await syncPendingTitle(p);
-  const data=await API.request('/library');
-  remotePairs=Array.isArray(data.pairs)?data.pairs.map(p=>({...p,display_name:data.titles?.[p.original.sha256]||p.title})):[];
-  remoteJobs=Array.isArray(data.jobs)?data.jobs:[];
-  for(const p of pairs){
-   const cloudName=data.titles?.[p.original.sha256];
-   if(cloudName&&!p.title_sync_pending&&p.display_name!==cloudName){p.display_name=cloudName;await putPair(p);}
-   const remote=remotePairs.find(x=>x.original?.sha256===p.original.sha256);
-   if(remote&&!p.upload_id){p.upload_id=remote.pair_id;p.gateway_version='v3';await putPair(p);}
+  if(ask){
+   const run=()=>syncEngine.sync();
+   const result=navigator.locks?.request?await navigator.locks.request('dualframe-full-sync',run):await run();
+   pairs=await getPairs();
+   applyCloudCatalog(await syncEngine.catalog());
+   showSyncConflicts(result);
+   if(!selected||!pairs.some(p=>p.pair_id===selected))selected=pairs[0]?.pair_id||null;
+   render();repaintGallery();
+   if(!result.synced){
+    const details=[...(result.errors||[]),...(result.conflicts||[])].map(x=>x.code||x.error||'SYNC_CONFLICT');
+    $('cloud-status').textContent+=(language==='sl'?' · Nepopolno; ponovi Sync: ':' · Incomplete; retry Sync: ')+[...new Set(details)].join(', ');
+   }
+   return result;
   }
-  // Metadata-only: never bulk-download 4K photos on iPhone startup or Sync.
-  if(!selected)selected=pairs[0]?.pair_id||null;
+  const data=await syncEngine.catalog();applyCloudCatalog(data);
+  // Catalog refresh never overwrites a pending local title or downloads photographs.
+  for(const p of pairs){
+   const row=data.title_records?.find(x=>x.source_sha256===p.original.sha256);
+   const cloudName=data.titles?.[p.original.sha256];
+   if(cloudName){const saved=await updatePair(p.pair_id,current=>current&&!current.title_sync_pending?{...current,display_name:cloudName,title_revision:row?.revision||0}:current);if(saved)Object.assign(p,saved);}
+  }
   render();repaintGallery();
-  const pending=remotePairs.filter(x=>!pairs.some(p=>p.original.sha256===x.original?.sha256)).length;
-  $('cloud-status').textContent=t('cloudCatalog')+' · '+pending;
- }catch(e){$('cloud-status').textContent=t(e.message);if(ask)throw e;}
- finally{cloudBusy=false;}
+  $('cloud-status').textContent=t('cloudCatalog')+' · '+(language==='sl'?'Za datoteke pritisni Sync.':'Press Sync to transfer files.');
+ }catch(e){$('cloud-status').textContent=(language==='sl'?'Sync ni dokončan: ':'Sync incomplete: ')+t(e.message);if(ask)throw e;}
+ finally{syncRequests--;cloudBusy=syncRequests>0;diagnoseStorage().catch(()=>{});}
 }
 async function loadRemotePair(remote){
- if(cloudDownloadBusy)return;
- cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
- try{
-  if(!API.apiUnlocked())await connectGateway();
-  const fromRemote=remoteJobs.filter(j=>j.pair_id===remote.pair_id&&['READY','ACCEPTED'].includes(j.status)&&j.output?.asset_id);
-  const declared=[remote.original,remote.normalized,...fromRemote.map(j=>j.output)];
-  // Server records actual byte_size; missing sizes must never be treated as zero.
-  const expected=remoteTransferBytes(declared);
-  if(expected>192*1048576)throw Error('STORAGE_TRANSFER_TOO_LARGE');
-  const budget=estimateHydrationSafety(await storageEstimate(),expected);
-  if(!budget.safe)throw Error('STORAGE_ESTIMATED_LOW');
-  const old=await ensurePair(pairs.find(x=>x.original.sha256===remote.original.sha256));
-  let p=old?{...old,variants:{landscape:{...old.variants.landscape},portrait:{...old.variants.portrait}},jobs:[...old.jobs],candidates:[...(old.candidates||[])]}:null;
-  if(!p){
-   const blob=await API.asset(remote.original.asset_id),normalized=await API.asset(remote.normalized.asset_id);
-   if(await sha256(blob)!==remote.original.sha256)throw Error('INPUT_HASH_MISMATCH');
-   const n=await normalizedImage(normalized);
-   p={schema:SCHEMA,pair_id:remote.pair_id,original:{name:remote.title,filename:remote.title,blob,normalized,sha256:remote.original.sha256,width:n.width,height:n.height,bytes:blob.size,mime:blob.type,source_orientation:orientation(n.width,n.height),visibility:'private',normalization:'browser-decoded-sRGB-RGBA8'},variants:{portrait:{},landscape:{}},jobs:[],candidates:[],created_at:remote.created_at,upload_id:remote.pair_id,gateway_version:'v3'};
-   p.variants[p.original.source_orientation].hd={...p.original,origin:'original',direction:p.original.source_orientation,path:'original/'+remote.original.sha256};
-  }
-  p.upload_id=remote.pair_id;p.gateway_version='v3';
-  if(!p.title_sync_pending&&remote.display_name)p.display_name=remote.display_name;
-  for(const remoteJob of fromRemote){
-   if((p.candidates||[]).some(a=>a.sha256===remoteJob.output.sha256||a.parent_output_sha256===remoteJob.output.sha256))continue;
-   const blob=await API.asset(remoteJob.output.asset_id);
-   if(await sha256(blob)!==remoteJob.output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
-   const a=await localTextOverlay({...remoteJob.output,blob,path:`variants/${remoteJob.target}/${remoteJob.output.sha256}.png`,source_sha256:p.original.sha256,origin:'generated',provider:remoteJob.provider,model_key:remoteJob.model,direction:remoteJob.target,target_ratio:RATIOS[remoteJob.target],review_scale_policy:'equal-canvas-v1',lineage_status:remoteJob.output.normalization_proof?.verified?'SOURCE_VERIFIED':'NORMALIZED_SOURCE_VERIFIED',provenance_verified:remoteJob.output.normalization_proof?.verified===true,provenance_basis:'authenticated-gateway-response',provenance_evidence:{source_sha256:p.original.sha256,output_sha256:remoteJob.output.sha256}},remoteJob.mode==='infographic'?remoteJob.text_layout:null);
-   rememberResult(p,a,remoteJob.job_id);
-   if(remoteJob.status==='ACCEPTED')p.variants[remoteJob.target][remoteJob.quality==='4k'?'fourK':'hd']=a;
-   if(!p.jobs.some(j=>j.gateway_job_id===remoteJob.job_id))p.jobs.push({...remoteJob,job_id:remoteJob.job_id,gateway_job_id:remoteJob.job_id,result_receipt:publicManifest(a),...(remoteJob.status==='READY'?{candidate:a}:{})});
-  }
-  checkPair(p);await putPair(p); // Persist atomically; no partial local pair on a failed transfer.
-  if(!old)pairs.push(p);else pairs[pairs.indexOf(old)]=p;
-  selected=p.pair_id;render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
- }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
- finally{cloudDownloadBusy=false;diagnoseStorage().catch(()=>{});}
+ await syncCloud(true);
+ const local=pairs.find(p=>p.original.sha256===remote.original.sha256);
+ if(local){selected=local.pair_id;render();repaintGallery();}
 }
 async function loadRemoteGenerated(job){
- if(cloudDownloadBusy)return;
- cloudDownloadBusy=true;$('cloud-status').textContent=t('cloudLoading');
- try{
-  if(!API.apiUnlocked())await connectGateway();
-  const output=job.output,expected=Number(output?.size)||Number(output?.bytes)||0;
-  if(!estimateHydrationSafety(await storageEstimate(),expected).safe)throw Error('STORAGE_ESTIMATED_LOW');
-  const blob=await API.asset(output.asset_id);
-  if(await sha256(blob)!==output.sha256)throw Error('OUTPUT_HASH_MISMATCH');
-  const p=await addOriginal(new File([blob],safeName(job.prompt?.slice(0,70)||'Generated')+'.png',{type:blob.type||'image/png'}));
-  p.generated_from_prompt=true;p.description=job.prompt;
-  p.original.creation_receipt={job_id:job.job_id,model:job.model,provider:job.provider};
-  const candidate=await localTextOverlay({...output,blob,origin:'generated',provider:job.provider,model_key:job.model,direction:job.target,target_ratio:RATIOS[job.target],mode:job.mode},job.mode==='infographic'?job.text_layout:null);
-  p.variants[job.target][job.quality==='4k'?'fourK':'hd']=candidate;
-  rememberResult(p,candidate,job.job_id);await putPair(p);render();repaintGallery();$('cloud-status').textContent=t('cloudDownloaded');
- }catch(e){$('cloud-status').textContent=t(e.message);throw e;}
- finally{cloudDownloadBusy=false;}
+ await syncCloud(true);
+ const local=pairs.find(p=>p.original.sha256===job.output.sha256);
+ if(local){selected=local.pair_id;render();repaintGallery();}
 }
 function remoteCard(remote,generated=false){
  const card=node('article',undefined,'card gallery-artwork'),photo=node('div',undefined,'cloud-placeholder'),target=actualGalleryFrame();
