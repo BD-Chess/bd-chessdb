@@ -22,10 +22,11 @@ function fixture(t,{art=false}={}){
  return r;
 }
 
-test('all 16 source-bound EN/SL editions have complete anchors and genuine pending status',()=>{
+test('all 16 source-bound EN/SL editions retain complete anchors and use only their published score pair',()=>{
  const items=loadFormatEditions(root);assert.equal(items.length,16);assert.equal(items.filter(x=>x.paths.date==='2026-10-11').length,3);
  assert.equal(items.filter(x=>x.paths.date==='2026-10-12').length,3);
- for(const x of items){assert.equal(x.combined,null);assert.equal(x.binding.assessment.status,'PENDING');assert.equal(editionBodyHash(x.en),x.en.content_sha256);assert.equal(editionBodyHash(x.sl),x.sl.content_sha256);for(let i=0;i<x.en.scenes.length;i++)assert.equal(x.en.scenes[i].paragraphs.length,x.sl.scenes[i].paragraphs.length)}
+ const scores=JSON.parse(fs.readFileSync(path.join(n,'daily/format-editions/paired-scores-20261013.json'))).scores;
+ for(const x of items){const pair=scores.find(s=>s.key===x.entry.key);assert.equal(x.combined,pair?pair.combined:null);if(pair)assert.equal(pair.en_content_sha256,x.en.content_sha256);assert.equal(x.binding.assessment.status,'PENDING');assert.equal(editionBodyHash(x.en),x.en.content_sha256);assert.equal(editionBodyHash(x.sl),x.sl.content_sha256);for(let i=0;i<x.en.scenes.length;i++)assert.equal(x.en.scenes[i].paragraphs.length,x.sl.scenes[i].paragraphs.length)}
 });
 test('untrusted manifest dates, paths and modified source bytes are rejected',t=>{
  const r=fixture(t),mp=path.join(r,'public/Nara/daily/format-editions/manifest.json'),original=fs.readFileSync(mp,'utf8'),m=JSON.parse(original);

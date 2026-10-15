@@ -44,9 +44,9 @@ function illustratedOct9S1(){
  const en=read(paths.en),sl=read(paths.sl),binding=read(paths.binding);
  return {paths,en,sl,binding,originalEn:read(paths.source_en),originalSl:read(paths.source_sl),combined:pairedAssessment(binding.assessment,en.content_sha256)};
 }
-test('public edition artwork v3 keeps private provenance out and binds all three bilingual anchors',()=>{
+test('public edition artwork keeps private provenance out and binds all three bilingual anchors',()=>{
  const item=illustratedOct9S1(),art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
- assert.equal(art.schema,'nara.format.edition.artwork.v3');
+ assert.ok(['nara.format.edition.artwork.v3','nara.format.edition.artwork.v5'].includes(art.schema));
  assert.doesNotMatch(JSON.stringify(art),/drive_id|full_prompt|claude_review|model_reported|generation_prompt/);
  const before=JSON.stringify([item.en,item.sl]),html=renderEditionPage(editionRoot,item);
  assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,6);
@@ -62,7 +62,8 @@ test('public edition artwork v3 keeps private provenance out and binds all three
 });
 test('direct artwork rejects private fields, stale bindings and corrupted assets while retaining v2 compatibility',t=>{
  const root=temp(t),item=illustratedOct9S1(),n=path.join(root,'public/Nara'),manifestPath=path.join(n,item.paths.artwork);
- const art=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
+ const current=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
+ const art=current.landscape_hd_source?JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',current.landscape_hd_source.src),'utf8')):current;
  fs.mkdirSync(path.dirname(manifestPath),{recursive:true});
  for(const im of art.images){fs.mkdirSync(path.dirname(path.join(n,im.src)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',im.src),path.join(n,im.src));}
  const write=a=>fs.writeFileSync(manifestPath,JSON.stringify(a));

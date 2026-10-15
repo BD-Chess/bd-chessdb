@@ -57,7 +57,7 @@ export function responsiveEditionArtwork(root,item,manifest,validateWebp,sourceI
   for(const slot of slots){
    const v=entry.variants[slot];assert(exact(v,['src','width','height','sha256'])&&hex(v.sha256),'responsive variant fields');
    const legacy=inherited&&slot.startsWith('L_'),approved=preservedHd&&slot==='L_HD';
-   const folder=legacy?prefix+'HD/':approved?prefix+'R1/':leaf;
+   const folder=legacy?prefix+'HD/':approved?prefix+(item.paths.instance?item.paths.instance+'/':'')+'R1/':leaf;
    assert(typeof v.src==='string'&&v.src.startsWith(folder)&&/^[A-Za-z0-9_.-]+\.webp$/.test(v.src.slice(folder.length)),'unsafe responsive variant path');
    const portrait=slot.startsWith('P_');
    const expected=approved?[1672,941]:portrait?[1080,1920]:(inherited&&item.paths.date==='2026-10-05'?[1919,1080]:[1672,941]);
