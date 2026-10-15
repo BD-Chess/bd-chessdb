@@ -83,6 +83,19 @@ test('Oct9-S2 binds three new moments to exact EN/SL paragraphs and six same-ins
  const missing=structuredClone(m);delete missing.images[2].variants.P_HD;
  assert.throws(()=>responsiveEditionArtwork(root,i,missing,validateWebp),/two HD variant/);
 });
+test('Oct9-S3 binds its opening, first treatment cycle and independent ending to six HD variants',()=>{
+ const i=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-09-S3'),m=JSON.parse(fs.readFileSync(path.join(n,i.paths.artwork)));
+ const images=responsiveEditionArtwork(root,i,m,validateWebp),html=renderEditionPage(root,i);
+ assert.equal(i.combined,84);assert.equal(images.length,3);assert.equal(m.landscape_hd_source,undefined);
+ assert.deepEqual(images.map(x=>[x.scene,x.after_paragraph_en,x.after_paragraph_sl]),[[1,8,8],[4,13,13],[6,13,13]]);
+ assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);assert.doesNotMatch(html,/data-nara-image-4k=/);
+ assert.doesNotMatch(JSON.stringify(m),/prompt|drive|credential/i);
+ for(const image of images)for(const variant of Object.values(image.variants)){assert.ok(variant.src.startsWith('assets/img/daily/2026-10-09/S3/R1-responsive/'));assert.ok(html.includes(variant.src));}
+ const sibling=structuredClone(m);sibling.images[0].variants.L_HD.src=sibling.images[0].variants.L_HD.src.replace('/S3/','/S2/');
+ assert.throws(()=>responsiveEditionArtwork(root,i,sibling,validateWebp),/unsafe responsive variant path/);
+ const stale=structuredClone(m);stale.images[2].paragraph_sha256_sl='0'.repeat(64);
+ assert.throws(()=>responsiveEditionArtwork(root,i,stale,validateWebp),/paragraph binding/);
+});
 test('inline loads only visible-language HD; viewport resize selects P/L without a page reload',async()=>{
  const f=responsiveFixture();await flush();assert.equal(f.requests.length,3);assert.ok(f.requests.every(r=>/P[123]-HD/.test(r.src)));
  assert.equal(f.images[0].src,'P1-HD.webp');assert.equal(f.images[0].width,1080);assert.equal(f.images[0].height,1920);
