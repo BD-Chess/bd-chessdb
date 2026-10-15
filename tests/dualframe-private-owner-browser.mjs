@@ -30,7 +30,7 @@ const output=await sharp({create:{width:64,height:48,channels:4,background:'#a8c
 const policy=createPrivateOwnerPolicy({store,env,now:()=>clock});let service;
 service=createService({store,env,now:()=>clock,enhancementPolicy:routeOwnerPolicy(policy,null),runProvider:async job=>{mockProviderCalls++;return {bytes:output,request_id:'synthetic-mock-'+mockProviderCalls,parameters:{fixture:true,operation:job.operation},actual_cost:null};},fetcher:async()=>{realProviderCalls++;throw Error('REAL_PROVIDER_FORBIDDEN');},dispatch:async payload=>{const p=new Promise(resolve=>setTimeout(resolve,10)).then(()=>service.work(payload));pending.add(p);p.finally(()=>pending.delete(p));}});
 for(let i=0;i<235;i++)await store.setJSON('titles/bd-research-owner/'+hash('pagination-'+i),{title:'Synthetic pagination '+i,updated_at:'2026-10-15T00:00:00.000Z'});
-let pauseDownloads=false;const held=new Set();
+let pauseDownloads=false,downloadAllowance=3;const held=new Set();
 const mime={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.webmanifest':'application/manifest+json','.json':'application/json'};
 const server=http.createServer(async(req,res)=>{
  try{
@@ -44,7 +44,7 @@ const server=http.createServer(async(req,res)=>{
    if(url.pathname.includes('/uploads/')&&req.method==='PUT')metrics.uploads++;
    if(url.pathname==='/api/df/sync/manifest'){metrics.manifestGets++;if(url.searchParams.has('cursor'))metrics.cursors++;}
    const response=await service.handle(request),bytes=Buffer.from(await response.arrayBuffer());
-   if(pauseDownloads&&url.pathname.startsWith('/api/df/assets/')){held.add(res);res.on('close',()=>held.delete(res));return;}
+   if(pauseDownloads&&url.pathname.startsWith('/api/df/assets/')&&downloadAllowance--<=0){held.add(res);res.on('close',()=>held.delete(res));return;}
    if(url.pathname.startsWith('/api/df/assets/')&&response.ok)metrics.assetGets++;
    res.writeHead(response.status,Object.fromEntries(response.headers));res.end(bytes);return;
   }
@@ -79,6 +79,7 @@ try{
  const before=await enhanced(a.p);assert.equal(mockProviderCalls-before.calls,1);await a.p.reload({waitUntil:'networkidle'});await count(a.p,100);assert.equal(metrics.auth,auth+1);assert.equal(mockProviderCalls-before.calls,1);checks.one_click_enhance_only_no_replay_on_reload='PASS';
  // Use the same source for a fresh artistic family and both orientations.
  const pair=await enhanced(a.p,{only:false,artistic:true});assert.equal(mockProviderCalls-pair.calls,3);const state=await snapshot(a.p);assert.ok(state.some(x=>x.families.includes('COMPLETE')&&x.masters.length));checks.artistic_pair_same_master_and_original_hashes='PASS';
+ const callsBeforeSync=mockProviderCalls;await sync(a.p);await sync(b.p);assert.deepEqual(await snapshot(b.p),state);assert.equal(mockProviderCalls,callsBeforeSync);checks.enhanced_families_and_frames_full_sync_without_generation='PASS';
  // Back up through the real UI, restore into profile B after removing only
  // its disposable synthetic fixtures. No cloud deletion or provider replay.
  await a.p.locator('#tab-create').click();await a.p.locator('details.technical > summary').click();const event=a.p.waitForEvent('download');await a.p.locator('#bundle-export').click();const download=await event,file=path.join(profiles,'small-backup.json');await download.saveAs(file);

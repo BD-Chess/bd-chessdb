@@ -12,7 +12,7 @@ export async function verifyEnhancementBackup(pair,{sha256=digest,inspectImage=i
  const result=structuredClone(pair),checked=new WeakSet(),checkedBlobs=new WeakMap();
  async function verifyAsset(asset){
   const blob=asset.blob;
-  if(!(blob instanceof Blob)||!HASH.test(asset.sha256||'')||!blob.size||blob.size>32*1024*1024)invalid();
+  if(!(blob instanceof Blob)||!HASH.test(asset.sha256||'')||!blob.size||blob.size>64*1024*1024)invalid();
   for(const key of ['byte_size','size','bytes'])if(Object.hasOwn(asset,key)&&(!Number.isSafeInteger(asset[key])||asset[key]!==blob.size))invalid();
   let proof=checkedBlobs.get(blob);
   if(!proof){
