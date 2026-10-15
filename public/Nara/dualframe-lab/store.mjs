@@ -1,5 +1,6 @@
 const DB = 'bd-dualframe-lab-v1';
-const VERSION=2;
+// v3 adds receipts only. Existing pairs/assets remain readable without hydration.
+const VERSION=3;
 const blobIds=new WeakMap();
 export const isBlobReference=value=>value?.__df_blob===1&&typeof value.id==='string';
 function references(value,out=new Set()){
@@ -47,10 +48,13 @@ export async function openStore() {
   if (connection) return connection;
   connection = await new Promise((resolve,reject) => {
     const request = indexedDB.open(DB,VERSION);
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = event => {
       const db=request.result,tx=request.transaction;
       for (const name of ['pairs','scores'])if(!db.objectStoreNames.contains(name))db.createObjectStore(name,{keyPath:name === 'pairs' ? 'pair_id' : 'comparison_id'});
-      const assets=db.createObjectStore('assets'),cursor=tx.objectStore('pairs').openCursor();
+      if(!db.objectStoreNames.contains('sync'))db.createObjectStore('sync');
+      const assets=db.objectStoreNames.contains('assets')?tx.objectStore('assets'):db.createObjectStore('assets');
+      if(event.oldVersion>=2)return;
+      const cursor=tx.objectStore('pairs').openCursor();
       // One legacy pair at a time; upgrade transaction rolls everything back on failure.
       cursor.onsuccess=()=>{const row=cursor.result;if(!row)return;try{
         const writes=new Map(),meta=separate(row.value,row.value.pair_id,writes);
@@ -88,12 +92,13 @@ async function writePair(pair,id=pair?.pair_id){
  if(updateBarrier)throw Error('UPDATE_IN_PROGRESS');
  activeWrites++;
  try{
-  const db=await openStore(),writes=new Map(),meta=pair?separate(pair,id,writes):null,keep=references(meta);
+  const db=await openStore(),writes=new Map();let meta=typeof pair==='function'?null:pair?separate(pair,id,writes):null,keep=references(meta);
   await new Promise((resolve,reject)=>{
    const tx=db.transaction(['pairs','assets'],'readwrite'),pairs=tx.objectStore('pairs'),assets=tx.objectStore('assets');
    tx.oncomplete=()=>{for(const [key,blob] of writes)blobIds.set(blob,key);resolve();};
    tx.onabort=tx.onerror=()=>reject(storageError(tx.error||{name:'AbortError'}));
    const old=pairs.get(id);old.onsuccess=()=>{
+    if(typeof pair==='function')try{const value=pair(old.result);meta=value?separate(value,id,writes):null;keep=references(meta);}catch{tx.abort();return;}
     for(const key of references(old.result))if(!keep.has(key))assets.delete(key);
     for(const [key,blob] of writes)assets.put(blob,key);
     // Missing asset references abort, preserving the old pair and its image bytes.
@@ -105,8 +110,27 @@ async function writePair(pair,id=pair?.pair_id){
  }finally{activeWrites--;if(!activeWrites){for(const resolve of writeWaiters)resolve();writeWaiters=[];}}
 }
 export const putPair = p => writePair(p);
+export const updatePair = (id,updater) => writePair(updater,id);
 export const removePair = id => writePair(null,id);
 export const getPairs = () => operation('pairs','readonly',s=>s.getAll());
+export const getPair = id => operation('pairs','readonly',s=>s.get(id));
+export const getSyncState = key => operation('sync','readonly',s=>s.get(key));
+export const putSyncState = (key,value) => operation('sync','readwrite',s=>s.put(value,key));
+// Each verified remote asset is committed independently. A failed later variant
+// therefore cannot roll back the original or force it to transfer on reload.
+export async function putSyncAsset(key,pairId,blob,metadata={}){
+ if(!(blob instanceof Blob))throw Error('STORAGE_ASSET_INVALID');
+ if(updateBarrier)throw Error('UPDATE_IN_PROGRESS');
+ activeWrites++;
+ try{
+  const db=await openStore(),id=pairId+':sync:'+key,ref={__df_blob:1,id,size:blob.size,type:blob.type},receipt={...metadata,blob:ref};
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(['assets','sync'],'readwrite');
+   tx.objectStore('assets').put(blob,id);tx.objectStore('sync').put(receipt,key);
+   tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(storageError(tx.error||{name:'AbortError'}));
+  });blobIds.set(blob,id);return receipt;
+ }finally{activeWrites--;if(!activeWrites){for(const resolve of writeWaiters)resolve();writeWaiters=[];}}
+}
 export async function getStoredBlob(value){
  if(value instanceof Blob)return value;
  if(!isBlobReference(value))return null;

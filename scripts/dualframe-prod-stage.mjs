@@ -18,6 +18,8 @@ if(mode==='--guard'){
  const base=current.ssl_url||current.url;
  let capabilities=null;for(let i=0;i<40;i++){const cap=await fetch(base+'/api/df/capabilities',{cache:'no-store'});if(cap.ok){capabilities=await cap.json();if(capabilities.auth_configured&&capabilities.models.every(m=>m.key_configured))break;}await new Promise(r=>setTimeout(r,4000));}if(!capabilities)throw Error('LIVE_API_UNAVAILABLE');console.log(JSON.stringify({auth_configured:capabilities.auth_configured,available_models:capabilities.models?.filter(m=>m.available).map(m=>m.key)}));if(capabilities.version!=='3.0-r4')throw Error('LIVE_API_VERSION_MISMATCH');
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
+ const syncAnon=await fetch(base+'/api/df/sync/manifest',{cache:'no-store'});if(syncAnon.status!==401)throw Error('LIVE_SYNC_NOT_PROTECTED');
+ const syncRecordAnon=await fetch(base+'/api/df/sync/records',{method:'POST',headers:{'content-type':'application/json'},body:'{}',cache:'no-store'});if(syncRecordAnon.status!==401)throw Error('LIVE_SYNC_WRITE_NOT_PROTECTED');
  const probeAnon=await fetch(base+'/api/df/model-probe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({models:['openai-flare']}),cache:'no-store'});
  if(probeAnon.status!==401)throw Error('LIVE_MODEL_PROBE_NOT_PROTECTED');
  const probeCors=await fetch(base+'/api/df/model-probe',{method:'OPTIONS',headers:{origin:'https://bd-chess.github.io','access-control-request-method':'POST','access-control-request-headers':'authorization,content-type'}});
