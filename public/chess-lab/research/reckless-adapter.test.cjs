@@ -108,3 +108,7 @@ test('a failed root restriction never degrades to an unrestricted standalone Rec
   const x=await fixture(t),pending=x.engine.analyze({fen:START,movetime:10,searchMoves:['e2e4']});pending.catch(()=>{});await tick();
   assert.equal(x.workers.length,0,'an unsupported request cannot instantiate a native search');await assert.rejects(pending,/does not support restricted root moves/);
 });
+test('a native bestmove disagreement without any verified set stays partial, never labeled a retained verified set',async t=>{
+  const x=await fixture(t),{done,w}=await x.start();w.info(1,8,'e2e4',20,'lower');w.finish('d2d4');const s=await done;
+  assert.equal(s.completeMultiPV,false);assert.equal(s.retainedCompleteMultiPV,false);assert.equal(s.coverage.status,'partial');assert.equal(s.bestMoveConsistent,false);
+});

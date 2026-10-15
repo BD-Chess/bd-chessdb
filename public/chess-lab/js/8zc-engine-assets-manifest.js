@@ -232,8 +232,8 @@
         },
         {
           "path": "engines/reckless/v0.10.0-a6fa482c-r8/adapter.mjs",
-          "bytes": 14759,
-          "sha256": "878a2d5c83edc5157fd5663861ad045d3831f2bb3b8a50c8bd1e888bbd0789be"
+          "bytes": 14778,
+          "sha256": "548422bd3a6f8c008987b94dd3c6f917c3804af1d25ec0f71be6b532ab29da56"
         },
         {
           "path": "engines/reckless/v0.10.0-a6fa482c-r8/reckless-engine.js",
@@ -288,8 +288,8 @@
         "sha256": "7f587dfb1fe5d74d53909328afa6fd51650c8c7f45907602db7fbb1e52948c61",
         "storage": "embedded in original WASM"
       },
-      "bytes": 64508263,
-      "identity": "265e8ebac5befe9e051d26aecbd1c15baf685cd28c92a3819291259874a364b6"
+      "bytes": 64508282,
+      "identity": "de04d3dad8d83d369e3af9126fee9011b78148ec46b788189903e37837479a0a"
     },
     {
       "mode": "lc0",

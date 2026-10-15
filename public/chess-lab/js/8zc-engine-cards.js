@@ -83,8 +83,10 @@
       const result=get(mode,ctx.fen,ctx),attempt=attempts.get(key(ctx.fen,mode)),variant=mode==='sf-full'?'Full':'Lite';
       const seconds=value=>Number.isFinite(Number(value))?(Number(value)/1000).toFixed(1)+'s':null;
       const searched=seconds(result?.actualSearchMs??result?.searchElapsedMs),requested=seconds(result?.requestedTimeMs??result?.limits?.movetime);
-      const reached=mode==='lc0'?(result?.visits??result?.nodes):result?.depth??result?.linesDepth??result?.lines?.[0]?.depth;
-      const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),result.stopReason].filter(Boolean).join(' · '):null;
+      const reached=mode==='lc0'?(result?.visits??result?.nodes):result?.linesDepth??result?.lines?.[0]?.depth??result?.depth;
+      const coverage=result?.coverage?.status==='bestmove-mismatch'?'Verified set retained; native best move differs':
+        result?.coverage?.status==='unvalidated'?'Legality unverified':result?.coverage?.status==='partial'?'Partial line coverage':null;
+      const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),coverage,result.stopReason].filter(Boolean).join(' · '):null;
       return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!ctx.canAnalyze||!available().includes(mode)),
         title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':

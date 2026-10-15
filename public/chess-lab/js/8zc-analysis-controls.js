@@ -106,7 +106,7 @@
     const rootSupport=session?.rootMoveSupport?.(deepMode)||root.ChessEngineRegistry?.rootSupport?.(group(deepMode)?members(deepMode):[deepMode]);
     if(roots){roots.disabled=!rootSupport?.supported;roots.setAttribute('aria-describedby','deepRootMovesNote');}
     if(rootsNote)rootsNote.textContent=rootSupport?.supported?'Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.':
-      (rootSupport?.reason||'Restricted first moves unavailable: engine capabilities could not be verified.')+' Saved entries are retained; this mode searches all first moves.';
+      (rootSupport?.reason||'Restricted first moves unavailable: engine capabilities could not be verified.')+' Entered moves are retained; this mode searches all first moves.';
     const start=deepPanel?.querySelector('[data-deep="start"]');if(start)start.textContent='Analyze position';
     const dualTime=deepPanel?.querySelector('[data-deep="dual-time"]');if(dualTime)dualTime.hidden=true;
     const budgetLabel=deepPanel?.querySelector('[data-deep="budget-label"]');if(budgetLabel)budgetLabel.textContent='Search depth';

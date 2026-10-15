@@ -103,7 +103,7 @@ export function create(config = {}) {
     const first=chosen.find(l=>l.multipv===1)?.pv?.[0] || null;
     const consistent=job.bestMove&&first?job.bestMove===first:null;
     const complete=!!job.completeLines&&consistent!==false;
-    const status=job.terminal?'terminal':!Chess?'unvalidated':consistent===false?'bestmove-mismatch':complete?'complete':'partial';
+    const status=job.terminal?'terminal':!Chess?'unvalidated':job.completeLines&&consistent===false?'bestmove-mismatch':complete?'complete':'partial';
     return clone({fen:job.limits.fen, engine:descriptor, limits:job.limits,
       lines:chosen, completeMultiPV:complete, retainedCompleteMultiPV:!!job.completeLines, linesDepth:job.completeDepth ?? null,
       expectedLines:job.expectedLines, partialLines:job.completeLines && job.sequence!==job.completeSequence?latest:[],

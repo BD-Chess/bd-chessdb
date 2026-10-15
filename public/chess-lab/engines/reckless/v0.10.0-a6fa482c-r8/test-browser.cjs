@@ -22,10 +22,11 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
     const page = await browser.newPage();
     const errors=[]; page.on('pageerror',error=>errors.push(error.message));
     const base=process.env.CHESSBEST_BASE_URL || `http://127.0.0.1:${server.address().port}/chess-lab/`;
-    await page.goto(base+'engines/reckless/SOURCE.md');
+    await page.goto(base+'engines/reckless/v0.10.0-a6fa482c-r8/SOURCE.md');
+    await page.addScriptTag({url:base+'js/chess.min.js'});
     const result = await page.evaluate(async base => {
       const {create} = await import(base+'engines/reckless/adapter.mjs');
-      const e=create(); const events=[];
+      const e=create({Chess:window.Chess}); const events=[];
       const start='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
       const black='rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1';
       const mate='7k/5Q2/6K1/8/8/8/8/8 w - - 0 1';
