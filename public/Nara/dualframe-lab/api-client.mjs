@@ -78,6 +78,7 @@ export async function validateSession(){
  try{return await pending.promise;}finally{if(validationPromise===pending)validationPromise=null;}
 }
 export async function ensureAuth(language='en'){
+ if(session&&Date.parse(session.expires_at)<=Date.now())lockAPI();
  if(session&&!validated){try{await validateSession();}catch(error){if(error.status!==401)throw error;}}
  if(session)return session;if(authPromise)return authPromise;
  const dialog=document.getElementById('api-auth'),form=document.getElementById('api-auth-form'),input=document.getElementById('api-password'),error=document.getElementById('api-auth-error');

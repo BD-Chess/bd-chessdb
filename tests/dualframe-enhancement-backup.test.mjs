@@ -34,3 +34,22 @@ test('optional decoder is injected locally and legacy records pass through intac
  const {pair}=await fixture();let calls=0;const result=await verifyEnhancementBackup(pair,{sha256,inspectImage:async blob=>{calls++;assert.ok(blob instanceof Blob);return {width:32,height:24};}});assert.ok(calls>0);assert.equal(result.enhancement_families[0].status,'RESTORED');
  const legacy={pair_id:'legacy_0001',original:{blob:new Blob(['legacy']),sha256:'a'.repeat(64)},jobs:[{job_id:'legacy_job_0001',status:'ACCEPTED'}],variants:{landscape:{},portrait:{}}};assert.deepEqual(await verifyEnhancementBackup(legacy,{sha256}),legacy);
 });
+test('real frozen plan master geometry and prompt remain metadata while actual master bytes stay mandatory',async()=>{
+ const {pair}=await fixture(),family=pair.enhancement_families[0];
+ family.plan.geometry={master:{width:1920,height:1440},master_request:{width:1920,height:1440}};
+ family.plan.effective_prompts={master:'Preserve every recognizable person.',frames:{portrait:'Compose the same scene.'}};
+ const restored=await verifyEnhancementBackup(pair,{sha256});
+ assert.equal(restored.enhancement_families[0].restored_plan.geometry.master.width,1920);
+ assert.equal(restored.enhancement_families[0].restored_plan.effective_prompts.master,'Preserve every recognizable person.');
+ assert.equal(await sha256(restored.enhancement_families[0].master.blob),pair.masters[0].sha256);
+ const bad=structuredClone(pair);delete bad.enhancement_families[0].master.blob;
+ await assert.rejects(verifyEnhancementBackup(bad,{sha256}),/INVALID_BACKUP/);
+});
+test('a verified saved master over 32 MiB restores through the 64 MiB raw-archive asset contract',async()=>{
+ const {pair,asset}=await fixture(),blob=new Blob([asset.blob,new Uint8Array(33*1048576)],{type:'image/png'});
+ const large={...asset,blob,sha256:await sha256(blob),byte_size:blob.size};
+ pair.masters=[large];pair.enhancement_families[0].master=large;
+ const restored=await verifyEnhancementBackup(pair,{sha256});
+ assert.equal(restored.masters[0].blob.size,blob.size);assert.equal(await sha256(restored.masters[0].blob),large.sha256);
+ assert.equal(restored.enhancement_families[0].automatic_paid_retry,false);
+});

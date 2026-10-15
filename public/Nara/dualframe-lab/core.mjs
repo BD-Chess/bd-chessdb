@@ -1,6 +1,7 @@
 // DualFrame AI LAB. Concept: Bojan Dobrečevič (BD). Implementation: GPT Work.
 export const SCHEMA = 'bd.dualframe.pair.v1';
 export const MAX_BYTES = 12 * 1024 * 1024;
+export const MAX_ORIGINALS = 100;
 export const MAX_PIXELS = 24000000;
 export const RATIOS = { landscape: '16:9', portrait: '9:16' };
 export const opposite = source => source === 'portrait' ? 'landscape' : 'portrait';
