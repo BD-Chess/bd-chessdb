@@ -114,7 +114,7 @@ test('v4 six HD variants render only for the selected winner; hashes, geometry, 
   assert.equal(loaded.length,3);assert.ok(loaded.every(x=>x.responsive===true&&x.story_id===f.r.id));
   const html=instanceStoryHtml({record:f.r},f.root);
   assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);
-  assert.equal((html.match(/<source media="\\(orientation: portrait\\)"/g)||[]).length,6);
+  assert.equal((html.match(/<source media="\(orientation: portrait\)"/g)||[]).length,6);
   assert.ok(html.includes('moment-01-P-HD.webp'));assert.ok(html.includes('moment-03-L-HD.webp'));
   const sibling={...f.r,id:f.r.id.replace(':S1',':S2'),instance:'S2'};
   assert.deepEqual(loadIllustrations(f.root,sibling,f.sl),[],'nonselected instance has no images');
