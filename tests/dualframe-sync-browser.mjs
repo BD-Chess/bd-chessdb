@@ -166,7 +166,8 @@ try{
   const beforeControls={jobs:metrics.jobWrites,plans:metrics.planPosts,submits:metrics.enhancePosts};
   await page.locator('#settings-open').click();assert.equal(await page.locator('#settings-dialog').evaluate(el=>el.open),true);await page.locator('#settings-delay').selectOption('0');
   assert.equal(await page.locator('#settings-enhance-tier').evaluate(el=>el.tagName),'SELECT');assert.deepEqual(await page.locator('#settings-enhance-tier option').evaluateAll(nodes=>nodes.map(n=>n.value)),['free','premium']);
-  await page.locator('#settings-enhance-tier').selectOption('premium');assert.equal(await page.locator('#settings-enhance-model option[value="cloudflare-flux-free"]').isDisabled(),true);await page.locator('#settings-save').click();
+  // isDisabled() follows the wrapping label to the select in Playwright 1.64.1; inspect this option's actual disabled property.
+  await page.locator('#settings-enhance-tier').selectOption('premium');assert.equal(await page.locator('#settings-enhance-model option[value="cloudflare-flux-free"]').evaluate(option=>option.disabled),true);await page.locator('#settings-save').click();
   await page.locator('#settings-open').click();assert.equal(await page.locator('#settings-enhance-tier').inputValue(),'premium');await page.locator('#settings-enhance-tier').selectOption('free');assert.equal(await page.locator('#settings-enhance-model').inputValue(),'cloudflare-flux-free');await page.locator('#settings-save').click();
   assert.deepEqual({jobs:metrics.jobWrites,plans:metrics.planPosts,submits:metrics.enhancePosts},beforeControls,'changing preferences does not submit a plan or call a model');
   await page.locator('#own-gallery .card-image').first().click();await page.waitForFunction(()=>document.querySelector('#viewer-image').naturalWidth>0);
