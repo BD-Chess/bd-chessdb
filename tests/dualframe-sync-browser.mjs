@@ -90,10 +90,11 @@ const snapshot=page=>page.evaluate(async()=>{
   await visit(pair);result.push({source:pair.original.sha256,assets:assets.sort((a,b)=>a.path.localeCompare(b.path)),jobs:pair.jobs.map(j=>({status:j.status,job_id:j.job_id})),variantHashes:Object.fromEntries(Object.entries(pair.variants).map(([d,q])=>[d,Object.fromEntries(Object.entries(q).map(([quality,asset])=>[quality,asset.sha256]))]))});}
  return {version:(await disk.openStore()).version,metadataOnly:pairs.every(p=>!(p.original.blob instanceof Blob)),pairs:result.sort((a,b)=>a.source.localeCompare(b.source))};
 });
+async function poll(check){const deadline=Date.now()+20000;while(Date.now()<deadline){if(await check())return;await new Promise(r=>setTimeout(r,30));}throw Error('BROWSER_PERSISTENCE_POLL_TIMEOUT');}
 async function syncClick(page){
  const before=metrics.manifestGets,previous=await page.evaluate(async()=>{const disk=await import('./store.mjs?v=3.0-r4.10');return (await disk.getSyncState('sync:bd-research-owner:last-run'))?.finished_at||null;});
  await page.locator('#cloud-load').click();
- await page.waitForFunction(async previous=>{const disk=await import('./store.mjs?v=3.0-r4.10'),last=await disk.getSyncState('sync:bd-research-owner:last-run');return last?.finished_at&&last.finished_at!==previous;},previous);
+ await poll(()=>page.evaluate(async previous=>{const disk=await import('./store.mjs?v=3.0-r4.10'),last=await disk.getSyncState('sync:bd-research-owner:last-run');return last?.finished_at&&last.finished_at!==previous;},previous));
  await page.waitForFunction(()=>/^(Synced|Usklajeno) ·/.test(document.querySelector('#cloud-status').textContent));
  assert.ok(metrics.manifestGets>before,'Sync actually queried the local synthetic service');
 }
@@ -124,7 +125,7 @@ try{
  const b0=await makeContext('profile-b',true);activePage=b0.page;
  assert.equal((await snapshot(b0.page)).pairs.length,0,'profile B starts without profile A data');
  await b0.page.locator('#cloud-load').click();
- await b0.page.waitForFunction(async()=>{const disk=await import('./store.mjs?v=3.0-r4.10'),db=await disk.openStore();return new Promise(resolve=>{const r=db.transaction('sync').objectStore('sync').getAll();r.onsuccess=()=>resolve(new Set(r.result.filter(v=>v?.verified===true).map(v=>v.asset_id).filter(Boolean)).size>=2);});});
+ await poll(()=>b0.page.evaluate(async()=>{const disk=await import('./store.mjs?v=3.0-r4.10'),db=await disk.openStore();return new Promise(resolve=>{const r=db.transaction('sync').objectStore('sync').getAll();r.onsuccess=()=>resolve(new Set(r.result.filter(v=>v?.verified===true).map(v=>v.asset_id).filter(Boolean)).size>=2);});}));
  const beforeResume=metrics.assetGets;assert.ok(beforeResume>=2);await close(b0.context);
  gateDownloads=false;for(const res of held)res.destroy();held.clear();
  const b=await makeContext('profile-b',true);activePage=b.page;await syncClick(b.page);
