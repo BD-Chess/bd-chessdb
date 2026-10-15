@@ -16,7 +16,7 @@
       <p class="deep-allocation" data-deep="allocation" role="status"></p><p class="deep-dcc-note" data-deep="dcc-note" hidden>DCC is unavailable for these engine scores. The separate DCC view remains available.</p>
       <small data-berserk-status role="status" hidden></small>
       <details class="deep-additional"><summary>Additional data · CDB / DCC</summary><p data-deep="additional-status"></p><button type="button" data-deep="cdb-refresh">Refresh CDB data</button></details>
-      <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false"><small>Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
+      <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false" aria-describedby="deepRootMovesNote"><small id="deepRootMovesNote" data-deep="roots-note">Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
       <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
       <div class="deep-lines" data-deep="lines" aria-label="Engine principal variations"></div>
@@ -237,7 +237,9 @@
           const seconds = Number.isFinite(elapsed) ? (elapsed / 1000).toFixed(1) + ' s' : 'time pending';
           const threads = Number(child.threadsEffective) || Number(child.engine?.threads) || 1;
           const nps = Number.isFinite(child.nps) ? ' · ' + child.nps.toLocaleString() + ' nps' : '';
-          const coverage = key === 'lc0' ? ' · visited root candidates' : child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
+          const coverage = key === 'lc0' ? ' · visited root candidates' : child.coverage?.status==='bestmove-mismatch' ?
+            ' · verified lines retained at depth '+child.linesDepth+'; native best move differs ('+child.nativeBestMove+')' :
+            child.coverage?.status==='unvalidated'?' · legality unverified':child.completeMultiPV ? ' · lines at depth ' + child.linesDepth : ' · partial line coverage';
           setText(view.progress, (child.status || 'loading') + (key==='lc0'?' · visits ' + (child.visits ?? child.nodes ?? '—'):' · depth ' + (child.depth ?? child.linesDepth ?? '—')) +
             ' · ' + nodes + nps + ' · ' + seconds + ' · ' + threads + ' search thread' + (threads === 1 ? '' : 's') +
             coverage + (child.downloadProgress?.loaded?' · downloaded '+(child.downloadProgress.loaded/1048576).toFixed(1)+' MiB':'') + (child.error ? ' · ' + (child.error.message || child.error) : ''));
@@ -300,7 +302,8 @@
         setText(el('status'), statuses.join(' · ') + (entries.length>1 ? ' · Independent evaluations; no combined score.' : ''));
       } else {
         const nodes = Number.isFinite(current.nodes) ? current.nodes.toLocaleString() + ' nodes' : 'Waiting for search information';
-        const coverage = current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
+        const coverage = current.coverage?.status==='bestmove-mismatch'?' · verified lines retained at depth '+current.linesDepth+'; native best move differs ('+current.nativeBestMove+')':
+          current.coverage?.status==='unvalidated'?' · legality unverified':current.completeMultiPV ? ' · comparable lines at depth ' + current.linesDepth : ' · partial line coverage';
         setText(el('status'), nodes + ' · ' + (current.elapsedMs / 1000).toFixed(1) + ' s' + coverage + ' · ' +
           (engine?.isRunning() ? 'Analyzing current position…' : current.error ? 'Analysis failed: ' + current.error :
             current.forcedStop ? 'Stopped after the engine exceeded its time limit; latest results retained.' :
@@ -312,12 +315,12 @@
     }
     function rootMoves() {
       const value = el('roots').value.trim(); if (!value) return [];
-      return value.split(/[\s,;]+/).filter(Boolean).map(text => {
+      return [...new Set(value.split(/[\s,;]+/).filter(Boolean).map(text => {
         const game = new Chess(pinned.fen);
         const move = /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(text) ? game.move({ from: text.slice(0, 2), to: text.slice(2, 4), promotion: text[4] }) : game.move(text, { sloppy: true });
         if (!move) throw new Error('Not a legal first move: ' + text);
         return move.from + move.to + (move.promotion || '');
-      });
+      }))];
     }
     function revealSearch() {
       const actions = panel.querySelector('.deep-actions');
@@ -343,7 +346,8 @@
       try {
         if (host.pause) host.pause('deep-analysis');
         if (!pinned) throw new Error('Pin a board position first');
-        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: configuredMode() === 'lc0'||session?.participants?.(configuredMode())?.includes('lc0') ? [] : rootMoves(),
+        const support=session?.rootMoveSupport?.(configuredMode())||root.ChessEngineRegistry?.rootSupport?.(session?.participants?.(configuredMode())||[configuredMode()]);
+        const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: support?.supported ? rootMoves() : [],
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':'), time = el('time').value;
         if (!options.automatic) followActive = true;
