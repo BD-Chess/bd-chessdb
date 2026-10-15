@@ -30,19 +30,22 @@ export async function verifyEnhancementBackup(pair,{sha256=digest,inspectImage=i
   }
   asset.provenance_verified=false;asset.provenance_basis='restored-backup-unverified';
  }
- async function visit(value,{requiredAsset=false}={}){
+ async function visit(value,{requiredAsset=false,planMetadata=false}={}){
   if(value instanceof Blob)invalid();
   if(!value||typeof value!=='object'){if(requiredAsset)invalid();return;}
   if(value.__df_blob===1)invalid();
-  if(checked.has(value))return;checked.add(value);
-  if(Array.isArray(value)){if(requiredAsset)invalid();for(const child of value)await visit(child);return;}
+  if(checked.has(value)){if(requiredAsset)await verifyAsset(value);return;}checked.add(value);
+  if(Array.isArray(value)){if(requiredAsset)invalid();for(const child of value)await visit(child,{planMetadata});return;}
   if(requiredAsset||Object.hasOwn(value,'blob'))await verifyAsset(value);
   for(const [key,child] of Object.entries(value)){
    if(key==='blob')continue;
-   if(key==='master'&&child!==null&&child!==undefined)await visit(child,{requiredAsset:true});
+   // A frozen server plan contains geometry.master and effective_prompts.master.
+   // Those are dimensions/text, not the family's actual saved master image.
+   const metadata=planMetadata||['plan','restored_plan','plan_request'].includes(key);
+   if(key==='master'&&child!==null&&child!==undefined)await visit(child,{requiredAsset:!metadata,planMetadata:metadata});
    else if(key==='masters'){
     if(!Array.isArray(child))invalid();for(const master of child)await visit(master,{requiredAsset:true});
-   }else await visit(child);
+   }else await visit(child,{planMetadata:metadata});
   }
  }
  function restoreFamily(family){

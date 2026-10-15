@@ -751,7 +751,7 @@ async function initR5(){
  if(API.apiUnlocked())try{await API.validateSession();}catch(e){if(e.status!==401){offlineSessionFallback=true;notify(e.message,true);}}
  await accountTransition;await activateSessionScope();
  initSettingsUI();initEnhancementUI();applyEnhancementControls();refreshCreateModels(false);galleryDisplayedFrame=actualGalleryFrame();applySettings();$('consent').checked=true;
- await init();appInitialized=true;switchTab('showcase');updateModelControls();
+ await init();appInitialized=true;switchTab('showcase');updateModelControls();document.documentElement.dataset.appReady='true';
  API.capabilities().then(value=>{capabilities=value;updateModelControls();}).catch(()=>{$('model-status').textContent=t('apiChecking');});
  if(API.sessionOwner()){gateway={url:API.API_BASE,version:'v3'};if(prefs.autoSyncMetadata)syncCloud(false).catch(()=>{});for(const p of pairs)for(const j of p.jobs)if(!j.enhancement_plan_id&&!['enhance','derive'].includes(j.operation)&&j.gateway_job_id&&['HELD','RUNNING','PENDING'].includes(j.status)&&modelFor(j.model)?.direct)runGateway(p,j).catch(()=>{});}
 }
@@ -780,7 +780,7 @@ let scopeOwner,scopedStore,enhancementClient,scopeController=new AbortController
 async function activateSessionScope(force=false){
  const owner=API.sessionOwner()||(offlineSessionFallback?API.cachedSessionOwner():null);if(!force&&scopeOwner===owner&&scopedStore)return;
  document.documentElement.dataset.libraryState='switching';$('api-toggle').setAttribute('aria-busy','true');
- const previousSelection=selected;const localClaim=scopeOwner===null&&owner==='bd-research-owner'&&API.sessionOwner()===owner?await snapshotUnassigned():null;
+ const previousSelection=selected;const localClaim=scopeOwner===null&&owner==='bd-research-owner'&&API.sessionOwner()===owner&&API.sessionMethod()==='legacy-password'?await snapshotUnassigned():null;
  scopeController.abort();activeSyncController?.abort();syncPaused=false;$('sync-pause').hidden=true;$('sync-pause').textContent=t('syncPause');for(const controller of controllers.values())controller.abort();controllers.clear();
  closeViewer();imageLoader.clear();clearWarmImages();for(const url of urls)URL.revokeObjectURL(url);urls.clear();urlCache=new WeakMap();
  pairs=[];scores=[];selected=null;remotePairs=[];remoteJobs=[];reviewState=null;activeEnhancementPlan=null;
