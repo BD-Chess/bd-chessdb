@@ -1569,9 +1569,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     panel.appendChild(title);
     for (const move of moves.slice(0, Math.min(settings.topN || 5, 8))) {
       const row = document.createElement('div');
-      const displayCp = move.scoreType === 'q' ? window.ChessEvalBar.qToCp(move.nativeQ) : null;
+      const neural = move.scoreType === 'q' ? window.ChessEvalBar.neuralScore(move.nativeQ, move.wdl) : null;
+      const displayCp = neural?.cp ?? null;
       const score = move.scoreType === 'q' ? displayCp === null ? '—' : `${displayCp > 0 ? '+' : ''}${displayCp} cp` : move.scoreType === 'mate' ? `#${move.mateIn}` : `${move.score >= 0 ? '+' : ''}${move.score} cp`;
-      if (move.scoreType === 'q') row.title = `LC Zero approximate cp converted from native Q ${move.nativeQ}; original Q/WDL retained`;
+      if (move.scoreType === 'q') row.title = neural ? `LC Zero ${neural.description} · root player perspective · model estimates` : 'LC Zero evaluation unavailable';
       const pv = move.pv?.slice(0, 5).join(' ') || '';
       row.textContent = `${uciToSan(game.fen(), move.move)} · ${score}${move.depth ? ` · depth ${move.depth}` : ''}${pv ? ' · PV ' + pv : ''}`;
       panel.appendChild(row);
@@ -1646,9 +1647,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 	ov.dataset.move = move;
 	ov.dataset.rawScore = Number.isFinite(newScore) ? String(newScore) : '';
 	ov.dataset.rawBest = String(!!best);
-	const num = detail?.scoreType === 'q' ? window.ChessEvalBar.qToCp(nativeQ) : parseInt(score, 10);
+	const neural = detail?.scoreType === 'q' ? window.ChessEvalBar.neuralScore(nativeQ, detail.wdl) : null;
+	const num = detail?.scoreType === 'q' ? neural?.cp ?? null : parseInt(score, 10);
 	ov.innerText = settings.notation==='dot' ? '•' : detail?.scoreType==='q' ? (num === null ? '—' : (num > 0 ? '+' : '') + num) : detail?.scoreType === 'mate' ? `#${detail.mateIn}` : (detail?.bound==='lower'?'≥':detail?.bound==='upper'?'≤':'')+(num>0?`+${num}`:String(num));
-	ov.title = `${source} ${detail?.scoreType==='q' ? (num === null ? 'evaluation unavailable' : 'approximately '+num+' cp, converted from native neural Q '+nativeQ) : detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
+	ov.title = `${source} ${detail?.scoreType==='q' ? (neural ? neural.description + ' · root player perspective · model estimates' : 'evaluation unavailable') : detail?.scoreType === 'mate' ? 'mate ' + detail.mateIn : num + ' cp'} · ${best ? 'raw #1' : 'candidate'}`;
 
 	const badgeClass = detail?.scoreType==='q' ? (num === null || Math.abs(num) <= 20 ? 'zero' : num > 0 ? 'positive' : 'negative') : Math.abs(num) <= 20 ? 'zero'
 					: num > 0 ? 'positive'

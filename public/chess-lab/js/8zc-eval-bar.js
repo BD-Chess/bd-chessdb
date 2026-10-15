@@ -5,11 +5,75 @@
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
   const instances = new WeakMap();
-  // Display-only historical Lc0 cp scale; native Q/WDL remain engine evidence.
-  // https://lczero.org/dev/wiki/technical-explanation-of-leela-chess-zero/
-  function qToCp(q) {
+  // Display-only Lc0 v0.32.1 WDL_mu, with no contempt or WDL rescaling.
+  // Upstream: fd71a2d921b689c5f479d3227c3806c8e272d9c5,
+  // src/search/classic/search.cc (WDLRescale / Search::SendUciInfo).
+  // Native Q/WDL remain the evidence; this is an approximate display scale.
+  // WDL routines adapt code by The LCZero Authors, GPL-3.0-or-later.
+  // Corresponding source is pinned above; license is distributed at
+  // engines/lc0/v0.32.1-maia1900-r8/GPL-3.0.txt.
+  const f32 = Math.fround, floatBits = new DataView(new ArrayBuffer(4));
+  function fastLog(a) {
+    floatBits.setFloat32(0, a, true);
+    const bits = floatBits.getUint32(0, true), exponent = bits >>> 23;
+    floatBits.setUint32(0, (bits & 0x7fffff) | (0x7f << 23), true);
+    const x = f32(floatBits.getFloat32(0, true) - 1);
+    const log2 = f32(f32(f32(x * f32(f32(1.3465552) - f32(f32(0.34655523) * x))) - 127) + exponent);
+    return f32(f32(0.6931471805599453) * log2);
+  }
+  function fastLogistic(a) {
+    if (a > 20) return 1;
+    if (a < -20) return 0;
+    const x = f32(f32(1.442695040) * f32(-a));
+    if (x < -126) return 1;
+    const exponent = Math.trunc(x < 0 ? f32(x - 1) : x), fraction = f32(x - exponent);
+    const mantissa = f32(1 + f32(fraction * f32(f32(0.6602339) + f32(f32(0.33976606) * fraction))));
+    floatBits.setFloat32(0, mantissa, true);
+    floatBits.setInt32(0, (floatBits.getInt32(0, true) + (exponent << 23)) | 0, true);
+    return f32(1 / f32(1 + floatBits.getFloat32(0, true)));
+  }
+  function validWdl(wdl) {
+    if (!Array.isArray(wdl) || wdl.length !== 3 || wdl.some(p => !Number.isFinite(p) || p < 0 || p > 1)) return null;
+    const sum = wdl.reduce((a, b) => a + b, 0);
+    return Math.abs(sum - 1) <= 0.0001 ? wdl.map(p => p / sum) : null;
+  }
+  function neuralScore(q, wdl) {
     if (!Number.isFinite(q) || Math.abs(q) > 1) return null;
-    return Math.sign(q) * Math.round(Math.abs(111.714640912 * Math.tan(1.5620688421 * q))) || 0;
+    let probabilities = validWdl(wdl);
+    if (probabilities && Math.abs(probabilities[0] - probabilities[2] - q) > 0.0001) probabilities = null;
+    // The native WDL_mu fallback is finite even at neural Q endpoints.
+    let wl = f32(q), draw = probabilities ? f32(probabilities[1]) : 0, mu = 0;
+    let unstable = false;
+    let method = probabilities ? 'WDL_mu fallback' : 'Q fallback';
+    if (probabilities) {
+      const w = f32(f32(f32(1 + wl) - draw) / 2), l = f32(f32(f32(1 - wl) - draw) / 2), eps = f32(0.0001);
+      if ([w, draw, l].every(p => p > eps && p < f32(1 - eps))) {
+        const a = fastLog(f32(f32(1 / l) - 1)), b = fastLog(f32(f32(1 / w) - 1));
+        const sum = f32(a + b), scale = f32(2 / sum);
+        mu = f32(f32(a - b) / sum);
+        // Native FastLog can reverse mu at extremely broad distributions.
+        // A display conversion must never reverse the sign of measured Q.
+        unstable = !Number.isFinite(mu) || !Number.isFinite(scale) || scale <= 0 || (mu !== 0 && Math.sign(mu) !== Math.sign(q));
+        if (!unstable) {
+          const wNew = fastLogistic(f32(f32(-1 + mu) / scale)), lNew = fastLogistic(f32(f32(-1 - mu) / scale));
+          wl = f32(wNew - lNew); draw = Math.max(0, f32(f32(1 - wNew) - lNew));
+        }
+      }
+    }
+    let value = f32(45 * Math.tan(1.56728071628 * wl));
+    if (unstable) method = 'Q fallback (unstable WDL)';
+    else if (probabilities && mu !== 0 && f32(Math.abs(wl) + draw) < f32(0.996) &&
+        (Math.abs(mu) < 1 || Math.abs(value) < Math.abs(f32(100 * mu)))) {
+      value = f32(100 * mu); method = 'WDL_mu';
+    }
+    // Native UCI emits integer cp by truncation. Endpoints do not prove mate.
+    const cp = Math.trunc(value) || 0;
+    const wdlLabel = probabilities ? probabilities.map((p, i) => ['win', 'draw', 'loss'][i] + ' ' + (100 * p).toFixed(1) + '%').join(' · ') : 'W/D/L unavailable';
+    return { cp, method, wdl: probabilities, wdlLabel,
+      description: `approximately ${cp} cp (${method}); native neural Q ${q.toFixed(3)} · ${wdlLabel}` };
+  }
+  function qToCp(q) {
+    return neuralScore(q, null)?.cp ?? null;
   }
   function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
@@ -26,11 +90,14 @@
         description: `${source} ${label} · White perspective`, state: 'known' };
     }
     if (score?.type === 'q') {
-      const cp = qToCp(score.white);
-      if (cp === null) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const rootWdl = validWdl(score.wdl);
+      const wdl = validWdl(score.wdlWhite) || (rootWdl && (side === 'b' ? [rootWdl[2], rootWdl[1], rootWdl[0]] : rootWdl));
+      const neural = neuralScore(score.white, wdl);
+      if (!neural) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const cp = neural.cp;
       const label = (cp > 0 ? '+' : '') + (cp / 100).toFixed(2);
       return { label, white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
-        description: `${source} approximately ${cp} cp, converted from native neural Q ${score.white.toFixed(3)} · White perspective`, state: 'known' };
+        description: `${source} ${neural.description} · White perspective · model estimates`, state: 'known', neural };
     }
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
@@ -325,5 +392,5 @@
     }
     return { start, position, decision, stop };
   }
-  return { measure, qToCp, create, watchSimulation };
+  return { measure, qToCp, neuralScore, create, watchSimulation };
 });

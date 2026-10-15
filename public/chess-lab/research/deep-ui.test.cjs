@@ -4,12 +4,34 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
+test('LCZero WDL details keep raw evidence, open state and viewport through streamed MultiPV updates', t => {
+  const x=setup(t,{}, {analysisMode:'all'}),w=x.w,fen=x.game.fen();
+  x.ui.open();x.el('start').click();
+  const score=Object.freeze({type:'q',root:.3,white:.3,wdl:Object.freeze([.5,.3,.2])});
+  const first={mode:'all',fen,children:{lc0:{status:'searching',lines:[{multipv:1,pv:['e2e4'],score,visits:20}],visits:20}},elapsedMs:200};
+  const before=JSON.stringify(first);x.emit(first);
+  const details=x.el('lines').querySelector('.deep-neural-details'),row=x.el('lines').querySelector('.deep-line');
+  assert.equal(details.open,false);assert.match(details.textContent,/win 50.0%.*draw 30.0%.*loss 20.0%/);
+  assert.equal(row.querySelector('strong').textContent,'+1.00');
+  details.querySelector('summary').click();assert.equal(details.open,true);
+  x.get('workspaceDisplay').scrollTop=120;
+  const next={...first,children:{lc0:{...first.children.lc0,status:'complete',lines:[first.children.lc0.lines[0],{multipv:2,pv:['d2d4'],score:{type:'q',root:-.3,white:-.3,wdl:[.2,.3,.5]},visits:9}]}}};
+  x.emit(next);
+  assert.equal(x.el('lines').querySelector('.deep-neural-details'),details);assert.equal(details.open,true);
+  assert.equal(x.el('lines').querySelector('.deep-line'),row);
+  assert.equal(details.parentNode.lastElementChild,details);assert.match(details.textContent,/Line 2/);
+  assert.equal(x.get('workspaceDisplay').scrollTop,120);assert.equal(JSON.stringify(first),before);
+  assert.equal(first.children.lc0.lines[0].score.type,'q');
+});
+
+
 function setup(t, host = {}, sessionSettings = null) {
   const base = path.resolve(__dirname, '..');
   const dom = new JSDOM('<!doctype html><button id="btnDeepAnalysis">Deep analysis</button><div id="workspaceDisplay" class="workspace-display" aria-label="Moves and DCC analysis"><div id="moves" style="display:none">1. e4</div><div id="dccAnalysisPanel" style="display:block"><button>DCC detail</button></div></div>', { runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window; t.after(() => w.close());
   const style = w.document.createElement('style'); style.textContent = fs.readFileSync(path.join(base, 'css/8zc-deep.css'), 'utf8'); w.document.head.append(style);
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(base, 'js/8zc-eval-bar.js'), 'utf8'));
   const game = new w.Chess(); let options, finish, running = false, stops = 0, hostListener = null;
   const analyses = [];
   w.ChessDeepEngine = {
