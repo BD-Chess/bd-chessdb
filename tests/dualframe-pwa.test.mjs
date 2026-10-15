@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp,cp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {adjacentImageIndices,syncImageCache} from '../public/Nara/dualframe-lab/image-cache.mjs?v=3.0-r1';
 import {createHash} from 'node:crypto';
 const root=new URL('../public/Nara/dualframe-lab/',import.meta.url);
@@ -29,7 +33,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-15-r4.11');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-15-r4.12');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
@@ -126,4 +130,16 @@ test('API access shows only selected model tests and does not invoke generation'
  assert.match(body,/node\('table',undefined,'api-check-table'\)/);
  assert.doesNotMatch(body,/API.request\('\/(?:generate|expand)'/);
  assert.doesNotMatch(body,/lines.join\(' · '\)/);
+});
+
+// Pages prepares every HTML file before verifying the sealed offline package.
+test('password-manager preparation preserves every byte in the sealed account login package',async()=>{
+ const directory=await mkdtemp(path.join(tmpdir(),'dualframe-package-prep-'));
+ try{
+  const target=path.join(directory,'dualframe');await cp(fileURLToPath(root),target,{recursive:true});
+  // Run the exact HTML transform used by Pages, without unrelated site runtime patching.
+  const transform=['import runpy,sys','from pathlib import Path',"hooks=runpy.run_path(sys.argv[1],run_name='dualframe_pm_fixture')",'root=Path(sys.argv[2])',"for page in root.rglob('*.html'): hooks['patch_html'](page,root)"].join('\n');
+  execFileSync('python3',['-c',transform,fileURLToPath(new URL('../scripts/inject_password_manager.py',import.meta.url)),target],{stdio:'pipe'});
+  for(const asset of assets){const name=asset.replace(/^\.\//,'').split('?')[0];assert.deepEqual(await readFile(path.join(target,name)),await bytes(name),'host preparation changed sealed asset '+name);}
+ }finally{await rm(directory,{recursive:true,force:true});}
 });
