@@ -8,7 +8,7 @@ const HASH=/^[a-f0-9]{64}$/,ID=/^[a-zA-Z0-9_-]{8,100}$/;
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status});};
 const fingerprint=value=>hash(Buffer.from(JSON.stringify(value)));
 const bool=(value,fallback=false)=>{if(value===undefined)return fallback;if(typeof value!=='boolean')fail('ENHANCEMENT_PLAN_INVALID');return value;};
-export function createEnhancementService({store,get,put,bytes,state,getJob,ownedAsset,env,now,schedule,runProvider,fetcher,policy=null,freeAuthorization=null}){
+export function createEnhancementService({store,get,put,bytes,state,getJob,ownedAsset,env,now,schedule,runProvider,fetcher,policy=null,freeAuthorization=null,accountUsage=null}){
  const planKey=(owner,id)=>`enhancement-plans/${owner}/${id}`;
  async function getPlan(owner,id){if(!HASH.test(id||''))fail('PLAN_UNKNOWN',404);const p=await get(planKey(owner,id));if(!p)fail('PLAN_UNKNOWN',404);return p;}
  async function sourcePair(owner,id){if(!ID.test(id||''))fail('PAIR_UNKNOWN',404);const p=await get(`pairs/${owner}/${id}`);if(!p)fail('PAIR_UNKNOWN',404);if(await get(`deleted-pairs/${owner}/${id}`)||await get(`deleted-sources/${owner}/${p.original?.sha256}`))fail('PAIR_DELETED',409);return p;}
@@ -55,6 +55,7 @@ export function createEnhancementService({store,get,put,bytes,state,getJob,owned
   const saved=await put(planKey(owner,id),plan);if(!saved.modified){const current=await get(planKey(owner,id));if(current.input_fingerprint!==input_fingerprint)fail('IDEMPOTENCY_CONFLICT',409);return current;}return plan;
  }
  function validReservation(plan,reservation){
+  if(plan.owner!=='bd-research-owner'&&reservation?.byte_quota_reserved!==true)fail('OUTPUT_STORAGE_NOT_RESERVED',503);
   if(!reservation||reservation.verified!==true||reservation.whole_plan_reserved!==true||!ID.test(reservation.reservation_id||'')||reservation.plan_fingerprint!==plan.fingerprint||reservation.policy_version!==plan.policy_version||reservation.maximum_api_calls!==plan.maximum_api_calls||JSON.stringify(reservation.call_ids)!==JSON.stringify(plan.calls.filter(c=>c.model_calls).map(c=>c.call_id)))fail('PLAN_RESERVATION_INVALID',503);
  }
  async function reserve(plan){
@@ -117,6 +118,7 @@ export function createEnhancementService({store,get,put,bytes,state,getJob,owned
     else{const prepared=await prepareEditInput(source,{...j,...(original?{_original_reference:original}:{})});result=await runProvider(prepared.job,prepared.source,env,{fetcher});}finished=j.operation==='enhance'?await finishMasterImage(result.bytes,source,j):await finishImage(result.bytes,source,j);
    }
    const asset_id=randomUUID(),meta={...finished.output,asset_id,owner:j.owner,kind:j.operation==='enhance'?j.recipe.kind+'-master':'derived',role:j.operation==='enhance'?j.recipe.kind+'-master':j.target+'-output',pair_id:j.pair_id,family_id:j.family_id,source_sha256:j.input_sha256,parent_asset_ids:[j.operation==='enhance'?j.normalized_asset_id:j.master_asset_id],master_sha256:j.master_sha256||null,recipe:j.recipe,recipe_hash:j.recipe_hash,job_id:j.job_id};
+   if(j.owner!=='bd-research-owner')await accountUsage?.authorizePlanAsset({owner:j.owner,plan_id:j.enhancement_plan_id,slot_id:j.job_id,resource_id:`assets/${j.owner}/${asset_id}`,byte_count:finished.bytes.length});
    await store.set(`assets/${j.owner}/${asset_id}`,finished.bytes,{onlyIfNew:true});const saved=await bytes(`assets/${j.owner}/${asset_id}`);if(!saved||saved.length!==meta.byte_size||hash(saved)!==meta.sha256)fail('ASSET_WRITE_UNCONFIRMED',503);await put(`asset-meta/${j.owner}/${asset_id}`,meta);
    await put(`${root}/ready`,{status:'READY',output:meta,provider_request_id:result.request_id||null,provider_cost:result.actual_cost??null,cost_currency:result.cost_currency??null,provider_parameters:result.parameters||{},latency_ms:now()-started,completed_at:new Date(now()).toISOString()});
    if(j.operation==='enhance'&&!plan.review_master)await put(`${root}/accepted`,{at:now(),asset_id,sha256:meta.sha256,family_id:j.family_id,acceptance_basis:'explicit-consented-plan-auto-continuation'});
@@ -127,7 +129,7 @@ export function createEnhancementService({store,get,put,bytes,state,getJob,owned
   if(!j.enhancement_plan_id||j.operation==='enhance'||j.quality!=='4k')return;
   const plan=await getPlan(j.owner,j.enhancement_plan_id);if(!plan.include_hd)return;const root=`job-events/${j.owner}/${j.job_id}`;if(await get(`${root}/hd-copy`))return;
   const parent=await ownedAsset(j.owner,s.output.asset_id),data=await bytes(`assets/${j.owner}/${parent.asset_id}`),derived=await deriveHDFromAccepted(data,{...parent,acceptance:'ACCEPTED'},j),asset_id=fingerprint([j.owner,j.job_id,'hd-copy',parent.sha256]);
-  const meta={...derived.output,asset_id,owner:j.owner,kind:'hd-derivative',role:'hd-derivative',pair_id:j.pair_id,family_id:j.family_id,source_sha256:j.input_sha256,parent_asset_ids:[parent.asset_id],master_sha256:j.master_sha256,acceptance:'ACCEPTED',job_id:j.job_id};await store.set(`assets/${j.owner}/${asset_id}`,derived.bytes,{onlyIfNew:true});const saved=await bytes(`assets/${j.owner}/${asset_id}`);if(!saved||hash(saved)!==meta.sha256)fail('ASSET_WRITE_UNCONFIRMED',503);await put(`asset-meta/${j.owner}/${asset_id}`,meta);await put(`${root}/hd-copy`,meta);
+  const meta={...derived.output,asset_id,owner:j.owner,kind:'hd-derivative',role:'hd-derivative',pair_id:j.pair_id,family_id:j.family_id,source_sha256:j.input_sha256,parent_asset_ids:[parent.asset_id],master_sha256:j.master_sha256,acceptance:'ACCEPTED',job_id:j.job_id};if(j.owner!=='bd-research-owner')await accountUsage?.authorizePlanAsset({owner:j.owner,plan_id:j.enhancement_plan_id,slot_id:j.job_id+':hd',resource_id:`assets/${j.owner}/${asset_id}`,byte_count:derived.bytes.length});await store.set(`assets/${j.owner}/${asset_id}`,derived.bytes,{onlyIfNew:true});const saved=await bytes(`assets/${j.owner}/${asset_id}`);if(!saved||hash(saved)!==meta.sha256)fail('ASSET_WRITE_UNCONFIRMED',503);await put(`asset-meta/${j.owner}/${asset_id}`,meta);await put(`${root}/hd-copy`,meta);
  }
  return {route,work,onAccept};
 }

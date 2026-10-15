@@ -1,3 +1,4 @@
+import {fixtureAccountUsage} from './fixtures/account-usage.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -18,7 +19,7 @@ class Store{
  async list({prefix,cursor}){const keys=[...this.map.keys()].filter(k=>k.startsWith(prefix)).sort(),start=Number(cursor||0),end=Math.min(start+37,keys.length);return {blobs:keys.slice(start,end).map(key=>({key})),...(end<keys.length?{cursor:String(end)}:{})};}
 }
 function harness(store=new Store()){
- let providerCalls=0;const service=createService({store,env,runProvider:async()=>{providerCalls++;throw Error('NO_PROVIDER_IN_SYNC');},dispatch:async()=>{throw Error('NO_DISPATCH_IN_SYNC');}});
+ let providerCalls=0;const service=createService({accountUsage:fixtureAccountUsage(['another-owner','foreign-owner']),store,env,runProvider:async()=>{providerCalls++;throw Error('NO_PROVIDER_IN_SYNC');},dispatch:async()=>{throw Error('NO_DISPATCH_IN_SYNC');}});
  const api=(path,method='GET',body,owner=OWNER,raw)=>service.handle(new Request('https://www.mdlxdcc.org/api/df'+path,{method,headers:{authorization:'Bearer '+signToken({owner,scope:'session'},secret)},...(raw?{body:raw}:body!==undefined?{body:JSON.stringify(body)}:{})}));
  return {store,service,api,get providerCalls(){return providerCalls;}};
 }

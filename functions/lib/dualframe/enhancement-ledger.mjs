@@ -1,6 +1,7 @@
 // Transactional PostgreSQL adapter. No initialization/provisioning on import.
 // Netlify Blobs is deliberately not used for transactional counters or budgets.
 import {createHash} from 'node:crypto';
+import {createByteUsageLedger} from './account-usage-ledger.mjs';
 import {validateOperatorPolicy} from './enhancement-policy.mjs';
 const SCHEMA='bd.dualframe.transactional-ledger.v1',KEY='dualframe-operator-v1';
 const HASH=/^[a-f0-9]{64}$/,OWNER=/^[A-Za-z0-9_-]{8,100}$/;
@@ -11,7 +12,7 @@ const clone=value=>structuredClone(value);
 const add=(a,b)=>{const result=a+b;if(!Number.isSafeInteger(result)||result<0)fail('LEDGER_LIMIT_OVERFLOW',503);return result;};
 const minor=value=>{if(typeof value!=='number'||!Number.isFinite(value)||value<0||!Number.isSafeInteger(Math.round(value*100))||Math.abs(value*100-Math.round(value*100))>1e-7)fail('COST_MINOR_UNITS_INVALID');return Math.round(value*100);};
 const safeError=e=>e?.code==='42P01'?Object.assign(Error('LEDGER_SCHEMA_NOT_CONFIGURED'),{code:'LEDGER_SCHEMA_NOT_CONFIGURED',status:503}):/^[A-Z_]+$/.test(e?.message||'')?e:Object.assign(Error('LEDGER_TRANSACTION_FAILED'),{code:'LEDGER_TRANSACTION_FAILED',status:503});
-export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpend=null,now=()=>Date.now(),maxRetries=4,maxBytes=1024*1024,maxReservations=5000}={}){
+export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpend=null,verifyUsageBaseline=null,now=()=>Date.now(),maxRetries=4,maxBytes=1024*1024,maxReservations=5000}={}){
  if(!Number.isSafeInteger(maxRetries)||maxRetries<1||maxRetries>10||!Number.isSafeInteger(maxBytes)||maxBytes<1024||!Number.isSafeInteger(maxReservations)||maxReservations<1)fail('LEDGER_CONFIGURATION_INVALID',503);
  const ready=typeof pool?.connect==='function'&&typeof pool?.query==='function';
  function requirePool(){if(!ready)fail('LEDGER_DATABASE_NOT_CONFIGURED',503);}
@@ -32,6 +33,7 @@ export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpen
    finally{client?.release();}
   }
  }
+ const byteUsage=createByteUsageLedger({transaction,now,verifyUsageBaseline});
  async function readPolicy(){requirePool();try{const result=await pool.query('SELECT body, revision FROM dualframe_operator_ledger WHERE ledger_id = $1',[KEY]);if(!result.rows[0])return null;const body=decode(result.rows[0].body);return body.policy?{policy:validateOperatorPolicy(body.policy),audit:body.audit}:null;}catch(e){throw safeError(e);}}
  async function compareAndSwapPolicy({expected_version,policy,audit}){const next=validateOperatorPolicy(policy);return transaction(body=>{if((body.policy?.version||null)!==expected_version)return {write:false,value:{modified:false}};if(next.version===expected_version)fail('OPERATOR_POLICY_VERSION_INVALID');body.policy=next;body.audit=clone(audit);return {write:true,value:{modified:true}};});}
  function policyFor(body,plan,owner){
@@ -57,7 +59,7 @@ export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpen
   }
   if(add(current.provider.units,addition.units)>minor(context.provider.units_per_day))fail('PROVIDER_QUOTA_EXHAUSTED',429);
  }
- function receipt(r){return {atomic:true,limits_enforced:true,job_limits_enforced:true,storage_transfer_quotas_verified:false,uncertain_included:true,owner:r.owner,reservation_id:r.reservation_id,whole_plan_reserved:true,plan_fingerprint:r.plan_fingerprint,policy_version:r.policy_version,maximum_api_calls:r.maximum_api_calls,call_ids:Object.keys(r.calls)};}
+ function receipt(r){return {atomic:true,limits_enforced:true,job_limits_enforced:true,storage_transfer_quotas_verified:false,byte_quota_reserved:!!r.planned_storage,...(r.planned_storage?{planned_storage:r.planned_storage}:{}),uncertain_included:true,owner:r.owner,reservation_id:r.reservation_id,whole_plan_reserved:true,plan_fingerprint:r.plan_fingerprint,policy_version:r.policy_version,maximum_api_calls:r.maximum_api_calls,call_ids:Object.keys(r.calls)};}
  async function reservePlan(input){
   const calls=validatePlan(input.owner,input.plan),cost=await maximumCost(input),id=sha(input.owner+':'+input.plan.plan_id),reservation_id='r_'+id;
   return transaction(body=>{
@@ -66,7 +68,8 @@ export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpen
    if(cost.currency&&[context.policy.global.spend_cap.currency,context.own.limits.spend_cap.currency,context.provider.spend_cap.currency].some(c=>c!==cost.currency))fail('POLICY_CURRENCY_MISMATCH');
    const units=input.plan.tier==='free'?input.plan.free_plan?.maximum_neurons:calls.length;if(input.plan.tier==='free'&&context.provider.unit!=='neurons'||input.plan.tier==='premium'&&context.provider.unit!=='requests'||!Number.isFinite(units))fail('PROVIDER_QUOTA_UNIT_INVALID');
    const period=day(now()),unitCount=minor(units),totals=usage(body,period,context);checkCaps(totals,context,{calls:calls.length,spend:cost.amount_minor,units:unitCount});
-   const record={reservation_id,owner:input.owner,plan_id:input.plan.plan_id,plan_fingerprint:input.plan.fingerprint,policy_version:input.plan.policy_version,provider:context.providerName,period,maximum_api_calls:calls.length,units_hundredths:unitCount,maximum_spend_minor:cost.amount_minor,charged_spend_minor:cost.amount_minor,currency:cost.currency,zero_spend_verified:cost.zero_spend_verified,state:'RESERVED',created_at:new Date(now()).toISOString(),calls:Object.fromEntries(calls.map(c=>[c.call_id,{state:'RESERVED',actual_spend_minor:null}]))};body.reservations[id]=record;return {write:true,value:receipt(record)};
+   const planned_storage=byteUsage.reservePlanStorage(body,input.plan);
+   const record={...(planned_storage?{planned_storage}:{}),reservation_id,owner:input.owner,plan_id:input.plan.plan_id,plan_fingerprint:input.plan.fingerprint,policy_version:input.plan.policy_version,provider:context.providerName,period,maximum_api_calls:calls.length,units_hundredths:unitCount,maximum_spend_minor:cost.amount_minor,charged_spend_minor:cost.amount_minor,currency:cost.currency,zero_spend_verified:cost.zero_spend_verified,state:'RESERVED',created_at:new Date(now()).toISOString(),calls:Object.fromEntries(calls.map(c=>[c.call_id,{state:'RESERVED',actual_spend_minor:null}]))};body.reservations[id]=record;return {write:true,value:receipt(record)};
   });
  }
  async function claimCall(input){validatePlan(input.owner,input.plan);if(input.plan.tier==='free')await maximumCost(input);return transaction(body=>{
@@ -79,5 +82,5 @@ export function createEnhancementLedger({pool=null,quotePlan=null,verifyZeroSpen
   const actual=minor(input.actual_cost),currency=input.result?.cost_currency;if(!r.zero_spend_verified&&((actual>0&&currency!==r.currency)||(currency&&currency!==r.currency)))fail('ACTUAL_COST_CURRENCY_UNKNOWN');if(r.zero_spend_verified&&actual!==0)fail('FREE_NONZERO_COST_RECEIPT');if(call.state==='SETTLED'){if(call.actual_spend_minor!==actual)fail('SETTLEMENT_CONFLICT');return {write:false,value:{settled:r.state==='SETTLED',state:r.state,reused:true}};}if(!['CLAIMED','HELD','COMPLETED_COST_UNKNOWN'].includes(call.state))fail('CALL_NOT_SUBMITTED');
   call.state='SETTLED';call.actual_spend_minor=actual;call.settled_at=new Date(now()).toISOString();const sum=Object.values(r.calls).reduce((total,c)=>add(total,c.actual_spend_minor||0),0),done=Object.values(r.calls).every(c=>c.state==='SETTLED');r.charged_spend_minor=done?sum:Math.max(r.maximum_spend_minor,sum);r.state=sum>r.maximum_spend_minor?'HELD':done?'SETTLED':Object.values(r.calls).some(c=>['HELD','COMPLETED_COST_UNKNOWN'].includes(c.state))?'HELD':'RUNNING';if(sum>r.maximum_spend_minor)r.error='ACTUAL_COST_EXCEEDED_RESERVATION';return {write:true,value:{settled:done&&r.state==='SETTLED',retained:r.state==='HELD',state:r.state,...(r.error?{error:r.error}:{})}};
  });}
- return {configurationStatus:Object.freeze({configured:ready,status:ready?'LEDGER_DATABASE_INTERFACE_CONFIGURED_UNVERIFIED':'LEDGER_DATABASE_NOT_CONFIGURED',storage_transfer_quotas_verified:false}),readPolicy,compareAndSwapPolicy,reservePlan,claimCall,settleCall,quotePlan:async input=>{if(typeof quotePlan==='function')return quotePlan(input);if(input.proposal?.tier!=='premium')return null;const model=input.policy?.models.find(m=>m.key===input.proposal.model),ceiling=model?.maximum_call_cost;if(!ceiling)return null;const total=ceiling.amount_minor*input.proposal.maximum_api_calls;if(!Number.isSafeInteger(total))fail('COST_MINOR_UNITS_INVALID');return {maximum:total/100,currency:ceiling.currency,estimated_as:'operator-call-ceiling',invoice_or_market_price:false};}};
+ return {...byteUsage,configurationStatus:Object.freeze({configured:ready,status:ready?'LEDGER_DATABASE_INTERFACE_CONFIGURED_UNVERIFIED':'LEDGER_DATABASE_NOT_CONFIGURED',storage_transfer_quotas_verified:false}),readPolicy,compareAndSwapPolicy,reservePlan,claimCall,settleCall,quotePlan:async input=>{if(typeof quotePlan==='function')return quotePlan(input);if(input.proposal?.tier!=='premium')return null;const model=input.policy?.models.find(m=>m.key===input.proposal.model),ceiling=model?.maximum_call_cost;if(!ceiling)return null;const total=ceiling.amount_minor*input.proposal.maximum_api_calls;if(!Number.isSafeInteger(total))fail('COST_MINOR_UNITS_INVALID');return {maximum:total/100,currency:ceiling.currency,estimated_as:'operator-call-ceiling',invoice_or_market_price:false};}};
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {createEnhancementLedger} from '../functions/lib/dualframe/enhancement-ledger.mjs';
 import {createEnhancementPolicy,OPERATOR_POLICY_SCHEMA} from '../functions/lib/dualframe/enhancement-policy.mjs';
-const owner='fixture_owner_123',hash=s=>createHash('sha256').update(s).digest('hex');
+const owner='bd-research-owner',hash=s=>createHash('sha256').update(s).digest('hex');
 function policy({calls=2,concurrent=1,spend=400,price=false}={}){const limit={calls_per_day:calls,storage_bytes:0,transfer_bytes_per_day:0,concurrent_jobs:concurrent,concurrent_transfers:0,spend_cap:{amount_minor:spend,currency:'USD'}};return {schema:OPERATOR_POLICY_SCHEMA,version:'fixture-v1',enabled:true,kill_switch:false,models:[{key:'openai-sunburst',provider:'openai',tier:'premium',enabled:true,operations:['enhance','expand','derive'],resolutions:['hd'],...(price?{maximum_call_cost:{amount_minor:150,currency:'USD'}}:{})}],per_owner:{[owner]:{premium:true,limits:limit}},global:limit,provider_quotas:{openai:{units_per_day:calls,unit:'requests',concurrent_jobs:concurrent,spend_cap:{amount_minor:spend,currency:'USD'}}},retention:{original_days:0,derived_days:0,tombstone_days:0}};}
 function plan(label,{cost=1.50,calls=1}={}){const id=hash(label);return {plan_id:id,owner,fingerprint:hash(label+'fingerprint'),policy_version:'fixture-v1',model:'openai-sunburst',tier:'premium',quality:'hd',maximum_api_calls:calls,calls:Array.from({length:calls},(_,i)=>({call_id:hash(label+'call'+i),operation:i?'expand':'enhance',model_calls:1})),cost:cost===null?null:{maximum:cost,currency:'USD'}};}
 // A pg-compatible transactional fixture with a row mutex and rollback snapshots.
