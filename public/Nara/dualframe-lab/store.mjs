@@ -1,4 +1,30 @@
 const DB = 'bd-dualframe-lab-v1';
+const VERSION=2;
+const blobIds=new WeakMap();
+export const isBlobReference=value=>value?.__df_blob===1&&typeof value.id==='string';
+function references(value,out=new Set()){
+ if(isBlobReference(value))out.add(value.id);
+ else if(Array.isArray(value))for(const item of value)references(item,out);
+ else if(value&&typeof value==='object'&&!(value instanceof Blob))for(const item of Object.values(value))references(item,out);
+ return out;
+}
+// Blob bytes move into a separate store. The original hash and every other field survive.
+function separate(value,pairId,assets,seen=new Map()){
+ if(value instanceof Blob){
+  if(seen.has(value))return seen.get(value);
+  const id=blobIds.get(value)||pairId+':'+crypto.randomUUID();
+  const ref={__df_blob:1,id,size:value.size,type:value.type};seen.set(value,ref);
+  if(!blobIds.has(value))assets.set(id,value);
+  return ref;
+ }
+ if(isBlobReference(value)){
+  if(!value.id.startsWith(pairId+':'))throw Error('STORAGE_ASSET_OWNER_MISMATCH');
+  return {...value};
+ }
+ if(Array.isArray(value))return value.map(item=>separate(item,pairId,assets,seen));
+ if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,separate(item,pairId,assets,seen)]));
+ return value;
+}
 export function storageErrorCode(error){
  const name=error?.name||'';
  if(name==='QuotaExceededError')return 'STORAGE_QUOTA_EXCEEDED';
@@ -20,8 +46,18 @@ let connection,updateBarrier=false,activeWrites=0,writeWaiters=[];
 export async function openStore() {
   if (connection) return connection;
   connection = await new Promise((resolve,reject) => {
-    const request = indexedDB.open(DB,1);
-    request.onupgradeneeded = () => { for (const name of ['pairs','scores']) request.result.createObjectStore(name,{keyPath:name === 'pairs' ? 'pair_id' : 'comparison_id'}); };
+    const request = indexedDB.open(DB,VERSION);
+    request.onupgradeneeded = () => {
+      const db=request.result,tx=request.transaction;
+      for (const name of ['pairs','scores'])if(!db.objectStoreNames.contains(name))db.createObjectStore(name,{keyPath:name === 'pairs' ? 'pair_id' : 'comparison_id'});
+      const assets=db.createObjectStore('assets'),cursor=tx.objectStore('pairs').openCursor();
+      // One legacy pair at a time; upgrade transaction rolls everything back on failure.
+      cursor.onsuccess=()=>{const row=cursor.result;if(!row)return;try{
+        const writes=new Map(),meta=separate(row.value,row.value.pair_id,writes);
+        for(const [id,blob] of writes)assets.put(blob,id);
+        row.update(meta);row.continue();
+      }catch{tx.abort();}};
+    };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(storageError(request.error));
     request.onblocked = () => reject(Error('STORAGE_DB_BLOCKED'));
@@ -48,9 +84,50 @@ async function operation(store,mode,action) {
   });
   } finally { if(writing){activeWrites--;if(activeWrites===0){for(const resolve of writeWaiters)resolve();writeWaiters=[];}} }
 }
-export const putPair = p => operation('pairs','readwrite',s=>s.put(p));
-export const removePair = id => operation('pairs','readwrite',s=>s.delete(id));
+async function writePair(pair,id=pair?.pair_id){
+ if(updateBarrier)throw Error('UPDATE_IN_PROGRESS');
+ activeWrites++;
+ try{
+  const db=await openStore(),writes=new Map(),meta=pair?separate(pair,id,writes):null,keep=references(meta);
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(['pairs','assets'],'readwrite'),pairs=tx.objectStore('pairs'),assets=tx.objectStore('assets');
+   tx.oncomplete=()=>{for(const [key,blob] of writes)blobIds.set(blob,key);resolve();};
+   tx.onabort=tx.onerror=()=>reject(storageError(tx.error||{name:'AbortError'}));
+   const old=pairs.get(id);old.onsuccess=()=>{
+    for(const key of references(old.result))if(!keep.has(key))assets.delete(key);
+    for(const [key,blob] of writes)assets.put(blob,key);
+    // Missing asset references abort, preserving the old pair and its image bytes.
+    for(const key of keep)if(!writes.has(key)){const request=assets.getKey(key);request.onsuccess=()=>{if(request.result===undefined)tx.abort();};}
+    if(meta)pairs.put(meta);else pairs.delete(id);
+   };
+  });
+  return meta;
+ }finally{activeWrites--;if(!activeWrites){for(const resolve of writeWaiters)resolve();writeWaiters=[];}}
+}
+export const putPair = p => writePair(p);
+export const removePair = id => writePair(null,id);
 export const getPairs = () => operation('pairs','readonly',s=>s.getAll());
+export async function getStoredBlob(value){
+ if(value instanceof Blob)return value;
+ if(!isBlobReference(value))return null;
+ const blob=await operation('assets','readonly',s=>s.get(value.id));
+ if(!(blob instanceof Blob)||blob.size!==value.size||blob.type!==value.type)throw Error('STORAGE_ASSET_MISSING');
+ blobIds.set(blob,value.id);return blob;
+}
+export function hasStoredBlobs(value){
+ if(isBlobReference(value))return true;
+ if(value instanceof Blob)return false;
+ if(Array.isArray(value))return value.some(hasStoredBlobs);
+ return value&&typeof value==='object'?Object.values(value).some(hasStoredBlobs):false;
+}
+export async function hydratePair(value,seen=new Map()){
+ if(!hasStoredBlobs(value))return value;
+ if(isBlobReference(value)){if(!seen.has(value.id))seen.set(value.id,getStoredBlob(value));return seen.get(value.id);}
+ if(value instanceof Blob)return value;
+ if(Array.isArray(value))return Promise.all(value.map(item=>hydratePair(item,seen)));
+ if(value&&typeof value==='object')return Object.fromEntries(await Promise.all(Object.entries(value).map(async([key,item])=>[key,await hydratePair(item,seen)])));
+ return value;
+}
 export const getScores = () => operation('scores','readonly',s=>s.getAll());
 // add(), not put(): an existing blind score cannot be edited by resubmission.
 export const addScore = s => operation('scores','readwrite',o=>o.add(s));

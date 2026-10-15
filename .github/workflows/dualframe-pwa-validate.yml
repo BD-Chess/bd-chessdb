@@ -17,12 +17,16 @@ jobs:
       - name: Check PWA JavaScript
         run: |
           node --check public/Nara/dualframe-lab/app.mjs
+          node --check public/Nara/dualframe-lab/store.mjs
+          node --check public/Nara/dualframe-lab/image-loader.mjs
           node --check functions/lib/dualframe/provider-health.mjs
           node --check public/Nara/dualframe-lab/sw.js
           node --check scripts/dualframe-prod-stage.mjs
           node --check tests/dualframe-pwa-live-smoke.mjs
+      - name: Install the isolated IndexedDB regression fixture
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
       - name: Verify offline package and update safety
-        run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs
+        run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs
       - name: Verify authenticated provider probing without vendor calls
         run: |
           npm install --prefix functions --no-audit --no-fund
