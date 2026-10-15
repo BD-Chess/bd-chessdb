@@ -4,6 +4,51 @@ const { Chess } = require('../js/chess.min.js');
 const E = require('../js/8zc-eval-bar.js');
 const game = new Chess(), white = game.fen(); game.move('e4'); const black = game.fen();
 
+test('LCZero WDL_mu matches independent pinned C++ outputs and guards unstable native signs', () => {
+  const fixture = require('./fixtures/lc0-wdlmu-reference.json');
+  let compared = 0, guarded = 0;
+  for (const entry of fixture.cases) {
+    const q = entry.wdl[0] - entry.wdl[2], before = JSON.stringify(entry.wdl);
+    const result = E.neuralScore(q, entry.wdl);
+    assert.ok(Number.isSafeInteger(result.cp), entry.id);
+    if (result.method.includes('unstable')) {
+      guarded++;
+      assert.ok(entry.cp * q < 0, entry.id + ': native approximation has an inverted sign');
+      assert.equal(result.cp, E.qToCp(q), entry.id + ': explicit Q fallback');
+    } else {
+      compared++;
+      assert.ok(Math.abs(result.cp - entry.cp) <= 1, entry.id + ': native=' + entry.cp + ', display=' + result.cp);
+    }
+    assert.ok(result.cp === 0 || result.cp * q > 0, entry.id + ': display cannot reverse native Q');
+    assert.equal(JSON.stringify(entry.wdl), before, 'probability evidence is immutable');
+  }
+  assert.ok(compared >= 165); assert.equal(guarded, 4);
+});
+
+test('LCZero full WDL changes its scale at the same Q and preserves color perspective', () => {
+  const first = E.neuralScore(0.1, [.42,.26,.32]), second = E.neuralScore(0.1, [.12,.86,.02]);
+  assert.notEqual(first.cp, second.cp, 'draw information must affect the score');
+  for (const wdl of [[.5,.3,.2],[.001,.998,.001],[0,1,0],[1,0,0],[.3,.00011,.69989]]) {
+    const q = wdl[0] - wdl[2], reverse = [wdl[2],wdl[1],wdl[0]];
+    assert.equal(E.neuralScore(q,wdl).cp, -E.neuralScore(-q,reverse).cp || 0);
+    const typed = Object.freeze({type:'q',root:q,white:-q,wdl:Object.freeze(wdl)});
+    const auto = E.measure(black,typed,null,'LC0');
+    const explicit = E.measure(black,{...typed,wdlWhite:reverse},null,'LC0');
+    assert.equal(auto.label, explicit.label);
+    assert.equal(auto.neural.cp, E.neuralScore(-q,reverse).cp);
+  }
+});
+
+test('invalid or missing LCZero WDL has a labelled fallback without invented probabilities', () => {
+  for (const wdl of [null,undefined,[],[0,0,0],[.5,.3,.3],[-.1,.6,.5],[NaN,.5,.5],['.5',.3,.2],[.4,.3,.3]]) {
+    const result = E.neuralScore(.3,wdl);
+    assert.equal(result.method,'Q fallback'); assert.equal(result.wdl,null);
+    assert.match(result.description,/W\/D\/L unavailable/);
+    assert.equal(result.cp,E.qToCp(.3));
+  }
+});
+
+
 test('evaluation bar normalizes mover centipawns into White perspective', () => {
   assert.equal(E.measure(white, 135).label, '+1.35');
   assert.equal(E.measure(black, 135).label, '-1.35');
@@ -14,10 +59,11 @@ test('evaluation bar normalizes mover centipawns into White perspective', () => 
 });
 test('LC Zero display conversion preserves native evidence and never invents mate or unknown scores', () => {
   const score = Object.freeze({ type: 'q', root: 0.3, white: -0.3, wdl: Object.freeze([0.5, 0.3, 0.2]) });
-  assert.equal(E.qToCp(0.3), 57);
-  assert.equal(E.qToCp(-0.3), -57);
-  assert.equal(E.measure(black, score, null, 'LC0').label, '-0.57', 'typed White score is not flipped twice');
-  assert.match(E.measure(black, score, null, 'LC0').description, /approximately -57 cp.*native neural Q -0.300/);
+  assert.equal(E.qToCp(0.3), 22);
+  assert.equal(E.qToCp(-0.3), -22);
+  assert.equal(E.measure(black, score, null, 'LC0').label, '-1.00', 'typed White score is not flipped twice');
+  assert.match(E.measure(black, score, null, 'LC0').description, /approximately -100 cp.*WDL_mu.*native neural Q -0.300/);
+  assert.match(E.measure(black, score, null, 'LC0').description, /win 20.0%.*draw 30.0%.*loss 50.0%/);
   assert.equal(score.type, 'q'); assert.equal(score.root, 0.3); assert.deepEqual(score.wdl, [0.5, 0.3, 0.2]);
   for (const q of [null, undefined, '0.3', NaN, Infinity, -Infinity, 1.01, -1.01]) {
     assert.equal(E.qToCp(q), null);

@@ -277,6 +277,22 @@
             checkClipping();
           }
         });
+        const neuralLines = lines.filter(line => line.score?.type === 'q');
+        if (neuralLines.length && !view.neuralDetails) {
+          view.neuralDetails = doc.createElement('details'); view.neuralDetails.className = 'deep-neural-details';
+          const summary = doc.createElement('summary'); summary.textContent = 'Score details · W/D/L';
+          view.neuralText = doc.createElement('p');
+          view.neuralDetails.append(summary, view.neuralText); view.target.appendChild(view.neuralDetails);
+        }
+        if (view.neuralDetails) {
+          view.neuralDetails.hidden = !neuralLines.length;
+          setText(view.neuralText, neuralLines.map((line, i) => {
+            const measured = root.ChessEvalBar?.measure(current.fen, line.score, null, 'LCZero');
+            return 'Line ' + (line.multipv || i + 1) + ' · ' + (measured?.description || 'evaluation unavailable');
+          }).join('\n') + '\nW/D/L are model estimates for White. Approximate centipawns preserve the original Q/WDL. Maia 1900 models human play.');
+          // New MultiPV rows must stay before this persistent, user-opened detail.
+          if (view.target.lastElementChild !== view.neuralDetails) view.target.appendChild(view.neuralDetails);
+        }
       }
       el('export').disabled = !displayedLines;
       if (showCards) {

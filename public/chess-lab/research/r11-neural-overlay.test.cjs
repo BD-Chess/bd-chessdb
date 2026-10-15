@@ -1,4 +1,5 @@
 'use strict';
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -33,18 +34,18 @@ test('same-square LC0 candidates compare original Q, keeping a higher later cand
   f.paint('d2f3', first); f.paint('h2f3', later);
   assert.equal(f.overlay().dataset.move, 'h2f3');
   assert.equal(f.overlay().dataset.rawScore, '0.3');
-  assert.equal(f.overlay().textContent, '+57');
-  assert.match(f.overlay().title, /approximately 57 cp.*native neural Q 0.3/);
+  assert.equal(f.overlay().textContent, '+22');
+  assert.match(f.overlay().title, /approximately 22 cp.*native neural Q 0.300/);
   assert.equal(JSON.stringify([first,later]), before, 'display leaves original Q/WDL evidence unchanged');
 });
 
 test('LC0 raw #1 wins a same-square collision even when its Q is lower', t => {
   const f = fixture(t), raw = f.score(-0.3), other = f.score(0.9);
   f.paint('d2f3', raw, true); f.paint('h2f3', other);
-  assert.equal(f.overlay().dataset.move, 'd2f3'); assert.equal(f.overlay().textContent, '-57');
+  assert.equal(f.overlay().dataset.move, 'd2f3'); assert.equal(f.overlay().textContent, '-22');
   assert.equal(f.overlay().dataset.rawBest, 'true');
   f.overlay().remove(); f.paint('h2f3', other); f.paint('d2f3', raw, true);
-  assert.equal(f.overlay().dataset.move, 'd2f3'); assert.equal(f.overlay().textContent, '-57');
+  assert.equal(f.overlay().dataset.move, 'd2f3'); assert.equal(f.overlay().textContent, '-22');
   assert.equal(f.overlay().dataset.rawScore, '-0.3');
 });
 
@@ -56,7 +57,7 @@ test('unknown LC0 Q is unavailable, never an invented zero or winner over known 
     assert.match(f.overlay().title, /evaluation unavailable/);
     f.paint('h2f3', f.score(-0.3));
     assert.equal(f.overlay().dataset.move, 'h2f3', 'finite negative Q replaces unknown');
-    assert.equal(f.overlay().textContent, '-57');
+    assert.equal(f.overlay().textContent, '-22');
     f.paint('d2f3', f.score(q));
     assert.equal(f.overlay().dataset.move, 'h2f3', 'unknown cannot erase a known score');
   }
@@ -74,4 +75,25 @@ test('LC0 overlay labels are integer approximate cp and dot mode preserves raw Q
   f.paint('d2f3', f.score(0.2)); f.paint('h2f3', f.score(0.3));
   assert.equal(f.overlay().textContent, '•'); assert.equal(f.overlay().dataset.move, 'h2f3');
   assert.equal(f.overlay().dataset.rawScore, '0.3');
+});
+
+test('LCZero overlays use full WDL while collisions retain original Q ranking', t => {
+  const f = fixture(t);
+  const a = Object.freeze({scoreType:'q',nativeQ:.1,wdl:Object.freeze([.42,.26,.32])});
+  const b = Object.freeze({scoreType:'q',nativeQ:.1,wdl:Object.freeze([.12,.86,.02])});
+  f.paint('d2f3',a,true); assert.equal(f.overlay().textContent,'+40');
+  assert.match(f.overlay().title,/WDL_mu.*win 42.0%.*draw 26.0%.*root player perspective/);
+  f.overlay().remove();f.paint('d2f3',b,true);assert.equal(f.overlay().textContent,'+32');
+  assert.equal(f.overlay().dataset.rawScore,'0.1');
+});
+
+test('candidate list uses the same full WDL display as overlays and Deep', t => {
+  const dom=new JSDOM('<div id="analysisCandidates"></div>');t.after(()=>dom.window.close());
+  const first=utils.indexOf('  function showAnalysisCandidates('),last=utils.indexOf('  async function fetchAnnotations',first);
+  const context={window:{ChessEvalBar:Eval},document:dom.window.document,settings:{topN:3},
+    game:{fen:()=>new Chess().fen()},uciToSan:(_fen,move)=>move};
+  vm.createContext(context);vm.runInContext(utils.slice(first,last),context);
+  context.showAnalysisCandidates([{move:'e2e4',scoreType:'q',nativeQ:.3,wdl:[.5,.3,.2]}],'LC0',null);
+  const row=dom.window.document.querySelector('#analysisCandidates div');
+  assert.match(row.textContent,/\+100 cp/);assert.match(row.title,/WDL_mu.*draw 30.0%/);
 });
