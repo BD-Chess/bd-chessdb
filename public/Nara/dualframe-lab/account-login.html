@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="referrer" content="no-referrer">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'self'; object-src 'none'">
+ <meta name="robots" content="noindex,nofollow">
+ <title>DualFrame AI · Account sign-in</title>
+ <link rel="stylesheet" href="./styles.css?v=3.0-r4.9">
+ <script type="module" src="./account-login.mjs?v=3.0-r4.11"></script>
+</head>
+<body>
+ <main>
+  <section class="panel creator auth-dialog" aria-labelledby="account-title">
+   <p class="eyebrow">DUALFRAME AI</p>
+   <h1 id="account-title" data-copy="title">Account sign-in</h1>
+   <p data-copy="intro">Sign in to connect this account's private image library.</p>
+   <p id="account-status" class="small" role="status" aria-live="polite">Checking account sign-in availability…</p>
+   <form id="account-form" hidden>
+    <label class="field"><span data-copy="email">Email</span><input id="account-email" type="email" autocomplete="username" maxlength="254" required></label>
+    <label class="field"><span data-copy="password">Password</span><input id="account-password" type="password" autocomplete="current-password" maxlength="1000" required></label>
+    <button id="account-submit" type="submit" class="primary" data-copy="signIn" disabled>Sign in</button>
+   </form>
+   <button id="account-existing" class="secondary" type="button" data-copy="existing" hidden>Use the account already signed in here</button>
+   <p class="small muted" data-copy="registration">Registration is currently unavailable.</p>
+   <div class="button-row"><button id="account-close" class="secondary" type="button" data-copy="close">Close</button><button id="account-language" class="text-button" type="button">SL</button></div>
+   <noscript>JavaScript is required for account sign-in.</noscript>
+  </section>
+ </main>
+</body>
+</html>

@@ -63,7 +63,11 @@ export function verifyProtectedPixels({sourceData,sourceWidth,sourceHeight,outpu
   return {schema:'bd.dualframe.pixel-proof.v1',verified:channel_difference_count===0,checked_scope:'normalized-rgba-values',normalization:'browser-decoded-sRGB-RGBA8',source_width:sourceWidth,source_height:sourceHeight,protected_pixel_count:sourceWidth*sourceHeight,checked_channel_count:sourceData.length,channel_difference_count,pixel_difference_count,max_channel_difference,placement:{x:p.x,y:p.y,width:sourceWidth,height:sourceHeight,scale:1}};
 }
 export function verifiedFourK(asset) {
-  const originVerified=['native','upscaled'].includes(asset?.resolution_origin) || (['provider-native','provider-native-composite'].includes(asset?.resolution_origin) && asset?.native_4k===true) || (asset?.resolution_origin==='reference-provided' && asset?.origin==='reference' && asset?.reference_only===true);
+  const deterministic=['deterministic-upscaled','deterministic-contained','deterministic-downsampled'].includes(asset?.resolution_origin)
+   &&asset?.operation==='derive'&&asset?.model_calls===0&&asset?.no_crop===true&&asset?.native_4k===false
+   &&HASH.test(asset?.sha256||'')&&HASH.test(asset?.parent_sha256||'')&&asset?.parent_output_sha256===asset?.parent_sha256
+   &&((asset?.width===3840&&asset?.height===2160&&asset?.direction==='landscape')||(asset?.width===2160&&asset?.height===3840&&asset?.direction==='portrait'));
+  const originVerified=deterministic || ['native','upscaled'].includes(asset?.resolution_origin) || (['provider-native','provider-native-composite'].includes(asset?.resolution_origin) && asset?.native_4k===true) || (asset?.resolution_origin==='reference-provided' && asset?.origin==='reference' && asset?.reference_only===true);
   return Boolean(asset?.resolution_verified && Number.isInteger(asset.width) && Number.isInteger(asset.height) && Math.max(asset.width,asset.height)>=3840 && Math.min(asset.width,asset.height)>=2160 && asset.width*asset.height<=MAX_PIXELS && originVerified);
 }
 export function deviceOrientation({ device = 'desktop', width = 1280, height = 720, override = 'auto', simulation = 'auto', tablet = 'viewport' } = {}) {
@@ -77,11 +81,11 @@ export function selectAsset(pair, target, quality = 'hd', dpr = 1) {
   if (target === 'original') return { asset: pair.original, orientation: pair.original.source_orientation, quality: 'original', missing: false };
   const branch = pair.variants[target];
   const wanted = quality === 'auto' ? (dpr > 1.5 && verifiedFourK(branch?.fourK) ? '4k' : 'hd') : quality;
-  if (wanted === '4k' && verifiedFourK(branch?.fourK)) return { asset: branch.fourK, orientation: target, quality: '4k', missing: false, upscaled:branch.fourK.resolution_origin==='upscaled' };
+  if (wanted === '4k' && verifiedFourK(branch?.fourK)) return { asset: branch.fourK, orientation: target, quality: '4k', missing: false, upscaled:['upscaled','deterministic-upscaled'].includes(branch.fourK.resolution_origin) };
   if (branch?.hd) return { asset: branch.hd, orientation: target, quality: branch.hd.origin === 'original' ? 'original' : branch.hd.origin === 'imported' ? 'imported' : 'hd', missing: wanted === '4k' };
   // A 4K-first result remains usable before a separate HD composition exists.
   // Keep its actual quality label; never relabel the 4K file as native HD.
-  if (verifiedFourK(branch?.fourK)) return {asset:branch.fourK,orientation:target,quality:'4k',missing:wanted!=='4k',upscaled:branch.fourK.resolution_origin==='upscaled'};
+  if (verifiedFourK(branch?.fourK)) return {asset:branch.fourK,orientation:target,quality:'4k',missing:wanted!=='4k',upscaled:['upscaled','deterministic-upscaled'].includes(branch.fourK.resolution_origin)};
   return { asset: pair.original, orientation: pair.original.source_orientation, quality: 'original', missing: true };
 }
 export function sniff(bytes) {

@@ -73,5 +73,5 @@ test('Phone zoom-safe viewer exit is independent of toolbar and tracks visible v
  assert.match(app,/visualViewport\?\.addEventListener\('scroll',positionMobileClose\)/);
  assert.match(app,/button\.style\.transform='scale\('/);
  assert.match(app,/\$\('viewer-floating-close'\)\.addEventListener\('click',closeViewer\)/);
- assert.match(app,/createSyncEngine\(\{api:API.syncTransport/);
+ assert.match(app,/createSyncEngine\(\{api:API\.captureAPI\(\)\.syncTransport,store:scopedStore,owner:scopeOwner/);
 });

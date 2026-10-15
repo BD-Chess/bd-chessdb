@@ -20,6 +20,9 @@ if(mode==='--guard'){
  const anon=await fetch(base+'/api/df/library',{cache:'no-store'});if(anon.status!==401)throw Error('LIVE_API_NOT_PROTECTED');
  const syncAnon=await fetch(base+'/api/df/sync/manifest',{cache:'no-store'});if(syncAnon.status!==401)throw Error('LIVE_SYNC_NOT_PROTECTED');
  const syncRecordAnon=await fetch(base+'/api/df/sync/records',{method:'POST',headers:{'content-type':'application/json'},body:'{}',cache:'no-store'});if(syncRecordAnon.status!==401)throw Error('LIVE_SYNC_WRITE_NOT_PROTECTED');
+ const enhanceAnon=await fetch(base+'/api/df/enhance',{method:'POST',headers:{'content-type':'application/json'},body:'{}',cache:'no-store'});if(enhanceAnon.status!==401)throw Error('LIVE_ENHANCE_NOT_PROTECTED');
+ const adminAnon=await fetch(base+'/api/df/admin/policy',{cache:'no-store'});if(adminAnon.status!==401)throw Error('LIVE_ADMIN_NOT_PROTECTED');
+ if(capabilities.account_identity?.public_enabled!==false)throw Error('PUBLIC_ENABLEMENT_GATE_NOT_HELD');
  const probeAnon=await fetch(base+'/api/df/model-probe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({models:['openai-flare']}),cache:'no-store'});
  if(probeAnon.status!==401)throw Error('LIVE_MODEL_PROBE_NOT_PROTECTED');
  const probeCors=await fetch(base+'/api/df/model-probe',{method:'OPTIONS',headers:{origin:'https://bd-chess.github.io','access-control-request-method':'POST','access-control-request-headers':'authorization,content-type'}});
@@ -45,7 +48,7 @@ if(mode==='--guard'){
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
  const names=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY'];
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));
- const check={status:'PRODUCTION_VERIFIED',deploy_id:id,source_commit:process.env.GITHUB_SHA,baseline:(await readFile('.dualframe-baseline','utf8')).trim(),url:base+'/Nara/dualframe-lab/',api_version:capabilities.version,offline_package_sha256:livePwaHash,anonymous_library_status:anon.status,models:capabilities.models?.map(m=>({key:m.key,key_configured:m.key_configured,status:m.status})),credential_metadata:configured,configuration_storage:configured.every(v=>v.present)?'Netlify secret environment':'private-encrypted-netlify-vault',real_provider_calls:0,paid_image_spend:0};
+ const check={status:'PRODUCTION_VERIFIED',deploy_id:id,source_commit:process.env.GITHUB_SHA,baseline:(await readFile('.dualframe-baseline','utf8')).trim(),url:base+'/Nara/dualframe-lab/',api_version:capabilities.version,offline_package_sha256:livePwaHash,anonymous_library_status:anon.status,anonymous_enhance_status:enhanceAnon.status,anonymous_admin_status:adminAnon.status,account_identity_status:capabilities.account_identity,enhancement_status:capabilities.enhancement_policy||null,models:capabilities.models?.map(m=>({key:m.key,key_configured:m.key_configured,status:m.status})),credential_metadata:configured,configuration_storage:configured.every(v=>v.present)?'Netlify secret environment':'private-encrypted-netlify-vault',real_provider_calls:0,paid_image_spend:0};
  await writeFile('dualframe-live-check.json',JSON.stringify(check,null,2)+'\n');console.log(JSON.stringify(check));
  if(!capabilities.auth_configured||capabilities.models.some(m=>!m.key_configured))throw Error('IMAGE_CREDENTIAL_CONFIGURATION_INCOMPLETE');
 }else{
@@ -59,7 +62,7 @@ if(mode==='--guard'){
   let completed=0;const end=code=>{if(code!==0)reject(Error('BASELINE_ARCHIVE_FAILED'));else if(++completed===2)resolve();};
   archive.on('error',reject);extract.on('error',reject);archive.stdout.on('error',reject);extract.stdin.on('error',reject);archive.stdout.pipe(extract.stdin);archive.on('close',end);extract.on('close',end);
  });
- const paths=['public/Nara/dualframe-lab','functions/lib/dualframe','functions/dualframe-api.mjs','functions/dualframe-auth.mjs','functions/dualframe-work-background.mjs','functions/package.json'];
+ const paths=['public/Nara/dualframe-lab','functions/lib/dualframe','functions/dualframe-api.mjs','functions/dualframe-auth.mjs','functions/dualframe-work-background.mjs','functions/package.json','functions/package-lock.json'];
  for(const path of paths)await cp(path,'.dualframe-prod/'+path,{recursive:true,force:true});
  const config=await readFile('.dualframe-prod/netlify.toml','utf8'),fragment=await readFile('netlify-dualframe.fragment.toml','utf8');await writeFile('.dualframe-prod/netlify.toml',config.includes('# DualFrame AI R&D')?config.replace(/\n# DualFrame AI R&D[\s\S]*?# END DualFrame AI R&D\n/,fragment):config+fragment);
  const digest=createHash('sha256').update(config).digest('hex');console.log(JSON.stringify({preserved_deploy:deploy.id,preserved_git_baseline:baseline,preserved_config_sha256:digest,overlay_paths:paths,real_provider_calls:0}));

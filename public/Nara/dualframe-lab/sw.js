@@ -1,7 +1,7 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
-const BUILD_LABEL='2026-10-15-r4.10';
-const PACKAGE_SHA='1a7090b83a442b232729dd2f81f04d7441ec104b76a42f99424f464a46924246';
-const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.9","./app.mjs?v=3.0-r4.10","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.9","./api-client.mjs?v=3.0-r4.10","./core.mjs?v=3.0-r4","./store.mjs?v=3.0-r4.10","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4","./models.mjs?v=3.0-r4","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.10","./pair.schema.json","./release.json"];
+const BUILD_LABEL='2026-10-15-r4.11';
+const PACKAGE_SHA='ad8d0c68807f906675d52d8ceb68bd1edf6978d3f4d641a8723d156d18b43518';
+const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.11","./app.mjs?v=3.0-r4.11","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.9","./api-client.mjs?v=3.0-r4.11","./core.mjs?v=3.0-r4.11","./store.mjs?v=3.0-r4.11","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4.11","./models.mjs?v=3.0-r4.11","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4.11","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.11","./pair.schema.json","./release.json","./enhancement-client.mjs?v=3.0-r4.11","./enhancement-settings.mjs?v=3.0-r4.11","./enhancement-backup.mjs?v=3.0-r4.11","./account-login.html","./account-login.mjs","./vendor/netlify-identity-2.0.0.mjs"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';
 const CACHE=PREFIX+BUILD_LABEL+':'+PACKAGE_SHA;
@@ -49,6 +49,8 @@ self.addEventListener('fetch',event=>{
  if(request.method!=='GET'||request.headers.has('authorization'))return;
  if(url.pathname.startsWith('/api/df/')||url.pathname.startsWith('/.netlify/functions/'))return;
  if(url.origin!==BASE.origin||!url.pathname.startsWith(BASE.pathname))return;
+ // Login URLs carry a one-use bridge nonce; fetch the public shell without caching that navigation.
+ if(url.pathname===new URL('./account-login.html',BASE).pathname&&request.mode==='navigate')return;
  if(URL_SET.has(url.href)){
   event.respondWith((async()=>{const cache=await caches.open(CACHE),saved=await cache.match(url.href);return saved||fetch(request);})());
   return;

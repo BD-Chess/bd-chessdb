@@ -6,6 +6,7 @@ import {probeModelKeys} from './provider-health.mjs';
 import {inspectImage,finishImage,hash,normalizationProof,prepareEditInput} from './images.mjs';
 import {taskGeometry} from '../../../public/Nara/dualframe-lab/core.mjs';
 import {syncState} from './sync-state.mjs';
+import {createEnhancementService} from './enhancement-service.mjs';
 
 const OWNER='bd-research-owner',CHUNK=1024*1024,MAX_FILE=64*1024*1024;
 const ID=/^[a-zA-Z0-9_-]{8,100}$/,HASH=/^[a-f0-9]{64}$/;
@@ -13,7 +14,7 @@ const origins=new Set(['https://bd-chess.github.io','https://www.mdlxdcc.org','h
 function fail(code,status=400){throw Object.assign(Error(code),{status});}
 const cleanName=s=>String(s||'Untitled').replace(/[\u0000-\u001f]/g,'').slice(0,120);
 const readJSON=async(req,max=16000)=>{const t=await req.text();if(t.length>max)fail('REQUEST_TOO_LARGE',413);try{return JSON.parse(t);}catch{fail('INVALID_JSON');}};
-export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null}){
+export function createService({store,env,fetcher=fetch,runProvider=callProvider,now=()=>Date.now(),dispatch=null,enhancementPolicy=null,accountIdentity=null,operatorPolicy=null,freeAuthorization=null}){
  const get=key=>store.get(key,{type:'json',consistency:'strong'}),bytes=key=>store.get(key,{type:'arrayBuffer',consistency:'strong'}).then(v=>v===null?null:Buffer.from(v));
  const put=async(key,value)=>{const result=await store.setJSON(key,value,{onlyIfNew:true});if(typeof result?.modified!=='boolean')fail('STORAGE_VERSION_UNSUPPORTED',503);if(result.modified&&JSON.stringify(await get(key))!==JSON.stringify(value))fail('STORAGE_WRITE_UNCONFIRMED',503);return result;};
  const session=req=>verifyToken(bearer(req),env('DF_SESSION_SECRET'),'session',now());
@@ -23,9 +24,9 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
  async function state(j){
   const root=`job-events/${j.owner}/${j.job_id}`;
   if(await get(`${root}/rejected`))return {...j,status:'REJECTED'};
-  const result=await get(`${root}/ready`);if(result)return {...j,...result,status:await get(`${root}/accepted`)?'ACCEPTED':'READY'};
+  const result=await get(`${root}/ready`);if(result){const hd_copy=await get(`${root}/hd-copy`);return {...j,...result,...(hd_copy?{hd_copy}:{}),status:await get(`${root}/accepted`)?'ACCEPTED':'READY'};}
   const failed=await get(`${root}/failed`);if(failed)return {...j,...failed};
-  const claim=await get(`${root}/submitted`);if(claim)return {...j,status:now()-claim.at>15*60000?'HELD':'RUNNING',...(now()-claim.at>15*60000?{error:'PROVIDER_STATE_UNKNOWN',detail:'Submission was recorded; no automatic paid retry.'}:{})};
+  const submitted=await get(`${root}/submitted`),claim=submitted||await get(`${root}/enhancement-worker`);if(claim)return {...j,status:now()-claim.at>15*60000?'HELD':'RUNNING',...(now()-claim.at>15*60000?{error:submitted?'PROVIDER_STATE_UNKNOWN':'WORKER_STATE_UNKNOWN',detail:submitted?'Submission was recorded; no automatic paid retry.':'Worker claim was recorded; provider submission is not confirmed. No automatic generation retry.'}:{})};
   return {...j,status:await get(`${root}/cancelled`)?'CANCELLED':'PENDING'};
  }
  const sync=syncState({store,get,put,state,now});
@@ -36,19 +37,37 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
   const r=await fetcher(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({job_id:j.job_id,token}),signal:AbortSignal.timeout(15000),redirect:'error'});
   if(r.status!==202)fail('WORKER_DISPATCH_FAILED',503);
  }
+ const enhancement=createEnhancementService({store,get,put,bytes,state,getJob,ownedAsset,env,now,schedule,runProvider,fetcher,policy:enhancementPolicy,freeAuthorization});
  async function handle(req){
   try{
    const u=new URL(req.url),path=u.pathname.replace(/^\/api\/df/,'').replace(/^\/\.netlify\/functions\/dualframe-api/,'').replace(/^\/\.netlify\/functions\/dualframe-auth$/,'/auth');
    if(req.method==='OPTIONS'){const origin=req.headers.get('origin');if(!origin||!origins.has(origin))return json(req,{error:'ORIGIN_NOT_ALLOWED'},403);return json(req,{ok:true});}
-   if(path==='/capabilities'&&req.method==='GET')return json(req,publicCapabilities(env));
+   if(path==='/capabilities'&&req.method==='GET'){
+    const callbacks=['inspect','reserve','authorizeCall'].every(key=>typeof enhancementPolicy?.[key]==='function'),policyConfigured=callbacks&&enhancementPolicy?.configurationStatus?.configured!==false;
+    const freeCredentials=/^[a-f0-9]{32}$/i.test(env('DF_CLOUDFLARE_ACCOUNT_ID')||'')&&typeof env('DF_CLOUDFLARE_API_TOKEN')==='string'&&env('DF_CLOUDFLARE_API_TOKEN').length>=20,freeInterface=freeCredentials&&typeof freeAuthorization==='function';
+    return json(req,{...publicCapabilities(env),account_identity:typeof accountIdentity?.status==='function'?await accountIdentity.status():{configured:false,status:'PUBLIC_ENABLEMENT_HELD',public_enabled:false},enhancement_policy:{configured:policyConfigured,status:policyConfigured?'ENHANCE_POLICY_INTERFACE_CONFIGURED_UNVERIFIED':'ENHANCE_POLICY_NOT_CONFIGURED',policy_values_verified:false},free_provider:{configured:freeInterface&&policyConfigured,status:!freeInterface?'FREE_PROVIDER_NOT_CONFIGURED':!policyConfigured?'ENHANCE_POLICY_NOT_CONFIGURED':'FREE_AUTHORIZATION_CONFIGURED_UNVERIFIED',model:'@cf/black-forest-labs/flux-2-klein-4b',zero_spend_route_verified:false,real_quality_verified:false,paid_fallback:false}});
+   }
+   if(path==='/auth/account'&&req.method==='POST'){
+    if(typeof accountIdentity!=='function')fail('PUBLIC_ENABLEMENT_HELD',503);
+    const principal=await accountIdentity(req);if(!principal||!ID.test(principal.owner||'')||principal.verified_email!==true||typeof principal.issuer!=='string'||!principal.issuer||principal.issuer.length>500||typeof principal.subject!=='string'||!principal.subject||principal.subject.length>200)fail('ACCOUNT_IDENTITY_UNVERIFIED',401);
+    const token=signToken({owner:principal.owner,scope:'session',auth_method:'verified-account',issuer:principal.issuer,subject:principal.subject},env('DF_SESSION_SECRET'),30*86400,now());
+    return json(req,{token,expires_at:new Date(now()+30*86400000).toISOString(),owner:principal.owner,auth_method:'verified-account',admin:false,paid_entitlement:0,account_access:principal.account_access||'restricted'});
+   }
    if(path==='/auth'&&req.method==='POST'){
     if(!env('DF_PASSWORD_VERIFIER')||!env('DF_SESSION_SECRET'))fail('AUTH_NOT_CONFIGURED',503);
     const b=await readJSON(req);if(!checkPassword(b.password,env('DF_PASSWORD_VERIFIER')))fail('UNAUTHORIZED',401);
-    const token=signToken({owner:OWNER,scope:'session',device:ID.test(b.device||'')?b.device:randomUUID()},env('DF_SESSION_SECRET'),30*86400,now());
+    const token=signToken({owner:OWNER,scope:'session',auth_method:'legacy-password',device:ID.test(b.device||'')?b.device:randomUUID()},env('DF_SESSION_SECRET'),30*86400,now());
     return json(req,{token,expires_at:new Date(now()+30*86400000).toISOString(),owner:OWNER});
    }
-   const claim=session(req),owner=claim.owner;
-   if(path==='/session'&&req.method==='GET')return json(req,{ok:true,expires_at:new Date(claim.exp*1000).toISOString(),owner});
+   const claim=session(req),owner=claim.owner,principal={owner,auth_method:claim.auth_method||'legacy-password',admin:false,...(claim.auth_method==='verified-account'?{issuer:claim.issuer,subject:claim.subject}:{})};
+   if(path==='/session'&&req.method==='GET')return json(req,{ok:true,expires_at:new Date(claim.exp*1000).toISOString(),owner,auth_method:principal.auth_method,admin:false,paid_entitlement:0});
+   if(path==='/admin/policy'&&['GET','PUT'].includes(req.method)){
+    if(principal.auth_method!=='verified-account')fail('ADMIN_IDENTITY_REQUIRED',403);
+    if(!operatorPolicy)fail('ADMIN_POLICY_NOT_CONFIGURED',503);
+    const admin=typeof operatorPolicy.resolvePrincipal==='function'?await operatorPolicy.resolvePrincipal(principal):principal;if(admin.admin!==true)fail('ADMIN_IDENTITY_REQUIRED',403);
+    if(req.method==='GET')return json(req,await operatorPolicy.read({principal:admin}));const update=await readJSON(req,128*1024);return json(req,await operatorPolicy.update({principal:admin,expected_version:update.expected_version,policy:update.policy}));
+   }
+   const enhanced=await enhancement.route(req,owner,principal,path,readJSON);if(enhanced)return json(req,enhanced.data,enhanced.status||200);
    if(path==='/model-probe'&&req.method==='POST'){
     const body=await readJSON(req);
     const result=await probeModelKeys(body?.models,env,{fetcher,now});
@@ -108,6 +127,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    const deletePair=path.match(/^\/pairs\/([-a-zA-Z0-9_]+)$/);
    if(deletePair&&req.method==='DELETE'){if(!ID.test(deletePair[1]))fail('PAIR_INVALID');const pair=await get(`pairs/${owner}/${deletePair[1]}`),source=pair?.original?.sha256||null,tombstone={at:now(),pair_id:deletePair[1],source_sha256:source};await put(`deleted-pairs/${owner}/${deletePair[1]}`,tombstone);if(source)await put(`deleted-sources/${owner}/${source}`,tombstone);return json(req,{deleted:true});}
    if((path==='/expand'||path==='/generate')&&req.method==='POST'){
+    if(principal.auth_method==='verified-account')fail('PAID_ENTITLEMENT_REQUIRED',403);
     const b=await readJSON(req),operation=path==='/generate'?'generate':'expand',m=modelFor(b.model);
     if(!m)fail('MODEL_UNKNOWN');if(!keyFor(m,env))fail('KEY_NOT_CONFIGURED',503);if(operation==='expand'&&!m.edit)fail('MODEL_GENERATION_ONLY');
     if(!HASH.test(b.idempotency_key||'')||!['portrait','landscape'].includes(b.target)||!['faithful','smart','infographic'].includes(b.mode)||!['hd','4k'].includes(b.quality)||typeof b.prompt!=='string'||b.prompt.length>3000||!['center','left','right','top','bottom'].includes(b.position||'center')||!Number.isInteger(b.seed)||b.seed<0||b.seed>2147483647)fail('JOB_INVALID');
@@ -125,7 +145,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if(jobRoute){const j=await getJob(owner,jobRoute[1]);if(req.method==='GET'&&!jobRoute[2])return json(req,await state(j));
     if(req.method==='POST'&&jobRoute[2]){
      const action=jobRoute[2],s=await state(j),root=`job-events/${owner}/${j.job_id}`;
-     if(action==='accept'){if(await sync.tombstoned(owner,j.pair_id,j.input_sha256))fail('PAIR_DELETED',409);if(!['READY','ACCEPTED'].includes(s.status))fail('OUTPUT_NOT_READY',409);await put(`${root}/accepted`,{at:now()});}
+     if(action==='accept'){if(await sync.tombstoned(owner,j.pair_id,j.input_sha256))fail('PAIR_DELETED',409);if(!['READY','ACCEPTED'].includes(s.status))fail('OUTPUT_NOT_READY',409);await put(`${root}/accepted`,{at:now()});await enhancement.onAccept(j,s);}
      if(action==='reject')await put(`${root}/rejected`,{at:now()});
      if(action==='cancel')await put(`${root}/cancelled`,{at:now()});
      // Resume is receipt/status recovery. It cannot make another paid submission.
@@ -155,6 +175,7 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
  async function work(payload){
   const claim=verifyToken(payload?.token,env('DF_SESSION_SECRET'),'worker',now());if(claim.job_id!==payload.job_id)fail('UNAUTHORIZED',401);
   const j=await getJob(claim.owner,payload.job_id),root=`job-events/${j.owner}/${j.job_id}`;
+  if(j.enhancement_plan_id)return enhancement.work(j);
   if(await get(`${root}/ready`)||await get(`${root}/failed`)||await get(`${root}/cancelled`))return;
   // Immutable reservation: platform retries/repeated dispatches never repeat a paid call.
   const locked=await put(`${root}/submitted`,{at:now(),owner:j.owner,job_id:j.job_id,reservation_id:randomUUID()});if(!locked.modified)return;
