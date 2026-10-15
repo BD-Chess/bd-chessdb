@@ -137,7 +137,9 @@ test('password-manager preparation preserves every byte in the sealed account lo
  const directory=await mkdtemp(path.join(tmpdir(),'dualframe-package-prep-'));
  try{
   const target=path.join(directory,'dualframe');await cp(fileURLToPath(root),target,{recursive:true});
-  execFileSync('python3',[fileURLToPath(new URL('../scripts/inject_password_manager.py',import.meta.url)),target],{stdio:'pipe'});
+  // Run the exact HTML transform used by Pages, without unrelated site runtime patching.
+  const transform=['import runpy,sys','from pathlib import Path',"hooks=runpy.run_path(sys.argv[1],run_name='dualframe_pm_fixture')",'root=Path(sys.argv[2])',"for page in root.rglob('*.html'): hooks['patch_html'](page,root)"].join('\n');
+  execFileSync('python3',['-c',transform,fileURLToPath(new URL('../scripts/inject_password_manager.py',import.meta.url)),target],{stdio:'pipe'});
   for(const asset of assets){const name=asset.replace(/^\.\//,'').split('?')[0];assert.deepEqual(await readFile(path.join(target,name)),await bytes(name),'host preparation changed sealed asset '+name);}
  }finally{await rm(directory,{recursive:true,force:true});}
 });
