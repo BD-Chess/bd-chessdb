@@ -42,6 +42,7 @@ async function boot(t, options = {}) {
     lockQueues.set(name, result.catch(() => {})); return result;
   } }, configurable: true });
   if (options.initialStudies) w.localStorage.setItem('ChessBest:LAB:v2:studies', options.initialStudies);
+  for (const [key, value] of Object.entries(options.initialStorage || {})) w.localStorage.setItem(key, value);
   w.alert = text => { throw Error(text); }; w.confirm = () => true;
   w.URL.createObjectURL = () => 'blob:fixture'; w.URL.revokeObjectURL = () => {};
   const timeout = w.setTimeout.bind(w);
@@ -81,6 +82,10 @@ async function boot(t, options = {}) {
   };
   for (const file of [...w.document.querySelectorAll('script[src]')].map(node => node.getAttribute('src').split('?')[0])) {
     if (/jquery-|chessboard-/.test(file)) continue;
+    if (file === 'js/8zc-utils.js' && options.beforeInit) {
+      await w.ChessLabStorage.ready;
+      options.beforeInit(w);
+    }
     w.eval(readSource(file));
     if (file === 'js/8zc-dcc-core.js') w.ChessDCC.analyze = async ({ fen, moves: candidates }) => ({
       allMoves: candidates, dcc1Move: candidates[0]?.move,
@@ -103,8 +108,10 @@ async function boot(t, options = {}) {
   };
   const ready = () => until(() => /SF local depth/.test(el('analysisSourceStatus').textContent)
     && /CDB/.test(el('allEvalBadges').querySelector('[data-eval-source="DCC"] small')?.textContent || ''), 'independent SF and CDB-based DCC completed');
-  el('analysisSource').value = 'sf'; el('analysisSource').dispatchEvent(new w.Event('change'));
-  await ready();
+  if (!options.skipReady) {
+    el('analysisSource').value = 'sf'; el('analysisSource').dispatchEvent(new w.Event('change'));
+    await ready();
+  }
   return { w, el, errors, ready, until, drop: (...args) => boardOptions.onDrop(...args),
     failStudyWrites(value) { failStudyWrites = value; },
     ask() { el('geminiQuestion').value = 'Compare sources'; el('geminiForm').dispatchEvent(new w.Event('submit', { cancelable: true })); return sent; } };

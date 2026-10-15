@@ -2,6 +2,54 @@
 (function (root) {
   'use strict';
   const KEY = 'ChessBest:LAB:v2:studies';
+  function providerLabel(receipt = {}) {
+    const mode = receipt.engineMode, id = String(receipt.engineId || receipt.engine?.id || '');
+    const provider = receipt.provider;
+    if (mode === 'sf-full' || /stockfish.*full/i.test(id)) return 'Stockfish Full';
+    if (mode === 'sf-lite' || /stockfish.*lite/i.test(id)) return 'Stockfish Lite';
+    if (mode === 'berserk' || /berserk/i.test(id)) return 'Berserk';
+    if (mode === 'reckless' || /reckless/i.test(id)) return 'Reckless';
+    if (mode === 'lc0' || /lc0|lczero|maia/i.test(id)) return 'LC0' + (/maia/i.test(id + ' ' + (receipt.engineName || receipt.engine?.name || '')) ? ' / Maia1900' : '') + (mode === 'lc0' ? ' (browser PUCT)' : '');
+    return ({ CDB: 'CDB', SF: 'Stockfish (variant unknown)', BER: 'Berserk', RLE: 'Reckless', LC0: 'LC0 (network unknown)' })[provider] || 'Unknown provider';
+  }
+  function scoreText(item, candidate) {
+    const receipt = item.analysis.receipt || {}, move = candidate.move || candidate.uci;
+    const measured = item.analysis.allMoves?.find(m => (m.move || m.uci) === move);
+    const value = { ...(candidate.data || {}), ...candidate, ...measured };
+    const typed = value.score && typeof value.score === 'object' ? value.score : null;
+    const type = typed?.type || value.scoreType;
+    const pov = String(receipt.scorePOV || ''), side = item.fen.split(' ')[1] === 'b' ? -1 : 1;
+    let sign = /white/i.test(pov) ? 1 : /black/i.test(pov) ? -1 : /root|to move|stm/i.test(pov) ? side : null;
+    let raw = typed ? typed.root : Number.isFinite(value.raw) ? value.raw : value.score;
+    if (Number.isFinite(typed?.white)) { raw = typed.white; sign = 1; }
+    let bound = typed?.whiteBound && sign === 1 ? typed.whiteBound : typed?.bound || value.bound;
+    if (sign === -1 && ['upper', 'lower'].includes(bound)) bound = bound === 'upper' ? 'lower' : 'upper';
+    const prefix = bound === 'lower' ? '≥ ' : bound === 'upper' ? '≤ ' : '';
+    const suffix = sign === null ? ' · perspective unknown' : ' · White perspective';
+    if (type === 'q') {
+      const q = Number.isFinite(typed?.white) ? typed.white : typed?.root ?? value.nativeQ;
+      const rootWdl = typed?.wdl || value.wdl || value.nativeWDL;
+      const wdl = Number.isFinite(typed?.white) ? typed.wdlWhite || (side === -1 && Array.isArray(rootWdl) ? [rootWdl[2], rootWdl[1], rootWdl[0]] : rootWdl) : rootWdl;
+      if (!Number.isFinite(q) || Math.abs(q) > 1) return 'unknown' + suffix;
+      const whiteWdl = sign === -1 && Array.isArray(wdl) ? [wdl[2], wdl[1], wdl[0]] : wdl;
+      const display = root.ChessEvalBar?.neuralScore(q * (sign ?? 1), whiteWdl);
+      return display ? prefix + display.description + suffix + ' · model estimates' : `native neural Q ${q}` + suffix;
+    }
+    if (type === 'mate') {
+      const mate = Number.isFinite(typed?.white) ? typed.white : typed?.root ?? value.mateIn;
+      return Number.isFinite(mate) ? prefix + `mate #${mate * (sign ?? 1) || 0}` + suffix : 'unknown mate distance' + suffix;
+    }
+    if (!Number.isFinite(raw)) return 'unknown' + suffix;
+    if (Math.abs(raw) >= 10000 && receipt.provider === 'CDB') {
+      // CDB encodes mate in plies near 30000. Other decisive sentinels do
+      // not establish a distance. Never print either as enormous centipawns.
+      const plies = 30000 - Math.abs(raw), white = raw * (sign ?? 1);
+      if (plies >= 0 && plies <= 1000) return prefix + `mate #${Math.sign(white) * Math.ceil(plies / 2)} (${plies} plies; CDB raw ${raw})` + suffix;
+      return prefix + 'decisive / mate distance unknown (CDB raw ' + raw + ')' + suffix;
+    }
+    if (type && type !== 'cp') return 'unknown score type' + suffix;
+    return prefix + `${raw * (sign ?? 1) || 0} cp` + suffix;
+  }
   function create(host) {
     const C = root.ChessStudy, Chess = host.Chess || root.Chess;
     if (!C || !Chess || typeof host.getContext !== 'function') throw Error('Study requires ChessStudy, Chess and getContext');
@@ -383,7 +431,7 @@
         if (item) {
           panel.append(el('strong', '', item.label || 'Analysis snapshot'), el('p', 'chess-study-hint', item.capturedAt));
           const candidates = Array.isArray(item.analysis.candidates) ? item.analysis.candidates : [], table = el('table'), thead = el('thead'), tr = el('tr');
-          const provider = item.analysis.receipt?.provider === 'SF' ? 'SF' : 'CDB';
+          const provider = providerLabel(item.analysis.receipt);
           for (const title of ['Candidate', `${provider} score`, 'DCC rank', 'Coverage']) tr.append(el('th', '', title)); thead.append(tr); table.append(thead);
           const tbody = el('tbody');
           for (const candidate of candidates.slice(0, 80)) {
@@ -395,9 +443,7 @@
               let line = pv; if (pv[0] !== move) line = [move, ...pv];
               preview({ fen: item.fen, moves: line, title: slot + ' · ' + san, analysis: item.analysis });
             }));
-            const root = item.analysis.allMoves?.find(m => m.move === move);
-            const raw = Number.isFinite(candidate.raw) ? candidate.raw : candidate.score;
-            const score = root?.scoreType === 'mate' ? `mate #${root.mateIn}` : Number.isFinite(raw) ? `${raw} cp` : 'unknown';
+            const score = scoreText(item, candidate);
             const data = candidate.data || candidate;
             row.append(cell, el('td', '', score), el('td', '', Number.isFinite(data.dccScore) ? data.dccScore.toFixed(2) : 'unknown'), el('td', '', data.complete === true ? 'sampled path complete' : 'partial / unknown')); tbody.append(row);
           }

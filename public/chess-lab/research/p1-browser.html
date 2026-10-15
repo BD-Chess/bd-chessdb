@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>ChessBest P1 disposable storage acceptance</title>
+<style>body{font:16px/1.5 system-ui;max-width:58rem;margin:2rem auto;background:#142820;color:#ecf5ef}button{padding:.7rem}pre{white-space:pre-wrap}iframe{display:none}</style>
+<h1>P1 disposable storage acceptance</h1>
+<p>Runs real IndexedDB and Web Locks checks in two independent window contexts. All writes use a unique test prefix. Existing LAB and CURRENT data are never opened or changed.</p>
+<button id="run">Run disposable storage checks</button><pre id="result" role="status">Ready</pre>
+<script src="../js/8zc-evidence.js"></script>
+<script>
+'use strict';
+const E=window.ChessEvidence, args=new URLSearchParams(location.search), opened=[];
+const fen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+function options(prefix,backend,withoutLocks=false,quota=false){
+  if(!/^ChessBest:P1-QA:[a-z0-9-]+:$/.test(prefix))throw Error('Invalid disposable namespace');
+  return {indexedDB:backend==='indexedDB'?{open(name,version){const req=indexedDB.open(prefix+name,version);req.addEventListener('success',()=>opened.push(req.result));return req;}}:null,
+    localStorage:{getItem:k=>localStorage.getItem(prefix+k),setItem(k,v){if(quota)throw new DOMException('Disposable quota fixture','QuotaExceededError');localStorage.setItem(prefix+k,v);},removeItem:k=>localStorage.removeItem(prefix+k)},
+    locks:withoutLocks?null:{request:(name,settings,fn)=>navigator.locks.request(prefix+name,settings,fn)}};
+}
+async function cleanup(prefix,deleteDatabase=true){
+  opened.splice(0).forEach(db=>db.close());
+  for(const key of Object.keys(localStorage))if(key.startsWith(prefix))localStorage.removeItem(key);
+  if(deleteDatabase)await new Promise((resolve,reject)=>{const req=indexedDB.deleteDatabase(prefix+'ChessBest:LAB:v2:evidence');req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error);});
+}
+function snapshot(label){const collector=E.createCollector();collector.capture({kind:'score',fen,response:0,source:label});return collector.snapshot({receipt:{fen}},{label,createdAt:'2026-10-15T12:00:00Z'});}
+if(args.has('worker')){
+  document.body.hidden=true;
+  addEventListener('message',async event=>{
+    if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='p1-store')return;
+    const {request,prefix,backend,action,value,withoutLocks,quota}=event.data;
+    try{
+      let result;
+      if(action==='cleanup')result=await cleanup(prefix,false);
+      else {const store=E.createStore(options(prefix,backend,withoutLocks,quota));result=await store[action](value);if(action==='put')result={...result,retained:await store.get(value.id)};}
+      parent.postMessage({request,result},location.origin);
+    }catch(error){parent.postMessage({request,error:error.message},location.origin);}
+  });
+}else document.getElementById('run').onclick=async()=>{
+  const button=document.getElementById('run'),out=document.getElementById('result');button.disabled=true;out.textContent='Running…';
+  const frames=[],pending=new Map(),logs=[];let serial=0,prefix;
+  const listener=event=>{if(event.origin!==location.origin||!frames.some(f=>f.contentWindow===event.source))return;const job=pending.get(event.data?.request);if(job){pending.delete(event.data.request);event.data.error?job.reject(Error(event.data.error)):job.resolve(event.data.result);}};
+  addEventListener('message',listener);
+  const call=(frame,backend,action,value,extra={})=>new Promise((resolve,reject)=>{
+    const request=++serial,timer=setTimeout(()=>{pending.delete(request);reject(Error('Worker timed out'));},15000);
+    pending.set(request,{resolve:x=>{clearTimeout(timer);resolve(x);},reject:e=>{clearTimeout(timer);reject(e);}});
+    frame.contentWindow.postMessage({type:'p1-store',request,prefix,backend,action,value,...extra},location.origin);
+  });
+  const check=(yes,message)=>{if(!yes)throw Error(message);logs.push('PASS '+message);out.textContent=logs.join('\n');};
+  try{
+    for(let i=0;i<2;i++)await new Promise(resolve=>{const frame=document.createElement('iframe');frames.push(frame);frame.onload=resolve;frame.src=location.pathname+'?worker=1';document.body.append(frame);});
+    for(const backend of ['indexedDB','fallback']){
+      prefix='ChessBest:P1-QA:'+crypto.randomUUID()+':';
+      const a=snapshot('A'),b=snapshot('B'),c=snapshot('C');
+      const saves=await Promise.all([call(frames[0],backend,'put',a),call(frames[1],backend,'put',b)]);
+      check(saves.every(r=>r.persistent),backend+': both writes report durable');
+      const third=E.createStore(options(prefix,backend));
+      check(E.canonical(await third.get(a.id))===E.canonical(a)&&E.canonical(await third.get(b.id))===E.canonical(b),backend+': third-instance reopen retains both sealed hashes');
+      await Promise.all([call(frames[0],backend,'remove',a.id),call(frames[1],backend,'put',c)]);
+      check(await third.get(a.id)===null&&!!await third.get(b.id)&&!!await third.get(c.id),backend+': remove(A)+put(C) preserves B and C');
+      await Promise.all([call(frames[0],backend,'put',b),call(frames[1],backend,'put',b)]);
+      check((await third.list()).length===2,backend+': same-id sealed writes are idempotent');
+      if(backend==='fallback'){
+        const d=snapshot('D'),refused=await call(frames[0],backend,'put',d,{quota:true});
+        check(!refused.persistent&&refused.retained.id===d.id&&await third.get(d.id)===null,'fallback: quota refusal is readable in memory and leaves durable bytes intact');
+        const uncoordinated=await call(frames[1],backend,'put',d,{withoutLocks:true});
+        check(!uncoordinated.persistent&&await third.get(d.id)===null,'fallback: unavailable lock never claims durability');
+      }
+      await Promise.all(frames.map(frame=>call(frame,backend,'cleanup')));await cleanup(prefix);
+    }
+    const probe='ChessBest:P1-QA:'+crypto.randomUUID()+':aborted-probe';
+    await new Promise((resolve,reject)=>{const req=indexedDB.open(probe);req.onupgradeneeded=()=>req.transaction.abort();req.onerror=()=>resolve();req.onsuccess=()=>{req.result.close();reject(Error('Missing-DB probe unexpectedly committed'));};});
+    check(!(await indexedDB.databases()).some(db=>db.name===probe),'native IndexedDB: aborted missing-database probe creates no durable database');
+    out.textContent=JSON.stringify({status:'PASS',checks:logs.length,results:logs,context:'two same-origin disposable windows; real IndexedDB/localStorage/Web Locks'},null,2);
+  }catch(error){out.textContent=logs.join('\n')+'\nFAIL '+error.message;}
+  finally{removeEventListener('message',listener);frames.forEach(f=>f.remove());button.disabled=false;}
+};
+</script></html>
