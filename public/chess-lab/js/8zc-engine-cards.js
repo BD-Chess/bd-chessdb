@@ -24,7 +24,8 @@
     let following=false,followedPosition=null,followTimer=null,followSerial=0;
     const context=()=>host.getContext();
     const mobile=()=>session.capabilities('sf-full').mobile;
-    const capacity=()=>mobile()?1:Math.max(1,Math.min(2,(session.capabilities('sf-full').hardwareConcurrency||2)-1));
+    // CPU is per engine. All owns one concurrent worker per available family.
+    const capacity=()=>batch?batch.modes.length:mobile()?1:Math.max(1,Math.min(2,(session.capabilities('sf-full').hardwareConcurrency||2)-1));
     const key=(fen,mode)=>fen+'|'+mode;
     const changed=()=>host.onState?.();
     const positionKey=ctx=>JSON.stringify([ctx.fen,ctx.positionHistory||null]);

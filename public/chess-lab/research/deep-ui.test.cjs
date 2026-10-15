@@ -4,6 +4,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
+test('Deep explicitly distinguishes a retained verified Reckless set from a different native final best move',t=>{
+  const x=setup(t,{}, {analysisMode:'all'});x.ui.open();x.el('start').click();
+  x.emit({mode:'all',fen:x.game.fen(),elapsedMs:10000,children:{reckless:{status:'complete',depth:12,linesDepth:11,completeMultiPV:false,nativeBestMove:'d2d4',coverage:{status:'bestmove-mismatch'},
+    lines:[{multipv:1,pv:['e2e4'],score:{type:'cp',root:20,white:20,bound:'exact'}}]}}});
+  assert.match(x.el('lines').textContent,/verified lines retained at depth 11; native best move differs \(d2d4\)/);
+  assert.equal(x.el('lines').querySelectorAll('.deep-line').length,1);
+});
+
 test('LCZero WDL details keep raw evidence, open state and viewport through streamed MultiPV updates', t => {
   const x=setup(t,{}, {analysisMode:'all'}),w=x.w,fen=x.game.fen();
   x.ui.open();x.el('start').click();
@@ -31,6 +39,7 @@ function setup(t, host = {}, sessionSettings = null) {
   const w = dom.window; t.after(() => w.close());
   const style = w.document.createElement('style'); style.textContent = fs.readFileSync(path.join(base, 'css/8zc-deep.css'), 'utf8'); w.document.head.append(style);
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
+  w.eval(fs.readFileSync(path.join(base, 'js/8zc-engine-registry.js'), 'utf8'));
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-eval-bar.js'), 'utf8'));
   const game = new w.Chess(); let options, finish, running = false, stops = 0, hostListener = null;
   const analyses = [];

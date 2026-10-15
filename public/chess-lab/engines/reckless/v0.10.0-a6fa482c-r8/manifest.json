@@ -33,12 +33,12 @@
       "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
     },
     "SOURCE.md": {
-      "bytes": 3567,
-      "sha256": "21672f20082eb66ec092dc52f1cc75f4e08cebf9176106a7bdca3d2cfa06a432"
+      "bytes": 4859,
+      "sha256": "cb30f10e4c4d9ea629d867e6f3985b92c64216115010e94c9507b86cfd56c4df"
     },
     "adapter.mjs": {
-      "bytes": 11506,
-      "sha256": "cfccbc963ad61a2540936023c52951d4ebc81b16a3a8622a3f5cc8d0830ee995"
+      "bytes": 14759,
+      "sha256": "878a2d5c83edc5157fd5663861ad045d3831f2bb3b8a50c8bd1e888bbd0789be"
     },
     "build.sh": {
       "bytes": 2320,
@@ -49,8 +49,8 @@
       "sha256": "f03033b0e945ade17e8c4b2b27ffc5d749b7242d240f4b5c699074fe251083c7"
     },
     "reckless-engine.js": {
-      "bytes": 10062,
-      "sha256": "5b4496642fdc8299c433a2dbcf2a3e1827dc9c56ec8af8a6f0be2b561fdcff53"
+      "bytes": 10131,
+      "sha256": "d6514e1c72079ec252aa49059fba5f825368af702ac2f34e0cdc3927c2f51da5"
     },
     "reckless-worker.js": {
       "bytes": 16555,
@@ -101,14 +101,15 @@
       "sha256": "1df9ba68131fbfc34cbd1e9783fcf211e672ddb84e9ff95f10af2f8d492ac34b"
     },
     "source-download.html": {
-      "bytes": 3283,
-      "sha256": "ebe20aa217c05bfd2b4ef57f1c000989d7b66faeea7e26c0396dd3a087a6ae9a"
+      "bytes": 3734,
+      "sha256": "fc779f8bf8a239fe167c95653a7a1a8fdcf5227dd1de45683847e886472831e0"
     }
   },
   "verification": {
     "real_wasm_smoke": "PASS; 9/9 upstream package/worker/real-WASM tests",
     "real_browser_smoke": "PASS; Chromium: timed MultiPV, depth, White/Black perspective, mate, combined depth/time first limit wins, infinite stop, signal cancellation",
-    "public_url_smoke": "PENDING_ROOT_DEPLOY"
+    "public_url_smoke": "PENDING_ROOT_DEPLOY",
+    "adapter_revision": "P2: deterministic legality/rank/bound/request-ID regressions; actual unchanged WASM CPU1/10s/3PV exercised. Historical browser smoke below belongs to the initial native package."
   },
   "source_archive_exclusions": {
     "reason": "Unused target-specific precompiled Windows link libraries; offered compiler host Linux and target WebAssembly. All source/manifest/license notices retained. Redundant compiled WASM is omitted from the source archive and distributed separately as the identical four runtime chunks; all build inputs retained.",
@@ -134,5 +135,15 @@
       "reckless-corresponding-source.tar.gz.part02"
     ],
     "download_page": "source-download.html"
+  },
+  "source_overlay": {
+    "revision": "2026-10-15-P2",
+    "files": [
+      "adapter.mjs",
+      "reckless-engine.js"
+    ],
+    "tests": "../../../research/reckless-adapter.test.cjs",
+    "application": "Replace original browser copies in the unchanged native source archive; build.sh copies these current files. No WASM/network rebuild.",
+    "testsSHA256": "1b1d75e97a107934514766006a4778f166f690acfd0d199c1626b3390c17cc8f"
   }
 }

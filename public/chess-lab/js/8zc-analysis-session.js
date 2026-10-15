@@ -1,14 +1,18 @@
 /* One analysis owner; optional full engines are instantiated only by analyze(). */
 (function(root, factory) {
-  const api = factory(root, typeof module === 'object' && module.exports ? require('./8zc-deep-engine.js') : root.ChessDeepEngine);
+  const api = factory(root, typeof module === 'object' && module.exports ? require('./8zc-deep-engine.js') : root.ChessDeepEngine,
+    typeof module === 'object' && module.exports ? require('./8zc-engine-registry.js') : root.ChessEngineRegistry);
   if (typeof module === 'object' && module.exports) module.exports = api; else root.ChessAnalysisSession = api;
-})(typeof window === 'object' ? window : globalThis, function(root, Deep) {
+})(typeof window === 'object' ? window : globalThis, function(root, Deep, Registry) {
   'use strict';
   const abortError=()=>Object.assign(new Error('Cancelled'),{name:'AbortError'});
   const GROUPS = {'sf-lc0':['lc0'], 'sf-reckless':['reckless'], 'sf-berserk':['berserk'], all:['lc0','reckless','berserk']};
   const MODES = ['sf-lite','sf-full','berserk','reckless','lc0',...Object.keys(GROUPS)];
   const isGroup = mode => Object.hasOwn(GROUPS,mode);
-  const participants = (mode,variant=settings.sfCardMode) => isGroup(mode) ? [variant,...GROUPS[mode]] : [mode];
+  const registry=root.ChessEngineRegistry||Registry;
+  const participants = (mode,variant=settings.sfCardMode) => (isGroup(mode)?[variant,...GROUPS[mode]]:[mode])
+    .filter(id=>mode!=='all'||registry?.supported?.(id)!==false);
+  const rootMoveSupport=mode=>registry?.rootSupport?.(participants(mode))||{supported:false,reason:'Restricted first moves unavailable: engine capabilities could not be verified.'};
   const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
   // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
   const STORAGE = 'ChessBest:LAB:v2:analysis-engine-r3';
@@ -41,7 +45,7 @@
     const ids=participants(mode),dual=isGroup(mode),full=ids.includes('sf-full');
     // All Engines searches concurrently on every device; CPU is per engine.
     // Retain the existing sequential policy only for two-engine phone modes.
-    const sequential=ids.length===2&&mobile;
+    const sequential=mode!=='all'&&ids.length===2&&mobile;
     const cap = Math.max(1, Math.min(mobile ? 2 : 8, hc - (dual ? 2 : 1)));
     const maxSFThreads = isolated ? cap : 1;
     const requested = settings.sfFullThreadsRequested;
@@ -374,8 +378,12 @@
       if (root.document?.hidden === true) return Promise.reject(new Error('Analysis is paused while the page is hidden'));
       let validated; try { validated = Deep.limitsFor(options, config.Chess || root.Chess); } catch (e) { return Promise.reject(e); }
       if (options.signal?.aborted) return Promise.reject(Deep.abortError ? abortError() : Object.assign(new Error('Cancelled'),{name:'AbortError'}));
-      stop(); if (owner && owner !== api) owner.stop(); owner = api;
       const mode = config.analysisMode || settings.analysisMode, localMode = mode === 'auto' ? 'sf-lite' : mode;
+      const roots=rootMoveSupport(localMode);
+      if(validated.searchMoves.length&&!roots.supported)return Promise.reject(new Error(roots.reason));
+      if(validated.searchMoves.length)validated.multiPV=Math.min(validated.multiPV,validated.searchMoves.length);
+      if(localMode==='all'&&!participants(localMode).length)return Promise.reject(new Error('No local engines are available for All Engines.'));
+      stop(); if (owner && owner !== api) owner.stop(); owner = api;
       if(localMode==='cdb'){owner=null;return Promise.reject(new Error('ChessDB uses the connected source service, not a local UCI worker.'));}
       const caps = capabilities(localMode), ids=participants(localMode);
       if(caps.sequential&&ids.includes('lc0')&&validated.infinite){owner=null;
@@ -483,6 +491,14 @@
             }
             if(active===job)settle(job);
           })().catch(error=>{if(active===job){stop();reject(error);}});
+        }else if(localMode==='all'){
+          // A slow/failed loader cannot hold another family's complete budget.
+          for(const {child,prepare}of preparations)void prepare().then(()=>{
+            if(active!==job||job.generation!==generation||job.stopped)return;
+            if(child.status==='ready'){child.status='searching';child.launch();}
+            settle(job);
+          });
+          settle(job);
         }else Promise.allSettled(preparations.map(item=>item.prepare())).then(() => {
           if (active !== job || job.generation !== generation || job.stopped) return;
           for (const child of job.children) if (child.status === 'ready') {
@@ -516,5 +532,5 @@
       try{const record=await networkStore('get');if(!record?.buffer||record.buffer.byteLength!==BERSERK_NET.bytes)return false;
         if(verify)await verifyNetwork(record.buffer);return true;}catch(_){return false;}
     }});
-  return {create,configure,getSettings,capabilities,participants,isGroup,backendFor,engineMemory:memory,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
+  return {create,configure,getSettings,capabilities,participants,rootMoveSupport,isGroup,backendFor,engineMemory:memory,loadBerserkNetwork,restoreBerserkNetwork,ensureBerserkNetwork,clearBerserkNetwork,BERSERK_NET,MODES,BOARD_SOURCES,descriptors,cardModes:()=>root.ChessEngineRegistry?.participants(settings.sfCardMode)||[settings.sfCardMode,'berserk'],subscribeSettings(fn){listeners.add(fn);return()=>listeners.delete(fn);}};
 });

@@ -44,7 +44,7 @@ function fixture({ hardwareConcurrency = 8, isolated = true, mobile = false, sto
     performance: { now: () => (clock += 101) }
   };
   const module = { exports: {} };
-  vm.runInNewContext(source, { window: root, module, require: () => Deep,
+  vm.runInNewContext(source, { window: root, module, require: name => name.includes('registry') ? require('../js/8zc-engine-registry.js') : Deep,
     URL, Date, Promise, AbortController, setTimeout, clearTimeout }, { filename: '8zc-analysis-session.js' });
   return { Session: module.exports, root, events, documentEvents, values };
 }
@@ -127,7 +127,8 @@ test('All Engines starts four CPU-1 searches together with a full hour each on d
     assert.deepEqual(fake.calls.map(c=>c.id),[sfCardMode,'lc0','reckless','berserk']);
     assert(fake.calls.every(c=>c.prepareCalled&&!c.options),'all four prepare before timed searches');
     for(const call of fake.calls.slice(0,3))call.ready.resolve();await tick();
-    assert(fake.calls.every(c=>!c.options),'loading time consumes none of the one-hour search budgets');
+    assert(fake.calls.slice(0,3).every(c=>c.options?.movetime===3600000),'each ready engine starts its full budget without waiting for the last loader');
+    assert.equal(fake.calls[3].options,null,'the loading engine has not consumed search time');
     fake.calls[3].ready.resolve();await tick();
     assert(fake.calls.every(c=>c.options&&!c.destroyed),'four searches overlap before any completes');
     for(const call of fake.calls){

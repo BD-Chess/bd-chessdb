@@ -50,10 +50,10 @@ test('per-move analysis is opt-in, uses the card variant, and cancels stale posi
   assert.equal(x.cards.isFollowing(),false);
 });
 
-test('mobile automatic analysis stays sequential and respects unavailable/locked contexts',async t=>{
+test('mobile automatic All analysis is concurrent and respects unavailable/locked contexts',async t=>{
   const x=setup(t,true),wait=()=>new Promise(r=>setTimeout(r,130));
   x.setAvailable(false);x.cards.setFollowing(true);await wait();assert.equal(x.calls.length,0);
-  x.setAvailable(true);await wait();assert.equal(x.calls.length,1);assert.match(x.cards.state('BER').note,/Queued/);
+  x.setAvailable(true);await wait();assert.equal(x.calls.length,2);assert.equal(x.cards.state('BER').working,true);
   x.complete(0);await x.tick();assert.equal(x.calls.length,2);
   x.cards.setFollowing(false);await wait();assert.equal(x.cards.isRunning(),false);
   assert.equal(x.engines[1].destroyed,true);
@@ -72,13 +72,13 @@ test('desktop Analyze all runs actual engines concurrently and retains separate 
   assert.equal(x.cards.get('sf-lite').lines[0].score.white,27);assert.equal(x.cards.get('berserk').lines[0].score.white,12);
   assert.equal(x.cards.isAllRunning(),false);assert.equal(x.cards.get('reckless'),null);
 });
-test('mobile Analyze all queues the second engine and Stop cancels both active and queued work',async t=>{
-  const x=setup(t,true),run=x.cards.analyzeAll();await x.tick();assert.equal(x.calls.length,1);
-  assert.match(x.cards.state('BER').note,/Queued/);x.cards.stopAll();await run;await x.tick();assert.equal(x.calls.length,1);
+test('mobile Analyze all starts both engines and Stop cancels all active work',async t=>{
+  const x=setup(t,true),run=x.cards.analyzeAll();await x.tick();assert.equal(x.calls.length,2);
+  assert.equal(x.cards.state('BER').working,true);x.cards.stopAll();await run;await x.tick();assert.equal(x.calls.length,2);
   assert.equal(x.cards.isRunning(),false);assert.equal(x.engines[0].destroyed,true);
 });
-test('mobile starts its next engine only after the first completes',async t=>{
-  const x=setup(t,true),run=x.cards.analyzeAll();await x.tick();x.complete(0);await x.tick();assert.equal(x.calls.length,2);
+test('mobile All keeps the second engine searching after the first completes',async t=>{
+  const x=setup(t,true),run=x.cards.analyzeAll();await x.tick();assert.equal(x.calls.length,2);x.complete(0);await x.tick();assert.equal(x.cards.state('BER').working,true);
   x.complete(1);await run;
 });
 test('position changes destroy old workers and late callbacks cannot publish another position',async t=>{

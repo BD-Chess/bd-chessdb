@@ -249,6 +249,7 @@ export class RecklessEngine {
       return;
     }
     if (message.type === "info") {
+      if (message.requestId !== this._activeSearchRequestId) return;
       this._emit(this._infoCallbacks, message.info, message);
       return;
     }
