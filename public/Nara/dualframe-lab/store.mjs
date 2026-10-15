@@ -1,3 +1,4 @@
+import {MAX_ORIGINALS} from './core.mjs?v=3.0-r4.11';
 const DB = 'bd-dualframe-lab-v1';
 const LEGACY_OWNER='bd-research-owner',OWNER=/^[a-zA-Z0-9_-]{8,100}$/;
 // v3 adds receipts only. Existing pairs/assets remain readable without hydration.
@@ -134,27 +135,36 @@ async function operation(store,mode,action,ctx=context()) {
   active(ctx);return value;
   } finally { if(writing)endWrite(ctx); }
 }
-async function writePair(pair,id=pair?.pair_id,ctx=context()){
+async function writePair(pair,id=pair?.pair_id,ctx=context(),limitOriginals=false){
  beginWrite(ctx);
  try{
   const db=await openFor(ctx);active(ctx);const writes=new Map();let meta=typeof pair==='function'?null:pair?separate(pair,id,writes,ctx):null,keep=references(meta);
   await new Promise((resolve,reject)=>{
    const tx=db.transaction(['pairs','assets'],'readwrite'),pairs=tx.objectStore('pairs'),assets=tx.objectStore('assets');
    tx.oncomplete=()=>{for(const [key,blob] of writes)blobIds.set(blob,{id:key,namespace:ctx.scope.name});resolve();};
-   tx.onabort=tx.onerror=()=>reject(storageError(tx.error||{name:'AbortError'}));
+   let validationError=null;
+   tx.onabort=tx.onerror=()=>reject(validationError||storageError(tx.error||{name:'AbortError'}));
    const old=pairs.get(id);old.onsuccess=()=>{
     if(typeof pair==='function')try{const value=pair(old.result);meta=value?separate(value,id,writes,ctx):null;keep=references(meta);}catch{tx.abort();return;}
+    const commit=()=>{
     for(const key of references(old.result))if(!keep.has(key))assets.delete(key);
     for(const [key,blob] of writes)assets.put(blob,key);
     // Missing asset references abort, preserving the old pair and its image bytes.
     for(const key of keep)if(!writes.has(key)){const request=assets.getKey(key);request.onsuccess=()=>{if(request.result===undefined)tx.abort();};}
     if(meta)pairs.put(meta);else pairs.delete(id);
+    };
+    if(limitOriginals&&meta&&meta.original?.sha256!==old.result?.original?.sha256){
+     const all=pairs.getAll();all.onsuccess=()=>{const hashes=new Set(all.result.filter(p=>p.pair_id!==id).map(p=>p.original?.sha256).filter(Boolean));if(!hashes.has(meta.original?.sha256)&&hashes.size>=MAX_ORIGINALS){validationError=Error('PAIR_LIMIT');tx.abort();}else commit();};
+    }else commit();
    };
   });
   active(ctx);return meta;
  }finally{endWrite(ctx);}
 }
 export const putPair = p => writePair(p);
+// New local imports enforce the gallery cap atomically. Recovery/Sync keeps
+// every historical cloud record, including larger pre-existing libraries.
+export const putOriginal = p => writePair(p,p?.pair_id,context(),true);
 export const updatePair = (id,updater) => writePair(updater,id);
 export const removePair = id => writePair(null,id);
 export const getPairs = () => operation('pairs','readonly',s=>s.getAll());
@@ -216,7 +226,7 @@ export function captureStorageScope(){
  return Object.freeze({
   storageOwner:()=>ctx.scope.owner,isBlobReference,hasStoredBlobs,storageErrorCode,storageEstimate,
   openStore:()=>openFor(ctx),getPairs:()=>operation('pairs','readonly',s=>s.getAll(),ctx),getPair:id=>operation('pairs','readonly',s=>s.get(id),ctx),
-  putPair:pair=>writePair(pair,pair?.pair_id,ctx),updatePair:(id,updater)=>writePair(updater,id,ctx),removePair:id=>writePair(null,id,ctx),
+  putPair:pair=>writePair(pair,pair?.pair_id,ctx),putOriginal:pair=>writePair(pair,pair?.pair_id,ctx,true),updatePair:(id,updater)=>writePair(updater,id,ctx),removePair:id=>writePair(null,id,ctx),
   getSyncState:key=>operation('sync','readonly',s=>s.get(key),ctx),putSyncState:(key,value)=>syncStateWrite(key,value,ctx),
   putSyncAsset:(key,pairId,blob,metadata={})=>putSyncAssetFor(key,pairId,blob,metadata,ctx),getStoredBlob:value=>getStoredBlobFor(value,ctx),hydratePair:(value,seen=new Map())=>hydrateIn(value,seen,ctx),
   getScores:()=>operation('scores','readonly',s=>s.getAll(),ctx),addScore:score=>operation('scores','readwrite',s=>s.add(score),ctx),

@@ -4,6 +4,7 @@ import {decryptConfiguration} from './config-crypto.mjs';
 import {createAccountIdentity} from './account-identity.mjs';
 import {createEnhancementLedger} from './enhancement-ledger.mjs';
 import {createEnhancementPolicy,createOperatorPolicyService} from './enhancement-policy.mjs';
+import {createPrivateOwnerPolicy,routeOwnerPolicy} from './private-owner-policy.mjs';
 export const VAULT_KEY='configuration/private-v3';
 export const configurationStore=()=>getStore({name:'dualframe-rd-v3',consistency:'strong'});
 function heldIdentity(code){
@@ -92,5 +93,6 @@ export async function runtimeService(){
  if(pack)values=decryptConfiguration(pack,Netlify.env.get('GEMINI_API_KEY'));
  const env=key=>Netlify.env.get(key)||values[key];
  const policies=await runtimeOperatorPolicies(env);
- return createService({store,env,accountIdentity:await runtimeAccountIdentity(env),enhancementPolicy:policies.enhancementPolicy,operatorPolicy:policies.operatorPolicy,accountUsage:policies.accountUsage});
+ const ownerPolicy=createPrivateOwnerPolicy({store,env});
+ return createService({store,env,accountIdentity:await runtimeAccountIdentity(env),enhancementPolicy:routeOwnerPolicy(ownerPolicy,policies.enhancementPolicy),operatorPolicy:policies.operatorPolicy,accountUsage:policies.accountUsage});
 }
