@@ -48,7 +48,7 @@ test('v3 places WebP figures after their exact EN/SL paragraph, with invalid anc
   f.write(f.manifest,m);const badSl={...f.sl,scenes:f.sl.scenes.map((s,i)=>i?s:{...s,paragraphs:['Different structure.']})};badSl.content_sha256=bodyHash(badSl);
   f.write(f.manifest,{...m,sl_content_sha256:badSl.content_sha256});assert.throws(()=>loadIllustrations(f.root,f.r,badSl),/paragraph structure/);
 });
-test('instance images survive featured projection and bilingual non-featured monthly rendering',t=>{
+test('selected instance images survive featured projection and bilingual monthly rendering',t=>{
   const f=fixture(t),before=JSON.stringify(f.r);
   assert.deepEqual(loadIllustrations(f.root,f.r,f.sl).map(x=>x.scene),[1,3,6]);
   const daily=latestPage(f.projection,'2026-10',{[f.projection.id]:f.pt},f.root);
@@ -59,6 +59,16 @@ test('instance images survive featured projection and bilingual non-featured mon
   }
   assert.equal(JSON.stringify(f.r),before,'images never mutate frozen prose or grade');
   const s2={...f.r,id:f.r.id.replace(':S1',':S2'),instance:'S2'};assert.deepEqual(loadIllustrations(f.root,s2,f.sl),[],'S2 cannot inherit S1 images');
+});
+test('unselected native candidates stay image-free even when their complete artwork remains on disk',t=>{
+  const f=fixture(t),day=`daily/days/${f.r.date}.json`,before=JSON.stringify(f.r);
+  assert.equal(loadIllustrations(f.root,f.r,f.sl).length,3);
+  f.write(day,{schema:'nara.daily.day.v1',id:`NARA-D-${f.r.date}`,date:f.r.date,featured_instance:'S2'});
+  assert.deepEqual(loadIllustrations(f.root,f.r,f.sl),[]);
+  assert.equal(count(instanceStoryHtml({record:f.r},f.root)),0);
+  fs.unlinkSync(path.join(f.root,'public/Nara',day));
+  assert.deepEqual(loadIllustrations(f.root,f.r,f.sl),[],'unconfirmed selection cannot publish candidate images');
+  assert.equal(JSON.stringify(f.r),before,'selection guard preserves prose and grades');
 });
 test('source, instance, PNG dimension and private-field violations are rejected but never hold rendering',t=>{
   const f=fixture(t);

@@ -66,35 +66,16 @@ test('Oct9-S1 preserves its own approved landscape folder and rejects a sibling 
  const changed=structuredClone(m);changed.images[0].variants.L_HD.src=changed.images[0].variants.L_HD.src.replace('/S1/','/S2/');
  assert.throws(()=>responsiveEditionArtwork(root,i,changed,validateWebp,[],()=>approved.images),/unsafe responsive variant path/);
 });
-test('Oct9-S2 binds three new moments to exact EN/SL paragraphs and six same-instance HD variants',()=>{
- const i=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-09-S2'),m=JSON.parse(fs.readFileSync(path.join(n,i.paths.artwork)));
- const images=responsiveEditionArtwork(root,i,m,validateWebp),html=renderEditionPage(root,i);
- assert.equal(m.schema,'nara.format.edition.artwork.v5');assert.equal(m.landscape_hd_source,undefined);
- assert.equal(i.combined,86.5);assert.equal(images.length,3);
- assert.deepEqual(m.images.map(x=>[x.scene,x.after_paragraph_en,x.after_paragraph_sl]),[[1,13,13],[3,11,11],[5,20,20]]);
- assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);assert.doesNotMatch(html,/data-nara-image-4k=/);
- assert.doesNotMatch(JSON.stringify(m),/prompt|drive|credential/i);
- for(const image of images){
-  assert.deepEqual(Object.keys(image.variants).sort(),['L_HD','P_HD']);
-  for(const variant of Object.values(image.variants)){assert.ok(variant.src.startsWith('assets/img/daily/2026-10-09/S2/R1-responsive/'));assert.ok(html.includes(variant.src));}
- }
- const sibling=structuredClone(m);sibling.images[2].variants.P_HD.src=sibling.images[2].variants.P_HD.src.replace('/S2/','/S3/');
- assert.throws(()=>responsiveEditionArtwork(root,i,sibling,validateWebp),/unsafe responsive variant path/);
- const missing=structuredClone(m);delete missing.images[2].variants.P_HD;
- assert.throws(()=>responsiveEditionArtwork(root,i,missing,validateWebp),/two HD variant/);
-});
-test('Oct9-S3 binds its opening, first treatment cycle and independent ending to six HD variants',()=>{
- const i=loadFormatEditions(root).find(x=>x.entry.key==='2026-10-09-S3'),m=JSON.parse(fs.readFileSync(path.join(n,i.paths.artwork)));
- const images=responsiveEditionArtwork(root,i,m,validateWebp),html=renderEditionPage(root,i);
- assert.equal(i.combined,84);assert.equal(images.length,3);assert.equal(m.landscape_hd_source,undefined);
- assert.deepEqual(images.map(x=>[x.scene,x.after_paragraph_en,x.after_paragraph_sl]),[[1,8,8],[4,13,13],[6,13,13]]);
- assert.equal((html.match(/data-nara-responsive=/g)||[]).length,6);assert.doesNotMatch(html,/data-nara-image-4k=/);
- assert.doesNotMatch(JSON.stringify(m),/prompt|drive|credential/i);
- for(const image of images)for(const variant of Object.values(image.variants)){assert.ok(variant.src.startsWith('assets/img/daily/2026-10-09/S3/R1-responsive/'));assert.ok(html.includes(variant.src));}
- const sibling=structuredClone(m);sibling.images[0].variants.L_HD.src=sibling.images[0].variants.L_HD.src.replace('/S3/','/S2/');
- assert.throws(()=>responsiveEditionArtwork(root,i,sibling,validateWebp),/unsafe responsive variant path/);
- const stale=structuredClone(m);stale.images[2].paragraph_sha256_sl='0'.repeat(64);
- assert.throws(()=>responsiveEditionArtwork(root,i,stale,validateWebp),/paragraph binding/);
+for(const [key,score] of [['2026-10-09-S2',86.5],['2026-10-09-S3',84]])test(key+' remains readable without artwork, including when a stray manifest is reintroduced',t=>{
+ const i=loadFormatEditions(root).find(x=>x.entry.key===key),html=renderEditionPage(root,i);
+ assert.equal(i.combined,score);assert.equal(fs.existsSync(path.join(n,i.paths.artwork)),false);
+ assert.doesNotMatch(html,/<figure\b|data-nara-responsive=|nara-daily-responsive\.js/);
+ const r=fs.mkdtempSync(path.join(os.tmpdir(),'nara-unselected-'));t.after(()=>fs.rmSync(r,{recursive:true,force:true}));
+ const target=path.join(r,'public/Nara');fs.mkdirSync(target,{recursive:true});fs.cpSync(path.join(n,'daily'),path.join(target,'daily'),{recursive:true});
+ for(const file of fs.readdirSync(n).filter(f=>f.endsWith('-pre-format-R1.html')))fs.copyFileSync(path.join(n,file),path.join(target,file));
+ fs.writeFileSync(path.join(target,i.paths.artwork),'{stray artwork must not be parsed');
+ const candidate=loadFormatEditions(r).find(x=>x.entry.key===key);
+ assert.equal(renderEditionPage(r,candidate),html,'non-selected artwork cannot reappear during normal regeneration');
 });
 test('inline loads only visible-language HD; viewport resize selects P/L without a page reload',async()=>{
  const f=responsiveFixture();await flush();assert.equal(f.requests.length,3);assert.ok(f.requests.every(r=>/P[123]-HD/.test(r.src)));

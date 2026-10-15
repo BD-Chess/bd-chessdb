@@ -20,9 +20,21 @@ export const validateWebp=(bytes,width,height)=>{
         assert(w===width&&h===height,'illustration WebP dimensions');
 };
 
+/** Only the chosen Daily story is illustrated; archived sibling candidates stay text-only. */
+export function isSelectedDailyStory(root,record){
+  if(!root||!/^\d{4}-\d{2}-\d{2}$/.test(record.date))return false;
+  const instance=record.instance||record.id?.match(/:S([123])$/)?.[0].slice(1)||null;
+  if(!instance)return true;
+  try{
+    const day=JSON.parse(fs.readFileSync(path.join(root,'public/Nara/daily/days',record.date+'.json'),'utf8'));
+    return day.schema==='nara.daily.day.v1'&&day.date===record.date&&day.id===`NARA-D-${record.date}`&&/^S[123]$/.test(instance)&&day.featured_instance===instance;
+  }catch{return false} // No confirmed selection means no candidate artwork.
+}
+
 export function loadIllustrations(root,record,translation=null,{nonBlocking=false}={}){
   if(!root)return [];
   assert(/^\d{4}-\d{2}-\d{2}$/.test(record.date),'illustration date');
+  if(!isSelectedDailyStory(root,record))return [];
   const base=path.join(root,'public','Nara');
   let instance=record.instance||record.id?.match(/:S([123])$/)?.[0].slice(1)||null;
   if(!instance&&record.id===`NARA-D-${record.date}`){

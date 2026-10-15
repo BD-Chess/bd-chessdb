@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {loadIllustrations,renderStoryScene,validateWebp} from './nara-illustrations.mjs';
+import {isSelectedDailyStory,loadIllustrations,renderStoryScene,validateWebp} from './nara-illustrations.mjs';
 import {DIALOGUE_EFFECTIVE_DATE} from './nara-dialogue.mjs';
 import {responsiveEditionArtwork,RESPONSIVE_VERSION} from './nara-responsive-artwork.mjs';
 
@@ -201,6 +201,7 @@ function editionArtworkImages(root,item){
  });
 }
 function optionalEditionImages(root,item){
+ if(!isSelectedDailyStory(root,item.originalEn))return [];
  const file=path.join(naraRoot(root),item.paths.artwork);
  if(item.paths.date==='2026-10-05'||fs.existsSync(file))return editionArtworkImages(root,item);
  try{

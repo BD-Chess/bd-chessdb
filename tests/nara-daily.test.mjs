@@ -65,6 +65,7 @@ test('direct artwork rejects private fields, stale bindings and corrupted assets
  const current=JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',item.paths.artwork),'utf8'));
  const art=current.landscape_hd_source?JSON.parse(fs.readFileSync(path.join(editionRoot,'public/Nara',current.landscape_hd_source.src),'utf8')):current;
  fs.mkdirSync(path.dirname(manifestPath),{recursive:true});
+  const dayPath=path.join(n,'daily/days',item.paths.date+'.json');fs.mkdirSync(path.dirname(dayPath),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara/daily/days',item.paths.date+'.json'),dayPath);
  for(const im of art.images){fs.mkdirSync(path.dirname(path.join(n,im.src)),{recursive:true});fs.copyFileSync(path.join(editionRoot,'public/Nara',im.src),path.join(n,im.src));}
  const write=a=>fs.writeFileSync(manifestPath,JSON.stringify(a));
  write(art);assert.doesNotThrow(()=>renderEditionPage(root,item));
