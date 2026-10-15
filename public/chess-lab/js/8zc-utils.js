@@ -92,6 +92,7 @@ function initAllCore() {
     dccClickAction: 'hybrid', // details, play, or both
     dccOnly: false,      // hide raw ChessDB scores, show only DCC view
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
+    showSimEval: true,
     simGames: 5,         // games per simulation run
     dccTakeover: 'auto',  // when DCC takes over: 'auto' or number of half-moves
     opponentModel: 'realistic', // v0.6.0: 'perfect', 'realistic', 'weak'
@@ -727,7 +728,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     positionEval.render();
   });
   const positionEval = window.ChessEvalBar.create({ game, settings,
-    isVisible: () => ((simRunning || replayRunning) ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
+    isVisible: () => (simRunning ? settings.showSimEval !== false : replayRunning ? evalBarVisible : showEval) && !(playState.active && playState.assistanceLocked),
     getBadgeControl: source => {
       const allRunning = !!engineCards?.isAllRunning();
       if (source === 'DCC') {
@@ -1576,6 +1577,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (dccOnlyEl) dccOnlyEl.checked = settings.dccOnly;
     const simSpeedEl = document.getElementById('settingSimSpeed');
     if (simSpeedEl) simSpeedEl.value = settings.simSpeed;
+    const simEvalEl = document.getElementById('settingSimEval');
+    if (simEvalEl) simEvalEl.checked = settings.showSimEval !== false;
+    if (simRunning && lastDecision) renderSimDecision(lastDecision.pick, lastDecision.fen, lastDecision.caption);
     const simGamesEl = document.getElementById('settingSimGames');
     if (simGamesEl) simGamesEl.value = settings.simGames;
     const takeoverEl = document.getElementById('settingDccTakeover');
@@ -2362,7 +2366,7 @@ function jumpTo(i){
     for (const key of Object.keys(settings)) delete settings[key];
     Object.assign(settings, JSON.parse(JSON.stringify(defaultSettings)));
     writeLocal(STORAGE_KEY_SETTINGS, null);
-    applySettings(); updateBoard(false);
+    applySettings(); tournamentRunner?.refreshEvaluation?.(); updateBoard(false);
   };
 
 	  
@@ -2373,7 +2377,13 @@ function jumpTo(i){
 
 	document.getElementById('btnHideEval').onclick = () => {
       if (simRunning || replayRunning) {
-        evalBarVisible = !evalBarVisible;
+        evalBarVisible = simRunning ? settings.showSimEval === false : !evalBarVisible;
+        if (simRunning) {
+          settings.showSimEval = evalBarVisible; saveSettings();
+          document.getElementById('settingSimEval').checked = evalBarVisible;
+          tournamentRunner?.refreshEvaluation?.();
+          if (lastDecision) renderSimDecision(lastDecision.pick, lastDecision.fen, lastDecision.caption);
+        }
         positionEval.render();
         document.getElementById('btnHideEval').textContent = evalBarVisible ? 'Hide Eval' : 'Show Eval';
         return;
@@ -2442,6 +2452,7 @@ function jumpTo(i){
 	  'settingDccEvalFloor',
 	  'settingDccOnly',
 	  'settingSimSpeed',
+      'settingSimEval',
 	].forEach(id => {
 	  document.getElementById(id).onchange = e => {
 		switch (id) {
@@ -2517,11 +2528,16 @@ function jumpTo(i){
 		  case 'settingSimSpeed':
 			settings.simSpeed = parseInt(e.target.value, 10);
 			break;
+          case 'settingSimEval':
+            settings.showSimEval = e.target.checked;
+            if (simRunning) evalBarVisible = e.target.checked;
+            break;
 
 		  // ────────────────────────────
 		}
 		saveSettings();
 		applySettings();
+		if (id === 'settingSimEval') { tournamentRunner?.refreshEvaluation?.(); positionEval.render(); refreshPlayUi(); return; }
 		updateBoard(false);
 	  };
 	});
@@ -2977,16 +2993,17 @@ function jumpTo(i){
     const panel = document.getElementById('simDecisionPanel');
     if (!panel || !pick) return;
     lastDecision = { pick, fen, caption };
+    if (simRunning && settings.showSimEval === false) { panel.style.display = 'none'; return; }
     const san = move => move ? uciToSan(fen, move) : 'unknown';
     panel.replaceChildren();
     const heading = document.createElement('strong');
     heading.textContent = `${caption} · ${pick.side === 'w' ? 'White' : 'Black'} to move${fen !== game.fen() ? ' · previous position' : ''}`;
     const choices = document.createElement('div');
-    choices.textContent = `${pick.provider} #1: ${san(pick.raw_best)} (${pick.score_type === 'mate' ? `mate ${pick.raw_best_mate_in > 0 ? '#' : '#-'}${Math.abs(pick.raw_best_mate_in)}` : `${pick.raw_best_score > 0 ? '+' : ''}${pick.raw_best_score} cp`}) · DCC: ${san(pick.dcc_choice)}`;
+    choices.textContent = `${pick.engine_name || pick.provider} #1: ${san(pick.raw_best)} (${SIM.scoreText(pick)})${pick.dcc_requested ? ' · DCC: ' + san(pick.dcc_choice) : ''}`;
     const ties = document.createElement('div');
-    ties.textContent = pick.score_type === 'mate' ? 'Mate score · centipawn ties/gap not applicable' : `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
+    ties.textContent = pick.score_type === 'q' ? 'Native neural Q / WDL · centipawn ties do not apply' : pick.score_type === 'mate' ? 'Mate score · centipawn ties/gap not applicable' : pick.exact_ties == null ? 'Native engine move · candidate tie count unavailable' : `${pick.exact_ties} at best eval · ${pick.near_ties} within 10 cp · DCC gap: ${pick.dcc_raw_gap ?? '?'} cp`;
     const verdict = document.createElement('div');
-    verdict.textContent = pick.dcc_choice ? (pick.dcc_choice === pick.raw_best ? 'Same choice.' : 'DCC chooses a different move.') : 'DCC comparison unavailable.';
+    verdict.textContent = !pick.dcc_requested ? 'Source top choice.' : pick.dcc_choice ? (pick.dcc_choice === pick.raw_best ? 'Same choice.' : 'DCC chooses a different move.') : 'DCC comparison unavailable.';
     verdict.textContent += ` Coverage: ${pick.coverage}${pick.coverage_reason ? ' · ' + pick.coverage_reason : ''}. Scores are from the mover’s perspective.${pick.provider === 'SF' ? ' Root '+(pick.root_nodes ?? '?')+' nodes; DCC extra '+(pick.dcc_extra_nodes ?? '?')+' nodes (compute unmatched).' : ''}`;
     const inspect = document.createElement('button'); inspect.type = 'button'; inspect.className = 'btn';
     inspect.textContent = 'Compare A/B';
@@ -3303,7 +3320,7 @@ function refreshPlayUi() {
   if (askInput) askInput.disabled = !ENABLE_COACH;
   if (askBtn) askBtn.disabled = !ENABLE_COACH;
   if (!playState.active) setCoachNotice('');
-  if (btnHide) btnHide.textContent = ((simRunning || replayRunning) ? evalBarVisible : showEval) ? 'Hide Eval' : 'Show Eval';
+  if (btnHide) btnHide.textContent = (simRunning ? settings.showSimEval !== false : replayRunning ? evalBarVisible : showEval) ? 'Hide Eval' : 'Show Eval';
 }
 
 function enterActiveSession(mode, opts = {}) {
@@ -4204,6 +4221,7 @@ async function launchFromSimModal() {
     // Freeze the source selection for repeatable paired games.
     config.openingReport = { available: extracted.openings.length, rejected: extracted.rejected.length, duplicates: extracted.duplicates };
     if (workspace.isHuman()) workspace.stop();
+    deepUI?.stop?.(); engineCards?.stopAll('simulation');
     offlineEvidence = null; invalidateDCCAnalysis();
     return tournamentRunner.start(config, extracted.openings);
   }
@@ -4242,6 +4260,7 @@ async function launchFromSimModal() {
       callbacks: {
         started(run) {
           activityEpoch++; invalidateDCCAnalysis(); simSession = run; simRunning = true; simAbort = false; showEval = false;
+          evalBarVisible = settings.showSimEval !== false;
           game.header('Event', run.eventName, 'White', SIM.label(run.white), 'Black', SIM.label(run.black), 'Date', run.startedAt.slice(0, 10).replace(/-/g, '.'), 'Result', '*');
           clearInterval(evalRetryTimer); evalRetryTimer = null;
           lastLoadedPGN = null; lastDecision = null; divergedIndex = -1;
@@ -4262,7 +4281,7 @@ async function launchFromSimModal() {
         move(run) { simSession = run; lastAction = 'move'; window._skipDivergedReset = true; updateBoard(false); },
         shouldPause(decision, run) {
           const lab = window.ChessLabLayout?.getSettings() || {}, pick = decision.pick;
-          const currentEval = pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score;
+          const currentEval = (!pick.score_type || pick.score_type === 'cp') && Number.isFinite(pick.raw_best_score) ? (pick.side === 'w' ? pick.raw_best_score : -pick.raw_best_score) : null;
           const prior = run.previousEvalWhite; run.previousEvalWhite = currentEval;
           if (lab.pauseOnDisagreement && pick.changed) return 'Auto-pause: source and DCC disagree';
           if (lab.pauseOnMissing && pick.dcc_requested && pick.coverage !== 'complete') return 'Auto-pause: incomplete DCC coverage';
@@ -4275,7 +4294,7 @@ async function launchFromSimModal() {
     tournamentUI = window.ChessTournamentUI.create({
       onStart: startTournament,
       onPause: () => tournamentRunner.pause(),
-      onResume: async id => { if (playState.active || replayRunning) throw new Error('Stop the current activity first.'); await tournamentRunner.resume(id); },
+      onResume: async id => { if (playState.active || replayRunning) throw new Error('Stop the current activity first.'); deepUI?.stop?.(); engineCards?.stopAll('simulation'); await tournamentRunner.resume(id); },
       onOpenGame: openArchivedGame, onExport: exportTournament,
       onImport: async data => {
         if (tournamentRunner.busy()) throw new Error('Pause the simulation before importing.');

@@ -315,10 +315,10 @@
   // Read-only spectator: independent of which engine is playing this turn.
   // One bounded CDB lookup at a time; fast moves coalesce to the displayed FEN.
   // Never await this observer from the runner or create another SF search.
-  function watchSimulation({ Chess, game, getCDB, view = instances.get(game) }) {
+  function watchSimulation({ Chess, game, getCDB, view = instances.get(game), enabled = () => true }) {
     if (!view || typeof getCDB !== 'function') return null;
     let active = false, current = null, queued = null, inFlight = false;
-    const live = item => active && item === current && item.fen === game.fen();
+    const live = item => active && enabled() && item === current && item.fen === game.fen();
     function san(fen, move) {
       try {
         if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move || '')) return null;
@@ -334,11 +334,11 @@
       if (!live(item) || item.cdbKnown) return;
       item.cdbSettled = true;
       view.updateSource(item.fen, null, 'CDB');
-      if (item.sf) paint(item, item.sf.score, 'SF', item.sf.move, item.sf.depth);
+      if (item.local) paint(item, item.local.score, item.local.source, item.local.move, item.local.depth);
       else view.update(item.fen, null, 'CDB', true);
     }
     async function pump() {
-      if (inFlight || !queued || !active) return;
+      if (inFlight || !queued || !active || !enabled()) return;
       const item = queued; queued = null; inFlight = true;
       try {
         // No actor AbortSignal: cachedFetchChessDB uses a separate pending key
@@ -361,8 +361,10 @@
       }
     }
     function position() {
-      if (!active || current?.fen === game.fen()) return;
-      current = { fen: game.fen(), cdbKnown: false, cdbSettled: false, sf: null };
+      if (!active) return;
+      if (!enabled()) { current = null; queued = null; view.render(); return; }
+      if (current?.fen === game.fen()) return;
+      current = { fen: game.fen(), cdbKnown: false, cdbSettled: false, local: null };
       queued = null;
       view.markComparisonPending(current.fen, false);
       if (game.game_over()) { view.render(); return; }
@@ -378,19 +380,24 @@
       if (source === 'CDB' && Number.isFinite(pick.raw_best_score)) {
         item.cdbKnown = true; item.cdbSettled = true;
         paint(item, pick.raw_best_score, 'CDB', pick.raw_best);
-      } else if (source === 'SF') {
-        const score = pick.score_type === 'mate'
+      } else if (['SF','BER','RLE','LC0'].includes(source)) {
+        const score = pick.native_score || (pick.score_type === 'mate'
           ? (Number.isFinite(pick.raw_best_mate_in) ? { type: 'mate', white: pick.raw_best_mate_in * (item.fen.split(' ')[1] === 'b' ? -1 : 1) } : null)
-          : pick.raw_best_score;
+          : pick.raw_best_score);
         if (score == null || (!Number.isFinite(score) && !Number.isFinite(score.white))) return;
-        item.sf = { score, move: pick.raw_best, depth: pick.root_depth };
-        view.updateSource(item.fen, score, 'SF', pick.root_depth, san(item.fen, pick.raw_best), false, 'simulation');
+        item.local = { score, source, move: pick.raw_best, depth: pick.root_depth };
+        view.updateSource(item.fen, score, source, pick.root_depth, san(item.fen, pick.raw_best), false, 'simulation');
         // Reuse the current player's result while CDB is pending/unavailable;
         // never replace a current CDB score with a shallow SF score.
-        if (!item.cdbKnown) paint(item, score, 'SF', pick.raw_best, pick.root_depth);
+        if (!item.cdbKnown) paint(item, score, source, pick.raw_best, pick.root_depth);
       }
     }
-    return { start, position, decision, stop };
+    function refresh() {
+      if (!active) return;
+      if (!enabled()) { current = null; queued = null; view.render(); }
+      else { position(); view.render(); }
+    }
+    return { start, position, decision, stop, refresh };
   }
   return { measure, qToCp, neuralScore, create, watchSimulation };
 });

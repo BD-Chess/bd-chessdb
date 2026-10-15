@@ -23,11 +23,14 @@
   }
   function create({ Chess, SIM, Tournament, SF, Engine, DCC, game, workspace, store,
     getCDB, getPV, getScore, settings, callbacks = {}, evaluation = globalThis.ChessEvalBar,
+    Session = globalThis.ChessAnalysisSession,
     now = () => performance.now(), storage = globalThis.localStorage }) {
     let active = null, token = 0, controller = null, provider = null, heartbeat = null, task = null;
     const owner = store.createId('tab'), leaseKey = 'ChessBest:APP:v1:sim-lease';
     // The spectator never drives moves, search budgets, clocks or checkpoints.
-    const spectator = evaluation?.watchSimulation?.({ Chess, game, getCDB });
+    const spectator = evaluation?.watchSimulation?.({ Chess, game,
+      enabled: () => settings().showSimEval !== false,
+      getCDB: (fen, options) => settings().cdbEnabled === false ? Promise.resolve({moves:[]}) : getCDB(fen, options) });
     const observe = (method, value) => {
       try { spectator?.[method]?.(value); } catch (_) { /* A view failure cannot pause a match. */ }
     };
@@ -100,7 +103,9 @@
       const stale = () => epoch !== token || game.fen() !== fen;
       const check = () => { if (stale() || controller.signal.aborted) throw abortError(); };
       const useDCC = policy === 'dcc' || policy === 'sf-dcc';
-      provider = SF.create({ Chess, Engine, DCC });
+      const mode = SIM.localMode?.(policy);
+      if (mode && !Session?.backendFor) throw new Error(SIM.label(policy) + ' is unavailable in this browser.');
+      provider = mode ? Session.backendFor(mode, Chess).create({ Chess }) : SF.create({ Chess, Engine, DCC });
       // Warmup is outside the player's time, including a possible hybrid fallback.
       try { await provider.prepare({ signal: controller.signal }); check(); }
       catch (error) { provider.destroy(); provider = null; throw error; }
@@ -112,10 +117,21 @@
       const hardMs = run.limits.limitMode === 'game-time' ? before.remaining[side] : null;
       let timedOut = false;
       const hardTimer = hardMs == null ? null : setTimeout(() => { timedOut = true; controller.abort(); }, hardMs);
-      let rootResult, analysis = null, source = 'SF', fallbackReason = null;
+      let rootResult, nativeResult, analysis = null, source = mode ? SIM.provider(policy) : 'SF', fallbackReason = null;
       try {
         emit('thinking', run, policy, side);
-        if (!policy.startsWith('sf')) {
+        if (mode) {
+          const search = budget == null ? (run.limits.limitMode === 'nodes' ? { nodes:run.limits.nodes } : { depth:run.limits.depth })
+            : { movetime:Math.max(1, Math.floor(deadline - now())) };
+          let lastPaint = -Infinity;
+          nativeResult = await provider.analyze({ fen, ...search, multiPV:1, history:history(), signal:controller.signal,
+            onInfo: (_info, value) => {
+              if (stale() || settings().showSimEval === false || now() - lastPaint < 100) return;
+              const pick = SIM.engineDecision(Chess, fen, policy, value);
+              if (pick) { lastPaint = now(); observe('decision', {fen, pick}); }
+            } });
+          check();
+        } else if (!policy.startsWith('sf')) {
           const lookupMs = budget == null ? 5000 : Math.max(20, Math.min(1500, budget * 0.25));
           rootResult = await getCDB(fen, { signal: controller.signal, timeoutMs: lookupMs }); check();
           if (rootResult.moves?.length) source = 'CDB';
@@ -149,8 +165,8 @@
         check();
         const after = workspace.endTurn();
         if (after.flagged) { finishOnTime(run, side); return null; }
-        const ledger = provider.ledger;
-        const pick = SIM.decision(Chess, fen, policy, rootResult.moves, analysis, {
+        const ledger = provider.ledger || {};
+        const evidence = {
           provider: source, fallbackReason, budgetNodes: run.limits.limitMode === 'nodes' ? run.limits.nodes : null,
           budgetDepth: run.limits.limitMode === 'depth' ? run.limits.depth : null, budgetMs: budget,
           rootNodes: source === 'SF' ? ledger.rootNodes : null, rootDepth: source === 'SF' ? ledger.rootDepth : null,
@@ -159,7 +175,9 @@
           elapsedMs: now() - began, chargedMs: after.turnSpent,
           clockBeforeMs: before.mode === 'countdown' ? before.remaining[side] : null,
           clockAfterMs: after.mode === 'countdown' ? after.remaining[side] : null,
-          incrementMs: run.limits.incrementMs });
+          incrementMs: run.limits.incrementMs };
+        const pick = mode ? SIM.engineDecision(Chess, fen, policy, nativeResult, evidence)
+          : SIM.decision(Chess, fen, policy, rootResult.moves, analysis, evidence);
         if (!pick) throw new Error('The engine returned no evaluated legal move.');
         return { pick, fen, elapsed: now() - began, analysis, clock: after };
       } catch (error) {
@@ -270,6 +288,10 @@
         white: SIM.policy(config.white), black: SIM.policy(config.black), pair: '1', round: 1 }]
         : Tournament.createSchedule({ ...cfg, engines: config.format === 'duel' ? [config.white, config.black] : config.engines }, selected);
       if (!games.length) throw new Error('Choose at least two different engines.');
+      if (games.some(item => item.white === 'lc0' || item.black === 'lc0') && ['depth','nodes'].includes(cfg.limitMode))
+        throw new Error('LCZero requires Time per move or Game clock; it does not support depth or node limits.');
+      if (games.some(item => SIM.localMode?.(item.white) || SIM.localMode?.(item.black)) && cfg.limitMode === 'move-time' && cfg.moveTimeMs > 14400000)
+        throw new Error('Local browser engines support at most 4 hours per move.');
       const event = { id: store.createId(config.format === 'single' ? 'match' : 'tournament'), name: String(config.name || (config.format === 'single' ? 'Engine game' : 'Engine tournament')).slice(0, 120),
         createdAt: new Date().toISOString(), config: cfg, settings: { ...settings(), dccNoDeadline: true }, state: 'paused', games, nextIndex: 0 };
       await store.saveEvent(event); return launch(event);
@@ -285,7 +307,7 @@
       } catch (error) { release(); throw error; }
     }
     return { start, resume, pause, checkpoint, busy: () => !!active, current: () => active,
-      settled: () => task || Promise.resolve(), limits, allocation };
+      settled: () => task || Promise.resolve(), refreshEvaluation: () => observe('refresh'), limits, allocation };
   }
   return { create, limits, allocation };
 });
