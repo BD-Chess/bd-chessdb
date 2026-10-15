@@ -753,7 +753,7 @@ function accountPreferences(owner){
 let scopeOwner,scopedStore,enhancementClient,scopeController=new AbortController(),accountTransition=Promise.resolve(),appInitialized=false,offlineSessionFallback=false,enhancementBusy=false,activeEnhancementPlan=null;
 async function activateSessionScope(force=false){
  const owner=API.sessionOwner()||(offlineSessionFallback?API.cachedSessionOwner():null);if(!force&&scopeOwner===owner&&scopedStore)return;
- scopeController.abort();activeSyncController?.abort();syncPaused=false;$('sync-pause').hidden=true;for(const controller of controllers.values())controller.abort();controllers.clear();
+ scopeController.abort();activeSyncController?.abort();syncPaused=false;$('sync-pause').hidden=true;$('sync-pause').textContent=t('syncPause');for(const controller of controllers.values())controller.abort();controllers.clear();
  closeViewer();imageLoader.clear();clearWarmImages();for(const url of urls)URL.revokeObjectURL(url);urls.clear();urlCache=new WeakMap();
  pairs=[];scores=[];selected=null;remotePairs=[];remoteJobs=[];reviewState=null;activeEnhancementPlan=null;
  $('enhancement-plan-dialog').close();$('enhancement-families').replaceChildren();$('source-preview').removeAttribute('src');$('source-details').hidden=true;

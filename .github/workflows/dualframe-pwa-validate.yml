@@ -23,13 +23,14 @@ jobs:
           node --check public/Nara/dualframe-lab/sw.js
           node --check scripts/dualframe-prod-stage.mjs
           node --check tests/dualframe-pwa-live-smoke.mjs
-      - name: Install the isolated IndexedDB regression fixture
-        run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+      - name: Install isolated IndexedDB and image regression fixtures
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+          npm install --prefix functions --no-audit --no-fund
       - name: Verify offline package and update safety
         run: node --test tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs tests/dualframe-enhancement-client.test.mjs tests/dualframe-enhancement-backup.test.mjs tests/dualframe-account-storage.test.mjs tests/dualframe-account-bridge.test.mjs tests/dualframe-account-client.test.mjs
       - name: Verify authenticated provider probing without vendor calls
         run: |
-          npm install --prefix functions --no-audit --no-fund
           node --test tests/dualframe-v3.test.mjs tests/dualframe-sync-server.test.mjs tests/dualframe-enhancement.test.mjs tests/dualframe-enhancement-service.test.mjs tests/dualframe-enhancement-policy.test.mjs tests/dualframe-enhancement-ledger.test.mjs tests/dualframe-free-provider.test.mjs tests/dualframe-master-images.test.mjs tests/dualframe-account-identity.test.mjs tests/dualframe-account-runtime.test.mjs tests/dualframe-tenant-isolation.test.mjs
       - name: Verify Sync, enhancement UI and account storage with two persistent synthetic profiles
         timeout-minutes: 4
