@@ -30,15 +30,15 @@
   "provider_account_validation": "manual-user-tests-pending",
   "reference_gallery": "existing-Nara-assets; excluded-from-controlled-benchmark",
   "status": "R_AND_D_READY_FOR_MANUAL_PROVIDER_TESTS",
-  "release_revision": 17,
+  "release_revision": 18,
   "blobs_sdk": "11.1.4",
   "api_configuration_verified": true,
   "pwa": {
-    "build_label": "2026-10-15-r4.9",
+    "build_label": "2026-10-15-r4.10",
     "manifest": "manifest.webmanifest",
     "service_worker": "sw.js",
     "scope": "./",
-    "offline_package_sha256": "d9398207d5f2a6719cbd0956af1f5d8ea0ec0bcee3fca0bf186298825c99a6d0",
+    "offline_package_sha256": "1a7090b83a442b232729dd2f81f04d7441ec104b76a42f99424f464a46924246",
     "offline_scope": "app-shell-and-browser-local-library",
     "network_required": [
       "AI image generation",
@@ -61,7 +61,7 @@
   "preferences_and_storage_fix": {
     "settings": "four enabled models by default, expansion/quality/position presets, free configuration/session API check, model outcome history",
     "delay": "0 / 0.5 / 1 / 2 / 3 / 4 / 5 seconds; 1s default; preserve explicit saved preference",
-    "storage": "metadata-only automatic and manual Sync; on-demand per-image download; IndexedDB error classes; estimated quota and bounded prefetch",
+    "storage": "metadata-only automatic refresh; explicit full bidirectional asset Sync with persisted per-asset and chunk checkpoints",
     "no_paid_generation": true
   },
   "provider_access_probe": {
@@ -120,12 +120,22 @@
     }
   },
   "local_library_v2": {
-    "version": 2,
+    "version": 3,
     "metadata_only_startup": true,
     "blob_store": "assets",
     "migration": "atomic IndexedDB upgrade; original bytes and scores retained",
     "viewport_loading": "on-demand; revoke Blob URLs offscreen and on close",
     "real_device_acceptance": "PENDING_PHYSICAL_IPHONE",
     "verification": "migration/hash/rollback/cache tests plus Windows Chrome browser tests"
+  },
+  "full_sync": {
+    "schema_version": 1,
+    "manual": "full-bidirectional-assets",
+    "automatic": "catalog-only",
+    "transfer_concurrency": 2,
+    "pagination": "immutable-owner-frontier",
+    "integrity": "actual-byte-size-and-sha256",
+    "generation_calls": 0,
+    "physical_device_acceptance": "PENDING_PHYSICAL_IPHONE_IPAD"
   }
 }

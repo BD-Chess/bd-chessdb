@@ -64,3 +64,60 @@ export async function compatibleAPI(path,{method='GET',body,raw,pair}={}){
  if(path.startsWith('/api/assets/'))return asset(path.slice('/api/assets/'.length));
  return request(path.replace(/^\/api/,''),{method,body,raw});
 }
+
+// Sync transports are byte-only. They never create or resume an image-generation job.
+export async function uploadSyncAsset(blob,options={}){
+ if(!(blob instanceof Blob)||!blob.size)throw Error('SYNC_ASSET_MISSING');
+ const digest=await sha256(blob);
+ let checkpoint=options.checkpoint;
+ if(checkpoint?.sha256!==digest||checkpoint?.size!==blob.size)checkpoint=null;
+ let ticket=checkpoint?.ticket;
+ if(ticket){
+  try{
+   const status=await request('/uploads/'+encodeURIComponent(ticket.upload_id));
+   if(status.complete){if(status.asset?.sha256!==digest||status.asset?.byte_size!==blob.size)throw Error('UPLOAD_HASH_MISMATCH');return status.asset;}
+   const received=new Set(status.received||[]);let first=0;while(received.has(first))first++;
+   checkpoint={...checkpoint,next_chunk:first};
+  }catch(error){if(![404,410].includes(error.status))throw error;ticket=null;checkpoint=null;}
+ }
+ if(!ticket){
+  const {kind='derived',pair_id,source_sha256,parent_asset_ids=[],lineage={},role,acceptance,family_id,operation,orientation,quality}=options;
+  ticket=await request('/uploads/init',{method:'POST',body:{sha256:digest,size:blob.size,kind,pair_id,source_sha256,parent_asset_ids,lineage,role,acceptance,family_id,operation,orientation,quality}});
+  checkpoint={sha256:digest,size:blob.size,ticket,next_chunk:0};
+  await options.onCheckpoint?.(checkpoint);
+ }
+ if(!Number.isInteger(ticket.chunk_size)||ticket.chunk_size<=0||ticket.chunks!==Math.ceil(blob.size/ticket.chunk_size))throw Error('UPLOAD_TICKET_INVALID');
+ for(let i=checkpoint.next_chunk||0;i<ticket.chunks;i++){
+  await request(`/uploads/${encodeURIComponent(ticket.upload_id)}/${i}`,{method:'PUT',raw:blob.slice(i*ticket.chunk_size,Math.min(blob.size,(i+1)*ticket.chunk_size))});
+  checkpoint={...checkpoint,next_chunk:i+1};await options.onCheckpoint?.(checkpoint);
+ }
+ const result=await request(`/uploads/${encodeURIComponent(ticket.upload_id)}/finish`,{method:'POST',body:{}});
+ if(result.sha256!==digest||result.byte_size!==blob.size)throw Error('UPLOAD_HASH_MISMATCH');
+ return result;
+}
+export async function downloadSyncAsset(meta,options={}){
+ const size=meta?.byte_size??meta?.size;
+ if(!Number.isSafeInteger(size)||size<=0||size>75*1024*1024||!/^[a-f0-9]{64}$/.test(meta?.sha256||''))throw Error('SYNC_ASSET_SIZE_UNKNOWN');
+ let checkpoint=options.checkpoint;
+ if(checkpoint?.sha256!==meta.sha256||checkpoint?.asset_id!==meta.asset_id||checkpoint?.size!==size)checkpoint=null;
+ let pieces=checkpoint?.pieces||[],start=checkpoint?.next_byte||0;
+ if(!Number.isSafeInteger(start)||start<0||start>size||pieces.reduce((n,b)=>n+b.size,0)!==start){pieces=[];start=0;}
+ while(start<size){
+  const end=Math.min(size-1,start+2097151),response=await request('/assets/'+encodeURIComponent(meta.asset_id),{headers:{range:`bytes=${start}-${end}`}});
+  const data=await response.blob(),range=response.headers.get('content-range')?.match(/^bytes (\d+)-(\d+)\/(\d+)$/);
+  if(!range||Number(range[1])!==start||Number(range[2])!==end||Number(range[3])!==size||data.size!==end-start+1)throw Error('ASSET_RANGE_INVALID');
+  pieces=[...pieces,data];start=end+1;
+  await options.onCheckpoint?.({sha256:meta.sha256,asset_id:meta.asset_id,size,next_byte:start,pieces});
+ }
+ const blob=new Blob(pieces,{type:meta.mime||meta.type||'image/png'});
+ if(blob.size!==size||await sha256(blob)!==meta.sha256)throw Error('SYNC_ASSET_HASH_MISMATCH');
+ return blob;
+}
+export const syncTransport={
+ manifest:({cursor,limit=100,frontier}={})=>request('/sync/manifest?'+new URLSearchParams({limit:String(limit),...(cursor?{cursor}:{}),...(frontier?{frontier}:{})})),
+ uploadAsset:uploadSyncAsset,
+ downloadAsset:downloadSyncAsset,
+ saveRecord:body=>request('/sync/records',{method:'POST',body}),
+ createPair:body=>request('/pairs',{method:'POST',body}),
+ putTitle:(sha,body)=>request('/titles/'+sha,{method:'PUT',body}),
+};
