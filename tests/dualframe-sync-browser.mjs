@@ -12,7 +12,7 @@ import {chromium} from 'playwright-core';
 import {createService} from '../functions/lib/dualframe/service.mjs';
 import {signToken} from '../functions/lib/dualframe/auth.mjs';
 
-const root=fileURLToPath(new URL('..',import.meta.url));
+const root=path.resolve(fileURLToPath(new URL('..',import.meta.url)));
 const sharp=createRequire(new URL('../functions/package.json',import.meta.url))('sharp');
 const evidence=path.join(root,'browser-evidence','sync');
 await mkdir(evidence,{recursive:true});
@@ -152,7 +152,7 @@ try{
  Object.assign(receipt,{checks:{...receipt.checks,manifest_over_200_records:'PASS',no_provider_calls:'PASS'},metrics,page_errors:pageErrors,blocked_external_origins:[...new Set(externalRequests)],raw_original_hashes:originals.map(x=>hash(x.buffer)),saved_asset_hashes:expected.pairs.flatMap(p=>p.assets.map(a=>a.sha256)),status:'PASS'});
  await writeFile(path.join(evidence,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));
 }catch(error){
- receipt.status='FAIL';receipt.error=error.message;receipt.metrics=metrics;await writeFile(path.join(evidence,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');
+ receipt.status='FAIL';receipt.error=error.message;receipt.metrics=metrics;receipt.page_errors=pageErrors;receipt.page_url=activePage?.url();receipt.page_body=await activePage?.locator('body').innerText().catch(()=>null);await writeFile(path.join(evidence,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');
  await activePage?.screenshot({path:path.join(evidence,'failure.png')}).catch(()=>{});throw error;
 }finally{
  clearTimeout(watchdog);for(const context of contexts)await context.close().catch(()=>{});for(const res of held)res.destroy();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await rm(profiles,{recursive:true,force:true});
