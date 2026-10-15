@@ -97,3 +97,12 @@ test('both Sim selectors expose all engines and LC0 switches to an honest suppor
   assert.equal(select('limit-mode').value,'move-time');assert(select('limit-mode').querySelector('[value="depth"]').disabled);
   select('white').value='reckless';select('white').dispatchEvent(new dom.window.Event('change',{bubbles:true}));assert(!select('limit-mode').querySelector('[value="depth"]').disabled);
 });
+test('saved event statistics identify every native provider and retain truly unknown sources',t=>{
+  const dom=new JSDOM('<body></body>',{runScripts:'outside-only'});t.after(()=>dom.window.close());
+  dom.window.eval(fs.readFileSync(require.resolve('../js/8zc-tournament-ui.js'),'utf8'));
+  const ui=dom.window.ChessTournamentUI.create({});
+  ui.render([{id:'native-event',name:'Native sources',games:[]}],[{eventId:'native-event',trace:
+    ['LC0','RLE','BER','LC0','CDB','SF','unrecognized'].map(actual_provider=>({actual_provider}))}]);
+  const text=dom.window.document.querySelector('.tournament-event-stats').textContent;
+  for(const part of ['CDB 1','SF 1','LC0 2','Reckless 1','Berserk 1','unknown source 1'])assert(text.includes(part),text);
+});
