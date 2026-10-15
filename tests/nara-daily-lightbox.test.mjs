@@ -48,7 +48,7 @@ function fixture({fullscreen=true}={}){
   const document={
     body:docBody,fullscreenElement:null,
     documentElement:{classList:{add:x=>rootClasses.add(x),remove:x=>rootClasses.delete(x),contains:x=>rootClasses.has(x)}},
-    querySelectorAll:s=>s==='.daily-scene-figure img'?[one,two]:[],
+    querySelectorAll:s=>s.startsWith('.daily-scene-figure img')?[one,two]:[],
     createElement:tag=>new Node(tag),
     addEventListener:(type,fn)=>{
       if(!listeners.has(type))listeners.set(type,[]);
