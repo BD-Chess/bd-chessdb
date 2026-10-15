@@ -76,3 +76,9 @@ test('Deep All remains concurrent on mobile with only two available families and
     for(const c of calls)c.ready.resolve();await tick();assert(calls.every(c=>c.options));session.stop();await run;
   }
 });
+test('the lower Reckless card reports the retained set depth and a different native best move honestly',async t=>{
+  const x=fixture(t),run=x.cards.analyze('reckless');await tick();x.calls[0].ready.resolve();await tick();
+  x.calls[0].search.resolve({fen:START,depth:24,linesDepth:23,completeMultiPV:false,retainedCompleteMultiPV:true,
+    coverage:{status:'bestmove-mismatch'},nativeBestMove:'d2d4',lines:[{multipv:1,depth:23,pv:['e2e4'],score:{type:'cp',root:20,white:20,bound:'exact'}}]});await run;
+  const note=x.cards.state('RLE').note;assert.match(note,/Depth 23/);assert.doesNotMatch(note,/Depth 24/);assert.match(note,/retained.*native best move differs/i);
+});
