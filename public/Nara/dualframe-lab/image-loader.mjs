@@ -14,7 +14,16 @@ export function createImageLoader({readBlob,URLClass=URL,Observer=globalThis.Int
  return {
   async bind(img,asset,normalized=false,immediate=false){
    if(!asset)return;const prior=records.get(img),identity=key(asset,normalized);
-   if(prior?.key===identity){if(immediate)await load(img,prior);return;}
+   if(prior?.key===identity){
+    if(immediate){
+     // External UI transitions may clear src without invalidating the bound asset.
+     // Restore the already-decoded URL or fetch the visible asset immediately.
+     const url=prior.url||prior.asset.remote_url;
+     if(prior.loaded&&url&&!img.getAttribute?.('src'))img.src=url;
+     await load(img,prior);
+    }
+    return;
+   }
    if(prior)release(img,prior);
    const row={asset,normalized,key:identity,token:++serial,loaded:false,url:null};records.set(img,row);
    if(immediate||!observer)await load(img,row);else observer.observe(img);

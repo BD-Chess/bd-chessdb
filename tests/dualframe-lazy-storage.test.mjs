@@ -50,3 +50,21 @@ test('slow obsolete image cannot overwrite a newer selection or recreate a URL a
  pending.get('new')(new Blob(['new']));await next;pending.get('old')(new Blob(['old']));await old;assert.equal(img.src,'blob:1');assert.equal(made,1);
  const late=loader.bind(img,{blob:{id:'late'}},false,true);loader.clear();pending.get('late')(new Blob(['late']));await late;assert.equal(img.src,'');assert.equal(made,1);assert.deepEqual(revoked,['blob:1']);
 });
+
+test('selected original is decoded eagerly even when IntersectionObserver has not fired',async()=>{
+ let observer,reads=0,made=0;
+ class Observer{constructor(fn){this.callback=fn;observer=this;}observe(){}unobserve(){}}
+ const img={isConnected:true,src:'',getAttribute(k){return k==='src'?this.src:null;},removeAttribute(k){if(k==='src')this.src='';}};
+ const loader=createImageLoader({Observer,readBlob:async()=>{reads++;return new Blob(['preview'],{type:'image/png'});},URLClass:{createObjectURL:()=>`blob:preview-${++made}`,revokeObjectURL(){}}});
+ await loader.bind(img,{normalized:{id:'original-normalized'}},true,false);
+ assert.equal(img.src,'','lazy mode must not decode hidden cards');
+ await loader.bind(img,{normalized:{id:'original-normalized'}},true,true);
+ assert.equal(img.src,'blob:preview-1');assert.equal(reads,1);
+ // An app render can remove src independently of the stored image row.
+ img.removeAttribute('src');
+ await loader.bind(img,{normalized:{id:'original-normalized'}},true,true);
+ assert.equal(img.src,'blob:preview-1','rebind must restore the existing decoded URL');
+ assert.equal(reads,1,'no redundant blob read');
+ loader.unbind(img);assert.equal(img.src,'');
+ assert.ok(observer,'observer remains available for gallery thumbnails');
+});
