@@ -70,9 +70,18 @@ async function enhanced(p,{only=true,artistic=false,review=false}={}){clock+=600
 try{
  const a=await context('desktop');await a.p.locator('#tab-create').click();assert.equal(await a.p.locator('#account-sign-in').count(),0);assert.equal(await a.p.locator('#admin-policy-open').count(),0);
  const originals=[];for(let i=0;i<101;i++)originals.push({name:'synthetic-'+i+'.png',mimeType:'image/png',buffer:await sharp({create:{width:32,height:24,channels:4,background:{r:i,g:180,b:140,alpha:1}}}).png().toBuffer()});
- await a.p.locator('#upload').setInputFiles(originals.slice(0,21));await count(a.p,21);assert.equal(metrics.auth,0);assert.equal(metrics.plans,0);assert.equal(mockProviderCalls,0);assert.equal(await a.p.locator('#api-auth').evaluate(x=>x.open),false);
+ // Photo-sized JPEG like the reported regression: metadata loads but preview is blank.
+ originals[0]={name:'synthetic-portrait-1307x1516.jpeg',mimeType:'image/jpeg',buffer:await sharp({create:{width:1307,height:1516,channels:3,background:'#75a5c5'}}).jpeg({quality:80}).toBuffer()};
+ await a.p.locator('#upload').setInputFiles(originals.slice(0,1));await count(a.p,1);
+ await a.p.locator('#source-preview').scrollIntoViewIfNeeded();
+ await poll(()=>a.p.evaluate(()=>{const img=document.querySelector('#source-preview');return img?.getAttribute('src')?.startsWith('blob:')&&img.complete&&img.naturalWidth===1307&&img.naturalHeight===1516;}),15000);
+ checks.jpg_original_visible_immediately_after_import='PASS';
+ await a.p.locator('#upload').setInputFiles(originals.slice(1,21));await count(a.p,21);assert.equal(metrics.auth,0);assert.equal(metrics.plans,0);assert.equal(mockProviderCalls,0);assert.equal(await a.p.locator('#api-auth').evaluate(x=>x.open),false);
  await a.p.locator('#upload').setInputFiles(originals.slice(21,100));await count(a.p,100);await a.p.locator('#upload').setInputFiles(originals[100]);await a.p.waitForFunction(()=>document.querySelector('#notice').textContent.includes('100'));await count(a.p,100);await a.p.locator('#upload').setInputFiles(originals[20]);await count(a.p,100);checks.local_import_21_100_101_dedupe_without_auth='PASS';
- const local=await snapshot(a.p);assert.equal(local.length,100);assert.ok(local.every(x=>x.hash===x.source));await a.p.reload({waitUntil:'networkidle'});await count(a.p,100);assert.deepEqual(await snapshot(a.p),local);checks.locked_reload_100_raw_hashes='PASS';
+ const local=await snapshot(a.p);assert.equal(local.length,100);assert.ok(local.every(x=>x.hash===x.source));await a.p.reload({waitUntil:'networkidle'});await count(a.p,100);assert.deepEqual(await snapshot(a.p),local);
+ await a.p.locator('#tab-create').click();await a.p.locator('#source-preview').scrollIntoViewIfNeeded();
+ await poll(()=>a.p.evaluate(()=>{const img=document.querySelector('#source-preview');return img?.getAttribute('src')?.startsWith('blob:')&&img.complete&&img.naturalWidth>0;}),15000);
+ checks.imported_preview_survives_reload='PASS';checks.locked_reload_100_raw_hashes='PASS';
  await unlock(a.p,true);await count(a.p,100);assert.deepEqual(await snapshot(a.p),local);const auth=metrics.auth;await a.p.reload({waitUntil:'networkidle'});await count(a.p,100);assert.equal(metrics.auth,auth);checks.password_once_preserved_local_owner_collection='PASS';
  const b=await context('phone',true);await unlock(b.p);await count(b.p,0);await sync(a.p);
  pauseDownloads=true;await b.p.locator('#cloud-load').click();await poll(()=>held.size>0);await b.p.locator('#sync-pause').click();pauseDownloads=false;for(const r of held)r.destroy();await b.p.reload({waitUntil:'networkidle'});await sync(b.p);await count(b.p,100);assert.deepEqual(await snapshot(b.p),await snapshot(a.p));assert.ok(metrics.cursors>0);const transfers={up:metrics.uploads,down:metrics.assetGets};await sync(a.p);await sync(b.p);assert.deepEqual({up:metrics.uploads,down:metrics.assetGets},transfers);checks.two_profiles_100_full_sync_pause_resume_noop_pagination='PASS';
