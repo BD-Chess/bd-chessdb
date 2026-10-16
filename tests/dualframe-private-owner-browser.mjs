@@ -111,7 +111,7 @@ async function photosShell(p,lang='en'){
  assert.equal(await photos.getAttribute('aria-pressed'),'true');assert.equal(await cartoons.isDisabled(),false);
  const before={plans:metrics.plans,calls:mockProviderCalls,legacy:metrics.legacyJobs};
  await cartoons.focus();await p.keyboard.press('Enter');
- await p.waitForFunction(()=>window.DFCReader?.getEdition()?.panel_count===39);
+ if(await p.evaluate(()=>navigator.onLine))await p.waitForFunction(()=>window.DFCReader?.getEdition()?.panel_count===39);else {await p.locator('#cartoons-gallery .error').waitFor({state:'visible'});assert.match(await p.locator('#cartoons-gallery').textContent(),/internet|povezavo/);}
  assert.equal(await p.locator('#cartoons-gallery').isVisible(),true);
  assert.equal(await p.locator('.dfc-coming button').isDisabled(),true);
  assert.equal(await p.locator('#workspace').isVisible(),false);

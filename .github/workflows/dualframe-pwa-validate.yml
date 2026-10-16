@@ -41,6 +41,7 @@ jobs:
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
           node tests/dualframe-private-owner-browser.mjs
       - name: Verify the real eight-page Cartoons reader and isolated pair adapter
+        if: ${{ !cancelled() }}
         timeout-minutes: 4
         run: node tests/dfc-reader-browser.mjs
       - uses: actions/upload-artifact@v4

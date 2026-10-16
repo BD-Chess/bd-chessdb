@@ -1,6 +1,6 @@
 // Build-time only. Resolve exact Drive IDs with the connected Drive tool first;
 // provide a local {drive_id:absolute_zip_path} map. Public readers never use Drive.
-import {readFile,mkdir,rename,rm,cp} from 'node:fs/promises';
+import {readFile,access,rename,rm,cp} from 'node:fs/promises';
 import path from 'node:path';
 import {inflateRawSync} from 'node:zlib';
 import {createRequire} from 'node:module';
@@ -58,6 +58,8 @@ export async function validatePairImport({catalog,catalogBytes,partsByDrive,edit
  return {imported,files:allFiles,receipt:{catalog_sha256:sha(catalogBytes),pair_count:imported.length,parts:receipt}};
 }
 export async function importPairs(catalogPath,mapPath,destination=path.join(appRoot,'content/illuminara')){
+ // Recover a process stop between the two sibling renames before revalidating.
+ try{await access(destination);}catch(error){try{await rename(destination+'.previous',destination);}catch{throw error;}}
  const catalogBytes=await readFile(catalogPath),catalog=JSON.parse(catalogBytes),partsByDrive=JSON.parse(await readFile(mapPath)),edition=validateEdition(JSON.parse(await readFile(path.join(destination,'edition.json'))));
  const result=await validatePairImport({catalog,catalogBytes,partsByDrive,edition});
  const parent=path.dirname(destination),stage=destination+'.candidate',backup=destination+'.previous';await rm(stage,{recursive:true,force:true});await cp(destination,stage,{recursive:true});
@@ -65,8 +67,8 @@ export async function importPairs(catalogPath,mapPath,destination=path.join(appR
  // sibling edition swap, never a half-pair patch. Re-running is idempotent.
  try{for(const [file,bytes]of result.files)await atomic(path.join(stage,'paired',safePath(file)),bytes);
   const rebase=a=>({...a,file:'paired/'+a.file});for(const p of result.imported){const s=edition.panels.find(x=>x.panel_id===p.panel_id);Object.assign(s,{P:rebase(p.P),L:rebase(p.L),overlays:Object.fromEntries(['P','L'].map(o=>[o,Object.fromEntries(['SL','EN'].map(l=>[l,rebase(p.overlays[o][l])]))])),qa_status:'PASS',pair_source_story_state_sha256:p.story_state_sha256,readiness:{...s.readiness,pair_ready:true}});}
-  edition.pair_count=edition.panels.filter(p=>p.readiness.pair_ready).length;edition.pair_import=result.receipt;validateEdition(edition);await atomic(path.join(stage,'paired/DFC_PAIRED_CATALOG.json'),catalogBytes);await atomic(path.join(stage,'edition.json'),JSON.stringify(edition,null,2)+'\n');
-  const old=JSON.parse(await readFile(path.join(stage,'members.json'))),members=old.members.filter(m=>m.file!=='edition.json'&&!m.file.startsWith('paired/'));for(const [file,bytes]of result.files)members.push({file:'paired/'+file,bytes:bytes.length,sha256:sha(bytes)});const ed=await readFile(path.join(stage,'edition.json'));members.push({file:'edition.json',bytes:ed.length,sha256:sha(ed)});const cb=await readFile(path.join(stage,'paired/DFC_PAIRED_CATALOG.json'));members.push({file:'paired/DFC_PAIRED_CATALOG.json',bytes:cb.length,sha256:sha(cb)});await atomic(path.join(stage,'members.json'),JSON.stringify({...old,members},null,2)+'\n');
+  edition.pair_count=edition.panels.filter(p=>p.readiness.pair_ready).length;edition.pair_import_history=[...(edition.pair_import_history||[]),...(edition.pair_import?[edition.pair_import]:[])].filter((r,i,all)=>all.findIndex(a=>a.catalog_sha256===r.catalog_sha256)===i&&r.catalog_sha256!==result.receipt.catalog_sha256);edition.pair_import=result.receipt;validateEdition(edition);await atomic(path.join(stage,'paired/DFC_PAIRED_CATALOG.json'),catalogBytes);await atomic(path.join(stage,'edition.json'),JSON.stringify(edition,null,2)+'\n');
+  const old=JSON.parse(await readFile(path.join(stage,'members.json'))),replaced=new Set([...result.files.keys()].map(p=>'paired/'+p)),members=old.members.filter(m=>m.file!=='edition.json'&&m.file!=='paired/DFC_PAIRED_CATALOG.json'&&!replaced.has(m.file));for(const [file,bytes]of result.files)if(file!=='DFC_PAIRED_CATALOG.json')members.push({file:'paired/'+file,bytes:bytes.length,sha256:sha(bytes)});const ed=await readFile(path.join(stage,'edition.json'));members.push({file:'edition.json',bytes:ed.length,sha256:sha(ed)});const cb=await readFile(path.join(stage,'paired/DFC_PAIRED_CATALOG.json'));members.push({file:'paired/DFC_PAIRED_CATALOG.json',bytes:cb.length,sha256:sha(cb)});await atomic(path.join(stage,'members.json'),JSON.stringify({...old,members},null,2)+'\n');
   await rm(backup,{recursive:true,force:true});await rename(destination,backup);try{await rename(stage,destination);}catch(error){await rename(backup,destination);throw error;}await rm(backup,{recursive:true,force:true});console.log(JSON.stringify({state:'IMPORTED',...result.receipt,edition_sha256:sha(ed)}));return result.receipt;
  }catch(error){await rm(stage,{recursive:true,force:true});throw error;}
 }

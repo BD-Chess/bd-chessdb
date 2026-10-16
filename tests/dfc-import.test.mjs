@@ -1,11 +1,13 @@
 import {pairFixture} from './dfc-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile,mkdtemp,cp,rm,rename} from 'node:fs/promises';
+import path from 'node:path';
+import {tmpdir} from 'node:os';
 import {createRequire} from 'node:module';
 import {SOURCE,STORY_ID,canonical,validateEdition,normalizeDialogue,hitTest,imageContentRect,pointerToNorm,restoreState,neighborAssets,AssetWindow,digest,safePath} from '../public/Nara/dualframe-lab/dfc-model.mjs';
 import {sha} from '../scripts/dfc-build-overviews.mjs';
-import {validatePairImport,validateSVG,readZip} from '../scripts/dfc-import-pairs.mjs';
+import {validatePairImport,validateSVG,readZip,importPairs} from '../scripts/dfc-import-pairs.mjs';
 import {zipStore} from '../public/Nara/dualframe-lab/zip-store.mjs';
 const sharp=createRequire(new URL('../functions/package.json',import.meta.url))('sharp');
 const content=new URL('../public/Nara/dualframe-lab/content/illuminara/',import.meta.url),read=p=>readFile(new URL(p,content));
@@ -28,6 +30,14 @@ test('cache aborts evicted loads, revokes URLs, retains overlap and rejects corr
  const bad=new AssetWindow('https://example.test/',{ImageClass:Img,fetcher:async()=>new Response('wrong')});await assert.rejects(bad.get(assets[0]),/ASSET_HASH/);assert.equal(bad.entries.size,0);
 });
 test('complete synthetic test pair passes source/part/byte/text/state validation',async()=>{const f=await pairFixture(),r=await validatePairImport(f);assert.equal(r.imported.length,1);assert.equal(r.receipt.pair_count,1);assert.equal(readZip(f.zip).size,f.files.size);});
+test('atomic imports retain earlier partial pairs and manifest coverage, repeat safely, recover rename stop, and leave bad import untouched',async()=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'dfc-isolated-import-')),destination=path.join(dir,'edition');try{await cp(content,destination,{recursive:true});
+  const run=async index=>{const f=await pairFixture(index),zip=path.join(dir,'part.zip'),catalog=path.join(dir,'catalog.json'),map=path.join(dir,'map.json');await writeFile(zip,f.zip);await writeFile(catalog,f.catalogBytes);await writeFile(map,JSON.stringify({SYNTHETIC_LOCAL_TEST:zip}));return {catalog,map,zip};};
+  let f=await run(0);await importPairs(f.catalog,f.map,destination);const once=sha(await readFile(path.join(destination,'edition.json')));await importPairs(f.catalog,f.map,destination);assert.equal(sha(await readFile(path.join(destination,'edition.json'))),once);
+  await rename(destination,destination+'.previous');await importPairs(f.catalog,f.map,destination);assert.equal(sha(await readFile(path.join(destination,'edition.json'))),once);
+  f=await run(1);await importPairs(f.catalog,f.map,destination);const e=validateEdition(JSON.parse(await readFile(path.join(destination,'edition.json'))));assert.equal(e.pair_count,2);const manifest=JSON.parse(await readFile(path.join(destination,'members.json')));assert.equal(manifest.members.length,new Set(manifest.members.map(m=>m.file)).size);for(const m of manifest.members)assert.equal(sha(await readFile(path.join(destination,m.file))),m.sha256);const before=sha(await readFile(path.join(destination,'edition.json')));await writeFile(f.zip,'corrupt');await assert.rejects(importPairs(f.catalog,f.map,destination),/PART_HASH/);assert.equal(sha(await readFile(path.join(destination,'edition.json'))),before);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
 for(const [name,mutate,expected]of [
  ['source lineage',f=>f.catalog.overview_catalog_sha256='0'.repeat(64),/PAIR_SOURCE/],
  ['half pair',f=>delete f.catalog.panels[0].L,/PAIR_FIELDS/],
