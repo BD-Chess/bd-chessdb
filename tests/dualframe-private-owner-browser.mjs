@@ -107,16 +107,17 @@ async function photosShell(p,lang='en'){
  assert.equal(await p.locator('html').getAttribute('lang'),lang);
  assert.equal(await p.title(),lang==='sl'?'DualFrame Photos — Galerija · Ustvari · Primerjaj':'DualFrame Photos — Gallery · Create · Compare');
  assert.match(await p.locator('.brand').getAttribute('aria-label'),/DualFrame Photos/);
- const photos=p.locator('#product-photos'),cartoons=p.locator('#product-cartoons'),note=p.locator('#product-cartoons-note');
- assert.equal(await photos.getAttribute('aria-pressed'),'true');assert.equal(await cartoons.isDisabled(),true);assert.equal(await cartoons.getAttribute('aria-disabled'),'true');
- assert.match(await note.textContent(),lang==='sl'?/V pripravi/:/Coming soon/);assert.equal(await note.isVisible(),true);
+ const photos=p.locator('#product-photos'),cartoons=p.locator('#product-cartoons');
+ assert.equal(await photos.getAttribute('aria-pressed'),'true');assert.equal(await cartoons.isDisabled(),false);
  const before={plans:metrics.plans,calls:mockProviderCalls,legacy:metrics.legacyJobs};
- await p.evaluate(()=>document.querySelector('#product-cartoons').click());
- const bounds=await cartoons.boundingBox();assert.ok(bounds);await p.mouse.click(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
- await note.focus();await p.keyboard.press('Shift+Tab');assert.notEqual(await p.evaluate(()=>document.activeElement?.id),'product-cartoons');
- await p.keyboard.press('Enter');await p.keyboard.press('Space');
- assert.equal(await photos.getAttribute('aria-pressed'),'true');assert.equal(await cartoons.isDisabled(),true);
- assert.deepEqual({plans:metrics.plans,calls:mockProviderCalls,legacy:metrics.legacyJobs},before,'disabled product controls must not create image work');
+ await cartoons.focus();await p.keyboard.press('Enter');
+ if(await p.evaluate(()=>navigator.onLine))await p.waitForFunction(()=>window.DFCReader?.getEdition()?.panel_count===39);else {await p.locator('#cartoons-gallery .error').waitFor({state:'visible'});assert.match(await p.locator('#cartoons-gallery').textContent(),/internet|povezavo/);}
+ assert.equal(await p.locator('#cartoons-gallery').isVisible(),true);
+ assert.equal(await p.locator('.dfc-coming button').isDisabled(),true);
+ assert.equal(await p.locator('#workspace').isVisible(),false);
+ await photos.click();
+ assert.equal(await photos.getAttribute('aria-pressed'),'true');assert.equal(await p.locator('#cartoons-gallery').isVisible(),false);
+ assert.deepEqual({plans:metrics.plans,calls:mockProviderCalls,legacy:metrics.legacyJobs},before,'product switching must not create image work');
 }
 async function headerLayout(p,label){
  await p.evaluate(()=>scrollTo(0,0));
@@ -169,7 +170,7 @@ try{
  const newRelease=JSON.parse(await readFile(path.join(root,'public/Nara/dualframe-lab/release.json'),'utf8')),newPackage=await workerPackage(a.p);assert.equal(newPackage.ready,true);assert.equal(newPackage.build,newRelease.pwa.build_label+':'+newRelease.pwa.offline_package_sha256);assert.notEqual(newPackage.build,oldPackage.build);
  receipt.pwa_update={baseline_commit:baselineCommit,from:oldPackage.build,to:newPackage.build,originals:retained.originals.length,database:retained.state.database,session_fields:retainedSession.fields,session_owner:retainedSession.owner,session_method:retainedSession.auth_method,session_sha256:retainedSession.sha256,retained_state_sha256:hash(JSON.stringify(retained)),no_authentication_or_generation_replay:true,standalone_detection:'synthetic navigator.standalone; no physical device claim'};assert.equal(await a.p.locator('#pwa-install').isVisible(),false);
  checks.r4_15_saved_update_preserves_100_original_hashes_labels_favorites_settings_and_signed_session='PASS';
- await photosShell(a.p);await a.p.locator('#language').click();await photosShell(a.p,'sl');await a.p.locator('#language').click();checks.photos_cartooons_native_disabled_keyboard_and_SL_EN='PASS';
+ await photosShell(a.p);await a.p.locator('#language').click();await photosShell(a.p,'sl');await a.p.locator('#language').click();checks.photos_cartoons_reader_enabled_creation_disabled_keyboard_and_SL_EN='PASS';
  const layoutEvidence=[];for(const [width,height]of [[1440,900],[402,874],[874,402],[768,1024]]){await a.p.setViewportSize({width,height});layoutEvidence.push(await headerLayout(a.p,width+'x'+height));}
  receipt.header_layouts=layoutEvidence;await a.p.setViewportSize({width:1440,height:900});checks.photos_header_four_viewports_no_overflow_or_control_overlap='PASS';
  const navigationCalls={plans:metrics.plans,provider:mockProviderCalls,legacy:metrics.legacyJobs};

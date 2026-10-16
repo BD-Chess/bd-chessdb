@@ -1,6 +1,7 @@
 import {readFile,writeFile,mkdir,cp} from 'node:fs/promises';
 import {execFileSync,spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {verifyDFC} from './dfc-verify-live.mjs';
 import {waitForPublishedDeploy} from './dualframe-deploy-ready.mjs';
 const site=process.env.NETLIFY_SITE_ID,token=process.env.NETLIFY_AUTH_TOKEN;
 if(!site||!token)throw Error('PRODUCTION_CREDENTIAL_MISSING');
@@ -53,6 +54,7 @@ if(mode==='--guard'){
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));
  const check={status:'PRODUCTION_VERIFIED',deploy_id:id,source_commit:process.env.GITHUB_SHA,baseline:(await readFile('.dualframe-baseline','utf8')).trim(),url:base+'/Nara/dualframe-lab/',api_version:capabilities.version,offline_package_sha256:livePwaHash,anonymous_library_status:anon.status,anonymous_enhance_status:enhanceAnon.status,anonymous_admin_status:adminAnon.status,account_identity_status:capabilities.account_identity,enhancement_status:capabilities.enhancement_policy||null,models:capabilities.models?.map(m=>({key:m.key,key_configured:m.key_configured,status:m.status})),credential_metadata:configured,configuration_storage:configured.every(v=>v.present)?'Netlify secret environment':'private-encrypted-netlify-vault',real_provider_calls:0,paid_image_spend:0};
  Object.assign(check,{final_page_url:page.url,pwa_asset_count:pwaAssets.length,pwa_assets:pwaEvidence,pwa_manifest_identity:{id:pwaManifest.id,start_url:pwaManifest.start_url,scope:pwaManifest.scope,orientation:pwaManifest.orientation}});
+ check.cartoons=await verifyDFC(base+'/nara/dualframe-lab/');
  await writeFile('dualframe-live-check.json',JSON.stringify(check,null,2)+'\n');console.log(JSON.stringify(check));
  if(!capabilities.auth_configured||capabilities.models.some(m=>!m.key_configured))throw Error('IMAGE_CREDENTIAL_CONFIGURATION_INCOMPLETE');
 }else{

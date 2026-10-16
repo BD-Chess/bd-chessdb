@@ -1,3 +1,4 @@
+import {verifyDFC} from '../scripts/dfc-verify-live.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const raw=process.env.PWA_BASE_URL||'https://bd-chess.github.io/bd-chessdb/';
@@ -15,3 +16,5 @@ assert.equal(manifest.id,'./');assert.equal(manifest.scope,'./');assert.equal(ex
 assert.ok(worker.includes("const PACKAGE_SHA='"+expected+"'"),'worker package ID mismatch');
 for(const icon of manifest.icons){const response=await get(icon.src),png=Buffer.from(await response.arrayBuffer());assert.equal(png.toString('ascii',1,4),'PNG');assert.equal(png.readUInt32BE(16),Number(icon.sizes.split('x')[0]));}
 console.log(JSON.stringify({status:'PWA_LIVE_PACKAGE_VERIFIED',base:appRoot.href,package_sha256:actual,assets:assets.length,manifest:manifest.name}));
+
+console.log(JSON.stringify({cartoons:await verifyDFC(appRoot.href)}));
