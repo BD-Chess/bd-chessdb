@@ -18,5 +18,5 @@ export async function pairFixture(panelIndex=0){
  add('SHA256SUMS.txt',Buffer.from([...files].map(([p,b])=>sha(b)+'  '+p).join('\n')+'\n'));
  const blob=await zipStore([...files].map(([name,bytes])=>({name,blob:new Blob([bytes])}))),zip=Buffer.from(await blob.arrayBuffer());
  const catalog={schema:'bd.dfc.paired-catalog.v1',version:'SYNTHETIC_FIXTURE_ONLY',story_id:STORY_ID,source_h1_release_sha256:SOURCE.h1,overview_catalog_sha256:SOURCE.catalog,dialogue_file:'sources/DFC_DIALOGUE_SOURCE.json',dialogue_sha256:SOURCE.dialogue,panel_count:39,pair_count:1,artwork_composition_count:2,panels:[panel],delivery_parts:[{part_id:part,filename:'fixture.zip',drive_id:'SYNTHETIC_LOCAL_TEST',bytes:zip.length,sha256:sha(zip),panel_ids:[source.panel_id],included_files:[...files.keys()],raw_readback:'PASS'}],package_manifest:'SHA256SUMS.txt'};
- return {catalog,catalogBytes:Buffer.from(JSON.stringify(catalog)),partsByDrive:{SYNTHETIC_LOCAL_TEST:'fixture.zip'},edition,loadPart:async()=>zip,zip,files};
+ return {allowFixtures:true,catalog,catalogBytes:Buffer.from(JSON.stringify(catalog)),partsByDrive:{SYNTHETIC_LOCAL_TEST:'fixture.zip'},edition,loadPart:async()=>zip,zip,files};
 }
