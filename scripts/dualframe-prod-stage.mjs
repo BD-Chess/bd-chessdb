@@ -1,10 +1,11 @@
 import {readFile,writeFile,mkdir,cp} from 'node:fs/promises';
 import {execFileSync,spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
+import {waitForPublishedDeploy} from './dualframe-deploy-ready.mjs';
 const site=process.env.NETLIFY_SITE_ID,token=process.env.NETLIFY_AUTH_TOKEN;
 if(!site||!token)throw Error('PRODUCTION_CREDENTIAL_MISSING');
 const api=async path=>{const r=await fetch('https://api.netlify.com/api/v1/'+path,{headers:{authorization:'Bearer '+token},signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('NETLIFY_API_'+r.status);return r.json();};
-const current=await api('sites/'+site),deploy=current.published_deploy;
+let current=await api('sites/'+site);const deploy=current.published_deploy;
 if(!deploy?.id)throw Error('PUBLISHED_DEPLOY_UNKNOWN');
 const mode=process.argv[2];
 if(mode==='--guard'){
@@ -12,7 +13,7 @@ if(mode==='--guard'){
  console.log('Production baseline unchanged.');
 }else if(mode==='--verify'){
  const receipt=JSON.parse(await readFile('dualframe-deploy.json','utf8')),id=receipt.deploy_id||receipt.deployId;
- if(!id||deploy.id!==id||deploy.state!=='ready')throw Error('PRODUCTION_DEPLOY_NOT_READY');
+ current=await waitForPublishedDeploy({expectedId:id,initialSite:current,loadSite:()=>api('sites/'+site)});
  const envMetadata=await api('accounts/'+current.account_id+'/env?site_id='+site);
  console.log(JSON.stringify({credential_presence:envMetadata.filter(v=>v.key.startsWith('DF_')).map(v=>({key:v.key,is_secret:v.is_secret,scopes:v.scopes}))}));
  const base=current.ssl_url||current.url;
@@ -44,11 +45,14 @@ if(mode==='--guard'){
  const pwaAssets=JSON.parse(pwaList[1]),pwaHash=createHash('sha256'),pwaEvidence=[];
  for(const asset of pwaAssets){const name=asset.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const requestedUrl=new URL(asset,pwaRoot),r=await fetch(requestedUrl,{cache:'no-store'});if(!r.ok)throw Error('LIVE_PWA_PACKAGE_ASSET_MISSING');const data=Buffer.from(await r.arrayBuffer()),assetSha=createHash('sha256').update(data).digest('hex');pwaHash.update(asset).update('\0').update(assetSha).update('\n');pwaEvidence.push({asset,requested_url:requestedUrl.href,final_url:r.url,bytes:data.length,sha256:assetSha});}
  const livePwaHash=pwaHash.digest('hex'),workerPackageSha=pwaWorker.match(/const PACKAGE_SHA='([^']+)'/)?.[1]||null;
+ const expectedRelease=JSON.parse(await readFile('public/Nara/dualframe-lab/release.json','utf8'));
+ if(livePwaHash!==expectedRelease.pwa.offline_package_sha256)throw Error('LIVE_PWA_SOURCE_PACKAGE_MISMATCH');
  if(livePwaHash!==pwaRelease.pwa.offline_package_sha256||workerPackageSha!==livePwaHash){console.log(JSON.stringify({pwa_integrity_mismatch:{expected:pwaRelease.pwa.offline_package_sha256,actual:livePwaHash,worker:workerPackageSha,assets:pwaEvidence}}));throw Error('LIVE_PWA_PACKAGE_HASH_MISMATCH');}
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
  const names=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY'];
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));
  const check={status:'PRODUCTION_VERIFIED',deploy_id:id,source_commit:process.env.GITHUB_SHA,baseline:(await readFile('.dualframe-baseline','utf8')).trim(),url:base+'/Nara/dualframe-lab/',api_version:capabilities.version,offline_package_sha256:livePwaHash,anonymous_library_status:anon.status,anonymous_enhance_status:enhanceAnon.status,anonymous_admin_status:adminAnon.status,account_identity_status:capabilities.account_identity,enhancement_status:capabilities.enhancement_policy||null,models:capabilities.models?.map(m=>({key:m.key,key_configured:m.key_configured,status:m.status})),credential_metadata:configured,configuration_storage:configured.every(v=>v.present)?'Netlify secret environment':'private-encrypted-netlify-vault',real_provider_calls:0,paid_image_spend:0};
+ Object.assign(check,{final_page_url:page.url,pwa_asset_count:pwaAssets.length,pwa_assets:pwaEvidence,pwa_manifest_identity:{id:pwaManifest.id,start_url:pwaManifest.start_url,scope:pwaManifest.scope,orientation:pwaManifest.orientation}});
  await writeFile('dualframe-live-check.json',JSON.stringify(check,null,2)+'\n');console.log(JSON.stringify(check));
  if(!capabilities.auth_configured||capabilities.models.some(m=>!m.key_configured))throw Error('IMAGE_CREDENTIAL_CONFIGURATION_INCOMPLETE');
 }else{
