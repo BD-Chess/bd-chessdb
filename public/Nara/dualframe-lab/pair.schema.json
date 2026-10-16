@@ -158,6 +158,35 @@
     },
     "references": {
       "type": "array"
+    },
+    "gallery_order": {
+      "type": "object",
+      "description": "Optional shared personal-photo order metadata. Original asset identity is unchanged.",
+      "required": [
+        "version",
+        "position",
+        "clock",
+        "event_id"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clock": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "event_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]{8,100}$"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "$defs": {

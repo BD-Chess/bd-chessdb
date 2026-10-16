@@ -1,4 +1,5 @@
 import * as disk from './store.mjs?v=3.0-r4.11';
+import {mergeGalleryOrder} from './gallery-order.mjs?v=3.0-r4.17';
 
 const HASH=/^[a-f0-9]{64}$/;
 const remoteRef=value=>value?.__df_remote_asset===1;
@@ -37,6 +38,8 @@ function mergeEnhancementFamilies(local=[],incoming=[]){
 export function mergeSyncedPair(local,incoming){
  if(!local)return incoming;
  const merged={...incoming,...local,original:{...incoming.original,...local.original},variants:{portrait:{...incoming.variants?.portrait,...local.variants?.portrait},landscape:{...incoming.variants?.landscape,...local.variants?.landscape}},jobs:union(local.jobs,incoming.jobs),candidates:union(local.candidates,incoming.candidates)};
+ const galleryOrder=mergeGalleryOrder(local.gallery_order,incoming.gallery_order);
+ if(galleryOrder)merged.gallery_order=galleryOrder;else delete merged.gallery_order;
  merged.sync_selection_resolutions={...incoming.sync_selection_resolutions,...local.sync_selection_resolutions};
  merged.sync_conflicts=(merged.sync_conflicts||[]).filter(conflict=>conflict.kind!=='selection'||merged.sync_selection_resolutions[conflict.direction+'.'+conflict.quality]!==conflict.local_sha256);
  for(const key of ['blob','normalized'])if(incoming.original?.[key])merged.original[key]=incoming.original[key];

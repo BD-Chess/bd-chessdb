@@ -1,4 +1,5 @@
 import {MAX_ORIGINALS} from './core.mjs?v=3.0-r4.11';
+import {moveGallery,orderedGallery,validGalleryOrder} from './gallery-order.mjs?v=3.0-r4.17';
 const DB = 'bd-dualframe-lab-v1';
 const LEGACY_OWNER='bd-research-owner',OWNER=/^[a-zA-Z0-9_-]{8,100}$/;
 // v3 adds receipts only. Existing pairs/assets remain readable without hydration.
@@ -169,6 +170,28 @@ export const updatePair = (id,updater) => writePair(updater,id);
 export const removePair = id => writePair(null,id);
 export const getPairs = () => operation('pairs','readonly',s=>s.getAll());
 export const getPair = id => operation('pairs','readonly',s=>s.get(id));
+// One transaction changes only ordering metadata. A concurrent rename, variant
+// or import is read inside this transaction; no asset store is opened or copied.
+async function movePairIn(id,action,options={},ctx=context()){
+ beginWrite(ctx);
+ try{
+  const db=await openFor(ctx);active(ctx);let result,problem;
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction('pairs','readwrite'),rows=tx.objectStore('pairs'),request=rows.getAll();
+   tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(problem||storageError(tx.error||{name:'AbortError'}));
+   request.onsuccess=()=>{try{
+    const before=request.result,after=moveGallery(before,id,action,options);
+    const previous=orderedGallery(before,options.baselineIds);
+    if(after.every((pair,i)=>pair.pair_id===previous[i]?.pair_id)){result=after;return;}
+    const clock=Math.max(Date.now(),...before.map(pair=>(validGalleryOrder(pair.gallery_order)?.clock||0)+1));
+    if(!Number.isSafeInteger(clock))throw Error('GALLERY_ORDER_INVALID');
+    const event_id=crypto.randomUUID();result=after.map((pair,position)=>({...pair,gallery_order:{version:1,position,clock,event_id}}));
+    for(const pair of result)rows.put(pair);
+   }catch(error){problem=error.message?.startsWith('GALLERY_')?error:storageError(error);tx.abort();}};
+  });active(ctx);return result;
+ }finally{endWrite(ctx);}
+}
+export const movePair=(id,action,options)=>movePairIn(id,action,options);
 export const getSyncState = key => operation('sync','readonly',s=>s.get(key));
 async function syncStateWrite(key,value,ctx=context()){validateNamespace(value,ctx);return operation('sync','readwrite',s=>s.put(value,key),ctx);}
 export const putSyncState = (key,value) => syncStateWrite(key,value);
@@ -227,6 +250,7 @@ export function captureStorageScope(){
   storageOwner:()=>ctx.scope.owner,isBlobReference,hasStoredBlobs,storageErrorCode,storageEstimate,
   openStore:()=>openFor(ctx),getPairs:()=>operation('pairs','readonly',s=>s.getAll(),ctx),getPair:id=>operation('pairs','readonly',s=>s.get(id),ctx),
   putPair:pair=>writePair(pair,pair?.pair_id,ctx),putOriginal:pair=>writePair(pair,pair?.pair_id,ctx,true),updatePair:(id,updater)=>writePair(updater,id,ctx),removePair:id=>writePair(null,id,ctx),
+  movePair:(id,action,options)=>movePairIn(id,action,options,ctx),
   getSyncState:key=>operation('sync','readonly',s=>s.get(key),ctx),putSyncState:(key,value)=>syncStateWrite(key,value,ctx),
   putSyncAsset:(key,pairId,blob,metadata={})=>putSyncAssetFor(key,pairId,blob,metadata,ctx),getStoredBlob:value=>getStoredBlobFor(value,ctx),hydratePair:(value,seen=new Map())=>hydrateIn(value,seen,ctx),
   getScores:()=>operation('scores','readonly',s=>s.getAll(),ctx),addScore:score=>operation('scores','readwrite',s=>s.add(score),ctx),

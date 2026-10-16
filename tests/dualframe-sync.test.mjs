@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash,webcrypto} from 'node:crypto';
 import {IDBFactory} from 'fake-indexeddb';
 import {createSyncEngine,mergeSyncedPair} from '../public/Nara/dualframe-lab/sync.mjs';
+import {orderedGallery} from '../public/Nara/dualframe-lab/gallery-order.mjs';
 if(!globalThis.crypto)Object.defineProperty(globalThis,'crypto',{value:webcrypto});
 const sha=async blob=>createHash('sha256').update(Buffer.from(await blob.arrayBuffer())).digest('hex');
 const copy=value=>structuredClone(value);
@@ -23,6 +24,21 @@ test('unprocessed source and all saved candidates/variants sync exact bytes into
  const b=await profile(),engine=createSyncEngine({api:remote.api,store:b});let done=await engine.sync();assert.equal(done.synced,true,JSON.stringify(done));
  const imported=(await b.getPairs())[0];assert.equal(await sha(await b.getStoredBlob(imported.original.blob)),p.original.sha256);assert.equal(await sha(await b.getStoredBlob(imported.variants.portrait.hd.blob)),p.variants.portrait.hd.sha256);assert.equal(imported.jobs[0].status,'READY');assert.equal(imported.candidates[0].candidate_id,p.candidates[0].candidate_id);
  const count={uploads:remote.stats.uploads,downloads:remote.stats.downloads};done=await engine.sync();assert.equal(done.synced,true,JSON.stringify(done));assert.equal(remote.stats.uploads,count.uploads);assert.equal(remote.stats.downloads,count.downloads);assert.ok(remote.stats.maxActive<=2);
+});
+test('manual photo order survives old immutable snapshots, two-way Sync and reload without transferring image bytes again',async()=>{
+ const remote=cloud(),a=await profile();for(const name of ['order_a','order_b','order_c','order_d'])await a.putPair(await pair(name,false));
+ const ea=createSyncEngine({api:remote.api,store:a});assert.equal((await ea.sync()).synced,true);
+ const b=await profile(),eb=createSyncEngine({api:remote.api,store:b});assert.equal((await eb.sync()).synced,true);
+ const before={uploads:remote.stats.uploads,downloads:remote.stats.downloads},hashes=async store=>Promise.all((await store.getPairs()).map(async p=>[p.pair_id,await sha(await store.getStoredBlob(p.original.blob))]));
+ const raw=await hashes(a),original=(await a.getPairs()).map(p=>p.pair_id),moved=await a.movePair(original[3],'top');
+ assert.equal((await ea.sync()).synced,true);assert.equal((await eb.sync()).synced,true);
+ assert.deepEqual(orderedGallery(await b.getPairs()).map(p=>p.pair_id),moved.map(p=>p.pair_id));
+ const latest=await b.movePair(original[0],'bottom');assert.equal((await eb.sync()).synced,true);assert.equal((await ea.sync()).synced,true);
+ assert.deepEqual(orderedGallery(await a.getPairs()).map(p=>p.pair_id),latest.map(p=>p.pair_id));
+ // Every old snapshot remains in the immutable remote history; later reads
+ // must not randomly roll the order back as records are traversed again.
+ for(const record of remote.records.values())for(const local of await a.getPairs())if(local.original.sha256===record.source_sha256){const merged=mergeSyncedPair(local,record.record);assert.deepEqual(merged.gallery_order,local.gallery_order);}
+ assert.deepEqual({uploads:remote.stats.uploads,downloads:remote.stats.downloads},before);assert.deepEqual(await hashes(a),raw);assert.deepEqual(await hashes(b),raw);assert.equal(remote.stats.provider,0);
 });
 test('same raw/normalized bytes retain two validated source roles; existing original never hides missing orientation',async()=>{
  const remote=cloud(),a=await profile(),p=await pair('samebytes',false);p.original.normalized=p.original.blob;await a.putPair(p);assert.equal((await createSyncEngine({api:remote.api,store:a}).sync()).synced,true);assert.equal(remote.stats.uploads,2);
