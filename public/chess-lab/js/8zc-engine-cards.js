@@ -13,7 +13,7 @@
     const roleFor=mode=>registry?.roleFor?.(mode)||fallbackRoles[mode];
     const label=mode=>registry?.label?.(mode)||({'sf-lite':'Stockfish Lite','sf-full':'Stockfish Full',berserk:'Berserk',reckless:'Reckless',lc0:'LCZero'}[mode]||mode);
     const now=()=>root.performance?.now?.()??Date.now();
-    const results=new Map(),jobs=new Map(),queue=[],attempts=new Map();
+    const results=new Map(),jobs=new Map(),queue=[],attempts=new Map(),recentActivity=new Map();
     let serial=0,batch=null,destroyed=false,draining=false,preparedSlot=null;
     // Every retained adapter resets its actual search state; one slot caps mobile RAM.
     const reusable=mode=>['sf-lite','sf-full','berserk','reckless','lc0'].includes(mode);
@@ -28,6 +28,7 @@
     const capacity=()=>batch?batch.modes.length:mobile()?1:Math.max(1,Math.min(2,(session.capabilities('sf-full').hardwareConcurrency||2)-1));
     const key=(fen,mode)=>fen+'|'+mode;
     const changed=()=>host.onState?.();
+    const disarm=()=>{following=false;followedPosition=null;cancelFollow();};
     const positionKey=ctx=>JSON.stringify([ctx.fen,ctx.positionHistory||null]);
     lastPosition=positionKey(context());
     function baseTime(ctx=context()){
@@ -58,6 +59,7 @@
       },100);
     }
     function setFollowing(value){
+      if(value&&!following)host.beforeFollow?.();
       following=!!value;cancelFollow();followedPosition=null;
       if(following)scheduleFollow();
       else if(batch?.automatic)stopAll();
@@ -88,7 +90,7 @@
         result?.coverage?.status==='unvalidated'?'Legality unverified':result?.coverage?.status==='partial'?'Partial line coverage':null;
       const metrics=result?[searched&&('Search '+searched+(requested?' / '+requested:'')),Number.isFinite(reached)&&(mode==='lc0'?reached.toLocaleString()+' visits':'Depth '+reached),coverage,result.stopReason].filter(Boolean).join(' · '):null;
       return {mode,working:!!job,batchParticipant:!!batch?.modes.some(candidate=>roleFor(candidate)===role),disabled:!job&&(!ctx.canAnalyze||!available().includes(mode)),
-        title:job?'Stop '+label(mode):'Analyze '+label(mode)+'; click again for more time',
+        title:job?'Stop '+label(mode)+' and Cards each move':'New search: '+label(mode)+'; search again with a larger budget',
         note:job?(job.phase==='queued'?'Queued · Stop':job.phase==='searching'?'Analyzing · Stop':
           job.progress?.loaded?`${job.progress.phase==='downloading'?'Downloading':job.progress.phase==='local'?'Loading locally':job.progress.phase==='preparing'?'Preparing engine':'Loading files'} ${(job.progress.loaded/1048576).toFixed(1)}${job.progress.total?' / '+(job.progress.total/1048576).toFixed(1):''} MiB · Stop`:'Preparing engine · Stop'):
           attempt?'Stopped · '+attempt+(result?.lines?.length?' · retained result':' · no result'):
@@ -96,7 +98,9 @@
         variant:role==='SF'?variant:null};
     }
     function stop(mode,reason='user-stop'){
+      if(reason==='user-stop'||reason==='shared-stop'||reason==='takeover'){disarm();changed();}
       const job=jobs.get(mode);if(!job)return;
+      recentActivity.set(mode,{...jobActivity(job),state:'stopped',stopReason:reason});
       job.cancelled=true;job.stopReason=reason;clearTimeout(job.guard);clearTimeout(job.paintTimer);job.controller.abort();dispose(job.engine);
       if(reason.includes('watchdog')){attempts.set(key(job.fen,mode),reason);if(attempts.size>150)attempts.delete(attempts.keys().next().value);}
       jobs.delete(mode);const i=queue.indexOf(job);if(i>=0)queue.splice(i,1);
@@ -104,13 +108,34 @@
         const ctx=context();if(ctx.fen===job.fen&&JSON.stringify(ctx.positionHistory||null)===JSON.stringify(job.options.history||null))host.onResult?.(value,job.options);}
       job.resolve(null);finishBatch();changed();pump();
     }
-    function stopAll(reason='user-stop'){cancelFollow();releasePrepared();draining=true;batch=null;for(const mode of [...jobs.keys()])stop(mode,reason);draining=false;changed();}
+    function stopAll(reason='user-stop'){
+      if(reason==='page-hidden')cancelFollow();else disarm();
+      clearTimeout(pumpTimer);pumpTimer=null;releasePrepared();draining=true;batch=null;
+      // Retire every generation before abort callbacks can drain another child.
+      for(const job of jobs.values())job.cancelled=true;
+      for(const mode of [...jobs.keys()])stop(mode,reason);
+      queue.length=0;draining=false;changed();
+    }
+    function jobActivity(job){
+      return {id:'card-'+job.startedAt+'-'+job.mode+'-'+job.id,mode:job.mode,label:label(job.mode),
+        state:job.phase,positionKey:job.positionKey,
+        budget:{movetime:job.options.movetime},progress:job.progress?{...job.progress}:null,
+        searchElapsedMs:job.searchStarted==null?null:Math.max(0,now()-job.searchStarted)};
+    }
+    function activitySnapshot(){
+      const children=new Map(recentActivity);
+      for(const [mode,job]of jobs)children.set(mode,jobActivity(job));
+      return {owner:'cards',following,running:jobs.size>0,pending:!!followTimer,children:[...children.values()]};
+    }
     function finishBatch(){
       if(batch&&!batch.scheduling&&!batch.modes.some(mode=>jobs.has(mode))){batch=null;changed();}
     }
     function remember(value,options){
       if(!available().includes(value.mode))return;
       results.set(key(value.fen,value.mode),value);
+      const job=jobs.get(value.mode);
+      if(job)recentActivity.set(value.mode,{...jobActivity(job),state:value.status,error:value.error||null,
+        searchElapsedMs:value.actualSearchMs??null});
       if(results.size>150)results.delete(results.keys().next().value);
       host.onResult?.(value,options);changed();
     }
@@ -165,7 +190,7 @@
       if(mobile()&&now()<cooldownUntil){clearTimeout(pumpTimer);pumpTimer=setTimeout(pump,cooldownUntil-now());return;}
       let count=[...jobs.values()].filter(x=>x.phase!=='queued').length;
       while(queue.length&&count<capacity()){
-        const job=queue.shift();if(!live(job)){stop(job.mode);continue;}
+        const job=queue.shift();if(!live(job)){stop(job.mode,'position-change');continue;}
         count++;void run(job);
       }
     }
@@ -185,12 +210,15 @@
       attempts.delete(key(ctx.fen,mode));
       host.beforeStart?.();
       // Lite and Full share one Stockfish card, and cannot occupy it simultaneously.
-      for(const other of ['sf-lite','sf-full'])if(other!==mode&&roleFor(other)===roleFor(mode))stop(other);
+      for(const other of ['sf-lite','sf-full'])if(other!==mode&&roleFor(other)===roleFor(mode))stop(other,'variant-change');
       const base=baseTime(ctx),priorTime=Number(previous?.requestedTimeMs)||0;
       const requested=Number(timeOverride);
       const movetime=Number.isSafeInteger(requested)&&requested>0?Math.min(requested,14400000):
         !reuse&&!all&&!automatic&&previous?.lines?.length?Math.min(14400000,Math.max(base,priorTime)*2):base;
+      if(!jobs.size)recentActivity.clear();
+      for(const other of recentActivity.keys())if(other!==mode&&roleFor(other)===roleFor(mode))recentActivity.delete(other);
       const job={mode,fen:ctx.fen,id:++serial,phase:'queued',cancelled:false,controller:new AbortController(),queuedAt:now(),startedAt:new Date().toISOString(),
+        positionKey:positionKey(ctx),
         options:{fen:ctx.fen,movetime,multiPV:Math.min(5,Number(ctx.settings?.topN)||5),history:ctx.positionHistory}};
       job.promise=new Promise(resolve=>{job.resolve=resolve;});jobs.set(mode,job);queue.push(job);changed();pump();return job.promise;
     }
@@ -224,7 +252,7 @@
     root.document?.addEventListener('visibilitychange',hidden);const pagehide=()=>stopAll('page-hidden');root.addEventListener?.('pagehide',pagehide);
     let computePolicy=JSON.stringify([session.getSettings?.().sfFullThreadsRequested,session.getSettings?.().hashMB]);
     const unsubscribe=session.subscribeSettings?.(settings=>{const next=JSON.stringify([settings.sfFullThreadsRequested,settings.hashMB]);if(next!==computePolicy){computePolicy=next;stopAll();}});
-    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopRole(role,reason='user-stop'){const job=[...jobs.values()].find(x=>roleFor(x.mode)===role);if(job)stop(job.mode,reason);return !!job;},stopAll,setFollowing,isFollowing:()=>following,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
+    return {get,state,analyze,analyzeAll,ingest,positionChanged,stop,stopRole(role,reason='user-stop'){const armed=following;const job=[...jobs.values()].find(x=>roleFor(x.mode)===role);stop(job?.mode,reason);return !!job||armed;},stopAll,setFollowing,activitySnapshot,isFollowing:()=>following,isRunning:()=>jobs.size>0,isAllRunning:()=>!!batch,
       destroy(){destroyed=true;stopAll();clearTimeout(pumpTimer);unsubscribe?.();root.document?.removeEventListener('visibilitychange',hidden);root.removeEventListener?.('pagehide',pagehide);}};
   }
   return {create};

@@ -47,6 +47,8 @@ jobs:
             public/chess-lab/research/analysis-controls.test.cjs \
             public/chess-lab/research/deep-ui.test.cjs \
             public/chess-lab/research/engine-memory.test.cjs
+      - name: P3 interactive activity, Stop and each-move ownership
+        run: node --test public/chess-lab/research/p3-active-analysis.test.cjs public/chess-lab/research/sf-provider.test.cjs
       - name: P1 durable state, navigation and source provenance
         run: |
           node --test \
@@ -89,7 +91,10 @@ jobs:
           "$RUNNER_TEMP/chess-browser-deps/node_modules/.bin/playwright" install --with-deps chromium
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
-            node --test public/chess-lab/research/full-game-resume-browser.cjs
+            CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p3" \
+            node --test --test-concurrency=1 \
+              public/chess-lab/research/full-game-resume-browser.cjs \
+              public/chess-lab/research/p3-active-analysis-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

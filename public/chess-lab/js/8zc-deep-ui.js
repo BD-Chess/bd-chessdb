@@ -9,7 +9,7 @@
     const panel = doc.createElement('section'); panel.className = 'deep-panel'; panel.id = 'deepAnalysisPanel'; panel.hidden = true;
     panel.setAttribute('aria-labelledby', 'deepAnalysisTitle');
     panel.innerHTML = `<header class="deep-header"><div><h2 id="deepAnalysisTitle">Deep analysis</h2><p data-deep="engine-intro">SF Lite · runs on this device.</p></div><button type="button" data-deep="close" aria-label="Return to moves and DCC">×</button></header>
-      <p class="deep-intro">Analyze the current position and compare several lines. While Deep analysis stays open, every new board position is analyzed automatically. Scores below are from White’s perspective.</p>
+      <p class="deep-intro">Analyze the current position and compare independent lines. Each move is opt-in; turning it off cancels future automatic searches. A current search may finish. Scores below are from White’s perspective.</p>
       <details class="deep-position"><summary>Pinned position</summary><code data-deep="fen"></code><button type="button" data-deep="use">Use current board position</button></details>
       <div class="deep-settings"><label>Analysis mode<select data-deep="mode" aria-label="Deep analysis mode"><option value="sf-lite" selected>SF Lite</option><option value="sf-full">SF Full</option><option value="berserk">Berserk</option><option value="reckless">Reckless</option><option value="lc0">LCZero NN</option><option value="sf-lc0">SF &amp; LC Zero</option><option value="sf-reckless">SF &amp; Reckless</option><option value="sf-berserk">SF &amp; Berserk</option><option value="all">All Engines</option></select></label><label>CPU<select data-deep="threads" aria-label="Local search CPU threads"><option value="1" selected>CPU 1</option></select></label><label><span data-deep="budget-label">Search depth</span><select data-deep="budget"><option value="depth:14">14</option><option value="depth:18">18</option><option value="depth:22">22</option><option value="depth:26">26</option><option value="depth:30">30</option><option value="depth:34">34</option><option value="depth:38">38</option><option value="depth:42">42</option><option value="infinite">Until I stop</option></select><output class="deep-dual-time" data-deep="dual-time" hidden></output></label><label>Time<select data-deep="time" aria-label="Deep analysis search time"><option value="off" selected>Off</option><option value="10000">10s</option><option value="30000">30s</option><option value="60000">1m</option><option value="300000">5m</option><option value="900000">15m</option><option value="1800000">30m</option><option value="3600000">1h</option><option value="14400000">4h</option><option value="infinite">Until I stop</option></select></label><label>Lines<select data-deep="multipv"><option>1</option><option selected>3</option><option>5</option><option>10</option></select></label></div>
       <p class="deep-budget-note" data-deep="budget-note" hidden></p><p class="deep-budget-note" data-deep="time-note" hidden></p>
@@ -17,7 +17,7 @@
       <small data-berserk-status role="status" hidden></small>
       <details class="deep-additional"><summary>Additional data · CDB / DCC</summary><p data-deep="additional-status"></p><button type="button" data-deep="cdb-refresh">Refresh CDB data</button></details>
       <label class="deep-root-moves">Only these first moves <span>(optional)</span><input data-deep="roots" placeholder="e4, d4, Nf3" autocomplete="off" spellcheck="false" aria-describedby="deepRootMovesNote"><small id="deepRootMovesNote" data-deep="roots-note">Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.</small></label>
-      <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" disabled>Stop</button><button type="button" data-deep="export" disabled>Export analysis</button></div>
+      <div class="deep-actions"><button type="button" data-deep="start">Analyze position</button><button type="button" data-deep="stop" title="Stop Deep analysis and Deep each move" disabled>Stop</button><label class="deep-follow"><input type="checkbox" data-deep="follow" aria-label="Deep: analyze each new board position">Deep · Each move</label><button type="button" data-deep="export" disabled>Export analysis</button></div>
       <p class="deep-status" data-deep="status" role="status">Ready. The engine stays idle until you start.</p>
       <div class="deep-lines" data-deep="lines" aria-label="Engine principal variations"></div>
       <section class="deep-preview" data-deep="preview" hidden><div data-deep="preview-board"></div><div><h3>Variation preview</h3><p data-deep="preview-text"></p><button type="button" data-deep="save">Save line to study</button><p class="deep-note">The main board stays at your original position.</p></div></section>
@@ -28,6 +28,9 @@
     let engine = null, pinned = null, result = null, resultRun = 0, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
     let manualStoppedFen = null, followActive = false, unregisterControls = null, unsubscribeSettings = null;
+    let followTimer = null, followGeneration = 0;
+    const cancelFollow = () => { ++followGeneration; root.clearTimeout(followTimer); followTimer = null; };
+    const eligible = () => !doc.hidden && host.canAnalyze?.() !== false;
     const lineViews = new Map();
     let renderKey = null, clippingFrame = 0;
     const Chess = host.Chess || root.Chess;
@@ -60,6 +63,8 @@
     reflectTime();
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
+    const activitySnapshot = () => ({owner:'deep',...state(),pending:!!followTimer,
+      ...(engine?.activitySnapshot?.()||{children:[]})});
     const notifyState = extra => host.onStateChange?.({...state(),...extra});
     function reflectAdditional() {
       const data=host.getAdditionalAnalysis?.()||{};
@@ -94,20 +99,21 @@
       workspace.classList.add('is-deep-analysis');
       workspace.setAttribute('aria-label', 'Deep analysis');
       panel.hidden = false; trigger?.setAttribute('aria-expanded', 'true');
-      root.ChessAnalysisControls?.syncLinkedDeep?.();
+      // Merely entering this view never changes the board's display source.
       reflectAdditional();
       workspace.scrollTop = deepScroll;
-      el('start').disabled = !pinned; el('stop').disabled = true;
+      el('start').disabled = !pinned || !!engine?.isRunning?.(); el('stop').disabled = !followActive && !engine?.isRunning?.();
       el('close').focus({ preventScroll: true });
       if (previewBoard) requestAnimationFrame(resizePreview);
       notifyState();
     }
     function close() {
       if (panel.hidden) return;
+      cancelFollow();
       const wasRunning = stopAnalysis('panel-close');
       if (wasRunning) el('status').textContent = hasLines(result) ? 'Analysis stopped; results retained.' : 'Analysis cancelled. Start again when ready.';
       el('start').disabled = !pinned; el('stop').disabled = true;
-      deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null; followActive = false;
+      deepScroll = workspace.scrollTop; panel.hidden = true; manualStoppedFen = null; followActive = false; el('follow').checked = false;
       workspace.classList.remove('is-deep-analysis');
       if (workspaceLabel === null) workspace.removeAttribute('aria-label'); else workspace.setAttribute('aria-label', workspaceLabel);
       trigger?.setAttribute('aria-expanded', 'false');
@@ -206,6 +212,7 @@
       const now = Date.now();
       if (!force && now - paintAt < 100 && signature === paintStatus) return;
       paintAt = now; paintStatus = signature;
+      notifyState({passive:true});
       const scroll = workspace.scrollTop;
       onUpdate?.(current);
       const children = current.children && Object.keys(current.children).length ? Object.entries(current.children) : null;
@@ -308,7 +315,7 @@
           (engine?.isRunning() ? 'Analyzing current position…' : current.error ? 'Analysis failed: ' + current.error :
             current.forcedStop ? 'Stopped after the engine exceeded its time limit; latest results retained.' :
             current.status === 'partial' ? 'Analysis incomplete; partial results retained.' : current.stopped && manualStoppedFen === current.fen
-              ? 'Stopped; the next move will analyze automatically.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.'));
+              ? 'Stopped; retained results. Each move is off.' : current.stopped ? 'Stopped; analysis retained.' : 'Analysis complete.'));
       }
       // The workspace is the scroller. The lines container itself never scrolls.
       if (workspace.scrollTop !== scroll) workspace.scrollTop = scroll;
@@ -341,6 +348,12 @@
       workspace.scrollTop = target;
     }
     async function start(options = {}) {
+      if (!eligible() || options.automatic && !followActive) return;
+      cancelFollow();
+      if (!options.automatic) {
+        const next = host.getContext?.();
+        if (next?.fen && positionKey(next) !== positionKey(pinned)) setPinned(next, {preserveViewport:true});
+      }
       const token = ++run;
       manualStoppedFen = null;
       try {
@@ -350,7 +363,6 @@
         const opts = { fen: pinned.fen, multiPV: Number(el('multipv').value), searchMoves: support?.supported ? rootMoves() : [],
           history: pinned.positionHistory || (!Array.isArray(pinned.history) ? pinned.history : undefined) };
         const [kind, value] = el('budget').value.split(':'), time = el('time').value;
-        if (!options.automatic) followActive = true;
         if (time === 'infinite') opts.infinite = true;
         else if (time !== 'off') {
           opts.movetime = Number.isFinite(options.timeOverride) ? options.timeOverride : Number(time);
@@ -400,16 +412,19 @@
       return wasRunning;
     }
     function stopCurrent() {
-      if (!followActive && !engine?.isRunning?.()) return false;
+      const active = followActive || !!followTimer || !!engine?.isRunning?.();
+      cancelFollow();
       followActive = false;
+      el('follow').checked = false;
+      if (!active) { notifyState({passive:true}); return false; }
       manualStoppedFen = pinned?.fen || null;
       stopAnalysis('user-stop');
       el('start').disabled = !pinned; el('stop').disabled = true;
-      el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
+      el('status').textContent = 'Stopped · Each move is off. Analyze position starts a new search.';
       notifyState(); return true;
     }
     function deepenOrStop() {
-      if (panel.hidden || !pinned || !followActive) return false;
+      if (panel.hidden || !pinned) return false;
       if (engine?.isRunning?.()) return stopCurrent();
       const [kind, value] = el('budget').value.split(':'), time = el('time').value;
       if (time !== 'off') {
@@ -424,6 +439,27 @@
       start({ depthOverride: Math.min(128, reached + 2), reveal: false }); return true;
     }
     el('start').onclick = () => start({ automatic: false }); el('stop').onclick = stopCurrent;
+    function scheduleFollow(context = host.getContext?.()) {
+      cancelFollow();
+      if (!followActive || !eligible() || !context?.fen || context.assistanceLocked) return;
+      const token = followGeneration, signature = positionKey(context);
+      followTimer = root.setTimeout(() => {
+        followTimer = null;
+        const next = host.getContext?.() || context;
+        if (token !== followGeneration || !followActive || !eligible() || positionKey(next) !== signature) return;
+        if (positionKey(pinned) !== signature) setPinned(next, {preserveViewport:true});
+        void start({automatic:true,reveal:false});
+      },100);
+      notifyState({passive:true});
+    }
+    el('follow').onchange = () => {
+      cancelFollow();
+      followActive = el('follow').checked && eligible();
+      el('follow').checked = followActive;
+      if (followActive) { host.onFollowEnable?.(); if(!engine?.isRunning?.())scheduleFollow(); }
+      el('stop').disabled = !followActive && !engine?.isRunning?.();
+      notifyState({passive:true});
+    };
     el('cdb-refresh').onclick=async()=>{
       el('cdb-refresh').disabled=true;el('additional-status').textContent='Refreshing ChessDB…';
       try{await host.onCDBSearch?.();reflectAdditional();}
@@ -436,8 +472,8 @@
       try { if (host.pause) host.pause(followActive ? 'deep-analysis' : 'deep-panel'); setPinned(host.getContext?.()); }
       catch (e) { el('status').textContent = e.message; }
       el('start').disabled = !pinned; el('stop').disabled = !followActive;
-      if (pinned && !panel.hidden && followActive) start({ automatic: true, reveal: false });
-      else if (pinned && !panel.hidden) el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
+      if (pinned && !panel.hidden && followActive) scheduleFollow();
+      else if (pinned && !panel.hidden) el('status').textContent = 'Analyze position starts a new search.';
     };
     el('save').onclick = async () => {
       if (!preview || !host.onSaveLine || el('save').disabled) return;
@@ -456,16 +492,17 @@
     };
     if (typeof host.onChange === 'function') {
       liveUnsubscribe = host.onChange(context => {
-        if (panel.hidden || !context?.fen || context.assistanceLocked || positionKey(context) === positionKey(pinned)) return;
+        if (!context?.fen || positionKey(context) === positionKey(pinned)) return;
+        cancelFollow();
         const keepScroll = workspace.scrollTop;
         ++run; engine?.stop(); manualStoppedFen = null;
         try {
           setPinned(context, { preserveViewport: true });
           workspace.scrollTop = keepScroll;
-          if (followActive) start({ automatic: true, reveal: false });
+          if (followActive && eligible() && !context.assistanceLocked) scheduleFollow(context);
           else {
             el('start').disabled = !pinned; el('stop').disabled = true;
-            el('status').textContent = 'Stopped · press Analyze position to resume Deep analysis.';
+            el('status').textContent = 'Analyze position starts a new search. Each move is off.';
             notifyState();
           }
         } catch (e) {
@@ -483,7 +520,7 @@
       const nextKey=settingsKey(settings);
       if(nextKey===analysisSettingsKey)return;
       analysisSettingsKey=nextKey;
-      stopAnalysis('settings-change'); followActive = false; manualStoppedFen = pinned?.fen || null;
+      cancelFollow(); stopAnalysis('settings-change'); followActive = false; el('follow').checked = false; manualStoppedFen = pinned?.fen || null;
       el('start').disabled = !pinned; el('stop').disabled = true;
       el('status').textContent = 'Selected '+modeLabels[settings.analysisMode]+'. '+(hasLines(result)?'Previous '+(modeLabels[result.mode]||'engine')+' results retained. ':'')+'Press Analyze position to start.';
       notifyState({passive:true});
@@ -497,9 +534,14 @@
       trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
       trigger.addEventListener('click', toggle);
     }
+    const pageHidden = () => { if(doc.hidden) { cancelFollow(); stopAnalysis('page-hidden'); notifyState({passive:true}); } };
+    doc.addEventListener('visibilitychange',pageHidden);
+    const pageExit = () => { cancelFollow();stopAnalysis('page-hidden');notifyState({passive:true}); };
+    root.addEventListener('pagehide',pageExit);
     return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
+      activitySnapshot,
       stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
-      destroy() { close(); ++run; liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();root.cancelAnimationFrame(clippingFrame);previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+      destroy() { cancelFollow(); close(); ++run; doc.removeEventListener('visibilitychange',pageHidden);root.removeEventListener('pagehide',pageExit);liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();root.cancelAnimationFrame(clippingFrame);previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

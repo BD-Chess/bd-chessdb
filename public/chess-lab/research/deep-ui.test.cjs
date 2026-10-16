@@ -41,7 +41,7 @@ function setup(t, host = {}, sessionSettings = null) {
   w.eval(fs.readFileSync(path.join(base, 'js/chess.min.js'), 'utf8'));
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-engine-registry.js'), 'utf8'));
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-eval-bar.js'), 'utf8'));
-  const game = new w.Chess(); let options, finish, running = false, stops = 0, hostListener = null;
+  const game = new w.Chess(); let options, finish, running = false, stops = 0, hostListener = null, positionContext = {};
   const analyses = [];
   w.ChessDeepEngine = {
     validateFen(fen) { if (!new w.Chess().validate_fen(fen).valid) throw Error('Invalid FEN'); },
@@ -58,13 +58,13 @@ function setup(t, host = {}, sessionSettings = null) {
       configure(patch){Object.assign(settings,patch);for(const fn of listeners)fn({...settings});}};
   }
   w.eval(fs.readFileSync(path.join(base, 'js/8zc-deep-ui.js'), 'utf8'));
-  const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen() }),
+  const ui = w.ChessDeepUI.create({ Chess: w.Chess, getContext: () => ({ fen: game.fen(), ...positionContext }),
     onChange: listener => { hostListener = listener; return () => { hostListener = null; }; }, pause() {}, ...host });
   const el = name => w.document.querySelector('[data-deep="' + name + '"]');
   const get = id => w.document.getElementById(id);
   const snapshot = () => ({ fen: game.fen(), lines: [{ depth: 12, score: { type: 'cp', white: 25 }, pv: ['e2e4', 'e7e5'] }], nodes: 50000, elapsedMs: 1000, completeMultiPV: true, linesDepth: 12 });
   return { w, ui, game, el, get, snapshot, emit: value => options.onInfo(null, value), finish: value => finish(value),
-    stops: () => stops, analyses, change: context => hostListener?.(context) };
+    stops: () => stops, analyses, change: context => { positionContext = context; hostListener?.(context); } };
 }
 
 test('Deep analysis toggles in the workspace and restores DCC visibility, scroll, focus and retained analysis', t => {
@@ -231,12 +231,14 @@ test('Deep search uses fixed depth presets plus Until I stop and reserves exactl
   assert.match(css, /\.deep-pv\.is-clipped::after\{[^}]*content:"…"/s);
 });
 
-test('Deep finite depth follows later positions, while manual Stop disables follow until Analyze position is pressed again', async t => {
+test('Deep explicit each-move follows later positions; manual Stop stays off through a new Analyze until explicitly re-enabled', async t => {
   const states = [];
   const x = setup(t, { onStateChange: state => states.push(state) });
   x.get('btnDeepAnalysis').click();
   assert.equal(x.ui.isFollowing(), false, 'opening Deep alone does not enable auto-follow');
   x.el('budget').value = 'depth:18';
+  assert.equal(x.el('follow').checked, false, 'each move defaults off');
+  x.el('follow').checked = true; x.el('follow').dispatchEvent(new x.w.Event('change'));
   x.el('start').click();
   assert.equal(x.analyses.length, 1);
   assert.equal(x.analyses[0].depth, 18);
@@ -249,7 +251,7 @@ test('Deep finite depth follows later positions, while manual Stop disables foll
   x.game.move('e4');
   const afterE4 = x.game.fen();
   x.change({ fen: afterE4, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4'] } });
-  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setTimeout(resolve,130));
   assert.equal(x.el('fen').textContent, afterE4);
   assert.equal(panel.style.minHeight, '900px', 'live repin keeps the established Deep viewport height');
   x.emit(x.snapshot());
@@ -268,7 +270,7 @@ test('Deep finite depth follows later positions, while manual Stop disables foll
   x.game.move('e5');
   const afterE5 = x.game.fen();
   x.change({ fen: afterE5, positionHistory: { startFen: new x.w.Chess().fen(), moves: ['e2e4','e7e5'] } });
-  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setTimeout(resolve,130));
   assert.equal(x.analyses.length, 3, 'next position auto-starts while follow remains armed');
   assert.equal(x.analyses[2].fen, afterE5);
   assert.equal(x.ui.isRunning(), true);
@@ -276,7 +278,7 @@ test('Deep finite depth follows later positions, while manual Stop disables foll
   x.el('stop').click();
   assert.equal(x.ui.isRunning(), false);
   assert.equal(x.ui.isFollowing(), false);
-  assert.match(x.el('status').textContent, /press Analyze position to resume Deep analysis/i);
+  assert.match(x.el('status').textContent, /Each move is off.*new search/i);
 
   x.game.move('Nf3');
   const afterNf3 = x.game.fen();
@@ -288,8 +290,11 @@ test('Deep finite depth follows later positions, while manual Stop disables foll
   assert.equal(x.ui.isFollowing(), false);
 
   x.el('start').click();
-  assert.equal(x.analyses.length, 4, 'Analyze position explicitly re-arms Deep follow');
+  assert.equal(x.analyses.length, 4, 'Analyze position starts a new explicit search');
   assert.equal(x.analyses[3].fen, afterNf3);
+  assert.equal(x.ui.isFollowing(), false, 'a new search cannot silently re-arm a manual Stop');
+  assert.equal(x.el('follow').checked, false);
+  x.el('follow').checked = true; x.el('follow').dispatchEvent(new x.w.Event('change'));
   assert.equal(x.ui.isFollowing(), true);
   x.ui.close();
   assert.equal(x.ui.isOpen(), false);

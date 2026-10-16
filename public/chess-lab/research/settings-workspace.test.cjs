@@ -3,6 +3,29 @@ const assert = require('node:assert/strict');
 const { boot } = require('./source-context-integration.test.cjs');
 const flush = w => new Promise(resolve => w.requestAnimationFrame(resolve));
 
+test('APP More to Settings keeps natural focus inside after the asynchronous Tools close event', async t => {
+  const h = await boot(t, { skipReady: true, beforeInit(w) {
+    w.document.body.classList.add('app-mobile');
+    w.history.replaceState(null, '', '?view=app');
+  } }), { w, el } = h;
+  await flush(w); await flush(w);
+  w.HTMLDialogElement.prototype.close = function () {
+    this.open = false;
+    w.setTimeout(() => this.dispatchEvent(new w.Event('close')), 0);
+  };
+  for (const method of ['escape', 'x', 'escape']) {
+    el('appMore').click();
+    el('btnSettings').click(); await flush(w); await flush(w);
+    assert.equal(el('settingsPanel').contains(w.document.activeElement), true);
+    assert.equal(el('labToolsDialog').open, false);
+    if (method === 'x') el('btnCloseSettings').click();
+    else w.document.activeElement.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await flush(w);
+    assert.equal(el('settingsPanel').classList.contains('open'), false);
+    assert.equal(el('appTabs').hasAttribute('inert'), false);
+  }
+});
+
 test('Settings X, Escape and trigger toggle restore temporary input isolation without changing game/preferences', async t => {
   const h = await boot(t, { skipReady: true }), { w, el } = h;
   h.w.ChessLabHost.navigate({ moves: ['e2e4', 'e7e5', 'g1f3'] });

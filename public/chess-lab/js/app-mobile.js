@@ -59,6 +59,13 @@
   let lang = 'en', i18nApplying = false, languageObserver = null;
   const textSources = new WeakMap(), attrSources = new WeakMap();
   const TO_SL = new Map(Object.entries({
+    'Deep · Each move':'Deep · Vsaka poteza','Each move':'Vsaka poteza',
+    'Deep: analyze each new board position':'Deep: analiziraj vsak nov položaj',
+    'Cards/All each move: immediately searches this position, then each new position with all engines. Off cancels automatic work. Manual All runs once.':'Kartice/Vsi za vsako potezo: takoj analizira trenutni in nato vsak nov položaj z vsemi motorji. Izklop prekliče samodejno delo. Ročni Vsi zažene enkrat.',
+    'Stop Deep analysis and Deep each move':'Ustavi Deep analizo in samodejno analizo potez',
+    'Analyze position starts a new search.':'Analiziraj položaj začne novo iskanje.',
+    'Stopped · Each move is off. Analyze position starts a new search.':'Ustavljeno · Samodejna analiza je izklopljena. Analiziraj položaj začne novo iskanje.',
+    'Analyze the current position and compare independent lines. Each move is opt-in; turning it off cancels future automatic searches. A current search may finish. Scores below are from White’s perspective.':'Analiziraj trenutni položaj in primerjaj neodvisne linije. Analizo vsake poteze vklopiš posebej; izklop prekliče prihodnja samodejna iskanja. Trenutno iskanje se lahko dokonča. Ocene so s strani belega.',
     'Board':'Šahovnica','Moves':'Poteze','Review':'Pregled','Deep':'Globoko','Analysis board':'Analizna šahovnica',
     'ANALYSIS BOARD':'ANALIZNA ŠAHOVNICA','Simulation / play':'Sim / Play','Sim / Play':'Sim / Play','Simulation':'Sim','Analysis':'Analiza','Deeper SF':'Globlji SF',
     'Hide Eval':'Skrij oceno','Current position':'Trenutni položaj','Starting position':'Začetni položaj','Select a move on the board':'Izberi potezo na šahovnici',
@@ -365,7 +372,8 @@
     if (current === 'moves' || current === 'dcc') scroll[current] = display.scrollTop;
     closeWorkspaceDrawer();
     if (current === 'review' && next !== 'review') closeReview();
-    if (current === 'deep' && next !== 'deep') closeDeep();
+    // View navigation hides Deep through CSS. Its explicit X/Stop owns engine
+    // cancellation; the shared activity row keeps hidden work reachable.
     current = next;
     doc.body.dataset.appView = next;
     byId('appPositionPreview').hidden = next === 'board';
@@ -467,7 +475,8 @@
       if (id === 'btnDeepAnalysis') root.setTimeout(() => setView('deep'), 0);
       if (id === 'btnViewToggle') root.setTimeout(() => setView('dcc'), 0);
     }, true);
-    byId('labToolsDialog').addEventListener('close', () => byId('appMore').focus({ preventScroll: true }));
+    // Tools owns its close focus. A delayed native close event must not pull
+    // focus out of a drawer (notably Settings) opened by the selected action.
     byId('replayStart')?.addEventListener('click', () => root.setTimeout(() => setView('board'), 0));
     byId('simStartBtn')?.addEventListener('click', () => root.setTimeout(() => setView('board'), 0));
     byId('humanStart')?.addEventListener('click', () => root.setTimeout(() => setView('board'), 0));

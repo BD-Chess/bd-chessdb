@@ -290,8 +290,16 @@
   root.addEventListener?.('pagehide',()=>memory?.clear());
   const clone = v => JSON.parse(JSON.stringify(v));
   function create(config = {}) {
-    let active = null, destroyed = false, serial = 0;
+    let active = null, destroyed = false, serial = 0, lastActivity = null;
     const now = () => root.performance?.now?.() ?? Date.now();
+    function activityFor(job){
+      return {id:job.id,positionKey:job.positionKey,children:job.children.map(child=>({
+        id:child.jobId,mode:child.id,label:root.ChessEngineRegistry?.label(child.id)||child.id,state:child.status,
+        error:child.error||null,budget:child.limits||job.requestedBudget,
+        progress:child.snapshot?.downloadProgress?{...child.snapshot.downloadProgress}:null,
+        searchElapsedMs:child.searchStartedMs==null?null:Math.max(0,(child.finishedMs??now())-child.searchStartedMs),
+        positionKey:job.positionKey}))};
+    }
     function snapshot(job) {
       const children = {};
       for (const child of job.children) children[child.id] = Object.assign({}, child.snapshot || {fen:job.fen,lines:[]}, {
@@ -352,7 +360,7 @@
         child.beginSearch=phase==='search'?()=>{
           if(finished)return false;
           if(!searchStarted){
-            searchStarted=true;child.searchStartedMs=now();clearTimeout(timer);
+            searchStarted=true;child.searchStartedMs=now();child.status='searching';clearTimeout(timer);emit(job,true);
             if(child.limits.movetime!=null)timer=setTimeout(expire,child.limits.movetime+(config.timeGraceMs??2500));
           }
           return true;
@@ -371,6 +379,8 @@
         cleanupUntil = Math.max(cleanupUntil, now() + (config.teardownGraceMs ?? 3500));
       clearTimeout(job.timer); job.networkController?.abort();job.signal?.removeEventListener('abort',job.abort);
       for (const child of job.children) { if (!['complete','failed'].includes(child.status)) child.status='stopped'; child.engine?.destroy(); }
+      for(const child of job.children)child.finishedMs??=now();
+      lastActivity=activityFor(job);
       job.resolve(snapshot(job));
     }
     function analyze(options = {}) {
@@ -395,7 +405,7 @@
       return new Promise((resolve,reject) => {
         const job = {id:'analysis-'+Date.now()+'-'+(++sessionSerial)+'-'+(++serial),generation,mode:localMode,caps,requested:settings.sfFullThreadsRequested,
           children:ids.map((id,i)=>({id,status:caps.sequential&&i?'queued':'loading',jobId:id+'-'+Date.now()+'-'+serial})),
-          fen:limits.fen,history:limits.history,options:limits,onInfo:options.onInfo,signal:options.signal,
+          fen:limits.fen,history:limits.history,positionKey:JSON.stringify([limits.fen,limits.history||null]),options:limits,onInfo:options.onInfo,signal:options.signal,
           started:now(),startedAt:new Date().toISOString(),lastEmit:-Infinity,resolve,reject,stopped:false,requestedBudget,
           networkController:new AbortController(),
           effectiveBudget:{depth:limits.depth,nodes:limits.nodes,movetime:limits.movetime,infinite:limits.infinite,
@@ -495,14 +505,14 @@
           // A slow/failed loader cannot hold another family's complete budget.
           for(const {child,prepare}of preparations)void prepare().then(()=>{
             if(active!==job||job.generation!==generation||job.stopped)return;
-            if(child.status==='ready'){child.status='searching';child.launch();}
+            if(child.status==='ready'){child.status='preparing';child.launch();}
             settle(job);
           });
           settle(job);
         }else Promise.allSettled(preparations.map(item=>item.prepare())).then(() => {
           if (active !== job || job.generation !== generation || job.stopped) return;
           for (const child of job.children) if (child.status === 'ready') {
-            child.searchStartedMs=now(); child.status='searching';
+            child.status='preparing';
             try { child.launch(); } catch(error) { child.engine.destroy(); child.status='failed'; child.error=error.message; }
           }
           settle(job);
@@ -513,10 +523,11 @@
     function settle(job) {
       if (job.children.every(c=>['complete','failed','stopped'].includes(c.status))) {
         emit(job,true); clearTimeout(job.timer);job.signal?.removeEventListener('abort',job.abort);
-        active=null;if(owner===api)owner=null;job.resolve(snapshot(job));
+        lastActivity=activityFor(job);active=null;if(owner===api)owner=null;job.resolve(snapshot(job));
       } else emit(job,true);
     }
-    const api = {analyze,stop,isRunning:()=>!!active,destroy(){stop();destroyed=true;instances.delete(api);},engine:Deep.ENGINE};
+    const api = {analyze,stop,isRunning:()=>!!active,activitySnapshot:()=>active?activityFor(active):lastActivity,
+      destroy(){stop();destroyed=true;instances.delete(api);},engine:Deep.ENGINE};
     instances.add(api);return api;
   }
   root.addEventListener?.('pagehide',()=>{++generation;for(const x of instances)x.stop();});
