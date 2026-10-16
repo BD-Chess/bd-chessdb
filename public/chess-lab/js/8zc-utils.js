@@ -33,6 +33,16 @@ function chessBestTopPickResumeCursor(meta, pgn, headers, history, ChessCtor) {
   return meta.cursor;
 }
 
+// A workspace cursor is meaningful only for this complete line and exact FEN.
+// It shares the atomic PGN record; legacy records simply have no resume field.
+function chessBestGameResumeCursor(meta, pgn, headers, history, ChessCtor) {
+  if (!meta || !Number.isSafeInteger(meta.cursor) || meta.cursor < 0 || meta.cursor > history.length ||
+      meta.totalPlies !== history.length || meta.pgnLength !== pgn.length || typeof meta.fen !== 'string') return null;
+  const replay = new ChessCtor(headers.FEN || new ChessCtor().fen());
+  for (const move of history.slice(0, meta.cursor)) if (!replay.move(move.san)) return null;
+  return replay.fen() === meta.fen ? meta.cursor : null;
+}
+
 function initAll() {
   if (window.ChessLabReady) return window.ChessLabReady;
   window.ChessLabReady = (async () => {
@@ -147,7 +157,8 @@ function initAllCore() {
   // ─── Track the most-recently loaded PGN and current move index ───
   let lastLoadedPGN = null;
   let lastMoveIndex  = -1;
-  let activeTopPickPGN = null, restoreTopPickCursor = null;
+  let activeTopPickPGN = null, restoreTopPickCursor = null, restoreGameCursor = null;
+  let reviewSourceCache = null;
 
   /* ------------------------------------------------------------------
      2. LOAD SAVED SETTINGS
@@ -522,36 +533,46 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     return stripRAV(String(pgn || '')).replace(/\{[^}]*\}/g, '');
   }
 
-  // One atomic record owns PGN + curated cursor. Legacy plain-PGN games
+  // One atomic record owns the complete PGN + workspace/curated cursor. Legacy plain-PGN games
   // and the separate legacy marker remain readable; new saves never update
   // that pair partially. The old marker is ignored for an envelope, even null.
   const savedGameRecord = readLocal(STORAGE_KEY_GAME);
-  let savedGame = savedGameRecord, savedTopPick = null, gameEnvelope = false, gameRecordCorrupt = false;
+  let savedGame = savedGameRecord, savedTopPick = null, savedResume;
+  let gameEnvelope = false, gameRecordCorrupt = false;
   if (savedGameRecord?.trimStart().startsWith('{')) {
     try {
       const record = JSON.parse(savedGameRecord);
       if (record.schema !== 'chessbest-game/1' || typeof record.pgn !== 'string') throw Error('Unsupported saved game');
-      savedGame = record.pgn; savedTopPick = record.topPick; gameEnvelope = true;
+      savedGame = record.pgn; savedTopPick = record.topPick; savedResume = record.resume; gameEnvelope = true;
+      if (Object.hasOwn(record, 'resume') && !savedResume) throw Error('Invalid workspace resume');
     } catch (error) { console.warn('Invalid saved game record; original bytes retained', error); savedGame = null; gameRecordCorrupt = true; }
   }
-  if (savedGame) {
+  if (typeof savedGame === 'string') {
     if (!gameEnvelope) {
       const marker = readLocal(STORAGE_KEY_TOP_PICK);
       try { savedTopPick = marker ? JSON.parse(marker) : null; }
       catch (error) { console.warn('Invalid Top Pick resume marker', error); }
     }
-    if (savedTopPick) {
-      try {
-        if (game.load_pgn(validateStudyPGN(savedGame).pgn())) {
+    try {
+      if (!game.load_pgn(validateStudyPGN(savedGame).pgn())) throw Error('Invalid saved PGN');
+      lastLoadedPGN = savedGame;
+      if (savedTopPick) {
           restoreTopPickCursor = chessBestTopPickResumeCursor(
             savedTopPick, savedGame, game.header(), game.history({ verbose: true }), Chess);
           if (restoreTopPickCursor !== null) activeTopPickPGN = savedGame;
+      }
+      restoreGameCursor = restoreTopPickCursor;
+      if (savedResume !== undefined) {
+        restoreGameCursor = chessBestGameResumeCursor(
+          savedResume, savedGame, game.header(), game.history({ verbose: true }), Chess);
+        if (restoreGameCursor === null || (restoreTopPickCursor !== null && restoreGameCursor !== restoreTopPickCursor)) {
+          gameRecordCorrupt = true; restoreGameCursor = null;
+          console.warn('Invalid saved workspace cursor; original bytes retained');
         }
-      } catch (error) { console.warn('Invalid Top Pick resume marker', error); }
-    }
-    if (restoreTopPickCursor === null) {
-      try { game.load_pgn(savedGame); }
-      catch (e) { console.error('Bad saved PGN', e); }
+      }
+    } catch (error) {
+      console.warn('Invalid saved game; original bytes retained', error);
+      gameRecordCorrupt = true;
     }
   }
 
@@ -634,16 +655,17 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 
   function persistGame() {
     if (gameRecordCorrupt) { unsavedKeys.add(STORAGE_KEY_GAME); persistenceStatus(); return false; }
-    const moves = game.history();
-    let pgn = game.pgn(), topPick = null;
-    if (activeTopPickPGN && lastLoadedPGN === activeTopPickPGN && moves.length <= fullHistory.length &&
-        moves.every((move, i) => move === fullHistory[i].san)) {
-      pgn = activeTopPickPGN;
-      topPick = { cursor: moves.length, totalPlies: fullHistory.length, pgnLength: pgn.length,
+    const snapshot = getReviewGame();
+    if (!snapshot.lineValid) { unsavedKeys.add(STORAGE_KEY_GAME); persistenceStatus(); return false; }
+    const pgn = snapshot.sourcePGN;
+    let topPick = null;
+    if (activeTopPickPGN && lastLoadedPGN === activeTopPickPGN && snapshot.sourceIsOriginal) {
+      topPick = { cursor: snapshot.cursor, totalPlies: snapshot.totalPly, pgnLength: pgn.length,
         source: game.header().ChessBestSource || '' };
     } else activeTopPickPGN = null;
+    const resume = { cursor: snapshot.cursor, totalPlies: snapshot.totalPly, pgnLength: pgn.length, fen: game.fen() };
     // setItem is atomic: refusal leaves the last complete PGN/cursor intact.
-    const saved = writeLocal(STORAGE_KEY_GAME, JSON.stringify({ schema: 'chessbest-game/1', pgn, topPick }));
+    const saved = writeLocal(STORAGE_KEY_GAME, JSON.stringify({ schema: 'chessbest-game/1', pgn, topPick, resume }));
     if (saved) { unsavedKeys.delete(STORAGE_KEY_TOP_PICK); persistenceStatus(); }
     return saved;
   }
@@ -1023,19 +1045,30 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const moves = fullHistory.map(move => ({ san: move.san, from: move.from, to: move.to,
       promotion: move.promotion || '' }));
     const replay = new Chess(startFen);
+    const cursorMoves = game.history();
+    let cursorFen = replay.fen();
     Object.entries(headers).forEach(([key, value]) => replay.header(key, value));
-    for (const move of moves) {
+    for (const [index, move] of moves.entries()) {
       if (!replay.move(move.san)) return { sourcePGN: '', headers, startFen, moves: [],
-        cursor: game.history().length, totalPly: 0, blocked: true };
+        cursor: game.history().length, totalPly: 0, lineValid: false, blocked: true };
+      if (index + 1 === cursorMoves.length) cursorFen = replay.fen();
     }
+    const lineValid = cursorMoves.length <= moves.length && cursorFen === game.fen() &&
+      cursorMoves.every((san, i) => san === moves[i].san);
     // Original PGN may contain annotations absent from the board's PGN. Check
     // the full line before attaching those annotations to a changed variation.
     let sourcePGN = replay.pgn(), sourceIsOriginal = false;
     if (lastLoadedPGN && lastLoadedPGN.length <= 2000000) {
       try {
-        const original = validateStudyPGN(lastLoadedPGN);
-        const line = original.history();
-        if (line.length === moves.length && line.every((san, i) => san === moves[i].san)) {
+        // The immutable source is parsed once, not on every navigation/save.
+        if (reviewSourceCache?.pgn !== lastLoadedPGN) {
+          const original = validateStudyPGN(lastLoadedPGN);
+          reviewSourceCache = { pgn: lastLoadedPGN, startFen: original.header().FEN || new Chess().fen(),
+            line: original.history() };
+        }
+        const line = reviewSourceCache.line;
+        if (reviewSourceCache.startFen === startFen &&
+            line.length === moves.length && line.every((san, i) => san === moves[i].san)) {
           sourcePGN = lastLoadedPGN;
           sourceIsOriginal = true;
         }
@@ -1053,7 +1086,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     }
     return { sourcePGN, sourceIsOriginal, lineChanged: !!lastLoadedPGN && !sourceIsOriginal,
       headers, startFen, moves, cursor: game.history().length,
-      totalPly: moves.length, blocked: !!playState.active || replayRunning };
+      totalPly: moves.length, lineValid, blocked: !!playState.active || replayRunning };
   }
   function navigateReview(ply) {
     if (!Number.isSafeInteger(ply) || ply < 0 || ply > fullHistory.length)
@@ -1115,6 +1148,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const clean = window.ChessStudy.pathPGN(Chess, parsed, node.id);
       const probe = new Chess(parsed.rootFen);
       if (clean && !probe.load_pgn(clean)) throw new Error('Invalid PGN main line.');
+      // pathPGN describes a selected Study path with an unfinished result.
+      // Here the entire source main line was validated, so retain its result.
+      probe.header('Result', parsed.result);
       return probe;
     }
     const probe = new Chess();
@@ -1850,7 +1886,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   /* ------------------------------------------------------------------
      11. UPDATE BOARD
   ------------------------------------------------------------------*/
-	function updateBoard(reset) {
+	function updateBoard(reset, save = true) {
 	  // — Cancel any pending draw banner if we move again —
 	  if (window.drawBannerTimeoutId) {
 		clearTimeout(window.drawBannerTimeoutId);
@@ -1897,32 +1933,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 		  window._skipDivergedReset = false;
 		}
 
-	  persistGame();
-	  
-	  // ─── HISTORY-CLICK REBRANCH ───────────────────────────────────────────
-	  if (!reset && lastAction === 'history' && divergedIndex >= 0) {
-	    const clickedIndex = game.history().length - 1;
-	    if (clickedIndex < divergedIndex) {
-	      divergedIndex = clickedIndex;
-	      fullHistory = game.history({ verbose: true });
-	    }
-	  }
-	  // ────────────────────────────────────────────────────────────────────────
-
-    // ─── HISTORY-NAV RE-BRANCHING ───────────────────────────────
-    if (!reset && lastAction === 'history' && divergedIndex >= 0) {
-      const clickedIndex = game.history().length - 1;
-      // if user jumped back before the old branch point → start a new branch there
-      if (clickedIndex < divergedIndex) {
-        divergedIndex = clickedIndex;
-        fullHistory = game.history({ verbose: true });
-      }
-    }
-    // ───────────────────────────────────────────────────────────────
+    // Browsing history selects a cursor; only a played move replaces the line.
 
     // ─── Combined branching & history update ───
     if (!reset && lastAction === 'move') {
-      const cur = game.history().map(x => x.san);
+      const cur = game.history();
       const ref = fullHistory.map(x => x.san).slice(0, cur.length);
       // record the first branch point
       // if (JSON.stringify(cur) !== JSON.stringify(ref) && divergedIndex < 0) {
@@ -1937,6 +1952,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         branchIndex = -1;
       }
     }
+    // Capture after the newest move/branch has updated the complete line.
+    if (save) persistGame();
     // clear the action flag
     lastAction = null;
 
@@ -2868,13 +2885,11 @@ function jumpTo(i){
     persistSettings();
     window.ChessAnalysisControls?.syncLinkedDeep?.();positionEval.render();
   });
+  if (lastLoadedPGN) bookFlags = extractBookFlags(lastLoadedPGN);
+  // Do not overwrite a saved cursor with a transient end-of-line boot state.
+  updateBoard(true, restoreGameCursor === null);
+  if (restoreGameCursor !== null) jumpTo(restoreGameCursor - 1);
   if (restoreTopPickCursor !== null) {
-    lastLoadedPGN = activeTopPickPGN;
-    bookFlags = extractBookFlags(activeTopPickPGN);
-  }
-  updateBoard(true);
-  if (restoreTopPickCursor !== null) {
-    jumpTo(restoreTopPickCursor - 1);
     document.getElementById('gameTitle').textContent = chessBestTopPickTitle(
       game.header().ChessBestTitle, 'ChessBest Top Pick');
   }
