@@ -436,12 +436,18 @@
       if (!action || action.id === 'btnFormat') return;
       closeTools({ restoreFocus: false });
       root.requestAnimationFrame(() => {
-        if (document.querySelector('dialog[open], [aria-modal="true"]:not([style*="display:none"]):not([style*="display: none"])')) return;
+        if (document.querySelector('dialog[open]')) return;
+        const modal = [...document.querySelectorAll('[aria-modal="true"]:not(dialog)')].some(node =>
+          !node.closest('[hidden]') && getComputedStyle(node).display !== 'none' && node.getClientRects().length);
+        if (modal) return;
         const openPanel = document.querySelector('.workspace-drawer.open');
         const active = document.activeElement;
         const launcher = ['appMore', 'btnWorkspaceMore', 'btnLabTools', 'btnCloseLabTools'].includes(active?.id);
-        if (openPanel && (launcher || active === document.body || !active?.getClientRects().length))
-          openPanel.querySelector('button, input, select')?.focus({ preventScroll: true });
+        if (openPanel && (launcher || active === document.body || !active?.getClientRects().length)) {
+          const target = openPanel.id === 'settingsPanel' ? byId('btnCloseSettings') :
+            [...openPanel.querySelectorAll('button, input, select')].find(node => !node.disabled && !node.closest('[hidden], [inert]'));
+          if (!target?.disabled) target?.focus({ preventScroll: true });
+        }
         else if (!document.activeElement || !document.activeElement.getClientRects().length) byId('workspaceDisplay').focus({ preventScroll: true });
       });
     }, true);

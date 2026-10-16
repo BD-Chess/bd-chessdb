@@ -190,6 +190,21 @@ test('P3 preparing-only Deep Stop has no fictional elapsed search; late readines
   for(const c of x.calls)c.ready.resolve();await x.frame();assert(x.calls.every(c=>c.options===undefined&&c.destroyed));
   assert(x.snapshot().owners.every(o=>!o.running&&!o.following));
 });
+test('P3 Deep Stop retains the latest valid info from each child even inside a coalesced paint interval',async t=>{
+  const x=await integrated(t);await x.startDeep();
+  for(let depth=1;depth<=20;depth++)x.calls[0].options.onInfo({}, {fen:x.calls[0].options.fen,lines:[{depth,pv:['e2e4'],score:{type:'cp',root:depth,white:depth,bound:'exact'}}],nodes:depth,depth});
+  x.w.ChessLabHost.stopAnalysis();await x.frame();
+  assert.match(x.deep('lines').textContent,/Depth 20/,'Stop must retain controller info not just the previous UI paint');
+  assert.match(x.deep('lines').querySelector('.deep-engine-progress').textContent,/stopped/);
+});
+test('P3 actual Deep session retains earlier completed lines when a new search is stopped before its first info',async t=>{
+  const x=await integrated(t);await x.startDeep();
+  x.calls[0].search.resolve({fen:x.calls[0].options.fen,lines:[{depth:20,pv:['e2e4'],score:{type:'cp',root:20,white:20,bound:'exact'}}],depth:20,nodes:200});
+  for(const c of x.calls.slice(1))c.search.resolve({fen:c.options.fen,lines:[]});await x.frame();
+  assert.match(x.deep('lines').textContent,/Depth 20/);
+  x.deep('start').click();await x.frame();x.w.ChessLabHost.stopAnalysis();await x.frame();
+  assert.match(x.deep('lines').textContent,/Depth 20/,'preparing/empty stopped generation must not erase prior valid results');
+});
 test('P3 completed/failed children and armed-idle status are factual; reading/subscribing never launches work',async t=>{
   const x=await integrated(t);await x.startDeep();x.setFollow(true);x.deep('follow').checked=true;
   x.calls[0].search.reject(Error('fixture engine failed'));

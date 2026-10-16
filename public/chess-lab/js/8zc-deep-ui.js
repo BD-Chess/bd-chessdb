@@ -207,6 +207,15 @@
       });
     }
     function render(current, force, onUpdate) {
+      if(!hasLines(current)&&hasLines(result)&&resultRun!==run&&current.fen===result.fen){
+        // Loading/failed/empty stopped requests have no replacement lines.
+        // Keep the earlier receipt intact and label it as retained UI data.
+        onUpdate?.(current);notifyState({passive:true});
+        const errors=[current.error,...Object.values(current.children||{}).map(child=>child.error)].filter(Boolean);
+        const failed=errors.length||Object.values(current.children||{}).some(child=>child.status==='failed');
+        el('status').textContent=(current.stopped?'Stopped. ':errors.length?'Analysis failed: '+[...new Set(errors)].join('; ')+'. ':failed?'New search failed. ':'Preparing a new search. ')+'Previous results retained.';
+        return;
+      }
       result = current; resultRun = run;
       const signature = Object.entries(current.children || {}).map(([key, child]) => key + ':' + child.status).join('|');
       const now = Date.now();
@@ -397,7 +406,10 @@
     }
     function stopAnalysis(reason) {
       const wasRunning=!!engine?.isRunning?.(),ownsResult=result&&resultRun===run;
-      ++run;engine?.stop();
+      ++run;const final=engine?.stop();
+      // Session cancellation owns newer information than a throttled UI paint.
+      // Retain that exact snapshot locally; it is not a new evidence receipt.
+      if(final?.fen===pinned?.fen&&(hasLines(final)||!hasLines(result))){render(final,true);return wasRunning;}
       if(ownsResult){
         const active=status=>['loading','preparing','ready','queued','searching','running'].includes(status);
         let changed=wasRunning||active(result.status);
@@ -420,7 +432,8 @@
       manualStoppedFen = pinned?.fen || null;
       stopAnalysis('user-stop');
       el('start').disabled = !pinned; el('stop').disabled = true;
-      el('status').textContent = 'Stopped · Each move is off. Analyze position starts a new search.';
+      el('status').textContent = hasLines(result)?'Stopped · Retained results. Each move is off. Analyze position starts a new search.':
+        'Stopped · Each move is off. Analyze position starts a new search.';
       notifyState(); return true;
     }
     function deepenOrStop() {

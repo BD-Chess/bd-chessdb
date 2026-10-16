@@ -26,6 +26,19 @@ test('APP More to Settings keeps natural focus inside after the asynchronous Too
   }
 });
 
+test('APP Board to Settings waits for drawer visibility and ignores an inactive Study modal',async t=>{
+  const h=await boot(t,{skipReady:true,beforeInit(w){w.document.body.classList.add('app-mobile');w.history.replaceState(null,'','?view=app');}}),{w,el}=h;
+  await flush(w);await flush(w);
+  assert.equal(w.document.body.dataset.appView,'board');
+  const close=el('btnCloseSettings'),focus=close.focus.bind(close);
+  // A real Board view hides #controls until the Settings observer reveals it.
+  close.focus=options=>{if(w.document.body.classList.contains('workspace-settings-open'))focus(options);};
+  el('appMore').focus();el('appMore').click();el('btnSettings').click();await flush(w);await flush(w);
+  assert.equal(el('settingsPanel').contains(w.document.activeElement),true);
+  w.document.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await flush(w);
+  assert.equal(el('settingsPanel').classList.contains('open'),false);
+});
+
 test('Settings X, Escape and trigger toggle restore temporary input isolation without changing game/preferences', async t => {
   const h = await boot(t, { skipReady: true }), { w, el } = h;
   h.w.ChessLabHost.navigate({ moves: ['e2e4', 'e7e5', 'g1f3'] });

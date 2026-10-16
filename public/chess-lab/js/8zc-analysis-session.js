@@ -381,7 +381,9 @@
       for (const child of job.children) { if (!['complete','failed'].includes(child.status)) child.status='stopped'; child.engine?.destroy(); }
       for(const child of job.children)child.finishedMs??=now();
       lastActivity=activityFor(job);
-      job.resolve(snapshot(job));
+      const stopped=snapshot(job);
+      job.resolve(stopped);
+      return stopped;
     }
     function analyze(options = {}) {
       if (destroyed) return Promise.reject(new Error('Analysis session destroyed'));

@@ -47,7 +47,13 @@ test('Chromium natural Settings focus/Escape, modal priority, keyboard and respo
     for(const close of ['Escape','X','Escape']){
       if(spec.app)await page.locator('#appMore').click();
       await page.locator('#btnSettings').click();
-      await page.waitForFunction(()=>!document.querySelector('#labToolsDialog').open&&document.querySelector('#settingsPanel').contains(document.activeElement));
+      try { await page.waitForFunction(()=>!document.querySelector('#labToolsDialog').open&&document.querySelector('#settingsPanel').contains(document.activeElement)); }
+      catch(error){
+        records.push({...spec,case:'natural focus failure '+close,pass:false,dom:await page.evaluate(()=>({active:document.activeElement?.outerHTML,
+          view:document.body.dataset.appView,classes:document.body.className,settings:document.querySelector('#settingsPanel').className,tools:document.querySelector('#labToolsDialog').open,
+          modals:[...document.querySelectorAll('[aria-modal="true"]')].map(n=>({id:n.id,display:getComputedStyle(n).display,rects:n.getClientRects().length}))}))});
+        await page.screenshot({path:path.join(evidence,spec.label+'-focus-failure.png'),fullPage:true});throw error;
+      }
       const focused=await page.evaluate(()=>document.activeElement.id);
       if(close==='X')await page.locator('#settingTheme').check();
       const fen=await page.evaluate(()=>window.ChessLabHost.getContext().fen);
@@ -71,6 +77,11 @@ test('Chromium natural Settings focus/Escape, modal priority, keyboard and respo
 
 test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across views and stops from Settings', {timeout:150000},async t=>{
   const {page}=await open(t);await ready(page);
+  const pgnFile=path.join(tmp,'p3-desktop-ordinary.pgn');fs.writeFileSync(pgnFile,fixture);
+  await page.locator('#btnWorkspaceMore').click();const picker=page.waitForEvent('filechooser');await page.locator('#btnLoad').click();await(await picker).setFiles(pgnFile);
+  await page.waitForFunction(()=>window.ChessLabHost.getReviewGame().totalPly===3);
+  await page.locator('#first').click();await page.locator('#next').click();const saved=await retention(page);
+  assert.equal(saved.total,3);assert.equal(saved.cursor,1);
   await page.locator('button[data-desktop-view="deep"]').click();
   await page.locator('[data-deep="mode"]').selectOption('all');await page.locator('[data-deep="time"]').selectOption('10000');
   const threads=page.locator('[data-deep="threads"]');
@@ -103,7 +114,10 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
   await page.locator('button[data-desktop-view="deep"]').click();
   assert.deepEqual((await activity(page)).owners.find(o=>o.owner==='deep').children.map(c=>c.id),ids);
-  records.push({case:'real shipped All4 CPU1 selected 10000ms per family',initial,started,stopped,physicalDevice:false,pass:true});
+  assert.deepEqual(await retention(page),saved);await page.reload();await page.waitForFunction(()=>!!window.ChessLabHost);
+  assert.deepEqual(await retention(page),saved,'ordinary full line/cursor survives desktop P3 controls and reload');
+  assert((await activity(page)).owners.every(o=>!o.running&&!o.following));
+  records.push({case:'real shipped All4 CPU1 selected 10000ms per family plus desktop ordinary cursor1/P3/reload',initial,started,stopped,retention:saved,physicalDevice:false,pass:true});
 });
 
 test('Chromium APP Quick preparation Stop, natural focus, late loader, status layout and ordinary full-line cursor reload', {timeout:90000},async t=>{
@@ -135,7 +149,8 @@ test('Chromium APP Quick preparation Stop, natural focus, late loader, status la
   await page.waitForFunction(()=>document.querySelector('#settingsPanel').contains(document.activeElement));
   await page.locator('#settingTheme').check();
   await page.locator('[data-activity="stop"]').click();await page.evaluate(()=>window.__P3.release());
-  await page.waitForFunction(()=>window.__P3.calls.every(c=>c.destroyed&&!c.started));
+  await page.waitForFunction(()=>window.__P3.calls.every(c=>c.destroyed&&!c.started)&&document.querySelector('[data-activity="stop"]').disabled);
+  assert(await page.locator('#settingsPanel').evaluate(el=>el.contains(document.activeElement)),'completed Stop preserves Settings natural Escape focus');
   await page.screenshot({path:path.join(evidence,'app402-preparation-stop-settings.png'),fullPage:true});
   await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
   await page.locator('[data-app-tab="deep"]').click();await page.locator('[data-app-tab="moves"]').click();
