@@ -52,6 +52,7 @@ jobs:
           node --test \
             public/chess-lab/research/p1-evidence.test.cjs \
             public/chess-lab/research/p1-state.test.cjs \
+            public/chess-lab/research/full-game-resume.test.cjs \
             public/chess-lab/research/settings-workspace.test.cjs \
             public/chess-lab/research/p1-provenance.test.cjs \
             public/chess-lab/research/p1-pwa.test.cjs \
@@ -82,4 +83,17 @@ jobs:
         run: |
           python tools/build-chess-channel-pwas.py --check
           node tools/chess-versioning.mjs
+      - name: Real browser full-game resume and explicit PWA update
+        run: |
+          npm install --prefix "$RUNNER_TEMP/chess-browser-deps" --no-package-lock --ignore-scripts playwright@1.55.0
+          "$RUNNER_TEMP/chess-browser-deps/node_modules/.bin/playwright" install --with-deps chromium
+          NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
+            CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
+            node --test public/chess-lab/research/full-game-resume-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chess-full-game-resume-evidence
+          path: ${{ runner.temp }}/chess-resume-evidence
+          if-no-files-found: ignore
 
