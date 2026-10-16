@@ -409,7 +409,7 @@
       ++run;const final=engine?.stop();
       // Session cancellation owns newer information than a throttled UI paint.
       // Retain that exact snapshot locally; it is not a new evidence receipt.
-      if(final?.fen===pinned?.fen&&(hasLines(final)||!hasLines(result))){render(final,true);return wasRunning;}
+      if(final&&pinned&&final.fen===pinned.fen&&(hasLines(final)||!hasLines(result))){render(final,true);return wasRunning;}
       if(ownsResult){
         const active=status=>['loading','preparing','ready','queued','searching','running'].includes(status);
         let changed=wasRunning||active(result.status);
