@@ -1426,15 +1426,8 @@ body.light-theme #btnSim { background: #f1ead4 !important; color: #735500 !impor
 .workspace-analysis { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; min-width: 0; position: relative; }
 .workspace-analysis > .top-buttons { flex: 0 0 auto; margin: 0 0 8px; }
 .workspace-analysis > .top-buttons .btn { height: 44px; min-height: 44px; line-height: 1.15; }
-.workspace-display { flex: 1 1 0; min-height: 0; min-width: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #52675b #19221d; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-inset); padding: 8px; }
+.workspace-display { flex: 1 1 0; min-height: 0; min-width: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; scrollbar-gutter: stable; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-inset); padding: 8px; }
 .workspace-display:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: -2px; }
-#controls.is-automating .workspace-display { scrollbar-color: transparent transparent; }
-#controls.is-automating .workspace-display:hover, #controls.is-automating .workspace-display:focus-within { scrollbar-color: #52675b #19221d; }
-.workspace-display::-webkit-scrollbar { width: 8px; height: 8px; }
-.workspace-display::-webkit-scrollbar-track, .workspace-display::-webkit-scrollbar-corner { background: #19221d; border-radius: 8px; }
-.workspace-display::-webkit-scrollbar-thumb { background: #52675b; border: 2px solid #19221d; border-radius: 8px; }
-.workspace-display::-webkit-scrollbar-thumb:hover { background: #718b79; }
-#controls.is-automating .workspace-display:not(:hover):not(:focus-within)::-webkit-scrollbar-thumb { background: transparent; }
 .workspace-display #moves, .workspace-display #dccAnalysisPanel, body.light-theme .workspace-display #moves, body.light-theme .workspace-display #dccAnalysisPanel { height: auto !important; min-height: 0; max-height: none !important; overflow: visible !important; border: 0; border-radius: 0; padding: 0; margin: 0; background: transparent; }
 .workspace-display .sim-experiment-list { max-height: none; overflow: visible; }
 .workspace-bottom { padding-top: 12px; }
@@ -1741,3 +1734,36 @@ body.app-mobile .desktop-control-stack{display:none!important}
 /* RAM policy uses the same controls on desktop and mobile. */
 .engine-memory-choice{display:flex;align-items:center;gap:8px;min-height:44px}
 [data-engine-memory-status]{display:block;margin:8px 0;overflow-wrap:anywhere}
+
+/* Settings owns its workspace, while ordinary views and Library keep their dock.
+   Visibility preserves the underlying layout; the lifecycle also makes it inert. */
+body.workspace-settings-open #controls > :not(#settingsPanel),
+body.workspace-settings-open #controls > :not(#settingsPanel) * {
+  visibility: hidden !important; pointer-events: none !important;
+}
+body.workspace-settings-open #appTabs,
+body.workspace-settings-open #geminiPanel { visibility: hidden; pointer-events: none; }
+
+/* One native scrollbar skin for all application scroll owners, including lazy
+   dialogs. No extra scroll boxes and no changes to native select-menu popups. */
+body {
+  --ui-scroll-thumb: color-mix(in srgb, var(--ui-muted) 70%, var(--ui-inset));
+  --ui-scroll-track: var(--ui-inset);
+  --ui-scroll-hover: var(--ui-accent);
+}
+body, body * { scrollbar-width: thin; scrollbar-color: var(--ui-scroll-thumb) var(--ui-scroll-track); }
+body::-webkit-scrollbar, body *::-webkit-scrollbar { width: 10px; height: 10px; }
+body::-webkit-scrollbar-track, body *::-webkit-scrollbar-track,
+body::-webkit-scrollbar-corner, body *::-webkit-scrollbar-corner { background: var(--ui-scroll-track); }
+body::-webkit-scrollbar-thumb, body *::-webkit-scrollbar-thumb {
+  background: var(--ui-scroll-thumb); border: 2px solid var(--ui-scroll-track); border-radius: 8px;
+}
+body::-webkit-scrollbar-thumb:hover, body *::-webkit-scrollbar-thumb:hover { background: var(--ui-scroll-hover); }
+.workspace-drawer, .library-result-list, dialog, .chess-study-body, .gemini-messages { scrollbar-gutter: stable; }
+@media (forced-colors: active) {
+  body, body * { scrollbar-color: auto !important; scrollbar-width: auto !important; }
+  body::-webkit-scrollbar, body *::-webkit-scrollbar { width: auto; height: auto; }
+  body::-webkit-scrollbar-track, body *::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-corner, body *::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-thumb, body *::-webkit-scrollbar-thumb { background: revert; border-color: revert; }
+}
