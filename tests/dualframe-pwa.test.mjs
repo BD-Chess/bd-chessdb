@@ -17,7 +17,7 @@ const match=sw.match(/const ASSETS=(\[[\s\S]*?\]);/);
 assert.ok(match,'service worker must declare an explicit offline asset package');
 const assets=JSON.parse(match[1]),paths=new Set(assets.map(path=>path.replace(/^\.\//,'').split('?')[0]));
 test('manifest keeps DualFrame installed at the existing app path',async()=>{
- assert.equal(manifest.name,'DualFrame AI');assert.equal(manifest.id,'./');assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.display,'standalone');
+ assert.equal(manifest.name,'DualFrame Photos');assert.equal(manifest.id,'./');assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');assert.equal(manifest.display,'standalone');
  assert.match(html,/rel="manifest" href="\.\/manifest\.webmanifest"/);assert.match(html,/apple-touch-icon/);assert.match(html,/id="pwa-install"/);assert.match(html,/id="pwa-help"/);
  for(const icon of manifest.icons){const data=await bytes(icon.src.replace(/^\.\//,''));assert.equal(data.toString('ascii',1,4),'PNG');assert.equal(data.readUInt32BE(16),Number(icon.sizes.split('x')[0]));assert.equal(data.readUInt32BE(20),Number(icon.sizes.split('x')[1]));}
 });
@@ -33,7 +33,7 @@ test('content hash binds the complete offline package to release metadata and wo
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-15-r4.15');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-16-r4.16');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);
