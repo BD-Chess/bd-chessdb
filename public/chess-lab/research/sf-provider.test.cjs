@@ -6,6 +6,20 @@ const SIM = require('../js/8zc-sim-core.js');
 
 const fen = new Chess().fen();
 const line = (move, score, rank = 1) => ({ multipv: rank, depth: 8, score: { type: 'cp', root: score, bound: 'exact' }, pv: [move] });
+test('P3 Board/DCC activity separates preparation and measured search; Stop rejects late info/progress',async()=>{
+  let options,resolve,paints=0,infos=0;
+  const provider=SF.create({Chess,onActivity:()=>paints++,Engine:{create:()=>({destroy(){},analyze(opts){options=opts;return new Promise(r=>resolve=r);}})}});
+  const controller=new AbortController(),pending=provider.root(fen,{depth:12,signal:controller.signal,onInfo:()=>infos++});
+  assert.equal(provider.activitySnapshot().state,'preparing');assert.equal(provider.activitySnapshot().searchElapsedMs,null);
+  options.onProgress({phase:'downloading',loaded:5,total:10});
+  assert.equal(provider.activitySnapshot().progress.loaded,5);
+  options.onInfo({}, {children:{'sf-lite':{status:'loading',searchStartedMs:null}}});assert.equal(provider.activitySnapshot().state,'preparing');
+  options.onSearchStarted({});assert.equal(provider.activitySnapshot().state,'searching');assert(provider.activitySnapshot().searchElapsedMs>=0);
+  controller.abort();provider.destroy();const before=paints,received=infos;
+  options.onInfo({}, {lines:[line('e2e4',99)]});options.onProgress({loaded:10,total:10});
+  assert.equal(paints,before);assert.equal(infos,received);assert.equal(provider.activitySnapshot().state,'stopped');
+  resolve({lines:[line('e2e4',0)],completeMultiPV:true});await assert.rejects(pending,{name:'AbortError'});
+});
 function fixture({ incomplete = false, coverage = true, onSearch = () => {} } = {}) {
   const searches = [];
   const preparations = [];

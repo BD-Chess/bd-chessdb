@@ -383,7 +383,7 @@
     elements.dialog.close();
     restoreTools();
     if (!options || options.restoreFocus !== false) {
-      (focused ? elements.tools : byId('btnWorkspaceMore')).focus({ preventScroll: true });
+      (document.body.classList.contains('app-mobile') ? byId('appMore') : focused ? elements.tools : byId('btnWorkspaceMore')).focus({ preventScroll: true });
     }
     closing = false;
   }
@@ -436,9 +436,18 @@
       if (!action || action.id === 'btnFormat') return;
       closeTools({ restoreFocus: false });
       root.requestAnimationFrame(() => {
-        if (document.querySelector('dialog[open], [aria-modal="true"]:not([style*="display:none"]):not([style*="display: none"])')) return;
+        if (document.querySelector('dialog[open]')) return;
+        const modal = [...document.querySelectorAll('[aria-modal="true"]:not(dialog)')].some(node =>
+          !node.closest('[hidden]') && getComputedStyle(node).display !== 'none' && node.getClientRects().length);
+        if (modal) return;
         const openPanel = document.querySelector('.workspace-drawer.open');
-        if (openPanel) openPanel.querySelector('button, input, select')?.focus({ preventScroll: true });
+        const active = document.activeElement;
+        const launcher = ['appMore', 'btnWorkspaceMore', 'btnLabTools', 'btnCloseLabTools'].includes(active?.id);
+        if (openPanel && (launcher || active === document.body || !active?.getClientRects().length)) {
+          const target = openPanel.id === 'settingsPanel' ? byId('btnCloseSettings') :
+            [...openPanel.querySelectorAll('button, input, select')].find(node => !node.disabled && !node.closest('[hidden], [inert]'));
+          if (!target?.disabled) target?.focus({ preventScroll: true });
+        }
         else if (!document.activeElement || !document.activeElement.getClientRects().length) byId('workspaceDisplay').focus({ preventScroll: true });
       });
     }, true);

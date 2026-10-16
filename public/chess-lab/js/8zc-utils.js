@@ -716,6 +716,46 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const requestPending = new Map();
   const simRequests = new Set();
   let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
+  let analysisActivity = null, activityPositionKey = null, probeActivity = null, probeSerial = 0, interactiveStopped = false;
+  const canAnalyzeInteractive = () => !document.hidden && !offlineEvidence && showEval && !simRunning && !replayRunning && !playState.assistanceLocked;
+  const refreshAnalysisActivity = () => analysisActivity?.refresh();
+  function stopInteractiveProbe() {
+    const job = probeActivity;
+    if (!job?.running || localController !== job.controller) return;
+    job.running = false;
+    job.controller.abort(); job.provider.destroy();
+    job.last = job.provider.activitySnapshot?.() || {state:'stopped',mode:job.mode};
+    localController = null; localProvider = null;
+    refreshAnalysisActivity();
+  }
+  function registerInteractiveProbe(provider, controller, fen, mode) {
+    const job = {provider,controller,fen,mode,id:'board-dcc-'+(++probeSerial),positionKey:activityPositionKey,running:true,last:null};
+    probeActivity = job; refreshAnalysisActivity();
+    return () => {
+      if(probeActivity!==job)return;
+      job.running=false;job.last=provider.activitySnapshot?.()||{state:controller.signal.aborted?'stopped':'complete',mode};
+      refreshAnalysisActivity();
+    };
+  }
+  function interactiveAnalysisSnapshot() {
+    const owners=[engineCards?.activitySnapshot?.(),deepUI?.activitySnapshot?.()].filter(Boolean);
+    if(probeActivity){
+      const job=probeActivity, child=job.running?job.provider.activitySnapshot?.():job.last;
+      const running=job.running&&localController===job.controller&&!job.controller.signal.aborted;
+      owners.push({owner:'probe',following:false,running,
+        children:[{...(child||{mode:job.mode,state:running?'preparing':'stopped'}),id:job.id,positionKey:job.positionKey}]});
+    }
+    const active=owners.filter(owner=>owner.running||owner.following||owner.pending);
+    return {display:settings.analysisSource==='cdb'?'CDB':window.ChessEngineRegistry?.label(settings.analysisSource)||settings.analysisSource,
+      positionKey:activityPositionKey,owners:active.length?active:owners};
+  }
+  function stopInteractiveAnalysis() {
+    interactiveStopped=true;
+    // These controllers own interactive work only. Do not call workspace.pause,
+    // the global session owner, Sim/replay cancellation or game actor teardown.
+    engineCards?.stopAll('shared-stop');deepUI?.stop();stopInteractiveProbe();
+    refreshAnalysisActivity();
+  }
   const cardMode = source => source==='BER'?'berserk':source==='RLE'?'reckless':source==='LC0'?'lc0':source==='CDB'?'cdb':settings.sfCardMode;
   function linkedDCCMode(receipt) {
     if (!receipt || receipt.fen && receipt.fen !== game.fen()) return null;
@@ -789,6 +829,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const cdb = settings.cdbEnabled === false ? {moves:[]} : await cachedFetchChessDB(fen);
       if (stale()) return null;
       if (selected === 'sf-lite' || !cdb.moves.length) {
+        if (interactiveStopped) return null;
         const local = await runLocalSF(fen, { dcc: true, cancelled: stale });
         return stale() ? null : local.analysis;
       }
@@ -943,8 +984,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     if (localController) localController.abort();
     if (localProvider) localProvider.destroy();
     const controller = new AbortController();
-    const provider = SF.create({ Chess, Engine: window.ChessAnalysisSession ? { create: config => window.ChessAnalysisSession.create({ ...config, analysisMode: 'sf-lite' }) } : window.ChessDeepEngine, DCC });
+    const provider = SF.create({ Chess, Engine: window.ChessAnalysisSession ? { create: config => window.ChessAnalysisSession.create({ ...config, analysisMode: 'sf-lite' }) } : window.ChessDeepEngine, DCC, onActivity:refreshAnalysisActivity });
     localController = controller; localProvider = provider;
+    const finishActivity = !simRunning&&!replayRunning ? registerInteractiveProbe(provider,controller,fen,'sf-lite') : null;
     try {
       if (cancelled()) controller.abort();
       const root = await provider.root(fen, { nodes, depth, signal: controller.signal, onInfo });
@@ -959,6 +1001,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     } finally {
       if (localController === controller) { localController = null; localProvider = null; }
       provider.destroy();
+      finishActivity?.();
     }
   }
   async function fetchPV(fen, options = {}) {
@@ -1103,6 +1146,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function pauseLab(reason) {
     if (playState.assistanceLocked) throw new Error('Analysis tools are unavailable in this live game.');
     const deepPanelOnly = reason === 'deep-panel';
+    if (deepPanelOnly) return;
     if(!deepPanelOnly)engineCards?.stopAll();
     if (reason === 'deep-analysis') {
       engineCards?.stopAll();
@@ -1897,7 +1941,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
 		}
 	  }
 
-	  const evalContext=JSON.stringify([game.fen(),game.header().FEN||new Chess().fen(),game.history({verbose:true}).map(normalizeUci)]);
+      const activityHistory={startFen:game.header().FEN||new Chess().fen(),moves:game.history({verbose:true}).map(normalizeUci)};
+      activityPositionKey=JSON.stringify([game.fen(),activityHistory]);
+      refreshAnalysisActivity();
+      const evalContext=JSON.stringify([game.fen(),activityHistory.startFen,activityHistory.moves]);
       const positionChanged=evalContext!==evalHistoryFingerprint;
       if(positionChanged){positionEval.clearLocalSources?.(game.fen());positionEval.clearDCC?.(game.fen());evalHistoryFingerprint=evalContext;}
 	  engineCards?.positionChanged();
@@ -2620,6 +2667,8 @@ function jumpTo(i){
   function publishEngineSnapshot(snapshot,search={}) {
     const fen=snapshot.fen;
     if(game.fen()!==fen||offlineEvidence||simRunning||replayRunning||playState.assistanceLocked)return;
+    const history=search.history||snapshot.positionHistory||snapshot.limits?.history;
+    if(history && JSON.stringify([fen,history])!==activityPositionKey)return;
     // Publish the independent scores together, then repaint the six badges once.
     positionEval.batch(() => {
     for(const [mode,child]of Object.entries(snapshot.children||{[snapshot.mode]:snapshot})){
@@ -2642,7 +2691,7 @@ function jumpTo(i){
         showAnalysisCandidates(moves,role,{receipt:{engineName:name}});
       }
       // Displaying a retained result after a variant toggle must not start DCC probes.
-      if(search.displayOnly||['reckless','lc0'].includes(mode)||search.streaming&&Object.keys(snapshot.children||{}).length>1)continue;
+      if(interactiveStopped||engineCards?.isAllRunning()||deepUI?.isRunning?.()||search.displayOnly||['reckless','lc0'].includes(mode)||search.streaming&&Object.keys(snapshot.children||{}).length>1)continue;
       if(Object.keys(snapshot.children||{}).length>1&&selectedSource!==mode)continue;
       const fallbackDCC=!sourceAnalyses.CDB?.snapshot?.allMoves?.length;
       // Reuse a valid CDB decision instead of launching local DCC probes.
@@ -2652,9 +2701,10 @@ function jumpTo(i){
       if(!done||snapshot.stopped||child.stopped||dccEngineJobs.has(jobKey))continue;
       dccEngineJobs.add(jobKey);if(dccEngineJobs.size>100)dccEngineJobs.delete(dccEngineJobs.values().next().value);
       const generation=analysisGeneration,epoch=activityEpoch;
-      const current=()=>settings.analysisSource===selectedSource&&(selectedSource===mode||!sourceAnalyses.CDB?.snapshot?.allMoves?.length)&&game.fen()===fen&&generation===analysisGeneration&&epoch===activityEpoch&&showEval;
+      const current=()=>!interactiveStopped&&settings.analysisSource===selectedSource&&(selectedSource===mode||!sourceAnalyses.CDB?.snapshot?.allMoves?.length)&&game.fen()===fen&&generation===analysisGeneration&&epoch===activityEpoch&&showEval;
       const controller=new AbortController();localController?.abort();localProvider?.destroy();localController=controller;
-      const provider=SF.create({Chess,Engine:window.ChessAnalysisSession.backendFor(mode,Chess),DCC,multiPV:Math.max(1,moves.length)});localProvider=provider;
+      const provider=SF.create({Chess,Engine:window.ChessAnalysisSession.backendFor(mode,Chess),DCC,multiPV:Math.max(1,moves.length),mode,onActivity:refreshAnalysisActivity});localProvider=provider;
+      const finishActivity=registerInteractiveProbe(provider,controller,fen,mode);
       Object.assign(provider.ledger,{rootNodes:child.nodes||0,rootDepth:child.linesDepth||child.depth||null,
         rootElapsedMs:child.searchElapsedMs||child.elapsedMs||0});
       const root={moves,complete:!!child.completeMultiPV&&!child.stopped&&moves.every(m=>m.bound==='exact'),
@@ -2664,12 +2714,12 @@ function jumpTo(i){
         Object.assign(analysis.receipt,{provider:role,engineName:name,engineId:child.engine?.id||mode,engineMode:mode,rootNodes:child.nodes||0});
         return runDCCLookahead(moves,fen,analysis);
       }).catch(error=>{if(error.name!=='AbortError'&&current())positionEval.updateDCC(fen,null,name,'unavailable');})
-        .finally(()=>{provider.destroy();if(localProvider===provider)localProvider=null;if(localController===controller)localController=null;});
+        .finally(()=>{provider.destroy();finishActivity();if(localProvider===provider)localProvider=null;if(localController===controller)localController=null;});
     }
     });
   }
   function beginDeepAnalysis(search = {}) {
-    deepAnalysisFen=game.fen();sfWorking=false;syncSFAnalysisControl();
+    interactiveStopped=false;stopInteractiveProbe();deepAnalysisFen=search.fen||game.fen();sfWorking=false;syncSFAnalysisControl();
     return snapshot=>{engineCards?.ingest(snapshot);publishEngineSnapshot(snapshot,{...search,streaming:true});};
   }
   engineCards=window.ChessEngineCards.create({Chess,
@@ -2678,13 +2728,15 @@ function jumpTo(i){
     getContext:()=>({fen:game.fen(),positionHistory:{startFen:game.header().FEN||new Chess().fen(),
       moves:game.history({verbose:true}).map(normalizeUci)},settings,
       canAnalyze:!document.hidden&&!offlineEvidence&&showEval&&!simRunning&&!replayRunning&&!playState.assistanceLocked}),
-    beforeStart:()=>{deepUI?.stop?.();localController?.abort();localProvider?.destroy();sfWorking=false;},
+    beforeStart:()=>{interactiveStopped=false;deepUI?.stop?.();stopInteractiveProbe();localController?.abort();localProvider?.destroy();sfWorking=false;},
+    beforeFollow:()=>{interactiveStopped=false;deepUI?.stop?.();stopInteractiveProbe();},
     // Queued mobile cards start later than beforeStart. Retire any intervening
     // local DCC probe before allocating their heavy worker; keep DCC policy intact.
     beforeRun:()=>{localController?.abort();localProvider?.destroy();localController=null;localProvider=null;},
     canRetainPrepared:()=>!localProvider&&!localController,
     onResult:publishEngineSnapshot,
     onState:()=>{
+      refreshAnalysisActivity();
       positionEval.render();
       const follow=document.getElementById('analysisAllMoves');
       if(follow)follow.checked=!!engineCards?.isFollowing();
@@ -2695,7 +2747,8 @@ function jumpTo(i){
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
-  const labHost = { Chess, mount: document.body, getContext: getLabContext,
+  const labHost = { Chess, mount: document.body, getContext: getLabContext, canAnalyze:canAnalyzeInteractive,
+    getAnalysisActivity:interactiveAnalysisSnapshot,stopAnalysis:stopInteractiveAnalysis,
     saveBeforeUpdate: () => {
       const gameSaved = persistGame(), settingsSaved = persistSettings();
       for (const [key, pending] of [['study', studyUI?.getPending()], ['evidence', researchUI?.store.status().unsaved]])
@@ -2727,13 +2780,12 @@ function jumpTo(i){
     onRestore: restoreEvidence, resumeLive: resumeLiveEvidence };
   studyUI = window.ChessStudyUI?.create(labHost) || null;
   function syncDeepAnalysisState(state = {}) {
-    const releasedFen = !state.following ? deepAnalysisFen : null;
-    if (!state.following) {deepAnalysisFen = null;if(releasedFen){localController?.abort();localProvider?.destroy();localProvider=null;}}
+    deepAnalysisFen=state.running||state.following?state.fen:null;
     syncSFAnalysisControl();
-    if (!state.passive && releasedFen === game.fen() && showEval && !simRunning && !replayRunning && !playState.assistanceLocked)
-      setTimeout(fetchAnnotations, 0);
+    refreshAnalysisActivity();
   }
   deepUI = window.ChessDeepUI?.create({ ...labHost, onSearchStart: beginDeepAnalysis,
+    onFollowEnable:()=>{interactiveStopped=false;engineCards?.stopAll('takeover');stopInteractiveProbe();},
     onStateChange: syncDeepAnalysisState,
     onClose: () => syncDeepAnalysisState({ following: false }) }) || null;
   researchUI = window.ChessResearchUI?.create(labHost) || null;
@@ -2743,6 +2795,8 @@ function jumpTo(i){
   document.addEventListener('chess:pause-request', () => pauseLab());
   // Explicit board-state integration for extension panels; no engine commands are exposed to Gemini.
   window.ChessLabHost = labHost;
+  analysisActivity=window.ChessAnalysisActivity?.create({getSnapshot:interactiveAnalysisSnapshot,stop:stopInteractiveAnalysis})||null;
+  window.ChessAnalysisSession?.subscribeSettings?.(refreshAnalysisActivity);
   window.ChessGemini.create({ currentFen: () => game.fen(), snapshot: () => {
     const fen = game.fen(), analysisSources = currentSourceAnalyses();
     const config = DCC.config({ ...settings, dccNoDeadline: simRunning });

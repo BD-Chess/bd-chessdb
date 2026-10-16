@@ -263,3 +263,8 @@ body.app-mobile.app-preview-desktop .app-preview-width{min-width:0}
 body.app-mobile.workspace-settings-open { --app-nav-reserve: 0px; }
 body.app-mobile.workspace-settings-open #controls { display: flex !important; min-height: 0 !important; }
 body.app-mobile.workspace-settings-open #board-container { display: none !important; }
+
+/* Shared analysis is in normal flow below the header, never above a modal. */
+body.app-mobile .app-mobile-header + .analysis-activity { position: sticky; top: 56px; z-index: 499; box-sizing: border-box; width: min(100%, 430px); margin: 0 auto; border-radius: 0; }
+body.app-mobile #controls, body.app-mobile.light-theme #controls { height: calc(100dvh - 56px - var(--app-nav-reserve) - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height) - var(--analysis-activity-height, 0px) - var(--app-preview-safe-top, env(safe-area-inset-top, 0px)) - var(--app-preview-safe-bottom, env(safe-area-inset-bottom, 0px))); }
+body.app-mobile.app-preview-desktop #controls, body.app-mobile.app-preview-desktop.light-theme #controls { height: calc(806px - 56px - var(--app-nav-reserve) - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height) - var(--analysis-activity-height, 0px)); }
