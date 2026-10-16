@@ -33,7 +33,9 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
       fs.copyFileSync(path.join(base, asset), dest);
     }
   }
-  fs.appendFileSync(path.join(staged, 'public/chess-lab/index.html'), '\n<!-- Local acceptance: synthetic following release. -->\n');
+  const nextHTML = path.join(staged, 'public/chess-lab/index.html');
+  fs.writeFileSync(nextHTML, fs.readFileSync(nextHTML, 'utf8').replace('</head>',
+    '<!-- Local acceptance: synthetic following release. -->\n</head>'));
   execFileSync('python3', [path.join(staged, 'tools/build-chess-channel-pwas.py')]);
   const originalRelease = JSON.parse(fs.readFileSync(path.join(repo, 'public/chess-lab/release.json'))).version;
   const nextRelease = JSON.parse(fs.readFileSync(path.join(staged, 'public/chess-lab/release.json'))).version;
@@ -53,8 +55,15 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  let context;
-  t.after(async () => { await context?.close(); await new Promise(resolve => server.close(resolve)); fs.rmSync(tmp, { recursive: true, force: true }); });
+  let context, completed = false;
+  const errors = [], results = [];
+  t.after(async () => {
+    if (!completed) {
+      fs.writeFileSync(path.join(evidence, 'browser-failure.json'), JSON.stringify({ results, errors }, null, 2));
+      await context?.pages()[0]?.screenshot({ path: path.join(evidence, 'failure.png'), timeout: 5000 }).catch(() => {});
+    }
+    await context?.close(); await new Promise(resolve => server.close(resolve)); fs.rmSync(tmp, { recursive: true, force: true });
+  });
   const profile = path.join(tmp, 'profile');
   const open = async () => {
     context = await chromium.launchPersistentContext(profile, { headless: true, viewport: { width: 1440, height: 1000 } });
@@ -65,7 +74,6 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
     await page.waitForFunction(() => !!window.ChessLabHost);
     return page;
   };
-  const errors = [], results = [];
   let page = await open();
   const snapshot = () => page.evaluate(k => {
     const h = window.ChessLabHost, r = h.getReviewGame(), c = h.getContext();
@@ -123,4 +131,5 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
   fs.writeFileSync(path.join(evidence, 'browser-acceptance.json'), JSON.stringify({
     schema: 'chessbest-full-game-browser-qa/1', originalRelease, nextRelease,
     fixtureOnly: true, physicalDevice: false, results, errors }, null, 2) + '\n');
+  completed = true;
 });
