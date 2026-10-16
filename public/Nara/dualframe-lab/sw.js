@@ -1,6 +1,6 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
 const BUILD_LABEL='2026-10-16-r4.18';
-const PACKAGE_SHA='58dfd576195b8c2fdf6bc558c226f8e66ae1b22b5286787adbb3b17e5c14560e';
+const PACKAGE_SHA='f047045b49c4c0a7dc75c84e81a75e80ff984cd40404ed4c747a1e8b98e68a6e';
 const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.17","./app.mjs?v=3.0-r4.18","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.15","./api-client.mjs?v=3.0-r4.11","./core.mjs?v=3.0-r4.11","./store.mjs?v=3.0-r4.11","./gallery-order.mjs?v=3.0-r4.17","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4.11","./models.mjs?v=3.0-r4.11","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4.11","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.17","./archive-backup.mjs?v=3.0-r4.14","./dfc-reader.mjs?v=3.0-r4.18","./dfc-model.mjs?v=3.0-r4.18","./dfc.css?v=3.0-r4.18","./pair.schema.json","./release.json","./enhancement-client.mjs?v=3.0-r4.11","./enhancement-settings.mjs?v=3.0-r4.11","./enhancement-backup.mjs?v=3.0-r4.11","./account-login.html","./account-login.mjs","./vendor/netlify-identity-2.0.0.mjs"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';
