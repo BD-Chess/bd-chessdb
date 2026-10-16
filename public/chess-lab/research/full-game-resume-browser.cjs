@@ -67,6 +67,7 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
   const profile = path.join(tmp, 'profile');
   const open = async () => {
     context = await chromium.launchPersistentContext(profile, { headless: true, viewport: { width: 1440, height: 1000 } });
+    context.setDefaultTimeout(10000);
     await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
     const page = context.pages()[0] || await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
@@ -114,7 +115,7 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
   await page.goto(origin + '/chess-lab/?view=app');
   await page.waitForFunction(() => !!window.ChessLabHost && document.body.classList.contains('app-mobile'));
   check(await snapshot(), beforeUpdate, 'APP uses same complete game/cursor namespace');
-  await page.locator('[data-app-tab="moves"]').click();
+  await page.locator('[data-app-tab="board"]').click();
   await page.locator('#last').click(); assert.equal((await snapshot()).cursor, 3);
   await page.locator('#first').click(); await page.locator('#next').click();
   await page.reload(); await page.waitForFunction(() => !!window.ChessLabHost);
