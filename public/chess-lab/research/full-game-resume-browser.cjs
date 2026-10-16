@@ -122,8 +122,9 @@ test('Chromium file import, four cursors, explicit worker update, close/reopen a
   check(await snapshot(), beforeUpdate, 'APP ordinary reload at cursor 1');
   await page.locator('#appMore').click(); await page.locator('#btnSettings').click();
   assert.equal(await page.locator('#desktopNavRow').isVisible(), false);
-  await page.keyboard.press('Escape');
-  assert.equal(await page.locator('#desktopNavRow').isVisible(), true);
+  await page.locator('#btnCloseSettings').press('Escape');
+  await page.locator('#settingsPanel').waitFor({ state: 'hidden' });
+  await page.locator('#desktopNavRow').waitFor({ state: 'visible' });
   await page.locator('#appGames').click(); await page.locator('[data-app-tab="deep"]').click();
   assert.equal(await page.locator('#popularGamesPanel').isVisible(), false);
   assert.equal(await page.locator('#deepAnalysisPanel').isVisible(), true);
