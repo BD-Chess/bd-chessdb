@@ -49,6 +49,7 @@ test('Chromium natural Settings focus/Escape, modal priority, keyboard and respo
       await page.locator('#btnSettings').click();
       await page.waitForFunction(()=>!document.querySelector('#labToolsDialog').open&&document.querySelector('#settingsPanel').contains(document.activeElement));
       const focused=await page.evaluate(()=>document.activeElement.id);
+      if(close==='X')await page.locator('#settingTheme').check();
       const fen=await page.evaluate(()=>window.ChessLabHost.getContext().fen);
       await page.keyboard.press('ArrowLeft');assert.equal(await page.evaluate(()=>window.ChessLabHost.getContext().fen),fen);
       if(close==='X')await page.locator('#btnCloseSettings').click();else await page.keyboard.press('Escape');
@@ -59,7 +60,7 @@ test('Chromium natural Settings focus/Escape, modal priority, keyboard and respo
     // Native top-layer Escape closes its dialog without a background Settings handler.
     if(spec.app)await page.locator('#appMore').click();else await page.locator('#btnWorkspaceMore').click();
     await page.keyboard.press('Escape');await page.locator('#labToolsDialog').waitFor({state:'hidden'});
-    const nav=spec.app?'[data-app-tab="deep"]':'[data-desktop-view="deep"]';
+    const nav=spec.app?'[data-app-tab="deep"]':'button[data-desktop-view="deep"]';
     if(spec.app)await page.locator('#appGames').click();else await page.locator('#btnGames').click();
     await page.locator(nav).click();await page.locator('#deepAnalysisPanel').waitFor({state:'visible'});
     const deepBounds=await page.locator(nav).boundingBox();assert(deepBounds&&deepBounds.width>0&&deepBounds.height>=40);
@@ -70,16 +71,18 @@ test('Chromium natural Settings focus/Escape, modal priority, keyboard and respo
 
 test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across views and stops from Settings', {timeout:150000},async t=>{
   const {page}=await open(t);await ready(page);
-  await page.locator('[data-desktop-view="deep"]').click();
+  await page.locator('button[data-desktop-view="deep"]').click();
   await page.locator('[data-deep="mode"]').selectOption('all');await page.locator('[data-deep="time"]').selectOption('10000');
-  await page.locator('[data-deep="threads"]').selectOption('1');
+  const threads=page.locator('[data-deep="threads"]');
+  if(await threads.isEnabled())await threads.selectOption('1');
+  assert.equal(await threads.inputValue(),'1','CPU1 remains truthful even on a locked single-thread host');
   assert.equal(await page.locator('[data-deep="follow"]').isChecked(),false);
   await page.locator('[data-deep="follow"]').check();await page.locator('[data-deep="start"]').click();
   await page.waitForFunction(()=>window.ChessLabHost.getAnalysisActivity().owners.some(o=>o.owner==='deep'&&o.children.length===4));
   const initial=(await activity(page)).owners.find(o=>o.owner==='deep'),ids=initial.children.map(c=>c.id);
   assert(initial.children.every(c=>c.budget.movetime===10000));
   for(const view of ['moves','dcc','review','library','deep']){
-    if(view==='library')await page.locator('#btnGames').click();else await page.locator('[data-desktop-view="'+view+'"]').click();
+    if(view==='library')await page.locator('#btnGames').click();else await page.locator('button[data-desktop-view="'+view+'"]').click();
     const s=await activity(page),owner=s.owners.find(o=>o.owner==='deep');assert.deepEqual(owner.children.map(c=>c.id),ids,view);
     assert.equal(s.display,'CDB');assert.equal(await page.locator('#analysisActivity').isVisible(),true,view);
   }
@@ -87,7 +90,7 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   const started=(await activity(page)).owners.find(o=>o.owner==='deep');
   assert(started.children.every(c=>c.state!=='failed'),JSON.stringify(started));
   await page.waitForFunction(()=>{const o=window.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep');return o?.children.every(c=>c.state==='complete'||c.searchElapsedMs>=9000);},{},{timeout:30000});
-  await page.locator('[data-desktop-view="moves"]').click();
+  await page.locator('button[data-desktop-view="moves"]').click();
   await page.locator('#analysisActivity details').evaluate(el=>el.open=true);
   await page.screenshot({path:path.join(evidence,'real-all-four-running-status.png'),fullPage:true});
   await page.locator('#btnSettings').click();
@@ -98,7 +101,7 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   const stopped=await activity(page);assert.equal(await page.locator('[data-deep="follow"]').isChecked(),false);
   await page.screenshot({path:path.join(evidence,'real-all-four-settings-stopped.png'),fullPage:true});
   await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
-  await page.locator('[data-desktop-view="deep"]').click();
+  await page.locator('button[data-desktop-view="deep"]').click();
   assert.deepEqual((await activity(page)).owners.find(o=>o.owner==='deep').children.map(c=>c.id),ids);
   records.push({case:'real shipped All4 CPU1 selected 10000ms per family',initial,started,stopped,physicalDevice:false,pass:true});
 });
@@ -121,8 +124,16 @@ test('Chromium APP Quick preparation Stop, natural focus, late loader, status la
     await page.locator('[data-app-tab="'+view+'"]').click();assert.deepEqual((await activity(page)).owners.find(o=>o.owner==='cards').children.map(c=>c.id),ids);
     const a=await page.locator('[data-activity="stop"]').boundingBox(),tabs=await page.locator('#appTabs').boundingBox();assert(a&&a.height>=44&&a.y+a.height<=tabs.y,'Stop never overlaps bottom navigation');
   }
+  for(const size of [{width:740,height:402},{width:402,height:874}]){
+    await page.setViewportSize(size);await page.locator('[data-app-tab="moves"]').click();
+    const stop=await page.locator('[data-activity="stop"]').boundingBox(),nav=await page.locator('#appTabs').boundingBox();
+    assert(stop&&stop.height>=44&&stop.y+stop.height<=nav.y,'active Stop stays clear of landscape/portrait navigation');
+    await page.screenshot({path:path.join(evidence,'app-active-'+size.width+'x'+size.height+'.png'),fullPage:true});
+    records.push({case:'active APP responsive layout',viewport:size,stop,nav,emulation:true,pass:true});
+  }
   await page.locator('#appGames').click();await page.locator('#appMore').click();await page.locator('#btnSettings').click();
   await page.waitForFunction(()=>document.querySelector('#settingsPanel').contains(document.activeElement));
+  await page.locator('#settingTheme').check();
   await page.locator('[data-activity="stop"]').click();await page.evaluate(()=>window.__P3.release());
   await page.waitForFunction(()=>window.__P3.calls.every(c=>c.destroyed&&!c.started));
   await page.screenshot({path:path.join(evidence,'app402-preparation-stop-settings.png'),fullPage:true});

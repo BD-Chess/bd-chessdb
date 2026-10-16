@@ -42,7 +42,17 @@
       const l=lex[doc.documentElement.lang==='sl'?'sl':'en'];
       const owners=(s.owners||[]).filter(o=>o.running||o.following||o.children?.length);
       const active=owners.some(o=>o.running||o.following||o.pending);
-      row.hidden=!owners.length;
+      const hiding=!owners.length;
+      // Disabling the focused Stop button otherwise drops native browser focus
+      // to body, losing Settings' own Escape handler. Move only our retiring
+      // focus, without interrupting a user who has already moved elsewhere.
+      if(row.contains(doc.activeElement)&&(hiding||!active&&doc.activeElement===el('stop'))){
+        const target=!hiding?row.querySelector('summary'):row.closest('#settingsPanel')?byId('btnCloseSettings'):
+          row.closest('dialog')?byId('btnCloseLabTools'):doc.body.classList.contains('app-mobile')?
+            byId('appTabs')?.querySelector('[aria-current="page"]'):byId('desktopViewTabs')?.querySelector('[aria-selected="true"]');
+        target?.focus({preventScroll:true});
+      }
+      row.hidden=hiding;
       el('stop').disabled=!active;el('stop').title=l.scope;el('stop').setAttribute('aria-label',l.stop);text(el('stop'),l.stop);
       const ownerNames=owners.map(o=>l[o.owner]||o.owner);
       text(el('title'),l.display+': '+s.display+' · '+(ownerNames.join(' / ')||l.idle));
@@ -56,7 +66,7 @@
           let progress='';
           if(Number.isFinite(child.progress?.loaded))progress=' · '+(child.progress.loaded/1048576).toFixed(1)+(child.progress.total?' / '+(child.progress.total/1048576).toFixed(1):'')+' MiB';
           brief.push(label+' '+status);
-          details.push(label+' · '+status+' · '+location+(clock?' · '+clock:'')+progress+(child.error?' · '+child.error:''));
+          details.push(label+' · '+status+' · '+location+(clock?' · '+clock:'')+progress+(child.error?' · '+child.error:'')+(child.stopReason?' · '+child.stopReason:''));
         }
         if(owner.pending)brief.push(l.pending);
       }

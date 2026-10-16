@@ -71,7 +71,7 @@ async function integrated(t,{app=false,hold=false}={}){
   }});
   const {w,el}=h;await tick();await new Promise(r=>w.requestAnimationFrame(r));
   const frame=async()=>{await tick();await new Promise(r=>w.requestAnimationFrame(r));};
-  const view=name=>w.document.querySelector(app?'[data-app-tab="'+name+'"]':'[data-desktop-view="'+name+'"]')?.click();
+  const view=name=>w.document.querySelector(app?'[data-app-tab="'+name+'"]':'button[data-desktop-view="'+name+'"]')?.click();
   const deep=name=>w.document.querySelector('[data-deep="'+name+'"]');
   const snapshot=()=>w.ChessLabHost.getAnalysisActivity();
   const stop=()=>w.document.querySelector('[data-activity="stop"]').click();
@@ -153,6 +153,25 @@ test('P3 Quick→Deep→Quick atomically retires the other follow owner; Stop th
   x.w.ChessLabHost.navigate({moves:['e2e4']});x.w.ChessLabHost.navigate({moves:['e2e4','e7e5']});x.view('deep');await wait(160);
   assert.equal(x.calls.length,count);assert.equal(x.el('analysisAllMoves').checked,false);assert.equal(x.deep('follow').checked,false);
   x.deep('start').click();await x.frame();assert.equal(x.calls.length,count+4);assert.equal(x.deep('follow').checked,false);
+});
+
+test('P3 disabling focused shared Stop keeps useful focus inside Settings so natural Escape still closes it',async t=>{
+  const x=await integrated(t,{app:true,hold:true}),{w,el}=x;
+  el('btnAnalyzeAll').click();await x.frame();el('appMore').click();el('btnSettings').click();await x.frame();
+  const stop=w.document.querySelector('[data-activity="stop"]');stop.focus();stop.click();await x.frame();
+  assert.equal(stop.disabled,true);assert.notEqual(w.document.activeElement,stop);assert(el('settingsPanel').contains(w.document.activeElement));
+  w.document.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await x.frame();
+  assert.equal(el('settingsPanel').classList.contains('open'),false);assert.equal(el('appTabs').hasAttribute('inert'),false);
+});
+
+test('P3 Deep hidden/manual Stop stays stopped on foreground and navigation, with explicit Analyze still reachable',async t=>{
+  const x=await integrated(t);await x.startDeep();x.setFollow(true);
+  Object.defineProperty(x.w.document,'hidden',{value:true,configurable:true});x.w.document.dispatchEvent(new x.w.Event('visibilitychange'));
+  assert(x.calls.every(c=>c.destroyed));x.w.ChessLabHost.stopAnalysis();
+  Object.defineProperty(x.w.document,'hidden',{value:false,configurable:true});x.w.document.dispatchEvent(new x.w.Event('visibilitychange'));
+  x.w.ChessLabHost.navigate({moves:['e2e4']});x.view('moves');x.view('deep');await wait(150);
+  assert.equal(x.calls.length,4);assert.equal(x.deep('follow').checked,false);assert.equal(x.deep('start').disabled,false);
+  x.deep('start').click();await x.frame();assert.equal(x.calls.length,8);assert.equal(x.deep('follow').checked,false);
 });
 test('P3 a Deep follow burst starts only the latest root/history and old callbacks cannot publish',async t=>{
   const x=await integrated(t);await x.startDeep();x.setFollow(true);const old=x.calls.slice();

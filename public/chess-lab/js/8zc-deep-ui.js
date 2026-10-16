@@ -534,9 +534,14 @@
       trigger.removeAttribute('aria-haspopup'); trigger.setAttribute('aria-controls', panel.id); trigger.setAttribute('aria-expanded', 'false');
       trigger.addEventListener('click', toggle);
     }
-    const pageHidden = () => { if(doc.hidden) { cancelFollow(); stopAnalysis('page-hidden'); notifyState({passive:true}); } };
+    const pauseHidden = () => {
+      cancelFollow();stopAnalysis('page-hidden');
+      el('start').disabled=!pinned;el('stop').disabled=!followActive;
+      notifyState({passive:true});
+    };
+    const pageHidden = () => { if(doc.hidden)pauseHidden(); };
     doc.addEventListener('visibilitychange',pageHidden);
-    const pageExit = () => { cancelFollow();stopAnalysis('page-hidden');notifyState({passive:true}); };
+    const pageExit = pauseHidden;
     root.addEventListener('pagehide',pageExit);
     return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
       activitySnapshot,
