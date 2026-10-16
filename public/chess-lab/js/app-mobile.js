@@ -462,7 +462,7 @@
     // Drawers belong to #controls. Reveal that area before the original action runs.
     byId('labToolsDialog').addEventListener('click', event => {
       const id = event.target.closest('button')?.id;
-      if (id === 'btnGames' || id === 'btnSettings') setView('moves');
+      if (id === 'btnGames') setView('moves');
       if (id === 'btnNew') root.setTimeout(() => setView('board'), 0);
       if (id === 'btnDeepAnalysis') root.setTimeout(() => setView('deep'), 0);
       if (id === 'btnViewToggle') root.setTimeout(() => setView('dcc'), 0);

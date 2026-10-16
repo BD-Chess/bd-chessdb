@@ -35,12 +35,140 @@
   const desktopScroll = { moves: 0, review: 0, deep: 0, dcc: 0, library: 0 };
   let desktopView = 'moves', desktopSyncing = false;
 
+  function initSettingsWorkspace() {
+    const panel = byId('settingsPanel');
+    if (!panel || !root.MutationObserver) return;
+    let saved = null;
+    const sync = () => {
+      const open = panel.classList.contains('open');
+      if (open === !!saved) return;
+      if (open) {
+        const scrollOwners = [byId('workspaceDisplay'), byId('popularGamesPanel'),
+          document.querySelector('.library-result-list'), byId('gameReviewPanel')].filter(Boolean);
+        const background = [...elements.controls.children].filter(node => node !== panel);
+        for (const id of ['appTabs', 'geminiPanel']) if (byId(id)) background.push(byId(id));
+        saved = {
+          view: document.body.dataset.appView || document.body.dataset.desktopView,
+          scroll: scrollOwners.map(node => [node, node.scrollTop, node.scrollLeft]),
+          inert: background.map(node => [node, node.getAttribute('inert')])
+        };
+        for (const [node] of saved.inert) node.setAttribute('inert', '');
+        document.body.classList.add('workspace-settings-open');
+      } else {
+        const previous = saved;
+        saved = null;
+        document.body.classList.remove('workspace-settings-open');
+        for (const [node, inert] of previous.inert) {
+          if (inert === null) node.removeAttribute('inert'); else node.setAttribute('inert', inert);
+        }
+        const restore = () => {
+          if (saved) return;
+          if (previous.view === (document.body.dataset.appView || document.body.dataset.desktopView)) {
+            for (const [node, top, left] of previous.scroll) { node.scrollTop = top; node.scrollLeft = left; }
+          }
+          const active = document.activeElement;
+          if (active === document.body || panel.contains(active) || !active?.getClientRects().length) {
+            const trigger = byId(document.body.classList.contains('app-mobile') ? 'appMore' : 'btnSettings');
+            const target = trigger?.getClientRects().length ? trigger : elements.tools;
+            target?.focus({ preventScroll: true });
+          }
+        };
+        restore();
+        root.requestAnimationFrame?.(restore);
+      }
+    };
+    // Observe the existing lifecycle, including X, Escape, toggle and view exits.
+    // Inert is temporary: do not enable controls that were already disabled/hidden.
+    new MutationObserver(sync).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    panel.addEventListener('keydown', event => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) event.stopPropagation();
+    });
+    sync();
+  }
+
+  function initCustomModalIsolation() {
+    // Existing ARIA overlays keep their own rendering/close handlers. Native
+    // <dialog>s already own the browser top layer and need no replacement.
+    const modals = [];
+    let active = null, priorFocus = null, lastExternal = null, blocked = [];
+    const nativeModal = () => document.querySelector('dialog[open]');
+    const focusable = () => [...active.querySelectorAll('button, input, select, textarea, a[href], [tabindex]')]
+      .filter(node => !node.disabled && node.tabIndex >= 0 && node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden');
+    const focusFirst = () => (focusable()[0] || active).focus({ preventScroll: true });
+    const sync = () => {
+      const next = modals.filter(node => node.isConnected && !node.closest('[hidden]') && getComputedStyle(node).display !== 'none').at(-1) || null;
+      if (next === active) return;
+      const origin = priorFocus;
+      for (const [node, inert] of blocked) {
+        if (inert === null) node.removeAttribute('inert'); else node.setAttribute('inert', inert);
+      }
+      blocked = []; active = next;
+      if (!active) {
+        const useful = origin?.isConnected && origin.getClientRects().length && !origin.closest('[inert]') && getComputedStyle(origin).visibility !== 'hidden';
+        (useful ? origin : byId(document.body.classList.contains('app-mobile') ? 'appMore' : 'btnWorkspaceMore'))?.focus({ preventScroll: true });
+        return;
+      }
+      priorFocus = active.contains(document.activeElement) ? lastExternal : document.activeElement;
+      active.tabIndex = -1;
+      // APP preview nests the same controls in a frame. Isolate siblings along
+      // that path instead of making the frame (and the dialog) inert together.
+      for (let branch = active; branch && branch !== document.body; branch = branch.parentElement) {
+        for (const sibling of branch.parentElement.children) {
+          if (sibling === branch || sibling.tagName === 'DIALOG' || sibling.tagName === 'SCRIPT') continue;
+          blocked.push([sibling, sibling.getAttribute('inert')]); sibling.setAttribute('inert', '');
+        }
+      }
+      if (!active.contains(document.activeElement)) focusFirst();
+    };
+    const observer = new MutationObserver(sync);
+    const register = node => {
+      if (!node.matches?.('[aria-modal="true"]:not(dialog)') || modals.includes(node)) return;
+      modals.push(node);
+      observer.observe(node, { attributes: true, attributeFilter: ['style', 'hidden'] });
+      if (node.parentElement !== document.body) observer.observe(node.parentElement, { attributes: true, attributeFilter: ['style', 'hidden'] });
+    };
+    document.querySelectorAll('[aria-modal="true"]:not(dialog)').forEach(register);
+    // Study capacity/recovery overlays can be created lazily at the body root.
+    new MutationObserver(records => {
+      for (const record of records) for (const node of record.addedNodes) {
+        register(node); node.querySelectorAll?.('[aria-modal="true"]:not(dialog)').forEach(register);
+      }
+      sync();
+    }).observe(document.body, { childList: true });
+    document.addEventListener('focusin', event => {
+      if (active && !nativeModal() && !active.contains(event.target)) focusFirst();
+      else if (!active && !modals.some(node => node.contains(event.target))) lastExternal = event.target;
+    }, true);
+    document.addEventListener('keydown', event => {
+      if (!active || nativeModal() || event.defaultPrevented) return;
+      if (event.key === 'Escape' && ['simModal', 'replayModal'].includes(active.id)) {
+        event.preventDefault(); event.stopImmediatePropagation();
+        byId(active.id === 'simModal' ? 'simCancelBtn' : 'replayCancel')?.click();
+      } else if (event.key === 'Tab') {
+        const targets = focusable(), index = targets.indexOf(document.activeElement);
+        if (!targets.length || index < 0 || (event.shiftKey ? index === 0 : index === targets.length - 1)) {
+          event.preventDefault(); (event.shiftKey ? targets.at(-1) : targets[0])?.focus({ preventScroll: true });
+        }
+      }
+    }, true);
+    sync();
+  }
+
   function backingState() {
     return {
       dcc: byId('btnViewToggle')?.getAttribute('aria-pressed') === 'true',
       review: byId('btnGameReview')?.getAttribute('aria-expanded') === 'true',
       deep: byId('btnDeepAnalysis')?.getAttribute('aria-expanded') === 'true'
     };
+  }
+  function positionGemini() {
+    const panel = byId('geminiPanel');
+    if (!elements || !panel || panel.hidden || document.body.classList.contains('app-mobile')) return;
+    const dock = elements.bottom.getBoundingClientRect();
+    const above = Math.max(0, dock.top - 24), below = Math.max(0, root.innerHeight - dock.bottom - 24);
+    const useAbove = above >= below;
+    panel.style.bottom = `${useAbove ? Math.max(12, root.innerHeight - dock.top + 12) : 12}px`;
+    panel.style.height = `${Math.max(120, Math.min(650, useAbove ? above : below))}px`;
   }
   function paintDesktopView() {
     if (document.body.classList.contains('app-mobile')) return;
@@ -65,6 +193,7 @@
     if (display) display.setAttribute('aria-label', {
       moves: 'Moves', review: 'Game review', deep: 'Deep analysis', dcc: 'DCC analysis', library: 'Game library'
     }[desktopView]);
+    positionGemini();
   }
   function closeDesktopDrawers() {
     if (byId('settingsPanel')?.classList.contains('open')) byId('btnCloseSettings')?.click();
@@ -179,6 +308,7 @@
     return getSettings();
   }
   function measureTools() {
+    positionGemini();
     if (!elements || elements.dialog.open) return;
     const { content, bottom, controls } = elements;
     // Measure the same controls at the workspace width. This only runs on a
@@ -271,6 +401,11 @@
       primary.insertBefore(settingsAction, byId('btnWorkspaceMore'));
     }
     initDesktopViews();
+    initSettingsWorkspace();
+    initCustomModalIsolation();
+    if (byId('geminiPanel') && root.MutationObserver) new MutationObserver(positionGemini)
+      .observe(byId('geminiPanel'), { attributes: true, attributeFilter: ['hidden'] });
+    root.addEventListener('scroll', positionGemini, { passive: true });
     byId('btnWorkspaceMore').addEventListener('click', openTools);
     for (const [key, id] of Object.entries(fields)) {
       const field = byId(id);
