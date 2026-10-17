@@ -21,13 +21,14 @@ jobs:
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      AWS_LAMBDA_JS_RUNTIME: nodejs24.x
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Verify encrypted publication boundary
         run: |
           node --check public/BD/O/sef.js
@@ -48,7 +49,7 @@ jobs:
       - name: Check the production lease and publish through the established Netlify CLI
         run: |
           node scripts/sef-kindle-production-20261017.mjs --guard
-          npx --yes netlify-cli@26.2.0 deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "BD Sef encrypted Kindle $GITHUB_SHA baseline=$GITHUB_SHA" --json > sef-kindle-cli-deploy.json
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "BD Sef encrypted Kindle $GITHUB_SHA baseline=$GITHUB_SHA" --json > sef-kindle-cli-deploy.json
       - name: Verify the complete live file inventory and retained function settings
         run: node scripts/sef-kindle-production-20261017.mjs --verify
       - uses: actions/upload-artifact@v4
