@@ -46,6 +46,16 @@ for(const app of [false,true])test('P4 B '+(app?'APP':'desktop')+' SL→EN→SL 
     x.w.ChessLanguage.apply(lang);await x.settle();assert.equal(x.w.document.documentElement.lang,lang);
     assert.equal(x.el('btnAnalyzeAll').getAttribute('aria-label'),lang==='sl'?'Ustavi vse':'Stop all');
     assert.equal(x.w.document.querySelector('[data-analysis-help]').textContent,lang==='sl'?'Pomoč pri analizi':'Analysis help');
+    const publicAttributes=[
+      [x.el('analysisLink'),'aria-label','Link engine cards to displayed evaluation','Poveži kartice motorjev s prikazano oceno'],
+      [x.el('analysisLink').parentElement,'title','Link card selection to the evaluation bar, board scores and candidates','Poveži izbiro kartice s prikazom ocene in kandidatov na šahovnici'],
+      [x.el('allEvalBadges'),'aria-label','ChessDB, Stockfish, ChessDCC, Reckless, LC Zero and Berserk comparison','Primerjava ChessDB, Stockfish, ChessDCC, Reckless, LC Zero in Berserk'],
+      [x.el('btnAnalysisDeepen'),'title','Refresh ChessDB evaluations for the current position','Osveži ocene ChessDB za trenutni položaj'],
+      [x.el('analysisCpuThreads'),'title','CDB has no configurable local search threads. Your local CPU setting is retained.','CDB nima nastavljivih niti lokalnega iskanja. Lokalna nastavitev CPU je ohranjena.'],
+      [x.el('humanWhiteName'),'placeholder','Human White','Beli igralec'],
+      [x.el('humanBlackName'),'placeholder','Human Black','Črni igralec']
+    ];
+    for(const [el,attr,en,sl]of publicAttributes)assert.equal(el.getAttribute(attr),lang==='sl'?sl:en,'public '+attr+' follows locale');
     assert.equal(authored.textContent,'White · Stop · Analysis settings · e4 Nf3');assert.equal(raw.textContent,'Depth 24 · 3 lines · bestmove e2e4');
     assert.equal(JSON.stringify(x.w.ChessLabHost.getReviewGame()),before);assert.equal(JSON.stringify(x.w.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep').children.map(c=>c.id)),ids);assert.equal(x.calls.length,4);
   }
@@ -55,7 +65,11 @@ test('P4 B dynamic status, error prefixes and accessible attributes restore with
   const x=await fixture(t);x.w.ChessLanguage.apply('sl');await x.settle();
   const status=x.deep('status');status.textContent='Analysis failed: upstream fixture 0xC0FFEE';await x.settle();assert.equal(status.textContent,'Analiza ni uspela: upstream fixture 0xC0FFEE');
   x.deep('start').setAttribute('title','New search');await x.settle();assert.equal(x.deep('start').title,'Novo iskanje');
+  const move=x.w.document.createElement('span');move.setAttribute('aria-label','SF best move e2e4');x.el('workspaceDisplay').append(move);
+  const visual=x.w.document.createElement('span');visual.title='CDB equal · White perspective. Bar height is a visual scale, not a win probability.';x.el('workspaceDisplay').append(visual);await x.settle();
+  assert.equal(move.getAttribute('aria-label'),'SF najboljša poteza e2e4');assert.equal(visual.title,'CDB izenačeno · pogled belega. Višina pasu je prikazna lestvica, ne verjetnost zmage.');
   x.w.ChessLanguage.apply('en');await x.settle();assert.equal(status.textContent,'Analysis failed: upstream fixture 0xC0FFEE');assert.equal(x.deep('start').title,'New search');
+  assert.equal(move.getAttribute('aria-label'),'SF best move e2e4');assert.equal(visual.title,'CDB equal · White perspective. Bar height is a visual scale, not a win probability.');
 });
 test('P4 B the existing language preference loads and synchronizes without new stores or changing game state',async t=>{
   const x=await fixture(t,{storage:{'ChessBest:LAB:v2:language':'sl'}});await x.settle();assert.equal(x.w.document.documentElement.lang,'sl');

@@ -86,3 +86,9 @@ separate device evidence. This package does not promote CURRENT or activate P5,
 native/Cockpit/research work. Exact baseline/forward/reverse patches and source
 identities are retained in the scoped delivery evidence. Rollback must first
 compare affected current files to avoid overwriting subsequent work.
+
+SL/EN regression checks include the actual accessible Link/card-group names,
+refresh and disabled-CPU help, human-name placeholders and composed evaluation
+descriptions. The same checks run on desktop and APP during active work, alongside
+literal move/error-payload preservation. The shared language module uses the
+`20261017-p4-r2` source marker.
