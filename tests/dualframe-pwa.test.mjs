@@ -27,13 +27,13 @@ test('offline package includes the local module, style, schema and icon closure 
  const imports=[...app.matchAll(/from\s+['"]([^'"]+)['"]/g)].map(match=>match[1]).filter(path=>path.startsWith('./'));
  for(const path of imports)assert.ok(assets.includes(path),'missing module dependency '+path);
  assert.ok(assets.every(path=>!/^https?:/i.test(path)),'offline package must not fetch cross-origin files');
- assert.ok(sw.includes("url.origin!==BASE.origin")&&sw.includes("url.pathname.startsWith(BASE.pathname)"),'worker must stay inside this app and origin');
+ assert.ok(sw.includes("url.origin!==BASE.origin")&&sw.includes("url.pathname.startsWith(BASE.pathname)"),'worker must stay inside this app and origin');assert.match(sw,/protectedComicPath/,'protected comic must bypass the app-shell cache');
 });
 test('content hash binds the complete offline package to release metadata and worker cache identity',async()=>{
  const hash=createHash('sha256');
  for(const path of assets){const name=path.replace(/^\.\//,'').split('?')[0];if(name==='release.json')continue;const file=await bytes(name);const digest=createHash('sha256').update(file).digest('hex');hash.update(path).update('\0').update(digest).update('\n');}
  const expected=hash.digest('hex');
- assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-17-r4.20');
+ assert.equal(release.pwa.offline_package_sha256,expected);assert.equal(sw.match(/const PACKAGE_SHA='([a-f0-9]{64})'/)?.[1],expected);assert.equal(release.pwa.build_label,'2026-10-17-r4.21');
 });
 test('worker bypasses auth, cloud API and non-app origins and only activates after saved update',()=>{
  assert.match(sw,/request\.headers\.has\('authorization'\)/);assert.match(sw,/url\.pathname\.startsWith\('\/api\/df\/'\)/);assert.match(sw,/url\.origin!==BASE\.origin/);

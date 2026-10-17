@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sl">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#080d18">
+ <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+ <meta name="referrer" content="no-referrer">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+ <title>CMarvel 01 · Zasebni strip</title>
+ <style>
+ :root{color-scheme:dark;--bg:#080d18;--panel:#101a2a;--line:#30445e;--text:#f4f7ff;--muted:#adbed2;--cyan:#7ee4df;--gold:#ffd47a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+ *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at top,#19283d 0,var(--bg) 55%);color:var(--text)}body{min-height:100svh;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);font-size:17px}button,input,select{font:inherit}button,a,select{touch-action:manipulation}.top{max-width:1100px;margin:auto;min-height:58px;display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid #283b54}.top a{color:var(--cyan);text-decoration:none;font-weight:750}.top button,.toolbar button,.gate button{min-height:44px;padding:9px 14px;border:1px solid var(--line);border-radius:12px;background:#142337;color:var(--text);font-weight:750;cursor:pointer}.top button:hover,.toolbar button:hover,.gate button:hover{border-color:var(--cyan)}main{max-width:1100px;margin:0 auto}.gate{width:min(600px,100%);margin:clamp(30px,9vh,100px) auto;padding:clamp(22px,5vw,38px);border:1px solid #354a65;border-radius:24px;background:linear-gradient(145deg,#17263a,#0d1524);box-shadow:0 24px 70px #0007}.eyebrow{margin:0;color:var(--gold);font-size:.75rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.gate h1{font:500 clamp(2.4rem,10vw,4rem)/1 Georgia,serif;letter-spacing:-.04em;margin:12px 0}.gate p{color:var(--muted);line-height:1.55}.gate label{display:block;margin:22px 0 8px;font-weight:750}.gate input{display:block;width:100%;min-height:50px;padding:12px 14px;border:1px solid #526984;border-radius:12px;background:#070d17;color:#fff}.gate button{width:100%;margin-top:12px;background:#17343d;border-color:#447d82}.status{min-height:1.5em;color:#ffd4a3!important;font-size:.92rem}.privacy{font-size:.78rem!important}.reader{padding:10px 0 22px}.toolbar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:9px 0}.toolbar select{min-height:44px;max-width:115px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#111d2e;color:var(--text)}.toolbar button:disabled{opacity:.45}.position{min-width:86px;text-align:center;font-variant-numeric:tabular-nums;color:var(--muted);font-size:.88rem}.page-stage{height:min(68svh,760px);min-height:240px;max-width:100%;overflow:auto;overscroll-behavior:contain;display:flex;align-items:center;justify-content:center;border:1px solid #263951;border-radius:16px;background:#03070d;scrollbar-color:#526984 #08101a}.page-stage img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}.page-stage.zoomed{display:block;text-align:left}.page-stage.zoomed img{width:250%;max-width:none;max-height:none;height:auto}.hint{margin:10px auto 0;text-align:center;color:var(--muted);font-size:.83rem}.error{color:#ff9f9f!important}.reader[hidden],.gate[hidden]{display:none!important}
+ @media(min-width:760px){.page-stage{height:min(72svh,820px)}.page-stage.zoomed img{width:200%}}
+ @media(max-width:500px){body{padding-left:8px;padding-right:8px}.toolbar{gap:6px}.toolbar button{padding:8px 10px;font-size:.88rem}.position{min-width:66px}.page-stage{height:min(64svh,600px);min-height:220px}}
+ @media(prefers-reduced-motion:no-preference){button{transition:border-color .15s ease,background-color .15s ease}}
+ </style>
+ <script type="module" src="./reader.mjs"></script>
+</head>
+<body>
+ <header class="top"><a href="../index.html?product=cartoons">← Nazaj v galerijo stripov</a><button id="lock" type="button" hidden>Zakleni strip</button></header>
+ <main>
+  <section id="gate" class="gate" aria-labelledby="title">
+   <p class="eyebrow">DUALFRAME · ZASEBNO</p>
+   <h1 id="title">CMarvel 01</h1>
+   <p>Za branje vnesi geslo. Strani se prenesejo šifrirane in odklenejo samo v tem zavihku.</p>
+   <form id="gate-form" autocomplete="on">
+    <label for="passphrase">Geslo za strip</label>
+    <input id="passphrase" type="password" autocomplete="current-password" data-bd-pm-skip="1" maxlength="200" required>
+    <button id="unlock" type="submit">Odpri strip</button>
+   </form>
+   <p id="status" class="status" role="status" aria-live="polite"></p>
+   <p class="privacy">Geslo se ne pošlje na strežnik in se ne shrani v brskalnik.</p>
+  </section>
+  <section id="reader" class="reader" hidden aria-label="Bralnik CMarvel 01">
+   <div class="toolbar">
+    <button id="previous" type="button" aria-label="Prejšnja stran">←</button>
+    <span id="position" class="position" role="status" aria-live="polite"></span>
+    <select id="page-select" aria-label="Izberi stran"></select>
+    <button id="zoom" type="button">Povečaj</button>
+    <button id="next" type="button" aria-label="Naslednja stran">→</button>
+   </div>
+   <div id="page-stage" class="page-stage"><img id="comic-page" alt="" draggable="false"></div>
+   <p class="hint">Na telefonu uporabi »Povečaj« in povleci stran za ogled podrobnosti.</p>
+  </section>
+ </main>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import {archiveBackup,readArchiveBackup} from './archive-backup.mjs?v=3.0-r4.14';
-import {createCartoons} from './dfc-reader.mjs?v=3.0-r4.20';
+import {createCartoons} from './dfc-reader.mjs?v=3.0-r4.21';
 import * as API from './api-client.mjs?v=3.0-r4.11';
 import {verifyEnhancementBackup} from './enhancement-backup.mjs?v=3.0-r4.11';
 import {createEnhancementClient} from './enhancement-client.mjs?v=3.0-r4.11';
@@ -133,7 +133,7 @@ function button(text,fn,className='secondary'){const b=node('button',text,classN
 Object.assign(dictionary.en,{appTitle:'DualFrame Photos — Gallery · Create · Compare',brandHome:'DualFrame Photos home',productLabel:'DualFrame products',cartoonsSoon:'Coming soon'});
 Object.assign(dictionary.sl,{appTitle:'DualFrame Photos — Galerija · Ustvari · Primerjaj',brandHome:'DualFrame Photos · domov',productLabel:'Izdelki DualFrame',cartoonsSoon:'V pripravi'});
 function setLanguage(){document.documentElement.lang=language;document.title=t('appTitle');document.querySelector('.brand').setAttribute('aria-label',t('brandHome'));document.querySelector('.product-switch').setAttribute('aria-label',t('productLabel'));document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));$('language').textContent=language==='en'?'SL':'EN';$('prompt').placeholder=t('promptPlaceholder');$('workspace').setAttribute('aria-label',t('creationGallery'));$('comparison').setAttribute('aria-label',t('comparisonLab'));updateModelControls();render();renderReference();if(viewerPair)updateViewer();if(reviewState)renderReview();if($('pwa-status'))$('pwa-status').textContent=t(pwaStatusKey);if(pwaUpdateKey&&$('pwa-update-text'))$('pwa-update-text').textContent=t(pwaUpdateKey);if(syncPaused)$('sync-pause').textContent=t('syncResume');cartoons?.setShellLanguage(language);updateProductBrand();}
-function updateProductBrand(){const comic=activeProduct==='cartoons',brand=document.querySelector('.brand');brand.querySelector('.brand-ai').textContent=comic?'Cartoons':'Photos';brand.querySelector('.badge').textContent=comic?'DFC':'DFP';brand.setAttribute('aria-label',comic?'DualFrame Cartoons':t('brandHome'));document.title=comic?'DualFrame Cartoons — Illuminara':t('appTitle');}
+function updateProductBrand(){const comic=activeProduct==='cartoons',brand=document.querySelector('.brand');brand.querySelector('.brand-ai').textContent=comic?'Cartoons':'Photos';brand.querySelector('.badge').textContent=comic?'DFC':'DFP';brand.setAttribute('aria-label',comic?'DualFrame Cartoons':t('brandHome'));document.title=comic?'DualFrame Cartoons':t('appTitle');}
 function switchProduct(product){if(!['photos','cartoons'].includes(product)||activeProduct===product)return;if(viewerPair)closeViewer();activeProduct=product;document.body.dataset.product=product;$('cartoons-gallery').hidden=product!=='cartoons';for(const value of ['photos','cartoons']){$('product-'+value).setAttribute('aria-pressed',String(product===value));$('product-'+value).classList.toggle('active',product===value);}updateProductBrand();if(product==='cartoons')cartoons.activate();else {cartoons.deactivate();setLanguage();}}
 
 function pwaSetStatus(key){pwaStatusKey=key;const el=$('pwa-status');if(el)el.textContent=t(key);}
@@ -954,6 +954,7 @@ Object.assign(dictionary.sl,{localNotice:'Tukaj uvozi do 100 izvirnikov, tudi br
 cartoons=createCartoons({container:$('cartoons-gallery'),getLanguage:()=>language,onStoryLanguage:lang=>{if(language===lang)return;language=lang;try{localStorage.setItem('dualframe-language',language);}catch{}document.documentElement.lang=language;$('language').textContent=language==='en'?'SL':'EN';}});
 $('product-cartoons').addEventListener('click',()=>switchProduct('cartoons'));
 $('product-photos').addEventListener('click',()=>switchProduct('photos'));
+if(new URLSearchParams(location.search).get('product')==='cartoons')switchProduct('cartoons');
 // Public, read-only diagnostic surface: DFC content/state only, no owner data.
 window.DFCReader={getState:cartoons.getState,getEdition:cartoons.getEdition,getCacheStats:cartoons.getCacheStats};
 initPWA().catch(()=>pwaSetStatus('pwaUnavailable'));

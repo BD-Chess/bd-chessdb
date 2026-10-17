@@ -49,11 +49,28 @@ if(mode==='--guard'){
  const expectedRelease=JSON.parse(await readFile('public/Nara/dualframe-lab/release.json','utf8'));
  if(livePwaHash!==expectedRelease.pwa.offline_package_sha256)throw Error('LIVE_PWA_SOURCE_PACKAGE_MISMATCH');
  if(livePwaHash!==pwaRelease.pwa.offline_package_sha256||workerPackageSha!==livePwaHash){console.log(JSON.stringify({pwa_integrity_mismatch:{expected:pwaRelease.pwa.offline_package_sha256,actual:livePwaHash,worker:workerPackageSha,assets:pwaEvidence}}));throw Error('LIVE_PWA_PACKAGE_HASH_MISMATCH');}
+ const comicBase=pwaRoot+'cmarvel-01/',comicGate=await fetch(comicBase,{cache:'no-store'}),comicHtml=await comicGate.text();
+ if(!comicGate.ok||!comicHtml.includes('id="gate-form"')||!comicHtml.includes('noindex,nofollow,noarchive,nosnippet,noimageindex'))throw Error('LIVE_CMARVEL_GATE_MISSING');
+ if(!comicGate.headers.get('cache-control')?.includes('no-store')||!comicGate.headers.get('x-robots-tag')?.includes('noindex')||comicGate.headers.get('referrer-policy')!=='no-referrer')throw Error('LIVE_CMARVEL_HEADERS_MISSING');
+ if(pwaRelease.protected_comic?.manifest_sha256!==expectedRelease.protected_comic.manifest_sha256)throw Error('LIVE_CMARVEL_RELEASE_MISMATCH');
+ const comicManifestResponse=await fetch(comicBase+'manifest.json',{cache:'no-store'});if(!comicManifestResponse.ok)throw Error('LIVE_CMARVEL_MANIFEST_MISSING');
+ const comicManifestBytes=Buffer.from(await comicManifestResponse.arrayBuffer()),comicManifestSha=createHash('sha256').update(comicManifestBytes).digest('hex');
+ if(comicManifestSha!==expectedRelease.protected_comic.manifest_sha256)throw Error('LIVE_CMARVEL_MANIFEST_MISMATCH');
+ const comicManifest=JSON.parse(comicManifestBytes.toString('utf8'));
+ if(comicManifest.story_id!=='CMARVEL_01'||comicManifest.iterations!==600000||comicManifest.pages?.length!==11)throw Error('LIVE_CMARVEL_MANIFEST_INVALID');
+ for(const asset of comicManifest.pages){const response=await fetch(new URL(asset.file,comicBase),{cache:'no-store'});if(!response.ok)throw Error('LIVE_CMARVEL_CIPHERTEXT_MISSING');const bytes=Buffer.from(await response.arrayBuffer()),sha=createHash('sha256').update(bytes).digest('hex');if(bytes.length!==asset.cipher_bytes||sha!==asset.cipher_sha256)throw Error('LIVE_CMARVEL_CIPHERTEXT_MISMATCH');}
+ const directSource=await fetch(comicBase+'assets/CM_01.webp',{cache:'no-store'});if(directSource.status!==404)throw Error('LIVE_CMARVEL_PLAINTEXT_SOURCE_EXPOSED');
+ const liveSefConfigResponse=await fetch(base+'/BD/O/sef-extra.json',{cache:'no-store'});if(!liveSefConfigResponse.ok)throw Error('LIVE_CMARVEL_SEF_ENTRY_MISSING');
+ const liveSefConfig=await liveSefConfigResponse.json();if(liveSefConfig.release!=='20261017-cmarvel-v1'||liveSefConfig.data?.path!=='sef-extra-20261017-cmarvel-v1.enc.txt')throw Error('LIVE_CMARVEL_SEF_ENTRY_VERSION');
+ const liveSefCipherResponse=await fetch(base+'/BD/O/'+liveSefConfig.data.path,{cache:'no-store'});if(!liveSefCipherResponse.ok)throw Error('LIVE_CMARVEL_SEF_CIPHERTEXT_MISSING');
+ const liveSefCipher=Buffer.from(await liveSefCipherResponse.arrayBuffer());if(createHash('sha256').update(liveSefCipher).digest('hex')!==liveSefConfig.data.sha256)throw Error('LIVE_CMARVEL_SEF_CIPHERTEXT_MISMATCH');
+ const comicCheck={gate:'PASS',password_input:'client_only',encrypted_pages:comicManifest.pages.length,direct_plaintext_probe_status:directSource.status,sef_entry_release:liveSefConfig.release,manifest_sha256:comicManifestSha};
  const env=await api('accounts/'+current.account_id+'/env?site_id='+site);
  const names=['DF_PASSWORD_VERIFIER','DF_SESSION_SECRET','DF_OPENAI_API_KEY','DF_GEMINI_API_KEY','DF_XAI_API_KEY','DF_QWEN_API_KEY','DF_MINIMAX_API_KEY','DF_ZAI_API_KEY','DF_MISTRAL_API_KEY'];
  const configured=names.map(key=>({key,present:env.some(v=>v.key===key),secret:env.find(v=>v.key===key)?.is_secret===true,functions_scope:env.find(v=>v.key===key)?.scopes.includes('functions')===true}));
  const check={status:'PRODUCTION_VERIFIED',deploy_id:id,source_commit:process.env.GITHUB_SHA,baseline:(await readFile('.dualframe-baseline','utf8')).trim(),url:base+'/Nara/dualframe-lab/',api_version:capabilities.version,offline_package_sha256:livePwaHash,anonymous_library_status:anon.status,anonymous_enhance_status:enhanceAnon.status,anonymous_admin_status:adminAnon.status,account_identity_status:capabilities.account_identity,enhancement_status:capabilities.enhancement_policy||null,models:capabilities.models?.map(m=>({key:m.key,key_configured:m.key_configured,status:m.status})),credential_metadata:configured,configuration_storage:configured.every(v=>v.present)?'Netlify secret environment':'private-encrypted-netlify-vault',real_provider_calls:0,paid_image_spend:0};
  Object.assign(check,{final_page_url:page.url,pwa_asset_count:pwaAssets.length,pwa_assets:pwaEvidence,pwa_manifest_identity:{id:pwaManifest.id,start_url:pwaManifest.start_url,scope:pwaManifest.scope,orientation:pwaManifest.orientation}});
+ check.protected_comic=comicCheck;
  check.cartoons=await verifyDFC(base+'/nara/dualframe-lab/');
  await writeFile('dualframe-live-check.json',JSON.stringify(check,null,2)+'\n');console.log(JSON.stringify(check));
  if(!capabilities.auth_configured||capabilities.models.some(m=>!m.key_configured))throw Error('IMAGE_CREDENTIAL_CONFIGURATION_INCOMPLETE');
@@ -69,7 +86,7 @@ if(mode==='--guard'){
   archive.on('error',reject);extract.on('error',reject);archive.stdout.on('error',reject);extract.stdin.on('error',reject);archive.stdout.pipe(extract.stdin);archive.on('close',end);extract.on('close',end);
  });
  // Preserve the owner-authorized encrypted Sef correction on subsequent isolated releases.
- const paths=['public/BD/O/sef.js','public/BD/O/sef-kindle.json','public/BD/O/sef-kindle-20261017-r1.enc.txt','public/Nara/dualframe-lab','functions/lib/dualframe','functions/dualframe-api.mjs','functions/dualframe-auth.mjs','functions/dualframe-work-background.mjs','functions/package.json','functions/package-lock.json'];
+ const paths=['public/BD/O/sef.js','public/BD/O/sef-extra.json','public/BD/O/sef-extra-20261017-cmarvel-v1.enc.txt','public/BD/O/sef-kindle.json','public/BD/O/sef-kindle-20261017-r1.enc.txt','public/Nara/dualframe-lab','functions/lib/dualframe','functions/dualframe-api.mjs','functions/dualframe-auth.mjs','functions/dualframe-work-background.mjs','functions/package.json','functions/package-lock.json'];
  for(const path of paths)await cp(path,'.dualframe-prod/'+path,{recursive:true,force:true});
  const config=await readFile('.dualframe-prod/netlify.toml','utf8'),fragment=await readFile('netlify-dualframe.fragment.toml','utf8');await writeFile('.dualframe-prod/netlify.toml',config.includes('# DualFrame AI R&D')?config.replace(/\n# DualFrame AI R&D[\s\S]*?# END DualFrame AI R&D\n/,fragment):config+fragment);
  const digest=createHash('sha256').update(config).digest('hex');console.log(JSON.stringify({preserved_deploy:deploy.id,preserved_git_baseline:baseline,preserved_config_sha256:digest,overlay_paths:paths,real_provider_calls:0}));
