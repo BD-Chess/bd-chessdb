@@ -157,7 +157,7 @@ test('Chromium APP Quick preparation Stop, natural focus, late loader, status la
   await page.locator('[data-app-tab="deep"]').click();await page.locator('[data-app-tab="moves"]').click();
   assert.deepEqual(await retention(page),before);await page.reload();await page.waitForFunction(()=>!!window.ChessLabHost&&document.body.dataset.appView==='board');
   assert.deepEqual(await retention(page),before);assert.equal(await page.evaluate(()=>window.__P3.calls.length),0,'reload restores no live jobs');
-  await page.locator('[data-app-lang="sl"]').click();await page.locator('[data-app-lang="en"]').click();
+  await page.locator('.app-language [data-app-lang="sl"]').click();await page.locator('.app-language [data-app-lang="en"]').click();
   assert.equal(await page.locator('#analysisAllMoves').isChecked(),false);
   records.push({case:'APP402 controlled adapters: preparation Stop plus ordinary file import/cursor1/P3 view switching/reload',before,after:await retention(page),ids,serviceWorkers:'blocked only for controlled adapter case',physicalDevice:false,pass:true});
   assert.deepEqual(errors,[]);

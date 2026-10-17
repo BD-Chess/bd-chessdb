@@ -230,6 +230,6 @@ test('P3 status is quiet, preserves focused controls and history bytes, and uses
   for(let i=0;i<20;i++)x.calls[0].options.onInfo({}, {fen:x.calls[0].options.fen,lines:[],nodes:i});await x.frame();
   assert.equal(x.w.document.activeElement,selected);assert.equal(x.el('workspaceDisplay').scrollTop,111);assert.equal(x.w.localStorage.getItem('ChessBest:LAB:v2:game'),before);
   assert.equal(x.w.document.querySelector('[data-eval-source="SF"]').closest('[aria-live]'),null);assert.equal(x.el('analysisActivity'),null);
-  x.w.document.querySelector('[data-app-lang="sl"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Ustavi analizo');
-  x.w.document.querySelector('[data-app-lang="en"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Stop analysis');
+  x.w.document.querySelector('.app-language [data-app-lang="sl"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Ustavi analizo');
+  x.w.document.querySelector('.app-language [data-app-lang="en"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Stop analysis');
 });
