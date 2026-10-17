@@ -52,14 +52,14 @@ const publicBytes=async name=>{
 };
 const functionConfig=f=>{
  const cfg={};
- for(const [short,long] of [['dn','display_name'],['g','generator'],['bd','build_data'],['m','memory'],['p','priority'],['tr','traffic_rules']]){
+ for(const [short,long] of [['dn','display_name'],['g','generator'],['bd','build_data'],['p','priority'],['tr','traffic_rules']]){
   if(f[short]!==null&&f[short]!==undefined)cfg[long]=f[short];
  }
  if(f.ro)cfg.routes=f.ro.map(r=>Object.fromEntries(Object.entries({pattern:r.p,literal:r.l,expression:r.e,methods:r.m,prefer_static:r.ps}).filter(([,v])=>v!==null&&v!==undefined)));
  if(f.er)cfg.excluded_routes=f.er;
  return cfg;
 };
-const functionState=deploy=>(deploy.available_functions||[]).map(f=>({name:f.n,sha:f.d,runtime:f.r,mode:f.im,region:f.rg,...functionConfig(f)})).sort((a,b)=>a.name.localeCompare(b.name));
+const functionState=deploy=>(deploy.available_functions||[]).map(f=>({name:f.n,sha:f.d,runtime:f.r,mode:f.im,region:f.rg,memory:f.m,...functionConfig(f)})).sort((a,b)=>a.name.localeCompare(b.name));
 const waitFor=async(id,states)=>{
  for(let n=0;n<90;n++){
   const deploy=await api('deploys/'+id);
@@ -91,6 +91,7 @@ for(const name of names){
 }
 const functions=Object.fromEntries((before.available_functions||[]).map(f=>[f.n,f.d]));
 assert(Object.keys(functions).length===25,'UNEXPECTED_FUNCTION_INVENTORY');
+assert(before.available_functions.every(f=>f.m===1024),'UNREVIEWED_FUNCTION_MEMORY_OVERRIDE');
 const functions_config=Object.fromEntries(before.available_functions.map(f=>[f.n,functionConfig(f)]));
 // Preserve the site's existing region. A deploy's airport code is not a function-region override.
 assert.equal((before.functions_region_overrides||[]).length,0,'UNREVIEWED_FUNCTION_REGION_OVERRIDE');
