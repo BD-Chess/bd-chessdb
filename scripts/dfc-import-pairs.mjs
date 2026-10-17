@@ -20,13 +20,15 @@ export function readZip(bytes){
  }assert(at===end,'ZIP_DIRECTORY');return files;
 }
 const plain=s=>s.replace(/<[^>]*>/g,' ').replace(/&#x([a-f0-9]+);/gi,(_,n)=>String.fromCodePoint(parseInt(n,16))).replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
-export async function validateSVG(bytes,asset,records,language){
+export async function validatePassiveSVG(bytes,asset){
  assert(bytes.length<=2*1048576,'SVG_SIZE');const svg=bytes.toString('utf8'),withoutNamespace=svg.replace(/\sxmlns(?::[A-Za-z0-9_-]+)?=["']http:\/\/www\.w3\.org\/[^"']+["']/g,'');assert(!/<!DOCTYPE|<!ENTITY|<\s*(script|foreignObject|image|use|a|iframe|animate\w*|set)\b|\bon\w+\s*=|(?:href|xlink:href)\s*=|@import|javascript:|https?:|file:/i.test(withoutNamespace),'SVG_ACTIVE_CONTENT');
  // Only self-contained fonts and fragment paint references; no external I/O.
  for(const match of svg.matchAll(/url\(\s*['"]?([^)'"\s]+)/gi))assert(/^#[A-Za-z0-9_-]+$/.test(match[1])||/^data:(?:font\/|application\/font-)/.test(match[1]),'SVG_EXTERNAL_RESOURCE');
  const view=svg.match(/\bviewBox\s*=\s*["']([^"']+)["']/i)?.[1]?.trim().split(/[ ,]+/).map(Number);assert(view?.length===4&&view[0]===0&&view[1]===0&&view[2]===asset.width_px&&view[3]===asset.height_px,'SVG_VIEWBOX');
- const words=[...svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text\s*>/gi)].map(m=>plain(m[1])).join(' ');assert(words===records.map(r=>r[language].replace(/\s+/g,' ').trim()).join(' '),'SVG_EXACT_TEXT');
  const m=await sharp(bytes,{limitInputPixels:24*1024*1024}).metadata();assert(m.width===asset.width_px&&m.height===asset.height_px,'SVG_DIMENSIONS');await sharp(bytes,{limitInputPixels:24*1024*1024}).resize({width:64}).png().toBuffer();return true;
+}
+export async function validateSVG(bytes,asset,records,language){
+ await validatePassiveSVG(bytes,asset);const words=[...bytes.toString('utf8').matchAll(/<text\b[^>]*>([\s\S]*?)<\/text\s*>/gi)].map(m=>plain(m[1])).join(' ');assert(words===records.map(r=>r[language].replace(/\s+/g,' ').trim()).join(' '),'SVG_EXACT_TEXT');return true;
 }
 export async function validatePairImport({catalog,catalogBytes,partsByDrive,edition,loadPart=readFile,allowFixtures=false}){
  required(catalog,['schema','version','story_id','source_h1_release_sha256','overview_catalog_sha256','dialogue_file','dialogue_sha256','panel_count','pair_count','artwork_composition_count','panels','delivery_parts','package_manifest'],'CATALOG_FIELDS');

@@ -51,7 +51,7 @@ test('AES-GCM accepts valid ciphertext and rejects a wrong derived key',async()=
 test('comic path is excluded from the offline app cache and header stays on current public Nara route',()=>{
  assert.match(sw,/cmarvel-01/);assert.match(sw,/request\.mode==='navigate'/);
  assert.match(sw,/cmarvel-01\/\*|cmarvel-01/);
- assert.equal(release.pwa.build_label,'2026-10-17-r4.21');assert.equal(release.release_revision,29);
+ assert.equal(release.pwa.build_label,'2026-10-17-r4.22');assert.equal(release.release_revision,30);
  assert.match(sefExtraText,/20261017-cmarvel-v1/);
 });
 
