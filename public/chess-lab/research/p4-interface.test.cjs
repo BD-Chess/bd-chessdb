@@ -17,6 +17,7 @@ async function fixture(t,{app=false,storage={}}={}){
 test('P4 B compact Deep summary retains explicit expansion and does not launch work on view/collapse',async t=>{
   const x=await fixture(t);x.view('deep');await x.settle();
   const conf=x.deep('configuration');assert.equal(conf.open,false);assert.match(x.deep('configuration-summary').textContent,/SF Lite.*CPU 1.*Depth.*3 lines.*All root moves/);
+  for(const lang of ['sl','en','sl','en']){x.w.ChessLanguage.apply(lang);await x.settle();assert.equal(x.deep('status').textContent,lang==='sl'?'Analiziraj položaj začne novo iskanje. Vsaka poteza je izklopljena.':'Analyze position starts a new search. Each move is off.');assert.equal(x.calls.length,0);}
   conf.open=true;x.view('moves');x.view('deep');await x.settle();assert.equal(conf.open,true);assert.equal(x.calls.length,0);
   x.w.ChessAnalysisSession.configure({analysisMode:'lc0',deepTimeMs:0,analysisTimeMs:10000});await x.settle();assert.match(x.deep('configuration-summary').textContent,/LC0 10 s/,'neural time fallback is an actual time limit, not fictional depth or visits');
   x.w.ChessAnalysisSession.configure({analysisMode:'all',deepTimeMs:10000});await x.settle();assert.match(x.deep('configuration-summary').textContent,/All Engines.*10 s \/ engine/);
@@ -67,9 +68,13 @@ test('P4 B dynamic status, error prefixes and accessible attributes restore with
   x.deep('start').setAttribute('title','New search');await x.settle();assert.equal(x.deep('start').title,'Novo iskanje');
   const move=x.w.document.createElement('span');move.setAttribute('aria-label','SF best move e2e4');x.el('workspaceDisplay').append(move);
   const visual=x.w.document.createElement('span');visual.title='CDB equal · White perspective. Bar height is a visual scale, not a win probability.';x.el('workspaceDisplay').append(visual);await x.settle();
+  const coverage=x.w.document.createElement('span');coverage.setAttribute('aria-label','7/7 measured candidates');coverage.title='CDB · e7e5: raw 0 cp; complete DCC; mover perspective';coverage.textContent='DCC choice e5 · unknown receipt 0xC0FFEE · 70 probes';x.el('workspaceDisplay').append(coverage);
+  const offline=x.w.document.createElement('span');offline.textContent='LAB · Offline ready';x.el('workspaceDisplay').append(offline);await x.settle();
+  assert.equal(coverage.getAttribute('aria-label'),'7/7 izmerjenih kandidatov');assert.equal(coverage.title,'CDB · e7e5: izvirno 0 cp; popoln DCC; pogled strani na potezi');assert.equal(coverage.textContent,'Izbira DCC e5 · unknown receipt 0xC0FFEE · 70 pregledov');assert.equal(offline.textContent,'LAB · Pripravljeno brez povezave');
   assert.equal(move.getAttribute('aria-label'),'SF najboljša poteza e2e4');assert.equal(visual.title,'CDB izenačeno · pogled belega. Višina pasu je prikazna lestvica, ne verjetnost zmage.');
   x.w.ChessLanguage.apply('en');await x.settle();assert.equal(status.textContent,'Analysis failed: upstream fixture 0xC0FFEE');assert.equal(x.deep('start').title,'New search');
   assert.equal(move.getAttribute('aria-label'),'SF best move e2e4');assert.equal(visual.title,'CDB equal · White perspective. Bar height is a visual scale, not a win probability.');
+  assert.equal(coverage.getAttribute('aria-label'),'7/7 measured candidates');assert.equal(coverage.title,'CDB · e7e5: raw 0 cp; complete DCC; mover perspective');assert.equal(coverage.textContent,'DCC choice e5 · unknown receipt 0xC0FFEE · 70 probes');assert.equal(offline.textContent,'LAB · Offline ready');
 });
 test('P4 B the existing language preference loads and synchronizes without new stores or changing game state',async t=>{
   const x=await fixture(t,{storage:{'ChessBest:LAB:v2:language':'sl'}});await x.settle();assert.equal(x.w.document.documentElement.lang,'sl');

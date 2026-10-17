@@ -91,4 +91,7 @@ SL/EN regression checks include the actual accessible Link/card-group names,
 refresh and disabled-CPU help, human-name placeholders and composed evaluation
 descriptions. The same checks run on desktop and APP during active work, alongside
 literal move/error-payload preservation. The shared language module uses the
-`20261017-p4-r2` source marker.
+`20261017-p4-r3` source marker. Idle Deep/follow state, PWA readiness and measured
+DCC coverage/prefixes are included. Result-receipt reason prose and unknown
+provider payloads remain literal data in SL as well as EN; translated surrounding
+labels do not rewrite stored analysis/Evidence records.
