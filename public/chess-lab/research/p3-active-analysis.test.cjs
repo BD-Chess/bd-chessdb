@@ -74,7 +74,7 @@ async function integrated(t,{app=false,hold=false}={}){
   const view=name=>w.document.querySelector(app?'[data-app-tab="'+name+'"]':'button[data-desktop-view="'+name+'"]')?.click();
   const deep=name=>w.document.querySelector('[data-deep="'+name+'"]');
   const snapshot=()=>w.ChessLabHost.getAnalysisActivity();
-  const stop=()=>w.document.querySelector('[data-activity="stop"]').click();
+  const stop=()=>el(el('settingsPanel').classList.contains('open')?'settingsStopAnalysis':app?'appStopAnalysis':'btnAnalyzeAll').click();
   const setFollow=checked=>{deep('follow').checked=checked;deep('follow').dispatchEvent(new w.Event('change'));};
   const quickFollow=checked=>{el('analysisAllMoves').checked=checked;el('analysisAllMoves').dispatchEvent(new w.Event('change'));};
   const finish=()=>{for(const c of calls.filter(c=>c.options&&!c.destroyed))c.search.resolve({fen:c.options.fen,lines:[],nodes:10,actualSearchMs:10000,completeMultiPV:false});};
@@ -89,11 +89,11 @@ for(const app of [false,true])test(`P3 ${app?'APP':'desktop'} Deep keeps identic
   for(const name of app?['board','moves','review','dcc','deep']:['moves','review','dcc','deep']){
     x.view(name);await x.frame();assert.equal(x.calls.length,4,name);
     assert.equal(JSON.stringify(x.snapshot().owners.find(o=>o.owner==='deep').children.map(c=>c.id)),ids,name);
-    assert.match(el('analysisActivity').textContent,/Deep/);assert.equal(w.document.querySelector('[data-activity="stop"]').disabled,false);
+    assert.equal(w.document.querySelector('[data-eval-source="SF"]').dataset.analysisOwner,'deep');assert.equal(el('btnAnalyzeAll').dataset.analysisAction,'stop');assert.equal(el('analysisActivity'),null);
   }
   if(app)el('appGames').click();else el('btnGames').click();await x.frame();assert.equal(x.calls.length,4);
   if(app)el('appMore').click();el('btnSettings').click();await x.frame();
-  assert(el('settingsPanel').contains(el('analysisActivity')));assert.equal(el('analysisActivity').closest('[inert]'),null);
+  assert(el('settingsPanel').contains(el('settingsStopAnalysis')));assert.equal(el('settingsStopAnalysis').closest('[inert]'),null);
   x.stop();await x.frame();assert(x.calls.every(c=>c.destroyed));assert(x.snapshot().owners.every(o=>!o.running&&!o.following));
   el('btnCloseSettings').click();x.view('moves');await x.frame();assert.equal(JSON.stringify(w.ChessLabHost.getReviewGame()),before);
   assert.equal(el('analysisSource').value,'cdb');assert.equal(hErrors(x),'');
@@ -149,6 +149,7 @@ test('P3 Quick→Deep→Quick atomically retires the other follow owner; Stop th
   const quick=x.calls.slice();await x.startDeep();assert(quick.every(c=>c.destroyed));assert.equal(x.el('analysisAllMoves').checked,false);
   x.setFollow(true);assert.equal(x.snapshot().owners.find(o=>o.owner==='deep').following,true);
   x.el('btnAnalyzeAll').click();await x.frame();assert.equal(x.deep('follow').checked,false);assert(x.calls.slice(4,8).every(c=>c.destroyed));
+  assert.equal(x.calls.length,8,'visible Stop all must not take over or start Cards');x.el('btnAnalyzeAll').click();await x.frame();assert.equal(x.calls.length,12,'explicit idle All starts a new Cards batch');
   x.quickFollow(true);x.stop();await wait(160);const count=x.calls.length;
   x.w.ChessLabHost.navigate({moves:['e2e4']});x.w.ChessLabHost.navigate({moves:['e2e4','e7e5']});x.view('deep');await wait(160);
   assert.equal(x.calls.length,count);assert.equal(x.el('analysisAllMoves').checked,false);assert.equal(x.deep('follow').checked,false);
@@ -158,7 +159,7 @@ test('P3 Quick→Deep→Quick atomically retires the other follow owner; Stop th
 test('P3 disabling focused shared Stop keeps useful focus inside Settings so natural Escape still closes it',async t=>{
   const x=await integrated(t,{app:true,hold:true}),{w,el}=x;
   el('btnAnalyzeAll').click();await x.frame();el('appMore').click();el('btnSettings').click();await x.frame();
-  const stop=w.document.querySelector('[data-activity="stop"]');stop.focus();stop.click();await x.frame();
+  const stop=el('settingsStopAnalysis');stop.focus();stop.click();await x.frame();
   assert.equal(stop.disabled,true);assert.notEqual(w.document.activeElement,stop);assert(el('settingsPanel').contains(w.document.activeElement));
   w.document.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await x.frame();
   assert.equal(el('settingsPanel').classList.contains('open'),false);assert.equal(el('appTabs').hasAttribute('inert'),false);
@@ -211,7 +212,7 @@ test('P3 completed/failed children and armed-idle status are factual; reading/su
   for(const c of x.calls.slice(1))c.search.resolve({fen:c.options.fen,lines:[],actualSearchMs:1234});
   await x.frame();const deep=x.snapshot().owners.find(o=>o.owner==='deep');
   assert.equal(deep.running,false);assert.equal(deep.following,true);assert.equal(deep.children.filter(c=>c.state==='failed').length,1);
-  assert.equal(deep.children.filter(c=>c.state==='complete').length,3);assert.equal(x.w.document.querySelector('[data-activity="stop"]').disabled,false);
+  assert.equal(deep.children.filter(c=>c.state==='complete').length,3);assert.equal(x.el('btnAnalyzeAll').dataset.analysisAction,'stop');
   const ids=JSON.stringify(deep.children.map(c=>c.id));
   for(let i=0;i<10;i++){x.snapshot();x.view(i%2?'moves':'dcc');}await x.frame();assert.equal(x.calls.length,4);assert.equal(JSON.stringify(x.snapshot().owners.find(o=>o.owner==='deep').children.map(c=>c.id)),ids);
   x.stop();await wait(150);assert.equal(x.calls.length,4);
@@ -228,7 +229,7 @@ test('P3 status is quiet, preserves focused controls and history bytes, and uses
   const before=x.w.localStorage.getItem('ChessBest:LAB:v2:game');
   for(let i=0;i<20;i++)x.calls[0].options.onInfo({}, {fen:x.calls[0].options.fen,lines:[],nodes:i});await x.frame();
   assert.equal(x.w.document.activeElement,selected);assert.equal(x.el('workspaceDisplay').scrollTop,111);assert.equal(x.w.localStorage.getItem('ChessBest:LAB:v2:game'),before);
-  assert.equal(x.w.document.querySelector('[data-activity="brief"]').closest('[aria-live]'),null);
-  x.w.document.querySelector('[data-app-lang="sl"]').click();await x.frame();assert.match(x.el('analysisActivity').textContent,/Ustavi analizo/);
-  x.w.document.querySelector('[data-app-lang="en"]').click();await x.frame();assert.match(x.el('analysisActivity').textContent,/Stop analysis/);
+  assert.equal(x.w.document.querySelector('[data-eval-source="SF"]').closest('[aria-live]'),null);assert.equal(x.el('analysisActivity'),null);
+  x.w.document.querySelector('[data-app-lang="sl"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Ustavi analizo');
+  x.w.document.querySelector('[data-app-lang="en"]').click();await x.frame();assert.equal(x.el('appStopAnalysis').getAttribute('aria-label'),'Stop analysis');
 });

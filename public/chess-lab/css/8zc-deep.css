@@ -222,3 +222,18 @@ body .analysis-options-row{column-gap:6px}
 body .analysis-options-row .analysis-checks{gap:5px}
 body:not(.app-mobile) .analysis-source-row .analysis-options-row .analysis-checks label{font-size:10.5px;padding-inline:0}
 @container(min-width:350px){body .analysis-options-row{flex-wrap:nowrap}body .analysis-dcc-actions{flex-wrap:nowrap}}
+
+/* Four concise busy lines, calm larger settled move/score; stable at each preference. */
+.all-eval-badges .all-eval-badge{height:calc(var(--card-unit,12px)*7);min-height:84px;gap:3px;padding:6px 4px;overflow:hidden}
+.all-eval-badges .all-eval-main{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px 5px;align-items:baseline}
+.all-eval-badges .all-eval-main strong{font-size:calc(var(--card-unit,12px)*.96);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.all-eval-badges .all-eval-move,.all-eval-badges .all-eval-score{font-size:calc(var(--card-unit,12px)*1.5);line-height:1.25}
+.all-eval-badges .all-eval-move{text-align:end}
+.all-eval-badges .all-eval-score{text-align:start}
+.all-eval-badges .all-eval-badge small{font-size:calc(var(--card-unit,12px)*.86);line-height:1.25;max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.all-eval-badges .all-eval-badge.is-busy .all-eval-move,.all-eval-badges .all-eval-badge.is-busy .all-eval-score{font-size:calc(var(--card-unit,12px)*1.14)}
+.all-eval-badges .all-eval-badge .all-eval-detail[hidden]{display:none!important}
+.all-eval-badges .all-eval-badge[data-eval-source="DCC"] .all-eval-move{grid-column:1/-1;text-align:center}
+
+/* Stop/All label changes cannot rewrap the surrounding toolbar. */
+.board-engine-row .analyze-all{inline-size:8.4em;flex:0 0 8.4em;justify-content:center;text-align:center}
