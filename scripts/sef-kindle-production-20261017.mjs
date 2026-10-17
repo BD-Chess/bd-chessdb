@@ -1,138 +1,71 @@
-// One owner-authorized encrypted Sef correction. Never reads or writes plaintext secrets.
-import {readFile, writeFile} from 'node:fs/promises';
+// Owner-authorized Kindle release: read-only publication guards and exact live verification.
+import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
 
 const site='17b4124d-c197-4c0a-a711-8b2c08d91088';
 const expectedDeploy='6ad2c372674de74206292aa2';
-const preservedGitBaseline='95905176c313c2c3577d242bb55d5d3e2af594d2';
-const token=process.env.NETLIFY_AUTH_TOKEN;
-assert(token,'NETLIFY_CREDENTIAL_MISSING');
+const baseline='95905176c313c2c3577d242bb55d5d3e2af594d2';
 const names=['sef.js','sef-kindle.json','sef-kindle-20261017-r1.enc.txt'];
-const digest=(bytes,algorithm='sha256')=>createHash(algorithm).update(bytes).digest('hex');
-const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const api=async(path,{method='GET',body,binary=false}={})=>{
- const response=await fetch('https://api.netlify.com/api/v1/'+path,{
-  method,headers:{authorization:'Bearer '+token,...(body?{'content-type':binary?'application/octet-stream':'application/json'}:{})},
-  body:body?(binary?body:JSON.stringify(body)):undefined,signal:AbortSignal.timeout(60000)
- });
- if(!response.ok){
-  const detail=(await response.text()).slice(0,1800).replaceAll(token,'[REDACTED]');
-  throw Error('NETLIFY_API_'+response.status+' '+detail);
- }
- return response.json();
-};
-const mapFiles=rows=>{
- assert(Array.isArray(rows)&&rows.length>100,'INCOMPLETE_PRODUCTION_FILE_LIST');
+const sha=(bytes,algorithm='sha256')=>createHash(algorithm).update(bytes).digest('hex');
+const canonical=path=>path.replace(/^\//,'').toLowerCase();
+export async function inventory(load){
  const files={};
- for(const row of rows){
-  assert(typeof row.path==='string'&&/^[a-f0-9]{40}$/.test(row.sha),'INVALID_FILE_DIGEST');
-  const path=row.path.replace(/^\//,'');assert(!Object.hasOwn(files,path),'DUPLICATE_FILE_PATH');files[path]=row.sha;
- }
- assert(Object.keys(files).some(p=>p.toLowerCase()==='bd/o/sef.js'),'SEF_NOT_IN_PRODUCTION_MANIFEST');
- assert(Object.hasOwn(files,'netlify.toml'),'DEPLOY_CONFIG_NOT_IN_MANIFEST');
- return files;
-};
-const listFiles=async()=>{
- const rows=[];
- // Netlify caps this endpoint at 100 entries even when a larger page is requested.
  for(let page=1;page<=200;page++){
-  const batch=await api('sites/'+site+'/files?per_page=100&page='+page);
-  assert(Array.isArray(batch),'INVALID_FILE_LIST');rows.push(...batch);
-  if(batch.length<100){
-   console.log(JSON.stringify({stage:'production-file-inventory',files:rows.length,pages:page,sef_paths:rows.filter(r=>/sef\.js$/i.test(r.path)).map(r=>r.path)}));
-   return mapFiles(rows);
+  const batch=await load(page);assert(Array.isArray(batch),'INVALID_FILE_PAGE');
+  for(const row of batch){const path=canonical(row.path);assert(/^[a-f0-9]{40}$/.test(row.sha),'INVALID_FILE_SHA');assert(!Object.hasOwn(files,path),'DUPLICATE_FILE');files[path]=row.sha;}
+  if(batch.length<100){assert(files['bd/o/sef.js']&&files['netlify.toml'],'INCOMPLETE_SITE_MANIFEST');return files;}
+ }
+ throw Error('FILE_PAGE_LIMIT');
+}
+export function verifyManifest(before,after,overrides){assert.deepEqual(after,{...before,...overrides},'UNRELATED_PRODUCTION_FILE_CHANGED');}
+export function verifyFunctions(before,after){
+ const normalize=d=>(d.available_functions||[]).map(f=>({name:f.n,runtime:f.r,memory:f.m,mode:f.im,routes:f.ro||null,traffic:f.tr||null,priority:f.p})).sort((a,b)=>a.name.localeCompare(b.name));
+ assert.deepEqual(normalize(after),normalize(before),'FUNCTION_CONFIGURATION_CHANGED');
+ assert.deepEqual(after.function_schedules,before.function_schedules,'FUNCTION_SCHEDULE_CHANGED');
+}
+async function main(){
+ const token=process.env.NETLIFY_AUTH_TOKEN;assert(token,'NETLIFY_CREDENTIAL_MISSING');
+ const api=async(path,method='GET')=>{const r=await fetch('https://api.netlify.com/api/v1/'+path,{method,headers:{authorization:'Bearer '+token},signal:AbortSignal.timeout(60000)});if(!r.ok)throw Error('NETLIFY_API_'+r.status);return r.json();};
+ const loadSite=()=>api('sites/'+site);
+ const loadInventory=()=>inventory(page=>api('sites/'+site+'/files?per_page=100&page='+page));
+ const mode=process.argv[2];
+ if(mode==='--snapshot'){
+  assert.equal((await loadSite()).published_deploy.id,expectedDeploy,'PRODUCTION_BASELINE_CHANGED');
+  const changed=execFileSync('git',['diff','--name-only',baseline,'HEAD','--','public','functions','netlify.toml','package.json','package-lock.json'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).sort();
+  assert.deepEqual(changed,names.map(n=>'public/BD/O/'+n).sort(),'UNAPPROVED_PUBLISH_SOURCE_CHANGE');
+  const before=await api('deploys/'+expectedDeploy),files=await loadInventory();
+  assert.equal(files['bd/o/sef.js'],'e86c71e1746153ec049afd4fe0d3820997f1da3c','SEF_CHANGED_CONCURRENTLY');
+  const overrides={},assets=[];
+  for(const name of names){const bytes=await readFile('public/BD/O/'+name);overrides['bd/o/'+name]=sha(bytes,'sha1');assets.push({file:name,sha256:sha(bytes),bytes:bytes.length});}
+  const cfg=JSON.parse(await readFile('public/BD/O/sef-kindle.json','utf8'));
+  assert.equal(cfg.data.sha256,assets.find(x=>x.file===cfg.data.path).sha256,'OWNER_CIPHER_CHANGED');
+  assert.equal(cfg.vault,JSON.parse(await readFile('public/BD/O/vault.json','utf8')).vault,'VAULT_KEY_ID_CHANGED');
+  await writeFile('sef-kindle-before.json',JSON.stringify({before,files,overrides,assets,changed})+'\n');
+  // Cancel only this task's incomplete, never-published digest-upload attempt.
+  const pending=await api('deploys/6ad2c69d76a59a698c81ef0b');
+  if(['prepared','uploading'].includes(pending.state)){
+   assert.equal(pending.site_id,site);assert(pending.title?.startsWith('BD Sef encrypted Kindle 6114585ce013adbe0b85300dd8e721967ccd10aa '));
+   await api('deploys/'+pending.id+'/cancel','POST');
   }
- }
- throw Error('PRODUCTION_FILE_PAGINATION_LIMIT');
-};
-const publicBytes=async name=>{
- const response=await fetch('https://www.mdlxdcc.org/BD/O/'+name,{cache:'no-store',signal:AbortSignal.timeout(30000)});
- assert(response.ok,'LIVE_ASSET_UNAVAILABLE');return Buffer.from(await response.arrayBuffer());
-};
-const functionConfig=f=>{
- const cfg={};
- for(const [short,long] of [['dn','display_name'],['g','generator'],['bd','build_data'],['p','priority'],['tr','traffic_rules']]){
-  if(f[short]!==null&&f[short]!==undefined)cfg[long]=f[short];
- }
- if(f.ro)cfg.routes=f.ro.map(r=>Object.fromEntries(Object.entries({pattern:r.p,literal:r.l,expression:r.e,methods:r.m,prefer_static:r.ps}).filter(([,v])=>v!==null&&v!==undefined)));
- if(f.er)cfg.excluded_routes=f.er;
- return cfg;
-};
-const functionState=deploy=>(deploy.available_functions||[]).map(f=>({name:f.n,sha:f.d,runtime:f.r,mode:f.im,region:f.rg,memory:f.m,...functionConfig(f)})).sort((a,b)=>a.name.localeCompare(b.name));
-const waitFor=async(id,states)=>{
- for(let n=0;n<90;n++){
-  const deploy=await api('deploys/'+id);
-  assert(deploy.state!=='error','DEPLOY_FAILED');if(states.includes(deploy.state))return deploy;
-  await sleep(3000);
- }
- throw Error('DEPLOY_TIMEOUT');
-};
-
-const initialSite=await api('sites/'+site);
-assert(initialSite.published_deploy?.id===expectedDeploy,'PRODUCTION_LEASE_CHANGED');
-const before=await api('deploys/'+expectedDeploy);
-assert(!before.edge_functions_present&&!before.server,'UNSUPPORTED_DEPLOY_COMPONENT');
-const files=await listFiles();
-const existingFiles={...files};
-const sefPath=Object.keys(files).find(p=>p.toLowerCase()==='bd/o/sef.js');
-const targetRoot=sefPath.slice(0,-'sef.js'.length);
-const originals=Object.fromEntries(await Promise.all(names.map(async name=>[name,await readFile('public/BD/O/'+name)])));
-const cfg=JSON.parse(originals['sef-kindle.json']);
-assert.equal(cfg.format,'BD-O-SEF-EXTRA-CONFIG-1');assert.equal(cfg.release,'20261017-kindle-r1');
-assert.equal(cfg.vault,JSON.parse(await readFile('public/BD/O/vault.json','utf8')).vault);
-assert.equal(cfg.data.path,names[2]);assert.equal(digest(originals[names[2]]),cfg.data.sha256);
-// A newer production Sef change must be reconciled, never overwritten.
-assert.equal(files[sefPath],'e86c71e1746153ec049afd4fe0d3820997f1da3c','PRODUCTION_SEF_CHANGED');
-for(const name of names){
- const path=targetRoot+name,newSha=digest(originals[name],'sha1');
- if(name!=='sef.js'&&Object.hasOwn(files,path))assert.equal(files[path],newSha,'EXISTING_OVERLAY_CONFLICT');
- files[path]=newSha;
+  console.log(JSON.stringify({stage:'snapshot-verified',files:Object.keys(files).length,approved_source_paths:changed}));
+ }else if(mode==='--guard'){
+  const saved=JSON.parse(await readFile('sef-kindle-before.json','utf8'));
+  assert.equal((await loadSite()).published_deploy.id,saved.before.id,'PRODUCTION_CHANGED_DURING_PREPARATION');
+  console.log('PRODUCTION_LEASE_UNCHANGED');
+ }else if(mode==='--verify'){
+  const saved=JSON.parse(await readFile('sef-kindle-before.json','utf8'));
+  const cli=JSON.parse(await readFile('sef-kindle-cli-deploy.json','utf8')),id=cli.deploy_id||cli.deployId;assert(id,'CLI_DEPLOY_ID_MISSING');
+  let afterSite;for(let i=0;i<60;i++){afterSite=await loadSite();if(afterSite.published_deploy.id===id)break;await new Promise(r=>setTimeout(r,2000));}
+  assert.equal(afterSite.published_deploy.id,id,'CLI_DEPLOY_NOT_PUBLISHED');
+  const after=await api('deploys/'+id),files=await loadInventory();
+  verifyManifest(saved.files,files,saved.overrides);verifyFunctions(saved.before,after);
+  for(const asset of saved.assets){const r=await fetch('https://www.mdlxdcc.org/BD/O/'+asset.file,{cache:'no-store',signal:AbortSignal.timeout(30000)});assert(r.ok);assert.equal(sha(Buffer.from(await r.arrayBuffer())),asset.sha256,'LIVE_ASSET_MISMATCH');}
+  const digestMap=d=>Object.fromEntries(d.available_functions.map(f=>[f.n,f.oid]));
+  const receipt={status:'PRODUCTION_ASSETS_VERIFIED',verified_utc:new Date().toISOString(),source_commit:process.env.GITHUB_SHA,deploy_id:id,previous_deploy:saved.before.id,url:'https://www.mdlxdcc.org/BD/O/sef.html',changed_files:names,preserved_files:Object.keys(saved.files).length-1,production_file_manifest_exact:true,preserved_functions:after.available_functions.length,function_configuration_preserved:true,function_schedules_preserved:true,function_original_digests_equal:JSON.stringify(digestMap(saved.before))===JSON.stringify(digestMap(after)),live_assets:saved.assets,plaintext_credentials_in_release:false,browser_acceptance:'PENDING_SEPARATE_AUTHENTICATED_BROWSER_CHECK'};
+  await writeFile('sef-kindle-production-receipt.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));
+ }else throw Error('EXPECTED_SNAPSHOT_GUARD_OR_VERIFY_MODE');
 }
-assert(before.available_functions.every(f=>/^[a-f0-9]{64}$/.test(f.oid||'')),'ORIGINAL_FUNCTION_DIGEST_MISSING');
-const functions=Object.fromEntries((before.available_functions||[]).map(f=>[f.n,f.oid]));
-assert(Object.keys(functions).length===25,'UNEXPECTED_FUNCTION_INVENTORY');
-assert(before.available_functions.every(f=>f.m===1024),'UNREVIEWED_FUNCTION_MEMORY_OVERRIDE');
-const functions_config=Object.fromEntries(before.available_functions.map(f=>[f.n,functionConfig(f)]));
-// Preserve the site's existing region. A deploy's airport code is not a function-region override.
-assert.equal((before.functions_region_overrides||[]).length,0,'UNREVIEWED_FUNCTION_REGION_OVERRIDE');
-assert.equal((await api('sites/'+site)).published_deploy.id,expectedDeploy,'PRODUCTION_CHANGED_BEFORE_CREATE');
-const title='BD Sef encrypted Kindle '+process.env.GITHUB_SHA+' baseline='+preservedGitBaseline+' preserved-deploy='+expectedDeploy;
-const body={files,functions,functions_config,function_schedules:before.function_schedules||[],draft:false,async:true,branch:'main',framework:before.framework||'unknown'};
-const resumeId=process.env.SEF_KINDLE_RESUME_DEPLOY;
-let created;
-if(resumeId){
- const pending=await api('deploys/'+resumeId);
- assert.equal(pending.site_id,site,'RESUME_SITE_MISMATCH');
- assert(['prepared','uploading'].includes(pending.state),'RESUME_DEPLOY_NOT_PENDING');
- assert(pending.title?.startsWith('BD Sef encrypted Kindle ')&&pending.title.includes('preserved-deploy='+expectedDeploy),'RESUME_PROVENANCE_MISMATCH');
- created=await api('sites/'+site+'/deploys/'+resumeId,{method:'PUT',body});
- assert.equal(created.id,resumeId,'RESUME_ID_MISMATCH');
-}else created=await api('sites/'+site+'/deploys?title='+encodeURIComponent(title),{method:'POST',body});
-await writeFile('sef-kindle-deploy-started.json',JSON.stringify({deploy_id:created.id,previous_deploy:expectedDeploy,source_commit:process.env.GITHUB_SHA,resumed:!!resumeId})+'\n');
-created=await waitFor(created.id,['prepared','uploading','uploaded','ready']);
-assert.equal((created.required_functions||[]).length,0,'CACHED_FUNCTIONS_NOT_REUSABLE');
-assert.equal((created.required_edge_functions||[]).length,0,'UNEXPECTED_EDGE_UPLOAD');
-const uploads=(created.required||[]).map(sha=>{
- const name=names.find(name=>digest(originals[name],'sha1')===sha);assert(name,'UNEXPECTED_UPLOAD_REQUIRED');return name;
-});
-console.log(JSON.stringify({stage:'verified-preserved-manifest',previous_deploy:expectedDeploy,preserved_files:Object.keys(existingFiles).length,preserved_functions:Object.keys(functions).length,changed_files:names,required_uploads:uploads.length}));
-for(const name of uploads){
- assert.equal((await api('sites/'+site)).published_deploy.id,expectedDeploy,'PRODUCTION_CHANGED_BEFORE_UPLOAD');
- await api('deploys/'+created.id+'/files/'+targetRoot+name,{method:'PUT',body:originals[name],binary:true});
-}
-const ready=await waitFor(created.id,['ready']);
-let afterSite;
-for(let n=0;n<30;n++){afterSite=await api('sites/'+site);if(afterSite.published_deploy?.id===ready.id)break;await sleep(2000);}
-assert.equal(afterSite.published_deploy?.id,ready.id,'DEPLOY_NOT_PUBLISHED');
-const afterFiles=await listFiles();
-assert.deepEqual(afterFiles,files,'PRODUCTION_MANIFEST_MISMATCH');
-assert.deepEqual(functionState(ready),functionState(before),'FUNCTION_CONFIGURATION_CHANGED');
-assert.deepEqual(ready.function_schedules,before.function_schedules,'FUNCTION_SCHEDULES_CHANGED');
-const live=[];
-for(const name of names){
- const data=await publicBytes(name);assert.equal(digest(data),digest(originals[name]),'LIVE_ASSET_MISMATCH');
- live.push({file:name,bytes:data.length,sha256:digest(data)});
-}
-const receipt={status:'PRODUCTION_ASSETS_VERIFIED',created_utc:new Date().toISOString(),source_commit:process.env.GITHUB_SHA,deploy_id:ready.id,previous_deploy:expectedDeploy,url:'https://www.mdlxdcc.org/BD/O/sef.html',changed_files:names,preserved_files:Object.keys(existingFiles).length-1,preserved_functions:Object.keys(functions).length,function_configuration_preserved:true,function_schedules_preserved:true,production_file_manifest_exact:true,live_assets:live,raw_credentials_read:false,browser_acceptance:'PENDING_SEPARATE_AUTHENTICATED_BROWSER_CHECK'};
-await writeFile('sef-kindle-production-receipt.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await main();

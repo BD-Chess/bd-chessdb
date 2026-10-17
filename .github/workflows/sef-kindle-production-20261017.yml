@@ -20,26 +20,43 @@ jobs:
     timeout-minutes: 15
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      SEF_KINDLE_RESUME_DEPLOY: 6ad2c69d76a59a698c81ef0b
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - name: Verify encrypted publication boundary
         run: |
           node --check public/BD/O/sef.js
           node --check scripts/sef-kindle-production-20261017.mjs
           python3 scripts/check_secret_boundary.py
-      - name: Publish only the three approved files on the current production manifest
-        run: node scripts/sef-kindle-production-20261017.mjs
+      - name: Verify that only the three approved public source files differ from production
+        run: |
+          git fetch --no-tags --depth 1 origin 95905176c313c2c3577d242bb55d5d3e2af594d2
+          node scripts/sef-kindle-production-20261017.mjs --snapshot
+      - name: Prepare the same password-manager integration as the existing production release
+        run: python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/sef-password-manager.json"
+      - name: Verify the existing publication checks
+        run: node tests/mdlxdcc-root-pwa.test.cjs
+      - name: Install the existing pinned runtime dependencies
+        run: |
+          npm ci --ignore-scripts
+          if [ -f functions/package.json ]; then npm install --prefix functions --no-audit --no-fund; fi
+      - name: Check the production lease and publish through the established Netlify CLI
+        run: |
+          node scripts/sef-kindle-production-20261017.mjs --guard
+          npx --yes netlify-cli@26.2.0 deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "BD Sef encrypted Kindle $GITHUB_SHA baseline=$GITHUB_SHA" --json > sef-kindle-cli-deploy.json
+      - name: Verify the complete live file inventory and retained function settings
+        run: node scripts/sef-kindle-production-20261017.mjs --verify
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: sef-kindle-production-20261017-receipt
           path: |
-            sef-kindle-deploy-started.json
+            sef-kindle-before.json
+            sef-kindle-cli-deploy.json
             sef-kindle-production-receipt.json
           if-no-files-found: ignore
