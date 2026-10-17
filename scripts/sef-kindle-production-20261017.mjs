@@ -32,10 +32,11 @@ const mapFiles=rows=>{
 };
 const listFiles=async()=>{
  const rows=[];
- for(let page=1;page<=40;page++){
-  const batch=await api('sites/'+site+'/files?per_page=1000&page='+page);
+ // Netlify caps this endpoint at 100 entries even when a larger page is requested.
+ for(let page=1;page<=200;page++){
+  const batch=await api('sites/'+site+'/files?per_page=100&page='+page);
   assert(Array.isArray(batch),'INVALID_FILE_LIST');rows.push(...batch);
-  if(batch.length<1000){
+  if(batch.length<100){
    console.log(JSON.stringify({stage:'production-file-inventory',files:rows.length,pages:page,sef_paths:rows.filter(r=>/sef\.js$/i.test(r.path)).map(r=>r.path)}));
    return mapFiles(rows);
   }
