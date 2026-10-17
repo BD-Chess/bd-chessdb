@@ -47,6 +47,12 @@ jobs:
         run: |
           node tests/dfc-reader-browser.mjs
           node tests/dfc-text-browser.mjs
+      - name: Verify protected first-page source navigation with synthetic ciphertext
+        if: ${{ !cancelled() }}
+        timeout-minutes: 2
+        run: |
+          node --test tests/dfc-cmarvel-protected.test.mjs
+          node tests/dfc-cmarvel-source-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
