@@ -7,6 +7,14 @@
   const preserve='script,style,code,pre,textarea,[translate="no"],[data-no-i18n],.deep-pv,.chess-study-pv,.chess-study-comment-summary,.chess-study-preview h3,.game-review-detail,.game-review-teaser,.game-review-intro h3,.game-review-moment>strong,.game-review-decision>strong,.game-review-fact dd,.tournament-current,.research-summary,#appGameName,#boardGameTitle,.library-game-name,.library-result,.tournament-event-title';
   const ignored=node=>!!(node.nodeType===1?node:node.parentElement)?.closest?.(preserve);
   const TO_SL = new Map(Object.entries({
+    "Analyze position starts a new search. Each move is off.":"Analiziraj položaj začne novo iskanje. Vsaka poteza je izklopljena.",
+    "Analyze position starts a new search":"Analiziraj položaj začne novo iskanje",
+    "Each move is off.":"Vsaka poteza je izklopljena.",
+    "Each move is off":"Vsaka poteza je izklopljena",
+    "Each move is on.":"Vsaka poteza je vklopljena.",
+    "Each move is on":"Vsaka poteza je vklopljena",
+    "Offline ready":"Pripravljeno brez povezave",
+    "Installable; offline after the first complete download":"Možna namestitev; brez povezave po prvem celotnem prenosu",
     "BD × AI Lab — MDLxDCC.org homepage":"BD × AI Lab — domača stran MDLxDCC.org",
     "LAB · Installable; offline after the first complete download":"LAB · Možna namestitev; brez povezave po prvem celotnem prenosu",
     "ChessDB, Stockfish, ChessDCC, Reckless, LC Zero and Berserk comparison":"Primerjava ChessDB, Stockfish, ChessDCC, Reckless, LC Zero in Berserk",
@@ -734,6 +742,13 @@
   for(const [en,sl]of TO_SL)if(!TO_EN.has(sl))TO_EN.set(sl,en);
   function dynamicText(text){
     const rules=[
+      [/^(\d+)\/(\d+) measured candidates$/,m=>m[1]+'/'+m[2]+' izmerjenih kandidatov'],
+      [/^(\d+)\/(\d+) source probes$/,m=>m[1]+'/'+m[2]+' pregledov vira'],
+      [/^(\d+) probes$/,m=>m[1]+' pregledov'],
+      [/^DCC choice ([^·]+)$/,m=>'Izbira DCC '+m[1]],
+      [/^Raw choice retained ([^·]+)$/,m=>'Ohranjena prvotna izbira '+m[1]],
+      [/^raw #(\d+) (.+)$/,m=>'izvirna #'+m[1]+' '+m[2]],
+      [/^(CDB|SF|DCC|RLE|LC0|BER) · ([a-h][1-8][a-h][1-8][qrbn]?): raw (.+) cp; (complete|partial|unknown) DCC; mover perspective$/,m=>m[1]+' · '+m[2]+': izvirno '+m[3]+' cp; '+({complete:'popoln',partial:'delen',unknown:'neznan'})[m[4]]+' DCC; pogled strani na potezi'],
       [/^(.+)\. Bar height is a visual scale, not a win probability\.$/,m=>(TO_SL.get(m[1])||dynamicText(m[1])||m[1])+'. '+TO_SL.get('Bar height is a visual scale, not a win probability.')],
       [/^(CDB|SF|DCC|RLE|LC0|BER) best move (.+)$/,m=>m[1]+' najboljša poteza '+(m[2]==='unavailable'?'ni na voljo':m[2])],
       [/^(CDB|SF|DCC|RLE|LC0|BER) evaluation unavailable$/,m=>m[1]+' ocena ni na voljo'],

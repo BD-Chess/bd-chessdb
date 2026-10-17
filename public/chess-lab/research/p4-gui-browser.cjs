@@ -88,6 +88,11 @@ test('P4 B responsive Deep, Appearance, locale and native touch-help preserve th
     const page=await open(t,spec),deep=page.locator('#deepAnalysisPanel');
     await page.locator(spec.app?'[data-app-tab="deep"]':'button[data-desktop-view="deep"]').click();
     await deep.waitFor({state:'visible'});assert.equal(await deep.locator('[data-deep="configuration"]').getAttribute('open'),null);
+    for(const lang of ['sl','en','sl']){
+      await page.locator((spec.app?'.app-language':'.desktop-language')+' [data-app-lang="'+lang+'"]').click();
+      assert.equal(await deep.locator('[data-deep="status"]').textContent(),lang==='sl'?'Analiziraj položaj začne novo iskanje. Vsaka poteza je izklopljena.':'Analyze position starts a new search. Each move is off.');
+      assert.equal(await page.evaluate(()=>window.__P4.calls.length),0);
+    }
     await deep.locator('[data-deep="configuration"] > summary').click();
     await deep.locator('[data-deep="mode"]').selectOption('all');await deep.locator('[data-deep="time"]').selectOption('10000');
     await deep.locator('[data-deep="configuration"] > summary').click();await deep.locator('[data-deep="start"]').click();
