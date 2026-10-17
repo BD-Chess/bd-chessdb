@@ -89,7 +89,8 @@ for(const name of names){
  if(name!=='sef.js'&&Object.hasOwn(files,path))assert.equal(files[path],newSha,'EXISTING_OVERLAY_CONFLICT');
  files[path]=newSha;
 }
-const functions=Object.fromEntries((before.available_functions||[]).map(f=>[f.n,f.d]));
+assert(before.available_functions.every(f=>/^[a-f0-9]{64}$/.test(f.oid||'')),'ORIGINAL_FUNCTION_DIGEST_MISSING');
+const functions=Object.fromEntries((before.available_functions||[]).map(f=>[f.n,f.oid]));
 assert(Object.keys(functions).length===25,'UNEXPECTED_FUNCTION_INVENTORY');
 assert(before.available_functions.every(f=>f.m===1024),'UNREVIEWED_FUNCTION_MEMORY_OVERRIDE');
 const functions_config=Object.fromEntries(before.available_functions.map(f=>[f.n,functionConfig(f)]));
@@ -97,8 +98,18 @@ const functions_config=Object.fromEntries(before.available_functions.map(f=>[f.n
 assert.equal((before.functions_region_overrides||[]).length,0,'UNREVIEWED_FUNCTION_REGION_OVERRIDE');
 assert.equal((await api('sites/'+site)).published_deploy.id,expectedDeploy,'PRODUCTION_CHANGED_BEFORE_CREATE');
 const title='BD Sef encrypted Kindle '+process.env.GITHUB_SHA+' baseline='+preservedGitBaseline+' preserved-deploy='+expectedDeploy;
-let created=await api('sites/'+site+'/deploys?title='+encodeURIComponent(title),{method:'POST',body:{files,functions,functions_config,function_schedules:before.function_schedules||[],draft:false,async:true,branch:'main',framework:before.framework||'unknown'}});
-await writeFile('sef-kindle-deploy-started.json',JSON.stringify({deploy_id:created.id,previous_deploy:expectedDeploy,source_commit:process.env.GITHUB_SHA})+'\n');
+const body={files,functions,functions_config,function_schedules:before.function_schedules||[],draft:false,async:true,branch:'main',framework:before.framework||'unknown'};
+const resumeId=process.env.SEF_KINDLE_RESUME_DEPLOY;
+let created;
+if(resumeId){
+ const pending=await api('deploys/'+resumeId);
+ assert.equal(pending.site_id,site,'RESUME_SITE_MISMATCH');
+ assert(['prepared','uploading'].includes(pending.state),'RESUME_DEPLOY_NOT_PENDING');
+ assert(pending.title?.startsWith('BD Sef encrypted Kindle ')&&pending.title.includes('preserved-deploy='+expectedDeploy),'RESUME_PROVENANCE_MISMATCH');
+ created=await api('sites/'+site+'/deploys/'+resumeId,{method:'PUT',body});
+ assert.equal(created.id,resumeId,'RESUME_ID_MISMATCH');
+}else created=await api('sites/'+site+'/deploys?title='+encodeURIComponent(title),{method:'POST',body});
+await writeFile('sef-kindle-deploy-started.json',JSON.stringify({deploy_id:created.id,previous_deploy:expectedDeploy,source_commit:process.env.GITHUB_SHA,resumed:!!resumeId})+'\n');
 created=await waitFor(created.id,['prepared','uploading','uploaded','ready']);
 assert.equal((created.required_functions||[]).length,0,'CACHED_FUNCTIONS_NOT_REUSABLE');
 assert.equal((created.required_edge_functions||[]).length,0,'UNEXPECTED_EDGE_UPLOAD');
