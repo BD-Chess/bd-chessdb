@@ -716,6 +716,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const requestPending = new Map();
   const simRequests = new Set();
   let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
+  const cardControlCache=new Map();
+  function cacheCardControls(){if(engineCards)for(const source of ['SF','RLE','LC0','BER'])cardControlCache.set(source,engineCards.state(source));}
   let analysisActivity = null, activityPositionKey = null, probeActivity = null, probeSerial = 0, interactiveStopped = false;
   const canAnalyzeInteractive = () => !document.hidden && !offlineEvidence && showEval && !simRunning && !replayRunning && !playState.assistanceLocked;
   const refreshAnalysisActivity = () => analysisActivity?.refresh();
@@ -786,7 +788,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   window.ChessAnalysisSession?.subscribeSettings?.(next=>{
     if(settings.sfCardMode===next.sfCardMode)return;
     settings.sfCardMode=next.sfCardMode;
-    persistSettings();
+    cacheCardControls();persistSettings();
     positionEval.render();
   });
   const positionEval = window.ChessEvalBar.create({ game, settings,
@@ -799,17 +801,27 @@ gameBuckets.forEach((bucket, bucketIndex) => {
           title: dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis', pressed: dccViewActive };
       }
       const available = !offlineEvidence && showEval && !simRunning && !replayRunning && !(playState.active && playState.assistanceLocked);
-      if(['SF','BER','RLE','LC0'].includes(source))return {...(engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'}),selected:settings.analysisLink&&linkedCard===source,allRunning};
+      if(['SF','BER','RLE','LC0'].includes(source)){
+        const activity=analysisActivity?.card(source),external=(activity?.busy||activity?.following)&&activity.owner!=='cards';
+        return {...(external?{disabled:!available,working:true,title:activity.action,variant:activity.child.mode==='sf-full'?'Full':'Lite'}:
+          cardControlCache.get(source)||{disabled:!available,title:'Analyze local engine'}),
+          activity,selected:settings.analysisLink&&linkedCard===source,allRunning};
+      }
       return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false, selected:settings.analysisLink&&linkedCard==='CDB', allRunning,
         note:cdbRefreshing?'Fetching position data':null,
         title: cdbRefreshing ? 'Refreshing CDB evaluation…' : available ? 'Click to refresh CDB evaluation for this position' : 'CDB refresh is unavailable during play or while Eval is hidden', working: cdbRefreshing };
     },
     onBadgeAction: (source, intent = {}) => {
+      const live=window.ChessAnalysisActivity?.card(interactiveAnalysisSnapshot(),source);
+      if(live&&(live.following||['queued','loading','preparing','ready','searching','running','stopping'].includes(live.child.state))&&live.owner!=='cards'){
+        if(live.owner==='deep')deepUI?.stop();else stopInteractiveProbe();
+        refreshAnalysisActivity();return;
+      }
       const stopped=engineCards?.stopRole(source);
-      selectLinkedCard(source);
       // A budget may finish while the finger is held down. That Stop press
       // must not start a new, larger-budget search on pointer-up.
       if(stopped||intent.stopOnly)return;
+      selectLinkedCard(source);
       if (['SF','BER','RLE','LC0'].includes(source)) {
         engineCards?.analyze(cardMode(source));
       }
@@ -1580,6 +1592,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     /* CSS vars */
     document.documentElement.style.setProperty('--overlay-font', settings.font);
     document.documentElement.style.setProperty('--moves-font',  settings.font);
+    document.documentElement.style.setProperty('--analysis-font', settings.font);
     document.documentElement.style.setProperty('--piece-scale',
       { small: .6, medium: .8, big: 1 }[settings.pieceSize]);
 
@@ -2602,6 +2615,7 @@ function jumpTo(i){
 		saveSettings();
 		applySettings();
 		if (id === 'settingSimEval') { tournamentRunner?.refreshEvaluation?.(); positionEval.render(); refreshPlayUi(); return; }
+        if (['settingFont','settingHistorySize','settingBg','settingTheme','settingDoubleBoard','settingPieceSize'].includes(id)) { board.resize(); renderHistory(); positionEval.render(); return; }
 		updateBoard(false);
 	  };
 	});
@@ -2736,7 +2750,7 @@ function jumpTo(i){
     canRetainPrepared:()=>!localProvider&&!localController,
     onResult:publishEngineSnapshot,
     onState:()=>{
-      refreshAnalysisActivity();
+      cacheCardControls();refreshAnalysisActivity();
       positionEval.render();
       const follow=document.getElementById('analysisAllMoves');
       if(follow)follow.checked=!!engineCards?.isFollowing();
@@ -2795,7 +2809,7 @@ function jumpTo(i){
   document.addEventListener('chess:pause-request', () => pauseLab());
   // Explicit board-state integration for extension panels; no engine commands are exposed to Gemini.
   window.ChessLabHost = labHost;
-  analysisActivity=window.ChessAnalysisActivity?.create({getSnapshot:interactiveAnalysisSnapshot,stop:stopInteractiveAnalysis})||null;
+  analysisActivity=window.ChessAnalysisActivity?.create({getSnapshot:interactiveAnalysisSnapshot,stop:stopInteractiveAnalysis,onPaint:()=>positionEval.render()})||null;
   window.ChessAnalysisSession?.subscribeSettings?.(refreshAnalysisActivity);
   window.ChessGemini.create({ currentFen: () => game.fen(), snapshot: () => {
     const fen = game.fen(), analysisSources = currentSourceAnalyses();
@@ -2928,7 +2942,9 @@ function jumpTo(i){
     if(settings.analysisSource==='cdb')refreshCDBCurrentPosition();
     else engineCards?.analyze(settings.analysisSource);
   });
-  document.getElementById('btnAnalyzeAll').addEventListener('click',()=>engineCards?.analyzeAll());
+  document.getElementById('btnAnalyzeAll').addEventListener('click',()=>{
+    if(window.ChessAnalysisActivity?.active(interactiveAnalysisSnapshot()))stopInteractiveAnalysis();else engineCards?.analyzeAll();
+  });
   document.getElementById('analysisAllMoves').addEventListener('change',event=>engineCards?.setFollowing(event.target.checked));
   const linkToggle=document.getElementById('analysisLink');
   linkToggle.checked=!!settings.analysisLink;

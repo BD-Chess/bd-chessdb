@@ -83,6 +83,7 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   await page.locator('#first').click();await page.locator('#next').click();const saved=await retention(page);
   assert.equal(saved.total,3);assert.equal(saved.cursor,1);
   await page.locator('button[data-desktop-view="deep"]').click();
+  await page.locator('[data-deep="configuration"] > summary').click();
   await page.locator('[data-deep="mode"]').selectOption('all');await page.locator('[data-deep="time"]').selectOption('10000');
   const threads=page.locator('[data-deep="threads"]');
   if(await threads.isEnabled())await threads.selectOption('1');
@@ -95,19 +96,19 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   for(const view of ['moves','dcc','review','library','deep']){
     if(view==='library')await page.locator('#btnGames').click();else await page.locator('button[data-desktop-view="'+view+'"]').click();
     const s=await activity(page),owner=s.owners.find(o=>o.owner==='deep');assert.deepEqual(owner.children.map(c=>c.id),ids,view);
-    assert.equal(s.display,'CDB');assert.equal(await page.locator('#analysisActivity').isVisible(),true,view);
+    assert.equal(s.display,'CDB');assert.equal(await page.locator('[data-eval-source="SF"]').getAttribute('data-analysis-owner'),'deep',view);assert.equal(await page.locator('#analysisActivity,.analysis-activity-slot').count(),0);
   }
   await page.waitForFunction(()=>{const o=window.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep');return o?.children.every(c=>['searching','complete','failed'].includes(c.state));},{},{timeout:100000});
   const started=(await activity(page)).owners.find(o=>o.owner==='deep');
   assert(started.children.every(c=>c.state!=='failed'),JSON.stringify(started));
   await page.waitForFunction(()=>{const o=window.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep');return o?.children.every(c=>c.state==='complete'||c.searchElapsedMs>=9000);},{},{timeout:30000});
   await page.locator('button[data-desktop-view="moves"]').click();
-  await page.locator('#analysisActivity details').evaluate(el=>el.open=true);
+  assert.equal(await page.locator('#btnAnalyzeAll').getAttribute('data-analysis-action'),'stop');
   await page.screenshot({path:path.join(evidence,'real-all-four-running-status.png'),fullPage:true});
   await page.locator('#btnSettings').click();
-  await page.waitForFunction(()=>document.querySelector('#settingsPanel').contains(document.querySelector('#analysisActivity')));
-  assert.equal(await page.locator('#analysisActivity').evaluate(el=>el.closest('[inert]')),null);
-  await page.locator('[data-activity="stop"]').click();
+  await page.waitForFunction(()=>document.querySelector('#settingsPanel').contains(document.querySelector('#settingsStopAnalysis')));
+  assert.equal(await page.locator('#settingsStopAnalysis').evaluate(el=>el.closest('[inert]')),null);
+  await page.locator('#settingsStopAnalysis').click();
   await page.waitForFunction(()=>window.ChessLabHost.getAnalysisActivity().owners.every(o=>!o.running&&!o.following));
   const stopped=await activity(page);assert.equal(await page.locator('[data-deep="follow"]').isChecked(),false);
   await page.screenshot({path:path.join(evidence,'real-all-four-settings-stopped.png'),fullPage:true});
@@ -136,11 +137,11 @@ test('Chromium APP Quick preparation Stop, natural focus, late loader, status la
   const ids=(await activity(page)).owners.find(o=>o.owner==='cards').children.map(c=>c.id);
   for(const view of ['moves','review','dcc','board']){
     await page.locator('[data-app-tab="'+view+'"]').click();assert.deepEqual((await activity(page)).owners.find(o=>o.owner==='cards').children.map(c=>c.id),ids);
-    const a=await page.locator('[data-activity="stop"]').boundingBox(),tabs=await page.locator('#appTabs').boundingBox();assert(a&&a.height>=44&&a.y+a.height<=tabs.y,'Stop never overlaps bottom navigation');
+    const a=await page.locator('#appStopAnalysis').boundingBox(),tabs=await page.locator('#appTabs').boundingBox();assert(a&&a.height>=44&&a.y+a.height<=tabs.y,'Stop never overlaps bottom navigation');
   }
   for(const size of [{width:740,height:402},{width:402,height:874}]){
     await page.setViewportSize(size);await page.locator('[data-app-tab="moves"]').click();
-    const stop=await page.locator('[data-activity="stop"]').boundingBox(),nav=await page.locator('#appTabs').boundingBox();
+    const stop=await page.locator('#appStopAnalysis').boundingBox(),nav=await page.locator('#appTabs').boundingBox();
     assert(stop&&stop.height>=44&&stop.y+stop.height<=nav.y,'active Stop stays clear of landscape/portrait navigation');
     await page.screenshot({path:path.join(evidence,'app-active-'+size.width+'x'+size.height+'.png'),fullPage:true});
     records.push({case:'active APP responsive layout',viewport:size,stop,nav,emulation:true,pass:true});
@@ -148,15 +149,15 @@ test('Chromium APP Quick preparation Stop, natural focus, late loader, status la
   await page.locator('#appGames').click();await page.locator('#appMore').click();await page.locator('#btnSettings').click();
   await page.waitForFunction(()=>document.querySelector('#settingsPanel').contains(document.activeElement));
   await page.locator('#settingTheme').check();
-  await page.locator('[data-activity="stop"]').click();await page.evaluate(()=>window.__P3.release());
-  await page.waitForFunction(()=>window.__P3.calls.every(c=>c.destroyed&&!c.started)&&document.querySelector('[data-activity="stop"]').disabled);
+  await page.locator('#settingsStopAnalysis').click();await page.evaluate(()=>window.__P3.release());
+  await page.waitForFunction(()=>window.__P3.calls.every(c=>c.destroyed&&!c.started)&&document.querySelector('#settingsStopAnalysis').disabled);
   assert(await page.locator('#settingsPanel').evaluate(el=>el.contains(document.activeElement)),'completed Stop preserves Settings natural Escape focus');
   await page.screenshot({path:path.join(evidence,'app402-preparation-stop-settings.png'),fullPage:true});
   await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
   await page.locator('[data-app-tab="deep"]').click();await page.locator('[data-app-tab="moves"]').click();
   assert.deepEqual(await retention(page),before);await page.reload();await page.waitForFunction(()=>!!window.ChessLabHost&&document.body.dataset.appView==='board');
   assert.deepEqual(await retention(page),before);assert.equal(await page.evaluate(()=>window.__P3.calls.length),0,'reload restores no live jobs');
-  await page.locator('[data-app-lang="sl"]').click();await page.locator('[data-app-lang="en"]').click();
+  await page.locator('.app-language [data-app-lang="sl"]').click();await page.locator('.app-language [data-app-lang="en"]').click();
   assert.equal(await page.locator('#analysisAllMoves').isChecked(),false);
   records.push({case:'APP402 controlled adapters: preparation Stop plus ordinary file import/cursor1/P3 view switching/reload',before,after:await retention(page),ids,serviceWorkers:'blocked only for controlled adapter case',physicalDevice:false,pass:true});
   assert.deepEqual(errors,[]);

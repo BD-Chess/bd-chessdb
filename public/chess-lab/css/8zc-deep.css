@@ -222,3 +222,55 @@ body .analysis-options-row{column-gap:6px}
 body .analysis-options-row .analysis-checks{gap:5px}
 body:not(.app-mobile) .analysis-source-row .analysis-options-row .analysis-checks label{font-size:10.5px;padding-inline:0}
 @container(min-width:350px){body .analysis-options-row{flex-wrap:nowrap}body .analysis-dcc-actions{flex-wrap:nowrap}}
+
+/* Four concise busy lines, calm larger settled move/score; stable at each preference. */
+.all-eval-badges .all-eval-badge{height:calc(var(--card-unit,12px)*7);min-height:84px;gap:3px;padding:6px 4px;overflow:hidden}
+.all-eval-badges .all-eval-main{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px 5px;align-items:baseline}
+.all-eval-badges .all-eval-main strong{font-size:calc(var(--card-unit,12px)*.96);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.all-eval-badges .all-eval-move,.all-eval-badges .all-eval-score{font-size:calc(var(--card-unit,12px)*1.5);line-height:1.25}
+.all-eval-badges .all-eval-move{text-align:end}
+.all-eval-badges .all-eval-score{text-align:start}
+.all-eval-badges .all-eval-badge small{font-size:calc(var(--card-unit,12px)*.86);line-height:1.25;max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.all-eval-badges .all-eval-badge.is-busy .all-eval-move,.all-eval-badges .all-eval-badge.is-busy .all-eval-score{font-size:calc(var(--card-unit,12px)*1.14)}
+.all-eval-badges .all-eval-badge .all-eval-detail[hidden]{display:none!important}
+.all-eval-badges .all-eval-badge[data-eval-source="DCC"] .all-eval-move{grid-column:1/-1;text-align:center}
+
+/* Stop/All label changes cannot rewrap the surrounding toolbar. */
+.board-engine-row .analyze-all{inline-size:8.4em;flex:0 0 8.4em;justify-content:center;text-align:center}
+
+/* P4: native collapsed configuration and the existing appearance preferences. */
+.deep-configuration{margin:10px 0;border:1px solid var(--ui-border);border-radius:7px;padding:8px}
+.deep-configuration>summary{cursor:pointer;font-size:calc(var(--analysis-font,14px)*.86);line-height:1.5;overflow-wrap:anywhere}
+.deep-configuration>summary strong{margin-inline-end:7px}
+.deep-configuration>summary span{display:block;color:var(--ui-muted);font-variant-numeric:tabular-nums}
+.deep-shortcuts{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.deep-shortcuts button{font-size:calc(var(--analysis-font,14px)*.86);min-height:44px}
+:root{--card-unit:calc(var(--analysis-font,14px)*.85714286)}
+.deep-panel{font-size:var(--analysis-font,14px)}
+.deep-settings label,.deep-actions button,.deep-position,.deep-status,.deep-preview p{font-size:calc(var(--analysis-font,14px)*.86)}
+.deep-line-meta strong{font-size:calc(var(--analysis-font,14px)*1.22)}
+.deep-line-meta span,.deep-engine-progress,.deep-allocation,.deep-budget-note,.deep-root-moves small,.deep-neural-details{font-size:calc(var(--analysis-font,14px)*.79)}
+.deep-pv button{font-size:calc(var(--analysis-font,14px)*.86)}
+.deep-settings input,.deep-settings select,.deep-root-moves input,.deep-follow{min-height:44px}
+.appearance-settings>summary{cursor:pointer;font-weight:700;margin-bottom:8px}
+.appearance-settings label{display:block;margin:8px 0 4px}
+.appearance-settings select{max-width:100%;min-height:44px}
+.settings-language,.desktop-language{display:inline-flex;align-items:center;gap:5px}
+.settings-language button,.desktop-language button,.analysis-help-action{min-width:44px;min-height:44px;cursor:pointer;border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-raised);color:var(--ui-text)}
+.desktop-language button{min-height:30px;font-size:11px}
+body.app-mobile .desktop-language{display:none}
+[data-app-lang][aria-pressed="true"]{color:var(--ui-accent);text-decoration:underline;text-underline-offset:4px}
+.drawer-heading{gap:6px;flex-wrap:wrap}
+.drawer-heading>strong{margin-inline-end:auto}
+.analysis-help-dialog{box-sizing:border-box;max-width:min(460px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-panel);color:var(--ui-text);padding:16px;font:var(--analysis-font,14px)/1.5 system-ui}
+.analysis-help-dialog::backdrop{background:#0008}
+.analysis-help-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.analysis-help-dialog h2{font-size:1.1em;margin:0}
+.analysis-help-dialog header button{min-width:44px;min-height:44px;color:inherit;background:var(--ui-raised);border:1px solid var(--ui-border);border-radius:6px;font-size:22px}
+.analysis-help-dialog dt{font-weight:700;margin-top:12px}
+.analysis-help-dialog dd{margin:4px 0 0;color:var(--ui-muted)}
+
+/* Keep essential clocks readable even when a wider workspace narrows the board. */
+.all-eval-badges .all-eval-badge{container-type:inline-size}
+.all-eval-badges .all-eval-main strong{font-size:clamp(10px,9cqi,12px)}
+.all-eval-badges .all-eval-badge.is-busy small{font-size:clamp(9px,8cqi,calc(var(--card-unit,12px)*.86))}

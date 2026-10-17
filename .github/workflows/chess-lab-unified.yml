@@ -47,8 +47,8 @@ jobs:
             public/chess-lab/research/analysis-controls.test.cjs \
             public/chess-lab/research/deep-ui.test.cjs \
             public/chess-lab/research/engine-memory.test.cjs
-      - name: P3 interactive activity, Stop and each-move ownership
-        run: node --test public/chess-lab/research/p3-active-analysis.test.cjs public/chess-lab/research/sf-provider.test.cjs
+      - name: P3/P4 interactive ownership, cards, preferences and language
+        run: node --test public/chess-lab/research/p3-active-analysis.test.cjs public/chess-lab/research/sf-provider.test.cjs public/chess-lab/research/p4-engine-cards.test.cjs public/chess-lab/research/p4-interface.test.cjs
       - name: P1 durable state, navigation and source provenance
         run: |
           node --test \
@@ -92,9 +92,11 @@ jobs:
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
             CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p3" \
+            CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p4" \
             node --test --test-concurrency=1 \
               public/chess-lab/research/full-game-resume-browser.cjs \
-              public/chess-lab/research/p3-active-analysis-browser.cjs
+              public/chess-lab/research/p3-active-analysis-browser.cjs \
+              public/chess-lab/research/p4-gui-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

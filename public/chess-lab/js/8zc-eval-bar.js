@@ -138,8 +138,9 @@
       const note = document.createElement('small');
       main.append(title, move); if (source !== 'DCC') main.append(score);
       if (source === 'DCC' && dccProgress) note.append(dccProgress);
-      badge.append(main, note); comparison.append(badge);
-      const nodes = { badge, main, title, move, score, note }; cards.set(source, nodes); return nodes;
+      const detail=document.createElement('small');detail.className='all-eval-detail';detail.hidden=true;
+      badge.append(main, note, detail); comparison.append(badge);
+      const nodes = { badge, main, title, move, score, note, detail }; cards.set(source, nodes); return nodes;
     }
     let lastKnown = null, batchDepth = 0, paintPending = false;
     function renderComparison(fen, visible) {
@@ -155,7 +156,15 @@
         const placeholder=source==='RLE'?!globalThis.ChessEngineRegistry?.supported('reckless'):source==='LC0'?!globalThis.ChessEngineRegistry?.supported('lc0'):false;
         const enabled=source==='CDB'?settings.cdbEnabled!==false:!placeholder;
         const control=getBadgeControl?.(source);
-        const { badge, move, score, note } = cardNodes(source);
+        const { badge, title:engineTitle, move, score, note, detail } = cardNodes(source);
+        const activity=control?.activity;
+        const sl=document.documentElement?.lang==='sl';
+        engineTitle.textContent=activity?activity.title:names[source];
+        badge.classList.toggle('is-busy',!!activity?.busy);
+        badge.dataset.analysisOwner=activity?.owner||'';
+        badge.dataset.analysisState=activity?.child.state||'idle';
+        badge.dataset.positionScope=activity?(activity.current?'current':'older'):'current';
+        detail.hidden=!activity?.busy;detail.textContent=activity?.busy?activity.compactDetail:'';
         if (actionable) {
           badge.disabled = placeholder || !!control?.disabled;
           badge.title = control?.title || '';
@@ -181,10 +190,16 @@
           note.title = `${dccProgress?.title || note.textContent}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
           if (actionable) badge.setAttribute('aria-label', `ChessDCC: ${move.textContent}. ${note.title}. ${badge.title}`);
         } else {
-          const entry = sourceScores.get(`${fen}:${source}`);
+          const projected=activity?.result, first=projected?.lines?.find(l=>(l.multipv||1)===1);
+          let entry = sourceScores.get(`${fen}:${source}`);
+          if(first){
+            const uci=first.pv?.[0];let san=uci;
+            try{if(typeof globalThis.Chess==='function'&&uci)san=new globalThis.Chess(projected.fen||fen).move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]})?.san||uci;}catch(_){}
+            entry={score:first.score,bestMove:san,at:Date.now(),depth:first.depth,variant:activity.child.mode==='sf-full'?'Full':'Lite',fen:projected.fen||fen};
+          }else if(activity&&!activity.current)entry=null;
           const fresh = enabled && entry && Date.now() - entry.at < 300000 &&
-            (source !== 'SF' || !control?.variant || !entry.variant || control.variant === entry.variant);
-          const result = measure(fen, fresh ? entry.score : null, null, source);
+            (first || source !== 'SF' || !control?.variant || !entry.variant || control.variant === entry.variant);
+          const result = measure(entry?.fen||fen, fresh ? entry.score : null, null, source);
           move.textContent = placeholder || !enabled ? '—' : fresh ? entry.bestMove || '—' : '…';
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
           score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
@@ -192,11 +207,15 @@
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
           note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
             (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
-          if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
+          if(activity){
+            note.textContent=activity.busy?activity.compactPhase:activity.note;
+            if(activity.busy&&!first&&fresh)note.textContent+=' · '+(sl?'ohranjen rezultat':'retained result');
+            if(activity.child.error)note.title=activity.child.error;
+          }else if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
-        if (source !== 'DCC') note.title = note.textContent;
+        if (source !== 'DCC') note.title = [activity?.phase,activity?.detail,note.textContent,activity?.child.error].filter(Boolean).join(' · ');
         if (actionable) {
           badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
           badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);

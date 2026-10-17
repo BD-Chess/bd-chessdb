@@ -118,7 +118,7 @@
     }
     function jobActivity(job){
       return {id:'card-'+job.startedAt+'-'+job.mode+'-'+job.id,mode:job.mode,label:label(job.mode),
-        state:job.phase,positionKey:job.positionKey,
+        state:job.phase,positionKey:job.positionKey,fen:job.fen,result:job.snapshot||null,
         budget:{movetime:job.options.movetime},progress:job.progress?{...job.progress}:null,
         searchElapsedMs:job.searchStarted==null?null:Math.max(0,now()-job.searchStarted)};
     }
@@ -134,7 +134,7 @@
       if(!available().includes(value.mode))return;
       results.set(key(value.fen,value.mode),value);
       const job=jobs.get(value.mode);
-      if(job)recentActivity.set(value.mode,{...jobActivity(job),state:value.status,error:value.error||null,
+      if(job)recentActivity.set(value.mode,{...jobActivity(job),state:value.status,error:value.error||null,result:value,
         searchElapsedMs:value.actualSearchMs??null});
       if(results.size>150)results.delete(results.keys().next().value);
       host.onResult?.(value,options);changed();

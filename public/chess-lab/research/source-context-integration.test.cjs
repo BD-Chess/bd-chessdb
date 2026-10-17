@@ -23,8 +23,17 @@ async function boot(t, options = {}) {
   t.after(async () => {
     // The real boot opens the simulation archive asynchronously. Closing jsdom
     // before its first render would turn its normal completion into a rejection.
-    await Promise.race([archiveReady, new Promise(resolve => setTimeout(resolve, 1500))]);
-    w.close();
+    // Await readiness rather than treating a slow CI runner as ready after 1.5s.
+    // A missing completion fails the fixture; it is never silently skipped.
+    let deadline;
+    try {
+      await Promise.race([archiveReady, new Promise((_, reject) => {
+        deadline = setTimeout(() => reject(new Error('Simulation archive fixture did not finish initialization')), 10000);
+      })]);
+    } finally {
+      clearTimeout(deadline);
+      w.close();
+    }
   });
   Object.defineProperty(w.HTMLElement.prototype, 'innerText', {
     get() { return this.textContent; }, set(value) { this.textContent = String(value); }, configurable: true

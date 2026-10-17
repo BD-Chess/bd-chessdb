@@ -296,6 +296,7 @@
       return {id:job.id,positionKey:job.positionKey,children:job.children.map(child=>({
         id:child.jobId,mode:child.id,label:root.ChessEngineRegistry?.label(child.id)||child.id,state:child.status,
         error:child.error||null,budget:child.limits||job.requestedBudget,
+        fen:job.fen,result:child.snapshot?{...child.snapshot,fen:job.fen}:null,
         progress:child.snapshot?.downloadProgress?{...child.snapshot.downloadProgress}:null,
         searchElapsedMs:child.searchStartedMs==null?null:Math.max(0,(child.finishedMs??now())-child.searchStartedMs),
         positionKey:job.positionKey}))};
