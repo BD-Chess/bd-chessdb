@@ -36,7 +36,7 @@ jobs:
       - name: Verify contracts, authentication, saved sessions and pixels without provider calls
         run: |
           set -o pipefail
-          node --test tests/dfc-cmarvel-protected.test.mjs tests/dfc-import.test.mjs tests/dualframe-deploy-ready.test.mjs tests/dualframe-gallery-order.test.mjs tools/dualframe-ai-lab/test_core.mjs tests/dualframe-v3.test.mjs tests/dualframe-session.test.mjs tests/dualframe-vault.test.mjs tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs tests/dualframe-sync-server.test.mjs tests/dualframe-enhancement-client.test.mjs tests/dualframe-enhancement-backup.test.mjs tests/dualframe-account-storage.test.mjs tests/dualframe-account-bridge.test.mjs tests/dualframe-account-client.test.mjs tests/dualframe-owner-storage.test.mjs tests/dualframe-enhancement.test.mjs tests/dualframe-enhancement-service.test.mjs tests/dualframe-enhancement-policy.test.mjs tests/dualframe-enhancement-ledger.test.mjs tests/dualframe-account-usage-ledger.test.mjs tests/dualframe-account-usage-service.test.mjs tests/dualframe-free-provider.test.mjs tests/dualframe-master-images.test.mjs tests/dualframe-account-identity.test.mjs tests/dualframe-account-runtime.test.mjs tests/dualframe-tenant-isolation.test.mjs tests/dualframe-private-owner.test.mjs | tee dualframe-test-results.txt
+          node --test tests/dfc-text.test.mjs tests/dfc-text-layers.test.mjs tests/dfc-cmarvel-protected.test.mjs tests/dfc-import.test.mjs tests/dualframe-deploy-ready.test.mjs tests/dualframe-gallery-order.test.mjs tools/dualframe-ai-lab/test_core.mjs tests/dualframe-v3.test.mjs tests/dualframe-session.test.mjs tests/dualframe-vault.test.mjs tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs tests/dualframe-sync-server.test.mjs tests/dualframe-enhancement-client.test.mjs tests/dualframe-enhancement-backup.test.mjs tests/dualframe-account-storage.test.mjs tests/dualframe-account-bridge.test.mjs tests/dualframe-account-client.test.mjs tests/dualframe-owner-storage.test.mjs tests/dualframe-enhancement.test.mjs tests/dualframe-enhancement-service.test.mjs tests/dualframe-enhancement-policy.test.mjs tests/dualframe-enhancement-ledger.test.mjs tests/dualframe-account-usage-ledger.test.mjs tests/dualframe-account-usage-service.test.mjs tests/dualframe-free-provider.test.mjs tests/dualframe-master-images.test.mjs tests/dualframe-account-identity.test.mjs tests/dualframe-account-runtime.test.mjs tests/dualframe-tenant-isolation.test.mjs tests/dualframe-private-owner.test.mjs | tee dualframe-test-results.txt
       - name: Preserve the currently deployed site and overlay only DualFrame
         run: node scripts/dualframe-prod-stage.mjs
       - name: Install preserved root dependencies and image dependencies
@@ -60,6 +60,11 @@ jobs:
           npx --yes netlify-cli@26.2.0 deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "DualFrame AI 3.0 ${GITHUB_SHA} baseline=$(cat ../.dualframe-baseline)" --json > ../dualframe-deploy.json
       - name: Verify the live API, password boundary and public page
         run: node scripts/dualframe-prod-stage.mjs --verify
+      - name: Verify actual reader text, gestures and rotation on both public hosts
+        timeout-minutes: 4
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          node tests/dfc-text-live-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -68,4 +73,5 @@ jobs:
             dualframe-deploy.json
             dualframe-live-check.json
             dualframe-test-results.txt
+            browser-evidence/dfc-live/
           if-no-files-found: ignore

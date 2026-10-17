@@ -1,5 +1,5 @@
 import {archiveBackup,readArchiveBackup} from './archive-backup.mjs?v=3.0-r4.14';
-import {createCartoons} from './dfc-reader.mjs?v=3.0-r4.21';
+import {createCartoons} from './dfc-reader.mjs?v=3.0-r4.22';
 import * as API from './api-client.mjs?v=3.0-r4.11';
 import {verifyEnhancementBackup} from './enhancement-backup.mjs?v=3.0-r4.11';
 import {createEnhancementClient} from './enhancement-client.mjs?v=3.0-r4.11';
@@ -956,6 +956,6 @@ $('product-cartoons').addEventListener('click',()=>switchProduct('cartoons'));
 $('product-photos').addEventListener('click',()=>switchProduct('photos'));
 if(new URLSearchParams(location.search).get('product')==='cartoons')switchProduct('cartoons');
 // Public, read-only diagnostic surface: DFC content/state only, no owner data.
-window.DFCReader={getState:cartoons.getState,getEdition:cartoons.getEdition,getCacheStats:cartoons.getCacheStats};
+window.DFCReader={getState:cartoons.getState,getEdition:cartoons.getEdition,getCacheStats:cartoons.getCacheStats,getTextState:cartoons.getTextState};
 initPWA().catch(()=>pwaSetStatus('pwaUnavailable'));
 initR5().catch(e=>notify(e.message,true));
