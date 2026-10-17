@@ -60,6 +60,11 @@ jobs:
           npx --yes netlify-cli@26.2.0 deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --message "DualFrame AI 3.0 ${GITHUB_SHA} baseline=$(cat ../.dualframe-baseline)" --json > ../dualframe-deploy.json
       - name: Verify the live API, password boundary and public page
         run: node scripts/dualframe-prod-stage.mjs --verify
+      - name: Verify actual reader text, gestures and rotation on both public hosts
+        timeout-minutes: 4
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          node tests/dfc-text-live-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -68,4 +73,5 @@ jobs:
             dualframe-deploy.json
             dualframe-live-check.json
             dualframe-test-results.txt
+            browser-evidence/dfc-live/
           if-no-files-found: ignore
