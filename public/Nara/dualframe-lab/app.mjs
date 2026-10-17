@@ -956,6 +956,6 @@ $('product-cartoons').addEventListener('click',()=>switchProduct('cartoons'));
 $('product-photos').addEventListener('click',()=>switchProduct('photos'));
 if(new URLSearchParams(location.search).get('product')==='cartoons')switchProduct('cartoons');
 // Public, read-only diagnostic surface: DFC content/state only, no owner data.
-window.DFCReader={getState:cartoons.getState,getEdition:cartoons.getEdition,getCacheStats:cartoons.getCacheStats};
+window.DFCReader={getState:cartoons.getState,getEdition:cartoons.getEdition,getCacheStats:cartoons.getCacheStats,getTextState:cartoons.getTextState};
 initPWA().catch(()=>pwaSetStatus('pwaUnavailable'));
 initR5().catch(e=>notify(e.message,true));
