@@ -25,6 +25,7 @@ async function openSef(raw){
  if(obj.format!=='BD-O-SEF-PAYLOAD-1'||typeof obj.html!=='string')throw new Error('Neveljavna vsebina Sefa.');
  const extra=await openExtra(raw);if(extra)obj.html+=extra.html;
  const startme=await openExtra(raw,'sef-startme.json');if(startme)obj.html+=startme.html;
+ const kindle=await openExtra(raw,'sef-kindle.json');if(kindle)obj.kindleHtml=kindle.html;
  return obj;
 }
 async function openExtra(raw,configFile='sef-extra.json'){
@@ -154,7 +155,36 @@ function installSearch(){
  apply();
 }
 function installFont(){let p=100;const root=document.documentElement;const paint=()=>{root.style.setProperty('--scale',String(p/100));$('fontReset').textContent=p+'%';$('fontMinus').disabled=p<=70};$('fontMinus').onclick=()=>{p=Math.max(70,p-10);paint()};$('fontPlus').onclick=()=>{p+=10;paint()};$('fontReset').onclick=()=>{p=100;paint()};paint();}
-function render(obj){$('loading').hidden=true;$('content').hidden=false;$('content').innerHTML=obj.html;installSecretControls();installSearch();installFont();document.querySelectorAll('a[href]').forEach(a=>{const u=new URL(a.href,location.href);if(u.origin!==location.origin){a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';a.target='_blank'}});}
+function applyKindleUpdate(fragment){
+ if(!fragment)return;
+ const tpl=document.createElement('template');tpl.innerHTML=fragment;
+ const corrected=tpl.content.querySelector('article[data-sef-kindle-current]');
+ if(!corrected)throw new Error('Neveljaven šifrirani Kindle popravek.');
+ const correctedEmail=corrected.querySelector('.sef-import-email')?.textContent||'';
+ const correctedPass=corrected.querySelector('.secret-value')?.textContent||'';
+ if(!correctedEmail||!correctedPass)throw new Error('Nepopoln Kindle popravek.');
+ let count=0;
+ document.querySelectorAll('article.sef-import-row').forEach(el=>{
+  if(el.querySelector('.sef-import-name strong')?.textContent.trim()==='Kindle Cloud Reader'){
+   el.replaceWith(corrected.cloneNode(true));count++;
+  }
+ });
+ document.querySelectorAll('#startme-import tr').forEach(el=>{
+  if(el.querySelector('td:first-child strong')?.textContent.trim()!=='Kindle Cloud Reader')return;
+  const cells=el.querySelectorAll('td');
+  if(cells.length<4)throw new Error('Nepričakovan format Kindle vrstice.');
+  const email=document.createElement('code');email.className='secret-value';email.tabIndex=0;email.textContent=correctedEmail;
+  const pass=document.createElement('code');pass.className='secret-value';pass.tabIndex=0;pass.textContent=correctedPass;
+  cells[2].replaceChildren(email);cells[3].replaceChildren(pass);count++;
+ });
+ if(!count){
+  const dst=document.querySelector('.vault-wrap');
+  if(!dst)throw new Error('Vsebina Sefa ni najdena.');
+  dst.append(corrected.cloneNode(true));
+ }
+}
+
+function render(obj){$('loading').hidden=true;$('content').hidden=false;$('content').innerHTML=obj.html;applyKindleUpdate(obj.kindleHtml);installSecretControls();installSearch();installFont();document.querySelectorAll('a[href]').forEach(a=>{const u=new URL(a.href,location.href);if(u.origin!==location.origin){a.rel='noopener noreferrer';a.referrerPolicy='no-referrer';a.target='_blank'}});}
 $('lockAll').onclick=lockAll;
 try{
  if(!window.isSecureContext||!crypto.subtle||!window.DecompressionStream)throw new Error('Odpri HTTPS naslov v posodobljenem brskalniku.');

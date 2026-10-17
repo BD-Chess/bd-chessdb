@@ -1,0 +1,44 @@
+name: Owner-authorized Sef Kindle encrypted correction 20261017
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/BD/O/sef.js'
+      - 'public/BD/O/sef-kindle.json'
+      - 'public/BD/O/sef-kindle-20261017-r1.enc.txt'
+      - 'scripts/sef-kindle-production-20261017.mjs'
+      - '.github/workflows/sef-kindle-production-20261017.yml'
+permissions:
+  contents: read
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+jobs:
+  release:
+    if: startsWith(github.event.head_commit.message, 'release: sef-kindle 20261017-r1')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify encrypted publication boundary
+        run: |
+          node --check public/BD/O/sef.js
+          node --check scripts/sef-kindle-production-20261017.mjs
+          python3 scripts/check_secret_boundary.py
+      - name: Publish only the three approved files on the current production manifest
+        run: node scripts/sef-kindle-production-20261017.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sef-kindle-production-20261017-receipt
+          path: |
+            sef-kindle-deploy-started.json
+            sef-kindle-production-receipt.json
+          if-no-files-found: ignore
