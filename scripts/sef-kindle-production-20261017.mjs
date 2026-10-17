@@ -4,8 +4,8 @@ import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const site='17b4124d-c197-4c0a-a711-8b2c08d91088';
-const expectedDeploy='6ad2aba10bde08c161ccac78';
-const preservedGitBaseline='88caab454fd2767eef87d03ad0a371f9411c22a5';
+const expectedDeploy='6ad2c372674de74206292aa2';
+const preservedGitBaseline='95905176c313c2c3577d242bb55d5d3e2af594d2';
 const token=process.env.NETLIFY_AUTH_TOKEN;
 assert(token,'NETLIFY_CREDENTIAL_MISSING');
 const names=['sef.js','sef-kindle.json','sef-kindle-20261017-r1.enc.txt'];
