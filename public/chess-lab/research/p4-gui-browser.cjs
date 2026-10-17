@@ -100,6 +100,13 @@ test('P4 B responsive Deep, Appearance, locale and native touch-help preserve th
     for(const lang of ['sl','en','sl']){
       await settings.locator('[data-app-lang="'+lang+'"]').click();
       await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
+      for(const [selector,attr,en,sl]of [
+        ['#analysisLink','aria-label','Link engine cards to displayed evaluation','Poveži kartice motorjev s prikazano oceno'],
+        ['#btnAnalysisDeepen','title','Refresh ChessDB evaluations for the current position','Osveži ocene ChessDB za trenutni položaj'],
+        ['#analysisCpuThreads','title','CDB has no configurable local search threads. Your local CPU setting is retained.','CDB nima nastavljivih niti lokalnega iskanja. Lokalna nastavitev CPU je ohranjena.'],
+        ['#allEvalBadges','aria-label','ChessDB, Stockfish, ChessDCC, Reckless, LC Zero and Berserk comparison','Primerjava ChessDB, Stockfish, ChessDCC, Reckless, LC Zero in Berserk'],
+        ['#humanWhiteName','placeholder','Human White','Beli igralec']
+      ])assert.equal(await page.locator(selector).getAttribute(attr),lang==='sl'?sl:en,'public '+attr+' at '+spec.label);
       assert.deepEqual(await page.evaluate(()=>window.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep').children.map(c=>c.id)),ids);
       assert.equal(await page.evaluate(()=>window.__P4.calls.length),4);
     }
