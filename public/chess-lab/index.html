@@ -127,6 +127,7 @@
       <nav class="header-nav" aria-label="Main navigation">
         <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
         <a href="8zc-help.html#dcc">How DCC works</a>
+        <span class="desktop-language" role="group" aria-label="Language"><button type="button" data-app-lang="en">EN</button><button type="button" data-app-lang="sl">SL</button></span>
         <button id="chessPwaInstall" class="chess-pwa-action" type="button" aria-controls="chessPwaHint">Install LAB</button>
         <button id="chessPwaUpdate" class="chess-pwa-action" type="button" hidden>Update ready · reload</button>
       </nav>
@@ -272,6 +273,27 @@
       <div id="settingsPanel" class="panel workspace-drawer" aria-label="Workspace settings">
         <div class="analysis-status-row" aria-label="Analysis status"><small id="analysisCpuStatus" hidden></small><small id="analysisHostNote" class="analysis-host-note" hidden></small><small data-berserk-status role="status" aria-live="polite" hidden></small><small id="analysisDccModeNote" hidden></small><span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span><span role="status" aria-live="polite" id="dccProgress"></span></div>
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
+<details id="appearanceSettings" class="dcc-settings-group appearance-settings" open><summary>Display / Appearance</summary>
+<label for="settingFont">Font size:</label>
+        <select id="settingFont">
+          <option value="14px" selected>Small</option>
+          <option value="16px">Medium</option>
+          <option value="18px">Large</option>
+        </select>
+<label for="settingLabWorkspaceWidth">Workspace width on a wide screen:</label>
+          <select id="settingLabWorkspaceWidth">
+            <option value="0" selected>Default</option>
+            <option value="380">380 px</option>
+            <option value="440">440 px</option>
+            <option value="500">500 px</option>
+            <option value="560">560 px</option>
+          </select>
+<label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+<label>
+          <input type="checkbox" id="settingTheme">
+          Light theme
+        </label>
+<div class="settings-language" role="group" aria-label="Language"><button type="button" data-app-lang="en">EN</button><button type="button" data-app-lang="sl">SL</button></div></details>
         <div class="dcc-settings-group">
           <details id="engineStorage" class="engine-storage"><summary>Engine storage</summary>
             <label class="engine-memory-choice"><input type="checkbox" data-engine-memory-all> Keep all engines in RAM</label>
@@ -300,15 +322,8 @@
             <option value="expanded">Always expanded</option>
           </select>
           <p class="setting-note">Focus gives the saved toolbar space to the analysis. Pause and Tools remain available. Tools opens without moving the board.</p>
-          <label for="settingLabWorkspaceWidth">Workspace width on a wide screen:</label>
-          <select id="settingLabWorkspaceWidth">
-            <option value="0" selected>Default</option>
-            <option value="380">380 px</option>
-            <option value="440">440 px</option>
-            <option value="500">500 px</option>
-            <option value="560">560 px</option>
-          </select>
-          <label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+
+
           <details class="lab-subsettings">
             <summary>Pause Sim at an interesting position</summary>
             <label><input type="checkbox" id="settingLabPauseDisagreement"> Raw engine and DCC choose different moves</label>
@@ -354,12 +369,7 @@
           <option value="big">Big</option>
         </select>
 
-        <label for="settingFont">Font size:</label>
-        <select id="settingFont">
-          <option value="14px" selected>Small</option>
-          <option value="16px">Medium</option>
-          <option value="18px">Large</option>
-        </select>
+
 
         <label for="settingNotation">Badge notation:</label>
         <select id="settingNotation">
@@ -387,10 +397,7 @@
           <option value="#90caf9">Light Blue</option>
         </select>
 
-        <label>
-          <input type="checkbox" id="settingTheme">
-          Light theme
-        </label>
+
 
         <label>
           <input type="checkbox" id="settingDoubleBoard">
@@ -781,6 +788,8 @@
   <script src="js/8zc-lab-layout.js?v=20261013-settings-r1"></script>
   <script src="pwa.js"></script>
   <script src="js/8zc-engine-storage-ui.js?v=20261013-r14"></script>
+  <script src="js/8zc-language.js?v=20261017-p4-r1"></script>
+  <script src="js/8zc-interface.js?v=20261017-p4-r1"></script>
   <script src="js/app-mobile.js?v=20261013-r9"></script>
 
 </body>

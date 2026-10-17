@@ -164,7 +164,7 @@
         badge.dataset.analysisOwner=activity?.owner||'';
         badge.dataset.analysisState=activity?.child.state||'idle';
         badge.dataset.positionScope=activity?(activity.current?'current':'older'):'current';
-        detail.hidden=!activity?.busy;detail.textContent=activity?.busy?activity.detail:'';
+        detail.hidden=!activity?.busy;detail.textContent=activity?.busy?activity.compactDetail:'';
         if (actionable) {
           badge.disabled = placeholder || !!control?.disabled;
           badge.title = control?.title || '';
@@ -208,14 +208,14 @@
           note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
             (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
           if(activity){
-            note.textContent=activity.busy?activity.phase:activity.note;
+            note.textContent=activity.busy?activity.compactPhase:activity.note;
             if(activity.busy&&!first&&fresh)note.textContent+=' · '+(sl?'ohranjen rezultat':'retained result');
             if(activity.child.error)note.title=activity.child.error;
           }else if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
-        if (source !== 'DCC') note.title = [note.textContent,activity?.child.error].filter(Boolean).join(' · ');
+        if (source !== 'DCC') note.title = [activity?.phase,activity?.detail,note.textContent,activity?.child.error].filter(Boolean).join(' · ');
         if (actionable) {
           badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
           badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);

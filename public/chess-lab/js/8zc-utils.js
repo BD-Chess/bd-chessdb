@@ -716,6 +716,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   const requestPending = new Map();
   const simRequests = new Set();
   let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
+  const cardControlCache=new Map();
+  function cacheCardControls(){if(engineCards)for(const source of ['SF','RLE','LC0','BER'])cardControlCache.set(source,engineCards.state(source));}
   let analysisActivity = null, activityPositionKey = null, probeActivity = null, probeSerial = 0, interactiveStopped = false;
   const canAnalyzeInteractive = () => !document.hidden && !offlineEvidence && showEval && !simRunning && !replayRunning && !playState.assistanceLocked;
   const refreshAnalysisActivity = () => analysisActivity?.refresh();
@@ -786,7 +788,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   window.ChessAnalysisSession?.subscribeSettings?.(next=>{
     if(settings.sfCardMode===next.sfCardMode)return;
     settings.sfCardMode=next.sfCardMode;
-    persistSettings();
+    cacheCardControls();persistSettings();
     positionEval.render();
   });
   const positionEval = window.ChessEvalBar.create({ game, settings,
@@ -802,7 +804,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       if(['SF','BER','RLE','LC0'].includes(source)){
         const activity=analysisActivity?.card(source),external=(activity?.busy||activity?.following)&&activity.owner!=='cards';
         return {...(external?{disabled:!available,working:true,title:activity.action,variant:activity.child.mode==='sf-full'?'Full':'Lite'}:
-          engineCards?.state(source)||{disabled:!available,title:'Analyze local engine'}),
+          cardControlCache.get(source)||{disabled:!available,title:'Analyze local engine'}),
           activity,selected:settings.analysisLink&&linkedCard===source,allRunning};
       }
       return { disabled: !available || cdbRefreshing || settings.cdbEnabled === false, selected:settings.analysisLink&&linkedCard==='CDB', allRunning,
@@ -1590,6 +1592,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     /* CSS vars */
     document.documentElement.style.setProperty('--overlay-font', settings.font);
     document.documentElement.style.setProperty('--moves-font',  settings.font);
+    document.documentElement.style.setProperty('--analysis-font', settings.font);
     document.documentElement.style.setProperty('--piece-scale',
       { small: .6, medium: .8, big: 1 }[settings.pieceSize]);
 
@@ -2612,6 +2615,7 @@ function jumpTo(i){
 		saveSettings();
 		applySettings();
 		if (id === 'settingSimEval') { tournamentRunner?.refreshEvaluation?.(); positionEval.render(); refreshPlayUi(); return; }
+        if (['settingFont','settingHistorySize','settingBg','settingTheme','settingDoubleBoard','settingPieceSize'].includes(id)) { board.resize(); renderHistory(); positionEval.render(); return; }
 		updateBoard(false);
 	  };
 	});
@@ -2746,7 +2750,7 @@ function jumpTo(i){
     canRetainPrepared:()=>!localProvider&&!localController,
     onResult:publishEngineSnapshot,
     onState:()=>{
-      refreshAnalysisActivity();
+      cacheCardControls();refreshAnalysisActivity();
       positionEval.render();
       const follow=document.getElementById('analysisAllMoves');
       if(follow)follow.checked=!!engineCards?.isFollowing();

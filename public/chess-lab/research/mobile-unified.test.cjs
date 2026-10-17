@@ -6,7 +6,7 @@ const { JSDOM } = require('jsdom');
 const { Chess } = require('../js/chess.min.js');
 const base = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(base, 'index.html'), 'utf8');
-const script = fs.readFileSync(path.join(base, 'js/app-mobile.js'), 'utf8');
+const script = fs.readFileSync(path.join(base, 'js/8zc-language.js'), 'utf8')+'\n'+fs.readFileSync(path.join(base, 'js/app-mobile.js'), 'utf8');
 const mobileCss = fs.readFileSync(path.join(base, 'css/app-mobile.css'), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 

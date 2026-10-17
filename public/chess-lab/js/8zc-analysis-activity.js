@@ -11,7 +11,8 @@
   }
   const words={en:{stop:'Stop analysis',all:'All engines',stopAll:'Stop all',scope:'Stop all interactive analysis and each-move policies; games, Sim and replay continue',armed:'Each move armed',off:'Each move off',cards:'Cards',deep:'Deep',probe:'Board/DCC',older:'Older position',queued:'Queued',loading:'Loading',preparing:'Preparing',ready:'Preparing',searching:'Searching',running:'Searching',stopping:'Stopping',complete:'Complete',stopped:'Stopped',failed:'Failed',partial:'Partial',depth:'Depth',lines:'lines',visits:'visits',limit:'Limit',until:'until Stop',noInfo:'No search info',stopDeep:'Stop Deep group and Deep each move',stopProbe:'Stop Board/DCC analysis',newSearch:'New search'},
     sl:{stop:'Ustavi analizo',all:'Vsi motorji',stopAll:'Ustavi vse',scope:'Ustavi vse interaktivne analize in samodejno analizo potez; partija, Sim in ponovitev tečejo naprej',armed:'Vsaka poteza vklopljena',off:'Vsaka poteza izklopljena',cards:'Kartice',deep:'Deep',probe:'Plošča/DCC',older:'Starejši položaj',queued:'V vrsti',loading:'Nalaganje',preparing:'Priprava',ready:'Priprava',searching:'Analizira',running:'Analizira',stopping:'Ustavljanje',complete:'Končano',stopped:'Ustavljeno',failed:'Napaka',partial:'Delno',depth:'Globina',lines:'linije',visits:'obiski',limit:'Omejitev',until:'do ustavitve',noInfo:'Brez podatkov iskanja',stopDeep:'Ustavi skupino Deep in Deep za vsako potezo',stopProbe:'Ustavi analizo plošče/DCC',newSearch:'Novo iskanje'}};
-  const lex=()=>words[root.document.documentElement.lang==='sl'?'sl':'en'];
+  const docLang=()=>root.document.documentElement.lang==='sl'?'sl':'en';
+  const lex=()=>words[docLang()];
   function presentation(item){
     if(!item)return null;
     const l=lex(),c=item.child,r=c.result||{},busy=liveStates.has(c.state),budget=c.budget||{};
@@ -25,8 +26,13 @@
     const reached=c.mode==='lc0'?(r.visits??r.nodes):(r.linesDepth??r.depth??r.lines?.[0]?.depth);
     const coverage=[Number.isFinite(reached)?(c.mode==='lc0'?reached.toLocaleString()+' '+l.visits:l.depth+' '+reached):'',r.lines?.length?r.lines.length+' '+l.lines:'',r.coverage?.status==='partial'?l.partial:''].filter(Boolean).join(' · ');
     const location=!item.current?l.older:'';
-    const title=(c.mode==='sf-full'?'Stockfish Full':c.mode==='sf-lite'?'Stockfish Lite':c.mode==='lc0'?'LC Zero':c.label||c.mode)+(item.owner==='cards'?'':' · '+l[item.owner]);
-    return {...item,busy,title,phase,detail:[location,coverage].filter(Boolean).join(' · '),result:r,
+    const number=n=>Number.isFinite(n)?new Intl.NumberFormat(docLang(),{notation:'compact',maximumFractionDigits:1}).format(n):'';
+    const compactDetail=[!item.current?(docLang()==='sl'?'Starejši':'Older'):'',Number.isFinite(reached)?(c.mode==='lc0'?(docLang()==='sl'?'Obiski ':'Visits ')+number(reached):'d'+reached):'',r.lines?.length?r.lines.length+' PV':''].filter(Boolean).join(' · ');
+    let compactPhase=phase;
+    if(['searching','running'].includes(c.state)&&Number.isFinite(c.searchElapsedMs))compactPhase='▶ '+sec(c.searchElapsedMs)+(limit?'/'+limit:'');
+    if(['loading','preparing','ready'].includes(c.state)&&Number.isFinite(c.progress?.loaded))compactPhase=(docLang()==='sl'?'Nal. ':'Load ')+(c.progress.loaded/1048576).toFixed(1).replace(/\.0$/,'')+(Number.isFinite(c.progress.total)?'/'+(c.progress.total/1048576).toFixed(1).replace(/\.0$/,''):'')+' MiB';
+    const title=(c.mode==='sf-full'?'SF Full':c.mode==='sf-lite'?'SF Lite':c.mode==='lc0'?'LC Zero':c.label||c.mode)+(item.owner==='cards'?'':' · '+l[item.owner]);
+    return {...item,busy,title,phase,compactPhase,compactDetail,detail:[location,coverage].filter(Boolean).join(' · '),result:r,
       action:item.owner==='deep'?l.stopDeep:item.owner==='probe'?l.stopProbe:undefined,
       note:[location,l[c.state]||c.state,coverage,item.following?l.armed:''].filter(Boolean).join(' · ')};
   }

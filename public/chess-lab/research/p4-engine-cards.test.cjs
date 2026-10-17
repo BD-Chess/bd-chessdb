@@ -4,11 +4,12 @@ const {boot}=require('./source-context-integration.test.cjs');
 const tick=()=>new Promise(r=>setImmediate(r));
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 async function fixture(t,{app=false,hold=false}={}){
-  const calls=[];
+  const calls=[];let contextReads=0;
   const h=await boot(t,{skipReady:true,beforeInit(w){
     if(app){w.document.body.classList.add('app-mobile');w.history.replaceState(null,'','?view=app');}
     const make=mode=>{const c={mode,ready:deferred(),search:deferred(),destroyed:false};calls.push(c);if(!hold)c.ready.resolve();
       return {prepare:options=>{c.preparation=options;return c.ready.promise;},analyze(options){c.options=options;options.onSearchStarted?.({timestamp:w.performance.now()});return c.search.promise;},destroy(){c.destroyed=true;}};};
+    const createCards=w.ChessEngineCards.create;w.ChessEngineCards.create=config=>createCards({...config,getContext:()=>{contextReads++;return config.getContext();}});
     const create=w.ChessAnalysisSession.create;w.ChessAnalysisSession.create=config=>create({...config,teardownGraceMs:0,adapterFactory:make});
     w.ChessAnalysisSession.backendFor=mode=>({create:()=>make(mode)});
   }});
@@ -16,7 +17,7 @@ async function fixture(t,{app=false,hold=false}={}){
   const deep=name=>h.w.document.querySelector('[data-deep="'+name+'"]');
   const card=source=>h.w.document.querySelector('[data-eval-source="'+source+'"]');
   const start=async()=>{h.w.document.querySelector(app?'[data-app-tab="deep"]':'button[data-desktop-view="deep"]').click();h.w.ChessAnalysisSession.configure({analysisMode:'all',deepTimeMs:10000,boardSource:'cdb'});deep('start').click();await frame();};
-  return {...h,calls,frame,deep,card,start};
+  return {...h,calls,frame,deep,card,start,contextReads:()=>contextReads};
 }
 test('P4 A removes the rejected row/slot; Deep projects its real owner and Stop all never starts Cards',async t=>{
   const x=await fixture(t);await x.start();assert.equal(x.calls.length,4);
@@ -43,6 +44,7 @@ test('P4 A a Cards-family touch Stop leaves already-started peers intact and dis
   x.card('RLE').dispatchEvent(new x.w.Event('pointerdown'));x.card('RLE').click();await x.frame();
   assert.equal(x.el('analysisAllMoves').checked,false);assert.equal(x.calls.find(c=>c.mode==='reckless').destroyed,true);
   assert(x.calls.filter(c=>c.mode!=='reckless').every(c=>!c.destroyed));
+  const before=x.contextReads();await new Promise(r=>setTimeout(r,320));await x.frame();assert.equal(x.contextReads(),before,'clock-only activity paints must not reconstruct card history');
 });
 test('P4 A preparing Stop is inside existing APP/Settings headers, keeps modal isolation and restores focus',async t=>{
   const x=await fixture(t,{app:true,hold:true});await x.start();
@@ -59,9 +61,9 @@ test('P4 A four card lines use measured search time/typed values and LC0 visits;
   const sf=x.calls.find(c=>c.mode==='sf-lite'),lc=x.calls.find(c=>c.mode==='lc0');
   sf.options.onInfo({}, {fen:board,linesDepth:21,lines:[{depth:21,pv:['e2e4'],score:{type:'mate',white:3,whiteBound:'lower'}}]});
   lc.options.onInfo({}, {fen:board,visits:612,lines:[{pv:['d2d4'],score:{type:'q',white:0.1}}]});await x.until(()=>x.card('SF').querySelector('.all-eval-score').textContent!=='…','coalesced card info paints');await x.frame();
-  assert.match(x.card('SF').querySelector('.all-eval-score').textContent,/≥#3/);assert.match(x.card('SF').textContent,/Depth 21/);
-  assert.match(x.card('LC0').textContent,/612 visits/);assert.doesNotMatch(x.card('LC0').textContent,/Depth/);
-  assert.match(x.card('SF').textContent,/Searching.*10.0s/);assert.equal(x.card('SF').querySelectorAll('small:not([hidden])').length,2);
+  assert.match(x.card('SF').querySelector('.all-eval-score').textContent,/≥#3/);assert.match(x.card('SF').textContent,/d21/);assert.match(x.card('SF').title,/Depth 21/);
+  assert.match(x.card('LC0').textContent,/Visits 612/);assert.match(x.card('LC0').title,/612 visits/);assert.doesNotMatch(x.card('LC0').textContent,/Depth/);
+  assert.match(x.card('SF').title,/Searching.*10.0s/);assert.match(x.card('SF').textContent,/▶.*10.0s/);assert.equal(x.card('SF').querySelectorAll('small:not([hidden])').length,2);
   const target=x.card('SF');x.el('btnAnalyzeAll').click();await x.frame();assert.equal(x.card('SF'),target);assert(!target.classList.contains('is-busy'));assert.equal(target.querySelector('.all-eval-detail').hidden,true);
 });
 test('P4 A pinned older-root card is labelled and its score is never attached to the current board',async t=>{

@@ -24,6 +24,14 @@
       <p class="deep-note">SF Lite and Berserk each use one search thread. SF Full uses the effective thread count shown above. These local evaluations are separate from DCC. <a href="vendor/ENGINE_NOTICES.md" target="_blank" rel="noopener">Build, source &amp; license</a></p>`;
     workspace.appendChild(panel);
     const el = name => panel.querySelector('[data-deep="' + name + '"]');
+    // Collapse configuration, never the primary actions/results. Native details
+    // retains the explicit expansion choice across paints and view switches.
+    const configuration=doc.createElement('details');configuration.className='deep-configuration';configuration.dataset.deep='configuration';
+    configuration.innerHTML='<summary><strong>Analysis settings</strong><span data-deep="configuration-summary"></span></summary><div data-deep="configuration-body"></div>';
+    panel.querySelector('.deep-settings').before(configuration);
+    for(const node of [...panel.querySelectorAll('.deep-settings,.deep-budget-note,.deep-allocation,.deep-dcc-note,[data-berserk-status],.deep-additional,.deep-root-moves')])configuration.lastElementChild.append(node);
+    const shortcuts=doc.createElement('div');shortcuts.className='deep-shortcuts';shortcuts.innerHTML='<button type="button" data-open-appearance>Appearance</button><button type="button" data-analysis-help aria-controls="analysisHelp">Analysis help</button>';
+    panel.querySelector('.deep-intro').replaceWith(shortcuts);
     const trigger = doc.getElementById('btnDeepAnalysis');
     let engine = null, pinned = null, result = null, resultRun = 0, preview = null, previewBoard = null, run = 0, paintAt = 0, paintStatus = '';
     let lastFocus = null, workspaceScroll = 0, deepScroll = 0, workspaceLabel = null, liveUnsubscribe = null;
@@ -60,7 +68,22 @@
       reflectTime();
       root.ChessAnalysisControls?.refresh?.();
     });
-    reflectTime();
+    function reflectSummary(){
+      const mode=configuredMode(),settings=session?.getSettings?.()||{},parts=session?.participants?.(mode)||[mode],caps=session?.capabilities?.(mode)||{};
+      const cpu=parts.includes('sf-full')?'SF CPU '+(caps.effectiveSFThreads||1)+(parts.length>1?' · others CPU 1':''):'CPU 1';
+      const t=el('time').value;
+      let limit=t==='infinite'?'Until Stop':t!=='off'?(Number(t)/1000)+' s / engine':el('budget').value==='infinite'?'Until Stop':'Depth '+el('budget').value.split(':')[1];
+      const saved=Number(settings.analysisTimeMs),neuralSeconds=(Number.isSafeInteger(saved)&&saved>0?saved:caps.mobile?5000:15000)/1000;
+      if(t==='off'&&mode==='lc0')limit='LC0 '+neuralSeconds+' s';
+      else if(t==='off'&&parts.includes('lc0')&&el('budget').value!=='infinite')limit+=' · LC0 '+neuralSeconds+' s';
+      const roots=el('roots').disabled?'Root limit unavailable':el('roots').value.trim()?'Selected root moves':'All root moves';
+      el('configuration-summary').textContent=(modeLabels[mode]||mode)+' · '+cpu+' · '+limit+' · '+el('multipv').value+' lines · '+roots;
+    }
+    for(const node of configuration.querySelectorAll('input,select'))node.addEventListener('change',()=>root.requestAnimationFrame(reflectSummary));
+    const summaryRefresh=()=>root.requestAnimationFrame(reflectSummary);
+    const unsubscribeSummary=session?.subscribeSettings?.(summaryRefresh);
+    doc.addEventListener('chess:language',summaryRefresh);
+    reflectTime();reflectSummary();
     const hasLines = snapshot => !!(snapshot?.lines?.length || Object.values(snapshot?.children || {}).some(child => child?.lines?.length));
     const state = () => ({ open: !panel.hidden, running: !!engine?.isRunning?.(), following: followActive, fen: pinned?.fen || null });
     const activitySnapshot = () => ({owner:'deep',...state(),pending:!!followTimer,
@@ -248,7 +271,7 @@
         }
         if (showCards) {
           view.target.setAttribute('aria-label', name + ' analysis'); setText(view.heading, name);
-          const nodes = key === 'lc0' ? ((child.visits ?? child.nodes ?? 0).toLocaleString() + ' visits') : Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
+          const nodes = key === 'lc0' ? (Number.isFinite(child.visits??child.nodes)?(child.visits??child.nodes).toLocaleString()+' visits':'visits pending') : Number.isFinite(child.nodes) ? child.nodes.toLocaleString() + ' nodes' : 'nodes pending';
           const elapsed = child.actualSearchMs ?? child.searchElapsedMs ?? child.elapsedMs;
           const seconds = Number.isFinite(elapsed) ? (elapsed / 1000).toFixed(1) + ' s' : 'time pending';
           const threads = Number(child.threadsEffective) || Number(child.engine?.threads) || 1;
@@ -559,7 +582,7 @@
     return { open, close, start: () => { if (panel.hidden) open(); if (pinned) return start({ automatic: false }); },
       activitySnapshot,
       stop: stopCurrent, deepenOrStop, isOpen: () => !panel.hidden, isRunning: () => !!engine?.isRunning?.(), isFollowing: () => followActive,
-      destroy() { cancelFollow(); close(); ++run; doc.removeEventListener('visibilitychange',pageHidden);root.removeEventListener('pagehide',pageExit);liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();root.cancelAnimationFrame(clippingFrame);previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
+      destroy() { unsubscribeSummary?.();doc.removeEventListener('chess:language',summaryRefresh);cancelFollow(); close(); ++run; doc.removeEventListener('visibilitychange',pageHidden);root.removeEventListener('pagehide',pageExit);liveUnsubscribe?.(); unsubscribeSettings?.(); unregisterControls?.(); engine?.destroy(); previewObserver?.disconnect();root.cancelAnimationFrame(clippingFrame);previewBoard?.destroy(); trigger?.removeEventListener('click', toggle); panel.remove(); },
       getResult: () => result };
   }
   root.ChessDeepUI = { create };

@@ -83,6 +83,7 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   await page.locator('#first').click();await page.locator('#next').click();const saved=await retention(page);
   assert.equal(saved.total,3);assert.equal(saved.cursor,1);
   await page.locator('button[data-desktop-view="deep"]').click();
+  await page.locator('[data-deep="configuration"] > summary').click();
   await page.locator('[data-deep="mode"]').selectOption('all');await page.locator('[data-deep="time"]').selectOption('10000');
   const threads=page.locator('[data-deep="threads"]');
   if(await threads.isEnabled())await threads.selectOption('1');
