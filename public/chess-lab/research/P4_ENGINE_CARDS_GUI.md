@@ -124,3 +124,9 @@ Actual browser 200% zoom remains separate from the CSS/DPR case. If the browser
 chrome is unavailable, report NOT_RUN; a shortcut that changes no zoom or viewport
 is not a successful zoom test. Manual review: browser menu → Zoom 200%, then
 Default/500/560 workspace and Small/Large, navigate every view and Settings/Escape.
+
+BD's final 23:19 review instruction retains the collapsed Deep configuration.
+Only its Analysis settings / Nastavitve analize title is yellow, with a darker
+gold for the light theme. Its background, summary values, saved preferences and
+toggle behavior are unchanged. Desktop/APP, SL/EN and both expansion states are
+checked for readable contrast against the composited ancestor background.
