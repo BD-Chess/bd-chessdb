@@ -26,9 +26,21 @@ const mapFiles=rows=>{
   assert(typeof row.path==='string'&&/^[a-f0-9]{40}$/.test(row.sha),'INVALID_FILE_DIGEST');
   const path=row.path.replace(/^\//,'');assert(!Object.hasOwn(files,path),'DUPLICATE_FILE_PATH');files[path]=row.sha;
  }
- assert(Object.hasOwn(files,'BD/O/sef.js'),'SEF_NOT_IN_PRODUCTION_MANIFEST');
+ assert(Object.keys(files).some(p=>p.toLowerCase()==='bd/o/sef.js'),'SEF_NOT_IN_PRODUCTION_MANIFEST');
  assert(Object.hasOwn(files,'netlify.toml'),'DEPLOY_CONFIG_NOT_IN_MANIFEST');
  return files;
+};
+const listFiles=async()=>{
+ const rows=[];
+ for(let page=1;page<=40;page++){
+  const batch=await api('sites/'+site+'/files?per_page=1000&page='+page);
+  assert(Array.isArray(batch),'INVALID_FILE_LIST');rows.push(...batch);
+  if(batch.length<1000){
+   console.log(JSON.stringify({stage:'production-file-inventory',files:rows.length,pages:page,sef_paths:rows.filter(r=>/sef\.js$/i.test(r.path)).map(r=>r.path)}));
+   return mapFiles(rows);
+  }
+ }
+ throw Error('PRODUCTION_FILE_PAGINATION_LIMIT');
 };
 const publicBytes=async name=>{
  const response=await fetch('https://www.mdlxdcc.org/BD/O/'+name,{cache:'no-store',signal:AbortSignal.timeout(30000)});
@@ -57,17 +69,19 @@ const initialSite=await api('sites/'+site);
 assert(initialSite.published_deploy?.id===expectedDeploy,'PRODUCTION_LEASE_CHANGED');
 const before=await api('deploys/'+expectedDeploy);
 assert(!before.edge_functions_present&&!before.server,'UNSUPPORTED_DEPLOY_COMPONENT');
-const files=mapFiles(await api('sites/'+site+'/files'));
+const files=await listFiles();
 const existingFiles={...files};
+const sefPath=Object.keys(files).find(p=>p.toLowerCase()==='bd/o/sef.js');
+const targetRoot=sefPath.slice(0,-'sef.js'.length);
 const originals=Object.fromEntries(await Promise.all(names.map(async name=>[name,await readFile('public/BD/O/'+name)])));
 const cfg=JSON.parse(originals['sef-kindle.json']);
 assert.equal(cfg.format,'BD-O-SEF-EXTRA-CONFIG-1');assert.equal(cfg.release,'20261017-kindle-r1');
 assert.equal(cfg.vault,JSON.parse(await readFile('public/BD/O/vault.json','utf8')).vault);
 assert.equal(cfg.data.path,names[2]);assert.equal(digest(originals[names[2]]),cfg.data.sha256);
 // A newer production Sef change must be reconciled, never overwritten.
-assert.equal(files['BD/O/sef.js'],'e86c71e1746153ec049afd4fe0d3820997f1da3c','PRODUCTION_SEF_CHANGED');
+assert.equal(files[sefPath],'e86c71e1746153ec049afd4fe0d3820997f1da3c','PRODUCTION_SEF_CHANGED');
 for(const name of names){
- const path='BD/O/'+name,newSha=digest(originals[name],'sha1');
+ const path=targetRoot+name,newSha=digest(originals[name],'sha1');
  if(name!=='sef.js'&&Object.hasOwn(files,path))assert.equal(files[path],newSha,'EXISTING_OVERLAY_CONFLICT');
  files[path]=newSha;
 }
@@ -90,13 +104,13 @@ const uploads=(created.required||[]).map(sha=>{
 console.log(JSON.stringify({stage:'verified-preserved-manifest',previous_deploy:expectedDeploy,preserved_files:Object.keys(existingFiles).length,preserved_functions:Object.keys(functions).length,changed_files:names,required_uploads:uploads.length}));
 for(const name of uploads){
  assert.equal((await api('sites/'+site)).published_deploy.id,expectedDeploy,'PRODUCTION_CHANGED_BEFORE_UPLOAD');
- await api('deploys/'+created.id+'/files/BD/O/'+name,{method:'PUT',body:originals[name],binary:true});
+ await api('deploys/'+created.id+'/files/'+targetRoot+name,{method:'PUT',body:originals[name],binary:true});
 }
 const ready=await waitFor(created.id,['ready']);
 let afterSite;
 for(let n=0;n<30;n++){afterSite=await api('sites/'+site);if(afterSite.published_deploy?.id===ready.id)break;await sleep(2000);}
 assert.equal(afterSite.published_deploy?.id,ready.id,'DEPLOY_NOT_PUBLISHED');
-const afterFiles=mapFiles(await api('sites/'+site+'/files'));
+const afterFiles=await listFiles();
 assert.deepEqual(afterFiles,files,'PRODUCTION_MANIFEST_MISMATCH');
 assert.deepEqual(functionState(ready),functionState(before),'FUNCTION_CONFIGURATION_CHANGED');
 assert.deepEqual(ready.function_schedules,before.function_schedules,'FUNCTION_SCHEDULES_CHANGED');
