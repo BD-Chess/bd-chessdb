@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: startsWith(github.event.head_commit.message, 'release: sef-kindle 20261017-r1')
+    if: "${{ startsWith(github.event.head_commit.message, 'release: sef-kindle 20261017-r1') }}"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
