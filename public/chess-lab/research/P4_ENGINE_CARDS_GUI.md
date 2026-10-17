@@ -91,7 +91,36 @@ SL/EN regression checks include the actual accessible Link/card-group names,
 refresh and disabled-CPU help, human-name placeholders and composed evaluation
 descriptions. The same checks run on desktop and APP during active work, alongside
 literal move/error-payload preservation. The shared language module uses the
-`20261017-p4-r3` source marker. Idle Deep/follow state, PWA readiness and measured
+`20261017-p4-fix-r1` source marker. Idle Deep/follow state, PWA readiness and measured
 DCC coverage/prefixes are included. Result-receipt reason prose and unknown
 provider payloads remain literal data in SL as well as EN; translated surrounding
 labels do not rewrite stored analysis/Evidence records.
+
+## Responsive/language review correction (2026-10-17)
+
+The inherited short-desktop rule capped the entire two-column row at viewport
+height plus 90px. At 1280×520 with a 500px workspace this left an 86px board
+container and a settled 21px board. The row now reserves a useful preferred board
+column before adding the independently selected workspace width, bounded by the
+available page width. Normal vertical page scrolling reaches the complete board,
+cards and navigation; no minimum forces horizontal page overflow.
+
+The browser regression waits for stable geometry, requires a board at least
+240px square with 64 square cells, checks all six cards and unclipped main labels,
+and actually clicks every view/Library navigation control within the viewport.
+It covers both resize directions, both font sizes and Default/500/560 workspace
+widths in dark and light/compact combinations. Viewport screenshots accompany
+measurements; full-page screenshots alone are not acceptance evidence.
+
+Composed DCC titles and ARIA now read canonical captions instead of copying an
+already translated child. Receipt reasons are separate literal spans; owned
+probe/completion counts localize independently. Deep's engine-prefixed phase
+labels localize after streaming updates. Appearance persistence bypasses analysis
+invalidation, retaining the current DCC receipt as well as local jobs/budgets.
+Regressions use the actual host/renderers and preserve the immutable source
+snapshot through locale changes and production view/Appearance rerenders.
+
+Actual browser 200% zoom remains separate from the CSS/DPR case. If the browser
+chrome is unavailable, report NOT_RUN; a shortcut that changes no zoom or viewport
+is not a successful zoom test. Manual review: browser menu → Zoom 200%, then
+Default/500/560 workspace and Small/Large, navigate every view and Settings/Escape.

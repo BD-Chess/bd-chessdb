@@ -742,6 +742,8 @@
   for(const [en,sl]of TO_SL)if(!TO_EN.has(sl))TO_EN.set(sl,en);
   function dynamicText(text){
     const rules=[
+      [/^(.+): (loading|preparing|ready|queued|searching|running|complete|partial|stopped|failed)$/,m=>m[1]+': '+(TO_SL.get(m[2])||m[2])],
+      [/^(\d+)\/(\d+) complete$/,m=>m[1]+'/'+m[2]+' končano'],
       [/^(\d+)\/(\d+) measured candidates$/,m=>m[1]+'/'+m[2]+' izmerjenih kandidatov'],
       [/^(\d+)\/(\d+) source probes$/,m=>m[1]+'/'+m[2]+' pregledov vira'],
       [/^(\d+) probes$/,m=>m[1]+' pregledov'],
@@ -912,7 +914,18 @@
   }
 
   for(const name of ['alert','confirm','prompt'])if(typeof root[name]==='function'){const native=root[name].bind(root);root[name]=(message,...args)=>native(translateText(String(message)),...args);}
-  root.ChessLanguage={getLanguage:()=>lang,apply:applyLanguage,translate:translateText,entries:()=>[...TO_SL]};
+  // Composed captions must read canonical source text, never a previously
+  // translated DOM copy. A producer's fresh mutation wins before observation.
+  function sourceAttribute(el,name){
+    const current=el?.getAttribute(name)||'',source=attrSources.get(el)?.[name];
+    return source!==undefined&&current===translateText(source)?source:current;
+  }
+  function sourceText(node){
+    if(!node)return '';
+    if(node.nodeType===3){const source=textSources.get(node);return source!==undefined&&node.nodeValue===translateText(source)?source:node.nodeValue;}
+    return [...node.childNodes].map(sourceText).join('');
+  }
+  root.ChessLanguage={getLanguage:()=>lang,apply:applyLanguage,translate:translateText,sourceAttribute,sourceText,entries:()=>[...TO_SL]};
   root.addEventListener('storage',event=>{if(event.key===LANG_KEY)applyLanguage(event.newValue,false);});
   if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',initLanguage,{once:true});else initLanguage();
 })(window);

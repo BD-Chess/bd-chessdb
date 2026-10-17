@@ -3,9 +3,10 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {boot}=require('./source-context-integration.test.cjs');
 const tick=()=>new Promise(r=>setImmediate(r));
 const settle=async w=>{await tick();await new Promise(r=>w.requestAnimationFrame(r));await tick();};
-async function fixture(t,{app=false,storage={}}={}){
+async function fixture(t,{app=false,storage={},dccCalls}={}){
   const calls=[];
   const h=await boot(t,{skipReady:true,initialStorage:storage,beforeInit(w){
+    if(dccCalls!==undefined){const analyze=w.ChessDCC.analyze;w.ChessDCC.analyze=async options=>{const result=await analyze(options);result.receipt.calls=dccCalls;result.receipt.reason='Author reason White · Stop · 70 probes';return result;};}
     if(app){w.document.body.classList.add('app-mobile');w.history.replaceState(null,'','?view=app');}
     const make=mode=>{const c={mode,destroyed:false};calls.push(c);return {prepare:async()=>{},analyze(options){c.options=options;options.onSearchStarted?.({timestamp:w.performance.now()});return new Promise((resolve,reject)=>Object.assign(c,{resolve,reject}));},destroy(){c.destroyed=true;}};};
     const create=w.ChessAnalysisSession.create;w.ChessAnalysisSession.create=config=>create({...config,teardownGraceMs:0,adapterFactory:make});w.ChessAnalysisSession.backendFor=mode=>({create:()=>make(mode)});
@@ -23,6 +24,40 @@ test('P4 B compact Deep summary retains explicit expansion and does not launch w
   x.w.ChessAnalysisSession.configure({analysisMode:'all',deepTimeMs:10000});await x.settle();assert.match(x.deep('configuration-summary').textContent,/All Engines.*10 s \/ engine/);
   conf.open=false;x.deep('start').click();await x.settle();assert.equal(x.calls.length,4);assert.equal(conf.open,false);
   for(let i=0;i<12;i++)x.calls[0].options.onInfo({}, {fen:x.calls[0].options.fen,lines:[],nodes:i});await x.settle();assert.equal(conf.open,false);
+});
+test('P4 fix actual DCC parent captions and probe UI restore after locale plus production rerenders; receipts stay literal',async t=>{
+  const x=await fixture(t,{dccCalls:70});
+  await x.until(()=>x.w.ChessLabHost.getContext().analysisSources?.DCC?.receipt?.calls===70,'controlled source completes through actual host');await x.settle();
+  const before=JSON.stringify(x.w.ChessLabHost.getContext().analysisSources.DCC);
+  for(const lang of ['sl','en','sl','en']){
+    x.w.ChessLanguage.apply(lang);await x.settle();
+    // Appearance uses the actual eval-bar rerender that formerly copied the
+    // translated child's title into a fresh, unrestorable parent string.
+    x.el('settingFont').value=lang==='sl'?'18px':'14px';x.el('settingFont').dispatchEvent(new x.w.Event('change'));await x.settle();
+    x.el('btnViewToggle').click();await x.settle();
+    const badge=x.w.document.querySelector('[data-eval-source="DCC"]');
+    for(const text of [badge.title,badge.getAttribute('aria-label'),badge.querySelector('small').title]){
+      assert.match(text,lang==='sl'?/3\/3 izmerjenih kandidatov/:/3\/3 measured candidates/);assert.doesNotMatch(text,lang==='sl'?/measured candidates/:/izmerjenih kandidatov/);
+    }
+    const candidates=x.el('analysisCandidates').textContent;
+    assert(candidates.includes('Author reason White · Stop · 70 probes'),'authored reason is literal');
+    assert(candidates.endsWith(lang==='sl'?'70 pregledov':'70 probes'),'separate owned measurement suffix follows locale');
+    assert.equal(JSON.stringify(x.w.ChessLabHost.getContext().analysisSources.DCC),before);
+  }
+});
+test('P4 fix composed Deep phase status follows locale during partial/final renders without changing active search',async t=>{
+  const x=await fixture(t);x.view('deep');x.w.ChessAnalysisSession.configure({analysisMode:'all',deepTimeMs:10000});x.deep('start').click();await x.settle();
+  const ids=JSON.stringify(x.w.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep').children.map(c=>c.id));
+  for(const lang of ['sl','en','sl']){
+    x.w.ChessLanguage.apply(lang);await x.settle();
+    for(const c of x.calls)c.options.onInfo({}, {fen:c.options.fen,lines:[],nodes:70});await x.settle();
+    assert.match(x.deep('status').textContent,lang==='sl'?/: analizira/:/: searching/);
+    assert.doesNotMatch(x.deep('status').textContent,lang==='sl'?/: searching/:/: analizira/);
+    assert.equal(x.calls.length,4);assert(x.calls.every(c=>!c.destroyed&&c.options.movetime===10000));
+    assert.equal(JSON.stringify(x.w.ChessLabHost.getAnalysisActivity().owners.find(o=>o.owner==='deep').children.map(c=>c.id)),ids);
+  }
+  for(const c of x.calls)c.resolve({fen:c.options.fen,lines:[],nodes:140});await x.settle();
+  for(const lang of ['en','sl','en']){x.w.ChessLanguage.apply(lang);await x.settle();assert.match(x.deep('status').textContent,lang==='sl'?/: končano/:/: complete/);}
 });
 test('P4 B one existing Appearance preference group and shortcut preserve job IDs, budget and results',async t=>{
   const x=await fixture(t);x.view('deep');x.w.ChessAnalysisSession.configure({analysisMode:'all',deepTimeMs:10000});x.deep('start').click();await x.settle();

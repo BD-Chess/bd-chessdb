@@ -187,7 +187,9 @@
             if(progress.dataset.fen!==fen){progress.textContent='';progress.title='No measured evidence available';progress.dataset.fen=fen;}
             if(!progress.textContent)progress.textContent=choice?.status==='pending'?'Analyzing':'No data';
           }else note.textContent=choice?.status==='pending'?'Analyzing':choice?.status==='raw-safety'?'Raw choice':choice?.provider?'Measured':'No data';
-          note.title = `${dccProgress?.title || note.textContent}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
+          const language=globalThis.ChessLanguage;
+          const coverageTitle=dccProgress?(language?.sourceAttribute(dccProgress,'title')??dccProgress.title):(language?.sourceText(note)??note.textContent);
+          note.title = `${coverageTitle}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
           if (actionable) badge.setAttribute('aria-label', `ChessDCC: ${move.textContent}. ${note.title}. ${badge.title}`);
         } else {
           const projected=activity?.result, first=projected?.lines?.find(l=>(l.multipv||1)===1);
@@ -215,7 +217,7 @@
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
-        if (source !== 'DCC') note.title = [activity?.phase,activity?.detail,note.textContent,activity?.child.error].filter(Boolean).join(' · ');
+        if (source !== 'DCC') note.title = [activity?.phase,activity?.detail,globalThis.ChessLanguage?.sourceText(note)??note.textContent,activity?.child.error].filter(Boolean).join(' · ');
         if (actionable) {
           badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
           badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);
