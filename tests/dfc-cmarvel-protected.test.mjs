@@ -5,6 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {webcrypto,createHash} from 'node:crypto';
 import {fromBase64,validateComicManifest,deriveComicKey,decryptComicBytes} from '../public/Nara/dualframe-lab/cmarvel-01/crypto.mjs';
+import {FIRST_PAGE_SOURCE_SHA256,FIRST_PAGE_PANELS,sourceRect,readingPlace} from '../public/Nara/dualframe-lab/cmarvel-01/first-page.mjs';
 
 const repo=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const root=path.join(repo,'public/Nara/dualframe-lab');
@@ -51,7 +52,7 @@ test('AES-GCM accepts valid ciphertext and rejects a wrong derived key',async()=
 test('comic path is excluded from the offline app cache and header stays on current public Nara route',()=>{
  assert.match(sw,/cmarvel-01/);assert.match(sw,/request\.mode==='navigate'/);
  assert.match(sw,/cmarvel-01\/\*|cmarvel-01/);
- assert.equal(release.pwa.build_label,'2026-10-17-r4.22');assert.equal(release.release_revision,30);
+ assert.equal(release.pwa.build_label,'2026-10-17-r4.23');assert.equal(release.release_revision,31);
  assert.match(sefExtraText,/20261017-cmarvel-v1/);
 });
 
@@ -59,4 +60,22 @@ test('the protected comic is its own story-local state, without changing the pub
  assert.match(reader,/bd\.dfc\.reader\.v1:CMARVEL_01/);
  assert.equal(release.cartoons?.story_id,'ILLUMINARA_TEZA_SVETLOBE_01');
  assert.equal(release.cartoons?.page_count,8);assert.equal(release.cartoons?.pair_count,39);
+});
+
+test('first-page source geometry is bounded, stable and honestly separate from P/L generation',()=>{
+ assert.equal(FIRST_PAGE_SOURCE_SHA256,'fa1b62a0c1fdf9416f5283c4a81ea06680c4201e84e95559ab75a320aad1394f');
+ assert.equal(FIRST_PAGE_PANELS.length,6);assert.deepEqual(sourceRect(0),[514,0,2812,2160]);
+ const expected=[[2806,1470],[470,650],[880,650],[475,650],[440,650],[526,650]];
+ for(let i=0;i<6;i++){const [x,y,w,h]=sourceRect(0,i);assert.ok(x>=0&&y>=0&&x+w<=3840&&y+h<=2160);assert.deepEqual([w,h],expected[i]);assert.equal(FIRST_PAGE_PANELS[i].id,`CM01-P01-K0${i+1}`);}
+ for(const input of [[-1,null],[11,null],[0,-1],[0,6],[1,0],[0,'1']])assert.throws(()=>sourceRect(...input));
+ assert.deepEqual(sourceRect(10),[0,0,3840,2160]);assert.match(html,/P\/L pari: 0\/6/);assert.equal(release.protected_comic.source_review.generated_pair_count,0);
+});
+
+test('old page bookmarks, new first-page bookmarks and explicit review links remain distinct',()=>{
+ assert.deepEqual(readingPlace({page:7}),{page:7,panel:null});
+ assert.deepEqual(readingPlace({page:0,panel:5}),{page:0,panel:5});
+ assert.deepEqual(readingPlace({page:7,panel:5}),{page:7,panel:null});
+ assert.deepEqual(readingPlace({page:7},'?page=1'),{page:0,panel:null});
+ assert.deepEqual(readingPlace({page:0,panel:12}),{page:0,panel:null});
+ assert.deepEqual(readingPlace({page:-1},'?page=99'),{page:0,panel:null});
 });
