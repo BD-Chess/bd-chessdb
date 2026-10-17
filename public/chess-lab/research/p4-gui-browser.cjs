@@ -36,6 +36,39 @@ async function open(t,{width=1280,height=800,app=false,preview=false,deviceScale
   await page.goto(origin+'/chess-lab/'+(app?'?view=app':''));await page.waitForFunction(()=>window.ChessLabHost&&window.ChessLabLayout);
   return page;
 }
+test('P4 final title is legible in both themes and languages while native expansion preserves settings',{timeout:45000},async t=>{
+  for(const app of [false,true]){
+    const page=await open(t,app?{app,width:402,height:874}:{});
+    await page.locator(app?'[data-app-tab="deep"]':'[data-desktop-view="deep"]').click();
+    const configuration=page.locator('.deep-configuration'),summary=configuration.locator(':scope > summary');
+    assert.equal(await configuration.getAttribute('open'),null,'default remains collapsed');
+    const initial=await page.locator('[data-deep="configuration-body"] select').evaluateAll(es=>es.map(e=>({key:e.dataset.deep,value:e.value})));
+    for(const light of [false,true]){
+      await page.locator('[data-open-appearance]').click();await page.locator('#settingTheme').setChecked(light);
+      await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
+      for(const lang of ['sl','en']){
+        await page.locator((app?'.app-language':'.desktop-language')+' [data-app-lang="'+lang+'"]').click();
+        for(const expanded of [false,true]){
+          if((await configuration.getAttribute('open')!==null)!==expanded)await summary.click();
+          const observed=await summary.evaluate(el=>{
+            const title=el.querySelector('strong'),color=s=>{const m=s.match(/[\d.]+/g)||[];return [Number(m[0]),Number(m[1]),Number(m[2]),m[3]===undefined?1:Number(m[3])];};
+            let bg=[255,255,255];const chain=[];for(let n=title;n;n=n.parentElement)chain.unshift(n);
+            for(const n of chain){const c=color(getComputedStyle(n).backgroundColor);bg=bg.map((v,i)=>c[i]*c[3]+v*(1-c[3]));}
+            const luminance=c=>c.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0);
+            const ink=color(getComputedStyle(title).color),a=luminance(ink),b=luminance(bg);
+            return {text:title.textContent,color:getComputedStyle(title).color,yellow:ink[0]>ink[2]*1.5&&ink[1]>ink[2]*1.5,summaryColor:getComputedStyle(el.querySelector('span')).color,background:getComputedStyle(el).backgroundColor,contrast:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),rect:title.getBoundingClientRect().toJSON()};
+          });
+          assert.equal(observed.text,lang==='sl'?'Nastavitve analize':'Analysis settings');assert(observed.yellow,'title is yellow/gold');assert(observed.contrast>=4.5,'title readable in '+(light?'light':'dark')+' theme');
+          assert.notEqual(observed.color,observed.summaryColor,'only the title receives emphasis');assert(observed.rect.width>50&&observed.rect.height>10);
+          assert.deepEqual(await page.locator('[data-deep="configuration-body"] select').evaluateAll(es=>es.map(e=>({key:e.dataset.deep,value:e.value}))),initial);
+          records.push({case:'final yellow title / controlled engine adapters',app,light,lang,expanded,...observed});
+          await page.screenshot({path:path.join(evidence,'title-'+(app?'APP':'desktop')+'-'+(light?'light':'dark')+'-'+lang+'-'+(expanded?'open':'closed')+'-viewport.png'),fullPage:false});
+        }
+      }
+    }
+    assert.equal(await page.evaluate(()=>window.__P4.calls.length),0,'title/theme/language/toggle launches no engine');
+  }
+});
 test('P4 fix browser DCC partial/final/recomposed captions localize owned measurements and retain source receipts',{timeout:60000},async t=>{
   const page=await open(t,{width:1280,height:520,cdbFixture:true});
   const capture=()=>page.evaluate(()=>{const b=document.querySelector('[data-eval-source="DCC"]'),p=document.querySelector('#dccProgress');return {lang:document.documentElement.lang,direct:p.title,parent:b.title,note:b.querySelector('small').title,aria:b.getAttribute('aria-label'),candidates:document.querySelector('#analysisCandidates').textContent};});
