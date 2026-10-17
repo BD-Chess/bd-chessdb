@@ -16,7 +16,10 @@ const api=async(path,{method='GET',body,binary=false}={})=>{
   method,headers:{authorization:'Bearer '+token,...(body?{'content-type':binary?'application/octet-stream':'application/json'}:{})},
   body:body?(binary?body:JSON.stringify(body)):undefined,signal:AbortSignal.timeout(60000)
  });
- assert(response.ok,'NETLIFY_API_'+response.status);
+ if(!response.ok){
+  const detail=(await response.text()).slice(0,1800).replaceAll(token,'[REDACTED]');
+  throw Error('NETLIFY_API_'+response.status+' '+detail);
+ }
  return response.json();
 };
 const mapFiles=rows=>{
@@ -89,9 +92,8 @@ for(const name of names){
 const functions=Object.fromEntries((before.available_functions||[]).map(f=>[f.n,f.d]));
 assert(Object.keys(functions).length===25,'UNEXPECTED_FUNCTION_INVENTORY');
 const functions_config=Object.fromEntries(before.available_functions.map(f=>[f.n,functionConfig(f)]));
-for(const [name,config] of Object.entries(functions_config)){
- config.region=before.functions_region_overrides?.find(r=>r.name===name)?.region||before.functions_region;
-}
+// Preserve the site's existing region. A deploy's airport code is not a function-region override.
+assert.equal((before.functions_region_overrides||[]).length,0,'UNREVIEWED_FUNCTION_REGION_OVERRIDE');
 assert.equal((await api('sites/'+site)).published_deploy.id,expectedDeploy,'PRODUCTION_CHANGED_BEFORE_CREATE');
 const title='BD Sef encrypted Kindle '+process.env.GITHUB_SHA+' baseline='+preservedGitBaseline+' preserved-deploy='+expectedDeploy;
 let created=await api('sites/'+site+'/deploys?title='+encodeURIComponent(title),{method:'POST',body:{files,functions,functions_config,function_schedules:before.function_schedules||[],draft:false,async:true,branch:'main',framework:before.framework||'unknown'}});
