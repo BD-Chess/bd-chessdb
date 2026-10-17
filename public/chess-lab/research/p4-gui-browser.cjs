@@ -11,9 +11,18 @@ test.before(async()=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));origin='http://127.0.0.1:'+server.address().port;browser=await chromium.launch({headless:true});
 });
 test.after(async()=>{fs.writeFileSync(path.join(evidence,'p4-browser-acceptance.json'),JSON.stringify({schema:'chessbest-p4-browser/1',controlledAdapters:true,physicalDevice:false,records,errors},null,2)+'\n');await browser?.close();await new Promise(r=>server?.close(r));fs.rmSync(tmp,{recursive:true,force:true});});
-async function open(t,{width=1280,height=800,app=false,preview=false,deviceScaleFactor=1}={}){
+async function open(t,{width=1280,height=800,app=false,preview=false,deviceScaleFactor=1,cdbFixture=false}={}){
   const context=await browser.newContext({viewport:{width,height},deviceScaleFactor,serviceWorkers:'block',...(app&&!preview?{isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1'}:{})});t.after(()=>context.close());
-  await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await context.route('**/*',async route=>{
+    const u=new URL(route.request().url());if(u.origin===origin)return route.continue();
+    if(cdbFixture&&u.searchParams.has('action')){
+      // Controlled transport, real shipped DCC computation and renderers.
+      const {Chess}=require('../js/chess.min.js'),game=new Chess(u.searchParams.get('board'));
+      const text=u.searchParams.get('action')==='queryall'?game.moves({verbose:true}).slice(0,7).map((m,i)=>'move:'+m.from+m.to+(m.promotion||'')+',score:0,rank:'+(i+1)+',note:*').join('|'):'eval:0';
+      await new Promise(r=>setTimeout(r,45));return route.fulfill({status:200,contentType:'text/plain',headers:{'access-control-allow-origin':'*'},body:text});
+    }
+    return route.abort();
+  });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(10000);
   await page.addInitScript(()=>{
     const calls=[];window.__P4={calls};
@@ -27,7 +36,83 @@ async function open(t,{width=1280,height=800,app=false,preview=false,deviceScale
   await page.goto(origin+'/chess-lab/'+(app?'?view=app':''));await page.waitForFunction(()=>window.ChessLabHost&&window.ChessLabLayout);
   return page;
 }
+test('P4 fix browser DCC partial/final/recomposed captions localize owned measurements and retain source receipts',{timeout:60000},async t=>{
+  const page=await open(t,{width:1280,height:520,cdbFixture:true});
+  const capture=()=>page.evaluate(()=>{const b=document.querySelector('[data-eval-source="DCC"]'),p=document.querySelector('#dccProgress');return {lang:document.documentElement.lang,direct:p.title,parent:b.title,note:b.querySelector('small').title,aria:b.getAttribute('aria-label'),candidates:document.querySelector('#analysisCandidates').textContent};});
+  await page.waitForFunction(()=>/^\d+\/\d+$/.test(document.querySelector('#dccProgress').textContent)&&!window.ChessLabHost.getContext().analysisSources.DCC);
+  const invariants=()=>page.evaluate(()=>({game:window.ChessLabHost.getReviewGame(),dcc:window.ChessDCC.config(window.ChessLabHost.getContext().settings)}));
+  const initial=await invariants();await page.locator('#btnSettings').click();
+  await page.locator('#settingFont').selectOption('18px');await page.locator('#settingLabWorkspaceWidth').selectOption('560');await page.locator('#settingTheme').check();await page.locator('#settingLabCompact').check();
+  await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});assert.deepEqual(await invariants(),initial);
+  for(const lang of ['sl','en','sl']){
+    await page.locator('.desktop-language [data-app-lang="'+lang+'"]').click();const c=await capture();
+    records.push({case:'actual DCC partial composed captions / controlled CDB transport',...c});
+    for(const text of [c.direct,c.parent,c.note,c.aria])assert.doesNotMatch(text,lang==='sl'?/source probes|measured candidates/:/pregledov vira|izmerjenih kandidatov/);
+  }
+  await page.waitForFunction(()=>!!window.ChessLabHost.getContext().analysisSources.DCC,{},{timeout:30000});
+  const before=await page.evaluate(()=>window.ChessLabHost.getContext().analysisSources.DCC);
+  // This transport supplies root moves/scores, not verified PV/defenses. The
+  // real policy may truthfully return partial; cancellation would publish none.
+  assert(['complete','partial'].includes(before.receipt.status)&&before.receipt.calls>0,'Appearance retains the in-flight real DCC result');
+  records.push({case:'real DCC receipt from controlled transport; completeness is not fabricated',receipt:before.receipt});
+  for(const lang of ['en','sl','en','sl']){
+    await page.locator('.desktop-language [data-app-lang="'+lang+'"]').click();await page.locator('button[data-desktop-view="dcc"]').click();await page.locator('button[data-desktop-view="moves"]').click();
+    const c=await capture();records.push({case:'actual DCC final + view rerender / controlled CDB transport',...c});
+    for(const text of [c.direct,c.parent,c.note,c.aria]){assert.match(text,lang==='sl'?/\d+\/\d+ izmerjenih kandidatov/:/\d+\/\d+ measured candidates/);assert.doesNotMatch(text,lang==='sl'?/measured candidates/:/izmerjenih kandidatov/);}
+    assert(c.candidates.endsWith(before.receipt.calls+(lang==='sl'?' pregledov':' probes')));assert(c.candidates.includes(before.receipt.reason));
+    assert.deepEqual(await page.evaluate(()=>window.ChessLabHost.getContext().analysisSources.DCC),before);
+    await page.screenshot({path:path.join(evidence,'fix-DCC-final-'+lang+'-viewport.png'),fullPage:false});
+  }
+});
 const geometry=page=>page.evaluate(()=>({board:document.querySelector('#board').getBoundingClientRect().toJSON(),workspace:document.querySelector('#workspaceDisplay').getBoundingClientRect().toJSON(),cards:[...document.querySelectorAll('.all-eval-badge')].map(e=>({source:e.dataset.evalSource,rect:e.getBoundingClientRect().toJSON(),moveFont:getComputedStyle(e.querySelector('.all-eval-move')).fontSize}))}));
+// A no-overflow assertion alone previously passed a 22px board. Wait for the
+// resize observer/chessboard redraw to settle, then inspect the usable content.
+async function settledLayout(page){
+  return page.evaluate(async()=>{
+    let previous='',same=0;
+    for(let frame=0;frame<120;frame++){
+      await new Promise(requestAnimationFrame);
+      const rect=document.querySelector('#board').getBoundingClientRect(),key=[rect.width,rect.height,document.documentElement.scrollHeight].join(':');
+      same=key===previous?same+1:0;previous=key;if(same>=5)break;
+    }
+    const box=e=>e.getBoundingClientRect().toJSON();
+    return {viewport:{width:innerWidth,height:innerHeight},board:box(document.querySelector('#board')),container:box(document.querySelector('#board-container')),controls:box(document.querySelector('#controls')),
+      pageWidth:document.documentElement.scrollWidth,squares:[...document.querySelectorAll('#board [data-square]')].map(box),
+      cards:[...document.querySelectorAll('.all-eval-badge')].map(e=>({rect:box(e),text:e.textContent,main:[...e.querySelectorAll('.all-eval-move,.all-eval-score')].map(n=>({rect:box(n),text:n.textContent,scroll:n.scrollWidth,client:n.clientWidth,font:parseFloat(getComputedStyle(n).fontSize)}))}))};
+  });
+}
+function usableLayout(g,label){
+  assert(g.board.width>=240&&g.board.height>=240,label+' board >=240px; actual '+g.board.width+' × '+g.board.height);
+  assert(Math.abs(g.board.width-g.board.height)<1,label+' square board');assert.equal(g.squares.length,64);
+  for(const s of g.squares){assert(s.width>=29&&Math.abs(s.width-s.height)<1,label+' usable square');}
+  assert(g.pageWidth<=g.viewport.width+1,label+' no horizontal page overflow');assert.equal(g.cards.length,6);
+  for(const [i,c]of g.cards.entries()){
+    assert(c.rect.width>=96&&c.rect.height>=62,label+' readable card '+i);
+    for(const m of c.main){assert(m.font>=12&&m.scroll<=m.client+1,label+' main move/score not clipped '+m.text);assert(m.rect.x>=c.rect.x&&m.rect.right<=c.rect.right+1);}
+    for(const other of g.cards.slice(i+1))assert(c.rect.right<=other.rect.x+1||other.rect.right<=c.rect.x+1||c.rect.bottom<=other.rect.y+1||other.rect.bottom<=c.rect.y+1,label+' cards do not overlap');
+  }
+}
+test('P4 fix short desktop has usable settled board/cards and reachable navigation across Appearance preferences',{timeout:240000},async t=>{
+  const page=await open(t,{width:1280,height:520});await page.locator('[data-desktop-view="deep"]').click();
+  // Start with the exact rejected configuration, then cover both resize directions.
+  for(const height of [520,800])for(const width of ['500','560','0'])for(const font of ['18px','14px'])for(const light of [false,true]){
+    await page.locator('[data-open-appearance]').click();
+    await page.locator('#settingFont').selectOption(font);await page.locator('#settingLabWorkspaceWidth').selectOption(width);
+    await page.locator('#settingTheme').setChecked(light);await page.locator('#settingLabCompact').setChecked(light);
+    await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
+    await page.setViewportSize({width:1280,height});
+    const g=await settledLayout(page),label=[height,width,font,light?'light-compact':'dark'].join('-');records.push({case:'responsive fix settled geometry',label,...g});
+    await page.screenshot({path:path.join(evidence,'fix-'+label+'-viewport.png'),fullPage:false});usableLayout(g,label);
+    for(const view of ['moves','review','dcc','library','deep']){
+      const nav=page.locator(view==='library'?'#btnGames':'button[data-desktop-view="'+view+'"]');await nav.click();
+      assert.equal(await page.locator('body').getAttribute('data-desktop-view'),view);
+      const reachable=await nav.evaluate(e=>{const r=e.getBoundingClientRect(),at=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.top>=0&&r.bottom<=innerHeight&&!!at&&(at===e||e.contains(at));});assert(reachable,label+' reachable '+view);
+    }
+    await page.screenshot({path:path.join(evidence,'fix-'+label+'-navigation-viewport.png'),fullPage:false});
+  }
+  await page.setViewportSize({width:1280,height:520});const reverse=await settledLayout(page);usableLayout(reverse,'resize back to short');records.push({case:'responsive fix reverse resize',...reverse});
+  assert.deepEqual(errors,[]);
+});
 test('P4 A mixed loading/searching/complete/failed cards have stable geometry and recover workspace space',{timeout:60000},async t=>{
   for(const spec of [{label:'desktop',width:1280,height:800},{label:'APP402',width:402,height:874,app:true}]){
     const page=await open(t,spec);const idle=await geometry(page);
@@ -41,6 +126,7 @@ test('P4 A mixed loading/searching/complete/failed cards have stable geometry an
     });
     await page.waitForFunction(()=>document.querySelector('[data-eval-source="SF"]').dataset.analysisState==='complete'&&document.querySelector('[data-eval-source="BER"]').dataset.analysisState==='failed');
     const busy=await geometry(page);records.push({...spec,case:'mixed geometry observation',idle,busy});
+    usableLayout(await settledLayout(page),spec.label+' mixed active fixture');
     await page.screenshot({path:path.join(evidence,spec.label+'-cards-mixed-active.png'),fullPage:true});
     assert.deepEqual(busy.cards.map(c=>c.rect.height),idle.cards.map(c=>c.rect.height));assert.equal(busy.board.height,idle.board.height);assert.equal(busy.workspace.y,idle.workspace.y);
     assert.equal(new Set(busy.cards.map(c=>c.rect.height)).size,1);
@@ -105,6 +191,10 @@ test('P4 B responsive Deep, Appearance, locale and native touch-help preserve th
     for(const lang of ['sl','en','sl']){
       await settings.locator('[data-app-lang="'+lang+'"]').click();
       await page.waitForFunction(lang=>document.documentElement.lang===lang,lang);
+      const phases=await deep.locator('[data-deep="status"]').textContent();
+      assert.match(phases,lang==='sl'?/: nalaganje/:/: loading/,'actual composed LC0 loading phase');
+      assert.match(phases,lang==='sl'?/: analizira/:/: searching/,'actual composed searching phase');
+      assert.doesNotMatch(phases,lang==='sl'?/: (loading|searching)/:/: (nalaganje|analizira)/);
       for(const [selector,attr,en,sl]of [
         ['#analysisLink','aria-label','Link engine cards to displayed evaluation','Poveži kartice motorjev s prikazano oceno'],
         ['#btnAnalysisDeepen','title','Refresh ChessDB evaluations for the current position','Osveži ocene ChessDB za trenutni položaj'],
@@ -132,6 +222,12 @@ test('P4 B responsive Deep, Appearance, locale and native touch-help preserve th
     }
     await page.screenshot({path:path.join(evidence,spec.label+'-P4-deep-SL.png'),fullPage:true});
     await page.locator(spec.app?'#appStopAnalysis':'#btnAnalyzeAll').click();await page.waitForFunction(()=>window.__P4.calls.every(c=>c.destroyed));
+    for(const lang of ['en','sl','en']){
+      await page.locator((spec.app?'.app-language':'.desktop-language')+' [data-app-lang="'+lang+'"]').click();
+      const stopped=await deep.locator('[data-deep="status"]').textContent();
+      assert.match(stopped,lang==='sl'?/Ustavljeno/:/Stopped/,'actual stopped status follows locale');
+    }
+    if(spec.app){await page.locator('[data-app-tab="board"]').click();const board=await settledLayout(page);usableLayout(board,spec.label+' Large board');records.push({case:'APP Large board usable',...spec,...board});await page.screenshot({path:path.join(evidence,spec.label+'-large-board-viewport.png'),fullPage:false});}
     records.push({...spec,case:'Deep collapse/preferences/locale/help/owner preserved',pass:true,ids});
   }
   assert.deepEqual(errors,[]);

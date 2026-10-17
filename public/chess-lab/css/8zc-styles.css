@@ -1578,15 +1578,15 @@ body:not(.app-mobile) #workspaceDisplay > #popularGamesPanel #btnUseTournamentOp
   .workspace-focus-bar .btn { min-width: 70px; }
 }
 
-/* Short desktop windows (including HD screens with OS scaling): constrain the
-   board by viewport height without scaling text, dialogs or drag coordinates.
-   Tall desktops and the existing touch/tablet layout keep their sizing. */
+/* Short desktop windows: height may limit the preferred board column, never
+   the whole row including the independently selected workspace. Let the page
+   scroll vertically; width:100% still bounds the row to the available viewport. */
 @media (min-width: 1060px) and (max-height: 1100px) and (hover: hover) and (pointer: fine) {
   body { padding-top: 16px; padding-bottom: 16px; }
-  .app-header { max-width: min(1160px, calc(100dvh + 90px)); }
+  .app-header { max-width: 1160px; }
   #main, #main:has(#board.scaled), #main.lab-custom-width, #main.lab-custom-width:has(#board.scaled) {
     grid-template-columns: minmax(0, 1fr) minmax(340px, var(--lab-workspace-width, 408px));
-    max-width: min(1160px, calc(100dvh + 90px));
+    max-width: min(1160px, calc(clamp(480px, 100dvh - 280px, 700px) + var(--lab-workspace-width, 408px) + 24px));
   }
   #board-container, #controls, body.light-theme #controls { padding: 14px; }
   #controls, body.light-theme #controls { min-height: 700px; }

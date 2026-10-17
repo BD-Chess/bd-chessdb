@@ -889,8 +889,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   function syncDCCBadgeControl() {
     const card = document.getElementById('allEvalBadges')?.querySelector?.('[data-eval-source="DCC"]');
     if (!card) return;
-    card.title = dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis';
-    card.setAttribute('aria-label', `ChessDCC: ${card.querySelector('.all-eval-move')?.textContent || '—'}. ${card.querySelector('small')?.title || ''}. ${card.title}`);
+    const action = dccViewActive ? 'Click to show moves' : 'Click to show DCC analysis';
+    const note=card.querySelector('small'),coverage=window.ChessLanguage?.sourceAttribute(note,'title')??note?.title??'';
+    card.title = [action,coverage].filter(Boolean).join('. ');
+    card.setAttribute('aria-label', `ChessDCC: ${card.querySelector('.all-eval-move')?.textContent || '—'}. ${card.title}`);
     card.setAttribute('aria-pressed', String(dccViewActive));
     card.classList.toggle('is-active', dccViewActive);
   }
@@ -1505,7 +1507,10 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     });
     table.appendChild(body); panel.appendChild(table);
     const coverage = receipt.coverage;
-    panel.appendChild(labElement('div', `${receipt.reason || ''} ${receipt.completed || 0}/${receipt.total || latestDCCResults.length} complete · ${receipt.calls || 0} probes${receipt.limited ? ' · funding limit reached' : ''}. ${coverage ? `${coverage.eligibleInspected}/${coverage.eligible} near-tied candidates inspected; ${coverage.unscoredLegal || 0} legal moves without a source score.` : ''} DCC rank is a heuristic, not an engine evaluation.`, 'dcc-analysis-pv'));
+    const caption=labElement('div','','dcc-analysis-pv'),reason=labElement('span',receipt.reason||'');
+    reason.setAttribute('translate','no');caption.append(reason,' ',labElement('span',`${receipt.completed || 0}/${receipt.total || latestDCCResults.length} complete`),' · ',labElement('span',`${receipt.calls || 0} probes`));
+    caption.append(`${receipt.limited ? ' · funding limit reached' : ''}. ${coverage ? `${coverage.eligibleInspected}/${coverage.eligible} near-tied candidates inspected; ${coverage.unscoredLegal || 0} legal moves without a source score.` : ''} DCC rank is a heuristic, not an engine evaluation.`);
+    panel.appendChild(caption);
   }
   function applyDCCOnlyBadges() {
     if (!settings.dccOnly) return;
@@ -1718,7 +1723,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     }
     if (analysis?.receipt) {
       const detail = document.createElement('div');
-      detail.textContent = `${hasMeasuredDCCChoice(analysis) ? 'DCC choice' : 'Raw choice retained'} ${analysis.dcc1Move ? uciToSan(game.fen(), analysis.dcc1Move) : '—'} · ${analysis.receipt.reason || analysis.receipt.status} · ${analysis.receipt.calls || 0} probes`;
+      const choice=labElement('span',`${hasMeasuredDCCChoice(analysis) ? 'DCC choice' : 'Raw choice retained'} ${analysis.dcc1Move ? uciToSan(game.fen(), analysis.dcc1Move) : '—'}`);
+      const reason=labElement('span',analysis.receipt.reason || analysis.receipt.status);reason.setAttribute('translate','no');
+      detail.append(choice,' · ',reason,' · ',labElement('span',`${analysis.receipt.calls || 0} probes`));
       panel.appendChild(detail);
     }
   }
@@ -2612,10 +2619,11 @@ function jumpTo(i){
 
 		  // ────────────────────────────
 		}
-		saveSettings();
+		const presentationOnly = ['settingFont','settingHistorySize','settingBg','settingTheme','settingDoubleBoard','settingPieceSize'].includes(id);
+        if (presentationOnly) persistSettings(); else saveSettings();
 		applySettings();
 		if (id === 'settingSimEval') { tournamentRunner?.refreshEvaluation?.(); positionEval.render(); refreshPlayUi(); return; }
-        if (['settingFont','settingHistorySize','settingBg','settingTheme','settingDoubleBoard','settingPieceSize'].includes(id)) { board.resize(); renderHistory(); positionEval.render(); return; }
+        if (presentationOnly) { board.resize(); renderHistory(); positionEval.render(); return; }
 		updateBoard(false);
 	  };
 	});

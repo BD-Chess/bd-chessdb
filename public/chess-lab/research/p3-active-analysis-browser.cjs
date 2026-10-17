@@ -93,6 +93,14 @@ test('Chromium shipped Deep All4 CPU1 10s budget keeps job ownership across view
   await page.waitForFunction(()=>window.ChessLabHost.getAnalysisActivity().owners.some(o=>o.owner==='deep'&&o.children.length===4));
   const initial=(await activity(page)).owners.find(o=>o.owner==='deep'),ids=initial.children.map(c=>c.id);
   assert(initial.children.every(c=>c.budget.movetime===10000));
+  await page.locator('[data-open-appearance]').click();
+  await page.locator('#settingFont').selectOption('18px');await page.locator('#settingLabWorkspaceWidth').selectOption('560');
+  await page.locator('#settingTheme').check();await page.locator('#settingLabCompact').check();
+  for(const lang of ['sl','en','sl'])await page.locator('.settings-language [data-app-lang="'+lang+'"]').click();
+  const afterAppearance=(await activity(page)).owners.find(o=>o.owner==='deep');
+  assert.deepEqual(afterAppearance.children.map(c=>c.id),ids);assert(afterAppearance.children.every(c=>c.budget.movetime===10000));assert.deepEqual(await retention(page),saved);
+  records.push({case:'real All4 Appearance/SL EN SL preserves jobs budgets game cursor',initial,afterAppearance,pass:true});
+  await page.keyboard.press('Escape');await page.locator('#settingsPanel').waitFor({state:'hidden'});
   for(const view of ['moves','dcc','review','library','deep']){
     if(view==='library')await page.locator('#btnGames').click();else await page.locator('button[data-desktop-view="'+view+'"]').click();
     const s=await activity(page),owner=s.owners.find(o=>o.owner==='deep');assert.deepEqual(owner.children.map(c=>c.id),ids,view);
