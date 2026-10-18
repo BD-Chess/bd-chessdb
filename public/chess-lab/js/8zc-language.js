@@ -55,7 +55,7 @@
     "White wins":"Zmaga beli",
     "Black wins":"Zmaga črni",
     "Checkmate":"Mat",
-    'Deep · Each move':'Deep · Vsaka poteza','Each move':'Vsaka poteza',
+    'Deep · Each move':'Deep · Vsaka poteza','Each move':'Vsaka poteza','Each':'Vsaka',
     'Deep: analyze each new board position':'Deep: analiziraj vsak nov položaj',
     'Cards/All each move: immediately searches this position, then each new position with all engines. Off cancels automatic work. Manual All runs once.':'Kartice/Vsi za vsako potezo: takoj analizira trenutni in nato vsak nov položaj z vsemi motorji. Izklop prekliče samodejno delo. Ročni Vsi zažene enkrat.',
     'Stop Deep analysis and Deep each move':'Ustavi Deep analizo in samodejno analizo potez',
