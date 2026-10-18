@@ -9,6 +9,9 @@ for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
 }
 assert.equal(data.body_indexed,false,'No protected bodies indexed');
 assert.equal(data.total_pages,data.items.length);
+assert.match(html,/home:'https:\/\/193\.77\.159\.220\//);
+assert.match(html,/dom:'https:\/\/193\.77\.159\.220\//);
+
 const canonical=url=>url.replace(/\/index\.html$/i,'/').replace(/\/+$/,'').toLowerCase();
 const targets=['/Start/index.html','/chess-lab/','/S/new/','/Trip/new/','/F4M/new/','/CW/new/'];
 for(const url of targets){
@@ -32,6 +35,7 @@ async function check(base,offline){
  assert.equal(context.qa.shortlist('LAB').length,5,'Only the five active LAB entrances');
  for(const q of ['šah lab','chess lab','lab chess','sah lab'])assert.equal(first(q),'/chess-lab');
  for(const [q,target] of [['sudoku lab','/s/new'],['trip lab','/trip/new'],['flip4m lab','/f4m/new'],['križanke lab','/cw/new'],['crosswords lab','/cw/new'],['Start','/start'],['/Start/','/start'],['začetna','/start'],['chess','/chess']])assert.equal(first(q),target,q);
+ for(const q of ['home','dom','domaca','domaca stran'])assert.equal(new URL(context.qa.shortlist(q)[0]?.url).href,'https://193.77.159.220/',q);
  assert.equal(context.qa.shortlist('lab no-such-project-321').length,0);
  assert.ok(context.qa.shortlist('LAB').every(x=>!x.url.includes('/old/')));
  console.log('PASS actual search merge/ranking',new URL(base).pathname,offline?'fallback':'global index');
