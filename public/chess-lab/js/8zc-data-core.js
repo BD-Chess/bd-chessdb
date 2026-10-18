@@ -81,6 +81,31 @@
     if (!object(r) || !Number.isSafeInteger(r.cursor) || r.cursor<0 || r.cursor>line.length || r.totalPlies!==line.length || r.pgnLength!==value.pgn.length || r.fen!==(r.cursor?line[r.cursor-1].fen:s.rootFen)) fail('Game cursor/FEN does not match the complete PGN.');
     if (value.topPick!==null && (!object(value.topPick) || value.topPick.cursor!==r.cursor || value.topPick.totalPlies!==line.length || value.topPick.pgnLength!==value.pgn.length)) fail('Invalid Top Pick reference.');
   }
+  // Exact saved ChessTime contract, without restore()'s anchor/flag normalization.
+  // The boot recovery gate also uses this before application modules start.
+  function checkClock(clock,paused=false) {
+    exact(clock,['version','mode','initial','increment','turn','used','remaining','anchor','turnSpent','running','flagged'],'saved clock');
+    if(clock.version!=='1.0.0'||!['elapsed','countdown'].includes(clock.mode)||!['w','b'].includes(clock.turn)||typeof clock.running!=='boolean'||paused&&clock.running)fail('Invalid paused workspace clock.');
+    if(clock.flagged!==null&&!['w','b'].includes(clock.flagged))fail('Invalid saved clock flag.');
+    const time=value=>{if(!Number.isFinite(value)||value<0)fail('Invalid saved clock time.');};
+    for(const field of ['initial','increment','anchor','turnSpent'])time(clock[field]);
+    for(const field of ['used','remaining']){exact(clock[field],['w','b'],'clock '+field);time(clock[field].w);time(clock[field].b);}
+  }
+  function checkTiming(timing,deps) {
+    if(timing===null)return;
+    exact(timing,['pgn','records','kind','humanStartPly','clock'],'workspace timing');
+    if(typeof timing.pgn!=='string'||!Array.isArray(timing.records)||!['analysis','human','sim','lichess'].includes(timing.kind)||!Number.isSafeInteger(timing.humanStartPly)||timing.humanStartPly<0)fail('Invalid workspace timing.');
+    if(timing.pgn)deps.Study.parsePGN(deps.Chess,timing.pgn);
+    checkClock(timing.clock,true);
+    // Records may extend past the displayed PGN cursor and have null gaps.
+    for(const row of timing.records) {
+      if(row===null)continue;
+      if(!object(row)||typeof row.at_utc!=='string'||!Number.isFinite(Date.parse(row.at_utc))||typeof row.san!=='string'||!row.san||typeof row.move!=='string'||!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(row.move))fail('Invalid workspace timing record.');
+      for(const field of ['think_ms','white_elapsed_ms','black_elapsed_ms','clock_ms','analysis_ms'])if(['think_ms','white_elapsed_ms','black_elapsed_ms'].includes(field)||row[field]!==undefined)if(!Number.isFinite(row[field])||row[field]<0)fail('Invalid workspace record time.');
+      for(const field of ['fen','afterFen'])if(typeof row[field]!=='string'||!new deps.Chess().validate_fen(row[field]).valid)fail('Invalid workspace record FEN.');
+      checkClock(row.after);
+    }
+  }
   function validatePayload(p,deps) {
     exact(p,Object.keys(SECTIONS),'payload'); canonical(p);
     for (const [k,limit] of Object.entries(LIMITS)) if (k!=='file' && bytes(p[k])>limit) fail('DATA '+k+' section exceeds its limit.');
@@ -135,10 +160,7 @@
       for(const key of ['fen','startFen','finalFen']) if(run[key]&&!new deps.Chess().validate_fen(run[key]).valid)fail('Invalid Sim FEN.');
       typedScores(run);
     }
-    if (p.timing!==null) {
-      if(!object(p.timing)||typeof p.timing.pgn!=='string'||!Array.isArray(p.timing.records)||!object(p.timing.clock)||p.timing.clock.running!==false)fail('Invalid paused workspace timing.');
-      if(p.timing.pgn)deps.Study.parsePGN(deps.Chess,p.timing.pgn);
-    }
+    checkTiming(p.timing,deps);
     exact(p.recovery,Object.keys(empty().recovery),'recovery');
     if (!Array.isArray(p.recovery.evidencePending))fail('Invalid pending Evidence.');
     for(const op of p.recovery.evidencePending) if(op.snapshot)deps.Evidence.validate(op.snapshot);
@@ -181,6 +203,14 @@
         changed:[...B.keys()].filter(k=>A.has(k)&&A.get(k)!==B.get(k)).length,unchanged:[...B.keys()].filter(k=>A.get(k)===B.get(k)).length});
     };
     compare('Studies',old.studies.collection?.studies||[],next.studies.collection?.studies||[]);
+    const single=(section,a,b)=>compare(section,a===null?[]:[{id:section,value:a}],b===null?[]:[{id:section,value:b}]);
+    const semanticCollection=value=>value===null?null:Object.fromEntries(Object.entries(value).filter(([k])=>!['revision','appliedOperations'].includes(k)));
+    single('Active Study',old.studies.collection?.activeId??null,next.studies.collection?.activeId??null);
+    single('A / B comparison',old.studies.collection?.comparison??null,next.studies.collection?.comparison??null);
+    const metadata=value=>value===null?null:Object.fromEntries(Object.entries(value).filter(([k])=>!['studies','activeId','comparison','revision','appliedOperations'].includes(k)));
+    single('Studies metadata',metadata(old.studies.collection),metadata(next.studies.collection));
+    single('Studies undo A',semanticCollection(old.studies.undoA),semanticCollection(next.studies.undoA));
+    single('Studies undo B',semanticCollection(old.studies.undoB),semanticCollection(next.studies.undoB));
     compare('Evidence',old.evidence.snapshots,next.evidence.snapshots);
     compare('Sim games',old.simulation.runs,next.simulation.runs);compare('Tournaments',old.simulation.events,next.simulation.events);
     for(const section of ['game','preferences','evaluations','timing','recovery'])compare(section,old[section]===null?[]:[{id:section,value:old[section]}],next[section]===null?[]:[{id:section,value:next[section]}]);

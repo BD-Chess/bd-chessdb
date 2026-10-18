@@ -48,3 +48,16 @@ are never resumed by a restore. User must reopen to activate the new workspace.
 
 Source: fresh main 87469d421bb5cabfdb91c17179e929648d9d26af,
 LAB tree 291be21d8a20d03e83a66a251233494205477e82. P5B/C are separate.
+
+Architect review corrections (2026-10-18): preview includes active Study,
+A/B question/pins, collection metadata and both complete undo slots. Only
+collection revision/appliedOperations bookkeeping is excluded from that display.
+Failed current exports still expose independently validated previous-workspace
+and recovery-draft downloads; neither download restores or replaces data.
+
+Timing uses the complete saved ChessTime 1.0.0 shape, with finite nonnegative
+numeric times, both sides, valid mode/turn/flag and an explicitly paused top-level
+clock. Timing kind/start-ply/PGN and non-null historical move records, their FENs,
+times and full after-clocks are checked before any restore journal write.
+Historical records can include null gaps and extend past the displayed cursor.
+Validation does not call restore's normalizer or mutate the hashed payload.

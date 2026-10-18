@@ -77,10 +77,10 @@ test('DATA real Save download → Load preview/cancel/confirm → reload/reopen 
   assert.deepEqual(await page.evaluate(()=>[localStorage.getItem('ChessBest:CURRENT:v2:game'),localStorage.getItem('other-app-sentinel')]),['TARGET-CURRENT','TARGET-OTHER']);checks.push('target-current-and-other-app-isolation');
   await load(page,first.file);
   await page.evaluate(()=>localStorage.setItem(window.ChessDataGuard.key('ChessBest:LAB:v2:showTopLine'),'1'));
-  await page.getByRole('button',{name:'Restore entire workspace',exact:true}).click();await page.getByText('DATA operation stopped',{exact:true}).waitFor();assert.match(await page.locator('#dataDialog').innerText(),/stale/);await page.locator('#dataDialog button').click();checks.push('stale-preview-refused');
+  await page.getByRole('button',{name:'Restore entire workspace',exact:true}).click();await page.getByText('DATA operation stopped',{exact:true}).waitFor();assert.match(await page.locator('#dataDialog').innerText(),/stale/);await page.getByRole('button',{name:'Close',exact:true}).click();checks.push('stale-preview-refused');
   const other=await ctx.newPage();await other.goto(origin+'/chess-lab/');await other.waitForFunction(()=>!!window.ChessLabHost);
   await other.evaluate(async()=>{const sim=window.ChessSimStore.create();await sim.saveRun({id:'other-tab-run',state:'paused',pgn:'1. d4 *',trace:[]});});
-  await load(page,first.file);await page.getByRole('button',{name:'Restore entire workspace',exact:true}).click();await page.getByText('DATA operation stopped',{exact:true}).waitFor();assert.match(await page.locator('#dataDialog').innerText(),/other LAB tabs/);await page.locator('#dataDialog button').click();await other.close();checks.push('real-other-tab-sim-writer-excluded');
+  await load(page,first.file);await page.getByRole('button',{name:'Restore entire workspace',exact:true}).click();await page.getByText('DATA operation stopped',{exact:true}).waitFor();assert.match(await page.locator('#dataDialog').innerText(),/other LAB tabs/);await page.getByRole('button',{name:'Close',exact:true}).click();await other.close();checks.push('real-other-tab-sim-writer-excluded');
   for(const size of [{width:375,height:812},{width:402,height:874},{width:430,height:932},{width:874,height:402},{width:1280,height:520}]) {
     await page.setViewportSize(size);await more(page);assert(await page.locator('#btnSaveData').isVisible());assert(await page.locator('#btnLoadData').isVisible());
     const box=await page.locator('#btnLoadData').boundingBox();assert(box.x>=0&&box.x+box.width<=size.width+1);
@@ -124,5 +124,29 @@ test('DATA real Save download → Load preview/cancel/confirm → reload/reopen 
   const fallback=await save(page,'fallback-memory.json');assert.equal(fallback.data.payload.evidence.snapshots.length,1);assert.equal(fallback.data.payload.recovery.evidencePending.length,1);
   await ctx.close();page=await open('fallback');await load(page,fallback.file);await restore(page);
   const fallbackRestored=await save(page,'fallback-restored.json');assert.equal(fallbackRestored.data.payload.evidence.snapshots.length,1);assert.equal(fallbackRestored.data.payload.recovery.evidencePending.length,1);checks.push('browser-localStorage-fallback-memory-pending-preserved');
+  // Architect R1-02: the real Save handler must offer a real previous-file download
+  // even when a retained current section cannot be captured. The download never writes storage.
+  const priorHash=await page.evaluate(()=>window.ChessDataGuard.recovery().then(v=>v.sha256));
+  const corruptCurrent=await page.evaluate(()=>{const key=window.ChessDataGuard.key('ChessBest:LAB:v2:data-recovery');localStorage.setItem(key,'unreadable current recovery drafts');return localStorage.getItem(key);});
+  await more(page);await page.locator('#btnSaveData').click();await page.getByText('DATA operation stopped',{exact:true}).waitFor();await page.getByRole('button',{name:'Save previous workspace',exact:true}).waitFor();
+  const priorDownload=page.waitForEvent('download');await page.getByRole('button',{name:'Save previous workspace',exact:true}).click();
+  const priorFile=path.join(evidence,'review-fix-previous.json');await (await priorDownload).saveAs(priorFile);
+  const priorText=fs.readFileSync(priorFile,'utf8');assert.equal(await page.evaluate(text=>window.ChessDataCore.parse(text,window.ChessDataGuard.dependencies()).then(v=>v.sha256),priorText),priorHash);
+  assert.equal(await page.evaluate(()=>localStorage.getItem(window.ChessDataGuard.key('ChessBest:LAB:v2:data-recovery'))),corruptCurrent);
+  await ctx.close();page=await open('review-recovery-target');await load(page,priorFile);await restore(page);checks.push('review-R1-02-failed-current-save-downloads-valid-previous-file-and-restores-clean-target');
+  // Architect R1-03: valid native clocks import unchanged and the actual Resume
+  // game control works after the application's real reload, with no worker start.
+  for(const mode of ['elapsed','countdown']){
+    const text=await page.evaluate(async mode=>{const p=window.ChessDataCore.empty(),g=new window.Chess();g.move('e4');g.header('Event','P5A clock fixture','White','Fixture W','Black','Fixture B','Result','*');const pgn=g.pgn();p.game={schema:'chessbest-game/1',pgn,topPick:null,resume:{cursor:1,totalPlies:1,pgnLength:pgn.length,fen:g.fen()}};
+      const clock=window.ChessTime.create({mode,seconds:mode==='countdown'?30:0,turn:'b',running:false});clock.used={w:1234,b:456};clock.remaining={w:28766,b:29544};clock.turnSpent=456;
+      p.timing={pgn,records:[],kind:'human',humanStartPly:0,clock};g.move('e5');g.move('Nf3');p.game.pgn=g.pgn();p.game.resume.totalPlies=3;p.game.resume.pgnLength=p.game.pgn.length;return window.ChessDataCore.canonical(await window.ChessDataCore.pack(p,window.ChessDataGuard.source(),window.ChessDataGuard.dependencies()));},mode);
+    const file=path.join(evidence,'review-fix-clock-'+mode+'.json');fs.writeFileSync(file,text);await load(page,file);await restore(page);
+    assert.equal(page.workers().length,0);assert.equal(await page.evaluate(()=>window.ChessLabHost.getReviewGame().cursor),1);assert(await page.locator('#humanSession').isVisible());
+    const clock=await page.evaluate(()=>JSON.parse(localStorage.getItem(window.ChessDataGuard.key('ChessBest:LAB:v2:timing'))).clock);
+    assert.deepEqual(clock.used,{w:1234,b:456});assert.deepEqual(clock.remaining,{w:28766,b:29544});assert.equal(clock.running,false);
+    await page.getByRole('button',{name:'Resume game',exact:true}).click();await page.getByRole('button',{name:'Pause game',exact:true}).waitFor();
+    const running=await page.evaluate(()=>JSON.parse(localStorage.getItem(window.ChessDataGuard.key('ChessBest:LAB:v2:timing'))).clock.running);assert.equal(running,false); // persisted snapshots are always paused
+    assert.equal(page.workers().length,0);await page.getByRole('button',{name:'Pause game',exact:true}).click();checks.push('review-R1-03-real-reload-resume-'+mode);
+  }
   assert.deepEqual(errors,[]);
 });

@@ -2177,14 +2177,14 @@ function startEvalRetry() {
   /* ------------------------------------------------------------------
      12. JUMP TO MOVE & NAV BUTTONS
   ------------------------------------------------------------------*/
-function jumpTo(i){
+function jumpTo(i, { preserveTiming = false } = {}){
   if (playState.active || replayRunning) return;
   if (simRunning) pauseSimulation('Paused at the selected move. Open Sim to choose engines and continue.');
   const headers = game.header();
   game.load(headers.FEN || new Chess().fen());
   Object.entries(headers).forEach(([k,v]) => game.header(k,v));
   fullHistory.forEach((m,idx)=>{ if(idx<=i) game.move(m.san); });
-  workspace.history();
+  if (!preserveTiming) workspace.history();
   lastAction = 'history';
   updateBoard(false);
 }
@@ -2997,7 +2997,13 @@ function jumpTo(i){
   if (lastLoadedPGN) bookFlags = extractBookFlags(lastLoadedPGN);
   // Do not overwrite a saved cursor with a transient end-of-line boot state.
   updateBoard(true, restoreGameCursor === null);
-  if (restoreGameCursor !== null) jumpTo(restoreGameCursor - 1);
+  if (restoreGameCursor !== null) {
+    const restoredData = !!window.ChessDataGuard?.restoredPaused;
+    jumpTo(restoreGameCursor - 1, { preserveTiming: restoredData });
+    // DATA timing belongs to the displayed cursor, not the transient full-line
+    // boot position. Read it after navigation, before any history-clock rewrite.
+    if (restoredData) { workspace.restoreSavedTiming(); workspace.render(); }
+  }
   if (restoreTopPickCursor !== null) {
     document.getElementById('gameTitle').textContent = chessBestTopPickTitle(
       game.header().ChessBestTitle, 'ChessBest Top Pick');
