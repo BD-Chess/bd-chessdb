@@ -29,6 +29,7 @@ on:
       - '.github/workflows/chess-lab-unified.yml'
 permissions:
   contents: read
+  actions: read
 jobs:
   unified-lab:
     runs-on: ubuntu-latest
@@ -59,6 +60,10 @@ jobs:
             public/chess-lab/research/engine-memory.test.cjs
       - name: P3/P4 interactive ownership, cards, preferences and language
         run: node --test public/chess-lab/research/p3-active-analysis.test.cjs public/chess-lab/research/sf-provider.test.cjs public/chess-lab/research/p4-engine-cards.test.cjs public/chess-lab/research/p4-interface.test.cjs
+      - name: Fetch pinned pre-DATA LAB for the explicit upgrade scenario
+        run: git fetch --no-tags --depth=1 origin 87469d421bb5cabfdb91c17179e929648d9d26af
+      - name: P5A portable DATA validation, generations and recovery
+        run: node --test public/chess-lab/research/p5a-data.test.cjs public/chess-lab/research/p5a-recovery.test.cjs
       - name: P1 durable state, navigation and source provenance
         run: |
           node --test \
@@ -106,9 +111,12 @@ jobs:
           "$RUNNER_TEMP/chess-browser-deps/node_modules/.bin/playwright" install --with-deps chromium
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
+            CHESS_P5A_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p5a" \
             CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p3" \
             CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p4" \
             node --test --test-concurrency=1 \
+              public/chess-lab/research/p5a-data-browser.cjs \
+              public/chess-lab/research/p5a-upgrade-browser.cjs \
               public/chess-lab/research/full-game-resume-browser.cjs \
               public/chess-lab/research/p3-active-analysis-browser.cjs \
               public/chess-lab/research/p4-gui-browser.cjs
@@ -120,6 +128,60 @@ jobs:
             CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/p4" \
             CHESS_CURRENT_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/surface" \
             node --test --test-concurrency=1 tests/chess-current-browser.cjs tests/chess-current-surface-browser.cjs tests/chess-current-upgrade-browser.cjs
+      - name: P5A exact Pages publication and public byte readback
+        if: github.event_name == 'push'
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import datetime, hashlib, json, os, pathlib, time, urllib.request
+          repo = os.environ['GITHUB_REPOSITORY']
+          sha = os.environ['GITHUB_SHA']
+          def api(path):
+              req = urllib.request.Request('https://api.github.com/repos/' + repo + path,
+                  headers={'Authorization': 'Bearer ' + os.environ['GH_READ_TOKEN'], 'Accept': 'application/vnd.github+json'})
+              return json.load(urllib.request.urlopen(req, timeout=25))
+          pages = None
+          for attempt in range(40):
+              candidates = api('/actions/workflows/deploy-pages.yml/runs?head_sha=' + sha + '&per_page=10')['workflow_runs']
+              pages = next((r for r in candidates if r['head_sha'] == sha and r['event'] == 'push'), None)
+              if pages and pages['status'] == 'completed':
+                  break
+              time.sleep(3)
+          assert pages and pages['conclusion'] == 'success', 'Exact merge Pages workflow is not SUCCESS'
+          jobs = api('/actions/runs/' + str(pages['id']) + '/jobs')['jobs']
+          assert jobs and all(j['conclusion'] == 'success' for j in jobs), 'Pages build/deploy is not SUCCESS'
+          changes = api('/commits/' + sha)['files']
+          paths = {f['filename'] for f in changes if f['filename'].startswith('public/chess-lab/') and f['status'] != 'removed'}
+          paths.update(['public/chess-lab/release.json', 'public/chess-lab/sw.js', 'public/chess-lab/engine-sw.js',
+              'public/chess/index.html', 'public/chess/release.json', 'public/chess/sw.js', 'public/chess/manifest.webmanifest',
+              'public/chess-lab/old/index.html', 'public/chess-lab/old/014/ARCHIVE_RECEIPT.json'])
+          results = []
+          for path in sorted(paths):
+              expected = pathlib.Path(path).read_bytes()
+              url = 'https://bd-chess.github.io/bd-chessdb/' + path.removeprefix('public/')
+              observed = None
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url + '?p5a=' + sha, headers={'Cache-Control': 'no-cache'})
+                      observed = urllib.request.urlopen(req, timeout=25).read()
+                      if observed == expected:
+                          break
+                  except Exception as error:
+                      observed = None
+                  time.sleep(2)
+              results.append({'path': path, 'source_bytes': len(expected), 'source_sha256': hashlib.sha256(expected).hexdigest(),
+                  'public_bytes': len(observed) if observed is not None else None,
+                  'public_sha256': hashlib.sha256(observed).hexdigest() if observed is not None else None,
+                  'status': 'PASS' if observed == expected else 'FAIL'})
+          result = {'schema': 'chessbest-p5a-public-readback/1', 'sha': sha, 'pages_run_id': pages['id'],
+              'pages_jobs': [{'id': j['id'], 'name': j['name'], 'conclusion': j['conclusion']} for j in jobs],
+              'observed_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'files': results}
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'chess-resume-evidence/p5a/public-readback.json'
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(result, indent=2) + '\n')
+          assert all(r['status'] == 'PASS' for r in results), 'Public LAB/source byte mismatch; see evidence artifact'
+          print('Exact Pages', pages['id'], 'SUCCESS;', len(results), 'public file SHA-256 checks PASS')
       - uses: actions/upload-artifact@v4
         if: always()
         with:

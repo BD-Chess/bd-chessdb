@@ -13,8 +13,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
   const PREFIX = 'ChessBest:LAB:v2:';
-  const KEYS = Object.freeze(Object.fromEntries(['settings', 'game', 'eval-cache', 'top-pick', 'timing', 'layout', 'studies', 'studies-recovery', 'evidence-fallback', 'evidence-legacy-fallback', 'sim-fallback', 'sim-legacy-fallback', 'sim-checkpoint', 'sim-legacy-checkpoint', 'sim-lease', 'lichess-token', 'anthropic-token', 'migration', 'sim-fallback-origin'].map(name => [name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), PREFIX + name])));
-  const DATABASES = Object.freeze({ evidence: PREFIX + 'evidence', sim: PREFIX + 'sim' });
+  const KEYS = Object.freeze(Object.fromEntries(['settings', 'game', 'eval-cache', 'top-pick', 'timing', 'layout', 'studies', 'studies-recovery', 'evidence-fallback', 'evidence-legacy-fallback', 'sim-fallback', 'sim-legacy-fallback', 'sim-checkpoint', 'sim-legacy-checkpoint', 'sim-lease', 'lichess-token', 'anthropic-token', 'migration', 'sim-fallback-origin'].map(name => [name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), (root.ChessDataGuard?.key(PREFIX + name) || PREFIX + name)])));
+  const DATABASES = Object.freeze({ evidence: root.ChessDataGuard?.key(PREFIX + 'evidence') || PREFIX + 'evidence', sim: root.ChessDataGuard?.key(PREFIX + 'sim') || PREFIX + 'sim' });
   const LOCAL = Object.freeze([
     ['chessLabSettings-v8', KEYS.settings], ['chessLabGame-v8', KEYS.game],
     ['chessLabEvalCache-v8', KEYS.evalCache], ['chessLabTopPickCursor-v1', KEYS.topPick],
@@ -308,7 +308,11 @@
       }
       panel.querySelector('.lab-storage-error').textContent = current.error;
     }
-    const ready = attempt();
+    const ready = (async () => {
+      if (root.ChessDataGuard) await root.ChessDataGuard.ready;
+      if (root.ChessDataGuard?.epoch) { current = { ...current, phase: 'ready', complete: true }; return status(); }
+      return attempt();
+    })();
     // ready remains the initial immutable boot gate. Retry success reloads the
     // app so every consumer obtains the same verified ready gate again.
     ready.catch(() => {});

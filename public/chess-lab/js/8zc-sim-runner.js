@@ -26,7 +26,7 @@
     Session = globalThis.ChessAnalysisSession,
     now = () => performance.now(), storage = globalThis.localStorage }) {
     let active = null, token = 0, controller = null, provider = null, heartbeat = null, task = null;
-    const owner = store.createId('tab'), leaseKey = 'ChessBest:APP:v1:sim-lease';
+    const owner = store.createId('tab'), leaseKey = globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:sim-lease') || 'ChessBest:APP:v1:sim-lease';
     // The spectator never drives moves, search budgets, clocks or checkpoints.
     const spectator = evaluation?.watchSimulation?.({ Chess, game,
       enabled: () => settings().showSimEval !== false,

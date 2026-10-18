@@ -1,7 +1,7 @@
 /* Analysis-lab presentation only. Chess state and cancellation belong to utils. */
 (function (root) {
   'use strict';
-  const STORAGE_KEY = 'ChessBest:LAB:v2:layout';
+  const STORAGE_KEY = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:layout') || 'ChessBest:LAB:v2:layout');
   const defaults = Object.freeze({ focusMode: 'auto', workspaceWidth: 0, compact: false,
     pauseOnDisagreement: false, pauseOnSwing: false, pauseSwingCp: 50, pauseOnMissing: false });
   const fields = {

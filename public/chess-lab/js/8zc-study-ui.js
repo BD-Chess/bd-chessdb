@@ -1,7 +1,7 @@
 /* Saved variations and pinned evidence. Main-board navigation is always explicit. */
 (function (root) {
   'use strict';
-  const KEY = 'ChessBest:LAB:v2:studies';
+  const KEY = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:studies') || 'ChessBest:LAB:v2:studies');
   function providerLabel(receipt = {}) {
     const mode = receipt.engineMode, id = String(receipt.engineId || receipt.engine?.id || '');
     const provider = receipt.provider;
@@ -481,7 +481,7 @@
     if (host.onChange) unsubscribe = host.onChange(ctx => { if (!pending) guard(() => recordPosition(ctx)); });
     const onStorage = e => { if (e.key === KEY && !busy) { if (visible && !capacity) { message('Studies changed in another tab. Reopen to review; stale edits will not overwrite them.'); } else { refresh(); if (visible) { confirmation = null; render(); message('Studies changed in another tab. Review before removing.'); } } } };
     root.addEventListener('storage', onStorage);
-    return { open, close, preview, pin, showLoadProblem, manage: showManager, resumePending, cancelPending, refresh, getPending: () => pending && clone(pending), captureContext, recordPosition: ctx => guard(() => recordPosition(ctx)), importPGN, importJSON, exportPGN, exportWorkspacePGN, exportJSON, newStudy, annotatePath, saveLine,
+    return { async dataSnapshot() { await recordQueue; if (busy || queuedRecords) throw Error('Study saving is still active. Try Save DATA again.'); return { pending: pending && clone(pending) }; }, open, close, preview, pin, showLoadProblem, manage: showManager, resumePending, cancelPending, refresh, getPending: () => pending && clone(pending), captureContext, recordPosition: ctx => guard(() => recordPosition(ctx)), importPGN, importJSON, exportPGN, exportWorkspacePGN, exportJSON, newStudy, annotatePath, saveLine,
       getStudy: () => current(), getComparison: () => JSON.parse(JSON.stringify(state.comparison)),
       destroy() { destroyed = true; committedEffects.clear(); root.removeEventListener('storage', onStorage); unsubscribe?.(); document.removeEventListener('keydown', keys, true); overlay.remove(); } };
   }

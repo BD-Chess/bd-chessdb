@@ -6,7 +6,7 @@
   else root.ChessStudyStore = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const KEY = 'ChessBest:LAB:v2:studies', LIMIT = 20, MAX = 4500000;
+  const KEY = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:studies') || 'ChessBest:LAB:v2:studies'), LIMIT = 20, MAX = 4500000;
   const bytes = text => new Blob([text]).size;
   const copy = value => JSON.parse(JSON.stringify(value));
   const error = (code, message, details) => Object.assign(new Error(message), { code, ...details });
@@ -158,6 +158,7 @@
       if (!locks?.request) throw error('STORAGE_UNAVAILABLE', 'Safe cross-tab saving is unavailable in this browser. Keep this tab open and export pending work.');
       return locks.request(KEY, { mode: 'exclusive' }, () => {
         if (cancelled()) throw error('CANCELLED', 'Pending save was cancelled.');
+        globalThis.ChessDataGuard?.assertWritable();
         read();
         if (state.appliedOperations.includes(op.id)) return { ok: true, duplicate: true, state: copy(state) };
         // The bounded receipt ledger cannot establish whether an older uncertain save committed.

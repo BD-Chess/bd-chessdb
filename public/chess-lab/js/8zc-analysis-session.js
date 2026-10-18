@@ -15,7 +15,7 @@
   const rootMoveSupport=mode=>registry?.rootSupport?.(participants(mode))||{supported:false,reason:'Restricted first moves unavailable: engine capabilities could not be verified.'};
   const BOARD_SOURCES = ['cdb','sf-lite','sf-full','reckless','lc0','berserk'];
   // New controls start with CDB / one thread; earlier R2 preferences remain in their original key.
-  const STORAGE = 'ChessBest:LAB:v2:analysis-engine-r3';
+  const STORAGE = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:analysis-engine-r3') || 'ChessBest:LAB:v2:analysis-engine-r3');
   const listeners = new Set(), instances = new Set();
   let owner = null, generation = 0, cleanupUntil = 0, sessionSerial = 0, berserkNetwork = null;
   const BERSERK_NET = Object.freeze({bytes:25201924,sha256:"9b84c340af7e45f6e07f0046235ccb327f4ae0840c8ee2c4b97b99121e5c5084",name:"berserk-9b84c340af7e.nn"});
@@ -23,9 +23,9 @@
   let networkState = 'unchecked', networkPersistent = false, networkError = '', networkRevision = 0, restorePending = null, networkLoadSerial = 0;
   let networkWrites = Promise.resolve();
   let savedCardMode='sf-lite';
-  try{const key=root.ChessLabStorage?.KEYS?.settings||'ChessBest:LAB:v2:settings';savedCardMode=JSON.parse(root.localStorage?.getItem(key)||'null')?.sfCardMode==='sf-full'?'sf-full':'sf-lite';}catch(_){}
+  try{const key=root.ChessLabStorage?.KEYS?.settings||(globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:settings') || 'ChessBest:LAB:v2:settings');savedCardMode=JSON.parse(root.localStorage?.getItem(key)||'null')?.sfCardMode==='sf-full'?'sf-full':'sf-lite';}catch(_){}
   let settings = { analysisMode:'sf-lite', boardSource:'cdb', sfCardMode:savedCardMode, sfFullThreadsRequested:1, hashMB:16, engineMemoryPolicy:'one' };
-  try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || root.localStorage?.getItem('ChessBest:LAB:v2:analysis-engine') || 'null'); if (old) settings = sanitize(old); } catch (_) {}
+  try { const old = JSON.parse(root.localStorage?.getItem(STORAGE) || root.localStorage?.getItem((globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:analysis-engine') || 'ChessBest:LAB:v2:analysis-engine')) || 'null'); if (old) settings = sanitize(old); } catch (_) {}
   function sanitize(value) {
     const mode = ['auto','cdb','sf','cdb-sf-lite','CDB | SF Lite'].includes(value.analysisMode)?'sf-lite':value.analysisMode;
     const requested = value.sfFullThreadsRequested;

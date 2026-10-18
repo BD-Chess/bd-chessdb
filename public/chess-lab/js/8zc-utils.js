@@ -137,6 +137,7 @@ function initAllCore() {
   const labListeners = new Set();
   const sourceObservations = new Map();
   const labSnapshots = new Map();
+  try { for (const item of JSON.parse(localStorage.getItem(window.ChessDataGuard?.key('ChessBest:LAB:v2:data-positions') || 'ChessBest:LAB:v2:data-positions') || '[]')) { window.ChessEvidence.validate(item); labSnapshots.set(item.payload.fen, item); } } catch (_) {}
   const acknowledgedAutoPauses = new Set();
   let offlineEvidence = null;
 
@@ -188,6 +189,7 @@ function initAllCore() {
   }
   function writeLocal(key, value) {
     try {
+      window.ChessDataGuard?.assertWritable();
       // Do not overwrite an unreadable durable value with a session default.
       localStorage.getItem(key);
       if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
@@ -554,7 +556,14 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       catch (error) { console.warn('Invalid Top Pick resume marker', error); }
     }
     try {
-      if (!game.load_pgn(validateStudyPGN(savedGame).pgn())) throw Error('Invalid saved PGN');
+      const savedProbe = validateStudyPGN(savedGame);
+      if (!savedProbe.history().length) {
+        // chess.js rejects a legal headers-only PGN. A zero-move workspace is
+        // restored from its validated root, retaining source headers/comments.
+        if (!game.load(savedProbe.fen())) throw Error('Invalid saved root');
+        const parsed = window.ChessStudy.parsePGN(Chess, savedGame);
+        for (const [name, value] of Object.entries(parsed.headers)) game.header(name,value);
+      } else if (!game.load_pgn(savedProbe.pgn())) throw Error('Invalid saved PGN');
       lastLoadedPGN = savedGame;
       if (savedTopPick) {
           restoreTopPickCursor = chessBestTopPickResumeCursor(
@@ -645,7 +654,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   let prevHighlight = [];
   let divergedIndex = -1;  // NEW: index of divergence from PGN history
   let lastAction = null;
-  let showEval      = true;
+  let showEval      = !window.ChessDataGuard?.restoredPaused;
   let evalBarVisible = true;
   // per‐move “in book” flags parsed from PGN comments
   let bookFlags = [];
@@ -718,7 +727,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
   let engineCards = null, evalHistoryFingerprint=null, linkedCard=null;
   const cardControlCache=new Map();
   function cacheCardControls(){if(engineCards)for(const source of ['SF','RLE','LC0','BER'])cardControlCache.set(source,engineCards.state(source));}
-  let analysisActivity = null, activityPositionKey = null, probeActivity = null, probeSerial = 0, interactiveStopped = false;
+  let analysisActivity = null, activityPositionKey = null, probeActivity = null, probeSerial = 0, interactiveStopped = !!window.ChessDataGuard?.restoredPaused;
   const canAnalyzeInteractive = () => !document.hidden && !offlineEvidence && showEval && !simRunning && !replayRunning && !playState.assistanceLocked;
   const refreshAnalysisActivity = () => analysisActivity?.refresh();
   function stopInteractiveProbe() {
@@ -2473,6 +2482,7 @@ function jumpTo(i){
         return;
       }
 	  showEval = !showEval;
+      if(showEval)window.ChessDataGuard?.resume();
 	  positionEval.render();
 	  // cancel any pending retries when hiding
 	  if (!showEval && evalRetryTimer) clearInterval(evalRetryTimer);
@@ -2769,7 +2779,26 @@ function jumpTo(i){
         button.disabled=offlineEvidence||!showEval||simRunning||replayRunning||playState.assistanceLocked;}
       syncSFAnalysisControl();
     }});
-  const labHost = { Chess, mount: document.body, getContext: getLabContext, canAnalyze:canAnalyzeInteractive,
+  const labHost = {
+    canRestoreData: () => {
+      if (playState.active || simRunning || replayRunning || tournamentRunner?.busy() || engineCards?.isAllRunning() || deepUI?.isRunning?.())
+        throw Error('Pause the current game, simulation and analysis before loading DATA.');
+    },
+    prepareData: async () => {
+      window.ChessDataGuard?.assertWritable();
+      if (playState.active && playState.mode === 'lichess') throw Error('End the live Lichess session before Save DATA.');
+      stopInteractiveAnalysis(); pauseLab('data');
+      if (tournamentRunner?.busy()) { await tournamentRunner.pause('Paused for Save DATA'); await tournamentRunner.settled(); }
+      workspace.pause(); await studyUI?.dataSnapshot();
+      const language=window.ChessLanguage?.getLanguage();
+      if(language)localStorage.setItem(window.ChessDataGuard?.key('ChessBest:LAB:v2:language') || 'ChessBest:LAB:v2:language',language);
+      if (!persistGame() || !persistSettings()) throw Error('Game/settings could not be saved. Existing bytes were retained.');
+      persistEvalCache();
+    },
+    dataStores: () => ({ evidence: researchUI?.store, sim: simStore }),
+    dataMemory: async () => ({ pending: (await studyUI?.dataSnapshot())?.pending || null,
+      evidence: await researchUI?.store.dataSnapshot(), positions: [...labSnapshots.values()] }),
+    Chess, mount: document.body, getContext: getLabContext, canAnalyze:canAnalyzeInteractive,
     getAnalysisActivity:interactiveAnalysisSnapshot,stopAnalysis:stopInteractiveAnalysis,
     saveBeforeUpdate: () => {
       const gameSaved = persistGame(), settingsSaved = persistSettings();

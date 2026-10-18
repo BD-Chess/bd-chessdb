@@ -52,7 +52,7 @@
     return { schema: SCHEMA, version: VERSION, runs, events };
   }
   function create(options = {}) {
-    const namespace = options.namespace || 'ChessBest:LAB:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
+    const namespace = options.namespace || root.ChessDataGuard?.key('ChessBest:LAB:v2:sim') || 'ChessBest:LAB:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
     const leaseKey = options.leaseKey || 'ChessBest:LAB:v2:sim-lease';
     const idb = options.indexedDB === undefined ? root.indexedDB : options.indexedDB;
     let storage = options.localStorage;
@@ -96,6 +96,7 @@
     }
     function serial(work) {
       const result = queue.then(async () => {
+        root.ChessDataGuard?.assertWritable();
         await ready();
         if (mode === 'unavailable') throw Error(warning);
         if (locks?.request) return locks.request(namespace + '-archive', work);
@@ -218,6 +219,7 @@
       });
     }
     function checkpointSync(run, event) {
+      root.ChessDataGuard?.assertWritable();
       if (!storage) throw Error('Cannot save the active-game checkpoint: localStorage is unavailable.');
       const payload = { schema: 'chess-sim-checkpoint', version: VERSION, savedAt: new Date().toISOString(), records: [] };
       for (const [kind, value] of [['runs', run], ['events', event]]) if (value) {
@@ -327,5 +329,5 @@
       close: () => serial(() => { database?.close(); database = null; mode = 'unavailable'; warning = 'Archive is closed. Create a new archive connection to continue.'; })
     };
   }
-  return { SCHEMA, VERSION, create, createId };
+  return { SCHEMA, VERSION, create, createId, validate: archive, validateRecord: record, MAX_RECORD_BYTES, MAX_IMPORT_BYTES };
 });
