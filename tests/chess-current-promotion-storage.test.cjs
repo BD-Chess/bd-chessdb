@@ -5,7 +5,7 @@ const path = require('node:path');
 const { createRequire } = require('node:module');
 
 // The chess research suite owns this optional test dependency.
-const researchRequire = createRequire(path.resolve(__dirname, '../public/chess/new/research/package.json'));
+const researchRequire = createRequire(path.resolve(__dirname, '../public/chess-lab/research/package.json'));
 const { IDBFactory } = researchRequire('fake-indexeddb');
 const Migration = require('../public/chess/js/8zc-lab-storage.js');
 const CURRENT = 'ChessBest:CURRENT:v2:';
@@ -187,4 +187,14 @@ test('CURRENT archive copy preserves old and LAB databases, with existing CURREN
   assert.deepEqual(await read(env.indexedDB, LAB + 'evidence', 'snapshots'), [{ id: 'same', value: 'LAB' }]);
   assert.equal((await env.indexedDB.databases()).find(value => value.name === 'ChessDCC-evidence').version, 4);
   assertNoCrossChannelWrites(env.localStorage);
+});
+
+test('CURRENT fallback never reads LAB values and a completed receipt preserves intentional deletion',async()=>{
+  const env=setup({chessBestGame:'1. c4 c5',[LAB+'game']:'private LAB sentinel'}),reads=[];
+  const get=env.localStorage.getItem.bind(env.localStorage);env.localStorage.getItem=k=>{reads.push(k);return get(k);};
+  await Migration.create(env).ready;
+  assert.equal(get(K.game),'1. c4 c5');assert(!reads.some(k=>k.startsWith(LAB)));
+  env.localStorage.removeItem(K.game);reads.length=0;
+  await Migration.create(env).ready;
+  assert.equal(get(K.game),null);assert(!reads.some(k=>k.startsWith(LAB)));assertNoCrossChannelWrites(env.localStorage);
 });

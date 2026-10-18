@@ -58,7 +58,35 @@ export function checkVersions(repo,base){
     try{execFileSync('git',['cat-file','-e',base+':'+prefix],{cwd:repo,stdio:'ignore'});}catch{prefix='public/chess/old';}
     const rows=execFileSync('git',['ls-tree','-rz',base,'--',prefix],{cwd:repo}).toString().split('\0').filter(Boolean), sealed=new Set();
     for(const row of rows){const x=row.match(/^[^ ]+ blob [0-9a-f]+\t(.+)$/);if(!x)continue;const rel=x[1].slice(prefix.length+1);if(!/^\d{3,}\//.test(rel))continue;sealed.add(rel);const now=path.join(previous,rel);if(!fs.existsSync(now)){errors.push('deleted archive '+rel);continue;}const before=execFileSync('git',['show',base+':'+x[1]],{cwd:repo});if(!before.equals(fs.readFileSync(now)))errors.push('changed archive '+rel);}
-    for(const f of walk(previous)){const rel=path.relative(previous,f).split(path.sep).join('/');if(/^\d{3,}\//.test(rel)&&!sealed.has(rel))errors.push('added archive file '+rel);}
+    // A new numbered Drive stub is append-only. Every number present at the
+    // base remains sealed, including additions to an old archive directory.
+    const sealedIds=new Set([...sealed].map(rel=>rel.split('/')[0]));
+    const addedIds=ids.filter(id=>!sealedIds.has(id));
+    const expected=String((sealedIds.size?Math.max(...[...sealedIds].map(Number)):0)+1).padStart(3,'0');
+    let allowed=null;
+    if(addedIds.length===1&&addedIds[0]===expected){
+      const id=addedIds[0],dir=path.join(previous,id),entry=m.archives?.find(a=>a.id===id);
+      try{
+        const receipt=JSON.parse(fs.readFileSync(path.join(dir,'ARCHIVE_RECEIPT.json'),'utf8'));
+        const files=fs.readdirSync(dir).sort().join(',');
+        const sha40=x=>/^[a-f0-9]{40}$/.test(x||''),sha64=x=>/^[a-f0-9]{64}$/.test(x||'');
+        const drive=x=>/^[A-Za-z0-9_-]{20,}$/.test(x||'');
+        if(files==='ARCHIVE_RECEIPT.json,index.html'&&entry?.path==='/chess-lab/old/'+id+'/'&&
+          receipt.schema==='chessbest-drive-archive-receipt/1'&&receipt.archive_id===id&&
+          receipt.source_channel==='CURRENT'&&entry.source_channel==='CURRENT'&&
+          sha40(receipt.source_commit)&&sha40(receipt.source_tree)&&
+          entry.source_commit===receipt.source_commit&&entry.source_tree===receipt.source_tree&&
+          sha64(receipt.manifest_sha256)&&entry.manifest_sha256===receipt.manifest_sha256&&
+          drive(receipt.manifest_drive_id)&&entry.manifest_drive_id===receipt.manifest_drive_id&&
+          receipt.verified_restore===true&&receipt.drive_readback_verified===true&&
+          receipt.file_count>0&&receipt.uncompressed_bytes>0&&receipt.parts?.length>0&&
+          receipt.parts.every(p=>drive(p.drive_id)&&sha64(p.sha256)&&p.bytes>0)&&
+          m.latest_promotion?.previous_current_archive===id&&m.latest_promotion.backup_created===true){
+          allowed=id;
+        }
+      }catch{/* An incomplete or undeclared stub is rejected below. */}
+    }
+    for(const f of walk(previous)){const rel=path.relative(previous,f).split(path.sep).join('/');if(/^\d{3,}\//.test(rel)&&!sealed.has(rel)&&rel.split('/')[0]!==allowed)errors.push('added archive file '+rel);}
   }
   const next=String((ids.length?Math.max(...ids.map(Number)):0)+1).padStart(3,'0');
   return {ok:errors.length===0,errors,channels:channels.map(([name,,p])=>({name,path:p})),archives:ids,nextArchive:'/chess-lab/old/'+next+'/',promotionPerformed:false};

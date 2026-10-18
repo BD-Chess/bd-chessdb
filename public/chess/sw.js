@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. CURRENT only. */
 'use strict';
-const RELEASE = "current-4510d50405cdffd9";
+const RELEASE = "current-505c19dc6062c6e5";
 const PREFIX = "chessbest-chess-current-";
 const ASSETS = [
   "8zc-about.html",
@@ -78,6 +78,7 @@ const ASSETS = [
   "img/chesspieces/wikipedia/wQ.png",
   "img/chesspieces/wikipedia/wR.png",
   "index.html",
+  "js/8zc-analysis-activity.js",
   "js/8zc-analysis-controls.js",
   "js/8zc-analysis-session.js",
   "js/8zc-benchmark.js",
@@ -94,8 +95,10 @@ const ASSETS = [
   "js/8zc-eval-bar.js",
   "js/8zc-evidence.js",
   "js/8zc-gemini.js",
+  "js/8zc-interface.js",
   "js/8zc-lab-layout.js",
   "js/8zc-lab-storage.js",
+  "js/8zc-language.js",
   "js/8zc-new-ui.js",
   "js/8zc-research-ui.js",
   "js/8zc-review-core.js",

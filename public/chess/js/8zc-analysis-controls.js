@@ -102,12 +102,26 @@
     if(budget){budget.closest('label').hidden=false;budget.hidden=false;budget.disabled=deepMode==='lc0'||Number(settings.deepTimeMs)!==0&&settings.deepTimeMs!=null;budget.title=deepMode==='lc0'?'Neural PUCT is measured in visits and time.':budget.disabled?'Time is the active search limit. Choose Time Off to use depth.':'';}
     const lineCount=deepPanel?.querySelector('[data-deep="multipv"]');
     if(lineCount){lineCount.closest('label').hidden=false;lineCount.title=deepMode==='lc0'?'Visited root candidates, not equal-depth MultiPV':'';}
-    const rootMoves=deepPanel?.querySelector('.deep-root-moves');if(rootMoves)rootMoves.hidden=deepMode==='lc0'||group(deepMode)&&members(deepMode).includes('lc0');
+    const roots=deepPanel?.querySelector('[data-deep="roots"]'),rootsNote=deepPanel?.querySelector('[data-deep="roots-note"]');
+    const rootSupport=session?.rootMoveSupport?.(deepMode)||root.ChessEngineRegistry?.rootSupport?.(group(deepMode)?members(deepMode):[deepMode]);
+    if(roots){roots.disabled=!rootSupport?.supported;roots.setAttribute('aria-describedby','deepRootMovesNote');}
+    if(rootsNote)rootsNote.textContent=rootSupport?.supported?'Enter legal SAN or coordinate moves, separated by commas. Leave empty to search all moves.':
+      (rootSupport?.reason||'Restricted first moves unavailable: engine capabilities could not be verified.')+' Entered moves are retained; this mode searches all first moves.';
     const start=deepPanel?.querySelector('[data-deep="start"]');if(start)start.textContent='Analyze position';
     const dualTime=deepPanel?.querySelector('[data-deep="dual-time"]');if(dualTime)dualTime.hidden=true;
     const budgetLabel=deepPanel?.querySelector('[data-deep="budget-label"]');if(budgetLabel)budgetLabel.textContent='Search depth';
     const budgetNote=deepPanel?.querySelector('[data-deep="budget-note"]');
-    if(budgetNote){budgetNote.hidden=!group(deepMode);budgetNote.textContent='Each engine receives the selected time or depth limit. Achieved depths can differ; scores remain independent.'+(deepCaps.sequential?' Engines run in sequence, so total time is longer.':'')+(deepCaps.sequential&&members(deepMode).includes('lc0')?' Choose a finite Time so every engine gets a turn.':'');}
+    if(budgetNote){
+      const time=deepPanel?.querySelector('[data-deep="time"]')?.value||'off';
+      const neural=group(deepMode)&&members(deepMode).includes('lc0');
+      const neuralFallback=neural&&time==='off'&&budget?.value!=='infinite';
+      const saved=Number(settings.analysisTimeMs),neuralTime=Number.isSafeInteger(saved)&&saved>0?saved:deepCaps.mobile?5000:15000;
+      budgetNote.hidden=!group(deepMode);
+      budgetNote.textContent=(neuralFallback?'LCZero uses '+neuralTime/1000+' s; the selected depth applies to the other engines. Scores remain independent.':
+        'Each engine receives the selected time or depth limit. Achieved depths can differ; scores remain independent.')+
+        (deepCaps.sequential?' Engines run in sequence, so total time is longer.':'')+
+        (deepCaps.sequential&&neural&&(time==='infinite'||time==='off'&&budget?.value==='infinite')?' Choose a finite Time so every engine gets a turn.':'');
+    }
     for(const select of [topMode,modeControl()])for(const option of select?.options||[]){
       if(['reckless','lc0'].includes(option.value))option.disabled=!root.ChessEngineRegistry?.supported(option.value);
     }

@@ -31,7 +31,7 @@
     const routeReady=()=>env.navigator?.serviceWorker?.controller?.scriptURL===new URL('engine-sw.js',base).href;
     async function waitRoute(signal){
       if(!env.navigator?.serviceWorker)throw error('StorageUnavailableError','Offline engine routing is unavailable');
-      const start=now();while(!routeReady()){abort(signal);if(now()-start>30000)throw error('StorageUnavailableError','Offline setup pending. Keep LAB open or activate Update ready.');await sleep(100,signal);}
+      const start=now();while(!routeReady()){abort(signal);if(now()-start>30000)throw error('StorageUnavailableError','Offline setup pending. Keep CURRENT open or activate Update ready.');await sleep(100,signal);}
     }
     const emit=(p,value)=>{const state={mode:p.mode,variant:p.variant,total:p.bytes,...states.get(p.identity),...value};states.set(p.identity,state);for(const fn of listeners){try{fn(state);}catch(_){}}return state;};
     function transaction(work){
@@ -158,7 +158,7 @@
     }
     async function remove(mode){
       const p=select(mode);if(!p)return false;
-      return locked(p,null,async()=>{if(await useCount(p)||p.network&&network?.busy?.())throw error('InUseError','Engine is prepared or running. Stop analysis, then change position or reopen LAB before removing its files.');
+      return locked(p,null,async()=>{if(await useCount(p)||p.network&&network?.busy?.())throw error('InUseError','Engine is prepared or running. Stop analysis, then change position or reopen CURRENT before removing its files.');
         if(p.network)await network?.remove();await env.caches.delete(cacheName(p));receipts.delete(p.identity);emit(p,{status:'online',message:'Online only',savedBytes:0,loaded:0,receipt:null});return true;});
     }
     return {select,cacheName,marker,inspect,install,prepare,remove,acquireUsage,setNetworkProvider:provider=>{network=provider;},

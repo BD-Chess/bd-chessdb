@@ -155,67 +155,112 @@
     if (typeof text !== 'string' || bytes(text) > MAX_BYTES) throw new Error('Evidence file exceeds 16 MB.');
     return copy(validate(JSON.parse(text)));
   }
-  function createStore({ maxItems = 30, maxBytes = MAX_BYTES, indexedDB: suppliedIDB, localStorage: suppliedStorage } = {}) {
+  function createStore({ maxItems = 30, maxBytes = MAX_BYTES, indexedDB: suppliedIDB, localStorage: suppliedStorage, locks: suppliedLocks } = {}) {
     const dbProvider = suppliedIDB === undefined ? globalThis.indexedDB : suppliedIDB;
+    const locks = suppliedLocks === undefined ? globalThis.navigator?.locks : suppliedLocks;
     let storage = suppliedStorage;
     if (storage === undefined) { try { storage = globalThis.localStorage; } catch (_) { storage = null; } }
-    const key = 'ChessBest:CURRENT:v2:evidence-fallback', memory = new Map(); let mode = 'memory', dbPromise, fallbackDegraded=false, databaseFailed=false;
+    const key = 'ChessBest:CURRENT:v2:evidence-fallback', databaseName = 'ChessBest:CURRENT:v2:evidence';
+    let mode = 'memory', dbPromise, memory = [], pending = [], queue = Promise.resolve();
+    const valid = items => items.filter(item => { try { validate(item); return true; } catch (_) { return false; } });
     async function db() {
-      if (!dbProvider || databaseFailed) return null;
+      if (!dbProvider) return null;
       if (!dbPromise) dbPromise = new Promise(resolve => {
         let request;
-        try { request = dbProvider.open('ChessBest:CURRENT:v2:evidence',1); } catch (_) { resolve(null); return; }
-        request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('snapshots')) request.result.createObjectStore('snapshots',{ keyPath:'id' }); };
-        request.onsuccess = () => { mode='indexedDB'; resolve(request.result); };
+        try { request = dbProvider.open(databaseName, 1); } catch (_) { resolve(null); return; }
+        request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('snapshots')) request.result.createObjectStore('snapshots', { keyPath: 'id' }); };
+        request.onsuccess = () => { const database = request.result; database.onversionchange = () => { database.close(); dbPromise = null; }; resolve(database); };
         request.onerror = request.onblocked = () => resolve(null);
       });
       return dbPromise;
     }
+    function trim(items, keepId) {
+      items.sort((a,b) => String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id));
+      if (keepId) { const index = items.findIndex(item => item.id === keepId); if (index > 0) items.unshift(...items.splice(index,1)); }
+      const kept = []; let size = 0;
+      for (const item of items) { const n = bytes(item); if (kept.length < maxItems && size + n <= maxBytes) { kept.push(item); size += n; } }
+      return kept;
+    }
+    function apply(items, operations) {
+      items = valid(items);
+      for (const op of operations) {
+        items = items.filter(item => item.id !== op.id);
+        if (op.snapshot) items.unshift(copy(op.snapshot));
+        items = trim(items, op.snapshot ? op.id : null);
+      }
+      return items;
+    }
     async function idbAll(database) {
       return new Promise((resolve,reject) => {
-        const req=database.transaction('snapshots','readonly').objectStore('snapshots').getAll();
-        req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+        const tx = database.transaction('snapshots','readonly'), req = tx.objectStore('snapshots').getAll();
+        tx.oncomplete = () => resolve(req.result); tx.onerror = tx.onabort = () => reject(tx.error || Error('Evidence read aborted.'));
       });
     }
     function fallbackRead() {
-      if (storage && !fallbackDegraded) {
-        try { const items=JSON.parse(storage.getItem(key)||'[]'); if(Array.isArray(items)) { mode='localStorage'; memory.clear();items.forEach(i=>{if(i?.id)memory.set(i.id,i);});return items; } } catch (_) { fallbackDegraded=true;mode='memory'; }
-      }
-      return [...memory.values()];
+      if (!storage) return null;
+      const items = JSON.parse(storage.getItem(key) || '[]');
+      if (!Array.isArray(items)) throw Error('Unreadable evidence fallback was preserved.');
+      return items;
     }
     async function all() {
-      let items;
-      try { const database=await db(); items=database ? await idbAll(database) : fallbackRead(); } catch (_) { databaseFailed=true;items=fallbackRead(); }
-      return items.filter(item=>{ try { validate(item);return true; } catch (_) { return false; } });
+      try {
+        const database = await db(), items = database ? await idbAll(database) : fallbackRead();
+        if (items) { memory = apply(items, pending); mode = pending.length ? 'memory' : database ? 'indexedDB' : 'localStorage'; }
+      } catch (_) { mode = 'memory'; }
+      return copy(valid(memory));
     }
-    function trim(items,keepId) {
-      items.sort((a,b)=>String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id));
-      if(keepId){const index=items.findIndex(item=>item.id===keepId);if(index>0)items.unshift(...items.splice(index,1));}
-      const kept=[]; let size=0;
-      for(const item of items) { const n=bytes(item); if(kept.length<maxItems && size+n<=maxBytes) { kept.push(item);size+=n; } }
-      return kept;
-    }
-    let queue = Promise.resolve();
-    function mutate(fn,keepId) {
-      const work=queue.then(async()=>{
-        const items=trim(fn(await all()),keepId);
-        let database; try { database=await db(); } catch (_) { database=null; }
-        if(database) {
-          try { await new Promise((resolve,reject)=>{ const tx=database.transaction('snapshots','readwrite'), object=tx.objectStore('snapshots');object.clear();items.forEach(i=>object.put(i));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error); });mode='indexedDB';return; } catch (_) { databaseFailed=true; }
-        }
-        memory.clear();items.forEach(i=>memory.set(i.id,i));mode='memory';
-        if(storage) {
-          try { if(items.length)storage.setItem(key,canonical(items));else storage.removeItem(key);fallbackDegraded=false;mode='localStorage';return; }
-          catch (_) { fallbackDegraded=true;mode='memory'; }
-        }
+    function idbMutate(database, operations) {
+      return new Promise((resolve,reject) => {
+        // Reading, merging, retention and writes share this cross-tab write
+        // transaction. A competing writer cannot insert between these steps.
+        const tx = database.transaction('snapshots','readwrite'), object = tx.objectStore('snapshots'), req = object.getAll();
+        let items;
+        req.onsuccess = () => {
+          try {
+            items = apply(req.result, operations);
+            const kept = new Set(items.map(item => item.id));
+            req.result.forEach(item => { if (!kept.has(item.id)) object.delete(item.id); });
+            items.forEach(item => object.put(item));
+          } catch (_) { tx.abort(); }
+        };
+        tx.oncomplete = () => resolve(items);
+        tx.onerror = tx.onabort = () => reject(tx.error || Error('Evidence write aborted.'));
       });
-      queue=work.catch(()=>{});return work;
     }
-    return { async put(snapshot) { validate(snapshot);if(bytes(snapshot)>maxBytes) throw new Error('Snapshot exceeds local storage budget.');await mutate(items=>[copy(snapshot),...items.filter(i=>i.id!==snapshot.id)],snapshot.id);return { id:snapshot.id,mode,persistent:mode!=='memory' }; },
-      async list() { return (await all()).sort((a,b)=>String(b.payload.createdAt).localeCompare(String(a.payload.createdAt))).map(s=>({id:s.id,fen:s.payload.fen,label:s.payload.label,createdAt:s.payload.createdAt,records:s.payload.records.length,bytes:bytes(s)})); },
-      async get(id) { return (await all()).find(s=>s.id===id)||null; },
-      remove(id) { return mutate(items=>items.filter(s=>s.id!==id)); },
-      status() { return { mode,persistent:mode!=='memory',maxItems,maxBytes }; } };
+    function mutate(operation) {
+      const work = queue.then(async () => {
+        const operations = [...pending, operation];
+        // Keep a readable unsaved view if either persistence path refuses it.
+        const before = await all();
+        const unsaved = apply(before, [operation]);
+        const database = await db();
+        if (database) {
+          try { memory = await idbMutate(database, operations); pending = []; mode = 'indexedDB'; return; }
+          catch (_) { /* An aborted transaction retains the previous durable state. */ }
+        } else if (storage && locks?.request) {
+          try {
+            await locks.request(databaseName, { mode: 'exclusive' }, () => {
+              // Web Locks, unlike the per-instance queue, include other tabs.
+              const items = apply(fallbackRead(), operations), text = canonical(items);
+              storage.setItem(key, text);
+              if (storage.getItem(key) !== text) throw Error('Evidence write readback failed.');
+              memory = items;
+            });
+            pending = []; mode = 'localStorage'; return;
+          } catch (_) { /* Preserve existing durable bytes and expose memory only. */ }
+        }
+        pending = operations; memory = unsaved; mode = 'memory';
+      });
+      queue = work.catch(() => {}); return work;
+    }
+    // IDs seal the entire payload: overwriting the same ID is byte-identical
+    // and idempotent. Changes produce a different ID; unsealed edits reject.
+    return { async put(snapshot) { validate(snapshot); if (bytes(snapshot) > maxBytes) throw Error('Snapshot exceeds local storage budget.'); await mutate({ id: snapshot.id, snapshot: copy(snapshot) }); return { id: snapshot.id, mode, persistent: mode !== 'memory' }; },
+      async list() { return (await all()).sort((a,b) => String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id)).map(s => ({ id:s.id, fen:s.payload.fen, label:s.payload.label, createdAt:s.payload.createdAt, records:s.payload.records.length, bytes:bytes(s) })); },
+      async get(id) { return (await all()).find(s => s.id === id) || null; },
+      remove(id) { return mutate({ id }); },
+      status() { return { mode, persistent:mode !== 'memory', unsaved:pending.length > 0, maxItems, maxBytes }; } };
   }
+
   return { VERSION, SCHEMA, canonical, digest, candidateDigest, cacheIdentity, validFen, validate, seal, parse, createCollector, replay, createStore };
 });

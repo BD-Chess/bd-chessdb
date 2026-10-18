@@ -1,11 +1,11 @@
-/* Same-origin, exact immutable CURRENT path allowlist. No API, user content or other apps. */
+/* Same-origin, exact immutable LAB path allowlist. No API, user content or other apps. */
 (() => {
   'use strict';
   const manifest=self.ChessEngineAssetManifest,root=new URL('./',self.location.href);
   const allowed=new Map();
   for(const p of manifest.packages)for(const f of p.files){
     const u=new URL(f.path,root);
-    if(u.origin!==root.origin||!u.pathname.startsWith(root.pathname)||f.path.includes('..'))throw new Error('Invalid CURRENT engine allowlist');
+    if(u.origin!==root.origin||!u.pathname.startsWith(root.pathname)||f.path.includes('..'))throw new Error('Invalid LAB engine allowlist');
     const candidates=allowed.get(u.pathname)||[];candidates.push({p,f,url:u.href});allowed.set(u.pathname,candidates);
   }
   self.addEventListener('fetch',event=>{

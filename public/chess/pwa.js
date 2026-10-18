@@ -47,6 +47,7 @@
   }
   function activateUpdate() {
     if (!registration?.waiting) return;
+    if (window.ChessLabHost?.saveBeforeUpdate?.() !== true) return;
     reloadRequested = true;
     if (updateButton) updateButton.disabled = true;
     if (mobileUpdate) mobileUpdate.disabled = true;
@@ -73,7 +74,7 @@
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     render();
-    if (reloadRequested && !reloading) { reloading = true; window.location.reload(); }
+    if (reloadRequested && !reloading && window.ChessLabHost?.saveBeforeUpdate?.() === true) { reloading = true; window.location.reload(); }
   });
   window.addEventListener('load', async () => {
     try {

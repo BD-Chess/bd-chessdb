@@ -16,7 +16,7 @@
   const KEYS = Object.freeze(Object.fromEntries(['settings', 'game', 'eval-cache', 'top-pick', 'timing', 'layout', 'studies', 'studies-recovery', 'evidence-fallback', 'evidence-legacy-fallback', 'sim-fallback', 'sim-legacy-fallback', 'sim-checkpoint', 'sim-legacy-checkpoint', 'sim-lease', 'lichess-token', 'anthropic-token', 'migration', 'sim-fallback-origin'].map(name => [name.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), PREFIX + name])));
   const DATABASES = Object.freeze({ evidence: PREFIX + 'evidence', sim: PREFIX + 'sim' });
   const LOCAL = Object.freeze([
-    ['chessLabSettings-v8', KEYS.settings], ['chessLabGame-v8', KEYS.game],
+    ['chessLabSettings-v8', KEYS.settings, 'chessBestSettings'], ['chessLabGame-v8', KEYS.game, 'chessBestGame'],
     ['chessLabEvalCache-v8', KEYS.evalCache], ['chessLabTopPickCursor-v1', KEYS.topPick],
     ['chessLabTiming-v1', KEYS.timing], ['8zc-lab-layout-v1', KEYS.layout],
     ['chessLabStudy-v1', KEYS.studies], ['chessLabStudy-v1-recovery', KEYS.studiesRecovery],
@@ -232,7 +232,7 @@
           storage.setItem(KEYS.simCheckpoint, source);
           if (storage.getItem(KEYS.simCheckpoint) !== source) fail('Simulation checkpoint copy readback failed.');
         } else if (active) journal.warnings.push('A legacy simulation is still running. Its checkpoint copy is retained for review; CURRENT will not take over that runner.');
-        else if (valid && !journal.freshSimulation) journal.warnings.push('Existing LAB simulation data was preserved; the legacy checkpoint is retained separately for review.');
+        else if (valid && !journal.freshSimulation) journal.warnings.push('Existing CURRENT simulation data was preserved; the legacy checkpoint is retained separately for review.');
       }
       journal.checkpoint = true; writeJournal(journal);
     }
@@ -261,12 +261,12 @@
               }
               writeJournal(journal);
             }
-            for (const [source, target] of LOCAL) {
+            for (const [source, target, fallback] of LOCAL) {
               const spec = SPECS.find(item => item.fallback === target);
               // Retain a legacy fallback separately when LAB already has a
               // deliberately empty archive; do not reactivate deleted records.
               const destination = spec && journal.emptyArchives?.[spec.name] && storage.getItem(target) === null ? spec.retainedFallback : target;
-              copyLocal(journal, source, destination);
+              copyLocal(journal, fallback && storage.getItem(source) === null ? fallback : source, destination);
             }
             for (const spec of SPECS) await copyDatabase(journal, spec);
             await checkpoint(journal);

@@ -2,6 +2,11 @@ name: Chess LAB unified mobile verification
 on:
   pull_request:
     paths:
+      - 'public/chess/**'
+      - 'tests/chess-current*'
+      - 'tests/chess-promotion.test.cjs'
+      - 'tests/chess-pwa.test.cjs'
+      - 'tests/chess-versioning.test.mjs'
       - 'public/chess-lab/**'
       - 'public/chess/app/**'
       - 'tools/chess-versioning.mjs'
@@ -11,6 +16,11 @@ on:
   push:
     branches: [main]
     paths:
+      - 'public/chess/**'
+      - 'tests/chess-current*'
+      - 'tests/chess-promotion.test.cjs'
+      - 'tests/chess-pwa.test.cjs'
+      - 'tests/chess-versioning.test.mjs'
       - 'public/chess-lab/**'
       - 'public/chess/app/**'
       - 'tools/chess-versioning.mjs'
@@ -85,6 +95,11 @@ jobs:
         run: |
           python tools/build-chess-channel-pwas.py --check
           node tools/chess-versioning.mjs
+      - name: CURRENT promotion, storage isolation and sealed archive gates
+        run: |
+          git fetch --no-tags --depth=1 origin 9ab90a82c751ad527eeee763fffc61f3e1edab8c
+          node --test tests/chess-current-promotion-storage.test.cjs tests/chess-promotion.test.cjs tests/chess-pwa.test.cjs tests/chess-versioning.test.mjs
+          node tools/chess-versioning.mjs --base 9ab90a82c751ad527eeee763fffc61f3e1edab8c
       - name: Real browser full-game resume and explicit PWA update
         run: |
           npm install --prefix "$RUNNER_TEMP/chess-browser-deps" --no-package-lock --ignore-scripts playwright@1.55.0
@@ -97,6 +112,14 @@ jobs:
               public/chess-lab/research/full-game-resume-browser.cjs \
               public/chess-lab/research/p3-active-analysis-browser.cjs \
               public/chess-lab/research/p4-gui-browser.cjs
+      - name: Real promoted CURRENT, root overlay and full-game PWA update
+        run: |
+          NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
+            CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/resume" \
+            CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/p3" \
+            CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/p4" \
+            CHESS_CURRENT_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/current/surface" \
+            node --test --test-concurrency=1 tests/chess-current-browser.cjs tests/chess-current-surface-browser.cjs tests/chess-current-upgrade-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,7 +1,7 @@
 /* Browser-local simulation setup and history. Scheduling and engine work live in the host. */
 (function (root) {
   'use strict';
-  const ENGINES = { raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC' };
+  const ENGINES = { raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC', lc0: 'LCZero', reckless: 'Reckless', berserk: 'Berserk' };
   function create(host = {}) {
     const doc = root.document, dialog = doc.createElement('dialog');
     dialog.id = 'simTournamentDialog'; dialog.className = 'tournament-dialog';
@@ -22,7 +22,7 @@
             <label>Format<select data-ui="format"><option value="single">Single game</option><option value="duel">Duel · both colors</option><option value="round-robin">Round robin · both colors</option></select></label>
             <div class="tournament-columns" data-ui="sides"><label><span data-ui="white-label">White engine</span><select data-ui="white">${engineOptions}</select></label><label><span data-ui="black-label">Black engine</span><select data-ui="black">${engineOptions}</select></label></div>
             <label data-ui="rounds-label" hidden>Rounds per opening<input data-ui="rounds" type="number" min="1" max="1000" step="1" value="1"></label>
-            <div class="tournament-participants" data-ui="participants" hidden>${Object.entries(ENGINES).map(([id, label]) => `<label><input type="checkbox" value="${id}" checked> ${label}</label>`).join('')}</div>
+            <div class="tournament-participants" data-ui="participants" hidden>${Object.entries(ENGINES).map(([id, label]) => `<label><input type="checkbox" value="${id}" ${['raw','dcc','sf','sf-dcc'].includes(id) ? 'checked' : ''}> ${label}</label>`).join('')}</div>
             <p class="tournament-note">CDB/SF uses CDB with local Stockfish fallback. DCC adds its move selection.</p>
             <label>Event name <span class="tournament-optional">optional</span><input data-ui="name" maxlength="100" placeholder="e.g. Four-engine opening test"></label>
           </fieldset>
@@ -41,7 +41,7 @@
             <label data-limit="nodes" hidden>Root nodes per move<input data-ui="nodes" type="number" min="1" max="1000000000" step="1" value="24000"></label>
             <div data-limit="move-time" hidden><label>Time per move<select data-ui="move-time"><option value="1000">1 second</option><option value="3000">3 seconds</option><option value="5000" selected>5 seconds</option><option value="10000">10 seconds</option><option value="15000">15 seconds</option><option value="30000">30 seconds</option><option value="60000">1 minute</option><option value="custom">Custom</option></select></label><label data-ui="move-custom-label" hidden>Seconds per move<input data-ui="move-custom" type="number" min="0.1" max="86400" step="0.1" value="5"></label></div>
             <div data-limit="game-time" hidden><div class="tournament-columns"><label>Time per side<select data-ui="game-time"><option value="30000">30 seconds</option><option value="60000">1 minute</option><option value="180000" selected>3 minutes</option><option value="300000">5 minutes</option><option value="900000">15 minutes</option><option value="1800000">30 minutes</option><option value="3600000">1 hour</option><option value="7200000">2 hours</option><option value="custom">Custom · up to 1 day</option></select></label><label>Increment<select data-ui="increment"><option value="0">0 seconds</option><option value="1000">1 second</option><option value="2000" selected>2 seconds</option><option value="5000">5 seconds</option><option value="10000">10 seconds</option></select></label></div><label data-ui="game-custom-label" hidden>Minutes per side <span class="tournament-optional">up to 1,440</span><input data-ui="game-custom" type="number" min="0.5" max="1440" step="0.5" value="3"></label></div>
-            <p class="tournament-note">Depth and root-node limits apply to SF; DCC probes add nodes. Timed limits include CDB, SF and DCC together. Move pause and engine loading do not use player time.</p>
+            <p class="tournament-note" data-ui="limit-note">Depth and nodes apply to local search engines; LCZero uses time per move or a game clock. DCC probes add nodes. Move pause and engine loading do not use player time.</p>
           </fieldset>
           <fieldset><legend>4 · Run</legend>
             <label>Pause between moves<select data-ui="move-pause"><option value="0">None · fastest</option><option value="400">0.4 seconds</option><option value="1000">1 second</option><option value="2000">2 seconds</option><option value="5000">5 seconds · inspect choices</option></select></label>
@@ -72,7 +72,12 @@
         incrementMs: Number(el('increment').value), movePauseMs: Number(el('move-pause').value), name: el('name').value.trim() };
     }
     function updateSetup() {
-      const cfg = readConfig(), collection = (context.collections || []).find(item => String(item.id) === cfg.collectionId);
+      let cfg = readConfig();
+      const neural = cfg.engines.includes('lc0');
+      if (neural && ['depth','nodes'].includes(cfg.limitMode)) { el('limit-mode').value = 'move-time'; cfg = readConfig(); }
+      for (const option of el('limit-mode').options) option.disabled = neural && ['depth','nodes'].includes(option.value);
+      el('limit-note').textContent = neural ? 'LCZero uses time per move or a game clock; depth and node limits are unavailable. Each side uses the selected time. Move pause and engine loading do not use player time.' : 'Depth and nodes apply to local search engines; DCC probes add nodes. Timed limits include the decision work. Move pause and engine loading do not use player time.';
+      const collection = (context.collections || []).find(item => String(item.id) === cfg.collectionId);
       const isCollection = cfg.openingSource === 'collection', count = Math.max(0, Number(collection?.count) || 0);
       el('rounds-label').hidden = cfg.format === 'single'; el('sides').hidden = cfg.format === 'round-robin'; el('participants').hidden = cfg.format !== 'round-robin';
       el('white-label').textContent = cfg.format === 'duel' ? 'Engine A' : 'White engine';
@@ -181,14 +186,16 @@
         title.textContent = event.name || event.config?.name || 'Simulation'; state.textContent = `${event.state || 'saved'} · ${complete}/${games.length} complete`; summary.append(title, state);
         const runIds = new Set(games.map(game => game.runId).filter(Boolean));
         const decisions = runs.filter(run => run.eventId === event.id || runIds.has(run.id)).flatMap(run => run.trace || []);
-        const counts = { CDB: 0, SF: 0, unknown: 0, changed: 0 };
+        const counts = { CDB: 0, SF: 0, LC0: 0, RLE: 0, BER: 0, unknown: 0, changed: 0 };
         for (const decision of decisions) {
           const source = decision.actual_provider || decision.provider;
-          if (source === 'CDB' || source === 'SF') counts[source]++; else counts.unknown++;
+          if (['CDB', 'SF', 'LC0', 'RLE', 'BER'].includes(source)) counts[source]++; else counts.unknown++;
           if (decision.changed && (decision.dcc_requested || ['dcc', 'sf-dcc'].includes(decision.policy))) counts.changed++;
         }
         const statistics = doc.createElement('span'); statistics.className = 'tournament-event-stats';
-        statistics.textContent = `Actual decisions · CDB ${counts.CDB} · SF ${counts.SF} · DCC changes ${counts.changed}${counts.unknown ? ' · unknown source ' + counts.unknown : ''}`;
+        const nativeCounts = [['LC0', 'LC0'], ['RLE', 'Reckless'], ['BER', 'Berserk']]
+          .filter(([source]) => counts[source]).map(([source, name]) => ` · ${name} ${counts[source]}`).join('');
+        statistics.textContent = `Actual decisions · CDB ${counts.CDB} · SF ${counts.SF}${nativeCounts} · DCC changes ${counts.changed}${counts.unknown ? ' · unknown source ' + counts.unknown : ''}`;
         summary.appendChild(statistics); card.appendChild(summary);
         const content = doc.createElement('div'); content.className = 'tournament-event-body';
         const description = doc.createElement('p'); description.className = 'tournament-note';
