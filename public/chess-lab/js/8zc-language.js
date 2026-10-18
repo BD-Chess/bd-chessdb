@@ -8,6 +8,12 @@
   const ignored=node=>!!(node.nodeType===1?node:node.parentElement)?.closest?.(preserve);
   const TO_SL = new Map(Object.entries({
     "Save DATA":"Shrani DATA",
+    "Active Study":"Aktivna študija",
+    "Studies metadata":"Stanje študij",
+    "Studies undo A":"Razveljavitev študij A",
+    "Studies undo B":"Razveljavitev študij B",
+    "Previous workspace backup is unavailable or invalid.":"Prejšnja kopija delovnega prostora ni na voljo ali ni veljavna.",
+    "Recovery drafts are unavailable or invalid.":"Obnovitveni osnutki niso na voljo ali niso veljavni.",
     "Exported":"Izvoženo",
     "Source":"Izvor",
     "Target":"Cilj",
