@@ -26,6 +26,9 @@ test('DATA v1 exact schema, canonical hash and complete line/cursor/variation ar
 for(const [name,mutate] of [
   ['future version',v=>v.version=2],['future section',v=>v.sections.game=2],['missing section',v=>delete v.payload.recovery],
   ['untrusted target namespace',v=>v.payload.namespace='ChessBest:CURRENT:v2:'],
+  ['numeric Sim ID',v=>v.payload.simulation.runs[0].id=1],
+  ['numeric Sim reference',v=>v.payload.simulation.events[0].games[0].runId=1],
+  ['wrong preference type',v=>v.payload.preferences.settings.showTimers='yes'],
   ['hash',v=>v.sha256='0'.repeat(64)],['count',v=>v.manifest.counts.studies=0],
   ['cursor',v=>v.payload.game.resume.cursor=999],['FEN',v=>v.payload.game.resume.fen='bad'],
   ['illegal PGN',v=>v.payload.game.pgn='1. e9 *'],

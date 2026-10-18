@@ -12,8 +12,10 @@ test('real Dreev-Kasparov Top Pick loads from Game library and opens populated R
     url:'https://www.mdlxdcc.org/chess-lab/',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc
   });
   const w=dom.window; t.after(()=>w.close());
-  let lockTail=Promise.resolve();
-  Object.defineProperty(w.navigator,'locks',{value:{request:(_name,_options,job)=>{const next=lockTail.then(job||_options);lockTail=next.catch(()=>{});return next;}}});
+  // Web Locks serialize the same resource, not unrelated lock names. DATA
+  // keeps a shared session lock without blocking the Studies transaction lock.
+  const lockTails=new Map();
+  Object.defineProperty(w.navigator,'locks',{value:{request:(name,options,job)=>{const next=(lockTails.get(name)||Promise.resolve()).then(job||options);lockTails.set(name,next.catch(()=>{}));return next;}}});
   w.indexedDB={databases:async()=>[],open(){throw Error('Fixture archive fallback');}};
   Object.defineProperty(w.HTMLElement.prototype,'innerText',{get(){return this.textContent},set(v){this.textContent=String(v)},configurable:true});
   await new Promise(resolve=>w.addEventListener('load',resolve));

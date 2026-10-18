@@ -11,6 +11,7 @@
     timing:4*MiB, recovery:16*MiB });
   const SECTIONS = Object.freeze(Object.fromEntries(Object.keys(LIMITS).filter(x=>x!=='file').map(x=>[x,1])));
   const PREFERENCE_KEYS={settings:new Set("allCDBSeconds allDCCSeconds allSFSeconds analysisLink analysisSource analysisTimeMs badgeInitialDelay bg cdbEnabled coachMode coachOpen dccClickAction dccDefenseCandidates dccDefenseCheck dccDefensePlies dccDepth dccEnabled dccEvalFloor dccOnly dccPolicy dccSensors dccStructureMode dccTakeover dccTieThreshold dccTopCandidates doubleBoard drawDelay evalMode flipBoard font historySize ioFormat nextDot notation opponentModel pieceSize retryInterval sfAnalysisDepth sfCardMode sfRootNodes showSimEval showTimers showTimestamps simGames simSpeed theme timerDisplayDefaults topN tryLaterDuration".split(' ')),analysis:new Set('analysisMode boardSource sfCardMode sfFullThreadsRequested hashMB engineMemoryPolicy analysisTimeMs deepTimeMs'.split(' ')),layout:new Set('focusMode workspaceWidth compact pauseOnDisagreement pauseOnSwing pauseSwingCp pauseOnMissing'.split(' '))};
+  const NUMBER_SETTINGS=["allCDBSeconds", "allDCCSeconds", "allSFSeconds", "badgeInitialDelay", "dccDefenseCandidates", "dccDefensePlies", "dccDepth", "dccEvalFloor", "dccTieThreshold", "dccTopCandidates", "drawDelay", "retryInterval", "sfAnalysisDepth", "sfRootNodes", "simGames", "simSpeed", "timerDisplayDefaults", "topN", "tryLaterDuration", "analysisTimeMs"],BOOLEAN_SETTINGS=["analysisLink", "cdbEnabled", "coachOpen", "dccDefenseCheck", "dccEnabled", "dccOnly", "flipBoard", "nextDot", "showSimEval", "showTimers", "showTimestamps", "doubleBoard"],STRING_SETTINGS=["analysisSource", "bg", "coachMode", "dccClickAction", "dccPolicy", "dccStructureMode", "evalMode", "font", "historySize", "ioFormat", "notation", "opponentModel", "pieceSize", "sfCardMode", "theme"];
   const bytes = value => new TextEncoder().encode(typeof value==='string'?value:canonical(value)).length;
   const fail = text => { throw Error(text); };
   const object = v => !!v && typeof v==='object' && !Array.isArray(v);
@@ -66,7 +67,7 @@
       if (!s.nodes[s.selectedId]) fail('Invalid Study cursor.');
     }
     if (value.activeId!==null && !value.studies.some(s=>s.id===value.activeId)) fail('Invalid active Study.');
-    if (!Array.isArray(value.appliedOperations) || value.appliedOperations.length>64) fail('Unsupported Study operation ledger.');
+    if (!Number.isSafeInteger(value.revision)||value.revision<0||!Array.isArray(value.appliedOperations)||value.appliedOperations.length>64||value.appliedOperations.some(x=>typeof x!=='string'||x.length>200)) fail('Unsupported Study operation ledger.');
     if (value.comparison?.question?.length>2000) fail('A/B question is too long.');
     for (const slot of ['A','B']) if (value.comparison?.[slot]) typedScores(value.comparison[slot]);
   }
@@ -96,9 +97,20 @@
       }
     }
     const settings=p.preferences.settings;
+    for(const name of NUMBER_SETTINGS)if(settings?.[name]!==undefined&&typeof settings[name]!=='number')fail('Invalid numeric preference.');
+    for(const name of BOOLEAN_SETTINGS)if(settings?.[name]!==undefined&&typeof settings[name]!=='boolean')fail('Invalid boolean preference.');
+    for(const name of STRING_SETTINGS)if(settings?.[name]!==undefined&&typeof settings[name]!=='string')fail('Invalid text preference.');
+    if(settings?.dccTakeover!==undefined&&!['string','number'].includes(typeof settings.dccTakeover))fail('Invalid takeover preference.');
+
     if(settings?.theme!==undefined&&!['dark','light'].includes(settings.theme))fail('Invalid theme.');
     if(settings?.bg!==undefined&&!/^#[0-9a-f]{3,8}$/i.test(settings.bg))fail('Invalid background color.');
     if(settings?.font!==undefined&&!/^\d{1,2}px$/.test(settings.font))fail('Invalid font size.');
+    const analysis=p.preferences.analysis,layout=p.preferences.layout;
+    for(const name of ['sfFullThreadsRequested','hashMB','analysisTimeMs','deepTimeMs'])if(analysis?.[name]!==undefined&&typeof analysis[name]!=='number')fail('Invalid numeric engine preference.');
+    for(const name of ['analysisMode','boardSource','sfCardMode','engineMemoryPolicy'])if(analysis?.[name]!==undefined&&typeof analysis[name]!=='string')fail('Invalid engine preference.');
+    for(const name of ['workspaceWidth','pauseSwingCp'])if(layout?.[name]!==undefined&&typeof layout[name]!=='number')fail('Invalid numeric layout preference.');
+    for(const name of ['compact','pauseOnDisagreement','pauseOnSwing','pauseOnMissing'])if(layout?.[name]!==undefined&&typeof layout[name]!=='boolean')fail('Invalid layout preference.');
+    if(layout?.focusMode!==undefined&&!['auto','expanded'].includes(layout.focusMode))fail('Invalid focus preference.');
     if (p.preferences.language!==null&&!['sl','en'].includes(p.preferences.language)) fail('Invalid language.');
     if (p.preferences.appWidth!==null&&!['375','390','402','430'].includes(p.preferences.appWidth)) fail('Invalid APP width.');
     if (p.preferences.showTopLine!==null&&!['0','1'].includes(p.preferences.showTopLine)) fail('Invalid top-line preference.');
@@ -113,7 +125,11 @@
       if(new Set(items.map(v=>v.id)).size!==items.length)fail('Duplicate evidence IDs.');
       items.forEach(v=>{deps.Evidence.validate(v);typedScores(v);});
     }
+    exact(p.simulation,['schema','version','runs','events'],'simulation');
     deps.Sim.validate(p.simulation,true);
+    for(const record of [...p.simulation.runs,...p.simulation.events])if(typeof record.id!=='string')fail('DATA record IDs must be strings.');
+    for(const run of p.simulation.runs)if(run.eventId!=null&&typeof run.eventId!=='string')fail('DATA event references must be strings.');
+    for(const event of p.simulation.events)for(const game of event.games||[])if(game.runId!=null&&typeof game.runId!=='string')fail('DATA game references must be strings.');
     for(const run of p.simulation.runs) {
       if (run.pgn) deps.Study.parsePGN(deps.Chess,run.pgn);
       for(const key of ['fen','startFen','finalFen']) if(run[key]&&!new deps.Chess().validate_fen(run[key]).valid)fail('Invalid Sim FEN.');
