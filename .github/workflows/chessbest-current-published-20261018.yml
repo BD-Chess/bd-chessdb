@@ -1,0 +1,46 @@
+name: ChessBest CURRENT published byte verification 20261018
+on:
+  push:
+    branches: ['chessbest/lab-to-current-20261018-r1']
+    paths: ['.github/workflows/chessbest-current-published-20261018.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 4a099eac7c516649817f68158e79bd7ceaf45a49
+      - name: Compare published CURRENT, unchanged LAB and archive bytes against exact final commit
+        run: |
+          python3 - <<'PY'
+          import concurrent.futures,hashlib,json,time,urllib.request
+          from pathlib import Path
+          target_commit="4a099eac7c516649817f68158e79bd7ceaf45a49"
+          paths=["public/chess-lab/old/014/ARCHIVE_RECEIPT.json","public/chess-lab/old/014/index.html","public/chess/8zc-about.html","public/chess/8zc-help.html","public/chess/PROMOTION_RECEIPT.json","public/chess/css/8zc-deep.css","public/chess/css/8zc-styles.css","public/chess/css/app-mobile.css","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/SOURCE.md","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/adapter.mjs","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/manifest.json","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/reckless-engine.js","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/source-download.html","public/chess/engines/reckless/v0.10.0-a6fa482c-r8/test-browser.cjs","public/chess/index.html","public/chess/js/8zc-analysis-activity.js","public/chess/js/8zc-analysis-controls.js","public/chess/js/8zc-analysis-session.js","public/chess/js/8zc-deep-engine.js","public/chess/js/8zc-deep-ui.js","public/chess/js/8zc-engine-assets-manifest.js","public/chess/js/8zc-engine-assets-sw.js","public/chess/js/8zc-engine-assets.js","public/chess/js/8zc-engine-cards.js","public/chess/js/8zc-engine-registry.js","public/chess/js/8zc-engine-storage-ui.js","public/chess/js/8zc-eval-bar.js","public/chess/js/8zc-evidence.js","public/chess/js/8zc-interface.js","public/chess/js/8zc-lab-layout.js","public/chess/js/8zc-lab-storage.js","public/chess/js/8zc-language.js","public/chess/js/8zc-sf-provider.js","public/chess/js/8zc-sim-core.js","public/chess/js/8zc-sim-runner.js","public/chess/js/8zc-study-ui.js","public/chess/js/8zc-tournament-core.js","public/chess/js/8zc-tournament-ui.js","public/chess/js/8zc-utils.js","public/chess/js/app-mobile.js","public/chess/js/boardManager.js","public/chess/js/state.js","public/chess/pwa.js","public/chess/release.json","public/chess/sw.js","public/chess/versions.json","public/chess-lab/index.html","public/chess-lab/release.json","public/chess-lab/sw.js","public/chess-lab/js/8zc-language.js","public/chess-lab/css/8zc-deep.css","public/chess-lab/old/index.html","public/chess-lab/old/005/index.html","public/chess-lab/old/013/index.html"]
+          def check(rel):
+              expected=Path(rel).read_bytes()
+              url="https://bd-chess.github.io/bd-chessdb/"+rel.removeprefix("public/")+"?verify="+target_commit
+              result={"path":rel,"url":url,"expected_sha256":hashlib.sha256(expected).hexdigest()}
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(urllib.request.Request(url,headers={"Cache-Control":"no-cache"}),timeout=30) as response:
+                          data=response.read();status=response.status
+                      result.update(status=status,bytes=len(data),actual_sha256=hashlib.sha256(data).hexdigest(),equal=data==expected,attempt=attempt+1)
+                      if result["equal"]:return result
+                  except Exception as e:result.update(error=str(e),equal=False,attempt=attempt+1)
+                  if attempt<2:time.sleep(2)
+              return result
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:results=list(pool.map(check,paths))
+          record={"schema":"chessbest-pages-byte-verification/1","final_commit":target_commit,"runner":"GitHub Actions ubuntu-latest","count":len(results),"passed":sum(r["equal"] for r in results),"results":results}
+          Path("published-byte-verification.json").write_text(json.dumps(record,indent=2)+"\n")
+          print("PUBLIC_QA_JSON="+json.dumps(record))
+          assert record["passed"]==record["count"],"Published byte verification incomplete"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chessbest-current-published-byte-evidence
+          path: published-byte-verification.json
