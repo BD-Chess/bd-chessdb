@@ -1,0 +1,56 @@
+name: BD-approved ChessBest-only release dispatch 20261018
+# Explicit BD instruction: vse OK kar naredi deply na ChessBest.org.
+# This single-use adapter only dispatches the unchanged manual production workflow.
+# It has no Netlify credential and cannot select another site.
+on:
+  push:
+    branches: [ops/chessbest-only-netlify-20261018-r1]
+    paths: [.github/workflows/chessbest-only-release-dispatch-20261018.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: chessbest-only-dispatch-20261018
+  cancel-in-progress: false
+jobs:
+  dispatch-once:
+    if: github.event.before == '87469d421bb5cabfdb91c17179e929648d9d26af' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check frozen main and approved CURRENT, then dispatch existing release once
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, json, os, urllib.request
+          repo = "BD-Chess/bd-chessdb"
+          target = "87469d421bb5cabfdb91c17179e929648d9d26af"
+          api = "https://api.github.com/repos/" + repo
+          headers = {"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                     "Accept": "application/vnd.github+json",
+                     "X-GitHub-Api-Version": "2022-11-28"}
+          def get(path):
+              req = urllib.request.Request(api + path, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+          assert get("/branches/main")["commit"]["sha"] == target, "Main moved; no dispatch."
+          entries = get("/contents/public?ref=" + target)
+          assert next(x["sha"] for x in entries if x["name"] == "chess") == "91f6c0896e4c469dd4632f6d82d65f86afef5795"
+          release = get("/contents/public/chess/release.json?ref=" + target)
+          release = json.loads(base64.b64decode(release["content"]))
+          assert release["version"] == "current-505c19dc6062c6e5"
+          assert release["channel"] == "CURRENT"
+          assert release["storage_namespace"] == "ChessBest:CURRENT:v2:"
+          workflow = get("/contents/.github/workflows/deploy-netlify.yml?ref=" + target)
+          content = base64.b64decode(workflow["content"])
+          assert hashlib.sha256(content).hexdigest() == "005198c7eacc9ffc3927d750f49e5076e9df523e691ff1e65e95a5505168b5c8"
+          payload = {"ref": "main", "inputs": {"site": "bd-chess", "target_sha": target}}
+          req = urllib.request.Request(api + "/actions/workflows/deploy-netlify.yml/dispatches",
+              data=json.dumps(payload).encode(), headers=headers, method="POST")
+          # Deliberately no retry: reconcile actual runs before any further effect.
+          with urllib.request.urlopen(req, timeout=30) as r:
+              assert r.status == 204
+          print("CHESSBEST_ONLY_MANUAL_DISPATCH_ACCEPTED", json.dumps(payload))
+          PY
