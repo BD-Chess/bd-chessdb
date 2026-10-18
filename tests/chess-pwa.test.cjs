@@ -87,7 +87,10 @@ test('CURRENT and LAB have distinct install identities, intact releases and comp
       const ref = (el.getAttribute('src') || el.getAttribute('href')).split('?')[0];
       assert(assets.includes(ref), `${lane.name}: ${ref} must work offline`);
     }
-    assert.equal(dom.window.document.querySelector('[aria-current=page]').textContent, lane.name);
+    if(lane.name==='CURRENT'){
+      assert.equal(dom.window.document.body.dataset.channel,'current');
+      assert.equal(dom.window.document.querySelectorAll('nav[aria-label="Application versions"],.bd-version-selector,.app-channel-nav,.app-preview-nav').length,0);
+    }else assert.equal(dom.window.document.querySelector('[aria-current=page]').textContent, lane.name);
     dom.window.close();
     const manifest = JSON.parse(read(lane, 'manifest.webmanifest'));
     assert.equal(manifest.display, 'standalone');
@@ -161,6 +164,15 @@ test('updates wait for user action and cannot delete caches belonging to the oth
   }
 });
 
+test('ChessBest.org root CURRENT worker serves its shell without intercepting sibling applications',async()=>{
+  const h=workerHarness(lanes[0],'/');await h.dispatch('install');await h.dispatch('activate');h.state.offline=true;
+  const reply=await h.dispatch('fetch',{request:new Request(new URL('/',h.root))});
+  assert.equal(hash(reply.bytes),release(lanes[0]).assets_sha256['index.html']);
+  for(const rel of ['S/','F4M/','chess-lab/','Trip/','api/chess','chess-lab/old/014/','private.txt']){
+    assert.equal(await h.dispatch('fetch',{request:new Request(new URL(rel,h.root))}),undefined,rel);
+  }
+});
+
 test('CURRENT and LAB copy shared legacy data into separate namespaces without overwriting either lane', async () => {
   const oldGame = '[White "Shared legacy"] 1. d4 d5 *';
   const map = new Map([
@@ -196,7 +208,7 @@ test('CURRENT and LAB copy shared legacy data into separate namespaces without o
   assert.equal(storage.getItem('ChessBest:LAB:v2:game'), 'existing LAB game');
 });
 
-test('the retired PWA worker releases its old shell and sends cached visitors to LAB', async () => {
+test('the retired PWA worker releases its old shell and sends cached visitors to CURRENT', async () => {
   const root = new URL('https://example.test/bd-chessdb/chess/PWA/');
   const oldCache = 'chessbest-lab-pwa-old-release';
   const otherCache = 'chessbest-chess-lab-current-release';
@@ -213,7 +225,7 @@ test('the retired PWA worker releases its old shell and sends cached visitors to
       claim: async () => visits.push('claim'),
       matchAll: async () => [
         { url: root.href, navigate: async url => visits.push(url) },
-        { url: new URL('../new/', root).href, navigate: async () => { throw Error('LAB must stay untouched'); } }
+        { url: new URL('../../chess-lab/', root).href, navigate: async () => { throw Error('LAB must stay untouched'); } }
       ]
     }
   };
@@ -231,12 +243,12 @@ test('the retired PWA worker releases its old shell and sends cached visitors to
   }
   await dispatch('install');
   await dispatch('activate');
-  assert.deepEqual(visits, ['skipWaiting', 'claim', new URL('../new/', root).href]);
+  assert.deepEqual(visits, ['skipWaiting', 'claim', new URL('../', root).href]);
   assert(!names.has(oldCache));
   assert(names.has(otherCache));
   const redirect = await dispatch('fetch', { request: { url: root.href, mode: 'navigate' } });
   assert.equal(redirect.status, 302);
-  assert.equal(redirect.headers.get('location'), new URL('../new/', root).href);
+  assert.equal(redirect.headers.get('location'), new URL('../', root).href);
   assert.equal(await dispatch('fetch', { request: new Request(new URL('../old/', root)) }), undefined);
-  assert.match(fs.readFileSync(path.join(chessRoot, 'PWA/index.html'), 'utf8'), /url=\.\.\/new\//);
+  assert.match(fs.readFileSync(path.join(chessRoot, 'PWA/index.html'), 'utf8'), /url=\.\.\//);
 });

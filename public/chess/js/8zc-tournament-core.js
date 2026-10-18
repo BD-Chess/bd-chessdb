@@ -7,14 +7,14 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const VERSION = '1.0.2-lab';
-  const ENGINES = ['raw', 'dcc', 'sf', 'sf-dcc'];
-  const LABELS = { raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC' };
+  const ENGINES = ['raw', 'dcc', 'sf', 'sf-dcc', 'lc0', 'reckless', 'berserk'];
+  const LABELS = { raw: 'CDB/SF', dcc: 'CDB/SF + DCC', sf: 'SF', 'sf-dcc': 'SF + DCC', lc0: 'LCZero', reckless: 'Reckless', berserk: 'Berserk' };
   const integer = (value, fallback, low, high) => Number.isFinite(Number(value)) ? Math.min(high, Math.max(low, Math.trunc(Number(value)))) : fallback;
   const uniqueEngines = values => [...new Set((Array.isArray(values) ? values : []).filter(value => ENGINES.includes(value)))];
   function normalizeConfig(input = {}) {
     const format = ['round-robin', 'roundRobin', 'roundrobin'].includes(input.format || input.mode) ? 'round-robin' : 'duel';
     if (input.engines != null && !Array.isArray(input.engines)) throw new Error('Tournament engines must be a list.');
-    const specified = input.engines?.length ? input.engines : format === 'round-robin' ? ENGINES :
+    const specified = input.engines?.length ? input.engines : format === 'round-robin' ? ENGINES.slice(0, 4) :
       [input.white || input.whiteEngine || 'raw', input.black || input.blackEngine || 'dcc'];
     if (specified.some(engine => !ENGINES.includes(engine))) throw new Error('Unknown tournament engine.');
     const engines = uniqueEngines(specified);

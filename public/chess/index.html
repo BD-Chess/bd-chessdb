@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChessBest.org — DCC Analysis</title>
+  <title>ChessBest.org — DCC Analysis Lab</title>
   <meta name="theme-color" content="#16382b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,15 +15,15 @@
   <meta name="description" content="Explore chess with ChessDB evaluations, DCC lookahead, measured line coverage, a searchable game library, and live play. An experimental analysis layer from BD × AI Lab.">
   <meta name="author" content="Bojan Dobrečevič">
   <meta name="keywords" content="chess analysis, ChessDB, MDL×DCC, MDLxDCC, DCC lookahead, 8Z, chess engine, BD AI Lab, AIM3, Bojan Dobrečevič, MDL DCC">
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <link rel="canonical" href="https://chessbest.org/">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.mdlxdcc.org/chess/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ChessBest.org">
   <meta property="og:title" content="ChessBest.org — 8Z DCC Eval Layer (MDL×DCC)">
   <meta property="og:description" content="ChessDB analysis with transparent DCC line sensors, a shared move policy, and a responsive board.">
-  <meta property="og:url" content="https://chessbest.org/">
+  <meta property="og:url" content="https://www.mdlxdcc.org/chess/">
   <meta property="og:image" content="https://www.mdlxdcc.org/og-image.png">
   <meta property="og:locale" content="en_US">
 
@@ -34,10 +34,10 @@
   <meta name="twitter:image" content="https://www.mdlxdcc.org/og-image.png">
 
   <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
-  <link rel="stylesheet" href="css/8zc-styles.css?v=20261013-r13">
+  <link rel="stylesheet" href="css/8zc-styles.css?v=20261017-p4-fix-r1">
   <link rel="stylesheet" href="css/8zc-study.css?v=20260927-w0r2">
   <link rel="stylesheet" href="css/8zc-review.css?v=20261012-review4">
-  <link rel="stylesheet" href="css/8zc-deep.css?v=20261013-r13">
+  <link rel="stylesheet" href="css/8zc-deep.css?v=20261018-mobile-each-r1">
   <link rel="stylesheet" href="css/engine-storage.css?v=20261013-r12">
   <link rel="stylesheet" href="css/8zc-research.css?v=20260913-lab1">
 
@@ -67,7 +67,7 @@
       {
         "@type": "WebApplication",
         "name": "8Z DCC Eval Layer",
-        "url": "https://chessbest.org/",
+        "url": "https://www.mdlxdcc.org/chess/",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Web browser",
         "browserRequirements": "Requires JavaScript",
@@ -79,18 +79,8 @@
     ]
   }
   </script>
-  <!-- BD version selector v1: self-contained, copied with each release. -->
-  <style id="bd-version-style">
-    .bd-version-selector{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:7px;font:600 11px/1.3 system-ui,sans-serif;letter-spacing:.06em}
-    .bd-version-selector a{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px;border:1px solid transparent;border-radius:6px;color:#a9bdb5;text-decoration:none}
-    .bd-version-selector a:hover,.bd-version-selector a:focus-visible{color:#effff7;border-color:#658879;outline-offset:3px}
-    .bd-version-selector a[aria-current="page"]{color:#bdf6ce;background:#16382b;border-color:#48765d}
-    .bd-version-selector .bd-version-dot{color:#77877e}
-    body.light-theme .bd-version-selector a{color:#485d51}
-    body.light-theme .bd-version-selector a:hover,body.light-theme .bd-version-selector a:focus-visible{color:#163b27;border-color:#658879}
-    body.light-theme .bd-version-selector a[aria-current="page"]{color:#164c2c;background:#e1f3e6;border-color:#659275}
-    .bd-version-selector--legacy{justify-content:center;margin:0 0 10px}
-    @media(max-width:790px){.bd-version-selector a{min-height:44px}.bd-version-selector .bd-version-dot{display:none}}
+  <!-- CURRENT install/update actions. -->
+  <style id="chess-pwa-style">
     #chessPwaNotice{margin:0;padding:8px 16px;color:#f4eed7;background:#493714;font:600 14px/1.4 system-ui,sans-serif;text-align:center}
     body.light-theme #chessPwaNotice{color:#513700;background:#ffecb2}
     .chess-pwa-action{font:600 12px/1.4 system-ui,sans-serif;color:var(--ui-accent);background:transparent;border:1px solid currentColor;border-radius:6px;padding:5px 9px;cursor:pointer;min-height:34px}
@@ -113,15 +103,15 @@
           <span class="brand-title">ChessBest.org</span>
           <button type="button" id="btnWhatsNew" class="new-badge" aria-haspopup="dialog" aria-controls="whatsNewDialog">new</button>
         </h1>
-        <div class="brand-kicker">CHESS ANALYSIS · <a class="bd-lab-home" href="https://www.mdlxdcc.org/index.html" target="_top" aria-label="BD × AI Lab — MDLxDCC.org homepage">BD × AI LAB</a> <span class="development-label">DEVELOPMENT</span></div>
+        <div class="brand-kicker">CHESS ANALYSIS · <a class="bd-lab-home" href="https://www.mdlxdcc.org/index.html" target="_top" aria-label="BD × AI Lab — MDLxDCC.org homepage">BD × AI LAB</a></div>
       </div>
     </div>
     <div class="header-links">
-      
       <nav class="header-nav" aria-label="Main navigation">
         <a href="8zc-help.html">Help <span aria-hidden="true">↗</span></a>
         <a href="8zc-help.html#dcc">How DCC works</a>
-        <button id="chessPwaInstall" class="chess-pwa-action" type="button" aria-controls="chessPwaHint">Install</button>
+        <span class="desktop-language" role="group" aria-label="Language"><button type="button" data-app-lang="en">EN</button><button type="button" data-app-lang="sl">SL</button></span>
+        <button id="chessPwaInstall" class="chess-pwa-action" type="button" aria-controls="chessPwaHint">Install ChessBest</button>
         <button id="chessPwaUpdate" class="chess-pwa-action" type="button" hidden>Update ready · reload</button>
       </nav>
       <span id="chessPwaHint" class="chess-pwa-hint" role="status" hidden></span>
@@ -130,11 +120,9 @@
   <p id="chessPwaNotice" role="status" hidden>Offline: board, saved studies, game library and local Stockfish work. ChessDB, Lichess and Gemini need internet access.</p>
   <header id="appPreviewDesktopTools" class="app-preview-toolbar app-preview-desktop-tools" hidden aria-label="Desktop APP preview">
   <h2 class="app-preview-title">ChessBest · <span>APP preview</span></h2>
-  
   <label class="app-preview-width">Preview width <select id="appPreviewWidth"><option>375</option><option>390</option><option selected>402</option><option>430</option></select></label>
 </header>
   <div class="app-web-nav app-utility-row">
-    
     <div class="app-language" role="group" aria-label="Language"><button type="button" data-app-lang="en" aria-pressed="true">EN</button><span aria-hidden="true">|</span><button type="button" data-app-lang="sl" aria-pressed="false">SL</button></div>
   </div>
   <div class="app-brand-name" aria-label="ChessBest.org">ChessBest.org <a class="bd-lab-home" href="https://www.mdlxdcc.org/index.html" target="_top" aria-label="BD × AI Lab — MDLxDCC.org homepage">BD × AI Lab</a></div>
@@ -181,7 +169,7 @@
       <div id="openingName"></div>
       <!-- Position-analysis controls: engine/source actions stay separate from workspace views. -->
       <div class="analysis-source-row" aria-label="Main analysis source">
-        <div class="board-engine-row"><div class="board-analysis-actions"><label class="sf-full-toggle"><input type="checkbox" id="analysisSFFull"> SF Full</label><button type="button" id="btnAnalyzeAll" class="analyze-all" title="Analyze with Stockfish, Reckless, LCZero and Berserk. Unavailable engines are marked on their cards."><span class="all-desktop-label">All engines</span><span class="all-mobile-label">All engines</span></button><label class="analysis-follow-toggle" title="When enabled, analyzes every new position with all available engines. When off, All engines runs once."><input type="checkbox" id="analysisAllMoves" aria-label="Analyze every move with all available engines"></label><label class="analysis-link-toggle" title="Link card selection to the evaluation bar, board scores and candidates"><span>Link</span><input type="checkbox" id="analysisLink" aria-label="Link engine cards to displayed evaluation"></label></div><details class="board-key"><summary aria-label="Board badge legend" title="Board badge legend">i</summary><div class="board-legend" aria-label="Board badge legend">
+        <div class="board-engine-row"><div class="board-analysis-actions"><label class="sf-full-toggle"><input type="checkbox" id="analysisSFFull"> SF Full</label><button type="button" id="btnAnalyzeAll" class="analyze-all" title="Analyze with Stockfish, Reckless, LCZero and Berserk. Unavailable engines are marked on their cards."><span class="all-desktop-label">All engines</span><span class="all-mobile-label">All engines</span></button><label class="analysis-follow-toggle" title="Cards/All each move: immediately searches this position, then each new position with all engines. Off cancels automatic work. Manual All runs once."><input type="checkbox" id="analysisAllMoves" aria-label="Analyze every move with all available engines"><span class="each-desktop-label">Each move</span><span class="each-mobile-label">Each</span></label><label class="analysis-link-toggle" title="Link card selection to the evaluation bar, board scores and candidates"><span>Link</span><input type="checkbox" id="analysisLink" aria-label="Link engine cards to displayed evaluation"></label></div><details class="board-key"><summary aria-label="Board badge legend" title="Board badge legend">i</summary><div class="board-legend" aria-label="Board badge legend">
         <span><i class="legend-dot legend-best"></i>Engine best</span>
         <span><i class="legend-dot legend-next"></i>Game continuation</span>
         <span><i class="legend-dot legend-dcc"></i>DCC line <button id="btnDccScoreHelp" type="button" class="dcc-score-help" aria-label="Explain DCC scores" aria-haspopup="dialog" aria-controls="dccScoreHelp">⚡</button></span>
@@ -266,6 +254,27 @@
       <div id="settingsPanel" class="panel workspace-drawer" aria-label="Workspace settings">
         <div class="analysis-status-row" aria-label="Analysis status"><small id="analysisCpuStatus" hidden></small><small id="analysisHostNote" class="analysis-host-note" hidden></small><small data-berserk-status role="status" aria-live="polite" hidden></small><small id="analysisDccModeNote" hidden></small><span id="analysisSourceStatus" role="status" aria-live="polite">CDB pending</span><span role="status" aria-live="polite" id="dccProgress"></span></div>
         <div class="drawer-heading"><strong>Settings</strong><button type="button" class="btn" id="btnCloseSettings" aria-label="Close settings">×</button></div>
+<details id="appearanceSettings" class="dcc-settings-group appearance-settings" open><summary>Display / Appearance</summary>
+<label for="settingFont">Font size:</label>
+        <select id="settingFont">
+          <option value="14px" selected>Small</option>
+          <option value="16px">Medium</option>
+          <option value="18px">Large</option>
+        </select>
+<label for="settingLabWorkspaceWidth">Workspace width on a wide screen:</label>
+          <select id="settingLabWorkspaceWidth">
+            <option value="0" selected>Default</option>
+            <option value="380">380 px</option>
+            <option value="440">440 px</option>
+            <option value="500">500 px</option>
+            <option value="560">560 px</option>
+          </select>
+<label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+<label>
+          <input type="checkbox" id="settingTheme">
+          Light theme
+        </label>
+<div class="settings-language" role="group" aria-label="Language"><button type="button" data-app-lang="en">EN</button><button type="button" data-app-lang="sl">SL</button></div></details>
         <div class="dcc-settings-group">
           <details id="engineStorage" class="engine-storage"><summary>Engine storage</summary>
             <label class="engine-memory-choice"><input type="checkbox" data-engine-memory-all> Keep all engines in RAM</label>
@@ -294,15 +303,8 @@
             <option value="expanded">Always expanded</option>
           </select>
           <p class="setting-note">Focus gives the saved toolbar space to the analysis. Pause and Tools remain available. Tools opens without moving the board.</p>
-          <label for="settingLabWorkspaceWidth">Workspace width on a wide screen:</label>
-          <select id="settingLabWorkspaceWidth">
-            <option value="0" selected>Default</option>
-            <option value="380">380 px</option>
-            <option value="440">440 px</option>
-            <option value="500">500 px</option>
-            <option value="560">560 px</option>
-          </select>
-          <label><input type="checkbox" id="settingLabCompact"> Compact analysis spacing</label>
+
+
           <details class="lab-subsettings">
             <summary>Pause Sim at an interesting position</summary>
             <label><input type="checkbox" id="settingLabPauseDisagreement"> Raw engine and DCC choose different moves</label>
@@ -348,12 +350,7 @@
           <option value="big">Big</option>
         </select>
 
-        <label for="settingFont">Font size:</label>
-        <select id="settingFont">
-          <option value="14px" selected>Small</option>
-          <option value="16px">Medium</option>
-          <option value="18px">Large</option>
-        </select>
+
 
         <label for="settingNotation">Badge notation:</label>
         <select id="settingNotation">
@@ -381,10 +378,7 @@
           <option value="#90caf9">Light Blue</option>
         </select>
 
-        <label>
-          <input type="checkbox" id="settingTheme">
-          Light theme
-        </label>
+
 
         <label>
           <input type="checkbox" id="settingDoubleBoard">
@@ -466,6 +460,8 @@
             DCC only (hide raw ChessDB scores)
           </label>
 
+          <label for="settingSimEval">Show evaluation scores during Sim:</label>
+          <input id="settingSimEval" type="checkbox" checked>
           <label for="settingSimSpeed">Sim speed:</label>
           <select id="settingSimSpeed">
             <option value="5000">Study (5s/move)</option>
@@ -578,17 +574,17 @@
     <div class="dialog-topline"><h2 id="labToolsTitle">Workspace tools</h2><button type="button" class="dialog-close" id="btnCloseLabTools" aria-label="Close workspace tools">×</button></div>
     <button type="button" id="appSimMore" class="app-sim">Simulation / play</button>
     <p class="setting-note">Simulation continues until you pause or choose an action that changes the position.</p>
-    <section id="appPwaPanel" class="app-pwa-panel" aria-label="CURRENT installation and offline access" hidden><button type="button" id="appPwaInstall" class="app-sim">Install</button><p id="appPwaHint">Install this same LAB on your Home Screen.</p><p id="appPwaStatus" role="status"></p><button type="button" id="appPwaUpdate" class="app-sim" hidden>Update ready · reload</button></section>
+    <section id="appPwaPanel" class="app-pwa-panel" aria-label="ChessBest installation and offline access" hidden><button type="button" id="appPwaInstall" class="app-sim">Install ChessBest</button><p id="appPwaHint">Install ChessBest on your Home Screen.</p><p id="appPwaStatus" role="status"></p><button type="button" id="appPwaUpdate" class="app-sim" hidden>Update ready · reload</button></section>
     <div id="labToolsBody"></div>
   </dialog>
 
   <dialog id="whatsNewDialog" class="whats-new-dialog" aria-labelledby="whatsNewTitle" lang="sl">
     <div class="dialog-topline"><span class="section-kicker">CHESSBEST · SEPTEMBER 2026</span><button type="button" class="dialog-close" id="btnCloseWhatsNew" aria-label="Zapri novosti">×</button></div>
     <h2 id="whatsNewTitle">Tvoja ideja.<br><span>Preverjene alternative.</span></h2>
-    <p class="dialog-intro">Razvojni Analysis Lab. Trenutna potrjena stran je še vedno na <a href="../chess/">/chess/</a>.</p>
+    <p class="dialog-intro">Trenutna različica ChessBest za računalnik in telefon; igra in nastavitve ostanejo shranjene v tem brskalniku.</p>
     <ul class="upgrade-list">
-      <li><strong>En LAB za web in APP.</strong> Desktop uporablja polni LAB pogled ali APP preview; telefon in prihodnji Capacitor iOS/Android build uporabljata mobilni Board · Moves · Review · Deep · DCC pogled. Vsi trije načini uporabljajo isto kodo in isto LAB shrambo.</li>
-      <li><strong>Samostojni podatki LAB.</strong> Ob prvem zagonu se obstoječi podatki preverjeno kopirajo v ločeno shrambo. Obstoječi zapisi LAB imajo prednost; izvirniki CURRENT ostanejo ohranjeni. Kvota brskalnika ostaja skupna.</li>
+      <li><strong>Isti ChessBest na računalniku in telefonu.</strong> Namizni in mobilni Board · Moves · Review · Deep · DCC pogled uporabljata isto CURRENT kodo in shrambo.</li>
+      <li><strong>Ohranjeni podatki CURRENT.</strong> Obstoječa igra, nastavitve in študije CURRENT ostanejo ohranjene; podatki LAB so ločeni. Stari zapisi se kopirajo samo, če cilj še ne obstaja. Kvota brskalnika ostaja skupna.</li>
       <li><strong>Studies brez delnih zapisov.</strong> Uvoz zbirke se shrani kot celota. Ob polni zbirki izberi študije za odstranitev, izvozi kopijo in nadaljuj prvotni čakajoči zapis. Preverjena obnovitvena kopija omogoča razveljavitev; napaka shranjevanja ne pomeni uspeha.</li>
       <li><strong>Viri analiz ostanejo ločeni.</strong> CDB, SF in DCC ohranijo svoj izvor v kontekstu Study in pomočnika tudi ob menjavi vira prikaza na šahovnici. Kartice pod šahovnico ostanejo na svojem mestu.</li>
       <li><strong>Sim Focus.</strong> Zaženi <b>Sim</b>: spodnja orodja se umaknejo, prostor dobijo poteze in DCC. <b>Pause</b> ostane pri roki; <b>Tools</b> odpre ista orodja brez premikanja šahovnice. V Settings izberi <b>Always expanded</b> za prejšnji prikaz.</li>
@@ -635,9 +631,9 @@
       <p class="sim-position-info" id="simPositionInfo"></p>
       <div class="sim-form-grid">
         <label for="simWhiteEngine">White engine</label>
-        <select id="simWhiteEngine"><option value="raw" selected>CDB/SF</option><option value="dcc">CDB/SF + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option></select>
+        <select id="simWhiteEngine"><option value="raw" selected>CDB/SF</option><option value="dcc">CDB/SF + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option><option value="lc0">LCZero</option><option value="reckless">Reckless</option><option value="berserk">Berserk</option></select>
         <label for="simBlackEngine">Black engine</label>
-        <select id="simBlackEngine"><option value="raw">CDB/SF</option><option value="dcc" selected>CDB/SF + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option></select>
+        <select id="simBlackEngine"><option value="raw">CDB/SF</option><option value="dcc" selected>CDB/SF + DCC</option><option value="sf">SF</option><option value="sf-dcc">SF + DCC</option><option value="lc0">LCZero</option><option value="reckless">Reckless</option><option value="berserk">Berserk</option></select>
         <label for="simSFNodes">SF root budget</label>
         <select id="simSFNodes"><option value="12000">12,000 nodes / side</option><option value="24000" selected>24,000 nodes / side</option><option value="48000">48,000 nodes / side</option></select>
         <label for="simLocalSpeed">Move pause</label>
@@ -740,7 +736,7 @@
   <script src="js/8zc-dcc-core.js?v=20260913-lab1"></script>
   <script src="js/8zc-sim-core.js?v=20260926-sim2"></script>
   <script src="js/8zc-time-core.js?v=20260926-sim2"></script>
-  <script src="js/8zc-eval-bar.js?v=20261013-r11"></script>
+  <script src="js/8zc-eval-bar.js?v=20261017-p4-fix-r1"></script>
   <script src="js/8zc-workspace.js?v=20260927-w0r2"></script>
   <script src="js/8zc-gemini.js?v=20260913-lab1"></script>
   <script src="js/8zc-study-core.js?v=20260913-game-title2"></script>
@@ -758,6 +754,7 @@
   <script src="js/8zc-analysis-session.js?v=20261013-r14"></script>
   <script src="js/8zc-deep-ui.js?v=20261013-r13"></script>
   <script src="js/8zc-engine-cards.js?v=20261013-r14"></script>
+  <script src="js/8zc-analysis-activity.js?v=20261016-p3-r1"></script>
   <script src="js/8zc-analysis-controls.js?v=20261013-r13"></script>
   <script src="js/8zc-evidence.js?v=20260927-w0r2"></script>
   <script src="js/8zc-benchmark.js?v=20260913-lab1"></script>
@@ -766,12 +763,14 @@
   <script src="js/8zc-sim-store.js?v=20260927-w0r2"></script>
   <script src="js/8zc-sim-runner.js?v=20260927-w0r2"></script>
   <script src="js/8zc-tournament-ui.js?v=20260928-sim1"></script>
-  <script src="js/8zc-utils.js?v=20261013-r13"></script>
+  <script src="js/8zc-utils.js?v=20261017-p4-fix-r1"></script>
   <script src="js/8zc-new-ui.js?v=20261002-library3"></script>
   <script src="js/8zc-review-ui.js?v=20261012-review4"></script>
   <script src="js/8zc-lab-layout.js?v=20261013-settings-r1"></script>
   <script src="pwa.js"></script>
   <script src="js/8zc-engine-storage-ui.js?v=20261013-r14"></script>
+<script src="js/8zc-language.js?v=20261018-mobile-each-r1"></script>
+  <script src="js/8zc-interface.js?v=20261017-p4-r1"></script>
   <script src="js/app-mobile.js?v=20261013-r9"></script>
 
 </body>

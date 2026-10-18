@@ -11,13 +11,19 @@ does not require cross-origin isolation or SharedArrayBuffer.
 - Browser package authors/project: [EasternKentuckyDigital/recklesschessweb](https://github.com/EasternKentuckyDigital/recklesschessweb).
 - Browser package source commit: `a64199fbd26251914120a8fa6d08c89fa3ac50d6` (`0.1.0`).
 - License: [GNU Affero General Public License v3.0](./LICENSE), `AGPL-3.0-only`.
-- Matching source offer: [one-click verified source archive](./source-download.html) (three static parts, reassembled and SHA-256 checked).
+- Source offer: [verified native source archive and current adapter overlay](./source-download.html) (three unchanged static archive parts plus the linked plain-source overlay).
 - Per-file bytes and SHA-256: [manifest.json](./manifest.json).
 - Rebuild recipe: [build.sh](./build.sh); cloud rebuild workflow: `.github/workflows/chessbest-reckless.yml` in the public ChessBest repository.
 
-The corresponding-source archive includes the complete upstream Reckless source
+The unchanged corresponding-source archive includes the complete upstream Reckless source
 and Git commit metadata, its NNUE network, the pinned browser wrapper source,
-ChessBest adapter, all local wrapper patches, tests, license, and build recipe.
+original ChessBest adapter, original local wrapper patches, tests, license, and build recipe.
+The current P2 JavaScript overlay is supplied separately as [adapter.mjs](./adapter.mjs)
+and [reckless-engine.js](./reckless-engine.js); their exact distributed hashes are
+in manifest.json. The [adapter regressions](../../../research/reckless-adapter.test.cjs)
+are also available as plain source. Replace the archive's original browser copies
+with these current files; the existing build.sh already copies the current files
+beside itself to its output. No native engine or network rebuild is required.
 Unused precompiled Windows vendor link libraries are excluded because the offered
 build targets Linux-to-WebAssembly. The redundant compiled `reckless_bg.wasm` is
 also omitted from the source archive: the identical runtime is distributed as
@@ -30,6 +36,16 @@ requested. A depth/time guard terminates the worker and retains the last complet
 MultiPV iteration; it is reported as a forced time result rather than a completed
 native depth search. User cancellation terminates the worker promptly and ignores
 late messages. No Stockfish result is used to imitate Reckless.
+
+P2 (2026-10-15) validates whole PVs with the supplied chess validator and pinned
+history. A verified MultiPV sweep has ranks 1..K at one depth, distinct legal roots,
+fully legal continuations and exact finite cp/mate scores. Rank 1 begins a new
+sweep; older depths cannot regress the retained set. Bounds and rejected native
+lines remain separate evidence. If final native bestmove disagrees with retained
+rank 1, the retained lines stay intact, nativeBestMove records the native choice,
+and coverage explicitly reports bestmove-mismatch (not completeMultiPV).
+Without a validator, legality and completeness remain unverified. Terminal roots
+return no measured candidates. Request IDs and worker generations reject stale info.
 
 Build: Rust `1.93.0`, `wasm-bindgen-cli 0.2.123`, target
 `wasm32-unknown-unknown`, `RUSTFLAGS="-C target-feature=+simd128"`, locked Cargo

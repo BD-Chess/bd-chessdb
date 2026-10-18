@@ -3,11 +3,12 @@ body:not(.app-mobile) :is(.app-web-nav,.app-brand-name,.app-mobile-header,.app-a
 /* Unified LAB phone/native presentation: one phone-sized workspace, one view at a time. */
 body.app-mobile {
   --app-web-nav-height: 64px;
+  --app-nav-reserve: 72px;
   --app-activity-height: 0px;
   --app-clock-height: 0px;
   box-sizing: border-box;
   width: 100%; min-width: 0; min-height: 100dvh;
-  margin: 0; padding: var(--app-preview-safe-top, env(safe-area-inset-top, 0px)) 0 calc(78px + var(--app-preview-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  margin: 0; padding: var(--app-preview-safe-top, env(safe-area-inset-top, 0px)) 0 calc(6px + var(--app-nav-reserve) + var(--app-preview-safe-bottom, env(safe-area-inset-bottom, 0px)));
   overflow-x: hidden;
 }
 body.app-mobile:has(.app-activity:not([hidden])) { --app-activity-height: 55px; }
@@ -109,7 +110,7 @@ body.app-mobile[data-app-view="board"] #controls { display: none !important; }
 body.app-mobile:not([data-app-view="board"]) #board-container { display: none !important; }
 body.app-mobile #controls, body.app-mobile.light-theme #controls {
   display: flex !important; flex-direction: column; align-self: auto; contain: none !important;
-  width: 100%; max-width: none; height: calc(100dvh - 56px - 72px - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height) - var(--app-preview-safe-top, env(safe-area-inset-top, 0px)) - var(--app-preview-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  width: 100%; max-width: none; height: calc(100dvh - 56px - var(--app-nav-reserve) - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height) - var(--app-preview-safe-top, env(safe-area-inset-top, 0px)) - var(--app-preview-safe-bottom, env(safe-area-inset-bottom, 0px)));
   min-height: 380px !important; margin: 0; padding: 9px !important; overflow: hidden; border-radius: 11px;
 }
 body.app-mobile[data-app-view="board"] #controls { display: none !important; }
@@ -199,7 +200,7 @@ body.app-mobile :is(.dialog-close, #btnCloseGames, #btnCloseSettings,
 }
 
 body.app-mobile #popularGamesPanel .library-result-list{flex:0 0 auto;min-height:0;max-height:none;overflow:visible;overscroll-behavior:auto}
-body.app-mobile #popularGamesPanel{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--ui-accent) var(--ui-inset);scrollbar-gutter:stable}
+body.app-mobile #popularGamesPanel{overflow-y:auto;scrollbar-width:thin;scrollbar-gutter:stable}
 
 
 /* APP preview has one real 874px screen; shorter desktops scroll outside it. */
@@ -226,11 +227,11 @@ body.app-mobile.app-preview-desktop dialog{position:fixed!important;inset:auto!i
 body.app-mobile.app-preview-desktop dialog::backdrop{clip-path:inset(max(0px,var(--app-screen-top,0px)) max(0px,calc(100vw - var(--app-screen-right,100vw))) max(0px,calc(100dvh - var(--app-screen-bottom,100dvh))) max(0px,var(--app-screen-left,0px)))}
 @media(max-width:800px){body.app-mobile.app-preview-desktop .app-preview-toolbar{grid-template-columns:1fr auto;gap:8px;padding:15px 12px}body.app-mobile.app-preview-desktop .app-preview-nav{grid-column:1/-1;grid-row:2}body.app-mobile.app-preview-desktop .app-preview-title{font-size:15px}}
 
-body.app-mobile.app-preview-desktop .app-preview-content{padding-bottom:72px}
+body.app-mobile.app-preview-desktop .app-preview-content{padding-bottom:var(--app-nav-reserve)}
 body.app-mobile.app-preview-desktop .app-preview-content>.app-header,
 body.app-mobile.app-preview-desktop .app-preview-content>#chessPwaNotice{display:none!important}
 body.app-mobile.app-preview-desktop #controls,
-body.app-mobile.app-preview-desktop.light-theme #controls{height:calc(806px - 56px - 72px - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height))}
+body.app-mobile.app-preview-desktop.light-theme #controls{height:calc(806px - 56px - var(--app-nav-reserve) - var(--app-web-nav-height) - var(--app-activity-height) - var(--app-clock-height))}
 body.app-mobile.app-preview-desktop .app-tabs{width:100%;max-width:none;bottom:25px}
 
 /* LAB three-row source controls retain the same right edge in APP view. */
@@ -257,3 +258,14 @@ body.app-mobile .board-analysis-actions{margin-left:auto;gap:5px}
 body.app-mobile .app-analysis-status .analysis-status-row{display:grid!important;min-height:0;margin:0}
 body.app-mobile.app-preview-desktop .app-preview-device{max-width:100%}
 body.app-mobile.app-preview-desktop .app-preview-width{min-width:0}
+
+/* Settings is the workspace exception; preserve the selected view underneath. */
+body.app-mobile.workspace-settings-open { --app-nav-reserve: 0px; }
+body.app-mobile.workspace-settings-open #controls { display: flex !important; min-height: 0 !important; }
+body.app-mobile.workspace-settings-open #board-container { display: none !important; }
+
+/* The compact Stop lives inside the existing APP header. */
+body.app-mobile #appStopAnalysis{width:auto!important;max-width:66px;font-size:10px!important;flex:0 0 auto}
+
+/* CURRENT keeps its language control without a channel menu. */
+body[data-channel="current"] .app-utility-row{justify-content:flex-end}

@@ -5,11 +5,75 @@
   else root.ChessEvalBar = api;
 })(typeof window === 'object' ? window : this, function () {
   const instances = new WeakMap();
-  // Display-only historical Lc0 cp scale; native Q/WDL remain engine evidence.
-  // https://lczero.org/dev/wiki/technical-explanation-of-leela-chess-zero/
-  function qToCp(q) {
+  // Display-only Lc0 v0.32.1 WDL_mu, with no contempt or WDL rescaling.
+  // Upstream: fd71a2d921b689c5f479d3227c3806c8e272d9c5,
+  // src/search/classic/search.cc (WDLRescale / Search::SendUciInfo).
+  // Native Q/WDL remain the evidence; this is an approximate display scale.
+  // WDL routines adapt code by The LCZero Authors, GPL-3.0-or-later.
+  // Corresponding source is pinned above; license is distributed at
+  // engines/lc0/v0.32.1-maia1900-r8/GPL-3.0.txt.
+  const f32 = Math.fround, floatBits = new DataView(new ArrayBuffer(4));
+  function fastLog(a) {
+    floatBits.setFloat32(0, a, true);
+    const bits = floatBits.getUint32(0, true), exponent = bits >>> 23;
+    floatBits.setUint32(0, (bits & 0x7fffff) | (0x7f << 23), true);
+    const x = f32(floatBits.getFloat32(0, true) - 1);
+    const log2 = f32(f32(f32(x * f32(f32(1.3465552) - f32(f32(0.34655523) * x))) - 127) + exponent);
+    return f32(f32(0.6931471805599453) * log2);
+  }
+  function fastLogistic(a) {
+    if (a > 20) return 1;
+    if (a < -20) return 0;
+    const x = f32(f32(1.442695040) * f32(-a));
+    if (x < -126) return 1;
+    const exponent = Math.trunc(x < 0 ? f32(x - 1) : x), fraction = f32(x - exponent);
+    const mantissa = f32(1 + f32(fraction * f32(f32(0.6602339) + f32(f32(0.33976606) * fraction))));
+    floatBits.setFloat32(0, mantissa, true);
+    floatBits.setInt32(0, (floatBits.getInt32(0, true) + (exponent << 23)) | 0, true);
+    return f32(1 / f32(1 + floatBits.getFloat32(0, true)));
+  }
+  function validWdl(wdl) {
+    if (!Array.isArray(wdl) || wdl.length !== 3 || wdl.some(p => !Number.isFinite(p) || p < 0 || p > 1)) return null;
+    const sum = wdl.reduce((a, b) => a + b, 0);
+    return Math.abs(sum - 1) <= 0.0001 ? wdl.map(p => p / sum) : null;
+  }
+  function neuralScore(q, wdl) {
     if (!Number.isFinite(q) || Math.abs(q) > 1) return null;
-    return Math.sign(q) * Math.round(Math.abs(111.714640912 * Math.tan(1.5620688421 * q))) || 0;
+    let probabilities = validWdl(wdl);
+    if (probabilities && Math.abs(probabilities[0] - probabilities[2] - q) > 0.0001) probabilities = null;
+    // The native WDL_mu fallback is finite even at neural Q endpoints.
+    let wl = f32(q), draw = probabilities ? f32(probabilities[1]) : 0, mu = 0;
+    let unstable = false;
+    let method = probabilities ? 'WDL_mu fallback' : 'Q fallback';
+    if (probabilities) {
+      const w = f32(f32(f32(1 + wl) - draw) / 2), l = f32(f32(f32(1 - wl) - draw) / 2), eps = f32(0.0001);
+      if ([w, draw, l].every(p => p > eps && p < f32(1 - eps))) {
+        const a = fastLog(f32(f32(1 / l) - 1)), b = fastLog(f32(f32(1 / w) - 1));
+        const sum = f32(a + b), scale = f32(2 / sum);
+        mu = f32(f32(a - b) / sum);
+        // Native FastLog can reverse mu at extremely broad distributions.
+        // A display conversion must never reverse the sign of measured Q.
+        unstable = !Number.isFinite(mu) || !Number.isFinite(scale) || scale <= 0 || (mu !== 0 && Math.sign(mu) !== Math.sign(q));
+        if (!unstable) {
+          const wNew = fastLogistic(f32(f32(-1 + mu) / scale)), lNew = fastLogistic(f32(f32(-1 - mu) / scale));
+          wl = f32(wNew - lNew); draw = Math.max(0, f32(f32(1 - wNew) - lNew));
+        }
+      }
+    }
+    let value = f32(45 * Math.tan(1.56728071628 * wl));
+    if (unstable) method = 'Q fallback (unstable WDL)';
+    else if (probabilities && mu !== 0 && f32(Math.abs(wl) + draw) < f32(0.996) &&
+        (Math.abs(mu) < 1 || Math.abs(value) < Math.abs(f32(100 * mu)))) {
+      value = f32(100 * mu); method = 'WDL_mu';
+    }
+    // Native UCI emits integer cp by truncation. Endpoints do not prove mate.
+    const cp = Math.trunc(value) || 0;
+    const wdlLabel = probabilities ? probabilities.map((p, i) => ['win', 'draw', 'loss'][i] + ' ' + (100 * p).toFixed(1) + '%').join(' · ') : 'W/D/L unavailable';
+    return { cp, method, wdl: probabilities, wdlLabel,
+      description: `approximately ${cp} cp (${method}); native neural Q ${q.toFixed(3)} · ${wdlLabel}` };
+  }
+  function qToCp(q) {
+    return neuralScore(q, null)?.cp ?? null;
   }
   function measure(fen, score, terminal, source = 'CDB') {
     const side = fen.split(' ')[1];
@@ -26,11 +90,14 @@
         description: `${source} ${label} · White perspective`, state: 'known' };
     }
     if (score?.type === 'q') {
-      const cp = qToCp(score.white);
-      if (cp === null) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const rootWdl = validWdl(score.wdl);
+      const wdl = validWdl(score.wdlWhite) || (rootWdl && (side === 'b' ? [rootWdl[2], rootWdl[1], rootWdl[0]] : rootWdl));
+      const neural = neuralScore(score.white, wdl);
+      if (!neural) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
+      const cp = neural.cp;
       const label = (cp > 0 ? '+' : '') + (cp / 100).toFixed(2);
       return { label, white: Math.max(2, Math.min(98, 50 + 50 * Math.tanh(cp / 400))),
-        description: `${source} approximately ${cp} cp, converted from native neural Q ${score.white.toFixed(3)} · White perspective`, state: 'known' };
+        description: `${source} ${neural.description} · White perspective · model estimates`, state: 'known', neural };
     }
     if (!Number.isFinite(score)) return { label: '—', white: 50, description: `${source} evaluation unavailable`, state: 'unknown' };
     const cp = score * (side === 'b' ? -1 : 1);
@@ -71,10 +138,11 @@
       const note = document.createElement('small');
       main.append(title, move); if (source !== 'DCC') main.append(score);
       if (source === 'DCC' && dccProgress) note.append(dccProgress);
-      badge.append(main, note); comparison.append(badge);
-      const nodes = { badge, main, title, move, score, note }; cards.set(source, nodes); return nodes;
+      const detail=document.createElement('small');detail.className='all-eval-detail';detail.hidden=true;
+      badge.append(main, note, detail); comparison.append(badge);
+      const nodes = { badge, main, title, move, score, note, detail }; cards.set(source, nodes); return nodes;
     }
-    let lastKnown = null;
+    let lastKnown = null, batchDepth = 0, paintPending = false;
     function renderComparison(fen, visible) {
       if (!comparison?.parentElement) return;
       comparison.hidden = !visible;
@@ -88,7 +156,15 @@
         const placeholder=source==='RLE'?!globalThis.ChessEngineRegistry?.supported('reckless'):source==='LC0'?!globalThis.ChessEngineRegistry?.supported('lc0'):false;
         const enabled=source==='CDB'?settings.cdbEnabled!==false:!placeholder;
         const control=getBadgeControl?.(source);
-        const { badge, move, score, note } = cardNodes(source);
+        const { badge, title:engineTitle, move, score, note, detail } = cardNodes(source);
+        const activity=control?.activity;
+        const sl=document.documentElement?.lang==='sl';
+        engineTitle.textContent=activity?activity.title:names[source];
+        badge.classList.toggle('is-busy',!!activity?.busy);
+        badge.dataset.analysisOwner=activity?.owner||'';
+        badge.dataset.analysisState=activity?.child.state||'idle';
+        badge.dataset.positionScope=activity?(activity.current?'current':'older'):'current';
+        detail.hidden=!activity?.busy;detail.textContent=activity?.busy?activity.compactDetail:'';
         if (actionable) {
           badge.disabled = placeholder || !!control?.disabled;
           badge.title = control?.title || '';
@@ -111,13 +187,21 @@
             if(progress.dataset.fen!==fen){progress.textContent='';progress.title='No measured evidence available';progress.dataset.fen=fen;}
             if(!progress.textContent)progress.textContent=choice?.status==='pending'?'Analyzing':'No data';
           }else note.textContent=choice?.status==='pending'?'Analyzing':choice?.status==='raw-safety'?'Raw choice':choice?.provider?'Measured':'No data';
-          note.title = `${dccProgress?.title || note.textContent}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
+          const language=globalThis.ChessLanguage;
+          const coverageTitle=dccProgress?(language?.sourceAttribute(dccProgress,'title')??dccProgress.title):(language?.sourceText(note)??note.textContent);
+          note.title = `${coverageTitle}${choice?.provider ? ' · ' + choice.provider : ''}${choice?.status==='raw-safety'?' · raw choice retained; insufficient measured evidence':''}`;
           if (actionable) badge.setAttribute('aria-label', `ChessDCC: ${move.textContent}. ${note.title}. ${badge.title}`);
         } else {
-          const entry = sourceScores.get(`${fen}:${source}`);
+          const projected=activity?.result, first=projected?.lines?.find(l=>(l.multipv||1)===1);
+          let entry = sourceScores.get(`${fen}:${source}`);
+          if(first){
+            const uci=first.pv?.[0];let san=uci;
+            try{if(typeof globalThis.Chess==='function'&&uci)san=new globalThis.Chess(projected.fen||fen).move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]})?.san||uci;}catch(_){}
+            entry={score:first.score,bestMove:san,at:Date.now(),depth:first.depth,variant:activity.child.mode==='sf-full'?'Full':'Lite',fen:projected.fen||fen};
+          }else if(activity&&!activity.current)entry=null;
           const fresh = enabled && entry && Date.now() - entry.at < 300000 &&
-            (source !== 'SF' || !control?.variant || !entry.variant || control.variant === entry.variant);
-          const result = measure(fen, fresh ? entry.score : null, null, source);
+            (first || source !== 'SF' || !control?.variant || !entry.variant || control.variant === entry.variant);
+          const result = measure(entry?.fen||fen, fresh ? entry.score : null, null, source);
           move.textContent = placeholder || !enabled ? '—' : fresh ? entry.bestMove || '—' : '…';
           move.setAttribute('aria-label', `${source} best move ${fresh && entry.bestMove ? entry.bestMove : 'unavailable'}`);
           score.textContent = placeholder || !enabled ? '—' : fresh ? result.label : '…';
@@ -125,11 +209,15 @@
           if (actionable) badge.setAttribute('aria-label', `${source}: ${move.textContent} ${score.textContent}. ${badge.title}`);
           note.textContent = placeholder ? 'Unavailable in this release' : !enabled ? 'Disabled' : control?.note ||
             (fresh && entry.depth ? `depth ${entry.depth}` : source==='CDB'?fresh&&(Number.isFinite(entry.score)||entry.bestMove)?'Position data':'No position data':'Ready');
-          if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
+          if(activity){
+            note.textContent=activity.busy?activity.compactPhase:activity.note;
+            if(activity.busy&&!first&&fresh)note.textContent+=' · '+(sl?'ohranjen rezultat':'retained result');
+            if(activity.child.error)note.title=activity.child.error;
+          }else if(source==='SF')note.textContent=(control?.variant||entry?.variant||'Lite')+' · '+note.textContent;
           if (fresh && entry.restricted) note.textContent += ' · selected moves';
           if (!actionable) badge.title = result.description;
         }
-        if (source !== 'DCC') note.title = note.textContent;
+        if (source !== 'DCC') note.title = [activity?.phase,activity?.detail,globalThis.ChessLanguage?.sourceText(note)??note.textContent,activity?.child.error].filter(Boolean).join(' · ');
         if (actionable) {
           badge.title = [control?.title, note.title, source !== 'DCC' ? score.title : ''].filter(Boolean).join('. ');
           badge.setAttribute('aria-label', `${names[source]}: ${move.textContent}${source==='DCC'?'':' '+score.textContent}. ${badge.title}`);
@@ -138,6 +226,7 @@
       }
     }
     function render() {
+      if (batchDepth) { paintPending = true; return; }
       if (!el) return;
       const fen = game.fen();
       let entry = scores.get(fen);
@@ -230,7 +319,15 @@
       if(['SF','BER','RLE','LC0'].includes(scores.get(fen)?.source))scores.delete(fen);
       lastKnown=null;if(game.fen()===fen)render();
     }
-    const api = { render, update, updateSource, updateDCC, markComparisonPending, clearLocalSources,
+    function batch(update) {
+      batchDepth++;
+      try { return update(); }
+      finally {
+        batchDepth--;
+        if (!batchDepth && paintPending) { paintPending = false; render(); }
+      }
+    }
+    const api = { render, batch, update, updateSource, updateDCC, markComparisonPending, clearLocalSources,
       clearDCC(fen){dccChoices.delete(fen);if(dccProgress&&game.fen()===fen){dccProgress.textContent='';dccProgress.title='No measured evidence available';}if(game.fen()===fen)render();},
       clearBoard(fen){scores.delete(fen);lastKnown=null;if(game.fen()===fen)render();} };
     instances.set(game, api);
@@ -239,10 +336,10 @@
   // Read-only spectator: independent of which engine is playing this turn.
   // One bounded CDB lookup at a time; fast moves coalesce to the displayed FEN.
   // Never await this observer from the runner or create another SF search.
-  function watchSimulation({ Chess, game, getCDB, view = instances.get(game) }) {
+  function watchSimulation({ Chess, game, getCDB, view = instances.get(game), enabled = () => true }) {
     if (!view || typeof getCDB !== 'function') return null;
     let active = false, current = null, queued = null, inFlight = false;
-    const live = item => active && item === current && item.fen === game.fen();
+    const live = item => active && enabled() && item === current && item.fen === game.fen();
     function san(fen, move) {
       try {
         if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(move || '')) return null;
@@ -258,11 +355,11 @@
       if (!live(item) || item.cdbKnown) return;
       item.cdbSettled = true;
       view.updateSource(item.fen, null, 'CDB');
-      if (item.sf) paint(item, item.sf.score, 'SF', item.sf.move, item.sf.depth);
+      if (item.local) paint(item, item.local.score, item.local.source, item.local.move, item.local.depth);
       else view.update(item.fen, null, 'CDB', true);
     }
     async function pump() {
-      if (inFlight || !queued || !active) return;
+      if (inFlight || !queued || !active || !enabled()) return;
       const item = queued; queued = null; inFlight = true;
       try {
         // No actor AbortSignal: cachedFetchChessDB uses a separate pending key
@@ -285,8 +382,10 @@
       }
     }
     function position() {
-      if (!active || current?.fen === game.fen()) return;
-      current = { fen: game.fen(), cdbKnown: false, cdbSettled: false, sf: null };
+      if (!active) return;
+      if (!enabled()) { current = null; queued = null; view.render(); return; }
+      if (current?.fen === game.fen()) return;
+      current = { fen: game.fen(), cdbKnown: false, cdbSettled: false, local: null };
       queued = null;
       view.markComparisonPending(current.fen, false);
       if (game.game_over()) { view.render(); return; }
@@ -302,19 +401,24 @@
       if (source === 'CDB' && Number.isFinite(pick.raw_best_score)) {
         item.cdbKnown = true; item.cdbSettled = true;
         paint(item, pick.raw_best_score, 'CDB', pick.raw_best);
-      } else if (source === 'SF') {
-        const score = pick.score_type === 'mate'
+      } else if (['SF','BER','RLE','LC0'].includes(source)) {
+        const score = pick.native_score || (pick.score_type === 'mate'
           ? (Number.isFinite(pick.raw_best_mate_in) ? { type: 'mate', white: pick.raw_best_mate_in * (item.fen.split(' ')[1] === 'b' ? -1 : 1) } : null)
-          : pick.raw_best_score;
+          : pick.raw_best_score);
         if (score == null || (!Number.isFinite(score) && !Number.isFinite(score.white))) return;
-        item.sf = { score, move: pick.raw_best, depth: pick.root_depth };
-        view.updateSource(item.fen, score, 'SF', pick.root_depth, san(item.fen, pick.raw_best), false, 'simulation');
+        item.local = { score, source, move: pick.raw_best, depth: pick.root_depth };
+        view.updateSource(item.fen, score, source, pick.root_depth, san(item.fen, pick.raw_best), false, 'simulation');
         // Reuse the current player's result while CDB is pending/unavailable;
         // never replace a current CDB score with a shallow SF score.
-        if (!item.cdbKnown) paint(item, score, 'SF', pick.raw_best, pick.root_depth);
+        if (!item.cdbKnown) paint(item, score, source, pick.raw_best, pick.root_depth);
       }
     }
-    return { start, position, decision, stop };
+    function refresh() {
+      if (!active) return;
+      if (!enabled()) { current = null; queued = null; view.render(); }
+      else { position(); view.render(); }
+    }
+    return { start, position, decision, stop, refresh };
   }
-  return { measure, qToCp, create, watchSimulation };
+  return { measure, qToCp, neuralScore, create, watchSimulation };
 });

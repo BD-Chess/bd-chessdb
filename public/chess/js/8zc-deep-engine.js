@@ -9,6 +9,7 @@
     version: '18.0.0', threads: 1, source: 'https://github.com/nmrugg/stockfish.js/releases/tag/v18.0.0',
     wasmSHA256: 'a8fbc05ec6920b56d7485826dcb02c5ffd2826bcbf751cf973046f237a9096f1' });
   const MOVE = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
+  const PV_CACHE_ENTRIES = 128, PV_CACHE_MAX_PLIES = 256;
   function abortError(message) { const e = new Error(message || 'Analysis cancelled'); e.name = 'AbortError'; return e; }
   function finiteInt(value, fallback, min, max) {
     if (value == null) return fallback;
@@ -92,6 +93,27 @@
     let active = null, serial = 0, destroyed = false, prepared = null, warming = null, reusePrepared = false;
     const clone = value => JSON.parse(JSON.stringify(value));
     const now = () => root.performance?.now ? root.performance.now() : Date.now();
+    function validatePV(job, pv) {
+      // Engines repeat the same PV with updated scores/counters. Validate each
+      // exact sequence once per pinned position, including any illegal suffix.
+      // Both entry count and sequence length are bounded for infinite searches.
+      const key = pv.length <= PV_CACHE_MAX_PLIES ? pv.join(' ') : null;
+      if (key !== null && job.pvCache.has(key)) {
+        const cached = job.pvCache.get(key);
+        job.pvCache.delete(key); job.pvCache.set(key, cached);
+        return cached.slice();
+      }
+      const replay = new Chess(job.limits.fen), legalPV = [];
+      for (const uci of pv) {
+        if (!replay.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })) break;
+        legalPV.push(uci);
+      }
+      if (key !== null) {
+        if (job.pvCache.size >= PV_CACHE_ENTRIES) job.pvCache.delete(job.pvCache.keys().next().value);
+        job.pvCache.set(key, legalPV);
+      }
+      return legalPV.slice();
+    }
     function detach(worker) { worker.onmessage = null; worker.onerror = null; worker.onmessageerror = null; }
     function prepare({ signal, onProgress, onStatus } = {}) {
       if (destroyed) return Promise.reject(new Error('Engine has been destroyed'));
@@ -139,6 +161,7 @@
     function finish(job, error, forced) {
       if (active !== job) return;
       active = null;
+      job.pvCache.clear();
       clearTimeout(job.initTimer); clearTimeout(job.stopTimer); clearTimeout(job.searchTimer);
       if (job.signal) job.signal.removeEventListener('abort', job.onAbort);
       if (job.worker) {
@@ -197,7 +220,7 @@
       return new Promise((resolve, reject) => {
         const readyWorker = prepared; prepared = null;
         const job = { id: ++serial, limits, resolve, reject, signal: options.signal, started: now(),
-          startedAt: new Date().toISOString(), lines: new Map(), iterations: new Map(), nodes: null, depth: null, stopped: false, phase: 'uci',
+          startedAt: new Date().toISOString(), lines: new Map(), iterations: new Map(), pvCache: new Map(), nodes: null, depth: null, stopped: false, phase: 'uci',
           reportedName: readyWorker?.reportedName || null, searchStarted: null, workerReused: (readyWorker?.searches||0)>0,workerSearches:readyWorker?.searches||0,
           expectedLines: Math.min(limits.multiPV, limits.searchMoves.length || (Chess ? new Chess(limits.fen).moves().length : limits.multiPV)) };
         active = job;
@@ -257,11 +280,7 @@
               } else if (job.phase === 'search') {
                 const info = parseInfo(line, limits.fen);
                 if (!info) continue;
-                if (Chess && info.pv?.length) {
-                  const replay = new Chess(limits.fen), legalPV = [];
-                  for (const uci of info.pv) { if (!replay.move({ from: uci.slice(0,2), to: uci.slice(2,4), promotion: uci[4] })) break; legalPV.push(uci); }
-                  info.pv = legalPV;
-                }
+                if (Chess && info.pv?.length) info.pv = validatePV(job, info.pv);
                 if (Number.isFinite(info.nodes)) job.nodes = Math.max(job.nodes || 0, info.nodes);
                 if (Number.isFinite(info.depth)) job.depth = Math.max(job.depth || 0, info.depth);
                 if (info.score && info.pv && info.pv.length) {

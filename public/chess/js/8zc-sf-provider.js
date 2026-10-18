@@ -15,17 +15,34 @@
     try { return !!new Chess(fen).move({ from: move.slice(0, 2), to: move.slice(2, 4), promotion: move[4] }); }
     catch (_) { return false; }
   };
-  function create({ Chess, Engine, DCC, rootNodes = 24000, probeNodes = 3000, multiPV = 8 }) {
+  function create({ Chess, Engine, DCC, rootNodes = 24000, probeNodes = 3000, multiPV = 8, mode = 'sf-lite', onActivity }) {
     if (!Chess || !Engine?.create) throw new Error('Local Stockfish is unavailable');
     const engine = Engine.create({ Chess });
     let destroyed = false;
+    let activity = null, serial = 0;
     const now = () => globalThis.performance?.now ? globalThis.performance.now() : Date.now();
     const ensure = signal => { if (destroyed || signal?.aborted) { const e = new Error('Stockfish analysis cancelled'); e.name = 'AbortError'; throw e; } };
     const ledger = { rootNodes: 0, rootDepth: null, rootElapsedMs: 0, extraNodes: 0, extraElapsedMs: 0, probes: 0, probeDepths: [], initializationMs: 0 };
     async function prepare(options = {}) { ensure(options.signal); await engine.prepare?.(options); ensure(options.signal); }
     async function search(fen, options, signal, isRoot = false) {
       ensure(signal);
-      const result = await engine.analyze({ fen, ...options, signal });
+      const job={id:'probe-'+(++serial),mode,state:'preparing',fen,budget:{depth:options.depth,nodes:options.nodes,movetime:options.movetime,infinite:!!options.infinite},searchStarted:null,searchElapsedMs:null};
+      activity=job;onActivity?.();
+      let result;
+      try {
+        const activityHooks = !onActivity ? {} : {
+          onSearchStarted:info=>{if(activity!==job||destroyed||signal?.aborted)return;
+            job.state='searching';job.searchStarted=now();options.onSearchStarted?.(info);onActivity?.();},
+          onProgress:progress=>{if(activity!==job||destroyed||signal?.aborted)return;job.progress=progress;options.onProgress?.(progress);onActivity?.();},
+          onInfo:(info,value)=>{if(activity!==job||destroyed||signal?.aborted)return;
+            const searching=value?.children?Object.values(value.children).some(child=>child.status==='searching'&&child.searchStartedMs!=null):
+              !['loading','preparing','ready','queued'].includes(value?.status);
+            if(searching){job.state='searching';job.searchStarted??=now();}
+            options.onInfo?.(info,value);onActivity?.();} };
+        result = await engine.analyze({ fen, ...options, ...activityHooks, signal });
+        if(activity===job&&!destroyed){job.state=result.stopped?'stopped':'complete';job.searchElapsedMs=result.actualSearchMs??result.searchElapsedMs??(job.searchStarted==null?null:now()-job.searchStarted);}
+      } catch(error) {if(activity===job&&!destroyed){job.state=error.name==='AbortError'?'stopped':'failed';job.error=error.name==='AbortError'?null:error.message;}throw error;}
+      finally {onActivity?.();}
       ensure(signal);
       ledger.initializationMs += result.initializationMs || 0;
       if (isRoot) {
@@ -124,7 +141,10 @@
       return analysis;
     }
     return { root, prepare, probePV, probeScore, analyzeDCC, ledger, source: SOURCE,
-      destroy() { destroyed = true; engine.destroy(); } };
+      activitySnapshot:()=>activity?{...activity,searchElapsedMs:activity.state==='searching'&&activity.searchStarted!=null?now()-activity.searchStarted:activity.searchElapsedMs}:null,
+      destroy() { destroyed = true;
+        if(activity&&['preparing','searching','loading'].includes(activity.state)){activity.searchElapsedMs=activity.searchStarted==null?null:now()-activity.searchStarted;activity.state='stopped';}
+        engine.destroy();onActivity?.(); } };
   }
   return { SOURCE, create };
 });

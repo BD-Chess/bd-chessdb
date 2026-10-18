@@ -24,6 +24,10 @@ function positive(value, fallback, max = 0xffffffff) {
   return n;
 }
 function limitsFor(options, Chess) {
+  // Validate before the optional shared normalizer as well as after it. The
+  // standalone wrapper must never silently discard an unsupported restriction.
+  if (options.searchMoves != null && (!Array.isArray(options.searchMoves) || options.searchMoves.length))
+    throw new Error('This Reckless port does not support restricted root moves');
   const shared = globalThis.ChessDeepEngine;
   let limits;
   if (shared?.limitsFor) limits = shared.limitsFor(options, Chess);
@@ -56,9 +60,9 @@ function lineFor(info, fen) {
   const value = info.mate != null ? info.mate : info.scoreCp;
   const type = info.mate != null ? 'mate' : 'cp';
   const bound = /\blowerbound\b/.test(info.raw || '') ? 'lower' : /\bupperbound\b/.test(info.raw || '') ? 'upper' : 'exact';
-  return {multipv: info.multiPv || 1, depth: info.depth, seldepth: info.selDepth,
+  return {multipv: info.multiPv ?? 1, depth: info.depth, seldepth: info.selDepth,
     nodes: info.nodes, nps: info.nps, time: info.timeMs,
-    pv: (info.pv || []).filter(move => MOVE.test(move)),
+    pv: Array.isArray(info.pv) ? info.pv.slice() : [], raw:info.raw || '',
     score: value == null ? null : {type, value, root:value, white:sign*value || 0, bound,
       whiteBound: sign < 0 && bound !== 'exact' ? bound === 'lower' ? 'upper' : 'lower' : bound,
       unit: type === 'cp' ? 'centipawns' : 'moves'}};
@@ -95,18 +99,64 @@ export function create(config = {}) {
     });
   }
   function snapshot(job) {
-    const latest = [...job.lines.values()].sort((a,b) => a.multipv-b.multipv);
-    const chosen = job.completeLines || latest;
+    const latest = [...job.lines.values()].sort((a,b) => a.multipv-b.multipv),chosen = job.completeLines || latest;
+    const first=chosen.find(l=>l.multipv===1)?.pv?.[0] || null;
+    const consistent=job.bestMove&&first?job.bestMove===first:null;
+    const complete=!!job.completeLines&&consistent!==false;
+    const status=job.terminal?'terminal':!Chess?'unvalidated':job.completeLines&&consistent===false?'bestmove-mismatch':complete?'complete':'partial';
     return clone({fen:job.limits.fen, engine:descriptor, limits:job.limits,
-      lines:chosen, completeMultiPV:!!job.completeLines, linesDepth:job.completeDepth ?? null,
-      expectedLines:job.expectedLines, partialLines:job.completeLines && latest.some(l=>l.depth>job.completeDepth)?latest:[],
-      nodes:job.nodes,depth:job.depth,bestMove:job.bestMove || chosen.find(l=>l.multipv===1)?.pv?.[0] || null,
-      stopped:job.stopped, stopReason:job.stopReason || null, forcedStop:!!job.forcedStop, partial:!!job.forcedStop,
+      lines:chosen, completeMultiPV:complete, retainedCompleteMultiPV:!!job.completeLines, linesDepth:job.completeDepth ?? null,
+      expectedLines:job.expectedLines, partialLines:job.completeLines && job.sequence!==job.completeSequence?latest:[],
+      nativeLines:job.nativeLines, terminal:!!job.terminal,
+      coverage:{status,expected:job.expectedLines,verified:job.completeLines?.length||0,depth:job.completeDepth??null,
+        latestDepth:job.iterationDepth??null,partial:latest.length,legalityValidated:!!Chess},
+      nodes:job.nodes,depth:job.depth,bestMove:first || job.legalBestMove || null,
+      nativeBestMove:job.bestMove ?? null,bestMoveConsistent:consistent,
+      bestMoveSource:first?(job.completeLines?'verified-lines':'partial-lines'):job.legalBestMove?'native-bestmove':'none',
+      stopped:job.stopped, stopReason:job.stopReason || null, forcedStop:!!job.forcedStop, partial:!!job.forcedStop||!complete&&!job.terminal,
       startedAt:job.startedAt,elapsedMs:now()-job.started,
       searchElapsedMs:job.searchStarted == null ? 0 : now()-job.searchStarted,
       initializationMs:(job.searchStarted ?? now())-job.started,
       positionHistory:job.limits.history?'Validated history supplied from startFen':'FEN only; repetition history before this position is unavailable',
       coldHash:true,perspective:'root scores are for the side to move; white scores are for White'});
+  }
+  function validatePV(job,pv){
+    if(!Chess)return {legal:false,reason:'Chess validator unavailable'};
+    const key=JSON.stringify(pv);
+    if(job.pvCache.has(key))return job.pvCache.get(key);
+    let reason=null,played=0;
+    try{
+      if(!pv.length)reason='Empty principal variation';
+      else for(const move of pv){
+        if(typeof move!=='string'||!MOVE.test(move)){reason='Invalid coordinate token';break;}
+        if(!job.validator.move({from:move.slice(0,2),to:move.slice(2,4),promotion:move[4]})){reason='Illegal principal variation';break;}
+        played++;
+      }
+    }catch(_){reason='Illegal principal variation';}
+    finally{while(played-->0)job.validator.undo();}
+    const result={legal:!reason,reason};job.pvCache.set(key,result);
+    if(job.pvCache.size>512)job.pvCache.delete(job.pvCache.keys().next().value);
+    return result;
+  }
+  function receive(job,info){
+    const line=lineFor(info,job.limits.fen),rank=line.multipv,depth=line.depth;
+    const validation=validatePV(job,line.pv);
+    // Keep exact native evidence separate; an invalid middle token is never
+    // removed to manufacture a plausible continuation. Bound values stay typed.
+    const native={...line,validation};
+    job.nativeLines.push(native);if(job.nativeLines.length>10)job.nativeLines.shift();
+    if(!Number.isInteger(rank)||rank<1||rank>job.expectedLines||!Number.isInteger(depth)||depth<1||depth<(job.iterationDepth??0))return line;
+    if(depth!==job.iterationDepth||rank===1){
+      job.lines=new Map();job.iterationDepth=depth;job.sequence++;job.sweepStarted=rank===1;
+    }
+    const scored=line.score&&Number.isFinite(line.score.root)&&Number.isFinite(line.score.white);
+    if(validation.legal&&scored)job.lines.set(rank,line);else job.lines.delete(rank);
+    const rows=[...job.lines.values()].sort((a,b)=>a.multipv-b.multipv);
+    if(job.sweepStarted&&job.expectedLines&&rows.length===job.expectedLines&&
+      rows.every((row,i)=>row.multipv===i+1&&row.score.bound==='exact')&&new Set(rows.map(row=>row.pv[0])).size===job.expectedLines){
+      job.completeLines=rows;job.completeDepth=depth;job.completeSequence=job.sequence;
+    }
+    return line;
   }
   function finish(job,error) {
     if (active !== job) return;
@@ -124,10 +174,16 @@ export function create(config = {}) {
     try { limits = limitsFor(options,Chess); } catch(error) { return Promise.reject(error); }
     if (active) { const previous = active; discard(); finish(previous,aborted('Superseded by a new analysis')); }
     return new Promise((resolve,reject) => {
-      const expectedLines = Chess ? Math.min(limits.multiPV,new Chess(limits.fen).moves().length) : limits.multiPV;
+      let validator;
+      if(Chess){
+        validator=new Chess(limits.history?.startFen||limits.fen);
+        for(const move of limits.history?.moves||[])validator.move({from:move.slice(0,2),to:move.slice(2,4),promotion:move[4]});
+      }
+      const expectedLines = validator ? Math.min(limits.multiPV,validator.moves().length) : limits.multiPV;
       const job = {limits,resolve,reject,signal:options.signal,started:now(),startedAt:new Date().toISOString(),
-        searchStarted:null,lines:new Map(),iterations:new Map(),nodes:0,depth:0,expectedLines,stopped:false};
+        searchStarted:null,lines:new Map(),nativeLines:[],sequence:0,validator,pvCache:new Map(),nodes:0,depth:0,expectedLines,stopped:false};
       active = job;
+      if(validator&&!expectedLines){job.terminal=true;job.stopReason='terminal-position';finish(job);return;}
       job.abort = () => { if (active===job) { discard(); finish(job,aborted()); } };
       job.signal?.addEventListener('abort',job.abort,{once:true});
       (async () => {
@@ -144,20 +200,12 @@ export function create(config = {}) {
         if (remaining != null && remaining<=0) { const error=new Error('Search deadline reached before search');error.name='DeadlineError';throw error; }
         job.offInfo = instance.onInfo(info => {
           if (active!==job) return;
-          const line = lineFor(info,limits.fen);
-          if (line.pv.length && line.score) {
-            job.lines.set(line.multipv,line);
-            const iteration = job.iterations.get(line.depth) || new Map(); iteration.set(line.multipv,line); job.iterations.set(line.depth,iteration);
-            if (job.expectedLines && iteration.size>=job.expectedLines && [...Array(job.expectedLines)].every((_,i)=>iteration.has(i+1))) {
-              job.completeLines=[...iteration.values()].sort((a,b)=>a.multipv-b.multipv);job.completeDepth=line.depth;
-            }
-            for (const d of job.iterations.keys()) if (d < line.depth-2) job.iterations.delete(d);
-          }
+          const line = receive(job,info);
           job.nodes=Math.max(job.nodes,info.nodes || 0);job.depth=Math.max(job.depth,info.depth || 0);
           try { options.onInfo?.(clone(line),snapshot(job)); } catch(_) { /* rendering cannot break search */ }
         });
         job.searchStarted=now();
-        try { options.onSearchStarted?.({engine:descriptor,startedMs:job.searchStarted,fen:limits.fen}); } catch(_) {}
+        try { options.onSearchStarted?.({engine:descriptor,timestamp:job.searchStarted,startedMs:job.searchStarted,fen:limits.fen}); } catch(_) {}
         // The upstream WASM API accepts one native limit. A second time bound
         // therefore terminates the depth/node worker at the actual search deadline,
         // retaining its last completed MultiPV iteration as the finite result.
@@ -171,7 +219,9 @@ export function create(config = {}) {
         else search.movetime=remaining;
         const result = await instance.analyze(search);
         if (active!==job) return;
-        job.bestMove=result.bestMove;job.nodes=Math.max(job.nodes,result.nodes || 0);job.depth=Math.max(job.depth,result.depth || 0);
+        job.bestMove=result.bestMove;
+        if(Chess&&typeof result.bestMove==='string'&&validatePV(job,[result.bestMove]).legal)job.legalBestMove=result.bestMove;
+        job.nodes=Math.max(job.nodes,result.nodes || 0);job.depth=Math.max(job.depth,result.depth || 0);
         job.stopReason=limits.depth != null?'depth':limits.nodes != null?'nodes':limits.movetime != null?'time':'search-complete';
         finish(job);
       })().catch(error => { if (active===job) { discard();finish(job,error); } });

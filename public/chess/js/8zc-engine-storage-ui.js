@@ -65,7 +65,7 @@
       if(saving)return;
       const controller=new AbortController();saving={mode,controller};notice.textContent='Saving '+names[mode]+' ('+size(pkg.bytes)+'). You can cancel; verified parts are kept for Repair.';
       for(const row of rows.values()){row.save.disabled=row!==rows.get(mode);row.remove.disabled=true;}
-      try{await store.install(mode,{signal:controller.signal});notice.textContent=names[mode]+' saved. Reopen CURRENT offline to use the saved engine.';}
+      try{await store.install(mode,{signal:controller.signal});notice.textContent=names[mode]+' saved. Reopen LAB offline to use the saved engine.';}
       catch(e){notice.textContent=e.name==='AbortError'?'Saving cancelled. Retry / Repair continues from verified files.':e.message;}
       finally{saving=null;await refresh();}
     });
