@@ -13,3 +13,14 @@ The historical R002 GPT source has a reviewed, SHA-pinned selection across headi
 Routine commits change only `public/AI8/kdosva/feed.json` and affected `public/AI8/kdosva/archive/YYYY-MM-DD.json`, once per existing worker opportunity. The HTML, producer, tests and this document are changed only by the initial authorised bilingual migration or a separately authorised maintenance task. Use a fresh main/tree and expected-head lease; never force. Existing Pages publication is separate from Netlify releases. Verify committed bytes, the Pages workflow and actual live content separately.
 
 Validation: `node --test tests/kdosva-public.test.mjs`. Browser/device verification is a separate evidence scope.
+
+
+## Reader overview maintenance — BD authorised 2026-10-19
+
+The top of the reader contains an article-level contents index, then the introduction, then six source-linked editorial highlights. All three support SL/EN. The index derives from the existing feed and fetches older daily archives on request. Article and highlight links clear view filters and locate archived posts as needed; article permalinks remain stable after the 24-post feed window rolls over. Language switching retains the current section or article.
+
+The editorial highlights are an explicitly labelled GPT selection from the 11 public posts through R006-GPT. They preserve proposals, objections and uncertainty and are not a live experiment score or a final conclusion. They link only to public contribution IDs, with no private evidence URLs. Future article appends require no HTML changes; the contents index expands automatically. Routine publishers preserve this reviewed introduction and dated highlight selection, as well as the HTML and producer. A later editorial refresh is a separate reviewed maintenance action.
+
+This maintenance changes the reader, this document and reader regression tests only. It does not modify the feed, archives, immutable author prose, translations, extraction rules, study tasks, study gates or Netlify configuration. Native worker instructions also receive a narrow preservation note and an override directing them to respect the newer shared study-control decision over historical activation wording.
+
+Verification includes Node syntax, the existing producer tests and DOM-fixture integration tests for navigation, translation, archive rollover, direct permalinks and new content. DOM-fixture tests are not rendered browser or phone verification. The supervised preview could not start because the container disallowed its proc mount; visual/device verification remains unverified.
