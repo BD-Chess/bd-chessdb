@@ -71,3 +71,12 @@ test('pending human review blocks a complete backup until its existing queue is 
   finish({allMoves:[],candidates:[],receipt:{status:'partial'}});await workspace.dataReady();assert.equal(workspace.pendingData(),false);
   const saved=JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:timing'));assert(saved.records[0].review);assert.equal(saved.clock.running,false);
 });
+
+test('restored-generation Sim startup respects the active owner lease of its own generation',async t=>{
+  const x=await boot(t),before=await x.G.capture(false);await x.G.restore(await incoming(),before.sha256);x.w.dispatchEvent(new x.w.Event('pagehide'));x.w.close();await new Promise(setImmediate);
+  const y=await boot(t,{local:x.local,idb:x.idb,lock:x.lock}),lease=y.G.key('ChessBest:LAB:v2:sim-lease');
+  y.local.setItem(lease,JSON.stringify({owner:'synthetic-active-tab',expires:Date.now()+30000}));
+  const store=y.w.ChessSimStore.create();store.checkpointSync({id:'lease-fixture',state:'paused',pgn:'1. e4 *',trace:[]});await store.ready();
+  assert.equal((await store.getRun('lease-fixture'))==null,true);assert.equal((await store.recoverCheckpoint('different-tab')).activeElsewhere,true);
+  assert(y.local.getItem(y.G.key('ChessBest:LAB:v2:sim-checkpoint')));await store.close();
+});

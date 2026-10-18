@@ -53,7 +53,7 @@
   }
   function create(options = {}) {
     const namespace = options.namespace || root.ChessDataGuard?.key('ChessBest:LAB:v2:sim') || 'ChessBest:LAB:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
-    const leaseKey = options.leaseKey || 'ChessBest:LAB:v2:sim-lease';
+    const leaseKey = options.leaseKey || root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-lease') || 'ChessBest:LAB:v2:sim-lease';
     const idb = options.indexedDB === undefined ? root.indexedDB : options.indexedDB;
     let storage = options.localStorage;
     if (storage === undefined) { try { storage = root.localStorage; } catch (_) { storage = null; } }
@@ -281,7 +281,7 @@
         const text = storage.getItem(storageKey);
         if (!text) return;
         const saved = archive(JSON.parse(text), false);
-        const legacyCopy = storage.getItem('ChessBest:LAB:v2:sim-fallback-origin') === 'legacy-copy';
+        const legacyCopy = storage.getItem(root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-fallback-origin') || 'ChessBest:LAB:v2:sim-fallback-origin') === 'legacy-copy';
         await new Promise((resolve, reject) => {
           const transaction = database.transaction(['runs', 'events'], 'readwrite');
           for (const kind of ['runs', 'events']) {
@@ -307,7 +307,7 @@
         // fallback update for the next reload instead of deleting its data.
         if (storage.getItem(storageKey) === text) {
           storage.removeItem(storageKey);
-          if (legacyCopy) storage.removeItem('ChessBest:LAB:v2:sim-fallback-origin');
+          if (legacyCopy) storage.removeItem(root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-fallback-origin') || 'ChessBest:LAB:v2:sim-fallback-origin');
         }
       };
       try {
