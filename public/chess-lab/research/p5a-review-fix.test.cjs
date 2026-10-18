@@ -105,3 +105,6 @@ test('P5A-R1-03 every native clock field is required and real move records retai
   for(const value of ['white','',4]){const invalid=copy(p);invalid.timing.records[0].after.turn=value;assert.throws(()=>C.validatePayload(invalid,deps));}
   assert.equal(C.canonical(p),before);
 });
+test('P5A-R1-03 all existing workspace modes including local dccbot retain valid paused timing',async()=>{
+  for(const kind of ['analysis','human','sim','lichess','dccbot']){const p=fixture();p.timing.kind=kind;const value=await C.pack(p,source,deps);assert.equal(C.canonical((await C.parse(C.canonical(value),deps)).payload),C.canonical(p));}
+});

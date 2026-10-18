@@ -94,7 +94,7 @@
   function checkTiming(timing,deps) {
     if(timing===null)return;
     exact(timing,['pgn','records','kind','humanStartPly','clock'],'workspace timing');
-    if(typeof timing.pgn!=='string'||!Array.isArray(timing.records)||!['analysis','human','sim','lichess'].includes(timing.kind)||!Number.isSafeInteger(timing.humanStartPly)||timing.humanStartPly<0)fail('Invalid workspace timing.');
+    if(typeof timing.pgn!=='string'||!Array.isArray(timing.records)||!['analysis','human','sim','lichess','dccbot'].includes(timing.kind)||!Number.isSafeInteger(timing.humanStartPly)||timing.humanStartPly<0)fail('Invalid workspace timing.');
     if(timing.pgn)deps.Study.parsePGN(deps.Chess,timing.pgn);
     checkClock(timing.clock,true);
     // Records may extend past the displayed PGN cursor and have null gaps.
