@@ -32,9 +32,9 @@ async function check(base,offline){
  vm.runInContext(seed+helpers+search+';globalThis.qa={shortlist,loadIndex,get pages(){return pages}}',context);
  await context.qa.loadIndex();
  const first=q=>canonical(new URL(context.qa.shortlist(q)[0]?.url).pathname.replace(new URL(base).pathname.replace(/\/$/,''),''));
- assert.equal(context.qa.shortlist('LAB').length,5,'Only the five active LAB entrances');
+ assert.equal(context.qa.shortlist('LAB').length,6,'Only the six active LAB entrances');
  for(const q of ['šah lab','chess lab','lab chess','sah lab'])assert.equal(first(q),'/chess-lab');
- for(const [q,target] of [['sudoku lab','/s/new'],['trip lab','/trip/new'],['flip4m lab','/f4m/new'],['križanke lab','/cw/new'],['crosswords lab','/cw/new'],['Start','/start'],['/Start/','/start'],['začetna','/start'],['chess','/chess']])assert.equal(first(q),target,q);
+ for(const [q,target] of [['sudoku lab','/s/new'],['trip lab','/trip/new'],['flip4m lab','/f4m/new'],['križanke lab','/cw/new'],['crosswords lab','/cw/new'],['dualframe','/nara/dualframe-lab'],['Start','/start'],['/Start/','/start'],['začetna','/start'],['chess','/chess']])assert.equal(first(q),target,q);
  for(const q of ['home','dom','domaca','domaca stran'])assert.equal(new URL(context.qa.shortlist(q)[0]?.url).href,'https://193.77.159.220/',q);
  assert.equal(context.qa.shortlist('lab no-such-project-321').length,0);
  assert.ok(context.qa.shortlist('LAB').every(x=>!x.url.includes('/old/')));
