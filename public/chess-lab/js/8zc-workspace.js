@@ -8,16 +8,17 @@
     let clock = T.create({ turn: game.turn(), now: now() });
     let records = [], kind = 'analysis', human = false, reviewEpoch = 0, reviewQueue = Promise.resolve(), pendingReviews = 0;
     let lastReview = null, selectedPly = null, humanStartPly = 0;
-    try {
+    function restoreSavedTiming() { try {
       const saved = JSON.parse(localStorage.getItem(STORAGE) || 'null');
       if (saved?.pgn === game.pgn() && Array.isArray(saved.records)) {
-        records = saved.records;
-        if (saved.clock) clock = saved.clock;
+        const restored = T.restore(saved.clock, now());
+        records = saved.records; clock = restored;
         kind = saved.kind === 'human' ? 'human' : 'analysis';
         human = kind === 'human'; humanStartPly = saved.humanStartPly || 0;
-        clock.running = false; clock.anchor = now();
+        clock.running = false; clock.anchor = now(); return true;
       }
-    } catch (_) {}
+    } catch (_) {} return false; }
+    restoreSavedTiming();
     function persist() {
       try { localStorage.setItem(STORAGE, JSON.stringify({ pgn: game.pgn(), records, kind, humanStartPly,
         clock: { ...T.snapshot(clock, now()), running: false } })); } catch (_) {}
@@ -182,7 +183,7 @@
         if (pendingReviews) throw Error('The workspace review changed during backup. Retry after it finishes.');
       } finally { clearTimeout(timer); }
     }
-    return { dataReady, pendingData: () => pendingReviews > 0, reset, start, pause, stop, beginTurn, endTurn, restoreClock, beforeMove, recordMove, recordAt, history, decorate, render,
+    return { dataReady, pendingData: () => pendingReviews > 0, restoreSavedTiming, reset, start, pause, stop, beginTurn, endTurn, restoreClock, beforeMove, recordMove, recordAt, history, decorate, render,
       isHuman: () => human, isTimed: () => human && clock.mode === 'countdown',
       clockSnapshot, lastReview: () => lastReview,
       pgnTime: (i, move, fen) => T.pgn(recordAt(i, move, fen)),

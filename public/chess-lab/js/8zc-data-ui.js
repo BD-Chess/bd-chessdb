@@ -12,18 +12,44 @@
     const status=element('p');status.setAttribute('role','status');
     const body=element('div'),actions=element('div');actions.className='chess-data-actions';
     dialog.append(heading,status,body,actions);doc.body.append(dialog);
-    let opener=null,preview=null,busy=false,needsReload=false;
+    let opener=null,preview=null,busy=false,needsReload=false,view=0;
     function button(text,action){const b=element('button',text);b.type='button';b.className='btn';b.onclick=action;actions.append(b);return b;}
-    function close(){if(busy)return;if(needsReload){root.location.reload();return;}preview=null;dialog.close();opener?.focus();}
-    function show(title){heading.textContent=tr(title);status.textContent='';body.replaceChildren();actions.replaceChildren();if(!dialog.open){opener=doc.activeElement;dialog.showModal();}}
+    function close(){if(busy)return;if(needsReload){root.location.reload();return;}view++;preview=null;dialog.close();opener?.focus();}
+    function show(title){view++;heading.textContent=tr(title);status.textContent='';body.replaceChildren();actions.replaceChildren();if(!dialog.open){opener=doc.activeElement;dialog.showModal();}}
     function download(value,name) {
       const text=C.canonical(value),url=URL.createObjectURL(new Blob([text],{type:'application/json;charset=utf-8'})),a=element('a');
       a.href=url;a.download=name;doc.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     }
-    function problem(error) {
+    function drafts() {
+      const value=G.drafts();
+      if(!value||!Object.values(value).some(v=>Array.isArray(v)?v.length:v!==null))return null;
+      C.validatePayload({...C.empty(),recovery:value},G.dependencies());return value;
+    }
+    async function recoveryActions() {
+      const token=view;
+      try {
+        const previous=await G.recovery(); // Guard parses and hashes independently of current capture.
+        if(token!==view)return;
+        if(previous)button('Save previous workspace',async()=>{
+          if(busy)return;busy=true;
+          try{const verified=await G.recovery();if(!verified)throw Error('Previous workspace backup is unavailable.');download(verified,'ChessBest_DATA_previous.json');}
+          catch(error){await problem(error);}finally{busy=false;}
+        });
+      }catch(_){if(token===view)body.append(element('p','Previous workspace backup is unavailable or invalid.'));}
+      if(token!==view)return;
+      try {
+        if(drafts())button('Save recovery drafts',async()=>{
+          if(busy)return;busy=true;
+          try{const verified=drafts();if(!verified)throw Error('Recovery drafts are unavailable.');download({schema:'chessbest-data-recovery/1',source:G.source(),drafts:verified},'ChessBest_DATA_recovery.json');}
+          catch(error){await problem(error);}finally{busy=false;}
+        });
+      }catch(_){body.append(element('p','Recovery drafts are unavailable or invalid.'));}
+    }
+    async function problem(error) {
       busy=false;show('DATA operation stopped');status.textContent=tr('Your existing workspace and recovery data were retained.');
       const detail=element('p',error.message||String(error));detail.setAttribute('translate','no');body.append(detail);
       button('Close',close);
+      await recoveryActions();
     }
     dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
     save.onclick=async()=>{
@@ -34,9 +60,8 @@
         busy=false;status.textContent=tr('Backup file prepared. Check your browser downloads.');
         body.append(element('p',tr('Workspace records')+': '+Object.values(envelope.manifest.counts).join(' / ')));
         button('Close',close);
-        const backup=await G.recovery();if(backup)button('Save previous workspace',()=>download(backup,'ChessBest_DATA_previous.json'));
-        const drafts=G.drafts();if(drafts&&Object.values(drafts).some(v=>Array.isArray(v)?v.length:v!==null))button('Save recovery drafts',()=>download({schema:'chessbest-data-recovery/1',source:G.source(),drafts},'ChessBest_DATA_recovery.json'));
-      }catch(error){problem(error);}
+        await recoveryActions();
+      }catch(error){await problem(error);}
     };
     load.onclick=()=>{if(busy)return;file.value='';file.click();};
     file.onchange=async()=>{
@@ -69,9 +94,9 @@
             await G.restore(preview.incoming,preview.targetHash);
             busy=false;needsReload=true;preview=null;actions.replaceChildren();status.textContent=tr('Workspace restored and verified. Reload to open it.');
             body.replaceChildren();button('Reload workspace',()=>root.location.reload());
-          }catch(error){problem(error);}
+          }catch(error){await problem(error);}
         });
-      }catch(error){problem(error);}
+      }catch(error){await problem(error);}
       finally{file.value='';}
     };
 

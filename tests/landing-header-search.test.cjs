@@ -24,13 +24,35 @@ const runtime=html.match(/<script id="landing-runtime">([\s\S]*?)<\/script>/)[1]
 const seed=runtime.slice(runtime.indexOf('const BASE='),runtime.indexOf('function localPath'));
 const helpers=runtime.slice(runtime.indexOf('function localPath'),runtime.indexOf('let history=[]'));
 const search=runtime.slice(runtime.indexOf('async function loadIndex'),runtime.indexOf('function historyView'));
+const submit=runtime.match(/^\$\('#search-form'\)\.addEventListener\('submit',[^\n]+/m)[0];
 async function check(base,offline){
- const context={URL,Map,document:{baseURI:base},location:new URL(base),render(){},fetch:async()=>{
+ let submitHandler,navigated;
+ const location=new URL(base);location.assign=url=>{navigated=url;};
+ const context={URL,Map,document:{baseURI:base},location,render(){},remember(){},input:{value:''},results:[],active:-1,
+  $:selector=>{assert.equal(selector,'#search-form');return {addEventListener(type,handler){assert.equal(type,'submit');submitHandler=handler;}};},
+  fetch:async()=>{
   if(offline)throw Error('Offline');return {ok:true,json:async()=>data};
  }};
  vm.createContext(context);
- vm.runInContext(seed+helpers+search+';globalThis.qa={shortlist,loadIndex,get pages(){return pages}}',context);
+ vm.runInContext(seed+helpers+search+submit+';globalThis.qa={shortlist,loadIndex,get pages(){return pages}}',context);
+ function checkDirectRoutes(phase){
+  const home=['home','dom','HOME',' DOM ','domača','domača stran'];
+  const start=['start','Start','bd start','začetna','začetna stran'];
+  for(const q of [...home,...start]){
+   const target=home.includes(q)?'https://193.77.159.220/':new URL('Start/index.html',base).href;
+   const matches=context.qa.shortlist(q);
+   assert.equal(matches[0]?.url,target,'First result '+phase+': '+q);
+   // Exercise the real submit handler, including a deliberately different active result.
+   context.input.value=q;context.results=matches;context.active=matches.length>1?1:-1;navigated=null;
+   let prevented=false;
+   submitHandler({preventDefault(){prevented=true;}});
+   assert.equal(prevented,true);
+   assert.equal(navigated,target,'Enter '+phase+': '+q);
+  }
+ }
+ checkDirectRoutes('before index');
  await context.qa.loadIndex();
+ checkDirectRoutes('after index');
  const first=q=>canonical(new URL(context.qa.shortlist(q)[0]?.url).pathname.replace(new URL(base).pathname.replace(/\/$/,''),''));
  assert.equal(context.qa.shortlist('LAB').length,6,'Only the six active LAB entrances');
  for(const q of ['šah lab','chess lab','lab chess','sah lab'])assert.equal(first(q),'/chess-lab');
@@ -38,7 +60,7 @@ async function check(base,offline){
  for(const q of ['home','dom','domaca','domaca stran'])assert.equal(new URL(context.qa.shortlist(q)[0]?.url).href,'https://193.77.159.220/',q);
  assert.equal(context.qa.shortlist('lab no-such-project-321').length,0);
  assert.ok(context.qa.shortlist('LAB').every(x=>!x.url.includes('/old/')));
- console.log('PASS actual search merge/ranking',new URL(base).pathname,offline?'fallback':'global index');
+ console.log('PASS actual search ranking and Enter routing',new URL(base).pathname,offline?'fallback':'global index','before/after index');
 }
 (async()=>{
  for(const base of ['https://www.mdlxdcc.org/','https://bd-chess.github.io/bd-chessdb/'])for(const offline of [false,true])await check(base,offline);
