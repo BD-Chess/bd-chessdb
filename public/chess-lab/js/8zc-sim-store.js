@@ -52,8 +52,8 @@
     return { schema: SCHEMA, version: VERSION, runs, events };
   }
   function create(options = {}) {
-    const namespace = options.namespace || 'ChessBest:LAB:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
-    const leaseKey = options.leaseKey || 'ChessBest:LAB:v2:sim-lease';
+    const namespace = options.namespace || root.ChessDataGuard?.key('ChessBest:LAB:v2:sim') || 'ChessBest:LAB:v2:sim', storageKey = namespace + '-fallback', checkpointKey = namespace + '-checkpoint';
+    const leaseKey = options.leaseKey || root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-lease') || 'ChessBest:LAB:v2:sim-lease';
     const idb = options.indexedDB === undefined ? root.indexedDB : options.indexedDB;
     let storage = options.localStorage;
     if (storage === undefined) { try { storage = root.localStorage; } catch (_) { storage = null; } }
@@ -96,6 +96,7 @@
     }
     function serial(work) {
       const result = queue.then(async () => {
+        root.ChessDataGuard?.assertWritable();
         await ready();
         if (mode === 'unavailable') throw Error(warning);
         if (locks?.request) return locks.request(namespace + '-archive', work);
@@ -218,6 +219,7 @@
       });
     }
     function checkpointSync(run, event) {
+      root.ChessDataGuard?.assertWritable();
       if (!storage) throw Error('Cannot save the active-game checkpoint: localStorage is unavailable.');
       const payload = { schema: 'chess-sim-checkpoint', version: VERSION, savedAt: new Date().toISOString(), records: [] };
       for (const [kind, value] of [['runs', run], ['events', event]]) if (value) {
@@ -279,7 +281,7 @@
         const text = storage.getItem(storageKey);
         if (!text) return;
         const saved = archive(JSON.parse(text), false);
-        const legacyCopy = storage.getItem('ChessBest:LAB:v2:sim-fallback-origin') === 'legacy-copy';
+        const legacyCopy = storage.getItem(root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-fallback-origin') || 'ChessBest:LAB:v2:sim-fallback-origin') === 'legacy-copy';
         await new Promise((resolve, reject) => {
           const transaction = database.transaction(['runs', 'events'], 'readwrite');
           for (const kind of ['runs', 'events']) {
@@ -305,7 +307,7 @@
         // fallback update for the next reload instead of deleting its data.
         if (storage.getItem(storageKey) === text) {
           storage.removeItem(storageKey);
-          if (legacyCopy) storage.removeItem('ChessBest:LAB:v2:sim-fallback-origin');
+          if (legacyCopy) storage.removeItem(root.ChessDataGuard?.key('ChessBest:LAB:v2:sim-fallback-origin') || 'ChessBest:LAB:v2:sim-fallback-origin');
         }
       };
       try {
@@ -327,5 +329,5 @@
       close: () => serial(() => { database?.close(); database = null; mode = 'unavailable'; warning = 'Archive is closed. Create a new archive connection to continue.'; })
     };
   }
-  return { SCHEMA, VERSION, create, createId };
+  return { SCHEMA, VERSION, create, createId, validate: archive, validateRecord: record, MAX_RECORD_BYTES, MAX_IMPORT_BYTES };
 });

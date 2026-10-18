@@ -15,7 +15,9 @@ test('014 is an append-only Drive recovery stub; prior archive and promotion his
  assert.deepEqual(fs.readdirSync(path.join(repo,'public/chess-lab/old/014')).sort(),['ARCHIVE_RECEIPT.json','index.html']);
  assert.equal(versions.latest_promotion.previous_root_preserved,true);
  assert.equal(versions.latest_installable_pwas.CURRENT.version,JSON.parse(read('public/chess/release.json')).version);
- assert.equal(versions.latest_installable_pwas.LAB.version,JSON.parse(read('public/chess-lab/release.json')).version);
+ // This is the immutable promotion receipt; LAB may develop after promotion.
+ const promotedLab=JSON.parse(git('show',base+':public/chess-lab/release.json'));
+ assert.equal(versions.latest_installable_pwas.LAB.version,promotedLab.version);
 });
 test('CURRENT exposes accepted controls and own storage without a channel selector or LAB redirect',()=>{
  const index=read('public/chess/index.html');

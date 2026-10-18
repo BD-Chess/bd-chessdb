@@ -160,7 +160,7 @@
     const locks = suppliedLocks === undefined ? globalThis.navigator?.locks : suppliedLocks;
     let storage = suppliedStorage;
     if (storage === undefined) { try { storage = globalThis.localStorage; } catch (_) { storage = null; } }
-    const key = 'ChessBest:LAB:v2:evidence-fallback', databaseName = 'ChessBest:LAB:v2:evidence';
+    const key = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:evidence-fallback') || 'ChessBest:LAB:v2:evidence-fallback'), databaseName = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:evidence') || 'ChessBest:LAB:v2:evidence');
     let mode = 'memory', dbPromise, memory = [], pending = [], queue = Promise.resolve();
     const valid = items => items.filter(item => { try { validate(item); return true; } catch (_) { return false; } });
     async function db() {
@@ -229,6 +229,7 @@
     }
     function mutate(operation) {
       const work = queue.then(async () => {
+        globalThis.ChessDataGuard?.assertWritable();
         const operations = [...pending, operation];
         // Keep a readable unsaved view if either persistence path refuses it.
         const before = await all();
@@ -255,7 +256,13 @@
     }
     // IDs seal the entire payload: overwriting the same ID is byte-identical
     // and idempotent. Changes produce a different ID; unsealed edits reject.
-    return { async put(snapshot) { validate(snapshot); if (bytes(snapshot) > maxBytes) throw Error('Snapshot exceeds local storage budget.'); await mutate({ id: snapshot.id, snapshot: copy(snapshot) }); return { id: snapshot.id, mode, persistent: mode !== 'memory' }; },
+    return { async dataSnapshot() {
+        await queue; const database = await db();
+        const durable = database ? await idbAll(database) : fallbackRead();
+        if (!Array.isArray(durable)) throw Error('Evidence storage is unreadable. Keep this tab open.');
+        durable.forEach(validate);
+        return { durable: copy(durable), memory: copy(memory), pending: copy(pending), mode };
+      }, async put(snapshot) { validate(snapshot); if (bytes(snapshot) > maxBytes) throw Error('Snapshot exceeds local storage budget.'); await mutate({ id: snapshot.id, snapshot: copy(snapshot) }); return { id: snapshot.id, mode, persistent: mode !== 'memory' }; },
       async list() { return (await all()).sort((a,b) => String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id)).map(s => ({ id:s.id, fen:s.payload.fen, label:s.payload.label, createdAt:s.payload.createdAt, records:s.payload.records.length, bytes:bytes(s) })); },
       async get(id) { return (await all()).find(s => s.id === id) || null; },
       remove(id) { return mutate({ id }); },

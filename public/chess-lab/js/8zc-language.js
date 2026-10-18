@@ -1,12 +1,47 @@
 /* Shared LAB UI language. Reuses the existing APP language preference and
  * source-text restoration; chess/source/user content is never rewritten. */
 (function(root){
-  'use strict';const doc=root.document,LANG_KEY='ChessBest:LAB:v2:language';
+  'use strict';const doc=root.document,LANG_KEY=(globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:language') || 'ChessBest:LAB:v2:language');
   let lang='en',i18nApplying=false,languageObserver=null;
   const textSources=new WeakMap(),attrSources=new WeakMap();
   const preserve='script,style,code,pre,textarea,[translate="no"],[data-no-i18n],.deep-pv,.chess-study-pv,.chess-study-comment-summary,.chess-study-preview h3,.game-review-detail,.game-review-teaser,.game-review-intro h3,.game-review-moment>strong,.game-review-decision>strong,.game-review-fact dd,.tournament-current,.research-summary,#appGameName,#boardGameTitle,.library-game-name,.library-result,.tournament-event-title';
   const ignored=node=>!!(node.nodeType===1?node:node.parentElement)?.closest?.(preserve);
   const TO_SL = new Map(Object.entries({
+    "Save DATA":"Shrani DATA",
+    "Exported":"Izvoženo",
+    "Source":"Izvor",
+    "Target":"Cilj",
+    "Save recovery drafts":"Shrani obnovitvene osnutke",
+    "Load DATA":"Naloži DATA",
+    "Save all workspace data to a backup file.":"Shrani vse podatke delovnega prostora v varnostno datoteko.",
+    "Preview and restore workspace data from a backup file.":"Predogled in obnova podatkov delovnega prostora iz varnostne datoteke.",
+    "Load DATA preview":"Predogled obnove DATA",
+    "Restore entire workspace":"Obnovi celoten delovni prostor",
+    "This replaces the ENTIRE included workspace in LAB. A verified recovery copy is kept first.":"To zamenja CELOTNI vključeni delovni prostor LAB. Najprej se shrani preverjena obnovitvena kopija.",
+    "Pending work is retained as recovery drafts and is never run automatically. Engines and online sessions stay stopped.":"Čakajoče delo je ohranjeno kot obnovitveni osnutek in se ne izvede samodejno. Motorji in spletne seje ostanejo ustavljeni.",
+    "DATA operation stopped":"Postopek DATA je ustavljen",
+    "Your existing workspace and recovery data were retained.":"Obstoječi delovni prostor in obnovitveni podatki so ohranjeni.",
+    "Pausing activity and preparing a complete workspace backup…":"Ustavljam dejavnost in pripravljam celotno varnostno kopijo…",
+    "Backup file prepared. Check your browser downloads.":"Varnostna datoteka je pripravljena. Preveri prenose brskalnika.",
+    "Checking the complete file. Nothing is being replaced.":"Preverjam celotno datoteko. Podatki ostajajo nespremenjeni.",
+    "Verifying recovery and restoring workspace…":"Preverjam varnostno kopijo in obnavljam delovni prostor…",
+    "Workspace restored and verified. Reload to open it.":"Delovni prostor je obnovljen in preverjen. Odpri ga s ponovnim nalaganjem.",
+    "Reload workspace":"Ponovno naloži delovni prostor",
+    "Workspace records":"Zapisi delovnega prostora",
+    "Save previous workspace":"Shrani prejšnji delovni prostor",
+    "Download the verified workspace snapshot kept before the last DATA restore.":"Prenesi preverjeni posnetek delovnega prostora pred zadnjo obnovo DATA.",
+    "Section":"Razdelek",
+    "Added":"Dodano",
+    "Changed / conflicts":"Spremenjeno / konflikti",
+    "Removed":"Odstranjeno",
+    "Unchanged / duplicates":"Nespremenjeno / dvojniki",
+    "Sim games":"Sim partije",
+    "Tournaments":"Turnirji",
+    "game":"partija",
+    "preferences":"nastavitve",
+    "evaluations":"ocene",
+    "timing":"čas",
+    "recovery":"obnovitev",
     "Analyze position starts a new search. Each move is off.":"Analiziraj položaj začne novo iskanje. Vsaka poteza je izklopljena.",
     "Analyze position starts a new search":"Analiziraj položaj začne novo iskanje",
     "Each move is off.":"Vsaka poteza je izklopljena.",

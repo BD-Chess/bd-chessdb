@@ -26,7 +26,7 @@
       (node.id==='appTabs'||node.tagName==='DIALOG'?screen:content).append(node);
     }
     doc.body.append(stage);
-    const choices=['375','390','402','430'],select=byId('appPreviewWidth'),key='ChessBest:LAB:v2:preview-width';
+    const choices=['375','390','402','430'],select=byId('appPreviewWidth'),key=(globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:preview-width') || 'ChessBest:LAB:v2:preview-width');
     let saved;try{saved=root.localStorage.getItem(key);}catch(_){}
     const requested=new URLSearchParams(root.location.search).get('width');
     select.value=choices.includes(requested)?requested:choices.includes(saved)?saved:'402';
@@ -53,7 +53,7 @@
   const views = new Set(['board', 'moves', 'review', 'deep', 'dcc']);
   const scroll = { moves: 0, dcc: 0 };
   let current = 'board', host = null, miniBoard = null, lastFen = '', movesPly = null, activity = {};
-  const TOP_LINE_KEY = 'ChessBest:LAB:v2:showTopLine';
+  const TOP_LINE_KEY = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:showTopLine') || 'ChessBest:LAB:v2:showTopLine');
   let showTopLine = false;
   let lang = root.ChessLanguage?.getLanguage() || 'en';
   doc.addEventListener('chess:language',event=>{lang=event.detail.lang;if(host){updatePosition();updateActivity({});}});
