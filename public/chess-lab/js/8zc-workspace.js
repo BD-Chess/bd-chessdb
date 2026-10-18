@@ -6,7 +6,7 @@
     const T = root.ChessTime, $ = id => document.getElementById(id), now = () => performance.now();
     const STORAGE = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:timing') || 'ChessBest:LAB:v2:timing');
     let clock = T.create({ turn: game.turn(), now: now() });
-    let records = [], kind = 'analysis', human = false, reviewEpoch = 0, reviewQueue = Promise.resolve();
+    let records = [], kind = 'analysis', human = false, reviewEpoch = 0, reviewQueue = Promise.resolve(), pendingReviews = 0;
     let lastReview = null, selectedPly = null, humanStartPly = 0;
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE) || 'null');
@@ -124,7 +124,7 @@
         : game.game_over() ? 'Game over' : clock.running ? `Two players · ${game.turn() === 'w' ? 'White' : 'Black'} to move` : 'Two players · paused';
     }
     function queueReview(index, row) {
-      const epoch = reviewEpoch;
+      const epoch = reviewEpoch; pendingReviews++;
       $('humanReview').textContent = `Review queued for ${row.san} · play can continue`;
       reviewQueue = reviewQueue.catch(() => {}).then(async () => {
         if (epoch !== reviewEpoch) return;
@@ -141,7 +141,7 @@
         const toSAN = uci => { try { return new Chess(row.fen).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san; } catch (_) { return '?'; } };
         $('humanReview').textContent = `${lastReview.side === 'w' ? 'White' : 'Black'} ${row.san}: ${gap === null ? 'CDB move score unknown' : gap + ' cp below CDB best'} · DCC ${lastReview.dccChoice ? toSAN(lastReview.dccChoice) : 'unknown'} · ${lastReview.coverage}`;
         persist();
-      }).catch(() => { if (epoch === reviewEpoch) $('humanReview').textContent = `${row.san}: review unavailable; the game can continue.`; });
+      }).catch(() => { if (epoch === reviewEpoch) $('humanReview').textContent = `${row.san}: review unavailable; the game can continue.`; }).finally(() => { pendingReviews--; });
     }
     ['showTimers', 'showTimestamps'].forEach((key, i) => {
       const input = $(i === 0 ? 'settingShowTimers' : 'settingShowTimestamps');
@@ -175,7 +175,14 @@
     render();
     setInterval(render, 250);
     window.addEventListener('pagehide', pause);
-    return { reset, start, pause, stop, beginTurn, endTurn, restoreClock, beforeMove, recordMove, recordAt, history, decorate, render,
+    async function dataReady({ timeoutMs = 2000 } = {}) {
+      let timer;
+      try {
+        await Promise.race([reviewQueue, new Promise((_, reject) => { timer = setTimeout(() => reject(Error('A workspace review is still pending. Keep this tab open and retry Save DATA after it finishes.')), timeoutMs); })]);
+        if (pendingReviews) throw Error('The workspace review changed during backup. Retry after it finishes.');
+      } finally { clearTimeout(timer); }
+    }
+    return { dataReady, pendingData: () => pendingReviews > 0, reset, start, pause, stop, beginTurn, endTurn, restoreClock, beforeMove, recordMove, recordAt, history, decorate, render,
       isHuman: () => human, isTimed: () => human && clock.mode === 'countdown',
       clockSnapshot, lastReview: () => lastReview,
       pgnTime: (i, move, fen) => T.pgn(recordAt(i, move, fen)),

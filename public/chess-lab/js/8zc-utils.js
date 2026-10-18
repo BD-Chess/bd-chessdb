@@ -2781,6 +2781,7 @@ function jumpTo(i){
     }});
   const labHost = {
     canRestoreData: () => {
+      if(workspace.pendingData?.())throw Error('A workspace review is still pending. Keep this tab open and retry after it finishes.');
       if (playState.active || simRunning || replayRunning || tournamentRunner?.busy() || engineCards?.isAllRunning() || deepUI?.isRunning?.())
         throw Error('Pause the current game, simulation and analysis before loading DATA.');
     },
@@ -2788,8 +2789,9 @@ function jumpTo(i){
       window.ChessDataGuard?.assertWritable();
       if (playState.active && playState.mode === 'lichess') throw Error('End the live Lichess session before Save DATA.');
       stopInteractiveAnalysis(); pauseLab('data');
-      if (tournamentRunner?.busy()) { await tournamentRunner.pause('Paused for Save DATA'); await tournamentRunner.settled(); }
-      workspace.pause(); await studyUI?.dataSnapshot();
+      if (tournamentRunner?.busy()) await tournamentRunner.pause('Paused for Save DATA');
+      await tournamentRunner?.settled();
+      workspace.pause(); await workspace.dataReady?.(); await studyUI?.dataSnapshot();
       const language=window.ChessLanguage?.getLanguage();
       if(language)localStorage.setItem(window.ChessDataGuard?.key('ChessBest:LAB:v2:language') || 'ChessBest:LAB:v2:language',language);
       if (!persistGame() || !persistSettings()) throw Error('Game/settings could not be saved. Existing bytes were retained.');

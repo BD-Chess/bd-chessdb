@@ -60,3 +60,14 @@ test('corrupt committing generation restores verified previous payload before no
   assert.notEqual(JSON.parse(x.local.getItem('ChessBest:LAB:v2:DATA-active')).epoch,active);
   const y=await boot(t,{local:x.local,idb:x.idb,lock:x.lock});assert.equal((await y.G.capture(false)).sha256,before.sha256);
 });
+
+test('pending human review blocks a complete backup until its existing queue is durably settled',async t=>{
+  const base=path.resolve(__dirname,'..'),dom=new JSDOM(fs.readFileSync(path.join(base,'index.html'),'utf8'),{url:'https://fixture.test/chess-lab/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;t.after(()=>w.close());
+  for(const name of ['chess.min.js','8zc-time-core.js','8zc-workspace.js'])w.eval(fs.readFileSync(path.join(base,'js',name),'utf8'));
+  const game=new w.Chess();let finish;
+  const workspace=w.ChessWorkspace.create({Chess:w.Chess,game,settings:{showTimers:true,showTimestamps:false},onDisplaySettings(){},analyze:()=>new Promise(resolve=>finish=resolve),onAnnotations(){},getAnalysis:()=>null,isBusy:()=>false,isSimulationRunning:()=>false,stopActivities(){}});
+  workspace.start('human',{seconds:0,increment:0});const fen=game.fen();assert(workspace.beforeMove());workspace.recordMove(fen,game.move('e4'));workspace.pause();
+  assert.equal(workspace.pendingData(),true);await assert.rejects(()=>workspace.dataReady({timeoutMs:10}),/still pending/);
+  finish({allMoves:[],candidates:[],receipt:{status:'partial'}});await workspace.dataReady();assert.equal(workspace.pendingData(),false);
+  const saved=JSON.parse(w.localStorage.getItem('ChessBest:LAB:v2:timing'));assert(saved.records[0].review);assert.equal(saved.clock.running,false);
+});

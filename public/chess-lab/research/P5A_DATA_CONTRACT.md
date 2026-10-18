@@ -31,6 +31,8 @@ snapshots / 16 MiB; Studies 20 / 4.5 MB, per Study 2 MB / 5000 nodes; game
 PGN 2 MB; preferences 512 KiB; cache 4 MiB; timing 4 MiB; recovery 16 MiB.
 No section is silently trimmed. File.size is checked before text()/JSON.parse.
 
+Save waits at most two seconds for already queued human reviews and flushes the paused Sim task; an unfinished review blocks a complete export/restore without discarding it.
+
 All live adapters resolve a fixed LAB generation at script load. A restore
 stages a separate generation, verifies durable contents and a full recovery
 snapshot in a bounded journal, then atomically switches one localStorage
