@@ -3,28 +3,57 @@ name: Deploy to Netlify production
 # MANUAL-ONLY NETLIFY RELEASE PATH.
 # Git-triggered Netlify builds are suppressed by netlify.toml.
 # A normal Git push is expected to be ignored before the Netlify build command runs.
-# The dedicated 06:00 Europe/Ljubljana release coordinator may dispatch this workflow
-# only when its materiality, budget, safety and provenance gates pass.
+# The sole coordinator may dispatch once per site in the Monday 06:00
+# Europe/Ljubljana window, subject to budget, safety and provenance gates.
+# Additional manual releases require a new explicit agreement with BD.
 on:
   workflow_dispatch:
+    inputs:
+      site:
+        description: Existing production site approved for this release
+        type: choice
+        required: true
+        default: mdlxdcc
+        options:
+          - mdlxdcc
+          - bd-chess
+      target_sha:
+        description: Exact current main commit approved by the coordinator or BD
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
   group: netlify-production
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      RELEASE_SITE: ${{ inputs.site }}
+      TARGET_SHA: ${{ inputs.target_sha }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
-      - name: Checkout exact main commit
+      - name: Validate the frozen main target and select the existing site
+        shell: bash
+        run: |
+          [[ "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'A full commit SHA is required.' >&2; exit 1; }
+          test "$TARGET_SHA" = "$GITHUB_SHA" || { echo 'Main moved since approval; no deployment attempted.' >&2; exit 1; }
+          case "$RELEASE_SITE" in
+            mdlxdcc) echo 'NETLIFY_SITE_ID=17b4124d-c197-4c0a-a711-8b2c08d91088' >> "$GITHUB_ENV" ;;
+            bd-chess) echo 'NETLIFY_SITE_ID=deb1dab6-dfad-436e-ae92-4477d873c987' >> "$GITHUB_ENV" ;;
+            *) echo 'Unapproved site; no deployment attempted.' >&2; exit 1 ;;
+          esac
+
+      - name: Checkout exact approved main commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
 
       - name: Prepare protected pages for browser password managers
         shell: bash
@@ -48,7 +77,8 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "NETLIFY_AUTH_TOKEN is not configured; Netlify deployment is safely skipped."
+            echo "NETLIFY_AUTH_TOKEN is not configured; no deployment attempted." >&2
+            exit 1
           fi
 
       - name: Set up Node 22
@@ -66,6 +96,24 @@ jobs:
         if: steps.netlify.outputs.ready == 'true' && hashFiles('functions/package.json') != ''
         run: npm install --prefix functions --no-audit --no-fund
 
+      - name: Prepare the correct publish root for the selected site
+        if: steps.netlify.outputs.ready == 'true'
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          if [ "$RELEASE_SITE" = 'bd-chess' ]; then
+            publish_dir="$RUNNER_TEMP/netlify-chess-site"
+            mkdir -p "$publish_dir"
+            cp -a public/. "$publish_dir/"
+            cp -a public/chess/. "$publish_dir/"
+            cmp public/chess/index.html "$publish_dir/index.html"
+            test -f "$publish_dir/Trip/index.html"
+            test -f "$publish_dir/S/index.html"
+          else
+            publish_dir="$GITHUB_WORKSPACE/public"
+          fi
+          echo "PUBLISH_DIR=$publish_dir" >> "$GITHUB_ENV"
+
       - name: Deploy public site and functions to existing Netlify project
         if: steps.netlify.outputs.ready == 'true'
         shell: bash
@@ -73,12 +121,20 @@ jobs:
           npx --yes netlify-cli@latest deploy \
             --prod \
             --no-build \
-            --dir public \
+            --dir "$PUBLISH_DIR" \
             --functions functions \
             --skip-functions-cache \
             --site "$NETLIFY_SITE_ID" \
             --auth "$NETLIFY_AUTH_TOKEN" \
-            --message "GitHub main ${GITHUB_SHA}" \
+            --message "$RELEASE_SITE GitHub main $TARGET_SHA" \
             --json > netlify-deploy.json
           node -e 'const d=require("./netlify-deploy.json"); console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId||null,url:d.url||d.deploy_url||null,logs:d.logs||null}))'
 
+      - name: Retain the actual deployment receipt
+        if: steps.netlify.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: netlify-${{ inputs.site }}-${{ github.run_id }}
+          path: netlify-deploy.json
+          if-no-files-found: error
+          retention-days: 30

@@ -48,13 +48,9 @@ jobs:
 
   production:
     # Single explicit BD production request on 2026-10-10. Ordinary pushes do not activate this job.
-    if: >-
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.run_attempt == 1 &&
-      startsWith(github.event.workflow_run.head_commit.message, 'release: bd-start 20261010')
+    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
+    # use deploy-netlify.yml; this historical job must not publish again.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 24
     concurrency:

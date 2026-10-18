@@ -1,10 +1,7 @@
 name: DualFrame AI production
+# BD 2026-10-18: automatic Netlify releases are weekly through the coordinator.
+# This specialized overlay path is manual-only and requires a fresh BD agreement.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/dualframe-prod.yml'
-      - 'public/Nara/dualframe-lab/release.json'
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'DualFrame AI 3.0:')
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:

@@ -13,7 +13,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   dual-site:
-    if: "${{ startsWith(github.event.head_commit.message, 'release: chessbest lab-current dual-netlify 20261014') }}"
+    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
+    # use deploy-netlify.yml; this historical job must not publish again.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 24
     env:

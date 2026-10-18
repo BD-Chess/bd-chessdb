@@ -15,7 +15,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    if: "${{ startsWith(github.event.head_commit.message, 'release: sef-kindle 20261017-r1') }}"
+    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
+    # use deploy-netlify.yml; this historical job must not publish again.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

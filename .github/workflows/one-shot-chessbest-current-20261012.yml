@@ -12,7 +12,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   chessbest-only:
-    if: "${{ startsWith(github.event.head_commit.message, 'release: chessbest current 20261012') }}"
+    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
+    # use deploy-netlify.yml; this historical job must not publish again.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

@@ -49,13 +49,9 @@ jobs:
   production:
     # BD explicitly authorized only this header/search production patch on 2026-10-10.
     # An ordinary push, rerun, or unrelated release cannot publish through this job.
-    if: >-
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.run_attempt == 1 &&
-      startsWith(github.event.workflow_run.head_commit.message, 'release: landing-header-search 20261010')
+    # Retired by BD on 2026-10-18. Weekly releases and agreed exceptions
+    # use deploy-netlify.yml; this historical job must not publish again.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
