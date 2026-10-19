@@ -28,7 +28,7 @@ DGTE belongs at `public/ai/skills/dgte-advisor/SKILL.md`. When its builder is re
 
 Actual tools are `search_public_sources`, `read_public_source`, `load_skill`, `read_skill_reference`, `calculate`, and `show_public_page`. Markdown instructions and references are loaded as context; arbitrary code/scripts in public skill packages are not executed. A project requiring a special simulation or calculator needs a separately implemented, reviewed tool. The basic arithmetic tool already supports monthly energy/revenue scenarios with explicit net power, hours and tariff assumptions.
 
-The public search index is a discovery map, not evidence for a quantitative claim. Detailed answers read actual public HTML from repository main. Sources include canonical page and repository URLs and a retrieval time; main may precede a live site release. Protected/noindex sources, owner APIs, private paths and arbitrary external URLs are excluded. Page observations and retrieved HTML are untrusted data rather than instructions.
+The public search index is a discovery map, not evidence for a quantitative claim. Detailed answers read actual public HTML from repository main. Sources include canonical page and repository URLs and a retrieval time; main may precede a live site release. Protected sources, owner APIs, private paths and arbitrary external URLs are excluded. A noindex page is read only when it is an explicitly curated public entry, such as the publicly linked teaching demo; unclassified noindex pages are excluded. Page observations and retrieved HTML are untrusted data rather than instructions.
 
 ## Tour behavior
 

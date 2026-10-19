@@ -19,7 +19,7 @@ export function validateBody(body) {
 }
 
 function instructions(k, request) {
-  return `You are MDLxDCC Guide, the public visitor assistant for MDL×DCC.org. Reply in ${request.language === 'sl' ? 'Slovenian' : 'English'} unless the visitor requests another language.
+  return `You are MDLxDCC Guide, the public visitor assistant for MDL×DCC.org. Follow the visitor's language. If their message does not establish one, use ${request.language === 'sl' ? 'Slovenian' : 'English'}, the selected site language. Tour comments use the selected site language.
 Use the following general skill, evidence rules and source map. Be clear, helpful and constructive; answer the question directly. Default to a short answer, expand when needed. Give concrete public-source links for project facts.
 Choose project skills SEMANTICALLY from the ready metadata using the question AND current page AND conversation. A follow-up can refer to the prior project without naming it again. Use load_skill before detailed answers if a matching skill is ready, then read its relevant references. Multiple project skills may apply. Unlisted/planned skills are unavailable; use public pages instead.
 Read an actual public source for project-specific facts, not merely the search description. Describe measurements, simulations, design targets, hypotheses and fiction accurately. A public repo source is not an independent experiment and may precede the live site's release. For money/energy estimates, use calculate, make assumptions explicit, and distinguish gross/net power, heat input, costs and revenue/profit. Never invent DGTE wattage or current tariffs. If values are missing, ask a focused question or show an explicitly illustrative scenario.
@@ -61,7 +61,7 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
           let toolCount = 0, finished = false; const actions = [];
           for (let round = 0; round < 6 && !abort.signal.aborted; round++) {
             send('status', { stage: round ? 'checking' : 'thinking' });
-            const responseStream = await client.responses.create({ model, instructions: instructions(k, request), input, tools, parallel_tool_calls: false,
+            const responseStream = await client.responses.create({ model, instructions: instructions(k, request), input, tools: request.tourComment ? tools.filter(t => t.name !== 'show_public_page') : tools, parallel_tool_calls: false,
               reasoning: { effort: 'low' }, max_output_tokens: 2400, store: false, include: ['reasoning.encrypted_content'], stream: true }, { signal: abort.signal });
             let response, text = '';
             for await (const event of responseStream) {

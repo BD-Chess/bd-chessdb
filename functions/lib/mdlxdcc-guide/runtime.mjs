@@ -3,7 +3,7 @@ export const RAW = 'https://raw.githubusercontent.com/BD-Chess/bd-chessdb/main/p
 export const SITE = 'https://www.mdlxdcc.org';
 const cache = new Map();
 const blocked = /(?:^\/(?:WL|WD)(?:\/|$)|^\/BD\/(?:O(?:\/|$)|BD_kardiolog\.html)|dualframe-lab|(?:^|\/)(?:private|secrets?|\.git)(?:\/|$)|IM3_MentalArena_MALm|\/old\/|\/archive\/)/i;
-const essential = ['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/crp/MDLxDCC.html', '/crp/DGTE.html', '/crp/HTH.html', '/crp/SORA.html', '/Trip/demo.html', '/chess/', '/8Z/', '/AI8/', '/Nara/', '/Art/', '/AC/', '/Someone/'];
+const essential = ['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/crp/MDLxDCC.html', '/crp/DGTE.html', '/crp/HTH.html', '/crp/SORA.html', '/crp/ToE.html', '/Trip/demo.html', '/chess/', '/8Z/', '/AI8/', '/Nara/', '/Art/', '/AC/', '/Someone/'];
 
 export function publicPath(input) {
   if (typeof input !== 'string' || input.length > 400 || /[\\\x00-\x1f]/.test(input)) throw Error('PUBLIC_PATH_REQUIRED');
@@ -90,7 +90,7 @@ export async function createKnowledge({ fetcher = fetch } = {}) {
     else if (file.endsWith('/')) file += 'index.html';
     if (!/\.html?$/i.test(file)) throw Error('HTML_SOURCE_REQUIRED');
     const html = await getText(file, fetcher);
-    if (/<meta\b[^>]*(?:name\s*=\s*["']robots["'][^>]*noindex|noindex[^>]*name\s*=\s*["']robots["'])/i.test(html) || /data-(?:private|protected)\b/i.test(html)) throw Error('PROTECTED_SOURCE');
+    if ((!essential.includes(p) && /<meta\b[^>]*(?:name\s*=\s*["']robots["'][^>]*noindex|noindex[^>]*name\s*=\s*["']robots["'])/i.test(html)) || /data-(?:private|protected)\b/i.test(html)) throw Error('PROTECTED_SOURCE');
     const text = readable(html), terms = String(focus).toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [];
     let excerpt = text.slice(0, 14000);
     if (terms.length && text.length > 14000) {

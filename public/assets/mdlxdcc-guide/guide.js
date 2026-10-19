@@ -11,6 +11,7 @@ const lang = () => document.documentElement.lang.toLowerCase().startsWith('sl') 
 const w = key => words[lang()][key] || key;
 let messages = [], available = null, activeRequest = null, requestNumber = 0, tour = null, sceneNumber = 0, timer = null, manifestPromise, catalogPromise;
 const allowed = new Set(['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/Trip/demo.html']);
+const publicScenes = new Set(allowed);
 const denied = /(?:^\/(?:WL|WD)(?:\/|$)|^\/BD\/(?:O(?:\/|$)|BD_kardiolog)|dualframe-lab|(?:^|\/)(?:private|secret)(?:\/|$)|IM3_MentalArena_MALm|\/old\/|\/archive\/)/i;
 
 function sitePath(url) {
@@ -82,7 +83,7 @@ async function catalog() {
  await catalogPromise;
 }
 async function manifest() {
- if (!manifestPromise) manifestPromise = fetch(new URL('assets/mdlxdcc-guide/tour.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const s of Object.values(d.scenes)) { const p = sitePath(s.path); if (p) allowed.add(p.path); } return d; }).catch(e => { manifestPromise = null; throw e; });
+ if (!manifestPromise) manifestPromise = fetch(new URL('assets/mdlxdcc-guide/tour.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const s of Object.values(d.scenes)) { const p = sitePath(s.path); if (p) { allowed.add(p.path); publicScenes.add(p.path); } } return d; }).catch(e => { manifestPromise = null; throw e; });
  return manifestPromise;
 }
 async function probe() {
@@ -98,7 +99,7 @@ function snapshot() {
   const p = sitePath(frame.contentWindow.location.href);
   if ($('guide-stage').hidden || !p || !allowed.has(p.path)) return { path:'/', title:document.title, excerpt:$('main').innerText.slice(0, 6000), verified:true };
   const d = frame.contentDocument, title = d.title;
-  if (/noindex/i.test(d.querySelector('meta[name=robots]')?.content || '') || d.querySelector('[data-private],[data-protected]')) return { path:p.path, title:'', excerpt:'', verified:false };
+  if ((!publicScenes.has(p.path) && /noindex/i.test(d.querySelector('meta[name=robots]')?.content || '')) || d.querySelector('[data-private],[data-protected]')) return { path:p.path, title:'', excerpt:'', verified:false };
   const text = (d.querySelector('main') || d.body).innerText;
   const missing = /page not found|404[^\n]{0,30}not found/i.test(title + ' ' + (d.querySelector('h1')?.innerText || ''));
   return { path:p.path, title, excerpt:text.slice(0, 6000), verified:d.readyState === 'complete' && text.trim().length > 80 && !missing && d.visibilityState === 'visible' };
@@ -106,7 +107,7 @@ function snapshot() {
 }
 
 async function showPage(path, { fromTour = false } = {}) {
- await catalog(); const p = sitePath(path); if (!p || !allowed.has(p.path)) throw Error('PAGE_UNAVAILABLE');
+ await Promise.all([catalog(), manifest().catch(() => null)]); const p = sitePath(path); if (!p || !allowed.has(p.path)) throw Error('PAGE_UNAVAILABLE');
  if (!fromTour && tour) pauseTour();
  $('guide-stage').hidden = false; document.body.classList.add('guide-viewing'); topSize(); $('guide-page-title').textContent = w('loading');
  const target = localURL(p.path + p.suffix); $('guide-page-external').href = target;
