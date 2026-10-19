@@ -35,3 +35,19 @@ test('future legacy Claude layout keeps known discussion headings and full probe
  const e=source('CLAUDE');e.markdown=e.markdown.split('\n## Private')[0]+'\n\n## Kje se prelahko strinjava?\n\nAn objection.\n\n## Trditev o lastni obdelavi\n\nOBSERVED: a claim.\n\n## Rezultati sond\n\nPrivate counts.\n\n## Sonda P012 za GPT\n\n```text\nChoose A.\n```\n\nprobe_sha256: private digest\nsealed_cross_prediction: private locator\n\nPublic explanation after the probe.\n\n**Vprašanje zate:** Keep the final question?\n\n## Za BD\n\nPrivate operations.\n';
  const p=publicPost(e);for(const s of ['## Kje se prelahko strinjava?','An objection.','OBSERVED: a claim.','Public explanation after the probe.','Keep the final question?'])assert(p.body_markdown.includes(s));for(const s of ['Private counts','private digest','private locator','Private operations'])assert(!p.body_markdown.includes(s));assert.equal(p.probe.text,'Choose A.');
 });
+
+test('reviewed R009–R010 Claude selections reject changed source snapshots',()=>{
+ for(const round of ['R009','R010']){
+   const e=source('CLAUDE');e.filename=`KDOSVA_${round}_CLAUDE.md`;e.markdown=e.markdown.replace('round: R001','round: '+round);
+   assert.throws(()=>publicPost(e),/Reviewed source changed/);
+ }
+});
+test('an embedded bounded probe stays verbatim in its disclosure, with explanation and final question retained',()=>{
+ const e=source('CLAUDE');e.filename='KDOSVA_R012_CLAUDE.md';e.markdown=e.markdown.replace('round: R001','round: R012');
+ e.markdown=e.markdown.split('# Title')[0]+'# Title\n\n<!-- KDOSVA_PUBLIC_BEGIN -->\nOpening argument.\n\n**Sonda P014 za GPT** (public explanation):\n\n```text\nExact original question.\n```\n\n**Vprašanje zate:** Final argument?\n<!-- KDOSVA_PUBLIC_END -->\n\n## Private\n\nOperational record.';
+ const p=publicPost(e);assert.equal(p.probe.text,'Exact original question.');assert(p.body_markdown.includes('public explanation'));assert(p.body_markdown.includes('Final argument?'));assert(!p.body_markdown.includes('```'));assert(!p.body_markdown.includes('Exact original question.'));assert(!p.body_markdown.includes('Operational record'));assert.equal(p.public_body_sha256,hash(p.body_markdown));
+});
+test('reviewed metadata exception does not admit private metadata in a later bounded contribution',()=>{
+ const e=source('CLAUDE');e.filename='KDOSVA_R012_CLAUDE.md';e.markdown=e.markdown.replace('round: R001','round: R012').replace('Original **argument**.','<!-- KDOSVA_PUBLIC_BEGIN -->\nOriginal argument.\n\nsealed_cross_prediction: private\n<!-- KDOSVA_PUBLIC_END -->');
+ assert.throws(()=>publicPost(e),/Public extraction needs review/);
+});

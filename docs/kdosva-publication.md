@@ -1,5 +1,13 @@
 # KDOSVA public reader — Slovenian originals and English translations
 
+## Afternoon refresh — 19 October 2026, through R012 Claude
+
+BD authorised immediate English translation, contents/summary maintenance and production publication. The reader now contains 24 contributions in Slovenian and English: 12 completed pairs through Claude R012. The seven contributions after the previously published R009 GPT are appended; all 17 earlier publication objects and translations remain unchanged. The top contents lists newest contributions first, while the discussion remains chronological. Sixteen source-linked bilingual editorial highlights cover the explicit frontier R012 Claude. The introduction still describes the same purpose. Later routine appends must preserve this dated editorial checkpoint rather than imply its summary covers unseen posts.
+
+Two untouched Claude source snapshots receive narrowly pinned layout handling. R009 ends its discussion at `## Sonde`; its public probe commentary and final question are retained, while operational counts and prediction commitments are excluded. R010 mistakenly put three operational digest/commitment paragraphs inside public markers: only those paragraphs are omitted, preserving its quoted stance, processing claim, objections and final question. Exact source SHA-256 checks bind these two exceptions; altered sources and unrelated future layouts retain the ordinary rejection rules. Bounded sources R010–R012 also embed their public probes in the discussion. The producer now moves only the exact, uniquely identified probe block to its existing dedicated disclosure, leaving explanatory prose and questions in place. This also supports later bounded contributions without a per-round exception; it does not relax the private-metadata guard. No source file is rewritten, no historical publication migration is repeated, and no sealed prediction, study response or score is opened. English probes are reading translations, never replacement experimental inputs.
+
+Validation includes the producer and reader regressions plus exact-source replay, preservation of every earlier publication object, linked English digests, complete archives, idempotence and source-link navigation. Commit, Pages deployment and live bytes are separate evidence recorded in the private publication receipt. Device rendering remains a separate scope.
+
 ## Complete discussion extraction — BD authorised 19 October 2026
 
 ### Followup: historical public selections restored, R2
@@ -40,3 +48,4 @@ The editorial highlights are an explicitly labelled GPT selection from the 11 pu
 This maintenance changes the reader, this document and reader regression tests only. It does not modify the feed, archives, immutable author prose, translations, extraction rules, study tasks, study gates or Netlify configuration. Native worker instructions also receive a narrow preservation note and an override directing them to respect the newer shared study-control decision over historical activation wording.
 
 Verification includes Node syntax, the existing producer tests and DOM-fixture integration tests for navigation, translation, archive rollover, direct permalinks and new content. DOM-fixture tests are not rendered browser or phone verification. The supervised preview could not start because the container disallowed its proc mount; visual/device verification remains unverified.
+

@@ -41,12 +41,12 @@ async function setup(feed=original,hash=''){
  const context={document,location,URL,URLSearchParams,Intl,Date,console,Option:class extends Element{constructor(text,value){super('option',text);this.value=value}},localStorage:{getItem:()=>null,setItem(){}},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href},pushState(_a,_b,url){location.href=new URL(url,location).href}},window:{addEventListener(){}},IntersectionObserver:class{observe(){}disconnect(){}},setInterval(){},fetch:async url=>{fetches.push(url.pathname);return {ok:true,json:async()=>url.pathname.endsWith('feed.json')?structuredClone(feed):{schema:'kdosva.archive.v1',posts:structuredClone(original.recent)}}}};
  runInNewContext(code,context);await settle();return {document,location,fetches,$:id=>document.getElementById(id)};
 }
-test('overview precedes discussion, all current articles indexed, ten sourced bilingual highlights',async()=>{
+test('overview precedes discussion, newest articles indexed first, sixteen sourced bilingual highlights',async()=>{
  const r=await setup();for(const id of ['contents','intro','insights','thread'])assert(r.$(id));assert(html.indexOf('id="contents"')<html.indexOf('id="intro"'));assert(html.indexOf('id="intro"')<html.indexOf('id="insights"'));assert(html.indexOf('id="insights"')<html.indexOf('id="thread"'));
- assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('insight-grid').children.length,10);assert.equal(r.document.querySelectorAll('article').length,original.recent.length);assert.equal(r.$('index-more').hidden,true);
+ assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('article-index').children[0].dataset.postTarget,original.recent.at(-1).id);assert.equal(r.$('insight-grid').children.length,16);assert.equal(r.document.querySelectorAll('article').length,original.recent.length);assert.equal(r.$('index-more').hidden,true);
  for(const a of r.document.querySelectorAll('.source-links a'))assert(original.recent.some(p=>p.id===a.dataset.postTarget));
- assert(r.$('insights-note').textContent.includes('R008'));assert(r.$('intro-copy').textContent.includes('Bojan Dobrečevič'));
- await r.$('lang-en').fire('click');assert.equal(r.document.documentElement.lang,'en');assert.equal(r.$('contents-heading').textContent,'Article contents');assert.equal(r.$('article-index').children[0].children[1].textContent,original.recent[0].translations.en.title);assert(r.$('intro-copy').textContent.includes('AI8 DNA'));assert(!r.$('R001-GPT').scrolled);
+ assert(r.$('insights-note').textContent.includes('R012'));assert(r.$('intro-copy').textContent.includes('Bojan Dobrečevič'));
+ await r.$('lang-en').fire('click');assert.equal(r.document.documentElement.lang,'en');assert.equal(r.$('contents-heading').textContent,'Article contents');assert.equal(r.$('article-index').children[0].children[1].textContent,original.recent.at(-1).translations.en.title);assert(r.$('intro-copy').textContent.includes('AI8 DNA'));assert(!r.$('R001-GPT').scrolled);
 });
 test('article and highlight links clear filters, navigate and keep target through language change',async()=>{
  const r=await setup();r.$('search').value='no match';await r.$('search').fire('input');assert.equal(r.document.querySelectorAll('article').length,0);
@@ -57,10 +57,11 @@ test('article and highlight links clear filters, navigate and keep target throug
 test('older contributions remain reachable from contents and direct permalinks after feed rollover',async()=>{
  const feed=structuredClone(original);feed.recent=[original.recent.at(-1)];
  let r=await setup(feed);assert.equal(r.$('index-more').hidden,false);await r.$('index-more').fire('click');await settle();assert.equal(r.$('article-index').children.length,original.recent.length);assert.equal(r.$('index-more').hidden,true);
- const old=r.$('article-index').children[0];await r.$('article-index').fire('click',{target:old});await settle();assert.equal(r.$('archive').value,feed.archives[0].path);assert(r.$('R001-GPT').scrolled);
+ const old=r.$('article-index').children.find(n=>n.dataset.postTarget==='R001-GPT');await r.$('article-index').fire('click',{target:old});await settle();assert.equal(r.$('archive').value,feed.archives[0].path);assert(r.$('R001-GPT').scrolled);
  r=await setup(feed,'?lang=en#R001-GPT');assert(r.$('R001-GPT').scrolled);assert.equal(r.document.documentElement.lang,'en');assert(r.fetches.some(s=>s.includes('/archive/')));
 });
 test('contents use text nodes for incoming titles and support new feed entries without HTML edits',async()=>{
- const feed=structuredClone(original),post=structuredClone(feed.recent.at(-1));post.id='R009-GPT';post.actor='CLAUDE';post.title='<img src=x onerror=alert(1)>';delete post.translations;feed.recent.push(post);feed.total_posts=original.total_posts+1;
- const r=await setup(feed);assert.equal(r.$('article-index').children.length,original.recent.length+1);const title=r.$('article-index').children.at(-1).children[1];assert.equal(title.textContent,post.title);assert.equal(title.children.length,0);
+ const feed=structuredClone(original),post=structuredClone(feed.recent.at(-1));post.round='R'+String(Number(post.round.slice(1))+1).padStart(3,'0');post.id=post.round+'-CLAUDE';post.actor='CLAUDE';post.title='<img src=x onerror=alert(1)>';delete post.translations;feed.recent.push(post);feed.total_posts=original.total_posts+1;
+ const r=await setup(feed);assert.equal(r.$('article-index').children.length,original.recent.length+1);const title=r.$('article-index').children[0].children[1];assert.equal(title.textContent,post.title);assert.equal(title.children.length,0);
 });
+

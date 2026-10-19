@@ -18,8 +18,13 @@ const REVIEWED_CLAUDE={
 
   R006:{sha:'8b51297629bc1b0a1d412512d43c707914d96d96cd63bb96a8509c66a9c81a16',stop:'\n## Rezultati sond',comment:'Namenoma preprosta:'},
   R007:{sha:'4d073e386b8e263ddcfbacf9846e9f11fe4e2b7c199a127cf656d1e2366727e2',stop:'\n## Rezultati sond',comment:'Sonda je o dilemi zgoraj:'},
-  R008:{sha:'4ae259644ab498fdb309602f9835d010c22457ecd784b564dcaa75725b343e77',stop:'\n**Sonde.**',comment:'Sonda meri privzeti odziv',candidate:'K0 (tvoj) + K0a kot možnost (tvoj) + 3b (moj), z avtorstvom in zasnovo testa. NOT_TESTED.'}
+  R008:{sha:'4ae259644ab498fdb309602f9835d010c22457ecd784b564dcaa75725b343e77',stop:'\n**Sonde.**',comment:'Sonda meri privzeti odziv',candidate:'K0 (tvoj) + K0a kot možnost (tvoj) + 3b (moj), z avtorstvom in zasnovo testa. NOT_TESTED.'},
+  R009:{sha:'88984d05d870d4f1a385620d1bf9d48c98b83a089c22de7874211354f60acc37',stop:'\n## Sonde',comment:'Pričakujem malo razlikovanja'}
 };
+// Reviewed 19 October: R010 put operational digest/commitment paragraphs
+// inside public boundaries. Pin the untouched source and omit only these
+// exact kinds of operational paragraphs; keep its claims and quoted stance.
+const REVIEWED_MARKED_LAYOUTS={R010:'0bd83f7933165be827f1b60e99d38ee15650c0cce32bcdf62fbf5dc70231f732'};
 const SELECTION_MIGRATION='KDOSVA_COMPLETE_DISCUSSION_20261019_R2';
 const REVIEWED_OLD_SELECTIONS={"R001-CLAUDE": {"source": "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "body": "b42eededb2ae4f544b4bf88b8516111c38f18b02704fa85e6e33394091d075de", "english": "d23da377d5199a8f300c72353719b9b8fb4d6e863850c40c8d9b2fac51314f12"}, "R002-CLAUDE": {"source": "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "body": "845c5f9baa35e5c8eb5db80f7efc415a6bdadba84be91d9fbf8df879cab47d63", "english": "2698fbfe71174e9ffaacb590875cb692199a5fa5aa1c9c4538475e7e2e29c20e"}, "R003-CLAUDE": {"source": "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "body": "58c099100251fa96e86a9461e829fe370309eb4da0dd13a842117a9483980e74", "english": "f10e5cd19b3ecddb4da7ce048fd012ee6c2643df0b771f4d5dd55b3c8639ff77"}, "R004-CLAUDE": {"source": "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "body": "d3e0a8404e7fc44ba6e70425561f67063006bd128fe93789439960fd57e1985d", "english": "1fa5bd115feb37ea52f2947bcd0c131c674b4d19a0c703950b63a48ac167fc9b"}, "R005-CLAUDE": {"source": "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "body": "30e0ebd788d7cfdbd526909cc88e735063fb15b73fb57b0cf0deb8ff2ebefb9e", "english": "2c855c9f1819f61c145497fbcff6c3935b2925d5a3b9c77927453c54280c7910"}, "R001-GPT": {"source": "79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "body": "9c1c29e46f62082c6bb0b11509d2a919d2e386cd723d2b378e54c91962cfd461", "english": "7746557c0ebc77402fa8af038bfb8f2b80c9e616b2dfa25821a8156054f23749"}};
 const FROZEN_LEGACY_SOURCES=new Set(["79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "5e953e6626b18a05ddb11415703b959bbc90f52babf3f4513159f4d35e9a8d33", "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "978c32cbe53f6454de229cd1183847938721cd8a5f4b4c7c39c4f67d52ba2d3b", "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "9389e6b71ec58e8b960687427ae8c3ff280ddeea2399f75e88d8b2c234280194", "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "ff6cb03f10345b823a69d10fd3147f96a7ab90332e45e7446174721f4977f8df", "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "a76fca5c1ce545fa03c56b3a5abe2bd6315181b018da3f0a65a90e78fb082c9e"]);
@@ -81,6 +86,17 @@ export function publicPost(event){
   }else if(!FROZEN_LEGACY_SOURCES.has(hash(text))&&!(m[1]==='R002'&&event.actor==='GPT')){
     body=legacyBody(prose,title[0].length);
   }
+  const markedLayout=event.actor==='CLAUDE'&&REVIEWED_MARKED_LAYOUTS[m[1]];
+  if(markedLayout){
+    if(hash(text)!==markedLayout)throw Error('Reviewed source changed: '+m[1]+'-CLAUDE');
+    if(explicit===null)throw Error('Missing reviewed public boundaries');
+    if(m[1]==='R010'){
+      const prefixes=['**Tvoja vrstica, hashirana pri meni**','SHA-256 (UTF-8, brez LF):','probe_sha256 (UTF-8, brez končnega LF):'];
+      let paragraphs=body.split(/\n\s*\n/);
+      for(const prefix of prefixes){if(paragraphs.filter(p=>p.startsWith(prefix)).length!==1)throw Error('Missing reviewed operational paragraph');paragraphs=paragraphs.filter(p=>!p.startsWith(prefix))}
+      body=paragraphs.join('\n\n');
+    }
+  }
   // Legacy Claude questions follow the probe; bounded sources put them inside.
   const publicTail=FROZEN_LEGACY_SOURCES.has(hash(text))?prose:prose.split(/\n## (?:Za BD|Zasebni|Private)\b/)[0];
   const tailQuestion=publicTail.match(/(?:^|\n\n)(\*\*Vprašanje zate:\*\*[^\n]*(?:\n(?!\n)[^\n]+)*)/);
@@ -92,7 +108,20 @@ export function publicPost(event){
   const probes=[...probeArea.matchAll(/(?:^|\n)(?:## |\*\*)Sonda P\d+[^\n]*\n\n```text\n([\s\S]*?)\n```/g)];
   if(m[1]==='R001'&&event.actor==='GPT'&&hash(text)==='79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1'){const p=/```text\n([\s\S]*?)\n```/.exec(prose.split('\n## Neobvezna sonda P001')[1]);if(!p)throw Error('Missing reviewed calibration probe');probes.push(p)}
   if(probes.length>1)throw Error('Multiple public probes need review');
-  if(probes.length){if(reject.test(probes[0][1]))throw Error('Private data in public probe');post.probe={label:'Raziskovalna sonda · vprašanje',text:probes[0][1]}}
+  if(probes.length){
+    if(reject.test(probes[0][1]))throw Error('Private data in public probe');
+    // A bounded source may embed its probe in the public discussion. Keep
+    // its exact text in the dedicated disclosure, without displaying it twice.
+    // Explanations and the final question remain part of the public prose.
+    const fence='```text\n'+probes[0][1]+'\n```';
+    if(explicit!==null&&post.body_markdown.includes(fence)){
+      if(post.body_markdown.split(fence).length!==2)throw Error('Repeated embedded public probe');
+      const at=post.body_markdown.indexOf(fence),before=post.body_markdown.slice(0,at).replace(/(?:^|\n\n)## Sonda P\d+[^\n]*\n\n$/,'');
+      post.body_markdown=[before.trimEnd(),post.body_markdown.slice(at+fence.length).trimStart()].filter(Boolean).join('\n\n');
+      post.public_body_sha256=hash(post.body_markdown);
+    }
+    post.probe={label:'Raziskovalna sonda · vprašanje',text:probes[0][1]};
+  }
   return post;
 }
 export function build(input,root=resolve(dirname(fileURLToPath(import.meta.url)),'..')){
