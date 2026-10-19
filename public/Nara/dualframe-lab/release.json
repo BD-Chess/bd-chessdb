@@ -30,7 +30,7 @@
   "provider_account_validation": "manual-user-tests-pending",
   "reference_gallery": "existing-Nara-assets; excluded-from-controlled-benchmark",
   "status": "R_AND_D_READY_FOR_MANUAL_PROVIDER_TESTS",
-  "release_revision": 31,
+  "release_revision": 32,
   "blobs_sdk": "11.1.4",
   "api_configuration_verified": true,
   "pwa": {
@@ -203,45 +203,6 @@
     "delete": "last action, #e99c55 orange; existing confirmation unchanged",
     "provider_calls": 0
   },
-  "protected_comic": {
-    "story_id": "CMARVEL_01",
-    "page_count": 11,
-    "reader": "password-derived-PBKDF2-SHA-256-and-AES-256-GCM",
-    "media": "encrypted-only; not precached by the public app service worker",
-    "manifest_sha256": "67e35661ce9fd6c4699ee8686e10b191727d612f9ddf5abd07eb62f3ba56ab6b",
-    "secret_storage": "encrypted-BD-O-Sef-extra-payload",
-    "index_art": "content/cmarvel-01/cover.webp",
-    "plaintext_media_in_public_release": false,
-    "physical_iphone_acceptance": "PENDING_OWNER_CHECK",
-    "text_capability": {
-      "separate_lettering": false,
-      "reason": "embedded original English lettering; Text Off unavailable",
-      "preserved_manifest": true,
-      "preserved_ciphertext": true
-    },
-    "source_review": {
-      "version": "20261017-page01-source-r1",
-      "page": 1,
-      "source_panel_count": 6,
-      "generated_pair_count": 0,
-      "media": "in-memory source crops after existing password unlock; no new plaintext media",
-      "entry": "cmarvel-01/?page=1"
-    },
-    "art_review": {
-      "version": "20261019-page01-art-review-r1",
-      "page": 1,
-      "pair_count": 6,
-      "candidate_image_count": 12,
-      "orientations": [
-        "portrait",
-        "landscape"
-      ],
-      "status": "OWNER_REVIEW_PENDING",
-      "display": "native 1584x2816 / 2816x1584; WebP quality 95 for protected web review",
-      "text_overlays": 0,
-      "acceptance": "pending BD visual selection"
-    }
-  },
   "cartoons": {
     "task_id": "DFC-APP-INTEGRATION-R2",
     "execution_revision": "R4 / ALL_REAL_PAIRS",
@@ -366,5 +327,42 @@
       "verification": "Source-bound checks and exact-head CI are required; actual publication and live proof are recorded in external release receipts.",
       "physical_devices": "NOT_TESTED"
     }
+  },
+  "comic_preview": {
+    "story_id": "CMARVEL_01",
+    "page_count": 11,
+    "reader": "passwordless; integrity-checked-plaintext-WebP",
+    "media": "public WebP; loaded on demand; not precached by the public app service worker",
+    "manifest_sha256": "e22e19a30023b01d3cc2322423b6e1318de9871255aa786aa0265e700189cfb6",
+    "index_art": "content/cmarvel-01/cover.webp",
+    "plaintext_media_in_public_release": true,
+    "physical_iphone_acceptance": "PENDING_OWNER_CHECK",
+    "text_capability": {
+      "separate_lettering": false,
+      "reason": "embedded original English lettering; Text Off unavailable"
+    },
+    "source_review": {
+      "version": "20261017-page01-source-r1",
+      "page": 1,
+      "source_panel_count": 6,
+      "generated_pair_count": 0,
+      "media": "source crops are created in memory from the public source page",
+      "entry": "cmarvel-01/?page=1"
+    },
+    "art_review": {
+      "version": "20261019-page01-art-review-r1",
+      "page": 1,
+      "pair_count": 6,
+      "candidate_image_count": 12,
+      "orientations": [
+        "portrait",
+        "landscape"
+      ],
+      "status": "OWNER_REVIEW_PENDING",
+      "display": "public native-size WebP review images; 1584x2816 / 2816x1584",
+      "text_overlays": 0,
+      "acceptance": "pending BD visual selection"
+    },
+    "access": "PUBLIC_RND_PREVIEW_DIRECT_URL"
   }
 }
