@@ -13,7 +13,7 @@
   const mobileUpdate = document.getElementById('appPwaUpdate');
   const workerURL = new URL('engine-sw.js', document.baseURI).href;
   const native = !!window.Capacitor?.isNativePlatform?.();
-  let registration, installPrompt, reloadRequested = false, reloading = false;
+  let registration, installPrompt, installOffered = false, installConfirmed = false, reloadRequested = false, reloading = false;
   const standalone = () => window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
   const mobileMode = () => document.body.classList.contains('app-mobile');
 
@@ -24,7 +24,9 @@
     const message = ready ? 'LAB · Offline ready' : 'LAB · Installable; offline after the first complete download';
     if (labLink?.getAttribute('aria-current') === 'page') labLink.title = message;
     if (labHint) labHint.textContent = message;
-    const installed = standalone(), waiting = !!registration?.waiting && !!controller;
+    // A current manifest's install offer outranks an enclosing app window.
+    // The original browser tab stays in browser display-mode after installation.
+    const installed = installConfirmed || (standalone() && !installOffered), waiting = !!registration?.waiting && !!controller;
     if (installButton) installButton.hidden = installed || native;
     if (updateButton) updateButton.hidden = !waiting || native;
     if (mobilePanel) mobilePanel.hidden = !mobileMode() || native;
@@ -35,7 +37,9 @@
       : 'Preparing offline files… Keep LAB open until ready.';
   }
   function manualHelp() {
-    const text = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'In Safari, tap Share, then Add to Home Screen.' : 'Open your browser menu and choose Install app or Add to Home Screen.';
+    const text = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'In Safari, tap Share, then Add to Home Screen.'
+      : /Edg\//.test(navigator.userAgent) ? 'In Edge, open the menu: More tools → Apps → Install this site as an app. Or use the install icon in the address bar.'
+      : 'Open your browser menu and choose Install app or Add to Home Screen.';
     if (installHint) { installHint.textContent = text; installHint.hidden = false; }
     if (mobileHint) mobileHint.textContent = text;
   }
@@ -57,8 +61,8 @@
   document.addEventListener('chess:mobile-ready', render);
   window.addEventListener('online', () => { render(); registration?.update().catch(() => {}); });
   window.addEventListener('offline', render);
-  window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; render(); });
-  window.addEventListener('appinstalled', () => { installPrompt = null; render(); });
+  window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installOffered = true; installConfirmed = false; installPrompt = event; render(); });
+  window.addEventListener('appinstalled', () => { installConfirmed = true; installPrompt = null; render(); });
   installButton?.addEventListener('click', requestInstall);
   mobileInstall?.addEventListener('click', requestInstall);
   updateButton?.addEventListener('click', activateUpdate);

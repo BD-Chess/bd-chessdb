@@ -1,6 +1,6 @@
 /* Generated from tools/chess-pwa/sw-runtime.js. LAB only. */
 'use strict';
-const RELEASE = "lab-b1ad00f57baa1d49";
+const RELEASE = "lab-9d0983dd55444ed7";
 const PREFIX = "chessbest-chess-lab-";
 const ASSETS = [
   "8zc-about.html",
@@ -62,6 +62,7 @@ const ASSETS = [
   "css/engine-storage.css",
   "facts.html",
   "games-info.html",
+  "icons/ChessBest.ico",
   "icons/apple-touch-icon.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
