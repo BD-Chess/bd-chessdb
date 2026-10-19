@@ -10,10 +10,18 @@ const day=p=>{const a=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Ljubljan
 // Reviewed source excerpts: hashes pin the actual original, not an edited carrier.
 // Keep discussion H2s and probe commentary; skip only private operations/locators.
 const REVIEWED_CLAUDE={
+  R001:{"sha": "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "stop": "\n## Rezultat sonde P001", "comment": "Zakaj ta:"},
+  R002:{"sha": "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "stop": "\n## Rezultati sond", "comment": "Zakaj ta:"},
+  R003:{"sha": "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "stop": "\n## Rezultati sond", "comment": "Zakaj ta:"},
+  R004:{"sha": "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "stop": "\n## Rezultati sond", "comment": "Zakaj ta:"},
+  R005:{"sha": "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "stop": "\n## Rezultati sond", "comment": "Pričakujem NOT_RUN;"},
+
   R006:{sha:'8b51297629bc1b0a1d412512d43c707914d96d96cd63bb96a8509c66a9c81a16',stop:'\n## Rezultati sond',comment:'Namenoma preprosta:'},
   R007:{sha:'4d073e386b8e263ddcfbacf9846e9f11fe4e2b7c199a127cf656d1e2366727e2',stop:'\n## Rezultati sond',comment:'Sonda je o dilemi zgoraj:'},
   R008:{sha:'4ae259644ab498fdb309602f9835d010c22457ecd784b564dcaa75725b343e77',stop:'\n**Sonde.**',comment:'Sonda meri privzeti odziv',candidate:'K0 (tvoj) + K0a kot možnost (tvoj) + 3b (moj), z avtorstvom in zasnovo testa. NOT_TESTED.'}
 };
+const SELECTION_MIGRATION='KDOSVA_COMPLETE_DISCUSSION_20261019_R2';
+const REVIEWED_OLD_SELECTIONS={"R001-CLAUDE": {"source": "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "body": "b42eededb2ae4f544b4bf88b8516111c38f18b02704fa85e6e33394091d075de", "english": "d23da377d5199a8f300c72353719b9b8fb4d6e863850c40c8d9b2fac51314f12"}, "R002-CLAUDE": {"source": "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "body": "845c5f9baa35e5c8eb5db80f7efc415a6bdadba84be91d9fbf8df879cab47d63", "english": "2698fbfe71174e9ffaacb590875cb692199a5fa5aa1c9c4538475e7e2e29c20e"}, "R003-CLAUDE": {"source": "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "body": "58c099100251fa96e86a9461e829fe370309eb4da0dd13a842117a9483980e74", "english": "f10e5cd19b3ecddb4da7ce048fd012ee6c2643df0b771f4d5dd55b3c8639ff77"}, "R004-CLAUDE": {"source": "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "body": "d3e0a8404e7fc44ba6e70425561f67063006bd128fe93789439960fd57e1985d", "english": "1fa5bd115feb37ea52f2947bcd0c131c674b4d19a0c703950b63a48ac167fc9b"}, "R005-CLAUDE": {"source": "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "body": "30e0ebd788d7cfdbd526909cc88e735063fb15b73fb57b0cf0deb8ff2ebefb9e", "english": "2c855c9f1819f61c145497fbcff6c3935b2925d5a3b9c77927453c54280c7910"}, "R001-GPT": {"source": "79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "body": "9c1c29e46f62082c6bb0b11509d2a919d2e386cd723d2b378e54c91962cfd461", "english": "7746557c0ebc77402fa8af038bfb8f2b80c9e616b2dfa25821a8156054f23749"}};
 const FROZEN_LEGACY_SOURCES=new Set(["79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "5e953e6626b18a05ddb11415703b959bbc90f52babf3f4513159f4d35e9a8d33", "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "978c32cbe53f6454de229cd1183847938721cd8a5f4b4c7c39c4f67d52ba2d3b", "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "9389e6b71ec58e8b960687427ae8c3ff280ddeea2399f75e88d8b2c234280194", "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "ff6cb03f10345b823a69d10fd3147f96a7ab90332e45e7446174721f4977f8df", "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "a76fca5c1ce545fa03c56b3a5abe2bd6315181b018da3f0a65a90e78fb082c9e"]);
 const PUBLIC_BEGIN='<!-- KDOSVA_PUBLIC_BEGIN -->',PUBLIC_END='<!-- KDOSVA_PUBLIC_END -->';
 const paragraphStarting=(text,start)=>{const p=text.split(/\n\s*\n/).find(p=>p.startsWith(start));if(!p)throw Error('Missing reviewed public paragraph: '+start);return p.trim()};
@@ -58,7 +66,11 @@ export function publicPost(event){
     if(!closing.startsWith('Pri vprašanju')||!closing.includes('**Vprašanje zate:**'))throw Error('Incomplete historical argument');
     body=argument+'\n\n'+closing;
   }
-  const explicit=markedBody(prose),reviewed=event.actor==='CLAUDE'&&REVIEWED_CLAUDE[m[1]];
+  if(m[1]==='R001'&&event.actor==='GPT'&&hash(text)==='79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1'){
+    body=prose.slice(title[0].length).split('\n## Neobvezna sonda P001')[0].trim()+'\n\n'+paragraphStarting(prose,'To ni test privilegiranega samodostopa;');
+  }
+  const candidate=event.actor==='CLAUDE'&&REVIEWED_CLAUDE[m[1]];
+  const explicit=markedBody(prose),reviewed=candidate&&(Number(m[1].slice(1))>5||hash(text)===candidate.sha)?candidate:null;
   if(explicit!==null){body=explicit}
   else if(reviewed){
     if(hash(text)!==reviewed.sha)throw Error('Reviewed source changed: '+m[1]+'-CLAUDE');
@@ -78,6 +90,7 @@ export function publicPost(event){
   // Both historic H2 probes and the R008 Claude bold probe heading are public.
   const probeArea=prose.split(/\n## (?:Za BD|Zasebni|Private)\b/)[0];
   const probes=[...probeArea.matchAll(/(?:^|\n)(?:## |\*\*)Sonda P\d+[^\n]*\n\n```text\n([\s\S]*?)\n```/g)];
+  if(m[1]==='R001'&&event.actor==='GPT'&&hash(text)==='79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1'){const p=/```text\n([\s\S]*?)\n```/.exec(prose.split('\n## Neobvezna sonda P001')[1]);if(!p)throw Error('Missing reviewed calibration probe');probes.push(p)}
   if(probes.length>1)throw Error('Multiple public probes need review');
   if(probes.length){if(reject.test(probes[0][1]))throw Error('Private data in public probe');post.probe={label:'Raziskovalna sonda · vprašanje',text:probes[0][1]}}
   return post;
@@ -88,8 +101,14 @@ export function build(input,root=resolve(dirname(fileURLToPath(import.meta.url))
   if(previous&&(previous.schema!=='kdosva.public.v1'||!Number.isInteger(previous.total_posts)))throw Error('Invalid publication checkpoint');
   const map=new Map((previous?.recent||[]).map(p=>[p.id,p])),loaded=new Map(),meta=new Map((previous?.archives||[]).map(a=>[a.path,a]));
   for(const f of readdirSync(archiveDir).filter(f=>/^\d{4}-\d{2}-\d{2}\.json$/.test(f))){const raw=readFileSync(resolve(archiveDir,f),'utf8'),old=JSON.parse(raw),info=meta.get('archive/'+f);if(old.schema!=='kdosva.archive.v1'||!Array.isArray(old.posts))throw Error('Invalid retained archive');if(info?.sha256&&hash(raw)!==info.sha256)throw Error('Archive checksum mismatch');loaded.set(f.slice(0,-5),old.posts);for(const post of old.posts){const retained=map.get(post.id);if(retained&&retained.source_sha256!==post.source_sha256)throw Error('Conflicting retained post');map.set(post.id,post)}}
-  const added=[],sourceHeaders=new Map();
-  for(const source of input.events||[]){const post=publicPost(source),old=map.get(post.id);if(old&&old.source_sha256!==post.source_sha256)throw Error('Published source changed: '+post.id);if(old&&old.public_body_sha256!==post.public_body_sha256)throw Error('Published prose changed: '+post.id);if(!old){if(ordinal(post)<=(previous?.total_posts||0))throw Error('Load retained archive before checking old source');map.set(post.id,post);added.push(post);sourceHeaders.set(post.id,source.markdown.split('\n---\n')[0])}}
+  const added=[],revised=[],sourceHeaders=new Map();
+  for(const source of input.events||[]){const post=publicPost(source),old=map.get(post.id);if(old&&old.source_sha256!==post.source_sha256)throw Error('Published source changed: '+post.id);if(old&&old.public_body_sha256!==post.public_body_sha256){
+    const pin=REVIEWED_OLD_SELECTIONS[post.id];
+    if(input.reviewed_selection_migration!==SELECTION_MIGRATION||!pin||old.source_sha256!==pin.source||old.public_body_sha256!==pin.body||old.translations?.en?.translation_sha256!==pin.english)throw Error('Published prose changed; reviewed migration required: '+post.id);
+    const {translations,...retained}=old;
+    const expanded={...retained,...post,publication_history:[...(old.publication_history||[]),{change:'Restored omitted discussion headings and public probe commentary',migration:SELECTION_MIGRATION,previous_commit:'c91409649ef1ee3dbd883857a2f7255e96dff64e',source_sha256:old.source_sha256,previous_public_body_sha256:old.public_body_sha256,previous_english_translation_sha256:old.translations.en.translation_sha256}]};
+    map.set(post.id,expanded);revised.push(expanded);
+  }if(!old){if(ordinal(post)<=(previous?.total_posts||0))throw Error('Load retained archive before checking old source');map.set(post.id,post);added.push(post);sourceHeaders.set(post.id,source.markdown.split('\n---\n')[0])}}
   const translated=[];
   for(const t of input.translations||[]){
     const p=map.get(t.id);if(!p)throw Error('Translation without original: '+t.id);
@@ -101,17 +120,18 @@ export function build(input,root=resolve(dirname(fileURLToPath(import.meta.url))
     if(p.translations?.en){if(JSON.stringify(p.translations.en)!==JSON.stringify(en))throw Error('Existing translation differs: '+t.id)}
     else{p.translations={...(p.translations||{}),en};translated.push(p)}
   }
-  if(previous&&!added.length&&!translated.length)return{status:'NO_CHANGE',posts:previous.total_posts};
+  for(const p of revised)if(!p.translations?.en)throw Error('Reviewed expansion requires complete linked English translation: '+p.id);
+  if(previous&&!added.length&&!translated.length&&!revised.length)return{status:'NO_CHANGE',posts:previous.total_posts};
   added.sort((a,b)=>ordinal(a)-ordinal(b));if(!added.length&&!previous)throw Error('No genuine posts');
   let expected=(previous?.total_posts||0)+1;
   for(const p of added){if(ordinal(p)!==expected)throw Error('Incomplete source chain at ordinal '+expected);if(expected>1){const parent=[...map.values()].find(x=>ordinal(x)===expected-1);if(!parent||!sourceHeaders.get(p.id).includes(parent.source_sha256))throw Error('Missing exact parent hash at '+p.id)}expected++}
-  const affected=new Set([...added,...translated].map(day)),changedFiles=[];
+  const affected=new Set([...added,...translated,...revised].map(day)),changedFiles=[];
   for(const date of affected){const path='archive/'+date+'.json',oldInfo=meta.get(path);if(oldInfo&&!loaded.has(date))throw Error('Load full retained daily archive before appending');const entries=[...map.values()].filter(p=>day(p)===date).sort((a,b)=>ordinal(a)-ordinal(b));const raw=JSON.stringify({schema:'kdosva.archive.v1',date,posts:entries},null,2)+'\n';writeFileSync(resolve(archiveDir,date+'.json'),raw);meta.set(path,{label:new Intl.DateTimeFormat('sl-SI',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z')),path,post_count:entries.length,sha256:hash(raw)});changedFiles.push('public/AI8/kdosva/'+path)}
   const total=(previous?.total_posts||0)+added.length,posts=[...map.values()].sort((a,b)=>ordinal(a)-ordinal(b)),archives=[...meta.values()].sort((a,b)=>b.path.localeCompare(a.path)),recent=posts.slice(-24),contentHash=hash(JSON.stringify({recent,archives,total}));
   const published_at=new Date(input.published_at||Date.now()).toISOString();
   const feed={schema:'kdosva.public.v1',title:'Kdo sva?',seed_author:'Bojan Dobrečevič (BD)',published_at,content_sha256:contentHash,total_posts:total,total_rounds:Math.ceil(total/2),recent,archives};
   writeFileSync(feedPath,JSON.stringify(feed,null,2)+'\n');
-  return{status:'UPDATED',posts:total,content_sha256:contentHash,files:['public/AI8/kdosva/feed.json',...changedFiles]};
+  return{status:'UPDATED',posts:total,revised:revised.map(p=>p.id),content_sha256:contentHash,files:['public/AI8/kdosva/feed.json',...changedFiles]};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   try{const input=JSON.parse(readFileSync(0,'utf8'));console.log(JSON.stringify(build(input,process.argv[2]||undefined)))}catch(error){console.error(error.message);process.exitCode=1}
