@@ -24,6 +24,8 @@ jobs:
           node --check public/Nara/dualframe-lab/image-loader.mjs
           node --check functions/lib/dualframe/provider-health.mjs
           node --check public/Nara/dualframe-lab/sw.js
+          node --check public/Nara/dualframe-lab/cmarvel-01/reader.mjs
+          node --check tests/dfc-cmarvel-source-browser.mjs
           node --check scripts/dualframe-prod-stage.mjs
           node --check tests/dualframe-pwa-live-smoke.mjs
           node --check tests/dfc-text-live-browser.mjs
@@ -47,11 +49,11 @@ jobs:
         run: |
           node tests/dfc-reader-browser.mjs
           node tests/dfc-text-browser.mjs
-      - name: Verify protected first-page source navigation with synthetic ciphertext
+      - name: Verify public first-page reader without a password
         if: ${{ !cancelled() }}
         timeout-minutes: 2
         run: |
-          node --test tests/dfc-cmarvel-protected.test.mjs
+          node --test tests/dfc-cmarvel-public.test.mjs
           node tests/dfc-cmarvel-source-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
