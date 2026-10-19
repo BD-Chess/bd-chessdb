@@ -3,6 +3,19 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createKnowledge, calculate, publicPath, RAW } from '../functions/lib/mdlxdcc-guide/runtime.mjs';
 import { makeHandler, validateBody } from '../functions/mdlxdcc-guide.mjs';
+import { createPublicRoutes } from '../public/assets/mdlxdcc-guide/routes.mjs';
+
+test('public guide recognizes Netlify pretty redirects without admitting unregistered paths', () => {
+ const routes = createPublicRoutes(['/', '/index.html', '/index-demo.html', '/Trip/demo.html', '/BD/', '/crp/DGTE.html']);
+ for (const [observed,source] of [['/index-demo','/index-demo.html'],['/trip/demo','/Trip/demo.html'],['/bd/','/BD/'],['/crp/dgte','/crp/DGTE.html'],['/index.html','/index.html']]) {
+  assert.equal(routes.resolve(observed),source);
+  assert.ok(routes.known.has(routes.resolve(observed)));
+ }
+ for (const unknown of ['/bd/o/diary','/crp/unknown','/trip/private']) assert.equal(routes.known.has(routes.resolve(unknown)),false);
+ routes.add('/Art/'); assert.equal(routes.resolve('/art'),'/Art/');
+ routes.add('/Art.html'); assert.equal(routes.resolve('/Art.html'),'/Art.html','An exact registered path wins over an alias');
+ routes.add('/Art/',{prefer:true}); assert.equal(routes.resolve('/art'),'/Art/','The curated tour determines an ambiguous redirect');
+});
 
 const guide = { id:'mdlxdcc-guide', availability:'ready', skill_path:'mdlxdcc-guide/SKILL.md', description:'General guide' };
 const dgte = { id:'dgte-advisor', availability:'ready', skill_path:'dgte-advisor/SKILL.md', description:'Energy and DGTE', reference_paths:['dgte-advisor/references/energy.md'] };

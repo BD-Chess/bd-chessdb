@@ -1,3 +1,5 @@
+import { createPublicRoutes } from './routes.mjs?v=20261019-r1';
+
 const root = new URL('../../', import.meta.url);
 const endpoint = new URL('/.netlify/functions/mdlxdcc-guide', location.origin);
 const $ = id => document.getElementById(id);
@@ -10,7 +12,8 @@ const words = {
 const lang = () => document.documentElement.lang.toLowerCase().startsWith('sl') ? 'sl' : 'en';
 const w = key => words[lang()][key] || key;
 let messages = [], available = null, activeRequest = null, requestNumber = 0, tour = null, sceneNumber = 0, timer = null, manifestPromise, catalogPromise;
-const allowed = new Set(['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/Trip/demo.html']);
+const routes = createPublicRoutes(['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/Trip/demo.html']);
+const allowed = routes.known;
 const publicScenes = new Set(allowed);
 const denied = /(?:^\/(?:WL|WD)(?:\/|$)|^\/BD\/(?:O(?:\/|$)|BD_kardiolog)|dualframe-lab|(?:^|\/)(?:private|secret)(?:\/|$)|IM3_MentalArena_MALm|\/old\/|\/archive\/)/i;
 
@@ -20,7 +23,7 @@ function sitePath(url) {
  if (!canonical && (u.origin !== root.origin || !u.pathname.startsWith(root.pathname))) return null;
  const p = canonical ? u.pathname : '/' + u.pathname.slice(root.pathname.length);
  if (denied.test(decodeURIComponent(p)) || /[\\\x00-\x1f]/.test(p)) return null;
- return { path:p, suffix:u.search + u.hash };
+ return { path:routes.resolve(p), suffix:u.search + u.hash };
 }
 function localURL(path) { return new URL(path.replace(/^\//, ''), root).href; }
 function safeLink(href) { try { const u = new URL(href, typeof href === 'string' && href.startsWith('/') ? 'https://www.mdlxdcc.org' : root); return ['https:', 'http:'].includes(u.protocol) ? u : null; } catch { return null; } }
@@ -89,11 +92,11 @@ window.visualViewport?.addEventListener('resize', topSize);
 window.visualViewport?.addEventListener('scroll', topSize, { passive:true });
 
 async function catalog() {
- if (!catalogPromise) catalogPromise = fetch(new URL('site-search-index.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const i of d.items || []) { const p = sitePath(i.url); if (p && !/private|protected|password|zasebn|zaščiten/i.test(i.title + ' ' + i.description)) allowed.add(p.path); } }).catch(() => { catalogPromise = null; });
+ if (!catalogPromise) catalogPromise = fetch(new URL('site-search-index.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const i of d.items || []) { const p = sitePath(i.url); if (p && !/private|protected|password|zasebn|zaščiten/i.test(i.title + ' ' + i.description)) routes.add(p.path); } }).catch(() => { catalogPromise = null; });
  await catalogPromise;
 }
 async function manifest() {
- if (!manifestPromise) manifestPromise = fetch(new URL('assets/mdlxdcc-guide/tour.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const s of Object.values(d.scenes)) { const p = sitePath(s.path); if (p) { allowed.add(p.path); publicScenes.add(p.path); } } return d; }).catch(e => { manifestPromise = null; throw e; });
+ if (!manifestPromise) manifestPromise = fetch(new URL('assets/mdlxdcc-guide/tour.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const s of Object.values(d.scenes)) { const p = sitePath(s.path); if (p) { routes.add(p.path, { prefer:true }); publicScenes.add(p.path); } } return d; }).catch(e => { manifestPromise = null; throw e; });
  return manifestPromise;
 }
 async function probe() {
