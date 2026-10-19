@@ -106,3 +106,12 @@ test('each supported Sim policy actually moves after a CDB prefix using its real
     const b=new Chess();assert(b.load_pgn(r.pgn));assert.equal(b.history().length,3);records.push({case:'actual browser policy after controlled CDB',engine,archive:state});await h.context.close();
   }
 });
+test('loaded game at cursor zero keeps Current board as the explicit Sim source', {timeout:30000},async t=>{
+  const h=await open(t),p=h.page;await p.locator('#btnWorkspaceMore').click();
+  await p.locator('#filePGN').setInputFiles({name:'loaded-root-context.pgn',mimeType:'application/x-chess-pgn',buffer:Buffer.from('1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 *')});
+  await p.waitForFunction(()=>window.ChessLabHost.getReviewGame().totalPly===6);await p.evaluate(()=>window.ChessLabHost.navigateReview(0));
+  if(await p.locator('#btnCloseLabTools').isVisible())await p.locator('#btnCloseLabTools').click();
+  await sim(h);assert.equal(await el(p,'opening-source').inputValue(),'current');assert(await el(p,'cdb-fields').isHidden());
+  const context=await p.evaluate(()=>window.ChessLabHost.getReviewGame());assert.equal(context.cursor,0);assert.equal(context.totalPly,6);assert.equal(await p.evaluate(()=>window.__CDBQA.prepared.length),0);
+  records.push({case:'loaded six-ply PGN viewed at cursor zero retains Current board source; no CDB preparation',context});
+});

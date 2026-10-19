@@ -4334,7 +4334,7 @@ async function launchFromSimModal() {
   }
   function openTournamentUI(openingSource) {
     tournamentUI?.open({ currentGameTitle: document.getElementById('gameTitle').textContent,
-      openingSource: openingSource || (game.history().length || game.fen() !== new Chess().fen() ? 'current' : undefined),
+      openingSource: openingSource || (fullHistory.length || game.history().length || game.fen() !== new Chess().fen() ? 'current' : undefined),
       collections: openingCollections.map(c => ({ id: c.id, label: c.label, count: c.games.length })) });
     refreshSimArchive().catch(error => updateSimStatus(error.message));
   }
@@ -4386,7 +4386,7 @@ async function launchFromSimModal() {
       simRunning = false; simAbort = false; showEval = true;
       workspace.stop(); setBoardThinking(false); refreshPlayUi(); updateBoard(false);
       renderSimStats();
-      updateSimStatus(`${event?.name || 'Simulation'}: ${event?.state || 'paused'}${run ? ` · ${run.result} · ${run.reason || ''}` : ''}`);
+      updateSimStatus(`${event?.name || 'Simulation'}: ${event?.state || 'paused'}${run ? ` · ${run.result} · ${run.reason || ''}` : event?.reason ? ' · '+event.reason : ''}`);
       refreshSimArchive().catch(error => updateSimStatus(error.message));
     };
     tournamentRunner = window.ChessSimRunner.create({ Chess, SIM, Tournament: window.ChessTournament,

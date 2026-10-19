@@ -241,9 +241,10 @@
       await save(run, event); emit('finished', run, event);
     }
     async function execute(event) {
-      acquire(); const epoch = ++token; active = { event, run: null };
-      event.state = 'running';
+      const epoch = ++token; active = { event, run: null };
+      event.state = 'running'; delete event.reason;
       try {
+      acquire();
       await store.saveEvent(event); if (epoch !== token) return;
       heartbeat = setInterval(() => {
         try { acquire(); checkpoint(); } catch (error) { pause(error.message).catch(e => emit('error', e)); }
@@ -269,7 +270,7 @@
         if (epoch === token) { event.state = event.games.every(g => g.state === 'complete') ? 'complete' : 'paused'; await store.saveEvent(event); }
       } catch (error) {
         if (epoch === token) {
-          event.state = 'paused';
+          event.state = 'paused'; event.reason = error.message;
           if (active.run) { active.run.state = 'incomplete'; active.run.reason = error.message; active.run.clock = workspace.endTurn(); try { await save(active.run, event); } catch (_) {} }
           else { try { await store.saveEvent(event); } catch (_) {} }
           emit('error', error);

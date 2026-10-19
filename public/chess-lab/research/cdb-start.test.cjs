@@ -124,3 +124,11 @@ test('DATA freeze/generation change aborts preparation before any event or game 
   const pending=h.runner.start({openingSource:'cdb'});while(!release)await tick();frozen=true;release({moves:[{move:'e2e4',score:20}]});
   await assert.rejects(pending,/workspace changed/);assert.equal(h.events.size,0);assert.equal(h.game.history().length,0);assert(!h.runner.busy());
 });
+test('lease persistence failure at engine handover reaches idle without changing the loaded board',async t=>{
+  let writes=0,preparing=false,idle=false;const map=new Map();
+  const storage={getItem:k=>map.get(k)||null,removeItem:k=>map.delete(k),setItem(k,v){if(++writes===2)throw Error('lease quota at handover');map.set(k,v);}};
+  const h=harness(t,{storage,callbacks:{preparing(){preparing=true;},idle(){preparing=false;idle=true;}}});
+  await h.runner.start({format:'single',white:'sf',black:'sf',openingSource:'cdb',cdbStartOn:false});await h.runner.settled();
+  assert.equal(h.game.history().length,0);assert(!h.runner.busy());assert.equal(preparing,false);assert.equal(idle,true);assert.equal(map.size,0);assert.match(h.errors[0],/lease quota/);
+  assert.match([...h.events.values()][0].reason,/lease quota/);
+});
