@@ -1,0 +1,95 @@
+name: Approved MDLxDCC GPT and Claude guide release
+
+# One release explicitly requested by BD on 2026-10-19. The weekly policy is unchanged.
+# Frozen production plus the seventeen reviewed Guide files; no other pending main changes.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/release-mdlxdcc-guide-dual-20261019.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'Publish approved MDLxDCC GPT and Claude release 20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_SHA: b492ccd3f804b259e0f6b205dd1fed706e8d51a5
+      EXPECTED_DEPLOY: 6ad6360ed97a9272c47519fb
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout the frozen scoped release
+        uses: actions/checkout@v4
+        with:
+          ref: b492ccd3f804b259e0f6b205dd1fed706e8d51a5
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Prepare existing protected-page password-manager compatibility
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/js/bd-password-manager.js
+          node --check public/js/trading-password-shield.js
+          node --check public/BD/O/vault.js
+          node --check public/WL/reader.js
+          node --check public/WL/BD/reader.js
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+
+      - name: Install pinned runtime dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install function dependencies including both official AI SDKs
+        run: npm ci --prefix functions --no-audit --no-fund
+
+      - name: Verify the complete existing landing and PWA
+        run: node tests/mdlxdcc-root-pwa.test.cjs
+
+      - name: Verify GPT, Claude, public tools, shared history and protected-source boundaries
+        run: node --test tests/mdlxdcc-guide.test.mjs tests/mdlxdcc-guide-access.test.mjs
+
+      - name: Verify visitor sign-in, shared conversation and the paced tour client
+        run: node tests/mdlxdcc-guide-client.test.cjs
+
+      - name: Refuse to overwrite a newer production deployment
+        shell: bash
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'The existing Netlify deployment credential is unavailable.' >&2; exit 1; }
+          node --input-type=module <<'JS'
+          const r = await fetch('https://api.netlify.com/api/v1/sites/' + process.env.NETLIFY_SITE_ID, {headers:{Authorization:'Bearer ' + process.env.NETLIFY_AUTH_TOKEN}});
+          if (!r.ok) throw Error('Cannot verify production: HTTP ' + r.status);
+          const site = await r.json();
+          if (site.id !== process.env.NETLIFY_SITE_ID || site.name !== 'mdlxdcc' || site.published_deploy?.id !== process.env.EXPECTED_DEPLOY) throw Error('Production changed. No deployment attempted.');
+          console.log(JSON.stringify({site:site.name,published_deploy:site.published_deploy.id}));
+          JS
+
+      - name: Publish the approved Guide and production secret configuration
+        shell: bash
+        run: |
+          npx --yes netlify-cli@latest deploy \
+            --prod --no-build --dir public --functions functions \
+            --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" \
+            --message "mdlxdcc approved authenticated GPT+Claude Guide $TARGET_SHA" \
+            --json > "$RUNNER_TEMP/guide-netlify-deploy.json"
+          node -e 'const fs=require("node:fs");const d=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/guide-netlify-deploy.json","utf8"));console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId,url:d.url||d.deploy_url}));'
+
+      - name: Retain the deployment receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdlxdcc-guide-gpt-claude-${{ github.run_id }}
+          path: ${{ runner.temp }}/guide-netlify-deploy.json
+          if-no-files-found: error
+          retention-days: 30
