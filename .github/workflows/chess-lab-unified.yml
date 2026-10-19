@@ -123,6 +123,9 @@ jobs:
               public/chess-lab/research/full-game-resume-browser.cjs \
               public/chess-lab/research/p3-active-analysis-browser.cjs \
               public/chess-lab/research/p4-gui-browser.cjs
+          NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
+            CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
+            node --test public/chess-lab/research/pwa-install-browser.cjs
       - name: Real promoted CURRENT, root overlay and full-game PWA update
         run: |
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \

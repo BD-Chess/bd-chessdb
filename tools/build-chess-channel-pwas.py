@@ -36,7 +36,7 @@ def runtime_asset(name):
     if name.startswith('img/chesspieces/wikipedia/') and len(pieces) == 4:
         return name.endswith('.png')
     if name.startswith('icons/') and len(pieces) == 2:
-        return name.endswith('.png')
+        return name.endswith('.png') or name == 'icons/ChessBest.ico'
     if name.startswith('config/') and len(pieces) == 2:
         return name.endswith('.json')
     if name == 'research/benchmark-fixtures.json':
@@ -47,8 +47,8 @@ def runtime_asset(name):
     return False
 
 
-def manifest(name, short_name):
-    return {
+def manifest(name, short_name, icon_version=None):
+    metadata = {
         'id': './', 'name': name, 'short_name': short_name,
         'description': 'ChessBest analysis, DCC, local Stockfish, game library and saved studies.',
         'start_url': './', 'scope': './', 'display': 'standalone',
@@ -58,6 +58,13 @@ def manifest(name, short_name):
             {'src': 'icons/icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any maskable'},
         ],
     }
+    if icon_version:
+        for icon in metadata['icons']:
+            icon['src'] += '?v=' + icon_version
+        # The supplied desktop artwork has a detailed border and DCC signature;
+        # do not promise that it can be cropped into an arbitrary OS mask.
+        metadata['icons'][1]['purpose'] = 'any'
+    return metadata
 
 
 def json_bytes(value):
@@ -75,7 +82,8 @@ def put(path, data, check):
 
 def build(channel, check):
     base, route, name, short_name = CHANNELS[channel]
-    metadata = manifest(name, short_name)
+    icon_version = digest((base / 'icons/ChessBest.ico').read_bytes())[:12] if channel == 'LAB' else None
+    metadata = manifest(name, short_name, icon_version)
     put(base / 'manifest.webmanifest', json_bytes(metadata), check)
     pwa_template = 'lab-pwa.js' if channel == 'LAB' else 'pwa.js'
     put(base / 'pwa.js', (TEMPLATES / pwa_template).read_bytes(), check)

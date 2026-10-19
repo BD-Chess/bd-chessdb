@@ -116,6 +116,22 @@ test('P4 B the existing language preference loads and synchronizes without new s
   const before=JSON.stringify(x.w.ChessLabHost.getReviewGame());x.w.dispatchEvent(new x.w.StorageEvent('storage',{key:'ChessBest:LAB:v2:language',newValue:'en'}));await x.settle();
   assert.equal(x.w.document.documentElement.lang,'en');assert.equal(JSON.stringify(x.w.ChessLabHost.getReviewGame()),before);assert.equal(x.calls.length,0);
 });
+test('Slovenian SF abbreviation restores Full labels without relabeling generic SF or engine IDs',async t=>{
+  const x=await fixture(t);const game=JSON.stringify(x.w.ChessLabHost.getReviewGame());
+  const generic=x.w.document.createElement('span');generic.textContent='SF';x.el('workspaceDisplay').append(generic);
+  const literal=x.w.document.createElement('code');literal.textContent='SF Full';x.el('workspaceDisplay').append(literal);
+  for(const lang of ['sl','en','sl','en']){
+    x.w.ChessLanguage.apply(lang);await x.settle();
+    assert.equal(x.w.document.querySelector('.sf-full-toggle').textContent.trim(),lang==='sl'?'SF':'SF Full');
+    for(const select of ['analysisSource','settingSFEngine']){
+      const option=x.el(select).querySelector('[value="sf-full"]');assert.equal(option.textContent,lang==='sl'?'SF':'SF Full');assert.equal(option.value,'sf-full');
+    }
+    assert.equal(x.deep('mode').querySelector('[value="sf-full"]').textContent,lang==='sl'?'SF':'SF Full');
+    assert.equal(generic.textContent,'SF');assert.equal(literal.textContent,'SF Full');
+    assert.equal(x.w.ChessLanguage.translate('SF Full: ready'),lang==='sl'?'SF: ready':'SF Full: ready');
+    assert.equal(JSON.stringify(x.w.ChessLabHost.getReviewGame()),game);assert.equal(x.calls.length,0);
+  }
+});
 test('P4 B touch/keyboard help uses one native modal and explains CPU, All, follow, Link, budgets and partial roots',async t=>{
   const x=await fixture(t);x.view('deep');x.w.document.querySelector('[data-analysis-help]').click();
   const help=x.el('analysisHelp');assert.equal(help.open,true);assert.equal(x.w.document.querySelectorAll('#analysisHelp').length,1);
