@@ -105,7 +105,7 @@ test('real runner prepares before engines, freezes color pair, full clocks and P
 test('Stop and new Start discard a late prefix without board writes or a stuck busy flag',async t=>{
   let release;const h=harness(t,{getCDB:()=>new Promise(r=>release=r)}),before=h.game.fen();
   const started=h.runner.start({format:'single',openingSource:'cdb',cdbStartMoves:8});assert(h.runner.busy());
-  while(!release)await tick();await h.runner.pause();await assert.rejects(started,{name:'AbortError'});assert(!h.runner.busy());
+  while(!release)await tick();const rejected=assert.rejects(started,{name:'AbortError'});await h.runner.pause();await assert.doesNotReject(h.runner.settled());await rejected;assert(!h.runner.busy());
   h.game.move('d4');release({moves:[{move:'e2e4',score:20}]});await tick();assert.equal(h.game.history().length,1);assert.notEqual(h.game.fen(),before);assert.equal(h.events.size,0);assert.equal(h.calls.filter(c=>c.type==='engine').length,0);
 });
 test('preparation reserves the shared tab lease before requests; quota failure never changes board',async t=>{

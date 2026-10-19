@@ -91,6 +91,10 @@ test('Stop/Close during real pending HTTP protects loaded game and blocks DATA r
   const other=await h.context.newPage();await other.goto(origin+'/chess-lab/');await other.waitForFunction(()=>window.ChessLabHost&&window.__CDBQA.runner);
   await other.locator('#btnSim').click();await el(other,'start').click();await el(other,'status').filter({hasText:'another tab'}).waitFor();
   assert.equal(await other.evaluate(()=>window.__CDBQA.runner.busy()),false);await other.close();
+  await p.evaluate(()=>window.ChessLabHost.prepareData());await p.waitForFunction(()=>!window.__CDBQA.runner.busy());
+  assert.deepEqual(await p.evaluate(()=>window.ChessLabHost.getReviewGame()),before);
+  records.push({case:'actual Save DATA preparation cancels a pending CDB prefix, settles and preserves the loaded game'});
+  await el(p,'start').click();await p.waitForFunction(()=>window.__CDBQA.runner.isPreparing());
   await p.locator('[data-action="cancel-start"]').click();await p.waitForFunction(()=>!window.__CDBQA.runner.busy());h.release();await p.waitForTimeout(100);
   assert.deepEqual(await p.evaluate(()=>window.ChessLabHost.getReviewGame()),before);const state=await saved(p);assert.equal(state.events.length,0);assert.equal(state.runs.length,0);assert.equal(await p.evaluate(()=>window.__CDBQA.workers.length),0);records.push({case:'pending HTTP cancelled; second real tab and DATA guard blocked; no board/event/engine mutation'});
 });

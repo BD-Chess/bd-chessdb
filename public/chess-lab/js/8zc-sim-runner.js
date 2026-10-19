@@ -357,7 +357,8 @@
     }
     return { start, resume, pause, checkpoint, busy: () => !!active || !!preparation, current: () => active,
       isPreparing: () => !!preparation,
-      settled: () => preparationTask || task || Promise.resolve(), refreshEvaluation: () => observe('refresh'), limits, allocation };
+      settled: () => (preparationTask || task || Promise.resolve()).catch(error=>{if(error.name!=='AbortError')throw error;}),
+      refreshEvaluation: () => observe('refresh'), limits, allocation };
   }
   return { create, limits, allocation };
 });
