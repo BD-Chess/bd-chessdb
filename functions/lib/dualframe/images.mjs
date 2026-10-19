@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import {createHash} from 'node:crypto';
 import {taskGeometry,verifyProtectedPixels} from '../../../public/Nara/dualframe-lab/core.mjs';
 import {masterGeometry,enhancementOutputGeometry,ENHANCEMENT_CONTRACT} from './enhancement.mjs';
-import {modelFor} from './contracts.mjs';
+import {modelFor,nativeOutputSupported} from './contracts.mjs';
 export const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const image=bytes=>sharp(bytes,{limitInputPixels:24000000,failOn:'error',animated:false}).rotate().toColourspace('srgb').ensureAlpha();
 export async function inspectImage(bytes){const m=await sharp(bytes,{limitInputPixels:24000000,failOn:'error'}).metadata();if(!['png','jpeg','webp'].includes(m.format)||!m.width||!m.height||m.pages>1||m.width*m.height>24000000)throw Error('IMAGE_INVALID');return {width:m.autoOrient?.width||m.width,height:m.autoOrient?.height||m.height,format:m.format};}
@@ -65,7 +65,25 @@ export async function deriveHDFromAccepted(parentBytes,parentMeta,job={}){
  const result=await deriveFrameFromMaster(parentBytes,{...job,target,quality:'hd',output_geometry:enhancementOutputGeometry(target,'hd'),fit:'resize',master_hash:parentMeta.sha256});
  return {...result,output:{...result.output,role:'hd-derivative',quality:'hd',parent_asset_id:parentMeta.asset_id||null,parent_sha256:parentMeta.sha256,parent_output_sha256:parentMeta.sha256,master_sha256:parentMeta.master_sha256||job.master_hash||null,native_4k:false,resolution_origin:'deterministic-downsampled',provider_width:parentMeta.provider_width??source.width,provider_height:parentMeta.provider_height??source.height,model_calls:0}};
 }
+/** Opt-in Grok reference edits retain the exact validated provider file. */
+export async function finishNativeImage(providerBytes,job){
+ if(!nativeOutputSupported(job))throw Error('NATIVE_OUTPUT_UNSUPPORTED');
+ if(!providerBytes?.length||providerBytes.length>75*1024*1024)throw Error('NATIVE_IMAGE_SIZE_INVALID');
+ let metadata;
+ try{
+  const decoder=sharp(providerBytes,{limitInputPixels:24000000,failOn:'error',animated:false});
+  metadata=await decoder.metadata();
+  if(!['png','jpeg','webp'].includes(metadata.format)||!metadata.width||!metadata.height||metadata.pages>1||metadata.width*metadata.height>24000000||(metadata.orientation&&metadata.orientation!==1))throw Error('invalid');
+  // Force bounded full decoding; metadata alone can accept a truncated file.
+  await decoder.raw().toBuffer();
+ }catch{throw Error('NATIVE_IMAGE_INVALID');}
+ const {width,height,format}=metadata,aspect=job.target==='portrait'?9/16:16/9;
+ if(Math.abs(width/height/aspect-1)>.02)throw Error('NATIVE_IMAGE_ASPECT_INVALID');
+ const digest=hash(providerBytes),mime=format==='jpeg'?'image/jpeg':`image/${format}`;
+ return {bytes:providerBytes,output:{width,height,mime,byte_size:providerBytes.length,sha256:digest,provider_response_sha256:digest,provider_response_byte_size:providerBytes.length,provider_width:width,provider_height:height,provider_native_dimensions:{width,height},exported_dimensions:{width,height},resolution_verified:true,resolution_origin:'provider-native-unmodified',preserve_provider_native:true,resize:false,crop:false,upscale:false,no_crop:true,source_placement:null,pixel_proof:null,native_4k:Math.max(width,height)>=3840&&Math.min(width,height)>=2160,source_sha256:job.input_sha256||null,mode:job.mode,operation:job.operation}};
+}
 export async function finishImage(providerBytes,normalizedSource,job){
+ if(job.preserve_provider_native===true)return finishNativeImage(providerBytes,job);
  if(job.operation==='enhance')return finishMasterImage(providerBytes,normalizedSource,job);
  const provider=await inspectImage(providerBytes),source=normalizedSource?await inspectImage(normalizedSource):null;
  const p=source&&job.operation!=='generate'?taskGeometry(source.width,source.height,job.target,job.position,job.mode,job.quality):{width:job.target==='portrait'?(job.quality==='4k'?2160:1080):(job.quality==='4k'?3840:1920),height:job.target==='portrait'?(job.quality==='4k'?3840:1920):(job.quality==='4k'?2160:1080),x:0,y:0,scale:1,source_width:0,source_height:0};
