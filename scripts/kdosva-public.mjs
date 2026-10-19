@@ -106,7 +106,9 @@ export function build(input,root=resolve(dirname(fileURLToPath(import.meta.url))
     const pin=REVIEWED_OLD_SELECTIONS[post.id];
     if(input.reviewed_selection_migration!==SELECTION_MIGRATION||!pin||old.source_sha256!==pin.source||old.public_body_sha256!==pin.body||old.translations?.en?.translation_sha256!==pin.english)throw Error('Published prose changed; reviewed migration required: '+post.id);
     const {translations,...retained}=old;
-    const expanded={...retained,...post,publication_history:[...(old.publication_history||[]),{change:'Restored omitted discussion headings and public probe commentary',migration:SELECTION_MIGRATION,previous_commit:'c91409649ef1ee3dbd883857a2f7255e96dff64e',source_sha256:old.source_sha256,previous_public_body_sha256:old.public_body_sha256,previous_english_translation_sha256:old.translations.en.translation_sha256}]};
+    // Retain original publication identity/time, including R001's original-run
+    // timestamp, which predates the later canonical carrier file upload.
+    const expanded={...retained,body_markdown:post.body_markdown,public_body_sha256:post.public_body_sha256,...(post.probe?{probe:post.probe}:{}),publication_history:[...(old.publication_history||[]),{change:'Restored omitted discussion headings and public probe commentary',migration:SELECTION_MIGRATION,previous_commit:'c91409649ef1ee3dbd883857a2f7255e96dff64e',source_sha256:old.source_sha256,previous_public_body_sha256:old.public_body_sha256,previous_english_translation_sha256:old.translations.en.translation_sha256}]};
     map.set(post.id,expanded);revised.push(expanded);
   }if(!old){if(ordinal(post)<=(previous?.total_posts||0))throw Error('Load retained archive before checking old source');map.set(post.id,post);added.push(post);sourceHeaders.set(post.id,source.markdown.split('\n---\n')[0])}}
   const translated=[];
