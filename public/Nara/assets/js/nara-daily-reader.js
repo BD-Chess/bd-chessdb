@@ -114,8 +114,9 @@
 
   // Source-attributed shared score cards: historical editions + all three daily stories.
   const detailsScript=document.createElement('script');
-  detailsScript.src='assets/js/nara-daily-score-details.js?v=20261015-r4';
+  detailsScript.src='assets/js/nara-daily-score-details.js?v=20261019-dialog-r2';
   detailsScript.async=true;
   document.head.appendChild(detailsScript);
   applyScale();applyLanguage();openHash();
 })();
+

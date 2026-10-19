@@ -100,7 +100,8 @@ test('13 and 14 October selected stories have full source-bound standalone reade
    assert.equal(featuredStoryFilename(editionRoot,r),file);
    const html=result[file]??renderFeaturedStoryPage(editionRoot,r,t);
    assert.ok(html.includes(r.content_sha256)&&html.includes(t.content_sha256));
-   assert.ok(html.includes('data-reader-rating=')&&html.includes('Reader score'));
+   assert.ok(html.includes('data-reader-rating='));
+   assert.ok(!html.includes('>Reader score</span>'));
    assert.ok(html.includes('<strong>'+r.literary_score.combined));
    assert.equal((html.match(/<figure class="daily-scene-figure">/g)||[]).length,6);
    assert.ok(html.includes('data-language-content="en"')&&html.includes('data-language-content="sl"'));
@@ -252,3 +253,4 @@ test('approved R3 illustrations stay in the monthly story while Daily links to t
   fs.writeFileSync(manifestPath,JSON.stringify(m));fs.writeFileSync(path.join(imagesDir,'fixture-0.png'),'corrupted');
   assert.throws(()=>monthlyPage('2026-10',[r],translations,root),/source hash mismatch/);
 });
+

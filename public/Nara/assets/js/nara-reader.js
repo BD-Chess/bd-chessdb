@@ -161,3 +161,7 @@
   }
 
 })();
+
+
+// Current numeric score explanations.
+(()=>{const script=document.createElement("script");script.src="assets/js/nara-daily-score-details.js?v=20261019-dialog-r2";script.async=true;document.head.appendChild(script)})();

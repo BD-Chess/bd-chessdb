@@ -24,7 +24,7 @@ export function ratingMarkup(r,{compact=false}={}){
   const edition=r.edition_url?'<p><a href="'+esc(r.edition_url)+'">'+bi('Read the assessed edition','Preberi ocenjeno izdajo')+'</a></p>':'';
   const plus=Object.entries(r.comments??{}).map(([m,s])=>'<p><strong>'+esc(m==='gpt'?'GPT':'Claude')+'</strong> — '+esc(s)+'</p>').join('');
   const gaps=Object.entries(r.suggestions??{}).map(([m,s])=>'<p><strong>'+esc(m==='gpt'?'GPT':'Claude')+'</strong> — '+esc(s)+'</p>').join('');
-  return '<details class="reader-rating'+(compact?' reader-rating--compact':'')+'" data-reader-rating="'+esc(r.story_id)+'"><summary>'+bi('Reader score','Bralska ocena')+' <strong>'+value+'<small> / 100</small></strong></summary><div class="reader-rating-body"><p class="reader-rating-models"><strong>GPT '+r.gpt+'</strong> · <strong>Claude '+r.claude+'</strong> · 50/50</p><p>'+bi('Independent model assessments of reader appeal. The combined score is their arithmetic mean.','Neodvisni modelski oceni bralske privlačnosti. Skupna ocena je njuno aritmetično povprečje.')+'</p><h3>'+bi('Reading notes','Obrazložitvi')+'</h3>'+plus+edition+(gaps?'<h3>'+bi('Suggestions for improvement','Predlogi za izboljšave')+'</h3>'+gaps:'')+'<p class="muted">'+bi('Assessment refers to the English reading edition. Model comments retain their original language.','Ocena velja za angleško bralno izdajo. Komentarja modelov sta v izvirnem jeziku.')+'</p></div></details>';
+  return '<details class="reader-rating'+(compact?' reader-rating--compact':'')+'" data-reader-rating="'+esc(r.story_id)+'"><summary aria-label="Open score explanation / Odpri razlago ocene"><strong>'+value+'<small> / 100</small></strong></summary><div class="reader-rating-body"><p class="reader-rating-models"><strong>GPT '+r.gpt+'</strong> · <strong>Claude '+r.claude+'</strong> · 50/50</p><p>'+bi('Independent model assessments of reader appeal. The combined score is their arithmetic mean.','Neodvisni modelski oceni bralske privlačnosti. Skupna ocena je njuno aritmetično povprečje.')+'</p><h3>'+bi('Reading notes','Obrazložitvi')+'</h3>'+plus+edition+(gaps?'<h3>'+bi('Suggestions for improvement','Predlogi za izboljšave')+'</h3>'+gaps:'')+'<p class="muted">'+bi('Assessment refers to the English reading edition. Model comments retain their original language.','Ocena velja za angleško bralno izdajo. Komentarja modelov sta v izvirnem jeziku.')+'</p></div></details>';
 }
 export function requireCurrentReaderEvaluation(root,evaluation){
   if(!loadReaderRatings(root))return;
@@ -48,3 +48,4 @@ export function setReaderAlias(root,alias,key){
   d.aliases[alias]=key;
   fs.writeFileSync(path.join(root,'public/Nara/daily/reader-ratings.json'),JSON.stringify(d,null,2)+'\n');
 }
+

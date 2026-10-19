@@ -7,6 +7,10 @@ name: Deploy to Netlify production
 # Europe/Ljubljana window, subject to budget, safety and provenance gates.
 # Additional manual releases require a new explicit agreement with BD.
 on:
+  # One BD-requested repair release; retired after verification.
+  push:
+    branches: [main]
+    paths: [public/Nara/assets/js/nara-daily-score-details.js]
   workflow_dispatch:
     inputs:
       site:
@@ -31,12 +35,12 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'Fix Nara score dialogs [nara-score-dialog-release-20261019]')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      RELEASE_SITE: ${{ inputs.site }}
-      TARGET_SHA: ${{ inputs.target_sha }}
+      RELEASE_SITE: ${{ inputs.site || 'mdlxdcc' }}
+      TARGET_SHA: ${{ inputs.target_sha || github.sha }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - name: Validate the frozen main target and select the existing site
@@ -53,7 +57,7 @@ jobs:
       - name: Checkout exact approved main commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.target_sha }}
+          ref: ${{ inputs.target_sha || github.sha }}
 
       - name: Prepare protected pages for browser password managers
         shell: bash
@@ -138,8 +142,9 @@ jobs:
         if: steps.netlify.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: netlify-${{ inputs.site }}-${{ github.run_id }}
+          name: netlify-${{ inputs.site || 'mdlxdcc' }}-${{ github.run_id }}
           path: netlify-deploy.json
           if-no-files-found: error
           retention-days: 30
+
 
