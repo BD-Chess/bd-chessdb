@@ -22,3 +22,11 @@ test('Stop/Close during async start cancel host preparation and controls recover
   h.window.document.querySelector('[data-action="cancel-start"]').click();await new Promise(r=>setImmediate(r));assert.equal(cancelled,1);assert(!h.q('start').disabled);
   h.q('form').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true}));h.api.close();await new Promise(r=>setImmediate(r));assert.equal(cancelled,2);assert(!h.q('start').disabled);
 });
+test('CDB opening count and visible plan agree for single, paired and OFF starts',async t=>{
+  const configs=[],h=ui(t,{onStart:c=>{configs.push(c);return false;}});h.api.open();
+  h.change('format','duel');h.change('cdb-start-count','3');assert.match(h.q('plan').textContent,/6 games/);
+  const submit=async()=>{h.q('form').dispatchEvent(new h.window.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setImmediate(r));};
+  await submit();assert.equal(configs.at(-1).openingCount,3);
+  h.change('cdb-start-on',false);assert.match(h.q('plan').textContent,/2 games/);await submit();assert.equal(configs.at(-1).openingCount,1);
+  h.change('cdb-start-on',true);h.change('format','single');assert(h.q('cdb-count-label').hidden);assert.match(h.q('plan').textContent,/1 game/);await submit();assert.equal(configs.at(-1).openingCount,1);
+});

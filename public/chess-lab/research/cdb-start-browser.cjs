@@ -49,7 +49,7 @@ test('CDB controls render without overflow in desktop/APP 375/402/430, SL/EN, da
     for(const light of [false,true])for(const lang of ['sl','en']) {
       await p.evaluate(({light,lang})=>{document.body.classList.toggle('light-theme',light);window.ChessLanguage.apply(lang);},{light,lang});
       await el(p,'cdb-start-mode').selectOption('random_side');await el(p,'cdb-start-mode').selectOption('random_main');
-      const g=await p.locator('#simTournamentDialog').evaluate(d=>({width:innerWidth,scroll:d.scrollWidth,client:d.clientWidth,rect:d.getBoundingClientRect().toJSON(),source:d.querySelector('[data-ui="opening-source"] option:checked').textContent,controls:[...d.querySelectorAll('[data-ui^="cdb-start-"]')].map(e=>({rect:e.getBoundingClientRect().toJSON(),disabled:e.disabled}))}));
+      const g=await p.locator('#simTournamentDialog').evaluate(d=>({width:innerWidth,scroll:d.scrollWidth,client:d.clientWidth,rect:d.getBoundingClientRect().toJSON(),source:d.querySelector('[data-ui="opening-source"] option:checked').textContent,controls:[...d.querySelectorAll('[data-ui^="cdb-start-"]')].filter(e=>!e.closest('[hidden]')).map(e=>({rect:e.getBoundingClientRect().toJSON(),disabled:e.disabled}))}));
       records.push({case:'UI',app,width,light,lang,...g});await p.screenshot({path:path.join(dir,'latest-ui.png')});
       assert(g.scroll<=g.client+1);assert(g.rect.x>=0&&g.rect.right<=g.width+1);assert.equal(g.source,lang==='sl'?'Nova partija · začetek s CDB':'New game · CDB start');
       assert(g.controls.every(c=>c.rect.width>=17&&!c.disabled));

@@ -32,7 +32,7 @@
               <label class="tournament-toggle"><input data-ui="cdb-start-on" type="checkbox" checked> CDB start</label>
               <label>Start after<input data-ui="cdb-start-moves" type="number" min="1" max="30" step="1" value="8"><span class="tournament-optional">full moves</span></label>
               <label>Opening<select data-ui="cdb-start-mode"><option value="e4">1.e4</option><option value="d4">1.d4</option><option value="random_main" selected>Random – main openings</option><option value="random_side">Random – side openings</option></select></label>
-              <label>Opening positions<input data-ui="cdb-start-count" type="number" min="1" max="10" step="1" value="1"></label>
+              <label data-ui="cdb-count-label">Opening positions<input data-ui="cdb-start-count" type="number" min="1" max="10" step="1" value="1"></label>
               <p class="tournament-note">Main entries: e4, d4, c4, Nf3. Side entries: b3, g3, f4, Nc3. CDB supplies evaluated continuations; player clocks begin afterwards.</p>
             </div>
             <p class="tournament-current" data-ui="current-title"></p>
@@ -77,7 +77,7 @@
       return { format, white, black, rounds: format === 'single' ? 1 : Number(el('rounds').value), engines: format === 'round-robin' ? selectedEngines() : [...new Set([white, black])],
         openingSource: el('opening-source').value, collectionId: el('collection').value,
         openingMode: el('opening-mode').value, openingMoves: Number(el('opening-moves').value),
-        openingCount: el('opening-source').value === 'current' ? 1 : el('opening-source').value === 'cdb' ? Number(el('cdb-start-count').value) : Number(el('opening-count').value),
+        openingCount: el('opening-source').value === 'current' ? 1 : el('opening-source').value === 'cdb' ? (format === 'single' || !el('cdb-start-on').checked ? 1 : Number(el('cdb-start-count').value)) : Number(el('opening-count').value),
         cdbStartOn:el('cdb-start-on').checked,cdbStartMoves:Number(el('cdb-start-moves').value),cdbStartMode:el('cdb-start-mode').value,
         limitMode: el('limit-mode').value, depth: Number(el('depth').value), nodes: Number(el('nodes').value),
         moveTimeMs: el('move-time').value === 'custom' ? Number(el('move-custom').value) * 1000 : Number(el('move-time').value),
@@ -97,6 +97,7 @@
       el('black-label').textContent = cfg.format === 'duel' ? 'Engine B' : 'Black engine';
       el('collection-fields').hidden = !isCollection; el('current-title').hidden = cfg.openingSource !== 'current';
       el('cdb-fields').hidden = cfg.openingSource !== 'cdb';
+      el('cdb-count-label').hidden = cfg.format === 'single';
       el('opening-moves-label').hidden = cfg.openingMode !== 'moves';
       el('opening-count').max = String(Math.max(1, count));
       el('collection-note').textContent = count ? `${count} games available. Auto uses opening metadata when available, otherwise up to 9 full moves.` : 'Choose a collection with games in the Game library.';
@@ -105,7 +106,7 @@
       el('game-custom-label').hidden = el('game-time').value !== 'custom';
       // Hidden settings keep their values but cannot block native form validation.
       el('form').querySelectorAll('input, select').forEach(input => { input.disabled = !!input.closest('[hidden]'); if (input.type === 'number') input.required = true; });
-      for(const name of ['cdb-start-moves','cdb-start-mode','cdb-start-count'])el(name).disabled = cfg.openingSource!=='cdb' || !cfg.cdbStartOn;
+      for(const name of ['cdb-start-moves','cdb-start-mode','cdb-start-count'])el(name).disabled = cfg.openingSource!=='cdb' || !cfg.cdbStartOn || (name==='cdb-start-count' && cfg.format==='single');
       el('form').querySelectorAll('input,select').forEach(input=>{if(busy)input.disabled=true;});
       dialog.querySelector('[data-action="cancel-start"]').hidden=!busy;
       const participants = cfg.engines.length;
