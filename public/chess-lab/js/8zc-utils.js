@@ -103,6 +103,7 @@ function initAllCore() {
     dccOnly: false,      // hide raw ChessDB scores, show only DCC view
     simSpeed: 1000,      // ms per move (0 = max speed, no board update)
     showSimEval: true,
+    cdbStartOn: true, cdbStartMoves: 8, cdbStartMode: 'random_main',
     simGames: 5,         // games per simulation run
     dccTakeover: 'auto',  // when DCC takes over: 'auto' or number of half-moves
     opponentModel: 'realistic', // v0.6.0: 'perfect', 'realistic', 'weak'
@@ -941,7 +942,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       const at = new Date().toISOString();
       return observe(cached.text, at, at, true, new Date(cached.time).toISOString());
     }
-    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '') + (requestOptions.force ? ':refresh' : '');
+    const pendingKey = key + (simRunning ? ':sim:' + activityEpoch : ':normal') + (requestOptions.signal ? ':bounded:' + (requestOptions.timeoutMs || 0) : '') + (requestOptions.force ? ':refresh' : '') + (requestOptions.requestBudget ? ':prefix:'+requestOptions.requestBudget.id : '');
     if (requestPending.has(pendingKey)) return requestPending.get(pendingKey);
     const unhurried = simRunning, requestEpoch = activityEpoch;
     const pending = (async () => {
@@ -956,6 +957,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       if (requestOptions.signal?.aborted) controller.abort();
       const timer = setTimeout(abortRequest, Math.max(1, requestOptions.timeoutMs || 15000));
       try {
+        requestOptions.requestBudget?.take();
         const base = source === 'proxy' && action === 'queryall'
           ? '/.netlify/functions/queryall?'
           : `https://www.chessdb.cn/cdb.php?action=${action}&`;
@@ -963,7 +965,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         if (!response.ok) throw new Error(`ChessDB HTTP ${response.status}`);
         const text = (await response.text()).trim();
         // Unknown, rate limited and error responses are deliberately not persisted.
-        if (/^(move:|score:|eval:|checkmate|stalemate)/.test(text) && (!evalCache[key] || evalCache[key].time <= requestStartedMs)) {
+        if (!controller.signal.aborted && /^(move:|score:|eval:|checkmate|stalemate)/.test(text) && (!evalCache[key] || evalCache[key].time <= requestStartedMs)) {
           evalCache[key] = { time: Date.now(), text };
           persistEvalCache();
         }
@@ -971,7 +973,7 @@ gameBuckets.forEach((bucket, bucketIndex) => {
         return observe(text, startedAt, at, false, at);
       } catch (err) {
         console.warn(`ChessDB ${action} unavailable:`, err.name);
-        return observe('', startedAt, new Date().toISOString(), false, null, err.name);
+        return observe('', startedAt, new Date().toISOString(), false, null, requestOptions.requestBudget ? (err.name==='AbortError' ? 'CDB timeout' : err.message) : err.name);
       } finally { clearTimeout(timer); requestOptions.signal?.removeEventListener('abort', abortRequest); simRequests.delete(controller); requestPending.delete(pendingKey); }
     })();
     requestPending.set(pendingKey, pending);
@@ -1000,8 +1002,9 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     const legal = DCC.legalMoves(Chess, fen, moves);
     const observations = [0, 1].map(learn => sourceObservations.get(`queryall:${learn}:${fen}`));
     const unavailable = observations.every(record => !record || !!record.metadata?.error);
-    return { fen, moves: legal, provider: 'CDB', reason: legal.length ? 'CDB evaluated candidates' :
-      unavailable ? 'CDB network/provider unavailable' : 'CDB no usable database evaluation' };
+    const preparationError = options.requestBudget && observations.map(record=>record?.metadata?.error).filter(Boolean).join('; ');
+    return { fen, moves: legal, provider: 'CDB', source:settings.evalMode, observedAt:new Date().toISOString(), reason: legal.length ? 'CDB evaluated candidates' :
+      preparationError || (unavailable ? 'CDB network/provider unavailable' : 'CDB no usable database evaluation') };
   }
   async function runLocalSF(fen, { nodes, depth = nodes == null ? settings.sfAnalysisDepth : undefined, dcc = false, cancelled = () => false, onInfo } = {}) {
     if (localController) localController.abort();
@@ -4329,13 +4332,14 @@ async function launchFromSimModal() {
     window.dispatchEvent(new CustomEvent('chess-sim-collections', { detail: collections }));
     renderSimStats();
   }
-  function openTournamentUI() {
+  function openTournamentUI(openingSource) {
     tournamentUI?.open({ currentGameTitle: document.getElementById('gameTitle').textContent,
+      openingSource: openingSource || (game.history().length || game.fen() !== new Chess().fen() ? 'current' : undefined),
       collections: openingCollections.map(c => ({ id: c.id, label: c.label, count: c.games.length })) });
     refreshSimArchive().catch(error => updateSimStatus(error.message));
   }
   async function startTournament(config) {
-    if (playState.active || replayRunning || simRunning) throw new Error('Pause the current activity first.');
+    if (playState.active || replayRunning || simRunning || tournamentRunner?.busy()) throw new Error('Pause the current activity first.');
     const T = window.ChessTournament;
     let extracted;
     if (config.openingSource === 'collection') {
@@ -4343,15 +4347,16 @@ async function launchFromSimModal() {
       if (!collection?.games.length) throw new Error('This collection has not loaded or has no games. Choose another collection.');
       extracted = T.extractOpenings(Chess, collection.games.map(g => g.pgn).join('\n\n'), {
         mode: config.openingMode === 'moves' ? 'fullmoves' : 'auto', fullmoves: config.openingMoves || 9 });
-    } else extracted = T.extractOpenings(Chess, '', { mode: 'current', currentFen: game.fen(), currentPgn: game.pgn() });
+    } else if (config.openingSource === 'cdb') extracted = {openings:[],rejected:[],duplicates:0};
+    else extracted = T.extractOpenings(Chess, '', { mode: 'current', currentFen: game.fen(), currentPgn: game.pgn() });
     extracted.openings = extracted.openings.filter(opening => !new Chess(opening.startFen).game_over());
-    if (!extracted.openings.length) throw new Error('No playable orthodox positions in this selection. Chess960 and finished games are excluded.');
+    if (config.openingSource !== 'cdb' && !extracted.openings.length) throw new Error('No playable orthodox positions in this selection. Chess960 and finished games are excluded.');
     if (config.format === 'duel' && config.white === config.black) throw new Error('Choose two different engines for a paired duel.');
-    if (Number(config.openingCount) > extracted.openings.length) throw new Error(`Only ${extracted.openings.length} unique playable openings are available. Lower the opening count.`);
+    if (config.openingSource !== 'cdb' && Number(config.openingCount) > extracted.openings.length) throw new Error(`Only ${extracted.openings.length} unique playable openings are available. Lower the opening count.`);
     // Freeze the source selection for repeatable paired games.
     config.openingReport = { available: extracted.openings.length, rejected: extracted.rejected.length, duplicates: extracted.duplicates };
     if (workspace.isHuman()) workspace.stop();
-    deepUI?.stop?.(); engineCards?.stopAll('simulation');
+    stopInteractiveAnalysis();
     offlineEvidence = null; invalidateDCCAnalysis();
     return tournamentRunner.start(config, extracted.openings);
   }
@@ -4388,6 +4393,13 @@ async function launchFromSimModal() {
       SF, Engine: window.ChessDeepEngine, DCC, game, workspace, store: simStore,
       getCDB: cachedFetchChessDB, getPV: fetchPV, getScore: fetchScore, settings: () => ({ ...settings }),
       callbacks: {
+        preparing(value) {
+          simRunning=true; simAbort=false;
+          const message=value.requestedPlies ? `CDB start · ${value.actualPlies/2}/${value.requestedPlies/2} moves` : 'Preparing simulation…';
+          tournamentUI?.setStatus(message); updateSimStatus(message); refreshPlayUi();
+        },
+        prepared(opening) { const message=window.ChessCDBStart.status(opening); tournamentUI?.setStatus(message); updateSimStatus(message); },
+        preparationEnd(_ok,reason) { simRunning=false; simAbort=false; refreshPlayUi(); tournamentUI?.setStatus(reason); updateSimStatus(reason); },
         started(run) {
           activityEpoch++; invalidateDCCAnalysis(); simSession = run; simRunning = true; simAbort = false; showEval = false;
           evalBarVisible = settings.showSimEval !== false;
@@ -4397,6 +4409,7 @@ async function launchFromSimModal() {
           bookFlags = Array(game.history().length).fill(true); window._skipDivergedReset = false;
           updateBoard(true); refreshPlayUi();
           document.getElementById('gameTitle').textContent = `${run.eventName} · ${SIM.label(run.white)} vs ${SIM.label(run.black)}`;
+          if(run.opening?.cdbStart)updateSimStatus(window.ChessCDBStart.status(run.opening));
         },
         thinking(run, policy, side) { setBoardThinking(true); updateSimStatus(`${side === 'w' ? 'White' : 'Black'} · ${SIM.label(policy)} · thinking…`); },
         decision(decision) {
@@ -4423,6 +4436,9 @@ async function launchFromSimModal() {
       } });
     tournamentUI = window.ChessTournamentUI.create({
       onStart: startTournament,
+      getPreferences: () => ({cdbStartOn:settings.cdbStartOn,cdbStartMoves:settings.cdbStartMoves,cdbStartMode:settings.cdbStartMode}),
+      onPreferences(value) { Object.assign(settings,value); if(!persistSettings())throw Error('Simulation preferences could not be saved.'); },
+      onCancelStart: () => { if(tournamentRunner.isPreparing())return tournamentRunner.pause('CDB start cancelled'); },
       onPause: () => tournamentRunner.pause(),
       onResume: async id => { if (playState.active || replayRunning) throw new Error('Stop the current activity first.'); deepUI?.stop?.(); engineCards?.stopAll('simulation'); await tournamentRunner.resume(id); },
       onOpenGame: openArchivedGame, onExport: exportTournament,
@@ -4437,7 +4453,7 @@ async function launchFromSimModal() {
     window.addEventListener('chess-sim-open-game', event => openArchivedGame(event.detail.id).catch(error => updateSimStatus(error.message)));
     const useOpening = document.createElement('button'); useOpening.type = 'button'; useOpening.className = 'btn';
     useOpening.id = 'btnUseTournamentOpening'; useOpening.textContent = 'Use position in Sim / tournament'; useOpening.title = 'Use the displayed position as a paired opening';
-    useOpening.onclick = () => { panel.classList.remove('open'); openTournamentUI(); }; document.getElementById('popularGamesPanel').appendChild(useOpening);
+    useOpening.onclick = () => { panel.classList.remove('open'); openTournamentUI('current'); }; document.getElementById('popularGamesPanel').appendChild(useOpening);
     window.addEventListener('pagehide', () => {
       try { tournamentRunner.checkpoint(); }
       catch (error) { updateSimStatus(`Checkpoint unavailable: ${error.message}`); }

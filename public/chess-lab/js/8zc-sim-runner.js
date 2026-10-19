@@ -23,9 +23,10 @@
   }
   function create({ Chess, SIM, Tournament, SF, Engine, DCC, game, workspace, store,
     getCDB, getPV, getScore, settings, callbacks = {}, evaluation = globalThis.ChessEvalBar,
-    Session = globalThis.ChessAnalysisSession,
+    Session = globalThis.ChessAnalysisSession, CDBStart = globalThis.ChessCDBStart,
     now = () => performance.now(), storage = globalThis.localStorage }) {
     let active = null, token = 0, controller = null, provider = null, heartbeat = null, task = null;
+    let preparation = null, preparationTask = null;
     const owner = store.createId('tab'), leaseKey = globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:sim-lease') || 'ChessBest:APP:v1:sim-lease';
     // The spectator never drives moves, search budgets, clocks or checkpoints.
     const spectator = evaluation?.watchSimulation?.({ Chess, game,
@@ -87,6 +88,11 @@
         moves: game.history({ verbose: true }).map(m => m.from + m.to + (m.promotion || '')) };
     }
     async function pause(reason = 'Paused by user') {
+      if (preparation) {
+        ++token; preparation.controller.abort(); release();
+        emit('preparationEnd', false, reason);
+        return;
+      }
       if (!active) return;
       ++token; controller?.abort(); provider?.destroy(); workspace.endTurn();
       const { run, event } = active;
@@ -133,7 +139,7 @@
           check();
         } else if (!policy.startsWith('sf')) {
           const lookupMs = budget == null ? 5000 : Math.max(20, Math.min(1500, budget * 0.25));
-          rootResult = await getCDB(fen, { signal: controller.signal, timeoutMs: lookupMs }); check();
+          rootResult = settings().cdbEnabled === false ? {moves:[],reason:'CDB disabled'} : await getCDB(fen, { signal: controller.signal, timeoutMs: lookupMs }); check();
           if (rootResult.moves?.length) source = 'CDB';
           else fallbackReason = rootResult.reason || 'CDB has no usable evaluation';
         }
@@ -216,7 +222,7 @@
         if (!played) throw new Error('The engine selected an illegal move.');
         const timing = workspace.recordMove(decision.fen, played, { analysis_ms: decision.elapsed, pause_ms: run.limits.movePauseMs });
         if (!timing) { game.undo(); finishOnTime(run, played.color); break; }
-        run.trace.push({ ...decision.pick, ply: run.trace.length + 1, fen: decision.fen, san: played.san,
+        run.trace.push({ ...decision.pick, ply: run.trace.length + 1, root_ply:game.history().length-1, game_ply:game.history().length, fen: decision.fen, san: played.san,
           elapsed_ms: decision.elapsed, turn_ms: timing.think_ms, pause_ms: run.limits.movePauseMs,
           at_utc: timing.at_utc, clock_ms: timing.clock_ms,
           white_elapsed_ms: timing.white_elapsed_ms, black_elapsed_ms: timing.black_elapsed_ms,
@@ -279,8 +285,8 @@
       task.catch(error => emit('error', error));
       return copy(event);
     }
-    async function start(config, openings) {
-      await store.ready();
+    async function createEvent(config, openings, check) {
+      check();
       if (!openings.length) throw new Error('No usable orthodox opening was selected.');
       const cfg = limits(config);
       const selected = openings.slice(0, Math.max(1, Number(config.openingCount) || 1));
@@ -294,10 +300,52 @@
         throw new Error('Local browser engines support at most 4 hours per move.');
       const event = { id: store.createId(config.format === 'single' ? 'match' : 'tournament'), name: String(config.name || (config.format === 'single' ? 'Engine game' : 'Engine tournament')).slice(0, 120),
         createdAt: new Date().toISOString(), config: cfg, settings: { ...settings(), dccNoDeadline: true }, state: 'paused', games, nextIndex: 0 };
-      await store.saveEvent(event); return launch(event);
+      check(); await store.saveEvent(event); check();
+      preparation = null;
+      return launch(event);
+    }
+    function start(config, openings = []) {
+      if (active || task || preparation) return Promise.reject(new Error('Pause the active simulation first.'));
+      const guard = globalThis.ChessDataGuard, generation = guard?.epoch;
+      try { guard?.assertWritable(); acquire(); } catch(error) { return Promise.reject(error); }
+      const state = preparation = {controller:new AbortController(),epoch:++token};
+      const check = () => {
+        if (state.controller.signal.aborted || state.epoch !== token) throw abortError();
+        guard?.assertWritable();
+        if (guard && generation !== guard.epoch) throw abortError();
+      };
+      let launched = false;
+      preparationTask = (async () => {
+        // Reserve the same writer lease before the first asynchronous operation.
+        emit('preparing', {actualPlies:0,requestedPlies:0});
+        heartbeat = setInterval(() => { try { check(); acquire(); } catch(error) { pause(error.message).catch(e=>emit('error',e)); } }, 2000);
+        await store.ready(); check();
+        if (config.openingSource === 'cdb') {
+          if (!CDBStart) throw Error('CDB start is unavailable. Reload the LAB.');
+          const count = Number(config.openingCount) || 1;
+          if (!Number.isInteger(count) || count < 1 || count > 10) throw Error('Choose 1–10 CDB opening positions.');
+          config = {...config,...CDBStart.config(config),cdbStartSeed:config.cdbStartSeed || store.createId('opening-seed')};
+          const requestBudget = CDBStart.budget(400); openings = [];
+          for (let index=0; index<count; index++) {
+            const opening = await CDBStart.prepare({Chess,getCDB,input:config,seed:config.cdbStartSeed,index,requestBudget,
+              signal:state.controller.signal,check,enabled:()=>settings().cdbEnabled !== false,
+              progress:value=>emit('preparing',value),now});
+            check(); openings.push(opening); emit('prepared',copy(opening));
+          }
+          config.openingReport = {available:openings.length,rejected:0,duplicates:0};
+        }
+        check(); clearInterval(heartbeat); heartbeat=null;
+        const event = await createEvent(config,openings,check); launched=true;
+        return event;
+      })().finally(() => {
+        if (preparation === state) preparation=null;
+        if (!launched) { release(); emit('preparationEnd',false,'CDB start cancelled or unavailable'); }
+        preparationTask=null;
+      });
+      return preparationTask;
     }
     async function resume(id) {
-      if (task) { await pause(); await task; }
+      if (preparation || task) { await pause(); try { await (preparationTask || task); } catch(error) { if(error.name!=='AbortError')throw error; } }
       await store.ready(); acquire();
       try {
         await store.recoverCheckpoint?.(owner);
@@ -306,8 +354,9 @@
         return await launch(event);
       } catch (error) { release(); throw error; }
     }
-    return { start, resume, pause, checkpoint, busy: () => !!active, current: () => active,
-      settled: () => task || Promise.resolve(), refreshEvaluation: () => observe('refresh'), limits, allocation };
+    return { start, resume, pause, checkpoint, busy: () => !!active || !!preparation, current: () => active,
+      isPreparing: () => !!preparation,
+      settled: () => preparationTask || task || Promise.resolve(), refreshEvaluation: () => observe('refresh'), limits, allocation };
   }
   return { create, limits, allocation };
 });

@@ -154,6 +154,11 @@
     };
     if (initialFen !== new Chess().fen()) { tags.SetUp = '1'; tags.FEN = initialFen; }
     if (run.openingId || run.opening?.id) tags.OpeningId = run.openingId || run.opening.id;
+    if(run.opening?.cdbStart) {
+      const c=run.opening.cdbStart;
+      Object.assign(tags,{CDBStartMode:c.mode,CDBStartSeed:c.seed,CDBStartSHA256:c.sha256,CDBStartRequestedPlies:c.requestedPlies,
+        CDBStartActualPlies:c.actualPlies,CDBStartComplete:c.complete,CDBStartReason:c.reason,CDBPreparationMs:c.preparationMs,EngineDecisions:trace.length});
+    }
     if (run.openingName || run.opening?.name) tags.Opening = run.openingName || run.opening.name;
     if (run.tournamentId || run.eventId) tags.TournamentId = run.tournamentId || run.eventId;
     for (const key of ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'ECO', 'Opening', 'Variation'])
@@ -167,7 +172,7 @@
       if (!played) throw new Error('Experiment PGN contains an illegal move');
       moves.push(`${prefix}${played.san}${comment ? ' {' + comment + '}' : ''}`);
     };
-    for (const move of opening) appendMove({ from: move.from, to: move.to, promotion: move.promotion }, 'book; source=opening');
+    for (const move of opening) appendMove({ from: move.from, to: move.to, promotion: move.promotion }, run.opening?.cdbStart ? 'book; source=CDB' : 'book; source=opening');
     if (board.fen() !== run.startFen) throw new Error('Experiment PGN opening position mismatch');
     const boundary = `{Opening boundary: ${opening.length} plies; engine play begins here}`;
     if (moves.length) moves[moves.length - 1] += ' ' + boundary;

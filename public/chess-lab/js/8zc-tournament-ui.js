@@ -27,7 +27,14 @@
             <label>Event name <span class="tournament-optional">optional</span><input data-ui="name" maxlength="100" placeholder="e.g. Four-engine opening test"></label>
           </fieldset>
           <fieldset><legend>2 · Starting positions</legend>
-            <label>Source<select data-ui="opening-source"><option value="current">Current board position</option><option value="collection">Game library collection</option></select></label>
+            <label>Source<select data-ui="opening-source"><option value="cdb">New game · CDB start</option><option value="current">Current board position</option><option value="collection">Game library collection</option></select></label>
+            <div data-ui="cdb-fields">
+              <label class="tournament-toggle"><input data-ui="cdb-start-on" type="checkbox" checked> CDB start</label>
+              <label>Start after<input data-ui="cdb-start-moves" type="number" min="1" max="30" step="1" value="8"><span class="tournament-optional">full moves</span></label>
+              <label>Opening<select data-ui="cdb-start-mode"><option value="e4">1.e4</option><option value="d4">1.d4</option><option value="random_main" selected>Random – main openings</option><option value="random_side">Random – side openings</option></select></label>
+              <label>Opening positions<input data-ui="cdb-start-count" type="number" min="1" max="10" step="1" value="1"></label>
+              <p class="tournament-note">Main entries: e4, d4, c4, Nf3. Side entries: b3, g3, f4, Nc3. CDB supplies evaluated continuations; player clocks begin afterwards.</p>
+            </div>
             <p class="tournament-current" data-ui="current-title"></p>
             <div data-ui="collection-fields" hidden><label>Collection<select data-ui="collection"></select></label>
               <div class="tournament-columns"><label>Opening length<select data-ui="opening-mode"><option value="auto">Auto · opening metadata</option><option value="moves">Choose move count</option></select></label><label data-ui="opening-moves-label" hidden>Full moves<input data-ui="opening-moves" type="number" min="0" max="100" step="1" value="9"></label></div>
@@ -51,10 +58,15 @@
           </fieldset>
         </div>
       </form>
+      <button type="button" data-action="cancel-start" hidden>Stop preparation</button>
       <p class="tournament-status" data-ui="status" role="status"></p>
       <section class="tournament-history" aria-labelledby="simTournamentHistory"><div class="tournament-section-head"><h3 id="simTournamentHistory">History & standings</h3><div class="tournament-toolbar"><button type="button" data-action="import">Import JSON</button><button type="button" data-action="lichess" hidden>Lichess Bot…</button></div></div><input data-ui="import-file" type="file" accept=".json,application/json" hidden><div data-ui="history"></div></section>`;
     doc.body.appendChild(dialog);
     const el = name => dialog.querySelector('[data-ui="' + name + '"]');
+    const preferences = host.getPreferences?.() || {};
+    el('cdb-start-on').checked = preferences.cdbStartOn !== false;
+    if(Number.isInteger(preferences.cdbStartMoves) && preferences.cdbStartMoves>=1 && preferences.cdbStartMoves<=30)el('cdb-start-moves').value=preferences.cdbStartMoves;
+    if(['e4','d4','random_main','random_side'].includes(preferences.cdbStartMode))el('cdb-start-mode').value=preferences.cdbStartMode;
     let context = {}, events = [], runs = [], lastFocus = null, busy = false;
     el('black').value = 'dcc';
     const label = engine => ENGINES[engine] || String(engine || '—');
@@ -65,7 +77,8 @@
       return { format, white, black, rounds: format === 'single' ? 1 : Number(el('rounds').value), engines: format === 'round-robin' ? selectedEngines() : [...new Set([white, black])],
         openingSource: el('opening-source').value, collectionId: el('collection').value,
         openingMode: el('opening-mode').value, openingMoves: Number(el('opening-moves').value),
-        openingCount: el('opening-source').value === 'current' ? 1 : Number(el('opening-count').value),
+        openingCount: el('opening-source').value === 'current' ? 1 : el('opening-source').value === 'cdb' ? Number(el('cdb-start-count').value) : Number(el('opening-count').value),
+        cdbStartOn:el('cdb-start-on').checked,cdbStartMoves:Number(el('cdb-start-moves').value),cdbStartMode:el('cdb-start-mode').value,
         limitMode: el('limit-mode').value, depth: Number(el('depth').value), nodes: Number(el('nodes').value),
         moveTimeMs: el('move-time').value === 'custom' ? Number(el('move-custom').value) * 1000 : Number(el('move-time').value),
         baseMs: el('game-time').value === 'custom' ? Number(el('game-custom').value) * 60000 : Number(el('game-time').value),
@@ -82,7 +95,8 @@
       el('rounds-label').hidden = cfg.format === 'single'; el('sides').hidden = cfg.format === 'round-robin'; el('participants').hidden = cfg.format !== 'round-robin';
       el('white-label').textContent = cfg.format === 'duel' ? 'Engine A' : 'White engine';
       el('black-label').textContent = cfg.format === 'duel' ? 'Engine B' : 'Black engine';
-      el('collection-fields').hidden = !isCollection; el('current-title').hidden = isCollection;
+      el('collection-fields').hidden = !isCollection; el('current-title').hidden = cfg.openingSource !== 'current';
+      el('cdb-fields').hidden = cfg.openingSource !== 'cdb';
       el('opening-moves-label').hidden = cfg.openingMode !== 'moves';
       el('opening-count').max = String(Math.max(1, count));
       el('collection-note').textContent = count ? `${count} games available. Auto uses opening metadata when available, otherwise up to 9 full moves.` : 'Choose a collection with games in the Game library.';
@@ -91,6 +105,9 @@
       el('game-custom-label').hidden = el('game-time').value !== 'custom';
       // Hidden settings keep their values but cannot block native form validation.
       el('form').querySelectorAll('input, select').forEach(input => { input.disabled = !!input.closest('[hidden]'); if (input.type === 'number') input.required = true; });
+      for(const name of ['cdb-start-moves','cdb-start-mode','cdb-start-count'])el(name).disabled = cfg.openingSource!=='cdb' || !cfg.cdbStartOn;
+      el('form').querySelectorAll('input,select').forEach(input=>{if(busy)input.disabled=true;});
+      dialog.querySelector('[data-action="cancel-start"]').hidden=!busy;
       const participants = cfg.engines.length;
       const perOpening = cfg.format === 'single' ? 1 : cfg.format === 'duel' ? 2 : participants * (participants - 1);
       const openings = Math.max(0, cfg.openingCount || 0), games = perOpening * openings * cfg.rounds;
@@ -112,7 +129,7 @@
       }
       if ([...el('collection').options].some(option => option.value === previousCollection)) el('collection').value = previousCollection;
       el('current-title').textContent = context.currentGameTitle || context.title || 'Current board position';
-      if (context.openingSource === 'current') el('opening-source').value = 'current';
+      if (['current','collection','cdb'].includes(context.openingSource)) el('opening-source').value = context.openingSource;
       el('human-play').hidden = typeof host.onHuman !== 'function';
       dialog.querySelector('[data-action="lichess"]').hidden = typeof host.onLichess !== 'function';
       updateSetup(); setStatus('');
@@ -122,7 +139,8 @@
         el('format').focus({ preventScroll: true });
       }
     }
-    function close() {
+    function close(cancel = true) {
+      if(cancel && busy)Promise.resolve(host.onCancelStart?.()).catch(error=>setStatus(error.message,true));
       if (!dialog.open) return;
       if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open');
       if (lastFocus?.isConnected) lastFocus.focus({ preventScroll: true });
@@ -200,6 +218,10 @@
         const content = doc.createElement('div'); content.className = 'tournament-event-body';
         const description = doc.createElement('p'); description.className = 'tournament-note';
         const date = new Date(event.createdAt); description.textContent = `${Number.isNaN(date.getTime()) ? '' : date.toLocaleString() + ' · '}${({ single: 'Single game', duel: 'Paired duel', 'round-robin': 'Round robin' })[event.config?.format] || 'Local engines'}`; content.appendChild(description);
+        const prefixes = [...new Map(games.filter(g=>g.opening?.cdbStart).map(g=>[g.opening.id,g.opening])).values()];
+        for(const opening of prefixes) {
+          const note=doc.createElement('p');note.className='tournament-note';note.textContent=root.ChessCDBStart?.status(opening)||opening.name;content.appendChild(note);
+        }
         const actions = doc.createElement('div'); actions.className = 'tournament-toolbar';
         if (event.state === 'running') actions.appendChild(button('Pause', 'pause', event.id));
         else if (!['complete', 'completed'].includes(event.state) && complete < games.length) actions.appendChild(button('Resume', 'resume', event.id));
@@ -221,12 +243,19 @@
       if (focusedSummary) [...history.querySelectorAll('details')].find(node => node.dataset.disclosure === focusedSummary)?.firstElementChild.focus({ preventScroll: true });
       else if (focus) [...history.querySelectorAll('button')].find(node => node.dataset.action === focus.action && node.dataset.event === focus.event && node.dataset.run === focus.run && node.dataset.format === focus.format)?.focus({ preventScroll: true });
     }
-    el('form').addEventListener('change', updateSetup);
+    el('form').addEventListener('change', event => {
+      updateSetup();
+      if(event.target.matches('[data-ui^="cdb-start-"]')) {
+        const c=readConfig();
+        if(Number.isInteger(c.cdbStartMoves)&&c.cdbStartMoves>=1&&c.cdbStartMoves<=30)try{host.onPreferences?.({cdbStartOn:c.cdbStartOn,cdbStartMoves:c.cdbStartMoves,cdbStartMode:c.cdbStartMode});}catch(error){setStatus(error.message,true);}
+      }
+    });
     el('form').addEventListener('input', event => { if (event.target.type === 'number') updateSetup(); });
     el('form').addEventListener('submit', async event => {
       event.preventDefault(); if (busy || el('start').disabled || !el('form').reportValidity()) return;
-      const config = readConfig(); busy = true; updateSetup(); setStatus('Preparing simulation…');
-      try { const started = await host.onStart?.(config); if (started !== false) close(); else setStatus('Simulation was not started.'); }
+      const config = readConfig(); if(!config.cdbStartOn && config.openingSource==='cdb')config.openingCount=1;
+      busy = true; updateSetup(); setStatus('Preparing simulation…');
+      try { const started = await host.onStart?.(config); if (started !== false) close(false); else setStatus('Simulation was not started.'); }
       catch (error) { setStatus(error.message || String(error), true); }
       finally { busy = false; updateSetup(); }
     });
@@ -237,6 +266,7 @@
       const action = control.dataset.action, id = control.dataset.event;
       try {
         if (action === 'close') close();
+        else if (action === 'cancel-start') { await host.onCancelStart?.(); setStatus('CDB start cancelled'); }
         else if (action === 'import') el('import-file').click();
         else if (action === 'lichess') { close(); await host.onLichess?.(); }
         else if ((action === 'human-white' || action === 'human-black') && typeof host.onHuman === 'function') {
@@ -256,7 +286,7 @@
       finally { el('import-file').value = ''; }
     });
     render(); updateSetup();
-    return { open, close, render, destroy() { close(); dialog.remove(); } };
+    return { open, close, render, setStatus, destroy() { close(); dialog.remove(); } };
   }
   root.ChessTournamentUI = { create };
 })(window);
