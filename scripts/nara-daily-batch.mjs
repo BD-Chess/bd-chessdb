@@ -77,7 +77,9 @@ function validateInstanceLog(l,date,instance,record,candidates,selection){
   assert(l&&l.schema==='nara.daily.instance_log.v1','instance log schema');
   assert(l.id===`${instanceId(date,instance)}-LOG`&&l.story_id===instanceId(date,instance)&&l.day_id===`NARA-D-${date}`&&l.date===date&&l.instance===instance,'instance log identity');
   for(const k of ['proposer','selector','author','critic'])assert(['GPT','CLAUDE'].includes(l[k]),'log role');
-  assert(l.proposer===l.author&&l.selector===l.critic&&l.author!==l.critic,'role pairing');
+  // Functional failover can split the original proposal/selection roles from
+  // the final author/critic roles. Preserve all four authentic attributions.
+  assert(l.author!==l.critic,'author and closing critic must be independent');
   assert(l.title===record.title&&l.final_critic_line===record.critic_line,'log/record binding');
   assert(Array.isArray(l.rounds)&&l.rounds.some(r=>r.stage==='AUTHOR_FINAL')&&l.rounds.some(r=>r.stage==='CRITIC_CLOSE'),'log close');
   normalizeEvaluation(l.evaluation);
@@ -127,7 +129,7 @@ function dayManifest(batch,items,featured,files){
   return {
     schema:'nara.daily.day.v1',id:`NARA-D-${batch.date}`,date:batch.date,published_at:batch.published_at,
     regime:'THREE_STORY_CAPACITY_R8',cutoff_local:batch.cutoff_local,featured_instance:featured,
-    selection_method:'highest 50/50 combined; tie higher minimum individual score; then earlier close',
+    selection_method:'highest READER_APPEAL_R1 50/50 mean; tie higher minimum individual reader score; then earlier close',
     story_count:sorted.length,
     instances:sorted.map(x=>({
       instance:x.instance,id:instanceId(batch.date,x.instance),title:x.record.title,
@@ -169,7 +171,7 @@ function patchArchive(html,batch,items,featured){
 }
 function patchLog(html,batch,items,featured){
   const rows=[...items].sort((a,b)=>instances.indexOf(a.instance)-instances.indexOf(b.instance)).map(x=>`<tr><td>${esc(x.instance)}</td><td>${esc(x.record.title)}</td><td>${x.log.evaluation.gpt.score}</td><td>${x.log.evaluation.claude.score}</td><td>${x.log.evaluation.combined.toFixed(1)}</td><td>${x.instance===featured?'featured':'archive'}</td></tr>`).join('');
-  return insertBeforeMainClose(html,`<section class="notice score-audit"><h2>${esc(batch.date)} · day selection</h2><p>All eligible finals were blind-scored before the batch was opened for comparison. Featured selection used the approved deterministic rule.</p><table><thead><tr><th>Instance</th><th>Story</th><th>GPT</th><th>Claude</th><th>Combined</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></section>`);
+  return insertBeforeMainClose(html,`<section class="notice score-audit"><h2>${esc(batch.date)} · day selection</h2><p>All eligible finals received independent READER_APPEAL_R1 judgments before comparison. Featured selection used the approved deterministic reader-mean rule.</p><table><thead><tr><th>Instance</th><th>Story</th><th>GPT</th><th>Claude</th><th>Reader mean</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></section>`);
 }
 
 export function validateBatch(batch){
