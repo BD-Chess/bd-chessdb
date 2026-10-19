@@ -48,7 +48,8 @@ test('archive includes all source text, honest pending and distinct R8 identitie
   const html=renderVersionArchive(root);
   assert.match(html,/Test &lt;Story&gt;/);
   assert.match(html,/A safe &lt;paragraph&gt;/);
-  assert.match(html,/No comparable paired SA1 grade yet/);
+  assert.doesNotMatch(html,/SA1|score-chip|80\/100|90\/100/);
+  assert.match(html,/Current reader ratings/);
   assert.match(archivePage([{date:'2026-10-12',title:'Test Story',id:s.story_id}],null,root),/id="version-history"/);
  }finally{fs.rmSync(root,{recursive:true,force:true})}
 });

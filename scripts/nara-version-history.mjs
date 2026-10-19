@@ -70,14 +70,6 @@ export function storyScoreTrend(root,storyId){
   return deriveVersionTrend(series.find(s=>s.story_id===storyId+':'+d.featured_instance));
 }
 const formatScore=x=>String(Math.round(x*100)/100).replace(/\.0+$/,'');
-function gradeView(v){
-  const g=v.grade;
-  if(!realGrade(g)){
-    let msg=v.coverage==='CLAUDE_SEALED_GPT_PENDING'?'Claude SA1 sealed; GPT SA1 pending':v.coverage==='PENDING_BOTH'?'Both SA1 scores pending — No comparable paired SA1 grade yet':v.coverage==='INVALID_CLAUDE_SCORE_OUT_OF_RANGE'?'INVALID: Claude score exceeds rubric maximum; no comparable paired SA1 grade yet':v.coverage==='GPT_BASELINE_PENDING'?'GPT first-draft SA1 pending; no comparable paired SA1 grade yet':'No comparable paired SA1 grade yet';
-    return '<p class="muted version-grade-pending">'+esc(msg)+' / Claudova ocena zapečatena oziroma ocenjevanje še poteka.</p>';
-  }
-  return '<p class="version-grade"><strong>GPT</strong> '+formatScore(g.gpt)+' / 100 · <strong>Claude</strong> '+formatScore(g.claude)+' / 100 · <strong>50/50</strong> '+formatScore(g.combined)+' / 100 <small>SA1</small></p>';
-}
 function versionView(v,id,index,branch='',images=[],translation=null,storyDate){
   const safeId=String(id+'-'+branch+'-'+v.version).replace(/[^A-Za-z0-9_-]/g,'-');
   const readable=v.story||{},scenes=Array.isArray(readable.scenes)?readable.scenes:[];
@@ -85,10 +77,10 @@ function versionView(v,id,index,branch='',images=[],translation=null,storyDate){
   const side=v.branch?' · '+esc(v.branch):'';
   const full=scenes.map((scene,j)=>renderStoryScene(scene,j+1,images,'en',5,storyDate)).join('');
   const sl=translation?'<article class="story" lang="sl" data-language-content="sl" hidden><h4>'+esc(translation.title)+'</h4>'+translation.scenes.map((s,j)=>renderStoryScene(s,j+1,images,'sl',5,storyDate)).join('')+'</article>':'';
-  const notes=v.note?'<p class="muted">'+esc(v.note)+'</p>':'';
+  const notes=v.note&&!/SA1|PEC-6|score|grade|ocen/i.test(v.note)?'<p class="muted">'+esc(v.note)+'</p>':'';
   const duplicate=v.same_text_events?.length>1?'<p class="muted">Identical text also recorded at '+esc(v.same_text_events.join(', '))+'</p>':'';
-  const rating=realGrade(v.grade)?' · '+formatScore(v.grade.combined)+'/100':' · PENDING';
-  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+rating+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+gradeView(v)+notes+duplicate+'<article class="story" lang="en"'+(translation?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
+
+  return '<details class="version-entry" id="'+esc(safeId)+'"><summary><strong>'+esc(v.version)+'</strong> · '+esc(stage)+side+'</summary><div class="inside"><p class="muted">Full English original · celotno angleško besedilo'+(branch?' · '+esc(branch):'')+'</p>'+notes+duplicate+'<article class="story" lang="en"'+(translation?' data-language-content="en"':'')+'><h4>'+esc(readable.title||'')+'</h4>'+(readable.deck?'<p class="lede">'+esc(readable.deck)+'</p>':'')+full+'</article>'+sl+'</div></details>';
 }
 function branchView(name,entries,id,finalVersion=null,images=[],translation=null,storyDate){
   return '<section class="version-branch"><h3>'+esc(name)+'</h3>'+entries.map((v,i)=>versionView(v,id,i,name,v.version===finalVersion?images:[],v.version===finalVersion?translation:null,storyDate)).join('')+'</section>';
@@ -97,7 +89,7 @@ export function renderVersionArchive(root){
   const series=listVersionSeries(root);
   if(!series.length)return '';
   const storyCount=series.length,versions=series.reduce((n,s)=>n+s.accepted_lineage.length+(s.parallel_branches||[]).reduce((m,b)=>m+(Array.isArray(b)?b.length:b.versions?.length||0),0),0);
-  const intro='<section class="version-history" id="version-history"><header class="masthead"><div class="eyebrow">GPT × Claude · text lineage / sled različic</div><h2>All published stories · every preserved author version</h2><p class="lede">Inspect each original, revision, rewrite and final text, including missing assessments. Public SA1 scores are 50/50 across models; PENDING never means zero. Earlier readings may be stronger. This archive does not hide them.</p><p class="lede">Vse objavljene zgodbe in ohranjene različice. Vse potrjene ocene SA1 so vidne, manjkajoče pa izrecno označene.</p><p class="muted">'+storyCount+' published story identities · '+versions+' version records, including separately labelled branches</p></header>';
+  const intro='<section class="version-history" id="version-history"><header class="masthead"><div class="eyebrow">GPT × Claude · text lineage / sled različic</div><h2>All published stories · every preserved author version</h2><p class="lede">Read the original, revisions and final text. Current reader ratings appear with the published reading editions.</p><p class="lede">Vse objavljene zgodbe in ohranjene različice. Bralske ocene so prikazane ob objavljenih bralnih izdajah.</p><p class="muted">'+storyCount+' published story identities · '+versions+' version records, including separately labelled branches</p></header>';
   const items=series.map(s=>{
     const sid='versions-'+s.story_id.replace(/[^a-z0-9]/gi,'-'),final=s.accepted_lineage.find(v=>v.version===s.final_version),grade=final?.grade,trend=deriveVersionTrend(s);
     const label=realGrade(grade)?formatScore(grade.combined)+'/100':'PENDING';
@@ -112,7 +104,7 @@ export function renderVersionArchive(root){
     }
     const main=branchView('Published story lineage / objavljena veja',s.accepted_lineage,s.story_id,s.final_version,images,translation,s.date);
     const alt=(s.parallel_branches||[]).map((b,i)=>Array.isArray(b)?branchView('Parallel branch '+(i+1),b,s.story_id,null,[],null,s.date):branchView(b.name||'Parallel branch',b.versions||[],s.story_id,null,[],null,s.date)).join('');
-    return '<details class="archive-item version-story" id="'+esc(sid)+'"><summary><time datetime="'+esc(s.date)+'">'+esc(s.date)+'</time><span class="story-summary-title"><strong>'+esc(s.story_id.includes(':')?s.story_id.slice(-2)+' · '+s.published_title:s.published_title)+'</strong><span class="score-chip score-trend--'+trend+'">'+esc(label)+'</span></span></summary><div class="inside">'+main+alt+'</div></details>';
+    return '<details class="archive-item version-story" id="'+esc(sid)+'"><summary><time datetime="'+esc(s.date)+'">'+esc(s.date)+'</time><span class="story-summary-title"><strong>'+esc(s.story_id.includes(':')?s.story_id.slice(-2)+' · '+s.published_title:s.published_title)+'</strong></span></summary><div class="inside">'+main+alt+'</div></details>';
   }).join('\n');
   return intro+items+'</section>';
 }

@@ -1,3 +1,4 @@
+import {readerRating,ratingMarkup,ratingNumber,loadReaderRatings,setReaderAlias,requireCurrentReaderEvaluation,registerReaderRating} from './nara-reader-ratings.mjs';
 /** Illuminara Daily R10 batch renderer.
  * Backward-compatible extension for the approved multi-story regime.
  * Existing single-story publication remains owned by scripts/nara-daily.mjs.
@@ -145,7 +146,7 @@ export function instanceStoryHtml(item,root=null){
   const prose=(src,lang)=>`<article class="story" lang="${lang}">${src.scenes.map((s,i)=>renderStoryScene(s,i+1,images,lang,3,r.date)).join('\n')}</article>`;
   const english=`<div data-language-content="en" lang="en"><p class="lede">${esc(r.deck)}</p>${prose(r,'en')}</div>`;
   const sl=t?`<div data-language-content="sl" lang="sl" hidden><p class="lede">${esc(t.deck)}</p>${prose(t,'sl')}</div>`:`<p data-language-content="sl" lang="sl" hidden>Ta zgodba je trenutno na voljo v angleščini.</p>`;
-  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}<span class="score-chip score-trend--${storyScoreTrend(root,r.id)}" aria-label="Combined literary score">${r.literary_score.display}</span></span></summary><div class="inside">${formatDayLinks(root,r.date,r.id)}${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
+  return `<details class="archive-item batch-instance" id="${esc(r.id)}"><summary><time datetime="${esc(r.date)}">${esc(r.date)} · ${esc(r.instance)}</time><span class="story-summary-title"><strong data-language-content="en" lang="en">${esc(r.title)}</strong>${t?`<strong data-language-content="sl" lang="sl" hidden>${esc(t.title)}</strong>`:''}${readerRating(root,r.id)?`<span class="reader-score-badge">${ratingNumber(readerRating(root,r.id).combined)} / 100</span>`:`<span class="score-chip">${r.literary_score?.display??''}</span>`}</span></summary><div class="inside">${loadReaderRatings(root)?ratingMarkup(readerRating(root,r.id)):''}${formatDayLinks(root,r.date,r.id)}${english}${sl}<blockquote class="critic-line">${esc(r.critic_line)}</blockquote></div></details>`;
 }
 
 function insertBeforeMainClose(html,fragment){const needle='</main>';const i=html.lastIndexOf(needle);assert(i>=0,'main close missing');return html.slice(0,i)+fragment+html.slice(i)}
@@ -212,6 +213,8 @@ export function publishBatch(root,input,now=new Date()){
     files[x.instance]={record:rp,record_sha256:hash(rb),log:lp,log_sha256:hash(lb)};
     const tp=instanceTranslationPath(batch.date,x.instance),tb=stringify(x.record.translation_sl);staged[tp]=tb;files[x.instance].translation=tp;files[x.instance].translation_sha256=hash(tb);
   }
+  for(const x of batch.instances){requireCurrentReaderEvaluation(root,x.log.evaluation);registerReaderRating(root,x.record,x.log.evaluation)}
+  setReaderAlias(root,'NARA-D-'+batch.date,item.record.id);
   const manifest=dayManifest(batch,batch.instances,featured,files),manifestBytes=stringify(manifest);staged[dayPath]=manifestBytes;
   const legacyFile=`daily/records/${batch.date}.json`,legacyLogFile=`daily/log/${batch.date}.json`;
   staged[legacyFile]=featuredBytes;staged[legacyLogFile]=featuredLogBytes;
@@ -231,6 +234,7 @@ export function publishBatch(root,input,now=new Date()){
   for(const [rel,html] of Object.entries(featuredPages))write(path.join(n,rel),html);
   const pageOutputs={
     ...featuredPages,
+    ...(fs.existsSync(path.join(n,'daily/reader-ratings.json'))?{'daily/reader-ratings.json':fs.readFileSync(path.join(n,'daily/reader-ratings.json'),'utf8')} : {}),
     'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations,root),batch,batch.instances,featured,root),
     [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),batch,batch.instances,featured,root),
     'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured),
