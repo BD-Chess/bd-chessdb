@@ -52,6 +52,9 @@ test('CDB controls render without overflow in desktop/APP 375/402/430, SL/EN, da
       const g=await p.locator('#simTournamentDialog').evaluate(d=>({width:innerWidth,scroll:d.scrollWidth,client:d.clientWidth,rect:d.getBoundingClientRect().toJSON(),source:d.querySelector('[data-ui="opening-source"] option:checked').textContent,controls:[...d.querySelectorAll('[data-ui^="cdb-start-"]')].filter(e=>!e.closest('[hidden]')).map(e=>({rect:e.getBoundingClientRect().toJSON(),disabled:e.disabled}))}));
       records.push({case:'UI',app,width,light,lang,...g});await p.screenshot({path:path.join(dir,'latest-ui.png')});
       assert(g.scroll<=g.client+1);assert(g.rect.x>=0&&g.rect.right<=g.width+1);assert.equal(g.source,lang==='sl'?'Nova partija · začetek s CDB':'New game · CDB start');
+      const labels=await p.evaluate(()=>({opening:document.querySelector('[data-ui="cdb-start-mode"]').parentElement.firstChild.textContent.trim(),after:document.querySelector('[data-ui="cdb-start-moves"]').parentElement.firstChild.textContent.trim(),status:window.ChessLanguage.translate('CDB start incomplete · 3/8 moves · CDB disabled · Engine play from move 4 · preparation 2.0 s')}));
+      assert.equal(labels.opening,lang==='sl'?'Otvoritev':'Opening');assert.equal(labels.after,lang==='sl'?'Začni po':'Start after');
+      if(lang==='sl'){assert.match(labels.status,/Nepopoln začetek s CDB/);assert.match(labels.status,/3\/8 potez/);assert.match(labels.status,/Motorja igrata od 4. poteze/);assert.match(labels.status,/priprava 2.0 s/);}
       assert(g.controls.every(c=>c.rect.width>=17&&!c.disabled));
       await el(p,'cdb-fields').scrollIntoViewIfNeeded();
       await p.screenshot({path:path.join(dir,'gui-'+app+'-'+width+'-'+lang+'-'+light+'.png')});

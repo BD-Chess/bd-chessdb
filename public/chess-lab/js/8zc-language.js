@@ -9,6 +9,8 @@
   const TO_SL = new Map(Object.entries({
     "New game · CDB start":"Nova partija · začetek s CDB",
     "CDB start":"Začetek s CDB",
+    "CDB start incomplete":"Nepopoln začetek s CDB",
+    "Opening":"Otvoritev",
     "Start after":"Začni po",
     "full moves":"polnih potezah",
     "Random – main openings":"Naključno – glavne otvoritve",
@@ -848,6 +850,7 @@
       [/^Before (.+)$/,m=>'Pred '+m[1]],
       [/^(\d+) half-moves · choose any position$/,m=>m[1]+' polpotez · izberi poljuben položaj'],
       [/^(CDB start|CDB start incomplete) · ([\d.]+)\/(\d+) moves$/,m=>(m[1]==='CDB start'?'Začetek s CDB':'Nepopoln začetek s CDB')+' · '+m[2]+'/'+m[3]+' potez'],
+      [/^([\d.]+)\/(\d+) moves$/,m=>m[1]+'/'+m[2]+' potez'],
       [/^Engine play from move (\d+)$/,m=>'Motorja igrata od '+m[1]+'. poteze'],
       [/^preparation ([\d.]+) s$/,m=>'priprava '+m[1]+' s'],
       [/^Go to (.+) at ply (\d+)$/,m=>'Pojdi na '+m[1]+' pri polpotezi '+m[2]],
