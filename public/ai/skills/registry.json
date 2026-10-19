@@ -1,0 +1,262 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "updated": "2026-10-19",
+  "repository": "BD-Chess/bd-chessdb",
+  "repository_root": "public/ai/skills",
+  "runtime_integration": {
+    "status": "not_connected",
+    "note": "Source skills only. The future website backend must load metadata, instructions, references and actual tools. No public chat agent is activated by this catalog."
+  },
+  "default_skill_id": "mdlxdcc-guide",
+  "selection": {
+    "strategy": "semantic_plus_page_and_conversation",
+    "load_metadata_first": true,
+    "load_bodies_on_demand": true,
+    "allow_multiple_project_skills": true,
+    "planned_entry_behavior": "skip_and_use_public_sources",
+    "follow_up_behavior": "retain_relevant_project_context",
+    "keyword_only": false
+  },
+  "skills": [
+    {
+      "id": "mdlxdcc-guide",
+      "name": "mdlxdcc-guide",
+      "title": "MDLxDCC Guide",
+      "description": "Pomočnik in usmerjevalec za MDLxDCC.org / MDL×DCC: razlage projektov, metod, naprav, aplikacij, raziskav in zgodb; vprašanja obiskovalcev, izračuni, primerjave, iskanje javnih virov ter izbira projektnih veščin. Use for questions about this website or its projects, including follow-ups about the current page and requests for a guided glance tour.",
+      "version": "1.0.0",
+      "availability": "ready",
+      "role": "default_guide",
+      "skill_path": "mdlxdcc-guide/SKILL.md",
+      "project_ids": [
+        "site"
+      ],
+      "page_prefixes": [
+        "/"
+      ],
+      "topic_hints": [
+        "MDLxDCC.org",
+        "MDL×DCC",
+        "BD × AI Lab",
+        "glance"
+      ],
+      "reference_paths": [
+        "mdlxdcc-guide/references/answering.md",
+        "mdlxdcc-guide/references/project-skill-contract.md",
+        "mdlxdcc-guide/references/runtime-contract.md",
+        "mdlxdcc-guide/references/site-map.md"
+      ],
+      "file_hashes": {
+        "SKILL.md": "ab8d68c47f4c7b2fb9335bd38235988ac826b464cca9711da21f95dc8f6a3acf",
+        "agents/openai.yaml": "4f65d0f6a7813c86b8afe4721815603741d49822f1f6847e4dbd44640e8cc5f2",
+        "references/answering.md": "40f80a04a1210e2f5b4584378ca92e6ac119c0082a5805cfd55dd548d98145ea",
+        "references/project-skill-contract.md": "5058d4d73b6cd9524b978b8bcb32c07f826785b518348c4e0d0c27de2b65373e",
+        "references/runtime-contract.md": "c3daba59612eadec1a05a4e7b8778cd7057d7967d047286d52f43412a4ad2468",
+        "references/site-map.md": "57c4a59d4008dae2a380d69bb6a51f570e81498fce524d9f394840e6fabcddbf"
+      }
+    }
+  ],
+  "planned_skills": [
+    {
+      "id": "dgte-advisor",
+      "name": "dgte-advisor",
+      "title": "DGTE Advisor",
+      "description": "Razlaga DGTE ter fizikalne in ekonomske ocene. Uporabi pri vprašanjih o DGTE ali ko trenutna stran/pogovor določa DGTE.",
+      "availability": "planned",
+      "suggested_skill_path": "dgte-advisor/SKILL.md",
+      "project_ids": [
+        "dgte"
+      ],
+      "page_prefixes": [
+        "/crp/DGTE.html"
+      ],
+      "topic_hints": [
+        "DGTE",
+        "elektrika",
+        "toplota",
+        "heat engine"
+      ]
+    },
+    {
+      "id": "mdlxdcc-method",
+      "name": "mdlxdcc-method",
+      "title": "MDL×DCC Method",
+      "description": "Podrobnosti MDL, DCC in metodnih primerjav.",
+      "availability": "planned",
+      "suggested_skill_path": "mdlxdcc-method/SKILL.md",
+      "project_ids": [
+        "method"
+      ],
+      "page_prefixes": [
+        "/crp/MDLxDCC.html"
+      ],
+      "topic_hints": [
+        "MDL",
+        "DCC",
+        "description length"
+      ]
+    },
+    {
+      "id": "engineering-advisor",
+      "name": "engineering-advisor",
+      "title": "Engineering Advisor",
+      "description": "HTH, SORA in drugi javni inženirski koncepti.",
+      "availability": "planned",
+      "suggested_skill_path": "engineering-advisor/SKILL.md",
+      "project_ids": [
+        "hth",
+        "sora"
+      ],
+      "page_prefixes": [
+        "/crp/HTH.html",
+        "/crp/SORA.html"
+      ],
+      "topic_hints": [
+        "HTH",
+        "SORA"
+      ]
+    },
+    {
+      "id": "optimization-advisor",
+      "name": "optimization-advisor",
+      "title": "Optimization Advisor",
+      "description": "TSP, Trip in primerjave optimizacijskih metod.",
+      "availability": "planned",
+      "suggested_skill_path": "optimization-advisor/SKILL.md",
+      "project_ids": [
+        "tsp",
+        "trip"
+      ],
+      "page_prefixes": [
+        "/Trip/",
+        "/trip/",
+        "/BD/BD_8ZRP.html"
+      ],
+      "topic_hints": [
+        "TSP",
+        "Trip",
+        "routing"
+      ]
+    },
+    {
+      "id": "compression-advisor",
+      "name": "compression-advisor",
+      "title": "Compression Advisor",
+      "description": "8Z kodeki, nabori, rekonstrukcija in benchmark pogoji.",
+      "availability": "planned",
+      "suggested_skill_path": "compression-advisor/SKILL.md",
+      "project_ids": [
+        "compression"
+      ],
+      "page_prefixes": [
+        "/8Z/"
+      ],
+      "topic_hints": [
+        "8Z",
+        "compression",
+        "stiskanje"
+      ]
+    },
+    {
+      "id": "chessbest-advisor",
+      "name": "chessbest-advisor",
+      "title": "ChessBest Advisor",
+      "description": "ChessBest, uporabniški postopki in šahovski raziskovalni viri.",
+      "availability": "planned",
+      "suggested_skill_path": "chessbest-advisor/SKILL.md",
+      "project_ids": [
+        "chess"
+      ],
+      "page_prefixes": [
+        "/chess/"
+      ],
+      "topic_hints": [
+        "ChessBest",
+        "šah",
+        "chess"
+      ]
+    },
+    {
+      "id": "ai8-advisor",
+      "name": "ai8-advisor",
+      "title": "AI8 Advisor",
+      "description": "AI8, ArenaLoop, AIm3 in javno raziskovalno delo.",
+      "availability": "planned",
+      "suggested_skill_path": "ai8-advisor/SKILL.md",
+      "project_ids": [
+        "ai8",
+        "aim3"
+      ],
+      "page_prefixes": [
+        "/AI8/",
+        "/ai8/",
+        "/BD/BD_AIM3.html"
+      ],
+      "topic_hints": [
+        "AI8",
+        "ArenaLoop",
+        "AIm3"
+      ]
+    },
+    {
+      "id": "theory-advisor",
+      "name": "theory-advisor",
+      "title": "Theory Advisor",
+      "description": "ToE, CFH in CCH; hipoteze, izpeljave in testi.",
+      "availability": "planned",
+      "suggested_skill_path": "theory-advisor/SKILL.md",
+      "project_ids": [
+        "toe",
+        "cfh",
+        "cch"
+      ],
+      "page_prefixes": [
+        "/crp/ToE.html",
+        "/crp/Physics_CFH_MDLxDCC.html",
+        "/BD/BD_CCH_Foundations.html"
+      ],
+      "topic_hints": [
+        "ToE",
+        "CFH",
+        "CCH"
+      ]
+    },
+    {
+      "id": "nara-illuminara-guide",
+      "name": "nara-illuminara-guide",
+      "title": "Nara / Illuminara Guide",
+      "description": "Pripovedni svetovi, zgodbe, liki in umetniška kontinuiteta.",
+      "availability": "planned",
+      "suggested_skill_path": "nara-illuminara-guide/SKILL.md",
+      "project_ids": [
+        "nara",
+        "illuminara"
+      ],
+      "page_prefixes": [
+        "/Nara/",
+        "/nara/"
+      ],
+      "topic_hints": [
+        "Nara",
+        "Illuminara"
+      ]
+    },
+    {
+      "id": "glance-tour",
+      "name": "glance-tour",
+      "title": "Glance Tour",
+      "description": "Izvedba živih ogledov iz potrjenega scenarija in z dejanskim spletnim izvajalnikom.",
+      "availability": "planned",
+      "suggested_skill_path": "glance-tour/SKILL.md",
+      "project_ids": [
+        "glance"
+      ],
+      "page_prefixes": [],
+      "topic_hints": [
+        "glance",
+        "ogled",
+        "guided tour"
+      ]
+    }
+  ]
+}
