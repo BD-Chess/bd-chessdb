@@ -112,9 +112,8 @@ try{
  assert.equal(await page.locator('#immersive-exit').isVisible(),false);
  checks.double_click_enters_and_returns='PASS';
 
- const cdp=await context.newCDPSession(page);
  const point=await page.locator('#comic-page').evaluate(image=>{const box=image.getBoundingClientRect();return {x:box.x+box.width/2,y:box.y+box.height/2};});
- const tap=async()=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...point,id:1,radiusX:1,radiusY:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});};
+ const tap=async()=>page.touchscreen.tap(point.x,point.y);
  await tap();await page.waitForTimeout(80);await tap();await page.locator('#immersive-exit').waitFor();await page.locator('#immersive-exit').click();
  checks.touch_double_tap_and_reachable_exit='PASS';
 
