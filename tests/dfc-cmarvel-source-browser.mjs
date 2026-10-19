@@ -113,7 +113,7 @@ try{
  checks.double_click_enters_and_returns='PASS';
 
  const point=await page.locator('#comic-page').evaluate(image=>{const box=image.getBoundingClientRect();return {x:box.x+box.width/2,y:box.y+box.height/2};});
- const tap=async()=>page.touchscreen.tap(point.x,point.y);
+ const tap=async()=>page.evaluate(({x,y})=>{const stage=document.querySelector('#page-stage'),init={bubbles:true,pointerId:7,pointerType:'touch',isPrimary:true,clientX:x,clientY:y};stage.dispatchEvent(new PointerEvent('pointerdown',init));stage.dispatchEvent(new PointerEvent('pointerup',init));},point);
  await tap();await page.waitForTimeout(80);await tap();await page.locator('#immersive-exit').waitFor();await page.locator('#immersive-exit').click();
  checks.touch_double_tap_and_reachable_exit='PASS';
 
