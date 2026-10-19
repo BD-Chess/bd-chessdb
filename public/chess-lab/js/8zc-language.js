@@ -805,10 +805,15 @@
   "Choose a finite Time so every engine gets a turn.": "Izberi končni čas, da pride na vrsto vsak motor."
 };
   for(const [en,sl]of Object.entries(additions))TO_SL.set(en,sl);
+  for(const [en,sl]of TO_SL)if(sl.includes('SF Full'))TO_SL.set(en,sl.replace(/\bSF Full\b/g,'SF'));
   for(const [en,sl]of TO_SL)if(!TO_EN.has(sl))TO_EN.set(sl,en);
+  // This abbreviation is ambiguous: never reverse-map a generic SF source
+  // label to SF Full. Original source nodes restore their own English label.
+  TO_SL.set('SF Full','SF');
+  TO_SL.set('Loading SF Full on demand…','Nalagam SF na zahtevo…');
   function dynamicText(text){
     const rules=[
-      [/^(.+): (loading|preparing|ready|queued|searching|running|complete|partial|stopped|failed)$/,m=>m[1]+': '+(TO_SL.get(m[2])||m[2])],
+      [/^(.+): (loading|preparing|ready|queued|searching|running|complete|partial|stopped|failed)$/,m=>(TO_SL.get(m[1])||m[1])+': '+(TO_SL.get(m[2])||m[2])],
       [/^(\d+)\/(\d+) complete$/,m=>m[1]+'/'+m[2]+' končano'],
       [/^(\d+)\/(\d+) measured candidates$/,m=>m[1]+'/'+m[2]+' izmerjenih kandidatov'],
       [/^(\d+)\/(\d+) source probes$/,m=>m[1]+'/'+m[2]+' pregledov vira'],
@@ -829,7 +834,7 @@
       [/^(.+): current-position candidates unknown\.$/,m=>m[1]+': kandidati trenutnega položaja niso znani.'],
       [/^(\d+) markers? from the PGN or navigation checkpoints\. Markers are questions to inspect, not verified engine mistakes\.$/,m=>m[1]+' oznak iz PGN ali navigacijskih točk. Oznake so vprašanja za pregled, ne potrjene napake motorja.'],
       [/^Preview position, (White|Black) to move\. FEN (.+)$/,m=>'Predogled položaja, na potezi '+(m[1]==='White'?'beli':'črni')+'. FEN '+m[2]],
-      [/^Ready in RAM: (.+)$/,m=>'Pripravljeno v RAM: '+m[1]],
+      [/^Ready in RAM: (.+)$/,m=>'Pripravljeno v RAM: '+m[1].split(', ').map(name=>TO_SL.get(name)||name).join(', ')],
       [/^Origin storage estimate: (.+) used \/ (.+) quota\. (.+)$/,m=>'Ocena shrambe izvora: porabljeno '+m[1]+' / kvota '+m[2]+'. '+m[3]],
 
       [/^Position after (\d+) half-moves$/,m=>'Položaj po '+m[1]+' polpotezah'],
@@ -846,7 +851,7 @@
       [/^(\d+) hours?$/,m=>m[1]+' h'],
       [/^New search: (.+); search again with a larger budget$/,m=>'Novo iskanje: '+m[1]+'; znova išči z večjim proračunom'],
       [/^Stop (.+) and Cards each move$/,m=>'Ustavi '+m[1]+' in kartice za vsako potezo'],
-      [/^Stop (.+)$/,m=>'Ustavi '+m[1]],
+      [/^Stop (.+)$/,m=>'Ustavi '+(TO_SL.get(m[1])||m[1])],
       [/^Analysis failed: (.+)$/,m=>'Analiza ni uspela: '+m[1]],
       [/^Error: (.+)$/,m=>'Napaka: '+m[1]],
       [/^Preview (.+) after (.+)$/,m=>'Predogled '+m[1]+' po '+m[2]],

@@ -53,14 +53,29 @@ for(const prefix of ['/','/bd-chessdb/'])test('LAB keeps its install identity, i
   assert(manifest.icons.every(x=>x.src.includes('?v=')),'updated artwork refreshes cached launcher icons');
   const installIcon=page.locator('#chessPwaInstall img');await installIcon.evaluate(image=>image.decode());
   assert.equal(await installIcon.evaluate(image=>image.naturalWidth),192);
+  const brandIcon=page.locator('.brand-line .chessbest-brand-mark');await brandIcon.evaluate(image=>image.decode());
+  assert.equal(await brandIcon.evaluate(image=>image.naturalWidth),192);
   assert(icons.every(x=>x.url.startsWith(identity+'icons/')),'no fallback to the root-site icon');
   for(const language of ['en','sl'])for(const light of [false,true]){
     await page.evaluate(({language,light})=>{window.ChessLanguage.apply(language,false);document.body.classList.toggle('light-theme',light);},{language,light});
     assert.equal(await page.locator('#chessPwaInstall span').innerText(),language==='sl'?'Namesti LAB':'Install LAB');
+    assert.equal((await page.locator('.sf-full-toggle').innerText()).trim(),language==='sl'?'SF':'SF Full');
+    assert.equal(await page.locator('#analysisSource option[value="sf-full"]').textContent(),language==='sl'?'SF':'SF Full');
+    assert.equal(await page.locator('#analysisSource option[value="sf-full"]').getAttribute('value'),'sf-full');
+    assert(await brandIcon.isVisible());
     assert(await installIcon.isVisible());
     const rect=await page.locator('#chessPwaInstall').boundingBox();
     assert(rect.x>=0&&rect.x+rect.width<=1280&&rect.y>=0,'install control remains in the page header');
   }
+  for(const width of [375,402,430]){
+    await page.setViewportSize({width,height:900});
+    await page.waitForFunction(()=>document.body.classList.contains('app-mobile'));
+    const logo=page.locator('.app-brand-icon');await logo.evaluate(image=>image.decode());
+    assert(await logo.isVisible());const rect=await logo.boundingBox();
+    assert(rect.width===26&&rect.x>=0&&rect.x+rect.width<=width,'phone header keeps the same logo visible');
+  }
+  await page.setViewportSize({width:1280,height:900});
+  await page.waitForFunction(()=>!document.body.classList.contains('app-mobile'));
   const before=await page.evaluate(()=>window.ChessLabHost.getReviewGame());assert.match(before.sourcePGN,/PWA retained fixture/);
   await page.evaluate(()=>window.dispatchEvent(new Event('appinstalled')));
   assert.equal(await page.locator('#chessPwaInstall').evaluate(e=>e.hidden),true);
@@ -72,5 +87,5 @@ for(const prefix of ['/','/bd-chessdb/'])test('LAB keeps its install identity, i
   const controller=await page.evaluate(()=>navigator.serviceWorker.controller.scriptURL);assert.equal(controller,identity+'engine-sw.js');
   assert.equal(await page.evaluate(async()=>{const r=await fetch('icons/icon-192.png');return r.ok&&r.headers.get('content-type').includes('image/png');}),true);
   assert.deepEqual(errors,[]);
-  records.push({prefix,identity,parentController,controller,manifestURL:app.url,installabilityErrors:install.installabilityErrors,icons,offlineGameRetained:true,errors});
+  records.push({prefix,identity,parentController,controller,manifestURL:app.url,installabilityErrors:install.installabilityErrors,icons,brandLogo:true,phoneWidths:[375,402,430],slFullLabel:'SF',offlineGameRetained:true,errors});
 });
