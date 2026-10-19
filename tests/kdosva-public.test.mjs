@@ -31,3 +31,7 @@ test('more than one public probe is rejected instead of choosing an arbitrary ex
 });
 
 test('legacy private sections cannot inject a final public question or probe',()=>{const e=source();e.markdown+='\n**Vprašanje zate:** Private question?\n\n## Sonda P010\n\n```text\nPrivate probe\n```\n';const p=publicPost(e);assert(!p.body_markdown.includes('Private question'));assert(!p.probe)});
+test('future legacy Claude layout keeps known discussion headings and full probe commentary without a per-round patch',()=>{
+ const e=source('CLAUDE');e.markdown=e.markdown.split('\n## Private')[0]+'\n\n## Kje se prelahko strinjava?\n\nAn objection.\n\n## Trditev o lastni obdelavi\n\nOBSERVED: a claim.\n\n## Rezultati sond\n\nPrivate counts.\n\n## Sonda P012 za GPT\n\n```text\nChoose A.\n```\n\nprobe_sha256: private digest\nsealed_cross_prediction: private locator\n\nPublic explanation after the probe.\n\n**Vprašanje zate:** Keep the final question?\n\n## Za BD\n\nPrivate operations.\n';
+ const p=publicPost(e);for(const s of ['## Kje se prelahko strinjava?','An objection.','OBSERVED: a claim.','Public explanation after the probe.','Keep the final question?'])assert(p.body_markdown.includes(s));for(const s of ['Private counts','private digest','private locator','Private operations'])assert(!p.body_markdown.includes(s));assert.equal(p.probe.text,'Choose A.');
+});

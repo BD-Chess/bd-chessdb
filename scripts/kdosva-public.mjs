@@ -17,6 +17,24 @@ const REVIEWED_CLAUDE={
 const FROZEN_LEGACY_SOURCES=new Set(["79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "5e953e6626b18a05ddb11415703b959bbc90f52babf3f4513159f4d35e9a8d33", "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "978c32cbe53f6454de229cd1183847938721cd8a5f4b4c7c39c4f67d52ba2d3b", "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "9389e6b71ec58e8b960687427ae8c3ff280ddeea2399f75e88d8b2c234280194", "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "ff6cb03f10345b823a69d10fd3147f96a7ab90332e45e7446174721f4977f8df", "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "a76fca5c1ce545fa03c56b3a5abe2bd6315181b018da3f0a65a90e78fb082c9e"]);
 const PUBLIC_BEGIN='<!-- KDOSVA_PUBLIC_BEGIN -->',PUBLIC_END='<!-- KDOSVA_PUBLIC_END -->';
 const paragraphStarting=(text,start)=>{const p=text.split(/\n\s*\n/).find(p=>p.startsWith(start));if(!p)throw Error('Missing reviewed public paragraph: '+start);return p.trim()};
+function legacyBody(prose,titleLength){
+  const sections=prose.slice(titleLength).split(/\n## /),parts=[sections.shift().trim()];
+  for(const section of sections){
+    const nl=section.indexOf('\n'),heading=nl<0?section:section.slice(0,nl),content=nl<0?'':section.slice(nl+1).trim();
+    if(/^(?:Kje se prelahko strinjava\?|Trditev o lastni obdelavi)$/.test(heading)){parts.push('## '+heading+'\n\n'+content);continue}
+    if(/^(?:Za BD\b|Zasebni\b|Private\b)/i.test(heading))break;
+    if(/^Rezultati sond\b/i.test(heading))continue;
+    if(/^Sonda\s+P\d+/i.test(heading)){
+      const probe=/```text\n[\s\S]*?\n```/.exec(content);if(!probe)throw Error('Missing legacy public probe block');
+      // These exact metadata paragraphs are private. All remaining commentary
+      // stays public, subject to the ordinary privacy guard; do not drop it.
+      const tail=content.slice(probe.index+probe[0].length).trim().split(/\n\s*\n/).filter(p=>p&&!/^(?:probe_sha256|sealed_cross_prediction)\s*[:(]/i.test(p));
+      parts.push(...tail);continue;
+    }
+    throw Error('Unreviewed public heading; use explicit public boundaries: '+heading);
+  }
+  return parts.filter(Boolean).join('\n\n');
+}
 function markedBody(prose){
   const count=marker=>prose.split(marker).length-1;
   if(!count(PUBLIC_BEGIN)&&!count(PUBLIC_END))return null;
@@ -49,11 +67,7 @@ export function publicPost(event){
     body=start.slice(0,end).trim()+'\n\n'+paragraphStarting(prose,reviewed.comment);
     if(reviewed.candidate){if(!prose.includes(reviewed.candidate))throw Error('Missing candidate excerpt');body+='\n\n'+reviewed.candidate}
   }else if(!FROZEN_LEGACY_SOURCES.has(hash(text))&&!(m[1]==='R002'&&event.actor==='GPT')){
-    // Do not silently lose a new discussion heading under the legacy layout.
-    for(const section of prose.split(/\n## /).slice(1)){
-      const heading=section.split('\n')[0];
-      if(!/^(?:Sonda\s+P\d+|Za BD\b|Zasebni\b|Rezultati sond\b|Private\b)/i.test(heading))throw Error('Unreviewed public heading; use explicit public boundaries: '+heading);
-    }
+    body=legacyBody(prose,title[0].length);
   }
   // Legacy Claude questions follow the probe; bounded sources put them inside.
   const publicTail=FROZEN_LEGACY_SOURCES.has(hash(text))?prose:prose.split(/\n## (?:Za BD|Zasebni|Private)\b/)[0];
