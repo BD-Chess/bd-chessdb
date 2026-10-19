@@ -12,8 +12,8 @@ const root=path.join(repo,'public/Nara/dualframe-lab');
 const text=async p=>readFile(path.join(root,p),'utf8');
 const bytes=async p=>readFile(path.join(root,p));
 const sha=value=>createHash('sha256').update(value).digest('hex');
-const [html,reader,cryptoCode,manifestText,dfcReader,sw,releaseText,sefExtraText]=await Promise.all([
- text('cmarvel-01/index.html'),text('cmarvel-01/reader.mjs'),text('cmarvel-01/crypto.mjs'),text('cmarvel-01/manifest.json'),text('dfc-reader.mjs'),text('sw.js'),text('release.json'),readFile(path.join(repo,'public/BD/O/sef-extra.json'),'utf8')
+const [html,reader,cryptoCode,manifestText,dfcReader,sw,releaseText,sefExtraText,buildScript]=await Promise.all([
+ text('cmarvel-01/index.html'),text('cmarvel-01/reader.mjs'),text('cmarvel-01/crypto.mjs'),text('cmarvel-01/manifest.json'),text('dfc-reader.mjs'),text('sw.js'),text('release.json'),readFile(path.join(repo,'public/BD/O/sef-extra.json'),'utf8'),readFile(path.join(repo,'scripts/build-cmarvel-protected.mjs'),'utf8')
 ]);
 const manifest=JSON.parse(manifestText),release=JSON.parse(releaseText),comicDir=path.join(root,'cmarvel-01');
 
@@ -34,9 +34,28 @@ test('the gallery card links to a separate, original CMarvel cover and protected
 
 test('all eleven story pages are authenticated ciphertext; no source page is published',async()=>{
  validateComicManifest(manifest);assert.equal(manifest.pages.length,11);assert.equal(manifest.iterations,600000);
- const files=(await readdir(path.join(comicDir,'assets'))).sort();assert.equal(files.length,11);assert.ok(files.every(name=>name.endsWith('.webp.enc')));
+ const files=(await readdir(path.join(comicDir,'assets'))).filter(name=>/^CM_\d+\.webp\.enc$/.test(name)).sort();assert.equal(files.length,11);
  for(const page of manifest.pages){const cipher=await bytes(`cmarvel-01/${page.file}`);assert.equal(cipher.length,page.cipher_bytes);assert.equal(sha(cipher),page.cipher_sha256);assert.ok(cipher.length>16);}
  const contents=await readdir(comicDir);assert.ok(!contents.some(name=>/^CM_\d+\.webp$/i.test(name)));
+});
+
+test('page-one art review exposes six encrypted P/L pairs at native dimensions for BD selection',async()=>{
+ validateComicManifest(manifest);const review=manifest.art_review;
+ assert.equal(review.schema,'bd.dfc.cmarvel.art-review.v1');assert.equal(review.status,'UNREVIEWED');assert.equal(review.pairs.length,6);
+ const files=(await readdir(path.join(comicDir,'assets/review'))).sort();assert.equal(files.length,12);assert.ok(files.every(name=>name.endsWith('.webp.enc')));
+ for(let i=0;i<6;i++){
+  const pair=review.pairs[i],id=`CM01-P01-K0${i+1}`;assert.equal(pair.panel_id,id);
+  for(const [key,orientation] of [['portrait','P'],['landscape','L']]){
+   const art=pair[key],cipher=await bytes(`cmarvel-01/${art.file}`);
+   assert.equal(art.candidate,i===1||i===3||(i===5&&orientation==='P')?'A01':'A02');
+   assert.equal(cipher.length,art.cipher_bytes);assert.equal(sha(cipher),art.cipher_sha256);
+   assert.equal(art.orientation,orientation);assert.equal(art.mime,'image/webp');
+   assert.deepEqual([art.width_px,art.height_px],orientation==='P'?[1584,2816]:[2816,1584]);
+  }
+ }
+ assert.equal(release.protected_comic.art_review.pair_count,6);assert.equal(release.protected_comic.art_review.candidate_image_count,12);
+ assert.equal(release.protected_comic.art_review.text_overlays,0);assert.match(html,/čakajo na tvojo oceno/i);
+ assert.match(reader,/loadReviewArt/);assert.match(reader,/showPage\(place.page,place.panel,place.orientation,place.reviewMode\)/);
 });
 
 test('AES-GCM accepts valid ciphertext and rejects a wrong derived key',async()=>{
@@ -60,6 +79,7 @@ test('the protected comic is its own story-local state, without changing the pub
  assert.match(reader,/bd\.dfc\.reader\.v1:CMARVEL_01/);
  assert.equal(release.cartoons?.story_id,'ILLUMINARA_TEZA_SVETLOBE_01');
  assert.equal(release.cartoons?.page_count,8);assert.equal(release.cartoons?.pair_count,39);
+ assert.match(buildScript,/CMARVEL_ART_REVIEW_PASSWORD_MISMATCH/);assert.match(buildScript,/art_review:previousReview/);assert.match(buildScript,/protected_comic\.manifest_sha256=hash\(manifestBytes\)/);
 });
 
 test('first-page source geometry is bounded, stable and honestly separate from P/L generation',()=>{
@@ -68,7 +88,7 @@ test('first-page source geometry is bounded, stable and honestly separate from P
  const expected=[[2806,1470],[470,650],[880,650],[475,650],[440,650],[526,650]];
  for(let i=0;i<6;i++){const [x,y,w,h]=sourceRect(0,i);assert.ok(x>=0&&y>=0&&x+w<=3840&&y+h<=2160);assert.deepEqual([w,h],expected[i]);assert.equal(FIRST_PAGE_PANELS[i].id,`CM01-P01-K0${i+1}`);}
  for(const input of [[-1,null],[11,null],[0,-1],[0,6],[1,0],[0,'1']])assert.throws(()=>sourceRect(...input));
- assert.deepEqual(sourceRect(10),[0,0,3840,2160]);assert.match(html,/P\/L pari: 0\/6/);assert.equal(release.protected_comic.source_review.generated_pair_count,0);
+ assert.deepEqual(sourceRect(10),[0,0,3840,2160]);assert.equal(release.protected_comic.source_review.generated_pair_count,0);assert.equal(release.protected_comic.art_review.pair_count,6);
 });
 
 test('old page bookmarks, new first-page bookmarks and explicit review links remain distinct',()=>{
