@@ -13,6 +13,19 @@ export function validateComicManifest(value){
   if(p.page_id!==id||p.file!==`assets/${id}.webp.enc`||!validComicPath(p.file)||p.mime!=='image/webp'||p.width_px!==3840||p.height_px!==2160||!Number.isInteger(p.cipher_bytes)||p.cipher_bytes<16||!/^[a-f0-9]{64}$/.test(p.cipher_sha256)||p.aad!==`DFC-CMARVEL-01:v1:${id}.webp`)throw Error('CMARVEL_PAGE_INVALID');
   if(fromBase64(p.iv).length!==12)throw Error('CMARVEL_IV_INVALID');
  }
+ const review=value.art_review;
+ if(review){
+  if(review.schema!=='bd.dfc.cmarvel.art-review.v1'||review.version!==1||review.status!=='UNREVIEWED'||review.page_id!=='CM_01'||review.pair_count!==6||review.pairs?.length!==6)throw Error('CMARVEL_ART_REVIEW_INVALID');
+  for(let i=0;i<6;i++){
+   const pair=review.pairs[i],id=`CM01-P01-K${String(i+1).padStart(2,'0')}`;
+   if(pair.panel_id!==id)throw Error('CMARVEL_ART_PANEL_INVALID');
+   for(const [orientation,key,width,height] of [['P','portrait',1584,2816],['L','landscape',2816,1584]]){
+    const art=pair[key],name=`${id}-${orientation}.webp`;
+    if(art?.file!==`assets/review/${name}.enc`||!validComicPath(art.file)||art.mime!=='image/webp'||art.orientation!==orientation||art.width_px!==width||art.height_px!==height||!['A01','A02'].includes(art.candidate)||!Number.isInteger(art.cipher_bytes)||art.cipher_bytes<16||!/^[a-f0-9]{64}$/.test(art.cipher_sha256)||!/^[a-f0-9]{64}$/.test(art.source_sha256)||!Number.isInteger(art.source_bytes)||art.source_bytes<1||!/^[a-f0-9]{64}$/.test(art.payload_sha256)||!Number.isInteger(art.payload_bytes)||art.payload_bytes<1||art.aad!==`DFC-CMARVEL-01:art-review-v1:${name}`)throw Error('CMARVEL_ART_IMAGE_INVALID');
+    if(fromBase64(art.iv).length!==12)throw Error('CMARVEL_IV_INVALID');
+   }
+  }
+ }
  return value;
 }
 export async function deriveComicKey(passphrase,salt,iterations=600000,subtle=globalThis.crypto?.subtle){

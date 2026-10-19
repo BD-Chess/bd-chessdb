@@ -41,6 +41,26 @@ async function loadEncryptedConfig({config,configPath,plainFormat,expectedAad,ke
 if(!source||!path.isAbsolute(source))throw Error('SOURCE_DIRECTORY_REQUIRED');
 const {vaultPassword,comicPassword}=await readSecrets();
 if(typeof vaultPassword!=='string'||!vaultPassword||typeof comicPassword!=='string'||!comicPassword)throw Error('PASSWORDS_REQUIRED');
+let previousComic=null;
+try{previousComic=await readJson(path.join(comicDir,'manifest.json'));}catch(error){if(error.code!=='ENOENT')throw error;}
+const previousReview=previousComic?.art_review;let retainedSalt=null,retainedIterations=600000;
+if(previousReview){
+ if(previousComic.story_id!=='CMARVEL_01'||previousReview.schema!=='bd.dfc.cmarvel.art-review.v1'||previousReview.pairs?.length!==6)throw Error('CMARVEL_ART_REVIEW_MANIFEST_INVALID');
+ retainedSalt=un64(previousComic.salt);retainedIterations=previousComic.iterations;
+ const previousKey=await derive(comicPassword,retainedSalt,retainedIterations);
+ for(let i=0;i<6;i++){
+  const pair=previousReview.pairs[i],panelId=`CM01-P01-K${String(i+1).padStart(2,'0')}`;
+  if(pair.panel_id!==panelId)throw Error('CMARVEL_ART_REVIEW_PANEL_INVALID');
+  for(const [orientation,key] of [['P','portrait'],['L','landscape']]){
+   const asset=pair[key],filename=`${panelId}-${orientation}.webp`;
+   if(asset?.file!==`assets/review/${filename}.enc`||asset.aad!==`DFC-CMARVEL-01:art-review-v1:${filename}`)throw Error('CMARVEL_ART_REVIEW_ASSET_INVALID');
+   const encrypted=await readFile(path.join(comicDir,asset.file));
+   if(encrypted.length!==asset.cipher_bytes||hash(encrypted)!==asset.cipher_sha256)throw Error('CMARVEL_ART_REVIEW_CIPHERTEXT_INVALID');
+   let plain;try{plain=await openAES(previousKey,un64(asset.iv),asset.aad,encrypted);}catch{throw Error('CMARVEL_ART_REVIEW_PASSWORD_MISMATCH');}
+   if(hash(plain)!==asset.payload_sha256)throw Error('CMARVEL_ART_REVIEW_PLAINTEXT_INVALID');
+  }
+ }
+}
 const vault=await readJson(path.join(vaultDir,'vault.json'));
 if(vault.format!=='BD-O-VAULT-2'||vault.kdf?.iterations<600000)throw Error('VAULT_CONFIG_INVALID');
 const kek=await derive(vaultPassword,un64(vault.kdf.salt),vault.kdf.iterations);
@@ -76,7 +96,7 @@ await writeFile(path.join(vaultDir,extraName),extraEncoded+'\n');
 const newExtraConfig={format:'BD-O-SEF-EXTRA-CONFIG-1',release:'20261017-cmarvel-v1',vault:vault.vault,compression:'gzip',cipher:{alg:'AES-256-GCM',iv:b64(extraIv),aad:extraAad},plaintext_sha256:hash(extraBytes),data:{path:extraName,sha256:hash(te.encode(extraEncoded+'\n'))}};
 await writeFile(path.join(vaultDir,'sef-extra.json'),JSON.stringify(newExtraConfig,null,2)+'\n');
 
-const iterations=600000,salt=webcrypto.getRandomValues(new Uint8Array(16));
+const iterations=previousReview?retainedIterations:600000,salt=retainedSalt??webcrypto.getRandomValues(new Uint8Array(16));
 const storyKey=await derive(comicPassword,salt,iterations);
 await mkdir(path.join(comicDir,'assets'),{recursive:true});
 const pages=[];
@@ -93,8 +113,12 @@ for(let i=1;i<=11;i++){
  if(!Buffer.from(verification).equals(plain))throw Error('COMIC_ENCRYPTION_VERIFY_FAILED');
  pages.push({page_id:pageId,file,iv:b64(iv),aad,mime:'image/webp',width_px:3840,height_px:2160,cipher_sha256:hash(encrypted),cipher_bytes:encrypted.length});
 }
-const manifest={schema:'bd.dfc.protected-comic.v1',story_id:'CMARVEL_01',version:1,protection:'PBKDF2-SHA-256 + AES-256-GCM',iterations,salt:b64(salt),pages};
+const manifest={schema:'bd.dfc.protected-comic.v1',story_id:'CMARVEL_01',version:1,protection:'PBKDF2-SHA-256 + AES-256-GCM',iterations,salt:b64(salt),pages,...(previousReview?{art_review:previousReview}:{})};
 const manifestBytes=te.encode(JSON.stringify(manifest,null,2)+'\n');
 await writeFile(path.join(comicDir,'manifest.json'),manifestBytes);
+const releasePath=path.join(repo,'public/Nara/dualframe-lab/release.json'),release=await readJson(releasePath);
+if(release.protected_comic?.story_id!=='CMARVEL_01')throw Error('CMARVEL_RELEASE_METADATA_INVALID');
+release.protected_comic.manifest_sha256=hash(manifestBytes);
+await writeFile(releasePath,JSON.stringify(release,null,2)+'\n');
 rawMaster.fill(0);
 console.log(JSON.stringify({status:'PROTECTED_ASSETS_BUILT',story_pages:pages.length,ciphertext_bytes:pages.reduce((sum,p)=>sum+p.cipher_bytes,0),comic_manifest_sha256:hash(manifestBytes),sef_extra_release:newExtraConfig.release,sef_entry_added:true,plaintext_passwords_written:false}));
