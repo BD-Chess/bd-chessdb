@@ -55,3 +55,11 @@ Visitors share **one $100 USD monthly pool across GPT and Claude**, using Europe
 Netlify production requires `MDLXDCC_GUIDE_DATABASE_URL`, `MDLXDCC_GUIDE_DATABASE_PUBLISHABLE_KEY`, `MDLXDCC_GUIDE_DATABASE_SECRET`, `MDLXDCC_GUIDE_SESSION_SECRET`, and `MDLXDCC_GUIDE_OWNER_EMAIL`, in addition to both provider secrets. All are configured as production secrets with Functions scope included. Never commit their values. The dedicated Supabase project is `mdlxdcc-guide` in the existing MDLxDCC organization. No Netlify billing-plan migration, recharge or paid add-on is used.
 
 The pool covers these Guide endpoints only. Existing MAL and other applications have their own provider usage and do not become subject to this ledger. Provider/platform billing can differ from the conservative estimate. If storage, auth or settlement is unavailable, visitor paid questions stop; no unmetered fallback exists.
+
+## Production verification — 2026-10-19
+
+Approved release: `b492ccd3f804b259e0f6b205dd1fed706e8d51a5`, published Netlify deployment `6ad64b7027d811d00c7a7409` on www.mdlxdcc.org. [The release run](https://github.com/BD-Chess/bd-chessdb/actions/runs/39289355806) passed the complete root landing/PWA regression, all 15 server/SQL tests and the DOM client checks before publishing. The one-time release trigger was then removed; the existing release policy remains.
+
+Live production checks, using real provider responses rather than simulated clients, confirmed visitor registration, anonymous paid-request rejection, GPT plus Claude in shared history, DGTE skill/source retrieval and the illustrative 216 kWh / 32.40 EUR calculation. Both providers settled into the same monthly pool with no remaining holds. A separate existing OWNER login and browser conversation were exempt: they did not change that pool. The disposable visitor test account was deactivated afterward, keeping its accounting audit intact.
+
+Phone checks confirmed the bottom panel, both provider controls, retained draft/transcript after AI hide/show, one persistent frame and no horizontal overflow at a 360 CSS-pixel width. The live glance opening verified eight curves and received an actual GPT comment before its 60-second countdown began. Browser tests contain no provider credentials or owner password in their output.
