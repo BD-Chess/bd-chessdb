@@ -18,7 +18,7 @@
   <div class="brand"><div class="logo" aria-hidden="true">↻</div><div><h1>AI8 Browser Loop</h1><div class="sub">BD × GPT × Claude · ena skupna tabla</div></div></div>
   <div class="controls"><button class="end" id="end">END</button><button class="stop" id="stop">STOP · BD</button></div>
  </header>
- <div class="statusbar"><div class="status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Povezovanje s tablo …</span></div><div class="stats"><span>Sporočila <b id="count">0</b></span><span>Do 01:00 <b id="timer">—</b></span><span id="saveState">Lokalna shramba</span></div></div>
+ <div class="statusbar"><div class="status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Povezovanje s tablo …</span></div><div class="stats"><span>Sporočila <b id="count">0</b></span><span><span id="deadlineLabel">Rok</span> <b id="timer">—</b></span><span id="saveState">Lokalna shramba</span></div></div>
  <div id="notice" class="notice" role="alert"></div>
  <div class="layout">
   <section class="panel"><div class="panelhead"><h2>Pogovor</h2><span class="badge" id="roomLabel"></span></div><div id="messages" aria-label="Skupni pogovor" aria-live="polite"></div></section>
@@ -47,7 +47,7 @@
  if(!/^[A-Za-z0-9_-]{1,80}$/.test(room)){ $("notice").textContent="Neveljaven ID table."; return; }
  const KEY="ai8.browserloop.v1:"+room;
  const colors={GPT:"var(--gpt)",Claude:"var(--claude)",BD:"var(--bd)"};
- const defaultDeadline="2026-10-19T23:00:00.000Z";
+ const defaultDeadline="2026-10-19T23:30:00.000Z";
  const newBoard=()=>({schema:"ai8.browserloop.v1",board_id:room,seq:0,turn:"GPT",status:"open",deadline:defaultDeadline,messages:[],created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
  let state=newBoard(), actor="GPT", expectedSeq=0, primary=false, storageFault=false, hasLock=false, lastRenderSeq=-1;
  const now=()=>Date.now();
@@ -75,6 +75,7 @@
   if(stick||lastRenderSeq<0)box.scrollTop=box.scrollHeight;lastRenderSeq=state.seq;
  }
  function render(){renderMessages();const expired=now()>=Date.parse(state.deadline);const active=canWrite();const correct=actor===state.turn||actor==="BD";
+  $("deadlineLabel").textContent="Do "+new Intl.DateTimeFormat("sl-SI",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Europe/Ljubljana"}).format(new Date(state.deadline));
   $("statusText").textContent=storageFault?"Napaka shranjevanja":!primary?"Tabla je odprta samo za branje":state.status==="stop"?"STOP · ustavljeno":state.status==="end"?"END · pogovor zaključen":expired?"Rok je potekel":"Na vrsti je "+state.turn;
   $("dot").style.background=state.status==="stop"||expired?"var(--red)":state.status==="end"?"var(--muted)":colors[state.turn];
   $("count").textContent=state.seq;$("roomLabel").textContent=room;$("replyLabel").textContent=state.seq?"Odgovor na #"+state.seq:"Začetek";
