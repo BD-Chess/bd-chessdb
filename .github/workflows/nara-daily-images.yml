@@ -20,6 +20,9 @@ on:
       - 'scripts/nara-daily.mjs'
       - 'scripts/nara-daily-batch.mjs'
       - 'scripts/nara-version-history.mjs'
+      - 'scripts/nara-reader-ratings.mjs'
+      - 'public/Nara/daily/reader-ratings.json'
+      - 'tests/nara-reader-ratings.test.mjs'
       - 'tests/nara-daily*.test.mjs'
       - 'tests/nara-version-history.test.mjs'
       - 'public/Nara/daily/illustrations/**'
@@ -56,8 +59,10 @@ jobs:
           node --check scripts/nara-daily.mjs
           node --check scripts/nara-daily-batch.mjs
           node --check scripts/nara-version-history.mjs
+          node --check scripts/nara-reader-ratings.mjs
           node --check tests/nara-daily.test.mjs
           node --check tests/nara-daily-illustrations.test.mjs
       - name: Run Daily tests and image integrity checks
-        run: node --test tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs
+        run: node --test tests/nara-reader-ratings.test.mjs tests/nara-responsive-artwork.test.mjs tests/nara-format-editions.test.mjs tests/nara-daily-resolution.test.mjs tests/nara-daily-lightbox.test.mjs tests/nara-instance-illustrations.test.mjs tests/nara-daily.test.mjs tests/nara-daily-illustrations.test.mjs tests/nara-daily-batch.test.mjs tests/nara-version-history.test.mjs
+
 

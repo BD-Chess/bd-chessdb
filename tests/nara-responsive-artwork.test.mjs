@@ -66,7 +66,7 @@ test('Oct9-S1 preserves its own approved landscape folder and rejects a sibling 
  const changed=structuredClone(m);changed.images[0].variants.L_HD.src=changed.images[0].variants.L_HD.src.replace('/S1/','/S2/');
  assert.throws(()=>responsiveEditionArtwork(root,i,changed,validateWebp,[],()=>approved.images),/unsafe responsive variant path/);
 });
-for(const [key,score] of [['2026-10-09-S2',86.5],['2026-10-09-S3',84]])test(key+' remains readable without artwork, including when a stray manifest is reintroduced',t=>{
+for(const [key,score] of [['2026-10-09-S2',66.5],['2026-10-09-S3',70]])test(key+' remains readable without artwork, including when a stray manifest is reintroduced',t=>{
  const i=loadFormatEditions(root).find(x=>x.entry.key===key),html=renderEditionPage(root,i);
  assert.equal(i.combined,score);assert.equal(fs.existsSync(path.join(n,i.paths.artwork)),false);
  assert.doesNotMatch(html,/<figure\b|data-nara-responsive=|nara-daily-responsive\.js/);
@@ -135,3 +135,4 @@ test('normal regeneration is idempotent and leaves later editions and immutable 
  generateFormatEditions(r);const before=fs.readFileSync(path.join(target,'Nara-AI-2026-10-06-format-R1.html'));assert.deepEqual(generateFormatEditions(r).changed,[]);assert.deepEqual(fs.readFileSync(path.join(target,'Nara-AI-2026-10-06-format-R1.html')),before);
  for(const [file,bytes]of originals)assert.deepEqual(fs.readFileSync(path.join(target,file)),bytes);
 });
+
