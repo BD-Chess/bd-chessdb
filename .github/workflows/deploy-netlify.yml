@@ -96,6 +96,10 @@ jobs:
         if: steps.netlify.outputs.ready == 'true' && hashFiles('functions/package.json') != ''
         run: npm install --prefix functions --no-audit --no-fund
 
+      - name: Verify the public MDLxDCC Guide
+        if: steps.netlify.outputs.ready == 'true'
+        run: node --test tests/mdlxdcc-guide.test.mjs
+
       - name: Prepare the correct publish root for the selected site
         if: steps.netlify.outputs.ready == 'true'
         shell: bash
@@ -138,3 +142,4 @@ jobs:
           path: netlify-deploy.json
           if-no-files-found: error
           retention-days: 30
+
