@@ -67,15 +67,22 @@ for(const prefix of ['/','/bd-chessdb/'])test('LAB keeps its install identity, i
     const rect=await page.locator('#chessPwaInstall').boundingBox();
     assert(rect.x>=0&&rect.x+rect.width<=1280&&rect.y>=0,'install control remains in the page header');
   }
+  // The actual phone controller uses device identity or explicit APP mode,
+  // rather than changing desktop presentation merely on viewport resize.
+  const phone=await browser.newContext({viewport:{width:375,height:900},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'});t.after(()=>phone.close());
+  await phone.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.abort());
+  await phone.addInitScript(()=>localStorage.setItem('ChessBest:LAB:v2:settings',JSON.stringify({cdbEnabled:false,dccEnabled:false,theme:'dark'})));
+  const phonePage=await phone.newPage();phonePage.on('pageerror',e=>errors.push(e.message));
+  await phonePage.goto(origin+prefix+'chess-lab/');
+  await phonePage.waitForFunction(()=>window.ChessLabHost&&document.body.classList.contains('app-mobile'));
   for(const width of [375,402,430]){
-    await page.setViewportSize({width,height:900});
-    await page.waitForFunction(()=>document.body.classList.contains('app-mobile'));
-    const logo=page.locator('.app-brand-icon');await logo.evaluate(image=>image.decode());
+    await phonePage.setViewportSize({width,height:900});
+    const logo=phonePage.locator('.app-brand-icon');await logo.evaluate(image=>image.decode());
     assert(await logo.isVisible());const rect=await logo.boundingBox();
     assert(rect.width===26&&rect.x>=0&&rect.x+rect.width<=width,'phone header keeps the same logo visible');
   }
-  await page.setViewportSize({width:1280,height:900});
-  await page.waitForFunction(()=>!document.body.classList.contains('app-mobile'));
+  await phonePage.evaluate(()=>window.ChessLanguage.apply('sl',false));
+  assert.equal((await phonePage.locator('.sf-full-toggle').textContent()).trim(),'SF');
   const before=await page.evaluate(()=>window.ChessLabHost.getReviewGame());assert.match(before.sourcePGN,/PWA retained fixture/);
   await page.evaluate(()=>window.dispatchEvent(new Event('appinstalled')));
   assert.equal(await page.locator('#chessPwaInstall').evaluate(e=>e.hidden),true);
