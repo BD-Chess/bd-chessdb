@@ -152,14 +152,23 @@ test('Claude streams visible text, uses the same DGTE tools and preserves signed
  assert.ok(payloads[3].messages.at(-1).content.some(b=>b.type==='tool_result'&&b.content.includes('32.4')));
 });
 
-test('Claude provider errors are redacted and tour narration cannot request page navigation', async () => {
+test('Claude provider errors are redacted and tour narration is bounded to the already observed page', async () => {
  const handler=makeHandler({configured:{claude:true,gpt:false},knowledgeFactory:()=>createKnowledge({fetcher}),clientFactory:()=>({messages:{stream(payload){
-  assert.ok(!payload.tools.some(t=>t.name==='show_public_page'));
-  assert.ok(payload.tools.some(t=>t.name==='load_skill'));
+  assert.equal(payload.tools,undefined);assert.equal(payload.thinking,undefined);assert.equal(payload.max_tokens,800);
   const e=Error('sk-ant-private-key');e.status=401;throw e;
  }}})});
  const text=await (await handler(req({provider:'claude',message:'Comment on this scene',mode:'tour_comment'}))).text();
  assert.match(text,/AI_UNAVAILABLE/);assert.doesNotMatch(text,/sk-ant|private-key/);
+});
+
+test('GPT tour comment makes one short model call without tools or navigation', async () => {
+ let calls=0;
+ const handler=makeHandler({configured:true,knowledgeFactory:()=>createKnowledge({fetcher}),clientFactory:()=>({responses:{create:async payload=>{
+  calls++;assert.deepEqual(payload.tools,[]);assert.equal(payload.tool_choice,'none');assert.equal(payload.max_output_tokens,800);
+  return (async function*(){yield {type:'response.output_text.delta',delta:'Vidnih je osem krivulj.'};yield {type:'response.completed',response:{status:'completed',output:[]}}})();
+ }}})});
+ const text=await (await handler(req({message:'Comment on the verified eight curves.',mode:'tour_comment',page:{path:'/index-demo.html',verified:true,excerpt:'Eight curves'}}))).text();
+ assert.match(text,/"type":"done"/);assert.match(text,/osem krivulj/);assert.equal(calls,1);
 });
 
 test('landing preserves existing entry points and one persistent chat/frame; public tour excludes protected scenes', async () => {
