@@ -23,6 +23,7 @@ const manifest=JSON.parse(manifestText),release=JSON.parse(releaseText),comicDir
 test('CMarvel opens directly without a password gate',()=>{
  assert.match(html,/<title>CMarvel 01 · R&amp;D predogled<\/title>/);
  assert.match(html,/R&amp;D · JAVNI PREDOGLED/);
+ assert.ok(html.includes("reader.mjs?v=32"));
  assert.doesNotMatch(html,/type=["']password|gate-form|passphrase|Odpri strip|Zakleni strip/i);
  assert.doesNotMatch(reader,/passphrase|deriveComicKey|decryptComicBytes|unlockStory|gate-form|lockStory/i);
  assert.match(html,/noindex,nofollow,noarchive,nosnippet,noimageindex/);
