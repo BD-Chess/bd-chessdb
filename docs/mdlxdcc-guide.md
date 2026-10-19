@@ -38,6 +38,8 @@ Navigation and visible content are checked before commentary. With the provider 
 
 On phones AI opens a full-width bottom chat panel; during a tour the scene stays above it. The composer follows the visual viewport when the on-screen keyboard opens. The AI control and close button hide the same panel without losing the conversation or draft. On larger screens the chat stays at the left. Right-hand browser sidebars remain outside the webpage's layout. Tour links preserve the selected site language.
 
+Redirects to Netlify's lowercase, extensionless HTML URLs are matched only to already registered public paths. Snapshots keep the original repository path for source retrieval. Unregistered URLs remain unavailable.
+
 ## Privacy and usage
 
 The transcript is stored only in this tab's sessionStorage and sent as bounded conversation context to the endpoint. The app does not archive visitor conversations or accept provider response/thread IDs from the client. Requests use public sources, not personal account data. OpenAI processes the questions; the interface says so.
