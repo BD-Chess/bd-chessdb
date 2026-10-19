@@ -2,6 +2,7 @@ import { createPublicRoutes } from './routes.mjs?v=20261019-r1';
 
 const root = new URL('../../', import.meta.url);
 const endpoint = new URL('/.netlify/functions/mdlxdcc-guide', location.origin);
+const authEndpoint = new URL('/.netlify/functions/mdlxdcc-guide-auth', location.origin);
 const $ = id => document.getElementById(id);
 const panel = $('guide-panel'), log = $('guide-messages'), input = $('guide-input'), frame = $('guide-frame');
 const storageKey = 'mdlxdcc-guide-conversation-v1';
@@ -12,9 +13,12 @@ const words = {
  en: { title:'MDL×DCC Guide', subtitle:'Public guide', close:'Hide chat', welcome:'What are you curious about?', intro:'Explore the projects, ask for an explanation, or take a guided tour.', glance:'Start glance →', projects:'What is MDL×DCC?', dgte:'DGTE: electricity in €?', placeholder:'Ask about a project …', send:'Send', fine:'One shared conversation in this tab. {provider} processes your question and conversation. Check answers against their sources.', reading:'Reading public sources …', thinking:'Thinking …', checking:'Checking the details …', unavailable:'The assistant is currently unavailable. Try again later. The guided tour is available with comments from its script.', rate:'The question limit has been reached. Wait a minute and try again.', timeout:'The answer took too long. Try again or shorten the question.', interrupted:'The answer was interrupted.', sources:'Sources read', scenario:'Comment from the tour script', next:'Next · n', pause:'Pause', resume:'Resume', back:'Back', stop:'Finish', home:'Back to landing', loading:'Opening the page …', paused:'Paused — ask a question or resume.', wait:'Next scene in', seconds:'s', completed:'The tour is complete. Ask about anything you have seen.', pageError:'This page could not be verified. Choose Next or open the link directly.', unknown:'Choose: glance, glance it, glance devices, glance creative, glance ai8 or glance theories.', ready:'public sources', offline:'connection unavailable', tour:'Tour', external:'Open page in a tab', truncated:'The answer was shortened. Ask a follow-up to continue.' }
 };
 const lang = () => document.documentElement.lang.toLowerCase().startsWith('sl') ? 'sl' : 'en';
+Object.assign(words.sl, { loginTitle:'Prijava za vprašanja GPT in Claude', registerTitle:'Ustvari račun za vodnika', loginInfo:'Vprašanje ostane pripravljeno. Javni ogled deluje tudi brez prijave.', email:'E-pošta', password:'Geslo', login:'Prijava', logout:'Odjava', register:'Ustvari račun', registerChoice:'Še nimaš računa? Ustvari ga', loginChoice:'Že imaš račun? Prijavi se', cancelLogin:'Nazaj v klepet', budgetInfo:'Obiskovalci si delijo največ 100 USD mesečne porabe API. BD je izven te kvote.', signedOut:'Vprašanja s prijavo · glance je javen', signedIn:'Prijavljen obiskovalec', owner:'BD · izven javne kvote', monthlyLimit:'Skupna mesečna kvota obiskovalcev je porabljena. Ogled glance ostaja na voljo.', storageError:'Prijava ali beleženje porabe trenutno ni dosegljivo. Poskusi pozneje.', invalidLogin:'E-pošta ali geslo ni pravilno.', exists:'Račun s to e-pošto že obstaja. Uporabi Prijava.', invalidPassword:'Geslo mora imeti vsaj 8 in največ 256 znakov.', invalidEmail:'Vpiši veljaven e-poštni naslov.', pool:'Javna poraba', ownUsage:'Tvoja vprašanja', conservative:'konservativna ocena', loginRequired:'Za odgovor se prijavi. Vprašanje ostane pripravljeno.' });
+Object.assign(words.en, { loginTitle:'Sign in to ask GPT or Claude', registerTitle:'Create your Guide account', loginInfo:'Your question stays ready. The public tour also works without signing in.', email:'Email', password:'Password', login:'Sign in', logout:'Sign out', register:'Create account', registerChoice:'New here? Create an account', loginChoice:'Already registered? Sign in', cancelLogin:'Back to chat', budgetInfo:'Visitors share a maximum $100 monthly API budget. BD is outside that quota.', signedOut:'Sign in to ask · glance is public', signedIn:'Signed-in visitor', owner:'BD · outside the public quota', monthlyLimit:'The shared monthly visitor budget is exhausted. The glance tour remains available.', storageError:'Sign-in or usage accounting is currently unavailable. Try again later.', invalidLogin:'The email or password is incorrect.', exists:'An account with this email already exists. Choose Sign in.', invalidPassword:'Use a password of 8 to 256 characters.', invalidEmail:'Enter a valid email address.', pool:'Public usage', ownUsage:'Your questions', conservative:'conservative estimate', loginRequired:'Sign in for an answer. Your question stays ready.' });
 const w = key => words[lang()][key] || key;
 let messages = [], available = null, activeRequest = null, requestNumber = 0, tour = null, sceneNumber = 0, timer = null, manifestPromise, catalogPromise;
 let selectedProvider = 'gpt', providerAvailable = { gpt:null, claude:null };
+let account = null, usage = null, authMode = 'login', authBusy = false;
 const routes = createPublicRoutes(['/', '/index.html', '/index-atlas.html', '/index-demo.html', '/BD/', '/Trip/demo.html']);
 const allowed = routes.known;
 const publicScenes = new Set(allowed);
@@ -78,12 +82,48 @@ function updateProvider() {
  $('guide-provider').setAttribute('aria-label', lang() === 'sl' ? 'Izberi pomočnika za naslednji odgovor' : 'Choose the next assistant');
  $('guide-subtitle').textContent = available === true ? `${providerName(selectedProvider)} · ${w('ready')}` : available === false ? `${providerName(selectedProvider)} · ${w('offline')}` : w('subtitle');
  $('guide-privacy').textContent = w('fine').replace('{provider}', selectedProvider === 'claude' ? 'Anthropic' : 'OpenAI');
+ updateAccount();
 }
 function chooseProvider(provider) {
  if (activeRequest || provider === selectedProvider) return;
  if (tour) pauseTour(); selectedProvider = provider;
  try { sessionStorage.setItem(providerKey, provider); } catch {}
  updateProvider();
+}
+
+function updateAccount() {
+ $('guide-account-label').textContent = account?.role === 'owner' ? w('owner') : account ? w('signedIn') : w('signedOut');
+ $('guide-account-action').textContent = w(account ? 'logout' : 'login');
+ $('guide-account-action').disabled = Boolean(activeRequest) || authBusy;
+ $('guide-usage').textContent = account?.role === 'visitor' && usage && !usage.exempt ? `${w('pool')}: $${Number(usage.spent + usage.reserved).toFixed(2)} / $${Number(usage.limit).toFixed(0)} · ${usage.month}\n${w('ownUsage')}: ${usage.questions} · $${Number(usage.own_spent).toFixed(4)} (${w('conservative')})` : '';
+ $('guide-auth-title').textContent = w(authMode === 'register' ? 'registerTitle' : 'loginTitle');
+ $('guide-auth-submit').textContent = w(authMode === 'register' ? 'register' : 'login');
+ $('guide-auth-mode').textContent = w(authMode === 'register' ? 'loginChoice' : 'registerChoice');
+ $('guide-password').autocomplete = authMode === 'register' ? 'new-password' : 'current-password';
+ $('guide-password').minLength = authMode === 'register' ? 8 : 1;
+}
+function showAuth(show) {
+ if (show && tour) pauseTour();
+ $('guide-auth').hidden = !show; panel.classList.toggle('guide-auth-open', show); $('guide-auth-error').hidden = true;
+ if (!show) { $('guide-password').value = ''; $('guide-email').value = ''; input.focus({ preventScroll:true }); }
+ else $('guide-email').focus({ preventScroll:true });
+ updateAccount();
+}
+const authMessage = code => w(({INVALID_EMAIL:'invalidEmail',INVALID_PASSWORD:'invalidPassword',INVALID_LOGIN:'invalidLogin',ACCOUNT_EXISTS:'exists',MONTHLY_LIMIT:'monthlyLimit',RATE_LIMITED:'rate',AUTH_REQUIRED:'loginRequired'})[code] || 'storageError');
+async function refreshAccount() {
+ try {
+  const r = await fetch(authEndpoint, { cache:'no-store', signal:AbortSignal.timeout(12000) }); if (!r.ok) return;
+  const d = await r.json(); account = d.authenticated ? d.account : null; usage = d.usage || null; updateAccount();
+ } catch {}
+}
+async function sendAuth(action, details = {}) {
+ authBusy = true; $('guide-auth-submit').disabled = true; $('guide-auth-mode').disabled = true; updateAccount();
+ try {
+  const r = await fetch(authEndpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action,...details}), signal:AbortSignal.timeout(20000) });
+  const d = await r.json(); if (!r.ok) throw Error(d.error?.code || (r.status === 429 ? 'RATE_LIMITED' : 'AUTH_UNAVAILABLE'));
+  account = d.authenticated ? d.account : null; usage = d.usage || null; showAuth(false);
+ } catch(e) { $('guide-auth-error').textContent = authMessage(e.message); $('guide-auth-error').hidden = false; }
+ finally { $('guide-password').value = ''; authBusy = false; $('guide-auth-submit').disabled = false; $('guide-auth-mode').disabled = false; updateAccount(); }
 }
 
 function translate() {
@@ -93,6 +133,7 @@ function translate() {
  $('guide-page-external').setAttribute('aria-label', w('external'));
  $('guide-toggle').setAttribute('aria-label', lang() === 'sl' ? 'AI — odpri ali skrij vodnika' : 'AI — show or hide the guide');
  updateProvider();
+ updateAccount();
  updateTourStatus();
 }
 function topSize() {
@@ -123,7 +164,7 @@ async function probe() {
 }
 function setOpen(open) {
  if (!open && tour) pauseTour(); panel.hidden = !open; document.body.classList.toggle('guide-open', open); $('guide-toggle').setAttribute('aria-expanded', String(open)); topSize();
- if (open) { catalog(); probe(); requestAnimationFrame(() => { input.focus({ preventScroll:true }); scrollEnd(); }); } else $('guide-toggle').focus({ preventScroll:true });
+ if (open) { catalog(); probe(); refreshAccount(); requestAnimationFrame(() => { ($('guide-auth').hidden ? input : $('guide-email')).focus({ preventScroll:true }); scrollEnd(); }); } else $('guide-toggle').focus({ preventScroll:true });
 }
 function snapshot() {
  try {
@@ -165,6 +206,7 @@ function home() { if (tour) pauseTour(); $('guide-stage').hidden = true; documen
 
 function cancelAnswer() { requestNumber++; activeRequest?.abort(); activeRequest = null; $('guide-busy').hidden = true; $('guide-send').disabled = false; log.setAttribute('aria-busy','false'); updateProvider(); }
 async function ask(message, { recordUser = true, tourComment = false } = {}) {
+ if (!account) { if (!tourComment) { input.value = message; showAuth(true); } return false; }
  const requestProvider = selectedProvider;
  const history = messages.filter(m => ['user','assistant'].includes(m.role) && m.complete).slice(-16).map(m => ({ role:m.role, content:m.content, provider:m.provider }));
  if (recordUser) addMessage('user', message);
@@ -174,7 +216,7 @@ async function ask(message, { recordUser = true, tourComment = false } = {}) {
  const deadline = setTimeout(() => controller.abort(), 56000);
  try {
   const r = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ message, provider:requestProvider, history, page:snapshot(), language:lang(), mode:tourComment ? 'tour_comment' : 'chat' }), signal:controller.signal });
-  if (!r.ok || !r.headers.get('content-type')?.includes('text/event-stream')) { const error = Error(r.status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE'); throw error; }
+  if (!r.ok || !r.headers.get('content-type')?.includes('text/event-stream')) { let code; try { code = (await r.json()).error?.code; } catch {} throw Error(code || (r.status === 429 ? 'RATE_LIMITED' : 'AI_UNAVAILABLE')); }
   const reader = r.body.getReader(), decoder = new TextDecoder(); let buffer = '';
   for (;;) {
    const { value, done:ended } = await reader.read(); if (ended) break; if (number !== requestNumber) { await reader.cancel(); throw Error('INTERRUPTED'); }
@@ -198,11 +240,12 @@ async function ask(message, { recordUser = true, tourComment = false } = {}) {
   if (error.message === 'AI_UNAVAILABLE') { providerAvailable[requestProvider] = false; translate(); }
   if (!answer.content) { answer.element.remove(); messages = messages.filter(m => m !== answer); }
   else { answer.complete = false; const note = document.createElement('p'); note.className = 'guide-error'; note.textContent = w('interrupted'); answer.body.append(note); }
-  if (number === requestNumber && !tourComment) addMessage('notice', error.message === 'RATE_LIMITED' ? w('rate') : error.name === 'AbortError' || error.message === 'TIMEOUT' ? w('timeout') : w('unavailable'));
+  if (error.message === 'AUTH_REQUIRED') { account = null; usage = null; if (!tourComment) { input.value = message; showAuth(true); } }
+  if (number === requestNumber && !tourComment) addMessage('notice', ['RATE_LIMITED','MONTHLY_LIMIT','AUTH_REQUIRED','STORAGE_UNAVAILABLE','PRICING_MISMATCH','UNPRICED_MODEL'].includes(error.message) ? authMessage(error.message) : error.name === 'AbortError' || error.message === 'TIMEOUT' ? w('timeout') : w('unavailable'));
   save(); return false;
  } finally {
   clearTimeout(deadline);
-  if (number === requestNumber) { activeRequest = null; $('guide-busy').hidden = true; $('guide-send').disabled = false; log.setAttribute('aria-busy','false'); updateProvider(); }
+  if (number === requestNumber) { activeRequest = null; $('guide-busy').hidden = true; $('guide-send').disabled = false; log.setAttribute('aria-busy','false'); updateProvider(); updateAccount(); refreshAccount(); }
   scrollEnd();
  }
 }
@@ -253,7 +296,7 @@ async function showScene() {
   const observation = observeAdapter(scene), page = snapshot();
   addMessage('notice', `${active.cursor + 1} / ${active.ids.length} · ${scene.title}`);
   let narrated = false;
-  if (available === true) narrated = await ask(`Scene: ${scene.title}\nObserved interaction: ${observation}\nPrepared script (reference, not proof of current page): ${scene.narration[lang()] || scene.narration.en}\nComment on the verified page in 2–4 sentences.`, { recordUser:false, tourComment:true });
+  if (available === true && account) narrated = await ask(`Scene: ${scene.title}\nObserved interaction: ${observation}\nPrepared script (reference, not proof of current page): ${scene.narration[lang()] || scene.narration.en}\nComment on the verified page in 2–4 sentences.`, { recordUser:false, tourComment:true });
   if (number !== sceneNumber || tour !== active) return;
   if (!narrated) {
    const text = scene.narration[lang()] || scene.narration.en;
@@ -298,6 +341,10 @@ async function submit(text) {
 $('guide-toggle').addEventListener('click', () => setOpen(panel.hidden));
 for (const provider of ['gpt','claude']) $('guide-provider-' + provider).addEventListener('click', () => chooseProvider(provider));
 $('guide-close').addEventListener('click', () => setOpen(false));
+$('guide-account-action').addEventListener('click', () => account ? sendAuth('logout') : showAuth(true));
+$('guide-auth-cancel').addEventListener('click', () => showAuth(false));
+$('guide-auth-mode').addEventListener('click', () => { authMode = authMode === 'login' ? 'register' : 'login'; $('guide-auth-error').hidden = true; updateAccount(); });
+$('guide-auth').addEventListener('submit', e => { e.preventDefault(); if (!authBusy) sendAuth(authMode, {email:$('guide-email').value, password:$('guide-password').value}); });
 $('guide-lab').addEventListener('click', () => $('ai8-vision-open').click());
 $('guide-home').addEventListener('click', home);
 $('guide-form').addEventListener('submit', e => { e.preventDefault(); const text = input.value; input.value = ''; input.style.height = ''; submit(text); });

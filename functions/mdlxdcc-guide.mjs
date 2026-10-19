@@ -1,6 +1,8 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createKnowledge, tools, publicPath } from './lib/mdlxdcc-guide/runtime.mjs';
+import { authenticate } from './lib/mdlxdcc-guide/access.mjs';
+import { createBudget } from './lib/mdlxdcc-guide/cost.mjs';
 
 const env = key => globalThis.Netlify?.env?.get(key) ?? process.env[key];
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
@@ -32,17 +34,17 @@ The client implements the glance tour. During a tour comment, use ONLY the obser
 GENERAL SKILL:\n${k.guide.instructions}\nANSWERING:\n${k.answering.text}\nSITE MAP:\n${k.map.text}\nREADY PROJECT SKILL METADATA:\n${JSON.stringify(k.metadata)}`;
 }
 
-export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge, configured } = {}) {
+export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge, configured, accessFactory = authenticate, budgetFactory = createBudget } = {}) {
   return async function handler(req, context = {}) {
     const providers = {
       gpt: { available: Boolean(typeof configured === 'boolean' ? configured : configured?.gpt ?? env('OPENAI_API_KEY')) },
       claude: { available: Boolean(typeof configured === 'boolean' ? false : configured?.claude ?? env('ANTHROPIC_API_KEY')) }
     };
     if (context.site?.name && context.site.name !== 'mdlxdcc') return fail('SITE_UNAVAILABLE', 404);
-    if (req.method === 'GET') return json({ ok: true, available: Object.values(providers).some(p => p.available), providers, version: '1.1.0' });
+    if (req.method === 'GET') return json({ ok: true, available: Object.values(providers).some(p => p.available), providers, authentication_required:true, version: '1.2.0' });
     if (req.method !== 'POST') return fail('METHOD_NOT_ALLOWED', 405);
     const origin = req.headers.get('origin');
-    if (origin && origin !== new URL(req.url).origin) return fail('ORIGIN_NOT_ALLOWED', 403);
+    if ((origin && origin !== new URL(req.url).origin) || req.headers.get('sec-fetch-site') === 'cross-site') return fail('ORIGIN_NOT_ALLOWED', 403);
     if (!req.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail('INVALID_JSON', 415);
     if (Number(req.headers.get('content-length') || 0) > 70000) return fail('MESSAGE_TOO_LONG', 413);
     let request;
@@ -52,12 +54,16 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
     const claude = request.provider === 'claude';
     const model = claude ? env('MDLXDCC_GUIDE_CLAUDE_MODEL') || 'claude-sonnet-5-5' : env('MDLXDCC_GUIDE_MODEL') || 'gpt-6-luna';
     if (!(claude ? /^claude-[a-z0-9.-]+$/ : /^gpt-[a-z0-9.-]+$/).test(model)) return fail('MODEL_UNAVAILABLE', 503);
+    let actor;
+    try { actor = await accessFactory(req); } catch(e) { return fail(e.code === 'AUTH_REQUIRED' ? 'AUTH_REQUIRED' : 'AUTH_UNAVAILABLE', e.code === 'AUTH_REQUIRED' ? 401 : 503); }
+    const budget = budgetFactory(actor, request.provider, model);
     const abort = new AbortController();
     const timeout = setTimeout(() => abort.abort(), 50000);
     const onAbort = () => abort.abort(); req.signal.addEventListener('abort', onAbort, { once: true });
     const encoder = new TextEncoder(); let ended = false;
     const stream = new ReadableStream({
       async start(controller) {
+        let held = null;
         const send = (type, data = {}) => { if (!ended) controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`)); };
         try {
           send('status', { stage: 'reading' });
@@ -73,9 +79,11 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
             send('status', { stage: round ? 'checking' : 'thinking' });
             let response, text = '', calls;
             if (claude) {
-              const responseStream = client.messages.stream({ model, system, messages: input, max_tokens: 2400,
+              const payload = { model, system, messages: input, max_tokens: 2400, service_tier:'standard_only',
                 tools: selectedTools.map(t => ({ name: t.name, description: t.description, input_schema: t.parameters })), tool_choice: { type: 'auto', disable_parallel_tool_use: true },
-                output_config: { effort: 'low' }, ...(model === 'claude-sonnet-5-5' ? { thinking: { type: 'between_tools' } } : {}) }, { signal: abort.signal });
+                output_config: { effort: 'low' }, ...(model === 'claude-sonnet-5-5' ? { thinking: { type: 'between_tools' } } : {}) };
+              held = await budget.reserve(payload);
+              const responseStream = client.messages.stream(payload, { signal: abort.signal });
               for await (const event of responseStream) {
                 if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') { text += event.delta.text; send('delta', { text: event.delta.text }); }
                 if (event.type === 'error') throw Error('PROVIDER_ERROR');
@@ -83,8 +91,10 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
               response = await responseStream.finalMessage();
               calls = (response.content || []).filter(o => o.type === 'tool_use').map(o => ({ name: o.name, arguments: o.input, call_id: o.id }));
             } else {
-              const responseStream = await client.responses.create({ model, instructions: system, input, tools: selectedTools, parallel_tool_calls: false,
-                reasoning: { effort: 'low' }, max_output_tokens: 2400, store: false, include: ['reasoning.encrypted_content'], stream: true }, { signal: abort.signal });
+              const payload = { model, instructions: system, input, tools: selectedTools, parallel_tool_calls: false, service_tier:'default',
+                reasoning: { effort: 'low' }, max_output_tokens: 2400, store: false, include: ['reasoning.encrypted_content'], stream: true };
+              held = await budget.reserve(payload);
+              const responseStream = await client.responses.create(payload, { signal: abort.signal });
               for await (const event of responseStream) {
                 if (event.type === 'response.output_text.delta') { text += event.delta; send('delta', { text: event.delta }); }
                 if (event.type === 'response.completed' || event.type === 'response.incomplete') response = event.response;
@@ -93,6 +103,7 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
               calls = (response?.output || []).filter(o => o.type === 'function_call');
             }
             if (!response) throw Error('PROVIDER_ERROR');
+            await budget.settle(held, response.usage); held = null;
             if (!calls.length) {
               if (!text.trim()) throw Error('EMPTY_RESPONSE');
               if (response.status === 'incomplete' || response.stop_reason === 'max_tokens') send('notice', { code: 'ANSWER_TRUNCATED' });
@@ -114,7 +125,8 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
           for (const action of actions.slice(-1)) send('action', action);
           send('done', { sources: [...k.usedSources.values()], skills: [...k.loadedSkills], model, provider: request.provider });
         } catch (error) {
-          const code = abort.signal.aborted ? 'TIMEOUT' : error?.status === 429 ? 'RATE_LIMITED' : [401, 403].includes(error?.status) ? 'AI_UNAVAILABLE' : 'ANSWER_UNAVAILABLE';
+          if (held) { try { await budget.settle(held, null, [400,401,403,404,422,429].includes(error?.status)); } catch {} held = null; }
+          const code = ['MONTHLY_LIMIT','RATE_LIMITED','AUTH_REQUIRED','STORAGE_UNAVAILABLE','UNPRICED_MODEL','PRICING_MISMATCH'].includes(error.code) ? error.code : abort.signal.aborted ? 'TIMEOUT' : error?.status === 429 ? 'RATE_LIMITED' : [401, 403].includes(error?.status) ? 'AI_UNAVAILABLE' : 'ANSWER_UNAVAILABLE';
           // Do not pass provider error bodies, credentials or internal stack traces to the visitor.
           send('error', { code });
         } finally {
@@ -129,4 +141,3 @@ export function makeHandler({ clientFactory, knowledgeFactory = createKnowledge,
 }
 
 export default makeHandler();
-export const config = { rateLimit: { windowLimit: 8, windowSize: 60, aggregateBy: ['ip', 'domain'] } };

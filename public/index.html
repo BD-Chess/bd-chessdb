@@ -583,7 +583,7 @@ html.hero-demo-open,html.hero-demo-open body{overflow:hidden!important;overscrol
 .font-buttons .utility{min-width:24px}.font-buttons .font-value{min-width:36px;font-size:11px}.languages .utility{min-width:26px;font-size:11px}
 }
 </style>
-<link rel="stylesheet" href="./assets/mdlxdcc-guide/guide.css?v=20261019-r4">
+<link rel="stylesheet" href="./assets/mdlxdcc-guide/guide.css?v=20261019-r5">
 </head>
 <body>
 <a class="skip" href="#main"><span class="en" lang="en">Skip to content</span><span class="sl" lang="sl">Preskoči na vsebino</span></a>
@@ -1316,6 +1316,16 @@ setHero(0,false);startHeroAuto();
 <!-- One persistent chat and scene frame. Toggling AI never recreates them. -->
 <aside id="guide-panel" aria-labelledby="guide-title" hidden>
  <div class="guide-head"><div><strong id="guide-title" data-guide-text="title">MDL×DCC Guide</strong><small id="guide-subtitle" data-guide-text="subtitle">Public guide</small></div><div id="guide-provider" class="guide-provider" role="group" aria-label="Choose the next assistant"><button id="guide-provider-gpt" type="button" aria-pressed="true">GPT</button><button id="guide-provider-claude" type="button" aria-pressed="false">Claude</button></div><button id="guide-close" class="guide-icon" type="button" aria-label="Hide chat">×</button></div>
+ <div class="guide-account"><div><span id="guide-account-label"></span><small id="guide-usage"></small></div><button id="guide-account-action" class="guide-button" type="button">Sign in</button></div>
+ <form id="guide-auth" class="guide-auth" hidden>
+  <strong id="guide-auth-title" data-guide-text="loginTitle">Sign in to ask GPT or Claude</strong><p data-guide-text="loginInfo">Your question stays ready. The public tour is also available without signing in.</p>
+  <label><span data-guide-text="email">Email</span><input id="guide-email" type="email" autocomplete="username" maxlength="254" required></label>
+  <label><span data-guide-text="password">Password</span><input id="guide-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+  <p id="guide-auth-error" class="guide-error" role="status" hidden></p>
+  <button id="guide-auth-submit" class="guide-button" type="submit" data-guide-text="login">Sign in</button>
+  <button id="guide-auth-mode" type="button" data-guide-text="registerChoice">Create an account</button><button id="guide-auth-cancel" type="button" data-guide-text="cancelLogin">Back to chat</button>
+  <small data-guide-text="budgetInfo">Visitors share a $100 monthly API budget. BD is outside that quota.</small>
+ </form>
  <div id="guide-messages" role="log" aria-live="polite" aria-relevant="additions" aria-busy="false">
   <div class="guide-welcome"><div class="guide-star" aria-hidden="true">✳</div><h2 data-guide-text="welcome">What are you curious about?</h2><p data-guide-text="intro">Explore the projects, ask for an explanation, or take a guided tour.</p><div class="guide-suggestions"><button id="guide-start-tour" type="button" data-guide-text="glance">Start glance →</button><button id="guide-projects" type="button" data-guide-text="projects">What is MDL×DCC?</button><button id="guide-dgte" type="button" data-guide-text="dgte">DGTE: electricity in €?</button></div></div>
  </div>
@@ -1324,7 +1334,7 @@ setHero(0,false);startHeroAuto();
  <form class="guide-compose" id="guide-form"><div class="guide-input-wrap"><textarea id="guide-input" rows="1" maxlength="4000" aria-label="Ask about a project" placeholder="Ask about a project …"></textarea><button id="guide-send" type="submit" aria-label="Send">↑</button></div><p id="guide-privacy" class="guide-fine" data-guide-text="fine">One shared conversation in this tab. The selected provider processes your question and conversation. Check answers against their sources.</p></form>
 </aside>
 <section id="guide-stage" aria-label="Project page" hidden><div class="guide-stage-head"><button id="guide-home" type="button" data-guide-text="home">Back to landing</button><span id="guide-page-title"></span><a id="guide-page-external" href="./index-atlas.html" target="_blank" rel="noopener noreferrer" aria-label="Open page in a tab">↗</a></div><iframe id="guide-frame" title="MDL×DCC project" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups" referrerpolicy="same-origin"></iframe></section>
-<script type="module" src="./assets/mdlxdcc-guide/guide.js?v=20261019-r5"></script>
+<script type="module" src="./assets/mdlxdcc-guide/guide.js?v=20261019-r6"></script>
 </body></html>
 
 

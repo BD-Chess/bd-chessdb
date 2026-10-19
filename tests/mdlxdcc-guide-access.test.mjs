@@ -1,0 +1,90 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { randomUUID, createHash, pbkdf2Sync, createCipheriv } from 'node:crypto';
+import { PGlite } from '@electric-sql/pglite';
+import { passwordHash, passwordMatches, sessionCookie, readSession, authenticate, signIn, verifyOwner } from '../functions/lib/mdlxdcc-guide/access.mjs';
+import { reservation, charge, createBudget } from '../functions/lib/mdlxdcc-guide/cost.mjs';
+import { makeHandler } from '../functions/mdlxdcc-guide.mjs';
+
+test('passwords, owner proof and signed sessions cannot be replaced with email or a client role', async () => {
+ process.env.MDLXDCC_GUIDE_SESSION_SECRET = 's'.repeat(64);
+ process.env.MDLXDCC_GUIDE_OWNER_EMAIL = 'owner@example.test';
+ const hash = await passwordHash('visitor-test-password');
+ assert.ok(await passwordMatches('visitor-test-password',hash));
+ assert.equal(await passwordMatches('wrong',hash),false);
+ let stored;
+ const actor = await signIn('register','Visitor@Example.test','visitor-test-password',{rpc:async(action,data)=>{stored=data;return {ok:true}}});
+ assert.equal(actor.role,'visitor');assert.equal(stored.email,'visitor@example.test');assert.doesNotMatch(stored.password_hash,/visitor-test/);
+ await assert.rejects(signIn('register','owner@example.test','visitor-test-password'),{code:'ACCOUNT_EXISTS'});
+ await assert.rejects(signIn('login','owner@example.test','wrong',{ownerVerifier:async()=>false}),{code:'INVALID_LOGIN'});
+ const owner = await signIn('login','owner@example.test','existing-password',{ownerVerifier:async()=>true});
+ const cookie = sessionCookie(owner,1000000), req = c=>new Request('https://www.mdlxdcc.org/',{headers:{cookie:c.split(';')[0]}});
+ assert.match(cookie,/HttpOnly; Secure; SameSite=Strict/);
+ assert.equal(readSession(req(cookie),1000001).role,'owner');
+ assert.equal(readSession(req(cookie),1000000+8*3600000+1),null);
+ const forged = cookie.replace(/=([^.]*)/,(_,p)=>'='+Buffer.from(JSON.stringify({...JSON.parse(Buffer.from(p,'base64url')),role:'visitor'})).toString('base64url'));
+ assert.equal(readSession(req(forged),1000001),null);
+ await assert.rejects(authenticate(new Request('https://www.mdlxdcc.org/')),{code:'AUTH_REQUIRED'});
+ let usedDB=false;
+ const fresh=sessionCookie(owner);
+ assert.equal((await authenticate(req(fresh),{rpc:async()=>{usedDB=true;throw Error()}})).role,'owner');assert.equal(usedDB,false,'Owner works without the visitor ledger');
+ const salt=Buffer.alloc(32,1),iv=Buffer.alloc(12,2),path='crp/IM3_MentalArena_MALm.html',pair='test-pair';
+ const key=pbkdf2Sync('existing-owner-password',salt,600000,32,'sha256'),cipher=createCipheriv('aes-256-gcm',key,iv);
+ cipher.setAAD(Buffer.from(`BD_ACCESS_V1:${path}:${pair}:wrap`));const encrypted=Buffer.concat([cipher.update(Buffer.alloc(32,3)),cipher.final(),cipher.getAuthTag()]);
+ const pack={schema:'BD_ACCESS_V1',path,pair,kdf:{iterations:600000,salt:salt.toString('base64')},wrap:{iv:iv.toString('base64'),cipher:encrypted.toString('base64')}};
+ assert.equal(await verifyOwner('existing-owner-password',{pack}),true);assert.equal(await verifyOwner('wrong',{pack}),false);
+});
+
+test('unpriced visitors are blocked, output/reasoning/cache costs fit conservative reservations, owner is exempt', async () => {
+ const payload={input:[{role:'user',content:'energy?'}],max_output_tokens:2400};
+ const amount=reservation('gpt','gpt-6-luna',payload);
+ assert.ok(amount>charge('gpt',{input_tokens:500,output_tokens:2400,input_tokens_details:{cached_tokens:100,cache_write_tokens:50}},amount));
+ assert.equal(charge('gpt',null,amount),amount);
+ const claude=reservation('claude','claude-sonnet-5-5',{messages:[],max_tokens:2400});
+ assert.ok(claude>charge('claude',{input_tokens:100,output_tokens:2400,cache_creation_input_tokens:100,cache_read_input_tokens:20},claude));
+ assert.throws(()=>reservation('gpt','unknown-model',payload),{code:'UNPRICED_MODEL'});
+ const owner=createBudget({role:'owner'},'gpt','any-model',{rpc:()=>{throw Error('owner must not touch public quota')}});
+ assert.equal(await owner.reserve(payload),null);await owner.settle(null,null);
+ let invoked=false;
+ const handler=makeHandler({configured:true,clientFactory:()=>{invoked=true;throw Error()}});
+ const r=await handler(new Request('https://www.mdlxdcc.org/.netlify/functions/mdlxdcc-guide',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:'hi',role:'owner',email:'owner@example.test'})}));
+ assert.equal(r.status,401);assert.equal(invoked,false);
+});
+
+test('actual Postgres migration enforces server-only RLS, atomic shared $100 holds, idempotent settlement and unknown calls', async () => {
+ const db=new PGlite();
+ try {
+  await db.exec('create role anon; create role authenticated;');
+  const sql=await readFile(new URL('../supabase/migrations/20261019164920_mdlxdcc_guide_access_budget.sql',import.meta.url),'utf8');
+  await db.exec(sql);
+  const secret='test-database-server-key',hash=createHash('sha256').update(secret).digest('hex'),user=randomUUID();
+  await db.query('insert into mdlxdcc_guide_private.config(server_key_sha256) values ($1)',[hash]);
+  await db.exec('set role anon');
+  await assert.rejects(db.query("select public.mdlxdcc_guide('stats','{}'::jsonb)"),/Server authentication required/);
+  assert.equal((await db.query('select count(*)::int as n from mdlxdcc_guide_private.accounts')).rows[0].n,0);
+  await db.query("select set_config('request.headers',$1,false)",[JSON.stringify({'x-mdlxdcc-guide-key':secret})]);
+  const rpc=async(action,data)=> (await db.query('select public.mdlxdcc_guide($1,$2::jsonb) as result',[action,JSON.stringify(data)])).rows[0].result;
+  await rpc('account_create',{id:user,email:'qa@example.test',password_hash:'scrypt-v1$'+'0'.repeat(32)+'$'+'0'.repeat(64)});
+  const base={user_id:user,provider:'gpt',model:'gpt-6-luna'}, ids=Array.from({length:4},()=>randomUUID());
+  const results=await Promise.all(ids.map(id=>rpc('reserve',{...base,id,request_id:randomUUID(),amount:30000000000})));
+  assert.equal(results.filter(x=>x.ok).length,3);assert.equal(results[3].error,'MONTHLY_LIMIT');
+  let stats=await rpc('stats',{user_id:user});assert.equal(stats.reserved,90);assert.equal(stats.remaining,10);
+  await rpc('settle',{id:ids[0],amount:5000000000});await rpc('settle',{id:ids[0],amount:5000000000});
+  stats=await rpc('stats',{user_id:user});assert.equal(stats.spent,5);assert.equal(stats.reserved,60);assert.equal(stats.remaining,35);
+  await db.exec('reset role');
+  await db.query("update mdlxdcc_guide_private.calls set created_at=now()-interval '3 minutes' where id=$1",[ids[1]]);
+  await db.exec('set role anon');
+  stats=await rpc('stats',{user_id:user});assert.equal(stats.spent,35);assert.equal(stats.reserved,30);
+  await rpc('settle',{id:ids[1],amount:0});
+  assert.equal((await rpc('stats',{user_id:user})).spent,35,'Unknown calls never refund already possibly billed usage');
+  await rpc('settle',{id:ids[2],amount:0});
+  const request_id=randomUUID();
+  for(let i=0;i<6;i++)await rpc('reserve',{...base,id:randomUUID(),request_id,amount:1});
+  for(let i=0;i<5;i++)await rpc('reserve',{...base,id:randomUUID(),request_id:randomUUID(),amount:1});
+  assert.equal((await rpc('reserve',{...base,id:randomUUID(),request_id:randomUUID(),amount:1})).error,'RATE_LIMITED','Tool rounds share one question allowance');
+  await db.query("select set_config('request.headers','{}',false)");
+  assert.equal((await db.query('select count(*)::int as n from mdlxdcc_guide_private.accounts')).rows[0].n,0,'No server secret means no account rows');
+  await assert.rejects(rpc('account_login',{email:'qa@example.test'}),/Server authentication required/);
+ } finally { await db.close(); }
+});
