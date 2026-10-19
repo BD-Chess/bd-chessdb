@@ -36,7 +36,7 @@ The public search index is a discovery map, not evidence for a quantitative clai
 
 Navigation and visible content are checked before commentary. With the provider available, GPT receives the observed page and interaction for its comment. Otherwise the public prepared commentary is explicitly labelled **Comment from the tour script**. The 60-second timer starts after the complete comment. Next / a standalone `n`, `next`, or `naprej` advances immediately. Typing a question, closing the panel or hiding the tab pauses the timer; a question is answered before the visitor resumes. Stop ends the tour and leaves the current page visible.
 
-On phones the normal chat occupies the area below the header; during a tour it moves below the scene so both remain visible. On larger screens it stays at the left. Right-hand browser sidebars remain outside the webpage's layout.
+On phones AI opens a full-width bottom chat panel; during a tour the scene stays above it. The composer follows the visual viewport when the on-screen keyboard opens. The AI control and close button hide the same panel without losing the conversation or draft. On larger screens the chat stays at the left. Right-hand browser sidebars remain outside the webpage's layout. Tour links preserve the selected site language.
 
 ## Privacy and usage
 

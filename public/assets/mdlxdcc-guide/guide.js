@@ -74,9 +74,19 @@ function translate() {
  $('guide-subtitle').textContent = available === true ? w('ready') : available === false ? w('offline') : w('subtitle');
  updateTourStatus();
 }
-function topSize() { document.documentElement.style.setProperty('--guide-top', document.querySelector('.topbar').getBoundingClientRect().bottom + 'px'); }
+function topSize() {
+ const style = document.documentElement.style, top = document.querySelector('.topbar').getBoundingClientRect().bottom;
+ const viewport = window.visualViewport, height = viewport?.height ?? window.innerHeight, offset = viewport?.offsetTop ?? 0;
+ style.setProperty('--guide-top', top + 'px');
+ // Keep the phone composer above the on-screen keyboard when only the visual viewport shrinks.
+ style.setProperty('--guide-viewport-height', height + 'px');
+ style.setProperty('--guide-visible-top', Math.max(0, top - offset) + 'px');
+ style.setProperty('--guide-bottom-offset', Math.max(0, window.innerHeight - height - offset) + 'px');
+}
 new ResizeObserver(topSize).observe(document.querySelector('.topbar'));
 window.addEventListener('resize', topSize); window.addEventListener('scroll', topSize, { passive:true });
+window.visualViewport?.addEventListener('resize', topSize);
+window.visualViewport?.addEventListener('scroll', topSize, { passive:true });
 
 async function catalog() {
  if (!catalogPromise) catalogPromise = fetch(new URL('site-search-index.json', root)).then(r => { if (!r.ok) throw Error(); return r.json(); }).then(d => { for (const i of d.items || []) { const p = sitePath(i.url); if (p && !/private|protected|password|zasebn|zaščiten/i.test(i.title + ' ' + i.description)) allowed.add(p.path); } }).catch(() => { catalogPromise = null; });
@@ -215,7 +225,9 @@ async function showScene() {
  if (!tour) return; stopClock(); cancelAnswer(); const number = ++sceneNumber, active = tour; active.loading = true; active.remaining = 60000; active.deadline = null; updateTourStatus();
  try {
   const data = await manifest(), scene = data.scenes[active.ids[active.cursor]];
-  await showPage(scene.path, { fromTour:true }); if (number !== sceneNumber || tour !== active) return;
+  const sceneURL = new URL(scene.path, 'https://www.mdlxdcc.org');
+  if (sceneURL.searchParams.has('lang')) sceneURL.searchParams.set('lang', lang());
+  await showPage(sceneURL.href, { fromTour:true }); if (number !== sceneNumber || tour !== active) return;
   const observation = observeAdapter(scene), page = snapshot();
   addMessage('notice', `${active.cursor + 1} / ${active.ids.length} · ${scene.title}`);
   let narrated = false;
