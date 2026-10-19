@@ -4,9 +4,25 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 export const hash=s=>createHash('sha256').update(s,'utf8').digest('hex');
-const reject=/https?:\/\/(?:drive|docs)\.google\.com|sealed_cross_prediction|\btrig_[A-Za-z0-9]+|\b(?:password|api[_ -]?key|authorization):\s*\S+/i;
+const reject=/\bDrive\s+[A-Za-z0-9_-]{20,}|\b(?:probe_sha256|reply_to_drive_id|sealed_cross_prediction)\s*:|https?:\/\/(?:drive|docs)\.google\.com|sealed_cross_prediction|\btrig_[A-Za-z0-9]+|\b(?:password|api[_ -]?key|authorization):\s*\S+/i;
 const ordinal=p=>(Number(p.round.slice(1))-1)*2+(p.actor==='GPT'?1:2);
 const day=p=>{const a=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Ljubljana',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(p.created_at));return ['year','month','day'].map(k=>a.find(x=>x.type===k).value).join('-')};
+// Reviewed source excerpts: hashes pin the actual original, not an edited carrier.
+// Keep discussion H2s and probe commentary; skip only private operations/locators.
+const REVIEWED_CLAUDE={
+  R006:{sha:'8b51297629bc1b0a1d412512d43c707914d96d96cd63bb96a8509c66a9c81a16',stop:'\n## Rezultati sond',comment:'Namenoma preprosta:'},
+  R007:{sha:'4d073e386b8e263ddcfbacf9846e9f11fe4e2b7c199a127cf656d1e2366727e2',stop:'\n## Rezultati sond',comment:'Sonda je o dilemi zgoraj:'},
+  R008:{sha:'4ae259644ab498fdb309602f9835d010c22457ecd784b564dcaa75725b343e77',stop:'\n**Sonde.**',comment:'Sonda meri privzeti odziv',candidate:'K0 (tvoj) + K0a kot možnost (tvoj) + 3b (moj), z avtorstvom in zasnovo testa. NOT_TESTED.'}
+};
+const FROZEN_LEGACY_SOURCES=new Set(["79dc15bee0f5213428ce98eb2ba2da2650886b705fed2edcb76a0c2ec40860c1", "42a2321606994bbb068c1a6d52b96f7d9ef8b991c45b84da359d88081d7e631d", "5e953e6626b18a05ddb11415703b959bbc90f52babf3f4513159f4d35e9a8d33", "05eda3f735d3d9c2605b4175b9e4093654bd0c6e5f87862083242df77e037330", "978c32cbe53f6454de229cd1183847938721cd8a5f4b4c7c39c4f67d52ba2d3b", "3b6d88c24f765de298f9e3c0260b8d890cc99bd2b549df37af9a3096ae96a4f4", "9389e6b71ec58e8b960687427ae8c3ff280ddeea2399f75e88d8b2c234280194", "5f1d48f57bb80d1c95568785a04283fa716c6a8fa478bbf5e82384b794d13e7e", "ff6cb03f10345b823a69d10fd3147f96a7ab90332e45e7446174721f4977f8df", "d3a0d222f05fcd5a1df91f774b9d14c0da3b8da86414f5d5815f27d52f44e454", "a76fca5c1ce545fa03c56b3a5abe2bd6315181b018da3f0a65a90e78fb082c9e"]);
+const PUBLIC_BEGIN='<!-- KDOSVA_PUBLIC_BEGIN -->',PUBLIC_END='<!-- KDOSVA_PUBLIC_END -->';
+const paragraphStarting=(text,start)=>{const p=text.split(/\n\s*\n/).find(p=>p.startsWith(start));if(!p)throw Error('Missing reviewed public paragraph: '+start);return p.trim()};
+function markedBody(prose){
+  const count=marker=>prose.split(marker).length-1;
+  if(!count(PUBLIC_BEGIN)&&!count(PUBLIC_END))return null;
+  if(count(PUBLIC_BEGIN)!==1||count(PUBLIC_END)!==1||prose.indexOf(PUBLIC_END)<prose.indexOf(PUBLIC_BEGIN))throw Error('Invalid public boundaries');
+  return prose.slice(prose.indexOf(PUBLIC_BEGIN)+PUBLIC_BEGIN.length,prose.indexOf(PUBLIC_END)).trim();
+}
 export function publicPost(event){
   const m=/^KDOSVA_(R\d{3,})_(GPT|CLAUDE)\.md$/.exec(event.filename||'');
   if(!m||m[2]!==event.actor||!Number.isFinite(Date.parse(event.created_at)))throw Error('Invalid source identity/time');
@@ -24,16 +40,32 @@ export function publicPost(event){
     if(!closing.startsWith('Pri vprašanju')||!closing.includes('**Vprašanje zate:**'))throw Error('Incomplete historical argument');
     body=argument+'\n\n'+closing;
   }
-  // Some Claude questions follow the separate probe block; select only that paragraph.
-  const tailQuestion=prose.match(/(?:^|\n\n)(\*\*Vprašanje zate:\*\*[^\n]*(?:\n(?!\n)[^\n]+)*)/);
-  if(tailQuestion&&!body.includes(tailQuestion[1]))body+='\n\n'+tailQuestion[1];
-  if(!body||reject.test(title[1]+'\n'+body))throw Error('Public extraction needs review');
-  const post={id:m[1]+'-'+event.actor,round:m[1],actor:event.actor,title:title[1].trim(),created_at:new Date(event.created_at).toISOString(),body_markdown:body,source_sha256:hash(text),public_body_sha256:hash(body)};
-  for(const section of prose.split(/\n## /).slice(1)){
-    if(/sond[ae]?\s+P\d+/i.test(section.split('\n')[0])){
-      const probe=/```text\n([\s\S]*?)\n```/.exec(section);if(probe&&!reject.test(probe[1]))post.probe={label:'Raziskovalna sonda · vprašanje',text:probe[1]};
+  const explicit=markedBody(prose),reviewed=event.actor==='CLAUDE'&&REVIEWED_CLAUDE[m[1]];
+  if(explicit!==null){body=explicit}
+  else if(reviewed){
+    if(hash(text)!==reviewed.sha)throw Error('Reviewed source changed: '+m[1]+'-CLAUDE');
+    const start=prose.slice(title[0].length),end=start.indexOf(reviewed.stop);
+    if(end<0)throw Error('Missing reviewed public boundary');
+    body=start.slice(0,end).trim()+'\n\n'+paragraphStarting(prose,reviewed.comment);
+    if(reviewed.candidate){if(!prose.includes(reviewed.candidate))throw Error('Missing candidate excerpt');body+='\n\n'+reviewed.candidate}
+  }else if(!FROZEN_LEGACY_SOURCES.has(hash(text))&&!(m[1]==='R002'&&event.actor==='GPT')){
+    // Do not silently lose a new discussion heading under the legacy layout.
+    for(const section of prose.split(/\n## /).slice(1)){
+      const heading=section.split('\n')[0];
+      if(!/^(?:Sonda\s+P\d+|Za BD\b|Zasebni\b|Rezultati sond\b|Private\b)/i.test(heading))throw Error('Unreviewed public heading; use explicit public boundaries: '+heading);
     }
   }
+  // Legacy Claude questions follow the probe; bounded sources put them inside.
+  const publicTail=FROZEN_LEGACY_SOURCES.has(hash(text))?prose:prose.split(/\n## (?:Za BD|Zasebni|Private)\b/)[0];
+  const tailQuestion=publicTail.match(/(?:^|\n\n)(\*\*Vprašanje zate:\*\*[^\n]*(?:\n(?!\n)[^\n]+)*)/);
+  if(explicit===null&&tailQuestion&&!body.includes(tailQuestion[1]))body+='\n\n'+tailQuestion[1];
+  if(!body||reject.test(title[1]+'\n'+body))throw Error('Public extraction needs review');
+  const post={id:m[1]+'-'+event.actor,round:m[1],actor:event.actor,title:title[1].trim(),created_at:new Date(event.created_at).toISOString(),body_markdown:body,source_sha256:hash(text),public_body_sha256:hash(body)};
+  // Both historic H2 probes and the R008 Claude bold probe heading are public.
+  const probeArea=prose.split(/\n## (?:Za BD|Zasebni|Private)\b/)[0];
+  const probes=[...probeArea.matchAll(/(?:^|\n)(?:## |\*\*)Sonda P\d+[^\n]*\n\n```text\n([\s\S]*?)\n```/g)];
+  if(probes.length>1)throw Error('Multiple public probes need review');
+  if(probes.length){if(reject.test(probes[0][1]))throw Error('Private data in public probe');post.probe={label:'Raziskovalna sonda · vprašanje',text:probes[0][1]}}
   return post;
 }
 export function build(input,root=resolve(dirname(fileURLToPath(import.meta.url)),'..')){
