@@ -1,6 +1,6 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {bearer,checkPassword,signToken,verifyToken} from './auth.mjs';
-import {modelFor,keyFor,publicCapabilities} from './contracts.mjs';
+import {modelFor,keyFor,publicCapabilities,nativeOutputSupported} from './contracts.mjs';
 import {callProvider,ProviderError} from './providers.mjs';
 import {probeModelKeys} from './provider-health.mjs';
 import {inspectImage,finishImage,hash,normalizationProof,prepareEditInput} from './images.mjs';
@@ -137,12 +137,19 @@ export function createService({store,env,fetcher=fetch,runProvider=callProvider,
    if((path==='/expand'||path==='/generate')&&req.method==='POST'){
     if(principal.auth_method==='verified-account')fail('PAID_ENTITLEMENT_REQUIRED',403);
     const b=await readJSON(req),operation=path==='/generate'?'generate':'expand',m=modelFor(b.model);
+    if(Object.hasOwn(b,'preserve_provider_native')&&typeof b.preserve_provider_native!=='boolean')fail('NATIVE_OUTPUT_OPTION_INVALID');
+    if(b.preserve_provider_native===true){
+     if(owner!==OWNER||principal.auth_method!=='legacy-password')fail('NATIVE_OUTPUT_OWNER_REQUIRED',403);
+     if(!nativeOutputSupported({...b,operation}))fail('NATIVE_OUTPUT_UNSUPPORTED');
+    }
     if(!m)fail('MODEL_UNKNOWN');if(!keyFor(m,env))fail('KEY_NOT_CONFIGURED',503);if(operation==='expand'&&!m.edit)fail('MODEL_GENERATION_ONLY');
     if(!HASH.test(b.idempotency_key||'')||!['portrait','landscape'].includes(b.target)||!['faithful','smart','infographic'].includes(b.mode)||!['hd','4k'].includes(b.quality)||typeof b.prompt!=='string'||b.prompt.length>3000||!['center','left','right','top','bottom'].includes(b.position||'center')||!Number.isInteger(b.seed)||b.seed<0||b.seed>2147483647)fail('JOB_INVALID');
     let pair=null;if(operation==='expand'){if(!ID.test(b.pair_id||''))fail('PAIR_UNKNOWN',404);pair=await get(`pairs/${owner}/${b.pair_id}`);if(await sync.tombstoned(owner,b.pair_id,pair?.original?.sha256))fail('PAIR_DELETED',409);if(!pair||pair.original.sha256!==b.input_sha256)fail('INPUT_HASH_MISMATCH',409);taskGeometry(pair.normalized.width,pair.normalized.height,b.target,b.position,b.mode,b.quality);}
     if(!b.prompt.trim()&&operation==='generate')fail('PROMPT_REQUIRED');
     const id=hash(Buffer.from(owner+':'+b.idempotency_key)),root=`jobs/${owner}/${id}`;
     const effective={operation,model:b.model,provider:m.provider,pair_id:pair?.pair_id||null,input_sha256:pair?.original.sha256||null,normalized_asset_id:pair?.normalized.asset_id||null,target:b.target,quality:b.quality,mode:b.mode,position:b.position||'center',prompt:b.prompt,seed:b.seed,task_parameters_hash:HASH.test(b.task_parameters_hash||'')?b.task_parameters_hash:null,text_layout:b.text_layout||null};
+    // Omit the field for old/false requests so existing immutable job hashes stay valid.
+    if(b.preserve_provider_native===true)effective.preserve_provider_native=true;
     const fingerprint=hash(Buffer.from(JSON.stringify(effective))),existing=await get(root);
     if(existing){if(existing.request_fingerprint!==fingerprint)fail('IDEMPOTENCY_CONFLICT',409);return json(req,{job_id:id,status:(await state(existing)).status,reused:true});}
     const ratio=b.target==='portrait'?'9:16':'16:9',instruction=operation==='generate'?`Create one image in ${ratio}. `:b.mode==='faithful'?`Extend this scene naturally to ${ratio}. Preserve the subject, identity, original scene and lighting; create the missing surroundings. `:b.mode==='infographic'?`Create a ${ratio} visual background based on the reference, with space for a text overlay. Do not draw text. `:`Recompose this reference as ${ratio}. Preserve the subject identity and scene; intelligently reveal a wider environment rather than crop. `;
