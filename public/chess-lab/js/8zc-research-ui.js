@@ -55,7 +55,7 @@
     async function refresh(id){
       const options=await store.list(),select=$('[data-input="snapshots"]');select.replaceChildren();
       const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=options.length?'Choose a saved snapshot':'No saved snapshots';select.appendChild(placeholder);
-      for(const item of options){const option=document.createElement('option');option.value=item.id;option.textContent=(item.pinned?'📌 ':'')+(item.persistent?'':'['+tr('Unsaved')+'] ')+(item.label||item.fen.split(' ')[1]+' to move')+' · '+(item.createdAt||'time unknown')+' · '+item.records+' replies';select.appendChild(option);}
+      for(const item of options){const option=document.createElement('option');option.value=item.id;option.textContent=(item.pinned?'['+tr('Pinned')+'] ':'')+(item.persistent?'':'['+tr('Unsaved')+'] ')+(item.label||item.fen.split(' ')[1]+' to move')+' · '+(item.createdAt||'time unknown')+' · '+item.records+' replies';select.appendChild(option);}
       if(id){select.value=id;selected=await store.get(id);}else if(selected&&options.some(s=>s.id===selected.id)){select.value=selected.id;}else selected=null;
       selectedPinned=!!options.find(s=>s.id===selected?.id)?.pinned;
       const pin=$('[data-action="pin"]');pin.textContent=tr(selectedPinned?'Unpin':'Pin');pin.disabled=!selected||!options.find(s=>s.id===selected.id)?.persistent;
