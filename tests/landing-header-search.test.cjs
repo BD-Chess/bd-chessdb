@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'public/index.html'),'utf8');
 const data=JSON.parse(fs.readFileSync(path.join(root,'public/site-search-index.json'),'utf8'));
-assert.match(html,/<a class="brand" href="\.\/Start\/index\.html"/);
+assert.match(html,/<a class="brand-home" href="\.\/Start\/index\.html"/);
 assert.match(html,/id="landing-compact-header"/);
 for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){
  if(!/application\/ld\+json|\bsrc=/.test(m[1]))new vm.Script(m[2]);
