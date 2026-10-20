@@ -1,5 +1,5 @@
 import {archiveBackup,readArchiveBackup} from './archive-backup.mjs?v=3.0-r4.14';
-import {createCartoons} from './dfc-reader.mjs?v=3.0-r4.22';
+import {createCartoons} from './dfc-reader.mjs?v=33';
 import * as API from './api-client.mjs?v=3.0-r4.11';
 import {verifyEnhancementBackup} from './enhancement-backup.mjs?v=3.0-r4.11';
 import {createEnhancementClient} from './enhancement-client.mjs?v=3.0-r4.11';

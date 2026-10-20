@@ -35,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(file.startsWith(publicRoot+path.sep));
   const data=pathname===prefix+'release.json'?releaseBytes:pathname===base+'manifest.json'?manifestBytes:await readFile(file);
   const ext=path.extname(file);
-  const mime={'.html':'text/html','.mjs':'text/javascript','.json':'application/json','.webp':'image/webp'};
+  const mime={'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp'};
   res.writeHead(200,{'content-type':mime[ext]||'application/octet-stream','cache-control':'no-store'});
   res.end(data);
  }catch{res.writeHead(404);res.end('missing');}
@@ -50,8 +50,8 @@ await page.addInitScript(()=>{
  URL.createObjectURL=blob=>{const url=create(blob);window.previewUrls.add(url);return url;};
  URL.revokeObjectURL=url=>{window.previewUrls.delete(url);return revoke(url);};
 });
-const ready=()=>page.waitForFunction(()=>document.querySelector('#reader')?.dataset.ready==='true'&&document.querySelector('#comic-page')?.complete&&document.querySelector('#comic-page')?.naturalWidth>0);
-const dims=()=>page.locator('#comic-page').evaluate(image=>[image.naturalWidth,image.naturalHeight]);
+const ready=()=>page.waitForFunction(()=>document.querySelector('#reader')?.dataset.ready==='true'&&(!document.querySelector('#comic-source').hidden||document.querySelector('#comic-page')?.complete&&document.querySelector('#comic-page')?.naturalWidth>0));
+const dims=()=>page.locator('#comic-frame').evaluate(frame=>{const canvas=frame.querySelector('canvas'),image=frame.querySelector('img');return canvas.hidden?[image.naturalWidth,image.naturalHeight]:[canvas.width,canvas.height];});
 const state=()=>page.locator('#reader').evaluate(reader=>({page:reader.dataset.page,panel:reader.dataset.panel}));
 try{
  await page.goto(origin+base);
@@ -60,9 +60,10 @@ try{
  assert.equal(await page.locator('#gate-form').count(),0);
  assert.equal(await page.locator('#lock').count(),0);
  assert.equal(await page.locator('#reader').isVisible(),true);
- assert.deepEqual(await dims(),[1584,2816]);
+ assert.deepEqual(await dims(),[2812,2160]);
  assert.equal((await state()).page,'1');
- assert.equal((await state()).panel,FIRST_PAGE_PANELS[0].id);
+ assert.equal((await state()).panel,'');
+ await page.locator('[data-reader-more]').click();
  checks.reader_opens_directly_without_password='PASS';
 
  await page.locator('#overview').click();
@@ -72,6 +73,7 @@ try{
  checks.source_overview_and_six_hotspots='PASS';
 
  for(let i=0;i<6;i++){
+  if(i){await page.locator('#portrait').click();await ready();}
   await page.locator('#panel-choices button').nth(i).click();
   await ready();
   assert.equal((await state()).panel,FIRST_PAGE_PANELS[i].id);
@@ -85,7 +87,7 @@ try{
   await page.locator('#source-toggle').click();
   await ready();
   assert.deepEqual(await dims(),[2816,1584]);
-  assert.ok(await page.evaluate(()=>window.previewUrls.size)<=2);
+  assert.ok(await page.evaluate(()=>window.previewUrls.size)<=4);
  }
  checks.all_six_public_pairs_and_source_crop_dimensions='PASS';
 
@@ -94,7 +96,7 @@ try{
  await page.locator('#hotspots .hotspot').nth(2).click();
  await ready();
  assert.equal((await state()).panel,FIRST_PAGE_PANELS[2].id);
- assert.deepEqual(await dims(),[1584,2816]);
+ assert.deepEqual(await dims(),[2816,1584]);
  checks.overview_hotspot_opens_matching_candidate='PASS';
 
  await page.setViewportSize({width:874,height:402});
@@ -140,6 +142,7 @@ try{
  await ready();
  await page.locator('#page-select').selectOption('0');
  await ready();
+ await page.locator('[data-reader-more]').click();
  await page.locator('#panel-choices button').nth(2).click();
  await ready();
  await page.screenshot({path:path.join(out,'phone-panel.png'),fullPage:true});

@@ -23,7 +23,7 @@ const manifest=JSON.parse(manifestText),release=JSON.parse(releaseText),comicDir
 test('CMarvel opens directly without a password gate',()=>{
  assert.match(html,/<title>CMarvel 01 · R&amp;D predogled<\/title>/);
  assert.match(html,/R&amp;D · JAVNI PREDOGLED/);
- assert.ok(html.includes("reader.mjs?v=32"));
+ assert.ok(html.includes("reader.mjs?v=33"));
  assert.doesNotMatch(html,/type=["']password|gate-form|passphrase|Odpri strip|Zakleni strip/i);
  assert.doesNotMatch(reader,/passphrase|deriveComicKey|decryptComicBytes|unlockStory|gate-form|lockStory/i);
  assert.match(html,/noindex,nofollow,noarchive,nosnippet,noimageindex/);
@@ -89,7 +89,8 @@ test('six unreviewed P/L image pairs are publicly readable at their recorded dim
  assert.equal(release.comic_preview.art_review.candidate_image_count,12);
  assert.equal(release.comic_preview.art_review.text_overlays,0);
  assert.equal(release.comic_preview.art_review.acceptance,'pending BD visual selection');
- assert.match(html,/čak[aą] na tvoj pregled/i);
+ assert.match(reader,/Ilustracije prve strani čakajo na tvoj pregled/);
+ assert.doesNotMatch(html,/Strip se odpre neposredno, brez gesla/);
 });
 
 test('page-one crop coordinates and saved reading positions remain bounded',()=>{
