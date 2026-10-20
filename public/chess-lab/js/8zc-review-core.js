@@ -134,7 +134,8 @@
   function validatePV(Chess, fen, pv, expectedFirst) {
     if (!Array.isArray(pv) || !pv.length || pv.length > 256 || (expectedFirst && pv[0] !== expectedFirst))
       throw Error('Saved variation does not match its candidate');
-    const game = new Chess(fen);
+    const game = new Chess();
+    if (!game.load(fen)) throw Error('Invalid saved variation root');
     const steps = [{ fen, san: null, label: 'Before the candidate', move: null }];
     for (const uci of pv) {
       if (typeof uci !== 'string' || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci)) throw Error('Invalid saved variation move');
@@ -145,63 +146,130 @@
     }
     return { steps, checkmate: game.in_checkmate() };
   }
-  function attachEvidence(review, evidence, Chess = root.Chess) {
+  function hashText(text) {
+    const Hash = root.ChessAssetSHA256 ||
+      (typeof module === 'object' && module.exports ? require('./8zc-sha256.js') : null);
+    if (!Hash) throw Error('Review integrity checker unavailable');
+    // The canonical mainline is ASCII UCI joined by a single space.
+    return new Hash.SHA256().update(Uint8Array.from(text, c => c.charCodeAt(0))).hex();
+  }
+  function resolveEvidence(review, registry) {
+    if (!registry || registry.schema !== 'chessbest-review-registry/1' ||
+      !Array.isArray(registry.entries) || registry.entries.length > 20)
+      throw Error('Saved review registry unavailable');
+    const claimed = review.headers.ChessBestReviewEvidence;
+    const entries = registry.entries.filter(e => claimed ? e.alias === claimed :
+      e.source === review.headers.ChessBestSource && Boolean(e.source));
+    if (!entries.length) {
+      if (claimed) throw Error('Saved review identity mismatch');
+      return null;
+    }
+    const digest = hashText(review.moves.join(' '));
+    const matches = entries.filter(e => e.rootFen === review.rootFen && e.mainline_sha256 === digest &&
+      e.totalPly === review.totalPly && review.positions[e.anchor?.ply]?.fen === e.anchor?.fen &&
+      review.moves[e.anchor?.ply] === e.anchor?.played);
+    if (matches.length !== 1) throw Error('Saved review identity mismatch');
+    const e = matches[0];
+    if (!/^[a-z0-9][a-z0-9_-]{1,100}$/.test(e.id) ||
+      !/^config\/(?:review-[a-z0-9_-]+|dreev-kasparov-review)\.json$/.test(e.file) ||
+      !/^[a-f0-9]{64}$/.test(e.sha256) || !Number.isSafeInteger(e.bytes) || e.bytes < 1 || e.bytes > 2097152)
+      throw Error('Invalid saved review registration');
+    return e;
+  }
+  function attachEvidence(review, evidence, Chess = root.Chess, registration = null) {
+    const expectedId = registration?.alias || review?.headers.ChessBestReviewEvidence;
     if (!review || evidence?.schema !== 'chessbest-review-evidence/1' ||
-      evidence.id !== review.headers.ChessBestReviewEvidence || evidence.rootFen !== review.rootFen ||
+      evidence.id !== expectedId || evidence.rootFen !== review.rootFen ||
       evidence.moves?.length !== review.moves.length ||
       !evidence.moves.every((move, i) => move === review.moves[i]) ||
-      evidence.positions?.length !== review.positions.length) throw Error('Saved analysis belongs to a different recorded line');
+      evidence.positions?.length !== review.positions.length || review.totalPly > 5000 ||
+      (evidence.mainline_sha256 && evidence.mainline_sha256 !== hashText(review.moves.join(' '))) ||
+      !Array.isArray(evidence.decisions) || evidence.decisions.length > 256 ||
+      !evidence.sources || !['cdb','sf'].every(p => evidence.sources[p] &&
+        typeof evidence.sources[p].label === 'string' && evidence.sources[p].label.length <= 180))
+      throw Error('Saved analysis belongs to a different recorded line');
+    if (registration && (registration.rootFen !== review.rootFen ||
+      registration.mainline_sha256 !== hashText(review.moves.join(' ')))) throw Error('Saved review identity mismatch');
+    const replayed = play(Chess, review.rootFen, review.moves);
     const positions = evidence.positions.map((row, ply) => {
-      const fen = review.positions[ply].fen;
+      const fen = replayed.positions[ply].fen;
       if (row.ply !== ply || row.fen !== fen || row.played !== (review.moves[ply] || null))
         throw Error('Saved analysis position identity mismatch');
       const legal = new Map(new Chess(fen).moves({ verbose: true }).map(m => [m.from + m.to + (m.promotion || ''), m.san]));
-      const source = (input, name) => {
+      const source = (input, name, nested = false) => {
         if (!input || !Array.isArray(input.candidates) || input.candidates.length > 256) throw Error('Invalid saved source');
+        if (input.positionEstimate && nested) throw Error('Nested saved source estimate');
         const candidates = input.candidates.map(candidate => {
           if (!legal.has(candidate.uci)) throw Error('Saved candidate is illegal');
           const score = typedScore(candidate.score);
+          if (candidate.score?.pov && !['white', 'mover'].includes(candidate.score.pov)) throw Error('Invalid saved POV');
           if (name === 'cdb' && score.type === 'cp' && Math.abs(score.cp) >= 10000)
             throw Error('Special CDB score mislabeled as centipawns');
           if (candidate.score?.type !== score.type) throw Error('Invalid saved score type');
           const pv = candidate.pv ? validatePV(Chess, fen, candidate.pv, candidate.uci) : null;
-          return { uci: candidate.uci, san: legal.get(candidate.uci), score, pv };
+          if (candidate.heuristic != null && !Number.isFinite(candidate.heuristic)) throw Error('Invalid saved heuristic');
+          return { uci: candidate.uci, san: legal.get(candidate.uci), score, pv, heuristic: candidate.heuristic ?? null };
         });
         if (new Set(candidates.map(c => c.uci)).size !== candidates.length) throw Error('Duplicate saved candidates');
-        return { ...input, candidates };
+        const positionScore = input.positionScore == null ? null : typedScore(input.positionScore);
+        if (positionScore && (positionScore.type !== input.positionScore.type ||
+          (input.positionScore.pov && !['white','mover'].includes(input.positionScore.pov)))) throw Error('Invalid saved position score');
+        if ((candidates.length || positionScore) && (typeof input.at !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:T|$)/.test(input.at)))
+          throw Error('Missing saved source date');
+        if (input.legal_count != null && input.legal_count !== legal.size) throw Error('Saved legal coverage mismatch');
+        return { ...input, candidates, positionScore,
+          positionEstimate: input.positionEstimate ? source(input.positionEstimate, name, true) : null };
       };
+      if (row.observations && (!Array.isArray(row.observations) || row.observations.length > 50)) throw Error('Invalid saved observations');
       return { ...row, cdb: source(row.cdb, 'cdb'), sf: source(row.sf, 'sf'),
-        comparison: row.comparison ? source(row.comparison, 'sf') : null };
+        comparison: row.comparison ? source(row.comparison, 'sf') : null,
+        observations: (row.observations || []).map(input => {
+          if (!['cdb','sf','dcc'].includes(input.provider)) throw Error('Invalid saved provider');
+          return source(input, input.provider);
+        }) };
     });
     const types = { cp: 0, mate: 0, special: 0, unknown: 0 };
     let sfPlayed = 0;
     for (const row of positions.slice(0, -1)) {
       types[row.cdb.candidates.find(m => m.uci === row.played)?.score.type || 'unknown']++;
-      if (row.sf.candidates.some(m => m.uci === row.played)) sfPlayed++;
+      if (row.sf.candidates.some(m => m.uci === row.played && ['cp','mate'].includes(m.score.type))) sfPlayed++;
     }
     for (const [type, count] of Object.entries(types))
       if ((evidence.coverage?.cdb_played_types?.[type] || 0) !== count) throw Error('Saved coverage count mismatch');
     const decisions = evidence.decisions.map(decision => {
       if (!Number.isSafeInteger(decision.ply) || decision.ply < 0 || decision.ply >= review.totalPly)
         throw Error('Invalid saved decision position');
+      if (!decision.human || !Array.isArray(decision.human.candidates_san) || decision.human.candidates_san.length > 256 ||
+        !decision.human.candidates_san.every(c => typeof c === 'string')) throw Error('Invalid saved human annotation');
       return { ...decision, title: clean(decision.title), lesson: clean(decision.lesson) };
     });
-    return { ...review, evidence: { ...evidence, positions, decisions,
+    if (evidence.notes && (!Array.isArray(evidence.notes) || evidence.notes.length > 256)) throw Error('Invalid saved notes');
+    const notes = (evidence.notes || []).map(note => {
+      if (!Number.isSafeInteger(note.ply) || note.ply < 0 || note.ply >= review.totalPly ||
+        typeof note.text !== 'string' || note.text.length > 10000) throw Error('Invalid saved note identity');
+      return { ply: note.ply, text: clean(note.text) };
+    });
+    const scored = value => ['cp','mate'].includes(typedScore(value).type);
+    const positionCount = provider => positions.filter(row => scored(row[provider].positionScore) ||
+      row[provider].candidates.some(c => scored(c.score))).length;
+    return { ...review, evidence: { ...evidence, positions, decisions, notes,
       coverage: { ...evidence.coverage, cdb_played_types: types, sf_played: sfPlayed,
-        cdb_scored: types.cp + types.mate } } };
+        cdb_scored: types.cp + types.mate, cdb_positions: positionCount('cdb'), sf_positions: positionCount('sf') } } };
   }
   function plotSeries(rows, provider, perspective = 'white') {
     const segments = [];
     let segment = [];
     for (const row of rows) {
-      const input = provider === 'pgn' ? row.pgn?.score : row[provider]?.candidates?.[0]?.score;
+      const source = row[provider]?.positionEstimate || row[provider];
+      const input = provider === 'pgn' ? row.pgn?.score : source?.positionScore ?? source?.candidates?.[0]?.score;
       const score = typedScore(input);
       if (!['cp', 'mate'].includes(score.type) || score.bound) {
         if (segment.length) segments.push(segment);
         segment = [];
         continue;
       }
-      const factor = perspective === 'white' ? whiteFactor(score, row.fen) : 1;
+      const factor = perspective === 'white' ? whiteFactor(score, row.fen) :
+        score.pov === 'white' && row.fen.split(' ')[1] === 'b' ? -1 : 1;
       // Mate stays a typed edge marker. It never becomes a fabricated cp value.
       segment.push({ ply: row.ply, score, cp: score.type === 'cp' ? score.cp * factor : null,
         mateSign: score.type === 'mate' ? score.sign * factor : null });
@@ -288,6 +356,6 @@
       evidence: null, pgnEvaluations,
       analysis: { status: 'not-computed', source: null, evaluations: null } };
   }
-  return { VERSION, build, decodeCdb, typedScore, scoreText, validatePV, attachEvidence, plotSeries };
+  return { VERSION, build, decodeCdb, typedScore, scoreText, validatePV, hashText, resolveEvidence, attachEvidence, plotSeries };
 });
 

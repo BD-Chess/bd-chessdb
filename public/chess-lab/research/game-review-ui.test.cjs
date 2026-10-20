@@ -7,7 +7,7 @@ const { boot } = require('./source-context-integration.test.cjs');
 const picks = fs.readFileSync(path.resolve(__dirname, '../Games/ChessBest_Top_Picks.pgn'), 'utf8');
 
 test('Review opens a loaded Top Pick at its full recorded line and hands a moment to the exact A/B position', { timeout: 12000 }, async t => {
-  const h = await boot(t, { libraryPGN: picks });
+  const h = await boot(t, { libraryPGN: picks, skipReady: true });
   const select = h.el('popularGamesPanel').querySelector('.library-native-selects select');
   await h.until(() => select.options.length > 1, 'Top Pick available');
   const pgn = select.options[1].value;
@@ -16,12 +16,13 @@ test('Review opens a loaded Top Pick at its full recorded line and hands a momen
   select.value = pgn;
   select.dispatchEvent(new h.w.Event('change'));
   await h.until(() => h.w.ChessLabHost.getReviewGame().cursor === anchor, 'curated position loaded');
-  await h.ready();
+  await h.until(() => h.w.ChessLabHost.getContext().analysisSources.DCC?.receipt?.fen === h.w.ChessLabHost.getContext().fen, 'CDB-based DCC belongs to the loaded position');
   const before = h.w.ChessLabHost.getReviewGame();
   const originalStudies = JSON.parse(h.w.localStorage.getItem('ChessBest:LAB:v2:studies')).studies.length;
   const expected = h.w.ChessGameReview.build({ Chess: h.w.Chess, pgn, moves: before.moves, startFen: before.startFen });
   const button = h.el('btnGameReview');
-  button.click();
+  if (h.el('gameReviewPanel').hidden) button.click();
+  h.el('gameReviewReveal').click();
   await h.until(() => h.el('gameReviewPanel')?.classList.contains('open'), 'review drawer open');
   assert.equal(button.getAttribute('aria-expanded'), 'true');
   assert.equal(h.el('gameReviewScrub').value, String(anchor));
@@ -44,7 +45,7 @@ test('Review opens a loaded Top Pick at its full recorded line and hands a momen
 });
 
 test('recorded move gap uses one current source only and leaves missing SF played scores unknown', { timeout: 12000 }, async t => {
-  const h = await boot(t, { libraryPGN: picks });
+  const h = await boot(t, { libraryPGN: picks, skipReady: true });
   const select = h.el('popularGamesPanel').querySelector('.library-native-selects select');
   await h.until(() => select.options.length > 1, 'Top Pick available');
   select.value = select.options[1].value;
@@ -52,7 +53,7 @@ test('recorded move gap uses one current source only and leaves missing SF playe
   const host = h.w.ChessLabHost;
   const anchor = Number(select.options[1].value.match(/^\[ChessBestAnchorPly "(\d+)"\]$/m)?.[1]);
   await h.until(() => host.getReviewGame().cursor === anchor, 'position loaded');
-  await h.ready();
+  await h.until(() => h.w.ChessLabHost.getContext().analysisSources.DCC?.receipt?.fen === h.w.ChessLabHost.getContext().fen, 'CDB-based DCC belongs to the loaded position');
   const game = host.getReviewGame(), fen = host.getContext().fen;
   const recordedMove = game.moves[anchor].from + game.moves[anchor].to + (game.moves[anchor].promotion || '');
   const other = new h.w.Chess(fen).moves({ verbose: true })
@@ -69,7 +70,8 @@ test('recorded move gap uses one current source only and leaves missing SF playe
     }
     return context;
   };
-  h.el('btnGameReview').click();
+  if (h.el('gameReviewPanel').hidden) h.el('btnGameReview').click();
+  h.el('gameReviewReveal').click();
   const content = h.el('gameReviewPanel').querySelector('.game-review-played').textContent;
   assert.match(content, /CDB:.*14 cp below first returned candidate \(mover POV\)/);
   assert.match(content, /SF:.*played move score unknown/);

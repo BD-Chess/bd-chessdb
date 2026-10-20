@@ -2,6 +2,7 @@
    remain owned by the LAB host; no new engine requests or stored records here. */
 (function (root) {
   'use strict';
+  const L = (en, sl) => root.ChessLanguage?.getLanguage() === 'sl' ? sl : en;
 
   function element(tag, className, value) {
     const node = document.createElement(tag);
@@ -47,7 +48,30 @@
     let refreshFrame = 0;
     const scrollByKey = new Map();
     let evidenceState = '';
-    const presentationContext = () => ({ review, snapshot, body, navigate, blocked, evidenceState, repaint: render });
+    let evidenceAttempts = 0;
+    let needsReveal = false;
+    const revealed = new Set();
+    const presentationContext = () => ({ review, snapshot, body, navigate, blocked, evidenceState,
+      canRetry: evidenceAttempts < 3, retry: () => { beginEvidence(); render(); }, repaint: render });
+    const isRevealed = () => !needsReveal || revealed.has(previousKey);
+    function beginEvidence() {
+      if (!isRevealed() || evidenceState === 'loading' || evidenceAttempts >= 3) return;
+      const pending = !snapshot.lineChanged && snapshot.sourceIsOriginal !== false && root.ChessReviewPresentation?.load(review);
+      if (!pending) return;
+      evidenceAttempts++; evidenceState = 'loading';
+      const expectedReview = review, key = previousKey;
+      pending.then(data => {
+        if (previousKey !== key || review !== expectedReview) return;
+        const registration = root.ChessGameReview.resolveEvidence(review, root.ChessReviewRegistry);
+        review = root.ChessGameReview.attachEvidence(review, data, root.Chess, registration);
+        evidenceState = 'ready';
+        if (!panel.hidden) render();
+      }).catch(() => {
+        if (previousKey !== key || review !== expectedReview) return;
+        evidenceState = 'failed';
+        if (!panel.hidden) render();
+      });
+    }
 
     const blocked = () => Boolean(snapshot?.blocked);
     function focusAfterClose() {
@@ -127,10 +151,11 @@
       const intro = element('div', 'game-review-intro');
       intro.append(element('h3', '', name));
       intro.append(element('p', 'game-review-subtitle',
-        [h.Event && h.Event !== name ? h.Event : '', h.Date && h.Date !== '?' ? h.Date : '', h.Result && h.Result !== '*' ? h.Result : ''].filter(Boolean).join(' · ') || `${review.totalPly} recorded half-moves`));
+        [h.Event && h.Event !== name ? h.Event : '', h.Date && h.Date !== '?' ? h.Date : '', isRevealed() && h.Result && h.Result !== '*' ? h.Result : ''].filter(Boolean).join(' · ') || `${review.totalPly} recorded half-moves`));
       if (snapshot.lineChanged) intro.append(element('p', 'game-review-line-note', 'Current explored line. Original PGN markers and end-of-game details no longer apply to this branch.'));
-      else if (h.ChessBestTeaser && snapshot.sourceIsOriginal) intro.append(element('p', 'game-review-teaser', h.ChessBestTeaser));
+      else if (isRevealed() && h.ChessBestTeaser && snapshot.sourceIsOriginal) intro.append(element('p', 'game-review-teaser', h.ChessBestTeaser));
       body.append(intro);
+      if (!isRevealed()) return;
 
       const facts = element('dl', 'game-review-facts');
       if (review.tcec?.isTcec && !snapshot.lineChanged) {
@@ -325,6 +350,15 @@
         return;
       }
       renderSummary();
+      if (!isRevealed()) {
+        body.append(element('p', 'game-review-reveal-note', L('The recorded game stays on the board. Reveal Review when you are ready to see saved analysis, future moves and notes.', 'Zabeležena partija ostane na šahovnici. Razkrij pregled, ko želiš videti shranjeno analizo, prihodnje poteze in opombe.')));
+        const reveal = action(L('Reveal saved review', 'Razkrij shranjeni pregled'), () => {
+          if (revealed.size >= 10) revealed.delete(revealed.values().next().value);
+          revealed.add(previousKey); beginEvidence(); render();
+          document.getElementById('gameReviewScrub')?.focus({ preventScroll: true });
+        });
+        reveal.id = 'gameReviewReveal'; body.append(reveal); return;
+      }
       if (blocked()) body.append(element('p', 'game-review-line-note', 'Finish the active game or stop Replay before navigating with Review.'));
       renderTimeline();
       root.ChessReviewPresentation?.overview(presentationContext());
@@ -348,7 +382,8 @@
       if (panel.hidden) return;
       try {
         const next = host.getReviewGame();
-        const key = [next.sourcePGN, next.startFen, next.moves?.map(m => m.san).join(' '), next.lineChanged].join('\u0001');
+        const key = [next.sourcePGN, next.startFen, next.moves?.map(m => typeof m === 'string' ? m :
+          m.from && m.to ? m.from + m.to + (m.promotion || '') : m.san).join(' '), next.lineChanged].join('\u0001');
         const stale = key !== previousKey;
         const cursorChanged = next.cursor !== previousCursor || Boolean(next.blocked) !== previousBlocked;
         snapshot = next;
@@ -358,21 +393,10 @@
             moves: next.moves, startFen: next.startFen, lineChanged: next.lineChanged, sourceIsOriginal: next.sourceIsOriginal });
           previousKey = key;
           evidenceState = '';
-          const pending = !next.lineChanged && next.sourceIsOriginal !== false && root.ChessReviewPresentation?.load(review);
-          if (pending) {
-            evidenceState = 'loading';
-            const expectedReview = review;
-            pending.then(data => {
-              if (previousKey !== key || review !== expectedReview) return;
-              review = root.ChessGameReview.attachEvidence(review, data, root.Chess);
-              evidenceState = 'ready';
-              if (!panel.hidden) render();
-            }).catch(() => {
-              if (previousKey !== key || review !== expectedReview) return;
-              evidenceState = 'failed';
-              if (!panel.hidden) render();
-            });
-          }
+          evidenceAttempts = 0;
+          needsReveal = !next.lineChanged && next.sourceIsOriginal !== false &&
+            Boolean(review.headers.ChessBestTitle || review.headers.ChessBestReviewEvidence);
+          beginEvidence();
           if (appView) reviewScroller().scrollTop = scrollByKey.get(key) || 0;
         }
         if (stale || cursorChanged) render();
@@ -413,6 +437,7 @@
     host.onChange(() => {
       if (!panel.hidden && !refreshFrame) refreshFrame = root.requestAnimationFrame(() => { refreshFrame = 0; refresh(); });
     });
+    document.addEventListener('chess:language', () => { if (!panel.hidden) render(); });
     const boardCards = document.getElementById('allEvalBadges');
     if (boardCards && root.MutationObserver) new root.MutationObserver(() => {
       if (!panel.hidden && !refreshFrame) refreshFrame = root.requestAnimationFrame(() => { refreshFrame = 0; refresh(); });

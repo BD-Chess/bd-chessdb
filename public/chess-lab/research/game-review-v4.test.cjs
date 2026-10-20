@@ -8,7 +8,8 @@ const Review = require('../js/8zc-review-core.js');
 const base = path.resolve(__dirname, '..');
 const dreev = fs.readFileSync(base + '/Games/ChessBest_Top_Picks.pgn', 'utf8')
   .split(/\n\s*\n(?=\[Event)/).find(pgn => pgn.includes('ChessBestReviewEvidence'));
-const evidence = JSON.parse(fs.readFileSync(base + '/config/dreev-kasparov-review.json', 'utf8'));
+const evidenceText = fs.readFileSync(base + '/config/dreev-kasparov-review.json', 'utf8');
+const evidence = JSON.parse(evidenceText);
 function state(pgn, cursor = 0) {
   const review = Review.build({ Chess, pgn });
   return { headers:review.headers, sourcePGN:pgn, sourceIsOriginal:true, startFen:review.rootFen,
@@ -23,7 +24,11 @@ async function fixture(t, response) {
   let current = state(dreev, 37), studied = null;
   const listeners = [];
   w.Chess = Chess; w.ChessLabReady = Promise.resolve();
-  w.fetch = response;
+  w.TextDecoder = TextDecoder; w.AbortController = AbortController;
+  w.fetch = async (...args) => {
+    const r = await response(...args);
+    return { ...r, arrayBuffer: async () => { await r.json(); return new TextEncoder().encode(evidenceText).buffer; } };
+  };
   w.ChessLabHost = {
     getReviewGame:()=>current,
     getContext:()=>({fen:Review.build({Chess,pgn:current.sourcePGN}).positions[current.cursor].fen,
@@ -32,7 +37,7 @@ async function fixture(t, response) {
     openReviewStudy:()=>{studied=current.cursor;},
     onChange:callback=>listeners.push(callback)
   };
-  for(const file of ['8zc-study-core.js','8zc-review-core.js','8zc-review-presentation.js','8zc-review-ui.js'])
+  for(const file of ['8zc-study-core.js','8zc-sha256.js','8zc-review-registry.js','8zc-review-core.js','8zc-review-presentation.js','8zc-review-ui.js'])
     w.eval(fs.readFileSync(base+'/js/'+file,'utf8'));
   const until = async predicate=>{
     const end=Date.now()+5000;
@@ -41,6 +46,7 @@ async function fixture(t, response) {
   };
   await until(()=>!!w.document.getElementById('gameReviewPanel'));
   w.document.getElementById('btnGameReview').click();
+  w.document.getElementById('gameReviewReveal').click();
   return {w, until, current:()=>current, studied:()=>studied,
     change:next=>{current=next; listeners.forEach(callback=>callback());}};
 }
@@ -58,7 +64,7 @@ test('a late saved-analysis response cannot attach to the next loaded game', asy
 });
 test('unavailable saved data keeps the PGN review and recorded board usable', async t=>{
   const f = await fixture(t,async()=>({ok:false}));
-  await f.until(()=>f.w.document.getElementById('gameReviewPanel').textContent.includes('could not be loaded'));
+  await f.until(()=>f.w.document.getElementById('gameReviewPanel').textContent.includes('unavailable or does not match'));
   assert.equal(f.w.document.getElementById('gameReviewScrub').max,'99');
   assert.equal(f.current().cursor,37);
   assert.match(f.w.document.getElementById('gameReviewPanel').textContent,/27 plies, about M14/);
