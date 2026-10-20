@@ -25,6 +25,7 @@ jobs:
           node --check functions/lib/dualframe/provider-health.mjs
           node --check public/Nara/dualframe-lab/sw.js
           node --check public/Nara/dualframe-lab/cmarvel-01/reader.mjs
+          node --check public/Nara/dualframe-lab/reader-ui.mjs
           node --check tests/dfc-cmarvel-source-browser.mjs
           node --check scripts/dualframe-prod-stage.mjs
           node --check tests/dualframe-pwa-live-smoke.mjs
@@ -34,7 +35,7 @@ jobs:
           npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
           npm install --prefix functions --no-audit --no-fund
       - name: Verify offline package and update safety
-        run: node --test tests/dualframe-native-output.test.mjs tests/dfc-text.test.mjs tests/dfc-text-layers.test.mjs tests/dfc-import.test.mjs tests/dualframe-deploy-ready.test.mjs tests/dualframe-gallery-order.test.mjs tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs tests/dualframe-enhancement-client.test.mjs tests/dualframe-enhancement-backup.test.mjs tests/dualframe-account-storage.test.mjs tests/dualframe-account-bridge.test.mjs tests/dualframe-account-client.test.mjs tests/dualframe-owner-storage.test.mjs
+        run: node --test tests/dfc-hybrid-ui.test.mjs tests/dualframe-native-output.test.mjs tests/dfc-text.test.mjs tests/dfc-text-layers.test.mjs tests/dfc-import.test.mjs tests/dualframe-deploy-ready.test.mjs tests/dualframe-gallery-order.test.mjs tests/dualframe-pwa.test.mjs tests/dualframe-settings-storage.test.mjs tests/dualframe-provider-probe.test.mjs tests/dualframe-lazy-storage.test.mjs tests/dualframe-sync.test.mjs tests/dualframe-sync-transport.test.mjs tests/dualframe-enhancement-client.test.mjs tests/dualframe-enhancement-backup.test.mjs tests/dualframe-account-storage.test.mjs tests/dualframe-account-bridge.test.mjs tests/dualframe-account-client.test.mjs tests/dualframe-owner-storage.test.mjs
       - name: Verify authenticated provider probing without vendor calls
         run: |
           node --test tests/dualframe-v3.test.mjs tests/dualframe-sync-server.test.mjs tests/dualframe-enhancement.test.mjs tests/dualframe-enhancement-service.test.mjs tests/dualframe-enhancement-policy.test.mjs tests/dualframe-enhancement-ledger.test.mjs tests/dualframe-account-usage-ledger.test.mjs tests/dualframe-account-usage-service.test.mjs tests/dualframe-free-provider.test.mjs tests/dualframe-master-images.test.mjs tests/dualframe-account-identity.test.mjs tests/dualframe-account-runtime.test.mjs tests/dualframe-tenant-isolation.test.mjs tests/dualframe-private-owner.test.mjs
@@ -43,12 +44,31 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
           node tests/dualframe-private-owner-browser.mjs
-      - name: Verify the real eight-page Cartoons reader and isolated pair adapter
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dualframe-sync-browser-evidence
+          path: browser-evidence/
+          if-no-files-found: ignore
+
+  comics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install pinned comic browser and image fixtures
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          npm install --prefix functions --no-audit --no-fund
+      - name: Verify the real eight-page reader and isolated pair adapter
+        timeout-minutes: 4
+        run: node tests/dfc-reader-browser.mjs
+      - name: Verify text layers and gestures independently
         if: ${{ !cancelled() }}
         timeout-minutes: 4
-        run: |
-          node tests/dfc-reader-browser.mjs
-          node tests/dfc-text-browser.mjs
+        run: node tests/dfc-text-browser.mjs
       - name: Verify public first-page reader without a password
         if: ${{ !cancelled() }}
         timeout-minutes: 2
@@ -58,6 +78,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dualframe-sync-browser-evidence
+          name: dualframe-comic-browser-evidence
           path: browser-evidence/
           if-no-files-found: ignore
