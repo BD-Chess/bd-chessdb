@@ -5,9 +5,11 @@ const D=window.ANDALUZIJA;
 if(!D){document.getElementById('day-cards').textContent='Vsebine ni bilo mogoče naložiti. Osvežita stran.';return;}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const get=(k,f)=>{try{return localStorage.getItem(k)??f;}catch{return f;}};
-const put=(k,v)=>{try{localStorage.setItem(k,String(v));return true;}catch{return false;}};
+const privateKey=k=>k.startsWith('bd-andaluzija-2027-r1-')&&!k.endsWith('-plan');
+const get=(k,f)=>{if(privateKey(k))return D.privateUnlocked?(D.preferences?.[k]??f):f;try{return localStorage.getItem(k)??f;}catch{return f;}};
+const put=(k,v)=>{if(privateKey(k)){if(!D.privateUnlocked)return false;(D.preferences??={})[k]=String(v);window.dispatchEvent(new CustomEvent('andaluzija-preference',{detail:{key:k,value:String(v)}}));return true;}try{localStorage.setItem(k,String(v));return true;}catch{return false;}};
 const KEY='bd-andaluzija-2027-r1-';
+const PUBLIC_DATA=JSON.parse(JSON.stringify(D));
 const variants=Object.keys(D.variants);
 const params=new URLSearchParams(location.search);
 let selected=params.get('plan')||get(KEY+'plan','gpt');
@@ -16,10 +18,10 @@ let selectedPlace='malaga';
 const visible=new Set(variants);
 const photo=name=>'./assets/andaluzija-2027/'+name+'.webp';
 const money=n=>new Intl.NumberFormat('sl-SI',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:2}).format(n);
-const dateFor=i=>{const start=new Date((D.trip?.startDate||'2027-04-23')+'T00:00:00Z');start.setUTCDate(start.getUTCDate()+i);return start;};
+const dateFor=i=>{const start=new Date((D.trip?.startDate||'2000-01-01')+'T00:00:00Z');start.setUTCDate(start.getUTCDate()+i);return start;};
 const bookingFor=(day,i)=>{const date=dateFor(i).toISOString().slice(0,10);return (D.bookings||[]).find(b=>b.city===day.night&&b.checkIn<=date&&date<b.checkOut);};
-const dateLabel=(i,long=false)=>dateFor(i).toLocaleDateString('sl-SI',{weekday:long?'long':'short',day:'numeric',month:'numeric',timeZone:'UTC'});
-const shortDate=i=>dateFor(i).toLocaleDateString('sl-SI',{day:'numeric',month:'numeric',timeZone:'UTC'});
+const dateLabel=(i,long=false)=>!D.privateUnlocked?'Dan '+(i+1):dateFor(i).toLocaleDateString('sl-SI',{weekday:long?'long':'short',day:'numeric',month:'numeric',timeZone:'UTC'});
+const shortDate=i=>!D.privateUnlocked?'dan '+(i+1):dateFor(i).toLocaleDateString('sl-SI',{day:'numeric',month:'numeric',timeZone:'UTC'});
 const mapSearch=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
 function routeURL(keys,mode='driving'){
  const unique=keys.filter((v,i)=>!i||v!==keys[i-1]);
@@ -43,7 +45,7 @@ function datesForPlace(v,id){
 function renderVariantControls(){
  $('variant-cards').innerHTML=variants.map(k=>{const v=D.variants[k];return `<button class="variant-card" type="button" data-plan="${k}" aria-pressed="${k===selected}" style="--route:${v.color}"><span class="variant-top"><span class="variant-letter">${v.letter} · ${esc(v.label)}</span><span>${esc(v.tag)}</span></span><h3>${esc(v.headline)}</h3><p>${esc(v.desc)}</p><span class="variant-metrics"><span><b>${v.days.filter(d=>d.night).length}</b> noči</span><span><b>${v.moves}</b> selitev</span><span><b>~${v.rental}</b> dni avta*</span></span><span class="variant-foot">${k===selected?'● Izbrani dnevni vodič':'Odpri ta načrt →'}</span></button>`;}).join('');
  $('variant-switch').innerHTML=variants.map(k=>`<button type="button" data-plan="${k}" aria-pressed="${k===selected}" style="--route:${D.variants[k].color}">${D.variants[k].letter} · ${D.variants[k].label}</button>`).join('');
- const foot=document.createElement('p');foot.className='muted small';foot.textContent='* Število obračunanih dni je odvisno od ur prevzema/vračila in pogodbe. Privzeti primer: prevzem 24. 4. ob 9.00. Izračun je v proračunu.';
+ const foot=document.createElement('p');foot.className='muted small';foot.textContent='* Število obračunanih dni je odvisno od ur prevzema/vračila in pogodbe. Primerjalne ure so v osebnem proračunu. Izračun je v proračunu.';
  const old=document.querySelector('[data-rental-note]');if(old)old.remove();foot.dataset.rentalNote='true';$('variant-cards').after(foot);
 }
 function renderCompare(){
@@ -65,8 +67,8 @@ function renderSupporting(){
  $('hotel-cards').innerHTML=D.hotels.map(h=>`<article class="hotel-card"><img src="${photo(h.image)}" alt="Slikovni primer nastanitve iz Worda; povezava s konkretno enoto ni potrjena" width="800" height="500" loading="lazy"><div class="hotel-content"><p class="hotel-city">${esc(h.city)}</p><h3>${esc(h.name)}</h3><p>${esc(h.note)}</p><span class="hotel-status">Kandidat iz izvirnika · nepreverjena ponudba</span><br><a class="text-link" target="_blank" rel="noopener noreferrer" href="${esc(h.url)}">Izvirna povezava ↗</a></div></article>`).join('');
  $('photo-gallery').innerHTML=gallery.map(([image,label])=>`<button type="button" data-photo="${image}" data-caption="${esc(label)}" aria-label="Povečaj: ${esc(label)}"><img src="${photo(image)}" alt="${esc(label)}" width="800" height="550" loading="lazy"><span>${esc(label)}</span></button>`).join('');
  $('source-list').innerHTML=D.sources.map(s=>`<div class="source-item"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a><p>${esc(s.note)}</p></div>`).join('');
- const checks=[['flights','Karte kupljene · dopolnite podatke','3 karte / 581,92 €; manjkajo datumi in ure letov, kodi letališč ter potrjena prtljaga.'],['alhambra','Alhambra in Nasridske palače','Najprej razpoložljivost 25. aprila, nato imena in točen termin.'],['sleep','Pet noči rezerviranih; štiri še odprte','Potrjeno 451,59 €. Preverite roke brezplačne odpovedi, Camas, prijavo in parkiranje.'],['car','Avto in vračilo','Oznaka za ZBE, franšiza, kartica, gorivo, ure, praznik in pregled.'],['sevilla','Sevillski termini brez hitenja','Alcázar in katedrala na izbranih dneh; ne pozabita na odmor.'],['final','Končna kontrola pred odhodom','Urniki 1. maja, Córdoba Alcázar, C1, vreme in shranjene vstopnice.']];
- $('booking-checklist').innerHTML=checks.map(([id,title,text])=>`<label class="check-item"><input type="checkbox" data-check="${id}" ${get(KEY+'check-'+id,'')==='1'?'checked':''}><span><b>${esc(title)}</b><small>${esc(text)}</small></span></label>`).join('');
+ const checks=[['flights','Podatki leta','Dopolnite po potrditvi.'],['alhambra','Alhambra in Nasridske palače','Preverite datum in uro vstopnice.'],['sleep','Nastanitve','Potrditve so v osebnem delu.'],['car','Avto in vračilo','Preverite pogodbo, dovoze in končni račun.'],['sevilla','Sevillski ogledi','Velike oglede ločite z odmori.'],['final','Pred odhodom','Urniki, vreme in shranjene vstopnice.']];
+ if($('booking-checklist'))$('booking-checklist').innerHTML=checks.map(([id,title,text])=>`<label class="check-item"><input type="checkbox" data-check="${id}" ${get(KEY+'check-'+id,'')==='1'?'checked':''}><span><b>${esc(title)}</b><small>${esc(text)}</small></span></label>`).join('');
 }
 
 // A self-contained geographic overview. The colored lines deliberately are not roads.
@@ -164,10 +166,11 @@ async function setMapView(mode){
 
 const defaults={malaga:110,granada:90,cordoba:95,sevilla:120,ronda:90,marbella:110};
 function initBudget(){
+ if(!D.privateUnlocked||!$('guest-count'))return;
  $('use-confirmed-bookings').checked=get(KEY+'use-confirmed-bookings','1')!=='0';
  $('use-confirmed-bookings').addEventListener('change',()=>{put(KEY+'use-confirmed-bookings',$('use-confirmed-bookings').checked?'1':'0');renderBudget();});
- const partyKey=KEY+'confirmed-party-20261019',partyChanged=get(partyKey,'')!=='1';
- if(partyChanged){$('guest-count').value=String(D.purchase.flights.passengers);put(KEY+'guest-count',$('guest-count').value);put(partyKey,'1');}
+ const partyKey=KEY+'confirmed-party-20261019',partyChanged=get(partyKey,'')!=='1'&&get(KEY+'guest-count',null)===null;
+ if(partyChanged){$('guest-count').value=String(D.purchase.flights.passengers);D.preferences[KEY+'guest-count']=$('guest-count').value;D.preferences[partyKey]='1';}
  $('room-rates').innerHTML=Object.entries(defaults).map(([city,value])=>`<label>${esc(D.places[city].name)} (€)<input id="rate-${city}" type="number" min="0" max="100000" step="1" value="${value}"></label>`).join('');
  ['guest-count','car-pickup','car-rate','parking-rate','food-rate','ticket-rate',...Object.keys(defaults).map(c=>'rate-'+c)].forEach(id=>{const stored=get(KEY+id,null);if(stored!==null&&!(id==='guest-count'&&partyChanged))$(id).value=stored;$(id).addEventListener('input',()=>{put(KEY+id,$(id).value);renderBudget();});});
  renderBudget();
@@ -183,17 +186,19 @@ function budgetFor(key){
  const v=D.variants[key],guests=Math.max(1,numeric('guest-count')),days=rentalDays($('car-pickup').value,v.returnAt);
  let lodging=0,confirmedLodging=0;v.days.forEach((d,i)=>{if(!d.night)return;const booked=$('use-confirmed-bookings').checked&&bookingFor(d,i);const amount=booked?booked.totalEur/booked.nights:numeric('rate-'+d.night);lodging+=amount;if(booked)confirmedLodging+=amount;});lodging=Math.round(lodging*100)/100;confirmedLodging=Math.round(confirmedLodging*100)/100;
  const pickupDate=$('car-pickup').value.slice(0,10);
- const start=Math.max(Date.parse(pickupDate+'T00:00Z'),Date.parse('2027-04-23T00:00Z'));
- const stop=Math.min(Date.parse(v.returnAt.slice(0,10)+'T00:00Z'),Date.parse('2027-05-02T00:00Z'));
+ const start=Math.max(Date.parse(pickupDate+'T00:00Z'),Date.parse(D.trip.startDate+'T00:00Z'));
+ const stop=Math.min(Date.parse(v.returnAt.slice(0,10)+'T00:00Z'),Date.parse(D.trip.endDate+'T00:00Z'));
  const parkingNights=Number.isFinite(start)&&Number.isFinite(stop)?Math.max(0,Math.round((stop-start)/86400000)):0;
  const parts={flights:D.purchase.flights.totalEur,lodging,car:(days??0)*numeric('car-rate'),parking:parkingNights*numeric('parking-rate'),food:guests*10*numeric('food-rate'),tickets:guests*numeric('ticket-rate')};
  const total=Object.values(parts).reduce((s,n)=>s+n,0);
  return {days,parts,total,guests,parkingNights,confirmedLodging};
 }
 function renderBudget(){
+ if(!D.privateUnlocked||!$('budget-results'))return;
  $('budget-results').innerHTML=variants.map(k=>{const v=D.variants[k],b=budgetFor(k);return `<article class="budget-result ${k===selected?'selected':''}" style="--route:${v.color}"><div class="budget-head"><span>${v.letter} · ${v.label}</span><b>${b.days===null?'Preveri prevzem':money(b.total)}</b></div><p>${b.days===null?'Prevzem mora biti veljaven in pred vračilom.':b.days+' dni najema · '+money(b.total/b.guests)+' / osebo · '+b.parkingNights+' noči parkiranja · že plačani leti vključeni'}</p><details><summary>Razčlenitev izračuna</summary><div class="budget-breakdown">${[['Letalske karte · 3 / že plačano',b.parts.flights],['Nočitve · '+money(b.confirmedLodging)+' potrjeno + '+money(b.parts.lodging-b.confirmedLodging)+' ocena',b.parts.lodging],['Avto',b.parts.car],['Parkiranje',b.parts.parking],['Hrana',b.parts.food],['Ogledi',b.parts.tickets]].map(([label,value])=>`<span>${label}</span><span>${money(value)}</span>`).join('')}</div></details></article>`;}).join('');
 }
 function renderFlight(){
+ if(!D.privateUnlocked||!$('flight-time'))return;
  const raw=$('flight-time').value;
  if(!raw){$('flight-result').textContent='Ure kupljenega leta v dosegljivih dokazilih še ni. Dokler ni potrjena, ogledov na dan odleta ne potrjujemo.';return;}
  const [h,m]=raw.split(':').map(Number),depart=h*60+m-210;
@@ -221,10 +226,7 @@ function speak(id){
  activeSpeech.onend=()=>{$('audio-status').textContent='Branje končano.';};activeSpeech.onerror=()=>{$('audio-status').textContent='Branje se je ustavilo; besedilo ostaja na voljo.';};
  $('audio-status').textContent='Berem: '+g.title;speechSynthesis.speak(activeSpeech);openStory(id);
 }
-function saveNotesFile(){
- const data={trip:'Andaluzija 2027',version:D.version,plan:selected,notes:$('bd-notes').value,created:new Date().toISOString(),checklist:Object.fromEntries([...document.querySelectorAll('[data-check]')].map(x=>[x.dataset.check,x.checked]))};
- const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='BD-andaluzija-2027-zapiski.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
+function saveNotesFile(){window.dispatchEvent(new CustomEvent('andaluzija-export-encrypted'));}
 document.addEventListener('click',e=>{
  const view=e.target.closest('[data-map-view]');if(view){setMapView(view.dataset.mapView);return;}
  const plan=e.target.closest('[data-plan]');if(plan){choosePlan(plan.dataset.plan);return;}
@@ -241,10 +243,15 @@ document.addEventListener('change',e=>{
 $('guide-search').addEventListener('input',()=>{const q=$('guide-search').value.trim().toLocaleLowerCase('sl');let count=0;document.querySelectorAll('.guide-card').forEach(c=>{c.hidden=!c.dataset.search.includes(q);if(!c.hidden)count++;});$('guide-empty').hidden=count>0;});
 $('open-guides').onclick=()=>{const cards=[...document.querySelectorAll('.guide-card:not([hidden])')],open=cards.some(c=>!c.open);cards.forEach(c=>c.open=open);$('open-guides').textContent=open?'Zapri zgodbe':'Odpri vse zgodbe';};
 $('stop-audio').onclick=()=>{if('speechSynthesis' in window)speechSynthesis.cancel();$('audio-status').textContent='Branje ustavljeno.';};
-$('bd-notes').value=get(KEY+'notes','');
-$('bd-notes').addEventListener('input',()=>{$('notes-status').textContent=put(KEY+'notes',$('bd-notes').value)?'Shranjeno v tem brskalniku.':'Za trajno kopijo uporabi Izvozi zapiske.';});
+function bindPrivate(){
+ if(!D.privateUnlocked||!$('bd-notes'))return;
+ $('bd-notes').value=get(KEY+'notes','');
+$('bd-notes').addEventListener('input',()=>{$('notes-status').textContent=put(KEY+'notes',$('bd-notes').value)?'Lokalna sprememba; skupno shranjevanje preverita pri Najini ogledi.':'Za trajno kopijo uporabi Izvozi zapiske.';});
 $('export-notes').onclick=saveNotesFile;
-$('flight-time').value=get(KEY+'flight-time','');$('flight-time').addEventListener('input',()=>{put(KEY+'flight-time',$('flight-time').value);renderFlight();});
+if($('flight-time')){$('flight-time').value=get(KEY+'flight-time','');$('flight-time').addEventListener('input',()=>{put(KEY+'flight-time',$('flight-time').value);renderFlight();});}
+ initBudget();renderFlight();
+}
+
 $('map-zoom-in').onclick=()=>changeZoom(1.35);$('map-zoom-out').onclick=()=>changeZoom(1/1.35);$('map-reset').onclick=()=>{if(photoMap&&mapMode!=='scheme'){fitPhotoMap();return;}zoom=1;panX=0;panY=0;applyMapTransform();};
 const mapCard=document.querySelector('.map-card');
 function expandMap(force){const expanded=force??!mapCard.classList.contains('map-expanded');mapCard.classList.toggle('map-expanded',expanded);document.body.style.overflow=expanded?'hidden':'';$('map-expand').textContent=expanded?'Zapri zemljevid':'Razširi';if(photoMap)requestAnimationFrame(()=>photoMap.invalidateSize({pan:false}));}
@@ -256,13 +263,16 @@ $('trip-map').addEventListener('pointerup',()=>drag=null);$('trip-map').addEvent
 let font=Number(get('bd-trip-font-percent-v1','100'));if(!Number.isFinite(font))font=100;
 function setFont(n){font=Math.min(200,Math.max(80,n));document.documentElement.style.setProperty('--scale',font/100);$('font-reset').textContent=font+'%';put('bd-trip-font-percent-v1',font);}
 $('font-minus').onclick=()=>setFont(font-10);$('font-plus').onclick=()=>setFont(font+10);$('font-reset').onclick=()=>setFont(100);
-$('print-page').onclick=()=>window.print();
+if($('print-page'))$('print-page').onclick=()=>window.print();
 window.addEventListener('pagehide',()=>{if('speechSynthesis' in window)speechSynthesis.cancel();});
-renderVariantControls();renderCompare();renderDays();renderGuides();renderSupporting();renderMap();initBudget();renderFlight();setFont(font);
+renderVariantControls();renderCompare();renderDays();renderGuides();renderSupporting();renderMap();bindPrivate();setFont(font);
 if('IntersectionObserver' in window){const mapObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){mapObserver.disconnect();if(mapMode!=='scheme')setMapView(mapMode);}},{rootMargin:'150px'});mapObserver.observe($('map-host'));}else setMapView(mapMode);
 if('ResizeObserver' in window)new ResizeObserver(()=>{if(photoMap&&mapMode!=='scheme')photoMap.invalidateSize({pan:false});}).observe($('map-host'));
 if('ResizeObserver' in window){new ResizeObserver(()=>{document.documentElement.style.setProperty('--topbar-h',document.querySelector('.topbar').getBoundingClientRect().height+'px');}).observe(document.querySelector('.topbar'));}
 // Expose only deterministic data/math for inspection, without user notes or stored data.
+window.addEventListener('andaluzija-preferences-sync',e=>{if(!D.privateUnlocked)return;D.preferences=e.detail||{};for(const id of ['bd-notes','flight-time','guest-count','car-pickup','car-rate','parking-rate','food-rate','ticket-rate',...Object.keys(defaults).map(c=>'rate-'+c)]){const el=$(id);if(el)el.value=get(KEY+(id==='bd-notes'?'notes':id),el.defaultValue||'');}document.querySelectorAll('[data-check]').forEach(el=>el.checked=get(KEY+'check-'+el.dataset.check,'')==='1');if($('use-confirmed-bookings'))$('use-confirmed-bookings').checked=get(KEY+'use-confirmed-bookings','1')!=='0';renderBudget();renderFlight();});
+window.addEventListener('andaluzija-content',e=>{const p=e.detail;Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,p?.data||JSON.parse(JSON.stringify(PUBLIC_DATA)));D.privateUnlocked=!!p;D.preferences=p?.preferences||{};renderVariantControls();renderCompare();renderDays();renderSupporting();updatePlace();bindPrivate();});
 window.AndaluzijaApp=Object.freeze({version:D.version,rentalDays,blocks,key:()=>selected});
 })();
+
 

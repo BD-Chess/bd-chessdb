@@ -90,3 +90,48 @@
 @media(max-width:600px){.confirmed-section .purchase-facts{grid-template-columns:1fr}.booking-details summary small{line-height:1.6}.day-booking{overflow-wrap:anywhere}}
 
 .booking-details .coverage-detail summary{grid-template-columns:minmax(0,1fr) auto}
+
+
+/* Scoped shared POI planner. Existing gallery/DualFrame styles stay unchanged. */
+.poi-section {scroll-margin-top:6rem}
+.poi-access {display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1.3rem}
+.poi-access>div {flex:1;min-width:230px}
+.poi-access form {display:flex;align-items:end;gap:.65rem;flex-wrap:wrap}
+.poi-access p {margin:.35rem 0}
+.poi-access #poi-status {flex-basis:100%;font-weight:650;color:var(--gold,#ebc783)}
+.poi-access #poi-private-status {flex-basis:100%}
+.poi-section label {display:block;font-size:.9em;font-weight:550}
+.poi-section input:not([type=checkbox]),.poi-section select,.poi-section textarea {display:block;width:100%;background:#112a32;color:#f2f1e8;border:1px solid #56706c;border-radius:.65rem;padding:.7rem;font:inherit;margin:.4rem 0 .7rem;box-sizing:border-box}
+.poi-section textarea {min-height:245px;line-height:1.7;resize:vertical}
+.poi-section input:focus,.poi-section select:focus,.poi-section textarea:focus {outline:2px solid #ebc783;outline-offset:2px}
+.poi-section button {background:#d9b778;color:#11252a;border:1px solid #d9b778;border-radius:.6rem;min-height:44px;padding:.6rem .9rem;font:inherit;font-weight:650;cursor:pointer}
+.poi-section button:disabled {opacity:.5;cursor:default}
+.poi-section [hidden] {display:none!important}
+.poi-section a {color:#a7d8dc;text-decoration:underline;text-underline-offset:3px}
+.poi-selectors {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.poi-layout {display:grid;grid-template-columns:1.05fr 1fr;gap:1.1rem;align-items:start;margin:1rem 0 1.4rem}
+.poi-layout>.info-card {min-width:0}
+.poi-layout h3 {margin-top:0}
+.poi-actions,.poi-maps {display:flex;flex-wrap:wrap;gap:.65rem;margin:1rem 0}
+.poi-maps a {font-size:.9em;min-height:38px;display:inline-flex;align-items:center}
+.poi-settings summary,.poi-stop summary {cursor:pointer;padding:.6rem 0;color:#e8ca91}
+.poi-stops {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.poi-stop {border:1px solid #3c5c5b;background:#10282e;border-radius:.9rem;padding:1rem;min-width:0}
+.poi-stop-top {display:flex;gap:.6rem;justify-content:space-between;align-items:start;flex-wrap:wrap}
+.poi-stop-top label {white-space:nowrap}
+.poi-stop-top input {accent-color:#e8ca91;width:20px;height:20px;vertical-align:middle}
+.poi-disabled {opacity:.72}
+.poi-fields {padding:.5rem 0}
+.poi-fields button {margin-bottom:.75rem}
+.poi-fields [data-location-choice] {margin:.5rem 0}
+.poi-consent {padding:.7rem 0;font-size:.8em!important;font-weight:400!important}
+.poi-consent input {margin-right:.4rem;width:20px;height:20px;vertical-align:middle;accent-color:#e8ca91}
+#poi-error {color:#ffb8a7;font-weight:550;white-space:pre-wrap}
+#poi-preview {border-left:3px solid #ebc783;padding-left:1rem}
+#poi-preview:empty {display:none}
+#poi-conflict {border:2px solid #dbb477;margin:1rem 0}
+#poi-conflict-diff {display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+#poi-conflict-diff pre {white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.85em}
+.private-placeholder {border-left:2px solid #9bafaa;color:#b9cbc5}
+@media(max-width:700px){.poi-layout,.poi-stops,#poi-conflict-diff {grid-template-columns:1fr}.poi-selectors {grid-template-columns:1fr 1fr;gap:.6rem}.poi-selectors label:last-child {grid-column:1/-1}.poi-access {padding:1rem}.poi-access form {width:100%}.poi-access form label {flex:1;min-width:160px}.poi-actions button {flex:1;min-width:120px}.poi-stop {padding:.9rem}.poi-section textarea {font-size:17px}}
+@media print {.poi-access form,.poi-actions,.poi-section button,.poi-consent,.private-placeholder {display:none!important}.poi-layout,.poi-stops {display:block}.poi-stop {break-inside:avoid;margin:1rem 0}.poi-section input,.poi-section select,.poi-section textarea {color:#111;background:white}}
