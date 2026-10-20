@@ -70,8 +70,8 @@ async function run(name,engine,url){
    await page.locator('#search-input').fill(query);
    const links=await page.locator('#search-results a').evaluateAll(nodes=>nodes.map(a=>({title:a.querySelector('strong').textContent,url:a.href})));
    if(query==='LAB'){
-    assert.equal(links.length,5);
-    assert.deepEqual(links.map(x=>key(x.url)).sort(),['/chess-lab/','/s/new/','/trip/new/','/f4m/new/','/cw/new/'].sort());
+    assert.equal(links.length,6);
+    assert.deepEqual(links.map(x=>key(x.url)).sort(),['/chess-lab/','/s/new/','/trip/new/','/f4m/new/','/cw/new/','/nara/dualframe-lab/'].sort());
     assert.ok(links.every(x=>/LAB/.test(x.title)&&!x.url.includes('/old/')));
     if(evidence)await page.screenshot({path:path.join(evidence,name+'-lab-results.png')});
    }else assert.equal(key(links[0]?.url),target,query);
@@ -81,7 +81,7 @@ async function run(name,engine,url){
   await Promise.all([page.waitForURL(url=>url.pathname.toLowerCase().includes('/chess-lab/')),page.locator('#search-input').press('Enter')]);
   assert.ok(await page.locator('body').innerText());
   await page.goto(url,{waitUntil:'domcontentloaded'});
-  await Promise.all([page.waitForURL(url=>/\/start\/(?:index\.html)?$/i.test(url.pathname)),page.locator('.topbar .brand').click()]);
+  await Promise.all([page.waitForURL(url=>/\/start\/(?:index\.html)?$/i.test(url.pathname)),page.locator('.topbar .brand-home').click()]);
   assert.match(await page.title(),/Start/i);
   await page.goto(url,{waitUntil:'domcontentloaded'});
   // Keep working if the global index is unavailable. Test in a fresh context.
@@ -92,7 +92,7 @@ async function run(name,engine,url){
   await fallback.goto(url,{waitUntil:'domcontentloaded'});
   await fallback.locator('#search-open').click();
   await fallback.waitForFunction(()=>/quick routes|bližnjice/.test(document.querySelector('#search-status').textContent));
-  await fallback.locator('#search-input').fill('LAB');assert.equal(await fallback.locator('#search-results a').count(),5);
+  await fallback.locator('#search-input').fill('LAB');assert.equal(await fallback.locator('#search-results a').count(),6);
   await fallback.locator('#search-input').fill('Start');assert.equal(key(await fallback.locator('#search-results a').first().getAttribute('href')),'/start/');
   await offline.close();
   assert.deepEqual(errors,[],'No landing JavaScript errors');
