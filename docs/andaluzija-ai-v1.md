@@ -22,7 +22,7 @@ The client paints an explicit application receipt independently of model prose. 
 
 Closed initially. Desktop uses a left sidebar; at 402px it uses a full-screen overlay with close/Escape, focus containment and safe-area padding. One conversation keeps provider labels on earlier answers. Toggle preserves the authorised session. Messages, continuation, preview and catalogue cache stay in memory, never plain localStorage or global Guide history. Pagehide/BFCache/lock abort requests/worker, increment epoch, clear chat/composer/preview and ignore late results. Print excludes the sidebar. Existing Shield-protected planner storage remains ciphertext. No owner password is obtained or logged by the AI code.
 
-The real private content envelope remains `SECURE_WRAP_PENDING`; this build does not rotate keys, publish plaintext, rewrite history or imply retroactive protection of the held old deploy. Live release, real owner key, production CAS and real provider response remain `LIVE_ACCEPTANCE_PENDING` until the authorised release window. Desktop Chromium at 402px is not a physical iPhone test.
+The private content envelope was completed by the parallel TripOpti session and independently checked on 2026-10-21: `SECURE_WRAP_VERIFIED`, SHA-256 `873c812e4182bcc8e2633e805f1e0ae62665965a40b3f16e927542663616afaa`. Local checks with the previously authorized owner key cover decryption, the existing owner verifier, wrong-key rejection, real browser unlock/relock/reload and no private data in the model projection or plain cache. A later chat entry with an additional trailing character was rejected; no key was changed. Live release, production CAS and real provider response remain separately recorded acceptance items. Desktop Chromium at 402px is not a physical iPhone test, and earlier public history is not retroactively protected.
 
 ## Targeted verification
 
@@ -36,3 +36,11 @@ Set `ANDALUZIJA_TEST_CHROMIUM` to an installed Chromium executable. Install Play
 Rollback: scoped revert on fresh main, preserve later DualFrame/main commits and encrypted user state. Release only in the existing authorised window, with no manual duplicate deployment.
 
 Authenticated owner sessions can ask public city questions while the Shield remains locked; mutation stays disabled. Expired authentication locks/clears the client on a failed request or the next visible 60-second auth-only check. The planner also clears after its eight-hour project session lifetime, including without a network response. No provider call runs on that check. Physical keyboard validation is pending; the 402×540 case only simulates reduced viewport height.
+
+## Shared email sign-in · 2026-10-21
+
+The travel panel now includes email/password sign-in through the existing `mdlxdcc-guide-auth` endpoint and HttpOnly Guide cookie used by the landing page. An existing landing owner session is reused automatically on the same host. No new account store, provider call, signup flow or permission is introduced. Ordinary visitor accounts remain ineligible for this private trip and receive an explicit explanation and a link to the public landing guide. Project-password authentication remains compatible.
+
+AI sign-in does not decrypt the personal sections or grant planner mutations. Unlocking `Najini ogledi` is still required for Shield data and shared edits. The entered password is cleared after submission, error, panel close and lifecycle reset; it is never persisted or sent to a model. The draft question survives a login attempt. Logout clears both Guide and project sessions, aborts active work, locks private state and clears conversation; a failed logout is displayed and can be retried. GitHub Pages only links to the canonical host and never collects credentials.
+
+The isolated browser checks exercise real Guide session cookies, wrong password, owner/visitor distinction, a locked-Shield conversation, an existing landing session, credential clearing, draft retention, logout and 402px layout. These are deterministic local acceptance checks; production authentication and providers require separate live verification.

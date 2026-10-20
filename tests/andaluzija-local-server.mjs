@@ -26,6 +26,7 @@ const root=resolve('public'),mime={'.html':'text/html','.js':'application/javasc
 let privateEnvelope;
 async function syntheticPrivate(){
  if(!privateEnvelope){
+  if(process.env.ANDALUZIJA_TEST_ENVELOPE){privateEnvelope=JSON.parse(await readFile(process.env.ANDALUZIJA_TEST_ENVELOPE,'utf8'));return privateEnvelope;}
   if(process.env.ANDALUZIJA_PRIVATE_FIXTURE){const value=JSON.parse(await readFile(process.env.ANDALUZIJA_PRIVATE_FIXTURE,'utf8'));value.sections.potrjeno=value.sections.potrjeno.replace('</section>','<p>SYNTHETIC_PRIVATE_MARKER</p></section>');privateEnvelope=await ShieldCore.seal(value,[TEST_PASSWORD],{domain:'www.mdlxdcc.org'});return privateEnvelope;}
   const raw=await readFile(root+'/BD/O/izleti/andaluzija-2027-data.js','utf8');const data=JSON.parse(raw.slice(raw.indexOf('{')).trim().replace(/;$/,''));
   data.trip={startDate:'2030-01-01',endDate:'2030-01-10',flightTimesVerified:false};data.bookings=[];data.purchase={flights:{passengers:3,totalEur:0}};

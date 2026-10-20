@@ -16,8 +16,8 @@
 <script defer src="../../../Trip/new/road-matrix.js"></script>
 <script defer src="./andaluzija-shield-core.js"></script>
 <script type="module" src="./andaluzija-planner.mjs?v=20261020-trip1"></script>
-<link rel="stylesheet" href="./andaluzija-ai.css?v=20261020-ai1">
-<script type="module" src="./andaluzija-ai.mjs?v=20261020-ai1"></script>
+<link rel="stylesheet" href="./andaluzija-ai.css?v=20261021-auth1">
+<script type="module" src="./andaluzija-ai.mjs?v=20261021-auth1"></script>
 </head>
 <body>
 <a class="skip" href="#vsebina">Na vsebino</a>
@@ -111,11 +111,21 @@
 <dialog id="photo-dialog"><form method="dialog"><button type="submit" aria-label="Zapri fotografijo">Zapri ×</button></form><img id="lightbox-photo" alt=""><p id="lightbox-caption"></p></dialog>
 <aside id="trip-ai-panel" role="dialog" aria-label="Andaluzija · AI vodič" hidden>
  <header><h2>Andaluzija · AI vodič</h2><button id="trip-ai-close" type="button" aria-label="Zapri AI vodiča">Zapri ×</button></header>
- <label for="trip-ai-provider">Naslednji odgovor<select id="trip-ai-provider"><option value="gpt">GPT</option><option value="claude">Claude</option></select></label>
+ <div class="trip-ai-account"><span id="trip-ai-account-label">Prijava za AI</span><button id="trip-ai-account-action" type="button">Prijava</button></div>
+ <form id="trip-ai-auth" hidden>
+  <strong>Prijava za GPT in Claude</strong>
+  <p>Uporabi isti račun kot na glavni strani MDL×DCC. Osebni izlet odkleneta posebej pri »Najini ogledi«.</p>
+  <label for="trip-ai-email">E-pošta<input id="trip-ai-email" type="email" autocomplete="username" maxlength="254" required></label>
+  <label for="trip-ai-password">Geslo<input id="trip-ai-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+  <p id="trip-ai-auth-error" role="alert" hidden></p>
+  <div class="trip-ai-actions"><button id="trip-ai-auth-submit" type="submit">Prijava</button><button id="trip-ai-auth-cancel" type="button">Nazaj v klepet</button></div>
+  <a href="https://www.mdlxdcc.org/">Javni vodnik in računi obiskovalcev ↗</a>
+ </form>
+ <label class="trip-ai-provider-label" for="trip-ai-provider">Naslednji odgovor<select id="trip-ai-provider"><option value="gpt">GPT</option><option value="claude">Claude</option></select></label>
  <div class="trip-ai-prompts"><button type="button" data-trip-question="Kaj bi še pogledala v izbranem mestu?">Kaj še v bližini?</button><button type="button" data-trip-question="Preuredi oglede po poti v izbranem dnevu.">Preuredi sprehod</button><button type="button" data-trip-question="Pokaži naslednji peš odsek v Google Maps.">Naslednji odsek</button></div>
  <div id="trip-ai-messages" role="log" aria-live="polite" aria-label="Pogovor"></div>
  <details><summary>Predogled dejanj</summary><div id="trip-ai-preview"></div></details>
- <p id="trip-ai-status" role="status">Za pogovor odklenita skupni izlet pri »Najini ogledi«.</p>
+ <p id="trip-ai-status" role="status">Za pogovor se prijavita z računom MDL×DCC ali odklenita skupni izlet.</p>
  <form id="trip-ai-form"><label for="trip-ai-input" class="trip-ai-note">Vprašanje za izbrani dan</label><textarea id="trip-ai-input" maxlength="4000" required placeholder="Kaj bi še pogledala v Córdobi?"></textarea>
  <label class="trip-ai-consent"><input id="trip-ai-allow" type="checkbox" checked>Izrecno naročene spremembe tudi shrani</label>
  <div class="trip-ai-actions"><button id="trip-ai-send" type="submit">Pošlji</button><button id="trip-ai-cancel" type="button">Prekliči</button></div></form>

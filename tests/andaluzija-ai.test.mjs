@@ -12,6 +12,7 @@ const req=b=>new Request('https://www.mdlxdcc.org/.netlify/functions/andaluzija-
 const parse=async r=>(await r.text()).trim().split('\n\n').filter(Boolean).map(x=>JSON.parse(x.slice(6)));
 const noBudget=()=>({reserve:async()=>null,settle:async()=>{}});
 import {scriptedClient} from './andaluzija-ai-provider-fixture.mjs';
+import {sessionCookie} from '../functions/lib/mdlxdcc-guide/access.mjs';
 
 test('public skill and every reference hash match; city knowledge is progressively loaded',async()=>{
  const k=await travelKnowledge();assert(k.skill.includes('Version 1.0.0'));assert(!JSON.stringify(k.receipt()).includes('cordoba.md'));assert((await k.reference('cordoba')).includes('Palacio de Viana'));assert(Object.keys(k.visits).length===10);assert(Object.keys(k.receipt().files).includes('references/cordoba.md'));assert(k.visits.cordoba.length>=12);
@@ -28,6 +29,13 @@ test('continuations are confidential, tamper resistant, expire and bind actor',a
 test('unauthenticated, visitor and forged page/role never invoke provider; origins remain constrained',async()=>{
  let called=false;const h=makeTravelHandler({actor:()=>null,clientFactory:()=>{called=true;}});assert.equal((await h(req({role:'owner',page:{path:'/BD/O/'},context:context()}))).status,401);assert.equal(called,false);
  const x=makeTravelHandler({actor:()=>({id:'a'})});assert.equal((await x(new Request('https://www.mdlxdcc.org/.netlify/functions/andaluzija-ai',{method:'POST',headers:{Origin:'https://evil.invalid'}}))).status,403);
+});
+test('existing signed landing owner cookie enables AI but visitor cookie never enables the trip',async()=>{
+ process.env.MDLXDCC_GUIDE_OWNER_EMAIL='synthetic@example.invalid';
+ let called=0;const h=makeTravelHandler({configured:{gpt:true,claude:true},clientFactory:()=>{called++;throw Error('NO_PROVIDER_EXPECTED');}});
+ const get=actor=>new Request('https://www.mdlxdcc.org/.netlify/functions/andaluzija-ai',{headers:{Cookie:sessionCookie(actor).split(';')[0]}});
+ const owner=await h(get({id:'owner',email:'synthetic@example.invalid',role:'owner'}));assert.equal(owner.status,200);assert.equal((await owner.json()).authenticated,true);
+ assert.equal((await h(get({id:'visitor',email:'visitor@example.invalid',role:'visitor'}))).status,401);assert.equal(called,0);
 });
 for(const provider of ['gpt','claude'])test(provider+': skill, action -> execution receipt -> independently checked save -> continuation, signed prefix intact',async()=>{
  const payloads=[];let verified=0;const handler=makeTravelHandler({actor:()=>({id:'a'}),configured:{gpt:true,claude:true},clientFactory:()=>scriptedClient(provider,payloads),budgetFactory:noBudget,stateReader:async()=>{verified++;return Response.json({revision:1,receipts:[{requestId:'server-save-id',revision:1}]},{headers:{ETag:'"saved-1"'}});}});
