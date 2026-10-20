@@ -11,7 +11,9 @@ permissions:
   actions: write
 jobs:
   dispatch:
-    if: github.repository == 'BD-Chess/bd-chessdb' && github.event.head_commit.message == 'release: BD-approved DGTE research update 20261020'
+    if: >-
+      github.repository == 'BD-Chess/bd-chessdb' &&
+      github.event.head_commit.message == 'release: BD-approved DGTE research update 20261020'
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
@@ -24,7 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = '50d9674e48ade966739eb3ef519e8b87d29925ed'
+          test "$(git rev-parse HEAD^)" = 'f9f085fe61c2c2188505ad8184245831d3f9ef8f'
           test "$(git diff --name-only HEAD^ HEAD)" = '.github/workflows/dgte-research-release-20261020.yml'
           test "$(git hash-object .github/workflows/deploy-netlify.yml)" = '50ce39e4c000f312174fdc188b6c0afcf223fd18'
           echo '38effe5e5da2def2dd2f8a2b9e843b851b2e9d5c09c449d899f08497a72e57b5  public/crp/DGTE.html' | sha256sum -c -
