@@ -1,22 +1,24 @@
 {
   "schema": "mdlxdcc.root-pwa.release.v2",
-  "release_id": "root-20261009-r4",
+  "release_id": "root-20261020-r5",
   "canonical_entry": "index.html",
   "manifest": "manifest.webmanifest",
   "service_worker": "sw.js",
-  "service_worker_scope": "./",
+  "service_worker_scope": "./index.html",
+  "manifest_scope": "./index.html",
+  "manifest_start_url": "./index.html",
   "fallback_url": "index.html",
   "legacy_redirects": [
     "PWA/",
     "PWA/index.html",
     "index-pwa.html"
   ],
-  "architecture": "One installable root PWA. The /PWA/ folder only retains icons and legacy migration files.",
+  "architecture": "Landing-only PWA: top-level index.html (including in-document dialogs and embedded Guide), never sibling apps. /PWA/ remains a compatibility route.",
   "cache_policy": {
-    "root_navigation": "network-first, no-store request, offline cache fallback",
+    "root_navigation": "index.html network-first, no-store request, offline cache fallback; bare directory URL normalized to index.html by the page",
     "public_shell_and_gallery": "network-first, no-store request, offline cache fallback",
     "unrelated_routes": "not intercepted",
-    "root_cache_prefix": "mdlxdcc-root-pwa:",
+    "root_cache_prefix": "mdlxdcc-landing-pwa:",
     "image_cache_limit": 24
   },
   "core_shell_assets": [
@@ -27,6 +29,11 @@
     "PWA/icon-192.png",
     "PWA/icon-512.png",
     "PWA/apple-touch-icon.png",
+    "assets/mdlxdcc-guide/guide.css",
+    "assets/mdlxdcc-guide/guide.js",
+    "assets/mdlxdcc-guide/routes.mjs",
+    "assets/mdlxdcc-guide/tour.json",
+    "site-search-index.json",
     "assets/ai8-vision/r2/vision-r4.css",
     "assets/ai8-vision/r2/vision-r4.js",
     "assets/human-middle/v5/human-middle-family-r1.css",

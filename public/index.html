@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MDL×DCC — Less describes more.</title>
-<!-- ROOT PWA v2: the primary index.html is the only installable entry -->
-<meta name="mdlxdcc-pwa-release" content="root-20261009-r4">
-<link rel="manifest" href="./manifest.webmanifest?v=root-20261009-r4">
+<!-- ROOT PWA v3: only the landing document and its in-document dialogs are in scope. -->
+<script id="mdlxdcc-pwa-entry-alias">(function(){'use strict';if(!/^https?:$/.test(location.protocol)||!location.pathname.endsWith('/'))return;try{const entry=new URL('index.html',location.href);history.replaceState(history.state,'',entry.pathname+location.search+location.hash);}catch(_){}})();</script>
+<meta name="mdlxdcc-pwa-release" content="root-20261020-r5">
+<link rel="manifest" href="./manifest.webmanifest?v=root-20261020-r5">
 <link rel="apple-touch-icon" href="./PWA/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -892,7 +893,7 @@ dialog.addEventListener('close',()=>{root.classList.remove('search-open');$('#se
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
 input.addEventListener('input',render);input.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(results.length)select((active+(e.key==='ArrowDown'?1:results.length-1)+results.length)%results.length);}});
 /* LANDING_TOE_ENTER_20260917 */
-$('#search-form').addEventListener('submit',e=>{e.preventDefault();const q=norm(input.value),publicDirect=PUBLIC_DIRECT[q];if(publicDirect){remember(input.value);location.assign(new URL(publicDirect,BASE).href);return;}const direct=PRIVATE[q];if(direct){location.assign(new URL(direct,BASE).href);return;}const p=results[active>=0?active:0];if(p){remember(input.value);location.assign(p.url);}});
+$('#search-form').addEventListener('submit',e=>{e.preventDefault();const pwaGo=url=>{if(typeof window!=='undefined'&&window.MDLxDCCPWAOpenExternal?.(url)===true)return;location.assign(url);};const q=norm(input.value),publicDirect=PUBLIC_DIRECT[q];if(publicDirect){remember(input.value);pwaGo(new URL(publicDirect,BASE).href);return;}const direct=PRIVATE[q];if(direct){pwaGo(new URL(direct,BASE).href);return;}const p=results[active>=0?active:0];if(p){remember(input.value);pwaGo(p.url);}});
 $('#clear-history').addEventListener('click',()=>{history=[];save(STORE,'[]');historyView();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog.open){e.preventDefault();dialog.close();return;}const editing=e.target.closest('input,textarea,select,[contenteditable="true"]');if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();}else if(!editing&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(e.key==='/'||e.key.toLowerCase()==='s')){e.preventDefault();openSearch();}});
 // Keep bookmarks from the preceding landing pointed at their established owners.
@@ -1312,7 +1313,7 @@ setHero(0,false);startHeroAuto();
 
 <script id="ai8-lab-vision-script" src="./assets/ai8-vision/r2/vision-r4.js?v=20261004-r4"></script>
 
-<script src="./pwa.js?v=root-20261009-r4" defer></script>
+<script src="./pwa.js?v=root-20261020-r5" defer></script>
 
 <!-- One persistent chat and scene frame. Toggling AI never recreates them. -->
 <aside id="guide-panel" aria-labelledby="guide-title" hidden>
