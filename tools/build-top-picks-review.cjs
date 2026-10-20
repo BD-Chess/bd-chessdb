@@ -135,7 +135,10 @@ for(const c of catalog.cases){
    docs.set('docs/chessbest-evidence/'+p,null);
   for(const [p,h]of docs){const doc=input(p,h);if(doc.requests)cdbRequests(e,doc,p);else addSF(e,doc,p,anchor);}
   const sf=positions[anchor].observations.filter(o=>o.provider==='sf').sort((a,b)=>(b.depth||0)-(a.depth||0));
-  if(sf.length)positions[anchor].sf=sf[0];
+  if(sf.length){
+   positions[anchor].sf=sf[0];
+   e.sources.sf.date=sf[0].at.slice(0,10);e.sources.sf.engine=sf[0].engine;
+  }else e.sources.sf={label:'SF',date:null,engine:null,method:'No saved SF result.'};
   const counts={cp:0,mate:0,special:0,unknown:r.totalPly};
   for(const row of positions.slice(0,-1)){
    const direct=row.observations.filter(o=>o.provider==='cdb'&&o.method==='queryall').at(-1);

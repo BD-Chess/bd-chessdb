@@ -39,7 +39,8 @@ test('TP01/02 all ten full sources, roots, anchors and hashes bind actual nonemp
   assert.equal(e.evidence.positions.length,review.totalPly+1);assert(e.evidence.coverage.cdb_positions>0);
   if(entry.alias==='dreev-kasparov-1996'){assert.equal(e.evidence.decisions.length,12);assert.equal(e.evidence.coverage.cdb_scored,58);assert.equal(e.evidence.coverage.sf_positions,100);}
   else {const anchor=e.evidence.positions[entry.anchor.ply];assert(anchor.observations.length>0,entry.id);assert(e.evidence.notes.some(n=>n.ply===entry.anchor.ply));
-   assert(e.evidence.provenance.archive.members['moves.csv'].sha256);assert(e.evidence.coverage.sf_positions<=1);}
+   assert(e.evidence.provenance.archive.members['moves.csv'].sha256);assert(e.evidence.coverage.sf_positions<=1);
+   if(e.evidence.coverage.sf_positions===0){assert.equal(e.evidence.sources.sf.date,null);assert.equal(e.evidence.sources.sf.engine,null);}}
  }
 });
 test('TP01 no matching names, truncated/foreign line, root mismatch, fake alias or injected URL can inherit evidence',()=>{

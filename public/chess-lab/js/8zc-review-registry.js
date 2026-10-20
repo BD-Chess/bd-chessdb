@@ -111,8 +111,8 @@
         "played": "c7c8"
       },
       "file": "config/review-gukesh-ding-wch-2024-28-qc8.json",
-      "bytes": 62486,
-      "sha256": "23fbbac961806975d41813be2d5eabecd5aa88f0a59ca908d3388ab71a0e44e1"
+      "bytes": 62422,
+      "sha256": "2731f8521f0397dd465698777ccf9a9bb80a4023df38f9043f9c6087b64faade"
     },
     {
       "id": "capablanca-lasker-havana-1921-45-kf8",
@@ -127,8 +127,8 @@
         "played": "e7f8"
       },
       "file": "config/review-capablanca-lasker-havana-1921-45-kf8.json",
-      "bytes": 94944,
-      "sha256": "ae2f4908b0cda07000f649193e583797ef0e1b4eaa7292195f17d8111fa5cef7"
+      "bytes": 94880,
+      "sha256": "6895bb92afe110d07a9814a1e6ed9e0add6e7793796f03de0ff9b7379b7f57ad"
     },
     {
       "id": "su_fi_97_49_rba1",
