@@ -1,7 +1,8 @@
 (()=>{'use strict';
 // One installable app: the site's primary index.html, never a /PWA/ clone.
-const RELEASE='root-20261009-r4';
+const RELEASE='root-20261020-r5';
 const ROOT=new URL('./',document.currentScript?.src||document.baseURI);
+const ENTRY=new URL('index.html',ROOT);
 const SW=new URL('sw.js',ROOT);
 const RELOAD_KEY='mdlxdcc-root-pwa-reload-v2';
 const UPDATE_GAP_MS=15000;
@@ -9,6 +10,40 @@ let registration=null,deferredPrompt=null,lastUpdate=0,reloading=false,pendingRe
 let hadController=!!navigator.serviceWorker?.controller;
 let started=false;
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+// A single-page PWA: sibling apps and project pages open as normal browser tabs.
+// Native dialogs, the AI Guide panel and its embedded iframe stay in index.html.
+function outOfScope(url){
+ try{
+  const u=new URL(url,document.baseURI);
+  if(!['http:','https:'].includes(u.protocol))return false;
+  return u.origin!==location.origin || (u.pathname!==ENTRY.pathname && u.pathname!==ROOT.pathname);
+ }catch(_){return false;}
+}
+function openOutside(url){
+ if(!standalone()||!outOfScope(url))return false;
+ window.open(new URL(url,document.baseURI).href,'_blank','noopener,noreferrer');
+ return true;
+}
+window.MDLxDCCPWAOpenExternal=openOutside;
+document.addEventListener('click',event=>{
+ if(!standalone()||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+ const link=event.target?.closest?.('a[href]');
+ if(!link||link.hasAttribute('download')||(link.target&&link.target!=='_self')||!outOfScope(link.href))return;
+ link.target='_blank';
+ link.rel=[...new Set([...link.rel.split(/\s+/),'noopener','noreferrer'].filter(Boolean))].join(' ');
+},true);
+async function retireOldRootRegistration(){
+ // Do not touch caches, localStorage or other apps. Only retire the verified old
+ // broad registration once the complete narrow worker is active.
+ if(!registration?.active || !navigator.serviceWorker.getRegistrations)return;
+ try{
+  for(const candidate of await navigator.serviceWorker.getRegistrations()){
+   if(candidate===registration||candidate.scope!==ROOT.href)continue;
+   if(candidate.active?.scriptURL!==SW.href)continue;
+   await candidate.unregister();
+  }
+ }catch(_){/* Registration cleanup must not block landing navigation. */}
+}
 function button(){return document.getElementById('pwa-install')}
 function sync(){const b=button();if(b)b.hidden=standalone()}
 function labels(){return document.documentElement.dataset.lang==='sl'?
@@ -79,9 +114,13 @@ async function start(){
  setUpdateHooks();
  try{
   registration=await navigator.serviceWorker.register(SW.href,{
-   scope:ROOT.pathname,updateViaCache:'none'
+   scope:ENTRY.pathname,updateViaCache:'none'
   });
   if(registration.waiting)registration.waiting.postMessage({type:'MDLX_ROOT_PWA_ACTIVATE'});
+  if(registration.active)retireOldRootRegistration();
+  else if(registration.installing)registration.installing.addEventListener('statechange',()=>{
+   if(registration.active)retireOldRootRegistration();
+  });
   if(navigator.serviceWorker.controller)
    navigator.serviceWorker.controller.postMessage({type:'MDLX_ROOT_PWA_VERSION'});
   update();
