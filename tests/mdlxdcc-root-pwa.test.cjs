@@ -15,23 +15,37 @@ const legacyWorker=read('PWA/sw.js');
 const release=JSON.parse(read('pwa-release.json'));
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const oldManifest=JSON.parse(read('PWA/manifest.webmanifest'));
-assert.equal(manifest.start_url,'./');
-assert.equal(manifest.scope,'./');
+assert.equal(manifest.start_url,'./index.html');
+assert.equal(manifest.scope,'./index.html');
 assert.equal(manifest.id,'./');
-assert.equal(oldManifest.start_url,'../');
-assert.equal(oldManifest.scope,'../');
+assert.equal(oldManifest.start_url,'../index.html');
+assert.equal(oldManifest.scope,'../index.html');
 assert.equal(oldManifest.id,'../');
-assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261009-r4"/);
-assert.match(html,/manifest\.webmanifest\?v=root-20261009-r4/);
-assert.match(html,/pwa\.js\?v=root-20261009-r4/);
+assert.match(html,/name="mdlxdcc-pwa-release" content="root-20261020-r5"/);
+assert.match(html,/manifest\.webmanifest\?v=root-20261020-r5/);
+assert.match(html,/pwa\.js\?v=root-20261020-r5/);
 assert.match(bootstrap,/updateViaCache:'none'/);
+assert.match(bootstrap,/scope:ENTRY.pathname/);
+assert.match(bootstrap,/MDLxDCCPWAOpenExternal/);
+assert.match(bootstrap,/retireOldRootRegistration/);
+assert.match(html,/id="mdlxdcc-pwa-entry-alias"/);
+const alias=html.split('<script id="mdlxdcc-pwa-entry-alias">')[1].split('</script>')[0];
+for(const base of ['https://www.mdlxdcc.org/','https://example.github.io/bd-chessdb/']){
+ const loc=new URL(base);loc.search='?tab=1';loc.hash='#main';let changed=null;
+ vm.runInNewContext(alias,{URL,location:loc,history:{state:null,replaceState(_state,_title,next){changed=next;}}});
+ assert.equal(changed,loc.pathname+'index.html?tab=1#main','Directory URL canonicalization '+base);
+}
+assert.ok(html.indexOf('id="mdlxdcc-pwa-entry-alias"')<html.indexOf('rel="manifest"'),'Canonical URL before manifest');
+assert.equal(release.service_worker_scope,'./index.html');
+assert.equal(release.manifest_scope,'./index.html');
+assert.equal(release.manifest_start_url,'./index.html');
 assert.match(bootstrap,/controllerchange/);
 assert.match(bootstrap,/pageshow/);
 assert.match(bootstrap,/visibilitychange/);
 assert.match(bootstrap,/cache:'no-store'/);
-assert.equal(release.release_id,'root-20261009-r4');
-assert.match(workerSource,/const VERSION='root-20261009-r4'/);
-assert.match(bootstrap,/const RELEASE='root-20261009-r4'/);
+assert.equal(release.release_id,'root-20261020-r5');
+assert.match(workerSource,/const VERSION='root-20261020-r5'/);
+assert.match(bootstrap,/const RELEASE='root-20261020-r5'/);
 for(const variant of ['Clean','Caption'])assert.ok(fs.existsSync(path.join(pub,'assets/human-middle/v5/Human_in_the_Middle_Questions_Meadow_Tower_'+variant+'_R1.webp')),'Questions '+variant);
 assert.match(legacy,/location\.replace/);
 assert.doesNotMatch(legacy,/class="human-middle-card"/);
@@ -91,6 +105,8 @@ async function harness(base){
  };
  vm.runInNewContext(workerSource,{self,caches:storage,URL,Request,Response,fetch:fetchMock});
  const scope=new URL(base);
+ assert.ok(!new URL('chess/',scope).pathname.startsWith(scope.pathname),'Chess stays outside landing PWA scope');
+ assert.ok(!new URL('Nara/dualframe-lab/',scope).pathname.startsWith(scope.pathname),'DualFrame stays outside landing PWA scope');
  const event=(req)=>({
   request:req,background:[],response:null,
   waitUntil(p){this.background.push(Promise.resolve(p))},
@@ -103,7 +119,7 @@ async function harness(base){
  assert.equal((await storage.keys()).length,1,'Exactly one root cache installed');
  const names=await storage.keys(),cache=await storage.open(names[0]);
  assert.equal(cache.count,release.core_shell_assets.length,'Only current lightweight shell precached');
- const old='mdlxdcc-root-pwa:'+scope.pathname+':previous-release';
+ const old='mdlxdcc-landing-pwa:'+new URL('./',scope).pathname+':previous-release';
  await storage.open(old);
  await storage.open('other-application-cache');
  e=event();
@@ -131,7 +147,8 @@ async function harness(base){
  assert.equal((await request(gallery)).text,'v2:'+gallery,'Online asset replaces stale cache');
  online=false;
  assert.equal((await request(gallery)).text,'v2:'+gallery,'Offline image uses last successful version');
- assert.equal((await request(root,'navigate')).intercepted,true,'Root navigation handled offline');
+ assert.equal((await request(root,'navigate')).intercepted,true,'Landing entry navigation handled offline');
+ assert.equal((await request(new URL('./',root).href,'navigate')).intercepted,false,'Directory URL not intercepted by narrow worker');
  online=true;revision='v3';
  assert.equal((await request(root,'navigate')).text,'v3:'+root,'Online homepage is network-first');
  assert.equal((await request(new URL('index.html',root).href,'navigate')).text,'v3:'+new URL('index.html',root).href,'index.html network-first');
@@ -146,9 +163,9 @@ async function harness(base){
 }
 (async()=>{
  const cases=[
-  await harness('https://www.mdlxdcc.org/'),
-  await harness('https://example.github.io/bd-chessdb/')
+  await harness('https://www.mdlxdcc.org/index.html'),
+  await harness('https://example.github.io/bd-chessdb/index.html')
  ];
- console.log('PASS root PWA: manifest, 27 assets, one entry, legacy migration, network-first, offline, scopes and bounded media cache');
+ console.log('PASS landing-only PWA: manifest, dialogs, legacy identity, offline, narrow scope and bounded media cache');
  for(const x of cases)console.log('PASS scope '+x.scope+' cached='+x.cacheEntries+' media='+x.mediaEntries);
 })().catch(error=>{console.error(error);process.exitCode=1});
