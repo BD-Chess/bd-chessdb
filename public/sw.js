@@ -9,6 +9,7 @@ const HOME=new URL('index.html',BASE);
 const SHELL=[
  'index.html','manifest.webmanifest','pwa.js','pwa-release.json',
  'PWA/icon-192.png','PWA/icon-512.png','PWA/apple-touch-icon.png',
+ 'assets/mdlxdcc-guide/guide.css','assets/mdlxdcc-guide/guide.js','assets/mdlxdcc-guide/routes.mjs','assets/mdlxdcc-guide/tour.json','site-search-index.json',
  'assets/ai8-vision/r2/vision-r4.css',
  'assets/ai8-vision/r2/vision-r4.js',
  'assets/human-middle/v5/human-middle-family-r1.css',
