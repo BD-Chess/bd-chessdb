@@ -13,7 +13,7 @@ jobs:
   dispatch:
     if: >-
       github.repository == 'BD-Chess/bd-chessdb' &&
-      github.event.head_commit.message == 'release: BD-approved DGTE research update 20261020'
+      github.event.head_commit.message == 'release: BD-approved DGTE research update 20261020 R7'
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
@@ -26,10 +26,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = 'f9f085fe61c2c2188505ad8184245831d3f9ef8f'
-          test "$(git diff --name-only HEAD^ HEAD)" = '.github/workflows/dgte-research-release-20261020.yml'
+          test "$(git rev-parse HEAD^)" = '465f47fce65f6fdd74f48a37433fe850a9d37aaf'
+          expected_paths=$'.github/workflows/dgte-research-release-20261020.yml\npublic/crp/DGTE.html\npublic/crp/assets/dgte/research-20261020/DGTE_PUBLIC_SUMMARY_20261020.json\npublic/crp/assets/dgte/research-20261020/DGTE_R4_PUBLIC_SELECTED_CHECKS_20261020.json'
+          test "$(git diff --name-only HEAD^ HEAD)" = "$expected_paths"
           test "$(git hash-object .github/workflows/deploy-netlify.yml)" = '50ce39e4c000f312174fdc188b6c0afcf223fd18'
-          echo '38effe5e5da2def2dd2f8a2b9e843b851b2e9d5c09c449d899f08497a72e57b5  public/crp/DGTE.html' | sha256sum -c -
+          echo 'd45677cfb54c9cfa643c76f9fa7f3e4c4791c9898a8f6be41cad1c83fa854747  public/crp/DGTE.html' | sha256sum -c -
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')" = "$GITHUB_SHA"
       - name: Request one manual MDLxDCC production release at this frozen main SHA
         shell: bash
