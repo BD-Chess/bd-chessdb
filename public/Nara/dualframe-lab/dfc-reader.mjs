@@ -139,7 +139,7 @@ export function createCartoons({container,getLanguage=()=> 'en',onStoryLanguage=
   stage.addEventListener('contextmenu',event=>{const g=gesture;if(g?.stage===stage&&performance.now()-g.at>=HOLD_MS)recognize(g);const m=consumedMenu;if(g?.stage===stage&&g.consumed||m?.stage===stage&&m.logical===logical()&&performance.now()<m.until&&Math.hypot(event.clientX-m.x,event.clientY-m.y)<24)event.preventDefault();});
  }
  bindStage($('page-stage'),true);bindStage($('panel-stage'),false);
- dialog.addEventListener('cancel',event=>{event.preventDefault();back();});dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();back();return;}if(event.target.matches('select,input,textarea')||event.altKey||event.ctrlKey||event.metaKey)return;
+ dialog.addEventListener('cancel',event=>{event.preventDefault();back();});dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();return;}if(event.target.matches('select,input,textarea')||event.altKey||event.ctrlKey||event.metaKey)return;
   if(event.code==='Space'&&textState.mode==='Off'){const id=event.target.closest('[data-dfc-panel]')?.dataset.dfcPanel||(event.target===$('panel-stage')?state.panelId:null);if(id){event.preventDefault();if(!event.repeat)textState.peek(id);return;}}
   if(event.key==='+'){activeZoom().step(1);}if(event.key==='-'){activeZoom().step(-1);}if(event.key==='0'){activeZoom().reset();}if(event.key==='ArrowRight'){event.preventDefault();move(1);}if(event.key==='ArrowLeft'){event.preventDefault();move(-1);}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelGesture();textState.setHidden(document.hidden);});
