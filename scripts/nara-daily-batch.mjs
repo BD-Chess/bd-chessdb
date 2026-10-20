@@ -159,11 +159,36 @@ function patchLatest(html,batch,items,featured){
   assert(!html.includes('id="'+day+':'),'non-featured stories leaked into Daily');
   return html;
 }
-function patchMonthly(html,batch,items,featured,root){
-  const others=items.filter(x=>x.instance!==featured);
-  if(!others.length)return html;
-  const block=`<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(batch.date)}</div><h2>${esc(batch.date)} · complete eligible archive</h2><p class="lede">These stories completed the same editorial gates but were not the featured Daily story.</p></header>${others.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`;
-  return insertBeforeMainClose(html,block);
+export function publishedBatchDays(root,month){
+  assert(root&&/^\d{4}-\d{2}$/.test(month),'published batch month');
+  const n=path.join(root,'public/Nara'),daysDir=path.join(n,'daily/days');
+  if(!fs.existsSync(daysDir))return [];
+  return fs.readdirSync(daysDir)
+    .filter(file=>file.startsWith(month+'-')&&file.endsWith('.json'))
+    .sort((a,b)=>b.localeCompare(a))
+    .map(file=>{
+      const day=JSON.parse(fs.readFileSync(path.join(daysDir,file),'utf8'));
+      assert(day?.schema==='nara.daily.day.v1'&&day.date===file.slice(0,-5)&&instances.includes(day.featured_instance),'published batch day');
+      const items=day.instances.map(entry=>{
+        assert(instances.includes(entry.instance)&&(entry.id===undefined||entry.id===instanceId(day.date,entry.instance)),'published batch instance');
+        const expected=`daily/records/${day.date}/${entry.instance}.json`;
+        assert(entry.record_file===expected,'published batch record path');
+        const record=JSON.parse(fs.readFileSync(path.join(n,expected),'utf8'));
+        assert(record.id===instanceId(day.date,entry.instance)&&record.instance===entry.instance,'published batch record identity');
+        return {instance:entry.instance,record};
+      });
+      assert(items.some(item=>item.instance===day.featured_instance),'published batch featured instance');
+      return {date:day.date,featured:day.featured_instance,items};
+    });
+}
+function patchMonthly(html,month,root){
+  const days=publishedBatchDays(root,month);
+  const blocks=days.map(day=>{
+    const others=day.items.filter(x=>x.instance!==day.featured);
+    if(!others.length)return '';
+    return `<section class="batch-archive"><header><div class="eyebrow">Other stories of ${esc(day.date)}</div><h2>${esc(day.date)} · complete eligible archive</h2><p class="lede">These stories completed the same editorial gates but were not the featured Daily story.</p></header>${others.map(x=>instanceStoryHtml(x,root)).join('\n')}</section>`;
+  }).filter(Boolean);
+  return blocks.length?insertBeforeMainClose(html,blocks.join('\n')):html;
 }
 function patchArchive(html,batch,items,featured){
   const links=items.map(x=>`<li>${esc(x.record.instance)} · <a href="Nara-AI-${batch.date.slice(0,7)}.html#${esc(x.record.id)}">${esc(x.record.title)}</a>${x.instance===featured?' · featured':''}</li>`).join('');
@@ -238,7 +263,7 @@ export function publishBatch(root,input,now=new Date()){
     ...featuredPages,
     ...(fs.existsSync(path.join(n,'daily/reader-ratings.json'))?{'daily/reader-ratings.json':fs.readFileSync(path.join(n,'daily/reader-ratings.json'),'utf8')} : {}),
     'Nara-AI-daily.html':patchLatest(latestPage(next,month,translations,root),batch,batch.instances,featured,root),
-    [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),batch,batch.instances,featured,root),
+    [`Nara-AI-${month}.html`]:patchMonthly(monthlyPage(month,next.filter(r=>r.date.startsWith(month)),translations,root),month,root),
     'Nara-AI-archive.html':patchArchive(archivePage(entries,month,root),batch,batch.instances,featured),
     'Nara-AI-log.html':patchLog(logPage(logs),batch,batch.instances,featured),
   };
@@ -270,8 +295,7 @@ export function refreshIllustratedPages(root,month){
     assert(items.some(x=>x.instance===day.featured_instance),'refresh featured missing');
     days.push({day,items});
   }
-  let monthly=monthlyPage(month,records.filter(r=>r.date.startsWith(month)),translations,root);
-  for(const {day,items} of days)monthly=patchMonthly(monthly,day,items,day.featured_instance,root);
+  const monthly=patchMonthly(monthlyPage(month,records.filter(r=>r.date.startsWith(month)),translations,root),month,root);
   const featuredPages=featuredStoryPageOutputs(root,records.filter(r=>r.date.startsWith(month)),translations);
   const featuredChanges=[];
   for(const [rel,html] of Object.entries(featuredPages))if(write(path.join(n,rel),html))featuredChanges.push(rel);
