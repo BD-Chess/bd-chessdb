@@ -64,7 +64,7 @@ function renderSupporting(){
  $('hotel-cards').innerHTML=D.hotels.map(h=>`<article class="hotel-card"><img src="${photo(h.image)}" alt="Slikovni primer nastanitve iz Worda; povezava s konkretno enoto ni potrjena" width="800" height="500" loading="lazy"><div class="hotel-content"><p class="hotel-city">${esc(h.city)}</p><h3>${esc(h.name)}</h3><p>${esc(h.note)}</p><span class="hotel-status">Kandidat iz izvirnika · nepreverjena ponudba</span><br><a class="text-link" target="_blank" rel="noopener noreferrer" href="${esc(h.url)}">Izvirna povezava ↗</a></div></article>`).join('');
  $('photo-gallery').innerHTML=gallery.map(([image,label])=>`<button type="button" data-photo="${image}" data-caption="${esc(label)}" aria-label="Povečaj: ${esc(label)}"><img src="${photo(image)}" alt="${esc(label)}" width="800" height="550" loading="lazy"><span>${esc(label)}</span></button>`).join('');
  $('source-list').innerHTML=D.sources.map(s=>`<div class="source-item"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a><p>${esc(s.note)}</p></div>`).join('');
- const checks=[['flights','Točen prihod in odlet','Potrdita datum, uro, prtljago in prevoz do Benetk.'],['alhambra','Alhambra in Nasridske palače','Najprej razpoložljivost 25. aprila, nato imena in točen termin.'],['sleep','Devet nočitev in pravi dostopi','Končna cena, kuhinja, ležišča, garaža, odpoved in pozni prihod.'],['car','Avto in vračilo','Oznaka za ZBE, franšiza, kartica, gorivo, ure, praznik in pregled.'],['sevilla','Sevillski termini brez hitenja','Alcázar in katedrala na izbranih dneh; ne pozabita na odmor.'],['final','Končna kontrola pred odhodom','Urniki 1. maja, Córdoba Alcázar, C1, vreme in shranjene vstopnice.']];
+ const checks=[['flights','Karte kupljene · dopolnite podatke','3 karte / 582 €; preverite uri letov, prtljago in prevoz do Benetk.'],['alhambra','Alhambra in Nasridske palače','Najprej razpoložljivost 25. aprila, nato imena in točen termin.'],['sleep','Devet nočitev in pravi dostopi','Končna cena, kuhinja, ležišča, garaža, odpoved in pozni prihod.'],['car','Avto in vračilo','Oznaka za ZBE, franšiza, kartica, gorivo, ure, praznik in pregled.'],['sevilla','Sevillski termini brez hitenja','Alcázar in katedrala na izbranih dneh; ne pozabita na odmor.'],['final','Končna kontrola pred odhodom','Urniki 1. maja, Córdoba Alcázar, C1, vreme in shranjene vstopnice.']];
  $('booking-checklist').innerHTML=checks.map(([id,title,text])=>`<label class="check-item"><input type="checkbox" data-check="${id}" ${get(KEY+'check-'+id,'')==='1'?'checked':''}><span><b>${esc(title)}</b><small>${esc(text)}</small></span></label>`).join('');
 }
 
@@ -97,8 +97,10 @@ function choosePlace(id,jump){if(!D.places[id])return;selectedPlace=id;updatePla
 
 const defaults={malaga:110,granada:90,cordoba:95,sevilla:120,ronda:90,marbella:110};
 function initBudget(){
+ const partyKey=KEY+'confirmed-party-20261019',partyChanged=get(partyKey,'')!=='1';
+ if(partyChanged){$('guest-count').value=String(D.purchase.flights.passengers);put(KEY+'guest-count',$('guest-count').value);put(partyKey,'1');}
  $('room-rates').innerHTML=Object.entries(defaults).map(([city,value])=>`<label>${esc(D.places[city].name)} (€)<input id="rate-${city}" type="number" min="0" max="100000" step="1" value="${value}"></label>`).join('');
- ['guest-count','car-pickup','car-rate','parking-rate','food-rate','ticket-rate',...Object.keys(defaults).map(c=>'rate-'+c)].forEach(id=>{const stored=get(KEY+id,null);if(stored!==null)$(id).value=stored;$(id).addEventListener('input',()=>{put(KEY+id,$(id).value);renderBudget();});});
+ ['guest-count','car-pickup','car-rate','parking-rate','food-rate','ticket-rate',...Object.keys(defaults).map(c=>'rate-'+c)].forEach(id=>{const stored=get(KEY+id,null);if(stored!==null&&!(id==='guest-count'&&partyChanged))$(id).value=stored;$(id).addEventListener('input',()=>{put(KEY+id,$(id).value);renderBudget();});});
  renderBudget();
 }
 const numeric=id=>{const el=$(id),n=Number(el.value),max=Number(el.max)||1000000;return Number.isFinite(n)?Math.min(max,Math.max(0,n)):0;};
@@ -115,12 +117,12 @@ function budgetFor(key){
  const start=Math.max(Date.parse(pickupDate+'T00:00Z'),Date.parse('2027-04-23T00:00Z'));
  const stop=Math.min(Date.parse(v.returnAt.slice(0,10)+'T00:00Z'),Date.parse('2027-05-02T00:00Z'));
  const parkingNights=Number.isFinite(start)&&Number.isFinite(stop)?Math.max(0,Math.round((stop-start)/86400000)):0;
- const parts={lodging,car:(days??0)*numeric('car-rate'),parking:parkingNights*numeric('parking-rate'),food:guests*10*numeric('food-rate'),tickets:guests*numeric('ticket-rate')};
+ const parts={flights:D.purchase.flights.totalEur,lodging,car:(days??0)*numeric('car-rate'),parking:parkingNights*numeric('parking-rate'),food:guests*10*numeric('food-rate'),tickets:guests*numeric('ticket-rate')};
  const total=Object.values(parts).reduce((s,n)=>s+n,0);
  return {days,parts,total,guests,parkingNights};
 }
 function renderBudget(){
- $('budget-results').innerHTML=variants.map(k=>{const v=D.variants[k],b=budgetFor(k);return `<article class="budget-result ${k===selected?'selected':''}" style="--route:${v.color}"><div class="budget-head"><span>${v.letter} · ${v.label}</span><b>${b.days===null?'Preveri prevzem':money(b.total)}</b></div><p>${b.days===null?'Prevzem mora biti veljaven in pred vračilom.':b.days+' dni najema · '+money(b.total/b.guests)+' / osebo · '+b.parkingNights+' noči parkiranja'}</p><details><summary>Razčlenitev izračuna</summary><div class="budget-breakdown">${[['Nočitve',b.parts.lodging],['Avto',b.parts.car],['Parkiranje',b.parts.parking],['Hrana',b.parts.food],['Ogledi',b.parts.tickets]].map(([label,value])=>`<span>${label}</span><span>${money(value)}</span>`).join('')}</div></details></article>`;}).join('');
+ $('budget-results').innerHTML=variants.map(k=>{const v=D.variants[k],b=budgetFor(k);return `<article class="budget-result ${k===selected?'selected':''}" style="--route:${v.color}"><div class="budget-head"><span>${v.letter} · ${v.label}</span><b>${b.days===null?'Preveri prevzem':money(b.total)}</b></div><p>${b.days===null?'Prevzem mora biti veljaven in pred vračilom.':b.days+' dni najema · '+money(b.total/b.guests)+' / osebo · '+b.parkingNights+' noči parkiranja · že plačani leti vključeni'}</p><details><summary>Razčlenitev izračuna</summary><div class="budget-breakdown">${[['Letalske karte · 3 / že plačano',b.parts.flights],['Nočitve',b.parts.lodging],['Avto',b.parts.car],['Parkiranje',b.parts.parking],['Hrana',b.parts.food],['Ogledi',b.parts.tickets]].map(([label,value])=>`<span>${label}</span><span>${money(value)}</span>`).join('')}</div></details></article>`;}).join('');
 }
 function renderFlight(){
  const raw=$('flight-time').value;

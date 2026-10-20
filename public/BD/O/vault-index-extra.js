@@ -39,7 +39,8 @@ const sections=[
       ['＋','Kardiolog','Kardiološki zapiski in priprava.','kardiolog.html','VAULT'],
       ['⌚','Apple Health','Osebni Apple Health pregled.','apple-health.html','VAULT'],
       ['→','Napotnice','Napotnice in povezani koraki.','napotnice.html','VAULT'],
-      ['🧭','Moji izleti','Javni itinerarji za neposredno deljenje.','izleti/','PUBLIC']
+      ['🧭','Moji izleti','Javni itinerarji za neposredno deljenje.','izleti/','PUBLIC'],
+      ['☀','Andaluzija 2027','Tri poti · kupljeni leti · pomoč in Revolut Metal.','izleti/andaluzija-2027.html','PUBLIC']
     ]
   },
   {
