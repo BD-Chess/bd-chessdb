@@ -44,12 +44,31 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
           node tests/dualframe-private-owner-browser.mjs
-      - name: Verify the real eight-page Cartoons reader and isolated pair adapter
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dualframe-sync-browser-evidence
+          path: browser-evidence/
+          if-no-files-found: ignore
+
+  comics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install pinned comic browser and image fixtures
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          npm install --prefix functions --no-audit --no-fund
+      - name: Verify the real eight-page reader and isolated pair adapter
+        timeout-minutes: 4
+        run: node tests/dfc-reader-browser.mjs
+      - name: Verify text layers and gestures independently
         if: ${{ !cancelled() }}
         timeout-minutes: 4
-        run: |
-          node tests/dfc-reader-browser.mjs
-          node tests/dfc-text-browser.mjs
+        run: node tests/dfc-text-browser.mjs
       - name: Verify public first-page reader without a password
         if: ${{ !cancelled() }}
         timeout-minutes: 2
@@ -59,6 +78,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dualframe-sync-browser-evidence
+          name: dualframe-comic-browser-evidence
           path: browser-evidence/
           if-no-files-found: ignore
