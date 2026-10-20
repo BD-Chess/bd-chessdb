@@ -1,0 +1,87 @@
+{
+  "release": "DGTE public research update 2026-10-20 R6",
+  "authors": {
+    "seed_original": "BD / Bojan Dobrečevič",
+    "MV_VL2_R3": "Claude",
+    "verification_scenarios_economics_and_public_synthesis": "GPT"
+  },
+  "status": "Reduced numerical model, not measured plant performance or installed quote",
+  "common": {
+    "heat_input_W": 1000000.0,
+    "coolant_in_C": 25,
+    "coolant_out_C": 30,
+    "condensing_C": 35,
+    "minimum_source_HX_approach_K": 5,
+    "assumed_external_auxiliary_kW": 5,
+    "eta_turbine": 0.85,
+    "eta_generator": 0.93,
+    "C0": 1.2
+  },
+  "scenarios": [
+    {
+      "id": "S60-F",
+      "hot_in_C": 60,
+      "hot_out_C": 50,
+      "R3_gas_C": 45,
+      "R3_H_m": 10,
+      "R3_D_m": 0.8,
+      "R3_reproduced_gross_kW": 15.1349510303,
+      "R3_reproduced_net_kW": 10.1349510303,
+      "GPT_1K_1kPa_025_net_kW": 7.1927013,
+      "GPT_1K_1kPa_slip_net_range_kW": [
+        3.4725754,
+        7.1927013
+      ],
+      "conditional_total_CAPEX_range_EUR": [
+        22704,
+        47027
+      ]
+    },
+    {
+      "id": "S90-F",
+      "hot_in_C": 90,
+      "hot_out_C": 70,
+      "R3_gas_C": 65,
+      "R3_H_m": 40,
+      "R3_D_m": 0.6,
+      "R3_reproduced_gross_kW": 35.32087543,
+      "R3_reproduced_net_kW": 30.32087543,
+      "GPT_1K_1kPa_025_net_kW": 27.9850329,
+      "GPT_1K_1kPa_slip_net_range_kW": [
+        17.9968116,
+        27.9850329
+      ],
+      "conditional_total_CAPEX_range_EUR": [
+        117667,
+        182972
+      ]
+    }
+  ],
+  "sensitivity_scope": "Fixed corresponding R3 geometries, assumed slip range 0.25/0.5/1 m/s; selected omitted terms added, not reoptimized maxima or confidence intervals.",
+  "economics": {
+    "full_load_hours_year": 8000,
+    "electricity_value_EUR_kWh": 0.12,
+    "years": 15,
+    "real_discount_rate": 0.08,
+    "annual_maintenance_fraction_total_CAPEX": 0.03,
+    "NPV0_EUR_per_net_kW": 6538.193661,
+    "simple_5year_payback_EUR_per_net_kW": 4173.913043,
+    "excluded": "taxes, financing, purchased heat, exceptional replacement costs; input value is a scenario, not a current market quote"
+  },
+  "exclusions": [
+    "validated drift/heat transfer closure",
+    "full coupled carrier and condensate enthalpy/mixing closure",
+    "NCG",
+    "separator constitutive law",
+    "dynamic stability",
+    "hardware net electrical measurement",
+    "matched installed cost quote"
+  ],
+  "reproducibility": {
+    "python": "3.12.14",
+    "CoolProp": "8.0.0",
+    "EOS_revision": "ae81610e7d23efc57f9d051c8e70a4d66e87537f",
+    "Claude_R3_original_sha256": "1ede72128eaf293405e4cf1c69fbc266b5eefd1e2c605afe83ae5efb4ef5b023",
+    "scope": "Independent author-code execution and separate numerical integration, using the same EOS and unvalidated drift closures; not independent physical validation."
+  }
+}
