@@ -1,0 +1,144 @@
+name: DGTE RHP scoped publication R8
+
+# One-shot BD-authorized DGTE update. Preserve all unrelated published content.
+# Permanent manual-only release workflow and policy are unchanged.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/dgte-rhp-scoped-20261020-r8.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-production
+  cancel-in-progress: false
+
+jobs:
+  scoped-dgte:
+    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && contains(github.event.head_commit.message, 'DGTE-RHP-SCOPED-R8')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: livebase
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 17b4124d-c197-4c0a-a711-8b2c08d91088
+      BASE_SOURCE_SHA: e8c7505f222ec3f8c1403b57a002a36222d041cf
+      DGTE_SOURCE_SHA: 9f25323895e6e1dd305a4daa88cba93c8f808753
+      EXPECTED_PUBLISHED_ID: 6ad79e8dc7c13ec4e7073a9d
+    steps:
+      - name: Checkout currently published source, never pending main applications
+        uses: actions/checkout@v4
+        with:
+          ref: e8c7505f222ec3f8c1403b57a002a36222d041cf
+          path: livebase
+          persist-credentials: false
+      - name: Checkout exact reviewed DGTE files
+        uses: actions/checkout@v4
+        with:
+          ref: 9f25323895e6e1dd305a4daa88cba93c8f808753
+          path: incoming
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            public/crp/DGTE.html
+            public/crp/assets/dgte/research-20261020/DGTE_RHP_PUBLIC_SYNTHESIS_20261020_R1.zip
+            public/crp/assets/dgte/research-20261020/DGTE_RHP_SYNTHESIS_CHECKS_20261020_R1.json
+      - name: Verify frozen publication base and exact three-file overlay
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$BASE_SOURCE_SHA"
+          test "$(git hash-object .github/workflows/deploy-netlify.yml)" = '50ce39e4c000f312174fdc188b6c0afcf223fd18'
+          python3 - <<'PY'
+          import os,json,urllib.request,hashlib,pathlib,shutil,subprocess
+          root=pathlib.Path('.')
+          token=os.environ['NETLIFY_AUTH_TOKEN']
+          assert token, 'Existing Netlify deployment credential required'
+          def api(path):
+              req=urllib.request.Request('https://api.netlify.com/api/v1/'+path,headers={'Authorization':'Bearer '+token})
+              return json.load(urllib.request.urlopen(req,timeout=30))
+          site=api('sites/'+os.environ['NETLIFY_SITE_ID'])
+          assert site['published_deploy']['id']==os.environ['EXPECTED_PUBLISHED_ID'], 'Published base changed; no deployment'
+          dep=api('deploys/'+os.environ['EXPECTED_PUBLISHED_ID'])
+          assert os.environ['BASE_SOURCE_SHA'] in dep['title'], 'Source provenance mismatch'
+          baseline={x['n']:x['d'] for x in dep.get('available_functions',[])}
+          pathlib.Path('dgte-baseline-functions.json').write_text(json.dumps(baseline,sort_keys=True))
+          targets={
+            'public/crp/DGTE.html':'29166abae5bf765d4c6bfe667ccc82a12414da15862f16ed11bbc00dbefc9d39',
+            'public/crp/assets/dgte/research-20261020/DGTE_RHP_PUBLIC_SYNTHESIS_20261020_R1.zip':'b0258cf385fb211ededf876e9c5dbaf522917c5635476196b3051c81ba99d1da',
+            'public/crp/assets/dgte/research-20261020/DGTE_RHP_SYNTHESIS_CHECKS_20261020_R1.json':'2359a7679781c943b907ea0a39c2e30b4ec1665b4af7b8a1789ad2d6c0b9a557'}
+          assert hashlib.sha256(pathlib.Path('public/crp/DGTE.html').read_bytes()).hexdigest()=='d45677cfb54c9cfa643c76f9fa7f3e4c4791c9898a8f6be41cad1c83fa854747'
+          for rel,h in targets.items():
+              src=pathlib.Path('../incoming')/rel
+              assert hashlib.sha256(src.read_bytes()).hexdigest()==h, rel
+              dst=root/rel;dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
+          subprocess.run(['git','add','-N','--',*targets],check=True)
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed==set(targets),changed
+          assert not subprocess.check_output(['git','diff','--name-only','--','functions','netlify.toml','package.json','package-lock.json'],text=True).strip()
+          pathlib.Path('dgte-public-scope.json').write_text(json.dumps({'base_source':os.environ['BASE_SOURCE_SHA'],'dgte_source':os.environ['DGTE_SOURCE_SHA'],'expected_published_deploy':os.environ['EXPECTED_PUBLISHED_ID'],'overlay_sha256':targets,'other_source_changes':False},indent=2)+'\n')
+          print('Verified existing live source plus exactly three DGTE files.')
+          PY
+      - name: Apply the established production preparation
+        shell: bash
+        run: |
+          python3 scripts/inject_password_manager.py public --report "$RUNNER_TEMP/password-manager-compat-report.json"
+          node --check public/js/bd-password-manager.js
+          node --check public/js/trading-password-shield.js
+          node --check public/BD/O/vault.js
+          node --check public/WL/reader.js
+          node --check public/WL/BD/reader.js
+          node --check public/Trip/private-client.js
+          node --check public/Trip/new/private-client.js
+          node tests/mdlxdcc-root-pwa.test.cjs
+      - name: Set up the established Node runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: livebase/package-lock.json
+      - name: Install pinned baseline dependencies
+        run: npm ci --ignore-scripts
+      - name: Install baseline image-function dependencies
+        if: hashFiles('livebase/functions/package.json') != ''
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Verify baseline guide before publication
+        run: node --test tests/mdlxdcc-guide.test.mjs
+      - name: Recheck live base immediately before the single production deployment
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request
+          req=urllib.request.Request('https://api.netlify.com/api/v1/sites/'+os.environ['NETLIFY_SITE_ID'],headers={'Authorization':'Bearer '+os.environ['NETLIFY_AUTH_TOKEN']})
+          d=json.load(urllib.request.urlopen(req,timeout=30))
+          assert d['published_deploy']['id']==os.environ['EXPECTED_PUBLISHED_ID'], 'Another publication occurred; no deployment'
+          print('Frozen live base still current.')
+          PY
+          npx --yes netlify-cli@latest deploy --prod --no-build --dir public --functions functions --skip-functions-cache --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "DGTE RHP R8 overlay $DGTE_SOURCE_SHA on published $BASE_SOURCE_SHA" --json > netlify-deploy.json
+          node -e 'const d=require("./netlify-deploy.json");console.log(JSON.stringify({deploy_id:d.deploy_id||d.deployId,url:d.url||d.deploy_url}))'
+      - name: Record actual function preservation and public scope
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,pathlib
+          d=json.loads(pathlib.Path('netlify-deploy.json').read_text());did=d.get('deploy_id') or d.get('deployId')
+          assert did
+          req=urllib.request.Request('https://api.netlify.com/api/v1/deploys/'+did,headers={'Authorization':'Bearer '+os.environ['NETLIFY_AUTH_TOKEN']})
+          dep=json.load(urllib.request.urlopen(req,timeout=30))
+          before=json.loads(pathlib.Path('dgte-baseline-functions.json').read_text())
+          after={x['n']:x['d'] for x in dep.get('available_functions',[])}
+          receipt={'deploy_id':did,'state':dep['state'],'published_at':dep.get('published_at'),'title':dep.get('title'),'function_names_unchanged':sorted(before)==sorted(after),'function_digests_identical':before==after,'function_count_before':len(before),'function_count_after':len(after),'changed_function_digest_names':[n for n in sorted(set(before)|set(after)) if before.get(n)!=after.get(n)]}
+          pathlib.Path('dgte-scoped-release-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          print(json.dumps(receipt))
+          PY
+      - name: Retain actual scope and deployment receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dgte-rhp-scoped-r8-${{ github.run_id }}
+          path: |
+            livebase/dgte-public-scope.json
+            livebase/dgte-scoped-release-receipt.json
+            livebase/netlify-deploy.json
+          if-no-files-found: warn
+          retention-days: 30
