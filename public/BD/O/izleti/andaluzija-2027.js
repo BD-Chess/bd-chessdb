@@ -20,8 +20,14 @@ const photo=name=>'./assets/andaluzija-2027/'+name+'.webp';
 const money=n=>new Intl.NumberFormat('sl-SI',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:2}).format(n);
 const dateFor=i=>{const start=new Date((D.trip?.startDate||'2000-01-01')+'T00:00:00Z');start.setUTCDate(start.getUTCDate()+i);return start;};
 const bookingFor=(day,i)=>{const date=dateFor(i).toISOString().slice(0,10);return (D.bookings||[]).find(b=>b.city===day.night&&b.checkIn<=date&&date<b.checkOut);};
-const dateLabel=(i,long=false)=>!D.privateUnlocked?'Dan '+(i+1):dateFor(i).toLocaleDateString('sl-SI',{weekday:long?'long':'short',day:'numeric',month:'numeric',timeZone:'UTC'});
-const shortDate=i=>!D.privateUnlocked?'dan '+(i+1):dateFor(i).toLocaleDateString('sl-SI',{day:'numeric',month:'numeric',timeZone:'UTC'});
+const dateLabel=(i,long=false)=>dateFor(i).toLocaleDateString('sl-SI',{weekday:long?'long':'short',day:'numeric',month:'numeric',year:'numeric',timeZone:'UTC'});
+const shortDate=i=>dateFor(i).toLocaleDateString('sl-SI',{day:'numeric',month:'numeric',timeZone:'UTC'});
+function renderTripYear(){
+ const year=String(dateFor(0).getUTCFullYear());
+ $('naslov').querySelector('em').textContent=year+'.';
+ document.title='Andaluzija '+year+' · Moji izleti';
+ document.querySelector('meta[name="description"]').content='Andaluzija '+year+'. Tri poti, slovenski vodič, mestni ogledi in posamične Google Maps povezave. Osebni podatki so zaklenjeni.';
+}
 const mapSearch=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
 function routeURL(keys,mode='driving'){
  const unique=keys.filter((v,i)=>!i||v!==keys[i-1]);
@@ -265,13 +271,13 @@ function setFont(n){font=Math.min(200,Math.max(80,n));document.documentElement.s
 $('font-minus').onclick=()=>setFont(font-10);$('font-plus').onclick=()=>setFont(font+10);$('font-reset').onclick=()=>setFont(100);
 if($('print-page'))$('print-page').onclick=()=>window.print();
 window.addEventListener('pagehide',()=>{if('speechSynthesis' in window)speechSynthesis.cancel();});
-renderVariantControls();renderCompare();renderDays();renderGuides();renderSupporting();renderMap();bindPrivate();setFont(font);
+renderTripYear();renderVariantControls();renderCompare();renderDays();renderGuides();renderSupporting();renderMap();bindPrivate();setFont(font);
 if('IntersectionObserver' in window){const mapObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){mapObserver.disconnect();if(mapMode!=='scheme')setMapView(mapMode);}},{rootMargin:'150px'});mapObserver.observe($('map-host'));}else setMapView(mapMode);
 if('ResizeObserver' in window)new ResizeObserver(()=>{if(photoMap&&mapMode!=='scheme')photoMap.invalidateSize({pan:false});}).observe($('map-host'));
 if('ResizeObserver' in window){new ResizeObserver(()=>{document.documentElement.style.setProperty('--topbar-h',document.querySelector('.topbar').getBoundingClientRect().height+'px');}).observe(document.querySelector('.topbar'));}
 // Expose only deterministic data/math for inspection, without user notes or stored data.
 window.addEventListener('andaluzija-preferences-sync',e=>{if(!D.privateUnlocked)return;D.preferences=e.detail||{};for(const id of ['bd-notes','flight-time','guest-count','car-pickup','car-rate','parking-rate','food-rate','ticket-rate',...Object.keys(defaults).map(c=>'rate-'+c)]){const el=$(id);if(el)el.value=get(KEY+(id==='bd-notes'?'notes':id),el.defaultValue||'');}document.querySelectorAll('[data-check]').forEach(el=>el.checked=get(KEY+'check-'+el.dataset.check,'')==='1');if($('use-confirmed-bookings'))$('use-confirmed-bookings').checked=get(KEY+'use-confirmed-bookings','1')!=='0';renderBudget();renderFlight();});
-window.addEventListener('andaluzija-content',e=>{const p=e.detail;Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,p?.data||JSON.parse(JSON.stringify(PUBLIC_DATA)));D.privateUnlocked=!!p;D.preferences=p?.preferences||{};renderVariantControls();renderCompare();renderDays();renderSupporting();updatePlace();bindPrivate();});
+window.addEventListener('andaluzija-content',e=>{const p=e.detail;Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,p?.data||JSON.parse(JSON.stringify(PUBLIC_DATA)));D.privateUnlocked=!!p;D.preferences=p?.preferences||{};renderTripYear();renderVariantControls();renderCompare();renderDays();renderSupporting();updatePlace();bindPrivate();});
 window.AndaluzijaApp=Object.freeze({version:D.version,rentalDays,blocks,key:()=>selected});
 })();
 
