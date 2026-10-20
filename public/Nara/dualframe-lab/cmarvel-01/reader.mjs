@@ -63,8 +63,8 @@ async function showPage(next,selection=null,chosen=chosenOrientation(),mode='art
  reader.dataset.ready='false';stage.setAttribute('aria-busy','true');$('reader-status').textContent=tr('loading');$('retry').hidden=true;
  try{const loaded=await loadPublicImage(asset);if(ticket!==requestId)return false;
   currentKey=asset.sha256;const rect=!art&&next===0?sourceRect(next,selection):null;
-  if(rect){const [x,y,w,h]=rect;canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)throw Error('CANVAS_UNAVAILABLE');ctx.drawImage(loaded.image,x,y,w,h,0,0,w,h);canvas.hidden=false;image.hidden=true;viewZoom.setAsset(w,h,next+':'+selection+':source');}
-  else{canvas.hidden=true;image.hidden=false;image.src=loaded.url;viewZoom.setAsset(asset.width_px,asset.height_px,next+':'+selection+':'+(art?chosen:'source'));}
+  if(rect){const [x,y,w,h]=rect;canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)throw Error('CANVAS_UNAVAILABLE');ctx.drawImage(loaded.image,x,y,w,h,0,0,w,h);canvas.hidden=false;image.hidden=true;image.removeAttribute('src');viewZoom.setAsset(w,h,next+':'+selection+':source');}
+  else{canvas.hidden=true;canvas.width=canvas.height=0;image.hidden=false;image.src=loaded.url;viewZoom.setAsset(asset.width_px,asset.height_px,next+':'+selection+':'+(art?chosen:'source'));}
   image.alt='CMarvel 01 · '+tr('page')+' '+(next+1)+(selection===null?'':' · '+tr('panel')+' '+(selection+1));canvas.setAttribute('aria-label',image.alt);index=next;panel=selection;if(selection!==null)lastPanel=selection;orientation=chosen;reviewMode=art?'art':'source';controls();save();$('reader-status').textContent='';prune();prefetch();return true;
  }catch(error){if(ticket===requestId){$('reader-status').textContent=tr('error');$('retry').hidden=false;reader.dataset.error=error.message;}return false;}finally{if(ticket===requestId)stage.setAttribute('aria-busy','false');}
 }

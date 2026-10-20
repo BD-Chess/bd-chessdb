@@ -1,6 +1,6 @@
 /* Path-scoped installable DualFrame package. Only the public app shell is cached. */
 const BUILD_LABEL='2026-10-20-r4.24';
-const PACKAGE_SHA='57e079336205fc36ab5428bffc3f8fa2b8cf9346b335164f92112f8e97315a31';
+const PACKAGE_SHA='f6de6a2995c4207e624b10304c6e84a7d3177dea10f757e3db50245b2c277ed4';
 const ASSETS=["./index.html","./manifest.webmanifest","./icon-180.png","./icon-192.png","./icon-512.png","./styles.css?v=3.0-r4.17","./app.mjs?v=33","./image-cache.mjs?v=3.0-r1","./image-loader.mjs?v=3.0-r4.15","./api-client.mjs?v=3.0-r4.11","./core.mjs?v=3.0-r4.11","./store.mjs?v=3.0-r4.11","./gallery-order.mjs?v=3.0-r4.17","./settings.mjs?v=3.0-r3","./mock.mjs?v=3.0-r4.11","./models.mjs?v=3.0-r4.11","./showcase.mjs?v=3.0-r4","./jobs.mjs?v=3.0-r4.11","./zip-store.mjs?v=3.0-r4.1","./sync.mjs?v=3.0-r4.17","./archive-backup.mjs?v=3.0-r4.14","./dfc-reader.mjs?v=33","./dfc-text.mjs?v=3.0-r4.22","./dfc-model.mjs?v=3.0-r4.22","./dfc.css?v=33","./reader-ui.mjs?v=33","./reader-ui.css?v=33","./content/cmarvel-01/cover.webp","./pair.schema.json","./release.json","./enhancement-client.mjs?v=3.0-r4.11","./enhancement-settings.mjs?v=3.0-r4.11","./enhancement-backup.mjs?v=3.0-r4.11","./account-login.html","./account-login.mjs","./vendor/netlify-identity-2.0.0.mjs"];
 const BASE=new URL('./',self.location.href);
 const PREFIX='dualframe:'+BASE.pathname+':';
