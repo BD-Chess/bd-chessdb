@@ -25,13 +25,13 @@ async function boot(url){
 }
 async function budget(page,ms=600){await page.evaluate(ms=>{const n=document.getElementById('settingAnalysisTime');if(![...n.options].some(o=>o.value===String(ms)))n.add(new Option('Bounded acceptance',String(ms)));n.value=String(ms);n.dispatchEvent(new Event('change',{bubbles:true}));},ms);}
 async function position(page,moves){await page.evaluate(moves=>ChessLabHost.navigate({startFen:new Chess().fen(),moves}),moves);}
+async function quiescent(page){await page.waitForFunction(()=>{const a=ChessLabHost.getAnalysisActivity();return !a.owners.some(o=>o.running||o.pending||o.following);},null,{timeout:30000});}
 async function run(page,mode){
  // A completed card can still own a genuine follow-on DCC probe. Its next
  // click means Stop until that probe settles; wait for the actual owner here.
- const idle=()=>{const a=ChessLabHost.getAnalysisActivity();return !a.owners.some(o=>o.running||o.pending||o.following);};
- await page.waitForFunction(idle,null,{timeout:30000});
+ await quiescent(page);
  await budget(page);if(mode.startsWith('sf-'))await page.locator('#analysisSFFull').setChecked(mode==='sf-full');
- await page.waitForFunction(idle,null,{timeout:30000});
+ await quiescent(page);
  const previous=await page.evaluate(mode=>ChessLabHost.getEngineCardResult(mode)?.jobId,mode),started=Date.now();
  await page.locator('[data-eval-source="'+role(mode)+'"]').click();
  await page.waitForFunction(({mode,role,previous})=>{const s=ChessLabHost.getEngineCardState(role),r=ChessLabHost.getEngineCardResult(mode);return !s.working&&r&&r.jobId!==previous;},{mode,role:role(mode),previous},{timeout:160000});
@@ -111,11 +111,12 @@ async function stopCase(page,mode){
  check('real blocked Berserk watchdog terminates worker and retains last valid PV',fault.status==='stopped'&&fault.forcedStop&&fault.lines.length>0&&await p.evaluate(()=>__cacheWorkers.some(w=>w.fault==='go infinite'&&w.terminated)));
  await p.evaluate(()=>{window.__forceBerserkHang=false;});report.results['fault-recovery:berserk']=await run(p,'berserk');
  const beforeAll=await p.evaluate(()=>Object.fromEntries(['sf-full','reckless','lc0','berserk'].map(m=>[m,ChessLabHost.getEngineCardResult(m)?.jobId])));
- await budget(p,600);await p.locator('#analysisSFFull').check();await p.locator('#btnAnalyzeAll').click();
+ await budget(p,600);await p.locator('#analysisSFFull').check();await quiescent(p);await p.locator('#btnAnalyzeAll').click();
+ await p.waitForFunction(()=>['SF','BER','RLE','LC0'].some(r=>ChessLabHost.getEngineCardState(r).working),null,{timeout:5000});
  await p.waitForFunction(()=>!ChessLabHost.getEngineCardState('SF').working&&!ChessLabHost.getEngineCardState('BER').working&&!ChessLabHost.getEngineCardState('RLE').working&&!ChessLabHost.getEngineCardState('LC0').working&&!document.querySelector('.is-batch-participant'),null,{timeout:120000});
  check('offline All searches four genuine families with the same base time',await p.evaluate(old=>['sf-full','reckless','lc0','berserk'].every(m=>{const r=ChessLabHost.getEngineCardResult(m);return r?.status==='complete'&&r.jobId!==old[m]&&r.requestedTimeMs===600;}),beforeAll));
  check('mobile retains at most one live heavy prepared worker',await p.evaluate(()=>__cacheWorkers.filter(w=>!w.terminated).length)<=1);
- await budget(p,5000);await p.locator('#btnAnalyzeAll').click();await p.waitForTimeout(100);await p.locator('#btnAnalyzeAll').click();check('Stop all removes active and queued jobs',await p.evaluate(()=>['SF','RLE','LC0','BER'].every(r=>!ChessLabHost.getEngineCardState(r).working)));
+ await budget(p,5000);await quiescent(p);await p.locator('#btnAnalyzeAll').click();await p.waitForTimeout(100);await p.locator('#btnAnalyzeAll').click();check('Stop all removes active and queued jobs',await p.evaluate(()=>['SF','RLE','LC0','BER'].every(r=>!ChessLabHost.getEngineCardState(r).working)));
  phase='remove-eviction';
  const coreCaches=await p.evaluate(async()=> (await caches.keys()).filter(n=>n.startsWith('chessbest-chess-lab-')));
  await p.evaluate(()=>ChessEngineAssetStore.remove('reckless'));
