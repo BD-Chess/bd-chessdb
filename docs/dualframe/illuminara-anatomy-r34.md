@@ -10,6 +10,6 @@ New art lives at immutable `content/illuminara/art-r34/` paths, with before/afte
 
 The release metadata and sealed 36-asset app shell advance to revision 34 / r4.25. New media paths prevent an old bitmap cache from supplying the replaced artwork. Existing installed copies use the normal save-before-update mechanism.
 
-Local validation: 58 focused tests passed across DFC import/integrity, text layers, text timing, hybrid reader behavior and PWA package/update safety. All 1,259 member files passed byte/dimension checks. Original 289 protected art/overlay/source/page files still match the frozen baseline. Ten EN/SL page composites were visually inspected. Runtime browser/CI/deployment evidence is recorded after publication in the project result receipt; these local checks are not a claim of physical iOS/Android testing.
+Local validation: 58 focused tests passed across DFC import/integrity, text layers, text timing, hybrid reader behavior and PWA package/update safety. All 1,258 member files passed byte/dimension checks. Original 289 protected art/overlay/source/page files still match the frozen baseline. Ten EN/SL page composites were visually inspected. Runtime browser/CI/deployment evidence is recorded after publication in the project result receipt; these local checks are not a claim of physical iOS/Android testing.
 
 Visual anatomy acceptance is editorial. BD's final review of the corrected art remains pending after deployment.
