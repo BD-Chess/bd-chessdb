@@ -18,6 +18,7 @@ export class MemoryBlobs{
  }
 }
 export const memory=new MemoryBlobs();
+export const extraHandlers=new Map();
 const context={site:{name:'mdlxdcc'},deploy:{context:'dev',id:'isolated-acceptance'}};
 const handler=makeStateHandler({openStore:async()=>memory});
 const auth=makeTripAuth({verify:async p=>p===TEST_PASSWORD});
@@ -37,7 +38,7 @@ export const server=http.createServer(async(req,res)=>{
   if(url.pathname.startsWith('/.netlify/functions/')){
    const chunks=[];for await(const c of req)chunks.push(c);const body=Buffer.concat(chunks);
    const request=new Request(url,{method:req.method,headers:req.headers,...(req.method!=='GET'&&req.method!=='HEAD'?{body}:{} )});
-   result=url.pathname.endsWith('andaluzija-auth')?await auth(request,context):url.pathname.endsWith('andaluzija-state')?await handler(request,context):new Response('{}',{status:503});
+   result=extraHandlers.has(url.pathname)?await extraHandlers.get(url.pathname)(request,context):url.pathname.endsWith('andaluzija-auth')?await auth(request,context):url.pathname.endsWith('andaluzija-state')?await handler(request,context):new Response('{}',{status:503});
    res.writeHead(result.status,Object.fromEntries(result.headers));res.end(Buffer.from(await result.arrayBuffer()));return;
   }
   if(url.pathname.endsWith('/andaluzija-private.8zs.json')){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(await syntheticPrivate()));return;}

@@ -1,0 +1,9 @@
+# Travel actions v1 · 2026-10-20
+
+Only authenticated project users; the host fixes actor and tripId. Context is the selected variant/day/city and revision, not the whole private page. list_city_visits combines existing planner candidates and public additions. read_travel_reference accepts a city ID only. No arbitrary URL reader is provided; follow the linked official source for current hours.
+
+propose_visit_changes makes a preview. apply_visit_changes applies allowed catalogue additions/enabling/disabling/duration changes and, if requested, Classical DeepSearch on one untimed segment, then saves through the existing encrypted store. optimize_day_visits can preview or apply/save. save_visit_plan and undo_last_own_change share the manual store. No other database or solver. Each call gets a stable server requestId; duplicate delivery cannot duplicate execution.
+
+A change uses {op:add|enable|disable|duration,id,minutes}; minutes is null except for duration. An existing stop ID or a listed public catalogue ID is required. Fixed events are immutable to AI. Multiple segments require a separate explicit choice. A new unresolved location is a useful preview but cannot be optimised by inventing coordinates; report LOCATION_REQUIRED and preserve the draft. estimate uses existing approximate coordinates only, is not walking distance and costs no provider API.
+
+Execution results distinguish preview/applied_local/saved/conflict/failed/cancelled. Saved includes server write requestId, accepted revision and ETag; the AI endpoint independently checks the server receipt. The encrypted continuation binds actor, scope, expiry, provider transcript, action and input revision. A requested client action is not completion. No retry with a newer revision after conflict. Lock changes epoch, cancels worker/network and discards late results and private history.

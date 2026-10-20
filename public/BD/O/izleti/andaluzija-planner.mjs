@@ -15,7 +15,7 @@ root.innerHTML='<div class="section-heading"><div><p class="eyebrow">TRIPOPTI / 
 for(let i=0;i<10;i++)$('poi-day').add(new Option('Dan '+(i+1),i));
 let local;try{local=globalThis.localStorage;}catch{local=null;}
 let preview=null,editingTimer=null,saveTimer=null,unlocked=false,selection={variant:'gpt',day:0,city:'malaga'},editBaseline=[];
-let running=false;
+let running=false,authTimer=null;
 const optimizer=new DayOptimizer();
 const store=new SharedTripStore({local,notify:e=>{
  $('poi-status').textContent=(labels[e.status]||e.status)+(e.updatedAt?' · '+new Date(e.updatedAt).toLocaleTimeString('sl-SI'):'')+' · rev. '+e.revision;
@@ -144,11 +144,11 @@ $('poi-login').onsubmit=async e=>{
  try{
   const r=await fetch('/.netlify/functions/andaluzija-auth',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',password})});
   const b=await r.json();if(!r.ok||!b.authenticated)throw Error('Prijava ni uspela. Preverita geslo in povezavo.');
-  await store.unlock(password);unlocked=true;selection=clone(store.state.selection);render();await openPrivate(password);
+  await store.unlock(password);unlocked=true;clearTimeout(authTimer);authTimer=setTimeout(lock,8*3600*1000);selection=clone(store.state.selection);render();await openPrivate(password);window.dispatchEvent(new CustomEvent('andaluzija-trip-ready'));
  }catch(err){if(!unlocked)store.lock();showError(err);}
 };
 function lock(){
- clearTimeout(editingTimer);clearTimeout(saveTimer);optimizer.clear();unlocked=false;running=false;clearPreview();store.lock();
+ clearTimeout(authTimer);authTimer=null;clearTimeout(editingTimer);clearTimeout(saveTimer);optimizer.clear();unlocked=false;running=false;clearPreview();store.lock();
  for(const [id,html]of privateMounts){const target=$(id);if(target)target.outerHTML=html;}
  if($('private-choice'))$('private-choice').replaceChildren();
  window.dispatchEvent(new CustomEvent('andaluzija-content',{detail:null}));
@@ -159,12 +159,16 @@ $('poi-save').onclick=async()=>{try{await commitEditor();await store.save();}cat
 $('poi-sync').onclick=async()=>{try{await commitEditor();await store.sync();if(!store.conflict){announcePreferences();render();}}catch(e){showError(e);}};
 $('poi-undo').onclick=async()=>{try{await commitEditor();await store.undoLastOwnChange();render();scheduleSave();}catch(e){showError(e);}};
 async function optimize(options={}){
- await commitEditor();clearPreview();const d=clone(currentDay()),scope=JSON.stringify(selection),mode=options.mode||$('poi-mode').value;
+ await commitEditor();clearPreview();
+ if(options.baseRevision!==undefined&&options.baseRevision!==store.state.revision)throw Error('REVISION_CONFLICT');
+ if(options.operations)scopeOps(options.operations);
+ const candidate=options.operations?.length?store.preview(options.operations,store.state.revision).state:null;
+ const d=clone(candidate?candidate.days[dayKey(selection.variant,selection.day,selection.city)]:currentDay()),scope=JSON.stringify(selection),mode=options.mode||$('poi-mode').value;
  if(mode==='walking'&&!$('poi-provider-consent').checked)throw Error('Najprej dovolita izbrani Google izračun.');
  running=true;$('poi-optimize').disabled=true;$('poi-cancel').hidden=false;
  try{
   const baseRevision=store.state.revision,generation=store.generation;
-  const p=await optimizer.optimize(d,{...options,mode,segment:options.segment??Number($('poi-segment').value),baseRevision,generation,progress:s=>$('poi-progress').textContent=s});
+  const p=await optimizer.optimize(d,{...options,mode,segment:options.segment??Number($('poi-segment').value),baseRevision,generation,progress:s=>{$('poi-progress').textContent=s;options.progress?.(s);}});
   if(JSON.stringify(selection)!==scope||store.generation!==generation||store.state.revision!==baseRevision)throw Error('Seznam se je spremenil. Zaženita nov izračun.');
   preview=p;const m=p.metrics,order=p.ids.map(id=>d.stops.find(p=>p.id===id)).filter(p=>p.enabled);
   $('poi-progress').textContent='Predogled je pripravljen. Pot še ni uporabljena.';
@@ -204,14 +208,17 @@ function projection(){
  const s=store.getState();return {schema:s.schema,version:s.version,tripId:s.tripId,revision:s.revision,selection:clone(selection),days:s.days};
 }
 window.AndaluzijaTripOptiV1=Object.freeze({
- version:'1.0.0',
+ version:'1.0.1',
+ getExecutionState:()=>({epoch:store.epoch,generation:store.generation,write:unlocked&&!store.conflict}),
+ lockSession:lock,
  getState:projection,
  getContext:()=>{const d=currentDay();return {schema:'andaluzija-ai-context-v1',tripId:'andaluzija-2027',revision:store.state.revision,selection:clone(selection),
   city:cities[selection.city].name,entry:{id:d.entry.id,name:d.entry.name},stops:d.stops.map(p=>({id:p.id,name:p.name,enabled:p.enabled,durationMin:p.durationMin,fixedTime:p.fixedTime,maps:mapsForStop(p)})),
   capabilities:{preview:true,optimize:true,write:unlocked&&!store.conflict,save:canonical&&unlocked},flightTimesVerified:false};},
  previewChanges:(ops,base)=>{scopeOps(ops);const r=store.preview(ops,base);return {status:r.status,diff:r.diff};},
- applyChanges:async(ops,base,requestId)=>{
+ applyChanges:async(ops,base,requestId,guard)=>{
   const r=await fetch('/.netlify/functions/andaluzija-auth',{credentials:'same-origin',cache:'no-store'});const b=await r.json();if(!r.ok||!b.authenticated||!unlocked)throw Error('AUTH_REQUIRED');
+  if(guard&&(guard.epoch!==store.epoch||guard.generation!==store.generation))throw Error('REVISION_CONFLICT');
   const result=await apply(ops,base,requestId);render();return result;
  },
  optimizeDay:optimize,cancelOptimization:()=>optimizer.cancel(),

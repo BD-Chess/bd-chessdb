@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AndaluzijaTripOptiV1 mutation request",
-  "interfaceVersion": "1.0.0",
+  "interfaceVersion": "1.0.1",
   "global": "window.AndaluzijaTripOptiV1",
   "methods": {
     "getState": {
@@ -31,7 +31,9 @@
           "walking"
         ],
         "segment": "zero based untimed segment",
-        "progress": "optional callback"
+        "progress": "optional callback",
+        "operations": "optional validated candidate operations, preview only",
+        "baseRevision": "optional original revision guard"
       },
       "returns": "preview with IDs, receipt, memory-only metrics"
     },
@@ -42,7 +44,8 @@
       "args": [
         "operations",
         "baseRevision",
-        "requestId"
+        "requestId",
+        "optional guard {epoch,generation}"
       ],
       "effect": "applied_local; server auth required; call save for acknowledgement"
     },
@@ -73,6 +76,14 @@
         "b"
       ],
       "returns": "Google Maps walking URL"
+    },
+    "getExecutionState": {
+      "args": [],
+      "returns": "epoch, generation, write; optional guard for asynchronous callers"
+    },
+    "lockSession": {
+      "args": [],
+      "effect": "client lock, clears decrypted planner, dispatches lock; no password or server privilege exposed"
     }
   },
   "type": "object",

@@ -16,10 +16,13 @@
 <script defer src="../../../Trip/new/road-matrix.js"></script>
 <script defer src="./andaluzija-shield-core.js"></script>
 <script type="module" src="./andaluzija-planner.mjs?v=20261020-trip1"></script>
+<link rel="stylesheet" href="./andaluzija-ai.css?v=20261020-ai1">
+<script type="module" src="./andaluzija-ai.mjs?v=20261020-ai1"></script>
 </head>
 <body>
 <a class="skip" href="#vsebina">Na vsebino</a>
 <header class="topbar">
+ <button type="button" id="trip-ai-toggle" aria-controls="trip-ai-panel" aria-expanded="false">AI</button>
  <a class="back" href="./index.html">← Moji izleti</a>
  <span class="brand">BD <span>×</span> potovanja</span>
  <div class="font-controls" aria-label="Velikost besedila"><button id="font-minus" type="button" aria-label="Zmanjšaj besedilo">A−</button><button id="font-reset" type="button" aria-label="Ponastavi velikost besedila">100%</button><button id="font-plus" type="button" aria-label="Povečaj besedilo">A+</button></div>
@@ -106,6 +109,19 @@
  <footer><a href="./index.html">← Moji izleti</a><a href="#naslov">Na vrh ↑</a><button type="button" id="print-page">Natisni izbrani načrt</button></footer>
 </main>
 <dialog id="photo-dialog"><form method="dialog"><button type="submit" aria-label="Zapri fotografijo">Zapri ×</button></form><img id="lightbox-photo" alt=""><p id="lightbox-caption"></p></dialog>
+<aside id="trip-ai-panel" role="dialog" aria-label="Andaluzija · AI vodič" hidden>
+ <header><h2>Andaluzija · AI vodič</h2><button id="trip-ai-close" type="button" aria-label="Zapri AI vodiča">Zapri ×</button></header>
+ <label for="trip-ai-provider">Naslednji odgovor<select id="trip-ai-provider"><option value="gpt">GPT</option><option value="claude">Claude</option></select></label>
+ <div class="trip-ai-prompts"><button type="button" data-trip-question="Kaj bi še pogledala v izbranem mestu?">Kaj še v bližini?</button><button type="button" data-trip-question="Preuredi oglede po poti v izbranem dnevu.">Preuredi sprehod</button><button type="button" data-trip-question="Pokaži naslednji peš odsek v Google Maps.">Naslednji odsek</button></div>
+ <div id="trip-ai-messages" role="log" aria-live="polite" aria-label="Pogovor"></div>
+ <details><summary>Predogled dejanj</summary><div id="trip-ai-preview"></div></details>
+ <p id="trip-ai-status" role="status">Za pogovor odklenita skupni izlet pri »Najini ogledi«.</p>
+ <form id="trip-ai-form"><label for="trip-ai-input" class="trip-ai-note">Vprašanje za izbrani dan</label><textarea id="trip-ai-input" maxlength="4000" required placeholder="Kaj bi še pogledala v Córdobi?"></textarea>
+ <label class="trip-ai-consent"><input id="trip-ai-allow" type="checkbox" checked>Izrecno naročene spremembe tudi shrani</label>
+ <div class="trip-ai-actions"><button id="trip-ai-send" type="submit">Pošlji</button><button id="trip-ai-cancel" type="button">Prekliči</button></div></form>
+ <p class="trip-ai-note">Vprašanje in omejen dnevni kontekst obdeluje izbrani ponudnik. Pogovor se ob zaklepu izbriše. Preverita vire; odgovor ni rezervacija.</p>
+ <a class="trip-ai-note" href="https://www.mdlxdcc.org/BD/O/izleti/andaluzija-2027.html">Glavna stran z AI in skupnim shranjevanjem ↗</a>
+</aside>
 <noscript><div class="noscript">Za izbiro poti in zemljevid omogočita JavaScript. Glavni praktični napotki in viri so tudi brez njega v besedilu strani.</div></noscript>
 </body>
 </html>
