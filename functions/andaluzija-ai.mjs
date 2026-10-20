@@ -2,7 +2,8 @@ import {createHash,randomBytes,createCipheriv,createDecipheriv,randomUUID} from 
 import {tripActor,originOK} from './lib/andaluzija-access.mjs';
 import stateHandler from './andaluzija-state.mjs';
 import {createBudget} from './lib/mdlxdcc-guide/cost.mjs';
-import {travelKnowledge} from './lib/andaluzija-ai-knowledge.mjs';
+import {travelKnowledge,travelTopics} from './lib/andaluzija-ai-knowledge.mjs';
+import {pageSections,validatePageTarget} from '../public/BD/O/izleti/andaluzija-page.mjs';
 import {providerEnv as env,providerModel,createProviderClient,providerRound,appendAssistant,appendTool} from './lib/mdlxdcc-guide/provider.mjs';
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
 const error=(code,status)=>Response.json({error:{code}},{status,headers});
@@ -18,9 +19,11 @@ const str={type:'string'},integer={type:'integer'},nilInt={type:['integer','null
 const changes={type:'array',maxItems:20,items:{type:'object',properties:{op:{enum:['add','enable','disable','duration'],type:'string'},id:str,minutes:nilInt},required:['op','id','minutes'],additionalProperties:false}};
 const tool=(name,description,properties={})=>({type:'function',name,description,strict:true,parameters:{type:'object',properties,required:Object.keys(properties),additionalProperties:false}});
 export const travelTools=[
+ tool('show_page_section','Scroll THIS HTML page to its built-in map or named section. Use for pokaži zemljevid / premakni stran / pomakni do. This is a read-only UI action, not a Google Maps link. day is null except a 1–10 day card in dnevi.',{section:{type:'string',enum:Object.keys(pageSections)},day:nilInt}),
  tool('get_trip_context','Read the selected safe day snapshot.'),
  tool('list_city_visits','Existing planner candidates plus optional public choices. Use returned IDs.',{city:str}),
  tool('read_travel_reference','Read an allowlisted city reference. No arbitrary URL.',{city:str}),
+ tool('read_travel_topic','Read a bundled specialist topic: regional history, this public itinerary, page help, food/culture, transport/weather or tickets/access. Not a live web search.',{topic:{type:'string',enum:travelTopics}}),
  tool('propose_visit_changes','Preview only; no save. Never changes fixed events.',{changes,optimize:{type:'boolean'},segment:integer}),
  tool('apply_visit_changes','Explicit user instruction only: apply changes, optionally run actual TripOpti, and save. Report receipt, never assume success.',{changes,optimize:{type:'boolean'},segment:integer}),
  tool('optimize_day_visits','Same manual DeepSearch, one untimed segment. Preview or explicit apply/save; estimate only, no paid API.',{apply:{type:'boolean'},segment:integer}),
@@ -37,6 +40,8 @@ export function safeContext(v){
 }
 export function validateAction(name,a){
  const t=travelTools.find(t=>t.name===name);if(!t||!a||typeof a!=='object'||Array.isArray(a)||Object.keys(a).some(k=>!Object.hasOwn(t.parameters.properties,k))||t.parameters.required.some(k=>!Object.hasOwn(a,k)))throw Error('INVALID_TOOL');
+ if(name==='show_page_section')validatePageTarget(a);
+ if('topic'in a&&!travelTopics.includes(a.topic))throw Error('UNKNOWN_TOPIC');
  if('city'in a&&!/^(malaga|nerja|granada|cordoba|carmona|sevilla|setenil|ronda|marbella|mijas)$/.test(a.city))throw Error('UNKNOWN_CITY');
  if('segment'in a&&(!Number.isInteger(a.segment)||a.segment<0||a.segment>49))throw Error('INVALID_SEGMENT');
  for(const f of ['optimize','apply'])if(f in a&&typeof a[f]!=='boolean')throw Error('INVALID_TOOL');
@@ -61,8 +66,13 @@ export function makeTravelHandler({actor=tripActor,knowledgeFactory=travelKnowle
    const raw=await req.text();if(raw.length>400000)return error('TOO_LARGE',413);b=JSON.parse(raw);
    if(b.continuation){
     v=openContinuation(b.continuation);if(v.actor!==user.id||v.origin!==new URL(req.url).origin)throw Error('ACTOR_MISMATCH');
-    const r=b.receipt;if(!r||r.actor!==v.actor||r.requestId!==v.pending.requestId||r.epoch!==v.epoch||r.tripId!==tripId||JSON.stringify(r.selection)!==JSON.stringify(v.scope)||r.baseRevision!==v.pending.baseRevision||!['preview','saved','synced','failed','conflict','cancelled'].includes(r.status))throw Error('INVALID_RECEIPT');
+    const r=b.receipt;if(!r||r.actor!==v.actor||r.requestId!==v.pending.requestId||r.epoch!==v.epoch||r.tripId!==tripId||JSON.stringify(r.selection)!==JSON.stringify(v.scope)||r.baseRevision!==v.pending.baseRevision||!['shown','preview','saved','synced','failed','conflict','cancelled'].includes(r.status))throw Error('INVALID_RECEIPT');
     let receipt={actor:v.actor,requestId:r.requestId,tripId,selection:v.scope,baseRevision:r.baseRevision,status:r.status};
+    if(r.status==='shown'){
+     if(v.call.name!=='show_page_section'||r.navigation?.section!==v.pending.page?.section||r.navigation?.day!==v.pending.page?.day||typeof r.navigation?.locked!=='boolean')throw Error('INVALID_NAVIGATION_RECEIPT');
+     receipt.navigation={section:r.navigation.section,day:r.navigation.day,locked:r.navigation.locked};
+     v.shown=true;
+    }
     if(['saved','synced'].includes(r.status)){
      if(!Number.isSafeInteger(r.save?.revision)||r.status==='saved'&&!r.save?.requestId)throw Error('SAVE_NOT_CONFIRMED');
      const response=await stateReader(new Request(req.url,{headers:req.headers}),context),data=await response.json();
@@ -100,7 +110,8 @@ export function makeTravelHandler({actor=tripActor,knowledgeFactory=travelKnowle
      if(!calls.length){
       if(!text.trim())throw Error('EMPTY_RESPONSE');
       const claim=/(?:shranjen[oa]?|shranil|saved|preuredil|dodal|dodano)/i.test(text);
-      const answer=claim&&(!v.saved||!['saved','synced'].includes(v.lastStatus))?'Izvedbe in shranitve v tej zahtevi nisem potrdil. Preverita stanje in predogled v programu; lahko pripravim predlog.':text;
+      const pageClaim=/(?:pomaknil|premaknil|prikazal|scrolled)(?:a|o)?\b/i.test(text);
+      const answer=pageClaim&&!v.shown?'Pomika v tej zahtevi nisem potrdil. Uporabita povezavo »Zemljevid« v kazalu strani.':claim&&(!v.saved||!['saved','synced'].includes(v.lastStatus))?'Izvedbe in shranitve v tej zahtevi nisem potrdil. Preverita stanje in predogled v programu; lahko pripravim predlog.':text;
       send('delta',{text:answer});send('done',{provider:v.provider,skill:k.receipt(),serverSaveVerified:v.saved});return;
      }
      if(calls.length!==1)throw Error('PARALLEL_TOOLS_NOT_ALLOWED');appendAssistant(v.input,v.provider,response);
@@ -108,10 +119,11 @@ export function makeTravelHandler({actor=tripActor,knowledgeFactory=travelKnowle
      let result;
      if(call.name==='get_trip_context')result=v.context;
      else if(call.name==='read_travel_reference')result={city:a.city,text:await k.reference(a.city)};
+     else if(call.name==='read_travel_topic')result={topic:a.topic,text:await k.topic(a.topic)};
      else if(call.name==='list_city_visits')result={city:a.city,existing:a.city===v.scope.city?v.context.stops:[],additions:k.visits[a.city]};
      else{
       if(isWrite(call.name,a)&&!v.write){appendTool(v.input,v.provider,call,{error:'WRITE_NOT_REQUESTED',status:'failed'});continue;}
-      const requestId=randomUUID();v.call=call;v.pending={requestId,baseRevision:v.context.revision};
+      const requestId=randomUUID();v.call=call;v.pending={requestId,baseRevision:v.context.revision,page:call.name==='show_page_section'?a:null};
       send('client_action',{action:{actor:user.id,name:call.name,args:a,requestId,tripId,selection:v.scope,baseRevision:v.context.revision,epoch:v.epoch,allowWrite:v.write},continuation:sealContinuation(v),skill:k.receipt()});return;
      }
      appendTool(v.input,v.provider,call,result);

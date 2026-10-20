@@ -1,6 +1,6 @@
 # Marbella
 
-Version 1.0.0 · checked 2026-10-20.
+Version 1.1.0 · checked 2026-10-21.
 
 Možnosti iz uradnih javnih katalogov: Plaza de los Naranjos; Casco histórico; Paseo Marítimo; Avenida del Mar.
 
@@ -10,3 +10,12 @@ Načrtovalske ocene (naše, ne podatek upravljavca): kratek sklop 60–90 min; s
 
 Viri:
 - https://turismo.marbella.es/
+
+## Staro mesto, promenada in ločena marina
+Marbella ni samo Puerto Banús. Staro jedro z belimi hišami in Plaza de los Naranjos ponuja drugačno izkušnjo kot luksuzna marina; Puerto Banús je ločena lokacija in ne nadaljevanje vsakega kratkega kroga. Obalni sprehod in morje sta smiselna protiutež notranjim monumentalnim mestom.
+
+Naš kratek izbor: stari center → Plaza de los Naranjos → odmor. Za 2–3 ure dodaj promenado glede na izhodišče. Za cel večer izberi mirnejši obalni tempo, ne vseh obalnih četrti. Če uporabnik želi Puerto Banús, posebej upoštevaj pot, promet in parkiranje. Ne sklepaj o cenah lokala iz podobe mesta.
+
+Različica A tu predvideva obalni večer/noč v javnem okviru, B kratek postanek med drugimi obveznostmi. To ni dokaz konkretne nastanitve. Pri prehodnem dnevu naj čas vračila avta prevlada nad dodatnim ogledom. Za utrujenost skrajšaj na en sklop in odmor, za dež preveri notranjo kulturno možnost ali nadaljevanje poti. Ne obljubi kopalnega vremena, temperature morja ali prostega parkirišča za prihodnji datum.
+
+Dodatni uradni vir: https://www.spain.info/en/destination/marbella/

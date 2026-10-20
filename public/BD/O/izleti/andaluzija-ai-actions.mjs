@@ -1,6 +1,7 @@
 // Application executor: the manual planner owns all data, solver, validation and saves.
 import {clone,ensureDay,dayKey,mapsForStop,mapsForLeg} from './andaluzija-poi.mjs';
-export function createTravelExecutor({adapter=()=>window.AndaluzijaTripOptiV1,fetcher=fetch,renderPreview=()=>{},progress=()=>{}}={}){
+import {showPageSection,validatePageTarget} from './andaluzija-page.mjs';
+export function createTravelExecutor({adapter=()=>window.AndaluzijaTripOptiV1,fetcher=fetch,renderPreview=()=>{},progress=()=>{},navigate=showPageSection}={}){
  const requests=new Map();let catalogue;
  const list=async()=>catalogue??=await fetcher('/ai/skills/andaluzija-2027-guide/references/visits.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('CATALOGUE_UNAVAILABLE');return r.json();});
  function clear(){requests.clear();catalogue=null;}
@@ -31,6 +32,11 @@ export function createTravelExecutor({adapter=()=>window.AndaluzijaTripOptiV1,fe
   const alive=()=>{if(sessionEpoch!==undefined&&api.getExecutionState().epoch!==sessionEpoch)throw Error('LOCKED');const c=api.getContext();if(signal?.aborted||epoch!==a.epoch)throw Error('LOCKED');if(JSON.stringify(c.selection)!==JSON.stringify(scope))throw Error('SCOPE_CHANGED');};
   try{
    if(a.tripId!==receipt.tripId||!/^[-a-zA-Z0-9_]{8,100}$/.test(a.requestId||''))throw Error('INVALID_ACTION');alive();
+   if(a.name==='show_page_section'){
+    validatePageTarget(a.args);
+    const navigation=await navigate(a.args,{alive,signal});alive();
+    return {...receipt,status:'shown',navigation};
+   }
    // Strong read before every action; never automatically rebase onto a newer revision.
    const writable=api.getContext().capabilities.write;
    const synced=writable?await api.sync():{status:'synced'};alive();if(synced.status==='conflict'||api.getContext().revision!==a.baseRevision)throw Error('REVISION_CONFLICT');

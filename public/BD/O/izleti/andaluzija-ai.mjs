@@ -1,4 +1,5 @@
 import {createTravelExecutor} from './andaluzija-ai-actions.mjs';
+import {showPageSection,pageSections,pageRequest} from './andaluzija-page.mjs';
 const $=id=>document.getElementById(id),panel=$('trip-ai-panel'),input=$('trip-ai-input'),log=$('trip-ai-messages'),status=$('trip-ai-status'),endpoint='/.netlify/functions/andaluzija-ai';
 const canonical=['www.mdlxdcc.org','mdlxdcc.org','localhost','127.0.0.1'].includes(location.hostname);
 let history=[],epoch=0,active=null,busy=false,available=null,authenticated=false,previousFocus;
@@ -51,13 +52,17 @@ async function signOut(){
 }
 function line(role,text,provider){const el=document.createElement('article'),label=document.createElement('b'),body=document.createElement('div');el.className='trip-ai-message';label.textContent=role==='user'?'Vidva':role==='receipt'?'Izvedba':provider==='claude'?'Claude':'GPT';body.className='trip-ai-text';el.append(label,body);log.append(el);renderText(body,text);log.scrollTop=log.scrollHeight;return body;}
 function renderText(el,text){el.replaceChildren();const re=/\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)/g;let at=0;for(const m of text.matchAll(re)){el.append(document.createTextNode(text.slice(at,m.index)));try{const u=new URL(m[2]);if(u.protocol==='https:'&&!u.username&&!u.password){const a=document.createElement('a');a.textContent=m[1];a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';el.append(a);}else el.append(document.createTextNode(m[0]));}catch{el.append(document.createTextNode(m[0]));}at=m.index+m[0].length;}el.append(document.createTextNode(text.slice(at)));}
-const executor=createTravelExecutor({adapter:api,progress:s=>status.textContent=s,renderPreview:p=>{
+function pageResult(navigation){
+ const text='Prikazano · '+pageSections[navigation.section].label+(navigation.day?' · dan '+navigation.day:'')+(navigation.locked?' · osebni del ostaja zaklenjen':'');
+ $('trip-ai-page-result').textContent=text;$('trip-ai-page-notice').hidden=false;return text;
+}
+const executor=createTravelExecutor({adapter:api,navigate:(args,options)=>showPageSection(args,{...options,before:()=>{if(matchMedia('(max-width:1099px)').matches)toggle(false);}}),progress:s=>status.textContent=s,renderPreview:p=>{
  const host=$('trip-ai-preview');host.replaceChildren();const title=document.createElement('b');title.textContent='Predogled sprememb';host.append(title);
  for(const d of p.diff){const text=document.createElement('p');text.textContent=d.changes.map(c=>(c.before?.name||'Nov ogled')+' → '+(c.after?.name||'odstranjeno')).join('; ')||'Vrstni red: '+d.orderAfter.join(' → ');host.append(text);}
  if(p.solver){const text=document.createElement('p');text.textContent='TripOpti · '+p.solver.receipt.source+' · ocena po ravni črti; pravočasnost in peš pot nista potrjeni.';host.append(text);}
 }});
 function toggle(open=!panel.hidden){if(open){previousFocus=document.activeElement;panel.hidden=false;$('trip-ai-toggle').setAttribute('aria-expanded','true');document.body.classList.add('trip-ai-open');input.focus();availability();}else{availabilitySequence++;clearCredentials();panel.hidden=true;$('trip-ai-toggle').setAttribute('aria-expanded','false');document.body.classList.remove('trip-ai-open');previousFocus?.focus();}}
-function cancel(clear=false){epoch++;availabilitySequence++;active?.abort();active=null;api()?.cancelOptimization();busy=false;$('trip-ai-send').disabled=false;if(clear){authenticated=false;available=null;history=[];log.replaceChildren();input.value='';$('trip-ai-preview').replaceChildren();executor.clear();$('trip-ai-allow').checked=true;clearCredentials();}status.textContent=clear?'Izlet je zaklenjen. Za AI se prijavita z računom MDL×DCC; za osebni del odklenita »Najini ogledi«.':'Odgovor je prekinjen. Že potrjene spremembe ostanejo vidne v programu.';}
+function cancel(clear=false){epoch++;availabilitySequence++;active?.abort();active=null;api()?.cancelOptimization();busy=false;$('trip-ai-send').disabled=false;if(clear){$('trip-ai-page-notice').hidden=true;authenticated=false;available=null;history=[];log.replaceChildren();input.value='';$('trip-ai-preview').replaceChildren();executor.clear();$('trip-ai-allow').checked=true;clearCredentials();}status.textContent=clear?'Izlet je zaklenjen. Za AI se prijavita z računom MDL×DCC; za osebni del odklenita »Najini ogledi«.':'Odgovor je prekinjen. Že potrjene spremembe ostanejo vidne v programu.';}
 function ready(){return canonical&&!logoutPending&&(authenticated||api()?.getContext().capabilities.write);}
 async function availability(){
  accountUI();if(!canonical){showAuth(false,false);status.textContent='Ta gostitelj nima AI zaledja. Odprita glavno stran izleta.';return;}
@@ -73,6 +78,13 @@ async function availability(){
 async function* events(response){const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';try{for(;;){const {done,value}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});if(buffer.length>500000)throw Error('TOO_LARGE');let i;while((i=buffer.indexOf('\n\n'))>=0){const frame=buffer.slice(0,i);buffer=buffer.slice(i+2);for(const line of frame.split('\n'))if(line.startsWith('data: '))yield JSON.parse(line.slice(6));}}}finally{reader.releaseLock();}}
 async function submit(message){
  if(busy||authBusy||logoutPending)return;if(!ready()){await availability();if(!ready())return;}
+ const target=pageRequest(message);
+ if(target){
+  const current=++epoch,session=api()?.getExecutionState?.().epoch;busy=true;$('trip-ai-send').disabled=true;input.value='';line('user',message);
+  try{const navigation=await showPageSection(target,{before:()=>{if(matchMedia('(max-width:1099px)').matches)toggle(false);},alive:()=>{if(current!==epoch||api()?.getExecutionState?.().epoch!==session)throw Error('LOCKED');}});line('receipt',pageResult(navigation));status.textContent='Prikazano · brez klica AI';}
+  catch{if(current===epoch)status.textContent='Razdelka trenutno ne morem prikazati. Uporabita kazalo strani.';}
+  finally{if(current===epoch){busy=false;$('trip-ai-send').disabled=false;}}return;
+ }
  const provider=$('trip-ai-provider').value;if(available&&available[provider]===false){status.textContent=(provider==='claude'?'Claude':'GPT')+' trenutno ni dosegljiv.';return;}
  const selectedEpoch=++epoch;active=new AbortController();const signal=active.signal;busy=true;$('trip-ai-send').disabled=true;
  const prior=history.slice(-12);history.push({role:'user',content:message});line('user',message);input.value='';let answer='';
@@ -93,8 +105,9 @@ async function submit(message){
      status.textContent='Preverjam in izvajam zahtevo v programu …';
      const receipt=await executor.execute(event.action,{epoch:selectedEpoch,signal});
      if(selectedEpoch!==epoch||signal.aborted)throw Error('CANCELLED');
-     const words={preview:'Predogled · načrt še ni shranjen',saved:'Shranjeno · rev. '+receipt.save?.revision,synced:'Skupni načrt je že usklajen',conflict:'Spor različic · sprememb nisem prepisal',failed:'Dejanje ni uspelo',cancelled:'Dejanje je preklicano'};
+     const words={shown:'Prikazano · '+(pageSections[receipt.navigation?.section]?.label||'razdelek')+(receipt.navigation?.day?' · dan '+receipt.navigation.day:'')+(receipt.navigation?.locked?' · osebni del ostaja zaklenjen':''),preview:'Predogled · načrt še ni shranjen',saved:'Shranjeno · rev. '+receipt.save?.revision,synced:'Skupni načrt je že usklajen',conflict:'Spor različic · sprememb nisem prepisal',failed:'Dejanje ni uspelo',cancelled:'Dejanje je preklicano'};
      line('receipt',words[receipt.status]+(receipt.reason?' · '+receipt.reason:''));
+     if(receipt.status==='shown')pageResult(receipt.navigation);
      next={continuation:event.continuation,receipt,context:api().getContext()};
     }
    }
@@ -106,6 +119,8 @@ async function submit(message){
  finally{if(selectedEpoch===epoch){busy=false;active=null;$('trip-ai-send').disabled=false;}}
 }
 $('trip-ai-toggle').onclick=()=>toggle(panel.hidden);$('trip-ai-close').onclick=()=>toggle(false);$('trip-ai-cancel').onclick=()=>cancel();
+$('trip-ai-return').onclick=()=>{$('trip-ai-page-notice').hidden=true;toggle(true);};
+$('trip-ai-dismiss-notice').onclick=()=>{$('trip-ai-page-notice').hidden=true;};
 $('trip-ai-account-action').onclick=()=>{if(authenticated||logoutPending)signOut();else showAuth(true);};
 $('trip-ai-auth').onsubmit=e=>{e.preventDefault();signIn();};$('trip-ai-auth-cancel').onclick=()=>showAuth(false);
 $('trip-ai-form').onsubmit=e=>{e.preventDefault();const message=input.value.trim();if(message)submit(message);};
