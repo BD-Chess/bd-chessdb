@@ -25,8 +25,13 @@ async function boot(url){
 }
 async function budget(page,ms=600){await page.evaluate(ms=>{const n=document.getElementById('settingAnalysisTime');if(![...n.options].some(o=>o.value===String(ms)))n.add(new Option('Bounded acceptance',String(ms)));n.value=String(ms);n.dispatchEvent(new Event('change',{bubbles:true}));},ms);}
 async function position(page,moves){await page.evaluate(moves=>ChessLabHost.navigate({startFen:new Chess().fen(),moves}),moves);}
+async function quiescent(page){await page.waitForFunction(()=>{const a=ChessLabHost.getAnalysisActivity();return !a.owners.some(o=>o.running||o.pending||o.following);},null,{timeout:30000});}
 async function run(page,mode){
+ // A completed card can still own a genuine follow-on DCC probe. Its next
+ // click means Stop until that probe settles; wait for the actual owner here.
+ await quiescent(page);
  await budget(page);if(mode.startsWith('sf-'))await page.locator('#analysisSFFull').setChecked(mode==='sf-full');
+ await quiescent(page);
  const previous=await page.evaluate(mode=>ChessLabHost.getEngineCardResult(mode)?.jobId,mode),started=Date.now();
  await page.locator('[data-eval-source="'+role(mode)+'"]').click();
  await page.waitForFunction(({mode,role,previous})=>{const s=ChessLabHost.getEngineCardState(role),r=ChessLabHost.getEngineCardResult(mode);return !s.working&&r&&r.jobId!==previous;},{mode,role:role(mode),previous},{timeout:160000});
@@ -48,7 +53,7 @@ async function stopCase(page,mode){
 (async()=>{
  fs.mkdirSync(output,{recursive:true});const url=opt('url')||await serve();report.url=url;report.public=!!opt('url');
  let proxy;if(opt('url')&&process.env.HTTPS_PROXY){const u=new URL(process.env.HTTPS_PROXY);proxy={server:u.protocol+'//'+u.host};if(u.username)proxy.username=decodeURIComponent(u.username);if(u.password)proxy.password=decodeURIComponent(u.password);}
- if(kind==='chromium'){const imported=require('@sparticuz/chromium'),c=imported.default||imported;browser=await playwright.chromium.launch({headless:true,executablePath:await c.executablePath(),args:[...c.args.filter(a=>a!=='--single-process'),...(proxy?['--ignore-certificate-errors']:[])],proxy});}
+ if(kind==='chromium')browser=await playwright.chromium.launch({headless:true,executablePath:process.env.CHESS_BROWSER_EXECUTABLE||undefined,args:proxy?['--ignore-certificate-errors']:[],proxy});
  else browser=await playwright.webkit.launch({headless:true,proxy});
  report.version=browser.version();context=await browser.newContext({serviceWorkers:'allow',ignoreHTTPSErrors:!!proxy,viewport:{width:393,height:920},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'});
  context.on('request',r=>{if(optional(r.url()))report.requests.push({phase,url:r.url(),serviceWorker:!!r.serviceWorker(),save:r.headers()['x-chessbest-engine-save']==='1'});});
@@ -66,20 +71,30 @@ async function stopCase(page,mode){
  check('actual mobile presentation exposes compact Engine storage without overflow',await p.evaluate(()=>document.body.classList.contains('app-mobile')&&document.documentElement.scrollWidth<=innerWidth));
  const retained=await preserve(p);report.retainedStudySha256=createHash('sha256').update(retained.studies).digest('hex');
  phase='cold-online';
+ const cancellation=await p.evaluate(async()=>{const control=new AbortController();let outcome=null;
+  try{await ChessEngineAssetStore.install('reckless',{signal:control.signal,onProgress:s=>{if(s.loaded>0&&s.loaded<s.total)control.abort();}});}catch(e){outcome=e.name;}
+  return {outcome,state:await ChessEngineAssetStore.inspect('reckless',{verifyHashes:true})};});
+ check('actual cancelled save keeps verified parts without claiming offline readiness',cancellation.outcome==='AbortError'&&cancellation.state.status==='incomplete'&&!cancellation.state.offlineReady);
+ await p.evaluate(()=>ChessEngineAssetStore.install('reckless'));
+ check('actual Repair completes the cancelled package and reuses its first verified file',await p.evaluate(async()=>{const p=ChessEngineAssetStore.select('reckless');return (await ChessEngineAssetStore.inspect('reckless',{verifyHashes:true})).offlineReady&&performance.getEntriesByName(new URL(p.files[0].path,location.href).href).length===1;}));
+ report.cancelRepair=cancellation;
  // Explicit offline save must not start a Worker/search.
  const beforeWorkers=await p.evaluate(()=>__cacheWorkers.length);await p.evaluate(()=>ChessEngineAssetStore.install('sf-full'));
  check('Save SF Full downloads only compatible variant without starting a worker',await p.evaluate(()=>__cacheWorkers.length)===beforeWorkers&&!report.requests.some(r=>/stockfish-19\.part/.test(r.url)));
- for(const mode of families){report.results[phase+':'+mode]=await run(p,mode);if(mode!=='sf-lite')check('cold '+mode+' full dependency closure is verified locally',(await p.evaluate(mode=>ChessEngineAssetStore.inspect(mode,{verifyHashes:true}),mode)).status==='ready');}
+ for(const mode of families){report.results[phase+':'+mode]=await run(p,mode);const inspected=await p.evaluate(mode=>ChessEngineAssetStore.inspect(mode,{verifyHashes:true}),mode);check('cold '+mode+' full dependency closure is verified locally',inspected.status==='ready'&&inspected.offlineReady===true);(report.offlineStates||=[]).push(inspected);}
  check('Berserk NNUE is absent from optional CacheStorage',await p.evaluate(async()=>{const cache=await caches.open(ChessEngineAssetStore.cacheName(ChessEngineAssetStore.select('berserk')));return (await cache.keys()).every(r=>!r.url.endsWith('.nn'));}));
  phase='prepared-reuse';
- for(const mode of ['reckless','lc0']){await position(p,['d2d4','d7d5']);await run(p,mode);const count=await p.evaluate(()=>__cacheWorkers.length),r=await run(p,mode);report.results[phase+':'+mode]=r;check(mode+' completed repeat reuses the actual worker without asset reads',await p.evaluate(()=>__cacheWorkers.length)===count&&r.preparedEngineReused&&r.workerReused&&r.engineAssetStorage.assetSource==='prepared-memory');}
+ for(const mode of ['reckless','lc0']){await position(p,['d2d4','d7d5']);const first=await run(p,mode),count=await p.evaluate(()=>__cacheWorkers.length),requestsBefore=report.requests.length,r=await run(p,mode);report.results[phase+':'+mode]=r;check(mode+' completed repeat reuses the actual worker without asset reads',await p.evaluate(()=>__cacheWorkers.length)===count&&report.requests.length===requestsBefore&&r.engineMemory?.fromMemory&&r.engineMemory.instanceId===first.engineMemory.instanceId&&r.workerReused&&r.engineAssetStorage.assetSource==='prepared-memory');}
  // Every document is closed before the next phase, releasing prepared workers.
  phase='warm-online';await p.close();p=await boot(url);await position(p,['e2e4','e7e5']);const warmStart=report.requests.length;
  for(const mode of families){const r=await run(p,mode);report.results[phase+':'+mode]=r;if(mode!=='sf-lite')check('warm '+mode+' uses saved bytes in a newly initialized worker',r.assetCacheHit&&r.engineAssetStorage.localBytes>0);}
  check('warm page reopen performs no engine-save requests',report.requests.slice(warmStart).every(r=>!r.save));
  check('warm engine runtime responses come from verified local SW',report.responses.filter(r=>r.phase===phase&&r.status===200).every(r=>r.source==='verified-local'));
- phase='warm-offline';await p.close();await context.setOffline(true);networkAllowed=false;p=await boot(url);await position(p,['g1f3','d7d5']);
- const offlineServer=report.serverRequests.length,offlineResponse=report.responses.length,offlineRequest=report.requests.length;
+ phase='corrupt-repair';
+ const corrupted=await p.evaluate(async()=>{const p=ChessEngineAssetStore.select('reckless'),c=await caches.open(ChessEngineAssetStore.cacheName(p)),f=p.files[0];await c.put(new URL(f.path,location.href).href,new Response(new Uint8Array(f.bytes),{headers:{'Content-Length':String(f.bytes),'X-ChessBest-SHA256':f.sha256}}));return ChessEngineAssetStore.inspect('reckless',{verifyHashes:true});});
+ check('actual corrupt bytes defeat the stored ready marker',corrupted.status==='incomplete'&&corrupted.files==='partial'&&!corrupted.offlineReady);
+ const repairRequests=report.requests.length;await p.evaluate(()=>ChessEngineAssetStore.install('reckless'));check('actual repair fetches only one corrupted file',report.requests.length-repairRequests===1);report.corruptRepair=corrupted;
+ phase='warm-offline';const offlineServer=report.serverRequests.length,offlineResponse=report.responses.length,offlineRequest=report.requests.length;await p.close();await context.setOffline(true);networkAllowed=false;p=await boot(url);await position(p,['g1f3','d7d5']);
  for(const mode of families){report.results[phase+':'+mode]=await run(p,mode);}
  check('fresh offline document and new FEN search all real saved families',families.every(m=>report.results[phase+':'+m]?.status==='complete'));
  check('offline has zero successful outgoing engine asset requests',report.responses.slice(offlineResponse).filter(r=>r.status===200).every(r=>r.source==='verified-local'));
@@ -96,17 +111,20 @@ async function stopCase(page,mode){
  check('real blocked Berserk watchdog terminates worker and retains last valid PV',fault.status==='stopped'&&fault.forcedStop&&fault.lines.length>0&&await p.evaluate(()=>__cacheWorkers.some(w=>w.fault==='go infinite'&&w.terminated)));
  await p.evaluate(()=>{window.__forceBerserkHang=false;});report.results['fault-recovery:berserk']=await run(p,'berserk');
  const beforeAll=await p.evaluate(()=>Object.fromEntries(['sf-full','reckless','lc0','berserk'].map(m=>[m,ChessLabHost.getEngineCardResult(m)?.jobId])));
- await budget(p,600);await p.locator('#analysisSFFull').check();await p.locator('#btnAnalyzeAll').click();
+ await budget(p,600);await p.locator('#analysisSFFull').check();await quiescent(p);await p.locator('#btnAnalyzeAll').click();
+ await p.waitForFunction(()=>['SF','BER','RLE','LC0'].some(r=>ChessLabHost.getEngineCardState(r).working),null,{timeout:5000});
  await p.waitForFunction(()=>!ChessLabHost.getEngineCardState('SF').working&&!ChessLabHost.getEngineCardState('BER').working&&!ChessLabHost.getEngineCardState('RLE').working&&!ChessLabHost.getEngineCardState('LC0').working&&!document.querySelector('.is-batch-participant'),null,{timeout:120000});
  check('offline All searches four genuine families with the same base time',await p.evaluate(old=>['sf-full','reckless','lc0','berserk'].every(m=>{const r=ChessLabHost.getEngineCardResult(m);return r?.status==='complete'&&r.jobId!==old[m]&&r.requestedTimeMs===600;}),beforeAll));
  check('mobile retains at most one live heavy prepared worker',await p.evaluate(()=>__cacheWorkers.filter(w=>!w.terminated).length)<=1);
- await budget(p,5000);await p.locator('#btnAnalyzeAll').click();await p.waitForTimeout(100);await p.locator('#btnAnalyzeAll').click();check('Stop all removes active and queued jobs',await p.evaluate(()=>['SF','RLE','LC0','BER'].every(r=>!ChessLabHost.getEngineCardState(r).working)));
+ await budget(p,5000);await quiescent(p);await p.locator('#btnAnalyzeAll').click();await p.waitForTimeout(100);await p.locator('#btnAnalyzeAll').click();check('Stop all removes active and queued jobs',await p.evaluate(()=>['SF','RLE','LC0','BER'].every(r=>!ChessLabHost.getEngineCardState(r).working)));
  phase='remove-eviction';
  const coreCaches=await p.evaluate(async()=> (await caches.keys()).filter(n=>n.startsWith('chessbest-chess-lab-')));
  await p.evaluate(()=>ChessEngineAssetStore.remove('reckless'));
- check('Remove selected engine preserves the shell and other engines',await p.evaluate(async core=>core.every(n=>n&&(true))&&(await ChessEngineAssetStore.inspect('reckless')).status==='online'&&(await ChessEngineAssetStore.inspect('lc0')).status==='ready'&&(await caches.keys()).some(n=>n.startsWith('chessbest-chess-lab-')),coreCaches));
+ check('Remove selected engine preserves the exact shell caches and other engines',await p.evaluate(async core=>{const keys=await caches.keys();return core.every(n=>keys.includes(n))&&(await ChessEngineAssetStore.inspect('reckless')).status==='online'&&(await ChessEngineAssetStore.inspect('lc0')).status==='ready';},coreCaches));
  const offlineBefore=report.requests.length,missing=await p.evaluate(async()=>{try{await ChessEngineAssetStore.install('reckless');return null;}catch(e){return e.name;}});
  check('missing offline engine reports honest error with no retry download',missing==='OfflineError'&&report.requests.length===offlineBefore);
  await position(p,['c2c4','e7e5']);report.results['remaining-offline:lc0']=await run(p,'lc0');
  check('no uncaught application errors',report.pageErrors.length===0);report.status='PASS';
-})().catch(e=>{report.status='FAIL';report.error=e.stack;process.exitCode=1;}).finally(async()=>{report.finishedAt=new Date().toISOString();fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({status:report.status,checks:report.checks.length,error:report.error,output}));await browser?.close();if(server)await new Promise(r=>server.close(r));});
+})().catch(async e=>{report.status='FAIL';report.error=e.stack;process.exitCode=1;
+ try{report.failureState=await p.evaluate(()=>({cards:Object.fromEntries(['SF','BER','RLE','LC0'].map(role=>[role,ChessLabHost.getEngineCardState(role)])),memory:ChessAnalysisSession.engineMemory.getState(),settings:ChessAnalysisSession.getSettings(),workers:__cacheWorkers}));}catch(_){}
+}).finally(async()=>{report.finishedAt=new Date().toISOString();fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({status:report.status,checks:report.checks.length,error:report.error,output}));await browser?.close();if(server)await new Promise(r=>server.close(r));});

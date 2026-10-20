@@ -108,6 +108,8 @@ def build(channel, check):
               + 'const RELEASE = ' + json.dumps(version) + ';\n'
               + 'const PREFIX = ' + json.dumps(prefix) + ';\n'
               + 'const ASSETS = ' + json.dumps(list(assets), indent=2) + ';\n')
+    if channel == 'LAB':
+        header += 'const ASSET_HASHES = ' + json.dumps(assets, sort_keys=True) + ';\n'
     worker = (header + (TEMPLATES / 'sw-runtime.js').read_text()).encode()
     put(base / 'sw.js', worker, check)
     release = {

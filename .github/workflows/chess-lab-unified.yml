@@ -33,7 +33,7 @@ permissions:
 jobs:
   unified-lab:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,9 +61,11 @@ jobs:
       - name: P3/P4 interactive ownership, cards, preferences and language
         run: node --test public/chess-lab/research/p3-active-analysis.test.cjs public/chess-lab/research/sf-provider.test.cjs public/chess-lab/research/p4-engine-cards.test.cjs public/chess-lab/research/p4-interface.test.cjs
       - name: Fetch pinned pre-DATA LAB for the explicit upgrade scenario
-        run: git fetch --no-tags --depth=1 origin 87469d421bb5cabfdb91c17179e929648d9d26af
+        run: git fetch --no-tags --depth=1 origin 87469d421bb5cabfdb91c17179e929648d9d26af 4849d5075ebdf4cf8ef440828fca3c9e65dab201
       - name: P5A portable DATA validation, generations and recovery
         run: node --test public/chess-lab/research/p5a-data.test.cjs public/chess-lab/research/p5a-recovery.test.cjs public/chess-lab/research/p5a-review-fix.test.cjs
+      - name: P5BC pin retention, strict DATA migration and cache-only diagnostics
+        run: node --test public/chess-lab/research/p5bc-storage.test.cjs public/chess-lab/research/p5bc-offline.test.cjs public/chess-lab/research/engine-assets.test.cjs public/chess-lab/research/berserk-cache-cross-tab.test.cjs
       - name: P1 durable state, navigation and source provenance
         run: |
           node --test \
@@ -114,18 +116,25 @@ jobs:
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
             CHESS_P5A_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p5a" \
+            CHESS_P5BC_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p5bc" \
             CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p3" \
             CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p4" \
             node --test --test-concurrency=1 \
               public/chess-lab/research/cdb-start-browser.cjs \
               public/chess-lab/research/p5a-data-browser.cjs \
               public/chess-lab/research/p5a-upgrade-browser.cjs \
+              public/chess-lab/research/p5bc-browser.cjs \
+              public/chess-lab/research/p5bc-upgrade-browser.cjs \
               public/chess-lab/research/full-game-resume-browser.cjs \
               public/chess-lab/research/p3-active-analysis-browser.cjs \
               public/chess-lab/research/p4-gui-browser.cjs
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
             node --test public/chess-lab/research/pwa-install-browser.cjs
+      - name: P5BC actual five-engine offline cold reopen, cancel, corruption, repair and selective remove
+        run: |
+          NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
+            timeout 480s node public/chess-lab/research/engine-cache-browser.cjs --output="$RUNNER_TEMP/chess-resume-evidence/p5bc/actual-engines"
       - name: Real promoted CURRENT, root overlay and full-game PWA update
         run: |
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \

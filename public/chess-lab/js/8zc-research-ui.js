@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   function create(host={}){
-    const E=root.ChessEvidence,B=root.ChessBenchmark;
+    const E=root.ChessEvidence,B=root.ChessBenchmark,tr=text=>root.ChessLanguage?.translate(text)||text;
     if(!E||!B)throw new Error('Research modules are not loaded.');
     const store=E.createStore(),dialog=document.createElement('dialog');
     dialog.className='chess-research-dialog';dialog.setAttribute('aria-labelledby','chessResearchTitle');
@@ -12,7 +12,8 @@
         <div class="research-actions"><button type="button" data-action="capture">Save current analysis</button><button type="button" data-action="import">Import evidence JSON</button><input type="file" accept="application/json,.json" data-input="import" hidden></div>
         <label class="research-label">Saved snapshots<select data-input="snapshots"><option value="">No saved snapshots</option></select></label>
         <p class="research-storage"></p><pre class="research-summary" tabindex="0"></pre>
-        <div class="research-actions"><button type="button" data-action="restore">Restore offline</button><button type="button" data-action="live">Return to live data</button><button type="button" data-action="export">Export evidence</button><button type="button" data-action="delete">Delete selected</button></div>
+        <p>Offline replay keeps the current game and cursor. Only captured full-FEN queries are available.</p>
+        <div class="research-actions"><button type="button" data-action="pin">Pin</button><button type="button" data-action="restore">Use offline replies</button><button type="button" data-action="live">Return to live data</button><button type="button" data-action="export">Export evidence</button><button type="button" data-action="delete">Delete selected</button></div>
       </section>
       <section data-section="benchmark" hidden><p>Replay the same frozen evidence with legacy, balanced and sensor variants. Every policy has the same query allowance; actual requests and missing replies are shown. CDB server compute is unknown.</p>
         <label class="research-label">Logical queries per policy<input data-input="budget" type="number" min="1" max="2000" value="120"></label>
@@ -29,7 +30,7 @@
       <div class="research-results" aria-live="polite"></div>`;
     document.body.appendChild(dialog);
     const $=selector=>dialog.querySelector(selector),status=$('.research-status');
-    let selected=null,lastResult=null,controller=null,engine=null,destroyed=false;
+    let selected=null,selectedPinned=false,lastResult=null,controller=null,engine=null,destroyed=false;
     function say(message){status.textContent=message;}
     function tab(name){
       dialog.querySelectorAll('[data-section]').forEach(section=>{section.hidden=section.dataset.section!==name;});
@@ -54,9 +55,14 @@
     async function refresh(id){
       const options=await store.list(),select=$('[data-input="snapshots"]');select.replaceChildren();
       const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=options.length?'Choose a saved snapshot':'No saved snapshots';select.appendChild(placeholder);
-      for(const item of options){const option=document.createElement('option');option.value=item.id;option.textContent=(item.label||item.fen.split(' ')[1]+' to move')+' · '+(item.createdAt||'time unknown')+' · '+item.records+' replies';select.appendChild(option);}
+      for(const item of options){const option=document.createElement('option');option.value=item.id;option.textContent=(item.pinned?'['+tr('Pinned')+'] ':'')+(item.persistent?'':'['+tr('Unsaved')+'] ')+(item.label||item.fen.split(' ')[1]+' to move')+' · '+(item.createdAt||'time unknown')+' · '+item.records+' replies';select.appendChild(option);}
       if(id){select.value=id;selected=await store.get(id);}else if(selected&&options.some(s=>s.id===selected.id)){select.value=selected.id;}else selected=null;
-      const mode=store.status(),context=await host.getContext?.();$('.research-storage').textContent=(context?.evidenceMode==='offline'?'OFFLINE REPLAY · ':'LIVE DATA · ')+(mode.persistent?'Saved in this browser':'Temporary memory only; export to keep')+' · Up to 30 snapshots / 16 MB. Export JSON to move evidence between devices.';
+      selectedPinned=!!options.find(s=>s.id===selected?.id)?.pinned;
+      const pin=$('[data-action="pin"]');pin.textContent=tr(selectedPinned?'Unpin':'Pin');pin.disabled=!selected||!options.find(s=>s.id===selected.id)?.persistent;
+      const mode=store.status(),context=await host.getContext?.(),mib=n=>(n/1048576).toFixed(2)+' MiB';
+      $('.research-storage').setAttribute('translate','no');
+      $('.research-storage').textContent=tr(context?.evidenceMode==='offline'?'OFFLINE REPLAY':'LIVE DATA')+' · '+tr('Saved')+': '+mode.count+' / '+mode.maxItems+' · '+tr('Pinned')+': '+mode.pinned+' · Evidence: '+mib(mode.bytes)+' / '+mib(mode.maxBytes)+' ('+tr('Pin metadata')+': '+mode.metadataBytes+' B). '+tr('Pins protect against automatic retention; browsers can still remove local data.')+(mode.unsaved?' '+tr('Unsaved snapshot: export it before closing.'):'');
+      if(context?.evidenceCoverage){const c=context.evidenceCoverage;$('.research-storage').textContent+=' '+tr('Captured replies')+': '+c.captured+' · '+tr('Hits')+': '+c.hits+' · '+tr('Missing')+': '+c.misses.length+' · '+tr('Dropped')+': '+c.dropped+' · '+tr('Budget denied')+': '+c.denied+'.';}
       summary();
     }
     async function currentSnapshot(){
@@ -66,6 +72,16 @@
       const captured=await host.captureEvidence?.();
       if(!captured)throw new Error('Wait for a completed analysis, then save its evidence.');
       return E.validate(captured);
+    }
+    async function refreshOutcome(snapshot,saved){
+      try{await refresh(snapshot.id);}
+      catch(error){
+        if(saved.persistent)throw error;
+        // An unreadable durable archive must remain visible as a limitation,
+        // while the one unsaved snapshot still has a real export action.
+        selected=snapshot;selectedPinned=false;$('.research-storage').textContent=tr('Unsaved snapshot: export it before closing.')+' '+error.message;
+        $('[data-action="pin"]').disabled=true;summary();
+      }
     }
     function saveFile(value,name){
       const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -105,14 +121,15 @@
       if(name==='import'){$('[data-input="import"]').click();return;}
       if(name==='export-result'){if(lastResult)saveFile(lastResult,'ChessDCC_comparison_'+lastResult.createdAt.replace(/[:.]/g,'-')+'.json');return;}
       if(name==='export'){const snapshot=await currentSnapshot();saveFile(snapshot,'ChessDCC_evidence_'+snapshot.id.slice(0,12)+'.json');return;}
-      if(name==='delete'){if(selected){const id=selected.id;await store.remove(id);selected=null;await refresh();say('Deleted the selected snapshot from this browser.');}return;}
+      if(name==='pin'){if(selected){const result=await store.setPinned(selected.id,!selectedPinned);await refresh(selected.id);say(result.persistent?tr(selectedPinned?'Pinned':'Unpinned'):result.reason);}return;}
+      if(name==='delete'){if(selected){if(selectedPinned&&!root.confirm(tr('Delete this pinned evidence? This removes its protection and saved snapshot.')))return;const id=selected.id,result=await store.remove(id);if(result.persistent)selected=null;await refresh();say(result.persistent?tr('Deleted the selected snapshot from this browser.'):result.reason);}return;}
       if(name==='live'){if(!host.resumeLive)throw new Error('Live data control is unavailable.');await host.resumeLive();await refresh();say('Live source queries enabled again.');return;}
       if(name==='restore'){const snapshot=await currentSnapshot();if(!host.onRestore)throw new Error('Offline restore is unavailable in this page.');await host.onRestore(snapshot);say('Restored offline evidence. Uncaptured positions have no evaluation.');dialog.close();return;}
       if(name==='capture'){
         say('Capturing the current position…');
         const snapshot=await host.captureEvidence?.()||await host.getEvidence?.();
         if(!snapshot)throw new Error('No analysis evidence is available yet.');
-        const saved=await store.put(E.validate(snapshot));await refresh(snapshot.id);say(saved.persistent?'Evidence saved in this browser. Export it for another device.':'Evidence captured temporarily. Export JSON to keep it.');return;
+        selected=E.validate(snapshot);const saved=await store.put(selected);await refreshOutcome(snapshot,saved);say(saved.persistent?tr('Evidence saved in this browser.')+' '+tr('Removed by retention')+': '+saved.removed+'.':saved.reason+' '+tr('Unsaved snapshot: export it before closing.'));return;
       }
       await task(async signal=>{
         if(name==='frozen'||name==='fixture'){
@@ -150,12 +167,13 @@
       if(button.dataset.action)Promise.resolve(action(button.dataset.action)).catch(error=>say(error.message));
     });
     dialog.addEventListener('cancel',()=>{controller?.abort();engine?.stop();});
-    $('[data-input="snapshots"]').addEventListener('change',async event=>{selected=await store.get(event.target.value);summary();});
+    $('[data-input="snapshots"]').addEventListener('change',async event=>{selected=await store.get(event.target.value);await refresh(selected?.id);});
     $('[data-input="import"]').addEventListener('change',async event=>{
       const file=event.target.files[0];if(!file)return;
-      try{if(file.size>16*1024*1024)throw new Error('Evidence file exceeds 16 MB.');const snapshot=E.parse(await file.text());await store.put(snapshot);await refresh(snapshot.id);say('Imported and verified SHA-256. Integrity does not authenticate the original provider.');}catch(error){say(error.message);}finally{event.target.value='';}
+      try{if(file.size>16*1024*1024)throw new Error('Evidence file exceeds 16 MB.');const snapshot=E.parse(await file.text());selected=snapshot;const saved=await store.put(snapshot);await refreshOutcome(snapshot,saved);say(saved.persistent?tr('Imported and verified SHA-256.')+' '+tr('Removed by retention')+': '+saved.removed+'. '+tr('Integrity does not authenticate the original provider.'):saved.reason+' '+tr('Unsaved snapshot: export it before closing.'));}catch(error){say(error.message);}finally{event.target.value='';}
     });
-    return { async open(section='evidence'){tab(section);say('');await refresh();if(!dialog.open)dialog.showModal();},
+    document.addEventListener('chess:language',()=>{if(dialog.open)void refresh(selected?.id).catch(e=>say(e.message));});
+    return { async open(section='evidence'){tab(section);say('');try{await refresh();}catch(e){say(e.message);}if(!dialog.open)dialog.showModal();},
       close(){controller?.abort();engine?.stop();dialog.close();},
       destroy(){destroyed=true;controller?.abort();engine?.destroy();dialog.remove();},store };
   }

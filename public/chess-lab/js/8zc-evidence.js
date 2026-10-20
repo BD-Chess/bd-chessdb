@@ -155,119 +155,171 @@
     if (typeof text !== 'string' || bytes(text) > MAX_BYTES) throw new Error('Evidence file exceeds 16 MB.');
     return copy(validate(JSON.parse(text)));
   }
+  function metadata(snapshots, value = { version:1, pins:[] }) {
+    if (!value || Object.keys(value).sort().join('|') !== 'pins|version' || value.version !== 1 || !Array.isArray(value.pins) || value.pins.length > 30)
+      throw Error('Unsupported Evidence pin metadata. Original bytes were retained.');
+    const ids = new Set(snapshots.map(s=>s.id)), seen = new Set();
+    for (const id of value.pins) {
+      if (typeof id !== 'string' || !/^[0-9a-f]{64}$/.test(id) || seen.has(id) || !ids.has(id)) throw Error('Invalid, duplicate or dangling Evidence pin. Original bytes were retained.');
+      seen.add(id);
+    }
+    return { version:1, pins:[...seen].sort() };
+  }
+  function archive(value) {
+    if (Array.isArray(value)) value = { snapshots:value, metadata:{version:1,pins:[]} };
+    if (!value || !Array.isArray(value.snapshots)) throw Error('Unreadable Evidence archive. Original bytes were retained.');
+    const ids = new Set();
+    for (const s of value.snapshots) { validate(s); if (ids.has(s.id)) throw Error('Duplicate Evidence snapshot. Original bytes were retained.'); ids.add(s.id); }
+    return { snapshots:copy(value.snapshots), metadata:metadata(value.snapshots,value.metadata) };
+  }
+  // Keep a full valid v1 archive importable: its empty version descriptor is
+  // bounded framing, not a pin record. Real pin metadata consumes the quota.
+  const storageBytes=value=>bytes({snapshots:value.snapshots})+(value.metadata?.pins?.length?bytes(value.metadata):0);
   function createStore({ maxItems = 30, maxBytes = MAX_BYTES, indexedDB: suppliedIDB, localStorage: suppliedStorage, locks: suppliedLocks } = {}) {
     const dbProvider = suppliedIDB === undefined ? globalThis.indexedDB : suppliedIDB;
     const locks = suppliedLocks === undefined ? globalThis.navigator?.locks : suppliedLocks;
     let storage = suppliedStorage;
     if (storage === undefined) { try { storage = globalThis.localStorage; } catch (_) { storage = null; } }
     const key = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:evidence-fallback') || 'ChessBest:LAB:v2:evidence-fallback'), databaseName = (globalThis.ChessDataGuard?.key('ChessBest:LAB:v2:evidence') || 'ChessBest:LAB:v2:evidence');
-    let mode = 'memory', dbPromise, memory = [], pending = [], queue = Promise.resolve();
-    const valid = items => items.filter(item => { try { validate(item); return true; } catch (_) { return false; } });
+    let mode = 'memory', dbPromise, memory = [], pending = [], queue = Promise.resolve(), readError = null, lastOutcome = null;
+    let durable = archive([]), view = durable;
+    const guard = globalThis.ChessDataGuard, generation = guard?.epoch;
+    function writable() { guard?.assertWritable(); if (guard && guard.epoch !== generation) throw Error('Evidence workspace changed. Reload before saving.'); }
+    const order = (a,b) => String(a.payload.createdAt).localeCompare(String(b.payload.createdAt)) || a.id.localeCompare(b.id);
+    const full = message => Object.assign(Error(message),{name:'EvidenceFullError'});
     async function db() {
       if (!dbProvider) return null;
-      if (!dbPromise) dbPromise = new Promise(resolve => {
-        let request;
-        try { request = dbProvider.open(databaseName, 1); } catch (_) { resolve(null); return; }
-        request.onupgradeneeded = () => { if (!request.result.objectStoreNames.contains('snapshots')) request.result.createObjectStore('snapshots', { keyPath: 'id' }); };
-        request.onsuccess = () => { const database = request.result; database.onversionchange = () => { database.close(); dbPromise = null; }; resolve(database); };
-        request.onerror = request.onblocked = () => resolve(null);
+      // Keep an existing fallback authoritative when no IDB archive exists.
+      // Merely making IDB available again must not hide its pins behind a new DB.
+      if(!dbPromise&&storage&&storage.getItem(key)!==null) {
+        if(!dbProvider.databases)throw Error('Evidence archive presence cannot be verified. Original fallback was retained.');
+        if(!(await dbProvider.databases()).some(x=>x.name===databaseName))return null;
+      }
+      if (!dbPromise) dbPromise = new Promise((resolve,reject) => {
+        let request,done=false;
+        const timer=setTimeout(()=>finish(Error('Evidence archive access timed out. Close older tabs and retry.')),4000);
+        function finish(error,database) { if(done){database?.close();return;}done=true;clearTimeout(timer);error?reject(error):resolve(database); }
+        try { request = dbProvider.open(databaseName, 2); } catch (e) { finish(e); return; }
+        request.onupgradeneeded = () => {
+          if(done){request.transaction.abort();return;}
+          for(const name of ['snapshots','metadata']) if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name, { keyPath:'id' });
+        };
+        request.onsuccess = () => { const database = request.result; database.onversionchange = () => { database.close(); dbPromise = null; }; finish(null,database); };
+        request.onerror = () => finish(request.error || Error('Evidence archive is unavailable. Original bytes were retained.'));
+        request.onblocked = () => finish(Error('Evidence upgrade is blocked. Close older LAB tabs and retry; original bytes were retained.'));
       });
+      dbPromise.catch(()=>{dbPromise=null;});
       return dbPromise;
     }
-    function trim(items, keepId) {
-      items.sort((a,b) => String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id));
-      if (keepId) { const index = items.findIndex(item => item.id === keepId); if (index > 0) items.unshift(...items.splice(index,1)); }
-      const kept = []; let size = 0;
-      for (const item of items) { const n = bytes(item); if (kept.length < maxItems && size + n <= maxBytes) { kept.push(item); size += n; } }
-      return kept;
-    }
-    function apply(items, operations) {
-      items = valid(items);
+    function apply(input, operations) {
+      const state=archive(input),removed=[];let pins=new Set(state.metadata.pins);
       for (const op of operations) {
-        items = items.filter(item => item.id !== op.id);
-        if (op.snapshot) items.unshift(copy(op.snapshot));
-        items = trim(items, op.snapshot ? op.id : null);
+        if(op.type==='pin') {
+          if(!state.snapshots.some(s=>s.id===op.id))throw Error('Save this Evidence snapshot before pinning it.');
+          op.pinned?pins.add(op.id):pins.delete(op.id);
+        } else {
+          state.snapshots=state.snapshots.filter(s=>s.id!==op.id);
+          if(op.snapshot)state.snapshots.push(copy(op.snapshot));else pins.delete(op.id);
+        }
+        state.metadata={version:1,pins:[...pins].sort()};
+        if(op.snapshot) {
+          const candidates=state.snapshots.filter(s=>s.id!==op.id&&!pins.has(s.id)).sort(order);
+          while((state.snapshots.length>maxItems||storageBytes(state)>maxBytes)&&candidates.length) {
+            const victim=candidates.shift();state.snapshots=state.snapshots.filter(s=>s.id!==victim.id);removed.push(victim.id);
+          }
+        }
+        if(state.snapshots.length>maxItems||storageBytes(state)>maxBytes)throw full('Evidence storage is full (30 snapshots / 16 MiB). Pinned evidence was kept. Export the unsaved snapshot.');
       }
-      return items;
+      return {state,removed};
     }
-    async function idbAll(database) {
+    function fromRows(snapshots, rows) {
+      for(const row of rows) if(!row||Object.keys(row).sort().join('|')!=='id|pinned|version'||row.version!==1||row.pinned!==true)throw Error('Unreadable Evidence metadata. Original bytes were retained.');
+      return archive({snapshots,metadata:{version:1,pins:rows.map(r=>r.id)}});
+    }
+    function idbAll(database) {
       return new Promise((resolve,reject) => {
-        const tx = database.transaction('snapshots','readonly'), req = tx.objectStore('snapshots').getAll();
-        tx.oncomplete = () => resolve(req.result); tx.onerror = tx.onabort = () => reject(tx.error || Error('Evidence read aborted.'));
+        const tx = database.transaction(['snapshots','metadata'],'readonly'), req = tx.objectStore('snapshots').getAll(), meta=tx.objectStore('metadata').getAll();
+        tx.oncomplete = () => {try{resolve(fromRows(req.result,meta.result));}catch(e){reject(e);}}; tx.onerror = tx.onabort = () => reject(tx.error || Error('Evidence read aborted.'));
       });
     }
     function fallbackRead() {
-      if (!storage) return null;
-      const items = JSON.parse(storage.getItem(key) || '[]');
-      if (!Array.isArray(items)) throw Error('Unreadable evidence fallback was preserved.');
-      return items;
+      if (!storage) throw Error('Evidence storage is unavailable. Export the unsaved snapshot.');
+      const value=JSON.parse(storage.getItem(key)||'[]');
+      if(!Array.isArray(value)&&(!value||value.version!==2||Object.keys(value).sort().join('|')!=='metadata|snapshots|version'))throw Error('Unreadable evidence fallback was preserved.');
+      return archive(value);
     }
     async function all() {
       try {
-        const database = await db(), items = database ? await idbAll(database) : fallbackRead();
-        if (items) { memory = apply(items, pending); mode = pending.length ? 'memory' : database ? 'indexedDB' : 'localStorage'; }
-      } catch (_) { mode = 'memory'; }
-      return copy(valid(memory));
+        const database=await db();durable=database?await idbAll(database):fallbackRead();readError=null;
+        mode=pending.length?'memory':database?'indexedDB':'localStorage';
+      } catch(e) {readError=e.message;mode='memory';}
+      // Uncommitted snapshots are visible/exportable but never displace durable pins.
+      const merged=new Map(durable.snapshots.map(s=>[s.id,s]));pending.forEach(op=>{if(op.snapshot)merged.set(op.id,op.snapshot);});
+      memory=[...merged.values()];view={snapshots:memory,metadata:durable.metadata};return copy(memory);
     }
     function idbMutate(database, operations) {
       return new Promise((resolve,reject) => {
-        // Reading, merging, retention and writes share this cross-tab write
-        // transaction. A competing writer cannot insert between these steps.
-        const tx = database.transaction('snapshots','readwrite'), object = tx.objectStore('snapshots'), req = object.getAll();
-        let items;
-        req.onsuccess = () => {
+        const tx=database.transaction(['snapshots','metadata'],'readwrite'),object=tx.objectStore('snapshots'),meta=tx.objectStore('metadata'),req=object.getAll(),pins=meta.getAll();
+        let result,failure;
+        pins.onsuccess = () => {
           try {
-            items = apply(req.result, operations);
-            const kept = new Set(items.map(item => item.id));
+            writable();result=apply(fromRows(req.result,pins.result),operations);
+            const kept = new Set(result.state.snapshots.map(item => item.id));
             req.result.forEach(item => { if (!kept.has(item.id)) object.delete(item.id); });
-            items.forEach(item => object.put(item));
-          } catch (_) { tx.abort(); }
+            result.state.snapshots.forEach(item=>object.put(item));
+            meta.clear();result.state.metadata.pins.forEach(id=>meta.put({id,version:1,pinned:true}));
+          } catch(e) {failure=e;tx.abort();}
         };
-        tx.oncomplete = () => resolve(items);
-        tx.onerror = tx.onabort = () => reject(tx.error || Error('Evidence write aborted.'));
+        tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(failure||tx.error||Error('Evidence write aborted.'));
       });
     }
     function mutate(operation) {
       const work = queue.then(async () => {
-        globalThis.ChessDataGuard?.assertWritable();
-        const operations = [...pending, operation];
-        // Keep a readable unsaved view if either persistence path refuses it.
-        const before = await all();
-        const unsaved = apply(before, [operation]);
-        const database = await db();
-        if (database) {
-          try { memory = await idbMutate(database, operations); pending = []; mode = 'indexedDB'; return; }
-          catch (_) { /* An aborted transaction retains the previous durable state. */ }
-        } else if (storage && locks?.request) {
-          try {
-            await locks.request(databaseName, { mode: 'exclusive' }, () => {
-              // Web Locks, unlike the per-instance queue, include other tabs.
-              const items = apply(fallbackRead(), operations), text = canonical(items);
-              storage.setItem(key, text);
+        writable();
+        if(operation.snapshot&&pending.some(op=>op.snapshot&&op.id!==operation.id))throw Error('Export the previous unsaved Evidence snapshot before saving another.');
+        const operations = operation.snapshot?[...pending,operation]:[operation];
+        let failure;
+        try {
+          const database=await db();let result;
+          if(database)result=await idbMutate(database,operations);
+          else if(storage&&locks?.request) {
+            result=await locks.request(databaseName,{mode:'exclusive'},()=>{
+              writable();const result=apply(fallbackRead(),operations),text=canonical({version:2,...result.state});
+              storage.setItem(key,text);
               if (storage.getItem(key) !== text) throw Error('Evidence write readback failed.');
-              memory = items;
+              return result;
             });
-            pending = []; mode = 'localStorage'; return;
-          } catch (_) { /* Preserve existing durable bytes and expose memory only. */ }
-        }
-        pending = operations; memory = unsaved; mode = 'memory';
+          } else throw Error('Safe Evidence storage is unavailable. Export JSON to keep this snapshot.');
+          durable=result.state;pending=operation.snapshot?[]:pending.filter(p=>p.id!==operation.id);memory=copy(durable.snapshots);view=durable;readError=null;mode=database?'indexedDB':'localStorage';
+          const savedMode=mode;await all();return lastOutcome={id:operation.id,mode:savedMode,persistent:true,removed:result.removed.length,removedIds:result.removed,reason:null};
+        }catch(e){failure=e;}
+        if(operation.snapshot)pending=[{id:operation.id,snapshot:copy(operation.snapshot)}];
+        await all();mode='memory';
+        return lastOutcome={id:operation.id,mode,persistent:false,removed:0,removedIds:[],reason:failure.message};
       });
       queue = work.catch(() => {}); return work;
     }
-    // IDs seal the entire payload: overwriting the same ID is byte-identical
-    // and idempotent. Changes produce a different ID; unsealed edits reject.
+    function status() {
+      return {mode,persistent:mode!=='memory',unsaved:pending.length>0,maxItems,maxBytes,
+        count:durable.snapshots.length,pinned:durable.metadata.pins.length,bytes:storageBytes(durable),serializedBytes:bytes(durable),framingBytes:bytes(durable)-storageBytes(durable),metadataBytes:bytes(durable.metadata),
+        pendingCount:pending.length,readError,lastOutcome};
+    }
     return { async dataSnapshot() {
-        await queue; const database = await db();
-        const durable = database ? await idbAll(database) : fallbackRead();
-        if (!Array.isArray(durable)) throw Error('Evidence storage is unreadable. Keep this tab open.');
-        durable.forEach(validate);
-        return { durable: copy(durable), memory: copy(memory), pending: copy(pending), mode };
-      }, async put(snapshot) { validate(snapshot); if (bytes(snapshot) > maxBytes) throw Error('Snapshot exceeds local storage budget.'); await mutate({ id: snapshot.id, snapshot: copy(snapshot) }); return { id: snapshot.id, mode, persistent: mode !== 'memory' }; },
-      async list() { return (await all()).sort((a,b) => String(b.payload.createdAt).localeCompare(String(a.payload.createdAt)) || a.id.localeCompare(b.id)).map(s => ({ id:s.id, fen:s.payload.fen, label:s.payload.label, createdAt:s.payload.createdAt, records:s.payload.records.length, bytes:bytes(s) })); },
-      async get(id) { return (await all()).find(s => s.id === id) || null; },
-      remove(id) { return mutate({ id }); },
-      status() { return { mode, persistent:mode !== 'memory', unsaved:pending.length > 0, maxItems, maxBytes }; } };
+        await queue;await all();if(readError)throw Error(readError);
+        return {durable:copy(durable.snapshots),metadata:copy(durable.metadata),memory:copy(memory),pending:copy(pending),mode};
+      }, async put(snapshot) {
+        validate(snapshot);
+        return mutate({id:snapshot.id,snapshot:copy(snapshot)});
+      }, async list() {
+        const items=await all();if(readError)throw Error(readError);
+        return items.sort((a,b)=>-order(a,b)).map(s=>({id:s.id,fen:s.payload.fen,label:s.payload.label,createdAt:s.payload.createdAt,records:s.payload.records.length,bytes:bytes(s),pinned:durable.metadata.pins.includes(s.id),persistent:!pending.some(p=>p.id===s.id)}));
+      }, async get(id) { return (await all()).find(s=>s.id===id)||null; },
+      async setPinned(id,pinned) {
+        if(typeof pinned!=='boolean')throw Error('Evidence pin must be boolean.');
+        if(pending.some(op=>op.id===id))throw Error('Save this Evidence snapshot before pinning it.');
+        return mutate({type:'pin',id,pinned});
+      }, remove(id) {return mutate({id});},status };
   }
 
-  return { VERSION, SCHEMA, canonical, digest, candidateDigest, cacheIdentity, validFen, validate, seal, parse, createCollector, replay, createStore };
+  return { VERSION, SCHEMA, canonical, digest, candidateDigest, cacheIdentity, validFen, validate, seal, parse, createCollector, replay, createStore, metadata, archive, storageBytes };
 });

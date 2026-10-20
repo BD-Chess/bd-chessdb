@@ -29,6 +29,34 @@
     const marker=p=>new URL('__engine-cache__/'+p.identity+'/ready.json',base).href;
     const available=()=>!!(env.caches&&env.crypto?.subtle&&env.indexedDB);
     const routeReady=()=>env.navigator?.serviceWorker?.controller?.scriptURL===new URL('engine-sw.js',base).href;
+    function capabilities() {return !env.document||!!(env.Worker&&env.WebAssembly);}
+    function runtime() {return !capabilities()?'unsupported':routeReady()?'supported':'route-blocked';}
+    async function inspectShell({signal}={}) {
+      const result={files:'unknown',verified:false,bytes:0,total:0,missing:[],corrupt:[],runtime:runtime()};
+      if(!env.caches||!env.crypto?.subtle||!routeReady())return {...result,reason:'Local shell is not yet verified; offline setup pending.'};
+      let descriptor;
+      try {
+        descriptor=await new Promise(resolve=>{
+          const Channel=env.MessageChannel||globalThis.MessageChannel;if(!Channel){resolve(null);return;}
+          const channel=new Channel(),timer=setTimeout(()=>{channel.port1.close();resolve(null);},2500);
+          channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data);};
+          env.navigator.serviceWorker.controller.postMessage({type:'CHESS_OFFLINE_SHELL'},[channel.port2]);
+        });
+        if(!descriptor||descriptor.root!==base.href||!/^lab-[0-9a-f]{16}$/.test(descriptor.release)||descriptor.cacheName!=='chessbest-chess-lab-'+descriptor.release||!descriptor.hashes||!descriptor.hashes['vendor/stockfish/stockfish-18-lite-single.wasm'])return {...result,reason:'Included in shell; this release cannot verify its local closure yet.'};
+        const entries=Object.entries(descriptor.hashes);if(entries.length>250)throw Error('Unsupported shell descriptor.');
+        const names=await env.caches.keys();if(!names.includes(descriptor.cacheName))return {...result,files:'missing',reason:'Local shell cache is missing.'};
+        const cache=await env.caches.open(descriptor.cacheName);let good=0,total=0,missing=[],corrupt=[];
+        for(const [path,hash] of entries) {
+          abort(signal);const target=new URL(path,base);
+          if(target.origin!==base.origin||!target.pathname.startsWith(base.pathname)||!/^[0-9a-f]{64}$/.test(hash))throw Error('Invalid shell asset descriptor.');
+          const response=await cache.match(target.href);if(!response){missing.push(path);continue;}
+          const b=await response.arrayBuffer();total+=b.byteLength;
+          const digest=await env.crypto.subtle.digest('SHA-256',b),hex=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
+          if(hex===hash)good+=b.byteLength;else corrupt.push(path);
+        }
+        return {...result,release:descriptor.release,files:missing.length||corrupt.length?'partial':'verified',verified:!missing.length&&!corrupt.length,bytes:good,total,missing:missing.slice(0,10),corrupt:corrupt.slice(0,10),reason:missing.length||corrupt.length?'Local shell is incomplete or corrupted.':'Local shell verified.'};
+      }catch(e){if(e.name==='AbortError')throw e;return {...result,reason:e.message};}
+    }
     async function waitRoute(signal){
       if(!env.navigator?.serviceWorker)throw error('StorageUnavailableError','Offline engine routing is unavailable');
       const start=now();while(!routeReady()){abort(signal);if(now()-start>30000)throw error('StorageUnavailableError','Offline setup pending. Keep LAB open or activate Update ready.');await sleep(100,signal);}
@@ -77,22 +105,25 @@
       const digest=await env.crypto.subtle.digest('SHA-256',bytes),hex=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');abort(signal);
       if(hex!==f.sha256)throw error('IntegrityError','Engine SHA-256 mismatch: '+f.path);return bytes;
     }
-    async function inspect(mode,{verifyHashes=false,signal}={}){
-      if(mode==='sf-lite')return {mode,status:'included',message:'Included in PWA shell',savedBytes:0,total:0};
-      let p;try{p=select(mode);}catch(e){return {mode,status:'unsupported',message:e.message,savedBytes:0};}
-      if(!available())return emit(p,{status:'unavailable',message:'Storage unavailable · online analysis available',savedBytes:0});
+    async function inspect(mode,{verifyHashes=false,signal,shellReport}={}){
+      const shell=shellReport||await inspectShell({signal}),run=runtime();
+      const detail=(files,extra={})=>({files,runtime:run,offlineReady:files==='verified'&&shell.verified&&run==='supported',shell,...extra});
+      if(mode==='sf-lite')return {mode,status:shell.verified?'ready':'included',message:shell.verified?'Local shell verified':shell.reason,savedBytes:shell.bytes,total:shell.total,...detail(shell.files)};
+      let p;try{p=select(mode);}catch(e){return {mode,status:'unsupported',message:e.message,savedBytes:0,...detail('unknown',{runtime:'unsupported'})};}
+      if(!available())return emit(p,{status:'unavailable',message:'Storage unavailable · online analysis available',savedBytes:0,...detail('unknown')});
       try{
-        const cache=await env.caches.open(cacheName(p));let receipt=null,savedBytes=0,bad=false;
+        const cache=await env.caches.open(cacheName(p));let receipt=null,savedBytes=0,present=0,bad=false;
         try{receipt=await (await cache.match(marker(p)))?.json();}catch(_){}
         for(const f of p.files){abort(signal);const response=await cache.match(url(f.path));if(!response){bad=true;continue;}
+          present++;
           if(verifyHashes){try{await verify(response,f,signal);savedBytes+=f.bytes;}catch(e){if(e.name==='AbortError')throw e;bad=true;}}
           else if(Number(response.headers.get('Content-Length'))===f.bytes&&response.headers.get('X-ChessBest-SHA256')===f.sha256)savedBytes+=f.bytes;
           else bad=true;
         }
         if(p.network){const present=await network?.check(verifyHashes);if(present)savedBytes+=p.network.bytes;else bad=true;}
         const ready=!bad&&receipt?.identity===p.identity&&receipt?.bytes===p.bytes;
-        return emit(p,{status:ready?'ready':savedBytes?'incomplete':'online',message:ready?(routeReady()?'Saved locally & verified':'Saved files · offline setup pending'):savedBytes?'Incomplete or corrupted':'Online only',savedBytes,receipt:ready?receipt:null});
-      }catch(e){if(e.name==='AbortError')throw e;return emit(p,{status:'unavailable',message:e.name==='QuotaExceededError'?'Storage quota exceeded':e.message,savedBytes:0});}
+        return emit(p,{status:ready?'ready':present||savedBytes?'incomplete':'online',message:ready?(routeReady()?'Saved locally & verified':'Saved files · offline setup pending'):present||savedBytes?'Incomplete or corrupted':'Online only',savedBytes,receipt:ready?receipt:null,...detail(ready?(verifyHashes?'verified':'present-unverified'):present||savedBytes?'partial':'missing')});
+      }catch(e){if(e.name==='AbortError')throw e;return emit(p,{status:'unavailable',message:e.name==='QuotaExceededError'?'Storage quota exceeded':e.message,savedBytes:0,...detail('unknown')});}
     }
     async function install(mode,{signal,onProgress,variant}={}){
       const p=select(mode,variant);if(!p)return {mode,status:'included',assetCacheHit:true,downloadedBytes:0,integrityMs:0,assetLoadMs:0};
@@ -161,12 +192,12 @@
       return locked(p,null,async()=>{if(await useCount(p)||p.network&&network?.busy?.())throw error('InUseError','Engine is prepared or running. Stop analysis, then change position or reopen LAB before removing its files.');
         if(p.network)await network?.remove();await env.caches.delete(cacheName(p));receipts.delete(p.identity);emit(p,{status:'online',message:'Online only',savedBytes:0,loaded:0,receipt:null});return true;});
     }
-    return {select,cacheName,marker,inspect,install,prepare,remove,acquireUsage,setNetworkProvider:provider=>{network=provider;},
+    return {select,cacheName,marker,inspect,inspectShell,install,prepare,remove,acquireUsage,setNetworkProvider:provider=>{network=provider;},
       subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},getState:mode=>{const p=select(mode);return p?states.get(p.identity):null;},
       lastMetrics:mode=>{const p=select(mode);return p?receipts.get(p.identity):null;},
       estimate:async()=>env.navigator?.storage?.estimate?.()||null,
       requestPersistence:async()=>({supported:!!env.navigator?.storage?.persist,granted:await env.navigator?.storage?.persist?.()||false}),
-      persisted:async()=>env.navigator?.storage?.persisted?.()||false,
+      persisted:async()=>env.navigator?.storage?.persisted?env.navigator.storage.persisted():null,
       routeReady,packages:()=>definition.packages.filter(p=>p.mode!=='sf-full'||p.variant===select('sf-full').variant),PREFIX,DB};
   }
   return {...create(),create};

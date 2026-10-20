@@ -47,7 +47,7 @@ test('denied recovery storage refuses before changing target; future schema has 
   const x=await boot(t,{idb:null}),before=await x.G.capture(false),v=await incoming(),set=x.local.setItem;
   x.local.setItem=(k,v)=>{if(k.includes('DATA-journal'))throw Error('synthetic recovery denied');set(k,v);};
   await assert.rejects(()=>x.G.restore(v,before.sha256),/recovery denied/);assert.equal(x.local.getItem('ChessBest:LAB:v2:DATA-active'),null);
-  const future=JSON.parse(JSON.stringify(v));future.version=2;await assert.rejects(()=>x.G.restore(future,before.sha256),/version/);
+  const future=JSON.parse(JSON.stringify(v));future.version=3;await assert.rejects(()=>x.G.restore(future,before.sha256),/version/);
 });
 
 test('corrupt committing generation restores verified previous payload before normal writers can boot',async t=>{

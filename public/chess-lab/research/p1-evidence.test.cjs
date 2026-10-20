@@ -38,7 +38,7 @@ test('P1 fallback without Web Locks preserves durable records and reports memory
 });
 test('P1 aborted IDB transaction preserves durable state and exposes unsaved memory honestly',async()=>{
   const idb=new IDBFactory(),a=snapshot('A'),b=snapshot('B');await E.createStore({indexedDB:idb}).put(a);
-  const req=idb.open('ChessBest:LAB:v2:evidence',1);const database=await new Promise((r,j)=>{req.onsuccess=()=>r(req.result);req.onerror=()=>j(req.error);});
+  const req=idb.open('ChessBest:LAB:v2:evidence',2);const database=await new Promise((r,j)=>{req.onsuccess=()=>r(req.result);req.onerror=()=>j(req.error);});
   const original=database.transaction.bind(database);let abort=true;
   database.transaction=(...args)=>{const tx=original(...args);if(abort&&args[1]==='readwrite')queueMicrotask(()=>tx.abort());return tx;};
   const provider={open(){const request={};queueMicrotask(()=>{request.result=database;request.onsuccess();});return request;}};

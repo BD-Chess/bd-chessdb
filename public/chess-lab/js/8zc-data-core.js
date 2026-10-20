@@ -1,4 +1,4 @@
-/* Portable DATA v1. No storage, DOM, engines or network. */
+/* Portable DATA v2; strict v1 validation precedes a separate logical migration. */
 (function(root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -9,7 +9,8 @@
   const LIMITS = Object.freeze({ file:64*MiB, game:2000000, preferences:512*1024,
     evaluations:4*MiB, studies:13500000, evidence:16*MiB, simulation:32*MiB,
     timing:4*MiB, recovery:16*MiB });
-  const SECTIONS = Object.freeze(Object.fromEntries(Object.keys(LIMITS).filter(x=>x!=='file').map(x=>[x,1])));
+  const V1_SECTIONS = Object.freeze(Object.fromEntries(Object.keys(LIMITS).filter(x=>x!=='file').map(x=>[x,1])));
+  const SECTIONS = Object.freeze({...V1_SECTIONS,evidence:2});
   const PREFERENCE_KEYS={settings:new Set("allCDBSeconds allDCCSeconds allSFSeconds analysisLink analysisSource analysisTimeMs badgeInitialDelay bg cdbEnabled coachMode coachOpen dccClickAction dccDefenseCandidates dccDefenseCheck dccDefensePlies dccDepth dccEnabled dccEvalFloor dccOnly dccPolicy dccSensors dccStructureMode dccTakeover dccTieThreshold dccTopCandidates doubleBoard drawDelay evalMode flipBoard font historySize ioFormat nextDot notation opponentModel pieceSize retryInterval sfAnalysisDepth sfCardMode sfRootNodes showSimEval cdbStartOn cdbStartMoves cdbStartMode showTimers showTimestamps simGames simSpeed theme timerDisplayDefaults topN tryLaterDuration".split(' ')),analysis:new Set('analysisMode boardSource sfCardMode sfFullThreadsRequested hashMB engineMemoryPolicy analysisTimeMs deepTimeMs'.split(' ')),layout:new Set('focusMode workspaceWidth compact pauseOnDisagreement pauseOnSwing pauseSwingCp pauseOnMissing'.split(' '))};
   const NUMBER_SETTINGS=["cdbStartMoves", "allCDBSeconds", "allDCCSeconds", "allSFSeconds", "badgeInitialDelay", "dccDefenseCandidates", "dccDefensePlies", "dccDepth", "dccEvalFloor", "dccTieThreshold", "dccTopCandidates", "drawDelay", "retryInterval", "sfAnalysisDepth", "sfRootNodes", "simGames", "simSpeed", "timerDisplayDefaults", "topN", "tryLaterDuration", "analysisTimeMs"],BOOLEAN_SETTINGS=["cdbStartOn", "analysisLink", "cdbEnabled", "coachOpen", "dccDefenseCheck", "dccEnabled", "dccOnly", "flipBoard", "nextDot", "showSimEval", "showTimers", "showTimestamps", "doubleBoard"],STRING_SETTINGS=["cdbStartMode", "analysisSource", "bg", "coachMode", "dccClickAction", "dccPolicy", "dccStructureMode", "evalMode", "font", "historySize", "ioFormat", "notation", "opponentModel", "pieceSize", "sfCardMode", "theme"];
   const bytes = value => new TextEncoder().encode(typeof value==='string'?value:canonical(value)).length;
@@ -39,12 +40,12 @@
   }
   function empty() { return {game:null,preferences:{settings:null,analysis:null,layout:null,language:null,appWidth:null,showTopLine:null},
     evaluations:{cache:{},positions:[]},studies:{collection:null,undoA:null,undoB:null},
-    evidence:{snapshots:[]},simulation:{schema:'chess-sim-archive',version:1,runs:[],events:[]},timing:null,
+    evidence:{snapshots:[],metadata:{version:1,pins:[]}},simulation:{schema:'chess-sim-archive',version:1,runs:[],events:[]},timing:null,
     recovery:{studyPending:null,evidencePending:[],simulationCheckpoint:null,legacyStudy:null,legacyEvidence:null,legacySimulation:null,legacyCheckpoint:null,recoveredDrafts:null,legacyAnalysis:null}}; }
-  function counts(p) { return {gamePlies:p.game?.resume?.totalPlies??0,studies:p.studies.collection?.studies?.length||0,
+  function counts(p,version=2) { return {gamePlies:p.game?.resume?.totalPlies??0,studies:p.studies.collection?.studies?.length||0,
     evidence:p.evidence.snapshots.length,positions:p.evaluations.positions.length,runs:p.simulation.runs.length,
-    events:p.simulation.events.length,drafts:Object.values(p.recovery).filter(v=>Array.isArray(v)?v.length:v!==null).length}; }
-  function manifest(p) { return {bytes:bytes(p),sections:Object.fromEntries(Object.keys(SECTIONS).map(k=>[k,bytes(p[k])])),counts:counts(p)}; }
+    events:p.simulation.events.length,drafts:Object.values(p.recovery).filter(v=>Array.isArray(v)?v.length:v!==null).length,...(version===2?{pins:p.evidence.metadata.pins.length}:{})}; }
+  function manifest(p,version=2) { return {bytes:bytes(p),sections:Object.fromEntries(Object.keys(SECTIONS).map(k=>[k,bytes(p[k])])),counts:counts(p,version)}; }
   function typedScores(v) {
     if (!v || typeof v!=='object') return;
     if (object(v.score)) {
@@ -106,9 +107,9 @@
       checkClock(row.after);
     }
   }
-  function validatePayload(p,deps) {
+  function validatePayload(p,deps,version=2) {
     exact(p,Object.keys(SECTIONS),'payload'); canonical(p);
-    for (const [k,limit] of Object.entries(LIMITS)) if (k!=='file' && bytes(p[k])>limit) fail('DATA '+k+' section exceeds its limit.');
+    for (const [k,limit] of Object.entries(LIMITS)) if (k!=='file' && (k==='evidence'&&version===2?deps.Evidence.storageBytes(p[k]):bytes(p[k]))>limit) fail('DATA '+k+' section exceeds its limit.');
     checkGame(p.game,deps);
     exact(p.preferences,Object.keys(empty().preferences),'preferences');
     for (const k of ['settings','analysis','layout']) {
@@ -146,12 +147,13 @@
     for (const v of Object.values(p.evaluations.cache)) if(!object(v)||!Number.isFinite(v.time)||typeof v.text!=='string')fail('Invalid cached evaluation.');
     exact(p.studies,['collection','undoA','undoB'],'Studies');
     for (const v of Object.values(p.studies)) checkCollection(v,deps);
-    exact(p.evidence,['snapshots'],'Evidence');
+    exact(p.evidence,version===1?['snapshots']:['snapshots','metadata'],'Evidence');
     if (!Array.isArray(p.evidence.snapshots)||p.evidence.snapshots.length>30) fail('Evidence exceeds 30 snapshots.');
     for (const items of [p.evidence.snapshots,p.evaluations.positions]) {
       if(new Set(items.map(v=>v.id)).size!==items.length)fail('Duplicate evidence IDs.');
       items.forEach(v=>{deps.Evidence.validate(v);typedScores(v);});
     }
+    if(version===2)deps.Evidence.metadata(p.evidence.snapshots,p.evidence.metadata);
     exact(p.simulation,['schema','version','runs','events'],'simulation');
     deps.Sim.validate(p.simulation,true);
     for(const record of [...p.simulation.runs,...p.simulation.events])if(typeof record.id!=='string')fail('DATA record IDs must be strings.');
@@ -176,10 +178,11 @@
     if(p.recovery.legacySimulation!==null)deps.Sim.validate(p.recovery.legacySimulation,false);
     return p;
   }
-  async function pack(payload, source, deps) {
-    validatePayload(payload,deps);
-    const envelope={schema:'chessbest-workspace-data',version:1,exportedAt:new Date().toISOString(),source,
-      sections:{...SECTIONS},manifest:manifest(payload),sha256:await digest(payload),payload};
+  async function pack(payload, source, deps, version=2) {
+    if(![1,2].includes(version))fail('Unsupported DATA schema/version.');
+    validatePayload(payload,deps,version);
+    const envelope={schema:'chessbest-workspace-data',version,exportedAt:new Date().toISOString(),source,
+      sections:{...(version===1?V1_SECTIONS:SECTIONS)},manifest:manifest(payload,version),sha256:await digest(payload),payload};
     if(bytes(envelope)>LIMITS.file)fail('DATA file exceeds 64 MiB. Use the separate Study/Sim exports.');
     return envelope;
   }
@@ -187,15 +190,21 @@
     if(typeof text!=='string'||bytes(text)>LIMITS.file)fail('DATA file exceeds 64 MiB.');
     let v;try{v=JSON.parse(text);}catch(_){fail('DATA file is truncated or invalid JSON.');}
     exact(v,['schema','version','exportedAt','source','sections','manifest','sha256','payload'],'envelope');
-    if(v.schema!=='chessbest-workspace-data'||v.version!==1)fail('Unsupported DATA schema/version.');
+    if(v.schema!=='chessbest-workspace-data'||![1,2].includes(v.version))fail('Unsupported DATA schema/version.');
     if(!Number.isFinite(Date.parse(v.exportedAt)))fail('Invalid export date.');
     exact(v.source,['channel','release'],'source');
     if(!['LAB','CURRENT'].includes(v.source.channel)||typeof v.source.release!=='string'||v.source.release.length>160)fail('Invalid source provenance.');
-    if(canonical(v.sections)!==canonical(SECTIONS))fail('Unsupported DATA section versions.');
-    validatePayload(v.payload,deps);
-    if(canonical(v.manifest)!==canonical(manifest(v.payload)))fail('DATA counts/bytes do not match.');
+    if(canonical(v.sections)!==canonical(v.version===1?V1_SECTIONS:SECTIONS))fail('Unsupported DATA section versions.');
+    validatePayload(v.payload,deps,v.version);
+    if(canonical(v.manifest)!==canonical(manifest(v.payload,v.version)))fail('DATA counts/bytes do not match.');
     if(!/^[0-9a-f]{64}$/.test(v.sha256)||await digest(v.payload)!==v.sha256)fail('DATA SHA-256 does not match.');
     return v;
+  }
+  async function migrate(value,deps) {
+    const original=await parse(canonical(value),deps);
+    if(original.version===2)return original;
+    const payload=JSON.parse(canonical(original.payload));payload.evidence.metadata={version:1,pins:[]};
+    const migrated=await pack(payload,original.source,deps);migrated.exportedAt=original.exportedAt;return migrated;
   }
   function diff(old,next) {
     const rows=[];
@@ -214,9 +223,10 @@
     single('Studies undo A',semanticCollection(old.studies.undoA),semanticCollection(next.studies.undoA));
     single('Studies undo B',semanticCollection(old.studies.undoB),semanticCollection(next.studies.undoB));
     compare('Evidence',old.evidence.snapshots,next.evidence.snapshots);
+    compare('Evidence pins',(old.evidence.metadata?.pins||[]).map(id=>({id})),(next.evidence.metadata?.pins||[]).map(id=>({id})));
     compare('Sim games',old.simulation.runs,next.simulation.runs);compare('Tournaments',old.simulation.events,next.simulation.events);
     for(const section of ['game','preferences','evaluations','timing','recovery'])compare(section,old[section]===null?[]:[{id:section,value:old[section]}],next[section]===null?[]:[{id:section,value:next[section]}]);
     return rows;
   }
-  return {LIMITS,SECTIONS,bytes,canonical,digest,empty,counts,manifest,validatePayload,pack,parse,diff};
+  return {LIMITS,SECTIONS,V1_SECTIONS,bytes,canonical,digest,empty,counts,manifest,validatePayload,pack,parse,migrate,diff};
 });

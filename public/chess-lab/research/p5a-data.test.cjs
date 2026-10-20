@@ -16,7 +16,7 @@ function fixture() {
   p.simulation.events=[{id:'event-1',name:'Synthetic tournament',state:'paused',games:[{runId:'run-1',state:'paused'}],_storeRevision:1}];
   return p;
 }
-test('DATA v1 exact schema, canonical hash and complete line/cursor/variation are stable',async()=>{
+test('DATA v2 exact schema, canonical hash and complete line/cursor/variation are stable',async()=>{
   const p=fixture(),v=await C.pack(p,{channel:'LAB',release:'fixture-v1'},deps);
   assert.deepEqual((await C.parse(C.canonical(v),deps)).payload,copy(p));
   assert.equal(await C.digest({z:1,a:{d:2,b:3}}),await C.digest({a:{b:3,d:2},z:1}));
@@ -24,7 +24,7 @@ test('DATA v1 exact schema, canonical hash and complete line/cursor/variation ar
   assert.match(v.payload.game.pgn,/\(1\. d4 d5\)/);
 });
 for(const [name,mutate] of [
-  ['future version',v=>v.version=2],['future section',v=>v.sections.game=2],['missing section',v=>delete v.payload.recovery],
+  ['future version',v=>v.version=3],['future section',v=>v.sections.game=2],['missing section',v=>delete v.payload.recovery],
   ['untrusted target namespace',v=>v.payload.namespace='ChessBest:CURRENT:v2:'],
   ['numeric Sim ID',v=>v.payload.simulation.runs[0].id=1],
   ['numeric Sim reference',v=>v.payload.simulation.events[0].games[0].runId=1],
