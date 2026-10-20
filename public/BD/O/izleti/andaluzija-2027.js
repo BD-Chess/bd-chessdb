@@ -1,4 +1,4 @@
-/* Andaluzija 2027 · Mateja / Claude / GPT · no network or paid API dependency. */
+/* Andaluzija 2027 · Mateja / Claude / GPT · optional imagery, offline schematic. */
 (()=>{
 'use strict';
 const D=window.ANDALUZIJA;
@@ -72,6 +72,9 @@ function renderSupporting(){
 const project=([lon,lat])=>[(lon+6.7)*260,(38.35-lat)*320];
 const point=id=>project([D.places[id].lon,D.places[id].lat]);
 let zoom=1,panX=0,panY=0;
+let photoMap=null,photoLayers=null,activePhotoLayer=null,leafletLoading=null;
+let mapMode='satellite',mapViewRequest=0;
+const photoRoutes=new Map(),photoMarkers=new Map();
 function polygonPath(geometry){
  const polys=geometry.type==='Polygon'?[geometry.coordinates]:geometry.coordinates;
  return polys.map(poly=>poly.map(ring=>ring.map((xy,i)=>{const [x,y]=project(xy);return (i?'L':'M')+x.toFixed(2)+' '+y.toFixed(2);}).join(' ')+' Z').join(' ')).join(' ');
@@ -84,16 +87,79 @@ function renderMap(){
 }
 function updateMapRoutes(){
  $('map-routes').innerHTML=variants.filter(k=>visible.has(k)).map(k=>{const v=D.variants[k],lane=(variants.indexOf(k)-1)*7;const points=v.route.map(id=>{const [x,y]=point(id);return (x+lane).toFixed(2)+','+y.toFixed(2);}).join(' ');return `<polyline points="${points}" fill="none" stroke="${v.color}" stroke-width="${k===selected?5:4}" stroke-dasharray="${v.dash}" stroke-linejoin="round" stroke-linecap="round" opacity="${k===selected?1:.7}"><title>${v.label}: ${v.route.map(id=>D.places[id].name).join(' → ')}</title></polyline>`;}).join('');
+ updatePhotoRoutes();
 }
 function updatePlace(){
  const p=D.places[selectedPlace];
  $('map-nodes').innerHTML=Object.entries(D.places).map(([id,p])=>{const [x,y]=point(id);return `<g class="city-node" data-place="${id}"><circle cx="${x}" cy="${y}" r="${id===selectedPlace?9:6}" fill="${id===selectedPlace?'#ebc783':'#d0e2da'}" stroke="#102832" stroke-width="3"/><text class="city-label" x="${x+p.dx}" y="${y+p.dy}" text-anchor="${p.anchor}">${esc(p.name)}</text></g>`;}).join('');
  $('place-buttons').querySelectorAll('[data-place]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.place===selectedPlace)));
  $('map-detail').innerHTML=`<div><h3>${esc(p.name)}</h3><p>Datumi vključujejo tudi prihod oziroma odhod.</p><a class="text-link" href="${esc(mapSearch(p.query))}" target="_blank" rel="noopener noreferrer">Odpri lokacijo v Maps ↗</a></div><div>${variants.map(k=>`<div class="map-date-row" style="--route:${D.variants[k].color}"><b>${D.variants[k].letter} · ${D.variants[k].label}</b><span>${esc(datesForPlace(D.variants[k],selectedPlace))}</span></div>`).join('')}${!visible.size?'<p>Nobena pot ni prikazana. Vključita jo s kljukico nad zemljevidom.</p>':''}</div>`;
+ updatePhotoMarkers();
 }
 function applyMapTransform(){$('map-viewport').setAttribute('transform',`translate(${panX} ${panY}) scale(${zoom})`);}
-function changeZoom(factor){const next=Math.max(1,Math.min(3,zoom*factor));const [x,y]=point(selectedPlace);zoom=next;panX=500-x*zoom;panY=350-y*zoom;if(zoom===1){panX=0;panY=0;}applyMapTransform();}
-function choosePlace(id,jump){if(!D.places[id])return;selectedPlace=id;updatePlace();if(zoom>1){const[x,y]=point(id);panX=500-x*zoom;panY=350-y*zoom;applyMapTransform();}if(jump)$('zemljevid').scrollIntoView({behavior:'smooth',block:'start'});}
+function changeZoom(factor){if(photoMap&&mapMode!=='scheme'){factor>1?photoMap.zoomIn():photoMap.zoomOut();return;}const next=Math.max(1,Math.min(3,zoom*factor));const [x,y]=point(selectedPlace);zoom=next;panX=500-x*zoom;panY=350-y*zoom;if(zoom===1){panX=0;panY=0;}applyMapTransform();}
+function choosePlace(id,jump){if(!D.places[id])return;selectedPlace=id;updatePlace();if(photoMap&&mapMode!=='scheme'){const p=D.places[id];photoMap.panTo([p.lat,p.lon]);}if(zoom>1){const[x,y]=point(id);panX=500-x*zoom;panY=350-y*zoom;applyMapTransform();}if(jump)$('zemljevid').scrollIntoView({behavior:'smooth',block:'start'});}
+
+function loadLeaflet(){
+ if(window.L)return Promise.resolve();
+ if(leafletLoading)return leafletLoading;
+ leafletLoading=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');let settled=false;
+  const finish=ok=>{if(settled)return;settled=true;clearTimeout(timer);if(ok&&window.L)resolve();else{script.remove();leafletLoading=null;reject(new Error('MAP_LIBRARY_UNAVAILABLE'));}};
+  script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  script.integrity='sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+  script.crossOrigin='anonymous';script.referrerPolicy='strict-origin-when-cross-origin';
+  script.onload=()=>finish(true);script.onerror=()=>finish(false);
+  const timer=setTimeout(()=>finish(false),12000);document.head.append(script);
+ });return leafletLoading;
+}
+function fitPhotoMap(){if(photoMap)photoMap.fitBounds(Object.values(D.places).map(p=>[p.lat,p.lon]),{padding:[38,45],maxZoom:9,animate:false});}
+function updatePhotoRoutes(){
+ if(!photoMap)return;
+ photoRoutes.forEach(layer=>photoMap.removeLayer(layer));photoRoutes.clear();
+ variants.forEach((k,i)=>{if(!visible.has(k))return;const v=D.variants[k];
+  const line=window.L.polyline(v.route.map(id=>[D.places[id].lat,D.places[id].lon]),{color:v.color,weight:[11,7,3.5][i],opacity:k===selected?1:.85,dashArray:k==='claude'?'14 10':undefined,lineCap:'round',lineJoin:'round',className:'photo-route photo-route-'+k});
+  line.bindTooltip(esc(v.letter+' · '+v.label));line.addTo(photoMap);photoRoutes.set(k,line);
+ });
+ photoMarkers.forEach(marker=>marker.bringToFront());
+ $('photo-map').dataset.visibleRoutes=variants.filter(k=>visible.has(k)).join(',');
+}
+function updatePhotoMarkers(){photoMarkers.forEach((marker,id)=>{marker.setStyle({fillColor:id===selectedPlace?'#ebc783':'#f6f6ed',color:'#10232e',weight:2});marker.setRadius(id===selectedPlace?8:5);marker.bringToFront();});}
+async function ensurePhotoMap(){
+ if(photoMap)return photoMap;await loadLeaflet();if(mapMode==='scheme')return null;if(photoMap)return photoMap;
+ const L=window.L;$('map-host').classList.add('photo-mode');
+ photoMap=L.map('photo-map',{zoomControl:false,scrollWheelZoom:false,minZoom:6,maxZoom:19,maxBounds:[[34,-11],[44,5]],maxBoundsViscosity:.8,attributionControl:true});
+ photoMap.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>');
+ photoLayers={
+  satellite:L.tileLayer('https://www.ign.es/wmts/pnoa-ma?service=WMTS&request=GetTile&version=1.0.0&layer=OI.OrthoimageCoverage&style=default&tilematrixset=GoogleMapsCompatible&format=image/jpeg&tilematrix={z}&tilerow={y}&tilecol={x}',{maxZoom:19,keepBuffer:1,referrerPolicy:'strict-origin-when-cross-origin',attribution:'<a href="https://pnoa.ign.es/" target="_blank" rel="noopener noreferrer">PNOA / IGN–CNIG</a> · <a href="https://www.ign.es/web/ign/portal/politica-datos" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>'}),
+  streets:L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,keepBuffer:1,referrerPolicy:'strict-origin-when-cross-origin',attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'})
+ };
+ Object.entries(photoLayers).forEach(([mode,layer])=>{let loaded=0,errors=0;
+  layer.on('tileload',()=>{loaded++;if(mapMode===mode)$('photo-map').dataset.tiles='ready';});
+  layer.on('load',()=>{if(mapMode===mode&&loaded){$('map-status').textContent=mode==='satellite'?'Satelit in ortofoto · IGN/PNOA. Izberita kraj ali povečajta zemljevid.':'Cestni zemljevid · OpenStreetMap. Barvne črte kažejo vrstni red postankov.';}});
+  layer.on('tileerror',()=>{errors++;if(mapMode===mode&&!loaded&&errors>=3){$('photo-map').dataset.tiles='error';$('map-status').textContent='Podlage ni bilo mogoče naložiti. Poskusita drugi pogled ali Shemo; vse tri poti ostanejo dostopne.';}});
+ });
+ Object.entries(D.places).forEach(([id,p])=>{
+  const label=document.createElement('span');label.textContent=p.name;
+  const marker=L.circleMarker([p.lat,p.lon],{radius:5,color:'#10232e',fillColor:'#f6f6ed',fillOpacity:1,weight:2,className:'photo-place photo-place-'+id}).addTo(photoMap);
+  marker.bindTooltip(label,{permanent:['malaga','granada','cordoba','sevilla','ronda','nerja'].includes(id),direction:'top',offset:[0,-6],className:'photo-city-label'});
+  marker.on('click',()=>choosePlace(id,false));photoMarkers.set(id,marker);
+ });
+ photoMap.on('zoomend',()=>{$('photo-map').dataset.zoom=String(photoMap.getZoom());});
+ fitPhotoMap();updatePhotoRoutes();updatePhotoMarkers();return photoMap;
+}
+function syncMapView(){document.querySelectorAll('[data-map-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapView===mapMode)));$('map-host').dataset.mapMode=mapMode;}
+async function setMapView(mode){
+ if(!['satellite','streets','scheme'].includes(mode))return;
+ const request=++mapViewRequest;mapMode=mode;syncMapView();
+ if(mode==='scheme'){$('map-host').classList.remove('photo-mode');if(photoMap&&activePhotoLayer){photoMap.removeLayer(activePhotoLayer);activePhotoLayer=null;}$('map-status').textContent='Shema vseh treh poti · deluje tudi brez zunanje podlage.';return;}
+ $('map-status').textContent=mode==='satellite'?'Nalagam satelit in ortofoto …':'Nalagam cestni zemljevid …';
+ try{await ensurePhotoMap();if(request!==mapViewRequest||mode!==mapMode||!photoMap)return;
+  $('map-host').classList.add('photo-mode');photoMap.invalidateSize({pan:false});
+  if(activePhotoLayer)photoMap.removeLayer(activePhotoLayer);
+  activePhotoLayer=photoLayers[mode];$('photo-map').dataset.tiles='loading';activePhotoLayer.addTo(photoMap);updatePhotoRoutes();updatePhotoMarkers();
+ }catch{if(request!==mapViewRequest)return;mapMode='scheme';syncMapView();$('map-host').classList.remove('photo-mode');$('map-status').textContent='Fotografskega zemljevida ni bilo mogoče naložiti. Shema deluje; za ponovni poskus izberita Satelit ali Cestni zemljevid.';}
+}
 
 const defaults={malaga:110,granada:90,cordoba:95,sevilla:120,ronda:90,marbella:110};
 function initBudget(){
@@ -157,6 +223,7 @@ function saveNotesFile(){
  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='BD-andaluzija-2027-zapiski.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 document.addEventListener('click',e=>{
+ const view=e.target.closest('[data-map-view]');if(view){setMapView(view.dataset.mapView);return;}
  const plan=e.target.closest('[data-plan]');if(plan){choosePlan(plan.dataset.plan);return;}
  const day=e.target.closest('[data-day-plan]');if(day){choosePlan(day.dataset.dayPlan);$('dan-'+(Number(day.dataset.dayIndex)+1)).scrollIntoView({behavior:'smooth'});return;}
  const guide=e.target.closest('[data-guide]');if(guide){openStory(guide.dataset.guide);return;}
@@ -175,9 +242,9 @@ $('bd-notes').value=get(KEY+'notes','');
 $('bd-notes').addEventListener('input',()=>{$('notes-status').textContent=put(KEY+'notes',$('bd-notes').value)?'Shranjeno v tem brskalniku.':'Za trajno kopijo uporabi Izvozi zapiske.';});
 $('export-notes').onclick=saveNotesFile;
 $('flight-time').value=get(KEY+'flight-time','');$('flight-time').addEventListener('input',()=>{put(KEY+'flight-time',$('flight-time').value);renderFlight();});
-$('map-zoom-in').onclick=()=>changeZoom(1.35);$('map-zoom-out').onclick=()=>changeZoom(1/1.35);$('map-reset').onclick=()=>{zoom=1;panX=0;panY=0;applyMapTransform();};
+$('map-zoom-in').onclick=()=>changeZoom(1.35);$('map-zoom-out').onclick=()=>changeZoom(1/1.35);$('map-reset').onclick=()=>{if(photoMap&&mapMode!=='scheme'){fitPhotoMap();return;}zoom=1;panX=0;panY=0;applyMapTransform();};
 const mapCard=document.querySelector('.map-card');
-function expandMap(force){const expanded=force??!mapCard.classList.contains('map-expanded');mapCard.classList.toggle('map-expanded',expanded);document.body.style.overflow=expanded?'hidden':'';$('map-expand').textContent=expanded?'Zapri zemljevid':'Razširi';}
+function expandMap(force){const expanded=force??!mapCard.classList.contains('map-expanded');mapCard.classList.toggle('map-expanded',expanded);document.body.style.overflow=expanded?'hidden':'';$('map-expand').textContent=expanded?'Zapri zemljevid':'Razširi';if(photoMap)requestAnimationFrame(()=>photoMap.invalidateSize({pan:false}));}
 $('map-expand').onclick=()=>expandMap();document.addEventListener('keydown',e=>{if(e.key==='Escape')expandMap(false);});
 let drag=null;
 $('trip-map').addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||zoom===1)return;drag={x:e.clientX,y:e.clientY,px:panX,py:panY};$('trip-map').setPointerCapture(e.pointerId);});
@@ -189,6 +256,8 @@ $('font-minus').onclick=()=>setFont(font-10);$('font-plus').onclick=()=>setFont(
 $('print-page').onclick=()=>window.print();
 window.addEventListener('pagehide',()=>{if('speechSynthesis' in window)speechSynthesis.cancel();});
 renderVariantControls();renderCompare();renderDays();renderGuides();renderSupporting();renderMap();initBudget();renderFlight();setFont(font);
+if('IntersectionObserver' in window){const mapObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){mapObserver.disconnect();if(mapMode!=='scheme')setMapView(mapMode);}},{rootMargin:'150px'});mapObserver.observe($('map-host'));}else setMapView(mapMode);
+if('ResizeObserver' in window)new ResizeObserver(()=>{if(photoMap&&mapMode!=='scheme')photoMap.invalidateSize({pan:false});}).observe($('map-host'));
 if('ResizeObserver' in window){new ResizeObserver(()=>{document.documentElement.style.setProperty('--topbar-h',document.querySelector('.topbar').getBoundingClientRect().height+'px');}).observe(document.querySelector('.topbar'));}
 // Expose only deterministic data/math for inspection, without user notes or stored data.
 window.AndaluzijaApp=Object.freeze({version:D.version,rentalDays,blocks,key:()=>selected});
