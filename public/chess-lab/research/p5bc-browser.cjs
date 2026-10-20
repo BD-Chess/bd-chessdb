@@ -78,7 +78,7 @@ test('BC-01/06/08/09 real APP pin controls, cache-only status, partial replay an
 test('BC-01/09 desktop keyboard pin and explicit pinned-delete confirmation preserve game and sealed payload',{timeout:35000},async t=>{
   const c=await context(t),p=await page(c),{s}=await seed(p,0),game=await p.evaluate(()=>ChessLabHost.getReviewGame());
   await p.evaluate(()=>document.getElementById('btnEvidence').click());await p.locator('[data-input="snapshots"]').selectOption(s.id);
-  const pin=p.locator('[data-action="pin"]');await pin.focus();await p.keyboard.press('Enter');await p.waitForFunction(()=>document.querySelector('[data-action="pin"]').textContent==='Unpin');
+  const pin=p.locator('[data-action="pin"]');await p.waitForFunction(()=>!document.querySelector('[data-action="pin"]').disabled&&document.querySelector('[data-action="pin"]').textContent==='Pin');await pin.focus();await p.keyboard.press('Enter');await p.waitForFunction(()=>document.querySelector('[data-action="pin"]').textContent==='Unpin');
   assert.deepEqual(await p.evaluate(id=>ChessEvidence.createStore().get(id),s.id),s);
   await p.evaluate(()=>ChessLanguage.apply('sl'));await p.waitForFunction(()=>document.querySelector('[data-action="pin"]').textContent==='Odpni');await p.evaluate(()=>ChessLanguage.apply('en'));
   p.once('dialog',d=>d.dismiss());await p.locator('[data-action="delete"]').click();assert((await p.evaluate(()=>ChessEvidence.createStore().list())).find(x=>x.id===s.id)?.pinned);
@@ -120,4 +120,13 @@ test('BC-08 delayed live CDB reply cannot overwrite replay or the complete curre
   await p.waitForFunction(()=>window.__lateResult!=='pending');assert.equal(await p.evaluate(()=>window.__lateResult),null);
   const after=await p.evaluate(()=>({game:ChessLabHost.getReviewGame(),context:ChessLabHost.getContext()}));assert.deepEqual(after.game,before);assert.equal(after.context.evidenceMode,'offline');assert.equal(after.context.analysisSources.CDB.receipt.status,'unavailable');assert.deepEqual(after.context.analysisSources.CDB.allMoves,[]);
   receipts.push({case:'late-live-response-replay-guard',mockReplies:pending.length,fullGameRetained:true,lateResult:null});
+});
+test('BC-02 actual failed Evidence save keeps unreadable raw bytes and downloads its unsaved snapshot',{timeout:35000},async t=>{
+  const c=await context(t,{fallback:true}),p=await page(c);const before='unreadable original bytes retained';
+  const sealed=await p.evaluate(async before=>{const fen=new Chess().fen(),s=ChessEvidence.createCollector().snapshot({receipt:{fen}},{label:'Exportable unsaved Evidence'});localStorage.setItem(ChessDataGuard.key('ChessBest:LAB:v2:evidence-fallback'),before);
+    window.failedUI=ChessResearchUI.create({captureEvidence:async()=>s,getContext:()=>({evidenceMode:'live'})});await failedUI.open();return s;},before);
+  const dialog=p.locator('.chess-research-dialog').last();await dialog.locator('[data-action="capture"]').click();await p.waitForFunction(()=>Array.from(document.querySelectorAll('.research-status')).some(n=>n.textContent.includes('Unsaved snapshot')));
+  assert.equal(await p.evaluate(()=>localStorage.getItem(ChessDataGuard.key('ChessBest:LAB:v2:evidence-fallback'))),before);assert(await p.evaluate(()=>failedUI.store.status().unsaved));
+  const download=p.waitForEvent('download');await dialog.locator('[data-action="export"]').click();const file=await download,stream=await file.createReadStream();const parts=[];for await(const chunk of stream)parts.push(chunk);const exported=JSON.parse(Buffer.concat(parts).toString());assert.deepEqual(exported,sealed);
+  receipts.push({case:'real-failed-save-individual-download',sealedId:sealed.id,rawBytesUnchanged:true});
 });

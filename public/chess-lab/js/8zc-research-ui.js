@@ -73,6 +73,16 @@
       if(!captured)throw new Error('Wait for a completed analysis, then save its evidence.');
       return E.validate(captured);
     }
+    async function refreshOutcome(snapshot,saved){
+      try{await refresh(snapshot.id);}
+      catch(error){
+        if(saved.persistent)throw error;
+        // An unreadable durable archive must remain visible as a limitation,
+        // while the one unsaved snapshot still has a real export action.
+        selected=snapshot;selectedPinned=false;$('.research-storage').textContent=tr('Unsaved snapshot: export it before closing.')+' '+error.message;
+        $('[data-action="pin"]').disabled=true;summary();
+      }
+    }
     function saveFile(value,name){
       const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
       a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -119,7 +129,7 @@
         say('Capturing the current position…');
         const snapshot=await host.captureEvidence?.()||await host.getEvidence?.();
         if(!snapshot)throw new Error('No analysis evidence is available yet.');
-        selected=E.validate(snapshot);const saved=await store.put(selected);await refresh(snapshot.id);say(saved.persistent?tr('Evidence saved in this browser.')+' '+tr('Removed by retention')+': '+saved.removed+'.':saved.reason+' '+tr('Unsaved snapshot: export it before closing.'));return;
+        selected=E.validate(snapshot);const saved=await store.put(selected);await refreshOutcome(snapshot,saved);say(saved.persistent?tr('Evidence saved in this browser.')+' '+tr('Removed by retention')+': '+saved.removed+'.':saved.reason+' '+tr('Unsaved snapshot: export it before closing.'));return;
       }
       await task(async signal=>{
         if(name==='frozen'||name==='fixture'){
@@ -160,7 +170,7 @@
     $('[data-input="snapshots"]').addEventListener('change',async event=>{selected=await store.get(event.target.value);await refresh(selected?.id);});
     $('[data-input="import"]').addEventListener('change',async event=>{
       const file=event.target.files[0];if(!file)return;
-      try{if(file.size>16*1024*1024)throw new Error('Evidence file exceeds 16 MB.');const snapshot=E.parse(await file.text());selected=snapshot;const saved=await store.put(snapshot);await refresh(snapshot.id);say(saved.persistent?tr('Imported and verified SHA-256.')+' '+tr('Removed by retention')+': '+saved.removed+'. '+tr('Integrity does not authenticate the original provider.'):saved.reason);}catch(error){say(error.message);}finally{event.target.value='';}
+      try{if(file.size>16*1024*1024)throw new Error('Evidence file exceeds 16 MB.');const snapshot=E.parse(await file.text());selected=snapshot;const saved=await store.put(snapshot);await refreshOutcome(snapshot,saved);say(saved.persistent?tr('Imported and verified SHA-256.')+' '+tr('Removed by retention')+': '+saved.removed+'. '+tr('Integrity does not authenticate the original provider.'):saved.reason+' '+tr('Unsaved snapshot: export it before closing.'));}catch(error){say(error.message);}finally{event.target.value='';}
     });
     document.addEventListener('chess:language',()=>{if(dialog.open)void refresh(selected?.id).catch(e=>say(e.message));});
     return { async open(section='evidence'){tab(section);say('');try{await refresh();}catch(e){say(e.message);}if(!dialog.open)dialog.showModal();},
