@@ -1,8 +1,8 @@
 'use strict';
-// MDLxDCC root PWA v2. Scope is the site root (or its GitHub Pages project prefix).
+// MDLxDCC landing PWA v3. The registration is scoped to index.html, never sibling apps.
 // Only the homepage and its public assets are cached; APIs and other apps are untouched.
-const VERSION='root-20261009-r4';
-const FAMILY='mdlxdcc-root-pwa:';
+const VERSION='root-20261020-r5';
+const FAMILY='mdlxdcc-landing-pwa:';
 const BASE=new URL('./',self.registration.scope);
 const CACHE=FAMILY+BASE.pathname+':'+VERSION;
 const HOME=new URL('index.html',BASE);
@@ -73,7 +73,7 @@ self.addEventListener('fetch',event=>{
  const u=new URL(r.url);
  if(u.origin!==BASE.origin)return;
  if(r.mode==='navigate'){
-  if(u.pathname===BASE.pathname||u.pathname===HOME.pathname){
+  if(u.pathname===HOME.pathname){
    event.respondWith(fromNetwork(event,new Request(HOME),false));
   }
   return; // Do not take over other websites/apps under this origin.
