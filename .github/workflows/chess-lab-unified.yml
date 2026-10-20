@@ -99,7 +99,10 @@ jobs:
             public/chess-lab/research/cdb-start-ui.test.cjs \
             public/chess-lab/research/study-ui.test.cjs \
             public/chess-lab/research/game-review-core.test.cjs \
-            public/chess-lab/research/game-review-v4.test.cjs
+            public/chess-lab/research/game-review-v4.test.cjs \
+            public/chess-lab/research/game-review-ui.test.cjs \
+            public/chess-lab/research/top-picks-review.test.cjs
+          node tools/build-top-picks-review.cjs --check
       - name: PWA release and channel topology
         run: |
           python tools/build-chess-channel-pwas.py --check
@@ -119,6 +122,7 @@ jobs:
             CHESS_P5BC_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p5bc" \
             CHESS_P3_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p3" \
             CHESS_P4_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/p4" \
+            CHESS_TOP_PICKS_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence/top-picks" \
             node --test --test-concurrency=1 \
               public/chess-lab/research/cdb-start-browser.cjs \
               public/chess-lab/research/p5a-data-browser.cjs \
@@ -127,7 +131,8 @@ jobs:
               public/chess-lab/research/p5bc-upgrade-browser.cjs \
               public/chess-lab/research/full-game-resume-browser.cjs \
               public/chess-lab/research/p3-active-analysis-browser.cjs \
-              public/chess-lab/research/p4-gui-browser.cjs
+              public/chess-lab/research/p4-gui-browser.cjs \
+              public/chess-lab/research/top-picks-review-browser.cjs
           NODE_PATH="$NODE_PATH:$RUNNER_TEMP/chess-browser-deps/node_modules" \
             CHESS_RESUME_EVIDENCE_DIR="$RUNNER_TEMP/chess-resume-evidence" \
             node --test public/chess-lab/research/pwa-install-browser.cjs

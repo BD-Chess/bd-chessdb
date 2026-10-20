@@ -41,7 +41,7 @@ test('real Dreev-Kasparov Top Pick loads from Game library and opens populated R
     } else if(u.pathname.endsWith('/Games/ChessBest_Top_Picks.pgn')) {
       text=fs.readFileSync(base+'Games/ChessBest_Top_Picks.pgn','utf8');
     }
-    return {ok:true,text:async()=>text,json:async()=>text.startsWith('{')?JSON.parse(text):{}};
+    return {ok:true,text:async()=>text,json:async()=>text.startsWith('{')?JSON.parse(text):{},arrayBuffer:async()=>new TextEncoder().encode(text).buffer};
   };
   const scripts=[...w.document.querySelectorAll('script[src]')].map(node=>node.getAttribute('src').split('?')[0]);
   for(const file of scripts){
@@ -74,6 +74,8 @@ test('real Dreev-Kasparov Top Pick loads from Game library and opens populated R
   assert.equal(review.sourceIsOriginal,true,'curated source PGN is retained');
   assert.match(review.headers.ChessBestTitle,/Dreev.*Kasparov.*whole-game review \(V4\)/i);
   assert.equal(review.headers.ChessBestReviewVersion,'4');
+  assert.equal(el('gameReviewGraph'),null,'saved analysis is hidden before an explicit reveal');
+  el('gameReviewReveal').click();
   await until(()=>!!el('gameReviewGraph'),'saved V4 data is loaded and its graph renders');
   const graphBox=el('gameReviewGraph').getAttribute('viewBox').split(' ').map(Number);
   assert(graphBox[2]<=400 && graphBox[3]>=150,'graph uses a readable phone/sidebar scale');
