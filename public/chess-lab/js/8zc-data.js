@@ -37,20 +37,21 @@
       let missing=false,done=false,request;
       const timer=setTimeout(()=>finish(Error('DATA archive access timed out. Close other chess tabs and retry.')),4000);
       function finish(e,db){if(done){db?.close();return;}done=true;clearTimeout(timer);e?reject(e):resolve(db||null);}
-      try{request=root.indexedDB.open(name,1);}catch(e){finish(e);return;}
+      try{request=create?root.indexedDB.open(name,name.endsWith(':evidence')?2:1):root.indexedDB.open(name);}catch(e){finish(e);return;}
       request.onupgradeneeded=()=>{if(done){request.transaction.abort();return;}if(!create){missing=true;const missingDB=request.result;request.transaction.abort();missingDB.close();return;}
-        for(const store of stores)request.result.createObjectStore(store,{keyPath:'id'});};
-      request.onsuccess=()=>{const db=request.result;if(stores.some(s=>!db.objectStoreNames.contains(s))){db.close();finish(Error('Unsupported DATA archive store.'));}else finish(null,db);};
+        for(const store of stores)if(!request.result.objectStoreNames.contains(store))request.result.createObjectStore(store,{keyPath:'id'});};
+      request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>db.close();if(stores.some(s=>!db.objectStoreNames.contains(s)&&!(s==='metadata'&&db.version===1))){db.close();finish(Error('Unsupported DATA archive store.'));}else finish(null,db);};
       request.onerror=()=>missing?finish(null):finish(request.error||Error('DATA archive access failed.'));
       request.onblocked=()=>finish(Error('DATA archive is blocked by another tab.'));
     });
   }
   async function database(name,stores,values) {
+    if(name.endsWith(':evidence'))stores=[...new Set([...stores,'metadata'])];
     const db=await openDB(name,stores,values!==undefined);
     if(!db)return null;
     try{return await new Promise((resolve,reject)=>{
-      const tx=db.transaction(stores,values===undefined?'readonly':'readwrite'),result={};
-      for(const store of stores){const s=tx.objectStore(store);if(values!==undefined){s.clear();for(const v of values[store])s.put(v);}else{const r=s.getAll();r.onsuccess=()=>result[store]=r.result;}}
+      const present=stores.filter(s=>db.objectStoreNames.contains(s)),tx=db.transaction(present,values===undefined?'readonly':'readwrite'),result=Object.fromEntries(stores.map(s=>[s,[]]));
+      for(const store of present){const s=tx.objectStore(store);if(values!==undefined){s.clear();for(const v of values[store]||[])s.put(v);}else{const r=s.getAll();r.onsuccess=()=>result[store]=r.result;}}
       tx.oncomplete=()=>resolve(values===undefined?result:values);tx.onerror=tx.onabort=()=>reject(tx.error||Error('DATA archive transaction failed.'));
     });}finally{db.close();}
   }
@@ -75,7 +76,15 @@
       const list=await root.indexedDB?.databases?.();
       if(!Array.isArray(list)||list.some(x=>[keyAt(P+'evidence',gen),keyAt(P+'sim',gen)].includes(x.name)))throw error;
     }
-    p.evidence.snapshots=E?.snapshots||evidenceFallback||[];
+    let fallbackEvidence=null;
+    if(evidenceFallback!==null) {
+      if(!Array.isArray(evidenceFallback)&&(evidenceFallback.version!==2||Object.keys(evidenceFallback).sort().join('|')!=='metadata|snapshots|version'))throw Error('Unsupported retained Evidence fallback. Original bytes were retained.');
+      fallbackEvidence=root.ChessEvidence.archive(evidenceFallback);
+    }
+    if(E) {
+      for(const row of E.metadata)if(!row||Object.keys(row).sort().join('|')!=='id|pinned|version'||row.version!==1||row.pinned!==true)throw Error('Unreadable Evidence metadata. Original bytes were retained.');
+      p.evidence=root.ChessEvidence.archive({snapshots:E.snapshots,metadata:{version:1,pins:E.metadata.map(v=>v.id)}});
+    } else p.evidence=fallbackEvidence||p.evidence;
     if(S){p.simulation.runs=S.runs;p.simulation.events=S.events;}else if(simFallback)p.simulation=simFallback;
     // Conflicting representations are retained as recovery, never overwritten by export.
     for(const [field,name] of [['studyPending','studies:pending'],['simulationCheckpoint','sim-checkpoint'],['legacyStudy','studies-recovery'],
@@ -85,9 +94,10 @@
       for(const field of Object.keys(p.recovery))if(p.recovery[field]===null||Array.isArray(p.recovery[field])&&!p.recovery[field].length)p.recovery[field]=retained[field];
       p.recovery.recoveredDrafts=retained.recoveredDrafts;
     }
-    if(E&&evidenceFallback&&C.canonical(E.snapshots)!==C.canonical(evidenceFallback)) {
+    if(E&&fallbackEvidence&&C.canonical(p.evidence)!==C.canonical(fallbackEvidence)) {
+      if(fallbackEvidence.metadata.pins.length)throw Error('Conflicting pinned Evidence archives need separate export before Save DATA. Original bytes were retained.');
       if(p.recovery.legacyEvidence!==null)throw Error('Multiple retained Evidence representations need separate export before Save DATA.');
-      p.recovery.legacyEvidence=evidenceFallback;
+      p.recovery.legacyEvidence=fallbackEvidence.snapshots;
     }
     if(S&&simFallback&&C.canonical({schema:'chess-sim-archive',version:1,...S})!==C.canonical(simFallback)) {
       if(p.recovery.legacySimulation!==null)throw Error('Multiple retained Sim representations need separate export before Save DATA.');
@@ -119,6 +129,7 @@
           if(memory.evidence) {
             const merged=new Map(p.evidence.snapshots.map(v=>[v.id,v]));
             memory.evidence.memory.forEach(v=>merged.set(v.id,v));p.evidence.snapshots=[...merged.values()].sort((a,b)=>a.id.localeCompare(b.id));
+            p.evidence.metadata=memory.evidence.metadata;
             p.recovery.evidencePending=[...new Map([...p.recovery.evidencePending,...memory.evidence.pending].map(op=>[C.canonical(op),op])).values()];
           }
           const positions=new Map(p.evaluations.positions.map(v=>[v.id,v]));
@@ -160,21 +171,22 @@
       'data-positions':p.evaluations.positions,'data-recovery':p.recovery};
     for(const [name,value] of Object.entries(fields))putLocal(keyAt(P+name,gen),value===null?null:JSON.stringify(value));
     for(const [name,value] of [['language',p.preferences.language],['preview-width',p.preferences.appWidth],['showTopLine',p.preferences.showTopLine]])putLocal(keyAt(P+name,gen),value);
-    const E={snapshots:p.evidence.snapshots},S={runs:p.simulation.runs,events:p.simulation.events};
+    const E={snapshots:p.evidence.snapshots,metadata:p.evidence.metadata.pins.map(id=>({id,version:1,pinned:true}))},S={runs:p.simulation.runs,events:p.simulation.events};
     try {await database(keyAt(P+'evidence',gen),['snapshots'],E);await database(keyAt(P+'sim',gen),['runs','events'],S);}
     catch(error){
       // A partial new IDB generation must never be hidden behind fallback data.
       const list=await root.indexedDB?.databases?.();
       if(list?.some(x=>[keyAt(P+'evidence',gen),keyAt(P+'sim',gen)].includes(x.name)))throw error;
-      putLocal(keyAt(P+'evidence-fallback',gen),JSON.stringify(p.evidence.snapshots));
+      putLocal(keyAt(P+'evidence-fallback',gen),JSON.stringify({version:2,...p.evidence}));
       putLocal(keyAt(P+'sim-fallback',gen),JSON.stringify(p.simulation));
     }
   }
-  async function verifyGeneration(gen,hash) {
+  async function verifyGeneration(gen,hash,version=2) {
     const payload=await rawSnapshot(gen);
     if(payload.timing?.clock)payload.timing.clock.anchor=0;
     // Durable adapter sorting is defined by ID, independent of IDB iteration.
     payload.evidence.snapshots.sort((a,b)=>a.id.localeCompare(b.id));payload.simulation.runs.sort((a,b)=>String(a.id).localeCompare(String(b.id)));payload.simulation.events.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+    if(version===1)delete payload.evidence.metadata;
     if(await C.digest(payload)!==hash)throw Error('Restored workspace durable SHA-256 does not match.');
     return payload;
   }
@@ -200,6 +212,8 @@
     assertWritable();
     // Revalidate the exact file again at the effect boundary.
     incoming=await C.parse(C.canonical(incoming),dependencies());
+    const inputHash=incoming.sha256,sourceVersion=incoming.version;
+    incoming=await C.migrate(incoming,dependencies());
     return exclusive(async()=>{
       const worker=await workerState();
       if(root.navigator?.serviceWorker?.controller&&!worker)throw Error('Activate the LAB Update ready, then reload before restoring DATA.');
@@ -211,7 +225,7 @@
         const prior=await getControl();
         if(prior&&!['committed','rolledBack'].includes(prior.phase))throw Error('An unfinished DATA restore needs recovery before another restore.');
         if(prior?.previous&&prior.previous!==epoch)await removeGeneration(prior.previous);
-        const journal={version:1,phase:'staged',previous:epoch,next:id(),hash:incoming.sha256,backup};
+        const journal={version:2,phase:'staged',previous:epoch,next:id(),hash:incoming.sha256,inputHash,sourceVersion,backup};
         await putControl(journal); // Verified full recovery BEFORE any new-generation write.
         await writeGeneration(incoming.payload,journal.next);
         await verifyGeneration(journal.next,incoming.sha256);
@@ -220,7 +234,7 @@
         putLocal(ACTIVE,JSON.stringify({version:1,epoch:journal.next}));
         await verifyGeneration(journal.next,incoming.sha256);
         journal.phase='committed';await putControl(journal);
-        return {hash:incoming.sha256,epoch:journal.next};
+        return {hash:incoming.sha256,inputHash,sourceVersion,epoch:journal.next};
       } catch(error) {
         const journal=await getControl().catch(()=>null);
         if(journal&&readEpoch()===journal.previous){journal.phase='rolledBack';await putControl(journal);await removeGeneration(journal.next);}
@@ -237,13 +251,13 @@
     return root.navigator.locks.request(LOCK,{mode:'exclusive',ifAvailable:true},async lock=>{
       if(!lock)throw Error('A DATA restore is active in another LAB tab. Close it and reload.');
       const journal=await getControl();
-    if(journal.version!==1||!['staged','committing'].includes(journal.phase))throw Error('Unsupported DATA recovery journal. Original workspace was retained.');
+    if(![1,2].includes(journal.version)||!['staged','committing'].includes(journal.phase))throw Error('Unsupported DATA recovery journal. Original workspace was retained.');
     await C.parse(C.canonical(journal.backup),dependencies());
     if(readEpoch()===journal.previous){journal.phase='rolledBack';await putControl(journal);await removeGeneration(journal.next);return;}
     if(readEpoch()!==journal.next)throw Error('DATA recovery conflicts with another workspace. Original recovery was retained.');
-    try{await verifyGeneration(journal.next,journal.hash);journal.phase='committed';await putControl(journal);}
+    try{await verifyGeneration(journal.next,journal.hash,journal.version);journal.phase='committed';await putControl(journal);}
     catch(error){
-      const recovered=id();await writeGeneration(journal.backup.payload,recovered);await verifyGeneration(recovered,journal.backup.sha256);
+      const backup=await C.migrate(journal.backup,dependencies()),recovered=id();await writeGeneration(backup.payload,recovered);await verifyGeneration(recovered,backup.sha256);
       putLocal(ACTIVE,JSON.stringify({version:1,epoch:recovered}));journal.phase='rolledBack';await putControl(journal);await removeGeneration(journal.next);
       root.location.reload();throw Error('Previous workspace recovered. Reloading before application writers start.');
     }

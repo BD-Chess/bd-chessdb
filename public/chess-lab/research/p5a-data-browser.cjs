@@ -46,7 +46,8 @@ test('DATA real Save download → Load preview/cancel/confirm → reload/reopen 
     const previous=JSON.parse(localStorage.getItem('ChessBest:LAB:v2:studies')||'null');
     const collection={...window.ChessStudyStore.empty(),revision:previous?.revision||0,appliedOperations:previous?.appliedOperations||[],studies:[study],activeId:study.id};
     const snapshot=window.ChessEvidence.createCollector();snapshot.capture({kind:'score',fen:new C().fen(),source:'synthetic',response:12});
-    await window.ChessEvidence.createStore().put(snapshot.snapshot({receipt:{fen:new C().fen()}},{label:'synthetic',createdAt:'2026-10-18T00:00:00Z'}));
+    const sealed=snapshot.snapshot({receipt:{fen:new C().fen()}},{label:'synthetic',createdAt:'2026-10-18T00:00:00Z'}),evidenceStore=window.ChessEvidence.createStore();
+    await evidenceStore.put(sealed);await evidenceStore.setPinned(sealed.id,true);
     const sim=window.ChessSimStore.create();await sim.saveEvent({id:'e-source',state:'paused',name:'Synthetic tournament',games:[{runId:'r-source',state:'paused'}]});
     await sim.saveRun({id:'r-source',eventId:'e-source',state:'paused',pgn:'1. e4 *',trace:[]});
     localStorage.setItem('ChessBest:LAB:v2:studies',JSON.stringify(collection));
@@ -59,6 +60,7 @@ test('DATA real Save download → Load preview/cancel/confirm → reload/reopen 
   await more(page);await page.locator('#filePGN').setInputFiles(pgn);await page.waitForFunction(n=>window.ChessLabHost.getReviewGame().totalPly===n,seed.plies).catch(async error=>{fs.writeFileSync(path.join(evidence,'import-debug.json'),JSON.stringify({seed,state:await page.evaluate(()=>({r:window.ChessLabHost.getReviewGame(),alerts:[...document.querySelectorAll('[role=status]')].map(n=>n.textContent)}))},null,2));throw error;});
   await page.evaluate(()=>window.ChessLabHost.navigateReview(30));
   const first=await save(page,'source.json');assert.equal(first.data.payload.game.resume.cursor,30);assert.equal(first.data.payload.game.resume.totalPlies,seed.plies);
+  assert.equal(first.data.version,2);assert.deepEqual(first.data.payload.evidence.metadata.pins,[first.data.payload.evidence.snapshots[0].id]);checks.push('BC-04-real-Save-DATA-v2-includes-pin');
   assert.match(first.data.payload.game.pgn,/Keep comment/);assert(!fs.readFileSync(first.file,'utf8').includes('SYNTHETIC-TOKEN'));checks.push('actual-save-file-long-game-and-sections');
   await ctx.close();page=await open('target');
   await page.evaluate(()=>{localStorage.setItem('ChessBest:CURRENT:v2:game','TARGET-CURRENT');localStorage.setItem('other-app-sentinel','TARGET-OTHER');});
@@ -74,6 +76,11 @@ test('DATA real Save download → Load preview/cancel/confirm → reload/reopen 
   for(const key of ['studies','evidence','simulation','evaluations','recovery'])assert.deepEqual(sem(reexport.data.payload[key]),sem(first.data.payload[key]));checks.push('file-restore-reload-semantic-comparison');
   await ctx.close();page=await open('target');assert.equal(await page.evaluate(()=>window.ChessLabHost.getReviewGame().cursor),30);checks.push('browser-process-reopen');
   await load(page,first.file);await restore(page);const again=await save(page,'repeated.json');assert.equal(again.data.payload.simulation.runs.length,1);assert.equal(again.data.payload.evidence.snapshots.length,first.data.payload.evidence.snapshots.length);checks.push('idempotent-second-import');
+  const Core=require('../js/8zc-data-core.js'),legacy=JSON.parse(JSON.stringify(first.data));legacy.version=1;legacy.sections={...Core.V1_SECTIONS};delete legacy.payload.evidence.metadata;
+  legacy.manifest=Core.manifest(legacy.payload,1);legacy.sha256=await Core.digest(legacy.payload);const legacyFile=path.join(evidence,'authentic-v1.json');fs.writeFileSync(legacyFile,Core.canonical(legacy));
+  await load(page,legacyFile);assert.match(await page.locator('#dataDialog').innerText(),/Evidence pins/);const pinnedHash=await page.evaluate(()=>ChessDataGuard.capture(false).then(v=>v.sha256));await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>ChessDataGuard.capture(false).then(v=>v.sha256)),pinnedHash);
+  await load(page,legacyFile);await restore(page);const downgraded=await save(page,'v1-migrated-v2.json');assert.deepEqual(downgraded.data.payload.evidence.metadata.pins,[]);assert.deepEqual(downgraded.data.payload.game,first.data.payload.game);
+  await load(page,first.file);await restore(page);checks.push('BC-04-GUI-v1-preview-cancel-confirm-reload-clears-pins-explicitly-and-v2-restores-them');
   assert.deepEqual(await page.evaluate(()=>[localStorage.getItem('ChessBest:CURRENT:v2:game'),localStorage.getItem('other-app-sentinel')]),['TARGET-CURRENT','TARGET-OTHER']);checks.push('target-current-and-other-app-isolation');
   await load(page,first.file);
   await page.evaluate(()=>localStorage.setItem(window.ChessDataGuard.key('ChessBest:LAB:v2:showTopLine'),'1'));

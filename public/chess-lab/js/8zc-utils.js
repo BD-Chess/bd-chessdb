@@ -1104,7 +1104,8 @@ gameBuckets.forEach((bucket, bucketIndex) => {
       analysis, analysisSources, boardAnalysisProvider: activeAnalysisFen === fen ? activeAnalysisProvider : null,
       evidence: analysisSources.DCC?.receipt.provider === 'CDB' ? labSnapshots.get(fen) || null : null, lastDecision,
       assistanceLocked: !!playState.assistanceLocked, simRunning,
-      evidenceMode: offlineEvidence ? 'offline' : 'live' };
+      evidenceMode: offlineEvidence ? 'offline' : 'live',
+      evidenceCoverage:offlineEvidence?{...offlineEvidence.provider.stats(),captured:offlineEvidence.snapshot.payload.records.filter(r=>['moves','pv','score'].includes(r.kind)).length,dropped:offlineEvidence.snapshot.payload.droppedRecords||0,snapshotId:offlineEvidence.snapshot.id}:null };
   }
   // Review reads the complete loaded main line. getLabContext() deliberately
   // describes only the current cursor, which can be midway through a game.
@@ -1268,12 +1269,11 @@ gameBuckets.forEach((bucket, bucketIndex) => {
     window.ChessEvidence.validate(snapshot);
     const payload = snapshot.payload;
     pauseLab();
+    stopInteractiveAnalysis();invalidateDCCAnalysis();
     offlineEvidence = { snapshot, provider: window.ChessEvidence.replay(snapshot) };
     analysisMemo.clear(); analysisPending.clear();
-    if (payload.settings) Object.assign(settings, payload.settings);
-    navigateStudy({ startFen: payload.fen, fen: payload.fen, moves: [] });
     labSnapshots.set(payload.fen, snapshot);
-    applySettings();
+    updateBoard(false);
     updateSimStatus('Offline evidence: only recorded source answers are available. Use Evidence → Return to live to reconnect.');
   }
   function resumeLiveEvidence() {
