@@ -12,7 +12,8 @@
         <div class="research-actions"><button type="button" data-action="capture">Save current analysis</button><button type="button" data-action="import">Import evidence JSON</button><input type="file" accept="application/json,.json" data-input="import" hidden></div>
         <label class="research-label">Saved snapshots<select data-input="snapshots"><option value="">No saved snapshots</option></select></label>
         <p class="research-storage"></p><pre class="research-summary" tabindex="0"></pre>
-        <div class="research-actions"><button type="button" data-action="pin">Pin</button><button type="button" data-action="restore">Restore offline</button><button type="button" data-action="live">Return to live data</button><button type="button" data-action="export">Export evidence</button><button type="button" data-action="delete">Delete selected</button></div>
+        <p>Offline replay keeps the current game and cursor. Only captured full-FEN queries are available.</p>
+        <div class="research-actions"><button type="button" data-action="pin">Pin</button><button type="button" data-action="restore">Use offline replies</button><button type="button" data-action="live">Return to live data</button><button type="button" data-action="export">Export evidence</button><button type="button" data-action="delete">Delete selected</button></div>
       </section>
       <section data-section="benchmark" hidden><p>Replay the same frozen evidence with legacy, balanced and sensor variants. Every policy has the same query allowance; actual requests and missing replies are shown. CDB server compute is unknown.</p>
         <label class="research-label">Logical queries per policy<input data-input="budget" type="number" min="1" max="2000" value="120"></label>

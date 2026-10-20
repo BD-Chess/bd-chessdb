@@ -109,7 +109,7 @@
   }
   function validatePayload(p,deps,version=2) {
     exact(p,Object.keys(SECTIONS),'payload'); canonical(p);
-    for (const [k,limit] of Object.entries(LIMITS)) if (k!=='file' && bytes(p[k])>limit) fail('DATA '+k+' section exceeds its limit.');
+    for (const [k,limit] of Object.entries(LIMITS)) if (k!=='file' && (k==='evidence'&&version===2?deps.Evidence.storageBytes(p[k]):bytes(p[k]))>limit) fail('DATA '+k+' section exceeds its limit.');
     checkGame(p.game,deps);
     exact(p.preferences,Object.keys(empty().preferences),'preferences');
     for (const k of ['settings','analysis','layout']) {

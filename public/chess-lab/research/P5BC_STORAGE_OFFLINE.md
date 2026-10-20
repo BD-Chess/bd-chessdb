@@ -21,9 +21,12 @@ reject this object and preserve its bytes. No safe lock means no durable write.
 Every asynchronous effect rechecks the captured DATA generation. Corrupt raw
 records are retained and block mutation/export; they are never filtered away.
 
-The 30-item / 16 MiB budget counts canonical UTF-8 bytes of the complete
-`{snapshots,metadata}` logical archive, including bounded pin metadata and fixed
-JSON overhead. New saves retain the incoming snapshot and all pins, evicting
+The 30-item / 16 MiB quota counts canonical UTF-8 bytes of `{snapshots}` plus
+the complete `{version:1,pins:[...]}` metadata when pins exist. The empty version
+descriptor is bounded framing, so an already valid, exactly-full DATA v1 remains
+importable. Status exposes charged bytes, metadata bytes, serialized bytes and
+the fixed framing difference; manifest bytes always count the actual full JSON.
+All actual pin metadata consumes the quota. New saves retain the incoming snapshot and all pins, evicting
 only pre-existing unpinned records, oldest timestamp then ID first. If no valid
 fit exists, the entire transaction is refused. At most one unsaved snapshot is
 held per store for individual export; another cannot replace it silently.

@@ -58,9 +58,17 @@ test('BC-04 authentic DATA v1 validates unchanged before separate v2 migration; 
   const parsed=await C.parse(text,deps),migrated=await C.migrate(parsed,deps);
   assert.equal(C.canonical(old),text);assert.equal(C.canonical(parsed),text);assert.equal(migrated.version,2);assert.equal(migrated.sections.evidence,2);assert.deepEqual(migrated.payload.evidence.metadata,{version:1,pins:[]});
   assert.equal(E.canonical(migrated.payload.evidence.snapshots[0]),E.canonical(s));
+  assert.equal(E.storageBytes(migrated.payload.evidence),C.bytes(old.payload.evidence),'unpinned v1 quota is preserved exactly, including a full-budget archive');
   const target=C.empty();target.evidence={snapshots:[s],metadata:{version:1,pins:[s.id]}};
   assert.equal(C.diff(target,old.payload).find(r=>r.section==='Evidence pins').removed,1);
   const broken=JSON.parse(text);broken.payload.evidence.snapshots[0].payload.label='tampered';await assert.rejects(()=>C.migrate(broken,deps),/integrity/);
+});
+test('BC-04 an exactly 16 MiB valid v1 Evidence section migrates losslessly with bounded empty metadata framing',{timeout:60000},async()=>{
+  const template=E.createCollector().snapshot({receipt:{fen},padding:''},{label:'full v1',createdAt:'2026-10-01T00:00:00Z'}),body=JSON.parse(E.canonical(template.payload));
+  body.analysis.padding='x'.repeat(C.LIMITS.evidence-C.bytes({snapshots:[template]}));const sealed=E.seal(body),p=C.empty();p.evidence={snapshots:[sealed]};assert.equal(C.bytes(p.evidence),C.LIMITS.evidence);
+  const old=await C.pack(p,{channel:'LAB',release:'exact-full-v1-fixture'},deps,1),migrated=await C.migrate(old,deps);
+  assert.equal(old.payload.evidence.metadata,undefined);assert.deepEqual(migrated.payload.evidence.metadata,{version:1,pins:[]});assert.equal(migrated.payload.evidence.snapshots[0].id,sealed.id);
+  assert.equal(E.storageBytes(migrated.payload.evidence),C.LIMITS.evidence);assert(C.bytes(migrated.payload.evidence)>C.LIMITS.evidence);await C.parse(C.canonical(migrated),deps);
 });
 for(const [name,pins] of [['wrong type','yes'],['wrong ID',[4]],['duplicate',null],['dangling',['f'.repeat(64)]],['too many',Array(31).fill('f'.repeat(64))]]) {
   test('BC-05 correct-hash '+name+' metadata refuses before any storage adapter',async()=>{

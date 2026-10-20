@@ -8,6 +8,8 @@
   const ignored=node=>!!(node.nodeType===1?node:node.parentElement)?.closest?.(preserve);
   const TO_SL = new Map(Object.entries({
     "Pin":"Pripni",
+    "Use offline replies":"Uporabi zajete odgovore",
+    "Offline replay keeps the current game and cursor. Only captured full-FEN queries are available.":"Ponovitev ohrani trenutno partijo in kazalec. Na voljo so le zajeta vprašanja za celoten FEN.",
     "Unpin":"Odpni",
     "Pinned":"Pripeto",
     "Unpinned":"Odpeto",

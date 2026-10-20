@@ -172,6 +172,9 @@
     for (const s of value.snapshots) { validate(s); if (ids.has(s.id)) throw Error('Duplicate Evidence snapshot. Original bytes were retained.'); ids.add(s.id); }
     return { snapshots:copy(value.snapshots), metadata:metadata(value.snapshots,value.metadata) };
   }
+  // Keep a full valid v1 archive importable: its empty version descriptor is
+  // bounded framing, not a pin record. Real pin metadata consumes the quota.
+  const storageBytes=value=>bytes({snapshots:value.snapshots})+(value.metadata?.pins?.length?bytes(value.metadata):0);
   function createStore({ maxItems = 30, maxBytes = MAX_BYTES, indexedDB: suppliedIDB, localStorage: suppliedStorage, locks: suppliedLocks } = {}) {
     const dbProvider = suppliedIDB === undefined ? globalThis.indexedDB : suppliedIDB;
     const locks = suppliedLocks === undefined ? globalThis.navigator?.locks : suppliedLocks;
@@ -221,11 +224,11 @@
         state.metadata={version:1,pins:[...pins].sort()};
         if(op.snapshot) {
           const candidates=state.snapshots.filter(s=>s.id!==op.id&&!pins.has(s.id)).sort(order);
-          while((state.snapshots.length>maxItems||bytes(state)>maxBytes)&&candidates.length) {
+          while((state.snapshots.length>maxItems||storageBytes(state)>maxBytes)&&candidates.length) {
             const victim=candidates.shift();state.snapshots=state.snapshots.filter(s=>s.id!==victim.id);removed.push(victim.id);
           }
         }
-        if(state.snapshots.length>maxItems||bytes(state)>maxBytes)throw full('Evidence storage is full (30 snapshots / 16 MiB). Pinned evidence was kept. Export the unsaved snapshot.');
+        if(state.snapshots.length>maxItems||storageBytes(state)>maxBytes)throw full('Evidence storage is full (30 snapshots / 16 MiB). Pinned evidence was kept. Export the unsaved snapshot.');
       }
       return {state,removed};
     }
@@ -298,7 +301,7 @@
     }
     function status() {
       return {mode,persistent:mode!=='memory',unsaved:pending.length>0,maxItems,maxBytes,
-        count:durable.snapshots.length,pinned:durable.metadata.pins.length,bytes:bytes(durable),metadataBytes:bytes(durable.metadata),
+        count:durable.snapshots.length,pinned:durable.metadata.pins.length,bytes:storageBytes(durable),serializedBytes:bytes(durable),framingBytes:bytes(durable)-storageBytes(durable),metadataBytes:bytes(durable.metadata),
         pendingCount:pending.length,readError,lastOutcome};
     }
     return { async dataSnapshot() {
@@ -318,5 +321,5 @@
       }, remove(id) {return mutate({id});},status };
   }
 
-  return { VERSION, SCHEMA, canonical, digest, candidateDigest, cacheIdentity, validFen, validate, seal, parse, createCollector, replay, createStore, metadata, archive };
+  return { VERSION, SCHEMA, canonical, digest, candidateDigest, cacheIdentity, validFen, validate, seal, parse, createCollector, replay, createStore, metadata, archive, storageBytes };
 });

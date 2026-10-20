@@ -58,9 +58,10 @@ test('bounded persistent fallback survives reopening and evicts oldest snapshots
   const store=E.createStore({indexedDB:null,localStorage:storage,locks,maxItems:2});
   const a=snapshot({at:'2026-09-11T00:00:00Z'}),b=snapshot({at:'2026-09-12T00:00:00Z'}),c=snapshot({at:'2026-09-13T00:00:00Z'});
   await store.put(a);await store.put(b);assert.equal((await store.put(c)).persistent,true);
-  const reopened=E.createStore({indexedDB:null,localStorage:storage});
+  const reopened=E.createStore({indexedDB:null,localStorage:storage,locks});
   assert.equal((await reopened.list()).length,2);assert.equal(await reopened.get(a.id),null);assert.deepEqual(await reopened.get(c.id),c);
-  await reopened.remove(c.id);assert.equal(await reopened.get(c.id),null);
+  assert.equal((await reopened.remove(c.id)).persistent,true);assert.equal(await reopened.get(c.id),null);
+  assert.equal(await E.createStore({indexedDB:null,localStorage:storage,locks}).get(c.id),null);
 });
 test('quota failure retains readable memory and never reports persistent storage',async()=>{
   const storage={getItem:()=>null,setItem:()=>{throw new Error('QuotaExceededError');},removeItem(){}};
