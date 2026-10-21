@@ -1,7 +1,7 @@
 """BD-authorized one-shot album release; preserve the published snapshot by digest.
 
 Uses Netlify's file-digest API, including its existing serialized netlify.toml,
-cached function digests/configuration and schedules. No provider calls or secrets
+identical function ZIPs/configuration and schedules. No provider calls or secrets
 are written. Only the explicitly listed public album and backlink are overlaid.
 """
 import hashlib
@@ -16,7 +16,6 @@ import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
 BASE = '6ad7f1f75aa407c6d162b971'
-RESUME = '6ad87fea33e0aca3edd3c338'
 HOST = 'https://' + BASE + '--mdlxdcc.netlify.app'
 PAGE = 'BD/O/izleti/andaluzija-2027.html'
 DF = 'Nara/dualframe-lab/'
@@ -148,10 +147,13 @@ for path, data in overlay.items():
     files[path] = sha(data, 'sha1')
 functions = {f['n']: f['d'] for f in published['available_functions']}
 assert len(functions) == 30
-# `d` is the deployed function digest; `oid` identifies the original cached
-# upload. Keep their roles separate when reusing the existing function bundles.
-cached_uploads = {f['n']: f['oid'] for f in published['available_functions']}
-assert all(re.fullmatch('[0-9a-f]{64}', h) for h in cached_uploads.values())
+# Netlify no longer has the raw cached ZIPs. Re-upload only byte-identical
+# reconstructions: every ZIP must match the current production digest first.
+bundles = {f['name']: f for f in json.loads((Path(os.environ['ALBUM_FROZEN_ROOT']) / 'bundled-functions.json').read_text())}
+assert {name: f['sha256'] for name, f in bundles.items()} == functions, 'Function ZIP differs from production'
+for name, bundle in bundles.items():
+    assert sha(Path(bundle['path']).read_bytes()) == functions[name]
+print('All 30 function ZIPs match exact production SHA256.', flush=True)
 # The API reports effective defaults. Re-sending them would request plan-gated
 # overrides, although this release changes no function settings. Require the
 # existing default allocation, then let the same site retain those defaults.
@@ -177,17 +179,15 @@ scope = {'previous_deploy': BASE, 'source': os.environ['GITHUB_SHA'],
     'live_dualframe_policy': 'only backlink and matching offline package; preserve current deployed features'}
 (EVIDENCE / 'scope.json').write_text(json.dumps(scope, indent=2) + '\n')
 
-# Resume the one known prepared deploy; never create a second production attempt.
+# Create a fresh draft: previous incomplete cache attempts contain unsatisfied
+# extra hashes. Verify the complete ready draft before publishing it.
 guard()
 title = 'Andaluzija DualFrame album ' + os.environ['GITHUB_SHA'] + ' baseline=' + BASE
-pending = api('deploys/' + RESUME)
-assert pending['site_id'] == SITE and pending['state'] in ['prepared', 'uploading']
-assert BASE in pending['title'] and '88e6d6aa09de0bd94fa1399f74808356e220a0a8' in pending['title']
-deploy = api('sites/' + SITE + '/deploys/' + RESUME + '?commit_ref=' + os.environ['GITHUB_SHA'], {
-    'files': files, 'functions': cached_uploads, 'functions_config': config,
+deploy = api('sites/' + SITE + '/deploys?title=' + urllib.parse.quote(title) + '&commit_ref=' + os.environ['GITHUB_SHA'], {
+    'files': files, 'functions': functions, 'functions_config': config,
     'function_schedules': published.get('function_schedules') or [],
-    'branch': 'main', 'framework': published.get('framework') or 'unknown', 'async': True,
-}, method='PUT')
+    'branch': 'main', 'framework': published.get('framework') or 'unknown', 'async': True, 'draft': True,
+}, method='POST')
 deploy_id = deploy['id']
 (EVIDENCE / 'created.json').write_text(json.dumps({'deploy_id': deploy_id, 'source': os.environ['GITHUB_SHA']}) + '\n')
 for _ in range(90):
@@ -198,8 +198,9 @@ for _ in range(90):
     time.sleep(3)
 else:
     raise AssertionError('Deploy preparation timed out; retain existing ID')
-assert not deploy.get('required_functions'), 'Cached functions unavailable; no function replacement allowed'
 assert not deploy.get('required_edge_functions') and not deploy.get('required_server')
+by_function_sha = {f['sha256']: f for f in bundles.values()}
+assert all(h in by_function_sha for h in deploy.get('required_functions', []))
 by_sha = {sha(data, 'sha1'): (path, data) for path, data in overlay.items()}
 required = deploy.get('required') or []
 assert all(h in by_sha for h in required), 'Baseline digest was not preserved by server'
@@ -207,16 +208,28 @@ guard()
 for h in required:
     path, data = by_sha[h]
     api('deploys/' + deploy_id + '/files/' + urllib.parse.quote(path, safe='/'), data, 'PUT', 'application/octet-stream')
+for h in deploy.get('required_functions', []):
+    bundle = by_function_sha[h]
+    query = {'runtime': bundle.get('runtimeVersion') or bundle['runtime']}
+    if bundle.get('invocationMode'):
+        query['invocation_mode'] = bundle['invocationMode']
+    if bundle.get('timeout'):
+        query['timeout'] = bundle['timeout']
+    api('deploys/' + deploy_id + '/functions/' + urllib.parse.quote(bundle['name']) + '?' + urllib.parse.urlencode(query),
+        Path(bundle['path']).read_bytes(), 'PUT', 'application/octet-stream')
 for _ in range(120):
     deploy = api('deploys/' + deploy_id)
     if deploy['state'] in ['ready', 'error']:
         break
     time.sleep(3)
 assert deploy['state'] == 'ready'
-assert api('sites/' + SITE)['published_deploy']['id'] == deploy_id
 assert {f['n']: f['d'] for f in deploy['available_functions']} == functions, 'Production functions changed'
 assert {f['n']: (f.get('rg'), f.get('m')) for f in deploy['available_functions']} == {f['n']: (f.get('rg'), f.get('m')) for f in published['available_functions']}, 'Function allocation changed'
 assert deploy.get('function_schedules') == published.get('function_schedules'), 'Function schedules changed'
+guard()
+api('sites/' + SITE + '/deploys/' + deploy_id + '/restore', data=b'', method='POST')
+deploy = api('deploys/' + deploy_id)
+assert api('sites/' + SITE)['published_deploy']['id'] == deploy_id
 after = {f['path'].lstrip('/'): f['sha'] for f in api('sites/' + SITE + '/files')}
 assert after == files, 'Unexpected published static changes'
 receipt = {'deploy_id': deploy_id, 'state': deploy['state'], 'published_at': deploy.get('published_at'),

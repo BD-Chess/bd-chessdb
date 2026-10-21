@@ -2,7 +2,7 @@ name: Andaluzija DualFrame scoped production R2
 # BD explicitly authorized this one album release. Normal Git CD stays disabled.
 # Retain bounded validation diagnostics when the provider rejects preparation.
 # Effective default regions/memory are verified, never re-sent as new overrides.
-# Resume the known prepared deploy using original cached function-upload hashes.
+# Reconstruct and verify byte-identical legacy ZIPs; publish only a verified draft.
 on:
   push:
     branches: [main]
@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 18
     env:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      ALBUM_FROZEN_ROOT: ${{ runner.temp }}/andaluzija-frozen-functions
+      ALBUM_NETLIFY_TOOLS: ${{ runner.temp }}/album-netlify-tools
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,6 +33,17 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify album interactions, assets and travel regressions without provider calls
         run: node --test tests/dualframe-album.test.mjs tests/andaluzija-ai.test.mjs tests/andaluzija-page.test.mjs tests/dualframe-pwa.test.mjs
+      - name: Reconstruct exact published function sources
+        run: python3 scripts/prepare-andaluzija-legacy-functions-20261021.py
+      - name: Install pinned legacy dependencies and official packaging tools
+        run: |
+          npm ci --prefix "$ALBUM_FROZEN_ROOT" --ignore-scripts --no-audit --no-fund
+          npm ci --prefix "$ALBUM_FROZEN_ROOT/functions" --ignore-scripts --no-audit --no-fund
+          npm install --prefix "$RUNNER_TEMP/album-netlify-tools" --ignore-scripts --no-audit --no-fund netlify-cli@27.14.0
+      - name: Package unchanged functions using the production CLI version
+        env:
+          ALBUM_NETLIFY_TOOLS: ${{ runner.temp }}/album-netlify-tools
+        run: node scripts/bundle-andaluzija-legacy-functions-20261021.mjs
       - name: Publish only the album and backlink over the exact current snapshot
         run: python3 scripts/deploy-andaluzija-dualframe-20261021.py
       - uses: actions/upload-artifact@v4
