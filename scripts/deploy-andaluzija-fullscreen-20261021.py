@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
-BASE = '6ad8b5e8f7e23390029e9844'
+BASE = '6ad8b6f61a26f6a739b566bc'
 OUT = Path('album-release-evidence')
 OUT.mkdir(exist_ok=True)
 
@@ -57,23 +57,23 @@ def guard():
 guard()
 before = api('deploys/' + BASE)
 assert before['state'] == 'ready' and before['context'] == 'production'
-sources = ['public/shared/dualframe-album.css']
+sources = ['public/shared/dualframe-album.mjs']
 expected_before = {
-    "shared/dualframe-album.css": "9751f5a60ab92f4cac7fcc442e8e95f5ca6fff5346caba91129d36c5107fad48"
+    "shared/dualframe-album.mjs": "fbcb4a80a3f4f06799a51a37b7ec7ed645767bdf077d0b45533a960ad9d0a860"
 }
 overlay = {p.removeprefix('public/').lower(): Path(p).read_bytes() for p in sources}
 for path, contents in overlay.items():
     assert sha(public(path)) == expected_before[path], 'Live source drift: ' + path
     assert sha(contents) != expected_before[path], 'Missing change: ' + path
 # The published HTML contains canonical links and password-manager preparation
-# not present in source. Preserve every byte except the stylesheet cache key.
+# not present in source. Preserve every byte except the module cache key.
 page_path = 'bd/o/izleti/andaluzija-2027.html'
 original_page = public(page_path)
 page = original_page.decode()
-for name in ['dualframe-album.css']:
+for name in ['dualframe-album.mjs']:
     old = name + '?v=20261021-fullscreen2'
     assert page.count(old) == 1, 'Unexpected live resource: ' + name
-    page = page.replace(old, name + '?v=20261021-fullscreen3')
+    page = page.replace(old, name + '?v=20261021-fullscreen4')
 overlay[page_path] = page.encode()
 files = {f['path'].lstrip('/').lower(): f['sha'] for f in api('sites/' + SITE + '/files')}
 assert files[page_path] == sha(original_page, 'sha1'), 'HTML is not the exact static snapshot'

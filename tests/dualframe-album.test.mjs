@@ -145,6 +145,18 @@ test('photo-only stylesheet removes the hosting page legacy dialog image-height 
   const css=await readFile('public/shared/dualframe-album.css','utf8');
   assert.match(css,/\.df-album-viewer\.is-immersive \.df-viewer-stage>img\{max-width:none;max-height:none\}/);
 });
+test('the delayed place name is inside the contained photo, not its black letterbox',async()=>{
+  const f=fixture();try{
+    let reveal;f.w.setTimeout=(fn,ms)=>{if(ms===2000)reveal=fn;return 1;};f.w.clearTimeout=()=>{};
+    f.click('[data-df-open]');const image=f.d.querySelector('[data-df-image]'),stage=f.d.querySelector('.df-viewer-stage'),caption=f.d.querySelector('[data-df-photo-caption]');
+    Object.defineProperties(stage,{clientWidth:{value:1363},clientHeight:{value:936}});
+    Object.defineProperties(image,{naturalWidth:{value:1672},naturalHeight:{value:941},width:{value:1363},height:{value:936}});
+    image.dispatchEvent(new f.w.Event('load'));f.click('[data-df-full]');await Promise.resolve();reveal();
+    const inset=parseFloat(caption.style.bottom);
+    assert(inset>100&&inset<110,'caption clears the lower black letterbox');
+    assert.equal(parseFloat(caption.style.maxWidth),1323);
+  }finally{f.dom.window.close();}
+});
 test('locked page and content-refresh integration retain the album without changing Shield',async()=>{
   const html=await readFile('public/BD/O/izleti/andaluzija-2027.html','utf8'),js=await readFile('public/BD/O/izleti/andaluzija-2027.js','utf8');
   assert(html.includes('Spoznaj DualFrame Photos'));assert(html.includes('data-dualframe-album'));

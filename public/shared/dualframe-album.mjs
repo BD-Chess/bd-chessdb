@@ -66,8 +66,12 @@ export function mountAlbum(root, album, baseURL) {
   const immersive = () => viewer.classList.contains('is-immersive');
   function hideCaption() { if (captionTimer !== null) win.clearTimeout(captionTimer); captionTimer = null; caption.hidden = true; }
   function positionCaption() {
-    const scale = Math.min(stage.clientWidth / image.width, stage.clientHeight / image.height);
-    caption.style.bottom = Math.max(20, (stage.clientHeight - image.height * scale) / 2 + 20) + 'px';
+    // img.width/height describe the CSS box, not the contained photograph.
+    const width = image.naturalWidth || Number(image.getAttribute('width'));
+    const height = image.naturalHeight || Number(image.getAttribute('height'));
+    const scale = Math.min(stage.clientWidth / width, stage.clientHeight / height);
+    caption.style.bottom = Math.max(20, (stage.clientHeight - height * scale) / 2 + 20) + 'px';
+    caption.style.maxWidth = Math.max(40, width * scale - 40) + 'px';
   }
   function scheduleCaption() {
     hideCaption();
