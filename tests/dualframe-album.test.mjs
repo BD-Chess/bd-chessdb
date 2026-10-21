@@ -141,6 +141,10 @@ test('native fullscreen exit and synthesized double click after touch do not reo
     f.click('[data-df-full]');await Promise.resolve();await f.d.exitFullscreen();assert(!viewer.classList.contains('is-immersive'));
   }finally{f.dom.window.close();}
 });
+test('photo-only stylesheet removes the hosting page legacy dialog image-height cap',async()=>{
+  const css=await readFile('public/shared/dualframe-album.css','utf8');
+  assert.match(css,/\.df-album-viewer\.is-immersive \.df-viewer-stage>img\{max-width:none;max-height:none\}/);
+});
 test('locked page and content-refresh integration retain the album without changing Shield',async()=>{
   const html=await readFile('public/BD/O/izleti/andaluzija-2027.html','utf8'),js=await readFile('public/BD/O/izleti/andaluzija-2027.js','utf8');
   assert(html.includes('Spoznaj DualFrame Photos'));assert(html.includes('data-dualframe-album'));

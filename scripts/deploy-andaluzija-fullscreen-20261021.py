@@ -9,7 +9,7 @@ import urllib.request
 import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
-BASE = '6ad88b33fa605c1ea5781038'
+BASE = '6ad8b5e8f7e23390029e9844'
 OUT = Path('album-release-evidence')
 OUT.mkdir(exist_ok=True)
 
@@ -57,24 +57,23 @@ def guard():
 guard()
 before = api('deploys/' + BASE)
 assert before['state'] == 'ready' and before['context'] == 'production'
-sources = ['public/shared/dualframe-album.mjs', 'public/shared/dualframe-album.css']
+sources = ['public/shared/dualframe-album.css']
 expected_before = {
-    "shared/dualframe-album.mjs": "f5f658b18c19b465f5f9054dbca8383c4b25f43cf3221dc870b0ee98fe0930e8",
-    "shared/dualframe-album.css": "c5716a074f0c9ed4cb900f41a05beba94730250f81cc34d94527eb3f86d0a3be"
+    "shared/dualframe-album.css": "9751f5a60ab92f4cac7fcc442e8e95f5ca6fff5346caba91129d36c5107fad48"
 }
 overlay = {p.removeprefix('public/').lower(): Path(p).read_bytes() for p in sources}
 for path, contents in overlay.items():
     assert sha(public(path)) == expected_before[path], 'Live source drift: ' + path
     assert sha(contents) != expected_before[path], 'Missing change: ' + path
 # The published HTML contains canonical links and password-manager preparation
-# not present in source. Preserve every byte except these two cache keys.
+# not present in source. Preserve every byte except the stylesheet cache key.
 page_path = 'bd/o/izleti/andaluzija-2027.html'
 original_page = public(page_path)
 page = original_page.decode()
-for name in ['dualframe-album.css', 'dualframe-album.mjs']:
-    old = name + '?v=20261021-r1'
+for name in ['dualframe-album.css']:
+    old = name + '?v=20261021-fullscreen2'
     assert page.count(old) == 1, 'Unexpected live resource: ' + name
-    page = page.replace(old, name + '?v=20261021-fullscreen2')
+    page = page.replace(old, name + '?v=20261021-fullscreen3')
 overlay[page_path] = page.encode()
 files = {f['path'].lstrip('/').lower(): f['sha'] for f in api('sites/' + SITE + '/files')}
 assert files[page_path] == sha(original_page, 'sha1'), 'HTML is not the exact static snapshot'
