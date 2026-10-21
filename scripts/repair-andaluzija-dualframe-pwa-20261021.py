@@ -8,6 +8,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
 BASE = '6ad88643df77f0aa7c7847b2'
@@ -25,14 +26,31 @@ def api(path, data=None, method=None):
         data=json.dumps(data).encode() if isinstance(data, dict) else data, method=method,
         headers={'Authorization': 'Bearer ' + os.environ['NETLIFY_AUTH_TOKEN'],
                  'Content-Type': 'application/json' if isinstance(data, dict) else 'application/octet-stream'})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return json.load(response)
+    attempts = 4 if request.get_method() in ['GET', 'PUT'] else 1
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                return json.load(response)
+        except (urllib.error.URLError, ConnectionResetError, TimeoutError) as error:
+            if isinstance(error, urllib.error.HTTPError) and error.code not in [429, 500, 502, 503, 504]:
+                raise
+            if attempt + 1 == attempts:
+                raise
+            time.sleep(2 ** attempt)
 
 
 def public(path, deploy=BASE):
     url = 'https://' + deploy + '--mdlxdcc.netlify.app/' + urllib.parse.quote(path.lower(), safe='/')
-    with urllib.request.urlopen(url, timeout=45) as response:
-        return response.read()
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(url, timeout=45) as response:
+                return response.read()
+        except (urllib.error.URLError, ConnectionResetError, TimeoutError) as error:
+            if isinstance(error, urllib.error.HTTPError) and error.code not in [429, 500, 502, 503, 504]:
+                raise
+            if attempt == 3:
+                raise
+            time.sleep(2 ** attempt)
 
 
 def guard():
@@ -62,7 +80,7 @@ release = json.loads(public(DF + 'release.json'))
 assets = json.loads(re.search(r'const ASSETS=(\[[\s\S]*?\]);', worker)[1])
 assert './sw.js' not in assets
 paths = sorted({asset_path(a) for a in assets if asset_path(a) != DF + 'release.json'})
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
     data = dict(zip(paths, pool.map(public, paths)))
 assert 'DualFrame in practice' in data[DF + 'index.html'].decode()
 digest = package_hash(assets, data)
@@ -137,7 +155,7 @@ after_files = {f['path'].lstrip('/').lower(): f['sha'] for f in api('sites/' + S
 assert after_files == files, 'Unexpected static delta'
 for path, contents in overlay.items():
     assert public(path, deploy_id) == contents
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
     actual_data = dict(zip(paths, pool.map(lambda path: public(path, deploy_id), paths)))
 assert package_hash(assets, actual_data) == digest
 receipt = {'deploy_id': deploy_id, 'state': deploy['state'], 'published_at': deploy['published_at'],
