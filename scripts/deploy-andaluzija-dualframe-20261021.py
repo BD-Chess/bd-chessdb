@@ -147,11 +147,17 @@ for path, data in overlay.items():
     files[path] = sha(data, 'sha1')
 functions = {f['n']: f['d'] for f in published['available_functions']}
 assert len(functions) == 30
+# The API reports effective defaults. Re-sending them would request plan-gated
+# overrides, although this release changes no function settings. Require the
+# existing default allocation, then let the same site retain those defaults.
+assert not published.get('functions_region_overrides')
+assert {f.get('rg') for f in published['available_functions']} == {'us-east-2'}
+assert {f.get('m') for f in published['available_functions']} == {1024}
 config = {}
 for f in published['available_functions']:
     config[f['n']] = {long: f[short] for long, short in {
-        'display_name': 'dn', 'generator': 'g', 'build_data': 'bd', 'memory': 'm',
-        'priority': 'p', 'region': 'rg', 'traffic_rules': 'tr',
+        'display_name': 'dn', 'generator': 'g', 'build_data': 'bd',
+        'priority': 'p', 'traffic_rules': 'tr',
     }.items() if f.get(short) is not None}
     if f.get('ro'):
         config[f['n']]['routes'] = [{long: route[short] for long, short in {
@@ -201,6 +207,8 @@ for _ in range(120):
 assert deploy['state'] == 'ready'
 assert api('sites/' + SITE)['published_deploy']['id'] == deploy_id
 assert {f['n']: f['d'] for f in deploy['available_functions']} == functions, 'Production functions changed'
+assert {f['n']: (f.get('rg'), f.get('m')) for f in deploy['available_functions']} == {f['n']: (f.get('rg'), f.get('m')) for f in published['available_functions']}, 'Function allocation changed'
+assert deploy.get('function_schedules') == published.get('function_schedules'), 'Function schedules changed'
 after = {f['path'].lstrip('/'): f['sha'] for f in api('sites/' + SITE + '/files')}
 assert after == files, 'Unexpected published static changes'
 receipt = {'deploy_id': deploy_id, 'state': deploy['state'], 'published_at': deploy.get('published_at'),
