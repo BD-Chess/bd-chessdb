@@ -88,7 +88,11 @@ for f in before['available_functions']:
     config[f['n']] = {long: f[short] for long, short in {
         'display_name': 'dn', 'generator': 'g', 'build_data': 'bd',
         'priority': 'p', 'traffic_rules': 'tr'}.items() if f.get(short) is not None}
-    assert not f.get('ro') and not f.get('ero'), 'Unexpected routes'
+    if f.get('ro'):
+        config[f['n']]['routes'] = [{long: route[short] for long, short in {
+            'pattern': 'p', 'literal': 'l', 'expression': 'e', 'methods': 'm', 'prefer_static': 'ps',
+        }.items() if route.get(short) is not None} for route in f['ro']]
+    assert not f.get('ero'), 'Unexpected excluded routes'
 guard()
 title = 'DualFrame live PWA checksum correction ' + os.environ['GITHUB_SHA'] + ' album=' + BASE
 deploy = api('sites/' + SITE + '/deploys?title=' + urllib.parse.quote(title) + '&commit_ref=' + os.environ['GITHUB_SHA'],
