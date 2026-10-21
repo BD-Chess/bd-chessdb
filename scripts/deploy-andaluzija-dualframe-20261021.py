@@ -12,6 +12,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
+import urllib.error
 
 SITE = '17b4124d-c197-4c0a-a711-8b2c08d91088'
 BASE = '6ad7f1f75aa407c6d162b971'
@@ -32,8 +33,19 @@ def api(path, data=None, method=None, content_type='application/json'):
         data=json.dumps(data).encode() if isinstance(data, dict) else data,
         method=method, headers={'Authorization': 'Bearer ' + os.environ['NETLIFY_AUTH_TOKEN'],
                               'Content-Type': content_type})
-    with urllib.request.urlopen(req, timeout=60) as response:
-        return json.load(response)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as error:
+        # Log only provider validation messages, never request headers or tokens.
+        raw = error.read().decode('utf-8', errors='replace')
+        try:
+            detail = json.loads(raw)
+            safe = {key: detail[key] for key in ['code', 'message', 'error', 'errors'] if key in detail}
+        except (ValueError, TypeError):
+            safe = {'message': 'Non-JSON provider response', 'response_sha256': sha(raw.encode())}
+        print('NETLIFY_API_REJECTION', error.code, json.dumps(safe)[:2500], flush=True)
+        raise
 
 
 def read_public(path):
