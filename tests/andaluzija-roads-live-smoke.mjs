@@ -30,7 +30,7 @@ try{
  }
  await page.locator('#map-expand').click();assert.equal(await page.evaluate(()=>document.fullscreenElement?.id),'trip-map-card');await page.locator('#map-ai').click();assert.equal(await page.locator('#trip-ai-panel').evaluate(e=>e.parentElement.id),'trip-map-card');
  const panel=await page.locator('#trip-ai-panel').boundingBox(),close=await page.locator('#map-expand').boundingBox();assert(close.x+close.width<=panel.x+2,'AI covers fullscreen exit');await page.locator('#trip-ai-close').click();await page.locator('#map-expand').click();assert.equal(await page.evaluate(()=>!!document.fullscreenElement),false);result.nativeFullscreenAI=true;
- await page.setViewportSize({width:402,height:874});assert(await page.locator('.topbar').evaluate(e=>parseFloat(getComputedStyle(e).paddingTop)>=30));result.portraitSafeArea=true;
+ await page.setViewportSize({width:402,height:874});assert.equal(await page.locator('.topbar').evaluate(e=>parseFloat(getComputedStyle(e).paddingTop)),18);result.portraitSafeArea=true;
  result.csp=await page.evaluate(()=>window.cspViolations);assert.deepEqual(result.errors,[]);assert.deepEqual(result.mapErrors,[]);assert.deepEqual(result.csp,[]);
  result.status='PRODUCTION_SMOKE_PASSED';
 }catch(e){result.status='PRODUCTION_SMOKE_FAILED';result.failure=String(e.message).replace(/https?:\/\/\S+/g,'[URL]').slice(0,600);process.exitCode=1;}

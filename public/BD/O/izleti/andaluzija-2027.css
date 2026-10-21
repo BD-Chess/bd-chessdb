@@ -79,9 +79,20 @@
 body.map-fullscreen{overflow:hidden!important;padding-left:0!important}.map-card.map-expanded,.map-card:fullscreen{position:fixed;inset:0;z-index:2000;width:100%;height:100dvh;max-height:none;max-width:none;margin:0;border:0;border-radius:0;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .map-card.map-expanded .map-host{height:auto;min-height:120px;flex:1}.map-expanded .map-viewbar{padding:7px 12px;flex:none}.map-expanded .map-toolbar{padding:7px 12px;flex:none}.map-expanded .map-route-controls{padding:7px 12px;flex:none}.map-expanded .place-buttons,.map-expanded .map-detail,.map-expanded .map-note{display:none}.map-expanded #map-status{font-size:.65rem;max-width:none;flex:1}.map-expanded .map-tools button{min-height:40px}.map-expanded:has(#trip-ai-panel:not([hidden])) .map-host{margin-right:min(420px,40vw)}
 @media(max-width:700px){.map-route-controls{padding:12px;gap:8px}.map-route-controls select{font-size:14px}.map-expanded .map-views button{min-height:36px}.map-expanded .map-toolbar{order:0}.map-expanded .map-viewbar{order:1}.map-expanded .map-host{order:2}.map-expanded .map-route-controls{display:none}.map-expanded .map-toggles{display:none}.map-expanded .map-host{margin-right:0!important}.map-expanded:has(#trip-ai-panel:not([hidden])) .map-host{margin-bottom:min(60dvh,540px)}.map-expanded .map-tools{width:100%;justify-content:space-between}.map-expanded #map-status{font-size:11px}.map-expanded .map-viewbar{gap:4px}.map-expanded .map-views{width:auto}.map-expanded .map-views button{font-size:11px;padding:6px}.map-expanded #map-reset{font-size:11px}}
-/* Portrait only: reserve the iPhone status/Dynamic Island area. Landscape is unchanged. */
+/* Portrait only: one safe top row, without adding a second row to the inset. */
 @media(min-width:701px){.map-expanded:has(#trip-ai-panel:not([hidden]))>.map-viewbar,.map-expanded:has(#trip-ai-panel:not([hidden]))>.map-route-controls,.map-expanded:has(#trip-ai-panel:not([hidden]))>.map-toolbar{margin-right:min(420px,40vw)}}
-@media(max-width:700px) and (orientation:portrait){.topbar{padding-top:calc(12px + max(18px,env(safe-area-inset-top)));padding-bottom:10px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}}
+@media(max-width:700px) and (orientation:portrait){
+ :root{--trip-safe-top:max(18px,env(safe-area-inset-top,0px))}
+ .topbar{padding-top:var(--trip-safe-top);padding-bottom:10px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+ .andaluzija-trip .df-album-viewer:not(.is-immersive)>.df-viewer-top{padding-top:var(--trip-safe-top)}
+ .andaluzija-trip #photo-dialog{padding-top:var(--trip-safe-top)}
+ .map-card.map-expanded,.map-card:fullscreen{padding-top:var(--trip-safe-top)}
+ .map-expanded .map-toolbar{padding-top:0}
+ .map-expanded .map-viewbar{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+ .map-expanded .map-views{width:100%;min-width:0;flex-wrap:nowrap}
+ .map-expanded .map-views button{flex:1;min-width:0}
+ .map-expanded #map-status{min-width:0;width:100%;max-width:100%;flex:none;overflow-wrap:anywhere;line-height:1.35}
+}
 @media(max-width:600px){.map-viewbar{padding:12px}.map-views{width:100%}.map-views button{flex:1;font-size:.62rem;padding:8px}.map-host{height:430px}#map-status{max-width:none}.photo-map .leaflet-control-attribution{font-size:10px}.map-expanded .map-host{height:60vh}}
 @media print{.map-viewbar,.photo-map{display:none!important}.map-host.photo-mode>#trip-map{visibility:visible}.map-host.photo-mode>.map-corner{display:block}.map-host{height:auto;aspect-ratio:1000/700}}
 

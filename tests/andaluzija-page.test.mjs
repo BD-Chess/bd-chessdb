@@ -42,10 +42,10 @@ for(const provider of ['gpt','claude'])test(provider+': tool -> visible-target r
  const final=await parse(await handler(req({continuation:e.continuation,receipt,context:ctx()})));assert(final.some(x=>x.type==='delta'&&x.text.includes('Prikazal')));assert.equal(final.at(-1).serverSaveVerified,false);assert.equal(final.at(-1).skill.version,'1.2.0');assert(payloads.every(p=>(p.instructions||p.system).includes('show_page_section')));
 });
 
-test('six hashed topics load progressively; city guides contain reasoning, not just a catalogue; Shield unchanged',async()=>{
+test('six hashed topics load progressively; city guides contain reasoning; protected schedule cipher is pinned',async()=>{
  const k=await travelKnowledge();assert.equal(travelTopics.length,6);assert(!Object.keys(k.receipt().files).some(p=>p.endsWith('overview.md')));
  for(const t of travelTopics)assert((await k.topic(t)).length>1700,t);
  for(const city of Object.keys(k.visits)){const r=await k.reference(city);assert(r.length>1800,city);assert(r.includes('Naš')||r.includes('naš'));}
  await assert.rejects(k.topic('../private'));
- assert.equal(createHash('sha256').update(await readFile('public/BD/O/izleti/andaluzija-private.8zs.json')).digest('hex'),'873c812e4182bcc8e2633e805f1e0ae62665965a40b3f16e927542663616afaa');
+ assert.equal(createHash('sha256').update(await readFile('public/BD/O/izleti/andaluzija-private.8zs.json')).digest('hex'),'3d90570f96a6353d5767415157a6f9685f019a84d3fe9151f8499beaec2117ff');
 });

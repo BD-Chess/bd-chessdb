@@ -119,19 +119,19 @@ async function ensurePhotoMap(){
 }
 function fitPhotoMap(){photoMap?.fit();}
 function updatePhotoRoutes(){
- if(!photoMap)return;photoMap.clear();$('map-status').textContent='Izbira je spremenjena. Kliknita »Prikaži traso« za dejansko cestno pot.';
+ if(!photoMap)return;photoMap.clear();$('map-status').textContent='Izbira spremenjena · prikažita traso.';
 }
 function updatePhotoMarkers(){}
 function syncMapView(){document.querySelectorAll('[data-map-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapView===mapMode)));$('map-host').dataset.mapMode=mapMode;}
 async function setMapView(mode){
  if(!['satellite','streets','scheme'].includes(mode))return;
  const request=++mapViewRequest;mapMode=mode;syncMapView();
- if(mode==='scheme'){$('map-host').classList.remove('photo-mode');$('map-status').textContent='Offline shema · ravne črte so samo pregled, ne cestni izračun.';return;}
+ if(mode==='scheme'){$('map-host').classList.remove('photo-mode');$('map-status').textContent='Shema · ne cestna trasa.';return;}
  $('map-status').textContent='Nalagam Google Maps …';
  try{await ensurePhotoMap();if(request!==mapViewRequest)return;
   await photoMap.init(mode==='streets'?'roadmap':'hybrid');$('map-host').classList.add('photo-mode');photoMap.resize();
-  $('map-status').textContent='Google Maps · izberita obseg in kliknita »Prikaži traso«. Podlaga je satelitska s cestami in oznakami.';
- }catch{if(request!==mapViewRequest)return;mapMode='scheme';syncMapView();$('map-host').classList.remove('photo-mode');$('map-status').textContent='Google Maps ni dosegljiv. Offline shema ostaja na voljo; ne predstavlja cestnih poti.';}
+  $('map-status').textContent=mode==='streets'?'Cestni zemljevid':'Satelit + ceste';
+ }catch{if(request!==mapViewRequest)return;mapMode='scheme';syncMapView();$('map-host').classList.remove('photo-mode');$('map-status').textContent='Google ni dosegljiv · prikazana shema.';}
 }
 function routePoints(ids){return ids.filter((id,i)=>D.places[id]&&(!i||id!==ids[i-1])).map(id=>({id,name:D.places[id].name,lat:D.places[id].lat,lon:D.places[id].lon,place:id}));}
 async function drawMapRoute(supplied){
@@ -161,7 +161,7 @@ $('map-scope').onchange=()=>{$('map-day').hidden=$('map-scope').value!=='day';ph
 $('map-day').onchange=()=>{photoMap?.clear();$('map-status').textContent='Za novi dan kliknita »Prikaži traso«.';};
 for(let i=0;i<10;i++)$('map-day').add(new Option('Dan '+(i+1),i));
 window.addEventListener('andaluzija-route-preview',e=>{if(e.detail?.route){$('map-scope').value='city';$('map-day').hidden=true;drawMapRoute([{...e.detail.route,label:'Predogled · DeepOpti',color:'#67e2c1'}]);}});
-window.addEventListener('andaluzija-map-invalidated',()=>{++mapPrivateEpoch;photoMap?.clearPrivate();$('map-status').textContent='Za aktualno izbiro kliknita »Prikaži traso«. Google podatki prejšnjega prikaza so odstranjeni.';});
+window.addEventListener('andaluzija-map-invalidated',()=>{++mapPrivateEpoch;photoMap?.clearPrivate();$('map-status').textContent='Prikaz ponastavljen · prikažita traso.';});
 const defaults={malaga:110,granada:90,cordoba:95,sevilla:120,ronda:90,marbella:110};
 function initBudget(){
  if(!D.privateUnlocked||!$('guest-count'))return;
@@ -195,14 +195,18 @@ function renderBudget(){
  if(!D.privateUnlocked||!$('budget-results'))return;
  $('budget-results').innerHTML=variants.map(k=>{const v=D.variants[k],b=budgetFor(k);return `<article class="budget-result ${k===selected?'selected':''}" style="--route:${v.color}"><div class="budget-head"><span>${v.letter} · ${v.label}</span><b>${b.days===null?'Preveri prevzem':money(b.total)}</b></div><p>${b.days===null?'Prevzem mora biti veljaven in pred vračilom.':b.days+' dni najema · '+money(b.total/b.guests)+' / osebo · '+b.parkingNights+' noči parkiranja · že plačani leti vključeni'}</p><details><summary>Razčlenitev izračuna</summary><div class="budget-breakdown">${[['Letalske karte · 3 / že plačano',b.parts.flights],['Nočitve · '+money(b.confirmedLodging)+' potrjeno + '+money(b.parts.lodging-b.confirmedLodging)+' ocena',b.parts.lodging],['Avto',b.parts.car],['Parkiranje',b.parts.parking],['Hrana',b.parts.food],['Ogledi',b.parts.tickets]].map(([label,value])=>`<span>${label}</span><span>${money(value)}</span>`).join('')}</div></details></article>`;}).join('');
 }
+const verifiedFlightTime=()=>D.trip?.flightTimesVerified?D.purchase?.flights?.inboundDeparture?.slice(11,16)||'':'';
 function renderFlight(){
- if(!D.privateUnlocked||!$('flight-time'))return;
+ if(!$('flight-time'))return;
+ $('flight-time').closest('article').hidden=!D.privateUnlocked;
+ if(!D.privateUnlocked){$('flight-time').value='';$('flight-result').textContent='Letalski urnik je v zaščitenem delu.';return;}
  const raw=$('flight-time').value;
- if(!raw){$('flight-result').textContent='Ure kupljenega leta v dosegljivih dokazilih še ni. Dokler ni potrjena, ogledov na dan odleta ne potrjujemo.';return;}
+ if(!raw){$('flight-result').textContent='Za časovni izračun potrebujeta potrjeno uro leta.';return;}
  const [h,m]=raw.split(':').map(Number),depart=h*60+m-210;
  const format=min=>String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
  if(depart<0){$('flight-result').textContent='Let je zelo zgodaj. Potrebujeta transfer že prejšnji večer oziroma ponoči; ogledi na dan odleta odpadejo.';return;}
- $('flight-result').textContent='Informativno za vneseno uro (ni preverjena z vozovnico): zadnji odhod iz centra '+format(depart)+'. '+(h*60+m>=1200?'Alcazaba od 14.00 je časovno možna, če je potrjena hramba prtljage in ostane dovolj rezerve. Gibralfaro naj ostane izpuščen.':h*60+m<780?'Za jutranji ogled je lahko premalo časa; prednost imata pravočasni transfer in let.':'Prednost ima plačljiv dopoldanski ogled. Ne čakata do 14.00 samo zaradi brezplačnega vstopa.')+(selected==='mateja'?' V različici A avto vračata danes: odhod premaknita še prej za pregled oziroma shuttle.':'');
+ const verified=raw===verifiedFlightTime(),arrival=D.purchase?.flights?.inboundArrival;
+ $('flight-result').textContent=(verified?'Ura odleta je preverjena iz »Karte«. ':'Primerjalna ura · ni urnik kupljenega leta. ')+'Načrtovalna meja za odhod iz centra: '+format(depart)+'. '+(h*60+m>=1200?'Dopoldne in zgodnje popoldne sta na voljo za en izbran ogled z odmori, ob potrjeni hrambi prtljage in dovolj rezerve. ':h*60+m<780?'Prednost imata pravočasni transfer in let. ':'Izberita dopoldanski ogled in ohranita rezervo za transfer. ')+(selected==='mateja'?'V A avto vračata danes: odhod premaknita še prej za pregled in shuttle. ':'')+(verified&&arrival?'Pristanek v VCE: '+new Date(arrival).toLocaleDateString('sl-SI',{day:'numeric',month:'numeric',timeZone:'Europe/Rome'})+' ob '+arrival.slice(11,16)+'. Nadaljnjo pot domov načrtujta posebej.':'');
 }
 function choosePlan(key){
  if(!variants.includes(key))return;selected=key;put(KEY+'plan',key);
@@ -242,11 +246,11 @@ $('guide-search').addEventListener('input',()=>{const q=$('guide-search').value.
 $('open-guides').onclick=()=>{const cards=[...document.querySelectorAll('.guide-card:not([hidden])')],open=cards.some(c=>!c.open);cards.forEach(c=>c.open=open);$('open-guides').textContent=open?'Zapri zgodbe':'Odpri vse zgodbe';};
 $('stop-audio').onclick=()=>{if('speechSynthesis' in window)speechSynthesis.cancel();$('audio-status').textContent='Branje ustavljeno.';};
 function bindPrivate(){
- if(!D.privateUnlocked||!$('bd-notes'))return;
+ if(!D.privateUnlocked||!$('bd-notes')){renderFlight();return;}
  $('bd-notes').value=get(KEY+'notes','');
 $('bd-notes').addEventListener('input',()=>{$('notes-status').textContent=put(KEY+'notes',$('bd-notes').value)?'Lokalna sprememba; skupno shranjevanje preverita pri Najini ogledi.':'Za trajno kopijo uporabi Izvozi zapiske.';});
 $('export-notes').onclick=saveNotesFile;
-if($('flight-time')){$('flight-time').value=get(KEY+'flight-time','');$('flight-time').addEventListener('input',()=>{put(KEY+'flight-time',$('flight-time').value);renderFlight();});}
+if($('flight-time')){$('flight-time').value=verifiedFlightTime()||get(KEY+'flight-time','');$('flight-time').addEventListener('input',()=>{put(KEY+'flight-time',$('flight-time').value);renderFlight();});}
  initBudget();renderFlight();
 }
 

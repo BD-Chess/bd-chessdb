@@ -27,7 +27,7 @@ try{
  const context=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:true});await context.route('https://**/*',r=>r.abort());const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await fixture(page);
  await page.goto(base+'/BD/O/izleti/andaluzija-2027.html');await page.waitForFunction(()=>window.AndaluzijaTripOptiV1);
  assert.equal(await page.evaluate(()=>googleCalls.length),0,'No map or paid routes on initial render');
- assert(await page.locator('.topbar').evaluate(e=>parseFloat(getComputedStyle(e).paddingTop)>=30));
+ assert.equal(await page.locator('.topbar').evaluate(e=>parseFloat(getComputedStyle(e).paddingTop)),18);
  await page.locator('#map-draw').click();assert.equal(await page.evaluate(()=>googleCalls.length),0,'Consent enforced');
  await page.locator('[data-map-view="satellite"]').click();await page.waitForFunction(()=>googleMaps.length===1);assert.equal(await page.evaluate(()=>googleMaps[0].type),'hybrid');
  await page.locator('#map-provider-consent').check();await page.locator('#map-draw').click();await page.waitForFunction(()=>document.querySelector('#map-status').textContent.includes('12,3 km'));assert.equal(await page.evaluate(()=>googleCalls.filter(x=>x.route).length),3);assert(await page.evaluate(()=>googleCalls.filter(x=>x.route).every(x=>x.route.travelMode==='DRIVING'&&!x.route.optimizeWaypointOrder)));

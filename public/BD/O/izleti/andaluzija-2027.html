@@ -9,18 +9,18 @@
 <meta name="trip-content-version" content="2026-10-21-SHIELD-R2">
 <meta name="description" content="Andaluzija 2026. Tri poti, slovenski vodič, mestni ogledi in posamične Google Maps povezave. Osebni podatki so zaklenjeni.">
 <title>Andaluzija 2026 · Moji izleti</title>
-<link rel="stylesheet" href="./andaluzija-2027.css?v=20261021-map1">
+<link rel="stylesheet" href="./andaluzija-2027.css?v=20261021-portrait2">
 <script defer src="./andaluzija-2027-data.js?v=20261021-shield2"></script>
-<script defer src="./andaluzija-2027.js?v=20261021-map1"></script>
+<script defer src="./andaluzija-2027.js?v=20261021-portrait2"></script>
 <script defer src="../../../Trip/new/road-matrix.js"></script>
 <script defer src="./andaluzija-shield-core.js"></script>
 <script type="module" src="./andaluzija-planner.mjs?v=20261021-map1"></script>
-<link rel="stylesheet" href="./andaluzija-ai.css?v=20261021-map1">
+<link rel="stylesheet" href="./andaluzija-ai.css?v=20261021-portrait2">
 <script type="module" src="./andaluzija-ai.mjs?v=20261021-map1"></script>
 <link rel="stylesheet" href="../../../shared/dualframe-album.css?v=20261021-fullscreen3">
 <script type="module" src="../../../shared/dualframe-album.mjs?v=20261021-fullscreen4"></script>
 </head>
-<body>
+<body class="andaluzija-trip">
 <a class="skip" href="#vsebina">Na vsebino</a>
 <header class="topbar">
  <button type="button" id="trip-ai-toggle" aria-controls="trip-ai-panel" aria-expanded="false">AI</button>
@@ -36,7 +36,7 @@
   <span class="photo-credit">Ronda · fotografija iz Matejinega dokumenta</span>
  </section>
  <nav class="jump-nav" aria-label="Vsebina izleta"><a href="#potrjeno">Rezervirano</a><a href="#nacrti">Načrti</a><a href="#zemljevid">Zemljevid</a><a href="#primerjava">Primerjava</a><a href="#dnevi">Po dnevih</a><a href="#najini-ogledi">Najini ogledi</a><a href="#vodic">Vodič</a><a href="#prakticno">Praktično</a><a href="#leti-kritja">Leti in Metal</a><a href="#proracun">Proračun</a><a href="#slike">Slike</a></nav>
- <div class="intro-note"><span class="small-dot"></span><p>Tri različice poti in javni vodič. Osebni datumi, rezervacije in zapiski se odprejo z obstoječim geslom. Ure kupljenih letov še niso preverjene.</p></div>
+ <div class="intro-note"><span class="small-dot"></span><p>Tri različice poti in javni vodič. Osebni datumi, letalski urnik, rezervacije in zapiski se odprejo z obstoječim geslom.</p></div>
 
 
  <section id="potrjeno" class="section private-placeholder"><p>Osebni del je zaklenjen. <a href="#najini-ogledi">Odkleni skupni izlet ↓</a></p></section>
@@ -52,7 +52,7 @@
   <div class="section-heading"><div><p class="eyebrow">02 / EN ZEMLJEVID</p><h2>Vse poti, vsaka v svoji barvi.</h2></div><p>Google satelit s cestami, dejanske vozne trase in mestni sprehodi. Izberita celotno pot, dan ali oglede; AI je pri roki tudi na celem zaslonu.</p></div>
   <p class="project-callout"><b>Načrtuj s TripOpti.</b> Isti optimizacijski engine, tukaj prilagojen vajinim ogledom. <a href="https://www.mdlxdcc.org/trip/" target="_blank" rel="noopener noreferrer">Razišči TripOpti ↗</a></p>
   <div class="map-card" id="trip-map-card">
-   <div class="map-viewbar"><div class="map-views" role="group" aria-label="Podlaga zemljevida"><button type="button" data-map-view="satellite" aria-pressed="true">Google satelit + ceste</button><button type="button" data-map-view="streets" aria-pressed="false">Cestni zemljevid</button><button type="button" data-map-view="scheme" aria-pressed="false">Shema</button></div><p id="map-status" role="status" aria-live="polite">Klik na Google podlago naloži zemljevid. Shema deluje brez zunanje povezave.</p></div>
+   <div class="map-viewbar"><div class="map-views" role="group" aria-label="Podlaga zemljevida"><button type="button" data-map-view="satellite" aria-pressed="true">Google satelit + ceste</button><button type="button" data-map-view="streets" aria-pressed="false">Cestni zemljevid</button><button type="button" data-map-view="scheme" aria-pressed="false">Shema</button></div><p id="map-status" role="status" aria-live="polite">Izberita podlago.</p></div>
    <div class="map-route-controls"><label>Prikaz<select id="map-scope"><option value="trip">Celotne poti A / B / C · avto</option><option value="day">Posamezni dan · avto</option><option value="city">Najini ogledi · peš</option></select></label><label><span class="sr-only">Dan poti</span><select id="map-day" aria-label="Dan poti" hidden></select></label><label class="map-consent"><input id="map-provider-consent" type="checkbox"> Dovolim Google izračun tras (API je lahko plačljiv).</label><button id="map-draw" type="button">Prikaži traso</button></div>
    <div class="map-toolbar"><div id="map-toggles" class="map-toggles"></div><div class="map-tools"><button type="button" id="map-zoom-in" aria-label="Povečaj zemljevid">+</button><button type="button" id="map-zoom-out" aria-label="Pomanjšaj zemljevid">−</button><button type="button" id="map-reset">Celotna pot</button><button type="button" id="map-ai" aria-controls="trip-ai-panel" aria-expanded="false">AI pomočnik</button><button type="button" id="map-expand" aria-expanded="false">Cel zaslon</button></div></div>
    <div id="map-host" class="map-host" data-map-mode="satellite"><div id="photo-map" class="photo-map" role="region" aria-label="Interaktivni zemljevid treh poti po Andaluziji"></div><svg id="trip-map" viewBox="0 0 1000 700" role="img" aria-labelledby="map-title map-desc"><title id="map-title">Tri poti po Andaluziji</title><desc id="map-desc">Mateja v koralni, Claude v modri in GPT v zeleni. Kraji so dostopni tudi prek gumbov pod zemljevidom.</desc><defs><pattern id="map-grid" width="65" height="65" patternUnits="userSpaceOnUse"><path d="M 65 0 L 0 0 0 65" fill="none" stroke="#294451" stroke-width=".7" opacity=".6"/></pattern><filter id="land-shadow"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity=".25"/></filter></defs><rect width="1000" height="700" fill="#0c2532"/><g id="map-viewport"></g></svg><div class="map-corner">S ↑<br><span>sever</span></div></div>
