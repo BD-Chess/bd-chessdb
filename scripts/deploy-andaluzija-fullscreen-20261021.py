@@ -57,18 +57,27 @@ def guard():
 guard()
 before = api('deploys/' + BASE)
 assert before['state'] == 'ready' and before['context'] == 'production'
-sources = ['public/shared/dualframe-album.mjs', 'public/shared/dualframe-album.css',
-           'public/BD/O/izleti/andaluzija-2027.html']
+sources = ['public/shared/dualframe-album.mjs', 'public/shared/dualframe-album.css']
 expected_before = {
     "shared/dualframe-album.mjs": "f5f658b18c19b465f5f9054dbca8383c4b25f43cf3221dc870b0ee98fe0930e8",
-    "shared/dualframe-album.css": "c5716a074f0c9ed4cb900f41a05beba94730250f81cc34d94527eb3f86d0a3be",
-    "bd/o/izleti/andaluzija-2027.html": "7910b4cadac11aa4adfcb26b8826c65e90bab3cddbf6cbf9027586dbe8acacc9"
+    "shared/dualframe-album.css": "c5716a074f0c9ed4cb900f41a05beba94730250f81cc34d94527eb3f86d0a3be"
 }
 overlay = {p.removeprefix('public/').lower(): Path(p).read_bytes() for p in sources}
 for path, contents in overlay.items():
     assert sha(public(path)) == expected_before[path], 'Live source drift: ' + path
     assert sha(contents) != expected_before[path], 'Missing change: ' + path
+# The published HTML contains canonical links and password-manager preparation
+# not present in source. Preserve every byte except these two cache keys.
+page_path = 'bd/o/izleti/andaluzija-2027.html'
+original_page = public(page_path)
+page = original_page.decode()
+for name in ['dualframe-album.css', 'dualframe-album.mjs']:
+    old = name + '?v=20261021-r1'
+    assert page.count(old) == 1, 'Unexpected live resource: ' + name
+    page = page.replace(old, name + '?v=20261021-fullscreen2')
+overlay[page_path] = page.encode()
 files = {f['path'].lstrip('/').lower(): f['sha'] for f in api('sites/' + SITE + '/files')}
+assert files[page_path] == sha(original_page, 'sha1'), 'HTML is not the exact static snapshot'
 original_files = dict(files)
 for path, contents in overlay.items():
     assert path in files
