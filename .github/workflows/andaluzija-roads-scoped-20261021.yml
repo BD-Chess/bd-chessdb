@@ -1,5 +1,6 @@
 name: Andaluzija roads and fullscreen AI scoped production
 # One user-authorized release. Ordinary Git CD remains suppressed.
+# R2: normalize published skill paths and verify one live Google road request.
 on:
   push:
     branches: [main]
@@ -47,6 +48,13 @@ jobs:
         run: ANDALUZIJA_BUNDLE_NAME=bundled-upgrade node scripts/bundle-andaluzija-legacy-functions-20261021.mjs
       - name: Publish explicit overlay on exact production snapshot
         run: python3 scripts/deploy-andaluzija-roads-20261021.py
+      - name: Install bounded production browser smoke runner
+        run: npm install --prefix /tmp/roads-browser-tools --ignore-scripts --no-audit --no-fund playwright@1.58.0
+      - name: Verify published page, native fullscreen and one Google road route
+        env:
+          NODE_PATH: /tmp/roads-browser-tools/node_modules
+          ANDALUZIJA_TEST_CHROMIUM: /usr/bin/google-chrome
+        run: node tests/andaluzija-roads-live-smoke.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

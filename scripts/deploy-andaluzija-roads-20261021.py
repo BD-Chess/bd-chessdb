@@ -48,6 +48,7 @@ def git_bytes(path):
  return subprocess.check_output(['git','show',SOURCE+':'+path])
 
 def raw_file(path):
+ path=path.lower()
  data=request('sites/'+SITE+'/files/'+urllib.parse.quote(path,safe='/'),raw=True)
  assert sha(data,'sha1')==files[path], 'Source snapshot drift: '+path
  return data
@@ -87,7 +88,7 @@ def main():
  for name in SKILLS:
   path='ai/skills/andaluzija-2027-guide/'+name
   assert raw_file(path)==git_bytes('public/'+path)
-  overlay[path]=Path('public/'+path).read_bytes()
+  overlay[path.lower()]=Path('public/'+path).read_bytes()
  registry_path='ai/skills/registry.json'
  original_registry=json.loads(raw_file(registry_path))
  registry=copy.deepcopy(original_registry)
