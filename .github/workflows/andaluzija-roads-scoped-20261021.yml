@@ -1,66 +1,38 @@
-name: Andaluzija roads and fullscreen AI scoped production
-# One user-authorized release. Ordinary Git CD remains suppressed.
-# R2: normalize published skill paths and verify one live Google road request.
-# R3: final one-file camera/bounds clearing; reuse successful Google proof, no new paid calls.
+name: Andaluzija roads production read-only audit
+# The owner-authorized production releases are complete. Deploy capability retired.
+# This retained audit cannot create, change, restore or publish a Netlify deploy.
 on:
   push:
     branches: [main]
     paths: [.github/workflows/andaluzija-roads-scoped-20261021.yml]
 permissions:
   contents: read
-concurrency:
-  group: netlify-production
-  cancel-in-progress: false
 jobs:
-  publish:
-    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && contains(github.event.head_commit.message, 'ANDALUZIJA-ROADS-R1')
+  audit:
+    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'ANDALUZIJA-ROADS-AUDIT')
     runs-on: ubuntu-latest
-    timeout-minutes: 18
-    env:
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      ALBUM_FROZEN_ROOT: /tmp/andaluzija-frozen-functions
-      ALBUM_NETLIFY_TOOLS: /tmp/album-netlify-tools
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          sparse-checkout: tests
       - uses: actions/setup-node@v4
         with:
           node-version: 24.19.0
-          cache: npm
-      - name: Pin verified package manager
-        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
-      - name: Install locked narrow-test dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Targeted road, AI, navigation and album tests without paid calls
-        run: node --test tests/andaluzija-roads.test.mjs tests/andaluzija-ai.test.mjs tests/andaluzija-page.test.mjs tests/dualframe-album.test.mjs
-      - name: Reconstruct exact published function sources
-        run: python3 scripts/prepare-andaluzija-legacy-functions-20261021.py
-      - name: Install locked legacy dependencies and pinned packaging tools
-        run: |
-          npm ci --prefix "$ALBUM_FROZEN_ROOT" --ignore-scripts --no-audit --no-fund
-          npm ci --prefix "$ALBUM_FROZEN_ROOT/functions" --ignore-scripts --no-audit --no-fund
-          npm install --prefix "$ALBUM_NETLIFY_TOOLS" --ignore-scripts --no-audit --no-fund netlify-cli@27.14.0
-      - name: Package exact baseline functions
-        run: node scripts/bundle-andaluzija-legacy-functions-20261021.mjs
-      - name: Prepare only upgraded travel AI package
-        run: python3 scripts/prepare-andaluzija-roads-functions-20261021.py
-      - name: Package upgrade separately; unchanged packages are retained byte-for-byte
-        run: ANDALUZIJA_BUNDLE_NAME=bundled-upgrade node scripts/bundle-andaluzija-legacy-functions-20261021.mjs
-      - name: Publish explicit overlay on exact production snapshot
-        run: python3 scripts/deploy-andaluzija-roads-20261021.py
-      - name: Install bounded production browser smoke runner
+      - name: Install bounded read-only browser checker
         run: npm install --prefix /tmp/roads-browser-tools --ignore-scripts --no-audit --no-fund playwright@1.58.0
-      - name: Verify published page, native fullscreen and one Google road route
+      - name: Verify final deployed asset and fullscreen AI without paid calls
         env:
           NODE_PATH: /tmp/roads-browser-tools/node_modules
           ANDALUZIJA_TEST_CHROMIUM: /usr/bin/google-chrome
           ANDALUZIJA_STATIC_SMOKE_ONLY: '1'
+          ANDALUZIJA_AUDIT_DEPLOY: 6ad8f36a5dbc88a9b9653680
         run: node tests/andaluzija-roads-live-smoke.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: andaluzija-roads-production-${{ github.run_id }}
+          name: andaluzija-roads-final-audit-${{ github.run_id }}
           path: roads-release-evidence/
           if-no-files-found: warn
           retention-days: 30

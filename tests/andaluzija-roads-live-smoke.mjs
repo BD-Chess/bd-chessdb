@@ -2,9 +2,10 @@
 // No login, model calls, private unlock or shared-plan writes. No API keys logged.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {readFile,writeFile} from 'node:fs/promises';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const receipt=JSON.parse(await readFile('roads-release-evidence/receipt.json','utf8'));
+await mkdir('roads-release-evidence',{recursive:true});
+const receipt=process.env.ANDALUZIJA_AUDIT_DEPLOY?{deploy_id:process.env.ANDALUZIJA_AUDIT_DEPLOY,url:'https://www.mdlxdcc.org/bd/o/izleti/andaluzija-2027',googleRoadSmokeVerifiedOn:'6ad8f264d12d64595e64eca4'}:JSON.parse(await readFile('roads-release-evidence/receipt.json','utf8'));
 const browser=await chromium.launch({headless:true,executablePath:process.env.ANDALUZIJA_TEST_CHROMIUM||'/usr/bin/google-chrome',args:['--no-sandbox','--disable-dev-shm-usage']});
 const result={deploy_id:receipt.deploy_id,anonymous:true,modelCalls:0,privateWrites:0,roadDrawAttempts:0,errors:[],csp:[],mapErrors:[]};
 try{
@@ -17,7 +18,7 @@ try{
  const csp=response.headers()['content-security-policy'];assert(csp.includes('https://*.googleapis.com')&&csp.includes("frame-ancestors 'none'"));
  await page.waitForSelector('#photo-gallery[data-dualframe-ready="true"]',{timeout:15000});assert.equal(await page.evaluate(()=>AndaluzijaTripOptiV1.getContext().capabilities.write),false);
  if(process.env.ANDALUZIJA_STATIC_SMOKE_ONLY){
-  const r=await page.request.get(new URL('./andaluzija-map.mjs',receipt.url));assert.equal(r.status(),200);assert((await r.text()).includes('this.bounds=null;this.map?.panTo({lat:37.1,lng:-4.8});this.map?.setZoom(7)'));result.cameraResetAsset=true;result.googleRoadSmokeVerifiedOn=receipt.googleRoadSmokeVerifiedOn;
+  const r=await page.request.get(new URL('./andaluzija-map.mjs',receipt.url).href);assert.equal(r.status(),200);assert((await r.text()).includes('this.bounds=null;this.map?.panTo({lat:37.1,lng:-4.8});this.map?.setZoom(7)'));result.cameraResetAsset=true;result.googleRoadSmokeVerifiedOn=receipt.googleRoadSmokeVerifiedOn;
  }else{
  await page.locator('[data-map-view="satellite"]').click();
  await page.waitForFunction(()=>document.querySelector('#photo-map .gm-style')||document.getElementById('map-status').textContent.includes('ni dosegljiv'),null,{timeout:30000});
