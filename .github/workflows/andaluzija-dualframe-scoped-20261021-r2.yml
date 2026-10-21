@@ -9,10 +9,36 @@ on:
     paths: [.github/workflows/andaluzija-dualframe-scoped-20261021-r2.yml]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: netlify-production
   cancel-in-progress: false
 jobs:
+  audit:
+    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-AUDIT')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39577031843
+          name: andaluzija-dualframe-production-39577031843
+          path: album-release-evidence/
+      - name: Verify the published release without creating or changing any deploy
+        run: python3 scripts/audit-andaluzija-dualframe-20261021.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: andaluzija-dualframe-audit-${{ github.run_id }}
+          path: album-release-evidence/
+          retention-days: 30
   publish:
     if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-R2')
     runs-on: ubuntu-latest

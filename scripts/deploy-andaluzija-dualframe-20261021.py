@@ -233,8 +233,11 @@ assert {f['n']: f['d'] for f in deploy['available_functions']} == functions, 'Pr
 assert {f['n']: (f.get('rg'), f.get('m')) for f in deploy['available_functions']} == {f['n']: (f.get('rg'), f.get('m')) for f in published['available_functions']}, 'Function allocation changed'
 assert deploy.get('function_schedules') == published.get('function_schedules'), 'Function schedules changed'
 assert api('sites/' + SITE)['published_deploy']['id'] == deploy_id
-after = {f['path'].lstrip('/'): f['sha'] for f in api('sites/' + SITE + '/files')}
-assert after == files, 'Unexpected published static changes'
+after = {f['path'].lstrip('/').lower(): f['sha'] for f in api('sites/' + SITE + '/files')}
+# Netlify canonicalizes newly introduced paths to lowercase, including the
+# L/P suffixes. Existing baseline paths were already canonicalized.
+expected_files = {path.lower(): value for path, value in files.items()}
+assert len(expected_files) == len(files) and after == expected_files, 'Unexpected published static changes'
 receipt = {'deploy_id': deploy_id, 'state': deploy['state'], 'published_at': deploy.get('published_at'),
     'source': os.environ['GITHUB_SHA'], 'baseline': BASE, 'changed_public_files': len(overlay),
     'preserved_functions': len(functions), 'unchanged_static_files_verified': True,
