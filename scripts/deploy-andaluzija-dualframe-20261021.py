@@ -126,7 +126,9 @@ worker = read_public(DF + 'sw.js').decode()
 assets = json.loads(re.search(r'const ASSETS=(\[[\s\S]*?\]);', worker)[1])
 package = hashlib.sha256()
 for asset in assets:
-    path = DF + asset.removeprefix('./').split('?')[0]
+    path = (DF + asset.removeprefix('./').split('?')[0]).lower()
+    if path.endswith('/'):
+        path += 'index.html'
     if path == DF + 'release.json':
         continue
     data = overlay.get(path)
