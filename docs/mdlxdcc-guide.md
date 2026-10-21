@@ -1,6 +1,6 @@
 # MDL×DCC Guide
 
-The landing now has separate **MDL×DCC → Start**, **BD → /BD/**, **AI → left guide**, and **LAB → the existing Growth through time dialog** controls. AI is closed initially. Closing it keeps the same DOM, transcript, request and frame. A tab-scoped transcript also survives a reload. The existing landing studies, galleries, languages, typography, theme and search remain in place.
+The landing now has separate **MDL×DCC → toggle guide**, **BD → Start**, **AI → toggle the same guide**, and **LAB → the existing Growth through time dialog** controls. AI is closed initially. Closing it keeps the same DOM, transcript, request and frame. A tab-scoped transcript also survives a reload. The existing landing studies, galleries, languages, typography, theme and search remain in place.
 
 The assistant is a site-owned API application with **GPT** and **Claude** choices in the chat header. The choice controls the next answer in one shared conversation; every assistant answer carries its provider label. Switching preserves the transcript, draft and scene and pauses a running tour. It does not embed chatgpt.com, use a visitor's personal subscription, inherit the owner's account/Drive, or expose a provider credential to the browser.
 

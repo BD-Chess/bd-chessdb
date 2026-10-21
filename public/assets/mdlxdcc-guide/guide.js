@@ -132,6 +132,7 @@ function translate() {
  $('guide-send').setAttribute('aria-label', w('send')); $('guide-close').setAttribute('aria-label', w('close'));
  $('guide-page-external').setAttribute('aria-label', w('external'));
  $('guide-toggle').setAttribute('aria-label', lang() === 'sl' ? 'AI — odpri ali skrij vodnika' : 'AI — show or hide the guide');
+ $('guide-brand-toggle')?.setAttribute('aria-label', lang() === 'sl' ? 'MDL×DCC — odpri ali skrij vodnika' : 'MDL×DCC — show or hide the guide');
  updateProvider();
  updateAccount();
  updateTourStatus();
@@ -163,7 +164,7 @@ async function probe() {
  catch { providerAvailable = { gpt:false, claude:false }; } translate();
 }
 function setOpen(open) {
- if (!open && tour) pauseTour(); panel.hidden = !open; document.body.classList.toggle('guide-open', open); $('guide-toggle').setAttribute('aria-expanded', String(open)); topSize();
+ if (!open && tour) pauseTour(); panel.hidden = !open; document.body.classList.toggle('guide-open', open); $('guide-toggle').setAttribute('aria-expanded', String(open)); $('guide-brand-toggle')?.setAttribute('aria-expanded', String(open)); topSize();
  if (open) { catalog(); probe(); refreshAccount(); requestAnimationFrame(() => { ($('guide-auth').hidden ? input : $('guide-email')).focus({ preventScroll:true }); scrollEnd(); }); } else $('guide-toggle').focus({ preventScroll:true });
 }
 function snapshot() {
@@ -339,6 +340,7 @@ async function submit(text) {
 }
 
 $('guide-toggle').addEventListener('click', () => setOpen(panel.hidden));
+$('guide-brand-toggle')?.addEventListener('click', () => setOpen(panel.hidden));
 for (const provider of ['gpt','claude']) $('guide-provider-' + provider).addEventListener('click', () => chooseProvider(provider));
 $('guide-close').addEventListener('click', () => setOpen(false));
 $('guide-account-action').addEventListener('click', () => account ? sendAuth('logout') : showAuth(true));
