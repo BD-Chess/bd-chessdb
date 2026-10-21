@@ -150,6 +150,11 @@ assert len(functions) == 30
 # Netlify no longer has the raw cached ZIPs. Re-upload only byte-identical
 # reconstructions: every ZIP must match the current production digest first.
 bundles = {f['name']: f for f in json.loads((Path(os.environ['ALBUM_FROZEN_ROOT']) / 'bundled-functions.json').read_text())}
+mismatches = {name: {'expected': functions.get(name), 'actual': bundle['sha256'], 'size': bundle['size']}
+              for name, bundle in bundles.items() if bundle['sha256'] != functions.get(name)}
+(EVIDENCE / 'function-bundle-check.json').write_text(json.dumps({'count': len(bundles), 'mismatches': mismatches}, indent=2) + '\n')
+if mismatches:
+    print('FUNCTION_BUNDLE_MISMATCHES', json.dumps(mismatches), flush=True)
 assert {name: f['sha256'] for name, f in bundles.items()} == functions, 'Function ZIP differs from production'
 for name, bundle in bundles.items():
     assert sha(Path(bundle['path']).read_bytes()) == functions[name]
@@ -179,14 +184,14 @@ scope = {'previous_deploy': BASE, 'source': os.environ['GITHUB_SHA'],
     'live_dualframe_policy': 'only backlink and matching offline package; preserve current deployed features'}
 (EVIDENCE / 'scope.json').write_text(json.dumps(scope, indent=2) + '\n')
 
-# Create a fresh draft: previous incomplete cache attempts contain unsatisfied
-# extra hashes. Verify the complete ready draft before publishing it.
+# Previous incomplete cache attempts contain unsatisfied extra hashes. Start a
+# fresh production deploy only after all source, asset and ZIP checks pass.
 guard()
 title = 'Andaluzija DualFrame album ' + os.environ['GITHUB_SHA'] + ' baseline=' + BASE
 deploy = api('sites/' + SITE + '/deploys?title=' + urllib.parse.quote(title) + '&commit_ref=' + os.environ['GITHUB_SHA'], {
     'files': files, 'functions': functions, 'functions_config': config,
     'function_schedules': published.get('function_schedules') or [],
-    'branch': 'main', 'framework': published.get('framework') or 'unknown', 'async': True, 'draft': True,
+    'branch': 'main', 'framework': published.get('framework') or 'unknown', 'async': True, 'draft': False,
 }, method='POST')
 deploy_id = deploy['id']
 (EVIDENCE / 'created.json').write_text(json.dumps({'deploy_id': deploy_id, 'source': os.environ['GITHUB_SHA']}) + '\n')
@@ -223,12 +228,10 @@ for _ in range(120):
         break
     time.sleep(3)
 assert deploy['state'] == 'ready'
+assert deploy.get('context') == published.get('context'), 'Deployment context changed'
 assert {f['n']: f['d'] for f in deploy['available_functions']} == functions, 'Production functions changed'
 assert {f['n']: (f.get('rg'), f.get('m')) for f in deploy['available_functions']} == {f['n']: (f.get('rg'), f.get('m')) for f in published['available_functions']}, 'Function allocation changed'
 assert deploy.get('function_schedules') == published.get('function_schedules'), 'Function schedules changed'
-guard()
-api('sites/' + SITE + '/deploys/' + deploy_id + '/restore', data=b'', method='POST')
-deploy = api('deploys/' + deploy_id)
 assert api('sites/' + SITE)['published_deploy']['id'] == deploy_id
 after = {f['path'].lstrip('/'): f['sha'] for f in api('sites/' + SITE + '/files')}
 assert after == files, 'Unexpected published static changes'

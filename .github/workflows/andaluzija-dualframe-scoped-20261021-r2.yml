@@ -2,7 +2,7 @@ name: Andaluzija DualFrame scoped production R2
 # BD explicitly authorized this one album release. Normal Git CD stays disabled.
 # Retain bounded validation diagnostics when the provider rejects preparation.
 # Effective default regions/memory are verified, never re-sent as new overrides.
-# Reconstruct and verify byte-identical legacy ZIPs; publish only a verified draft.
+# Reconstruct byte-identical legacy ZIPs using the locally verified tool versions.
 on:
   push:
     branches: [main]
@@ -27,8 +27,10 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.19.0
           cache: npm
+      - name: Pin the verified packaging package manager
+        run: npm install --global npm@11.9.0 --ignore-scripts --no-audit --no-fund
       - name: Install locked test dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify album interactions, assets and travel regressions without provider calls
