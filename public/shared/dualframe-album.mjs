@@ -29,6 +29,7 @@ export function mountAlbum(root, album, baseURL) {
     [item.original, item.thumbnail, item.variants.L.src, item.variants.P.src].forEach(asset);
   }
   let mode = 'AUTO', index = 0, playing = false, timer = null, trigger = null, loadSerial = 0, touch = null, lastTap = 0;
+  let captionTimer = null, loaded = false, touchDoubleAt = -Infinity;
   const region = root.closest('section') || root;
   const toolbar = doc.createElement('div');
   toolbar.className = 'df-album-toolbar';
@@ -59,6 +60,33 @@ export function mountAlbum(root, album, baseURL) {
   const find = s => dialog.querySelector(s);
   const viewer = find('.df-album-viewer'), stage = find('.df-viewer-stage'), image = find('[data-df-image]');
   const status = find('[data-df-status]');
+  const caption = doc.createElement('span');
+  caption.className = 'df-photo-caption'; caption.hidden = true;
+  caption.setAttribute('data-df-photo-caption', ''); stage.append(caption);
+  const immersive = () => viewer.classList.contains('is-immersive');
+  function hideCaption() { if (captionTimer !== null) win.clearTimeout(captionTimer); captionTimer = null; caption.hidden = true; }
+  function positionCaption() {
+    const scale = Math.min(stage.clientWidth / image.width, stage.clientHeight / image.height);
+    caption.style.bottom = Math.max(20, (stage.clientHeight - image.height * scale) / 2 + 20) + 'px';
+  }
+  function scheduleCaption() {
+    hideCaption();
+    if (!dialog.open || !immersive() || !loaded || doc.hidden) return;
+    const serial = loadSerial;
+    captionTimer = win.setTimeout(() => {
+      if (dialog.open && immersive() && loaded && serial === loadSerial && !doc.hidden) {
+        positionCaption(); caption.hidden = false;
+      }
+    }, 2000);
+  }
+  function syncFull() {
+    const active = immersive();
+    dialog.classList.toggle('is-photo-full', active);
+    find('[data-df-full]').setAttribute('aria-pressed', String(active));
+    find('[data-df-full]').textContent = active ? 'Povrni pogled ⛶' : 'Cel zaslon ⛶';
+    for (const chrome of dialog.querySelectorAll('.df-viewer-top, .df-viewer-controls, .df-viewer-footer, [data-df-step], [data-df-status]')) chrome.inert = active;
+    scheduleCaption();
+  }
   const frame = () => orientation(mode, win.innerWidth, win.innerHeight);
   const modeButtons = [...toolbar.querySelectorAll('[data-df-mode]'), ...dialog.querySelectorAll('[data-df-mode]')];
   function syncMode() {
@@ -86,10 +114,12 @@ export function mountAlbum(root, album, baseURL) {
   }
   async function show(next) {
     win.clearTimeout(timer);
+    hideCaption(); loaded = false;
     index = (next + album.items.length) % album.items.length;
     const item = album.items[index], selected = frame(), v = item.variants[selected], serial = ++loadSerial;
     find('[data-df-count]').textContent = `${index + 1} / ${album.items.length} · ${selected}`;
     find('[data-df-title]').textContent = item.title;
+    caption.textContent = item.title;
     find('[data-df-note]').textContent = item.note || '';
     find('[data-df-original]').href = asset(item.original);
     find('[data-df-download]').href = asset(v.src);
@@ -97,10 +127,11 @@ export function mountAlbum(root, album, baseURL) {
     image.alt = item.title + ' · AI kompozicija ' + selected;
     dialog.dataset.orientation = selected;
     status.textContent = 'Nalagam …';
-    image.onload = () => { if (serial === loadSerial) { status.textContent = ''; schedule(); } };
-    image.onerror = () => { if (serial === loadSerial) { status.textContent = 'Slike ni mogoče naložiti. Odpri izvirnik ali izberi drugo fotografijo.'; setPlaying(false); } };
+    const ready = () => { if (serial === loadSerial && !loaded) { loaded = true; status.textContent = ''; schedule(); scheduleCaption(); } };
+    image.onload = ready;
+    image.onerror = () => { if (serial === loadSerial) { loaded = false; hideCaption(); status.textContent = 'Slike ni mogoče naložiti. Odpri izvirnik ali izberi drugo fotografijo.'; setPlaying(false); } };
     image.width = v.width; image.height = v.height; image.src = asset(v.src);
-    if (image.complete && image.naturalWidth) { status.textContent = ''; schedule(); }
+    if (image.complete && image.naturalWidth) ready();
   }
   function setMode(value) {
     if (!['AUTO', 'L', 'P'].includes(value)) return;
@@ -115,13 +146,12 @@ export function mountAlbum(root, album, baseURL) {
     if (active) {
       if (doc.fullscreenElement === viewer) await doc.exitFullscreen?.().catch(() => {});
       viewer.classList.remove('is-immersive');
+      syncFull(); find('[data-df-full]').focus({preventScroll:true});
     } else {
       viewer.classList.add('is-immersive');
+      syncFull(); stage.focus({preventScroll:true});
       try { await viewer.requestFullscreen?.(); } catch { /* iOS uses the viewport-sized viewer. */ }
     }
-    const state = doc.fullscreenElement === viewer || viewer.classList.contains('is-immersive');
-    find('[data-df-full]').setAttribute('aria-pressed', String(state));
-    find('[data-df-full]').textContent = state ? 'Povrni pogled ⛶' : 'Cel zaslon ⛶';
   }
   function close() { if (dialog.open) dialog.close(); }
   function clicked(e) {
@@ -137,19 +167,20 @@ export function mountAlbum(root, album, baseURL) {
   region.addEventListener('click', clicked); dialog.addEventListener('click', clicked);
   dialog.addEventListener('close', () => {
     setPlaying(false); ++loadSerial;
+    loaded = false; hideCaption(); lastTap = 0;
     if (doc.fullscreenElement === viewer) doc.exitFullscreen?.().catch(() => {});
-    viewer.classList.remove('is-immersive'); find('[data-df-full]').setAttribute('aria-pressed', 'false');
-    find('[data-df-full]').textContent = 'Cel zaslon ⛶';
+    viewer.classList.remove('is-immersive'); syncFull();
     doc.body.classList.remove('df-album-open');
     image.removeAttribute('src'); trigger?.focus({preventScroll:true});
   });
+  dialog.addEventListener('cancel', e => { if (immersive()) { e.preventDefault(); full(); } });
   dialog.addEventListener('keydown', e => {
     if (e.target.matches('select, input, textarea') || e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); show(index + (e.key === 'ArrowRight' ? 1 : -1)); }
     if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); show(e.key === 'Home' ? 0 : album.items.length - 1); }
     if (e.key === ' ' && (e.target === stage || e.target === image)) { e.preventDefault(); setPlaying(!playing); }
   });
-  stage.addEventListener('dblclick', e => { if (e.target === image || e.target === stage) { e.preventDefault(); full(); } });
+  stage.addEventListener('dblclick', e => { if (e.target === image || e.target === stage) { e.preventDefault(); if (Date.now() - touchDoubleAt > 700) full(); } });
   stage.addEventListener('touchstart', e => {
     touch = e.touches.length === 1 && !e.target.closest('button') ? {x:e.touches[0].clientX, y:e.touches[0].clientY, at:Date.now()} : null;
   }, {passive:true});
@@ -158,18 +189,19 @@ export function mountAlbum(root, album, baseURL) {
     const dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y, now = Date.now();
     if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.5) { show(index + (dx < 0 ? 1 : -1)); lastTap = 0; }
     else if (Math.abs(dx) < 15 && Math.abs(dy) < 15 && now - touch.at < 350) {
-      if (now - lastTap < 320) { e.preventDefault(); full(); lastTap = 0; } else lastTap = now;
+      if (lastTap && now - lastTap < 320) { e.preventDefault(); touchDoubleAt = now; full(); lastTap = 0; } else lastTap = now;
     }
     touch = null;
   }, {passive:false});
   stage.addEventListener('touchcancel', () => { touch = null; });
   find('[data-df-interval]').addEventListener('change', schedule);
-  doc.addEventListener('visibilitychange', schedule);
+  doc.addEventListener('visibilitychange', () => { schedule(); scheduleCaption(); });
   doc.addEventListener('fullscreenchange', () => {
-    if (!doc.fullscreenElement) { viewer.classList.remove('is-immersive'); find('[data-df-full]').setAttribute('aria-pressed','false'); find('[data-df-full]').textContent = 'Cel zaslon ⛶'; }
+    if (!doc.fullscreenElement) { viewer.classList.remove('is-immersive'); syncFull(); stage.focus({preventScroll:true}); }
   });
   let previousFrame = frame();
   win.addEventListener('resize', () => {
+    if (!caption.hidden) positionCaption();
     const next = frame(); if (next === previousFrame) return;
     previousFrame = next; syncMode(); if (dialog.open) show(index);
   });

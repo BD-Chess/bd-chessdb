@@ -5,6 +5,7 @@ name: Andaluzija DualFrame scoped production R2
 # Reconstruct byte-identical legacy ZIPs using the locally verified tool versions.
 # The two-file PWA correction also preserves existing function route mappings.
 # Retry transient asset reads; never repeat a deploy-creation POST automatically.
+# BD also explicitly authorized the photo-only fullscreen correction, 2026-10-21.
 on:
   push:
     branches: [main]
@@ -42,7 +43,7 @@ jobs:
           path: album-release-evidence/
           retention-days: 30
   publish:
-    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && (contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-R2') || contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-PWA-FIX'))
+    if: github.repository == 'BD-Chess/bd-chessdb' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && (contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-R2') || contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-PWA-FIX') || contains(github.event.head_commit.message, 'ANDALUZIJA-PHOTO-ONLY-FULLSCREEN'))
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
@@ -78,6 +79,9 @@ jobs:
       - name: Correct only the two live PWA metadata files and verify the actual package
         if: contains(github.event.head_commit.message, 'ANDALUZIJA-DUALFRAME-PWA-FIX')
         run: python3 scripts/repair-andaluzija-dualframe-pwa-20261021.py
+      - name: Publish only photo-only fullscreen, styles and the page cache key
+        if: contains(github.event.head_commit.message, 'ANDALUZIJA-PHOTO-ONLY-FULLSCREEN')
+        run: python3 scripts/deploy-andaluzija-fullscreen-20261021.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

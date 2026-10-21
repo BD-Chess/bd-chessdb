@@ -101,6 +101,46 @@ test('embedded module rejects external assets and inserts captions as text',()=>
     assert.equal(f.root.querySelectorAll('button').length,21);assert(!f.d.querySelector('script'));
   }finally{f.dom.window.close();}
 });
+test('photo-only view delays the place name until two seconds after load and resets on navigation/exit',async()=>{
+  const f=fixture();try{
+    let now=0,id=0;const pending=new Map();
+    f.w.setTimeout=(fn,ms)=>{pending.set(++id,{fn,at:now+ms});return id;};
+    f.w.clearTimeout=id=>pending.delete(id);
+    const advance=ms=>{now+=ms;for(const [key,t] of [...pending])if(t.at<=now){pending.delete(key);t.fn();}};
+    f.click('[data-df-open]');
+    const image=f.d.querySelector('[data-df-image]'),caption=f.d.querySelector('[data-df-photo-caption]');
+    const double=()=>image.dispatchEvent(new f.w.MouseEvent('dblclick',{bubbles:true,cancelable:true}));
+    double();await Promise.resolve();
+    assert(f.d.querySelector('dialog').classList.contains('is-photo-full'));
+    assert(f.d.querySelector('.df-viewer-controls').inert);
+    advance(5000);assert(caption.hidden,'no title while image is loading');
+    image.dispatchEvent(new f.w.Event('load'));
+    advance(1999);assert(caption.hidden);advance(1);assert(!caption.hidden);
+    assert.equal(caption.textContent,album.items[0].title);
+    f.key('ArrowRight');assert(caption.hidden);advance(3000);assert(caption.hidden);
+    image.dispatchEvent(new f.w.Event('load'));advance(2000);assert(!caption.hidden);
+    assert.equal(caption.textContent,album.items[1].title);
+    double();await Promise.resolve();assert(caption.hidden);
+    assert(!f.d.querySelector('dialog').classList.contains('is-photo-full'));
+    assert(!f.d.querySelector('.df-viewer-controls').inert);
+    double();await Promise.resolve();advance(1999);assert(caption.hidden);advance(1);assert(!caption.hidden);
+    f.api.close();advance(3000);assert(caption.hidden);assert.equal(pending.size,0);
+  }finally{f.dom.window.close();}
+});
+test('native fullscreen exit and synthesized double click after touch do not reopen the photo',async()=>{
+  const f=fixture();try{
+    const viewer=f.d.querySelector('.df-album-viewer'),stage=f.d.querySelector('.df-viewer-stage');
+    Object.defineProperty(f.d,'fullscreenElement',{value:null,writable:true,configurable:true});
+    viewer.requestFullscreen=async()=>{f.d.fullscreenElement=viewer;f.d.dispatchEvent(new f.w.Event('fullscreenchange'));};
+    f.d.exitFullscreen=async()=>{f.d.fullscreenElement=null;f.d.dispatchEvent(new f.w.Event('fullscreenchange'));};
+    const touch=type=>{const e=new f.w.Event(type,{bubbles:true,cancelable:true});Object.defineProperty(e,type==='touchstart'?'touches':'changedTouches',{value:[{clientX:100,clientY:200}]});stage.dispatchEvent(e);};
+    const double=()=>{touch('touchstart');touch('touchend');touch('touchstart');touch('touchend');};
+    f.click('[data-df-open]');double();await Promise.resolve();assert.equal(f.d.fullscreenElement,viewer);
+    stage.dispatchEvent(new f.w.MouseEvent('dblclick',{bubbles:true,cancelable:true}));await Promise.resolve();assert.equal(f.d.fullscreenElement,viewer);
+    double();await Promise.resolve();await Promise.resolve();assert.equal(f.d.fullscreenElement,null);assert(!viewer.classList.contains('is-immersive'));
+    f.click('[data-df-full]');await Promise.resolve();await f.d.exitFullscreen();assert(!viewer.classList.contains('is-immersive'));
+  }finally{f.dom.window.close();}
+});
 test('locked page and content-refresh integration retain the album without changing Shield',async()=>{
   const html=await readFile('public/BD/O/izleti/andaluzija-2027.html','utf8'),js=await readFile('public/BD/O/izleti/andaluzija-2027.js','utf8');
   assert(html.includes('Spoznaj DualFrame Photos'));assert(html.includes('data-dualframe-album'));
